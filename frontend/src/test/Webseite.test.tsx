@@ -684,7 +684,15 @@ describe('Inhalte der Webseite', () => {
       title: 'Chronik',
       has_timeline: true,
       timeline: [
-        { kind: 'event', year: 1949, until: null, title: 'Neuanfang', text: '', images: [] },
+        {
+          kind: 'event',
+          year: 1949,
+          until: null,
+          title: 'Neuanfang',
+          text: '',
+          images: [],
+          image_position: 'auto',
+        },
       ],
     })
     const calls = renderApp(
@@ -755,6 +763,7 @@ describe('Inhalte der Webseite', () => {
           title: 'Verschobenes Jubiläum',
           text: '',
           images: [1, 2, 3],
+          image_position: 'auto',
         },
       ],
     })
@@ -781,12 +790,17 @@ describe('Inhalte der Webseite', () => {
     // Reihenfolge ändern und ein Bild entfernen
     await user.click(within(form).getByRole('button', { name: 'Plakat 2022 nach vorn' }))
     await user.click(within(form).getByRole('button', { name: 'Plakat 2020 entfernen' }))
+    // Bildposition: Standard abwechselnd, hier groß unter dem Text
+    const position = within(form).getByLabelText('Bildposition')
+    expect(position).toHaveValue('auto')
+    await user.selectOptions(position, 'groß unter dem Text')
     await user.click(within(form).getByRole('button', { name: 'Übernehmen' }))
     await waitFor(
       () => {
         const put = calls.filter((c) => c.key === `PUT ${base}texts/5/`).at(-1)
         const body = put && JSON.parse(String(put.init?.body))
         expect(body?.timeline?.[0]?.images).toEqual([3, 2])
+        expect(body?.timeline?.[0]?.image_position).toBe('below')
       },
       { timeout: 3000 },
     )

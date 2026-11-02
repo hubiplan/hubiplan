@@ -313,7 +313,11 @@ export interface TimelineEntry {
   text: string
   /** bis zu sechs Bilder (Ralf 02.11.) */
   images: number[]
+  /** auto = abwechselnd links/rechts, below = groß unter dem Text (Ralf 02.11.) */
+  image_position: ImagePosition
 }
+
+export type ImagePosition = 'auto' | 'left' | 'right' | 'below'
 
 export const contentApi = {
   texts: (org: number) =>

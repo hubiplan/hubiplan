@@ -16,13 +16,19 @@ export const EMPTY: TimelineEntry = {
   title: '',
   text: '',
   images: [],
+  image_position: 'auto',
 }
 
 /** Eintrag in fester Form; ältere Einträge hatten ein einzelnes „image“ */
-export function normalizeEntry(e: TimelineEntry & { image?: number | null }): TimelineEntry {
+export function normalizeEntry(
+  e: Omit<TimelineEntry, 'image_position'> & {
+    image?: number | null
+    image_position?: TimelineEntry['image_position']
+  },
+): TimelineEntry {
   const { image, ...rest } = e
   const images = Array.isArray(e.images) ? e.images : typeof image === 'number' ? [image] : []
-  return { ...rest, images }
+  return { ...rest, images, image_position: e.image_position ?? 'auto' }
 }
 
 /** „1939–1948“ oder „1920“ */
