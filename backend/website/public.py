@@ -599,6 +599,24 @@ class SiteView:
         return services.in_tree_order(qs)
 
     @cached_property
+    def unit_roles(self) -> dict[int, list[DepartmentRole]]:
+        """Rollen der Untereinheiten auf der Webseite je Untereinheit, in einer Abfrage
+        (vorher je Untereinheit eine; bei 17 Zügen 17 Abfragen je Vorstandsseite)."""
+        result: dict[int, list[DepartmentRole]] = {u.pk: [] for u in self.units}
+        rows = DepartmentRole.objects.filter(
+            department__in=[u.pk for u in self.units], on_website=True
+        ).order_by("position", "name")
+        for role in rows:
+            result[role.department_id].append(role)
+        return result
+
+    def roles_of_unit(self, u: Department) -> list[DepartmentRole]:
+        if u.pk in self.unit_roles:
+            return self.unit_roles[u.pk]
+        rows = DepartmentRole.objects.filter(department=u, on_website=True)
+        return list(rows.order_by("position", "name"))
+
+    @cached_property
     def unit_slugs(self) -> dict[int, str]:
         seen: dict[str, int] = {}
         result = {}
@@ -665,9 +683,7 @@ class SiteView:
         text = self.unit_text(u)
         rows = []
         if self.site.block_on("board"):
-            for role in DepartmentRole.objects.filter(department=u, on_website=True).order_by(
-                "position", "name"
-            ):
+            for role in self.roles_of_unit(u):
                 holders, keys = [], set()
                 for h in self.unit_role_holders.get(role.pk, []):
                     entry = self.person(h.membership.person, details=True)
@@ -969,9 +985,7 @@ class SiteView:
             if emails:
                 found.append(("", tuple(emails), self.token("role", role.pk), role.name))
         for u in self.units:
-            for role in DepartmentRole.objects.filter(department=u, on_website=True).order_by(
-                "position", "name"
-            ):
+            for role in self.roles_of_unit(u):
                 emails = self.recipient_emails("unitrole", role)
                 if emails:
                     found.append(
@@ -1004,7 +1018,7 @@ class SiteView:
                 emails = self.recipient_emails("role", role)
                 return (role.name, emails) if emails else None
         for u in self.units:
-            for role in DepartmentRole.objects.filter(department=u, on_website=True):
+            for role in self.roles_of_unit(u):
                 if hmac.compare_digest(self.token("unitrole", role.pk), rid):
                     emails = self.recipient_emails("unitrole", role)
                     return (f"{role.name} ({u.name})", emails) if emails else None
