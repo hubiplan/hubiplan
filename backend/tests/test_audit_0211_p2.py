@@ -161,7 +161,7 @@ class TestAuszugsliste:
 class TestVorschlaege:
     def test_mandate_einmal_je_lauf(self, c, fin, club, members, monkeypatch):
         with tenant_context(club.pk):
-            for i, key in enumerate(("erika", "max")):
+            for i, key in enumerate(("erika", "jung")):
                 Mandate.objects.create(
                     organization=club,
                     membership=members[key],
