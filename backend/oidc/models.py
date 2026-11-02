@@ -83,6 +83,19 @@ class Client(models.Model):
     # (Angabe preferred_username). Bewusst nur von Hand gepflegt: Aus Namen abgeleitet könnte
     # sich jemand durch eine Namensänderung ein fremdes Konto holen.
     usernames = models.TextField("bisherige Benutzernamen", blank=True, default="")
+    # Konten in der Nextcloud automatisch deaktivieren, wenn der Zugang endet (siehe accounts)
+    manage_accounts = models.BooleanField("Konten automatisch deaktivieren", default=False)
+    # Dienstkonto in der Nextcloud (Gruppen-Admin der Gruppe ``account_group``) mit App-Passwort
+    service_user = models.CharField("Dienstkonto", max_length=64, blank=True, default="")
+    # verschlüsselt (accounts.mfa.encrypt), nie in Antworten oder im Protokoll
+    service_password = models.TextField(blank=True, default="")
+    # Gruppe, die bei jeder Anmeldung mitgeht; das Dienstkonto verwaltet nur ihre Mitglieder
+    account_group = models.CharField(
+        "Gruppe der Konten über HUBIplan", max_length=64, blank=True, default=""
+    )
+    # Letzter Fehler oder Halt des Abgleichs (für die Oberfläche)
+    sync_error = models.CharField(max_length=500, blank=True, default="")
+    synced_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField("eingeschaltet", default=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
@@ -104,6 +117,9 @@ class Client(models.Model):
             "groups_units",
             "groups_members",
             "usernames",
+            "manage_accounts",
+            "service_user",
+            "account_group",
             "is_active",
         }
     )
@@ -139,3 +155,38 @@ class Client(models.Model):
         """Rückleitungen der Nextcloud-App „user_oidc“ (mit und ohne index.php)."""
         base = self.base_url.rstrip("/")
         return [f"{base}/apps/user_oidc/code", f"{base}/index.php/apps/user_oidc/code"]
+
+
+class Account(models.Model):
+    """Nextcloud-Konto, das sich über HUBIplan angemeldet hat.
+
+    Nur diese Konten fasst der Abgleich an (deaktivieren und wieder aktivieren); ``admin``
+    und Konten ohne Anmeldung über HUBIplan nie.
+    """
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name="accounts")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+")
+    # Benutzername in der Nextcloud: bisheriger Name aus der Liste, sonst die Kennung ``sub``
+    nc_user = models.CharField("Benutzername in der Nextcloud", max_length=64)
+    first_login_at = models.DateTimeField(auto_now_add=True)
+    last_login_at = models.DateTimeField()
+    # Nur was HUBIplan selbst deaktiviert hat, aktiviert es wieder
+    disabled_by_hubiplan = models.BooleanField(default=False)
+    changed_at = models.DateTimeField(null=True, blank=True)
+    error = models.CharField(max_length=300, blank=True, default="")
+
+    audit_fields = frozenset({"nc_user", "disabled_by_hubiplan"})
+
+    class Meta:
+        verbose_name = "Nextcloud-Konto"
+        verbose_name_plural = "Nextcloud-Konten"
+        ordering = ["nc_user"]
+        constraints = [
+            models.UniqueConstraint(fields=["client", "user"], name="oidc_account_unique_user"),
+        ]
+
+    def __str__(self) -> str:
+        return self.nc_user

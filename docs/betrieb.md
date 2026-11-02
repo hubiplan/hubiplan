@@ -433,6 +433,12 @@ vorhandenen `.env`) und baut dort die Images, während die laufende Fassung weit
 Scheitert das Bauen, bleibt der Server unverändert. Danach tauscht `server-setup.sh` die
 Ordner (`/opt/hubiplan` → `/opt/hubiplan.vorher`) und startet.
 
+Es läuft immer nur ein Ausrollen je Server: `deploy.sh` legt zu Beginn die Sperre
+`/opt/hubiplan.sperre` an (mit Fassung, Zeit und Rechner in `lauf`) und entfernt sie am Ende,
+auch nach einem Fehler. Ein zweiter Lauf bricht ab und zeigt, wer gerade ausrollt. Bleibt die
+Sperre nach einem harten Abbruch (Rechner aus, Verbindung weg) liegen, erst prüfen, dass kein
+Lauf mehr arbeitet, dann `rm -r /opt/hubiplan.sperre` (Dogado mit `sudo`).
+
 Vor dem Tausch laufen die Migrationen als eigener Schritt (Ausgabe mit `-v 2`, höchstens
 `MIGRATE_TIMEOUT` Sekunden, Standard 3600, änderbar in der `.env`). Dafür halten Backend,
 Worker, Beat und Backup der bisherigen Fassung an, damit keine laufende Abfrage eine
