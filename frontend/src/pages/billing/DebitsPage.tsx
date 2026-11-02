@@ -53,8 +53,9 @@ export function DebitsPage() {
         <Alert kind="error">
           {t('Für Lastschriften fehlen noch')}{' '}
           {!p.creditor_id && t('die Gläubiger-Identifikationsnummer')}
-          {!p.creditor_id && !p.account_has_iban && ' und '}
-          {!p.account_has_iban && t('ein Konto mit IBAN')}. Beides steht unter{' '}
+          {!p.creditor_id && !p.account_has_iban && t(' und ')}
+          {!p.account_has_iban && t('ein Konto mit IBAN')}
+          {t('. Beides steht unter')}{' '}
           <Link to="/finanzen/einstellungen/rechnung">{t('Einrichtung › Rechnung & Zahlung')}</Link>
           .
         </Alert>

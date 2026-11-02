@@ -3619,6 +3619,7 @@ label:has(> .file-input:focus-visible) {
 /* Ansicht als Rolle: deutlich, solange eine Rolle gewählt ist */
 .role-preview-switch select {
   max-width: 14rem;
+  min-width: 10rem;
 }
 .role-preview-banner {
   display: flex;

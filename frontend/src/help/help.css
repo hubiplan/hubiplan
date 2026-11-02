@@ -5,6 +5,8 @@
   align-items: center;
   gap: 0.4rem;
   min-height: 2rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .help-button-mark {
   display: inline-grid;
@@ -16,7 +18,8 @@
   font-weight: 700;
   line-height: 1;
 }
-@media (max-width: 900px) {
+/* Bis 1440 px nur das „?“: sonst bricht die Beschriftung um und drängt die Rollenauswahl */
+@media (max-width: 1440px) {
   .help-button-label {
     position: absolute;
     width: 1px;

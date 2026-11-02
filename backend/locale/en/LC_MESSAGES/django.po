@@ -4336,3 +4336,40 @@ msgstr "Unknown guide."
 
 msgid "Unbekannter Schritt."
 msgstr "Unknown step."
+
+msgid ""
+"Die Einheit ist nicht als steuerbegünstigt mit eigenem Bescheid eingetragen "
+"(Schalter in den Einstellungen)."
+msgstr ""
+"The unit is not registered as tax-privileged with its own notice (switch in "
+"the settings)."
+
+msgid "begünstigte Zwecke"
+msgstr "privileged purposes"
+
+msgid "Finanzamt"
+msgstr "tax office"
+
+msgid "Steuernummer"
+msgstr "tax number"
+
+msgid "Datum des Bescheids"
+msgstr "date of the notice"
+
+msgid "letzter Veranlagungszeitraum"
+msgstr "last assessment period"
+
+msgid "Es fehlt: {gaps}."
+msgstr "Missing: {gaps}."
+
+msgid ""
+"Der Bescheid vom {date} ist älter als {years} Jahre. Mit ihm dürfen keine "
+"Zuwendungsbestätigungen mehr ausgestellt werden (§ 63 Abs. 5 AO). Bitte den "
+"neuen Bescheid eintragen."
+msgstr ""
+"The notice of {date} is older than {years} years. Donation receipts may no "
+"longer be issued with it (section 63(5) of the German Fiscal Code). Please "
+"enter the new notice."
+
+msgid "Das Datum des Bescheids liegt in der Zukunft."
+msgstr "The date of the notice is in the future."
