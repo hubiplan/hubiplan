@@ -2,6 +2,15 @@
 
 <!-- Kurz beschreiben, was dieser Pull Request ändert und warum. Zugehöriges Issue: #… -->
 
+## Für die Änderungshinweise
+
+<!-- Für das nächste Release (docs/releases.md): ein bis drei Sätze für Vereinsvorstände, nicht
+für Entwickler, auf Deutsch und Englisch. „–“, wenn nichts sichtbar ist. -->
+- de: –
+- en: –
+- Art: neu | verbessert | behoben | sicherheit | betrieb
+- Migration: nein · Rückweg möglich: ja
+
 ## Geprüft
 
 - [ ] `scripts/test.sh` ist grün, oder: <!-- was wurde stattdessen geprüft? -->

@@ -23,6 +23,8 @@ willkommen. Contributions in English are welcome as well.
    scripts/test.sh HEAD     # vollständiger Test in Wegwerf-Containern (Linux/WSL mit Docker)
    ```
 3. Pull Request gegen `main` öffnen und kurz beschreiben, was sich ändert und warum.
+   Den Abschnitt „Für die Änderungshinweise“ der Vorlage auf Deutsch und Englisch ausfüllen;
+   daraus entsteht das Changelog des nächsten Releases ([docs/releases.md](docs/releases.md)).
 
 Hinweise zum Stil:
 

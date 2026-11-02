@@ -70,7 +70,7 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 
 | Methode und Pfad | Zweck |
 |---|---|
-| `GET /api/app/v1/instance/` | Selbstauskunft ohne Anmeldung: `api_version`, `min_app_version`, `url`, `push` |
+| `GET /api/app/v1/instance/` | Selbstauskunft ohne Anmeldung: `version` (Programmversion, nur zur Anzeige, siehe [releases.md](releases.md)), `api_version`, `min_app_version`, `url`, `push` |
 | `GET /api/app/v1/me/` | Konto, dieses Gerät, Zugänge (`portal`, je mit `theme`: Farben und Wappen der Einheit) |
 | `GET /api/app/v1/devices/` | eigene Geräte (`current` = dieses Gerät) |
 | `GET /api/portal/<Zugang>/events/?from=&to=` | Termine (wie Mitgliederbereich) |

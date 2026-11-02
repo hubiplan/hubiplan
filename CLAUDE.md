@@ -17,6 +17,9 @@ Feste Regeln von Ralf:
 - **Hilfe mitpflegen**: Wer eine Seite oder einen Ablauf ändert, passt die Hilfe (`frontend/src/help/`,
   Deutsch und Englisch) im selben PR an; bei sichtbaren Änderungen Bilder mit `scripts/hilfe-bilder.sh`
   neu erzeugen. Siehe [docs/hilfe.md](docs/hilfe.md).
+- **Jeder PR füllt „Für die Änderungshinweise“** der PR-Vorlage aus (Deutsch und Englisch, Art,
+  Migration/Rückweg). Releases (Tag, GitHub-Release) nur auf Ralfs Wort, nie von sich aus;
+  Migrationen eine Fassung lang abwärtsverträglich. Siehe [docs/releases.md](docs/releases.md).
 - CI (GitHub Actions) läuft nur von Hand (workflow_dispatch); keine automatischen Auslöser.
 
 Details: [docs/testserver.md](docs/testserver.md), [docs/betrieb.md](docs/betrieb.md).
