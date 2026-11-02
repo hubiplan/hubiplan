@@ -11,11 +11,13 @@ from django.utils.translation import gettext
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework.exceptions import ValidationError
 
+from core.filecheck import JPEG_FORMATS, heic_message, is_heic
+
 from .photo_models import MemberPhoto
 
 MAX_BYTES = 10 * 1024 * 1024
 MAX_PIXELS = 40_000_000  # Schutz vor „Bildbomben“
-ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
+ALLOWED_FORMATS = {"PNG", "WEBP"} | JPEG_FORMATS
 FULL_SIZE = 1200
 THUMB_SIZE = 160
 
@@ -80,6 +82,9 @@ def process(upload) -> Processed:
     except ValidationError:
         raise
     except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
+        upload.seek(0)
+        if is_heic(upload.read(16)):
+            raise ValidationError({"file": heic_message()}) from exc
         raise ValidationError({"file": gettext("Die Datei ist kein gültiges Bild.")}) from exc
     img = ImageOps.exif_transpose(img)
     if img.mode in ("RGBA", "LA", "P"):

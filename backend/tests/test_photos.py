@@ -91,6 +91,33 @@ class TestSeitenverhaeltnis:
         assert cropped.getpixel((cropped.width // 2, 600)) == (255, 0, 0)
 
 
+class TestIphoneFotos:
+    """Ralf 02.11.: iPhone-JPEGs mit Zusatzbild (MPO) galten nicht als JPEG."""
+
+    def test_mpo_wird_angenommen(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        from members.photos import process
+
+        buf = io.BytesIO()
+        Image.new("RGB", (900, 1200), "red").save(
+            buf, "MPO", save_all=True, append_images=[Image.new("RGB", (90, 120))]
+        )
+        result = process(SimpleUploadedFile("IMG_4991.jpg", buf.getvalue(), "image/jpeg"))
+        assert (result.width, result.height) == (900, 1200)
+
+    def test_heic_meldung(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from rest_framework.exceptions import ValidationError
+
+        from members.photos import process
+
+        heic = b"\x00\x00\x00\x18ftypheic\x00\x00\x00\x00mif1heic" + b"\x00" * 64
+        with pytest.raises(ValidationError) as err:
+            process(SimpleUploadedFile("IMG_1.heic", heic, "image/heic"))
+        assert "HEIC" in str(err.value.detail["file"])
+
+
 class TestVorstand:
     def test_hochladen_braucht_einwilligung(self, api, orgs, member, board_a):
         resp = api(board_a).post(url(orgs, member), {"file": image_file()})

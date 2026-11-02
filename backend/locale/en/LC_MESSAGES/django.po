@@ -4688,3 +4688,14 @@ msgstr "This design does not exist or is not released for this website."
 
 msgid "Schmaler farbiger Kopf mit Wappen, darunter eine helle Menüleiste, Karten auf hellem Grund."
 msgstr "Slim coloured header with coat of arms, a light menu bar below, cards on a light background."
+
+msgid "Das Bild darf höchstens 15 MB groß sein."
+msgstr "The image may be at most 15 MB."
+
+msgid ""
+"HEIC-Bilder (iPhone) werden nicht unterstützt. Bitte als JPEG speichern oder "
+"am iPhone unter Einstellungen > Kamera > Formate „Maximale Kompatibilität“ "
+"wählen."
+msgstr ""
+"HEIC images (iPhone) are not supported. Please save as JPEG or choose “Most "
+"Compatible” on the iPhone under Settings > Camera > Formats."
