@@ -56,6 +56,11 @@ def problems(data: bytes, **kw) -> list[str]:
 
 
 class TestPruefung:
+    def test_skizze_frueherer_fassung(self):
+        """Das alte Klassisch (bis 2026-11) behält als Paket seine eigene Skizze."""
+        assert dp.read(make_zip(skizze_wie="classic-1"), key="hubertus").sketch_like == "classic-1"
+        assert dp.read(make_zip(skizze_wie="gibtsnicht"), key="hubertus").sketch_like == "classic"
+
     def test_gutes_paket_unter_neuem_namen(self):
         pkg = dp.read(make_zip({"vorlagen/kopf.html": KOPF}), key="hubertus", label="Hubertus")
         assert pkg.key == "hubertus" and pkg.label == "Hubertus" and pkg.label_en == ""

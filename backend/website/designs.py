@@ -31,7 +31,10 @@ NEUTRAL = {"dark": DARK_TEXT, "light": LIGHT_TEXT}
 DESIGNS: dict[str, dict] = {
     "classic": {
         "label": "Klassisch",
-        "hint": "Farbiger Kopf mit Wappen links und Menü rechts, Karten auf hellem Grund.",
+        "hint": (
+            "Schmaler farbiger Kopf mit Wappen, darunter eine helle Menüleiste, "
+            "Karten auf hellem Grund."
+        ),
         "roles": {
             "header": [0],
             "nav": [1],
@@ -169,6 +172,11 @@ def _role_list(roles: dict) -> list[dict]:
     ]
 
 
+# Skizzen in der Oberfläche: je Standarddesign eine, dazu der Aufbau früherer Fassungen für
+# Designpakete, die aus ihnen exportiert wurden („classic-1“ = Klassisch bis 2026-11).
+SKETCHES = (*DESIGNS, "classic-1")
+
+
 def catalog(packages=(), language: str = "de") -> list[dict]:
     """Für die Oberfläche: Standarddesigns und freigegebene Designpakete mit Rollen."""
     result = [
@@ -189,7 +197,7 @@ def catalog(packages=(), language: str = "de") -> list[dict]:
                 "label": p.label_for(language),
                 "hint": p.hint_for(language),
                 "package": True,
-                "sketch": p.sketch_like if p.sketch_like in DESIGNS else DEFAULT_DESIGN,
+                "sketch": p.sketch_like if p.sketch_like in SKETCHES else DEFAULT_DESIGN,
                 "roles": _role_list(p.roles),
             }
         )

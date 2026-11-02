@@ -271,7 +271,8 @@ export function Sketch({ design, colors }: { design: string; colors?: RoleColors
         </>
       )
       break
-    default:
+    case 'classic-1':
+      // Klassisch bis 2026-11 (z. B. als Designpaket gesichert): Menü rechts im Kopf
       body = (
         <>
           <rect width="160" height="16" fill={head} />
@@ -280,6 +281,27 @@ export function Sketch({ design, colors }: { design: string; colors?: RoleColors
           <rect x="92" y="6" width="60" height="2.5" rx="1" fill="#ffffff" opacity={0.7} />
           <rect x="92" y="10" width="10" height="1.2" fill={nav} />
           {hero(8, 21, 144, 26)}
+          {box(8, 52, 70, 20)}
+          <rect x="11" y="55" width="8" height="10" fill={date} />
+          {box(82, 52, 70, 20)}
+          {box(8, 76, 144, 10)}
+          <rect y="92" width="160" height="8" fill={foot} />
+        </>
+      )
+      break
+    default:
+      // Klassisch: schmaler Kopf, darunter eine helle Menüleiste
+      body = (
+        <>
+          <rect width="160" height="12" fill={head} />
+          {shield(6, 2, 8)}
+          <rect x="18" y="5" width="40" height="3" rx="1" fill="#ffffff" />
+          <rect y="12" width="160" height="8" fill="#ffffff" stroke={grey} strokeWidth={0.6} />
+          {[8, 26, 44, 62].map((x) => (
+            <rect key={x} x={x} y="15" width="14" height="2" rx="1" fill="#5b6560" />
+          ))}
+          <rect x="8" y="19" width="14" height="1" fill={nav} />
+          {hero(8, 24, 144, 24)}
           {box(8, 52, 70, 20)}
           <rect x="11" y="55" width="8" height="10" fill={date} />
           {box(82, 52, 70, 20)}
