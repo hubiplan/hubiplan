@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 
 from access.catalog import DEPT_DOCS_MANAGE, DOCS_MANAGE, DOCS_VIEW
 from audit.log import record
+from core import virenscan
 from core.api_base import OrgScopedMixin
 from core.tenancy import rls_bypass, scope_of, set_rls
 from members.models import DepartmentMembership, today
@@ -674,6 +675,11 @@ class PublicDocumentView(APIView):
         if folder is None or doc is None:
             raise Http404
         with rls_bypass():
-            response = file_response(request, doc.versions.all()[0], cache="public")
+            version = doc.versions.all()[0]
+            # Öffentlich nur geprüft weitergeben (Fachfrage FQ16)
+            virenscan.release_ok(
+                version.file, version.name, "öffentliches Dokument", key=f"dokument:{version.pk}"
+            )
+            response = file_response(request, version, cache="public")
         response["Access-Control-Allow-Origin"] = "*"
         return response

@@ -4540,3 +4540,16 @@ msgstr "This financial year has already been cleaned up."
 
 msgid "Für dieses Geschäftsjahr gilt eine Löschsperre: {x}"
 msgstr "A deletion hold applies to this financial year: {x}"
+
+msgid "Die Datei konnte nicht auf Viren geprüft werden und wird deshalb nicht weitergegeben."
+msgstr "The file could not be checked for viruses and is therefore not passed on."
+
+msgid ""
+"Die Datei „{name}“ wurde nicht weitergegeben: Die Virenprüfung ist nicht "
+"eingerichtet."
+msgstr "The file “{name}” was not passed on: virus scanning is not set up."
+
+msgid ""
+"Die Datei „{name}“ ist zu groß für die Virenprüfung und wird deshalb nicht "
+"weitergegeben."
+msgstr "The file “{name}” is too large for the virus scan and is therefore not passed on."

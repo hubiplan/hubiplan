@@ -370,6 +370,15 @@ hochgeladene Datei läuft dann während des Hochladens durch clamd:
   clamd) bleiben ungeprüft und stehen im Log. Die Einstellungen des clamd (HestiaCP) bleiben
   unverändert.
 
+Vor der Weitergabe prüft HUBIplan noch einmal mit den dann aktuellen Signaturen
+(Fachfrage FQ16, Audit 02.11.): Anhänge eines Rundschreibens beim Versand und Dateien aus
+öffentlichen Ordnern beim Abruf über den Link. Ein „sauber“ gilt dabei 6 Stunden. Ein Fund
+stoppt den Versand bzw. den Abruf und schickt eine Alarm-Mail. Mit Virenprüfung gilt
+`VIRUS_SCAN_REQUIRED=1` (Standard in `docker-compose.clamav.yml`): Dateien über
+`CLAMD_MAX_BYTES` werden dann nicht weitergegeben, und fällt der Socket weg, auch nichts
+anderes. Mit `VIRUS_SCAN_REQUIRED=0` in der `.env` geht Ungeprüftes wie früher durch
+und steht nur im Log.
+
 Ohne `CLAMD_SOCKET_DIR` (Testserver, Entwicklung) gibt es keine Prüfung.
 
 ## Alarm-Mails und Notfall
