@@ -440,6 +440,12 @@ def spam_flagged(msg: EmailMessage) -> bool:
 OPEN_PER_DAY = 3
 
 
+def open_total_per_day() -> int:
+    """Alle fremden Absender zusammen: so viele Mails je Tag und Verteiler gehen direkt
+    hinaus, weitere bleiben zur Freigabe liegen (Fachfrage FQ15)."""
+    return int(getattr(settings, "MAILING_OPEN_PER_DAY_TOTAL", 20))
+
+
 def dmarc_failed(msg: EmailMessage) -> bool:
     """Hat der eigene Mailserver die Herkunft geprüft und abgelehnt (DMARC)?"""
     results = " ".join(str(v) for v in msg.get_all("Authentication-Results") or [])
@@ -550,6 +556,14 @@ def _process(raw: bytes) -> InboundMail | None:
                 return _log(**base, status=rejected, reason=reason)
             if ml.mode == MailingList.Mode.DRAFT:
                 return _log(**base, circular=circular, status=InboundMail.Status.DRAFT)
+            held = _open_hold_reason(ml, count)
+            if held:
+                # Großer Verteiler oder Tagesgrenze erreicht: zur Freigabe ablegen
+                entry = _log(
+                    **base, circular=circular, status=InboundMail.Status.DRAFT, reason=held
+                )
+                transaction.on_commit(lambda: notify_moderators(entry, held))
+                return entry
             services.start_sending(circular, None)
             return _log(**base, circular=circular, status=InboundMail.Status.SENT)
     with transaction.atomic():
@@ -580,6 +594,23 @@ def _process(raw: bytes) -> InboundMail | None:
     else:
         notify_draft(entry, content.skipped)
     return entry
+
+
+def _open_hold_reason(ml: MailingList, count: int) -> str:
+    """Warum die Mail eines fremden Absenders nicht direkt hinausgeht (leer: sie darf)."""
+    if count > ml.open_direct_max:
+        return f"Zur Freigabe: {count} Empfänger, ohne Freigabe höchstens {ml.open_direct_max}."
+    since = timezone.now() - datetime.timedelta(days=1)
+    sent_today = InboundMail.objects.filter(
+        mailing_list=ml,
+        user__isnull=True,
+        status=InboundMail.Status.SENT,
+        received_at__gte=since,
+    ).count()
+    limit = open_total_per_day()
+    if sent_today >= limit:
+        return f"Zur Freigabe: heute schon {sent_today} Mails fremder Absender (Grenze {limit})."
+    return ""
 
 
 def create_circular(ml: MailingList, user, content: Extracted, reply_to: str = "") -> Circular:
@@ -740,6 +771,41 @@ def notify_draft(entry: InboundMail, skipped: list[str]) -> None:
         f"{_skipped_text(skipped)}\n"
     )
     _send(entry, f"Als Entwurf abgelegt: {entry.subject}"[:300], body)
+
+
+# Höchstens so viele Freigabe-Hinweise je Mail (bei sehr vielen Berechtigten)
+MODERATORS_MAX = 20
+
+
+def moderators(ml: MailingList) -> list:
+    """Wer eine zurückgehaltene Mail freigeben kann: die eingestellten Absender, sonst alle
+    mit dem Recht für die Einheit des Verteilers."""
+    with rls_bypass():
+        chosen = list(ml.senders.filter(is_active=True))
+    users = [u for u in chosen if has_right(u, ml)] if chosen else eligible_senders(ml)
+    return users[:MODERATORS_MAX]
+
+
+def notify_moderators(entry: InboundMail, reason: str) -> None:
+    """Hinweis an die Freigebenden: Eine Mail eines fremden Absenders wartet als Entwurf."""
+    ml = entry.mailing_list
+    body = (
+        f"Hallo,\n\neine Mail von {entry.sender} an den offenen Verteiler {ml.name} "
+        f"({address_of(ml)}) wartet auf Freigabe.\n\n"
+        f"Betreff: {entry.subject}\n{reason}\n\n"
+        f"Ansehen und versenden oder löschen: "
+        f"{settings.FRONTEND_URL}/rundschreiben/{entry.circular_id}\n"
+    )
+    for user in moderators(ml):
+        mail.send(
+            user.email,
+            f"Zur Freigabe: {entry.subject}"[:300],
+            body,
+            organization=entry.organization,
+            kind="verteiler",
+            fail_silently=True,
+            headers={"Auto-Submitted": "auto-generated"},
+        )
 
 
 def notify_sent(entry: InboundMail, skipped: list[str]) -> None:

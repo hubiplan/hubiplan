@@ -311,6 +311,9 @@ BACKUP_MAX_AGE_HOURS = int(os.environ.get("BACKUP_MAX_AGE_HOURS", "26"))
 OUTBOX_RETENTION_DAYS = int(os.environ.get("OUTBOX_RETENTION_DAYS", "30"))
 # Nicht zugestellte Mails: länger, aber nicht unbegrenzt (Fachfrage FQ14, Audit 02.11.)
 OUTBOX_FAILED_RETENTION_DAYS = int(os.environ.get("OUTBOX_FAILED_RETENTION_DAYS", "90"))
+# Offene Mailverteiler: Mails fremder Absender je Tag und Verteiler, die ohne Freigabe
+# hinausgehen (Fachfrage FQ15)
+MAILING_OPEN_PER_DAY_TOTAL = int(os.environ.get("MAILING_OPEN_PER_DAY_TOTAL", "20"))
 
 # --- Sicherheit ---
 # Django-Admin unter /admin/: im Server-Betrieb standardmäßig aus (weniger
