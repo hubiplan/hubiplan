@@ -14,3 +14,5 @@ With **Disable accounts automatically**, HUBIplan switches the Nextcloud account
 Under “Accounts via HUBIplan” you see who has already signed in via HUBIplan and what the next synchronisation would do. If the synchronisation stops because too many accounts would be affected at once, check the roles and then confirm with **Synchronise now**.
 
 Under **Adjust groups for individual roles** you choose which Nextcloud groups a role is put in, for example “1st treasurer” and “2nd treasurer” both in “Treasurer”. Separate several groups with commas. Without an entry, the group has the same name as the role. If you rename a role, the assignment stays.
+
+**How long does a sign-in last?** Nextcloud decides that itself; usually up to 24 hours without activity and up to 15 days with “stay logged in”; sync apps stay connected permanently. If access ends in HUBIplan without automatic disabling, only the next sign-in fails. Running sessions and sync apps only end when the account is disabled, automatically or by hand in Nextcloud.
