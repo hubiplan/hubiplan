@@ -10,4 +10,4 @@ stichworte: [year-end closing, cash report, audit, DATEV, retention period, dele
 
 Here you produce the cash report for the general meeting and close a financial year. After closing, the bookings can no longer be changed. There are also exports, for example for DATEV or the cash audit.
 
-Once the retention period has ended (receipts 8 years, books 10 years after the end of the calendar year), receipts can be deleted and books anonymised. The periods are set by law and cannot be shortened. If an audit or a legal dispute is still ongoing, set a **deletion hold** with a reason on the financial year. While it applies, nothing is deleted. Board members who can manage roles may set and lift it; both are recorded in the log.
+Once the retention period has ended (receipts 8 years, books 10 years after the end of the calendar year), receipts can be deleted and books anonymised. The periods are set by law and cannot be shortened. If an audit or a legal dispute is still ongoing, use **Set deletion hold** on the financial year and give a reason. While it applies, nothing is deleted. Board members who can manage roles may set and lift it; both are recorded in the log.
