@@ -119,10 +119,19 @@ def _purge_documents(org, start, end) -> dict[str, int]:
     counts["Zählprotokolle"] = n
 
     n = 0
-    for st in BankStatement.objects.filter(
+    purged = BankStatement.objects.filter(
         organization=org, date_to__gte=start, date_to__lte=end
-    ).exclude(source=""):
-        _delete_file(st.source)
+    ).exclude(source="")
+    for st in purged:
+        # Mehrere Auszüge können dieselbe Datei teilen (BP-S01): erst löschen, wenn kein
+        # Auszug außerhalb dieses Jahres sie noch braucht
+        shared = (
+            BankStatement.objects.filter(organization=org, source=st.source.name)
+            .exclude(pk__in=purged.values("pk"))
+            .exists()
+        )
+        if not shared:
+            _delete_file(st.source)
         st.source = ""
         st.save(update_fields=["source"])
         n += 1

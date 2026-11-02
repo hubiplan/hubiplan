@@ -4409,3 +4409,12 @@ msgid ""
 "Die Aufbewahrungsfrist dieser Rechnung ist abgelaufen; ihr PDF wurde gelöscht."
 msgstr ""
 "The retention period for this invoice has ended; its PDF has been deleted."
+
+msgid "Das ZIP-Archiv ist entpackt zu groß."
+msgstr "The ZIP archive is too large when unpacked."
+
+msgid "Höchstens {n} Kontoauszüge je Datei."
+msgstr "At most {n} bank statements per file."
+
+msgid "Höchstens {n} Umsätze je Datei."
+msgstr "At most {n} transactions per file."
