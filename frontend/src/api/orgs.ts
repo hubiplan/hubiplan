@@ -426,6 +426,10 @@ export interface FederationClub {
 export interface PlatformSettings {
   person_data_mode: 'shared' | 'per_club'
   deletion_period_months: number
+  /** Verkürzte Löschfrist gilt erst ab diesem Zeitpunkt (sonst null) */
+  deletion_shorter_from?: string | null
+  /** Frist, nach der gerade gelöscht wird */
+  deletion_period_effective?: number
   peering_enabled: boolean
   peering_allowed_hosts: string
   peering_login: boolean

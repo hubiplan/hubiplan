@@ -85,6 +85,8 @@ class Client(models.Model):
         "Wer darf sich anmelden", max_length=10, choices=Audience.choices, default=Audience.BOARD
     )
     require_mfa = models.BooleanField("nur mit Zwei-Faktor-Anmeldung", default=False)
+    # Fachfrage FQ26: Anmeldung nur mit PKCE (S256); user_oidc schickt es von selbst mit
+    require_pkce = models.BooleanField("nur mit PKCE (S256)", default=True)
     groups_board = models.BooleanField("Gruppe „Vorstand“", default=True)
     groups_roles = models.BooleanField("je Rolle eine Gruppe", default=True)
     groups_units = models.BooleanField("je Untereinheit eine Gruppe", default=True)
@@ -127,6 +129,7 @@ class Client(models.Model):
             "client_id",
             "audience",
             "require_mfa",
+            "require_pkce",
             "groups_board",
             "groups_roles",
             "groups_units",

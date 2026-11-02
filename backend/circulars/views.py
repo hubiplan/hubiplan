@@ -811,7 +811,16 @@ class MailingListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MailingList
-        fields = ["name", "local_part", "aliases", "mode", "is_active", "open_senders", "senders"]
+        fields = [
+            "name",
+            "local_part",
+            "aliases",
+            "mode",
+            "is_active",
+            "open_senders",
+            "open_direct_max",
+            "senders",
+        ]
         # Eindeutigkeit prüft clean_local_part über alle Vereine (RLS verbirgt fremde)
         extra_kwargs = {"local_part": {"validators": []}}
 
@@ -901,6 +910,7 @@ def mailing_list_data(ml: MailingList) -> dict:
         "kind_label": pattern.get_kind_display(),
         "audience": pattern.audience,
         "open_senders": ml.open_senders,
+        "open_direct_max": ml.open_direct_max,
         "senders": sorted(ml.senders.values_list("pk", flat=True)),
         "last_inbound": inbound_data(last) if last else None,
     }
@@ -993,6 +1003,7 @@ class _ListDetail(_ListsMixin, APIView):
             "aliases": list(ml.aliases or []),
             "is_active": ml.is_active,
             "open_senders": ml.open_senders,
+            "open_direct_max": ml.open_direct_max,
         }
         senders_before = sorted(ml.senders.values_list("email", flat=True))
         ser = MailingListSerializer(ml, data=request.data, partial=True)

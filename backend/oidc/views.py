@@ -169,6 +169,7 @@ class ClientSerializer(serializers.ModelSerializer):
             "client_id",
             "audience",
             "require_mfa",
+            "require_pkce",
             "groups_board",
             "groups_roles",
             "groups_units",

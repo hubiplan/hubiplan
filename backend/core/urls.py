@@ -191,6 +191,11 @@ org_patterns = [
         name="member-disclosure",
     ),
     path("members/<int:pk>/erase/", member_views.MemberErasureView.as_view(), name="member-erase"),
+    path(
+        "members/<int:pk>/erase-history/",
+        member_views.MemberHistoryErasureView.as_view(),
+        name="member-erase-history",
+    ),
     path("members/<int:pk>/reentry/", workflow_views.ReentryView.as_view(), name="member-reentry"),
     path("members/<int:pk>/fields/", field_views.MemberFieldsView.as_view(), name="member-fields"),
     path("jubilees/", jubilee_views.JubileeView.as_view(), name="jubilees"),

@@ -159,9 +159,11 @@ Kürzer geht es in der Nextcloud, z. B. `occ config:system:set session_lifetime 
   wird beim Anlegen bzw. „Neues Geheimnis“ einmal angezeigt.
 - Rückleitung nur an `<Nextcloud>/apps/user_oidc/code` bzw. mit `/index.php` (genauer
   Vergleich). Unbekannte Rückleitungen werden nie benutzt.
-- PKCE nur mit `S256` (`plain` wird abgelehnt), optional. `user_oidc` (ab 8.x) nutzt PKCE
-  von selbst, sobald die Discovery `S256` anbietet; abschalten ließe es sich nur systemweit in
-  der Nextcloud (`user_oidc` › `use_pkce` = `false`, nicht tun).
+- PKCE nur mit `S256` (`plain` wird abgelehnt). Seit der Fachfrage FQ26 (Audit 02.11.)
+  Pflicht: ohne `code_challenge` scheitert die Anmeldung mit `invalid_request`. `user_oidc`
+  schickt S256 von selbst, sobald die Discovery es anbietet (Systemwert `use_pkce`, Standard
+  an). Nur für ältere Anwendungen ohne PKCE lässt sich das je Eintrag ausschalten
+  („Nur mit PKCE (S256)“, Feld `require_pkce`).
 - Code 60 Sekunden, nur einmal einlösbar; Zugriffsschlüssel 5 Minuten; keine
   Refresh-Token. Beides nur im Cache (Redis), nie in der Datenbank.
 - ID-Token RS256; Schlüssel `PRIVATE_ROOT/oidc/signing.pem` (in den Backups enthalten),
@@ -172,6 +174,32 @@ Kürzer geht es in der Nextcloud, z. B. `occ config:system:set session_lifetime 
   (ohne Geheimnis). Beim Umzug auf eine andere Instanz werden sie nicht mitgenommen.
 - Einstellen darf, wer „Rollen und Benutzer verwalten“ hat (damit auch die Pflicht zur
   Zwei-Faktor-Anmeldung für dieses Recht).
+
+## Erneute Anmeldung, Sperren und Löschen
+
+Fachfrage FQ26 (Audit 02.11.): wie sich die Anmeldung über HUBIplan bei erneuter Anmeldung
+verhält.
+
+- **Bestehende HUBIplan-Sitzung:** Wer in HUBIplan angemeldet ist, kommt ohne neue
+  Passworteingabe in die Nextcloud; die Anmeldeseite leitet gleich weiter.
+- **`prompt=none`:** Ohne HUBIplan-Sitzung antwortet HUBIplan mit `login_required`, ohne
+  Seite.
+- **`prompt=login` und `max_age`:** wertet HUBIplan nicht aus. Eine Nextcloud, die eine
+  frische Anmeldung verlangt, bekommt die bestehende HUBIplan-Sitzung; `auth_time` im
+  ID-Token nennt, wann sie entstanden ist, und die Nextcloud kann danach selbst ablehnen.
+  Wer eine frische Anmeldung erzwingen will, meldet sich bei HUBIplan ab (oder lässt die
+  Sitzung ablaufen). „Nur mit Zwei-Faktor-Anmeldung“ verlangt eine Sitzung mit zweitem
+  Faktor (`amr` mit `mfa`), keine frische.
+- **Abmelden in HUBIplan:** beendet nur die HUBIplan-Sitzung. Die Nextcloud-Sitzung läuft
+  weiter, bis sie dort endet (kein Single Logout).
+- **Sperren** (Konto gesperrt, Rolle oder Amt beendet, Austritt): Die nächste Anmeldung
+  scheitert; was mit laufenden Sitzungen geschieht, steht unter „Wie lange eine Anmeldung
+  gilt“.
+- **Löschen** des HUBIplan-Kontos oder des Eintrags hier: Anmeldungen über HUBIplan gehen
+  nicht mehr. Das Nextcloud-Konto und seine Dateien bleiben; löschen oder übertragen muss
+  sie die Nextcloud-Verwaltung. Ein neuer Eintrag bekommt ein neues Salz, also neue
+  `sub`-Kennungen: Bisherige Konten passen dann nur über die Liste der bisherigen
+  Benutzernamen.
 
 ## Schnittstellen
 

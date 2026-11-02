@@ -8,3 +8,5 @@ stichworte: [email, sending, delivered, error]
 ---
 
 The outbox shows the emails HUBIplan has sent or is about to send for your unit, with their status. Here you also see when an address could not be reached.
+
+After 30 days, delivered emails keep only recipient, subject, type and date; text and attachments are removed. Undelivered emails stay complete for longer so you can resend them, but after 90 days they are emptied as well.

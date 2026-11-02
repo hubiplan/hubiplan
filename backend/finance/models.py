@@ -344,6 +344,15 @@ class YearClosing(models.Model):
     documents_purged_at = models.DateTimeField("Belege gelöscht am", null=True, blank=True)
     records_purged_at = models.DateTimeField("Bücher anonymisiert am", null=True, blank=True)
     purged_by_name = models.CharField("bereinigt von", max_length=200, blank=True, db_default="")
+    # Löschsperre (Fachfrage FQ10): z. B. laufende Prüfung oder Rechtsstreit. Solange ein
+    # Grund eingetragen ist, wird nichts gelöscht, auch nach Ablauf der Frist.
+    retention_hold = models.CharField(
+        "Löschsperre (Grund)", max_length=500, blank=True, db_default=""
+    )
+    retention_hold_by_name = models.CharField(
+        "Löschsperre gesetzt von", max_length=200, blank=True, db_default=""
+    )
+    retention_hold_at = models.DateTimeField("Löschsperre gesetzt am", null=True, blank=True)
 
     class Meta:
         verbose_name = "Jahresabschluss"

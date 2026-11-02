@@ -13,6 +13,11 @@ Zwei Stufen je abgeschlossenem Geschäftsjahr, beide von Hand ausgelöst:
    anonymisiert. Beträge, Daten, Konten, Kategorien und Nummern bleiben, damit Bestände und
    Vorjahresvergleiche weiter stimmen. Protokolleinträge dieser Daten werden geleert
    (die Protokollkette bleibt prüfbar).
+
+Die Fristen stehen fest im Code und lassen sich nicht verkürzen. Verlängern lässt sich die
+Aufbewahrung je Geschäftsjahr mit einer Löschsperre (z. B. laufende Betriebsprüfung,
+Rechtsstreit, Fachfrage FQ10); solange sie gilt, löscht ``purge`` nichts.
+Übersicht aller Datenarten: docs/aufbewahrung.md.
 """
 
 from __future__ import annotations
@@ -53,7 +58,42 @@ def state(org, closing) -> dict:
         "purged_by": closing.purged_by_name,
         "documents_due": closing.documents_purged_at is None and today >= docs_from,
         "records_due": closing.records_purged_at is None and today >= records_from,
+        # Löschsperre (Fachfrage FQ10)
+        "hold": closing.retention_hold,
+        "hold_by": closing.retention_hold_by_name,
+        "hold_at": closing.retention_hold_at,
     }
+
+
+def set_hold(org, year: int, reason: str, user) -> None:
+    """Löschsperre setzen (Grund) oder aufheben (leerer Grund). Wird protokolliert."""
+    from audit.log import record
+
+    from .models import YearClosing
+
+    reason = (reason or "").strip()[:500]
+    with transaction.atomic():
+        closing = (
+            YearClosing.objects.select_for_update().filter(organization=org, year=year).first()
+        )
+        if closing is None:
+            raise ValidationError(
+                gettext("Eine Löschsperre gibt es nur für abgeschlossene Geschäftsjahre.")
+            )
+        if closing.records_purged_at:
+            raise ValidationError(gettext("Dieses Geschäftsjahr ist schon bereinigt."))
+        old = closing.retention_hold
+        if old == reason:
+            return
+        closing.retention_hold = reason
+        closing.retention_hold_by_name = (
+            (user.get_full_name() or user.email)[:200] if reason else ""
+        )
+        closing.retention_hold_at = timezone.now() if reason else None
+        closing.save(
+            update_fields=["retention_hold", "retention_hold_by_name", "retention_hold_at"]
+        )
+        record(org, user, "update", closing, {"Löschsperre": [old or None, reason or None]})
 
 
 def _delete_file(field) -> None:
@@ -247,6 +287,12 @@ def purge(org, year: int, user) -> dict:
     if closing is None:
         raise ValidationError(gettext("Nur abgeschlossene Geschäftsjahre lassen sich bereinigen."))
     info = state(org, closing)
+    if closing.retention_hold:
+        raise ValidationError(
+            gettext("Für dieses Geschäftsjahr gilt eine Löschsperre: {x}").format(
+                x=closing.retention_hold
+            )
+        )
     if not (info["documents_due"] or info["records_due"]):
         raise ValidationError(
             gettext(

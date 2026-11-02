@@ -6,6 +6,11 @@ eingehängt), läuft jede hochgeladene Datei noch während des Hochladens durch 
 erreichbar, wird ebenfalls abgelehnt (lieber kein Upload als ein ungeprüfter) und gemeldet.
 Dateien über ``CLAMD_MAX_BYTES`` (Grenze StreamMaxLength des clamd) bleiben ungeprüft und
 werden protokolliert. Ohne ``CLAMD_SOCKET`` (Testserver, Entwicklung) gibt es keine Prüfung.
+
+Vor der Weitergabe an viele (Rundschreiben) oder an alle (öffentliche Dokumente) läuft
+jede Datei noch einmal durch clamd, mit den dann aktuellen Signaturen (Fachfrage FQ16,
+Audit 02.11.; ``release_ok``). Mit ``VIRUS_SCAN_REQUIRED`` wird dort nichts ungeprüft
+weitergegeben: weder ohne eingerichteten Scanner noch bei Dateien über der Grenze.
 """
 
 from __future__ import annotations
@@ -37,12 +42,25 @@ class ScanUnavailable(APIException):
     )
 
 
+class NotScanned(APIException):
+    status_code = 422
+    default_code = "not_scanned"
+    default_detail = gettext_lazy(
+        "Die Datei konnte nicht auf Viren geprüft werden und wird deshalb nicht weitergegeben."
+    )
+
+
 class ScanError(Exception):
     pass
 
 
 def enabled() -> bool:
     return bool(getattr(settings, "CLAMD_SOCKET", ""))
+
+
+def required() -> bool:
+    """Weitergabe nur geprüfter Dateien (Rundschreiben, öffentliche Dokumente)."""
+    return bool(getattr(settings, "VIRUS_SCAN_REQUIRED", False))
 
 
 def max_bytes() -> int:
@@ -231,3 +249,53 @@ def inbound_ok(data: bytes, name: str, source: str) -> bool:
     except VirusFound:
         return False
     return True
+
+
+# Wie lange ein „sauber“ vor der Weitergabe gilt (danach neu mit aktuellen Signaturen)
+RELEASE_CLEAN_SECONDS = 6 * 60 * 60
+
+
+def release_ok(file, name: str, what: str, key: str) -> None:
+    """Datei vor der Weitergabe prüfen (Fachfrage FQ16).
+
+    ``file``: Django-Datei (FieldFile), ``key``: eindeutig je Dateistand, für den Merker.
+    Fund: ``VirusFound`` mit Alarm. clamd nicht erreichbar: ``ScanUnavailable``.
+    Ungeprüft (kein Scanner oder Datei zu groß): mit ``VIRUS_SCAN_REQUIRED``
+    ``NotScanned``, sonst durchgelassen und protokolliert.
+    """
+    if not enabled():
+        if required():
+            logger.error("Weitergabe ohne Virenprüfung abgelehnt: %s (%s)", name, what)
+            raise NotScanned(
+                gettext(
+                    "Die Datei „{name}“ wurde nicht weitergegeben: Die Virenprüfung ist nicht "
+                    "eingerichtet."
+                ).format(name=name)
+            )
+        return
+    marker = f"virenscan-frei:{key}"
+    if cache.get(marker):
+        return
+    try:
+        stream = Stream()
+        with file.open("rb") as handle:
+            while chunk := handle.read(64 * 1024):
+                stream.feed(chunk)
+                if stream.too_big:
+                    break
+        signature = stream.result()
+    except ScanError as exc:
+        unavailable(exc)
+    if signature:
+        found(f"{name} ({what})", signature)
+    if stream.too_big:
+        logger.warning("Vor der Weitergabe nicht geprüft (zu groß): %s (%s)", name, what)
+        if required():
+            raise NotScanned(
+                gettext(
+                    "Die Datei „{name}“ ist zu groß für die Virenprüfung und wird deshalb "
+                    "nicht weitergegeben."
+                ).format(name=name)
+            )
+        return
+    cache.set(marker, 1, RELEASE_CLEAN_SECONDS)

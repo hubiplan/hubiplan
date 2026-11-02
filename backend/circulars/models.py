@@ -284,6 +284,11 @@ class MailingList(models.Model):
     )
     # Jeder darf schreiben, auch ohne Konto (Ralf 2026-10-31: ohne Freigabe direkt an alle)
     open_senders = models.BooleanField("jeder darf schreiben", default=False)
+    # Offener Verteiler, Mail eines fremden Absenders: bis zu so vielen Empfängern geht sie
+    # direkt hinaus, darüber bleibt sie als Entwurf zur Freigabe liegen (Fachfrage FQ15)
+    open_direct_max = models.PositiveIntegerField(
+        "ohne Freigabe höchstens an", default=50, db_default=50
+    )
     pattern = models.OneToOneField(Circular, on_delete=models.CASCADE, related_name="list_pattern")
     created_at = models.DateTimeField(auto_now_add=True)
 

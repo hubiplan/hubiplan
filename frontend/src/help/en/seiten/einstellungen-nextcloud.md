@@ -16,3 +16,5 @@ Under “Accounts via HUBIplan” you see who has already signed in via HUBIplan
 Under **Adjust groups for individual roles** you choose which Nextcloud groups a role is put in, for example “1st treasurer” and “2nd treasurer” both in “Treasurer”. Separate several groups with commas. Without an entry, the group has the same name as the role. If you rename a role, the assignment stays.
 
 Nextcloud itself decides how long a sign-in lasts: usually up to 24 hours without activity and up to 15 days with “stay logged in”; sync apps stay connected permanently. If access ends in HUBIplan without automatic disabling, only the next sign-in fails. Running sessions and sync apps only end when the account is disabled, automatically or by hand in Nextcloud.
+
+“Only with PKCE (S256)” is switched on from the start and protects the login code. The Nextcloud app “user_oidc” uses PKCE by itself. You only need to switch it off for older applications that cannot do PKCE.

@@ -344,6 +344,7 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/app.md](docs/app.md) | Schnittstelle für die App, Push |
 | [docs/kontoauszug.md](docs/kontoauszug.md) | Kontoauszüge (CAMT.053) einlesen |
 | [docs/verfahrensdokumentation-kasse.md](docs/verfahrensdokumentation-kasse.md) | Verfahrensdokumentation Kasse und Quittungen (GoBD) |
+| [docs/aufbewahrung.md](docs/aufbewahrung.md) | Aufbewahrung und Löschung je Datenart (Rechtsgrundlage, Fristbeginn) |
 | [docs/zuwendungen.md](docs/zuwendungen.md) | Zuwendungsbestätigungen |
 | [docs/rueckgaengig.md](docs/rueckgaengig.md) | Autospeichern, Rückgängig, Papierkorb |
 | [docs/rundschreiben.md](docs/rundschreiben.md) | Rundschreiben |

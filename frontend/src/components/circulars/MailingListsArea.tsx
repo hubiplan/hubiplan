@@ -261,6 +261,7 @@ type SettingsValues = {
   mode: MailingListMode
   is_active: boolean
   open_senders: boolean
+  open_direct_max: number
   senders: number[]
 }
 
@@ -281,6 +282,7 @@ function ListSettings({
     mode: initial.mode,
     is_active: initial.is_active,
     open_senders: initial.open_senders ?? false,
+    open_direct_max: initial.open_direct_max ?? 50,
     senders: initial.senders,
   })
   const { values: v, errors, set } = form
@@ -457,11 +459,25 @@ function ListSettings({
           </label>
         </div>
         {v.open_senders && (
-          <Alert kind="info">
-            {t(
-              'Jeder kann an diesen Verteiler schreiben, die Mail geht ohne Bestätigung an alle Empfänger. Automatische Mails, gefälschte Absender und vom Spamfilter markierte Mails werden verworfen; je fremdem Absender höchstens drei Mails am Tag.',
-            )}
-          </Alert>
+          <>
+            <Alert kind="info">
+              {t(
+                'Jeder kann an diesen Verteiler schreiben, die Mail geht ohne Bestätigung an alle Empfänger. Automatische Mails, gefälschte Absender und vom Spamfilter markierte Mails werden verworfen; je fremdem Absender höchstens drei Mails am Tag.',
+              )}{' '}
+              {t(
+                'Bei mehr Empfängern als unten eingestellt oder nach zu vielen Mails fremder Absender am selben Tag bleibt die Mail als Entwurf liegen; wer an den Verteiler schreiben darf, bekommt einen Hinweis und gibt sie frei.',
+              )}
+            </Alert>
+            <Field
+              label={t('Ohne Freigabe höchstens an so viele Empfänger')}
+              type="number"
+              min={0}
+              value={String(v.open_direct_max)}
+              error={errors.open_direct_max}
+              hint={t('0: jede Mail fremder Absender wartet auf Freigabe.')}
+              onChange={(e) => set('open_direct_max', Math.max(0, Number(e.target.value) || 0))}
+            />
+          </>
         )}
         {someSenders && !v.open_senders && options.length === 0 && (
           <p className="muted small">

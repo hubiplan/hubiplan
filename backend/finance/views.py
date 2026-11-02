@@ -989,7 +989,8 @@ def closing_checks(org, year: int, start, last) -> dict:
 
 class RetentionView(FinanceMixin, APIView):
     """POST {year}: nach Ablauf der Aufbewahrungsfrist Belege löschen bzw. Bücher
-    anonymisieren (Finanzamt-Prüfung C6). Nur Vorstände mit Rollenverwaltung."""
+    anonymisieren (Finanzamt-Prüfung C6). POST {year, hold}: Löschsperre setzen oder mit
+    leerem Grund aufheben (FQ10). Nur Vorstände mit Rollenverwaltung."""
 
     def post(self, request, org_id: int):
         if ROLES_MANAGE not in self.org_permissions:
@@ -1001,6 +1002,15 @@ class RetentionView(FinanceMixin, APIView):
                 {"year": gettext("Bitte ein Geschäftsjahr angeben.")}
             ) from exc
         try:
+            if "hold" in request.data:
+                # Löschsperre setzen ({year, hold: Grund}) oder aufheben ({year, hold: ""})
+                hold = request.data.get("hold")
+                if not isinstance(hold, str):
+                    raise serializers.ValidationError(
+                        {"hold": gettext("Bitte einen Grund angeben.")}
+                    )
+                retention.set_hold(self.org, year, hold, request.user)
+                return Response({"hold": hold.strip()[:500]})
             result = retention.purge(self.org, year, request.user)
         except DjangoValidationError as exc:
             raise serializers.ValidationError(" ".join(exc.messages)) from exc

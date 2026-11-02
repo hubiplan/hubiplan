@@ -376,7 +376,7 @@ def purge_due_date(membership: Membership) -> datetime.date | None:
     last = membership.periods.order_by("-exit_date").first()
     if last is None or last.exit_date is None:
         return None
-    months = PlatformSettings.load().deletion_period_months
+    months = PlatformSettings.load().effective_deletion_months()
     return last.exit_date + relativedelta(months=months)
 
 
@@ -482,7 +482,7 @@ def _purge_related(membership: Membership, person, club) -> None:
 def purge_expired(on: datetime.date | None = None) -> int:
     """Hintergrund-Job: alle Mitgliedschaften nach Ablauf der Löschfrist bereinigen."""
     on = on or today()
-    months = PlatformSettings.load().deletion_period_months
+    months = PlatformSettings.load().effective_deletion_months()
     cutoff = on - relativedelta(months=months)
     count = 0
     with rls_bypass():
@@ -495,3 +495,56 @@ def purge_expired(on: datetime.date | None = None) -> int:
                 purge_membership(membership, after_deadline=True)
                 count += 1
     return count
+
+
+# --- Namen in Chronik und Ehrungen (Fachfrage FQ12) ---
+
+# Steht statt des Namens in Chronik und Wettbewerben, wenn er auf Wunsch entfernt wurde
+NAME_REMOVED = "Name auf Wunsch entfernt"
+
+
+@transaction.atomic
+def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, int]:
+    """Namen eines ehemaligen, schon gelöschten Mitglieds auf Wunsch auch aus Chronik,
+    Würden, Ehrungen und Wettbewerben dieses Vereins (und seiner Einheiten) entfernen.
+
+    Nach der Löschfrist bleiben Name und Zeiträume für die Vereinsgeschichte (berechtigtes
+    Interesse, docs/aufbewahrung.md). Widerspricht die Person, entfernt das hier den Namen;
+    Jahre und Würden bleiben als Lücke stehen. Ist die Person in keinem anderen Verein
+    erfasst, wird auch ihr Name anonymisiert."""
+    from competitions.models import AwardGrant
+    from honors.models import Companion, Reign, ReignPhoto
+    from honors.views import _remove_photo
+
+    from .auskunft import _org_ids
+    from .models import HonoraryTitleAward, Person
+
+    person = membership.person
+    with rls_bypass():
+        orgs = _org_ids(membership.organization)
+        reigns = Reign.objects.filter(organization_id__in=orgs, person=person)
+        for photo in ReignPhoto.objects.filter(reign__in=reigns):
+            _remove_photo(photo)
+        counts = {
+            "Würden": reigns.update(person=None, name=NAME_REMOVED),
+            "Begleitungen": Companion.objects.filter(
+                organization_id__in=orgs, person=person
+            ).update(person=None, name=NAME_REMOVED),
+            "Ehrungen": HonoraryTitleAward.objects.filter(
+                organization_id__in=orgs, person=person
+            ).delete()[0],
+            "Wettbewerbe": AwardGrant.objects.filter(
+                organization_id__in=orgs, membership=membership
+            ).update(membership=None, name=NAME_REMOVED),
+        }
+        elsewhere = (
+            Membership.objects.filter(person=person).exclude(organization_id__in=orgs).exists()
+        )
+        if not elsewhere and person.last_name != NAME_REMOVED:
+            Person.objects.filter(pk=person.pk).update(last_name=NAME_REMOVED, first_name="")
+            counts["Name"] = 1
+    if not listed:
+        from . import loeschliste
+
+        loeschliste.note_history(membership)
+    return counts

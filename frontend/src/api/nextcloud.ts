@@ -10,6 +10,8 @@ export interface NextcloudClient {
   client_id: string
   audience: NextcloudAudience
   require_mfa: boolean
+  /** Anmeldung nur mit PKCE (S256), Fachfrage FQ26 */
+  require_pkce?: boolean
   groups_board: boolean
   groups_roles: boolean
   groups_units: boolean
@@ -51,6 +53,7 @@ export type NextcloudInput = Partial<
     | 'base_url'
     | 'audience'
     | 'require_mfa'
+    | 'require_pkce'
     | 'groups_board'
     | 'groups_roles'
     | 'groups_units'

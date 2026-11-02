@@ -309,6 +309,11 @@ BACKUP_STATUS_DIR = os.environ.get("BACKUP_STATUS_DIR", "")
 BACKUP_MAX_AGE_HOURS = int(os.environ.get("BACKUP_MAX_AGE_HOURS", "26"))
 # Zugestellte Mails: Text und Anhänge nach so vielen Tagen leeren (Nachweis bleibt)
 OUTBOX_RETENTION_DAYS = int(os.environ.get("OUTBOX_RETENTION_DAYS", "30"))
+# Nicht zugestellte Mails: länger, aber nicht unbegrenzt (Fachfrage FQ14, Audit 02.11.)
+OUTBOX_FAILED_RETENTION_DAYS = int(os.environ.get("OUTBOX_FAILED_RETENTION_DAYS", "90"))
+# Offene Mailverteiler: Mails fremder Absender je Tag und Verteiler, die ohne Freigabe
+# hinausgehen (Fachfrage FQ15)
+MAILING_OPEN_PER_DAY_TOTAL = int(os.environ.get("MAILING_OPEN_PER_DAY_TOTAL", "20"))
 
 # --- Sicherheit ---
 # Django-Admin unter /admin/: im Server-Betrieb standardmäßig aus (weniger
@@ -392,6 +397,8 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 CLAMD_SOCKET = os.environ.get("CLAMD_SOCKET", "")
 CLAMD_MAX_BYTES = int(os.environ.get("CLAMD_MAX_BYTES", str(25 * 1024 * 1024 - 64 * 1024)))
 CLAMD_TIMEOUT = int(os.environ.get("CLAMD_TIMEOUT", "60"))
+# Rundschreiben-Anhänge und öffentliche Dokumente nur geprüft weitergeben (FQ16)
+VIRUS_SCAN_REQUIRED = os.environ.get("VIRUS_SCAN_REQUIRED", "") == "1"
 FILE_UPLOAD_HANDLERS = [
     "core.virenscan.ClamavUploadHandler",
     "django.core.files.uploadhandler.MemoryFileUploadHandler",

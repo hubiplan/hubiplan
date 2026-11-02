@@ -7,6 +7,8 @@ x-clamav: &clamav
     - ${CLAMD_SOCKET_DIR:?CLAMD_SOCKET_DIR fehlt}:/run/clamav-host:ro
   environment:
     CLAMD_SOCKET: /run/clamav-host/${CLAMD_SOCKET_NAME:-clamd.ctl}
+    # Rundschreiben-Anhänge und öffentliche Dokumente nur geprüft weitergeben (FQ16)
+    VIRUS_SCAN_REQUIRED: ${VIRUS_SCAN_REQUIRED:-1}
 
 services:
   backend:

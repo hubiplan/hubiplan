@@ -195,6 +195,13 @@ def start_sending(circular: Circular, user) -> dict[str, int]:
     remote = packet_circulars.remote_targets(circular)
     if not chosen and not remote:
         raise serializers.ValidationError(gettext("Für diese Auswahl gibt es keine Empfänger."))
+    # Anhänge vor dem Versand noch einmal auf Viren prüfen (Fachfrage FQ16)
+    from core import virenscan
+
+    for att in circular.attachments.all():
+        virenscan.release_ok(
+            att.file, att.name, "Anhang eines Rundschreibens", key=f"rundschreiben:{att.pk}"
+        )
     rcp.fill_values(circular, selection, used_placeholders(circular))
     now = timezone.now()
     rows = []

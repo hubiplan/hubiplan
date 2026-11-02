@@ -292,6 +292,10 @@ export interface Retention {
   purged_by: string
   documents_due: boolean
   records_due: boolean
+  /** Löschsperre (Grund); leer = keine Sperre */
+  hold: string
+  hold_by: string
+  hold_at: string | null
 }
 
 export interface Closings {
@@ -339,6 +343,9 @@ export const financeApi = {
       `${base(org)}/closings/aufbewahrung/`,
       { year },
     ),
+  /** Löschsperre setzen (Grund) oder aufheben (leerer Text) */
+  setRetentionHold: (org: number, year: number, hold: string) =>
+    api.post<{ hold: string }>(`${base(org)}/closings/aufbewahrung/`, { year, hold }),
   reopenYear: (org: number, year: number, reason: string) =>
     api.delWith<Closings>(`${base(org)}/closings/?jahr=${year}`, { reason }),
   reportUrl: (org: number, year: number) => `${base(org)}/report/?jahr=${year}`,

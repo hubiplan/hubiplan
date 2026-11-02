@@ -86,6 +86,12 @@ gehen dann ohne Bestätigung direkt an den Verteiler (im Modus „Entwurf“ als
 Antworten an den Absender; sie bekommen keine Rückmail. Verworfen werden weiter
 automatische Mails, DMARC-Fehler und vom Spamfilter markierte Mails (`X-Spam-Flag`),
 und je fremdem Absender gehen höchstens drei Mails am Tag durch.
+Große offene Verteiler werden moderiert (Fachfrage FQ15, Audit 02.11.): Hat die Mail
+mehr Empfänger als `open_direct_max` (je Verteiler, Standard 50, 0 = immer Freigabe)
+oder sind am selben Tag schon `MAILING_OPEN_PER_DAY_TOTAL` (Standard 20) Mails fremder
+Absender an den Verteiler hinausgegangen, bleibt sie als Entwurf liegen. Die
+eingestellten Absender (sonst alle mit dem Recht, höchstens 20) bekommen einen Hinweis
+mit Link und geben sie unter Rundschreiben frei oder löschen sie.
 
 1. Das Sammelpostfach (Catch-all der Domain) wird jede Minute per IMAP abgeholt
    (Celery-Beat `verteiler-abholen`); verarbeitete Mails werden dort gelöscht,

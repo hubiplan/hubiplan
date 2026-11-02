@@ -56,6 +56,13 @@ describe('Lizenzaudit 29.10. Teil d', () => {
     expect(
       await screen.findByRole('link', { name: 'Quellcode dieser Fassung (0123456)' }),
     ).toHaveAttribute('href', `https://github.com/hubiplan/hubiplan/tree/${sha}`)
+    // Fachfrage FQ17: Bauhinweise derselben Fassung gleich daneben
+    expect(
+      screen.getByRole('link', { name: 'Bauen und selbst betreiben (Anleitung)' }),
+    ).toHaveAttribute(
+      'href',
+      `https://github.com/hubiplan/hubiplan/blob/${sha}/README.md#selbst-betreiben`,
+    )
   })
 
   it('F02: Fußzeile verlinkt „Lizenzen“', async () => {

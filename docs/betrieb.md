@@ -305,7 +305,9 @@ DEFAULT_FROM_EMAIL=hubiplan <noreply@example.org>
 
 **Aufbewahrung:** Bei zugestellten Mails leert ein täglicher Job nach
 `OUTBOX_RETENTION_DAYS` Tagen (Standard 30) Text und Anhänge. Empfänger, Betreff, Art und
-Datum bleiben als Nachweis. Nicht zugestellte Mails bleiben vollständig.
+Datum bleiben als Nachweis. Nicht zugestellte (und nur gespeicherte) Mails bleiben länger
+vollständig, damit man sie erneut senden kann, aber nicht unbegrenzt: nach
+`OUTBOX_FAILED_RETENTION_DAYS` Tagen (Standard 90, Fachfrage FQ14) werden auch sie geleert.
 
 ## Grenzen der Container
 
@@ -367,6 +369,15 @@ hochgeladene Datei läuft dann während des Hochladens durch clamd:
 - Dateien über `CLAMD_MAX_BYTES` (Standard knapp 25 MB, die Grenze `StreamMaxLength` des
   clamd) bleiben ungeprüft und stehen im Log. Die Einstellungen des clamd (HestiaCP) bleiben
   unverändert.
+
+Vor der Weitergabe prüft HUBIplan noch einmal mit den dann aktuellen Signaturen
+(Fachfrage FQ16, Audit 02.11.): Anhänge eines Rundschreibens beim Versand und Dateien aus
+öffentlichen Ordnern beim Abruf über den Link. Ein „sauber“ gilt dabei 6 Stunden. Ein Fund
+stoppt den Versand bzw. den Abruf und schickt eine Alarm-Mail. Mit Virenprüfung gilt
+`VIRUS_SCAN_REQUIRED=1` (Standard in `docker-compose.clamav.yml`): Dateien über
+`CLAMD_MAX_BYTES` werden dann nicht weitergegeben, und fällt der Socket weg, auch nichts
+anderes. Mit `VIRUS_SCAN_REQUIRED=0` in der `.env` geht Ungeprüftes wie früher durch
+und steht nur im Log.
 
 Ohne `CLAMD_SOCKET_DIR` (Testserver, Entwicklung) gibt es keine Prüfung.
 
@@ -434,7 +445,8 @@ Geburtsjahr und die Mitgliedszeiträume; die Verbandsnummer wird gelöscht, soba
 nirgends mehr Mitglied ist. Verlangt ein ehemaliges Mitglied die Löschung vorher, gibt es in
 der Akte unter „Abläufe“ den Knopf „Daten auf Verlangen löschen“ (gleiches Ergebnis).
 Rechnungen und Buchungen bleiben wegen der Aufbewahrungspflicht. Jede Löschung steht auf der
-Löschliste (siehe Wiederherstellen).
+Löschliste (siehe Wiederherstellen). Eine verkürzte Löschfrist gilt erst nach 30 Tagen.
+Alle Datenarten mit Rechtsgrundlage und Frist: [aufbewahrung.md](aufbewahrung.md).
 
 **Auskunft (Art. 15 DSGVO):** In der Akte unter „Abläufe“ › „Auskunft für dieses Mitglied
 (ZIP)“ (Recht „Vollständigen Datenexport erstellen“): Akte, Zusatzfelder, Rechnungen mit PDF,
