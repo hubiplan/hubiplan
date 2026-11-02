@@ -8,7 +8,7 @@ from customfields.models import FieldDefinition, FieldValue
 from members.duration import jubilee_date, merge
 from members.models import Membership, MemberType
 
-from .factories import give_role, make_user
+from .factories import found, give_role, make_user
 from .test_m2_members import admit, make_types
 
 pytestmark = pytest.mark.django_db
@@ -78,6 +78,7 @@ class TestDauerInDerAkte:
                 f"/api/orgs/{orgs['b'].pk}/members/admit/",
                 {
                     "person": a["person_id"],
+                    **found(a["person_id"]),
                     "member_type": types["b"]["aktiv"].pk,
                     "entry_date": "2000-01-01",
                     "email": "e@example.org",
@@ -277,6 +278,7 @@ class TestZusatzfelder:
                 f"/api/orgs/{orgs['b'].pk}/members/admit/",
                 {
                     "person": m["person_id"],
+                    **found(m["person_id"]),
                     "member_type": types["b"]["passiv"].pk,
                     "entry_date": "2020-01-01",
                     "email": "e@example.org",

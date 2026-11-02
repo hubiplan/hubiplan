@@ -15,6 +15,8 @@ Before you start: there is at least one membership type (Members › Setup › M
    person already exists, for example from another club.
 3. If there are **Possible matches**, choose the right person or **None of these – create a new person**.
 4. Choose the **Membership type** and the **Joining date**.
-5. Add contact details and address and click **Admit**.
+5. Add contact details and address and click **Admit**. For a person who already exists, the
+   existing shared contact details stay as they are; your entries only fill empty fields. You can
+   change them afterwards in the member record.
 
 ![The “Admit member” form](bild:mitglieder-aufnehmen)

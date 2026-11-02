@@ -61,18 +61,27 @@ def login_enabled() -> bool:
     return s.peering_enabled and s.peering_login
 
 
-def coupled_peers():
-    """Instanzen, mit denen gerade eine Kopplung besteht."""
-    return (
+def coupled_peers(*, quarantined: bool = False):
+    """Instanzen, mit denen gerade eine Kopplung besteht. Wartet bei einer ein
+    Notfallwechsel der Schlüssel, ruht die Anmeldung über sie (Audit 02.11. GA-S02)."""
+    qs = (
         Peer.objects.filter(couplings__state__in=OPEN)
         .exclude(instance_id=identity.identity().instance_id)
         .distinct()
         .order_by("base_url")
     )
+    return qs if quarantined else qs.filter(pending_keys={})
 
 
 def peer_by_instance(instance_id: str) -> Peer:
-    peer = coupled_peers().filter(instance_id=_uuid(instance_id)).first()
+    peer = coupled_peers(quarantined=True).filter(instance_id=_uuid(instance_id)).first()
+    if peer is not None and peer.pending_keys:
+        raise ValidationError(
+            gettext(
+                "Für diese Instanz wartet ein Notfallwechsel der Schlüssel. Die Anmeldung "
+                "über sie ruht, bis die Plattformverwaltung ihn bestätigt."
+            )
+        )
     if peer is None:
         raise ValidationError(gettext("Mit dieser Instanz besteht keine Kopplung."))
     return peer
