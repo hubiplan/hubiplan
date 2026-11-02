@@ -278,6 +278,9 @@ export interface WebsiteText extends WebsiteTextSummary {
   gallery_interval: number
   /** Karussell beginnt mit einem zufälligen Bild statt mit dem ersten */
   gallery_random: boolean
+  /** Zeitleiste der Chronik (nur Textseite „geschichte“) */
+  timeline: TimelineEntry[]
+  has_timeline: boolean
   published_title: string
   published_body: string
   revisions: { id: number; title: string; published_at: string; published_by: string }[]
@@ -295,6 +298,18 @@ export interface TextDraft {
   gallery?: number[]
   gallery_interval?: number
   gallery_random?: boolean
+  timeline?: TimelineEntry[]
+}
+
+/** Eintrag der Zeitleiste: ein Jahr oder ein Zeitraum (`until`), kurz gehalten.
+ * Ein Kapitel ist eine Zwischenüberschrift; die Ereignisse ab seinem Jahr stehen darunter. */
+export interface TimelineEntry {
+  kind: 'event' | 'chapter'
+  year: number | null
+  until: number | null
+  title: string
+  text: string
+  image: number | null
 }
 
 export const contentApi = {
@@ -317,6 +332,15 @@ export const contentApi = {
     api.delWith<WebsiteText>(`${base(org)}texts/${id}/publish/`, {}),
   restore: (org: number, id: number, rev: number) =>
     api.post<WebsiteText>(`${base(org)}texts/${id}/revisions/${rev}/restore/`),
+  /** Excel/CSV lesen; gespeichert wird nichts, die Einträge kommen in den Entwurf */
+  importTimeline: (org: number, id: number, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return api.post<{ entries: TimelineEntry[]; errors: { line: number; message: string }[] }>(
+      `${base(org)}texts/${id}/timeline-import/`,
+      form,
+    )
+  },
   images: (org: number) => api.get<WebsiteImage[]>(`${base(org)}images/`),
   upload: (org: number, data: ImageUpload) =>
     api.post<WebsiteImage>(`${base(org)}images/`, imageForm(data)),

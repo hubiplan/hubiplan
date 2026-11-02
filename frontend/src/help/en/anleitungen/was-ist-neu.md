@@ -10,6 +10,7 @@ The latest changes are at the top.
 
 November 2026:
 
+- Website: The chronicle can be kept as a timeline, with events (year or period), chapters as subheadings and Excel import.
 - Help: Every page has "Help on this page" at the top (or the ? key), plus step-by-step guides with pictures. Under "For you" you find first steps that match your rights, to tick off.
 - Who helps us?: A unit can name contacts for questions about HUBIplan and add its own notes to guides.
 - English: The interface is also available in English. You can switch under My account › Profile.

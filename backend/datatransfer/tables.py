@@ -406,6 +406,20 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
             if isinstance(getattr(obj, field, None), list):
                 mapped = [ids.get("website.websiteimage", pk) for pk in getattr(obj, field)]
                 setattr(obj, field, [pk for pk in mapped if pk is not None])
+        # Zeitleiste der Chronik: Bildnummern ebenso umstellen
+        for field in ("timeline", "published_timeline"):
+            entries = getattr(obj, field, None)
+            if isinstance(entries, list):
+                setattr(
+                    obj,
+                    field,
+                    [
+                        {**e, "image": ids.get("website.websiteimage", e.get("image"))}
+                        if isinstance(e, dict) and e.get("image") is not None
+                        else e
+                        for e in entries
+                    ],
+                )
 
 
 def check_cash_receipts(tables: dict, warn) -> None:

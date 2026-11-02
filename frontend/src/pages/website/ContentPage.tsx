@@ -23,6 +23,7 @@ import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../.
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
 import { ImageChoice, ImagePicker } from './images.tsx'
+import { TimelineEditor } from './TimelineEditor.tsx'
 import { imageLabel } from './imageTools.ts'
 import type { Unit } from './images.tsx'
 import { t } from '../../i18n/index.ts'
@@ -329,6 +330,7 @@ function TextForm({
     gallery: text.gallery ?? [],
     gallery_interval: text.gallery_interval ?? 7,
     gallery_random: text.gallery_random ?? false,
+    timeline: text.timeline ?? [],
   })
   const { values: v, set, errors } = form
   const [current, setCurrent] = useState(text)
@@ -406,8 +408,15 @@ function TextForm({
           />
         </div>
       )}
+      {text.has_timeline && (
+        <p className="muted small">
+          {t(
+            'Der Text steht oben auf der Seite, darunter die Zeitleiste. Für die Chronik genügen meist ein paar einleitende Sätze.',
+          )}
+        </p>
+      )}
       <TextEditor
-        label={t('Text')}
+        label={text.has_timeline ? t('Einleitung (optional)') : t('Text')}
         value={v.body}
         error={errors.body}
         rows={12}
@@ -434,6 +443,17 @@ function TextForm({
         onChange={(id) => set('image', id)}
         onImagesChanged={reloadImages}
       />
+      {text.has_timeline && (
+        <TimelineEditor
+          textId={text.id}
+          value={v.timeline}
+          error={errors.timeline}
+          images={images.data ?? []}
+          units={units}
+          onChange={(entries) => set('timeline', entries)}
+          onImagesChanged={reloadImages}
+        />
+      )}
       {text.kind !== 'page' && (
         <GalleryPicker
           images={images.data ?? []}
