@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import URLValidator
 from django.db.models import Q
@@ -857,7 +859,7 @@ class PlatformSettingsSerializer(serializers.ModelSerializer):
             "peering_login",
         ]
 
-    def get_deletion_shorter_from(self, obj):
+    def get_deletion_shorter_from(self, obj) -> datetime.datetime | None:
         return obj.shorter_from()
 
     def get_deletion_period_effective(self, obj) -> int:

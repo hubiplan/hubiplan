@@ -11,6 +11,7 @@ import pytest
 from finance.models import Booking
 
 from .test_aufbewahrungsende import _private, fin, heute, jahr2025, retention_of  # noqa: F401
+from .test_impressum import platform_admin  # noqa: F401
 from .test_m9_billing import JSON, base, c, club, members, setup, start_run, zug  # noqa: F401
 
 pytestmark = pytest.mark.django_db
