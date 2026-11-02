@@ -421,7 +421,7 @@ class DepartmentMemberDetailView(DepartmentScopedMixin, APIView):
     def get(self, request, dept_id: int, pk: int):
         membership = self.get_member(pk)
         return Response(
-            dept_member_detail(self.org, membership, DEPT_ACCESS_MANAGE in self.dept_permissions)
+            dept_member_detail(self.org, membership, LOGINS_VIEW in self.dept_permissions)
         )
 
     @transaction.atomic
@@ -433,7 +433,7 @@ class DepartmentMemberDetailView(DepartmentScopedMixin, APIView):
         values.pop("club_number", None)  # Vereinsnummer vergibt der Verein
         update_member(self.org, membership, values, request.user)
         return Response(
-            dept_member_detail(self.org, membership, DEPT_ACCESS_MANAGE in self.dept_permissions)
+            dept_member_detail(self.org, membership, LOGINS_VIEW in self.dept_permissions)
         )
 
 

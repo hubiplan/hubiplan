@@ -271,6 +271,64 @@ describe('Abteilungsbereich', () => {
     expect(await screen.findByRole('link', { name: 'Muster, Erika' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Rollen und Rechte' })).not.toBeInTheDocument()
   })
+  it('zeigt Rollen nur lesend, wenn die Rolle sie nur lesen darf', async () => {
+    const calls = fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/contexts/': () => ({
+        status: 200,
+        body: {
+          departments: [
+            {
+              id: 3,
+              name: '1. Zug',
+              club_id: 7,
+              club_name: 'TV Beispielhausen',
+              label: 'Zug',
+              permissions: ['roles.view'],
+              theme,
+            },
+          ],
+          portal: [],
+        },
+      }),
+      'GET /api/depts/3/roles/': () => ({
+        status: 200,
+        body: {
+          roles: [{ id: 1, name: 'Zugführer', permissions: ['members.view'], holder_count: 1 }],
+          catalog: [
+            {
+              id: 'members',
+              kind: 'area',
+              label: 'Mitglieder des Zugs',
+              levels: [
+                { code: 'members.view', level: 'view', label: 'sehen' },
+                { code: 'members.edit', level: 'edit', label: 'ändern' },
+              ],
+              permissions: [
+                { code: 'members.view', label: 'Mitglieder des Zugs: lesen' },
+                { code: 'members.edit', label: 'Mitglieder des Zugs: bearbeiten' },
+              ],
+            },
+          ],
+        },
+      }),
+      'GET /api/depts/3/holders/': () => ({
+        status: 200,
+        body: [
+          { id: 9, member_name: 'Muster, Erika', role_name: 'Zugführer', valid_from: '2026-01-01' },
+        ],
+      }),
+    })
+    renderApp('/abteilung/rollen')
+    expect(await screen.findByText('Zugführer', { selector: 'strong' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Rolle hinzufügen' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Rolle vergeben' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Beenden' })).not.toBeInTheDocument()
+    const radio = screen.getByRole('radio', { name: 'Mitglieder des Zugs: lesen' })
+    expect(radio).toBeChecked()
+    expect(radio).toBeDisabled()
+    expect(calls.some((c) => c.key.includes('/members/'))).toBe(false)
+  })
 })
 
 describe('Mein Konto', () => {

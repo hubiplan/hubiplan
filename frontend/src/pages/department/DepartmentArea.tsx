@@ -39,6 +39,7 @@ import { MemberDevelopment } from '../members/DevelopmentPage.tsx'
 import { statsApi } from '../../api/statistics.ts'
 import { alertDialog, confirmDialog, confirmRoleRemoval } from '../../components/dialog.ts'
 import { t } from '../../i18n/index.ts'
+import { PermissionMatrix, PermissionSummary } from '../../components/RoleEditor.tsx'
 
 export function DepartmentArea() {
   const dept = useActiveDept()
@@ -58,7 +59,7 @@ export function DepartmentArea() {
           },
         ]
       : []),
-    ...(can(DEPT_PERM.rolesManage)
+    ...(can(DEPT_PERM.rolesView) || can(DEPT_PERM.rolesManage)
       ? [{ to: '/abteilung/rollen', label: t('Rollen und Rechte') }]
       : []),
     ...(can(DEPT_PERM.entriesSubmit)
@@ -101,8 +102,11 @@ export function DepartmentArea() {
           <Route path="rechnungen" element={<DeptInvoices deptId={dept.id} />} />
         )}
         <Route path="mitglied/:id" element={<DeptMemberPage dept={dept} />} />
-        {can(DEPT_PERM.rolesManage) && (
-          <Route path="rollen" element={<DeptRolesPage dept={dept} />} />
+        {(can(DEPT_PERM.rolesView) || can(DEPT_PERM.rolesManage)) && (
+          <Route
+            path="rollen"
+            element={<DeptRolesPage dept={dept} canEdit={can(DEPT_PERM.rolesManage)} />}
+          />
         )}
         {can(DEPT_PERM.export) && (
           <Route path="export" element={<ExportSection base={{ dept: dept.id }} />} />
@@ -305,7 +309,9 @@ function DeptMemberPage({ dept }: { dept: DeptSummary }) {
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   const canEdit = dept.permissions.includes(DEPT_PERM.membersEdit)
-  const canAccess = dept.permissions.includes(DEPT_PERM.accessManage)
+  const canAccess =
+    dept.permissions.includes(DEPT_PERM.loginsView) ||
+    dept.permissions.includes(DEPT_PERM.accessManage)
   return (
     <div className="stack">
       <p>
@@ -323,7 +329,7 @@ function DeptMemberPage({ dept }: { dept: DeptSummary }) {
           access={data.access ?? null}
           hasEmail={!!data.contact?.email}
           contactEmail={data.contact?.email}
-          canManage
+          canManage={dept.permissions.includes(DEPT_PERM.accessManage)}
           onSend={async (transfer) => {
             const r = await portalApi.sendDeptAccess(dept.id, id, transfer)
             setData({ ...data, access: r.access })
@@ -445,7 +451,7 @@ const CONTACT_LABEL: Record<(typeof CONTACT_KEYS)[number], string> = {
   country: t('Land'),
 }
 
-function DeptRolesPage({ dept }: { dept: DeptSummary }) {
+function DeptRolesPage({ dept, canEdit }: { dept: DeptSummary; canEdit: boolean }) {
   const roles = useLoad(() => portalApi.deptRoles(dept.id), [dept.id])
   const holders = useLoad(() => portalApi.holders(dept.id), [dept.id])
   const [error, setError] = useState<string | null>(null)
@@ -455,12 +461,16 @@ function DeptRolesPage({ dept }: { dept: DeptSummary }) {
     id: (r) => r.id,
     label: (r) => r.name,
     onReorder: (ids) => portalApi.reorderDeptRoles(dept.id, ids).then(() => roles.reload()),
+    enabled: canEdit,
   })
 
   const loadError = roles.error ?? holders.error
   if (loadError) return <Alert kind="error">{loadError}</Alert>
   if (!roles.data || !holders.data) return <p className="muted">{t('Lädt …')}</p>
-  const perms = roles.data.catalog.flatMap((m) => m.permissions)
+  const catalog = roles.data.catalog
+  // Katalog mit Bereichen und Stufen; ältere Server liefern noch einzelne Rechte
+  const staged = catalog.some((m) => m.kind === 'area')
+  const perms = catalog.flatMap((m) => m.permissions)
 
   async function run(action: () => Promise<unknown>) {
     setError(null)
@@ -472,9 +482,12 @@ function DeptRolesPage({ dept }: { dept: DeptSummary }) {
     }
   }
 
-  function toggle(role: DeptRole, code: string, on: boolean) {
-    const next = on ? [...role.permissions, code] : role.permissions.filter((c) => c !== code)
+  function save(role: DeptRole, next: string[]) {
     void run(() => portalApi.updateDeptRole(dept.id, role.id, { permissions: next }))
+  }
+
+  function toggle(role: DeptRole, code: string, on: boolean) {
+    save(role, on ? [...role.permissions, code] : role.permissions.filter((c) => c !== code))
   }
 
   return (
@@ -498,63 +511,96 @@ function DeptRolesPage({ dept }: { dept: DeptSummary }) {
               {sort.handle(r)}
               <strong>
                 {r.name}
-                <span className="muted small"> · {r.holder_count} vergeben</span>
+                <span className="muted small">
+                  {' · '}
+                  {t('{n} vergeben', { n: r.holder_count })}
+                </span>
               </strong>
-              <div className="role-perms">
-                {perms.map((p) => (
-                  <Checkbox
-                    key={p.code}
-                    label={p.label}
-                    checked={r.permissions.includes(p.code)}
-                    onChange={(on) => toggle(r, p.code, on)}
-                  />
-                ))}
-              </div>
-              <button
-                type="button"
-                className="link-button"
-                onClick={async () => {
-                  if (!(await confirmRoleRemoval(r.name, r.holder_count))) return
-                  try {
-                    await portalApi.deleteDeptRole(dept.id, r.id)
-                    await roles.reload()
-                  } catch (err) {
-                    await alertDialog({
-                      title: t('Rolle nicht entfernt'),
-                      message: errorMessage(err),
-                    })
-                  }
-                }}
-              >
-                {t('Entfernen')}
-              </button>
+              {staged ? (
+                <div className="role-perms">
+                  {r.permissions.length > 0 ? (
+                    <PermissionSummary codes={r.permissions} catalog={catalog} />
+                  ) : (
+                    <p className="muted small">{t('keine (nur Amt)')}</p>
+                  )}
+                  <details>
+                    <summary>{canEdit ? t('Rechte ändern') : t('Rechte ansehen')}</summary>
+                    <PermissionMatrix
+                      catalog={catalog}
+                      codes={r.permissions}
+                      readOnly={!canEdit}
+                      onChange={(next) => save(r, next)}
+                    />
+                  </details>
+                </div>
+              ) : (
+                <div className="role-perms">
+                  {perms.map((p) => (
+                    <Checkbox
+                      key={p.code}
+                      label={p.label}
+                      checked={r.permissions.includes(p.code)}
+                      disabled={!canEdit}
+                      onChange={(on) => toggle(r, p.code, on)}
+                    />
+                  ))}
+                </div>
+              )}
+              {canEdit && (
+                <button
+                  type="button"
+                  className="link-button"
+                  onClick={async () => {
+                    if (!(await confirmRoleRemoval(r.name, r.holder_count))) return
+                    try {
+                      await portalApi.deleteDeptRole(dept.id, r.id)
+                      await roles.reload()
+                    } catch (err) {
+                      await alertDialog({
+                        title: t('Rolle nicht entfernt'),
+                        message: errorMessage(err),
+                      })
+                    }
+                  }}
+                >
+                  {t('Entfernen')}
+                </button>
+              )}
             </li>
           ))}
         </ul>
         {sort.status}
-        <form
-          className="inline-add"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (!newRole.trim()) return
-            void run(() =>
-              portalApi.createDeptRole(dept.id, { name: newRole.trim(), permissions: [] }),
-            ).then(() => setNewRole(''))
-          }}
-        >
-          <input
-            aria-label={t('Neue Rolle')}
-            placeholder={t('z. B. Kassierer')}
-            value={newRole}
-            onChange={(e) => setNewRole(e.target.value)}
-          />
-          <button type="submit" className="button button-ghost">
-            {t('Rolle hinzufügen')}
-          </button>
-        </form>
+        {canEdit && (
+          <form
+            className="inline-add"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (!newRole.trim()) return
+              void run(() =>
+                portalApi.createDeptRole(dept.id, { name: newRole.trim(), permissions: [] }),
+              ).then(() => setNewRole(''))
+            }}
+          >
+            <input
+              aria-label={t('Neue Rolle')}
+              placeholder={t('z. B. Kassierer')}
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
+            />
+            <button type="submit" className="button button-ghost">
+              {t('Rolle hinzufügen')}
+            </button>
+          </form>
+        )}
         {error && <Alert kind="error">{error}</Alert>}
       </div>
-      <HoldersCard dept={dept} roles={roles.data.roles} holders={holders.data} onRun={run} />
+      <HoldersCard
+        dept={dept}
+        roles={roles.data.roles}
+        holders={holders.data}
+        onRun={run}
+        canEdit={canEdit}
+      />
     </div>
   )
 }
@@ -564,11 +610,13 @@ function HoldersCard({
   roles,
   holders,
   onRun,
+  canEdit,
 }: {
   dept: DeptSummary
   roles: DeptRole[]
   holders: Holder[]
   onRun: (action: () => Promise<unknown>) => Promise<void>
+  canEdit: boolean
 }) {
   const [member, setMember] = useState('')
   const [role, setRole] = useState('')
@@ -578,6 +626,8 @@ function HoldersCard({
   const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
+    // Nur zum Vergeben nötig (wer Rollen nur liest, darf die Liste evtl. nicht sehen)
+    if (!canEdit) return
     let alive = true
     // Alle Seiten laden: auch in großen Einheiten muss jedes Mitglied wählbar sein
     async function loadAll() {
@@ -599,7 +649,7 @@ function HoldersCard({
     return () => {
       alive = false
     }
-  }, [dept.id, attempt])
+  }, [dept.id, attempt, canEdit])
 
   return (
     <div className="card card-wide">
@@ -612,8 +662,8 @@ function HoldersCard({
             <tr>
               <th>{t('Mitglied')}</th>
               <th>{t('Rolle')}</th>
-              <th>seit</th>
-              <th />
+              <th>{t('seit')}</th>
+              {canEdit && <th />}
             </tr>
           </thead>
           <tbody>
@@ -622,75 +672,79 @@ function HoldersCard({
                 <td>{h.member_name}</td>
                 <td>{h.role_name}</td>
                 <td>{formatDate(h.valid_from)}</td>
-                <td className="actions">
-                  <button
-                    type="button"
-                    className="link-button"
-                    onClick={async () => {
-                      if (
-                        await confirmDialog({
-                          title: t('Rolle von {member_name} beenden?', {
-                            member_name: h.member_name,
-                          }),
-                          confirmLabel: t('Beenden'),
-                        })
-                      ) {
-                        void onRun(() => portalApi.endHolder(dept.id, h.id))
-                      }
-                    }}
-                  >
-                    {t('Beenden')}
-                  </button>
-                </td>
+                {canEdit && (
+                  <td className="actions">
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={async () => {
+                        if (
+                          await confirmDialog({
+                            title: t('Rolle von {member_name} beenden?', {
+                              member_name: h.member_name,
+                            }),
+                            confirmLabel: t('Beenden'),
+                          })
+                        ) {
+                          void onRun(() => portalApi.endHolder(dept.id, h.id))
+                        }
+                      }}
+                    >
+                      {t('Beenden')}
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
       )}
-      <form
-        className="grid-3"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (!member || !role) return
-          void onRun(() =>
-            portalApi.addHolder(dept.id, { member: Number(member), role: Number(role) }),
-          ).then(() => setMember(''))
-        }}
-      >
-        <SelectField
-          label={t('Mitglied')}
-          value={member}
-          onChange={(e) => setMember(e.target.value)}
+      {canEdit && (
+        <form
+          className="grid-3"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (!member || !role) return
+            void onRun(() =>
+              portalApi.addHolder(dept.id, { member: Number(member), role: Number(role) }),
+            ).then(() => setMember(''))
+          }}
         >
-          <option value="">
-            {load === 'loading'
-              ? t('Mitglieder werden geladen …')
-              : load === 'failed'
-                ? t('Mitglieder konnten nicht geladen werden')
-                : t('bitte wählen')}
-          </option>
-          {options.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.last_name}, {m.first_name}
+          <SelectField
+            label={t('Mitglied')}
+            value={member}
+            onChange={(e) => setMember(e.target.value)}
+          >
+            <option value="">
+              {load === 'loading'
+                ? t('Mitglieder werden geladen …')
+                : load === 'failed'
+                  ? t('Mitglieder konnten nicht geladen werden')
+                  : t('bitte wählen')}
             </option>
-          ))}
-        </SelectField>
-        <SelectField label={t('Rolle')} value={role} onChange={(e) => setRole(e.target.value)}>
-          <option value="">{t('bitte wählen')}</option>
-          {roles.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name}
-            </option>
-          ))}
-        </SelectField>
-        <div className="field">
-          <span>&nbsp;</span>
-          <button type="submit" className="button button-primary" disabled={!member || !role}>
-            {t('Rolle vergeben')}
-          </button>
-        </div>
-      </form>
-      {load === 'failed' && (
+            {options.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.last_name}, {m.first_name}
+              </option>
+            ))}
+          </SelectField>
+          <SelectField label={t('Rolle')} value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="">{t('bitte wählen')}</option>
+            {roles.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </SelectField>
+          <div className="field">
+            <span>&nbsp;</span>
+            <button type="submit" className="button button-primary" disabled={!member || !role}>
+              {t('Rolle vergeben')}
+            </button>
+          </div>
+        </form>
+      )}
+      {canEdit && load === 'failed' && (
         <p className="alert alert-error" role="alert">
           {t('Die Mitglieder konnten nicht geladen werden.')}{' '}
           <button
