@@ -9,6 +9,7 @@ import type { DatePrecision } from '../../components/forms.ts'
 import { Freshness, LoadError } from '../../components/ui.tsx'
 import { ExportPanel } from '../../components/ExportPanel.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
 
 interface Column {
@@ -109,6 +110,8 @@ function loadListState(org: number): ListParams | null {
 
 export function MemberListPage() {
   const org = useActiveOrg()
+  // Bezeichnung der Untereinheiten in der Sprache der Oberfläche (z. B. „Zug“ / „Platoon“)
+  const terms = useTerms()
   const navigate = useNavigate()
   const canEdit = org.permissions.includes(PERM.membersEdit)
   const [params, setParams] = useState<ListParams>(
@@ -272,11 +275,11 @@ export function MemberListPage() {
         </select>
         {departments.data && departments.data.length > 0 && (
           <select
-            aria-label={org.department_label}
+            aria-label={terms.Sg}
             value={params.abteilung ?? ''}
             onChange={(e) => setParams((p) => ({ ...p, abteilung: e.target.value, page: 1 }))}
           >
-            <option value="">alle {org.department_label_plural}</option>
+            <option value="">{t('alle {pl}', { pl: terms.pl })}</option>
             {departments.data.map((d) => (
               <option key={d.id} value={d.id}>
                 {unitName(d)}
@@ -318,7 +321,7 @@ export function MemberListPage() {
                   checked={columns.includes(c.key)}
                   onChange={(e) => toggleColumn(c.key, e.target.checked)}
                 />
-                <span>{c.key === 'departments' ? org.department_label : c.label}</span>
+                <span>{c.key === 'departments' ? terms.Sg : c.label}</span>
               </label>
             ))}
           </div>
@@ -368,11 +371,11 @@ export function MemberListPage() {
                     >
                       {c.sort ? (
                         <button type="button" className="th-sort" onClick={() => sortBy(c.sort!)}>
-                          {c.key === 'departments' ? org.department_label : c.label}
+                          {c.key === 'departments' ? terms.Sg : c.label}
                           {sortMark(c.sort)}
                         </button>
                       ) : c.key === 'departments' ? (
-                        org.department_label
+                        terms.Sg
                       ) : (
                         c.label
                       )}

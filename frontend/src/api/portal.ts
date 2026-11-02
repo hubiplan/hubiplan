@@ -1,4 +1,5 @@
 // Zugänge: Abteilungsbereich, Mitgliederbereich, Anmeldelinks, Postausgang.
+import { t } from '../i18n/index.ts'
 import { api, listParams, request } from './client.ts'
 import type { ListQuery, Paged } from './client.ts'
 import type { CatalogModule, EffectiveTheme } from './orgs.ts'
@@ -150,17 +151,38 @@ export const DEPT_PERM = {
   entriesSubmit: 'dept.entries.submit',
 } as const
 
+// Beschriftungen erst beim Lesen übersetzen
 export const FIELD_LABELS: Record<string, string> = {
-  last_name: 'Name',
-  first_name: 'Vorname',
-  birth_date: 'Geburtsdatum',
-  gender: 'Geschlecht',
-  email: 'E-Mail',
-  phone: 'Telefon',
-  street: 'Straße und Hausnummer',
-  postal_code: 'PLZ',
-  city: 'Ort',
-  country: 'Land',
+  get last_name() {
+    return t('Name')
+  },
+  get first_name() {
+    return t('Vorname')
+  },
+  get birth_date() {
+    return t('Geburtsdatum')
+  },
+  get gender() {
+    return t('Geschlecht')
+  },
+  get email() {
+    return t('E-Mail')
+  },
+  get phone() {
+    return t('Telefon')
+  },
+  get street() {
+    return t('Straße und Hausnummer')
+  },
+  get postal_code() {
+    return t('PLZ')
+  },
+  get city() {
+    return t('Ort')
+  },
+  get country() {
+    return t('Land')
+  },
 }
 
 const dept = (id: number) => `/api/depts/${id}`

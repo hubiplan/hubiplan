@@ -4588,5 +4588,11 @@
   "Auf dieser Seite nicht zu sehen. Öffne zuerst die Seite aus Schritt 1.": "Not visible on this page. Open the page from step 1 first.",
   "Dafür fehlt dir ein Recht": "You lack a right for these",
   "Bisherige Benutzernamen in der Nextcloud": "Existing user names in the Nextcloud",
-  "Für Konten, die es in der Nextcloud schon gibt: je Zeile die Anmelde-E-Mail bei HUBIplan und der bisherige Benutzername. Wer hier steht, landet bei der ersten Anmeldung in seinem vorhandenen Konto mit allen Dateien. Wer fehlt, bekommt ein neues Konto. Nur eintragen, wenn es wirklich dieselbe Person ist.": "For accounts that already exist in the Nextcloud: one line each with the HUBIplan login email and the existing user name. Anyone listed here lands in their existing account with all files on first login. Anyone missing gets a new account. Only enter a line if it really is the same person."
+  "Für Konten, die es in der Nextcloud schon gibt: je Zeile die Anmelde-E-Mail bei HUBIplan und der bisherige Benutzername. Wer hier steht, landet bei der ersten Anmeldung in seinem vorhandenen Konto mit allen Dateien. Wer fehlt, bekommt ein neues Konto. Nur eintragen, wenn es wirklich dieselbe Person ist.": "For accounts that already exist in the Nextcloud: one line each with the HUBIplan login email and the existing user name. Anyone listed here lands in their existing account with all files on first login. Anyone missing gets a new account. Only enter a line if it really is the same person.",
+  "männlich": "male",
+  "weiblich": "female",
+  "divers": "diverse",
+  "PLZ": "Postcode",
+  ". Beides steht unter": ". Both are set under",
+  "alle {pl}": "all {pl}"
 }

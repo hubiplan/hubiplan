@@ -1,4 +1,5 @@
 // Mitgliederverwaltung: Liste, Aufnahme, Akte, Mitgliedsarten.
+import { t } from '../i18n/index.ts'
 import { api, requestBlob } from './client.ts'
 import type { AuditEntry } from './orgs.ts'
 import type { DatePrecision } from '../components/forms.ts'
@@ -69,11 +70,32 @@ export interface PickedMember {
 
 /** Geschlecht; leer = keine Angabe. */
 export type Gender = '' | 'männlich' | 'weiblich' | 'divers'
-export const GENDERS: { value: Gender; label: string }[] = [
-  { value: '', label: 'keine Angabe' },
-  { value: 'männlich', label: 'männlich' },
-  { value: 'weiblich', label: 'weiblich' },
-  { value: 'divers', label: 'divers' },
+// Beschriftung erst beim Lesen übersetzen (Sprache kann nach dem Laden wechseln)
+export const GENDERS: { readonly value: Gender; readonly label: string }[] = [
+  {
+    value: '',
+    get label() {
+      return t('keine Angabe')
+    },
+  },
+  {
+    value: 'männlich',
+    get label() {
+      return t('männlich')
+    },
+  },
+  {
+    value: 'weiblich',
+    get label() {
+      return t('weiblich')
+    },
+  },
+  {
+    value: 'divers',
+    get label() {
+      return t('divers')
+    },
+  },
 ]
 
 export interface MemberRow {

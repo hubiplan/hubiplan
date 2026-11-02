@@ -30,6 +30,8 @@ from django.db.models import Max
 from django.utils import timezone
 from django.utils.translation import gettext
 
+from core.i18n import date_text
+
 from .models import Booking, Donation, DonationSettings, DonationStatement
 
 EXEMPTION_YEARS = 5
@@ -83,33 +85,37 @@ def problems(cfg: DonationSettings, on: datetime.date | None = None) -> list[str
     on = on or timezone.localdate()
     if not cfg.enabled:
         return [
-            "Die Einheit ist nicht als steuerbegünstigt mit eigenem Bescheid eingetragen "
-            "(Schalter in den Einstellungen)."
+            gettext(
+                "Die Einheit ist nicht als steuerbegünstigt mit eigenem Bescheid eingetragen "
+                "(Schalter in den Einstellungen)."
+            )
         ]
     gaps = []
     if not cfg.purposes.strip():
-        gaps.append("begünstigte Zwecke")
+        gaps.append(gettext("begünstigte Zwecke"))
     if not cfg.tax_office.strip():
-        gaps.append("Finanzamt")
+        gaps.append(gettext("Finanzamt"))
     if not cfg.tax_number.strip():
-        gaps.append("Steuernummer")
+        gaps.append(gettext("Steuernummer"))
     if cfg.notice_date is None:
-        gaps.append("Datum des Bescheids")
+        gaps.append(gettext("Datum des Bescheids"))
     if cfg.notice == DonationSettings.Notice.EXEMPTION and not cfg.assessment_period.strip():
-        gaps.append("letzter Veranlagungszeitraum")
-    result = [f"Es fehlt: {', '.join(gaps)}."] if gaps else []
+        gaps.append(gettext("letzter Veranlagungszeitraum"))
+    result = [gettext("Es fehlt: {gaps}.").format(gaps=", ".join(gaps))] if gaps else []
     until = notice_valid_until(cfg)
     if until is not None and on > until:
         years = (
             EXEMPTION_YEARS if cfg.notice == DonationSettings.Notice.EXEMPTION else STATUTE_YEARS
         )
         result.append(
-            f"Der Bescheid vom {cfg.notice_date:%d.%m.%Y} ist älter als {years} Jahre. "
-            "Mit ihm dürfen keine Zuwendungsbestätigungen mehr ausgestellt werden "
-            "(§ 63 Abs. 5 AO). Bitte den neuen Bescheid eintragen."
+            gettext(
+                "Der Bescheid vom {date} ist älter als {years} Jahre. "
+                "Mit ihm dürfen keine Zuwendungsbestätigungen mehr ausgestellt werden "
+                "(§ 63 Abs. 5 AO). Bitte den neuen Bescheid eintragen."
+            ).format(date=date_text(cfg.notice_date), years=years)
         )
     if cfg.notice_date is not None and cfg.notice_date > on:
-        result.append("Das Datum des Bescheids liegt in der Zukunft.")
+        result.append(gettext("Das Datum des Bescheids liegt in der Zukunft."))
     return result
 
 
