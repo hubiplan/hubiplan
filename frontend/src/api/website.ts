@@ -342,6 +342,8 @@ export interface WebsiteText extends WebsiteTextSummary {
   gallery_interval: number
   /** Karussell beginnt mit einem zufälligen Bild statt mit dem ersten */
   gallery_random: boolean
+  /** Bildunterschriften unter Bild und Karussell auf der Webseite zeigen */
+  show_captions?: boolean
   /** Zeitleiste der Chronik (nur Textseite „geschichte“) */
   timeline: TimelineEntry[]
   has_timeline: boolean
@@ -363,6 +365,7 @@ export interface TextDraft {
   gallery?: number[]
   gallery_interval?: number
   gallery_random?: boolean
+  show_captions?: boolean
   timeline?: TimelineEntry[]
   timeline_newest_first?: boolean
 }

@@ -451,6 +451,7 @@ def publish(text: WebsiteText, user) -> WebsiteRevision:
     text.published_gallery = list(text.gallery or [])
     text.published_gallery_interval = text.gallery_interval
     text.published_gallery_random = text.gallery_random
+    text.published_show_captions = text.show_captions
     text.published_timeline = list(text.timeline or [])
     text.published_timeline_newest_first = text.timeline_newest_first
     text.published_at = now
@@ -465,6 +466,7 @@ def publish(text: WebsiteText, user) -> WebsiteRevision:
         gallery=list(text.gallery or []),
         gallery_interval=text.gallery_interval,
         gallery_random=text.gallery_random,
+        show_captions=text.show_captions,
         timeline=list(text.timeline or []),
         timeline_newest_first=text.timeline_newest_first,
         published_at=now,
@@ -515,6 +517,7 @@ def restore(text: WebsiteText, revision: WebsiteRevision, user) -> None:
     ]
     text.gallery_interval = revision.gallery_interval
     text.gallery_random = revision.gallery_random
+    text.show_captions = revision.show_captions
     text.timeline_newest_first = revision.timeline_newest_first
     text.updated_by = user
     text.save()

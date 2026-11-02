@@ -99,6 +99,8 @@ class WebsiteText(models.Model):
     )
     # Beginnt mit einem zufälligen Bild statt mit dem ersten der Liste
     gallery_random = models.BooleanField("zufälliges Startbild", default=False)
+    # Bildunterschrift unter Bild und Karussell auf der Webseite zeigen (Ralf 02.11., Standard aus)
+    show_captions = models.BooleanField("Bildunterschriften zeigen", default=False)
     # Zeitleiste der Chronik: [{"year", "until", "title", "text", "image"}]
     timeline = models.JSONField("Zeitleiste", default=list, blank=True)
     # Webseite zeigt die neuesten Einträge oben (Ralf 02.11., wahlweise)
@@ -112,6 +114,7 @@ class WebsiteText(models.Model):
     published_gallery = models.JSONField(default=list, blank=True)
     published_gallery_interval = models.PositiveSmallIntegerField(default=GALLERY_INTERVAL)
     published_gallery_random = models.BooleanField(default=False)
+    published_show_captions = models.BooleanField(default=False)
     published_timeline = models.JSONField(default=list, blank=True)
     published_timeline_newest_first = models.BooleanField(default=False)
     published_at = models.DateTimeField("veröffentlicht am", null=True, blank=True)
@@ -171,6 +174,7 @@ class WebsiteText(models.Model):
             or (self.gallery or []) != (self.published_gallery or [])
             or self.gallery_interval != self.published_gallery_interval
             or self.gallery_random != self.published_gallery_random
+            or self.show_captions != self.published_show_captions
             or (self.timeline or []) != (self.published_timeline or [])
             or self.timeline_newest_first != self.published_timeline_newest_first
         )
@@ -204,6 +208,7 @@ class WebsiteRevision(models.Model):
     gallery = models.JSONField(default=list, blank=True)
     gallery_interval = models.PositiveSmallIntegerField(default=GALLERY_INTERVAL)
     gallery_random = models.BooleanField(default=False)
+    show_captions = models.BooleanField(default=False)
     timeline = models.JSONField(default=list, blank=True)
     timeline_newest_first = models.BooleanField(default=False)
     published_at = models.DateTimeField(default=timezone.now)

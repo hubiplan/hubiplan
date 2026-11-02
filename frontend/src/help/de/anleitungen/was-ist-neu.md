@@ -10,6 +10,7 @@ Die neuesten Änderungen stehen oben.
 
 November 2026:
 
+- Webseite: Je Text lässt sich wählen, ob unter dem Bild und im Bilderkarussell die Bildunterschrift steht. Standard ist ohne Unterschrift, auch für bestehende Seiten.
 - Webseite: Neues Design „Klassisch“ mit hellem Kopf, farbiger Linie oben und Menüknöpfen in der Vereinsfarbe. Wer das bisherige Klassisch behalten will, speichert es vorher als Paket und spielt es als eigenes Design ein.
 - Webseite: Ein Design lässt sich als Paket speichern und von Plattformverwaltern als eigenes Design wieder einspielen, mit eigener Anordnung von Kopf, Fuß und Startseite (Webseite › Gestaltung › Design weitergeben).
 - Webseite: Die Chronik lässt sich als Zeitleiste pflegen, mit Ereignissen (Jahr oder Zeitraum), Kapiteln als Zwischenüberschriften und Excel-Import; auf Wunsch stehen die neuesten Einträge oben. Ein Ereignis kann bis zu sechs Bilder haben, wahlweise links, rechts, abwechselnd oder groß unter dem Text.

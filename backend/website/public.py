@@ -682,9 +682,11 @@ class SiteView:
             **self.unit_summary(u),
             "title": text.published_title if text else u.name,
             "text": content.public_body(text.published_body, self.site) if text else "",
+            "image": self.shown_image(text) if text else None,
             "gallery": self.gallery(text) if text else [],
             "gallery_interval": text.published_gallery_interval if text else GALLERY_INTERVAL,
             "gallery_random": text.published_gallery_random if text else False,
+            "show_captions": text.published_show_captions if text else False,
             "roles": roles,
             "social": self.social(u) if self.site.block_on("social") else [],
             # Eigene Homepage der Untereinheit, nur wenn dort freigegeben
@@ -849,7 +851,8 @@ class SiteView:
             "slug": t.slug,
             "title": t.published_title,
             "text": content.public_body(t.published_body, self.site),
-            "image": self.image(t.published_image),
+            "image": self.shown_image(t),
+            "show_captions": t.published_show_captions,
             "timeline": self.timeline(t) if t.slug == TIMELINE_SLUG else [],
             # Reihenfolge auf der Webseite; „timeline“ bleibt aufsteigend sortiert, damit
             # die Webseite Kapitel und ihre Ereignisse zusammenhalten kann
@@ -901,11 +904,12 @@ class SiteView:
         return {
             "title": t.published_title,
             "text": content.public_body(t.published_body, self.site),
-            "image": self.image(t.published_image),
+            "image": self.shown_image(t),
             # Bilderkarussell (leer: nur das einzelne Bild wie bisher)
             "gallery": self.gallery(t),
             "gallery_interval": t.published_gallery_interval,
             "gallery_random": t.published_gallery_random,
+            "show_captions": t.published_show_captions,
         }
 
     def gallery(self, t: WebsiteText) -> list[dict]:
@@ -914,7 +918,19 @@ class SiteView:
         if not ids:
             return []
         by_id = {i.pk: i for i in WebsiteImage.objects.filter(website=self.site, pk__in=ids)}
-        return [self.image(by_id[pk]) for pk in ids if pk in by_id]
+        return [self.captioned(self.image(by_id[pk]), t) for pk in ids if pk in by_id]
+
+    def shown_image(self, t: WebsiteText) -> dict | None:
+        """Bild oben auf der Seite, mit Bildunterschrift nur wenn gewünscht."""
+        return self.captioned(self.image(t.published_image), t)
+
+    @staticmethod
+    def captioned(image: dict | None, t: WebsiteText) -> dict | None:
+        """Bildunterschrift nur liefern, wenn der Text sie zeigen soll (Ralf 02.11.,
+        Standard aus). Der Alternativtext bleibt, auch wenn er aus der Unterschrift stammt."""
+        if image is not None and not t.published_show_captions:
+            image["caption"] = ""
+        return image
 
     # --- Kontakt ---
 
