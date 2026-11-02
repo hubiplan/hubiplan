@@ -79,6 +79,7 @@ class TestZeitleiste:
             "title": "Gründung",
             "text": "",
             "images": [],
+            "image_position": "auto",
         }
         public = f"/api/public/site/v1/{site.public_key}/pages/geschichte/"
         assert Client().get(public).status_code == 404  # noch nicht veröffentlicht
@@ -219,6 +220,26 @@ class TestZeitleiste:
         assert t.revisions.get().timeline[0]["images"] == [poster["id"]]
         assert t.timeline[0]["title"] == "Neue Fahne"
         assert not WebsiteImage.objects.filter(pk=image["id"]).exists()
+
+    def test_bildposition(self, orgs, editor, api, site):
+        c = api(editor)
+        pk = chronicle(c, orgs["a"])
+        entries = [
+            {"year": 1920, "title": "Gründung", "image_position": "below"},
+            {"year": 1930, "title": "Fahne"},
+            {"kind": "chapter", "year": 1939, "title": "Krieg", "image_position": "left"},
+        ]
+        resp = c.put(url(orgs["a"], f"texts/{pk}/"), {"timeline": entries}, "application/json")
+        assert resp.status_code == 200, resp.content
+        # Standard automatisch (abwechselnd); Kapitel haben keine Bildposition
+        assert [e["image_position"] for e in resp.json()["timeline"]] == ["below", "auto", "auto"]
+        c.post(url(orgs["a"], f"texts/{pk}/publish/"))
+        public = f"/api/public/site/v1/{site.public_key}/pages/geschichte/"
+        timeline = Client().get(public).json()["timeline"]
+        assert timeline[0]["image_position"] == "below"
+        bad = [{"year": 1920, "title": "x", "image_position": "oben"}]
+        resp = c.put(url(orgs["a"], f"texts/{pk}/"), {"timeline": bad}, "application/json")
+        assert resp.status_code == 400
 
     def test_hoechstens_sechs_bilder(self, orgs, editor, api, site):
         c = api(editor)

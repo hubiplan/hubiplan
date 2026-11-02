@@ -4,8 +4,9 @@ Neben Ereignissen gibt es Kapitel (``kind`` = ``chapter``, Ralf 02.11.), z. B.
 „Gründerjahre 1920–1938“: eine Zwischenüberschrift, unter der die Webseite alle
 Ereignisse ab ihrem Jahr bis zum nächsten Kapitel zeigt. Kapitel haben kein Bild.
 
-Ein Ereignis hat bis zu sechs Bilder (``images``, Ralf 02.11.). Ältere Einträge hatten
-ein einzelnes ``image``; :func:`entry_images` liest beide Formen.
+Ein Ereignis hat bis zu sechs Bilder (``images``, Ralf 02.11.) und eine Bildposition
+(``image_position``: auto = abwechselnd, left, right, below = groß unter dem Text).
+Ältere Einträge hatten ein einzelnes ``image``; :func:`entry_images` liest beide Formen.
 
 Die Zeitleiste gehört zur Textseite „Chronik“ (Adresse ``geschichte``) und wird mit ihr
 als Entwurf gespeichert und veröffentlicht. Die Webseite zeigt sie nach Jahren sortiert.
@@ -32,6 +33,8 @@ MIN_YEAR = 1000
 MAX_YEAR = 2999
 EVENT, CHAPTER = "event", "chapter"
 KINDS = (EVENT, CHAPTER)
+# Bildposition je Ereignis (Ralf 02.11.): automatisch = abwechselnd links/rechts
+POSITIONS = ("auto", "left", "right", "below")
 CHAPTER_WORDS = ("kapitel", "abschnitt", "chapter", "section")
 COLUMNS = {
     "kind": ("art", "typ", "kind", "type"),
@@ -124,8 +127,11 @@ def clean_timeline(value, website) -> list[dict]:
         kind = raw.get("kind") or EVENT
         if kind not in KINDS:
             raise ValidationError(gettext("Ungültige Zeitleiste."))
+        position = raw.get("image_position") or "auto"
+        if position not in POSITIONS:
+            raise ValidationError(gettext("Ungültige Zeitleiste."))
         if kind == CHAPTER:
-            images = []
+            images, position = [], "auto"
         if len(images) > MAX_TIMELINE_IMAGES:
             raise ValidationError(
                 gettext("Eintrag {n}: höchstens {max} Bilder.").format(
@@ -139,6 +145,7 @@ def clean_timeline(value, website) -> list[dict]:
             "title": str(raw.get("title") or "").strip(),
             "text": str(raw.get("text") or "").strip().replace("\r\n", "\n"),
             "images": images,
+            "image_position": position,
         }
         if entry["until"] == entry["year"]:
             entry["until"] = None
@@ -222,6 +229,7 @@ def read_import(path, file_name: str) -> dict:
             "title": str(cell(row, "title")).strip(),
             "text": str(cell(row, "text")).strip().replace("\r\n", "\n"),
             "images": [],
+            "image_position": "auto",
         }
         problems = entry_errors(entry)
         if str(until_raw).strip() and entry["until"] is None:

@@ -1,9 +1,9 @@
 // Zeitleiste der Chronik: kurze Einträge mit Jahr oder Zeitraum statt einer Textwand.
 import { useState } from 'react'
 import { contentApi } from '../../api/website.ts'
-import type { TimelineEntry, WebsiteImage } from '../../api/website.ts'
+import type { ImagePosition, TimelineEntry, WebsiteImage } from '../../api/website.ts'
 import { errorMessage } from '../../components/forms.ts'
-import { Alert, Checkbox, Field } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t, tn } from '../../i18n/index.ts'
 import { ImagePicker } from './images.tsx'
@@ -252,6 +252,7 @@ function EntryForm({
   const [title, setTitle] = useState(initial.title)
   const [text, setText] = useState(initial.text)
   const [images, setImages] = useState<number[]>(initial.images)
+  const [position, setPosition] = useState<ImagePosition>(initial.image_position)
   const [checked, setChecked] = useState(false)
   const chapter = initial.kind === 'chapter'
   const entry: TimelineEntry = {
@@ -261,6 +262,7 @@ function EntryForm({
     title,
     text,
     images,
+    image_position: chapter ? 'auto' : position,
   }
   const errors = checked ? entryErrors(entry) : {}
 
@@ -320,6 +322,19 @@ function EntryForm({
           onChange={setImages}
           onImagesChanged={onImagesChanged}
         />
+      )}
+      {!chapter && images.length > 0 && (
+        <SelectField
+          label={t('Bildposition')}
+          value={position}
+          hint={t('Auf dem Handy stehen die Bilder immer unter dem Text.')}
+          onChange={(e) => setPosition(e.target.value as ImagePosition)}
+        >
+          <option value="auto">{t('automatisch (abwechselnd links und rechts)')}</option>
+          <option value="left">{t('links')}</option>
+          <option value="right">{t('rechts')}</option>
+          <option value="below">{t('groß unter dem Text')}</option>
+        </SelectField>
       )}
       <div className="button-row">
         <button type="button" className="button button-primary" onClick={submit}>

@@ -884,6 +884,7 @@ class SiteView:
                     # bis zu sechs Bilder; „image“ = erstes Bild für ältere Webseiten
                     "images": images,
                     "image": images[0] if images else None,
+                    "image_position": e.get("image_position") or "auto",
                 }
             )
         return result

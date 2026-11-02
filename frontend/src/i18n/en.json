@@ -4686,5 +4686,11 @@
   "Schützt den Anmeldecode. Die Nextcloud-App „user_oidc“ nutzt PKCE von selbst; nur für ältere Anwendungen ohne PKCE ausschalten.": "Protects the login code. The Nextcloud app “user_oidc” uses PKCE by itself; only switch this off for older applications without PKCE.",
   "Neueste Einträge oben": "Newest entries at the top",
   "Die Webseite zeigt die Zeitleiste dann vom heutigen Jahr rückwärts; Kapitel stehen weiter über ihren Ereignissen.": "The website then shows the timeline from the present backwards; chapters stay above their events.",
-  "Bis zu {n} Bilder, z. B. Plakate aus mehreren Jahren. Die Webseite zeigt sie klein nebeneinander; groß lässt sich durch sie blättern.": "Up to {n} pictures, e.g. posters from several years. The website shows them small side by side; in the large view you can page through them."
+  "Bis zu {n} Bilder, z. B. Plakate aus mehreren Jahren. Die Webseite zeigt sie klein nebeneinander; groß lässt sich durch sie blättern.": "Up to {n} pictures, e.g. posters from several years. The website shows them small side by side; in the large view you can page through them.",
+  "Bildposition": "Picture position",
+  "Auf dem Handy stehen die Bilder immer unter dem Text.": "On a phone the pictures always appear below the text.",
+  "automatisch (abwechselnd links und rechts)": "automatic (alternating left and right)",
+  "links": "left",
+  "rechts": "right",
+  "groß unter dem Text": "large below the text"
 }
