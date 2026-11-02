@@ -4683,5 +4683,7 @@
   "Namen aus Chronik und Ehrungen entfernen": "Remove name from chronicle and honours",
   "Die kürzere Frist gilt erst ab {x}. Bis dahin wird weiter nach {n} Monaten gelöscht, damit ein Versehen auffällt, bevor Daten weg sind.": "The shorter period only applies from {x}. Until then, data is still deleted after {n} months, so that a mistake is noticed before data is gone.",
   "Nur mit PKCE (S256)": "Only with PKCE (S256)",
-  "Schützt den Anmeldecode. Die Nextcloud-App „user_oidc“ nutzt PKCE von selbst; nur für ältere Anwendungen ohne PKCE ausschalten.": "Protects the login code. The Nextcloud app “user_oidc” uses PKCE by itself; only switch this off for older applications without PKCE."
+  "Schützt den Anmeldecode. Die Nextcloud-App „user_oidc“ nutzt PKCE von selbst; nur für ältere Anwendungen ohne PKCE ausschalten.": "Protects the login code. The Nextcloud app “user_oidc” uses PKCE by itself; only switch this off for older applications without PKCE.",
+  "Neueste Einträge oben": "Newest entries at the top",
+  "Die Webseite zeigt die Zeitleiste dann vom heutigen Jahr rückwärts; Kapitel stehen weiter über ihren Ereignissen.": "The website then shows the timeline from the present backwards; chapters stay above their events."
 }

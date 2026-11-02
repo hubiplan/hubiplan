@@ -100,6 +100,8 @@ class WebsiteText(models.Model):
     gallery_random = models.BooleanField("zufälliges Startbild", default=False)
     # Zeitleiste der Chronik: [{"year", "until", "title", "text", "image"}]
     timeline = models.JSONField("Zeitleiste", default=list, blank=True)
+    # Webseite zeigt die neuesten Einträge oben (Ralf 02.11., wahlweise)
+    timeline_newest_first = models.BooleanField("neueste Einträge oben", default=False)
     # Veröffentlicht
     published_title = models.CharField(max_length=MAX_TITLE, blank=True)
     published_body = models.TextField(blank=True)
@@ -110,6 +112,7 @@ class WebsiteText(models.Model):
     published_gallery_interval = models.PositiveSmallIntegerField(default=GALLERY_INTERVAL)
     published_gallery_random = models.BooleanField(default=False)
     published_timeline = models.JSONField(default=list, blank=True)
+    published_timeline_newest_first = models.BooleanField(default=False)
     published_at = models.DateTimeField("veröffentlicht am", null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
@@ -168,6 +171,7 @@ class WebsiteText(models.Model):
             or self.gallery_interval != self.published_gallery_interval
             or self.gallery_random != self.published_gallery_random
             or (self.timeline or []) != (self.published_timeline or [])
+            or self.timeline_newest_first != self.published_timeline_newest_first
         )
 
     def clean(self):
@@ -200,6 +204,7 @@ class WebsiteRevision(models.Model):
     gallery_interval = models.PositiveSmallIntegerField(default=GALLERY_INTERVAL)
     gallery_random = models.BooleanField(default=False)
     timeline = models.JSONField(default=list, blank=True)
+    timeline_newest_first = models.BooleanField(default=False)
     published_at = models.DateTimeField(default=timezone.now)
     published_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"

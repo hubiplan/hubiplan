@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { contentApi } from '../../api/website.ts'
 import type { TimelineEntry, WebsiteImage } from '../../api/website.ts'
 import { errorMessage } from '../../components/forms.ts'
-import { Alert, Field } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t, tn } from '../../i18n/index.ts'
 import { ImageChoice } from './images.tsx'
@@ -27,6 +27,8 @@ export function TimelineEditor({
   units,
   onChange,
   onImagesChanged,
+  newestFirst,
+  onNewestFirstChange,
 }: {
   textId: number
   value: TimelineEntry[]
@@ -35,6 +37,8 @@ export function TimelineEditor({
   units: Unit[]
   onChange: (entries: TimelineEntry[]) => void
   onImagesChanged: () => void
+  newestFirst: boolean
+  onNewestFirstChange: (value: boolean) => void
 }) {
   const org = useActiveOrg()
   // Nummer des bearbeiteten Eintrags, -1 = neues Ereignis, -2 = neues Kapitel
@@ -105,6 +109,14 @@ export function TimelineEditor({
           'Kapitel (z. B. „Gründerjahre 1920–1938“) sind Zwischenüberschriften: Alle Ereignisse ab ihrem Jahr stehen darunter, bis das nächste Kapitel beginnt.',
         )}
       </p>
+      <Checkbox
+        label={t('Neueste Einträge oben')}
+        hint={t(
+          'Die Webseite zeigt die Zeitleiste dann vom heutigen Jahr rückwärts; Kapitel stehen weiter über ihren Ereignissen.',
+        )}
+        checked={newestFirst}
+        onChange={onNewestFirstChange}
+      />
       {value.length > 0 && (
         <ol className="timeline-list">
           {value.map((e, index) =>

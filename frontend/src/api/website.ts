@@ -281,6 +281,7 @@ export interface WebsiteText extends WebsiteTextSummary {
   /** Zeitleiste der Chronik (nur Textseite „geschichte“) */
   timeline: TimelineEntry[]
   has_timeline: boolean
+  timeline_newest_first?: boolean
   published_title: string
   published_body: string
   revisions: { id: number; title: string; published_at: string; published_by: string }[]
@@ -299,6 +300,7 @@ export interface TextDraft {
   gallery_interval?: number
   gallery_random?: boolean
   timeline?: TimelineEntry[]
+  timeline_newest_first?: boolean
 }
 
 /** Eintrag der Zeitleiste: ein Jahr oder ein Zeitraum (`until`), kurz gehalten.

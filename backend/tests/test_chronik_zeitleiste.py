@@ -98,6 +98,29 @@ class TestZeitleiste:
         data = c.post(url(orgs["a"], f"texts/{pk}/revisions/{rev}/restore/")).json()
         assert len(data["timeline"]) == 3
 
+    def test_neueste_oben(self, orgs, editor, api, site):
+        """Ralf 02.11.: wahlweise neueste Einträge oben; die Liste bleibt aufsteigend."""
+        c = api(editor)
+        pk = chronicle(c, orgs["a"])
+        data = c.get(url(orgs["a"], f"texts/{pk}/")).json()
+        assert data["timeline_newest_first"] is False
+        c.put(url(orgs["a"], f"texts/{pk}/"), {"timeline": ENTRIES}, "application/json")
+        c.post(url(orgs["a"], f"texts/{pk}/publish/"))
+        data = c.put(
+            url(orgs["a"], f"texts/{pk}/"), {"timeline_newest_first": True}, "application/json"
+        ).json()
+        assert data["timeline_newest_first"] is True and data["has_changes"] is True
+        public = f"/api/public/site/v1/{site.public_key}/pages/geschichte/"
+        assert Client().get(public).json()["timeline_newest_first"] is False
+        c.post(url(orgs["a"], f"texts/{pk}/publish/"))
+        page = Client().get(public).json()
+        assert page["timeline_newest_first"] is True
+        assert [e["year"] for e in page["timeline"]] == [1920, 1939, 1949]
+        # Frühere Fassung bringt auch die Reihenfolge zurück
+        old = c.get(url(orgs["a"], f"texts/{pk}/")).json()["revisions"][1]["id"]
+        data = c.post(url(orgs["a"], f"texts/{pk}/revisions/{old}/restore/")).json()
+        assert data["timeline_newest_first"] is False
+
     @pytest.mark.parametrize(
         "entry",
         [

@@ -91,6 +91,7 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
                 "gallery_interval": t.gallery_interval,
                 "gallery_random": t.gallery_random,
                 "timeline": list(t.timeline or []),
+                "timeline_newest_first": t.timeline_newest_first,
                 "has_timeline": is_chronicle(t),
                 "published_title": t.published_title,
                 "published_body": t.published_body,
@@ -134,6 +135,7 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "gallery_interval",
             "gallery_random",
             "timeline",
+            "timeline_newest_first",
         ]
         extra_kwargs = {"kind": {"required": False}}
 

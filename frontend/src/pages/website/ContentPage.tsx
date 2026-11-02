@@ -331,6 +331,7 @@ function TextForm({
     gallery_interval: text.gallery_interval ?? 7,
     gallery_random: text.gallery_random ?? false,
     timeline: text.timeline ?? [],
+    timeline_newest_first: text.timeline_newest_first ?? false,
   })
   const { values: v, set, errors } = form
   const [current, setCurrent] = useState(text)
@@ -451,6 +452,8 @@ function TextForm({
           images={images.data ?? []}
           units={units}
           onChange={(entries) => set('timeline', entries)}
+          newestFirst={v.timeline_newest_first}
+          onNewestFirstChange={(value) => set('timeline_newest_first', value)}
           onImagesChanged={reloadImages}
         />
       )}
