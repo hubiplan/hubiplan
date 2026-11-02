@@ -32,7 +32,7 @@ MAX_REDIRECTS = 4
 TIMEOUT = 8
 PREVIEW_MAX_SIDE = 1200
 MAX_PIXELS = 40_000_000
-FORMATS = {"PNG", "JPEG", "WEBP", "GIF"}
+FORMATS = {"PNG", "JPEG", "MPO", "WEBP", "GIF"}
 HEADERS = {"User-Agent": "HUBIplan-Vorschau/1.0", "Accept": "text/html,image/*;q=0.9"}
 
 # Reihenfolge: das erste vorhandene gewinnt

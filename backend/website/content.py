@@ -8,14 +8,17 @@ import re
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext
 from PIL import Image, ImageOps, UnidentifiedImageError
 from rest_framework.exceptions import ValidationError
+
+from core.filecheck import JPEG_FORMATS, heic_message, is_heic
 
 from .content_models import WebsiteImage, WebsiteRevision, WebsiteText
 
 MAX_BYTES = 15 * 1024 * 1024
 MAX_PIXELS = 60_000_000
-ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
+ALLOWED_FORMATS = {"PNG", "WEBP"} | JPEG_FORMATS
 FULL_SIZE = 2000
 SMALL_SIZE = 800
 ORIGINAL_SIZE = 4000
@@ -24,14 +27,16 @@ MAX_REVISIONS = 5  # Ralf 01.11.: nur die letzten 5 Fassungen behalten, ältere 
 
 def _open(upload) -> Image.Image:
     if upload.size > MAX_BYTES:
-        raise ValidationError({"file": "Das Bild darf höchstens 15 MB groß sein."})
+        raise ValidationError({"file": gettext("Das Bild darf höchstens 15 MB groß sein.")})
     try:
         upload.seek(0)
         probe = Image.open(upload)
         if probe.format not in ALLOWED_FORMATS:
-            raise ValidationError({"file": "Bitte ein JPEG-, PNG- oder WebP-Bild hochladen."})
+            raise ValidationError(
+                {"file": gettext("Bitte ein JPEG-, PNG- oder WebP-Bild hochladen.")}
+            )
         if probe.width * probe.height > MAX_PIXELS:
-            raise ValidationError({"file": "Das Bild hat zu viele Pixel."})
+            raise ValidationError({"file": gettext("Das Bild hat zu viele Pixel.")})
         probe.verify()
         upload.seek(0)
         img = Image.open(upload)
@@ -39,7 +44,10 @@ def _open(upload) -> Image.Image:
     except ValidationError:
         raise
     except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
-        raise ValidationError({"file": "Die Datei ist kein gültiges Bild."}) from exc
+        upload.seek(0)
+        if is_heic(upload.read(16)):
+            raise ValidationError({"file": heic_message()}) from exc
+        raise ValidationError({"file": gettext("Die Datei ist kein gültiges Bild.")}) from exc
     return ImageOps.exif_transpose(img)
 
 

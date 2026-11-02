@@ -15,7 +15,27 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter, UnidentifiedImageErro
 
 MAX_LOGO_PIXELS = 25_000_000
 LOGO_MAX_SIDE = 1024
-LOGO_FORMATS = {"PNG", "JPEG", "WEBP"}
+# MPO = JPEG mit Zusatzbildern (iPhone-Fotos mit HDR- oder Tiefenkarte); Pillow
+# meldet sie nicht als JPEG, öffnet aber das Hauptbild wie ein JPEG (Ralf 02.11.).
+JPEG_FORMATS = {"JPEG", "MPO"}
+LOGO_FORMATS = {"PNG", "WEBP"} | JPEG_FORMATS
+
+# HEIC/HEIF (iPhone-Standard) kann Pillow nicht lesen; Kennung im ftyp-Kasten
+HEIC_BRANDS = {b"heic", b"heix", b"hevc", b"hevx", b"heim", b"heis", b"mif1", b"msf1"}
+
+
+def is_heic(head: bytes) -> bool:
+    """Erkennt HEIC/HEIF am Dateianfang (für eine verständliche Fehlermeldung)."""
+    return head[4:8] == b"ftyp" and head[8:12] in HEIC_BRANDS
+
+
+def heic_message() -> str:
+    return gettext(
+        "HEIC-Bilder (iPhone) werden nicht unterstützt. Bitte als JPEG speichern "
+        "oder am iPhone unter Einstellungen > Kamera > Formate "
+        "„Maximale Kompatibilität“ wählen."
+    )
+
 
 # Dateianfang → Dateiart
 MAGIC: tuple[tuple[bytes, str], ...] = (

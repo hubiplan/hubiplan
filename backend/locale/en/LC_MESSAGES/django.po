@@ -4688,3 +4688,14 @@ msgstr "This design does not exist or is not released for this website."
 
 msgid "Heller Kopf mit farbiger Linie, Menü als Knöpfe in der Vereinsfarbe, Karten mit Schatten."
 msgstr "Light header with a coloured line, menu as buttons in the club colour, cards with shadows."
+
+msgid "Das Bild darf höchstens 15 MB groß sein."
+msgstr "The image may be at most 15 MB."
+
+msgid ""
+"HEIC-Bilder (iPhone) werden nicht unterstützt. Bitte als JPEG speichern oder "
+"am iPhone unter Einstellungen > Kamera > Formate „Maximale Kompatibilität“ "
+"wählen."
+msgstr ""
+"HEIC images (iPhone) are not supported. Please save as JPEG or choose “Most "
+"Compatible” on the iPhone under Settings > Camera > Formats."

@@ -281,3 +281,36 @@ class TestMigration:
         only_unit.refresh_from_db()
         both.refresh_from_db()
         assert only_unit.department_id == unit.pk and both.department_id is None
+
+
+def mpo(size=(600, 400), name="IMG_4991.jpg"):
+    """JPEG mit Zusatzbild wie iPhone-Fotos mit HDR-Karte (Pillow-Format „MPO“)."""
+    buf = io.BytesIO()
+    Image.new("RGB", size, "green").save(
+        buf, "MPO", save_all=True, append_images=[Image.new("RGB", (150, 100), "gray")]
+    )
+    return SimpleUploadedFile(name, buf.getvalue(), content_type="image/jpeg")
+
+
+class TestIphoneFotos:
+    """Ralf 02.11.: IMG_4991.jpg per Strg+V wurde als „kein JPEG“ abgelehnt."""
+
+    def test_mpo_wird_als_jpeg_angenommen(self, orgs, editor, api, site):
+        resp = api(editor).post(
+            url(orgs["a"], "images/"),
+            {"file": mpo((300, 300)), "original": mpo(), "crop": json.dumps(CROP)},
+        )
+        assert resp.status_code == 201, resp.content
+        image = WebsiteImage.objects.get(pk=resp.json()["id"])
+        assert size_of(image.file) == (300, 300) and size_of(image.original) == (600, 400)
+        with image.original.open("rb") as f:
+            assert Image.open(f).format == "JPEG"  # nur das Hauptbild, als echtes JPEG
+
+    def test_heic_mit_verstaendlicher_meldung(self, orgs, editor, api, site):
+        heic = b"\x00\x00\x00\x18ftypheic\x00\x00\x00\x00mif1heic" + b"\x00" * 64
+        resp = api(editor).post(
+            url(orgs["a"], "images/"),
+            {"file": SimpleUploadedFile("IMG_1.heic", heic, content_type="image/heic")},
+        )
+        assert resp.status_code == 400
+        assert "HEIC" in str(resp.json()["file"])
