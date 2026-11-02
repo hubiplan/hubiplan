@@ -5,3 +5,6 @@ class OidcConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "oidc"
     verbose_name = "Anmeldung für andere Dienste (OpenID Connect)"
+
+    def ready(self) -> None:
+        from . import signals  # noqa: F401

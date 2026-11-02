@@ -121,6 +121,9 @@ def profile(client: Client, user) -> Profile:
         groups += [u.name for u in units]
     if client.groups_members and is_member:
         groups.append(MEMBERS_GROUP)
+    # Gruppe aller Konten über HUBIplan: Ihr Gruppen-Admin (Dienstkonto) kann sie deaktivieren
+    if client.account_group:
+        groups.append(client.account_group)
     seen: set[str] = set()
     unique = []
     for g in map(_group, groups):
