@@ -22,9 +22,9 @@ Nur, was bei der eintragenden Einheit gilt (Rechte höherer Einheiten zählen ni
 - bei „zusätzlich Mitglieder mit Zugang“ (nur Vereine): jedes Konto mit
   Mitgliederzugang und laufender Mitgliedschaft.
 
-Austritt, Ende der Rolle oder gesperrtes Konto: Die nächste Anmeldung scheitert.
-Laufende Nextcloud-Sitzungen beendet HUBIplan nicht; zum sofortigen Sperren das Konto in
-der Nextcloud deaktivieren.
+Austritt, Ende der Rolle oder gesperrtes Konto: Die nächste Anmeldung scheitert. Laufende
+Nextcloud-Sitzungen endet HUBIplan nur mit „Konten automatisch deaktivieren“ (siehe unten und
+„Wie lange eine Anmeldung gilt“); sonst das Konto in der Nextcloud von Hand deaktivieren.
 
 Optional „nur mit Zwei-Faktor-Anmeldung“: Die HUBIplan-Sitzung muss mit zweitem Faktor
 entstanden sein (`amr` enthält `mfa`), sonst erklärt die Anmeldeseite, was zu tun ist.
@@ -120,6 +120,38 @@ Einrichtung in der Nextcloud:
 4. Konten, die schon vorher da waren, kommen bei ihrer nächsten Anmeldung über HUBIplan in die
    Gruppe. Erst dann kann das Dienstkonto sie deaktivieren.
 
+## Wie lange eine Anmeldung gilt
+
+HUBIplan stellt nur den Code und einen kurzen Zugriffsschlüssel aus (keine Refresh-Token). Wie
+lange man danach in der Nextcloud angemeldet bleibt, bestimmt allein die Nextcloud
+(`config.php`). In der Vereins-Nextcloud sind keine eigenen Werte gesetzt, es gelten die
+Standards (Stand 02.11.2026):
+
+| Wert | Standard | Bedeutung |
+|---|---|---|
+| `session_lifetime` | 86400 (24 h) | Sitzung ohne Aktivität |
+| `session_keepalive` | `true` | offene Browser-Tabs halten die Sitzung am Leben |
+| `remember_login_cookie_lifetime` | 1296000 (15 Tage) | „angemeldet bleiben“ |
+| `auto_logout` | `false` | kein Abmelden beim Schließen des Browsers |
+| `token_auth_enforced` | `false` | Sync-Apps auch ohne App-Passwort |
+
+Sync-Apps (Desktop, Handy) bekommen bei der Einrichtung ein App-Passwort, das bis zum Widerruf
+gilt; eine Anmeldung über HUBIplan läuft dort nicht erneut.
+
+Was bei Sperre, Rollenende oder Austritt passiert:
+
+- **Mit „Konten automatisch deaktivieren“**: HUBIplan deaktiviert das Konto sofort nach der
+  Änderung (Hintergrundauftrag) und spätestens im nächtlichen Abgleich, bei Rollen mit Enddatum
+  in der Nacht nach dem Ende. Die Nextcloud lässt deaktivierte Konten nicht mehr hinein: Browser-
+  Sitzungen enden bei der nächsten Anfrage, App-Passwörter und Sync-Apps greifen nicht mehr.
+  Ausnahme: Die Obergrenze hält den Abgleich an, dann erst nach „Jetzt abgleichen“.
+- **Ohne**: Nur die nächste Anmeldung über HUBIplan scheitert. Eine offene Sitzung kann mit
+  Keepalive bzw. „angemeldet bleiben“ bis zu 15 Tage weiterlaufen, App-Passwörter unbegrenzt.
+  Dann das Konto in der Nextcloud von Hand deaktivieren.
+
+Kürzer geht es in der Nextcloud, z. B. `occ config:system:set session_lifetime --type=integer
+--value=28800` (8 h) oder `remember_login_cookie_lifetime` auf 0 (kein „angemeldet bleiben“).
+
 ## Ablauf und Schutz
 
 - Nur Authorization Code Flow, nur Clients mit Geheimnis (`client_secret_basic` oder
@@ -127,7 +159,9 @@ Einrichtung in der Nextcloud:
   wird beim Anlegen bzw. „Neues Geheimnis“ einmal angezeigt.
 - Rückleitung nur an `<Nextcloud>/apps/user_oidc/code` bzw. mit `/index.php` (genauer
   Vergleich). Unbekannte Rückleitungen werden nie benutzt.
-- PKCE nur mit `S256` (`plain` wird abgelehnt), optional.
+- PKCE nur mit `S256` (`plain` wird abgelehnt), optional. `user_oidc` (ab 8.x) nutzt PKCE
+  von selbst, sobald die Discovery `S256` anbietet; abschalten ließe es sich nur systemweit in
+  der Nextcloud (`user_oidc` › `use_pkce` = `false`, nicht tun).
 - Code 60 Sekunden, nur einmal einlösbar; Zugriffsschlüssel 5 Minuten; keine
   Refresh-Token. Beides nur im Cache (Redis), nie in der Datenbank.
 - ID-Token RS256; Schlüssel `PRIVATE_ROOT/oidc/signing.pem` (in den Backups enthalten),
