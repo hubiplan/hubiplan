@@ -166,6 +166,23 @@ docker compose -f docker-compose.server.yml exec backend python manage.py seed_t
 docker compose -f docker-compose.server.yml exec backend python manage.py seed_testdata --remove-legacy-demo
 ```
 
+### Zusätzlicher Demoverein mit Korps
+
+„Schützenverein Musterstadt 1823 e.V.“ direkt unter der Plattform: sieben Korps, darunter
+Züge (das Tambourkorps ohne Züge), alle schaltbaren Module und Zusatzfunktionen an, mit
+erfundenen Daten für Mitglieder, Kasse, Beiträge, Termine, Würden, Wettbewerbe, Meldungen,
+Rundschreiben-Entwurf und Webseite mit Chronik (`organizations/demo_korps.py`). Wiederholbar;
+die Pilotorganisationen und alle anderen Daten bleiben unverändert.
+
+```bash
+docker compose -f docker-compose.server.yml exec backend python manage.py seed_demoverein
+```
+
+Testzugänge: `vorstand@`, `kasse@`, `schriftfuehrer@sv-musterstadt.test` (Vereinsrollen),
+`major.jaeger@sv-musterstadt.test` (Major des Jägerkorps, über den Mitgliederbereich) und
+`mitglied@sv-musterstadt.test` (einfaches Mitglied). Ohne `--password` wird ein zufälliges
+Passwort erzeugt und einmal ausgegeben.
+
 ## Tests gegen PostgreSQL
 
 Nur lokal, siehe „Ausrollen“: `scripts/test.sh` (mit `BACKUP_TEST=1` auch Backup
