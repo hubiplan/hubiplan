@@ -1,5 +1,5 @@
 // Webseite der Einheit: Einrichtung, Zustand, Domains, Vorschau, Einwilligungen.
-import { api } from './client.ts'
+import { api, requestBlob } from './client.ts'
 import type { CropArea } from '../components/ImageCrop.tsx'
 import type { PaletteColor } from './orgs.ts'
 
@@ -43,6 +43,49 @@ export interface DesignInfo {
   label: string
   hint: string
   roles: { key: string; label: string; default: number | string }[]
+  /** Eingespieltes Designpaket statt Standarddesign (fehlt bei älteren Ständen) */
+  package?: boolean
+  /** Skizze wie dieses Standarddesign */
+  sketch?: string
+}
+
+/** Eingespieltes Designpaket (nur für Plattformverwalter) */
+export interface DesignPackage {
+  key: string
+  label: string
+  label_en: string
+  hint: string
+  /** für diese Webseite freigegeben */
+  released: boolean
+  /** diese Webseite nutzt es gerade */
+  in_use: boolean
+  released_count: number
+  templates: string[]
+  created_at: string
+  updated_at: string
+}
+
+/** Ergebnis der Prüfung eines Pakets vor dem Einspielen */
+export interface DesignPackageCheck {
+  key: string
+  label: string
+  label_en: string
+  hint: string
+  sketch: string
+  roles: string[]
+  templates: string[]
+  css_bytes: number
+  warnings: string[]
+  exists: boolean
+  source: string
+}
+
+export interface DesignImportOptions {
+  key: string
+  label: string
+  label_en: string
+  check?: boolean
+  replace?: boolean
 }
 
 /** Punkt im Menübaum (höchstens zwei Ebenen) */
@@ -139,6 +182,8 @@ export interface WebsiteData {
   designs?: DesignInfo[]
   /** Farben der Einheit: Haupt-, Zweit- und weitere Farben */
   palette?: PaletteColor[]
+  /** Darf Designpakete einspielen und freigeben (Plattformverwalter) */
+  can_import_designs?: boolean
   website: Website | null
 }
 
@@ -171,6 +216,25 @@ export const websiteApi = {
   addPreviewLink: (org: number, label: string, days: number) =>
     api.post<PreviewLink>(`${base(org)}preview-links/`, { label, days }),
   revokePreviewLink: (org: number, id: number) => api.del(`${base(org)}preview-links/${id}/`),
+  designPackages: (org: number) => api.get<DesignPackage[]>(`${base(org)}design-packages/`),
+  importDesign: (org: number, file: File, options: DesignImportOptions) => {
+    const form = new FormData()
+    form.append('file', file)
+    if (options.key) form.append('key', options.key)
+    if (options.label) form.append('label', options.label)
+    if (options.label_en) form.append('label_en', options.label_en)
+    if (options.check) form.append('check', '1')
+    if (options.replace) form.append('replace', '1')
+    return api.post<{ ok: boolean; package: DesignPackageCheck | DesignPackage }>(
+      `${base(org)}design-packages/`,
+      form,
+    )
+  },
+  releaseDesign: (org: number, key: string, released: boolean) =>
+    api.patch<DesignPackage>(`${base(org)}design-packages/${key}/`, { released }),
+  removeDesign: (org: number, key: string) => api.del(`${base(org)}design-packages/${key}/`),
+  exportDesign: (org: number, key: string) =>
+    requestBlob('GET', `${base(org)}design-packages/${key}/export/`),
   openPreview: (org: number) =>
     api.post<{ token: string; url: string | null }>(`${base(org)}preview/`),
   consents: (org: number, membership: number) =>

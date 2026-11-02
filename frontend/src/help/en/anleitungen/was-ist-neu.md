@@ -10,6 +10,7 @@ The latest changes are at the top.
 
 November 2026:
 
+- Website: A design can be saved as a package and imported again by platform administrators as an own design, with its own layout of header, footer and home page (Website › Design › Share design).
 - Website: The chronicle can be kept as a timeline, with events (year or period), chapters as subheadings and Excel import; if you like, the newest entries come first. An event can have up to six pictures, on the left, on the right, alternating or large below the text.
 - Website: Copied images can be pasted with Ctrl+V, in the image library and in the image picker.
 - Help: Every page has "Help on this page" at the top (or the ? key), plus step-by-step guides with pictures. Under "For you" you find first steps that match your rights, to tick off.

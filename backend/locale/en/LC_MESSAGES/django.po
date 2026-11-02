@@ -4562,3 +4562,126 @@ msgstr "First delete the former member's data, then the name from the chronicle.
 #: website/timeline.py
 msgid "Eintrag {n}: höchstens {max} Bilder."
 msgstr "Entry {n}: at most {max} pictures."
+
+msgid "design.css ist größer als 64 KB."
+msgstr "design.css is larger than 64 KB."
+
+msgid "design.css enthält {what}, das ist nicht erlaubt."
+msgstr "design.css contains {what}, which is not allowed."
+
+msgid "{name}: Befehl „{tag}“"
+msgstr "{name}: tag “{tag}”"
+
+msgid "{where} ist nicht erlaubt."
+msgstr "{where} is not allowed."
+
+msgid "{where}: nur die Bibliotheken seite, static und i18n."
+msgstr "{where}: only the libraries seite, static and i18n."
+
+msgid "{where}: nur seite/basis.html oder seite/start.html."
+msgstr "{where}: only seite/basis.html or seite/start.html."
+
+msgid "{where}: nur feste Vorlagen unter seite/ oder „vorlage“."
+msgstr "{where}: only fixed templates under seite/ or “vorlage”."
+
+msgid "{name} ist größer als 64 KB."
+msgstr "{name} is larger than 64 KB."
+
+msgid "{name} lässt sich nicht lesen."
+msgstr "{name} cannot be read."
+
+msgid "{name}: Filter „{f}“ ist nicht erlaubt."
+msgstr "{name}: filter “{f}” is not allowed."
+
+msgid "{name} enthält {what}, das ist nicht erlaubt."
+msgstr "{name} contains {what}, which is not allowed."
+
+msgid "design.json: „roles“ fehlt oder ist leer."
+msgstr "design.json: “roles” is missing or empty."
+
+msgid "design.json: unbekannte Farbrolle „{r}“."
+msgstr "design.json: unknown colour role “{r}”."
+
+msgid "design.json: Farbrolle „{r}“ hat keinen gültigen Wert."
+msgstr "design.json: colour role “{r}” has no valid value."
+
+msgid "design.json: Farbrolle „header“ fehlt."
+msgstr "design.json: colour role “header” is missing."
+
+msgid "Das Paket ist größer als 2 MB."
+msgstr "The package is larger than 2 MB."
+
+msgid "Die Datei ist kein ZIP-Paket."
+msgstr "The file is not a ZIP package."
+
+msgid "Ordner „{n}“ ist im Paket nicht erlaubt."
+msgstr "Folder “{n}” is not allowed in the package."
+
+msgid "Datei „{n}“ ist im Paket nicht erlaubt."
+msgstr "File “{n}” is not allowed in the package."
+
+msgid "Datei „{n}“ kommt doppelt vor."
+msgstr "File “{n}” appears twice."
+
+msgid "Das Paket ist entpackt größer als 5 MB."
+msgstr "The unpacked package is larger than 5 MB."
+
+msgid "Datei „{n}“ lässt sich nicht entpacken."
+msgstr "File “{n}” cannot be unpacked."
+
+msgid "Datei „{n}“ ist kein UTF-8-Text."
+msgstr "File “{n}” is not UTF-8 text."
+
+msgid "design.json fehlt."
+msgstr "design.json is missing."
+
+msgid "design.css fehlt."
+msgstr "design.css is missing."
+
+msgid "design.json ist größer als 16 KB."
+msgstr "design.json is larger than 16 KB."
+
+msgid "design.json ist kein gültiges JSON."
+msgstr "design.json is not valid JSON."
+
+msgid "design.json: Das ist kein HUBIplan-Designpaket."
+msgstr "design.json: this is not a HUBIplan design package."
+
+msgid "design.json: Version fehlt."
+msgstr "design.json: version is missing."
+
+msgid "Das Paket hat Version {v}; diese HUBIplan-Fassung kennt nur Version {k}."
+msgstr "The package has version {v}; this HUBIplan version only knows version {k}."
+
+msgid "Unbekannte Angaben werden nicht übernommen: {f}"
+msgstr "Unknown entries are not imported: {f}"
+
+msgid "Kürzel „{k}“ ist ungültig (2–31 Zeichen: a–z, 0–9, Bindestrich)."
+msgstr "Short name “{k}” is invalid (2–31 characters: a–z, 0–9, hyphen)."
+
+msgid "Kürzel „{k}“ gehört zu einem Standarddesign. Bitte ein eigenes Kürzel wählen."
+msgstr "Short name “{k}” belongs to a standard design. Please choose your own short name."
+
+msgid "Name des Designs fehlt."
+msgstr "The design name is missing."
+
+msgid "Eine Webseite nutzt dieses Design noch. Bitte dort zuerst ein anderes wählen."
+msgstr "A website still uses this design. Please choose another one there first."
+
+msgid "Designpakete spielen nur Plattformverwalter ein."
+msgstr "Only platform administrators can import design packages."
+
+msgid "Dieses Designpaket gibt es nicht."
+msgstr "This design package does not exist."
+
+msgid "Bitte ein Designpaket (ZIP) auswählen."
+msgstr "Please choose a design package (ZIP)."
+
+msgid "Ein Designpaket „{k}“ gibt es schon."
+msgstr "A design package “{k}” already exists."
+
+msgid "Die Webseite nutzt dieses Design. Bitte zuerst ein anderes wählen."
+msgstr "The website uses this design. Please choose another one first."
+
+msgid "Dieses Design gibt es nicht oder es ist für diese Webseite nicht freigegeben."
+msgstr "This design does not exist or is not released for this website."

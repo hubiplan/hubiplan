@@ -245,6 +245,7 @@ function WebsiteAdmin({
             colorRoles={v.color_roles ?? {}}
             onDesign={(key) => set('design', key)}
             onColorRoles={(next) => set('color_roles', next)}
+            onPackagesChanged={reload}
           />,
         )
       ) : (
