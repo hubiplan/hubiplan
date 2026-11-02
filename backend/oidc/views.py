@@ -24,12 +24,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from access.catalog import ROLES_MANAGE
+from accounts.mfa import encrypt
 from audit.log import record
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.ratelimit import client_ip, too_many
 
-from . import provider
-from .models import Client, parse_usernames
+from . import nc_accounts, provider
+from .models import USERNAME_RE, Account, Client, parse_usernames
 
 TOKEN_RATE = (60, 60)
 
@@ -146,9 +147,17 @@ def clean_base_url(value: str) -> str:
     return urlunsplit((parts.scheme, parts.netloc.lower(), path, "", ""))
 
 
+GROUP_MAX = 64
+
+
 class ClientSerializer(serializers.ModelSerializer):
     redirect_uri = serializers.SerializerMethodField()
     discovery_url = serializers.SerializerMethodField()
+    # Nur schreiben; die Antwort sagt nur, ob eines gespeichert ist
+    service_password = serializers.CharField(
+        write_only=True, required=False, allow_blank=True, trim_whitespace=True
+    )
+    has_service_password = serializers.SerializerMethodField()
 
     class Meta:
         model = Client
@@ -164,13 +173,39 @@ class ClientSerializer(serializers.ModelSerializer):
             "groups_units",
             "groups_members",
             "usernames",
+            "manage_accounts",
+            "service_user",
+            "service_password",
+            "has_service_password",
+            "account_group",
+            "sync_error",
+            "synced_at",
             "is_active",
             "created_at",
             "last_used_at",
             "redirect_uri",
             "discovery_url",
         ]
-        read_only_fields = ["client_id", "created_at", "last_used_at"]
+        read_only_fields = ["client_id", "created_at", "last_used_at", "sync_error", "synced_at"]
+
+    def get_has_service_password(self, obj) -> bool:
+        return bool(obj.service_password)
+
+    def validate_service_user(self, value):
+        value = str(value or "").strip()
+        if value and not USERNAME_RE.match(value.lower()):
+            raise serializers.ValidationError(gettext("Bitte den Benutzernamen des Dienstkontos."))
+        return value
+
+    def validate_service_password(self, value):
+        # Leer heißt: das gespeicherte behalten
+        return encrypt(value) if value else None
+
+    def validate_account_group(self, value):
+        value = " ".join(str(value or "").split())
+        if len(value) > GROUP_MAX:
+            raise serializers.ValidationError(gettext("Höchstens 64 Zeichen."))
+        return value
 
     def get_redirect_uri(self, obj) -> str:
         return obj.redirect_uris[0]
@@ -208,7 +243,50 @@ class ClientSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"audience": gettext("Mitgliederzugänge gibt es nur bei Vereinen.")}
             )
+        if attrs.get("service_password", "") is None:
+            attrs.pop("service_password")
+        inst = self.instance
+        manage = attrs.get("manage_accounts", inst.manage_accounts if inst else False)
+        if manage:
+            user = attrs.get("service_user", inst.service_user if inst else "")
+            password = attrs.get("service_password", inst.service_password if inst else "")
+            group = attrs.get("account_group", inst.account_group if inst else "")
+            if not user or not password or not group:
+                raise serializers.ValidationError(
+                    {
+                        "manage_accounts": gettext(
+                            "Dafür braucht es Dienstkonto, App-Passwort und Gruppe."
+                        )
+                    }
+                )
         return attrs
+
+
+class AccountSerializer(serializers.ModelSerializer):
+    email = serializers.CharField(source="user.email", read_only=True)
+    name = serializers.SerializerMethodField()
+    planned = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Account
+        fields = [
+            "id",
+            "nc_user",
+            "email",
+            "name",
+            "first_login_at",
+            "last_login_at",
+            "disabled_by_hubiplan",
+            "changed_at",
+            "error",
+            "planned",
+        ]
+
+    def get_name(self, obj) -> str:
+        return obj.user.get_full_name() or obj.user.email
+
+    def get_planned(self, obj) -> str:
+        return self.context.get("planned", {}).get(obj.pk, "")
 
 
 class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
@@ -251,3 +329,32 @@ class ClientViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         data = dict(self.get_serializer(client).data)
         data["client_secret"] = secret
         return Response(data)
+
+    @action(detail=True, methods=["get"])
+    def accounts(self, request, *args, **kwargs):
+        """Konten über HUBIplan, mit dem, was der nächste Abgleich täte (Probelauf)."""
+        client = self.get_object()
+        plans = nc_accounts.plan(client)
+        planned = {p.account.pk: p.action for p in plans}
+        items = sorted((p.account for p in plans), key=lambda a: a.nc_user)
+        return Response(AccountSerializer(items, many=True, context={"planned": planned}).data)
+
+    @action(detail=True, methods=["post"])
+    def check(self, request, *args, **kwargs):
+        """Dienstkonto bei der Nextcloud prüfen."""
+        client = self.get_object()
+        try:
+            name = nc_accounts.check_connection(client)
+        except nc_accounts.NextcloudError as exc:
+            return Response({"ok": False, "detail": str(exc)}, status=400)
+        return Response({"ok": True, "detail": gettext("Verbunden als {name}.").format(name=name)})
+
+    @action(detail=True, methods=["post"])
+    def sync(self, request, *args, **kwargs):
+        """Abgleich jetzt ausführen (auch nach einem Halt: mit ``confirm`` ohne Obergrenze)."""
+        client = self.get_object()
+        if not client.manage_accounts:
+            raise ValidationError({"detail": gettext("„Konten automatisch deaktivieren“ ist aus.")})
+        result = nc_accounts.sync(client, confirmed=bool(request.data.get("confirm")))
+        client.refresh_from_db()
+        return Response({"result": result, "client": self.get_serializer(client).data})

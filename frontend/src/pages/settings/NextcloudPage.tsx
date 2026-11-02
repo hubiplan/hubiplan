@@ -2,7 +2,7 @@
 // HUBIplan ist dabei Anmeldedienst (OpenID Connect), die Nextcloud nutzt die App „user_oidc“.
 import { useState } from 'react'
 import { nextcloudApi } from '../../api/nextcloud.ts'
-import type { NextcloudClient, NextcloudInput } from '../../api/nextcloud.ts'
+import type { NextcloudAccount, NextcloudClient, NextcloudInput } from '../../api/nextcloud.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
@@ -31,6 +31,129 @@ function Copyable({ label, value }: { label: string; value: string }) {
   )
 }
 
+function AccountList({
+  org,
+  client,
+  onChanged,
+}: {
+  org: number
+  client: NextcloudClient
+  onChanged: (c: NextcloudClient) => void
+}) {
+  const { data, error, reload } = useLoad(
+    () => nextcloudApi.accounts(org, client.id),
+    [org, client.id, client.synced_at, client.manage_accounts],
+  )
+  const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+
+  async function check() {
+    setMessage(null)
+    try {
+      const r = await nextcloudApi.check(org, client.id)
+      setMessage({ kind: 'success', text: r.detail })
+    } catch (e) {
+      setMessage({ kind: 'error', text: errorMessage(e) })
+    }
+  }
+
+  async function sync(rows: NextcloudAccount[]) {
+    const disabling = rows.filter((r) => r.planned === 'disable').length
+    if (
+      disabling &&
+      !(await confirmDialog({
+        title: t('Jetzt abgleichen?'),
+        message: t(
+          '{count} Konten werden in der Nextcloud deaktiviert. Dateien bleiben erhalten, Sitzungen und Sync-Apps werden abgemeldet.',
+          { count: disabling },
+        ),
+      }))
+    )
+      return
+    setMessage(null)
+    try {
+      const r = await nextcloudApi.sync(org, client.id, true)
+      onChanged(r.client)
+      setMessage({
+        kind: r.result.errors ? 'error' : 'success',
+        text: t('Deaktiviert: {disabled}, wieder aktiviert: {enabled}, Fehler: {errors}', {
+          disabled: r.result.disabled,
+          enabled: r.result.enabled,
+          errors: r.result.errors,
+        }),
+      })
+      reload()
+    } catch (e) {
+      setMessage({ kind: 'error', text: errorMessage(e) })
+    }
+  }
+
+  const label = (r: NextcloudAccount) => {
+    if (r.planned === 'disable') return t('wird deaktiviert')
+    if (r.planned === 'enable') return t('wird wieder aktiviert')
+    if (r.disabled_by_hubiplan) return t('deaktiviert')
+    return t('aktiv')
+  }
+
+  return (
+    <>
+      <h3>{t('Konten über HUBIplan')}</h3>
+      {client.sync_error && <Alert kind="error">{client.sync_error}</Alert>}
+      {error && <LoadError message={error} onRetry={reload} />}
+      {data && !data.length && (
+        <p className="muted small">{t('Noch hat sich niemand über HUBIplan angemeldet.')}</p>
+      )}
+      {data && data.length > 0 && (
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{t('Person')}</th>
+                <th>{t('Benutzername in der Nextcloud')}</th>
+                <th>{t('Zuletzt angemeldet')}</th>
+                <th>{t('Zustand')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((r) => (
+                <tr key={r.id}>
+                  <td>
+                    {r.name}
+                    <div className="muted small">{r.email}</div>
+                  </td>
+                  <td>
+                    <code className="break-all">{r.nc_user}</code>
+                  </td>
+                  <td>{formatDayTime(r.last_login_at)}</td>
+                  <td>
+                    {label(r)}
+                    {r.error && <div className="error small">{r.error}</div>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {client.synced_at && (
+        <p className="muted small">
+          {t('Zuletzt abgeglichen: {when}', { when: formatDayTime(client.synced_at) })}
+        </p>
+      )}
+      {message && <Alert kind={message.kind}>{message.text}</Alert>}
+      <div className="button-row">
+        <button type="button" className="button" onClick={() => void check()}>
+          {t('Verbindung prüfen')}
+        </button>
+        {client.manage_accounts && data && (
+          <button type="button" className="button" onClick={() => void sync(data)}>
+            {t('Jetzt abgleichen')}
+          </button>
+        )}
+      </div>
+    </>
+  )
+}
+
 function ClientCard({
   org,
   isClub,
@@ -56,6 +179,10 @@ function ClientCard({
     groups_units: client.groups_units,
     groups_members: client.groups_members,
     usernames: client.usernames,
+    manage_accounts: client.manage_accounts,
+    service_user: client.service_user,
+    service_password: '',
+    account_group: client.account_group,
     is_active: client.is_active,
   })
   const [error, setError] = useState<string | null>(null)
@@ -69,6 +196,7 @@ function ClientCard({
     setError(null)
     try {
       onChanged(await nextcloudApi.update(org, client.id, values))
+      setValues((v) => ({ ...v, service_password: '' }))
       setSaved(true)
     } catch (e) {
       setError(errorMessage(e))
@@ -193,6 +321,48 @@ function ClientCard({
             )}
           </small>
         </label>
+        <fieldset>
+          <legend>{t('Konten automatisch deaktivieren')}</legend>
+          <p className="muted small">
+            {t(
+              'Endet der Zugang bei HUBIplan (Rolle beendet, Austritt, Konto gesperrt), deaktiviert HUBIplan das Nextcloud-Konto sofort und prüft jede Nacht nach. Bekommt die Person wieder eine Rolle, wird es wieder aktiviert. Dateien bleiben erhalten. Angefasst werden nur Konten, die sich über HUBIplan angemeldet haben.',
+            )}
+          </p>
+          <Field
+            label={t('Gruppe der Konten über HUBIplan')}
+            value={values.account_group ?? ''}
+            maxLength={64}
+            placeholder="HUBIplan"
+            onChange={(e) => set('account_group', e.target.value)}
+            hint={t(
+              'Geht bei jeder Anmeldung mit. In der Nextcloud Gruppen-Provisionierung mit Whitelist nur für diese Gruppe einschalten.',
+            )}
+          />
+          <Field
+            label={t('Dienstkonto in der Nextcloud')}
+            value={values.service_user ?? ''}
+            maxLength={64}
+            autoComplete="off"
+            onChange={(e) => set('service_user', e.target.value)}
+            hint={t('eigenes Konto, Gruppen-Admin der Gruppe oben')}
+          />
+          <Field
+            label={t('App-Passwort des Dienstkontos')}
+            type="password"
+            autoComplete="new-password"
+            value={values.service_password ?? ''}
+            placeholder={client.has_service_password ? t('gespeichert') : ''}
+            onChange={(e) => set('service_password', e.target.value)}
+            hint={t(
+              'wird verschlüsselt gespeichert und nie wieder angezeigt; leer lassen behält es',
+            )}
+          />
+          <Checkbox
+            label={t('Konten automatisch deaktivieren')}
+            checked={Boolean(values.manage_accounts)}
+            onChange={(v) => set('manage_accounts', v)}
+          />
+        </fieldset>
         <Checkbox
           label={t('Eingeschaltet')}
           checked={Boolean(values.is_active)}
@@ -206,6 +376,8 @@ function ClientCard({
           </button>
         </div>
       </form>
+
+      <AccountList org={org} client={client} onChanged={onChanged} />
 
       <h3>{t('In der Nextcloud eintragen')}</h3>
       <p className="muted small">
@@ -284,7 +456,7 @@ export function NextcloudPage() {
         </p>
         <p className="muted small">
           {t(
-            'Bereits angemeldete Sitzungen in der Nextcloud laufen weiter, bis sie ablaufen. Zum sofortigen Sperren das Konto in der Nextcloud deaktivieren.',
+            'Bereits angemeldete Sitzungen in der Nextcloud laufen weiter, bis sie ablaufen. Zum sofortigen Sperren das Konto in der Nextcloud deaktivieren oder „Konten automatisch deaktivieren“ einschalten.',
           )}
         </p>
       </section>
