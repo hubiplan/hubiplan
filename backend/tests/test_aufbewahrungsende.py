@@ -13,7 +13,7 @@ from finance import retention
 from finance.models import Booking, Receipt
 
 from .test_e_rechnung import UBL
-from .test_m9_billing import JSON, base, c, club, setup, zug  # noqa: F401
+from .test_m9_billing import JSON, base, c, club, members, setup, zug  # noqa: F401
 
 pytestmark = pytest.mark.django_db
 
