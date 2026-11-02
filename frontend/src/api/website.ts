@@ -311,7 +311,8 @@ export interface TimelineEntry {
   until: number | null
   title: string
   text: string
-  image: number | null
+  /** bis zu sechs Bilder (Ralf 02.11.) */
+  images: number[]
 }
 
 export const contentApi = {

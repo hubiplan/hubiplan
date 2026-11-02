@@ -862,7 +862,7 @@ class SiteView:
     def timeline(self, t: WebsiteText) -> list[dict]:
         """Zeitleiste der Chronik nach Jahren; ``until`` = Zeitraum (z. B. 1939–1948),
         ``kind`` = ``chapter`` für eine Zwischenüberschrift (Kapitel)."""
-        from .timeline import sorted_timeline
+        from .timeline import entry_images, sorted_timeline
 
         entries = sorted_timeline(t.published_timeline)
         ids = content.timeline_images(entries)
@@ -871,17 +871,22 @@ class SiteView:
             if ids
             else {}
         )
-        return [
-            {
-                "kind": e.get("kind") or "event",
-                "year": e["year"],
-                "until": e.get("until"),
-                "title": e.get("title") or "",
-                "text": e.get("text") or "",
-                "image": self.image(by_id.get(e.get("image"))),
-            }
-            for e in entries
-        ]
+        result = []
+        for e in entries:
+            images = [self.image(by_id[pk]) for pk in entry_images(e) if pk in by_id]
+            result.append(
+                {
+                    "kind": e.get("kind") or "event",
+                    "year": e["year"],
+                    "until": e.get("until"),
+                    "title": e.get("title") or "",
+                    "text": e.get("text") or "",
+                    # bis zu sechs Bilder; „image“ = erstes Bild für ältere Webseiten
+                    "images": images,
+                    "image": images[0] if images else None,
+                }
+            )
+        return result
 
     def greeting(self) -> dict | None:
         t = (

@@ -5,6 +5,7 @@ import { t } from '../../i18n/index.ts'
 export const MAX_TIMELINE = 300
 export const MAX_TITLE = 120
 export const MAX_TEXT = 400
+export const MAX_IMAGES = 6
 const MIN_YEAR = 1000
 const MAX_YEAR = 2999
 
@@ -14,7 +15,14 @@ export const EMPTY: TimelineEntry = {
   until: null,
   title: '',
   text: '',
-  image: null,
+  images: [],
+}
+
+/** Eintrag in fester Form; ältere Einträge hatten ein einzelnes „image“ */
+export function normalizeEntry(e: TimelineEntry & { image?: number | null }): TimelineEntry {
+  const { image, ...rest } = e
+  const images = Array.isArray(e.images) ? e.images : typeof image === 'number' ? [image] : []
+  return { ...rest, images }
 }
 
 /** „1939–1948“ oder „1920“ */

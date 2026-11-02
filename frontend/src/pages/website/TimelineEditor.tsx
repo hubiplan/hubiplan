@@ -6,9 +6,11 @@ import { errorMessage } from '../../components/forms.ts'
 import { Alert, Checkbox, Field } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t, tn } from '../../i18n/index.ts'
-import { ImageChoice } from './images.tsx'
+import { ImagePicker } from './images.tsx'
+import { imageLabel } from './imageTools.ts'
 import {
   EMPTY,
+  MAX_IMAGES,
   MAX_TEXT,
   MAX_TIMELINE,
   MAX_TITLE,
@@ -17,14 +19,12 @@ import {
   sortTimeline,
   yearValue,
 } from './timeline.ts'
-import type { Unit } from './images.tsx'
 
 export function TimelineEditor({
   textId,
   value,
   error,
   images,
-  units,
   onChange,
   onImagesChanged,
   newestFirst,
@@ -34,7 +34,6 @@ export function TimelineEditor({
   value: TimelineEntry[]
   error?: string
   images: WebsiteImage[]
-  units: Unit[]
   onChange: (entries: TimelineEntry[]) => void
   onImagesChanged: () => void
   newestFirst: boolean
@@ -52,7 +51,7 @@ export function TimelineEditor({
   function apply(entry: TimelineEntry) {
     const clean = { ...entry, title: entry.title.trim(), text: entry.text.trim() }
     if (clean.until === clean.year) clean.until = null
-    if (clean.kind === 'chapter') clean.image = null
+    if (clean.kind === 'chapter') clean.images = []
     const next =
       editing === null || editing < 0
         ? [...value, clean]
@@ -125,7 +124,6 @@ export function TimelineEditor({
                 <EntryForm
                   initial={e}
                   images={images}
-                  units={units}
                   onApply={apply}
                   onCancel={() => setEditing(null)}
                   onImagesChanged={onImagesChanged}
@@ -144,8 +142,14 @@ export function TimelineEditor({
                   </span>
                   {e.text && <small className="muted">{e.text}</small>}
                 </span>
-                {e.image !== null && byId.has(e.image) && (
-                  <img src={byId.get(e.image)!.small_url} alt="" width={64} height={40} />
+                {e.images.some((id) => byId.has(id)) && (
+                  <span className="timeline-thumbs">
+                    {e.images
+                      .filter((id) => byId.has(id))
+                      .map((id) => (
+                        <img key={id} src={byId.get(id)!.small_url} alt="" width={64} height={40} />
+                      ))}
+                  </span>
                 )}
                 <span className="button-row">
                   <button
@@ -176,7 +180,6 @@ export function TimelineEditor({
         <EntryForm
           initial={editing === -2 ? { ...EMPTY, kind: 'chapter' } : EMPTY}
           images={images}
-          units={units}
           onApply={apply}
           onCancel={() => setEditing(null)}
           onImagesChanged={onImagesChanged}
@@ -233,15 +236,13 @@ export function TimelineEditor({
 
 function EntryForm({
   initial,
-  images,
-  units,
+  images: allImages,
   onApply,
   onCancel,
   onImagesChanged,
 }: {
   initial: TimelineEntry
   images: WebsiteImage[]
-  units: Unit[]
   onApply: (entry: TimelineEntry) => void
   onCancel: () => void
   onImagesChanged: () => void
@@ -250,7 +251,7 @@ function EntryForm({
   const [until, setUntil] = useState(initial.until === null ? '' : String(initial.until))
   const [title, setTitle] = useState(initial.title)
   const [text, setText] = useState(initial.text)
-  const [image, setImage] = useState<number | null>(initial.image)
+  const [images, setImages] = useState<number[]>(initial.images)
   const [checked, setChecked] = useState(false)
   const chapter = initial.kind === 'chapter'
   const entry: TimelineEntry = {
@@ -259,7 +260,7 @@ function EntryForm({
     until: until.trim() ? (yearValue(until) ?? -1) : null,
     title,
     text,
-    image,
+    images,
   }
   const errors = checked ? entryErrors(entry) : {}
 
@@ -313,12 +314,10 @@ function EntryForm({
       />
       <TextArea value={text} error={errors.text} onChange={setText} />
       {!chapter && (
-        <ImageChoice
-          label={t('Bild (optional)')}
-          value={image}
-          images={images}
-          units={units}
-          onChange={setImage}
+        <ImagesChoice
+          value={images}
+          images={allImages}
+          onChange={setImages}
           onImagesChanged={onImagesChanged}
         />
       )}
@@ -363,5 +362,96 @@ function TextArea({
         {error ?? count}
       </small>
     </div>
+  )
+}
+
+function ImagesChoice({
+  value,
+  images,
+  onChange,
+  onImagesChanged,
+}: {
+  value: number[]
+  images: WebsiteImage[]
+  onChange: (ids: number[]) => void
+  onImagesChanged: () => void
+}) {
+  const [picking, setPicking] = useState(false)
+  const byId = new Map(images.map((i) => [i.id, i]))
+  const chosen = value.filter((id) => byId.has(id))
+  const move = (index: number, delta: number) => {
+    const next = [...chosen]
+    const [item] = next.splice(index, 1)
+    next.splice(index + delta, 0, item)
+    onChange(next)
+  }
+  return (
+    <fieldset className="image-choice">
+      <legend>{t('Bilder (optional)')}</legend>
+      <p className="muted small">
+        {t(
+          'Bis zu {n} Bilder, z. B. Plakate aus mehreren Jahren. Die Webseite zeigt sie klein nebeneinander; groß lässt sich durch sie blättern.',
+          { n: MAX_IMAGES },
+        )}
+      </p>
+      {chosen.length > 0 && (
+        <ol className="gallery-list">
+          {chosen.map((id, index) => (
+            <li key={id}>
+              <img src={byId.get(id)!.small_url} alt="" width={64} height={40} />
+              <span>{imageLabel(byId.get(id)!)}</span>
+              <span className="button-row">
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  disabled={index === 0}
+                  aria-label={t('{x} nach vorn', { x: imageLabel(byId.get(id)!) })}
+                  onClick={() => move(index, -1)}
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  disabled={index === chosen.length - 1}
+                  aria-label={t('{x} nach hinten', { x: imageLabel(byId.get(id)!) })}
+                  onClick={() => move(index, 1)}
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  aria-label={t('{x} entfernen', { x: imageLabel(byId.get(id)!) })}
+                  onClick={() => onChange(chosen.filter((x) => x !== id))}
+                >
+                  {t('Entfernen')}
+                </button>
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+      <div className="button-row">
+        <button type="button" className="button button-ghost" onClick={() => setPicking(true)}>
+          {chosen.length ? t('Bilder ändern') : t('Bilder wählen')}
+        </button>
+      </div>
+      {picking && (
+        <ImagePicker
+          images={images}
+          title={t('Bilder (optional)')}
+          multiple
+          max={MAX_IMAGES}
+          initial={chosen}
+          onUploaded={onImagesChanged}
+          onPick={(picked) => {
+            setPicking(false)
+            onChange(picked.map((i) => i.id))
+          }}
+          onCancel={() => setPicking(false)}
+        />
+      )}
+    </fieldset>
   )
 }

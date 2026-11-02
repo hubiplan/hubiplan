@@ -33,6 +33,7 @@ TIMELINE_SLUG = "geschichte"
 MAX_TIMELINE = 300
 MAX_TIMELINE_TITLE = 120
 MAX_TIMELINE_TEXT = 400
+MAX_TIMELINE_IMAGES = 6  # Bilder je Ereignis (Ralf 02.11.: z. B. drei Plakate)
 SLUG_RE = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
 # Adressen, die die Webseite selbst belegt
 RESERVED_SLUGS = frozenset(

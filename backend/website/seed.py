@@ -88,7 +88,7 @@ TIMELINE = [
     {"kind": "chapter", "year": 1950, "until": None, "title": "Bis heute", "text": ""},
     *TIMELINE[4:],
 ]
-TIMELINE = [{"kind": "event", **e, "image": None} for e in TIMELINE]
+TIMELINE = [{"kind": "event", **e, "images": []} for e in TIMELINE]
 
 # Erfundene Namen für frühere Majestäten (vor HUBIplan)
 OLD_KINGS = [

@@ -684,7 +684,7 @@ describe('Inhalte der Webseite', () => {
       title: 'Chronik',
       has_timeline: true,
       timeline: [
-        { kind: 'event', year: 1949, until: null, title: 'Neuanfang', text: '', image: null },
+        { kind: 'event', year: 1949, until: null, title: 'Neuanfang', text: '', images: [] },
       ],
     })
     const calls = renderApp(
@@ -713,7 +713,7 @@ describe('Inhalte der Webseite', () => {
     // Kapitel ohne Bildauswahl, steht vor den Ereignissen seines Jahres
     await user.click(screen.getByRole('button', { name: 'Kapitel hinzufügen' }))
     const chapter = screen.getByRole('group', { name: 'Neues Kapitel' })
-    expect(within(chapter).queryByText('Bild (optional)')).toBeNull()
+    expect(within(chapter).queryByText('Bilder (optional)')).toBeNull()
     await user.type(within(chapter).getByLabelText('Beginnt im Jahr'), '1939')
     await user.type(within(chapter).getByLabelText(/^bis/), '1949')
     await user.type(within(chapter).getByLabelText('Name des Kapitels'), 'Krieg und Neubeginn')
@@ -738,6 +738,55 @@ describe('Inhalte der Webseite', () => {
       () => {
         const put = calls.filter((c) => c.key === `PUT ${base}texts/5/`).at(-1)
         expect(put && JSON.parse(String(put.init?.body))).toEqual({ timeline_newest_first: true })
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  it('zeigt mehrere Bilder je Ereignis der Zeitleiste', async () => {
+    const chronik = text({
+      title: 'Chronik',
+      has_timeline: true,
+      timeline: [
+        {
+          kind: 'event',
+          year: 2020,
+          until: 2022,
+          title: 'Verschobenes Jubiläum',
+          text: '',
+          images: [1, 2, 3],
+        },
+      ],
+    })
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}texts/`]: () => ({ status: 200, body: { texts: [chronik], units: [] } }),
+        [`GET ${base}texts/5/`]: () => ({ status: 200, body: chronik }),
+        [`GET ${base}images/`]: () => ({
+          status: 200,
+          body: [img(1, 'Plakat 2020'), img(2, 'Plakat 2021'), img(3, 'Plakat 2022')],
+        }),
+        [`PUT ${base}texts/5/`]: () => ({ status: 200, body: chronik }),
+      },
+      '/webseite/inhalte',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Chronik' }))
+    await user.click(
+      await screen.findByRole('button', { name: '2020–2022 Verschobenes Jubiläum bearbeiten' }),
+    )
+    const form = screen.getByRole('group', { name: 'Ereignis bearbeiten' })
+    expect(within(form).getByText('Plakat 2021')).toBeVisible()
+    // Reihenfolge ändern und ein Bild entfernen
+    await user.click(within(form).getByRole('button', { name: 'Plakat 2022 nach vorn' }))
+    await user.click(within(form).getByRole('button', { name: 'Plakat 2020 entfernen' }))
+    await user.click(within(form).getByRole('button', { name: 'Übernehmen' }))
+    await waitFor(
+      () => {
+        const put = calls.filter((c) => c.key === `PUT ${base}texts/5/`).at(-1)
+        const body = put && JSON.parse(String(put.init?.body))
+        expect(body?.timeline?.[0]?.images).toEqual([3, 2])
       },
       { timeout: 3000 },
     )
