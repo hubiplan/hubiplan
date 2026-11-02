@@ -2911,6 +2911,11 @@ label:has(> .file-input:focus-visible) {
   object-fit: cover;
   border-radius: 4px;
 }
+.timeline-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
 
 /* Bausteine der Startseite (Webseite › Aufbau) */
 .home-sections {

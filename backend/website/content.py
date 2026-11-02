@@ -230,13 +230,19 @@ def delete_image(image: WebsiteImage) -> None:
 
 def timeline_images(timeline) -> list[int]:
     """Bilder einer Zeitleiste (in ihrer Reihenfolge, ohne Doppelte)."""
-    ids = [e.get("image") for e in timeline or [] if isinstance(e, dict)]
-    return list(dict.fromkeys(pk for pk in ids if isinstance(pk, int)))
+    from .timeline import entry_images
+
+    ids = [pk for e in timeline or [] for pk in entry_images(e)]
+    return list(dict.fromkeys(ids))
 
 
 def _without_image(timeline, pk: int) -> list:
+    from .timeline import entry_images, with_images
+
     return [
-        {**e, "image": None} if isinstance(e, dict) and e.get("image") == pk else e
+        with_images(e, [i for i in entry_images(e) if i != pk])
+        if isinstance(e, dict) and pk in entry_images(e)
+        else e
         for e in timeline or []
     ]
 
@@ -420,6 +426,7 @@ def image_in_revisions(image: WebsiteImage) -> list[str]:
             Q(image=image)
             | Q(body__contains=marker)
             | Q(gallery__contains=[image.pk])
+            | Q(timeline__contains=[{"images": [image.pk]}])
             | Q(timeline__contains=[{"image": image.pk}])
         )
         .select_related("text")
@@ -475,6 +482,8 @@ def unpublish(text: WebsiteText, user) -> None:
 
 def restore(text: WebsiteText, revision: WebsiteRevision, user) -> None:
     """Fassung in den Entwurf zurückholen (veröffentlicht wird erst danach)."""
+    from .timeline import entry_images, with_images
+
     text.title = revision.title
     text.body = revision.body
     text.image = revision.image
@@ -492,7 +501,7 @@ def restore(text: WebsiteText, revision: WebsiteRevision, user) -> None:
         ).values_list("pk", flat=True)
     )
     text.timeline = [
-        {**e, "image": e.get("image") if e.get("image") in known else None}
+        with_images(e, [pk for pk in entry_images(e) if pk in known])
         for e in revision.timeline or []
         if isinstance(e, dict)
     ]

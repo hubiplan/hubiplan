@@ -78,7 +78,7 @@ class TestZeitleiste:
             "until": None,
             "title": "Gründung",
             "text": "",
-            "image": None,
+            "images": [],
         }
         public = f"/api/public/site/v1/{site.public_key}/pages/geschichte/"
         assert Client().get(public).status_code == 404  # noch nicht veröffentlicht
@@ -151,7 +151,7 @@ class TestZeitleiste:
         ]
         resp = c.put(url(orgs["a"], f"texts/{pk}/"), {"timeline": entries}, "application/json")
         assert resp.status_code == 200, resp.content
-        assert resp.json()["timeline"][-1]["image"] is None  # Kapitel ohne Bild
+        assert resp.json()["timeline"][-1]["images"] == []  # Kapitel ohne Bild
         bad = [{"kind": "anderes", "year": 1950, "title": "x"}]
         resp = c.put(url(orgs["a"], f"texts/{pk}/"), {"timeline": bad}, "application/json")
         assert resp.status_code == 400
@@ -188,13 +188,24 @@ class TestZeitleiste:
     def test_bild_in_der_zeitleiste(self, orgs, editor, api, site):
         c = api(editor)
         image = c.post(url(orgs["a"], "images/"), {"file": png(), "alt_text": "Fahne"}).json()
+        poster = c.post(url(orgs["a"], "images/"), {"file": png(), "alt_text": "Plakat"}).json()
         pk = chronicle(c, orgs["a"])
-        entries = [{"year": 1995, "title": "Neue Fahne", "image": image["id"]}]
-        c.put(url(orgs["a"], f"texts/{pk}/"), {"timeline": entries}, "application/json")
+        # Mehrere Bilder je Ereignis (Ralf 02.11.); die alte Form mit „image“ geht weiter
+        entries = [
+            {"year": 1995, "title": "Neue Fahne", "images": [image["id"], poster["id"]]},
+            {"year": 1996, "title": "Altes Format", "image": poster["id"]},
+        ]
+        resp = c.put(url(orgs["a"], f"texts/{pk}/"), {"timeline": entries}, "application/json")
+        assert resp.status_code == 200, resp.content
+        assert [e["images"] for e in resp.json()["timeline"]] == [
+            [image["id"], poster["id"]],
+            [poster["id"]],
+        ]
         c.post(url(orgs["a"], f"texts/{pk}/publish/"))
         public = f"/api/public/site/v1/{site.public_key}/"
         entry = Client().get(f"{public}pages/geschichte/").json()["timeline"][0]
-        assert entry["image"]["alt"] == "Fahne"
+        assert [i["alt"] for i in entry["images"]] == ["Fahne", "Plakat"]
+        assert entry["image"]["alt"] == "Fahne"  # erstes Bild für ältere Webseiten
         # Öffentlich abrufbar und beim Löschen als verwendet gemeldet
         assert Client().get(f"{public}images/{image['key']}/").status_code == 200
         resp = c.delete(url(orgs["a"], f"images/{image['id']}/"))
@@ -203,10 +214,40 @@ class TestZeitleiste:
         # Trotzdem löschen: Eintrag bleibt, nur das Bild fällt weg
         assert c.delete(url(orgs["a"], f"images/{image['id']}/?trotzdem=1")).status_code == 204
         t = WebsiteText.objects.get(pk=pk)
-        assert t.timeline[0]["image"] is None and t.published_timeline[0]["image"] is None
-        assert t.revisions.get().timeline[0]["image"] is None
+        assert t.timeline[0]["images"] == [poster["id"]]
+        assert t.published_timeline[0]["images"] == [poster["id"]]
+        assert t.revisions.get().timeline[0]["images"] == [poster["id"]]
         assert t.timeline[0]["title"] == "Neue Fahne"
         assert not WebsiteImage.objects.filter(pk=image["id"]).exists()
+
+    def test_hoechstens_sechs_bilder(self, orgs, editor, api, site):
+        c = api(editor)
+        ids = [c.post(url(orgs["a"], "images/"), {"file": png()}).json()["id"] for _ in range(7)]
+        pk = chronicle(c, orgs["a"])
+        for count, status in ((6, 200), (7, 400)):
+            entries = [{"year": 2020, "title": "Plakate", "images": ids[:count]}]
+            resp = c.put(url(orgs["a"], f"texts/{pk}/"), {"timeline": entries}, "application/json")
+            assert resp.status_code == status, resp.content
+        bad = [{"year": 2020, "title": "x", "images": "1"}]
+        resp = c.put(url(orgs["a"], f"texts/{pk}/"), {"timeline": bad}, "application/json")
+        assert resp.status_code == 400
+
+    def test_umstellung_auf_mehrere_bilder(self):
+        from importlib import import_module
+
+        convert = import_module("website.migrations.0030_zeitleiste_mehrere_bilder")._convert
+        old = [
+            {"year": 1920, "title": "a", "image": 5},
+            {"year": 1930, "title": "b", "image": None},
+        ]
+        assert convert(old) == (
+            [
+                {"year": 1920, "title": "a", "images": [5]},
+                {"year": 1930, "title": "b", "images": []},
+            ],
+            True,
+        )
+        assert convert([{"year": 1920, "title": "a", "images": [5]}])[1] is False
 
 
 class TestImport:

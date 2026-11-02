@@ -4558,3 +4558,7 @@ msgid ""
 "Erst die Daten des ehemaligen Mitglieds löschen, dann den Namen aus der "
 "Chronik."
 msgstr "First delete the former member's data, then the name from the chronicle."
+
+#: website/timeline.py
+msgid "Eintrag {n}: höchstens {max} Bilder."
+msgstr "Entry {n}: at most {max} pictures."

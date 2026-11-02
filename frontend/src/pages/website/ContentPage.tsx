@@ -24,6 +24,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
 import { ImageChoice, ImagePicker } from './images.tsx'
 import { TimelineEditor } from './TimelineEditor.tsx'
+import { normalizeEntry } from './timeline.ts'
 import { imageLabel } from './imageTools.ts'
 import type { Unit } from './images.tsx'
 import { t } from '../../i18n/index.ts'
@@ -330,7 +331,7 @@ function TextForm({
     gallery: text.gallery ?? [],
     gallery_interval: text.gallery_interval ?? 7,
     gallery_random: text.gallery_random ?? false,
-    timeline: text.timeline ?? [],
+    timeline: (text.timeline ?? []).map(normalizeEntry),
     timeline_newest_first: text.timeline_newest_first ?? false,
   })
   const { values: v, set, errors } = form
@@ -450,7 +451,6 @@ function TextForm({
           value={v.timeline}
           error={errors.timeline}
           images={images.data ?? []}
-          units={units}
           onChange={(entries) => set('timeline', entries)}
           newestFirst={v.timeline_newest_first}
           onNewestFirstChange={(value) => set('timeline_newest_first', value)}

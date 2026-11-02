@@ -1,8 +1,11 @@
-"""Zeitleiste der Chronik: kurze Einträge mit Jahr, Überschrift, Text und Bild.
+"""Zeitleiste der Chronik: kurze Einträge mit Jahr, Überschrift, Text und Bildern.
 
 Neben Ereignissen gibt es Kapitel (``kind`` = ``chapter``, Ralf 02.11.), z. B.
 „Gründerjahre 1920–1938“: eine Zwischenüberschrift, unter der die Webseite alle
 Ereignisse ab ihrem Jahr bis zum nächsten Kapitel zeigt. Kapitel haben kein Bild.
+
+Ein Ereignis hat bis zu sechs Bilder (``images``, Ralf 02.11.). Ältere Einträge hatten
+ein einzelnes ``image``; :func:`entry_images` liest beide Formen.
 
 Die Zeitleiste gehört zur Textseite „Chronik“ (Adresse ``geschichte``) und wird mit ihr
 als Entwurf gespeichert und veröffentlicht. Die Webseite zeigt sie nach Jahren sortiert.
@@ -19,6 +22,7 @@ from exchange.reading import ReadError, read_table
 
 from .content_models import (
     MAX_TIMELINE,
+    MAX_TIMELINE_IMAGES,
     MAX_TIMELINE_TEXT,
     MAX_TIMELINE_TITLE,
     WebsiteImage,
@@ -36,6 +40,24 @@ COLUMNS = {
     "title": ("überschrift", "ueberschrift", "titel", "ereignis", "title", "event"),
     "text": ("text", "beschreibung", "kurztext", "description"),
 }
+
+
+def entry_images(entry) -> list[int]:
+    """Bildnummern eines Eintrags, auch aus der alten Form mit einem ``image``."""
+    if not isinstance(entry, dict):
+        return []
+    images = entry.get("images")
+    if not isinstance(images, list):
+        images = [entry.get("image")]
+    ids = [pk for pk in images if isinstance(pk, int) and not isinstance(pk, bool)]
+    return list(dict.fromkeys(ids))
+
+
+def with_images(entry: dict, images: list[int]) -> dict:
+    """Eintrag in der neuen Form mit ``images`` (ohne das alte ``image``)."""
+    result = {k: v for k, v in entry.items() if k != "image"}
+    result["images"] = images
+    return result
 
 
 def _year(value) -> int | None:
@@ -91,21 +113,32 @@ def clean_timeline(value, website) -> list[dict]:
     for index, raw in enumerate(value, start=1):
         if not isinstance(raw, dict):
             raise ValidationError(gettext("Ungültige Zeitleiste."))
-        image = raw.get("image")
-        if image is not None and (not isinstance(image, int) or isinstance(image, bool)):
+        raw_images = raw.get("images")
+        if raw_images is None:
+            raw_images = [] if raw.get("image") is None else [raw.get("image")]
+        if not isinstance(raw_images, list) or any(
+            not isinstance(pk, int) or isinstance(pk, bool) for pk in raw_images
+        ):
             raise ValidationError(gettext("Ungültige Zeitleiste."))
+        images = list(dict.fromkeys(raw_images))
         kind = raw.get("kind") or EVENT
         if kind not in KINDS:
             raise ValidationError(gettext("Ungültige Zeitleiste."))
         if kind == CHAPTER:
-            image = None
+            images = []
+        if len(images) > MAX_TIMELINE_IMAGES:
+            raise ValidationError(
+                gettext("Eintrag {n}: höchstens {max} Bilder.").format(
+                    n=index, max=MAX_TIMELINE_IMAGES
+                )
+            )
         entry = {
             "kind": kind,
             "year": _year(raw.get("year")),
             "until": _year(raw.get("until")),
             "title": str(raw.get("title") or "").strip(),
             "text": str(raw.get("text") or "").strip().replace("\r\n", "\n"),
-            "image": image,
+            "images": images,
         }
         if entry["until"] == entry["year"]:
             entry["until"] = None
@@ -115,7 +148,7 @@ def clean_timeline(value, website) -> list[dict]:
                 gettext("Eintrag {n}: {error}").format(n=index, error=" ".join(errors))
             )
         result.append(entry)
-    images = {e["image"] for e in result if e["image"] is not None}
+    images = {pk for e in result for pk in e["images"]}
     known = set(
         WebsiteImage.objects.filter(website=website, pk__in=images).values_list("pk", flat=True)
     )
@@ -188,7 +221,7 @@ def read_import(path, file_name: str) -> dict:
             "until": _year(until_raw),
             "title": str(cell(row, "title")).strip(),
             "text": str(cell(row, "text")).strip().replace("\r\n", "\n"),
-            "image": None,
+            "images": [],
         }
         problems = entry_errors(entry)
         if str(until_raw).strip() and entry["until"] is None:

@@ -361,6 +361,7 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
     darauf). Ist sie hier schon vergeben, bekommt das Bild eine neue, und die Texte
     werden angepasst."""
     from website.models import WebsiteImage
+    from website.timeline import entry_images, with_images
 
     renamed = ids.maps.setdefault("website.imagekey", {})
     if name == "website.websiteimage":
@@ -414,8 +415,17 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
                     obj,
                     field,
                     [
-                        {**e, "image": ids.get("website.websiteimage", e.get("image"))}
-                        if isinstance(e, dict) and e.get("image") is not None
+                        with_images(
+                            e,
+                            [
+                                pk
+                                for pk in (
+                                    ids.get("website.websiteimage", i) for i in entry_images(e)
+                                )
+                                if pk is not None
+                            ],
+                        )
+                        if isinstance(e, dict)
                         else e
                         for e in entries
                     ],
