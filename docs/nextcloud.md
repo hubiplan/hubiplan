@@ -95,8 +95,8 @@ Einrichtung in der Nextcloud:
 1. Gruppe anlegen, z. B. `HUBIplan`, und in HUBIplan als „Gruppe der Konten über HUBIplan“
    eintragen. HUBIplan schickt sie bei jeder Anmeldung mit.
 2. Beim Anbieter „Gruppen-Provisionierung“ an, Gruppen-Zuordnung `groups`, Whitelist
-   `^HUBIplan$`. Dann setzt `user_oidc` nur diese Gruppe; alle anderen Gruppen (auch `admin`)
-   bleiben, wie sie sind.
+   `/^HUBIplan$/` (mit Schrägstrichen, sonst greift sie nicht). Dann setzt `user_oidc` nur
+   diese Gruppe; alle anderen Gruppen (auch `admin`) bleiben, wie sie sind.
 3. Eigenes Konto `hubiplan-dienst` anlegen, als Gruppen-Admin der Gruppe `HUBIplan`
    eintragen, angemeldet ein App-Passwort erzeugen (Persönliche Einstellungen › Sicherheit).
    Benutzername und App-Passwort in HUBIplan eintragen („Verbindung prüfen“). Das Passwort
