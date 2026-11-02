@@ -15,7 +15,7 @@ from django.utils.translation import gettext
 
 from access.catalog import DEPT_INVOICES_VIEW
 from finance import services as finance_services
-from finance.models import Booking
+from finance.models import Booking, CashReceipt
 from members.honorary import adjusted_fee
 from members.models import (
     DepartmentRoleHolder,
@@ -790,9 +790,22 @@ def add_payment(
 @transaction.atomic
 def remove_payment(payment: Payment, user=None) -> Booking | None:
     """Zahlung entfernen. Am Tag der Erfassung wird die Buchung gelöscht, danach storniert
-    (GoBD: Gegenbuchung, die Buchung bleibt). Gibt die Stornobuchung zurück, sonst None."""
+    (GoBD: Gegenbuchung, die Buchung bleibt). Gibt die Stornobuchung zurück, sonst None.
+
+    Gehört eine abgeschlossene Quittung zur Zahlung, geht das nur über das Storno der
+    Quittung (Audit 02.11. BP-F01). Sperrfolge wie dort: erst Quittung, dann Rechnung."""
+    receipt = CashReceipt.objects.select_for_update().filter(payment_id=payment.pk).first()
     invoice = payment.invoice
     lock_invoice(invoice)
+    if not Payment.objects.filter(pk=payment.pk).exists():
+        raise ValidationError(gettext("Diese Zahlung gibt es nicht mehr."))
+    if receipt is not None and receipt.status != CashReceipt.Status.DRAFT:
+        raise ValidationError(
+            gettext(
+                "Zu dieser Zahlung gibt es die abgeschlossene Quittung {number}. Bitte die "
+                "Quittung in der Kasse stornieren; das entfernt auch die Zahlung."
+            ).format(number=receipt.number)
+        )
     booking = payment.booking
     finance_services.ensure_open(invoice.organization, year=booking.year)
     payment.delete()
