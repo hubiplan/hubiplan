@@ -265,6 +265,8 @@ class TestQuarantaene:
     """Audit 02.11. GA-S02: Während ein Notfallwechsel wartet, ruht jeder Austausch."""
 
     def test_alter_schluessel_wird_abgewiesen(self, net, world, coupled):
+        upper = coupled["upper"]
+        received = Message.objects.filter(coupling=upper, direction=Message.Direction.IN).count()
         with net.on(VEREIN):
             stolen = _key_file(net, VEREIN)
             keys.rotate(None, emergency=True)
@@ -273,8 +275,11 @@ class TestQuarantaene:
         assert not deliver_ok(net, VEREIN, coupled["lower"])
         msg = Message.objects.filter(coupling=coupled["lower"], state=Message.State.QUEUED).first()
         assert "Notfallwechsel" in msg.last_error
-        upper = coupled["upper"]
-        assert not Message.objects.filter(coupling=upper, direction=Message.Direction.IN).exists()
+        # Nichts Neues angenommen
+        assert (
+            Message.objects.filter(coupling=upper, direction=Message.Direction.IN).count()
+            == received
+        )
 
     def test_nichts_geht_an_die_gegenstelle(self, net, world, coupled, monkeypatch):
         with net.on(VEREIN):
@@ -290,7 +295,7 @@ class TestQuarantaene:
         assert "Notfallwechsel" in msg.last_error
 
     def test_verbundanmeldung_ruht(self, net, world, coupled):
-        from rest_framework.exceptions import ValidationError
+        from django.core.exceptions import ValidationError
 
         from peering import sso
 
