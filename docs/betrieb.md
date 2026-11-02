@@ -445,7 +445,8 @@ Geburtsjahr und die Mitgliedszeiträume; die Verbandsnummer wird gelöscht, soba
 nirgends mehr Mitglied ist. Verlangt ein ehemaliges Mitglied die Löschung vorher, gibt es in
 der Akte unter „Abläufe“ den Knopf „Daten auf Verlangen löschen“ (gleiches Ergebnis).
 Rechnungen und Buchungen bleiben wegen der Aufbewahrungspflicht. Jede Löschung steht auf der
-Löschliste (siehe Wiederherstellen).
+Löschliste (siehe Wiederherstellen). Eine verkürzte Löschfrist gilt erst nach 30 Tagen.
+Alle Datenarten mit Rechtsgrundlage und Frist: [aufbewahrung.md](aufbewahrung.md).
 
 **Auskunft (Art. 15 DSGVO):** In der Akte unter „Abläufe“ › „Auskunft für dieses Mitglied
 (ZIP)“ (Recht „Vollständigen Datenexport erstellen“): Akte, Zusatzfelder, Rechnungen mit PDF,
