@@ -5,7 +5,9 @@ bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/abschluss]
-stichworte: [year-end closing, cash report, audit, DATEV]
+stichworte: [year-end closing, cash report, audit, DATEV, retention period, deletion hold]
 ---
 
 Here you produce the cash report for the general meeting and close a financial year. After closing, the bookings can no longer be changed. There are also exports, for example for DATEV or the cash audit.
+
+Once the retention period has ended (receipts 8 years, books 10 years after the end of the calendar year), receipts can be deleted and books anonymised. The periods are set by law and cannot be shortened. If an audit or a legal dispute is still ongoing, set a **deletion hold** with a reason on the financial year. While it applies, nothing is deleted. Board members who can manage roles may set and lift it; both are recorded in the log.

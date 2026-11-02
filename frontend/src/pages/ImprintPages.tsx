@@ -378,6 +378,11 @@ export function LicensePage() {
       </p>
       <ul>
         <li>
+          <a href={`${SOURCE_REPO}/blob/${commit ?? 'main'}/README.md#selbst-betreiben`}>
+            {t('Bauen und selbst betreiben (Anleitung)')}
+          </a>
+        </li>
+        <li>
           <a href={LICENSE_FILES.license}>{t('Lizenztext (englisch)')}</a>
         </li>
         <li>

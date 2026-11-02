@@ -305,7 +305,9 @@ DEFAULT_FROM_EMAIL=hubiplan <noreply@example.org>
 
 **Aufbewahrung:** Bei zugestellten Mails leert ein täglicher Job nach
 `OUTBOX_RETENTION_DAYS` Tagen (Standard 30) Text und Anhänge. Empfänger, Betreff, Art und
-Datum bleiben als Nachweis. Nicht zugestellte Mails bleiben vollständig.
+Datum bleiben als Nachweis. Nicht zugestellte (und nur gespeicherte) Mails bleiben länger
+vollständig, damit man sie erneut senden kann, aber nicht unbegrenzt: nach
+`OUTBOX_FAILED_RETENTION_DAYS` Tagen (Standard 90, Fachfrage FQ14) werden auch sie geleert.
 
 ## Grenzen der Container
 

@@ -309,6 +309,8 @@ BACKUP_STATUS_DIR = os.environ.get("BACKUP_STATUS_DIR", "")
 BACKUP_MAX_AGE_HOURS = int(os.environ.get("BACKUP_MAX_AGE_HOURS", "26"))
 # Zugestellte Mails: Text und Anhänge nach so vielen Tagen leeren (Nachweis bleibt)
 OUTBOX_RETENTION_DAYS = int(os.environ.get("OUTBOX_RETENTION_DAYS", "30"))
+# Nicht zugestellte Mails: länger, aber nicht unbegrenzt (Fachfrage FQ14, Audit 02.11.)
+OUTBOX_FAILED_RETENTION_DAYS = int(os.environ.get("OUTBOX_FAILED_RETENTION_DAYS", "90"))
 
 # --- Sicherheit ---
 # Django-Admin unter /admin/: im Server-Betrieb standardmäßig aus (weniger

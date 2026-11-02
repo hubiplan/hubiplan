@@ -615,6 +615,7 @@
   "Lizenzen": "Licences",
   "Lizenzen der enthaltenen Bibliotheken": "Licences of the included libraries",
   "Lizenztext (englisch)": "Licence text (English)",
+  "Bauen und selbst betreiben (Anleitung)": "Building and running it yourself (instructions)",
   "Lädt …": "Loading …",
   "löschen": "delete",
   "Löschen": "Delete",
@@ -4659,5 +4660,15 @@
   "Name des Kapitels": "Chapter name",
   "Gruppen für einzelne Rollen anpassen": "Adjust groups for individual roles",
   "Leer heißt: Die Rolle geht unter ihrem Namen an die Nextcloud (wenn „je Rolle eine Gruppe“ an ist). Mit Eintrag gehen stattdessen die genannten Gruppen mit, mehrere mit Komma, auch wenn „je Rolle eine Gruppe“ aus ist. So kommen etwa „1. Kassierer“ und „2. Kassierer“ beide in „Kassierer“. Umbenennen der Rolle ändert daran nichts.": "Empty means: the role is sent to Nextcloud under its own name (if “one group per role” is on). With an entry, the listed groups are sent instead, several separated by commas, even if “one group per role” is off. This way, for example, “1st treasurer” and “2nd treasurer” both end up in “Treasurer”. Renaming the role does not change this.",
-  "Gruppen für {role}": "Groups for {role}"
+  "Gruppen für {role}": "Groups for {role}",
+  "Löschsperre für {label} aufheben?": "Lift the deletion hold for {label}?",
+  "Nach Ablauf der Aufbewahrungsfrist lassen sich die Daten dann wieder bereinigen.": "Once the retention period has ended, the data can then be cleaned up again.",
+  "Löschsperre für {label} setzen?": "Set a deletion hold for {label}?",
+  "Solange die Sperre gilt, wird für dieses Geschäftsjahr nichts gelöscht, auch nach Ablauf der Aufbewahrungsfrist. Zum Beispiel bei einer laufenden Prüfung oder einem Rechtsstreit.": "While the hold applies, nothing is deleted for this financial year, even after the retention period has ended. For example during an ongoing audit or a legal dispute.",
+  "Sperre setzen": "Set hold",
+  "Löschsperre für {label} aufgehoben.": "Deletion hold for {label} lifted.",
+  "Löschsperre für {label} gesetzt.": "Deletion hold for {label} set.",
+  "Löschsperre aufheben": "Lift deletion hold",
+  "Löschsperre setzen": "Set deletion hold",
+  "Löschsperre seit {x}{x2}: {reason}": "Deletion hold since {x}{x2}: {reason}"
 }

@@ -3,7 +3,10 @@
 Der Postausgang hält Mailtexte mit Mitgliederdaten (Rechnungen, Mahnungen,
 Rundschreiben). Nach der Zustellung braucht man davon nur noch den Nachweis: an wen,
 wann, welcher Betreff, welche Art. Text und Anhänge werden deshalb nach
-``OUTBOX_RETENTION_DAYS`` Tagen geleert. Nicht zugestellte Mails bleiben vollständig.
+``OUTBOX_RETENTION_DAYS`` Tagen geleert. Nicht zugestellte Mails bleiben länger
+vollständig, damit sie sich erneut senden lassen, aber nicht unbegrenzt: nach
+``OUTBOX_FAILED_RETENTION_DAYS`` Tagen (Standard 90) werden auch sie geleert
+(Fachfrage FQ14, Audit 02.11.).
 """
 
 from __future__ import annotations
@@ -28,17 +31,18 @@ SHORT_RETENTION_KINDS = ("website-contact",)
 def purge_sent(now: datetime.datetime | None = None) -> int:
     days = getattr(settings, "OUTBOX_RETENTION_DAYS", 30)
     cutoff = (now or timezone.now()) - datetime.timedelta(days=days)
+    failed_days = getattr(settings, "OUTBOX_FAILED_RETENTION_DAYS", 90)
+    failed_cutoff = (now or timezone.now()) - datetime.timedelta(days=failed_days)
     root = Path(settings.PRIVATE_ROOT)
     own_folder = attachment_dir().resolve()
     with rls_bypass():
         short = (now or timezone.now()) - datetime.timedelta(days=SHORT_RETENTION_DAYS)
-        old = (
-            OutgoingMail.objects.filter(status=OutgoingMail.Status.SENT)
-            .filter(
-                Q(created_at__lt=cutoff) | Q(kind__in=SHORT_RETENTION_KINDS, created_at__lt=short)
-            )
-            .exclude(body=EMPTIED)
+        sent = Q(status=OutgoingMail.Status.SENT) & (
+            Q(created_at__lt=cutoff) | Q(kind__in=SHORT_RETENTION_KINDS, created_at__lt=short)
         )
+        # Nicht zugestellt oder nur gespeichert: nach der längeren Frist
+        other = ~Q(status=OutgoingMail.Status.SENT) & Q(created_at__lt=failed_cutoff)
+        old = OutgoingMail.objects.filter(sent | other).exclude(body=EMPTIED)
         paths: set[str] = set()
         count = 0
         for mail in old.iterator():

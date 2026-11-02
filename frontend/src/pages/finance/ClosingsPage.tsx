@@ -113,6 +113,51 @@ export function ClosingsPage() {
     }
   }
 
+  /** Löschsperre setzen (reason) oder aufheben (leer); Fachfrage FQ10 */
+  async function hold(year: number, label: string, active: boolean) {
+    let reason = ''
+    if (active) {
+      if (
+        !(await confirmDialog({
+          title: t('Löschsperre für {label} aufheben?', { label }),
+          message: t(
+            'Nach Ablauf der Aufbewahrungsfrist lassen sich die Daten dann wieder bereinigen.',
+          ),
+          confirmLabel: t('Aufheben'),
+          danger: false,
+        }))
+      )
+        return
+    } else {
+      const given = await promptDialog({
+        title: t('Löschsperre für {label} setzen?', { label }),
+        message: t(
+          'Solange die Sperre gilt, wird für dieses Geschäftsjahr nichts gelöscht, auch nach Ablauf der Aufbewahrungsfrist. Zum Beispiel bei einer laufenden Prüfung oder einem Rechtsstreit.',
+        ),
+        label: t('Grund'),
+        confirmLabel: t('Sperre setzen'),
+      })
+      if (given === null || !given.trim()) return
+      reason = given
+    }
+    setBusy(true)
+    setNotice(null)
+    try {
+      await financeApi.setRetentionHold(org.id, year, reason)
+      setNotice({
+        kind: 'success',
+        text: active
+          ? t('Löschsperre für {label} aufgehoben.', { label })
+          : t('Löschsperre für {label} gesetzt.', { label }),
+      })
+      await reload()
+    } catch (err) {
+      setNotice({ kind: 'error', text: errorMessage(err) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function lock() {
     if (!lockDate) return
     if (
@@ -317,19 +362,34 @@ export function ClosingsPage() {
                       {t('Abschluss aufheben')}
                     </button>
                   )}
-                {data.can_reopen && (y.retention?.documents_due || y.retention?.records_due) && (
+                {data.can_reopen && y.retention && !y.retention.records_purged_at && (
                   <>
                     {' '}
                     <button
                       type="button"
                       className="link-button"
                       disabled={busy}
-                      onClick={() => void purge(y.year, y.label, !!y.retention?.records_due)}
+                      onClick={() => void hold(y.year, y.label, !!y.retention?.hold)}
                     >
-                      {y.retention?.records_due ? t('Daten bereinigen') : t('Belege löschen')}
+                      {y.retention.hold ? t('Löschsperre aufheben') : t('Löschsperre setzen')}
                     </button>
                   </>
                 )}
+                {data.can_reopen &&
+                  !y.retention?.hold &&
+                  (y.retention?.documents_due || y.retention?.records_due) && (
+                    <>
+                      {' '}
+                      <button
+                        type="button"
+                        className="link-button"
+                        disabled={busy}
+                        onClick={() => void purge(y.year, y.label, !!y.retention?.records_due)}
+                      >
+                        {y.retention?.records_due ? t('Daten bereinigen') : t('Belege löschen')}
+                      </button>
+                    </>
+                  )}
               </td>
             </tr>
           ))}
@@ -343,6 +403,17 @@ export function ClosingsPage() {
 function RetentionNote({ r }: { r: Retention }) {
   return (
     <div className="muted small">
+      {r.hold && (
+        <div>
+          <strong>
+            {t('Löschsperre seit {x}{x2}: {reason}', {
+              x: r.hold_at ? formatDateTime(r.hold_at) : '',
+              x2: r.hold_by ? t(' von {name}', { name: r.hold_by }) : '',
+              reason: r.hold,
+            })}
+          </strong>
+        </div>
+      )}
       {r.records_purged_at
         ? t('Bücher anonymisiert am {x}{x2}', {
             x: formatDateTime(r.records_purged_at),

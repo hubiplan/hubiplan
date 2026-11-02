@@ -4531,3 +4531,12 @@ msgstr "Please give a list of groups for each role."
 
 msgid "Gruppennamen höchstens 64 Zeichen: {groups}"
 msgstr "Group names may have at most 64 characters: {groups}"
+
+msgid "Eine Löschsperre gibt es nur für abgeschlossene Geschäftsjahre."
+msgstr "A deletion hold is only possible for closed financial years."
+
+msgid "Dieses Geschäftsjahr ist schon bereinigt."
+msgstr "This financial year has already been cleaned up."
+
+msgid "Für dieses Geschäftsjahr gilt eine Löschsperre: {x}"
+msgstr "A deletion hold applies to this financial year: {x}"

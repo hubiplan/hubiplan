@@ -11,6 +11,7 @@ from __future__ import annotations
 import io
 import json
 import zipfile
+from decimal import Decimal
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
@@ -29,7 +30,8 @@ Inhalt
 - akte.json: Stammdaten, Kontaktdaten, Mitgliedschaftszeiten, Mitgliedsarten, Zugehörigkeit zu
   Untereinheiten, Ämter, Ehrungen, Verbandsmeldung
 - zusatzfelder.json: vom Verein festgelegte zusätzliche Angaben
-- rechnungen.json / rechnungen.pdf: Rechnungen an die Person mit Zahlungen
+- rechnungen.json / rechnungen.pdf: Rechnungen an die Person mit Zahlungen; aus
+  Sammelrechnungen an andere nur die eigenen Posten mit Nummer, Datum und Empfänger
 - mandate.json: SEPA-Lastschriftmandate
 - zuwendungen.json: Spenden und Zuwendungen
 - mails.json: E-Mails, die der Verein über HUBIplan an die Person geschickt hat
@@ -103,9 +105,34 @@ def _invoices(membership: Membership):
     )
 
 
-def _invoice_rows(invoices) -> list[dict]:
+# Sammelrechnung an jemand anderen: nur der nötige Zusammenhang (Fachfrage FQ13)
+SHARED_INVOICE_FIELDS = (
+    "number",
+    "year",
+    "status",
+    "recipient_name",
+    "date",
+    "due_date",
+    "subject",
+    "cancelled_at",
+)
+
+
+def _invoice_rows(invoices, membership: Membership | None = None) -> list[dict]:
+    """Rechnungen an die Person vollständig. Steht die Person nur in einzelnen Posten einer
+    Sammelrechnung an jemand anderen, gehören nur ihre eigenen Posten in die Auskunft, mit
+    Nummer, Datum und Rechnungsempfänger als Zusammenhang; Posten, Anschrift und Zahlungen
+    der anderen bleiben draußen (Fachfrage FQ13)."""
     rows = []
     for inv in invoices:
+        if membership is not None and inv.membership_id != membership.pk:
+            own = [line for line in inv.lines.all() if line.membership_id == membership.pk]
+            row = {name: getattr(inv, name) for name in SHARED_INVOICE_FIELDS}
+            row["sammelrechnung"] = True
+            row["positionen"] = [_row(line) for line in own]
+            row["eigene_summe"] = sum((line.amount for line in own), Decimal("0"))
+            rows.append(row)
+            continue
         row = _row(inv, {"created_by"})
         row["positionen"] = [_row(line) for line in inv.lines.all()]
         row["zahlungen"] = [_row(p, {"created_by", "booking"}) for p in inv.payments.all()]
@@ -145,8 +172,9 @@ def build(membership: Membership, org) -> bytes:
     )
 
     invoices = _invoices(membership)
-    files["rechnungen.json"] = _dump(_invoice_rows(invoices))
-    issued = [i for i in invoices if i.number]
+    files["rechnungen.json"] = _dump(_invoice_rows(invoices, membership))
+    # Als PDF nur Rechnungen an die Person selbst; eine Sammelrechnung zeigt alle Posten
+    issued = [i for i in invoices if i.number and i.membership_id == membership.pk]
     if issued:
         from billing import pdf
 

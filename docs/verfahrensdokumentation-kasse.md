@@ -167,6 +167,17 @@ Gespeichert wird von einer Unterschrift nur die Form der Linien (keine Zeit-, Dr
 Geschwindigkeitswerte), dazu Name und Zeitpunkt. Die Unterschrift ist eine einfache
 elektronische Signatur.
 
+**Beweiswert (Fachfrage FQ09, Audit 02.11.):** Die Unterschrift zeigt, dass jemand auf dem
+Gerät des Kassierers unterschrieben hat. Sie prüft nicht, wer das war; eine
+Identitätsprüfung oder eine unabhängige Zeitbestätigung gibt es nicht. Der Zeitpunkt ist der
+des Servers beim Abschluss; bei einer offline in der App unterschriebenen Quittung kommt der
+Zeitpunkt der Unterschrift von der Uhr des Telefons. Damit hat die digitale Quittung
+denselben Beweiswert wie eine von Hand unterschriebene Papierquittung: ein Kassenbeleg im
+Sinne der GoBD, keine qualifizierte elektronische Signatur. Braucht der Verein im Einzelfall
+mehr (z. B. bei hohen Barbeträgen oder Streit über den Empfang), lässt er sich den Empfang
+zusätzlich auf einem zweiten Weg bestätigen, etwa schriftlich oder per Mail der Gegenseite,
+und legt die Bestätigung als Beleg an die Buchung.
+
 In der Android-App darf offline unterschrieben werden; der Abschluss mit Belegnummer folgt,
 sobald Netz da ist, höchstens 30 Tage nach der Unterschrift.
 
@@ -185,6 +196,13 @@ sobald Netz da ist, höchstens 30 Tage nach der Unterschrift.
   Vorstände mit Rollenverwaltung; ein so bereinigtes Jahr lässt sich nicht mehr aufheben.
   Vorher den Datenexport prüfen, falls eine Betriebsprüfung oder ein Verfahren läuft
   (solange Steuern dieser Jahre noch festgesetzt werden können, läuft die Frist nicht ab, § 147 Abs. 3 AO).
+- **Löschsperre (Fachfrage FQ10, Audit 02.11.):** Läuft eine Betriebsprüfung, ein
+  Rechtsstreit oder ein anderes Verfahren, setzen Vorstände mit Rollenverwaltung beim
+  betroffenen Geschäftsjahr eine Löschsperre mit Grund. Solange sie besteht, lassen sich
+  Belege und Bücher dieses Jahres nicht bereinigen, auch nach Ablauf der Frist. Setzen und
+  Aufheben stehen im Änderungsprotokoll. Die Fristen selbst sind fest (Mindestfristen nach
+  § 147 AO) und lassen sich nicht verkürzen; einen Überblick über alle Datenarten gibt
+  [aufbewahrung.md](aufbewahrung.md).
 - Tägliches verschlüsseltes Backup mit Rücksicherungstest (siehe [betrieb.md](betrieb.md));
   ein zweiter Sicherungsort außerhalb des Servers ist einzurichten (Abschnitt 6).
 - **Datenexport für eine Prüfung:** Finanzen › Abschluss & Berichte › Jahresabschluss ›

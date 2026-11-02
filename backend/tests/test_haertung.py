@@ -65,6 +65,25 @@ def test_alte_zugestellte_mails_werden_geleert(orgs, settings, tmp_path):
     assert purge_sent() == 0
 
 
+def test_fehlgeschlagene_mails_nach_90_tagen_geleert(orgs, settings, tmp_path):
+    """Fachfrage FQ14: Auch nicht zugestellte Mails bleiben nicht unbegrenzt."""
+    settings.PRIVATE_ROOT = tmp_path / "private"
+    settings.OUTBOX_RETENTION_DAYS = 30
+    settings.OUTBOX_FAILED_RETENTION_DAYS = 90
+    attachment_dir().mkdir(parents=True)
+    failed_old = _mail(orgs["a"], OutgoingMail.Status.FAILED, 91)
+    stored_old = _mail(orgs["a"], OutgoingMail.Status.STORED, 91)
+    failed_new = _mail(orgs["a"], OutgoingMail.Status.FAILED, 89)
+
+    assert purge_sent() == 2
+    for mail in (failed_old, stored_old):
+        mail.refresh_from_db()
+        assert mail.body == EMPTIED and mail.attachments == []
+        assert mail.subject == "Rechnung"
+    failed_new.refresh_from_db()
+    assert failed_new.body.startswith("Hallo")
+
+
 @pytest.fixture
 def reload_urls(settings):
     import importlib
