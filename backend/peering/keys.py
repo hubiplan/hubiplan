@@ -77,7 +77,9 @@ def announce(peer: Peer) -> str:
     if peer.our_fingerprint == ident.fingerprint:
         return "applied"
     try:
-        result = transport.call(services.keys_of(peer), PATH, announcement(ident), announce=True)
+        result = transport.call(
+            services.keys_of(peer, quarantine_ok=True), PATH, announcement(ident), announce=True
+        )
     except transport.PeerError as exc:
         log.warning("Schlüsselwechsel an %s nicht zugestellt: %s", peer.base_url, exc)
         return str(exc) or "nicht erreichbar"

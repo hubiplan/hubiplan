@@ -51,6 +51,7 @@ class _Signed(APIView):
 
     # Darf eine noch unbekannte Instanz anfragen (Koppeln mit Code)?
     allow_unknown = False
+    allow_quarantined = False
 
     def dispatch(self, request, *args, **kwargs):
         with rls_bypass():
@@ -88,7 +89,7 @@ class _Signed(APIView):
         if not isinstance(envelope, dict) or envelope.get("from") != sender:
             return _plain(400, "Absender passt nicht.")
         peer = Peer.objects.filter(instance_id=sender).first() if _is_uuid(sender) else None
-        keys = services.keys_of(peer) if peer else None
+        keys = services.keys_of(peer, quarantine_ok=True) if peer else None
         if keys is not None:
             # Bekannte Absenderin: erst die Unterschrift, dann (teuer) entschlüsseln
             if not crypto.verify_request_any(
@@ -114,6 +115,10 @@ class _Signed(APIView):
                 return _plain(403, "Unterschrift ungültig.")
         if keys is None:
             return _plain(403, "Unbekannte Instanz.")
+        if peer is not None and peer.pending_keys and not self.allow_quarantined:
+            # Notfallwechsel wartet: weder alter noch neuer Schlüssel gilt (GA-S02).
+            # 423 = später erneut versuchen; die Antwort enthält nur diesen Hinweis.
+            return self.respond(423, {"error": services.QUARANTINE_TEXT}, keys, request.path, nonce)
         if not cache.add(f"peering:nonce:{sender}:{nonce}", 1, int(MAX_SKEW.total_seconds()) * 3):
             return _plain(409, "Anfrage schon verarbeitet.")
         if peer is not None:
@@ -228,6 +233,8 @@ class StatusView(_Signed):
 
 class KeysView(_Signed):
     """Schlüsselwechsel einer Gegenstelle (H6), auch mit dem alten Schlüssel unterschrieben."""
+
+    allow_quarantined = True
 
     def handle(self, peer, payload):
         from . import keys

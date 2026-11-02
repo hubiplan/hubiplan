@@ -261,6 +261,51 @@ class TestNotfall:
         assert coupled["verein_at_verband"].pending_keys == {}
 
 
+class TestQuarantaene:
+    """Audit 02.11. GA-S02: Während ein Notfallwechsel wartet, ruht jeder Austausch."""
+
+    def test_alter_schluessel_wird_abgewiesen(self, net, world, coupled):
+        with net.on(VEREIN):
+            stolen = _key_file(net, VEREIN)
+            keys.rotate(None, emergency=True)
+            # Wer den alten Schlüssel gestohlen hat, sendet damit weiter
+            _write_key_file(net, VEREIN, stolen)
+        assert not deliver_ok(net, VEREIN, coupled["lower"])
+        msg = Message.objects.filter(coupling=coupled["lower"], state=Message.State.QUEUED).first()
+        assert "Notfallwechsel" in msg.last_error
+        upper = coupled["upper"]
+        assert not Message.objects.filter(coupling=upper, direction=Message.Direction.IN).exists()
+
+    def test_nichts_geht_an_die_gegenstelle(self, net, world, coupled, monkeypatch):
+        with net.on(VEREIN):
+            keys.rotate(None, emergency=True)
+        calls = []
+        real = transport.call
+        monkeypatch.setattr(
+            transport, "call", lambda *a, **kw: calls.append(a[1]) or real(*a, **kw)
+        )
+        assert not deliver_ok(net, VERBAND, coupled["upper"])
+        assert calls == []
+        msg = Message.objects.filter(coupling=coupled["upper"], state=Message.State.QUEUED).first()
+        assert "Notfallwechsel" in msg.last_error
+
+    def test_verbundanmeldung_ruht(self, net, world, coupled):
+        from rest_framework.exceptions import ValidationError
+
+        from peering import sso
+
+        peer = coupled["verein_at_verband"]
+        with net.on(VERBAND):
+            assert peer in sso.coupled_peers()
+        with net.on(VEREIN):
+            keys.rotate(None, emergency=True)
+        with net.on(VERBAND):
+            assert peer not in sso.coupled_peers()
+            with pytest.raises(ValidationError) as exc:
+                sso.peer_by_instance(str(peer.instance_id))
+            assert "Notfallwechsel" in str(exc.value)
+
+
 class TestPlattform:
     def test_knopf_mit_bestaetigungswort(self, net, world, coupled, alarms):
         with net.on(VEREIN):

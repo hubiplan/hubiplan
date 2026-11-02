@@ -152,9 +152,23 @@ def _code_for(unit_uuid: str, secret: str) -> CouplingCode:
     return code
 
 
-def keys_of(peer_or_info) -> transport.PeerKeys:
+class Quarantined(transport.PeerError):
+    """Für die Gegenstelle wartet ein Notfallwechsel der Schlüssel auf Bestätigung."""
+
+
+QUARANTINE_TEXT = (
+    "Für diese Instanz wartet ein Notfallwechsel der Schlüssel auf Bestätigung; der Austausch ruht."
+)
+
+
+def keys_of(peer_or_info, *, quarantine_ok: bool = False) -> transport.PeerKeys:
+    """Schlüssel einer Gegenstelle. Wartet ein Notfallwechsel, ruht jeder Austausch mit
+    ihr (weder alter noch neuer Schlüssel), bis die Plattformverwaltung bestätigt
+    (Audit 02.11. GA-S02). ``quarantine_ok`` nur für den Schlüsselwechsel selbst."""
     if isinstance(peer_or_info, Peer):
         p = peer_or_info
+        if p.pending_keys and not quarantine_ok:
+            raise Quarantined(QUARANTINE_TEXT)
         return transport.PeerKeys(
             str(p.instance_id), p.base_url, p.public_key, p.enc_public_key, p.valid_previous_key
         )
