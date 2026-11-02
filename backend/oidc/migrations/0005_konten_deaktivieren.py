@@ -8,7 +8,7 @@ from core.rls import disable_rls_sql, enable_rls_sql
 class Migration(migrations.Migration):
     dependencies = [
         ("oidc", "0004_nur_rollen"),
-        ("organizations", "__latest__"),
+        ("organizations", "0045_hilfe"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
