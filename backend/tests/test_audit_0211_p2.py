@@ -19,7 +19,7 @@ from members.models import MemberType, MemberTypeAssignment
 
 from .factories import make_member
 from .test_kontoauszug import camt_xml, entry, fin, upload  # noqa: F401
-from .test_m9_billing import JSON, c, club, members, setup, zug  # noqa: F401
+from .test_m9_billing import JSON, base, c, club, members, setup, zug  # noqa: F401
 from .test_m10_billing import fbase, fc, fed, fsetup  # noqa: F401
 
 pytestmark = pytest.mark.django_db
