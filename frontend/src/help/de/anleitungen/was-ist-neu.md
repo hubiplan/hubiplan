@@ -10,6 +10,7 @@ Die neuesten Änderungen stehen oben.
 
 November 2026:
 
+- Termine: Fremde Kalender zeigen ihre Termine im eigenen Kalender, z. B. die des Dachverbands aus Vereinsplaner oder aus einem Kalender-Abo (iCal). HUBIplan holt sie stündlich ab; einzelne lassen sich ausblenden (Termine › Fremde Kalender).
 - Webseite: Je Text lässt sich wählen, ob unter dem Bild und im Bilderkarussell die Bildunterschrift steht. Standard ist ohne Unterschrift, auch für bestehende Seiten.
 - Webseite: Neues Design „Klassisch“ mit hellem Kopf, farbiger Linie oben und Menüknöpfen in der Vereinsfarbe. Wer das bisherige Klassisch behalten will, speichert es vorher als Paket und spielt es als eigenes Design ein.
 - Webseite: Ein Design lässt sich als Paket speichern und von Plattformverwaltern als eigenes Design wieder einspielen, mit eigener Anordnung von Kopf, Fuß und Startseite (Webseite › Gestaltung › Design weitergeben).

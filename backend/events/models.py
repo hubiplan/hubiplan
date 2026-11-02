@@ -117,6 +117,17 @@ class Event(models.Model):
     # Verbund: Kennung des Termins auf seiner Heimat-Instanz (nur bei übermittelten
     # Terminen einer fernen Einheit; die ändert hier niemand)
     remote_uid = models.CharField(max_length=80, blank=True, db_index=True, editable=False)
+    # Fremder Kalender (Vereinsplaner, iCal), aus dem der Termin stammt; auch dann
+    # steht seine Kennung in ``remote_uid`` und niemand ändert ihn hier
+    external_source = models.ForeignKey(
+        "events.ExternalCalendar",
+        verbose_name="fremder Kalender",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="events",
+    )
     # Zeit oder Ort nach dem Anlegen geändert: im Kalender markiert
     changed_at = models.DateTimeField("Zeit oder Ort geändert am", null=True, blank=True)
     # Zu- und Absagen (Meilenstein 13): nur einmalige Termine eines Vereins oder Zugs
@@ -388,3 +399,58 @@ class PersonalCalendar(models.Model):
     @staticmethod
     def new_key() -> str:
         return secrets.token_urlsafe(24)
+
+
+class ExternalCalendar(models.Model):
+    """Fremder Kalender, dessen Termine HUBIplan regelmäßig abholt (nur lesen).
+
+    Die Kopien sind gewöhnliche Termine der Einheit mit ``external_source`` und
+    ``remote_uid``; bearbeiten lassen sie sich hier nicht (``services.can_edit``).
+    Token und Link liegen verschlüsselt (``accounts.mfa.encrypt``).
+    """
+
+    class Kind(models.TextChoices):
+        VEREINSPLANER = "vereinsplaner", "Vereinsplaner"
+        ICAL = "ical", gettext_lazy("Kalender-Abo (iCal)")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    name = models.CharField("Name", max_length=80)
+    kind = models.CharField("Art", max_length=15, choices=Kind.choices)
+    # Vereinsplaner: Token (x-api-token); iCal: Link. Beides verschlüsselt.
+    token = models.TextField(blank=True)
+    # Vereinsplaner, nur private Tokens: x-api-secret (verschlüsselt)
+    secret = models.TextField(blank=True)
+    category = models.ForeignKey(
+        EventCategory,
+        verbose_name="Kategorie",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    visibility = models.CharField(
+        "Sichtbarkeit",
+        max_length=10,
+        choices=Event.Visibility.choices,
+        default=Event.Visibility.MEMBERS,
+    )
+    share_down = models.BooleanField("an Untereinheiten weitergeben", default=True)
+    is_active = models.BooleanField("Abruf aktiv", default=True)
+    # Hier ausgeblendete Termine ({key, title, starts_at}); bleiben es bei jedem Abruf
+    hidden = models.JSONField(default=list, blank=True)
+    last_sync_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.CharField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Fremder Kalender"
+        verbose_name_plural = "Fremde Kalender"
+        ordering = ["name", "pk"]
+
+    # Zugang und Link nie ins Protokoll
+    audit_fields = ("name", "kind", "category", "visibility", "share_down", "is_active")
+
+    def __str__(self) -> str:
+        return self.name

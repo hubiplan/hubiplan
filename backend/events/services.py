@@ -209,7 +209,7 @@ class Viewer:
     def events(self):
         return (
             Event.objects.filter(self.visible_q())
-            .select_related("organization", "department", "category", "project")
+            .select_related("organization", "department", "category", "project", "external_source")
             .distinct()
         )
 

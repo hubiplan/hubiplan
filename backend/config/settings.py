@@ -274,6 +274,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "outbox.tasks.purge_sent_mails",
         "schedule": 24 * 60 * 60,  # täglich
     },
+    # Fremde Kalender (Vereinsplaner, iCal); ohne eingetragene Kalender: nichts zu tun
+    "termine-fremde-kalender": {
+        "task": "events.tasks.sync_external_calendars",
+        "schedule": 60 * 60,  # stündlich
+    },
     # Social-Media-Beiträge der Webseite (ohne verbundene Kanäle: nichts zu tun)
     "webseite-beitraege-abrufen": {"task": "website.tasks.sync_social_feeds", "schedule": 30 * 60},
     "webseite-beitraege-zugang": {

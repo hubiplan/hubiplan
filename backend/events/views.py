@@ -35,7 +35,7 @@ from organizations.models import Organization
 from organizations.terms import fill
 from portal.views import DepartmentScopedMixin, _portal_access
 
-from . import ical, notify, participants, pdf, recurrence, rsvp, services
+from . import external, ical, notify, participants, pdf, recurrence, rsvp, services
 from .models import (
     MAX_ATTACHMENT_BYTES,
     MAX_ATTACHMENTS,
@@ -46,6 +46,7 @@ from .models import (
     EventCategory,
     EventException,
     EventResponse,
+    ExternalCalendar,
     PersonalCalendar,
 )
 from .recurrence import Occurrence, is_rule_start, occurrences
@@ -98,6 +99,8 @@ def occurrence_data(
         "owner": services.owner_label(event, short=True),
         "level": services.level(event),
         "department_id": event.department_id,
+        # Fremder Kalender (Vereinsplaner, iCal), aus dem der Termin stammt
+        "source": event.external_source.name if event.external_source_id else None,
         "own": viewer.owns(event),
         "can_edit": viewer.can_edit(event),
         "rsvp_enabled": event.rsvp_enabled,
@@ -188,6 +191,21 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
         "attachments": [attachment_data(a, f"{base}{event.pk}/") for a in event.attachments.all()],
         "exceptions": [exception_data(e) for e in event.exceptions.all()],
         "rsvp": rsvp_data(event, viewer),
+        "source": (
+            {
+                "name": event.external_source.name,
+                "kind": event.external_source.kind,
+                "kind_label": event.external_source.get_kind_display(),
+            }
+            if event.external_source_id
+            else None
+        ),
+        "can_hide": bool(
+            event.external_source_id
+            and viewer.kind == "org"
+            and viewer.can_manage
+            and viewer.owns(event)
+        ),
     }
     if can_edit:
         # Weitergabe: Angabe am Termin (leer = Voreinstellung) und die Voreinstellung
@@ -794,6 +812,222 @@ class _Publication(APIView):
         return Response(publication_data(request, pub))
 
 
+# --- Fremde Kalender (Vereinsplaner, iCal) ---
+
+
+def external_data(cal: ExternalCalendar) -> dict:
+    return {
+        "id": cal.pk,
+        "name": cal.name,
+        "kind": cal.kind,
+        "kind_label": cal.get_kind_display(),
+        "has_token": bool(cal.token),
+        "has_secret": bool(cal.secret),
+        "category": category_data(cal.category),
+        "visibility": cal.visibility,
+        "share_down": cal.share_down,
+        "is_active": cal.is_active,
+        "last_sync_at": cal.last_sync_at,
+        "last_error": cal.last_error,
+        "event_count": cal.events.count(),
+        "hidden": [h for h in (cal.hidden or []) if isinstance(h, dict)],
+    }
+
+
+class ExternalCalendarSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=80)
+    kind = serializers.ChoiceField(choices=ExternalCalendar.Kind.choices)
+    # Vereinsplaner: Token; iCal: Link. Nur schreiben, nie zurückgeben.
+    token = serializers.CharField(max_length=2000, required=False, allow_blank=True)
+    secret = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    category = serializers.IntegerField(required=False, allow_null=True)
+    visibility = serializers.ChoiceField(choices=Event.Visibility.choices, required=False)
+    share_down = serializers.BooleanField(required=False)
+    is_active = serializers.BooleanField(required=False)
+
+    def validate_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError(gettext("Bitte einen Namen angeben."))
+        return value
+
+    def validate_category(self, value):
+        if value is None:
+            return None
+        cat = EventCategory.objects.filter(organization=self.context["org"], pk=value).first()
+        if cat is None:
+            raise serializers.ValidationError(gettext("Unbekannte Kategorie."))
+        return cat
+
+    def validate(self, attrs):
+        kind = attrs.get("kind") or getattr(self.instance, "kind", "")
+        token = (attrs.get("token") or "").strip()
+        if "token" in attrs:
+            attrs["token"] = token
+        if kind == ExternalCalendar.Kind.ICAL and token:
+            lowered = token.lower()
+            if not (lowered.startswith("https://") or lowered.startswith("webcal://")):
+                raise serializers.ValidationError(
+                    {"token": gettext("Der Link muss mit https:// oder webcal:// beginnen.")}
+                )
+        if self.instance is None and not token:
+            raise serializers.ValidationError(
+                {
+                    "token": gettext("Bitte das Token angeben.")
+                    if kind == ExternalCalendar.Kind.VEREINSPLANER
+                    else gettext("Bitte den Link angeben.")
+                }
+            )
+        return attrs
+
+    def apply(self, cal: ExternalCalendar) -> ExternalCalendar:
+        from accounts.mfa import encrypt
+
+        data = dict(self.validated_data)
+        token = data.pop("token", None)
+        secret = data.pop("secret", None)
+        for key, value in data.items():
+            setattr(cal, key, value)
+        if token:
+            cal.token = encrypt(token)
+        if secret is not None:
+            cal.secret = encrypt(secret.strip()) if secret.strip() else ""
+        if cal.kind != ExternalCalendar.Kind.VEREINSPLANER:
+            cal.secret = ""
+        return cal
+
+
+class _ExternalMixin:
+    def require_org_manage(self) -> None:
+        if self.viewer.kind != "org" or not self.viewer.can_manage:
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
+
+    def calendar(self, pk: int) -> ExternalCalendar:
+        return get_object_or_404(ExternalCalendar, organization=self.viewer.org, pk=pk)
+
+    def after_change(self, cal: ExternalCalendar) -> None:
+        """Bestehende Kopien an Kategorie, Sichtbarkeit und Weitergabe anpassen."""
+        cal.events.update(
+            category=cal.category, visibility=cal.visibility, share_down=cal.share_down
+        )
+        if not cal.is_active:
+            cal.events.all().delete()
+
+
+class _ExternalCalendars(_ExternalMixin, APIView):
+    """GET: fremde Kalender der Einheit · POST: neuen anlegen (und gleich abrufen)."""
+
+    def get(self, request, **kwargs):
+        self.require_org_manage()
+        cals = ExternalCalendar.objects.filter(organization=self.viewer.org).select_related(
+            "category"
+        )
+        return Response([external_data(c) for c in cals])
+
+    def post(self, request, **kwargs):
+        self.require_org_manage()
+        data = ExternalCalendarSerializer(data=request.data, context={"org": self.viewer.org})
+        data.is_valid(raise_exception=True)
+        with transaction.atomic():
+            cal = data.apply(ExternalCalendar(organization=self.viewer.org))
+            cal.save()
+            self.audit("create", cal, diff({}, snapshot(cal)))
+        external.sync(cal)
+        cal.refresh_from_db()
+        return Response(external_data(cal), status=201)
+
+
+class _ExternalCalendarDetail(_ExternalMixin, APIView):
+    def patch(self, request, pk: int, **kwargs):
+        self.require_org_manage()
+        with transaction.atomic():
+            cal = self.calendar(pk)
+            before = snapshot(cal)
+            old_token = cal.token
+            data = ExternalCalendarSerializer(
+                cal, data=request.data, partial=True, context={"org": self.viewer.org}
+            )
+            data.is_valid(raise_exception=True)
+            cal = data.apply(cal)
+            cal.save()
+            changes = diff(before, snapshot(cal))
+            if cal.token != old_token:
+                changes["Zugang"] = ["alt", "neu"]
+            if changes:
+                self.audit("update", cal, changes)
+            self.after_change(cal)
+        if cal.is_active and (cal.token != old_token or "is_active" in data.validated_data):
+            external.sync(cal)
+            cal.refresh_from_db()
+        return Response(external_data(cal))
+
+    @transaction.atomic
+    def delete(self, request, pk: int, **kwargs):
+        self.require_org_manage()
+        cal = self.calendar(pk)
+        self.audit("delete", cal, diff(snapshot(cal), {}))
+        cal.delete()  # die Kopien gehen mit
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class _ExternalCalendarSync(_ExternalMixin, APIView):
+    """Jetzt abrufen."""
+
+    def post(self, request, pk: int, **kwargs):
+        self.require_org_manage()
+        cal = self.calendar(pk)
+        if not cal.is_active:
+            raise serializers.ValidationError(gettext("Der Abruf ist ausgeschaltet."))
+        external.sync(cal)
+        cal.refresh_from_db()
+        return Response(external_data(cal))
+
+
+class _ExternalCalendarShow(_ExternalMixin, APIView):
+    """Einen ausgeblendeten Termin wieder zeigen (beim nächsten Abruf)."""
+
+    def post(self, request, pk: int, **kwargs):
+        self.require_org_manage()
+        key = str(request.data.get("key") or "")
+        with transaction.atomic():
+            cal = self.calendar(pk)
+            entry = next(
+                (h for h in (cal.hidden or []) if isinstance(h, dict) and h.get("key") == key),
+                None,
+            )
+            if entry is None:
+                raise NotFound()
+            cal.hidden = [h for h in cal.hidden if h is not entry]
+            cal.save(update_fields=["hidden"])
+            self.audit("update", cal, {"Wieder gezeigt": [entry.get("title") or key, None]})
+        if cal.is_active:
+            external.sync(cal)
+            cal.refresh_from_db()
+        return Response(external_data(cal))
+
+
+class _EventHide(APIView):
+    """Einen fremden Termin hier ausblenden (bleibt es bei jedem Abruf)."""
+
+    @transaction.atomic
+    def post(self, request, pk: int, **kwargs):
+        event = self.visible_event(pk)
+        if not (
+            event.external_source_id
+            and self.viewer.kind == "org"
+            and self.viewer.can_manage
+            and self.viewer.owns(event)
+        ):
+            raise PermissionDenied(gettext("Diesen Termin kannst du hier nicht ausblenden."))
+        self.audit(
+            "update",
+            event.external_source,
+            {"Ausgeblendet": [None, f"{event.title} ({event.starts_at:%d.%m.%Y})"]},
+        )
+        external.hide(event)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 # --- Zu- und Absagen ---
 
 
@@ -1246,6 +1480,26 @@ class OrgCategoriesView(OrgCalendarMixin, _Categories):
 
 
 class OrgCategoryDetailView(OrgCalendarMixin, _CategoryDetail):
+    pass
+
+
+class OrgExternalCalendarsView(OrgCalendarMixin, _ExternalCalendars):
+    pass
+
+
+class OrgExternalCalendarDetailView(OrgCalendarMixin, _ExternalCalendarDetail):
+    pass
+
+
+class OrgExternalCalendarSyncView(OrgCalendarMixin, _ExternalCalendarSync):
+    pass
+
+
+class OrgExternalCalendarShowView(OrgCalendarMixin, _ExternalCalendarShow):
+    pass
+
+
+class OrgEventHideView(OrgCalendarMixin, _EventHide):
     pass
 
 

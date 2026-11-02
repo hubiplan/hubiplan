@@ -430,6 +430,25 @@ org_patterns = [
         event_views.OrgCategoryDetailView.as_view(),
         name="event-category",
     ),
+    path(
+        "events/external/", event_views.OrgExternalCalendarsView.as_view(), name="events-external"
+    ),
+    path(
+        "events/external/<int:pk>/",
+        event_views.OrgExternalCalendarDetailView.as_view(),
+        name="events-external-detail",
+    ),
+    path(
+        "events/external/<int:pk>/sync/",
+        event_views.OrgExternalCalendarSyncView.as_view(),
+        name="events-external-sync",
+    ),
+    path(
+        "events/external/<int:pk>/show/",
+        event_views.OrgExternalCalendarShowView.as_view(),
+        name="events-external-show",
+    ),
+    path("events/<int:pk>/hide/", event_views.OrgEventHideView.as_view(), name="event-hide"),
     path("events/<int:pk>/", event_views.OrgEventDetailView.as_view(), name="event"),
     path("events/<int:pk>/notify/", event_views.OrgEventNotifyView.as_view(), name="event-notify"),
     path(

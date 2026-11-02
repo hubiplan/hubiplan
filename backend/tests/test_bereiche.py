@@ -247,3 +247,13 @@ def test_mehrere_rollen_hoechste_stufe(orgs):
     give_role(user, org, ["finance.edit"], name="Kassierer")
     perms = permissions_in(user, org)
     assert {"finance.view", "finance.edit"} <= perms
+
+
+def test_hilfe_nennt_fruehere_codes_mit_neuem_namen(orgs):
+    from organizations.help_views import help_state
+
+    rights = help_state(orgs["a"], set())["rights"]
+    assert rights["events.manage"] == rights["events.edit"]
+    assert rights["org.edit"] == rights["settings.edit"]
+    assert rights["competitions.manage"] == rights["competitions.edit"]
+    assert rights["website.manage"] == rights["website.edit"]

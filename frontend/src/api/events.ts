@@ -34,6 +34,8 @@ export interface Occurrence {
   own: boolean
   can_edit: boolean
   rsvp_enabled: boolean
+  /** Fremder Kalender (Vereinsplaner, iCal), aus dem der Termin stammt */
+  source?: string | null
   /** Nur im Mitgliederbereich: eigene Rückmeldung (null = noch offen) */
   my_response?: ResponseStatus | null
 }
@@ -135,6 +137,10 @@ export interface EventDetail {
   attachments: Attachment[]
   exceptions: SeriesException[]
   rsvp: RsvpInfo
+  /** Fremder Kalender, aus dem der Termin stammt (nur lesbare Kopie) */
+  source?: { name: string; kind: ExternalKind; kind_label: string } | null
+  /** Fremden Termin hier ausblenden (Vorstand der Einheit) */
+  can_hide?: boolean
   /** Veranstaltungsfinanzen (nur mit Kassenrecht): zugeordnete Veranstaltung */
   project?: { id: number; name: string } | null
   can_link_project?: boolean
@@ -199,6 +205,38 @@ export interface Publication {
   json_url: string | null
 }
 
+export type ExternalKind = 'vereinsplaner' | 'ical'
+
+/** Fremder Kalender, dessen Termine HUBIplan stündlich abholt */
+export interface ExternalCalendar {
+  id: number
+  name: string
+  kind: ExternalKind
+  kind_label: string
+  has_token: boolean
+  has_secret: boolean
+  category: EventCategory | null
+  visibility: Visibility
+  share_down: boolean
+  is_active: boolean
+  last_sync_at: string | null
+  last_error: string
+  event_count: number
+  hidden: { key: string; title: string; starts_at: string }[]
+}
+
+export interface ExternalCalendarInput {
+  name: string
+  kind: ExternalKind
+  /** Vereinsplaner: Token; iCal: Link. Leer lassen = unverändert */
+  token: string
+  secret: string
+  category: number | null
+  visibility: Visibility
+  share_down: boolean
+  is_active: boolean
+}
+
 export const VISIBILITY_LABELS: Record<Visibility, string> = {
   public: 'nach außen öffentlich',
   members: 'Mitglieder',
@@ -260,6 +298,17 @@ export const eventApi = {
   updateCategory: (base: CalendarBase, id: number, data: Partial<EventCategory>) =>
     api.patch<EventCategory>(`${base}events/categories/${id}/`, data),
   removeCategory: (base: CalendarBase, id: number) => api.del(`${base}events/categories/${id}/`),
+  externals: (base: CalendarBase) => api.get<ExternalCalendar[]>(`${base}events/external/`),
+  createExternal: (base: CalendarBase, data: Partial<ExternalCalendarInput>) =>
+    api.post<ExternalCalendar>(`${base}events/external/`, data),
+  updateExternal: (base: CalendarBase, id: number, data: Partial<ExternalCalendarInput>) =>
+    api.patch<ExternalCalendar>(`${base}events/external/${id}/`, data),
+  removeExternal: (base: CalendarBase, id: number) => api.del(`${base}events/external/${id}/`),
+  syncExternal: (base: CalendarBase, id: number) =>
+    api.post<ExternalCalendar>(`${base}events/external/${id}/sync/`, {}),
+  showExternal: (base: CalendarBase, id: number, key: string) =>
+    api.post<ExternalCalendar>(`${base}events/external/${id}/show/`, { key }),
+  hide: (base: CalendarBase, id: number) => api.post(`${base}events/${id}/hide/`, {}),
   publication: (base: CalendarBase) => api.get<Publication>(`${base}events/publication/`),
   sharing: (base: CalendarBase) => api.get<Sharing>(`${base}events/sharing/`),
   updateSharing: (

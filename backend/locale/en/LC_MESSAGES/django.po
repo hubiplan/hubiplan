@@ -2197,6 +2197,41 @@ msgstr "The entry has already been submitted; withdraw it first."
 msgid "Nur eine zurückgezogene Meldung lässt sich wieder öffnen."
 msgstr "Only a withdrawn entry can be reopened."
 
+msgid "Die Antwort ist zu groß."
+msgstr "The response is too large."
+
+#, python-brace-format
+msgid "Kategorie: {name}"
+msgstr "Category: {name}"
+
+#, python-brace-format
+msgid "Anmeldung bis {date}"
+msgstr "Registration until {date}"
+
+msgid "Termin"
+msgstr "Event"
+
+msgid "Vereinsplaner hat keine gültige Antwort geschickt."
+msgstr "Vereinsplaner did not send a valid response."
+
+#, python-brace-format
+msgid "Vereinsplaner lehnt das Token ab ({status})."
+msgstr "Vereinsplaner rejects the token ({status})."
+
+#, python-brace-format
+msgid "Vereinsplaner meldet einen Fehler ({status}). {message}"
+msgstr "Vereinsplaner reports an error ({status}). {message}"
+
+#, python-brace-format
+msgid "Der Kalender-Link antwortet mit {status}."
+msgstr "The calendar link responds with {status}."
+
+msgid "Unter dem Link liegt kein Kalender (iCal)."
+msgstr "There is no calendar (iCal) at this link."
+
+msgid "Es ist kein Zugang hinterlegt."
+msgstr "No access details are stored."
+
 msgid "nach außen öffentlich"
 msgstr "public to the outside"
 
@@ -2211,6 +2246,9 @@ msgstr "No"
 
 msgid "Vorstand"
 msgstr "Board"
+
+msgid "Kalender-Abo (iCal)"
+msgstr "Calendar subscription (iCal)"
 
 msgid "Leider sind alle Plätze vergeben."
 msgstr "Unfortunately all places are taken."
@@ -2262,6 +2300,21 @@ msgstr "The file is larger than 15 MB."
 #, python-brace-format
 msgid "Höchstens {MAX_ATTACHMENTS} Anhänge je Termin."
 msgstr "At most {MAX_ATTACHMENTS} attachments per event."
+
+msgid "Der Link muss mit https:// oder webcal:// beginnen."
+msgstr "The link must start with https:// or webcal://."
+
+msgid "Bitte das Token angeben."
+msgstr "Please enter the token."
+
+msgid "Bitte den Link angeben."
+msgstr "Please enter the link."
+
+msgid "Der Abruf ist ausgeschaltet."
+msgstr "Fetching is switched off."
+
+msgid "Diesen Termin kannst du hier nicht ausblenden."
+msgstr "You cannot hide this event here."
 
 msgid "Die Rückmeldungen sieht der Vorstand, der den Termin anlegt."
 msgstr "The board member who creates the event sees the responses."
