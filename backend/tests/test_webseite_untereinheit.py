@@ -8,7 +8,7 @@ import pytest
 from django.test import Client
 from django.utils import timezone
 
-from access.catalog import ROLES_MANAGE, WEBSITE_MANAGE, codes_for
+from access.catalog import codes_for
 from access.models import Role, RoleAssignment
 from core.tenancy import rls_bypass
 from events.models import Event
@@ -50,7 +50,7 @@ class TestSchalter:
         assert "website" in zug.enabled_modules
         with rls_bypass():
             role = Role.objects.get(organization=zug)
-        assert ROLES_MANAGE in role.permissions and WEBSITE_MANAGE in role.permissions
+        assert {"roles.edit", "website.edit", "webcontent.edit"} <= set(role.permissions)
 
     def test_nur_mit_arbeitsbereich(self, api, club, board_a):
         with rls_bypass():

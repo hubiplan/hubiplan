@@ -18,18 +18,27 @@ from organizations.models import Organization
 from .tenancy import scope_of, set_rls
 
 
+def has_needed(perms: set[str], needed: str | tuple[str, ...] | None) -> bool:
+    """Genügen die Rechte? ``needed``: ein Code, ein Tupel (eines genügt) oder None."""
+    if not needed:
+        return True
+    if isinstance(needed, str):
+        return needed in perms
+    return bool(perms & set(needed))
+
+
 class OrgScopedMixin:
     """API-Ansicht innerhalb einer Organisation (URL-Parameter ``org_id``).
 
     1. Organisation laden und prüfen, dass der Benutzer dort eine aktive Rolle hat.
        Sonst 404 – fremde Organisationen sollen nicht einmal sichtbar sein.
     2. Lesen: ``read_permission`` (None = jede Rolle der Organisation genügt).
-       Schreiben: ``write_permission``.
+       Schreiben: ``write_permission``. Ein Tupel heißt: eines davon genügt.
     3. Erst dann die RLS-Variable ``app.org_id`` setzen.
     """
 
-    read_permission: str | None = None
-    write_permission: str | None = None
+    read_permission: str | tuple[str, ...] | None = None
+    write_permission: str | tuple[str, ...] | None = None
     allowed_org_types: tuple[str, ...] | None = None
 
     org: Organization
@@ -48,7 +57,7 @@ class OrgScopedMixin:
             if request.method in ("GET", "HEAD", "OPTIONS")
             else self.write_permission
         )
-        if needed and needed not in perms:
+        if not has_needed(perms, needed):
             raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
         self.org = org
         self.org_permissions = perms

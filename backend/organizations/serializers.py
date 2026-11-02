@@ -392,12 +392,16 @@ class LogoSerializer(serializers.Serializer):
 
 
 def clean_department_permissions(value) -> list[str]:
+    from access.catalog import normalize
+
+    # Frühere Codes (dept.*) nimmt die Schnittstelle eine Fassung lang an
+    value = normalize(value, dept=True)
     unknown = sorted(set(value) - DEPARTMENT_CODES)
     if unknown:
         raise serializers.ValidationError(
             gettext("Unbekannte Berechtigungen: {x}").format(x=", ".join(unknown))
         )
-    return sorted(set(value))
+    return value
 
 
 class DepartmentRoleSerializer(serializers.ModelSerializer):

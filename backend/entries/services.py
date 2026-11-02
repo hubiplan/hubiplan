@@ -1053,7 +1053,7 @@ def unit_counts(call: Call) -> dict:
 def unit_contacts(org, department) -> list[str]:
     """E-Mail-Adressen der Personen, die für die Untereinheit melden dürfen (Rolle der
     Untereinheit oder einer darüber, mit Zugang zur Anmeldung)."""
-    from access.catalog import DEPT_ENTRIES_SUBMIT
+    from access.catalog import DEPT_ENTRIES_SUBMIT, effective
     from members.models import DepartmentRoleHolder
     from organizations.tree import UnitTree
     from portal.models import PortalAccess
@@ -1070,7 +1070,9 @@ def unit_contacts(org, department) -> list[str]:
         .select_related("role")
     )
     memberships = {
-        h.membership_id for h in holders if DEPT_ENTRIES_SUBMIT in (h.role.permissions or [])
+        h.membership_id
+        for h in holders
+        if DEPT_ENTRIES_SUBMIT in effective(h.role.permissions, dept=True)
     }
     emails = (
         PortalAccess.objects.filter(organization=org, membership_id__in=memberships)

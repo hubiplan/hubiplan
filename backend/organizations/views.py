@@ -16,11 +16,14 @@ from access.catalog import (
     CLUBS_MANAGE,
     DEFAULT_MODULES,
     ORG_EDIT,
+    ROLES_EDIT,
     ROLES_MANAGE,
     THEME_EDIT,
-    WEBSITE_CONTENT,
-    WEBSITE_MANAGE,
+    UNITS_VIEW,
+    WEBCONTENT_EDIT,
+    WEBSITE_EDIT,
     codes_for,
+    effective,
 )
 from access.models import Role, RoleAssignment
 from access.permissions import is_platform_admin
@@ -275,14 +278,16 @@ def ensure_workspace_role(unit: Department) -> None:
     with tenant_context(unit.pk):
         if not Role.objects.filter(organization=unit).exists():
             # Webseite nur, wenn sie für die Untereinheit eingeschaltet ist (siehe unten)
-            perms = [c for c in codes_for(unit.type) if c not in (WEBSITE_MANAGE, WEBSITE_CONTENT)]
+            perms = [
+                c for c in codes_for(unit.type) if c.split(".")[0] not in ("webcontent", "website")
+            ]
             Role.objects.create(organization=unit, name=DEFAULT_BOARD_ROLE, permissions=perms)
         if "website" in (unit.enabled_modules or []):
             # Eigene Webseite: wer Rollen verwaltet, darf auch die Webseite pflegen
             for role in Role.objects.filter(organization=unit):
                 perms = set(role.permissions or [])
-                if ROLES_MANAGE in perms and WEBSITE_MANAGE not in perms:
-                    role.permissions = sorted(perms | {WEBSITE_MANAGE, WEBSITE_CONTENT})
+                if ROLES_EDIT in perms and WEBSITE_EDIT not in perms:
+                    role.permissions = sorted(perms | {WEBSITE_EDIT, WEBCONTENT_EDIT})
                     role.save(update_fields=["permissions"])
 
 
@@ -400,7 +405,7 @@ class FederationClubViewSet(
     """
 
     serializer_class = FederationClubSerializer
-    read_permission = CLUBS_MANAGE
+    read_permission = UNITS_VIEW
     write_permission = CLUBS_MANAGE
     allowed_org_types = (Organization.Type.FEDERATION,)
     http_method_names = ["get", "patch", "options", "head"]
@@ -495,7 +500,6 @@ class BoardMemberSerializer(serializers.Serializer):
 def _tell_board(org, user, role_name: str, actor) -> None:
     """Fachfrage 16 (31.10.b): vergibt die Plattform eine Rolle in einer Einheit, erfährt es
     deren Vorstand sofort (alle mit Rollenverwaltung dort, außer der neuen Person)."""
-    from access.catalog import ROLES_MANAGE
     from core.alarm import send_alert
     from core.i18n import user_language
     from outbox import mail
@@ -507,7 +511,9 @@ def _tell_board(org, user, role_name: str, actor) -> None:
             .exclude(user=user)
             .select_related("role", "user")
         )
-        users = {a.user for a in holders if a.user and ROLES_MANAGE in a.role.permissions}
+        users = {
+            a.user for a in holders if a.user and ROLES_MANAGE in effective(a.role.permissions)
+        }
     # Je Sprache eine Mail (Nutzersprache der Empfänger)
     by_language: dict[str, list[str]] = {}
     for holder in users:

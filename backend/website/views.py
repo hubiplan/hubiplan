@@ -17,7 +17,13 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import MEMBERS_EDIT, WEBSITE_CONTENT, WEBSITE_MANAGE
+from access.catalog import (
+    MEMBERS_EDIT,
+    WEBCONTENT_VIEW,
+    WEBSITE_CONTENT,
+    WEBSITE_MANAGE,
+    WEBSITE_VIEW,
+)
 from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin, OrgScopedMixin
 from core.tenancy import rls_bypass
@@ -214,7 +220,9 @@ def site_url(website: Website) -> str | None:
 
 
 class _WebsiteMixin(OrgScopedMixin):
-    """Lesen: Webseite verwalten oder Inhalte bearbeiten · Ändern: Webseite verwalten."""
+    """Lesen: Bereich Webseite (Inhalte oder Einrichtung) lesen · Ändern: Einrichtung bearbeiten.
+
+    Ohne Leserecht antwortet die Schnittstelle mit 404 (die Webseite bleibt verborgen)."""
 
     allowed_org_types = (
         Organization.Type.FEDERATION,
@@ -226,7 +234,7 @@ class _WebsiteMixin(OrgScopedMixin):
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
-        if not ({WEBSITE_MANAGE, WEBSITE_CONTENT} & self.org_permissions):
+        if not ({WEBCONTENT_VIEW, WEBSITE_VIEW} & self.org_permissions):
             raise NotFound()
         if request.method not in ("GET", "HEAD", "OPTIONS") and not services.module_enabled(
             self.org

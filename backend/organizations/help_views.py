@@ -22,7 +22,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import ORG_EDIT, ROLES_MANAGE, catalog_for
+from access.catalog import ORG_EDIT, ROLES_MANAGE, catalog_for, effective
 from access.models import Role
 from audit.log import record
 from core.api_base import OrgScopedMixin
@@ -111,7 +111,7 @@ def help_state(org: Organization, perms: set[str]) -> dict:
         {
             r.name
             for r in Role.objects.filter(organization=org)
-            if ROLES_MANAGE in (r.permissions or [])
+            if ROLES_MANAGE in effective(r.permissions)
         }
     )
     rights = {p["code"]: p["label"] for m in catalog_for(org.type, org) for p in m["permissions"]}

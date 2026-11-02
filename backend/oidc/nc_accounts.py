@@ -259,7 +259,7 @@ def _finish(client: Client, error: str, now) -> None:
 
 def _notify(client: Client, error: str, done: list[str]) -> None:
     """E-Mail an alle, die Rollen und Benutzer der Einheit verwalten."""
-    from access.catalog import ROLES_MANAGE
+    from access.catalog import ROLES_MANAGE, effective
     from access.models import RoleAssignment
     from outbox.mail import send
 
@@ -271,7 +271,7 @@ def _notify(client: Client, error: str, done: list[str]) -> None:
             .select_related("role", "user")
         )
         to = sorted(
-            {a.user.email for a in assignments if ROLES_MANAGE in (a.role.permissions or [])}
+            {a.user.email for a in assignments if ROLES_MANAGE in effective(a.role.permissions)}
         )
     if not to:
         return

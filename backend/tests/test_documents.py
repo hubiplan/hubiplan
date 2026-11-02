@@ -241,9 +241,9 @@ class TestFreigaben:
         assert overview(api(board_c), base(setup["c"]))["shared"] == []
 
     def test_abteilung(self, setup, board_a, zug, api):
-        # Abteilungsbereich: lesen mit jeder Rolle, verwalten mit Recht
+        # Abteilungsbereich: lesen mit Leserecht Dokumente, verwalten mit Recht
         m, user, _ = member_with_access(setup["a"], "Olaf", depts=[zug])
-        dept_role(zug, m, [DEPT_MEMBERS_VIEW])
+        dept_role(zug, m, [DEPT_MEMBERS_VIEW, DOCS_VIEW, "events.view"])
         d = api(user)
         db = f"/api/depts/{zug.pk}/documents/"
         m2, user2, _ = member_with_access(setup["a"], "Lea", depts=[zug])

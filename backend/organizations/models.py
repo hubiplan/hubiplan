@@ -808,7 +808,7 @@ class DepartmentRole(Role):
     """Rolle einer Untereinheit (z. B. Zugführer, Kassierer): dieselbe Rolle wie
     ``access.Role``, nur auf die Rollen von Untereinheiten beschränkt.
 
-    Mit Rechten aus dem Katalog der Untereinheiten (``access.catalog.DEPARTMENT_MODULES``)
+    Mit Rechten aus dem Katalog der Untereinheiten (``access.catalog.DEPARTMENT_CODES``)
     und freigeschaltetem Zugang dürfen sich Inhaber anmelden.
     """
 

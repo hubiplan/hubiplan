@@ -25,6 +25,11 @@ MFA_PERMISSIONS = frozenset(
         catalog.FINANCE_EDIT,
         catalog.PLATFORM_MANAGE,
         catalog.CLUBS_MANAGE,
+        # dieselben Rechte als Bereiche (konzepte/berechtigungen.md)
+        catalog.ROLES_EDIT,
+        catalog.EXPORT_FULL,
+        catalog.UNITS_EDIT,
+        catalog.PLATFORM_EDIT,
     }
 )
 

@@ -2,7 +2,7 @@
 
 import pytest
 
-from access.catalog import CLUBS_MANAGE, MEMBERS_VIEW, codes_for
+from access.catalog import MEMBERS_VIEW, UNITS_EDIT, codes_for
 from access.models import Role
 from core.tenancy import tenant_context
 from members.models import Membership, Person
@@ -42,7 +42,7 @@ class TestAnlegen:
         assert org.type == "federation" and not org.keeps_members
         assert org.department_label == "Verein"
         role = Role.objects.get(organization=org)
-        assert CLUBS_MANAGE in role.permissions
+        assert UNITS_EDIT in role.permissions
 
     def test_standard_mit_mitgliedern(self, api, admin):
         assert create(api, admin, name="Ohne Angabe").status_code == 201
@@ -87,7 +87,7 @@ class TestUmschalten:
         assert resp.status_code == 200
         org.refresh_from_db()
         assert org.type == "club" and org.label == "Verein"
-        assert CLUBS_MANAGE not in Role.objects.get(organization=org).permissions
+        assert UNITS_EDIT not in Role.objects.get(organization=org).permissions
 
     def test_eigene_bezeichnung_bleibt(self, api, admin):
         create(api, admin, name="Probe", keeps_members=True, label="Gilde", label_plural="Gilden")

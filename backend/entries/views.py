@@ -22,10 +22,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from access.catalog import (
+    CALLS_VIEW,
     DEPT_ENTRIES_SUBMIT,
     DEPT_MEMBERS_VIEW,
     ENTRIES_MANAGE,
     ENTRIES_SUBMIT,
+    ENTRIES_VIEW,
     EVENTS_MANAGE,
     MEMBERS_VIEW,
 )
@@ -79,6 +81,15 @@ class _Mixin(OrgScopedMixin):
         super().initial(request, *args, **kwargs)
         if MODULE not in (self.org.enabled_modules or []):
             raise NotFound(gettext("Das Modul Meldungen ist nicht freigeschaltet."))
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            # Nur lesen (Bereiche Meldungen/Ausschreibungen, Stufe lesen): beim Lesen gelten
+            # sie wie die Rechte zum Bearbeiten; Ändern bleibt diesen vorbehalten.
+            perms = set(self.org_permissions)
+            if ENTRIES_VIEW in perms:
+                perms.add(ENTRIES_SUBMIT)
+            if CALLS_VIEW in perms:
+                perms.add(ENTRIES_MANAGE)
+            self.org_permissions = perms
         if not self.org_permissions & {ENTRIES_SUBMIT, ENTRIES_MANAGE}:
             raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
         if self._unit_id is not None:
@@ -94,7 +105,10 @@ class _Mixin(OrgScopedMixin):
             raise NotFound()
         if MODULE not in (ctx.club.enabled_modules or []):
             raise NotFound(gettext("Das Modul Meldungen ist nicht freigeschaltet."))
-        if DEPT_ENTRIES_SUBMIT not in ctx.permissions:
+        reading = request.method in ("GET", "HEAD", "OPTIONS")
+        if DEPT_ENTRIES_SUBMIT not in ctx.permissions and not (
+            reading and ENTRIES_VIEW in ctx.permissions
+        ):
             raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
         self.org = ctx.club
         self.department = ctx.department

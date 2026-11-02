@@ -4724,5 +4724,12 @@
   "Kopierte Bilder lassen sich mit Strg+V einfügen.": "Copied images can be pasted with Ctrl+V.",
   "zwischenablage": "clipboard",
   "Laufende Version: {x}": "Running version: {x}",
-  "Änderungen in dieser Version": "Changes in this version"
+  "Änderungen in dieser Version": "Changes in this version",
+  "lesen": "read",
+  "bearbeiten": "edit",
+  "überall lesen": "read everywhere",
+  "überall bearbeiten": "edit everywhere",
+  "alles entfernen": "remove all",
+  "Zusatzrechte": "Additional rights",
+  "braucht dafür mindestens „lesen“": "needs at least “read” for this"
 }

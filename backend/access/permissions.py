@@ -10,8 +10,10 @@ from .catalog import (
     FINANCE_EDIT,
     FINANCE_VIEW,
     ORG_EDIT,
+    ROLES_EDIT,
     ROLES_MANAGE,
     codes_for,
+    effective,
 )
 from .models import RoleAssignment
 
@@ -41,21 +43,26 @@ def own_permissions_in(user, org: Organization) -> set[str]:
 
     platform = org.type == Organization.Type.PLATFORM
     if user.is_superuser and platform:
-        return gate(user, set(codes_for(org.type)), platform=True)
+        return gate(user, allowed_codes(org.type), platform=True)
     if org.type == Organization.Type.UNIT and not _workspace_open(org):
         return set()
     perms = _assigned(user, org)
     if org.type == Organization.Type.UNIT:
         perms |= inherited_permissions(user, org)
-    return gate(user, perms & set(codes_for(org.type)), platform=platform)
+    return gate(user, perms & allowed_codes(org.type), platform=platform)
+
+
+def allowed_codes(org_type: str) -> set[str]:
+    """Codes einer Einheitenart, neu und (für den Übergang) in der früheren Form."""
+    return effective(codes_for(org_type))
 
 
 def _assigned(user, org: Organization) -> set[str]:
     perms: set[str] = set()
     assignments = RoleAssignment.objects.active().filter(user=user, organization=org)
     for assignment in assignments.select_related("role"):
-        perms.update(assignment.role.permissions)
-    return perms
+        perms.update(assignment.role.permissions or [])
+    return effective(perms)
 
 
 def _workspace_open(unit: Organization) -> bool:
@@ -82,12 +89,12 @@ def inherited_permissions(user, unit: Organization) -> set[str]:
             break
     result: set[str] = set()
     if above & {ROLES_MANAGE, ORG_EDIT}:
-        result.add(ROLES_MANAGE)
+        result.add(ROLES_EDIT)
     if above & {FINANCE_VIEW, FINANCE_EDIT}:
         result.add(FINANCE_VIEW)
     if above & {BILLING_VIEW, BILLING_EDIT}:
         result.add(BILLING_VIEW)
-    return result
+    return effective(result)
 
 
 def is_platform_admin(user) -> bool:

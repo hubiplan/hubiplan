@@ -3,8 +3,8 @@
 // die Rechte kommen aus dem Rechtekatalog der Einheit.
 import type { FormEvent, ReactNode } from 'react'
 import type { CatalogModule } from '../api/orgs.ts'
-import { permissionAreas } from './roles.ts'
-import type { RoleField, RoleLike, RoleValues } from './roles.ts'
+import { levelOf, permissionAreas, withLevel } from './roles.ts'
+import type { Level, RoleField, RoleLike, RoleValues } from './roles.ts'
 import { Why } from '../learning/Aids.tsx'
 import { confirmDialog } from './dialog.ts'
 import { useForm } from './forms.ts'
@@ -19,10 +19,136 @@ function holderText(holders: number | string[]): ReactNode {
   return holders.length > 0 ? holders.join(', ') : <span className="muted">unbesetzt</span>
 }
 
+function catalogArea(catalog: CatalogModule[], label: string): boolean {
+  return catalog.some((m) => m.kind === 'area' && m.label === label)
+}
+
+const LEVELS: { level: Level; label: () => string }[] = [
+  { level: 'none', label: () => t('kein Zugriff') },
+  { level: 'view', label: () => t('lesen') },
+  { level: 'edit', label: () => t('bearbeiten') },
+]
+
+/** Rechte je Bereich: kein Zugriff, lesen, bearbeiten (Ralf 02.11.); darunter Zusatzrechte */
+function PermissionMatrix({
+  catalog,
+  codes,
+  onChange,
+}: {
+  catalog: CatalogModule[]
+  codes: string[]
+  onChange: (codes: string[]) => void
+}) {
+  const areas = catalog.filter((m) => m.kind === 'area')
+  const extras = catalog.filter((m) => m.kind === 'extras').flatMap((m) => m.permissions)
+  const setAll = (level: Level) =>
+    onChange(
+      areas.reduce(
+        (acc, a) => {
+          if (level === 'none' || (a.levels ?? []).some((l) => l.level === level)) {
+            return withLevel(acc, a, level, catalog)
+          }
+          // „überall bearbeiten“: Bereiche ohne Bearbeiten bekommen die höchste Stufe;
+          // „überall lesen“ lässt Bereiche ohne Lesen (Plattform) unverändert
+          const top = a.levels?.[a.levels.length - 1]?.level ?? 'none'
+          return level === 'edit' ? withLevel(acc, a, top, catalog) : acc
+        },
+        level === 'none' ? [] : codes,
+      ),
+    )
+  return (
+    <div className="permission-matrix">
+      <div className="button-row">
+        <button type="button" className="button button-ghost" onClick={() => setAll('view')}>
+          {t('überall lesen')}
+        </button>
+        <button type="button" className="button button-ghost" onClick={() => setAll('edit')}>
+          {t('überall bearbeiten')}
+        </button>
+        <button type="button" className="button button-ghost" onClick={() => setAll('none')}>
+          {t('alles entfernen')}
+        </button>
+      </div>
+      <table className="table permission-table">
+        <thead>
+          <tr>
+            <th>{t('Bereich')}</th>
+            {LEVELS.map((l) => (
+              <th key={l.level} className="level-cell">
+                {l.label()}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {areas.map((a) => {
+            const current = levelOf(codes, a)
+            const hint = a.levels?.find((l) => l.level === current)?.label
+            return (
+              <tr key={a.id}>
+                <th scope="row">
+                  {a.label}
+                  {hint && <div className="muted small">{hint}</div>}
+                </th>
+                {LEVELS.map((l) => {
+                  const offered =
+                    l.level === 'none' || (a.levels ?? []).some((x) => x.level === l.level)
+                  return (
+                    <td key={l.level} className="level-cell">
+                      {offered ? (
+                        <input
+                          type="radio"
+                          name={`stufe-${a.id}`}
+                          aria-label={`${a.label}: ${l.label()}`}
+                          checked={current === l.level}
+                          onChange={() => onChange(withLevel(codes, a, l.level, catalog))}
+                        />
+                      ) : (
+                        <span className="muted" aria-hidden="true">
+                          –
+                        </span>
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+      {extras.length > 0 && (
+        <fieldset className="permission-group">
+          <legend>{t('Zusatzrechte')}</legend>
+          {extras.map((p) => {
+            const blocked = !!p.needs && !codes.includes(p.needs)
+            return (
+              <Checkbox
+                key={p.code}
+                label={p.label}
+                checked={codes.includes(p.code)}
+                disabled={blocked}
+                hint={blocked ? t('braucht dafür mindestens „lesen“') : undefined}
+                onChange={(on) =>
+                  onChange(on ? [...codes, p.code] : codes.filter((c) => c !== p.code))
+                }
+              />
+            )
+          })}
+        </fieldset>
+      )}
+    </div>
+  )
+}
+
 /** Rechte als kurze Bereichsliste statt langem Fließtext (Ralf 31.10.);
  *  die einzelnen Rechte stehen aufklappbar darunter. */
 function PermissionSummary({ codes, catalog }: { codes: string[]; catalog: CatalogModule[] }) {
-  const areas = permissionAreas(codes, catalog)
+  const areas = permissionAreas(codes, catalog).map((a, i) => ({
+    ...a,
+    // Bereiche mit Stufen: Stufe direkt im Kennzeichen („Kasse: lesen“)
+    stufe: catalogArea(catalog, a.label) ? a.permissions[0] : undefined,
+    key: i,
+  }))
   return (
     <>
       <ul className="chips role-areas" aria-label={t('Bereiche')}>
@@ -33,7 +159,11 @@ function PermissionSummary({ codes, catalog }: { codes: string[]; catalog: Catal
             title={a.permissions.join(', ')}
           >
             {a.label}
-            {!a.full && <span className="muted"> (teilweise)</span>}
+            {a.stufe ? (
+              <span className={a.full ? undefined : 'muted'}>: {a.stufe}</span>
+            ) : (
+              !a.full && <span className="muted"> (teilweise)</span>
+            )}
           </li>
         ))}
       </ul>
@@ -188,7 +318,14 @@ export function RoleForm({
     form.set('permissions', on ? [...v.permissions, code] : v.permissions.filter((c) => c !== code))
   }
 
-  const permissionGrid = (
+  const staged = catalog.some((m) => m.kind === 'area')
+  const permissionGrid = staged ? (
+    <PermissionMatrix
+      catalog={catalog}
+      codes={v.permissions}
+      onChange={(codes) => form.set('permissions', codes)}
+    />
+  ) : (
     <div className="permission-grid">
       {catalog.map((module) => (
         <fieldset key={module.id} className="permission-group">

@@ -24,7 +24,14 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import DATA_EXPORT, MEMBERS_EDIT, MEMBERS_VIEW, ORG_EDIT
+from access.catalog import (
+    BILLING_VIEW,
+    DATA_EXPORT,
+    MEMBERS_EDIT,
+    MEMBERS_VIEW,
+    ORG_EDIT,
+    SETTINGS_VIEW,
+)
 from audit.log import diff, record, snapshot
 from audit.models import AuditEntry
 from changes import idempotency
@@ -85,7 +92,7 @@ class MemberTypeViewSet(_ClubMixin, AuditMixin, viewsets.ModelViewSet):
 
     serializer_class = MemberTypeSerializer
     write_permission = ORG_EDIT
-    read_permission = None
+    read_permission = (SETTINGS_VIEW, MEMBERS_VIEW, BILLING_VIEW)
 
     def get_queryset(self):
         return MemberType.objects.filter(organization=self.org)

@@ -226,7 +226,8 @@ def _pruefen(club, unit, membership, circular, cs, gone_cs):
             True,
             club,
         )
-        assert role.permissions == ["dept.members.view"]
+        # danach übersetzt access/0016 in Bereiche (mit Lesen für Termine und Dokumente)
+        assert role.permissions == ["docs.view", "events.view", "members.view"]
         holder = RoleAssignment.all_objects.get(membership_id=membership)
         assert holder.role_id == role.pk
         assert holder.valid_from == datetime.date(2020, 1, 1)

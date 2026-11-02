@@ -344,7 +344,7 @@ class TestAbteilungszugang:
         c = api(kassierer)
         data = c.get(f"/api/depts/{zug.pk}/roles/").json()
         assert data["roles"][0]["name"] == "Zugkassierer"
-        assert data["catalog"][0]["permissions"][0]["code"] == "dept.members.view"
+        assert data["catalog"][0]["permissions"][0]["code"] == "members.view"
 
         resp = c.post(
             f"/api/depts/{zug.pk}/roles/",
@@ -370,7 +370,7 @@ class TestAbteilungszugang:
         # unbekannte Rechte werden abgelehnt
         resp = c.post(
             f"/api/depts/{zug.pk}/roles/",
-            {"name": "X", "permissions": ["members.edit"]},
+            {"name": "X", "permissions": ["finance.edit"]},
             content_type=JSON,
         )
         assert resp.status_code == 400
@@ -390,7 +390,8 @@ class TestAbteilungszugang:
         )
         assert resp.status_code == 200, resp.json()
         role.refresh_from_db()
-        assert role.permissions == ["dept.members.view", "dept.roles.manage"]
+        # gespeichert in der Form der Bereiche (frühere Codes übersetzt)
+        assert role.permissions == ["members.view", "roles.edit", "roles.view"]
 
 
 def test_zwei_faktor_sperrt_anmeldelink(club, api, board_a):

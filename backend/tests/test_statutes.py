@@ -98,7 +98,7 @@ class TestRechte:
     def test_lesen_ohne_bearbeitungsrecht(self, orgs, board_a, api):
         upload(api(board_a), orgs["a"])
         leser = make_user("kasse@example.org")
-        give_role(leser, orgs["a"], permissions=["members.view"], name="Kassierer")
+        give_role(leser, orgs["a"], permissions=["members.view", "settings.view"], name="Kassierer")
         c = api(leser)
         data = c.get(f"/api/orgs/{orgs['a'].pk}/statutes/").json()
         assert len(data["versions"]) == 1 and data["can_manage"] is False

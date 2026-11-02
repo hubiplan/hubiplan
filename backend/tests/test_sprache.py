@@ -155,7 +155,10 @@ def test_rechtekatalog_auf_englisch():
     with translation.override("en"):
         modules = {m["id"]: m for m in catalog_for("club")}
     assert modules["members"]["label"] == "Members"
-    assert modules["members"]["permissions"][0]["label"] == "Read members"
+    assert modules["members"]["levels"][0]["label"] == (
+        "See list, records, offices, honours, titles and anniversaries"
+    )
+    assert modules["extras"]["label"] == "Additional rights"
     with translation.override("de"):
         assert catalog_for("club")[0]["label"] == "Mitglieder"
 

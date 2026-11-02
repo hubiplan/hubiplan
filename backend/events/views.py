@@ -26,7 +26,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import DEPT_EVENTS_MANAGE, EVENTS_MANAGE
+from access.catalog import DEPT_EVENTS_MANAGE, EVENTS_MANAGE, EVENTS_VIEW
 from audit.log import diff, record, snapshot
 from core.api_base import OrgScopedMixin
 from core.tenancy import rls_bypass, scope_of, set_rls
@@ -253,7 +253,7 @@ class _CalendarMixin:
 
 
 class OrgCalendarMixin(_CalendarMixin, OrgScopedMixin):
-    read_permission = None
+    read_permission = EVENTS_VIEW
     write_permission = EVENTS_MANAGE
     allowed_org_types = (Organization.Type.FEDERATION, Organization.Type.CLUB)
 
@@ -268,7 +268,7 @@ class OrgCalendarMixin(_CalendarMixin, OrgScopedMixin):
 
 
 class DeptCalendarMixin(_CalendarMixin, DepartmentScopedMixin):
-    read_permission = None
+    read_permission = EVENTS_VIEW
     write_permission = DEPT_EVENTS_MANAGE
 
     def initial(self, request, *args, **kwargs):

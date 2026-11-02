@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext
 
-from .catalog import DEPARTMENT_CODES, codes_for
+from .catalog import DEPARTMENT_CODES, codes_for, normalize
 
 
 class OrgRoleManager(models.Manager):
@@ -120,6 +120,8 @@ class Role(models.Model):
             siblings = Role.all_objects.filter(
                 organization_id=self.organization_id, department__isnull=True
             )
+        # Rechte immer in der Form der Bereiche speichern (frühere Codes übersetzt)
+        self.permissions = normalize(self.permissions, dept=bool(self.department_id))
         # Neue Rollen hinten anstellen; Webseite und HUBIplan haben dieselbe Reihenfolge
         append_if_new(self, "position", siblings)
         self.website_position = self.position
@@ -129,7 +131,7 @@ class Role(models.Model):
         allowed = (
             set(DEPARTMENT_CODES) if self.department_id else set(codes_for(self.organization.type))
         )
-        unknown = sorted(set(self.permissions) - allowed)
+        unknown = sorted(set(normalize(self.permissions, dept=bool(self.department_id))) - allowed)
         if unknown:
             raise ValidationError(
                 {

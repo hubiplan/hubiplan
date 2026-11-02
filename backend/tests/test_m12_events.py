@@ -145,7 +145,8 @@ class TestAnlegenUndRechte:
     def test_ohne_recht_nur_lesen(self, cal, board_a, api):
         create(api(board_a), org_base(cal["a"]), title="Fest")
         reader = make_user("kassenpruefer@example.org")
-        give_role(reader, cal["a"], ["finance.view"], name="Kassenprüfer")
+        # Termine lesen (früher durfte das jede Rolle; seit den Bereichen ein eigenes Recht)
+        give_role(reader, cal["a"], ["finance.view", "events.view"], name="Kassenprüfer")
         c = api(reader)
         resp = c.get(f"{org_base(cal['a'])}events/?from=2026-01-01&to=2026-12-31")
         assert [i["title"] for i in resp.json()["items"]] == ["Fest"]
@@ -269,7 +270,7 @@ class TestSichtbarkeit:
 
     def test_nicht_vorstand_sieht_keine_internen(self, kalender, api):
         reader = make_user("schriftfuehrer@example.org")
-        role = give_role(reader, kalender["a"], ["members.view"], name="Helfer")
+        role = give_role(reader, kalender["a"], ["members.view", "events.view"], name="Helfer")
         role.role.is_board = False
         role.role.save()
         seen = titles(api(reader), org_base(kalender["a"]))
@@ -318,7 +319,7 @@ class TestSichtbarkeit:
 
     def test_abteilung_ohne_terminrecht_liest_nur(self, kalender, zug, api):
         m, user, _ = member_with_access(kalender["a"], "Kassierer", depts=[zug])
-        dept_role(zug, m, ["dept.invoices.view"])
+        dept_role(zug, m, ["dept.invoices.view", "events.view"])
         c = api(user)
         resp = c.get(f"/api/depts/{zug.pk}/events/?from=2026-01-01&to=2026-12-31")
         assert resp.status_code == 200 and resp.json()["can_manage"] is False
@@ -569,8 +570,8 @@ def test_migration_schaltet_modul_und_rechte_frei():
     from access.catalog import SWITCHABLE_MODULES, codes_for
 
     assert "events" in SWITCHABLE_MODULES
-    assert "events.manage" in codes_for("club")
-    assert "events.manage" in codes_for("federation")
+    assert "events.edit" in codes_for("club")
+    assert "events.edit" in codes_for("federation")
 
 
 @pytest.mark.skipif(connection.vendor != "postgresql", reason="nur PostgreSQL")

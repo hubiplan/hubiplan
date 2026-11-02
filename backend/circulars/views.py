@@ -22,7 +22,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import CIRCULARS_SEND, DEPT_CIRCULARS_SEND
+from access.catalog import CIRCULARS_SEND, CIRCULARS_VIEW, DEPT_CIRCULARS_SEND
 from access.models import Role
 from audit.log import record
 from core.api_base import OrgScopedMixin
@@ -362,7 +362,7 @@ class _CircularMixin:
 
 
 class OrgCircularMixin(_CircularMixin, OrgScopedMixin):
-    read_permission = CIRCULARS_SEND
+    read_permission = CIRCULARS_VIEW
     write_permission = CIRCULARS_SEND
     allowed_org_types = (Organization.Type.FEDERATION, Organization.Type.CLUB)
 
@@ -373,7 +373,7 @@ class OrgCircularMixin(_CircularMixin, OrgScopedMixin):
 
 
 class DeptCircularMixin(_CircularMixin, DepartmentScopedMixin):
-    read_permission = DEPT_CIRCULARS_SEND
+    read_permission = CIRCULARS_VIEW
     write_permission = DEPT_CIRCULARS_SEND
 
     def initial(self, request, *args, **kwargs):
@@ -1096,7 +1096,7 @@ ORG_VIEWS = _views(OrgCircularMixin, "OrgCircular")
 class ReceivedMixin(OrgScopedMixin):
     """Jede Rolle des Vereins sieht, was der Dachverband an seine Vorstände schickte."""
 
-    read_permission = None
+    read_permission = CIRCULARS_VIEW
     write_permission = "-"  # nur lesen
     allowed_org_types = (Organization.Type.CLUB,)
 

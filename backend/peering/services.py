@@ -1213,6 +1213,7 @@ def _audit_unit(unit, user, text: str) -> None:
 
 
 def _managers(unit) -> list:
+    from access.catalog import effective
     from access.models import RoleAssignment
 
     from .permissions import PEERING_MANAGE
@@ -1221,7 +1222,7 @@ def _managers(unit) -> list:
     for a in (
         RoleAssignment.objects.active().filter(organization=unit).select_related("role", "user")
     ):
-        if a.user_id and PEERING_MANAGE in (a.role.permissions or []):
+        if a.user_id and PEERING_MANAGE in effective(a.role.permissions):
             users[a.user_id] = a.user
     return list(users.values())
 

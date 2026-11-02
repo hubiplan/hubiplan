@@ -28,7 +28,15 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext
 
-from access.catalog import DEFAULT_MODULES, DEPARTMENT_CODES, SWITCHABLE_MODULES, codes_for
+from access.catalog import (
+    DEFAULT_MODULES,
+    DEPARTMENT_CODES,
+    SWITCHABLE_MODULES,
+    codes_for,
+    from_legacy,
+    looks_legacy,
+    normalize,
+)
 from access.models import Role, RoleAssignment
 from accounts.models import User
 from core.filecheck import clean_logo
@@ -176,6 +184,13 @@ def parse_uuid(value):
         return uuid.UUID(str(value)) if value else None
     except ValueError:
         return None
+
+
+def role_codes(perms, *, dept: bool = False) -> list[str]:
+    """Rechte einer Rolle aus der Datei; ältere Dateien kennen noch die früheren Codes."""
+    if looks_legacy(perms, dept=dept):
+        return from_legacy(perms, dept=dept)
+    return normalize(perms, dept=dept)
 
 
 class FileProblem(Exception):
@@ -490,7 +505,7 @@ class Checker:
         for r in data.get("roles") or []:
             self.summary["roles"] += 1
             role_ids.add(r.get("id"))
-            unknown = sorted(set(r.get("permissions") or []) - allowed)
+            unknown = sorted(set(role_codes(r.get("permissions"))) - allowed)
             if unknown:
                 self.p.warn(
                     f"{where}: Rolle „{r.get('name')}“ hat hier unbekannte Rechte, sie "
@@ -958,7 +973,7 @@ class Loader:
                 organization=org,
                 name=r["name"],
                 description=r.get("description") or "",
-                permissions=sorted(set(r.get("permissions") or []) & allowed),
+                permissions=sorted(set(role_codes(r.get("permissions"))) & allowed),
                 is_board=bool(r.get("is_board", True)),
                 represents=bool(r.get("represents", False)),
                 on_letterhead=bool(r.get("on_letterhead", False)),
@@ -1079,7 +1094,9 @@ class Loader:
                 organization=club,
                 department=dept,
                 name=r["name"],
-                permissions=sorted(set(r.get("permissions") or []) & DEPARTMENT_CODES),
+                permissions=sorted(
+                    set(role_codes(r.get("permissions"), dept=True)) & DEPARTMENT_CODES
+                ),
                 position=r.get("position") or 0,
                 on_letterhead=bool(r.get("on_letterhead", False)),
                 contact_email=clean_email(r.get("contact_email")),
@@ -1334,7 +1351,7 @@ class Loader:
             role = Role.objects.create(
                 organization=org,
                 name=r["name"],
-                permissions=sorted(set(r.get("permissions") or []) & allowed),
+                permissions=sorted(set(role_codes(r.get("permissions"))) & allowed),
                 position=r.get("position") or 0,
                 on_letterhead=bool(r.get("on_letterhead", False)),
                 contact_email=clean_email(r.get("contact_email")),

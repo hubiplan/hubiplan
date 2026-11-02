@@ -34,7 +34,7 @@ export function SettingsLayout() {
     ...(active.type === 'federation' && !federationAccess(active) && can(PERM.membersView)
       ? [{ to: '/mitglieder/einrichtung', label: t('Mitglieder-Einrichtung') }]
       : []),
-    ...(can(PERM.rolesManage)
+    ...(can(PERM.rolesView) || can(PERM.rolesManage)
       ? [{ to: '/einstellungen/rollen', label: t('Rollen & Benutzer') }]
       : []),
     ...(unit ? [] : [{ to: '/einstellungen/erscheinungsbild', label: t('Erscheinungsbild') }]),

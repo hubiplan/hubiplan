@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework.exceptions import APIException, ValidationError
 
-from access.catalog import DEPARTMENT_CODES
+from access.catalog import DEPARTMENT_CODES, effective
 from access.models import RoleAssignment
 from accounts.models import User
 from core.i18n import language_of, user_language
@@ -91,7 +91,7 @@ def department_contexts(user) -> dict[int, DepartmentContext]:
                 .select_related("role__department")
             )
             for holder in holders:
-                perms = set(holder.role.permissions or []) & DEPARTMENT_CODES
+                perms = effective(set(holder.role.permissions or []) & DEPARTMENT_CODES, dept=True)
                 if not perms:
                     continue
                 dept = holder.role.department

@@ -3,13 +3,13 @@ key: guide.role_create
 titel: Create a role and invite a person
 bereich: einstellungen
 modul: roles
-rechte: [roles.manage]
+rechte: [roles.edit]
 routen: [/einstellungen/rollen]
 stichworte: [role, rights, invite, access, treasurer]
 ---
 
 1. Open [Settings › Roles & users](/einstellungen/rollen) and click **New role**.
-2. Give the role a name, such as “treasurer”, and tick the rights it needs. Grant only as much as necessary.
+2. Give the role a name, such as “treasurer”, and choose **no access**, **read** or **edit** for each area. Grant only as much as necessary. The buttons “read everywhere” and “edit everywhere” help with board roles.
 3. Click **Save**.
 4. Assign the role to a person with **Assign**, optionally for a limited time. If the person has no account yet, they receive an invitation by email.
 

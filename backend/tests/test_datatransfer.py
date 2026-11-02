@@ -572,9 +572,9 @@ def test_rechte_migration_fuer_vorstand(orgs):
     # Neue Rechte stehen im Katalog und gehören zur Vorstandsrolle neuer Organisationen
     from access.catalog import codes_for
 
-    assert "data.export" in codes_for("club")
-    assert "clubs.manage" in codes_for("federation")
-    assert "clubs.manage" not in codes_for("club")
+    assert "export.full" in codes_for("club")
+    assert "units.edit" in codes_for("federation")
+    assert "units.edit" not in codes_for("club")
     assert Role  # noqa: B018
     assert make_org
 

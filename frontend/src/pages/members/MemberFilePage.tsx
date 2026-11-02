@@ -134,14 +134,14 @@ export function MemberFilePage() {
               canEdit={canEdit}
             />
           )}
-          {data.status === 'active' && (
+          {data.status === 'active' && org.permissions.includes(PERM.loginsView) && (
             <MemberAccessSection
               key={`zugang-${data.id}`}
               orgId={org.id}
               memberId={data.id}
               hasEmail={!!data.contact?.email}
               contactEmail={data.contact?.email}
-              canManage={canEdit}
+              canManage={canEdit && org.permissions.includes(PERM.loginsEdit)}
             />
           )}
           {org.permissions.includes(PERM.cardsManage) && (
