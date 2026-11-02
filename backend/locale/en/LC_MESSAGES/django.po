@@ -4401,3 +4401,11 @@ msgid ""
 msgstr ""
 "The entry for this receipt has already been cancelled. Please check the "
 "treasury and do not cancel the receipt again."
+
+msgid "anonymisiert"
+msgstr "anonymised"
+
+msgid ""
+"Die Aufbewahrungsfrist dieser Rechnung ist abgelaufen; ihr PDF wurde gelöscht."
+msgstr ""
+"The retention period for this invoice has ended; its PDF has been deleted."

@@ -354,7 +354,11 @@ class LineInputSerializer(serializers.Serializer):
 
 class InvoiceInputSerializer(serializers.Serializer):
     recipient_kind = serializers.ChoiceField(
-        choices=[*Invoice.Recipient.choices, ("unit", "Untereinheit")], required=False
+        choices=[
+            *(c for c in Invoice.Recipient.choices if c[0] != Invoice.Recipient.ANONYMIZED),
+            ("unit", "Untereinheit"),
+        ],
+        required=False,
     )
     unit = serializers.IntegerField(required=False, allow_null=True)
     membership = serializers.IntegerField(required=False, allow_null=True)

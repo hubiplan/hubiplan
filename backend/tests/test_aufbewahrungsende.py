@@ -151,3 +151,68 @@ def test_rollback_behaelt_belege(c, fin, club, jahr2025, monkeypatch):
         retention.purge(club, 2025, user)
     assert Receipt.objects.exists()
     assert os.path.exists(path)
+
+
+class TestRechnungen:
+    """Audit 02.11. BP-F03 und BP-V03: Rechnungen bei der Bereinigung."""
+
+    @pytest.fixture
+    def rechnungen(self, c, base, members, club):
+        from billing import archive
+        from billing.models import Invoice
+        from finance.models import YearClosing
+
+        from .test_m9_billing import start_run
+
+        run = start_run(c, base).json()
+        assert c.post(f"{base}/runs/{run['id']}/finalize/").status_code == 200
+        with rls_bypass():
+            YearClosing.objects.get_or_create(organization=club, year=2025)
+            archive.archive_missing()
+            invoices = list(Invoice.objects.filter(organization=club, year=2025))
+        assert any(i.recipient_kind == "member" for i in invoices)
+        assert any(i.recipient_kind == "department" for i in invoices)
+        assert all(i.issued_pdf for i in invoices)
+        return invoices
+
+    def test_buecher_mit_mitgliedsrechnungen(self, club, rechnungen, monkeypatch):
+        from accounts.models import User
+        from billing.models import Invoice, InvoiceLine
+        from finance.models import YearClosing
+
+        heute(monkeypatch, datetime.date(2036, 1, 1))
+        user = User.objects.filter(role_assignments__organization=club).first()
+        retention.purge(club, 2025, user)
+        with rls_bypass():
+            closing = YearClosing.objects.get(organization=club, year=2025)
+            assert closing.records_purged_at and closing.documents_purged_at
+            invoices = Invoice.objects.filter(pk__in=[i.pk for i in rechnungen])
+            assert not invoices.filter(recipient_kind="member").exists()
+            assert not invoices.exclude(membership=None).exists()
+            assert set(invoices.values_list("recipient_name", flat=True)) == {"anonymisiert"}
+            lines = InvoiceLine.objects.filter(invoice__in=invoices)
+            assert not lines.exclude(membership=None).exists()
+            assert not lines.exclude(detail="").exists()
+            texts = list(lines.values_list("text", flat=True))
+            assert not any("Muster" in t or "Zug" in t for t in texts)
+            # Beträge bleiben
+            assert sum(i.total for i in invoices) == sum(i.total for i in rechnungen)
+
+    def test_geloeschte_pdfs_entstehen_nicht_neu(self, club, rechnungen, monkeypatch):
+        from rest_framework.exceptions import ValidationError
+
+        from accounts.models import User
+        from billing import archive
+        from billing.models import Invoice
+
+        heute(monkeypatch, datetime.date(2034, 1, 1))
+        user = User.objects.filter(role_assignments__organization=club).first()
+        retention.purge(club, 2025, user)
+        with rls_bypass():
+            assert archive.archive_missing() == 0
+            invoice = Invoice.objects.get(pk=rechnungen[0].pk)
+            assert not invoice.issued_pdf
+            with pytest.raises(ValidationError) as exc:
+                archive.archived_pdf(invoice)
+            assert "Aufbewahrungsfrist" in str(exc.value)
+            assert not Invoice.objects.get(pk=invoice.pk).issued_pdf
