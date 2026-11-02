@@ -191,7 +191,9 @@ def _apply(coupling, data):
                 },
             )
     # Nur Kopien aus dem Verbund: eine ausgegliederte Untereinheit behält ihre alten Termine
-    Event.objects.filter(**own).exclude(remote_uid="").exclude(pk__in=keep).delete()
+    Event.objects.filter(**own, external_source__isnull=True).exclude(remote_uid="").exclude(
+        pk__in=keep
+    ).delete()
 
 
 def persons(data):

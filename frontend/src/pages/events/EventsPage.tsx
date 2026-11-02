@@ -15,6 +15,7 @@ import { useOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useTerms } from '../../org/terms.ts'
 import { Why } from '../../learning/Aids.tsx'
+import { ExternalCalendarsPanel } from './ExternalCalendarsPanel.tsx'
 import { t } from '../../i18n/index.ts'
 
 export function EventsPage() {
@@ -57,6 +58,7 @@ export function EventsPage() {
     ...(categories ? [{ to: '/termine/kategorien', label: t('Kategorien') }] : []),
     ...(manage ? [{ to: '/termine/weitergabe', label: t('Weitergabe') }] : []),
     ...(manage ? [{ to: '/termine/link', label: t('Öffentlicher Link') }] : []),
+    ...(categories ? [{ to: '/termine/fremde', label: t('Fremde Kalender') }] : []),
     ...(isPortal ? [{ to: '/termine/abo', label: t('Kalender-Abo') }] : []),
   ]
   return (
@@ -82,6 +84,7 @@ export function EventsPage() {
         {categories && <Route path="kategorien" element={<CategoriesPanel base={base} />} />}
         {manage && <Route path="weitergabe" element={<SharingPanel base={base} />} />}
         {manage && <Route path="link" element={<PublicationPanel base={base} />} />}
+        {categories && <Route path="fremde" element={<ExternalCalendarsPanel base={base} />} />}
         {isPortal && <Route path="abo" element={<FeedPanel base={base} />} />}
         <Route path="*" element={<SubpageUnavailable to="/termine" label={t('Zum Kalender')} />} />
       </Routes>

@@ -60,6 +60,8 @@ MODULE_MODELS = (
     "honors.Companion",
     "honors.ReignPhoto",
     "events.EventCategory",
+    # Fremde Kalender vor den Terminen (Verweis der Kopien); Token und Link kommen nicht mit
+    "events.ExternalCalendar",
     "events.Event",
     "events.EventException",
     "events.EventAttachment",
@@ -219,6 +221,7 @@ FRESH_VALUES = {
 
 # Nie exportiert: Zugangsdaten und Anmeldezustand (Social-Media-Kanäle)
 SECRET_FIELDS = {
+    "events.externalcalendar": {"token", "secret", "last_error", "last_sync_at"},
     "website.socialfeed": {
         "app_secret",
         "access_token",
