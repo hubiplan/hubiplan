@@ -290,17 +290,26 @@ export function Sketch({ design, colors }: { design: string; colors?: RoleColors
       )
       break
     default:
-      // Klassisch: schmaler Kopf, darunter eine helle Menüleiste
+      // Klassisch: heller Kopf mit farbiger Linie oben, Menü als Knöpfe
       body = (
         <>
-          <rect width="160" height="12" fill={head} />
-          {shield(6, 2, 8)}
-          <rect x="18" y="5" width="40" height="3" rx="1" fill="#ffffff" />
-          <rect y="12" width="160" height="8" fill="#ffffff" stroke={grey} strokeWidth={0.6} />
-          {[8, 26, 44, 62].map((x) => (
-            <rect key={x} x={x} y="15" width="14" height="2" rx="1" fill="#5b6560" />
+          <rect width="160" height="2" fill={head} />
+          <rect y="2" width="160" height="18" fill="#ffffff" stroke={grey} strokeWidth={0.6} />
+          {shield(6, 4, 8)}
+          <rect x="18" y="6" width="40" height="3" rx="1" fill={head} />
+          <rect x="6" y="13" width="14" height="4" rx="2" fill={head} />
+          {[24, 40, 56, 72].map((x) => (
+            <rect
+              key={x}
+              x={x}
+              y="14.3"
+              width="11"
+              height="1.6"
+              rx="0.5"
+              fill={head}
+              opacity={0.7}
+            />
           ))}
-          <rect x="8" y="19" width="14" height="1" fill={nav} />
           {hero(8, 24, 144, 24)}
           {box(8, 52, 70, 20)}
           <rect x="11" y="55" width="8" height="10" fill={date} />

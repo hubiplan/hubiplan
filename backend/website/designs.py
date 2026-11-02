@@ -32,14 +32,14 @@ DESIGNS: dict[str, dict] = {
     "classic": {
         "label": "Klassisch",
         "hint": (
-            "Schmaler farbiger Kopf mit Wappen, darunter eine helle Menüleiste, "
-            "Karten auf hellem Grund."
+            "Heller Kopf mit farbiger Linie, Menü als Knöpfe in der Vereinsfarbe, "
+            "Karten mit Schatten."
         ),
         "roles": {
             "header": [0],
             "nav": [1],
             "line": [1],
-            "footer": "dark",
+            "footer": [0],
             "date": [0],
         },
     },

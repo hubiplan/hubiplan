@@ -4686,5 +4686,5 @@ msgstr "The website uses this design. Please choose another one first."
 msgid "Dieses Design gibt es nicht oder es ist für diese Webseite nicht freigegeben."
 msgstr "This design does not exist or is not released for this website."
 
-msgid "Schmaler farbiger Kopf mit Wappen, darunter eine helle Menüleiste, Karten auf hellem Grund."
-msgstr "Slim coloured header with coat of arms, a light menu bar below, cards on a light background."
+msgid "Heller Kopf mit farbiger Linie, Menü als Knöpfe in der Vereinsfarbe, Karten mit Schatten."
+msgstr "Light header with a coloured line, menu as buttons in the club colour, cards with shadows."
