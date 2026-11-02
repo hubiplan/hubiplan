@@ -8,6 +8,7 @@ import { errorMessage } from '../../components/forms.ts'
 import { Alert, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { DesignTransfer } from './DesignTransfer.tsx'
 
 const NEUTRAL: Record<string, string> = { light: t('Weiß'), dark: t('Dunkel (fast Schwarz)') }
 
@@ -17,12 +18,15 @@ export function DesignChooser({
   colorRoles,
   onDesign,
   onColorRoles,
+  onPackagesChanged,
 }: {
   data: WebsiteData
   design: string
   colorRoles: ColorRoles
   onDesign: (key: string) => void
   onColorRoles: (next: ColorRoles) => void
+  /** Designpakete eingespielt, freigegeben oder gelöscht: Stand neu laden */
+  onPackagesChanged?: () => void
 }) {
   const org = useActiveOrg()
   const [error, setError] = useState<string | null>(null)
@@ -90,8 +94,9 @@ export function DesignChooser({
                 checked={d.key === design}
                 onChange={() => onDesign(d.key)}
               />
-              <Sketch design={d.key} colors={colors[d.key]} />
+              <Sketch design={d.sketch ?? d.key} colors={colors[d.key]} />
               <strong>{d.label}</strong>
+              {d.package && <small className="muted">{t('Eigenes Design')}</small>}
               <small className="muted">{d.hint}</small>
             </label>
             <button
@@ -149,6 +154,9 @@ export function DesignChooser({
             })}
           </div>
         </details>
+      )}
+      {data.website && (
+        <DesignTransfer data={data} design={design} onChanged={() => onPackagesChanged?.()} />
       )}
     </>
   )

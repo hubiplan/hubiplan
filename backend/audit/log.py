@@ -66,6 +66,7 @@ OBJECT_TYPES = {
     "circulartemplate": "Vorlage für Rundschreiben",
     "circularattachment": "Anhang eines Rundschreibens",
     "website": "Webseite",
+    "designpackage": "Designpaket",
     "websitedomain": "Domain der Webseite",
     "previewlink": "Vorschau-Link",
     "websitetext": "Text der Webseite",

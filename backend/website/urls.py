@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from . import content_views, public_views, social_views, views
+from . import content_views, design_views, public_views, social_views, views
 
 org_patterns = [
     path("website/", views.WebsiteView.as_view(), name="website"),
@@ -15,6 +15,21 @@ org_patterns = [
         "website/privacy/publish/",
         views.PrivacyPublishView.as_view(),
         name="website-privacy-publish",
+    ),
+    path(
+        "website/design-packages/",
+        design_views.DesignPackageListView.as_view(),
+        name="website-design-packages",
+    ),
+    path(
+        "website/design-packages/<slug:key>/",
+        design_views.DesignPackageDetailView.as_view(),
+        name="website-design-package",
+    ),
+    path(
+        "website/design-packages/<slug:key>/export/",
+        design_views.DesignPackageExportView.as_view(),
+        name="website-design-package-export",
     ),
     path("website/domains/", views.DomainListView.as_view(), name="website-domains"),
     path("website/domains/<int:pk>/", views.DomainDetailView.as_view(), name="website-domain"),
@@ -129,6 +144,11 @@ public_patterns = [
     path("public/site/v1/resolve/", public_views.ResolveView.as_view(), name="site-resolve"),
     path(SITE, public_views.SiteInfoView.as_view(), name="site-info"),
     path(f"{SITE}preview/", public_views.PreviewView.as_view(), name="site-preview"),
+    path(
+        f"{SITE}design/<slug:package>/",
+        public_views.DesignPackageView.as_view(),
+        name="site-design-package",
+    ),
     path(f"{SITE}board/", public_views.BoardView.as_view(), name="site-board"),
     path(f"{SITE}units/", public_views.UnitListView.as_view(), name="site-units"),
     path(f"{SITE}units/<str:slug>/", public_views.UnitDetailView.as_view(), name="site-unit"),

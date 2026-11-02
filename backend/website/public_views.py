@@ -117,6 +117,9 @@ class SiteInfoView(_Public):
         from organizations.theme import effective_theme
 
         theme = effective_theme(org.ancestors())
+        packages = site.site.packages()
+        extra = designs.package_roles(packages)
+        lang = site.site.language
         base = {
             "version": API_VERSION,
             "state": self.state,
@@ -127,11 +130,18 @@ class SiteInfoView(_Public):
             "theme": {k: theme[k] for k in ("primary", "on_primary", "accent", "on_accent")},
             # Standarddesign und Farben je Rolle; alle Designs, damit die Vorschau
             # ein anderes zeigen kann, ohne es zu übernehmen
-            "design": site.site.design,
+            "design": site.site.effective_design(),
             "palette": [{k: c[k] for k in ("color", "on_color")} for c in theme["palette"]],
             "designs": {
-                key: designs.resolve(key, theme["palette"], site.site.color_roles)
-                for key in designs.DESIGNS
+                key: designs.resolve(key, theme["palette"], site.site.color_roles, extra)
+                for key in [*designs.DESIGNS, *extra]
+            },
+            # Steckbrief der Standarddesigns für den Export als Paket (Webseite
+            # /design-paket/<schlüssel>.zip); Farbrollen als Vorgaben
+            "design_catalog": designs.export_catalog(),
+            # Freigegebene Designpakete (Ralf 2026-11-02); Inhalt über design/<schlüssel>/
+            "design_packages": {
+                p.key: {"label": p.label_for(lang), "hash": p.content_hash} for p in packages
             },
             "imprint_url": site.url("imprint/"),
             "allow_indexing": site.site.allow_indexing and self.state == Website.State.PUBLIC,
@@ -223,6 +233,29 @@ class SiteInfoView(_Public):
             request.build_absolute_uri(reverse("public-statute", args=[pub.public_key]))
             if pub
             else None
+        )
+
+
+class DesignPackageView(_Public):
+    """CSS und Vorlagen eines für diese Webseite freigegebenen Designpakets."""
+
+    maintenance_ok = True
+
+    def get(self, request, key: str, package: str):
+        site = self.load(request, key)
+        found = next((p for p in site.site.packages() if p.key == package), None)
+        if found is None:
+            raise Http404
+        return self.respond(
+            {
+                "version": API_VERSION,
+                "key": found.key,
+                "hash": found.content_hash,
+                "label": found.label_for(site.site.language),
+                "css": found.css,
+                "templates": found.templates,
+            },
+            site,
         )
 
 

@@ -184,6 +184,79 @@ describe('Webseite', () => {
     ).toEqual(['greeting', 'carousel', 'events', 'instagram'])
   })
 
+  it('zeigt eingespielte Designs und lädt Pakete nur für Plattformverwalter', async () => {
+    const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
+    const designs = [
+      { key: 'classic', label: 'Klassisch', hint: 'erfunden', roles, package: false },
+      {
+        key: 'hubertus',
+        label: 'Musterdesign',
+        hint: 'erfunden',
+        roles,
+        package: true,
+        sketch: 'classic',
+      },
+    ]
+    const body = (admin: boolean) => ({
+      ...data(website('maintenance', { design: 'hubertus', color_roles: {} })),
+      designs,
+      can_import_designs: admin,
+    })
+    const check = {
+      key: 'muster',
+      label: 'Muster',
+      label_en: '',
+      hint: '',
+      sketch: 'classic',
+      roles: ['header'],
+      templates: ['seite/kopf.html'],
+      css_bytes: 20,
+      warnings: [],
+      exists: false,
+      source: 'classic',
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: body(true) }),
+        [`GET ${base}design-packages/`]: () => ({ status: 200, body: [] }),
+        [`POST ${base}design-packages/`]: () => ({
+          status: 200,
+          body: { ok: true, package: check },
+        }),
+      },
+      '/webseite/gestaltung',
+    )
+    const user = userEvent.setup()
+    expect(await screen.findByRole('radio', { name: /Musterdesign/ })).toBeChecked()
+    expect(screen.getByText('Eigenes Design')).toBeInTheDocument()
+    await user.click(screen.getByText('Design weitergeben'))
+    expect(screen.getByRole('button', { name: 'Als Paket speichern' })).toBeInTheDocument()
+    const file = new File(['PK'], 'design-classic.zip', { type: 'application/zip' })
+    await user.upload(screen.getByLabelText('Designpaket (ZIP)'), file)
+    await user.type(screen.getByLabelText('Kürzel'), 'muster')
+    await user.click(screen.getByRole('button', { name: 'Prüfen' }))
+    expect(await screen.findByText(/Paket in Ordnung/)).toBeInTheDocument()
+    expect(screen.getByText(/Farbzuordnung von „classic“/)).toBeInTheDocument()
+    const post = calls.find((c) => c.key === `POST ${base}design-packages/`)
+    const form = post?.init?.body as FormData
+    expect(form.get('key')).toBe('muster')
+    expect(form.get('check')).toBe('1')
+    expect(screen.getByRole('button', { name: 'Einspielen' })).toBeEnabled()
+  })
+
+  it('ohne Plattformrecht kein Einspielen', async () => {
+    const body = {
+      ...data(website('maintenance', { design: 'classic', color_roles: {} })),
+      designs: [{ key: 'classic', label: 'Klassisch', hint: 'erfunden', roles: [] }],
+      can_import_designs: false,
+    }
+    renderApp({ [`GET ${base}`]: () => ({ status: 200, body }) }, '/webseite/gestaltung')
+    const user = userEvent.setup()
+    await user.click(await screen.findByText('Design weitergeben'))
+    expect(screen.getByRole('button', { name: 'Als Paket speichern' })).toBeInTheDocument()
+    expect(screen.queryByText('Design aus Paket laden')).not.toBeInTheDocument()
+  })
+
   it('wählt ein Design und ordnet Farben zu', async () => {
     const designs = ['classic', 'festive', 'sidebar', 'stage', 'newspaper'].map((key) => ({
       key,

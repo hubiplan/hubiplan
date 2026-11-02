@@ -10,6 +10,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.translation import get_language
 from django.utils.translation import gettext as _
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, ValidationError
@@ -153,17 +154,37 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         except ValueError as exc:
             raise serializers.ValidationError(str(exc)) from exc
 
+    def _package_roles(self) -> dict:
+        return designs.package_roles(self.instance.packages()) if self.instance else {}
+
+    def validate_design(self, value):
+        allowed = self.instance.design_choices() if self.instance else set(designs.DESIGNS)
+        if value not in allowed:
+            raise serializers.ValidationError(
+                _("Dieses Design gibt es nicht oder es ist für diese Webseite nicht freigegeben.")
+            )
+        return value
+
     def validate_color_roles(self, value):
         if not isinstance(value, dict):
             raise serializers.ValidationError("Farbzuordnung bitte je Design angeben.")
-        return designs.normalize_color_roles(value)
+        return designs.normalize_color_roles(value, self._package_roles())
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["home_sections"] = normalize_home_sections(instance.home_sections)
         data["menu"] = menu.normalize(instance.menu, menu.items(instance))
-        data["color_roles"] = designs.normalize_color_roles(instance.color_roles)
+        data["color_roles"] = designs.normalize_color_roles(
+            instance.color_roles, designs.package_roles(instance.packages())
+        )
+        data["design"] = instance.effective_design()
         return data
+
+
+def can_import_designs(user) -> bool:
+    from access.permissions import is_platform_admin
+
+    return bool(user and user.is_authenticated and (user.is_superuser or is_platform_admin(user)))
 
 
 def domain_data(d: WebsiteDomain) -> dict:
@@ -242,7 +263,11 @@ class WebsiteView(_WebsiteMixin, APIView):
             },
             "home_hints": HOME_HINTS,
             "home_needs_block": HOME_NEEDS_BLOCK,
-            "designs": designs.catalog(),
+            "designs": designs.catalog(
+                website.packages() if website else (), (get_language() or "de")[:2]
+            ),
+            # Designpakete einspielen und freigeben: nur Plattformverwalter
+            "can_import_designs": can_import_designs(self.request.user),
             "units": [
                 {"id": u.pk, "name": u.name}
                 for u in services.in_tree_order(services.units_below(self.org))
@@ -252,6 +277,8 @@ class WebsiteView(_WebsiteMixin, APIView):
         if website is not None:
             palette = effective_theme(self.org.ancestors())["palette"]
             data["palette"] = palette
+            packages = website.packages()
+            extra = designs.package_roles(packages)
             data["website"] = {
                 **WebsiteSerializer(website).data,
                 "public_key": website.public_key,
@@ -259,8 +286,8 @@ class WebsiteView(_WebsiteMixin, APIView):
                 "url": site_url(website),
                 # Farben je Rolle für alle Designs (Skizzen in der Auswahl)
                 "design_colors": {
-                    key: designs.resolve(key, palette, website.color_roles)
-                    for key in designs.DESIGNS
+                    key: designs.resolve(key, palette, website.color_roles, extra)
+                    for key in [*designs.DESIGNS, *extra]
                 },
                 "privacy_generated_at": website.privacy_generated_at,
                 "privacy_published_text": website.privacy_published_text,

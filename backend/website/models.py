@@ -160,13 +160,10 @@ class Website(models.Model):
     home_sections = models.JSONField(
         "Bausteine der Startseite", default=default_home_sections, blank=True
     )
-    # Standarddesign der Webseite und eigene Farbzuordnung je Design (Ralf 2026-10-31)
-    design = models.CharField(
-        "Design",
-        max_length=20,
-        choices=[(k, d["label"]) for k, d in DESIGNS.items()],
-        default=DEFAULT_DESIGN,
-    )
+    # Standarddesign der Webseite und eigene Farbzuordnung je Design (Ralf 2026-10-31).
+    # Auch der Schlüssel eines freigegebenen Designpakets (DesignPackage, Ralf 2026-11-02);
+    # geprüft wird im Code (design_choices), nicht über feste choices.
+    design = models.CharField("Design", max_length=40, default=DEFAULT_DESIGN)
     color_roles = models.JSONField("Farbzuordnung je Design", default=dict, blank=True)
     name_format = models.CharField(
         "Namensform", max_length=10, choices=NameFormat.choices, default=NameFormat.FULL
@@ -235,6 +232,17 @@ class Website(models.Model):
     def new_key() -> str:
         return secrets.token_urlsafe(18)
 
+    def packages(self):
+        """Für diese Webseite freigegebene Designpakete."""
+        return list(self.design_packages.all())
+
+    def design_choices(self) -> set[str]:
+        return set(DESIGNS) | {p.key for p in self.packages()}
+
+    def effective_design(self) -> str:
+        """Gewähltes Design; fehlt das Paket oder seine Freigabe, Klassisch."""
+        return self.design if self.design in self.design_choices() else DEFAULT_DESIGN
+
     def block_on(self, key: str) -> bool:
         default = True if is_extra_block(key) else DEFAULT_BLOCKS.get(key, False)
         return bool((self.blocks or {}).get(key, default))
@@ -268,6 +276,47 @@ class Website(models.Model):
 
 
 HOSTNAME_RE = r"^(?=.{1,253}$)(?!-)[a-z0-9-]{1,63}(?<!-)(\.(?!-)[a-z0-9-]{1,63}(?<!-))+$"
+
+
+class DesignPackage(models.Model):
+    """Eingespieltes Design (Paket aus design_packages.py), nicht im Repository.
+
+    Gilt für die ganze Installation; wählen können es nur freigegebene Webseiten.
+    Einspielen, Freigeben und Löschen dürfen nur Plattformverwalter (Ralf 2026-11-02).
+    """
+
+    key = models.CharField("Kürzel", max_length=40, unique=True)
+    label = models.CharField("Name", max_length=60)
+    label_en = models.CharField("Name (Englisch)", max_length=60, blank=True)
+    hint = models.CharField("Beschreibung", max_length=300, blank=True)
+    hint_en = models.CharField("Beschreibung (Englisch)", max_length=300, blank=True)
+    roles = models.JSONField("Farbrollen", default=dict)
+    sketch_like = models.CharField("Skizze wie", max_length=20, default=DEFAULT_DESIGN)
+    css = models.TextField("Gestaltung (CSS)", blank=True)
+    templates = models.JSONField("Vorlagen", default=dict, blank=True)
+    content_hash = models.CharField("Prüfsumme", max_length=64)
+    websites = models.ManyToManyField(
+        Website, blank=True, related_name="design_packages", verbose_name="freigegeben für"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["label", "key"]
+        verbose_name = "Designpaket"
+        verbose_name_plural = "Designpakete"
+
+    def __str__(self) -> str:
+        return self.label
+
+    def label_for(self, language: str) -> str:
+        return (self.label_en if language == "en" and self.label_en else "") or self.label
+
+    def hint_for(self, language: str) -> str:
+        return (self.hint_en if language == "en" and self.hint_en else "") or self.hint
 
 
 class WebsiteDomain(models.Model):

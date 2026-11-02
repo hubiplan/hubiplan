@@ -107,25 +107,38 @@ def valid_choice(value) -> bool:
     return value in NEUTRAL
 
 
-def normalize_color_roles(value) -> dict:
-    """{design: {rolle: wahl}} → nur bekannte Designs, Rollen und Werte."""
+def _role_specs(extra: dict | None = None) -> dict[str, dict]:
+    """Vorgaben je Rolle für alle bekannten Designs: Standarddesigns und Pakete."""
+    specs = {key: d["roles"] for key, d in DESIGNS.items()}
+    specs.update(extra or {})
+    return specs
+
+
+def normalize_color_roles(value, extra: dict | None = None) -> dict:
+    """{design: {rolle: wahl}} → nur bekannte Designs, Rollen und Werte.
+
+    ``extra``: Rollen eingespielter Designpakete ({schlüssel: {rolle: vorgabe}})."""
     result: dict[str, dict] = {}
     if not isinstance(value, dict):
         return result
+    specs = _role_specs(extra)
     for key, roles in value.items():
-        if key not in DESIGNS or not isinstance(roles, dict):
+        if key not in specs or not isinstance(roles, dict):
             continue
-        used = DESIGNS[key]["roles"]
+        used = specs[key]
         clean = {r: v for r, v in roles.items() if r in used and valid_choice(v)}
         if clean:
             result[key] = clean
     return result
 
 
-def resolve(design: str, palette: list[dict], color_roles: dict | None = None) -> dict:
+def resolve(
+    design: str, palette: list[dict], color_roles: dict | None = None, extra: dict | None = None
+) -> dict:
     """Farben je Rolle für ein Design: {rolle: {color, on_color}}."""
-    spec = DESIGNS.get(design, DESIGNS[DEFAULT_DESIGN])["roles"]
-    chosen = normalize_color_roles(color_roles or {}).get(design, {})
+    specs = _role_specs(extra)
+    spec = specs.get(design, DESIGNS[DEFAULT_DESIGN]["roles"])
+    chosen = normalize_color_roles(color_roles or {}, extra).get(design, {})
     result = {}
     for role, default in spec.items():
         choice = chosen.get(role)
@@ -139,21 +152,63 @@ def resolve(design: str, palette: list[dict], color_roles: dict | None = None) -
     return result
 
 
-def catalog() -> list[dict]:
-    """Für die Oberfläche: Designs mit Rollen und Vorgaben."""
+def package_roles(packages) -> dict:
+    """{schlüssel: rollen} der übergebenen Designpakete."""
+    return {p.key: p.roles for p in packages}
+
+
+def _role_list(roles: dict) -> list[dict]:
     return [
+        {
+            "key": role,
+            "label": ROLES[role],
+            "default": spec if isinstance(spec, str) else spec[0],
+        }
+        for role, spec in roles.items()
+        if role in ROLES
+    ]
+
+
+def catalog(packages=(), language: str = "de") -> list[dict]:
+    """Für die Oberfläche: Standarddesigns und freigegebene Designpakete mit Rollen."""
+    result = [
         {
             "key": key,
             "label": d["label"],
             "hint": d["hint"],
-            "roles": [
-                {
-                    "key": role,
-                    "label": ROLES[role],
-                    "default": spec if isinstance(spec, str) else spec[0],
-                }
-                for role, spec in d["roles"].items()
-            ],
+            "package": False,
+            "sketch": key,
+            "roles": _role_list(d["roles"]),
         }
         for key, d in DESIGNS.items()
     ]
+    for p in packages:
+        result.append(
+            {
+                "key": p.key,
+                "label": p.label_for(language),
+                "hint": p.hint_for(language),
+                "package": True,
+                "sketch": p.sketch_like if p.sketch_like in DESIGNS else DEFAULT_DESIGN,
+                "roles": _role_list(p.roles),
+            }
+        )
+    return result
+
+
+def export_catalog() -> dict:
+    """Steckbriefe der Standarddesigns (Deutsch und Englisch) für den Export als Paket."""
+    from django.utils import translation
+
+    result = {}
+    for key, d in DESIGNS.items():
+        with translation.override("en"):
+            label_en, hint_en = translation.gettext(d["label"]), translation.gettext(d["hint"])
+        result[key] = {
+            "label": d["label"],
+            "label_en": label_en,
+            "hint": d["hint"],
+            "hint_en": hint_en,
+            "roles": d["roles"],
+        }
+    return result
