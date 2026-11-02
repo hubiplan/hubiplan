@@ -84,3 +84,36 @@ def test_auskunft_aus_sammelrechnung_nur_eigene_posten(c, base, club, members):
     assert "Zita" not in zf.read("rechnungen.json").decode()
     assert "recipient_address" not in row and "zahlungen" not in row and "total" not in row
     assert "rechnungen.pdf" not in zf.namelist()
+
+
+# --- FQ10: verkürzte Löschfrist erst nach der Schonfrist ---
+
+
+def test_kuerzere_loeschfrist_gilt_spaeter(monkeypatch):
+    from django.utils import timezone
+
+    from organizations.models import DELETION_SHORTEN_GRACE_DAYS, PlatformSettings
+
+    ps = PlatformSettings.load()
+    ps.set_deletion_period(24)
+    ps.save()
+    ps.set_deletion_period(1)
+    ps.save()
+    assert ps.deletion_period_months == 1
+    assert ps.effective_deletion_months() == 24 and ps.shorter_from()
+    # Verlängern gilt sofort
+    ps.set_deletion_period(36)
+    assert ps.effective_deletion_months() == 36 and ps.shorter_from() is None
+    ps.set_deletion_period(12)
+    later = timezone.now() + datetime.timedelta(days=DELETION_SHORTEN_GRACE_DAYS + 1)
+    monkeypatch.setattr(timezone, "now", lambda: later)
+    assert ps.effective_deletion_months() == 12
+
+
+def test_kuerzere_loeschfrist_ueber_die_schnittstelle(api, platform_admin):
+    c = api(platform_admin)
+    resp = c.patch("/api/platform/settings/", {"deletion_period_months": 3}, content_type=JSON)
+    assert resp.status_code == 200, resp.json()
+    data = resp.json()
+    assert data["deletion_period_months"] == 3
+    assert data["deletion_shorter_from"] and data["deletion_period_effective"] == 24

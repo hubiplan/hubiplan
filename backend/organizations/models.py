@@ -655,6 +655,14 @@ class PlatformSettings(models.Model):
         default=24,
         validators=[MinValueValidator(1), MaxValueValidator(600)],
     )
+    # Schutz vor zu frühem Löschen (Fachfrage FQ10): Eine verkürzte Frist gilt erst nach
+    # DELETION_SHORTEN_GRACE_DAYS Tagen; bis dahin zählt die vorige, längere Frist.
+    deletion_period_previous = models.PositiveSmallIntegerField(
+        "vorige Löschfrist (Monate)", null=True, blank=True
+    )
+    deletion_period_changed_at = models.DateTimeField(
+        "Löschfrist verkürzt am", null=True, blank=True
+    )
     # Verbund: Einheiten dieser Instanz dürfen sich mit Einheiten auf anderen
     # HUBIplan-Instanzen koppeln. Aus: alles wie bisher auf einer Instanz.
     peering_enabled = models.BooleanField("Kopplung mit anderen Instanzen", default=False)
@@ -679,6 +687,36 @@ class PlatformSettings(models.Model):
     def load(cls) -> PlatformSettings:
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+    def shorter_from(self) -> datetime.datetime | None:
+        """Ab wann eine verkürzte Löschfrist gilt (None: keine Verkürzung ausstehend)."""
+        if self.deletion_period_previous is None or self.deletion_period_changed_at is None:
+            return None
+        start = self.deletion_period_changed_at + datetime.timedelta(
+            days=DELETION_SHORTEN_GRACE_DAYS
+        )
+        return start if timezone.now() < start else None
+
+    def effective_deletion_months(self) -> int:
+        """Die Frist, nach der gerade gelöscht wird: während der Schonfrist die längere."""
+        if self.shorter_from() is not None:
+            return max(self.deletion_period_months, self.deletion_period_previous or 0)
+        return self.deletion_period_months
+
+    def set_deletion_period(self, months: int) -> None:
+        """Frist ändern; eine Verkürzung gilt erst nach der Schonfrist (Fachfrage FQ10)."""
+        effective = self.effective_deletion_months()
+        if months < effective:
+            self.deletion_period_previous = effective
+            self.deletion_period_changed_at = timezone.now()
+        elif months >= effective:
+            self.deletion_period_previous = None
+            self.deletion_period_changed_at = None
+        self.deletion_period_months = months
+
+
+# Eine verkürzte Löschfrist gilt erst nach so vielen Tagen (Zeit zum Bemerken und Sichern)
+DELETION_SHORTEN_GRACE_DAYS = 30
 
 
 class DepartmentManager(models.Manager):

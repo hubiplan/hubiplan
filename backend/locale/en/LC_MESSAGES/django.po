@@ -4553,3 +4553,8 @@ msgid ""
 "Die Datei „{name}“ ist zu groß für die Virenprüfung und wird deshalb nicht "
 "weitergegeben."
 msgstr "The file “{name}” is too large for the virus scan and is therefore not passed on."
+
+msgid ""
+"Erst die Daten des ehemaligen Mitglieds löschen, dann den Namen aus der "
+"Chronik."
+msgstr "First delete the former member's data, then the name from the chronicle."

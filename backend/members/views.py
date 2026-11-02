@@ -715,6 +715,45 @@ class MemberDisclosureView(_ClubMixin, APIView):
         return response
 
 
+class MemberHistoryErasureView(_ClubMixin, APIView):
+    """Auf Wunsch des ehemaligen Mitglieds auch den Namen aus Chronik, Würden, Ehrungen und
+    Wettbewerben entfernen (Fachfrage FQ12). Nur nach dem Löschen der Mitgliedsdaten."""
+
+    write_permission = MEMBERS_EDIT
+
+    @transaction.atomic
+    def post(self, request, org_id: int, pk: int):
+        from rest_framework.exceptions import ValidationError
+
+        from .workflows import erase_history
+
+        membership = get_object_or_404(
+            Membership.objects.select_related("person", "organization").select_for_update(),
+            organization=self.org,
+            pk=pk,
+        )
+        if membership.purged_at is None:
+            raise ValidationError(
+                {
+                    "detail": gettext(
+                        "Erst die Daten des ehemaligen Mitglieds löschen, dann den Namen aus "
+                        "der Chronik."
+                    )
+                }
+            )
+        counts = erase_history(membership)
+        record(
+            self.org,
+            request.user,
+            "update",
+            membership,
+            {"Chronik und Ehrungen": [None, "Name auf Wunsch entfernt"]},
+            person=membership.person,
+        )
+        membership.refresh_from_db()
+        return Response({**member_detail(membership, self.org), "erased": counts})
+
+
 class MemberErasureView(_ClubMixin, APIView):
     """Löschung auf Verlangen eines ehemaligen Mitglieds vor Ablauf der Löschfrist.
 

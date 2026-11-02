@@ -4673,5 +4673,13 @@
   "Löschsperre seit {x}{x2}: {reason}": "Deletion hold since {x}{x2}: {reason}",
   "Bei mehr Empfängern als unten eingestellt oder nach zu vielen Mails fremder Absender am selben Tag bleibt die Mail als Entwurf liegen; wer an den Verteiler schreiben darf, bekommt einen Hinweis und gibt sie frei.": "If there are more recipients than set below, or after too many mails from outside senders on the same day, the mail is kept as a draft; those allowed to write to the list are notified and release it.",
   "Ohne Freigabe höchstens an so viele Empfänger": "At most this many recipients without release",
-  "0: jede Mail fremder Absender wartet auf Freigabe.": "0: every mail from outside senders waits for release."
+  "0: jede Mail fremder Absender wartet auf Freigabe.": "0: every mail from outside senders waits for release.",
+  "Namen von {name} auch aus Chronik und Ehrungen entfernen?": "Also remove the name of {name} from the chronicle and honours?",
+  "In Würden, Begleitungen, Ehrungen und Wettbewerbsergebnissen steht danach ": "Dignities, companions, honours and competition results will then show ",
+  "„Name auf Wunsch entfernt“; Fotos dieser Würden werden gelöscht. Jahre und Würden ": "“Name removed on request”; photos of these dignities are deleted. Years and dignities ",
+  "bleiben als Lücke. Ist die Person in keinem anderen Verein erfasst, wird auch ihr ": "remain as a gap. If the person is not recorded in any other club, their ",
+  "Name hier anonymisiert. Das lässt sich nicht rückgängig machen.": "name is anonymised here as well. This cannot be undone.",
+  "Namen entfernen": "Remove name",
+  "Namen aus Chronik und Ehrungen entfernen": "Remove name from chronicle and honours",
+  "Die kürzere Frist gilt erst ab {x}. Bis dahin wird weiter nach {n} Monaten gelöscht, damit ein Versehen auffällt, bevor Daten weg sind.": "The shorter period only applies from {x}. Until then, data is still deleted after {n} months, so that a mistake is noticed before data is gone."
 }

@@ -162,7 +162,12 @@ function Privacy({
     !member.purged &&
     member.purge_due !== null &&
     member.periods.every((p) => !p.exit_date || p.exit_date <= todayIso())
-  if (!canExport && !canErase) return null
+  // Fachfrage FQ12: nach dem Löschen auf Wunsch auch den Namen aus Chronik und Ehrungen
+  const canEraseHistory =
+    org.permissions.includes(PERM.membersEdit) &&
+    member.purged &&
+    member.last_name !== 'Name auf Wunsch entfernt'
+  if (!canExport && !canErase && !canEraseHistory) return null
   const name = t('{first_name} {last_name}', {
     first_name: member.first_name,
     last_name: member.last_name,
@@ -204,6 +209,30 @@ function Privacy({
     }
   }
 
+  async function eraseHistory() {
+    if (
+      !(await confirmDialog({
+        title: t('Namen von {name} auch aus Chronik und Ehrungen entfernen?', { name }),
+        message:
+          t('In Würden, Begleitungen, Ehrungen und Wettbewerbsergebnissen steht danach ') +
+          t('„Name auf Wunsch entfernt“; Fotos dieser Würden werden gelöscht. Jahre und Würden ') +
+          t('bleiben als Lücke. Ist die Person in keinem anderen Verein erfasst, wird auch ihr ') +
+          t('Name hier anonymisiert. Das lässt sich nicht rückgängig machen.'),
+        confirmLabel: t('Namen entfernen'),
+      }))
+    )
+      return
+    setBusy(true)
+    setError('')
+    try {
+      onChanged(await memberApi.eraseHistory(org.id, member.id))
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="subcard stack-sm">
       <h3>{t('Datenschutz')}</h3>
@@ -222,6 +251,16 @@ function Privacy({
         {canErase && (
           <button type="button" className="button button-danger" disabled={busy} onClick={erase}>
             {t('Daten auf Verlangen löschen')}
+          </button>
+        )}
+        {canEraseHistory && (
+          <button
+            type="button"
+            className="button button-danger"
+            disabled={busy}
+            onClick={eraseHistory}
+          >
+            {t('Namen aus Chronik und Ehrungen entfernen')}
           </button>
         )}
       </div>

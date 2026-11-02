@@ -33,6 +33,11 @@ def note(membership, *, after_deadline: bool) -> None:
     _append(membership, {"d": after_deadline})
 
 
+def note_history(membership) -> None:
+    """Namen auch aus Chronik und Ehrungen entfernt (Fachfrage FQ12)."""
+    _append(membership, {"d": True, "h": True})
+
+
 def note_readmitted(membership) -> None:
     """Wiederaufnahme: eine frühere Löschung dieser Mitgliedschaft gilt nicht mehr."""
     _append(membership, {"r": True})
@@ -91,7 +96,7 @@ def apply() -> int:
     from core.tenancy import rls_bypass
 
     from .models import Membership
-    from .workflows import purge_membership
+    from .workflows import erase_history, purge_membership
 
     # Je Mitgliedschaft zählt der letzte Eintrag (Löschung oder Wiederaufnahme)
     last: dict[tuple, dict] = {}
@@ -104,15 +109,25 @@ def apply() -> int:
                 continue
             membership = (
                 Membership.objects.select_related("person", "organization")
-                .filter(pk=item["m"], organization_id=item.get("o"), purged_at__isnull=True)
+                .filter(pk=item["m"], organization_id=item.get("o"))
                 .first()
             )
             created = parse_datetime(item.get("c") or "")
             if membership is None or created is None or membership.created_at != created:
                 continue
+            if membership.purged_at is not None and not item.get("h"):
+                continue
             with transaction.atomic():
-                purge_membership(membership, after_deadline=bool(item.get("d")), listed=True)
-            count += 1
+                again = membership.purged_at is None
+                if again:
+                    purge_membership(membership, after_deadline=bool(item.get("d")), listed=True)
+                if item.get("h"):
+                    # Auch die Namen in Chronik und Ehrungen (FQ12); ändert nichts, wenn
+                    # sie schon entfernt sind
+                    changed = erase_history(membership, listed=True)
+                    again = again or any(changed.values())
+            if again:
+                count += 1
     if count:
         logger.warning("Löschliste: %s Mitgliedschaften erneut gelöscht", count)
         from core.alarm import send_alert

@@ -540,6 +540,17 @@ function SettingsForm({
         hint={t('Danach bleibt nur ein Minimum: Name, Geburtsdatum, Verbandsnummer und Zeiträume.')}
         onChange={(e) => form.set('deletion_period_months', Number(e.target.value))}
       />
+      {settings.deletion_shorter_from && (
+        <Alert kind="info">
+          {t(
+            'Die kürzere Frist gilt erst ab {x}. Bis dahin wird weiter nach {n} Monaten gelöscht, damit ein Versehen auffällt, bevor Daten weg sind.',
+            {
+              x: formatDate(settings.deletion_shorter_from),
+              n: settings.deletion_period_effective ?? settings.deletion_period_months,
+            },
+          )}
+        </Alert>
+      )}
       <Why k="deletion_period" />
       <h3>{t('Verbund mit anderen HUBIplan-Instanzen')}</h3>
       <Checkbox

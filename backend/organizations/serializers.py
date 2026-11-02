@@ -841,15 +841,40 @@ KIND_FIELDS = (
 
 
 class PlatformSettingsSerializer(serializers.ModelSerializer):
+    # Verkürzte Löschfrist: ab wann sie gilt (Fachfrage FQ10)
+    deletion_shorter_from = serializers.SerializerMethodField()
+    deletion_period_effective = serializers.SerializerMethodField()
+
     class Meta:
         model = PlatformSettings
         fields = [
             "person_data_mode",
             "deletion_period_months",
+            "deletion_shorter_from",
+            "deletion_period_effective",
             "peering_enabled",
             "peering_allowed_hosts",
             "peering_login",
         ]
+
+    def get_deletion_shorter_from(self, obj):
+        return obj.shorter_from()
+
+    def get_deletion_period_effective(self, obj) -> int:
+        return obj.effective_deletion_months()
+
+    def update(self, instance, validated_data):
+        months = validated_data.pop("deletion_period_months", None)
+        if months is not None and months != instance.deletion_period_months:
+            instance.set_deletion_period(months)
+            instance.save(
+                update_fields=[
+                    "deletion_period_months",
+                    "deletion_period_previous",
+                    "deletion_period_changed_at",
+                ]
+            )
+        return super().update(instance, validated_data)
 
 
 class FederationClubSerializer(ModelCleanMixin, serializers.ModelSerializer):

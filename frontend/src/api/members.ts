@@ -378,6 +378,9 @@ export const memberApi = {
     requestBlob('GET', `${base(org)}/members/${id}/auskunft/`),
   /** Daten eines ehemaligen Mitglieds auf Verlangen vor Ablauf der Löschfrist löschen. */
   erase: (org: number, id: number) => api.post<MemberDetail>(`${base(org)}/members/${id}/erase/`),
+  /** Fachfrage FQ12: Namen auch aus Chronik und Ehrungen entfernen (nach dem Löschen) */
+  eraseHistory: (org: number, id: number) =>
+    api.post<MemberDetail>(`${base(org)}/members/${id}/erase-history/`),
 
   transfers: (org: number) => api.get<Transfer[]>(`${base(org)}/transfers/`),
   createTransfer: (org: number, data: Record<string, unknown>) =>
