@@ -9,6 +9,8 @@ Läuft im Klon des jeweiligen Repos (hubiplan oder hubiplan-website). Ref ist oh
 origin/main. Ralf entscheidet, wann ein Release kommt: „taggen“ nur auf sein Wort.
 """
 
+# ruff: noqa: S603, S607  (git, gh und ssh mit festen Argumenten)
+
 from __future__ import annotations
 
 import argparse
@@ -241,9 +243,8 @@ def taggen(args: argparse.Namespace) -> None:
         fehler(f"Änderungshinweise für {version} fehlen oder sind unvollständig (de und en).")
 
     # 1. Lokal getestet (gleicher Tree wie in scripts/test.sh vermerkt)
-    state = Path(
-        os.environ.get("HUBIPLAN_TESTED_FILE", Path.home() / ".local/state/hubiplan/tested-trees")
-    )
+    umgebung = "HUBIPLAN_TESTED_FILE" if repo == "hubiplan" else "HUBIPLAN_WEBSITE_TESTED_FILE"
+    state = Path(os.environ.get(umgebung, Path.home() / f".local/state/{repo}/tested-trees"))
     tree = git("rev-parse", f"{ref}^{{tree}}")
     try:
         getestet = any(z.startswith(tree + " ") for z in state.read_text().splitlines())
