@@ -3261,6 +3261,9 @@ msgstr "The date of birth is after joining on {first:%d/%m/%Y}."
 msgid "Unbekannte Person."
 msgstr "Unknown person."
 
+msgid "Pflichtfeld."
+msgstr "Required field."
+
 msgid ""
 "Stammdaten und Kontakt pflegt die ausgegliederte Untereinheit auf ihrer "
 "Instanz. Bitte eine Korrektur vorschlagen."

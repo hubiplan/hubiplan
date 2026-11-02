@@ -104,3 +104,18 @@ def audit_with(key: str, value=_ANY, **filters) -> list:
         and key in entry.changes
         and (value is _ANY or entry.changes[key] == value)
     ]
+
+
+def found(person_id: int) -> dict:
+    """Angaben aus der Dublettensuche, mit denen eine vorhandene Person verknüpft wird
+    (Audit 02.11. GA-S01: die Personen-ID allein reicht nicht)."""
+    from core.tenancy import rls_bypass
+    from members.models import Person
+
+    with rls_bypass():
+        person = Person.objects.get(pk=person_id)
+    return {
+        "last_name": person.last_name,
+        "first_name": person.first_name,
+        "birth_date": person.birth_date.isoformat(),
+    }

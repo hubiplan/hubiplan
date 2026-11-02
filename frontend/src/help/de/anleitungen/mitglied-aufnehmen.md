@@ -15,6 +15,8 @@ Vorher: Es gibt mindestens eine Mitgliedsart (Mitglieder › Einrichtung › Mit
    Person schon gibt, z. B. aus einem anderen Verein.
 3. Gibt es **Mögliche Treffer**, wähle die richtige Person oder **Keine davon – neue Person anlegen**.
 4. Wähle die **Mitgliedsart** und das Datum für den **Eintritt**.
-5. Ergänze Kontakt und Anschrift und klicke auf **Aufnehmen**.
+5. Ergänze Kontakt und Anschrift und klicke auf **Aufnehmen**. Bei einer schon bekannten Person
+   bleiben die vorhandenen gemeinsamen Kontaktangaben stehen; deine Angaben füllen nur leere Felder.
+   Ändern kannst du sie danach in der Mitgliedsakte.
 
 ![Formular „Mitglied aufnehmen“](bild:mitglieder-aufnehmen)

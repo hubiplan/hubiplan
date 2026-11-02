@@ -66,8 +66,13 @@ def contact_for(
     return own or common
 
 
-def save_contact(person: Person, club: Organization, data: dict) -> ContactDetails:
+def save_contact(
+    person: Person, club: Organization, data: dict, *, only_empty: bool = False
+) -> ContactDetails:
+    """Kontaktdaten speichern. ``only_empty``: vorhandene gemeinsame Angaben nicht
+    überschreiben (Aufnahme einer schon bekannten Person, Audit 02.11. GA-S01)."""
     organization = None if shared_contacts() else club
+    only_empty = only_empty and organization is None
     contact = (
         ContactDetails.objects.select_for_update()
         .filter(person=person, organization=organization)
@@ -80,7 +85,7 @@ def save_contact(person: Person, club: Organization, data: dict) -> ContactDetai
             for field in CONTACT_FIELDS:
                 setattr(contact, field, getattr(template, field))
     for field in CONTACT_FIELDS:
-        if field in data:
+        if field in data and not (only_empty and getattr(contact, field)):
             setattr(contact, field, data[field])
     contact.save()
     return contact
@@ -255,6 +260,25 @@ def persons_matching(scope_id, last_name: str, first_name: str, birth_date, *, l
     return [p for p in qs if same_birth(p, birth_date, year_only=False)][:limit]
 
 
+def check_found(person: Person, club: Organization, data: dict) -> None:
+    """Eine vorhandene Person darf nur verknüpft werden, wenn die Dublettensuche sie mit
+    den mitgeschickten Angaben findet (Name und Geburtsdatum). Die Personen-ID allein
+    berechtigt nicht (Audit 02.11. GA-S01)."""
+    missing = [f for f in ("last_name", "first_name", "birth_date") if not data.get(f)]
+    if missing:
+        raise ValidationError({f: gettext("Pflichtfeld.") for f in missing})
+    last_name = data["last_name"].strip().casefold()
+    first_name = data["first_name"].strip().casefold()
+    names = (person.last_name.strip().casefold(), person.first_name.strip().casefold())
+    found = (
+        person.scope_id == scope_for(club).pk
+        and (names[0] == last_name or names[1] == first_name)
+        and same_birth(person, data["birth_date"])
+    )
+    if not found:
+        raise ValidationError({"person": gettext("Unbekannte Person.")})
+
+
 def find_duplicates(club: Organization, last_name: str, first_name: str, birth_date):
     """Mögliche Dubletten im Verbandsbereich: gleiches Geburtsdatum und Name.
 
@@ -280,8 +304,11 @@ def lock_person(person_id: int) -> None:
 
 
 @transaction.atomic
-def admit(club: Organization, data: dict) -> Membership:
-    """Nimmt eine Person auf: neue Person oder Verknüpfung mit vorhandener."""
+def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Membership:
+    """Nimmt eine Person auf: neue Person oder Verknüpfung mit vorhandener.
+
+    ``keep_contact``: bei einer vorhandenen Person gemeinsame Kontaktangaben nur ergänzen,
+    nicht überschreiben (direkte Aufnahme ohne Zustimmung des bisherigen Vereins)."""
     scope = scope_for(club)
     member_type: MemberType = data["member_type"]
     entry_date: datetime.date = data["entry_date"]
@@ -304,6 +331,7 @@ def admit(club: Organization, data: dict) -> Membership:
             person.gender = data["gender"]
             person.save(update_fields=["gender"])
     else:
+        keep_contact = False
         person = Person.objects.create(
             scope=scope,
             last_name=data["last_name"].strip(),
@@ -323,7 +351,7 @@ def admit(club: Organization, data: dict) -> Membership:
     )
     contact = {k: data[k] for k in CONTACT_FIELDS if k in data}
     if contact:
-        save_contact(person, club, contact)
+        save_contact(person, club, contact, only_empty=keep_contact)
     for department in data.get("departments", []):
         DepartmentMembership.objects.create(
             organization=club, membership=membership, department=department, valid_from=entry_date
