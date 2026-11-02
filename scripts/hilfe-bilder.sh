@@ -70,7 +70,10 @@ from organizations.models import Organization
 for o in Organization.objects.filter(type='club'):
     o.enabled_modules = sorted(set(o.enabled_modules or []) | {'competitions', 'entries', 'website'})
     o.cash_counts_enabled = True
-    o.save(update_fields=['enabled_modules', 'cash_counts_enabled'])
+    # Englische Bezeichnung der Untereinheiten (sonst zeigt die englische Oberfläche „Züge“)
+    if o.department_label == 'Zug' and not o.department_label_en:
+        o.department_label_en, o.department_label_plural_en = 'platoon', 'platoons'
+    o.save(update_fields=['enabled_modules', 'cash_counts_enabled', 'department_label_en', 'department_label_plural_en'])
 # Lastschrift (Beispiel-Gläubiger-ID der Bundesbank) und eine Mahnstufe
 from billing.models import BillingSettings, DunningLevel
 from finance.models import Account
