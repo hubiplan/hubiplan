@@ -9,7 +9,7 @@ Echtserver gehört zu jedem `docker compose`-Befehl zusätzlich `-f docker-compo
 | Dienst | Aufgabe |
 | --- | --- |
 | `web` | Caddy: HTTPS (Let's Encrypt), Oberfläche, Weiterleitung an das Backend, Sicherheits-Header |
-| `backend` | Django mit gunicorn, führt beim Start die Migrationen aus |
+| `backend` | Django mit gunicorn (3 Prozesse × 4 Threads), führt beim Start die Migrationen aus |
 | `worker` | Celery: Import, Export und andere Hintergrund-Jobs |
 | `beat` | Zeitplan für wiederkehrende Jobs (Löschfrist täglich) |
 | `backup` | tägliches verschlüsseltes Backup mit Rücksicherungstest |
