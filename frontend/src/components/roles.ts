@@ -72,7 +72,7 @@ export function withLevel(
 }
 
 export function permissionLabels(codes: string[], catalog: CatalogModule[]): string {
-  if (codes.length === 0) return 'keine'
+  if (codes.length === 0) return t('keine')
   const labels = catalog.flatMap((m) => m.permissions).filter((p) => codes.includes(p.code))
   return labels.map((p) => p.label).join(', ')
 }

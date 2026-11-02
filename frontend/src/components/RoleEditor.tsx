@@ -184,10 +184,10 @@ function PermissionSummary({ codes, catalog }: { codes: string[]; catalog: Catal
 export function RoleTable({
   roles,
   catalog,
-  holderLabel = 'vergeben',
+  holderLabel = t('vergeben'),
   onEdit,
   editLabel = t('Bearbeiten'),
-  noPermissions = 'keine',
+  noPermissions = t('keine'),
   showPermissions = true,
   onReorder,
   website = false,
