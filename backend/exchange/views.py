@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext
@@ -191,32 +192,33 @@ class ExportJobViewSet(_OrgCtx, OrgScopedMixin, viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        jobquota.ensure_capacity(
-            ExportJob.objects.filter(organization=self.org),
-            active_statuses=[ExportJob.Status.PENDING, ExportJob.Status.RUNNING],
-            max_active=3,
-            max_per_hour=60,
-            what="Listen-Exporte",
-        )
-        job = serializer.save(organization=self.org, created_by=self.request.user)
-        # Jeder Export wird protokolliert: wer, wann, welche Felder
-        member_cols = export.member_columns(self.org) if self.org.type == "club" else []
-        labels = {
-            c.key: c.label
-            for c in member_cols + export.jubilee_columns() + export.federation_columns(self.org)
-        }
-        record(
-            self.org,
-            self.request.user,
-            "create",
-            job,
-            {
-                "Liste": [None, "Jubiläen" if job.kind == "jubilees" else "Mitglieder"],
-                "Format": [None, job.file_format.upper()],
-                "Spalten": [None, ", ".join(labels.get(c, c) for c in job.columns)],
-                "Filter": [None, job.filters],
-            },
-        )
+        # Prüfen und Anlegen in einer Transaktion; gestartet wird erst danach
+        with transaction.atomic():
+            jobquota.ensure_capacity(
+                ExportJob.objects.filter(organization=self.org),
+                org_id=self.org.pk,
+                active_statuses=[ExportJob.Status.PENDING, ExportJob.Status.RUNNING],
+                max_active=3,
+                max_per_hour=60,
+                what="Listen-Exporte",
+            )
+            job = serializer.save(organization=self.org, created_by=self.request.user)
+            # Jeder Export wird protokolliert: wer, wann, welche Felder
+            member_cols = export.member_columns(self.org) if self.org.type == "club" else []
+            columns = member_cols + export.jubilee_columns() + export.federation_columns(self.org)
+            labels = {c.key: c.label for c in columns}
+            record(
+                self.org,
+                self.request.user,
+                "create",
+                job,
+                {
+                    "Liste": [None, "Jubiläen" if job.kind == "jubilees" else "Mitglieder"],
+                    "Format": [None, job.file_format.upper()],
+                    "Spalten": [None, ", ".join(labels.get(c, c) for c in job.columns)],
+                    "Filter": [None, job.filters],
+                },
+            )
         enqueue(tasks.run_export, job, failed_status=ExportJob.Status.FAILED)
 
 
@@ -341,27 +343,29 @@ class ImportJobViewSet(_OrgCtx, OrgScopedMixin, viewsets.ModelViewSet):
             raise serializers.ValidationError({"file": gettext("Bitte eine Datei wählen.")})
         if upload.size > MAX_UPLOAD:
             raise serializers.ValidationError({"file": gettext("Die Datei ist größer als 10 MB.")})
-        jobquota.ensure_capacity(
-            ImportJob.objects.filter(organization=self.org),
-            active_statuses=[ImportJob.Status.VALIDATING, ImportJob.Status.IMPORTING],
-            max_active=3,
-            max_per_hour=60,
-            what="Listen-Importe",
-        )
-        name = Path(upload.name).name
-        job = ImportJob(organization=self.org, created_by=request.user, file_name=name)
-        job.file.save(f"{job.organization_id}-{name}", upload, save=False)
-        try:
-            headers, rows = read_stored_table(job.file, name)
-        except ReadError as exc:
-            job.file.delete(save=False)
-            raise serializers.ValidationError({"file": str(exc)}) from exc
-        job.headers = headers
-        job.sample = [[_json(v) for v in r] for r in rows[:5]]
-        job.row_count = len(rows)
-        job.mapping = importer.suggest_mapping(headers, self.org)
-        job.options = {"link_duplicates": True}
-        job.save()
+        with transaction.atomic():
+            jobquota.ensure_capacity(
+                ImportJob.objects.filter(organization=self.org),
+                org_id=self.org.pk,
+                active_statuses=[ImportJob.Status.VALIDATING, ImportJob.Status.IMPORTING],
+                max_active=3,
+                max_per_hour=60,
+                what="Listen-Importe",
+            )
+            name = Path(upload.name).name
+            job = ImportJob(organization=self.org, created_by=request.user, file_name=name)
+            job.file.save(f"{job.organization_id}-{name}", upload, save=False)
+            try:
+                headers, rows = read_stored_table(job.file, name)
+            except ReadError as exc:
+                job.file.delete(save=False)
+                raise serializers.ValidationError({"file": str(exc)}) from exc
+            job.headers = headers
+            job.sample = [[_json(v) for v in r] for r in rows[:5]]
+            job.row_count = len(rows)
+            job.mapping = importer.suggest_mapping(headers, self.org)
+            job.options = {"link_duplicates": True}
+            job.save()
         return Response(self.get_serializer(job).data, status=status.HTTP_201_CREATED)
 
     def perform_update(self, serializer):

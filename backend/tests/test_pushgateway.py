@@ -128,6 +128,22 @@ class TestVapidPruefung:
             gw.check_vapid("Bearer abc", GATEWAY)
 
 
+@pytest.mark.parametrize("head", ["null", "[]", '"x"', "1"])
+@pytest.mark.parametrize("part", ["head", "claims"])
+def test_vapid_ohne_objekt_gibt_401(vapid, head, part):
+    """Audit 02.11., PG-F01: JSON-Liste oder Zahl statt Objekt → 401, kein Serverfehler."""
+    header = vapid.vapid_header(ENDPOINT)
+    token = header.split("t=")[1].split(",")[0]
+    h, c, sig = token.split(".")
+    if part == "head":
+        h = b64(head.encode())
+    else:
+        c = b64(head.encode())
+    with pytest.raises(gw.Rejected) as exc:
+        gw.check_vapid(header.replace(token, f"{h}.{c}.{sig}"), GATEWAY)
+    assert exc.value.status == 401
+
+
 class TestGateway:
     def test_reicht_an_fcm_weiter(self, vapid, gateway, google, creds):
         headers, body = push_request()
@@ -258,6 +274,32 @@ class TestBindung:
         status, data = other.handle("POST", path, *push_request(endpoint=endpoint))
         assert status == 403 and data["reason"] == "anderer Absender"
         assert len(google.messages) == 1
+
+    def test_selbst_gewaehlte_kennung_mit_freigabeliste(self, vapid, google, creds):
+        """Audit 02.11., PG-S01: fremder Schlüssel mit neu berechneter Kennung."""
+        data = {k: v for k, v in creds.items() if not k.startswith("_")}
+        own = gw.key_id(vapid.vapid_public_key())
+        g = gw.Gateway(GATEWAY, gw.Fcm(data), allowed_keys=frozenset({own}))
+        path = f"/fcm/{TOKEN}/{own}"
+        assert g.handle("POST", path, *push_request(endpoint=f"{GATEWAY}{path}"))[0] == 201
+        # Angreifer: eigener Schlüssel, Kennung passend dazu
+        vapid.reset_cache()
+        vapid.key_path().unlink()
+        forged = f"/fcm/{TOKEN}/{gw.key_id(vapid.vapid_public_key())}"
+        status, body = g.handle("POST", forged, *push_request(endpoint=f"{GATEWAY}{forged}"))
+        assert status == 403 and body["reason"] == "Absender nicht freigegeben"
+        # auch ohne Kennung im Pfad
+        assert g.handle("POST", f"/fcm/{TOKEN}", *push_request())[0] == 403
+        assert len(google.messages) == 1
+
+    def test_freigabeliste_aus_umgebung(self):
+        assert gw.allowed_keys(" 0123456789ABCDEF, ,fedcba9876543210") == {
+            "0123456789abcdef",
+            "fedcba9876543210",
+        }
+        assert gw.allowed_keys("") == frozenset()
+        with pytest.raises(RuntimeError):
+            gw.allowed_keys("kein-schluessel")
 
     def test_ohne_kennung_abschaltbar(self, vapid, google, creds):
         data = {k: v for k, v in creds.items() if not k.startswith("_")}

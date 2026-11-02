@@ -7,17 +7,40 @@ Exporte und Importe sind teuer (Arbeitsspeicher, Dateien, Warteschlange). Ein ei
 from __future__ import annotations
 
 import datetime
+import zlib
 
+from django.db import connection
 from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework.exceptions import Throttled
 
+# Eigener Schlüsselbereich für pg_advisory_xact_lock (andere Sperren nutzen Jahreszahlen)
+LOCK_BASE = 400_000_000
 
-def ensure_capacity(qs, *, active_statuses, max_active: int, max_per_hour: int, what: str):
+
+def _lock(qs, org_id: int) -> None:
+    """Sperre je Organisation und Job-Art bis zum Ende der Transaktion (Audit 02.11., BP-S02).
+
+    Zwei gleichzeitige Anfragen zählen sonst beide denselben freien Platz und legen
+    beide einen Job an. Mit der Sperre zählt die zweite erst, wenn die erste ihren Job
+    angelegt (oder aufgegeben) hat.
+    """
+    if not connection.in_atomic_block:
+        raise RuntimeError("ensure_capacity nur innerhalb einer Transaktion aufrufen.")
+    kind = LOCK_BASE + zlib.crc32(qs.model._meta.label.encode()) % 1_000_000
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", [org_id, kind])
+
+
+def ensure_capacity(
+    qs, *, org_id: int, active_statuses, max_active: int, max_per_hour: int, what: str
+):
     """Fehler 429, wenn zu viele Jobs laufen oder in der letzten Stunde begonnen wurden.
 
-    ``qs``: Jobs dieser Organisation (und Art).
+    ``qs``: Jobs dieser Organisation (und Art). Muss in derselben Transaktion aufgerufen
+    werden, die danach den Job anlegt; bis zu deren Ende wartet jede weitere Prüfung.
     """
+    _lock(qs, org_id)
     if qs.filter(status__in=active_statuses).count() >= max_active:
         raise Throttled(
             detail=gettext(

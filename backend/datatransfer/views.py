@@ -97,6 +97,7 @@ class ImportOptions(serializers.Serializer):
 def _capacity(org) -> None:
     jobquota.ensure_capacity(
         TransferJob.objects.filter(organization=org),
+        org_id=org.pk,
         active_statuses=[TransferJob.Status.PENDING, TransferJob.Status.RUNNING],
         max_active=2,
         max_per_hour=10,

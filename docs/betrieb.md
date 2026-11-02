@@ -315,6 +315,26 @@ Upload oder Import nicht den ganzen Server lahmlegt. Anpassbar in der `.env`:
 `WORKER_MEM_LIMIT` (Standard `2g`). Der Worker läuft mit zwei parallelen Aufgaben. Caddy
 nimmt höchstens 520 MB je Anfrage an.
 
+Seit dem Audit vom 02.11. (O-P01) haben alle Dienste Obergrenzen, damit HUBIplan andere
+Dienste auf einem geteilten Server (Hestia, Mail, Nextcloud) nicht verdrängt. Es sind
+Höchstwerte, keine Reservierungen; was frei bleibt, nutzen die anderen.
+
+| Dienst | Speicher | CPU | Anpassbar in der `.env` |
+|---|---|---|---|
+| Backend | 1536 MB | 2 | `BACKEND_MEM_LIMIT`, `BACKEND_CPUS` |
+| Worker | 2 GB | 2 | `WORKER_MEM_LIMIT`, `WORKER_CPUS` |
+| Beat | 256 MB | 0,5 | – |
+| PostgreSQL | 2 GB | 2 | `POSTGRES_MEM_LIMIT`, `POSTGRES_CPUS` |
+| Redis | 384 MB (Daten höchstens 256 MB) | 1 | `REDIS_MAXMEMORY` |
+| Backup | 3 GB, davon `/tmp` höchstens 2 GB | 1 | `BACKUP_MEM_LIMIT`, `BACKUP_TMP_SIZE`, `BACKUP_CPUS` |
+| Caddy | 256 MB | 1 | – |
+
+Redis verwirft bei voller Grenze nichts (`noeviction`): Neue Einträge schlagen mit einem
+Fehler fehl, wartende Aufträge bleiben erhalten. Das Backup legt den Dump für den
+Rücksicherungstest in `/tmp` im Arbeitsspeicher ab; wächst die Datenbank über etwa 1 GB,
+`BACKUP_TMP_SIZE` und `BACKUP_MEM_LIMIT` erhöhen. Wird ein Dienst an seiner Grenze
+beendet, startet Docker ihn neu (`restart: unless-stopped`); die anderen laufen weiter.
+
 ## Einladungen statt Startpasswort
 
 Neue Konten (Rollen, Plattform-Vorstand) bekommen kein Startpasswort mehr, sondern eine

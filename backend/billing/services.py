@@ -9,7 +9,7 @@ from decimal import ROUND_DOWN, ROUND_HALF_UP, Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import connection, transaction
-from django.db.models import Q, Sum
+from django.db.models import Prefetch, Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext
 
@@ -22,6 +22,7 @@ from members.models import (
     HonoraryTitle,
     HonoraryTitleAward,
     Membership,
+    MemberTypeAssignment,
 )
 from members.services import contact_for, shared_contacts
 from organizations.terms import fill
@@ -890,9 +891,20 @@ def reported_counts(
             )
             .distinct()
             .select_related("person")
+            # Art am Stichtag gleich mitladen, nicht je Mitglied einzeln (Audit 02.11., BP-P03)
+            .prefetch_related(
+                Prefetch(
+                    "type_assignments",
+                    queryset=MemberTypeAssignment.objects.filter(valid_from__lte=on)
+                    .filter(Q(valid_until__isnull=True) | Q(valid_until__gte=on))
+                    .select_related("member_type")
+                    .order_by("valid_from", "pk"),
+                    to_attr="types_on",
+                )
+            )
         )
-        for m in memberships:
-            assignment = m.current_type(on)
+        for m in memberships.iterator(chunk_size=2000):
+            assignment = m.types_on[0] if m.types_on else None
             if assignment is None or not assignment.member_type.reported:
                 continue
             kind = "active" if assignment.member_type.active else "passive"
