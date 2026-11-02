@@ -180,6 +180,10 @@ class TransferSerializer(serializers.ModelSerializer):
 
 class TransferCreateSerializer(serializers.Serializer):
     person = serializers.IntegerField()
+    # Angaben aus der Dublettensuche: binden die Anfrage an einen echten Fund
+    last_name = serializers.CharField(max_length=100)
+    first_name = serializers.CharField(max_length=100)
+    birth_date = serializers.DateField()
     member_type = serializers.IntegerField()
     entry_date = serializers.DateField()
     message = serializers.CharField(required=False, allow_blank=True, max_length=500)
@@ -218,6 +222,9 @@ class TransferListView(_ClubMixin, APIView):
         ).first()
         if person is None:
             raise serializers.ValidationError({"person": gettext("Unbekannte Person.")})
+        services.check_found(
+            person, self.org, {f: v.pop(f) for f in ("last_name", "first_name", "birth_date")}
+        )
         member_type = MemberType.objects.filter(
             organization=self.org, pk=v.pop("member_type")
         ).first()

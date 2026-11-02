@@ -3261,6 +3261,9 @@ msgstr "The date of birth is after joining on {first:%d/%m/%Y}."
 msgid "Unbekannte Person."
 msgstr "Unknown person."
 
+msgid "Pflichtfeld."
+msgstr "Required field."
+
 msgid ""
 "Stammdaten und Kontakt pflegt die ausgegliederte Untereinheit auf ihrer "
 "Instanz. Bitte eine Korrektur vorschlagen."
@@ -4429,3 +4432,62 @@ msgstr "Heading"
 #: website/timeline.py
 msgid "Es fehlen die Spalten: {missing}. Gefunden: {found}."
 msgstr "Missing columns: {missing}. Found: {found}."
+
+msgid "Einzelheiten stehen unter Einstellungen › Nextcloud und im Änderungsprotokoll."
+msgstr "Details are under Settings › Nextcloud and in the change log."
+
+msgid "Dienstkonto und App-Passwort fehlen."
+msgstr "Service account and app password are missing."
+
+msgid "Die Nextcloud lehnt Dienstkonto oder App-Passwort ab."
+msgstr "Nextcloud rejects the service account or app password."
+
+msgid "Das Konto gibt es in der Nextcloud nicht (mehr)."
+msgstr "This account does not exist in Nextcloud (any more)."
+
+msgid "Das Dienstkonto darf dieses Konto nicht verwalten (Gruppen-Admin?)."
+msgstr "The service account may not manage this account (group admin?)."
+
+msgid "aktiviert"
+msgstr "enabled"
+
+msgid "deaktiviert"
+msgstr "disabled"
+
+msgid "Nextcloud „{name}“: Konten abgeglichen"
+msgstr "Nextcloud “{name}”: accounts synchronised"
+
+msgid "Die Nextcloud antwortet mit Fehler {status}."
+msgstr "Nextcloud answers with error {status}."
+
+msgid "Angehalten: {count} Konten wären auf einmal deaktiviert worden. Bitte Rollen prüfen und unter Einstellungen › Nextcloud den Abgleich bestätigen."
+msgstr "Stopped: {count} accounts would have been disabled at once. Please check the roles and confirm the synchronisation under Settings › Nextcloud."
+
+msgid "{count} Konten konnten nicht geändert werden."
+msgstr "{count} accounts could not be changed."
+
+msgid "HUBIplan hat die Konten in der Nextcloud „{name}“ ({host}) mit den Rollen abgeglichen."
+msgstr "HUBIplan has synchronised the accounts in the Nextcloud “{name}” ({host}) with the roles."
+
+msgid "Bitte den Benutzernamen des Dienstkontos."
+msgstr "Please enter the user name of the service account."
+
+msgid "Höchstens 64 Zeichen."
+msgstr "At most 64 characters."
+
+msgid "„Konten automatisch deaktivieren“ ist aus."
+msgstr "“Disable accounts automatically” is off."
+
+msgid "Dafür braucht es Dienstkonto, App-Passwort und Gruppe."
+msgstr "This needs a service account, an app password and a group."
+
+msgid "Verbunden als {name}."
+msgstr "Connected as {name}."
+
+msgid ""
+"Für diese Instanz wartet ein Notfallwechsel der Schlüssel. Die Anmeldung "
+"über sie ruht, bis die Plattformverwaltung ihn bestätigt."
+msgstr ""
+"An emergency key change is waiting for confirmation for this instance. "
+"Signing in through it is paused until the platform administration confirms "
+"it."

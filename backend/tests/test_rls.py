@@ -20,6 +20,8 @@ from core.rls import APP_ROLE
 from core.tenancy import rls_bypass, set_rls, tenant_context
 from organizations.models import Department, DepartmentRole
 
+from .factories import found
+
 pytestmark = [
     pytest.mark.django_db(transaction=False),
     pytest.mark.skipif(
@@ -229,6 +231,7 @@ def test_wechselanfrage_ende_zu_ende_unter_rls(orgs, board_a, board_b, api):
             f"/api/orgs/{orgs['b'].pk}/transfers/",
             {
                 "person": member["person_id"],
+                **found(member["person_id"]),
                 "member_type": types["b"].pk,
                 "entry_date": "2024-01-01",
                 **contact,

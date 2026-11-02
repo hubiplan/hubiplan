@@ -75,11 +75,6 @@ export function AdmitPage() {
       member_type: Number(v.member_type),
       person: linked?.id ?? null,
     }
-    if (linked) {
-      delete payload.last_name
-      delete payload.first_name
-      delete payload.birth_date
-    }
     const created = await form.submit(
       () => memberApi.admit(org.id, payload, requestKey),
       t('Aufgenommen.'),
@@ -96,6 +91,9 @@ export function AdmitPage() {
       () =>
         memberApi.createTransfer(org.id, {
           person: linked.id,
+          last_name: v.last_name,
+          first_name: v.first_name,
+          birth_date: v.birth_date,
           member_type: Number(v.member_type),
           entry_date: v.entry_date,
           club_number: v.club_number,

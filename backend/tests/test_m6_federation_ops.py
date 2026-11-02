@@ -10,7 +10,7 @@ from audit.models import AuditEntry
 from members.models import Membership
 
 from .conftest import csrf_headers
-from .factories import give_role, make_user
+from .factories import found, give_role, make_user
 from .test_m2_members import admit, make_types
 
 pytestmark = pytest.mark.django_db
@@ -153,6 +153,7 @@ class TestFruehereMitgliedschaften:
                 f"/api/orgs/{orgs['b'].pk}/members/admit/",
                 {
                     "person": members["person_id"],
+                    **found(members["person_id"]),
                     "member_type": types["b"]["passiv"].pk,
                     "entry_date": "2020-01-01",
                     "email": "e@example.org",

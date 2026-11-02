@@ -15,7 +15,7 @@ November 2026:
 - Who helps us?: A unit can name contacts for questions about HUBIplan and add its own notes to guides.
 - English: The interface is also available in English. You can switch under My account › Profile.
 - View as role: Whoever manages roles can look at HUBIplan the way a role sees it (read only).
-- Nextcloud: The club's Nextcloud can use sign-in with the HUBIplan account.
+- Nextcloud: The club's Nextcloud can use sign-in with the HUBIplan account. When access in HUBIplan ends, HUBIplan can also disable the Nextcloud account itself.
 
 October 2026:
 

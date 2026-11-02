@@ -15,7 +15,7 @@ from members.models import (
 )
 from organizations.models import Department, PlatformSettings
 
-from .factories import give_role, make_user
+from .factories import found, give_role, make_user
 
 pytestmark = pytest.mark.django_db
 JSON = "application/json"
@@ -166,6 +166,7 @@ class TestDublettenUndAktivRegel:
             f"/api/orgs/{orgs['b'].pk}/members/admit/",
             {
                 "person": person_id,
+                **found(person_id),
                 "member_type": types["b"]["passiv"].pk,
                 "entry_date": "2021-01-01",
                 **{
@@ -185,6 +186,7 @@ class TestDublettenUndAktivRegel:
             f"/api/orgs/{orgs['b'].pk}/members/admit/",
             {
                 "person": erika["person_id"],
+                **found(erika["person_id"]),
                 "member_type": types["b"]["aktiv"].pk,
                 "entry_date": "2021-01-01",
                 "email": "e@example.org",
@@ -203,6 +205,7 @@ class TestDublettenUndAktivRegel:
             f"/api/orgs/{orgs['c'].pk}/members/admit/",
             {
                 "person": erika["person_id"],
+                **found(erika["person_id"]),
                 "member_type": types["c"]["aktiv"].pk,
                 "entry_date": "2021-01-01",
                 "email": "e@example.org",
@@ -219,6 +222,7 @@ class TestDublettenUndAktivRegel:
             f"/api/orgs/{orgs['a'].pk}/members/admit/",
             {
                 "person": erika["person_id"],
+                **found(erika["person_id"]),
                 "member_type": types["a"]["passiv"].pk,
                 "entry_date": "2021-01-01",
                 "email": "e@example.org",
@@ -367,6 +371,7 @@ class TestAkte:
             f"/api/orgs/{orgs['b'].pk}/members/admit/",
             {
                 "person": member["person_id"],
+                **found(member["person_id"]),
                 "member_type": types["b"]["passiv"].pk,
                 "entry_date": "2020-01-01",
                 "email": "erika@example.org",
@@ -390,6 +395,7 @@ class TestAkte:
             f"/api/orgs/{orgs['b'].pk}/members/admit/",
             {
                 "person": member["person_id"],
+                **found(member["person_id"]),
                 "member_type": types["b"]["passiv"].pk,
                 "entry_date": "2020-01-01",
                 "email": "erika@b.example.org",

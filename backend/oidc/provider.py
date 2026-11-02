@@ -30,7 +30,7 @@ from django.utils.translation import gettext
 
 from core.tenancy import rls_bypass
 
-from . import claims, keys
+from . import claims, keys, nc_accounts
 from .models import Client
 
 CODE_SECONDS = 60
@@ -274,6 +274,7 @@ def token(request) -> dict:
         prof = claims.profile(client, user)
     except claims.NotAllowed as exc:
         raise TokenError("invalid_grant") from exc
+    nc_accounts.remember_login(client, user, prof)
 
     now = int(time.time())
     id_claims = {

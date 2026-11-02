@@ -69,6 +69,41 @@ aufgeführte Personen bekommen wie bisher ein neues Konto mit der Kennung `sub`.
 Die Gruppen-Provisionierung von `user_oidc` setzt die Gruppen bei jeder Anmeldung neu.
 Gruppen, die nur in der Nextcloud gepflegt werden (z. B. `admin`), vorher prüfen.
 
+## Konten automatisch deaktivieren
+
+Endet der Zugang bei HUBIplan (Rolle oder Amt beendet, Austritt, Konto gesperrt), scheitert nur
+die nächste Anmeldung; Sitzungen, Sync-Apps (App-Passwörter) und alte Nextcloud-Passwörter
+gingen weiter. Mit „Konten automatisch deaktivieren“ deaktiviert HUBIplan das Konto in der
+Nextcloud selbst (OCS Provisioning API, `PUT /ocs/v2.php/cloud/users/<name>/disable`); das
+beendet auch Sitzungen und App-Passwörter. Bekommt die Person wieder Zugang, aktiviert HUBIplan
+das Konto wieder, aber nur, wenn HUBIplan es selbst deaktiviert hat. Dateien bleiben.
+
+- Angefasst werden nur Konten, die sich über HUBIplan angemeldet haben (Tabelle `oidc_account`,
+  unter RLS; Benutzername = bisheriger Name aus der Liste, sonst `sub`). `admin` und Konten
+  ohne Anmeldung über HUBIplan nie.
+- Auslöser: Änderung an Rolle, Amt, Mitgliederzugang, Mitgliedschaftszeitraum oder Konto
+  (Hintergrundauftrag `oidc.tasks.sync_user`) und jede Nacht `oidc.tasks.sync_all` (auch
+  Rollen, die zu einem Datum enden). Grundlage ist dieselbe Prüfung wie bei der Anmeldung.
+- Obergrenze: Würde ein Lauf mehr als 3 Konten oder mehr als die Hälfte auf einmal
+  deaktivieren, hält er an (Hinweis auf der Seite, E-Mail). „Jetzt abgleichen“ auf der Seite
+  bestätigt dann von Hand.
+- Jede Änderung ins Änderungsprotokoll und per E-Mail an alle mit „Rollen und Benutzer
+  verwalten“ in der Einheit. Die Seite zeigt je Konto, was der nächste Abgleich täte.
+
+Einrichtung in der Nextcloud:
+
+1. Gruppe anlegen, z. B. `HUBIplan`, und in HUBIplan als „Gruppe der Konten über HUBIplan“
+   eintragen. HUBIplan schickt sie bei jeder Anmeldung mit.
+2. Beim Anbieter „Gruppen-Provisionierung“ an, Gruppen-Zuordnung `groups`, Whitelist
+   `^HUBIplan$`. Dann setzt `user_oidc` nur diese Gruppe; alle anderen Gruppen (auch `admin`)
+   bleiben, wie sie sind.
+3. Eigenes Konto `hubiplan-dienst` anlegen, als Gruppen-Admin der Gruppe `HUBIplan`
+   eintragen, angemeldet ein App-Passwort erzeugen (Persönliche Einstellungen › Sicherheit).
+   Benutzername und App-Passwort in HUBIplan eintragen („Verbindung prüfen“). Das Passwort
+   wird verschlüsselt gespeichert (`MFA_ENCRYPTION_KEY`) und nie wieder angezeigt.
+4. Konten, die schon vorher da waren, kommen bei ihrer nächsten Anmeldung über HUBIplan in die
+   Gruppe. Erst dann kann das Dienstkonto sie deaktivieren.
+
 ## Ablauf und Schutz
 
 - Nur Authorization Code Flow, nur Clients mit Geheimnis (`client_secret_basic` oder

@@ -118,11 +118,14 @@ class AdmitSerializer(ContactSerializer):
     def validate(self, attrs):
         org = self.context["org"]
         check_plausible(attrs, "entry_date", "birth_date")
-        if not attrs.get("person"):
-            missing = [f for f in ("last_name", "first_name", "birth_date") if not attrs.get(f)]
-            if missing:
-                raise serializers.ValidationError({f: "Pflichtfeld." for f in missing})
-        birth = attrs.get("birth_date") or getattr(attrs.get("person"), "birth_date", None)
+        missing = [f for f in ("last_name", "first_name", "birth_date") if not attrs.get(f)]
+        if missing:
+            raise serializers.ValidationError({f: gettext("Pflichtfeld.") for f in missing})
+        if attrs.get("person"):
+            # Nur eine mit diesen Angaben gefundene Person (Audit 02.11. GA-S01)
+            services.check_found(attrs["person"], org, attrs)
+            attrs["birth_date"] = attrs["person"].birth_date
+        birth = attrs["birth_date"]
         if birth and attrs["entry_date"] < birth:
             raise serializers.ValidationError(
                 {"entry_date": gettext("Der Eintritt liegt vor der Geburt.")}
