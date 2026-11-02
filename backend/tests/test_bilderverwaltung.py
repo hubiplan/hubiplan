@@ -313,4 +313,4 @@ class TestIphoneFotos:
             {"file": SimpleUploadedFile("IMG_1.heic", heic, content_type="image/heic")},
         )
         assert resp.status_code == 400
-        assert "HEIC" in resp.json()["file"][0]
+        assert "HEIC" in str(resp.json()["file"])
