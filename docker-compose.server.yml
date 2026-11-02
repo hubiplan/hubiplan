@@ -77,7 +77,10 @@ x-haertung: &haertung
 # verändern. Schreiben nur in /tmp (Arbeitsspeicher) und in die Daten-Volumes.
 # Obergrenzen für Speicher, Prozesse und /tmp: Große Importe oder Dateien bringen so
 # nur diesen Dienst an seine Grenze, nicht den ganzen (geteilten) Server (Gesamtaudit
-# 31.10.b, INF-S02). Anpassbar in der .env.
+# 31.10.b, INF-S02). Anpassbar in der .env. Seit dem Audit 02.11. (O-P01) haben alle
+# Dienste auch eine CPU-Grenze; Datenbank, Redis, Backup und Caddy zusätzlich Speicher-
+# und Prozessgrenzen. Es sind Obergrenzen, keine Reservierungen: Was frei bleibt, nutzen
+# Hestia, Mail und die anderen Dienste auf dem Server.
 x-backend: &backend
   <<: *haertung
   image: hubiplan-backend
@@ -85,6 +88,7 @@ x-backend: &backend
   secrets: [datenschluessel]
   read_only: true
   mem_limit: ${BACKEND_MEM_LIMIT:-1536m}
+  cpus: ${BACKEND_CPUS:-2}
   pids_limit: 256
   tmpfs:
     - /tmp:size=${BACKEND_TMP_SIZE:-768m}
@@ -108,6 +112,9 @@ services:
     # Der Start wechselt vom root- zum postgres-Benutzer und braucht dafür Rechte
     security_opt: ["no-new-privileges:true"]
     networks: [intern]
+    mem_limit: ${POSTGRES_MEM_LIMIT:-2g}
+    cpus: ${POSTGRES_CPUS:-2}
+    pids_limit: 256
     environment:
       POSTGRES_DB: hubiplan
       POSTGRES_USER: hubiplan
@@ -126,13 +133,19 @@ services:
     restart: unless-stopped
     networks: [intern]
     user: redis
-    # Passwort über eine Konfigurationsdatei, damit es nicht in der Prozessliste steht
+    mem_limit: 384m
+    cpus: 1
+    pids_limit: 64
+    # Passwort über eine Konfigurationsdatei, damit es nicht in der Prozessliste steht.
+    # Speichergrenze ohne Verwerfen (noeviction): Ist sie erreicht, schlagen neue Einträge
+    # mit einer Fehlermeldung fehl; wartende Aufträge verschwinden nie stillschweigend.
     command:
       - sh
       - -c
-      - umask 077 && printf 'requirepass %s\n' "$$REDIS_PASSWORD" > /tmp/redis.conf && exec redis-server /tmp/redis.conf
+      - umask 077 && printf 'requirepass %s\nmaxmemory %s\nmaxmemory-policy noeviction\n' "$$REDIS_PASSWORD" "$$REDIS_MAXMEMORY" > /tmp/redis.conf && exec redis-server /tmp/redis.conf
     environment:
       REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD fehlt in .env}
+      REDIS_MAXMEMORY: ${REDIS_MAXMEMORY:-256mb}
     healthcheck:
       test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
       interval: 5s
@@ -167,6 +180,7 @@ services:
     # Höchstens zwei Aufträge gleichzeitig (Import, Export, Mails)
     command: celery -A config worker --loglevel=info --concurrency=2
     mem_limit: ${WORKER_MEM_LIMIT:-2g}
+    cpus: ${WORKER_CPUS:-2}
     volumes:
       - media-data:/app/media
       - private-data:/app/private
@@ -186,6 +200,7 @@ services:
     pull_policy: never
     command: celery -A config beat --loglevel=info --schedule /tmp/celerybeat-schedule
     mem_limit: 256m
+    cpus: 0.5
     depends_on:
       backend:
         condition: service_healthy
@@ -196,6 +211,11 @@ services:
     build: ./deploy/backup
     restart: unless-stopped
     networks: [intern, ausgang]
+    # Der Rücksicherungstest startet eine zweite Datenbank; /tmp liegt im Arbeitsspeicher
+    # und zählt zur Speichergrenze. Bei großer Datenbank beides in der .env erhöhen.
+    mem_limit: ${BACKUP_MEM_LIMIT:-3g}
+    cpus: ${BACKUP_CPUS:-1}
+    pids_limit: 256
     environment:
       PGHOST: postgres
       PGUSER: hubiplan
@@ -218,7 +238,7 @@ services:
     secrets: [datenschluessel]
     # Klartext des Dumps nur im Arbeitsspeicher (Rücksicherungstest vor dem Verschlüsseln)
     tmpfs:
-      - /tmp
+      - /tmp:size=${BACKUP_TMP_SIZE:-2g}
     volumes:
       - ${BACKUP_DIR:-/opt/hubiplan-backups}:/backups
       - media-data:/data/media:ro
@@ -242,6 +262,9 @@ services:
     <<: *haertung
     cap_add: [NET_BIND_SERVICE]
     networks: [web]
+    mem_limit: 256m
+    cpus: 1
+    pids_limit: 128
     environment:
       SITE_HOST: ${SITE_HOST}
     ports:

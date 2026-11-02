@@ -522,6 +522,32 @@ class TestDrosselung:
         circular.refresh_from_db()
         assert circular.status == Circular.Status.SENT
 
+    def test_beanspruchte_empfaenger_zaehlen_mit(self, cal, board_a, members, api, settings):
+        """Audit 02.11., BP-S02: Ein zweiter Versandlauf nutzt keinen schon belegten Platz."""
+        settings.MAIL_RATE_PER_HOUR = 10
+        for i in range(8):
+            OutgoingMail.objects.create(to="x@example.org", subject=f"alt {i}", body="")
+        create_list(api(board_a), base(cal["a"]))
+        entry = inbound.process_message(mail_bytes(board_a.email))
+        inbound.confirm(entry)
+        circular = Circular.objects.get(pk=entry.circular_id)
+        first, second = circular.recipients.order_by("pk")
+        # 12/h: 10 für Rundschreiben, 9 verbraucht → ein Platz frei
+        settings.MAIL_RATE_PER_HOUR = 12
+        assert services.mail_budget() == 1
+        # Ein anderer Lauf hat den ersten Empfänger beansprucht und versendet noch
+        assert services.claim(first.pk) is True
+        assert services.mail_budget() == 0
+        assert services.claim(second.pk) is None
+        assert services.send_pending(circular.pk) == 0
+        second.refresh_from_db()
+        assert second.status == CircularRecipient.Status.PENDING
+        # Der andere Lauf ist fertig (ohne Mail, z. B. per App): Platz wieder frei
+        CircularRecipient.objects.filter(pk=first.pk).update(status=CircularRecipient.Status.SENT)
+        assert services.send_pending(circular.pk) == 1
+        second.refresh_from_db()
+        assert second.status == CircularRecipient.Status.SENT
+
 
 class TestAbsenderAuswahl:
     def test_nur_ausgewaehlte_duerfen(self, cal, board_a, members, api):

@@ -179,16 +179,26 @@ def _taken_bookings(org) -> set[int]:
     )
 
 
-def _membership_by_iban(org, iban: str):
-    if not iban:
-        return None
+def _iban_index(org) -> dict[str, set[int]]:
+    """IBAN (ohne Leerzeichen, groß) → Mitgliedschaften mit Mandat zu dieser IBAN.
+
+    Die IBANs sind verschlüsselt gespeichert; deshalb einmal je Lauf entschlüsseln statt
+    für jeden Umsatz erneut alle Mandate (Audit 02.11., BP-P01). Nur im Speicher.
+    """
     from billing.models import Mandate
 
-    ids = {
-        m.membership_id
-        for m in Mandate.objects.filter(organization=org, membership__isnull=False)
-        if m.iban.replace(" ", "").upper() == iban
-    }
+    index: dict[str, set[int]] = {}
+    for m in Mandate.objects.filter(organization=org, membership__isnull=False):
+        index.setdefault(m.iban.replace(" ", "").upper(), set()).add(m.membership_id)
+    return index
+
+
+def _membership_by_iban(org, iban: str, index: dict[str, set[int]] | None = None):
+    if not iban:
+        return None
+    if index is None:
+        index = _iban_index(org)
+    ids = set(index.get(iban, ()))
     if len(ids) != 1:
         return None
     from members.models import Membership
@@ -215,7 +225,8 @@ def _same_party(line: BankLine, booking: Booking) -> bool:
     return any(r in haystack for r in refs)
 
 
-def suggest(line: BankLine, taken: set[int]) -> None:
+def suggest(line: BankLine, taken: set[int], ibans: dict[str, set[int]] | None = None) -> None:
+    """Vorschlag für einen offenen Umsatz. ``ibans``: schon gebauter Index (``_iban_index``)."""
     from billing.models import DebitItem, DebitRun
 
     org = line.organization
@@ -277,7 +288,7 @@ def suggest(line: BankLine, taken: set[int]) -> None:
             return
         if batch:
             return
-        member = _membership_by_iban(org, line.iban)
+        member = _membership_by_iban(org, line.iban, ibans)
         if member is not None:
             line.suggested_membership = member
             matching = [
@@ -300,25 +311,43 @@ def suggest(line: BankLine, taken: set[int]) -> None:
             line.suggested_membership = item.invoice.membership
 
 
+SUGGESTION_FIELDS = [
+    "suggestion",
+    "suggestion_sure",
+    "suggested_invoice",
+    "suggested_run",
+    "suggested_booking",
+    "suggested_membership",
+]
+
+
+def _suggestion_of(line: BankLine) -> tuple:
+    return tuple(
+        getattr(line, f"{f}_id") if f.startswith("suggested_") else getattr(line, f)
+        for f in SUGGESTION_FIELDS
+    )
+
+
 def suggest_all(org) -> None:
+    """Vorschläge aller offenen Umsätze neu berechnen.
+
+    Mandats-IBANs werden einmal entschlüsselt, gespeichert wird nur, was sich geändert
+    hat (Audit 02.11., BP-P01).
+    """
     taken = _taken_bookings(org)
     lines = BankLine.objects.filter(organization=org, status=BankLine.Status.OPEN).select_related(
         "organization", "account"
     )
-    for line in lines:
+    ibans = None
+    for line in lines.iterator(chunk_size=500):
         if line.suggested_booking_id:
             taken.discard(line.suggested_booking_id)
-        suggest(line, taken)
-        line.save(
-            update_fields=[
-                "suggestion",
-                "suggestion_sure",
-                "suggested_invoice",
-                "suggested_run",
-                "suggested_booking",
-                "suggested_membership",
-            ]
-        )
+        before = _suggestion_of(line)
+        if ibans is None and line.credit and line.iban:
+            ibans = _iban_index(org)
+        suggest(line, taken, ibans)
+        if _suggestion_of(line) != before:
+            line.save(update_fields=SUGGESTION_FIELDS)
 
 
 # --- Erledigen ---
@@ -503,13 +532,16 @@ def apply_suggestions(org, user, statement: BankStatement | None = None) -> dict
     return {"done": done, "failed": failed}
 
 
-def balance_check(statement: BankStatement) -> dict | None:
-    """Endsaldo des Auszugs gegen den Stand im Kassenbuch am selben Tag."""
+def balance_check(statement: BankStatement, book_balance: Decimal | None = None) -> dict | None:
+    """Endsaldo des Auszugs gegen den Stand im Kassenbuch am selben Tag.
+
+    ``book_balance``: schon berechneter Stand (Liste, siehe ``BankStatementSerializer``)."""
     if statement.closing_balance is None or statement.date_to is None:
         return None
-    book_balance = services.balance(
-        statement.account, before=statement.date_to + datetime.timedelta(days=1)
-    )
+    if book_balance is None:
+        book_balance = services.balance(
+            statement.account, before=statement.date_to + datetime.timedelta(days=1)
+        )
     diff = (statement.closing_balance - book_balance).quantize(Decimal("0.01"))
     return {
         "bank": str(statement.closing_balance),

@@ -312,12 +312,17 @@ RATE_RESERVE = 0.1
 RATE_RETRY_SECONDS = 5 * 60
 
 
+# Sperrschlüssel für die instanzweite Stundengrenze (Audit 02.11., BP-S02)
+MAIL_LOCK = (0, 410_000_001)
+
+
 def mail_budget() -> int | None:
     """Wie viele Rundschreiben-Mails jetzt noch gehen (``None``: ohne Grenze).
 
     Grenze ist ``MAIL_RATE_PER_HOUR`` (z. B. 100/h beim Hestia-Postfach); ein Zehntel
     bleibt frei für Anmelde- und Systemmails. Gezählt werden alle Mails der letzten
-    Stunde im Postausgang.
+    Stunde im Postausgang und alle gerade beanspruchten Empfänger, deren Mail noch
+    unterwegs ist.
     """
     limit = settings.MAIL_RATE_PER_HOUR
     if not limit:
@@ -327,7 +332,34 @@ def mail_budget() -> int | None:
     since = timezone.now() - datetime.timedelta(hours=1)
     with rls_bypass():
         used = OutgoingMail.objects.filter(created_at__gte=since).count()
+        used += CircularRecipient.objects.filter(
+            status=CircularRecipient.Status.SENDING, sent_at__gte=since
+        ).count()
     return max(0, int(limit * (1 - RATE_RESERVE)) - used)
+
+
+def claim(recipient_pk: int) -> bool | None:
+    """Empfänger zum Versand beanspruchen und dabei einen Platz der Stundengrenze belegen.
+
+    ``True``: beansprucht. ``False``: schon von einem anderen Lauf beansprucht.
+    ``None``: Stundengrenze erreicht. Prüfen und Beanspruchen geschehen unter einer
+    instanzweiten Sperre; zwei Versandläufe können denselben freien Platz also nicht
+    beide nutzen. Der beanspruchte Empfänger zählt bis zum Abschluss mit.
+    """
+    with transaction.atomic():
+        if settings.MAIL_RATE_PER_HOUR:
+            from django.db import connection
+
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", list(MAIL_LOCK))
+            if mail_budget() <= 0:
+                return None
+        # Erst vermerken, dann senden: lieber eine Mail zu wenig als doppelt
+        return bool(
+            CircularRecipient.objects.filter(
+                pk=recipient_pk, status=CircularRecipient.Status.PENDING
+            ).update(status=CircularRecipient.Status.SENDING, sent_at=timezone.now())
+        )
 
 
 def send_pending(circular_id: int) -> int:
@@ -337,7 +369,7 @@ def send_pending(circular_id: int) -> int:
     Grenze erlaubt; der Rest folgt in einem späteren Durchlauf.
     """
     sent = 0
-    budget = mail_budget()
+    limited = False
     with rls_bypass():
         circular = (
             Circular.objects.select_related("organization", "department", "sent_by")
@@ -349,12 +381,10 @@ def send_pending(circular_id: int) -> int:
         attachments = stored_attachments(circular)
         pending = circular.recipients.filter(status=CircularRecipient.Status.PENDING)
         for recipient in pending.iterator(chunk_size=200):
-            if budget is not None and budget <= 0:
+            claimed = claim(recipient.pk)
+            if claimed is None:
+                limited = True
                 break
-            # Erst vermerken, dann senden: lieber eine Mail zu wenig als doppelt
-            claimed = CircularRecipient.objects.filter(
-                pk=recipient.pk, status=CircularRecipient.Status.PENDING
-            ).update(status=CircularRecipient.Status.SENDING, sent_at=timezone.now())
             if not claimed:
                 continue
             if recipient.channel == CircularRecipient.Channel.APP:
@@ -362,9 +392,7 @@ def send_pending(circular_id: int) -> int:
                     sent += 1
                     error = ""
                     if circular.also_mail and recipient.email:
-                        # Zusätzlich per Mail (zählt zur Stundengrenze)
-                        if budget is not None:
-                            budget -= 1
+                        # Zusätzlich per Mail (Platz wurde beim Beanspruchen belegt)
                         if not deliver(recipient, circular, attachments):
                             error = "Per App zugestellt; die zusätzliche Mail schlug fehl."
                     CircularRecipient.objects.filter(pk=recipient.pk).update(
@@ -382,8 +410,6 @@ def send_pending(circular_id: int) -> int:
                 CircularRecipient.objects.filter(pk=recipient.pk).update(
                     channel=CircularRecipient.Channel.MAIL
                 )
-            if budget is not None:
-                budget -= 1
             ok = deliver(recipient, circular, attachments)
             if ok:
                 sent += 1
@@ -399,7 +425,7 @@ def send_pending(circular_id: int) -> int:
             Circular.objects.filter(pk=circular.pk).update(status=Circular.Status.SENT)
             circular.status = Circular.Status.SENT
             _after_sending(circular)
-        elif budget is not None and not settings.CELERY_TASK_ALWAYS_EAGER:
+        elif limited and not settings.CELERY_TASK_ALWAYS_EAGER:
             # Stundengrenze erreicht: später weiter
             from .tasks import send_circular
 

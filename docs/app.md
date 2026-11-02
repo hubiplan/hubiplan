@@ -134,8 +134,13 @@ FCM bekommt ihn base64-kodiert im Feld `b`) und speichert nichts.
 - **Bindung an die Instanz:** `instance/` nennt beim Weg `fcm` auch `vapid_public_key`. Die App
   meldet den Endpunkt `<Gateway>/fcm/<FCM-Token>/<Kennung>`; die Kennung sind die ersten 16
   Hex-Zeichen von SHA-256 über den rohen VAPID-Schlüssel. Das Gateway leitet nur weiter, wenn das
-  VAPID-Token mit genau diesem Schlüssel signiert ist (sonst 403 „anderer Absender“). Wer nur das
-  FCM-Token kennt, kann das Gerät also nicht wecken. Ältere Endpunkte ohne Kennung nimmt das
+  VAPID-Token mit genau diesem Schlüssel signiert ist (sonst 403 „anderer Absender“). Das schützt
+  einen unveränderten Endpunkt. Wer das FCM-Token kennt, kann aber einen eigenen VAPID-Schlüssel
+  erzeugen und dessen Kennung in den Pfad setzen (Audit 02.11., PG-S01). Lesbare Nachrichten kann
+  er so nicht schicken, das Gerät verwirft fremd verschlüsselte; wecken und Kontingente belegen
+  kann er es aber. Abhilfe: `PUSH_GATEWAY_ALLOWED_KEYS` mit den Kennungen der bekannten
+  Instanzen (durch Komma getrennt); dann reicht das Gateway nur deren Nachrichten weiter (sonst
+  403 „Absender nicht freigegeben“). Ältere Endpunkte ohne Kennung nimmt das
   Gateway weiter an, solange `PUSH_GATEWAY_ALLOW_UNBOUND=1` (Standard); nach dem Umstieg aller
   Apps auf 0 stellen.
 - **Weitere Grenzen am Gateway:** `PUSH_GATEWAY_RATE_TOKEN` (je Minute und Gerät, Standard 30)

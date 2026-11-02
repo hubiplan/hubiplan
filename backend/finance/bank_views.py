@@ -6,8 +6,11 @@ finance/bank_import.py.
 
 from __future__ import annotations
 
+import datetime
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext
 from rest_framework import mixins, serializers, status, viewsets
@@ -19,7 +22,7 @@ from audit.log import record
 from core.files import delete_on_commit
 from members.models import Membership
 
-from . import bank_import, camt
+from . import bank_import, camt, services
 from .models import Account, BankLine, BankStatement, Booking, Category, Project
 from .views import BookingPagination, FinanceMixin
 
@@ -56,10 +59,20 @@ class BankStatementSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_open_count(self, obj) -> int:
+        if hasattr(obj, "open_lines"):
+            return obj.open_lines
         return obj.lines.filter(status=BankLine.Status.OPEN).count()
 
     def get_balance(self, obj) -> dict | None:
-        return bank_import.balance_check(obj)
+        # In der Liste: Kontostände je Stichtag einmal für alle Konten berechnen
+        # statt vier Abfragen je Auszug (Audit 02.11., BP-P02)
+        cache = self.context.get("balances")
+        if cache is None or obj.closing_balance is None or obj.date_to is None:
+            return bank_import.balance_check(obj)
+        before = obj.date_to + datetime.timedelta(days=1)
+        if before not in cache:
+            cache[before] = services.balances(obj.organization_id, before)
+        return bank_import.balance_check(obj, book_balance=cache[before].get(obj.account_id))
 
 
 class BankLineSerializer(serializers.ModelSerializer):
@@ -137,10 +150,20 @@ class BankStatementViewSet(
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
-        qs = BankStatement.objects.filter(organization=self.org).select_related("account")
+        qs = (
+            BankStatement.objects.filter(organization=self.org)
+            .select_related("account")
+            .annotate(open_lines=Count("lines", filter=Q(lines__status=BankLine.Status.OPEN)))
+        )
         if (acc := self.request.query_params.get("konto", "")).isdigit():
             qs = qs.filter(account_id=int(acc))
         return qs.order_by("-created_at", "-pk")
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        if self.action == "list":
+            context["balances"] = {}
+        return context
 
     def create(self, request, org_id: int):
         upload = request.FILES.get("file")

@@ -27,6 +27,15 @@ Start: ``gunicorn pushgateway.app:application``. Einstellungen über Umgebungsva
 - ``PUSH_GATEWAY_RATE_IP``: je Minute und IP, Standard 1200
 - ``PUSH_GATEWAY_TRUST_PROXY``: ``1``, wenn ein Webserver davor ``X-Forwarded-For`` setzt
 - ``PUSH_GATEWAY_ALLOW_UNBOUND``: ``0`` lehnt Endpunkte ohne Kennung ab (Standard ``1``)
+- ``PUSH_GATEWAY_ALLOWED_KEYS``: Kennungen (wie oben, durch Komma getrennt) der Instanzen,
+  deren Nachrichten das Gateway weiterreicht. Leer: jede Instanz.
+
+Grenze der Kennung (Audit 02.11., PG-S01): Die Kennung im Pfad bindet ein Gerät nur an eine
+Instanz, solange niemand den Endpunkt umschreibt. Wer ein FCM-Token kennt, kann einen
+eigenen VAPID-Schlüssel erzeugen und dessen Kennung in den Pfad setzen. Lesbare Nachrichten
+kann er so nicht schicken (das Gerät verwirft fremd verschlüsselte), aber das Telefon wecken
+und Kontingente belegen. Wer das ausschließen will, trägt die bekannten Instanzen in
+``PUSH_GATEWAY_ALLOWED_KEYS`` ein.
 """
 
 from __future__ import annotations
@@ -96,9 +105,14 @@ def check_vapid(header: str, audience: str, now: float | None = None) -> str:
         head, body, sig = token.split(".")
         claims = json.loads(_unb64(body))
         signature = _unb64(sig)
-        if json.loads(_unb64(head)).get("alg") != "ES256" or len(signature) != 64:
+        header_data = json.loads(_unb64(head))
+        # Kopf und Inhalt müssen JSON-Objekte sein; Listen oder Zahlen ergäben sonst
+        # einen Serverfehler statt 401 (Audit 02.11., PG-F01)
+        if not isinstance(header_data, dict) or not isinstance(claims, dict):
+            raise ValueError("kein Objekt")
+        if header_data.get("alg") != "ES256" or len(signature) != 64:
             raise ValueError("alg")
-    except (ValueError, TypeError) as exc:
+    except (ValueError, TypeError, AttributeError) as exc:
         raise Rejected(401, "VAPID ungültig") from exc
     der = encode_dss_signature(
         int.from_bytes(signature[:32], "big"), int.from_bytes(signature[32:], "big")
@@ -264,6 +278,7 @@ class Gateway:
         rate_ip: int = 1200,
         allow_unbound: bool = True,
         trust_proxy: bool = False,
+        allowed_keys: frozenset[str] = frozenset(),
     ):
         parts = urllib.parse.urlsplit(public_url)
         self.audience = f"{parts.scheme}://{parts.netloc}"
@@ -273,6 +288,7 @@ class Gateway:
         self.limit_ip = RateLimit(rate_ip)
         self.allow_unbound = allow_unbound
         self.trust_proxy = trust_proxy
+        self.allowed_keys = allowed_keys
 
     def handle(
         self, method: str, path: str, headers: dict, body: bytes, ip: str = ""
@@ -301,6 +317,9 @@ class Gateway:
         if kid and key_id(sender) != kid:
             # Endpunkt gehört zu einer anderen Instanz
             return 403, {"reason": "anderer Absender"}
+        if self.allowed_keys and key_id(sender) not in self.allowed_keys:
+            # Nur eingetragene Instanzen (PG-S01)
+            return 403, {"reason": "Absender nicht freigegeben"}
         if not self.limit.allow(sender) or not self.limit_token.allow(f"t:{token}"):
             return 429, {}
         if self.fcm is None:
@@ -365,7 +384,17 @@ def create() -> Gateway:
         rate_ip=int(env("PUSH_GATEWAY_RATE_IP", "1200")),
         allow_unbound=env("PUSH_GATEWAY_ALLOW_UNBOUND", "1") != "0",
         trust_proxy=env("PUSH_GATEWAY_TRUST_PROXY", "0") == "1",
+        allowed_keys=allowed_keys(env("PUSH_GATEWAY_ALLOWED_KEYS", "")),
     )
+
+
+def allowed_keys(text: str) -> frozenset[str]:
+    """Kennungen aus ``PUSH_GATEWAY_ALLOWED_KEYS``; ungültige Einträge brechen den Start ab."""
+    keys = frozenset(k.strip().lower() for k in text.split(",") if k.strip())
+    wrong = [k for k in keys if not KID_RE.match(k)]
+    if wrong:
+        raise RuntimeError("PUSH_GATEWAY_ALLOWED_KEYS: ungültige Kennung " + ", ".join(wrong))
+    return keys
 
 
 def __getattr__(name):
