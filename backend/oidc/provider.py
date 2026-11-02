@@ -175,6 +175,9 @@ def authorize(request, params) -> str:
     method = _param(params, "code_challenge_method") or ("plain" if challenge else "")
     if challenge and method != "S256":
         raise back("invalid_request", "Nur PKCE mit S256")
+    if not challenge and client.require_pkce:
+        # Fachfrage FQ26: ohne PKCE ließe sich ein abgefangener Code einlösen
+        raise back("invalid_request", "PKCE (S256) ist nötig")
     if _param(params, "prompt") == "none" and not request.user.is_authenticated:
         raise back("login_required")
 

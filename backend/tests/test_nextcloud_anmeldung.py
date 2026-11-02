@@ -59,7 +59,18 @@ def make_client(org, **extra) -> tuple[Client, str]:
     return client, secret
 
 
+# Fachfrage FQ26: PKCE ist Pflicht; die Hilfen schicken es mit wie user_oidc
+VERIFIER = "pruefwert-" * 6
+
+
+def _challenge(verifier: str) -> str:
+    return keys.b64url(hashlib.sha256(verifier.encode()).digest())
+
+
 def start(c, client, **extra) -> dict:
+    if "code_challenge" not in extra:
+        extra = {"code_challenge": _challenge(VERIFIER), "code_challenge_method": "S256", **extra}
+    extra = {k: v for k, v in extra.items() if v is not None}
     params = {
         "client_id": client.client_id,
         "redirect_uri": REDIRECT,
@@ -84,7 +95,13 @@ def code_of(resp) -> str:
 
 def redeem(client, secret, code, **extra):
     auth = base64.b64encode(f"{client.client_id}:{secret}".encode()).decode()
-    data = {"grant_type": "authorization_code", "code": code, "redirect_uri": REDIRECT, **extra}
+    data = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": REDIRECT,
+        "code_verifier": VERIFIER,
+        **extra,
+    }
     return HttpClient(enforce_csrf_checks=True).post(
         "/api/oidc/token", data, HTTP_AUTHORIZATION=f"Basic {auth}"
     )
@@ -160,6 +177,7 @@ def test_geheimnis_im_formular(api, orgs, board_a):
             "redirect_uri": REDIRECT,
             "client_id": client.client_id,
             "client_secret": secret,
+            "code_verifier": VERIFIER,
         },
     )
     assert resp.status_code == 200, resp.content
@@ -405,3 +423,17 @@ def test_benutzernamen_einstellen(api, orgs, board_a):
         "a@example.org = x\nb@example.org = x",
     ):
         assert c.patch(url, {"usernames": bad}, JSON).status_code == 400, bad
+
+
+def test_ohne_pkce_abgelehnt(api, orgs, board_a):
+    """Fachfrage FQ26: ohne code_challenge keine Anmeldung, außer der Client erlaubt es."""
+    client, secret = make_client(orgs["a"])
+    c = api(board_a)
+    resp = start(c, client, code_challenge=None, code_challenge_method=None)
+    assert resp.status_code == 400
+    assert "error=invalid_request" in resp.json()["redirect"]
+    with tenant_context(orgs["a"].pk):
+        client.require_pkce = False
+        client.save()
+    code = code_of(start(c, client, code_challenge=None, code_challenge_method=None))
+    assert redeem(client, secret, code, code_verifier="").status_code == 200

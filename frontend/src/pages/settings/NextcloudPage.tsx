@@ -240,6 +240,7 @@ function ClientCard({
     base_url: client.base_url,
     audience: client.audience,
     require_mfa: client.require_mfa,
+    require_pkce: client.require_pkce ?? true,
     groups_board: client.groups_board,
     groups_roles: client.groups_roles,
     groups_units: client.groups_units,
@@ -350,6 +351,14 @@ function ClientCard({
           checked={Boolean(values.require_mfa)}
           onChange={(v) => set('require_mfa', v)}
           hint={t('empfohlen, wenn in der Nextcloud Vorstandsunterlagen liegen')}
+        />
+        <Checkbox
+          label={t('Nur mit PKCE (S256)')}
+          checked={values.require_pkce !== false}
+          onChange={(v) => set('require_pkce', v)}
+          hint={t(
+            'Schützt den Anmeldecode. Die Nextcloud-App „user_oidc“ nutzt PKCE von selbst; nur für ältere Anwendungen ohne PKCE ausschalten.',
+          )}
         />
         <fieldset>
           <legend>{t('Gruppen in der Nextcloud')}</legend>
