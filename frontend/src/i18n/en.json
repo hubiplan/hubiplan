@@ -4043,7 +4043,7 @@
   "Bilder fürs Karussell": "Images for the carousel",
   "Bilder hochladen": "Upload images",
   "Bilder wählen": "Choose images",
-  "Bilder werden beim Hochladen verkleinert, und Angaben wie Kamera oder Aufnahmeort werden entfernt. Für Fotos mit Personen braucht es deren Einverständnis. Du kannst Bilder auch hierher ziehen. Ein Klick auf ein Bild öffnet es zum Bearbeiten.": "Images are reduced in size on upload, and details such as camera or location are removed. Photos with people need their consent. You can also drag images here. Clicking an image opens it for editing.",
+  "Bilder werden beim Hochladen verkleinert, und Angaben wie Kamera oder Aufnahmeort werden entfernt. Für Fotos mit Personen braucht es deren Einverständnis. Du kannst Bilder auch hierher ziehen oder kopierte Bilder mit Strg+V einfügen. Ein Klick auf ein Bild öffnet es zum Bearbeiten.": "Images are reduced in size on upload, and details such as camera or location are removed. Photos with people need their consent. You can also drag images here or paste copied images with Ctrl+V. Clicking an image opens it for editing.",
   "Bilderkarussell (optional)": "Image carousel (optional)",
   "Bildunterschrift": "Caption",
   "Bitte die Nummer aus dem Hut eintragen.": "Please enter the number from the hat.",
@@ -4692,5 +4692,7 @@
   "automatisch (abwechselnd links und rechts)": "automatic (alternating left and right)",
   "links": "left",
   "rechts": "right",
-  "groß unter dem Text": "large below the text"
+  "groß unter dem Text": "large below the text",
+  "Kopierte Bilder lassen sich mit Strg+V einfügen.": "Copied images can be pasted with Ctrl+V.",
+  "zwischenablage": "clipboard"
 }

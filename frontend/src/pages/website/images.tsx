@@ -28,6 +28,7 @@ import {
   removeImage,
   sortImages,
   useImageUpload,
+  usePasteImages,
 } from './imageTools.ts'
 import type { ImageOrder } from './imageTools.ts'
 import { t, tn } from '../../i18n/index.ts'
@@ -200,6 +201,7 @@ export function ImagesPage() {
     if (done.length) void reload()
     if (done.length === 1) setOpen(done[0].id)
   }
+  usePasteImages(open === null && !uploader.working, (files) => void add(files))
 
   const all = data ?? []
   const filtered = sortImages(
@@ -232,7 +234,7 @@ export function ImagesPage() {
       </div>
       <p className="muted small">
         {t(
-          'Bilder werden beim Hochladen verkleinert, und Angaben wie Kamera oder Aufnahmeort werden entfernt. Für Fotos mit Personen braucht es deren Einverständnis. Du kannst Bilder auch hierher ziehen. Ein Klick auf ein Bild öffnet es zum Bearbeiten.',
+          'Bilder werden beim Hochladen verkleinert, und Angaben wie Kamera oder Aufnahmeort werden entfernt. Für Fotos mit Personen braucht es deren Einverständnis. Du kannst Bilder auch hierher ziehen oder kopierte Bilder mit Strg+V einfügen. Ein Klick auf ein Bild öffnet es zum Bearbeiten.',
         )}
       </p>
       <RightsHint />
@@ -677,6 +679,11 @@ export function ImagePicker({
     setChosen((c) => (c.includes(i.id) ? c.filter((x) => x !== i.id) : full ? c : [...c, i.id]))
   }
 
+  usePasteImages(
+    !uploader.working && !(multiple && full),
+    (files) => void add(multiple ? files : files.slice(0, 1)),
+  )
+
   async function add(files: File[]) {
     const done = await uploader.upload(files, { department: unit?.id ?? null })
     if (!done.length) return
@@ -733,6 +740,7 @@ export function ImagePicker({
       </div>
       {uploader.dialog}
       {uploader.error && <Alert kind="error">{uploader.error}</Alert>}
+      <p className="muted small">{t('Kopierte Bilder lassen sich mit Strg+V einfügen.')}</p>
       <ImageTiles
         images={filtered.slice(0, shown)}
         selected={multiple ? chosen : undefined}
