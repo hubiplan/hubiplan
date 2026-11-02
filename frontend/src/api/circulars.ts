@@ -310,6 +310,8 @@ export interface MailingList {
   audience: CircularAudience
   /** Jeder darf schreiben, auch ohne Konto (ohne Bestätigung) */
   open_senders?: boolean
+  /** Offener Verteiler: bis zu so vielen Empfängern ohne Freigabe (FQ15) */
+  open_direct_max?: number
   /** Ausgewählte Absender (Konto-IDs); leer: alle mit dem Recht */
   senders: number[]
   /** nur in der Einzelansicht: wer das Recht hat und ausgewählt werden kann */
@@ -331,7 +333,14 @@ export interface MailingListSettings {
 export type MailingListChanges = Partial<
   Pick<
     MailingList,
-    'name' | 'local_part' | 'aliases' | 'mode' | 'is_active' | 'open_senders' | 'senders'
+    | 'name'
+    | 'local_part'
+    | 'aliases'
+    | 'mode'
+    | 'is_active'
+    | 'open_senders'
+    | 'open_direct_max'
+    | 'senders'
   >
 >
 

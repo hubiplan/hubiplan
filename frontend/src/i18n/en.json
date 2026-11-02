@@ -4670,5 +4670,8 @@
   "Löschsperre für {label} gesetzt.": "Deletion hold for {label} set.",
   "Löschsperre aufheben": "Lift deletion hold",
   "Löschsperre setzen": "Set deletion hold",
-  "Löschsperre seit {x}{x2}: {reason}": "Deletion hold since {x}{x2}: {reason}"
+  "Löschsperre seit {x}{x2}: {reason}": "Deletion hold since {x}{x2}: {reason}",
+  "Bei mehr Empfängern als unten eingestellt oder nach zu vielen Mails fremder Absender am selben Tag bleibt die Mail als Entwurf liegen; wer an den Verteiler schreiben darf, bekommt einen Hinweis und gibt sie frei.": "If there are more recipients than set below, or after too many mails from outside senders on the same day, the mail is kept as a draft; those allowed to write to the list are notified and release it.",
+  "Ohne Freigabe höchstens an so viele Empfänger": "At most this many recipients without release",
+  "0: jede Mail fremder Absender wartet auf Freigabe.": "0: every mail from outside senders waits for release."
 }
