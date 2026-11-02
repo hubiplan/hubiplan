@@ -25,15 +25,19 @@ from rest_framework.views import APIView
 from access.catalog import (
     BILLING_EDIT,
     BILLING_VIEW,
+    CARDS_EDIT,
     CARDS_MANAGE,
     DEPT_EVENTS_MANAGE,
     DEPT_MEMBERS_EDIT,
     DEPT_MEMBERS_VIEW,
+    EVENTS_EDIT,
     EVENTS_MANAGE,
+    EVENTS_VIEW,
     FINANCE_EDIT,
     FINANCE_VIEW,
     MEMBERS_EDIT,
     MEMBERS_VIEW,
+    PHOTOS_EDIT,
     PHOTOS_MANAGE,
 )
 from access.permissions import organizations_for
@@ -48,20 +52,35 @@ from .models import ADMIN_DAYS, Device, hash_token
 
 logger = logging.getLogger(__name__)
 
-# Rechte, für die es in der App etwas zu verwalten gibt
+# Rechte, für die es in der App etwas zu verwalten gibt. Seit den Bereichen mit Stufen
+# (Ralf 02.11.2026) gehen die neuen Codes mit; die früheren bleiben eine Fassung lang für
+# ältere App-Versionen. „Termine lesen“ allein macht noch keine Verwaltung in der App.
 ADMIN_PERMISSIONS = (
     MEMBERS_VIEW,
     MEMBERS_EDIT,
     PHOTOS_MANAGE,
+    PHOTOS_EDIT,
     CARDS_MANAGE,
+    CARDS_EDIT,
     EVENTS_MANAGE,
+    EVENTS_VIEW,
+    EVENTS_EDIT,
     FINANCE_VIEW,
     FINANCE_EDIT,
     BILLING_VIEW,
     BILLING_EDIT,
 )
 # Untereinheiten (Rollen nur dort, z. B. Zugführung): Pfad /api/app/v1/admin/d/<Untereinheit>/
-DEPT_ADMIN_PERMISSIONS = (DEPT_MEMBERS_VIEW, DEPT_MEMBERS_EDIT, DEPT_EVENTS_MANAGE)
+DEPT_ADMIN_PERMISSIONS = (
+    DEPT_MEMBERS_VIEW,
+    DEPT_MEMBERS_EDIT,
+    DEPT_EVENTS_MANAGE,
+    MEMBERS_VIEW,
+    MEMBERS_EDIT,
+    EVENTS_VIEW,
+    EVENTS_EDIT,
+)
+ONLY_READING = {EVENTS_VIEW}
 # Freischalten: höchstens 5 Versuche je Gerät in 15 Minuten
 UNLOCK_LIMIT = (5, 15 * 60)
 
@@ -70,8 +89,17 @@ def admin_units(user) -> list[dict]:
     units = []
     for org, perms in organizations_for(user):
         own = sorted(p for p in perms if p in ADMIN_PERMISSIONS)
-        if own:
-            units.append({"id": org.pk, "name": org.name, "type": org.type, "permissions": own})
+        if set(own) - ONLY_READING:
+            units.append(
+                {
+                    "id": org.pk,
+                    "name": org.name,
+                    "type": org.type,
+                    "permissions": own,
+                    # Rechte als Bereiche mit Stufen (neue Codes gelten)
+                    "stufen": True,
+                }
+            )
     return sorted(units, key=lambda u: u["name"].lower())
 
 
@@ -82,7 +110,7 @@ def admin_departments(user) -> list[dict]:
     rows = []
     for ctx in department_contexts(user).values():
         own = sorted(p for p in ctx.permissions if p in DEPT_ADMIN_PERMISSIONS)
-        if own:
+        if set(own) - ONLY_READING:
             rows.append(
                 {
                     "id": ctx.department.pk,
@@ -91,6 +119,7 @@ def admin_departments(user) -> list[dict]:
                     "club_name": ctx.club.name,
                     "events": "events" in (ctx.club.enabled_modules or []),
                     "permissions": own,
+                    "stufen": True,
                 }
             )
     return sorted(rows, key=lambda d: d["name"].lower())

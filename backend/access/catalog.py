@@ -66,7 +66,9 @@ DEPT_ENTRIES_SUBMIT = "dept.entries.submit"
 
 # --- Neue Codes, die Prüfstellen direkt nutzen ---
 PHOTOS_VIEW = "photos.view"
+PHOTOS_EDIT = "photos.edit"
 CARDS_VIEW = "cards.view"
+CARDS_EDIT = "cards.edit"
 SETTINGS_VIEW = "settings.view"
 SETTINGS_EDIT = "settings.edit"
 THEME_VIEW = "theme.view"

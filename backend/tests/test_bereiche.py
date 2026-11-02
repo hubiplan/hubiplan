@@ -257,3 +257,16 @@ def test_hilfe_nennt_fruehere_codes_mit_neuem_namen(orgs):
     assert rights["org.edit"] == rights["settings.edit"]
     assert rights["competitions.manage"] == rights["competitions.edit"]
     assert rights["website.manage"] == rights["website.edit"]
+
+
+def test_app_bekommt_neue_codes_aber_nicht_fuer_reines_lesen(orgs):
+    from devices.admin_api import admin_units
+
+    org = orgs["a"]
+    termine = make_user("termine@example.org")
+    give_role(termine, org, ["events.edit"], name="Termine")
+    unit = next(u for u in admin_units(termine) if u["id"] == org.pk)
+    assert {"events.view", "events.edit", "events.manage"} <= set(unit["permissions"])
+    leser = make_user("leser@example.org")
+    give_role(leser, org, ["events.view"], name="Leser")
+    assert all(u["id"] != org.pk for u in admin_units(leser))
