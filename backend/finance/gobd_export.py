@@ -435,7 +435,7 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
     )
     for i in invoices:
         path = ""
-        if i.status in archive.ARCHIVED or i.issued_pdf:
+        if i.issued_pdf or (i.status in archive.ARCHIVED and not archive.documents_purged(i)):
             name = f"rechnungen/{_safe(i.display_number)}.pdf"
             if not i.issued_pdf:
                 archive.archived_pdf(i)  # legt die ausgegebene Fassung beim ersten Abruf ab

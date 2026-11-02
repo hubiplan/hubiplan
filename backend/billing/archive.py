@@ -11,11 +11,40 @@ import hashlib
 
 from django.core.files.base import ContentFile
 from django.db import transaction
+from django.db.models import Exists, OuterRef
+from django.utils.translation import gettext
+from rest_framework.exceptions import ValidationError
 
 from . import pdf
 from .models import Invoice
 
 ARCHIVED = (Invoice.Status.OPEN, Invoice.Status.PAID)
+
+
+def _purged_years():
+    """Jahre, deren Belege nach Ablauf der Aufbewahrungsfrist gelöscht sind."""
+    from finance.models import YearClosing
+
+    return YearClosing.objects.filter(
+        organization_id=OuterRef("organization_id"),
+        year=OuterRef("year"),
+        documents_purged_at__isnull=False,
+    )
+
+
+def documents_purged(invoice: Invoice) -> bool:
+    """Ist das PDF dieser Rechnung nach Fristablauf gelöscht? Dann wird es nicht neu
+    erzeugt (Audit 02.11. BP-V03)."""
+    from finance.models import YearClosing
+
+    return (
+        invoice.year is not None
+        and YearClosing.objects.filter(
+            organization_id=invoice.organization_id,
+            year=invoice.year,
+            documents_purged_at__isnull=False,
+        ).exists()
+    )
 
 
 def archived_pdf(invoice: Invoice) -> bytes:
@@ -25,6 +54,12 @@ def archived_pdf(invoice: Invoice) -> bytes:
     if invoice.issued_pdf:
         with invoice.issued_pdf.open("rb") as fh:
             return fh.read()
+    if documents_purged(invoice):
+        raise ValidationError(
+            gettext(
+                "Die Aufbewahrungsfrist dieser Rechnung ist abgelaufen; ihr PDF wurde gelöscht."
+            )
+        )
     with transaction.atomic():
         locked = Invoice.objects.select_for_update().get(pk=invoice.pk)
         if locked.issued_pdf:
@@ -48,6 +83,7 @@ def archive_missing(limit: int = 200) -> int:
     with rls_bypass():
         ids = list(
             Invoice.objects.filter(status__in=ARCHIVED, number__isnull=False, issued_pdf="")
+            .exclude(Exists(_purged_years()))
             .order_by("pk")
             .values_list("pk", flat=True)[:limit]
         )

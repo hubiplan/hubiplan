@@ -178,8 +178,10 @@ sobald Netz da ist, höchstens 30 Tage nach der Unterschrift.
   Berichte › Jahresabschluss beim abgeschlossenen Jahr „Belege löschen“ (ab dem 9. Jahr:
   Belegdateien, archivierte Rechnungs-, Quittungs-, Zuwendungs- und Zählprotokoll-PDFs,
   Kontoauszugs- und SEPA-Dateien, Unterschriften) bzw. „Daten bereinigen“ (ab dem 11. Jahr
-  zusätzlich: Namen, Anschriften, Buchungstexte und Bankdaten werden anonymisiert). Beträge,
-  Daten, Konten, Kategorien und Nummern bleiben, damit Bestände stimmen. Auslösen dürfen nur
+  zusätzlich: Namen, Anschriften, Buchungstexte und Bankdaten werden anonymisiert, auch
+  Rechnungsempfänger und Rechnungsposten mit Mitgliedsbezug). Beträge, Daten, Konten,
+  Kategorien und Nummern bleiben, damit Bestände stimmen. Gelöschte Rechnungs-PDFs entstehen
+  danach nicht neu; ein Abruf meldet das Ende der Aufbewahrungsfrist. Auslösen dürfen nur
   Vorstände mit Rollenverwaltung; ein so bereinigtes Jahr lässt sich nicht mehr aufheben.
   Vorher den Datenexport prüfen, falls eine Betriebsprüfung oder ein Verfahren läuft
   (solange Steuern dieser Jahre noch festgesetzt werden können, läuft die Frist nicht ab, § 147 Abs. 3 AO).

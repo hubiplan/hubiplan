@@ -279,3 +279,55 @@ def test_rls_kontoauszug(c, fin, club, orgs):
         with connection.cursor() as cursor:
             cursor.execute("RESET ROLE")
         set_rls(None, None, False)
+
+
+class TestAblageUndGrenzen:
+    """Audit 02.11. BP-S01: Originaldatei einmal ablegen, Gesamtgrenzen beim Lesen."""
+
+    def _zip(self, *xmls):
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w") as z:
+            for i, xml in enumerate(xmls):
+                z.writestr(f"{i}.xml", xml)
+        return buf.getvalue()
+
+    def test_eine_ablage_je_datei_auch_beim_zweiten_mal(self, c, fin):
+        from core.tenancy import rls_bypass
+        from finance.models import BankStatement
+
+        data = self._zip(camt_xml([entry("1.00")]), camt_xml([entry("2.00")]))
+        assert upload(c, fin, data, name="auszuege.zip").status_code == 201
+        assert upload(c, fin, data, name="auszuege.zip").status_code == 201
+        with rls_bypass():
+            names = set(BankStatement.objects.values_list("source", flat=True))
+            assert BankStatement.objects.count() == 4
+        assert len(names) == 1 and "" not in names
+
+    def test_loeschen_behaelt_geteilte_datei(self, c, fin):
+        from core.tenancy import rls_bypass
+        from finance.models import BankStatement
+
+        data = self._zip(camt_xml([entry("1.00")]), camt_xml([entry("2.00")]))
+        assert upload(c, fin, data, name="auszuege.zip").status_code == 201
+        with rls_bypass():
+            first, second = BankStatement.objects.order_by("pk")
+        resp = c.delete(f"{fin}/bank-statements/{first.pk}/")
+        assert resp.status_code == 204, resp.content
+        with rls_bypass():
+            second.refresh_from_db()
+            with second.source.open("rb") as fh:
+                assert fh.read() == data
+
+    def test_gesamtgrenzen(self, monkeypatch):
+        monkeypatch.setattr(camt, "MAX_STATEMENTS", 1)
+        data = self._zip(camt_xml([entry("1.00")]), camt_xml([entry("2.00")]))
+        with pytest.raises(camt.CamtError, match="Kontoauszüge"):
+            camt.parse(data)
+        monkeypatch.setattr(camt, "MAX_STATEMENTS", 10)
+        monkeypatch.setattr(camt, "MAX_LINES", 1)
+        with pytest.raises(camt.CamtError, match="Umsätze"):
+            camt.parse(camt_xml([entry("1.00"), entry("2.00")]))
+        monkeypatch.setattr(camt, "MAX_LINES", 100)
+        monkeypatch.setattr(camt, "MAX_TOTAL", 10)
+        with pytest.raises(camt.CamtError, match="entpackt zu groß"):
+            camt.parse(data)

@@ -123,18 +123,29 @@ if [ -f /loeschliste/loeschliste.jsonl ]; then
         || fail "Löschliste konnte nicht kopiert werden ($STAMP)"
 fi
 
-# Hauptschlüssel der Datenverschlüsselung (Docker-Secret) mit dem öffentlichen
-# Backup-Schlüssel verschlüsselt neben die Backups: Ohne ihn sind verschlüsselte Dateien
-# und Felder in den Backups nicht lesbar. Lesen kann die Kopie nur, wer den privaten
-# Backup-Schlüssel hat (docs/betrieb.md, Abschnitt Verschlüsselung).
-if [ -r /run/secrets/datenschluessel ]; then
-    if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
+# Hauptschlüssel der Datenverschlüsselung (Docker-Secret) verschlüsselt neben die Backups:
+# Ohne ihn sind verschlüsselte Dateien und Felder in den Backups nicht lesbar. Mit
+# BACKUP_PUBLIC_KEY kann die Kopie nur lesen, wer den privaten Backup-Schlüssel hat
+# (docs/betrieb.md, Abschnitt Verschlüsselung); sonst wie die Backups mit der Passphrase.
+# Fehlt die Kopie, gilt das Backup als unvollständig: Alarm, alte Backups bleiben
+# (Audit 02.11. O-F01).
+key_incomplete() {
+    echo "$(date '+%F %T') WARNUNG: $1 ($STAMP)" >> "$DIR/backup.log"
+    echo "$1" >> "$DIR/.unvollstaendig"
+}
+if [ -e /run/secrets/datenschluessel ]; then
+    if [ ! -r /run/secrets/datenschluessel ]; then
+        key_incomplete "Hauptschlüssel nicht lesbar, keine Schlüsselkopie beim Backup"
+    elif [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
         age -r "$BACKUP_PUBLIC_KEY" -o "$DIR/datenschluessel.age.tmp" /run/secrets/datenschluessel \
+            && [ -s "$DIR/datenschluessel.age.tmp" ] \
             && mv "$DIR/datenschluessel.age.tmp" "$DIR/datenschluessel.age" \
-            || echo "$(date '+%F %T') WARNUNG: Kopie des Hauptschlüssels fehlgeschlagen ($STAMP)" \
-                >> "$DIR/backup.log"
+            || key_incomplete "Kopie des Hauptschlüssels fehlgeschlagen"
     else
-        echo "HINWEIS: Ohne BACKUP_PUBLIC_KEY keine Kopie des Hauptschlüssels bei den Backups."
+        $ENC -in /run/secrets/datenschluessel -out "$DIR/datenschluessel.enc.tmp" \
+            && [ -s "$DIR/datenschluessel.enc.tmp" ] \
+            && mv "$DIR/datenschluessel.enc.tmp" "$DIR/datenschluessel.enc" \
+            || key_incomplete "Kopie des Hauptschlüssels fehlgeschlagen"
     fi
 fi
 
@@ -164,8 +175,9 @@ if [ -f "$DIR/.unvollstaendig" ]; then
     DELETE=""
 else
     # Alte Backups entfernen
+    # Die Schlüsselkopie bleibt immer (sie wird täglich erneuert)
     find "$DIR" -maxdepth 1 \( -name '*.enc' -o -name '*.enc.hmac' -o -name '*.age' -o -name '*.age.hmac' \) \
-        -mtime +"$KEEP_DAYS" -delete
+        ! -name 'datenschluessel.*' -mtime +"$KEEP_DAYS" -delete
 fi
 
 # Optional: Kopie an einen zweiten Ort (z. B. user@host:/pfad, per SSH-Schlüssel)

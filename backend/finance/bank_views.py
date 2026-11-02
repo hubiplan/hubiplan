@@ -193,7 +193,13 @@ class BankStatementViewSet(
             instance,
             {"Kontoauszug": [instance.file_name, None]},
         )
-        if instance.source:
+        # Die Datei können mehrere Auszüge teilen (Audit 02.11. BP-S01)
+        if (
+            instance.source
+            and not BankStatement.objects.filter(organization=self.org, source=instance.source.name)
+            .exclude(pk=instance.pk)
+            .exists()
+        ):
             delete_on_commit(instance.source)
         instance.delete()
 

@@ -240,6 +240,8 @@ class Invoice(models.Model):
         MEMBER = "member", gettext_lazy("Mitglied")
         DEPARTMENT = "department", gettext_lazy("Abteilung")
         CLUB = "club", gettext_lazy("Verein")
+        # Nach Ablauf der Aufbewahrungsfrist: ohne Bezug auf eine Person (Audit 02.11. BP-F03)
+        ANONYMIZED = "anonymized", gettext_lazy("anonymisiert")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -325,6 +327,7 @@ class Invoice(models.Model):
                     models.Q(recipient_kind="member", membership__isnull=False)
                     | models.Q(recipient_kind="department", department__isnull=False)
                     | models.Q(recipient_kind="club", club__isnull=False)
+                    | models.Q(recipient_kind="anonymized", membership__isnull=True)
                 ),
                 name="rechnung_empfaenger",
             ),

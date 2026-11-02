@@ -79,6 +79,14 @@ def import_file(org, data: bytes, file_name: str, user, account: Account | None 
         raise ValidationError(str(exc)) from exc
     result = {"statements": [], "lines": 0, "duplicates": 0}
     digest = hashlib.sha256(data).hexdigest()
+    # Dieselbe Datei nur einmal ablegen, auch beim erneuten Einlesen (Audit 02.11. BP-S01)
+    earlier = (
+        BankStatement.objects.filter(organization=org, source_sha256=digest)
+        .exclude(source="")
+        .order_by("pk")
+        .first()
+    )
+    stored = earlier.source.name if earlier is not None else ""
     safe = "".join(c if c.isalnum() or c in ".-_" else "_" for c in file_name)[-100:] or "auszug"
     for st in statements:
         if st.currency and st.currency != "EUR":
@@ -98,8 +106,13 @@ def import_file(org, data: bytes, file_name: str, user, account: Account | None 
             imported_by=user,
             source_sha256=digest,
         )
-        # Originaldatei unverändert aufbewahren (GoBD), je Auszug eine Kopie
-        record.source.save(safe, ContentFile(data), save=False)
+        # Originaldatei unverändert aufbewahren (GoBD), einmal je Upload; weitere Auszüge
+        # derselben Datei verweisen auf dieselbe Ablage
+        if stored:
+            record.source.name = stored
+        else:
+            record.source.save(safe, ContentFile(data), save=False)
+            stored = record.source.name
         record.save(update_fields=["source"])
         new = dup = 0
         for line in st.lines:
