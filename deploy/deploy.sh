@@ -61,6 +61,27 @@ if ! grep -q "^$TREE " "$STATE" 2>/dev/null; then
     exit 1
 fi
 
+# Sperre auf dem Server: Ein zweiter gleichzeitiger Lauf (von welchem Rechner auch immer)
+# bricht ab, statt den Zwischenstand des ersten zu löschen (Vorfälle 31.10. und 01.11.).
+# mkdir ist atomar; die Sperre verschwindet am Ende des Laufs, auch bei Fehlern.
+SPERRE="$DIR.sperre"
+WER="$(git rev-parse --short "$REF") $(date -u +%Y-%m-%dT%H:%M:%SZ) $(hostname 2>/dev/null || echo ?)"
+case "$WER" in
+    *[!A-Za-z0-9.:_\ -]*) WER="$(git rev-parse --short "$REF")" ;;
+esac
+if ! "$SSH" "${SSH_ARGS[@]}" "$HOST" "${SUDO}mkdir '$SPERRE' 2> /dev/null && echo '$WER' | ${SUDO}tee '$SPERRE/lauf' > /dev/null"; then
+    echo "Abbruch: Auf $HOST läuft schon ein Ausrollen (Sperre $SPERRE):" >&2
+    "$SSH" "${SSH_ARGS[@]}" "$HOST" "cat '$SPERRE/lauf' 2> /dev/null" >&2 || true
+    echo "Bitte warten, bis er fertig ist. Hängt die Sperre nach einem abgebrochenen Lauf," >&2
+    echo "auf dem Server prüfen, dass nichts mehr läuft, dann: ${SUDO}rm -r '$SPERRE'" >&2
+    exit 1
+fi
+sperre_loesen() {
+    "$SSH" "${SSH_ARGS[@]}" "$HOST" "${SUDO}rm -r '$SPERRE'" || \
+        echo "Warnung: Sperre $SPERRE konnte nicht entfernt werden." >&2
+}
+trap sperre_loesen EXIT
+
 echo "Rolle $(git rev-parse --short "$REF") nach $HOST:$DIR aus …"
 
 # Neue Fassung in einen eigenen Ordner neben der laufenden entpacken (mit deren .env).
