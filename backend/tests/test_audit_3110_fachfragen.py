@@ -61,3 +61,24 @@ class TestRechnungAbgelegt:
         assert archive_missing() >= 1
         with rls_bypass():
             assert Invoice.objects.get(pk=invoice.pk).issued_pdf
+
+    def test_sammel_pdf_nimmt_ausgegebene_fassung(self, c, base, members, club):  # noqa: F811
+        """Audit 02.11. BP-F02: Sammel-PDF eines Laufs = abgelegte Einzelfassungen."""
+        import pypdfium2 as pdfium
+
+        run = start_run(c, base).json()
+        assert c.post(f"{base}/runs/{run['id']}/finalize/").status_code == 200
+        with rls_bypass():
+            invoice = Invoice.objects.filter(run_id=run["id"]).order_by("pk").first()
+        first = c.get(f"{base}/invoices/{invoice.pk}/pdf/").content
+        club.name = "Ganz anderer Name"
+        club.save()
+        batch = c.get(f"{base}/runs/{run['id']}/pdf/")
+        assert batch.status_code == 200, batch.content[:200]
+        doc = pdfium.PdfDocument(batch.content)
+        text = "\n".join(doc[i].get_textpage().get_text_range() for i in range(len(doc)))
+        single = pdfium.PdfDocument(first)
+        assert len(doc) >= len(single)
+        # Die schon ausgegebene Rechnung erscheint mit dem alten Namen
+        old = single[0].get_textpage().get_text_range()
+        assert old in text
