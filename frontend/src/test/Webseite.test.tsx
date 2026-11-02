@@ -730,6 +730,17 @@ describe('Inhalte der Webseite', () => {
       },
       { timeout: 3000 },
     )
+    // Reihenfolge auf der Webseite: neueste Einträge oben
+    const newest = screen.getByRole('checkbox', { name: /Neueste Einträge oben/ })
+    expect(newest).not.toBeChecked()
+    await user.click(newest)
+    await waitFor(
+      () => {
+        const put = calls.filter((c) => c.key === `PUT ${base}texts/5/`).at(-1)
+        expect(put && JSON.parse(String(put.init?.body))).toEqual({ timeline_newest_first: true })
+      },
+      { timeout: 3000 },
+    )
   })
 
   it('stellt Wechselzeit und Startbild je Karussell ein', async () => {

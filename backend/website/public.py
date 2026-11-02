@@ -851,6 +851,11 @@ class SiteView:
             "text": content.public_body(t.published_body, self.site),
             "image": self.image(t.published_image),
             "timeline": self.timeline(t) if t.slug == TIMELINE_SLUG else [],
+            # Reihenfolge auf der Webseite; „timeline“ bleibt aufsteigend sortiert, damit
+            # die Webseite Kapitel und ihre Ereignisse zusammenhalten kann
+            "timeline_newest_first": t.published_timeline_newest_first
+            if t.slug == TIMELINE_SLUG
+            else False,
             "updated_at": t.published_at,
         }
 
