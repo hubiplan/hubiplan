@@ -16,7 +16,15 @@ from oidc import nc_accounts
 from oidc.models import Account, Client
 
 from .factories import give_role, make_user
-from .test_nextcloud_anmeldung import _key, code_of, make_client, redeem, start, verify_jwt  # noqa: F401
+from .test_nextcloud_anmeldung import (  # noqa: F401
+    _key,
+    code_of,
+    make_client,
+    redeem,
+    start,
+    verify_jwt,
+)
+from .test_rls import as_app_role
 
 JSON = "application/json"
 YESTERDAY = datetime.date.today() - datetime.timedelta(days=1)
@@ -215,5 +223,8 @@ def test_fremde_einheit_sieht_keine_konten(api, orgs, board_a, board_b):
     login(api, client, secret, board_a)
     resp = api(board_b).get(f"/api/orgs/{orgs['a'].pk}/nextcloud/{client.pk}/accounts/")
     assert resp.status_code == 404
-    with tenant_context(orgs["b"].pk):
+    # Row-Level Security: in der Rolle der Anwendung sieht Verein B das Konto nicht
+    with as_app_role(), tenant_context(orgs["b"].pk):
         assert not Account.objects.exists()
+    with as_app_role(), tenant_context(orgs["a"].pk):
+        assert Account.objects.count() == 1
