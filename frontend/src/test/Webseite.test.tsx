@@ -679,6 +679,59 @@ describe('Inhalte der Webseite', () => {
     )
   })
 
+  it('baut die Zeitleiste der Chronik mit Ereignissen und Kapiteln', async () => {
+    const chronik = text({
+      title: 'Chronik',
+      has_timeline: true,
+      timeline: [
+        { kind: 'event', year: 1949, until: null, title: 'Neuanfang', text: '', image: null },
+      ],
+    })
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}texts/`]: () => ({ status: 200, body: { texts: [chronik], units: [] } }),
+        [`GET ${base}texts/5/`]: () => ({ status: 200, body: chronik }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+        [`PUT ${base}texts/5/`]: () => ({ status: 200, body: chronik }),
+      },
+      '/webseite/inhalte',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Chronik' }))
+    expect(await screen.findByRole('textbox', { name: 'Einleitung (optional)' })).toBeVisible()
+    // Ereignis als Zeitraum; ohne Überschrift wird nichts übernommen
+    await user.click(screen.getByRole('button', { name: 'Ereignis hinzufügen' }))
+    const form = screen.getByRole('group', { name: 'Neues Ereignis' })
+    await user.type(within(form).getByLabelText('Jahr'), '1939')
+    await user.type(within(form).getByLabelText(/^bis/), '1948')
+    await user.click(within(form).getByRole('button', { name: 'Übernehmen' }))
+    expect(within(form).getByText('Bitte eine Überschrift angeben.')).toBeVisible()
+    await user.type(within(form).getByLabelText('Überschrift'), 'Ruhezeit')
+    await user.click(within(form).getByRole('button', { name: 'Übernehmen' }))
+    expect(screen.getByText('1939–1948')).toBeVisible()
+    // Kapitel ohne Bildauswahl, steht vor den Ereignissen seines Jahres
+    await user.click(screen.getByRole('button', { name: 'Kapitel hinzufügen' }))
+    const chapter = screen.getByRole('group', { name: 'Neues Kapitel' })
+    expect(within(chapter).queryByText('Bild (optional)')).toBeNull()
+    await user.type(within(chapter).getByLabelText('Beginnt im Jahr'), '1939')
+    await user.type(within(chapter).getByLabelText(/^bis/), '1949')
+    await user.type(within(chapter).getByLabelText('Name des Kapitels'), 'Krieg und Neubeginn')
+    await user.click(within(chapter).getByRole('button', { name: 'Übernehmen' }))
+    await waitFor(
+      () => {
+        const put = calls.filter((c) => c.key === `PUT ${base}texts/5/`).at(-1)
+        const body = put && JSON.parse(String(put.init?.body))
+        expect(body?.timeline?.map((e: { title: string }) => e.title)).toEqual([
+          'Krieg und Neubeginn',
+          'Ruhezeit',
+          'Neuanfang',
+        ])
+      },
+      { timeout: 3000 },
+    )
+  })
+
   it('stellt Wechselzeit und Startbild je Karussell ein', async () => {
     const greeting = text({
       id: 6,

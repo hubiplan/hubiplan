@@ -4373,3 +4373,59 @@ msgstr ""
 
 msgid "Das Datum des Bescheids liegt in der Zukunft."
 msgstr "The date of the notice is in the future."
+
+#: website/content_views.py
+msgid "Eine Zeitleiste gibt es nur in der Chronik."
+msgstr "Only the chronicle has a timeline."
+
+#: website/timeline.py
+msgid "Bitte ein Jahr zwischen 1000 und 2999 angeben."
+msgstr "Please enter a year between 1000 and 2999."
+
+#: website/timeline.py
+msgid "Das Jahr „bis“ ist ungültig."
+msgstr "The “until” year is invalid."
+
+#: website/timeline.py
+msgid "Das Jahr „bis“ liegt vor dem Jahr."
+msgstr "The “until” year is before the year."
+
+#: website/timeline.py
+msgid "Bitte eine Überschrift angeben."
+msgstr "Please enter a heading."
+
+#: website/timeline.py
+msgid "Die Überschrift darf höchstens {n} Zeichen haben."
+msgstr "The heading may have at most {n} characters."
+
+#: website/timeline.py
+msgid "Der Text darf höchstens {n} Zeichen haben."
+msgstr "The text may have at most {n} characters."
+
+#: website/timeline.py
+msgid "Ungültige Zeitleiste."
+msgstr "Invalid timeline."
+
+#: website/timeline.py
+msgid "Höchstens {n} Einträge in der Zeitleiste."
+msgstr "At most {n} entries in the timeline."
+
+#: website/timeline.py
+msgid "Eintrag {n}: {error}"
+msgstr "Entry {n}: {error}"
+
+#: website/timeline.py
+msgid "Unbekanntes Bild in der Zeitleiste."
+msgstr "Unknown picture in the timeline."
+
+#: website/timeline.py
+msgid "Jahr"
+msgstr "Year"
+
+#: website/timeline.py
+msgid "Überschrift"
+msgstr "Heading"
+
+#: website/timeline.py
+msgid "Es fehlen die Spalten: {missing}. Gefunden: {found}."
+msgstr "Missing columns: {missing}. Found: {found}."

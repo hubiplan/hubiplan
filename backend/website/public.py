@@ -29,7 +29,7 @@ from members.photo_models import MemberPhoto
 from organizations.models import Department, DepartmentRole, SocialLink
 
 from . import content, services
-from .content_models import GALLERY_INTERVAL, WebsiteImage, WebsiteText
+from .content_models import GALLERY_INTERVAL, TIMELINE_SLUG, WebsiteImage, WebsiteText
 from .models import PublicationConsent, Website
 
 Category = PublicationConsent.Category
@@ -822,6 +822,7 @@ class SiteView:
                 t.published_image_id == image.pk
                 or marker in t.published_body
                 or image.pk in (t.published_gallery or [])
+                or image.pk in content.timeline_images(t.published_timeline)
             ):
                 if t.kind != WebsiteText.Kind.UNIT or t.department_id in self.unit_slugs:
                     return image
@@ -849,8 +850,33 @@ class SiteView:
             "title": t.published_title,
             "text": content.public_body(t.published_body, self.site),
             "image": self.image(t.published_image),
+            "timeline": self.timeline(t) if t.slug == TIMELINE_SLUG else [],
             "updated_at": t.published_at,
         }
+
+    def timeline(self, t: WebsiteText) -> list[dict]:
+        """Zeitleiste der Chronik nach Jahren; ``until`` = Zeitraum (z. B. 1939–1948),
+        ``kind`` = ``chapter`` für eine Zwischenüberschrift (Kapitel)."""
+        from .timeline import sorted_timeline
+
+        entries = sorted_timeline(t.published_timeline)
+        ids = content.timeline_images(entries)
+        by_id = (
+            {i.pk: i for i in WebsiteImage.objects.filter(website=self.site, pk__in=ids)}
+            if ids
+            else {}
+        )
+        return [
+            {
+                "kind": e.get("kind") or "event",
+                "year": e["year"],
+                "until": e.get("until"),
+                "title": e.get("title") or "",
+                "text": e.get("text") or "",
+                "image": self.image(by_id.get(e.get("image"))),
+            }
+            for e in entries
+        ]
 
     def greeting(self) -> dict | None:
         t = (

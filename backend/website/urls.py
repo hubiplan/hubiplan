@@ -48,6 +48,11 @@ org_patterns = [
         content_views.TextRestoreView.as_view(),
         name="website-text-restore",
     ),
+    path(
+        "website/texts/<int:pk>/timeline-import/",
+        content_views.TimelineImportView.as_view(),
+        name="website-text-timeline-import",
+    ),
     path("website/images/", content_views.ImageListView.as_view(), name="website-images"),
     path("website/images/<int:pk>/", content_views.ImageDetailView.as_view(), name="website-image"),
     path(

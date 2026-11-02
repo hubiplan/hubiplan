@@ -28,6 +28,11 @@ MAX_INTERVAL = 30
 
 MAX_TITLE = 120
 MAX_BODY = 50_000
+# Zeitleiste der Chronik (Ralf 02.11.: keine Textwand): kurze Einträge mit Jahr
+TIMELINE_SLUG = "geschichte"
+MAX_TIMELINE = 300
+MAX_TIMELINE_TITLE = 120
+MAX_TIMELINE_TEXT = 400
 SLUG_RE = r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
 # Adressen, die die Webseite selbst belegt
 RESERVED_SLUGS = frozenset(
@@ -93,6 +98,8 @@ class WebsiteText(models.Model):
     )
     # Beginnt mit einem zufälligen Bild statt mit dem ersten der Liste
     gallery_random = models.BooleanField("zufälliges Startbild", default=False)
+    # Zeitleiste der Chronik: [{"year", "until", "title", "text", "image"}]
+    timeline = models.JSONField("Zeitleiste", default=list, blank=True)
     # Veröffentlicht
     published_title = models.CharField(max_length=MAX_TITLE, blank=True)
     published_body = models.TextField(blank=True)
@@ -102,6 +109,7 @@ class WebsiteText(models.Model):
     published_gallery = models.JSONField(default=list, blank=True)
     published_gallery_interval = models.PositiveSmallIntegerField(default=GALLERY_INTERVAL)
     published_gallery_random = models.BooleanField(default=False)
+    published_timeline = models.JSONField(default=list, blank=True)
     published_at = models.DateTimeField("veröffentlicht am", null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
@@ -159,6 +167,7 @@ class WebsiteText(models.Model):
             or (self.gallery or []) != (self.published_gallery or [])
             or self.gallery_interval != self.published_gallery_interval
             or self.gallery_random != self.published_gallery_random
+            or (self.timeline or []) != (self.published_timeline or [])
         )
 
     def clean(self):
@@ -190,6 +199,7 @@ class WebsiteRevision(models.Model):
     gallery = models.JSONField(default=list, blank=True)
     gallery_interval = models.PositiveSmallIntegerField(default=GALLERY_INTERVAL)
     gallery_random = models.BooleanField(default=False)
+    timeline = models.JSONField(default=list, blank=True)
     published_at = models.DateTimeField(default=timezone.now)
     published_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"

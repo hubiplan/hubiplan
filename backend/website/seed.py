@@ -35,6 +35,61 @@ HISTORY = (
     "schreibt der Verein hier seine eigene Chronik."
 )
 
+# Erfundene Zeitleiste der Chronik (Testserver)
+TIMELINE = [
+    {
+        "year": 1920,
+        "until": None,
+        "title": "Gründung",
+        "text": "Zwölf Schützenbrüder gründen den Verein im Saal der alten Dorfschänke.",
+    },
+    {
+        "year": 1925,
+        "until": None,
+        "title": "Erstes Schützenfest",
+        "text": "Das erste eigene Fest mit Umzug durch den Ort.",
+    },
+    {
+        "year": 1939,
+        "until": 1948,
+        "title": "Ruhezeit",
+        "text": "Kein Schützenfest, kaum Vereinsleben.",
+    },
+    {
+        "year": 1949,
+        "until": None,
+        "title": "Neuanfang",
+        "text": "Der Verein lebt wieder auf, das erste Fest nach dem Krieg.",
+    },
+    {
+        "year": 1970,
+        "until": None,
+        "title": "50 Jahre",
+        "text": "Jubiläumsfest mit Gastvereinen aus der Umgebung.",
+    },
+    {
+        "year": 1995,
+        "until": None,
+        "title": "Neue Fahne",
+        "text": "Die Mitglieder sammeln für eine neue Vereinsfahne.",
+    },
+    {
+        "year": 2020,
+        "until": None,
+        "title": "100 Jahre",
+        "text": "Das Jubiläum wird wegen der Pandemie ein Jahr später gefeiert.",
+    },
+]
+TIMELINE = [
+    {"kind": "chapter", "year": 1920, "until": 1938, "title": "Gründerjahre", "text": ""},
+    *TIMELINE[:2],
+    {"kind": "chapter", "year": 1939, "until": 1949, "title": "Krieg und Neubeginn", "text": ""},
+    *TIMELINE[2:4],
+    {"kind": "chapter", "year": 1950, "until": None, "title": "Bis heute", "text": ""},
+    *TIMELINE[4:],
+]
+TIMELINE = [{"kind": "event", **e, "image": None} for e in TIMELINE]
+
 # Erfundene Namen für frühere Majestäten (vor HUBIplan)
 OLD_KINGS = [
     "Heinrich Alt",
@@ -94,6 +149,14 @@ def _texts(website: Website) -> None:
             published_body=body,
             published_at=now,
         )
+    # Zeitleiste für die erfundene Chronik, auch auf schon angelegten Testseiten
+    chronicle = WebsiteText.objects.filter(
+        website=website, kind=WebsiteText.Kind.PAGE, slug="geschichte", body=HISTORY
+    ).first()
+    if chronicle and not chronicle.timeline and not chronicle.published_timeline:
+        chronicle.timeline = TIMELINE
+        chronicle.published_timeline = TIMELINE
+        chronicle.save(update_fields=["timeline", "published_timeline"])
 
 
 # Erfundene Kanäle, damit die Webseite alle vorgesehenen Netzwerke zeigt

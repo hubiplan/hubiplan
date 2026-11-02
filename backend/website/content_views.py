@@ -5,6 +5,7 @@ from __future__ import annotations
 from django.db import transaction
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -16,8 +17,8 @@ from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin
 from core.reorder import reorder_response
 
-from . import content, services
-from .content_models import WebsiteImage, WebsiteRevision, WebsiteText
+from . import content, services, timeline
+from .content_models import TIMELINE_SLUG, WebsiteImage, WebsiteRevision, WebsiteText
 from .views import _WebsiteMixin
 
 
@@ -89,6 +90,8 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
                 "gallery": list(t.gallery or []),
                 "gallery_interval": t.gallery_interval,
                 "gallery_random": t.gallery_random,
+                "timeline": list(t.timeline or []),
+                "has_timeline": is_chronicle(t),
                 "published_title": t.published_title,
                 "published_body": t.published_body,
                 "revisions": [
@@ -110,6 +113,11 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
 MAX_GALLERY = 10  # Ralf: bis zu 10 Fotos je Einheit
 
 
+def is_chronicle(t: WebsiteText) -> bool:
+    """Nur die Chronik (Textseite „geschichte“) hat eine Zeitleiste."""
+    return t.kind == WebsiteText.Kind.PAGE and t.slug == TIMELINE_SLUG
+
+
 class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
     class Meta:
         model = WebsiteText
@@ -125,6 +133,7 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "gallery",
             "gallery_interval",
             "gallery_random",
+            "timeline",
         ]
         extra_kwargs = {"kind": {"required": False}}
 
@@ -163,6 +172,9 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
             raise serializers.ValidationError("Unbekanntes Bild.")
         return value
 
+    def validate_timeline(self, value):
+        return timeline.clean_timeline(value, self.context["website"])
+
     def validate_image(self, value):
         if value is not None and value.website_id != self.context["website"].pk:
             raise serializers.ValidationError("Unbekanntes Bild.")
@@ -179,6 +191,11 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
         if kind == WebsiteText.Kind.PAGE and attrs.get("gallery"):
             raise serializers.ValidationError(
                 {"gallery": "Ein Bilderkarussell gibt es nur auf Startseiten von Einheiten."}
+            )
+        slug = attrs.get("slug", self.instance.slug if self.instance else "")
+        if attrs.get("timeline") and not (kind == WebsiteText.Kind.PAGE and slug == TIMELINE_SLUG):
+            raise serializers.ValidationError(
+                {"timeline": gettext("Eine Zeitleiste gibt es nur in der Chronik.")}
             )
         attrs = super().validate(attrs)
         website = self.context["website"]
@@ -305,6 +322,33 @@ class TextRestoreView(_TextMixin, APIView):
             self.org, request.user, "update", text, {"Entwurf": [None, f"zurückgeholt: {revision}"]}
         )
         return Response(text_data(self.org.pk, text, full=True))
+
+
+class TimelineImportView(_TextMixin, APIView):
+    """POST (Datei): Einträge für die Zeitleiste lesen. Speichert nichts; der Browser
+    hängt sie an den Entwurf an."""
+
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, org_id: int, pk: int):
+        import tempfile
+        from pathlib import Path
+
+        if not is_chronicle(self.text()):
+            raise NotFound()
+        upload = request.FILES.get("file")
+        if upload is None:
+            raise ValidationError({"file": gettext("Bitte eine Datei auswählen.")})
+        if upload.size > 5 * 1024 * 1024:
+            raise ValidationError({"file": gettext("Die Datei darf höchstens 5 MB groß sein.")})
+        with tempfile.NamedTemporaryFile(suffix=Path(upload.name).suffix.lower()) as tmp:
+            for chunk in upload.chunks():
+                tmp.write(chunk)
+            tmp.flush()
+            result = timeline.read_import(tmp.name, upload.name)
+        if result["error"]:
+            raise ValidationError({"file": result["error"]})
+        return Response({"entries": result["entries"], "errors": result["errors"]})
 
 
 class ImageUploadSerializer(serializers.Serializer):

@@ -228,6 +228,19 @@ def delete_image(image: WebsiteImage) -> None:
     transaction.on_commit(_remove)
 
 
+def timeline_images(timeline) -> list[int]:
+    """Bilder einer Zeitleiste (in ihrer Reihenfolge, ohne Doppelte)."""
+    ids = [e.get("image") for e in timeline or [] if isinstance(e, dict)]
+    return list(dict.fromkeys(pk for pk in ids if isinstance(pk, int)))
+
+
+def _without_image(timeline, pk: int) -> list:
+    return [
+        {**e, "image": None} if isinstance(e, dict) and e.get("image") == pk else e
+        for e in timeline or []
+    ]
+
+
 def _image_markdown(key: str) -> re.Pattern:
     """Bild im Text: ``![Alt](bild:<key>)``, optional mit Titel."""
     return re.compile(
@@ -241,6 +254,7 @@ def _uses(image: WebsiteImage, t, *, published: bool) -> list[str]:
     image_id = t.published_image_id if published else t.image_id
     gallery = (t.published_gallery if published else t.gallery) or []
     body = t.published_body if published else t.body
+    timeline = t.published_timeline if published else t.timeline
     places = []
     if image_id == image.pk:
         places.append(
@@ -252,6 +266,8 @@ def _uses(image: WebsiteImage, t, *, published: bool) -> list[str]:
         places.append("im Text")
     if image.pk in gallery:
         places.append("Bilderkarussell")
+    if image.pk in timeline_images(timeline):
+        places.append("Zeitleiste")
     return places
 
 
@@ -289,6 +305,8 @@ def used_image_ids(website) -> set[int]:
         used.update(pk for pk in (t.image_id, t.published_image_id) if pk)
         used.update(t.gallery or [])
         used.update(t.published_gallery or [])
+        used.update(timeline_images(t.timeline))
+        used.update(timeline_images(t.published_timeline))
         for body in (t.body, t.published_body):
             for key in _IMAGE_KEY.findall(body or ""):
                 if key in keys:
@@ -347,6 +365,8 @@ def remove_image_references(image: WebsiteImage, user) -> list[WebsiteText]:
             t.published_gallery,
             t.body,
             t.published_body,
+            t.timeline,
+            t.published_timeline,
         )
         if t.image_id == image.pk:
             t.image = None
@@ -356,6 +376,8 @@ def remove_image_references(image: WebsiteImage, user) -> list[WebsiteText]:
         t.published_gallery = [pk for pk in (t.published_gallery or []) if pk != image.pk]
         t.body = pattern.sub("", t.body)
         t.published_body = pattern.sub("", t.published_body)
+        t.timeline = _without_image(t.timeline, image.pk)
+        t.published_timeline = _without_image(t.published_timeline, image.pk)
         after = (
             t.image_id,
             t.published_image_id,
@@ -363,6 +385,8 @@ def remove_image_references(image: WebsiteImage, user) -> list[WebsiteText]:
             t.published_gallery,
             t.body,
             t.published_body,
+            t.timeline,
+            t.published_timeline,
         )
         if before != after:
             t.updated_by = user
@@ -371,11 +395,17 @@ def remove_image_references(image: WebsiteImage, user) -> list[WebsiteText]:
     for r in WebsiteRevision.objects.filter(text__website=image.website):
         body = pattern.sub("", r.body)
         gallery = [pk for pk in (r.gallery or []) if pk != image.pk]
-        if body != r.body or gallery != (r.gallery or []) or r.image_id == image.pk:
-            r.body, r.gallery = body, gallery
+        timeline = _without_image(r.timeline, image.pk)
+        if (
+            body != r.body
+            or gallery != (r.gallery or [])
+            or timeline != (r.timeline or [])
+            or r.image_id == image.pk
+        ):
+            r.body, r.gallery, r.timeline = body, gallery, timeline
             if r.image_id == image.pk:
                 r.image = None
-            r.save(update_fields=["body", "gallery", "image"])
+            r.save(update_fields=["body", "gallery", "timeline", "image"])
     return changed
 
 
@@ -386,7 +416,12 @@ def image_in_revisions(image: WebsiteImage) -> list[str]:
     marker = f"bild:{image.key}"
     revisions = (
         WebsiteRevision.objects.filter(text__website=image.website)
-        .filter(Q(image=image) | Q(body__contains=marker) | Q(gallery__contains=[image.pk]))
+        .filter(
+            Q(image=image)
+            | Q(body__contains=marker)
+            | Q(gallery__contains=[image.pk])
+            | Q(timeline__contains=[{"image": image.pk}])
+        )
         .select_related("text")
         .order_by("-published_at")
     )
@@ -401,6 +436,7 @@ def publish(text: WebsiteText, user) -> WebsiteRevision:
     text.published_gallery = list(text.gallery or [])
     text.published_gallery_interval = text.gallery_interval
     text.published_gallery_random = text.gallery_random
+    text.published_timeline = list(text.timeline or [])
     text.published_at = now
     text.updated_by = user
     text.save()
@@ -413,6 +449,7 @@ def publish(text: WebsiteText, user) -> WebsiteRevision:
         gallery=list(text.gallery or []),
         gallery_interval=text.gallery_interval,
         gallery_random=text.gallery_random,
+        timeline=list(text.timeline or []),
         published_at=now,
         published_by=user,
     )
@@ -427,6 +464,7 @@ def unpublish(text: WebsiteText, user) -> None:
     text.published_body = ""
     text.published_image = None
     text.published_gallery = []
+    text.published_timeline = []
     text.published_at = None
     text.updated_by = user
     text.save()
@@ -444,6 +482,17 @@ def restore(text: WebsiteText, revision: WebsiteRevision, user) -> None:
         ).values_list("pk", flat=True)
     )
     text.gallery = [pk for pk in (revision.gallery or []) if pk in existing]
+    # Zeitleiste: Einträge bleiben, Bilder, die es nicht mehr gibt, fallen weg
+    known = set(
+        WebsiteImage.objects.filter(
+            website=text.website, pk__in=timeline_images(revision.timeline)
+        ).values_list("pk", flat=True)
+    )
+    text.timeline = [
+        {**e, "image": e.get("image") if e.get("image") in known else None}
+        for e in revision.timeline or []
+        if isinstance(e, dict)
+    ]
     text.gallery_interval = revision.gallery_interval
     text.gallery_random = revision.gallery_random
     text.updated_by = user
