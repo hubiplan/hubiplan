@@ -11,6 +11,7 @@ Die neuesten Änderungen stehen oben.
 November 2026:
 
 - Webseite: Die Chronik lässt sich als Zeitleiste pflegen, mit Ereignissen (Jahr oder Zeitraum), Kapiteln als Zwischenüberschriften und Excel-Import; auf Wunsch stehen die neuesten Einträge oben. Ein Ereignis kann bis zu sechs Bilder haben, wahlweise links, rechts, abwechselnd oder groß unter dem Text.
+- Webseite: Kopierte Bilder lassen sich mit Strg+V einfügen, in der Bilderverwaltung und bei der Bildauswahl.
 - Hilfe: Zu jeder Seite gibt es oben „Hilfe zu dieser Seite“ (oder die Taste ?), dazu Anleitungen Schritt für Schritt mit Bildern. Unter „Für dich“ stehen erste Schritte passend zu deinen Rechten zum Abhaken.
 - Wer hilft bei uns?: Die Einheit kann Ansprechpartner für Fragen zu HUBIplan eintragen und eigene Hinweise zu Anleitungen ergänzen.
 - Englisch: Die Oberfläche gibt es auch auf Englisch. Umstellen kannst du das unter Mein Konto › Profil.

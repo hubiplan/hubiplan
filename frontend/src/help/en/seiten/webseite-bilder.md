@@ -5,7 +5,7 @@ bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/bilder]
-stichworte: [image, photo, gallery, consent, author]
+stichworte: [image, photo, gallery, consent, author, clipboard]
 ---
 
-You upload and crop images for the website here. Mind the rights: for photos you need the photographer's permission and, for recognisable people, their consent. Each image needs a short alternative text.
+You upload and crop images for the website here. Instead of a file you can also use a copied image, such as a screenshot or an image from the browser: just press Ctrl+V, here or in the image picker. Mind the rights: for photos you need the photographer's permission and, for recognisable people, their consent. Each image needs a short alternative text.

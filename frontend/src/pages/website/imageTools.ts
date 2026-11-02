@@ -1,5 +1,5 @@
 // Hilfen für die Bilder der Webseite (Übersicht, Bearbeiten, Auswahl in images.tsx).
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ApiError } from '../../api/client.ts'
 import { contentApi } from '../../api/website.ts'
 import type { WebsiteImage } from '../../api/website.ts'
@@ -22,6 +22,8 @@ export function useImageUpload() {
   const org = useActiveOrg()
   const crop = useImageCrop()
   const [busy, setBusy] = useState(false)
+  // auch während des Zuschneidens, damit Strg+V nicht ein zweites Fenster öffnet
+  const [working, setWorking] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function upload(
@@ -29,31 +31,36 @@ export function useImageUpload() {
     extra: { department?: number | null; alt_text?: string } = {},
   ): Promise<WebsiteImage[]> {
     setError(null)
+    setWorking(true)
     const done: WebsiteImage[] = []
-    for (const file of files) {
-      const result = await crop.pickArea(file)
-      if (!result) continue
-      setBusy(true)
-      try {
-        done.push(
-          await contentApi.upload(org.id, {
-            file: result.file,
-            original: result.crop ? file : null,
-            crop: result.crop,
-            department: extra.department ?? null,
-            alt_text: extra.alt_text,
-          }),
-        )
-      } catch (err) {
-        setError(t('{name}: {x}', { name: file.name, x: errorMessage(err) }))
-      } finally {
-        setBusy(false)
+    try {
+      for (const file of files) {
+        const result = await crop.pickArea(file)
+        if (!result) continue
+        setBusy(true)
+        try {
+          done.push(
+            await contentApi.upload(org.id, {
+              file: result.file,
+              original: result.crop ? file : null,
+              crop: result.crop,
+              department: extra.department ?? null,
+              alt_text: extra.alt_text,
+            }),
+          )
+        } catch (err) {
+          setError(t('{name}: {x}', { name: file.name, x: errorMessage(err) }))
+        } finally {
+          setBusy(false)
+        }
       }
+    } finally {
+      setWorking(false)
     }
     return done
   }
 
-  return { upload, busy, error, dialog: crop.dialog }
+  return { upload, busy, working, error, dialog: crop.dialog }
 }
 
 /** Löschen mit Rückfrage; wird das Bild verwendet, nennt die zweite Rückfrage die Stellen. */
@@ -100,4 +107,43 @@ export function sortImages(images: WebsiteImage[], order: ImageOrder): WebsiteIm
       time(b.updated_at ?? b.uploaded_at) - time(a.updated_at ?? a.uploaded_at) || newest(a, b),
   }
   return [...images].sort(compare[order])
+}
+
+const PASTE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+/** Bilder aus der Zwischenablage (Ralf 02.11.: Strg+V), z. B. ein kopiertes Bildschirmfoto.
+ * Kopierte Bilder haben meist den Namen „image.png“; sie bekommen einen sprechenden. */
+export function pastedImages(data: DataTransfer | null): File[] {
+  const files = Array.from(data?.files ?? []).filter((f) => PASTE_TYPES.includes(f.type))
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-')
+  return files.map((f, i) =>
+    f.name && f.name !== 'image.png'
+      ? f
+      : new File(
+          [f],
+          `${t('zwischenablage')}-${stamp}${files.length > 1 ? `-${i + 1}` : ''}.${f.type.split('/')[1].replace('jpeg', 'jpg')}`,
+          {
+            type: f.type,
+          },
+        ),
+  )
+}
+
+/** Strg+V lädt kopierte Bilder hoch, solange `enabled`; Text einfügen bleibt unberührt. */
+export function usePasteImages(enabled: boolean, onFiles: (files: File[]) => void) {
+  const handler = useRef(onFiles)
+  useEffect(() => {
+    handler.current = onFiles
+  })
+  useEffect(() => {
+    if (!enabled) return
+    function paste(e: ClipboardEvent) {
+      const files = pastedImages(e.clipboardData)
+      if (!files.length) return
+      e.preventDefault()
+      handler.current(files)
+    }
+    document.addEventListener('paste', paste)
+    return () => document.removeEventListener('paste', paste)
+  }, [enabled])
 }

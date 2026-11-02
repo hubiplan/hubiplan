@@ -612,6 +612,45 @@ describe('Inhalte der Webseite', () => {
     expect(JSON.parse(String(sent.get('crop')))).toMatchObject({ width: 100, height: 100 })
   })
 
+  it('lädt ein kopiertes Bild mit Strg+V hoch', async () => {
+    if (!URL.createObjectURL) {
+      URL.createObjectURL = vi.fn(() => 'blob:test')
+      URL.revokeObjectURL = vi.fn()
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}texts/`]: () => ({ status: 200, body: { texts: [], units } }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+        [`POST ${base}images/`]: () => ({ status: 201, body: img(8, '') }),
+        [`GET ${base}images/8/`]: () => ({ status: 200, body: { ...img(8, ''), usage: [] } }),
+      },
+      '/webseite/bilder',
+    )
+    const user = userEvent.setup()
+    await screen.findByText(/Strg\+V/)
+    // Text einfügen lädt nichts hoch, ein kopiertes Bild schon
+    const paste = (files: File[]) => {
+      const event = new Event('paste', { bubbles: true, cancelable: true })
+      Object.defineProperty(event, 'clipboardData', { value: { files } })
+      document.dispatchEvent(event)
+      return event
+    }
+    expect(paste([]).defaultPrevented).toBe(false)
+    expect(paste([new File(['p'], 'image.png', { type: 'image/png' })]).defaultPrevented).toBe(true)
+    const crop = await screen.findByRole('dialog', { name: 'Bildausschnitt festlegen' })
+    // Während des Zuschneidens öffnet ein zweites Strg+V kein weiteres Fenster
+    expect(paste([new File(['q'], 'image.png', { type: 'image/png' })]).defaultPrevented).toBe(
+      false,
+    )
+    await user.click(within(crop).getByRole('button', { name: 'Unverändert übernehmen' }))
+    await waitFor(() =>
+      expect(calls.filter((c) => c.key === `POST ${base}images/`)).toHaveLength(1),
+    )
+    const form = calls.find((c) => c.key === `POST ${base}images/`)!.init!.body as FormData
+    expect((form.get('file') as File).name).toMatch(/^zwischenablage-.*\.png$/)
+  })
+
   it('löscht ein verwendetes Bild nach Rückfrage mit den Stellen', async () => {
     const image = img(3, 'Gruppenbild', { caption: 'Gruppenbild' })
     const calls = renderApp(
