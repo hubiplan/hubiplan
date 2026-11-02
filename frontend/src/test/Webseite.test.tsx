@@ -960,6 +960,17 @@ describe('Inhalte der Webseite', () => {
       },
       { timeout: 3000 },
     )
+    // Bildunterschriften: Standard aus, gilt für Bild und Karussell
+    const captions = screen.getByRole('checkbox', { name: /Bildunterschriften auf der Webseite/ })
+    expect(captions).not.toBeChecked()
+    await user.click(captions)
+    await waitFor(
+      () => {
+        const put = calls.filter((c) => c.key === `PUT ${base}texts/6/`).at(-1)
+        expect(put && JSON.parse(String(put.init?.body))).toEqual({ show_captions: true })
+      },
+      { timeout: 3000 },
+    )
   })
 
   it('zeigt bei der Bildauswahl einer Untereinheit zuerst deren Bilder', async () => {

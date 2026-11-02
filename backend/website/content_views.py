@@ -90,6 +90,7 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
                 "gallery": list(t.gallery or []),
                 "gallery_interval": t.gallery_interval,
                 "gallery_random": t.gallery_random,
+                "show_captions": t.show_captions,
                 "timeline": list(t.timeline or []),
                 "timeline_newest_first": t.timeline_newest_first,
                 "has_timeline": is_chronicle(t),
@@ -134,6 +135,7 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "gallery",
             "gallery_interval",
             "gallery_random",
+            "show_captions",
             "timeline",
             "timeline_newest_first",
         ]

@@ -288,6 +288,45 @@ class TestBilderkarussell:
         c.post(url(orgs["a"], f"texts/{pk}/revisions/{revision.pk}/restore/"))
         assert WebsiteText.objects.get(pk=pk).gallery_interval == 12
 
+    def test_bildunterschriften_nur_auf_wunsch(self, orgs, editor, api, site):
+        """Ralf 02.11.: Unterschrift unter Bild und Karussell wählbar, Standard aus."""
+        from django.test import Client
+
+        site.state = "public"
+        site.save()
+        c = api(editor)
+        a = c.post(url(orgs["a"], "images/"), {"file": png((60, 40)), "caption": "Fahne"}).json()
+        b = c.post(
+            url(orgs["a"], "images/"), {"file": png((60, 40)), "caption": "Zug", "alt_text": "B"}
+        ).json()
+        pk = c.get(url(orgs["a"], "texts/")).json()["texts"][0]["id"]
+        resp = c.put(
+            url(orgs["a"], f"texts/{pk}/"),
+            {"image": a["id"], "gallery": [a["id"], b["id"]]},
+            "application/json",
+        )
+        assert resp.json()["show_captions"] is False
+        c.post(url(orgs["a"], f"texts/{pk}/publish/"))
+        public = f"/api/public/site/v1/{site.public_key}/"
+        greeting = Client().get(public).json()["greeting"]
+        assert greeting["show_captions"] is False
+        assert greeting["image"]["caption"] == ""
+        assert [i["caption"] for i in greeting["gallery"]] == ["", ""]
+        # Der Alternativtext bleibt, auch wenn er aus der Unterschrift stammt
+        assert [i["alt"] for i in greeting["gallery"]] == ["Fahne", "B"]
+
+        resp = c.put(url(orgs["a"], f"texts/{pk}/"), {"show_captions": True}, "application/json")
+        assert resp.json()["has_changes"] is True
+        assert Client().get(public).json()["greeting"]["image"]["caption"] == ""  # Entwurf
+        c.post(url(orgs["a"], f"texts/{pk}/publish/"))
+        greeting = Client().get(public).json()["greeting"]
+        assert greeting["image"]["caption"] == "Fahne"
+        assert [i["caption"] for i in greeting["gallery"]] == ["Fahne", "Zug"]
+        # Ältere Fassung zurückholen bringt auch die Einstellung zurück
+        old = WebsiteText.objects.get(pk=pk).revisions.last()
+        c.post(url(orgs["a"], f"texts/{pk}/revisions/{old.pk}/restore/"))
+        assert WebsiteText.objects.get(pk=pk).show_captions is False
+
 
 class TestBildTrotzdemLoeschen:
     def test_stellen_genau_benannt(self, orgs, editor, api, site):

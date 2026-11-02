@@ -331,6 +331,7 @@ function TextForm({
     gallery: text.gallery ?? [],
     gallery_interval: text.gallery_interval ?? 7,
     gallery_random: text.gallery_random ?? false,
+    show_captions: text.show_captions ?? false,
     timeline: (text.timeline ?? []).map(normalizeEntry),
     timeline_newest_first: text.timeline_newest_first ?? false,
   })
@@ -375,6 +376,20 @@ function TextForm({
       setMessage(errorMessage(err))
     }
   }
+
+  // Gilt für das einzelne Bild und das Karussell (Ralf 02.11., Standard aus)
+  const captionsBox = (
+    <Checkbox
+      label={t('Bildunterschriften auf der Webseite zeigen')}
+      hint={
+        text.kind === 'page'
+          ? t('Gilt für das Bild oben auf der Seite.')
+          : t('Gilt für das einzelne Bild und für das Bilderkarussell.')
+      }
+      checked={v.show_captions}
+      onChange={(on) => set('show_captions', on)}
+    />
+  )
 
   return (
     <form
@@ -445,6 +460,7 @@ function TextForm({
         onChange={(id) => set('image', id)}
         onImagesChanged={reloadImages}
       />
+      {text.kind === 'page' && captionsBox}
       {text.has_timeline && (
         <TimelineEditor
           textId={text.id}
@@ -472,6 +488,7 @@ function TextForm({
           onImagesChanged={reloadImages}
         />
       )}
+      {text.kind !== 'page' && captionsBox}
       {message && <Alert kind="error">{message}</Alert>}
       <div className="button-row">
         <button
