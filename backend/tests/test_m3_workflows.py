@@ -15,6 +15,7 @@ from members.models import (
 from members.workflows import purge_expired
 from organizations.models import Department, PlatformSettings
 
+from .factories import found
 from .test_m2_members import admit, make_types
 
 pytestmark = pytest.mark.django_db
@@ -58,6 +59,7 @@ class TestArtWechseln:
                 f"/api/orgs/{orgs['b'].pk}/members/admit/",
                 {
                     "person": member["person_id"],
+                    **found(member["person_id"]),
                     "member_type": types["b"]["passiv"].pk,
                     "entry_date": "2020-01-01",
                     "email": "e@example.org",
@@ -154,6 +156,7 @@ class TestWechselanfrage:
             f"/api/orgs/{orgs['b'].pk}/transfers/",
             {
                 "person": member["person_id"],
+                **found(member["person_id"]),
                 "member_type": types["b"]["aktiv"].pk,
                 "entry_date": "2024-07-01",
                 "message": "Bitte um Freigabe",
@@ -241,6 +244,7 @@ class TestWechselanfrage:
             f"/api/orgs/{orgs['b'].pk}/transfers/",
             {
                 "person": member["person_id"],
+                **found(member["person_id"]),
                 "member_type": types["b"]["aktiv"].pk,
                 "entry_date": "2024-07-01",
                 "email": "e@example.org",
@@ -289,6 +293,7 @@ class TestLoeschfrist:
             f"/api/orgs/{orgs['b'].pk}/members/admit/",
             {
                 "person": member["person_id"],
+                **found(member["person_id"]),
                 "member_type": types["b"]["passiv"].pk,
                 "entry_date": "2020-01-01",
                 "email": "e@example.org",

@@ -128,7 +128,9 @@ describe('Aufnahme', () => {
     const body = JSON.parse(String(admit.init?.body))
     expect(body.person).toBe(42)
     expect(body.member_type).toBe(3)
-    expect(body.last_name).toBeUndefined()
+    // Die Angaben aus der Suche gehen mit: die ID allein reicht dem Server nicht
+    expect(body.last_name).toBe('Muster')
+    expect(body.birth_date).toBe('1980-05-17')
   })
 })
 

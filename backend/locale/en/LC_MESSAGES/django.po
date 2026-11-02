@@ -3261,6 +3261,9 @@ msgstr "The date of birth is after joining on {first:%d/%m/%Y}."
 msgid "Unbekannte Person."
 msgstr "Unknown person."
 
+msgid "Pflichtfeld."
+msgstr "Required field."
+
 msgid ""
 "Stammdaten und Kontakt pflegt die ausgegliederte Untereinheit auf ihrer "
 "Instanz. Bitte eine Korrektur vorschlagen."
@@ -4373,3 +4376,11 @@ msgstr ""
 
 msgid "Das Datum des Bescheids liegt in der Zukunft."
 msgstr "The date of the notice is in the future."
+
+msgid ""
+"Für diese Instanz wartet ein Notfallwechsel der Schlüssel. Die Anmeldung "
+"über sie ruht, bis die Plattformverwaltung ihn bestätigt."
+msgstr ""
+"An emergency key change is waiting for confirmation for this instance. "
+"Signing in through it is paused until the platform administration confirms "
+"it."

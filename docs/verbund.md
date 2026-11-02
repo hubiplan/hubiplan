@@ -94,9 +94,11 @@ und auf Knopfdruck unter Plattform › Einstellungen › Verbund (Bestätigungsw
   mit einem später gestohlenen Schlüssel nicht mehr lesbar.
 - **Notfall** (Schlüssel vermutlich gestohlen): Pakete unterschreibt und öffnet nur noch
   der neue Schlüssel; der alte unterschreibt 30 Tage lang nur noch die Ankündigung. Die
-  Gegenstelle übernimmt die neuen Schlüssel erst, wenn dort ein Vorstand den
-  Fingerabdruck eingibt, den wir ihm auf anderem Weg nennen (unter Verbund bei der
-  Kopplung; gilt für alle Kopplungen mit dieser Instanz). Bis dahin ruht der Austausch.
+  Gegenstelle übernimmt die neuen Schlüssel erst, wenn dort die Plattformverwaltung den
+  Fingerabdruck eingibt, den wir ihr auf anderem Weg nennen (gilt für alle Kopplungen mit
+  dieser Instanz). Bis dahin ruht der Austausch ganz: Die Gegenstelle nimmt weder mit dem
+  alten noch mit dem neuen Schlüssel etwas an (Antwort 423, später erneut), schickt selbst
+  nichts und lässt keine Verbundanmeldung über uns zu (Audit 02.11. GA-S02).
   Solange ein Notfallwechsel wartet, lehnt die Gegenstelle geplante Wechsel ab: Wer nur
   den alten Schlüssel gestohlen hat, kann sich nicht dazwischen drängen.
 - Gehäuft ungültige Unterschriften einer bekannten Instanz (ab 5 in einer Stunde) lösen

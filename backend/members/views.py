@@ -446,7 +446,8 @@ class AdmitView(_ClubMixin, APIView):
                 pk=claim.result.get("membership", 0),
             )
             return Response(member_detail(membership, self.org), status=status.HTTP_200_OK)
-        membership = services.admit(self.org, data.validated_data)
+        # Vorhandene Person: gemeinsame Anschrift nicht überschreiben (Audit 02.11. GA-S01)
+        membership = services.admit(self.org, data.validated_data, keep_contact=True)
         claim.remember({"membership": membership.pk})
         record(
             self.org,
