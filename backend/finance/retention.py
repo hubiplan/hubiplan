@@ -119,10 +119,19 @@ def _purge_documents(org, start, end) -> dict[str, int]:
     counts["Zählprotokolle"] = n
 
     n = 0
-    for st in BankStatement.objects.filter(
+    purged = BankStatement.objects.filter(
         organization=org, date_to__gte=start, date_to__lte=end
-    ).exclude(source=""):
-        _delete_file(st.source)
+    ).exclude(source="")
+    for st in purged:
+        # Mehrere Auszüge können dieselbe Datei teilen (BP-S01): erst löschen, wenn kein
+        # Auszug außerhalb dieses Jahres sie noch braucht
+        shared = (
+            BankStatement.objects.filter(organization=org, source=st.source.name)
+            .exclude(pk__in=purged.values("pk"))
+            .exists()
+        )
+        if not shared:
+            _delete_file(st.source)
         st.source = ""
         st.save(update_fields=["source"])
         n += 1
@@ -141,7 +150,7 @@ def _purge_documents(org, start, end) -> dict[str, int]:
 def _anonymize_records(org, start, end) -> dict[str, int]:
     from audit.log import OBJECT_TYPES
     from audit.models import AuditEntry
-    from billing.models import Dunning, Invoice
+    from billing.models import Dunning, Invoice, InvoiceLine
 
     from .models import (
         BankLine,
@@ -170,9 +179,18 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
         Invoice.objects.filter(organization=org, date__gte=start, date__lte=end), "invoice"
     )
     Dunning.objects.filter(invoice__in=invoices).update(text="")
+    # Mitgliedsrechnungen brauchen sonst ein Mitglied (Constraint rechnung_empfaenger)
+    invoices.filter(recipient_kind=Invoice.Recipient.MEMBER).update(
+        recipient_kind=Invoice.Recipient.ANONYMIZED, membership=None
+    )
     counts["Rechnungen"] = invoices.update(
         recipient_name=ANON, recipient_address="", recipient_email="", note="", membership=None
     )
+    # Posten nennen in Sammelrechnungen Mitglieder mit Namen (Audit 02.11. BP-F03)
+    counts["Rechnungsposten"] = InvoiceLine.objects.filter(
+        invoice__in=invoices, membership__isnull=False
+    ).update(text=ANON, detail="", membership=None)
+    InvoiceLine.objects.filter(invoice__in=invoices).exclude(detail="").update(detail="")
     counts["Quittungen"] = ids(
         CashReceipt.objects.filter(organization=org, booking__in=bookings), "cashreceipt"
     ).update(

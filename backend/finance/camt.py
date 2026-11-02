@@ -24,6 +24,10 @@ from django.utils.translation import gettext
 MAX_FILE = 10 * 1024 * 1024  # 10 MB je Upload
 MAX_XML = 20 * 1024 * 1024  # 20 MB entpackt je Datei
 MAX_FILES = 100  # Auszüge je ZIP
+# Gesamtgrenzen je Upload (Audit 02.11. BP-S01): entpackt, Auszüge und Umsätze
+MAX_TOTAL = 50 * 1024 * 1024
+MAX_STATEMENTS = 200
+MAX_LINES = 50_000
 
 
 class CamtError(ValueError):
@@ -340,6 +344,7 @@ def parse(data: bytes) -> list[Statement]:
                 gettext("Höchstens {MAX_FILES} Auszüge je ZIP-Archiv.").format(MAX_FILES=MAX_FILES)
             )
         result = []
+        total = 0
         for info in sorted(names, key=lambda i: i.filename):
             if info.file_size > MAX_XML:
                 raise CamtError(
@@ -351,9 +356,21 @@ def parse(data: bytes) -> list[Statement]:
                 raise CamtError(
                     gettext("{filename} ist entpackt zu groß.").format(filename=info.filename)
                 )
+            total += len(content)
+            if total > MAX_TOTAL:
+                raise CamtError(gettext("Das ZIP-Archiv ist entpackt zu groß."))
             result += _parse_xml(content)
+            _check_counts(result)
         return result
-    return _parse_xml(data)
+    return _check_counts(_parse_xml(data))
+
+
+def _check_counts(statements: list[Statement]) -> list[Statement]:
+    if len(statements) > MAX_STATEMENTS:
+        raise CamtError(gettext("Höchstens {n} Kontoauszüge je Datei.").format(n=MAX_STATEMENTS))
+    if sum(len(st.lines) for st in statements) > MAX_LINES:
+        raise CamtError(gettext("Höchstens {n} Umsätze je Datei.").format(n=MAX_LINES))
+    return statements
 
 
 # Rechnungsnummern wie R2026-0007 oder R2025/26-0012 im Verwendungszweck (auch mit Leerzeichen)

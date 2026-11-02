@@ -170,7 +170,7 @@ export interface InvoiceRow {
   number: string
   status: InvoiceStatus
   status_label: string
-  recipient_kind: 'member' | 'department' | 'club'
+  recipient_kind: 'member' | 'department' | 'club' | 'anonymized'
   recipient_name: string
   recipient_email: string
   membership: number | null

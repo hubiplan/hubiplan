@@ -253,6 +253,14 @@ def cancel(receipt: CashReceipt, user, reason: str) -> CashReceipt:
         raise ValidationError({"reason": gettext("Bitte einen Grund für das Storno angeben.")})
     org = receipt.organization
     original = receipt.booking
+    if Booking.objects.filter(cancels=original).exists():
+        # Schon anderweitig storniert (Altfall vor dem Audit 02.11. BP-F01): kein 500
+        raise ValidationError(
+            gettext(
+                "Die Buchung zu dieser Quittung ist schon storniert. Bitte die Kasse prüfen "
+                "und die Quittung nicht noch einmal stornieren."
+            )
+        )
     today = timezone.localdate()
     services.ensure_open(org, date=today)
     # Abgeschlossenes Ursprungsjahr: Gegenbeleg im laufenden Jahr, das alte Jahr bleibt

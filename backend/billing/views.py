@@ -34,7 +34,7 @@ from organizations.terms import department_terms, fill
 from outbox import mail
 
 from . import pdf, sepa, services, units
-from .archive import archived_pdf
+from .archive import archived_pdf, documents_purged
 from .models import (
     AgeRate,
     DebitItem,
@@ -335,8 +335,33 @@ def send_invoice(invoice: Invoice) -> bool:
     return sent
 
 
+def combined_pdf(invoices: list[Invoice]) -> bytes:
+    """Mehrere Rechnungen in einem PDF, jede in ihrer ausgegebenen Fassung (Audit 02.11.
+    BP-F02). Nach Fristablauf gelöschte fehlen; Entwürfe werden frisch erzeugt."""
+    import io
+
+    import pypdfium2 as pdfium
+
+    parts = [archived_pdf(i) for i in invoices if i.issued_pdf or not documents_purged(i)]
+    if len(parts) == 1:
+        return parts[0]
+    out = pdfium.PdfDocument.new()
+    try:
+        for data in parts:
+            doc = pdfium.PdfDocument(data)
+            try:
+                out.import_pages(doc)
+            finally:
+                doc.close()
+        buffer = io.BytesIO()
+        out.save(buffer)
+        return buffer.getvalue()
+    finally:
+        out.close()
+
+
 def pdf_response(invoices: list[Invoice], name: str, download: bool) -> HttpResponse:
-    response = HttpResponse(pdf.render(invoices), content_type="application/pdf")
+    response = HttpResponse(combined_pdf(invoices), content_type="application/pdf")
     disposition = "attachment" if download else "inline"
     response["Content-Disposition"] = f'{disposition}; filename="{name}"'
     response["Cache-Control"] = "private, no-store"
@@ -1340,9 +1365,8 @@ class ReceivedInvoicePdfView(ReceivedInvoicesMixin, APIView):
         with tenant_context(fed.pk, request.user.pk):
             _, qs = self.federation_qs()
             invoice = get_object_or_404(qs, pk=pk)
-            return pdf_response(
-                [invoice], pdf.filename(invoice), request.query_params.get("download") == "1"
-            )
+            # Ausgegebene Fassung wie beim Dachverband selbst (Audit 02.11. BP-F02)
+            return invoice_pdf_response(invoice, request.query_params.get("download") == "1")
 
 
 # --- SEPA-Lastschrift ---

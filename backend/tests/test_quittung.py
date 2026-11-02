@@ -372,6 +372,58 @@ class TestRechnung:
         assert offen.status == Invoice.Status.OPEN and offen.outstanding == Decimal("60.00")
         assert Booking.objects.filter(pk=done["booking"]).exists()
 
+    def _paid_with_receipt(self, c, q, offen):
+        r = c.post(
+            f"{q['url']}from-invoice/{offen.pk}/", {"account": q["cash"]}, content_type=JSON
+        ).json()
+        sign(c, q, r["id"], "treasurer")
+        sign(c, q, r["id"], "counterparty")
+        done = finalize(c, q, r["id"]).json()
+        return r, done, Payment.objects.get(invoice=offen)
+
+    @pytest.mark.parametrize("next_day", [False, True])
+    def test_zahlung_mit_quittung_nicht_einfach_entfernen(self, club, c, q, offen, next_day):
+        """Audit 02.11. BP-F01: am Erfassungstag und danach nur über das Quittungsstorno."""
+        r, done, payment = self._paid_with_receipt(c, q, offen)
+        if next_day:
+            Booking.objects.filter(pk=done["booking"]).update(
+                created_at=timezone.now() - datetime.timedelta(days=1)
+            )
+        resp = c.delete(f"/api/orgs/{club.pk}/billing/payments/{payment.pk}/")
+        assert resp.status_code == 400
+        assert "Quittung" in str(resp.json())
+        assert Payment.objects.filter(pk=payment.pk).exists()
+        assert not Booking.objects.filter(cancels_id=done["booking"]).exists()
+        offen.refresh_from_db()
+        assert offen.status == Invoice.Status.PAID
+        # Der vorgesehene Weg geht weiter
+        resp = c.post(
+            f"{q['url']}{r['id']}/cancel/", {"reason": "falsche Person"}, content_type=JSON
+        )
+        assert resp.status_code == 200, resp.json()
+
+    def test_storno_bei_schon_stornierter_buchung_ohne_500(self, club, c, q, offen):
+        r, done, payment = self._paid_with_receipt(c, q, offen)
+        # Altfall: Buchung wurde vor der Korrektur auf anderem Weg storniert
+        original = Booking.objects.get(pk=done["booking"])
+        Booking.objects.create(
+            organization=club,
+            year=original.year,
+            number=original.number + 1000,
+            date=original.date,
+            kind=Booking.Kind.EXPENSE,
+            amount=original.amount,
+            account=original.account,
+            category=original.category,
+            text="Storno (Altfall)",
+            cancels=original,
+        )
+        resp = c.post(
+            f"{q['url']}{r['id']}/cancel/", {"reason": "falsche Person"}, content_type=JSON
+        )
+        assert resp.status_code == 400
+        assert "schon storniert" in str(resp.json())
+
 
 class TestApp:
     def test_quittung_aus_der_app(self, club, q, api, bestand):
