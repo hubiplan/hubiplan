@@ -446,7 +446,15 @@ class PreviewLinkSerializer(serializers.Serializer):
 
 def preview_url(website: Website, token: str) -> str | None:
     base = site_url(website)
-    return f"{base}vorschau?schluessel={quote(token)}" if base else None
+    if not base:
+        return None
+    url = f"{base}vorschau?schluessel={quote(token)}"
+    if settings.WEBSITE_PUBLIC_URL:
+        # Testserver: eine Adresse für alle Webseiten; der Link nennt, welche gemeint ist
+        domain = website.domains.order_by("-is_primary", "pk").first()
+        if domain:
+            url += f"&seite={quote(domain.hostname)}"
+    return url
 
 
 class PreviewLinkListView(_WebsiteMixin, APIView):

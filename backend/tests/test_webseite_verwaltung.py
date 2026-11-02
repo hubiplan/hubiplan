@@ -237,6 +237,15 @@ class TestVorschau:
         assert services.exchange(site, data["token"]) is None
         assert c.get(url(orgs["a"])).json()["website"]["preview_links"] == []
 
+    def test_link_nennt_webseite_auf_dem_testserver(self, orgs, board_a, api, site, settings):
+        """Testserver: alle Webseiten unter einer Adresse, der Link nennt die Webseite."""
+        settings.WEBSITE_PUBLIC_URL = "https://test.example.org/webseite/"
+        c = api(board_a)
+        c.post(url(orgs["a"], "domains/"), {"hostname": "www.example.org"})
+        data = c.post(url(orgs["a"], "preview/")).json()
+        assert data["url"].startswith("https://test.example.org/webseite/vorschau?schluessel=")
+        assert data["url"].endswith("&seite=www.example.org")
+
     def test_abgelaufener_link(self, orgs, site):
         link, token = PreviewLink.create(site, 1, "", None)
         link.expires_at = timezone.now() - timezone.timedelta(minutes=1)
