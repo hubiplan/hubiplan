@@ -79,8 +79,9 @@ def pr_nummern(von: str, bis: str) -> list[int]:
     bereich = f"{von}..{bis}" if von else bis
     nummern = []
     for zeile in git("log", "--first-parent", "--reverse", "--format=%s", bereich).splitlines():
-        m = re.search(r"\(#(\d+)\)\s*$", zeile)
-        if m:
+        # Squash: „Titel (#12)“; Merge-Commit: „Merge pull request #12 from …“
+        m = re.search(r"\(#(\d+)\)\s*$", zeile) or re.match(r"Merge pull request #(\d+)\b", zeile)
+        if m and int(m.group(1)) not in nummern:
             nummern.append(int(m.group(1)))
     return nummern
 
