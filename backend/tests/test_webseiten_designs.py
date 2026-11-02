@@ -87,9 +87,9 @@ class TestDesigns:
         colors = designs.resolve("classic", self.PALETTE, roles)
         assert colors["footer"] == {"color": "#c9a227", "on_color": "#1d2421"}
         assert colors["header"]["color"] == "#ffffff"
-        # Platz ohne Farbe: Vorgabe des Designs
+        # Platz ohne Farbe: Vorgabe des Designs (Klassisch: Fuß in der Hauptfarbe)
         colors = designs.resolve("classic", self.PALETTE, {"classic": {"footer": 4}})
-        assert colors["footer"]["color"] == "#1d2421"
+        assert colors["footer"]["color"] == "#1f4e2c"
 
     def test_unbekanntes_design_wie_klassisch(self):
         assert designs.resolve("gibtsnicht", self.PALETTE) == designs.resolve(
