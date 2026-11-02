@@ -89,8 +89,11 @@ Kontoinhabern läuft deshalb in HUBIplan selbst.
 - **Kopie des Hauptschlüssels:** Das Backup legt bei jedem Lauf `datenschluessel.age`
   neben die Backups, verschlüsselt mit dem öffentlichen Backup-Schlüssel. Sie geht mit
   restic an den zweiten Ort. Lesen kann sie nur, wer den privaten Backup-Schlüssel hat:
-  `age -d -i hubiplan-backup.key datenschluessel.age`. Zusätzlich den Hauptschlüssel im
-  Passwortmanager ablegen.
+  `age -d -i hubiplan-backup.key datenschluessel.age`. Ohne öffentlichen Backup-Schlüssel
+  (alte Form) heißt die Kopie `datenschluessel.enc` und ist mit der Backup-Passphrase
+  verschlüsselt. Gelingt die Kopie nicht, gilt das Backup als **unvollständig**
+  (Alarm-Mail, alte Backups bleiben). Die Kopie wird nie als „altes Backup“ gelöscht.
+  Zusätzlich den Hauptschlüssel im Passwortmanager ablegen.
   > **Wichtig:** Ohne Hauptschlüssel sind die verschlüsselten Dateien auf dem Server und
   > in allen Backups verloren.
 - **Austauschbare Quelle:** `DATA_KEY_PROVIDERS` (Standard `file`). Ein externer
