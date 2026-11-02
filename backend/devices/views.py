@@ -28,6 +28,7 @@ from accounts.language import MyLanguageView
 from core.i18n import available, user_language
 from core.ratelimit import client_ip, too_many
 from core.tenancy import set_rls
+from core.version import running_version
 from portal import services as portal_services
 from portal.models import LoginLink
 from portal.models import hash_token as link_hash
@@ -140,6 +141,8 @@ class InstanceView(APIView):
         return Response(
             {
                 "product": "HUBIplan",
+                # Programmversion nur zur Anzeige; Funktionen richten sich nach api_version
+                "version": running_version(),
                 "api_version": API_VERSION,
                 "min_app_version": MIN_APP_VERSION,
                 "url": settings.FRONTEND_URL,

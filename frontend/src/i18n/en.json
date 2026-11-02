@@ -4694,5 +4694,7 @@
   "rechts": "right",
   "groß unter dem Text": "large below the text",
   "Kopierte Bilder lassen sich mit Strg+V einfügen.": "Copied images can be pasted with Ctrl+V.",
-  "zwischenablage": "clipboard"
+  "zwischenablage": "clipboard",
+  "Laufende Version: {x}": "Running version: {x}",
+  "Änderungen in dieser Version": "Changes in this version"
 }

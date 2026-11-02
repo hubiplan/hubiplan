@@ -5,6 +5,7 @@
 #
 #   deploy/deploy.sh               # aktueller Commit (HEAD)
 #   deploy/deploy.sh origin/main   # bestimmter Branch/Commit
+#   deploy/deploy.sh v2026.11.0    # Release (Tag), siehe docs/releases.md
 #
 # Echtserver (Dogado, HestiaCP davor; siehe docs/echtbetrieb.md):
 #   SSH=/mnt/c/Windows/System32/OpenSSH/ssh.exe DEPLOY_HOST=administrator@dogado DEPLOY_SUDO=1 \
@@ -92,5 +93,40 @@ NEU="$DIR.neu"
 git archive --format=tar "$REF" | "$SSH" "${SSH_ARGS[@]}" "$HOST" "${SUDO}tar -x --no-same-owner -C '$NEU'"
 # Welche Fassung läuft (für deploy/zurueck.sh und zur Anzeige)
 git rev-parse "$REF" | "$SSH" "${SSH_ARGS[@]}" "$HOST" "${SUDO}tee '$NEU/.fassung' > /dev/null"
+# Versionsnummer (docs/releases.md): Release-Tag „v2026.11.0“ → „2026.11.0“; Stand nach dem
+# letzten Release → „2026.11.0+3.0a5d21e“ (3 Commits danach); ohne Release nur der Commit.
+version_von() {
+    local tag
+    if tag=$(git describe --tags --exact-match --match 'v[0-9]*' "$1" 2> /dev/null); then
+        echo "${tag#v}"
+    elif tag=$(git describe --tags --abbrev=7 --match 'v[0-9]*' "$1" 2> /dev/null); then
+        # v2026.11.0-3-g0a5d21e
+        local rest="${tag%-g*}"
+        echo "${rest%-*}+${rest##*-}.${tag##*-g}" | sed 's/^v//'
+    else
+        git rev-parse --short=7 "$1"
+    fi
+}
+VERSION=$(version_von "$REF")
+case "$VERSION" in
+    *[!A-Za-z0-9.+]*) echo "Abbruch: unerwartete Versionsnummer „$VERSION“." >&2; exit 1 ;;
+esac
+echo "$VERSION" | "$SSH" "${SSH_ARGS[@]}" "$HOST" "${SUDO}tee '$NEU/.version' > /dev/null"
+echo "Version $VERSION"
 
-"$SSH" "${SSH_ARGS[@]}" "$HOST" "cd '$NEU' && ${SUDO}env$SETUP_ENV ZIEL='$DIR' sh deploy/server-setup.sh"
+# Rollout-Protokoll neben dem Programmordner (bleibt beim Ordnertausch erhalten):
+# eine Zeile je Lauf mit Zeit (UTC), Commit, Version und Ergebnis
+protokoll() {
+    local zeile
+    zeile="$(date -u +%Y-%m-%dT%H:%M:%SZ) $(git rev-parse --short=7 "$REF") $VERSION $1"
+    echo "$zeile" | "$SSH" "${SSH_ARGS[@]}" "$HOST" "${SUDO}tee -a '$DIR.protokoll' > /dev/null" || \
+        echo "Warnung: Rollout-Protokoll $DIR.protokoll nicht geschrieben." >&2
+}
+
+if "$SSH" "${SSH_ARGS[@]}" "$HOST" "cd '$NEU' && ${SUDO}env$SETUP_ENV ZIEL='$DIR' sh deploy/server-setup.sh"; then
+    protokoll ausgerollt
+else
+    rc=$?
+    protokoll "fehlgeschlagen ($rc)"
+    exit "$rc"
+fi

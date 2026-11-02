@@ -165,6 +165,12 @@ if [ -f .fassung ]; then
     mkdir -p frontend/public/lizenzen
     cp .fassung frontend/public/lizenzen/fassung.txt
 fi
+# Versionsnummer aus deploy.sh (docs/releases.md) für Oberfläche und Backend
+if [ -f .version ]; then
+    mkdir -p frontend/public/lizenzen
+    cp .version frontend/public/lizenzen/version.txt
+    cp .version backend/hubiplan_version.txt
+fi
 
 # 1. Bauen, während die bisherige Fassung weiterläuft
 images_sichern

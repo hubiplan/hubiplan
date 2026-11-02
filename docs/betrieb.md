@@ -460,6 +460,9 @@ Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen.
 - Vor dem Ausrollen lokal testen: `BACKUP_TEST=1 scripts/test.sh` (in WSL).
   Tests laufen nie auf dem Server; höchstens zwei Testläufe
   gleichzeitig, jeder höchstens 8 Kerne (`scripts/testplatz.sh`).
+- Wer HUBIplan selbst betreibt, rollt am besten Releases aus (`deploy/deploy.sh v2026.11.0`)
+  und liest vorher in [CHANGELOG.md](../CHANGELOG.md) den Abschnitt „Für Betreiber“.
+  Versionen, Changelog und Rollout-Protokoll: [releases.md](releases.md).
 
 ## Ausrollen mit Rückweg
 

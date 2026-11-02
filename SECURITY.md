@@ -29,8 +29,9 @@ Hilfreich sind:
 
 ## Unterstützte Fassungen
 
-HUBIplan wird fortlaufend aus `main` ausgerollt; es gibt keine Release-Zweige. Korrekturen
-gibt es für den aktuellen Stand von `main`. Wer HUBIplan selbst betreibt, sollte regelmäßig
+HUBIplan wird fortlaufend aus `main` entwickelt und in Releases (`JJJJ.MM.N`, siehe
+[docs/releases.md](docs/releases.md)) veröffentlicht; es gibt keine Release-Zweige.
+Korrekturen gibt es für das neueste Release und den aktuellen Stand von `main`. Wer HUBIplan selbst betreibt, sollte regelmäßig
 aktualisieren ([docs/betrieb.md](docs/betrieb.md#updates)).
 
 ## Umfang

@@ -19,6 +19,27 @@
 # scripts/testplatz.sh und bindet alle Container an dessen Kerne.
 set -euo pipefail
 
+# Release-Commit (docs/releases.md): Ändert ein Commit gegenüber seinem schon getesteten
+# Vorgänger nur CHANGELOG.md/CHANGELOG.en.md, gilt er ohne neuen Lauf als getestet. Programm
+# und Tests sind dann dieselben; so belegt ein Release keinen Testplatz.
+STATE="${HUBIPLAN_TESTED_FILE:-$HOME/.local/state/hubiplan/tested-trees}"
+nur_aenderungshinweise() {
+    local c p dateien
+    c=$(git rev-parse --verify --quiet "$1^{commit}" 2> /dev/null) || return 1
+    p=$(git rev-parse --verify --quiet "$c^1^{commit}" 2> /dev/null) || return 1
+    # Merge-Commits nicht (deren zweiter Elternteil ist ungeprüft)
+    git rev-parse --verify --quiet "$c^2" > /dev/null 2>&1 && return 1
+    grep -q "^$(git rev-parse "$p^{tree}") " "$STATE" 2> /dev/null || return 1
+    dateien=$(git diff --name-only "$p" "$c")
+    [ -n "$dateien" ] && ! grep -qvxE 'CHANGELOG(\.en)?\.md' <<< "$dateien"
+}
+if [ "$#" -le 1 ] && nur_aenderungshinweise "${1:-HEAD}"; then
+    c=$(git rev-parse "${1:-HEAD}^{commit}")
+    echo "$(git rev-parse "$c^{tree}") $(git rev-parse --short "$c") $(date -Iseconds) nur-aenderungshinweise" >> "$STATE"
+    echo "Alles grün: $(git rev-parse --short "$c") ändert gegenüber dem getesteten Vorgänger nur die Änderungshinweise und ist als getestet vermerkt."
+    exit 0
+fi
+
 if [ -z "${TESTPLATZ:-}" ]; then
     exec "$(dirname "$0")/testplatz.sh" "$0" "$@"
 fi
@@ -321,7 +342,6 @@ if [ "$#" -gt 0 ]; then
     RESULT_OK=1
     exit 0
 fi
-STATE="${HUBIPLAN_TESTED_FILE:-$HOME/.local/state/hubiplan/tested-trees}"
 mkdir -p "$(dirname "$STATE")"
 echo "$TREE $SHA $(date -Iseconds)" >> "$STATE"
 echo "Alles grün: $SHA ist als getestet vermerkt ($(($(date +%s) - start)) s gesamt)."

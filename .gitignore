@@ -27,6 +27,8 @@ backend/media/
 backend/private/
 dump.rdb
 frontend/public/lizenzen/
+# Versionsnummer, legt deploy/server-setup.sh beim Ausrollen ab
+backend/hubiplan_version.txt
 
 # Übersetzungen: .mo entsteht beim Bauen aus der .po
 *.mo

@@ -65,6 +65,33 @@ describe('Lizenzaudit 29.10. Teil d', () => {
     )
   })
 
+  it('Releases: Version der laufenden Fassung mit Link auf die Änderungen', async () => {
+    fakeApi({ [SESSION]: loggedOut })
+    const api = vi.mocked(globalThis.fetch).getMockImplementation()!
+    vi.mocked(globalThis.fetch).mockImplementation(async (input, init) =>
+      String(input) === '/lizenzen/version.txt' ? new Response('2026.11.0\n') : api(input, init),
+    )
+    renderAt('/lizenz')
+    expect(await screen.findByText(/Laufende Version: 2026\.11\.0/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Änderungen in dieser Version' })).toHaveAttribute(
+      'href',
+      'https://github.com/hubiplan/hubiplan/releases/tag/v2026.11.0',
+    )
+  })
+
+  it('Releases: Zwischenstand ohne Link auf ein Release', async () => {
+    fakeApi({ [SESSION]: loggedOut })
+    const api = vi.mocked(globalThis.fetch).getMockImplementation()!
+    vi.mocked(globalThis.fetch).mockImplementation(async (input, init) =>
+      String(input) === '/lizenzen/version.txt'
+        ? new Response('2026.11.0+3.0a5d21e\n')
+        : api(input, init),
+    )
+    renderAt('/lizenz')
+    expect(await screen.findByText(/Laufende Version: 2026\.11\.0\+3\.0a5d21e/)).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Änderungen in dieser Version' })).toBeNull()
+  })
+
   it('F02: Fußzeile verlinkt „Lizenzen“', async () => {
     fakeApi({ [SESSION]: loggedOut })
     renderAt('/anmelden')

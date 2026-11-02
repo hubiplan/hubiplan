@@ -329,30 +329,37 @@ const LICENSE_FILES = {
 const SOURCE_REPO = 'https://github.com/hubiplan/hubiplan'
 
 /** Commit der laufenden Fassung; deploy/server-setup.sh legt ihn beim Ausrollen ab. */
-const VERSION_FILE = '/lizenzen/fassung.txt'
+const COMMIT_FILE = '/lizenzen/fassung.txt'
+const COMMIT_PATTERN = /^[0-9a-f]{40}$/
+/** Versionsnummer der laufenden Fassung (docs/releases.md), ebenfalls aus server-setup.sh. */
+const VERSION_FILE = '/lizenzen/version.txt'
+/** Release „2026.11.0“ oder Stand danach „2026.11.0+3.0a5d21e“ oder nur der Commit. */
+const VERSION_PATTERN = /^[0-9A-Za-z.+]{1,40}$/
+const RELEASE_PATTERN = /^\d{4}\.\d{1,2}\.\d+$/
 
-/** Liest den Commit der laufenden Fassung; ohne Datei (z. B. Entwicklung) null. */
-function useRunningCommit(): string | null {
-  const [commit, setCommit] = useState<string | null>(null)
+/** Liest eine kurze Textdatei der laufenden Fassung; ohne Datei (z. B. Entwicklung) null. */
+function useRunningFile(path: string, pattern: RegExp): string | null {
+  const [value, setValue] = useState<string | null>(null)
   useEffect(() => {
     let active = true
-    fetch(VERSION_FILE)
+    fetch(path)
       .then((resp) => (resp.ok ? resp.text() : ''))
       .then((text) => {
-        const sha = (text ?? '').trim()
-        if (active && /^[0-9a-f]{40}$/.test(sha)) setCommit(sha)
+        const line = (text ?? '').trim()
+        if (active && pattern.test(line)) setValue(line)
       })
       .catch(() => undefined)
     return () => {
       active = false
     }
-  }, [])
-  return commit
+  }, [path, pattern])
+  return value
 }
 
 /** /lizenz: Lizenz von HUBIplan, Quellcode und Lizenzen der enthaltenen Bibliotheken. */
 export function LicensePage() {
-  const commit = useRunningCommit()
+  const commit = useRunningFile(COMMIT_FILE, COMMIT_PATTERN)
+  const version = useRunningFile(VERSION_FILE, VERSION_PATTERN)
   return (
     <PublicCard title={t('Lizenzen')}>
       <p>
@@ -376,6 +383,19 @@ export function LicensePage() {
         )}
         .
       </p>
+      {version && (
+        <p>
+          {t('Laufende Version: {x}', { x: version })}
+          {RELEASE_PATTERN.test(version) && (
+            <>
+              {' · '}
+              <a href={`${SOURCE_REPO}/releases/tag/v${version}`}>
+                {t('Änderungen in dieser Version')}
+              </a>
+            </>
+          )}
+        </p>
+      )}
       <ul>
         <li>
           <a href={`${SOURCE_REPO}/blob/${commit ?? 'main'}/README.md#selbst-betreiben`}>

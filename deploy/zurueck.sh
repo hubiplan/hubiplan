@@ -24,8 +24,8 @@ fi
 COMPOSE="docker compose -p $PROJEKT $DATEIEN"
 EIGENE=$($COMPOSE config --images | grep -v '@sha256:' | sort -u)
 
-echo "Jetzt: $(cat .fassung 2>/dev/null || echo unbekannt)"
-echo "Zurück zu: $(cat "$ZIEL.vorher/.fassung" 2>/dev/null || echo unbekannt)"
+echo "Jetzt: $(cat .version 2>/dev/null || true) $(cat .fassung 2>/dev/null || echo unbekannt)"
+echo "Zurück zu: $(cat "$ZIEL.vorher/.version" 2>/dev/null || true) $(cat "$ZIEL.vorher/.fassung" 2>/dev/null || echo unbekannt)"
 
 # Kennt die vorige Fassung die Dateiverschlüsselung nicht (core/privatefiles.py fehlt),
 # erst alle privaten Dateien wieder im Klartext ablegen, sonst kann sie sie nicht lesen.
@@ -79,4 +79,6 @@ cd "$ZIEL"
 
 $COMPOSE up -d --remove-orphans --force-recreate --wait --wait-timeout 300
 $COMPOSE ps
-echo "Läuft jetzt: $(cat .fassung 2>/dev/null || echo unbekannt)"
+echo "Läuft jetzt: $(cat .version 2>/dev/null || true) $(cat .fassung 2>/dev/null || echo unbekannt)"
+# Rollout-Protokoll (deploy/deploy.sh): Rückweg vermerken
+echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $(cut -c1-7 .fassung 2>/dev/null || echo ?) $(cat .version 2>/dev/null || echo ?) zurueck" >> "$ZIEL.protokoll" || true
