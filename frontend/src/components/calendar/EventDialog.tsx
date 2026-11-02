@@ -307,6 +307,22 @@ export function EventDialog({
             <dd>
               {data.owner} <VisibilityBadge visibility={data.visibility} />
             </dd>
+            {data.source && (
+              <>
+                <dt>{t('Herkunft')}</dt>
+                <dd>
+                  {t('aus {name} ({kind})', {
+                    name: data.source.name,
+                    kind: data.source.kind_label,
+                  })}
+                  <div className="muted small">
+                    {t(
+                      'Diesen Termin pflegt der fremde Kalender; hier lässt er sich nicht ändern.',
+                    )}
+                  </div>
+                </dd>
+              </>
+            )}
             {data.category && (
               <>
                 <dt>{t('Kategorie')}</dt>
@@ -405,6 +421,36 @@ export function EventDialog({
           </p>
           {data.can_edit && data.repeat !== 'none' && (
             <OccurrencePanel base={base} event={data} occurrence={occurrence} onChanged={changed} />
+          )}
+          {data.can_hide && (
+            <div className="button-row">
+              <button
+                type="button"
+                className="button"
+                disabled={busy}
+                onClick={async () => {
+                  if (
+                    !(await confirmDialog({
+                      title: t('„{title}“ hier ausblenden?', { title: data.title }),
+                      message: t(
+                        'Der Termin verschwindet aus diesem Kalender und bleibt auch bei jedem Abruf ausgeblendet. Unter „Fremde Kalender“ lässt er sich wieder zeigen.',
+                      ),
+                      confirmLabel: t('Ausblenden'),
+                    }))
+                  )
+                    return
+                  try {
+                    await eventApi.hide(base, data.id)
+                    onChanged()
+                    onClose()
+                  } catch (err) {
+                    setMessage({ kind: 'error', text: errorMessage(err) })
+                  }
+                }}
+              >
+                {t('Hier ausblenden')}
+              </button>
+            </div>
           )}
           {data.can_edit && (
             <div className="button-row">

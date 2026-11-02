@@ -10,6 +10,7 @@ The latest changes are at the top.
 
 November 2026:
 
+- Events: External calendars show their events in your own calendar, e.g. the federation’s from Vereinsplaner or from a calendar subscription (iCal). HUBIplan fetches them every hour; individual ones can be hidden (Events › External calendars).
 - Website: For each text you can choose whether the caption appears below the image and in the image carousel. The default is without a caption, for existing pages too.
 - Website: New “Klassisch” (classic) design with a light header, a coloured line on top and menu buttons in the club colour. To keep the previous Klassisch, save it as a package first and import it as an own design.
 - Website: A design can be saved as a package and imported again by platform administrators as an own design, with its own layout of header, footer and home page (Website › Design › Share design).

@@ -152,6 +152,12 @@
       "ausschnitt": ""
     },
     {
+      "name": "fremde-kalender",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/termine/fremde",
+      "ausschnitt": ""
+    },
+    {
       "name": "kalender-abonnieren",
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/termine",

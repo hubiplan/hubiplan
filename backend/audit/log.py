@@ -62,6 +62,7 @@ OBJECT_TYPES = {
     "eventexception": "Serientermin",
     "eventattachment": "Terminanhang",
     "calendarpublication": "Öffentlicher Kalender",
+    "externalcalendar": "Fremder Kalender",
     "circular": "Rundschreiben",
     "circulartemplate": "Vorlage für Rundschreiben",
     "circularattachment": "Anhang eines Rundschreibens",

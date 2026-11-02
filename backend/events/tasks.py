@@ -15,3 +15,14 @@ def send_event_mails(event_id: int, kind: str) -> int:
 def send_event_reminders() -> int:
     """Stündlich: fällige Erinnerungen verschicken."""
     return notify.send_reminders()
+
+
+@shared_task
+def sync_external_calendars() -> int:
+    """Stündlich: Termine der fremden Kalender (Vereinsplaner, iCal) abholen."""
+    from core.tenancy import rls_bypass
+
+    from .external import sync_all
+
+    with rls_bypass():
+        return sync_all()
