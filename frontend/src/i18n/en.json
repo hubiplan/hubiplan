@@ -4656,5 +4656,8 @@
   "Neues Ereignis": "New event",
   "Beginnt im Jahr": "Starts in year",
   "Ende des Kapitels, z. B. 1938": "End of the chapter, e.g. 1938",
-  "Name des Kapitels": "Chapter name"
+  "Name des Kapitels": "Chapter name",
+  "Gruppen für einzelne Rollen anpassen": "Adjust groups for individual roles",
+  "Leer heißt: Die Rolle geht unter ihrem Namen an die Nextcloud (wenn „je Rolle eine Gruppe“ an ist). Mit Eintrag gehen stattdessen die genannten Gruppen mit, mehrere mit Komma, auch wenn „je Rolle eine Gruppe“ aus ist. So kommen etwa „1. Kassierer“ und „2. Kassierer“ beide in „Kassierer“. Umbenennen der Rolle ändert daran nichts.": "Empty means: the role is sent to Nextcloud under its own name (if “one group per role” is on). With an entry, the listed groups are sent instead, several separated by commas, even if “one group per role” is off. This way, for example, “1st treasurer” and “2nd treasurer” both end up in “Treasurer”. Renaming the role does not change this.",
+  "Gruppen für {role}": "Groups for {role}"
 }

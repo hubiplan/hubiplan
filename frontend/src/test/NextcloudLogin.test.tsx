@@ -92,6 +92,11 @@ describe('Einstellungen › Nextcloud', () => {
       groups_roles: true,
       groups_units: true,
       groups_members: true,
+      role_groups: {},
+      role_choices: [
+        { id: 11, name: '1. Kassierer', unit: '', is_board: true },
+        { id: 12, name: 'Zugführer', unit: 'Jäger', is_board: false },
+      ],
       is_active: true,
       created_at: '2026-11-01T20:00:00Z',
       last_used_at: null,
@@ -122,6 +127,10 @@ describe('Einstellungen › Nextcloud', () => {
     await user.click(screen.getByRole('button', { name: 'Eintragen' }))
     expect(await screen.findByText('geheim-123')).toBeInTheDocument()
     expect(screen.getByText('hp-abc')).toBeInTheDocument()
+    // Gruppen je Rolle: eine Zeile je Rolle, Ämter mit Untereinheit
+    expect(screen.getByText('Gruppen für einzelne Rollen anpassen')).toBeInTheDocument()
+    expect(screen.getByLabelText('Gruppen für 1. Kassierer')).toHaveValue('')
+    expect(screen.getByLabelText('Gruppen für Zugführer (Jäger)')).toBeInTheDocument()
     const post = calls.find((c) => c.key === 'POST /api/orgs/7/nextcloud/')
     expect(JSON.parse(String(post?.init?.body))).toEqual({
       name: 'Nextcloud',

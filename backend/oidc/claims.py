@@ -114,9 +114,15 @@ def profile(client: Client, user) -> Profile:
     groups: list[str] = []
     if client.groups_board and any(a.role.is_board for a in roles):
         groups.append(BOARD_GROUP)
-    if client.groups_roles:
-        groups += [a.role.name for a in roles]
-        groups += [f"{h.role.name} ({h.role.department.name})" for h in unit_roles]
+    # Zugeordnete Gruppen gehen immer mit; Rollen ohne Zuordnung nur mit „je Rolle eine Gruppe“
+    named = [(a.role_id, a.role.name) for a in roles]
+    named += [(h.role_id, f"{h.role.name} ({h.role.department.name})") for h in unit_roles]
+    for role_id, role_name in named:
+        mapped = client.groups_for_role(role_id)
+        if mapped:
+            groups += mapped
+        elif client.groups_roles:
+            groups.append(role_name)
     if client.groups_units:
         groups += [u.name for u in units]
     if client.groups_members and is_member:
