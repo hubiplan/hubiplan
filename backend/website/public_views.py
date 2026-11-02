@@ -269,12 +269,16 @@ def _statute_publication(site: SiteView, kind: str = "statute"):
     """Öffentliche Satzung der Seite (oder mit ``kind`` Beitragsordnung/Gründungsurkunde)."""
     from statutes.models import StatutePublication
 
-    return StatutePublication.objects.filter(
-        organization=site.area,
-        department=site.org if site.is_unit else None,
-        kind=kind,
-        is_public=True,
-    ).first()
+    # Je Antwort einmal je Art (die Grunddaten fragen Adresse und Vorschau getrennt ab)
+    found = site.__dict__.setdefault("_statute_publications", {})
+    if kind not in found:
+        found[kind] = StatutePublication.objects.filter(
+            organization=site.area,
+            department=site.org if site.is_unit else None,
+            kind=kind,
+            is_public=True,
+        ).first()
+    return found[kind]
 
 
 class StatutePreviewView(_Public):

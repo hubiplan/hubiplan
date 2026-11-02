@@ -38,6 +38,15 @@ der Rolle neu.
 - Drei Netze: `intern` (Postgres, Redis; ohne Weg ins Internet, für Caddy
   unerreichbar), `web` (Caddy ↔ Backend), `ausgang` (Mailversand, Backup-Zweitort).
 
+**Zugriffslog des Backends:** Zeit, Methode, Pfad (ohne `?…`), Status, Größe und
+Antwortzeit in Sekunden (letzte Spalte), ohne IP-Adresse. Langsamste Abrufe der letzten
+drei Stunden:
+
+```sh
+docker compose logs --since 3h backend | grep -E '"(GET|POST) ' \
+  | awk '{print $NF, $(NF-3)}' | sort -rn | head -25
+```
+
 ## Geheimnisse
 
 Alle Geheimnisse stehen nur in `/opt/hubiplan/.env` auf dem Server (Rechte 600), nie im

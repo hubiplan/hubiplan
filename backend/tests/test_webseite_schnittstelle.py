@@ -534,3 +534,22 @@ class TestSpamPruefung:
         assert "Schrift" in reason
         text = "Unser Gastverein aus Kiew heißt Дружба, wir möchten zum Schützenfest kommen."
         assert contact.suspicious("Besuch", text, "a@b.de") == ""
+
+
+def test_vorstand_abfragen_wachsen_nicht_mit_zuegen(setup):
+    """Vorstandsseite: Rollen der Züge in einer Abfrage, nicht je Zug (Webseite langsam,
+    02.11.2026). Weitere Züge mit Rollen ändern die Zahl der Abfragen nicht."""
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    def count():
+        with CaptureQueriesContext(connection) as captured:
+            assert get("schluessel-a/board/").status_code == 200
+        return len(captured)
+
+    before = count()
+    for n in range(4):
+        org = setup["org"]
+        unit = Department.objects.create(organization=org, parent=org, name=f"Zug {n}")
+        DepartmentRole.objects.create(department=unit, name="Zugführer", on_website=True)
+    assert count() == before

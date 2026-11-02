@@ -35,4 +35,6 @@ ENTRYPOINT ["sh", "./docker-entrypoint.sh"]
 # Ohne Steuer-Socket: braucht kein beschreibbares Home-Verzeichnis und ist eine Angriffsfläche weniger.
 # 3 Prozesse mit je 4 Threads: Bilder der Webseite und die Bedienung warten nicht
 # aufeinander (vorher 1 Anfrage je Prozess). Anpassen ohne Neubau: GUNICORN_CMD_ARGS.
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--worker-class", "gthread", "--threads", "4", "--no-control-socket"]
+# Zugriffslog mit Antwortzeit in Sekunden (letzte Spalte), ohne IP-Adresse, ohne Abfrage
+# (?…) und ohne Referer: Schlüssel in Adressen landen so in keinem Log.
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--worker-class", "gthread", "--threads", "4", "--no-control-socket", "--access-logfile", "-", "--access-logformat", "%(t)s \"%(m)s %(U)s\" %(s)s %(b)s %(L)s"]
