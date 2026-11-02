@@ -30,7 +30,7 @@ from core.api_base import AuditMixin, OrgScopedMixin
 from core.ratelimit import client_ip, too_many
 
 from . import nc_accounts, provider
-from .models import USERNAME_RE, Account, Client, parse_usernames
+from .models import USERNAME_RE, Account, Client, clean_groups, parse_usernames
 
 TOKEN_RATE = (60, 60)
 
@@ -158,6 +158,7 @@ class ClientSerializer(serializers.ModelSerializer):
         write_only=True, required=False, allow_blank=True, trim_whitespace=True
     )
     has_service_password = serializers.SerializerMethodField()
+    role_choices = serializers.SerializerMethodField()
 
     class Meta:
         model = Client
@@ -173,6 +174,8 @@ class ClientSerializer(serializers.ModelSerializer):
             "groups_units",
             "groups_members",
             "usernames",
+            "role_groups",
+            "role_choices",
             "manage_accounts",
             "service_user",
             "service_password",
@@ -236,6 +239,51 @@ class ClientSerializer(serializers.ModelSerializer):
                 gettext("Doppelt eingetragen: {items}").format(items=", ".join(double[:3]))
             )
         return "\n".join(f"{email} = {name}" for email, name, _x in lines)
+
+    def _roles(self) -> list:
+        from access.models import Role
+
+        org = self.context["org"]
+        return list(
+            Role.all_objects.filter(organization=org)
+            .select_related("department")
+            .order_by("department__name", "position", "name")
+        )
+
+    def get_role_choices(self, obj) -> list[dict]:
+        """Alle Rollen der Einheit (auch Ämter in Untereinheiten) für die Zuordnungstabelle."""
+        return [
+            {
+                "id": role.pk,
+                "name": role.name,
+                "unit": role.department.name if role.department_id else "",
+                "is_board": role.is_board,
+            }
+            for role in self._roles()
+        ]
+
+    def validate_role_groups(self, value):
+        if not isinstance(value, dict):
+            raise serializers.ValidationError(gettext("Bitte je Rolle eine Liste von Gruppen."))
+        known = {str(role.pk) for role in self._roles()}
+        out: dict[str, list[str]] = {}
+        for key, groups in value.items():
+            key = str(key)
+            if key not in known:
+                # Gelöschte oder fremde Rolle: Eintrag fällt weg
+                continue
+            if not isinstance(groups, list | str):
+                raise serializers.ValidationError(gettext("Bitte je Rolle eine Liste von Gruppen."))
+            groups = clean_groups(groups)
+            if any(len(g) > GROUP_MAX for g in groups):
+                raise serializers.ValidationError(
+                    gettext("Gruppennamen höchstens 64 Zeichen: {groups}").format(
+                        groups=", ".join(g for g in groups if len(g) > GROUP_MAX)[:120]
+                    )
+                )
+            if groups:
+                out[key] = groups
+        return out
 
     def validate(self, attrs):
         org = self.context["org"]

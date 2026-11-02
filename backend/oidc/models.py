@@ -52,6 +52,17 @@ def parse_usernames(text: str) -> list[tuple[str, str, str]]:
     return out
 
 
+# Gruppennamen in der Nextcloud dürfen höchstens 64 Zeichen haben
+GROUP_MAX = 64
+
+
+def clean_groups(value) -> list[str]:
+    """Gruppen aus Liste oder Text „A, B“: Leerraum gekürzt, leere und doppelte entfernt."""
+    items = value.split(",") if isinstance(value, str) else list(value or [])
+    groups = [" ".join(str(g).split()) for g in items]
+    return list(dict.fromkeys(g for g in groups if g))
+
+
 class Client(models.Model):
     class Audience(models.TextChoices):
         BOARD = "board", "Vorstand und Rollen"
@@ -83,6 +94,10 @@ class Client(models.Model):
     # (Angabe preferred_username). Bewusst nur von Hand gepflegt: Aus Namen abgeleitet könnte
     # sich jemand durch eine Namensänderung ein fremdes Konto holen.
     usernames = models.TextField("bisherige Benutzernamen", blank=True, default="")
+    # Gruppen für Rollen: Rollen-ID → Gruppen, z. B. „1. Kassierer“ und „2. Kassierer“ →
+    # „Kassierer“. An der ID statt am Namen, damit Umbenennen nichts ändert. Rollen ohne
+    # Eintrag schicken ihren Namen, wenn ``groups_roles`` an ist.
+    role_groups = models.JSONField("Gruppen für Rollen", default=dict, blank=True)
     # Konten in der Nextcloud automatisch deaktivieren, wenn der Zugang endet (siehe accounts)
     manage_accounts = models.BooleanField("Konten automatisch deaktivieren", default=False)
     # Dienstkonto in der Nextcloud (Gruppen-Admin der Gruppe ``account_group``) mit App-Passwort
@@ -117,6 +132,7 @@ class Client(models.Model):
             "groups_units",
             "groups_members",
             "usernames",
+            "role_groups",
             "manage_accounts",
             "service_user",
             "account_group",
@@ -145,6 +161,9 @@ class Client(models.Model):
         return bool(self.secret_hash) and secrets.compare_digest(
             self.secret_hash, hash_secret(secret or "")
         )
+
+    def groups_for_role(self, role_id: int) -> list[str]:
+        return clean_groups((self.role_groups or {}).get(str(role_id)))
 
     def username_map(self) -> dict[str, str]:
         """E-Mail (klein) → Benutzername aus ``usernames``; ungültige Zeilen fallen weg."""

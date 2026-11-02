@@ -4525,3 +4525,9 @@ msgstr "At most {n} bank statements per file."
 
 msgid "Höchstens {n} Umsätze je Datei."
 msgstr "At most {n} transactions per file."
+
+msgid "Bitte je Rolle eine Liste von Gruppen."
+msgstr "Please give a list of groups for each role."
+
+msgid "Gruppennamen höchstens 64 Zeichen: {groups}"
+msgstr "Group names may have at most 64 characters: {groups}"

@@ -39,11 +39,27 @@ Im ID-Token und unter `userinfo` (je nach angefragtem `scope`):
 | `name`, `given_name`, `family_name` | aus der Mitgliedsakte, sonst aus dem Konto |
 | `preferred_username` | nur bei Eintrag unter „Bisherige Benutzernamen“ (Scope `profile`): der vorhandene Benutzername in der Nextcloud |
 | `email` | Anmelde-E-Mail |
-| `groups` | je nach Einstellung „Vorstand“, Rollennamen, „Amt (Untereinheit)“, Namen der Untereinheiten, „Mitglieder“ (höchstens 64 Zeichen je Name) |
+| `groups` | je nach Einstellung „Vorstand“, Rollennamen bzw. die unter „Gruppen für einzelne Rollen“ eingetragenen Gruppen, „Amt (Untereinheit)“, Namen der Untereinheiten, „Mitglieder“ (höchstens 64 Zeichen je Name) |
 | `amr`, `auth_time` | wie und wann die HUBIplan-Sitzung angemeldet wurde |
 
 Gruppennamen sind fest (nicht übersetzt). Wird eine Rolle oder Untereinheit umbenannt,
 entsteht in der Nextcloud eine neue Gruppe; Freigaben dort ggf. anpassen.
+
+### Gruppen für einzelne Rollen
+
+Unter „Gruppen für einzelne Rollen anpassen“ bekommt jede Rolle (auch Ämter in
+Untereinheiten) ein Feld für ihre Gruppen in der Nextcloud, mehrere mit Komma. Beispiel:
+„1. Kassierer“ und „2. Kassierer“ beide `Kassierer`, „1. Vorsitzender“ `Kassierer,
+Schriftführer`. Mit Eintrag gehen nur diese Gruppen mit (auch wenn „je Rolle eine Gruppe“
+aus ist), ohne Eintrag wie bisher der Rollenname. Gespeichert wird an der Rolle selbst
+(`role_groups`: Rollen-ID → Gruppen), Umbenennen ändert also nichts; gelöschte Rollen fallen
+beim nächsten Speichern weg.
+
+Damit `user_oidc` diese Gruppen verwaltet, sie in die Whitelist aufnehmen, z. B.
+`/^(HUBIplan|Vorstand|Kassierer|Schriftführer)$/u`. Gruppen außerhalb der Whitelist (etwa
+Ordnergruppen, die von Hand gepflegt werden) bleiben unberührt. Vorher vergleichen, wer heute
+in diesen Gruppen ist: Wer keine passende Rolle hat, fällt bei der nächsten Anmeldung heraus
+und verliert die Gruppenordner.
 
 ## Vorhandene Nextcloud-Konten übernehmen
 

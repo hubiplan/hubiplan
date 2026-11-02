@@ -16,6 +16,10 @@ export interface NextcloudClient {
   groups_members: boolean
   // Je Zeile „E-Mail = Benutzername“ (bisherige Nextcloud-Konten)
   usernames: string
+  // Rollen-ID → Gruppen in der Nextcloud (statt des Rollennamens)
+  role_groups: Record<string, string[]>
+  // Alle Rollen der Einheit für die Zuordnung (auch Ämter in Untereinheiten)
+  role_choices: NextcloudRoleChoice[]
   // Konten in der Nextcloud deaktivieren, wenn der Zugang endet
   manage_accounts: boolean
   service_user: string
@@ -30,6 +34,14 @@ export interface NextcloudClient {
   discovery_url: string
   // Nur direkt nach Anlegen oder Erneuern
   client_secret?: string
+}
+
+export interface NextcloudRoleChoice {
+  id: number
+  name: string
+  // Untereinheit (leer: Rolle der Einheit selbst)
+  unit: string
+  is_board: boolean
 }
 
 export type NextcloudInput = Partial<
@@ -52,6 +64,8 @@ export type NextcloudInput = Partial<
 > & {
   // Nur schreiben; leer lässt das gespeicherte
   service_password?: string
+  // Je Rolle die Gruppen als Text „A, B“ (leer: Rollenname)
+  role_groups?: Record<string, string>
 }
 
 export interface NextcloudAccount {

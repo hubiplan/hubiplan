@@ -2,7 +2,12 @@
 // HUBIplan ist dabei Anmeldedienst (OpenID Connect), die Nextcloud nutzt die App „user_oidc“.
 import { useState } from 'react'
 import { nextcloudApi } from '../../api/nextcloud.ts'
-import type { NextcloudAccount, NextcloudClient, NextcloudInput } from '../../api/nextcloud.ts'
+import type {
+  NextcloudAccount,
+  NextcloudClient,
+  NextcloudInput,
+  NextcloudRoleChoice,
+} from '../../api/nextcloud.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
@@ -28,6 +33,67 @@ function Copyable({ label, value }: { label: string; value: string }) {
         </button>
       </div>
     </div>
+  )
+}
+
+function groupsAsText(groups: Record<string, string[]>): Record<string, string> {
+  return Object.fromEntries(Object.entries(groups ?? {}).map(([id, g]) => [id, g.join(', ')]))
+}
+
+// Gruppen je Rolle: z. B. „1. Kassierer“ und „2. Kassierer“ beide in „Kassierer“.
+// An der Rolle (nicht am Namen) festgemacht, Umbenennen ändert nichts.
+function RoleGroups({
+  roles,
+  value,
+  onChange,
+}: {
+  roles: NextcloudRoleChoice[]
+  value: Record<string, string>
+  onChange: (v: Record<string, string>) => void
+}) {
+  if (!roles?.length) return null
+  const mapped = Object.values(value).filter((g) => g.trim()).length
+  return (
+    <details className="small" open={mapped > 0}>
+      <summary>
+        {t('Gruppen für einzelne Rollen anpassen')}
+        {mapped > 0 && ` (${mapped})`}
+      </summary>
+      <p className="muted small">
+        {t(
+          'Leer heißt: Die Rolle geht unter ihrem Namen an die Nextcloud (wenn „je Rolle eine Gruppe“ an ist). Mit Eintrag gehen stattdessen die genannten Gruppen mit, mehrere mit Komma, auch wenn „je Rolle eine Gruppe“ aus ist. So kommen etwa „1. Kassierer“ und „2. Kassierer“ beide in „Kassierer“. Umbenennen der Rolle ändert daran nichts.',
+        )}
+      </p>
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>{t('Rolle')}</th>
+              <th>{t('Gruppen in der Nextcloud')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {roles.map((role) => {
+              const label = role.unit ? `${role.name} (${role.unit})` : role.name
+              return (
+                <tr key={role.id}>
+                  <td>{label}</td>
+                  <td>
+                    <input
+                      aria-label={t('Gruppen für {role}', { role: label })}
+                      value={value[String(role.id)] ?? ''}
+                      placeholder={label}
+                      maxLength={300}
+                      onChange={(e) => onChange({ ...value, [String(role.id)]: e.target.value })}
+                    />
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </details>
   )
 }
 
@@ -179,6 +245,7 @@ function ClientCard({
     groups_units: client.groups_units,
     groups_members: client.groups_members,
     usernames: client.usernames,
+    role_groups: groupsAsText(client.role_groups),
     manage_accounts: client.manage_accounts,
     service_user: client.service_user,
     service_password: '',
@@ -305,6 +372,11 @@ function ClientCard({
             label={t('„Mitglieder“ für alle mit laufender Mitgliedschaft')}
             checked={Boolean(values.groups_members)}
             onChange={(v) => set('groups_members', v)}
+          />
+          <RoleGroups
+            roles={client.role_choices}
+            value={values.role_groups ?? {}}
+            onChange={(v) => set('role_groups', v)}
           />
         </fieldset>
         <label className="field">
