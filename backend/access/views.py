@@ -11,6 +11,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from access.catalog import ROLES_VIEW
 from accounts.models import User
 from audit.log import diff, record, snapshot, type_label
 from audit.models import AuditEntry
@@ -23,7 +24,7 @@ from organizations.models import Organization
 from organizations.terms import department_terms, rename_word
 
 from . import preview
-from .catalog import AUDIT_VIEW, ROLES_MANAGE, ROLES_PREVIEW, catalog_for
+from .catalog import AUDIT_VIEW, ROLES_MANAGE, ROLES_PREVIEW, catalog_for, effective
 from .models import Role, RoleAssignment
 from .permissions import (
     inherited_permissions,
@@ -46,7 +47,7 @@ class _OrgContextMixin:
 
 class RoleViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     serializer_class = RoleSerializer
-    read_permission = ROLES_MANAGE
+    read_permission = ROLES_VIEW
     write_permission = ROLES_MANAGE
 
     def get_queryset(self):
@@ -112,7 +113,7 @@ def _serialize(user) -> None:
 def _locks_out(user, org: Organization, role: Role) -> bool:
     """Verliert der Benutzer mit dieser Rolle das Recht, Rollen zu verwalten?"""
     _serialize(user)
-    if ROLES_MANAGE not in role.permissions:
+    if ROLES_MANAGE not in effective(role.permissions):
         return False
     if not role.assignments.active().filter(user=user).exists():
         return False
@@ -124,7 +125,8 @@ def _locks_out(user, org: Organization, role: Role) -> bool:
     )
     perms: set[str] = set()
     for assignment in others:
-        perms.update(assignment.role.permissions)
+        perms.update(assignment.role.permissions or [])
+    perms = effective(perms)
     if org.type == Organization.Type.UNIT:
         perms |= inherited_permissions(user, org)
     return ROLES_MANAGE not in perms
@@ -164,7 +166,7 @@ def _has_rights_elsewhere(target, org) -> bool:
 
 class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     serializer_class = AssignmentSerializer
-    read_permission = ROLES_MANAGE
+    read_permission = ROLES_VIEW
     write_permission = ROLES_MANAGE
 
     def get_queryset(self):

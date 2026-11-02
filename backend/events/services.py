@@ -14,7 +14,13 @@ from dataclasses import dataclass, field
 from django.db.models import Q
 from django.utils import timezone
 
-from access.catalog import DEPT_EVENTS_MANAGE, EVENTS_MANAGE, FINANCE_EDIT, FINANCE_VIEW
+from access.catalog import (
+    DEPT_EVENTS_MANAGE,
+    EVENTS_EDIT,
+    EVENTS_MANAGE,
+    FINANCE_EDIT,
+    FINANCE_VIEW,
+)
 from access.models import RoleAssignment
 from organizations.models import Department, Organization
 from organizations.tree import UnitTree, with_ancestors
@@ -99,7 +105,8 @@ def has_own_calendar_admin(unit: Department) -> bool:
         DepartmentRoleHolder.objects.filter(
             role__department_id__in=units,
             role__department__self_managed=True,
-            role__permissions__contains=[DEPT_EVENTS_MANAGE],
+            # gespeichert wird die neue Form (Bereich Termine, Stufe bearbeiten)
+            role__permissions__contains=[EVENTS_EDIT],
             valid_from__lte=on,
         )
         .exclude(valid_until__lt=on)

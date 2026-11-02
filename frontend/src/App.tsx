@@ -125,10 +125,18 @@ const SettingsLayout = lazyPage(
 )
 
 /** Seite nur zeigen, wenn eine Organisation aktiv ist (und ggf. ein Recht vorliegt). */
-function RequireOrg({ permission, children }: { permission?: string; children: ReactNode }) {
+function RequireOrg({
+  permission,
+  children,
+}: {
+  /** ein Recht oder mehrere (eines genügt) */
+  permission?: string | string[]
+  children: ReactNode
+}) {
   const { active, can } = useOrg()
   if (!active) return <NoAccessPage reason="workspace" />
-  if (permission && !can(permission)) return <NoAccessPage reason="right" />
+  const needed = typeof permission === 'string' ? [permission] : permission
+  if (needed && !needed.some((p) => can(p))) return <NoAccessPage reason="right" />
   return <>{children}</>
 }
 
@@ -355,7 +363,7 @@ export default function App() {
             <Route
               path="rollen"
               element={
-                <RequireOrg permission={PERM.rolesManage}>
+                <RequireOrg permission={[PERM.rolesView, PERM.rolesManage]}>
                   <RolesPage />
                 </RequireOrg>
               }

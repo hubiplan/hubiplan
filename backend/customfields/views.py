@@ -11,7 +11,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import MEMBERS_EDIT, MEMBERS_VIEW, ORG_EDIT
+from access.catalog import MEMBERS_EDIT, MEMBERS_VIEW, ORG_EDIT, SETTINGS_VIEW
 from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, ModelCleanMixin, OrgScopedMixin
 from members.models import Membership
@@ -171,6 +171,7 @@ class FieldDefinitionViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     """Zusatzfelder des Vereins oder Dachverbands (verbandsweite werden mitgezeigt)."""
 
     serializer_class = FieldDefinitionSerializer
+    read_permission = (SETTINGS_VIEW, MEMBERS_VIEW)
     write_permission = ORG_EDIT
     allowed_org_types = ("club", "federation")
 

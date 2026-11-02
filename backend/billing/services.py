@@ -13,7 +13,7 @@ from django.db.models import Prefetch, Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext
 
-from access.catalog import DEPT_INVOICES_VIEW
+from access.catalog import DEPT_INVOICES_VIEW, effective
 from finance import services as finance_services
 from finance.models import Booking, CashReceipt
 from members.honorary import adjusted_fee
@@ -461,7 +461,7 @@ def department_treasurer(department) -> Membership | None:
         .order_by("valid_from", "pk")
     )
     for h in holders:
-        if DEPT_INVOICES_VIEW in (h.role.permissions or []):
+        if DEPT_INVOICES_VIEW in effective(h.role.permissions, dept=True):
             return h.membership
     return None
 

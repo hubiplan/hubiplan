@@ -84,7 +84,7 @@ class TestTermine:
         event = anlegen(app(admin_token), base).json()
         # Zweiter Vorstand ohne events.manage
         _, user, _ = member_with_access(cal["a"], "Paul")
-        give_role(user, cal["a"], ["members.view"], name="Beisitz")
+        give_role(user, cal["a"], ["members.view", "events.view"], name="Beisitz")
         secret = generate_totp_secret()
         TOTP.activate(user, secret)
         token = pair(pairing_code(api(user))).json()["token"]

@@ -83,7 +83,9 @@ def role_permissions(org, role_id: int) -> set[str] | None:
         )
     if perms is None:
         return None
-    return {p for p in perms if isinstance(p, str)}
+    from .catalog import effective
+
+    return effective(perms)
 
 
 def apply(user, org, perms: set[str]) -> set[str]:

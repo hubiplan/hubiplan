@@ -22,7 +22,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import ORG_EDIT, ROLES_MANAGE, catalog_for
+from access.catalog import LEGACY_TO_NEW, ORG_EDIT, ROLES_MANAGE, catalog_for, effective
 from access.models import Role
 from audit.log import record
 from core.api_base import OrgScopedMixin
@@ -111,10 +111,17 @@ def help_state(org: Organization, perms: set[str]) -> dict:
         {
             r.name
             for r in Role.objects.filter(organization=org)
-            if ROLES_MANAGE in (r.permissions or [])
+            if ROLES_MANAGE in effective(r.permissions)
         }
     )
     rights = {p["code"]: p["label"] for m in catalog_for(org.type, org) for p in m["permissions"]}
+    # Die Hilfeseiten nennen teils noch die früheren Codes: Name der neuen Stufe zeigen
+    for old, news in LEGACY_TO_NEW.items():
+        edits = [c for c in news if c.endswith(".edit") and c in rights]
+        same = [c for c in edits if c.split(".")[0] == old.split(".")[0]]
+        code = (same or edits or [c for c in news if c in rights] or [None])[0]
+        if old not in rights and code:
+            rights[old] = rights[code]
     return {
         "contacts": contacts,
         "contacts_from": (

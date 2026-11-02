@@ -452,4 +452,4 @@ def test_eigene_rollenverwaltung_nicht_per_datum_oder_rolle_entziehen(api, orgs)
     assert resp.status_code == 400, resp.content
     assignment.refresh_from_db()
     assert assignment.valid_until is None
-    assert "roles.manage" in assignment.role.permissions
+    assert "roles.edit" in assignment.role.permissions

@@ -73,14 +73,13 @@ class TestOberflaeche:
     def test_rechtekatalog_mit_eigener_bezeichnung(self, api, zug, board_a):
         data = api(board_a).get(f"/api/permissions/?org_type=department&org={zug.pk}").json()
         _no_abteilung(data)
-        labels = [p["label"] for m in data for p in m["permissions"]]
-        assert "Mitglieder des Zugs lesen" in labels
+        assert "Mitglieder des Zugs" in [m["label"] for m in data]
         club = api(board_a).get(f"/api/permissions/?org_type=club&org={zug.pk}").json()
         _no_abteilung(club)
 
     def test_rechtekatalog_ohne_org_und_fremde_org(self, api, zug, orgs, board_a):
         labels = str(api(board_a).get("/api/permissions/?org_type=department").json())
-        assert "Mitglieder der Abteilung lesen" in labels
+        assert "Mitglieder der Abteilung" in labels
         other = orgs["b"]
         other.department_label = "Sparte"
         other.save()

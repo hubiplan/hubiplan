@@ -80,8 +80,13 @@ export const modules: AppModule[] = [
     icon: icon('M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4M8 14h2M14 14h2M8 17h2'),
     visible: (org, ws) =>
       org
-        ? (org.type === 'club' || org.type === 'federation') && org.modules.includes('events')
-        : !!(ws.dept?.events_enabled || ws.portal?.events_enabled),
+        ? (org.type === 'club' || org.type === 'federation') &&
+          org.modules.includes('events') &&
+          org.permissions.includes(PERM.eventsView)
+        : !!(
+            (ws.dept?.events_enabled && ws.dept.permissions.includes(PERM.eventsView)) ||
+            ws.portal?.events_enabled
+          ),
   },
   {
     id: 'wettbewerbe',
@@ -94,8 +99,12 @@ export const modules: AppModule[] = [
       !!org &&
       (org.type === 'club' || org.type === 'federation') &&
       org.modules.includes('competitions') &&
-      (org.permissions.includes(PERM.competitionsManage) ||
-        org.permissions.includes(PERM.competitionsResults)),
+      [
+        PERM.competitionsView,
+        PERM.resultsView,
+        PERM.competitionsManage,
+        PERM.competitionsResults,
+      ].some((p) => org.permissions.includes(p)),
     children: () => [
       { to: '/wettbewerbe', label: t('Wettbewerbe') },
       { to: '/wettbewerbe/reihen', label: t('Reihen') },
@@ -113,7 +122,9 @@ export const modules: AppModule[] = [
       !!org &&
       (org.type === 'club' || org.type === 'federation') &&
       org.modules.includes('entries') &&
-      org.permissions.includes(PERM.entriesSubmit),
+      [PERM.entriesView, PERM.callsView, PERM.entriesSubmit, PERM.entriesManage].some((p) =>
+        org.permissions.includes(p),
+      ),
   },
   {
     id: 'dokumente',
@@ -124,7 +135,7 @@ export const modules: AppModule[] = [
       org
         ? (org.type === 'club' || org.type === 'federation') &&
           org.permissions.includes(PERM.docsView)
-        : !!(ws.dept || ws.portal),
+        : !!(ws.dept?.permissions.includes(PERM.docsView) || ws.portal),
   },
   {
     id: 'rundschreiben',
@@ -142,8 +153,9 @@ export const modules: AppModule[] = [
       !!org &&
       (org.type === 'club' || org.type === 'federation' || org.type === 'unit') &&
       org.modules.includes('website') &&
-      (org.permissions.includes(PERM.websiteManage) ||
-        org.permissions.includes(PERM.websiteContent)),
+      [PERM.webcontentView, PERM.websiteView, PERM.websiteManage, PERM.websiteContent].some((p) =>
+        org.permissions.includes(p),
+      ),
     children: websiteSections,
   },
   {

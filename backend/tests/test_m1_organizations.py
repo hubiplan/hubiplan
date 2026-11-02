@@ -50,7 +50,8 @@ class TestMeineOrganisationen:
         assert ROLES_MANAGE in verein["permissions"]
         assert verein["modules"] == ["members"]
         assert verein["theme"]["primary"].startswith("#")
-        assert data[0]["permissions"] == [ORG_EDIT]
+        # Einstellungen bearbeiten (neu) samt Lesen und dem früheren Code
+        assert data[0]["permissions"] == [ORG_EDIT, "settings.edit", "settings.view"]
 
     def test_abgelaufene_rolle_zaehlt_nicht(self, api, orgs):
         user = make_user("ex@example.org")
@@ -158,7 +159,7 @@ class TestBerechtigungen:
         # Neues Konto kann sich anmelden und sieht den Verein
         new_user = RoleAssignment.objects.get(pk=data["id"]).user
         orgs_seen = api(new_user).get("/api/me/organizations/").json()
-        assert orgs_seen[0]["permissions"] == ["export.run", MEMBERS_VIEW]
+        assert orgs_seen[0]["permissions"] == ["export.lists", "export.run", MEMBERS_VIEW]
 
     def test_bestehendes_konto_kein_neues_passwort(self, api, orgs, board_a, board_b):
         role = Role.objects.get(organization=orgs["a"])

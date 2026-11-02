@@ -192,13 +192,18 @@ class TestVorstand:
         c = api(board_a)
         c.post(url(orgs, member), {"file": image_file(), "consent": "true"})
         reader = make_user("leser@example.org")
-        give_role(reader, orgs["a"], ["members.view"], name="Leser")
+        give_role(reader, orgs["a"], ["members.view", "photos.view"], name="Leser")
         r = api(reader)
         assert r.get(url(orgs, member)).status_code == 200  # ansehen ja
         assert r.delete(url(orgs, member)).status_code == 403  # ändern nein
         editor = make_user("editor@example.org")
         give_role(editor, orgs["a"], ["members.view", "members.edit"], name="Bearbeiter")
-        assert api(editor).delete(url(orgs, member)).status_code == 403  # braucht „Fotos verwalten“
+        # braucht „Fotos bearbeiten“
+        assert api(editor).delete(url(orgs, member)).status_code == 403
+        # Ohne Bereich Fotos sieht auch, wer Mitglieder liest, keine Fotos
+        blind = make_user("blind@example.org")
+        give_role(blind, orgs["a"], ["members.view"], name="Ohne Fotos")
+        assert api(blind).get(url(orgs, member)).status_code == 403
 
     def test_anderer_verein_sieht_nichts(self, api, orgs, member, board_a, board_b):
         api(board_a).post(url(orgs, member), {"file": image_file(), "consent": "true"})
@@ -215,7 +220,7 @@ class TestVorstand:
 
     def test_vorstand_hat_recht_standardmaessig(self, orgs, board_a):
         role = Role.objects.get(organization=orgs["a"], name="Vorstand")
-        assert "photos.manage" in role.permissions
+        assert "photos.edit" in role.permissions
 
     def test_loeschfrist_entfernt_fotos(self, api, orgs, member, board_a):
         c = api(board_a)
@@ -326,7 +331,7 @@ class TestUploadLink:
         rows = c.get(f"/api/orgs/{orgs['a'].pk}/members/").json()["results"]
         assert rows[0]["photo_url"] is None  # wartendes Foto erscheint nicht in der Liste
         reader = make_user("leser@example.org")
-        give_role(reader, orgs["a"], ["members.view"], name="Leser")
+        give_role(reader, orgs["a"], ["members.view", "photos.view"], name="Leser")
         assert api(reader).get(url(orgs, member, "?status=pending")).status_code == 404
         approved = c.post(url(orgs, member, "approve/"), {}, content_type=JSON).json()
         assert approved["photo"]["approved"]["source"] == "member"

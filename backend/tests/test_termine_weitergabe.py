@@ -85,7 +85,7 @@ class TestVoreinstellung:
 class TestUntereinheiten:
     def test_zug_nach_oben_aus_entscheidet_verein(self, cal, zug, board_a, api):
         m, user, _ = member_with_access(cal["a"], "Zugi", depts=[zug])
-        role = dept_role(zug, m, ["dept.members.view"])  # ohne Kalenderrecht
+        role = dept_role(zug, m, ["dept.members.view", "events.view"])  # Termine nur lesen
         assert role
         c = api(user)
         resp = c.get(f"{dept_base(zug)}events/sharing/")

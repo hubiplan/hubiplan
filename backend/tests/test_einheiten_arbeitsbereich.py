@@ -51,7 +51,8 @@ class TestArbeitsbereich:
             role = Role.objects.get(organization=zug)
         assert role.name == "Vorstand"
         assert set(role.permissions) == {
-            "roles.manage",
+            "roles.view",
+            "roles.edit",
             "roles.preview",
             "finance.view",
             "finance.edit",
@@ -64,7 +65,14 @@ class TestArbeitsbereich:
         einschalten(c, club, zug)
         orgs = {o["id"]: o for o in c.get("/api/me/organizations/").json()}
         assert orgs[zug.pk]["type"] == "unit"
-        assert set(orgs[zug.pk]["permissions"]) == {"finance.view", "billing.view", "roles.manage"}
+        # neue Codes und (Übergang) die früheren
+        assert set(orgs[zug.pk]["permissions"]) == {
+            "finance.view",
+            "billing.view",
+            "roles.view",
+            "roles.edit",
+            "roles.manage",
+        }
         assert c.get(f"/api/orgs/{zug.pk}/finance/accounts/").status_code == 200
         # nur lesen
         resp = c.post(f"/api/orgs/{zug.pk}/finance/accounts/", ACCOUNT, content_type=JSON)
@@ -124,7 +132,7 @@ class TestArbeitsbereich:
         z = api(zugvorstand)
         orgs = {o["id"]: o for o in z.get("/api/me/organizations/").json()}
         assert set(orgs) == {zug.pk, gruppe.pk}
-        expected = {"finance.view", "billing.view", "roles.manage"}
+        expected = {"finance.view", "billing.view", "roles.view", "roles.edit", "roles.manage"}
         assert set(orgs[gruppe.pk]["permissions"]) == expected
 
 

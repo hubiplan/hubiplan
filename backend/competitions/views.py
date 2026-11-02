@@ -24,7 +24,12 @@ from rest_framework.exceptions import NotFound, PermissionDenied, ValidationErro
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import COMPETITIONS_MANAGE, COMPETITIONS_RESULTS
+from access.catalog import (
+    COMPETITIONS_MANAGE,
+    COMPETITIONS_RESULTS,
+    COMPETITIONS_VIEW,
+    RESULTS_VIEW,
+)
 from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, OrgScopedMixin
 from members.models import Membership
@@ -60,10 +65,15 @@ class _Mixin(OrgScopedMixin):
         if MODULE not in (self.org.enabled_modules or []):
             raise NotFound(gettext("Das Modul Wettbewerbe ist nicht freigeschaltet."))
         perms = self.org_permissions
-        if not ({COMPETITIONS_MANAGE, COMPETITIONS_RESULTS} & perms):
+        # Lesen: Wettbewerbe oder Ergebnisse lesen; Ändern: Wettbewerbe bearbeiten bzw.
+        # bei Ergebnissen auch Ergebnisse bearbeiten (konzepte/berechtigungen.md)
+        readable = {COMPETITIONS_VIEW, RESULTS_VIEW, COMPETITIONS_MANAGE, COMPETITIONS_RESULTS}
+        if not (readable & perms):
             raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
         if request.method not in ("GET", "HEAD", "OPTIONS"):
             if self.manage_only and COMPETITIONS_MANAGE not in perms:
+                raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
+            if not ({COMPETITIONS_MANAGE, COMPETITIONS_RESULTS} & perms):
                 raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
 
     @property

@@ -20,6 +20,7 @@ from access.catalog import (
     MEMBERS_EDIT,
     MEMBERS_VIEW,
     PEERING_MANAGE,
+    PEERING_VIEW,
 )
 from access.permissions import permissions_in
 from core.api_base import OrgScopedMixin
@@ -258,7 +259,7 @@ def register_data(c: Coupling, names: bool = True) -> dict | None:
 
 
 class _Peering(OrgScopedMixin, APIView):
-    read_permission = PEERING_MANAGE
+    read_permission = PEERING_VIEW
     write_permission = PEERING_MANAGE
 
     def couplings(self):

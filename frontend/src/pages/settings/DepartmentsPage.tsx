@@ -793,7 +793,7 @@ function DepartmentCard({
         roles={dep.roles.map((r) => ({ ...r, holders: r.holders.map((h) => h.name) }))}
         catalog={catalog}
         holderLabel={t('Inhaber')}
-        noPermissions="keine (nur Amt)"
+        noPermissions={t('keine (nur Amt)')}
         showPermissions={!!dep.self_managed}
         editLabel={editable ? t('Bearbeiten') : t('Ansehen')}
         onEdit={(r) => setRoleEdit(dep.roles.find((x) => x.id === r.id) ?? null)}

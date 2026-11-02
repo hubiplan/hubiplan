@@ -357,10 +357,17 @@ export interface AuditEntry {
   } | null
 }
 
+/** Eintrag des Rechtekatalogs: ein Bereich mit Stufen (lesen, bearbeiten) oder die
+ *  Zusatzrechte zum Ankreuzen (konzepte/berechtigungen.md) */
 export interface CatalogModule {
   id: string
   label: string
-  permissions: { code: string; label: string }[]
+  /** fehlt bei älteren Ständen: dann einfache Häkchen */
+  kind?: 'area' | 'extras'
+  module?: string
+  levels?: { code: string; level: 'view' | 'edit'; label: string }[]
+  /** Bereich: die Stufen; Zusatzrechte: die Häkchen (needs: nötiges Leserecht) */
+  permissions: { code: string; label: string; needs?: string }[]
 }
 
 export interface PlatformOrg {
@@ -596,6 +603,24 @@ export const PERM = {
   competitionsResults: 'competitions.results',
   entriesSubmit: 'entries.submit',
   entriesManage: 'entries.manage',
+  // Bereiche mit Stufen (konzepte/berechtigungen.md): Leserechte, die es früher nicht gab
+  photosView: 'photos.view',
+  settingsView: 'settings.view',
+  themeView: 'theme.view',
+  rolesView: 'roles.view',
+  rolesEdit: 'roles.edit',
+  eventsView: 'events.view',
+  circularsView: 'circulars.view',
+  webcontentView: 'webcontent.view',
+  websiteView: 'website.view',
+  competitionsView: 'competitions.view',
+  resultsView: 'results.view',
+  entriesView: 'entries.view',
+  callsView: 'calls.view',
+  peeringView: 'peering.view',
+  unitsView: 'units.view',
+  loginsView: 'logins.view',
+  loginsEdit: 'logins.edit',
 } as const
 
 /** Ergebnis von „Verwalter einrichten“ für eine Untereinheit. */

@@ -145,13 +145,19 @@ class TestVerwaltung:
         from organizations.models import Organization
 
         org = Organization.objects.create(name="X", type="club", parent=Organization.platform())
-        role = Role.objects.create(organization=org, name="Vorstand", permissions=["roles.manage"])
-        other = Role.objects.create(organization=org, name="Lesen", permissions=["members.view"])
+        role = Role.objects.create(organization=org, name="Vorstand")
+        other = Role.objects.create(organization=org, name="Lesen")
+        # Stand vor den Bereichen (access/0016): frühere Codes, an save() vorbei
+        Role.objects.filter(pk=role.pk).update(permissions=["roles.manage"])
+        Role.objects.filter(pk=other.pk).update(permissions=["members.view"])
         mig.forwards(django_apps, connection.schema_editor())
         role.refresh_from_db()
         other.refresh_from_db()
-        assert "cards.manage" in role.permissions
-        assert "cards.manage" not in other.permissions
+        # save() speichert die Form der Bereiche; wirksam ist das frühere Recht
+        from access.catalog import effective
+
+        assert "cards.manage" in effective(role.permissions)
+        assert "cards.manage" not in effective(other.permissions)
 
     def test_fremder_verein(self, club, erika, api, board_b):
         assert api(board_b).get(card_url(club, erika)).status_code == 404

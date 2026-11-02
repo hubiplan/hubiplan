@@ -17,7 +17,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import MEMBERS_VIEW, PHOTOS_MANAGE
+from access.catalog import PHOTOS_MANAGE, PHOTOS_VIEW
 from audit.log import record
 from core.ratelimit import client_ip, too_many
 from core.tenancy import rls_bypass, tenant_context
@@ -52,7 +52,7 @@ def photo_info(membership: Membership, org_id: int) -> dict:
 
 
 class _PhotoView(_ClubMixin, APIView):
-    read_permission = MEMBERS_VIEW
+    read_permission = PHOTOS_VIEW
     write_permission = PHOTOS_MANAGE
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 

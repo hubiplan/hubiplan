@@ -1029,6 +1029,29 @@ fieldset {
   margin: 1rem 0;
 }
 
+/* Rollenmaske: je Bereich kein Zugriff / lesen / bearbeiten */
+.permission-matrix {
+  margin: 1rem 0;
+}
+.permission-table th[scope='row'] {
+  font-weight: 600;
+  text-align: left;
+}
+.permission-table .level-cell {
+  text-align: center;
+  width: 7.5rem;
+}
+.permission-table input[type='radio'] {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+@media (max-width: 40rem) {
+  .permission-table .level-cell {
+    width: auto;
+    padding-inline: 0.25rem;
+  }
+}
+
 .permission-group legend {
   font-weight: 600;
   margin-bottom: 0.25rem;

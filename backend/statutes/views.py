@@ -18,7 +18,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import ORG_EDIT
+from access.catalog import ORG_EDIT, SETTINGS_VIEW
 from audit.log import record
 from core.api_base import OrgScopedMixin
 from core.tenancy import rls_bypass
@@ -68,7 +68,7 @@ def public_urls(request, pub: StatutePublication | None) -> dict:
 class _StatuteMixin(OrgScopedMixin):
     """Lesen: jede Rolle der Organisation · Verwalten: Organisation bearbeiten."""
 
-    read_permission = None
+    read_permission = SETTINGS_VIEW
     write_permission = ORG_EDIT
     allowed_org_types = (Organization.Type.FEDERATION, Organization.Type.CLUB)
 

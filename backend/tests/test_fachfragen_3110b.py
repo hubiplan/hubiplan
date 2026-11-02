@@ -75,7 +75,14 @@ def test_pflicht_2fa_nach_uebergang(orgs, api, board_a):
     board_a.refresh_from_db()
     perms = permissions_in(board_a, orgs["a"])
     assert ROLES_MANAGE not in perms and MEMBERS_VIEW in perms
-    assert api(board_a).get(f"/api/orgs/{orgs['a'].pk}/roles/").status_code == 403
+    # Rollen lesen geht weiter (nur Bearbeiten braucht den zweiten Faktor)
+    assert api(board_a).get(f"/api/orgs/{orgs['a'].pk}/roles/").status_code == 200
+    created = api(board_a).post(
+        f"/api/orgs/{orgs['a'].pk}/roles/",
+        {"name": "Neu", "permissions": []},
+        content_type="application/json",
+    )
+    assert created.status_code == 403
     session = api(board_a).get("/_allauth/browser/v1/auth/session").json()["data"]["user"]
     assert session["mfa_overdue"] is True
 

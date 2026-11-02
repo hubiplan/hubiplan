@@ -175,7 +175,7 @@ class OrgDocsMixin(_DocsMixin, OrgScopedMixin):
 
 
 class DeptDocsMixin(_DocsMixin, DepartmentScopedMixin):
-    read_permission = None
+    read_permission = DOCS_VIEW
     write_permission = DEPT_DOCS_MANAGE
 
     def initial(self, request, *args, **kwargs):

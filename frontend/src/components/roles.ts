@@ -1,5 +1,6 @@
 // Gemeinsame Angaben für Rollen aller Einheiten (Liste und Maske: RoleEditor.tsx)
 import type { CatalogModule } from '../api/orgs.ts'
+import { t } from '../i18n/index.ts'
 
 export interface RoleValues {
   name: string
@@ -37,16 +38,50 @@ const FULL: RoleField[] = [
 export const UNIT_ROLE_FIELDS: RoleField[] = ['on_letterhead', 'contact_email', 'on_website']
 export const ALL_ROLE_FIELDS = FULL
 
+export type Level = 'none' | 'view' | 'edit'
+
+/** Stufe einer Rolle in einem Bereich */
+export function levelOf(codes: string[], area: CatalogModule): Level {
+  const levels = area.levels ?? []
+  if (levels.some((l) => l.level === 'edit' && codes.includes(l.code))) return 'edit'
+  if (levels.some((l) => l.level === 'view' && codes.includes(l.code))) return 'view'
+  return 'none'
+}
+
+/** Stufe setzen: Bearbeiten schließt Lesen ein; ohne Lesen fallen abhängige Zusatzrechte weg */
+export function withLevel(
+  codes: string[],
+  area: CatalogModule,
+  level: Level,
+  catalog: CatalogModule[],
+): string[] {
+  const own = (area.levels ?? []).map((l) => l.code)
+  let next = codes.filter((c) => !own.includes(c))
+  const view = area.levels?.find((l) => l.level === 'view')?.code
+  const edit = area.levels?.find((l) => l.level === 'edit')?.code
+  if (level === 'view' && view) next.push(view)
+  if (level === 'edit') {
+    if (view) next.push(view)
+    if (edit) next.push(edit)
+  }
+  if (level === 'none' && view) {
+    const extras = catalog.filter((m) => m.kind === 'extras').flatMap((m) => m.permissions)
+    next = next.filter((c) => !extras.some((e) => e.code === c && e.needs === view))
+  }
+  return next
+}
+
 export function permissionLabels(codes: string[], catalog: CatalogModule[]): string {
-  if (codes.length === 0) return 'keine'
+  if (codes.length === 0) return t('keine')
   const labels = catalog.flatMap((m) => m.permissions).filter((p) => codes.includes(p.code))
   return labels.map((p) => p.label).join(', ')
 }
 
 export interface PermissionArea {
   label: string
-  /** alle Rechte des Bereichs */
+  /** höchste Stufe des Bereichs (bzw. alle Rechte des Bereichs) */
   full: boolean
+  /** Stufe als Text („lesen“, „bearbeiten“) oder die einzelnen Rechte */
   permissions: string[]
 }
 
@@ -54,10 +89,19 @@ export interface PermissionArea {
 export function permissionAreas(codes: string[], catalog: CatalogModule[]): PermissionArea[] {
   return catalog
     .map((m) => {
+      if (m.kind === 'area') {
+        const level = levelOf(codes, m)
+        const top = m.levels?.[m.levels.length - 1]?.level
+        return {
+          label: m.label,
+          full: level === top,
+          permissions: level === 'none' ? [] : [level === 'edit' ? t('bearbeiten') : t('lesen')],
+        }
+      }
       const held = m.permissions.filter((p) => codes.includes(p.code))
       return {
         label: m.label,
-        full: held.length === m.permissions.length,
+        full: m.kind === 'extras' || held.length === m.permissions.length,
         permissions: held.map((p) => p.label),
       }
     })

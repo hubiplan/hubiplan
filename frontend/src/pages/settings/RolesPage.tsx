@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { todayIso } from '../../api/members.ts'
 import type { FormEvent } from 'react'
-import { orgApi } from '../../api/orgs.ts'
+import { orgApi, PERM } from '../../api/orgs.ts'
 import type { Assignment, Role } from '../../api/orgs.ts'
 import { Alert, Checkbox, Field, SelectField, LoadError } from '../../components/ui.tsx'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
@@ -23,6 +23,8 @@ export function RolesPage() {
   const catalog = useLoad(() => orgApi.catalog(org.type, org.id), [org.type, org.id])
   const assignments = useLoad(() => orgApi.assignments(org.id), [org.id])
   const [editing, setEditing] = useState<Role | 'new' | null>(null)
+  // Bereich Rollen nur lesen: alles sehen, nichts ändern (konzepte/berechtigungen.md)
+  const canEdit = org.permissions.includes(PERM.rolesManage)
 
   const error = roles.error ?? catalog.error ?? assignments.error
   if (error)
@@ -45,7 +47,7 @@ export function RolesPage() {
       <div className="card card-wide">
         <div className="card-head">
           <h2>{t('Rollen')}</h2>
-          {editing === null && (
+          {editing === null && canEdit && (
             <button
               type="button"
               className="button button-ghost push-right"
@@ -68,6 +70,7 @@ export function RolesPage() {
             catalog={catalog.data}
             fields={ALL_ROLE_FIELDS}
             hasWebsite={org.modules.includes('website')}
+            readOnly={!canEdit}
             onSave={(data) =>
               editing === 'new'
                 ? orgApi.createRole(org.id, data)
@@ -89,7 +92,12 @@ export function RolesPage() {
           roles={roles.data.map((r) => ({ ...r, holders: r.assignment_count }))}
           catalog={catalogData}
           onEdit={(r) => setEditing(roles.data!.find((x) => x.id === r.id) ?? null)}
-          onReorder={(ids) => orgApi.reorderRoles(org.id, ids).then(() => roles.reload())}
+          editLabel={canEdit ? t('Bearbeiten') : t('Ansehen')}
+          onReorder={
+            canEdit
+              ? (ids) => orgApi.reorderRoles(org.id, ids).then(() => roles.reload())
+              : undefined
+          }
           website={org.modules.includes('website')}
         />
       </div>
@@ -100,6 +108,7 @@ export function RolesPage() {
         roles={roles.data}
         assignments={assignments.data}
         onChange={reloadAll}
+        readOnly={!canEdit}
       />
     </div>
   )
@@ -131,12 +140,15 @@ function UsersCard({
   roles,
   assignments,
   onChange,
+  readOnly = false,
 }: {
   orgId: number
   isClub: boolean
   roles: Role[]
   assignments: Assignment[]
   onChange: () => Promise<void>
+  /** nur lesen: keine Zuordnung, kein Ändern */
+  readOnly?: boolean
 }) {
   const { refresh } = useOrg()
   const [today] = useState(todayIso)
@@ -211,6 +223,7 @@ function UsersCard({
                 span={i === 0 ? group.length : 0}
                 continued={i < group.length - 1}
                 today={today}
+                readOnly={readOnly}
                 onEnd={() => void end(a)}
                 onChange={async () => {
                   await onChange()
@@ -228,79 +241,83 @@ function UsersCard({
       />
       {error && <Alert kind="error">{error}</Alert>}
 
-      <form className="subcard" onSubmit={add}>
-        <h3>{t('Rolle zuordnen')}</h3>
-        <div className="grid-2">
-          <Field
-            label={t('E-Mail-Adresse')}
-            type="email"
-            required
-            value={form.values.email}
-            error={form.errors.email}
-            hint={t('Gibt es noch kein Konto, wird eines angelegt.')}
-            onChange={(e) => form.set('email', e.target.value)}
-          />
-          <SelectField
-            label={t('Rolle')}
-            value={form.values.role}
-            error={form.errors.role}
-            onChange={(e) => form.set('role', Number(e.target.value))}
-          >
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </SelectField>
-          <Field
-            label="von"
-            type="date"
-            required
-            value={form.values.valid_from}
-            error={form.errors.valid_from}
-            onChange={(e) => form.set('valid_from', e.target.value)}
-          />
-          <Field
-            label={t('bis (optional)')}
-            type="date"
-            value={form.values.valid_until}
-            error={form.errors.valid_until}
-            onChange={(e) => form.set('valid_until', e.target.value)}
-          />
-        </div>
-        {isClub && (
-          <MemberPicker
-            orgId={orgId}
-            value={member}
-            label={t('Mitgliedsakte der Person (optional, für die Rollen-Historie)')}
-            onChange={(m) => {
-              setMember(m)
-              if (m && m.email && !form.values.email) form.set('email', m.email)
-            }}
-          />
-        )}
-        {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
-        {created && (
-          <Alert kind={created.invited ? 'info' : 'error'}>
-            {created.invited
-              ? t('Neues Konto für {email} angelegt. Die Einladung mit einem Link zum ', {
-                  email: created.email,
-                }) +
-                t(
-                  'Festlegen des Passworts ist per E-Mail unterwegs (gilt {INVITATION_DAYS} Tage).',
-                  { INVITATION_DAYS },
-                )
-              : t('Neues Konto für {email} angelegt, aber die Einladung konnte nicht ', {
-                  email: created.email,
-                }) +
-                t('verschickt werden. Die Person kann auf der Anmeldeseite „Passwort vergessen“ ') +
-                t('wählen und so ihr Passwort festlegen.')}
-          </Alert>
-        )}
-        <button type="submit" className="button button-primary" disabled={form.busy}>
-          {t('Zuordnen')}
-        </button>
-      </form>
+      {!readOnly && (
+        <form className="subcard" onSubmit={add}>
+          <h3>{t('Rolle zuordnen')}</h3>
+          <div className="grid-2">
+            <Field
+              label={t('E-Mail-Adresse')}
+              type="email"
+              required
+              value={form.values.email}
+              error={form.errors.email}
+              hint={t('Gibt es noch kein Konto, wird eines angelegt.')}
+              onChange={(e) => form.set('email', e.target.value)}
+            />
+            <SelectField
+              label={t('Rolle')}
+              value={form.values.role}
+              error={form.errors.role}
+              onChange={(e) => form.set('role', Number(e.target.value))}
+            >
+              {roles.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name}
+                </option>
+              ))}
+            </SelectField>
+            <Field
+              label="von"
+              type="date"
+              required
+              value={form.values.valid_from}
+              error={form.errors.valid_from}
+              onChange={(e) => form.set('valid_from', e.target.value)}
+            />
+            <Field
+              label={t('bis (optional)')}
+              type="date"
+              value={form.values.valid_until}
+              error={form.errors.valid_until}
+              onChange={(e) => form.set('valid_until', e.target.value)}
+            />
+          </div>
+          {isClub && (
+            <MemberPicker
+              orgId={orgId}
+              value={member}
+              label={t('Mitgliedsakte der Person (optional, für die Rollen-Historie)')}
+              onChange={(m) => {
+                setMember(m)
+                if (m && m.email && !form.values.email) form.set('email', m.email)
+              }}
+            />
+          )}
+          {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
+          {created && (
+            <Alert kind={created.invited ? 'info' : 'error'}>
+              {created.invited
+                ? t('Neues Konto für {email} angelegt. Die Einladung mit einem Link zum ', {
+                    email: created.email,
+                  }) +
+                  t(
+                    'Festlegen des Passworts ist per E-Mail unterwegs (gilt {INVITATION_DAYS} Tage).',
+                    { INVITATION_DAYS },
+                  )
+                : t('Neues Konto für {email} angelegt, aber die Einladung konnte nicht ', {
+                    email: created.email,
+                  }) +
+                  t(
+                    'verschickt werden. Die Person kann auf der Anmeldeseite „Passwort vergessen“ ',
+                  ) +
+                  t('wählen und so ihr Passwort festlegen.')}
+            </Alert>
+          )}
+          <button type="submit" className="button button-primary" disabled={form.busy}>
+            {t('Zuordnen')}
+          </button>
+        </form>
+      )}
     </div>
   )
 }
@@ -329,9 +346,11 @@ function AssignmentRow({
   today,
   onEnd,
   onChange,
+  readOnly = false,
 }: {
   orgId: number
   isClub: boolean
+  readOnly?: boolean
   assignment: Assignment
   /** Zeilen des Benutzers ab dieser (erste Zeile), 0 = Folgezeile ohne Benutzerspalte */
   span: number
@@ -455,7 +474,7 @@ function AssignmentRow({
         )}
       </td>
       <td className="actions">
-        {editing ? (
+        {readOnly ? null : editing ? (
           <div className="button-row">
             <button
               type="button"

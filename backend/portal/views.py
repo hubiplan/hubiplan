@@ -31,10 +31,15 @@ from access.catalog import (
     DEPT_MEMBERS_EDIT,
     DEPT_MEMBERS_VIEW,
     DEPT_ROLES_MANAGE,
+    LOGINS_EDIT,
+    LOGINS_VIEW,
+    ROLES_VIEW,
     catalog_for,
+    effective,
 )
 from accounts.models import User
 from audit.log import diff, record, snapshot
+from core.api_base import has_needed
 from core.ratelimit import client_ip, too_many
 from core.tenancy import scope_of, set_rls, tenant_context
 from members import services as member_services
@@ -69,6 +74,10 @@ from .models import ChangeRequest, LoginLink, PortalAccess, hash_token
 
 class MemberAccessView(_ClubMixin, APIView):
     """Zugang eines Mitglieds: ansehen, einrichten/Link senden, entfernen."""
+
+    # Bereich „Zugänge der Mitglieder“ (früher: Mitglieder lesen bzw. bearbeiten)
+    read_permission = LOGINS_VIEW
+    write_permission = LOGINS_EDIT
 
     def get_membership(self) -> Membership:
         return get_object_or_404(
@@ -317,7 +326,7 @@ class DepartmentScopedMixin:
             if request.method in ("GET", "HEAD", "OPTIONS")
             else self.write_permission
         )
-        if needed and needed not in ctx.permissions:
+        if not has_needed(ctx.permissions, needed):
             raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
         self.ctx = ctx
         self.dept = ctx.department
@@ -429,7 +438,7 @@ class DepartmentMemberDetailView(DepartmentScopedMixin, APIView):
 
 
 class DepartmentMemberAccessView(DepartmentScopedMixin, APIView):
-    read_permission = DEPT_ACCESS_MANAGE
+    read_permission = LOGINS_VIEW
     write_permission = DEPT_ACCESS_MANAGE
 
     @transaction.atomic
@@ -492,7 +501,7 @@ class DeptRoleSerializer(serializers.ModelSerializer):
 
 
 class DepartmentRolesView(DepartmentScopedMixin, APIView):
-    read_permission = DEPT_ROLES_MANAGE
+    read_permission = ROLES_VIEW
     write_permission = DEPT_ROLES_MANAGE
 
     def get(self, request, dept_id: int):
@@ -515,7 +524,7 @@ class DepartmentRolesView(DepartmentScopedMixin, APIView):
 class DepartmentRoleOrderView(DepartmentScopedMixin, APIView):
     """POST: Reihenfolge der Rollen der Untereinheit (per Ziehen)."""
 
-    read_permission = DEPT_ROLES_MANAGE
+    read_permission = ROLES_VIEW
     write_permission = DEPT_ROLES_MANAGE
 
     def post(self, request, dept_id: int):
@@ -531,7 +540,7 @@ class DepartmentRoleOrderView(DepartmentScopedMixin, APIView):
 
 
 class DepartmentRoleDetailView(DepartmentScopedMixin, APIView):
-    read_permission = DEPT_ROLES_MANAGE
+    read_permission = ROLES_VIEW
     write_permission = DEPT_ROLES_MANAGE
 
     def get_role(self, pk: int) -> DepartmentRole:
@@ -553,12 +562,13 @@ class DepartmentRoleDetailView(DepartmentScopedMixin, APIView):
         others = [
             h.role
             for h in own_roles.select_related("role")
-            if h.role_id != role.pk and DEPT_ROLES_MANAGE in (h.role.permissions or [])
+            if h.role_id != role.pk
+            and DEPT_ROLES_MANAGE in effective(h.role.permissions, dept=True)
         ]
         holds = own_roles.filter(role=role).exists()
         if not holds or others:
             return True
-        return new_perms is not None and DEPT_ROLES_MANAGE in new_perms
+        return new_perms is not None and DEPT_ROLES_MANAGE in effective(new_perms, dept=True)
 
     @transaction.atomic
     def patch(self, request, dept_id: int, pk: int):
@@ -613,7 +623,7 @@ def holder_data(h: DepartmentRoleHolder) -> dict:
 
 
 class DepartmentHoldersView(DepartmentScopedMixin, APIView):
-    read_permission = DEPT_ROLES_MANAGE
+    read_permission = ROLES_VIEW
     write_permission = DEPT_ROLES_MANAGE
 
     def get(self, request, dept_id: int):
@@ -661,8 +671,8 @@ class DepartmentHolderEndView(DepartmentScopedMixin, APIView):
             role__department=self.dept,
             pk=pk,
         )
-        if holder.membership_id == self.ctx.membership_id and DEPT_ROLES_MANAGE in (
-            holder.role.permissions or []
+        if holder.membership_id == self.ctx.membership_id and DEPT_ROLES_MANAGE in effective(
+            holder.role.permissions, dept=True
         ):
             raise serializers.ValidationError(
                 gettext("Du kannst dir die Rollenverwaltung nicht selbst entziehen.")

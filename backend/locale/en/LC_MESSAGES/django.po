@@ -15,53 +15,88 @@ msgstr ""
 msgid "Mitglieder"
 msgstr "Members"
 
-msgid "Mitglieder lesen"
-msgstr "Read members"
+msgid "Liste, Akten, Ämter, Ehrungen, Würden und Jubiläen sehen"
+msgstr "See list, records, offices, honours, titles and anniversaries"
 
-msgid "Mitglieder bearbeiten"
-msgstr "Edit members"
+msgid "Mitglieder anlegen und ändern, Austritte, Import"
+msgstr "Create and change members, leavings, import"
 
-msgid "Fotos verwalten"
-msgstr "Manage photos"
+#, python-brace-format
+msgid "Mitglieder {gen}"
+msgstr "Members of {gen}"
 
-msgid "Mitgliedsausweise (QR-Code) erstellen und sperren"
+msgid "Fotos"
+msgstr "Photos"
+
+msgid "Fotos der Mitglieder sehen"
+msgstr "See members' photos"
+
+msgid "Fotos hochladen, Einwilligungen und Freigabelinks"
+msgstr "Upload photos, consents and sharing links"
+
+msgid "Mitgliedsausweise"
+msgstr "Membership cards"
+
+msgid "Ausweise sehen und prüfen"
+msgstr "See and check membership cards"
+
+msgid "Ausweise (QR-Code) erstellen und sperren"
 msgstr "Create and block membership cards (QR code)"
 
-msgid "Einstellungen und Organisation"
-msgstr "Settings and organisation"
+#, python-brace-format
+msgid "Mitgliedsausweise {gen}"
+msgstr "Membership cards of {gen}"
+
+msgid "Zugänge der Mitglieder"
+msgstr "Member accounts"
+
+msgid "Sehen, wer einen Zugang hat"
+msgstr "See who has an account"
+
+msgid "Anmeldelinks schicken und Zugänge beenden"
+msgstr "Send sign-in links and end accounts"
+
+msgid "Einstellungen"
+msgstr "Settings"
+
+msgid ""
+"Organisationsdaten, Satzung, Mitgliedsarten, Zusatzfelder, Briefvorlage und "
+"Impressum sehen"
+msgstr ""
+"See organisation data, statutes, membership types, custom fields, letterhead "
+"and imprint"
 
 #, python-brace-format
 msgid "Organisationsdaten und {pl} bearbeiten"
 msgstr "Edit organisation details and {pl}"
 
-msgid "Änderungsprotokoll einsehen"
-msgstr "View change log"
+msgid "Erscheinungsbild"
+msgstr "Appearance"
 
-msgid ""
-"Verbund mit anderen HUBIplan-Instanzen verwalten (Namen und Rechnungen nur "
-"zusammen mit den Rechten dafür)"
-msgstr ""
-"Manage federation with other HUBIplan instances (names and invoices only "
-"together with the rights for them)"
+msgid "Farben, Logo und Designs sehen"
+msgstr "See colours, logo and designs"
+
+msgid "Erscheinungsbild ändern"
+msgstr "Change appearance"
 
 msgid "Rollen und Benutzer"
 msgstr "Roles and users"
 
+msgid "Rollen, Rechte und Inhaber sehen"
+msgstr "See roles, rights and holders"
+
 msgid "Rollen und Benutzer verwalten"
 msgstr "Manage roles and users"
 
-msgid ""
-"Ansicht als Rolle: HUBIplan so ansehen, wie eine Rolle es sieht (nur lesen, "
-"nie mehr als die eigenen Rechte)"
-msgstr ""
-"View as role: see HUBIplan as a role sees it (read only, never more than "
-"your own rights)"
+#, python-brace-format
+msgid "Rollen {gen}"
+msgstr "Roles of {gen}"
 
-msgid "Erscheinungsbild"
-msgstr "Appearance"
+msgid "Änderungsprotokoll"
+msgstr "Change log"
 
-msgid "Erscheinungsbild ändern"
-msgstr "Change appearance"
+msgid "Änderungsprotokoll und Postausgang einsehen"
+msgstr "See change log and outbox"
 
 msgid "Kasse"
 msgstr "Treasury"
@@ -82,12 +117,22 @@ msgid ""
 "Beitragsregeln, Beitragsläufe, Rechnungen, Mahnungen und Zahlungen bearbeiten"
 msgstr "Edit fee rules, fee runs, invoices, reminders and payments"
 
+#, python-brace-format
+msgid "Rechnungen {gen}"
+msgstr "Invoices of {gen}"
+
 msgid "Termine"
 msgstr "Events"
 
-msgid ""
-"Termine verwalten: Kalender der Organisation, Kategorien, öffentlicher Link"
-msgstr "Manage events: the organisation's calendar, categories, public link"
+msgid "Kalender, Rückmeldungen und Anhänge sehen"
+msgstr "See calendar, responses and attachments"
+
+msgid "Termine verwalten: Kalender, Kategorien, öffentlicher Link"
+msgstr "Manage events: calendar, categories, public link"
+
+#, python-brace-format
+msgid "Termine {gen}"
+msgstr "Events of {gen}"
 
 msgid "Dokumente"
 msgstr "Documents"
@@ -98,56 +143,100 @@ msgstr "Read the document store"
 msgid "Dokumentenablage verwalten: Ordner, Dokumente, Freigaben"
 msgstr "Manage the document store: folders, documents, sharing"
 
+#, python-brace-format
+msgid "Dokumente {gen}"
+msgstr "Documents of {gen}"
+
 msgid "Rundschreiben"
 msgstr "Circulars"
+
+msgid "Gesendete und empfangene Rundschreiben sehen"
+msgstr "See sent and received circulars"
 
 msgid "Rundschreiben verfassen und versenden (E-Mails und Serienbriefe)"
 msgstr "Write and send circulars (emails and mail-merge letters)"
 
-msgid "Webseite"
-msgstr "Website"
+#, python-brace-format
+msgid "Rundschreiben {gen}"
+msgstr "Circulars of {gen}"
 
-msgid "Webseite verwalten: einrichten, Zustand, Domains, Vorschau, Bausteine"
-msgstr "Manage the website: setup, status, domains, preview, blocks"
+msgid "Webseite: Inhalte"
+msgstr "Website: content"
+
+msgid "Texte und Bilder der Webseite sehen"
+msgstr "See website texts and images"
 
 msgid "Inhalte der Webseite bearbeiten (Texte und Bilder)"
 msgstr "Edit website content (texts and images)"
 
+msgid "Webseite: Einrichtung"
+msgstr "Website: setup"
+
+msgid "Zustand, Domains, Design und Bausteine sehen"
+msgstr "See status, domains, design and building blocks"
+
+msgid "Webseite einrichten: Zustand, Domains, Vorschau, Bausteine"
+msgstr "Set up the website: status, domains, preview, building blocks"
+
 msgid "Wettbewerbe"
 msgstr "Competitions"
+
+msgid "Wettbewerbe, Wertungen und Ranglisten sehen"
+msgstr "See competitions, scorings and rankings"
 
 msgid "Wettbewerbe verwalten: anlegen, Wertungen, abschließen, Auswertung"
 msgstr "Manage competitions: create, rankings, close, evaluation"
 
-msgid ""
-"Ergebnisse erfassen: Starter, Werte und Stechen eintragen (z. B. "
-"Schießmeister)"
+msgid "Ergebnisse"
+msgstr "Results"
+
+msgid "Starter und Ergebnisse sehen"
+msgstr "See participants and results"
+
+msgid "Ergebnisse erfassen: Starter, Werte und Stechen (z. B. Schießmeister)"
 msgstr ""
-"Record results: enter competitors, values and shoot-offs (e.g. range officer)"
+"Record results: participants, scores and shoot-offs (e.g. shooting master)"
 
 msgid "Meldungen"
 msgstr "Entries"
 
-msgid ""
-"Meldungen an Veranstalter zusammenstellen und abgeben (z. B. Mannschaften)"
-msgstr "Compile and submit entries to organisers (e.g. teams)"
+msgid "Eigene Meldungen sehen"
+msgstr "See own entries"
+
+msgid "Meldungen an Veranstalter zusammenstellen und abgeben"
+msgstr "Compile and submit entries to organisers"
+
+#, python-brace-format
+msgid "Meldungen {gen}"
+msgstr "Entries of {gen}"
+
+msgid "Ausschreibungen"
+msgstr "Calls"
+
+msgid "Ausschreibungen an die Untereinheiten sehen"
+msgstr "See calls to the sub-units"
+
+msgid "Ausschreibungen verwalten, Meldungen bestätigen"
+msgstr "Manage calls, confirm entries"
+
+msgid "Verbund"
+msgstr "Federation"
+
+msgid "Verbund mit anderen HUBIplan-Instanzen sehen"
+msgstr "See federation with other HUBIplan instances"
 
 msgid ""
-"Ausschreibungen an die eigenen Untereinheiten verwalten, Meldungen bestätigen"
-msgstr "Manage calls for entries to your own sub-units, confirm entries"
-
-msgid "Export"
-msgstr "Export"
-
-msgid "Mitgliederlisten exportieren"
-msgstr "Export member lists"
-
-msgid "Vollständigen Datenexport erstellen (alle Daten als Datei)"
-msgstr "Create a full data export (all data as a file)"
+"Verbund verwalten (Namen und Rechnungen nur zusammen mit den Rechten dafür)"
+msgstr ""
+"Manage federation (names and invoices only together with the rights for them)"
 
 #, python-brace-format
 msgid "{Pl}"
 msgstr "{Pl}"
+
+#, python-brace-format
+msgid "{Pl} sehen"
+msgstr "{Pl}: see"
 
 #, python-brace-format
 msgid "{Pl} anlegen und aus einer Exportdatei importieren"
@@ -159,76 +248,21 @@ msgstr "Platform"
 msgid "Einheiten und Plattform verwalten"
 msgstr "Manage units and platform"
 
-#, python-brace-format
-msgid "Mitglieder {gen}"
-msgstr "Members of {gen}"
+msgid "Mitgliederlisten exportieren (Excel und PDF)"
+msgstr "Export member lists (Excel and PDF)"
 
-#, python-brace-format
-msgid "Mitglieder {gen} lesen"
-msgstr "Read members of {gen}"
+msgid "Vollständigen Datenexport und Auskunft nach DSGVO erstellen"
+msgstr "Create full data export and GDPR information"
 
-#, python-brace-format
-msgid "Mitgliederdaten {gen} ändern"
-msgstr "Change member data of {gen}"
+msgid ""
+"Ansicht als Rolle: HUBIplan so ansehen, wie eine Rolle es sieht (nur lesen, "
+"nie mehr als die eigenen Rechte)"
+msgstr ""
+"View as role: see HUBIplan as a role sees it (read only, never more than "
+"your own rights)"
 
-msgid "Zugänge und Anmeldelinks für Mitglieder"
-msgstr "Accounts and sign-in links for members"
-
-#, python-brace-format
-msgid "Mitgliedsausweise (QR-Code) {gen}"
-msgstr "Membership cards (QR code) of {gen}"
-
-#, python-brace-format
-msgid "Daten {gen} exportieren"
-msgstr "Export data of {gen}"
-
-#, python-brace-format
-msgid "Rechnungen {gen}"
-msgstr "Invoices of {gen}"
-
-#, python-brace-format
-msgid "Sammelrechnungen {gen} sehen (Kassierer)"
-msgstr "See collective invoices of {gen} (treasurer)"
-
-#, python-brace-format
-msgid "Termine {gen}"
-msgstr "Events of {gen}"
-
-#, python-brace-format
-msgid "Termine {gen} verwalten"
-msgstr "Manage events of {gen}"
-
-#, python-brace-format
-msgid "Dokumente {gen}"
-msgstr "Documents of {gen}"
-
-#, python-brace-format
-msgid "Dokumentenablage {gen} verwalten"
-msgstr "Manage the document store of {gen}"
-
-#, python-brace-format
-msgid "Rundschreiben {gen}"
-msgstr "Circulars of {gen}"
-
-#, python-brace-format
-msgid "Rundschreiben an die Mitglieder {gen} versenden"
-msgstr "Send circulars to the members of {gen}"
-
-#, python-brace-format
-msgid "Meldungen {gen}"
-msgstr "Entries of {gen}"
-
-#, python-brace-format
-msgid "Meldungen {gen} zu Ausschreibungen von oben abgeben"
-msgstr "Submit entries of {gen} for calls from above"
-
-#, python-brace-format
-msgid "Rollen {gen}"
-msgstr "Roles of {gen}"
-
-#, python-brace-format
-msgid "Rollen {gen} und ihre Rechte verwalten"
-msgstr "Manage roles of {gen} and their rights"
+msgid "Zusatzrechte"
+msgstr "Additional rights"
 
 #, python-brace-format
 msgid "Für diese Organisation nicht erlaubt: {x}"
@@ -329,6 +363,9 @@ msgstr "Please choose a role."
 
 msgid "Diese Rolle gibt es hier nicht."
 msgstr "This role does not exist here."
+
+msgid "Unbekannter Schritt."
+msgstr "Unknown step."
 
 #, python-brace-format
 msgid ""
@@ -505,6 +542,12 @@ msgstr "changed"
 msgid "gelöscht"
 msgstr "deleted"
 
+msgid ""
+"Die Aufbewahrungsfrist dieser Rechnung ist abgelaufen; ihr PDF wurde "
+"gelöscht."
+msgstr ""
+"The retention period for this invoice has ended; its PDF has been deleted."
+
 msgid "jährlich"
 msgstr "yearly"
 
@@ -528,6 +571,9 @@ msgstr "Department"
 
 msgid "Verein"
 msgstr "Club"
+
+msgid "anonymisiert"
+msgstr "anonymised"
 
 msgid "Überweisung"
 msgstr "Bank transfer"
@@ -643,6 +689,17 @@ msgstr "Please choose a category for fee payments under Fees → Settings."
 
 msgid "Bitte das Konto wählen."
 msgstr "Please choose the account."
+
+msgid "Diese Zahlung gibt es nicht mehr."
+msgstr "This payment no longer exists."
+
+#, python-brace-format
+msgid ""
+"Zu dieser Zahlung gibt es die abgeschlossene Quittung {number}. Bitte die "
+"Quittung in der Kasse stornieren; das entfernt auch die Zahlung."
+msgstr ""
+"There is a completed receipt {number} for this payment. Please cancel the "
+"receipt in the treasury; that also removes the payment."
 
 msgid ""
 "An der Buchung hängen Belege. Bitte diese zuerst in der Kasse entfernen."
@@ -1061,6 +1118,27 @@ msgstr "Invalid."
 msgid "Das Pfand ist schon gefallen. Erst das Ergebnis entfernen."
 msgstr "The piece has already fallen. Remove the result first."
 
+msgid "Höchstens zwei Unterschriften."
+msgstr "At most two signatures."
+
+msgid "Das Bild darf höchstens 10 MB groß sein."
+msgstr "The image may be at most 10 MB."
+
+msgid "Bitte PNG, JPG oder WebP hochladen."
+msgstr "Please upload PNG, JPG or WebP."
+
+msgid "Das Bild hat zu viele Pixel."
+msgstr "The image has too many pixels."
+
+msgid "Die Datei ist kein gültiges Bild."
+msgstr "The file is not a valid image."
+
+msgid "Bitte ein Bild auswählen."
+msgstr "Please choose an image."
+
+msgid "Unter Mein Konto › Unterschrift ist keine Unterschrift hinterlegt."
+msgstr "No signature is stored under My account › Signature."
+
 msgid "Unbekannter Termin."
 msgstr "Unknown event."
 
@@ -1234,6 +1312,9 @@ msgstr "Please enter a title."
 msgid "Bitte eine Reihe dieser Einheit wählen."
 msgstr "Please choose a series of this unit."
 
+msgid "Bitte eine Vorlage dieser Einheit wählen."
+msgstr "Please choose a template of this unit."
+
 msgid "Höchstens 30 weitere Angaben."
 msgstr "At most 30 further details."
 
@@ -1399,14 +1480,16 @@ msgstr "Encrypted value is damaged."
 msgid "Verschlüsselter Wert ist verändert."
 msgstr "Encrypted value has been altered."
 
-msgid "Bitte PNG, JPG oder WebP hochladen."
-msgstr "Please upload PNG, JPG or WebP."
+msgid ""
+"HEIC-Bilder (iPhone) werden nicht unterstützt. Bitte als JPEG speichern oder "
+"am iPhone unter Einstellungen > Kamera > Formate „Maximale Kompatibilität“ "
+"wählen."
+msgstr ""
+"HEIC images (iPhone) are not supported. Please save as JPEG or choose “Most "
+"Compatible” on the iPhone under Settings > Camera > Formats."
 
 msgid "Das Logo hat zu viele Pixel."
 msgstr "The logo has too many pixels."
-
-msgid "Die Datei ist kein gültiges Bild."
-msgstr "The file is not a valid image."
 
 #, python-brace-format
 msgid ""
@@ -1468,6 +1551,12 @@ msgid ""
 "hochladen."
 msgstr "The virus scan is not reachable right now. Please upload again later."
 
+msgid ""
+"Die Datei konnte nicht auf Viren geprüft werden und wird deshalb nicht "
+"weitergegeben."
+msgstr ""
+"The file could not be checked for viruses and is therefore not passed on."
+
 #, python-brace-format
 msgid "clamd nicht erreichbar: {exc}"
 msgstr "clamd not reachable: {exc}"
@@ -1483,6 +1572,20 @@ msgstr "clamd does not respond: {exc}"
 #, python-brace-format
 msgid "clamd meldet: {x}"
 msgstr "clamd reports: {x}"
+
+#, python-brace-format
+msgid ""
+"Die Datei „{name}“ wurde nicht weitergegeben: Die Virenprüfung ist nicht "
+"eingerichtet."
+msgstr "The file “{name}” was not passed on: virus scanning is not set up."
+
+#, python-brace-format
+msgid ""
+"Die Datei „{name}“ ist zu groß für die Virenprüfung und wird deshalb nicht "
+"weitergegeben."
+msgstr ""
+"The file “{name}” is too large for the virus scan and is therefore not "
+"passed on."
 
 #, python-brace-format
 msgid "Höchstens {MAX_TEXT} Zeichen (jetzt {x})."
@@ -1546,6 +1649,9 @@ msgstr "Invalid data."
 #, python-brace-format
 msgid "Logo „{path}“: {x}"
 msgstr "Logo “{path}”: {x}"
+
+msgid "Export"
+msgstr "Export"
 
 msgid "Import"
 msgstr "Import"
@@ -2091,6 +2197,41 @@ msgstr "The entry has already been submitted; withdraw it first."
 msgid "Nur eine zurückgezogene Meldung lässt sich wieder öffnen."
 msgstr "Only a withdrawn entry can be reopened."
 
+msgid "Die Antwort ist zu groß."
+msgstr "The response is too large."
+
+#, python-brace-format
+msgid "Kategorie: {name}"
+msgstr "Category: {name}"
+
+#, python-brace-format
+msgid "Anmeldung bis {date}"
+msgstr "Registration until {date}"
+
+msgid "Termin"
+msgstr "Event"
+
+msgid "Vereinsplaner hat keine gültige Antwort geschickt."
+msgstr "Vereinsplaner did not send a valid response."
+
+#, python-brace-format
+msgid "Vereinsplaner lehnt das Token ab ({status})."
+msgstr "Vereinsplaner rejects the token ({status})."
+
+#, python-brace-format
+msgid "Vereinsplaner meldet einen Fehler ({status}). {message}"
+msgstr "Vereinsplaner reports an error ({status}). {message}"
+
+#, python-brace-format
+msgid "Der Kalender-Link antwortet mit {status}."
+msgstr "The calendar link responds with {status}."
+
+msgid "Unter dem Link liegt kein Kalender (iCal)."
+msgstr "There is no calendar (iCal) at this link."
+
+msgid "Es ist kein Zugang hinterlegt."
+msgstr "No access details are stored."
+
 msgid "nach außen öffentlich"
 msgstr "public to the outside"
 
@@ -2105,6 +2246,9 @@ msgstr "No"
 
 msgid "Vorstand"
 msgstr "Board"
+
+msgid "Kalender-Abo (iCal)"
+msgstr "Calendar subscription (iCal)"
 
 msgid "Leider sind alle Plätze vergeben."
 msgstr "Unfortunately all places are taken."
@@ -2156,6 +2300,21 @@ msgstr "The file is larger than 15 MB."
 #, python-brace-format
 msgid "Höchstens {MAX_ATTACHMENTS} Anhänge je Termin."
 msgstr "At most {MAX_ATTACHMENTS} attachments per event."
+
+msgid "Der Link muss mit https:// oder webcal:// beginnen."
+msgstr "The link must start with https:// or webcal://."
+
+msgid "Bitte das Token angeben."
+msgstr "Please enter the token."
+
+msgid "Bitte den Link angeben."
+msgstr "Please enter the link."
+
+msgid "Der Abruf ist ausgeschaltet."
+msgstr "Fetching is switched off."
+
+msgid "Diesen Termin kannst du hier nicht ausblenden."
+msgstr "You cannot hide this event here."
 
 msgid "Die Rückmeldungen sieht der Vorstand, der den Termin anlegt."
 msgstr "The board member who creates the event sees the responses."
@@ -2443,6 +2602,17 @@ msgstr "At most {MAX_FILES} statements per ZIP archive."
 msgid "{filename} ist entpackt zu groß."
 msgstr "{filename} is too large when unpacked."
 
+msgid "Das ZIP-Archiv ist entpackt zu groß."
+msgstr "The ZIP archive is too large when unpacked."
+
+#, python-brace-format
+msgid "Höchstens {n} Kontoauszüge je Datei."
+msgstr "At most {n} bank statements per file."
+
+#, python-brace-format
+msgid "Höchstens {n} Umsätze je Datei."
+msgstr "At most {n} transactions per file."
+
 msgid "Bitte ganze Stückzahlen angeben."
 msgstr "Please enter whole quantities."
 
@@ -2494,6 +2664,45 @@ msgstr "Please enter a valid year."
 
 msgid "Unbekannte Zuwendung."
 msgstr "Unknown donation."
+
+msgid ""
+"Die Einheit ist nicht als steuerbegünstigt mit eigenem Bescheid eingetragen "
+"(Schalter in den Einstellungen)."
+msgstr ""
+"The unit is not registered as tax-privileged with its own notice (switch in "
+"the settings)."
+
+msgid "begünstigte Zwecke"
+msgstr "privileged purposes"
+
+msgid "Finanzamt"
+msgstr "tax office"
+
+msgid "Steuernummer"
+msgstr "tax number"
+
+msgid "Datum des Bescheids"
+msgstr "date of the notice"
+
+msgid "letzter Veranlagungszeitraum"
+msgstr "last assessment period"
+
+#, python-brace-format
+msgid "Es fehlt: {gaps}."
+msgstr "Missing: {gaps}."
+
+#, python-brace-format
+msgid ""
+"Der Bescheid vom {date} ist älter als {years} Jahre. Mit ihm dürfen keine "
+"Zuwendungsbestätigungen mehr ausgestellt werden (§ 63 Abs. 5 AO). Bitte den "
+"neuen Bescheid eintragen."
+msgstr ""
+"The notice of {date} is older than {years} years. Donation receipts may no "
+"longer be issued with it (section 63(5) of the German Fiscal Code). Please "
+"enter the new notice."
+
+msgid "Das Datum des Bescheids liegt in der Zukunft."
+msgstr "The date of the notice is in the future."
 
 #, python-brace-format
 msgid ""
@@ -2707,6 +2916,13 @@ msgstr "Please confirm that you received or paid out the amount."
 msgid "Stornieren lassen sich nur abgeschlossene Quittungen."
 msgstr "Only completed receipts can be cancelled."
 
+msgid ""
+"Die Buchung zu dieser Quittung ist schon storniert. Bitte die Kasse prüfen "
+"und die Quittung nicht noch einmal stornieren."
+msgstr ""
+"The entry for this receipt has already been cancelled. Please check the "
+"treasury and do not cancel the receipt again."
+
 msgid "Verschicken lässt sich erst die abgeschlossene Quittung."
 msgstr "Only a completed receipt can be sent."
 
@@ -2763,8 +2979,18 @@ msgstr "The amount must be greater than zero."
 msgid "Einer archivierten Rücklage lässt sich nichts zuführen."
 msgstr "Nothing can be allocated to an archived reserve."
 
+msgid "Eine Löschsperre gibt es nur für abgeschlossene Geschäftsjahre."
+msgstr "A deletion hold is only possible for closed financial years."
+
+msgid "Dieses Geschäftsjahr ist schon bereinigt."
+msgstr "This financial year has already been cleaned up."
+
 msgid "Nur abgeschlossene Geschäftsjahre lassen sich bereinigen."
 msgstr "Only closed financial years can be cleaned up."
+
+#, python-brace-format
+msgid "Für dieses Geschäftsjahr gilt eine Löschsperre: {x}"
+msgstr "A deletion hold applies to this financial year: {x}"
 
 msgid ""
 "Die Aufbewahrungsfrist läuft noch: Belege ab {x:%d.%m.%Y}, Bücher ab {x2:%d."
@@ -2965,6 +3191,9 @@ msgstr "The length of ledger accounts is between 4 and 8."
 
 msgid "Das dürfen nur Vorstände mit Rollenverwaltung."
 msgstr "Only board members with role administration may do this."
+
+msgid "Bitte einen Grund angeben."
+msgstr "Please give a reason."
 
 msgid "Einen Abschluss heben nur Vorstände mit Rollenverwaltung auf."
 msgstr "Only board members with role administration can reopen a closing."
@@ -3211,14 +3440,8 @@ msgstr "Please agree to the use of the photo."
 msgid "Bitte stimme der Verwendung des Fotos zu."
 msgstr "Please agree to the use of the photo."
 
-msgid "Das Bild darf höchstens 10 MB groß sein."
-msgstr "The image may be at most 10 MB."
-
 msgid "Bitte ein JPEG-, PNG- oder WebP-Bild hochladen."
 msgstr "Please upload a JPEG, PNG or WebP image."
-
-msgid "Das Bild hat zu viele Pixel."
-msgstr "The image has too many pixels."
 
 msgid "Ein Mitgliederfoto in der Datei ist kein gültiges Bild."
 msgstr "A member photo in the file is not a valid image."
@@ -3232,14 +3455,14 @@ msgstr "Please enter a date between {EARLIEST:%Y} and {latest:%Y}."
 msgid "Diese Mitgliedsart gibt es schon."
 msgstr "This membership type already exists."
 
+msgid "Pflichtfeld."
+msgstr "Required field."
+
 msgid "Der Eintritt liegt vor der Geburt."
 msgstr "Joining is before birth."
 
 msgid "Nachgetragene Zeiträume brauchen ein Austrittsdatum."
 msgstr "Periods added afterwards need a leaving date."
-
-msgid "Bitte einen Grund angeben."
-msgstr "Please give a reason."
 
 msgid "Der Zeitraum überschneidet sich mit einem anderen Zeitraum."
 msgstr "The period overlaps with another period."
@@ -3261,9 +3484,6 @@ msgstr "The date of birth is after joining on {first:%d/%m/%Y}."
 msgid "Unbekannte Person."
 msgstr "Unknown person."
 
-msgid "Pflichtfeld."
-msgstr "Required field."
-
 msgid ""
 "Stammdaten und Kontakt pflegt die ausgegliederte Untereinheit auf ihrer "
 "Instanz. Bitte eine Korrektur vorschlagen."
@@ -3276,6 +3496,12 @@ msgstr "The only period cannot be deleted."
 
 msgid "Die Person ist (noch) kein Verbandsmitglied."
 msgstr "The person is not (yet) a member of the association."
+
+msgid ""
+"Erst die Daten des ehemaligen Mitglieds löschen, dann den Namen aus der "
+"Chronik."
+msgstr ""
+"First delete the former member's data, then the name from the chronicle."
 
 msgid "Löschen geht nur bei ehemaligen Mitgliedern nach dem Austritt."
 msgstr "Deletion is only possible for former members after leaving."
@@ -3324,6 +3550,136 @@ msgstr "Please choose an inactive type."
 
 msgid "Unbekannte Entscheidung."
 msgstr "Unknown decision."
+
+msgid "Die Anmeldung bei diesem Dienst ist nicht möglich."
+msgstr "Signing in to this service is not possible."
+
+#, python-brace-format
+msgid "Dein Konto hat bei {org} keinen Zugang zu „{name}“."
+msgstr "Your account has no access to “{name}” at {org}."
+
+msgid "Dienstkonto und App-Passwort fehlen."
+msgstr "Service account and app password are missing."
+
+msgid "Die Nextcloud lehnt Dienstkonto oder App-Passwort ab."
+msgstr "Nextcloud rejects the service account or app password."
+
+msgid "Das Konto gibt es in der Nextcloud nicht (mehr)."
+msgstr "This account does not exist in Nextcloud (any more)."
+
+msgid "Das Dienstkonto darf dieses Konto nicht verwalten (Gruppen-Admin?)."
+msgstr "The service account may not manage this account (group admin?)."
+
+#, python-brace-format
+msgid "Die Nextcloud antwortet mit Fehler {status}."
+msgstr "Nextcloud answers with error {status}."
+
+#, python-brace-format
+msgid ""
+"Angehalten: {count} Konten wären auf einmal deaktiviert worden. Bitte Rollen "
+"prüfen und unter Einstellungen › Nextcloud den Abgleich bestätigen."
+msgstr ""
+"Stopped: {count} accounts would have been disabled at once. Please check the "
+"roles and confirm the synchronisation under Settings › Nextcloud."
+
+msgid "aktiviert"
+msgstr "enabled"
+
+msgid "deaktiviert"
+msgstr "disabled"
+
+#, python-brace-format
+msgid "{count} Konten konnten nicht geändert werden."
+msgstr "{count} accounts could not be changed."
+
+#, python-brace-format
+msgid "Nextcloud „{name}“: Konten abgeglichen"
+msgstr "Nextcloud “{name}”: accounts synchronised"
+
+#, python-brace-format
+msgid ""
+"HUBIplan hat die Konten in der Nextcloud „{name}“ ({host}) mit den Rollen "
+"abgeglichen."
+msgstr ""
+"HUBIplan has synchronised the accounts in the Nextcloud “{name}” ({host}) "
+"with the roles."
+
+msgid ""
+"Einzelheiten stehen unter Einstellungen › Nextcloud und im "
+"Änderungsprotokoll."
+msgstr "Details are under Settings › Nextcloud and in the change log."
+
+msgid "Diese Anmeldung kennt HUBIplan nicht."
+msgstr "HUBIplan does not know this sign-in."
+
+#, python-brace-format
+msgid ""
+"Für „{name}“ ist die Zwei-Faktor-Anmeldung nötig. Bitte melde dich bei "
+"HUBIplan ab und mit Passwort und Code wieder an."
+msgstr ""
+"“{name}” requires two-factor authentication. Please sign out of HUBIplan and "
+"sign in again with password and code."
+
+#, python-brace-format
+msgid ""
+"Für „{name}“ ist die Zwei-Faktor-Anmeldung nötig. Richte sie unter „Mein "
+"Konto“ ein und versuche es dann erneut."
+msgstr ""
+"“{name}” requires two-factor authentication. Set it up under “My account” "
+"and then try again."
+
+msgid "Bitte die Adresse mit https:// angeben."
+msgstr "Please enter the address with https://."
+
+msgid ""
+"Bitte nur die Adresse der Nextcloud angeben, z. B. https://cloud.example.org"
+msgstr ""
+"Please enter only the Nextcloud address, e.g. https://cloud.example.org"
+
+msgid "Bitte den Benutzernamen des Dienstkontos."
+msgstr "Please enter the user name of the service account."
+
+msgid "Höchstens 64 Zeichen."
+msgstr "At most 64 characters."
+
+#, python-brace-format
+msgid ""
+"Bitte je Zeile „E-Mail = Benutzername“ (Benutzername nur Kleinbuchstaben, "
+"Ziffern, Punkt, Bindestrich, Unterstrich, @). Fehlerhaft: {lines}"
+msgstr ""
+"Please use one line per entry, “email = user name” (user name only lower-"
+"case letters, digits, dot, hyphen, underscore, @). Invalid: {lines}"
+
+#, python-brace-format
+msgid "Doppelt eingetragen: {items}"
+msgstr "Entered twice: {items}"
+
+msgid "Bitte je Rolle eine Liste von Gruppen."
+msgstr "Please give a list of groups for each role."
+
+#, python-brace-format
+msgid "Gruppennamen höchstens 64 Zeichen: {groups}"
+msgstr "Group names may have at most 64 characters: {groups}"
+
+msgid "Mitgliederzugänge gibt es nur bei Vereinen."
+msgstr "Member access only exists for clubs."
+
+msgid "Dafür braucht es Dienstkonto, App-Passwort und Gruppe."
+msgstr "This needs a service account, an app password and a group."
+
+#, python-brace-format
+msgid "Verbunden als {name}."
+msgstr "Connected as {name}."
+
+msgid "„Konten automatisch deaktivieren“ ist aus."
+msgstr "“Disable accounts automatically” is off."
+
+#, python-brace-format
+msgid "Höchstens {n} Ansprechpartner."
+msgstr "At most {n} contacts."
+
+msgid "Unbekannte Anleitung."
+msgstr "Unknown guide."
 
 msgid "Weiterleitung ohne gültiges Ziel."
 msgstr "Redirect without a valid target."
@@ -3951,6 +4307,14 @@ msgstr "Only after the link has been confirmed."
 msgid "Der Sammelaustritt ist schon ausgeführt."
 msgstr "The collective leaving has already been carried out."
 
+msgid ""
+"Für diese Instanz wartet ein Notfallwechsel der Schlüssel. Die Anmeldung "
+"über sie ruht, bis die Plattformverwaltung ihn bestätigt."
+msgstr ""
+"An emergency key change is waiting for confirmation for this instance. "
+"Signing in through it is paused until the platform administration confirms "
+"it."
+
 msgid "Mit dieser Instanz besteht keine Kopplung."
 msgstr "There is no link with this instance."
 
@@ -4273,335 +4637,63 @@ msgstr "Please choose a PDF file."
 msgid "Unbekannte Dokumentart."
 msgstr "Unknown document type."
 
-msgid "Die Anmeldung bei diesem Dienst ist nicht möglich."
-msgstr "Signing in to this service is not possible."
+msgid "Das Bild darf höchstens 15 MB groß sein."
+msgstr "The image may be at most 15 MB."
 
-msgid "Dein Konto hat bei {org} keinen Zugang zu „{name}“."
-msgstr "Your account has no access to “{name}” at {org}."
-
-msgid "Diese Anmeldung kennt HUBIplan nicht."
-msgstr "HUBIplan does not know this sign-in."
-
-msgid "Für „{name}“ ist die Zwei-Faktor-Anmeldung nötig. Bitte melde dich bei HUBIplan ab und mit Passwort und Code wieder an."
-msgstr "“{name}” requires two-factor authentication. Please sign out of HUBIplan and sign in again with password and code."
-
-msgid "Für „{name}“ ist die Zwei-Faktor-Anmeldung nötig. Richte sie unter „Mein Konto“ ein und versuche es dann erneut."
-msgstr "“{name}” requires two-factor authentication. Set it up under “My account” and then try again."
-
-msgid "Bitte die Adresse mit https:// angeben."
-msgstr "Please enter the address with https://."
-
-msgid "Bitte nur die Adresse der Nextcloud angeben, z. B. https://cloud.example.org"
-msgstr "Please enter only the Nextcloud address, e.g. https://cloud.example.org"
-
-msgid "Mitgliederzugänge gibt es nur bei Vereinen."
-msgstr "Member access only exists for clubs."
-
-msgid ""
-"Bitte je Zeile „E-Mail = Benutzername“ (Benutzername nur Kleinbuchstaben, "
-"Ziffern, Punkt, Bindestrich, Unterstrich, @). Fehlerhaft: {lines}"
-msgstr ""
-"Please use one line per entry, “email = user name” (user name only lower-case "
-"letters, digits, dot, hyphen, underscore, @). Invalid: {lines}"
-
-msgid "Doppelt eingetragen: {items}"
-msgstr "Entered twice: {items}"
-
-msgid "Diese Sprache ist auf diesem Server nicht freigeschaltet."
-msgstr "This language is not enabled on this server."
-
-msgid "Bitte ein Bild auswählen."
-msgstr "Please choose an image."
-
-msgid "Bitte eine Vorlage dieser Einheit wählen."
-msgstr "Please choose a template of this unit."
-
-msgid "Höchstens zwei Unterschriften."
-msgstr "At most two signatures."
-
-msgid "Unter Mein Konto › Unterschrift ist keine Unterschrift hinterlegt."
-msgstr "No signature is stored under My account › Signature."
-
-msgid "Bitte die Namen der Bausteine als Text angeben."
-msgstr "Please enter the names of the building blocks as text."
-
-msgid "Dieser Baustein lässt sich nicht umbenennen: {key}"
-msgstr "This building block cannot be renamed: {key}"
-
-msgid "Ein Name darf höchstens {n} Zeichen lang sein."
-msgstr "A name may be at most {n} characters long."
-
-msgid "Höchstens {n} Ansprechpartner."
-msgstr "At most {n} contacts."
-
-msgid "Unbekannte Anleitung."
-msgstr "Unknown guide."
-
-msgid "Unbekannter Schritt."
-msgstr "Unknown step."
-
-msgid ""
-"Die Einheit ist nicht als steuerbegünstigt mit eigenem Bescheid eingetragen "
-"(Schalter in den Einstellungen)."
-msgstr ""
-"The unit is not registered as tax-privileged with its own notice (switch in "
-"the settings)."
-
-msgid "begünstigte Zwecke"
-msgstr "privileged purposes"
-
-msgid "Finanzamt"
-msgstr "tax office"
-
-msgid "Steuernummer"
-msgstr "tax number"
-
-msgid "Datum des Bescheids"
-msgstr "date of the notice"
-
-msgid "letzter Veranlagungszeitraum"
-msgstr "last assessment period"
-
-msgid "Es fehlt: {gaps}."
-msgstr "Missing: {gaps}."
-
-msgid ""
-"Der Bescheid vom {date} ist älter als {years} Jahre. Mit ihm dürfen keine "
-"Zuwendungsbestätigungen mehr ausgestellt werden (§ 63 Abs. 5 AO). Bitte den "
-"neuen Bescheid eintragen."
-msgstr ""
-"The notice of {date} is older than {years} years. Donation receipts may no "
-"longer be issued with it (section 63(5) of the German Fiscal Code). Please "
-"enter the new notice."
-
-msgid "Das Datum des Bescheids liegt in der Zukunft."
-msgstr "The date of the notice is in the future."
-
-#: website/content_views.py
 msgid "Eine Zeitleiste gibt es nur in der Chronik."
 msgstr "Only the chronicle has a timeline."
-
-#: website/timeline.py
-msgid "Bitte ein Jahr zwischen 1000 und 2999 angeben."
-msgstr "Please enter a year between 1000 and 2999."
-
-#: website/timeline.py
-msgid "Das Jahr „bis“ ist ungültig."
-msgstr "The “until” year is invalid."
-
-#: website/timeline.py
-msgid "Das Jahr „bis“ liegt vor dem Jahr."
-msgstr "The “until” year is before the year."
-
-#: website/timeline.py
-msgid "Bitte eine Überschrift angeben."
-msgstr "Please enter a heading."
-
-#: website/timeline.py
-msgid "Die Überschrift darf höchstens {n} Zeichen haben."
-msgstr "The heading may have at most {n} characters."
-
-#: website/timeline.py
-msgid "Der Text darf höchstens {n} Zeichen haben."
-msgstr "The text may have at most {n} characters."
-
-#: website/timeline.py
-msgid "Ungültige Zeitleiste."
-msgstr "Invalid timeline."
-
-#: website/timeline.py
-msgid "Höchstens {n} Einträge in der Zeitleiste."
-msgstr "At most {n} entries in the timeline."
-
-#: website/timeline.py
-msgid "Eintrag {n}: {error}"
-msgstr "Entry {n}: {error}"
-
-#: website/timeline.py
-msgid "Unbekanntes Bild in der Zeitleiste."
-msgstr "Unknown picture in the timeline."
-
-#: website/timeline.py
-msgid "Jahr"
-msgstr "Year"
-
-#: website/timeline.py
-msgid "Überschrift"
-msgstr "Heading"
-
-#: website/timeline.py
-msgid "Es fehlen die Spalten: {missing}. Gefunden: {found}."
-msgstr "Missing columns: {missing}. Found: {found}."
-
-msgid "Einzelheiten stehen unter Einstellungen › Nextcloud und im Änderungsprotokoll."
-msgstr "Details are under Settings › Nextcloud and in the change log."
-
-msgid "Dienstkonto und App-Passwort fehlen."
-msgstr "Service account and app password are missing."
-
-msgid "Die Nextcloud lehnt Dienstkonto oder App-Passwort ab."
-msgstr "Nextcloud rejects the service account or app password."
-
-msgid "Das Konto gibt es in der Nextcloud nicht (mehr)."
-msgstr "This account does not exist in Nextcloud (any more)."
-
-msgid "Das Dienstkonto darf dieses Konto nicht verwalten (Gruppen-Admin?)."
-msgstr "The service account may not manage this account (group admin?)."
-
-msgid "aktiviert"
-msgstr "enabled"
-
-msgid "deaktiviert"
-msgstr "disabled"
-
-msgid "Nextcloud „{name}“: Konten abgeglichen"
-msgstr "Nextcloud “{name}”: accounts synchronised"
-
-msgid "Die Nextcloud antwortet mit Fehler {status}."
-msgstr "Nextcloud answers with error {status}."
-
-msgid "Angehalten: {count} Konten wären auf einmal deaktiviert worden. Bitte Rollen prüfen und unter Einstellungen › Nextcloud den Abgleich bestätigen."
-msgstr "Stopped: {count} accounts would have been disabled at once. Please check the roles and confirm the synchronisation under Settings › Nextcloud."
-
-msgid "{count} Konten konnten nicht geändert werden."
-msgstr "{count} accounts could not be changed."
-
-msgid "HUBIplan hat die Konten in der Nextcloud „{name}“ ({host}) mit den Rollen abgeglichen."
-msgstr "HUBIplan has synchronised the accounts in the Nextcloud “{name}” ({host}) with the roles."
-
-msgid "Bitte den Benutzernamen des Dienstkontos."
-msgstr "Please enter the user name of the service account."
-
-msgid "Höchstens 64 Zeichen."
-msgstr "At most 64 characters."
-
-msgid "„Konten automatisch deaktivieren“ ist aus."
-msgstr "“Disable accounts automatically” is off."
-
-msgid "Dafür braucht es Dienstkonto, App-Passwort und Gruppe."
-msgstr "This needs a service account, an app password and a group."
-
-msgid "Verbunden als {name}."
-msgstr "Connected as {name}."
-
-msgid ""
-"Für diese Instanz wartet ein Notfallwechsel der Schlüssel. Die Anmeldung "
-"über sie ruht, bis die Plattformverwaltung ihn bestätigt."
-msgstr ""
-"An emergency key change is waiting for confirmation for this instance. "
-"Signing in through it is paused until the platform administration confirms "
-"it."
-
-msgid "Diese Zahlung gibt es nicht mehr."
-msgstr "This payment no longer exists."
-
-msgid ""
-"Zu dieser Zahlung gibt es die abgeschlossene Quittung {number}. Bitte die "
-"Quittung in der Kasse stornieren; das entfernt auch die Zahlung."
-msgstr ""
-"There is a completed receipt {number} for this payment. Please cancel "
-"the receipt in the treasury; that also removes the payment."
-
-msgid ""
-"Die Buchung zu dieser Quittung ist schon storniert. Bitte die Kasse prüfen "
-"und die Quittung nicht noch einmal stornieren."
-msgstr ""
-"The entry for this receipt has already been cancelled. Please check the "
-"treasury and do not cancel the receipt again."
-
-msgid "anonymisiert"
-msgstr "anonymised"
-
-msgid ""
-"Die Aufbewahrungsfrist dieser Rechnung ist abgelaufen; ihr PDF wurde gelöscht."
-msgstr ""
-"The retention period for this invoice has ended; its PDF has been deleted."
-
-msgid "Das ZIP-Archiv ist entpackt zu groß."
-msgstr "The ZIP archive is too large when unpacked."
-
-msgid "Höchstens {n} Kontoauszüge je Datei."
-msgstr "At most {n} bank statements per file."
-
-msgid "Höchstens {n} Umsätze je Datei."
-msgstr "At most {n} transactions per file."
-
-msgid "Bitte je Rolle eine Liste von Gruppen."
-msgstr "Please give a list of groups for each role."
-
-msgid "Gruppennamen höchstens 64 Zeichen: {groups}"
-msgstr "Group names may have at most 64 characters: {groups}"
-
-msgid "Eine Löschsperre gibt es nur für abgeschlossene Geschäftsjahre."
-msgstr "A deletion hold is only possible for closed financial years."
-
-msgid "Dieses Geschäftsjahr ist schon bereinigt."
-msgstr "This financial year has already been cleaned up."
-
-msgid "Für dieses Geschäftsjahr gilt eine Löschsperre: {x}"
-msgstr "A deletion hold applies to this financial year: {x}"
-
-msgid "Die Datei konnte nicht auf Viren geprüft werden und wird deshalb nicht weitergegeben."
-msgstr "The file could not be checked for viruses and is therefore not passed on."
-
-msgid ""
-"Die Datei „{name}“ wurde nicht weitergegeben: Die Virenprüfung ist nicht "
-"eingerichtet."
-msgstr "The file “{name}” was not passed on: virus scanning is not set up."
-
-msgid ""
-"Die Datei „{name}“ ist zu groß für die Virenprüfung und wird deshalb nicht "
-"weitergegeben."
-msgstr "The file “{name}” is too large for the virus scan and is therefore not passed on."
-
-msgid ""
-"Erst die Daten des ehemaligen Mitglieds löschen, dann den Namen aus der "
-"Chronik."
-msgstr "First delete the former member's data, then the name from the chronicle."
-
-#: website/timeline.py
-msgid "Eintrag {n}: höchstens {max} Bilder."
-msgstr "Entry {n}: at most {max} pictures."
 
 msgid "design.css ist größer als 64 KB."
 msgstr "design.css is larger than 64 KB."
 
+#, python-brace-format
 msgid "design.css enthält {what}, das ist nicht erlaubt."
 msgstr "design.css contains {what}, which is not allowed."
 
+#, python-brace-format
 msgid "{name}: Befehl „{tag}“"
 msgstr "{name}: tag “{tag}”"
 
+#, python-brace-format
 msgid "{where} ist nicht erlaubt."
 msgstr "{where} is not allowed."
 
+#, python-brace-format
 msgid "{where}: nur die Bibliotheken seite, static und i18n."
 msgstr "{where}: only the libraries seite, static and i18n."
 
+#, python-brace-format
 msgid "{where}: nur seite/basis.html oder seite/start.html."
 msgstr "{where}: only seite/basis.html or seite/start.html."
 
+#, python-brace-format
 msgid "{where}: nur feste Vorlagen unter seite/ oder „vorlage“."
 msgstr "{where}: only fixed templates under seite/ or “vorlage”."
 
+#, python-brace-format
 msgid "{name} ist größer als 64 KB."
 msgstr "{name} is larger than 64 KB."
 
+#, python-brace-format
 msgid "{name} lässt sich nicht lesen."
 msgstr "{name} cannot be read."
 
+#, python-brace-format
 msgid "{name}: Filter „{f}“ ist nicht erlaubt."
 msgstr "{name}: filter “{f}” is not allowed."
 
+#, python-brace-format
 msgid "{name} enthält {what}, das ist nicht erlaubt."
 msgstr "{name} contains {what}, which is not allowed."
 
 msgid "design.json: „roles“ fehlt oder ist leer."
 msgstr "design.json: “roles” is missing or empty."
 
+#, python-brace-format
 msgid "design.json: unbekannte Farbrolle „{r}“."
 msgstr "design.json: unknown colour role “{r}”."
 
+#, python-brace-format
 msgid "design.json: Farbrolle „{r}“ hat keinen gültigen Wert."
 msgstr "design.json: colour role “{r}” has no valid value."
 
@@ -4614,21 +4706,26 @@ msgstr "The package is larger than 2 MB."
 msgid "Die Datei ist kein ZIP-Paket."
 msgstr "The file is not a ZIP package."
 
+#, python-brace-format
 msgid "Ordner „{n}“ ist im Paket nicht erlaubt."
 msgstr "Folder “{n}” is not allowed in the package."
 
+#, python-brace-format
 msgid "Datei „{n}“ ist im Paket nicht erlaubt."
 msgstr "File “{n}” is not allowed in the package."
 
+#, python-brace-format
 msgid "Datei „{n}“ kommt doppelt vor."
 msgstr "File “{n}” appears twice."
 
 msgid "Das Paket ist entpackt größer als 5 MB."
 msgstr "The unpacked package is larger than 5 MB."
 
+#, python-brace-format
 msgid "Datei „{n}“ lässt sich nicht entpacken."
 msgstr "File “{n}” cannot be unpacked."
 
+#, python-brace-format
 msgid "Datei „{n}“ ist kein UTF-8-Text."
 msgstr "File “{n}” is not UTF-8 text."
 
@@ -4650,23 +4747,34 @@ msgstr "design.json: this is not a HUBIplan design package."
 msgid "design.json: Version fehlt."
 msgstr "design.json: version is missing."
 
-msgid "Das Paket hat Version {v}; diese HUBIplan-Fassung kennt nur Version {k}."
-msgstr "The package has version {v}; this HUBIplan version only knows version {k}."
+#, python-brace-format
+msgid ""
+"Das Paket hat Version {v}; diese HUBIplan-Fassung kennt nur Version {k}."
+msgstr ""
+"The package has version {v}; this HUBIplan version only knows version {k}."
 
+#, python-brace-format
 msgid "Unbekannte Angaben werden nicht übernommen: {f}"
 msgstr "Unknown entries are not imported: {f}"
 
+#, python-brace-format
 msgid "Kürzel „{k}“ ist ungültig (2–31 Zeichen: a–z, 0–9, Bindestrich)."
 msgstr "Short name “{k}” is invalid (2–31 characters: a–z, 0–9, hyphen)."
 
-msgid "Kürzel „{k}“ gehört zu einem Standarddesign. Bitte ein eigenes Kürzel wählen."
-msgstr "Short name “{k}” belongs to a standard design. Please choose your own short name."
+#, python-brace-format
+msgid ""
+"Kürzel „{k}“ gehört zu einem Standarddesign. Bitte ein eigenes Kürzel wählen."
+msgstr ""
+"Short name “{k}” belongs to a standard design. Please choose your own short "
+"name."
 
 msgid "Name des Designs fehlt."
 msgstr "The design name is missing."
 
-msgid "Eine Webseite nutzt dieses Design noch. Bitte dort zuerst ein anderes wählen."
-msgstr "A website still uses this design. Please choose another one there first."
+msgid ""
+"Eine Webseite nutzt dieses Design noch. Bitte dort zuerst ein anderes wählen."
+msgstr ""
+"A website still uses this design. Please choose another one there first."
 
 msgid "Designpakete spielen nur Plattformverwalter ein."
 msgstr "Only platform administrators can import design packages."
@@ -4677,78 +4785,75 @@ msgstr "This design package does not exist."
 msgid "Bitte ein Designpaket (ZIP) auswählen."
 msgstr "Please choose a design package (ZIP)."
 
+#, python-brace-format
 msgid "Ein Designpaket „{k}“ gibt es schon."
 msgstr "A design package “{k}” already exists."
 
 msgid "Die Webseite nutzt dieses Design. Bitte zuerst ein anderes wählen."
 msgstr "The website uses this design. Please choose another one first."
 
-msgid "Dieses Design gibt es nicht oder es ist für diese Webseite nicht freigegeben."
-msgstr "This design does not exist or is not released for this website."
+msgid "Bitte ein Jahr zwischen 1000 und 2999 angeben."
+msgstr "Please enter a year between 1000 and 2999."
 
-msgid "Heller Kopf mit farbiger Linie, Menü als Knöpfe in der Vereinsfarbe, Karten mit Schatten."
-msgstr "Light header with a coloured line, menu as buttons in the club colour, cards with shadows."
+msgid "Das Jahr „bis“ ist ungültig."
+msgstr "The “until” year is invalid."
 
-msgid "Das Bild darf höchstens 15 MB groß sein."
-msgstr "The image may be at most 15 MB."
+msgid "Das Jahr „bis“ liegt vor dem Jahr."
+msgstr "The “until” year is before the year."
+
+msgid "Bitte eine Überschrift angeben."
+msgstr "Please enter a heading."
+
+#, python-brace-format
+msgid "Die Überschrift darf höchstens {n} Zeichen haben."
+msgstr "The heading may have at most {n} characters."
+
+#, python-brace-format
+msgid "Der Text darf höchstens {n} Zeichen haben."
+msgstr "The text may have at most {n} characters."
+
+msgid "Ungültige Zeitleiste."
+msgstr "Invalid timeline."
+
+#, python-brace-format
+msgid "Höchstens {n} Einträge in der Zeitleiste."
+msgstr "At most {n} entries in the timeline."
+
+#, python-brace-format
+msgid "Eintrag {n}: höchstens {max} Bilder."
+msgstr "Entry {n}: at most {max} pictures."
+
+#, python-brace-format
+msgid "Eintrag {n}: {error}"
+msgstr "Entry {n}: {error}"
+
+msgid "Unbekanntes Bild in der Zeitleiste."
+msgstr "Unknown picture in the timeline."
+
+msgid "Jahr"
+msgstr "Year"
+
+msgid "Überschrift"
+msgstr "Heading"
+
+#, python-brace-format
+msgid "Es fehlen die Spalten: {missing}. Gefunden: {found}."
+msgstr "Missing columns: {missing}. Found: {found}."
+
+msgid "Diese Sprache ist auf diesem Server nicht freigeschaltet."
+msgstr "This language is not enabled on this server."
+
+msgid "Bitte die Namen der Bausteine als Text angeben."
+msgstr "Please enter the names of the building blocks as text."
+
+#, python-brace-format
+msgid "Dieser Baustein lässt sich nicht umbenennen: {key}"
+msgstr "This building block cannot be renamed: {key}"
+
+#, python-brace-format
+msgid "Ein Name darf höchstens {n} Zeichen lang sein."
+msgstr "A name may be at most {n} characters long."
 
 msgid ""
-"HEIC-Bilder (iPhone) werden nicht unterstützt. Bitte als JPEG speichern oder "
-"am iPhone unter Einstellungen > Kamera > Formate „Maximale Kompatibilität“ "
-"wählen."
-msgstr ""
-"HEIC images (iPhone) are not supported. Please save as JPEG or choose “Most "
-"Compatible” on the iPhone under Settings > Camera > Formats."
-
-msgid "Die Antwort ist zu groß."
-msgstr "The response is too large."
-
-#, python-brace-format
-msgid "Kategorie: {name}"
-msgstr "Category: {name}"
-
-#, python-brace-format
-msgid "Anmeldung bis {date}"
-msgstr "Registration until {date}"
-
-msgid "Termin"
-msgstr "Event"
-
-msgid "Vereinsplaner hat keine gültige Antwort geschickt."
-msgstr "Vereinsplaner did not send a valid response."
-
-#, python-brace-format
-msgid "Vereinsplaner lehnt das Token ab ({status})."
-msgstr "Vereinsplaner rejects the token ({status})."
-
-#, python-brace-format
-msgid "Vereinsplaner meldet einen Fehler ({status}). {message}"
-msgstr "Vereinsplaner reports an error ({status}). {message}"
-
-#, python-brace-format
-msgid "Der Kalender-Link antwortet mit {status}."
-msgstr "The calendar link responds with {status}."
-
-msgid "Unter dem Link liegt kein Kalender (iCal)."
-msgstr "There is no calendar (iCal) at this link."
-
-msgid "Es ist kein Zugang hinterlegt."
-msgstr "No access details are stored."
-
-msgid "Kalender-Abo (iCal)"
-msgstr "Calendar subscription (iCal)"
-
-msgid "Der Link muss mit https:// oder webcal:// beginnen."
-msgstr "The link must start with https:// or webcal://."
-
-msgid "Bitte das Token angeben."
-msgstr "Please enter the token."
-
-msgid "Bitte den Link angeben."
-msgstr "Please enter the link."
-
-msgid "Der Abruf ist ausgeschaltet."
-msgstr "Fetching is switched off."
-
-msgid "Diesen Termin kannst du hier nicht ausblenden."
-msgstr "You cannot hide this event here."
+"Dieses Design gibt es nicht oder es ist für diese Webseite nicht freigegeben."
+msgstr "This design does not exist or is not released for this website."

@@ -30,12 +30,12 @@ function renderApp(path: string) {
 }
 
 describe('Menüpunkt Rundschreiben', () => {
-  it('Verein ohne Verfassen-Recht sieht empfangene Rundschreiben', async () => {
+  it('Verein mit Leserecht, ohne Verfassen sieht empfangene Rundschreiben', async () => {
     fakeApi({
       [SESSION]: () => ({ status: 200, body: { status: 200, data: { user: testUser } } }),
       'GET /api/me/organizations/': () => ({
         status: 200,
-        body: [testOrg({ permissions: ['members.view'] })],
+        body: [testOrg({ permissions: ['members.view', 'circulars.view'] })],
       }),
       'GET /api/orgs/7/circulars/received/': () => ({ status: 200, body: [received] }),
       'GET /api/orgs/7/circulars/received/4/': () => ({
@@ -49,6 +49,20 @@ describe('Menüpunkt Rundschreiben', () => {
     expect(screen.queryByRole('link', { name: 'Verfassen' })).not.toBeInTheDocument()
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Königsschießen' }))
     expect((await screen.findByText('pünktlich')).tagName).toBe('STRONG')
+  })
+
+  it('ohne Leserecht kein Menüpunkt', async () => {
+    fakeApi({
+      [SESSION]: () => ({ status: 200, body: { status: 200, data: { user: testUser } } }),
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ permissions: ['members.view'] })],
+      }),
+    })
+    renderApp('/')
+    const nav = within(await screen.findByRole('navigation', { name: 'Module' }))
+    expect(await nav.findByRole('link', { name: 'Mitglieder' })).toBeInTheDocument()
+    expect(nav.queryByRole('link', { name: 'Rundschreiben' })).not.toBeInTheDocument()
   })
 
   it('alte Adresse unter Mitglieder leitet weiter', async () => {
