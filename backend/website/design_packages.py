@@ -447,7 +447,7 @@ def read(
     roles, role_problems = _roles(manifest.get("roles"))
     problems += role_problems
     sketch = _text(manifest.get("skizze_wie"), 20)
-    if sketch not in designs.DESIGNS:
+    if sketch not in designs.SKETCHES:
         sketch = designs.DEFAULT_DESIGN
 
     source = _text(manifest.get("quelle"), 20)
