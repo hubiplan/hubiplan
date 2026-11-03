@@ -3,6 +3,8 @@
 HUBIplan wird laufend aus `main` weiterentwickelt. Ein **Release** ist ein geprüfter,
 benannter Stand von `main` mit Versionsnummer, Git-Tag und Änderungshinweisen auf Deutsch
 und Englisch. Für die Webseite (`hubiplan-website`) gilt dasselbe mit eigener Zählung.
+Wie HUBIplan, Webseite und App zusammenpassen (Schnittstellen, `features`, Mindestversionen):
+[versionen.md](versionen.md).
 
 ## Versionsnummern
 

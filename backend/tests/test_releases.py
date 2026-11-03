@@ -39,3 +39,24 @@ def test_selbstauskunft_der_app(version_file):
     data = Client().get(f"{APP}instance/").json()
     assert data["version"] == "2026.11.1"
     assert data["api_version"] == 1
+
+
+def test_funktionen_der_app(version_file):
+    from core.features import APP_FEATURES
+
+    data = Client().get(f"{APP}instance/").json()
+    assert data["features"] == sorted(APP_FEATURES)
+    assert "rechte-stufen" in data["features"]
+
+
+def test_selbstauskunft_der_webseite(version_file):
+    from core.features import SITE_FEATURES
+
+    version_file.write_text("2026.11.1\n", encoding="utf-8")
+    resp = Client().get("/api/public/site/v1/instance/")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["product"] == "HUBIplan"
+    assert data["version"] == "2026.11.1"
+    assert data["api_version"] == 1
+    assert data["features"] == sorted(SITE_FEATURES)

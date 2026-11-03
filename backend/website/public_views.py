@@ -17,8 +17,10 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.features import site_features
 from core.ratelimit import client_ip, too_many
 from core.tenancy import rls_bypass
+from core.version import running_version
 
 from . import contact, designs, menu, results, services
 from .models import BLOCKS, Website, WebsiteDomain
@@ -88,6 +90,21 @@ class _Public(APIView):
             if site and not site.site.allow_indexing:
                 response["X-Robots-Tag"] = "noindex"
         return response
+
+
+class InstanceView(_Public):
+    """Selbstauskunft für die Webseite: Version und Funktionen (core/features.py)."""
+
+    def get(self, request):
+        return self.respond(
+            {
+                "product": "HUBIplan",
+                # Programmversion nur zur Anzeige; Funktionen richten sich nach features
+                "version": running_version(),
+                "api_version": API_VERSION,
+                "features": site_features(),
+            }
+        )
 
 
 class ResolveView(_Public):
