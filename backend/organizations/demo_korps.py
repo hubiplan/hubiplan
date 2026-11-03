@@ -263,7 +263,13 @@ def _units(club) -> dict[str, Department]:
                 organization=club,
                 parent=unit,
                 name=zug_name,
-                defaults={"founding_year": year + 10 * z_order, "sort_order": z_order},
+                defaults={
+                    "founding_year": year + 10 * z_order,
+                    "sort_order": z_order,
+                    "label": "Zug",
+                    "label_en": "Platoon",
+                    "label_plural_en": "Platoons",
+                },
             )
             for position, role in enumerate(ZUG_ROLES, start=1):
                 DepartmentRole.objects.get_or_create(

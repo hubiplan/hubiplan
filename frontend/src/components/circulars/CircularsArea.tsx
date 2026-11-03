@@ -429,7 +429,7 @@ function DraftEditor({
           </SelectField>
           {byList ? (
             <SelectField
-              label="An"
+              label={t('An')}
               value={v.mailing_list ?? ''}
               error={errors.mailing_list}
               hint={
@@ -449,7 +449,7 @@ function DraftEditor({
           ) : (
             options.audiences && (
               <SelectField
-                label="An"
+                label={t('An')}
                 value={v.audience}
                 error={errors.audience}
                 onChange={(e) => {

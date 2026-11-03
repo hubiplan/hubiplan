@@ -3,7 +3,7 @@
 import { useRef } from 'react'
 import { promptDialog } from '../dialog.ts'
 import { renderMarkup } from './markup.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 export function MarkupPreview({ text }: { text: string }) {
   return (
@@ -72,10 +72,10 @@ export function MarkupEditor({
     <div className={`field markup-editor${error ? ' field-invalid' : ''}`}>
       <div className="markup-toolbar" role="toolbar" aria-label={t('Formatierung')}>
         <button type="button" title={t('Fett')} onClick={() => wrap('**', 'fett')}>
-          <strong>F</strong>
+          <strong>{tc('Knopf fett', 'F')}</strong>
         </button>
         <button type="button" title={t('Kursiv')} onClick={() => wrap('*', 'kursiv')}>
-          <em>K</em>
+          <em>{tc('Knopf kursiv', 'K')}</em>
         </button>
         <button type="button" title={t('Liste')} onClick={list}>
           {t('• Liste')}

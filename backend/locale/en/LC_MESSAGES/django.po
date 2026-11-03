@@ -4869,3 +4869,9 @@ msgstr "This version is not available as an update."
 
 msgid "Es läuft schon eine Aktualisierung."
 msgstr "An update is already running."
+
+msgid "Rolleninhaber in den {pl_dat}"
+msgstr "Role holders in the {pl_dat}"
+
+msgid "Rolleninhaber im Verein"
+msgstr "Role holders in the club"

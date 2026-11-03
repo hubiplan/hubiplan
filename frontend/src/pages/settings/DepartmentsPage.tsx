@@ -34,7 +34,7 @@ import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { SortableList, SortHint } from '../../components/Sortable.tsx'
 import { memberApi, todayIso } from '../../api/members.ts'
 import type { MemberRow } from '../../api/members.ts'
-import { t, tn } from '../../i18n/index.ts'
+import { lang, t, tn } from '../../i18n/index.ts'
 
 export function DepartmentsPage() {
   const org = useActiveOrg()
@@ -107,7 +107,9 @@ export function DepartmentsPage() {
           )}
           {d.logo_url && <img src={d.logo_url} alt="" className="cell-logo" />}
           {d.name}
-          {(d.depth ?? 0) > 0 && d.label && <span className="muted small">{d.label}</span>}
+          {(d.depth ?? 0) > 0 && d.label && (
+            <span className="muted small">{(lang() === 'en' && d.label_en) || d.label}</span>
+          )}
         </span>
       ),
     },
@@ -137,12 +139,12 @@ export function DepartmentsPage() {
     {
       key: 'status',
       label: t('Status'),
-      value: (d) => (d.is_remote ? t('andere Instanz') : d.is_active ? 'aktiv' : 'inaktiv'),
+      value: (d) => (d.is_remote ? t('andere Instanz') : d.is_active ? t('aktiv') : t('inaktiv')),
       filter: {
         allLabel: t('aktive und inaktive'),
         options: [
-          { value: 'aktiv', label: t('nur aktive') },
-          { value: 'inaktiv', label: t('nur inaktive') },
+          { value: t('aktiv'), label: t('nur aktive') },
+          { value: t('inaktiv'), label: t('nur inaktive') },
         ],
       },
     },
@@ -175,7 +177,7 @@ export function DepartmentsPage() {
             rows={data}
             columns={columns}
             rowKey={(d) => d.id}
-            searchPlaceholder={`${labelPlural} durchsuchen: Name, Kurzname, Rolle`}
+            searchPlaceholder={t('{labelPlural} durchsuchen: Name, Kurzname, Rolle', { labelPlural })}
             emptyText={t('Noch keine {labelPlural} angelegt.', { labelPlural })}
             countText={(n, total) =>
               n === total

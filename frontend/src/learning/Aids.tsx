@@ -368,7 +368,7 @@ export function HowTo({ k }: { k: HowKey }) {
   const example = 'example' in entry ? entry.example : undefined
   return (
     <Disclosure
-      prefix={entry.kind === 'calc' ? 'Wie gerechnet?' : 'So funktioniert es:'}
+      prefix={entry.kind === 'calc' ? t('Wie gerechnet?') : t('So funktioniert es:')}
       title={tr(entry.title)}
     >
       <p>{tr(entry.text)}</p>

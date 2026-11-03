@@ -66,7 +66,7 @@ export const modules: AppModule[] = [
     // Untereinheiten (z. B. Züge), benannt nach der Bezeichnung der Einheit
     id: 'untereinheiten',
     label: t('Untereinheiten'),
-    labelFor: (org) => org?.department_label_plural || t('Untereinheiten'),
+    labelFor: (org) => org?.department_terms?.pl || org?.department_label_plural || t('Untereinheiten'),
     path: '/untereinheiten',
     icon: icon(
       'M12 3.5v5M12 8.5H6v4M12 8.5h6v4M3.5 12.5h5v4h-5zM9.5 12.5h5v4h-5zM15.5 12.5h5v4h-5zM9.5 17.5v3h5v-3',

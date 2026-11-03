@@ -114,12 +114,12 @@ export function ClubsPage() {
     {
       key: 'status',
       label: t('Status'),
-      value: (c) => (c.is_active ? 'aktiv' : 'inaktiv'),
+      value: (c) => (c.is_active ? t('aktiv') : t('inaktiv')),
       filter: {
         allLabel: t('aktive und inaktive'),
-        initial: 'aktiv',
+        initial: t('aktiv'),
         options: [
-          { value: 'aktiv', label: t('nur aktive') },
+          { value: t('aktiv'), label: t('nur aktive') },
           { value: 'inaktiv', label: t('nur inaktive') },
         ],
       },
