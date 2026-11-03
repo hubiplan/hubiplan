@@ -91,6 +91,22 @@ des Änderungsprotokolls gelten für den Klartext, die Kette bleibt beim Verschl
 gültig. Die Datenbank kann darin nicht suchen; die Suche nach E-Mail-Adressen und
 Kontoinhabern läuft deshalb in HUBIplan selbst.
 
+**Umfang und Grenzen:** Vor- und Nachnamen der Mitglieder (`Person`) bleiben im
+Klartext. Das Geburtsdatum ist bereits verschlüsselt; Datumsvergleiche, Altersfilter
+und die Sortierung danach laufen in Python. Bei den Kontaktdaten sind E-Mail,
+Telefon und Straße verschlüsselt, Postleitzahl, Ort und Land bleiben lesbar.
+
+Weitere Klartextkopien von Namen und teilweise Kontaktdaten gibt es unter anderem
+bei Rundschreiben-Empfängern (`circulars.Recipient`), Rechnungen (`billing.Invoice`),
+Wettbewerbsstartern (`competitions.Starter`), Meldungen (`entries.EntryPerson`) und
+Würden/Begleitungen (`honors.Reign`, `honors.Companion`). Auch Benutzerkonten
+(`accounts`) enthalten Namen und E-Mail-Adressen.
+
+Bei einem Diebstahl der Datenbank ohne Schlüssel schützt die Verschlüsselung die
+verschlüsselten Inhalte. Die lesbaren Kopien und Beziehungen können Personen
+weiterhin identifizierbar machen. Wer die laufende Anwendung samt Zugriff auf die
+Schlüssel übernimmt, kann auch die verschlüsselten Inhalte lesen.
+
 - **Schlüssel je Verein:** Jeder Verein (bzw. Dachverband, Plattform) hat einen eigenen
   Datenschlüssel (AES-256-GCM). Untereinheiten nutzen den ihres Vereins. Die
   Datenschlüssel liegen in der Tabelle `core_datakey`, verpackt mit dem Hauptschlüssel.

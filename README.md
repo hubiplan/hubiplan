@@ -341,7 +341,6 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/versionen.md](docs/versionen.md) | Schnittstellen, `features`, Verträglichkeit von Webseite und App |
 | [docs/sicherheitspruefung.md](docs/sicherheitspruefung.md) | Sicherheitsprüfung |
 | [docs/ansicht-als-rolle.md](docs/ansicht-als-rolle.md) | Ansicht als Rolle |
-| [docs/konzept-verschluesselung-stufe2.md](docs/konzept-verschluesselung-stufe2.md) | Konzept: Verschlüsselung Stufe 2 (auch Namen) |
 | [docs/verbund.md](docs/verbund.md) | Verbund mit anderen Instanzen |
 | [docs/nextcloud.md](docs/nextcloud.md) | Anmeldung an der Nextcloud mit dem HUBIplan-Konto |
 | [docs/app.md](docs/app.md) | Schnittstelle für die App, Push |
