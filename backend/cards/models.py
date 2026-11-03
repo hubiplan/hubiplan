@@ -41,6 +41,8 @@ class MemberCard(models.Model):
     # Zeitpunkt des aktuellen Schlüssels (beim Neu-Erzeugen aktualisiert)
     issued_at = models.DateTimeField(auto_now_add=True)
     revoked_at = models.DateTimeField("gesperrt am", null=True, blank=True)
+    # Anbieter -> Objekt-ID -> zuletzt übertragener Inhalts-Hash. Keine Wallet-Schlüssel.
+    wallet_passes = models.JSONField(default=dict, db_default={}, blank=True)
 
     class Meta:
         verbose_name = "Mitgliedsausweis"

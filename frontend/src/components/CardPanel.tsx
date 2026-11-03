@@ -213,10 +213,58 @@ export function OwnCardPanel({ accessId, empty }: { accessId: number; empty?: Re
               <a className="button button-ghost" href={data.url} target="_blank" rel="noreferrer">
                 {t('Seite ansehen')}
               </a>
+              {data.wallet?.apple && (
+                <a className="button button-ghost" href={cardApi.appleWalletUrl(accessId)}>
+                  {t('Zu Apple Wallet hinzufügen')}
+                </a>
+              )}
             </div>
+            {data.wallet?.google && <GoogleWalletButton accessId={accessId} />}
+            {data.wallet?.apple && (
+              <p className="small muted">
+                {t(
+                  'Der Apple-Wallet-Pass wird nicht automatisch aktualisiert. Die aktuelle Gültigkeit wird beim Scannen online geprüft.',
+                )}
+              </p>
+            )}
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function GoogleWalletButton({ accessId }: { accessId: number }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  async function add() {
+    setBusy(true)
+    setError(null)
+    try {
+      const { url } = await cardApi.wallet(accessId, 'google')
+      window.location.assign(url)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="stack-sm">
+      <p className="small muted">
+        {t(
+          'Dabei werden dein Name, dein Verein und der QR-Code an Google übertragen. Dein Foto wird nicht übertragen. Die aktuelle Gültigkeit wird beim Scannen online geprüft.',
+        )}
+      </p>
+      <button
+        type="button"
+        className="button button-ghost"
+        disabled={busy}
+        onClick={() => void add()}
+      >
+        {busy ? t('Lädt …') : t('Zu Google Wallet hinzufügen')}
+      </button>
+      {error && <Alert kind="error">{error}</Alert>}
     </div>
   )
 }

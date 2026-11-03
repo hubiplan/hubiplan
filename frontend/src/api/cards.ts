@@ -10,6 +10,7 @@ export interface CardInfo {
   revoked_at?: string | null
   /** QR-Code als data:-URL (SVG) */
   qr?: string
+  wallet?: { google: boolean; apple?: boolean }
 }
 
 export interface PublicCard {
@@ -49,6 +50,9 @@ export const cardApi = {
     `/api/depts/${dept}/cards/pdf/${query(params)}`,
   portal: (access: number) => api.get<CardInfo>(`/api/portal/${access}/card/`),
   portalPdfUrl: (access: number) => `/api/portal/${access}/card/pdf/`,
+  appleWalletUrl: (access: number) => `/api/portal/${access}/card/wallet/apple/`,
+  wallet: (access: number, provider: 'google') =>
+    api.post<{ url: string }>(`/api/portal/${access}/card/wallet/${provider}/`, {}),
   publicCard: (token: string) =>
     request<PublicCard>('GET', `/api/public/card/${encodeURIComponent(token)}/`),
 }

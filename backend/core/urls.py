@@ -828,6 +828,11 @@ urlpatterns = [
     ),
     path("portal/<int:access_id>/card/", card_views.PortalCardView.as_view(), name="portal-card"),
     path(
+        "portal/<int:access_id>/card/wallet/<str:provider>/",
+        card_views.PortalCardWalletView.as_view(),
+        name="portal-card-wallet",
+    ),
+    path(
         "portal/<int:access_id>/photo/", photo_views.PortalPhotoView.as_view(), name="portal-photo"
     ),
     path(
