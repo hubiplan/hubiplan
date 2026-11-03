@@ -133,16 +133,22 @@ describe('Mitglieder: Unterpunkte', () => {
 describe('Mitglieder › Einrichtung › Jubiläen & Dauer', () => {
   it('speichert nur die Felder der Seite', async () => {
     const calls = setup(testOrg(), {
-      'GET /api/orgs/7/': () => ({ status: 200, body: detail() }),
-      'PATCH /api/orgs/7/': () => ({ status: 200, body: detail({ date_precision: 'year' }) }),
+      'GET /api/orgs/7/member-settings/': () => ({ status: 200, body: detail() }),
+      'PATCH /api/orgs/7/member-settings/': () => ({
+        status: 200,
+        body: detail({ date_precision: 'year' }),
+      }),
     })
     renderApp('/mitglieder/einrichtung/jubilaeen')
     const select = await screen.findByLabelText(/Genauigkeit für Mitgliedschaften und Jubiläen/)
     await userEvent.setup().selectOptions(select, 'year')
-    await waitFor(() => expect(calls.some((c) => c.key === 'PATCH /api/orgs/7/')).toBe(true), {
-      timeout: 3000,
-    })
-    const patch = calls.find((c) => c.key === 'PATCH /api/orgs/7/')!
+    await waitFor(
+      () => expect(calls.some((c) => c.key === 'PATCH /api/orgs/7/member-settings/')).toBe(true),
+      {
+        timeout: 3000,
+      },
+    )
+    const patch = calls.find((c) => c.key === 'PATCH /api/orgs/7/member-settings/')!
     expect(JSON.parse(String(patch.init?.body))).toEqual({ date_precision: 'year' })
   })
 })
