@@ -24,20 +24,48 @@ import { HowTo, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 
 const KIND_LABELS: Record<string, string> = {
-  'coupling.accept': t('Kopplung bestätigt'),
-  'coupling.config': t('Freigaben geändert'),
-  'coupling.end': t('Kopplung gelöst'),
-  'register.numbers': t('Verbandsnummern'),
-  'circular.forward': t('Rundschreiben zur Weitergabe'),
-  'circular.report': t('Rückmeldung zum Rundschreiben'),
-  'register.suggest': t('Korrekturvorschlag'),
-  'transfer.request': t('Wechselanfrage'),
-  'transfer.decision': t('Entscheidung zum Wechsel'),
-  'transfer.cancel': t('Wechselanfrage zurückgezogen'),
-  'invoice.issue': t('Rechnung'),
-  'invoice.cancel': t('Rechnung storniert'),
-  'invoice.status': t('Zahlungsstand'),
-  'invoice.paid': t('als bezahlt gemeldet'),
+  get 'coupling.accept'() {
+    return t('Kopplung bestätigt')
+  },
+  get 'coupling.config'() {
+    return t('Freigaben geändert')
+  },
+  get 'coupling.end'() {
+    return t('Kopplung gelöst')
+  },
+  get 'register.numbers'() {
+    return t('Verbandsnummern')
+  },
+  get 'circular.forward'() {
+    return t('Rundschreiben zur Weitergabe')
+  },
+  get 'circular.report'() {
+    return t('Rückmeldung zum Rundschreiben')
+  },
+  get 'register.suggest'() {
+    return t('Korrekturvorschlag')
+  },
+  get 'transfer.request'() {
+    return t('Wechselanfrage')
+  },
+  get 'transfer.decision'() {
+    return t('Entscheidung zum Wechsel')
+  },
+  get 'transfer.cancel'() {
+    return t('Wechselanfrage zurückgezogen')
+  },
+  get 'invoice.issue'() {
+    return t('Rechnung')
+  },
+  get 'invoice.cancel'() {
+    return t('Rechnung storniert')
+  },
+  get 'invoice.status'() {
+    return t('Zahlungsstand')
+  },
+  get 'invoice.paid'() {
+    return t('als bezahlt gemeldet')
+  },
 }
 
 function kindLabel(kind: string, coupling: Coupling): string {

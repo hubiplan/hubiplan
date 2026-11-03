@@ -33,9 +33,15 @@ function suggestedLabels(keeps: boolean) {
 }
 
 const ACCESS_LABELS = {
-  none: t('kein Zugriff'),
-  read: t('nur lesen'),
-  write: t('lesen und ändern'),
+  get none() {
+    return t('kein Zugriff')
+  },
+  get read() {
+    return t('nur lesen')
+  },
+  get write() {
+    return t('lesen und ändern')
+  },
 }
 const MODULES = [
   { id: 'members', label: t('Mitglieder') },

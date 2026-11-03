@@ -28,8 +28,12 @@ const EMPTY_CUSTOM: CustomTarget = {
 }
 
 const PRESET_LABELS: Record<string, string> = {
-  dsb: t('wie DSB (Auflage)'),
-  bhds: t('wie BHDS'),
+  get dsb() {
+    return t('wie DSB (Auflage)')
+  },
+  get bhds() {
+    return t('wie BHDS')
+  },
 }
 
 function num(v: string): string {
