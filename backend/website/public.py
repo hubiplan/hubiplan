@@ -311,12 +311,24 @@ class SiteView:
 
     def chairs(self) -> list[dict]:
         """Ämter: Rollen mit „unter Ämter zeigen“ und alle ihre Inhaber, auch frühere."""
+        return self._chairs
+
+    @cached_property
+    def _chairs(self) -> list[dict]:
+        # Einmal je Antwort und alle Zuordnungen in einer Abfrage: Menü und Grunddaten
+        # fragen beide nach; mit echten Daten kostete das 0,45 s je Grunddaten (03.11.2026)
+        roles = list(self.own_roles().filter(in_chronicle=True))
+        by_role: dict[int, list[RoleAssignment]] = {r.pk: [] for r in roles}
+        for a in (
+            RoleAssignment.all_objects.filter(role__in=[r.pk for r in roles])
+            .select_related("person", "user", "membership__person")
+            .order_by("valid_from", "pk")
+        ):
+            by_role[a.role_id].append(a)
         result = []
-        for role in self.own_roles().filter(in_chronicle=True):
+        for role in roles:
             entries = []
-            for a in role.assignments.select_related(
-                "person", "user", "membership__person"
-            ).order_by("valid_from"):
+            for a in by_role[role.pk]:
                 if a.needs_name_consent:
                     continue
                 person, fallback = self.holder_person(a)
