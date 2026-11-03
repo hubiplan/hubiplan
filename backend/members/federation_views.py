@@ -22,6 +22,7 @@ from core.api_base import OrgScopedMixin
 
 from . import services
 from .models import Membership, MembershipPeriod, MemberTypeAssignment, today
+from .personsearch import name_ids, ordered
 from .serializers import MemberUpdateSerializer, member_detail
 from .views import MemberPagination, member_rows
 
@@ -68,12 +69,6 @@ def federation_queryset(federation):
 
 
 def filter_federation(qs, params):
-    search = (params.get("suche") or "").strip()
-    for word in search.split():
-        q = Q(person__last_name__icontains=word) | Q(person__first_name__icontains=word)
-        if word.isdigit():
-            q |= Q(person__federation__member_number=int(word))
-        qs = qs.filter(q)
     status = params.get("status", "aktiv")
     if status == "aktiv":
         qs = qs.filter(is_current=True)
@@ -96,13 +91,19 @@ def filter_federation(qs, params):
         if title.isdigit():
             awards = awards.filter(title_id=int(title))
         qs = qs.filter(Exists(awards))
+    search = (params.get("suche") or "").strip()
+    for word in search.split():
+        q = Q(pk__in=name_ids(qs, word))
+        if word.isdigit():
+            q |= Q(person__federation__member_number=int(word))
+        qs = qs.filter(q)
     ordering = {
         "name": ("person__last_name", "person__first_name"),
         "-name": ("-person__last_name", "-person__first_name"),
         "verein": ("organization__name", "person__last_name"),
         "nummer": ("person__federation__member_number",),
     }.get(params.get("sortierung", "name"), ("person__last_name", "person__first_name"))
-    return qs.order_by(*ordering, "pk")
+    return ordered(qs, *ordering, "pk")
 
 
 def federation_rows(memberships, full_names: bool = False) -> list[dict]:

@@ -35,7 +35,7 @@ def search_members(unit, term: str, limit: int = 8) -> list[dict]:
     with tenant_context(area.pk):
         qs = _members(unit, {"suche": term, "status": "aktiv"}).prefetch_related("person__contacts")
         rows = []
-        for m in qs.order_by("person__last_name", "person__first_name", "pk")[:limit]:
+        for m in qs[:limit]:
             contact = contact_for(m.person, area)
             rows.append(
                 {

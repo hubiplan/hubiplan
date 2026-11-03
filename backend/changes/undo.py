@@ -127,6 +127,17 @@ def _undo(change_set: ChangeSet, org, user, *, force: bool) -> None:
     first_seq = ctx.seq
 
     with transaction.atomic():
+        # Gleiche Reihenfolge wie normale Buchungsänderungen: erst Buchung, dann
+        # Zuwendung. Nach dem Warten muss der aktuelle Bestätigungsstatus gelten.
+        from finance.models import Booking
+
+        booking_ids = [r.object_id for r in records if r.model == "finance.booking"]
+        list(
+            Booking._base_manager.select_for_update()
+            .filter(pk__in=booking_ids)
+            .order_by("pk")
+            .values_list("pk", flat=True)
+        )
         for rec in records:
             model = apps.get_model(rec.model)
             manager = model._base_manager

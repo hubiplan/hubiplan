@@ -17,6 +17,7 @@ from access.catalog import EVENTS_MANAGE
 from audit.log import diff, record, snapshot
 from events import services as event_services
 from events.models import Event, EventResponse
+from members.personsearch import ordered
 
 from .models import Competition
 from .views import _Mixin, create_starter
@@ -178,19 +179,18 @@ class StartersFromEventView(_Mixin, APIView):
         comp = self.competition(competition_id)
         if comp.event_id is None:
             raise ValidationError(gettext("Dem Wettbewerb ist kein Termin zugeordnet."))
-        yes = (
+        yes = ordered(
             EventResponse.objects.filter(
                 event_id=comp.event_id,
                 status=EventResponse.Status.YES,
                 membership__organization=self.org,
                 membership__purged_at__isnull=True,
-            )
-            .exclude(
+            ).exclude(
                 membership__in=comp.starters.filter(membership__isnull=False).values("membership")
-            )
-            .order_by("membership__person__last_name", "membership__person__first_name")
-            .values_list("membership_id", flat=True)
-        )
+            ),
+            "membership__person__last_name",
+            "membership__person__first_name",
+        ).values_list("membership_id", flat=True)
         added = 0
         for membership in yes:
             create_starter(self.org, request.user, comp, {"membership": membership})

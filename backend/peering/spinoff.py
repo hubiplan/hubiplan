@@ -20,6 +20,8 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext
 
+from members.personsearch import ordered
+
 from .models import Coupling, SpinOff
 
 CODE_VALID = datetime.timedelta(days=30)
@@ -211,15 +213,16 @@ def exit_candidates(spin: SpinOff) -> list[dict]:
 
     from members.models import DepartmentMembership
 
-    links = (
+    links = ordered(
         DepartmentMembership.objects.filter(
             organization=spin.organization,
             department=spin.unit,
             valid_from__lte=spin.cutoff,
         )
         .filter(Q(valid_until__isnull=True) | Q(valid_until__gte=spin.cutoff))
-        .select_related("membership__person")
-        .order_by("membership__person__last_name", "membership__person__first_name")
+        .select_related("membership__person"),
+        "membership__person__last_name",
+        "membership__person__first_name",
     )
     result, seen = [], set()
     for link in links:

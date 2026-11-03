@@ -29,6 +29,7 @@ from core.api_base import OrgScopedMixin
 from finance import services as finance_services
 from finance.models import Account, Category
 from members.models import Membership, MemberType
+from members.personsearch import name_ids
 from organizations.models import Department, Organization
 from organizations.terms import department_terms, fill
 from outbox import mail
@@ -1407,7 +1408,7 @@ class MandateViewSet(SepaMixin, viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(
                 Q(reference__icontains=term)
                 | Q(pk__in=by_holder)
-                | Q(membership__person__last_name__icontains=term)
+                | Q(pk__in=name_ids(qs, term, fields=("membership__person__last_name",)))
                 | Q(club__name__icontains=term)
             )
         return qs

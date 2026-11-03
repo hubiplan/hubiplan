@@ -423,6 +423,13 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         except DjangoValidationError as exc:
             raise serializers.ValidationError(" ".join(exc.messages)) from exc
 
+    @staticmethod
+    def _donation_editable(instance):
+        try:
+            services.editable_booking_donation(instance.pk)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(" ".join(exc.messages)) from exc
+
     @transaction.atomic
     def perform_update(self, serializer):
         # Alles in einer Transaktion: Zeile sperren, frisch prüfen, Jahr sperren, schreiben.
@@ -432,6 +439,8 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             serializer = self._revalidate(serializer)
         instance = serializer.instance
         changed = {k for k, v in serializer.validated_data.items() if v != getattr(instance, k)}
+        if changed:
+            self._donation_editable(instance)
         if changed <= {"project"}:
             # Nur die Veranstaltung: ändert keine Beträge, auch in abgeschlossenen Jahren
             super().perform_update(serializer)
@@ -492,6 +501,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
     @transaction.atomic
     def perform_destroy(self, instance):
         self._lock_and_refresh(instance)
+        self._donation_editable(instance)
         self._open(year=instance.year)
         if _quittung_of(instance) is not None:
             raise serializers.ValidationError(QUITTUNG_LOCKED)
