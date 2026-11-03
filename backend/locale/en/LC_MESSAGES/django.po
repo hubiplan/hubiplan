@@ -2537,6 +2537,11 @@ msgstr ""
 "Something from this statement has already been booked or assigned. It is "
 "kept."
 
+msgid ""
+"Der Auszug gehört zu einem abgeschlossenen Geschäftsjahr. Er bleibt "
+"erhalten."
+msgstr "This statement belongs to a closed financial year. It is kept."
+
 msgid "Bitte auswählen."
 msgstr "Please choose."
 

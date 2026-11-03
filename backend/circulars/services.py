@@ -334,6 +334,11 @@ def mail_budget() -> int | None:
     limit = settings.MAIL_RATE_PER_HOUR
     if not limit:
         return None
+    return max(0, _mail_room(limit))
+
+
+def _mail_room(limit: int) -> int:
+    """Freie Plätze der Stunde; negativ, wenn schon zu viel beansprucht ist."""
     from outbox.models import OutgoingMail
 
     since = timezone.now() - datetime.timedelta(hours=1)
@@ -342,19 +347,38 @@ def mail_budget() -> int | None:
         used += CircularRecipient.objects.filter(
             status=CircularRecipient.Status.SENDING, sent_at__gte=since
         ).count()
-    return max(0, int(limit * (1 - RATE_RESERVE)) - used)
+    return int(limit * (1 - RATE_RESERVE)) - used
 
 
-def claim(recipient_pk: int) -> bool | None:
+def mail_room_for_claimed() -> bool:
+    """Darf ein schon beanspruchter App-Empfänger jetzt auch eine Mail bekommen?
+
+    Er zählt beim Beanspruchen schon mit; es reicht also, dass die Grenze nicht überschritten
+    ist. Unter derselben Sperre wie ``claim``."""
+    limit = settings.MAIL_RATE_PER_HOUR
+    if not limit:
+        return True
+    from django.db import connection
+
+    with transaction.atomic():
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", list(MAIL_LOCK))
+        return _mail_room(limit) >= 0
+
+
+def claim(recipient_pk: int, *, mail: bool = True) -> bool | None:
     """Empfänger zum Versand beanspruchen und dabei einen Platz der Stundengrenze belegen.
 
     ``True``: beansprucht. ``False``: schon von einem anderen Lauf beansprucht.
     ``None``: Stundengrenze erreicht. Prüfen und Beanspruchen geschehen unter einer
     instanzweiten Sperre; zwei Versandläufe können denselben freien Platz also nicht
     beide nutzen. Der beanspruchte Empfänger zählt bis zum Abschluss mit.
+
+    ``mail=False``: Zustellung per App; die Stundengrenze für Mails gilt dafür nicht
+    (Audit 03.11. GA-F05).
     """
     with transaction.atomic():
-        if settings.MAIL_RATE_PER_HOUR:
+        if mail and settings.MAIL_RATE_PER_HOUR:
             from django.db import connection
 
             with connection.cursor() as cursor:
@@ -388,19 +412,24 @@ def send_pending(circular_id: int) -> int:
         attachments = stored_attachments(circular)
         pending = circular.recipients.filter(status=CircularRecipient.Status.PENDING)
         for recipient in pending.iterator(chunk_size=200):
-            claimed = claim(recipient.pk)
+            app = recipient.channel == CircularRecipient.Channel.APP
+            if limited and not app:
+                continue  # Stundengrenze erreicht; App-Empfänger kommen trotzdem weiter an
+            claimed = claim(recipient.pk, mail=not app)
             if claimed is None:
                 limited = True
-                break
+                continue
             if not claimed:
                 continue
-            if recipient.channel == CircularRecipient.Channel.APP:
+            if app:
                 if deliver_app(recipient, circular):
                     sent += 1
                     error = ""
                     if circular.also_mail and recipient.email:
-                        # Zusätzlich per Mail (Platz wurde beim Beanspruchen belegt)
-                        if not deliver(recipient, circular, attachments):
+                        # Zusätzlich per Mail, wenn die Stundengrenze es zulässt
+                        if not mail_room_for_claimed():
+                            error = "Per App zugestellt; keine zusätzliche Mail (Stundengrenze)."
+                        elif not deliver(recipient, circular, attachments):
                             error = "Per App zugestellt; die zusätzliche Mail schlug fehl."
                     CircularRecipient.objects.filter(pk=recipient.pk).update(
                         status=CircularRecipient.Status.SENT, error=error
@@ -412,8 +441,16 @@ def send_pending(circular_id: int) -> int:
                         error="Push nicht zustellbar; im Mitgliederbereich sichtbar.",
                     )
                     continue
-                # Kein Gerät erreicht: Ersatz per Mail
+                # Kein Gerät erreicht: Ersatz per Mail, bei erreichter Stundengrenze später
                 recipient.channel = CircularRecipient.Channel.MAIL
+                if not mail_room_for_claimed():
+                    CircularRecipient.objects.filter(pk=recipient.pk).update(
+                        channel=CircularRecipient.Channel.MAIL,
+                        status=CircularRecipient.Status.PENDING,
+                        sent_at=None,
+                    )
+                    limited = True
+                    continue
                 CircularRecipient.objects.filter(pk=recipient.pk).update(
                     channel=CircularRecipient.Channel.MAIL
                 )

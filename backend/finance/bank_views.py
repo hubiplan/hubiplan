@@ -23,7 +23,15 @@ from core.files import delete_on_commit
 from members.models import Membership
 
 from . import bank_import, camt, services
-from .models import Account, BankLine, BankStatement, Booking, Category, Project
+from .models import (
+    Account,
+    BankLine,
+    BankStatement,
+    Booking,
+    Category,
+    Project,
+    YearClosing,
+)
 from .views import BookingPagination, FinanceMixin
 
 
@@ -209,6 +217,20 @@ class BankStatementViewSet(
                     "Aus diesem Auszug ist schon etwas gebucht oder zugeordnet. Er bleibt erhalten."
                 )
             )
+        # Abgeschlossene Geschäftsjahre (und damit auch Löschsperren) gelten auch hier, nicht
+        # nur bei der Bereinigung nach der Aufbewahrungsfrist (Audit 03.11. GA-S12)
+        days = [d for d in (instance.date_from, instance.date_to) if d]
+        days += list(instance.lines.values_list("date", flat=True))
+        if days:
+            years = {self.org.fiscal_year_of(d) for d in days}
+            services.lock_years_from(self.org, min(years))
+            if YearClosing.objects.filter(organization=self.org, year__in=years).exists():
+                raise serializers.ValidationError(
+                    gettext(
+                        "Der Auszug gehört zu einem abgeschlossenen Geschäftsjahr. Er bleibt "
+                        "erhalten."
+                    )
+                )
         record(
             self.org,
             self.request.user,

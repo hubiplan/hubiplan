@@ -8,4 +8,4 @@ routen: [/finanzen/kontoauszuege]
 stichworte: [bank statement, CAMT, bank, matching]
 ---
 
-Here you upload the bank statement from online banking in CAMT.053 format. For each transaction HUBIplan suggests what it belongs to, such as an invoice or a booking, and you confirm. HUBIplan detects if the same file is read twice.
+Here you upload the bank statement from online banking in CAMT.053 format. For each transaction HUBIplan suggests what it belongs to, such as an invoice or a booking, and you confirm. HUBIplan detects if the same file is read twice. You can delete a statement only as long as nothing from it is booked and its financial year is not closed.

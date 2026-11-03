@@ -56,6 +56,10 @@ x-backend-env: &backend-env
   INBOUND_IMAP_PORT: ${INBOUND_IMAP_PORT:-993}
   INBOUND_IMAP_USER: ${INBOUND_IMAP_USER:-}
   INBOUND_IMAP_PASSWORD: ${INBOUND_IMAP_PASSWORD:-}
+  # Kennung des eigenen Mailservers in „Authentication-Results“ (z. B. der Hostname, den
+  # er dort voranstellt). Ohne sie gehen Mails an Verteiler „direkt versenden“ nie direkt
+  # hinaus, sondern immer mit Bestätigungslink.
+  MAIL_AUTHSERV_ID: ${MAIL_AUTHSERV_ID:-}
   # Vereinswebseite: Testserver nur Vorschau, feste Adresse unter /webseite/
   WEBSITE_PREVIEW_ONLY: ${WEBSITE_PREVIEW_ONLY:-false}
   WEBSITE_PUBLIC_URL: ${WEBSITE_PUBLIC_URL:-}

@@ -125,6 +125,10 @@ mit Link und geben sie unter Rundschreiben frei oder löschen sie.
      Recht) gehen sofort hinaus; der Absender bekommt nur eine Versandmeldung. Vor
      gefälschten Absendern schützt dann nur die DMARC-Prüfung, daher fragt die
      Oberfläche beim Einschalten nach. Nur für kleine Empfängerkreise gedacht.
+     Gezählt wird nur ein `dmarc=pass` des eigenen Mailservers: `MAIL_AUTHSERV_ID` in der
+     `.env` nennt dessen Kennung (der erste Wert in seinem `Authentication-Results`-Kopf).
+     Ohne diese Einstellung geht nichts direkt hinaus, sondern immer mit Bestätigungslink,
+     weil den obersten Kopf sonst auch der Absender mitschicken könnte (Audit 03.11. GA-V05).
 7. Antwort-an ist der Absender: Antworten der Mitglieder gehen nie an alle.
 
 Im „Von“ jeder Rundschreiben-Mail steht „Person (Verein)“ bzw. „Person (Untereinheit)“,
