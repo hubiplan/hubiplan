@@ -406,6 +406,9 @@ def purge_membership(
 def _purge_membership(membership: Membership, after_deadline: bool = False) -> None:
     person = membership.person
     club = membership.organization
+    # Person vereinsübergreifend sperren: eine gleichzeitige Aufnahme in einem anderen Verein
+    # wartet, bis feststeht, ob die gemeinsamen Daten noch gebraucht werden
+    services.lock_person(person.pk)
     DepartmentMembership.objects.filter(membership=membership).delete()
     DepartmentRoleHolder.objects.filter(membership=membership).delete()
     from .photos import remove_all
@@ -417,12 +420,15 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     membership.club_number = ""
     membership.purged_at = timezone.now()
     membership.save()
-    # Gemeinsame Kontaktdaten nur löschen, wenn die Person sonst nirgends mehr Mitglied ist
-    still_member = (
-        Membership.objects.filter(person=person, purged_at__isnull=True)
-        .exclude(pk=membership.pk)
-        .exists()
-    )
+    # Gemeinsame Kontaktdaten nur löschen, wenn die Person sonst nirgends mehr Mitglied ist.
+    # Gefragt wird ohne RLS: Der eigene Verein sieht die Mitgliedschaften anderer Vereine
+    # nicht und würde sonst Daten kürzen, die dort noch gebraucht werden (Audit 03.11. GA-S01).
+    with rls_bypass():
+        still_member = (
+            Membership.objects.filter(person_id=person.pk, purged_at__isnull=True)
+            .exclude(pk=membership.pk)
+            .exists()
+        )
     if not still_member:
         ContactDetails.objects.filter(person=person).delete()
         if after_deadline:
