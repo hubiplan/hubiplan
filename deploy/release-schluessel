@@ -2,3 +2,4 @@
 # von ssh-keygen, eine Zeile je Schlüssel). scripts/release.sh taggen prüft jeden neuen Tag
 # dagegen; der Aktualisierer (konzepte/selbstupdate.md) nimmt nur so signierte Releases.
 # Einrichten: docs/releases.md, „Release-Tags signieren“. Nur öffentliche Schlüssel, nie private.
+releases@hubiplan namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFgb41OO5EtvGibS+0ShPt+uyAUvv8b1u02GZ5mb34mo HUBIplan-Releases
