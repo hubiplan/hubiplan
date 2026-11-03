@@ -455,17 +455,19 @@ def dmarc_failed(msg: EmailMessage) -> bool:
 def dmarc_passed(msg: EmailMessage) -> bool:
     """Hat der eigene Mailserver die Herkunft positiv bestätigt (``dmarc=pass``)?
 
-    Zählt nur das oberste Authentication-Results (vom eigenen Server zuletzt
-    vorangestellt); mit ``MAIL_AUTHSERV_ID`` nur ein Ergebnis genau dieses Servers.
-    Fehlt das Ergebnis oder ist es none/temperror/permerror, gilt die Herkunft als
-    unbestätigt (Gesamtaudit 01.11., GA-S03).
+    Zählt nur das oberste Ergebnis genau des eigenen Servers (``MAIL_AUTHSERV_ID``). Ohne
+    diese Einstellung gilt nichts als bestätigt: Den obersten Eintrag kann sonst auch der
+    Absender selbst mitschicken (Gesamtaudit 03.11., GA-V05). Fehlt das Ergebnis oder ist
+    es none/temperror/permerror, gilt die Herkunft ebenfalls als unbestätigt (Gesamtaudit
+    01.11., GA-S03).
     """
     from django.conf import settings
 
-    headers = [str(v) for v in msg.get_all("Authentication-Results") or []]
     authserv = (getattr(settings, "MAIL_AUTHSERV_ID", "") or "").strip().lower()
-    if authserv:
-        headers = [h for h in headers if h.split(";", 1)[0].strip().lower() == authserv]
+    if not authserv:
+        return False
+    headers = [str(v) for v in msg.get_all("Authentication-Results") or []]
+    headers = [h for h in headers if h.split(";", 1)[0].strip().lower() == authserv]
     if not headers:
         return False
     return bool(re.search(r"(?:^|[;\s])dmarc=pass\b", headers[0], re.IGNORECASE))

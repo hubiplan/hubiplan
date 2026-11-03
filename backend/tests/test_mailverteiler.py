@@ -374,8 +374,9 @@ class TestEingang:
         assert "Mehr als 3" in too_many.reason
 
     def test_direkt_ohne_bestaetigung(
-        self, cal, board_a, members, api, django_capture_on_commit_callbacks
+        self, cal, board_a, members, api, django_capture_on_commit_callbacks, settings
     ):
+        settings.MAIL_AUTHSERV_ID = "mx.example.org"
         create_list(api(board_a), base(cal["a"]), mode="direct")
         with django_capture_on_commit_callbacks(execute=True):
             entry = inbound.process_message(

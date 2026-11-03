@@ -20,6 +20,7 @@ import datetime
 import hashlib
 import json
 import logging
+import re
 import urllib.parse
 import zoneinfo
 from dataclasses import dataclass
@@ -38,6 +39,8 @@ VEREINSPLANER_URL = "https://api.vereinsplaner.com/public/v1/resources/public-ev
 PER_PAGE = 100
 MAX_PAGES = 30
 MAX_EVENTS = 1000
+# Schritte über alle Serien eines Kalenders zusammen (GA-P04)
+MAX_RRULE_STEPS = 100_000
 MAX_ICAL = 4 * 1024 * 1024
 MAX_JSON = 2 * 1024 * 1024
 PAST = datetime.timedelta(days=90)
@@ -320,22 +323,46 @@ def _vevents(text: str) -> list[dict]:
     return events
 
 
-def _expand(start, rule: str, exdates, length, since, until) -> list[datetime.datetime]:
+def _expand(
+    start, rule: str, exdates, length, since, until, budget=None
+) -> list[datetime.datetime]:
+    """Termine einer Serie im Zeitfenster.
+
+    Die Serie wird Schritt für Schritt vom Beginn an durchlaufen. ``budget`` (eine Liste mit
+    einer Zahl, für den ganzen Kalender gemeinsam) begrenzt die Schritte; so kann eine Regel
+    wie „jede Sekunde seit 2000“ den Abruf nicht aufhalten (Audit 03.11. GA-P04)."""
     from dateutil.rrule import rrulestr
 
+    budget = budget if budget is not None else [MAX_RRULE_STEPS]
+    if re.search(r"FREQ\s*=\s*(SECONDLY|MINUTELY)", rule, re.I):
+        return [start]  # Vereinstermine im Sekunden- oder Minutentakt gibt es nicht
+    excluded = {x.astimezone(datetime.UTC) for x in exdates}
+    lower = since - length
+    result = []
     try:
         rr = rrulestr(rule, dtstart=start)
-        moments = rr.between(since - length, until, inc=True)
+        for moment in rr:
+            if budget[0] <= 0:
+                log.warning("Fremder Kalender: Serie zu groß, Rest ausgelassen")
+                break
+            budget[0] -= 1
+            if moment > until:
+                break
+            if moment < lower or moment.astimezone(datetime.UTC) in excluded:
+                continue
+            result.append(moment)
+            if len(result) >= MAX_EVENTS:
+                break
     except (ValueError, TypeError):
         return [start]
-    excluded = {x.astimezone(datetime.UTC) for x in exdates}
-    return [m for m in moments if m.astimezone(datetime.UTC) not in excluded][:MAX_EVENTS]
+    return result
 
 
 def parse_ical(text: str) -> list[Item]:
     since, until = window()
     items: dict[str, Item] = {}
     overrides: list[tuple[str, Item]] = []
+    budget = [MAX_RRULE_STEPS]
     for ev in _vevents(text):
         if "DTSTART" not in ev:
             continue
@@ -374,7 +401,9 @@ def parse_ical(text: str) -> list[Item]:
                 overrides.append((_occ_key(uid, rid[0]), base))
             continue
         if "RRULE" in ev:
-            for moment in _expand(start, ev["RRULE"][1], ev["EXDATE"], length, since, until):
+            for moment in _expand(
+                start, ev["RRULE"][1], ev["EXDATE"], length, since, until, budget
+            ):
                 item = Item(**{**base.__dict__})
                 item.starts_at, item.ends_at = moment, moment + length
                 item.key = _occ_key(uid, moment)
