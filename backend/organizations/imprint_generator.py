@@ -323,7 +323,8 @@ def platform_privacy() -> str:
             "Für die Bedienung merkt sich Ihr Browser einige Angaben im eigenen Speicher "
             "(Local und Session Storage): die gewählte Einheit, die Spalten, Suche und Seite der "
             "Mitgliederlisten, die Kalenderansicht, die Seite, zu der Sie nach der Anmeldung "
-            "zurückkehren, und den Verlauf zum Rückgängigmachen. Diese Angaben bleiben auf Ihrem "
+            "zurückkehren, ob Sie den Hinweis auf Neuigkeiten nach einem Update schon gesehen "
+            "haben, und den Verlauf zum Rückgängigmachen. Diese Angaben bleiben auf Ihrem "
             "Gerät, werden nicht an uns übertragen und dienen nur dazu, die von Ihnen genutzten "
             "Funktionen bereitzustellen (§ 25 Abs. 2 Nr. 2 TDDDG). Der Verlauf zum "
             "Rückgängigmachen wird beim Abmelden und beim Schließen des Tabs gelöscht; die "
@@ -353,6 +354,11 @@ def platform_privacy() -> str:
             "Änderungen an Daten werden zum Rückgängigmachen "
             f"{RETENTION_DAYS} Tage aufbewahrt. Daten ausgetretener Mitglieder löschen die "
             f"Einheiten nach {months} Monaten, soweit keine Aufbewahrungspflicht besteht.",
+            "Einmal am Tag fragt der Server bei GitHub (GitHub Inc., USA) nach, ob es eine "
+            "neuere Version von HUBIplan gibt. Dabei werden keine Daten über Nutzer oder "
+            "Einheiten übertragen; GitHub sieht nur die IP-Adresse des Servers."
+            if settings.UPDATE_CHECK
+            else "",
         ),
         _section(
             "8. Ihre Rechte",

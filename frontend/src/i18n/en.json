@@ -4778,5 +4778,7 @@
   "Überblick nach Monaten": "Overview by month",
   "Die Änderungshinweise liegen dieser Fassung nicht bei.": "The release notes are not included in this build.",
   "HUBIplan wurde auf Version {x} aktualisiert.": "HUBIplan has been updated to version {x}.",
-  "Das ist neu": "What's new"
+  "Das ist neu": "What's new",
+  "Es gibt eine neuere Version von HUBIplan: {x} (hier läuft {y}).": "A newer version of HUBIplan is available: {x} (this server runs {y}).",
+  "Änderungen ansehen": "View changes"
 }

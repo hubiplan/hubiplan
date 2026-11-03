@@ -28,6 +28,7 @@ x-backend-env: &backend-env
   MFA_TOTP_ISSUER: ${MFA_TOTP_ISSUER:-HUBIplan (Test)}
   # Wählbare Sprachen (docs/uebersetzung.md); Englisch erst nach der Abnahme: de,en
   HUBIPLAN_LANGUAGES: ${HUBIPLAN_LANGUAGES:-de}
+  HUBIPLAN_UPDATE_CHECK: ${HUBIPLAN_UPDATE_CHECK:-1}
   # Laufzeit in der eingeschränkten Rolle, damit Row-Level Security greift
   DATABASE_APP_ROLE: hubiplan_app
   # Hauptschlüssel der Datenverschlüsselung (Docker-Secret, nicht in der .env)

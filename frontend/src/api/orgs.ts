@@ -562,6 +562,13 @@ export const platformApi = {
   settings: () => api.get<PlatformSettings>('/api/platform/settings/'),
   updateSettings: (data: Partial<PlatformSettings>) =>
     api.patch<PlatformSettings>('/api/platform/settings/', data),
+  /** Neueres Release laut täglicher Prüfung (abschaltbar mit HUBIPLAN_UPDATE_CHECK=0) */
+  newRelease: () => api.get<PlatformUpdate>('/api/platform/update/'),
+}
+
+export interface PlatformUpdate {
+  enabled: boolean
+  update: { version: string; url: string; running: string } | null
 }
 
 /** Vorgang, der eine Entscheidung braucht (Startseite „Offene Aufgaben“) */

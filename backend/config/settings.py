@@ -307,7 +307,17 @@ CELERY_BEAT_SCHEDULE = {
     "nextcloud-konten": {"task": "oidc.tasks.sync_all", "schedule": 24 * 60 * 60},
     "meldungen-kuerzen": {"task": "entries.tasks.shorten_old_entries", "schedule": 24 * 60 * 60},
     "backup-pruefen": {"task": "core.backup_status.check_backup", "schedule": 60 * 60},
+    # Neueres Release auf GitHub? (abschaltbar mit HUBIPLAN_UPDATE_CHECK=0)
+    "release-pruefen": {"task": "core.update_check.check_latest", "schedule": 24 * 60 * 60},
 }
+
+# Update-Hinweis für Betreiber (core/update_check.py): einmal am Tag den Releases-Feed abfragen.
+# GitHub sieht dabei nur die IP-Adresse des Servers. Wer HUBIplan verändert betreibt, trägt
+# hier den Feed des eigenen Repositorys ein.
+UPDATE_CHECK = env_bool("HUBIPLAN_UPDATE_CHECK", True)
+UPDATE_CHECK_URL = os.environ.get(
+    "HUBIPLAN_UPDATE_URL", "https://api.github.com/repos/hubiplan/hubiplan/releases/latest"
+)
 # Statusdatei des Backup-Dienstes (docker-compose.server.yml) und ab wann ein fehlendes
 # vollständiges Backup gemeldet wird
 BACKUP_STATUS_DIR = os.environ.get("BACKUP_STATUS_DIR", "")

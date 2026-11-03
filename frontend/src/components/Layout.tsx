@@ -25,7 +25,8 @@ import { ACCOUNT_PATH, accountSectionLabel } from '../pages/settings/accountNav.
 import { AccountMenu } from './AccountMenu.tsx'
 import { RolePreviewBanner, RolePreviewSelect } from './RolePreview.tsx'
 import { UpdateNotice } from '../news/UpdateNotice.tsx'
-import { rolePreviewApi } from '../api/orgs.ts'
+import { NewReleaseNotice } from '../news/NewReleaseNotice.tsx'
+import { PERM, rolePreviewApi } from '../api/orgs.ts'
 import { locale } from '../i18n/index.ts'
 import { t } from '../i18n/index.ts'
 
@@ -408,6 +409,11 @@ export function Layout() {
               )}
               {/* Verwalter (Rechte in einer Einheit) sehen nach einem Release-Update „Das ist neu“ */}
               {orgs.length > 0 && !previewOrg && <UpdateNotice />}
+              {/* Betreiber: neueres Release verfügbar (tägliche Prüfung, abschaltbar) */}
+              {!previewOrg &&
+                orgs.some(
+                  (o) => o.type === 'platform' && o.permissions.includes(PERM.platformManage),
+                ) && <NewReleaseNotice />}
               {loading ? (
                 <p className="muted" role="status">
                   {t('Lädt …')}
