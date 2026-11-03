@@ -281,16 +281,37 @@ function ExternalCard({
       {cal.last_error ? (
         <Alert kind="error">
           {t('Letzter Abruf ging nicht: {error}', { error: cal.last_error })}
+          {cal.last_sync_at && (
+            <p>{t('Letzter Abrufversuch: {when}.', { when: formatDateTime(cal.last_sync_at) })}</p>
+          )}
+          <p>
+            {cal.last_successful_sync_at
+              ? t('Letzter erfolgreicher Abruf: {when}. Die vorhandenen Kopien bleiben erhalten.', {
+                  when: formatDateTime(cal.last_successful_sync_at),
+                })
+              : t('Letzter erfolgreicher Abruf unbekannt. Vorhandene Kopien können veraltet sein.')}
+          </p>
         </Alert>
       ) : (
-        <p className="muted small">
-          {cal.last_sync_at
-            ? t('{n} Termine, zuletzt abgerufen {when}.', {
-                n: cal.event_count,
-                when: formatDateTime(cal.last_sync_at),
-              })
-            : t('Noch nicht abgerufen.')}
-        </p>
+        <>
+          <p className="muted small">
+            {cal.last_successful_sync_at
+              ? t('{n} Termine, zuletzt abgerufen {when}.', {
+                  n: cal.event_count,
+                  when: formatDateTime(cal.last_successful_sync_at),
+                })
+              : cal.last_sync_at
+                ? t(
+                    'Letzter erfolgreicher Abruf unbekannt. Vorhandene Kopien können veraltet sein.',
+                  )
+                : t('Noch nicht abgerufen.')}
+          </p>
+          {!cal.last_successful_sync_at && cal.last_sync_at && (
+            <p className="muted small">
+              {t('Letzter Abrufversuch: {when}.', { when: formatDateTime(cal.last_sync_at) })}
+            </p>
+          )}
+        </>
       )}
       <fieldset disabled={busy} className="stack-sm">
         <div className="grid-2">

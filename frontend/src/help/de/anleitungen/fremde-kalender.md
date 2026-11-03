@@ -17,3 +17,16 @@ stichworte: [Vereinsplaner, iCal, Dachverband, fremde Termine, Abo, Token]
 HUBIplan holt die Termine danach stündlich ab; mit **Jetzt abrufen** sofort. Die Termine lassen sich hier nicht ändern. Einen unpassenden Termin öffnest du im Kalender und klickst auf **Hier ausblenden**; unter **Fremde Kalender** lässt er sich wieder zeigen.
 
 ![Ausgangspunkt: Termine eines fremden Kalenders zeigen](bild:fremde-kalender)
+
+Fremde Quellen starten mit Sichtbarkeit für Mitglieder; öffentlich werden ihre
+Kopien nur durch eine gesonderte bewusste Auswahl. Bei einem Abruffehler bleiben
+die letzten Kopien unverändert erhalten. Angezeigt werden der Fehler, der Zeitpunkt
+des letzten Versuchs und der letzte erfolgreiche Abruf. Bei älteren Beständen oder
+nie erfolgreichem Abruf ist der Erfolgszeitpunkt ausdrücklich unbekannt. Es gibt
+keine automatische Löschfrist bei wiederholten Abruffehlern: Die Kopien bleiben
+bis zum nächsten erfolgreichen Abgleich oder bewusster Quellenpflege bestehen.
+Beim erfolgreichen Abgleich verschwinden entfernte, ausgeblendete oder außerhalb
+des Abruffensters liegende Termine. Beim Ausschalten des Abrufs verschwinden alle
+Kopien sofort; auch eine inaktive Neuanlage ruft nichts ab. Beim Löschen der Quelle
+werden deren Kopien und Ausblendungen mitgelöscht. Eine automatische harte
+Altersgrenze wäre eine zusätzliche fachliche Festlegung, keine vorhandene Zusage.

@@ -224,6 +224,126 @@ class TestExport:
 
 
 class TestImportDachverband:
+    def test_verschluesselte_kontaktkopien_werden_als_klarwerte_exportiert_und_neu_verschluesselt(
+        self, api, orgs, club_c, board_c, board_fed
+    ):
+        from billing.models import Invoice
+        from circulars.models import Circular, CircularRecipient
+
+        source = club_c["club"]
+        member = Membership.objects.get(pk=club_c["erika"]["id"])
+        email = "synthetic-snapshot@example.org"
+        address = "Synthetische Straße 3"
+        with tenant_context(source.pk):
+            Invoice.objects.create(
+                organization=source,
+                recipient_kind="member",
+                membership=member,
+                recipient_name="Synthetische Person",
+                recipient_email=email,
+                recipient_address=address,
+                date=datetime.date(2026, 11, 3),
+                due_date=datetime.date(2026, 11, 17),
+            )
+            circular = Circular.objects.create(
+                organization=source, kind="info", audience="members", subject="Synthetischer Export"
+            )
+            CircularRecipient.objects.create(
+                organization=source,
+                circular=circular,
+                club=source,
+                membership=member,
+                channel="mail",
+                email=email,
+                address=address,
+                values={"Vorname": "Synthetisch"},
+            )
+        content, _ = export(api(board_c), f"/api/orgs/{source.pk}")
+        doc = as_doc(content)
+        tables = doc["organization"]["tables"]
+        assert tables["billing.invoice"][0]["recipient_email"] == email
+        assert tables["circulars.circularrecipient"][0]["values"] == {"Vorname": "Synthetisch"}
+        c = api(board_fed)
+        base = f"/api/orgs/{orgs['federation'].pk}"
+        job = upload(c, base, content, name="Synthetischer Kontaktimport")
+        assert not job["preview"]["error_count"], job
+        path = f"{base}/datatransfer/imports/{job['id']}"
+        assert c.post(path + "/run/").status_code == 200
+        job = c.get(path + "/").json()
+        assert job["status"] == "done", job
+        with tenant_context(job["result_organization"]["id"]):
+            invoice = Invoice.objects.get(organization_id=job["result_organization"]["id"])
+            recipient = CircularRecipient.objects.get(
+                organization_id=job["result_organization"]["id"]
+            )
+            assert invoice.recipient_email == recipient.email == email
+            assert invoice.recipient_address == recipient.address == address
+            assert recipient.values == {"Vorname": "Synthetisch"}
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT recipient_email FROM billing_invoice WHERE id = %s", [invoice.pk]
+                )
+                assert cursor.fetchone()[0].startswith("enc1:")
+                cursor.execute(
+                    "SELECT email FROM circulars_circularrecipient WHERE id = %s", [recipient.pk]
+                )
+                assert cursor.fetchone()[0].startswith("enc1:")
+
+    @pytest.mark.parametrize("schema", [1, 2])
+    def test_unmarkierte_rechte_brauchen_bewusste_auswahl_und_bestaetigung(
+        self, api, orgs, board_fed, schema
+    ):
+        doc = {
+            "format": "hubiplan-export",
+            "version": 1,
+            "kind": "organization",
+            "persons": [],
+            "organization": {
+                "id": 900001,
+                "type": "club",
+                "name": "Synthetischer Schema-Verein",
+                "founding_year": 1900,
+                "street": "Musterstraße 1",
+                "postal_code": "12345",
+                "city": "Musterstadt",
+                "roles": [
+                    {"id": 900002, "name": "Schmale Testrolle", "permissions": ["members.view"]}
+                ],
+            },
+        }
+        c = api(board_fed)
+        base = f"/api/orgs/{orgs['federation'].pk}"
+        job = upload(c, base, json.dumps(doc).encode())
+        path = f"{base}/datatransfer/imports/{job['id']}"
+        assert job["preview"]["error_count"]
+        assert c.post(path + "/run/").status_code == 400
+        response = c.patch(
+            path + "/",
+            {"permissions_schema": schema, "permissions_confirmed": False},
+            content_type=JSON,
+        )
+        assert response.status_code == 200
+        job = c.get(path + "/").json()
+        assert job["preview"]["error_count"]
+        assert c.post(path + "/run/").status_code == 400
+        c.patch(
+            path + "/",
+            {"permissions_schema": schema, "permissions_confirmed": True},
+            content_type=JSON,
+        )
+        job = c.get(path + "/").json()
+        assert not job["preview"]["error_count"], job["preview"]["errors"]
+        rights = job["preview"]["permission_policy"]["roles"][0]["permissions"]
+        if schema == 1:
+            assert {"members.view", "photos.view", "cards.view", "logins.view"} <= set(rights)
+        else:
+            assert rights == ["members.view"]
+        assert c.post(path + "/run/").status_code == 200
+        job = c.get(path + "/").json()
+        assert job["status"] == "done", job
+        org = Organization.objects.get(pk=job["result_organization"]["id"])
+        assert Role.objects.get(organization=org, name="Schmale Testrolle").permissions == rights
+
     def test_verein_importieren_mit_dublette(self, api, orgs, types, club_c, board_c, board_a):
         content, _ = export(api(board_c), f"/api/orgs/{club_c['club'].pk}")
         # Erika gibt es im Dachverband schon (Verein A, passiv)

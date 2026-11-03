@@ -9,3 +9,5 @@ stichworte: [Instagram, Facebook, post, social media]
 ---
 
 Here you connect Instagram or Facebook and show selected posts on the website. HUBIplan stores the posts so the website works without third-party services.
+
+**Fetch now** schedules a background fetch. Repeated requests are coalesced; manual and periodic fetches of the same channel never run concurrently. Reload later to see the results. The web process does not wait for Meta or image downloads.

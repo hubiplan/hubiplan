@@ -90,6 +90,11 @@ def coupling_data(c: Coupling, with_messages: bool = False, perms: set[str] | No
         "last_sync_at": c.last_sync_at,
         "last_contact_at": c.last_contact_at,
         "last_error": c.last_error,
+        "reception_budget": {
+            "bytes": c.received_bytes,
+            "messages": c.received_count,
+            "initialized": c.usage_initialized,
+        },
         "error_since": c.error_since,
         "queued": c.messages.filter(
             direction=Message.Direction.OUT, state=Message.State.QUEUED

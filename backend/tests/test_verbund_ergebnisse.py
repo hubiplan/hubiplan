@@ -7,11 +7,12 @@ import pytest
 from django.utils import timezone
 
 from competitions import services as comp_services
-from competitions.models import Competition
+from competitions.models import Competition, Starter
 from core.tenancy import tenant_context
 from peering import packet_results
 from peering.models import RemoteState
 
+from .factories import give_role, make_user
 from .test_verbund_kopplung import VERBAND, VEREIN, _setup, api, couple, net, world  # noqa: F401
 from .test_verbund_termine import enable, sync
 
@@ -35,6 +36,11 @@ def _standings(competition):
                     },
                     {
                         "place": 2,
+                        "starter": Starter.objects.filter(
+                            competition=competition, name="Max Muster"
+                        )
+                        .values_list("pk", flat=True)
+                        .first(),
                         "name": "Max Muster",
                         "club": "schützenverein  beispiel",
                         "unit": None,
@@ -91,6 +97,63 @@ def ranglisten(monkeypatch):
 
 
 class TestErgebnisPaket:
+    def test_lokale_freigabe_ist_moeglich_und_partnerumbenennung_hilft_nicht(
+        self, net, world, ranglisten
+    ):
+        fed = world["fed"]
+        with net.on(VERBAND):
+            fed.enabled_modules = sorted({*fed.enabled_modules, "competitions"})
+            fed.save(update_fields=["enabled_modules"])
+            comp = _wettbewerb(fed, "Explizite Freigabe")
+        lower, upper = couple(net, world)
+        with net.on(VERBAND), tenant_context(fed.pk):
+            starter = Starter.objects.create(
+                organization=fed, competition=comp, name="Max Muster", club="Freitext"
+            )
+            client = api(world["fed_board"])
+            path = f"/api/orgs/{fed.pk}/competitions/{comp.pk}/result-ownership/"
+            invalid = client.post(
+                path, {"starter": "arbitrary", "coupling": {}}, content_type="application/json"
+            )
+            assert invalid.status_code == 400
+            response = client.post(
+                path, {"starter": starter.pk, "coupling": upper.pk}, content_type="application/json"
+            )
+            assert response.status_code == 200, response.json()
+            starter.refresh_from_db()
+            assert starter.result_coupling_id == upper.pk
+            # A foreign local recipient's coupling can never authorize this starter.
+            response = client.post(
+                path, {"starter": starter.pk, "coupling": lower.pk}, content_type="application/json"
+            )
+            assert response.status_code == 404
+            data = packet_results.build(upper, "own")
+            assert packet_results.persons(data) == 1
+            upper.remote_unit.name = "Anderer Verein"
+            upper.remote_unit.save(update_fields=["name"])
+            data = packet_results.build(upper, "own")
+            rows = [
+                r
+                for c in data["competitions"]
+                for s in c["scorings"]
+                if s["kind"] == "einzel"
+                for r in s["rows"]
+            ]
+            assert [r["name"] for r in rows] == ["Max Muster"]
+            assert (
+                client.post(
+                    path, {"starter": starter.pk, "coupling": None}, content_type="application/json"
+                ).status_code
+                == 200
+            )
+            assert packet_results.persons(packet_results.build(upper, "own")) == 0
+            recorder = make_user("synthetic-recorder@example.org")
+            give_role(recorder, fed, permissions=["competitions.edit"], name="Nur Wettbewerbe")
+            denied = api(recorder).post(
+                path, {"starter": starter.pk, "coupling": upper.pk}, content_type="application/json"
+            )
+            assert denied.status_code == 403
+
     def test_standard_aus(self, net, world, ranglisten):
         with net.on(VERBAND):
             _wettbewerb(world["fed"], "Bundesmeisterschaft")
@@ -123,8 +186,16 @@ class TestErgebnisPaket:
 
     def test_eigene_starter(self, net, world, ranglisten):
         with net.on(VERBAND):
-            _wettbewerb(world["fed"], "Bundesmeisterschaft", location="Musterstadt")
+            comp = _wettbewerb(world["fed"], "Bundesmeisterschaft", location="Musterstadt")
         lower, upper = couple(net, world)
+        with net.on(VERBAND), tenant_context(world["fed"].pk):
+            Starter.objects.create(
+                organization=world["fed"],
+                competition=comp,
+                name="Max Muster",
+                club="schützenverein beispiel",
+                result_coupling=upper,
+            )
         enable(net, world, lower, upper, packets_upper={"unit": "on", "results": "own"})
         data = RemoteState.objects.get(coupling=lower, key="results").data
         comp = data["competitions"][0]

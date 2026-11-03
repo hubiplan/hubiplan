@@ -247,6 +247,8 @@ export function ImportSection({
   const [address, setAddress] = useState<Address>(NO_ADDRESS)
   const [job, setJob] = useState<TransferJob | null>(null)
   const [choices, setChoices] = useState<Record<string, string>>({})
+  const [permissionsSchema, setPermissionsSchema] = useState<1 | 2 | null>(null)
+  const [permissionsConfirmed, setPermissionsConfirmed] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const tm = useTerms()
@@ -298,6 +300,8 @@ export function ImportSection({
       rememberJob(started.id)
       const finished = await wait(started.id)
       setJob(finished)
+      setPermissionsSchema(finished.options.permissions_schema ?? null)
+      setPermissionsConfirmed(finished.options.permissions_confirmed ?? false)
       const p = finished.preview as ImportPreview
       if (p && 'duplicates' in p) {
         const next: Record<string, string> = {}
@@ -326,6 +330,8 @@ export function ImportSection({
       board_email: boardEmail.trim(),
       ...trimmed(address),
       persons: choices,
+      permissions_schema: permissionsSchema,
+      permissions_confirmed: permissionsConfirmed,
     }
   }
 
@@ -338,6 +344,8 @@ export function ImportSection({
     setBoardEmail('')
     setAddress(NO_ADDRESS)
     setInvite(false)
+    setPermissionsSchema(null)
+    setPermissionsConfirmed(false)
   }
 
   if (job?.status === 'done') {
@@ -466,34 +474,100 @@ export function ImportSection({
         </>
       )}
       {preview && job && (
-        <ImportPreviewView
-          preview={preview}
-          target={target}
-          choices={choices}
-          setChoices={setChoices}
-          name={name}
-          setName={setName}
-          invite={invite}
-          setInvite={setInvite}
-          boardEmail={boardEmail}
-          setBoardEmail={setBoardEmail}
-          address={address}
-          setAddress={setAddress}
-          busy={busy}
-          runError={job.error}
-          onRecheck={() => void act(() => transferApi.recheck(base, job.id, options()))}
-          onRun={() =>
-            void act(async () => {
-              // Geänderte Angaben zuerst prüfen lassen, dann übernehmen
-              const checked = await wait((await transferApi.recheck(base, job.id, options())).id)
-              setJob(checked)
-              const p = checked.preview as ImportPreview
-              if (checked.status !== 'checked' || p.error_count) return checked
-              return transferApi.run(base, job.id)
-            })
-          }
-          onCancel={reset}
-        />
+        <>
+          {preview.permission_policy &&
+            !preview.permission_policy.marked &&
+            preview.permission_policy.ambiguous && (
+              <div className="subcard stack-sm">
+                <p>
+                  {t(
+                    'Die Datei kennzeichnet ihr Rechteformat nicht. Wähle die ursprüngliche Bedeutung und prüfe danach die wirksamen Rollenrechte.',
+                  )}
+                </p>
+                <label className="field">
+                  <span>{t('Bedeutung der Rollenrechte')}</span>
+                  <select
+                    value={permissionsSchema ?? ''}
+                    disabled={busy}
+                    onChange={(e) => {
+                      setPermissionsSchema(
+                        e.target.value ? (Number(e.target.value) as 1 | 2) : null,
+                      )
+                      setPermissionsConfirmed(false)
+                    }}
+                  >
+                    <option value="">{t('Bitte ausdrücklich auswählen')}</option>
+                    <option value="1">
+                      {t(
+                        'Historische Rechte einschließlich früherer Foto-, Ausweis- und Zugangsdatenrechte',
+                      )}
+                    </option>
+                    <option value="2">
+                      {t('Bereichsrechte mit getrennten Foto-, Ausweis- und Zugangsdatenrechten')}
+                    </option>
+                  </select>
+                </label>
+                <p className="muted small">
+                  {t('Nach einer Änderung zuerst „Erneut prüfen“ wählen.')}
+                </p>
+                <Checkbox
+                  label={t(
+                    'Die unten angezeigten wirksamen Rollenrechte sind geprüft und bestätigt.',
+                  )}
+                  checked={permissionsConfirmed}
+                  disabled={
+                    busy ||
+                    permissionsSchema === null ||
+                    preview.permission_policy.schema !== permissionsSchema
+                  }
+                  onChange={setPermissionsConfirmed}
+                />
+              </div>
+            )}
+          {!!preview.permission_policy?.roles.length && (
+            <details open className="small">
+              <summary>{t('Wirksame Rollenrechte nach dem Import')}</summary>
+              <ul>
+                {preview.permission_policy.roles.map((role, index) => (
+                  <li key={index}>
+                    <strong>
+                      {role.unit}: {role.name}
+                    </strong>
+                    : {role.permissions.join(', ') || t('Keine Rechte')}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+          <ImportPreviewView
+            preview={preview}
+            target={target}
+            choices={choices}
+            setChoices={setChoices}
+            name={name}
+            setName={setName}
+            invite={invite}
+            setInvite={setInvite}
+            boardEmail={boardEmail}
+            setBoardEmail={setBoardEmail}
+            address={address}
+            setAddress={setAddress}
+            busy={busy}
+            runError={job.error}
+            onRecheck={() => void act(() => transferApi.recheck(base, job.id, options()))}
+            onRun={() =>
+              void act(async () => {
+                // Geänderte Angaben zuerst prüfen lassen, dann übernehmen
+                const checked = await wait((await transferApi.recheck(base, job.id, options())).id)
+                setJob(checked)
+                const p = checked.preview as ImportPreview
+                if (checked.status !== 'checked' || p.error_count) return checked
+                return transferApi.run(base, job.id)
+              })
+            }
+            onCancel={reset}
+          />
+        </>
       )}
       {error && <Alert kind="error">{error}</Alert>}
     </div>

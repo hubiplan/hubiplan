@@ -441,6 +441,7 @@ class ExternalCalendar(models.Model):
     # Hier ausgeblendete Termine ({key, title, starts_at}); bleiben es bei jedem Abruf
     hidden = models.JSONField(default=list, blank=True)
     last_sync_at = models.DateTimeField(null=True, blank=True)
+    last_successful_sync_at = models.DateTimeField(null=True, blank=True)
     last_error = models.CharField(max_length=500, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

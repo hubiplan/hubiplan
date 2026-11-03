@@ -27,6 +27,12 @@ export interface ImportPreview {
   source: { type?: string; name?: string }
   exported_at: string | null
   with_files: boolean
+  permission_policy?: {
+    schema: 1 | 2
+    marked: boolean
+    ambiguous: boolean
+    roles: { unit: string; name: string; permissions: string[] }[]
+  }
   summary: Record<string, number>
   /** Anzahl je Datenklasse (Umzugsbericht) */
   classes?: Record<string, number>
@@ -53,7 +59,13 @@ export interface TransferJob {
   summary: Record<string, unknown>
   preview: ImportPreview | Record<string, never>
   decisions: { persons?: Record<string, string> }
-  options: { name?: string; invite?: boolean; board_email?: string }
+  options: {
+    name?: string
+    invite?: boolean
+    board_email?: string
+    permissions_schema?: 1 | 2 | null
+    permissions_confirmed?: boolean
+  }
   error: string
   subject: { id: number; name: string } | null
   department: { id: number; name: string } | null
@@ -65,6 +77,8 @@ export interface TransferJob {
 }
 
 export interface ImportOptions {
+  permissions_schema?: 1 | 2 | null
+  permissions_confirmed?: boolean
   name?: string
   invite?: boolean
   board_email?: string

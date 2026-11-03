@@ -790,3 +790,32 @@ Schnappschüsse benötigen weiterhin ein abgestimmtes Verfahren bzw. Wartungsfen
 English: encryption and fingerprint use the same immutable tmpfs key-ring copy. An
 unreadable/missing source is incomplete. External key providers need an independently
 accepted recovery procedure; the file-based verifier does not certify them.
+
+### Empfangs-/Kapazitätsbudgets im Verbund
+
+Der Empfang reserviert atomar Kapazität, bevor Pakete oder Dateien gespeichert werden.
+Dubletten derselben Nachrichtenkennung werden nicht erneut belastet. Jede neue
+Nachricht zählt mindestens 64 KiB, sonst das Doppelte der UTF-8-JSON-Nutzdaten;
+auch ersetzte Stände und veraltete Sequenzen verbrauchen Empfangskapazität. Dies ist
+ein konservatives dauerhaftes Empfangsbudget, keine Anzeige exakt belegter Plattenbytes.
+Bestehende Nachrichten und retained Dateien werden vor dem ersten Empfang mitgezählt.
+Nicht lesbarer Altbestand blockiert den Empfang, bis er geprüft ist.
+
+Standardgrenzen: Instanz 10 GiB/200000 Nachrichten, Empfängereinheit 2 GiB/50000,
+Partnerinstanz über alle Empfänger 1 GiB/25000 sowie 1000 Nachrichten in 24 Stunden.
+Bei Überschreitung wird vor der Verarbeitung mit 507 bzw. 429 abgelehnt. Die Kopplung
+behält ihren bisherigen Sequenzstand; nach begründeter Kapazitätsfreigabe kann sie
+wieder zustellen. Die API zeigt reservierte Bytes und Nachrichten je Kopplung unter
+`reception_budget`; `initialized=false` bedeutet noch nicht vermessenen Altbestand.
+
+Positive Umgebungswerte `PEERING_RECEPTION_INSTANCE_BYTES`,
+`PEERING_RECEPTION_INSTANCE_MESSAGES`, `PEERING_RECEPTION_UNIT_BYTES`,
+`PEERING_RECEPTION_UNIT_MESSAGES`, `PEERING_RECEPTION_PEER_BYTES`,
+`PEERING_RECEPTION_PEER_MESSAGES`, `PEERING_RECEPTION_PEER_DAILY_MESSAGES`
+ändern die Grenzen. Vor einer Erhöhung freie Host-/Volume-Kapazität und Aufbewahrung
+prüfen und die Freigabe dokumentieren. Null bedeutet **nicht** unbegrenzt.
+Reservierungen werden niemals automatisch zurückgesetzt; Rechnungen und Rundschreiben
+werden nicht zur Quotenbereinigung gelöscht. Host-/Volumequoten und unabhängige
+Kapazitätsalarme bleiben zusätzliche Betriebsmaßnahmen auf dem gemeinsamen Server.
+Die Schemaerweiterung ist additiv; bei einem Rückweg zunächst nur den Code zurücknehmen,
+die zusätzlichen Spalten eine Fassung lang stehen lassen.

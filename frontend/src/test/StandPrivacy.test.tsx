@@ -171,6 +171,93 @@ it('behält Konto und Cache, wenn der Server die Abmeldung nicht bestätigt', as
   expect(loadStandCache(scope, 'local')).not.toBeNull()
 })
 
+it.each([429, 500, 502, 503])(
+  'behält offene Eingaben bei ungewissem Sessionstart %s und sperrt die Oberfläche',
+  async (status) => {
+    bindStandUser(testUser.id)
+    const scope = orgStandApi(7, 42).key
+    authorizeStandCache(scope)
+    saveStandCache(scope, 'local', { ...local, ops: [{ op: 'starter' }] }, standRevision())
+    fakeApi({ 'GET /_allauth/browser/v1/auth/session': () => ({ status }) })
+    const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.user).toBeNull()
+    expect(result.current.offline).toBe(false)
+    expect(loadStandCache(scope, 'local')).not.toBeNull()
+    expect(pendingStandInputs()).toBe(1)
+  },
+)
+
+it.each([401, 403])('entfernt Konto-Cache bei bestätigter Sessionablehnung %s', async (status) => {
+  bindStandUser(testUser.id)
+  const scope = orgStandApi(7, 42).key
+  authorizeStandCache(scope)
+  saveStandCache(scope, 'local', local, standRevision())
+  fakeApi({ 'GET /_allauth/browser/v1/auth/session': () => ({ status }) })
+  const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider })
+  await waitFor(() => expect(result.current.loading).toBe(false))
+  expect(loadStandCache(scope, 'local')).toBeNull()
+})
+
+it.each([
+  'photo',
+  'finish',
+  'list',
+  'create',
+  'update',
+  'updateEntry',
+  'unitMembers',
+  'remove',
+] as const)('beendet Offlinezugriff auch nach 403 bei %s', async (action) => {
+  bindStandUser(1)
+  const api = orgStandApi(7, 42)
+  authorizeStandCache(api.key)
+  saveStandCache(api.key, 'local', local, standRevision())
+  document.cookie = 'csrftoken=test'
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 403 }))
+  const actions = {
+    photo: () => api.photo(1, new Blob(['test'], { type: 'image/png' })),
+    finish: () => api.finish!(),
+    list: () => api.shootoffs.list(),
+    create: () => api.shootoffs.create(1, ['starter'], {}),
+    update: () => api.shootoffs.update(1, {}),
+    updateEntry: () => api.shootoffs.updateEntry(1, { value: '1' }),
+    unitMembers: () => api.shootoffs.unitMembers(1),
+    remove: () => api.shootoffs.remove!(1),
+  }
+  await expect(actions[action]()).rejects.toBeInstanceOf(ApiError)
+  expect(loadStandCache(api.key, 'local')).toBeNull()
+})
+
+it('behandelt einen einzelnen fehlenden Stech-Eintrag nicht als Entzug des ganzen Standes', async () => {
+  bindStandUser(1)
+  const api = orgStandApi(7, 42)
+  authorizeStandCache(api.key)
+  saveStandCache(api.key, 'local', local, standRevision())
+  document.cookie = 'csrftoken=test'
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}', { status: 404 }))
+  await expect(api.shootoffs.updateEntry(99, { value: '1' })).rejects.toBeInstanceOf(ApiError)
+  expect(loadStandCache(api.key, 'local')).not.toBeNull()
+})
+
+it('verwirft auch verspätete Fotoantworten nach dem Kontowechsel', async () => {
+  bindStandUser(1)
+  const api = orgStandApi(7, 42)
+  document.cookie = 'csrftoken=test'
+  let finish!: (response: Response) => void
+  vi.spyOn(globalThis, 'fetch').mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+  )
+  const pending = api.photo(1, new Blob(['test'], { type: 'image/png' }))
+  await waitFor(() => expect(finish).toBeTypeOf('function'))
+  bindStandUser(2)
+  finish(new Response('{}', { status: 200 }))
+  await expect(pending).rejects.toBeInstanceOf(ApiError)
+})
+
 it('schreibt eine vor Abmeldung gestartete Mitgliederantwort nicht zurück', async () => {
   bindStandUser(1)
   const api = orgStandApi(7, 42)
