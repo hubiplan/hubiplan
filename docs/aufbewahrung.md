@@ -33,8 +33,8 @@ f = berechtigtes Interesse, a = Einwilligung (DSGVO).
 | Würden, Begleitungen, Ehrungen, Wettbewerbsergebnisse | Vereinsgeschichte und öffentliche Chronik, Art. 6 (1) f | – | bleiben; jährliche Prüfung und Entfernen auf Wunsch (unten) |
 | Mitgliederfoto | Ausweis und Akte, Art. 6 (1) a | Widerruf oder Löschfrist | beim Widerruf bzw. mit den Mitgliedsdaten gelöscht |
 | SEPA-Mandate | Lastschrift, Art. 6 (1) b, c | letzte Lastschrift | 36 Monate nach der letzten Lastschrift ungültig (SEPA-Regel); Mandat bleibt als Beleg mit den Büchern |
-| Rechnungen, Quittungen, Buchungsbelege, Kontoauszüge | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres, in dem das Geschäftsjahr endet | Belege nach 8 Jahren gelöscht (Finanzen › Abschluss, von Hand ausgelöst) |
-| Bücher, Jahresabschlüsse | Buchführung, Art. 6 (1) c, § 147 AO | wie oben | nach 10 Jahren anonymisiert (Beträge bleiben) |
+| Rechnungen, Quittungen, Buchungsbelege, Kontoauszüge | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres der tatsächlichen Belegentstehung | Belege nach 8 Jahren gelöscht (Finanzen › Abschluss, von Hand ausgelöst) |
+| Bücher, Jahresabschlüsse | Buchführung, Art. 6 (1) c, § 147 AO | Ende des Kalenderjahres der letzten Eintragung bzw. Aufstellung | nach 10 Jahren anonymisiert (Beträge bleiben) |
 | Zuwendungsbestätigungen | § 50 EStDV, Art. 6 (1) c | wie oben | wie Belege |
 | Postausgang (Mailtexte und Anhänge) | Nachweis des Versands, Art. 6 (1) b, f | Versand bzw. Anlage | zugestellt: Text und Anhänge nach 30 Tagen geleert, Kontaktformular nach 7; nicht zugestellt nach 90 Tagen (FQ14); Empfänger, Betreff und Art bleiben |
 | Rundschreiben (versandt) | Information der Mitglieder, Art. 6 (1) b | – | bleiben nachlesbar; Empfängerliste wird mit den Mitgliedsdaten gelöscht |
@@ -128,3 +128,26 @@ including earlier or intermediate years and non-calendar fiscal years. Normal de
 also respects all closed years in that range. Hold changes share the file-lifecycle lock.
 An older year's cleanup does not remove originals that still support newer entries.
 Original bytes and reported balance dates are not rewritten.
+
+
+## Ergänzungen zur GoBD Sicherung vom 3. November 2026
+
+Buchungen mit Belegen werden storniert; ihre Originaldateien bleiben erhalten.
+Importierte Kontoauszüge lassen sich nicht löschen. Fehlerhafte Umsätze werden ignoriert.
+Gebuchte Kategorien bleiben fachlich unverändert; für neue Zuordnungen eine neue Kategorie
+anlegen und die bisherige bei Bedarf archivieren. Konten und Kategorien sind vom allgemeinen
+Rückgängig ausgeschlossen. Eine Festschreibung lässt sich darüber nicht zurücksetzen.
+
+Die Fristen berücksichtigen das Kalenderjahr der tatsächlichen Erfassung von Belegen sowie
+bei Büchern die letzte protokollierte Eintragung und die Aufstellung des Abschlusses.
+Später erfasste Unterlagen verschieben die Frist für das gesamte Geschäftsjahr konservativ.
+Eine Löschsperre verlängert die Aufbewahrung weiterhin. Mahnungen werden bei ihrer Erstellung
+mit Prüfsumme archiviert und mit dem Jahresexport ausgegeben; spätere Zahlungen verändern
+diese Fassung nicht. Bestehende Mahnungen ohne Archiv können ihre ursprüngliche Fassung
+nur aus noch vorhandenen Versandkopien belegen. Ein späterer Abruf sichert lediglich den
+dann vorhandenen Stand und stellt keine historische Versandfassung wieder her.
+
+Bargeldeinnahmen und Bargeldausgaben täglich festhalten. Bei technischem Ausfall täglich
+Ersatzbelege führen, anschließend mit Bezug auf diese Belege nachtragen. Verantwortliche,
+Berechtigungsprüfung, zweiter Sicherungsort und Rücksicherungstests werden vom Verein in
+der ausgefüllten Verfahrensdokumentation mit Datum und Nachweis festgehalten.

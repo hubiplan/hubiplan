@@ -366,8 +366,8 @@ def build(org, year: int):
         tables.append(_cash_count_table(org, start, end, add_file))
         if org.reserves_enabled or _has_reserves(org):
             tables.append(_reserve_table(org, start, end))
-        tables.append(_protocol_table(org, start))
         add("protokollpruefung.txt", _chain_report(org))
+        tables.append(_protocol_table(org, start))
 
         for table in tables:
             add(table.url, table.content())
@@ -510,6 +510,8 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
             "neue Zahlungsfrist",
             "Mahngebühr",
             "verschickt",
+            "Datei",
+            "SHA-256 Datei",
             num=("Mahngebühr",),
             date=("Datum", "neue Zahlungsfrist"),
         ),
@@ -527,6 +529,8 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
             _date(d.due_date),
             _money(d.fee),
             _stamp(d.sent_at),
+            add_file(f"mahnungen/{d.pk}.pdf", d.issued_pdf) if d.issued_pdf else "",
+            d.issued_pdf_sha256,
         )
     runs = Table(
         "lastschriften.csv",

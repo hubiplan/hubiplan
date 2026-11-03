@@ -1123,4 +1123,7 @@ def dun(invoice: Invoice, level: DunningLevel, user, on: datetime.date | None = 
     invoice.dunning_level = level.level
     invoice.dunned_at = on
     invoice.save(update_fields=["total", "dunning_level", "dunned_at", "updated_at"])
+    from .archive import archived_dunning
+
+    archived_dunning(dunning)
     return dunning

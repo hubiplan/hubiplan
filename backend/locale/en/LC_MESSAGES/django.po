@@ -4960,3 +4960,18 @@ msgstr "This connection is paused locally."
 
 msgid "Hier wartet ein angekündigter Umzug auf Bestätigung."
 msgstr "An announced move is awaiting confirmation here."
+
+msgid "Importierte Kontoauszüge bleiben erhalten. Bitte Umsätze ignorieren."
+msgstr "Imported bank statements are retained. Please ignore transactions instead."
+
+msgid "Der Anfangsbestand betrifft eine festgeschriebene Periode."
+msgstr "The opening balance affects a locked period."
+
+msgid "Gebuchte Kategorien bleiben erhalten. Bitte eine neue Kategorie anlegen."
+msgstr "Categories used in bookings are retained. Please create a new category."
+
+msgid "Die Aufbewahrungsfrist ist abgelaufen."
+msgstr "The retention period has expired."
+
+msgid "Buchungen mit Belegen bitte stornieren."
+msgstr "Please cancel bookings with receipts instead of deleting them."

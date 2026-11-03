@@ -50,7 +50,7 @@ Vorstand bzw. der steuerlichen Beratung.
   die Kasse zusätzlich von Hand bis zu einem Tag festschreiben; das ist endgültig.
   Festgeschriebene Buchungen lassen sich nicht mehr ändern (nur die Zuordnung zu einer
   Veranstaltung) und nicht neu nummerieren.
-- **Löschen** geht nur am Tag der Erfassung. Danach wird **storniert** (mit Pflicht-Grund):
+- **Löschen** geht nur am Tag der Erfassung und ohne angehängte Belege. Danach wird **storniert** (mit Pflicht-Grund):
   Eine Gegenbuchung mit heutigem Datum hebt die Buchung auf und verweist auf sie; beide
   bleiben unverändert sichtbar. Ein Storno geht auch für Buchungen abgeschlossener Jahre
   (die Gegenbuchung liegt im laufenden Jahr). Wird eine Zahlung zu einer Rechnung nach dem
@@ -61,7 +61,7 @@ Vorstand bzw. der steuerlichen Beratung.
   Datenexport.
 - Eine **Barkasse** kann an keinem Tag unter null fallen: Buchungen, Änderungen und
   Löschungen, die das bewirken würden, werden abgelehnt (Kassensturzfähigkeit).
-- Bargeld wird zeitnah erfasst, möglichst am selben Tag (Vereinsregel, Abschnitt 6).
+- Bargeld wird täglich erfasst (Vereinsregel, Abschnitt 6).
 - **Jahresabschluss** sperrt das Geschäftsjahr: danach keine Änderung, kein Löschen, kein
   Neunummerieren und keine neuen Buchungen. Korrekturen laufen als Storno bzw. neue Buchung
   im offenen Jahr.
@@ -134,8 +134,7 @@ konkreten Zweck. Eine Rücklage bewegt kein Geld, sie bindet einen Teil der Mitt
   Umsätze, gleiche Umsätze im selben Auszug bleiben getrennt), Sammelbuchungen behalten ihre
   Einzelposten. Eine zugeordnete Buchung lässt sich in Betrag, Art und Konto erst nach dem
   Lösen der Zuordnung ändern; wird sie gelöscht, ist der Umsatz wieder offen. Die
-  Originaldatei der Bank wird unverändert mit SHA-256 aufbewahrt; ein Auszug lässt sich nur
-  löschen, solange aus ihm nichts gebucht oder zugeordnet ist.
+  Originaldatei der Bank wird unverändert mit SHA-256 aufbewahrt; importierte Auszüge bleiben erhalten; nicht benötigte Umsätze werden ignoriert.
 - **Bestand** heißt Bestand heute; Buchungen mit Datum in der Zukunft stehen getrennt als
   „vorgemerkt“.
 
@@ -184,8 +183,8 @@ sobald Netz da ist, höchstens 30 Tage nach der Unterschrift.
 ## 5. Aufbewahrung, Sicherung, Prüfung
 
 - Aufbewahrungsfrist für Buchungsbelege: 8 Jahre (§ 147 AO in der Fassung ab 2025),
-  Bücher und Jahresabschlüsse 10 Jahre, jeweils ab dem Ende des Kalenderjahres, in dem das
-  Geschäftsjahr endet. HUBIplan löscht nichts von selbst. Nach Ablauf zeigt Abschluss &
+  Bücher und Jahresabschlüsse 10 Jahre. Fristbeginn ist das Ende des Kalenderjahres der
+  Belegentstehung bzw. letzten Bucheintragung oder Aufstellung des Abschlusses. HUBIplan löscht nichts von selbst. Nach Ablauf zeigt Abschluss &
   Berichte › Jahresabschluss beim abgeschlossenen Jahr „Belege löschen“ (ab dem 9. Jahr:
   Belegdateien, archivierte Rechnungs-, Quittungs-, Zuwendungs- und Zählprotokoll-PDFs,
   Kontoauszugs- und SEPA-Dateien, Unterschriften) bzw. „Daten bereinigen“ (ab dem 11. Jahr
@@ -234,8 +233,31 @@ sobald Netz da ist, höchstens 30 Tage nach der Unterschrift.
 |---|---|
 | Verantwortlich für die Kasse | |
 | Wer stellt Quittungen aus (Rollen) | |
-| Bargeld wird erfasst | z. B. am selben Tag, spätestens nach … Tagen |
+| Bargeld wird erfasst | täglich; bei Ausfall täglich auf einem Ersatzbeleg |
 | Kassensturz (Zählen der Barkasse) | z. B. monatlich und zum Jahresende, mit Zählprotokoll |
 | Zweiter Sicherungsort | |
 | Datenexport für das Archiv | z. B. nach jedem Jahresabschluss, abgelegt bei … |
 | Bestätigt durch den Vorstand am | |
+
+
+## Ergänzungen zur GoBD Sicherung vom 3. November 2026
+
+Buchungen mit Belegen werden storniert; ihre Originaldateien bleiben erhalten.
+Importierte Kontoauszüge lassen sich nicht löschen. Fehlerhafte Umsätze werden ignoriert.
+Gebuchte Kategorien bleiben fachlich unverändert; für neue Zuordnungen eine neue Kategorie
+anlegen und die bisherige bei Bedarf archivieren. Konten und Kategorien sind vom allgemeinen
+Rückgängig ausgeschlossen. Eine Festschreibung lässt sich darüber nicht zurücksetzen.
+
+Die Fristen berücksichtigen das Kalenderjahr der tatsächlichen Erfassung von Belegen sowie
+bei Büchern die letzte protokollierte Eintragung und die Aufstellung des Abschlusses.
+Später erfasste Unterlagen verschieben die Frist für das gesamte Geschäftsjahr konservativ.
+Eine Löschsperre verlängert die Aufbewahrung weiterhin. Mahnungen werden bei ihrer Erstellung
+mit Prüfsumme archiviert und mit dem Jahresexport ausgegeben; spätere Zahlungen verändern
+diese Fassung nicht. Bestehende Mahnungen ohne Archiv können ihre ursprüngliche Fassung
+nur aus noch vorhandenen Versandkopien belegen. Ein späterer Abruf sichert lediglich den
+dann vorhandenen Stand und stellt keine historische Versandfassung wieder her.
+
+Bargeldeinnahmen und Bargeldausgaben täglich festhalten. Bei technischem Ausfall täglich
+Ersatzbelege führen, anschließend mit Bezug auf diese Belege nachtragen. Verantwortliche,
+Berechtigungsprüfung, zweiter Sicherungsort und Rücksicherungstests werden vom Verein in
+der ausgefüllten Verfahrensdokumentation mit Datum und Nachweis festgehalten.

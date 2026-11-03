@@ -9,3 +9,5 @@ stichworte: [booking, receipt, income, expense, cash]
 ---
 
 The cash book records every income and expense with date, account, category and receipt. Bookings in a closed period can no longer be changed, only corrected with a reversing entry. This keeps the cash book auditable.
+
+Cancel bookings with receipts instead of deleting them. Imported bank statements are retained; ignore unwanted transactions. Archive used categories and create a new category for new assignments. Reminders retain their archived version.

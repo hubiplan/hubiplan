@@ -19,10 +19,9 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
 from audit.log import record
-from core.files import delete_on_commit
 from members.models import Membership
 
-from . import bank_import, bank_originals, camt, services
+from . import bank_import, camt, services
 from .models import (
     Account,
     BankLine,
@@ -30,7 +29,6 @@ from .models import (
     Booking,
     Category,
     Project,
-    YearClosing,
 )
 from .views import BookingPagination, FinanceMixin
 
@@ -209,44 +207,9 @@ class BankStatementViewSet(
 
     @transaction.atomic
     def perform_destroy(self, instance):
-        services.lock_bank_sources(self.org)
-        instance = bank_originals.queryset(self.org).get(pk=instance.pk)
-        # Zeilen sperren, damit keine parallele Zuordnung zwischen Prüfung und Löschen landet
-        list(instance.lines.select_for_update().values_list("pk", flat=True))
-        if instance.lines.filter(status=BankLine.Status.DONE).exists():
-            raise serializers.ValidationError(
-                gettext(
-                    "Aus diesem Auszug ist schon etwas gebucht oder zugeordnet. Er bleibt erhalten."
-                )
-            )
-        # Abgeschlossene Geschäftsjahre (und damit auch Löschsperren) gelten auch hier, nicht
-        # nur bei der Bereinigung nach der Aufbewahrungsfrist (Audit 03.11. GA-S12)
-        first, last = bank_originals.year_range(self.org, instance)
-        services.lock_years_from(self.org, first)
-        if YearClosing.objects.filter(
-            organization=self.org, year__gte=first, year__lte=last
-        ).exists():
-            raise serializers.ValidationError(
-                gettext(
-                    "Der Auszug gehört zu einem abgeschlossenen Geschäftsjahr. Er bleibt erhalten."
-                )
-            )
-        record(
-            self.org,
-            self.request.user,
-            "delete",
-            instance,
-            {"Kontoauszug": [instance.file_name, None]},
+        raise serializers.ValidationError(
+            gettext("Importierte Kontoauszüge bleiben erhalten. Bitte Umsätze ignorieren.")
         )
-        # Die Datei können mehrere Auszüge teilen (Audit 02.11. BP-S01)
-        if (
-            instance.source
-            and not BankStatement.objects.filter(organization=self.org, source=instance.source.name)
-            .exclude(pk=instance.pk)
-            .exists()
-        ):
-            delete_on_commit(instance.source)
-        instance.delete()
 
 
 class AssignSerializer(serializers.Serializer):

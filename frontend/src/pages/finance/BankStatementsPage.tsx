@@ -35,26 +35,6 @@ export function BankStatementsPage({ canEdit }: { canEdit: boolean }) {
   const list = statements.data?.results ?? []
   const current = list.find((s) => s.id === selected) ?? list[0] ?? null
 
-  async function removeStatement(st: BankStatement) {
-    const ok = await confirmDialog({
-      title: t('Kontoauszug entfernen?'),
-      message: t(
-        '{file_name}: Die {line_count} Umsätze werden entfernt. Das geht nur, solange nichts daraus gebucht ist.',
-        { file_name: st.file_name, line_count: st.line_count },
-      ),
-      confirmLabel: t('Entfernen'),
-      danger: true,
-    })
-    if (!ok) return
-    try {
-      await bankApi.removeStatement(org.id, st.id)
-      setSelected(null)
-      await statements.reload()
-    } catch (err) {
-      setMessage({ kind: 'error', text: errorMessage(err) })
-    }
-  }
-
   return (
     <>
       {canEdit && accounts.data && (
@@ -87,7 +67,6 @@ export function BankStatementsPage({ canEdit }: { canEdit: boolean }) {
                 <th className="num">{t('Umsätze')}</th>
                 <th className="num">offen</th>
                 <th>{t('Saldo')}</th>
-                <th />
               </tr>
             </thead>
             <tbody>
@@ -128,17 +107,6 @@ export function BankStatementsPage({ canEdit }: { canEdit: boolean }) {
                       )
                     ) : (
                       '–'
-                    )}
-                  </td>
-                  <td className="actions">
-                    {canEdit && (
-                      <button
-                        type="button"
-                        className="link-button"
-                        onClick={() => void removeStatement(st)}
-                      >
-                        {t('Entfernen')}
-                      </button>
                     )}
                   </td>
                 </tr>

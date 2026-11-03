@@ -73,7 +73,7 @@ def test_earlier_held_year_protects_original_even_if_header_omits_book_day(
     statement = legacy(org, account, user, day if spans else start, end, day)
     YearClosing.objects.create(organization=org, year=target - 1, retention_hold="Testhold")
     closing = YearClosing.objects.create(organization=org, year=target)
-    monkeypatch.setattr(retention, "_today", lambda: datetime.date(end.year + 9, 1, 1))
+    monkeypatch.setattr(retention, "_today", lambda: retention.due_dates(org, target)[0])
     storage, name = statement.source.storage, statement.source.name
     with as_app_role(), tenant_context(org.pk):
         with django_capture_on_commit_callbacks(execute=True):
@@ -133,7 +133,7 @@ def test_normal_delete_preserves_closed_intermediate_year(data, django_capture_o
     view.org, view.request = org, SimpleNamespace(user=user)
     storage, name = statement.source.storage, statement.source.name
     with as_app_role(), tenant_context(org.pk), django_capture_on_commit_callbacks(execute=True):
-        with pytest.raises(ApiValidationError, match="abgeschlossenen"):
+        with pytest.raises(ApiValidationError, match="bleiben erhalten"):
             view.perform_destroy(statement)
     assert storage.exists(name)
     assert BankStatement.objects.filter(pk=statement.pk).exists()

@@ -35,7 +35,7 @@ from organizations.terms import department_terms, fill
 from outbox import mail
 
 from . import pdf, sepa, services, units
-from .archive import archived_pdf, documents_purged
+from .archive import archived_dunning, archived_pdf, documents_purged
 from .models import (
     AgeRate,
     DebitItem,
@@ -339,11 +339,15 @@ def send_invoice(invoice: Invoice) -> bool:
 def combined_pdf(invoices: list[Invoice]) -> bytes:
     """Mehrere Rechnungen in einem PDF, jede in ihrer ausgegebenen Fassung (Audit 02.11.
     BP-F02). Nach Fristablauf gelöschte fehlen; Entwürfe werden frisch erzeugt."""
+    parts = [archived_pdf(i) for i in invoices if i.issued_pdf or not documents_purged(i)]
+    return merge_pdf_parts(parts)
+
+
+def merge_pdf_parts(parts: list[bytes]) -> bytes:
     import io
 
     import pypdfium2 as pdfium
 
-    parts = [archived_pdf(i) for i in invoices if i.issued_pdf or not documents_purged(i)]
     if len(parts) == 1:
         return parts[0]
     out = pdfium.PdfDocument.new()
@@ -1172,7 +1176,7 @@ def send_dunning(dunning: Dunning) -> bool:
         attachments=[
             (
                 pdf.dunning_filename(dunning),
-                pdf.render([invoice], {invoice.pk: dunning}),
+                archived_dunning(dunning),
                 "application/pdf",
             )
         ],
@@ -1257,10 +1261,9 @@ class DunningPdfView(BillingMixin, APIView):
         )
         if not dunnings:
             raise NotFound(gettext("Keine Mahnungen gefunden."))
-        invoices = [d.invoice for d in dunnings]
-        by_invoice = {d.invoice_id: d for d in dunnings}
+        parts = [archived_dunning(d) for d in dunnings]
         name = pdf.dunning_filename(dunnings[0]) if len(dunnings) == 1 else "Mahnungen.pdf"
-        response = HttpResponse(pdf.render(invoices, by_invoice), content_type="application/pdf")
+        response = HttpResponse(merge_pdf_parts(parts), content_type="application/pdf")
         disposition = "attachment" if request.query_params.get("download") == "1" else "inline"
         response["Content-Disposition"] = f'{disposition}; filename="{name}"'
         response["Cache-Control"] = "private, no-store"

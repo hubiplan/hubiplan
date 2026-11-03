@@ -31,14 +31,14 @@ def test_original_wird_mit_pruefsumme_gespeichert(c, fin):
         assert fh.read() == data
 
 
-def test_loeschen_entfernt_original(c, fin, django_capture_on_commit_callbacks):
+def test_loeschen_behaelt_original(c, fin, django_capture_on_commit_callbacks):
     assert upload(c, fin, camt_xml([entry("10.00")])).status_code == 201
     st = BankStatement.objects.get()
     storage, name = st.source.storage, st.source.name
     assert storage.exists(name)
     with django_capture_on_commit_callbacks(execute=True):
-        assert c.delete(f"{fin}/bank-statements/{st.pk}/").status_code == 204
-    assert not storage.exists(name)
+        assert c.delete(f"{fin}/bank-statements/{st.pk}/").status_code == 400
+    assert storage.exists(name)
 
 
 def test_export_enthaelt_alles_fuer_die_pruefung(c, fin):

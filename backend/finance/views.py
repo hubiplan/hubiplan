@@ -141,6 +141,15 @@ class AccountViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         )
         if changes_opening:
             dates = [instance.opening_date, data.get("opening_date", instance.opening_date)]
+            has_entries = Booking.objects.filter(
+                Q(account=instance) | Q(to_account=instance)
+            ).exists()
+            if services.fixed_on(self.org, min(dates), instance.created_at) and (
+                has_entries or self.org.finance_locked_until
+            ):
+                raise serializers.ValidationError(
+                    gettext("Der Anfangsbestand betrifft eine festgeschriebene Periode.")
+                )
             first = min(self.org.fiscal_year_of(d) for d in dates)
             # Alle betroffenen Jahre gegen einen gleichzeitigen Abschluss sperren
             services.lock_years_from(self.org, first)
@@ -507,6 +516,8 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             raise serializers.ValidationError(QUITTUNG_LOCKED)
         if hasattr(instance, "payment"):
             raise serializers.ValidationError(self.protected_message)
+        if instance.receipts.exists():
+            raise serializers.ValidationError(gettext("Buchungen mit Belegen bitte stornieren."))
         # GoBD: Löschen nur am Tag der Erfassung vor der Festschreibung, sonst Storno
         if not services.deletable(instance):
             raise serializers.ValidationError(
@@ -533,8 +544,6 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
                     line,
                     {"Kontoumsatz": ["erledigt", "wieder offen (Buchung gelöscht)"]},
                 )
-            for receipt in instance.receipts.all():
-                delete_on_commit(receipt.file)
             super().perform_destroy(instance)
             cash_ok(accounts, since)
 

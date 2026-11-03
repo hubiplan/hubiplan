@@ -4,7 +4,6 @@
 import datetime
 from concurrent.futures import ThreadPoolExecutor
 from importlib import import_module
-from threading import Event
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -15,7 +14,7 @@ from django.db import connection, connections, transaction
 from django.utils import timezone
 
 from core.tenancy import tenant_context
-from finance import bank_import, bank_views, camt, retention, services
+from finance import bank_import, bank_views, camt, retention
 from finance.models import Account, BankStatement, YearClosing
 
 from .factories import make_org, make_user
@@ -123,7 +122,7 @@ def test_backfilled_original_can_be_purged_again_but_holds_still_apply(
     closing = YearClosing.objects.create(
         organization=club, year=2025, documents_purged_at=timezone.now(), retention_hold="Prüfung"
     )
-    monkeypatch.setattr(retention, "_today", lambda: datetime.date(2034, 1, 1))
+    monkeypatch.setattr(retention, "_today", lambda: retention.due_dates(club, 2025)[0])
     assert retention.state(club, closing)["documents_due"]
     user = make_user("retention@example.invalid")
     with pytest.raises(ValidationError, match="Löschsperre"):
@@ -141,7 +140,9 @@ def test_backfilled_original_can_be_purged_again_but_holds_still_apply(
 
 
 @pytest.mark.django_db(transaction=True)
-def test_concurrent_delete_and_import_never_reuse_a_scheduled_deleted_path():
+def test_concurrent_delete_and_import_preserve_original():
+    from rest_framework.exceptions import ValidationError as ApiValidationError
+
     org = make_org("CAMT Parallelverein")
     user = make_user("camt-race@example.invalid")
     Account.objects.create(
@@ -152,58 +153,30 @@ def test_concurrent_delete_and_import_never_reuse_a_scheduled_deleted_path():
     )
     with tenant_context(org.pk):
         first = bank_import.import_file(org, camt_xml([]), "empty.xml", user)["statements"][0]
-    old_path = first.source.name
-    queued = Event()
-    release = Event()
-    importing = Event()
-    original_delete = bank_views.delete_on_commit
-    original_lock = services.lock_bank_sources
-
-    def delete_later(field):
-        original_delete(field)
-        queued.set()
-        assert release.wait(10)
-
-    def lock(org):
-        if queued.is_set():
-            importing.set()
-        original_lock(org)
 
     def delete():
         try:
             with tenant_context(org.pk):
                 view = bank_views.BankStatementViewSet()
-                view.org = org
-                view.request = SimpleNamespace(user=user)
-                view.perform_destroy(first)
+                view.org, view.request = org, SimpleNamespace(user=user)
+                with pytest.raises(ApiValidationError):
+                    view.perform_destroy(first)
         finally:
             connections.close_all()
 
     def upload_again():
         try:
             with tenant_context(org.pk):
-                return bank_import.import_file(org, camt_xml([]), "empty.xml", user)["statements"][
-                    0
-                ]
+                result = bank_import.import_file(org, camt_xml([]), "empty.xml", user)
+                return result["statements"][0]
         finally:
             connections.close_all()
 
-    with (
-        patch.object(bank_views, "delete_on_commit", delete_later),
-        patch.object(services, "lock_bank_sources", lock),
-        ThreadPoolExecutor(max_workers=2) as pool,
-    ):
+    with ThreadPoolExecutor(max_workers=2) as pool:
         deletion = pool.submit(delete)
-        assert queued.wait(10)
         upload = pool.submit(upload_again)
-        try:
-            assert importing.wait(10)
-            assert not upload.done()
-        finally:
-            release.set()
         deletion.result(timeout=10)
         second = upload.result(timeout=10)
-    assert second.source.name != old_path
-    assert not first.source.storage.exists(old_path)
+    assert first.source.storage.exists(first.source.name)
     with second.source.open("rb") as stream:
         assert stream.read() == camt_xml([])

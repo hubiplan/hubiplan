@@ -447,6 +447,10 @@ class DunningLevel(models.Model):
             raise ValidationError({"fee": gettext("Die Gebühr darf nicht negativ sein.")})
 
 
+def dunning_pdf_path(instance, filename: str) -> str:
+    return f"mahnungen/{instance.organization_id}/{instance.pk}-{filename}"
+
+
 class Dunning(models.Model):
     """Ausgelöste Mahnung zu einer Rechnung."""
 
@@ -454,6 +458,10 @@ class Dunning(models.Model):
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
     )
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="dunnings")
+    issued_pdf = PrivateFileField(
+        storage=private_storage, upload_to=dunning_pdf_path, blank=True, db_default=""
+    )
+    issued_pdf_sha256 = models.CharField(max_length=64, blank=True, db_default="")
     level = models.PositiveSmallIntegerField("Stufe")
     name = models.CharField("Bezeichnung", max_length=100)
     text = models.TextField("Text", blank=True)

@@ -251,9 +251,9 @@ class TestEinlesen:
 
     def test_auszug_loeschen_nur_ohne_buchungen(self, c, fin, setup):
         st = upload(c, fin, camt_xml([entry("4.00", ref="F1")])).json()["statements"][0]
-        assert c.delete(f"{fin}/bank-statements/{st['id']}/").status_code == 204
+        assert c.delete(f"{fin}/bank-statements/{st['id']}/").status_code == 400
         with tenant_context(setup["aktiv"].organization_id):
-            assert BankLine.objects.count() == 0
+            assert BankLine.objects.count() == 1
 
     def test_nur_lesen(self, c, fin, club, api):
         from .factories import give_role, make_user
@@ -312,7 +312,7 @@ class TestAblageUndGrenzen:
         with rls_bypass():
             first, second = BankStatement.objects.order_by("pk")
         resp = c.delete(f"{fin}/bank-statements/{first.pk}/")
-        assert resp.status_code == 204, resp.content
+        assert resp.status_code == 400, resp.content
         with rls_bypass():
             second.refresh_from_db()
             with second.source.open("rb") as fh:
