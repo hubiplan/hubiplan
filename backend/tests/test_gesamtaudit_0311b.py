@@ -10,7 +10,7 @@ from events import external
 from finance.models import BankStatement, YearClosing
 
 from .test_kontoauszug import camt_xml, entry, fin, upload  # noqa: F401
-from .test_m9_billing import c, club, members, setup, zug  # noqa: F401
+from .test_m9_billing import base, c, club, members, setup, zug  # noqa: F401
 
 pytestmark = pytest.mark.django_db
 
@@ -61,7 +61,8 @@ def test_serien_teilen_ein_schrittbudget():
 
 def test_normale_serie_unveraendert():
     since, until = _fenster()
-    start = since + datetime.timedelta(days=1)
+    # iCal-Zeiten haben keine Bruchteile von Sekunden (dateutil schneidet sie ab)
+    start = (since + datetime.timedelta(days=1)).replace(microsecond=0)
     moments = external._expand(
         start, "FREQ=WEEKLY;COUNT=5", [start], datetime.timedelta(hours=2), since, until
     )
