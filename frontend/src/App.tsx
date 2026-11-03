@@ -85,6 +85,10 @@ const PlatformTransferPage = lazyPage(
   () => import('./pages/platform/PlatformPages.tsx'),
   'PlatformTransferPage',
 )
+const PlatformVersionPage = lazyPage(
+  () => import('./pages/platform/PlatformVersionPage.tsx'),
+  'PlatformVersionPage',
+)
 const GlossaryPage = lazyPage(() => import('./learning/GlossaryPage.tsx'), 'GlossaryPage')
 const HelpPage = lazyPage(() => import('./help/HelpPage.tsx'), 'HelpPage')
 const HelpEntryPage = lazyPage(() => import('./help/HelpPage.tsx'), 'HelpEntryPage')
@@ -432,6 +436,7 @@ export default function App() {
             <Route path="impressum" element={<PlatformImprintPage />} />
             <Route path="postfach" element={<PlatformMailPage />} />
             <Route path="datenuebernahme" element={<PlatformTransferPage />} />
+            <Route path="version" element={<PlatformVersionPage />} />
           </Route>
           <Route path="*" element={<NotFoundPage />} />
         </Route>

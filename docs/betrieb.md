@@ -489,7 +489,9 @@ der `.env` und einmal ausrollen. Nötig sind systemd, `git` und `ssh-keygen` auf
   Standard `/opt/hubiplan-aktualisierung`, im Backend als `/aktualisierung` eingebunden durch
   `docker-compose.selbstupdate.yml`). Den Auftrag legt nur ein Plattformverwalter mit
   Zwei-Faktor-Anmeldung und Passwort an, und nur für das Release, das die tägliche Prüfung
-  gefunden hat. Dabei geht eine Alarm-Mail an die Plattformverwalter.
+  gefunden hat (Seite Plattform › Version). Dabei geht eine Alarm-Mail an den Betreiber
+  (`SECURITY_ALERT_EMAIL`, sonst die Superuser), und der Auftrag steht im Änderungsprotokoll
+  der Plattform. Solange er läuft, fragt die Seite alle 10 Sekunden nach dem Ergebnis.
 - Der **Aktualisierer** (`deploy/aktualisierer/aktualisierer.sh`, systemd-Timer
   `hubiplan-aktualisierer@hubiplan.timer`, jede Minute) läuft als root außerhalb der Container.
   Er holt den Tag aus `HUBIPLAN_UPDATE_REPO` in einen eigenen Spiegel (`/opt/hubiplan-quelle.git`)

@@ -7,10 +7,11 @@ from django.core.cache import cache
 from django.test import override_settings
 
 from core import safehttp, update_check, version
+from core.tenancy import tenant_context
 from organizations.imprint_generator import platform_privacy
 from organizations.models import Organization
 
-from .factories import PASSWORD, give_role, make_user
+from .factories import PASSWORD, audit_with, give_role, make_user
 
 pytestmark = pytest.mark.django_db
 URL = "/api/platform/update/"
@@ -208,6 +209,10 @@ def test_auftrag_wird_abgelegt(api, sauber, github, auftragsordner, mit_mfa, boa
     assert resp.json()["pending"] is True
     text = (auftragsordner / "auftrag").read_text(encoding="utf-8")
     assert text.startswith("version=2026.12.0\n")
+    platform = Organization.platform()
+    with tenant_context(platform.pk):
+        eintraege = audit_with("Selbstupdate angestoßen", organization=platform)
+    assert [e.changes["Selbstupdate angestoßen"][1] for e in eintraege] == ["2026.12.0"]
     # Zweiter Auftrag, solange der erste läuft: abgelehnt
     resp = c.post(
         URL, {"version": "2026.12.0", "password": PASSWORD}, content_type="application/json"

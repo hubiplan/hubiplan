@@ -653,6 +653,13 @@ class PlatformUpdateView(APIView):
                 status=status.HTTP_409_CONFLICT,
             )
         update_check.auftrag_anlegen(version, request.user.email)
+        record(
+            Organization.platform(),
+            request.user,
+            "update",
+            PlatformSettings.load(),
+            {"Selbstupdate angestoßen": [update["running"], version]},
+        )
         alarm.send_alert(
             "Selbstupdate angestoßen",
             [

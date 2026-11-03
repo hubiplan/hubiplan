@@ -564,11 +564,22 @@ export const platformApi = {
     api.patch<PlatformSettings>('/api/platform/settings/', data),
   /** Neueres Release laut täglicher Prüfung (abschaltbar mit HUBIPLAN_UPDATE_CHECK=0) */
   newRelease: () => api.get<PlatformUpdate>('/api/platform/update/'),
+  /** Selbstupdate anstoßen: legt nur einen Auftrag für den Aktualisierer auf dem Server ab. */
+  startUpdate: (version: string, password: string) =>
+    api.post<SelfUpdate>('/api/platform/update/', { version, password }),
 }
 
 export interface PlatformUpdate {
   enabled: boolean
   update: { version: string; url: string; running: string } | null
+  selfupdate?: SelfUpdate
+}
+
+/** Stand des Selbstupdates (konzepte/selbstupdate.md); result kommt vom Aktualisierer. */
+export interface SelfUpdate {
+  enabled: boolean
+  pending: boolean
+  result: { status?: string; version?: string; zeit?: string; text?: string } | null
 }
 
 /** Vorgang, der eine Entscheidung braucht (Startseite „Offene Aufgaben“) */
