@@ -27,6 +27,7 @@ from changes import idempotency
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.reorder import reorder_response
 from members.models import Membership
+from members.personsearch import filter_names, ordered
 from organizations.models import Department, Organization
 
 from . import importer, numbering
@@ -472,11 +473,8 @@ class PeopleView(_HonorsMixin, APIView):
         qs = Membership.objects.filter(
             organization=self.org, purged_at__isnull=True
         ).select_related("person")
-        for word in term.split()[:3]:
-            qs = qs.filter(
-                Q(person__first_name__icontains=word) | Q(person__last_name__icontains=word)
-            )
-        rows = qs.order_by("person__last_name", "person__first_name")[:10]
+        qs = filter_names(qs, term)
+        rows = ordered(qs, limit=10)
         return Response(
             [
                 {

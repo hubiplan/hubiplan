@@ -30,6 +30,7 @@ from core.api_base import OrgScopedMixin, has_needed
 from core.tenancy import rls_bypass, tenant_context
 from members.federation_views import federation_queryset, filter_federation
 from members.models import Membership
+from members.personsearch import ordered
 from members.views import filter_members, member_queryset
 from portal.views import DepartmentScopedMixin, _portal_access
 
@@ -208,9 +209,7 @@ class DeptCardsPdfView(_DeptCardMixin, APIView):
         if request.query_params.get("mitglied"):
             qs = qs.filter(pk=request.query_params["mitglied"])
         memberships = list(
-            qs.select_related("person", "organization__parent__parent").order_by(
-                "person__last_name", "person__first_name", "pk"
-            )[:MAX_CARDS]
+            ordered(qs.select_related("person", "organization__parent__parent"), limit=MAX_CARDS)
         )
         may_create = has_needed(self.dept_permissions, self.write_permission)
         cards = cards_for(memberships, request.user, create=may_create)

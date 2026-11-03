@@ -24,6 +24,7 @@ from members.models import (
     Membership,
     MemberTypeAssignment,
 )
+from members.personsearch import ordered
 from members.services import contact_for, shared_contacts
 from organizations.terms import fill
 
@@ -245,17 +246,16 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
     # Erst nur die Nummern (sortiert), dann in Blöcken laden: große Vereine halten so nicht
     # alle Zeiträume, Arten und Zugehörigkeiten gleichzeitig im Speicher (PERF-01).
     ids = list(
-        Membership.objects.filter(organization=org, purged_at__isnull=True)
-        .filter(
-            Q(periods__entry_date__lte=p.end)
-            & (Q(periods__exit_date__isnull=True) | Q(periods__exit_date__gte=p.start))
-        )
-        .exclude(pk__in=exclude)
-        .distinct()
-        .order_by("person__last_name", "person__first_name", "pk")
-        .values_list("pk", "person__last_name", "person__first_name")
+        ordered(
+            Membership.objects.filter(organization=org, purged_at__isnull=True)
+            .filter(
+                Q(periods__entry_date__lte=p.end)
+                & (Q(periods__exit_date__isnull=True) | Q(periods__exit_date__gte=p.start))
+            )
+            .exclude(pk__in=exclude)
+            .distinct()
+        ).values_list("pk", flat=True)
     )
-    ids = [row[0] for row in ids]
     fee_cache: dict = {}
     shared = shared_contacts()
     exempt_units = fee_exempt_units(org)

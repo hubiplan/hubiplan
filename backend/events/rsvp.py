@@ -16,6 +16,7 @@ from django.utils.translation import gettext
 from rest_framework.exceptions import ValidationError
 
 from members.models import DepartmentMembership, Membership, MembershipPeriod, today
+from members.personsearch import ordered
 from members.services import contact_for
 from organizations.tree import with_descendants
 
@@ -39,7 +40,7 @@ def _in_department(department_ids, on: datetime.date):
     )
 
 
-def current_members(club, department_ids=None, on: datetime.date | None = None):
+def current_members(club, department_ids=None, on: datetime.date | None = None, *, sort=True):
     """Aktuelle Mitglieder des Vereins, auf Wunsch nur der genannten Abteilungen."""
     on = on or today()
     qs = Membership.objects.filter(organization=club, purged_at__isnull=True).filter(
@@ -50,21 +51,20 @@ def current_members(club, department_ids=None, on: datetime.date | None = None):
         ids = list(department_ids)
         ids = list(with_descendants(club.pk, ids) or ids)
         qs = qs.filter(Exists(_in_department(ids, on)))
-    return qs.select_related("person", "organization").order_by(
-        "person__last_name", "person__first_name"
-    )
+    qs = qs.select_related("person", "organization")
+    return ordered(qs) if sort else qs
 
 
-def invited(event: Event, on: datetime.date | None = None):
+def invited(event: Event, on: datetime.date | None = None, *, sort=True):
     """Wer zu diesem Termin eingeladen ist (Zielgruppe für Rückmeldungen und Mails)."""
     if event.visibility == Event.Visibility.BOARD or event.organization.type != "club":
         return Membership.objects.none()
     depts = [event.department_id] if event.department_id else None
-    return current_members(event.organization, depts, on)
+    return current_members(event.organization, depts, on, sort=sort)
 
 
 def is_invited(event: Event, membership_id: int) -> bool:
-    return invited(event).filter(pk=membership_id).exists()
+    return invited(event, sort=False).filter(pk=membership_id).exists()
 
 
 @dataclass

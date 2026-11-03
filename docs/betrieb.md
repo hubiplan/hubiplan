@@ -102,6 +102,21 @@ Klartext. Das Geburtsdatum ist bereits verschlüsselt; Datumsvergleiche, Altersf
 und die Sortierung danach laufen in Python. Bei den Kontaktdaten sind E-Mail,
 Telefon und Straße verschlüsselt, Postleitzahl, Ort und Land bleiben lesbar.
 
+Namenssuche und Personensortierung der Listen laufen bereits in HUBIplan selbst
+(`members/personsearch.py`), nach Berechtigungs- und Fachfiltern und vor dem
+Seitenschnitt. Unicode-Schreibvarianten und Groß-/Kleinschreibung werden vereinheitlicht;
+`ß` entspricht `ss`. Für die feste Textreihenfolge gelten Grundbuchstaben zuerst,
+danach Akzente und Schreibweise, zuletzt die Zeilen-ID. Umlaute stehen daher bei
+ihrem Grundbuchstaben. Die Reihenfolge ist unabhängig von der Datenbank-Kollation.
+Es gibt keinen Suchcache. Der strenge Identitätsabgleich für Import und Verbund bleibt
+unverändert; Suchmarken und Namensverschlüsselung sind damit noch nicht eingeführt.
+
+Eine beim Start installierte Compiler-Erweiterung (`core/encrypted_ordering.py`)
+weist ORM-Sortierungen nach verschlüsselten Spalten zurück, auch über Beziehungen,
+Annotationen und Standardsortierungen. Sie verwendet die interne Django-Compiler-API;
+die Regressionstests dafür sind bei Django-Updates mitzuprüfen. Frei geschriebenes
+SQL ist von dieser ORM-Sperre nicht erfasst.
+
 Weitere Klartextkopien von Namen gibt es unter anderem
 bei Rundschreiben-Empfängern (`circulars.Recipient`), Rechnungen (`billing.Invoice`),
 Wettbewerbsstartern (`competitions.Starter`), Meldungen (`entries.EntryPerson`) und
