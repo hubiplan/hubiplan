@@ -4891,3 +4891,48 @@ msgstr "Role holders in the {pl_dat}"
 
 msgid "Rolleninhaber im Verein"
 msgstr "Role holders in the club"
+
+msgid "Für die Ergebnisfreigabe sind Wettbewerb und Verbund zu verwalten."
+msgstr "Managing competitions and peering is required to approve results."
+
+msgid "Nur eigene Wettbewerbe können Ergebnisse freigeben."
+msgstr "Only hosted competitions can share results."
+
+msgid "Dieser Starter ist bereits einer Untereinheit zugeordnet."
+msgstr "This starter is already assigned to a unit."
+
+msgid "Der vorhandene Partnerspeicher muss vor weiterem Empfang geprüft werden."
+msgstr "Existing partner storage must be checked before receiving further data."
+
+msgid "Das Empfangs-/Kapazitätsbudget ist ausgeschöpft. Die Administration muss die Kapazität prüfen und freigeben."
+msgstr "The reception/capacity budget is exhausted. An administrator must check and approve capacity."
+
+msgid "Das tägliche Empfangsbudget des Partners ist ausgeschöpft."
+msgstr "The partner daily reception budget is exhausted."
+
+msgid "Eine Datei im Archiv konnte nicht auf Viren geprüft werden."
+msgstr "A file in the archive could not be scanned for malware."
+
+msgid "Das Rechteformat der Exportdatei wird nicht unterstützt."
+msgstr "The export permission schema is not supported."
+
+msgid "Die Datei hat kein eindeutiges Rechteformat. Bitte die Bedeutung der Rollenrechte ausdrücklich auswählen."
+msgstr "The file has no unambiguous permission schema. Explicitly select the meaning of role permissions."
+
+msgid "Bitte die wirksamen Rollenrechte prüfen und ausdrücklich bestätigen."
+msgstr "Please review and explicitly confirm the effective role permissions."
+
+msgid "Die Gegenstelle hat sich während der Verarbeitung geändert."
+msgstr "The peer changed during processing."
+
+msgid "Die Kopplung ist nicht mehr aktiv."
+msgstr "The connection is no longer active."
+
+msgid "Die Kopplung hat sich geändert. Bitte erneut zustellen."
+msgstr "The connection changed. Please retry delivery."
+
+msgid "Die Kopplung ist hier pausiert."
+msgstr "This connection is paused locally."
+
+msgid "Hier wartet ein angekündigter Umzug auf Bestätigung."
+msgstr "An announced move is awaiting confirmation here."

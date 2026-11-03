@@ -259,9 +259,10 @@ class FeedSyncView(_FeedMixin, APIView):
         feed = self.feed()
         if not feed.is_connected:
             raise ValidationError("Der Kanal ist nicht verbunden.")
-        created = social.sync_feed(feed)
-        feed.refresh_from_db()
-        return Response({**feed_data(feed), "created": created})
+        from .social_jobs import request_sync
+
+        queued = request_sync(feed)
+        return Response({**feed_data(feed), "created": 0, "queued": queued}, status=202)
 
 
 class PostListView(_ContentMixin, APIView):
@@ -354,5 +355,7 @@ class CallbackView(APIView):
                 feed.organization, request.user, "update", feed, {"Verbindung": [None, str(feed)]}
             )
             if feed.status == SocialFeed.Status.OK:
-                social.sync_feed(feed)
+                from .social_jobs import request_sync
+
+                request_sync(feed)
         return HttpResponseRedirect(social.frontend_return(True))

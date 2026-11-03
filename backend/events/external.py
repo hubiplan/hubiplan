@@ -534,6 +534,8 @@ def sync(cal: ExternalCalendar) -> int:
     from core.tenancy import unit_context
 
     with unit_context(cal.organization_id):
+        if not cal.is_active:
+            return 0
         try:
             items = fetch(cal)
         except ExternalError as exc:
@@ -542,10 +544,19 @@ def sync(cal: ExternalCalendar) -> int:
             cal.save(update_fields=["last_error", "last_sync_at"])
             return 0
         with transaction.atomic():
+            current = (
+                ExternalCalendar.objects.select_for_update()
+                .filter(pk=cal.pk, is_active=True)
+                .first()
+            )
+            if current is None:
+                return 0  # Deactivated/deleted while the provider request was running.
+            cal = current
             count = apply(cal, items)
             cal.last_error = ""
             cal.last_sync_at = timezone.now()
-            cal.save(update_fields=["last_error", "last_sync_at"])
+            cal.last_successful_sync_at = cal.last_sync_at
+            cal.save(update_fields=["last_error", "last_sync_at", "last_successful_sync_at"])
         return count
 
 

@@ -474,3 +474,20 @@ PUSH_GATEWAY_URL = os.environ.get("PUSH_GATEWAY_URL", "")
 PUSH_ALLOW_INTERNAL = env_bool("PUSH_ALLOW_INTERNAL", False)
 # Nur für Testaufbauten: Partner auch über http und interne Adressen erreichen
 PEERING_ALLOW_INSECURE = env_bool("PEERING_ALLOW_INSECURE", False)
+
+
+# Finite lifetime reception reservations. Raising a limit is an explicit capacity
+# decision; never clear counters to make retained invoices fit.
+PEERING_RECEPTION_INSTANCE_BYTES = int(
+    os.environ.get("PEERING_RECEPTION_INSTANCE_BYTES", 10 * 1024**3)
+)
+PEERING_RECEPTION_INSTANCE_MESSAGES = int(
+    os.environ.get("PEERING_RECEPTION_INSTANCE_MESSAGES", 200000)
+)
+PEERING_RECEPTION_UNIT_BYTES = int(os.environ.get("PEERING_RECEPTION_UNIT_BYTES", 2 * 1024**3))
+PEERING_RECEPTION_UNIT_MESSAGES = int(os.environ.get("PEERING_RECEPTION_UNIT_MESSAGES", 50000))
+PEERING_RECEPTION_PEER_BYTES = int(os.environ.get("PEERING_RECEPTION_PEER_BYTES", 1024**3))
+PEERING_RECEPTION_PEER_MESSAGES = int(os.environ.get("PEERING_RECEPTION_PEER_MESSAGES", 25000))
+PEERING_RECEPTION_PEER_DAILY_MESSAGES = int(
+    os.environ.get("PEERING_RECEPTION_PEER_DAILY_MESSAGES", 1000)
+)

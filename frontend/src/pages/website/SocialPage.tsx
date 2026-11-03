@@ -439,12 +439,8 @@ function FeedCard({
                   disabled={busy}
                   onClick={() =>
                     void run(async () => {
-                      const r = await socialApi.sync(org.id, feed.id)
-                      setInfo(
-                        r.created
-                          ? t('{created} neue Beiträge abgerufen.', { created: r.created })
-                          : t('Nichts Neues.'),
-                      )
+                      await socialApi.sync(org.id, feed.id)
+                      setInfo(t('Der Abruf läuft im Hintergrund. Bitte später neu laden.'))
                     })
                   }
                 >

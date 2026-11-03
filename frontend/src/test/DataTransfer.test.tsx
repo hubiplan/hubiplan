@@ -89,6 +89,68 @@ const job = (status: string, extra: Record<string, unknown> = {}) => ({
 })
 
 describe('Datenübernahme im Dachverband', () => {
+  it('verlangt bei unmarkierten Rollen eine geprüfte Schemawahl und Bestätigung', async () => {
+    let schema: number | null = null
+    let confirmed = false
+    let done = false
+    const current = () =>
+      job(done ? 'done' : 'checked', {
+        options: { permissions_schema: schema, permissions_confirmed: confirmed },
+        summary: done ? { organization: { id: 99, name: 'Synthetischer Verein' } } : {},
+        preview: {
+          ...preview,
+          duplicates: [],
+          permission_policy: {
+            schema: schema ?? 2,
+            marked: false,
+            ambiguous: true,
+            roles: [
+              {
+                unit: 'Synthetischer Verein',
+                name: 'Leser',
+                permissions: schema === 1 ? ['members.view', 'cards.view'] : ['members.view'],
+              },
+            ],
+          },
+        },
+      })
+    const calls = fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [verband] }),
+      'GET /api/orgs/7/clubs/': () => ({ status: 200, body: [] }),
+      [`GET ${B}/imports/`]: () => ({ status: 200, body: [current()] }),
+      [`GET ${B}/imports/3/`]: () => ({ status: 200, body: current() }),
+      [`PATCH ${B}/imports/3/`]: (init) => {
+        const options = JSON.parse(String(init?.body))
+        schema = options.permissions_schema
+        confirmed = options.permissions_confirmed
+        return { status: 200, body: current() }
+      },
+      [`POST ${B}/imports/3/run/`]: () => {
+        done = true
+        return { status: 200, body: current() }
+      },
+    })
+    const user = userEvent.setup()
+    renderApp('/einstellungen/vereine?import=3')
+    const select = await screen.findByLabelText('Bedeutung der Rollenrechte')
+    const confirmation = screen.getByLabelText(
+      'Die unten angezeigten wirksamen Rollenrechte sind geprüft und bestätigt.',
+    )
+    expect(confirmation).toBeDisabled()
+    await user.selectOptions(select, '1')
+    expect(confirmation).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: 'Erneut prüfen' }))
+    expect(await screen.findByText(/members.view, cards.view/)).toBeInTheDocument()
+    expect(confirmation).toBeEnabled()
+    await user.click(confirmation)
+    await user.click(screen.getByRole('button', { name: 'Übernehmen' }))
+    expect(await screen.findByText(/Synthetischer Verein.*wurde angelegt/)).toBeInTheDocument()
+    const patches = calls.filter((call) => call.key === `PATCH ${B}/imports/3/`)
+    expect(JSON.parse(String(patches[0]?.init?.body)).permissions_confirmed).toBe(false)
+    expect(JSON.parse(String(patches.at(-1)?.init?.body)).permissions_confirmed).toBe(true)
+  })
+
   it('Verein aus Datei: Vorschau mit Dublette, dann übernehmen', async () => {
     let state = 'checked'
     const calls = fakeApi({

@@ -13,8 +13,11 @@ import datetime
 from decimal import Decimal
 
 from django.apps import apps
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext
+
+from .validation import validate_url_data, validate_urls
 
 MODULE_MODELS = (
     "finance.Account",
@@ -221,8 +224,18 @@ FRESH_VALUES = {
 
 # Nie exportiert: Zugangsdaten und Anmeldezustand (Social-Media-Kanäle)
 SECRET_FIELDS = {
-    "events.externalcalendar": {"token", "secret", "last_error", "last_sync_at"},
+    # Freigaben gelten nur für die lokale Kopplung, nie für importierte Nummern.
+    "competitions.starter": {"result_coupling"},
+    "events.externalcalendar": {
+        "token",
+        "secret",
+        "last_error",
+        "last_sync_at",
+        "last_successful_sync_at",
+    },
     "website.socialfeed": {
+        "sync_job_id",
+        "sync_requested_at",
         "app_secret",
         "access_token",
         "token_expires_at",
@@ -601,6 +614,10 @@ def check_tables(
             per_class[key] = per_class.get(key, 0) + len(rows)
         for row in rows:
             count += 1
+            try:
+                validate_url_data(model, row)
+            except ValidationError as exc:
+                errors.append(f"{where}: {name} {row.get('id')}: {'; '.join(exc.messages)}")
             for f in relations:
                 value = row.get(f.name)
                 if value is None:
@@ -620,7 +637,6 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
 
     ``allowed``: nur diese Tabellen anlegen; andere in der Datei brechen den Import ab.
     """
-    from django.core.exceptions import ValidationError
     from django.core.files.base import ContentFile
 
     count = 0
@@ -671,6 +687,7 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                     )
             if any(f.name == "file" for f in fields) and not getattr(obj, "file", True):
                 continue  # Beleg ohne Datei (Export ohne Dateien) wird nicht angelegt
+            validate_urls(obj)
             obj.save()
             ids.set(name, row.get("id"), obj.pk)
             count += 1

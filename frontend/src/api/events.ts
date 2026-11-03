@@ -221,6 +221,7 @@ export interface ExternalCalendar {
   share_down: boolean
   is_active: boolean
   last_sync_at: string | null
+  last_successful_sync_at?: string | null
   last_error: string
   event_count: number
   hidden: { key: string; title: string; starts_at: string }[]

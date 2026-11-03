@@ -13,6 +13,7 @@ from . import (
     target_views,
     views,
 )
+from .result_ownership import ResultOwnershipView
 
 router = SimpleRouter()
 # Reihen und Wanderpokale vor den Wettbewerben (sonst fängt „competitions/<pk>/“ sie ab)
@@ -77,6 +78,9 @@ org_patterns = [
         name="competition-starters-from-event",
     ),
     path(f"{C}starters/", views.StartersView.as_view(), name="competition-starters"),
+    path(
+        f"{C}result-ownership/", ResultOwnershipView.as_view(), name="competition-result-ownership"
+    ),
     path(f"{C}starters/<int:pk>/", views.StarterView.as_view(), name="competition-starter"),
     path(f"{C}scores/", views.ScoreView.as_view(), name="competition-score"),
     path(f"{C}sync/", views.SyncView.as_view(), name="competition-sync"),

@@ -597,6 +597,7 @@ def _header(kind: str, source, with_files: bool) -> dict:
     return {
         "format": FORMAT,
         "version": VERSION,
+        "permissions_schema": 2,
         "kind": kind,
         "exported_at": timezone.now().isoformat(),
         "source": {"type": getattr(source, "type", "department"), "name": source.name},

@@ -228,8 +228,11 @@ export function isStandNetworkError(error: unknown): boolean {
   return error instanceof ApiError && error.status === 0
 }
 
-export function rejectStandAccess(scope: string, error: unknown): boolean {
-  if (error instanceof ApiError && [401, 403, 404].includes(error.status)) {
+export function rejectStandAccess(scope: string, error: unknown, missingScope = true): boolean {
+  if (
+    error instanceof ApiError &&
+    ([401, 403].includes(error.status) || (missingScope && error.status === 404))
+  ) {
     revokeStandCache(scope)
     return true
   }
