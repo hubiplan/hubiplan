@@ -80,7 +80,7 @@ direkt zu GitHub geschickt. Danach legt es das GitHub-Release zu diesem Tag an.
 Einmal einrichten (in WSL, als der Benutzer, der Releases anlegt):
 
 ```bash
-ssh-keygen -t ed25519 -f ~/.ssh/hubiplan_release -C "HUBIplan-Releases"   # mit Passphrase
+ssh-keygen -t ed25519 -N "" -f ~/.ssh/hubiplan_release -C "HUBIplan-Releases"
 git config --global gpg.format ssh
 git config --global user.signingkey ~/.ssh/hubiplan_release.pub
 echo "releases@hubiplan namespaces=\"git\" $(cat ~/.ssh/hubiplan_release.pub)"
@@ -92,6 +92,11 @@ Sicherung bzw. den Passwortmanager. Wer ihn verliert, trägt einen neuen öffent
 ein; ältere Tags bleiben mit dem alten Schlüssel gültig, solange dessen Zeile stehen bleibt.
 
 Ohne Schlüssel bricht `taggen` vor der Rückfrage ab.
+
+Der Schlüssel des Betreuers liegt seit dem 03.11.2026 auf dessen PC in WSL, ohne Passphrase,
+damit `taggen` ohne Eingabe läuft. Wer den PC hat, hat ohnehin die `gh`-Anmeldung und könnte
+Code nach `main` bringen; die Passphrase würde also wenig schützen. Mit Passphrase ginge es
+auch, dann muss der Schlüssel vor `taggen` im `ssh-agent` liegen.
 
 ## Ein Release ausrollen
 
