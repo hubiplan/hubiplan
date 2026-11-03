@@ -149,12 +149,7 @@ function CardView({
             </a>
           )}
           {canEdit && (
-            <button
-              type="button"
-              className="button button-ghost"
-              disabled={busy}
-              onClick={onRenew}
-            >
+            <button type="button" className="button button-ghost" disabled={busy} onClick={onRenew}>
               {t('Neuen QR-Code erzeugen')}
             </button>
           )}
