@@ -67,6 +67,9 @@ export function fakeApi(routes: Record<string, Handler>) {
       .replace(/\/member-settings\/$/, '/')
     const handler =
       routes[key] ??
+      (/^GET \/api\/(orgs|depts)\/\d+\/todos\/\d+\/attachments\/$/.test(key)
+        ? () => ({ status: 200, body: { items: [], documents: [] } })
+        : undefined) ??
       (selectionKey === key ? undefined : routes[selectionKey]) ??
       DEFAULTS[key] ??
       // Jubiläen von Einheiten und Geburtstage: ohne eigene Angabe leer

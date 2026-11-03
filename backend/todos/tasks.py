@@ -7,7 +7,7 @@ from django.utils import timezone
 from changes.tracking import suppress
 from core.tenancy import rls_bypass
 
-from .models import Todo
+from .models import Todo, TodoAttachment
 
 
 @shared_task
@@ -19,6 +19,8 @@ def purge_deleted():
         count = len(rows)
         for row in rows:
             row.delete()
+        for attachment in TodoAttachment.objects.filter(deleted_at__lt=cutoff).select_for_update():
+            attachment.delete()
     return count
 
 

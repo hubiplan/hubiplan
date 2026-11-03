@@ -11,6 +11,7 @@ import { TodoOwnership } from '../components/TodoOwnership.tsx'
 import { OrphanTasks } from '../components/OrphanTasks.tsx'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { TodoReminders } from '../components/TodoReminders.tsx'
+import { TodoAttachments } from '../components/TodoAttachments.tsx'
 import { TodoCleanup } from '../components/TodoCleanup.tsx'
 import './todos.css'
 import { confirmLeave, useDraftGuard, useGuarded } from '../components/leaveGuard.ts'
@@ -147,6 +148,15 @@ function TodoWorkspace({ base }: { base: string }) {
       {selected?.due_date && tab !== 'trash' && (
         <TodoReminders key={`remind-${selected.id}`} base={base} id={selected.id} />
       )}
+      {selected && tab !== 'trash' && (
+        <TodoAttachments
+          key={`files-${selected.id}`}
+          base={base}
+          id={selected.id}
+          writable={selected.can_edit}
+          onSaved={() => void reload()}
+        />
+      )}
       {selected?.can_share && tab !== 'trash' && (
         <TodoSharing
           key={`share-${selected.id}`}
@@ -209,7 +219,7 @@ function TodoWorkspace({ base }: { base: string }) {
         ))}
       </ul>
       {data && !items.length && <p className="muted">{t('Keine Aufgaben vorhanden.')}</p>}
-      <a className="button button-ghost" href="/api/me/todos/export/">
+      <a className="button button-ghost" href="/api/me/todos/export/?files=1">
         {t('Eigene Aufgaben exportieren')}
       </a>
     </section>

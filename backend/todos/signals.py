@@ -25,10 +25,21 @@ def connect():
     from accounts.models import User
 
     pre_delete.connect(erase_private, sender=User, dispatch_uid="todos_erase_private")
-    from .models import Todo
+    from .models import Todo, TodoAttachment
 
     pre_save.connect(check_reminder_changes, sender=Todo, dispatch_uid="todos_reminder_changes")
     post_save.connect(plan_reminders, sender=Todo, dispatch_uid="todos_plan_reminders")
+    from django.db.models.signals import post_delete
+
+    post_delete.connect(
+        delete_attachment, sender=TodoAttachment, dispatch_uid="todos_delete_attachment"
+    )
+
+
+def delete_attachment(sender, instance, **kwargs):
+    from core.files import delete_on_commit
+
+    delete_on_commit(instance.file)
 
 
 def check_reminder_changes(sender, instance, raw=False, update_fields=None, **kwargs):
