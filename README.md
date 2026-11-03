@@ -50,6 +50,7 @@ Zu HUBIplan gehören drei Repositories:
 - Würden (z. B. Königinnen und Könige) mit Chronik und Excel-Import, Ämter mit Chronik
 - Änderungsmeldungen der Mitglieder, die der Vorstand freigibt
 - Mitgliedsausweis mit QR-Code
+- Optionaler Export nach Google Wallet und Apple Wallet (`.pkpass`, [Einrichtung](docs/wallet.md))
 - Import aus Excel, Export als Excel und PDF, Datenübernahme als JSON
 - Autospeichern, Rückgängig, Papierkorb und Änderungsprotokoll
 
