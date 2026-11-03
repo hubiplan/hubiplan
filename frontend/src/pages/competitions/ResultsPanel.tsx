@@ -53,7 +53,7 @@ export function ResultsPanel({
       {data.bird && <BirdResults bird={data.bird} />}
       {data.open_shootoffs > 0 && (
         <Alert kind="info">
-          <Term k="comp_tie">{t('Gleichstand')}</Term> auf{' '}
+          <Term k="comp_tie">{t('Gleichstand')}</Term> {t('auf')}{' '}
           <Term k="comp_prize_place">{t('Preisplätzen')}</Term>
           {t(': Stechen nötig. Erst danach lässt sich der Wettbewerb endgültig abschließen.')}
         </Alert>

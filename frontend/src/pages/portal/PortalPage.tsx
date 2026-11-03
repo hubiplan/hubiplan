@@ -123,7 +123,7 @@ export function PortalPage() {
       <Route
         path="ergebnisse"
         element={
-          <PortalSection title="Meine Ergebnisse">
+          <PortalSection title={t('Meine Ergebnisse')}>
             <PortalResults key={activePortal.id} accessId={activePortal.id} />
           </PortalSection>
         }
@@ -176,8 +176,8 @@ export function PortalTasks({ entry }: { entry: PortalEntry }) {
       ? [
           {
             to: '/mein-bereich/ergebnisse',
-            title: 'Meine Ergebnisse',
-            text: 'Plätze, Werte und Titel aus Wettbewerben',
+            title: t('Meine Ergebnisse'),
+            text: t('Plätze, Werte und Titel aus Wettbewerben'),
           },
         ]
       : []),

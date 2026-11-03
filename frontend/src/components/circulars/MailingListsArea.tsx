@@ -583,7 +583,7 @@ function ListRecipients({
           </SelectField>
           {options.audiences && (
             <SelectField
-              label="An"
+              label={t('An')}
               value={v.audience}
               error={errors.audience}
               onChange={(e) => set('audience', e.target.value as RecipientValues['audience'])}

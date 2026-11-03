@@ -29,7 +29,7 @@ import {
   parseMarkdown,
   toMarkdown,
 } from './markdown.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 const MODE_KEY = 'hubiplan.texteditor.markdown'
 
@@ -465,14 +465,14 @@ export function TextEditor({
         {
           key: 'strong',
           label: t('Fett (Strg+B)'),
-          text: <strong>F</strong>,
+          text: <strong>{tc('Knopf fett', 'F')}</strong>,
           pressed: !!state && markActive(state, m.strong),
           gapBefore: true,
         },
         {
           key: 'em',
           label: t('Kursiv (Strg+I)'),
-          text: <em>K</em>,
+          text: <em>{tc('Knopf kursiv', 'K')}</em>,
           pressed: !!state && markActive(state, m.em),
         },
         {

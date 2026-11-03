@@ -1,6 +1,6 @@
 // Datum und Uhrzeit in deutscher Zeit, unabhängig von der Zeitzone des Geräts.
 import type { Occurrence } from '../../api/events.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 const TZ = 'Europe/Berlin'
 
@@ -30,7 +30,7 @@ export function toApi(date: string, time = '00:00'): string {
   return `${date}T${time}:00`
 }
 
-export const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
+export const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((w) => tc('Wochentag', w))
 export const MONTHS = [
   t('Januar'),
   t('Februar'),

@@ -9,7 +9,7 @@ import { ExportPanel } from '../../components/ExportPanel.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo } from '../../learning/Aids.tsx'
 import { buildTerms } from '../../org/terms.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 function plusDays(iso: string, days: number): string {
   const d = new Date(`${iso}T12:00:00`) // Mittag: Sommerzeitwechsel verschiebt den Tag nicht
@@ -269,11 +269,11 @@ export function JubileeTile() {
 const BIRTHDAY_DAYS = 30
 const BIRTHDAY_PREVIEW = 8
 // Eigene Kürzel: Intl schreibt je nach Laufzeit „Do“ oder „Do.“
-const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
+const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'].map((w) => tc('Wochentag', w))
 
 function birthdayLabel(iso: string, today: string): string {
-  if (iso === today) return 'heute'
-  if (iso === plusDays(today, 1)) return 'morgen'
+  if (iso === today) return t('heute')
+  if (iso === plusDays(today, 1)) return t('morgen')
   const d = new Date(`${iso}T12:00:00`)
   return t('{x}, {x2}.{x3}.', { x: WEEKDAYS[d.getDay()], x2: d.getDate(), x3: d.getMonth() + 1 })
 }

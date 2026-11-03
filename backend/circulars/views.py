@@ -448,12 +448,12 @@ class _Options(APIView):
         ]
         if self.dept is None:
             data["audiences"] = [
-                {"value": Circular.Audience.MEMBERS, "label": "Mitglieder"},
+                {"value": Circular.Audience.MEMBERS, "label": gettext("Mitglieder")},
                 {
                     "value": Circular.Audience.DEPARTMENTS,
-                    "label": fill("Rolleninhaber in den {pl_dat}", org),
+                    "label": fill(gettext("Rolleninhaber in den {pl_dat}"), org),
                 },
-                {"value": Circular.Audience.ROLES, "label": "Rolleninhaber im Verein"},
+                {"value": Circular.Audience.ROLES, "label": gettext("Rolleninhaber im Verein")},
             ]
             data["club_roles"] = [
                 {"id": r.pk, "name": r.name, "is_board": r.is_board}
