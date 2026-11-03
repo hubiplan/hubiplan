@@ -1,11 +1,10 @@
 #!/bin/bash
-# Zweiter Backup-Ort für HUBIplan auf dem Echtserver (Dogado): kopiert die täglichen,
-# schon mit age verschlüsselten HUBIplan-Backups und die .env per restic in die
-# Hetzner Storage Box. Gebaut wie /usr/local/sbin/nextcloud-restic-backup.sh
-# (gleiche Storage Box, gleicher SSH-Zugang „storagebox“, eigenes Repository).
+# Optionale zweite Backup-Kopie: überträgt verschlüsselte Anwendungssicherungen
+# und die .env per restic auf einen getrennten SFTP-Speicher. Zugang und Ziel
+# werden je Installation lokal auf dem Server konfiguriert.
 #
-# Einrichten (einmal, von Ralfs PC in PowerShell):
-#   Get-Content -Raw deploy\hestia\hubiplan-restic-backup.sh | ssh administrator@dogado "sudo tee /usr/local/sbin/hubiplan-restic-backup.sh >/dev/null && sudo chmod 700 /usr/local/sbin/hubiplan-restic-backup.sh && sudo /usr/local/sbin/hubiplan-restic-backup.sh einrichten"
+# Einrichten (einmal, vom lokalen Arbeitsrechner in PowerShell):
+#   Get-Content -Raw deploy\hestia\hubiplan-restic-backup.sh | ssh deploy@server.example.org "sudo tee /usr/local/sbin/hubiplan-restic-backup.sh >/dev/null && sudo chmod 700 /usr/local/sbin/hubiplan-restic-backup.sh && sudo /usr/local/sbin/hubiplan-restic-backup.sh einrichten"
 #
 # „einrichten“ legt bei Bedarf ein eigenes restic-Passwort an (nur auf dem Server, Datei
 # siehe PASSDATEI), legt das Repository an, schreibt /etc/cron.d/hubiplan-restic und
@@ -13,7 +12,7 @@
 # sonst ist die Kopie bei einem Totalausfall des Servers nicht lesbar.
 #
 # Fehlermeldungen gehen an die Adresse in /root/.config/restic/hubiplan.mailto (sonst root):
-#   echo adresse@example.org | ssh administrator@dogado "sudo tee /root/.config/restic/hubiplan.mailto"
+#   echo adresse@example.org | ssh deploy@server.example.org "sudo tee /root/.config/restic/hubiplan.mailto"
 #
 # Ohne Argument: Sicherung (so ruft cron es täglich auf). Gibt keine Passwörter aus.
 set -u
@@ -48,7 +47,7 @@ einrichten() {
     # Das HUBIplan-Backup läuft um 03:15 (Europe/Berlin) samt Rücksicherungstest;
     # die Kopie danach um 04:30 deutscher Zeit (cron läuft auf UTC, daher die Prüfung)
     cat > "$CRON" <<'EOF'
-# HUBIplan-Backups (restic -> Hetzner Storage Box) täglich 04:30 deutscher Zeit
+# HUBIplan-Backups (restic -> SFTP-Speicher) täglich 04:30 deutscher Zeit
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 MAILTO=root
@@ -61,9 +60,9 @@ EOF
 }
 
 # Monatliche Probe (Fachfrage 15, Audit 31.10.): das neueste Datenbank-Backup und seine
-# Dateiliste aus Hetzner zurückholen und Byte für Byte mit dem Original vergleichen.
+# Dateiliste vom Sicherungsort zurückholen und Byte für Byte mit dem Original vergleichen.
 # Zeigt, dass die Kopie vollständig übertragen und mit dem restic-Passwort lesbar ist.
-# (Entschlüsseln geht nur mit dem age-Schlüssel auf Ralfs PC; das prüft der tägliche
+# (Entschlüsseln geht nur mit dem age-Schlüssel auf einem lokalen Arbeitsrechner; das prüft der tägliche
 # Rücksicherungstest vor dem Verschlüsseln.)
 probe() {
     local neu ziel name ok=0
@@ -79,7 +78,7 @@ probe() {
             cmp -s "$f" "$ziel$f" || { log "FEHLER: Probe: $(basename "$f") weicht ab"; ok=1; }
         done
         listen=$(find "$ziel$BACKUPS" -name 'dateien_*.sha256.age' 2>/dev/null | wc -l)
-        [ "$ok" = 0 ] && log "Probe ok: $name aus Hetzner zurückgeholt und gleich ($listen Dateilisten)"
+        [ "$ok" = 0 ] && log "Probe ok: $name vom Sicherungsort zurückgeholt und gleich ($listen Dateilisten)"
     else
         log "FEHLER: Probe: restic restore"
         ok=1

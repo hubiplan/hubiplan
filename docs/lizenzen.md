@@ -58,7 +58,7 @@ Logo nutzt die Schrift Outfit (SIL OFL 1.1), zwei Schnitte als Dateien in
 
 ## Server (Backend und Dienste)
 
-Die Server-Images werden nur selbst betrieben (Testserver, Dogado) und **nicht an andere
+Die Server-Images werden nur selbst betrieben (Test- und Produktionsserver) und **nicht an andere
 weitergegeben**. Ohne Weitergabe verlangen die Lizenzen der Server-Bibliotheken keine
 Lizenztexte oder Quellcode-Angebote an die Nutzer. Das ändert sich, wenn Images oder
 Installationspakete an Dritte gehen (siehe unten).

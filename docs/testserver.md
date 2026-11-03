@@ -1,9 +1,8 @@
 # Testserver
 
-Der Testserver ist ein Hostinger-VPS (Ubuntu 24.04, Docker). In dieser Anleitung steht
-`test.example.org` für seine Adresse; die echte steht nur auf Ralfs Rechner, für
-`deploy/deploy.sh` als SSH-Ziel in `~/.config/hubiplan/testserver` (eine Zeile, z. B.
-`root@test.example.org`). Er ist zum Ausprobieren gedacht und enthält **nur erfundene Testdaten**.
+Ein Testserver ist eine getrennte Linux-/Docker-Installation mit ausschließlich erfundenen Daten.
+`test.example.org` ist ein Platzhalter. Das tatsächliche SSH-Ziel steht nur lokal in
+`~/.config/hubiplan/testserver` (eine Zeile, z. B. `deploy@test.example.org`).
 
 ## Aufbau
 
@@ -18,7 +17,7 @@ Der Testserver ist ein Hostinger-VPS (Ubuntu 24.04, Docker). In dieser Anleitung
 | `backup` | tägliches verschlüsseltes Backup mit Rücksicherungstest, siehe [betrieb.md](betrieb.md) |
 | `postgres`, `redis` | Datenbank und Nachrichtenvermittlung, von außen nicht erreichbar |
 
-Von außen offen sind nur die Ports 22 (SSH), 80 und 443 (Hostinger-Firewall).
+Von außen offen sind nur die Ports 22 (SSH), 80 und 443 (Server-Firewall).
 
 Die Geheimnisse (`DJANGO_SECRET_KEY`, `POSTGRES_PASSWORD`) stehen nur in
 `/opt/hubiplan/.env` auf dem Server. Beim ersten Ausrollen erzeugt
@@ -30,19 +29,16 @@ Feste Regeln:
 
 - **Tests laufen nie auf dem Testserver.** Erst lokal testen, dann ausrollen.
 - **Höchstens zwei Testläufe gleichzeitig, jeder höchstens 8 Kerne**, projektübergreifend
-  für alle Projekte auf Ralfs PC (siehe „Testplätze“ unten). Tests nur über
+  (siehe „Testplätze“ unten). Tests nur über
   `scripts/test.sh` starten.
 
-Ausgerollt wird aus WSL (Distribution `Debian` mit Docker), im Klon `~/hubiplan`.
-Von Windows aus: `wsl -d Debian -- bash -lc 'cd ~/hubiplan && scripts/test.sh <commit>'`.
-Er holt sich die Commits aus dem Windows-Checkout (`origin` zeigt auf
-`/mnt/e/Softwareentwicklung/hubiplan`). Der Schlüssel liegt in WSL unter
-`~/.ssh/hubiplan_dev` (Rechte 600).
+Tests und Ausrollen erfolgen aus einem lokalen Linux-/WSL-Klon mit Docker.
+Checkout-Pfad, SSH-Programm und Schlüssel werden lokal konfiguriert; `DEPLOY_KEY` ist optional.
 
 ```bash
 cd ~/hubiplan && git fetch origin && git checkout --detach origin/main
 scripts/test.sh                                   # Backend, Frontend; BACKUP_TEST=1 für Backup
-DEPLOY_KEY=~/.ssh/hubiplan_dev deploy/deploy.sh        # nur nach grünem scripts/test.sh
+DEPLOY_HOST=deploy@test.example.org DEPLOY_SUDO=1 deploy/deploy.sh  # erst nach grünem Testlauf
 ```
 
 `scripts/test.sh` vermerkt den getesteten Stand (Git-Tree) in
@@ -52,14 +48,14 @@ fehlt. Ein Merge-Commit mit unverändertem Inhalt gilt als getestet.
 Fehlt der angegebene Commit im Klon, holt `scripts/test.sh` erst von allen Remotes
 (`git fetch --all`). Ist er dann immer noch nicht da, bricht es mit Exit 2 ab. Jeder
 Fehlschlag endet mit der Zeile `FEHLGESCHLAGEN (Exit …)`, nur ein vollständiger Lauf mit
-`Alles grün: …`. Der WSL-Klon holt vom Windows-Checkout, dort also vorher `git fetch origin`.
+`Alles grün: …`. Vorher im verwendeten Klon `git fetch origin` ausführen.
 
 Das Skript überträgt den eingecheckten Stand (`git archive`), baut die Images auf dem
 Server und startet alles neu. Datenbank und `.env` bleiben erhalten.
 
 ## Testplätze
 
-Auf Ralfs PC laufen höchstens zwei Testläufe gleichzeitig, jeder mit höchstens 8 Kernen,
+Lokal laufen höchstens zwei Testläufe gleichzeitig, jeder mit höchstens 8 Kernen,
 für alle Projekte zusammen. Das regelt `scripts/testplatz.sh`:
 
 ```bash
@@ -78,8 +74,6 @@ testplatz [--kerne N] <befehl …>   # wartet auf einen freien Platz, dann läuf
 - Ältere Testskripte mit der exklusiven Sperre `~/.hubiplan-tests.lock` belegen beide
   Plätze, bis sie umgestellt sind. Startet man ein solches Skript selbst mit `testplatz`, bekommt es
   über `HUBIPLAN_TEST_LOCK` eine eigene Sperrdatei und belegt nur diesen einen Platz.
-- In WSL stehen 12 Prozessoren zur Verfügung (`%USERPROFILE%\.wslconfig`); zwei Läufe
-  in WSL teilen sich also 12 Kerne (Platz 1: 0–7, Platz 2: 4–11).
 
 Installation (einmal und nach Änderungen an `scripts/testplatz.sh`):
 
@@ -93,30 +87,12 @@ ebenso `scripts/test.sh` in `hubiplan-website` und `hubiplan-android` (über das
 installierte `testplatz`). Andere Projekte: Testbefehl mit `testplatz` starten und
 `TEST_KERNE` als Anzahl der Worker nehmen.
 
-### Wo welche Tests laufen (gemessen am 30.10.2026, je 8 Kerne)
-
-| Suite | WSL | Windows | läuft in |
-|---|---|---|---|
-| hubiplan Backend (ruff, pytest gegen PostgreSQL) | 114 s | – (braucht Docker) | WSL |
-| hubiplan Frontend (npm ci, Typen, Lint, Format, Vitest) | 25 s | 81 s | WSL |
-| Webseite (ruff, pytest) | 4 s | 4 s | WSL (wie auf dem Server) |
-| Android (Unit-Tests, Lint, APKs; voller Bau ohne Cache) | 251 s | 132 s | Windows (Git Bash) |
-
-Gemessen bei laufenden Tests anderer Threads, also nur als grober Vergleich. Android in WSL
-lief mit Klon und SDK auf E: (`/mnt/e/…`), weil temporäre Dateien auf E: liegen sollen;
-der Dateizugriff von WSL auf Windows-Laufwerke ist langsam.
-Innerhalb eines hubiplan-Laufs laufen die Frontend-Prüfungen ohne Tests (npm ci,
-Typen, Lint, Format) gleichzeitig mit dem Backend; die Vitest-Tests laufen danach
-allein, weil ihre Wartezeiten (`findBy…`) neben den Backend-Tests auf denselben Kernen
-zu knapp werden. Ein kompletter Lauf dauerte so 139 s (vorher 124 s mit 12 Kernen,
-aber nur ein Lauf zur Zeit).
-
 ### Was die Tests schnell hält
 
 - **Testdatenbank als Vorlage:** `scripts/test.sh` migriert einmal und kopiert die
   Datenbank je Worker (`CREATE DATABASE … TEMPLATE`), statt in jedem Worker alle
   Migrationen laufen zu lassen (je ~40 s Rechenzeit). Die migrierte Datenbank liegt als
-  `pg_dump` in `/mnt/e/tmp/hubiplan-tests/db-vorlagen/` (zehn neueste). Der Dateiname ist
+  `pg_dump` im konfigurierten Test-Cache (zehn neueste). Der Dateiname ist
   ein Schlüssel über Migrationen, die von ihnen eingebundenen Module, Modelle, `apps.py`,
   Einstellungen, Abhängigkeiten und das Datenbank-Image; ändert sich davon etwas, wird neu
   migriert. `TEST_DB_CACHE=0` schaltet die Vorlage ab, `TEST_DB_CACHE=<ordner>` legt sie

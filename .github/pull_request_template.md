@@ -1,6 +1,7 @@
 ## Was ändert sich?
 
-<!-- Kurz beschreiben, was dieser Pull Request ändert und warum. Zugehöriges Issue: #… -->
+<!-- Kurz beschreiben, was dieser Pull Request ändert und warum. Zugehöriges Issue: #…
+Keine internen Chat-/Projektlinks, privaten Rechnerpfade, echten Serverziele oder Betriebsdaten eintragen. -->
 
 ## Für die Änderungshinweise
 
@@ -15,6 +16,7 @@ für Entwickler, auf Deutsch und Englisch. „–“, wenn nichts sichtbar ist. 
 
 - [ ] `scripts/test.sh` ist grün, oder: <!-- was wurde stattdessen geprüft? -->
 - [ ] Nur erfundene Daten in Code, Tests und Bildschirmfotos
+- [ ] Keine privaten Betriebsangaben, Rechnerpfade oder internen Chat-/Projektlinks
 
 ## Beitragsbedingungen
 

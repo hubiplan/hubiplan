@@ -2,15 +2,15 @@
 # Rollt ein Release (Tag) auf einen Server aus: erst HUBIplan, danach auf Wunsch die Webseite
 # (konzepte/releases.md, R5; docs/releases.md). Läuft in WSL im Klon ~/hubiplan:
 #
-#   deploy/release-ausrollen.sh dogado v2026.11.1
-#   deploy/release-ausrollen.sh dogado v2026.11.1 --webseite v2026.11.1
+#   deploy/release-ausrollen.sh produktion v2026.11.1
+#   deploy/release-ausrollen.sh produktion v2026.11.1 --webseite v2026.11.1
 #   deploy/release-ausrollen.sh testserver v2026.11.1
 #
 # Das Ziel steht nur lokal in ~/.config/hubiplan/ziele/<name>, je Zeile NAME=WERT
 # (erlaubt: DEPLOY_HOST, SSH, DEPLOY_SUDO, DEPLOY_KEY). „testserver“ geht auch ohne Datei
-# (wie deploy/deploy.sh: Ziel aus ~/.config/hubiplan/testserver). Beispiel für dogado:
+# (wie deploy/deploy.sh: Ziel aus ~/.config/hubiplan/testserver). Beispiel für produktion:
 #   SSH=/mnt/c/Windows/System32/OpenSSH/ssh.exe
-#   DEPLOY_HOST=administrator@dogado
+#   DEPLOY_HOST=deploy@server.example.org
 #   DEPLOY_SUDO=1
 #
 # Prüft vorher je Programm: Tag vorhanden und Release-Form, der laufende Stand ist im Tag

@@ -1,9 +1,7 @@
 # Konzept – Kurzfassung
 
-Das vollständige Konzept steht im Konzeptdokument:
-**[Konzept Vereinsverwaltung](https://claude.ai/artifact/U3Uyzy1yLiXfe4NKztqkvA)**.
-Diese Datei fasst die Punkte zusammen, die für die Architektur des Codes wichtig sind.
-Bei Abweichungen gilt das Konzeptdokument.
+Dieses Dokument beschreibt die öffentliche Architektur und den aktuellen Funktionsumfang.
+Installationsbezogene Entscheidungen und interne Entwürfe werden getrennt privat verwahrt.
 
 ## Ziel
 

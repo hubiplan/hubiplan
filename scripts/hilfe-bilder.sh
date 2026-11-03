@@ -9,7 +9,7 @@
 # legt die Bilder unter frontend/public/hilfe-bilder/<sprache>/ ab. Danach die Bilder
 # ansehen und einchecken.
 #
-# Läuft nur lokal auf Ralfs PC (nie auf einem Server) und belegt dafür einen Testplatz
+# Läuft nur lokal (nie auf einem Server) und belegt dafür einen Testplatz
 # (höchstens zwei gleichzeitig, je höchstens 8 Kerne; scripts/testplatz.sh).
 set -euo pipefail
 
@@ -29,8 +29,7 @@ PASSWORD="Bilder-$(head -c 12 /dev/urandom | od -An -tx1 | tr -d ' \n')"
 
 ID="hubiplan-bilder-$(date +%s)-$$"
 IMG="hubiplan-bilder-backend:$ID"
-if [ -d /mnt/e/tmp ]; then mkdir -p /mnt/e/tmp/hubiplan-bilder; WORK=$(mktemp -d -p /mnt/e/tmp/hubiplan-bilder)
-else WORK=$(mktemp -d); fi
+WORK=$(mktemp -d)
 cleanup() {
     for c in pw web backend redis db; do docker rm -f "$ID-$c" > /dev/null 2>&1 || true; done
     docker network rm "$ID" > /dev/null 2>&1 || true
@@ -67,6 +66,16 @@ docker exec "$ID-backend" python manage.py seed_testdata --password "$PASSWORD" 
 # Für die Bilder auch die Module, die neue Vereine erst einschalten (nur in diesem Wegwerf-Stand)
 docker exec -e DATABASE_APP_ROLE= "$ID-backend" python manage.py shell -c "
 from organizations.models import Organization
+# Nur diese Wegwerf-Datenbank: Auch die Organisationsanzeigen sind vollständig erfunden.
+# seed_testdata bleibt für andere Einsatzzwecke unverändert.
+for kind, name, city in [
+    ('federation', 'Dachverband Musterstadt', 'Musterstadt'),
+    ('club', 'Schützenverein Beispieldorf', 'Beispieldorf'),
+]:
+    Organization.objects.filter(type=kind).update(
+        name=name, short_name='', city=city, postal_code='12345',
+        street='Musterweg 1', contact_email='kontakt@example.org',
+    )
 for o in Organization.objects.filter(type='club'):
     o.enabled_modules = sorted(set(o.enabled_modules or []) | {'competitions', 'entries', 'website'})
     o.cash_counts_enabled = True

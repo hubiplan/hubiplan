@@ -7,8 +7,8 @@
 #   deploy/deploy.sh origin/main   # bestimmter Branch/Commit
 #   deploy/deploy.sh v2026.11.0    # Release (Tag), siehe docs/releases.md
 #
-# Echtserver (Dogado, HestiaCP davor; siehe docs/echtbetrieb.md):
-#   SSH=/mnt/c/Windows/System32/OpenSSH/ssh.exe DEPLOY_HOST=administrator@dogado DEPLOY_SUDO=1 \
+# Echtserver (HestiaCP davor; siehe docs/echtbetrieb.md):
+#   SSH=/mnt/c/Windows/System32/OpenSSH/ssh.exe DEPLOY_HOST=deploy@server.example.org DEPLOY_SUDO=1 \
 #   SITE_HOST=verein.example.org HUBIPLAN_HINTER_PROXY=1 deploy/deploy.sh
 # SITE_HOST, HUBIPLAN_HINTER_PROXY und WEB_PORT wirken nur beim allerersten
 # Ausrollen (sie landen dann in der .env auf dem Server).
@@ -30,7 +30,7 @@ if [ -z "$HOST" ]; then
 fi
 DIR="${DEPLOY_DIR:-/opt/hubiplan}"
 SSH="${SSH:-ssh}"
-# Optional: Pfad zum privaten Schlüssel, z. B. DEPLOY_KEY=~/.ssh/hubiplan_dev
+# Optional: Pfad zum privaten Schlüssel, z. B. DEPLOY_KEY=~/.ssh/deploy_key
 if [ -n "${DEPLOY_KEY:-}" ]; then
     SSH_ARGS=(-i "$DEPLOY_KEY" -o IdentitiesOnly=yes)
 else

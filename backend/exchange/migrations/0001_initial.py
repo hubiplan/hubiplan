@@ -3,7 +3,6 @@
 import django.core.files.storage
 import django.db.models.deletion
 import exchange.models
-import pathlib
 from django.conf import settings
 from django.db import migrations, models
 
@@ -29,7 +28,7 @@ class Migration(migrations.Migration):
                 ('orientation', models.CharField(default='portrait', max_length=10)),
                 ('title', models.CharField(blank=True, max_length=200)),
                 ('status', models.CharField(choices=[('pending', 'wartet'), ('running', 'läuft'), ('done', 'fertig'), ('failed', 'fehlgeschlagen')], default='pending', max_length=10)),
-                ('file', models.FileField(blank=True, storage=django.core.files.storage.FileSystemStorage(base_url=None, location=pathlib.PureWindowsPath('E:/Softwareentwicklung/hubiplan/backend/private')), upload_to=exchange.models.export_path)),
+                ('file', models.FileField(blank=True, storage=django.core.files.storage.FileSystemStorage(base_url=None, location=settings.PRIVATE_ROOT), upload_to=exchange.models.export_path)),
                 ('file_name', models.CharField(blank=True, max_length=200)),
                 ('row_count', models.PositiveIntegerField(default=0)),
                 ('error', models.TextField(blank=True)),
@@ -48,7 +47,7 @@ class Migration(migrations.Migration):
             name='ImportJob',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file', models.FileField(storage=django.core.files.storage.FileSystemStorage(base_url=None, location=pathlib.PureWindowsPath('E:/Softwareentwicklung/hubiplan/backend/private')), upload_to=exchange.models.import_path)),
+                ('file', models.FileField(storage=django.core.files.storage.FileSystemStorage(base_url=None, location=settings.PRIVATE_ROOT), upload_to=exchange.models.import_path)),
                 ('file_name', models.CharField(max_length=200)),
                 ('status', models.CharField(choices=[('uploaded', 'hochgeladen'), ('validating', 'wird geprüft'), ('validated', 'geprüft'), ('importing', 'wird importiert'), ('imported', 'importiert'), ('undone', 'rückgängig gemacht'), ('failed', 'fehlgeschlagen')], default='uploaded', max_length=12)),
                 ('headers', models.JSONField(default=list)),
@@ -60,7 +59,7 @@ class Migration(migrations.Migration):
                 ('preview', models.JSONField(blank=True, default=list)),
                 ('counts', models.JSONField(blank=True, default=dict)),
                 ('created', models.JSONField(blank=True, default=dict)),
-                ('error_file', models.FileField(blank=True, storage=django.core.files.storage.FileSystemStorage(base_url=None, location=pathlib.PureWindowsPath('E:/Softwareentwicklung/hubiplan/backend/private')), upload_to=exchange.models.import_path)),
+                ('error_file', models.FileField(blank=True, storage=django.core.files.storage.FileSystemStorage(base_url=None, location=settings.PRIVATE_ROOT), upload_to=exchange.models.import_path)),
                 ('error', models.TextField(blank=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('imported_at', models.DateTimeField(blank=True, null=True)),

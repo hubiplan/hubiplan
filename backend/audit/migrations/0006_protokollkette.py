@@ -13,7 +13,7 @@ def versiegeln(apps, schema_editor):
         schema_editor.execute("SELECT set_config('app.bypass_rls', 'on', true)")
     AuditEntry = apps.get_model("audit", "AuditEntry")
     # order_by() ohne Felder: Die Standardsortierung (Zeit, id) käme sonst mit in das
-    # DISTINCT, und jede Einheit käme einmal je Eintrag dran (Dogado 31.10.2026).
+    # DISTINCT, und jede Einheit käme einmal je Eintrag dran (Produktionsserver 31.10.2026).
     org_ids = sorted(
         set(AuditEntry.objects.order_by().values_list("organization_id", flat=True).distinct())
     )

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# testplatz: gemeinsame Testplätze für alle Projekte auf Ralfs PC.
+# testplatz: gemeinsame Testplätze für alle Projekte auf einem lokalen Arbeitsrechner.
 #
 #   testplatz [--kerne N] [--] Befehl [Argumente …]
 #
