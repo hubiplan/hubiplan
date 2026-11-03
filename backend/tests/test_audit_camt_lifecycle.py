@@ -3,17 +3,19 @@
 
 import datetime
 from concurrent.futures import ThreadPoolExecutor
+from importlib import import_module
 from threading import Event
 from types import SimpleNamespace
 from unittest.mock import patch
 
 import pytest
+from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db import connections, transaction
+from django.db import connection, connections, transaction
 from django.utils import timezone
 
 from core.tenancy import tenant_context
-from finance import bank_import, bank_views, camt, services
+from finance import bank_import, bank_views, camt, retention, services
 from finance.models import Account, BankStatement, YearClosing
 
 from .factories import make_org, make_user
@@ -88,6 +90,38 @@ def test_reimport_cannot_restore_already_purged_historical_data(club, setup, fie
 def test_import_rejects_outer_rollback_boundary(club, setup):
     with transaction.atomic(), pytest.raises(RuntimeError, match="durable"):
         bank_import.import_file(club, camt_xml([entry("5.00")]), "test.xml", None)
+
+
+def test_backfilled_original_can_be_purged_again_but_holds_still_apply(
+    club, setup, monkeypatch, django_capture_on_commit_callbacks
+):
+    record = bank_import.import_file(club, camt_xml([entry("5.00")]), "test.xml", None)[
+        "statements"
+    ][0]
+    name, storage = record.source.name, record.source.storage
+    BankStatement.objects.filter(pk=record.pk).update(date_from=None, date_to=None)
+    migration = import_module("finance.migrations.0022_bankstatement_retention_dates")
+    migration.fill_dates(apps, SimpleNamespace(connection=connection))
+    record.refresh_from_db()
+    assert record.date_from == record.date_to == datetime.date(2025, 3, 3)
+    closing = YearClosing.objects.create(
+        organization=club, year=2025, documents_purged_at=timezone.now(), retention_hold="Prüfung"
+    )
+    monkeypatch.setattr(retention, "_today", lambda: datetime.date(2034, 1, 1))
+    assert retention.state(club, closing)["documents_due"]
+    user = make_user("retention@example.invalid")
+    with pytest.raises(ValidationError, match="Löschsperre"):
+        retention.purge(club, 2025, user)
+    assert storage.exists(name)
+    closing.retention_hold = ""
+    closing.save(update_fields=["retention_hold"])
+    with django_capture_on_commit_callbacks(execute=True):
+        retention.purge(club, 2025, user)
+    assert not storage.exists(name)
+    record.refresh_from_db()
+    assert record.source.name == ""
+    closing.refresh_from_db()
+    assert not retention.state(club, closing)["documents_due"]
 
 
 @pytest.mark.django_db(transaction=True)
