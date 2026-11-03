@@ -1,15 +1,18 @@
 """Suchmarken: gleiche Zuordnungsregeln, keine veralteten Identitätsindizes."""
 
+import base64
 import datetime
 import io
 import time
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 from unittest.mock import patch
 
 import pytest
 from django.core.exceptions import FieldError
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.db import connection
+from django.db import IntegrityError, OperationalError, connection, connections, transaction
 from django.db.migrations.executor import MigrationExecutor
 
 from audit.log import snapshot
@@ -158,6 +161,7 @@ class TestPersonMarks:
                 cursor.execute("SELECT birth_date FROM members_person WHERE id = %s", [a.pk])
                 raw = cursor.fetchone()[0]
             assert decrypt_text(raw, Person._meta.get_field("birth_date")) == BIRTH.isoformat()
+            assert int.from_bytes(base64.b64decode(raw[5:])[:8], "big") == a.marks_key_id
             assert services.persons_matching(orgs["c"].pk, "Muster", "Erika", BIRTH, limit=5) == []
             assert services.persons_matching(orgs["a"].pk, "Muster", "Erika", BIRTH, limit=5) == [a]
 
@@ -197,6 +201,14 @@ class TestPersonMarks:
             )
             for a in Person.objects.filter(pk__in=[p.pk for p in rows]):
                 assert marks(a) == personmarks.values(a)
+
+    def test_als_fertig_markierter_teilbestand_wird_abgewiesen(self, orgs):
+        with rls_bypass():
+            a = person(orgs["c"])
+            with pytest.raises(IntegrityError), transaction.atomic(), connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE members_person SET last_birth_mark = '' WHERE id = %s", [a.pk]
+                )
 
     def test_alte_inserts_ohne_neue_spalten_bleiben_moeglich(self, orgs):
         with rls_bypass():
@@ -246,6 +258,29 @@ class TestPersonMarks:
             assert a.updated_at == stamp
             assert "Abweichungen: 0" in run()
             assert "Abweichungen: 0" in run("--pruefen")
+
+    def test_backfill_abbruch_und_wiederaufnahme(self, orgs):
+        with rls_bypass():
+            rows = [person(orgs["c"], first=str(n)) for n in range(3)]
+            with connection.cursor() as cursor:
+                cursor.execute("UPDATE members_person SET marks_version = 0")
+            original = personmarks.values
+            calls = 0
+
+            def interrupted(p):
+                nonlocal calls
+                calls += 1
+                if calls == 2:
+                    raise RuntimeError("Testabbruch")
+                return original(p)
+
+            with patch("members.management.commands.personen_suchmarken.values", interrupted):
+                with pytest.raises(RuntimeError, match="Testabbruch"):
+                    run()
+            assert Person.objects.get(pk=rows[0].pk).marks_version == personmarks.VERSION
+            assert Person.objects.get(pk=rows[1].pk).marks_version == 0
+            assert "Abweichungen: 2" in run()
+            run("--pruefen")
 
     def test_falsche_kandidaten_werden_nicht_zugeordnet(self, orgs):
         with rls_bypass():
@@ -333,6 +368,50 @@ def test_migration_bestand_und_rueckweg(orgs):
         run("--pruefen")
 
 
+@pytest.mark.django_db(transaction=True)
+def test_backfill_sperrt_gegen_gleichzeitige_identitaetsaenderung(orgs):
+    with rls_bypass():
+        a = person(orgs["c"])
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE members_person SET marks_version = 0 WHERE id = %s", [a.pk])
+    locked, resume = Event(), Event()
+    original = personmarks.values
+
+    def pause(p):
+        result = original(p)
+        locked.set()
+        assert resume.wait(10), "Test: Bestandslauf nicht freigegeben"
+        return result
+
+    def backfill():
+        try:
+            return run()
+        finally:
+            connections.close_all()
+
+    with patch("members.management.commands.personen_suchmarken.values", pause):
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(backfill)
+            try:
+                assert locked.wait(10), "Test: Zeilensperre nicht erreicht"
+                with rls_bypass():
+                    # Ein echter zweiter DB-Zugang muss an derselben Zeile warten.
+                    with pytest.raises(OperationalError), transaction.atomic():
+                        with connection.cursor() as cursor:
+                            cursor.execute("SET LOCAL lock_timeout = '100ms'")
+                        a.last_name = "Neu"
+                        a.save(update_fields=["last_name"])
+            finally:
+                resume.set()
+            future.result(timeout=10)
+    with rls_bypass():
+        a.save(update_fields=["last_name"])
+        a.refresh_from_db()
+        assert a.last_name == "Neu"
+        assert marks(a) == personmarks.values(a)
+        run("--pruefen")
+
+
 @pytest.mark.langsam
 @pytest.mark.django_db(transaction=True)
 def test_kandidaten_5000_personen(orgs):
@@ -348,6 +427,8 @@ def test_kandidaten_5000_personen(orgs):
                 for i in range(5000)
             ]
         )
+        with connection.cursor() as cursor:
+            cursor.execute("ANALYZE members_person")
         started = time.perf_counter()
         qs = personmarks.candidates(orgs["c"].pk, "Muster 100", "Person 100", BIRTH, strict=True)
         assert qs.count() == 1

@@ -101,15 +101,14 @@ def candidates(scope_id, last_name, first_name, birth_date, *, strict):
         )
     # Fehlender Bestand, ältere Writer und Schlüssel-/Formatwechsel: niemals
     # Personen verlieren. Der geprüfte Bestandslauf beseitigt diesen Übergang.
-    pending = (
-        ~Q(marks_version=VERSION)
-        | Q(marks_key_id__isnull=True)
-        | ~Q(marks_key_id=key_id)
-        | Q(last_birth_mark="")
-        | Q(first_birth_mark="")
-        | (Q(birth_year_only=True) & (Q(last_year_mark="") | Q(first_year_mark="")))
-    )
-    return Person.objects.filter(scope_id=scope_id).filter(match | pending)
+    pending = ~Q(marks_version=VERSION) | Q(marks_key_id__isnull=True) | ~Q(marks_key_id=key_id)
+    scope = Person.objects.filter(scope_id=scope_id)
+    # Getrennte Teilabfragen lassen die Markenindizes gezielt greifen. Der
+    # Zustandsindex deckt den Rückfall ab, ohne sämtliche Identitätswerte zu laden.
+    # Die DB-Constraint verbietet leere/halbe Marken bei positiver Formatversion.
+    indexed = scope.filter(match).order_by().values_list("pk", flat=True)
+    legacy = scope.filter(pending).order_by().values_list("pk", flat=True)
+    return scope.filter(pk__in=indexed.union(legacy))
 
 
 def verified(person, last_name, first_name, birth_date, *, strict):

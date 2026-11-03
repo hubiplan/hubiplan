@@ -120,6 +120,26 @@ class Person(models.Model):
             models.Index(fields=["scope", "first_birth_mark"], name="person_first_birth_mark"),
             models.Index(fields=["scope", "last_year_mark"], name="person_last_year_mark"),
             models.Index(fields=["scope", "first_year_mark"], name="person_first_year_mark"),
+            models.Index(
+                fields=["scope", "marks_version", "marks_key_id"],
+                include=["id"],
+                name="person_marks_state",
+            ),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(marks_version=0)
+                | (
+                    Q(marks_key_id__isnull=False)
+                    & ~Q(last_birth_mark="")
+                    & ~Q(first_birth_mark="")
+                    & (
+                        (Q(birth_year_only=True) & ~Q(last_year_mark="") & ~Q(first_year_mark=""))
+                        | Q(birth_year_only=False, last_year_mark="", first_year_mark="")
+                    )
+                ),
+                name="person_marks_complete",
+            ),
         ]
 
     def __str__(self) -> str:

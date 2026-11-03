@@ -69,6 +69,34 @@ class Migration(migrations.Migration):
                 ("first_year_mark", "person_first_year_mark"),
             )
         ],
+        migrations.AddIndex(
+            model_name="person",
+            index=models.Index(
+                fields=["scope", "marks_version", "marks_key_id"],
+                include=["id"],
+                name="person_marks_state",
+            ),
+        ),
+        migrations.AddConstraint(
+            model_name="person",
+            constraint=models.CheckConstraint(
+                condition=models.Q(marks_version=0)
+                | (
+                    models.Q(marks_key_id__isnull=False)
+                    & ~models.Q(last_birth_mark="")
+                    & ~models.Q(first_birth_mark="")
+                    & (
+                        (
+                            models.Q(birth_year_only=True)
+                            & ~models.Q(last_year_mark="")
+                            & ~models.Q(first_year_mark="")
+                        )
+                        | models.Q(birth_year_only=False, last_year_mark="", first_year_mark="")
+                    )
+                ),
+                name="person_marks_complete",
+            ),
+        ),
         migrations.RunSQL(
             TRIGGER,
             reverse_sql="""

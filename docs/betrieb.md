@@ -147,7 +147,10 @@ Nachname mit gespeichertem Datum, Vorname mit gespeichertem Datum, zusätzlich j
 Name mit Jahr **nur** bei `birth_year_only`. Es gibt keine einzelne Namens-, Datums-
 oder Jahresmarke. HMAC-SHA256 wird auf 16 Byte gekürzt und als Base64url gespeichert.
 HKDF-SHA256 leitet dafür je Bereich, Indexzweck und Formatversion einen eigenen
-Schlüssel vom Datenschlüssel des Bereichs ab. Vier Indizes beginnen mit `scope`.
+Schlüssel vom Datenschlüssel des Bereichs ab. Vier Markenindizes beginnen mit `scope`;
+ein weiterer Index deckt Bereich, Formatversion, Schlüsselkennung und Zeilen-ID für
+den Übergang ab. Die Datenbank verbietet unvollständige Marken, die bereits als
+fertig gekennzeichnet sind.
 Die Marken offenbaren weiterhin Gleichheiten und Häufigkeiten der jeweiligen
 Kombination; sie sind keine Anonymisierung. Namen bleiben in dieser Fassung Klartext.
 
