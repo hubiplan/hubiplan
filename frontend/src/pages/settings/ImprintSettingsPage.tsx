@@ -327,7 +327,8 @@ export function ImprintSettingsPage() {
   const editable = can(PERM.orgEdit)
   const [unitId, setUnitId] = useState<number | null>(null)
   const units = useLoad(
-    () => (org.type === 'club' ? orgApi.departments(org.id) : Promise.resolve([] as Department[])),
+    () =>
+      org.type === 'club' ? orgApi.departmentChoices(org.id) : Promise.resolve([] as Department[]),
     [org.id],
   )
   const state = useLoad(

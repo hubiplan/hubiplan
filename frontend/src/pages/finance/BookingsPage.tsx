@@ -58,7 +58,7 @@ export function BookingsPage() {
   const categories = useLoad(() => financeApi.categories(org.id), [org.id])
   const projects = useLoad(() => financeApi.projects(org.id), [org.id])
   const departments = useLoad(
-    () => (org.type === 'club' ? orgApi.departments(org.id) : Promise.resolve([])),
+    () => (org.type === 'club' ? orgApi.departmentChoices(org.id) : Promise.resolve([])),
     [org.id, org.type],
   )
   const partners = useLoad(() => financeApi.counterparties(org.id), [org.id])

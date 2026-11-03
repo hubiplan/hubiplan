@@ -9,7 +9,6 @@ from .catalog import (
     BILLING_VIEW,
     FINANCE_EDIT,
     FINANCE_VIEW,
-    ORG_EDIT,
     ROLES_EDIT,
     ROLES_MANAGE,
     codes_for,
@@ -88,7 +87,7 @@ def inherited_permissions(user, unit: Organization) -> set[str]:
         if node.type != Organization.Type.UNIT:
             break
     result: set[str] = set()
-    if above & {ROLES_MANAGE, ORG_EDIT}:
+    if above & {ROLES_MANAGE, ROLES_EDIT}:
         result.add(ROLES_EDIT)
     if above & {FINANCE_VIEW, FINANCE_EDIT}:
         result.add(FINANCE_VIEW)

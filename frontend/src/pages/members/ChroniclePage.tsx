@@ -695,7 +695,7 @@ function DignitiesPanel() {
   // Mitgliedern hat keine, dort würde die Abfrage scheitern
   const club = org.type === 'club'
   const units = useLoad(
-    () => (club ? orgApi.departments(org.id) : Promise.resolve([])),
+    () => (club ? orgApi.departmentChoices(org.id) : Promise.resolve([])),
     [org.id, club],
   )
   const [editing, setEditing] = useState<Dignity | 'new' | null>(null)

@@ -16,10 +16,14 @@ from rest_framework.views import APIView
 from access.catalog import (
     CLUBS_MANAGE,
     DEFAULT_MODULES,
+    MEMBERS_VIEW,
     ORG_EDIT,
     ROLES_EDIT,
     ROLES_MANAGE,
+    ROLES_VIEW,
+    SETTINGS_VIEW,
     THEME_EDIT,
+    THEME_VIEW,
     UNITS_VIEW,
     WEBCONTENT_EDIT,
     WEBSITE_EDIT,
@@ -40,11 +44,13 @@ from members import services as member_services
 from . import homepage_preview
 from .models import Department, DepartmentRole, Organization, PlatformSettings
 from .serializers import (
+    DepartmentChoiceSerializer,
     DepartmentRoleSerializer,
     DepartmentSerializer,
     FederationClubSerializer,
     HomepageImageSerializer,
     LogoSerializer,
+    MemberSettingsSerializer,
     OrganizationSerializer,
     PlatformOrganizationSerializer,
     PlatformSettingsSerializer,
@@ -58,9 +64,10 @@ DEFAULT_BOARD_ROLE = "Vorstand"
 
 
 class OrganizationDetailView(OrgScopedMixin, AuditMixin, generics.RetrieveUpdateAPIView):
-    """Stammdaten der Organisation (lesen: alle mit Rolle; ändern: org.edit)."""
+    """Verwaltung der Stammdaten: settings.view / settings.edit."""
 
     serializer_class = OrganizationSerializer
+    read_permission = SETTINGS_VIEW
     write_permission = ORG_EDIT
     http_method_names = ["get", "patch", "options", "head"]
 
@@ -68,10 +75,18 @@ class OrganizationDetailView(OrgScopedMixin, AuditMixin, generics.RetrieveUpdate
         return self.org
 
 
+class MemberSettingsView(OrganizationDetailView):
+    """Nur die für Mitgliedermasken benötigten Einstellungen, keine Verwaltungsdaten."""
+
+    serializer_class = MemberSettingsSerializer
+    read_permission = (MEMBERS_VIEW, SETTINGS_VIEW)
+
+
 class ThemeView(OrgScopedMixin, AuditMixin, generics.RetrieveUpdateAPIView):
     """Farben der Organisation; leere Werte erben von der übergeordneten Ebene."""
 
     serializer_class = ThemeSerializer
+    read_permission = THEME_VIEW
     write_permission = THEME_EDIT
     http_method_names = ["get", "patch", "options", "head"]
 
@@ -115,6 +130,7 @@ class OrganizationLogoView(OrgScopedMixin, _LogoMixin, APIView):
 
 class DepartmentViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     serializer_class = DepartmentSerializer
+    read_permission = SETTINGS_VIEW
     write_permission = ORG_EDIT
     allowed_org_types = (Organization.Type.CLUB,)
 
@@ -172,6 +188,11 @@ class DepartmentViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
         """Ersten Verwalter einrichten: Rolle „Leitung“ mit allen Rechten + Zugang."""
         from members.models import Membership
         from portal.unit_manager import setup_unit_manager
+
+        if ROLES_EDIT not in self.org_permissions:
+            from rest_framework.exceptions import PermissionDenied
+
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
 
         unit = self.get_object()
         _not_remote(unit)
@@ -261,6 +282,22 @@ class DepartmentViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
                     instance,
                 )
             ) from exc
+
+
+class DepartmentChoicesViewSet(DepartmentViewSet):
+    """Untereinheiten für Auswahlfelder, ohne Zugriff auf ihre Verwaltung."""
+
+    serializer_class = DepartmentChoiceSerializer
+    read_permission = None  # Die explizit begrenzte Basisauskunft reicht jeder aktiven Rolle.
+    http_method_names = ["get", "head", "options"]
+
+    def get_queryset(self):
+        qs = Department.objects.filter(organization=self.org).select_related(
+            "organization__parent__parent"
+        )
+        if ROLES_VIEW in self.org_permissions:
+            qs = qs.prefetch_related("unit_roles__assignments__membership__person")
+        return qs
 
 
 def _not_remote(unit) -> None:
@@ -356,7 +393,8 @@ class DepartmentHomepageImageView(OrgScopedMixin, APIView):
 
 class DepartmentRoleViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     serializer_class = DepartmentRoleSerializer
-    write_permission = ORG_EDIT
+    read_permission = ROLES_VIEW
+    write_permission = ROLES_EDIT
     allowed_org_types = (Organization.Type.CLUB,)
 
     def get_queryset(self):

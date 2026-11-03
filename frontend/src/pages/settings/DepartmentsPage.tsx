@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { orgApi, PERM } from '../../api/orgs.ts'
-import type { CatalogModule, Department, DepartmentRole } from '../../api/orgs.ts'
+import type { CatalogModule, Department, DepartmentChoice, DepartmentRole } from '../../api/orgs.ts'
 import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
 import {
   DATE_PRECISION_OPTIONS,
@@ -37,6 +37,140 @@ import type { MemberRow } from '../../api/members.ts'
 import { lang, t, tn } from '../../i18n/index.ts'
 
 export function DepartmentsPage() {
+  const { can } = useOrg()
+  return can(PERM.settingsView) ? <DepartmentSettingsPage /> : <DepartmentRolesPage />
+}
+
+function DepartmentRolesPage() {
+  const org = useActiveOrg()
+  const { can } = useOrg()
+  const { data, error, reload } = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
+  const catalog = useLoad(() => orgApi.catalog('department', org.id), [org.id])
+  const [selected, setSelected] = useState('')
+  if (!can(PERM.rolesView)) return null
+  if (error) return <Alert kind="error">{error}</Alert>
+  if (!data || !catalog.data) return <p className="muted">{t('Lädt …')}</p>
+  const dep = data.find((d) => String(d.id) === selected) ?? data[0]
+  return (
+    <div className="card card-wide">
+      <SelectField
+        label={org.department_label}
+        value={dep ? String(dep.id) : ''}
+        onChange={(e) => setSelected(e.target.value)}
+      >
+        {data.map((d) => (
+          <option key={d.id} value={d.id}>
+            {d.path || d.name}
+          </option>
+        ))}
+      </SelectField>
+      {dep && (
+        <DepartmentRolesPanel
+          key={dep.id}
+          orgId={org.id}
+          dep={dep}
+          inThis={dep.name}
+          editable={can(PERM.rolesManage)}
+          catalog={catalog.data}
+          onChange={reload}
+        />
+      )}
+    </div>
+  )
+}
+
+function DepartmentRolesPanel({
+  orgId,
+  dep,
+  inThis,
+  editable,
+  catalog,
+  onChange,
+}: {
+  orgId: number
+  dep: DepartmentChoice
+  inThis: string
+  editable: boolean
+  catalog: CatalogModule[]
+  onChange: () => void
+}) {
+  const [roleEdit, setRoleEdit] = useState<DepartmentRole | 'new' | null>(null)
+  const hasWebsite = useActiveOrg().modules.includes('website')
+  return (
+    <>
+      <div className="card-head">
+        <h3>
+          {t('Rollen in')} {inThis}
+        </h3>
+        {editable && roleEdit === null && (
+          <button
+            type="button"
+            className="button button-ghost push-right"
+            onClick={() => setRoleEdit('new')}
+          >
+            {t('Neue Rolle')}
+          </button>
+        )}
+      </div>
+      {roleEdit !== null && (
+        <RoleForm
+          key={roleEdit === 'new' ? 'new' : roleEdit.id}
+          role={
+            roleEdit === 'new'
+              ? null
+              : { ...roleEdit, holders: roleEdit.holders.map((h) => h.name) }
+          }
+          catalog={catalog}
+          fields={UNIT_ROLE_FIELDS}
+          hasWebsite={hasWebsite}
+          readOnly={!editable}
+          permissionsOptional
+          showPermissions={!!dep.self_managed}
+          onSave={(data) =>
+            roleEdit === 'new'
+              ? orgApi.createDepartmentRole(orgId, dep.id, data)
+              : orgApi.updateDepartmentRole(orgId, roleEdit.id, data)
+          }
+          onDelete={
+            roleEdit === 'new' ? undefined : () => orgApi.deleteDepartmentRole(orgId, roleEdit.id)
+          }
+          confirmDelete={
+            roleEdit === 'new'
+              ? undefined
+              : () =>
+                  confirmRoleRemoval(
+                    roleEdit.name,
+                    roleEdit.holders.map((h) => h.name),
+                  )
+          }
+          onDone={() => {
+            setRoleEdit(null)
+            onChange()
+          }}
+          onCancel={() => setRoleEdit(null)}
+        />
+      )}
+      <RoleTable
+        roles={dep.roles.map((r) => ({ ...r, holders: r.holders.map((h) => h.name) }))}
+        catalog={catalog}
+        holderLabel={t('Inhaber')}
+        noPermissions={t('keine (nur Amt)')}
+        showPermissions={!!dep.self_managed}
+        editLabel={editable ? t('Bearbeiten') : t('Ansehen')}
+        onEdit={(r) => setRoleEdit(dep.roles.find((x) => x.id === r.id) ?? null)}
+        onReorder={
+          editable
+            ? (ids) => orgApi.reorderDepartmentRoles(orgId, dep.id, ids).then(() => onChange())
+            : undefined
+        }
+        website={hasWebsite}
+      />
+      <UnitHolders orgId={orgId} dep={dep} onChange={onChange} />
+    </>
+  )
+}
+
+function DepartmentSettingsPage() {
   const org = useActiveOrg()
   const editable = org.permissions.includes(PERM.orgEdit)
   const { data, error, reload } = useLoad(() => orgApi.departments(org.id), [org.id])
@@ -405,8 +539,8 @@ function DepartmentCard({
   onClose: () => void
 }) {
   const tm = useTerms()
+  const { can } = useOrg()
   const editing = editable
-  const [roleEdit, setRoleEdit] = useState<DepartmentRole | 'new' | null>(null)
   const hasWebsite = useActiveOrg().modules.includes('website')
   const hasBilling = useActiveOrg().modules.includes('billing')
   async function toggleActive(on: boolean) {
@@ -737,78 +871,20 @@ function DepartmentCard({
         </form>
       )}
 
-      {editable && dep.self_managed && (
+      {editable && can(PERM.rolesManage) && dep.self_managed && (
         <ManagerSetup orgId={orgId} dep={dep} inThis={inThis} onChange={onChange} />
       )}
 
-      <div className="card-head">
-        <h3>
-          {t('Rollen in')} {inThis}
-        </h3>
-        {editable && roleEdit === null && (
-          <button
-            type="button"
-            className="button button-ghost push-right"
-            onClick={() => setRoleEdit('new')}
-          >
-            {t('Neue Rolle')}
-          </button>
-        )}
-      </div>
-      {roleEdit !== null && (
-        <RoleForm
-          key={roleEdit === 'new' ? 'new' : roleEdit.id}
-          role={
-            roleEdit === 'new'
-              ? null
-              : { ...roleEdit, holders: roleEdit.holders.map((h) => h.name) }
-          }
+      {can(PERM.rolesView) && (
+        <DepartmentRolesPanel
+          orgId={orgId}
+          dep={dep}
+          inThis={inThis}
+          editable={can(PERM.rolesManage)}
           catalog={catalog}
-          fields={UNIT_ROLE_FIELDS}
-          hasWebsite={hasWebsite}
-          readOnly={!editable}
-          permissionsOptional
-          showPermissions={!!dep.self_managed}
-          onSave={(data) =>
-            roleEdit === 'new'
-              ? orgApi.createDepartmentRole(orgId, dep.id, data)
-              : orgApi.updateDepartmentRole(orgId, roleEdit.id, data)
-          }
-          onDelete={
-            roleEdit === 'new' ? undefined : () => orgApi.deleteDepartmentRole(orgId, roleEdit.id)
-          }
-          confirmDelete={
-            roleEdit === 'new'
-              ? undefined
-              : () =>
-                  confirmRoleRemoval(
-                    roleEdit.name,
-                    roleEdit.holders.map((h) => h.name),
-                  )
-          }
-          onDone={() => {
-            setRoleEdit(null)
-            onChange()
-          }}
-          onCancel={() => setRoleEdit(null)}
+          onChange={onChange}
         />
       )}
-      <RoleTable
-        roles={dep.roles.map((r) => ({ ...r, holders: r.holders.map((h) => h.name) }))}
-        catalog={catalog}
-        holderLabel={t('Inhaber')}
-        noPermissions={t('keine (nur Amt)')}
-        showPermissions={!!dep.self_managed}
-        editLabel={editable ? t('Bearbeiten') : t('Ansehen')}
-        onEdit={(r) => setRoleEdit(dep.roles.find((x) => x.id === r.id) ?? null)}
-        onReorder={
-          editable
-            ? (ids) => orgApi.reorderDepartmentRoles(orgId, dep.id, ids).then(() => onChange())
-            : undefined
-        }
-        website={hasWebsite}
-      />
-      <UnitHolders orgId={orgId} dep={dep} onChange={onChange} />
       {dep.self_managed ? (
         <p className="muted small">
           {t(
@@ -846,7 +922,7 @@ function UnitHolders({
   onChange,
 }: {
   orgId: number
-  dep: Department
+  dep: Pick<Department, 'id' | 'roles'>
   onChange: () => void
 }) {
   const { can } = useOrg()
@@ -857,7 +933,7 @@ function UnitHolders({
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   if (dep.roles.length === 0 || !can(PERM.membersView)) return null
-  const canEdit = can(PERM.membersEdit)
+  const canEdit = can(PERM.rolesManage)
   const rows = dep.roles.flatMap((r) => r.holders.map((h) => ({ ...h, role: r })))
   const roleId = role || String(dep.roles[0].id)
 

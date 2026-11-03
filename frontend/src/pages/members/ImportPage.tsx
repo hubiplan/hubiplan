@@ -491,7 +491,7 @@ function ValueMappings({
   const mapped = new Set(Object.values(mapping).map((tmx) => tmx.replace(/_\d$/, '')))
   const needed = targets.filter((tmx) => tmx.value_mapped && mapped.has(tmx.key))
   const types = useLoad(() => memberApi.types(orgId), [orgId])
-  const departments = useLoad(() => orgApi.departments(orgId), [orgId])
+  const departments = useLoad(() => orgApi.departmentChoices(orgId), [orgId])
   const roles = useLoad(() => orgApi.roles(orgId).catch(() => []), [orgId])
   if (needed.length === 0) return null
   const choices: Record<string, { value: string; label: string }[]> = {

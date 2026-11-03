@@ -20,7 +20,7 @@ export function AdmitPage() {
   const fed = !!terms.dv_has
   const navigate = useNavigate()
   const types = useLoad(() => memberApi.types(org.id), [org.id])
-  const departments = useLoad(() => orgApi.departments(org.id), [org.id])
+  const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   const [step, setStep] = useState<Step>('person')
   const [duplicates, setDuplicates] = useState<Duplicate[]>([])
   const [linked, setLinked] = useState<Duplicate | null>(null)

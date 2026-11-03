@@ -44,6 +44,9 @@ from . import views
 
 org_router = SimpleRouter()
 org_router.register("departments", org_views.DepartmentViewSet, basename="department")
+org_router.register(
+    "department-choices", org_views.DepartmentChoicesViewSet, basename="department-choice"
+)
 org_router.register("finance/accounts", finance_views.AccountViewSet, basename="finance-account")
 org_router.register(
     "finance/categories", finance_views.CategoryViewSet, basename="finance-category"
@@ -122,6 +125,7 @@ platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename
 
 org_patterns = [
     path("", org_views.OrganizationDetailView.as_view(), name="org-detail"),
+    path("member-settings/", org_views.MemberSettingsView.as_view(), name="org-member-settings"),
     path("theme/", org_views.ThemeView.as_view(), name="org-theme"),
     path("help/", help_views.OrgHelpView.as_view(), name="org-help"),
     path("help/notes/<str:key>/", help_views.OrgHelpNoteView.as_view(), name="org-help-note"),
