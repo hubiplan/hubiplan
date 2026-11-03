@@ -815,7 +815,11 @@ export function tokenStandApi(token: string, key: string): StandApi {
 }
 
 function guardStandApi(raw: StandApi): StandApi {
-  function guard<A extends unknown[], R>(fn: (...args: A) => Promise<R>, detail = false) {
+  function guard<A extends unknown[], R>(
+    fn: (...args: A) => Promise<R>,
+    detail = false,
+    missingScope = true,
+  ) {
     return async (...args: A): Promise<R> => {
       const at = standRevision()
       try {
@@ -825,7 +829,7 @@ function guardStandApi(raw: StandApi): StandApi {
           authorizeStandCache(raw.key, (result as CompetitionDetail).stand_access?.expires_at)
         return result
       } catch (error) {
-        if (at === standRevision()) rejectStandAccess(raw.key, error)
+        if (at === standRevision()) rejectStandAccess(raw.key, error, missingScope)
         throw error
       }
     }
@@ -838,6 +842,17 @@ function guardStandApi(raw: StandApi): StandApi {
     sync: guard(raw.sync),
     version: guard(raw.version),
     standings: guard(raw.standings),
+    photo: guard(raw.photo, false, false),
+    finish: raw.finish ? guard(raw.finish) : undefined,
+    shootoffs: {
+      ...raw.shootoffs,
+      list: guard(raw.shootoffs.list),
+      create: guard(raw.shootoffs.create, false, false),
+      update: guard(raw.shootoffs.update, false, false),
+      updateEntry: guard(raw.shootoffs.updateEntry, false, false),
+      unitMembers: guard(raw.shootoffs.unitMembers, false, false),
+      remove: raw.shootoffs.remove ? guard(raw.shootoffs.remove, false, false) : undefined,
+    },
   }
 }
 

@@ -63,7 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (at !== revision.current) return
           putUser(null)
           setOffline(isStandNetworkError(error))
-          if (!isStandNetworkError(error)) bindStandUser(null)
+          // Ungewisser Serverzustand sperrt die Oberfläche, erhält aber den Cache.
+          // Nur getSession()s bestätigtes null darf die Konto-Bindung entfernen.
           setLoading(false)
         })
     }
