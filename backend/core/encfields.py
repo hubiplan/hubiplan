@@ -92,9 +92,16 @@ class EncryptedMixin:
 
     empty_values_db = ("", None)
 
-    def __init__(self, *args, plain_values=(), **kwargs):
+    def __init__(self, *args, plain_values=(), strict=False, **kwargs):
         self.plain_values = tuple(plain_values)
+        self.strict = strict
         super().__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        if self.strict:
+            kwargs["strict"] = True
+        return name, path, args, kwargs
 
     def _stays_plain(self, value) -> bool:
         return value in self.empty_values_db or value in self.plain_values
@@ -110,7 +117,9 @@ class EncryptedMixin:
 
     def pre_save(self, model_instance, add):
         value = getattr(model_instance, self.attname)
-        if self._stays_plain(value) or is_encrypted(value):
+        # Strenge Identitätsfelder erhalten stets Klartexteingaben. Ein vom Nutzer
+        # eingegebener Name mit „enc1:“ darf kein gespeichertes Chiffrat einschleusen.
+        if self._stays_plain(value) or (is_encrypted(value) and not self.strict):
             return value
         text = self._plain_to_text(value)
         return encrypt_text(text, _owner_or_fail(model_instance, self), self)
@@ -130,6 +139,8 @@ class EncryptedMixin:
         try:
             return self._text_to_plain(decrypt_text(value, self))
         except crypto.DecryptionError:
+            if self.strict:
+                raise
             # Schlüssel gelöscht (Verein entfernt) oder Wert verändert
             logger.warning("Wert in %s nicht lesbar", self.model._meta.label)
             return self._broken()

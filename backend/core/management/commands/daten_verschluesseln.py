@@ -7,11 +7,13 @@ kein Änderungsprotokoll, ``updated_at`` bleibt). Vorher ein frisches Backup anl
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from django.apps import apps
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connection, transaction
 
+from core.crypto import DecryptionError
 from core.encfields import (
     EncryptedJSONField,
     EncryptedMixin,
@@ -20,6 +22,7 @@ from core.encfields import (
     is_encrypted,
     owner_org_id,
 )
+from core.fieldcompat import rollback_fields
 from core.tenancy import rls_bypass
 
 
@@ -54,11 +57,55 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--entschluesseln", action="store_true")
         parser.add_argument("--probe", action="store_true", help="Nur zählen.")
+        parser.add_argument(
+            "--pruefen", action="store_true", help="Chiffrate und Vollständigkeit prüfen."
+        )
+        parser.add_argument(
+            "--feld", action="append", default=[], help="app.Modell.feld; wiederholbar."
+        )
+        parser.add_argument("--rueckweg-zu", type=Path, help="Backend-Quellordner der Zielfassung.")
 
-    def handle(self, *args, entschluesseln=False, probe=False, **options):
+    def handle(
+        self,
+        *args,
+        entschluesseln=False,
+        probe=False,
+        pruefen=False,
+        feld=(),
+        rueckweg_zu=None,
+        **options,
+    ):
+        if (pruefen and (probe or entschluesseln or rueckweg_zu)) or (
+            rueckweg_zu and entschluesseln
+        ):
+            raise CommandError("Prüfung, Entschlüsselung und gezielten Rückweg getrennt ausführen.")
+        if rueckweg_zu is not None and not rueckweg_zu.is_dir():
+            raise CommandError("Backend-Quellordner der Zielfassung fehlt.")
+        selected, known = [], set()
+        requested = {name.lower() for name in feld}
+        # Vor der ersten Änderung sämtliche Zielfelddeklarationen validieren.
+        for model, fields in encrypted_fields():
+            known.update(f"{model._meta.label_lower}.{f.name}" for f in fields)
+            if requested:
+                fields = [f for f in fields if f"{model._meta.label_lower}.{f.name}" in requested]
+            if rueckweg_zu is not None:
+                fields = rollback_fields(model, fields, rueckweg_zu)
+            if fields:
+                selected.append((model, fields))
+        if requested - known:
+            raise CommandError(
+                "Unbekannte verschlüsselte Felder: " + ", ".join(sorted(requested - known))
+            )
+        entschluesseln = entschluesseln or rueckweg_zu is not None
         total = 0
         with rls_bypass():
-            for model, fields in encrypted_fields():
+            if pruefen:
+                errors = sum(self._verify(model, fields) for model, fields in selected)
+                self.stdout.write(f"Fehlende oder unlesbare Verschlüsselung: {errors}.")
+                if errors:
+                    raise CommandError("Verschlüsselung nicht vollständig und lesbar.")
+                return
+            for model, fields in selected:
                 changed = self._model(model, fields, entschluesseln, probe)
                 if changed:
                     self.stdout.write(f"  {model._meta.label}: {changed}")
@@ -117,11 +164,22 @@ class Command(BaseCommand):
                             {field.KEY: cipher} if isinstance(field, EncryptedJSONField) else cipher
                         )
                 if updates and not probe:
-                    self._write(table, pk_col, pk, updates)
+                    written = self._write(
+                        table,
+                        pk_col,
+                        pk,
+                        updates,
+                        expected={
+                            **dict(zip((f.column for f in fields), values, strict=True)),
+                            **dict(zip(owner_cols, owner_values, strict=True)),
+                        },
+                    )
+                    if not written:
+                        continue
                 changed += bool(updates)
 
     @staticmethod
-    def _write(table, pk_col, pk, updates):
+    def _write(table, pk_col, pk, updates, *, expected=None):
         parts, params = [], []
         for field, value in updates.items():
             column = connection.ops.quote_name(field.column)
@@ -132,5 +190,48 @@ class Command(BaseCommand):
                 parts.append(f"{column} = %s")
                 params.append(value)
         with transaction.atomic(), connection.cursor() as cursor:
+            if expected:
+                columns = ", ".join(connection.ops.quote_name(c) for c in expected)
+                cursor.execute(
+                    f"SELECT {columns} FROM {table} WHERE {pk_col} = %s FOR UPDATE",  # noqa: S608
+                    [pk],
+                )
+                current = cursor.fetchone()
+                if current is None or tuple(expected.values()) != current:
+                    # Nicht den neueren Stand mit einem zuvor gelesenen Wert überschreiben.
+                    # Ein weiterer Lauf prüft gegebenenfalls verbliebene Altdaten.
+                    return False
             sql = f"UPDATE {table} SET {', '.join(parts)} WHERE {pk_col} = %s"  # noqa: S608
             cursor.execute(sql, [*params, pk])
+            return cursor.rowcount == 1
+
+    def _verify(self, model, fields):
+        quote = connection.ops.quote_name
+        table, pk_col = quote(model._meta.db_table), quote(model._meta.pk.column)
+        columns = ", ".join(quote(f.column) for f in fields)
+        errors = last = 0
+        while True:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"SELECT {pk_col}, {columns} FROM {table} "  # noqa: S608
+                    f"WHERE {pk_col} > %s ORDER BY {pk_col} LIMIT %s",
+                    [last, BATCH],
+                )
+                rows = cursor.fetchall()
+            if not rows:
+                return errors
+            last = rows[-1][0]
+            for row in rows:
+                for field, raw in zip(fields, row[1:], strict=True):
+                    try:
+                        encrypted, value = _stored(field, raw)
+                        if encrypted:
+                            plain = decrypt_text(value, field)
+                            if isinstance(field, EncryptedJSONField):
+                                json.loads(plain)
+                            else:
+                                field._text_to_plain(plain)
+                        elif not field._stays_plain(value):
+                            errors += 1
+                    except (DecryptionError, ValueError, TypeError):
+                        errors += 1

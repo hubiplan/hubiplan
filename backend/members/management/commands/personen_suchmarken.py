@@ -3,6 +3,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
+from core.crypto import DecryptionError
 from core.tenancy import rls_bypass
 from members.models import Person
 from members.personmarks import values, write
@@ -28,7 +29,12 @@ class Command(BaseCommand):
                     # Neu lesen NACH der Sperre, damit kein überholter Wert zurückgeschrieben
                     # wird. Ein Abbruch lässt abgeschlossene Zeilen nutzbar; Wiederholung sicher.
                     with transaction.atomic():
-                        person = qs.select_for_update().filter(pk=pk).first()
+                        try:
+                            person = qs.select_for_update().filter(pk=pk).first()
+                        except DecryptionError:
+                            checked += 1
+                            broken += 1
+                            continue
                         if person is None:
                             continue
                         checked += 1

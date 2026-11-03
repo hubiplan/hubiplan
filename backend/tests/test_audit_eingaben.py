@@ -12,6 +12,7 @@ from finance.serializers import CategorySerializer
 from finance.views import CategoryViewSet
 from members.models import ContactDetails, Person
 
+from .factories import named
 from .test_m2_members import admit, make_types
 
 pytestmark = pytest.mark.django_db
@@ -157,7 +158,7 @@ class TestVeralteteStaende:
         assert c.patch(url, {"email": "neu@example.org"}, content_type=JSON).status_code == 200
         assert c.patch(url, {"phone": "0999"}, content_type=JSON).status_code == 200
         with tenant_context(orgs["a"].pk):
-            contact = ContactDetails.objects.get(person__last_name="Muster")
+            contact = named(ContactDetails.objects.all(), person__last_name="Muster").get()
             assert (contact.email, contact.phone, contact.city) == (
                 "neu@example.org",
                 "0999",
@@ -169,10 +170,10 @@ class TestVeralteteStaende:
         member = admit(c, orgs["a"], types["aktiv"]).json()
         url = f"/api/orgs/{orgs['a'].pk}/members/{member['id']}/"
         with tenant_context(orgs["a"].pk):
-            person = Person.objects.get(last_name="Muster")
+            person = named(Person.objects.all(), last_name="Muster").get()
             person.first_name = "Erika Maria"
             person.save(update_fields=["first_name"])
         assert c.patch(url, {"last_name": "Muster-Neu"}, content_type=JSON).status_code == 200
         with tenant_context(orgs["a"].pk):
-            person = Person.objects.get(last_name="Muster-Neu")
+            person = named(Person.objects.all(), last_name="Muster-Neu").get()
         assert person.first_name == "Erika Maria"

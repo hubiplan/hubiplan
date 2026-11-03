@@ -12,7 +12,7 @@ from customfields.models import FieldDefinition, FieldValue
 from exchange.models import ImportJob
 from members.models import Membership, MemberType, Person
 
-from .factories import audit_with, give_role, make_user
+from .factories import audit_with, give_role, make_user, named
 from .test_m2_members import admit, make_types
 
 pytestmark = pytest.mark.django_db
@@ -187,7 +187,7 @@ class TestImport:
         assert done["status"] == "imported", done
         assert done["counts"]["imported"] == 2
         assert done["has_error_file"] is True
-        erika = Membership.objects.get(person__last_name="Muster")
+        erika = named(Membership.objects.all(), person__last_name="Muster").get()
         periods = list(erika.periods.values_list("entry_date", "exit_date"))
         assert periods == [
             (datetime.date(2001, 1, 1), datetime.date(2005, 12, 31)),
@@ -197,7 +197,7 @@ class TestImport:
         assert erika.person.federation.member_number == 1
         value = FieldValue.objects.get(person=erika.person).value
         assert [v["bezeichnung"] for v in value] == ["Nadel", "Pokal"]
-        anton = Membership.objects.get(person__last_name="Alt")
+        anton = named(Membership.objects.all(), person__last_name="Alt").get()
         assert anton.current_period() is None  # ehemaliges Mitglied
         # Fehlerliste herunterladen
         errors = c.get(f"/api/orgs/{org.pk}/imports/{job['id']}/errors/")
@@ -226,7 +226,7 @@ class TestImport:
         configure(c, org, job, types["a"], awards)
         c.post(f"/api/orgs/{org.pk}/imports/{job['id']}/validate/")
         c.post(f"/api/orgs/{org.pk}/imports/{job['id']}/run/")
-        erika = Membership.objects.get(person__last_name="Muster")
+        erika = named(Membership.objects.all(), person__last_name="Muster").get()
         c.patch(f"/api/orgs/{org.pk}/members/{erika.pk}/", {"city": "Neu"}, content_type=JSON)
         job_data = c.get(f"/api/orgs/{org.pk}/imports/{job['id']}/").json()
         assert job_data["undo_blockers"]

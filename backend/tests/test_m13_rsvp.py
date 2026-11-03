@@ -13,7 +13,7 @@ from events import notify
 from events.models import Event, EventResponse, PersonalCalendar
 from members.models import MembershipPeriod
 
-from .factories import audit_with, make_member
+from .factories import audit_with, make_member, named
 from .test_m12_events import (  # noqa: F401  (Fixtures)
     JSON,
     at,
@@ -236,7 +236,11 @@ class TestTeilnehmerliste:
         assert [i["name"] for i in listing["items"]] == ["Muster, Erika"]
         assert [o["name"] for o in listing["open"]] == ["Muster, Zugführer"]
         # Eintragen nur für eigene Zugmitglieder
-        hans = EventResponse.objects.get(membership__person__first_name="Hans").membership
+        hans = (
+            named(EventResponse.objects.all(), membership__person__first_name="Hans")
+            .get()
+            .membership
+        )
         resp = api(leader_user).put(
             base, {"membership_id": hans.pk, "status": "no"}, content_type=JSON
         )

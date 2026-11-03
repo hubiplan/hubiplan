@@ -11,7 +11,7 @@ from accounts.models import User
 from members.models import MemberPhoto, Membership, MemberType, Person
 from organizations.models import Department, Organization
 
-from .factories import give_role, make_org, make_user
+from .factories import give_role, make_org, make_user, named
 
 # Demodaten anlegen dauert je Test einige Sekunden (siehe conftest: langsam = zuerst)
 pytestmark = [pytest.mark.django_db, pytest.mark.langsam]
@@ -170,7 +170,7 @@ class TestAlteDemodatenEntfernen:
         assert not User.objects.filter(
             email__in=["vorstand@sv-musterstadt.test", "schach@schachfreunde.test"]
         ).exists()
-        assert not Person.objects.filter(last_name="Alt").exists()
+        assert not named(Person.objects.all(), last_name="Alt").exists()
         assert not MemberPhoto.objects.exists()
         assert not os.path.exists(legacy["photo_path"])  # Datei ist weg
         # Unangetastet: Admin, echte Organisation samt Zugang, Pilotdaten und ihre Zugänge

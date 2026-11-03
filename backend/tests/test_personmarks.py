@@ -100,13 +100,11 @@ class TestPersonMarks:
     def test_gleiche_namensregeln_wie_bisherige_datenbank(self, orgs, stored, wanted):
         with rls_bypass():
             a = person(orgs["c"], last=stored)
-            expected = list(
-                Person.objects.filter(
-                    scope=orgs["c"],
-                    last_name__iexact=wanted.strip(),
-                    first_name__iexact="Erika",
-                ).order_by("pk")
-            )
+            # Referenz bleibt der bisherige PostgreSQL-Vergleich; in der Tabelle
+            # liegen jetzt Chiffrate, daher die Testwerte als Parameter vergleichen.
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT UPPER(%s::text) = UPPER(%s::text)", [stored, wanted.strip()])
+                expected = [a] if cursor.fetchone()[0] else []
             assert (
                 services.persons_matching(orgs["c"].pk, wanted, "Erika", BIRTH, limit=5) == expected
             )
@@ -326,8 +324,9 @@ class TestPersonMarks:
             # Unverschlüsselter Altbestand ohne Datenschlüssel: Prüfung muss lesend bleiben.
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "UPDATE members_person SET birth_date = %s WHERE id = %s",
-                    [BIRTH.isoformat(), a.pk],
+                    "UPDATE members_person SET birth_date = %s, last_name = %s, first_name = %s "
+                    "WHERE id = %s",
+                    [BIRTH.isoformat(), a.last_name, a.first_name, a.pk],
                 )
             DataKey.objects.filter(organization=orgs["c"]).delete()
             crypto.reset()
@@ -368,6 +367,15 @@ def test_migration_bestand_und_rueckweg(orgs):
         latest = executor.loader.graph.leaf_nodes()
         previous = [("members", "0022_geburtsdatum_verschluesselt")]
         try:
+            call_command(
+                "daten_verschluesseln",
+                "--entschluesseln",
+                "--feld",
+                "members.Person.last_name",
+                "--feld",
+                "members.Person.first_name",
+                stdout=io.StringIO(),
+            )
             executor.migrate(previous)
             old = executor.loader.project_state(previous).apps.get_model("members", "Person")
             assert old.objects.get(pk=a.pk).birth_date == BIRTH

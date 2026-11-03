@@ -14,7 +14,7 @@ from core.tenancy import tenant_context
 from finance.models import Account, Booking
 from members.models import Membership, MembershipPeriod, Person
 
-from .factories import make_member
+from .factories import make_member, named
 from .test_m9_billing import _private, base, c, club, members, setup, start_run, zug  # noqa: F401
 from .test_m10_billing import fbase, fc, fed, fsetup  # noqa: F401
 from .test_m11_sepa_abschluss import CREDITOR, next_workday, open_invoice
@@ -267,4 +267,4 @@ class TestAufnahme:
         assert again.json()["id"] == first.json()["id"]
         with tenant_context(orgs["a"].pk):
             assert Membership.objects.filter(organization=orgs["a"]).count() == 1
-            assert Person.objects.filter(last_name="Muster").count() == 1
+            assert named(Person.objects.all(), last_name="Muster").count() == 1

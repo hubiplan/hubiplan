@@ -161,6 +161,13 @@ if git cat-file -e "$REF:scripts/pruefe-aktualisierer.sh" 2> /dev/null; then
     "$WORK/scripts/pruefe-aktualisierer.sh" "$WORK"
 fi
 
+# Gemeinsamer Daten-Rückweg, nur mit Befehlsersatz und synthetischem Zielquellstand.
+if git cat-file -e "$REF:scripts/pruefe-daten-rueckweg.sh" 2> /dev/null; then
+    git archive --format=tar "$REF" scripts/pruefe-daten-rueckweg.sh \
+        deploy/daten-rueckweg.sh deploy/zurueck.sh deploy/server-setup.sh | tar -x -C "$WORK"
+    sh "$WORK/scripts/pruefe-daten-rueckweg.sh" "$WORK"
+fi
+
 # Testdatenbank: einmal migrieren und je Worker kopieren (CREATE DATABASE … TEMPLATE, 0,2 s)
 # statt in jedem Worker alle Migrationen (je ~40 s Rechenzeit). Die migrierte Datenbank
 # wird als Vorlage zwischengespeichert. Ihr Schlüssel umfasst alles, was den Stand nach

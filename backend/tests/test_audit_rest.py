@@ -20,7 +20,7 @@ from exchange.models import ImportJob
 from members.duration import jubilee_date
 from members.models import ContactDetails, MembershipPeriod
 
-from .factories import make_member
+from .factories import make_member, named
 from .test_m5_exchange import _eager, awards, base_rows, configure, types, upload  # noqa: F401
 from .test_m12_events import (  # noqa: F401
     JSON,
@@ -172,7 +172,10 @@ class TestImport:
         configure(c, org, job, types["a"], awards)
         c.post(f"/api/orgs/{org.pk}/imports/{job['id']}/validate/")
         c.post(f"/api/orgs/{org.pk}/imports/{job['id']}/run/")
-        assert ContactDetails.objects.get(person__last_name="Alt").email == "anton@example.org"
+        assert (
+            named(ContactDetails.objects.all(), person__last_name="Alt").get().email
+            == "anton@example.org"
+        )
 
     def test_ds09_doppelte_zustellung_aendert_das_journal_nicht(
         self, api, orgs, types, board_a, awards

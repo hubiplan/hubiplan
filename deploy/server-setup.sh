@@ -95,6 +95,7 @@ if grep -q '^HUBIPLAN_SELBSTUPDATE=1' .env; then
     chmod 750 "$AKTUALISIERUNG_DIR"
 fi
 COMPOSE="docker compose -p $PROJEKT $DATEIEN"
+. ./deploy/daten-rueckweg.sh
 
 # Backup-Verzeichnis außerhalb der Docker-Volumes (gehört dem postgres-Benutzer, UID 70)
 BACKUP_DIR=$(grep '^BACKUP_DIR=' .env | cut -d= -f2)
@@ -271,6 +272,12 @@ if ! starten; then
     echo "FEHLER: Die neue Fassung startet nicht. Zurück zur vorigen Fassung …" >&2
     $COMPOSE logs --tail 40 backend >&2 || true
     if [ -d "$ZIEL.vorher" ]; then
+        # Auch gestartete Worker können vor dem fehlgeschlagenen Healthcheck bereits
+        # Namen verschlüsselt haben. Mit der neuen Fassung gezielt zurückführen.
+        if ! daten_rueckweg "$ZIEL.vorher"; then
+            echo "FEHLER: Daten-Rückweg fehlgeschlagen. Alte Fassung bleibt angehalten." >&2
+            exit 1
+        fi
         rm -rf "$ZIEL.fehler"
         mv "$ZIEL" "$ZIEL.fehler"
         mv "$ZIEL.vorher" "$ZIEL"
