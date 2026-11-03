@@ -14,11 +14,13 @@ import datetime
 import hashlib
 import io
 import re
-import xml.etree.ElementTree as ET  # noqa: S405 - DTD/Entitäten werden vorher abgewiesen
+import xml.etree.ElementTree as ET  # noqa: S405 - nur Typen/ParseError; geparst wird mit defusedxml
 import zipfile
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
 
+from defusedxml import DefusedXmlException
+from defusedxml.ElementTree import fromstring as safe_fromstring
 from django.utils.translation import gettext
 
 MAX_FILE = 10 * 1024 * 1024  # 10 MB je Upload
@@ -207,14 +209,14 @@ def _purpose(details) -> str:
 
 
 def _parse_xml(data: bytes) -> list[Statement]:
-    head = data[:4096].lower()
-    if b"<!doctype" in head or b"<!entity" in data.lower():
+    # defusedxml lehnt DTD und Entitäten in jeder Kodierung ab, auch UTF-16 (Audit 03.11. GA-S09)
+    try:
+        root = safe_fromstring(data, forbid_dtd=True)
+    except DefusedXmlException:
         raise CamtError(
             gettext("Die Datei enthält eine DTD und wird aus Sicherheitsgründen abgelehnt.")
-        )
-    try:
-        root = ET.fromstring(data)  # noqa: S314 - DTD/Entitäten oben abgewiesen
-    except ET.ParseError:
+        ) from None
+    except (ET.ParseError, ValueError):  # ValueError: z. B. encoding="UTF-16LE"
         raise CamtError(gettext("Die Datei ist kein gültiges XML.")) from None
     container = _find(root, "BkToCstmrStmt")
     if container is None:

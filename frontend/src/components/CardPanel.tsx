@@ -10,7 +10,16 @@ import type { ConfirmOptions } from './dialog.ts'
 import { useTerms } from '../org/terms.ts'
 import { t } from '../i18n/index.ts'
 
-export function CardPanel({ base, pdfUrl }: { base: string; pdfUrl: string }) {
+export function CardPanel({
+  base,
+  pdfUrl,
+  canEdit = true,
+}: {
+  base: string
+  pdfUrl: string
+  /** Ohne Bearbeitungsrecht nur ansehen und drucken (Audit 03.11. GA-F08). */
+  canEdit?: boolean
+}) {
   const tm = useTerms()
   const { data, error, setData } = useLoad(() => cardApi.get(base), [base])
   const [busy, setBusy] = useState(false)
@@ -36,6 +45,8 @@ export function CardPanel({ base, pdfUrl }: { base: string; pdfUrl: string }) {
       {error && <Alert kind="error">{error}</Alert>}
       {!data ? (
         !error && <p className="muted">{t('Lädt …')}</p>
+      ) : data.state === 'none' && !canEdit ? (
+        <p className="muted">{t('Für dieses Mitglied gibt es noch keinen Ausweis.')}</p>
       ) : data.state === 'none' ? (
         <>
           <p className="muted">
@@ -58,6 +69,7 @@ export function CardPanel({ base, pdfUrl }: { base: string; pdfUrl: string }) {
           card={data}
           pdfUrl={pdfUrl}
           busy={busy}
+          canEdit={canEdit}
           onRenew={() =>
             void run(
               'renew',
@@ -92,6 +104,7 @@ function CardView({
   card,
   pdfUrl,
   busy,
+  canEdit,
   onRenew,
   onRevoke,
   onRestore,
@@ -99,6 +112,7 @@ function CardView({
   card: CardInfo
   pdfUrl: string
   busy: boolean
+  canEdit: boolean
   onRenew: () => void
   onRevoke: () => void
   onRestore: () => void
@@ -134,10 +148,12 @@ function CardView({
               {t('Ausweis als PDF')}
             </a>
           )}
-          <button type="button" className="button button-ghost" disabled={busy} onClick={onRenew}>
-            {t('Neuen QR-Code erzeugen')}
-          </button>
-          {revoked ? (
+          {canEdit && (
+            <button type="button" className="button button-ghost" disabled={busy} onClick={onRenew}>
+              {t('Neuen QR-Code erzeugen')}
+            </button>
+          )}
+          {!canEdit ? null : revoked ? (
             <button
               type="button"
               className="button button-ghost"

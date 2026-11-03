@@ -108,7 +108,7 @@ function FederationList({ prefix }: { prefix: string }) {
         <h1>
           {t('Mitglieder')} {tm.e_im}
         </h1>
-        {org.permissions.includes(PERM.cardsManage) && (
+        {org.permissions.includes(PERM.cardsView) && (
           <a
             className="button button-ghost push-right"
             href={cardApi.orgPdfUrl(org.id, {
@@ -333,7 +333,7 @@ function FederationDetail({ prefix }: { prefix: string }) {
           federation
           onChanged={reload}
         />
-        {org.permissions.includes(PERM.cardsManage) && data.status === 'active' && (
+        {org.permissions.includes(PERM.cardsView) && data.status === 'active' && (
           <div className="card card-wide">
             <h2>{t('Mitgliedsausweis')}</h2>
             <p className="muted small">

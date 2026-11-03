@@ -85,5 +85,47 @@ echo "version=2026.12.0" > "$T/auftrag/auftrag"
 bash "$QUELLE_SKRIPT" "$ZIEL" > /dev/null 2>&1 || true
 pruefe "ausgeschaltet: Auftrag bleibt liegen" "$([ -f "$T/auftrag/auftrag" ] && echo liegt || echo weg)" liegt
 
+# GA-S10: Symlinks im Auftragsordner (gehört dem Backend) lenken root nicht auf fremde Dateien
+sed -i 's/^HUBIPLAN_SELBSTUPDATE=0/HUBIPLAN_SELBSTUPDATE=1/' "$ZIEL/.env"
+git -C "$T/repo" rev-parse v2026.11.0^{commit} > "$ZIEL/.fassung"
+echo geheim > "$T/opfer"
+rm -f "$T/auftrag/ergebnis"
+for name in ergebnis ergebnis.neu sicherung.log ausrollen.log; do
+    ln -sf "$T/opfer" "$T/auftrag/$name"
+done
+echo "version=2026.12.0" > "$T/auftrag/auftrag"
+bash "$QUELLE_SKRIPT" "$ZIEL" > /dev/null 2>&1 || true
+pruefe "Symlink: fremde Datei unverändert" "$(cat "$T/opfer")" geheim
+pruefe "  Ergebnis ist eigene Datei" "$([ -f "$T/auftrag/ergebnis" ] && [ ! -L "$T/auftrag/ergebnis" ] && echo ja || echo nein)" ja
+pruefe "  trotzdem ausgerollt" "$(status)" ok
+pruefe "  Ausgaben nur im root-Ordner" "$([ -f "$T/auftrag.root/ausrollen.log" ] && echo ja || echo nein)" ja
+rm -f "$T/auftrag/"*.log "$T/auftrag/ergebnis.neu"
+ln -sf "$T/opfer" "$T/auftrag/auftrag"
+bash "$QUELLE_SKRIPT" "$ZIEL" > /dev/null 2>&1 || true
+pruefe "Auftrag als Symlink abgelehnt" "$(status)" fehler
+pruefe "  fremde Datei unverändert" "$(cat "$T/opfer")" geheim
+
+# GA-F11: unvollständige Sicherung verhindert das Ausrollen
+git -C "$T/repo" rev-parse v2026.11.0^{commit} > "$ZIEL/.fassung"
+cat > "$T/compose" << 'SH'
+#!/usr/bin/env bash
+# Platzhalter für „docker compose“: backup.sh gelingt, Marker nach Wunsch
+case "$*" in
+    *backup.sh*) exit 0 ;;
+    *unvollstaendig*) [ ! -e "$MARKER" ] ;;
+    *) exit 0 ;;
+esac
+SH
+chmod +x "$T/compose"
+export HUBIPLAN_COMPOSE="$T/compose" MARKER="$T/unvollstaendig"
+unset HUBIPLAN_OHNE_SICHERUNG
+touch "$T/unvollstaendig"
+lauf "2026.12.0"
+pruefe "unvollständige Sicherung: abgelehnt" "$(status)" fehler
+pruefe "  dabei nichts ausgerollt" "$([ -f "$T/setup.lauf" ] && echo ja || echo nein)" nein
+rm -f "$T/unvollstaendig"
+lauf "2026.12.0"
+pruefe "vollständige Sicherung: ausgerollt" "$(status)" ok
+
 [ "$FEHLER" = 0 ] || { echo "Aktualisierer: Fehler" >&2; exit 1; }
 echo "Aktualisierer: ok"

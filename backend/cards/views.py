@@ -24,9 +24,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import CARDS_MANAGE, DEPT_CARDS_MANAGE
+from access.catalog import CARDS_MANAGE, CARDS_VIEW, DEPT_CARDS_MANAGE
 from audit.log import record
-from core.api_base import OrgScopedMixin
+from core.api_base import OrgScopedMixin, has_needed
 from core.tenancy import rls_bypass, tenant_context
 from members.federation_views import federation_queryset, filter_federation
 from members.models import Membership
@@ -89,13 +89,18 @@ def apply_action(club, membership: Membership, action: str, user) -> MemberCard:
     return card
 
 
-def cards_for(memberships: list[Membership], user) -> list[MemberCard]:
-    """Ausweise für alle Mitgliedschaften (fehlende anlegen), gesperrte auslassen."""
+def cards_for(memberships: list[Membership], user, *, create: bool = True) -> list[MemberCard]:
+    """Ausweise für alle Mitgliedschaften, gesperrte auslassen.
+
+    Fehlende legt nur an, wer Ausweise bearbeiten darf (``create``); wer nur lesen darf,
+    bekommt die vorhandenen (Audit 03.11. GA-F08)."""
     existing = {c.membership_id: c for c in MemberCard.objects.filter(membership__in=memberships)}
     result = []
     for m in memberships:
         card = existing.get(m.pk)
         if card is None:
+            if not create:
+                continue
             card = MemberCard.objects.create(
                 membership=m, organization_id=m.organization_id, created_by=user
             )
@@ -110,7 +115,8 @@ def cards_for(memberships: list[Membership], user) -> list[MemberCard]:
 
 
 class _CardOrgMixin(OrgScopedMixin):
-    read_permission = CARDS_MANAGE
+    # Ansehen genügt zum Lesen (Audit 03.11. GA-F08)
+    read_permission = (CARDS_VIEW, CARDS_MANAGE)
     write_permission = CARDS_MANAGE
 
 
@@ -161,8 +167,9 @@ class OrgCardsPdfView(_CardOrgMixin, APIView):
             qs = qs.filter(pk=params["mitglied"])
         memberships = list(qs.select_related("person", "organization__parent__parent")[:MAX_CARDS])
         # Ausweise gehören dem jeweiligen Verein; der Dachverband legt sie stellvertretend an
+        may_create = has_needed(self.org_permissions, self.write_permission)
         with rls_bypass():
-            cards = cards_for(memberships, request.user)
+            cards = cards_for(memberships, request.user, create=may_create)
             entries = services.card_entries(cards)
         record(
             self.org,
@@ -178,7 +185,7 @@ class OrgCardsPdfView(_CardOrgMixin, APIView):
 
 
 class _DeptCardMixin(DepartmentScopedMixin):
-    read_permission = DEPT_CARDS_MANAGE
+    read_permission = (CARDS_VIEW, DEPT_CARDS_MANAGE)
     write_permission = DEPT_CARDS_MANAGE
 
 
@@ -205,7 +212,8 @@ class DeptCardsPdfView(_DeptCardMixin, APIView):
                 "person__last_name", "person__first_name", "pk"
             )[:MAX_CARDS]
         )
-        cards = cards_for(memberships, request.user)
+        may_create = has_needed(self.dept_permissions, self.write_permission)
+        cards = cards_for(memberships, request.user, create=may_create)
         entries = services.card_entries(cards)
         record(
             self.org,

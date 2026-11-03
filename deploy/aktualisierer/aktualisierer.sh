@@ -11,6 +11,11 @@
 # deploy/release-schluessel der LAUFENDEN Fassung passt und der den laufenden Stand enthält.
 # Vorher sichert es die Datenbank, dann rollt es aus wie deploy.sh (server-setup.sh mit
 # automatischem Rückweg). Das Ergebnis steht in „ergebnis“, das Protokoll in ZIEL.protokoll.
+#
+# Der Auftragsordner gehört dem Backend (UID 1000). Darin öffnet dieses Skript (root) keine
+# Datei zum Schreiben: Ergebnis und Ausgaben entstehen in einem eigenen Ordner nur für root
+# (AKTUALISIERUNG_DIR.root) und landen per Umbenennen im Auftragsordner. Ein Symlink dort
+# kann so keine fremde Datei überschreiben (Audit 03.11. GA-S10).
 set -euo pipefail
 
 ZIEL="${1:-/opt/hubiplan}"
@@ -30,21 +35,44 @@ SETUP="${HUBIPLAN_SETUP:-sh deploy/server-setup.sh}"
 MIN_FREI_MB="${HUBIPLAN_MIN_FREI_MB:-4096}"
 DOCKER_DIR="${HUBIPLAN_DOCKER_DIR:-/var/lib/docker}"
 
+DIR="${DIR%/}"
 [ -f "$DIR/auftrag" ] || exit 0
+
+# Eigener Ordner nur für root, neben dem Auftragsordner (gleiches Dateisystem zum Umbenennen)
+PRIVAT="$DIR.root"
+if [ -L "$PRIVAT" ] || { [ -e "$PRIVAT" ] && [ ! -d "$PRIVAT" ]; }; then
+    echo "Abbruch: $PRIVAT ist kein Ordner." >&2
+    exit 1
+fi
+mkdir -p "$PRIVAT"
+chmod 700 "$PRIVAT"
+if [ "$(stat -c %u "$PRIVAT")" != "$(id -u)" ] ||
+    [ "$(stat -c %d "$PRIVAT")" != "$(stat -c %d "$DIR")" ]; then
+    echo "Abbruch: $PRIVAT gehört nicht $(id -un) oder liegt auf einem anderen Dateisystem als $DIR." >&2
+    exit 1
+fi
+
 # Auftrag übernehmen; ein zweiter Lauf findet ihn dann nicht mehr
-mv "$DIR/auftrag" "$DIR/auftrag.laeuft" 2> /dev/null || exit 0
+mv -T "$DIR/auftrag" "$DIR/auftrag.laeuft" 2> /dev/null || exit 0
+
+# Datei aus PRIVAT in den Auftragsordner legen: rename ersetzt einen Symlink, folgt ihm nicht
+ablegen() {
+    chmod 644 "$1"
+    mv -fT "$1" "$DIR/$2"
+}
 
 ergebnis() {
-    local status="$1" text="$2"
+    local status="$1" text="$2" neu
+    neu="$(mktemp "$PRIVAT/ergebnis.XXXXXX")"
     {
         echo "status=$status"
         echo "version=${VERSION:-}"
         echo "zeit=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
         echo "text=${text//$'\n'/ }"
-    } > "$DIR/ergebnis.neu"
-    chmod 644 "$DIR/ergebnis.neu"
-    mv "$DIR/ergebnis.neu" "$DIR/ergebnis"
-    rm -f "$DIR/auftrag.laeuft"
+    } > "$neu"
+    ablegen "$neu" ergebnis
+    # „laeuft“ ist ein Zwischenstand; der Auftrag bleibt dabei übernommen
+    [ "$status" = laeuft ] || rm -f "$DIR/auftrag.laeuft"
     echo "$status: $text"
 }
 fehler() {
@@ -53,11 +81,11 @@ fehler() {
 }
 status_schreiben() {
     ergebnis laeuft "$1"
-    # „laeuft“ ist ein Zwischenstand; der Auftrag bleibt dabei übernommen
-    : > "$DIR/auftrag.laeuft"
 }
 
-VERSION="$(sed -n 's/^version=//p' "$DIR/auftrag.laeuft" | head -n1)"
+# Nur eine kleine, gewöhnliche Datei lesen (kein Symlink, keine Pipe)
+[ -f "$DIR/auftrag.laeuft" ] && [ ! -L "$DIR/auftrag.laeuft" ] || fehler "Ungültiger Auftrag."
+VERSION="$(head -c 200 "$DIR/auftrag.laeuft" | sed -n 's/^version=//p' | head -n1)"
 [[ "$VERSION" =~ ^[0-9]{4}\.[0-9]{1,2}\.[0-9]+$ ]] || fehler "Ungültiger Auftrag."
 TAG="v$VERSION"
 
@@ -98,6 +126,11 @@ if [ -n "$FREI_MB" ] && [ "$FREI_MB" -lt "$MIN_FREI_MB" ]; then
 fi
 
 compose() {
+    # Nur für scripts/pruefe-aktualisierer.sh: Docker durch einen Platzhalter ersetzen
+    if [ -n "${HUBIPLAN_COMPOSE:-}" ]; then
+        "$HUBIPLAN_COMPOSE" "$@"
+        return
+    fi
     local projekt dateien
     projekt="$(wert COMPOSE_PROJECT_NAME)"
     projekt="${projekt:-$(basename "$ZIEL")}"
@@ -110,8 +143,15 @@ compose() {
 
 if [ -z "${HUBIPLAN_OHNE_SICHERUNG:-}" ]; then
     status_schreiben "Sichere die Datenbank …"
-    compose exec -T backup backup.sh > "$DIR/sicherung.log" 2>&1 ||
-        fehler "Sicherung fehlgeschlagen; nichts geändert (sicherung.log)."
+    compose exec -T backup backup.sh > "$PRIVAT/sicherung.log" 2>&1 ||
+        fehler "Sicherung fehlgeschlagen; nichts geändert (sicherung.log in $PRIVAT)."
+    # Fehlen Dateien oder die Schlüsselkopie, endet backup.sh trotzdem mit 0 und hinterlässt
+    # .unvollstaendig. Dann nicht ausrollen (Audit 03.11. GA-F11).
+    # shellcheck disable=SC2016 # $BACKUP_DIR gilt im Container
+    if ! compose exec -T backup sh -c 'test ! -e "${BACKUP_DIR:-/backups}/.unvollstaendig"' \
+        >> "$PRIVAT/sicherung.log" 2>&1; then
+        fehler "Sicherung unvollständig; nichts geändert (Backup-Status in HUBIplan, sicherung.log in $PRIVAT)."
+    fi
 fi
 
 protokoll() {
@@ -127,11 +167,11 @@ cp -p "$ZIEL/.env" "$NEU/.env"
 git -C "$QUELLE" archive --format=tar "$COMMIT" | tar -x --no-same-owner -C "$NEU"
 echo "$COMMIT" > "$NEU/.fassung"
 echo "$VERSION" > "$NEU/.version"
-if (cd "$NEU" && ZIEL="$ZIEL" bash -c "$SETUP") > "$DIR/ausrollen.log" 2>&1; then
+if (cd "$NEU" && ZIEL="$ZIEL" bash -c "$SETUP") > "$PRIVAT/ausrollen.log" 2>&1; then
     protokoll ausgerollt
     ergebnis ok "$TAG läuft."
 else
     rc=$?
     protokoll "fehlgeschlagen ($rc)"
-    fehler "Ausrollen von $TAG fehlgeschlagen ($rc); die vorige Fassung läuft weiter (ausrollen.log)."
+    fehler "Ausrollen von $TAG fehlgeschlagen ($rc); die vorige Fassung läuft weiter (ausrollen.log in $PRIVAT)."
 fi

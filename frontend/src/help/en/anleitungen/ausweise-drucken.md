@@ -3,7 +3,7 @@ key: guide.member_cards
 titel: Print or block membership cards
 bereich: mitglieder
 modul: members
-rechte: [cards.manage]
+rechte: [cards.view, cards.manage]
 routen: [/mitglieder]
 stichworte: [card, QR code, print, block, lost]
 ---
@@ -12,5 +12,7 @@ stichworte: [card, QR code, print, block, lost]
 2. For one person: open the record and click **Card as PDF** in the membership card section.
 3. If a card is lost, click **Block** there. The old QR code is then no longer valid.
 4. With **Create new QR code** the person gets a new card.
+
+Anyone who may only view cards can see and print them. Blocking, creating a new QR code and creating cards for members without one requires permission to edit cards.
 
 ![Starting point: Print or block membership cards](bild:ausweise-drucken)
