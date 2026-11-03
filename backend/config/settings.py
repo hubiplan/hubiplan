@@ -34,6 +34,15 @@ CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
 )
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+# Optionaler Wallet-Adapter. Schlüsseldatei außerhalb öffentlich erreichbarer Verzeichnisse.
+GOOGLE_WALLET_ISSUER_ID = os.environ.get("GOOGLE_WALLET_ISSUER_ID", "")
+GOOGLE_WALLET_CREDENTIALS_FILE = os.environ.get("GOOGLE_WALLET_CREDENTIALS_FILE", "")
+GOOGLE_WALLET_LOGO_URL = os.environ.get("GOOGLE_WALLET_LOGO_URL", "")
+APPLE_WALLET_PASS_TYPE_ID = os.environ.get("APPLE_WALLET_PASS_TYPE_ID", "")
+APPLE_WALLET_TEAM_ID = os.environ.get("APPLE_WALLET_TEAM_ID", "")
+APPLE_WALLET_CERTIFICATE_FILE = os.environ.get("APPLE_WALLET_CERTIFICATE_FILE", "")
+APPLE_WALLET_CERTIFICATE_PASSWORD = os.environ.get("APPLE_WALLET_CERTIFICATE_PASSWORD", "")
+APPLE_WALLET_WWDR_FILE = os.environ.get("APPLE_WALLET_WWDR_FILE", "")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -244,6 +253,7 @@ CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", False)
 CELERY_TIMEZONE = "Europe/Berlin"
 # Regelmäßige Jobs (laufen im Dienst "beat")
 CELERY_BEAT_SCHEDULE = {
+    "mitgliedsausweise-wallet": {"task": "cards.tasks.sync_wallets", "schedule": 5 * 60},
     "datenuebernahme-aufraeumen": {
         "task": "datatransfer.tasks.purge_expired",
         "schedule": 24 * 60 * 60,  # täglich
