@@ -204,7 +204,7 @@ describe('Eigene Aufgaben', () => {
     })
     setup()
     await userEvent.click(await screen.findByRole('button', { name: 'Vorbereiten' }))
-    await userEvent.type(screen.getByLabelText('Beschreibung'), 'Erste Notiz')
+    await userEvent.type(await screen.findByLabelText('Beschreibung'), 'Erste Notiz')
     await userEvent.click(screen.getByRole('checkbox', { name: 'Erledigt' }))
     await waitFor(() => expect(task.status).toBe('done'))
     expect(task.description).toBe('Erste Notiz')
