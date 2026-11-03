@@ -455,6 +455,7 @@ def deletable(booking: Booking, today: datetime.date | None = None) -> bool:
         and not fixed_reason(booking, today)
         and not in_storno(booking)
         and not hasattr(booking, "payment")
+        and not booking.receipts.exists()
     )
 
 

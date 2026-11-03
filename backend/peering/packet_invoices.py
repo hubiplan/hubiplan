@@ -70,14 +70,11 @@ def _coupling_for(invoice) -> Coupling | None:
 
 
 def _issue_data(invoice, uid: str) -> dict:
-    from billing import pdf
+    from billing.archive import archived_pdf
     from billing.services import settings_for
 
     account = settings_for(invoice.organization).account
-    try:
-        content = pdf.render([invoice])
-    except Exception:  # noqa: BLE001 - die Rechnung geht auch ohne PDF raus
-        content = b""
+    content = archived_pdf(invoice)
     return {
         "uid": uid,
         "number": invoice.display_number,

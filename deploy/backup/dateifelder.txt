@@ -3,6 +3,7 @@
 # auch in der Dateiliste des Backups steht. Ein Test (test_backup_dateifelder.py)
 # vergleicht die Liste mit den Modellen; ein neues Dateifeld gehört hier hinein.
 billing_invoice issued_pdf private
+billing_dunning issued_pdf private
 circulars_circularattachment file private
 competitions_certificatetemplate background private
 datatransfer_transferjob file private

@@ -250,8 +250,8 @@ class TestGrenzen:
             content_type=JSON,
         )
         assert resp.status_code == 201, resp.json()
-        assert resp["X-Change-Undoable"] == "1"
-        assert undo(c, orgs["a"], resp["X-Change-Set"]).status_code == 200
+        assert resp.get("X-Change-Undoable", "0") == "0"
+        assert "X-Change-Set" not in resp
 
     def test_fremde_aenderung_braucht_protokollrecht(self, api, orgs, member, board_a):
         change_set = api(board_a).patch(

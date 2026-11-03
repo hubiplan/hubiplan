@@ -1,8 +1,8 @@
 """Ende der Aufbewahrungsfrist (Finanzamt-Prüfung C6).
 
 Nach § 147 AO (Fassung ab 2025) sind Buchungsbelege 8 Jahre, Bücher und Abschlüsse
-10 Jahre aufzubewahren, jeweils ab dem Ende des Kalenderjahres, in dem das Geschäftsjahr
-endet. Danach dürfen (und nach der DSGVO sollen) die personenbezogenen Daten weg.
+10 Jahre aufzubewahren. Maßgeblich sind Belegentstehung, letzte Bucheintragung und
+Aufstellung des Abschlusses; spätere Erfassungen verschieben die Jahresfristen.
 
 Zwei Stufen je abgeschlossenem Geschäftsjahr, beide von Hand ausgelöst:
 
@@ -26,6 +26,8 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import CharField, Max
+from django.db.models.functions import Cast
 from django.utils import timezone
 from django.utils.translation import gettext
 
@@ -37,11 +39,69 @@ RECORD_YEARS = 10
 
 
 def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
-    """Ab wann Belege bzw. Bücher des Geschäftsjahres weg dürfen."""
-    end = org.fiscal_range(year)[1]
+    """Konservative Jahresfristen nach Entstehung und letzter Bucheintragung."""
+    from audit.log import OBJECT_TYPES
+    from audit.models import AuditEntry
+    from billing.models import DebitRun, Dunning, Invoice
+
+    from .models import (
+        Booking,
+        CashCount,
+        CashReceipt,
+        Donation,
+        DonationStatement,
+        Receipt,
+        ReserveMovement,
+        YearClosing,
+    )
+
+    start, end = org.fiscal_range(year)
+    document_year = record_year = end.year
+    sources = [
+        (Booking, "date"),
+        (Invoice, "date"),
+        (Dunning, "date"),
+        (CashCount, "date"),
+        (CashReceipt, "receipt_date"),
+        (Donation, "date"),
+        (DonationStatement, "issued_on"),
+        (ReserveMovement, "date"),
+        (DebitRun, "collection_date"),
+    ]
+    for model, field in sources:
+        rows = model.objects.filter(
+            organization=org, **{f"{field}__gte": start, f"{field}__lte": end}
+        )
+        latest = rows.aggregate(latest=Max("created_at"))["latest"]
+        if latest:
+            document_year = max(document_year, timezone.localdate(latest).year)
+        # Korrekturen gehören zur letzten Eintragung, nicht nur zur Ersterfassung.
+        latest_change = AuditEntry.objects.filter(
+            organization=org,
+            object_type=OBJECT_TYPES.get(model._meta.model_name, model._meta.model_name),
+            object_id__in=rows.annotate(export_id=Cast("pk", CharField())).values("export_id"),
+        ).aggregate(latest=Max("timestamp"))["latest"]
+        if latest_change:
+            record_year = max(record_year, timezone.localdate(latest_change).year)
+            # Ein Entwurf kann erst in einem späteren Jahr ausgegeben werden.
+            if model is Invoice:
+                document_year = max(document_year, timezone.localdate(latest_change).year)
+    for rows in (
+        Receipt.objects.filter(organization=org, booking__date__gte=start, booking__date__lte=end),
+        bank_originals.for_year(org, start, end),
+    ):
+        latest = rows.aggregate(latest=Max("created_at"))["latest"]
+        if latest:
+            document_year = max(document_year, timezone.localdate(latest).year)
+    closed = YearClosing.objects.filter(organization=org, year=year).aggregate(
+        latest=Max("closed_at")
+    )["latest"]
+    if closed:
+        record_year = max(record_year, timezone.localdate(closed).year)
+    record_year = max(record_year, document_year)
     return (
-        datetime.date(end.year + DOCUMENT_YEARS + 1, 1, 1),
-        datetime.date(end.year + RECORD_YEARS + 1, 1, 1),
+        datetime.date(document_year + DOCUMENT_YEARS + 1, 1, 1),
+        datetime.date(record_year + RECORD_YEARS + 1, 1, 1),
     )
 
 
@@ -114,7 +174,7 @@ def _delete_file(field) -> None:
 
 
 def _purge_documents(org, start, end) -> dict[str, int]:
-    from billing.models import DebitRun, Invoice
+    from billing.models import DebitRun, Dunning, Invoice
 
     from .models import (
         BankStatement,
@@ -173,6 +233,16 @@ def _purge_documents(org, start, end) -> dict[str, int]:
         i.save(update_fields=["issued_pdf"])
         n += 1
     counts["Rechnungs-PDFs"] = n
+
+    n = 0
+    for d in Dunning.objects.filter(organization=org, date__gte=start, date__lte=end).exclude(
+        issued_pdf=""
+    ):
+        _delete_file(d.issued_pdf)
+        d.issued_pdf = ""
+        d.save(update_fields=["issued_pdf"])
+        n += 1
+    counts["Mahnungs-PDFs"] = n
 
     n = 0
     for s in DonationStatement.objects.filter(

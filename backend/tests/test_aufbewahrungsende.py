@@ -5,6 +5,7 @@ import datetime
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 
 from audit.chain import seal, verify
 from audit.models import AuditEntry
@@ -19,8 +20,12 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(autouse=True)
-def _private(settings, tmp_path):
+def _private(settings, tmp_path, monkeypatch):
     settings.PRIVATE_ROOT = tmp_path / "private"
+    # Diese Tests behandeln tatsächlich 2025 entstandene Belege und Bücher.
+    # Nachträge in späteren Jahren werden gesondert in test_gobd_sicherung geprüft.
+    instant = timezone.make_aware(datetime.datetime(2025, 12, 31, 23, 58))
+    monkeypatch.setattr(timezone, "now", lambda: instant)
 
 
 @pytest.fixture
@@ -33,7 +38,9 @@ def heute(monkeypatch, day):
 
 
 @pytest.fixture
-def jahr2025(c, fin, setup):
+def jahr2025(c, fin, setup, monkeypatch):
+    instant = timezone.make_aware(datetime.datetime(2025, 12, 31, 23, 58))
+    monkeypatch.setattr(timezone, "now", lambda: instant)
     resp = c.post(
         f"{fin}/bookings/",
         {
@@ -55,7 +62,11 @@ def jahr2025(c, fin, setup):
         {"file": SimpleUploadedFile("rechnung.xml", UBL, content_type="text/xml")},
     )
     assert up.status_code == 201, up.json()
-    assert c.post(f"{fin}/closings/", {"year": 2025}, content_type=JSON).status_code == 201
+    # Abschluss erst im Folgejahr: Bücherfrist beginnt damit ein Jahr später.
+    closing_time = timezone.make_aware(datetime.datetime(2026, 1, 1, 0, 1))
+    monkeypatch.setattr(timezone, "now", lambda: closing_time)
+    response = c.post(f"{fin}/closings/", {"year": 2025}, content_type=JSON)
+    assert response.status_code == 201, response.json()
     return booking
 
 
@@ -67,7 +78,7 @@ def retention_of(c, fin, year=2025):
 def test_frist_laeuft_noch(c, fin, jahr2025, monkeypatch):
     info = retention_of(c, fin)
     assert info["documents_from"] == "2034-01-01"
-    assert info["records_from"] == "2036-01-01"
+    assert info["records_from"] == "2037-01-01"
     assert not info["documents_due"] and not info["records_due"]
     resp = c.post(f"{fin}/closings/aufbewahrung/", {"year": 2025}, content_type=JSON)
     assert resp.status_code == 400
@@ -101,7 +112,7 @@ def test_belege_nach_acht_jahren(
 
 
 def test_buecher_nach_zehn_jahren_anonymisiert(c, fin, club, jahr2025, monkeypatch):
-    heute(monkeypatch, datetime.date(2036, 1, 1))
+    heute(monkeypatch, datetime.date(2037, 1, 1))
     seal(club.pk)
     resp = c.post(f"{fin}/closings/aufbewahrung/", {"year": 2025}, content_type=JSON)
     assert resp.status_code == 200, resp.json()
@@ -157,7 +168,7 @@ class TestRechnungen:
     """Audit 02.11. BP-F03 und BP-V03: Rechnungen bei der Bereinigung."""
 
     @pytest.fixture
-    def rechnungen(self, c, base, members, club):
+    def rechnungen(self, c, base, members, club, monkeypatch):
         from billing import archive
         from billing.models import Invoice
         from finance.models import YearClosing
@@ -166,6 +177,8 @@ class TestRechnungen:
 
         run = start_run(c, base).json()
         assert c.post(f"{base}/runs/{run['id']}/finalize/").status_code == 200
+        closing_time = timezone.make_aware(datetime.datetime(2026, 1, 1, 0, 1))
+        monkeypatch.setattr(timezone, "now", lambda: closing_time)
         with rls_bypass():
             YearClosing.objects.get_or_create(organization=club, year=2025)
             archive.archive_missing()
@@ -180,7 +193,7 @@ class TestRechnungen:
         from billing.models import Invoice, InvoiceLine
         from finance.models import YearClosing
 
-        heute(monkeypatch, datetime.date(2036, 1, 1))
+        heute(monkeypatch, datetime.date(2037, 1, 1))
         user = User.objects.filter(role_assignments__organization=club).first()
         retention.purge(club, 2025, user)
         with rls_bypass():

@@ -92,3 +92,26 @@ def archive_missing(limit: int = 200) -> int:
             archived_pdf(invoice)
             done += 1
     return done
+
+
+def archived_dunning(dunning) -> bytes:
+    """Mahnfassung einmal ablegen; spätere Zahlungen verändern sie nicht."""
+    from finance.models import YearClosing
+
+    from .models import Dunning
+
+    with transaction.atomic():
+        locked = Dunning.objects.select_for_update().get(pk=dunning.pk)
+        if locked.issued_pdf:
+            with locked.issued_pdf.open("rb") as fh:
+                return fh.read()
+        year = locked.organization.fiscal_year_of(locked.date)
+        if YearClosing.objects.filter(
+            organization=locked.organization, year=year, documents_purged_at__isnull=False
+        ).exists():
+            raise ValidationError(gettext("Die Aufbewahrungsfrist ist abgelaufen."))
+        content = pdf.render([locked.invoice], {locked.invoice_id: locked})
+        locked.issued_pdf_sha256 = hashlib.sha256(content).hexdigest()
+        locked.issued_pdf.save(pdf.dunning_filename(locked), ContentFile(content), save=False)
+        locked.save(update_fields=["issued_pdf", "issued_pdf_sha256"])
+        return content

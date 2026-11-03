@@ -33,7 +33,7 @@ class TestLoeschsperre:
         assert info["hold"] == "Betriebsprüfung 2036"
         assert info["hold_by"] and info["hold_at"]
 
-        heute(monkeypatch, datetime.date(2036, 1, 1))
+        heute(monkeypatch, datetime.date(2037, 1, 1))
         resp = c.post(self.url(fin), {"year": 2025}, content_type=JSON)
         assert resp.status_code == 400
         assert "Löschsperre" in str(resp.json())

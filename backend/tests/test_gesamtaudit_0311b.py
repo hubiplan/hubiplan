@@ -23,14 +23,14 @@ def test_auszug_im_abgeschlossenen_jahr_bleibt(c, fin, club, sperre):
     YearClosing.objects.create(organization=club, year=2025, retention_hold=sperre)
     resp = c.delete(f"{fin}/bank-statements/{st['id']}/")
     assert resp.status_code == 400, resp.content
-    assert "abgeschlossenen Geschäftsjahr" in str(resp.json())
+    assert "bleiben erhalten" in str(resp.json())
     assert BankStatement.objects.filter(pk=st["id"]).exclude(source="").exists()
 
 
 def test_auszug_anderes_jahr_abgeschlossen_loeschbar(c, fin, club):
     st = upload(c, fin, camt_xml([entry("4.00", ref="F1")])).json()["statements"][0]
     YearClosing.objects.create(organization=club, year=2024)
-    assert c.delete(f"{fin}/bank-statements/{st['id']}/").status_code == 204
+    assert c.delete(f"{fin}/bank-statements/{st['id']}/").status_code == 400
 
 
 # --- GA-P04: Serien fremder Kalender werden begrenzt aufgefaltet ---

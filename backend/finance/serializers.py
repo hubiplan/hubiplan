@@ -100,6 +100,19 @@ class AccountSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        if self.instance and self.instance.bookings.filter(frozen=False).exists():
+            if any(
+                key in attrs and attrs[key] != getattr(self.instance, key)
+                for key in ("name", "kind", "tax_area", "donations")
+            ):
+                raise serializers.ValidationError(
+                    gettext(
+                        "Gebuchte Kategorien bleiben erhalten. Bitte eine neue Kategorie anlegen."
+                    )
+                )
+        return attrs
+
     kind_label = serializers.CharField(source="get_kind_display", read_only=True)
     tax_area_label = serializers.CharField(source="get_tax_area_display", read_only=True)
     booking_count = serializers.SerializerMethodField()
