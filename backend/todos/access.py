@@ -10,7 +10,7 @@ from access.permissions import permissions_in
 from core.tenancy import scope_of, set_rls
 from organizations.models import Organization
 
-from .models import Todo
+from .models import Todo, TodoShare
 
 
 @dataclass
@@ -45,19 +45,80 @@ def visible(user, scope, *, deleted=False):
         department_id=scope.department_id,
         deleted_at__isnull=not deleted,
     )
+    shares = shares_for(user, scope)
     if preview.current() is not None:
-        return qs.none()
-    return qs.filter(Q(created_by=user) | Q(owner=user))
+        return qs.filter(shared=True, pk__in=shares.values("todo_id"))
+    return qs.filter(
+        Q(created_by=user) | Q(owner=user) | Q(shared=True, pk__in=shares.values("todo_id"))
+    )
+
+
+def role_ids(user, scope):
+    from access.models import RoleAssignment
+
+    selected = preview.current()
+    if selected is not None:
+        if selected.user_id != user.pk or selected.org_id != scope.org.pk:
+            return set()
+        return {selected.role_id}
+    assignments = RoleAssignment.all_objects.active().filter(organization=scope.org)
+    if scope.department_id is None:
+        assignments = assignments.filter(user=user, role__department__isnull=True)
+    else:
+        from organizations.models import Department
+        from portal.services import department_contexts
+
+        ctx = department_contexts(user).get(scope.department_id)
+        if ctx is None:
+            return set()
+        dept = Department.objects.get(pk=scope.department_id)
+        units = [node.pk for node in dept.ancestors() if node.type == "unit"]
+        assignments = assignments.filter(
+            membership_id=ctx.membership_id, role__department_id__in=units
+        )
+    return set(assignments.values_list("role_id", flat=True))
+
+
+def shares_for(user, scope):
+    qs = TodoShare.objects.filter(target_org=scope.org, target_department_id=scope.department_id)
+    roles = role_ids(user, scope)
+    if preview.current() is not None:
+        return qs.filter(role_id__in=roles)
+    return qs.filter(Q(user=user) | Q(role_id__in=roles))
 
 
 def can_edit(todo, user, scope):
-    return (
-        preview.current() is None and "todos.view" in scope.permissions and todo.owner_id == user.pk
+    if preview.current() is not None or "todos.view" not in scope.permissions:
+        return False
+    return todo.owner_id == user.pk or (
+        todo.shared and shares_for(user, scope).filter(todo=todo, level="edit").exists()
     )
 
 
 def can_delete(todo, user, scope):
     return can_edit(todo, user, scope) and todo.owner_id == user.pk
+
+
+def owner_available(todo):
+    if not todo.owner_id:
+        return False
+    from core.tenancy import tenant_context
+
+    with tenant_context(todo.organization_id, todo.owner_id):
+        try:
+            scope_for(todo.owner, todo.organization_id, todo.department_id)
+        except (NotFound, PermissionDenied):
+            return False
+    return todo.owner.is_active
+
+
+def can_take_over(todo, user, scope):
+    return bool(
+        todo.shared
+        and preview.current() is None
+        and {"todos.edit", "roles.edit"} <= scope.permissions
+        and not owner_available(todo)
+    )
 
 
 def undo_problem(change_set, user):

@@ -76,3 +76,63 @@ class Todo(models.Model):
                 self.version += 1
                 self.due_revision += 1
         super().save(*args, **kwargs)
+
+
+class TodoShare(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    todo = models.ForeignKey(Todo, on_delete=models.CASCADE, related_name="shares")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True
+    )
+    role = models.ForeignKey("access.Role", on_delete=models.CASCADE, null=True, blank=True)
+    target_org = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="todo_shares"
+    )
+    target_department = models.ForeignKey(
+        "organizations.Department",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="todo_shares",
+    )
+    level = models.CharField(
+        max_length=4, choices=[("view", "Lesen"), ("edit", "Bearbeiten")], default="view"
+    )
+    responsible = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.todo_id}: {self.user_id or self.role_id}"
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    Q(user__isnull=False, role__isnull=True)
+                    | Q(user__isnull=True, role__isnull=False)
+                ),
+                name="todo_share_one_recipient",
+            ),
+            models.UniqueConstraint(
+                fields=["todo", "user", "target_org"],
+                condition=Q(user__isnull=False),
+                name="todo_share_user_unique",
+            ),
+            models.UniqueConstraint(
+                fields=["todo", "role", "target_org"],
+                condition=Q(role__isnull=False),
+                name="todo_share_role_unique",
+            ),
+        ]
+
+
+class TodoPreference(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    share_mail = models.BooleanField(default=True)
+    share_push = models.BooleanField(default=True)
+    reminder_mail = models.BooleanField(default=True)
+    reminder_push = models.BooleanField(default=True)
+    push_title = models.BooleanField(default=True)
+    purge_done = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.user_id)

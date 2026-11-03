@@ -98,13 +98,14 @@ class OutboxBackend(BaseEmailBackend):
                 if not body and alt[1] == "text/plain":
                     body = alt[0]
             org_pk = int(org_id) if org_id else None
+            private_task = kind == "aufgabe"
             with rls_bypass():
                 mail = OutgoingMail.objects.create(
                     organization_id=org_pk,
                     to=", ".join([*message.to, *message.cc, *message.bcc]),
                     reply_to=", ".join(message.reply_to or []),
-                    subject=message.subject[:300],
-                    body=redact(body),
+                    subject="Aufgabenbenachrichtigung" if private_task else message.subject[:300],
+                    body="Inhalt nur an das empfangende Konto versandt." if private_task else redact(body),
                     attachments=getattr(message, "outbox_attachments", None)
                     or _store_attachments(message, org_pk),
                     kind=kind[:50],
