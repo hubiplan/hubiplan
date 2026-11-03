@@ -177,7 +177,9 @@ export function DepartmentsPage() {
             rows={data}
             columns={columns}
             rowKey={(d) => d.id}
-            searchPlaceholder={t('{labelPlural} durchsuchen: Name, Kurzname, Rolle', { labelPlural })}
+            searchPlaceholder={t('{labelPlural} durchsuchen: Name, Kurzname, Rolle', {
+              labelPlural,
+            })}
             emptyText={t('Noch keine {labelPlural} angelegt.', { labelPlural })}
             countText={(n, total) =>
               n === total
