@@ -6,7 +6,7 @@ import datetime
 from dataclasses import dataclass
 
 from django.db import transaction
-from django.db.models import Max, Q
+from django.db.models import Max
 from django.utils.translation import gettext
 from rest_framework.exceptions import ValidationError
 
@@ -252,12 +252,11 @@ def same_birth(person, birth_date, *, year_only: bool = True) -> bool:
 
 def persons_matching(scope_id, last_name: str, first_name: str, birth_date, *, limit: int):
     """Personen im Verbandsbereich mit genau diesem Namen und Geburtsdatum."""
-    qs = Person.objects.filter(
-        scope_id=scope_id,
-        last_name__iexact=(last_name or "").strip(),
-        first_name__iexact=(first_name or "").strip(),
-    ).order_by("pk")
-    return [p for p in qs if same_birth(p, birth_date, year_only=False)][:limit]
+    from .personmarks import candidates, verified
+
+    last, first = (last_name or "").strip(), (first_name or "").strip()
+    qs = candidates(scope_id, last, first, birth_date, strict=True).order_by("pk")
+    return [p for p in qs if verified(p, last, first, birth_date, strict=True)][:limit]
 
 
 def check_found(person: Person, club: Organization, data: dict) -> None:
@@ -285,10 +284,15 @@ def find_duplicates(club: Organization, last_name: str, first_name: str, birth_d
     Die Personentabelle ist per RLS auf den Verbandsbereich beschränkt.
     """
     scope = scope_for(club)
-    qs = Person.objects.filter(scope=scope).filter(
-        Q(last_name__iexact=last_name.strip()) | Q(first_name__iexact=first_name.strip())
-    )
-    found = [p for p in qs.select_related("federation") if same_birth(p, birth_date)]
+    from .personmarks import candidates, verified
+
+    last, first = last_name.strip(), first_name.strip()
+    qs = candidates(scope.pk, last, first, birth_date, strict=False)
+    found = [
+        p
+        for p in qs.select_related("federation")
+        if verified(p, last, first, birth_date, strict=False)
+    ]
     return found[:10]
 
 

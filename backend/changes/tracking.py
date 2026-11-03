@@ -211,7 +211,9 @@ def from_json(f: models.Field, value: Any) -> Any:
 
 def dump(instance: models.Model) -> dict[str, Any]:
     return {
-        f.attname: to_json(f, f.value_from_object(instance)) for f in instance._meta.concrete_fields
+        f.attname: to_json(f, f.value_from_object(instance))
+        for f in instance._meta.concrete_fields
+        if f.attname not in getattr(instance, "derived_fields", ())
     }
 
 

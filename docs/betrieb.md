@@ -140,8 +140,76 @@ Seitenschnitt. Unicode-Schreibvarianten und Groß-/Kleinschreibung werden verein
 `ß` entspricht `ss`. Für die feste Textreihenfolge gelten Grundbuchstaben zuerst,
 danach Akzente und Schreibweise, zuletzt die Zeilen-ID. Umlaute stehen daher bei
 ihrem Grundbuchstaben. Die Reihenfolge ist unabhängig von der Datenbank-Kollation.
-Es gibt keinen Suchcache. Der strenge Identitätsabgleich für Import und Verbund bleibt
-unverändert; Suchmarken und Namensverschlüsselung sind damit noch nicht eingeführt.
+Es gibt keinen Suchcache. Die Listensuche ist vom Identitätsabgleich getrennt.
+
+Der Identitätsabgleich verwendet kombinierte Suchmarken (`members/personmarks.py`):
+Nachname mit gespeichertem Datum, Vorname mit gespeichertem Datum, zusätzlich jeweils
+Name mit Jahr **nur** bei `birth_year_only`. Es gibt keine einzelne Namens-, Datums-
+oder Jahresmarke. HMAC-SHA256 wird auf 16 Byte gekürzt und als Base64url gespeichert.
+HKDF-SHA256 leitet dafür je Bereich, Indexzweck und Formatversion einen eigenen
+Schlüssel vom Datenschlüssel des Bereichs ab. Vier Markenindizes beginnen mit `scope`;
+ein weiterer Index deckt Bereich, Formatversion, Schlüsselkennung und Zeilen-ID für
+den Übergang ab. Die Datenbank verbietet unvollständige Marken, die bereits als
+fertig gekennzeichnet sind.
+Die Marken offenbaren weiterhin Gleichheiten und Häufigkeiten der jeweiligen
+Kombination; sie sind keine Anonymisierung. Namen bleiben in dieser Fassung Klartext.
+
+Formatversion 1 übernimmt bewusst die bisherige `iexact`-Großschreibung durch
+PostgreSQL `UPPER` mit der Datenbank-Locale. Nur Suchangaben werden getrimmt, gespeicherte
+Namen nicht. Es gibt hier **kein** zusätzliches NFC oder `casefold` und keine neue
+Gleichsetzung von `ß` und `ss`. Die Großschreibung wird mit SQL-Parametern berechnet,
+ohne normalisierte Namen zu speichern; Datenbankabfragen bzw. deren Parameterprotokolle
+können daher weiterhin Namen enthalten. Die Vergleichsregel hängt wie bisher von
+der Datenbank-Locale ab ([PostgreSQL-Dokumentation](https://www.postgresql.org/docs/current/functions-string.html)).
+Bei Änderung von Locale, Kollation oder Großschreibungsregeln zuerst Writer anhalten,
+Marken nachfüllen und prüfen; erst dann wieder Abgleiche zulassen.
+
+Marken liefern nur Kandidaten innerhalb des ausdrücklich gefilterten Bereichs.
+Name und entschlüsseltes Geburtsdatum werden anschließend erneut geprüft:
+Dublettenhinweise brauchen Nachname **oder** Vorname und Datum beziehungsweise das
+bekannte Jahr; Import und Verbund brauchen beide Namen und exakt das gespeicherte
+Datum, ohne zusätzlichen Jahresvergleich. Die Prüfung beim Verknüpfen bleibt bestehen.
+Trefferlimits gelten erst nach dieser Prüfung.
+
+`Person.save()` pflegt Identität und Marken in einer Transaktion unter Zeilensperre;
+Teil-Saves übernehmen andere Identitätswerte aus der aktuellen gesperrten Zeile.
+`bulk_create()` berechnet Marken vor dem Einfügen. Identitätsänderungen mit `update()`,
+`bulk_update()` oder Upserts sind gesperrt und müssen über `save()` erfolgen.
+Ein Datenbank-Trigger entwertet sämtliche Marken bei Änderungen an Namen, Datum,
+Jahreskennzeichen oder Bereich, auch durch die vorherige Anwendungsversion oder
+direktes SQL. Neue Writer berechnen sie in derselben Transaktion neu. Nach Kürzung
+des Datums oder Namensentfernung bleiben keine Marken der früheren Werte erhalten.
+Abgeleitete Marken werden nicht im Protokoll oder in Rückgängig-Paketen archiviert.
+
+**Bestand und Übergang:** Migration `members.0023` ergänzt Spalten, Datenbank-Defaults,
+Indizes und Trigger, ohne Namen oder vorhandenes Chiffrat zu verändern. Anschließend
+mit der neuen Fassung ausführen (bei laufenden Diensten im Backend-Container, sonst
+entsprechend in einem separaten Administrationscontainer):
+
+```bash
+docker compose -f docker-compose.server.yml exec backend python manage.py personen_suchmarken
+docker compose -f docker-compose.server.yml exec backend python manage.py personen_suchmarken --pruefen
+```
+
+Optional begrenzt `--scope ID` beide Befehle auf einen Bereich. Der erste Lauf repariert
+fehlende oder falsche Marken wiederholbar, zeilenweise unter Sperre, ohne `updated_at`
+zu verändern. `--pruefen` berechnet alle erwarteten Werte erneut: Vollständigkeit,
+Inhalt, leere Jahresmarken, Formatversion und Schlüsselkennung; Abweichungen oder
+unlesbare Geburtsdaten beenden den Befehl mit Fehlerstatus. Das ist mehr als eine
+Zählung vorhandener Marken. Ein Abbruch kann ohne Rücksetzen wiederholt werden.
+Für eine feste Bestandsabnahme Writer anhalten, nachfüllen, danach prüfen. Bis dahin
+werden unmarkierte Zeilen und Zeilen mit anderer Version/Schlüsselkennung zusätzlich
+aus den Quelldaten geprüft. Das verhindert fehlende Treffer bei Teilbeständen und
+alten Writern, kann aber große Bereiche langsamer machen.
+
+Reines Umverpacken desselben Datenschlüssels ändert die Marken nicht. Bei einer neuen
+Datenschlüsselkennung oder Formatversion greift ebenfalls der Übergang über die
+Quelldaten und den geprüften Bestandslauf; alte Entschlüsselungsschlüssel bleiben
+bis zum Abschluss erforderlich. Rohschlüssel nicht unter derselben Kennung ersetzen.
+Ein vollständiger Austausch der Datenschlüssel ist kein Bestandteil dieses Befehls.
+Der Rückweg auf die vorherige Anwendung benötigt keine Entschlüsselung: zusätzliche
+Spalten und Trigger können bestehen bleiben. Auch die Rückmigration von `0023` entfernt
+nur die Suchmarken samt Indizes/Trigger, ohne Identitätswerte anzutasten.
 
 Eine beim Start installierte Compiler-Erweiterung (`core/encrypted_ordering.py`)
 weist ORM-Sortierungen nach verschlüsselten Spalten zurück, auch über Beziehungen,
@@ -150,7 +218,7 @@ die Regressionstests dafür sind bei Django-Updates mitzuprüfen. Frei geschrieb
 SQL ist von dieser ORM-Sperre nicht erfasst.
 
 Weitere Klartextkopien von Namen gibt es unter anderem
-bei Rundschreiben-Empfängern (`circulars.Recipient`), Rechnungen (`billing.Invoice`),
+bei Rundschreiben-Empfängern (`circulars.CircularRecipient`), Rechnungen (`billing.Invoice`),
 Wettbewerbsstartern (`competitions.Starter`), Meldungen (`entries.EntryPerson`) und
 Würden/Begleitungen (`honors.Reign`, `honors.Companion`). Auch Benutzerkonten
 (`accounts`) enthalten Namen und E-Mail-Adressen.

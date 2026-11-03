@@ -100,6 +100,8 @@ def snapshot(instance: models.Model) -> dict[str, Any]:
     # die viele Felder der Organisationstabelle nicht nutzen)
     only = getattr(instance, "audit_fields", None)
     for field in instance._meta.concrete_fields:
+        if field.attname in getattr(instance, "derived_fields", ()):
+            continue
         if field.name in IGNORED_FIELDS or (only is not None and field.name not in only):
             continue
         # Lesbarer deutscher Feldname fürs Protokoll
