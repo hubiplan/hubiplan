@@ -324,8 +324,9 @@ class TestPersonMarks:
             # Unverschlüsselter Altbestand ohne Datenschlüssel: Prüfung muss lesend bleiben.
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "UPDATE members_person SET birth_date = %s WHERE id = %s",
-                    [BIRTH.isoformat(), a.pk],
+                    "UPDATE members_person SET birth_date = %s, last_name = %s, first_name = %s "
+                    "WHERE id = %s",
+                    [BIRTH.isoformat(), a.last_name, a.first_name, a.pk],
                 )
             DataKey.objects.filter(organization=orgs["c"]).delete()
             crypto.reset()

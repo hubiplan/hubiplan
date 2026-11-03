@@ -117,7 +117,9 @@ class EncryptedMixin:
 
     def pre_save(self, model_instance, add):
         value = getattr(model_instance, self.attname)
-        if self._stays_plain(value) or is_encrypted(value):
+        # Strenge Identitätsfelder erhalten stets Klartexteingaben. Ein vom Nutzer
+        # eingegebener Name mit „enc1:“ darf kein gespeichertes Chiffrat einschleusen.
+        if self._stays_plain(value) or (is_encrypted(value) and not self.strict):
             return value
         text = self._plain_to_text(value)
         return encrypt_text(text, _owner_or_fail(model_instance, self), self)

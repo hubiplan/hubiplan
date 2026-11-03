@@ -66,6 +66,13 @@ def target_backend(tmp_path):
 
 @pytest.mark.django_db
 class TestNames:
+    def test_chiffratpraefix_in_eingaben_bleibt_ein_normaler_name(self, orgs):
+        m = make_member(orgs["c"], "Erika", "enc1:kein-Chiffrat")
+        with rls_bypass():
+            assert Person.objects.get(pk=m.person_id).last_name == "enc1:kein-Chiffrat"
+            assert raw(m.person_id)[0] != "enc1:kein-Chiffrat"
+            names_only("--pruefen")
+
     def test_chiffrate_schluessel_und_klartextlaenge(self, orgs):
         m = make_member(orgs["a"], "É" * 100, "Ö" * 100)
         with rls_bypass():
