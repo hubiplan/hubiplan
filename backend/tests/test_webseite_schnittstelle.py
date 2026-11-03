@@ -553,3 +553,37 @@ def test_vorstand_abfragen_wachsen_nicht_mit_zuegen(setup):
         unit = Department.objects.create(organization=org, parent=org, name=f"Zug {n}")
         DepartmentRole.objects.create(department=unit, name="Zugführer", on_website=True)
     assert count() == before
+
+
+def test_grunddaten_abfragen_wachsen_nicht_mit_aemtern(setup):
+    """Grunddaten: Ämter einmal je Antwort und in einer Abfrage, nicht je Rolle und nicht
+    für Menü und „has_offices“ getrennt (auf Dogado 0,45 s, 03.11.2026)."""
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    org = setup["org"]
+
+    def add_role(n):
+        role = Role.objects.create(organization=org, name=f"Amt {n}", in_chronicle=True)
+        RoleAssignment.all_objects.create(
+            organization=org,
+            role=role,
+            name=f"Erfundene Person {n}",
+            name_public=True,
+            valid_from=datetime.date(1960, 1, 1),
+            valid_until=datetime.date(1970, 1, 1),
+        )
+
+    def count():
+        with CaptureQueriesContext(connection) as captured:
+            response = get("schluessel-a/")
+            assert response.status_code == 200
+        assert response.json()["has_offices"] is True
+        return len(captured)
+
+    add_role(0)
+    count()  # einmalige Abfragen (Einstellungen, Impressum) vorab
+    before = count()
+    for n in range(1, 5):
+        add_role(n)
+    assert count() == before
