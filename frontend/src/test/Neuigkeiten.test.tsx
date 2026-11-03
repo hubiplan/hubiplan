@@ -159,4 +159,77 @@ describe('Neuigkeiten', () => {
     const calls = vi.mocked(globalThis.fetch).mock.calls.map(([input]) => String(input))
     expect(calls).not.toContain('/api/platform/update/')
   })
+
+  it('Selbstupdate (7c): Auftrag mit Passwort, danach Hinweis „läuft“', async () => {
+    const user = userEvent.setup()
+    const platform = testOrg({
+      id: 1,
+      name: 'Plattform',
+      type: 'platform',
+      permissions: ['platform.manage'],
+    })
+    let sent: unknown = null
+    const release = {
+      version: '2026.12.0',
+      url: 'https://github.com/hubiplan/hubiplan/releases/tag/v2026.12.0',
+      running: '2026.11.0',
+    }
+    const routes = {
+      'GET /api/platform/update/': () => ({
+        status: 200,
+        body: {
+          enabled: true,
+          update: release,
+          selfupdate: {
+            enabled: true,
+            pending: false,
+            result: {
+              status: 'fehler',
+              version: '2026.11.0',
+              zeit: '2026-11-02T02:00:00Z',
+              text: 'Erfundener Fehler.',
+            },
+          },
+        },
+      }),
+      'POST /api/platform/update/': (init: RequestInit | undefined) => {
+        sent = JSON.parse(String(init?.body))
+        return { status: 202, body: { enabled: true, pending: true, result: null } }
+      },
+    }
+    renderApp('/plattform/version', { '/lizenzen/version.txt': '2026.11.0\n' }, [platform], routes)
+    expect(await screen.findByText(/Hier läuft HUBIplan 2026\.11\.0/)).toBeVisible()
+    expect(screen.getByText(/fehlgeschlagen/)).toHaveTextContent('Erfundener Fehler.')
+    const button = screen.getByRole('button', { name: 'Auf 2026.12.0 aktualisieren' })
+    expect(button).toBeDisabled()
+    await user.type(screen.getByLabelText('Dein Passwort zur Bestätigung'), 'geheim-test')
+    await user.click(button)
+    expect(await screen.findByText(/Die Aktualisierung läuft/)).toBeVisible()
+    expect(sent).toEqual({ version: '2026.12.0', password: 'geheim-test' })
+    expect(screen.queryByRole('button', { name: /aktualisieren/ })).toBeNull()
+  })
+
+  it('Selbstupdate aus: kein Knopf, nur Hinweis', async () => {
+    const platform = testOrg({
+      id: 1,
+      name: 'Plattform',
+      type: 'platform',
+      permissions: ['platform.manage'],
+    })
+    const routes = {
+      'GET /api/platform/update/': () => ({
+        status: 200,
+        body: {
+          enabled: true,
+          update: { version: '2026.12.0', url: '', running: '2026.11.0' },
+          selfupdate: { enabled: false, pending: false, result: null },
+        },
+      }),
+    }
+    renderApp('/plattform/version', {}, [platform], routes)
+    expect(
+      await screen.findByText(/Selbstupdate ist auf diesem Server nicht eingeschaltet/),
+    ).toBeVisible()
+    expect(screen.queryByRole('button', { name: /aktualisieren/ })).toBeNull()
+  })
 })

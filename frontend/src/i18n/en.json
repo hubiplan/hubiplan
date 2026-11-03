@@ -4780,5 +4780,20 @@
   "HUBIplan wurde auf Version {x} aktualisiert.": "HUBIplan has been updated to version {x}.",
   "Das ist neu": "What's new",
   "Es gibt eine neuere Version von HUBIplan: {x} (hier läuft {y}).": "A newer version of HUBIplan is available: {x} (this server runs {y}).",
-  "Änderungen ansehen": "View changes"
+  "Änderungen ansehen": "View changes",
+  "Zur Versionsseite": "Go to version page",
+  "Version": "Version",
+  "Hier läuft HUBIplan {x}.": "This server runs HUBIplan {x}.",
+  "(unbekannt)": "(unknown)",
+  "Neueres Release: {x}.": "Newer release: {x}.",
+  "Kein neueres Release bekannt. Der Server fragt einmal am Tag nach.": "No newer release known. The server checks once a day.",
+  "Die Suche nach neuen Releases ist auf diesem Server ausgeschaltet.": "Checking for new releases is turned off on this server.",
+  "Die Aktualisierung läuft. HUBIplan ist dabei einige Minuten nicht erreichbar; diese Seite fragt von selbst nach.": "The update is running. HUBIplan will be unavailable for a few minutes; this page checks back on its own.",
+  "Das Selbstupdate ist auf diesem Server nicht eingeschaltet. Aktualisiert wird dann von Hand durch den Betreiber (docs/betrieb.md).": "Self-update is not turned on for this server. The operator updates it by hand instead (docs/betrieb.md).",
+  "Letzte Aktualisierung auf {x} erfolgreich ({y}).": "Last update to {x} succeeded ({y}).",
+  "Letzte Aktualisierung auf {x} fehlgeschlagen ({y}).": "Last update to {x} failed ({y}).",
+  "Jetzt aktualisieren": "Update now",
+  "Der Server sichert zuerst die Datenbank, prüft die Signatur des Releases und spielt es dann ein. Schlägt etwas fehl, läuft die bisherige Version weiter. Der Betreiber bekommt dazu eine Sicherheitsmail.": "The server first backs up the database, checks the release signature and then installs it. If anything fails, the previous version keeps running. The operator receives a security email about it.",
+  "Nur mit Zwei-Faktor-Anmeldung möglich.": "Only possible with two-factor sign-in.",
+  "Auf {x} aktualisieren": "Update to {x}"
 }

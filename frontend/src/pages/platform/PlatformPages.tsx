@@ -62,6 +62,7 @@ export function PlatformLayout() {
           { to: '/plattform/impressum', label: t('Impressum') },
           { to: '/plattform/postfach', label: t('Postfach') },
           { to: '/plattform/datenuebernahme', label: t('Datenübernahme') },
+          { to: '/plattform/version', label: t('Version') },
         ]}
       />
       <Outlet />
