@@ -1,5 +1,5 @@
 ---
-key: page.account.notifications
+key: page.account_notifications
 titel: Mein Konto › Benachrichtigungen
 bereich: konto
 routen: [/mein-konto/benachrichtigungen]
