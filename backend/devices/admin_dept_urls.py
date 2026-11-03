@@ -11,6 +11,7 @@ from django.urls import path
 from changes import views as change_views
 from events import views as event_views
 from portal import views as portal_views
+from todos import views as todo_views
 
 from .admin_api import for_app
 
@@ -20,6 +21,8 @@ def _p(route: str, view, name: str, read_only: bool = False):
 
 
 urlpatterns = [
+    path("todos/", for_app(todo_views.TodoListView).as_view()),
+    path("todos/<int:pk>/", for_app(todo_views.TodoDetailView).as_view()),
     _p("", portal_views.DepartmentInfoView, "info", read_only=True),
     _p("members/", portal_views.DepartmentMemberListView, "members"),
     _p("members/<int:pk>/", portal_views.DepartmentMemberDetailView, "member"),

@@ -40,6 +40,7 @@ const PlatformImprintPage = lazyPage(
   () => import('./pages/settings/ImprintSettingsPage.tsx'),
   'PlatformImprintPage',
 )
+const TodosPage = lazyPage(() => import('./pages/TodosPage.tsx'), 'TodosPage')
 const HomePage = lazyPage(() => import('./pages/HomePage.tsx'), 'HomePage')
 const DepartmentArea = lazyPage(
   () => import('./pages/department/DepartmentArea.tsx'),
@@ -265,6 +266,7 @@ export default function App() {
             }
           />
           <Route path="rundschreiben/*" element={<CircularsPage />} />
+          <Route path="aufgaben" element={<TodosPage />} />
           <Route path="termine/*" element={<EventsPage />} />
           <Route
             path="wettbewerbe/*"

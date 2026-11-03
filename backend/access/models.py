@@ -123,6 +123,13 @@ class Role(models.Model):
                 organization_id=self.organization_id, department__isnull=True
             )
         # Rechte immer in der Form der Bereiche speichern (frühere Codes übersetzt)
+        if self._state.adding and not any(p.startswith("todos.") for p in self.permissions or []):
+            level = (
+                "edit"
+                if self.is_board or set(self.permissions or []) & {"roles.edit", "roles.manage"}
+                else "view"
+            )
+            self.permissions = [*(self.permissions or []), f"todos.{level}"]
         self.permissions = normalize(self.permissions, dept=bool(self.department_id))
         # Neue Rollen hinten anstellen; Webseite und HUBIplan haben dieselbe Reihenfolge
         append_if_new(self, "position", siblings)

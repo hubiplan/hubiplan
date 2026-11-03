@@ -4975,3 +4975,27 @@ msgstr "The retention period has expired."
 
 msgid "Buchungen mit Belegen bitte stornieren."
 msgstr "Please cancel bookings with receipts instead of deleting them."
+
+msgid "Ungültige Zeitzone."
+msgstr "Invalid time zone."
+
+msgid "Bitte einen Titel eingeben."
+msgstr "Please enter a title."
+
+msgid "Eine Uhrzeit braucht ein Datum."
+msgstr "A time requires a date."
+
+msgid "Die Aufgabe wurde inzwischen geändert. Bitte neu laden."
+msgstr "The task has changed. Please reload."
+
+msgid "Aufgabe"
+msgstr "Task"
+
+msgid "ohne Frist"
+msgstr "No due date"
+
+msgid "Eigene und mit mir geteilte Aufgaben"
+msgstr "Personal tasks and tasks shared with me"
+
+msgid "Aufgaben mit anderen teilen"
+msgstr "Share tasks with others"

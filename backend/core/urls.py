@@ -38,6 +38,7 @@ from outbox import views as outbox_views
 from peering import urls as peering_urls
 from portal import views as portal_views
 from statutes import views as statute_views
+from todos import views as todo_views
 from website import urls as website_urls
 
 from . import views
@@ -124,6 +125,8 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("todos/", todo_views.TodoListView.as_view()),
+    path("todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
     path("", org_views.OrganizationDetailView.as_view(), name="org-detail"),
     path("member-settings/", org_views.MemberSettingsView.as_view(), name="org-member-settings"),
     path("theme/", org_views.ThemeView.as_view(), name="org-theme"),
@@ -643,6 +646,9 @@ dept_patterns = [
 ]
 
 urlpatterns = [
+    path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),
+    path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
+    path("me/todos/export/", todo_views.PersonalExportView.as_view()),
     path("health/", views.health, name="health"),
     # Android-App (Anmeldung, Geräte); Inhalte über /api/portal/…
     path("app/v1/", include("devices.urls")),

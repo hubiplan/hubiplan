@@ -131,4 +131,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
         if org.keeps_members and "members" in (org.enabled_modules or []):
             items += member_tasks(org, perms)
         items += event_tasks(org, perms)
+        from todos.open_tasks import todo_tasks
+
+        items += todo_tasks(request.user, org, perms)
         return Response({"items": items})

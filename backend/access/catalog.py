@@ -150,6 +150,14 @@ _BOTH = (VIEW, EDIT)
 
 AREAS: tuple[Area, ...] = (
     Area(
+        "todos",
+        gettext_noop("Aufgaben"),
+        gettext_noop("Eigene und mit mir geteilte Aufgaben"),
+        gettext_noop("Aufgaben mit anderen teilen"),
+        org_types=ALL_TYPES,
+        dept_levels=_BOTH,
+    ),
+    Area(
         "members",
         gettext_noop("Mitglieder"),
         gettext_noop("Liste, Akten, Ämter, Ehrungen, Würden und Jubiläen sehen"),

@@ -83,6 +83,10 @@ def needed_for(label: str, fields: set[str]) -> set[str]:
 
 
 def missing_permission(change_set: ChangeSet, user, perms: set[str]) -> str | None:
+    if change_set.records.filter(model__startswith="todos.").exists():
+        from todos.access import undo_problem
+
+        return undo_problem(change_set, user)
     if change_set.user_id != user.pk and AUDIT_VIEW not in perms:
         return "Fremde Änderungen kann nur zurücknehmen, wer das Änderungsprotokoll sehen darf."
     for label, before, after in change_set.records.values_list("model", "before", "after"):
@@ -95,6 +99,10 @@ def missing_permission(change_set: ChangeSet, user, perms: set[str]) -> str | No
 
 
 def missing_dept_permission(change_set: ChangeSet, user, perms: set[str]) -> str | None:
+    if change_set.records.filter(model__startswith="todos.").exists():
+        from todos.access import undo_problem
+
+        return undo_problem(change_set, user)
     if change_set.user_id != user.pk:
         return "Hier lassen sich nur eigene Änderungen zurücknehmen."
     for label in set(change_set.records.values_list("model", flat=True)):

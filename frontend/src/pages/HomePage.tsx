@@ -4,6 +4,7 @@ import { useOrg } from '../org/OrgContext.tsx'
 import { calendarBase } from '../api/events.ts'
 import { UpcomingTile } from '../components/calendar/UpcomingTile.tsx'
 import { BirthdayTile, JubileeTile } from './members/JubileesPage.tsx'
+import { DepartmentTodosTile } from '../components/DepartmentTodosTile.tsx'
 import { OpenTasksTile } from '../components/OpenTasksTile.tsx'
 import { imprintApi } from '../api/imprint.ts'
 import { PERM } from '../api/orgs.ts'
@@ -29,6 +30,7 @@ import { t } from '../i18n/index.ts'
 const TASK_PERMS = [PERM.membersEdit, PERM.photosManage, PERM.eventsManage]
 
 function showsOpenTasks(org: OrgSummary): boolean {
+  if (org.permissions.includes('todos.view')) return true
   if (org.type !== 'club' && org.type !== 'federation') return false
   return TASK_PERMS.some((p) => org.permissions.includes(p))
 }
@@ -43,6 +45,9 @@ export function HomePage() {
         <h1 className="sr-only">{activeDept.name}</h1>
         <HomeLetterheadNotices />
         <div className="tiles">
+          {activeDept?.permissions.includes('todos.view') && (
+            <DepartmentTodosTile department={activeDept.id} />
+          )}
           <div className="card tile">
             <h2>{activeDept.label}</h2>
             <p>
@@ -69,6 +74,9 @@ export function HomePage() {
         <PortalTasks entry={activePortal} />
         {activePortal.events_enabled && (
           <div className="tiles">
+            {activeDept?.permissions.includes('todos.view') && (
+              <DepartmentTodosTile department={activeDept.id} />
+            )}
             <UpcomingTile base={calendarBase.portal(activePortal.id)} />
           </div>
         )}
@@ -105,6 +113,9 @@ export function HomePage() {
       <ImprintHint org={active} />
       <HomeLetterheadNotices />
       <div className="tiles">
+        {activeDept?.permissions.includes('todos.view') && (
+          <DepartmentTodosTile department={activeDept.id} />
+        )}
         {showsOpenTasks(active) && <OpenTasksTile org={active} />}
         {(active.type === 'club' || active.type === 'federation') &&
           active.modules.includes('events') && <UpcomingTile base={calendarBase.org(active.id)} />}

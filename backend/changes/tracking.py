@@ -178,6 +178,8 @@ def classify(model: type[models.Model], instance: models.Model | None = None) ->
         model._meta.proxy or (instance is not None and getattr(instance, UNIT_ROWS[label], None))
     ):
         return TRACK, ""
+    if meta.app_label == "todos":
+        return (TRACK, "") if label == "todos.todo" else (IGNORE, "")
     if meta.app_label in IGNORED_APPS or label in IGNORED_MODELS:
         return IGNORE, ""
     if label in BLOCKING_MODELS:
