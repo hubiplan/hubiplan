@@ -30,8 +30,14 @@ Diensten sind dort gesondert zu beenden; HUBIplan behauptet dafür keinen Sofort
 
 Die Migration ergänzt die Version mit dem Datenbankstandardwert null. Vorhandene
 Sitzungen und alte kurzfristige Cacheeinträge bleiben bei Version null kompatibel; nach
-einer Sicherheitsänderung werden sie abgewiesen. Ein Rollback auf eine ältere
-Serverfassung kann eine erneute Browser-Anmeldung erfordern.
+einer Sicherheitsänderung werden sie abgewiesen. Vor einem Code-Rückweg auf eine ältere
+Serverfassung müssen Browser-Sitzungen und kurzlebige Authentifizierungscaches verworfen
+und spätere Sicherheitswiderrufe abgeglichen werden, wie beim Wiederherstellen eines
+älteren Backups. Alter Code ignoriert die Authversion und kann sonst nach einer
+MFA-Recovery frühere, unveränderte Passwort-Sitzungshashes oder OIDC-Cacheeinträge wieder
+akzeptieren. Die ältere Fassung stellt den neuen Widerrufsschutz nicht sicher; das bloße
+Beibehalten der additiven Datenbankspalte genügt nicht. Diese Dokumentation löst keine
+automatischen Kontorücksetzungen oder Serveraktionen aus.
 
 ## English
 
@@ -57,5 +63,10 @@ within two minutes. Immediate revocation would require an additional protocol. S
 already established at external services must be ended there separately.
 
 Version zero preserves compatibility for existing sessions and short-lived cache entries.
-The additive migration has a database default of zero. Rolling back server code can
-require affected users to sign in again.
+The additive migration has a database default of zero. Before rolling back to older
+server code, discard browser sessions and short-lived authentication caches and reconcile
+subsequent security revocations, as when restoring an older backup. Older code ignores the
+authentication version and could otherwise accept previous unchanged password-session
+hashes or OIDC cache entries after MFA recovery. The older version does not provide the
+new revocation protection; retaining the additive database column alone is insufficient.
+This documentation does not trigger automatic account resets or server actions.

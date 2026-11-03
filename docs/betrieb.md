@@ -60,29 +60,29 @@ thread-local: each gthread request thread connects on its first request. The unu
 main-thread connection is closed afterwards; no measured first-request latency guarantee
 is implied.
 
-**Paginierte Mitgliederliste:** Nur der interaktive Listenabruf verwendet innerhalb seiner
-Transaktion `SET LOCAL jit = off`. In einer lokalen PostgreSQL-18-Messung mit App-Rolle/RLS
-und 10.000 synthetischen Mitgliedern entfielen bei einer Liste mit 50 Zeilen 77,9 ms auf
-151 JIT-Funktionen (Ausführungsplan insgesamt 96,4 ms; ohne JIT 19,3 ms). Der gesamte
-ORM-Listenablauf einschließlich Anzahl und Zeilenaufbereitung lag im Median bei
-147,7 beziehungsweise 45,5 ms. Das sind Vergleichswerte dieses lokalen Datensatzes,
-keine gemessenen Produktions- oder HTTP-Latenzen. Bei 10 bis 1.000 Mitgliedern zeigte
-sich kein einheitlicher JIT-Vorteil. Andere Abrufe, Exporte und die globale
-Datenbankkonfiguration behalten ihre vorhandene JIT-Einstellung; RLS bleibt aktiv.
-Commit oder Rollback der Listentransaktion stellt die Einstellung zurück.
-Die Messung stammt vom P01-Stand `1af9ec0b` (Mess-Snapshot `afef8f1`), vor der
-Zentralisierung von Namenssuche und Personensortierung. Sie belegt keinen Zeitgewinn
-für den danach geänderten Such- und Sortierplan; dieser wurde hier nicht neu vermessen.
+**Paginierte Mitgliederliste:** Die Liste übernimmt die konfigurierte JIT-Einstellung.
+Eine historische lokale PostgreSQL-18-Messung mit 10.000 synthetischen Mitgliedern und
+App-Rolle/RLS am P01-Stand `1af9ec0b` (Mess-Snapshot `afef8f1`) ergab 147,7/45,5 ms
+ORM-Median mit/ohne JIT. Die spätere zentrale Namenssuche und Personensortierung ändert
+den Plan erheblich. Beim erneuten lokalen Vergleich am integrierten Stand `3c1563f4`
+ergaben ein Warmup und drei Durchläufe je Einstellung 675,7 ms [580,5–707,8] mit JIT und
+624,5 ms [551,4–657,7] ohne JIT bei jeweils acht Abfragen und identischen Ergebnissen.
+Die stark überlappenden Bereiche belegen für diesen neuen Plan keinen stabilen Vorteil.
+Die zunächst vorgesehene besondere JIT-Abschaltung samt eigener Listentransaktion wurde
+deshalb entfernt. Keine globale Datenbankänderung, kein RLS-Bypass und keine Produktions-
+oder HTTP-Latenzgarantie. Ein späteres Tuning benötigt eine neue Messung des dann
+tatsächlichen Plans mit repräsentativen Daten und kontrollierter Last.
 
-English: The paginated interactive member list disables JIT only for its transaction.
-A local synthetic 10,000-member RLS workload showed 77.9 ms compiling 151 JIT functions
-and a 96.4/19.3 ms execution-plan comparison with/without JIT; the complete ORM list
-workflow measured 147.7/45.5 ms median. These are local comparisons, not production or
-HTTP latency guarantees. Smaller clubs showed no consistent JIT advantage. Other requests,
-exports, global database defaults and RLS are unchanged. Commit/rollback restores the setting.
-The measurements use P01 source `1af9ec0b` (measurement snapshot `afef8f1`), before
-centralized name search/person ordering. They do not establish a speedup for that
-subsequently changed query/sort plan, which has not been remeasured here.
+English: The member list inherits the configured JIT setting. A historical local
+10,000-member PostgreSQL-18/app-RLS measurement at P01 source `1af9ec0b` (snapshot
+`afef8f1`) showed 147.7/45.5 ms ORM medians with/without JIT. Centralized name search
+and person ordering subsequently changed the plan. A new comparison at integrated source
+`3c1563f4`, one warmup and three runs per setting, showed 675.7 ms [580.5–707.8] with JIT
+and 624.5 ms [551.4–657.7] without, eight queries each and identical results. These
+overlapping ranges do not establish a stable benefit for the new plan. The proposed
+special JIT setting and its list-only transaction were therefore removed. No global
+database change, RLS bypass or production/HTTP latency guarantee is implied. Future
+tuning requires measuring the then-current plan with representative data and controlled load.
 
 ## Geheimnisse
 

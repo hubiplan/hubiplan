@@ -577,7 +577,7 @@ class TestMitgliedsarten:
 
 
 def test_viele_mitglieder_schnell(api, orgs, types, board_a):
-    """300 Mitglieder: feste Abfragezahl ohne N+1, plus begrenzte JIT-Transaktion."""
+    """300 Mitglieder: feste Abfragezahl ohne N+1 auch bei zentraler Sortierung."""
     org = orgs["a"]
     persons = Person.objects.bulk_create(
         Person(
@@ -609,15 +609,6 @@ def test_viele_mitglieder_schnell(api, orgs, types, board_a):
     client = api(board_a)
     with CaptureQueriesContext(connection) as queries:
         data = client.get(f"/api/orgs/{org.pk}/members/", {"page_size": 100}).json()
-    # Die neue Listentransaktion kostet konstant SAVEPOINT, SET LOCAL und RELEASE.
-    # Das bisherige 20er-Budget für Daten-/Anwendungsabfragen bleibt unverändert.
-    controls = [
-        q
-        for q in queries
-        if q["sql"] == "SET LOCAL jit = off"
-        or q["sql"].startswith(("SAVEPOINT ", "RELEASE SAVEPOINT "))
-    ]
-    assert len(controls) == 3
-    assert len(queries) - len(controls) <= 20
+    assert len(queries) <= 20
     assert data["count"] == 300
     assert len(data["results"]) == 100

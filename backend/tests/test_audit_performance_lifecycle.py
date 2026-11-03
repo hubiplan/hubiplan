@@ -84,7 +84,7 @@ def test_name_batch_decrypts_allowed_candidates_once_for_all_words():
 
 @pytest.mark.django_db(transaction=True)
 @pytest.mark.parametrize("fails", [False, True])
-def test_member_list_jit_setting_is_local_and_preserves_rls(api, orgs, board_a, fails):
+def test_member_list_preserves_inherited_jit_setting_and_rls(api, orgs, board_a, fails):
     def jit():
         with connection.cursor() as cursor:
             cursor.execute("SHOW jit")
@@ -113,7 +113,7 @@ def test_member_list_jit_setting_is_local_and_preserves_rls(api, orgs, board_a, 
         else:
             response = client.get(f"/api/orgs/{orgs['a'].pk}/members/")
             assert response.status_code == 200, response.content
-    assert observed == [("off", str(orgs["a"].pk), "off")]
+    assert observed == [(before, str(orgs["a"].pk), "off")]
     assert jit() == before
 
 
