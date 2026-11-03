@@ -209,6 +209,8 @@ class BankStatementViewSet(
 
     @transaction.atomic
     def perform_destroy(self, instance):
+        services.lock_bank_sources(self.org)
+        instance = BankStatement.objects.get(pk=instance.pk, organization=self.org)
         # Zeilen sperren, damit keine parallele Zuordnung zwischen Prüfung und Löschen landet
         list(instance.lines.select_for_update().values_list("pk", flat=True))
         if instance.lines.filter(status=BankLine.Status.DONE).exists():

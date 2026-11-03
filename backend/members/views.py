@@ -206,26 +206,33 @@ def member_queryset(org: Organization):
     )
 
 
-def _persons_by_email(qs, word: str) -> set[int]:
-    """Personen, deren E-Mail-Adresse ``word`` enthält. Die Adressen sind verschlüsselt
-    (core/encfields.py); die Datenbank kann darin nicht suchen, also hier im Speicher."""
-    word = word.lower()
+def _persons_by_email(qs, words: list[str]) -> dict[str, set[int]]:
+    """Entschlüsselt die sichtbaren Adressen einmal für alle Suchwörter."""
+    matches = {word: set() for word in words}
     contacts = ContactDetails.objects.filter(person_id__in=qs.values("person_id")).values_list(
         "person_id", "email"
     )
-    return {pid for pid, email in contacts if email and word in email.lower()}
+    for pid, email in contacts.iterator():
+        if email:
+            email = email.lower()
+            for word in words:
+                if word in email:
+                    matches[word].add(pid)
+    return matches
 
 
 def filter_members(qs, params, org: Organization):
     search = (params.get("suche") or "").strip()
     if search:
+        words = list(dict.fromkeys(word.lower() for word in search.split()))
+        email_matches = _persons_by_email(qs, words)
         q = Q()
-        for word in search.split():
+        for word in words:
             word_q = (
                 Q(person__last_name__icontains=word)
                 | Q(person__first_name__icontains=word)
                 | Q(club_number__iexact=word)
-                | Q(person_id__in=_persons_by_email(qs, word))
+                | Q(person_id__in=email_matches[word])
             )
             if word.isdigit():
                 word_q |= Q(person__federation__member_number=int(word))

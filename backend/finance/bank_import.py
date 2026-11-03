@@ -28,12 +28,12 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.db import transaction
+from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext
 
 from . import camt, services
-from .models import Account, BankLine, BankStatement, Booking, Category
+from .models import Account, BankLine, BankStatement, Booking, Category, YearClosing
 
 DAYS_BOOKED = 3
 DAYS_RUN = 10
@@ -71,8 +71,21 @@ def _account_for(org, iban: str, chosen: Account | None) -> Account:
     )
 
 
-@transaction.atomic
 def import_file(org, data: bytes, file_name: str, user, account: Account | None = None) -> dict:
+    # Dateien können nicht mit der Datenbank zurückrollen. Eine äußerste Transaktion
+    # verhindert, dass ein späterer Rollback unreferenzierte Originale hinterlässt.
+    created = []
+    try:
+        with transaction.atomic(durable=True):
+            return _import_file(org, data, file_name, user, account, created)
+    except BaseException:
+        for storage, name in created:
+            storage.delete(name)
+        raise
+
+
+def _import_file(org, data, file_name, user, account, created):
+    services.lock_bank_sources(org)
     try:
         statements = camt.parse(data)
     except camt.CamtError as exc:
@@ -88,19 +101,39 @@ def import_file(org, data: bytes, file_name: str, user, account: Account | None 
     )
     stored = earlier.source.name if earlier is not None else ""
     safe = "".join(c if c.isalnum() or c in ".-_" else "_" for c in file_name)[-100:] or "auszug"
+    prepared = []
     for st in statements:
         if st.currency and st.currency != "EUR":
             raise ValidationError(
                 gettext("Nur Konten in Euro (Auszug in {currency}).").format(currency=st.currency)
             )
         acc = _account_for(org, st.iban, account)
+        # Periodendaten fehlen bei manchen Banken: Buchungstage verwenden, bei
+        # einem völlig undatierten leeren Auszug konservativ das Importdatum.
+        days = [line.date for line in st.lines]
+        start = st.date_from or (min(days) if days else st.date_to) or timezone.localdate()
+        end = st.date_to or (max(days) if days else start)
+        dates = [start, end, *days]
+        first, last = org.fiscal_year_of(min(dates)), org.fiscal_year_of(max(dates))
+        if YearClosing.objects.filter(
+            organization=org, year__gte=first, year__lte=last
+        ).filter(
+            models.Q(documents_purged_at__isnull=False)
+            | models.Q(records_purged_at__isnull=False)
+        ).exists():
+            raise ValidationError(gettext(
+                "Für dieses Geschäftsjahr wurden Aufbewahrungsdaten bereits bereinigt. "
+                "Der Kontoauszug kann nicht erneut eingelesen werden."
+            ))
+        prepared.append((st, acc, start, end))
+    for st, acc, start, end in prepared:
         record = BankStatement.objects.create(
             organization=org,
             account=acc,
             file_name=file_name[:200],
             reference=st.ref[:100],
-            date_from=st.date_from,
-            date_to=st.date_to,
+            date_from=start,
+            date_to=end,
             opening_balance=st.opening,
             closing_balance=st.closing,
             imported_by=user,
@@ -113,6 +146,7 @@ def import_file(org, data: bytes, file_name: str, user, account: Account | None 
         else:
             record.source.save(safe, ContentFile(data), save=False)
             stored = record.source.name
+            created.append((record.source.storage, stored))
         record.save(update_fields=["source"])
         new = dup = 0
         for line in st.lines:

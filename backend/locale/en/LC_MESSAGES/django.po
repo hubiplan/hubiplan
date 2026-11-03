@@ -4880,3 +4880,6 @@ msgstr "Role holders in the {pl_dat}"
 
 msgid "Rolleninhaber im Verein"
 msgstr "Role holders in the club"
+
+msgid "Für dieses Geschäftsjahr wurden Aufbewahrungsdaten bereits bereinigt. Der Kontoauszug kann nicht erneut eingelesen werden."
+msgstr "Retention data for this financial year has already been purged. The bank statement cannot be imported again."

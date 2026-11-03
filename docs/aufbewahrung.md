@@ -71,3 +71,33 @@ Die Auskunft eines Mitglieds enthält Rechnungen an die Person vollständig. Aus
 Sammelrechnungen an andere (z. B. an eine Abteilung) enthält sie nur die eigenen Posten,
 mit Nummer, Datum, Betreff und Rechnungsempfänger als Zusammenhang; Posten, Anschrift und
 Zahlungen anderer Personen und das PDF der ganzen Rechnung bleiben draußen.
+
+## CAMT-Originale und spätere Importe
+
+Einlesen, Entfernen und Fristbereinigung von Kontoauszügen werden je Verein serialisiert.
+Mehrere Auszüge dürfen dasselbe unveränderte Original teilen; die Datei wird erst nach
+erfolgreichem Commit und ohne verbleibenden Verweis entfernt. Ein fehlgeschlagener Import
+entfernt nur neu angelegte Dateien. Der Import muss eine eigene äußerste Transaktion haben.
+
+Fehlen im Auszug Periodendaten, dienen die enthaltenen Buchungstage als Fristanker. Bei
+vollständig undatierten leeren Auszügen gilt konservativ das Importdatum. Bestehende fehlende
+Periodendaten werden entsprechend ergänzt. Das verändert die Originaldatei nicht. Noch
+vorhandene Originale können nach Fristablauf erneut bereinigt werden, auch wenn das Jahr
+bereits einen Bereinigungsvermerk hat. Löschsperren gelten weiterhin.
+
+Auszüge für bereits bereinigte Geschäftsjahre können nicht erneut eingelesen werden:
+Sie würden entfernte personenbezogene Angaben zurückbringen. Eine fachlich notwendige
+Wiederaufnahme benötigt eine gesonderte Entscheidung und Dokumentation.
+
+Der Widerspruch gegen Chroniknamen ist mit neuen Mitgliedschaften derselben Person
+serialisiert. Freitexte, fremde Partnerkopien und externe Veröffentlichungen gehören
+weiterhin zur gesonderten Prüfung durch den Vorstand.
+
+English: CAMT import, removal and retention cleanup are serialized per club. Shared original
+files survive until their last reference is removed and the transaction commits. Failed
+imports delete only newly created files. Missing statement periods use entry dates, or the
+import date for completely undated empty statements. Existing missing dates are backfilled
+without changing original files. Retention cleanup can revisit remaining originals; legal
+holds still apply. Imports into already purged financial years are rejected to prevent
+reintroducing personal data. History-name erasure shares the person's lifecycle lock;
+free-text and external partner copies still require separate review.
