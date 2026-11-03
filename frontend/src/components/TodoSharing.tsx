@@ -17,9 +17,10 @@ export function TodoSharing({
 }) {
   const { data, error, reload } = useLoad(
     () =>
-      api.get<{ users: { id: number; name: string }[]; roles: { id: number; name: string }[] }>(
-        `${base}choices/`,
-      ),
+      api.get<{
+        users: { id: number; name: string }[]
+        roles: { id: number; name: string; has_task_access?: boolean }[]
+      }>(`${base}choices/`),
     [base],
   )
   const [shares, setShares] = useState<TodoShare[]>(todo.shares ?? [])
@@ -64,6 +65,9 @@ export function TodoSharing({
               {data.roles.map((r) => (
                 <option key={r.id} value={`r:${r.id}`}>
                   {r.name}
+                  {r.has_task_access === false
+                    ? t(' – zusätzliche Aufgabenrechte erforderlich')
+                    : ''}
                 </option>
               ))}
             </optgroup>

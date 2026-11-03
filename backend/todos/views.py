@@ -188,6 +188,7 @@ class TodoChoicesView(TodoScopeMixin, APIView):
     def get(self, request, **kwargs):
         if "todos.edit" not in self.scope.permissions:
             raise PermissionDenied()
+        from access.catalog import effective
         from access.models import Role
 
         return Response(
@@ -197,7 +198,12 @@ class TodoChoicesView(TodoScopeMixin, APIView):
                     for u in eligible_users(self.scope)
                 ],
                 "roles": [
-                    {"id": r.pk, "name": r.name}
+                    {
+                        "id": r.pk,
+                        "name": r.name,
+                        "has_task_access": "todos.view"
+                        in effective(r.permissions, dept=bool(r.department_id)),
+                    }
                     for r in Role.all_objects.filter(
                         organization=self.org, department_id=self.scope.department_id
                     )

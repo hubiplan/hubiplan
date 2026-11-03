@@ -4901,5 +4901,6 @@
   "Verantwortung übernehmen": "Take responsibility",
   "Aufgaben ohne verantwortliches Konto": "Tasks without a responsible account",
   "Hier kannst du die Verantwortung für verwaiste geteilte Aufgaben übernehmen. Private Aufgaben erscheinen hier nicht.": "You can take responsibility for orphaned shared tasks here. Personal tasks do not appear here.",
-  "Von mir geteilt": "Shared by me"
+  "Von mir geteilt": "Shared by me",
+  " – zusätzliche Aufgabenrechte erforderlich": " – additional task permissions required"
 }

@@ -4979,6 +4979,15 @@ msgstr "Please cancel bookings with receipts instead of deleting them."
 msgid "Aufgaben"
 msgstr "Tasks"
 
+msgid "Aufgabenbenachrichtigung"
+msgstr "Task notification"
+
+msgid "Inhalt nur an das empfangende Konto versandt."
+msgstr "Content sent only to the recipient's account."
+
+msgid "Versand fehlgeschlagen"
+msgstr "Delivery failed"
+
 msgid "Ungültige Zeitzone."
 msgstr "Invalid time zone."
 
