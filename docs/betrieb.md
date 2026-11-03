@@ -50,7 +50,39 @@ docker compose logs --since 3h backend | grep -E '"(GET|POST) ' \
 **Vorwärmen:** Jeder neue gunicorn-Prozess ruft vor der ersten echten Anfrage
 `/api/health/` und `/api/public/site/v1/resolve/` bei sich selbst auf
 (`backend/gunicorn.conf.py`). Im Log steht dann je Prozess „Vorwärmen …: 200 OK“ bzw.
-„404 Not Found“. Sonst wartete der erste Besucher nach dem Ausrollen 2–3 s.
+„404 Not Found“. Das lädt Anwendungs- und Resolvercode. Datenbankverbindungen sind
+threadlokal; jeder gthread-Requestthread öffnet seine Verbindung erst bei seiner ersten
+Anfrage. Die ungenutzte Hauptthread-Verbindung wird danach geschlossen. Daraus folgt
+keine gemessene oder garantierte Verkürzung der ersten echten Anfrage.
+
+English: Warmup loads application/resolver code. Django database connections are
+thread-local: each gthread request thread connects on its first request. The unused
+main-thread connection is closed afterwards; no measured first-request latency guarantee
+is implied.
+
+**Paginierte Mitgliederliste:** Die Liste übernimmt die konfigurierte JIT-Einstellung.
+Eine historische lokale PostgreSQL-18-Messung mit 10.000 synthetischen Mitgliedern und
+App-Rolle/RLS am P01-Stand `1af9ec0b` (Mess-Snapshot `afef8f1`) ergab 147,7/45,5 ms
+ORM-Median mit/ohne JIT. Die spätere zentrale Namenssuche und Personensortierung ändert
+den Plan erheblich. Beim erneuten lokalen Vergleich am integrierten Stand `3c1563f4`
+ergaben ein Warmup und drei Durchläufe je Einstellung 675,7 ms [580,5–707,8] mit JIT und
+624,5 ms [551,4–657,7] ohne JIT bei jeweils acht Abfragen und identischen Ergebnissen.
+Die stark überlappenden Bereiche belegen für diesen neuen Plan keinen stabilen Vorteil.
+Die zunächst vorgesehene besondere JIT-Abschaltung samt eigener Listentransaktion wurde
+deshalb entfernt. Keine globale Datenbankänderung, kein RLS-Bypass und keine Produktions-
+oder HTTP-Latenzgarantie. Ein späteres Tuning benötigt eine neue Messung des dann
+tatsächlichen Plans mit repräsentativen Daten und kontrollierter Last.
+
+English: The member list inherits the configured JIT setting. A historical local
+10,000-member PostgreSQL-18/app-RLS measurement at P01 source `1af9ec0b` (snapshot
+`afef8f1`) showed 147.7/45.5 ms ORM medians with/without JIT. Centralized name search
+and person ordering subsequently changed the plan. A new comparison at integrated source
+`3c1563f4`, one warmup and three runs per setting, showed 675.7 ms [580.5–707.8] with JIT
+and 624.5 ms [551.4–657.7] without, eight queries each and identical results. These
+overlapping ranges do not establish a stable benefit for the new plan. The proposed
+special JIT setting and its list-only transaction were therefore removed. No global
+database change, RLS bypass or production/HTTP latency guarantee is implied. Future
+tuning requires measuring the then-current plan with representative data and controlled load.
 
 ## Geheimnisse
 

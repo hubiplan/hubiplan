@@ -22,7 +22,7 @@ from audit.log import record
 from core.files import delete_on_commit
 from members.models import Membership
 
-from . import bank_import, camt, services
+from . import bank_import, bank_originals, camt, services
 from .models import (
     Account,
     BankLine,
@@ -209,6 +209,8 @@ class BankStatementViewSet(
 
     @transaction.atomic
     def perform_destroy(self, instance):
+        services.lock_bank_sources(self.org)
+        instance = bank_originals.queryset(self.org).get(pk=instance.pk)
         # Zeilen sperren, damit keine parallele Zuordnung zwischen Prüfung und Löschen landet
         list(instance.lines.select_for_update().values_list("pk", flat=True))
         if instance.lines.filter(status=BankLine.Status.DONE).exists():
@@ -219,18 +221,16 @@ class BankStatementViewSet(
             )
         # Abgeschlossene Geschäftsjahre (und damit auch Löschsperren) gelten auch hier, nicht
         # nur bei der Bereinigung nach der Aufbewahrungsfrist (Audit 03.11. GA-S12)
-        days = [d for d in (instance.date_from, instance.date_to) if d]
-        days += list(instance.lines.values_list("date", flat=True))
-        if days:
-            years = {self.org.fiscal_year_of(d) for d in days}
-            services.lock_years_from(self.org, min(years))
-            if YearClosing.objects.filter(organization=self.org, year__in=years).exists():
-                raise serializers.ValidationError(
-                    gettext(
-                        "Der Auszug gehört zu einem abgeschlossenen Geschäftsjahr. Er bleibt "
-                        "erhalten."
-                    )
+        first, last = bank_originals.year_range(self.org, instance)
+        services.lock_years_from(self.org, first)
+        if YearClosing.objects.filter(
+            organization=self.org, year__gte=first, year__lte=last
+        ).exists():
+            raise serializers.ValidationError(
+                gettext(
+                    "Der Auszug gehört zu einem abgeschlossenen Geschäftsjahr. Er bleibt erhalten."
                 )
+            )
         record(
             self.org,
             self.request.user,

@@ -3,6 +3,8 @@
 import datetime
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from access.models import Role
 from members.models import (
@@ -574,8 +576,8 @@ class TestMitgliedsarten:
         assert api(user).get(f"/api/orgs/{orgs['federation'].pk}/members/").status_code == 404
 
 
-def test_viele_mitglieder_schnell(api, orgs, types, board_a, django_assert_max_num_queries):
-    """10.000 Mitglieder: die Seite lädt mit wenigen Abfragen (kein N+1)."""
+def test_viele_mitglieder_schnell(api, orgs, types, board_a):
+    """300 Mitglieder: feste Abfragezahl ohne N+1 auch bei zentraler Sortierung."""
     org = orgs["a"]
     persons = Person.objects.bulk_create(
         Person(
@@ -605,7 +607,8 @@ def test_viele_mitglieder_schnell(api, orgs, types, board_a, django_assert_max_n
         for m in memberships
     )
     client = api(board_a)
-    with django_assert_max_num_queries(20):
+    with CaptureQueriesContext(connection) as queries:
         data = client.get(f"/api/orgs/{org.pk}/members/", {"page_size": 100}).json()
+    assert len(queries) <= 20
     assert data["count"] == 300
     assert len(data["results"]) == 100

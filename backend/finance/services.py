@@ -17,6 +17,17 @@ from .models import Account, Booking, Category, Donation, TaxArea, YearClosing
 ZERO = Decimal("0.00")
 
 
+def lock_bank_sources(org) -> None:
+    """Import, Entfernen und Fristbereinigung gemeinsamer CAMT-Dateien serialisieren.
+
+    Vor Zeilen- und Jahressperren nehmen; nur innerhalb einer Transaktion verwenden.
+    """
+    if not connection.in_atomic_block:
+        raise RuntimeError("lock_bank_sources nur innerhalb einer Transaktion aufrufen.")
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", [org.pk, 300000])
+
+
 def next_number(org_id: int, year: int) -> int:
     """Nächste Buchungsnummer im Jahr; Sperre verhindert doppelte Nummern."""
     with connection.cursor() as cursor:

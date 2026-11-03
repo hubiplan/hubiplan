@@ -133,7 +133,7 @@ def _date(el, *path: str) -> datetime.date | None:
     node = _find(el, *path)
     if node is None:
         return None
-    raw = _text(node, "Dt") or _text(node, "DtTm")[:10]
+    raw = _text(node, "Dt") or _text(node, "DtTm")[:10] or _text(node)
     try:
         return datetime.date.fromisoformat(raw[:10]) if raw else None
     except ValueError:
