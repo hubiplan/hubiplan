@@ -229,6 +229,7 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_FAVICON_HREF": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.29.5/favicon-32x32.png",
     # Eindeutige Namen für Auswahllisten, die mehrfach vorkommen
     "ENUM_NAME_OVERRIDES": {
+        "OrganizationTypeEnum": "organizations.models.Organization.Type",
         "InvoiceStatusEnum": "billing.models.Invoice.Status",
         "GenderEnum": [("f", "die (weiblich)"), ("m", "der (männlich)"), ("n", "das (sächlich)")],
     },

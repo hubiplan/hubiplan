@@ -32,7 +32,9 @@ org_router.register(
     "fields", for_app(field_views.FieldDefinitionViewSet, True), basename="app-admin-field"
 )
 org_router.register(
-    "departments", for_app(org_views.DepartmentViewSet, True), basename="app-admin-department"
+    "departments",
+    for_app(org_views.DepartmentChoicesViewSet, True),
+    basename="app-admin-department",
 )
 org_router.register(
     "honorary-titles",

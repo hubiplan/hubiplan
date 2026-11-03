@@ -152,7 +152,7 @@ class TestBriefbogen:
 
     def test_lesen_ohne_schreibrecht(self, api, club):
         user = make_user("leser@example.org")
-        give_role(user, club, permissions=[MEMBERS_VIEW], name="Leser")
+        give_role(user, club, permissions=["settings.view"], name="Leser")
         c = api(user)
         assert c.get(f"/api/orgs/{club.pk}/letterhead/").status_code == 200
         resp = c.patch(f"/api/orgs/{club.pk}/letterhead/", {"form": "a"}, content_type=JSON)

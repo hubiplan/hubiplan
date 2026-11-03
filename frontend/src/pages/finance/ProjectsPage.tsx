@@ -179,7 +179,7 @@ function ProjectForm({
   const org = useActiveOrg()
   const tm = useTerms()
   const departments = useLoad(
-    () => (org.type === 'club' ? orgApi.departments(org.id) : Promise.resolve([])),
+    () => (org.type === 'club' ? orgApi.departmentChoices(org.id) : Promise.resolve([])),
     [org.id, org.type],
   )
   const [extraSeries, setExtraSeries] = useState<ProjectSeries[]>([])

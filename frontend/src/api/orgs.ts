@@ -165,6 +165,19 @@ export interface OrgDetail {
   logo_url: string | null
 }
 
+export type MemberSettings = Pick<
+  OrgDetail,
+  | 'id'
+  | 'type'
+  | 'jubilee_years'
+  | 'unit_jubilee_years'
+  | 'date_precision'
+  | 'federation_duration_rule'
+  | 'member_portal_enabled'
+  | 'contact_changes_need_approval'
+  | 'photo_approval_required'
+>
+
 export interface ThemeSettings {
   primary_color: string
   accent_color: string
@@ -259,6 +272,27 @@ export interface Department {
   /** liegt auf einer anderen Instanz (Verbund, nur Anzeige) */
   is_remote?: boolean
 }
+
+export type DepartmentChoice = Pick<
+  Department,
+  | 'id'
+  | 'name'
+  | 'short_name'
+  | 'display_name'
+  | 'is_active'
+  | 'parent_unit'
+  | 'depth'
+  | 'path'
+  | 'roles'
+  | 'label'
+  | 'label_plural'
+  | 'label_gender'
+  | 'label_en'
+  | 'label_plural_en'
+  | 'own_workspace'
+  | 'self_managed'
+  | 'is_remote'
+>
 
 export interface Role {
   id: number
@@ -450,6 +484,9 @@ export const orgApi = {
     api.get<CatalogModule[]>(`/api/permissions/?org_type=${type}${orgId ? `&org=${orgId}` : ''}`),
 
   detail: (id: number) => api.get<OrgDetail>(`${org(id)}/`),
+  memberSettings: (id: number) => api.get<MemberSettings>(`${org(id)}/member-settings/`),
+  updateMemberSettings: (id: number, data: Partial<MemberSettings>) =>
+    api.patch<MemberSettings>(`${org(id)}/member-settings/`, data),
   update: (id: number, data: Partial<OrgDetail>) => api.patch<OrgDetail>(`${org(id)}/`, data),
 
   theme: (id: number) => api.get<ThemeSettings>(`${org(id)}/theme/`),
@@ -472,6 +509,7 @@ export const orgApi = {
   },
 
   departments: (id: number) => api.get<Department[]>(`${org(id)}/departments/`),
+  departmentChoices: (id: number) => api.get<DepartmentChoice[]>(`${org(id)}/department-choices/`),
   createDepartment: (id: number, data: Partial<Department>) =>
     api.post<Department>(`${org(id)}/departments/`, data),
   updateDepartment: (id: number, dep: number, data: Partial<Department>) =>

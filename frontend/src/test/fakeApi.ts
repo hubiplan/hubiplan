@@ -48,8 +48,14 @@ export function fakeApi(routes: Record<string, Handler>) {
   vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const key = `${init?.method ?? 'GET'} ${String(input)}`
     calls.push({ key, init })
+    // Vorhandene erfundene Auswahldaten auch für die neuen schmalen Lesewege.
+    // Die serverseitige Feld-/Rechtetrennung prüfen die Backendregressionen.
+    const selectionKey = key
+      .replace(/\/department-choices\/$/, '/departments/')
+      .replace(/\/member-settings\/$/, '/')
     const handler =
       routes[key] ??
+      (selectionKey === key ? undefined : routes[selectionKey]) ??
       DEFAULTS[key] ??
       // Jubiläen von Einheiten und Geburtstage: ohne eigene Angabe leer
       (/^GET \/api\/orgs\/\d+\/(unit-jubilees|birthdays)\//.test(key)
@@ -103,13 +109,23 @@ export function fakeApi(routes: Record<string, Handler>) {
 export const testUser = { id: 1, email: 'kassenwart@example.org', display: 'Karla' }
 
 export function testOrg(overrides: Record<string, unknown> = {}) {
+  const permissions = (overrides.permissions as string[] | undefined) ?? [
+    'members.view',
+    'roles.manage',
+    'org.edit',
+  ]
+  // Wie die echte API: während des Übergangs stehen neue und frühere Codes bereit.
+  const aliases: Record<string, string[]> = {
+    'roles.manage': ['roles.view', 'roles.edit'],
+    'org.edit': ['settings.view', 'settings.edit'],
+  }
+  const effective = [...new Set(permissions.flatMap((p) => [p, ...(aliases[p] ?? [])]))]
   return {
     id: 7,
     name: 'TV Beispielhausen',
     type: 'club',
     type_label: 'Verein',
     parent_name: 'Testbund',
-    permissions: ['members.view', 'roles.manage', 'org.edit'],
     modules: ['members'],
     department_label: 'Abteilung',
     department_label_plural: 'Abteilungen',
@@ -122,5 +138,6 @@ export function testOrg(overrides: Record<string, unknown> = {}) {
       inherited_from: { colors: 'TV Beispielhausen', logo: null },
     },
     ...overrides,
+    permissions: effective,
   }
 }

@@ -19,6 +19,17 @@ Datenexport, Auskunft), `roles.preview` (Ansicht als Rolle).
 - Mehrere Rollen: je Bereich die höchste Stufe. Ansicht als Rolle: Schnittmenge.
 - Zwei-Faktor-Pflicht für *bearbeiten* in Rollen, Kasse, Vereine, Plattform und für
   `export.full` (`accounts/mfa_policy.py`).
+- Verwaltungsdaten benötigen das Leserecht ihres Bereichs: Organisation, Impressum und
+  Briefbogen `settings.view`, eigene Farbkonfiguration `theme.view`, Rollendefinitionen
+  `roles.view`. Die minimale Untereinheitsauswahl und mitgliederbezogene Einstellungen
+  haben getrennte Schnittstellen; sie geben keine Verwaltungs- oder fremden Rollendaten aus.
+- Einstellungen bearbeiten vermittelt keine Rollenverwaltung. Rollen einer Untereinheit,
+  ihre wirksamen Zuweisungen und das Einrichten eines Verwalters erfordern `roles.edit`.
+  Bestehende Einstellungsrollen werden nicht automatisch zu vereinsweiten Rollenverwaltern
+  aufgewertet. Ihre bisher implizite Untereinheits-Rollenpflege entfällt ebenfalls.
+  Soll jemand sie weiter ausführen, muss ein Rollenverwalter das Bearbeitungsrecht für
+  Rollen bewusst vergeben. Die gespeicherten Codes ändern sich nicht; eine Datenmigration
+  ist nicht nötig. Eine ältere Programmfassung hat wieder ihre frühere implizite Kopplung.
 - Migration `access/0016_bereiche` schreibt bestehende Rollen verlustfrei um (mit Rückweg).
 
 Bereiche und Zuordnung der früheren Codes: Konzept `konzepte/berechtigungen.md` im

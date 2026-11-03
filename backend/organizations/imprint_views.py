@@ -11,7 +11,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import ORG_EDIT
+from access.catalog import ORG_EDIT, SETTINGS_VIEW
 from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin, OrgScopedMixin
 
@@ -128,6 +128,7 @@ def _publish(request, org: Organization, audit_org: Organization) -> dict:
 class OrgImprintView(OrgScopedMixin, APIView):
     """Impressum der Einheit selbst (lesen: jede Rolle, ändern: org.edit)."""
 
+    read_permission = SETTINGS_VIEW
     write_permission = ORG_EDIT
 
     def get(self, request, org_id: int):
@@ -143,6 +144,7 @@ class OrgImprintView(OrgScopedMixin, APIView):
 class UnitImprintView(OrgScopedMixin, APIView):
     """Impressum einer Untereinheit (Standard: von oben übernehmen)."""
 
+    read_permission = SETTINGS_VIEW
     write_permission = ORG_EDIT
 
     def unit(self, unit_id: int) -> Department:
