@@ -43,8 +43,9 @@ class Migration(migrations.Migration):
                     IF EXISTS (
                         SELECT 1 FROM members_person
                         WHERE last_name LIKE 'enc1:%' OR first_name LIKE 'enc1:%'
+                            OR char_length(last_name) > 100 OR char_length(first_name) > 100
                     ) THEN
-                        RAISE EXCEPTION 'Vor der Rückmigration nur die Personennamen entschlüsseln.';
+                        RAISE EXCEPTION 'Vor der Rückmigration nur die Personennamen entschlüsseln und Längen prüfen.';
                     END IF;
                 END $$;
             """,

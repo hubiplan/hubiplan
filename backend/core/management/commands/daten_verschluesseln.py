@@ -164,7 +164,7 @@ class Command(BaseCommand):
                             {field.KEY: cipher} if isinstance(field, EncryptedJSONField) else cipher
                         )
                 if updates and not probe:
-                    self._write(
+                    written = self._write(
                         table,
                         pk_col,
                         pk,
@@ -174,6 +174,8 @@ class Command(BaseCommand):
                             **dict(zip(owner_cols, owner_values, strict=True)),
                         },
                     )
+                    if not written:
+                        continue
                 changed += bool(updates)
 
     @staticmethod
@@ -198,9 +200,10 @@ class Command(BaseCommand):
                 if current is None or tuple(expected.values()) != current:
                     # Nicht den neueren Stand mit einem zuvor gelesenen Wert überschreiben.
                     # Ein weiterer Lauf prüft gegebenenfalls verbliebene Altdaten.
-                    return
+                    return False
             sql = f"UPDATE {table} SET {', '.join(parts)} WHERE {pk_col} = %s"  # noqa: S608
             cursor.execute(sql, [*params, pk])
+            return cursor.rowcount == 1
 
     def _verify(self, model, fields):
         quote = connection.ops.quote_name

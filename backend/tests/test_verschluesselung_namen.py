@@ -226,6 +226,19 @@ def test_migration_schuetzt_chiffrate_beim_rueckweg(orgs):
                 executor.migrate(previous)
             assert raw(m.person_id) == before
             names_only("--entschluesseln")
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE members_person SET last_name = %s WHERE id = %s",
+                    ["Ö" * 101, m.person_id],
+                )
+            with pytest.raises(DatabaseError, match="Längen prüfen"):
+                MigrationExecutor(connection).migrate(previous)
+            assert len(raw(m.person_id)[0]) == 101
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE members_person SET last_name = %s WHERE id = %s",
+                    ["Ö" * 100, m.person_id],
+                )
             executor = MigrationExecutor(connection)
             executor.migrate(previous)
             old = executor.loader.project_state(previous).apps.get_model("members", "Person")
