@@ -1,6 +1,7 @@
 """Recovery widerruft ältere Browser-/OIDC-/Peer-Authentifizierung kontoweit."""
 # ruff: noqa: F811
 
+import datetime
 import time
 import uuid
 from unittest.mock import patch
@@ -11,6 +12,7 @@ from allauth.mfa import signals as mfa_signals
 from django.contrib.auth.models import AbstractBaseUser
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import Client, RequestFactory
+from django.utils import timezone
 
 from accounts.models import User
 from accounts.security import secure_account
@@ -64,6 +66,48 @@ def test_stale_user_save_cannot_restore_revoked_authentication_version(api, user
     assert fresh.auth_version == user.auth_version == 1
     assert fresh.get_session_auth_hash() != old_hash
     assert browser.get("/api/me/").status_code == 403
+
+
+@pytest.mark.parametrize("initial", [False, True])
+@pytest.mark.parametrize("reload", [False, True])
+def test_stale_profile_full_save_cannot_restore_old_password_or_initial_status(
+    api, user, initial, reload
+):
+    if initial:
+        user.set_password(PASSWORD)
+        user.initial_password_expires = timezone.now() + datetime.timedelta(days=7)
+        user.save()
+    stale = User.objects.get(pk=user.pk) if reload else user
+    browser = api(user)
+    response = browser.post(
+        "/api/me/password/",
+        {"current_password": PASSWORD, "new_password": "Synthetic-New-Password-2026"},
+        content_type="application/json",
+    )
+    assert response.status_code == 200, response.content
+    stale.first_name = "Updated profile"
+    stale.save()
+    fresh = User.objects.get(pk=user.pk)
+    assert fresh.first_name == "Updated profile"
+    assert fresh.check_password("Synthetic-New-Password-2026")
+    assert not fresh.check_password(PASSWORD)
+    assert fresh.initial_password_expires is None
+    assert fresh.auth_version == 1
+    assert browser.get("/api/me/").status_code == 200
+
+
+@pytest.mark.parametrize("method", ["password", "none", "unusable"])
+def test_intentional_password_setters_still_persist_on_full_save(user, method):
+    if method == "unusable":
+        user.set_unusable_password()
+    else:
+        user.set_password(None if method == "none" else "Explicit-New-Password-2026")
+    user.save()
+    fresh = User.objects.get(pk=user.pk)
+    if method == "password":
+        assert fresh.check_password("Explicit-New-Password-2026")
+    else:
+        assert not fresh.has_usable_password()
 
 
 def test_recovery_endpoint_revokes_two_browsers_code_token_and_peer_links(api, orgs, board_a):

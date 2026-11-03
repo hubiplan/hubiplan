@@ -88,6 +88,11 @@ class User(AbstractUser):
         # Jedes selbst gesetzte Passwort (Mein Konto, Zurücksetzen) ersetzt das Startpasswort
         super().set_password(raw_password)
         self.initial_password_expires = None
+        self._password_write_requested = True
+
+    def set_unusable_password(self) -> None:
+        super().set_unusable_password()
+        self._password_write_requested = True
 
     def _get_session_auth_hash(self, secret=None):
         original = super()._get_session_auth_hash(secret=secret)
@@ -113,10 +118,18 @@ class User(AbstractUser):
                     for field in self._meta.concrete_fields
                     if not field.primary_key and field.attname in self.__dict__
                 }
+                if not getattr(self, "_password_write_requested", False):
+                    # Profilvollsave: ein übernommener Hash/Startpasswortstatus ist
+                    # kein Passwortwechsel. Explizite Setter oder update_fields
+                    # bleiben die absichtlichen Passwort-Schreibwege.
+                    fields -= {"password", "initial_password_expires"}
             kwargs["update_fields"] = fields = set(fields) - {"auth_version"}
         if fields is not None and "password" in fields:
             kwargs["update_fields"] = {*fields, "initial_password_expires"}
+        writes_password = fields is None or "password" in fields
         super().save(*args, **kwargs)
+        if writes_password:
+            self._password_write_requested = False
 
     @property
     def must_change_password(self) -> bool:
