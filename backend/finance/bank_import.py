@@ -118,6 +118,16 @@ def _import_file(org, data, file_name, user, account, created):
         # Periodendaten fehlen bei manchen Banken: Buchungstage verwenden, bei
         # einem völlig undatierten leeren Auszug konservativ das Importdatum.
         days = [line.date for line in st.lines]
+        if (st.date_from and st.date_to and st.date_from > st.date_to) or any(
+            (st.date_from and day < st.date_from) or (st.date_to and day > st.date_to)
+            for day in days
+        ):
+            raise ValidationError(
+                gettext(
+                    "Der Zeitraum des Kontoauszugs ist widersprüchlich oder umfasst nicht alle "
+                    "Buchungstage."
+                )
+            )
         start = st.date_from or (min(days) if days else st.date_to) or timezone.localdate()
         end = st.date_to or (max(days) if days else start)
         dates = [start, end, *days]

@@ -29,6 +29,8 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext
 
+from . import bank_originals
+
 ANON = "anonymisiert"
 DOCUMENT_YEARS = 8
 RECORD_YEARS = 10
@@ -48,18 +50,12 @@ def _today() -> datetime.date:
 
 
 def state(org, closing) -> dict:
-    from .models import BankStatement
-
     today = _today()
     docs_from, records_from = due_dates(org, closing.year)
     pending_originals = False
     if closing.documents_purged_at is not None and today >= docs_from:
         start, end = org.fiscal_range(closing.year)
-        pending_originals = (
-            BankStatement.objects.filter(organization=org, date_to__gte=start, date_to__lte=end)
-            .exclude(source="")
-            .exists()
-        )
+        pending_originals = bank_originals.for_year(org, start, end).exists()
     return {
         "documents_from": docs_from,
         "records_from": records_from,
@@ -81,9 +77,11 @@ def set_hold(org, year: int, reason: str, user) -> None:
     from audit.log import record
 
     from .models import YearClosing
+    from .services import lock_bank_sources
 
     reason = (reason or "").strip()[:500]
     with transaction.atomic():
+        lock_bank_sources(org)
         closing = (
             YearClosing.objects.select_for_update().filter(organization=org, year=year).first()
         )
@@ -118,7 +116,34 @@ def _delete_file(field) -> None:
 def _purge_documents(org, start, end) -> dict[str, int]:
     from billing.models import DebitRun, Invoice
 
-    from .models import BankStatement, Booking, CashCount, CashReceipt, DonationStatement, Receipt
+    from .models import (
+        BankStatement,
+        Booking,
+        CashCount,
+        CashReceipt,
+        DonationStatement,
+        Receipt,
+        YearClosing,
+    )
+
+    originals = list(bank_originals.for_year(org, start, end))
+    if originals:
+        held_years = list(
+            YearClosing.objects.filter(organization=org)
+            .exclude(retention_hold="")
+            .order_by("year")
+            .values_list("year", flat=True)
+        )
+        for statement in originals:
+            first, last = bank_originals.year_range(org, statement)
+            held = next((year for year in held_years if first <= year <= last), None)
+            if held is not None:
+                raise ValidationError(
+                    gettext(
+                        "Der Kontoauszug betrifft auch das Geschäftsjahr {year} mit Löschsperre. "
+                        "Die Bereinigung wurde abgebrochen."
+                    ).format(year=org.fiscal_label(held))
+                )
 
     counts: dict[str, int] = {}
     bookings = Booking.objects.filter(organization=org, date__gte=start, date__lte=end)
@@ -170,15 +195,13 @@ def _purge_documents(org, start, end) -> dict[str, int]:
     counts["Zählprotokolle"] = n
 
     n = 0
-    purged = BankStatement.objects.filter(
-        organization=org, date_to__gte=start, date_to__lte=end
-    ).exclude(source="")
-    for st in purged:
+    purged_ids = [st.pk for st in originals]
+    for st in originals:
         # Mehrere Auszüge können dieselbe Datei teilen (BP-S01): erst löschen, wenn kein
         # Auszug außerhalb dieses Jahres sie noch braucht
         shared = (
             BankStatement.objects.filter(organization=org, source=st.source.name)
-            .exclude(pk__in=purged.values("pk"))
+            .exclude(pk__in=purged_ids)
             .exists()
         )
         if not shared:

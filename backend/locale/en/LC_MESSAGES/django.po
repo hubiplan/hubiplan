@@ -4886,3 +4886,9 @@ msgstr "Retention data for this financial year has already been purged. The bank
 
 msgid "Bestehende Browser-Anmeldungen und offene Dienst-Anmeldungen wurden widerrufen. Verknüpfungen für die Anmeldung über Partnerinstanzen müssen Sie nach der Neueinrichtung bewusst erneut verbinden. Bereits bei externen Diensten angemeldete Sitzungen sind dort gesondert zu beenden."
 msgstr "Existing browser sessions and pending service sign-ins have been revoked. After setting up your second factor again, you must explicitly reconnect sign-in links to partner instances. Sessions already established at external services must be ended there separately."
+
+msgid "Der Kontoauszug betrifft auch das Geschäftsjahr {year} mit Löschsperre. Die Bereinigung wurde abgebrochen."
+msgstr "The bank statement also covers financial year {year}, which is on hold. Retention cleanup was aborted."
+
+msgid "Der Zeitraum des Kontoauszugs ist widersprüchlich oder umfasst nicht alle Buchungstage."
+msgstr "The bank statement period is inconsistent or does not include all booking dates."
