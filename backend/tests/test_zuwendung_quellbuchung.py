@@ -11,9 +11,9 @@ from core.tenancy import tenant_context
 from finance import donations
 from finance.models import Booking, Donation, DonationStatement
 
+from .factories import make_member
 from .test_gesamtaudit_nebenlaeufig import hold_then
 from .test_m9_billing import JSON, base, c, club, setup, zug  # noqa: F401
-from .test_m10_billing import open_invoice  # noqa: F401
 from .test_zuwendungen import _private, ev, ready  # noqa: F401
 
 pytestmark = pytest.mark.django_db
@@ -185,11 +185,25 @@ def test_source_waits_for_concurrent_statement(source, ready, api, board_a, club
 
 
 @pytest.mark.parametrize("cancel_first", [False, True])
-def test_payment_removal_respects_confirmed_donation(
-    ready, c, club, setup, base, open_invoice, cancel_first
-):
+def test_payment_removal_respects_confirmed_donation(ready, c, club, setup, base, cancel_first):
     from billing.models import Invoice, Payment
 
+    member = make_member(club, "Erika", "Prüfmuster", "erfunden@example.org")
+    response = c.post(
+        f"{base}/invoices/",
+        {
+            "recipient_kind": "member",
+            "membership": member.pk,
+            "date": timezone.localdate().isoformat(),
+            "due_date": timezone.localdate().isoformat(),
+            "subject": "Erfundene Rechnung",
+            "lines": [{"text": "Erfundener Beitrag", "amount": "60.00"}],
+        },
+        content_type=JSON,
+    )
+    assert response.status_code == 201, response.json()
+    open_invoice = response.json()["id"]
+    assert c.post(f"{base}/invoices/{open_invoice}/finalize/").status_code == 200
     cfg = c.get(f"{base}/settings/").json()
     assert (
         c.patch(
