@@ -1,0 +1,4 @@
+# Öffentliche Schlüssel, mit denen Release-Tags signiert sein müssen (Format „allowed signers“
+# von ssh-keygen, eine Zeile je Schlüssel). scripts/release.sh taggen prüft jeden neuen Tag
+# dagegen; der Aktualisierer (konzepte/selbstupdate.md) nimmt nur so signierte Releases.
+# Einrichten: docs/releases.md, „Release-Tags signieren“. Nur öffentliche Schlüssel, nie private.

@@ -24,6 +24,9 @@ import tempfile
 from pathlib import Path
 
 MARKE = "<!-- Neue Versionen hier einfügen (scripts/release.sh) -->"
+# Öffentliche Schlüssel, mit denen Release-Tags signiert sein müssen (konzepte/selbstupdate.md,
+# S2). Liegt im HUBIplan-Repo und gilt auch für die Webseite.
+ERLAUBTE_SIGNATUREN = Path(__file__).resolve().parent.parent / "deploy" / "release-schluessel"
 DATEIEN = {"de": "CHANGELOG.md", "en": "CHANGELOG.en.md"}
 ARTEN = {
     # Art aus dem PR: (Überschrift de, Überschrift en)
@@ -222,6 +225,66 @@ def nur_aenderungshinweise(a: str, b: str) -> bool:
     return dateien <= set(DATEIEN.values())
 
 
+def signatur_bereit() -> None:
+    """Vorab: Signaturschlüssel eingerichtet und in deploy/release-schluessel eingetragen."""
+    if git("config", "gpg.format", check=False) != "ssh" or not git(
+        "config", "user.signingkey", check=False
+    ):
+        fehler(
+            "Kein Schlüssel zum Signieren eingerichtet (gpg.format=ssh, user.signingkey). "
+            "Siehe docs/releases.md, „Release-Tags signieren“."
+        )
+    if not ERLAUBTE_SIGNATUREN.is_file() or not any(
+        z.strip() and not z.startswith("#")
+        for z in ERLAUBTE_SIGNATUREN.read_text(encoding="utf-8").splitlines()
+    ):
+        fehler(f"{ERLAUBTE_SIGNATUREN} enthält noch keinen öffentlichen Schlüssel.")
+
+
+def signierter_tag(repo: str, tag: str, ref: str, titel: str) -> None:
+    """Tag lokal signieren, prüfen und direkt zu GitHub schicken (der Klon in WSL holt sonst
+    nur vom Windows-Checkout). Anmeldung bei GitHub über gh (GH=gh.exe in WSL)."""
+    git("tag", "-s", "-m", titel, tag, ref)
+    pruefung = subprocess.run(
+        [
+            "git",
+            "-c",
+            f"gpg.ssh.allowedSignersFile={ERLAUBTE_SIGNATUREN}",
+            "tag",
+            "-v",
+            tag,
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if pruefung.returncode != 0:
+        git("tag", "-d", tag)
+        fehler(
+            f"Signatur von {tag} passt zu keinem Schlüssel in {ERLAUBTE_SIGNATUREN}: "
+            f"{pruefung.stderr.strip()}"
+        )
+    hilfe = f"!{os.environ.get('GH', 'gh')} auth git-credential"
+    res = subprocess.run(
+        [
+            "git",
+            "-c",
+            "credential.helper=",
+            "-c",
+            f"credential.helper={hilfe}",
+            "push",
+            f"https://github.com/hubiplan/{repo}.git",
+            f"refs/tags/{tag}",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if res.returncode != 0:
+        fehler(f"Tag {tag} nicht zu GitHub geschickt: {res.stderr.strip()} (lokal liegt er)")
+    print(f"Signierter Tag {tag} bei GitHub.")
+
+
 def taggen(args: argparse.Namespace) -> None:
     repo = repo_name()
     ref = git("rev-parse", "--verify", f"{args.ref}^{{commit}}")
@@ -279,6 +342,7 @@ def taggen(args: argparse.Namespace) -> None:
             )
         print(f"Testserver: {test_sha[:7]} ok")
 
+    signatur_bereit()
     notizen = f"{text_de}\n\n---\n\n**English**\n\n{text_en}\n"
     print(f"\n{PRODUKT[repo]} {version} auf {kurz} (vorher: {vorher or 'kein Release'})\n")
     print(notizen)
@@ -287,6 +351,7 @@ def taggen(args: argparse.Namespace) -> None:
         if antwort not in {"j", "ja"}:
             print("Nichts angelegt.")
             return
+    signierter_tag(repo, tag, ref, f"{PRODUKT[repo]} {version}")
     with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as f:
         f.write(notizen)
     try:
@@ -296,8 +361,7 @@ def taggen(args: argparse.Namespace) -> None:
             tag,
             "--repo",
             f"hubiplan/{repo}",
-            "--target",
-            ref,
+            "--verify-tag",
             "--title",
             f"{PRODUKT[repo]} {version}",
             "--notes-file",
@@ -306,7 +370,7 @@ def taggen(args: argparse.Namespace) -> None:
     finally:
         os.unlink(f.name)
     print(url.strip())
-    print(f"Fertig. Tag holen: git fetch origin --tags. Ausrollen: deploy/deploy.sh {tag}")
+    print(f"Fertig. Ausrollen: deploy/release-ausrollen.sh <ziel> {tag}")
 
 
 def main() -> None:
