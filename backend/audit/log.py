@@ -163,8 +163,9 @@ def record(
         model = "departmentroleholder"
     from .chain import seal_later
 
+    seal_later(organization.pk)
     with tenant_context(organization.pk):
-        entry = AuditEntry.objects.create(
+        return AuditEntry.objects.create(
             organization=organization,
             user=user if user and user.is_authenticated else None,
             user_email=getattr(user, "email", "") or "",
@@ -177,5 +178,3 @@ def record(
             change_set=current_set_id(),
             via=current_via.get()[:100],
         )
-        seal_later(organization.pk)
-        return entry
