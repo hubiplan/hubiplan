@@ -5,16 +5,22 @@ import type { OrgSummary } from '../api/orgs.ts'
 import { LoadError } from './ui.tsx'
 import { useLoad } from './forms.ts'
 import { t } from '../i18n/index.ts'
+import { api } from '../api/client.ts'
+import { useState } from 'react'
+import { errorMessage } from './forms.ts'
 
 export function OpenTasksTile({ org }: { org: OrgSummary }) {
   const { data, error, reload } = useLoad(() => orgApi.openTasks(org.id), [org.id])
   const items = data?.items ?? []
+  const [actionError, setActionError] = useState<string | null>(null)
   return (
     <div className="card tile">
       <h2>
         {t('Offene Aufgaben')}
         {items.length > 0 && <span className="badge"> {items.length}</span>}
       </h2>
+      {org.permissions.includes('todos.view') && <Link to="/aufgaben">{t('Neue Aufgabe')}</Link>}
+      {actionError && <p role="alert">{actionError}</p>}
       {error && (
         <LoadError
           message={t('Die offenen Aufgaben konnten nicht geladen werden.')}
@@ -28,6 +34,22 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
         <ul className="plain-list task-list">
           {items.map((tm, i) => (
             <li key={`${tm.kind}-${i}`}>
+              {tm.kind === 'todo' && tm.can_edit && (
+                <input
+                  type="checkbox"
+                  aria-label={t('Erledigt')}
+                  checked={false}
+                  onChange={() => {
+                    void api
+                      .patch(`/api/orgs/${org.id}/todos/${tm.ref}/`, {
+                        status: 'done',
+                        version: tm.version,
+                      })
+                      .then(() => reload())
+                      .catch((err: unknown) => setActionError(errorMessage(err)))
+                  }}
+                />
+              )}
               <span className="muted small">{tm.kind_label}</span>
               <div>
                 <Link to={tm.link}>{tm.title}</Link>

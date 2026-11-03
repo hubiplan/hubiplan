@@ -51,6 +51,8 @@ class TestArbeitsbereich:
             role = Role.objects.get(organization=zug)
         assert role.name == "Vorstand"
         assert set(role.permissions) == {
+            "todos.view",
+            "todos.edit",
             "roles.view",
             "roles.edit",
             "roles.preview",

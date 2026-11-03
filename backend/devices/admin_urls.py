@@ -20,6 +20,7 @@ from members import jubilee_views, photo_views, workflow_views
 from members import views as member_views
 from organizations import views as org_views
 from portal import views as portal_views
+from todos import views as todo_views
 
 from . import admin_finance, admin_members
 from .admin_api import for_app
@@ -91,6 +92,8 @@ def _p(route: str, view, name: str):
 
 
 urlpatterns = [
+    path("todos/", for_app(todo_views.TodoListView).as_view()),
+    path("todos/<int:pk>/", for_app(todo_views.TodoDetailView).as_view()),
     _p("members/", member_views.MemberListView, "members"),
     _p("members/duplicates/", member_views.DuplicateView, "member-duplicates"),
     _p("members/admit/", member_views.AdmitView, "member-admit"),

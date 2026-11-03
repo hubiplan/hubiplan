@@ -155,6 +155,11 @@ def record(
     changes: dict | None = None,
     person=None,
 ) -> AuditEntry:
+    if instance._meta.app_label == "todos":
+        if not getattr(instance, "shared", False):
+            return None
+        # Vereinsprotokoll enthält keine privaten oder lokal ergänzten Aufgabeninhalte.
+        changes = {"Aufgabe": {"before": "", "after": action}}
     model = instance._meta.model_name
     # Rollen und Inhaber von Untereinheiten (auch ohne die Sicht DepartmentRole)
     if model == "role" and getattr(instance, "department_id", None):
@@ -171,7 +176,7 @@ def record(
             action=action,
             object_type=OBJECT_TYPES.get(model, model),
             object_id=str(instance.pk),
-            object_repr=str(instance)[:200],
+            object_repr=("Aufgabe" if instance._meta.app_label == "todos" else str(instance))[:200],
             changes=_german(changes or {}),
             person_id=getattr(person, "pk", None),
             change_set=current_set_id(),

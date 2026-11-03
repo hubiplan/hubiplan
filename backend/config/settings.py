@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     "peering",
     "devices",
     "oidc",
+    "todos",
 ]
 
 MIDDLEWARE = [
@@ -253,6 +254,7 @@ CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", False)
 CELERY_TIMEZONE = "Europe/Berlin"
 # Regelmäßige Jobs (laufen im Dienst "beat")
 CELERY_BEAT_SCHEDULE = {
+    "todos-purge": {"task": "todos.tasks.purge_deleted", "schedule": 86400.0},
     "mitgliedsausweise-wallet": {"task": "cards.tasks.sync_wallets", "schedule": 5 * 60},
     "datenuebernahme-aufraeumen": {
         "task": "datatransfer.tasks.purge_expired",

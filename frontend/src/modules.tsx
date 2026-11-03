@@ -46,6 +46,14 @@ const icon = (d: string) => (
 
 export const modules: AppModule[] = [
   {
+    id: 'aufgaben',
+    label: t('Aufgaben'),
+    path: '/aufgaben',
+    icon: icon('M4 5h16v15H4zM8 12l3 3 5-7'),
+    visible: (org, ws) =>
+      !!(org?.permissions.includes('todos.view') || ws.dept?.permissions.includes('todos.view')),
+  },
+  {
     id: 'start',
     label: t('Startseite'),
     path: '/',

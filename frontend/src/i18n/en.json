@@ -4870,5 +4870,21 @@
   "Keine Rechte": "No permissions",
   "Letzter Abrufversuch: {when}.": "Last fetch attempt: {when}.",
   "Letzter erfolgreicher Abruf: {when}. Die vorhandenen Kopien bleiben erhalten.": "Last successful fetch: {when}. Existing copies are retained.",
-  "Letzter erfolgreicher Abruf unbekannt. Vorhandene Kopien können veraltet sein.": "Last successful fetch unknown. Existing copies may be outdated."
+  "Letzter erfolgreicher Abruf unbekannt. Vorhandene Kopien können veraltet sein.": "Last successful fetch unknown. Existing copies may be outdated.",
+  "Aufgaben": "Tasks",
+  "Neue Aufgabe": "New task",
+  "Alle Aufgaben": "All tasks",
+  "Meine": "Mine",
+  "Geteilt mit mir": "Shared with me",
+  "Überfällig": "Overdue",
+  "Keine Aufgaben vorhanden.": "No tasks yet.",
+  "Eigene Aufgaben exportieren": "Export personal tasks",
+  "Beschreibung und Frist": "Description and due date",
+  "Frist": "Due date",
+  "ohne Frist": "No due date",
+  "Eigene und mit mir geteilte Aufgaben": "Personal tasks and tasks shared with me",
+  "Aufgaben mit anderen teilen": "Share tasks with others",
+  "Dafür fehlt dir die Berechtigung.": "You do not have permission.",
+  "Filter": "Filter",
+  "Erledigt": "Done"
 }

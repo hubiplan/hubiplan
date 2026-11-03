@@ -349,7 +349,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         p = request.query_params
         if (year := p.get("jahr")) and year.isdigit():
             qs = qs.filter(year=int(year))
-        rows = qs.order_by().values("counterparty", "kind", "date")
+        rows = qs.order_by("pk").values("counterparty", "kind", "date")
         kind = p.get("art")
         names: dict[str, dict] = {}
         for row in rows:

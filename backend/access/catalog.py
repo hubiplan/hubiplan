@@ -209,6 +209,14 @@ AREAS: tuple[Area, ...] = (
         dept_label=gettext_noop("Rollen {gen}"),
     ),
     Area(
+        "todos",
+        gettext_noop("Aufgaben"),
+        gettext_noop("Eigene und mit mir geteilte Aufgaben"),
+        gettext_noop("Aufgaben mit anderen teilen"),
+        org_types=ALL_TYPES,
+        dept_levels=_BOTH,
+    ),
+    Area(
         "audit",
         gettext_noop("Änderungsprotokoll"),
         gettext_noop("Änderungsprotokoll und Postausgang einsehen"),

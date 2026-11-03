@@ -56,6 +56,8 @@ logger = logging.getLogger(__name__)
 # (Ralf 02.11.2026) gehen die neuen Codes mit; die früheren bleiben eine Fassung lang für
 # ältere App-Versionen. „Termine lesen“ allein macht noch keine Verwaltung in der App.
 ADMIN_PERMISSIONS = (
+    "todos.view",
+    "todos.edit",
     MEMBERS_VIEW,
     MEMBERS_EDIT,
     PHOTOS_MANAGE,
@@ -72,6 +74,8 @@ ADMIN_PERMISSIONS = (
 )
 # Untereinheiten (Rollen nur dort, z. B. Zugführung): Pfad /api/app/v1/admin/d/<Untereinheit>/
 DEPT_ADMIN_PERMISSIONS = (
+    "todos.view",
+    "todos.edit",
     DEPT_MEMBERS_VIEW,
     DEPT_MEMBERS_EDIT,
     DEPT_EVENTS_MANAGE,
@@ -295,4 +299,7 @@ class AdminTasksView(AdminScopedMixin, APIView):
         if org.keeps_members and "members" in (org.enabled_modules or []):
             items += member_tasks(org, perms)
         items += event_tasks(org, perms)
+        from todos.open_tasks import todo_tasks
+
+        items += todo_tasks(request.user, org, perms)
         return Response({"items": items})

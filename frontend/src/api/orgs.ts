@@ -629,7 +629,10 @@ export interface SelfUpdate {
 
 /** Vorgang, der eine Entscheidung braucht (Startseite „Offene Aufgaben“) */
 export interface OpenTask {
-  kind: 'change_request' | 'transfer' | 'photo' | 'event'
+  kind: 'change_request' | 'transfer' | 'photo' | 'event' | 'todo'
+  ref?: number
+  version?: number
+  can_edit?: boolean
   kind_label: string
   title: string
   detail: string
@@ -638,6 +641,8 @@ export interface OpenTask {
 }
 
 export const PERM = {
+  todosView: 'todos.view',
+  todosEdit: 'todos.edit',
   membersView: 'members.view',
   membersEdit: 'members.edit',
   photosManage: 'photos.manage',
