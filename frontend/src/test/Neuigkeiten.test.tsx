@@ -23,10 +23,16 @@ Einleitung, die auf der Seite nicht erscheint.
 - Erfundene Neuerung für den Test
 `
 
-function renderApp(path: string, files: Record<string, string>, orgs = [testOrg()]) {
+function renderApp(
+  path: string,
+  files: Record<string, string>,
+  orgs: Record<string, unknown>[] = [testOrg()],
+  routes: Parameters<typeof fakeApi>[0] = {},
+) {
   fakeApi({
     [SESSION]: () => ({ status: 200, body: { status: 200, data: { user: testUser } } }),
     'GET /api/me/organizations/': () => ({ status: 200, body: orgs }),
+    ...routes,
   })
   const api = vi.mocked(globalThis.fetch).getMockImplementation()!
   vi.mocked(globalThis.fetch).mockImplementation(async (input, init) => {
@@ -108,5 +114,49 @@ describe('Neuigkeiten', () => {
     expect(await screen.findByRole('navigation', { name: 'Rechtliches' })).toBeInTheDocument()
     await new Promise((r) => setTimeout(r, 50))
     expect(screen.queryByText(/aktualisiert/)).toBeNull()
+  })
+
+  it('Plattformverwalter sehen ein neueres Release (E9), andere nicht', async () => {
+    const user = userEvent.setup()
+    const platform = testOrg({
+      id: 1,
+      name: 'Plattform',
+      type: 'platform',
+      permissions: ['platform.manage'],
+    })
+    const update = {
+      'GET /api/platform/update/': () => ({
+        status: 200,
+        body: {
+          enabled: true,
+          update: {
+            version: '2026.12.0',
+            url: 'https://github.com/hubiplan/hubiplan/releases/tag/v2026.12.0',
+            running: '2026.11.0',
+          },
+        },
+      }),
+    }
+    renderApp('/', {}, [platform], update)
+    expect(
+      await screen.findByText(
+        /neuere Version von HUBIplan: 2026\.12\.0 \(hier läuft 2026\.11\.0\)/,
+      ),
+    ).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Änderungen ansehen' })).toHaveAttribute(
+      'href',
+      'https://github.com/hubiplan/hubiplan/releases/tag/v2026.12.0',
+    )
+    await user.click(screen.getByRole('button', { name: 'Ausblenden' }))
+    await waitFor(() => expect(screen.queryByText(/neuere Version/)).toBeNull())
+    expect(localStorage.getItem('hubiplan.release-hinweis.ausgeblendet')).toBe('2026.12.0')
+  })
+
+  it('ohne Plattformrecht keine Abfrage des Update-Hinweises', async () => {
+    renderApp('/', {})
+    expect(await screen.findByRole('navigation', { name: 'Rechtliches' })).toBeInTheDocument()
+    await new Promise((r) => setTimeout(r, 50))
+    const calls = vi.mocked(globalThis.fetch).mock.calls.map(([input]) => String(input))
+    expect(calls).not.toContain('/api/platform/update/')
   })
 })

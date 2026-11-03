@@ -847,6 +847,7 @@ urlpatterns = [
         name="platform-outbox-attachment",
     ),
     path("platform/settings/", org_views.PlatformSettingsView.as_view(), name="platform-settings"),
+    path("platform/update/", org_views.PlatformUpdateView.as_view(), name="platform-update"),
     path("platform/imprint/", imprint_views.PlatformImprintView.as_view(), name="platform-imprint"),
     path(
         "platform/orgs/<int:pk>/board/",

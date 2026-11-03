@@ -2,6 +2,10 @@
 
 from celery import shared_task
 
+# Jobs in eigenen Modulen; der Import meldet sie beim Worker an (Celery sucht nur tasks.py)
+from .backup_status import check_backup  # noqa: F401
+from .update_check import check_latest  # noqa: F401
+
 
 @shared_task
 def ping() -> str:

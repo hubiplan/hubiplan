@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Count, ProtectedError, RestrictedError
 from django.shortcuts import get_object_or_404
@@ -29,6 +30,7 @@ from access.models import Role, RoleAssignment
 from access.permissions import is_platform_admin
 from accounts.models import User
 from audit.log import diff, record, snapshot
+from core import update_check
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.reorder import reorder_response
 from core.tenancy import rls_bypass, set_rls, tenant_context
@@ -595,6 +597,15 @@ class PlatformBoardView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+class PlatformUpdateView(APIView):
+    """Neueres HUBIplan-Release, falls die tägliche Prüfung eines gefunden hat (E9)."""
+
+    permission_classes = [IsPlatformAdmin]
+
+    def get(self, request):
+        return Response({"enabled": settings.UPDATE_CHECK, "update": update_check.available()})
 
 
 class PlatformSettingsView(generics.RetrieveUpdateAPIView):

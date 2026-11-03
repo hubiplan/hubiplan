@@ -472,6 +472,11 @@ Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen.
 - Wer HUBIplan selbst betreibt, rollt am besten Releases aus (`deploy/deploy.sh v2026.11.0`)
   und liest vorher in [CHANGELOG.md](../CHANGELOG.md) den Abschnitt „Für Betreiber“.
   Versionen, Changelog und Rollout-Protokoll: [releases.md](releases.md).
+- Einmal am Tag fragt HUBIplan den Releases-Feed auf GitHub ab
+  (`HUBIPLAN_UPDATE_URL`, Standard: dieses Repository) und zeigt Plattformverwaltern einen Hinweis,
+  wenn ein neueres Release als das laufende erschienen ist. Gesendet wird nichts; GitHub sieht
+  nur die IP-Adresse des Servers (steht in der erzeugten Datenschutzerklärung).
+  Abschalten mit `HUBIPLAN_UPDATE_CHECK=0` in der `.env`.
 
 ## Ausrollen mit Rückweg
 
