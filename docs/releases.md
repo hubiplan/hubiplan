@@ -62,11 +62,36 @@ Wann ein Release kommt, entscheidet der Betreuer. Ablauf im Klon (in WSL):
    - beide Changelogs haben einen vollständigen Abschnitt für die Version.
 
    Danach zeigt es die Release-Notizen und legt nach Rückfrage mit `gh release create`
-   den Tag `v2026.11.0` und das GitHub-Release an (`GH=` für einen anderen Pfad zu `gh`).
+   den signierten Tag `v2026.11.0` und das GitHub-Release an (`GH=` für einen anderen Pfad zu
+   `gh`; siehe „Release-Tags signieren“).
 7. Auf den Echtserver mit `deploy/release-ausrollen.sh` (nächster Abschnitt).
 
 Für die Webseite dieselben Schritte im Klon von `hubiplan-website` mit
 `~/hubiplan/scripts/release.sh`.
+
+## Release-Tags signieren
+
+Release-Tags sind signiert (Entscheidung 03.11.2026, `konzepte/selbstupdate.md` S2), damit ein
+Server prüfen kann, dass ein Release wirklich vom Betreuer stammt. `scripts/release.sh taggen`
+legt den Tag deshalb selbst an: signiert mit `git tag -s`, geprüft gegen
+[`deploy/release-schluessel`](../deploy/release-schluessel) und dann mit der Anmeldung von `gh`
+direkt zu GitHub geschickt. Danach legt es das GitHub-Release zu diesem Tag an.
+
+Einmal einrichten (in WSL, als der Benutzer, der Releases anlegt):
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/hubiplan_release -C "HUBIplan-Releases"   # mit Passphrase
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/hubiplan_release.pub
+echo "releases@hubiplan namespaces=\"git\" $(cat ~/.ssh/hubiplan_release.pub)"
+```
+
+Die letzte Zeile ausgeben lassen und per PR in `deploy/release-schluessel` eintragen (nur der
+öffentliche Schlüssel). Der private Schlüssel bleibt auf dem Rechner und gehört in die
+Sicherung bzw. den Passwortmanager. Wer ihn verliert, trägt einen neuen öffentlichen Schlüssel
+ein; ältere Tags bleiben mit dem alten Schlüssel gültig, solange dessen Zeile stehen bleibt.
+
+Ohne Schlüssel bricht `taggen` vor der Rückfrage ab.
 
 ## Ein Release ausrollen
 

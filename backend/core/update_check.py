@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
+from pathlib import Path
 
 from celery import shared_task
 from django.conf import settings
@@ -99,3 +101,48 @@ def available() -> dict | None:
         "url": latest.get("url", ""),
         "running": running_version(),
     }
+
+
+# --- Selbstupdate (konzepte/selbstupdate.md, 7b) -------------------------------------------
+# Das Backend schreibt nur die Datei „auftrag“ mit der gewünschten Version. Prüfen, sichern und
+# ausrollen macht der Aktualisierer auf dem Server (deploy/aktualisierer/aktualisierer.sh); er
+# schreibt das Ergebnis nach „ergebnis“ (status=laeuft|ok|fehler, version, zeit, text).
+
+ERGEBNIS_FELDER = ("status", "version", "zeit", "text")
+
+
+def _ordner() -> Path | None:
+    if not settings.SELBSTUPDATE:
+        return None
+    pfad = Path(settings.AKTUALISIERUNG_DIR)
+    return pfad if pfad.is_dir() else None
+
+
+def selbstupdate_status() -> dict:
+    ordner = _ordner()
+    if ordner is None:
+        return {"enabled": False, "pending": False, "result": None}
+    result = None
+    try:
+        text = (ordner / "ergebnis").read_text(encoding="utf-8")[:4096]
+    except OSError:
+        text = ""
+    if text:
+        werte = {}
+        for zeile in text.splitlines():
+            name, sep, wert = zeile.partition("=")
+            if sep and name in ERGEBNIS_FELDER:
+                werte[name] = wert.strip()[:500]
+        result = werte or None
+    pending = (ordner / "auftrag").exists() or (ordner / "auftrag.laeuft").exists()
+    return {"enabled": True, "pending": pending, "result": result}
+
+
+def auftrag_anlegen(version: str, wer: str) -> None:
+    """Auftrag für den Aktualisierer ablegen (atomar, damit er nie eine halbe Datei liest)."""
+    ordner = _ordner()
+    if ordner is None or release_tuple(version) is None:
+        raise ValueError(version)
+    neu = ordner / "auftrag.neu"
+    neu.write_text(f"version={version}\nwer={wer}\n", encoding="utf-8")
+    os.replace(neu, ordner / "auftrag")

@@ -1,0 +1,10 @@
+# Sieht jede Minute nach, ob HUBIplan einen Auftrag zum Aktualisieren abgelegt hat.
+[Unit]
+Description=HUBIplan-Selbstupdate prüfen (/opt/%i)
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=1min
+
+[Install]
+WantedBy=timers.target

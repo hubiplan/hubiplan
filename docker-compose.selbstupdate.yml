@@ -1,0 +1,10 @@
+# Selbstupdate (konzepte/selbstupdate.md): Das Backend darf in den Auftragsordner schreiben,
+# sonst nichts. Ausgeführt wird der Auftrag vom Aktualisierer auf dem Server
+# (deploy/aktualisierer/). server-setup.sh nimmt diese Datei dazu, wenn in der .env
+# HUBIPLAN_SELBSTUPDATE=1 steht.
+services:
+  backend:
+    environment:
+      HUBIPLAN_SELBSTUPDATE: "1"
+    volumes:
+      - ${AKTUALISIERUNG_DIR:-/opt/hubiplan-aktualisierung}:/aktualisierung

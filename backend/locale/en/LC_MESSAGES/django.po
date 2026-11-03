@@ -4857,3 +4857,15 @@ msgstr "A name may be at most {n} characters long."
 msgid ""
 "Dieses Design gibt es nicht oder es ist für diese Webseite nicht freigegeben."
 msgstr "This design does not exist or is not released for this website."
+
+msgid "Das Selbstupdate ist auf diesem Server nicht eingeschaltet."
+msgstr "Self-update is not enabled on this server."
+
+msgid "Für das Aktualisieren brauchst du die Zwei-Faktor-Anmeldung."
+msgstr "You need two-factor authentication to update."
+
+msgid "Diese Version ist nicht als Update verfügbar."
+msgstr "This version is not available as an update."
+
+msgid "Es läuft schon eine Aktualisierung."
+msgstr "An update is already running."

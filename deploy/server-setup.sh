@@ -83,6 +83,17 @@ fi
 if grep -q '^CLAMD_SOCKET_DIR=.' .env; then
     DATEIEN="$DATEIEN -f docker-compose.clamav.yml"
 fi
+# Selbstupdate (konzepte/selbstupdate.md): Backend darf Aufträge in einen eigenen Ordner legen
+SELBSTUPDATE=""
+if grep -q '^HUBIPLAN_SELBSTUPDATE=1' .env; then
+    SELBSTUPDATE=1
+    DATEIEN="$DATEIEN -f docker-compose.selbstupdate.yml"
+    AKTUALISIERUNG_DIR=$(grep '^AKTUALISIERUNG_DIR=' .env | cut -d= -f2 || true)
+    AKTUALISIERUNG_DIR=${AKTUALISIERUNG_DIR:-/opt/hubiplan-aktualisierung}
+    mkdir -p "$AKTUALISIERUNG_DIR"
+    chown 1000:1000 "$AKTUALISIERUNG_DIR"
+    chmod 750 "$AKTUALISIERUNG_DIR"
+fi
 COMPOSE="docker compose -p $PROJEKT $DATEIEN"
 
 # Backup-Verzeichnis außerhalb der Docker-Volumes (gehört dem postgres-Benutzer, UID 70)
@@ -285,4 +296,28 @@ for id in $ALTE_IDS; do
     fi
 done
 rm -rf "$ZIEL.fehler"
+
+# Aktualisierer für das Selbstupdate ein- oder ausschalten (systemd-Timer je Programmordner).
+# Das Skript wird als neue Datei angelegt (install), damit ein gerade laufender Aktualisierer,
+# der dieses Ausrollen selbst angestoßen hat, ungestört zu Ende läuft.
+INSTANZ="hubiplan-aktualisierer@$(basename "$ZIEL").timer"
+if command -v systemctl > /dev/null 2>&1 && [ "$(dirname "$ZIEL")" = /opt ]; then
+    if [ -n "$SELBSTUPDATE" ]; then
+        for prog in git ssh-keygen; do
+            command -v "$prog" > /dev/null 2>&1 ||
+                echo "WARNUNG: Für das Selbstupdate fehlt $prog auf dem Server." >&2
+        done
+        install -d -m 755 /usr/local/lib/hubiplan
+        install -m 755 deploy/aktualisierer/aktualisierer.sh /usr/local/lib/hubiplan/aktualisierer.sh
+        install -m 644 deploy/aktualisierer/hubiplan-aktualisierer@.service \
+            deploy/aktualisierer/hubiplan-aktualisierer@.timer /etc/systemd/system/
+        systemctl daemon-reload
+        systemctl enable --now "$INSTANZ" > /dev/null 2>&1 &&
+            echo "Selbstupdate eingeschaltet ($INSTANZ)." ||
+            echo "WARNUNG: Selbstupdate-Timer $INSTANZ ließ sich nicht einschalten." >&2
+    elif systemctl is-enabled "$INSTANZ" > /dev/null 2>&1; then
+        systemctl disable --now "$INSTANZ" > /dev/null 2>&1 || true
+        echo "Selbstupdate ausgeschaltet ($INSTANZ)."
+    fi
+fi
 $COMPOSE ps
