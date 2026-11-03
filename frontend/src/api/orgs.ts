@@ -369,6 +369,8 @@ export interface Assignment {
   invited?: boolean
   new_account?: boolean
   has_mfa?: boolean
+  /** Konto hat noch kein Passwort festgelegt (Einladung offen oder abgelaufen) */
+  awaiting_password?: boolean
 }
 
 export interface AuditEntry {
@@ -559,6 +561,11 @@ export const orgApi = {
       member?: number | null
     },
   ) => api.post<Assignment>(`${org(id)}/assignments/`, data),
+  resendInvitation: (id: number, a: number) =>
+    api.post<{ invited: boolean; email: string }>(
+      `/api/orgs/${id}/assignments/${a}/resend-invitation/`,
+      {},
+    ),
   resetMfa: (id: number, a: number) =>
     api.post<{ reset: boolean }>(`/api/orgs/${id}/assignments/${a}/reset-mfa/`, {}),
   updateAssignment: (

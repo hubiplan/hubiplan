@@ -200,6 +200,50 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
             super().perform_destroy(instance)
 
     @extend_schema(request=None)
+    @action(detail=True, methods=["post"], url_path="resend-invitation")
+    def resend_invitation(self, request, *args, **kwargs):
+        """Einladung zum Festlegen des Passworts erneut senden.
+
+        Für Konten, die noch nie ein Passwort festgelegt haben, etwa weil die Frist des
+        ersten Links abgelaufen ist. Der Link geht nur an die Adresse des Kontos selbst.
+        """
+        from accounts.invitations import send_invitation
+        from accounts.tokens import is_invitation
+
+        assignment = self.get_object()
+        target = assignment.user
+        if not RoleAssignment.objects.active().filter(pk=assignment.pk).exists():
+            raise serializers.ValidationError(
+                {"detail": gettext("Die Rolle ist nicht mehr aktiv.")}
+            )
+        if not is_invitation(target):
+            raise serializers.ValidationError(
+                {
+                    "detail": gettext(
+                        "Dieses Konto hat bereits ein Passwort. Bei Bedarf hilft „Passwort "
+                        "vergessen“ auf der Anmeldeseite."
+                    )
+                }
+            )
+        sent = send_invitation(target, self.org, assignment.role.name)
+        if not sent:
+            raise serializers.ValidationError(
+                {
+                    "detail": gettext(
+                        "Die Einladung konnte nicht gesendet werden. Bitte später erneut versuchen."
+                    )
+                }
+            )
+        record(
+            self.org,
+            request.user,
+            "update",
+            assignment,
+            {"Einladung": [None, f"erneut gesendet von {request.user.email}"]},
+        )
+        return Response({"invited": True, "email": target.email})
+
+    @extend_schema(request=None)
     @action(detail=True, methods=["post"], url_path="reset-mfa")
     @transaction.atomic
     def reset_mfa(self, request, *args, **kwargs):
