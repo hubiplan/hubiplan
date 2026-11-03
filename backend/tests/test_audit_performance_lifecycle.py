@@ -10,6 +10,7 @@ from django.test.utils import CaptureQueriesContext
 
 from core import encfields
 from core.tenancy import tenant_context
+from members import views
 from members.views import filter_members, member_queryset
 
 from .factories import make_member, make_org
@@ -50,6 +51,41 @@ def test_name_search_preserves_postgres_unicode_case_semantics():
     with as_app_role(), tenant_context(org.pk):
         found = filter_members(member_queryset(org), {"suche": "İpek İPEK"}, org)
         assert list(found.values_list("pk", flat=True)) == [member.pk]
+
+
+@pytest.mark.django_db(transaction=True)
+@pytest.mark.parametrize("fails", [False, True])
+def test_member_list_jit_setting_is_local_and_preserves_rls(api, orgs, board_a, fails):
+    def jit():
+        with connection.cursor() as cursor:
+            cursor.execute("SHOW jit")
+            return cursor.fetchone()[0]
+
+    before = jit()
+    original = views.member_rows
+    observed = []
+
+    def rows(page, org):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT current_setting('jit'), current_setting('app.org_id'), "
+                "current_setting('app.bypass_rls')"
+            )
+            observed.append(cursor.fetchone())
+        if fails:
+            raise RuntimeError("synthetic list error")
+        return original(page, org)
+
+    client = api(board_a)
+    with as_app_role(), patch.object(views, "member_rows", rows):
+        if fails:
+            with pytest.raises(RuntimeError, match="synthetic list error"):
+                client.get(f"/api/orgs/{orgs['a'].pk}/members/")
+        else:
+            response = client.get(f"/api/orgs/{orgs['a'].pk}/members/")
+            assert response.status_code == 200, response.content
+    assert observed == [("off", str(orgs["a"].pk), "off")]
+    assert jit() == before
 
 
 def test_warmup_closes_failing_iterable_and_main_thread_connections():

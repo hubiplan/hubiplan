@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from django.contrib.postgres.fields import ArrayField
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import (
     BigIntegerField,
     Exists,
@@ -429,7 +429,14 @@ class MemberListView(_ClubMixin, generics.GenericAPIView):
             OpenApiParameter("sortierung", str),
         ]
     )
+    @transaction.atomic
     def get(self, request, org_id: int):
+        # Lokale Messung mit 10.000 Mitgliedern/RLS: 151 JIT-Funktionen kosteten
+        # mehr als die Ausführung. Nur diesen paginierten interaktiven Abruf
+        # interpretieren; Transaktionsende stellt die Verbindungseinstellung zurück.
+        if connection.vendor == "postgresql":
+            with connection.cursor() as cursor:
+                cursor.execute("SET LOCAL jit = off")
         qs = filter_members(member_queryset(self.org), request.query_params, self.org)
         page = self.paginate_queryset(qs)
         return self.get_paginated_response(member_rows(page, self.org))

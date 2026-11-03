@@ -60,6 +60,24 @@ thread-local: each gthread request thread connects on its first request. The unu
 main-thread connection is closed afterwards; no measured first-request latency guarantee
 is implied.
 
+**Paginierte Mitgliederliste:** Nur der interaktive Listenabruf verwendet innerhalb seiner
+Transaktion `SET LOCAL jit = off`. In einer lokalen PostgreSQL-18-Messung mit App-Rolle/RLS
+und 10.000 synthetischen Mitgliedern entfielen bei einer Liste mit 50 Zeilen 77,9 ms auf
+151 JIT-Funktionen (Ausführungsplan insgesamt 96,4 ms; ohne JIT 19,3 ms). Der gesamte
+ORM-Listenablauf einschließlich Anzahl und Zeilenaufbereitung lag im Median bei
+147,7 beziehungsweise 45,5 ms. Das sind Vergleichswerte dieses lokalen Datensatzes,
+keine gemessenen Produktions- oder HTTP-Latenzen. Bei 10 bis 1.000 Mitgliedern zeigte
+sich kein einheitlicher JIT-Vorteil. Andere Abrufe, Exporte und die globale
+Datenbankkonfiguration behalten ihre vorhandene JIT-Einstellung; RLS bleibt aktiv.
+Commit oder Rollback der Listentransaktion stellt die Einstellung zurück.
+
+English: The paginated interactive member list disables JIT only for its transaction.
+A local synthetic 10,000-member RLS workload showed 77.9 ms compiling 151 JIT functions
+and a 96.4/19.3 ms execution-plan comparison with/without JIT; the complete ORM list
+workflow measured 147.7/45.5 ms median. These are local comparisons, not production or
+HTTP latency guarantees. Smaller clubs showed no consistent JIT advantage. Other requests,
+exports, global database defaults and RLS are unchanged. Commit/rollback restores the setting.
+
 ## Geheimnisse
 
 Alle Geheimnisse stehen nur in `/opt/hubiplan/.env` auf dem Server (Rechte 600), nie im
