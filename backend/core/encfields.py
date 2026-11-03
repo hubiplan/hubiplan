@@ -92,9 +92,16 @@ class EncryptedMixin:
 
     empty_values_db = ("", None)
 
-    def __init__(self, *args, plain_values=(), **kwargs):
+    def __init__(self, *args, plain_values=(), strict=False, **kwargs):
         self.plain_values = tuple(plain_values)
+        self.strict = strict
         super().__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        if self.strict:
+            kwargs["strict"] = True
+        return name, path, args, kwargs
 
     def _stays_plain(self, value) -> bool:
         return value in self.empty_values_db or value in self.plain_values
@@ -130,6 +137,8 @@ class EncryptedMixin:
         try:
             return self._text_to_plain(decrypt_text(value, self))
         except crypto.DecryptionError:
+            if self.strict:
+                raise
             # Schlüssel gelöscht (Verein entfernt) oder Wert verändert
             logger.warning("Wert in %s nicht lesbar", self.model._meta.label)
             return self._broken()

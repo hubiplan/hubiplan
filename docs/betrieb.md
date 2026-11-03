@@ -113,7 +113,7 @@ Exporte, Bilder der Webseite) liegen verschlüsselt im Volume `private-data`
 (`core/crypto.py`, `core/privatefiles.py`). Logos und Wappen (`media-data`) sind
 öffentlich und bleiben unverschlüsselt.
 
-Dazu kommen einzelne Felder in der Datenbank (`core/encfields.py`): Geburtsdatum,
+Dazu kommen einzelne Felder in der Datenbank (`core/encfields.py`): Vor- und Nachname, Geburtsdatum,
 E-Mail-Adresse, Telefon und Straße der Mitglieder, SEPA-Mandate (Kontoinhaber, IBAN, BIC), die IBAN der
 Gegenseite in Kontoauszügen, die Werte der Zusatzfelder, die Inhalte des
 Änderungsprotokolls und der Rückgängig-Daten sowie der Text von Mails im Postausgang
@@ -129,8 +129,9 @@ verschlüsselt. Historische Versand- und Rechnungsstände bleiben dabei erhalten
 Es gilt der Schlüssel der ausstellenden bzw. versendenden Organisation, auch wenn
 der Empfänger einem anderen Verein angehört. Die Namensfelder bleiben lesbar.
 
-**Umfang und Grenzen:** Vor- und Nachnamen der Mitglieder (`Person`) bleiben im
-Klartext. Das Geburtsdatum ist bereits verschlüsselt; Datumsvergleiche, Altersfilter
+**Umfang und Grenzen:** Vor- und Nachnamen der Mitglieder (`Person`) werden mit dem
+Schlüssel ihres Verbandsbereichs verschlüsselt. Die Klartextlänge bleibt auf 100 Zeichen
+begrenzt; die Spalten sind `text`. Das Geburtsdatum ist verschlüsselt; Datumsvergleiche, Altersfilter
 und die Sortierung danach laufen in Python. Bei den Kontaktdaten sind E-Mail,
 Telefon und Straße verschlüsselt, Postleitzahl, Ort und Land bleiben lesbar.
 
@@ -152,7 +153,9 @@ ein weiterer Index deckt Bereich, Formatversion, Schlüsselkennung und Zeilen-ID
 den Übergang ab. Die Datenbank verbietet unvollständige Marken, die bereits als
 fertig gekennzeichnet sind.
 Die Marken offenbaren weiterhin Gleichheiten und Häufigkeiten der jeweiligen
-Kombination; sie sind keine Anonymisierung. Namen bleiben in dieser Fassung Klartext.
+Kombination; sie sind keine Anonymisierung. Der frühere Klartext-Namensindex entfällt;
+die technische Standardsortierung verwendet nur die Zeilen-ID. Namensreihenfolgen
+werden ausdrücklich über die entschlüsselten Werte gebildet.
 
 Formatversion 1 übernimmt bewusst die bisherige `iexact`-Großschreibung durch
 PostgreSQL `UPPER` mit der Datenbank-Locale. Nur Suchangaben werden getrimmt, gespeicherte
@@ -207,9 +210,48 @@ Datenschlüsselkennung oder Formatversion greift ebenfalls der Übergang über d
 Quelldaten und den geprüften Bestandslauf; alte Entschlüsselungsschlüssel bleiben
 bis zum Abschluss erforderlich. Rohschlüssel nicht unter derselben Kennung ersetzen.
 Ein vollständiger Austausch der Datenschlüssel ist kein Bestandteil dieses Befehls.
-Der Rückweg auf die vorherige Anwendung benötigt keine Entschlüsselung: zusätzliche
-Spalten und Trigger können bestehen bleiben. Auch die Rückmigration von `0023` entfernt
-nur die Suchmarken samt Indizes/Trigger, ohne Identitätswerte anzutasten.
+Die Suchmarkenspalten und Trigger können beim Rückweg bestehen bleiben. Eine
+Rückmigration von `0023` entfernt nur abgeleitete Suchmarken; die Namensverschlüsselung
+aus `0024` benötigt zuvor den folgenden gezielten Rückweg.
+
+**Namensbestand ab Migration `members.0024`:** Die Schemaänderung verschlüsselt keine
+Bestandszeilen. Nach Backup und Ausrollen der neuen Fassung Schreibdienste anhalten,
+die Namen umstellen, ihre Chiffrate streng prüfen, danach die vom Trigger entwerteten
+Suchmarken nachfüllen und prüfen. Erst bei erfolgreicher Prüfung die Dienste starten:
+
+```bash
+docker compose -f docker-compose.server.yml stop backend worker beat backup
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py daten_verschluesseln --feld members.Person.last_name --feld members.Person.first_name
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py daten_verschluesseln --pruefen --feld members.Person.last_name --feld members.Person.first_name
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py personen_suchmarken
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py personen_suchmarken --pruefen
+docker compose -f docker-compose.server.yml up -d backend worker beat backup
+```
+
+Die ausdrückliche Entrypoint-Auswahl verhindert Migrationen in Verwaltungscontainern.
+Bis zum Bestandslauf bleiben Klartextnamen lesbar. `daten_verschluesseln --pruefen`
+prüft ohne Änderung fehlende Verschlüsselung und authentifizierte Lesbarkeit;
+`--feld app.Modell.feld` begrenzt den Umfang und kann wiederholt werden. Ohne Auswahl
+werden alle verschlüsselten Felder geprüft. Leere erlaubte Werte bleiben leer.
+Unlesbare Namenschiffrate führen auch beim normalen Lesen zu einem Fehler, statt
+als leerer Name in Abgleiche einzufließen. Der Bestandslauf überschreibt keine seit
+dem Lesen geänderten Zeilen; nach einem Abbruch oder konkurrierenden Änderungen
+erneut ausführen und vollständig prüfen. `--probe` allein prüft keine Lesbarkeit.
+
+**Gezielter Rückweg:** `deploy/zurueck.sh` und der automatische Rückweg bei fehlgeschlagenem
+Start verwenden `deploy/daten-rueckweg.sh`: Schreiber anhalten, dann mit dem neuen Image
+`daten_verschluesseln --rueckweg-zu /rueckweg-backend` ausführen. Der Backend-Quellordner
+der Zielfassung wird dabei nur lesbar eingebunden. Die Felddeklarationen werden ohne
+Import/Ausführung ihres Codes geprüft; nur dort eindeutig gewöhnliche Django-Felder
+werden geöffnet. Unbekannte Deklarationen brechen vor Änderungen ab. Für den Rückweg
+auf die vorherige Fassung betrifft das ausschließlich die beiden Personennamen;
+Geburtsdatum, Kontakte und sämtliche anderen schon geschützten Felder bleiben verschlüsselt.
+Bei einem Fehler bleiben die Dienste angehalten, statt die ältere Fassung auf Chiffrate
+zugreifen zu lassen. Schema und Suchmarkenspalten dürfen stehen bleiben. Eine ausdrückliche
+Rückmigration von `0024` sperrt den Typwechsel, solange noch Namenschiffrate vorhanden
+sind; zuerst nur diese Namen entschlüsseln. Wieder vorrollen über das Ausrollverfahren,
+danach Namen und Marken wie oben prüfen: die ältere Fassung kann noch das frühere
+Rücksetzskript mit pauschaler Entschlüsselung enthalten.
 
 Eine beim Start installierte Compiler-Erweiterung (`core/encrypted_ordering.py`)
 weist ORM-Sortierungen nach verschlüsselten Spalten zurück, auch über Beziehungen,
@@ -265,11 +307,12 @@ Schlüssel übernimmt, kann auch die verschlüsselten Inhalte lesen.
   einem separaten Verwaltungscontainer ausführen. Ein Ergebnis von 0 bestätigt nur,
   dass keine umzuwandelnden Werte gefunden wurden; zusätzlich Lesbarkeit, Versand
   und PDF-Ausgabe prüfen. Bis zum Bestandslauf werden alte Klartextwerte weiter gelesen.
-- **Rückweg:** `dateien_verschluesseln --entschluesseln` und
-  `daten_verschluesseln --entschluesseln` legen alles wieder im Klartext ab.
-  `deploy/zurueck.sh` macht das selbst, wenn die vorige Fassung die Verschlüsselung
-  (bzw. dieselben Felder) noch nicht kennt. Nach dem nächsten Ausrollen wieder
-  verschlüsseln.
+- **Rückweg:** Der gemeinsame Betriebsbaustein entschlüsselt Datenbankfelder gezielt
+  anhand der Zielfassung (siehe Namensbestand oben). Ein manueller
+  `daten_verschluesseln --entschluesseln` ohne `--feld` legt weiterhin **alle** geschützten
+  Datenbankfelder offen und ist kein normaler Rückweg auf die vorherige Fassung.
+  `dateien_verschluesseln --entschluesseln` öffnet die privaten Dateien; beim Rückweg auf
+  eine Fassung mit vorhandener Dateiverschlüsselung bleiben sie verschlüsselt.
 
 ## Backups
 
@@ -693,7 +736,8 @@ ssh root@<testserver> "cd /opt/hubiplan && sh deploy/zurueck.sh"
 ssh deploy@server.example.org "cd /opt/hubiplan && sudo sh deploy/zurueck.sh"
 ```
 
-Ein zweiter Aufruf geht wieder vor. Welche Fassung läuft, steht in `/opt/hubiplan/.fassung`.
+Wieder vorrollen über das Ausrollverfahren, nicht durch erneuten Aufruf eines älteren
+Rücksetzskripts. Welche Fassung läuft, steht in `/opt/hubiplan/.fassung`.
 Datenbank-Migrationen der neueren Fassung bleiben dabei angewendet; Migrationen deshalb
 so schreiben, dass die vorige Fassung damit weiterläuft (Spalten erst eine Fassung später
 entfernen).

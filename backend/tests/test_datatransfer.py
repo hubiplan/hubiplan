@@ -18,7 +18,7 @@ from finance.models import Account, Booking, Category, Project, ProjectSeries
 from members.models import DepartmentMembership, FederationMember, Membership, Person
 from organizations.models import Department, DepartmentRole, Organization
 
-from .factories import give_role, make_member, make_org, make_user
+from .factories import give_role, make_member, make_org, make_user, named
 from .test_m2_members import admit, make_types
 
 pytestmark = pytest.mark.django_db
@@ -376,8 +376,11 @@ class TestImportDachverband:
             memberships = Membership.objects.filter(organization=new_club)
             assert memberships.count() == 2
             assert memberships.filter(person_id=existing_id).exists()
-            assert Person.objects.filter(scope=orgs["federation"], last_name="Muster").count() == 1
-            bernd = Person.objects.get(scope=orgs["federation"], last_name="Berg")
+            assert (
+                named(Person.objects.filter(scope=orgs["federation"]), last_name="Muster").count()
+                == 1
+            )
+            bernd = named(Person.objects.filter(scope=orgs["federation"]), last_name="Berg").get()
             # Neue Person im Dachverband bekommt eine Verbandsnummer
             assert FederationMember.objects.filter(person=bernd).exists()
             assert Booking.objects.filter(organization=new_club).count() == 1

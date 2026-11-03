@@ -81,8 +81,8 @@ class Person(models.Model):
         on_delete=models.PROTECT,
         related_name="persons",
     )
-    last_name = models.CharField("Name", max_length=100)
-    first_name = models.CharField("Vorname", max_length=100)
+    last_name = EncryptedCharField("Name", max_length=100, strict=True)
+    first_name = EncryptedCharField("Vorname", max_length=100, strict=True)
     # Verschlüsselt mit dem Schlüssel des Verbandsbereichs; Vergleiche nur in Python
     # (members.services.same_birth)
     birth_date = EncryptedDateField("Geburtsdatum")
@@ -113,9 +113,8 @@ class Person(models.Model):
     class Meta:
         verbose_name = "Person"
         verbose_name_plural = "Personen"
-        ordering = ["last_name", "first_name"]
+        ordering = ["pk"]
         indexes = [
-            models.Index(fields=["scope", "last_name", "first_name"]),
             models.Index(fields=["scope", "last_birth_mark"], name="person_last_birth_mark"),
             models.Index(fields=["scope", "first_birth_mark"], name="person_first_birth_mark"),
             models.Index(fields=["scope", "last_year_mark"], name="person_last_year_mark"),
@@ -174,8 +173,8 @@ class Person(models.Model):
                     if name not in fields and name.removesuffix("_id") not in fields:
                         setattr(self, name, getattr(current, name))
                 if fields & {"scope", "scope_id"}:
-                    # Das Datum muss beim Bereichswechsel zum neuen Schlüssel gehören.
-                    fields.add("birth_date")
+                    # Die Identität muss beim Bereichswechsel zum neuen Schlüssel gehören.
+                    fields.update(["last_name", "first_name", "birth_date"])
                 kwargs["update_fields"] = fields
             super().save(*args, **kwargs)
             # Der DB-Trigger entwertet die alten Marken beim Schreiben der Quelldaten.

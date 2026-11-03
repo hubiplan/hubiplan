@@ -15,7 +15,7 @@ from members.models import ContactDetails, DepartmentRoleHolder, MembershipPerio
 from organizations.models import Department, DepartmentRole
 from portal.models import PortalAccess
 
-from .factories import give_role, make_member, make_user
+from .factories import give_role, make_member, make_user, named
 
 pytestmark = pytest.mark.django_db
 JSON = "application/json"
@@ -168,8 +168,10 @@ class TestBeitragslauf:
     def test_vorschau(self, c, base, members, club):
         # Jan ist weder per E-Mail noch per Post erreichbar, Paul nur per Post
         with tenant_context(club.pk):
-            ContactDetails.objects.filter(person__last_name="Jung").update(email="", street="")
-            ContactDetails.objects.filter(person__last_name="Passiv").update(email="")
+            named(ContactDetails.objects.all(), person__last_name="Jung").update(
+                email="", street=""
+            )
+            named(ContactDetails.objects.all(), person__last_name="Passiv").update(email="")
         data = c.post(
             f"{base}/runs/preview/", {"year": 2025, "period": 1}, content_type=JSON
         ).json()

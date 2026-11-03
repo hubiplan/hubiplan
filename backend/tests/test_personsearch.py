@@ -161,6 +161,9 @@ def test_pagination_stabil_und_objekte_nur_fuer_seite(orgs):
 @pytest.mark.parametrize(
     "query",
     [
+        lambda: Person.objects.order_by("last_name"),
+        lambda: Membership.objects.order_by("person__first_name"),
+        lambda: Person.objects.order_by(Lower("last_name")),
         lambda: Person.objects.order_by("birth_date"),
         lambda: Membership.objects.order_by("person__birth_date"),
         lambda: Person.objects.order_by(F("birth_date").desc()),

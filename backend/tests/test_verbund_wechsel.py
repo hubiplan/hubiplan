@@ -12,7 +12,7 @@ from peering import services
 from peering.models import RemoteMember, RemoteTransfer
 from portal.models import ChangeRequest
 
-from .factories import give_role, make_member, make_org, make_user
+from .factories import give_role, make_member, make_org, make_user, named
 from .test_verbund_kopplung import VERBAND, VEREIN, _setup, api, couple, net, world  # noqa: F401
 from .verbund_netz import release
 
@@ -55,9 +55,12 @@ def setup(net, world):
 
 def placeholder_membership(setup, first_name):
     with tenant_context(setup["upper"].remote_unit.pk):
-        return Membership.objects.select_related("person").get(
-            organization=setup["upper"].remote_unit, person__first_name=first_name
-        )
+        return named(
+            Membership.objects.select_related("person").filter(
+                organization=setup["upper"].remote_unit
+            ),
+            person__first_name=first_name,
+        ).get()
 
 
 class TestKorrekturvorschlag:

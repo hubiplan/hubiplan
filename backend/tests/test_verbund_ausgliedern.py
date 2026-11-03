@@ -12,7 +12,7 @@ from organizations.models import Department, Organization
 from peering import packets, services
 from peering.models import Coupling
 
-from .factories import give_role, make_org, make_user
+from .factories import give_role, make_org, make_user, named
 from .test_verbund_kopplung import _setup, api  # noqa: F401
 from .verbund_netz import install
 
@@ -372,7 +372,9 @@ class TestFernGefuehrt:
         assert lower.level("unit_members") == "on"
         erika = Membership.objects.get(pk=zug_im_verein["erika"].pk)
         assert erika.managed_by_id == upper.pk
-        bernd = Membership.objects.get(organization=club, person__first_name="Bernd")
+        bernd = named(
+            Membership.objects.filter(organization=club), person__first_name="Bernd"
+        ).get()
         assert bernd.managed_by_id is None
 
         # Die Untereinheit ändert den Namen: der Verein übernimmt, ohne neue Person
@@ -391,7 +393,7 @@ class TestFernGefuehrt:
         with net.on(ZUG):
             make_member(new, "Karl", "Neumann")
         sync_up(net, lower)
-        karl = Membership.objects.get(organization=club, person__first_name="Karl")
+        karl = named(Membership.objects.filter(organization=club), person__first_name="Karl").get()
         assert karl.managed_by_id == upper.pk
         assert DepartmentMembership.objects.filter(membership=karl, department=dept).exists()
 
@@ -485,7 +487,9 @@ class TestFernGefuehrt:
         assert period.exit_date == datetime.date(2027, 1, 1)
         assert period.exit_reason == "transfer"
         # Bernd gehört nicht zur Untereinheit und bleibt
-        bernd = Membership.objects.get(organization=club, person__first_name="Bernd")
+        bernd = named(
+            Membership.objects.filter(organization=club), person__first_name="Bernd"
+        ).get()
         assert bernd.periods.get().exit_date is None
 
     def test_weg_a_kein_sammelaustritt(self, net, world, zug_im_verein):

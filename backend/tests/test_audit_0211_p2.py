@@ -17,7 +17,7 @@ from finance import bank_import
 from finance.models import BankLine
 from members.models import MemberType, MemberTypeAssignment
 
-from .factories import make_member
+from .factories import make_member, named
 from .test_kontoauszug import camt_xml, entry, fin, upload  # noqa: F401
 from .test_m9_billing import JSON, base, c, club, members, setup, zug  # noqa: F401
 from .test_m10_billing import fbase, fc, fed, fsetup  # noqa: F401
@@ -107,9 +107,10 @@ class TestBeitragszaehlung:
         a = orgs["a"]
         with tenant_context(a.pk):
             aktiv = MemberType.objects.get(organization=a, name="aktiv")
-            old = MemberTypeAssignment.objects.get(
-                organization=a, membership__person__first_name="Paula"
-            )
+            old = named(
+                MemberTypeAssignment.objects.filter(organization=a),
+                membership__person__first_name="Paula",
+            ).get()
             old.valid_until = datetime.date(2025, 5, 31)
             old.save()
             MemberTypeAssignment.objects.create(

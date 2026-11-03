@@ -12,6 +12,22 @@ from organizations.models import Organization
 PASSWORD = "Sicheres-Passwort-123"
 
 
+def named(qs, **names):
+    """Testdatensätze anhand entschlüsselter Namen finden, ohne SQL-Klartextabfrage."""
+
+    def value(row, path):
+        for part in path.split("__"):
+            row = getattr(row, part) if row is not None else None
+        return row
+
+    ids = [
+        row.pk
+        for row in qs.order_by()
+        if all(value(row, path) == name for path, name in names.items())
+    ]
+    return qs.filter(pk__in=ids)
+
+
 def make_org(name: str, type_: str = "club", parent: Organization | None = None, **extra):
     defaults = {
         "founding_year": 1900,

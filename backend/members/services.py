@@ -285,9 +285,14 @@ def find_duplicates(club: Organization, last_name: str, first_name: str, birth_d
     """
     scope = scope_for(club)
     from .personmarks import candidates, verified
+    from .personsearch import ordered
 
     last, first = last_name.strip(), first_name.strip()
-    qs = candidates(scope.pk, last, first, birth_date, strict=False)
+    qs = ordered(
+        candidates(scope.pk, last, first, birth_date, strict=False),
+        "last_name",
+        "first_name",
+    )
     found = [
         p
         for p in qs.select_related("federation")

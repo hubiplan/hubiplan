@@ -3,7 +3,8 @@
 # neue Fassung zwar startet, aber fehlerhaft ist. Läuft auf dem Server:
 #   ssh deploy@test.example.org "cd /opt/hubiplan && sudo sh deploy/zurueck.sh"
 #   ssh deploy@server.example.org "cd /opt/hubiplan && sudo sh deploy/zurueck.sh"
-# Ein zweiter Aufruf geht wieder vor (die Fassungen tauschen jeweils die Plätze).
+# Wieder vorrollen über deploy.sh: Die alte Fassung kann noch ein älteres
+# Rücksetzskript mit pauschaler Entschlüsselung enthalten.
 # Datenbank-Migrationen der neueren Fassung bleiben angewendet.
 set -eu
 
@@ -26,26 +27,20 @@ if grep -q '^HUBIPLAN_SELBSTUPDATE=1' .env && [ -f docker-compose.selbstupdate.y
 fi
 COMPOSE="docker compose -p $PROJEKT $DATEIEN"
 EIGENE=$($COMPOSE config --images | grep -v '@sha256:' | sort -u)
+. ./deploy/daten-rueckweg.sh
 
 echo "Jetzt: $(cat .version 2>/dev/null || true) $(cat .fassung 2>/dev/null || echo unbekannt)"
 echo "Zurück zu: $(cat "$ZIEL.vorher/.version" 2>/dev/null || true) $(cat "$ZIEL.vorher/.fassung" 2>/dev/null || echo unbekannt)"
+
+# Zuerst Schreibdienste stoppen. Bei Fehler bleiben beide Quell-/Imagestände erhalten;
+# die ältere Fassung darf niemals Chiffrat als Namen lesen oder ändern.
+daten_rueckweg "$ZIEL.vorher"
 
 # Kennt die vorige Fassung die Dateiverschlüsselung nicht (core/privatefiles.py fehlt),
 # erst alle privaten Dateien wieder im Klartext ablegen, sonst kann sie sie nicht lesen.
 if [ ! -f "$ZIEL.vorher/backend/core/privatefiles.py" ] && [ -f backend/core/privatefiles.py ]; then
     echo "Die vorige Fassung liest keine verschlüsselten Dateien: entschlüssele sie …"
     $COMPOSE run -T --rm --no-deps backend python manage.py dateien_verschluesseln --entschluesseln
-fi
-
-# Verschlüsselte Datenbankfelder: Verschlüsselt die vorige Fassung andere Felder (oder
-# keine), erst alle Felder wieder im Klartext ablegen. Klartext liest jede Fassung;
-# nach dem nächsten Ausrollen verschlüsselt `daten_verschluesseln` wieder.
-felder() {
-    grep -rhE '= Encrypted[A-Za-z]+Field\(' "$1/backend" --include='*.py' 2> /dev/null | sed 's/^ *//' | sort
-}
-if [ -f backend/core/encfields.py ] && [ "$(felder .)" != "$(felder "$ZIEL.vorher")" ]; then
-    echo "Die vorige Fassung verschlüsselt andere Felder: entschlüssele sie …"
-    $COMPOSE run -T --rm --no-deps backend python manage.py daten_verschluesseln --entschluesseln
 fi
 
 # Geburtsdatum: Kennt die vorige Fassung die Spalte nur als Datum, die Migration von

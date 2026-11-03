@@ -17,7 +17,7 @@ from members.models import (
 )
 from organizations.models import Department, PlatformSettings
 
-from .factories import found, give_role, make_user
+from .factories import found, give_role, make_user, named
 
 pytestmark = pytest.mark.django_db
 JSON = "application/json"
@@ -311,7 +311,9 @@ class TestListe:
         schuetzen = Department.objects.create(
             organization=orgs["a"], name="Schützen", founding_year=1920, sort_order=1
         )
-        christ = Membership.objects.get(organization=orgs["a"], person__last_name="Christ")
+        christ = named(
+            Membership.objects.filter(organization=orgs["a"]), person__last_name="Christ"
+        ).get()
         DepartmentMembership.objects.create(
             membership=christ,
             department=schuetzen,
@@ -323,7 +325,9 @@ class TestListe:
         assert self.names(c, orgs["a"], "abteilung") == ["Christ", "Adler", "Berg"]
         assert self.names(c, orgs["a"], "-abteilung") == ["Adler", "Christ", "Berg"]
         # Mehrere Abteilungen: es zählt die erste in der Reihenfolge des Vereins.
-        adler = Membership.objects.get(organization=orgs["a"], person__last_name="Adler")
+        adler = named(
+            Membership.objects.filter(organization=orgs["a"]), person__last_name="Adler"
+        ).get()
         DepartmentMembership.objects.create(
             membership=adler,
             department=schuetzen,
