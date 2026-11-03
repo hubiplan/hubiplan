@@ -2,8 +2,13 @@
 // - Seiten unter /stand/: erst das Netz, ohne Netz die zuletzt gemerkte Seite.
 // - Dateien unter /assets/ (Name enthält eine Prüfsumme, ändern sich also nie): aus dem Speicher.
 // Alles andere, vor allem /api/, geht unverändert ans Netz.
-const CACHE = 'hubiplan-stand-v1'
+const CACHE = 'hubiplan-stand-v2'
 const SHELL = '/stand-seite'
+
+// Response.url enthält sonst die aufgerufene URL samt Standschlüssel, auch wenn
+// der Cacheeintrag einen neutralen Namen hat. Nur die statische Seitenschale merken.
+const shellCopy = async (res) =>
+  new Response(await res.blob(), { status: res.status, headers: res.headers })
 
 self.addEventListener('install', () => self.skipWaiting())
 
@@ -29,7 +34,7 @@ self.addEventListener('message', (event) => {
     caches.open(CACHE).then(async (cache) => {
       if (typeof data.page === 'string' && data.page.startsWith('/stand/')) {
         const res = await fetch(data.page, { credentials: 'same-origin' }).catch(() => null)
-        if (res && res.ok) await cache.put(SHELL, res)
+        if (res && res.ok) await cache.put(SHELL, await shellCopy(res))
       }
       const keep = new Set()
       for (const url of Array.isArray(data.assets) ? data.assets.slice(0, 200) : []) {
@@ -58,10 +63,13 @@ self.addEventListener('fetch', (event) => {
   if (req.mode === 'navigate' && url.pathname.startsWith('/stand/')) {
     event.respondWith(
       fetch(req)
-        .then((res) => {
+        .then(async (res) => {
           if (res.ok) {
-            const copy = res.clone()
-            caches.open(CACHE).then((c) => c.put(SHELL, copy))
+            try {
+              await (await caches.open(CACHE)).put(SHELL, await shellCopy(res.clone()))
+            } catch {
+              /* Online auch bei gesperrtem oder vollem Browserspeicher. */
+            }
           }
           return res
         })

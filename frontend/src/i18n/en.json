@@ -1,4 +1,13 @@
 {
+  "Alter Stand-Speicher entfernt": "Old stand cache removed",
+  "Der alte Stand-Speicher war keinem Konto zugeordnet. {n} nicht übertragene Eingaben wurden aus Sicherheitsgründen entfernt. Bitte den Stand prüfen.": "The old stand cache was not linked to an account. For security reasons, {n} unsent entries were removed. Please check the results.",
+  "Nicht übertragene Stand-Eingaben": "Unsent stand entries",
+  "{n} Stand-Eingaben sind noch nicht übertragen. Beim Abmelden werden sie auf diesem Browser gelöscht. Jetzt abmelden und verwerfen?": "{n} stand entries have not been sent yet. Signing out deletes them from this browser. Sign out and discard them now?",
+  "Abmelden und verwerfen": "Sign out and discard",
+  "Der sichere Stand-Speicher ist in diesem Browser nicht verfügbar.": "Secure stand storage is not available in this browser.",
+  "Der Standzugang ist abgelaufen oder wurde beendet. Bitte erneut verbinden.": "Stand access has expired or ended. Please connect again.",
+  "Der Standzugang wurde beendet. {n} nicht übertragene Eingaben wurden entfernt. Bitte erneut verbinden.": "Stand access has ended. {n} unsent entries were removed. Please connect again.",
+  "Die Eingaben sind nur im Arbeitsspeicher. Bitte die Seite bis zum erfolgreichen Abgleich geöffnet lassen.": "These entries are only held in memory. Please keep this page open until they have been sent successfully.",
   " + {guests}": " + {guests}",
   " + {guests} Begleitpersonen = {persons} Personen": " + {guests} companions = {persons} people",
   " Aktuell gewählt: {current}.": " Currently selected: {current}.",
