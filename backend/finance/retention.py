@@ -31,6 +31,8 @@ from django.db.models.functions import Cast
 from django.utils import timezone
 from django.utils.translation import gettext
 
+from core.encfields import update_encrypted
+
 from . import bank_originals
 
 ANON = "anonymisiert"
@@ -316,8 +318,8 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
     bookings = ids(
         Booking.objects.filter(organization=org, date__gte=start, date__lte=end), "booking"
     )
-    counts["Buchungen"] = bookings.update(
-        text=ANON, counterparty="", reference="", membership=None, cancel_reason=""
+    counts["Buchungen"] = update_encrypted(
+        bookings, text=ANON, counterparty="", reference="", membership=None, cancel_reason=""
     )
     invoices = ids(
         Invoice.objects.filter(organization=org, date__gte=start, date__lte=end), "invoice"
@@ -327,17 +329,24 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
     invoices.filter(recipient_kind=Invoice.Recipient.MEMBER).update(
         recipient_kind=Invoice.Recipient.ANONYMIZED, membership=None
     )
-    counts["Rechnungen"] = invoices.update(
-        recipient_name=ANON, recipient_address="", recipient_email="", note="", membership=None
+    counts["Rechnungen"] = update_encrypted(
+        invoices,
+        recipient_name=ANON,
+        recipient_address="",
+        recipient_email="",
+        note="",
+        membership=None,
     )
     # Posten nennen in Sammelrechnungen Mitglieder mit Namen (Audit 02.11. BP-F03)
-    counts["Rechnungsposten"] = InvoiceLine.objects.filter(
-        invoice__in=invoices, membership__isnull=False
-    ).update(text=ANON, detail="", membership=None)
+    counts["Rechnungsposten"] = update_encrypted(
+        InvoiceLine.objects.filter(invoice__in=invoices, membership__isnull=False),
+        text=ANON,
+        detail="",
+        membership=None,
+    )
     InvoiceLine.objects.filter(invoice__in=invoices).exclude(detail="").update(detail="")
-    counts["Quittungen"] = ids(
-        CashReceipt.objects.filter(organization=org, booking__in=bookings), "cashreceipt"
-    ).update(
+    counts["Quittungen"] = update_encrypted(
+        ids(CashReceipt.objects.filter(organization=org, booking__in=bookings), "cashreceipt"),
         counterparty_name=ANON,
         counterparty_address="",
         email="",
@@ -349,21 +358,37 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
         treasurer_signature=None,
         counterparty_signature=None,
     )
-    counts["Zuwendungen"] = ids(
-        Donation.objects.filter(organization=org, date__gte=start, date__lte=end), "donation"
-    ).update(donor_name=ANON, donor_address="", note="", membership=None)
-    counts["Zuwendungsbestätigungen"] = ids(
-        DonationStatement.objects.filter(
-            organization=org, issued_on__gte=start, issued_on__lte=end
+    counts["Zuwendungen"] = update_encrypted(
+        ids(Donation.objects.filter(organization=org, date__gte=start, date__lte=end), "donation"),
+        donor_name=ANON,
+        donor_address="",
+        note="",
+        membership=None,
+    )
+    counts["Zuwendungsbestätigungen"] = update_encrypted(
+        ids(
+            DonationStatement.objects.filter(
+                organization=org, issued_on__gte=start, issued_on__lte=end
+            ),
+            "donationstatement",
         ),
-        "donationstatement",
-    ).update(donor_name=ANON, donor_address="", membership=None, items=[], cancel_reason="")
+        donor_name=ANON,
+        donor_address="",
+        membership=None,
+        items=[],
+        cancel_reason="",
+    )
     counts["Kontoumsätze"] = ids(
         BankLine.objects.filter(organization=org, date__gte=start, date__lte=end), "bankline"
     ).update(name="", iban="", purpose="", details=[], suggested_membership=None)
-    counts["Kassenzählungen"] = ids(
-        CashCount.objects.filter(organization=org, date__gte=start, date__lte=end), "cashcount"
-    ).update(counted_by=ANON, witness="", note="")
+    counts["Kassenzählungen"] = update_encrypted(
+        ids(
+            CashCount.objects.filter(organization=org, date__gte=start, date__lte=end), "cashcount"
+        ),
+        counted_by=ANON,
+        witness="",
+        note="",
+    )
     counts["Rücklagenbewegungen"] = ids(
         ReserveMovement.objects.filter(organization=org, date__gte=start, date__lte=end),
         "reservemovement",

@@ -1074,7 +1074,7 @@ def _starters_with_values(comp) -> list[dict]:
             {"x": str(h.x), "y": str(h.y), "spot": h.spot}
         )
     out = []
-    for s in comp.starters.select_related("unit").order_by("name", "pk"):
+    for s in ordered(comp.starters.select_related("unit"), "name", "pk"):
         data = _starter_data(s, values.get(s.pk))
         # Trefferpunkte je Wertung (Antippen am Stand: vorhandene Treffer weiter bearbeiten)
         data["hits"] = hits.get(s.pk, {})

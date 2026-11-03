@@ -12,7 +12,7 @@ from core.tenancy import tenant_context
 from peering import packet_results
 from peering.models import RemoteState
 
-from .factories import give_role, make_user
+from .factories import give_role, make_user, named
 from .test_verbund_kopplung import VERBAND, VEREIN, _setup, api, couple, net, world  # noqa: F401
 from .test_verbund_termine import enable, sync
 
@@ -36,8 +36,8 @@ def _standings(competition):
                     },
                     {
                         "place": 2,
-                        "starter": Starter.objects.filter(
-                            competition=competition, name="Max Muster"
+                        "starter": named(
+                            Starter.objects.filter(competition=competition), name="Max Muster"
                         )
                         .values_list("pk", flat=True)
                         .first(),

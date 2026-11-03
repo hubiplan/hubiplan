@@ -28,6 +28,8 @@ from core.tenancy import rls_bypass
 
 def encrypted_fields():
     for model in apps.get_models():
+        if model._meta.proxy:
+            continue
         fields = [f for f in model._meta.concrete_fields if isinstance(f, EncryptedMixin)]
         if fields:
             yield model, fields

@@ -14,7 +14,7 @@ from access.permissions import permissions_in
 from organizations.models import Department
 from website.public import SiteView
 
-from .factories import make_member
+from .factories import make_member, named
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -56,7 +56,7 @@ class TestErfassen:
             "application/json",
         )
         assert resp.status_code == 201, resp.content
-        entry = RoleAssignment.all_objects.get(name="Wilhelm Vorzeit")
+        entry = named(RoleAssignment.all_objects.all(), name="Wilhelm Vorzeit").get()
         assert entry.user is None and entry.membership is None
         assert entry.valid_from == datetime.date(1955, 1, 1)
         assert entry.valid_until == datetime.date(1972, 1, 1)

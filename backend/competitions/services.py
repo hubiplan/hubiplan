@@ -5,6 +5,7 @@ from __future__ import annotations
 from decimal import ROUND_HALF_UP, Decimal
 
 from members.models import DepartmentMembership, Membership
+from members.personsearch import ordered
 
 from . import ranking, targets, tiebreak
 from .models import Competition, Hit, Scoring, ShootOff, Starter
@@ -247,9 +248,11 @@ def standings(competition: Competition) -> dict:
         return foreign_standings(competition)
     org = competition.organization
     starters = list(
-        Starter.objects.filter(competition=competition)
-        .select_related("unit")
-        .order_by("name", "pk")
+        ordered(
+            Starter.objects.filter(competition=competition).select_related("unit"),
+            "name",
+            "pk",
+        )
     )
     scorings = list(
         Scoring.objects.filter(competition=competition)
@@ -345,7 +348,10 @@ def foreign_standings(competition: Competition) -> dict:
     from .models import Placing, Team
 
     starters = list(
-        Starter.objects.filter(competition=competition).select_related("unit").order_by("name")
+        ordered(
+            Starter.objects.filter(competition=competition).select_related("unit"),
+            "name",
+        )
     )
     teams = list(Team.objects.filter(competition=competition).prefetch_related("members"))
     out = []

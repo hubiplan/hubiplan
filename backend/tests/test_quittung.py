@@ -15,7 +15,7 @@ from finance.models import Booking, CashReceipt, Receipt
 from finance.signature import normalize
 from finance.words import euro_words, number_words
 
-from .factories import give_role, make_member
+from .factories import give_role, make_member, named
 from .test_app_devices import app
 from .test_app_verwaltung_b4 import ADMIN, unlocked
 from .test_app_verwaltung_b5 import offen  # noqa: F401
@@ -494,10 +494,10 @@ class TestBarkasseNieUnterNull:
         assert c.post(url, inc, content_type=JSON).status_code == 201
         assert c.post(url, out, content_type=JSON).status_code == 201
         # Die Einnahme davor löschen ginge jetzt ins Minus
-        first = Booking.objects.get(text="Spende")
+        first = named(Booking.objects.all(), text="Spende").get()
         assert c.delete(f"{url}{first.pk}/").status_code == 400
         # Ausgabe auf das Datum vor der Einnahme verschieben ebenso
-        spent = Booking.objects.get(text="Kerzen")
+        spent = named(Booking.objects.all(), text="Kerzen").get()
         resp = c.patch(f"{url}{spent.pk}/", {"date": "2026-01-15"}, content_type=JSON)
         assert resp.status_code == 400
         # Bankkonto darf ins Minus

@@ -16,6 +16,7 @@ from django.utils.translation import gettext
 from rest_framework import serializers
 
 from core.tenancy import rls_bypass
+from members.personsearch import ordered
 from outbox import mail
 
 from . import recipients as rcp
@@ -638,7 +639,12 @@ def letters_pdf(circular: Circular, preview: bool = False) -> bytes:
         sel = rcp.Selection(letters, selection.jubilees)
         rcp.fill_values(circular, sel, used_placeholders(circular))
         return render_letters(circular, [(c.address, c.values) for c in letters])
-    rows = circular.recipients.filter(channel=CircularRecipient.Channel.LETTER)
+    rows = ordered(
+        circular.recipients.filter(channel=CircularRecipient.Channel.LETTER),
+        "last_name",
+        "first_name",
+        "pk",
+    )
     return render_letters(circular, [(r.address, r.values) for r in rows])
 
 

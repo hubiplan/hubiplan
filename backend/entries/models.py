@@ -18,7 +18,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy
 
-from core.encfields import EncryptedJSONField
+from core.encfields import EncryptedCharField, EncryptedJSONField
 
 
 class Call(models.Model):
@@ -256,7 +256,7 @@ class EntryPerson(models.Model):
         verbose_name="Mitglied",
     )
     # Name als Text: für Gäste die Eingabe, für Mitglieder eine Kopie
-    name = models.CharField("Name", max_length=200)
+    name = EncryptedCharField("Name", max_length=200, strict=True)
     club = models.CharField("Verein", max_length=200, blank=True)
     position = models.CharField("Aufgabe", max_length=100, blank=True)
     substitute = models.BooleanField("Ersatz", default=False)

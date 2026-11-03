@@ -29,6 +29,7 @@ from core.api_base import OrgScopedMixin
 from core.files import delete_on_commit
 from core.tenancy import rls_bypass, scope_of, set_rls
 from members.models import Membership, MemberType
+from members.personsearch import ordered
 from organizations.imprint import ensure as ensure_imprint
 from organizations.models import Department, DepartmentRole, Organization
 from organizations.terms import fill
@@ -582,7 +583,7 @@ class _Recipients(APIView):
                     "items": [candidate_data(c) for c in selection.candidates],
                 }
             )
-        rows = circular.recipients.select_related("club")
+        rows = ordered(circular.recipients.select_related("club"), "last_name", "first_name", "pk")
         return Response(
             {"counts": sent_counts(circular), "items": [recipient_data(r) for r in rows]}
         )

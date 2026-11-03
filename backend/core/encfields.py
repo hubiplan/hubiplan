@@ -25,7 +25,7 @@ import struct
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.core.exceptions import FieldError
-from django.db import models
+from django.db import models, transaction
 from django.utils.translation import gettext
 
 from . import crypto
@@ -82,6 +82,31 @@ def _owner_or_fail(instance, field) -> int:
             f"{field.model._meta.label}.{field.name}: Verein für die Verschlüsselung fehlt."
         )
     return org_id
+
+
+def update_encrypted(qs, **values):
+    """Konstante Änderungen an bereichsgebundenen Kopien, etwa bei Löschfristen.
+
+    Der übergebene Berechtigungs-/Fachfilter bleibt erhalten. Je Organisation wird
+    mit ihrem Schlüssel vorbereitet; keine Signale und keine Änderung an updated_at,
+    wie beim bisherigen update(). Person mit Suchmarken benötigt weiterhin save().
+    """
+    if qs.query.is_sliced:
+        raise TypeError("Sammeländerungen benötigen ein ungeschnittenes QuerySet.")
+    encrypted = {name: qs.model._meta.get_field(name) for name in values}
+    count = 0
+    with transaction.atomic(using=qs.db):
+        org_ids = list(qs.order_by().values_list("organization_id", flat=True).distinct())
+        for org_id in org_ids:
+            instance = qs.model(organization_id=org_id)
+            prepared = {
+                name: encrypted[name].stored_value(instance, value)
+                if isinstance(encrypted[name], EncryptedMixin)
+                else value
+                for name, value in values.items()
+            }
+            count += qs.filter(organization_id=org_id).update(**prepared)
+    return count
 
 
 class EncryptedMixin:
@@ -249,6 +274,7 @@ class EncryptedJSONField(EncryptedMixin, models.JSONField):
 
     def deconstruct(self):
         name, _path, args, kwargs = super().deconstruct()
+        kwargs.pop("strict", None)
         return name, "django.db.models.JSONField", args, kwargs
 
     def _plain_to_text(self, value) -> str:

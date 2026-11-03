@@ -18,6 +18,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy
 
+from core.encfields import EncryptedCharField, EncryptedJSONField
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
 
@@ -261,7 +262,7 @@ class Starter(models.Model):
         verbose_name="Mitglied",
     )
     # Name als Text: für Gäste die Eingabe, für Mitglieder eine Kopie (bleibt nach Austritt)
-    name = models.CharField("Name", max_length=200)
+    name = EncryptedCharField("Name", max_length=200, strict=True)
     club = models.CharField("Verein", max_length=200, blank=True)
     result_coupling = models.ForeignKey(
         "peering.Coupling", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
@@ -294,7 +295,7 @@ class Starter(models.Model):
     class Meta:
         verbose_name = "Starter"
         verbose_name_plural = "Starter"
-        ordering = ["name", "pk"]
+        ordering = ["pk"]
         constraints = [
             models.UniqueConstraint(
                 fields=["competition", "membership"],
@@ -431,7 +432,7 @@ class ShootOffEntry(models.Model):
         related_name="+",
         verbose_name="Schütze",
     )
-    name = models.CharField("Schütze", max_length=200, blank=True)
+    name = EncryptedCharField("Schütze", max_length=200, blank=True, strict=True)
     value = models.DecimalField("Wert", max_digits=10, decimal_places=3, null=True, blank=True)
 
     updated_at = models.DateTimeField(auto_now=True)
@@ -465,7 +466,7 @@ class Prize(models.Model):
     winner = models.ForeignKey(
         Starter, on_delete=models.SET_NULL, null=True, blank=True, related_name="prizes"
     )
-    winner_name = models.CharField("errungen von", max_length=200, blank=True)
+    winner_name = EncryptedCharField("errungen von", max_length=200, blank=True, strict=True)
     shot_number = models.PositiveIntegerField("Schuss Nr.", null=True, blank=True)
     shots_for = models.PositiveIntegerField("Schüsse für dieses Pfand", null=True, blank=True)
     shot = models.ForeignKey(
@@ -497,7 +498,7 @@ class Shot(models.Model):
     starter = models.ForeignKey(
         Starter, on_delete=models.SET_NULL, null=True, blank=True, related_name="shots"
     )
-    name = models.CharField("Schütze", max_length=200, blank=True)
+    name = EncryptedCharField("Schütze", max_length=200, blank=True, strict=True)
     at = models.DateTimeField("Zeit")
     client_key = models.UUIDField(null=True, blank=True, editable=False)
 
@@ -814,7 +815,7 @@ class AwardGrant(models.Model):
         related_name="+",
         verbose_name="Untereinheit",
     )
-    name = models.CharField("Name", max_length=200)
+    name = EncryptedCharField("Name", max_length=200, strict=True)
     trophy = models.ForeignKey(
         Trophy, on_delete=models.SET_NULL, null=True, blank=True, related_name="grants"
     )
@@ -883,7 +884,7 @@ class CertificateTemplate(models.Model):
     # Ort und Datum unten links, z. B. „Neuss, 14.06.2027“ (leer: Ort des Wettbewerbs)
     place_line = models.CharField("Ort für „Ort, Datum“", max_length=100, blank=True)
     # [{"name": "Max Muster", "function": "1. Vorsitzender"}, …], höchstens zwei
-    signers = models.JSONField("Unterschriften", default=list, blank=True)
+    signers = EncryptedJSONField("Unterschriften", default=list, blank=True, strict=True)
     background = PrivateFileField(
         "Hintergrundbild",
         storage=private_storage,

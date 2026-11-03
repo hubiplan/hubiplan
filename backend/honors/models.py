@@ -16,6 +16,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext
 
+from core.encfields import EncryptedCharField
 from core.plural import guess_plural  # noqa: F401  (hier weiter importierbar)
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
@@ -96,7 +97,7 @@ class Reign(models.Model):
     )
     # Name als Text: ohne Mitglied der einzige Name, mit Mitglied ein Stand für
     # die Chronik, falls die Mitgliedsdaten später gelöscht werden
-    name = models.CharField("Name", max_length=200, blank=True)
+    name = EncryptedCharField("Name", max_length=200, blank=True, strict=True)
     note = models.CharField("Bemerkung", max_length=200, blank=True)
     # Woher der Würdenträger kam (Ralf 2026-10-31): eine Einheit darunter (Verein unter dem
     # Dachverband, Zug eines Vereins) oder frei als Text, z. B. für längst aufgelöste Vereine.
@@ -187,7 +188,7 @@ class Companion(models.Model):
         related_name="+",
         verbose_name="Mitglied",
     )
-    name = models.CharField("Name", max_length=200, blank=True)
+    name = EncryptedCharField("Name", max_length=200, blank=True, strict=True)
     sort_order = models.PositiveSmallIntegerField("Reihenfolge", default=0)
 
     class Meta:

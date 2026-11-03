@@ -12,6 +12,8 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext
 
+from members.personsearch import name_ids
+
 from .models import Account, Booking, Category, Donation, TaxArea, YearClosing
 
 ZERO = Decimal("0.00")
@@ -380,8 +382,8 @@ def _overview(org, year: int) -> dict:
     }
 
 
-def search_filter(term: str) -> Q:
-    q = Q(text__icontains=term) | Q(reference__icontains=term) | Q(counterparty__icontains=term)
+def search_filter(qs, term: str) -> Q:
+    q = Q(pk__in=name_ids(qs, term, fields=("text", "counterparty"))) | Q(reference__icontains=term)
     if term.replace(",", ".").replace(".", "", 1).isdigit():
         q |= Q(amount=Decimal(term.replace(",", ".")))
     if "-" in term:

@@ -14,6 +14,7 @@ from decimal import Decimal
 from django.utils import timezone
 
 from members.models import Membership
+from members.personsearch import name_ids
 from organizations.models import Department, Organization
 
 from . import services
@@ -481,10 +482,18 @@ def seed_projects(orgs: dict[str, Organization], today: datetime.date | None = N
     bookings = Booking.objects.filter(organization=club, year=year).exclude(
         kind=Booking.Kind.TRANSFER
     )
-    fest = bookings.filter(category__name__startswith="Schützenfest") | bookings.filter(
-        text__in=["Musikkapelle Festumzug", "Spende Festbesucher"]
+    special = set().union(
+        *(
+            name_ids(bookings, text, fields=("text",), exact=True)
+            for text in ("Musikkapelle Festumzug", "Spende Festbesucher")
+        )
     )
-    opening = bookings.filter(text="Eintritt Festzelt Samstag").first()
+    fest = bookings.filter(category__name__startswith="Schützenfest") | bookings.filter(
+        pk__in=special
+    )
+    opening = bookings.filter(
+        pk__in=name_ids(bookings, "Eintritt Festzelt Samstag", fields=("text",), exact=True)
+    ).first()
     start = opening.date if opening else _date_in_year(club.fiscal_range(year)[0], 8, 29)
     end = start + datetime.timedelta(days=2)
     series, _ = ProjectSeries.objects.get_or_create(organization=club, name="Schützenfest")
