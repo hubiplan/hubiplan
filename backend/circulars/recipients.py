@@ -44,6 +44,7 @@ from members.models import (
     Membership,
     today,
 )
+from members.personsearch import ordered
 from organizations.models import Organization
 from organizations.tree import subtree_ids, with_descendants
 
@@ -280,9 +281,7 @@ def club_candidates(circular: Circular) -> tuple[list[Candidate], dict[int, int]
     include = {k for k in filters.get("include") or [] if isinstance(k, str)}
     include_ids = [int(k[1:]) for k in include if k.startswith("m") and k[1:].isdigit()]
     qs = base.filter(Q(pk__in=matched.values("pk")) | Q(pk__in=include_ids))
-    memberships = list(
-        qs.order_by("person__last_name", "person__first_name", "pk")[:MAX_RECIPIENTS]
-    )
+    memberships = list(ordered(qs, limit=MAX_RECIPIENTS))
     rows = {r["id"]: r for r in member_rows(memberships, club, full_names=True)}
     candidates = _member_candidates(memberships, rows, lambda m: club)
     matched_ids = set(
@@ -315,9 +314,7 @@ def department_role_candidates(circular: Circular) -> list[Candidate]:
         label = f"{h.role.name} ({h.role.department.display_name})"
         roles.setdefault(h.membership_id, []).append(label)
     base = club_base(club)
-    memberships = list(
-        base.filter(pk__in=list(roles)).order_by("person__last_name", "person__first_name", "pk")
-    )
+    memberships = list(ordered(base.filter(pk__in=list(roles))))
     rows = {r["id"]: r for r in member_rows(memberships, club, full_names=True)}
     candidates = _member_candidates(memberships, rows, lambda m: club)
     for c in candidates:
@@ -422,9 +419,7 @@ def federation_member_candidates(circular: Circular) -> list[Candidate]:
     include = [k for k in filters.get("include") or [] if isinstance(k, str)]
     include_ids = [int(k[1:]) for k in include if k.startswith("m") and k[1:].isdigit()]
     qs = base.filter(Q(pk__in=matched.values("pk")) | Q(pk__in=include_ids))
-    memberships = list(
-        qs.order_by("person__last_name", "person__first_name", "pk")[:MAX_RECIPIENTS]
-    )
+    memberships = list(ordered(qs, limit=MAX_RECIPIENTS))
     rows = {r["id"]: r for r in federation_rows(memberships, full_names=True)}
     candidates = _member_candidates(memberships, rows, lambda m: m.organization)
     matched_ids = set(

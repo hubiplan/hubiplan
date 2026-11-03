@@ -35,6 +35,7 @@ from audit.log import diff, record, snapshot
 from core.api_base import OrgScopedMixin
 from core.tenancy import scope_of, set_rls
 from members.models import Membership
+from members.personsearch import filter_names, ordered
 from organizations.models import Department, Organization
 
 from . import documents, services
@@ -960,14 +961,8 @@ class CandidatesView(_Mixin, APIView):
                 .filter(Q(periods__exit_date__isnull=True) | Q(periods__exit_date__gte=on))
                 .distinct()
             )
-        for word in term.split()[:3]:
-            cond = Q()
-            for v in _umlaut_variants(word):
-                cond |= Q(person__first_name__icontains=v) | Q(person__last_name__icontains=v)
-            qs = qs.filter(cond)
-        rows = list(
-            qs.select_related("person").order_by("person__last_name", "person__first_name")[:15]
-        )
+        qs = filter_names(qs, term, variants=_umlaut_variants)
+        rows = list(ordered(qs.select_related("person"), limit=15))
         infos = services.person_infos(self.org, [m.pk for m in rows], on)
         entry = self.find_entry(call)
         taken = (
