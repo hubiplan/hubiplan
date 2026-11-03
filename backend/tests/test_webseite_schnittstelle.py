@@ -582,6 +582,7 @@ def test_grunddaten_abfragen_wachsen_nicht_mit_aemtern(setup):
         return len(captured)
 
     add_role(0)
+    count()  # einmalige Abfragen (Einstellungen, Impressum) vorab
     before = count()
     for n in range(1, 5):
         add_role(n)
