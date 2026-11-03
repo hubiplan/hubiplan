@@ -4892,3 +4892,6 @@ msgstr "The bank statement also covers financial year {year}, which is on hold. 
 
 msgid "Der Zeitraum des Kontoauszugs ist widersprüchlich oder umfasst nicht alle Buchungstage."
 msgstr "The bank statement period is inconsistent or does not include all booking dates."
+
+msgid "Die Anmeldung ist nicht mehr aktuell. Bitte erneut anmelden."
+msgstr "This sign-in is no longer current. Please sign in again."

@@ -7,6 +7,13 @@ Die eigene Sitzung darf beim selbst ausgeführten Passwort-/Faktorwechsel besteh
 Beim Entfernen oder Zurücksetzen eines Faktors wird ihr früherer MFA-Nachweis entfernt;
 ein alter Authentifizierungszeitpunkt ersetzt keinen neuen zweiten Faktor.
 
+Der persönliche Passwortwechsel sperrt die aktuelle Kontozeile und prüft Passwort sowie
+Anmeldezustand dort erneut. Hat ein anderer Wechsel oder eine Recovery schon abgeschlossen,
+kann eine zuvor authentifizierte Anfrage den neuen Zustand nicht überschreiben. Hält der
+geprüfte Passwortwechsel die Sperre zuerst, schließt eine nachfolgende Recovery erst danach
+ab und widerruft dann auch dessen Sitzung. Gewöhnliche Profilvollsaves schreiben keinen
+übernommenen alten Passwort-Hash oder Startpasswortstatus zurück.
+
 Setzt eine berechtigte zweite Person die Zwei-Faktor-Anmeldung zurück, werden alle
 Browser- und App-Anmeldungen des Zielkontos widerrufen. Offene Anmelde-, E-Mail- und
 App-Kopplungslinks gelten nicht mehr. Eingehende Anmeldeverknüpfungen mit Partnerinstanzen
@@ -32,6 +39,12 @@ Password and second-factor changes increment an account-wide authentication vers
 Older browser sessions and pending OIDC codes/access tokens then become invalid across
 all clubs. An explicitly retained session for a self-service change can stay signed in.
 Removing/resetting MFA clears that session's historical MFA evidence.
+
+The personal password endpoint locks the current account row and rechecks its password and
+authentication state. A request authenticated before an already completed change/recovery
+cannot overwrite the newer state. If a checked password change acquired the lock first,
+subsequent recovery completes afterwards and revokes that session too. Ordinary profile
+saves do not restore a previously loaded password hash or initial-password status.
 
 Administrative MFA recovery revokes the target account's browser/app sessions and pending
 login, email-change and pairing links. Incoming peer sign-in links are removed and must

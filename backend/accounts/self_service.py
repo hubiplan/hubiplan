@@ -16,8 +16,10 @@ from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.utils import timezone
+from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext
 from rest_framework import serializers, status
+from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -87,13 +89,21 @@ class PasswordSerializer(serializers.Serializer):
 class PasswordView(APIView):
     """Passwort ändern – oder erstmals festlegen (Konten mit Anmeldelink)."""
 
+    @transaction.atomic
     def post(self, request):
         data = PasswordSerializer(data=request.data)
         data.is_valid(raise_exception=True)
-        user = request.user
-        if _too_many(user.pk, "passwort"):
+        authenticated = request.user
+        if _too_many(authenticated.pk, "passwort"):
             return Response(
                 {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
+            )
+        user = User.objects.select_for_update().filter(pk=authenticated.pk, is_active=True).first()
+        if user is None or not constant_time_compare(
+            user.get_session_auth_hash(), authenticated.get_session_auth_hash()
+        ):
+            raise NotAuthenticated(
+                gettext("Die Anmeldung ist nicht mehr aktuell. Bitte erneut anmelden.")
             )
         had_password = user.has_usable_password()
         if had_password and not user.check_password(data.validated_data.get("current_password")):
