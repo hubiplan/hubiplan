@@ -39,8 +39,10 @@ Wann ein Release kommt, entscheidet der Betreuer. Ablauf im Klon (in WSL):
 1. `git fetch origin --tags` (in WSL vorher im Windows-Checkout ebenfalls).
 2. `scripts/release.sh entwurf` trägt die Hinweise aller PRs seit dem letzten Release in
    beide Changelogs ein und schlägt die nächste Nummer vor (`--version` für eine andere).
-   PRs ohne Abschnitt übernimmt es mit ihrem Titel und meldet sie.
-3. Entwurf lesen und glätten, als PR „Release 2026.11.0“ mergen.
+   PRs findet es über „(#12)“ im Squash-Commit oder „Merge pull request #12“. PRs ohne
+   Abschnitt übernimmt es mit ihrem Titel und meldet sie.
+3. Entwurf lesen und glätten, als PR „Release 2026.11.0“ mergen, und zwar per **Squash**
+   (ein einzelner Commit, sonst erkennt Schritt 4 ihn nicht als reinen Changelog-Commit).
 4. `scripts/test.sh <Merge-Commit>`: Ändert der Commit gegenüber dem getesteten Vorgänger
    nur die beiden Changelogs, gilt er sofort als getestet (kein neuer Testlauf).
 5. Auf den Testserver ausrollen wie immer.
