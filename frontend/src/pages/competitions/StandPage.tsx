@@ -19,14 +19,28 @@ import { LiveTables } from './LiveTables.tsx'
 import { StandPanel } from './StandPanel.tsx'
 import { locale } from '../../i18n/index.ts'
 import { t } from '../../i18n/index.ts'
+import { useAuth } from '../../auth/AuthContext.tsx'
+import {
+  isStandNetworkError,
+  loadStandCache,
+  revokeStandCache,
+  saveStandCache,
+  standCacheAllowed,
+  standCacheExpired,
+  standRevision,
+  standTokenKey,
+  subscribeStandCache,
+} from '../../api/standCache.ts'
 
 export function StandPage() {
   const params = useParams()
   const org = Number(params.org)
   const id = Number(params.id)
-  const api = useMemo(() => orgStandApi(org, id), [org, id])
+  const { user } = useAuth()
+  const api = useMemo(() => orgStandApi(org, id), [org, id, user?.id])
   return (
     <StandShell
+      key={api.key}
       api={api}
       org={org}
       exit={
@@ -40,29 +54,65 @@ export function StandPage() {
 
 export function StandTokenPage() {
   const token = useParams().token ?? ''
-  const api = useMemo(() => tokenStandApi(token), [token])
-  return <StandShell api={api} exit={null} />
+  const [key, setKey] = useState<{ token: string; key: string } | null>(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    let stop = false
+    void standTokenKey(token)
+      .then((key) => {
+        if (!stop) setKey({ token, key })
+      })
+      .catch(() => {
+        if (!stop) setFailed(true)
+      })
+    return () => {
+      stop = true
+    }
+  }, [token])
+  const api = useMemo(
+    () => (key?.token === token ? tokenStandApi(token, key.key) : null),
+    [token, key],
+  )
+  if (failed)
+    return (
+      <p className="alert alert-error">
+        {t('Der sichere Stand-Speicher ist in diesem Browser nicht verfügbar.')}
+      </p>
+    )
+  return api ? <StandShell key={api.key} api={api} exit={null} /> : <p>{t('Lädt …')}</p>
 }
 
 function StandShell({ api, exit, org }: { api: StandApi; exit: ReactNode; org?: number }) {
   const [showAccess, setShowAccess] = useState(false)
-  const { data, error, reload } = useLoad(async () => {
-    const key = `hubiplan.stand.detail.${api.key}`
+  const [, refresh] = useState(0)
+  useEffect(() => subscribeStandCache(() => refresh((n) => n + 1)), [])
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (standCacheExpired(api.key)) revokeStandCache(api.key)
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [api.key])
+  const {
+    data: loaded,
+    error,
+    reload,
+  } = useLoad(async () => {
+    const at = standRevision()
     try {
       const detail = await api.get()
-      try {
-        localStorage.setItem(key, JSON.stringify(detail))
-      } catch {
-        // ohne Speicher geht es online weiter
-      }
+      saveStandCache(api.key, 'detail', detail, at)
       return detail
     } catch (err) {
       // Ohne Empfang: zuletzt geladene Einrichtung vom Gerät
-      const cached = localStorage.getItem(key)
-      if (cached) return JSON.parse(cached) as CompetitionDetail
+      const cached =
+        at === standRevision() && isStandNetworkError(err)
+          ? loadStandCache<CompetitionDetail>(api.key, 'detail')
+          : null
+      if (cached) return cached
       throw err
     }
   }, [api.key])
+  const data = !error && standCacheAllowed(api.key) ? loaded : null
   useWakeLock()
   useOfflineReload()
   return (
@@ -97,6 +147,12 @@ function StandShell({ api, exit, org }: { api: StandApi; exit: ReactNode; org?: 
       </header>
       {showAccess && org && data && <StandAccessCard org={org} comp={data} />}
       {error && <LoadError message={error} onRetry={reload} />}
+      {loaded && !data && !error && (
+        <LoadError
+          message={t('Der Standzugang ist abgelaufen oder wurde beendet. Bitte erneut verbinden.')}
+          onRetry={reload}
+        />
+      )}
       {data &&
         (!data.own ? (
           <p className="alert alert-info">
