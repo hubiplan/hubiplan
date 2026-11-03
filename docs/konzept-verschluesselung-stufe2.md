@@ -128,8 +128,7 @@ ID-Reihenfolge.
 - **Seitenweise Anzeige** (Mitgliederliste, 50 je Seite): erst alle IDs sortieren,
   dann die Seite herausschneiden, dann nur diese Objekte laden. Der DRF-Paginator
   bekommt dafür eine Liste statt eines QuerySets.
-- **Größe:** Ein Verein hat einige hundert Personen (Dogado: 128 Mitgliedschaften,
-  Testserver: 186), das ist im Speicher unkritisch. Ein großer Dachverband mit vielen
+- **Größe:** Ein Verein hat einige hundert Personen, das ist im Speicher unkritisch. Ein großer Dachverband mit vielen
   tausend Personen (Verbandsansicht) braucht einen Zwischenspeicher je Prozess
   (Schlüssel: Verbandsbereich und letzter `updated_at`), der bei Änderungen verfällt.
   Erst messen, dann bauen.
@@ -177,7 +176,7 @@ rückwärts wieder `date` herstellen können.
 | a) | `members/personsearch.py`; alle 5 Teilsuchen, 13 Sortierungen und die 2 Altersfilter darauf umstellen; Mitgliederliste blättert über die ID-Liste; `Meta.ordering` bleibt vorerst | nein (gleiche Treffer, gleiche Reihenfolge) | groß: ~15 Dateien, ~400–600 Zeilen Code, ~300 Zeilen Tests |
 | b) | Marken-Spalten, Ableitung des HMAC-Schlüssels, Füllen beim Speichern und per Befehl; die 5 Dublettenstellen auf Marken umstellen | nein | mittel: ~8 Dateien, ~250 Zeilen + Tests |
 | c) | Sperre für `order_by` auf verschlüsselten Feldern; `EncryptedDateField`; Felder umstellen; `Meta.ordering`/Indizes entfernen; Migration | ja (Daten verschlüsselt) | mittel: ~6 Dateien, ~250 Zeilen + Tests |
-| d) | Testserver, dann Dogado: Backup, ausrollen, Bestand verschlüsseln | – | Betrieb, ~30 Minuten je Server |
+| d) | Testserver, dann Produktionsserver: Backup, ausrollen, Bestand verschlüsseln | – | Betrieb, ~30 Minuten je Server |
 
 ### Schritt a) genauer
 

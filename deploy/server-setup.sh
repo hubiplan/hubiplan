@@ -194,7 +194,7 @@ fi
 # 1b. Migrationen als eigener Schritt, bevor die neue Fassung startet. Vorher halten
 #     Backend, Worker, Beat und Backup der bisherigen Fassung an: Laufende Abfragen (z. B. der
 #     minütliche Mailabruf im Worker) halten sonst Tabellensperren, und ALTER TABLE wartet
-#     endlos (Dogado 31.10.2026). Hinter nginx hält auch Caddy an, damit nginx die Seite
+#     endlos (Produktionsserver 31.10.2026). Hinter nginx hält auch Caddy an, damit nginx die Seite
 #     „Wird gerade aktualisiert“ zeigt (deploy/hestia/app-8110.stpl); mit eigenem HTTPS
 #     wartet Caddy auf das Backend. Datenbank und Redis laufen weiter.
 #     Stehen keine Migrationen an, entfällt das Anhalten.

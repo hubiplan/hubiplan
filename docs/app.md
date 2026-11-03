@@ -1,7 +1,7 @@
 # Schnittstelle für die HUBIplan-App
 
 Die Android-App (Repository `hubiplan-android`) spricht nur mit der HUBIplan-Instanz
-des Mitglieds. Konzept: `konzepte/android-app.md` im Projektordner.
+des Mitglieds. Die öffentliche Schnittstellenbeschreibung steht in diesem Dokument.
 
 ## Anmelden (Schritt A1)
 

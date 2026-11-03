@@ -1,17 +1,17 @@
 #!/bin/bash
-# Richtet HUBIplan auf einem Server mit HestiaCP ein (Echtserver bei Dogado).
+# Richtet HUBIplan auf einem Server mit HestiaCP ein (Produktionsbetrieb).
 # Voraussetzung: deploy/deploy.sh ist einmal mit HUBIPLAN_HINTER_PROXY=1 gelaufen,
 # der Docker-Verbund läuft also unter /opt/hubiplan und lauscht auf 127.0.0.1:8110.
 #
-# Aufruf von Ralfs PC (PowerShell), läuft als root auf dem Server:
-#   Get-Content -Raw deploy\hestia\einrichten.sh | ssh administrator@dogado "sudo env DOMAIN=verein.example.org MAILDOMAIN=example.org ALARM_MAIL=adresse@example.org bash -s"
+# Aufruf vom lokalen Arbeitsrechner (PowerShell), läuft als root auf dem Server:
+#   Get-Content -Raw deploy\hestia\einrichten.sh | ssh deploy@server.example.org "sudo env HUSER=hosting-user DOMAIN=verein.example.org MAILDOMAIN=example.org ALARM_MAIL=adresse@example.org bash -s"
 #
 # Wiederholbar: Was schon da ist, bleibt. Hestia lädt nginx dabei nur neu (reload),
 # andere Websites laufen weiter. Gibt keine Passwörter aus.
 set -euo pipefail
 export PATH=/usr/local/hestia/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-HUSER=${HUSER:-ralf}
+HUSER=${HUSER:?HUSER fehlt, z. B. HUSER=hosting-user}
 DOMAIN=${DOMAIN:?DOMAIN fehlt, z. B. DOMAIN=verein.example.org}
 MAILDOMAIN=${MAILDOMAIN:?MAILDOMAIN fehlt, z. B. MAILDOMAIN=example.org}
 MAILKONTO=${MAILKONTO:-verein}

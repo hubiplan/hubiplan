@@ -58,6 +58,14 @@ for (const language of ['de', 'en']) {
         const root = b.wurzel ?? 'main'
         const target = page.locator(b.ausschnitt ? `${root} ${b.ausschnitt}` : root).first()
         await target.waitFor({ state: 'visible', timeout: 15000 })
+        // Organisationsanzeigen dieser Bilder müssen aus dem erfundenen Screenshot-Bestand stammen.
+        const requiredNames = b.name === 'modul-einschalten'
+          ? ['Dachverband Musterstadt', 'Schützenverein Beispieldorf']
+          : b.name === 'dokument-hochladen' ? ['Schützenverein Beispieldorf'] : []
+        const visibleText = await target.innerText()
+        for (const name of requiredNames) {
+          if (!visibleText.includes(name)) throw new Error('Erfundene Organisationsanzeige fehlt')
+        }
         // Hinweise mit Datum (z. B. Frist für die Zwei-Faktor-Anmeldung) veralten im Bild
         await page.addStyleTag({ content: 'main.content > .alert[role="status"] { display: none !important; }' })
         // Ausschnitt aus der ganzen Seite: so liegt die feste Kopfleiste nicht über dem

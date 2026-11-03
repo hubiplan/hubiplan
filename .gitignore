@@ -1,4 +1,6 @@
-# Geheimnisse
+# Geheimnisse und private lokale Unterlagen
+.private/
+CLAUDE.local.md
 .env
 .env.*
 !.env.example

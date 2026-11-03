@@ -2,7 +2,7 @@
 
 Vorwärmen: Jeder neue Prozess beantwortet vor der ersten echten Anfrage zwei Abrufe
 an sich selbst. So lädt er Adressen, Ansichten und die Datenbankverbindung vorab;
-sonst wartete der erste Besucher nach dem Ausrollen darauf (auf Dogado 2,5 s, 03.11.2026).
+sonst wartete der erste Besucher nach dem Ausrollen darauf.
 """
 
 WARMUP_PATHS = ("/api/health/", "/api/public/site/v1/resolve/")

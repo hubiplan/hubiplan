@@ -4,8 +4,8 @@
 # aktualisiert“ statt „502 Bad Gateway“ beim Ausrollen. Erst HUBIplan und die
 # Webseite ausrollen (die Vorlagen kommen aus /opt/hubiplan und /opt/hubiplan-website).
 #
-# Aufruf von Ralfs PC (PowerShell), läuft als root auf dem Server:
-#   Get-Content -Raw deploy\hestia\vorlagen-erneuern.sh | ssh administrator@dogado "sudo bash -s"
+# Aufruf vom lokalen Arbeitsrechner (PowerShell), läuft als root auf dem Server:
+#   Get-Content -Raw deploy\hestia\vorlagen-erneuern.sh | ssh deploy@server.example.org "sudo env HUSER=hosting-user bash -s"
 #
 # Nur Domains, die die Vorlage schon nutzen, werden neu aufgebaut. Hestia lädt nginx
 # nur neu (reload), andere Websites laufen weiter. Besteht die neue Konfiguration
@@ -13,7 +13,7 @@
 set -euo pipefail
 export PATH=/usr/local/hestia/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-HUSER=${HUSER:-ralf}
+HUSER=${HUSER:?HUSER fehlt, z. B. HUSER=hosting-user}
 TPL=/usr/local/hestia/data/templates/web/nginx
 SICHERUNG=/root/sicherung-nginx-vorlagen/$(date +%Y-%m-%d_%H%M)
 

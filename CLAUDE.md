@@ -1,25 +1,25 @@
 # Hinweise für die Arbeit an hubiplan
 
-Feste Regeln von Ralf:
+## Projektregeln
 
-- **Nie Tests auf dem Testserver ausführen**, auch keine Test-Container.
-  Tests laufen lokal in WSL (Distribution `Debian`, Klon `~/hubiplan`, Docker) mit `scripts/test.sh`,
-  danach wird ausgerollt. `deploy/deploy.sh` rollt nur lokal getestete Stände aus.
-- **Höchstens zwei Testläufe gleichzeitig, jeder höchstens 8 Kerne**, projektübergreifend
-  für alle Projekte auf Ralfs PC. `scripts/test.sh` holt sich dafür einen Platz mit
-  `scripts/testplatz.sh` (auch für andere Projekte: `testplatz <befehl>`, siehe
-  [docs/testserver.md](docs/testserver.md), „Testplätze“). Tests nur über `scripts/test.sh` starten.
-- Keine Passwörter oder Geheimnisse ins Repo oder in Chats; Zugangsdaten nur in Dateien
-  auf Ralfs Rechner.
-- Auf dem Testserver nur erfundene Daten.
-- **Jeder neue Text gleich auch auf Englisch** (Oberfläche `t()` + `src/i18n/en.json`, Backend
-  `gettext` + `locale/en`); `scripts/test.sh` schlägt sonst fehl. Siehe [docs/uebersetzung.md](docs/uebersetzung.md).
-- **Hilfe mitpflegen**: Wer eine Seite oder einen Ablauf ändert, passt die Hilfe (`frontend/src/help/`,
-  Deutsch und Englisch) im selben PR an; bei sichtbaren Änderungen Bilder mit `scripts/hilfe-bilder.sh`
-  neu erzeugen. Siehe [docs/hilfe.md](docs/hilfe.md).
+- **Nie Tests auf dem Testserver ausführen**, auch keine Test-Container. Tests laufen lokal
+  unter Linux/WSL mit Docker und `scripts/test.sh`. Danach darf ausgerollt werden;
+  `deploy/deploy.sh` akzeptiert nur lokal getestete Stände.
+- **Höchstens zwei Testläufe gleichzeitig, jeder höchstens 8 Kerne**, projektübergreifend.
+  Tests nur über `scripts/test.sh` starten. Es holt über `scripts/testplatz.sh` einen Platz;
+  andere Projekte verwenden `testplatz <befehl>` (siehe [docs/testserver.md](docs/testserver.md)).
+- Keine Passwörter, Schlüssel oder Geheimnisse ins Repo, in PRs oder in Chats.
+- Persönliche Rechnerpfade, Serverziele, Betriebsunterlagen sowie interne Chat-/Projektlinks
+  bleiben in privaten lokalen Unterlagen. Öffentliche Beispiele verwenden Musterwerte.
+- Auf Testservern und in Beispielen nur erfundene Personen-, Kontakt- und Finanzdaten.
+- **Jeder neue Oberflächentext gleich auch auf Englisch**: `t()` + `src/i18n/en.json`, Backend
+  `gettext` + `locale/en`. Siehe [docs/uebersetzung.md](docs/uebersetzung.md).
+- **Hilfe mitpflegen**: Bei geänderten Seiten oder Abläufen die Hilfe (`frontend/src/help/`,
+  Deutsch und Englisch) im selben PR anpassen. Geänderte Hilfebilder lokal mit
+  `scripts/hilfe-bilder.sh` erzeugen (siehe [docs/hilfe.md](docs/hilfe.md)).
 - **Jeder PR füllt „Für die Änderungshinweise“** der PR-Vorlage aus (Deutsch und Englisch, Art,
-  Migration/Rückweg). Releases (Tag, GitHub-Release) nur auf Ralfs Wort, nie von sich aus;
-  Migrationen eine Fassung lang abwärtsverträglich. Siehe [docs/releases.md](docs/releases.md).
-- CI (GitHub Actions) läuft nur von Hand (workflow_dispatch); keine automatischen Auslöser.
+  Migration/Rückweg). Releases und Tags nur auf ausdrückliche Anweisung des Betreuers;
+  Migrationen bleiben eine Fassung lang abwärtsverträglich (siehe [docs/releases.md](docs/releases.md)).
+- CI (GitHub Actions) läuft nur von Hand (`workflow_dispatch`), ohne automatische Auslöser.
 
 Details: [docs/testserver.md](docs/testserver.md), [docs/betrieb.md](docs/betrieb.md).

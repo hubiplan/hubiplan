@@ -178,26 +178,27 @@ Kontoinhabern läuft deshalb in HUBIplan selbst.
 
 ### Backup-Ziele
 
-Festgelegt am 31.10.2026 (Gesamtaudit 31.10.b, Fachfrage 12):
+Die folgenden Ziele dienen als Vorlage; Zuständigkeiten und tatsächliche Sicherungsorte
+werden je Installation in privaten Wiederherstellungsunterlagen festgelegt:
 
 - **Höchstens 24 Stunden Datenverlust:** Das tägliche Backup reicht dafür. Bleibt es aus,
   meldet die Alarm-Mail „Backup prüfen“ das nach `BACKUP_MAX_AGE_HOURS` (26) Stunden.
 - **Wiederanlauf innerhalb eines Tages** nach Totalausfall des Servers: neuer Server,
   HUBIplan ausrollen, letztes Backup einspielen (siehe Wiederherstellen).
-- **Zweiter Ort:** Hetzner Storage Box mit restic (siehe [echtbetrieb.md](echtbetrieb.md)),
-  mit Snapshots der Storage Box, die ein Angreifer mit root auf dem Server nicht löschen
-  kann.
-- **Schlüssel für den Notfall:** Für eine Wiederherstellung ohne Server und ohne Ralfs PC
-  braucht es den privaten age-Schlüssel und das restic-Passwort (plus die Zugangsdaten der
-  Storage Box). Alle drei liegen im Passwortmanager und zusätzlich offline (Ausdruck oder
-  USB-Stick an einem sicheren Ort). Eine Vertretung (z. B. ein zweites Vorstandsmitglied)
-  bekommt einen versiegelten Ausdruck.
+- **Zweiter Ort:** eine getrennte Sicherung, zum Beispiel per restic
+  (siehe [echtbetrieb.md](echtbetrieb.md)), mit unabhängig verwalteten Snapshots oder
+  vergleichbarem Schutz gegen Löschen durch einen kompromittierten Anwendungsserver.
+- **Schlüssel für den Notfall:** Für eine Wiederherstellung ohne Server und ohne lokalen Arbeitsrechner
+  braucht es den privaten age-Schlüssel und gegebenenfalls das restic-Passwort sowie die
+  Zugangsdaten des zweiten Sicherungsorts. Diese getrennt vom Server und zusätzlich offline
+  sicher verwahren. Eine Vertretung (z. B. ein zweites Vorstandsmitglied) und den Zugriff
+  im Notfall festlegen.
 - **Unvollständige Backups** (fehlende Dateien) gelten nicht als gelungen: eigener Zustand,
   Alarm-Mail, alte vollständige Backups bleiben erhalten.
-- Eine Wiederherstellungsübung auf einem leeren Rechner ist vorerst zurückgestellt
-  (Ralf, 31.10.2026).
+- Eine Wiederherstellungsübung auf einem leeren Rechner regelmäßig durchführen und das
+  Ergebnis in den privaten Betriebsunterlagen dokumentieren.
 
-### Backup-Schlüssel einrichten (einmalig, auf Ralfs PC)
+### Backup-Schlüssel einrichten (einmalig, auf einem lokalen Arbeitsrechner)
 
 In WSL (`sudo apt install age`) oder mit Docker:
 
@@ -251,14 +252,14 @@ mit der entschlüsselten Dateiliste prüfen, ob alles vollständig und unveränd
 sha256sum -c dateien_JJJJ-MM-TT_HHMM.sha256
 ```
 
-**Backups mit öffentlichem Schlüssel (`….age`)** werden auf Ralfs PC entschlüsselt; der
+**Backups mit öffentlichem Schlüssel (`….age`)** werden auf einem lokalen Arbeitsrechner entschlüsselt; der
 private Schlüssel kommt nie auf den Server. Prüfsumme wie oben prüfen, Dienste stoppen
 und Datenbank leeren, dann in WSL:
 
 ```bash
-scp administrator@SERVER:/opt/hubiplan-backups/db_JJJJ-MM-TT_HHMM.sql.gz.age .
+scp deploy@server.example.org:/opt/hubiplan-backups/db_JJJJ-MM-TT_HHMM.sql.gz.age .
 age -d -i hubiplan-backup.key db_JJJJ-MM-TT_HHMM.sql.gz.age | gunzip \
-    | ssh administrator@SERVER "cd /opt/hubiplan && sudo docker compose -f docker-compose.server.yml exec -T postgres psql -U hubiplan -d hubiplan"
+    | ssh deploy@server.example.org "cd /opt/hubiplan && sudo docker compose -f docker-compose.server.yml exec -T postgres psql -U hubiplan -d hubiplan"
 ```
 
 Danach `docker compose … up -d` wie oben.
@@ -273,11 +274,11 @@ dorthin und kopiert sie an den zweiten Ort). Von Hand: `python manage.py loeschl
 
 **Kettenköpfe:** Das Backup hängt täglich je Organisation Nummer und Prüfsumme des letzten
 geprüften Eintrags im Änderungsprotokoll an `kettenkoepfe.log` im Backup-Ordner an (keine
-Inhalte). Die Datei geht mit an den zweiten Ort und mit restic nach Hetzner; ältere Stände
+Inhalte). Die Datei geht mit an den zweiten Sicherungsort; ältere Stände
 bleiben in den Schnappschüssen. Abgleich mit der Datenbank:
 `python manage.py kettenkoepfe_pruefen /pfad/kettenkoepfe.log`. Das macht Löschen oder
-Neuberechnen der Kette sichtbar, solange die Hetzner-Kopie unberührt ist; gegen jemanden mit
-vollem Zugriff auf Server und Hetzner schützt es nicht.
+Neuberechnen der Kette sichtbar, solange die getrennte Kopie unberührt ist; gegen jemanden mit
+vollem Zugriff auf Server und zweiten Sicherungsort schützt es nicht.
 
 **Alte Startpasswörter:** `python manage.py startpasswoerter` zeigt nur die Anzahl der Konten,
 die noch ein Startpasswort haben; mit `--umstellen` wird es unbrauchbar und die Person bekommt
@@ -528,7 +529,7 @@ Es läuft immer nur ein Ausrollen je Server: `deploy.sh` legt zu Beginn die Sper
 `/opt/hubiplan.sperre` an (mit Fassung, Zeit und Rechner in `lauf`) und entfernt sie am Ende,
 auch nach einem Fehler. Ein zweiter Lauf bricht ab und zeigt, wer gerade ausrollt. Bleibt die
 Sperre nach einem harten Abbruch (Rechner aus, Verbindung weg) liegen, erst prüfen, dass kein
-Lauf mehr arbeitet, dann `rm -r /opt/hubiplan.sperre` (Dogado mit `sudo`).
+Lauf mehr arbeitet, dann `rm -r /opt/hubiplan.sperre` (Produktionsserver mit `sudo`).
 
 Vor dem Tausch laufen die Migrationen als eigener Schritt (Ausgabe mit `-v 2`, höchstens
 `MIGRATE_TIMEOUT` Sekunden, Standard 3600, änderbar in der `.env`). Dafür halten Backend,
@@ -546,7 +547,7 @@ Läuft die neue Fassung, ist aber fachlich fehlerhaft, von Hand zurück:
 
 ```bash
 ssh root@<testserver> "cd /opt/hubiplan && sh deploy/zurueck.sh"
-ssh administrator@dogado "cd /opt/hubiplan && sudo sh deploy/zurueck.sh"
+ssh deploy@server.example.org "cd /opt/hubiplan && sudo sh deploy/zurueck.sh"
 ```
 
 Ein zweiter Aufruf geht wieder vor. Welche Fassung läuft, steht in `/opt/hubiplan/.fassung`.

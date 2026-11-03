@@ -3,7 +3,6 @@
 import django.core.files.storage
 import django.db.models.deletion
 import members.photo_models
-import pathlib
 from django.conf import settings
 from django.db import migrations, models
 
@@ -53,8 +52,8 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('status', models.CharField(choices=[('approved', 'freigegeben'), ('pending', 'wartet auf Freigabe')], default='approved', max_length=10)),
                 ('source', models.CharField(choices=[('board', 'Vorstand'), ('member', 'Mitglied (Upload-Link)')], default='board', max_length=10)),
-                ('image', models.FileField(storage=django.core.files.storage.FileSystemStorage(base_url=None, location=pathlib.PureWindowsPath('E:/Softwareentwicklung/hubiplan/backend/private')), upload_to=members.photo_models.photo_path)),
-                ('thumbnail', models.FileField(storage=django.core.files.storage.FileSystemStorage(base_url=None, location=pathlib.PureWindowsPath('E:/Softwareentwicklung/hubiplan/backend/private')), upload_to=members.photo_models.photo_path)),
+                ('image', models.FileField(storage=django.core.files.storage.FileSystemStorage(base_url=None, location=settings.PRIVATE_ROOT), upload_to=members.photo_models.photo_path)),
+                ('thumbnail', models.FileField(storage=django.core.files.storage.FileSystemStorage(base_url=None, location=settings.PRIVATE_ROOT), upload_to=members.photo_models.photo_path)),
                 ('width', models.PositiveIntegerField(default=0)),
                 ('height', models.PositiveIntegerField(default=0)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),

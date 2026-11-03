@@ -132,7 +132,7 @@ def test_api_und_export(c, fin, club, setup):
 
 def test_jede_einheit_nur_einmal(c, fin, club, setup):
     """Die Standardsortierung darf nicht ins DISTINCT geraten: sonst käme jede Einheit
-    einmal je Eintrag dran (Migration audit 0006 lief so auf Dogado stundenlang)."""
+    einmal je Eintrag dran und die Laufzeit der Migration unnötig erhöhen."""
     import importlib
 
     from django.apps import apps

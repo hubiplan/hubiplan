@@ -1,18 +1,18 @@
 #!/bin/bash
-# Mailverteiler auf dem Hestia-Server (Echtserver bei Dogado) einrichten:
+# Mailverteiler auf dem Hestia-Server (Produktionsbetrieb) einrichten:
 # Mail-Domain für die Verteiler-Adressen (z. B. alle@verein.example.org) mit
 # einem Sammelpostfach, an das alle Adressen der Domain gehen (Catch-all). HUBIplan
 # holt das Postfach jede Minute per IMAP ab (circulars/inbound.py).
 #
-# Aufruf von Ralfs PC (PowerShell), läuft als root auf dem Server:
-#   Get-Content -Raw deploy\hestia\verteiler.sh | ssh administrator@dogado "sudo env DOMAIN=verein.example.org ZONE=example.org bash -s"
+# Aufruf vom lokalen Arbeitsrechner (PowerShell), läuft als root auf dem Server:
+#   Get-Content -Raw deploy\hestia\verteiler.sh | ssh deploy@server.example.org "sudo env HUSER=hosting-user DOMAIN=verein.example.org ZONE=example.org bash -s"
 #
 # Wiederholbar: Was schon da ist, bleibt. Gibt keine Passwörter aus; das Passwort des
 # Sammelpostfachs steht nur in /opt/hubiplan/.env.
 set -euo pipefail
 export PATH=/usr/local/hestia/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-HUSER=${HUSER:-ralf}
+HUSER=${HUSER:?HUSER fehlt, z. B. HUSER=hosting-user}
 DOMAIN=${DOMAIN:?DOMAIN fehlt, z. B. DOMAIN=verein.example.org}
 ZONE=${ZONE:?ZONE fehlt, z. B. ZONE=example.org}
 KONTO=${KONTO:-eingang}

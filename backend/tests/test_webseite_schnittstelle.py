@@ -557,7 +557,7 @@ def test_vorstand_abfragen_wachsen_nicht_mit_zuegen(setup):
 
 def test_grunddaten_abfragen_wachsen_nicht_mit_aemtern(setup):
     """Grunddaten: Ämter einmal je Antwort und in einer Abfrage, nicht je Rolle und nicht
-    für Menü und „has_offices“ getrennt (auf Dogado 0,45 s, 03.11.2026)."""
+    für Menü und „has_offices“ getrennt."""
     from django.db import connection
     from django.test.utils import CaptureQueriesContext
 

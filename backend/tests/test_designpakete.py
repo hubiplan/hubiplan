@@ -187,7 +187,7 @@ def site(orgs):
 
 @pytest.fixture
 def admin(orgs):
-    # Plattformverwalter, der zugleich die Webseite des Vereins verwaltet (wie Ralf auf Dogado)
+    # Plattformverwalter, der zugleich die Webseite des Vereins verwaltet
     user = make_user("plattform-paket@example.org")
     give_role(user, Organization.platform())
     give_role(user, orgs["a"])

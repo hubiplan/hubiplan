@@ -1,8 +1,8 @@
 #!/bin/sh
 # Zurück zur vorigen Fassung (Ordner ZIEL.vorher und Images „:vorher“), z. B. wenn die
 # neue Fassung zwar startet, aber fehlerhaft ist. Läuft auf dem Server:
-#   ssh root@testserver "cd /opt/hubiplan && sh deploy/zurueck.sh"
-#   ssh administrator@dogado "cd /opt/hubiplan && sudo sh deploy/zurueck.sh"
+#   ssh deploy@test.example.org "cd /opt/hubiplan && sudo sh deploy/zurueck.sh"
+#   ssh deploy@server.example.org "cd /opt/hubiplan && sudo sh deploy/zurueck.sh"
 # Ein zweiter Aufruf geht wieder vor (die Fassungen tauschen jeweils die Plätze).
 # Datenbank-Migrationen der neueren Fassung bleiben angewendet.
 set -eu

@@ -71,7 +71,7 @@ Für die Webseite dieselben Schritte im Klon von `hubiplan-website` mit
 
 ## Release-Tags signieren
 
-Release-Tags sind signiert (Entscheidung 03.11.2026, `konzepte/selbstupdate.md` S2), damit ein
+Release-Tags sind signiert (Entscheidung 03.11.2026, siehe [betrieb.md](betrieb.md)), damit ein
 Server prüfen kann, dass ein Release wirklich vom Betreuer stammt. `scripts/release.sh taggen`
 legt den Tag deshalb selbst an: signiert mit `git tag -s`, geprüft gegen
 [`deploy/release-schluessel`](../deploy/release-schluessel) und dann mit der Anmeldung von `gh`
@@ -93,19 +93,18 @@ ein; ältere Tags bleiben mit dem alten Schlüssel gültig, solange dessen Zeile
 
 Ohne Schlüssel bricht `taggen` vor der Rückfrage ab.
 
-Der Schlüssel des Betreuers liegt seit dem 03.11.2026 auf dessen PC in WSL, ohne Passphrase,
-damit `taggen` ohne Eingabe läuft. Wer den PC hat, hat ohnehin die `gh`-Anmeldung und könnte
-Code nach `main` bringen; die Passphrase würde also wenig schützen. Mit Passphrase ginge es
-auch, dann muss der Schlüssel vor `taggen` im `ssh-agent` liegen.
+Den privaten Signaturschlüssel ausschließlich lokal und gesichert verwahren. Eine Passphrase
+und ein lokaler `ssh-agent` können verwendet werden. Die tatsächliche Schlüsselverwahrung
+gehört in private Wiederherstellungsunterlagen.
 
 ## Ein Release ausrollen
 
 `deploy/release-ausrollen.sh <ziel> <tag> [--webseite <tag>]` rollt HUBIplan und danach auf
-Wunsch die Webseite aus, beide als Release-Tag. Für Dogado aus PowerShell (vorher im
+Wunsch die Webseite aus, beide als Release-Tag. Beispiel aus PowerShell (vorher im
 Windows-Checkout `git fetch --tags`, für die Webseite auch in deren Checkout):
 
 ```
-wsl -d Debian -- bash -lc 'cd ~/hubiplan && deploy/release-ausrollen.sh dogado v2026.11.1 --webseite v2026.11.1'
+wsl -d Debian -- bash -lc 'cd ~/hubiplan && deploy/release-ausrollen.sh produktion v2026.11.1 --webseite v2026.11.1'
 ```
 
 Das Ziel steht nur lokal in `~/.config/hubiplan/ziele/<name>` (Zeilen `SSH=…`,
@@ -119,7 +118,7 @@ Das Ziel steht nur lokal in `~/.config/hubiplan/ziele/<name>` (Zeilen `SSH=…`,
 - fragt nach, wenn seit dem laufenden Stand im Changelog „Kein Rückweg“ steht, und lässt
   dann vor HUBIplan den Backup-Dienst eine zusätzliche Sicherung anlegen (ohne Terminal nur
   mit `RELEASE_OHNE_RUECKWEG=ja`),
-- rollt aus einem eigenen Worktree unter `RELEASE_TMP` (Standard `/mnt/e/temp/hubiplan-release`)
+- rollt aus einem eigenen Worktree unter `RELEASE_TMP` (Pfad über `RELEASE_TMP` konfigurierbar)
   mit dem `deploy.sh` des Tags aus; `~/hubiplan` bleibt, wie es ist,
 - prüft danach, dass `/opt/…/.version` die Release-Nummer zeigt.
 
