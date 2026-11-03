@@ -230,8 +230,7 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
             raise serializers.ValidationError(
                 {
                     "detail": gettext(
-                        "Die Einladung konnte nicht gesendet werden. Bitte später erneut "
-                        "versuchen."
+                        "Die Einladung konnte nicht gesendet werden. Bitte später erneut versuchen."
                     )
                 }
             )
