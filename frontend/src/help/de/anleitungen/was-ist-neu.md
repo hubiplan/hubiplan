@@ -15,7 +15,7 @@ November 2026:
 - Termine: Fremde Kalender zeigen ihre Termine im eigenen Kalender, z. B. die des Dachverbands aus Vereinsplaner oder aus einem Kalender-Abo (iCal). HUBIplan holt sie stündlich ab; einzelne lassen sich ausblenden (Termine › Fremde Kalender).
 - Webseite: Je Text lässt sich wählen, ob unter dem Bild und im Bilderkarussell die Bildunterschrift steht. Standard ist ohne Unterschrift, auch für bestehende Seiten.
 - Webseite: Neues Design „Klassisch“ mit hellem Kopf, farbiger Linie oben und Menüknöpfen in der Vereinsfarbe. Wer das bisherige Klassisch behalten will, speichert es vorher als Paket und spielt es als eigenes Design ein.
-- Webseite: Ein Design lässt sich als Paket speichern und von Plattformverwaltern als eigenes Design wieder einspielen, mit eigener Anordnung von Kopf, Fuß und Startseite (Webseite › Gestaltung › Design weitergeben).
+- Webseite: Ein Design lässt sich als Paket speichern und von Plattformverwaltern als eigenes Design wieder einspielen, mit eigener CSS-/Farbgestaltung auf gepflegten Standardlayouts (Webseite › Gestaltung › Design weitergeben).
 - Webseite: Die Chronik lässt sich als Zeitleiste pflegen, mit Ereignissen (Jahr oder Zeitraum), Kapiteln als Zwischenüberschriften und Excel-Import; auf Wunsch stehen die neuesten Einträge oben. Ein Ereignis kann bis zu sechs Bilder haben, wahlweise links, rechts, abwechselnd oder groß unter dem Text.
 - Webseite: Kopierte Bilder lassen sich mit Strg+V einfügen, in der Bilderverwaltung und bei der Bildauswahl.
 - Hilfe: Zu jeder Seite gibt es oben „Hilfe zu dieser Seite“ (oder die Taste ?), dazu Anleitungen Schritt für Schritt mit Bildern. Unter „Für dich“ stehen erste Schritte passend zu deinen Rechten zum Abhaken.

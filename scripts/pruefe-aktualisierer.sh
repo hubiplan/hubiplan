@@ -13,6 +13,13 @@ pruefe() {
     if [ "$2" = "$3" ]; then echo "  ok: $1"; else echo "  FEHLER: $1 (erwartet „$3“, war „$2“)"; FEHLER=1; fi
 }
 
+# Resource policy is part of the deployed unit, independent of fake update jobs.
+# This is a configuration regression, not proof of live cgroup enforcement.
+UNIT="$(dirname "$QUELLE_SKRIPT")/hubiplan-aktualisierer@.service"
+for setting in CPUQuota=100% MemoryHigh=512M MemoryMax=1G TasksMax=128; do
+    pruefe "Helperbudget $setting" "$(grep -Fx "$setting" "$UNIT" || true)" "$setting"
+done
+
 ssh-keygen -q -t ed25519 -N "" -C release -f "$T/schluessel"
 ssh-keygen -q -t ed25519 -N "" -C fremd -f "$T/fremd"
 # Eigene Git-Einstellungen des Rechners (Signierprogramm, gpgsign) gelten hier nicht

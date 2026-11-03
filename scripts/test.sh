@@ -97,6 +97,7 @@ cleanup() {
     docker network rm "$ID" > /dev/null 2>&1 || true
     docker volume rm "$ID-backups" > /dev/null 2>&1 || true
     docker volume rm "$ID-data" > /dev/null 2>&1 || true
+    docker volume rm "$ID-seed-data" > /dev/null 2>&1 || true
     # Dateien aus Containern ggf. mit deren Rechten entfernen
     rm -rf "$WORK" 2> /dev/null         || docker run --rm -v "$WORK:/w" node:24-alpine rm -rf /w/backend /w/frontend /w/deploy /w/scripts
     rm -rf "$WORK"
@@ -239,11 +240,35 @@ echo "Frontend: ok ($(($(date +%s) - fstart)) s nach dem Backend)"
 # --- Backup und Rücksicherung (optional) ---
 if [ "${BACKUP_TEST:-0}" = "1" ]; then
     docker build -q -t "$BACKUP_IMG" "$WORK/deploy/backup" > /dev/null
+    docker run --rm "$CPUS" -v "$WORK/deploy/backup/test_archive_check.py:/tmp/test_archive_check.py:ro" \
+        --entrypoint python3 "$BACKUP_IMG" /tmp/test_archive_check.py
+    docker run --rm --user 0 "$CPUS" --tmpfs /backups --tmpfs /tmp \
+        -v "$WORK/deploy/backup/test-names.py:/tmp/test-names.py:ro" \
+        --entrypoint python3 "$BACKUP_IMG" /tmp/test-names.py
+    docker run --rm "$CPUS" --tmpfs /tmp -e BACKUP_HMAC_KEY=nur-ein-test \
+        --entrypoint sh "$BACKUP_IMG" -c 'set -e
+            mkdir /tmp/backups
+            exec 9> /tmp/backups/.backup.lock; flock -n 9
+            if BACKUP_DIR=/tmp/backups backup.sh > /dev/null 2>&1; then exit 1; fi
+            test "$(find /tmp/backups -type f | wc -l)" = 1
+            exec 9>&-
+            flock -n /tmp/backups/.backup.lock true'
+    echo "Backup: paralleler Starter abgewiesen, Sperre danach frei"
+    # Synthetic source key: full local restoration must recover the exact bytes.
+    printf '01234567890123456789012345678901' | base64 > "$WORK/test-data-key"
+    chmod 644 "$WORK/test-data-key"
+    docker volume create "$ID-seed-data" > /dev/null
+    docker run --rm --user 0 "$CPUS" -v "$ID-seed-data:/data" --entrypoint sh "$BACKUP_IMG" \
+        -c 'mkdir -p /data/media /data/private; chown -R 1000:1000 /data'
     docker exec "$ID-db" psql -q -U test -d test -c "CREATE DATABASE hubiplan" > /dev/null
     docker run --rm --network "$ID" "$CPUS" -e DJANGO_DEBUG=true \
         -e DJANGO_SECRET_KEY=nur-test -e DATABASE_URL="postgres://test:test@$ID-db:5432/hubiplan" \
+        -v "$WORK/test-data-key:/run/secrets/datenschluessel:ro" \
+        -e DATA_ENCRYPTION_KEY_FILE=/run/secrets/datenschluessel \
+        -v "$ID-seed-data:/data" -e MEDIA_ROOT=/data/media -e PRIVATE_ROOT=/data/private \
+        -v "$WORK/deploy/backup/test_application_restore.py:/tmp/test_application_restore.py:ro" \
         --entrypoint sh "$BACKEND_IMG" \
-        -c "python manage.py migrate -v0 && python manage.py seed_testdata --password Test-123456 > /dev/null"
+        -c "python manage.py migrate -v0 && python manage.py seed_testdata --password Test-123456 > /dev/null && python /tmp/test_application_restore.py seed"
     docker volume create "$ID-backups" > /dev/null
     # Der Backup-Dienst läuft als Benutzer postgres (70)
     docker run --rm --user 0 -v "$ID-backups:/backups" --entrypoint chown         "$BACKUP_IMG" 70:70 /backups
@@ -306,7 +331,7 @@ if [ "${BACKUP_TEST:-0}" = "1" ]; then
              ELSE '' END" > /dev/null
     for mode in age enc; do
         docker run --rm --network "$ID" "$CPUS" -v "$ID-backups:/backups" --tmpfs /tmp \
-            -v "$ID-data:/data:ro" -e MODE="$mode" \
+            -v "$ID-data:/data:ro" -v "$WORK/test-data-key:/run/secrets/datenschluessel:ro" -e MODE="$mode" \
             -e PGHOST="$ID-db" -e PGUSER=test -e PGPASSWORD=test -e PGDATABASE=hubiplan \
             -e BACKUP_PASSPHRASE=nur-ein-test -e BACKUP_HMAC_KEY=nur-ein-test --entrypoint sh "$BACKUP_IMG" \
             -c 'set -e
@@ -336,10 +361,51 @@ if [ "${BACKUP_TEST:-0}" = "1" ]; then
                 # Unvollständig: Merker für die Alarm-Mail, alte Backups bleiben (INF-F03)
                 test -f /backups/.unvollstaendig || fail "Merker .unvollstaendig fehlt"
                 grep -q "unvollständig, alte Backups bleiben" /backups/backup.log \
-                    || fail "unvollständiges Backup hat alte Backups gelöscht"'
+                    || fail "unvollständiges Backup hat alte Backups gelöscht"
+'
     done
-    docker volume rm "$ID-data" > /dev/null
     echo "Backup: Dateiliste mit Prüfsummen, fehlende Dateien werden gemeldet"
+    # Complete sets after the separate incomplete-reference checks above.
+    docker run --rm --user 0 "$CPUS" -v "$ID-data:/data" -v "$ID-seed-data:/source:ro" \
+        --entrypoint sh "$BACKUP_IMG" \
+        -c 'cp -a /source/. /data/; printf recovered > /data/media/logos/fehlt.png; chmod -R a+rX /data'
+    for mode in age enc; do
+        docker run --rm --network "$ID" "$CPUS" --tmpfs /tmp -v "$ID-backups:/backups" \
+            -v "$ID-data:/data:ro" -v "$WORK/test-data-key:/run/secrets/datenschluessel:ro" \
+            -v "$WORK/deploy/backup/test-full-restore.sh:/tmp/test-full-restore.sh:ro" \
+            -e MODE="$mode" -e PGHOST="$ID-db" -e PGUSER=test -e PGPASSWORD=test -e PGDATABASE=hubiplan \
+            -e BACKUP_PASSPHRASE=nur-ein-test -e BACKUP_HMAC_KEY=nur-ein-test \
+            --entrypoint sh "$BACKUP_IMG" /tmp/test-full-restore.sh
+    done
+    # Application-level probe: restore an independently decrypted SQL copy and use
+    # the actually recovered snapshot key to decrypt real synthetic DB fields.
+    docker exec "$ID-db" createdb -U test hubiplan_restore_probe
+    docker run --rm "$CPUS" -v "$ID-backups:/backups" \
+        -e BACKUP_PASSPHRASE=nur-ein-test -e BACKUP_HMAC_KEY=nur-ein-test \
+        --entrypoint sh "$BACKUP_IMG" -c 'set -e; set -o pipefail
+            d=$(cat /backups/test-probe-dump); verify.sh "$d"
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:BACKUP_PASSPHRASE -in "$d" | gunzip' \
+        | docker exec -i "$ID-db" psql -q -U test -d hubiplan_restore_probe -v ON_ERROR_STOP=1 > /dev/null
+    docker run --rm "$CPUS" -v "$ID-backups:/backups" \
+        -e BACKUP_PASSPHRASE=nur-ein-test -e BACKUP_HMAC_KEY=nur-ein-test \
+        --entrypoint sh "$BACKUP_IMG" -c 'set -e
+            k=$(cat /backups/test-probe-key); verify.sh "$k"
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:BACKUP_PASSPHRASE -in "$k"' \
+        > "$WORK/recovered-data-key"
+    chmod 644 "$WORK/recovered-data-key" # synthetic key only, readable in backend container
+    expected=$(docker run --rm --network "$ID" "$CPUS" -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
+        -v "$WORK/test-data-key:/run/secrets/datenschluessel:ro" -e DATA_ENCRYPTION_KEY_FILE=/run/secrets/datenschluessel \
+        -e DATABASE_URL="postgres://test:test@$ID-db:5432/hubiplan" \
+        -v "$WORK/deploy/backup/test_application_restore.py:/tmp/test_application_restore.py:ro" \
+        --entrypoint python "$BACKEND_IMG" /tmp/test_application_restore.py fingerprint)
+    actual=$(docker run --rm --network "$ID" "$CPUS" -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
+        -v "$WORK/recovered-data-key:/run/secrets/datenschluessel:ro" -e DATA_ENCRYPTION_KEY_FILE=/run/secrets/datenschluessel \
+        -e DATABASE_URL="postgres://test:test@$ID-db:5432/hubiplan_restore_probe" \
+        -v "$WORK/deploy/backup/test_application_restore.py:/tmp/test_application_restore.py:ro" \
+        --entrypoint python "$BACKEND_IMG" /tmp/test_application_restore.py fingerprint)
+    [ "$expected" = "$actual" ] || { echo "Restored encrypted fields differ" >&2; exit 1; }
+    echo "Backup: Geburtsdaten und Rechnungs-/Rundschreibenkontakte mit wiederhergestelltem Satzschlüssel entschlüsselt"
+    docker volume rm "$ID-data" > /dev/null
 fi
 
 if [ "$#" -gt 0 ]; then

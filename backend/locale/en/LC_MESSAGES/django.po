@@ -4891,3 +4891,12 @@ msgstr "Role holders in the {pl_dat}"
 
 msgid "Rolleninhaber im Verein"
 msgstr "Role holders in the club"
+
+msgid "Eigene HTML-/Django-Vorlagen sind nicht erlaubt. Bitte ein Standardlayout mit CSS verwenden."
+msgstr "Custom HTML/Django templates are not allowed. Please use a built-in layout with CSS."
+
+msgid "Apple Wallet ist gerade nicht verfügbar. Bitte später erneut versuchen."
+msgstr "Apple Wallet is currently unavailable. Please try again later."
+
+msgid "Google Wallet ist gerade nicht verfügbar. Bitte später erneut versuchen."
+msgstr "Google Wallet is currently unavailable. Please try again later."

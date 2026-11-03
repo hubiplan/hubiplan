@@ -22,8 +22,9 @@ set -o pipefail
 : "${BACKUP_HMAC_KEY:?BACKUP_HMAC_KEY fehlt}"
 
 DIR="${BACKUP_DIR:-/backups}"
+DATA_KEY_FILE="${BACKUP_DATA_KEY_FILE:-/run/secrets/datenschluessel}"
 KEEP_DAYS="${BACKUP_KEEP_DAYS:-30}"
-STAMP=$(date +%Y-%m-%d_%H%M)
+STAMP="$(date +%Y-%m-%d_%H%M%S)_$(openssl rand -hex 6)"
 ENC="openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:BACKUP_PASSPHRASE"
 DEC="openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:BACKUP_PASSPHRASE"
 
@@ -36,10 +37,14 @@ SSH_KEY="$SSH_DIR/id_ed25519"
 
 mkdir -p "$DIR"
 umask 077
+# Per destination: concurrent/manual starts may not overwrite markers or clean
+# another run's temporary files. flock is released automatically even on crash.
+exec 9> "$DIR/.backup.lock"
+flock -n 9 || { echo "Backup läuft bereits; dieser Lauf wurde nicht gestartet." >&2; exit 1; }
 # Klartext nur im Arbeitsspeicher (tmpfs), nie im Backup-Ordner
 WORK=$(mktemp -d "${BACKUP_WORK:-/tmp}/backup.XXXXXX")
 # Halbfertige Dateien und Klartext nie liegen lassen
-trap 'rm -f "$DIR"/*.enc.tmp "$DIR"/*.age.tmp "$DIR"/*.hmac.tmp; rm -rf "$WORK"' EXIT
+trap 'rm -f "$DIR"/*.enc.tmp "$DIR"/*.age.tmp "$DIR"/*.hmac.tmp "$DIR"/*.sha256.tmp; rm -rf "$WORK"' EXIT
 
 fail() {
     echo "$(date '+%F %T') FEHLER: $1" >> "$DIR/backup.log"
@@ -75,7 +80,7 @@ if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
     if [ -d /data ]; then
         file_list
         LIST="$WORK/dateien.sha256"
-        tar -C /data -czf - . | $AGE -o "$DIR/files_$STAMP.tar.gz.age.tmp" \
+        tar -C /data -czf - . | archive-check.py "$LIST" --copy | $AGE -o "$DIR/files_$STAMP.tar.gz.age.tmp" \
             || fail "Sicherung der Dateien ist fehlgeschlagen ($STAMP)"
         $AGE -o "$DIR/dateien_$STAMP.sha256.age.tmp" "$LIST" \
             || fail "Verschlüsseln der Dateiliste fehlgeschlagen ($STAMP)"
@@ -103,7 +108,7 @@ else
     LATEST_DB="$DIR/db_$STAMP.sql.gz.enc"
     if [ -d /data ]; then
         file_list
-        tar -C /data -czf - . | $ENC -out "$DIR/files_$STAMP.tar.gz.enc.tmp" \
+        tar -C /data -czf - . | archive-check.py "$WORK/dateien.sha256" --copy | $ENC -out "$DIR/files_$STAMP.tar.gz.enc.tmp" \
             || fail "Sicherung der Dateien ist fehlgeschlagen ($STAMP)"
         $ENC -in "$WORK/dateien.sha256" -out "$DIR/dateien_$STAMP.sha256.enc.tmp" \
             || fail "Verschlüsseln der Dateiliste fehlgeschlagen ($STAMP)"
@@ -133,20 +138,32 @@ key_incomplete() {
     echo "$(date '+%F %T') WARNUNG: $1 ($STAMP)" >> "$DIR/backup.log"
     echo "$1" >> "$DIR/.unvollstaendig"
 }
-if [ -e /run/secrets/datenschluessel ]; then
-    if [ ! -r /run/secrets/datenschluessel ]; then
-        key_incomplete "Hauptschlüssel nicht lesbar, keine Schlüsselkopie beim Backup"
-    elif [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
-        age -r "$BACKUP_PUBLIC_KEY" -o "$DIR/datenschluessel.age.tmp" /run/secrets/datenschluessel \
-            && [ -s "$DIR/datenschluessel.age.tmp" ] \
-            && mv "$DIR/datenschluessel.age.tmp" "$DIR/datenschluessel.age" \
+# One immutable tmpfs copy is the source of both encryption and fingerprint.
+# Atomic replacement of the live file after cp must not create a mixed pair.
+KEY_SNAPSHOT="$WORK/datenschluessel"
+if [ ! -r "$DATA_KEY_FILE" ] || ! cp "$DATA_KEY_FILE" "$KEY_SNAPSHOT"; then
+    key_incomplete "Hauptschlüssel nicht lesbar, keine Schlüsselkopie beim Backup"
+else
+    if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
+        age -r "$BACKUP_PUBLIC_KEY" -o "$DIR/datenschluessel_$STAMP.age.tmp" "$KEY_SNAPSHOT" \
+            && [ -s "$DIR/datenschluessel_$STAMP.age.tmp" ] \
+            && sign "$DIR/datenschluessel_$STAMP.age" \
             || key_incomplete "Kopie des Hauptschlüssels fehlgeschlagen"
     else
-        $ENC -in /run/secrets/datenschluessel -out "$DIR/datenschluessel.enc.tmp" \
-            && [ -s "$DIR/datenschluessel.enc.tmp" ] \
-            && mv "$DIR/datenschluessel.enc.tmp" "$DIR/datenschluessel.enc" \
+        $ENC -in "$KEY_SNAPSHOT" -out "$DIR/datenschluessel_$STAMP.enc.tmp" \
+            && [ -s "$DIR/datenschluessel_$STAMP.enc.tmp" ] \
+            && sign "$DIR/datenschluessel_$STAMP.enc" \
             || key_incomplete "Kopie des Hauptschlüssels fehlgeschlagen"
     fi
+    sha256sum "$KEY_SNAPSHOT" | cut -d ' ' -f 1 > "$DIR/datenschluessel_$STAMP.sha256.tmp"
+    sign "$DIR/datenschluessel_$STAMP.sha256"
+    # One-release compatibility aliases are never used by a strict set restore.
+    if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then KEY_EXT=age; else KEY_EXT=enc; fi
+    for suffix in "$KEY_EXT" "$KEY_EXT.hmac" sha256 sha256.hmac; do
+        cp "$DIR/datenschluessel_$STAMP.$suffix" "$DIR/datenschluessel.$suffix.tmp" \
+            && mv "$DIR/datenschluessel.$suffix.tmp" "$DIR/datenschluessel.$suffix" \
+            || key_incomplete "Letzte Schlüsselkopie konnte nicht bereitgestellt werden"
+    done
 fi
 
 # Kettenköpfe des Änderungsprotokolls (nur Nummer und Prüfsumme je Organisation, keine
@@ -176,7 +193,7 @@ if [ -f "$DIR/.unvollstaendig" ]; then
 else
     # Alte Backups entfernen
     # Die Schlüsselkopie bleibt immer (sie wird täglich erneuert)
-    find "$DIR" -maxdepth 1 \( -name '*.enc' -o -name '*.enc.hmac' -o -name '*.age' -o -name '*.age.hmac' \) \
+    find "$DIR" -maxdepth 1 \( -name '*.enc' -o -name '*.enc.hmac' -o -name '*.age' -o -name '*.age.hmac' -o -name 'datenschluessel_*.sha256' -o -name 'datenschluessel_*.sha256.hmac' \) \
         ! -name 'datenschluessel.*' -mtime +"$KEEP_DAYS" -delete
 fi
 
@@ -187,6 +204,8 @@ if [ -n "${BACKUP_REMOTE:-}" ]; then
     rsync -a $DELETE \
         -e "ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$SSH_DIR/known_hosts -i $SSH_KEY" \
         --include='*.enc' --include='*.enc.hmac' --include='*.age' --include='*.age.hmac' \
+        --include='datenschluessel_*.sha256' --include='datenschluessel_*.sha256.hmac' \
+        --include='datenschluessel.sha256' --include='datenschluessel.sha256.hmac' \
         --include='restore-test.log' --include='loeschliste.jsonl' --include='kettenkoepfe.log' --exclude='*' "$DIR/" "$BACKUP_REMOTE" \
         || fail "Kopie nach $BACKUP_REMOTE fehlgeschlagen (lokales Backup $STAMP ist ok)"
     echo "$(date '+%F %T') Kopie nach $BACKUP_REMOTE ok" >> "$DIR/backup.log"

@@ -1,56 +1,42 @@
 # Designpakete
 
-Ein Design der Vereinswebseite lässt sich als Paket (ZIP) speichern und als eigenes Design wieder
-einspielen. So wird zum Beispiel das alte „Klassisch“ zu einem Design nur für einen Verein, während
-das Repository ein neues Klassisch bekommt. Konzept: `konzepte/designs-import-export.md` im
-Projektordner (Ralf 2026-11-02).
+Ein Paket enthält `design.json` und `design.css` (maximal 64 KB CSS; ZIP maximal 2 MB,
+entpackt maximal 5 MB). Format `hubiplan-designpaket`, Version 1 bleibt lesbar.
+`quelle` bzw. `skizze_wie` wählt eines der gepflegten Standardlayouts
+(classic, festive, sidebar, stage, newspaper). Unbekannte Layouts ergeben Klassisch.
+Farbrollen, Bezeichnungen und CSS können angepasst werden. Das Markup kommt immer
+von den geprüften Komponenten der installierten Webseite.
 
-## Ablauf
+Freie HTML-/Django-Vorlagen sind vollständig ausgeschlossen, auch bei scheinbar
+harmlosen Vorlagen, Bedingungen, Kommentaren oder Includes. Die frühere DTL-Filterliste
+ist keine Sicherheitsgrenze mehr. CSS darf weiterhin keine externen Ressourcen laden
+(`url`, `@import`, `@font-face` usw.); die CSP bleibt aktiv.
 
-1. **Exportieren** unter Webseite › Gestaltung › „Design weitergeben“ › „Als Paket speichern“.
-   Standarddesigns liefert die Webseite selbst (`<webseite>/design-paket/<schlüssel>.zip`), weil nur
-   sie deren CSS und Vorlagen kennt; eingespielte Designs liefert HUBIplan
-   (`website/design-packages/<schlüssel>/export/`).
-2. **Einspielen** (nur Plattformverwalter, die die Webseite verwalten): „Design aus Paket laden“,
-   neues Kürzel und Namen eintragen, „Prüfen“, dann „Einspielen“. Das Design ist danach für diese
-   Webseite freigegeben. Stammt das Paket aus einem Standarddesign (`quelle`), übernimmt HUBIplan
-   dessen Farbzuordnung dieser Webseite.
-3. **Wählen** wie jedes andere Design. Andere Webseiten sehen es erst nach einer Freigabe unter
-   „Eingespielte Designs“.
+Standarddesigns exportiert die Webseite unter `/design-paket/<layout>.zip` ohne
+Vorlagendateien. Plattformverwalter importieren unter Webseite › Gestaltung mit eigenem
+Kürzel, prüfen und geben je Webseite frei. `quelle` übernimmt auch die Farbzuordnung.
+Der gewählte Layoutschlüssel ist Teil der Prüfsumme. Ein freigegebenes Datenpaket kann
+wieder exportiert und importiert werden.
 
-Reihenfolge beim Ablösen eines Standarddesigns: erst exportieren, einspielen und umstellen, dann
-das geänderte Standarddesign ausrollen. So zeigt die Webseite nie kurz das neue Design.
+**Funktionsänderung:** Freie Vorlagen bestehender Pakete bleiben für die Verwaltung in
+der Datenbank erhalten, sind jedoch öffentlich quarantänisiert. Die Webseite fällt
+kontrolliert auf Klassisch zurück. Das Paket durch ein Paket ohne `vorlagen/` ersetzen,
+Layoutschlüssel wählen und Darstellung prüfen. Veraltete Vorlagen werden nicht still
+bereinigt oder ausgeführt. HUBIplan und Webseite gemeinsam aktualisieren. Ein Rückweg
+auf die frühere freie DTL-Ausführung würde die Sicherheitsgrenze wieder aufheben.
+Die Layoutkomponenten folgen künftig den gepflegten Standarddesigns; das Paket friert
+keine alte HTML-Anordnung dauerhaft ein.
 
-## Inhalt eines Pakets
+## English
 
-| Datei | Pflicht | Inhalt |
-| --- | --- | --- |
-| `design.json` | ja | `format` = `hubiplan-designpaket`, `version` = 1, `key`, `label`/`hint` (de, en), `roles` (Farbrollen wie in `website/designs.py`), `skizze_wie`, `quelle`, `exportiert` |
-| `design.css` | ja | Gestaltung auf `seite.css` aufgesetzt, höchstens 64 KB |
-| `vorlagen/kopf.html`, `vorlagen/fuss.html`, `vorlagen/start.html` | nein | ersetzen Kopf, Fuß bzw. Startseite der Webseite (Startseite meist `{% extends "seite/start.html" %}` mit Block `bausteine`) |
+Packages contain only `design.json` and `design.css`. `quelle`/`skizze_wie` selects a
+maintained built-in layout; labels, colour roles and bounded CSS remain customizable.
+No imported HTML or Django template source is compiled, including conditional or
+apparently harmless templates. Built-in export/import and per-site release continue
+to work. The layout identifier contributes to the content hash.
 
-Kein Wappen, keine Texte, keine Bilder, keine Schriften. Unterseiten bleiben für alle Designs gleich.
-
-## Prüfung
-
-HUBIplan (`website/design_packages.py`) prüft beim Einspielen, die Webseite
-(`seite/designpaket.py`) beim Abholen noch einmal mit denselben Regeln. Abgelehnt wird:
-
-- im CSS `@import`, `@font-face`, `url(…)`, `image-set(…)`, `expression(…)`, `javascript:`,
-  `behavior`/`-moz-binding`, Rückstriche und spitze Klammern;
-- in Vorlagen Skripte, eingebettete Fremdinhalte (`iframe`, `object`, `style`, `link` …),
-  `on…=`-, `style=`- und `srcdoc=`-Attribute, `javascript:`-Adressen, Inhalte von fremden Adressen
-  (`src=` usw.; Links mit `href` nach außen sind erlaubt);
-- Vorlagen-Befehle und Filter außerhalb einer festen Liste (kein `safe`, kein `autoescape`,
-  `load` nur `seite`, `static`, `i18n`; `extends` nur `seite/basis.html` oder `seite/start.html`;
-  `include` nur feste Vorlagen unter `seite/` oder `vorlage`);
-- andere Dateien, ZIP über 2 MB oder entpackt über 5 MB, unbekannte Version.
-
-Besteht ein Paket die Prüfung der Webseite nicht oder fehlt es, zeigt die Webseite Klassisch.
-Die Sicherheitsrichtlinie (CSP) der Webseite bleibt unverändert.
-
-## Speicherort
-
-Pakete liegen in der Datenbank (`website.DesignPackage`, Freigabe je Webseite) und damit in der
-normalen Sicherung. Die ZIP-Datei dient als zusätzliche Sicherung und zum Übertragen zwischen
-Installationen (Testserver ↔ Echtbetrieb). Die Datenübernahme einer Einheit nimmt Pakete nicht mit.
+Legacy free-template packages remain stored for administrators but are quarantined
+from public APIs. The website falls back to Classic without a server error. Replace
+such packages with CSS/layout-only packages and review the result. Update both
+applications. Layout markup follows maintained components rather than preserving
+arbitrary historic HTML. Downgrading to free DTL would remove this security boundary.

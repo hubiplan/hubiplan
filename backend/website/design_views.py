@@ -209,6 +209,8 @@ class DesignPackageExportView(_PackageMixin, APIView):
             and not package.websites.filter(pk=website.pk).exists()
         ):
             raise NotFound(_("Dieses Designpaket gibt es nicht."))
+        if package.templates:
+            raise ValidationError(design_packages.template_problems("", ""))
         data = design_packages.build_zip(
             key=package.key,
             label=package.label,

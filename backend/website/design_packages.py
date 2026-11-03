@@ -1,13 +1,14 @@
 """Designpakete: ein Design als Datei weitergeben und wieder einspielen.
 
 Ein Paket (ZIP) enthält den Steckbrief ``design.json``, die Gestaltung ``design.css`` und
-höchstens drei Vorlagen der Webseite (Kopf, Fuß, Startseite). So lässt sich ein Design samt
+ein geprüftes Standardlayout (skizze_wie/quelle). Freie HTML-/Django-Vorlagen
+sind nicht erlaubt. So lässt sich ein Design samt
 Anordnung exportieren und auf einer Installation als eigenes Design einspielen, z. B. das
 alte „Klassisch“ als Design nur für einen Verein (Konzept konzepte/designs-import-export.md,
 Ralf 2026-11-02).
 
 Ein Paket ist Gestaltungscode. Deshalb spielen nur Plattformverwalter Pakete ein, und alles
-wird streng geprüft: kein JavaScript, keine fremden Adressen, nur erlaubte Vorlagen-Befehle.
+wird streng geprüft: kein JavaScript, keine fremden Adressen, keine freien HTML-/Django-Vorlagen.
 Was die Prüfung nicht besteht, wird abgelehnt, nicht „bereinigt“. Die Webseite prüft beim
 Abholen noch einmal dasselbe (``hubiplan-website/seite/designpaket.py``).
 """
@@ -21,7 +22,6 @@ import re
 import zipfile
 from dataclasses import dataclass, field
 
-from django.template.base import Lexer, TokenType
 from django.utils.translation import gettext as _
 
 from . import designs
@@ -58,116 +58,6 @@ MANIFEST_FIELDS = {
     "exportiert",
     "quelle",
 }
-
-# Erlaubte Befehle und Filter in Vorlagen (alles, was die Vorlagen der Webseite brauchen,
-# aber nichts, was Text ungeprüft durchlässt wie „safe“ oder „autoescape off“)
-ALLOWED_TAGS = {
-    "if",
-    "elif",
-    "else",
-    "endif",
-    "for",
-    "empty",
-    "endfor",
-    "with",
-    "endwith",
-    "block",
-    "endblock",
-    "extends",
-    "include",
-    "load",
-    "comment",
-    "endcomment",
-    "url",
-    "static",
-    "translate",
-    "trans",
-    "blocktranslate",
-    "blocktrans",
-    "plural",
-    "endblocktranslate",
-    "endblocktrans",
-    "get_current_language",
-    "now",
-    "cycle",
-    "firstof",
-    "spaceless",
-    "endspaceless",
-    "ifchanged",
-    "endifchanged",
-    # Bibliothek „seite“ der Webseite
-    "menue",
-    "lokal",
-    "baustein",
-    "jahr",
-    "quellcode",
-    "einheiten_url",
-    "einheit_url",
-    "sm_symbol",
-    "seite_texte",
-}
-ALLOWED_FILTERS = {
-    "default",
-    "default_if_none",
-    "length",
-    "add",
-    "slice",
-    "join",
-    "first",
-    "last",
-    "lower",
-    "upper",
-    "title",
-    "capfirst",
-    "yesno",
-    "pluralize",
-    "floatformat",
-    "wordcount",
-    "truncatewords",
-    "truncatechars",
-    "urlencode",
-    "date",
-    "time",
-    "linebreaksbr",
-    "linebreaks",
-    "striptags",
-    "cut",
-    "divisibleby",
-    "escape",
-    "force_escape",
-    # Bibliothek „seite“
-    "md",
-    "datum",
-    "nur_jahr",
-    "tel",
-    "web_ziel",
-    "web_anzeige",
-    "mit_begleitung",
-}
-ALLOWED_LIBRARIES = {"seite", "static", "i18n"}
-ALLOWED_EXTENDS = {"seite/basis.html", "seite/start.html"}
-INCLUDE_LITERAL = re.compile(r"""^(["'])seite/[a-z0-9_/]+\.html\1$""")
-FILTER_USE = re.compile(r"\|\s*([A-Za-z_]\w*)")
-
-# Im HTML der Vorlagen verboten (Skripte, eingebettete Fremdinhalte, eigenes CSS)
-FORBIDDEN_HTML = [
-    (
-        re.compile(
-            r"<\s*(script|iframe|object|embed|style|link|meta|base|frame|frameset|form)\b", re.I
-        ),
-        "verbotenes Element",
-    ),
-    (re.compile(r"\son[a-z]+\s*=", re.I), "Ereignis-Attribut (on…=)"),
-    (re.compile(r"\s(style|srcdoc|formaction)\s*=", re.I), "verbotenes Attribut"),
-    (re.compile(r"javascript\s*:|vbscript\s*:|data\s*:\s*text/html", re.I), "Skript-Adresse"),
-    # Links (href) dürfen nach außen zeigen; nachgeladen wird nichts von fremden Adressen
-    (
-        re.compile(
-            r"\s(src|srcset|poster|action|data|background)\s*=\s*[\"']?\s*(https?:)?//", re.I
-        ),
-        "fremde Adresse",
-    ),
-]
 
 # Im CSS verboten: alles, was nachlädt, Skripte ausführt oder sich tarnen lässt
 FORBIDDEN_CSS = [
@@ -208,11 +98,13 @@ class Package:
 
     @property
     def content_hash(self) -> str:
-        return content_hash(self.css, self.templates, self.roles)
+        return content_hash(self.css, self.templates, self.roles, self.sketch_like)
 
 
-def content_hash(css: str, templates: dict, roles: dict) -> str:
-    raw = json.dumps({"css": css, "templates": templates, "roles": roles}, sort_keys=True)
+def content_hash(css: str, templates: dict, roles: dict, layout: str = "classic") -> str:
+    raw = json.dumps(
+        {"css": css, "templates": templates, "roles": roles, "layout": layout}, sort_keys=True
+    )
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
@@ -231,85 +123,21 @@ def css_problems(text: str) -> list[str]:
     return problems
 
 
-def _tag_problems(name: str, contents: str) -> list[str]:
-    bits = contents.split()
-    tag = bits[0] if bits else ""
-    where = _("{name}: Befehl „{tag}“").format(name=name, tag=tag)
-    if tag not in ALLOWED_TAGS:
-        return [_("{where} ist nicht erlaubt.").format(where=where)]
-    problems = []
-    if tag == "load":
-        libs = [b for b in bits[1:] if b != "from"]
-        if "from" in bits or not set(libs) <= ALLOWED_LIBRARIES:
-            problems.append(
-                _("{where}: nur die Bibliotheken seite, static und i18n.").format(where=where)
-            )
-    elif tag == "extends":
-        target = bits[1].strip("\"'") if len(bits) == 2 else ""
-        if len(bits) != 2 or bits[1][0] not in "\"'" or target not in ALLOWED_EXTENDS:
-            problems.append(
-                _("{where}: nur seite/basis.html oder seite/start.html.").format(where=where)
-            )
-    elif tag == "include":
-        target = bits[1] if len(bits) > 1 else ""
-        literal = INCLUDE_LITERAL.match(target) and ".." not in target
-        if not (literal or target == "vorlage"):
-            problems.append(
-                _("{where}: nur feste Vorlagen unter seite/ oder „vorlage“.").format(where=where)
-            )
-    return problems
-
-
 def template_problems(name: str, text: str) -> list[str]:
-    problems: list[str] = []
-    if len(text.encode()) > MAX_TEMPLATE_BYTES:
-        problems.append(_("{name} ist größer als 64 KB.").format(name=name))
-        return problems
-    try:
-        tokens = Lexer(text).tokenize()
-    except Exception:  # noqa: BLE001 - jeder Lesefehler macht die Vorlage ungültig
-        return [_("{name} lässt sich nicht lesen.").format(name=name)]
-    in_comment = False
-    for token in tokens:
-        contents = token.contents
-        if token.token_type == TokenType.BLOCK:
-            tag = contents.split()[0] if contents.split() else ""
-            if in_comment:
-                in_comment = tag != "endcomment"
-                continue
-            if tag == "comment":
-                in_comment = True
-            problems += _tag_problems(name, contents)
-            for f in FILTER_USE.findall(contents):
-                if f not in ALLOWED_FILTERS:
-                    problems.append(
-                        _("{name}: Filter „{f}“ ist nicht erlaubt.").format(name=name, f=f)
-                    )
-        elif token.token_type == TokenType.VAR:
-            if in_comment:
-                continue
-            for f in FILTER_USE.findall(contents):
-                if f not in ALLOWED_FILTERS:
-                    problems.append(
-                        _("{name}: Filter „{f}“ ist nicht erlaubt.").format(name=name, f=f)
-                    )
-        elif token.token_type == TokenType.TEXT and not in_comment:
-            for pattern, what in FORBIDDEN_HTML:
-                if pattern.search(contents):
-                    problems.append(
-                        _("{name} enthält {what}, das ist nicht erlaubt.").format(
-                            name=name, what=what
-                        )
-                    )
-    # Doppelte Meldungen zusammenfassen, Reihenfolge behalten
-    return list(dict.fromkeys(problems))
+    # No untrusted source reaches a template compiler, irrespective of DTL branches,
+    # escaping, includes or HTML tokenizer context.
+    return [
+        _(
+            "Eigene HTML-/Django-Vorlagen sind nicht erlaubt. "
+            "Bitte ein Standardlayout mit CSS verwenden."
+        )
+    ]
 
 
 def _text(value, limit: int) -> str:
     if not isinstance(value, str):
         return ""
-    value = "".join(ch for ch in value if ch.isprintable()).strip()
-    return value[:limit]
+    return "".join(ch for ch in value if ch.isprintable()).strip()[:limit]
 
 
 def _roles(value) -> tuple[dict, list[str]]:
@@ -447,10 +275,12 @@ def read(
     roles, role_problems = _roles(manifest.get("roles"))
     problems += role_problems
     sketch = _text(manifest.get("skizze_wie"), 20)
-    if sketch not in designs.SKETCHES:
+    if sketch not in designs.DESIGNS:
         sketch = designs.DEFAULT_DESIGN
 
     source = _text(manifest.get("quelle"), 20)
+    if source in designs.DESIGNS:
+        sketch = source
     css = files["design.css"]
     problems += css_problems(css)
     templates = {}
@@ -505,12 +335,10 @@ def build_zip(
     }
     if source:
         manifest["quelle"] = source
-    reverse = {v: k for k, v in TEMPLATES.items()}
+    if templates:
+        raise PackageError(template_problems("", ""))
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as archive:
         archive.writestr("design.json", json.dumps(manifest, ensure_ascii=False, indent=2) + "\n")
         archive.writestr("design.css", css)
-        for target, text in sorted(templates.items()):
-            if target in reverse:
-                archive.writestr(reverse[target], text)
     return buf.getvalue()

@@ -390,7 +390,6 @@
   "E-Mail:": "Email:",
   "E-Mails": "Emails",
   "Ehrungen": "Honours",
-  "Eigene Anordnung: {list}.": "Own layout: {list}.",
   "Eigene Ansicht": "Own view",
   "Eigener Name für {x} (leer: Standardname)": "Own name for {x} (empty: default name)",
   "Eigener Zeitraum": "Custom period",
@@ -399,7 +398,6 @@
   "Eigenes Bild.": "Own image.",
   "Eigenes Design": "Own design",
   "Ein Bild über die ganze Seite, z. B. ein Rahmen (PNG oder JPG, höchstens 10 MB). Ohne Bild bleibt die Seite weiß.": "An image covering the whole page, e.g. a frame (PNG or JPG, at most 10 MB). Without an image the page stays white.",
-  "Ein Design lässt sich als Paket (ZIP) speichern: mit Gestaltung, Anordnung von Kopf, Fuß und Startseite und den Vorgaben für die Farben, aber ohne Wappen, Texte und Bilder. Ein Plattformverwalter kann das Paket wieder einspielen, auch unter neuem Namen als eigenes Design.": "A design can be saved as a package (ZIP): with its styling, the layout of header, footer and home page and the colour defaults, but without coat of arms, texts and images. A platform administrator can import the package again, also under a new name as an own design.",
   "Ein Wanderpokal wechselt seine Inhaber. Ihr verknüpft ihn beim Wettbewerb unter „Einrichten“ › Auszeichnungen mit einem Platz; frühere Inhaber tragt ihr hier nach.": "A challenge trophy changes hands. Link it to a place under “Setup” › Awards of a competition; add earlier holders here.",
   "ein, den Zugang für {pl} unter": "and the access for {pl} under",
   "Eine Reihe verbindet denselben Wettbewerb über die Jahre, z. B. „Vereinsmeisterschaft“: Sieger je Jahr, Titel, Bestenliste und eure Untereinheiten im Vergleich.": "A series links the same competition across the years, e.g. “club championship”: winners per year, titles, records and your sub-units compared.",
@@ -591,7 +589,6 @@
   "Keine aktive Organisation.": "No active organisation.",
   "Keine Anhänge.": "No attachments.",
   "Keine Beitragsordnung hinterlegt (optional).": "No fee regulations stored (optional).",
-  "Keine eigene Anordnung, nur Gestaltung.": "No own layout, styling only.",
   "Keine Einträge.": "No entries.",
   "Keine Gründungsurkunde hinterlegt (optional).": "No founding charter stored (optional).",
   "Keine Mitglieder gefunden.": "No members found.",
@@ -787,7 +784,6 @@
   "nur ausgewählte": "selected only",
   "Nur diesen absagen": "Cancel only this one",
   "Nur dieser Termin ({x})": "Only this event ({x})",
-  "Nur für Plattformverwalter. HUBIplan prüft das Paket: kein JavaScript, keine Inhalte von fremden Adressen, nur erlaubte Vorlagen. Aus einem Standarddesign wird mit neuem Kürzel und Namen ein eigenes Design, das nur freigegebene Webseiten wählen können.": "For platform administrators only. HUBIplan checks the package: no JavaScript, no content from other addresses, only permitted templates. With a new short name and name, a standard design becomes an own design that only released websites can choose.",
   "nur gespeichert": "saved only",
   "Nur hochladen, was ihr verwenden dürft: Bei Fotos, Logos und fremden Texten braucht ihr die Erlaubnis der Urheber (z. B. der Fotografin oder des Fotografen), nicht nur der abgebildeten Personen.": "Only upload what you are allowed to use: for photos, logos and third-party texts you need the permission of the authors (e.g. the photographer), not just of the people shown.",
   "nur Jubilare im Jahr": "only those with an anniversary in the year",
@@ -4853,5 +4849,9 @@
   "Dabei werden dein Name, dein Verein und der QR-Code an Google übertragen. Dein Foto wird nicht übertragen. Die aktuelle Gültigkeit wird beim Scannen online geprüft.": "Your name, club and QR code will be sent to Google. Your photo will not be sent. Current validity is checked online when the code is scanned.",
   "Neue Einladung an {email} gesendet (gilt {INVITATION_DAYS} Tage).": "New invitation sent to {email} (valid for {INVITATION_DAYS} days).",
   "Passwort noch nicht festgelegt": "Password not set yet",
-  "Einladung erneut senden": "Resend invitation"
+  "Einladung erneut senden": "Resend invitation",
+  "Ein Designpaket enthält CSS, Farbrollen und die Auswahl eines gepflegten Standardlayouts. Es enthält keine eigenen HTML-Vorlagen, Wappen, Texte oder Bilder. Plattformverwalter können es unter eigenem Namen einspielen. Das Layout folgt den gepflegten Standardkomponenten.": "A design package contains CSS, colour roles and a maintained built-in layout selection. It contains no custom HTML templates, coat of arms, texts or images. Platform administrators can import it under a custom name. Layout markup follows maintained components.",
+  "Nur für Plattformverwalter. Erlaubt sind CSS, Farbrollen und Standardlayouts. Freie HTML-/Django-Vorlagen werden abgelehnt. Alte Pakete mit freien Vorlagen zeigen Klassisch, bis sie durch ein Paket ohne Vorlagen ersetzt werden.": "For platform administrators only. CSS, colour roles and built-in layouts are allowed. Imported HTML/Django templates are rejected. Legacy template packages display Classic until replaced by a package without templates.",
+  "Dieses Paket ist wegen freier Vorlagen gesperrt. Die Webseite zeigt Klassisch. Bitte ein Paket ohne Vorlagen einspielen.": "This package is quarantined because it contains custom templates. The website displays Classic. Please import a package without templates.",
+  "Standardlayout mit eigener Gestaltung.": "Built-in layout with custom styling."
 }

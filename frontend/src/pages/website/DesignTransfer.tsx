@@ -1,7 +1,7 @@
 // Webseite › Gestaltung › „Design weitergeben“: ein Design als Paket (ZIP) speichern und
 // Pakete als eigenes Design einspielen und freigeben (konzepte/designs-import-export.md,
 // Ralf 2026-11-02). Einspielen dürfen nur Plattformverwalter, weil ein Paket CSS und
-// Vorlagen enthält; HUBIplan prüft es streng.
+// Layoutauswahl enthält; HUBIplan prüft es streng.
 import { useEffect, useState } from 'react'
 import { saveBlob } from '../../api/client.ts'
 import { websiteApi } from '../../api/website.ts'
@@ -54,7 +54,7 @@ export function DesignTransfer({
       <summary>{t('Design weitergeben')}</summary>
       <p className="muted small">
         {t(
-          'Ein Design lässt sich als Paket (ZIP) speichern: mit Gestaltung, Anordnung von Kopf, Fuß und Startseite und den Vorgaben für die Farben, aber ohne Wappen, Texte und Bilder. Ein Plattformverwalter kann das Paket wieder einspielen, auch unter neuem Namen als eigenes Design.',
+          'Ein Designpaket enthält CSS, Farbrollen und die Auswahl eines gepflegten Standardlayouts. Es enthält keine eigenen HTML-Vorlagen, Wappen, Texte oder Bilder. Plattformverwalter können es unter eigenem Namen einspielen. Das Layout folgt den gepflegten Standardkomponenten.',
         )}
       </p>
       {error && <Alert kind="error">{error}</Alert>}
@@ -193,7 +193,7 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
       <h3>{t('Design aus Paket laden')}</h3>
       <p className="muted small">
         {t(
-          'Nur für Plattformverwalter. HUBIplan prüft das Paket: kein JavaScript, keine Inhalte von fremden Adressen, nur erlaubte Vorlagen. Aus einem Standarddesign wird mit neuem Kürzel und Namen ein eigenes Design, das nur freigegebene Webseiten wählen können.',
+          'Nur für Plattformverwalter. Erlaubt sind CSS, Farbrollen und Standardlayouts. Freie HTML-/Django-Vorlagen werden abgelehnt. Alte Pakete mit freien Vorlagen zeigen Klassisch, bis sie durch ein Paket ohne Vorlagen ersetzt werden.',
         )}
       </p>
       {error && <Alert kind="error">{error}</Alert>}
@@ -236,11 +236,7 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
       {check && (
         <Alert kind="info">
           {t('Paket in Ordnung: „{label}“ ({key}).', { label: check.label, key: check.key })}{' '}
-          {check.templates.length
-            ? t('Eigene Anordnung: {list}.', {
-                list: check.templates.map((n) => n.replace('seite/', '')).join(', '),
-              })
-            : t('Keine eigene Anordnung, nur Gestaltung.')}{' '}
+          {t('Standardlayout mit eigener Gestaltung.')}{' '}
           {check.source &&
             t('Die Farbzuordnung von „{source}“ wird übernommen.', { source: check.source })}
           {check.warnings.map((w) => (
@@ -283,6 +279,13 @@ function DesignImport({ onChanged }: { onChanged: () => void }) {
             {packages.map((p) => (
               <li key={p.key}>
                 <strong>{p.label}</strong> <span className="muted small">({p.key})</span>
+                {p.templates.length > 0 && (
+                  <Alert kind="error">
+                    {t(
+                      'Dieses Paket ist wegen freier Vorlagen gesperrt. Die Webseite zeigt Klassisch. Bitte ein Paket ohne Vorlagen einspielen.',
+                    )}
+                  </Alert>
+                )}
                 <Checkbox
                   label={t('für diese Webseite freigegeben')}
                   checked={p.released}
