@@ -23,3 +23,5 @@ Starter verwenden diese feste Zuordnung. Vereinsnamen allein reichen nicht aus.
 Zusätzlich muss das Verbundpaket „eigene Starter“ freigegeben sein. Änderungen
 werden beim nächsten Verbundabgleich übermittelt; bereits empfangene Kopien bei
 Partnern lassen sich nicht aus der Ferne zuverlässig zurückrufen.
+
+Namenslisten verwenden eine feste alphabetische Reihenfolge: Umlaute stehen bei ihrem Grundbuchstaben. Gleiche Namen bleiben auch beim Blättern in derselben Reihenfolge.

@@ -22,3 +22,5 @@ revokes the local assignment. A starter already assigned to a unit uses that sta
 assignment. Club names alone never authorize personal result sharing. The connection
 must also allow the own-starters packet. Changes propagate on the next peering sync;
 already received copies cannot reliably be recalled remotely.
+
+Name lists use a fixed alphabetical order: accented letters are placed with their base letter. Identical names keep their relative order when paging through the list.

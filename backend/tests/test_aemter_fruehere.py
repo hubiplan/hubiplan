@@ -199,7 +199,7 @@ class TestImport:
         assert rows[2]["until_year"] == 1973  # nur ein Jahr
         assert rows[3]["errors"] and rows[4]["errors"]
         assert data["new_roles"] == ["Ehrenvorsitzender"]
-        assert not RoleAssignment.all_objects.filter(name__gt="").exists()
+        assert not RoleAssignment.all_objects.exclude(name="").exists()
 
         chosen = [
             {
