@@ -115,16 +115,20 @@ def _import_file(org, data, file_name, user, account, created):
         end = st.date_to or (max(days) if days else start)
         dates = [start, end, *days]
         first, last = org.fiscal_year_of(min(dates)), org.fiscal_year_of(max(dates))
-        if YearClosing.objects.filter(
-            organization=org, year__gte=first, year__lte=last
-        ).filter(
-            models.Q(documents_purged_at__isnull=False)
-            | models.Q(records_purged_at__isnull=False)
-        ).exists():
-            raise ValidationError(gettext(
-                "Für dieses Geschäftsjahr wurden Aufbewahrungsdaten bereits bereinigt. "
-                "Der Kontoauszug kann nicht erneut eingelesen werden."
-            ))
+        if (
+            YearClosing.objects.filter(organization=org, year__gte=first, year__lte=last)
+            .filter(
+                models.Q(documents_purged_at__isnull=False)
+                | models.Q(records_purged_at__isnull=False)
+            )
+            .exists()
+        ):
+            raise ValidationError(
+                gettext(
+                    "Für dieses Geschäftsjahr wurden Aufbewahrungsdaten bereits bereinigt. "
+                    "Der Kontoauszug kann nicht erneut eingelesen werden."
+                )
+            )
         prepared.append((st, acc, start, end))
     for st, acc, start, end in prepared:
         record = BankStatement.objects.create(

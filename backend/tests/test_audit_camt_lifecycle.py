@@ -16,8 +16,8 @@ from core.tenancy import tenant_context
 from finance import bank_import, bank_views, camt, services
 from finance.models import Account, BankStatement, YearClosing
 
-from .test_kontoauszug import camt_xml, entry
 from .factories import make_org, make_user
+from .test_kontoauszug import camt_xml, entry
 from .test_m9_billing import base, c, club, members, setup, zug  # noqa: F401
 
 pytestmark = pytest.mark.django_db
@@ -38,7 +38,10 @@ def test_failed_import_removes_new_original_but_preserves_reused_original(club, 
         saved.append(result)
         return result
 
-    with patch.object(storage, "save", save), patch.object(bank_import, "suggest_all", side_effect=RuntimeError("rollback")):
+    with (
+        patch.object(storage, "save", save),
+        patch.object(bank_import, "suggest_all", side_effect=RuntimeError("rollback")),
+    ):
         with pytest.raises(RuntimeError):
             bank_import.import_file(club, data, "test.xml", None)
     assert saved and all(not storage.exists(name) for name in saved)
@@ -68,7 +71,9 @@ def test_undated_statement_uses_line_dates_and_empty_one_import_date(club, setup
     assert record.date_from == record.date_to == datetime.date(2025, 3, 3)
     st.lines = []
     with patch.object(camt, "parse", return_value=[st]):
-        record = bank_import.import_file(club, b"synthetic-empty", "empty.xml", None)["statements"][0]
+        record = bank_import.import_file(club, b"synthetic-empty", "empty.xml", None)["statements"][
+            0
+        ]
     assert record.date_from == record.date_to == timezone.localdate()
 
 
@@ -90,7 +95,9 @@ def test_concurrent_delete_and_import_never_reuse_a_scheduled_deleted_path():
     org = make_org("CAMT Parallelverein")
     user = make_user("camt-race@example.invalid")
     Account.objects.create(
-        organization=org, name="Testbank", iban="DE89370400440532013000",
+        organization=org,
+        name="Testbank",
+        iban="DE89370400440532013000",
         opening_date=datetime.date(2025, 1, 1),
     )
     with tenant_context(org.pk):
@@ -125,13 +132,17 @@ def test_concurrent_delete_and_import_never_reuse_a_scheduled_deleted_path():
     def upload_again():
         try:
             with tenant_context(org.pk):
-                return bank_import.import_file(org, camt_xml([]), "empty.xml", user)["statements"][0]
+                return bank_import.import_file(org, camt_xml([]), "empty.xml", user)["statements"][
+                    0
+                ]
         finally:
             connections.close_all()
 
-    with patch.object(bank_views, "delete_on_commit", delete_later), patch.object(
-        services, "lock_bank_sources", lock
-    ), ThreadPoolExecutor(max_workers=2) as pool:
+    with (
+        patch.object(bank_views, "delete_on_commit", delete_later),
+        patch.object(services, "lock_bank_sources", lock),
+        ThreadPoolExecutor(max_workers=2) as pool,
+    ):
         deletion = pool.submit(delete)
         assert queued.wait(10)
         upload = pool.submit(upload_again)
@@ -146,5 +157,3 @@ def test_concurrent_delete_and_import_never_reuse_a_scheduled_deleted_path():
     assert not first.source.storage.exists(old_path)
     with second.source.open("rb") as stream:
         assert stream.read() == camt_xml([])
-
-

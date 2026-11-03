@@ -33,7 +33,9 @@ def test_search_decrypts_visible_emails_once_for_all_words():
 
     with as_app_role(), tenant_context(org.pk), patch.object(encfields, "decrypt_text", decrypt):
         with CaptureQueriesContext(connection) as queries:
-            qs = filter_members(member_queryset(org), {"suche": "ERIKA demo.invalid demo.invalid"}, org)
+            qs = filter_members(
+                member_queryset(org), {"suche": "ERIKA demo.invalid demo.invalid"}, org
+            )
             assert list(qs.values_list("pk", flat=True)) == [member.pk]
         assert len(calls) == 2
         contact_queries = [q for q in queries if 'FROM "members_contactdetails"' in q["sql"]]
@@ -42,7 +44,9 @@ def test_search_decrypts_visible_emails_once_for_all_words():
 
 
 def test_warmup_closes_failing_iterable_and_main_thread_connections():
-    spec = importlib.util.spec_from_file_location("test_gunicorn_warmup", Path(__file__).parents[1] / "gunicorn.conf.py")
+    spec = importlib.util.spec_from_file_location(
+        "test_gunicorn_warmup", Path(__file__).parents[1] / "gunicorn.conf.py"
+    )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     bodies = []
@@ -69,7 +73,9 @@ def test_warmup_closes_failing_iterable_and_main_thread_connections():
 
 
 def test_warmup_close_failure_does_not_skip_other_paths_or_connections():
-    spec = importlib.util.spec_from_file_location("test_gunicorn_warmup_close", Path(__file__).parents[1] / "gunicorn.conf.py")
+    spec = importlib.util.spec_from_file_location(
+        "test_gunicorn_warmup_close", Path(__file__).parents[1] / "gunicorn.conf.py"
+    )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     body = Mock()

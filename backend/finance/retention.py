@@ -53,18 +53,19 @@ def state(org, closing) -> dict:
     today = _today()
     docs_from, records_from = due_dates(org, closing.year)
     start, end = org.fiscal_range(closing.year)
-    pending_originals = BankStatement.objects.filter(
-        organization=org, date_to__gte=start, date_to__lte=end
-    ).exclude(source="").exists()
+    pending_originals = (
+        BankStatement.objects.filter(organization=org, date_to__gte=start, date_to__lte=end)
+        .exclude(source="")
+        .exists()
+    )
     return {
         "documents_from": docs_from,
         "records_from": records_from,
         "documents_purged_at": closing.documents_purged_at,
         "records_purged_at": closing.records_purged_at,
         "purged_by": closing.purged_by_name,
-        "documents_due": today >= docs_from and (
-            closing.documents_purged_at is None or pending_originals
-        ),
+        "documents_due": today >= docs_from
+        and (closing.documents_purged_at is None or pending_originals),
         "records_due": closing.records_purged_at is None and today >= records_from,
         # Löschsperre (Fachfrage FQ10)
         "hold": closing.retention_hold,
@@ -290,7 +291,6 @@ def purge(org, year: int, user) -> dict:
     from audit.log import record
 
     from .models import YearClosing
-
     from .services import lock_bank_sources
 
     lock_bank_sources(org)
