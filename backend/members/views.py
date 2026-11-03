@@ -1,17 +1,12 @@
 from __future__ import annotations
 
-from django.contrib.postgres.fields import ArrayField
 from django.db import connection, transaction
 from django.db.models import (
-    BigIntegerField,
     Exists,
     F,
-    Func,
-    IntegerField,
     OuterRef,
     Q,
     Subquery,
-    Value,
 )
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -55,6 +50,7 @@ from .models import (
     Person,
     today,
 )
+from .personsearch import name_ids_many, ordered
 from .serializers import (
     AdmitSerializer,
     DepartmentMembershipSerializer,
@@ -222,26 +218,6 @@ def _persons_by_email(qs, words: list[str]) -> dict[str, set[int]]:
 
 
 def filter_members(qs, params, org: Organization):
-    search = (params.get("suche") or "").strip()
-    if search:
-        words = {}
-        for word in search.split():
-            # Originalschreibweise für PostgreSQL erhalten (Unicode-Kollation);
-            # nur der entschlüsselte E-Mail-Vergleich normalisiert in Python.
-            words.setdefault(word.lower(), word)
-        email_matches = _persons_by_email(qs, list(words))
-        q = Q()
-        for normalized, word in words.items():
-            word_q = (
-                Q(person__last_name__icontains=word)
-                | Q(person__first_name__icontains=word)
-                | Q(club_number__iexact=word)
-                | Q(person_id__in=email_matches[normalized])
-            )
-            if word.isdigit():
-                word_q |= Q(person__federation__member_number=int(word))
-            q &= word_q
-        qs = qs.filter(q)
     status_filter = params.get("status", "aktiv")
     if status_filter == "aktiv":
         qs = qs.filter(is_current=True)
@@ -278,6 +254,26 @@ def filter_members(qs, params, org: Organization):
         if title.isdigit():
             awards = awards.filter(title_id=int(title))
         qs = qs.filter(Exists(awards))
+    search = (params.get("suche") or "").strip()
+    if search:
+        words = {}
+        for word in search.split():
+            # SQL-Nummernvergleich behält die Originalschreibweise; Namen folgen
+            # der zentralen NFC-/Casefold-Regel, E-Mails wie bisher lower().
+            words.setdefault(word.lower(), word)
+        email_matches = _persons_by_email(qs, list(words))
+        name_matches = name_ids_many(qs, words.values())
+        q = Q()
+        for normalized, word in words.items():
+            word_q = (
+                Q(pk__in=name_matches[word])
+                | Q(club_number__iexact=word)
+                | Q(person_id__in=email_matches[normalized])
+            )
+            if word.isdigit():
+                word_q |= Q(person__federation__member_number=int(word))
+            q &= word_q
+        qs = qs.filter(q)
     sort = params.get("sortierung") or "name"
     desc = sort.startswith("-")
     key = sort.lstrip("-")
@@ -312,7 +308,7 @@ def filter_members(qs, params, org: Organization):
             getattr(F(f), "desc" if desc else "asc")(nulls_last=True)
             for f in ("sort_key", "sort_name")
         ] + ["person__last_name", "person__first_name"]
-        return qs.order_by(*ordering, "pk")
+        return ordered(qs, *ordering, "pk")
     if key == "geburtsdatum":
         return _by_birth(qs, desc)
     ordering = {
@@ -323,24 +319,13 @@ def filter_members(qs, params, org: Organization):
         "nummer": ("club_number",),
         "-nummer": ("-club_number",),
     }.get(sort, ("person__last_name", "person__first_name"))
-    return qs.order_by(*ordering, "pk")
+    return ordered(qs, *ordering, "pk")
 
 
 def _by_birth(qs, desc: bool):
-    """Nach Geburtsdatum sortieren. Das Datum ist verschlüsselt, die Datenbank kann
-    nicht danach sortieren: Reihenfolge in Python bilden, dann per array_position."""
-    rows = list(qs.values_list("pk", "person__birth_date"))
-    known = sorted((r for r in rows if r[1] is not None), key=lambda r: (r[1], r[0]))
-    if desc:
-        known.sort(key=lambda r: (r[1], -r[0]), reverse=True)
-    ids = [pk for pk, _ in known] + sorted(pk for pk, birth in rows if birth is None)
-    position = Func(
-        Value(ids, output_field=ArrayField(BigIntegerField())),
-        F("pk"),
-        function="array_position",
-        output_field=IntegerField(),
-    )
-    return qs.annotate(birth_position=position).order_by("birth_position")
+    """Unbekannte Daten stehen wie bisher in beiden Richtungen am Ende."""
+    term = F("person__birth_date")
+    return ordered(qs, term.desc(nulls_last=True) if desc else term.asc(nulls_last=True))
 
 
 def member_rows(memberships, org: Organization, full_names: bool = False) -> list[dict]:
@@ -431,9 +416,9 @@ class MemberListView(_ClubMixin, generics.GenericAPIView):
     )
     @transaction.atomic
     def get(self, request, org_id: int):
-        # Lokale Messung mit 10.000 Mitgliedern/RLS: 151 JIT-Funktionen kosteten
-        # mehr als die Ausführung. Nur diesen paginierten interaktiven Abruf
-        # interpretieren; Transaktionsende stellt die Verbindungseinstellung zurück.
+        # Historische P01-Messung (vor zentraler Personensortierung): 151 JIT-
+        # Funktionen bei 10.000 Mitgliedern/RLS. Keine neue Latenzzusage; nur den
+        # paginierten Abruf interpretieren, Transaktionsende stellt JIT zurück.
         if connection.vendor == "postgresql":
             with connection.cursor() as cursor:
                 cursor.execute("SET LOCAL jit = off")

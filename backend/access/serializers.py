@@ -76,6 +76,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
     invited = serializers.SerializerMethodField()
     new_account = serializers.SerializerMethodField()
     has_mfa = serializers.SerializerMethodField()
+    awaiting_password = serializers.SerializerMethodField()
 
     class Meta:
         model = RoleAssignment
@@ -95,6 +96,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
             "invited",
             "new_account",
             "has_mfa",
+            "awaiting_password",
         ]
 
     def get_fields(self):
@@ -151,6 +153,12 @@ class AssignmentSerializer(serializers.ModelSerializer):
         from accounts.mfa_policy import has_mfa
 
         return has_mfa(obj.user)
+
+    def get_awaiting_password(self, obj) -> bool:
+        """Konto hat noch kein Passwort festgelegt (Einladung offen oder abgelaufen)."""
+        from accounts.tokens import is_invitation
+
+        return bool(obj.user_id) and is_invitation(obj.user)
 
     def get_new_account(self, obj) -> bool:
         return getattr(obj, "_new_account", False)

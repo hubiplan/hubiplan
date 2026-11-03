@@ -160,10 +160,41 @@ class TestVereinsplaner:
     def test_fehler_behaelt_letzten_stand(self, cal, board_a, api, remote):
         remote.vp_events = [vp_event("u1", "Kreisfest")]
         data = add(api(board_a), cal["a"])
+        successful = data["last_successful_sync_at"]
+        assert successful is not None
         remote.vp_status = 401
         resp = api(board_a).post(f"{org_base(cal['a'])}events/external/{data['id']}/sync/")
         assert "lehnt das Token ab" in resp.json()["last_error"]
+        assert resp.json()["last_successful_sync_at"] == successful
+        assert resp.json()["last_sync_at"] >= successful
         assert Event.objects.filter(title="Kreisfest").exists()
+
+    def test_alter_oder_nie_erfolgreicher_stand_bleibt_ehrlich_unbekannt(
+        self, cal, board_a, api, remote
+    ):
+        remote.vp_status = 401
+        data = add(api(board_a), cal["a"])
+        assert data["last_successful_sync_at"] is None
+        assert data["last_sync_at"] is not None
+        assert data["last_error"]
+
+    def test_deaktivierung_waehrend_abruf_legt_keine_neuen_kopien_an(
+        self, cal, board_a, api, remote, monkeypatch
+    ):
+        data = add(api(board_a), cal["a"])
+        source = ExternalCalendar.objects.get(pk=data["id"])
+        original = external.fetch
+
+        def deactivate(current):
+            items = original(current)
+            ExternalCalendar.objects.filter(pk=current.pk).update(is_active=False)
+            current.events.all().delete()
+            return items
+
+        remote.vp_events = [vp_event("u1", "Darf nicht zurückkommen")]
+        monkeypatch.setattr(external, "fetch", deactivate)
+        assert external.sync(source) == 0
+        assert not Event.objects.filter(external_source=source).exists()
 
     def test_ausblenden_und_wieder_zeigen(self, cal, board_a, api, remote):
         remote.vp_events = [vp_event("u1", "Kreisfest"), vp_event("u2", "Andere")]

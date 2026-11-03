@@ -33,6 +33,7 @@ from access.catalog import (
 from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, OrgScopedMixin
 from members.models import Membership
+from members.personsearch import filter_names, ordered
 from organizations.models import Department, Organization
 
 from . import awards, bird, report, services
@@ -1133,15 +1134,8 @@ class CandidatesView(_Mixin, APIView):
             .filter(Q(periods__exit_date__isnull=True) | Q(periods__exit_date__gte=on))
             .distinct()
         )
-        for word in term.split()[:3]:
-            variants = _umlaut_variants(word)
-            cond = Q()
-            for v in variants:
-                cond |= Q(person__first_name__icontains=v) | Q(person__last_name__icontains=v)
-            qs = qs.filter(cond)
-        rows = list(
-            qs.select_related("person").order_by("person__last_name", "person__first_name")[:12]
-        )
+        qs = filter_names(qs, term, variants=_umlaut_variants)
+        rows = list(ordered(qs.select_related("person"), limit=12))
         taken = dict(comp.starters.filter(membership__in=rows).values_list("membership_id", "pk"))
         units = dict(Department.objects.filter(organization=self.org).values_list("pk", "name"))
         out = []

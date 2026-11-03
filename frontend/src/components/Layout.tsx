@@ -186,7 +186,7 @@ export function Layout() {
 
   async function handleLogout() {
     try {
-      await logout()
+      if (!(await logout())) return
     } catch {
       await alertDialog({
         title: t('Abmelden hat nicht geklappt'),

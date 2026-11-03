@@ -23,6 +23,7 @@ from competitions.event_views import _visible_events as visible_events
 from competitions.event_views import event_info, find_event
 from events import services as event_services
 from events.models import Event, EventResponse
+from members.personsearch import ordered
 
 from . import services
 from .models import Call, Entry
@@ -170,8 +171,10 @@ class ResponsesView(_Mixin, APIView):
                 membership_id__in=services.unit_member_ids(self.org, self.department, on)
             )
         rows = list(
-            qs.select_related("membership__person").order_by(
-                "membership__person__last_name", "membership__person__first_name"
+            ordered(
+                qs.select_related("membership__person"),
+                "membership__person__last_name",
+                "membership__person__first_name",
             )
         )
         yes = [r for r in rows if r.status == EventResponse.Status.YES]

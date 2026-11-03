@@ -49,7 +49,11 @@ function toLoginResult(status: number, body: AuthBody, fallback: string): LoginR
 
 export async function getSession(): Promise<User | null> {
   const { status, body } = await request<AuthBody>('GET', `${BASE}/auth/session`)
-  return status === 200 && body.data?.user ? body.data.user : null
+  if (status === 200 && body.data?.user) return body.data.user
+  if (status === 401 || status === 403) return null
+  // Serverfehler oder ein unbekannter Vertrag beweisen keine Abmeldung. Insbesondere
+  // dürfen sie keine noch nicht übertragenen Offline-Eingaben vernichten.
+  throw new ApiError(status === 200 ? 502 : status, body)
 }
 
 export async function login(email: string, password: string): Promise<LoginResult> {

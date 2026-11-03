@@ -78,6 +78,8 @@ class SocialFeed(models.Model):
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.NEW)
     last_error = models.CharField(max_length=500, blank=True)
     last_sync_at = models.DateTimeField(null=True, blank=True)
+    sync_job_id = models.UUIDField(null=True, blank=True)
+    sync_requested_at = models.DateTimeField(null=True, blank=True)
     warned_at = models.DateTimeField(null=True, blank=True)
     # Anmeldung bei Meta: Einmalwert (nur als Hash) mit Ablauf und Person
     oauth_state = models.CharField(max_length=64, blank=True)
@@ -103,6 +105,17 @@ class SocialFeed(models.Model):
     def __str__(self) -> str:
         name = self.account_name or self.get_kind_display()
         return f"{self.get_kind_display()}: {name}"
+
+    def save(self, *args, **kwargs):
+        # Job tokens are updated atomically by social_jobs. An ordinary save of a
+        # previously loaded feed must not cancel a request queued in the meantime.
+        if not self._state.adding and kwargs.get("update_fields") is None:
+            kwargs["update_fields"] = [
+                field.name
+                for field in self._meta.concrete_fields
+                if not field.primary_key and field.name not in {"sync_job_id", "sync_requested_at"}
+            ]
+        return super().save(*args, **kwargs)
 
     @property
     def is_connected(self) -> bool:

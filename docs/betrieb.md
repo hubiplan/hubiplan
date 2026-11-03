@@ -70,6 +70,9 @@ keine gemessenen Produktions- oder HTTP-Latenzen. Bei 10 bis 1.000 Mitgliedern z
 sich kein einheitlicher JIT-Vorteil. Andere Abrufe, Exporte und die globale
 Datenbankkonfiguration behalten ihre vorhandene JIT-Einstellung; RLS bleibt aktiv.
 Commit oder Rollback der Listentransaktion stellt die Einstellung zurück.
+Die Messung stammt vom P01-Stand `1af9ec0b` (Mess-Snapshot `afef8f1`), vor der
+Zentralisierung von Namenssuche und Personensortierung. Sie belegt keinen Zeitgewinn
+für den danach geänderten Such- und Sortierplan; dieser wurde hier nicht neu vermessen.
 
 English: The paginated interactive member list disables JIT only for its transaction.
 A local synthetic 10,000-member RLS workload showed 77.9 ms compiling 151 JIT functions
@@ -77,6 +80,9 @@ and a 96.4/19.3 ms execution-plan comparison with/without JIT; the complete ORM 
 workflow measured 147.7/45.5 ms median. These are local comparisons, not production or
 HTTP latency guarantees. Smaller clubs showed no consistent JIT advantage. Other requests,
 exports, global database defaults and RLS are unchanged. Commit/rollback restores the setting.
+The measurements use P01 source `1af9ec0b` (measurement snapshot `afef8f1`), before
+centralized name search/person ordering. They do not establish a speedup for that
+subsequently changed query/sort plan, which has not been remeasured here.
 
 ## Geheimnisse
 
@@ -127,6 +133,21 @@ der Empfänger einem anderen Verein angehört. Die Namensfelder bleiben lesbar.
 Klartext. Das Geburtsdatum ist bereits verschlüsselt; Datumsvergleiche, Altersfilter
 und die Sortierung danach laufen in Python. Bei den Kontaktdaten sind E-Mail,
 Telefon und Straße verschlüsselt, Postleitzahl, Ort und Land bleiben lesbar.
+
+Namenssuche und Personensortierung der Listen laufen bereits in HUBIplan selbst
+(`members/personsearch.py`), nach Berechtigungs- und Fachfiltern und vor dem
+Seitenschnitt. Unicode-Schreibvarianten und Groß-/Kleinschreibung werden vereinheitlicht;
+`ß` entspricht `ss`. Für die feste Textreihenfolge gelten Grundbuchstaben zuerst,
+danach Akzente und Schreibweise, zuletzt die Zeilen-ID. Umlaute stehen daher bei
+ihrem Grundbuchstaben. Die Reihenfolge ist unabhängig von der Datenbank-Kollation.
+Es gibt keinen Suchcache. Der strenge Identitätsabgleich für Import und Verbund bleibt
+unverändert; Suchmarken und Namensverschlüsselung sind damit noch nicht eingeführt.
+
+Eine beim Start installierte Compiler-Erweiterung (`core/encrypted_ordering.py`)
+weist ORM-Sortierungen nach verschlüsselten Spalten zurück, auch über Beziehungen,
+Annotationen und Standardsortierungen. Sie verwendet die interne Django-Compiler-API;
+die Regressionstests dafür sind bei Django-Updates mitzuprüfen. Frei geschriebenes
+SQL ist von dieser ORM-Sperre nicht erfasst.
 
 Weitere Klartextkopien von Namen gibt es unter anderem
 bei Rundschreiben-Empfängern (`circulars.Recipient`), Rechnungen (`billing.Invoice`),
@@ -608,3 +629,33 @@ Ein zweiter Aufruf geht wieder vor. Welche Fassung läuft, steht in `/opt/hubipl
 Datenbank-Migrationen der neueren Fassung bleiben dabei angewendet; Migrationen deshalb
 so schreiben, dass die vorige Fassung damit weiterläuft (Spalten erst eine Fassung später
 entfernen).
+
+
+### Empfangs-/Kapazitätsbudgets im Verbund
+
+Der Empfang reserviert atomar Kapazität, bevor Pakete oder Dateien gespeichert werden.
+Dubletten derselben Nachrichtenkennung werden nicht erneut belastet. Jede neue
+Nachricht zählt mindestens 64 KiB, sonst das Doppelte der UTF-8-JSON-Nutzdaten;
+auch ersetzte Stände und veraltete Sequenzen verbrauchen Empfangskapazität. Dies ist
+ein konservatives dauerhaftes Empfangsbudget, keine Anzeige exakt belegter Plattenbytes.
+Bestehende Nachrichten und retained Dateien werden vor dem ersten Empfang mitgezählt.
+Nicht lesbarer Altbestand blockiert den Empfang, bis er geprüft ist.
+
+Standardgrenzen: Instanz 10 GiB/200000 Nachrichten, Empfängereinheit 2 GiB/50000,
+Partnerinstanz über alle Empfänger 1 GiB/25000 sowie 1000 Nachrichten in 24 Stunden.
+Bei Überschreitung wird vor der Verarbeitung mit 507 bzw. 429 abgelehnt. Die Kopplung
+behält ihren bisherigen Sequenzstand; nach begründeter Kapazitätsfreigabe kann sie
+wieder zustellen. Die API zeigt reservierte Bytes und Nachrichten je Kopplung unter
+`reception_budget`; `initialized=false` bedeutet noch nicht vermessenen Altbestand.
+
+Positive Umgebungswerte `PEERING_RECEPTION_INSTANCE_BYTES`,
+`PEERING_RECEPTION_INSTANCE_MESSAGES`, `PEERING_RECEPTION_UNIT_BYTES`,
+`PEERING_RECEPTION_UNIT_MESSAGES`, `PEERING_RECEPTION_PEER_BYTES`,
+`PEERING_RECEPTION_PEER_MESSAGES`, `PEERING_RECEPTION_PEER_DAILY_MESSAGES`
+ändern die Grenzen. Vor einer Erhöhung freie Host-/Volume-Kapazität und Aufbewahrung
+prüfen und die Freigabe dokumentieren. Null bedeutet **nicht** unbegrenzt.
+Reservierungen werden niemals automatisch zurückgesetzt; Rechnungen und Rundschreiben
+werden nicht zur Quotenbereinigung gelöscht. Host-/Volumequoten und unabhängige
+Kapazitätsalarme bleiben zusätzliche Betriebsmaßnahmen auf dem gemeinsamen Server.
+Die Schemaerweiterung ist additiv; bei einem Rückweg zunächst nur den Code zurücknehmen,
+die zusätzlichen Spalten eine Fassung lang stehen lassen.

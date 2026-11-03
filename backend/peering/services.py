@@ -861,6 +861,21 @@ def receive(peer: Peer, payload: dict) -> dict:
         return _receive(coupling, payload)
 
 
+def _check_receiver(original: Coupling, locked: Coupling, kind: str):
+    if locked.peer_id != original.peer_id:
+        raise Refused(409, gettext("Die Gegenstelle hat sich während der Verarbeitung geändert."))
+    if locked.state in (Coupling.State.ENDED, Coupling.State.MOVED):
+        raise Refused(410, gettext("Die Kopplung ist nicht mehr aktiv."))
+    if (
+        locked.state == Coupling.State.PAUSED
+        and not kind.startswith("coupling.")
+        and kind != "unit.moved"
+    ):
+        raise Refused(423, gettext("Die Kopplung ist hier pausiert."))
+    if locked.state == Coupling.State.MOVING and kind != "unit.moved":
+        raise Refused(423, gettext("Hier wartet ein angekündigter Umzug auf Bestätigung."))
+
+
 def _receive(coupling: Coupling, payload: dict) -> dict:
     kind = str(payload.get("kind", ""))
     data = payload.get("data") or {}
@@ -878,13 +893,54 @@ def _receive(coupling: Coupling, payload: dict) -> dict:
         raise Refused(410, "Die Kopplung ist gelöst.")
     if kind == "unit.moved":
         from . import moving
+        from .quotas import lock_reception, reserve
 
         try:
+            if Message.objects.filter(direction=Message.Direction.IN, msg_id=msg_id).exists():
+                return {"ok": True, "duplicate": True}
+            if seq <= coupling.in_seq:
+                return {"ok": True, "stale": True}
+            previous = (coupling.options or {}).get("move") or {}
+            previously_same = bool(previous) and all(
+                str(previous.get(key, "")) == str(data.get(key, ""))
+                for key in ("base_url", "instance_id", "public_key", "enc_public_key")
+            )
+            info = None if previously_same else moving.verify_moved(data)
             with transaction.atomic():
+                lock_reception()
                 locked = (
                     Coupling.objects.select_for_update().select_related("peer").get(pk=coupling.pk)
                 )
-                moving.receive_moved(locked, data)
+                _check_receiver(coupling, locked, kind)
+                if Message.objects.filter(direction=Message.Direction.IN, msg_id=msg_id).exists():
+                    return {"ok": True, "duplicate": True}
+                if seq <= locked.in_seq:
+                    return {"ok": True, "stale": True}
+                pending = (locked.options or {}).get("move") or {}
+                same = bool(pending) and all(
+                    str(pending.get(key, "")) == str(data.get(key, ""))
+                    for key in ("base_url", "instance_id", "public_key", "enc_public_key")
+                )
+                if not same and info is None:
+                    raise Refused(
+                        409, gettext("Die Kopplung hat sich geändert. Bitte erneut zustellen.")
+                    )
+                reserve(locked, data)
+                if not same:
+                    moving.receive_moved(locked, data, verified_info=info)
+                locked.in_seq = seq
+                locked.last_contact_at = timezone.now()
+                locked.save(update_fields=["in_seq", "last_contact_at"])
+                Message.objects.create(
+                    coupling=locked,
+                    direction=Message.Direction.IN,
+                    msg_id=msg_id,
+                    seq=seq,
+                    kind=kind,
+                    payload=None,
+                    state=Message.State.DONE,
+                    done_at=timezone.now(),
+                )
         except (ValidationError, transport.PeerError) as exc:
             raise Refused(422, f"Umzug nicht übernommen: {exc}") from exc
         return {"ok": True}
@@ -898,7 +954,15 @@ def _receive(coupling: Coupling, payload: dict) -> dict:
     if Message.objects.filter(direction=Message.Direction.IN, msg_id=msg_id).exists():
         return {"ok": True, "duplicate": True}
     with transaction.atomic():
-        coupling = Coupling.objects.select_for_update().get(pk=coupling.pk)
+        from .quotas import lock_reception, reserve
+
+        lock_reception()
+        locked = Coupling.objects.select_for_update().get(pk=coupling.pk)
+        _check_receiver(coupling, locked, kind)
+        coupling = locked
+        if Message.objects.filter(direction=Message.Direction.IN, msg_id=msg_id).exists():
+            return {"ok": True, "duplicate": True}
+        reserve(coupling, data)
         stale = seq <= coupling.in_seq
         persons = 0
         if not stale:

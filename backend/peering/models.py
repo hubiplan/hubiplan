@@ -71,6 +71,12 @@ class Peer(models.Model):
 
 
 class Coupling(models.Model):
+    # Conservative lifetime reception/capacity reservations; never auto-reset or
+    # release these by deleting financial documents. Legacy usage is initialized once.
+    received_bytes = models.PositiveBigIntegerField(default=0, db_default=0)
+    received_count = models.PositiveBigIntegerField(default=0, db_default=0)
+    usage_initialized = models.BooleanField(default=False, db_default=False)
+
     class Direction(models.TextChoices):
         PARENT = "parent", gettext_lazy("ferne Einheit darüber")
         CHILD = "child", gettext_lazy("ferne Einheit darunter")

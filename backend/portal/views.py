@@ -50,6 +50,7 @@ from members.models import (
     Membership,
     today,
 )
+from members.personsearch import ordered
 from members.serializers import MemberUpdateSerializer
 from members.views import (
     MemberPagination,
@@ -628,11 +629,13 @@ class DepartmentHoldersView(DepartmentScopedMixin, APIView):
 
     def get(self, request, dept_id: int):
         on = today()
-        holders = (
+        holders = ordered(
             DepartmentRoleHolder.objects.filter(role__department=self.dept)
             .filter(Q(valid_until__isnull=True) | Q(valid_until__gte=on))
-            .select_related("membership__person", "role")
-            .order_by("role__position", "role__name", "membership__person__last_name")
+            .select_related("membership__person", "role"),
+            "role__position",
+            "role__name",
+            "membership__person__last_name",
         )
         return Response([holder_data(h) for h in holders])
 

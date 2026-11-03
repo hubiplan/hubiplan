@@ -25,9 +25,13 @@ pytestmark = pytest.mark.django_db(transaction=True)
 
 
 @pytest.fixture(autouse=True)
-def private_root(settings, tmp_path):
+def private_root(settings, tmp_path, monkeypatch):
     settings.PRIVATE_ROOT = tmp_path / "private"
     settings.FRONTEND_URL = "https://hubiplan.example"
+    # Execute the queued worker deterministically; provider calls still use FakeMeta.
+    from website.tasks import sync_social_feed
+
+    monkeypatch.setattr(sync_social_feed, "delay", sync_social_feed.run)
 
 
 def jpeg(color="blue", exif=True) -> bytes:

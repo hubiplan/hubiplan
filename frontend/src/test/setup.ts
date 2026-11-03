@@ -1,9 +1,14 @@
 import '@testing-library/jest-dom/vitest'
+import { webcrypto } from 'node:crypto'
 import { cleanup, configure } from '@testing-library/react'
 import { afterEach, beforeAll, vi } from 'vitest'
 import { retry } from '../api/client.ts'
 import { preloadPages } from '../lazyPages.ts'
 import '../App.tsx'
+
+// jsdom stellt SubtleCrypto nicht bereit. Echte SHA-256-Implementierung wie im Browser,
+// damit vollständige Standzugänge auch in Integrationsprüfungen gebunden bleiben.
+Object.defineProperty(globalThis.crypto, 'subtle', { value: webcrypto.subtle, configurable: true })
 
 // jsdom misst nichts; der Texteditor (ProseMirror) fragt beim Scrollen nach Rechtecken
 if (!('getClientRects' in Range.prototype)) {

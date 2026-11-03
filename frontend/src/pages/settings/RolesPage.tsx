@@ -365,8 +365,28 @@ function AssignmentRow({
   const [member, setMember] = useState<PickedMember | null>(a.member_record ?? null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
   const who = a.person_name ?? a.user_name ?? a.user_email
   const { user } = useAuth()
+
+  async function resendInvitation() {
+    setBusy(true)
+    setError(null)
+    setNotice(null)
+    try {
+      await orgApi.resendInvitation(orgId, a.id)
+      setNotice(
+        t('Neue Einladung an {email} gesendet (gilt {INVITATION_DAYS} Tage).', {
+          email: a.user_email,
+          INVITATION_DAYS,
+        }),
+      )
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function resetMfa() {
     const ok = await confirmDialog({
@@ -427,6 +447,11 @@ function AssignmentRow({
               {span} {t('Rollen, es gelten alle Rechte')}
             </div>
           )}
+          {a.awaiting_password && (
+            <div className="small muted">{t('Passwort noch nicht festgelegt')}</div>
+          )}
+          {notice && <Alert kind="info">{notice}</Alert>}
+          {!editing && error && <Alert kind="error">{error}</Alert>}
         </td>
       )}
       <td>
@@ -534,6 +559,16 @@ function AssignmentRow({
             {a.is_active && !a.valid_until && a.valid_from <= today && (
               <button type="button" className="link-button" onClick={onEnd}>
                 {t('Beenden')}
+              </button>
+            )}
+            {span > 0 && a.is_active && a.awaiting_password && (
+              <button
+                type="button"
+                className="link-button"
+                disabled={busy}
+                onClick={() => void resendInvitation()}
+              >
+                {t('Einladung erneut senden')}
               </button>
             )}
             {span > 0 && a.is_active && a.has_mfa && a.user_email !== user?.email && (

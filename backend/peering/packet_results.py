@@ -7,8 +7,9 @@ jede gekoppelte Einheit darunter bekommt die endgültigen Ergebnisse der letzten
   keine Personen), die eigene Zeile markiert;
 - Stufe „own“: dazu die eigenen Starter mit Platz und Wert in der Einzelwertung.
 
-„Eigen“ heißt: Untereinheit des Starters ist der Platzhalter der fernen Einheit, oder sein
-Verein (Text) heißt wie sie. Fremde Personen gehen nie hinaus. Standard: aus.
+„Eigen“ heißt: Die lokal zugeordnete Untereinheit des Starters ist der Platzhalter der
+fernen Einheit. Namen und frei eingegebene Vereinsangaben sind kein Berechtigungsnachweis.
+Nicht eindeutig zugeordnete Personen gehen nie hinaus. Standard: aus.
 """
 
 from __future__ import annotations
@@ -30,15 +31,15 @@ def _norm(text: str) -> str:
     return " ".join((text or "").lower().split())
 
 
-def _is_own_starter(row: dict, coupling, names: set[str]) -> bool:
-    if row.get("unit") and row.get("unit") == coupling.remote_unit_id:
-        return True
-    return bool(row.get("club")) and _norm(row["club"]) in names
+def _is_own_starter(row: dict, coupling, approved: set[int]) -> bool:
+    if row.get("unit"):
+        return row["unit"] == coupling.remote_unit_id
+    return row.get("starter") in approved
 
 
 def build(coupling, level):
     from competitions import services
-    from competitions.models import Competition, Scoring
+    from competitions.models import Competition, Scoring, Starter
     from core.tenancy import tenant_context
 
     org = coupling.local_unit
@@ -55,6 +56,18 @@ def build(coupling, level):
             if comp.form == Competition.Form.BIRD:
                 continue
             data = services.standings(comp)
+            approved = (
+                set(
+                    Starter.objects.filter(
+                        competition=comp,
+                        organization=org,
+                        result_coupling=coupling,
+                        unit__isnull=True,
+                    ).values_list("pk", flat=True)
+                )
+                if level == LEVEL_OWN
+                else set()
+            )
             scorings = []
             for s in data.get("scorings", []):
                 team = s["kind"] in team_kinds
@@ -66,7 +79,7 @@ def build(coupling, level):
                     if team:
                         own = r.get("unit") == remote.pk or _norm(r.get("name", "")) in names
                     else:
-                        own = _is_own_starter(r, coupling, names)
+                        own = _is_own_starter(r, coupling, approved)
                         if not own:
                             continue
                     if r.get("place") is None and not r.get("value_text"):

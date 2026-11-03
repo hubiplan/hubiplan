@@ -19,8 +19,9 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Any
 
+from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db import models
+from django.db import connection, models
 from django.db.models import signals
 from django.db.models.fields.files import FieldFile
 
@@ -140,6 +141,11 @@ def _booking_lock(values: dict) -> str:
         return "Betrifft ein Storno."
     if values.get("id") and Booking._base_manager.filter(cancels_id=values["id"]).exists():
         return "Betrifft eine stornierte Buchung."
+    if booking_id := values.get("id"):
+        try:
+            services.editable_booking_donation(booking_id, lock=connection.in_atomic_block)
+        except ValidationError as exc:
+            return " ".join(exc.messages)
     org = Organization._base_manager.filter(pk=values.get("organization_id")).first()
     date, created = values.get("date"), values.get("created_at")
     if isinstance(date, str):

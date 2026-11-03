@@ -17,3 +17,15 @@ stichworte: [Vereinsplaner, iCal, federation, external events, subscription, tok
 HUBIplan then fetches the events every hour; **Fetch now** fetches them at once. The events cannot be changed here. To drop an unsuitable event, open it in the calendar and click **Hide here**; you can show it again under **External calendars**.
 
 ![Starting point: Show events from an external calendar](bild:fremde-kalender)
+
+External sources default to members-only visibility; making their copies public
+requires a separate deliberate selection. A failed fetch retains the existing
+copies unchanged. The source shows the error, last attempt and last successful
+fetch. Legacy data and sources that never fetched successfully explicitly show an
+unknown success time. There is no automatic deletion deadline for repeated fetch
+failures: copies remain until the next successful sync or deliberate source
+maintenance. A successful sync removes deleted, hidden or out-of-window events.
+Disabling a source removes all copies immediately; an inactive new source does
+not fetch anything. Deleting a source also deletes its copies and hidden-item
+history. A strict automatic maximum age requires a separate policy decision and
+is not an existing guarantee.

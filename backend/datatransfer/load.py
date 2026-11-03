@@ -34,7 +34,6 @@ from access.catalog import (
     SWITCHABLE_MODULES,
     codes_for,
     from_legacy,
-    looks_legacy,
     normalize,
 )
 from access.models import Role, RoleAssignment
@@ -67,6 +66,7 @@ from organizations.models import (
 from organizations.terms import department_terms, fill
 
 from . import dump
+from .permission_schema import policy as permission_policy
 from .tables import (
     DEPARTMENT_IMPORT_MODELS,
     NOT_INCLUDED,
@@ -75,6 +75,7 @@ from .tables import (
     check_tables,
     load_tables,
 )
+from .validation import validate_url_data, validate_urls
 
 MAX_JSON_BYTES = 200 * 1024 * 1024
 MAX_FILE_BYTES = 25 * 1024 * 1024  # eine Datei im Archiv (größte Uploadgrenze: 20 MB)
@@ -166,6 +167,7 @@ def load_imprint(org: Organization, data: dict | None) -> None:
         # Ältere Dateien: dort war der Text sofort öffentlich
         imprint.privacy_published_text = imprint.privacy_text
     imprint.privacy_published_at = timezone.now() if imprint.privacy_published_text else None
+    validate_urls(imprint)
     imprint.save()
 
 
@@ -186,9 +188,9 @@ def parse_uuid(value):
         return None
 
 
-def role_codes(perms, *, dept: bool = False) -> list[str]:
+def role_codes(perms, *, dept: bool = False, schema: int = 1) -> list[str]:
     """Rechte einer Rolle aus der Datei; ältere Dateien kennen noch die früheren Codes."""
-    if looks_legacy(perms, dept=dept):
+    if schema == 1:
         return from_legacy(perms, dept=dept)
     return normalize(perms, dept=dept)
 
@@ -225,6 +227,14 @@ class Files:
         self.total += len(content)
         if self.total > MAX_TOTAL_BYTES:
             raise FileProblem("Die Dateien im Archiv sind zusammen zu groß.")
+        from core import virenscan
+
+        if virenscan.enabled() or virenscan.required():
+            if not virenscan.enabled() or len(content) > virenscan.max_bytes():
+                raise FileProblem(
+                    gettext("Eine Datei im Archiv konnte nicht auf Viren geprüft werden.")
+                )
+            virenscan.scan_bytes(content, str(path))
         return content
 
 
@@ -260,11 +270,15 @@ def open_file(fieldfile) -> tuple[dict, Files]:
     if not isinstance(doc, dict) or doc.get("format") != dump.FORMAT:
         raise FileProblem("Das ist keine Exportdatei von HUBIplan.")
     version = doc.get("version")
-    if not isinstance(version, int) or version > dump.VERSION:
+    if type(version) is not int or not 1 <= version <= dump.VERSION:
         raise FileProblem(
             f"Die Datei hat Version {version}. Diese Installation liest bis Version "
             f"{dump.VERSION}. Bitte die Software aktualisieren."
         )
+    if type(doc.get("permissions_schema", 1)) is not int or doc.get(
+        "permissions_schema", 1
+    ) not in (1, 2):
+        raise FileProblem(gettext("Das Rechteformat der Exportdatei wird nicht unterstützt."))
     return doc, Files(archive)
 
 
@@ -342,8 +356,12 @@ class Checker:
         # Texte in der Abteilungsbezeichnung des Zielvereins
         self.t = department_terms(self.target)
         self.doc = doc
+        self.permission_policy = permission_policy(doc, job.options or {})
+        self.permissions_schema = self.permission_policy["schema"]
         self.files = files
         self.p = Problems()
+        for error in self.permission_policy["errors"]:
+            self.p.error(error)
         self.persons = {p.get("id"): p for p in doc.get("persons") or [] if isinstance(p, dict)}
         self.known: dict[str, set] = {
             "organization": set(),
@@ -445,6 +463,7 @@ class Checker:
             "source": self.doc.get("source") or {},
             "exported_at": self.doc.get("exported_at"),
             "with_files": bool(self.doc.get("with_files")),
+            "permission_policy": self.permission_policy,
             "summary": self.summary,
             "classes": dict(sorted(self.classes.items())),
             "not_included": NOT_INCLUDED,
@@ -492,11 +511,19 @@ class Checker:
                 self.p.error(f"{where}: Geburtsdatum ist ungültig.")
 
     def check_org(self, data: dict, top: bool = False) -> None:
+        from organizations.models import Imprint
+
         self.summary["organizations"] += 1
         if data.get("type") == "club" and not top:
             self.summary["clubs"] += 1
         self.known["organization"].add(data.get("id"))
         where = data.get("name") or "Organisation"
+        try:
+            validate_url_data(Organization, data)
+            if isinstance(data.get("imprint"), dict):
+                validate_url_data(Imprint, data["imprint"])
+        except ValidationError as exc:
+            self.p.error(f"{where}: {'; '.join(exc.messages)}")
         for field in ("founding_year", "street", "postal_code", "city"):
             if not data.get(field):
                 self.p.error(f"{where}: Pflichtfeld „{field}“ fehlt.")
@@ -505,7 +532,9 @@ class Checker:
         for r in data.get("roles") or []:
             self.summary["roles"] += 1
             role_ids.add(r.get("id"))
-            unknown = sorted(set(role_codes(r.get("permissions"))) - allowed)
+            unknown = sorted(
+                set(role_codes(r.get("permissions"), schema=self.permissions_schema)) - allowed
+            )
             if unknown:
                 self.p.warn(
                     f"{where}: Rolle „{r.get('name')}“ hat hier unbekannte Rechte, sie "
@@ -544,9 +573,17 @@ class Checker:
                 )
 
     def check_department(self, d: dict, where: str = "") -> None:
+        from organizations.models import Imprint
+
         self.summary["departments"] += 1
         self.known["department"].add(d.get("id"))
         label = f"{where}: " if where else ""
+        try:
+            validate_url_data(Department, d)
+            if isinstance(d.get("imprint"), dict):
+                validate_url_data(Imprint, d["imprint"])
+        except ValidationError as exc:
+            self.p.error(label + "; ".join(exc.messages))
         if not d.get("name"):
             self.p.error(label + fill("{Ein} hat keinen Namen.", self.t))
         dept_roles = self.known.setdefault("department_role", set())
@@ -807,6 +844,7 @@ class Loader:
         self.files = files
         self.user = user
         self.options = job.options or {}
+        self.permissions_schema = permission_policy(doc, self.options)["schema"]
         self.by_platform = self.target.type == Organization.Type.PLATFORM
         self.ids = IdMap()
         self.persons = {p["id"]: p for p in doc.get("persons") or []}
@@ -957,6 +995,7 @@ class Loader:
             org.federation_member_access = Organization.MemberAccess.NONE
             org.federation_show_former_memberships = False
         try:
+            validate_urls(org)
             org.clean()
         except ValidationError as exc:
             raise ValidationError(f"{org.name}: {'; '.join(exc.messages)}") from exc
@@ -973,7 +1012,9 @@ class Loader:
                 organization=org,
                 name=r["name"],
                 description=r.get("description") or "",
-                permissions=sorted(set(role_codes(r.get("permissions"))) & allowed),
+                permissions=sorted(
+                    set(role_codes(r.get("permissions"), schema=self.permissions_schema)) & allowed
+                ),
                 is_board=bool(r.get("is_board", True)),
                 represents=bool(r.get("represents", False)),
                 on_letterhead=bool(r.get("on_letterhead", False)),
@@ -1083,6 +1124,7 @@ class Loader:
         if name:
             dept.name = name
         dept.short_name = (dept.short_name or "").strip()[:SHORT_NAME_MAX]
+        validate_urls(dept)
         dept.save()
         if d.get("logo") and self.save_logo(dept.logo, d["logo"]):
             dept.save(update_fields=["logo"])
@@ -1095,7 +1137,14 @@ class Loader:
                 department=dept,
                 name=r["name"],
                 permissions=sorted(
-                    set(role_codes(r.get("permissions"), dept=True)) & DEPARTMENT_CODES
+                    set(
+                        role_codes(
+                            r.get("permissions"),
+                            dept=True,
+                            schema=self.permissions_schema,
+                        )
+                    )
+                    & DEPARTMENT_CODES
                 ),
                 position=r.get("position") or 0,
                 on_letterhead=bool(r.get("on_letterhead", False)),
@@ -1336,6 +1385,7 @@ class Loader:
         org.enabled_modules = list(DEFAULT_MODULES)
         org.federation_member_access = Organization.MemberAccess.NONE
         try:
+            validate_urls(org)
             org.clean()
         except ValidationError as exc:
             raise ValidationError(f"{org.name}: {'; '.join(exc.messages)}") from exc
@@ -1351,7 +1401,9 @@ class Loader:
             role = Role.objects.create(
                 organization=org,
                 name=r["name"],
-                permissions=sorted(set(role_codes(r.get("permissions"))) & allowed),
+                permissions=sorted(
+                    set(role_codes(r.get("permissions"), schema=self.permissions_schema)) & allowed
+                ),
                 position=r.get("position") or 0,
                 on_letterhead=bool(r.get("on_letterhead", False)),
                 contact_email=clean_email(r.get("contact_email")),

@@ -11,6 +11,7 @@ from django.test.utils import CaptureQueriesContext
 from core import encfields
 from core.tenancy import tenant_context
 from members import views
+from members.personsearch import name_ids_many
 from members.views import filter_members, member_queryset
 
 from .factories import make_member, make_org
@@ -45,12 +46,40 @@ def test_search_decrypts_visible_emails_once_for_all_words():
 
 
 @pytest.mark.django_db
-def test_name_search_preserves_postgres_unicode_case_semantics():
+def test_name_search_preserves_central_unicode_case_semantics():
     org = make_org("Unicode Suchverein")
     member = make_member(org, "İpek", "Muster", email="ipek@example.invalid")
     with as_app_role(), tenant_context(org.pk):
         found = filter_members(member_queryset(org), {"suche": "İpek İPEK"}, org)
         assert list(found.values_list("pk", flat=True)) == [member.pk]
+
+
+@pytest.mark.django_db
+def test_name_batch_decrypts_allowed_candidates_once_for_all_words():
+    org = make_org("Zentrale Namenssuche")
+    member = make_member(org, "Anna", "Müller")
+    other = make_member(org, "Bernd", "Anders")
+    hidden = make_member(make_org("Fremdverein"), "Anna", "Müller")
+    original = encfields.decrypt_text
+    calls = []
+
+    def decrypt(value, field):
+        if field.model._meta.label_lower == "members.person" and field.name in (
+            "last_name",
+            "first_name",
+        ):
+            calls.append(value)
+        return original(value, field)
+
+    with as_app_role(), tenant_context(org.pk), patch.object(encfields, "decrypt_text", decrypt):
+        with CaptureQueriesContext(connection) as queries:
+            matches = name_ids_many(
+                member_queryset(org), ["ANNA", "Mu\u0308ller", "anders", "ANNA"]
+            )
+        assert matches == {"ANNA": {member.pk}, "Mu\u0308ller": {member.pk}, "anders": {other.pk}}
+        assert len(calls) == 4
+        assert len(queries) == 1
+        assert hidden.pk not in set().union(*matches.values())
 
 
 @pytest.mark.django_db(transaction=True)

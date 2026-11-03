@@ -235,7 +235,7 @@ def mails(event: Event, kind: str) -> None:
     """E-Mails im Hintergrund verschicken, sobald der Termin gespeichert ist."""
     from .tasks import send_event_mails
 
-    if rsvp.invited(event).exists():
+    if rsvp.invited(event, sort=False).exists():
         transaction.on_commit(lambda: send_event_mails.delay(event.pk, kind))
 
 
@@ -828,6 +828,7 @@ def external_data(cal: ExternalCalendar) -> dict:
         "share_down": cal.share_down,
         "is_active": cal.is_active,
         "last_sync_at": cal.last_sync_at,
+        "last_successful_sync_at": cal.last_successful_sync_at,
         "last_error": cal.last_error,
         "event_count": cal.events.count(),
         "hidden": [h for h in (cal.hidden or []) if isinstance(h, dict)],
@@ -1064,10 +1065,10 @@ class _ResponsesMixin:
         return participants.rows(event, None if scope == "all" else scope)
 
     def membership_in_scope(self, event: Event, scope, membership_id: int) -> Membership:
-        members = rsvp.invited(event)
+        members = rsvp.invited(event, sort=False)
         if scope != "all":
             members = members.filter(
-                pk__in=rsvp.current_members(event.organization, [scope]).values("pk")
+                pk__in=rsvp.current_members(event.organization, [scope], sort=False).values("pk")
             )
         membership = members.filter(pk=membership_id).first()
         if membership is None:
@@ -1160,7 +1161,10 @@ class _ResponseDetail(_ResponsesMixin, APIView):
             if scope == "all"
             else None
         )
-        if stale is not None and not rsvp.invited(event).filter(pk=membership_id).exists():
+        if (
+            stale is not None
+            and not rsvp.invited(event, sort=False).filter(pk=membership_id).exists()
+        ):
             membership = stale.membership
         else:
             membership = self.membership_in_scope(event, scope, membership_id)

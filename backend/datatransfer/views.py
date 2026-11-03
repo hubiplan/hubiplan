@@ -84,6 +84,8 @@ class ExportRequest(serializers.Serializer):
 
 
 class ImportOptions(serializers.Serializer):
+    permissions_schema = serializers.ChoiceField(choices=[1, 2], required=False, allow_null=True)
+    permissions_confirmed = serializers.BooleanField(required=False, default=False)
     name = serializers.CharField(max_length=200, required=False, allow_blank=True)
     invite = serializers.BooleanField(required=False, default=False)
     board_email = serializers.EmailField(required=False, allow_blank=True)
@@ -180,6 +182,11 @@ def update_import(job: TransferJob, options: dict) -> TransferJob:
     if not job.file:
         raise serializers.ValidationError(gettext("Die Datei ist nicht mehr vorhanden."))
     persons = options.pop("persons", None)
+    if "permissions_schema" in options and options["permissions_schema"] != (job.options or {}).get(
+        "permissions_schema"
+    ):
+        # A confirmation of another interpretation must never silently carry over.
+        options.setdefault("permissions_confirmed", False)
     job.options = {**(job.options or {}), **options}
     if persons is not None:
         job.decisions = {"persons": persons}

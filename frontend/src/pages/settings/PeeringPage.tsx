@@ -859,6 +859,17 @@ function CouplingCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
           t(' · abgeglichen {x}', { x: formatDateTime(coupling.last_sync_at) })}
         {coupling.queued > 0 && t(' · {queued} Paket(e) warten', { queued: coupling.queued })}
       </p>
+      {coupling.reception_budget?.initialized && (
+        <p className="muted small">
+          {t(
+            'Empfangsreservierung: {mib} MiB und {count} Nachrichten. Änderungen von Ständen zählen mit.',
+            {
+              mib: Math.ceil(coupling.reception_budget.bytes / 1024 / 1024),
+              count: coupling.reception_budget.messages,
+            },
+          )}
+        </p>
+      )}
       {coupling.error_since && (
         <Alert kind="error">
           {t(

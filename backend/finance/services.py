@@ -12,7 +12,7 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext
 
-from .models import Account, Booking, Category, TaxArea, YearClosing
+from .models import Account, Booking, Category, Donation, TaxArea, YearClosing
 
 ZERO = Decimal("0.00")
 
@@ -458,6 +458,30 @@ def deletable(booking: Booking, today: datetime.date | None = None) -> bool:
     )
 
 
+def editable_booking_donation(booking_id: int, *, lock: bool = True) -> Donation | None:
+    """Frische Zuwendung der Quellbuchung; Ausstellen und Ändern serialisieren.
+
+    Schreibpfade sperren zuerst die Buchung, dann diese Zeile. Die Bestätigung
+    sperrt dieselbe Zuwendung. Auch unbestätigte Zeilen sperren, damit eine
+    gleichzeitig ausgestellte Bestätigung nach dem Warten sichtbar wird.
+    ``lock=False`` ist nur für lesende Hinweise außerhalb einer Transaktion.
+    """
+    if lock and not connection.in_atomic_block:
+        raise RuntimeError("Zuwendungsschutz nur innerhalb einer Transaktion.")
+    rows = Donation.objects.filter(booking_id=booking_id)
+    if lock:
+        rows = rows.select_for_update()
+    donation = rows.first()
+    if donation is not None and donation.statement_id:
+        raise ValidationError(
+            gettext(
+                "Die Buchung ist als Zuwendung in der Bestätigung {number} enthalten. "
+                "Bitte erst die Bestätigung stornieren."
+            ).format(number=donation.statement.number)
+        )
+    return donation
+
+
 def cancel_booking(booking: Booking, user, reason: str, *, check_links: bool = True) -> Booking:
     """Storno: Gegenbuchung im offenen Geschäftsjahr mit heutigem Datum; die Buchung bleibt.
 
@@ -494,15 +518,8 @@ def cancel_booking(booking: Booking, user, reason: str, *, check_links: bool = T
                     "entfernen; das storniert die Buchung."
                 )
             )
-    donation = getattr(booking, "donation", None)
+    donation = editable_booking_donation(booking.pk)
     if donation is not None:
-        if donation.statement_id:
-            raise ValidationError(
-                gettext(
-                    "Die Buchung ist als Zuwendung in der Bestätigung {number} enthalten. "
-                    "Bitte erst die Bestätigung stornieren."
-                ).format(number=donation.statement.number)
-            )
         donation.delete()
     org = booking.organization
     today = timezone.localdate()
@@ -573,8 +590,6 @@ def renumber(org, year: int) -> int:
 
     Gibt die Zahl der geänderten Nummern zurück.
     """
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", [org.pk, year])
     from .models import CashReceipt
 
     if CashReceipt.objects.filter(organization=org, booking__year=year).exists():
@@ -586,10 +601,16 @@ def renumber(org, year: int) -> int:
             )
         )
     bookings = list(
-        Booking.objects.filter(organization=org, year=year)
+        Booking.objects.select_for_update(of=("self",))
+        .filter(organization=org, year=year)
         .select_related("organization")
-        .order_by("date", "number", "pk")
+        .order_by("pk")
     )
+    # Wie beim Storno: erst Buchungen, dann Nummernsperre; sonst können beide
+    # Abläufe gegenseitig auf ihre Sperren warten.
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", [org.pk, year])
+    bookings.sort(key=lambda b: (b.date, b.number, b.pk))
     # Festgeschriebene Buchungen behalten ihre Nummer (GoBD); Storno verweist auf Nummern
     if (
         any(fixed_reason(b) or b.cancels_id for b in bookings)
@@ -604,6 +625,8 @@ def renumber(org, year: int) -> int:
     changed = [b for i, b in enumerate(bookings, start=1) if b.number != i]
     if not changed:
         return 0
+    for booking in changed:
+        editable_booking_donation(booking.pk)
     # Erst aus dem Weg räumen, dann neu vergeben (Eindeutigkeit je Jahr)
     offset = len(bookings) + max(b.number for b in bookings)
     for b in changed:
