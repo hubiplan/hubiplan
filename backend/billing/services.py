@@ -807,7 +807,8 @@ def remove_payment(payment: Payment, user=None) -> Booking | None:
                 "Quittung in der Kasse stornieren; das entfernt auch die Zahlung."
             ).format(number=receipt.number)
         )
-    booking = payment.booking
+    booking = Booking.objects.select_for_update().get(pk=payment.booking_id)
+    finance_services.editable_booking_donation(booking.pk)
     finance_services.ensure_open(invoice.organization, year=booking.year)
     payment.delete()
     booking.refresh_from_db()
