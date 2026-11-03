@@ -13,6 +13,7 @@ from finance.models import Booking, Donation, DonationStatement
 
 from .test_gesamtaudit_nebenlaeufig import hold_then
 from .test_m9_billing import JSON, base, c, club, setup, zug  # noqa: F401
+from .test_m10_billing import open_invoice  # noqa: F401
 from .test_zuwendungen import _private, ev, ready  # noqa: F401
 
 pytestmark = pytest.mark.django_db
@@ -181,3 +182,93 @@ def test_source_waits_for_concurrent_statement(source, ready, api, board_a, club
     with tenant_context(club.pk):
         assert Booking.objects.get(pk=source["booking"]["id"]).amount == Decimal("100.00")
         assert Donation.objects.get(pk=source["donation"]).statement_id is not None
+
+
+@pytest.mark.parametrize("cancel_first", [False, True])
+def test_payment_removal_respects_confirmed_donation(
+    ready, c, club, setup, base, open_invoice, cancel_first
+):
+    from billing.models import Invoice, Payment
+
+    cfg = c.get(f"{base}/settings/").json()
+    assert (
+        c.patch(
+            f"{ready}/categories/{cfg['category']}/", {"donations": True}, content_type=JSON
+        ).status_code
+        == 200
+    )
+    response = c.post(
+        f"{base}/invoices/{open_invoice}/payments/",
+        {
+            "date": timezone.localdate().isoformat(),
+            "amount": "60.00",
+            "method": "transfer",
+            "account": setup["bank"],
+        },
+        content_type=JSON,
+    )
+    assert response.status_code == 201, response.json()
+    with tenant_context(club.pk):
+        payment = Payment.objects.get(invoice_id=open_invoice)
+    response = c.post(
+        f"{ready}/donations/import/", {"year": timezone.localdate().year}, content_type=JSON
+    )
+    assert response.status_code == 200 and response.json()["created"] == 1
+    with tenant_context(club.pk):
+        donation = Donation.objects.get(booking_id=payment.booking_id)
+    assert (
+        c.patch(
+            f"{ready}/donations/{donation.pk}/",
+            {"donor_address": "Erfundener Weg 1, 12345 Musterstadt"},
+            content_type=JSON,
+        ).status_code
+        == 200
+    )
+    statement = issue(c, ready, {"donation": donation.pk})
+    if cancel_first:
+        assert (
+            c.post(
+                f"{ready}/donation-statements/{statement['id']}/cancel/",
+                {"reason": "Erfundene Korrektur"},
+                content_type=JSON,
+            ).status_code
+            == 200
+        )
+    response = c.delete(f"{base}/payments/{payment.pk}/")
+    assert response.status_code == (200 if cancel_first else 400), response.content
+    with tenant_context(club.pk):
+        assert Payment.objects.filter(pk=payment.pk).exists() is (not cancel_first)
+        assert Booking.objects.filter(pk=payment.booking_id).exists() is (not cancel_first)
+        assert Invoice.objects.get(pk=open_invoice).paid == (
+            Decimal("0") if cancel_first else Decimal("60")
+        )
+        if not cancel_first:
+            assert Donation.objects.get(pk=donation.pk).booking_id == payment.booking_id
+
+
+@pytest.mark.parametrize("cancel_first", [False, True])
+def test_renumber_respects_confirmed_donation(source, ready, c, club, cancel_first):
+    assert (
+        c.patch(
+            f"{ready}/bookings/{source['booking']['id']}/", {"number": 100}, content_type=JSON
+        ).status_code
+        == 200
+    )
+    statement = issue(c, ready, source)
+    if cancel_first:
+        assert (
+            c.post(
+                f"{ready}/donation-statements/{statement['id']}/cancel/",
+                {"reason": "Erfundene Korrektur"},
+                content_type=JSON,
+            ).status_code
+            == 200
+        )
+    response = c.post(
+        f"{ready}/bookings/renumber/", {"year": source["booking"]["year"]}, content_type=JSON
+    )
+    assert response.status_code == (200 if cancel_first else 400), response.content
+    with tenant_context(club.pk):
+        assert Booking.objects.get(pk=source["booking"]["id"]).number == (
+            1 if cancel_first else 100
+        )

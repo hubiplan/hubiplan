@@ -579,8 +579,6 @@ def renumber(org, year: int) -> int:
 
     Gibt die Zahl der geänderten Nummern zurück.
     """
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", [org.pk, year])
     from .models import CashReceipt
 
     if CashReceipt.objects.filter(organization=org, booking__year=year).exists():
@@ -592,10 +590,16 @@ def renumber(org, year: int) -> int:
             )
         )
     bookings = list(
-        Booking.objects.filter(organization=org, year=year)
+        Booking.objects.select_for_update(of=("self",))
+        .filter(organization=org, year=year)
         .select_related("organization")
-        .order_by("date", "number", "pk")
+        .order_by("pk")
     )
+    # Wie beim Storno: erst Buchungen, dann Nummernsperre; sonst können beide
+    # Abläufe gegenseitig auf ihre Sperren warten.
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", [org.pk, year])
+    bookings.sort(key=lambda b: (b.date, b.number, b.pk))
     # Festgeschriebene Buchungen behalten ihre Nummer (GoBD); Storno verweist auf Nummern
     if (
         any(fixed_reason(b) or b.cancels_id for b in bookings)
@@ -610,6 +614,8 @@ def renumber(org, year: int) -> int:
     changed = [b for i, b in enumerate(bookings, start=1) if b.number != i]
     if not changed:
         return 0
+    for booking in changed:
+        editable_booking_donation(booking.pk)
     # Erst aus dem Weg räumen, dann neu vergeben (Eindeutigkeit je Jahr)
     offset = len(bookings) + max(b.number for b in bookings)
     for b in changed:
