@@ -7,6 +7,7 @@ from django.core.validators import URLValidator
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from access.catalog import DEPARTMENT_CODES, MEMBERS_VIEW, ROLES_VIEW, SWITCHABLE_MODULES
@@ -553,7 +554,8 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
             tree = self.context["tree"] = UnitTree.of(self.context["org"].pk)
         return tree
 
-    def get_roles(self, obj):
+    @extend_schema_field(DepartmentRoleSerializer(many=True))
+    def get_roles(self, obj) -> list[dict]:
         view = self.context.get("view")
         if ROLES_VIEW not in getattr(view, "org_permissions", set()):
             return []

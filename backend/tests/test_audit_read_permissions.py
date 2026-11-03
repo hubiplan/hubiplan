@@ -1,11 +1,8 @@
 """Direkte Bereichsgrenzen und minimale Basisauskunft (S11/FQ19/V09)."""
 
-import importlib
 import uuid
 
 import pytest
-from django.apps import apps
-from django.db import connection
 
 from access.models import Role
 from access.permissions import permissions_in
@@ -124,13 +121,22 @@ def test_settings_does_not_grant_roles_or_assign_holders(orgs, api):
     )
 
 
-def test_migration_preserves_only_existing_implicit_role_authority(orgs):
+def test_existing_settings_role_is_not_promoted_to_organisation_role_admin(orgs, api):
     org = orgs["a"]
     old = Role.objects.create(organization=org, name="Bestehend", permissions=["settings.edit"])
-    migration = importlib.import_module("access.migrations.0017_rollenhoheit")
-    with connection.schema_editor() as editor:
-        migration.forwards(apps, editor)
     old.refresh_from_db()
-    assert {"roles.view", "roles.edit"} <= set(old.permissions)
-    new = Role.objects.create(organization=org, name="Neu", permissions=["settings.edit"])
-    assert "roles.edit" not in new.permissions
+    assert "roles.edit" not in old.permissions
+    user = make_user("bestehende-einstellungen@example.org")
+    give_role(user, org, ["settings.edit"], name=old.name)
+    c = api(user)
+    assert (
+        c.post(
+            f"/api/orgs/{org.pk}/roles/", {"name": "Keine Aufwertung"}, content_type=JSON
+        ).status_code
+        == 403
+    )
+    give_role(user, org, ["roles.edit"], name="Bewusst vergebene Rollenverwaltung")
+    assert (
+        c.post(f"/api/orgs/{org.pk}/roles/", {"name": "Neue Rolle"}, content_type=JSON).status_code
+        == 201
+    )

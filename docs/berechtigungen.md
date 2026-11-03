@@ -25,10 +25,11 @@ Datenexport, Auskunft), `roles.preview` (Ansicht als Rolle).
   haben getrennte Schnittstellen; sie geben keine Verwaltungs- oder fremden Rollendaten aus.
 - Einstellungen bearbeiten vermittelt keine Rollenverwaltung. Rollen einer Untereinheit,
   ihre wirksamen Zuweisungen und das Einrichten eines Verwalters erfordern `roles.edit`.
-  Migration `access/0017_rollenhoheit` erhält die zuvor impliziten Befugnisse bestehender
-  Einstellungsrollen als explizite Rollenrechte. Neue Einstellungsrollen bleiben getrennt.
-  Beim Rückweg bleiben explizite Rechte erhalten, damit spätere bewusste Vergaben nicht
-  versehentlich entzogen werden; die vorherige Fassung versteht diese Codes bereits.
+  Bestehende Einstellungsrollen werden nicht automatisch zu vereinsweiten Rollenverwaltern
+  aufgewertet. Ihre bisher implizite Untereinheits-Rollenpflege entfällt ebenfalls.
+  Soll jemand sie weiter ausführen, muss ein Rollenverwalter das Bearbeitungsrecht für
+  Rollen bewusst vergeben. Die gespeicherten Codes ändern sich nicht; eine Datenmigration
+  ist nicht nötig. Eine ältere Programmfassung hat wieder ihre frühere implizite Kopplung.
 - Migration `access/0016_bereiche` schreibt bestehende Rollen verlustfrei um (mit Rückweg).
 
 Bereiche und Zuordnung der früheren Codes: Konzept `konzepte/berechtigungen.md` im

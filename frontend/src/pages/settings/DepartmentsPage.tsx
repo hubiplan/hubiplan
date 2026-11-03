@@ -44,17 +44,18 @@ export function DepartmentsPage() {
 function DepartmentRolesPage() {
   const org = useActiveOrg()
   const { can } = useOrg()
+  const terms = useTerms()
   const { data, error, reload } = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   const catalog = useLoad(() => orgApi.catalog('department', org.id), [org.id])
   const [selected, setSelected] = useState('')
   if (!can(PERM.rolesView)) return null
-  if (error) return <Alert kind="error">{error}</Alert>
+  if (error || catalog.error) return <Alert kind="error">{error || catalog.error}</Alert>
   if (!data || !catalog.data) return <p className="muted">{t('Lädt …')}</p>
   const dep = data.find((d) => String(d.id) === selected) ?? data[0]
   return (
     <div className="card card-wide">
       <SelectField
-        label={org.department_label}
+        label={terms.Sg}
         value={dep ? String(dep.id) : ''}
         onChange={(e) => setSelected(e.target.value)}
       >
