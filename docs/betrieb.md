@@ -47,6 +47,11 @@ docker compose logs --since 3h backend | grep -E '"(GET|POST) ' \
   | awk '{print $NF, $(NF-3)}' | sort -rn | head -25
 ```
 
+**Vorwärmen:** Jeder neue gunicorn-Prozess ruft vor der ersten echten Anfrage
+`/api/health/` und `/api/public/site/v1/resolve/` bei sich selbst auf
+(`backend/gunicorn.conf.py`). Im Log steht dann je Prozess „Vorwärmen …: 200 OK“ bzw.
+„404 Not Found“. Sonst wartete der erste Besucher nach dem Ausrollen 2–3 s.
+
 ## Geheimnisse
 
 Alle Geheimnisse stehen nur in `/opt/hubiplan/.env` auf dem Server (Rechte 600), nie im

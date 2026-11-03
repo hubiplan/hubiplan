@@ -587,3 +587,30 @@ def test_grunddaten_abfragen_wachsen_nicht_mit_aemtern(setup):
     for n in range(1, 5):
         add_role(n)
     assert count() == before
+
+
+def test_vorwaermen_nach_dem_start(setup):
+    """gunicorn.conf.py: Ein neuer Prozess ruft sich vorab selbst auf, ohne Fehler."""
+    import importlib.util
+    from pathlib import Path
+
+    from django.core.wsgi import get_wsgi_application
+
+    path = Path(__file__).resolve().parents[1] / "gunicorn.conf.py"
+    spec = importlib.util.spec_from_file_location("gunicorn_conf", path)
+    conf = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(conf)
+
+    class Log:
+        def __init__(self):
+            self.lines = []
+
+        def info(self, msg, *args):
+            self.lines.append(msg % args)
+
+        warning = info
+
+    log = Log()
+    conf.warm_up(get_wsgi_application(), log)
+    assert len(log.lines) == 2 and "fehlgeschlagen" not in " ".join(log.lines)
+    assert log.lines[1].endswith("404 Not Found")
