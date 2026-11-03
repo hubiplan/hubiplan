@@ -15,6 +15,8 @@ pruefe() {
 
 ssh-keygen -q -t ed25519 -N "" -C release -f "$T/schluessel"
 ssh-keygen -q -t ed25519 -N "" -C fremd -f "$T/fremd"
+# Eigene Git-Einstellungen des Rechners (Signierprogramm, gpgsign) gelten hier nicht
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 G=(git -c user.email=t@example.org -c user.name=Test -c gpg.format=ssh -c init.defaultBranch=main)
 
 # Repository mit drei Releases: v2026.11.0, v2026.12.0 (signiert), v2026.12.1 (fremder Schlüssel)
@@ -43,7 +45,7 @@ HUBIPLAN_SELBSTUPDATE=1
 AKTUALISIERUNG_DIR=$T/auftrag
 HUBIPLAN_UPDATE_REPO=$T/repo
 ENV
-export HUBIPLAN_SETUP="sh -c 'cat inhalt > ../setup.lauf'" HUBIPLAN_OHNE_SICHERUNG=1 \
+export HUBIPLAN_SETUP="cat inhalt > '$T/setup.lauf'" HUBIPLAN_OHNE_SICHERUNG=1 \
     HUBIPLAN_MIN_FREI_MB=0 HUBIPLAN_DOCKER_DIR=/
 lauf() {
     rm -f "$T/auftrag/ergebnis" "$T/setup.lauf"

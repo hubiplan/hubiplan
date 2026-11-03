@@ -81,7 +81,7 @@ COMMIT="$(git -C "$QUELLE" rev-parse -q --verify "refs/tags/$TAG^{commit}")" ||
 # Echtheit: signiert mit einem Schlüssel aus der laufenden Fassung
 SCHLUESSEL="$ZIEL/deploy/release-schluessel"
 grep -q '^[^#[:space:]]' "$SCHLUESSEL" 2> /dev/null || fehler "Kein Release-Schlüssel in der laufenden Fassung."
-git -C "$QUELLE" -c gpg.ssh.allowedSignersFile="$SCHLUESSEL" tag -v "$TAG" > /dev/null 2>&1 ||
+git -C "$QUELLE" -c gpg.ssh.program=ssh-keygen -c gpg.ssh.allowedSignersFile="$SCHLUESSEL" tag -v "$TAG" > /dev/null 2>&1 ||
     fehler "Signatur von $TAG ist ungültig. Nichts geändert."
 
 # Kein Rückschritt: der laufende Stand steckt im neuen
@@ -127,7 +127,7 @@ cp -p "$ZIEL/.env" "$NEU/.env"
 git -C "$QUELLE" archive --format=tar "$COMMIT" | tar -x --no-same-owner -C "$NEU"
 echo "$COMMIT" > "$NEU/.fassung"
 echo "$VERSION" > "$NEU/.version"
-if (cd "$NEU" && ZIEL="$ZIEL" $SETUP) > "$DIR/ausrollen.log" 2>&1; then
+if (cd "$NEU" && ZIEL="$ZIEL" bash -c "$SETUP") > "$DIR/ausrollen.log" 2>&1; then
     protokoll ausgerollt
     ergebnis ok "$TAG läuft."
 else
