@@ -8,17 +8,27 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.tenancy import user_view
 
-from .access import can_delete, can_edit, scope_for, visible
-from .models import Todo
+from .access import can_delete, can_edit, can_take_over, scope_for, visible
+from .models import Todo, TodoPreference
+from .sharing import eligible_users, log_change, replace_shares, transfer_owner
+
+
+class ShareInput(serializers.Serializer):
+    user = serializers.IntegerField(required=False, min_value=1)
+    role = serializers.IntegerField(required=False, min_value=1)
+    level = serializers.ChoiceField(choices=["view", "edit"], default="view")
+    responsible = serializers.BooleanField(default=False)
 
 
 class TodoInput(serializers.Serializer):
+    shares = ShareInput(many=True, required=False)
+    owner = serializers.IntegerField(required=False, min_value=1)
     title = serializers.CharField(max_length=200, required=False)
     description = serializers.CharField(allow_blank=True, required=False, max_length=50000)
     due_date = serializers.DateField(allow_null=True, required=False)
@@ -37,6 +47,8 @@ class TodoInput(serializers.Serializer):
 
 
 def data_for(todo, user, scope):
+    from .sharing import participants
+
     return {
         "id": todo.pk,
         "title": todo.title,
@@ -56,6 +68,18 @@ def data_for(todo, user, scope):
         "deleted_at": todo.deleted_at,
         "can_edit": can_edit(todo, user, scope),
         "can_delete": can_delete(todo, user, scope),
+        "can_take_over": can_take_over(todo, user, scope),
+        "can_share": can_delete(todo, user, scope) and "todos.edit" in scope.permissions,
+        "shares": list(todo.shares.values("user", "role", "level", "responsible"))
+        if todo.shared
+        else [],
+        "owners": [
+            {"id": p["user"].pk, "name": p["user"].get_full_name() or p["user"].email}
+            for p in participants(todo, scope).values()
+            if p["edit"]
+        ]
+        if todo.shared and can_delete(todo, user, scope)
+        else [],
     }
 
 
@@ -78,6 +102,8 @@ class TodoListView(TodoScopeMixin, APIView):
         serializer = TodoInput(data=request.data)
         serializer.is_valid(raise_exception=True)
         values = serializer.validated_data
+        shares = values.pop("shares", None)
+        values.pop("owner", None)
         if not values.get("title"):
             raise serializers.ValidationError({"title": gettext("Bitte einen Titel eingeben.")})
         if values.get("due_time") and not values.get("due_date"):
@@ -93,6 +119,13 @@ class TodoListView(TodoScopeMixin, APIView):
             owner=request.user,
             **values,
         )
+        if shares:
+            added = replace_shares(todo, request.user, self.scope, shares)
+            todo.save()
+            from .notify import schedule_shared
+
+            schedule_shared(todo, added)
+        log_change(todo, request.user, "create")
         return Response(data_for(todo, request.user, self.scope), status=201)
 
 
@@ -107,7 +140,10 @@ class TodoDetailView(TodoScopeMixin, APIView):
         todo = get_object_or_404(
             visible(request.user, self.scope, deleted=deleted).select_for_update(), pk=pk
         )
-        if not can_edit(todo, request.user, self.scope):
+        taking_over = request.data.get("owner") == request.user.pk and can_take_over(
+            todo, request.user, self.scope
+        )
+        if not can_edit(todo, request.user, self.scope) and not taking_over:
             raise PermissionDenied()
         serializer = TodoInput(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -117,6 +153,12 @@ class TodoDetailView(TodoScopeMixin, APIView):
                 {"detail": gettext("Die Aufgabe wurde inzwischen geändert. Bitte neu laden.")},
                 status=409,
             )
+        shares = values.pop("shares", None)
+        added = (
+            replace_shares(todo, request.user, self.scope, shares) if shares is not None else set()
+        )
+        if "owner" in values:
+            transfer_owner(todo, request.user, self.scope, values.pop("owner"))
         if "deleted" in values:
             if not can_delete(todo, request.user, self.scope):
                 raise PermissionDenied()
@@ -135,7 +177,79 @@ class TodoDetailView(TodoScopeMixin, APIView):
             todo.due_revision += 1
         todo.version += 1
         todo.save()
+        log_change(todo, request.user, "update")
+        from .notify import schedule_shared
+
+        schedule_shared(todo, added)
         return Response(data_for(todo, request.user, self.scope))
+
+
+class TodoChoicesView(TodoScopeMixin, APIView):
+    def get(self, request, **kwargs):
+        if "todos.edit" not in self.scope.permissions:
+            raise PermissionDenied()
+        from access.catalog import effective
+        from access.models import Role
+
+        return Response(
+            {
+                "users": [
+                    {"id": u.pk, "name": u.get_full_name() or u.email}
+                    for u in eligible_users(self.scope)
+                ],
+                "roles": [
+                    {
+                        "id": r.pk,
+                        "name": r.name,
+                        "has_task_access": "todos.view"
+                        in effective(r.permissions, dept=bool(r.department_id)),
+                    }
+                    for r in Role.all_objects.filter(
+                        organization=self.org, department_id=self.scope.department_id
+                    )
+                ],
+            }
+        )
+
+
+class OrphanTasksView(TodoScopeMixin, APIView):
+    def get(self, request, **kwargs):
+        from .ownership import candidates
+
+        return Response({"items": [{"id": row.pk} for row in candidates(request.user, self.scope)]})
+
+
+class TakeOverView(TodoScopeMixin, APIView):
+    def post(self, request, pk, **kwargs):
+        from .ownership import take_over
+
+        return Response({"id": take_over(request.user, self.scope, pk)})
+
+
+class PreferenceInput(serializers.ModelSerializer):
+    class Meta:
+        model = TodoPreference
+        fields = [
+            "share_mail",
+            "share_push",
+            "reminder_mail",
+            "reminder_push",
+            "push_title",
+            "purge_done",
+        ]
+
+
+class TodoPreferencesView(APIView):
+    def get(self, request):
+        preferences, _ = TodoPreference.objects.get_or_create(user=request.user)
+        return Response(PreferenceInput(preferences).data)
+
+    def patch(self, request):
+        preferences, _ = TodoPreference.objects.get_or_create(user=request.user)
+        serializer = PreferenceInput(preferences, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class PersonalExportView(APIView):
@@ -150,8 +264,48 @@ class PersonalExportView(APIView):
                     "due_time",
                     "status",
                     "deleted_at",
+                    "shared",
+                    "organization_id",
+                    "department_id",
                 )
             )
+        from access.permissions import organizations_for
+        from core.tenancy import tenant_context
+        from portal.services import department_contexts
+
+        with user_view(request.user.pk):
+            contexts = [(org.pk, None) for org, _ in organizations_for(request.user)]
+            contexts += [
+                (ctx.club.pk, ctx.department.pk)
+                for ctx in department_contexts(request.user).values()
+            ]
+        seen = {row["id"] for row in rows}
+        for org_id, dept_id in contexts:
+            with tenant_context(org_id, request.user.pk):
+                try:
+                    scope = scope_for(request.user, org_id, dept_id)
+                except (NotFound, PermissionDenied):
+                    continue
+                for todo in visible(request.user, scope).filter(shared=True):
+                    if todo.pk not in seen:
+                        rows.append(
+                            {
+                                key: getattr(todo, key)
+                                for key in (
+                                    "id",
+                                    "title",
+                                    "description",
+                                    "due_date",
+                                    "due_time",
+                                    "status",
+                                    "shared",
+                                    "deleted_at",
+                                    "organization_id",
+                                    "department_id",
+                                )
+                            }
+                        )
+                        seen.add(todo.pk)
         response = JsonResponse({"tasks": rows})
         response["Content-Disposition"] = 'attachment; filename="aufgaben.json"'
         return response

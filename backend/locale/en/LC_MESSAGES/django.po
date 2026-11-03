@@ -4979,6 +4979,12 @@ msgstr "Please cancel bookings with receipts instead of deleting them."
 msgid "Aufgaben"
 msgstr "Tasks"
 
+msgid "Aufgabenbenachrichtigung"
+msgstr "Task notification"
+
+msgid "Inhalt nur an das empfangende Konto versandt."
+msgstr "Content sent only to the recipient's account."
+
 msgid "Ungültige Zeitzone."
 msgstr "Invalid time zone."
 
@@ -5002,3 +5008,45 @@ msgstr "Personal tasks and tasks shared with me"
 
 msgid "Aufgaben mit anderen teilen"
 msgstr "Share tasks with others"
+
+msgid "Ungültige Aufgabenfreigabe."
+msgstr "Invalid task sharing entry."
+
+msgid "Dieser Empfänger hat keinen passenden Zugang."
+msgstr "This recipient does not have suitable access."
+
+msgid "Dieser Empfänger ist bereits ausgewählt."
+msgstr "This recipient has already been selected."
+
+msgid "Eine übertragene Aufgabe muss geteilt bleiben."
+msgstr "A transferred task must remain shared."
+
+msgid "Das verantwortliche Konto muss beteiligt sein und bearbeiten dürfen."
+msgstr "The responsible account must be a participant with edit permission."
+
+msgid "Diese Änderung kann hier nicht zurückgenommen werden."
+msgstr "This change cannot be undone here."
+
+msgid "Die Aufgabe ist nicht mehr vorhanden."
+msgstr "The task no longer exists."
+
+msgid "Für diese Aufgabe fehlt dir die Berechtigung."
+msgstr "You do not have permission for this task."
+
+msgid "Nur das verantwortliche Konto darf die Aufgabe löschen."
+msgstr "Only the responsible account can delete the task."
+
+msgid "Hier lassen sich nur eigene Aufgabenänderungen zurücknehmen."
+msgstr "You can only undo your own task changes here."
+
+msgid "Neue Aufgabe"
+msgstr "New task"
+
+msgid "Neue Aufgabe: {title}"
+msgstr "New task: {title}"
+
+msgid "Freigaben lassen sich nicht rückgängig machen."
+msgstr "Sharing changes cannot be undone."
+
+msgid "Verantwortung lässt sich nicht rückgängig übertragen."
+msgstr "Responsibility transfers cannot be undone."

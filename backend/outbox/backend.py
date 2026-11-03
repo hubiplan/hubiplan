@@ -18,6 +18,7 @@ from pathlib import Path
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
 from django.core.mail.backends.smtp import EmailBackend as SmtpBackend
+from django.utils.translation import gettext
 
 from core.tenancy import rls_bypass
 
@@ -98,13 +99,18 @@ class OutboxBackend(BaseEmailBackend):
                 if not body and alt[1] == "text/plain":
                     body = alt[0]
             org_pk = int(org_id) if org_id else None
+            private_task = kind == "aufgabe"
             with rls_bypass():
                 mail = OutgoingMail.objects.create(
                     organization_id=org_pk,
                     to=", ".join([*message.to, *message.cc, *message.bcc]),
                     reply_to=", ".join(message.reply_to or []),
-                    subject=message.subject[:300],
-                    body=redact(body),
+                    subject=gettext("Aufgabenbenachrichtigung")
+                    if private_task
+                    else message.subject[:300],
+                    body=gettext("Inhalt nur an das empfangende Konto versandt.")
+                    if private_task
+                    else redact(body),
                     attachments=getattr(message, "outbox_attachments", None)
                     or _store_attachments(message, org_pk),
                     kind=kind[:50],
@@ -119,7 +125,9 @@ class OutboxBackend(BaseEmailBackend):
                 except Exception as exc:  # noqa: BLE001 – Fehler vermerken, nicht abbrechen
                     logger.exception("Versand an %s fehlgeschlagen", mail.to)
                     mail.status = OutgoingMail.Status.FAILED
-                    mail.error = str(exc)[:300]
+                    mail.error = (
+                        gettext("Versand fehlgeschlagen") if private_task else str(exc)[:300]
+                    )
                     with rls_bypass():
                         mail.save(update_fields=["status", "error"])
                     if not self.fail_silently:

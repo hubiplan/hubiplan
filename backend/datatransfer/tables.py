@@ -20,6 +20,7 @@ from django.utils.translation import gettext
 from .validation import validate_url_data, validate_urls
 
 MODULE_MODELS = (
+    "todos.Todo",
     "finance.Account",
     "finance.Category",
     "finance.ProjectSeries",
@@ -224,6 +225,8 @@ FRESH_VALUES = {
 
 # Nie exportiert: Zugangsdaten und Anmeldezustand (Social-Media-Kanäle)
 SECRET_FIELDS = {
+    # Zugriffsrechte werden am Ziel ausdrücklich neu vergeben, keine fremden Kontonummern.
+    "todos.todo": {"origin", "owner", "done_by", "shared", "per_unit"},
     # Freigaben gelten nur für die lokale Kopplung, nie für importierte Nummern.
     "competitions.starter": {"result_coupling"},
     "events.externalcalendar": {
@@ -495,6 +498,10 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
     secret = SECRET_FIELDS.get(label(model), set())
     fields = [f for f in model._meta.concrete_fields if f.name not in SKIP | secret]
     qs = model.objects.filter(organization=org)
+    if label(model) == "todos.todo":
+        from todos.exports import shared_rows
+
+        qs = shared_rows(org, department)
     if department is not None:
         qs = qs.filter(department=department)
     for obj in qs.order_by("pk"):
@@ -678,6 +685,10 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
             fix_json_ids(name, obj, ids)
             if hasattr(obj, "created_by_id") and user is not None:
                 obj.created_by_id = user.pk
+            if name == "todos.todo":
+                # Übernahme erhält Inhalt, aber keine Freigaben der Quelle.
+                obj.owner_id = user.pk if user is not None else None
+                obj.shared = False
             for field_name, path in pending_files:
                 content = files.read(path)
                 if content is not None:

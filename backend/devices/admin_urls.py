@@ -92,6 +92,9 @@ def _p(route: str, view, name: str):
 
 
 urlpatterns = [
+    path("todos/orphans/", for_app(todo_views.OrphanTasksView).as_view()),
+    path("todos/<int:pk>/take-over/", for_app(todo_views.TakeOverView).as_view()),
+    path("todos/choices/", for_app(todo_views.TodoChoicesView).as_view()),
     path("todos/", for_app(todo_views.TodoListView).as_view()),
     path("todos/<int:pk>/", for_app(todo_views.TodoDetailView).as_view()),
     _p("members/", member_views.MemberListView, "members"),

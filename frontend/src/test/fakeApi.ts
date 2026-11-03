@@ -2,6 +2,17 @@ import { vi } from 'vitest'
 
 // Standardantworten, falls ein Test sie nicht selbst festlegt
 const DEFAULTS: Record<string, Handler> = {
+  'GET /api/me/todos/preferences/': () => ({
+    status: 200,
+    body: {
+      share_mail: true,
+      share_push: true,
+      reminder_mail: true,
+      reminder_push: true,
+      push_title: true,
+      purge_done: false,
+    },
+  }),
   'GET /api/me/organizations/': () => ({ status: 200, body: [] }),
   'GET /api/me/contexts/': () => ({ status: 200, body: { departments: [], portal: [] } }),
   // Verbund: ohne eigene Angabe keine Anmeldung über andere Instanzen

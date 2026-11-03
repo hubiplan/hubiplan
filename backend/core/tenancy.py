@@ -40,6 +40,7 @@ class RlsState:
     scope_id: int | None = None
     # Freigabe des Dachverbands für Mitgliedsdaten: "", "read" oder "write"
     fed_access: str = ""
+    todo_role_id: int | None = None
 
 
 def _is_postgres() -> bool:
@@ -56,13 +57,15 @@ def _apply(state: RlsState) -> None:
             "set_config('app.user_id', %s, false), "
             "set_config('app.bypass_rls', %s, false), "
             "set_config('app.scope_id', %s, false), "
-            "set_config('app.fed_access', %s, false)",
+            "set_config('app.fed_access', %s, false), "
+            "set_config('app.todo_role_id', %s, false)",
             [
                 "" if state.org_id is None else str(state.org_id),
                 "" if state.user_id is None else str(state.user_id),
                 "on" if state.bypass else "off",
                 "" if state.scope_id is None else str(state.scope_id),
                 state.fed_access,
+                "" if state.todo_role_id is None else str(state.todo_role_id),
             ],
         )
 
@@ -87,9 +90,10 @@ def set_rls(
     bypass: bool = False,
     scope_id: int | None = None,
     fed_access: str = "",
+    todo_role_id: int | None = None,
 ) -> None:
     """Setzt die RLS-Sitzungsvariablen der aktuellen Datenbankverbindung."""
-    _apply(RlsState(org_id, user_id, bypass, scope_id, fed_access))
+    _apply(RlsState(org_id, user_id, bypass, scope_id, fed_access, todo_role_id))
 
 
 def get_rls() -> RlsState:
@@ -113,6 +117,7 @@ def tenant_context(
             user_id=user_id if user_id is not None else previous.user_id,
             scope_id=scope_id if scope_id is not None else scope_of(org_id),
             fed_access="",
+            todo_role_id=None,
         )
     )
     try:
