@@ -17,3 +17,10 @@ def purge_deleted():
         count = rows.count()
         rows.delete()
     return count
+
+
+@shared_task
+def send_due_reminders():
+    from .reminders import run
+
+    return run()

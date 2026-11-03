@@ -47,10 +47,12 @@ class TodoInput(serializers.Serializer):
 
 
 def data_for(todo, user, scope):
+    from .reminders import highlight
     from .sharing import participants
 
     return {
         "id": todo.pk,
+        **highlight(todo, user),
         "title": todo.title,
         "description": todo.description,
         "due_date": todo.due_date,

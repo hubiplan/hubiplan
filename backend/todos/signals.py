@@ -1,6 +1,6 @@
 """Kontolöschung entfernt private Inhalte einschließlich ihrer Rückgängig-Daten."""
 
-from django.db.models.signals import pre_delete
+from django.db.models.signals import post_save, pre_delete
 
 
 def erase_private(sender, instance, **kwargs):
@@ -25,3 +25,13 @@ def connect():
     from accounts.models import User
 
     pre_delete.connect(erase_private, sender=User, dispatch_uid="todos_erase_private")
+    from .models import Todo
+
+    post_save.connect(plan_reminders, sender=Todo, dispatch_uid="todos_plan_reminders")
+
+
+def plan_reminders(sender, instance, raw=False, **kwargs):
+    if not raw:
+        from .reminders import sync
+
+        sync(instance)
