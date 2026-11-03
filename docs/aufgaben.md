@@ -47,5 +47,29 @@ der Einheit enthält nur deren eigene geteilte Aufgaben, die das exportierende K
 Beim Import wird der Inhalt dem importierenden Konto privat zugeordnet; Freigaben müssen
 ausdrücklich neu vergeben werden. Fremde Konto- und Freigabenummern werden nicht übernommen.
 
-Hinweise beim Teilen sind unter Profil pro Kanal abschaltbar. Mailtexte und Aufgabentitel
+Hinweise beim Teilen sind unter „Mein Konto › Benachrichtigungen“ pro Kanal abschaltbar. Mailtexte und Aufgabentitel
 werden im allgemeinen Postausgang durch einen neutralen Versandvermerk ersetzt.
+
+## Erinnerungen und Aufbewahrung
+
+Die Kontovorgaben stehen unter „Mein Konto › Benachrichtigungen“. Je Aufgabe lassen sich
+Zeitpunkte und Kanäle übersteuern. Zuständige werden erinnert; ohne Zuständige alle
+beteiligten Bearbeiter. Rechte werden bei der Planung und unmittelbar vor dem Versand
+erneut geprüft. Neue Rolleninhaber erhalten ausschließlich noch bevorstehende Erinnerungen.
+
+Tagesfristen gelten bis zum folgenden lokalen Mitternachtsbeginn. Erinnerungen dafür
+liegen um 8 Uhr am ausgewählten Kalendertag. Uhrzeitfristen verwenden den genauen Zeitpunkt
+und Vorläufe von jeweils 24 Stunden pro Tag. Bei einer fehlenden Ortszeit gilt der nächste
+gültige Zeitpunkt, bei einer doppelten die erste Ausprägung. Überfälligkeit erzeugt genau
+einen zusätzlichen Versuch um 8 Uhr am Folgetag; danach bleibt die Hervorhebung bestehen.
+
+Je Kanal wird ein Versuch atomar vor dem Versand beansprucht. Erfolg, Fehler und übersprungene
+Versuche bleiben getrennt vermerkt; nach einem Absturz wird ein beanspruchter Versuch nicht
+automatisch wiederholt. Friständerungen erhalten neue Versionen und überschreiben keine
+vorhandenen Versandnachweise. Die Celery-Planung läuft alle fünf Minuten.
+
+Private und geteilte erledigte Einzelaufgaben können optional nach zwölf Monaten in den
+Papierkorb wechseln. Beide Vorgaben sind aus. Die gemeinsame Vorgabe benötigt Aufgaben-
+und Rollenbearbeitungsrecht; Serienhistorie bleibt ausgenommen. Nach weiteren 30 Tagen
+erfolgt die endgültige Bereinigung. Private Aufgaben bleiben im Kontoprofil auch nach
+einem Rollenverlust exportierbar und endgültig löschbar.

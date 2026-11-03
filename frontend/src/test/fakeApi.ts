@@ -2,6 +2,7 @@ import { vi } from 'vitest'
 
 // Standardantworten, falls ein Test sie nicht selbst festlegt
 const DEFAULTS: Record<string, Handler> = {
+  'GET /api/me/todos/export/': () => ({ status: 200, body: { tasks: [] } }),
   'GET /api/me/todos/preferences/': () => ({
     status: 200,
     body: {

@@ -95,6 +95,10 @@ const HelpPage = lazyPage(() => import('./help/HelpPage.tsx'), 'HelpPage')
 const HelpEntryPage = lazyPage(() => import('./help/HelpPage.tsx'), 'HelpEntryPage')
 const NewsPage = lazyPage(() => import('./news/NewsPage.tsx'), 'NewsPage')
 const AccountPage = lazyPage(() => import('./pages/settings/AccountPage.tsx'), 'AccountPage')
+const AccountNotificationsPage = lazyPage(
+  () => import('./pages/settings/AccountPage.tsx'),
+  'AccountNotificationsPage',
+)
 const AccountLoginPage = lazyPage(
   () => import('./pages/settings/AccountPage.tsx'),
   'AccountLoginPage',
@@ -304,6 +308,7 @@ export default function App() {
             }
           />
           <Route path="mein-konto" element={<AccountPage />} />
+          <Route path="mein-konto/benachrichtigungen" element={<AccountNotificationsPage />} />
           <Route path="mein-konto/anmeldung" element={<AccountLoginPage />} />
           <Route path="mein-konto/app" element={<AccountAppPage />} />
           <Route path="mein-konto/briefvorlage" element={<AccountTemplatesPage />} />

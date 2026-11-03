@@ -1,11 +1,12 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .access import visible
-from .models import TodoReminderConfig
+from .models import TodoCleanupSetting, TodoReminderConfig
 from .reminders import sync
 from .views import TodoScopeMixin
 
@@ -42,3 +43,27 @@ class ReminderSettingsView(TodoScopeMixin, APIView):
         serializer.save(revision=config.revision + 1)
         sync(todo)
         return Response(ReminderInput(config).data)
+
+
+class CleanupSettingsView(TodoScopeMixin, APIView):
+    def get(self, request, **kwargs):
+        setting, _ = TodoCleanupSetting.objects.get_or_create(
+            organization=self.org, department_id=self.scope.department_id
+        )
+        return Response({"purge_done": setting.purge_done})
+
+    def patch(self, request, **kwargs):
+        if not {"todos.edit", "roles.edit"} <= self.scope.permissions:
+            raise PermissionDenied()
+        serializer = CleanupInput(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        setting, _ = TodoCleanupSetting.objects.get_or_create(
+            organization=self.org, department_id=self.scope.department_id
+        )
+        setting.purge_done = serializer.validated_data["purge_done"]
+        setting.save(update_fields=["purge_done"])
+        return Response({"purge_done": setting.purge_done})
+
+
+class CleanupInput(serializers.Serializer):
+    purge_done = serializers.BooleanField()

@@ -1,5 +1,6 @@
 """Aufgaben im Browser und über dieselbe Fachlogik in der App."""
 
+import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.db import transaction
@@ -72,7 +73,7 @@ def data_for(todo, user, scope):
         "can_delete": can_delete(todo, user, scope),
         "can_take_over": can_take_over(todo, user, scope),
         "can_share": can_delete(todo, user, scope) and "todos.edit" in scope.permissions,
-        "shares": list(todo.shares.values("user", "role", "level", "responsible"))
+        "shares": list(todo.shares.order_by("pk").values("user", "role", "level", "responsible"))
         if todo.shared
         else [],
         "owners": [
@@ -96,7 +97,14 @@ class TodoListView(TodoScopeMixin, APIView):
     def get(self, request, **kwargs):
         qs = visible(request.user, self.scope, deleted=request.query_params.get("trash") == "1")
         items = [data_for(t, request.user, self.scope) for t in qs.order_by("-created_at")]
-        items.sort(key=lambda t: (t["due_date"] is None, t["due_date"] or timezone.localdate()))
+        items.sort(
+            key=lambda t: (
+                not t["highlight"],
+                t["due_date"] is None,
+                t["due_date"] or timezone.localdate(),
+                t["due_time"] or datetime.time.max,
+            )
+        )
         return Response({"items": items})
 
     @transaction.atomic
@@ -155,6 +163,11 @@ class TodoDetailView(TodoScopeMixin, APIView):
                 {"detail": gettext("Die Aufgabe wurde inzwischen geändert. Bitte neu laden.")},
                 status=409,
             )
+        ownership_only = "owner" in values
+        if ownership_only and set(values) != {"owner"}:
+            raise serializers.ValidationError(
+                gettext("Verantwortung bitte getrennt von anderen Änderungen übertragen.")
+            )
         shares = values.pop("shares", None)
         added = (
             replace_shares(todo, request.user, self.scope, shares) if shares is not None else set()
@@ -178,7 +191,14 @@ class TodoDetailView(TodoScopeMixin, APIView):
         if old_due != (todo.due_date, todo.due_time, todo.timezone):
             todo.due_revision += 1
         todo.version += 1
-        todo.save()
+        if ownership_only:
+            from core.tenancy import rls_bypass
+
+            # Nur die zuvor am gesperrten Datensatz geprüfte Verantwortungsübergabe.
+            with rls_bypass():
+                todo.save(update_fields=["owner", "version", "updated_at"])
+        else:
+            todo.save()
         log_change(todo, request.user, "update")
         from .notify import schedule_shared
 
@@ -311,3 +331,22 @@ class PersonalExportView(APIView):
         response = JsonResponse({"tasks": rows})
         response["Content-Disposition"] = 'attachment; filename="aufgaben.json"'
         return response
+
+
+class PersonalTaskDeleteView(APIView):
+    @transaction.atomic
+    def delete(self, request, pk):
+        from changes.models import ChangeSet
+        from changes.tracking import suppress
+        from core.tenancy import tenant_context
+
+        with user_view(request.user.pk):
+            todo = get_object_or_404(
+                Todo.objects.select_for_update(), pk=pk, created_by=request.user, shared=False
+            )
+        with tenant_context(todo.organization_id, request.user.pk), suppress():
+            ChangeSet.objects.filter(
+                records__model="todos.todo", records__object_id=str(todo.pk)
+            ).delete()
+            todo.delete()
+        return Response(status=204)

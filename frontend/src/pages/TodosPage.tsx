@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { todoApi, todoBase } from '../api/todos.ts'
 import type { Todo } from '../api/todos.ts'
@@ -10,17 +10,49 @@ import { TodoSharing } from '../components/TodoSharing.tsx'
 import { TodoOwnership } from '../components/TodoOwnership.tsx'
 import { OrphanTasks } from '../components/OrphanTasks.tsx'
 import { useAuth } from '../auth/AuthContext.tsx'
+import { TodoReminders } from '../components/TodoReminders.tsx'
+import { TodoCleanup } from '../components/TodoCleanup.tsx'
+import './todos.css'
+import { confirmLeave, useDraftGuard, useGuarded } from '../components/leaveGuard.ts'
 
 export function TodosPage() {
-  const { active, activeDept, can } = useOrg()
+  const { active, activeDept, activeKey, orgs, departments, select } = useOrg()
+  const [params, setParams] = useSearchParams()
+  const target = params.get('abteilung') ? `d:${params.get('abteilung')}` : params.get('einheit')
+  const knownTarget =
+    !!target &&
+    (target.startsWith('d:')
+      ? departments.some((dept) => `d:${dept.id}` === target)
+      : orgs.some((org) => String(org.id) === target))
+  useEffect(() => {
+    if (!knownTarget || target === activeKey) return
+    let alive = true
+    void confirmLeave().then((allowed) => {
+      if (!alive) return
+      if (allowed) select(target!)
+      else {
+        const next = new URLSearchParams(params)
+        next.delete('abteilung')
+        next.delete('einheit')
+        setParams(next, { replace: true })
+      }
+    })
+    return () => {
+      alive = false
+    }
+  }, [target, knownTarget, activeKey, select, params, setParams])
   const base = todoBase(active?.id ?? null, activeDept?.id)
-  if (!can('todos.view')) return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+  if (!(active?.permissions ?? activeDept?.permissions ?? []).includes('todos.view'))
+    return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
   return <TodoWorkspace key={base} base={base} />
 }
 
 function TodoWorkspace({ base }: { base: string }) {
+  const guard = useGuarded()
   const { user } = useAuth()
-  const { can } = useOrg()
+  const { active, activeDept } = useOrg()
+  const can = (permission: string) =>
+    (active?.permissions ?? activeDept?.permissions ?? []).includes(permission)
   const [tab, setTab] = useState('open')
   const [filter, setFilter] = useState('all')
   const [newTask, setNewTask] = useState(false)
@@ -35,14 +67,14 @@ function TodoWorkspace({ base }: { base: string }) {
         (filter === 'mine' && !item.shared) ||
         (filter === 'shared' && item.shared && item.created_by !== user?.id) ||
         (filter === 'sent' && item.shared && item.created_by === user?.id) ||
-        (filter === 'overdue' &&
-          !!item.due_date &&
-          item.due_date < new Date().toLocaleDateString('en-CA'))),
+        (filter === 'overdue' && item.overdue)),
   )
   async function change(item: Todo, changes: object) {
+    if (!(await confirmLeave())) return
     try {
       setActionError(null)
-      await todoApi.update(base, item.id, { version: item.version, ...changes })
+      const current = tab === 'trash' ? item : await todoApi.get(base, item.id)
+      await todoApi.update(base, item.id, { version: current.version, ...changes })
       await reload()
     } catch (err) {
       setActionError(errorMessage(err))
@@ -55,8 +87,10 @@ function TodoWorkspace({ base }: { base: string }) {
         <button
           className="button"
           onClick={() => {
-            setNewTask(true)
-            setParams({})
+            void guard(() => {
+              setNewTask(true)
+              setParams({})
+            })
           }}
         >
           {t('Neue Aufgabe')}
@@ -69,9 +103,11 @@ function TodoWorkspace({ base }: { base: string }) {
             className="button button-ghost"
             aria-pressed={tab === key}
             onClick={() => {
-              setTab(key)
-              setNewTask(false)
-              setParams({})
+              void guard(() => {
+                setTab(key)
+                setNewTask(false)
+                setParams({})
+              })
             }}
           >
             {t(key === 'open' ? 'Offen' : key === 'done' ? 'Erledigt' : 'Papierkorb')}
@@ -91,6 +127,7 @@ function TodoWorkspace({ base }: { base: string }) {
       </SelectField>
       {error && <LoadError message={error} onRetry={reload} />}
       {actionError && <p role="alert">{actionError}</p>}
+      {can('todos.edit') && can('roles.edit') && <TodoCleanup base={base} />}
       {can('todos.edit') && can('roles.edit') && (
         <OrphanTasks base={base} onSaved={() => void reload()} />
       )}
@@ -107,9 +144,12 @@ function TodoWorkspace({ base }: { base: string }) {
       {selected && tab !== 'trash' && (
         <TodoEditor key={selected.id} base={base} todo={selected} onSaved={() => void reload()} />
       )}
+      {selected?.due_date && tab !== 'trash' && (
+        <TodoReminders key={`remind-${selected.id}`} base={base} id={selected.id} />
+      )}
       {selected?.can_share && tab !== 'trash' && (
         <TodoSharing
-          key={`share-${selected.id}-${selected.version}`}
+          key={`share-${selected.id}`}
           base={base}
           todo={selected}
           onSaved={() => void reload()}
@@ -117,7 +157,7 @@ function TodoWorkspace({ base }: { base: string }) {
       )}
       {selected && !!selected.owners?.length && tab !== 'trash' && (
         <TodoOwnership
-          key={`owner-${selected.id}-${selected.version}`}
+          key={`owner-${selected.id}`}
           base={base}
           todo={selected}
           onSaved={() => void reload()}
@@ -125,7 +165,14 @@ function TodoWorkspace({ base }: { base: string }) {
       )}
       <ul className="plain-list task-list">
         {items.map((item) => (
-          <li key={item.id}>
+          <li
+            key={item.id}
+            className={
+              item.highlight
+                ? `task-reminder${item.overdue ? ' task-reminder-overdue' : ''}`
+                : undefined
+            }
+          >
             {tab !== 'trash' && (
               <input
                 type="checkbox"
@@ -140,13 +187,16 @@ function TodoWorkspace({ base }: { base: string }) {
             <button
               className="button button-ghost"
               onClick={() => {
-                setNewTask(false)
-                setParams({ aufgabe: String(item.id) })
+                void guard(() => {
+                  setNewTask(false)
+                  setParams({ aufgabe: String(item.id) })
+                })
               }}
             >
               {item.title}
             </button>
             <span className="muted">{item.due_date ?? t('ohne Frist')}</span>
+            {item.highlight && <span className="badge">{item.due_label}</span>}
             {item.can_delete && (
               <button
                 className="button button-ghost"
@@ -166,14 +216,27 @@ function TodoWorkspace({ base }: { base: string }) {
   )
 }
 
-function TodoEditor({ base, todo, onSaved }: { base: string; todo?: Todo; onSaved: () => void }) {
-  const version = useRef(todo?.version ?? 1)
-  const form = useForm({
+function todoFields(todo?: Todo) {
+  return {
     title: todo?.title ?? '',
     description: todo?.description ?? '',
     due_date: todo?.due_date ?? '',
     due_time: todo?.due_time?.slice(0, 5) ?? '',
-  })
+  }
+}
+
+function TodoEditor({ base, todo, onSaved }: { base: string; todo?: Todo; onSaved: () => void }) {
+  const version = useRef(todo?.version ?? 1)
+  const baseline = useRef(todoFields(todo))
+  const form = useForm(todoFields(todo))
+  useEffect(() => {
+    // Statuswechsel dürfen die eigene Versionsbasis vorziehen, externe Inhaltsänderungen nicht.
+    if (todo && JSON.stringify(todoFields(todo)) === JSON.stringify(baseline.current))
+      version.current = todo.version
+  }, [todo])
+  useDraftGuard(!todo && Object.values(form.values).some(Boolean), () =>
+    form.setValues(todoFields()),
+  )
   const writable = !todo || todo.can_edit
   const payload = () => ({
     ...form.values,
@@ -182,12 +245,19 @@ function TodoEditor({ base, todo, onSaved }: { base: string; todo?: Todo; onSave
   })
   const auto = useAutoSave(
     form,
-    async () => {
+    async (changes) => {
+      const update: Record<string, unknown> = { ...changes }
+      if ('due_date' in update) {
+        update.due_date = update.due_date || null
+        if (!update.due_date) update.due_time = null
+      }
+      if ('due_time' in update) update.due_time = update.due_time || null
       const updated = await todoApi.update(base, todo!.id, {
-        ...payload(),
+        ...update,
         version: version.current,
       })
       version.current = updated.version
+      baseline.current = todoFields(updated)
       onSaved()
     },
     { enabled: !!todo && writable },

@@ -204,3 +204,31 @@ class TodoReminder(models.Model):
 
     def __str__(self):
         return f"{self.todo_id}: {self.user_id} {self.rule} {self.channel}"
+
+
+class TodoCleanupSetting(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    department = models.ForeignKey(
+        "organizations.Department",
+        on_delete=models.CASCADE,
+        null=True,
+        related_name="todo_cleanup_settings",
+    )
+    purge_done = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization"],
+                condition=Q(department__isnull=True),
+                name="todo_cleanup_root_unique",
+            ),
+            models.UniqueConstraint(
+                fields=["organization", "department"],
+                condition=Q(department__isnull=False),
+                name="todo_cleanup_department_unique",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.organization_id}: {self.department_id or 0}"

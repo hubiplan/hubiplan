@@ -8,6 +8,7 @@ import { t } from '../i18n/index.ts'
 import { api } from '../api/client.ts'
 import { useState } from 'react'
 import { errorMessage } from './forms.ts'
+import '../pages/todos.css'
 
 export function OpenTasksTile({ org }: { org: OrgSummary }) {
   const { data, error, reload } = useLoad(() => orgApi.openTasks(org.id), [org.id])
@@ -33,7 +34,14 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
       {items.length > 0 && (
         <ul className="plain-list task-list">
           {items.map((tm, i) => (
-            <li key={`${tm.kind}-${i}`}>
+            <li
+              key={`${tm.kind}-${i}`}
+              className={
+                tm.highlight
+                  ? `task-reminder${tm.overdue ? ' task-reminder-overdue' : ''}`
+                  : undefined
+              }
+            >
               {tm.kind === 'todo' && tm.can_edit && (
                 <input
                   type="checkbox"
@@ -51,6 +59,7 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
                 />
               )}
               <span className="muted small">{tm.kind_label}</span>
+              {tm.highlight && <span className="badge">{tm.due_label}</span>}
               <div>
                 <Link to={tm.link}>{tm.title}</Link>
                 <span className="muted small"> · {tm.detail}</span>

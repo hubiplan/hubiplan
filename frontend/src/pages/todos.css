@@ -1,0 +1,8 @@
+.task-reminder {
+  border-inline-start: 0.25rem solid var(--color-primary, #245b9b);
+  padding-inline-start: 0.6rem;
+}
+
+.task-reminder-overdue {
+  border-inline-start-color: var(--color-danger, #a22020);
+}

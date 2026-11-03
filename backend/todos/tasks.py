@@ -1,6 +1,7 @@
 import datetime
 
 from celery import shared_task
+from django.db import transaction
 from django.utils import timezone
 
 from changes.tracking import suppress
@@ -10,12 +11,14 @@ from .models import Todo
 
 
 @shared_task
+@transaction.atomic
 def purge_deleted():
     cutoff = timezone.now() - datetime.timedelta(days=30)
     with suppress(), rls_bypass():
-        rows = Todo.objects.filter(deleted_at__lt=cutoff)
-        count = rows.count()
-        rows.delete()
+        rows = list(Todo.objects.filter(deleted_at__lt=cutoff).select_for_update())
+        count = len(rows)
+        for row in rows:
+            row.delete()
     return count
 
 
@@ -24,3 +27,10 @@ def send_due_reminders():
     from .reminders import run
 
     return run()
+
+
+@shared_task
+def purge_completed():
+    from .cleanup import completed
+
+    return completed()

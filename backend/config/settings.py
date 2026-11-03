@@ -255,6 +255,7 @@ CELERY_TIMEZONE = "Europe/Berlin"
 # Regelmäßige Jobs (laufen im Dienst "beat")
 CELERY_BEAT_SCHEDULE = {
     "todos-reminders": {"task": "todos.tasks.send_due_reminders", "schedule": 300.0},
+    "todos-completed": {"task": "todos.tasks.purge_completed", "schedule": 86400.0},
     "todos-purge": {"task": "todos.tasks.purge_deleted", "schedule": 86400.0},
     "mitgliedsausweise-wallet": {"task": "cards.tasks.sync_wallets", "schedule": 5 * 60},
     "datenuebernahme-aufraeumen": {

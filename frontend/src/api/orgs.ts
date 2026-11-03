@@ -633,6 +633,9 @@ export interface OpenTask {
   ref?: number
   version?: number
   can_edit?: boolean
+  overdue?: boolean
+  highlight?: boolean
+  due_label?: string
   kind_label: string
   title: string
   detail: string

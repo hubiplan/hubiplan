@@ -134,4 +134,5 @@ class OpenTasksView(OrgScopedMixin, APIView):
         from todos.open_tasks import todo_tasks
 
         items += todo_tasks(request.user, org, perms)
+        items.sort(key=lambda item: not item.get("highlight", False))
         return Response({"items": items})

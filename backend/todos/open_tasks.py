@@ -1,3 +1,5 @@
+import datetime
+
 from django.utils.translation import gettext
 
 from .access import Scope, can_edit, visible
@@ -11,7 +13,13 @@ def todo_tasks(user, org, perms, department_id=None):
     rows = list(visible(user, scope).filter(status="open").order_by("due_date", "-created_at"))
     dated = [t for t in rows if t.due_date]
     undated = [t for t in rows if not t.due_date][:5]
-    dated.sort(key=lambda t: (not highlight(t, user)["highlight"], t.due_date))
+    dated.sort(
+        key=lambda t: (
+            not highlight(t, user)["highlight"],
+            t.due_date,
+            t.due_time or datetime.time.max,
+        )
+    )
     return [
         {
             "kind": "todo",

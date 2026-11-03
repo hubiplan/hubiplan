@@ -7,7 +7,8 @@ from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.formats import date_format
+from django.utils.translation import gettext, ngettext
 from rest_framework.exceptions import NotFound, PermissionDenied
 
 from core.i18n import language_of, user_language
@@ -24,8 +25,30 @@ logger = logging.getLogger(__name__)
 
 def local_time(day, time, zone):
     """Erste Ausprägung bei doppelter, nächste gültige bei fehlender Ortszeit."""
-    local = datetime.datetime.combine(day, time, ZoneInfo(zone)).replace(fold=0)
-    return local.astimezone(datetime.UTC).astimezone(ZoneInfo(zone))
+    zone = ZoneInfo(zone)
+    naive = datetime.datetime.combine(day, time)
+    local = naive.replace(tzinfo=zone, fold=0)
+    projected = local.astimezone(datetime.UTC).astimezone(zone)
+    if projected.replace(tzinfo=None) == naive:
+        return projected
+    # Beginn des nächsten gültigen Minutenwerts, z. B. 03:00 statt 02:30.
+    probe = naive.replace(second=0, microsecond=0)
+    for _ in range(26 * 60):
+        probe += datetime.timedelta(minutes=1)
+        candidate = probe.replace(tzinfo=zone, fold=0)
+        valid = candidate.astimezone(datetime.UTC).astimezone(zone)
+        if valid.replace(tzinfo=None) == probe:
+            return valid
+    raise ValueError("Ortszeit nicht auflösbar")
+
+
+def due_text(todo):
+    if not todo.due_date:
+        return gettext("ohne Frist")
+    text = date_format(todo.due_date, "DATE_FORMAT", use_l10n=True)
+    if todo.due_time:
+        text += f", {todo.due_time:%H:%M} ({todo.timezone})"
+    return text
 
 
 def deadline(todo):
@@ -115,7 +138,7 @@ def sync(todo, now=None):
         todo.reminders.filter(result="pending").exclude(user_id__in=recipients).update(
             result="cancelled"
         )
-        for uid, entry in recipients.items():
+        for uid in recipients:
             config, _ = TodoReminderConfig.objects.get_or_create(
                 organization=todo.organization,
                 todo=todo,
@@ -158,6 +181,12 @@ def sync(todo, now=None):
 
 def highlight(todo, user, now=None):
     now = now or timezone.now()
+    if todo.status != "open" or todo.deleted_at:
+        return {
+            "overdue": False,
+            "highlight": False,
+            "due_label": str(todo.due_date) if todo.due_date else gettext("ohne Frist"),
+        }
     if not todo.due_date:
         return {"overdue": False, "highlight": False, "due_label": gettext("ohne Frist")}
     config = TodoReminderConfig.objects.filter(todo=todo, user=user).first()
@@ -167,7 +196,14 @@ def highlight(todo, user, now=None):
     late = overdue(todo, now)
     today = now.astimezone(ZoneInfo(todo.timezone)).date()
     if late:
-        label = gettext("Überfällig")
+        days_late = (today - todo.due_date).days
+        label = (
+            ngettext("überfällig seit {n} Tag", "überfällig seit {n} Tagen", days_late).format(
+                n=days_late
+            )
+            if days_late
+            else gettext("Überfällig")
+        )
     elif todo.due_date == today:
         label = gettext("Heute fällig")
     elif todo.due_date == today + datetime.timedelta(days=1):
@@ -217,7 +253,7 @@ def deliver(pk, now=None):
                     ZoneInfo(todo.timezone)
                 ).date() == todo.due_date + datetime.timedelta(days=1)
             elif overdue(todo, now):
-                allowed = bool(
+                allowed = allowed and bool(
                     todo.due_time
                     and item.rule == "before:0"
                     and now <= item.scheduled_at + datetime.timedelta(minutes=5)
@@ -241,8 +277,13 @@ def deliver(pk, now=None):
             return False
         with language_of(user):
             title = gettext("Erinnerung: {title}").format(title=current.title)
-            text = gettext("Frist: {date}").format(date=current.due_date)
-            link = f"{settings.FRONTEND_URL}/aufgaben?aufgabe={current.pk}"
+            text = gettext("Frist: {date}").format(date=due_text(current))
+            unit = (
+                f"abteilung={scope.department_id}"
+                if scope.department_id
+                else f"einheit={scope.org.pk}"
+            )
+            link = f"{settings.FRONTEND_URL}/aufgaben?aufgabe={current.pk}&{unit}"
             try:
                 if item.channel == "mail":
                     sent = mail.send(

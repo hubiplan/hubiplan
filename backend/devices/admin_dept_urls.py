@@ -11,6 +11,7 @@ from django.urls import path
 from changes import views as change_views
 from events import views as event_views
 from portal import views as portal_views
+from todos import reminder_views as todo_reminder_views
 from todos import views as todo_views
 
 from .admin_api import for_app
@@ -21,6 +22,7 @@ def _p(route: str, view, name: str, read_only: bool = False):
 
 
 urlpatterns = [
+    path("todos/<int:pk>/reminders/", for_app(todo_reminder_views.ReminderSettingsView).as_view()),
     path("todos/orphans/", for_app(todo_views.OrphanTasksView).as_view()),
     path("todos/<int:pk>/take-over/", for_app(todo_views.TakeOverView).as_view()),
     path("todos/choices/", for_app(todo_views.TodoChoicesView).as_view()),
