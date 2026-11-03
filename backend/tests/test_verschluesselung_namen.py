@@ -51,7 +51,7 @@ def target_backend(tmp_path):
         dest = target / source.relative_to(settings.BASE_DIR)
         dest.parent.mkdir(parents=True, exist_ok=True)
         text = source.read_text()
-        if model is Person:
+        if source == Path(inspect.getfile(Person)):
             text = text.replace(
                 'EncryptedCharField("Name", max_length=100, strict=True)',
                 'models.CharField("Name", max_length=100)',
