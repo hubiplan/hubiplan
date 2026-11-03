@@ -50,7 +50,15 @@ docker compose logs --since 3h backend | grep -E '"(GET|POST) ' \
 **Vorwärmen:** Jeder neue gunicorn-Prozess ruft vor der ersten echten Anfrage
 `/api/health/` und `/api/public/site/v1/resolve/` bei sich selbst auf
 (`backend/gunicorn.conf.py`). Im Log steht dann je Prozess „Vorwärmen …: 200 OK“ bzw.
-„404 Not Found“. Sonst wartete der erste Besucher nach dem Ausrollen 2–3 s.
+„404 Not Found“. Das lädt Anwendungs- und Resolvercode. Datenbankverbindungen sind
+threadlokal; jeder gthread-Requestthread öffnet seine Verbindung erst bei seiner ersten
+Anfrage. Die ungenutzte Hauptthread-Verbindung wird danach geschlossen. Daraus folgt
+keine gemessene oder garantierte Verkürzung der ersten echten Anfrage.
+
+English: Warmup loads application/resolver code. Django database connections are
+thread-local: each gthread request thread connects on its first request. The unused
+main-thread connection is closed afterwards; no measured first-request latency guarantee
+is implied.
 
 ## Geheimnisse
 

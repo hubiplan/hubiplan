@@ -1,8 +1,9 @@
 """Einstellungen für gunicorn (liest es selbst aus dem Arbeitsverzeichnis /app).
 
 Vorwärmen: Jeder neue Prozess beantwortet vor der ersten echten Anfrage zwei Abrufe
-an sich selbst. So lädt er Adressen, Ansichten und die Datenbankverbindung vorab;
-sonst wartete der erste Besucher nach dem Ausrollen darauf.
+an sich selbst und lädt damit Anwendungs-/Resolvercode. Django-Verbindungen sind
+threadlokal: gthread öffnet sie bewusst erst bei der ersten Anfrage im jeweiligen
+Requestthread. Die Hauptthread-Verbindung wird nach dem Vorwärmen geschlossen.
 """
 
 WARMUP_PATHS = ("/api/health/", "/api/public/site/v1/resolve/")

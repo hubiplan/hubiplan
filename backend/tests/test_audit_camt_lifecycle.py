@@ -65,6 +65,22 @@ def test_validate_all_accounts_before_writing_any_file(club, setup):
             save.assert_not_called()
 
 
+def test_cleanup_storage_failure_preserves_original_error_without_logging_paths(
+    club, setup, caplog
+):
+    original = RuntimeError("synthetic original import error")
+    storage = BankStatement._meta.get_field("source").storage
+    with (
+        patch.object(bank_import, "suggest_all", side_effect=original),
+        patch.object(storage, "delete", side_effect=OSError("private-path-must-not-be-logged")),
+    ):
+        with pytest.raises(RuntimeError) as error:
+            bank_import.import_file(club, camt_xml([]), "test.xml", None)
+    assert error.value is original
+    assert "Neue Originaldatei nach Rollback nicht entfernt" in caplog.text
+    assert "private-path-must-not-be-logged" not in caplog.text
+
+
 def test_undated_statement_uses_line_dates_and_empty_one_import_date(club, setup):
     st = camt.parse(camt_xml([entry("5.00")]))[0]
     st.date_from = st.date_to = None

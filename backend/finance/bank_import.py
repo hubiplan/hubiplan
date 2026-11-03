@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import datetime
 import hashlib
+import logging
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -37,6 +38,7 @@ from .models import Account, BankLine, BankStatement, Booking, Category, YearClo
 
 DAYS_BOOKED = 3
 DAYS_RUN = 10
+logger = logging.getLogger(__name__)
 
 
 def _account_for(org, iban: str, chosen: Account | None) -> Account:
@@ -80,7 +82,12 @@ def import_file(org, data: bytes, file_name: str, user, account: Account | None 
             return _import_file(org, data, file_name, user, account, created)
     except BaseException:
         for storage, name in created:
-            storage.delete(name)
+            try:
+                storage.delete(name)
+            except Exception:  # noqa: BLE001 – ursprünglichen Importfehler erhalten
+                # Weder Storage-Pfad noch Ausnahmeinhalt (kann personenbezogen sein)
+                # protokollieren. Das Original benötigt eine gesonderte Betriebsprüfung.
+                logger.error("CAMT-Import: Neue Originaldatei nach Rollback nicht entfernt.")
         raise
 
 
