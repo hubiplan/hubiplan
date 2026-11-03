@@ -1,29 +1,50 @@
 // Wettbewerbe: eigene Schießen mit Einzel- und Zugwertung, Stechen und Auswertung.
 import { api } from './client.ts'
+import { t } from '../i18n/index.ts'
 import type { Award, Grant } from './competitionHistory.ts'
 
 export type CompetitionStatus = 'vorbereitung' | 'laeuft' | 'vorlaeufig' | 'endgueltig'
 export type WebsiteMode = 'aus' | 'live' | 'abschluss'
 
 export const STATUS_LABELS: Record<CompetitionStatus, string> = {
-  vorbereitung: 'Vorbereitung',
-  laeuft: 'läuft',
-  vorlaeufig: 'vorläufig',
-  endgueltig: 'endgültig',
+  get vorbereitung() {
+    return t('Vorbereitung')
+  },
+  get laeuft() {
+    return t('läuft')
+  },
+  get vorlaeufig() {
+    return t('vorläufig')
+  },
+  get endgueltig() {
+    return t('endgültig')
+  },
 }
 
 export const WEBSITE_LABELS: Record<WebsiteMode, string> = {
-  aus: 'nicht auf der Webseite',
-  live: 'live während des Wettbewerbs',
-  abschluss: 'nach Abschluss',
+  get aus() {
+    return t('nicht auf der Webseite')
+  },
+  get live() {
+    return t('live während des Wettbewerbs')
+  },
+  get abschluss() {
+    return t('nach Abschluss')
+  },
 }
 
 export type WebsiteDepth = 'einheiten' | 'top3' | 'alle'
 
 export const WEBSITE_DEPTH_LABELS: Record<WebsiteDepth, string> = {
-  einheiten: 'nur Wertung der Untereinheiten und Mannschaften',
-  top3: 'Plätze 1 bis 3 mit Namen',
-  alle: 'ganze Rangliste',
+  get einheiten() {
+    return t('nur Wertung der Untereinheiten und Mannschaften')
+  },
+  get top3() {
+    return t('Plätze 1 bis 3 mit Namen')
+  },
+  get alle() {
+    return t('ganze Rangliste')
+  },
 }
 
 export interface Detail {
@@ -239,9 +260,15 @@ export interface CompetitionDetail extends Competition {
 export type Presence = '' | 'fehlt' | 'zurueckgezogen'
 
 export const PRESENCE_LABELS: Record<Presence, string> = {
-  '': 'dabei',
-  fehlt: 'fehlt kurz',
-  zurueckgezogen: 'zurückgezogen',
+  get ''() {
+    return t('dabei')
+  },
+  get fehlt() {
+    return t('fehlt kurz')
+  },
+  get zurueckgezogen() {
+    return t('zurückgezogen')
+  },
 }
 
 export interface Starter {

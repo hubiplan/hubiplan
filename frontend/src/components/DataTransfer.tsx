@@ -204,14 +204,30 @@ const TARGET_TEXT = {
 
 const SUMMARY_LABELS: Record<string, string> = {
   clubs: '{Pl}',
-  departments: t('Untereinheiten'),
-  roles: t('Rollen'),
-  role_assignments: t('Rollenbesetzungen'),
-  persons: t('Personen'),
-  memberships: t('Mitgliedschaften'),
-  already_members: t('schon Mitglied {e_im}'),
-  table_rows: t('Kasse, Beiträge und Satzung (Einträge)'),
-  files: t('Dateien'),
+  get departments() {
+    return t('Untereinheiten')
+  },
+  get roles() {
+    return t('Rollen')
+  },
+  get role_assignments() {
+    return t('Rollenbesetzungen')
+  },
+  get persons() {
+    return t('Personen')
+  },
+  get memberships() {
+    return t('Mitgliedschaften')
+  },
+  get already_members() {
+    return t('schon Mitglied {e_im}')
+  },
+  get table_rows() {
+    return t('Kasse, Beiträge und Satzung (Einträge)')
+  },
+  get files() {
+    return t('Dateien')
+  },
 }
 
 /** Datei hochladen, Vorschau prüfen, Dubletten entscheiden, übernehmen. */

@@ -25,7 +25,7 @@ export function UnitsArea() {
   const tm = useTerms()
   return (
     <section>
-      <h1>{org.department_label_plural || tm.Pl}</h1>
+      <h1>{org.department_terms?.Pl || org.department_label_plural || tm.Pl}</h1>
       <p className="muted">{org.name}</p>
       <UnitsPage />
     </section>

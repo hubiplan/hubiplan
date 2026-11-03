@@ -1,6 +1,7 @@
 // Meldungen: Ausschreibungen erfassen, Mannschaften und Personen melden, Fassungen.
 import type { CalendarAccess, CompetitionEvent } from './competitions.ts'
 import { api } from './client.ts'
+import { t } from '../i18n/index.ts'
 
 export type BlockKind = 'mannschaften' | 'personen' | 'zahl' | 'auswahl' | 'text'
 export type EntryStatus = 'entwurf' | 'abgegeben' | 'bestaetigt' | 'rueckfrage' | 'zurueckgezogen'
@@ -9,27 +10,57 @@ export type FeePer = 'mannschaft' | 'person' | 'pauschal'
 export type ChangesAfterDeadline = 'keine' | 'ersatz' | 'frei'
 
 export const BLOCK_LABELS: Record<BlockKind, string> = {
-  mannschaften: 'Mannschaften',
-  personen: 'Personenliste',
-  zahl: 'Zahl',
-  auswahl: 'Auswahl',
-  text: 'Text',
+  get mannschaften() {
+    return t('Mannschaften')
+  },
+  get personen() {
+    return t('Personenliste')
+  },
+  get zahl() {
+    return t('Zahl')
+  },
+  get auswahl() {
+    return t('Auswahl')
+  },
+  get text() {
+    return t('Text')
+  },
 }
 
 export const STATUS_LABELS: Record<EntryStatus, string> = {
-  entwurf: 'Entwurf',
-  abgegeben: 'abgegeben',
-  bestaetigt: 'bestätigt',
-  rueckfrage: 'Rückfrage',
-  zurueckgezogen: 'zurückgezogen',
+  get entwurf() {
+    return t('Entwurf')
+  },
+  get abgegeben() {
+    return t('abgegeben')
+  },
+  get bestaetigt() {
+    return t('bestätigt')
+  },
+  get rueckfrage() {
+    return t('Rückfrage')
+  },
+  get zurueckgezogen() {
+    return t('zurückgezogen')
+  },
 }
 
 export const CHANNEL_LABELS: Record<Channel, string> = {
-  brief: 'Brief (PDF auf dem Briefbogen)',
-  email: 'E-Mail an den Veranstalter',
-  tabelle: 'Tabelle (Excel/CSV, z. B. für ein Portal)',
-  sonstiges: 'sonstiger Weg (nur vermerken)',
-  hubiplan: 'in HUBIplan',
+  get brief() {
+    return t('Brief (PDF auf dem Briefbogen)')
+  },
+  get email() {
+    return t('E-Mail an den Veranstalter')
+  },
+  get tabelle() {
+    return t('Tabelle (Excel/CSV, z. B. für ein Portal)')
+  },
+  get sonstiges() {
+    return t('sonstiger Weg (nur vermerken)')
+  },
+  get hubiplan() {
+    return t('in HUBIplan')
+  },
 }
 
 export interface BlockSettings {

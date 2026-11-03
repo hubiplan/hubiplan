@@ -1,5 +1,6 @@
 // Terminkalender: gleiche Schnittstelle für Vorstand, Abteilung und Mitgliederbereich.
 import { api } from './client.ts'
+import { t } from '../i18n/index.ts'
 
 export type Visibility = 'public' | 'members' | 'board'
 export type Repeat = 'none' | 'weekly' | 'monthly' | 'yearly'
@@ -238,16 +239,30 @@ export interface ExternalCalendarInput {
 }
 
 export const VISIBILITY_LABELS: Record<Visibility, string> = {
-  public: 'nach außen öffentlich',
-  members: 'Mitglieder',
-  board: 'nur Vorstand',
+  get public() {
+    return t('nach außen öffentlich')
+  },
+  get members() {
+    return t('Mitglieder')
+  },
+  get board() {
+    return t('nur Vorstand')
+  },
 }
 
 export const REPEAT_LABELS: Record<Repeat, string> = {
-  none: 'einmalig',
-  weekly: 'wöchentlich',
-  monthly: 'monatlich',
-  yearly: 'jährlich',
+  get none() {
+    return t('einmalig')
+  },
+  get weekly() {
+    return t('wöchentlich')
+  },
+  get monthly() {
+    return t('monatlich')
+  },
+  get yearly() {
+    return t('jährlich')
+  },
 }
 
 /** Basis-URL eines Kalenders, z. B. `/api/orgs/7/` oder `/api/depts/3/`. */
