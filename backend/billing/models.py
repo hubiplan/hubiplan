@@ -18,7 +18,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext, gettext_lazy
 
-from core.encfields import EncryptedCharField
+from core.encfields import EncryptedCharField, EncryptedEmailField, EncryptedTextField
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
 
@@ -290,8 +290,8 @@ class Invoice(models.Model):
     )
     # Anschrift und E-Mail, wie sie beim Festschreiben galten
     recipient_name = models.CharField("Empfänger", max_length=200)
-    recipient_address = models.TextField("Anschrift", blank=True)
-    recipient_email = models.EmailField("E-Mail", blank=True)
+    recipient_address = EncryptedTextField("Anschrift", blank=True)
+    recipient_email = EncryptedEmailField("E-Mail", blank=True)
     date = models.DateField("Rechnungsdatum")
     due_date = models.DateField("fällig am")
     subject = models.CharField("Betreff", max_length=200, default="Rechnung")

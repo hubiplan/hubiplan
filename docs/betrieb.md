@@ -91,12 +91,18 @@ des Änderungsprotokolls gelten für den Klartext, die Kette bleibt beim Verschl
 gültig. Die Datenbank kann darin nicht suchen; die Suche nach E-Mail-Adressen und
 Kontoinhabern läuft deshalb in HUBIplan selbst.
 
+Auch die Kontaktkopien auf Rechnungen (Empfängeranschrift und E-Mail) und in
+Rundschreiben-Empfängern (Anschrift, E-Mail und gespeicherte Platzhalterwerte) werden
+verschlüsselt. Historische Versand- und Rechnungsstände bleiben dabei erhalten.
+Es gilt der Schlüssel der ausstellenden bzw. versendenden Organisation, auch wenn
+der Empfänger einem anderen Verein angehört. Die Namensfelder bleiben lesbar.
+
 **Umfang und Grenzen:** Vor- und Nachnamen der Mitglieder (`Person`) bleiben im
 Klartext. Das Geburtsdatum ist bereits verschlüsselt; Datumsvergleiche, Altersfilter
 und die Sortierung danach laufen in Python. Bei den Kontaktdaten sind E-Mail,
 Telefon und Straße verschlüsselt, Postleitzahl, Ort und Land bleiben lesbar.
 
-Weitere Klartextkopien von Namen und teilweise Kontaktdaten gibt es unter anderem
+Weitere Klartextkopien von Namen gibt es unter anderem
 bei Rundschreiben-Empfängern (`circulars.Recipient`), Rechnungen (`billing.Invoice`),
 Wettbewerbsstartern (`competitions.Starter`), Meldungen (`entries.EntryPerson`) und
 Würden/Begleitungen (`honors.Reign`, `honors.Companion`). Auch Benutzerkonten
@@ -138,6 +144,12 @@ Schlüssel übernimmt, kann auch die verschlüsselten Inhalte lesen.
   frisches Backup) `exec backend python manage.py dateien_verschluesseln`. Wiederholbar;
   `--probe` zählt nur. Bis dahin liest HUBIplan alte Klartextdateien weiter.
   Für die Felder entsprechend `daten_verschluesseln` (auch `--probe`).
+  Bei der Einführung der verschlüsselten Kontaktkopien zuerst Migrationen ausführen,
+  dann den Feldbestand verschlüsseln und erneut mit `--probe` prüfen. Während des
+  Bestandslaufs Backend und Hintergrundjobs als Schreiber anhalten; den Befehl in
+  einem separaten Verwaltungscontainer ausführen. Ein Ergebnis von 0 bestätigt nur,
+  dass keine umzuwandelnden Werte gefunden wurden; zusätzlich Lesbarkeit, Versand
+  und PDF-Ausgabe prüfen. Bis zum Bestandslauf werden alte Klartextwerte weiter gelesen.
 - **Rückweg:** `dateien_verschluesseln --entschluesseln` und
   `daten_verschluesseln --entschluesseln` legen alles wieder im Klartext ab.
   `deploy/zurueck.sh` macht das selbst, wenn die vorige Fassung die Verschlüsselung
