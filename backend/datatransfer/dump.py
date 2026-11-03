@@ -606,7 +606,7 @@ def _header(kind: str, source, with_files: bool) -> dict:
     }
 
 
-def export_organization(org: Organization, *, with_files: bool, by_platform: bool):
+def export_organization(org: Organization, *, with_files: bool, by_platform: bool, actor=None):
     """Daten einer Organisation mit ihren Untereinheiten.
 
     Ein Dachverband bekommt Mitgliedsdaten und Kasse seiner Vereine nur, soweit
@@ -622,7 +622,9 @@ def export_organization(org: Organization, *, with_files: bool, by_platform: boo
     def finance_for(o: Organization) -> bool:
         return o.type != Organization.Type.PLATFORM and (by_platform or o.pk == org.pk)
 
-    with consistent_snapshot(), rls_bypass():
+    from todos.exports import for_actor
+
+    with consistent_snapshot(), rls_bypass(), for_actor(actor):
         dumper = Dumper(
             with_files=with_files, member_data_for=member_data_for, finance_for=finance_for
         )
@@ -650,10 +652,14 @@ def consistent_snapshot():
         yield
 
 
-def export_department(dept: Department, *, with_files: bool, spin_off: dict | None = None):
+def export_department(
+    dept: Department, *, with_files: bool, spin_off: dict | None = None, actor=None
+):
     """Eine Abteilung: Stammdaten, Rollen, Mitglieder (mit ihren Vereinsdaten)."""
     club = dept.organization
-    with consistent_snapshot(), rls_bypass():
+    from todos.exports import for_actor
+
+    with consistent_snapshot(), rls_bypass(), for_actor(actor):
         dumper = Dumper(
             with_files=with_files, member_data_for=lambda o: True, finance_for=lambda o: False
         )

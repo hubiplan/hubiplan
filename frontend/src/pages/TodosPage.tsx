@@ -6,6 +6,7 @@ import { useOrg } from '../org/OrgContext.tsx'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../components/forms.ts'
 import { Field, LoadError, SaveStatus, SelectField } from '../components/ui.tsx'
 import { t } from '../i18n/index.ts'
+import { TodoSharing } from '../components/TodoSharing.tsx'
 
 export function TodosPage() {
   const { active, activeDept, can } = useOrg()
@@ -95,6 +96,14 @@ function TodoWorkspace({ base }: { base: string }) {
       )}
       {selected && tab !== 'trash' && (
         <TodoEditor key={selected.id} base={base} todo={selected} onSaved={() => void reload()} />
+      )}
+      {selected?.can_share && tab !== 'trash' && (
+        <TodoSharing
+          key={`share-${selected.id}-${selected.version}`}
+          base={base}
+          todo={selected}
+          onSaved={() => void reload()}
+        />
       )}
       <ul className="plain-list task-list">
         {items.map((item) => (

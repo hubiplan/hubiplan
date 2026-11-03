@@ -42,12 +42,14 @@ def run_export(job_id: int) -> None:
                 job.department,
                 with_files=job.with_files,
                 spin_off=(job.options or {}).get("spin_off"),
+                actor=job.created_by,
             )
         else:
             content, name, counts = dump.export_organization(
                 job.subject or job.organization,
                 with_files=job.with_files,
                 by_platform=bool(job.options.get("by_platform")),
+                actor=job.created_by,
             )
         job.file.save(name, ContentFile(content), save=False)
         job.file_name = name

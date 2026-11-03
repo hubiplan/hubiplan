@@ -13,18 +13,20 @@ from devices.push import send_to_user
 from outbox import mail
 
 from .access import scope_for, visible
-from .models import Todo, TodoPreference
+from .models import Todo, TodoNotice, TodoPreference
 
 logger = logging.getLogger(__name__)
 
 
 def schedule_shared(todo, user_ids):
     for user_id in sorted(set(user_ids) - {todo.created_by_id}):
-        transaction.on_commit(lambda uid=user_id: notify_shared.delay(todo.pk, uid), robust=True)
+        transaction.on_commit(
+            lambda uid=user_id: notify_shared.delay(todo.pk, uid, todo.version), robust=True
+        )
 
 
 @shared_task
-def notify_shared(todo_id, user_id):
+def notify_shared(todo_id, user_id, revision):
     with rls_bypass():
         todo = Todo.objects.filter(pk=todo_id, shared=True, deleted_at__isnull=True).first()
         user = User.objects.filter(pk=user_id, is_active=True).first()
@@ -38,17 +40,41 @@ def notify_shared(todo_id, user_id):
             return
         if not visible(user, scope).filter(pk=todo.pk).exists():
             return
+        with rls_bypass():
+            _, created = TodoNotice.objects.get_or_create(
+                organization=todo.organization,
+                todo=todo,
+                user=user,
+                revision=revision,
+            )
+        if not created:
+            return
         with language_of(user):
             title = gettext("Neue Aufgabe: {title}").format(title=todo.title)
             link = f"{settings.FRONTEND_URL}/aufgaben?aufgabe={todo.pk}"
             if preferences.share_mail:
-                mail.send(user.email, title, f"{title}\n{link}", organization=todo.organization,
-                          kind="aufgabe", language=user_language(user), fail_silently=True)
+                mail.send(
+                    user.email,
+                    title,
+                    f"{title}\n{link}",
+                    organization=todo.organization,
+                    kind="aufgabe",
+                    language=user_language(user),
+                    fail_silently=True,
+                )
             if preferences.share_push:
                 try:
-                    send_to_user(user.pk, {"v": 1, "t": "todo", "todo": todo.pk,
-                        "org": todo.organization_id, "department": todo.department_id,
-                        "title": title if preferences.push_title else gettext("Neue Aufgabe"),
-                        "text": str(todo.due_date or "")})
+                    send_to_user(
+                        user.pk,
+                        {
+                            "v": 1,
+                            "t": "todo",
+                            "todo": todo.pk,
+                            "org": todo.organization_id,
+                            "department": todo.department_id,
+                            "title": title if preferences.push_title else gettext("Neue Aufgabe"),
+                            "text": str(todo.due_date or ""),
+                        },
+                    )
                 except Exception:  # noqa: BLE001 - Kanalfehler dürfen Speichern nicht verhindern
                     logger.exception("Aufgabenhinweis konnte nicht zugestellt werden")

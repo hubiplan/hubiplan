@@ -1,6 +1,6 @@
 from django.utils.translation import gettext
 
-from .access import Scope, visible
+from .access import Scope, can_edit, visible
 
 
 def todo_tasks(user, org, perms, department_id=None):
@@ -20,7 +20,7 @@ def todo_tasks(user, org, perms, department_id=None):
             "ref": t.pk,
             "link": f"/aufgaben?aufgabe={t.pk}",
             "version": t.version,
-            "can_edit": t.owner_id == user.pk,
+            "can_edit": can_edit(t, user, scope),
         }
         for t in dated + undated
     ]

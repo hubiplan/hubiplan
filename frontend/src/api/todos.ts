@@ -1,5 +1,12 @@
 import { api } from './client.ts'
 
+export interface TodoShare {
+  user?: number | null
+  role?: number | null
+  level: 'view' | 'edit'
+  responsible: boolean
+}
+
 export interface Todo {
   id: number
   title: string
@@ -17,6 +24,9 @@ export interface Todo {
   deleted_at: string | null
   can_edit: boolean
   can_delete: boolean
+  can_share?: boolean
+  can_take_over?: boolean
+  shares?: TodoShare[]
 }
 
 export const todoBase = (org: number | null, department?: number | null) =>

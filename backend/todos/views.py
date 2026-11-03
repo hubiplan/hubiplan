@@ -68,7 +68,9 @@ def data_for(todo, user, scope):
         "can_delete": can_delete(todo, user, scope),
         "can_take_over": can_take_over(todo, user, scope),
         "can_share": todo.owner_id == user.pk and "todos.edit" in scope.permissions,
-        "shares": list(todo.shares.values("user", "role", "level", "responsible")) if todo.shared else [],
+        "shares": list(todo.shares.values("user", "role", "level", "responsible"))
+        if todo.shared
+        else [],
     }
 
 
@@ -129,7 +131,9 @@ class TodoDetailView(TodoScopeMixin, APIView):
         todo = get_object_or_404(
             visible(request.user, self.scope, deleted=deleted).select_for_update(), pk=pk
         )
-        taking_over = request.data.get("owner") == request.user.pk and can_take_over(todo, request.user, self.scope)
+        taking_over = request.data.get("owner") == request.user.pk and can_take_over(
+            todo, request.user, self.scope
+        )
         if not can_edit(todo, request.user, self.scope) and not taking_over:
             raise PermissionDenied()
         serializer = TodoInput(data=request.data)
@@ -141,7 +145,9 @@ class TodoDetailView(TodoScopeMixin, APIView):
                 status=409,
             )
         shares = values.pop("shares", None)
-        added = replace_shares(todo, request.user, self.scope, shares) if shares is not None else set()
+        added = (
+            replace_shares(todo, request.user, self.scope, shares) if shares is not None else set()
+        )
         if "owner" in values:
             transfer_owner(todo, request.user, self.scope, values.pop("owner"))
         if "deleted" in values:
@@ -175,16 +181,33 @@ class TodoChoicesView(TodoScopeMixin, APIView):
             raise PermissionDenied()
         from access.models import Role
 
-        return Response({
-            "users": [{"id": u.pk, "name": u.get_full_name() or u.email} for u in eligible_users(self.scope)],
-            "roles": [{"id": r.pk, "name": r.name} for r in Role.all_objects.filter(organization=self.org, department_id=self.scope.department_id)],
-        })
+        return Response(
+            {
+                "users": [
+                    {"id": u.pk, "name": u.get_full_name() or u.email}
+                    for u in eligible_users(self.scope)
+                ],
+                "roles": [
+                    {"id": r.pk, "name": r.name}
+                    for r in Role.all_objects.filter(
+                        organization=self.org, department_id=self.scope.department_id
+                    )
+                ],
+            }
+        )
 
 
 class PreferenceInput(serializers.ModelSerializer):
     class Meta:
         model = TodoPreference
-        fields = ["share_mail", "share_push", "reminder_mail", "reminder_push", "push_title", "purge_done"]
+        fields = [
+            "share_mail",
+            "share_push",
+            "reminder_mail",
+            "reminder_push",
+            "push_title",
+            "purge_done",
+        ]
 
 
 class TodoPreferencesView(APIView):

@@ -11,6 +11,7 @@ import { AppDevicesCard } from './AppDevicesCard.tsx'
 import { RemoteLoginCard } from './RemoteLoginCard.tsx'
 import { SignatureCard } from './SignatureCard.tsx'
 import { t } from '../../i18n/index.ts'
+import { TodoPreferences } from '../../components/TodoPreferences.tsx'
 
 // Mein Konto: persönliche Einstellungen, unabhängig von der gewählten Organisation.
 // Aufgeteilt in Unterpunkte (accountNav.ts), die in der Seitenleiste stehen.
@@ -24,6 +25,7 @@ export function AccountPage() {
         <NameSection />
         <LanguageCard />
         <LearningCard />
+        <TodoPreferences />
       </div>
     </section>
   )

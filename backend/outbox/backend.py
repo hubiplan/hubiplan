@@ -105,7 +105,9 @@ class OutboxBackend(BaseEmailBackend):
                     to=", ".join([*message.to, *message.cc, *message.bcc]),
                     reply_to=", ".join(message.reply_to or []),
                     subject="Aufgabenbenachrichtigung" if private_task else message.subject[:300],
-                    body="Inhalt nur an das empfangende Konto versandt." if private_task else redact(body),
+                    body="Inhalt nur an das empfangende Konto versandt."
+                    if private_task
+                    else redact(body),
                     attachments=getattr(message, "outbox_attachments", None)
                     or _store_attachments(message, org_pk),
                     kind=kind[:50],

@@ -136,3 +136,19 @@ class TodoPreference(models.Model):
 
     def __str__(self):
         return str(self.user_id)
+
+
+class TodoNotice(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    todo = models.ForeignKey(Todo, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    revision = models.PositiveIntegerField()
+    claimed_at = models.DateTimeField(default=django_timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["todo", "user", "revision"], name="todo_notice_once")
+        ]
+
+    def __str__(self):
+        return f"{self.todo_id}: {self.user_id} ({self.revision})"

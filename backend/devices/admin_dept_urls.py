@@ -21,6 +21,7 @@ def _p(route: str, view, name: str, read_only: bool = False):
 
 
 urlpatterns = [
+    path("todos/choices/", for_app(todo_views.TodoChoicesView).as_view()),
     path("todos/", for_app(todo_views.TodoListView).as_view()),
     path("todos/<int:pk>/", for_app(todo_views.TodoDetailView).as_view()),
     _p("", portal_views.DepartmentInfoView, "info", read_only=True),
