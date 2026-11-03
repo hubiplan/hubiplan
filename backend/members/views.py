@@ -224,15 +224,19 @@ def _persons_by_email(qs, words: list[str]) -> dict[str, set[int]]:
 def filter_members(qs, params, org: Organization):
     search = (params.get("suche") or "").strip()
     if search:
-        words = list(dict.fromkeys(word.lower() for word in search.split()))
-        email_matches = _persons_by_email(qs, words)
+        words = {}
+        for word in search.split():
+            # Originalschreibweise für PostgreSQL erhalten (Unicode-Kollation);
+            # nur der entschlüsselte E-Mail-Vergleich normalisiert in Python.
+            words.setdefault(word.lower(), word)
+        email_matches = _persons_by_email(qs, list(words))
         q = Q()
-        for word in words:
+        for normalized, word in words.items():
             word_q = (
                 Q(person__last_name__icontains=word)
                 | Q(person__first_name__icontains=word)
                 | Q(club_number__iexact=word)
-                | Q(person_id__in=email_matches[word])
+                | Q(person_id__in=email_matches[normalized])
             )
             if word.isdigit():
                 word_q |= Q(person__federation__member_number=int(word))

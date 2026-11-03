@@ -43,6 +43,15 @@ def test_search_decrypts_visible_emails_once_for_all_words():
         assert not filter_members(member_queryset(org), {"suche": "fremd"}, org).exists()
 
 
+@pytest.mark.django_db
+def test_name_search_preserves_postgres_unicode_case_semantics():
+    org = make_org("Unicode Suchverein")
+    member = make_member(org, "İpek", "Muster", email="ipek@example.invalid")
+    with as_app_role(), tenant_context(org.pk):
+        found = filter_members(member_queryset(org), {"suche": "İpek İPEK"}, org)
+        assert list(found.values_list("pk", flat=True)) == [member.pk]
+
+
 def test_warmup_closes_failing_iterable_and_main_thread_connections():
     spec = importlib.util.spec_from_file_location(
         "test_gunicorn_warmup", Path(__file__).parents[1] / "gunicorn.conf.py"

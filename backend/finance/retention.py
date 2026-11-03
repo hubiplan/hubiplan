@@ -52,12 +52,14 @@ def state(org, closing) -> dict:
 
     today = _today()
     docs_from, records_from = due_dates(org, closing.year)
-    start, end = org.fiscal_range(closing.year)
-    pending_originals = (
-        BankStatement.objects.filter(organization=org, date_to__gte=start, date_to__lte=end)
-        .exclude(source="")
-        .exists()
-    )
+    pending_originals = False
+    if closing.documents_purged_at is not None and today >= docs_from:
+        start, end = org.fiscal_range(closing.year)
+        pending_originals = (
+            BankStatement.objects.filter(organization=org, date_to__gte=start, date_to__lte=end)
+            .exclude(source="")
+            .exists()
+        )
     return {
         "documents_from": docs_from,
         "records_from": records_from,
