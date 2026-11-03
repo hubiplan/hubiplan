@@ -507,8 +507,13 @@ der `.env` und einmal ausrollen. Nötig sind systemd, `git` und `ssh-keygen` auf
   - genug Platz zum Bauen da ist und keine Sperre (`/opt/hubiplan.sperre`) besteht.
 
   Dann sichert er die Datenbank über den Backup-Dienst und rollt aus wie `deploy.sh`
-  (`server-setup.sh` mit automatischem Rückweg). Ergebnis in `ergebnis` (in HUBIplan sichtbar),
-  Ausgaben in `ausrollen.log` und `sicherung.log`, eine Zeile im Rollout-Protokoll.
+  (`server-setup.sh` mit automatischem Rückweg). Meldet die Sicherung „unvollständig“ (Dateien
+  oder Schlüsselkopie fehlen), rollt er nicht aus. Ergebnis in `ergebnis` (in HUBIplan
+  sichtbar), Ausgaben in `ausrollen.log` und `sicherung.log` im Ordner
+  `/opt/hubiplan-aktualisierung.root` (nur root), eine Zeile im Rollout-Protokoll. Im
+  Auftragsordner, der dem Backend gehört, schreibt der Aktualisierer keine Datei direkt; er
+  legt das Ergebnis nur per Umbenennen hinein. Der root-Ordner muss auf demselben
+  Dateisystem liegen wie der Auftragsordner.
 - Ausschalten: `HUBIPLAN_SELBSTUPDATE=0` und einmal ausrollen; `server-setup.sh` schaltet den
   Timer dann ab.
 

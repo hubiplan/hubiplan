@@ -194,7 +194,7 @@ function DeptMemberList({ dept }: { dept: DeptSummary }) {
   const pages = data ? Math.max(1, Math.ceil(data.count / 50)) : 1
   return (
     <div className="card card-wide">
-      {dept.permissions.includes(DEPT_PERM.cardsManage) && (
+      {dept.permissions.includes(DEPT_PERM.cardsView) && (
         <div className="button-row">
           <a
             className="button button-ghost push-right"
@@ -341,10 +341,11 @@ function DeptMemberPage({ dept }: { dept: DeptSummary }) {
           }}
         />
       )}
-      {dept.permissions.includes(DEPT_PERM.cardsManage) && (
+      {dept.permissions.includes(DEPT_PERM.cardsView) && (
         <CardPanel
           base={cardBase.dept(dept.id, id)}
           pdfUrl={cardApi.deptPdfUrl(dept.id, { mitglied: id })}
+          canEdit={dept.permissions.includes(DEPT_PERM.cardsManage)}
         />
       )}
     </div>

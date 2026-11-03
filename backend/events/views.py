@@ -932,8 +932,10 @@ class _ExternalCalendars(_ExternalMixin, APIView):
             cal = data.apply(ExternalCalendar(organization=self.viewer.org))
             cal.save()
             self.audit("create", cal, diff({}, snapshot(cal)))
-        external.sync(cal)
-        cal.refresh_from_db()
+        # Ausgeschaltet angelegt: nichts abrufen (Audit 03.11. GA-F10)
+        if cal.is_active:
+            external.sync(cal)
+            cal.refresh_from_db()
         return Response(external_data(cal), status=201)
 
 

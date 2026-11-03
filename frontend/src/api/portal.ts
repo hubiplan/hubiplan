@@ -147,6 +147,7 @@ export const DEPT_PERM = {
   loginsView: 'logins.view',
   invoicesView: 'dept.invoices.view',
   cardsManage: 'dept.cards.manage',
+  cardsView: 'cards.view',
   export: 'dept.export',
   eventsManage: 'dept.events.manage',
   docsManage: 'dept.docs.manage',

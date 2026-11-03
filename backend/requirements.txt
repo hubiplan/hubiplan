@@ -12,6 +12,8 @@ whitenoise==6.12.0
 pillow==13.0.0
 python-dateutil==3.0.0
 openpyxl==3.1.5
+# Kontoauszüge (CAMT) sicher einlesen: keine DTD/Entitäten
+defusedxml==0.7.1
 reportlab==5.1.0
 pypdfium2==5.14.0
 # Schießscheiben-Fotoerkennung (ohne Oberflächenbibliotheken)

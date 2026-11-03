@@ -205,7 +205,7 @@ export function MemberListPage() {
             {t('Export')}
           </button>
         )}
-        {org.permissions.includes(PERM.cardsManage) && (
+        {org.permissions.includes(PERM.cardsView) && (
           <a
             className="button button-ghost"
             href={cardApi.orgPdfUrl(org.id, {

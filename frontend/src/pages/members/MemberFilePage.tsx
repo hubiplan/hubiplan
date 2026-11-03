@@ -144,11 +144,12 @@ export function MemberFilePage() {
               canManage={canEdit && org.permissions.includes(PERM.loginsEdit)}
             />
           )}
-          {org.permissions.includes(PERM.cardsManage) && (
+          {org.permissions.includes(PERM.cardsView) && (
             <CardPanel
               key={`ausweis-${data.id}`}
               base={cardBase.org(org.id, data.id)}
               pdfUrl={cardApi.orgPdfUrl(org.id, { mitglied: data.id })}
+              canEdit={org.permissions.includes(PERM.cardsManage)}
             />
           )}
         </div>
