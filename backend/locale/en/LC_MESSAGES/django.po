@@ -4985,9 +4985,6 @@ msgstr "Task notification"
 msgid "Inhalt nur an das empfangende Konto versandt."
 msgstr "Content sent only to the recipient's account."
 
-msgid "Versand fehlgeschlagen"
-msgstr "Delivery failed"
-
 msgid "Ungültige Zeitzone."
 msgstr "Invalid time zone."
 
