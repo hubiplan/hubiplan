@@ -127,7 +127,7 @@ Auch die Kontaktkopien auf Rechnungen (Empfängeranschrift und E-Mail) und in
 Rundschreiben-Empfängern (Anschrift, E-Mail und gespeicherte Platzhalterwerte) werden
 verschlüsselt. Historische Versand- und Rechnungsstände bleiben dabei erhalten.
 Es gilt der Schlüssel der ausstellenden bzw. versendenden Organisation, auch wenn
-der Empfänger einem anderen Verein angehört. Die Namensfelder bleiben lesbar.
+der Empfänger einem anderen Verein angehört. Auch ihre Namenskopien werden verschlüsselt.
 
 **Umfang und Grenzen:** Vor- und Nachnamen der Mitglieder (`Person`) werden mit dem
 Schlüssel ihres Verbandsbereichs verschlüsselt. Die Klartextlänge bleibt auf 100 Zeichen
@@ -259,11 +259,68 @@ Annotationen und Standardsortierungen. Sie verwendet die interne Django-Compiler
 die Regressionstests dafür sind bei Django-Updates mitzuprüfen. Frei geschriebenes
 SQL ist von dieser ORM-Sperre nicht erfasst.
 
-Weitere Klartextkopien von Namen gibt es unter anderem
-bei Rundschreiben-Empfängern (`circulars.CircularRecipient`), Rechnungen (`billing.Invoice`),
-Wettbewerbsstartern (`competitions.Starter`), Meldungen (`entries.EntryPerson`) und
-Würden/Begleitungen (`honors.Reign`, `honors.Companion`). Auch Benutzerkonten
-(`accounts`) enthalten Namen und E-Mail-Adressen.
+**Namenskopien:** Der Bestandsumfang ist in `core/namecopies.py` festgehalten:
+34 Felder in 23 konkreten Modellen. Der Schlüssel gehört jeweils der speichernden
+Organisation (bei Untereinheiten ihrem Verein), nicht automatisch dem Verbandsbereich
+der referenzierten Person. Rechnungs-, Versand- und historische Stände bleiben erhalten;
+eine Änderung der Person verändert diese Kopien nicht rückwirkend.
+
+| Bereich | Verschlüsselte Kopien |
+| --- | --- |
+| Rollen | `RoleAssignment.name`, auch bei früheren Inhabern ohne Akte; Untereinheiten-Inhaber nutzen dieselbe Tabelle |
+| Rechnungen | `Invoice.recipient_name`, `InvoiceLine.text` und `detail` (enthalten Namen in Sammelrechnungen) |
+| Rundschreiben | `CircularRecipient.first_name` und `last_name`; Absender-Schlüssel wie bei den Kontaktkopien |
+| Wettbewerbe | `Starter.name`, `ShootOffEntry.name`, `Prize.winner_name`, `Shot.name`, `AwardGrant.name`; vollständige `CertificateTemplate.signers`-Liste |
+| Meldungen und Chronik | `EntryPerson.name`, `Reign.name`, `Companion.name`, auch freie Gast-/Historiennamen |
+| Kasse und Kontoauszüge | `Booking.counterparty` und automatisch erzeugte Namen in `text`; `BankLine.name` und vollständige `details` einer Sammelbuchung; `CashReceipt.counterparty_name`, `treasurer_name` |
+| Zuwendungen | `Donation.donor_name`; `DonationStatement.donor_name`, `signer_name` und vollständiger `items`-Stand |
+| Finanznachweise | `YearClosing.purged_by_name`, `retention_hold_by_name`; `ReopenedClosing.closed_by_name`, `reopened_by_name`; `CashCount.counted_by`, `witness`; `ReserveMovement.created_by_name` |
+| Zurückgehaltene Kontaktformulare | `HeldMessage.recipient_name`, `sender_name` |
+
+Nichtleere Texte liegen als Chiffrat in `text`-Spalten. Die drei JSON-Snapshots
+(`signers`, `items`, `details`) bleiben `jsonb` und erhalten die vorhandene
+`{"enc1": "…"}`-Hülle. Erlaubte leere Werte bleiben leer. Beschädigte Kopien lösen
+beim Lesen Fehler aus. Suche, Namensreihenfolge und Empfänger/Zahler-Vorschläge werten
+entschlüsselte Daten aus, nach Berechtigungs-/Fachfiltern und vor Seitenschnitt oder
+Trefferlimit. Die Listensuche übernimmt dieselbe Unicode-/Großschreibungsregel wie
+die Mitgliederliste (`ß`/`ss` gleich); der strenge Personenabgleich bleibt unverändert.
+Sammellöschungen bereiten konstante Ersatzwerte je Organisation verschlüsselt vor;
+Filter, Aufbewahrungsregeln und unveränderte Finanzbeträge bleiben erhalten.
+
+**Bestand ab den Namenskopien-Migrationen** (`access.0017`, `billing.0013`, `circulars.0015`,
+`competitions.0017`, `entries.0005`, `finance.0023`, `honors.0007`, `website.0034`):
+Die Schemaänderungen allein verschlüsseln keine Altbestände. Nach Backup und Ausrollen
+Schreiber anhalten; mit der neuen Fassung den abgegrenzten Bestandslauf und seine
+vollständige Lesbarkeitsprüfung ausführen. Erst bei Erfolg Dienste starten:
+
+```bash
+docker compose -f docker-compose.server.yml stop backend worker beat backup
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py namenskopien_verschluesseln
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py namenskopien_verschluesseln --pruefen
+docker compose -f docker-compose.server.yml up -d backend worker beat backup
+```
+
+`--probe` zählt nur Kandidaten. Der Bestandslauf ist wiederholbar, erhält Zeitstempel
+und schreibt keine neuen Fachänderungen ins Protokoll. Die Personennamen/Suchmarken
+aus den vorherigen Ausbaustufen bleiben unverändert; deren Bestandslauf bei Bedarf
+zusätzlich durchführen. Proxy-Modelle werden nicht ein zweites Mal verarbeitet.
+Der gemeinsame Daten-Rückweg erkennt anhand der Zielfassung genau diese neu hinzugekommenen
+Felder und öffnet bei einem Rückweg auf die vorherige Fassung nur diese Kopien.
+Personennamen, Geburtsdaten und bisherige Kontakt-/Protokollverschlüsselung bleiben
+geschützt. Rückmigrationen sperren verbliebenes Chiffrat und überlange Klartexte,
+bevor Spalten wieder auf `varchar` verkleinert werden; auch die JSON-Hüllen müssen
+zuvor gezielt geöffnet sein.
+
+**Verbleibende Klartextbereiche:** Benutzerkonten (`accounts`: Namen/E-Mail, für Anmeldung
+und Kontoverwaltung), öffentliches Impressum/Datenschutzhinweise und öffentliche
+Ansprechpartner-Konfigurationen sind nicht Teil dieses Bestandslaufs. Ebenso bleiben
+allgemeine Freitexte, Titel, Notizen, Mail-Empfänger/-Betreff, Dateinamen und nicht
+hier genannte Import-/Verbund-Zwischenstände separat zu bewerten. Auch Finanzanschriften,
+E-Mail-Felder und Zahlungszwecke außerhalb der genannten Snapshots werden dadurch
+nicht pauschal verschlüsselt. Bilder/Unterschriften sowie öffentliche Veröffentlichungen
+haben ihren eigenen Umfang; freigegebene Namen bleiben auf Webseiten und in Exporten
+sichtbar. Diese Inventur beschränkt sich bewusst auf strukturierte Namenskopien und
+die belegten automatisch erzeugten Namens-Snapshots, nicht auf jede mögliche freie Eingabe.
 
 Bei einem Diebstahl der Datenbank ohne Schlüssel schützt die Verschlüsselung die
 verschlüsselten Inhalte. Die lesbaren Kopien und Beziehungen können Personen

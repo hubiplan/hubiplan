@@ -24,6 +24,7 @@ from core.encfields import EncryptedJSONField, update_encrypted
 from core.management.commands.daten_verschluesseln import encrypted_fields
 from core.namecopies import FIELDS
 from core.tenancy import rls_bypass
+from finance.models import YearClosing
 from members.personsearch import name_ids, ordered
 
 from .factories import make_member
@@ -179,6 +180,38 @@ def test_versandstand_bleibt_erhalten_und_gehoert_dem_absender(orgs):
         template.refresh_from_db()
         assert template.signers == SNAPSHOT
         run("--pruefen")
+
+
+@pytest.mark.django_db
+def test_leere_datenbankdefaults_werden_nicht_als_namen_verschluesselt(orgs):
+    with rls_bypass():
+        row = YearClosing.objects.create(organization=orgs["c"], year=2020)
+        row.refresh_from_db()
+        assert row.purged_by_name == row.retention_hold_by_name == ""
+        assert raw(row, "purged_by_name") == raw(row, "retention_hold_by_name") == ""
+        run("--pruefen")
+
+
+@pytest.mark.django_db
+def test_beschaedigter_json_namensstand_wird_nicht_als_leerwert_gelesen(orgs):
+    with rls_bypass():
+        template = CertificateTemplate.objects.create(
+            organization=orgs["a"], name="Urkunde", signers=SNAPSHOT
+        )
+        stored = raw(template, "signers")
+        stored = json.loads(stored) if isinstance(stored, str) else stored
+        blob = bytearray(base64.b64decode(stored["enc1"][5:]))
+        blob[-1] ^= 1
+        stored["enc1"] = "enc1:" + base64.b64encode(blob).decode()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE competitions_certificatetemplate SET signers = %s::jsonb WHERE id = %s",
+                [json.dumps(stored), template.pk],
+            )
+        with pytest.raises(crypto.DecryptionError):
+            CertificateTemplate.objects.get(pk=template.pk)
+        with pytest.raises(CommandError):
+            run("--pruefen")
 
 
 @pytest.mark.django_db

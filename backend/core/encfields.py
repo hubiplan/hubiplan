@@ -26,6 +26,7 @@ from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.core.exceptions import FieldError
 from django.db import models, transaction
+from django.db.models.expressions import DatabaseDefault
 from django.utils.translation import gettext
 
 from . import crypto
@@ -142,6 +143,10 @@ class EncryptedMixin:
 
     def pre_save(self, model_instance, add):
         value = getattr(model_instance, self.attname)
+        if isinstance(value, DatabaseDefault):
+            if self._stays_plain(self.db_default):
+                return value
+            raise FieldError("Verschlüsselte Felder erlauben nur leere Datenbank-Standardwerte.")
         # Strenge Identitätsfelder erhalten stets Klartexteingaben. Ein vom Nutzer
         # eingegebener Name mit „enc1:“ darf kein gespeichertes Chiffrat einschleusen.
         if self._stays_plain(value) or (is_encrypted(value) and not self.strict):
