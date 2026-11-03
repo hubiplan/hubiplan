@@ -46,11 +46,25 @@ def _mark(raw_key, scope_id, purpose, name, date):
     return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
 
 
-def values(person, *, using="default"):
+def values(person, *, using="default", create_key=True):
     birth = person._meta.get_field("birth_date").to_python(person.birth_date)
     if birth is None:
         raise ValueError("Geburtsdatum nicht lesbar; Suchmarken nicht berechnet.")
-    key_id, raw_key = crypto.key_for_org(person.scope_id)
+    if create_key:
+        key_id, raw_key = crypto.key_for_org(person.scope_id)
+    else:
+        from core.models import DataKey
+
+        key_id = (
+            DataKey.objects.filter(
+                organization_id=crypto.key_owner_id(person.scope_id),
+            )
+            .values_list("pk", flat=True)
+            .first()
+        )
+        if key_id is None:
+            raise ValueError("Datenschlüssel fehlt; Suchmarken nicht geprüft.")
+        raw_key = crypto.key_by_id(key_id)
     last, first = names(person.last_name, person.first_name, using=using)
     day = birth.isoformat()
     year = str(birth.year)

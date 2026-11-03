@@ -33,7 +33,7 @@ class Command(BaseCommand):
                             continue
                         checked += 1
                         try:
-                            expected = values(person)
+                            expected = values(person, create_key=not pruefen)
                         except ValueError:
                             broken += 1
                             continue

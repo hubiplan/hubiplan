@@ -267,12 +267,12 @@ class TestPersonMarks:
             original = personmarks.values
             calls = 0
 
-            def interrupted(p):
+            def interrupted(p, **kwargs):
                 nonlocal calls
                 calls += 1
                 if calls == 2:
                     raise RuntimeError("Testabbruch")
-                return original(p)
+                return original(p, **kwargs)
 
             with patch("members.management.commands.personen_suchmarken.values", interrupted):
                 with pytest.raises(RuntimeError, match="Testabbruch"):
@@ -317,6 +317,25 @@ class TestPersonMarks:
                 )
             with pytest.raises(CommandError):
                 run()
+
+    def test_pruefen_legt_keinen_fehlenden_datenschluessel_an(self, orgs):
+        from core.models import DataKey
+
+        with rls_bypass():
+            a = person(orgs["c"])
+            # Unverschlüsselter Altbestand ohne Datenschlüssel: Prüfung muss lesend bleiben.
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE members_person SET birth_date = %s WHERE id = %s",
+                    [BIRTH.isoformat(), a.pk],
+                )
+            DataKey.objects.filter(organization=orgs["c"]).delete()
+            crypto.reset()
+            with pytest.raises(CommandError):
+                run("--pruefen")
+            assert not DataKey.objects.filter(organization=orgs["c"]).exists()
+            run()
+            run("--pruefen")
 
     def test_namensentfernung_loescht_alte_marken(self, orgs):
         m = make_member(orgs["c"], "Erika", "Muster", birth_date=BIRTH)
@@ -377,8 +396,8 @@ def test_backfill_sperrt_gegen_gleichzeitige_identitaetsaenderung(orgs):
     locked, resume = Event(), Event()
     original = personmarks.values
 
-    def pause(p):
-        result = original(p)
+    def pause(p, **kwargs):
+        result = original(p, **kwargs)
         locked.set()
         assert resume.wait(10), "Test: Bestandslauf nicht freigegeben"
         return result
