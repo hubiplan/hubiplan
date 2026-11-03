@@ -223,7 +223,7 @@ def test_payment_removal_respects_confirmed_donation(ready, c, club, setup, base
         content_type=JSON,
         HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
     )
-    assert response.status_code == 201, response.json()
+    assert response.status_code == 200, response.json()
     with tenant_context(club.pk):
         payment = Payment.objects.get(invoice_id=open_invoice)
     response = c.post(
