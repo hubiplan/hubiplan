@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from django.core.exceptions import FieldError
 from django.db import connection
-from django.db.models import Case, F, IntegerField, Subquery, Value, When
+from django.db.models import Case, Count, F, IntegerField, Subquery, Value, When
 from django.db.models.functions import Lower
 from django.test.utils import CaptureQueriesContext
 
@@ -180,6 +180,12 @@ def test_pagination_stabil_und_objekte_nur_fuer_seite(orgs):
 def test_sql_sortierung_verschluesselter_felder_scheitert(query):
     with pytest.raises(FieldError, match="verschlüsselt"):
         str(query().query)
+
+
+def test_sortierung_nach_normalen_aggregaten_bleibt_moeglich():
+    # Das Sternchen in COUNT(*) hat selbst keinen output_field.
+    query = Person.objects.annotate(total=Count("*")).order_by("total")
+    assert "COUNT(*)" in str(query.query)
 
 
 def test_implizite_sortierung_und_python_sortierung(orgs, monkeypatch):

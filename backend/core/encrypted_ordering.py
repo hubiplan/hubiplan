@@ -19,8 +19,9 @@ def _encrypted_column(expression):
         return expression.target
     # Insbesondere skalare Unterabfragen tragen das Feld am Ergebnis, während
     # ihr inneres Query keine gewöhnliche Col-Quelle dieses Ausdrucks ist.
-    if isinstance(getattr(expression, "output_field", None), EncryptedMixin):
-        return expression.output_field
+    field = getattr(expression, "_output_field_or_none", None)
+    if isinstance(field, EncryptedMixin):
+        return field
     for child in expression.get_source_expressions():
         if child is not None and (field := _encrypted_column(child)) is not None:
             return field
