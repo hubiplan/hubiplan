@@ -141,6 +141,7 @@ public_patterns = [
         social_views.CallbackView.as_view(),
         name="website-social-callback",
     ),
+    path("public/site/v1/instance/", public_views.InstanceView.as_view(), name="site-instance"),
     path("public/site/v1/resolve/", public_views.ResolveView.as_view(), name="site-resolve"),
     path(SITE, public_views.SiteInfoView.as_view(), name="site-info"),
     path(f"{SITE}preview/", public_views.PreviewView.as_view(), name="site-preview"),

@@ -3,6 +3,8 @@
 HUBIplan wird laufend aus `main` weiterentwickelt. Ein **Release** ist ein geprüfter,
 benannter Stand von `main` mit Versionsnummer, Git-Tag und Änderungshinweisen auf Deutsch
 und Englisch. Für die Webseite (`hubiplan-website`) gilt dasselbe mit eigener Zählung.
+Wie HUBIplan, Webseite und App zusammenpassen (Schnittstellen, `features`, Mindestversionen):
+[versionen.md](versionen.md).
 
 ## Versionsnummern
 
@@ -61,10 +63,38 @@ Wann ein Release kommt, entscheidet der Betreuer. Ablauf im Klon (in WSL):
 
    Danach zeigt es die Release-Notizen und legt nach Rückfrage mit `gh release create`
    den Tag `v2026.11.0` und das GitHub-Release an (`GH=` für einen anderen Pfad zu `gh`).
-7. `git fetch origin --tags`, dann `deploy/deploy.sh v2026.11.0` auf den Echtserver.
+7. Auf den Echtserver mit `deploy/release-ausrollen.sh` (nächster Abschnitt).
 
 Für die Webseite dieselben Schritte im Klon von `hubiplan-website` mit
 `~/hubiplan/scripts/release.sh`.
+
+## Ein Release ausrollen
+
+`deploy/release-ausrollen.sh <ziel> <tag> [--webseite <tag>]` rollt HUBIplan und danach auf
+Wunsch die Webseite aus, beide als Release-Tag. Für Dogado aus PowerShell (vorher im
+Windows-Checkout `git fetch --tags`, für die Webseite auch in deren Checkout):
+
+```
+wsl -d Debian -- bash -lc 'cd ~/hubiplan && deploy/release-ausrollen.sh dogado v2026.11.1 --webseite v2026.11.1'
+```
+
+Das Ziel steht nur lokal in `~/.config/hubiplan/ziele/<name>` (Zeilen `SSH=…`,
+`DEPLOY_HOST=…`, `DEPLOY_SUDO=1`, `DEPLOY_KEY=…`); `testserver` geht auch ohne Datei. Das Skript
+
+- holt die Tags, prüft die Form `vJJJJ.MM.N` und liest per SSH, welcher Stand läuft
+  (`/opt/hubiplan/.fassung`, `/opt/hubiplan-website/.fassung`),
+- bricht ab, wenn der Tag den laufenden Stand nicht enthält (Rückschritt; zurück nur mit
+  `deploy/zurueck.sh`), und überspringt, was schon läuft,
+- prüft erst beide Programme, bevor es etwas ausrollt,
+- fragt nach, wenn seit dem laufenden Stand im Changelog „Kein Rückweg“ steht, und lässt
+  dann vor HUBIplan den Backup-Dienst eine zusätzliche Sicherung anlegen (ohne Terminal nur
+  mit `RELEASE_OHNE_RUECKWEG=ja`),
+- rollt aus einem eigenen Worktree unter `RELEASE_TMP` (Standard `/mnt/e/temp/hubiplan-release`)
+  mit dem `deploy.sh` des Tags aus; `~/hubiplan` bleibt, wie es ist,
+- prüft danach, dass `/opt/…/.version` die Release-Nummer zeigt.
+
+Ob ein Stand lokal getestet ist und die Sperre gegen gleichzeitige Läufe prüft weiter
+`deploy.sh`. Ungetaggte, getestete Stände rollt man wie bisher mit `deploy/deploy.sh <sha>` aus.
 
 ## Migrationen und Rückweg
 

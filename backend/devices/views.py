@@ -25,6 +25,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.language import MyLanguageView
+from core.features import app_features
 from core.i18n import available, user_language
 from core.ratelimit import client_ip, too_many
 from core.tenancy import set_rls
@@ -144,6 +145,8 @@ class InstanceView(APIView):
                 # Programmversion nur zur Anzeige; Funktionen richten sich nach api_version
                 "version": running_version(),
                 "api_version": API_VERSION,
+                # Was diese Instanz kann (core/features.py, docs/versionen.md)
+                "features": app_features(),
                 "min_app_version": MIN_APP_VERSION,
                 "url": settings.FRONTEND_URL,
                 # Push-Wege der Instanz; Abruf geht immer

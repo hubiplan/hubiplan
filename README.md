@@ -337,6 +337,7 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/echtbetrieb.md](docs/echtbetrieb.md) | Betrieb hinter einem vorhandenen Webserver (HestiaCP) |
 | [docs/testserver.md](docs/testserver.md) | Testserver, Testplätze, Demodaten |
 | [docs/releases.md](docs/releases.md) | Versionen, Releases, Changelog, Rollout-Protokoll |
+| [docs/versionen.md](docs/versionen.md) | Schnittstellen, `features`, Verträglichkeit von Webseite und App |
 | [docs/sicherheitspruefung.md](docs/sicherheitspruefung.md) | Sicherheitsprüfung |
 | [docs/ansicht-als-rolle.md](docs/ansicht-als-rolle.md) | Ansicht als Rolle |
 | [docs/konzept-verschluesselung-stufe2.md](docs/konzept-verschluesselung-stufe2.md) | Konzept: Verschlüsselung Stufe 2 (auch Namen) |
