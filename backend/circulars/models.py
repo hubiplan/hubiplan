@@ -25,6 +25,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy
 
+from core.encfields import EncryptedEmailField, EncryptedJSONField, EncryptedTextField
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
 
@@ -187,10 +188,10 @@ class CircularRecipient(models.Model):
     )
     first_name = models.CharField("Vorname", max_length=100, blank=True)
     last_name = models.CharField("Name", max_length=100, blank=True)
-    email = models.EmailField("E-Mail", blank=True)
-    address = models.TextField("Anschrift", blank=True)
+    email = EncryptedEmailField("E-Mail", blank=True)
+    address = EncryptedTextField("Anschrift", blank=True)
     # Werte der Platzhalter beim Versand
-    values = models.JSONField(default=dict, blank=True)
+    values = EncryptedJSONField(default=dict, blank=True)
     channel = models.CharField(max_length=10, choices=Channel.choices)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     error = models.CharField(max_length=300, blank=True)
