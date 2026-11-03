@@ -15,6 +15,16 @@ import type {
 } from '../../api/competitions.ts'
 import { errorMessage } from '../../components/forms.ts'
 import { t, tn } from '../../i18n/index.ts'
+import {
+  isStandNetworkError,
+  loadStandCache,
+  rememberStandPending,
+  revokeStandCache,
+  saveStandCache,
+  standCacheAllowed,
+  standRevision,
+  subscribeStandCache,
+} from '../../api/standCache.ts'
 
 export type LocalStarter = Starter & { key?: string | null }
 
@@ -35,24 +45,7 @@ export interface Local {
   standings?: Pick<Standings, 'scorings' | 'open_shootoffs'>
 }
 
-const storageKey = (key: string) => `hubiplan.stand.${key}`
-
-function loadLocal(key: string): Local | null {
-  try {
-    const raw = localStorage.getItem(storageKey(key))
-    return raw ? (JSON.parse(raw) as Local) : null
-  } catch {
-    return null
-  }
-}
-
-function saveLocal(key: string, data: Local) {
-  try {
-    localStorage.setItem(storageKey(key), JSON.stringify(data))
-  } catch {
-    // Speicher voll oder gesperrt: dann bleibt es bei der Warteschlange im Speicher
-  }
-}
+const emptyLocal = (): Local => ({ starters: [], members: [], ops: [], recent: [], savedAt: null })
 
 export function mergePending(server: Starter[], l: Local): LocalStarter[] {
   // Noch nicht abgeglichene Starter und Eingaben des Geräts über den Stand des Servers legen
@@ -101,21 +94,51 @@ export function useStandStore(
   refresh = false,
 ) {
   const [local, setLocal] = useState<Local>(
-    () => loadLocal(api.key) ?? { starters: [], members: [], ops: [], recent: [], savedAt: null },
+    () => loadStandCache<Local>(api.key, 'local') ?? emptyLocal(),
   )
   const [online, setOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine)
   const [syncError, setSyncError] = useState<string | null>(null)
+  const [storageFailed, setStorageFailed] = useState(false)
   const localRef = useRef(local)
   const syncing = useRef(false)
   const pushed = useRef(0)
   const conflictsRef = useRef(onConflicts)
+  const lifetime = useRef(standRevision())
+  const alive = useRef(true)
+  const valid = () => alive.current && lifetime.current === standRevision()
+  useEffect(() => {
+    alive.current = true
+    const off = subscribeStandCache(() => {
+      if (lifetime.current === standRevision()) return
+      const pending = localRef.current.ops.length
+      localRef.current = emptyLocal()
+      setLocal(emptyLocal())
+      setSyncError(
+        t(
+          'Der Standzugang wurde beendet. {n} nicht übertragene Eingaben wurden entfernt. Bitte erneut verbinden.',
+          { n: pending },
+        ),
+      )
+    })
+    return () => {
+      alive.current = false
+      rememberStandPending(api.key, 0)
+      off()
+    }
+  }, [])
   useEffect(() => {
     conflictsRef.current = onConflicts
   })
 
   useEffect(() => {
     localRef.current = local
-    saveLocal(api.key, local)
+    rememberStandPending(api.key, valid() ? local.ops.length : 0)
+    if (valid() && local.ops.length && !saveStandCache(api.key, 'local', local, lifetime.current)) {
+      setStorageFailed(true)
+    } else if (valid()) {
+      saveStandCache(api.key, 'local', local, lifetime.current)
+      setStorageFailed(false)
+    }
   }, [api.key, local])
 
   function apply(res: SyncResult, sent: number) {
@@ -143,6 +166,7 @@ export function useStandStore(
   }
 
   async function sync(force = false) {
+    if (!valid()) return
     const ops = localRef.current.ops
     if (syncing.current || (ops.length === 0 && !force)) return
     syncing.current = true
@@ -150,6 +174,7 @@ export function useStandStore(
     try {
       const known = localRef.current.generation
       const res = await api.sync(ops, known)
+      if (!valid()) return
       if (known !== undefined && res.generation !== undefined && res.generation !== known) {
         apply(res, ops.length)
         setOnline(true)
@@ -174,7 +199,8 @@ export function useStandStore(
       setSyncError(failed.length ? t('Nicht übernommen: {x}', { x: failed.join('; ') }) : null)
       if (res.conflicts.length) conflictsRef.current?.(res.conflicts)
     } catch (err) {
-      setOnline(false)
+      if (!valid()) return
+      setOnline(!isStandNetworkError(err))
       setSyncError(
         errorMessage(err) === 'Der Server ist nicht erreichbar.' ? null : errorMessage(err),
       )
@@ -190,12 +216,17 @@ export function useStandStore(
     let stop = false
     async function load() {
       try {
+        await api.get()
+        if (stop || !valid()) return
         const [starters, members] = await Promise.all([api.starters(), api.members()])
-        if (stop) return
+        if (stop || !valid()) return
         setLocal((l) => ({ ...l, starters: mergePending(starters, l), members }))
         setOnline(true)
-      } catch {
-        if (!stop) setOnline(false)
+      } catch (err) {
+        if (!stop && valid()) {
+          setOnline(!isStandNetworkError(err))
+          if (!isStandNetworkError(err)) setSyncError(errorMessage(err))
+        }
       }
     }
     void load().then(() => sync(refresh))
@@ -219,6 +250,10 @@ export function useStandStore(
 
   /** Eingabe auf dem Gerät übernehmen und gleich abgleichen. */
   function push(op: SyncOp | null, change: (l: Local) => Local = (l) => l) {
+    if (!valid() || !standCacheAllowed(api.key)) {
+      revokeStandCache(api.key)
+      return
+    }
     if (op) pushed.current += 1
     setLocal((l) => {
       const next = change(op ? { ...l, ops: [...l.ops, op] } : l)
@@ -239,7 +274,12 @@ export function useStandStore(
       : tn('{n} Eingabe wartet auf Empfang', '{n} Eingaben warten auf Empfang', pending)
     : t('Alles gespeichert')
 
-  return { local, setLocal, push, sync, online, syncError, pending, statusText }
+  const visibleError = storageFailed
+    ? t(
+        'Die Eingaben sind nur im Arbeitsspeicher. Bitte die Seite bis zum erfolgreichen Abgleich geöffnet lassen.',
+      ) + (syncError ? ` ${syncError}` : '')
+    : syncError
+  return { local, setLocal, push, sync, online, syncError: visibleError, pending, statusText }
 }
 
 /** Alle 3 s (nur bei sichtbarer Seite) den kleinen Stand des Wettbewerbs abfragen und bei

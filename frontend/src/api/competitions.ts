@@ -1,5 +1,6 @@
 // Wettbewerbe: eigene Schießen mit Einzel- und Zugwertung, Stechen und Auswertung.
-import { api } from './client.ts'
+import { api, ApiError } from './client.ts'
+import { authorizeStandCache, rejectStandAccess, standRevision, standUser } from './standCache.ts'
 import { t } from '../i18n/index.ts'
 import type { Award, Grant } from './competitionHistory.ts'
 
@@ -766,8 +767,8 @@ export function orgShootoffApi(org: number, id: number): ShootoffApi {
 }
 
 export function orgStandApi(org: number, id: number): StandApi {
-  return {
-    key: `${org}.${id}`,
+  return guardStandApi({
+    key: `user.${standUser() ?? 'none'}.${org}.${id}`,
     get: () => competitionsApi.get(org, id),
     starters: () => competitionsApi.starters(org, id),
     members: () => competitionsApi.members(org, id),
@@ -777,13 +778,13 @@ export function orgStandApi(org: number, id: number): StandApi {
     finish: () => competitionsApi.setStatus(org, id, 'endgueltig'),
     shootoffs: orgShootoffApi(org, id),
     photo: (scoring, photo) => competitionsApi.photo(org, id, scoring, photo),
-  }
+  })
 }
 
-export function tokenStandApi(token: string): StandApi {
+export function tokenStandApi(token: string, key: string): StandApi {
   const b = `/api/public/stand/${encodeURIComponent(token)}/`
-  return {
-    key: `zugang.${token.slice(0, 12)}`,
+  return guardStandApi({
+    key,
     get: () => api.get<CompetitionDetail>(b),
     starters: () => api.get<Starter[]>(`${b}starters/`),
     members: () => api.get<MemberChoice[]>(`${b}members/`),
@@ -800,6 +801,33 @@ export function tokenStandApi(token: string): StandApi {
         api.get<{ membership: number; name: string }[]>(`${b}unit-members/?unit=${unit}`),
     },
     photo: (scoring, photo) => api.post<PhotoResult>(`${b}photo/`, photoForm(scoring, photo)),
+  })
+}
+
+function guardStandApi(raw: StandApi): StandApi {
+  function guard<A extends unknown[], R>(fn: (...args: A) => Promise<R>, detail = false) {
+    return async (...args: A): Promise<R> => {
+      const at = standRevision()
+      try {
+        const result = await fn(...args)
+        if (at !== standRevision()) throw new ApiError(401, {})
+        if (detail)
+          authorizeStandCache(raw.key, (result as CompetitionDetail).stand_access?.expires_at)
+        return result
+      } catch (error) {
+        if (at === standRevision()) rejectStandAccess(raw.key, error)
+        throw error
+      }
+    }
+  }
+  return {
+    ...raw,
+    get: guard(raw.get, true),
+    starters: guard(raw.starters),
+    members: guard(raw.members),
+    sync: guard(raw.sync),
+    version: guard(raw.version),
+    standings: guard(raw.standings),
   }
 }
 
