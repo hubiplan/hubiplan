@@ -4976,6 +4976,9 @@ msgstr "The retention period has expired."
 msgid "Buchungen mit Belegen bitte stornieren."
 msgstr "Please cancel bookings with receipts instead of deleting them."
 
+msgid "Aufgaben"
+msgstr "Tasks"
+
 msgid "Ungültige Zeitzone."
 msgstr "Invalid time zone."
 

@@ -4883,5 +4883,8 @@
   "Frist": "Due date",
   "ohne Frist": "No due date",
   "Eigene und mit mir geteilte Aufgaben": "Personal tasks and tasks shared with me",
-  "Aufgaben mit anderen teilen": "Share tasks with others"
+  "Aufgaben mit anderen teilen": "Share tasks with others",
+  "Dafür fehlt dir die Berechtigung.": "You do not have permission.",
+  "Filter": "Filter",
+  "Erledigt": "Done"
 }

@@ -60,3 +60,19 @@ class Todo(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        from changes.tracking import active
+
+        ctx = active()
+        if ctx is not None and ctx.reverts and self.pk:
+            previous = type(self).objects.filter(pk=self.pk).first()
+            if previous:
+                self.version = max(previous.version, self.version) + 1
+                old_due = (previous.due_date, previous.due_time, previous.timezone)
+                if old_due != (self.due_date, self.due_time, self.timezone):
+                    self.due_revision = max(previous.due_revision, self.due_revision) + 1
+            else:
+                self.version += 1
+                self.due_revision += 1
+        super().save(*args, **kwargs)

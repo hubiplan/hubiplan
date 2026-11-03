@@ -68,7 +68,11 @@ def undo_problem(change_set, user):
     for rec in records:
         todo = Todo.objects.filter(pk=rec.object_id).first()
         if todo is None:
-            return "Die Aufgabe ist nicht mehr vorhanden."
+            if rec.operation != "delete" or not rec.before:
+                return "Die Aufgabe ist nicht mehr vorhanden."
+            from changes.undo import _build
+
+            todo = _build(Todo, rec.before)
         try:
             scope = scope_for(user, org_id=todo.organization_id, dept_id=todo.department_id)
         except (NotFound, PermissionDenied):

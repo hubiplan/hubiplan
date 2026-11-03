@@ -153,3 +153,42 @@ def test_papierkorb_wird_nach_30_tagen_bereinigt(api, board_a, orgs):
             deleted_at=timezone.now() - datetime.timedelta(days=31)
         )
     assert purge_deleted() == 1
+
+
+def test_anlegen_rueckgaengig_und_wiederherstellen(api, board_a, orgs):
+    org = orgs["a"]
+    response = api(board_a).post(url(org), {"title": "Probe"}, content_type="application/json")
+    undo_url = f"/api/orgs/{org.pk}/changes/{response.headers['X-Change-Set']}/undo/"
+    undone = api(board_a).post(undo_url)
+    assert undone.status_code == 200
+    assert api(board_a).get(url(org)).json()["items"] == []
+    redo_url = f"/api/orgs/{org.pk}/changes/{undone.headers['X-Change-Set']}/undo/"
+    assert api(board_a).post(redo_url).status_code == 200
+    assert api(board_a).get(url(org)).json()["items"][0]["title"] == "Probe"
+
+
+def test_rueckgaengig_setzt_versionsnummer_nicht_zurueck(api, board_a, orgs):
+    org = orgs["a"]
+    todo = create(api, board_a, org)
+    changed = patch(api, board_a, org, todo, title="Neu")
+    set_id = changed.headers["X-Change-Set"]
+    assert api(board_a).post(f"/api/orgs/{org.pk}/changes/{set_id}/undo/").status_code == 200
+    assert patch(api, board_a, org, todo, title="Veraltet").status_code == 409
+
+
+@pytest.mark.skipif(connection.vendor != "postgresql", reason="PostgreSQL-RLS")
+def test_rls_sperrt_fremde_private_aufgaben_auch_innerhalb_der_einheit(api, board_a, orgs):
+    from core.tenancy import set_rls
+
+    from .test_rls import as_app_role
+
+    org = orgs["a"]
+    todo = create(api, board_a, org)
+    other = make_user("zweiter-vorstand@example.org")
+    give_role(other, org, name="Zweiter Vorstand")
+    with as_app_role():
+        set_rls(org.pk, other.pk)
+        assert not Todo.objects.filter(pk=todo["id"]).exists()
+        assert Todo.objects.filter(pk=todo["id"]).update(status="done") == 0
+        set_rls(org.pk, board_a.pk)
+        assert Todo.objects.filter(pk=todo["id"]).exists()
