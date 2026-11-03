@@ -12,3 +12,5 @@ COPY deploy/Caddyfile deploy/Caddyfile.proxy /etc/caddy/
 COPY deploy/caddy/ /etc/caddy/caddy/
 COPY --from=build /app/dist /srv
 COPY LICENSE /srv/lizenzen/LICENSE.txt
+# Änderungshinweise für die Seite „Neuigkeiten“ (frontend/src/news/)
+COPY CHANGELOG.md CHANGELOG.en.md /srv/lizenzen/

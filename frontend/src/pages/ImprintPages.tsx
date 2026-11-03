@@ -8,6 +8,13 @@ import { Logo } from '../components/Logo.tsx'
 import { Alert } from '../components/ui.tsx'
 import { usePublicImprint } from '../components/publicImprint.ts'
 import { t } from '../i18n/index.ts'
+import {
+  COMMIT_FILE,
+  COMMIT_PATTERN,
+  RELEASE_PATTERN,
+  useRunningFile,
+  useRunningVersion,
+} from '../news/version.ts'
 
 function usePublicImprintData(key?: string) {
   const [result, setResult] = useState<{
@@ -328,38 +335,10 @@ const LICENSE_FILES = {
 /** Öffentliches Repository mit dem Quellcode (AGPL § 13). Wer HUBIplan verändert betreibt, trägt hier sein eigenes ein. */
 const SOURCE_REPO = 'https://github.com/hubiplan/hubiplan'
 
-/** Commit der laufenden Fassung; deploy/server-setup.sh legt ihn beim Ausrollen ab. */
-const COMMIT_FILE = '/lizenzen/fassung.txt'
-const COMMIT_PATTERN = /^[0-9a-f]{40}$/
-/** Versionsnummer der laufenden Fassung (docs/releases.md), ebenfalls aus server-setup.sh. */
-const VERSION_FILE = '/lizenzen/version.txt'
-/** Release „2026.11.0“ oder Stand danach „2026.11.0+3.0a5d21e“ oder nur der Commit. */
-const VERSION_PATTERN = /^[0-9A-Za-z.+]{1,40}$/
-const RELEASE_PATTERN = /^\d{4}\.\d{1,2}\.\d+$/
-
-/** Liest eine kurze Textdatei der laufenden Fassung; ohne Datei (z. B. Entwicklung) null. */
-function useRunningFile(path: string, pattern: RegExp): string | null {
-  const [value, setValue] = useState<string | null>(null)
-  useEffect(() => {
-    let active = true
-    fetch(path)
-      .then((resp) => (resp.ok ? resp.text() : ''))
-      .then((text) => {
-        const line = (text ?? '').trim()
-        if (active && pattern.test(line)) setValue(line)
-      })
-      .catch(() => undefined)
-    return () => {
-      active = false
-    }
-  }, [path, pattern])
-  return value
-}
-
 /** /lizenz: Lizenz von HUBIplan, Quellcode und Lizenzen der enthaltenen Bibliotheken. */
 export function LicensePage() {
   const commit = useRunningFile(COMMIT_FILE, COMMIT_PATTERN)
-  const version = useRunningFile(VERSION_FILE, VERSION_PATTERN)
+  const version = useRunningVersion()
   return (
     <PublicCard title={t('Lizenzen')}>
       <p>

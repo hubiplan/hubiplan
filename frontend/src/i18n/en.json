@@ -4770,5 +4770,13 @@
   "{n} vergeben": "{n} assigned",
   "Rechte ändern": "Change rights",
   "Rechte ansehen": "View rights",
-  "seit": "since"
+  "seit": "since",
+  "Neuigkeiten": "News",
+  "Neuigkeiten: Änderungen je Version": "News: changes in each version",
+  "Laufende Version: {x}. Die neueste Version steht oben.": "Running version: {x}. The newest version is at the top.",
+  "Die neueste Version steht oben.": "The newest version is at the top.",
+  "Überblick nach Monaten": "Overview by month",
+  "Die Änderungshinweise liegen dieser Fassung nicht bei.": "The release notes are not included in this build.",
+  "HUBIplan wurde auf Version {x} aktualisiert.": "HUBIplan has been updated to version {x}.",
+  "Das ist neu": "What's new"
 }

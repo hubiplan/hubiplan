@@ -32,6 +32,11 @@ Rückweg möglich bleibt. Nicht sichtbare Änderungen bekommen „–“.
 Aus diesen Abschnitten entstehen [CHANGELOG.md](../CHANGELOG.md) und
 [CHANGELOG.en.md](../CHANGELOG.en.md), das neueste Release oben.
 
+In HUBIplan stehen beide Dateien unter **Hilfe › Neuigkeiten** (`/hilfe/neuigkeiten`) in der
+Sprache der Oberfläche; `deploy/web.Dockerfile` legt sie dafür unter `/lizenzen/` ab. Läuft ein
+Release (Version ohne `+…`), sehen alle mit Rechten in einer Einheit einmal je Browser den Hinweis
+„HUBIplan wurde auf Version … aktualisiert · Das ist neu“. Zwischenstände lösen ihn nicht aus.
+
 ## Ein Release anlegen
 
 Wann ein Release kommt, entscheidet der Betreuer. Ablauf im Klon (in WSL):

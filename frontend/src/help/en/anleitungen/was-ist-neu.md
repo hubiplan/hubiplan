@@ -6,7 +6,9 @@ routen: [/hilfe]
 stichworte: [news, changes, version]
 ---
 
-The latest changes are at the top.
+The latest changes are at the top. This is an overview by month; all changes in each version (release) are under [News](/hilfe/neuigkeiten).
+
+After an update to a new release, HUBIplan shows everyone who manages something a one-time notice “HUBIplan has been updated to version …” with the link “What's new”. “Hide” removes it; it appears only once per browser.
 
 November 2026:
 
