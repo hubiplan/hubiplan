@@ -32,8 +32,8 @@ def name_ids(qs, word: str, *, fields=("person__last_name", "person__first_name"
 
 
 def name_ids_many(qs, words, *, fields=("person__last_name", "person__first_name")):
-    """Alle Wörter aus einer Entschlüsselung der erlaubten Namensspalten auswerten."""
-    needles = {word: normalize(word) for word in words}
+    """Alle Wörter aus einem Durchlauf der erlaubten Namensspalten auswerten."""
+    needles = {word: normalize(word) for word in dict.fromkeys(words)}
     matches = {word: set() for word in needles}
     if not needles:
         return matches
