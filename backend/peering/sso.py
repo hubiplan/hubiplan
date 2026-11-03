@@ -526,6 +526,7 @@ def begin_stepup(request, user, peer: Peer, next_path: str) -> None:
         )
     request.session[STEPUP_KEY] = {
         "user": user.pk,
+        "auth_version": user.auth_version,
         "peer": str(peer.instance_id),
         "next": next_path,
         "until": int(time.time()) + STEPUP_SECONDS,
@@ -545,6 +546,7 @@ def finish_stepup(request, code: str):
     # Verbundanmeldung, Kopplung oder Verknüpfung beendet worden sein (AT-V02).
     if (
         user is None
+        or pending.get("auth_version", 0) != user.auth_version
         or peer is None
         or not login_enabled()
         or not LoginLink.objects.filter(peer=peer, user=user).exists()

@@ -4883,3 +4883,6 @@ msgstr "Role holders in the club"
 
 msgid "Für dieses Geschäftsjahr wurden Aufbewahrungsdaten bereits bereinigt. Der Kontoauszug kann nicht erneut eingelesen werden."
 msgstr "Retention data for this financial year has already been purged. The bank statement cannot be imported again."
+
+msgid "Bestehende Browser-Anmeldungen und offene Dienst-Anmeldungen wurden widerrufen. Verknüpfungen für die Anmeldung über Partnerinstanzen müssen Sie nach der Neueinrichtung bewusst erneut verbinden. Bereits bei externen Diensten angemeldete Sitzungen sind dort gesondert zu beenden."
+msgstr "Existing browser sessions and pending service sign-ins have been revoked. After setting up your second factor again, you must explicitly reconnect sign-in links to partner instances. Sessions already established at external services must be ended there separately."

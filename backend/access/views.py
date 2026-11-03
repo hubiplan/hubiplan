@@ -261,7 +261,7 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
                 }
             )
         User.objects.filter(pk=target.pk).update(mfa_required_by=timezone.now())
-        secure_account(target, devices=True)
+        secure_account(target, devices=True, recovery=True)
         record(
             self.org,
             request.user,
@@ -284,6 +284,13 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
                     "& Sicherheit“ neu ein; bis dahin ruhen Rollenverwaltung, Exporte und "
                     "Kasse. App-Geräte wurden abgemeldet."
                 ).format(actor=actor_email, org=org.name)
+                + "\n\n"
+                + gettext(
+                    "Bestehende Browser-Anmeldungen und offene Dienst-Anmeldungen wurden "
+                    "widerrufen. Verknüpfungen für die Anmeldung über Partnerinstanzen müssen "
+                    "Sie nach der Neueinrichtung bewusst erneut verbinden. Bereits bei "
+                    "externen Diensten angemeldete Sitzungen sind dort gesondert zu beenden."
+                )
                 + "\n\n"
                 + gettext(
                     "Wenn Sie das nicht veranlasst haben, wenden Sie sich bitte an {org}."

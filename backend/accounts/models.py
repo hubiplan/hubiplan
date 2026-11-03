@@ -4,6 +4,7 @@ import string
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.utils.crypto import salted_hmac
 from django.utils.translation import gettext
 
 
@@ -69,6 +70,7 @@ class User(AbstractUser):
     mfa_required_by = models.DateTimeField(
         "Zwei-Faktor-Anmeldung einrichten bis", null=True, blank=True
     )
+    auth_version = models.PositiveBigIntegerField(default=0, db_default=0, editable=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []
@@ -86,6 +88,18 @@ class User(AbstractUser):
         # Jedes selbst gesetzte Passwort (Mein Konto, Zurücksetzen) ersetzt das Startpasswort
         super().set_password(raw_password)
         self.initial_password_expires = None
+
+    def _get_session_auth_hash(self, secret=None):
+        original = super()._get_session_auth_hash(secret=secret)
+        # Bestehende Sitzungen bleiben bis zur ersten Sicherheitsänderung gültig.
+        if not self.auth_version:
+            return original
+        return salted_hmac(
+            "accounts.User.auth_version",
+            f"{original}:{self.auth_version}",
+            secret=secret,
+            algorithm="sha256",
+        ).hexdigest()
 
     def save(self, *args, **kwargs):
         fields = kwargs.get("update_fields")

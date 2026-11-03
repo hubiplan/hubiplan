@@ -208,6 +208,7 @@ def authorize(request, params) -> str:
         {
             "client_id": client.client_id,
             "user_id": user.pk,
+            "auth_version": user.auth_version,
             "redirect_uri": redirect_uri,
             "nonce": _param(params, "nonce"),
             "challenge": challenge,
@@ -271,7 +272,7 @@ def token(request) -> dict:
     if not _pkce_ok(data["challenge"], str(request.POST.get("code_verifier") or "")):
         raise TokenError("invalid_grant")
     user = _user(data["user_id"])
-    if user is None:
+    if user is None or data.get("auth_version", 0) != user.auth_version:
         raise TokenError("invalid_grant")
     try:
         prof = claims.profile(client, user)
@@ -296,7 +297,12 @@ def token(request) -> dict:
     access = secrets.token_urlsafe(32)
     cache.set(
         TOKEN_PREFIX + _hash(access),
-        {"client_id": client.client_id, "user_id": user.pk, "scope": data["scope"]},
+        {
+            "client_id": client.client_id,
+            "user_id": user.pk,
+            "scope": data["scope"],
+            "auth_version": user.auth_version,
+        },
         TOKEN_SECONDS,
     )
     with rls_bypass():
@@ -332,7 +338,7 @@ def userinfo(request) -> dict:
         raise TokenError("invalid_token", status=401)
     client = find_client(data["client_id"])
     user = _user(data["user_id"])
-    if client is None or user is None:
+    if client is None or user is None or data.get("auth_version", 0) != user.auth_version:
         raise TokenError("invalid_token", status=401)
     try:
         prof = claims.profile(client, user)

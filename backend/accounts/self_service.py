@@ -12,7 +12,7 @@ import secrets
 
 from allauth.account.models import EmailAddress
 from django.conf import settings
-from django.contrib.auth import password_validation, update_session_auth_hash
+from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -107,11 +107,10 @@ class PasswordView(APIView):
             raise serializers.ValidationError({"new_password": list(exc.messages)}) from exc
         user.set_password(new)
         user.save(update_fields=["password"])
-        update_session_auth_hash(request, user)  # angemeldet bleiben
         # Vorher verschickte Links und QR-Codes gelten nicht mehr. Beim Wechsel eines
         # bestehenden Passworts werden auch alle App-Geräte abgemeldet (wie beim Reset);
         # beim erstmaligen Festlegen bleiben sie, denn es gab kein altes Passwort.
-        secure_account(user, devices=had_password)
+        secure_account(user, devices=had_password, request=request)
         with language_of(user):
             if had_password:
                 subject = gettext("Ihr Passwort wurde geändert")
