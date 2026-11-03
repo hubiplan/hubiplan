@@ -17,6 +17,10 @@ from .encfields import EncryptedMixin
 def _encrypted_column(expression):
     if isinstance(expression, Col) and isinstance(expression.target, EncryptedMixin):
         return expression.target
+    # Insbesondere skalare Unterabfragen tragen das Feld am Ergebnis, während
+    # ihr inneres Query keine gewöhnliche Col-Quelle dieses Ausdrucks ist.
+    if isinstance(getattr(expression, "output_field", None), EncryptedMixin):
+        return expression.output_field
     for child in expression.get_source_expressions():
         if child is not None and (field := _encrypted_column(child)) is not None:
             return field

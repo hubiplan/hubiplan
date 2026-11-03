@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 from django.core.exceptions import FieldError
 from django.db import connection
-from django.db.models import Case, F, IntegerField, Value, When
+from django.db.models import Case, F, IntegerField, Subquery, Value, When
 from django.db.models.functions import Lower
 from django.test.utils import CaptureQueriesContext
 
@@ -165,6 +165,9 @@ def test_pagination_stabil_und_objekte_nur_fuer_seite(orgs):
         lambda: Membership.objects.order_by("person__birth_date"),
         lambda: Person.objects.order_by(F("birth_date").desc()),
         lambda: Person.objects.annotate(alias=F("birth_date")).order_by("alias"),
+        lambda: Person.objects.annotate(
+            alias=Subquery(Person.objects.order_by("pk").values("birth_date")[:1])
+        ).order_by("alias"),
         lambda: ContactDetails.objects.order_by(Lower("email")),
         lambda: Person.objects.values("birth_date").order_by("birth_date"),
         lambda: (
@@ -186,6 +189,8 @@ def test_implizite_sortierung_und_python_sortierung(orgs, monkeypatch):
         qs = ContactDetails.objects.filter(person=member.person)
         with pytest.raises(FieldError, match="verschlüsselt"):
             list(qs)
+        with pytest.raises(FieldError, match="verschlüsselt"):
+            str(Person.objects.order_by("contacts").query)
         assert list(ordered(qs, "email").values_list("email", flat=True)) == ["anna@example.org"]
 
 
