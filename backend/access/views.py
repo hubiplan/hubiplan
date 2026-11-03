@@ -135,20 +135,26 @@ def _locks_out(user, org: Organization, role: Role) -> bool:
 def _has_rights_elsewhere(target, org) -> bool:
     """Hat das Konto Rechte außerhalb von ``org`` und ihren Untereinheiten?
 
-    Plattform-, Staff- und Superuser-Konten zählen immer dazu. Gelesen wird in der Sicht des
-    Zielkontos, sonst blendet RLS dessen Rollen in fremden Organisationen aus.
+    Plattform-, Staff- und Superuser-Konten zählen immer dazu, ebenso Rechte aus Ämtern in
+    Untereinheiten anderer Vereine. Gelesen wird in der Sicht des Zielkontos, sonst blendet
+    RLS dessen Rollen in fremden Organisationen aus.
     """
     from access.permissions import is_platform_admin
     from core.tenancy import rls_bypass, user_view
 
     if target.is_staff or target.is_superuser or is_platform_admin(target):
         return True
+    from portal.services import department_contexts
+
     with user_view(target.pk):
         org_ids = set(
             RoleAssignment.objects.active()
             .filter(user=target)
             .values_list("organization_id", flat=True)
         )
+        # Rechte über Ämter in Untereinheiten anderer Vereine (Zugführer usw.) zählen mit;
+        # sie hängen an der Mitgliedschaft, nicht an einer Rollenzuweisung (Audit 03.11. GA-S02)
+        org_ids |= {ctx.club.pk for ctx in department_contexts(target).values() if ctx.permissions}
     org_ids.discard(org.pk)
     if not org_ids:
         return False
