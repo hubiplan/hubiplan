@@ -16,7 +16,7 @@ dieses Wort?“. Konzept: `konzepte/hilfe-funktion.md` im Projektordner (Schritt
 | Wer hilft bei uns? | auf `/hilfe` und in der Seitenhilfe: Ansprechpartner der Einheit (Einstellungen › Organisation, Recht „Organisationsdaten bearbeiten“), sonst die der nächsten Einheit darüber, sonst nur Rollennamen. Nie automatisch Personen |
 | Hinweise bei uns | unter einer Anleitung: kurze Hinweise der Einheit und der Einheiten darüber (höchstens 500 Zeichen, mit „Organisationsdaten bearbeiten“ auf der Seite der Anleitung) |
 | Zeig es mir | in der Seitenhilfe unter einer Anleitung: hebt auf der Seite das erste Bedienelement hervor, das die Anleitung **fett** nennt; auf `/hilfe/<name>` öffnet es erst die Seite |
-| Was ist neu | Anleitung `anleitungen/was-ist-neu.md`, verlinkt oben auf `/hilfe`; bei sichtbaren Neuerungen ergänzen (neueste oben) |
+| Was ist neu | Anleitung `anleitungen/was-ist-neu.md`, verlinkt oben auf `/hilfe`; bei sichtbaren Neuerungen ergänzen (neueste oben). Änderungen je Release zeigt `/hilfe/neuigkeiten` aus `CHANGELOG.md`/`CHANGELOG.en.md` |
 | App | Mein Konto in der Android-App: „Hilfe und Anleitungen im Browser“ öffnet `/hilfe` der Instanz |
 
 Sichtbar ist nur, was zur Person passt: Das Modul (`modul`) muss freigeschaltet sein und die Person

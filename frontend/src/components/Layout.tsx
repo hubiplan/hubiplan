@@ -24,6 +24,7 @@ import { HelpButton, HelpPanel } from '../help/HelpPanel.tsx'
 import { ACCOUNT_PATH, accountSectionLabel } from '../pages/settings/accountNav.ts'
 import { AccountMenu } from './AccountMenu.tsx'
 import { RolePreviewBanner, RolePreviewSelect } from './RolePreview.tsx'
+import { UpdateNotice } from '../news/UpdateNotice.tsx'
 import { rolePreviewApi } from '../api/orgs.ts'
 import { locale } from '../i18n/index.ts'
 import { t } from '../i18n/index.ts'
@@ -33,6 +34,7 @@ const OTHER_PAGES: Record<string, string> = {
   '/mein-konto': t('Mein Konto'),
   '/glossar': t('Glossar'),
   '/hilfe': t('Hilfe'),
+  '/hilfe/neuigkeiten': t('Neuigkeiten'),
   '/briefvorlage': t('Briefvorlage'),
 }
 
@@ -404,6 +406,8 @@ export function Layout() {
               {user?.mfa_required_by && (
                 <MfaNotice by={user.mfa_required_by} overdue={!!user.mfa_overdue} />
               )}
+              {/* Verwalter (Rechte in einer Einheit) sehen nach einem Release-Update „Das ist neu“ */}
+              {orgs.length > 0 && !previewOrg && <UpdateNotice />}
               {loading ? (
                 <p className="muted" role="status">
                   {t('Lädt …')}

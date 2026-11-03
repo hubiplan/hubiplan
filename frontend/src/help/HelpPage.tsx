@@ -122,6 +122,9 @@ export function HelpPage() {
           'Anleitungen Schritt für Schritt, Erklärungen zu jeder Seite und das Glossar. Auf jeder Seite öffnet „Hilfe zu dieser Seite“ oben (oder die Taste ?) die passende Hilfe.',
         )}
       </p>
+      <p>
+        <Link to="/hilfe/neuigkeiten">{t('Neuigkeiten: Änderungen je Version')}</Link>
+      </p>
       <div className="help-search">
         <Field
           label={t('Hilfe durchsuchen')}

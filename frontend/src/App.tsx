@@ -88,6 +88,7 @@ const PlatformTransferPage = lazyPage(
 const GlossaryPage = lazyPage(() => import('./learning/GlossaryPage.tsx'), 'GlossaryPage')
 const HelpPage = lazyPage(() => import('./help/HelpPage.tsx'), 'HelpPage')
 const HelpEntryPage = lazyPage(() => import('./help/HelpPage.tsx'), 'HelpEntryPage')
+const NewsPage = lazyPage(() => import('./news/NewsPage.tsx'), 'NewsPage')
 const AccountPage = lazyPage(() => import('./pages/settings/AccountPage.tsx'), 'AccountPage')
 const AccountLoginPage = lazyPage(
   () => import('./pages/settings/AccountPage.tsx'),
@@ -303,6 +304,7 @@ export default function App() {
           <Route path="briefvorlage" element={<LetterheadPage />} />
           <Route path="glossar" element={<GlossaryPage />} />
           <Route path="hilfe" element={<HelpPage />} />
+          <Route path="hilfe/neuigkeiten" element={<NewsPage />} />
           <Route path="hilfe/*" element={<HelpEntryPage />} />
           <Route
             path="untereinheiten"
