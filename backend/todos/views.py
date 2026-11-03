@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -47,6 +47,8 @@ class TodoInput(serializers.Serializer):
 
 
 def data_for(todo, user, scope):
+    from .sharing import participants
+
     return {
         "id": todo.pk,
         "title": todo.title,
@@ -67,9 +69,16 @@ def data_for(todo, user, scope):
         "can_edit": can_edit(todo, user, scope),
         "can_delete": can_delete(todo, user, scope),
         "can_take_over": can_take_over(todo, user, scope),
-        "can_share": todo.owner_id == user.pk and "todos.edit" in scope.permissions,
+        "can_share": can_delete(todo, user, scope) and "todos.edit" in scope.permissions,
         "shares": list(todo.shares.values("user", "role", "level", "responsible"))
         if todo.shared
+        else [],
+        "owners": [
+            {"id": p["user"].pk, "name": p["user"].get_full_name() or p["user"].email}
+            for p in participants(todo, scope).values()
+            if p["edit"]
+        ]
+        if todo.shared and can_delete(todo, user, scope)
         else [],
     }
 
@@ -197,6 +206,20 @@ class TodoChoicesView(TodoScopeMixin, APIView):
         )
 
 
+class OrphanTasksView(TodoScopeMixin, APIView):
+    def get(self, request, **kwargs):
+        from .ownership import candidates
+
+        return Response({"items": [{"id": row.pk} for row in candidates(request.user, self.scope)]})
+
+
+class TakeOverView(TodoScopeMixin, APIView):
+    def post(self, request, pk, **kwargs):
+        from .ownership import take_over
+
+        return Response({"id": take_over(request.user, self.scope, pk)})
+
+
 class PreferenceInput(serializers.ModelSerializer):
     class Meta:
         model = TodoPreference
@@ -235,8 +258,48 @@ class PersonalExportView(APIView):
                     "due_time",
                     "status",
                     "deleted_at",
+                    "shared",
+                    "organization_id",
+                    "department_id",
                 )
             )
+        from access.permissions import organizations_for
+        from core.tenancy import tenant_context
+        from portal.services import department_contexts
+
+        with user_view(request.user.pk):
+            contexts = [(org.pk, None) for org, _ in organizations_for(request.user)]
+            contexts += [
+                (ctx.club.pk, ctx.department.pk)
+                for ctx in department_contexts(request.user).values()
+            ]
+        seen = {row["id"] for row in rows}
+        for org_id, dept_id in contexts:
+            with tenant_context(org_id, request.user.pk):
+                try:
+                    scope = scope_for(request.user, org_id, dept_id)
+                except (NotFound, PermissionDenied):
+                    continue
+                for todo in visible(request.user, scope).filter(shared=True):
+                    if todo.pk not in seen:
+                        rows.append(
+                            {
+                                key: getattr(todo, key)
+                                for key in (
+                                    "id",
+                                    "title",
+                                    "description",
+                                    "due_date",
+                                    "due_time",
+                                    "status",
+                                    "shared",
+                                    "deleted_at",
+                                    "organization_id",
+                                    "department_id",
+                                )
+                            }
+                        )
+                        seen.add(todo.pk)
         response = JsonResponse({"tasks": rows})
         response["Content-Disposition"] = 'attachment; filename="aufgaben.json"'
         return response

@@ -32,3 +32,20 @@ bleiben privat. Zusätzliche Sichtbarkeit entsteht ausschließlich durch ausdrü
 
 Jeder Abschnitt erhält einen eigenen PR. Tests laufen lokal über `scripts/test.sh`;
 automatische CI-Auslöser bleiben abgeschaltet. Migrationen bleiben additiv und rückführbar.
+
+## Freigaben und Verantwortung
+
+Freigaben an Personen und Rollen unterscheiden Lesen, Bearbeiten und Zuständigkeit.
+Rollenfreigaben folgen aktiven Amtsinhabern. Nur das verantwortliche Konto teilt weiter,
+löscht oder überträgt die Verantwortung an einen beteiligten Bearbeiter. Ein Rollenverwalter
+mit Aufgabenbearbeitungsrecht kann eine verwaiste geteilte Aufgabe ausdrücklich übernehmen.
+Diese begrenzte Verwaltungsprüfung liest zunächst nur Besitzdaten und liefert Aufgabennummern;
+private Inhalte werden dabei nicht gelesen. Der normale Aufgabenabruf umgeht RLS nicht.
+
+Persönliche Exporte enthalten eigene und aktuell berechtigt geteilte Aufgaben. Ein Exporteintrag
+der Einheit enthält nur deren eigene geteilte Aufgaben, die das exportierende Konto sehen darf.
+Beim Import wird der Inhalt dem importierenden Konto privat zugeordnet; Freigaben müssen
+ausdrücklich neu vergeben werden. Fremde Konto- und Freigabenummern werden nicht übernommen.
+
+Hinweise beim Teilen sind unter Profil pro Kanal abschaltbar. Mailtexte und Aufgabentitel
+werden im allgemeinen Postausgang durch einen neutralen Versandvermerk ersetzt.

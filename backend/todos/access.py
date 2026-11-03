@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from django.db.models import Q
+from django.utils.translation import gettext
 from rest_framework.exceptions import NotFound, PermissionDenied
 
 from access import preview
@@ -138,30 +139,30 @@ def undo_problem(change_set, user):
     """Keine Bereichsrechte als Ersatz für die heutige Aufgabenberechtigung."""
     records = list(change_set.records.all())
     if change_set.user_id != user.pk:
-        return "Hier lassen sich nur eigene Aufgabenänderungen zurücknehmen."
+        return gettext("Hier lassen sich nur eigene Aufgabenänderungen zurücknehmen.")
     if not records or any(r.model != "todos.todo" for r in records):
-        return "Diese Änderung kann hier nicht zurückgenommen werden."
+        return gettext("Diese Änderung kann hier nicht zurückgenommen werden.")
     for rec in records:
         todo = Todo.objects.filter(pk=rec.object_id).first()
         if todo is None:
             if rec.operation != "delete" or not rec.before:
-                return "Die Aufgabe ist nicht mehr vorhanden."
+                return gettext("Die Aufgabe ist nicht mehr vorhanden.")
             from changes.undo import _build
 
             todo = _build(Todo, rec.before)
         try:
             scope = scope_for(user, org_id=todo.organization_id, dept_id=todo.department_id)
         except (NotFound, PermissionDenied):
-            return "Für diese Aufgabe fehlt dir die Berechtigung."
+            return gettext("Für diese Aufgabe fehlt dir die Berechtigung.")
         if not can_edit(todo, user, scope):
-            return "Für diese Aufgabe fehlt dir die Berechtigung."
+            return gettext("Für diese Aufgabe fehlt dir die Berechtigung.")
         fields = set(rec.before or {}) | set(rec.after or {})
         if (
             rec.operation == "update"
             and fields & {"deleted_at", "shared", "owner_id"}
             and not can_delete(todo, user, scope)
         ):
-            return "Nur das verantwortliche Konto darf die Aufgabe löschen."
+            return gettext("Nur das verantwortliche Konto darf die Aufgabe löschen.")
         if rec.operation == "create" and not can_delete(todo, user, scope):
-            return "Nur das verantwortliche Konto darf die Aufgabe löschen."
+            return gettext("Nur das verantwortliche Konto darf die Aufgabe löschen.")
     return None

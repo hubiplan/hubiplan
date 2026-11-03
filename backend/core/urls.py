@@ -125,6 +125,8 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("todos/orphans/", todo_views.OrphanTasksView.as_view()),
+    path("todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
     path("todos/choices/", todo_views.TodoChoicesView.as_view()),
     path("todos/", todo_views.TodoListView.as_view()),
     path("todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
@@ -647,6 +649,8 @@ dept_patterns = [
 ]
 
 urlpatterns = [
+    path("depts/<int:dept_id>/todos/orphans/", todo_views.OrphanTasksView.as_view()),
+    path("depts/<int:dept_id>/todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
     path("depts/<int:dept_id>/todos/choices/", todo_views.TodoChoicesView.as_view()),
     path("me/todos/preferences/", todo_views.TodoPreferencesView.as_view()),
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),

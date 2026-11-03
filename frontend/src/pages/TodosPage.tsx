@@ -7,6 +7,9 @@ import { errorMessage, useAutoSave, useForm, useLoad } from '../components/forms
 import { Field, LoadError, SaveStatus, SelectField } from '../components/ui.tsx'
 import { t } from '../i18n/index.ts'
 import { TodoSharing } from '../components/TodoSharing.tsx'
+import { TodoOwnership } from '../components/TodoOwnership.tsx'
+import { OrphanTasks } from '../components/OrphanTasks.tsx'
+import { useAuth } from '../auth/AuthContext.tsx'
 
 export function TodosPage() {
   const { active, activeDept, can } = useOrg()
@@ -16,6 +19,8 @@ export function TodosPage() {
 }
 
 function TodoWorkspace({ base }: { base: string }) {
+  const { user } = useAuth()
+  const { can } = useOrg()
   const [tab, setTab] = useState('open')
   const [filter, setFilter] = useState('all')
   const [newTask, setNewTask] = useState(false)
@@ -28,7 +33,8 @@ function TodoWorkspace({ base }: { base: string }) {
       (tab === 'trash' || item.status === tab) &&
       (filter === 'all' ||
         (filter === 'mine' && !item.shared) ||
-        (filter === 'shared' && item.shared) ||
+        (filter === 'shared' && item.shared && item.created_by !== user?.id) ||
+        (filter === 'sent' && item.shared && item.created_by === user?.id) ||
         (filter === 'overdue' &&
           !!item.due_date &&
           item.due_date < new Date().toLocaleDateString('en-CA'))),
@@ -80,10 +86,14 @@ function TodoWorkspace({ base }: { base: string }) {
         <option value="all">{t('Alle Aufgaben')}</option>
         <option value="mine">{t('Meine')}</option>
         <option value="shared">{t('Geteilt mit mir')}</option>
+        <option value="sent">{t('Von mir geteilt')}</option>
         <option value="overdue">{t('Überfällig')}</option>
       </SelectField>
       {error && <LoadError message={error} onRetry={reload} />}
       {actionError && <p role="alert">{actionError}</p>}
+      {can('todos.edit') && can('roles.edit') && (
+        <OrphanTasks base={base} onSaved={() => void reload()} />
+      )}
       {newTask && (
         <TodoEditor
           key="new"
@@ -100,6 +110,14 @@ function TodoWorkspace({ base }: { base: string }) {
       {selected?.can_share && tab !== 'trash' && (
         <TodoSharing
           key={`share-${selected.id}-${selected.version}`}
+          base={base}
+          todo={selected}
+          onSaved={() => void reload()}
+        />
+      )}
+      {selected && !!selected.owners?.length && tab !== 'trash' && (
+        <TodoOwnership
+          key={`owner-${selected.id}-${selected.version}`}
           base={base}
           todo={selected}
           onSaved={() => void reload()}

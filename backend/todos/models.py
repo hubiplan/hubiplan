@@ -100,9 +100,6 @@ class TodoShare(models.Model):
     )
     responsible = models.BooleanField(default=False)
 
-    def __str__(self):
-        return f"{self.todo_id}: {self.user_id or self.role_id}"
-
     class Meta:
         constraints = [
             models.CheckConstraint(
@@ -123,6 +120,9 @@ class TodoShare(models.Model):
                 name="todo_share_role_unique",
             ),
         ]
+
+    def __str__(self):
+        return f"{self.todo_id}: {self.user_id or self.role_id}"
 
 
 class TodoPreference(models.Model):

@@ -24,6 +24,7 @@ IGNORED_FIELDS = {"created_at", "updated_at", "id", "organization", "uuid"}
 
 # Lesbare Namen der protokollierten Objekte
 OBJECT_TYPES = {
+    "todo": "Aufgabe",
     "organization": "Organisation",
     "department": "Abteilung",
     "departmentrole": "Abteilungsrolle",

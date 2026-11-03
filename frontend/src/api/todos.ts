@@ -27,6 +27,7 @@ export interface Todo {
   can_share?: boolean
   can_take_over?: boolean
   shares?: TodoShare[]
+  owners?: { id: number; name: string }[]
 }
 
 export const todoBase = (org: number | null, department?: number | null) =>

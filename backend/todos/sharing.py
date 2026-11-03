@@ -1,5 +1,6 @@
 """Empfängerauswahl, Freigaben und verantwortliche Konten."""
 
+from django.utils.translation import gettext
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
 from access.models import Role, RoleAssignment
@@ -66,12 +67,12 @@ def replace_shares(todo, user, scope, values):
     for value in values:
         user_id, role_id = value.get("user"), value.get("role")
         if bool(user_id) == bool(role_id) or value.get("level", "view") not in {"view", "edit"}:
-            raise ValidationError("Ungültige Aufgabenfreigabe.")
+            raise ValidationError(gettext("Ungültige Aufgabenfreigabe."))
         if user_id and user_id not in allowed_users or role_id and role_id not in roles:
-            raise ValidationError("Dieser Empfänger hat keinen passenden Zugang.")
+            raise ValidationError(gettext("Dieser Empfänger hat keinen passenden Zugang."))
         key = (user_id, role_id)
         if key in seen:
-            raise ValidationError("Dieser Empfänger ist bereits ausgewählt.")
+            raise ValidationError(gettext("Dieser Empfänger ist bereits ausgewählt."))
         seen.add(key)
         rows.append(
             TodoShare(
@@ -90,12 +91,14 @@ def replace_shares(todo, user, scope, values):
     with suppress():
         todo.shares.all().delete()
         TodoShare.objects.bulk_create(rows)
+    if todo.shared and not rows:
+        record(todo.organization, user, "update", todo)
     todo.shared = bool(rows)
     if not rows and todo.owner_id != todo.created_by_id:
-        raise ValidationError("Eine übertragene Aufgabe muss geteilt bleiben.")
+        raise ValidationError(gettext("Eine übertragene Aufgabe muss geteilt bleiben."))
     ctx = active()
     if ctx:
-        ctx.block("Freigaben lassen sich nicht rückgängig machen.")
+        ctx.block(gettext("Freigaben lassen sich nicht rückgängig machen."))
     return set(participants(todo, scope)) - previous
 
 
@@ -104,7 +107,7 @@ def transfer_owner(todo, user, scope, owner_id):
         raise PermissionDenied()
     ctx = active()
     if ctx:
-        ctx.block("Verantwortung lässt sich nicht rückgängig übertragen.")
+        ctx.block(gettext("Verantwortung lässt sich nicht rückgängig übertragen."))
     if owner_id == user.pk and can_take_over(todo, user, scope):
         todo.owner = user
         return
