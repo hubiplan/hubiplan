@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import (
     Exists,
     F,
@@ -50,7 +50,7 @@ from .models import (
     Person,
     today,
 )
-from .personsearch import name_ids, ordered
+from .personsearch import name_ids_many, ordered
 from .serializers import (
     AdmitSerializer,
     DepartmentMembershipSerializer,
@@ -202,14 +202,19 @@ def member_queryset(org: Organization):
     )
 
 
-def _persons_by_email(qs, word: str) -> set[int]:
-    """Personen, deren E-Mail-Adresse ``word`` enthält. Die Adressen sind verschlüsselt
-    (core/encfields.py); die Datenbank kann darin nicht suchen, also hier im Speicher."""
-    word = word.lower()
+def _persons_by_email(qs, words: list[str]) -> dict[str, set[int]]:
+    """Entschlüsselt die sichtbaren Adressen einmal für alle Suchwörter."""
+    matches = {word: set() for word in words}
     contacts = ContactDetails.objects.filter(person_id__in=qs.values("person_id")).values_list(
         "person_id", "email"
     )
-    return {pid for pid, email in contacts if email and word in email.lower()}
+    for pid, email in contacts.iterator():
+        if email:
+            email = email.lower()
+            for word in words:
+                if word in email:
+                    matches[word].add(pid)
+    return matches
 
 
 def filter_members(qs, params, org: Organization):
@@ -251,12 +256,19 @@ def filter_members(qs, params, org: Organization):
         qs = qs.filter(Exists(awards))
     search = (params.get("suche") or "").strip()
     if search:
-        q = Q()
+        words = {}
         for word in search.split():
+            # SQL-Nummernvergleich behält die Originalschreibweise; Namen folgen
+            # der zentralen NFC-/Casefold-Regel, E-Mails wie bisher lower().
+            words.setdefault(word.lower(), word)
+        email_matches = _persons_by_email(qs, list(words))
+        name_matches = name_ids_many(qs, words.values())
+        q = Q()
+        for normalized, word in words.items():
             word_q = (
-                Q(pk__in=name_ids(qs, word))
+                Q(pk__in=name_matches[word])
                 | Q(club_number__iexact=word)
-                | Q(person_id__in=_persons_by_email(qs, word))
+                | Q(person_id__in=email_matches[normalized])
             )
             if word.isdigit():
                 word_q |= Q(person__federation__member_number=int(word))
@@ -402,7 +414,14 @@ class MemberListView(_ClubMixin, generics.GenericAPIView):
             OpenApiParameter("sortierung", str),
         ]
     )
+    @transaction.atomic
     def get(self, request, org_id: int):
+        # Historische P01-Messung (vor zentraler Personensortierung): 151 JIT-
+        # Funktionen bei 10.000 Mitgliedern/RLS. Keine neue Latenzzusage; nur den
+        # paginierten Abruf interpretieren, Transaktionsende stellt JIT zurück.
+        if connection.vendor == "postgresql":
+            with connection.cursor() as cursor:
+                cursor.execute("SET LOCAL jit = off")
         qs = filter_members(member_queryset(self.org), request.query_params, self.org)
         page = self.paginate_queryset(qs)
         return self.get_paginated_response(member_rows(page, self.org))

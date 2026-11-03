@@ -50,7 +50,39 @@ docker compose logs --since 3h backend | grep -E '"(GET|POST) ' \
 **Vorwärmen:** Jeder neue gunicorn-Prozess ruft vor der ersten echten Anfrage
 `/api/health/` und `/api/public/site/v1/resolve/` bei sich selbst auf
 (`backend/gunicorn.conf.py`). Im Log steht dann je Prozess „Vorwärmen …: 200 OK“ bzw.
-„404 Not Found“. Sonst wartete der erste Besucher nach dem Ausrollen 2–3 s.
+„404 Not Found“. Das lädt Anwendungs- und Resolvercode. Datenbankverbindungen sind
+threadlokal; jeder gthread-Requestthread öffnet seine Verbindung erst bei seiner ersten
+Anfrage. Die ungenutzte Hauptthread-Verbindung wird danach geschlossen. Daraus folgt
+keine gemessene oder garantierte Verkürzung der ersten echten Anfrage.
+
+English: Warmup loads application/resolver code. Django database connections are
+thread-local: each gthread request thread connects on its first request. The unused
+main-thread connection is closed afterwards; no measured first-request latency guarantee
+is implied.
+
+**Paginierte Mitgliederliste:** Nur der interaktive Listenabruf verwendet innerhalb seiner
+Transaktion `SET LOCAL jit = off`. In einer lokalen PostgreSQL-18-Messung mit App-Rolle/RLS
+und 10.000 synthetischen Mitgliedern entfielen bei einer Liste mit 50 Zeilen 77,9 ms auf
+151 JIT-Funktionen (Ausführungsplan insgesamt 96,4 ms; ohne JIT 19,3 ms). Der gesamte
+ORM-Listenablauf einschließlich Anzahl und Zeilenaufbereitung lag im Median bei
+147,7 beziehungsweise 45,5 ms. Das sind Vergleichswerte dieses lokalen Datensatzes,
+keine gemessenen Produktions- oder HTTP-Latenzen. Bei 10 bis 1.000 Mitgliedern zeigte
+sich kein einheitlicher JIT-Vorteil. Andere Abrufe, Exporte und die globale
+Datenbankkonfiguration behalten ihre vorhandene JIT-Einstellung; RLS bleibt aktiv.
+Commit oder Rollback der Listentransaktion stellt die Einstellung zurück.
+Die Messung stammt vom P01-Stand `1af9ec0b` (Mess-Snapshot `afef8f1`), vor der
+Zentralisierung von Namenssuche und Personensortierung. Sie belegt keinen Zeitgewinn
+für den danach geänderten Such- und Sortierplan; dieser wurde hier nicht neu vermessen.
+
+English: The paginated interactive member list disables JIT only for its transaction.
+A local synthetic 10,000-member RLS workload showed 77.9 ms compiling 151 JIT functions
+and a 96.4/19.3 ms execution-plan comparison with/without JIT; the complete ORM list
+workflow measured 147.7/45.5 ms median. These are local comparisons, not production or
+HTTP latency guarantees. Smaller clubs showed no consistent JIT advantage. Other requests,
+exports, global database defaults and RLS are unchanged. Commit/rollback restores the setting.
+The measurements use P01 source `1af9ec0b` (measurement snapshot `afef8f1`), before
+centralized name search/person ordering. They do not establish a speedup for that
+subsequently changed query/sort plan, which has not been remeasured here.
 
 ## Geheimnisse
 

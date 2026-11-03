@@ -4,6 +4,7 @@ import string
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.utils.crypto import salted_hmac
 from django.utils.translation import gettext
 
 
@@ -69,6 +70,7 @@ class User(AbstractUser):
     mfa_required_by = models.DateTimeField(
         "Zwei-Faktor-Anmeldung einrichten bis", null=True, blank=True
     )
+    auth_version = models.PositiveBigIntegerField(default=0, db_default=0, editable=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS: list[str] = []
@@ -86,12 +88,48 @@ class User(AbstractUser):
         # Jedes selbst gesetzte Passwort (Mein Konto, Zurücksetzen) ersetzt das Startpasswort
         super().set_password(raw_password)
         self.initial_password_expires = None
+        self._password_write_requested = True
+
+    def set_unusable_password(self) -> None:
+        super().set_unusable_password()
+        self._password_write_requested = True
+
+    def _get_session_auth_hash(self, secret=None):
+        original = super()._get_session_auth_hash(secret=secret)
+        # Bestehende Sitzungen bleiben bis zur ersten Sicherheitsänderung gültig.
+        if not self.auth_version:
+            return original
+        return salted_hmac(
+            "accounts.User.auth_version",
+            f"{original}:{self.auth_version}",
+            secret=secret,
+            algorithm="sha256",
+        ).hexdigest()
 
     def save(self, *args, **kwargs):
         fields = kwargs.get("update_fields")
+        if not self._state.adding and not kwargs.get("force_insert"):
+            # Ausschließlich security.secure_account erhöht diese Spalte unter
+            # Zeilensperre. Ein vor Recovery geladenes Objekt darf sie beim späteren
+            # vollständigen Speichern seiner Profilfelder nicht zurücksetzen.
+            if fields is None:
+                fields = {
+                    field.attname
+                    for field in self._meta.concrete_fields
+                    if not field.primary_key and field.attname in self.__dict__
+                }
+                if not getattr(self, "_password_write_requested", False):
+                    # Profilvollsave: ein übernommener Hash/Startpasswortstatus ist
+                    # kein Passwortwechsel. Explizite Setter oder update_fields
+                    # bleiben die absichtlichen Passwort-Schreibwege.
+                    fields -= {"password", "initial_password_expires"}
+            kwargs["update_fields"] = fields = set(fields) - {"auth_version"}
         if fields is not None and "password" in fields:
             kwargs["update_fields"] = {*fields, "initial_password_expires"}
+        writes_password = fields is None or "password" in fields
         super().save(*args, **kwargs)
+        if writes_password:
+            self._password_write_requested = False
 
     @property
     def must_change_password(self) -> bool:

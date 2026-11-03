@@ -525,7 +525,8 @@ def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, 
     from .auskunft import _org_ids
     from .models import HonoraryTitleAward, Person
 
-    person = membership.person
+    services.lock_person(membership.person_id)
+    person = Person.objects.get(pk=membership.person_id)
     with rls_bypass():
         orgs = _org_ids(membership.organization)
         reigns = Reign.objects.filter(organization_id__in=orgs, person=person)

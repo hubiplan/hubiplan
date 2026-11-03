@@ -1,8 +1,9 @@
 """Einstellungen für gunicorn (liest es selbst aus dem Arbeitsverzeichnis /app).
 
 Vorwärmen: Jeder neue Prozess beantwortet vor der ersten echten Anfrage zwei Abrufe
-an sich selbst. So lädt er Adressen, Ansichten und die Datenbankverbindung vorab;
-sonst wartete der erste Besucher nach dem Ausrollen darauf.
+an sich selbst und lädt damit Anwendungs-/Resolvercode. Django-Verbindungen sind
+threadlokal: gthread öffnet sie bewusst erst bei der ersten Anfrage im jeweiligen
+Requestthread. Die Hauptthread-Verbindung wird nach dem Vorwärmen geschlossen.
 """
 
 WARMUP_PATHS = ("/api/health/", "/api/public/site/v1/resolve/")
@@ -13,6 +14,17 @@ def post_worker_init(worker):
 
 
 def warm_up(app, log) -> None:
+    from django.db import connections
+
+    try:
+        _warm_up(app, log)
+    finally:
+        # gthread bearbeitet Anfragen in anderen Threads. Die hier geöffnete
+        # Verbindung kann dort nicht wiederverwendet werden.
+        connections.close_all()
+
+
+def _warm_up(app, log) -> None:
     import io
 
     for path in WARMUP_PATHS:
@@ -34,15 +46,20 @@ def warm_up(app, log) -> None:
             "wsgi.run_once": False,
         }
         status: list[str] = []
+        body = None
         try:
             body = app(environ, _collect(status))
             for _ in body:
                 pass
-            if hasattr(body, "close"):
-                body.close()
             log.info("Vorwärmen %s: %s", path, status[0] if status else "?")
         except Exception as exc:  # noqa: BLE001 – Vorwärmen darf den Start nie verhindern
             log.warning("Vorwärmen %s fehlgeschlagen: %s", path, exc)
+        finally:
+            if body is not None and hasattr(body, "close"):
+                try:
+                    body.close()
+                except Exception as exc:  # noqa: BLE001
+                    log.warning("Vorwärmen %s: Schließen fehlgeschlagen: %s", path, exc)
 
 
 def _collect(status: list[str]):

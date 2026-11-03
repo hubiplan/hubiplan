@@ -28,12 +28,21 @@ def text_key(value: str) -> tuple[str, str, str]:
 
 def name_ids(qs, word: str, *, fields=("person__last_name", "person__first_name")):
     """Zeilen-IDs, bei denen eines der angegebenen Namensfelder das Wort enthält."""
-    needle = normalize(word)
-    return {
-        row[0]
-        for row in qs.order_by().values_list("pk", *fields)
-        if any(needle in normalize(value) for value in row[1:] if value is not None)
-    }
+    return name_ids_many(qs, [word], fields=fields)[word]
+
+
+def name_ids_many(qs, words, *, fields=("person__last_name", "person__first_name")):
+    """Alle Wörter aus einer Entschlüsselung der erlaubten Namensspalten auswerten."""
+    needles = {word: normalize(word) for word in words}
+    matches = {word: set() for word in needles}
+    if not needles:
+        return matches
+    for row in qs.order_by().values_list("pk", *fields).iterator():
+        values = [normalize(value) for value in row[1:] if value is not None]
+        for word, needle in needles.items():
+            if any(needle in value for value in values):
+                matches[word].add(row[0])
+    return matches
 
 
 def filter_names(qs, search: str, *, variants=None, max_words=3):
