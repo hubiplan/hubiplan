@@ -84,6 +84,14 @@ def test_zeilen_ids_und_annotationen_bleiben_erhalten(orgs):
         )
 
 
+def test_neue_zeilen_ohne_sortierposition_kommen_nicht_in_die_seite(orgs):
+    first = make_member(orgs["c"], "Anna", "Alt")
+    with rls_bypass():
+        page = ordered(Membership.objects.filter(organization=orgs["c"]))
+        make_member(orgs["c"], "Berta", "Neu")
+        assert list(page.values_list("pk", flat=True)) == [first.pk]
+
+
 def test_gemischte_sortierung_nulls_und_geburtsdatum(orgs):
     old = make_member(orgs["c"], "Anna", "Adler", birth_date=datetime.date(1960, 1, 1))
     young = make_member(orgs["c"], "Berta", "Berg", birth_date=datetime.date(2000, 1, 1))

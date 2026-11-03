@@ -103,6 +103,4 @@ def ordered(qs, *ordering, limit=None):
         function="array_position",
         output_field=IntegerField(),
     )
-    if limit is not None:
-        qs = qs.filter(pk__in=ids)
-    return qs.alias(_person_position=position).order_by("_person_position")
+    return qs.filter(pk__in=ids).alias(_person_position=position).order_by("_person_position")
