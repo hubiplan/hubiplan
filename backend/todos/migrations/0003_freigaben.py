@@ -51,7 +51,7 @@ class Migration(migrations.Migration):
                 ('responsible', models.BooleanField(default=False)),
                 ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='organizations.organization')),
                 ('role', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='access.role')),
-                ('target_department', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='todo_shares', to='organizations.department')),
+                ('target_department', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='todo_department_shares', to='organizations.department')),
                 ('target_org', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='todo_shares', to='organizations.organization')),
                 ('todo', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='shares', to='todos.todo')),
                 ('user', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),

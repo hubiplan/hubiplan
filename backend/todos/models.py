@@ -93,7 +93,7 @@ class TodoShare(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="todo_shares",
+        related_name="todo_department_shares",
     )
     level = models.CharField(
         max_length=4, choices=[("view", "Lesen"), ("edit", "Bearbeiten")], default="view"
