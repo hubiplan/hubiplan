@@ -10,7 +10,7 @@ def forwards(apps, schema_editor):
     Role = apps.get_model("access", "Role")
     for role in Role._base_manager.all():
         permissions = role.permissions or []
-        if not any(p.startswith("todos.") for p in permissions):
+        if permissions and not any(p.startswith("todos.") for p in permissions):
             level = "edit" if role.is_board or set(permissions) & {"roles.edit", "roles.manage"} else "view"
             role.permissions = [*permissions, f"todos.{level}"]
             role.save(update_fields=["permissions"])

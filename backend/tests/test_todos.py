@@ -75,6 +75,25 @@ def test_lesen_erlaubt_eigene_aufgaben(api, orgs):
     assert patch(api, user, orgs["a"], todo, title="Geändert").status_code == 200
 
 
+def test_rollenvorgaben_respektieren_ausdrueckliche_auswahl(api, board_a, orgs):
+    roles = f"/api/orgs/{orgs['a'].pk}/roles/"
+    reader = api(board_a).post(
+        roles, {"name": "Neue Leserrolle", "is_board": False}, content_type="application/json"
+    )
+    assert reader.status_code == 201
+    assert "todos.view" in reader.json()["permissions"]
+    board = api(board_a).post(
+        roles, {"name": "Neuer Vorstand", "is_board": True}, content_type="application/json"
+    )
+    assert "todos.edit" in board.json()["permissions"]
+    office = api(board_a).post(
+        roles,
+        {"name": "Reines Amt", "permissions": [], "is_board": False},
+        content_type="application/json",
+    )
+    assert office.json()["permissions"] == []
+
+
 def test_veraltete_version_ueberschreibt_nichts(api, board_a, orgs):
     todo = create(api, board_a, orgs["a"])
     assert patch(api, board_a, orgs["a"], todo, title="Aktuell").status_code == 200

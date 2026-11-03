@@ -9,6 +9,9 @@ bleiben privat. Zusätzliche Sichtbarkeit entsteht ausschließlich durch ausdrü
   Aufgabenrechte und App-Navigation müssen zusätzlich ergänzt werden.
 - Rollen kennen Bereiche mit Lesen und Bearbeiten. Aufgabenlesen erlaubt die Pflege eigener
   Aufgaben; Aufgabenbearbeiten erlaubt zusätzlich das Teilen.
+  Bei der Neuanlage dienen Aufgabenrechte als Vorgabe. Ausdrücklich ausgewählte Rechte
+  werden respektiert; reine Ämter ohne Zugriffsrechte bleiben ohne Zugang. Die Bestandsmigration
+  ergänzt Rollen mit vorhandenen Zugriffsrechten, Vorstandsrollen erhalten Bearbeiten.
 - Verschlüsselte Textfelder und private Dateien lassen sich wiederverwenden.
 - Die Organisationsprüfung der bisherigen API genügt für organisationsübergreifende Aufgaben
   nicht. Der Empfänger greift im Kontext seiner berechtigten Zieleinheit zu.

@@ -12,6 +12,14 @@ from .models import Role, RoleAssignment
 class RoleSerializer(serializers.ModelSerializer):
     assignment_count = serializers.SerializerMethodField()
 
+    def create(self, validated_data):
+        # Vorgabe nur ohne ausdrückliche Rechteauswahl; Importe und reine Ämter
+        # behalten ihre absichtlich festgelegten Berechtigungen.
+        if "permissions" not in validated_data:
+            level = "edit" if validated_data.get("is_board", True) else "view"
+            validated_data["permissions"] = [f"todos.{level}"]
+        return super().create(validated_data)
+
     class Meta:
         model = Role
         fields = [

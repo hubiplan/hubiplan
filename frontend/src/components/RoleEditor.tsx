@@ -323,7 +323,11 @@ export function RoleForm({
     contact_email: role?.contact_email ?? '',
     on_website: role?.on_website ?? false,
     in_chronicle: role?.in_chronicle ?? false,
-    permissions: role?.permissions ?? [],
+    permissions:
+      role?.permissions ??
+      (showPermissions && !permissionsOptional && catalog.some((m) => m.id === 'todos')
+        ? ['todos.edit']
+        : []),
   })
   const { values: v } = form
   const has = (f: RoleField) => fields.includes(f)
