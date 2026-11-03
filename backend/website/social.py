@@ -18,12 +18,10 @@ from __future__ import annotations
 
 import datetime
 import hashlib
-import ipaddress
 import json
 import logging
 import re
 import secrets
-import socket
 import time
 import urllib.error
 import urllib.parse
@@ -109,7 +107,10 @@ def _raise_for_error(payload: dict) -> None:
 
 
 def cdn_allowed(url: str) -> bool:
-    parts = urllib.parse.urlsplit(url or "")
+    try:
+        parts = urllib.parse.urlsplit(url or "")
+    except ValueError:
+        return False
     host = (parts.hostname or "").lower()
     return parts.scheme == "https" and any(host.endswith(s) for s in CDN_SUFFIXES)
 
@@ -118,27 +119,17 @@ def _download(url: str) -> bytes:
     """Bild von Meta holen: nur https, nur Meta-Server, keine Weiterleitung, Größengrenze."""
     if not cdn_allowed(url):
         raise MetaError("Bildadresse gehört nicht zu Meta.")
-    host = urllib.parse.urlsplit(url).hostname or ""
+    from core.safehttp import SafeHTTPError, request
+
     try:
-        infos = socket.getaddrinfo(host, 443, proto=socket.IPPROTO_TCP)
-    except OSError as exc:
-        raise MetaError("Bildserver nicht auflösbar.") from exc
-    if any(not ipaddress.ip_address(i[4][0]).is_global for i in infos):
-        raise MetaError("Bildserver zeigt auf eine interne Adresse.")
-    req = urllib.request.Request(url)  # noqa: S310
-    opener = urllib.request.build_opener(_NoRedirect())
-    try:
-        with opener.open(req, timeout=TIMEOUT) as resp:
-            if resp.status != 200:
-                raise MetaError(f"Bild nicht abrufbar (HTTP {resp.status}).")
-            data = resp.read(MAX_IMAGE + 1)
-    except urllib.error.HTTPError as exc:
-        raise MetaError(f"Bild nicht abrufbar (HTTP {exc.code}).") from exc
-    except (urllib.error.URLError, OSError, TimeoutError) as exc:
+        resp = request("GET", url, timeout=TIMEOUT, max_body=MAX_IMAGE)
+    except (SafeHTTPError, ValueError) as exc:
         raise MetaError("Bild nicht abrufbar.") from exc
-    if len(data) > MAX_IMAGE:
+    if resp.status != 200:
+        raise MetaError(f"Bild nicht abrufbar (HTTP {resp.status}).")
+    if len(resp.body) > MAX_IMAGE:
         raise MetaError("Bild ist zu groß.")
-    return data
+    return resp.body
 
 
 # --- Adressen ---
@@ -785,6 +776,29 @@ def _store_images(post: SocialPost, media: list[tuple[str, str, bool]]) -> None:
 
 
 def sync_feed(feed: SocialFeed) -> int:
+    """A session advisory lock prevents overlapping manual/periodic worker fetches.
+
+    No transaction stays open during provider calls; a crashed connection releases
+    the lock automatically. A fresh read also observes disconnects while queued.
+    """
+    from django.db import connection
+
+    key = int.from_bytes(
+        hashlib.sha256(f"social-feed:{feed.pk}".encode()).digest()[:8], signed=True
+    )
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_try_advisory_lock(%s)", [key])
+        if not cursor.fetchone()[0]:
+            return 0
+    try:
+        current = SocialFeed.objects.filter(pk=feed.pk).first()
+        return _sync_feed(current) if current else 0
+    finally:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pg_advisory_unlock(%s)", [key])
+
+
+def _sync_feed(feed: SocialFeed) -> int:
     """Neueste Beiträge holen und abgleichen. Liefert die Zahl neuer Beiträge."""
     if (
         not feed.is_active

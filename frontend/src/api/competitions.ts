@@ -559,6 +559,16 @@ export interface SyncResult {
 const base = (org: number) => `/api/orgs/${org}/competitions/`
 const c = (org: number, id: number) => `${base(org)}${id}/`
 
+export const resultOwnershipApi = {
+  get: (org: number, id: number) =>
+    api.get<{
+      partners: { id: number; name: string }[]
+      starters: { id: number; name: string; club: string; coupling: number | null }[]
+    }>(`${c(org, id)}result-ownership/`),
+  set: (org: number, id: number, starter: number, coupling: number | null) =>
+    api.post(`${c(org, id)}result-ownership/`, { starter, coupling }),
+}
+
 const targetCache = new Map<number, Promise<TargetCatalog>>()
 
 export const competitionsApi = {

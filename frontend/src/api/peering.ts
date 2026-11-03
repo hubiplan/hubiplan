@@ -52,6 +52,7 @@ export interface Coupling {
   last_error: string
   error_since: string | null
   queued: number
+  reception_budget?: { bytes: number; messages: number; initialized: boolean }
   received: Received
   invoices: CouplingInvoice[]
   register: RegisterInfo | null

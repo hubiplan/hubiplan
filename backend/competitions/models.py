@@ -263,6 +263,9 @@ class Starter(models.Model):
     # Name als Text: für Gäste die Eingabe, für Mitglieder eine Kopie (bleibt nach Austritt)
     name = models.CharField("Name", max_length=200)
     club = models.CharField("Verein", max_length=200, blank=True)
+    result_coupling = models.ForeignKey(
+        "peering.Coupling", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
     unit = models.ForeignKey(
         "organizations.Department",
         on_delete=models.SET_NULL,

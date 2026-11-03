@@ -209,10 +209,8 @@ def announce(org, base_url: str, fingerprint: str, user) -> dict:
 # --- Umzug übernehmen (Gegenstelle) ---
 
 
-def receive_moved(coupling: Coupling, data: dict) -> None:
-    """Gegenstelle: Die Einheit wohnt jetzt auf einer anderen Instanz.
-
-    Nichts wird umgestellt, bevor ein Vorstand hier zustimmt (``confirm_move``)."""
+def verify_moved(data: dict) -> dict:
+    """Verify the announced identity before taking a global reception-budget lock."""
     info = transport.fetch_info(str(data.get("base_url", "")))
     if (
         str(info["instance_id"]) != str(data.get("instance_id"))
@@ -222,6 +220,12 @@ def receive_moved(coupling: Coupling, data: dict) -> None:
         raise ValidationError(gettext("Die neue Instanz meldet andere Schlüssel als angekündigt."))
     if str(info["instance_id"]) == identity.identity().instance_id:
         raise ValidationError(gettext("Die neue Instanz ist diese Instanz selbst."))
+    return info
+
+
+def receive_moved(coupling: Coupling, data: dict, *, verified_info=None) -> None:
+    """Gegenstelle: Umzug erst nach lokaler Bestätigung (``confirm_move``)."""
+    info = verify_moved(data) if verified_info is None else verified_info
     options = dict(coupling.options or {})
     previous = options.get("move", {}).get("previous") or coupling.state
     if previous not in OPEN:

@@ -828,6 +828,7 @@ def external_data(cal: ExternalCalendar) -> dict:
         "share_down": cal.share_down,
         "is_active": cal.is_active,
         "last_sync_at": cal.last_sync_at,
+        "last_successful_sync_at": cal.last_successful_sync_at,
         "last_error": cal.last_error,
         "event_count": cal.events.count(),
         "hidden": [h for h in (cal.hidden or []) if isinstance(h, dict)],

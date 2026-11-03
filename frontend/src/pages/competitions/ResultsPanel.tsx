@@ -1,14 +1,15 @@
 // Auswertung: Ranglisten je Wertung mit Preisplätzen, offene Stechen, Kennzahlen, Ausgaben.
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import {
   competitionsApi,
+  resultOwnershipApi,
   orgShootoffApi,
   type BirdState,
   type CompetitionDetail,
   type StandingBlock,
   type Stats,
 } from '../../api/competitions.ts'
-import { useLoad } from '../../components/forms.ts'
+import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, LoadError } from '../../components/ui.tsx'
 import { ShootoffBlock } from './Shootoffs.tsx'
 import { HowTo, Term } from '../../learning/Aids.tsx'
@@ -51,6 +52,7 @@ export function ResultsPanel({
         </button>
       </div>
       {data.bird && <BirdResults bird={data.bird} />}
+      {comp.own && comp.can_manage && <ResultOwnership org={org} comp={comp.id} />}
       {data.open_shootoffs > 0 && (
         <Alert kind="info">
           <Term k="comp_tie">{t('Gleichstand')}</Term> {t('auf')}{' '}
@@ -336,6 +338,60 @@ function StatsCard({ stats }: { stats: Stats }) {
           </table>
         </div>
       )}
+    </div>
+  )
+}
+
+function ResultOwnership({ org, comp }: { org: number; comp: number }) {
+  const ownership = useLoad(() => resultOwnershipApi.get(org, comp), [org, comp])
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  if (!ownership.data?.partners.length) return null
+  return (
+    <div className="card card-wide">
+      <h2>{t('Ergebnisfreigabe an gekoppelte Vereine')}</h2>
+      <p>
+        {t(
+          'Gaststarter ausdrücklich zuordnen. Ein Vereinsname allein gibt keine persönlichen Ergebnisse frei. Die Paketfreigabe gilt zusätzlich.',
+        )}
+      </p>
+      {error && <Alert kind="error">{error}</Alert>}
+      {ownership.data.starters.map((s) => (
+        <label className="field" key={s.id}>
+          <span>
+            {s.name}
+            {s.club ? ` (${s.club})` : ''}
+          </span>
+          <select
+            value={s.coupling ?? ''}
+            disabled={busy}
+            onChange={async (e) => {
+              setBusy(true)
+              try {
+                await resultOwnershipApi.set(
+                  org,
+                  comp,
+                  s.id,
+                  e.target.value ? Number(e.target.value) : null,
+                )
+                setError(null)
+                await ownership.reload()
+              } catch (err) {
+                setError(errorMessage(err))
+              } finally {
+                setBusy(false)
+              }
+            }}
+          >
+            <option value="">{t('Nicht freigegeben')}</option>
+            {ownership.data!.partners.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      ))}
     </div>
   )
 }

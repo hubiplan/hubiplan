@@ -552,7 +552,7 @@ export const socialApi = {
   choosePage: (org: number, id: number, page: string) =>
     api.post<SocialFeed>(`${base(org)}social/${id}/page/`, { page }),
   sync: (org: number, id: number) =>
-    api.post<SocialFeed & { created: number }>(`${base(org)}social/${id}/sync/`),
+    api.post<SocialFeed & { created: number; queued: boolean }>(`${base(org)}social/${id}/sync/`),
   /** alle wartenden Beiträge des Kanals freigeben */
   publishPending: (org: number, id: number) =>
     api.post<SocialFeed & { published: number }>(`${base(org)}social/${id}/publish-pending/`),
