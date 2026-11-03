@@ -323,6 +323,17 @@ msgid "Die Rolle ist nicht mehr aktiv."
 msgstr "The role is no longer active."
 
 msgid ""
+"Dieses Konto hat bereits ein Passwort. Bei Bedarf hilft „Passwort vergessen“ "
+"auf der Anmeldeseite."
+msgstr ""
+"This account already has a password. If needed, use “Forgot password” on the "
+"sign-in page."
+
+msgid ""
+"Die Einladung konnte nicht gesendet werden. Bitte später erneut versuchen."
+msgstr "The invitation could not be sent. Please try again later."
+
+msgid ""
 "Dieses Konto hat auch außerhalb dieses Vereins Rechte. Die Zwei-Faktor-"
 "Anmeldung setzt dann nur die Plattform-Verwaltung zurück."
 msgstr ""

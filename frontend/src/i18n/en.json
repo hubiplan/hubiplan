@@ -4841,5 +4841,8 @@
   "Zu Google Wallet hinzufügen": "Add to Google Wallet",
   "Zu Apple Wallet hinzufügen": "Add to Apple Wallet",
   "Der Apple-Wallet-Pass wird nicht automatisch aktualisiert. Die aktuelle Gültigkeit wird beim Scannen online geprüft.": "The Apple Wallet pass is not updated automatically. Current validity is checked online when the code is scanned.",
-  "Dabei werden dein Name, dein Verein und der QR-Code an Google übertragen. Dein Foto wird nicht übertragen. Die aktuelle Gültigkeit wird beim Scannen online geprüft.": "Your name, club and QR code will be sent to Google. Your photo will not be sent. Current validity is checked online when the code is scanned."
+  "Dabei werden dein Name, dein Verein und der QR-Code an Google übertragen. Dein Foto wird nicht übertragen. Die aktuelle Gültigkeit wird beim Scannen online geprüft.": "Your name, club and QR code will be sent to Google. Your photo will not be sent. Current validity is checked online when the code is scanned.",
+  "Neue Einladung an {email} gesendet (gilt {INVITATION_DAYS} Tage).": "New invitation sent to {email} (valid for {INVITATION_DAYS} days).",
+  "Passwort noch nicht festgelegt": "Password not set yet",
+  "Einladung erneut senden": "Resend invitation"
 }
