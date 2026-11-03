@@ -234,7 +234,11 @@ class Website(models.Model):
 
     def packages(self):
         """Für diese Webseite freigegebene Designpakete."""
-        return list(self.design_packages.all())
+        # Legacy free templates remain stored for administrators, but are quarantined
+        # from all public clients, including older website versions.
+        return [
+            p for p in self.design_packages.all() if not p.templates and p.sketch_like in DESIGNS
+        ]
 
     def design_choices(self) -> set[str]:
         return set(DESIGNS) | {p.key for p in self.packages()}

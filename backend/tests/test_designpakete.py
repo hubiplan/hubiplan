@@ -57,15 +57,15 @@ def problems(data: bytes, **kw) -> list[str]:
 
 class TestPruefung:
     def test_skizze_frueherer_fassung(self):
-        """Das alte Klassisch (bis 2026-11) behält als Paket seine eigene Skizze."""
-        assert dp.read(make_zip(skizze_wie="classic-1"), key="hubertus").sketch_like == "classic-1"
+        """Historische Layoutkennungen verwenden ein gepflegtes Standardlayout."""
+        assert dp.read(make_zip(skizze_wie="classic-1"), key="hubertus").sketch_like == "classic"
         assert dp.read(make_zip(skizze_wie="gibtsnicht"), key="hubertus").sketch_like == "classic"
 
     def test_gutes_paket_unter_neuem_namen(self):
-        pkg = dp.read(make_zip({"vorlagen/kopf.html": KOPF}), key="hubertus", label="Hubertus")
+        pkg = dp.read(make_zip(), key="hubertus", label="Hubertus")
         assert pkg.key == "hubertus" and pkg.label == "Hubertus" and pkg.label_en == ""
         assert pkg.roles == {"header": [0], "nav": [1], "footer": "dark"}
-        assert set(pkg.templates) == {"seite/kopf.html"}
+        assert pkg.templates == {}
         assert len(pkg.content_hash) == 16
 
     def test_standardkuerzel_braucht_neuen_namen(self):
@@ -110,12 +110,11 @@ class TestPruefung:
 
     def test_link_nach_aussen_erlaubt(self):
         html = '<a href="https://github.com/hubiplan" target="_blank" rel="noopener">HUBIplan</a>'
-        pkg = dp.read(make_zip({"vorlagen/fuss.html": html}, key="test"))
-        assert "seite/fuss.html" in pkg.templates
+        assert problems(make_zip({"vorlagen/fuss.html": html}, key="test"))
 
     def test_kommentar_wird_nicht_geprueft(self):
         html = "{% comment %}<script>{% endcomment %}<p>ok</p>"
-        assert dp.read(make_zip({"vorlagen/start.html": html}, key="test"))
+        assert problems(make_zip({"vorlagen/start.html": html}, key="test"))
 
     @pytest.mark.parametrize(
         "files",
@@ -151,7 +150,7 @@ class TestPruefung:
         assert pkg.warnings and "farbe_fuer_alles" in pkg.warnings[0]
 
     def test_export_liest_sich_wieder(self):
-        pkg = dp.read(make_zip({"vorlagen/kopf.html": KOPF}, key="test"))
+        pkg = dp.read(make_zip(key="test"))
         data = dp.build_zip(
             key="test",
             label="Test",
@@ -221,7 +220,7 @@ class TestEinspielen:
 
     def test_einspielen_waehlen_und_ausliefern(self, api, orgs, admin, board_a, site):
         c = api(admin)
-        zipped = make_zip({"vorlagen/kopf.html": KOPF})
+        zipped = make_zip()
         resp = upload(c, orgs["a"], zipped, key="hubertus", label="Hubertus")
         assert resp.status_code == 201, resp.content
         pkg = DesignPackage.objects.get(key="hubertus")
@@ -258,7 +257,11 @@ class TestEinspielen:
         }
         assert info["designs"]["hubertus"]["footer"]["color"] == info["theme"]["accent"]
         body = Client().get("/api/public/site/v1/schluessel-p/design/hubertus/").json()
-        assert body["css"].startswith(".kopf") and "seite/kopf.html" in body["templates"]
+        assert (
+            body["css"].startswith(".kopf")
+            and body["templates"] == {}
+            and body["layout"] == "classic"
+        )
 
         # Freigabe entziehen geht erst nach einem anderen Design; löschen ebenso
         detail = f"/api/orgs/{orgs['a'].pk}/website/design-packages/hubertus/"
@@ -284,7 +287,7 @@ class TestEinspielen:
         upload(
             api(admin),
             orgs["a"],
-            make_zip({"vorlagen/kopf.html": KOPF}),
+            make_zip(),
             key="hubertus",
             label="Hubertus",
         )
@@ -294,7 +297,7 @@ class TestEinspielen:
         assert resp.status_code == 200
         assert resp["Content-Type"] == "application/zip"
         again = dp.read(resp.content)
-        assert again.key == "hubertus" and "seite/kopf.html" in again.templates
+        assert again.key == "hubertus" and not again.templates
 
     def test_farbzuordnung_aus_dem_standarddesign(self, api, orgs, admin, site):
         site.color_roles = {"classic": {"footer": 1, "header": "light"}}
@@ -309,3 +312,39 @@ class TestEinspielen:
         info = Client().get("/api/public/site/v1/schluessel-p/").json()
         classic = info["design_catalog"]["classic"]
         assert classic["label"] == "Klassisch" and classic["roles"]["header"] == [0]
+
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        KOPF,
+        "{% firstof '<script>alert(1)</script>' %}",
+        "<scr{% if site.info.name %}ipt{% endif %}>x</script>",
+        "{% if site.info.secret %}<img src=x onerror=alert(1)>{% endif %}",
+        '{% cycle "<iframe src=https://evil.example>" "ok" %}',
+        '<a href="java&#x73;cript:alert(1)">x</a>',
+    ],
+)
+def test_fremde_vorlagen_unabhaengig_vom_kontext_abgelehnt(html):
+    assert problems(make_zip({"vorlagen/kopf.html": html}, key="test"))
+
+
+@pytest.mark.parametrize("layout", list(dp.designs.DESIGNS))
+def test_standardlayout_export_import(layout):
+    pkg = dp.read(make_zip(key="test", quelle=layout))
+    assert pkg.sketch_like == layout and not pkg.templates
+    assert pkg.content_hash != dp.content_hash(pkg.css, {}, pkg.roles, "unknown")
+
+
+def test_altpaket_wird_oeffentlich_quarantaenisiert(site):
+    pkg = DesignPackage.objects.create(
+        key="altpaket", label="Alt", templates={"seite/kopf.html": KOPF}
+    )
+    pkg.websites.add(site)
+    site.design = pkg.key
+    site.save()
+    response = Client().get("/api/public/site/v1/schluessel-p/")
+    assert response.status_code == 200
+    assert response.json()["design"] == "classic"
+    assert pkg.key not in response.json()["design_packages"]
+    assert Client().get("/api/public/site/v1/schluessel-p/design/altpaket/").status_code == 404

@@ -271,6 +271,7 @@ class DesignPackageView(_Public):
                 "label": found.label_for(site.site.language),
                 "css": found.css,
                 "templates": found.templates,
+                "layout": found.sketch_like,
             },
             site,
         )

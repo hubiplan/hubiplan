@@ -12,4 +12,6 @@ Under Design you choose the look, colours and logo of the website. The colours u
 
 Under **Share design** you save a design as a ZIP file with **Save as package**. The package contains the styling, the layout of header, footer and home page and the colour defaults, but no coat of arms, texts or images.
 
-Platform administrators can import a package under **Load design from package**. With a new **Short name** and **Name** it becomes an own design, for example the previous “Klassisch” as a design for your club only. **Check** lets HUBIplan check the package: no JavaScript, no content from other addresses, only permitted templates. **Import** releases the design for this website; under **Imported designs** the release can be switched on and off for each website.
+Platform administrators can import a package under **Load design from package**. With a new **Short name** and **Name** it becomes an own design, for example a styling variant for your club only. **Check** lets HUBIplan check the package: no JavaScript, no content from other addresses, no imported HTML/Django templates. **Import** releases the design for this website; under **Imported designs** the release can be switched on and off for each website.
+
+Design packages use maintained built-in layouts with custom CSS and colours. Imported HTML/Django templates are rejected. Legacy packages with such templates are quarantined and display Classic until replaced by a package without templates. Layout markup follows maintained components rather than freezing historic HTML.

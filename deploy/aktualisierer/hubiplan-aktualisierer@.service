@@ -11,3 +11,15 @@ Type=oneshot
 ExecStart=/usr/local/lib/hubiplan/aktualisierer.sh /opt/%i
 # Bauen und Migrationen dürfen dauern (MIGRATE_TIMEOUT bis 1 h)
 TimeoutStartSec=3h
+# Conservative helper defaults, not measured capacity figures. Operators may
+# override them in a root-owned systemd drop-in. This cgroup bounds helper/Git/tar
+# processes only; Docker-daemon/BuildKit work has a separate resource boundary.
+CPUAccounting=yes
+MemoryAccounting=yes
+TasksAccounting=yes
+CPUQuota=100%
+MemoryHigh=512M
+MemoryMax=1G
+TasksMax=128
+Nice=10
+OOMPolicy=stop

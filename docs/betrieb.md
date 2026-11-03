@@ -137,11 +137,11 @@ Schlüssel übernimmt, kann auch die verschlüsselten Inhalte lesen.
   UID 1000, Gruppe 70, Rechte 0440), als Docker-Secret nur in Backend, Worker, Beat und
   Backup. Er steht nicht in der `.env`. `deploy/server-setup.sh` legt ihn beim ersten
   Ausrollen an und überschreibt ihn nie.
-- **Kopie des Hauptschlüssels:** Das Backup legt bei jedem Lauf `datenschluessel.age`
+- **Kopie des Hauptschlüssels:** Das Backup legt bei jedem Lauf `datenschluessel_STAMP.age`
   neben die Backups, verschlüsselt mit dem öffentlichen Backup-Schlüssel. Sie geht mit
   restic an den zweiten Ort. Lesen kann sie nur, wer den privaten Backup-Schlüssel hat:
-  `age -d -i hubiplan-backup.key datenschluessel.age`. Ohne öffentlichen Backup-Schlüssel
-  (alte Form) heißt die Kopie `datenschluessel.enc` und ist mit der Backup-Passphrase
+  `age -d -i hubiplan-backup.key datenschluessel_STAMP.age`. Ohne öffentlichen Backup-Schlüssel
+  (alte Form) heißt die Kopie `datenschluessel_STAMP.enc` und ist mit der Backup-Passphrase
   verschlüsselt. Gelingt die Kopie nicht, gilt das Backup als **unvollständig**
   (Alarm-Mail, alte Backups bleiben). Die Kopie wird nie als „altes Backup“ gelöscht.
   Zusätzlich den Hauptschlüssel im Passwortmanager ablegen.
@@ -598,6 +598,213 @@ Datenbank-Migrationen der neueren Fassung bleiben dabei angewendet; Migrationen 
 so schreiben, dass die vorige Fassung damit weiterläuft (Spalten erst eine Fassung später
 entfernen).
 
+
+## Verifikation der Dateiarchive und lokale technische Satzprüfung
+
+Die Sicherung prüft die tatsächlichen gzip/tar-Dateibytes streamingweise vor der
+Verschlüsselung gegen die SHA-256-Dateiliste. Veränderte Inhalte, fehlende/zusätzliche
+Dateien, Duplikate, unsichere Pfade, Links sowie defekte gzip-Trailer brechen die
+Pipeline ab. Es wird kein vollständiges Klartext-Dateiarchiv im Server-tmpfs abgelegt.
+Die Passphrase-Rücksicherung prüft zusätzlich das entschlüsselte signierte Archiv.
+Der vorhandene SQL-Test spielt den Dump weiterhin in eine leere lokale PostgreSQL-Instanz.
+DB-Verweise werden gegen die so geprüfte Dateiliste verglichen; fehlende Verweise
+lösen weiterhin den Unvollständigkeitsmerker aus und verhindern die Altersbereinigung.
+
+Bei age kann der Server nur die Daten **vor** Verschlüsselung prüfen. Den privaten
+age-Schlüssel nicht auf den Server kopieren. Auf einem isolierten lokalen Rechner mit
+Testplatz, PostgreSQL 18, age, OpenSSL und den Backup-Werkzeugen lässt sich ein kopierter
+Sicherungssatz vollständig prüfen:
+
+```sh
+BACKUP_HMAC_KEY="$(cat /geschuetzt/hmac-key)" \
+  restore-test.sh --age /sicherung/db_ZEIT.sql.gz.age /geschuetzt/restore-identity
+```
+
+`verify.sh` unterstützt die vorhandene HMAC-Konfiguration; vor Aufruf den Schlüssel
+über die dokumentierte geschützte Umgebung bereitstellen. Kein Geheimnis auf die
+Befehlszeile schreiben. Die Beispiele zeigen nur Musterpfade. Der lokale Restore
+prüft HMAC, age-Entschlüsselung, tatsächliche Archiv-Prüfsummen und SQL-Restore.
+Die zum Sicherungszeitpunkt gehörende verschlüsselte Hauptschlüsselkopie muss gegen
+den signierten SHA-256-Fingerabdruck dieses Quellschlüsselrings passen. Jede
+Schlüsselzeile muss 32 Byte ergeben; Kommentare und mehrere alte Rotationsschlüssel
+werden wie in der Anwendung unterstützt. Alte Sätze ohne Fingerabdruck verlangen eine unabhängige manuelle
+Schlüsselprüfung; der strenge neue Test akzeptiert sie nicht als vollständig geprüft.
+Ein Restore ohne passende Dateiarchive ist ebenfalls kein vollständiger Satz.
+Das belegt Wiederherstellbarkeit der geprüften Kopie, keine externe Kopier-/Transport-
+oder zukünftige Hardwaregarantie. Temporäre Klartexte nur auf einem geschützten
+lokalen Arbeitsdatenträger ablegen; der Test entfernt sie beim Ende.
+
+English: archive contents are SHA-256 verified as a bounded stream before encryption.
+A separate local `--age` restore with an independently supplied private identity checks
+HMACs, decryption, actual archive bytes, database restoration and the recovered data-key
+fingerprint. The private identity must never be installed on the production server.
+Legacy key copies without authenticated source fingerprints need independent verification.
+
+Der entsprechende strenge lokale Test für Passphrase-Sätze heißt
+`restore-test.sh --passphrase /sicherung/db_ZEIT.sql.gz.enc`; er benötigt zusätzlich
+`BACKUP_PASSPHRASE` aus einer geschützten Umgebung. Auch hier müssen HMAC,
+Dateiarchive, Dateiliste und authentisierte Hauptschlüsselkopie vollständig vorliegen.
+English: `--passphrase DUMP` performs the same strict full-set check for legacy
+passphrase encryption, using independently supplied protected environment values.
+
+
+## Hosthelper und getrenntes Buildbudget (FQ18)
+
+Der sichere Auftragseingang, rootgeschützte Ergebnisordner, Release-Signaturprüfung,
+Abstammungsprüfung und Abbruch bei unvollständigem Vorupdatebackup bleiben aktiv.
+Die mitgelieferte systemd-Unit begrenzt nun den **Hosthelper samt direkten Kindprozessen**:
+CPUQuota 100 % (zusammen eine logische CPU), MemoryHigh 512 MiB, MemoryMax 1 GiB,
+TasksMax 128, Nice 10. Das sind konservative **Schätzwerte**, keine gemessene Dimensionierung
+für einen bestimmten gemeinsam genutzten Server. Die CPU-/RAM-/PID-Abrechnung ist aktiv.
+Ein Betreiber kann die Werte in einem rootgeschützten Drop-in unter
+`/etc/systemd/system/hubiplan-aktualisierer@.service.d/ressourcen.conf` überschreiben:
+
+```ini
+[Service]
+CPUQuota=100%
+MemoryHigh=512M
+MemoryMax=1G
+TasksMax=128
+```
+
+Die Unit muss erst beim freigegebenen Deployment installiert und von systemd neu geladen
+werden. Hier wurden weder Hostkonfiguration noch tatsächliche Cgroup-Zuordnung geprüft
+oder geändert. Die lokale Regression prüft die ausgelieferte Konfiguration, keine reale
+Durchsetzung auf einem Server. Kein ganzer Docker-/Hestia-Dienst darf hierfür pauschal
+mitbegrenzt werden: Das würde auch andere Websites und Bestandscontainer betreffen.
+
+**Offene Betriebsfreigabe:** Über den Docker-Socket angeforderte Builds laufen beim
+Docker-Daemon bzw. BuildKit und erben die Helper-Unitlimits nicht. Die Compose-Laufzeitlimits
+begrenzen ebenfalls keine Image-Builds. Für einen geteilten Host sind daher folgende
+Optionen getrennt freizugeben:
+
+- Empfehlung: geprüfte Images außerhalb des gemeinsam genutzten Webhosts bauen; der Host
+  lädt nur freigegebene Fassungen. Registry-/Signatur-/Rollbackverfahren vorher festlegen.
+- Alternativ: einen dedizierten begrenzten Builder mit passender Cgroup-/Docker-Treiber-
+  Konfiguration provisionieren. Buildx bietet beim Container-Treiber CPU-/Speicheroptionen;
+  PID-Gesamtgrenze und Zuordnung aller Buildprozesse müssen zusätzlich nachgewiesen werden.
+- Bis dahin ein explizites Wartungsfenster mit Betreiberaufsicht; dies ist **kein** technischer
+  Gesamtschutz und schließt den offenen Host-Buildteil von H01/FQ18 nicht.
+
+CPU/RAM/PID-Gesamtreserve, Wartungsfenster, Freigabeverantwortliche und Umgang mit OOM/
+Timeout müssen anhand des konkreten Hosts abgenommen werden. Keine Aktivierung oder
+Deaktivierung von Selbstupdate wurde hier vorgenommen.
+
+Die Grenzen folgen der offiziellen [systemd-Ressourcensteuerung](https://freedesktop.org/software/systemd/man/latest/systemd.resource-control.html).
+Die getrennte Builder-Konfiguration beschreibt die [Docker-Dokumentation zum Container-Treiber](https://docs.docker.com/build/builders/drivers/docker-container/).
+
+English: the shipped systemd unit now bounds the helper and its direct child processes.
+Defaults (one logical CPU, 512 MiB memory high watermark, 1 GiB memory maximum, 128 tasks)
+are conservative estimates and configurable through a root-owned unit drop-in. They do
+not constrain work delegated to Docker/BuildKit. Host activation and an independently
+bounded builder or external build/release process still require operational acceptance;
+no server actions or live enforcement tests were performed.
+
+
+### Bindung an den Sicherungssatz und Grenzen
+
+Neue Sicherungskennungen enthalten Sekunden und einen Zufallsteil. Dump, Dateiarchiv,
+Manifest, `datenschluessel_STAMP.age` bzw. `.enc` und `datenschluessel_STAMP.sha256`
+gehören über dieselbe Kennung zusammen; verschlüsselte Dateien und Fingerabdruck tragen
+je eine HMAC. Gleichzeitige Starter für denselben Backupordner werden mit `flock`
+abgewiesen, ohne fremde temporäre Dateien oder Marker anzufassen. Schlüsselkopien und
+Fingerabdrücke werden mit ihrem Satz aufbewahrt und an den zweiten Ort kopiert.
+
+Für eine Übergangsfassung bleiben `datenschluessel.age`/`.enc` und `.sha256` als Kopie
+**des letzten** Schlüssels erhalten. Sie dürfen niemals als Beweis für die Zugehörigkeit
+zu einem älteren Dump verwendet werden. Strenge Prüfungen wählen ausschließlich die
+zur Kennung passende Kopie. Der Schlüsselquellpfad ist standardmäßig das Docker-Secret
+`/run/secrets/datenschluessel` (`BACKUP_DATA_KEY_FILE` kann ihn bei bewusst anderer
+Schlüsselverwaltung ersetzen). Die Sicherung eines Schlüsselrings ersetzt keine Prüfung,
+dass die Anwendung genau diesen Schlüsselring bzw. einen unabhängigen Provider verwendet.
+
+Alte Dump-/Archivnamen bleiben lesbar. Ohne satzgebundenen Schlüssel/Fingerabdruck schlägt
+`--age`/`--passphrase` kontrolliert fehl. Für die Prüfung der noch belegbaren Teile gibt es
+explizit `--legacy-age DUMP IDENTITAET` und `--legacy-passphrase DUMP`. Diese Modi melden
+**LEGACY-Teilprüfung (keine Schlüsselzuordnung)**, niemals einen vollständig geprüften Satz.
+Die tägliche serverseitige SQL-/Datei-Vorprüfung bleibt davon getrennt. Ein strenger lokaler
+Test scheitert auch bei fehlenden DB-Dateiverweisen; die geplante Sicherung behält wie bisher
+den Unvollständigkeitsmerker und löscht dann keine alten Sicherungen.
+
+Die lokale Teststrecke prüft zusätzlich mit synthetischen Daten einen SQL-Restore in eine
+weitere Wegwerf-Datenbank und entschlüsselt dort gespeicherte Geburtsdaten sowie Rechnungs-/Rundschreibenkontakte
+(E-Mail, Anschrift und JSON-Platzhalter) mit dem aus
+**diesem** Sicherungssatz zurückgewonnenen Hauptschlüssel. Verglichen wird eine Prüfsumme
+der entschlüsselten Werte, es werden keine Klartext-Personendaten ausgegeben. Getrennte
+Regressionen vertauschen gültig verschlüsselte Schlüsselkopien, prüfen explizite Legacy-
+Modi und verifizieren einen älteren Satz nach einer neueren Schlüsselringrotation.
+
+**Das ist keine vollständige praktische Wiederanlaufübung.** MFA-Geheimnisse, Peering-
+Signaturmaterial, Mail-/Meta-Zugänge, externe Schlüsselprovider und jede verschlüsselte
+Datei wurden dadurch nicht in einer laufenden Gesamtanwendung wiederhergestellt.
+Unabhängig zu verwahren und in einer freigegebenen lokalen Übung zuzuordnen sind insbesondere
+Hauptschlüsselring/Providerzugang, `MFA_ENCRYPTION_KEYS`, Django-Geheimnis, Peering-Schlüssel,
+Backup-HMAC-Schlüssel, private age-Identität und Restic-Zugangsmaterial sowie Löschliste und
+Konfiguration. Kein privater age-Schlüssel gehört auf den Produktivserver. RPO/RTO,
+Verantwortliche, Prüfintervall, externe Kopie und fachliche Vollständigkeit bleiben
+betriebliche Abnahmen; ein positiver technischer Test nimmt sie nicht vorweg.
+
+English: every new snapshot binds its own encrypted data-key ring and authenticated
+fingerprint to the dump/archive identifier; strict restores never select the latest-key
+compatibility alias. Old snapshot names remain readable via explicitly labelled partial
+legacy verification. Tests cover key swapping, old-snapshot restoration after rotation,
+and decrypting synthetic restored birth dates and billing/circular contact copies with the recovered snapshot key.
+This does not establish a full application restart, MFA/peering recovery, external escrow
+availability, or accepted RPO/RTO.
+
+
+### Sicherheitszustand nach Rücksicherung (V06)
+
+`auth_version` liegt selbst in der Datenbanksicherung. Nach dem Einspielen eines älteren
+Stands ist der Wert **nicht über Rücksicherungen hinweg monoton**. Auch Geräte-/Peer-
+Widerrufe, Kontosperren und Passwort-/MFA-Änderungen nach dem Sicherungszeitpunkt können
+im restaurierten Datenbestand fehlen. Der Restore beweist deshalb nicht, dass spätere
+Sicherheitsmaßnahmen weiterwirken. Alte Browser-Sessions oder Tokens dürfen daraus
+keine erneute Freigabe erhalten.
+
+Vor jeder Wiederfreigabe muss eine verantwortliche Betriebs-/Sicherheitsrolle den noch
+isolierten Stand bewusst behandeln und den gewählten Weg protokollieren:
+
+- **Option A, empfohlen bei unvollständigem unabhängigem Änderungsnachweis:** restaurierte
+  Browser-Sessions und kurzlebige Anmelde-/Token-Caches in Datenbank, Redis und Prozessen
+  verwerfen. Geräteanmeldungen und Peer-Anmeldungen prüfen und bei nicht belegbarem
+  Widerrufsstand gezielt neu koppeln bzw. kontrolliert neu freigeben. Betroffene Konten
+  bis zur Prüfung späterer Sperren und Passwort-/MFA-Änderungen nicht freigeben.
+- **Option B, nur mit geprüft vollständigem unabhängigen Sicherheitsjournal:** alle nach
+  dem Sicherungszeitpunkt erfolgten Sperren, Geräte-/Peer-Widerrufe und Passwort-/MFA-
+  Sicherheitsänderungen im isolierten Stand abgleichen und nachführen. Sitzungen und
+  kurzlebige Token-Caches ebenfalls verwerfen; gezieltes Neuvertrauen erst nach dokumentierter
+  Vollständigkeitsprüfung. Das ältere Datenbankbackup selbst ist kein solcher Nachweis.
+
+Der Betreiber verantwortet Abgleich, angemessene Benutzer-/Partnerinformation und die
+Freigabe. Aktuelle Löschlisten und nachträgliche fachliche Sicherheitsentscheidungen sind
+zusätzlich einzubeziehen. Peer-/Geräte-Neukopplungen sowie Passwort-/MFA-Maßnahmen brauchen
+bewusste Einzelfall- bzw. Notfallfreigaben; die technische Satzprüfung führt keine
+ungeprüften Massenresets aus. Wiederanlauf zunächst isoliert, Wiederfreigabe erst nach
+abgeschlossenem Sitzungs-/Widerrufsabgleich. In dieser Änderung wurden keine produktiven
+Daten zurückgesetzt oder Anmeldungen widerrufen.
+
+English: `auth_version` and revocation state roll back with the database and are not
+globally monotonic across restores. Before reopening a restored service, a responsible
+operator must discard restored browser sessions and short-lived authentication caches,
+and reconcile post-snapshot account blocks, device/peer revocations and password/MFA
+security changes. Use independently verified complete security records or keep affected
+access blocked and deliberately establish fresh trust. No automatic mass reset is
+performed by the technical restore verifier.
+
+
+Der lesbare Schlüsselring wird für jede Sicherung einmal in den geschützten WORK-/tmpfs-
+Ordner kopiert. Verschlüsselung und Fingerabdruck entstehen aus genau dieser Kopie;
+ein atomarer Austausch der Live-Datei dazwischen kann sie nicht auseinanderziehen.
+Unlesbare oder fehlende Schlüsselquelle erzeugt einen Unvollständigkeitsmerker und
+verhindert eine strenge vollständige Satzprüfung. Bei externen Providern muss statt
+Exportpflicht auf dem Server ein bewusst freigegebenes unabhängiges Schlüssel-/Escrow-
+Verfahren die Wiederherstellbarkeit belegen; die vorhandene lokale Dateiprüfung behauptet
+für einen solchen Provider keine Vollständigkeit. Schlüsselrotation und Daten-/Datei-
+Schnappschüsse benötigen weiterhin ein abgestimmtes Verfahren bzw. Wartungsfenster.
+English: encryption and fingerprint use the same immutable tmpfs key-ring copy. An
+unreadable/missing source is incomplete. External key providers need an independently
+accepted recovery procedure; the file-based verifier does not certify them.
 
 ### Empfangs-/Kapazitätsbudgets im Verbund
 
