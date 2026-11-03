@@ -651,6 +651,8 @@ class DepartmentMembershipViewSet(_MemberChildMixin, viewsets.ModelViewSet):
 
 
 class DepartmentRoleHolderViewSet(_MemberChildMixin, viewsets.ModelViewSet):
+    # Mitgliederdatenpflege allein darf keine wirksamen Verwaltungsrollen vergeben.
+    write_permission = "roles.edit"
     serializer_class = DepartmentRoleHolderSerializer
     child_model = DepartmentRoleHolder
     http_method_names = ["get", "post", "patch", "delete", "options", "head"]

@@ -137,7 +137,7 @@ describe('Abteilungsrollen entfernen', () => {
     const calls = setup()
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Herolde bearbeiten' }))
-    const row = (await screen.findByText('Fahnenträger')).closest('tr')!
+    const row = (await screen.findByText('Fahnenträger', { selector: 'strong' })).closest('tr')!
     await user.click(within(row).getByRole('button', { name: 'Bearbeiten' }))
     await user.click(screen.getByRole('button', { name: 'Löschen' }))
     const dialog = await screen.findByRole('alertdialog', {
@@ -170,7 +170,7 @@ describe('Abteilungsrollen entfernen', () => {
     setup(400)
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Herolde bearbeiten' }))
-    const row = (await screen.findByText('Fahnenträger')).closest('tr')!
+    const row = (await screen.findByText('Fahnenträger', { selector: 'strong' })).closest('tr')!
     await user.click(within(row).getByRole('button', { name: 'Bearbeiten' }))
     await user.click(screen.getByRole('button', { name: 'Löschen' }))
     await user.click(
@@ -189,7 +189,7 @@ describe('Abteilungsrollen entfernen', () => {
     await user.click(screen.getByRole('checkbox', { name: 'Mitglieder sehen' }))
     await user.click(screen.getByRole('checkbox', { name: /auf dem Briefbogen nennen/ }))
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
-    await screen.findByText('Kassierer')
+    await screen.findByText('Kassierer', { selector: 'strong' })
     const post = calls.find((c) => c.key === 'POST /api/orgs/7/department-roles/')!
     expect(JSON.parse(String(post.init?.body))).toMatchObject({
       department: 5,

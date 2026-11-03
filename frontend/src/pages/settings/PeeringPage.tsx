@@ -260,7 +260,7 @@ function SpinOffCard({ onChange }: { onChange: () => void }) {
   const org = useActiveOrg()
   const canExport = org.permissions.includes(PERM.dataExport)
   const { data, reload } = useLoad(() => peeringApi.spinOffs(org.id), [org.id])
-  const units = useLoad(() => orgApi.departments(org.id), [org.id])
+  const units = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   const [unit, setUnit] = useState('')
   const [way, setWay] = useState<'keep' | 'move'>('keep')
   const [cutoff, setCutoff] = useState('')

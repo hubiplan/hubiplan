@@ -6,7 +6,6 @@ import pytest
 from django.core import mail as djmail
 from django.test import Client
 
-from access.catalog import MEMBERS_VIEW
 from access.models import Role, RoleAssignment
 from core.tenancy import rls_bypass, tenant_context
 from organizations.imprint import ensure, missing, owner_of
@@ -137,7 +136,7 @@ class TestPflege:
 
     def test_ohne_recht_nur_lesen(self, api, orgs):
         user = make_user("leser@example.org")
-        give_role(user, orgs["a"], permissions=[MEMBERS_VIEW], name="Beisitz")
+        give_role(user, orgs["a"], permissions=["settings.view"], name="Beisitz")
         c = api(user)
         assert c.get(f"/api/orgs/{orgs['a'].pk}/imprint/").status_code == 200
         resp = c.patch(f"/api/orgs/{orgs['a'].pk}/imprint/", {"phone": "1"}, content_type=JSON)

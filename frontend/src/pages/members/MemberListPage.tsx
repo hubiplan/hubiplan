@@ -135,7 +135,7 @@ export function MemberListPage() {
   const [loadedFor, setLoadedFor] = useState<string | null>(null)
   const query = JSON.stringify(params)
   const types = useLoad(() => memberApi.types(org.id), [org.id])
-  const departments = useLoad(() => orgApi.departments(org.id), [org.id])
+  const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   const titles = useLoad(() => memberApi.honoraryTitles(org.id, true), [org.id])
   const pageSize = 50
 

@@ -7,9 +7,10 @@ from django.core.validators import URLValidator
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from access.catalog import DEPARTMENT_CODES, MEMBERS_VIEW, SWITCHABLE_MODULES
+from access.catalog import DEPARTMENT_CODES, MEMBERS_VIEW, ROLES_VIEW, SWITCHABLE_MODULES
 from access.models import Role, RoleAssignment
 from core.api_base import ModelCleanMixin
 
@@ -308,6 +309,21 @@ def clean_accent(value: str) -> str:
     return value.lower()
 
 
+class MemberSettingsSerializer(OrganizationSerializer):
+    class Meta(OrganizationSerializer.Meta):
+        fields = [
+            "id",
+            "type",
+            "jubilee_years",
+            "unit_jubilee_years",
+            "date_precision",
+            "federation_duration_rule",
+            "member_portal_enabled",
+            "contact_changes_need_approval",
+            "photo_approval_required",
+        ]
+
+
 class ThemeSerializer(serializers.ModelSerializer):
     """Eigene Farben einer Organisation; leer = erben. Mit Lesbarkeitsprüfung."""
 
@@ -456,7 +472,7 @@ class DepartmentRoleSerializer(serializers.ModelSerializer):
 class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
     display_name = serializers.CharField(read_only=True)
     logo_url = serializers.SerializerMethodField()
-    roles = DepartmentRoleSerializer(many=True, read_only=True, source="unit_roles")
+    roles = serializers.SerializerMethodField()
     effective_theme = serializers.SerializerMethodField()
     member_count = serializers.SerializerMethodField()
     # Übergeordnete Untereinheit; leer heißt direkt unter der Einheit
@@ -537,6 +553,13 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
             tree = self.context["tree"] = UnitTree.of(self.context["org"].pk)
         return tree
+
+    @extend_schema_field(DepartmentRoleSerializer(many=True))
+    def get_roles(self, obj) -> list[dict]:
+        view = self.context.get("view")
+        if ROLES_VIEW not in getattr(view, "org_permissions", set()):
+            return []
+        return DepartmentRoleSerializer(obj.unit_roles.all(), many=True, context=self.context).data
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -692,6 +715,40 @@ def _has_memberships(org: Organization) -> bool:
 
     with rls_bypass():
         return Membership.objects.filter(organization=org).exists()
+
+
+class DepartmentChoiceSerializer(DepartmentSerializer):
+    """Auswahldaten ohne Verwaltungsfelder; Rollen weiterhin nur mit Rollenleserecht."""
+
+    class Meta(DepartmentSerializer.Meta):
+        fields = [
+            "id",
+            "name",
+            "short_name",
+            "display_name",
+            "is_active",
+            "parent_unit",
+            "depth",
+            "path",
+            "roles",
+            "label",
+            "label_plural",
+            "label_gender",
+            "label_en",
+            "label_plural_en",
+            "own_workspace",
+            "self_managed",
+            "is_remote",
+        ]
+        read_only_fields = fields
+
+    def to_representation(self, instance):
+        # DepartmentSerializer ergänzt sonst auch das Verwaltungsfeld own_website.
+        data = serializers.ModelSerializer.to_representation(self, instance)
+        data["parent_unit"] = (
+            None if instance.parent_id == instance.organization_id else instance.parent_id
+        )
+        return data
 
 
 class PlatformOrganizationSerializer(

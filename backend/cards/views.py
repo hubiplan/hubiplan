@@ -33,7 +33,7 @@ from members.models import Membership
 from members.views import filter_members, member_queryset
 from portal.views import DepartmentScopedMixin, _portal_access
 
-from . import services
+from . import apple, services, wallet
 from .models import MemberCard
 
 MAX_CARDS = 2000  # Obergrenze je PDF
@@ -253,7 +253,82 @@ class PortalCardView(APIView):
                 display = services.public_data(card)
                 display["club_number"] = membership.club_number or ""
                 data["display"] = display
+                data["wallet"] = {
+                    "google": wallet.enabled() and display["status"] == "active",
+                    "apple": apple.enabled() and display["status"] == "active",
+                }
         return Response(data)
+
+
+class PortalCardWalletView(APIView):
+    """Bewusste Ausgabe des eigenen Ausweises, niemals über einen öffentlichen Link."""
+
+    def post(self, request, access_id: int, provider: str):
+        access = _portal_access(request.user, access_id)
+        if provider != "google" or not wallet.enabled():
+            raise NotFound()
+        with tenant_context(access.organization_id, request.user.pk):
+            card = MemberCard.objects.filter(
+                membership_id=access.membership_id, revoked_at__isnull=True
+            ).first()
+            if card is None or card.membership.purged_at or not card.membership.current_period():
+                raise NotFound()
+            try:
+                url = wallet.issue_google(card.pk)
+            except wallet.WalletError:
+                return Response(
+                    {
+                        "detail": gettext(
+                            "Google Wallet ist gerade nicht verfügbar. "
+                            "Bitte später erneut versuchen."
+                        )
+                    },
+                    status=503,
+                    headers={"Cache-Control": "no-store"},
+                )
+        return Response(
+            {"url": url},
+            headers={
+                "Cache-Control": "no-store",
+                "Referrer-Policy": "no-referrer",
+            },
+        )
+
+    def get(self, request, access_id: int, provider: str):
+        access = _portal_access(request.user, access_id)
+        if provider != "apple" or not apple.enabled():
+            raise NotFound()
+        with tenant_context(access.organization_id, request.user.pk):
+            card = (
+                MemberCard.objects.select_related("membership__person", "organization")
+                .filter(membership_id=access.membership_id, revoked_at__isnull=True)
+                .first()
+            )
+            if (
+                card is None
+                or card.membership.purged_at
+                or not card.organization.is_active
+                or not card.membership.current_period()
+            ):
+                raise NotFound()
+            try:
+                content = apple.render_pass(card)
+            except wallet.WalletError:
+                return Response(
+                    {
+                        "detail": gettext(
+                            "Apple Wallet ist gerade nicht verfügbar. "
+                            "Bitte später erneut versuchen."
+                        )
+                    },
+                    status=503,
+                    headers={"Cache-Control": "no-store"},
+                )
+        response = HttpResponse(content, content_type="application/vnd.apple.pkpass")
+        response["Content-Disposition"] = 'attachment; filename="mitgliedsausweis.pkpass"'
+        response["Cache-Control"] = "private, no-store"
+        response["Referrer-Policy"] = "no-referrer"
+        return response
 
 
 class PortalCardPdfView(APIView):

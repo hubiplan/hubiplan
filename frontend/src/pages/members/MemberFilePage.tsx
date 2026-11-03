@@ -346,7 +346,7 @@ function MembershipTab({
 }) {
   const tm = useTerms()
   const [error, setError] = useState<string | null>(null)
-  const departments = useLoad(() => orgApi.departments(org.id), [org.id])
+  const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   const precision = org.date_precision
   const terms = orgTerms(org)
 
@@ -783,7 +783,8 @@ function RolesTab({
   canEdit: boolean
   reload: () => Promise<void>
 }) {
-  const departments = useLoad(() => orgApi.departments(org.id), [org.id])
+  const canEditRoles = org.permissions.includes(PERM.rolesManage)
+  const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   const [error, setError] = useState<string | null>(null)
   const roleOptions =
     departments.data?.flatMap((d) =>
@@ -843,7 +844,7 @@ function RolesTab({
               <li key={r.id}>
                 <strong>{r.role_name}</strong> ({r.department_name}) · {formatDate(r.valid_from)} –{' '}
                 {r.valid_until ? formatDate(r.valid_until) : 'heute'}
-                {canEdit && !r.valid_until && (
+                {canEditRoles && !r.valid_until && (
                   <button
                     type="button"
                     className="link-button spaced"
@@ -860,7 +861,7 @@ function RolesTab({
             ))}
           </ul>
         )}
-        {canEdit && roleOptions.length > 0 && (
+        {canEditRoles && roleOptions.length > 0 && (
           <AddWithDate
             label={t('Rolle hinzufügen')}
             options={roleOptions}

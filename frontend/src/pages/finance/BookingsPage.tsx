@@ -16,7 +16,7 @@ import type {
 } from '../../api/finance.ts'
 import type { MemberRow, Page } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
-import type { Department } from '../../api/orgs.ts'
+import type { DepartmentChoice } from '../../api/orgs.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { errorMessage, formatDate, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { Alert, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
@@ -58,7 +58,7 @@ export function BookingsPage() {
   const categories = useLoad(() => financeApi.categories(org.id), [org.id])
   const projects = useLoad(() => financeApi.projects(org.id), [org.id])
   const departments = useLoad(
-    () => (org.type === 'club' ? orgApi.departments(org.id) : Promise.resolve([])),
+    () => (org.type === 'club' ? orgApi.departmentChoices(org.id) : Promise.resolve([])),
     [org.id, org.type],
   )
   const partners = useLoad(() => financeApi.counterparties(org.id), [org.id])
@@ -554,7 +554,7 @@ function BookingForm({
   kind: BookingKind
   accounts: Account[]
   categories: Category[]
-  departments: Department[]
+  departments: DepartmentChoice[]
   projects: Project[]
   canEdit: boolean
   onSaved: (b: Booking, again: boolean) => void

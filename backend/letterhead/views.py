@@ -13,7 +13,7 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import DOCS_MANAGE, ORG_EDIT
+from access.catalog import DOCS_MANAGE, ORG_EDIT, SETTINGS_VIEW
 from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin, OrgScopedMixin
 from organizations.models import Department, Organization
@@ -132,8 +132,9 @@ def _file(content: bytes, name: str, content_type: str, inline: bool = False) ->
 
 
 class _OrgLetterheadMixin(OrgScopedMixin):
-    """Briefbogen einer Einheit und ihrer Untereinheiten (lesen: jede Rolle)."""
+    """Briefbogen einer Einheit und ihrer Untereinheiten (settings.view/edit)."""
 
+    read_permission = SETTINGS_VIEW
     write_permission = ORG_EDIT
     allowed_org_types = (Organization.Type.FEDERATION, Organization.Type.CLUB)
 

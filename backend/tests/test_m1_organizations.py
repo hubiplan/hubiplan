@@ -122,7 +122,7 @@ class TestMandantentrennungApi:
 class TestBerechtigungen:
     def test_ohne_recht_kein_schreiben(self, api, orgs):
         user = make_user("leser@example.org")
-        give_role(user, orgs["a"], [MEMBERS_VIEW], name="Leser")
+        give_role(user, orgs["a"], ["settings.view"], name="Leser")
         c = api(user)
         assert c.get(f"/api/orgs/{orgs['a'].pk}/").status_code == 200
         resp = c.patch(f"/api/orgs/{orgs['a'].pk}/", {"name": "neu"}, content_type=JSON)

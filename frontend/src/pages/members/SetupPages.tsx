@@ -3,7 +3,7 @@
 // Organisationsformular automatisch, aber nur mit den Feldern dieser Seite.
 import type { ReactNode } from 'react'
 import { orgApi, PERM } from '../../api/orgs.ts'
-import type { OrgDetail } from '../../api/orgs.ts'
+import type { MemberSettings } from '../../api/orgs.ts'
 import { ListInput } from '../../components/ListField.tsx'
 import { parseNumberList } from '../../components/lists.ts'
 import { DATE_PRECISION_OPTIONS, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
@@ -13,15 +13,15 @@ import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
 
-type Form = ReturnType<typeof useForm<OrgDetail>>
+type Form = ReturnType<typeof useForm<MemberSettings>>
 
-const DURATION_FIELDS: (keyof OrgDetail)[] = [
+const DURATION_FIELDS: (keyof MemberSettings)[] = [
   'jubilee_years',
   'unit_jubilee_years',
   'date_precision',
   'federation_duration_rule',
 ]
-const PORTAL_FIELDS: (keyof OrgDetail)[] = [
+const PORTAL_FIELDS: (keyof MemberSettings)[] = [
   'member_portal_enabled',
   'contact_changes_need_approval',
   'photo_approval_required',
@@ -33,12 +33,12 @@ function OrgSettingsCard({
   title,
   children,
 }: {
-  fields: (keyof OrgDetail)[]
+  fields: (keyof MemberSettings)[]
   title: string
-  children: (form: Form, detail: OrgDetail) => ReactNode
+  children: (form: Form, detail: MemberSettings) => ReactNode
 }) {
   const org = useActiveOrg()
-  const { data, error, setData } = useLoad(() => orgApi.detail(org.id), [org.id])
+  const { data, error, setData } = useLoad(() => orgApi.memberSettings(org.id), [org.id])
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   return (
@@ -55,11 +55,11 @@ function SettingsForm({
   onSaved,
   children,
 }: {
-  detail: OrgDetail
-  fields: (keyof OrgDetail)[]
+  detail: MemberSettings
+  fields: (keyof MemberSettings)[]
   title: string
-  onSaved: (d: OrgDetail) => void
-  children: (form: Form, detail: OrgDetail) => ReactNode
+  onSaved: (d: MemberSettings) => void
+  children: (form: Form, detail: MemberSettings) => ReactNode
 }) {
   const { can, refresh } = useOrg()
   const editable = can(PERM.orgEdit)
@@ -69,13 +69,13 @@ function SettingsForm({
     (changes) => {
       const payload = Object.fromEntries(
         fields.filter((key) => key in changes).map((key) => [key, changes[key]]),
-      ) as Partial<OrgDetail>
-      return orgApi.update(detail.id, payload)
+      ) as Partial<MemberSettings>
+      return orgApi.updateMemberSettings(detail.id, payload)
     },
     {
       enabled: editable,
       onSaved: (saved) => {
-        onSaved(saved as OrgDetail)
+        onSaved(saved as MemberSettings)
         void refresh()
       },
     },
@@ -142,7 +142,7 @@ export function MemberDurationSettings() {
               onChange={(e) =>
                 set(
                   'federation_duration_rule',
-                  e.target.value as OrgDetail['federation_duration_rule'],
+                  e.target.value as MemberSettings['federation_duration_rule'],
                 )
               }
             >

@@ -50,6 +50,7 @@ Zu HUBIplan gehören drei Repositories:
 - Würden (z. B. Königinnen und Könige) mit Chronik und Excel-Import, Ämter mit Chronik
 - Änderungsmeldungen der Mitglieder, die der Vorstand freigibt
 - Mitgliedsausweis mit QR-Code
+- Optionaler Export nach Google Wallet und Apple Wallet (`.pkpass`, [Einrichtung](docs/wallet.md))
 - Import aus Excel, Export als Excel und PDF, Datenübernahme als JSON
 - Autospeichern, Rückgängig, Papierkorb und Änderungsprotokoll
 
@@ -340,7 +341,6 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/versionen.md](docs/versionen.md) | Schnittstellen, `features`, Verträglichkeit von Webseite und App |
 | [docs/sicherheitspruefung.md](docs/sicherheitspruefung.md) | Sicherheitsprüfung |
 | [docs/ansicht-als-rolle.md](docs/ansicht-als-rolle.md) | Ansicht als Rolle |
-| [docs/konzept-verschluesselung-stufe2.md](docs/konzept-verschluesselung-stufe2.md) | Konzept: Verschlüsselung Stufe 2 (auch Namen) |
 | [docs/verbund.md](docs/verbund.md) | Verbund mit anderen Instanzen |
 | [docs/nextcloud.md](docs/nextcloud.md) | Anmeldung an der Nextcloud mit dem HUBIplan-Konto |
 | [docs/app.md](docs/app.md) | Schnittstelle für die App, Push |

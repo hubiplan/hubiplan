@@ -10,7 +10,7 @@ export function DataTransferPage() {
   const { active, can } = useOrg()
   const isClub = active?.type === 'club'
   const departments = useLoad(
-    () => (active && isClub ? orgApi.departments(active.id) : Promise.resolve([])),
+    () => (active && isClub ? orgApi.departmentChoices(active.id) : Promise.resolve([])),
     [active?.id],
   )
   if (!active) return null
