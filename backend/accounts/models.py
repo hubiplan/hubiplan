@@ -103,6 +103,17 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         fields = kwargs.get("update_fields")
+        if not self._state.adding and not kwargs.get("force_insert"):
+            # Ausschließlich security.secure_account erhöht diese Spalte unter
+            # Zeilensperre. Ein vor Recovery geladenes Objekt darf sie beim späteren
+            # vollständigen Speichern seiner Profilfelder nicht zurücksetzen.
+            if fields is None:
+                fields = {
+                    field.attname
+                    for field in self._meta.concrete_fields
+                    if not field.primary_key and field.attname in self.__dict__
+                }
+            kwargs["update_fields"] = fields = set(fields) - {"auth_version"}
         if fields is not None and "password" in fields:
             kwargs["update_fields"] = {*fields, "initial_password_expires"}
         super().save(*args, **kwargs)

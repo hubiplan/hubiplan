@@ -48,6 +48,24 @@ def test_version_zero_preserves_existing_session_hash_and_secret_fallback(user):
     assert user._get_session_auth_hash(secret="synthetic-fallback") != user.get_session_auth_hash()
 
 
+@pytest.mark.parametrize("explicit", [False, True])
+def test_stale_user_save_cannot_restore_revoked_authentication_version(api, user, explicit):
+    browser = api(user)
+    stale = User.objects.get(pk=user.pk)
+    old_hash = stale.get_session_auth_hash()
+    secure_account(user, devices=False, recovery=True)
+    stale.first_name = "Updated profile"
+    if explicit:
+        stale.save(update_fields=["first_name", "auth_version"])
+    else:
+        stale.save()
+    fresh = User.objects.get(pk=user.pk)
+    assert fresh.first_name == "Updated profile"
+    assert fresh.auth_version == user.auth_version == 1
+    assert fresh.get_session_auth_hash() != old_hash
+    assert browser.get("/api/me/").status_code == 403
+
+
 def test_recovery_endpoint_revokes_two_browsers_code_token_and_peer_links(api, orgs, board_a):
     target = make_user("recovery@example.invalid")
     assignment = give_role(target, orgs["a"])
