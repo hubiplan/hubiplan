@@ -381,6 +381,19 @@ class TestAbteilungszugang:
         assert resp.status_code == 200, resp.json()
         assert resp.json()["sent"] == "link"
 
+    def test_zugaenge_nur_lesen(self, club, zug, kassierer, api):
+        """Bereich „Zugänge“ auf „lesen“: Stand sehen, aber keinen Link schicken."""
+        role = DepartmentRole.objects.get()
+        role.permissions = ["members.view", "logins.view"]
+        role.save()
+        m = make_member(club, "Zora", "Zug", "zora@example.org", departments=[zug])
+        c = api(kassierer)
+        assert "access" in c.get(f"/api/depts/{zug.pk}/members/{m.pk}/").json()
+        assert c.post(f"/api/depts/{zug.pk}/members/{m.pk}/access/").status_code == 403
+        role.permissions = ["members.view"]
+        role.save()
+        assert "access" not in c.get(f"/api/depts/{zug.pk}/members/{m.pk}/").json()
+
     def test_verein_pflegt_rechte_der_abteilungsrollen(self, club, zug, api, board_a):
         role = DepartmentRole.objects.create(organization=club, department=zug, name="Zugführer")
         resp = api(board_a).patch(

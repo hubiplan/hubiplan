@@ -251,6 +251,12 @@ freischalten wie oben. Pfade unter `/api/app/v1/admin/d/<Untereinheit>/` wie im 
 `/api/depts/<Untereinheit>/`: `""` (Angaben), `members/`, `members/<id>/` (GET/PATCH),
 `changes/<Paket>/undo/`, `events/…` wie in B3.
 
+Rechte in `units` und `departments` (seit November 2026, `docs/berechtigungen.md`): `stufen: true`
+heißt, `permissions` enthält die neuen Codes `<bereich>.view`/`.edit` (z. B. `events.view`,
+`photos.edit`, im Zug `members.edit`). Eine Fassung lang kommen die früheren Codes
+(`events.manage`, `photos.manage`, `dept.*`) mit; die App prüft zuerst die neuen. Wer nur
+„Termine lesen“ hat, bekommt keine Einheit zum Verwalten.
+
 ### Barzahlung und Quittung (Schritt B5)
 
 Unter `/api/app/v1/admin/u/<Einheit>/billing/…`, Rechte wie im Browser (`billing.view` lesen,

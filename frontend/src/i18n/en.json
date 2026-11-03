@@ -4766,5 +4766,9 @@
   "Sichtbarkeit": "Visibility",
   "Termine anderer Kalender erscheinen hier als Kopie, z. B. die des Dachverbands aus Vereinsplaner. HUBIplan holt sie stündlich ab. Ändern lassen sie sich nur im fremden Kalender; einzelne Termine kannst du hier ausblenden.": "Events from other calendars appear here as copies, e.g. those of the federation from Vereinsplaner. HUBIplan fetches them every hour. They can only be changed in the external calendar; you can hide individual events here.",
   "wieder zeigen": "show again",
-  "z. B. Dachverband": "e.g. federation"
+  "z. B. Dachverband": "e.g. federation",
+  "{n} vergeben": "{n} assigned",
+  "Rechte ändern": "Change rights",
+  "Rechte ansehen": "View rights",
+  "seit": "since"
 }

@@ -67,6 +67,7 @@ class TestUeberblick:
         assert data["two_factor"] is True and data["unlocked"] is False
         unit = next(u for u in data["units"] if u["id"] == cal["a"].pk)
         assert unit["permissions"] == ["members.edit", "members.view"]
+        assert unit["stufen"] is True
 
     def test_mitglied_ohne_rechte(self, cal, api):
         _, user, _ = member_with_access(cal["a"], "Otto")

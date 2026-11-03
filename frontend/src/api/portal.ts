@@ -141,7 +141,10 @@ export const DEPT_PERM = {
   membersView: 'dept.members.view',
   membersEdit: 'dept.members.edit',
   rolesManage: 'dept.roles.manage',
+  /** Bereiche mit Stufen (Ralf 02.11.): lesen ohne bearbeiten */
+  rolesView: 'roles.view',
   accessManage: 'dept.access.manage',
+  loginsView: 'logins.view',
   invoicesView: 'dept.invoices.view',
   cardsManage: 'dept.cards.manage',
   export: 'dept.export',

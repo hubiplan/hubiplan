@@ -1,6 +1,7 @@
 // Rollen: für jede Einheit dieselbe Liste und dieselbe Maske.
 // Was eine Einheit an Angaben zu einer Rolle speichern kann, steht in `fields`;
 // die Rechte kommen aus dem Rechtekatalog der Einheit.
+import { useId } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import type { CatalogModule } from '../api/orgs.ts'
 import { levelOf, permissionAreas, withLevel } from './roles.ts'
@@ -30,15 +31,20 @@ const LEVELS: { level: Level; label: () => string }[] = [
 ]
 
 /** Rechte je Bereich: kein Zugriff, lesen, bearbeiten (Ralf 02.11.); darunter Zusatzrechte */
-function PermissionMatrix({
+export function PermissionMatrix({
   catalog,
   codes,
   onChange,
+  readOnly = false,
 }: {
   catalog: CatalogModule[]
   codes: string[]
   onChange: (codes: string[]) => void
+  /** nur ansehen (Leserecht für Rollen) */
+  readOnly?: boolean
 }) {
+  // Mehrere Tabellen auf einer Seite (Zug-Rollen): eigene Namen für die Optionsgruppen
+  const group = useId()
   const areas = catalog.filter((m) => m.kind === 'area')
   const extras = catalog.filter((m) => m.kind === 'extras').flatMap((m) => m.permissions)
   const setAll = (level: Level) =>
@@ -58,17 +64,19 @@ function PermissionMatrix({
     )
   return (
     <div className="permission-matrix">
-      <div className="button-row">
-        <button type="button" className="button button-ghost" onClick={() => setAll('view')}>
-          {t('überall lesen')}
-        </button>
-        <button type="button" className="button button-ghost" onClick={() => setAll('edit')}>
-          {t('überall bearbeiten')}
-        </button>
-        <button type="button" className="button button-ghost" onClick={() => setAll('none')}>
-          {t('alles entfernen')}
-        </button>
-      </div>
+      {!readOnly && (
+        <div className="button-row">
+          <button type="button" className="button button-ghost" onClick={() => setAll('view')}>
+            {t('überall lesen')}
+          </button>
+          <button type="button" className="button button-ghost" onClick={() => setAll('edit')}>
+            {t('überall bearbeiten')}
+          </button>
+          <button type="button" className="button button-ghost" onClick={() => setAll('none')}>
+            {t('alles entfernen')}
+          </button>
+        </div>
+      )}
       <table className="table permission-table">
         <thead>
           <tr>
@@ -98,7 +106,8 @@ function PermissionMatrix({
                       {offered ? (
                         <input
                           type="radio"
-                          name={`stufe-${a.id}`}
+                          name={`${group}-stufe-${a.id}`}
+                          disabled={readOnly}
                           aria-label={`${a.label}: ${l.label()}`}
                           checked={current === l.level}
                           onChange={() => onChange(withLevel(codes, a, l.level, catalog))}
@@ -126,7 +135,7 @@ function PermissionMatrix({
                 key={p.code}
                 label={p.label}
                 checked={codes.includes(p.code)}
-                disabled={blocked}
+                disabled={blocked || readOnly}
                 hint={blocked ? t('braucht dafür mindestens „lesen“') : undefined}
                 onChange={(on) =>
                   onChange(on ? [...codes, p.code] : codes.filter((c) => c !== p.code))
@@ -142,7 +151,13 @@ function PermissionMatrix({
 
 /** Rechte als kurze Bereichsliste statt langem Fließtext (Ralf 31.10.);
  *  die einzelnen Rechte stehen aufklappbar darunter. */
-function PermissionSummary({ codes, catalog }: { codes: string[]; catalog: CatalogModule[] }) {
+export function PermissionSummary({
+  codes,
+  catalog,
+}: {
+  codes: string[]
+  catalog: CatalogModule[]
+}) {
   const areas = permissionAreas(codes, catalog).map((a, i) => ({
     ...a,
     // Bereiche mit Stufen: Stufe direkt im Kennzeichen („Kasse: lesen“)
