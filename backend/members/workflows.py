@@ -16,6 +16,7 @@ from django.utils.translation import gettext
 from rest_framework.exceptions import ValidationError
 
 from audit.models import AuditEntry
+from core.encfields import update_encrypted
 from core.tenancy import rls_bypass, tenant_context
 from organizations.models import Organization, PlatformSettings
 from organizations.terms import fill
@@ -532,16 +533,20 @@ def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, 
         for photo in ReignPhoto.objects.filter(reign__in=reigns):
             _remove_photo(photo)
         counts = {
-            "Würden": reigns.update(person=None, name=NAME_REMOVED),
-            "Begleitungen": Companion.objects.filter(
-                organization_id__in=orgs, person=person
-            ).update(person=None, name=NAME_REMOVED),
+            "Würden": update_encrypted(reigns, person=None, name=NAME_REMOVED),
+            "Begleitungen": update_encrypted(
+                Companion.objects.filter(organization_id__in=orgs, person=person),
+                person=None,
+                name=NAME_REMOVED,
+            ),
             "Ehrungen": HonoraryTitleAward.objects.filter(
                 organization_id__in=orgs, person=person
             ).delete()[0],
-            "Wettbewerbe": AwardGrant.objects.filter(
-                organization_id__in=orgs, membership=membership
-            ).update(membership=None, name=NAME_REMOVED),
+            "Wettbewerbe": update_encrypted(
+                AwardGrant.objects.filter(organization_id__in=orgs, membership=membership),
+                membership=None,
+                name=NAME_REMOVED,
+            ),
         }
         elsewhere = (
             Membership.objects.filter(person=person).exclude(organization_id__in=orgs).exists()

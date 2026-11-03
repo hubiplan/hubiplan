@@ -26,12 +26,12 @@ def text_key(value: str) -> tuple[str, str, str]:
     return base, folded, unicodedata.normalize("NFC", value)
 
 
-def name_ids(qs, word: str, *, fields=("person__last_name", "person__first_name")):
+def name_ids(qs, word: str, *, fields=("person__last_name", "person__first_name"), exact=False):
     """Zeilen-IDs, bei denen eines der angegebenen Namensfelder das Wort enthält."""
-    return name_ids_many(qs, [word], fields=fields)[word]
+    return name_ids_many(qs, [word], fields=fields, exact=exact)[word]
 
 
-def name_ids_many(qs, words, *, fields=("person__last_name", "person__first_name")):
+def name_ids_many(qs, words, *, fields=("person__last_name", "person__first_name"), exact=False):
     """Alle Wörter aus einem Durchlauf der erlaubten Namensspalten auswerten."""
     needles = {word: normalize(word) for word in dict.fromkeys(words)}
     matches = {word: set() for word in needles}
@@ -40,7 +40,7 @@ def name_ids_many(qs, words, *, fields=("person__last_name", "person__first_name
     for row in qs.order_by().values_list("pk", *fields).iterator():
         values = [normalize(value) for value in row[1:] if value is not None]
         for word, needle in needles.items():
-            if any(needle in value for value in values):
+            if any(needle == value if exact else needle in value for value in values):
                 matches[word].add(row[0])
     return matches
 

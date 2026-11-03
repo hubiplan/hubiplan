@@ -15,7 +15,7 @@ from competitions import ranking
 from competitions.models import Competition, Score, Scoring, Starter
 from organizations.models import Department
 
-from .factories import give_role, make_member, make_user
+from .factories import give_role, make_member, make_user, named
 
 D = Decimal
 
@@ -439,7 +439,7 @@ class TestOfflineAbgleich:
         again = c.post(url(club, f"{comp_id}/sync/"), {"ops": ops[:4]}, "application/json").json()
         assert all(r["ok"] for r in again["results"])
         assert Starter.objects.filter(competition_id=comp_id).count() == 2
-        gast = Starter.objects.get(competition_id=comp_id, name="Gerd Gast")
+        gast = named(Starter.objects.filter(competition_id=comp_id), name="Gerd Gast").get()
         assert gast.unit_id == zuege[2].pk
 
     def test_spaetere_eingabe_gilt(self, club, schuetzen, board_a, api):

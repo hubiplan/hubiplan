@@ -23,6 +23,7 @@ from accounts.models import StoredSignature
 from audit.log import current_via, record
 from changes import idempotency
 from members.models import Membership
+from members.personsearch import name_ids
 
 from . import quittung, signature
 from .models import Account, CashReceipt, Category, Project
@@ -251,7 +252,9 @@ class CashReceiptViewSet(
         if (state := self.request.query_params.get("status")) in CashReceipt.Status.values:
             qs = qs.filter(status=state)
         if term := self.request.query_params.get("suche", "").strip():
-            qs = qs.filter(counterparty_name__icontains=term) | qs.filter(number__icontains=term)
+            qs = qs.filter(pk__in=name_ids(qs, term, fields=("counterparty_name",))) | qs.filter(
+                number__icontains=term
+            )
         return qs.order_by("-created_at")
 
     @transaction.atomic

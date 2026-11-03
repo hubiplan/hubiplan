@@ -27,7 +27,7 @@ from changes import idempotency
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.reorder import reorder_response
 from members.models import Membership
-from members.personsearch import filter_names, ordered
+from members.personsearch import filter_names, name_ids, ordered
 from organizations.models import Department, Organization
 
 from . import importer, numbering
@@ -371,8 +371,7 @@ class ReignViewSet(_HonorsMixin, AuditMixin, viewsets.ModelViewSet):
         if params.get("suche"):
             text = params["suche"].strip()
             qs = qs.filter(
-                Q(name__icontains=text)
-                | Q(companions__name__icontains=text)
+                Q(pk__in=name_ids(qs, text, fields=("name", "companions__name")))
                 | Q(note__icontains=text)
             ).distinct()
         return qs

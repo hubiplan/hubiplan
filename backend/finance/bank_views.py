@@ -20,6 +20,7 @@ from rest_framework.response import Response
 
 from audit.log import record
 from members.models import Membership
+from members.personsearch import name_ids
 
 from . import bank_import, camt, services
 from .models import (
@@ -243,7 +244,9 @@ class BankLineViewSet(FinanceMixin, mixins.ListModelMixin, viewsets.GenericViewS
         if (state := params.get("status")) in BankLine.Status.values:
             qs = qs.filter(status=state)
         if term := params.get("suche", "").strip():
-            qs = qs.filter(name__icontains=term) | qs.filter(purpose__icontains=term)
+            qs = qs.filter(pk__in=name_ids(qs, term, fields=("name",))) | qs.filter(
+                purpose__icontains=term
+            )
         return qs.order_by("date", "pk")
 
     def _get(self, model, pk, field):

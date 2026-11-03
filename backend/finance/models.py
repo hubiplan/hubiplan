@@ -15,7 +15,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
-from core.encfields import EncryptedCharField
+from core.encfields import EncryptedCharField, EncryptedJSONField
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
 
@@ -149,11 +149,11 @@ class Booking(models.Model):
         blank=True,
         verbose_name="Kategorie",
     )
-    text = models.CharField("Buchungstext", max_length=200)
+    text = EncryptedCharField("Buchungstext", max_length=200, strict=True)
     reference = models.CharField("Belegnummer/Referenz", max_length=100, blank=True)
     # Wer das Geld bekommt (Ausgabe) oder zahlt (Einnahme): Geschäft, Dienstleister,
     # Person. Freitext; frühere Namen werden beim Erfassen vorgeschlagen.
-    counterparty = models.CharField("Empfänger/Zahler", max_length=200, blank=True)
+    counterparty = EncryptedCharField("Empfänger/Zahler", max_length=200, blank=True, strict=True)
     membership = models.ForeignKey(
         "members.Membership",
         on_delete=models.SET_NULL,
@@ -343,14 +343,16 @@ class YearClosing(models.Model):
     # Ende der Aufbewahrungsfrist (Finanzamt-Prüfung C6, finance/retention.py)
     documents_purged_at = models.DateTimeField("Belege gelöscht am", null=True, blank=True)
     records_purged_at = models.DateTimeField("Bücher anonymisiert am", null=True, blank=True)
-    purged_by_name = models.CharField("bereinigt von", max_length=200, blank=True, db_default="")
+    purged_by_name = EncryptedCharField(
+        "bereinigt von", max_length=200, blank=True, db_default="", strict=True
+    )
     # Löschsperre (Fachfrage FQ10): z. B. laufende Prüfung oder Rechtsstreit. Solange ein
     # Grund eingetragen ist, wird nichts gelöscht, auch nach Ablauf der Frist.
     retention_hold = models.CharField(
         "Löschsperre (Grund)", max_length=500, blank=True, db_default=""
     )
-    retention_hold_by_name = models.CharField(
-        "Löschsperre gesetzt von", max_length=200, blank=True, db_default=""
+    retention_hold_by_name = EncryptedCharField(
+        "Löschsperre gesetzt von", max_length=200, blank=True, db_default="", strict=True
     )
     retention_hold_at = models.DateTimeField("Löschsperre gesetzt am", null=True, blank=True)
 
@@ -374,13 +376,15 @@ class ReopenedClosing(models.Model):
     )
     year = models.PositiveSmallIntegerField("Geschäftsjahr")
     closed_at = models.DateTimeField("abgeschlossen am")
-    closed_by_name = models.CharField("abgeschlossen von", max_length=200, blank=True)
+    closed_by_name = EncryptedCharField(
+        "abgeschlossen von", max_length=200, blank=True, strict=True
+    )
     snapshot = models.JSONField(default=dict, blank=True)
     reopened_at = models.DateTimeField("aufgehoben am", auto_now_add=True)
     reopened_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
-    reopened_by_name = models.CharField("aufgehoben von", max_length=200, blank=True)
+    reopened_by_name = EncryptedCharField("aufgehoben von", max_length=200, blank=True, strict=True)
     reason = models.CharField("Grund", max_length=500)
 
     class Meta:
@@ -508,7 +512,7 @@ class CashReceipt(models.Model):
     )
     direction = models.CharField("Richtung", max_length=3, choices=Direction.choices)
     status = models.CharField("Status", max_length=10, choices=Status.choices, default=Status.DRAFT)
-    counterparty_name = models.CharField("Name der Gegenseite", max_length=200)
+    counterparty_name = EncryptedCharField("Name der Gegenseite", max_length=200, strict=True)
     counterparty_address = models.TextField("Anschrift", max_length=500, blank=True)
     membership = models.ForeignKey(
         "members.Membership",
@@ -553,7 +557,7 @@ class CashReceipt(models.Model):
     treasurer_user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
-    treasurer_name = models.CharField(max_length=200, blank=True)
+    treasurer_name = EncryptedCharField(max_length=200, blank=True, strict=True)
     treasurer_signed_at = models.DateTimeField(null=True, blank=True)
     counterparty_signature = models.JSONField("Unterschrift Gegenseite", null=True, blank=True)
     counterparty_signed_at = models.DateTimeField(null=True, blank=True)
@@ -705,18 +709,18 @@ class DonationStatement(models.Model):
         blank=True,
         related_name="+",
     )
-    donor_name = models.CharField("Zuwendender", max_length=200)
+    donor_name = EncryptedCharField("Zuwendender", max_length=200, strict=True)
     donor_address = models.TextField("Anschrift", max_length=500, blank=True)
     total = models.DecimalField("Betrag", max_digits=12, decimal_places=2)
     period_from = models.DateField("von")
     period_to = models.DateField("bis")
     # Die bestätigten Zuwendungen, wie sie beim Ausstellen galten
-    items = models.JSONField(default=list, blank=True)
+    items = EncryptedJSONField(default=list, blank=True, strict=True)
     issued_on = models.DateField("ausgestellt am")
     issued_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
     )
-    signer_name = models.CharField("unterschrieben von", max_length=200, blank=True)
+    signer_name = EncryptedCharField("unterschrieben von", max_length=200, blank=True, strict=True)
     file = PrivateFileField(
         "Doppel", storage=private_storage, upload_to=donation_statement_path, blank=True
     )
@@ -774,7 +778,7 @@ class Donation(models.Model):
         blank=True,
         related_name="+",
     )
-    donor_name = models.CharField("Zuwendender", max_length=200)
+    donor_name = EncryptedCharField("Zuwendender", max_length=200, strict=True)
     donor_address = models.TextField("Anschrift", max_length=500, blank=True)
     goods_description = models.TextField(
         "Bezeichnung der Sache (Alter, Zustand, Kaufpreis)", max_length=1000, blank=True
@@ -885,7 +889,7 @@ class BankLine(models.Model):
     value_date = models.DateField("Wertstellung", null=True, blank=True)
     amount = models.DecimalField("Betrag", max_digits=12, decimal_places=2)
     credit = models.BooleanField("Gutschrift")
-    name = models.CharField("Gegenseite", max_length=200, blank=True)
+    name = EncryptedCharField("Gegenseite", max_length=200, blank=True, strict=True)
     iban = EncryptedCharField("IBAN der Gegenseite", max_length=34, blank=True)
     purpose = models.CharField("Verwendungszweck", max_length=500, blank=True)
     end_to_end = models.CharField("End-to-End-Referenz", max_length=35, blank=True)
@@ -893,7 +897,9 @@ class BankLine(models.Model):
     return_code = models.CharField("Rückgabegrund", max_length=10, blank=True)
     batch_count = models.PositiveIntegerField("Einzelposten", default=1)
     # Einzelposten einer Sammelbuchung, so wie sie im Auszug stehen (Audit 31.10. FIN31-02)
-    details = models.JSONField("Einzelposten der Sammelbuchung", default=list, blank=True)
+    details = EncryptedJSONField(
+        "Einzelposten der Sammelbuchung", default=list, blank=True, strict=True
+    )
     fingerprint = models.CharField(max_length=64)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
     suggestion = models.CharField(
@@ -982,8 +988,8 @@ class CashCount(models.Model):
     # Kassenbericht: Aufteilung der Einnahmen [{category, name, amount}]
     lines = models.JSONField("Aufteilung", default=list, blank=True)
     note = models.CharField("Bemerkung/Grund", max_length=500, blank=True)
-    counted_by = models.CharField("gezählt von", max_length=200)
-    witness = models.CharField("zweite Person", max_length=200, blank=True)
+    counted_by = EncryptedCharField("gezählt von", max_length=200, strict=True)
+    witness = EncryptedCharField("zweite Person", max_length=200, blank=True, strict=True)
     booking_ids = models.JSONField("Buchungen", default=list, blank=True)
     pdf = PrivateFileField("PDF", storage=private_storage, upload_to=cash_count_path, blank=True)
     pdf_sha256 = models.CharField("Prüfsumme", max_length=64, blank=True)
@@ -1063,7 +1069,7 @@ class ReserveMovement(models.Model):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
-    created_by_name = models.CharField(max_length=200, blank=True)
+    created_by_name = EncryptedCharField(max_length=200, blank=True, strict=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

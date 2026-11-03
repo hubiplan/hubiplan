@@ -11,6 +11,8 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext
 
+from core.encfields import EncryptedCharField
+
 from .catalog import DEPARTMENT_CODES, codes_for, normalize
 
 
@@ -216,7 +218,7 @@ class RoleAssignment(models.Model):
     valid_until = models.DateField("bis", null=True, blank=True)
     # Früherer Amtsinhaber ohne Konto und ohne Mitgliedschaft (Ralf 2026-10-31): nur Name,
     # Zeitraum jahresgenau (1. 1. von bis 1. 1. bis), immer abgeschlossen. Siehe access/offices.py.
-    name = models.CharField("Name (früherer Inhaber)", max_length=200, blank=True)
+    name = EncryptedCharField("Name (früherer Inhaber)", max_length=200, blank=True, strict=True)
     # Freie Namen ohne Akte erscheinen auf der Webseite nur mit Häkchen (FQ-19, Ralf 01.11.).
     name_public = models.BooleanField(
         "Name darf auf der Webseite erscheinen", default=False, db_default=False

@@ -7,7 +7,7 @@ import mimetypes
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
-from django.db.models import Count, Max, ProtectedError, Q
+from django.db.models import Count, ProtectedError, Q
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -23,6 +23,7 @@ from access.catalog import FINANCE_EDIT, FINANCE_VIEW, ROLES_MANAGE
 from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.files import delete_on_commit
+from members.personsearch import name_ids
 from organizations.models import Organization
 
 from . import retention, services, statistics
@@ -312,7 +313,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         if bis := _date_param(p.get("bis")):
             qs = qs.filter(date__lte=bis)
         if partner := p.get("partner", "").strip():
-            qs = qs.filter(counterparty__iexact=partner)
+            qs = qs.filter(pk__in=name_ids(qs, partner, fields=("counterparty",), exact=True))
         if p.get("ohne_beleg") in ("1", "true"):
             # Ausgeblendete Belege zählen nicht
             qs = qs.exclude(
@@ -321,7 +322,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
                 )
             )
         if term := p.get("suche", "").strip():
-            qs = qs.filter(services.search_filter(term))
+            qs = qs.filter(services.search_filter(qs, term))
         return qs.prefetch_related("receipts").order_by("-date", "-number").distinct()
 
     @transaction.atomic
@@ -348,19 +349,19 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         p = request.query_params
         if (year := p.get("jahr")) and year.isdigit():
             qs = qs.filter(year=int(year))
-        rows = qs.values("counterparty", "kind").annotate(n=Count("id"), last=Max("date"))
+        rows = qs.order_by().values("counterparty", "kind", "date")
         kind = p.get("art")
         names: dict[str, dict] = {}
         for row in rows:
             key = row["counterparty"].casefold()
             entry = names.setdefault(
-                key, {"name": row["counterparty"], "count": 0, "same": 0, "last": row["last"]}
+                key, {"name": row["counterparty"], "count": 0, "same": 0, "last": row["date"]}
             )
-            entry["count"] += row["n"]
+            entry["count"] += 1
             if row["kind"] == kind:
-                entry["same"] += row["n"]
-            if row["last"] and (entry["last"] is None or row["last"] > entry["last"]):
-                entry["last"] = row["last"]
+                entry["same"] += 1
+            if row["date"] and (entry["last"] is None or row["date"] > entry["last"]):
+                entry["last"] = row["date"]
         result = sorted(
             names.values(), key=lambda e: (-e["same"], -e["count"], e["name"].casefold())
         )

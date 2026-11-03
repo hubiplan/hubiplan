@@ -25,6 +25,7 @@ from rest_framework.views import APIView
 from audit.log import record
 from core.api_base import AuditMixin
 from members.models import Membership
+from members.personsearch import name_ids
 
 from . import donations as svc
 from .models import Donation, DonationSettings, DonationStatement
@@ -191,7 +192,7 @@ class DonationViewSet(DonationMixin, AuditMixin, viewsets.ModelViewSet):
         if params.get("offen") == "1":
             qs = qs.filter(statement__isnull=True)
         if term := params.get("suche", "").strip():
-            qs = qs.filter(donor_name__icontains=term)
+            qs = qs.filter(pk__in=name_ids(qs, term, fields=("donor_name",)))
         return qs.order_by("-date", "-pk")
 
     def get_create_kwargs(self) -> dict:
@@ -326,7 +327,7 @@ class DonationStatementViewSet(
         if (year := params.get("jahr", "")).isdigit():
             qs = qs.filter(year=int(year))
         if term := params.get("suche", "").strip():
-            qs = qs.filter(donor_name__icontains=term)
+            qs = qs.filter(pk__in=name_ids(qs, term, fields=("donor_name",)))
         return qs.order_by("-year", "-seq")
 
     @action(detail=False, methods=["get"], url_path="years")

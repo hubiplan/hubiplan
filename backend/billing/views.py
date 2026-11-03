@@ -29,7 +29,7 @@ from core.api_base import OrgScopedMixin
 from finance import services as finance_services
 from finance.models import Account, Category
 from members.models import Membership, MemberType
-from members.personsearch import name_ids
+from members.personsearch import name_ids, ordered
 from organizations.models import Department, Organization
 from organizations.terms import department_terms, fill
 from outbox import mail
@@ -546,9 +546,12 @@ class FeeRunViewSet(BillingMixin, viewsets.ReadOnlyModelViewSet):
         run = self.get_object()
         services.lock_run(run)
         drafts = list(
-            _invoice_qs(self.org)
-            .filter(run=run, status=Invoice.Status.DRAFT)
-            .order_by("recipient_kind", "recipient_name", "pk")
+            ordered(
+                _invoice_qs(self.org).filter(run=run, status=Invoice.Status.DRAFT),
+                "recipient_kind",
+                "recipient_name",
+                "pk",
+            )
         )
         for invoice in drafts:
             try:
@@ -618,7 +621,7 @@ class FeeRunViewSet(BillingMixin, viewsets.ReadOnlyModelViewSet):
             qs = qs.filter(status=Invoice.Status.DRAFT)
         else:
             qs = qs.exclude(status=Invoice.Status.DRAFT) if which else qs
-        invoices = list(qs.order_by("recipient_kind", "recipient_name", "pk"))
+        invoices = list(ordered(qs, "recipient_kind", "recipient_name", "pk"))
         return pdf_response(invoices, f"Beitragslauf-{run.pk}.pdf", download=True)
 
     @transaction.atomic
@@ -683,7 +686,9 @@ class InvoiceViewSet(BillingMixin, viewsets.ModelViewSet):
         if p.get("gemahnt") in ("1", "true"):
             qs = qs.filter(dunning_level__gt=0)
         if term := p.get("suche", "").strip():
-            q = Q(recipient_name__icontains=term) | Q(subject__icontains=term)
+            q = Q(pk__in=name_ids(qs, term, fields=("recipient_name",))) | Q(
+                subject__icontains=term
+            )
             if term.upper().startswith("R") and "-" in term:
                 try:
                     q |= Q(number=int(term.rsplit("-", 1)[1]))
@@ -1255,9 +1260,13 @@ class DunningPdfView(BillingMixin, APIView):
     def get(self, request, org_id: int):
         ids = [int(i) for i in request.query_params.get("ids", "").split(",") if i.isdigit()]
         dunnings = list(
-            Dunning.objects.filter(organization=self.org, pk__in=ids)
-            .select_related("invoice__organization", "invoice__membership", "invoice__club")
-            .order_by("invoice__recipient_name", "pk")
+            ordered(
+                Dunning.objects.filter(organization=self.org, pk__in=ids).select_related(
+                    "invoice__organization", "invoice__membership", "invoice__club"
+                ),
+                "invoice__recipient_name",
+                "pk",
+            )
         )
         if not dunnings:
             raise NotFound(gettext("Keine Mahnungen gefunden."))

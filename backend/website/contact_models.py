@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from django.db import models
 
+from core.encfields import EncryptedCharField
+
 HELD_DAYS = 7
 
 
@@ -20,8 +22,8 @@ class HeldMessage(models.Model):
         "website.Website", on_delete=models.CASCADE, related_name="held_messages"
     )
     recipient = models.CharField("Empfänger (Kennung)", max_length=40)
-    recipient_name = models.CharField("Empfänger", max_length=200)
-    sender_name = models.CharField("Name", max_length=100)
+    recipient_name = EncryptedCharField("Empfänger", max_length=200, strict=True)
+    sender_name = EncryptedCharField("Name", max_length=100, strict=True)
     sender_email = models.EmailField("E-Mail")
     subject = models.CharField("Betreff", max_length=150)
     body = models.TextField("Nachricht", max_length=5000)

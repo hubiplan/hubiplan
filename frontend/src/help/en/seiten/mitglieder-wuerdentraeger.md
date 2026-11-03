@@ -9,3 +9,5 @@ stichworte: [king, dignity, chronicle, reign]
 ---
 
 This lists the holders of your club's titles, such as kings and princes, year by year. This forms the chronicle, which can also appear on the website.
+
+Name searches ignore letter case and normalize Unicode spelling variants; “ß” and “ss” are treated as equal. Other selected filters still apply.

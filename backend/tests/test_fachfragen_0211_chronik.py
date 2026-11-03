@@ -3,6 +3,7 @@
 # ruff: noqa: F811  (Fixtures als Parameter)
 
 import pytest
+from django.db import connection
 
 from core.tenancy import rls_bypass
 from honors.models import Companion, Dignity, Reign
@@ -72,7 +73,13 @@ def test_namen_entfernt_jahre_bleiben(
 
     # Älteres Backup eingespielt: Liste entfernt den Namen erneut
     with rls_bypass():
-        Reign.objects.filter(pk=reign.pk).update(person=person, name="Erika Muster")
+        # Das alte Backup enthält noch Klartext; bewusst direkt einspielen statt
+        # den neuen, nur verschlüsselt schreibenden Anwendungspfad zu verwenden.
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE honors_reign SET person_id = %s, name = %s WHERE id = %s",
+                [person.pk, "Erika Muster", reign.pk],
+            )
     assert loeschliste.apply() == 1
     reign.refresh_from_db()
     assert reign.name == NAME_REMOVED

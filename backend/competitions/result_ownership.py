@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from access.catalog import COMPETITIONS_MANAGE, PEERING_MANAGE
 from access.permissions import permissions_in
 from audit.log import record
+from members.personsearch import ordered
 from peering.models import Coupling
 
 from .models import Starter
@@ -46,7 +47,7 @@ class ResultOwnershipView(_Mixin, APIView):
                 ],
                 "starters": [
                     {"id": s.pk, "name": s.name, "club": s.club, "coupling": s.result_coupling_id}
-                    for s in comp.starters.filter(unit__isnull=True).order_by("name", "pk")
+                    for s in ordered(comp.starters.filter(unit__isnull=True), "name", "pk")
                 ],
             }
         )

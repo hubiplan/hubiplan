@@ -18,7 +18,11 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext, gettext_lazy
 
-from core.encfields import EncryptedCharField, EncryptedEmailField, EncryptedTextField
+from core.encfields import (
+    EncryptedCharField,
+    EncryptedEmailField,
+    EncryptedTextField,
+)
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
 
@@ -289,7 +293,7 @@ class Invoice(models.Model):
         verbose_name="Veranstaltung",
     )
     # Anschrift und E-Mail, wie sie beim Festschreiben galten
-    recipient_name = models.CharField("Empfänger", max_length=200)
+    recipient_name = EncryptedCharField("Empfänger", max_length=200, strict=True)
     recipient_address = EncryptedTextField("Anschrift", blank=True)
     recipient_email = EncryptedEmailField("E-Mail", blank=True)
     date = models.DateField("Rechnungsdatum")
@@ -356,8 +360,8 @@ class InvoiceLine(models.Model):
     )
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name="lines")
     position = models.PositiveSmallIntegerField(default=0)
-    text = models.CharField("Text", max_length=200)
-    detail = models.CharField("Zusatz", max_length=200, blank=True)
+    text = EncryptedCharField("Text", max_length=200, strict=True)
+    detail = EncryptedCharField("Zusatz", max_length=200, blank=True, strict=True)
     amount = models.DecimalField("Betrag", max_digits=10, decimal_places=2)
     # Beitragsposten: für welches Mitglied (auch in Sammelrechnungen)
     membership = models.ForeignKey(

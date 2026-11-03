@@ -25,7 +25,8 @@ import struct
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.core.exceptions import FieldError
-from django.db import models
+from django.db import models, transaction
+from django.db.models.expressions import DatabaseDefault
 from django.utils.translation import gettext
 
 from . import crypto
@@ -84,6 +85,31 @@ def _owner_or_fail(instance, field) -> int:
     return org_id
 
 
+def update_encrypted(qs, **values):
+    """Konstante Änderungen an bereichsgebundenen Kopien, etwa bei Löschfristen.
+
+    Der übergebene Berechtigungs-/Fachfilter bleibt erhalten. Je Organisation wird
+    mit ihrem Schlüssel vorbereitet; keine Signale und keine Änderung an updated_at,
+    wie beim bisherigen update(). Person mit Suchmarken benötigt weiterhin save().
+    """
+    if qs.query.is_sliced:
+        raise TypeError("Sammeländerungen benötigen ein ungeschnittenes QuerySet.")
+    encrypted = {name: qs.model._meta.get_field(name) for name in values}
+    count = 0
+    with transaction.atomic(using=qs.db):
+        org_ids = list(qs.order_by().values_list("organization_id", flat=True).distinct())
+        for org_id in org_ids:
+            instance = qs.model(organization_id=org_id)
+            prepared = {
+                name: encrypted[name].stored_value(instance, value)
+                if isinstance(encrypted[name], EncryptedMixin)
+                else value
+                for name, value in values.items()
+            }
+            count += qs.filter(organization_id=org_id).update(**prepared)
+    return count
+
+
 class EncryptedMixin:
     """Gemeinsamer Teil für Text- und JSON-Felder.
 
@@ -117,6 +143,10 @@ class EncryptedMixin:
 
     def pre_save(self, model_instance, add):
         value = getattr(model_instance, self.attname)
+        if isinstance(value, DatabaseDefault):
+            if self._stays_plain(self.db_default):
+                return value
+            raise FieldError("Verschlüsselte Felder erlauben nur leere Datenbank-Standardwerte.")
         # Strenge Identitätsfelder erhalten stets Klartexteingaben. Ein vom Nutzer
         # eingegebener Name mit „enc1:“ darf kein gespeichertes Chiffrat einschleusen.
         if self._stays_plain(value) or (is_encrypted(value) and not self.strict):
@@ -249,6 +279,7 @@ class EncryptedJSONField(EncryptedMixin, models.JSONField):
 
     def deconstruct(self):
         name, _path, args, kwargs = super().deconstruct()
+        kwargs.pop("strict", None)
         return name, "django.db.models.JSONField", args, kwargs
 
     def _plain_to_text(self, value) -> str:
