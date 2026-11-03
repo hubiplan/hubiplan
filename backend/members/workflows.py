@@ -447,12 +447,11 @@ def _reduce_identity(person) -> None:
     keine Verbandsnummer mehr. Name und Zeiträume bleiben für Chronik und Ehrungen."""
     from .models import FederationMember, Person
 
-    with rls_bypass():
-        field = Person._meta.get_field("birth_date")
-        Person.objects.filter(pk=person.pk).update(
-            birth_date=field.stored_value(person, person.birth_date.replace(month=1, day=1)),
-            birth_year_only=True,
-        )
+    with rls_bypass(), transaction.atomic():
+        person = Person.objects.select_for_update().get(pk=person.pk)
+        person.birth_date = person.birth_date.replace(month=1, day=1)
+        person.birth_year_only = True
+        person.save(update_fields=["birth_date", "birth_year_only"])
         FederationMember.objects.filter(person_id=person.pk).delete()
 
 
@@ -548,7 +547,8 @@ def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, 
             Membership.objects.filter(person=person).exclude(organization_id__in=orgs).exists()
         )
         if not elsewhere and person.last_name != NAME_REMOVED:
-            Person.objects.filter(pk=person.pk).update(last_name=NAME_REMOVED, first_name="")
+            person.last_name, person.first_name = NAME_REMOVED, ""
+            person.save(update_fields=["last_name", "first_name"])
             counts["Name"] = 1
     if not listed:
         from . import loeschliste

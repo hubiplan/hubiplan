@@ -169,7 +169,9 @@ class TestVeralteteStaende:
         member = admit(c, orgs["a"], types["aktiv"]).json()
         url = f"/api/orgs/{orgs['a'].pk}/members/{member['id']}/"
         with tenant_context(orgs["a"].pk):
-            Person.objects.filter(last_name="Muster").update(first_name="Erika Maria")
+            person = Person.objects.get(last_name="Muster")
+            person.first_name = "Erika Maria"
+            person.save(update_fields=["first_name"])
         assert c.patch(url, {"last_name": "Muster-Neu"}, content_type=JSON).status_code == 200
         with tenant_context(orgs["a"].pk):
             person = Person.objects.get(last_name="Muster-Neu")

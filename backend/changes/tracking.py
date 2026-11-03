@@ -76,6 +76,8 @@ BLOCKING_MODELS = {
     "billing.mandate": "Betrifft SEPA-Mandate.",
     "billing.debitrun": "Betrifft eine Lastschriftdatei.",
     "billing.debititem": "Betrifft eine Lastschriftdatei.",
+    "finance.account": "Betrifft Konten und historische Anfangsbestände.",
+    "finance.category": "Betrifft Kategorien und steuerliche Zuordnungen.",
 }
 BLOCKING_APPS = {
     "outbox": "Es wurden E-Mails verschickt.",
@@ -100,6 +102,9 @@ def lock_reason(model: type[models.Model], values: dict | None) -> str:
     if not values:
         return ""
     label = model._meta.concrete_model._meta.label_lower
+    if label == "organizations.organization" and "finance_locked_until" in values:
+        if values["finance_locked_until"]:
+            return "Betrifft die endgültige Festschreibung der Kasse."
     if label == "finance.booking" and values.get("year") is not None:
         from finance.models import YearClosing
 
@@ -211,7 +216,9 @@ def from_json(f: models.Field, value: Any) -> Any:
 
 def dump(instance: models.Model) -> dict[str, Any]:
     return {
-        f.attname: to_json(f, f.value_from_object(instance)) for f in instance._meta.concrete_fields
+        f.attname: to_json(f, f.value_from_object(instance))
+        for f in instance._meta.concrete_fields
+        if f.attname not in getattr(instance, "derived_fields", ())
     }
 
 

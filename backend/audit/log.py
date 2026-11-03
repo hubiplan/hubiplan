@@ -100,6 +100,8 @@ def snapshot(instance: models.Model) -> dict[str, Any]:
     # die viele Felder der Organisationstabelle nicht nutzen)
     only = getattr(instance, "audit_fields", None)
     for field in instance._meta.concrete_fields:
+        if field.attname in getattr(instance, "derived_fields", ()):
+            continue
         if field.name in IGNORED_FIELDS or (only is not None and field.name not in only):
             continue
         # Lesbarer deutscher Feldname fürs Protokoll
@@ -161,9 +163,8 @@ def record(
         model = "departmentroleholder"
     from .chain import seal_later
 
-    seal_later(organization.pk)
     with tenant_context(organization.pk):
-        return AuditEntry.objects.create(
+        entry = AuditEntry.objects.create(
             organization=organization,
             user=user if user and user.is_authenticated else None,
             user_email=getattr(user, "email", "") or "",
@@ -176,3 +177,5 @@ def record(
             change_set=current_set_id(),
             via=current_via.get()[:100],
         )
+        seal_later(organization.pk)
+        return entry

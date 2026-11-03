@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import datetime
 
-from django.core.exceptions import ValidationError
-from django.db import models
+from django.core.exceptions import FieldError, ValidationError
+from django.db import models, router, transaction
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
@@ -36,7 +36,45 @@ class Gender(models.TextChoices):
     DIVERSE = "divers", "divers"
 
 
+class PersonQuerySet(models.QuerySet):
+    def update(self, **kwargs):
+        from .personmarks import DERIVED_FIELDS, IDENTITY_FIELDS
+
+        if set(kwargs) & (IDENTITY_FIELDS | set(DERIVED_FIELDS)):
+            raise FieldError("Personenidentität und Suchmarken nur über save() ändern.")
+        return super().update(**kwargs)
+
+    def bulk_update(self, objs, fields, **kwargs):
+        from .personmarks import DERIVED_FIELDS, IDENTITY_FIELDS
+
+        if set(fields) & (IDENTITY_FIELDS | set(DERIVED_FIELDS)):
+            raise FieldError("Personenidentität und Suchmarken nur über save() ändern.")
+        return super().bulk_update(objs, fields, **kwargs)
+
+    def bulk_create(self, objs, **kwargs):
+        from .personmarks import values
+
+        if kwargs.get("update_conflicts"):
+            raise FieldError("Personenidentität nur über save() ändern; kein Upsert.")
+        objs = list(objs)
+        with transaction.atomic(using=self.db):
+            for obj in objs:
+                for field, value in values(obj, using=self.db).items():
+                    setattr(obj, field, value)
+            return super().bulk_create(objs, **kwargs)
+
+
 class Person(models.Model):
+    # Abgeleitete Werte werden nach jeder Identitätsänderung neu berechnet.
+    # Sie dürfen weder als Historie gespeichert noch durch Rückgängig restauriert werden.
+    derived_fields = (
+        "last_birth_mark",
+        "first_birth_mark",
+        "last_year_mark",
+        "first_year_mark",
+        "marks_version",
+        "marks_key_id",
+    )
     scope = models.ForeignKey(
         "organizations.Organization",
         verbose_name="Verbandsbereich",
@@ -55,6 +93,22 @@ class Person(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    last_birth_mark = models.CharField(
+        max_length=22, blank=True, default="", db_default="", editable=False
+    )
+    first_birth_mark = models.CharField(
+        max_length=22, blank=True, default="", db_default="", editable=False
+    )
+    last_year_mark = models.CharField(
+        max_length=22, blank=True, default="", db_default="", editable=False
+    )
+    first_year_mark = models.CharField(
+        max_length=22, blank=True, default="", db_default="", editable=False
+    )
+    marks_version = models.PositiveSmallIntegerField(default=0, db_default=0, editable=False)
+    marks_key_id = models.BigIntegerField(null=True, editable=False)
+
+    objects = PersonQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Person"
@@ -62,10 +116,51 @@ class Person(models.Model):
         ordering = ["last_name", "first_name"]
         indexes = [
             models.Index(fields=["scope", "last_name", "first_name"]),
+            models.Index(fields=["scope", "last_birth_mark"], name="person_last_birth_mark"),
+            models.Index(fields=["scope", "first_birth_mark"], name="person_first_birth_mark"),
+            models.Index(fields=["scope", "last_year_mark"], name="person_last_year_mark"),
+            models.Index(fields=["scope", "first_year_mark"], name="person_first_year_mark"),
         ]
 
     def __str__(self) -> str:
         return f"{self.last_name}, {self.first_name}"
+
+    def save(self, *args, **kwargs):
+        from .personmarks import DERIVED_FIELDS, IDENTITY_FIELDS, write
+
+        using = kwargs.get("using") or router.db_for_write(type(self), instance=self)
+        fields = kwargs.get("update_fields")
+        if fields is not None and set(fields) & set(DERIVED_FIELDS):
+            raise FieldError("Suchmarken werden ausschließlich aus der Identität berechnet.")
+        if fields is not None and not set(fields) & IDENTITY_FIELDS:
+            return super().save(*args, **kwargs)
+        with transaction.atomic(using=using):
+            current = None
+            if self.pk is not None and not kwargs.get("force_insert"):
+                current = (
+                    type(self).objects.using(using).select_for_update().filter(pk=self.pk).first()
+                )
+            if fields is not None and current is not None:
+                # Bei Teil-Saves stammen unveränderte Identitätswerte aus der gesperrten
+                # Zeile, nicht aus einem womöglich veralteten Python-Objekt.
+                fields = set(fields)
+                for name in (
+                    "scope_id",
+                    "last_name",
+                    "first_name",
+                    "birth_date",
+                    "birth_year_only",
+                ):
+                    if name not in fields and name.removesuffix("_id") not in fields:
+                        setattr(self, name, getattr(current, name))
+                if fields & {"scope", "scope_id"}:
+                    # Das Datum muss beim Bereichswechsel zum neuen Schlüssel gehören.
+                    fields.add("birth_date")
+                kwargs["update_fields"] = fields
+            super().save(*args, **kwargs)
+            # Der DB-Trigger entwertet die alten Marken beim Schreiben der Quelldaten.
+            # Erst nach erfolgreicher Neuberechnung wird dieselbe Transaktion sichtbar.
+            write(self, using=using)
 
 
 class ContactDetails(models.Model):
