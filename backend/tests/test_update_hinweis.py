@@ -10,7 +10,7 @@ from core import safehttp, update_check, version
 from organizations.imprint_generator import platform_privacy
 from organizations.models import Organization
 
-from .factories import give_role, make_user
+from .factories import PASSWORD, give_role, make_user
 
 pytestmark = pytest.mark.django_db
 URL = "/api/platform/update/"
@@ -145,3 +145,88 @@ def test_datenschutzhinweis_nennt_github():
     assert "GitHub sieht nur die IP-Adresse des Servers" in platform_privacy()
     with override_settings(UPDATE_CHECK=False):
         assert "GitHub" not in platform_privacy()
+
+
+# --- Selbstupdate (konzepte/selbstupdate.md, 7b) ---
+
+
+@pytest.fixture
+def auftragsordner(tmp_path, settings):
+    ordner = tmp_path / "aktualisierung"
+    ordner.mkdir()
+    settings.SELBSTUPDATE = True
+    settings.AKTUALISIERUNG_DIR = str(ordner)
+    return ordner
+
+
+@pytest.fixture
+def mit_mfa(platform_admin):
+    from allauth.mfa.models import Authenticator
+
+    Authenticator.objects.create(user=platform_admin, type=Authenticator.Type.TOTP, data={})
+    return platform_admin
+
+
+def bereit(sauber, github):
+    laufend(sauber, "2026.11.0")
+    update_check.check_latest()
+
+
+def test_selbstupdate_aus_ohne_einstellung(api, sauber, github, platform_admin):
+    bereit(sauber, github)
+    data = api(platform_admin).get(URL).json()
+    assert data["selfupdate"] == {"enabled": False, "pending": False, "result": None}
+    resp = api(platform_admin).post(
+        URL, {"version": "2026.12.0", "password": PASSWORD}, content_type="application/json"
+    )
+    assert resp.status_code == 400
+
+
+def test_auftrag_nur_mit_zwei_faktor_und_passwort(
+    api, sauber, github, auftragsordner, platform_admin
+):
+    bereit(sauber, github)
+    c = api(platform_admin)
+    daten = {"version": "2026.12.0", "password": PASSWORD}
+    assert c.post(URL, daten, content_type="application/json").status_code == 403
+    assert not (auftragsordner / "auftrag").exists()
+
+
+def test_auftrag_wird_abgelegt(api, sauber, github, auftragsordner, mit_mfa, board_a):
+    bereit(sauber, github)
+    c = api(mit_mfa)
+    falsch = {"version": "2026.12.0", "password": "falsch"}
+    assert c.post(URL, falsch, content_type="application/json").status_code == 403
+    andere = {"version": "2026.11.5", "password": PASSWORD}
+    assert c.post(URL, andere, content_type="application/json").status_code == 400
+    assert api(board_a).post(URL, andere, content_type="application/json").status_code == 403
+
+    resp = c.post(
+        URL, {"version": "2026.12.0", "password": PASSWORD}, content_type="application/json"
+    )
+    assert resp.status_code == 202
+    assert resp.json()["pending"] is True
+    text = (auftragsordner / "auftrag").read_text(encoding="utf-8")
+    assert text.startswith("version=2026.12.0\n")
+    # Zweiter Auftrag, solange der erste läuft: abgelehnt
+    resp = c.post(
+        URL, {"version": "2026.12.0", "password": PASSWORD}, content_type="application/json"
+    )
+    assert resp.status_code == 409
+
+
+def test_ergebnis_des_aktualisierers(api, sauber, github, auftragsordner, platform_admin):
+    bereit(sauber, github)
+    (auftragsordner / "ergebnis").write_text(
+        "status=fehler\nversion=2026.12.0\nzeit=2026-11-20T02:00:00Z\n"
+        "text=Signatur von v2026.12.0 ist ungültig. Nichts geändert.\nanderes=x\n",
+        encoding="utf-8",
+    )
+    data = api(platform_admin).get(URL).json()["selfupdate"]
+    assert data["enabled"] is True and data["pending"] is False
+    assert data["result"] == {
+        "status": "fehler",
+        "version": "2026.12.0",
+        "zeit": "2026-11-20T02:00:00Z",
+        "text": "Signatur von v2026.12.0 ist ungültig. Nichts geändert.",
+    }

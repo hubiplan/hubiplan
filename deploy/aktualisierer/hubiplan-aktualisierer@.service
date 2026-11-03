@@ -1,0 +1,13 @@
+# Selbstupdate von HUBIplan (konzepte/selbstupdate.md): arbeitet einen Auftrag aus der
+# Oberfläche ab. Instanz = Programmordner ohne /opt/, z. B. hubiplan-aktualisierer@hubiplan.
+# Eingerichtet von deploy/server-setup.sh bei HUBIPLAN_SELBSTUPDATE=1.
+[Unit]
+Description=HUBIplan-Selbstupdate (/opt/%i)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/hubiplan/aktualisierer.sh /opt/%i
+# Bauen und Migrationen dürfen dauern (MIGRATE_TIMEOUT bis 1 h)
+TimeoutStartSec=3h

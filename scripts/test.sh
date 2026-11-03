@@ -153,6 +153,12 @@ if git cat-file -e "$REF:scripts/pruefe-proxy.sh" 2> /dev/null; then
         deploy/Caddyfile.proxy deploy/caddy deploy/hestia | tar -x -C "$WORK"
     "$WORK/scripts/pruefe-proxy.sh" "$WORK" "$CPUS"
 fi
+# Selbstupdate: Aktualisierer mit Wegwerf-Repository (braucht git und ssh-keygen)
+if git cat-file -e "$REF:scripts/pruefe-aktualisierer.sh" 2> /dev/null; then
+    git archive --format=tar "$REF" scripts/pruefe-aktualisierer.sh deploy/aktualisierer \
+        | tar -x -C "$WORK"
+    "$WORK/scripts/pruefe-aktualisierer.sh" "$WORK"
+fi
 
 # Testdatenbank: einmal migrieren und je Worker kopieren (CREATE DATABASE … TEMPLATE, 0,2 s)
 # statt in jedem Worker alle Migrationen (je ~40 s Rechenzeit). Die migrierte Datenbank

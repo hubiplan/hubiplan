@@ -318,6 +318,10 @@ UPDATE_CHECK = env_bool("HUBIPLAN_UPDATE_CHECK", True)
 UPDATE_CHECK_URL = os.environ.get(
     "HUBIPLAN_UPDATE_URL", "https://api.github.com/repos/hubiplan/hubiplan/releases/latest"
 )
+# Selbstupdate (konzepte/selbstupdate.md): Plattformverwalter legen einen Auftrag in diesen
+# Ordner, ausgeführt wird er vom Aktualisierer auf dem Server (deploy/aktualisierer/).
+SELBSTUPDATE = env_bool("HUBIPLAN_SELBSTUPDATE", False)
+AKTUALISIERUNG_DIR = os.environ.get("HUBIPLAN_AKTUALISIERUNG_DIR", "/aktualisierung")
 # Statusdatei des Backup-Dienstes (docker-compose.server.yml) und ab wann ein fehlendes
 # vollständiges Backup gemeldet wird
 BACKUP_STATUS_DIR = os.environ.get("BACKUP_STATUS_DIR", "")

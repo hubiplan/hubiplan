@@ -479,6 +479,32 @@ Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen.
   nur die IP-Adresse des Servers (steht in der erzeugten Datenschutzerklärung).
   Abschalten mit `HUBIPLAN_UPDATE_CHECK=0` in der `.env`.
 
+## Selbstupdate
+
+Für Vereine, die HUBIplan selbst betreiben (Konzept `konzepte/selbstupdate.md`; nicht auf dem
+Echtserver des Pilotvereins). Standardmäßig aus; einschalten mit `HUBIPLAN_SELBSTUPDATE=1` in
+der `.env` und einmal ausrollen. Nötig sind systemd, `git` und `ssh-keygen` auf dem Server.
+
+- HUBIplan darf nur einen **Auftrag** ablegen (Datei `auftrag` in `AKTUALISIERUNG_DIR`,
+  Standard `/opt/hubiplan-aktualisierung`, im Backend als `/aktualisierung` eingebunden durch
+  `docker-compose.selbstupdate.yml`). Den Auftrag legt nur ein Plattformverwalter mit
+  Zwei-Faktor-Anmeldung und Passwort an, und nur für das Release, das die tägliche Prüfung
+  gefunden hat. Dabei geht eine Alarm-Mail an die Plattformverwalter.
+- Der **Aktualisierer** (`deploy/aktualisierer/aktualisierer.sh`, systemd-Timer
+  `hubiplan-aktualisierer@hubiplan.timer`, jede Minute) läuft als root außerhalb der Container.
+  Er holt den Tag aus `HUBIPLAN_UPDATE_REPO` in einen eigenen Spiegel (`/opt/hubiplan-quelle.git`)
+  und rollt nur aus, wenn
+  - der Tag mit einem Schlüssel aus `deploy/release-schluessel` der **laufenden** Fassung
+    signiert ist,
+  - er den laufenden Stand enthält (kein Rückschritt),
+  - genug Platz zum Bauen da ist und keine Sperre (`/opt/hubiplan.sperre`) besteht.
+
+  Dann sichert er die Datenbank über den Backup-Dienst und rollt aus wie `deploy.sh`
+  (`server-setup.sh` mit automatischem Rückweg). Ergebnis in `ergebnis` (in HUBIplan sichtbar),
+  Ausgaben in `ausrollen.log` und `sicherung.log`, eine Zeile im Rollout-Protokoll.
+- Ausschalten: `HUBIPLAN_SELBSTUPDATE=0` und einmal ausrollen; `server-setup.sh` schaltet den
+  Timer dann ab.
+
 ## Ausrollen mit Rückweg
 
 `deploy/deploy.sh` entpackt die neue Fassung nach `/opt/hubiplan.neu` (mit der

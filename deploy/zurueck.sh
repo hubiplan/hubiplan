@@ -21,6 +21,9 @@ fi
 if grep -q '^CLAMD_SOCKET_DIR=.' .env; then
     DATEIEN="$DATEIEN -f docker-compose.clamav.yml"
 fi
+if grep -q '^HUBIPLAN_SELBSTUPDATE=1' .env && [ -f docker-compose.selbstupdate.yml ]; then
+    DATEIEN="$DATEIEN -f docker-compose.selbstupdate.yml"
+fi
 COMPOSE="docker compose -p $PROJEKT $DATEIEN"
 EIGENE=$($COMPOSE config --images | grep -v '@sha256:' | sort -u)
 

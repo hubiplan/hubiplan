@@ -32,6 +32,7 @@ from accounts.models import User
 from audit.log import diff, record, snapshot
 from core import update_check
 from core.api_base import AuditMixin, OrgScopedMixin
+from core.ratelimit import too_many
 from core.reorder import reorder_response
 from core.tenancy import rls_bypass, set_rls, tenant_context
 from members import services as member_services
@@ -600,12 +601,66 @@ class PlatformBoardView(APIView):
 
 
 class PlatformUpdateView(APIView):
-    """Neueres HUBIplan-Release, falls die tägliche Prüfung eines gefunden hat (E9)."""
+    """Neueres HUBIplan-Release (E9) und Selbstupdate (konzepte/selbstupdate.md).
+
+    GET: verfügbares Release und Stand des Selbstupdates. POST {version, password}: Auftrag
+    an den Aktualisierer auf dem Server; nur mit Zwei-Faktor-Anmeldung und Passwort.
+    """
 
     permission_classes = [IsPlatformAdmin]
 
     def get(self, request):
-        return Response({"enabled": settings.UPDATE_CHECK, "update": update_check.available()})
+        return Response(
+            {
+                "enabled": settings.UPDATE_CHECK,
+                "update": update_check.available(),
+                "selfupdate": update_check.selbstupdate_status(),
+            }
+        )
+
+    def post(self, request):
+        from accounts.mfa_policy import has_mfa
+        from core import alarm
+
+        status_now = update_check.selbstupdate_status()
+        if not status_now["enabled"]:
+            return Response(
+                {"detail": gettext("Das Selbstupdate ist auf diesem Server nicht eingeschaltet.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not has_mfa(request.user):
+            return Response(
+                {"detail": gettext("Für das Aktualisieren brauchst du die Zwei-Faktor-Anmeldung.")},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        if too_many(f"selbstupdate:{request.user.pk}", 5, 3600) or not request.user.check_password(
+            str(request.data.get("password") or "")
+        ):
+            return Response(
+                {"detail": gettext("Das Passwort stimmt nicht.")},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        update = update_check.available()
+        version = str(request.data.get("version") or "")
+        if not update or update["version"] != version:
+            return Response(
+                {"detail": gettext("Diese Version ist nicht als Update verfügbar.")},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if status_now["pending"]:
+            return Response(
+                {"detail": gettext("Es läuft schon eine Aktualisierung.")},
+                status=status.HTTP_409_CONFLICT,
+            )
+        update_check.auftrag_anlegen(version, request.user.email)
+        alarm.send_alert(
+            "Selbstupdate angestoßen",
+            [
+                f"{request.user.email} hat das Update auf HUBIplan {version} angestoßen.",
+                f"Bisher lief {update['running']}. Der Server aktualisiert gleich.",
+            ],
+        )
+        return Response(update_check.selbstupdate_status(), status=status.HTTP_202_ACCEPTED)
 
 
 class PlatformSettingsView(generics.RetrieveUpdateAPIView):
