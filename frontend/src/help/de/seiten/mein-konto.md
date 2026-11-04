@@ -9,5 +9,5 @@ stichworte: [Profil, Name, Sprache, Lernhilfen]
 Hier stellst du alles ein, was nur dich betrifft: deinen Namen, die **Sprache der Oberfläche** und
 ob HUBIplan dir Lernhilfen zeigt. Die Einstellungen gelten in allen Einheiten, in denen du mitarbeitest.
 
-Weitere Unterpunkte von „Mein Konto“ stehen links in der Seitenleiste, z. B. **Anmeldung & Sicherheit**
-für Passwort und Zwei-Faktor-Anmeldung.
+Weitere Unterpunkte öffnest du oben rechts über **Mein Konto**, z. B. **Anmeldung & Sicherheit**
+für Passwort und Zwei-Faktor-Anmeldung. Im selben Menü siehst du deine E-Mail-Adresse und kannst dich mit **Abmelden** abmelden.
