@@ -171,7 +171,8 @@ ORG_FIELDS = (
     "enabled_modules",
     "tax_areas_enabled",
     "is_active",
-    # Dachverband mit eigenen Mitgliedern (Audit 31.10. D31-02)
+    # Dachverband mit eigenen Mitgliedern (Audit 31.10. D31-02    "shooting_facilities",
+)
     "direct_members",
     # Platzhalter einer Einheit auf einer anderen Instanz (Verbund)
     "is_remote",

@@ -654,7 +654,6 @@ function Setup({
               </div>
             </details>
           </fieldset>
-          {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
         </div>
 
         <EventCard

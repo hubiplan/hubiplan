@@ -460,9 +460,6 @@ class CompetitionViewSet(_Mixin, AuditMixin, viewsets.ModelViewSet):
 
     @transaction.atomic
     def perform_create(self, serializer):
-        comp = Competition.objects.select_for_update().get(pk=serializer.context["competition"].pk)
-        serializer.context["competition"] = comp
-        serializer = self._revalidate(serializer)
         super().perform_create(serializer)
         comp = serializer.instance
         self._calendar(comp)
@@ -589,7 +586,11 @@ class ScoringViewSet(_Mixin, AuditMixin, viewsets.ModelViewSet):
 
     @transaction.atomic
     def perform_create(self, serializer):
-        super().perform_create(serializer)
+        comp = Competition.objects.select_for_update().get(pk=serializer.context["competition"].pk)
+        serializer.context["competition"] = comp
+        fresh = self._revalidate(serializer)
+        super().perform_create(fresh)
+        serializer.instance = fresh.instance
         from .target_views import recompute_all
 
         scoring = serializer.instance
