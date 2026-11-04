@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
@@ -53,7 +53,7 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
       {d.rehearsals.map((r) => (
         <article className="stack" key={`${r.id}-${r.original_start}`}>
           <strong>
-            {r.title} · {new Date(r.starts_at).toLocaleString()}
+            {r.title} · {formatDateTime(r.starts_at)}
           </strong>
           <p>{[r.location, r.focus].filter(Boolean).join(' · ')}</p>
           <MusicStatus status={r.cancelled ? 'declined' : r.status} />

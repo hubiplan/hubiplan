@@ -188,7 +188,9 @@ export function ProgramPanel({ performance }: { performance: number }) {
             {e.kind === 'encore' ? `(${t('Zugabe')})` : ''}
           </strong>
           <p>
-            {e.arrangement_name} · {duration(e.effective_seconds)} · {e.note}
+            {[e.arrangement_name, duration(e.effective_seconds), e.note]
+              .filter(Boolean)
+              .join(' · ')}
           </p>
           {e.effective_seconds === 0 && <p>{t('Dauer noch nicht angegeben.')}</p>}
           {canEdit && (

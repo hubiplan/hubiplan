@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api, newRequestKey } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
@@ -120,7 +120,7 @@ export function AvailabilityPage() {
 function AbsenceDates({ row }: { row: Absence }) {
   return (
     <p>
-      {new Date(row.starts_at).toLocaleString()} – {new Date(row.ends_at).toLocaleString()}
+      {formatDateTime(row.starts_at)} – {formatDateTime(row.ends_at)}
     </p>
   )
 }

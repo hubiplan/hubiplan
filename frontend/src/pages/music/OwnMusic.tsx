@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { OwnPracticePanel } from './OwnPractice.tsx'
@@ -69,18 +69,14 @@ export function OwnMusic({ accessId }: { accessId: number }) {
                 </p>
               )}
               <p>
-                {new Date(r.starts_at).toLocaleString()} · {r.location} · {r.instrument}{' '}
-                {r.register}
+                {formatDateTime(r.starts_at)} · {r.location} · {r.instrument} {r.register}
               </p>
               <dl className="music-details">
                 {(r.meeting_at || r.meeting_place) && (
                   <div>
                     <dt>{t('Treffpunkt')}</dt>
                     <dd>
-                      {[
-                        r.meeting_at ? new Date(r.meeting_at).toLocaleString() : '',
-                        r.meeting_place,
-                      ]
+                      {[r.meeting_at ? formatDateTime(r.meeting_at) : '', r.meeting_place]
                         .filter(Boolean)
                         .join(' · ')}
                     </dd>

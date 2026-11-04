@@ -85,6 +85,12 @@ export function SettlementPanel({
   if (load.error) return <Alert kind="error">{load.error}</Alert>
   const d = load.data
   if (!d) return <p>{t('Lädt …')}</p>
+  const invoiceStatuses: Record<string, string> = {
+    draft: t('Entwurf'),
+    open: t('Offen'),
+    paid: t('Bezahlt'),
+    cancelled: t('Storniert'),
+  }
   return (
     <section className="stack music-page">
       <MusicHeader title={t('Auftrittsabrechnung')} context={title} />
@@ -129,7 +135,7 @@ export function SettlementPanel({
           <Link to={`/finanzen/rechnungen/leistungen?rechnung=${d.invoice}`}>
             {t('Veranstalterrechnung öffnen')}
           </Link>{' '}
-          · {d.invoice_status}
+          · {invoiceStatuses[d.invoice_status || ''] || '—'}
         </p>
       ) : (
         canEdit &&

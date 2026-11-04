@@ -21,6 +21,10 @@
 }
 
 .music-navigation a {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-size: 0.875rem;
   padding: 0.625rem 0.75rem;
   border-radius: var(--radius);
   color: var(--color-text-muted);
@@ -42,11 +46,13 @@
   gap: 1.25rem;
 }
 
-:where(.music-workspace, .music-personal) :where(h1, h2, h3, p, dl, ol, ul) {
+.music-workspace :where(h1, h2, h3, p, dl, ol, ul),
+.music-personal :where(h1, h2, h3, p, dl, ol, ul) {
   margin-block: 0;
 }
 
-:where(.music-workspace, .music-personal) .card {
+.music-workspace .card,
+.music-personal .card {
   max-width: none;
 }
 
@@ -149,7 +155,7 @@
 }
 
 .music-page > .button,
-.music-page > form > .button,
+.music-workspace form > .button,
 .music-page > .card > .button,
 .music-personal > .button {
   justify-self: start;
@@ -262,7 +268,9 @@
 
 .music-workspace .table-wrap table {
   width: 100%;
+  min-width: 68rem;
   border-collapse: collapse;
+  overflow-wrap: normal;
 }
 
 .music-workspace .table-wrap :where(th, td) {
@@ -287,7 +295,8 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
-  :where(.music-workspace, .music-personal) .card {
+  .music-workspace .card,
+  .music-personal .card {
     padding: 1rem;
   }
 

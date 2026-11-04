@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmDiscard, confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
@@ -68,8 +68,7 @@ function ProgramForm({ initial, ...props }: Props & { initial: Program }) {
       }}
     >
       <h2>
-        {t('Probenprogramm bearbeiten')}: {props.title} ·{' '}
-        {new Date(props.startsAt).toLocaleString()}
+        {t('Probenprogramm bearbeiten')}: {props.title} · {formatDateTime(props.startsAt)}
       </h2>
       {error && <Alert kind="error">{error}</Alert>}
       <fieldset disabled={busy} className="music-form-fields">

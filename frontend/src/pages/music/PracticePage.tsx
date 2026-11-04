@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmLeave } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
@@ -219,7 +219,7 @@ export function PracticePage() {
         d.overview.map((o) => (
           <article className="card stack music-record" key={`${o.rehearsal}-${o.original_start}`}>
             <strong>
-              {o.title} · {new Date(o.starts_at).toLocaleString()}
+              {o.title} · {formatDateTime(o.starts_at)}
             </strong>
             <p>
               {o.focus} {o.cancelled ? t('Abgesagt') : ''}
@@ -328,7 +328,7 @@ export function PracticePage() {
               {(r as Loan).overdue && <Alert kind="error">{t('Rückgabe überfällig')}</Alert>}
               {(r as Loan).returns.map((ret, i) => (
                 <p key={i}>
-                  {t('Notenrückgabe')}: {ret.quantity} · {new Date(ret.created_at).toLocaleString()}
+                  {t('Notenrückgabe')}: {ret.quantity} · {formatDateTime(ret.created_at)}
                 </p>
               ))}
               {canEdit && (r as Loan).returned < (r as Loan).quantity && (

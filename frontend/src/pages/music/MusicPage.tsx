@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
@@ -197,8 +197,16 @@ function MusicWorkspace() {
         !params.get('mitglied') ||
         String(r.membership) === params.get('mitglied')) &&
       [
-        ...Object.values(r),
-        musicianName(r.musician),
+        r.title,
+        r.display_name,
+        r.name,
+        r.contact,
+        r.instrument,
+        r.register,
+        r.notes,
+        r.location,
+        r.uniform,
+        r.musician ? musicianName(r.musician) : '',
         d.performances.find((p) => p.id === r.performance)?.title,
         d.positions.find((p) => p.id === r.position)?.instrument,
       ]
@@ -306,18 +314,15 @@ function MusicWorkspace() {
             {kind === 'performances' && (
               <>
                 <p>
-                  {r.starts_at ? new Date(String(r.starts_at)).toLocaleString() : ''} –{' '}
-                  {r.ends_at ? new Date(String(r.ends_at)).toLocaleString() : ''} · {r.location}
+                  {r.starts_at ? formatDateTime(String(r.starts_at)) : ''} –{' '}
+                  {r.ends_at ? formatDateTime(String(r.ends_at)) : ''} · {r.location}
                 </p>
                 <dl className="music-details">
                   {(r.meeting_at || r.meeting_place) && (
                     <div>
                       <dt>{t('Treffpunkt')}</dt>
                       <dd>
-                        {[
-                          r.meeting_at ? new Date(String(r.meeting_at)).toLocaleString() : '',
-                          r.meeting_place,
-                        ]
+                        {[r.meeting_at ? formatDateTime(String(r.meeting_at)) : '', r.meeting_place]
                           .filter(Boolean)
                           .join(' · ')}
                       </dd>
