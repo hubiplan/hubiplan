@@ -43,6 +43,7 @@ from todos import cross_views as todo_cross_views
 from todos import reminder_views as todo_reminder_views
 from todos import series_views as todo_series_views
 from todos import views as todo_views
+from todos.event_links import EventChoicesView
 from website import urls as website_urls
 
 from . import views
@@ -140,6 +141,7 @@ org_patterns = [
     path("todos/<int:pk>/reminders/", todo_reminder_views.ReminderSettingsView.as_view()),
     path("todos/orphans/", todo_views.OrphanTasksView.as_view()),
     path("todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
+    path("todos/events/", EventChoicesView.as_view()),
     path("todos/choices/", todo_views.TodoChoicesView.as_view()),
     path("todos/", todo_views.TodoListView.as_view()),
     path("todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
@@ -684,6 +686,7 @@ urlpatterns = [
     ),
     path("depts/<int:dept_id>/todos/orphans/", todo_views.OrphanTasksView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
+    path("depts/<int:dept_id>/todos/events/", EventChoicesView.as_view()),
     path("depts/<int:dept_id>/todos/choices/", todo_views.TodoChoicesView.as_view()),
     path("me/todos/preferences/", todo_views.TodoPreferencesView.as_view()),
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),

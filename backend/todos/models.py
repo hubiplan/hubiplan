@@ -21,6 +21,9 @@ class Todo(models.Model):
     )
     title = EncryptedCharField("Titel", max_length=200)
     description = EncryptedTextField("Beschreibung", blank=True)
+    event = models.ForeignKey(
+        "events.Event", on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks"
+    )
     due_date = models.DateField("Frist", null=True, blank=True)
     due_time = models.TimeField("Uhrzeit", null=True, blank=True)
     timezone = models.CharField(max_length=64, default="Europe/Berlin")

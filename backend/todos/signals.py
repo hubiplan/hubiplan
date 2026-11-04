@@ -24,6 +24,11 @@ def erase_private(sender, instance, **kwargs):
 
 def connect():
     from accounts.models import User
+    from events.models import Event
+
+    from .event_links import detach_deleted_event
+
+    pre_delete.connect(detach_deleted_event, sender=Event, dispatch_uid="todos_detach_event")
 
     pre_delete.connect(erase_private, sender=User, dispatch_uid="todos_erase_private")
     from .models import Todo, TodoAttachment, TodoSeries

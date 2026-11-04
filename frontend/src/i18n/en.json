@@ -4971,5 +4971,11 @@
   "eine gemeinsame Aufgabe": "one shared task",
   "Rolle „{name}“ in {n} Zieleinheiten hinzufügen": "Add role “{name}” in {n} target units",
   "Titel, Beschreibung und Frist werden von der Quelle vorgegeben.": "The title, description and due date are controlled by the source.",
-  "Bei Serien erhält jede Zieleinheit eine eigene Folge mit der zentralen Vorlage. Die Einheit verwaltet ihre lokalen Beteiligten selbst.": "For recurring tasks, each target unit receives its own sequence using the central template. The unit manages its local participants independently."
+  "Bei Serien erhält jede Zieleinheit eine eigene Folge mit der zentralen Vorlage. Die Einheit verwaltet ihre lokalen Beteiligten selbst.": "For recurring tasks, each target unit receives its own sequence using the central template. The unit manages its local participants independently.",
+  "Terminverknüpfung": "Linked event",
+  "Termin nicht verfügbar": "Event unavailable",
+  "Ohne Terminverknüpfung": "No linked event",
+  "Die Verknüpfung ändert weder Frist noch Freigaben. Bei einer Terminserie gilt sie für die ganze Terminserie.": "Linking an event does not change due dates or sharing. For a recurring event, the link refers to the entire event series.",
+  "Aufgaben zu diesem Termin": "Tasks for this event",
+  "Aufgabe zu diesem Termin anlegen": "Create a task for this event"
 }

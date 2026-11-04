@@ -13,6 +13,13 @@ export interface Todo {
   id: number
   organization?: number
   department?: number | null
+  event?: {
+    available: boolean
+    id?: number
+    title?: string
+    starts_at?: string
+    cancelled?: boolean
+  } | null
   per_unit?: boolean
   distributed?: boolean
   central_readonly?: boolean

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { TodoEventLink } from '../components/TodoEventLink.tsx'
 import { todoApi, todoBase } from '../api/todos.ts'
 import type { Todo } from '../api/todos.ts'
 import { useOrg } from '../org/OrgContext.tsx'
@@ -58,7 +59,9 @@ function TodoWorkspace({ base }: { base: string }) {
     (active?.permissions ?? activeDept?.permissions ?? []).includes(permission)
   const [tab, setTab] = useState('open')
   const [filter, setFilter] = useState('all')
-  const [newTask, setNewTask] = useState(false)
+  const [newTask, setNewTask] = useState(
+    () => new URLSearchParams(location.search).get('neu') === '1',
+  )
   const [params, setParams] = useSearchParams()
   const { data, error, reload } = useLoad(() => todoApi.list(base, tab === 'trash'), [base, tab])
   const [actionError, setActionError] = useState<string | null>(null)
@@ -66,6 +69,7 @@ function TodoWorkspace({ base }: { base: string }) {
   const items = (data?.items ?? []).filter(
     (item) =>
       (tab === 'trash' || item.status === tab) &&
+      (!params.get('termin') || String(item.event?.id) === params.get('termin')) &&
       (filter === 'all' ||
         (filter === 'mine' && !item.shared) ||
         (filter === 'shared' && item.shared && item.created_by !== user?.id) ||
@@ -137,6 +141,7 @@ function TodoWorkspace({ base }: { base: string }) {
       {newTask && (
         <TodoEditor
           key="new"
+          initialEvent={Number(params.get('termin')) || undefined}
           base={base}
           onSaved={() => {
             setNewTask(false)
@@ -146,6 +151,9 @@ function TodoWorkspace({ base }: { base: string }) {
       )}
       {selected && tab !== 'trash' && (
         <TodoEditor key={selected.id} base={base} todo={selected} onSaved={() => void reload()} />
+      )}
+      {selected && tab !== 'trash' && (
+        <TodoEventLink base={base} todo={selected} onSaved={() => void reload()} />
       )}
       {selected && (selected.due_date || selected.series) && (
         <TodoSeries
@@ -263,7 +271,17 @@ function todoFields(todo?: Todo) {
   }
 }
 
-function TodoEditor({ base, todo, onSaved }: { base: string; todo?: Todo; onSaved: () => void }) {
+function TodoEditor({
+  base,
+  todo,
+  initialEvent,
+  onSaved,
+}: {
+  base: string
+  todo?: Todo
+  initialEvent?: number
+  onSaved: () => void
+}) {
   const version = useRef(todo?.version ?? 1)
   const baseline = useRef(todoFields(todo))
   const form = useForm(todoFields(todo))
@@ -310,7 +328,10 @@ function TodoEditor({ base, todo, onSaved }: { base: string; todo?: Todo; onSave
         event.preventDefault()
         if (!todo)
           void form.submit(async () => {
-            await todoApi.create(base, payload())
+            await todoApi.create(base, {
+              ...payload(),
+              ...(initialEvent ? { event: initialEvent } : {}),
+            })
             onSaved()
           })
       }}
