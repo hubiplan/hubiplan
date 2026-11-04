@@ -3,6 +3,7 @@ import { api } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { AvailabilityHint } from './AvailabilityPage.tsx'
 
 type Score = { id: number; piece: string; title: string; url: string; usage_note: string }
 
@@ -22,6 +23,7 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
           cancelled: boolean
           can_respond: boolean
           status: string
+          availability?: string[]
           items: { title: string; focus: string }[]
           scores?: Score[]
           overridden?: boolean
@@ -89,7 +91,7 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
                 <button
                   key={status}
                   className="button button-ghost"
-                  disabled={busy}
+                  disabled={busy || (status === 'accepted' && !!r.availability?.length)}
                   onClick={async () => {
                     setBusy(true)
                     try {
@@ -107,6 +109,7 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
               ))}
             </div>
           )}
+          {!!r.availability?.length && <AvailabilityHint reasons={r.availability} />}
         </article>
       ))}
       <h3>{t('Meine Notenunterlagen')}</h3>

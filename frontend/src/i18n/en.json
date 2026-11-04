@@ -5396,5 +5396,22 @@
   "Zur Bestätigung den vollständigen Namen eingeben:": "Enter the full name to confirm:",
   "Name zur Löschbestätigung": "Name to confirm deletion",
   "Unwiderruflich löschen": "Delete permanently",
-  "Einheit löschen": "Delete unit"
+  "Einheit löschen": "Delete unit",
+  "Verfügbarkeiten": "Availability",
+  "Abwesend": "Absent",
+  "Abwesend von": "Absent from",
+  "Abwesend bis": "Absent until",
+  "Abwesenheit eintragen": "Add absence",
+  "Abwesenheit entfernen?": "Remove absence?",
+  "Meine Abwesenheiten": "My absences",
+  "Terminüberschneidung": "Scheduling conflict",
+  "Für diesen Termin abgesagt": "Declined this event",
+  "Kein Konflikt bekannt": "No known conflict",
+  "Abwesenheiten ohne Begründung erfassen. Die Besetzungsplanung prüft zusätzlich bekannte Auftritte, Proben und Kalenderzusagen im selben Verein.": "Record absences without reasons. Instrumentation planning also checks known performances, rehearsals and accepted calendar events within the same association.",
+  "Zeiträume eintragen, in denen Sie nicht mitspielen können. Eine Begründung wird nicht erfasst. Bestehende Einteilungen bleiben erhalten; bitte dort zusätzlich absagen.": "Enter periods when you cannot play. No reason is recorded. Existing assignments remain; please decline them separately.",
+  "Ersatz suchen": "Find replacement",
+  "Ersatz für diese Position": "Replacement for this position",
+  "Alle Kandidaten anzeigen": "Show all candidates",
+  "Einteilungen bearbeiten": "Edit assignments",
+  "Auswahl zurücksetzen": "Reset selection"
 }

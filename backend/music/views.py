@@ -13,6 +13,7 @@ from core.api_base import AuditMixin, OrgScopedMixin
 from events import services
 from members.models import Membership
 
+from .availability import ensure_performance
 from .models import Assignment, Musician, Performance, Position, Skill
 
 
@@ -88,6 +89,8 @@ class ScopedSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     gettext("Für diese Stimme fehlt die instrumentale Fähigkeit.")
                 )
+            if value("status") != "declined":
+                ensure_performance(value("musician"), value("performance"))
         if self.Meta.model is Position and self.instance:
             if self.instance.assignment_set.exists() and any(
                 key in attrs and attrs[key] != getattr(self.instance, key)
@@ -274,6 +277,8 @@ class PerformanceChildViewSet(MusicViewSet):
     @transaction.atomic
     def perform_create(self, serializer):
         self.lock_performance(serializer.validated_data["performance"].pk)
+        if self.serializer_class.Meta.model is Assignment:
+            Musician.objects.select_for_update().get(pk=serializer.validated_data["musician"].pk)
         fresh = self._revalidate(serializer)
         super().perform_create(fresh)
         serializer.instance = fresh.instance
@@ -281,12 +286,16 @@ class PerformanceChildViewSet(MusicViewSet):
     @transaction.atomic
     def perform_update(self, serializer):
         self.lock_performance(serializer.instance.performance_id)
+        if isinstance(serializer.instance, Assignment):
+            Musician.objects.select_for_update().get(pk=serializer.instance.musician_id)
         self._lock_and_refresh(serializer.instance)
         super().perform_update(self._revalidate(serializer))
 
     @transaction.atomic
     def perform_destroy(self, instance):
         self.lock_performance(instance.performance_id)
+        if isinstance(instance, Assignment):
+            Musician.objects.select_for_update().get(pk=instance.musician_id)
         super().perform_destroy(instance)
 
 

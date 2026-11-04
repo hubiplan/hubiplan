@@ -7,6 +7,7 @@ import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import type { EnsembleTemplate } from './EnsembleTemplatesPage.tsx'
+import { AvailabilityHint } from './AvailabilityPage.tsx'
 
 type Position = {
   id: number
@@ -19,8 +20,20 @@ type Plan = {
   title: string
   cancelled: boolean
   positions: Position[]
-  assignments: { id: number; name: string; position: number; status: string }[]
-  candidates: { id: number; name: string; positions: number[] }[]
+  assignments: {
+    id: number
+    name: string
+    position: number
+    status: string
+    availability?: string[]
+  }[]
+  candidates: {
+    id: number
+    name: string
+    positions: number[]
+    availability?: string[]
+    preferred_positions?: number[]
+  }[]
 }
 
 export function StaffingPage({ performance }: { performance: number }) {
@@ -34,6 +47,7 @@ export function StaffingPage({ performance }: { performance: number }) {
     ])
     return { plan, templates }
   }, [org.id, performance])
+  const [replacement, setReplacement] = useState<number | null>(null)
   const [template, setTemplate] = useState(''),
     [selected, setSelected] = useState<Record<number, number>>({}),
     [busy, setBusy] = useState(false),
@@ -53,6 +67,20 @@ export function StaffingPage({ performance }: { performance: number }) {
     selected: Object.values(selected).filter((id) => id === p.id).length,
   }))
   const overfull = counts.some((p) => p.selected > 0 && p.assigned + p.selected > p.required)
+  const candidates = plan.candidates
+    .filter(
+      (m) => replacement === null || (m.positions.includes(replacement) && !m.availability?.length),
+    )
+    .sort((a, b) =>
+      replacement === null
+        ? 0
+        : Number(b.preferred_positions?.includes(replacement) || false) -
+          Number(a.preferred_positions?.includes(replacement) || false),
+    )
+  const blockedSelection = Object.keys(selected).some((id) => {
+    const m = plan.candidates.find((v) => v.id === Number(id))
+    return !m || !!m.availability?.length
+  })
   function select(next: Record<number, number>) {
     setSelected(next)
     setAssignKey(newRequestKey())
@@ -65,6 +93,8 @@ export function StaffingPage({ performance }: { performance: number }) {
         {t('Besetzung planen')}: {plan.title}
       </h1>
       <Link to="/musik?vorlagen=1">{t('Besetzungsvorlagen')}</Link>
+      <Link to="/musik?verfuegbarkeit=1">{t('Verfügbarkeiten')}</Link>
+      <Link to="/musik?art=assignments">{t('Einteilungen bearbeiten')}</Link>
       {error && <Alert kind="error">{error}</Alert>}
       {message && <Alert kind="success">{message}</Alert>}
       {plan.cancelled && <Alert kind="error">{t('Auftritt abgesagt')}</Alert>}
@@ -157,6 +187,18 @@ export function StaffingPage({ performance }: { performance: number }) {
       </article>
       <article className="card stack">
         <h2>{t('Sammeleinteilung')}</h2>
+        {replacement !== null && (
+          <div className="stack">
+            <p>
+              {t('Ersatz für diese Position')}:{' '}
+              {plan.positions.find((p) => p.id === replacement)?.instrument}{' '}
+              {plan.positions.find((p) => p.id === replacement)?.register}
+            </p>
+            <button className="button button-ghost" onClick={() => setReplacement(null)}>
+              {t('Alle Kandidaten anzeigen')}
+            </button>
+          </div>
+        )}
         <p>
           {t(
             'Aktive, noch nicht eingeteilte Musiker mit passender instrumentaler Fähigkeit auswählen. Neue Einteilungen beginnen als Angefragt; bestehende Absagen werden nicht überschrieben.',
@@ -164,15 +206,21 @@ export function StaffingPage({ performance }: { performance: number }) {
         </p>
         {canEdit && (
           <>
-            {plan.candidates.map((m) => {
-              const matching = counts.filter((p) => m.positions.includes(p.id))
+            {candidates.map((m) => {
+              const matching = counts.filter(
+                (p) => m.positions.includes(p.id) && (replacement === null || p.id === replacement),
+              )
               const first = matching.find((p) => p.assigned < p.required)
               return (
                 <div className="card stack" key={m.id}>
                   <label>
                     <input
                       type="checkbox"
-                      disabled={busy || plan.cancelled || !first}
+                      disabled={
+                        busy ||
+                        plan.cancelled ||
+                        ((!first || !!m.availability?.length) && !(m.id in selected))
+                      }
                       checked={m.id in selected}
                       onChange={(e) => {
                         const next = { ...selected }
@@ -183,10 +231,11 @@ export function StaffingPage({ performance }: { performance: number }) {
                     />
                     {m.name}
                   </label>
+                  <AvailabilityHint reasons={m.availability} />
                   <label>
                     {t('Besetzungsposition für {name}', { name: m.name })}
                     <select
-                      disabled={busy || !(m.id in selected)}
+                      disabled={busy || !(m.id in selected) || !!m.availability?.length}
                       value={selected[m.id] ?? first?.id ?? matching[0]?.id ?? ''}
                       onChange={(e) => select({ ...selected, [m.id]: Number(e.target.value) })}
                     >
@@ -200,7 +249,12 @@ export function StaffingPage({ performance }: { performance: number }) {
                 </div>
               )
             })}
-            {!plan.candidates.length && <p>{t('Keine weiteren passenden Musiker vorhanden.')}</p>}
+            {!candidates.length && <p>{t('Keine weiteren passenden Musiker vorhanden.')}</p>}
+            {Object.keys(selected).length > 0 && (
+              <button className="button button-ghost" disabled={busy} onClick={() => select({})}>
+                {t('Auswahl zurücksetzen')}
+              </button>
+            )}
             {overfull && (
               <Alert kind="error">
                 {t(
@@ -210,7 +264,13 @@ export function StaffingPage({ performance }: { performance: number }) {
             )}
             <button
               className="button button-primary"
-              disabled={busy || plan.cancelled || !Object.keys(selected).length || overfull}
+              disabled={
+                busy ||
+                plan.cancelled ||
+                !Object.keys(selected).length ||
+                overfull ||
+                blockedSelection
+              }
               onClick={async () => {
                 setBusy(true)
                 setError('')
@@ -233,6 +293,7 @@ export function StaffingPage({ performance }: { performance: number }) {
                   setMessage(t('Ausgewählte Musiker wurden angefragt.'))
                 } catch (e) {
                   setError(errorMessage(e))
+                  await load.reload()
                 } finally {
                   setBusy(false)
                 }
@@ -254,6 +315,21 @@ export function StaffingPage({ performance }: { performance: number }) {
               : a.status === 'declined'
                 ? t('Abgesagt')
                 : t('Angefragt')}
+            {' · '}
+            <AvailabilityHint reasons={a.availability} />
+            {canEdit && a.status === 'declined' && !plan.cancelled && (
+              <button
+                className="button button-ghost"
+                onClick={async () => {
+                  if (await confirmDiscard(Object.keys(selected).length > 0)) {
+                    select({})
+                    setReplacement(a.position)
+                  }
+                }}
+              >
+                {t('Ersatz suchen')}
+              </button>
+            )}
           </p>
         ))}
       </article>

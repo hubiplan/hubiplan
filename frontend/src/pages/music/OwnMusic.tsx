@@ -4,6 +4,7 @@ import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { OwnPracticePanel } from './OwnPractice.tsx'
+import { OwnAvailability, AvailabilityHint } from './AvailabilityPage.tsx'
 
 export function OwnMusic({ accessId }: { accessId: number }) {
   const url = `/api/portal/${accessId}/music/`
@@ -22,6 +23,7 @@ export function OwnMusic({ accessId }: { accessId: number }) {
           meeting_place: string
           uniform: string
           cancelled: boolean
+          availability?: string[]
           program?: { title: string; kind: string; duration_seconds: number }[]
           settlement?: {
             fee: string
@@ -36,10 +38,17 @@ export function OwnMusic({ accessId }: { accessId: number }) {
   )
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  if (!load.data?.length) return <OwnPracticePanel accessId={accessId} />
+  if (!load.data?.length)
+    return (
+      <>
+        <OwnAvailability accessId={accessId} />
+        <OwnPracticePanel accessId={accessId} />
+      </>
+    )
   return (
     <section className="card stack">
       <h2>{t('Meine Auftritte')}</h2>
+      <OwnAvailability accessId={accessId} />
       {error && <Alert kind="error">{error}</Alert>}
       {load.data.map((r) => (
         <article className="stack" key={r.id}>
@@ -87,7 +96,7 @@ export function OwnMusic({ accessId }: { accessId: number }) {
                 <button
                   key={status}
                   className="button button-ghost"
-                  disabled={busy}
+                  disabled={busy || (status === 'accepted' && !!r.availability?.length)}
                   onClick={async () => {
                     setBusy(true)
                     try {
@@ -105,6 +114,7 @@ export function OwnMusic({ accessId }: { accessId: number }) {
               ))}
             </div>
           )}
+          {!!r.availability?.length && <AvailabilityHint reasons={r.availability} />}
         </article>
       ))}
       <OwnPracticePanel accessId={accessId} />

@@ -35,6 +35,7 @@ from music import practice as music_practice
 from music import scores as music_scores
 from music import staffing as music_staffing
 from music import views as music_views
+from music.availability_views import AbsenceViewSet, OwnAbsences
 from music.portal import OwnAssignments
 from music.practice_portal import OwnPractice, OwnScoreFile
 from music.settlement import PerformanceInvoiceView, SettlementView
@@ -93,6 +94,7 @@ org_router.register("billing/age-rates", billing_views.AgeRateViewSet, basename=
 org_router.register("billing/runs", billing_views.FeeRunViewSet, basename="billing-run")
 org_router.register("billing/invoices", billing_views.InvoiceViewSet, basename="billing-invoice")
 org_router.register("music/musicians", music_views.MusicianViewSet, basename="music-musician")
+org_router.register("music/absences", AbsenceViewSet, basename="music-absence")
 org_router.register(
     "music/ensemble-templates",
     music_staffing.EnsembleTemplateViewSet,
@@ -726,6 +728,7 @@ urlpatterns = [
     path("portal/<int:access_id>/music/practice/", OwnPractice.as_view()),
     path("portal/<int:access_id>/music/files/<int:pk>/", OwnScoreFile.as_view()),
     path("portal/<int:access_id>/music/", OwnAssignments.as_view()),
+    path("portal/<int:access_id>/music/absences/", OwnAbsences.as_view()),
     path(
         "depts/<int:dept_id>/todos/<int:pk>/attachments/",
         todo_attachments.AttachmentListView.as_view(),

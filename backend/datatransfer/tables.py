@@ -21,6 +21,7 @@ from .validation import validate_url_data, validate_urls
 
 MODULE_MODELS = (
     "music.Musician",
+    "music.MusicianAbsence",
     "music.Skill",
     "todos.TodoSeries",
     "todos.Todo",
