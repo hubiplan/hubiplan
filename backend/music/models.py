@@ -2,6 +2,7 @@
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from core.encfields import EncryptedCharField
 
@@ -106,6 +107,7 @@ class PerformanceAccount(models.Model):
         "billing.Invoice", on_delete=models.PROTECT, null=True, blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    date = models.DateField(default=timezone.localdate)
 
     def __str__(self):
         return f"Auftrittsabrechnung {self.pk}"

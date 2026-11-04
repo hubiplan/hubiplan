@@ -6,9 +6,7 @@ from .models import MusicianClaim, PerformanceAccount, PerformanceExpense
 def export_tables(org, start, end):
     from finance.gobd_export import Table, _columns
 
-    accounts = PerformanceAccount.objects.filter(
-        organization=org, performance__event__starts_at__date__range=(start, end)
-    )
+    accounts = PerformanceAccount.objects.filter(organization=org, date__range=(start, end))
     table = Table(
         "auftritte.csv",
         "Auftrittsabrechnungen",
@@ -28,7 +26,7 @@ def export_tables(org, start, end):
             row.pk, row.performance_id, row.fee, row.travel, row.extras, row.invoice_id, row.note
         )
     claims = MusicianClaim.objects.filter(
-        organization=org, assignment__performance__event__starts_at__date__range=(start, end)
+        organization=org, assignment__performance__performanceaccount__date__range=(start, end)
     )
     fees = Table(
         "musikerverguetungen.csv",

@@ -69,8 +69,8 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
 
     document_year = record_year = end.year
     sources = [
-        (PerformanceAccount, "performance__event__starts_at__date"),
-        (MusicianClaim, "assignment__performance__event__starts_at__date"),
+        (PerformanceAccount, "date"),
+        (MusicianClaim, "assignment__performance__performanceaccount__date"),
         (PerformanceExpense, "booking__date"),
         (IncomingInvoice, "created_at__date"),
         (IncomingValidation, "incoming__created_at__date"),
@@ -364,9 +364,7 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
 
     update_encrypted(
         ids(
-            PerformanceAccount.objects.filter(
-                organization=org, performance__event__starts_at__date__range=(start, end)
-            ),
+            PerformanceAccount.objects.filter(organization=org, date__range=(start, end)),
             "performanceaccount",
         ),
         note="",
@@ -375,7 +373,7 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
         ids(
             MusicianClaim.objects.filter(
                 organization=org,
-                assignment__performance__event__starts_at__date__range=(start, end),
+                assignment__performance__performanceaccount__date__range=(start, end),
             ),
             "musicianclaim",
         ),

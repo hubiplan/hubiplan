@@ -2,6 +2,7 @@
 
 import core.encfields
 import django.db.models.deletion
+import django.utils.timezone
 from django.conf import settings
 from django.db import migrations, models
 from core.rls import enable_rls_sql, disable_rls_sql
@@ -38,6 +39,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='PerformanceAccount',
             fields=[
+                ('date', models.DateField(default=django.utils.timezone.localdate)),
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('fee', models.DecimalField(decimal_places=2, default=0, max_digits=12)),
                 ('travel', models.DecimalField(decimal_places=2, default=0, max_digits=12)),

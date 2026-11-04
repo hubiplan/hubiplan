@@ -165,12 +165,14 @@ class SettlementView(OrgScopedMixin, APIView):
         lock_bank_sources(self.org)
         performance = self.account(pk)
         account, _ = PerformanceAccount.objects.get_or_create(
-            organization=self.org, performance=performance
+            organization=self.org,
+            performance=performance,
+            defaults={"date": timezone.localdate(performance.event.starts_at)},
         )
         action = request.data.get("action")
         if action != "payment":
             try:
-                ensure_open(self.org, date=timezone.localdate(performance.event.starts_at))
+                ensure_open(self.org, date=account.date)
             except DjangoValidationError as exc:
                 raise serializers.ValidationError(exc.messages) from exc
         if action == "agreement":
@@ -180,6 +182,7 @@ class SettlementView(OrgScopedMixin, APIView):
                 )
             data = AgreementInput(data=request.data)
             data.is_valid(raise_exception=True)
+            previous = {field: str(getattr(account, field)) for field in data.validated_data}
             for field, value in data.validated_data.items():
                 setattr(account, field, value)
             account.save()
@@ -188,7 +191,12 @@ class SettlementView(OrgScopedMixin, APIView):
                 request.user,
                 "update",
                 account,
-                {"Vereinbarung": [None, str(account.fee + account.travel + account.extras)]},
+                {
+                    "Vereinbarung": [
+                        previous,
+                        {field: str(getattr(account, field)) for field in data.validated_data},
+                    ]
+                },
             )
         elif action == "claim":
             data = ClaimInput(data=request.data)
@@ -207,7 +215,7 @@ class SettlementView(OrgScopedMixin, APIView):
                 raise serializers.ValidationError(
                     gettext("Freigegebene Vergütungen sind unveränderbar.")
                 )
-            previous = str(total(claim))
+            previous = {field: str(getattr(claim, field)) for field in values}
             for field, value in values.items():
                 setattr(claim, field, value)
             claim.save()
@@ -217,7 +225,10 @@ class SettlementView(OrgScopedMixin, APIView):
                 "update",
                 claim,
                 {
-                    "Vergütung": [previous, str(total(claim))],
+                    "Vergütung": [
+                        previous,
+                        {field: str(getattr(claim, field)) for field in values},
+                    ],
                     "Teilnahme": [None, claim.attended],
                     "Vermerk": [None, claim.note],
                 },
@@ -233,6 +244,7 @@ class SettlementView(OrgScopedMixin, APIView):
                 raise serializers.ValidationError(
                     gettext("Bitte zuerst die Auszahlung in der Kasse stornieren.")
                 )
+            previous_status = claim.status
             if action == "approve":
                 if (
                     claim.status != "draft"
@@ -262,7 +274,13 @@ class SettlementView(OrgScopedMixin, APIView):
             else:
                 claim.status = "void"
             claim.save()
-            record(self.org, request.user, "update", claim, {"Freigabe": [None, claim.status]})
+            record(
+                self.org,
+                request.user,
+                "update",
+                claim,
+                {"Freigabe": [previous_status, claim.status]},
+            )
         elif action == "payment":
             booking_id = serializers.IntegerField(min_value=1).run_validation(
                 request.data.get("booking")
