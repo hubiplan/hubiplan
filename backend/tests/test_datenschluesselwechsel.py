@@ -21,17 +21,18 @@ from audit.chain import seal, verify
 from audit.models import AuditEntry
 from changes.models import ChangeRecord, ChangeSet
 from core import crypto, keyrotation
+from core.encfields import encrypt_text_with_key
 from core.fieldcompat import require_key_rotation_support
 from core.models import DataKey, DataKeyRotation
 from core.tenancy import rls_bypass
 from exchange.models import ImportJob, private_storage
 from members import personmarks, services
-from members.models import Person
+from members.models import ContactDetails, Person
 from organizations.models import Organization
 from outbox.models import OutgoingMail
 from todos.models import Todo
 
-from .factories import make_org
+from .factories import make_member, make_org
 
 pytestmark = pytest.mark.django_db(transaction=True)
 BIRTH = datetime.date(1980, 5, 17)
@@ -455,6 +456,8 @@ def test_schluesselwechsel_erlaubt_spaetere_generation_ohne_alte_zu_loeschen(org
         assert crypto.key_by_id(first[0]) == first[1]
         assert field_key(value(p, "last_name")) == third[0]
         assert DataKeyRotation.objects.filter(organization=org).count() == 2
+        # Die bestehende Fachregel schützt Organisationen mit Personenbestand.
+        p.delete()
         org.delete()
         assert not DataKey.objects.filter(pk__in=[first[0], second[0], third[0]]).exists()
 
@@ -579,3 +582,98 @@ def test_geaenderte_datei_wird_nicht_mit_einem_alten_stand_ersetzt(orgs):
         assert path.read_bytes() == newer
         resume(org)
         assert crypto.decrypt_bytes(path.read_bytes()) == b"Neuer Dateistand"
+
+
+def test_vereinswechsel_laesst_gemeinsame_verbandsidentitaet_unveraendert(orgs):
+    member = make_member(orgs["a"], "Erika", "Muster")
+    with rls_bypass():
+        p = member.person
+        contact = ContactDetails.objects.get(person=p)
+        todo = Todo.objects.create(organization=orgs["a"], title="Vereinsaufgabe")
+        identity = (
+            value(p, "last_name"),
+            value(p, "birth_date"),
+            value(contact, "email"),
+            p.marks_key_id,
+        )
+        start(orgs["a"])
+        p.refresh_from_db()
+        assert (
+            value(p, "last_name"),
+            value(p, "birth_date"),
+            value(contact, "email"),
+            p.marks_key_id,
+        ) == identity
+        club_copy = value(todo, "title")
+        start(orgs["federation"])
+        p.refresh_from_db()
+        assert p.first_name == "Erika" and p.marks_key_id != identity[3]
+        assert field_key(value(contact, "email")) == p.marks_key_id
+        assert value(todo, "title") == club_copy
+
+
+def test_abschlusspruefung_findet_altes_restchiffrat_auch_nach_erfolgreichem_auftrag(orgs):
+    with rls_bypass():
+        org = orgs["c"]
+        todo = Todo.objects.create(organization=org, title="Testaufgabe")
+        old = value(todo, "title")
+        start(org)
+        completed = DataKeyRotation.objects.get().completed_at
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE todos_todo SET title = %s WHERE id = %s", [old, todo.pk])
+        with pytest.raises(CommandError, match="alte Schlüsselgeneration"):
+            run(org, "--pruefen")
+        assert DataKeyRotation.objects.get().completed_at == completed
+
+
+@pytest.mark.parametrize(
+    "field_name,text", [("birth_date", "kein Datum"), ("central_attachment_ids", "kein JSON")]
+)
+def test_authentifiziertes_aber_ungueltiges_datum_oder_json_stoppt_vor_aktivierung(
+    orgs, field_name, text
+):
+    with rls_bypass():
+        org = orgs["c"]
+        obj = (
+            person(org)
+            if field_name == "birth_date"
+            else Todo.objects.create(organization=org, title="Test")
+        )
+        field = obj._meta.get_field(field_name)
+        cipher = encrypt_text_with_key(text, field, *crypto.key_for_org(org.pk))
+        stored = cipher if field_name == "birth_date" else json.dumps({"enc1": cipher})
+        quote = connection.ops.quote_name
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"UPDATE {quote(obj._meta.db_table)} SET {quote(field_name)} = %s WHERE id = %s",  # noqa: S608
+                [stored, obj.pk],
+            )
+        with pytest.raises(CommandError, match="Feldbestand"):
+            start(org)
+        assert not DataKeyRotation.objects.exists()
+
+
+def test_geteilter_dokumentanhang_behaelt_den_schluessel_des_dokumentinhabers(orgs):
+    with rls_bypass():
+        org = orgs["c"]
+        document, path = private_file(orgs["b"])
+        before = path.read_bytes()
+        OutgoingMail.objects.create(
+            organization=org,
+            to="test@example.org",
+            subject="Test",
+            body="Anhang",
+            attachments=[{"path": document.file.name}],
+        )
+        start(org)
+        assert path.read_bytes() == before
+        assert keyrotation.file_key_id(path) == crypto.key_for_org(orgs["b"].pk)[0]
+
+
+def test_vorpruefung_prueft_verpackung_auch_bei_gefuelltem_lesecache(orgs):
+    org = orgs["c"]
+    key_id, _ = crypto.key_for_org(org.pk)
+    DataKey.objects.filter(pk=key_id).update(wrapped="unlesbar")
+    with pytest.raises(CommandError, match="nicht entpacken"):
+        start(org)
+    assert not DataKeyRotation.objects.exists()
