@@ -61,11 +61,20 @@ describe('Ladefehler gezielt wiederholen', () => {
 
   it('zeigt auch bei der ersten fehlgeschlagenen Live-Abfrage einen Wiederholungsweg', async () => {
     const standings = vi
-      .fn()
+      .fn<StandApi['standings']>()
       .mockRejectedValueOnce(new ApiError(503, { detail: 'Live-Abfrage unterbrochen.' }))
       .mockResolvedValueOnce({
-        scorings: [{ scoring: 1, name: 'Einzelwertung', kind: 'einzel', rows: [] }],
-        open_shootoffs: [],
+        scorings: [
+          {
+            scoring: 1,
+            name: 'Einzelwertung',
+            kind: 'einzel',
+            rows: [],
+            open: [],
+            without_value: [],
+          },
+        ],
+        open_shootoffs: 0,
       })
     const api = {
       standings,
