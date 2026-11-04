@@ -179,7 +179,7 @@ def test_ganze_serie_papierkorb_und_historie_von_aufbewahrung_ausgenommen(api, b
 
 def test_datenbank_verhindert_zweite_offene_ausgabe(api, board_a, orgs):
     first = start(api, board_a, orgs["a"])
-    with pytest.raises(IntegrityError), transaction.atomic(), rls_bypass():
+    with rls_bypass(), pytest.raises(IntegrityError), transaction.atomic():
         Todo.objects.bulk_create(
             [
                 Todo(
@@ -249,3 +249,26 @@ def test_beteiligter_bearbeiter_kann_unter_rls_folge_erzeugen(api, board_a, orgs
         response = api(reader).get(url(org))
         assert response.status_code == 200
         assert len(response.json()["items"]) == 2
+
+
+def test_dokumentverweise_werden_vererbt_dateien_nicht(api, board_a, orgs):
+    from .test_documents import base, folder, upload
+    from .test_todo_attachments import add, endpoint
+
+    org = orgs["a"]
+    first = start(api, board_a, org)
+    response = add(api, board_a, org, first)
+    assert response.status_code == 201
+    f = folder(api(board_a), base(org))
+    doc = upload(api(board_a), base(org), f["id"])
+    response = api(board_a).post(
+        endpoint(org, first),
+        {"version": response.json()["version"], "document": doc["id"], "following": True},
+        content_type="application/json",
+    )
+    assert response.status_code == 201
+    first = api(board_a).get(url(org, first["id"])).json()
+    complete(api, board_a, org, first)
+    attachments = tasks(org)[1].attachments.all()
+    assert attachments.count() == 1
+    assert attachments.get().kind == "document" and attachments.get().document_id == doc["id"]

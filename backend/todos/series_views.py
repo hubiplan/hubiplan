@@ -125,6 +125,8 @@ class SeriesView(TodoScopeMixin, APIView):
                 anchor_date=todo.due_date,
             )
         for key, value in values.items():
+            if key == "repeat" and series.pk and value != series.repeat:
+                series.anchor_date = todo.due_date
             setattr(series, key, value)
         if series.ends_on and series.count:
             raise serializers.ValidationError(

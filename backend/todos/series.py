@@ -208,11 +208,13 @@ def snapshot_template(todo, series):
 
 
 @transaction.atomic
-def update_template(todo):
+def update_template(todo, *, reset_anchor=False):
     if not todo.series_id:
         return
     series = TodoSeries.objects.select_for_update().get(pk=todo.series_id)
     snapshot_template(todo, series)
+    if reset_anchor:
+        series.anchor_date = todo.due_date
     series.owner = todo.owner
     series.version += 1
     series.save()

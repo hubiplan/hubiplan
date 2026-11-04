@@ -197,7 +197,7 @@ class TodoDetailView(TodoScopeMixin, APIView):
         if following and todo.series_id:
             from .series import update_template
 
-            update_template(todo)
+            update_template(todo, reset_anchor="due_date" in values)
         if ownership_only:
             from core.tenancy import rls_bypass
 

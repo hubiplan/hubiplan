@@ -41,6 +41,7 @@ export function TodoSeries({
     count: String(todo.series?.count ?? ''),
   })
   const [initial, setInitial] = useState(JSON.stringify(values))
+  const [baseVersion, setBaseVersion] = useState(todo.series?.version)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const dirty = initial !== JSON.stringify(values)
@@ -53,9 +54,13 @@ export function TodoSeries({
     setError(null)
     try {
       const current = trash ? todo : await todoApi.get(base, todo.id)
-      if (rules && current.series?.version !== todo.series?.version)
+      if (rules && current.series?.version !== baseVersion)
         throw new Error(t('Die Aufgabe wurde inzwischen geändert. Bitte neu laden.'))
-      await api.patch(`${base}${todo.id}/series/`, { version: current.version, ...patch })
+      const result = await api.patch<{ series: Todo['series'] }>(`${base}${todo.id}/series/`, {
+        version: current.version,
+        ...patch,
+      })
+      setBaseVersion(result.series?.version)
       setInitial(JSON.stringify(values))
       onSaved()
     } catch (err) {
