@@ -31,6 +31,50 @@ from .test_rls import as_app_role
 pytestmark = pytest.mark.django_db
 
 
+def test_preparation_counts_only_current_assignments(club, practice):
+    from music.models import Assignment, Performance, Position, ProgramEntry
+    from music.scores import program_data
+
+    _, _, musician, event, _, part = practice
+    with tenant_context(club.pk):
+        performance = Performance.objects.create(organization=club, event=event)
+        position = Position.objects.create(
+            organization=club, performance=performance, instrument="Tuba", register="1"
+        )
+        Assignment.objects.create(
+            organization=club,
+            performance=performance,
+            position=position,
+            musician=musician,
+            status="accepted",
+        )
+        ProgramEntry.objects.create(
+            organization=club, performance=performance, arrangement=part.arrangement
+        )
+        ScoreLoan.objects.create(
+            organization=club, part=part, musician=musician, quantity=2, due_on=timezone.localdate()
+        )
+        other_event = Event.objects.create(
+            organization=club,
+            title="Anderer Termin",
+            starts_at=event.starts_at,
+            ends_at=event.ends_at,
+        )
+        other = Performance.objects.create(organization=club, event=other_event)
+        other_position = Position.objects.create(
+            organization=club, performance=other, instrument="Tuba", register="1"
+        )
+        Assignment.objects.create(
+            organization=club,
+            performance=other,
+            position=other_position,
+            musician=musician,
+            status="declined",
+        )
+        row = program_data(performance)["preparation"][0]["voices"][0]
+        assert row["held"] == 2 and row["available"] == 0 and row["missing_copies"] == 0
+
+
 @pytest.fixture
 def practice(club, music):
     user = make_user("probe@example.org")

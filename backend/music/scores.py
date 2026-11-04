@@ -224,9 +224,11 @@ def program_data(performance):
             if part.paper_format == entry.paper_format:
                 loaned = part.loans.aggregate(n=Sum(F("quantity") - F("returned")))["n"] or 0
                 held = (
-                    part.loans.filter(musician__assignment__performance=performance)
-                    .exclude(musician__assignment__status="declined")
-                    .aggregate(n=Sum(F("quantity") - F("returned")))["n"]
+                    part.loans.filter(
+                        musician__assignment__performance=performance,
+                        musician__assignment__status__in=["pending", "accepted"],
+                        musician__active=True,
+                    ).aggregate(n=Sum(F("quantity") - F("returned")))["n"]
                     or 0
                 )
                 row.setdefault("loaned", 0)
