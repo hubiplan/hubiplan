@@ -229,3 +229,114 @@ class ProgramEntry(models.Model):
 
     def __str__(self):
         return f"Programmpunkt {self.pk}"
+
+
+class Rehearsal(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    event = models.OneToOneField("events.Event", on_delete=models.PROTECT)
+    focus = models.CharField(max_length=2000, blank=True)
+    remind_days = models.PositiveSmallIntegerField(default=1)
+
+    def __str__(self):
+        return f"Probe {self.pk}"
+
+
+class RehearsalItem(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    rehearsal = models.ForeignKey(Rehearsal, on_delete=models.CASCADE, related_name="items")
+    arrangement = models.ForeignKey(Arrangement, on_delete=models.PROTECT)
+    focus = models.CharField(max_length=500, blank=True)
+
+    def __str__(self):
+        return f"Probenstück {self.pk}"
+
+
+class RehearsalInvitation(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    rehearsal = models.ForeignKey(Rehearsal, on_delete=models.PROTECT, related_name="invitations")
+    musician = models.ForeignKey(Musician, on_delete=models.PROTECT)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["rehearsal", "musician"], name="probe_einladung_einmal")
+        ]
+
+    def __str__(self):
+        return f"Probeneinteilung {self.pk}"
+
+
+class RehearsalResponse(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    invitation = models.ForeignKey(
+        RehearsalInvitation, on_delete=models.PROTECT, related_name="responses"
+    )
+    original_start = models.DateTimeField()
+    status = models.CharField(max_length=10)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["invitation", "original_start"], name="probe_rueckmeldung_einmal"
+            )
+        ]
+
+    def __str__(self):
+        return f"Probenrückmeldung {self.pk}"
+
+
+class ScoreLoan(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    part = models.ForeignKey(ScorePart, on_delete=models.PROTECT, related_name="loans")
+    musician = models.ForeignKey(Musician, on_delete=models.PROTECT)
+    quantity = models.PositiveSmallIntegerField()
+    returned = models.PositiveSmallIntegerField(default=0)
+    issued_on = models.DateField(default=timezone.localdate)
+    due_on = models.DateField()
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(quantity__gt=0, returned__lte=models.F("quantity")),
+                name="notenausgabe_menge_gueltig",
+            )
+        ]
+
+    def __str__(self):
+        return f"Notenausgabe {self.pk}"
+
+
+class ScoreReturn(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    loan = models.ForeignKey(ScoreLoan, on_delete=models.PROTECT, related_name="returns")
+    quantity = models.PositiveSmallIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(quantity__gt=0), name="notenrueckgabe_positiv"
+            )
+        ]
+
+    def __str__(self):
+        return f"Notenrückgabe {self.pk}"
+
+
+class RehearsalNotice(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    invitation = models.ForeignKey(RehearsalInvitation, on_delete=models.CASCADE)
+    original_start = models.DateTimeField()
+    kind = models.CharField(max_length=10)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["invitation", "original_start", "kind"], name="probe_hinweis_einmal"
+            )
+        ]
+
+    def __str__(self):
+        return f"Probenhinweis {self.pk}"

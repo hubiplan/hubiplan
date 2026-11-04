@@ -1,0 +1,350 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { api, newRequestKey } from '../../api/client.ts'
+import { errorMessage, useLoad } from '../../components/forms.ts'
+import { confirmLeave } from '../../components/leaveGuard.ts'
+import { confirmDialog } from '../../components/dialog.ts'
+import { Alert } from '../../components/ui.tsx'
+import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { t } from '../../i18n/index.ts'
+import { ScoreForm } from './ScoresPage.tsx'
+
+type Row = { id: number; [key: string]: string | number | boolean | null }
+type Loan = {
+  id: number
+  part: number
+  musician: number
+  quantity: number
+  returned: number
+  due_on: string
+  overdue: boolean
+  title: string
+  instrument: string
+  register: string
+  returns: { quantity: number; created_at: string }[]
+}
+type Occurrence = {
+  rehearsal: number
+  event: number
+  title: string
+  original_start: string
+  starts_at: string
+  cancelled: boolean
+  focus: string
+  members: { invitation: number; name: string; status: string }[]
+}
+
+export function PracticePage() {
+  const org = useActiveOrg(),
+    base = `/api/orgs/${org.id}/music/`
+  const load = useLoad(async () => {
+    const [
+      rehearsals,
+      items,
+      invitations,
+      musicians,
+      arrangements,
+      parts,
+      loans,
+      overview,
+      events,
+    ] = await Promise.all([
+      api.get<Row[]>(base + 'rehearsals/'),
+      api.get<Row[]>(base + 'rehearsal-items/'),
+      api.get<Row[]>(base + 'rehearsal-invitations/'),
+      api.get<Row[]>(base + 'musicians/'),
+      api.get<Row[]>(base + 'arrangements/'),
+      api.get<Row[]>(base + 'parts/'),
+      api.get<Loan[]>(base + 'loans/'),
+      api.get<Occurrence[]>(base + 'practice/'),
+      api.get<Row[]>(base + 'rehearsals/choices/'),
+    ])
+    return {
+      rehearsals,
+      items,
+      invitations,
+      musicians,
+      arrangements,
+      parts,
+      loans,
+      overview,
+      events,
+    }
+  }, [org.id])
+  const [tab, setTab] = useState('overview'),
+    [selected, setSelected] = useState<Row | 'new' | null>(null),
+    [error, setError] = useState(''),
+    [key, setKey] = useState(newRequestKey)
+  if (load.error) return <Alert kind="error">{load.error}</Alert>
+  if (!load.data) return <p>{t('Lädt …')}</p>
+  const d = load.data,
+    canEdit = org.permissions.includes('music.edit'),
+    opts = (rows: Row[], field: string): [string, string][] =>
+      rows.map((r) => [String(r.id), String(r[field])])
+  const fields = {
+    rehearsals: [
+      { key: 'event', label: t('Termin oder Terminserie'), options: opts(d.events, 'title') },
+      { key: 'focus', label: t('Probenschwerpunkt'), type: 'textarea', optional: true },
+      { key: 'remind_days', label: t('Erinnerung Tage vorher (0 = aus)'), type: 'number' },
+    ],
+    items: [
+      { key: 'rehearsal', label: t('Probe'), options: opts(d.rehearsals, 'title') },
+      { key: 'arrangement', label: t('Arrangement'), options: opts(d.arrangements, 'name') },
+      { key: 'focus', label: t('Probenschwerpunkt'), optional: true },
+    ],
+    invitations: [
+      { key: 'rehearsal', label: t('Probe'), options: opts(d.rehearsals, 'title') },
+      { key: 'musician', label: t('Musiker'), options: opts(d.musicians, 'display_name') },
+      { key: 'active', label: t('Aktiv'), type: 'checkbox' },
+    ],
+    loans: [
+      {
+        key: 'part',
+        label: t('Einzelstimme'),
+        options: d.parts.map(
+          (p) =>
+            [
+              String(p.id),
+              `${d.arrangements.find((a) => a.id === p.arrangement)?.name} · ${p.instrument} ${p.register} · ${t('Freie Exemplare')}: ${Number(p.copies) - d.loans.filter((l) => l.part === p.id).reduce((sum, l) => sum + l.quantity - l.returned, 0)}`,
+            ] as [string, string],
+        ),
+      },
+      {
+        key: 'musician',
+        label: t('Musiker'),
+        options: opts(
+          d.musicians.filter((m) => m.active),
+          'display_name',
+        ),
+      },
+      { key: 'quantity', label: t('Anzahl'), type: 'number' },
+      { key: 'due_on', label: t('Rückgabe bis'), type: 'date' },
+    ],
+  }
+  const names = {
+    overview: t('Nächste Proben'),
+    rehearsals: t('Probenplanung'),
+    items: t('Probenstücke'),
+    invitations: t('Probeneinteilung'),
+    loans: t('Notenausgabe'),
+  }
+  const rows = tab === 'overview' ? [] : d[tab as 'rehearsals' | 'items' | 'invitations' | 'loans']
+  return (
+    <section className="stack">
+      <Link to="/musik">{t('Zurück')}</Link>
+      <h1>{t('Proben und Notenausgabe')}</h1>
+      <nav className="tabs">
+        {Object.entries(names).map(([id, label]) => (
+          <button
+            className={`tab${id === tab ? ' active' : ''}`}
+            key={id}
+            onClick={async () => {
+              if (await confirmLeave()) {
+                setSelected(null)
+                setTab(id)
+              }
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      {error && <Alert kind="error">{error}</Alert>}
+      <p>
+        {t(
+          'Proben verwenden bestehende Kalendertermine und Terminserien. Rückmeldungen gelten für den jeweiligen Einzeltermin. Erinnerungen an offene Rückmeldungen werden über die Ausgangspost zugestellt.',
+        )}
+      </p>
+      {canEdit && tab !== 'overview' && (
+        <button
+          className="button button-primary"
+          onClick={async () => {
+            if (await confirmLeave()) {
+              setKey(newRequestKey())
+              setSelected('new')
+            }
+          }}
+        >
+          {t('Anlegen')}
+        </button>
+      )}
+      {canEdit && selected && tab !== 'overview' && (
+        <ScoreForm
+          key={`${tab}-${selected === 'new' ? key : selected.id}`}
+          initial={selected === 'new' ? undefined : selected}
+          fields={fields[tab as keyof typeof fields]}
+          onClose={() => setSelected(null)}
+          onSave={async (values) => {
+            const endpoint =
+              tab === 'items'
+                ? 'rehearsal-items'
+                : tab === 'invitations'
+                  ? 'rehearsal-invitations'
+                  : tab
+            if (tab === 'loans')
+              await api.post(base + 'loans/', { action: 'issue', ...values }, key)
+            else if (selected === 'new') await api.post(base + endpoint + '/', values)
+            else await api.patch(`${base}${endpoint}/${selected.id}/`, values)
+            setSelected(null)
+            await load.reload()
+          }}
+        />
+      )}
+      {tab === 'overview' &&
+        d.overview.map((o) => (
+          <article className="card stack" key={`${o.rehearsal}-${o.original_start}`}>
+            <strong>
+              {o.title} · {new Date(o.starts_at).toLocaleString()}
+            </strong>
+            <p>
+              {o.focus} {o.cancelled ? t('Abgesagt') : ''}
+            </p>
+            <Link to={`/aufgaben?termin=${o.event}`}>{t('Aufgaben für Notenvorbereitung')}</Link>
+            <p>
+              {t('Fehlende Rückmeldungen')}:{' '}
+              {o.members.filter((m) => m.status === 'pending').length}
+            </p>
+            {o.members.map((m) => (
+              <p key={m.invitation}>
+                {m.name} ·{' '}
+                {m.status === 'pending'
+                  ? t('Angefragt')
+                  : m.status === 'accepted'
+                    ? t('Zugesagt')
+                    : t('Abgesagt')}
+                {canEdit && !o.cancelled && (
+                  <span className="actions">
+                    {[
+                      ['accepted', t('Zusagen')],
+                      ['declined', t('Absagen')],
+                    ].map(([status, label]) => (
+                      <button
+                        key={status}
+                        className="button button-ghost"
+                        onClick={async () => {
+                          try {
+                            await api.post(base + 'practice/', {
+                              invitation: m.invitation,
+                              original_start: o.original_start,
+                              status,
+                            })
+                            await load.reload()
+                          } catch (e) {
+                            setError(errorMessage(e))
+                          }
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </span>
+                )}
+              </p>
+            ))}
+          </article>
+        ))}
+      {rows.map((r) => (
+        <article className="card stack" key={r.id}>
+          <strong>
+            {tab === 'rehearsals'
+              ? String((r as Row).title)
+              : tab === 'loans'
+                ? (r as Loan).title
+                : String(d.rehearsals.find((a) => a.id === (r as Row).rehearsal)?.title)}
+          </strong>
+          {tab === 'items' && (
+            <p>
+              {d.arrangements.find((a) => a.id === (r as Row).arrangement)?.name} ·{' '}
+              {(r as Row).focus}
+            </p>
+          )}
+          {tab === 'invitations' && (
+            <p>
+              {d.musicians.find((m) => m.id === (r as Row).musician)?.display_name} ·{' '}
+              {(r as Row).active ? t('Aktiv') : t('Inaktiv')}
+            </p>
+          )}
+          {tab === 'rehearsals' && (
+            <>
+              <p>{(r as Row).focus}</p>
+              <Link to={`/aufgaben?termin=${(r as Row).event}`}>
+                {t('Aufgaben für Notenvorbereitung')}
+              </Link>
+            </>
+          )}
+          {tab === 'loans' ? (
+            <>
+              <p>
+                {d.musicians.find((m) => m.id === (r as Loan).musician)?.display_name} ·{' '}
+                {(r as Loan).instrument} {(r as Loan).register} · {t('Ausgegeben')}:{' '}
+                {(r as Loan).quantity} · {t('Zurückgegeben')}: {(r as Loan).returned} ·{' '}
+                {t('Rückgabe bis')}: {(r as Loan).due_on}
+              </p>
+              {(r as Loan).overdue && <Alert kind="error">{t('Rückgabe überfällig')}</Alert>}
+              {(r as Loan).returns.map((ret, i) => (
+                <p key={i}>
+                  {t('Notenrückgabe')}: {ret.quantity} · {new Date(ret.created_at).toLocaleString()}
+                </p>
+              ))}
+              {canEdit && (r as Loan).returned < (r as Loan).quantity && (
+                <ReturnForm
+                  key={`${r.id}-${(r as Loan).returned}`}
+                  loan={r as Loan}
+                  onSaved={() => load.reload()}
+                />
+              )}
+            </>
+          ) : (
+            canEdit && (
+              <button
+                className="button button-ghost"
+                onClick={async () => {
+                  if (await confirmLeave()) setSelected(r as Row)
+                }}
+              >
+                {t('Bearbeiten')}
+              </button>
+            )
+          )}
+          {canEdit && tab === 'items' && (
+            <button
+              className="button button-ghost"
+              onClick={async () => {
+                if (!(await confirmLeave()) || !(await confirmDialog(t('Eintrag entfernen?'))))
+                  return
+                try {
+                  await api.del(`${base}rehearsal-items/${r.id}/`)
+                  setSelected(null)
+                  await load.reload()
+                } catch (e) {
+                  setError(errorMessage(e))
+                }
+              }}
+            >
+              {t('Entfernen')}
+            </button>
+          )}
+        </article>
+      ))}
+    </section>
+  )
+}
+
+function ReturnForm({ loan, onSaved }: { loan: Loan; onSaved: () => Promise<unknown> }) {
+  const org = useActiveOrg(),
+    [key] = useState(newRequestKey)
+  return (
+    <ScoreForm
+      initial={{ id: loan.id, quantity: loan.quantity - loan.returned }}
+      fields={[{ key: 'quantity', label: t('Rückgabemenge'), type: 'number' }]}
+      onSave={async (values) => {
+        await api.post(
+          `/api/orgs/${org.id}/music/loans/`,
+          { action: 'return', loan: loan.id, quantity: values.quantity },
+          key,
+        )
+        await onSaved()
+      }}
+    />
+  )
+}

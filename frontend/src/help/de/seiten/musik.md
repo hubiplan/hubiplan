@@ -45,3 +45,17 @@ Beim Auftritt **Musikalisches Programm** öffnen. Stücke und Zugaben mit Arrang
 Die Vorbereitungsliste vergleicht benötigte Instrumente/Stimmen mit Sollbesetzung und aktiven Musikern mit Zusage. Schreibweisen werden ohne Groß-/Kleinschreibung und äußere Leerzeichen verglichen; unterschiedliche Instrumentenbezeichnungen bleiben getrennt. Fehlende Musiker, geplante Anzahl und fehlende Exemplare im gewählten Format bleiben sichtbar. Exemplare im anderen Format zählen nicht mit. Bei wiederholten Stücken wird derselbe Notensatz je Format einmal vorbereitet. Fehlende Besetzungsangaben werden markiert. Bestandsänderungen und Arrangementdauern wirken auf bestehende Programme.
 
 **Programmliste herunterladen** und **Stimmenliste herunterladen** geben CSV-Dateien aus. Über **Aufgaben für Notenvorbereitung** im bestehenden Aufgabenbereich Aufgaben mit dem Auftrittstermin anlegen. Programme erfordern Musik- und Kalenderleserecht; Änderungen Musikbearbeitungsrecht. Der allgemeine Datenexport enthält den Katalog und Programme. Digitale Dateien verbleiben im vorhandenen Dokumentenexport.
+
+## Proben und persönliche Noten
+
+Unter **Proben und Notenausgabe** eigene Kalendertermine oder Terminserien als Proben verknüpfen. Datum, Ort, Wiederholung und Einzelabsagen werden im bestehenden Kalender gepflegt. Probenschwerpunkt und Probenstücke gelten für die ganze Probe bzw. Serie. Unter **Probeneinteilung** Musiker zuordnen; nicht mehr benötigte Einteilungen deaktivieren. Gäste werden durch die Musikverwaltung betreut.
+
+Die Übersicht zeigt Termine von 14 Tagen vor heute bis 90 Tage voraus. Jede Zu-/Absage gehört zum ursprünglichen Einzelbeginn der Kalenderregel; verschobene Termine bleiben diesem Beginn zugeordnet. Nach einer Änderung der Serienregel sind neue Rückmeldungen erforderlich. Zu abgesagten oder begonnenen Proben ist keine Rückmeldung mehr möglich. Fehlende Antworten erscheinen in der Übersicht.
+
+Aktuelle Mitglieder mit aktivem Musikerprofil sehen unter **Mein Bereich** eigene Proben und Auftritte, deren Programme, Schwerpunkte und passende Noten. Für Notendownloads gelten die Mitgliederfreigaben der Dokumentenablage zusätzlich zur passenden Stimme oder instrumentalen Fähigkeit. Gesperrte, gelöschte und fremde Unterlagen bleiben unzugänglich.
+
+**Notenausgabe** erfasst Musiker, Stimme, Anzahl und Rückgabefrist. Jede Ausgabe reduziert den freien Bestand. Teilrückgaben sind möglich und bleiben mit Zeitstempel nachvollziehbar. Ausstehende Ausgaben verhindern das Verkleinern oder Umwidmen des Bestands. Überfällige Rückgaben sind markiert; Mitglieder sehen ihre eigenen offenen Mengen. Bei der Vorbereitung werden frei verfügbare Exemplare und bereits bei Eingeteilten befindliche Exemplare getrennt angezeigt.
+
+Neue Probeneinteilungen und bevorstehende offene Rückmeldungen erzeugen neutrale Hinweise über die bestehende Ausgangspost. Der stündliche Job erinnert je Probentermin einmal innerhalb der eingestellten Tage; 0 schaltet Erinnerungen aus. Nachrichten enthalten einen Link zum Mitgliederbereich, keine Notenanhänge oder vertraulichen Termininhalte. Gäste ohne Mitgliederzugang erhalten diese Hinweise nicht. Vorbereitungsaufgaben und weitere Kalenderkommunikation bleiben im bestehenden Aufgaben-/Terminbereich.
+
+Die Proben-, Rückmeldungs- und Notenausgabedaten sind im allgemeinen Datenexport enthalten. Die Datenbankmigration ergänzt Tabellen, RLS und Mengengrenzen; vor einem Rückweg die neuen Verläufe exportieren.

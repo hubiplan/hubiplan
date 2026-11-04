@@ -46,6 +46,9 @@ type Program = {
       missing_planned: number
       needed_copies: number
       copies: number
+      loaned?: number
+      available?: number
+      held?: number
       missing_copies: number
       locations: string[]
     }[]
@@ -245,6 +248,9 @@ export function ProgramPanel({ performance }: { performance: number }) {
                     t('Fehlende Musiker'),
                     t('Benötigte Exemplare'),
                     t('Vorhandene Exemplare'),
+                    t('Ausgegeben'),
+                    t('Freie Exemplare'),
+                    t('Bei Eingeteilten'),
                     t('Fehlende Exemplare'),
                     t('Lagerort'),
                   ].map((s) => (
@@ -263,6 +269,9 @@ export function ProgramPanel({ performance }: { performance: number }) {
                     <td>{v.missing_players}</td>
                     <td>{v.needed_copies}</td>
                     <td>{v.copies}</td>
+                    <td>{v.loaned || 0}</td>
+                    <td>{v.available ?? v.copies}</td>
+                    <td>{v.held || 0}</td>
                     <td>{v.missing_copies}</td>
                     <td>{v.locations.join(', ')}</td>
                   </tr>

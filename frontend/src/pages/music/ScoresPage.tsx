@@ -254,7 +254,7 @@ export function ScoreForm({
   fields: Field[]
   initial?: Row
   onSave: (v: Record<string, unknown>) => Promise<void>
-  onClose: () => void
+  onClose?: () => void
 }) {
   const [values, setValues] = useState<Record<string, unknown>>(() =>
       Object.fromEntries(
@@ -343,15 +343,17 @@ export function ScoreForm({
         <button className="button button-primary" disabled={busy}>
           {t('Speichern')}
         </button>
-        <button
-          type="button"
-          className="button button-ghost"
-          onClick={async () => {
-            if (await confirmLeave()) onClose()
-          }}
-        >
-          {t('Abbrechen')}
-        </button>
+        {onClose && (
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={async () => {
+              if (await confirmLeave()) onClose()
+            }}
+          >
+            {t('Abbrechen')}
+          </button>
+        )}
       </div>
     </form>
   )

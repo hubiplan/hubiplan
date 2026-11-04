@@ -31,9 +31,11 @@ from members import (
 )
 from members import honorary as honorary_views
 from members import views as member_views
+from music import practice as music_practice
 from music import scores as music_scores
 from music import views as music_views
 from music.portal import OwnAssignments
+from music.practice_portal import OwnPractice, OwnScoreFile
 from music.settlement import PerformanceInvoiceView, SettlementView
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
@@ -96,6 +98,15 @@ org_router.register(
 )
 org_router.register("music/positions", music_views.PositionViewSet, basename="music-position")
 org_router.register("music/assignments", music_views.AssignmentViewSet, basename="music-assignment")
+org_router.register("music/rehearsals", music_practice.RehearsalViewSet, basename="music-rehearsal")
+org_router.register(
+    "music/rehearsal-items", music_practice.RehearsalItemViewSet, basename="music-rehearsal-item"
+)
+org_router.register(
+    "music/rehearsal-invitations",
+    music_practice.RehearsalInvitationViewSet,
+    basename="music-rehearsal-invitation",
+)
 org_router.register("music/pieces", music_scores.PieceViewSet, basename="music-piece")
 org_router.register(
     "music/arrangements", music_scores.ArrangementViewSet, basename="music-arrangement"
@@ -159,6 +170,8 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("music/practice/", music_practice.PracticeOverview.as_view()),
+    path("music/loans/", music_practice.LoanView.as_view()),
     path("music/performances/<int:pk>/program/", music_scores.ProgramView.as_view()),
     path("music/performances/<int:pk>/settlement/", SettlementView.as_view()),
     path("music/performances/<int:pk>/invoice/", PerformanceInvoiceView.as_view()),
@@ -703,6 +716,8 @@ dept_patterns = [
 ]
 
 urlpatterns = [
+    path("portal/<int:access_id>/music/practice/", OwnPractice.as_view()),
+    path("portal/<int:access_id>/music/files/<int:pk>/", OwnScoreFile.as_view()),
     path("portal/<int:access_id>/music/", OwnAssignments.as_view()),
     path(
         "depts/<int:dept_id>/todos/<int:pk>/attachments/",

@@ -10,6 +10,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { SettlementPanel } from './SettlementPanel.tsx'
 import { ScoresPage } from './ScoresPage.tsx'
 import { ProgramPanel } from './ProgramPanel.tsx'
+import { PracticePage } from './PracticePage.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; members: Row[]; partners: Row[] }
@@ -37,6 +38,7 @@ export function MusicPage() {
   if (!org.modules.includes('music') || !org.permissions.includes('music.view'))
     return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
   if (params.get('noten')) return <ScoresPage key={org.id} />
+  if (params.get('proben')) return <PracticePage key={org.id} />
   if (/^\d+$/.test(params.get('programm') || ''))
     return (
       <ProgramPanel
@@ -169,6 +171,7 @@ function MusicWorkspace() {
     <section className="stack">
       <h1>{t('Musik')}</h1>
       <Link to="/musik?noten=1">{t('Notenbestand')}</Link>
+      <Link to="/musik?proben=1">{t('Proben und Notenausgabe')}</Link>
       <nav className="tabs">
         {Object.entries(names).map(([key, label]) => (
           <button
