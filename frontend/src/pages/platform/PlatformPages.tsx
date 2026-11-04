@@ -201,6 +201,26 @@ function PlatformOrgForm({
   const v = form.values
   const e = form.errors
   const [board, setBoard] = useState('')
+  const [erasing, setErasing] = useState(false)
+  const [confirmation, setConfirmation] = useState('')
+  const [eraseBusy, setEraseBusy] = useState(false)
+  const [eraseError, setEraseError] = useState<string | null>(null)
+
+  async function erase(ev: FormEvent) {
+    ev.preventDefault()
+    if (!org || confirmation !== org.name || eraseBusy) return
+    setEraseBusy(true)
+    setEraseError(null)
+    try {
+      await platformApi.erase(org.id, confirmation)
+      await refresh()
+      onDone()
+    } catch (error) {
+      setEraseError(errorMessage(error))
+    } finally {
+      setEraseBusy(false)
+    }
+  }
   const [boardResult, setBoardResult] = useState<string | null>(null)
   const tm = buildTerms(v.label, v.label_plural, v.label_gender, v.label_genitive)
   // Unter einer übergeordneten Einheit führen Einheiten immer eigene Mitglieder
@@ -475,6 +495,55 @@ function PlatformOrgForm({
           </button>
         </div>
       </form>
+
+      {org && (
+        <form className="card card-wide" onSubmit={erase}>
+          <h2>{t('Einheit vollständig löschen')}</h2>
+          <p>
+            {t(
+              'Die Einheit und ihre Daten einschließlich Mitgliedern, Rollen, Finanzdaten und Dateien werden unwiderruflich gelöscht. Benutzerkonten bleiben erhalten. Untergeordnete Einheiten müssen vorher gelöscht oder umgehängt werden.',
+            )}
+          </p>
+          {erasing ? (
+            <>
+              <p>
+                {t('Zur Bestätigung den vollständigen Namen eingeben:')} <strong>{org.name}</strong>
+              </p>
+              <Field
+                label={t('Name zur Löschbestätigung')}
+                value={confirmation}
+                onChange={(ev) => setConfirmation(ev.target.value)}
+              />
+              {eraseError && <Alert kind="error">{eraseError}</Alert>}
+              <div className="button-row">
+                <button
+                  type="submit"
+                  className="button button-danger"
+                  disabled={eraseBusy || confirmation !== org.name}
+                >
+                  {t('Unwiderruflich löschen')}
+                </button>
+                <button
+                  type="button"
+                  className="button"
+                  disabled={eraseBusy}
+                  onClick={() => {
+                    setErasing(false)
+                    setConfirmation('')
+                    setEraseError(null)
+                  }}
+                >
+                  {t('Abbrechen')}
+                </button>
+              </div>
+            </>
+          ) : (
+            <button type="button" className="button button-danger" onClick={() => setErasing(true)}>
+              {t('Einheit löschen')}
+            </button>
+          )}
+        </form>
+      )}
 
       {org && (
         <form className="card card-wide" onSubmit={addBoard}>
