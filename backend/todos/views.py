@@ -122,9 +122,8 @@ class TodoListView(TodoScopeMixin, APIView):
         qs = visible(request.user, self.scope, deleted=request.query_params.get("trash") == "1")
         from .remote import fresh_rows
 
-        items = [
-            data_for(t, request.user, self.scope) for t in fresh_rows(qs.order_by("-created_at"))
-        ]
+        candidates = list(qs.order_by("-created_at"))
+        items = [data_for(t, request.user, self.scope) for t in fresh_rows(candidates)]
         items.sort(
             key=lambda t: (
                 not t["highlight"],
@@ -133,7 +132,7 @@ class TodoListView(TodoScopeMixin, APIView):
                 t["due_time"] or datetime.time.max,
             )
         )
-        return Response({"items": items})
+        return Response({"items": items, "source_unavailable": len(items) < len(candidates)})
 
     @transaction.atomic
     def post(self, request, **kwargs):
@@ -190,6 +189,9 @@ class TodoDetailView(TodoScopeMixin, APIView):
         from .series import lock_task
 
         todo = lock_task(request.user, self.scope, pk, deleted=deleted)
+        from .remote import refresh_common
+
+        todo = refresh_common(todo)
         taking_over = request.data.get("owner") == request.user.pk and can_take_over(
             todo, request.user, self.scope
         )
@@ -219,6 +221,7 @@ class TodoDetailView(TodoScopeMixin, APIView):
             ctx = active()
             if ctx:
                 ctx.block(gettext("Diese Änderung kann hier nicht zurückgenommen werden."))
+            log_change(todo, request.user, "update")
             return Response(data_for(todo, request.user, self.scope))
         ownership_only = "owner" in values
         if ownership_only and set(values) != {"owner"}:

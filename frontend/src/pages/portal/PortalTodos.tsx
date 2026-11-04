@@ -77,7 +77,7 @@ export function PortalTodos({ accessId }: { accessId: number }) {
           <p>{selected.due_label || t('ohne Frist')}</p>
           <ul>
             {selected.attachments?.map((file) => (
-              <li key={file.id}>
+              <li key={`${file.remote ? 'remote' : 'local'}-${file.id}`}>
                 {file.available ? (
                   <a
                     href={`${base}${selected.id}/${file.remote ? 'remote-files' : 'attachments'}/${file.id}/`}

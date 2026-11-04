@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api/client.ts'
 import type { Todo } from '../api/todos.ts'
 import { errorMessage, useLoad } from './forms.ts'
 import { Checkbox, LoadError, SelectField } from './ui.tsx'
-import { confirmLeave } from './leaveGuard.ts'
+import { confirmLeave, flushAllForms, useDraftGuard } from './leaveGuard.ts'
 import { t } from '../i18n/index.ts'
 
 interface Grant {
@@ -21,6 +21,12 @@ interface Grant {
   }[]
 }
 
+interface RemoteData {
+  version: number
+  couplings: { id: number; name: string; enabled: boolean }[]
+  shares: Grant[]
+}
+
 export function TodoRemote({
   base,
   todo,
@@ -31,13 +37,8 @@ export function TodoRemote({
   onSaved: () => void
 }) {
   const endpoint = `${base}${todo.id}/remote/`
-  const { data, error, reload } = useLoad(
-    () =>
-      api.get<{
-        version: number
-        couplings: { id: number; name: string; enabled: boolean }[]
-        shares: Grant[]
-      }>(endpoint),
+  const { data, error, reload, setData } = useLoad(
+    () => api.get<RemoteData>(endpoint),
     [endpoint, todo.version],
   )
   return (
@@ -53,13 +54,14 @@ export function TodoRemote({
       <div className="stack">
         {data?.couplings.map((coupling) => (
           <RemoteGrant
-            key={`${coupling.id}-${data.version}`}
+            key={coupling.id}
             coupling={coupling}
             version={data.version}
             recurring={!!todo.series}
             endpoint={endpoint}
             initial={data.shares.find((s) => s.coupling === coupling.id)}
-            onSaved={() => {
+            onSaved={(updated) => {
+              setData(updated)
               void reload()
               onSaved()
             }}
@@ -83,7 +85,7 @@ function RemoteGrant({
   recurring: boolean
   endpoint: string
   initial?: Grant
-  onSaved: () => void
+  onSaved: (updated: RemoteData) => void
 }) {
   const [active, setActive] = useState(initial?.active ?? false)
   const [mode, setMode] = useState<Grant['mode']>(initial?.mode ?? 'copy')
@@ -91,6 +93,35 @@ function RemoteGrant({
   const [following, setFollowing] = useState(initial?.following ?? false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const incoming = JSON.stringify({
+    active: initial?.active ?? false,
+    mode: initial?.mode ?? 'copy',
+    complete: initial?.can_complete ?? true,
+    following: initial?.following ?? false,
+  })
+  const [baseline, setBaseline] = useState(incoming)
+  const currentVersion = useRef(version)
+  const dirty = JSON.stringify({ active, mode, complete, following }) !== baseline
+  function restore(value: string) {
+    const saved = JSON.parse(value)
+    setActive(saved.active)
+    setMode(saved.mode)
+    setComplete(saved.complete)
+    setFollowing(saved.following)
+  }
+  useEffect(() => {
+    if (incoming === baseline) currentVersion.current = version
+    else if (!dirty) {
+      const saved = JSON.parse(incoming)
+      setActive(saved.active)
+      setMode(saved.mode)
+      setComplete(saved.complete)
+      setFollowing(saved.following)
+      setBaseline(incoming)
+      currentVersion.current = version
+    }
+  }, [incoming, baseline, dirty, version])
+  useDraftGuard(dirty, () => restore(baseline))
   return (
     <section className="subcard stack">
       <h3>{coupling.name}</h3>
@@ -139,19 +170,20 @@ function RemoteGrant({
           className="button"
           disabled={busy}
           onClick={async () => {
-            if (!(await confirmLeave())) return
+            if (!(await flushAllForms())) return
             setBusy(true)
             setError(null)
             try {
-              await api.put(endpoint, {
-                version,
+              const updated = await api.put<RemoteData>(endpoint, {
+                version: currentVersion.current,
                 coupling: coupling.id,
                 active,
                 mode,
                 can_complete: complete,
                 following,
               })
-              onSaved()
+              setBaseline(JSON.stringify({ active, mode, complete, following }))
+              onSaved(updated)
             } catch (err) {
               setError(errorMessage(err))
             } finally {

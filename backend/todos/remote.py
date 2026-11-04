@@ -5,7 +5,7 @@ import hashlib
 import tempfile
 
 from django.db import transaction
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext, gettext_lazy
@@ -105,7 +105,12 @@ def snapshot(share):
         rule.update({"uid": str(series.pk), "active": series.active and not series.deleted_at})
         if share.mode == "copy":
             # Künftige Inhalte sind nur mit ausdrücklicher Serienfreigabe autorisiert.
-            values.update(title=series.title, description=series.description)
+            values.update(
+                title=series.title,
+                description=series.description,
+                due_time=series.due_time,
+                timezone=series.timezone,
+            )
     return {
         "uid": str(todo.pk),
         "version": todo.version,
@@ -116,7 +121,7 @@ def snapshot(share):
         "status": todo.status,
         "done_at": todo.done_at.isoformat() if todo.done_at else None,
         "sequence_no": todo.sequence_no,
-        "series": rule,
+        "series": _serialize(rule) if rule else None,
         **{
             key: value.isoformat() if hasattr(value, "isoformat") else value
             for key, value in values.items()
@@ -171,6 +176,7 @@ class SnapshotInput(serializers.Serializer):
                 not isinstance(rule, dict)
                 or set(rule) != {*RULE, "uid", "active"}
                 or not str(rule.get("uid", "")).isdigit()
+                or len(str(rule.get("uid", ""))) > 19
                 or type(rule.get("active")) is not bool
             ):
                 raise serializers.ValidationError(gettext("Ungültige Serienregel."))
@@ -184,12 +190,29 @@ class SnapshotInput(serializers.Serializer):
 
             if not rule.get("anchor_date") or not parse_date(str(rule["anchor_date"])):
                 raise serializers.ValidationError(gettext("Ungültiger Serienanker."))
+            future = TodoInput(
+                data={
+                    "due_date": rule["anchor_date"],
+                    "due_time": rule["due_time"],
+                    "timezone": rule["timezone"],
+                }
+            )
+            future.is_valid(raise_exception=True)
+            attrs["series"] = {
+                **test.validated_data,
+                **future.validated_data,
+                "anchor_date": future.validated_data["due_date"],
+                "uid": rule["uid"],
+                "active": rule["active"],
+            }
+            attrs["series"].pop("version", None)
+            attrs["series"].pop("due_date", None)
         return attrs
 
 
 def build(coupling, level):
     with rls_bypass():
-        rows = (
+        all_rows = (
             TodoRemoteShare.objects.filter(
                 coupling=coupling,
                 organization_id=coupling.local_unit_id,
@@ -199,9 +222,15 @@ def build(coupling, level):
                 todo__shared=True,
             )
             .select_related("todo", "todo__series")
-            .order_by("pk")[:LIMIT]
+            .order_by("-todo__updated_at", "-pk")
         )
-        return {"items": [snapshot(row) for row in rows]}
+        # Alte gemeinsame Serienausgaben bleiben autorisiert, ohne bei jedem
+        # Abgleich erneut alle historischen Beschreibungen übertragen zu müssen.
+        rows = list(all_rows.filter(Q(mode="copy") | Q(todo__status="open"))[:LIMIT])
+        if len(rows) < LIMIT:
+            rows += list(all_rows.exclude(pk__in=[row.pk for row in rows])[: LIMIT - len(rows)])
+        authorized = [str(pk) for pk in all_rows.values_list("todo_id", flat=True)]
+        return {"items": [snapshot(row) for row in rows], "authorized": authorized}
 
 
 def _serialize(values):
@@ -218,6 +247,19 @@ def apply(coupling, data):
         raise serializers.ValidationError(gettext("Zu viele Verbundaufgaben."))
     validated = SnapshotInput(data=items, many=True)
     validated.is_valid(raise_exception=True)
+    if len({item["uid"] for item in items}) != len(items):
+        raise serializers.ValidationError(gettext("Ungültige Aufgabenfreigabe."))
+    authorized = (
+        data.get("authorized", [str(item["uid"]) for item in items]) if data.get("level") else []
+    )
+    if (
+        not isinstance(authorized, list)
+        or len(authorized) > 10000
+        or any(not isinstance(uid, str) or not uid.isdigit() or len(uid) > 19 for uid in authorized)
+        or len(set(authorized)) != len(authorized)
+        or any(item["uid"] not in authorized for item in items)
+    ):
+        raise serializers.ValidationError(gettext("Ungültige Aufgabenfreigabe."))
     with suppress(), rls_bypass():
         keep = []
         for values in validated.validated_data:
@@ -228,7 +270,7 @@ def apply(coupling, data):
         ):
             adopt_successor(mapping)
         for mapping in TodoRemoteTask.objects.filter(coupling=coupling, active=True).exclude(
-            pk__in=keep
+            uid__in=authorized
         ):
             mapping.active = False
             mapping.save(update_fields=["active"])
@@ -254,7 +296,7 @@ def receive_one(coupling, item):
         return mapping
     if mapping.todo_id and item["mode"] != mapping.mode:
         raise serializers.ValidationError(
-            "Die Verteilart einer übernommenen Aufgabe ist unveränderlich."
+            gettext("Die Verteilart einer übernommenen Aufgabe ist unveränderlich.")
         )
     if not created and mapping.active and mapping.payload == item:
         return mapping
@@ -330,21 +372,79 @@ def completion_allowed(todo):
     return bool(todo.remote_origin.payload.get("can_complete"))
 
 
+def read_many(mappings):
+    """Eine signierte, eng auf bereits bekannte Aufgabennummern begrenzte Abfrage."""
+    mappings = {m.uid: m for m in mappings}
+    result = call(next(iter(mappings.values())), "todo.read_many", uids=list(mappings))
+    items, missing = result.get("items"), result.get("unavailable")
+    if (
+        not isinstance(items, list)
+        or not isinstance(missing, list)
+        or any(not isinstance(uid, str) for uid in missing)
+    ):
+        raise RemoteUnavailable()
+    check = SnapshotInput(data=items, many=True)
+    check.is_valid(raise_exception=True)
+    found = [v["uid"] for v in check.validated_data]
+    if len(set(found + missing)) != len(found + missing) or set(found + missing) != set(mappings):
+        raise RemoteUnavailable()
+    updated = {}
+    with transaction.atomic(), suppress(), rls_bypass():
+        for item in check.validated_data:
+            mapping = mappings[item["uid"]]
+            if (
+                item["version"] < mapping.source_version
+                or item["revision"] < mapping.share_revision
+            ):
+                raise RemoteUnavailable()
+            updated[item["uid"]] = receive_one(mapping.coupling, _serialize(item))
+        for uid in missing:
+            mapping = mappings[uid]
+            TodoRemoteTask.objects.filter(pk=mapping.pk).update(active=False)
+            Todo.objects.filter(remote_origin=mapping).update(withdrawn=True)
+    return updated
+
+
 def fresh_rows(rows):
     """Keine veralteten gemeinsamen Inhalte ausliefern, wenn die Quelle ausfällt."""
     from rest_framework.exceptions import NotFound
 
-    unavailable = set()
+    rows = list(rows)
+    groups = {}
+    available = {t.pk for t in rows if t.remote_mode != "common"}
     for todo in rows:
-        if todo.remote_mode == "common" and todo.remote_origin_id in unavailable:
-            continue
-        try:
-            yield refresh_common(todo)
-        except RemoteUnavailable:
-            unavailable.add(todo.remote_origin_id)
-            continue
-        except NotFound:
-            continue
+        if todo.remote_mode == "common" and todo.remote_origin_id:
+            groups.setdefault(todo.remote_origin.coupling_id, []).append(todo)
+    for group in groups.values():
+        # Höchstens ein Netzwerkausfall je Kopplung; keine 100 seriellen Timeouts.
+        for start in range(0, len(group), LIMIT):
+            batch = group[start : start + LIMIT]
+            try:
+                updated = read_many([t.remote_origin for t in batch])
+                for todo in batch:
+                    if todo.remote_origin.uid in updated:
+                        todo.refresh_from_db()
+                        todo._state.fields_cache.pop("remote_origin", None)
+                        available.add(todo.pk)
+            except (RemoteUnavailable, NotFound):
+                break
+    yield from (t for t in rows if t.pk in available)
+
+
+def fresh_offers(rows):
+    rows = list(rows)
+    result = [m for m in rows if m.mode != "common"]
+    groups = {}
+    for mapping in rows:
+        if mapping.mode == "common":
+            groups.setdefault(mapping.coupling_id, []).append(mapping)
+    for group in groups.values():
+        for start in range(0, len(group), LIMIT):
+            try:
+                result.extend(read_many(group[start : start + LIMIT]).values())
+            except RemoteUnavailable:
+                break
+    return result
 
 
 class ProgressInput(serializers.Serializer):
@@ -557,9 +657,15 @@ def refresh_common(todo):
     check.is_valid(raise_exception=True)
     if str(check.validated_data["uid"]) != mapping.uid:
         raise RemoteUnavailable()
+    if (
+        check.validated_data["version"] < mapping.source_version
+        or check.validated_data["revision"] < mapping.share_revision
+    ):
+        raise RemoteUnavailable()
     with suppress(), rls_bypass():
         receive_one(mapping.coupling, _serialize(check.validated_data))
     todo.refresh_from_db()
+    todo._state.fields_cache.pop("remote_origin", None)
     return todo
 
 
@@ -584,6 +690,23 @@ def complete_common(todo, user, status):
 
 def answer(coupling, payload):
     """Nur die von genau dieser Kopplung autorisierte Quelle; keine freie Objektabfrage."""
+    if payload.get("kind") == "todo.read_many":
+        uids = payload.get("uids")
+        if (
+            not isinstance(uids, list)
+            or len(uids) > LIMIT
+            or any(not isinstance(uid, str) or not uid.isdigit() or len(uid) > 19 for uid in uids)
+            or len(set(uids)) != len(uids)
+        ):
+            raise services.Refused(400, gettext("Ungültige Aufgabennummer."))
+        with rls_bypass():
+            items, missing = [], []
+            for uid in uids:
+                try:
+                    items.append(snapshot(selected(coupling, uid)))
+                except services.Refused:
+                    missing.append(uid)
+            return {"items": items, "unavailable": missing}
     if payload.get("kind") not in {"todo.read", "todo.complete", "todo.file"}:
         raise services.Refused(400, gettext("Unbekannte Aufgabenabfrage."))
     uid = payload.get("uid")
@@ -680,6 +803,7 @@ def remote_file(todo, aid):
     try:
         offset = 0
         fingerprint = None
+        digest = hashlib.sha256()
         while True:
             chunk = call(
                 mapping, "todo.file", attachment=aid, offset=offset, fingerprint=fingerprint
@@ -713,6 +837,7 @@ def remote_file(todo, aid):
             ):
                 raise RemoteUnavailable()
             output.write(content)
+            digest.update(content)
             offset += len(content)
             if offset == size:
                 break
@@ -728,7 +853,7 @@ def remote_file(todo, aid):
                 output.seek(0)
                 return nullcontext(output)
 
-        release_ok(ScanFile(), upload.name, "Verbundaufgabe", fingerprint)
+        release_ok(ScanFile(), upload.name, "Verbundaufgabe", f"todo-remote:{digest.hexdigest()}")
         output.seek(0)
         response = FileResponse(
             output, as_attachment=True, filename=upload.name, content_type=content_type

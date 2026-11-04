@@ -19,6 +19,13 @@ from .series import lock_task
 from .views import TodoScopeMixin, data_for
 
 
+class RemoteScope(TodoScopeMixin):
+    def finalize_response(self, request, response, *args, **kwargs):
+        response = super().finalize_response(request, response, *args, **kwargs)
+        response["Cache-Control"] = "private, no-store"
+        return response
+
+
 class ShareInput(serializers.Serializer):
     version = serializers.IntegerField(min_value=1)
     coupling = serializers.IntegerField(min_value=1)
@@ -28,7 +35,7 @@ class ShareInput(serializers.Serializer):
     following = serializers.BooleanField(default=False)
 
 
-class RemoteSharesView(TodoScopeMixin, APIView):
+class RemoteSharesView(RemoteScope, APIView):
     def task(self, request, pk):
         todo = get_object_or_404(visible(request.user, self.scope), pk=pk)
         if (
@@ -117,13 +124,20 @@ class RemoteSharesView(TodoScopeMixin, APIView):
         return self.get(request, pk, **kwargs)
 
 
-class RemoteInboxView(TodoScopeMixin, APIView):
+class RemoteInboxView(RemoteScope, APIView):
     def get(self, request, **kwargs):
         if "todos.edit" not in self.scope.permissions or self.scope.department_id:
             raise PermissionDenied()
-        rows = TodoRemoteTask.objects.filter(
-            organization=self.org, active=True, coupling__state=Coupling.State.ACTIVE
-        ).select_related("coupling__remote_unit")
+        from .remote import fresh_offers
+
+        rows = fresh_offers(
+            TodoRemoteTask.objects.filter(
+                organization=self.org,
+                active=True,
+                todo__isnull=True,
+                coupling__state=Coupling.State.ACTIVE,
+            ).select_related("coupling__remote_unit", "coupling__peer", "coupling__local_unit")
+        )
         # Übernommene Inhalte folgen ausschließlich ihrer lokalen Aufgaben-ACL.
         return Response(
             {
@@ -144,7 +158,7 @@ class RemoteInboxView(TodoScopeMixin, APIView):
         )
 
 
-class RemoteAdoptView(TodoScopeMixin, APIView):
+class RemoteAdoptView(RemoteScope, APIView):
     @transaction.atomic
     def post(self, request, remote_id, **kwargs):
         if "todos.edit" not in self.scope.permissions or self.scope.department_id:
@@ -171,7 +185,7 @@ class RemoteAdoptView(TodoScopeMixin, APIView):
         return Response(data_for(todo, request.user, self.scope), status=201)
 
 
-class RemoteFileView(TodoScopeMixin, APIView):
+class RemoteFileView(RemoteScope, APIView):
     def get(self, request, pk, att_id, **kwargs):
         todo = get_object_or_404(visible(request.user, self.scope), pk=pk)
         if not todo.remote_origin_id:

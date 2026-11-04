@@ -69,7 +69,7 @@ export const todoBase = (org: number | null, department?: number | null) =>
 export const todoApi = {
   get: (base: string, id: number) => api.get<Todo>(`${base}${id}/`),
   list: (base: string, trash = false) =>
-    api.get<{ items: Todo[] }>(`${base}${trash ? '?trash=1' : ''}`),
+    api.get<{ items: Todo[]; source_unavailable?: boolean }>(`${base}${trash ? '?trash=1' : ''}`),
   create: (base: string, values: unknown) => api.post<Todo>(base, values),
   update: (base: string, id: number, values: unknown) => api.patch<Todo>(`${base}${id}/`, values),
 }

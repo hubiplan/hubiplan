@@ -131,6 +131,13 @@ class PortalTaskMixin:
         if write:
             # Gleiche Sperrreihenfolge wie alle anderen Serienwege.
             candidate = get_object_or_404(qs, pk=pk)
+            if candidate.remote_mode == "common" and candidate.remote_origin_id:
+                from .models import TodoRemoteTask
+
+                with rls_bypass():
+                    TodoRemoteTask.objects.select_for_update().values("pk").get(
+                        pk=candidate.remote_origin_id
+                    )
             if candidate.series_id:
                 with rls_bypass():
                     TodoSeries.objects.defer(
@@ -213,6 +220,9 @@ class PortalTaskDetailView(PortalTaskMixin, APIView):
                 from .remote import complete_common
 
                 todo = complete_common(todo, request.user, values["status"])
+                from .sharing import log_change
+
+                log_change(todo, request.user, "update")
                 return Response(portal_data(todo, self.access, self.scope))
             todo.status = values["status"]
             todo.done_at = timezone.now() if todo.status == "done" else None

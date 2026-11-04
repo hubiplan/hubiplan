@@ -23,7 +23,13 @@ def lock_task(user, scope, pk, *, deleted=False):
     from .access import visible
 
     qs = visible(user, scope, deleted=deleted)
-    metadata = get_object_or_404(qs.only("pk", "series_id"), pk=pk)
+    metadata = get_object_or_404(
+        qs.only("pk", "series_id", "remote_origin_id", "remote_mode"), pk=pk
+    )
+    if metadata.remote_mode == "common" and metadata.remote_origin_id:
+        from .models import TodoRemoteTask
+
+        TodoRemoteTask.objects.select_for_update().values("pk").get(pk=metadata.remote_origin_id)
     if metadata.series_id:
         with rls_bypass():
             TodoSeries.objects.select_for_update().values("pk").get(pk=metadata.series_id)

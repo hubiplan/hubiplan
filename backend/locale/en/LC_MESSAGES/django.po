@@ -5160,3 +5160,66 @@ msgstr "Local note"
 
 msgid "Diese Aufgabe wurde bereits übernommen."
 msgstr "This task has already been claimed."
+
+msgid "Die Quellinstanz ist gerade nicht verfügbar. Bitte später erneut versuchen."
+msgstr "The source installation is currently unavailable. Please try again later."
+
+msgid "Status bitte getrennt von anderen Änderungen speichern."
+msgstr "Please save status separately from other changes."
+
+msgid "Je Kopplung können höchstens 100 Aufgaben gleichzeitig geteilt werden."
+msgstr "A connection can share at most 100 tasks at a time."
+
+msgid "Bitte Aufgaben zuerst in der Kopplung freigeben."
+msgstr "Please enable tasks in the connection first."
+
+msgid "Aufgabenfreigabe nicht aktiv."
+msgstr "Task sharing is not active."
+
+msgid "Aufgabe nicht verfügbar."
+msgstr "Task unavailable."
+
+msgid "Erledigung nicht freigegeben."
+msgstr "Completion is not allowed."
+
+msgid "Uhrzeit ohne Datum."
+msgstr "Time without date."
+
+msgid "Ungültiger Aufgabendateieintrag."
+msgstr "Invalid task file entry."
+
+msgid "Ungültige Serienregel."
+msgstr "Invalid recurrence rule."
+
+msgid "Ungültiger Serienanker."
+msgstr "Invalid recurrence anchor."
+
+msgid "Zu viele Verbundaufgaben."
+msgstr "Too many tasks from connected installations."
+
+msgid "Die Verteilart einer übernommenen Aufgabe ist unveränderlich."
+msgstr "The distribution mode of an adopted task cannot be changed."
+
+msgid "Ungültige Aufgabennummer."
+msgstr "Invalid task ID."
+
+msgid "Keine Einzelkopie."
+msgstr "Not an independent copy."
+
+msgid "Unbekannte Aufgabenabfrage."
+msgstr "Unknown task query."
+
+msgid "Ungültige Aufgabenänderung."
+msgstr "Invalid task change."
+
+msgid "Ungültiger Dateibereich."
+msgstr "Invalid file range."
+
+msgid "Datei nicht verfügbar."
+msgstr "File unavailable."
+
+msgid "Datei zu groß."
+msgstr "File too large."
+
+msgid "Dateistand geändert."
+msgstr "File version changed."

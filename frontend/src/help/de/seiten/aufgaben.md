@@ -36,3 +36,12 @@ Unter „Mein Bereich › Aufgaben“ stehen offene und erledigte Aufgaben. Push
 ## Aufgaben anlegen
 
 „Neue Aufgabe“ öffnet einen eigenen Dialog. Titel, Beschreibung, Frist und Teilen können vor dem Anlegen festgelegt werden. Nach „Anlegen“ bleibt der Dialog für Anhänge, Erinnerungen, Wiederholung und Mitgliederfreigabe geöffnet; „Fertig“ schließt ihn. Änderungen an der angelegten Aufgabe werden wie üblich gespeichert, ungespeicherte Freigaben vor dem Schließen geprüft. Die Beschreibung bietet ein breites, vergrößerbares Textfeld. Statusauswahl und Filter stehen bei ausreichendem Platz nebeneinander, auf kleinen Bildschirmen darunter.
+
+## Aufgaben zwischen getrennten Installationen
+
+Im Aufgaben-Dialog unter **Mit anderer Installation teilen** wählst du eine bestätigte Kopplung. Zuerst muss in der Kopplung das Aufgabenpaket freigegeben und auf der Gegenseite angenommen werden. Jede Aufgabe braucht zusätzlich ihre eigene Freigabe. Neue Angebote stehen unter **Aufgaben aus anderen Installationen** und werden ausdrücklich von einem verantwortlichen Konto übernommen.
+
+- **Eigene Kopie mit eigenem Erledigungsstand:** Jede Zieleinheit erledigt unabhängig. Die Quelle sieht nur Ausgabe, Frist und Fortschritt; lokale Notizen, eigene Anhänge und Kontonamen werden nicht zurückgesendet. Offene Kopien erhalten zentrale Inhaltsänderungen. Erledigte Kopien behalten ihren Stand. Ein Widerruf beendet weitere Aktualisierungen und Folgeausgaben; übernommene Inhalte bleiben vor Ort. Quellanhänge benötigen weiterhin eine aktuelle Freigabe.
+- **Eine gemeinsam erledigte Aufgabe:** Lesen und Erledigen werden bei der Quelle geprüft. Ein Erledigen gilt für alle Installationen; bei einem Versionskonflikt bitte neu laden. Ist die Quelle nicht erreichbar, kann kein neuer Erledigungsstand bestätigt werden. Widerruf, pausierte Kopplung oder ausstehender Schlüsselwechsel entziehen den Zugriff.
+
+Nach der Übernahme gelten die örtlichen Aufgabenfreigaben. Ein anderer Vorstand erhält dadurch keinen automatischen Zugriff. Die Quelle bestimmt, ob die Gegenseite erledigen darf. Die Verteilart lässt sich nach der ersten Freigabe nicht wechseln. Folgeausgaben werden nur mit **Auch folgende Ausgaben freigeben** übertragen. Bei eigenen Kopien erhält jede Zieleinheit dann ihre eigene Ausgabenfolge; bei gemeinsamen Aufgaben entstehen die Folgeausgaben an der Quelle.

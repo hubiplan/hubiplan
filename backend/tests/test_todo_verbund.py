@@ -242,3 +242,78 @@ def test_eigene_serien_fahren_nur_nach_ausdruecklicher_freigabe_fort(net, world,
         assert successor.due_date == datetime.date(2030, 2, 1)
         assert successor.remote_mode == "copy"
         assert Todo.objects.get(pk=task["id"]).status == "open"
+
+
+def test_gemeinsame_folgeausgabe_entsteht_nur_an_der_quelle(net, world, linked):
+    with net.on(VERBAND):
+        task = create(api, world["fed_board"], world["fed"], due_date="2030-01-01")
+        result = api(world["fed_board"]).patch(
+            url(world["fed"], task["id"]) + "series/",
+            {"version": task["version"], "repeat": "monthly", "count": 3},
+            content_type=JSON,
+        )
+        assert result.status_code == 200, result.content
+        task = api(world["fed_board"]).get(url(world["fed"], task["id"])).json()
+        result = api(world["fed_board"]).put(
+            url(world["fed"], task["id"]) + "remote/",
+            {
+                "version": task["version"],
+                "coupling": linked[1].pk,
+                "mode": "common",
+                "following": True,
+            },
+            content_type=JSON,
+        )
+        assert result.status_code == 200, result.content
+    with net.on(VEREIN):
+        mapping = TodoRemoteTask.objects.get()
+        result = api(world["club_board"]).post(
+            url(world["club"]) + f"remote/{mapping.pk}/adopt/", {}, content_type=JSON
+        )
+        assert result.status_code == 201, result.content
+        target = result.json()
+    assert target["series"] is None
+    result = change(net, world, target, status="done")
+    assert result.status_code == 200, result.content
+    with net.on(VERBAND):
+        services.sync(linked[1])
+    with rls_bypass():
+        sources = Todo.objects.filter(organization=world["fed"], status="open")
+        targets = Todo.objects.filter(organization=world["club"], status="open")
+        assert sources.count() == targets.count() == 1
+        assert sources.get().due_date == targets.get().due_date == datetime.date(2030, 2, 1)
+        assert targets.get().series_id is None
+
+
+def test_signierte_abfrage_darf_keine_private_oder_fremde_aufgabe_lesen(net, world, linked):
+    from todos.remote import call
+
+    with net.on(VERBAND):
+        private = create(api, world["fed_board"], world["fed"], title="Privat")
+    distribute(net, world, linked, "common")
+    mapping = TodoRemoteTask.objects.get()
+    with net.on(VEREIN):
+        result = call(mapping, "todo.read_many", uids=[str(private["id"])])
+        assert result == {"items": [], "unavailable": [str(private["id"])]}
+
+
+def test_keine_quellinhalte_in_portal_oder_dashboard_bei_ausfall(net, world, linked):
+    from todos.open_tasks import todo_tasks
+
+    from .test_todo_portal import member, portal_url
+
+    source, target = distribute(net, world, linked, "common")
+    user, access = member(world["club"])
+    with net.on(VEREIN):
+        result = api(world["club_board"]).put(
+            url(world["club"], target["id"]) + "portal/",
+            {"version": target["version"], "recipients": [{"access_id": access.pk}]},
+            content_type=JSON,
+        )
+        assert result.status_code == 200, result.content
+        assert api(user).get(portal_url(access)).json()["items"][0]["title"] == source["title"]
+        net.down.add(VERBAND)
+        assert api(user).get(portal_url(access)).json()["items"] == []
+        with tenant_context(world["club"].pk, world["club_board"].pk):
+            scope = scope_for(world["club_board"], world["club"].pk)
+            assert todo_tasks(world["club_board"], world["club"], scope.permissions) == []

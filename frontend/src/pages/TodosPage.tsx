@@ -140,6 +140,16 @@ function TodoWorkspace({ base }: { base: string }) {
       </div>
       {error && <LoadError message={error} onRetry={reload} />}
       {actionError && <p role="alert">{actionError}</p>}
+      {data?.source_unavailable && (
+        <div className="button-row">
+          <p role="status">
+            {t('Einige gemeinsame Aufgaben sind gerade nicht abrufbar. Bitte erneut laden.')}
+          </p>
+          <button className="button" onClick={() => void reload()}>
+            {t('Erneut laden')}
+          </button>
+        </div>
+      )}
       {can('todos.edit') && can('roles.edit') && <TodoCleanup base={base} />}
       {can('todos.edit') && can('roles.edit') && (
         <OrphanTasks base={base} onSaved={() => void reload()} />
@@ -164,7 +174,7 @@ function TodoWorkspace({ base }: { base: string }) {
       {selected && tab !== 'trash' && (
         <TodoEventLink base={base} todo={selected} onSaved={() => void reload()} />
       )}
-      {selected && (selected.due_date || selected.series) && (
+      {selected && selected.remote_mode !== 'common' && (selected.due_date || selected.series) && (
         <TodoSeries
           key={`series-${selected.id}-${selected.series?.id ?? 'new'}`}
           base={base}

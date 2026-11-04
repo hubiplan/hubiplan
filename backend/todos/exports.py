@@ -43,7 +43,9 @@ def shared_rows(org, department=None):
                 scope = scope_for(user, org.pk, dept_id)
             except (NotFound, PermissionDenied):
                 continue
-            ids.update(visible(user, scope).filter(shared=True).values_list("pk", flat=True))
+            from .remote import fresh_rows
+
+            ids.update(t.pk for t in fresh_rows(visible(user, scope).filter(shared=True)))
     return Todo.objects.filter(organization=org, shared=True, pk__in=ids)
 
 
@@ -147,6 +149,22 @@ def personal_export(user, include_files=False):
                             shutil.copyfileobj(source, target, 1024 * 1024)
                         item["file"] = path
                 row["attachments"].append(item)
+        from .remote import file_entries, remote_file
+
+        for item in file_entries(todo):
+            if archive and item["available"]:
+                from documents.services import storage_name
+
+                response = remote_file(todo, item["id"])
+                path = f"files/{todo.pk}/remote-{item['id']}/{storage_name(item['name'])}"
+                try:
+                    with archive.open(path, "w") as target:
+                        for chunk in response.streaming_content:
+                            target.write(chunk)
+                    item["file"] = path
+                finally:
+                    response.close()
+            row["attachments"].append(item)
         config = (
             TodoReminderConfig.objects.filter(todo=todo, user=user)
             .values("days", "enabled", "mail", "push")
