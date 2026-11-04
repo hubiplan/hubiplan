@@ -12,6 +12,10 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 The platform enables Music per organization. Roles need music viewing or editing permission. Performances also require calendar viewing permission.
 
+Section navigation remains visible on every music page: **Performances**, **Musicians**, **Sheet music library**, **Rehearsals and sheet music checkout**, **Availability** and **Instrumentation templates**. Under **Performances**, switch between performances, required instrumentation and assignments; under **Musicians**, switch between profiles and instrumental skills. The active section is marked. Navigation and form fields stack on smaller screens.
+
+Use **Search entries** to filter the current performance or musician view, for example by name, instrument or performance. **Search sheet music** filters the current library view. Empty lists and searches without matches show a message. Performance cards group programme, instrumentation, settlement, tasks and calendar links; detail pages show the associated performance above the heading. Totals and programme durations appear in labelled summaries. Responses and availability conflicts use consistent text badges, including in the member area.
+
 Create a musician from an existing member or enter a guest name and contact details. The member record links to the musician workspace. Record instruments and sections or parts under **Instrumental skills**, marking the main instrument. Deactivate guests when no longer needed.
 
 Create an individual event in your own calendar, then select it under **Performances**. Add customer, meeting time and place, setup, uniform, formation and notes. Performance times and location remain in the calendar. Use individual events for recurring performances. Open **Performance tasks** to manage tasks through the existing task workspace.

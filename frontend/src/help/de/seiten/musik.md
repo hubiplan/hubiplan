@@ -12,6 +12,10 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 Die Plattform schaltet das Modul Musik je Verein frei. Rollen benötigen Musik-Lese- oder Bearbeitungsrecht. Für Auftritte wird zusätzlich Kalenderleserecht benötigt.
 
+Die Bereichsnavigation bleibt auf allen Musikseiten sichtbar: **Auftritte**, **Musiker**, **Notenbestand**, **Proben und Notenausgabe**, **Verfügbarkeiten** und **Besetzungsvorlagen**. Unter **Auftritte** wechselst du zwischen Auftritten, Sollbesetzung und Einteilungen; unter **Musiker** zwischen Profilen und instrumentalen Fähigkeiten. Der aktive Bereich ist markiert. Auf kleinen Bildschirmen werden Navigation und Eingabefelder untereinander angeordnet.
+
+Mit **Einträge suchen** filterst du die aktuelle Auftritts- oder Musikeransicht, zum Beispiel nach Name, Instrument oder Auftritt. **Noten suchen** filtert den aktuellen Notenbestand. Bei leerem Bestand und erfolgloser Suche erscheint ein Hinweis. Auftrittskarten bündeln Programm, Besetzung, Abrechnung, Aufgaben und Kalendertermin; Detailseiten zeigen den zugehörigen Auftritt über der Überschrift. Summen und Programmdauern stehen in beschrifteten Übersichten. Rückmeldungen und Verfügbarkeitskonflikte haben einheitliche Textmarkierungen, auch im eigenen Mitgliederbereich.
+
 Unter **Musiker** ein Mitglied oder einen Gast erfassen. Die Mitgliedsakte verlinkt zum Musikerprofil. Unter **Instrumentale Fähigkeiten** Instrument und Register/Stimme eintragen; das Hauptinstrument markieren. Gäste können mit Kontaktangaben verwaltet und später deaktiviert werden.
 
 Einen eigenen Einzeltermin im Kalender anlegen. Unter **Auftritte** diesen Termin wählen und Auftraggeber, Treffzeit/-punkt, Aufbau, Uniform, Spielform und Hinweise ergänzen. Spielzeit und Ort bleiben im Kalender. Serien benötigen einzelne Auftrittstermine. Aufgaben werden über **Aufgaben zum Auftritt** im bestehenden Aufgabenbereich gepflegt.

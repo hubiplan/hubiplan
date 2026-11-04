@@ -8,6 +8,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import type { EnsembleTemplate } from './EnsembleTemplatesPage.tsx'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
+import { MusicHeader, MusicEmptyState, MusicStatus } from './MusicLayout.tsx'
 
 type Position = {
   id: number
@@ -87,18 +88,17 @@ export function StaffingPage({ performance }: { performance: number }) {
     setMessage('')
   }
   return (
-    <section className="stack">
-      <Link to="/musik">{t('Zurück')}</Link>
-      <h1>
-        {t('Besetzung planen')}: {plan.title}
-      </h1>
-      <Link to="/musik?vorlagen=1">{t('Besetzungsvorlagen')}</Link>
-      <Link to="/musik?verfuegbarkeit=1">{t('Verfügbarkeiten')}</Link>
-      <Link to="/musik?art=assignments">{t('Einteilungen bearbeiten')}</Link>
+    <section className="stack music-page">
+      <MusicHeader title={t('Besetzung planen')} context={plan.title} />
+      <div className="music-actions">
+        <Link className="button button-ghost" to="/musik?art=assignments">
+          {t('Einteilungen bearbeiten')}
+        </Link>
+      </div>
       {error && <Alert kind="error">{error}</Alert>}
       {message && <Alert kind="success">{message}</Alert>}
       {plan.cancelled && <Alert kind="error">{t('Auftritt abgesagt')}</Alert>}
-      <article className="card stack">
+      <article className="card stack music-record">
         <h2>{t('Besetzungsvorlage anwenden')}</h2>
         <p>
           {t(
@@ -167,7 +167,7 @@ export function StaffingPage({ performance }: { performance: number }) {
           </>
         )}
       </article>
-      <article className="card stack">
+      <article className="card stack music-record">
         <h2>{t('Sollbesetzung')}</h2>
         {counts.map((p) => (
           <p key={p.id}>
@@ -185,7 +185,7 @@ export function StaffingPage({ performance }: { performance: number }) {
           <SaveTemplate url={url} onSaved={() => load.reload()} />
         )}
       </article>
-      <article className="card stack">
+      <article className="card stack music-record">
         <h2>{t('Sammeleinteilung')}</h2>
         {replacement !== null && (
           <div className="stack">
@@ -206,49 +206,52 @@ export function StaffingPage({ performance }: { performance: number }) {
         </p>
         {canEdit && (
           <>
-            {candidates.map((m) => {
-              const matching = counts.filter(
-                (p) => m.positions.includes(p.id) && (replacement === null || p.id === replacement),
-              )
-              const first = matching.find((p) => p.assigned < p.required)
-              return (
-                <div className="card stack" key={m.id}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      disabled={
-                        busy ||
-                        plan.cancelled ||
-                        ((!first || !!m.availability?.length) && !(m.id in selected))
-                      }
-                      checked={m.id in selected}
-                      onChange={(e) => {
-                        const next = { ...selected }
-                        if (e.target.checked && first) next[m.id] = first.id
-                        else delete next[m.id]
-                        select(next)
-                      }}
-                    />
-                    {m.name}
-                  </label>
-                  <AvailabilityHint reasons={m.availability} />
-                  <label>
-                    {t('Besetzungsposition für {name}', { name: m.name })}
-                    <select
-                      disabled={busy || !(m.id in selected) || !!m.availability?.length}
-                      value={selected[m.id] ?? first?.id ?? matching[0]?.id ?? ''}
-                      onChange={(e) => select({ ...selected, [m.id]: Number(e.target.value) })}
-                    >
-                      {matching.map((p) => (
-                        <option key={p.id} value={p.id} disabled={p.assigned >= p.required}>
-                          {label(p)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-              )
-            })}
+            <div className="music-candidates">
+              {candidates.map((m) => {
+                const matching = counts.filter(
+                  (p) =>
+                    m.positions.includes(p.id) && (replacement === null || p.id === replacement),
+                )
+                const first = matching.find((p) => p.assigned < p.required)
+                return (
+                  <div className="music-candidate stack" key={m.id}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        disabled={
+                          busy ||
+                          plan.cancelled ||
+                          ((!first || !!m.availability?.length) && !(m.id in selected))
+                        }
+                        checked={m.id in selected}
+                        onChange={(e) => {
+                          const next = { ...selected }
+                          if (e.target.checked && first) next[m.id] = first.id
+                          else delete next[m.id]
+                          select(next)
+                        }}
+                      />
+                      {m.name}
+                    </label>
+                    <AvailabilityHint reasons={m.availability} />
+                    <label>
+                      {t('Besetzungsposition für {name}', { name: m.name })}
+                      <select
+                        disabled={busy || !(m.id in selected) || !!m.availability?.length}
+                        value={selected[m.id] ?? first?.id ?? matching[0]?.id ?? ''}
+                        onChange={(e) => select({ ...selected, [m.id]: Number(e.target.value) })}
+                      >
+                        {matching.map((p) => (
+                          <option key={p.id} value={p.id} disabled={p.assigned >= p.required}>
+                            {label(p)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                )
+              })}
+            </div>
             {!candidates.length && <p>{t('Keine weiteren passenden Musiker vorhanden.')}</p>}
             {Object.keys(selected).length > 0 && (
               <button className="button button-ghost" disabled={busy} onClick={() => select({})}>
@@ -304,18 +307,17 @@ export function StaffingPage({ performance }: { performance: number }) {
           </>
         )}
       </article>
-      <article className="card stack">
+      <article className="card stack music-record">
         <h2>{t('Bestehende Einteilungen')}</h2>
+        {!plan.assignments.length && <MusicEmptyState />}
         {plan.assignments.map((a) => (
-          <p key={a.id}>
-            {a.name} · {plan.positions.find((p) => p.id === a.position)?.instrument}{' '}
-            {plan.positions.find((p) => p.id === a.position)?.register} ·{' '}
-            {a.status === 'accepted'
-              ? t('Zugesagt')
-              : a.status === 'declined'
-                ? t('Abgesagt')
-                : t('Angefragt')}
-            {' · '}
+          <div className="music-row music-actions" key={a.id}>
+            <strong>{a.name}</strong>
+            <span>
+              {plan.positions.find((p) => p.id === a.position)?.instrument}{' '}
+              {plan.positions.find((p) => p.id === a.position)?.register}
+            </span>
+            <MusicStatus status={a.status} />
             <AvailabilityHint reasons={a.availability} />
             {canEdit && a.status === 'declined' && !plan.cancelled && (
               <button
@@ -330,7 +332,7 @@ export function StaffingPage({ performance }: { performance: number }) {
                 {t('Ersatz suchen')}
               </button>
             )}
-          </p>
+          </div>
         ))}
       </article>
     </section>

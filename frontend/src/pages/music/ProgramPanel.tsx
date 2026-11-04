@@ -7,6 +7,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { ScoreForm } from './ScoresPage.tsx'
 import { formats, duration } from './scoreHelpers.ts'
 
@@ -94,16 +95,23 @@ export function ProgramPanel({ performance }: { performance: number }) {
     await act({ action: 'reorder', ids })
   }
   return (
-    <section className="stack">
-      <Link to="/musik">{t('Zurück')}</Link>
-      <h1>
-        {t('Musikalisches Programm')}: {event.title}
-      </h1>
+    <section className="stack music-page">
+      <MusicHeader title={t('Musikalisches Programm')} context={event.title} />
       {error && <Alert kind="error">{error}</Alert>}
-      <p>
-        {t('Programmdauer')}: {duration(p.regular_seconds)} · {t('Zugaben')}:{' '}
-        {duration(p.encore_seconds)} · {t('Gesamtdauer')}: {duration(p.total_seconds)}
-      </p>
+      <dl className="card music-summary">
+        <div>
+          <dt>{t('Programmdauer')}</dt>
+          <dd>{duration(p.regular_seconds)}</dd>
+        </div>
+        <div>
+          <dt>{t('Zugaben')}</dt>
+          <dd>{duration(p.encore_seconds)}</dd>
+        </div>
+        <div>
+          <dt>{t('Gesamtdauer')}</dt>
+          <dd>{duration(p.total_seconds)}</dd>
+        </div>
+      </dl>
       <div className="actions">
         <a className="button button-ghost" href={url + '?export=program'}>
           {t('Programmliste herunterladen')}
@@ -170,8 +178,11 @@ export function ProgramPanel({ performance }: { performance: number }) {
           }}
         />
       )}
+      {!p.entries.length && (
+        <MusicEmptyState>{t('Noch keine Programmpunkte vorhanden.')}</MusicEmptyState>
+      )}
       {p.entries.map((e, i) => (
-        <article key={e.id} className="card stack">
+        <article key={e.id} className="card stack music-record">
           <strong>
             {e.position}. {e.kind === 'pause' ? t('Pause') : e.title}{' '}
             {e.kind === 'encore' ? `(${t('Zugabe')})` : ''}
@@ -225,7 +236,7 @@ export function ProgramPanel({ performance }: { performance: number }) {
         )}
       </p>
       {p.preparation.map((a) => (
-        <article key={`${a.arrangement}-${a.paper_format}`} className="card stack">
+        <article key={`${a.arrangement}-${a.paper_format}`} className="card stack music-record">
           <h3>
             {a.title} · {a.name} · {formats().find((f) => f[0] === a.paper_format)?.[1]}
           </h3>

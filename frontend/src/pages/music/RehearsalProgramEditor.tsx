@@ -72,7 +72,7 @@ function ProgramForm({ initial, ...props }: Props & { initial: Program }) {
         {new Date(props.startsAt).toLocaleString()}
       </h2>
       {error && <Alert kind="error">{error}</Alert>}
-      <fieldset disabled={busy} className="stack">
+      <fieldset disabled={busy} className="music-form-fields">
         {initial.is_series && (
           <label>
             {t('Änderungen gelten für')}
@@ -108,7 +108,7 @@ function ProgramForm({ initial, ...props }: Props & { initial: Program }) {
           />
         </label>
         {values.items.map((item, index) => (
-          <fieldset key={index} className="stack">
+          <fieldset key={index} className="music-position-fields">
             <legend>
               {t('Probenstück')} {index + 1}
             </legend>

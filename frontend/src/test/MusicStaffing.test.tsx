@@ -88,7 +88,8 @@ it('legt eine wiederverwendbare Besetzungsvorlage mit Sollpositionen an', async 
 
 it('zeigt eine Vorlage vor dem Anwenden und überträgt sie separat von der Einteilung', async () => {
   const calls = setup()
-  await screen.findByRole('heading', { name: 'Besetzung planen: Musterkonzert' })
+  await screen.findByRole('heading', { name: 'Besetzung planen' })
+  expect(screen.getByText('Musterkonzert')).toBeInTheDocument()
   await userEvent.selectOptions(screen.getByLabelText('Besetzungsvorlage'), '3')
   expect(screen.getByText(/Tuba.*Sollbesetzung.*2/)).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'Vorlage anwenden' }))
@@ -119,7 +120,7 @@ it('ordnet Mehrinstrumentalisten nur einmal zu und verhindert eine übervolle Sa
 it('bietet einem Lesezugang keine Sammeländerungen an', async () => {
   context.permissions = ['music.view']
   setup()
-  await screen.findByRole('heading', { name: 'Besetzung planen: Musterkonzert' })
+  await screen.findByRole('heading', { name: 'Besetzung planen' })
   expect(screen.queryByRole('button', { name: 'Vorlage anwenden' })).not.toBeInTheDocument()
   expect(
     screen.queryByRole('button', { name: 'Ausgewählte Musiker anfragen' }),

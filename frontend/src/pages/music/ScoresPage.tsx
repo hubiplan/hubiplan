@@ -7,6 +7,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { formats, duration } from './scoreHelpers.ts'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
@@ -105,14 +106,33 @@ export function ScoresPage() {
       parts: t('Stimmenbestand'),
       files: t('Notenunterlagen'),
     }
+  const visibleRows = rows.filter((r) =>
+    [
+      r.title,
+      r.name,
+      r.instrument,
+      r.register,
+      r.composer,
+      r.arranger,
+      arrangementName(r.arrangement),
+    ]
+      .join(' ')
+      .toLocaleLowerCase()
+      .includes(search.trim().toLocaleLowerCase()),
+  )
   return (
-    <section className="stack">
-      <Link to="/musik">{t('Zurück')}</Link>
-      <h1>{t('Notenbestand')}</h1>
-      <nav className="tabs">
+    <section className="stack music-page">
+      <MusicHeader
+        title={t('Notenbestand')}
+        description={t(
+          'Stücke, Arrangements, Stimmen und digitale Notenunterlagen an einem Ort verwalten.',
+        )}
+      />
+      <nav className="tabs" aria-label={t('Ansichten')}>
         {Object.entries(names).map(([key, label]) => (
           <button
             className={`tab${tab === key ? ' active' : ''}`}
+            aria-current={tab === key ? 'page' : undefined}
             key={key}
             onClick={async () => {
               if (await confirmLeave()) {
@@ -132,20 +152,22 @@ export function ScoresPage() {
       </p>
       <Link to="/dokumente">{t('Zur Dokumentenablage')}</Link>
       {error && <Alert kind="error">{error}</Alert>}
-      <label>
-        {t('Noten suchen')}
-        <input value={search} onChange={(e) => setSearch(e.target.value)} />
-      </label>
-      {canEdit && (
-        <button
-          className="button button-primary"
-          onClick={async () => {
-            if (await confirmLeave()) setSelected('new')
-          }}
-        >
-          {t('Anlegen')}
-        </button>
-      )}
+      <div className="music-toolbar">
+        <label>
+          {t('Noten suchen')}
+          <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
+        </label>
+        {canEdit && (
+          <button
+            className="button button-primary"
+            onClick={async () => {
+              if (await confirmLeave()) setSelected('new')
+            }}
+          >
+            {t('Anlegen')}
+          </button>
+        )}
+      </div>
       {canEdit && selected && (
         <ScoreForm
           key={`${tab}-${selected === 'new' ? 'new' : selected.id}`}
@@ -162,85 +184,73 @@ export function ScoresPage() {
           }}
         />
       )}
-      {rows
-        .filter((r) =>
-          [
-            r.title,
-            r.name,
-            r.instrument,
-            r.register,
-            r.composer,
-            r.arranger,
-            arrangementName(r.arrangement),
-          ]
-            .join(' ')
-            .toLocaleLowerCase()
-            .includes(search.toLocaleLowerCase()),
-        )
-        .map((r) => (
-          <article key={r.id} className="card stack">
-            <strong>{String(r.title || r.name || r.instrument)}</strong>
-            {tab === 'pieces' && <p>{r.composer}</p>}
-            {tab === 'arrangements' && (
-              <>
-                <p>
-                  {d.pieces.find((p) => p.id === r.piece)?.title} · {r.arranger} · {r.publisher} ·{' '}
-                  {duration(Number(r.duration_seconds))} · {r.difficulty} · {r.ensemble}
-                </p>
-                <p>{r.license_note}</p>
-                <p>{r.active ? t('Aktiv') : t('Archiviert')}</p>
-              </>
-            )}
-            {tab === 'parts' && (
+      {!visibleRows.length && (
+        <MusicEmptyState>
+          {search.trim()
+            ? t('Keine passenden Einträge gefunden.')
+            : t('Noch keine Einträge vorhanden.')}
+        </MusicEmptyState>
+      )}
+      {visibleRows.map((r) => (
+        <article key={r.id} className="card stack music-record">
+          <strong>{String(r.title || r.name || r.instrument)}</strong>
+          {tab === 'pieces' && <p>{r.composer}</p>}
+          {tab === 'arrangements' && (
+            <>
               <p>
-                {arrangementName(r.arrangement)} · {r.register} ·{' '}
-                {r.kind === 'score' ? t('Partitur') : t('Einzelstimme')} ·{' '}
-                {formats().find((f) => f[0] === r.paper_format)?.[1]} · {t('Vorhandene Exemplare')}:{' '}
-                {r.copies} · {t('Benötigte Musiker')}: {r.required_players} · {r.location}
+                {d.pieces.find((p) => p.id === r.piece)?.title} · {r.arranger} · {r.publisher} ·{' '}
+                {duration(Number(r.duration_seconds))} · {r.difficulty} · {r.ensemble}
               </p>
-            )}
-            {tab === 'files' && (
-              <>
-                <p>
-                  {arrangementName(r.arrangement)} · {r.usage_note}
-                </p>
-                <a href={`${base}score-documents/${r.id}/download/`}>
-                  {t('Notenunterlage öffnen')}
-                </a>
-              </>
-            )}
-            {canEdit && (
-              <div className="actions">
+              <p>{r.license_note}</p>
+              <p>{r.active ? t('Aktiv') : t('Archiviert')}</p>
+            </>
+          )}
+          {tab === 'parts' && (
+            <p>
+              {arrangementName(r.arrangement)} · {r.register} ·{' '}
+              {r.kind === 'score' ? t('Partitur') : t('Einzelstimme')} ·{' '}
+              {formats().find((f) => f[0] === r.paper_format)?.[1]} · {t('Vorhandene Exemplare')}:{' '}
+              {r.copies} · {t('Benötigte Musiker')}: {r.required_players} · {r.location}
+            </p>
+          )}
+          {tab === 'files' && (
+            <>
+              <p>
+                {arrangementName(r.arrangement)} · {r.usage_note}
+              </p>
+              <a href={`${base}score-documents/${r.id}/download/`}>{t('Notenunterlage öffnen')}</a>
+            </>
+          )}
+          {canEdit && (
+            <div className="actions">
+              <button
+                className="button button-ghost"
+                onClick={async () => {
+                  if (await confirmLeave()) setSelected(r)
+                }}
+              >
+                {t('Bearbeiten')}
+              </button>
+              {['parts', 'files'].includes(tab) && (
                 <button
                   className="button button-ghost"
                   onClick={async () => {
-                    if (await confirmLeave()) setSelected(r)
+                    if (!(await confirmDialog(t('Eintrag entfernen?')))) return
+                    try {
+                      await api.del(`${base}${tab === 'files' ? 'score-documents' : tab}/${r.id}/`)
+                      await load.reload()
+                    } catch (e) {
+                      setError(errorMessage(e))
+                    }
                   }}
                 >
-                  {t('Bearbeiten')}
+                  {t('Entfernen')}
                 </button>
-                {['parts', 'files'].includes(tab) && (
-                  <button
-                    className="button button-ghost"
-                    onClick={async () => {
-                      if (!(await confirmDialog(t('Eintrag entfernen?')))) return
-                      try {
-                        await api.del(
-                          `${base}${tab === 'files' ? 'score-documents' : tab}/${r.id}/`,
-                        )
-                        await load.reload()
-                      } catch (e) {
-                        setError(errorMessage(e))
-                      }
-                    }}
-                  >
-                    {t('Entfernen')}
-                  </button>
-                )}
-              </div>
-            )}
-          </article>
-        ))}
+              )}
+            </div>
+          )}
+        </article>
+      ))}
     </section>
   )
 }
@@ -300,45 +310,47 @@ export function ScoreForm({
       }}
     >
       {error && <Alert kind="error">{error}</Alert>}
-      {fields.map((f) => (
-        <label key={f.key}>
-          {f.label}
-          {f.options ? (
-            <select
-              required={!f.optional}
-              value={String(values[f.key] ?? '')}
-              onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-            >
-              {f.optional && <option value="">—</option>}
-              {f.options.map(([v, l]) => (
-                <option value={v} key={v}>
-                  {l}
-                </option>
-              ))}
-            </select>
-          ) : f.type === 'textarea' ? (
-            <textarea
-              maxLength={2000}
-              value={String(values[f.key])}
-              onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
-            />
-          ) : (
-            <input
-              required={!f.optional && f.type !== 'checkbox'}
-              type={f.type || 'text'}
-              min={f.type === 'number' ? 0 : undefined}
-              value={f.type === 'checkbox' ? undefined : String(values[f.key] ?? '')}
-              checked={f.type === 'checkbox' ? Boolean(values[f.key]) : undefined}
-              onChange={(e) =>
-                setValues({
-                  ...values,
-                  [f.key]: f.type === 'checkbox' ? e.target.checked : e.target.value,
-                })
-              }
-            />
-          )}
-        </label>
-      ))}
+      <div className="music-form-fields">
+        {fields.map((f) => (
+          <label key={f.key} className={f.type === 'textarea' ? 'music-field-wide' : undefined}>
+            {f.label}
+            {f.options ? (
+              <select
+                required={!f.optional}
+                value={String(values[f.key] ?? '')}
+                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+              >
+                {f.optional && <option value="">—</option>}
+                {f.options.map(([v, l]) => (
+                  <option value={v} key={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            ) : f.type === 'textarea' ? (
+              <textarea
+                maxLength={2000}
+                value={String(values[f.key])}
+                onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+              />
+            ) : (
+              <input
+                required={!f.optional && f.type !== 'checkbox'}
+                type={f.type || 'text'}
+                min={f.type === 'number' ? 0 : undefined}
+                value={f.type === 'checkbox' ? undefined : String(values[f.key] ?? '')}
+                checked={f.type === 'checkbox' ? Boolean(values[f.key]) : undefined}
+                onChange={(e) =>
+                  setValues({
+                    ...values,
+                    [f.key]: f.type === 'checkbox' ? e.target.checked : e.target.value,
+                  })
+                }
+              />
+            )}
+          </label>
+        ))}
+      </div>
       <div className="actions">
         <button className="button button-primary" disabled={busy}>
           {t('Speichern')}

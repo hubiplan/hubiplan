@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 export type TemplatePosition = { instrument: string; register: string; required: number }
 export type EnsembleTemplate = {
@@ -25,14 +25,13 @@ export function EnsembleTemplatesPage() {
   if (!load.data) return <p>{t('Lädt …')}</p>
   const canEdit = org.permissions.includes('music.edit')
   return (
-    <section className="stack">
-      <Link to="/musik">{t('Zurück')}</Link>
-      <h1>{t('Besetzungsvorlagen')}</h1>
-      <p>
-        {t(
+    <section className="stack music-page">
+      <MusicHeader
+        title={t('Besetzungsvorlagen')}
+        description={t(
           'Vorlagen speichern Instrumente, Stimmen und Sollzahlen. Änderungen an einer Vorlage wirken erst beim erneuten Anwenden auf einen Auftritt.',
         )}
-      </p>
+      />
       {canEdit && (
         <button
           className="button button-primary"
@@ -52,8 +51,9 @@ export function EnsembleTemplatesPage() {
           onSaved={() => load.reload()}
         />
       )}
+      {!load.data.length && <MusicEmptyState />}
       {load.data.map((row) => (
-        <article className="card stack" key={row.id}>
+        <article className="card stack music-record" key={row.id}>
           <strong>
             {row.name} · {row.active ? t('Aktiv') : t('Archiviert')}
           </strong>
@@ -127,7 +127,7 @@ function TemplateForm({
       }}
     >
       {error && <Alert kind="error">{error}</Alert>}
-      <fieldset disabled={busy} className="stack">
+      <fieldset disabled={busy} className="music-form-fields">
         <label>
           {t('Name der Besetzungsvorlage')}
           <input
@@ -137,7 +137,7 @@ function TemplateForm({
             onChange={(e) => update({ ...values, name: e.target.value })}
           />
         </label>
-        <label>
+        <label className="music-field-wide">
           {t('Hinweis')}
           <textarea
             maxLength={1000}
@@ -154,7 +154,7 @@ function TemplateForm({
           {t('Aktiv')}
         </label>
         {values.positions.map((p, i) => (
-          <fieldset className="stack" key={i}>
+          <fieldset className="music-position-fields" key={i}>
             <legend>
               {t('Besetzungsposition')} {i + 1}
             </legend>

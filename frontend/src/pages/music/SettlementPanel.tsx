@@ -9,6 +9,7 @@ import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { CommercialForm } from '../billing/EInvoicesPage.tsx'
 
 type Claim = {
@@ -85,18 +86,15 @@ export function SettlementPanel({
   const d = load.data
   if (!d) return <p>{t('Lädt …')}</p>
   return (
-    <section className="stack">
-      <Link to="/musik">{t('Zurück')}</Link>
-      <h1>
-        {t('Auftrittsabrechnung')}: {title}
-      </h1>
+    <section className="stack music-page">
+      <MusicHeader title={t('Auftrittsabrechnung')} context={title} />
       {error && <Alert kind="error">{error}</Alert>}
       <p>
         {t(
           'Alle Vereinbarungen und Vergütungen sind Bruttobeträge in EUR. Zuordnungen dokumentieren erfolgte Zahlungen und lösen keine Überweisung aus.',
         )}
       </p>
-      <dl className="card">
+      <dl className="card music-summary">
         {[
           [t('Vereinbart'), d.agreed],
           [t('In Rechnung gestellt'), d.invoiced],
@@ -206,8 +204,9 @@ export function SettlementPanel({
           }}
         />
       )}
+      {!d.claims.length && <MusicEmptyState />}
       {d.claims.map((c) => (
-        <article className="card stack" key={c.id}>
+        <article className="card stack music-record" key={c.id}>
           <strong>{assignments.find((a) => a.id === c.assignment)?.name}</strong>
           <p>
             {euro(c.fee)} {t('Gage')} + {euro(c.allowance)} {t('Pauschale')} + {euro(c.expenses)}{' '}
@@ -409,20 +408,22 @@ function Amounts({
           </select>
         </label>
       )}
-      {Object.entries(labels).map(([key, label]) => (
-        <label key={key}>
-          {label}
-          <input
-            required
-            type="number"
-            min="0"
-            max="9999999999.99"
-            step="0.01"
-            value={String(values[key])}
-            onChange={(e) => setValues({ ...values, [key]: e.target.value })}
-          />
-        </label>
-      ))}
+      <div className="music-form-fields">
+        {Object.entries(labels).map(([key, label]) => (
+          <label key={key}>
+            {label}
+            <input
+              required
+              type="number"
+              min="0"
+              max="9999999999.99"
+              step="0.01"
+              value={String(values[key])}
+              onChange={(e) => setValues({ ...values, [key]: e.target.value })}
+            />
+          </label>
+        ))}
+      </div>
       {choices && (
         <label>
           <input

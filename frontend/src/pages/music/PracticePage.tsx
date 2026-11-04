@@ -10,6 +10,7 @@ import { t } from '../../i18n/index.ts'
 import { ScoreForm } from './ScoresPage.tsx'
 import { RehearsalProgramEditor } from './RehearsalProgramEditor.tsx'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
+import { MusicHeader, MusicEmptyState, MusicStatus } from './MusicLayout.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Loan = {
@@ -135,13 +136,18 @@ export function PracticePage() {
   }
   const rows = tab === 'overview' ? [] : d[tab as 'rehearsals' | 'items' | 'invitations' | 'loans']
   return (
-    <section className="stack">
-      <Link to="/musik">{t('Zurück')}</Link>
-      <h1>{t('Proben und Notenausgabe')}</h1>
-      <nav className="tabs">
+    <section className="stack music-page">
+      <MusicHeader
+        title={t('Proben und Notenausgabe')}
+        description={t(
+          'Proben vorbereiten, Rückmeldungen verfolgen und ausgegebene Noten im Blick behalten.',
+        )}
+      />
+      <nav className="tabs" aria-label={t('Ansichten')}>
         {Object.entries(names).map(([id, label]) => (
           <button
             className={`tab${id === tab ? ' active' : ''}`}
+            aria-current={id === tab ? 'page' : undefined}
             key={id}
             onClick={async () => {
               if (await confirmLeave()) {
@@ -208,9 +214,10 @@ export function PracticePage() {
           }}
         />
       )}
+      {!(tab === 'overview' ? d.overview : rows).length && <MusicEmptyState />}
       {tab === 'overview' &&
         d.overview.map((o) => (
-          <article className="card stack" key={`${o.rehearsal}-${o.original_start}`}>
+          <article className="card stack music-record" key={`${o.rehearsal}-${o.original_start}`}>
             <strong>
               {o.title} · {new Date(o.starts_at).toLocaleString()}
             </strong>
@@ -243,15 +250,12 @@ export function PracticePage() {
               {o.members.filter((m) => m.status === 'pending').length}
             </p>
             {o.members.map((m) => (
-              <p key={m.invitation}>
-                {m.name} ·{' '}
-                {m.status === 'pending'
-                  ? t('Angefragt')
-                  : m.status === 'accepted'
-                    ? t('Zugesagt')
-                    : t('Abgesagt')}
-                {' · '}
-                <AvailabilityHint reasons={m.availability} />
+              <div className="music-row stack" key={m.invitation}>
+                <div className="music-actions">
+                  <strong>{m.name}</strong>
+                  <MusicStatus status={m.status} />
+                  <AvailabilityHint reasons={m.availability} />
+                </div>
                 {canEdit && !o.cancelled && (
                   <span className="actions">
                     {[
@@ -280,12 +284,12 @@ export function PracticePage() {
                     ))}
                   </span>
                 )}
-              </p>
+              </div>
             ))}
           </article>
         ))}
       {rows.map((r) => (
-        <article className="card stack" key={r.id}>
+        <article className="card stack music-record" key={r.id}>
           <strong>
             {tab === 'rehearsals'
               ? String((r as Row).title)
