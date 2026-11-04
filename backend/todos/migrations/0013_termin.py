@@ -8,10 +8,12 @@ def forwards(apps, schema_editor):
     schema_editor.execute("""
         CREATE FUNCTION todos_event_scope() RETURNS trigger LANGUAGE plpgsql AS $$
         BEGIN
-            IF current_setting('app.bypass_rls', true) = 'on' OR NEW.event_id IS NULL THEN RETURN NEW; END IF;
+            IF current_setting('app.bypass_rls', true) = 'on' OR NEW.event_id IS NULL
+                THEN RETURN NEW; END IF;
             IF TG_OP = 'UPDATE' AND NEW.event_id IS NOT DISTINCT FROM OLD.event_id
                 THEN RETURN NEW; END IF;
-            IF NEW.owner_id IS DISTINCT FROM NULLIF(current_setting('app.user_id', true), '')::bigint OR NOT EXISTS (
+            IF NEW.owner_id IS DISTINCT FROM NULLIF(current_setting('app.user_id', true), '')::bigint
+               OR NOT EXISTS (
                 SELECT 1 FROM events_event e WHERE e.id = NEW.event_id
                 AND e.organization_id = NEW.organization_id
                 AND e.department_id IS NOT DISTINCT FROM NEW.department_id

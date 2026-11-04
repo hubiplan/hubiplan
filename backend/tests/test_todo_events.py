@@ -37,7 +37,7 @@ def test_termin_verknuepfen_ohne_frist_oder_freigabe_aenderung(api, board_a, org
 def test_aufgabenrechte_geben_keine_terminrechte(api, orgs):
     appointment = event(orgs["a"], "board")
     reader = make_user("aufgaben@example.org")
-    give_role(reader, orgs["a"], permissions=["todos.view"])
+    give_role(reader, orgs["a"], permissions=["todos.view"], name="Aufgaben lesen")
     response = api(reader).post(
         url(orgs["a"]), {"title": "Probe", "event": appointment.pk}, content_type="application/json"
     )
@@ -56,7 +56,7 @@ def test_fremder_termin_wird_nicht_verknuepft(api, board_a, orgs):
 def test_geteilte_aufgabe_verraet_keinen_internen_termin(api, board_a, orgs):
     appointment = event(orgs["a"], "board")
     reader = make_user("beteiligte@example.org")
-    give_role(reader, orgs["a"], permissions=["todos.view"])
+    give_role(reader, orgs["a"], permissions=["todos.view"], name="Aufgaben lesen")
     task = create(api, board_a, orgs["a"], event=appointment.pk, shares=[{"user": reader.pk}])
     response = api(reader).get(url(orgs["a"], task["id"]))
     assert response.status_code == 200
