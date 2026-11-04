@@ -90,7 +90,34 @@ mkdir "$CASE/app.sperre"
 before=$(wc -l < "$CASE/log")
 if (cd "$CASE/app" && bash "$ROOT/deploy/datenschluessel-wechseln.sh" --organisation 42 --starten > /dev/null 2>&1); then exit 1; fi
 [ "$(wc -l < "$CASE/log")" = "$before" ]
+for helper in server-setup.sh zurueck.sh; do
+    if (cd "$CASE/app" && ZIEL="$CASE/app" sh "$ROOT/deploy/$helper" > /dev/null 2>&1); then exit 1; fi
+done
+[ "$(wc -l < "$CASE/log")" = "$before" ]
 rmdir "$CASE/app.sperre"
+mkdir "$CASE/app.datenschluesselwechsel/offen"
+for helper in server-setup.sh zurueck.sh; do
+    if (cd "$CASE/app" && ZIEL="$CASE/app" sh "$ROOT/deploy/$helper" > /dev/null 2>&1); then exit 1; fi
+done
+rmdir "$CASE/app.datenschluesselwechsel/offen"
+
+# Nach Aktivierung darf ein verlorener Vorher-Nachweis nicht ersetzt/übergangen werden.
+CASE="$TEST_ROOT/verlorener-nachweis"
+export CASE FAIL=rotation
+mkdir -p "$CASE/app"
+printf 'COMPOSE_PROJECT_NAME=testablauf\n' > "$CASE/app/.env"
+printf '%040d\n' 1 > "$CASE/app/.fassung"
+touch "$CASE/app/docker-compose.server.yml" "$CASE/log"
+if (cd "$CASE/app" && bash "$ROOT/deploy/datenschluessel-wechseln.sh" --organisation 42 --starten > /dev/null 2>&1); then exit 1; fi
+token=$(sed -n 's/^token=//p' "$CASE/app.datenschluesselwechsel/status")
+mv "$CASE/$token-vorher" "$CASE/gespeicherter-nachweis"
+export FAIL=ok
+if (cd "$CASE/app" && bash "$ROOT/deploy/datenschluessel-wechseln.sh" --organisation 42 --fortsetzen > /dev/null 2>&1); then exit 1; fi
+[ -f "$CASE/app.datenschluesselwechsel/status" ]
+! grep -q ' up ' "$CASE/log"
+mv "$CASE/gespeicherter-nachweis" "$CASE/$token-vorher"
+(cd "$CASE/app" && bash "$ROOT/deploy/datenschluessel-wechseln.sh" --organisation 42 --fortsetzen > /dev/null)
+[ "$(grep -c -- ' --starten ' "$CASE/log")" = 1 ]
 grep -Fq 'test ! -e '\''$DIR.datenschluesselwechsel/status' "$ROOT/deploy/deploy.sh"
 bash -n "$ROOT/deploy/datenschluessel-wechseln.sh"
 echo "Schlüsselwechsel-Betrieb: Sicherungssätze, Schreibpause, Fehlerpfade, Wiederaufnahme und Neustartsperren ok"

@@ -171,7 +171,6 @@ if git cat-file -e "$REF:scripts/pruefe-daten-rueckweg.sh" 2> /dev/null; then
     sh "$WORK/scripts/pruefe-daten-rueckweg.sh" "$WORK"
 fi
 
-# Testdatenbank: einmal migrieren und je Worker kopieren (CREATE DATABASE … TEMPLATE, 0,2 s)
 if git cat-file -e "$REF:scripts/pruefe-schluesselwechsel-betrieb.sh" 2> /dev/null; then
     git archive "$REF" scripts/pruefe-schluesselwechsel-betrieb.sh deploy/datenschluessel-wechseln.sh \
         deploy/server-setup.sh deploy/zurueck.sh deploy/deploy.sh | tar -x -C "$WORK"

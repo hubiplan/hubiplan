@@ -471,8 +471,92 @@ Aufträge vorliegen, verhindert ihre Rückmigration den Verlust der Wiederaufnah
 und Nachweisdaten. Der gemeinsame Daten-Rückweg prüft vor jeder Feldänderung auch
 den Zielquelltext der Schlüsselverwaltung, ohne ihn auszuführen. Kennt die
 Zielfassung aktive Generationen oder vorhandene Wechselaufträge nicht, wird der
-Rückweg vor dem Neustart verweigert. Der automatisierte Betriebsablauf und
-zusätzliche vollständige Wiederherstellungsübungen werden separat erweitert.
+Rückweg vor dem Neustart verweigert.
+
+### Geprüfter Betriebsablauf für den Schlüsselwechsel
+
+Der normale Betriebsweg ist `deploy/datenschluessel-wechseln.sh`. Er wird **auf dem
+Server im bereits ausgerollten Checkout** ausgeführt. Backend- und Backup-Images
+müssen aus derselben Fassung stammen. Die Datei `.fassung` muss vorhanden sein;
+das Skript baut keine Images, rollt keine neue Fassung aus und führt keine Tests
+auf dem Server aus. Es berücksichtigt die Compose-Projektkennung sowie Proxy-,
+ClamAV- und Selbstupdate-Erweiterungen aus der bestehenden `.env`.
+
+Beispiel mit der erfundenen Schlüsselinhaber-Nummer `42`:
+
+```bash
+sudo bash deploy/datenschluessel-wechseln.sh --organisation 42 --starten
+```
+
+Der Ablauf hält Backend, Worker, Beat und geplante Backups an und prüft, dass sie
+angehalten sind. Er erstellt dann einen frischen, geprüften Vorher-Sicherungssatz,
+führt Vorprüfung, Wechsel und Abschlussprüfung aus und erzeugt **bei weiterhin
+angehaltenen Schreibern** einen geprüften Nachher-Sicherungssatz. Erst danach
+startet er das Backend mit Gesundheitsprüfung und anschließend die übrigen
+Schreibdienste. Alte Schlüssel und vorhandene Backups werden dabei nicht entfernt.
+Direkte Verwaltungsbefehle und andere manuelle Schreiber währenddessen nicht starten.
+
+Jeder Sicherungssatz erhält einen eigenen signierten Nachweis (`*.receipt` samt
+HMAC). `backup-receipt.sh` prüft dessen Zuordnung und die HMACs von Datenbankdump,
+Dateiarchiv, Dateiliste, Hauptschlüsselkopie und deren Fingerabdruck. Es wird kein
+„neuestes Backup“ und kein veralteter globaler Erfolgsmarker als Nachweis verwendet.
+Ein unvollständiger Satz liefert keinen Erfolgsnachweis. Die bestehende SQL-/Archiv-
+und Dateiverweisprüfung erfolgt beim Sichern; bei `age` läuft die SQL-Prüfung vor
+der Verschlüsselung im tmpfs, ohne privaten Backup-Schlüssel auf dem Server. Die
+zusätzlichen vollständigen Wiederherstellungsproben laufen ausschließlich lokal.
+
+Ein atomar geschriebener und synchronisierter Wartungsvermerk liegt neben dem
+Checkout im Ordner `<Checkout>.datenschluesselwechsel`. Er enthält nur Organisation,
+Fassung, Auftrags-Ausgangsnummer, Phase und Sicherungssatz-Kennungen. `offen` markiert
+die Wartung zusätzlich schon vor dem ersten Statusschreibvorgang. Deploy, manuelles
+Setup und Rückweg respektieren diese Wartung und dieselbe Betriebssperre
+`<Checkout>.sperre`. Bei Fehlern oder nicht erfolgreichem Neustart hält das Skript
+alle Schreibdienste erneut an. Es startet keine ältere Fassung und schaltet keinen
+alten Datenschlüssel zurück.
+
+Nach Behebung eines Fehlers mit **derselben ausgerollten Fassung** fortsetzen:
+
+```bash
+sudo bash deploy/datenschluessel-wechseln.sh --organisation 42 --fortsetzen
+```
+
+Der ursprüngliche Vorher-Satz muss weiterhin vollständig prüfbar sein. Ein bereits
+angelegter Datenauftrag wird anhand seiner Nummer erkannt und ohne weitere
+Schlüsselanlage fortgesetzt. Der Nachher-Satz wird erneut frisch erstellt, bevor
+die Dienste wieder starten. Ein vor diesem Betriebsablauf manuell angelegter offener
+Datenauftrag wird nicht automatisch als neuer Ablauf übernommen; dafür zunächst
+den bisherigen Verwaltungsweg und dessen Sicherungen verwenden.
+
+Nach einem harten Prozessabbruch kann die Betriebssperre stehen bleiben. Vor ihrer
+manuellen Entfernung prüfen, dass kein Deploy, Setup, Rückweg oder Wechselprozess
+und kein Verwaltungscontainer mehr läuft. Wartungsvermerk und `offen` nicht zur
+Umgehung einer fehlgeschlagenen Prüfung entfernen. Fehlt eine gültige Statusdatei,
+ist eine manuelle Bestandsprüfung nötig. Nach vollständigem Erfolg verschwindet die
+aktive Markierung; `letzter-abschluss` hält die Satzkennungen fest. Diese Betriebsdaten
+zusätzlich sicher verwahren. Bei vollständigem Serververlust zunächst Sicherungssatz,
+Hauptschlüsselkopie und Datenbestand wiederherstellen, den Datenauftrag mit `--status`
+prüfen und einen offenen Auftrag mit dem Verwaltungsbefehl derselben Fassung
+fortsetzen; ohne Wartungsvermerk wird kein neuer Betriebsablauf über einen offenen
+Datenauftrag gelegt.
+
+### Lokale Wiederherstellungs- und Lastprüfung
+
+`BACKUP_TEST=1 scripts/test.sh <Commit>` prüft lokal komplette Sicherungen vor dem
+Wechsel, nach einem echten Abbruch während der Dateiphase und nach Abschluss.
+Jeder Stand wird sowohl mit Passphrase als auch mit `age` gesichert, mit dem
+satzgebunden wiederhergestellten Hauptschlüssel in eine unabhängige Datenbank und
+ein frisches Dateivolume eingespielt und von der Anwendung entschlüsselt. Ein
+unterbrochener Auftrag muss mit derselben Zielgeneration fortsetzbar sein; Personen,
+Aufgaben und Datei-Inhalte bleiben unverändert. Falsche oder unvollständige
+Sicherungsnachweise werden zusätzlich getestet.
+
+Die synthetische Messung umfasst 2.000 eigene und 200 fremde Personen, 1.000 Aufgaben,
+21 Dateien einschließlich einer 72-MiB-Datei sowie Importvorschauen. Sie berichtet
+Laufzeit und Prozess-Spitzenspeicher für Abbruch, Fortsetzung und einen weiteren
+ununterbrochenen Wechsel. Die Dateiinventur lädt hierfür nur Datei- und Relations-
+Kennungen; große Importvorschauen und Mailtexte werden nicht zusätzlich für die
+Dateiverweise eingelesen. Das ist eine lokale Wartungsbefehls-Messung mit höchstens
+acht Testkernen, kein Nachweis einer Produktionsdauer oder paralleler HTTP-Last.
 
 ## Backups
 

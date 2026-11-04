@@ -20,6 +20,12 @@ if [ -e "$ZIEL.datenschluesselwechsel/status" ] || [ -d "$ZIEL.datenschluesselwe
     echo "Schlüsselwechsel-Wartung offen; zuerst mit dem bestehenden Quellstand fortsetzen." >&2
     exit 1
 fi
+if [ "${HUBIPLAN_DEPLOY_LOCK_HELD:-0}" != 1 ]; then
+    SETUP_SPERRE="$ZIEL.sperre"
+    mkdir "$SETUP_SPERRE" 2>/dev/null || { echo "Ein anderer Betriebslauf hält die Sperre." >&2; exit 1; }
+    trap 'rm -f "$SETUP_SPERRE/lauf"; rmdir "$SETUP_SPERRE"' EXIT
+    echo "Manuelles Setup" > "$SETUP_SPERRE/lauf"
+fi
 
 # Beim ersten Mal: .env mit zufälligen Geheimnissen anlegen (nur auf dem Server)
 if [ ! -f .env ]; then
