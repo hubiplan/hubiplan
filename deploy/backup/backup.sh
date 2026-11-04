@@ -37,6 +37,8 @@ SSH_KEY="$SSH_DIR/id_ed25519"
 
 mkdir -p "$DIR"
 umask 077
+RECEIPT_NAME=${BACKUP_RECEIPT_NAME:-}
+case "$RECEIPT_NAME" in *[!a-zA-Z0-9_-]*) echo "Ungültiger Backup-Nachweisname" >&2; exit 1;; esac
 # Per destination: concurrent/manual starts may not overwrite markers or clean
 # another run's temporary files. flock is released automatically even on crash.
 exec 9> "$DIR/.backup.lock"
@@ -144,6 +146,24 @@ KEY_SNAPSHOT="$WORK/datenschluessel"
 if [ ! -r "$DATA_KEY_FILE" ] || ! cp "$DATA_KEY_FILE" "$KEY_SNAPSHOT"; then
     key_incomplete "Hauptschlüssel nicht lesbar, keine Schlüsselkopie beim Backup"
 else
+    if [ "${BACKUP_REQUIRE_COMPLETE:-0}" = 1 ]; then
+        if ! python3 - "$KEY_SNAPSHOT" <<'PYKEY'
+import base64
+import pathlib
+import sys
+try:
+    lines = pathlib.Path(sys.argv[1]).read_text(encoding="ascii").splitlines()
+    keys = [v.strip() for v in lines if v.strip() and not v.lstrip().startswith("#")]
+    assert keys
+    for key in keys:
+        assert len(base64.b64decode(key + "=" * (-len(key) % 4), altchars=b"-_", validate=True)) == 32
+except (ValueError, AssertionError, OSError):
+    sys.exit(1)
+PYKEY
+        then
+            key_incomplete "Hauptschlüssel-Kopie hat kein gültiges Schlüsselformat"
+        fi
+    fi
     if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
         age -r "$BACKUP_PUBLIC_KEY" -o "$DIR/datenschluessel_$STAMP.age.tmp" "$KEY_SNAPSHOT" \
             && [ -s "$DIR/datenschluessel_$STAMP.age.tmp" ] \
@@ -188,7 +208,10 @@ fi
 # am zweiten Ort nichts entfernen (Gesamtaudit 31.10.b, INF-F03)
 DELETE="--delete"
 if [ -f "$DIR/.unvollstaendig" ]; then
+    [ "${BACKUP_REQUIRE_COMPLETE:-0}" != 1 ] || fail "Vollständiges Backup erforderlich ($STAMP)"
     echo "$(date '+%F %T') WARNUNG: Backup $STAMP unvollständig, alte Backups bleiben" >> "$DIR/backup.log"
+    DELETE=""
+elif [ "${BACKUP_PRESERVE_EXISTING:-0}" = 1 ]; then
     DELETE=""
 else
     # Alte Backups entfernen
@@ -206,9 +229,18 @@ if [ -n "${BACKUP_REMOTE:-}" ]; then
         --include='*.enc' --include='*.enc.hmac' --include='*.age' --include='*.age.hmac' \
         --include='datenschluessel_*.sha256' --include='datenschluessel_*.sha256.hmac' \
         --include='datenschluessel.sha256' --include='datenschluessel.sha256.hmac' \
+        --include='*.receipt' --include='*.receipt.hmac' \
         --include='restore-test.log' --include='loeschliste.jsonl' --include='kettenkoepfe.log' --exclude='*' "$DIR/" "$BACKUP_REMOTE" \
         || fail "Kopie nach $BACKUP_REMOTE fehlgeschlagen (lokales Backup $STAMP ist ok)"
     echo "$(date '+%F %T') Kopie nach $BACKUP_REMOTE ok" >> "$DIR/backup.log"
 fi
 
 echo "$(date '+%F %T') Backup $STAMP ok ($(du -h "$LATEST_DB" | cut -f1))" >> "$DIR/backup.log"
+
+# Nur ein erfolgreicher vollständiger Lauf darf einen satzgebundenen Nachweis
+# veröffentlichen. Kein Auswerten von 'neuestes Backup' oder globalen Statusdateien.
+if [ -n "$RECEIPT_NAME" ]; then
+    [ ! -f "$DIR/.unvollstaendig" ] || fail "Kein Nachweis für unvollständiges Backup"
+    printf '%s\n%s\n' "$STAMP" "${KEY_EXT}" > "$DIR/$RECEIPT_NAME.receipt.tmp"
+    sign "$DIR/$RECEIPT_NAME.receipt"
+fi

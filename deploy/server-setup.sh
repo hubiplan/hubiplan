@@ -16,6 +16,10 @@ set -eu
 
 ZIEL="${ZIEL:-$(pwd)}"
 NEU="$(pwd)"
+if [ -e "$ZIEL.datenschluesselwechsel/status" ] || [ -d "$ZIEL.datenschluesselwechsel/offen" ]; then
+    echo "Schlüsselwechsel-Wartung offen; zuerst mit dem bestehenden Quellstand fortsetzen." >&2
+    exit 1
+fi
 
 # Beim ersten Mal: .env mit zufälligen Geheimnissen anlegen (nur auf dem Server)
 if [ ! -f .env ]; then

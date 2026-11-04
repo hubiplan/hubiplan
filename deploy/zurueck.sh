@@ -9,6 +9,10 @@
 set -eu
 
 ZIEL="$(pwd)"
+if [ -e "$ZIEL.datenschluesselwechsel/status" ] || [ -d "$ZIEL.datenschluesselwechsel/offen" ]; then
+    echo "Schlüsselwechsel-Wartung offen; kein Quellstandwechsel während der Schreibpause." >&2
+    exit 1
+fi
 if [ ! -d "$ZIEL.vorher" ]; then
     echo "Keine vorige Fassung vorhanden ($ZIEL.vorher fehlt)." >&2
     exit 1

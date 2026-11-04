@@ -98,6 +98,9 @@ cleanup() {
     docker volume rm "$ID-backups" > /dev/null 2>&1 || true
     docker volume rm "$ID-data" > /dev/null 2>&1 || true
     docker volume rm "$ID-seed-data" > /dev/null 2>&1 || true
+    for suffix in rotation-data rotation-restore rotation-backups; do
+        docker volume rm "$ID-$suffix" > /dev/null 2>&1 || true
+    done
     # Dateien aus Containern ggf. mit deren Rechten entfernen
     rm -rf "$WORK" 2> /dev/null         || docker run --rm -v "$WORK:/w" node:24-alpine rm -rf /w/backend /w/frontend /w/deploy /w/scripts
     rm -rf "$WORK"
@@ -166,6 +169,13 @@ if git cat-file -e "$REF:scripts/pruefe-daten-rueckweg.sh" 2> /dev/null; then
     git archive --format=tar "$REF" scripts/pruefe-daten-rueckweg.sh \
         deploy/daten-rueckweg.sh deploy/zurueck.sh deploy/server-setup.sh | tar -x -C "$WORK"
     sh "$WORK/scripts/pruefe-daten-rueckweg.sh" "$WORK"
+fi
+
+# Testdatenbank: einmal migrieren und je Worker kopieren (CREATE DATABASE … TEMPLATE, 0,2 s)
+if git cat-file -e "$REF:scripts/pruefe-schluesselwechsel-betrieb.sh" 2> /dev/null; then
+    git archive "$REF" scripts/pruefe-schluesselwechsel-betrieb.sh deploy/datenschluessel-wechseln.sh \
+        deploy/server-setup.sh deploy/zurueck.sh deploy/deploy.sh | tar -x -C "$WORK"
+    bash "$WORK/scripts/pruefe-schluesselwechsel-betrieb.sh" "$WORK"
 fi
 
 # Testdatenbank: einmal migrieren und je Worker kopieren (CREATE DATABASE … TEMPLATE, 0,2 s)
@@ -412,6 +422,10 @@ if [ "${BACKUP_TEST:-0}" = "1" ]; then
         --entrypoint python "$BACKEND_IMG" /tmp/test_application_restore.py fingerprint)
     [ "$expected" = "$actual" ] || { echo "Restored encrypted fields differ" >&2; exit 1; }
     echo "Backup: Geburtsdaten und Rechnungs-/Rundschreibenkontakte mit wiederhergestelltem Satzschlüssel entschlüsselt"
+    if git cat-file -e "$REF:scripts/pruefe-schluesselwechsel-restore.sh" 2> /dev/null; then
+        git archive "$REF" scripts/pruefe-schluesselwechsel-restore.sh | tar -x -C "$WORK"
+        source "$WORK/scripts/pruefe-schluesselwechsel-restore.sh"
+    fi
     docker volume rm "$ID-data" > /dev/null
 fi
 
