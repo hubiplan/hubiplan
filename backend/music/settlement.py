@@ -385,7 +385,11 @@ class PerformanceInvoiceView(SettlementView):
         account = get_object_or_404(
             PerformanceAccount, performance=performance, organization=self.org
         )
-        if claim.done or account.invoice_id:
+        if claim.done:
+            invoice = get_object_or_404(Invoice, organization=self.org, pk=claim.result["invoice"])
+            return Response(InvoiceDetailSerializer(invoice).data)
+        if account.invoice_id:
+            claim.remember({"invoice": account.invoice_id})
             return Response(InvoiceDetailSerializer(account.invoice).data)
         invoice = Invoice(organization=self.org, created_by=request.user)
         ElectronicInvoiceViewSet._save_commercial(self, invoice, request)

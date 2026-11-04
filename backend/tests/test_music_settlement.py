@@ -203,7 +203,8 @@ def test_performance_invoice_is_single_and_bound_to_agreement(c, club, settlemen
     amount = str(calculate(schema.validated_data["lines"])["gross"])
     assert post(c, url, action="agreement", fee=amount, travel="0", extras="0").status_code == 200
     invoice_url = url.replace("settlement/", "invoice/")
-    r = c.post(invoice_url, payload, content_type=JSON, HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()))
+    first_key = str(uuid.uuid4())
+    r = c.post(invoice_url, payload, content_type=JSON, HTTP_IDEMPOTENCY_KEY=first_key)
     assert r.status_code == 201, r.content
     invoice = r.json()["id"]
     retry = c.post(invoice_url, payload, content_type=JSON, HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()))
@@ -227,6 +228,9 @@ def test_performance_invoice_is_single_and_bound_to_agreement(c, club, settlemen
     replaced = post(c, url, action="replace_invoice")
     assert replaced.status_code == 200, replaced.content
     assert replaced.json()["previous_invoices"] == [invoice]
+    replay = c.post(invoice_url, payload, content_type=JSON, HTTP_IDEMPOTENCY_KEY=first_key)
+    assert replay.json()["id"] == invoice
+    assert c.get(url).json()["invoice"] is None
 
 
 def test_personal_claim_is_private(api, c, club, settlement):
