@@ -494,7 +494,7 @@ class PlatformOrganizationViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    """Dachverbände und Vereine anlegen, ändern und deaktivieren (kein Löschen)."""
+    """Dachverbände und Vereine verwalten und ausdrücklich vollständig löschen."""
 
     serializer_class = PlatformOrganizationSerializer
     permission_classes = [IsPlatformAdmin]
@@ -506,6 +506,22 @@ class PlatformOrganizationViewSet(
             .select_related("parent")
             .order_by("type", "name")
         )
+
+    @action(detail=True, methods=["post"], url_path="erase")
+    def erase(self, request, pk=None):
+        org = self.get_object()
+        if request.data.get("confirmation") != org.name:
+            raise serializers.ValidationError(
+                {
+                    "detail": gettext(
+                        "Zum Löschen bitte den vollständigen Namen der Einheit eingeben."
+                    )
+                }
+            )
+        from .deletion import erase_organization
+
+        erase_organization(org, request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @transaction.atomic
     def perform_create(self, serializer):

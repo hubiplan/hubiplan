@@ -41,6 +41,28 @@ function renderPage() {
 }
 
 describe('Einheit anlegen auf der Plattform', () => {
+  it('verlangt zum endgültigen Löschen den vollständigen Namen', async () => {
+    let deleted = false
+    const calls = fakeApi({
+      'GET /_allauth/browser/v1/auth/session': session,
+      'GET /api/platform/orgs/': () => ({ status: 200, body: deleted ? [] : [bund] }),
+      'POST /api/platform/orgs/7/erase/': () => {
+        deleted = true
+        return { status: 204 }
+      },
+    })
+    renderPage()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Bearbeiten' }))
+    await user.click(screen.getByRole('button', { name: 'Einheit löschen' }))
+    expect(screen.getByRole('button', { name: 'Unwiderruflich löschen' })).toBeDisabled()
+    await user.type(screen.getByLabelText('Name zur Löschbestätigung'), bund.name)
+    await user.click(screen.getByRole('button', { name: 'Unwiderruflich löschen' }))
+    await waitFor(() => expect(screen.queryByText(bund.name)).toBeNull())
+    const post = calls.find((call) => call.key === 'POST /api/platform/orgs/7/erase/')
+    expect(JSON.parse(String(post?.init?.body))).toEqual({ confirmation: bund.name })
+  })
+
   it('ein Knopf, Schalter statt Art, Bezeichnung folgt dem Schalter', async () => {
     const calls = fakeApi({
       'GET /_allauth/browser/v1/auth/session': session,

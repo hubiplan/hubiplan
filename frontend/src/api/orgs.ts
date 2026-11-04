@@ -595,6 +595,8 @@ export interface AuditChainCheck {
 }
 
 export const platformApi = {
+  erase: (id: number, confirmation: string) =>
+    api.post<void>(`/api/platform/orgs/${id}/erase/`, { confirmation }),
   orgs: () => api.get<PlatformOrg[]>('/api/platform/orgs/'),
   create: (data: Partial<PlatformOrg>) => api.post<PlatformOrg>('/api/platform/orgs/', data),
   update: (id: number, data: Partial<PlatformOrg>) =>
