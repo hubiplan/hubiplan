@@ -17,8 +17,9 @@ from events import recurrence
 from members.models import DepartmentMembership
 from portal.views import _portal_access
 
-from .models import Musician, RehearsalInvitation, ScoreDocument, ScoreLoan
+from .models import Musician, Rehearsal, RehearsalInvitation, ScoreDocument, ScoreLoan
 from .practice import loan_data, save_response, window
+from .practice_programs import program_for, with_programs
 from .scores import voice
 
 
@@ -32,7 +33,43 @@ def own_musician(access):
     ).first()
 
 
-def accessible_scores(access, musician):
+def practice_rows(musician):
+    if "events" not in musician.organization.enabled_modules:
+        return []
+    invitations = list(
+        musician.rehearsalinvitation_set.filter(active=True).prefetch_related("responses")
+    )
+    rehearsals = {
+        r.pk: r
+        for r in with_programs(
+            Rehearsal.objects.filter(pk__in=[i.rehearsal_id for i in invitations]).select_related(
+                "event"
+            )
+        )
+    }
+    rows = []
+    for invite in invitations:
+        rehearsal = rehearsals[invite.rehearsal_id]
+        responses = {r.original_start: r.status for r in invite.responses.all()}
+        for o in recurrence.occurrences([rehearsal.event], *window()):
+            rows.append(
+                {
+                    "id": invite.pk,
+                    "title": rehearsal.event.title,
+                    "original_start": o.original_start,
+                    "starts_at": o.starts_at,
+                    "ends_at": o.ends_at,
+                    "location": rehearsal.event.location,
+                    **program_for(rehearsal, o.original_start),
+                    "cancelled": o.is_cancelled,
+                    "can_respond": not o.is_cancelled and o.starts_at > timezone.now(),
+                    "status": responses.get(o.original_start, "pending"),
+                }
+            )
+    return sorted(rows, key=lambda r: r["starts_at"])
+
+
+def accessible_scores(access, musician, rehearsals=None):
     if not musician or "events" not in access.organization.enabled_modules:
         return ScoreDocument.objects.none()
     today = timezone.localdate()
@@ -52,10 +89,12 @@ def accessible_scores(access, musician):
         .filter(performance__event__is_cancelled=False)
         .values_list("performance__program_entries__arrangement_id", flat=True)
     )
+    rows = practice_rows(musician) if rehearsals is None else rehearsals
     arrangements.update(
-        musician.rehearsalinvitation_set.filter(
-            active=True, rehearsal__event__is_cancelled=False
-        ).values_list("rehearsal__items__arrangement_id", flat=True)
+        item["arrangement"]
+        for row in rows
+        if not row["cancelled"] and row["status"] != "declined"
+        for item in row["items"]
     )
     voices = {voice(s.instrument, s.register) for s in musician.skills.all()}
     voices.update(
@@ -73,7 +112,7 @@ def accessible_scores(access, musician):
     return candidates.filter(pk__in=ids)
 
 
-def score_data(access, musician):
+def score_data(access, musician, rehearsals=None):
     return [
         {
             "id": s.pk,
@@ -83,7 +122,7 @@ def score_data(access, musician):
             "usage_note": s.usage_note,
             "url": f"/api/portal/{access.pk}/music/files/{s.pk}/",
         }
-        for s in accessible_scores(access, musician)
+        for s in accessible_scores(access, musician, rehearsals)
     ]
 
 
@@ -94,40 +133,19 @@ class OwnPractice(APIView):
             musician = own_musician(access)
             if not musician:
                 return Response({"rehearsals": [], "scores": [], "loans": []})
-            rows = []
-            for invite in musician.rehearsalinvitation_set.filter(
-                active=True, organization__enabled_modules__contains=["events"]
-            ).select_related("rehearsal__event"):
-                rehearsal = invite.rehearsal
-                items = [
-                    {
-                        "title": i.arrangement.piece.title,
-                        "arrangement": i.arrangement_id,
-                        "focus": i.focus,
-                    }
-                    for i in rehearsal.items.select_related("arrangement__piece")
-                ]
-                for o in recurrence.occurrences([rehearsal.event], *window()):
-                    response = invite.responses.filter(original_start=o.original_start).first()
-                    rows.append(
-                        {
-                            "id": invite.pk,
-                            "title": rehearsal.event.title,
-                            "original_start": o.original_start,
-                            "starts_at": o.starts_at,
-                            "ends_at": o.ends_at,
-                            "location": rehearsal.event.location,
-                            "focus": rehearsal.focus,
-                            "cancelled": o.is_cancelled,
-                            "can_respond": not o.is_cancelled and o.starts_at > timezone.now(),
-                            "status": response.status if response else "pending",
-                            "items": items,
-                        }
-                    )
+            rows = practice_rows(musician)
+            scores = score_data(access, musician, rows)
+            for row in rows:
+                arrangements = {i["arrangement"] for i in row["items"]}
+                row["scores"] = (
+                    [s for s in scores if s["arrangement"] in arrangements]
+                    if (not row["cancelled"] and row["status"] != "declined")
+                    else []
+                )
             return Response(
                 {
-                    "rehearsals": sorted(rows, key=lambda r: r["starts_at"]),
-                    "scores": score_data(access, musician),
+                    "rehearsals": rows,
+                    "scores": scores,
                     "loans": [
                         loan_data(r)
                         for r in ScoreLoan.objects.filter(musician=musician)

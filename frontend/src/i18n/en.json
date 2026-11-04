@@ -5332,5 +5332,20 @@
   "Nach unten": "Move down",
   "Dokument": "Document",
   "Archiviert": "Archived",
-  "Storniert": "Cancelled"
+  "Storniert": "Cancelled",
+  "Probenprogramm bearbeiten": "Edit rehearsal programme",
+  "Änderungen gelten für": "Changes apply to",
+  "Nur diesen Termin": "This occurrence only",
+  "Gesamte Serie": "Entire series",
+  "Die Serienvorlage ändert sich. Termine mit eigenem Programm behalten ihre Inhalte.": "The series template will change. Occurrences with their own programme keep their contents.",
+  "Dieser Termin erhält ein eigenes Programm. Andere Termine bleiben unverändert.": "This occurrence will have its own programme. Other occurrences remain unchanged.",
+  "Schwerpunkt für dieses Stück": "Focus for this piece",
+  "Probenstück": "Rehearsal piece",
+  "Probenstück hinzufügen": "Add rehearsal piece",
+  "Eigenes Programm entfernen und die aktuelle Serienvorlage übernehmen?": "Remove this occurrence’s programme and use the current series template?",
+  "Serienprogramm übernehmen": "Use series programme",
+  "Eigenes Programm für diesen Termin": "Own programme for this occurrence",
+  "Programm aus der Serienvorlage": "Programme from series template",
+  "Noten für diesen Probentermin": "Sheet music for this rehearsal",
+  "Proben verwenden Kalendertermine und Terminserien. Programme und Schwerpunkte können je Einzeltermin abweichen. Rückmeldungen gelten für den jeweiligen Einzeltermin.": "Rehearsals use calendar events and series. Programmes and focus can differ for each occurrence. Responses apply to each occurrence."
 }

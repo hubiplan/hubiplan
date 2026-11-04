@@ -48,11 +48,13 @@ Download programme and part lists as CSV. Use **Sheet music preparation tasks** 
 
 ## Rehearsals and personal sheet music
 
-Open **Rehearsals and sheet music checkout** and link events or series from your own calendar. Dates, location, recurrence and cancellations remain in the existing calendar. Rehearsal focus and pieces apply to the whole rehearsal or series. Assign musicians and deactivate assignments no longer required. Administrators record guest responses.
+Open **Rehearsals and sheet music checkout** and link events or series from your own calendar. Dates, location, recurrence and cancellations remain in the existing calendar. Rehearsal focus and pieces form the shared series template. Assign musicians and deactivate assignments no longer required. Administrators record guest responses.
+
+Under **Upcoming rehearsals**, open **Edit rehearsal programme** for an occurrence. **This occurrence only** saves its own focus and pieces, including an empty programme. **Entire series** loads and changes the shared template; occurrences with their own programmes keep their contents. **Use series programme** removes the override and inherits the current template again. Rehearsal planning and rehearsal pieces continue to edit the template. Moved occurrences keep their programmes. After a recurrence rule change, programmes without a matching original start need to be planned again. Programme changes preserve attendance responses.
 
 The overview covers the past 14 days and next 90 days. Each response belongs to the original occurrence start from the calendar rule, including moved occurrences. Changing the series rule requires new responses. Cancelled or started rehearsals cannot be answered. Missing responses are visible.
 
-Current members with an active musician profile see their own rehearsals and performances, programmes, focus and matching sheet music under **My area**. Downloads require the document library’s member access permissions as well as a matching part or instrumental skill. Restricted, deleted and unrelated files remain inaccessible.
+Current members with an active musician profile see their own rehearsals and performances with their effective programmes and focus under **My area**. **Sheet music for this rehearsal** shows matching permitted files. Downloads still require the document library’s member permissions and a matching part or skill. Removed pieces no longer grant access unless another own event needs them. Rehearsals use the displayed past 14 and next 90 days; cancelled rehearsals and declined invitations grant no sheet music access. Restricted, deleted and unrelated files remain inaccessible.
 
 Record musician, part, quantity and return date for checkouts. Each checkout reduces available stock. Partial returns are recorded with timestamps. Outstanding checkouts prevent reducing or repurposing stock. Overdue returns are highlighted; members see their own outstanding quantities. Preparation distinguishes available copies from copies already held by assigned musicians.
 
