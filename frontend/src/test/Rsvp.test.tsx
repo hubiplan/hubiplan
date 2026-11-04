@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
+import { useState } from 'react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
@@ -59,6 +60,32 @@ function detail(rsvp: Record<string, unknown>, over: Record<string, unknown> = {
 }
 
 describe('Zu- und Absagen', () => {
+  it('bestätigt die Rücknahme und fokussiert die verfügbare Antwortaktion statt des entfernten Knopfs', async () => {
+    const base = '/api/portal/4/'
+    const initial = detail({
+      mine: { status: 'yes', guests: 0, note: '', source: 'member' },
+      can_respond: true,
+    }) as EventDetail
+    fakeApi({
+      [`DELETE ${base}events/1/response/`]: () => ({
+        status: 200,
+        body: detail({ mine: null, can_respond: true }),
+      }),
+    })
+    function Response() {
+      const [event, setEvent] = useState(initial)
+      return <MyResponsePanel base={base} event={event} onChanged={setEvent} />
+    }
+    render(<Response />)
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Rückmeldung zurücknehmen' }))
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Deine Rückmeldung ist zurückgenommen.',
+    )
+    expect(
+      screen.queryByRole('button', { name: 'Rückmeldung zurücknehmen' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Zusagen' })).toHaveFocus()
+  })
   it('bestätigt eine Absage und entfernt die Bestätigung beim fehlgeschlagenen erneuten Senden', async () => {
     const base = '/api/portal/4/'
     let fail = false

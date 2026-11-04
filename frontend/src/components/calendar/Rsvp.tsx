@@ -1,5 +1,5 @@
 // Zu- und Absagen: eigene Rückmeldung, Teilnehmerliste des Vorstands, Kalender-Abo.
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { eventApi } from '../../api/events.ts'
 import type {
   CalendarBase,
@@ -56,13 +56,23 @@ export function MyResponsePanel({
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState('')
+  const responseAction = useRef<HTMLButtonElement>(null)
+  const focusAfterWithdrawal = useRef(false)
+  useLayoutEffect(() => {
+    if (notice && focusAfterWithdrawal.current) {
+      responseAction.current?.focus()
+      focusAfterWithdrawal.current = false
+    }
+  }, [notice])
 
-  async function run(action: () => Promise<EventDetail>, success: string) {
+  async function run(action: () => Promise<EventDetail>, success: string, withdrawing = false) {
     setBusy(true)
     setError(null)
     setNotice('')
     try {
       onChanged(await action())
+      // Die Rücknahme entfernt ihren eigenen Knopf. Danach zur nächsten Antwortaktion.
+      focusAfterWithdrawal.current = withdrawing
       setNotice(success)
     } catch (err) {
       setError(errorMessage(err))
@@ -136,6 +146,7 @@ export function MyResponsePanel({
           </div>
           <div className="button-row">
             <button
+              ref={responseAction}
               type="button"
               className="button button-primary"
               disabled={busy}
@@ -160,6 +171,7 @@ export function MyResponsePanel({
                   void run(
                     () => eventApi.withdraw(base, event.id),
                     t('Deine Rückmeldung ist zurückgenommen.'),
+                    true,
                   )
                 }
               >
