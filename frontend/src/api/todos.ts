@@ -9,6 +9,19 @@ export interface TodoShare {
 
 export interface Todo {
   id: number
+  series?: {
+    id: number
+    version: number
+    sequence_no: number
+    active: boolean
+    repeat: 'daily' | 'weekly' | 'monthly' | 'yearly'
+    interval: number
+    basis: 'due' | 'done'
+    last_day: boolean
+    ends_on: string | null
+    count: number | null
+    deleted_at: string | null
+  } | null
   title: string
   description: string
   due_date: string | null

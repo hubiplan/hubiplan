@@ -20,6 +20,7 @@ from django.utils.translation import gettext
 from .validation import validate_url_data, validate_urls
 
 MODULE_MODELS = (
+    "todos.TodoSeries",
     "todos.Todo",
     "finance.Account",
     "finance.Category",
@@ -120,6 +121,7 @@ PUBLIC_MODELS = {"statutes.statuteversion", "statutes.statutepublication"}
 # Die Dokumentenablage kommt im vollständigen Export und im Export einer Abteilung
 # mit, nicht aber im Dachverbands-Export der Vereine (dort nur die Satzung).
 DEPARTMENT_MODELS = {
+    "todos.todoseries",
     "documents.folder",
     "documents.document",
     "documents.documentversion",
@@ -233,6 +235,7 @@ FRESH_VALUES = {
 
 # Nie exportiert: Zugangsdaten und Anmeldezustand (Social-Media-Kanäle)
 SECRET_FIELDS = {
+    "todos.todoseries": {"owner", "source_series", "shares", "documents"},
     # Zugriffsrechte werden am Ziel ausdrücklich neu vergeben, keine fremden Kontonummern.
     "todos.todo": {"origin", "owner", "done_by", "shared", "per_unit"},
     # Freigaben gelten nur für die lokale Kopplung, nie für importierte Nummern.
@@ -520,6 +523,10 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
         from todos.exports import shared_rows
 
         qs = shared_rows(org, department)
+    elif label(model) == "todos.todoseries":
+        from todos.exports import series_rows
+
+        qs = series_rows(org, department)
     elif label(model) == "todos.todoattachment":
         from todos.exports import attachment_rows
 
@@ -717,6 +724,10 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                 # Übernahme erhält Inhalt, aber keine Freigaben der Quelle.
                 obj.owner_id = user.pk if user is not None else None
                 obj.shared = False
+            if name == "todos.todoseries":
+                obj.owner_id = user.pk if user is not None else None
+                obj.active = False
+                obj.kind = "sequence"
             for field_name, path in pending_files:
                 content = files.read(path)
                 if content is not None:

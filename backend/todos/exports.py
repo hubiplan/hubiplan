@@ -41,6 +41,14 @@ def attachment_rows(org, department=None):
     return TodoAttachment.objects.filter(todo__in=shared_rows(org, department))
 
 
+def series_rows(org, department=None):
+    from .models import TodoSeries
+
+    return TodoSeries.objects.filter(
+        organization=org, pk__in=shared_rows(org, department).values("series_id")
+    )
+
+
 def export_scope(org, department=None):
     user = _actor.get()
     if user is None:
@@ -76,6 +84,8 @@ def personal_export(user, include_files=False):
         if todo.pk in seen:
             return
         seen.add(todo.pk)
+        from .series_views import series_data
+
         row = {
             key: getattr(todo, key)
             for key in (
@@ -95,6 +105,7 @@ def personal_export(user, include_files=False):
             )
         }
         row["attachments"] = []
+        row["series"] = series_data(todo)
         for attachment in todo.attachments.order_by("pk"):
             item = data_for(attachment, scope)
             if archive and item["available"]:
@@ -124,7 +135,7 @@ def personal_export(user, include_files=False):
 
     try:
         with user_view(user.pk):
-            for todo in Todo.objects.filter(created_by=user, shared=False):
+            for todo in Todo.objects.filter(created_by=user, shared=False, withdrawn=False):
                 # Eigene Dateien bleiben auch ohne Rollen zugänglich; Dokumentrechte nicht.
                 with tenant_context(todo.organization_id, user.pk):
                     try:

@@ -7,7 +7,7 @@ from changes.tracking import suppress
 from core.tenancy import rls_bypass
 
 from .access import can_take_over
-from .models import Todo
+from .models import Todo, TodoSeries
 from .sharing import log_change
 
 
@@ -33,6 +33,13 @@ def take_over(user, scope, pk):
     if not {"todos.edit", "roles.edit"} <= scope.permissions:
         raise PermissionDenied()
     with rls_bypass(), suppress():
+        series_id = (
+            Todo.objects.filter(pk=pk, organization=scope.org, shared=True)
+            .values_list("series_id", flat=True)
+            .first()
+        )
+        if series_id:
+            TodoSeries.objects.select_for_update().get(pk=series_id)
         todo = (
             Todo.objects.select_for_update()
             .filter(

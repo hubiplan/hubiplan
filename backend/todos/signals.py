@@ -8,7 +8,7 @@ def erase_private(sender, instance, **kwargs):
     from changes.tracking import suppress
     from core.tenancy import rls_bypass
 
-    from .models import Todo
+    from .models import Todo, TodoSeries
 
     with suppress(), rls_bypass():
         ids = list(
@@ -19,6 +19,7 @@ def erase_private(sender, instance, **kwargs):
         )
         sets.delete()
         Todo.objects.filter(pk__in=ids).delete()
+        TodoSeries.objects.filter(owner=instance, occurrences__isnull=True).delete()
 
 
 def connect():

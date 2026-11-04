@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from types import SimpleNamespace
 
 from django.apps import apps
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
 from django.db.models.deletion import ProtectedError, RestrictedError
 
@@ -167,6 +168,9 @@ def _undo(change_set: ChangeSet, org, user, *, force: bool) -> None:
                 try:
                     with transaction.atomic():
                         obj.save()
+                except ValidationError as exc:
+                    hard.extend(exc.messages)
+                    continue
                 except IntegrityError:
                     hard.append(f"{_label(model, obj)} lässt sich nicht zurücksetzen.")
                     continue

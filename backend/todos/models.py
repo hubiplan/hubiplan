@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone as django_timezone
 
-from core.encfields import EncryptedCharField, EncryptedTextField
+from core.encfields import EncryptedCharField, EncryptedJSONField, EncryptedTextField
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
 
@@ -43,6 +43,11 @@ class Todo(models.Model):
         "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="copies"
     )
     per_unit = models.BooleanField(default=False)
+    series = models.ForeignKey(
+        "TodoSeries", on_delete=models.CASCADE, null=True, blank=True, related_name="occurrences"
+    )
+    sequence_no = models.PositiveIntegerField(null=True, blank=True)
+    withdrawn = models.BooleanField(default=False)
     local_note = EncryptedTextField(blank=True)
     version = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(default=django_timezone.now)
@@ -57,13 +62,42 @@ class Todo(models.Model):
             models.CheckConstraint(
                 condition=Q(due_time__isnull=True) | Q(due_date__isnull=False),
                 name="todo_time_needs_date",
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["series"],
+                condition=Q(series__isnull=False, status="open", deleted_at__isnull=True),
+                name="todo_series_one_open",
+            ),
+            models.UniqueConstraint(
+                fields=["series", "sequence_no"],
+                condition=Q(series__isnull=False, deleted_at__isnull=True),
+                name="todo_series_sequence_unique",
+            ),
         ]
 
     def __str__(self):
         return self.title
 
     def save(self, *args, **kwargs):
+        from django.db import transaction
+
+        if self.series_id:
+            from .series import after_save, before_save
+
+            with transaction.atomic():
+                series = TodoSeries.objects.select_for_update().get(pk=self.series_id)
+                previous = (
+                    type(self).objects.select_for_update().filter(pk=self.pk).first()
+                    if self.pk
+                    else None
+                )
+                before_save(self, previous, series)
+                self._save(*args, **kwargs)
+                after_save(self, previous, series)
+        else:
+            self._save(*args, **kwargs)
+
+    def _save(self, *args, **kwargs):
         from changes.tracking import active
 
         ctx = active()
@@ -78,6 +112,60 @@ class Todo(models.Model):
                 self.version += 1
                 self.due_revision += 1
         super().save(*args, **kwargs)
+
+
+class TodoSeries(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    department = models.ForeignKey(
+        "organizations.Department", on_delete=models.CASCADE, null=True, related_name="+"
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    source_series = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="target_series"
+    )
+    kind = models.CharField(
+        max_length=8,
+        default="sequence",
+        choices=[("template", "Vorlage"), ("sequence", "Ausgabenfolge")],
+    )
+    active = models.BooleanField(default=True)
+    anchor_date = models.DateField()
+    repeat = models.CharField(
+        max_length=7,
+        choices=[
+            ("daily", "täglich"),
+            ("weekly", "wöchentlich"),
+            ("monthly", "monatlich"),
+            ("yearly", "jährlich"),
+        ],
+    )
+    interval = models.PositiveIntegerField(default=1)
+    basis = models.CharField(
+        max_length=4, default="due", choices=[("due", "Frist"), ("done", "Erledigung")]
+    )
+    last_day = models.BooleanField(default=False)
+    ends_on = models.DateField(null=True, blank=True)
+    count = models.PositiveIntegerField(null=True, blank=True)
+    title = EncryptedCharField(max_length=200)
+    description = EncryptedTextField(blank=True)
+    due_time = models.TimeField(null=True, blank=True)
+    timezone = models.CharField(max_length=64, default="Europe/Berlin")
+    shares = EncryptedJSONField(default=list)
+    documents = EncryptedJSONField(default=list)
+    version = models.PositiveIntegerField(default=1)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(interval__gte=1), name="todo_series_interval_positive"
+            )
+        ]
+
+    def __str__(self):
+        return self.title
 
 
 class TodoShare(models.Model):
@@ -169,6 +257,7 @@ class TodoReminderConfig(models.Model):
     mail = models.BooleanField(null=True, default=None)
     push = models.BooleanField(null=True, default=None)
     active = models.BooleanField(default=False)
+    customized = models.BooleanField(default=False)
     revision = models.PositiveIntegerField(default=1)
     last_due_revision = models.PositiveIntegerField(default=0)
     enrolled_at = models.DateTimeField(default=django_timezone.now)

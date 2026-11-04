@@ -40,6 +40,7 @@ from portal import views as portal_views
 from statutes import views as statute_views
 from todos import attachments as todo_attachments
 from todos import reminder_views as todo_reminder_views
+from todos import series_views as todo_series_views
 from todos import views as todo_views
 from website import urls as website_urls
 
@@ -131,6 +132,7 @@ org_patterns = [
     path(
         "todos/<int:pk>/attachments/<int:att_id>/", todo_attachments.AttachmentDetailView.as_view()
     ),
+    path("todos/<int:pk>/series/", todo_series_views.SeriesView.as_view()),
     path("todos/cleanup/", todo_reminder_views.CleanupSettingsView.as_view()),
     path("todos/<int:pk>/reminders/", todo_reminder_views.ReminderSettingsView.as_view()),
     path("todos/orphans/", todo_views.OrphanTasksView.as_view()),
@@ -665,6 +667,7 @@ urlpatterns = [
         "depts/<int:dept_id>/todos/<int:pk>/attachments/<int:att_id>/",
         todo_attachments.AttachmentDetailView.as_view(),
     ),
+    path("depts/<int:dept_id>/todos/<int:pk>/series/", todo_series_views.SeriesView.as_view()),
     path("me/todos/<int:pk>/", todo_views.PersonalTaskDeleteView.as_view()),
     path("depts/<int:dept_id>/todos/cleanup/", todo_reminder_views.CleanupSettingsView.as_view()),
     path(
