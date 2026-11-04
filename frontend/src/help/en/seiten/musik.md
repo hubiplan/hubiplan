@@ -33,3 +33,15 @@ Reverse incorrect payments in the cash book. The original link remains visible, 
 General exports and financial audit exports include agreements, remuneration and booking links. Financial retention and anonymization include settlement notes.
 
 Use **Replace cancelled invoice** after fully cancelling the customer invoice. Then correct the agreement and create a replacement invoice. Previous invoices remain linked and traceable in the audit export.
+
+## Sheet music and programmes
+
+Open **Music → Sheet music library**. Create pieces with composers, then editions/arrangements with arrangers, publishers, duration in seconds, difficulty, instrumentation and licence notes. Archive unused arrangements. Record required musicians, copy counts, storage locations and concert or march book format for each instrument and part. Record full scores separately. Stocks at multiple locations are added together for the same part; the highest player requirement applies.
+
+Upload digital files in the existing document library, then link them to an arrangement and optionally a part under **Sheet music documents**. Document viewing permission is also required to link and open files. Access changes and deletions apply immediately. Music permissions do not extend document access. Record licence and usage notes; a stock count or file does not grant copying or performance rights.
+
+Open **Musical programme** on a performance. Add pieces and encores with an arrangement, and breaks with their own duration. A blank duration uses the arrangement duration; an explicit value overrides it. Edit, remove and move items up/down. Regular duration includes breaks; encore and total durations are shown separately. Zero indicates an unknown duration and is highlighted.
+
+Preparation compares required instruments and parts against planned instrumentation and active musicians who accepted assignments. Names are compared without case sensitivity or surrounding whitespace; different instrument names remain distinct. Missing musicians, planned counts and missing copies in the chosen format are visible. Copies in the other format do not count. Repeated pieces need one set per format. Missing instrumentation is highlighted. Changes to stock and arrangement duration affect existing programmes.
+
+Download programme and part lists as CSV. Use **Sheet music preparation tasks** to create preparation tasks linked to the event in the existing task workspace. Programmes require music and calendar viewing permissions; editing requires music editing permission. General exports include the catalogue and programmes. Digital files remain in the existing document export.
