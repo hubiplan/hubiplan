@@ -61,13 +61,13 @@ for (const language of ['de', 'en']) {
           await page
             .getByRole('button', { name: language === 'en' ? 'Next' : 'Weiter', exact: true })
             .click()
-          await page
-            .getByRole('heading', {
-              name:
-                language === 'en' ? '2. Membership and contact' : '2. Mitgliedschaft und Kontakt',
-              exact: true,
-            })
-            .waitFor()
+          const heading = page.getByRole('heading', {
+            name: language === 'en' ? '2. Membership and contact' : '2. Mitgliedschaft und Kontakt',
+            exact: true,
+          })
+          await heading.waitFor()
+          if (!(await heading.evaluate((el) => document.activeElement === el)))
+            throw new Error('Die zweite Aufnahmestufe erhält keinen Tastaturfokus')
         }
         await page
           .locator('main [role="status"]', { hasText: /Lädt|Loading/ })
