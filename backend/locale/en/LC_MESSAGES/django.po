@@ -5700,3 +5700,81 @@ msgstr "The customer is already linked to an invoice."
 
 msgid "Bitte die Veranstalterrechnung zuerst stornieren."
 msgstr "Please cancel the customer invoice first."
+
+msgid "Notenbestand"
+msgstr "Sheet music library"
+
+msgid "Dauer in Sekunden"
+msgstr "Duration in seconds"
+
+msgid "Lizenzhinweise"
+msgstr "Licence notes"
+
+msgid "Arrangement"
+msgstr "Arrangement"
+
+msgid "Vorhandene Exemplare"
+msgstr "Available copies"
+
+msgid "Lagerort"
+msgstr "Storage location"
+
+msgid "Stücke"
+msgstr "Pieces"
+
+msgid "Pause"
+msgstr "Break"
+
+msgid "Zugabe"
+msgstr "Encore"
+
+msgid "Arrangement ist archiviert."
+msgstr "Arrangement is archived."
+
+msgid "Benötigte Exemplare"
+msgstr "Required copies"
+
+msgid "Fehlende Exemplare"
+msgstr "Missing copies"
+
+msgid "Die Stimme gehört zu einem anderen Arrangement."
+msgstr "The part belongs to a different arrangement."
+
+msgid "Bitte eine zugängliche Notenunterlage wählen."
+msgstr "Please select an accessible sheet music document."
+
+msgid "Bitte alle Programmpunkte genau einmal anordnen."
+msgstr "Please arrange every programme item exactly once."
+
+msgid "Stücke benötigen ein Arrangement, Pausen eine Dauer."
+msgstr "Pieces require an arrangement; breaks require a duration."
+
+msgid "Dieses Arrangement ist archiviert."
+msgstr "This arrangement is archived."
+
+msgid "Unbekannte Programmänderung."
+msgstr "Unknown programme change."
+
+msgid "Reihenfolge"
+msgstr "Order"
+
+msgid "Stück"
+msgstr "Piece"
+
+msgid "Hinweis"
+msgstr "Note"
+
+msgid "Format"
+msgstr "Format"
+
+msgid "Instrument"
+msgstr "Instrument"
+
+msgid "Register / Stimme"
+msgstr "Section / part"
+
+msgid "Titel"
+msgstr "Title"
+
+msgid "Art"
+msgstr "Type"

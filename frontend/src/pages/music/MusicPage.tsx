@@ -8,6 +8,8 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { SettlementPanel } from './SettlementPanel.tsx'
+import { ScoresPage } from './ScoresPage.tsx'
+import { ProgramPanel } from './ProgramPanel.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; members: Row[]; partners: Row[] }
@@ -31,8 +33,17 @@ const statuses: [string, string][] = [
 
 export function MusicPage() {
   const org = useActiveOrg()
+  const [params] = useSearchParams()
   if (!org.modules.includes('music') || !org.permissions.includes('music.view'))
     return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+  if (params.get('noten')) return <ScoresPage key={org.id} />
+  if (/^\d+$/.test(params.get('programm') || ''))
+    return (
+      <ProgramPanel
+        key={`${org.id}-${params.get('programm')}`}
+        performance={Number(params.get('programm'))}
+      />
+    )
   return <MusicWorkspace key={org.id} />
 }
 
@@ -157,6 +168,7 @@ function MusicWorkspace() {
   return (
     <section className="stack">
       <h1>{t('Musik')}</h1>
+      <Link to="/musik?noten=1">{t('Notenbestand')}</Link>
       <nav className="tabs">
         {Object.entries(names).map(([key, label]) => (
           <button
@@ -246,6 +258,7 @@ function MusicWorkspace() {
                   </p>
                   <p>{r.notes}</p>
                   <Link to={`/aufgaben?termin=${r.event}`}>{t('Aufgaben zum Auftritt')}</Link>
+                  <Link to={`/musik?programm=${r.id}`}>{t('Musikalisches Programm')}</Link>
                   {org.modules.includes('finance') && org.permissions.includes('finance.view') && (
                     <Link to={`/musik?abrechnung=${r.id}`}>{t('Auftrittsabrechnung')}</Link>
                   )}

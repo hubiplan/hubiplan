@@ -31,6 +31,7 @@ from members import (
 )
 from members import honorary as honorary_views
 from members import views as member_views
+from music import scores as music_scores
 from music import views as music_views
 from music.portal import OwnAssignments
 from music.settlement import PerformanceInvoiceView, SettlementView
@@ -95,6 +96,14 @@ org_router.register(
 )
 org_router.register("music/positions", music_views.PositionViewSet, basename="music-position")
 org_router.register("music/assignments", music_views.AssignmentViewSet, basename="music-assignment")
+org_router.register("music/pieces", music_scores.PieceViewSet, basename="music-piece")
+org_router.register(
+    "music/arrangements", music_scores.ArrangementViewSet, basename="music-arrangement"
+)
+org_router.register("music/parts", music_scores.ScorePartViewSet, basename="music-part")
+org_router.register(
+    "music/score-documents", music_scores.ScoreDocumentViewSet, basename="music-score-document"
+)
 org_router.register("billing/partners", einvoice_views.PartnerViewSet, basename="billing-partner")
 org_router.register(
     "billing/electronic", einvoice_views.ElectronicInvoiceViewSet, basename="billing-electronic"
@@ -150,6 +159,7 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("music/performances/<int:pk>/program/", music_scores.ProgramView.as_view()),
     path("music/performances/<int:pk>/settlement/", SettlementView.as_view()),
     path("music/performances/<int:pk>/invoice/", PerformanceInvoiceView.as_view()),
     path("todos/remote/", todo_remote.RemoteInboxView.as_view()),

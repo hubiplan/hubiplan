@@ -33,3 +33,15 @@ Fehlerhafte Auszahlungen in der Kasse stornieren. Der ursprüngliche Bezug bleib
 Allgemeiner Datenexport und Finanzprüfexport umfassen Vereinbarungen, Vergütungen und Buchungszuordnungen. Finanzaufbewahrung und Anonymisierung umfassen die Abrechnungsvermerke.
 
 Eine vollständig stornierte Veranstalterrechnung kann mit **Stornierte Rechnung ersetzen** abgelöst werden. Danach die Vereinbarung korrigieren und eine neue Rechnung erstellen. Frühere Rechnungen bleiben verknüpft und im Prüfexport nachvollziehbar.
+
+## Notenbestand und Programme
+
+Unter **Musik** → **Notenbestand** zuerst Stücke mit Komponist und dann Ausgaben/Arrangements mit Arrangeur, Verlag, Dauer in Sekunden, Schwierigkeit, Besetzung und Lizenzhinweisen erfassen. Nicht mehr verwendete Arrangements archivieren. Unter **Stimmenbestand** je Instrument und Register/Stimme die benötigten Spieler, Exemplare, Lagerorte und das Konzert- oder Marschbuchformat angeben. Partituren gesondert als Partitur erfassen. Mehrere Lagerorte/Bestände werden für dieselbe Stimme addiert; die höchste Spieleranforderung gilt.
+
+Digitale Dateien in der bestehenden **Dokumente** hochladen und unter **Notenunterlagen** dem Arrangement und optional einer Stimme zuordnen. Zum Verknüpfen und Öffnen ist zusätzlich Dokumentenleserecht erforderlich. Freigaben und Löschungen wirken sofort auf die Verknüpfung. Musikrechte erweitern keine Dokumentenfreigabe. Lizenz- und Nutzungshinweise erfassen; eine Bestandszahl oder Datei gewährt keine Kopier- oder Aufführungsrechte.
+
+Beim Auftritt **Musikalisches Programm** öffnen. Stücke und Zugaben mit Arrangement, Pausen mit eigener Dauer hinzufügen. Eine leere Dauer übernimmt die Arrangementdauer; ein eigener Wert überschreibt sie. Programmpunkte bearbeiten, entfernen und nach oben/unten verschieben. Angezeigt werden reguläre Dauer einschließlich Pausen, Zugaben und Gesamtdauer. Null bedeutet unbekannte Dauer und wird markiert.
+
+Die Vorbereitungsliste vergleicht benötigte Instrumente/Stimmen mit Sollbesetzung und aktiven Musikern mit Zusage. Schreibweisen werden ohne Groß-/Kleinschreibung und äußere Leerzeichen verglichen; unterschiedliche Instrumentenbezeichnungen bleiben getrennt. Fehlende Musiker, geplante Anzahl und fehlende Exemplare im gewählten Format bleiben sichtbar. Exemplare im anderen Format zählen nicht mit. Bei wiederholten Stücken wird derselbe Notensatz je Format einmal vorbereitet. Fehlende Besetzungsangaben werden markiert. Bestandsänderungen und Arrangementdauern wirken auf bestehende Programme.
+
+**Programmliste herunterladen** und **Stimmenliste herunterladen** geben CSV-Dateien aus. Über **Aufgaben für Notenvorbereitung** im bestehenden Aufgabenbereich Aufgaben mit dem Auftrittstermin anlegen. Programme erfordern Musik- und Kalenderleserecht; Änderungen Musikbearbeitungsrecht. Der allgemeine Datenexport enthält den Katalog und Programme. Digitale Dateien verbleiben im vorhandenen Dokumentenexport.

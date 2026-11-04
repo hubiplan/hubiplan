@@ -32,6 +32,7 @@ Gepflegt von Ralf Philipsen; bei jeder neuen Funktion hier eine Zeile ergänzen.
 | E-Rechnungen | Kassierer, Rechnungsverwaltung | Geschäftspartner, Leistungsrechnungen als XRechnung, XML-/ZUGFeRD-Eingang, lokale Validierung, Freigabe und Originalarchiv; siehe [E-Rechnungen](e-rechnungen.md) |
 | Musik | Musikverwaltung | Musiker und Gäste, instrumentale Fähigkeiten, Auftritte an Kalenderterminen, Sollbesetzung und Einteilungen, persönliche Rückmeldungen; siehe [Musik](musik.md) |
 | Auftrittsabrechnung | Kasse mit Musik- und Kalenderleserecht | Veranstalterrechnung, Musikervergütungen mit Teilnahme und Freigabe, Auszahlungen und weitere Kosten, Stornos und Finanzübersicht; persönliche Vergütung im Mitgliederbereich |
+| Noten und Programme | Musikverwaltung | Stücke, Arrangements, Stimmenbestand und digitale Notenverweise; Auftrittsprogramme mit Dauer, Besetzungs-/Bestandsprüfung, Vorbereitungsaufgaben und CSV-Listen |
 | Mein Bereich | jedes Mitglied mit Zugang | Ausweis, Rechnungen, Rundschreiben, eigene Daten |
 | Einstellungen | Vorstand | Rollen, Erscheinungsbild, Briefvorlage, Verbund mit anderen Instanzen |
 | Plattform | Plattform-Administration | Vereine/Dachverbände anlegen, Module freischalten |

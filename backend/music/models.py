@@ -159,3 +159,73 @@ class PreviousPerformanceInvoice(models.Model):
 
     def __str__(self):
         return f"Frühere Auftrittsrechnung {self.pk}"
+
+
+class Piece(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    composer = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Arrangement(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    piece = models.ForeignKey(Piece, on_delete=models.PROTECT)
+    name = models.CharField(max_length=200)
+    arranger = models.CharField(max_length=200, blank=True)
+    publisher = models.CharField(max_length=200, blank=True)
+    duration_seconds = models.PositiveIntegerField(default=0)
+    difficulty = models.CharField(max_length=100, blank=True)
+    ensemble = models.CharField(max_length=200, blank=True)
+    license_note = models.CharField(max_length=2000, blank=True)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+
+class ScorePart(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    arrangement = models.ForeignKey(Arrangement, on_delete=models.PROTECT, related_name="parts")
+    instrument = models.CharField(max_length=100)
+    register = models.CharField(max_length=100, blank=True)
+    kind = models.CharField(max_length=10, default="part")
+    paper_format = models.CharField(max_length=10, default="concert")
+    required_players = models.PositiveSmallIntegerField(default=1)
+    copies = models.PositiveSmallIntegerField(default=0)
+    location = models.CharField(max_length=300, blank=True)
+
+    def __str__(self):
+        return self.instrument
+
+
+class ScoreDocument(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    arrangement = models.ForeignKey(Arrangement, on_delete=models.CASCADE)
+    part = models.ForeignKey(ScorePart, on_delete=models.SET_NULL, null=True, blank=True)
+    document = models.ForeignKey("documents.Document", on_delete=models.SET_NULL, null=True)
+    usage_note = models.CharField(max_length=2000, blank=True)
+
+    def __str__(self):
+        return f"Notenunterlage {self.pk}"
+
+
+class ProgramEntry(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    performance = models.ForeignKey(
+        Performance, on_delete=models.CASCADE, related_name="program_entries"
+    )
+    arrangement = models.ForeignKey(Arrangement, on_delete=models.PROTECT, null=True, blank=True)
+    position = models.PositiveIntegerField(default=1)
+    kind = models.CharField(max_length=10, default="piece")
+    duration_seconds = models.PositiveIntegerField(null=True, blank=True)
+    paper_format = models.CharField(max_length=10, default="concert")
+    note = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self):
+        return f"Programmpunkt {self.pk}"
