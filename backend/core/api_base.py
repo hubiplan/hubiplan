@@ -11,7 +11,8 @@ from django.utils.translation import gettext
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound, PermissionDenied
 
-from access.permissions import permissions_in
+from access.catalog import effective, enabled_codes_for
+from access.permissions import allowed_codes, permissions_in
 from audit.log import diff, record, snapshot
 from organizations.models import Organization
 
@@ -58,6 +59,12 @@ class OrgScopedMixin:
             else self.write_permission
         )
         if not has_needed(perms, needed):
+            # Abgeschaltete Module bleiben wie an den bisherigen Modul-Prüfstellen
+            # unsichtbar (404); bei fehlendem Rollenrecht gilt weiter 403.
+            if has_needed(allowed_codes(org.type), needed) and not has_needed(
+                effective(enabled_codes_for(org)), needed
+            ):
+                raise NotFound()
             raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
         self.org = org
         self.org_permissions = perms

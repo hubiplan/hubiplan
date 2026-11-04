@@ -109,6 +109,8 @@ class TestZugriff:
         assert api(board_a).get(url(orgs["a"], "calls/")).status_code == 404
 
     def test_ohne_recht(self, club, api):
+        club.enabled_modules.append("finance")
+        club.save(update_fields=["enabled_modules"])
         user = make_user("kassierer@example.org")
         give_role(user, club, ["finance.view"], name="Kassierer")
         assert api(user).get(url(club, "calls/")).status_code == 403

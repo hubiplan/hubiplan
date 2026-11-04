@@ -6,7 +6,7 @@ import io
 import pytest
 from PIL import Image
 
-from access.catalog import MEMBERS_VIEW, ORG_EDIT, ROLES_MANAGE
+from access.catalog import DEFAULT_MODULES, MEMBERS_VIEW, ORG_EDIT, ROLES_MANAGE
 from access.models import Role, RoleAssignment
 from audit.models import AuditEntry
 from organizations.models import Department, Organization, PlatformSettings
@@ -48,7 +48,7 @@ class TestMeineOrganisationen:
         assert [o["name"] for o in data] == ["Testbund", "Verein A"]
         verein = data[1]
         assert ROLES_MANAGE in verein["permissions"]
-        assert verein["modules"] == ["members"]
+        assert verein["modules"] == list(DEFAULT_MODULES)
         assert verein["theme"]["primary"].startswith("#")
         # Einstellungen bearbeiten (neu) samt Lesen und dem früheren Code
         assert data[0]["permissions"] == [ORG_EDIT, "settings.edit", "settings.view"]

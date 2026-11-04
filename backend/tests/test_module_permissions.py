@@ -75,7 +75,8 @@ def test_api_cycle_preserves_hidden_rights_on_edit(orgs, board_a, api):
     enable(org, ["members"])
     assert "music" not in {a["id"] for a in client.get(catalog_url).json()}
     denied = api(music_user).get(f"/api/orgs/{org.pk}/events/")
-    assert denied.status_code in (403, 404)
+    assert denied.status_code == 404
+    assert api(music_user).get(f"/api/orgs/{org.pk}/music/musicians/").status_code == 404
     updated = client.patch(
         f"/api/orgs/{org.pk}/roles/{role.pk}/",
         {"permissions": ["members.view", "finance.edit"]},
@@ -184,3 +185,14 @@ def test_superuser_and_preview_do_not_restore_disabled_module(orgs, api):
     assert response.status_code == 200
     summary = next(o for o in client.get("/api/me/organizations/").json() if o["id"] == org.pk)
     assert summary["permissions"] == []
+
+
+def test_filter_does_not_expand_legacy_aliases_twice(orgs):
+    org = orgs["a"]
+    enable(org, ["website"])
+    user = make_user("website@example.org")
+    give_role(user, org, ["website.edit"])
+    perms = permissions_in(user, org)
+    assert "website.manage" in perms
+    assert "webcontent.edit" not in perms
+    assert "website.content" not in perms
