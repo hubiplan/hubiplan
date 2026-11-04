@@ -129,3 +129,21 @@ vermeiden RLS-Rekursion und geben keine Aufgabeninhalte aus. Serienvorlagen blei
 andere Konten gesperrt; Regelmetadaten werden nach Aufgabenprüfung gezielt projiziert.
 Exporte verwenden ausschließlich berechtigt sichtbare Ausgaben als Inhalt einer Vorlage,
 damit eine einzeln freigegebene Ausgabe keine private Zukunftsvorlage mit exportiert.
+
+## Termine und Mitgliederbereich
+
+Eine Aufgabe kann einen Termin derselben Einheit verknüpfen. Der Abruf von Termindaten prüft die aktuellen Kalenderrechte unabhängig von den Aufgabenrechten. Eine gelöschte Veranstaltung entfernt nur die Verknüpfung.
+
+Veröffentlichungen für Mitglieder sind ausdrücklich: einzelne aktuelle Mitglieder erhalten Lese- oder Erledigungsrechte, oder die Einheit bietet eine Aufgabe zum Übernehmen an. Angebote haben genau eine übernehmende Person. Jede Anfrage prüft Konto, Portalzugang, Mitgliedschaft und gegebenenfalls Untereinheit erneut. Eine gesonderte RLS-Prüfung und ein Feldtrigger erlauben Mitgliedern ausschließlich den freigegebenen Erledigungsstand. Lokale Notizen werden nicht ins Mitgliederportal projiziert. Folgeausgaben erben eine Veröffentlichung nur bei ausdrücklicher Freigabe.
+
+## Getrennte Installationen
+
+Das Aufgabenpaket ist standardmäßig ausgeschaltet. Die bestätigte Kopplung, die Empfangsannahme und eine ausdrückliche Freigabe jeder Aufgabe sind getrennte Voraussetzungen. Übernommene Aufgaben erhalten ein verantwortliches Konto und örtliche Freigaben; ein allgemeines Vorstandsrecht eröffnet keinen Inhaltszugriff.
+
+Eigene Kopien haben einen unabhängigen Erledigungsstand und gegebenenfalls eine eigene Ausgabenfolge. Zentrale Inhaltsänderungen betreffen offene Kopien. Fortschrittsberichte enthalten ausschließlich Ausgabe, Frist, Status, Erledigungszeit und Beendigungskennzeichen. Notizen, eigene Dateien und Kontonamen bleiben vor Ort. Ein Widerruf stoppt weitere Aktualisierungen, Folgeausgaben und Quellanhänge; übernommene Kopien bleiben erhalten.
+
+Gemeinsame Aufgaben werden beim Lesen und bei Statusänderungen frisch an der Quelle geprüft. Signierte, verschlüsselte Abfragen sind auf genau die freigegebene Kopplung und Aufgabe begrenzt. Versionsprüfung und Serien-/Aufgabensperren schützen gleichzeitige Änderungen. Ohne Quellbestätigung wird kein Erledigungsstand vorgespiegelt; widerrufene gemeinsame Inhalte werden nicht mehr ausgegeben. Gemeinsame Folgeausgaben entstehen ausschließlich an der Quelle. Bei einer empfangenen gemeinsamen Aufgabe wird vor der örtlichen Aufgabe ihre Verbundzuordnung gesperrt, passend zum Eingang von Aktualisierungen.
+
+Quellanhänge werden in begrenzten Dateibereichen mit aktueller Freigabe abgerufen und vor der Weitergabe auf Typ und Viren geprüft. Dokumentverweise benötigen zusätzlich die heutigen Dokumentrechte des verantwortlichen Quellkontos. Empfangene Angebote und Fortschrittsstände sind verschlüsselt gespeichert. Datenimporte übernehmen keine fremden Verbundzuordnungen oder Freigaben.
+
+Vor einem Rückweg auf eine Serverfassung ohne diese Funktion sind Aufgabenfreigaben zu widerrufen, betroffene Kopplungen zu pausieren und benötigte Bestände zu sichern. Zusätzliche Tabellen und Felder bleiben beim reinen Code-Rückweg zunächst erhalten; ein Rückmigrieren entfernt die Verbundzuordnungen.

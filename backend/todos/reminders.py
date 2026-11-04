@@ -280,6 +280,14 @@ def deliver(pk, now=None):
             return False
         if current is None:
             return False
+        from .remote import RemoteUnavailable, refresh_common
+
+        try:
+            refresh_common(current)
+        except (RemoteUnavailable, NotFound):
+            return False
+        if current.status != "open" or current.due_revision != item.due_revision:
+            return False
         with language_of(user):
             title = gettext("Erinnerung: {title}").format(title=current.title)
             text = gettext("Frist: {date}").format(date=due_text(current))

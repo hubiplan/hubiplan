@@ -36,3 +36,14 @@ Use “My area › Tasks” to view open and completed tasks. Mail and push link
 ## Creating tasks
 
 “New task” opens a dialog. Enter the title, description, due date and sharing before creating the task. After “Create”, the same dialog stays open for attachments, reminders, recurrence and member access; “Done” closes it. Existing tasks save as usual and unsaved access settings are checked before closing. The description uses a wide, resizable text field. Status and filters share one row on larger screens and wrap on smaller screens.
+
+## Tasks across separate installations
+
+In the task dialog, **Share with another installation** selects a confirmed connection. Enable the task packet in the connection and have the receiving side accept it first. Each task also needs its own explicit grant. New offers appear under **Tasks from other installations** and must be adopted by a responsible local account.
+
+- **Separate copy with independent completion**: Each receiving unit completes independently. The source only sees occurrence, deadline and progress; local notes, additional attachments and account names are not returned. Open copies receive central content changes. Completed copies retain their content. Revocation stops further updates and future occurrences; adopted content stays local. Source attachments still require a current grant.
+- **One jointly completed task**: Reading and completion are checked at the source. Completion applies across installations; reload after a version conflict. An unreachable source cannot confirm a new completion state. Revocation, a paused connection or an unconfirmed key change removes access.
+
+After adoption, local task permissions apply. Another board member does not automatically gain access. The source controls whether the receiving side may complete a task. The distribution mode cannot be changed after the first grant. Future occurrences require **Also share future occurrences**. Separate copies then have independent local sequences; jointly completed tasks create successors at the source.
+
+The task list uses table rows for title, deadline and actions. The title is a link; clicking the free area of a row also opens the task. The checkbox only changes completion. The trash icon on the right moves a task to trash; the restore icon returns it from trash. On narrow screens, the deadline appears below the title.

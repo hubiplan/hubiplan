@@ -70,8 +70,10 @@ def portal_visible(user, scope):
 
 
 def may_complete(todo, access):
+    from .remote import completion_allowed
+
     pub = todo.portal_publication
-    return (
+    return completion_allowed(todo) and (
         pub.active
         and (
             pub.mode == "offer"
@@ -93,6 +95,9 @@ def portal_data(todo, access, scope):
             for a, central, pk in rows
             if a is None or not a.deleted_at
         ]
+    from .remote import file_entries
+
+    attachments += file_entries(todo)
     return {
         "id": todo.pk,
         "title": todo.title,
@@ -126,6 +131,13 @@ class PortalTaskMixin:
         if write:
             # Gleiche Sperrreihenfolge wie alle anderen Serienwege.
             candidate = get_object_or_404(qs, pk=pk)
+            if candidate.remote_mode == "common" and candidate.remote_origin_id:
+                from .models import TodoRemoteTask
+
+                with rls_bypass():
+                    TodoRemoteTask.objects.select_for_update().values("pk").get(
+                        pk=candidate.remote_origin_id
+                    )
             if candidate.series_id:
                 with rls_bypass():
                     TodoSeries.objects.defer(
@@ -135,16 +147,22 @@ class PortalTaskMixin:
             # Deshalb nur seine bereits geprüfte Nummer unter der Systemsperre sperren.
             with rls_bypass():
                 Todo.objects.only("pk").select_for_update().get(pk=candidate.pk)
-        return get_object_or_404(qs, pk=pk)
+        from .remote import refresh_common
+
+        return refresh_common(get_object_or_404(qs, pk=pk))
 
 
 class PortalTaskListView(PortalTaskMixin, APIView):
     def get(self, request, **kwargs):
+        from .remote import fresh_rows
+
         return Response(
             {
                 "items": [
                     portal_data(t, self.access, self.scope)
-                    for t in portal_visible(request.user, self.scope).order_by("due_date", "pk")
+                    for t in fresh_rows(
+                        portal_visible(request.user, self.scope).order_by("due_date", "pk")
+                    )
                 ]
             }
         )
@@ -165,7 +183,11 @@ class MemberChange(serializers.Serializer):
 
 class PortalTaskDetailView(PortalTaskMixin, APIView):
     def get(self, request, pk, **kwargs):
-        return Response(portal_data(self.task(request, pk), self.access, self.scope))
+        from .remote import refresh_common
+
+        return Response(
+            portal_data(refresh_common(self.task(request, pk)), self.access, self.scope)
+        )
 
     @transaction.atomic
     def patch(self, request, pk, **kwargs):
@@ -194,6 +216,14 @@ class PortalTaskDetailView(PortalTaskMixin, APIView):
         else:
             if not may_complete(todo, self.access):
                 raise PermissionDenied()
+            if todo.remote_mode == "common":
+                from .remote import complete_common
+
+                todo = complete_common(todo, request.user, values["status"])
+                from .sharing import log_change
+
+                log_change(todo, request.user, "update")
+                return Response(portal_data(todo, self.access, self.scope))
             todo.status = values["status"]
             todo.done_at = timezone.now() if todo.status == "done" else None
             todo.done_by = request.user if todo.status == "done" else None
@@ -220,6 +250,16 @@ class PortalTaskFileView(PortalTaskMixin, AttachmentDetailView):
         # AttachmentDetailView setzt sonst einen Verwaltungskontext.
         APIView.initial(self, request, *args, **kwargs)
         self.access, self.scope = portal_scope(request.user, kwargs["access_id"])
+
+
+class PortalRemoteFileView(PortalTaskMixin, APIView):
+    def get(self, request, pk, att_id, **kwargs):
+        from .remote import remote_file
+
+        todo = self.task(request, pk)
+        if not todo.remote_origin_id:
+            raise PermissionDenied()
+        return remote_file(todo, att_id)
 
 
 def choices(scope):

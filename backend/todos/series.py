@@ -23,7 +23,13 @@ def lock_task(user, scope, pk, *, deleted=False):
     from .access import visible
 
     qs = visible(user, scope, deleted=deleted)
-    metadata = get_object_or_404(qs.only("pk", "series_id"), pk=pk)
+    metadata = get_object_or_404(
+        qs.only("pk", "series_id", "remote_origin_id", "remote_mode"), pk=pk
+    )
+    if metadata.remote_mode == "common" and metadata.remote_origin_id:
+        from .models import TodoRemoteTask
+
+        TodoRemoteTask.objects.select_for_update().values("pk").get(pk=metadata.remote_origin_id)
     if metadata.series_id:
         with rls_bypass():
             TodoSeries.objects.select_for_update().values("pk").get(pk=metadata.series_id)
@@ -187,7 +193,19 @@ def after_save(todo, previous, series):
             TodoSeries.objects.filter(pk=series.pk).update(active=False)
             return
         central_ids = todo.central_attachment_ids
-        if todo.distributed:
+        if todo.remote_origin_id:
+            from .remote import usable
+
+            mapping = todo.remote_origin
+            if (
+                todo.remote_mode != "copy"
+                or not mapping.active
+                or not usable(mapping.coupling)
+                or not mapping.payload.get("following")
+                or not (mapping.payload.get("series") or {}).get("active")
+            ):
+                return
+        elif todo.distributed:
             source = (
                 Todo.objects.filter(pk=todo.origin_id, deleted_at__isnull=True)
                 .defer("local_note")
@@ -220,6 +238,8 @@ def after_save(todo, previous, series):
             shared=bool(series.shares),
             origin_id=todo.origin_id,
             distributed=todo.distributed,
+            remote_origin_id=todo.remote_origin_id,
+            remote_mode=todo.remote_mode,
             central_attachment_ids=central_ids,
         )
         TodoShare.objects.bulk_create(

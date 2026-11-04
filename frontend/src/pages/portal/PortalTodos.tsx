@@ -16,7 +16,7 @@ export interface MemberTodo {
   can_complete: boolean
   can_claim: boolean
   claimed_by_me: boolean
-  attachments: { id: number; name: string; available: boolean }[]
+  attachments: { id: number; name: string; available: boolean; remote?: boolean }[]
 }
 
 export function PortalTodos({ accessId }: { accessId: number }) {
@@ -77,9 +77,13 @@ export function PortalTodos({ accessId }: { accessId: number }) {
           <p>{selected.due_label || t('ohne Frist')}</p>
           <ul>
             {selected.attachments?.map((file) => (
-              <li key={file.id}>
+              <li key={`${file.remote ? 'remote' : 'local'}-${file.id}`}>
                 {file.available ? (
-                  <a href={`${base}${selected.id}/attachments/${file.id}/`}>{file.name}</a>
+                  <a
+                    href={`${base}${selected.id}/${file.remote ? 'remote-files' : 'attachments'}/${file.id}/`}
+                  >
+                    {file.name}
+                  </a>
                 ) : (
                   file.name
                 )}

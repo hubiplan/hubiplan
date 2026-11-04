@@ -76,17 +76,51 @@
   margin-inline-end: 0.75rem;
 }
 
-.todo-workspace .task-list > li {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem 1rem;
-  padding: 0.75rem;
-  margin-block: 0.5rem;
+.todo-list-panel {
+  overflow-x: clip;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
 }
-
-.todo-workspace .task-list > li > .button:last-child {
-  margin-inline-start: auto;
+.todo-table :is(td, th) {
+  vertical-align: middle;
+  padding-block: 0.75rem;
+}
+.todo-table {
+  margin: 0;
+  table-layout: fixed;
+}
+.todo-table .todo-state-cell {
+  width: 3.75rem;
+  padding-inline: 0.5rem;
+}
+.todo-table .todo-date-column {
+  width: 9rem;
+}
+.todo-table .todo-action-cell {
+  width: 6.5rem;
+  padding-inline: 1rem;
+  text-align: right;
+}
+.todo-table tbody .todo-title-cell {
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+}
+.todo-title-cell > a {
+  font-weight: 600;
+}
+.todo-table tr.todo-row-selected,
+.todo-table tr:focus-within {
+  background: color-mix(in srgb, var(--color-focus) 10%, var(--color-surface));
+}
+.todo-due-compact {
+  display: none;
+}
+.todo-row-due {
+  margin-inline-start: 0.75rem;
 }
 
 .todo-workspace .todo-check {
@@ -139,8 +173,20 @@
   .todo-toolbar > .field {
     flex-basis: 100%;
   }
-  .todo-workspace .task-list > li > .button:last-child {
-    margin-inline-start: 0;
+  .todo-table .todo-date-column {
+    display: none;
+  }
+  .todo-table .todo-action-cell {
+    width: 6.5rem;
+  }
+  .todo-due-compact {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: normal;
+  }
+  .todo-row-due {
+    display: inline-block;
+    margin: 0.35rem 0 0;
   }
 }
 .modal-backdrop:has(.todo-dialog) {
