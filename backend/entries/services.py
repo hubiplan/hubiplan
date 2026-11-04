@@ -9,9 +9,10 @@ from dataclasses import dataclass
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, ngettext
 from rest_framework.exceptions import ValidationError
 
+from core import i18n
 from members.models import (
     DepartmentMembership,
     Membership,
@@ -332,7 +333,7 @@ class Hint:
 
 
 def _teams(n: int) -> str:
-    return f"{n} {'Mannschaft' if n == 1 else 'Mannschaften'}"
+    return ngettext("{n} Mannschaft", "{n} Mannschaften", n).format(n=n)
 
 
 def check(entry: Entry) -> list[Hint]:
@@ -351,18 +352,27 @@ def check(entry: Entry) -> list[Hint]:
             bt = [t for t in teams if t.block_id == b.pk]
             n = len(bt)
             if b.required and n == 0:
-                hints.append(Hint(f"{b.label}: noch keine Mannschaft gemeldet.", block=b.pk))
+                hints.append(
+                    Hint(
+                        gettext("{label}: noch keine Mannschaft gemeldet.").format(label=b.label),
+                        block=b.pk,
+                    )
+                )
             if s.get("min_teams") and n < s["min_teams"]:
                 hints.append(
                     Hint(
-                        f"{b.label}: mindestens {_teams(s['min_teams'])}.",
+                        gettext("{label}: mindestens {teams}.").format(
+                            label=b.label, teams=_teams(s["min_teams"])
+                        ),
                         block=b.pk,
                     )
                 )
             if s.get("max_teams") is not None and n > s["max_teams"]:
                 hints.append(
                     Hint(
-                        f"{b.label}: höchstens {_teams(s['max_teams'])}.",
+                        gettext("{label}: höchstens {teams}.").format(
+                            label=b.label, teams=_teams(s["max_teams"])
+                        ),
                         block=b.pk,
                     )
                 )
@@ -373,7 +383,9 @@ def check(entry: Entry) -> list[Hint]:
                 if s.get("min_size") and regular < s["min_size"]:
                     hints.append(
                         Hint(
-                            f"{t.name}: {regular} von mindestens {s['min_size']} Personen.",
+                            gettext("{name}: {count} von mindestens {minimum} Personen.").format(
+                                name=t.name, count=regular, minimum=s["min_size"]
+                            ),
                             block=b.pk,
                             team=t.pk,
                         )
@@ -381,7 +393,9 @@ def check(entry: Entry) -> list[Hint]:
                 if s.get("max_size") is not None and regular > s["max_size"]:
                     hints.append(
                         Hint(
-                            f"{t.name}: {regular} Personen, erlaubt sind {s['max_size']}.",
+                            gettext("{name}: {count} Personen, erlaubt sind {maximum}.").format(
+                                name=t.name, count=regular, maximum=s["max_size"]
+                            ),
                             block=b.pk,
                             team=t.pk,
                         )
@@ -390,7 +404,9 @@ def check(entry: Entry) -> list[Hint]:
                 if subs and (limit is not None and subs > limit):
                     hints.append(
                         Hint(
-                            f"{t.name}: {subs} Ersatzleute, erlaubt sind {limit}.",
+                            gettext("{name}: {count} Ersatzleute, erlaubt sind {maximum}.").format(
+                                name=t.name, count=subs, maximum=limit
+                            ),
                             block=b.pk,
                             team=t.pk,
                         )
@@ -398,15 +414,35 @@ def check(entry: Entry) -> list[Hint]:
         elif b.kind == CallBlock.Kind.PERSONS:
             n = sum(1 for p in persons if p.block_id == b.pk)
             if b.required and n == 0:
-                hints.append(Hint(f"{b.label}: noch niemand gemeldet.", block=b.pk))
+                hints.append(
+                    Hint(
+                        gettext("{label}: noch niemand gemeldet.").format(label=b.label), block=b.pk
+                    )
+                )
             if s.get("min") and n < s["min"]:
-                hints.append(Hint(f"{b.label}: mindestens {s['min']} Personen.", block=b.pk))
+                hints.append(
+                    Hint(
+                        gettext("{label}: mindestens {minimum} Personen.").format(
+                            label=b.label, minimum=s["min"]
+                        ),
+                        block=b.pk,
+                    )
+                )
             if s.get("max") is not None and n > s["max"]:
-                hints.append(Hint(f"{b.label}: höchstens {s['max']} Personen.", block=b.pk))
+                hints.append(
+                    Hint(
+                        gettext("{label}: höchstens {maximum} Personen.").format(
+                            label=b.label, maximum=s["max"]
+                        ),
+                        block=b.pk,
+                    )
+                )
         else:
             value = answers.get(b.pk)
             if b.required and value in (None, "", []):
-                hints.append(Hint(f"{b.label}: Angabe fehlt.", block=b.pk))
+                hints.append(
+                    Hint(gettext("{label}: Angabe fehlt.").format(label=b.label), block=b.pk)
+                )
     hints += _check_persons(entry, persons)
     return hints
 
@@ -423,35 +459,63 @@ def _check_persons(entry: Entry, persons: list[EntryPerson]) -> list[Hint]:
     for p in persons:
         if p.membership_id is None:
             if not cond.get("guests"):
-                hints.append(Hint(f"{p.name}: Gäste sind nicht vorgesehen.", person=p.pk))
+                hints.append(
+                    Hint(
+                        gettext("{name}: Gäste sind nicht vorgesehen.").format(name=p.name),
+                        person=p.pk,
+                    )
+                )
             continue
         info = infos.get(p.membership_id)
         if p.membership_id in seen_member:
             if cond.get("one_team") or p.team_id is None:
-                hints.append(Hint(f"{p.name} ist mehrfach gemeldet.", person=p.pk))
+                hints.append(
+                    Hint(gettext("{name} ist mehrfach gemeldet.").format(name=p.name), person=p.pk)
+                )
         seen_member[p.membership_id] = p.pk
         if info is None:
             continue
         if cond.get("active") and not info.active_member:
-            hints.append(Hint(f"{p.name} ist am {on:%d.%m.%Y} kein aktives Mitglied.", person=p.pk))
+            hints.append(
+                Hint(
+                    gettext("{name} ist am {date} kein aktives Mitglied.").format(
+                        name=p.name, date=i18n.date_text(on)
+                    ),
+                    person=p.pk,
+                )
+            )
         age = _age(info.birth_date, on)
         if cond.get("min_age") is not None and (age is None or age < cond["min_age"]):
             hints.append(
                 Hint(
-                    f"{p.name}: Mindestalter {cond['min_age']} am {on:%d.%m.%Y}"
-                    + ("" if age is not None else " (Geburtsdatum fehlt)."),
+                    gettext("{name}: Mindestalter {age} am {date}").format(
+                        name=p.name, age=cond["min_age"], date=i18n.date_text(on)
+                    )
+                    + ("" if age is not None else gettext(" (Geburtsdatum fehlt).")),
                     person=p.pk,
                 )
             )
         if cond.get("max_age") is not None and age is not None and age > cond["max_age"]:
             hints.append(
-                Hint(f"{p.name}: Höchstalter {cond['max_age']} am {on:%d.%m.%Y}.", person=p.pk)
+                Hint(
+                    gettext("{name}: Höchstalter {age} am {date}.").format(
+                        name=p.name, age=cond["max_age"], date=i18n.date_text(on)
+                    ),
+                    person=p.pk,
+                )
             )
         if cond.get("member_types") and info.member_type not in cond["member_types"]:
-            hints.append(Hint(f"{p.name}: Mitgliedsart passt nicht.", person=p.pk))
+            hints.append(
+                Hint(gettext("{name}: Mitgliedsart passt nicht.").format(name=p.name), person=p.pk)
+            )
         if cond.get("units") and info.unit not in cond["units"]:
-            label = entry.organization.department_label or "Untereinheit"
-            hints.append(Hint(f"{p.name}: {label} passt nicht.", person=p.pk))
+            label = entry.organization.department_label or gettext("Untereinheit")
+            hints.append(
+                Hint(
+                    gettext("{name}: {label} passt nicht.").format(name=p.name, label=label),
+                    person=p.pk,
+                )
+            )
     if entry.department_id and seen_member:
         # Ausschreibung von oben: dieselbe Person meldet schon eine andere Untereinheit
         others = (
@@ -464,7 +528,7 @@ def _check_persons(entry: Entry, persons: list[EntryPerson]) -> list[Hint]:
             unit = o.entry.department.name if o.entry.department else ""
             hints.append(
                 Hint(
-                    f"{o.name} ist auch von {unit} gemeldet.",
+                    gettext("{name} ist auch von {unit} gemeldet.").format(name=o.name, unit=unit),
                     person=seen_member[o.membership_id],
                 )
             )

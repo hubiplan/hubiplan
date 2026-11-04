@@ -105,6 +105,11 @@ describe('Zu- und Absagen', () => {
     expect(
       within(dialog).getByRole('button', { name: 'Rückmeldung zurücknehmen' }),
     ).toBeInTheDocument()
+    const success = within(dialog).getByText('Deine Zusage ist gespeichert.')
+    expect(success).toHaveAttribute('role', 'status')
+    expect(success).toHaveAttribute('aria-atomic', 'true')
+    expect(within(dialog).getAllByText('Deine Zusage ist gespeichert.')).toHaveLength(1)
+    expect(within(dialog).getByRole('button', { name: 'Zusagen' })).toHaveFocus()
   })
 
   it('Vorstand sieht die Liste und trägt eine Zusage ein', async () => {

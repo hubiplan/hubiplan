@@ -17,7 +17,7 @@
 // Mitgliederliste bleibt die serverseitige Variante.
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { t } from '../i18n/index.ts'
+import { t, tn } from '../i18n/index.ts'
 
 export type CellValue = string | number | boolean | null | undefined
 
@@ -253,7 +253,7 @@ export function DataTable<T>({
           ? countText(visible.length, rows.length)
           : filtered
             ? t('{n} von {n2} Einträgen', { n: visible.length, n2: rows.length })
-            : t('{n} {x}', { n: rows.length, x: rows.length === 1 ? 'Eintrag' : 'Einträge' })}
+            : tn('{n} Eintrag', '{n} Einträge', rows.length)}
       </p>
 
       {shown.length === 0 ? (

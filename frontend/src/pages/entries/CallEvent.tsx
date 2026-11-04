@@ -54,8 +54,8 @@ export function CallEventCard({
           </p>
           {event.rsvp_enabled ? (
             <p className="muted">
-              {event.yes_count} {event.yes_count === 1 ? t('Zusage') : t('Zusagen')}. Wer zusagt,
-              steht unter „Meldung“ als Vorauswahl.
+              {event.yes_count} {event.yes_count === 1 ? t('Zusage') : t('Zusagen')}
+              {t('. Wer zusagt, steht unter „Meldung“ als Vorauswahl.')}
             </p>
           ) : (
             <Alert kind="info">
@@ -146,7 +146,7 @@ function EventChooser({
       {data.data.events.map((e) => (
         <option key={e.id} value={e.id}>
           {eventLabel(e)}
-          {e.call ? ` (auch bei „${e.call}“)` : ''}
+          {e.call ? t(' (auch bei „{x1}“)', { x1: e.call }) : ''}
         </option>
       ))}
     </SelectField>

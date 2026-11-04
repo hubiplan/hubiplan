@@ -9,8 +9,10 @@
 // mit festem Text. Leere Werte im Katalog gelten als fehlend.
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { sourceChecked, untranslatedUi } from './i18n-source.mjs'
 
-const root = new URL('..', import.meta.url).pathname
+const root = fileURLToPath(new URL('..', import.meta.url))
 const src = join(root, 'src')
 const catalogPath = join(src, 'i18n', 'en.json')
 const self = join(src, 'i18n', 'index.ts') // Beispiele in den Kommentaren
@@ -98,4 +100,13 @@ if (args.has('--add') && missing.length) {
   writeFileSync(catalogPath, `${JSON.stringify(sorted, null, 2)}\n`)
   console.log(`${missing.length} Schlüssel in en.json eingetragen.`)
 }
-if (args.has('--strict') && missing.length) process.exit(1)
+const raw = []
+for (const name of sourceChecked)
+  raw.push(...(await untranslatedUi(readFileSync(join(src, name), 'utf8'), name)))
+console.log(
+  `Quelltextprüfung: ${sourceChecked.length} umgestellte Dateien, ${raw.length} nicht angebundene UI-Literale`,
+)
+for (const hit of raw)
+  console.log(`  nicht angebunden: ${hit.file}:${hit.line}: ${JSON.stringify(hit.text)}`)
+// Im abgegrenzten, bereits umgestellten Umfang sind neue direkte UI-Texte ein Fehler.
+if (raw.length || (args.has('--strict') && missing.length)) process.exit(1)

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useLayoutEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { newRequestKey } from '../../api/client.ts'
@@ -22,6 +22,16 @@ export function AdmitPage() {
   const types = useLoad(() => memberApi.types(org.id), [org.id])
   const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   const [step, setStep] = useState<Step>('person')
+  const previousStep = useRef(step)
+  const personForm = useRef<HTMLFormElement>(null)
+  const stepHeading = useRef<HTMLHeadingElement>(null)
+  const unitErrorId = useId()
+  useLayoutEffect(() => {
+    if (previousStep.current === step) return
+    previousStep.current = step
+    if (step === 'person') personForm.current?.querySelector('input')?.focus()
+    else stepHeading.current?.focus()
+  }, [step])
   const [duplicates, setDuplicates] = useState<Duplicate[]>([])
   const [linked, setLinked] = useState<Duplicate | null>(null)
   const [checking, setChecking] = useState(false)
@@ -154,7 +164,7 @@ export function AdmitPage() {
       )}
 
       {step === 'person' ? (
-        <form className="card card-wide" onSubmit={checkPerson}>
+        <form ref={personForm} className="card card-wide" onSubmit={checkPerson}>
           <h2>{t('1. Person')}</h2>
           <p className="muted small">
             {fed
@@ -205,7 +215,9 @@ export function AdmitPage() {
         <form className="stack" onSubmit={save}>
           {duplicates.length > 0 && (
             <div className="card card-wide">
-              <h2>{t('Mögliche Treffer')}</h2>
+              <h2 ref={stepHeading} tabIndex={-1}>
+                {t('Mögliche Treffer')}
+              </h2>
               <p className="muted small">
                 {fed
                   ? t(
@@ -257,7 +269,9 @@ export function AdmitPage() {
           )}
 
           <div className="card card-wide">
-            <h2>{t('2. Mitgliedschaft')}</h2>
+            <h2 ref={duplicates.length === 0 ? stepHeading : undefined} tabIndex={-1}>
+              {t('2. Mitgliedschaft und Kontakt')}
+            </h2>
             <p className="muted small">
               {v.last_name}, {v.first_name} · {formatDate(v.birth_date)}{' '}
               <button type="button" className="link-button" onClick={() => setStep('person')}>
@@ -304,8 +318,13 @@ export function AdmitPage() {
               </p>
             )}
             {departments.data && departments.data.length > 0 && (
-              <fieldset className="field">
-                <span>{org.department_label_plural} (optional)</span>
+              <fieldset
+                className="field"
+                tabIndex={e.department_ids ? -1 : undefined}
+                aria-describedby={e.department_ids ? unitErrorId : undefined}
+                aria-invalid={!!e.department_ids}
+              >
+                <legend>{t('{units} (optional)', { units: org.department_label_plural })}</legend>
                 <div className="chips">
                   {departments.data
                     .filter((d) => d.is_active)
@@ -327,13 +346,17 @@ export function AdmitPage() {
                       </label>
                     ))}
                 </div>
-                {e.department_ids && <small className="field-error">{e.department_ids}</small>}
+                {e.department_ids && (
+                  <small id={unitErrorId} className="field-error">
+                    {e.department_ids}
+                  </small>
+                )}
               </fieldset>
             )}
           </div>
 
           <div className="card card-wide">
-            <h2>{t('3. Kontakt und Anschrift')}</h2>
+            <h3>{t('Kontakt und Anschrift')}</h3>
             <div className="grid-2">
               <Field
                 label={t('E-Mail-Adresse (optional)')}

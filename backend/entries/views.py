@@ -1071,7 +1071,7 @@ class SubmitView(_Mixin, APIView):
                 if hints:
                     raise ValidationError(
                         {"hints": [h.text for h in hints]}
-                        | {"detail": "Die Ausschreibung lässt so keine Meldung zu."}
+                        | {"detail": gettext("Die Ausschreibung lässt so keine Meldung zu.")}
                     )
             if entry.status == Entry.Status.RETURNED and not entry.changed and not withdraw:
                 # Rückfrage ohne Änderung beantwortet

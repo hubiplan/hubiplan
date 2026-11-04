@@ -442,3 +442,45 @@ class TestBausteine:
         _post(c, url(club, f"calls/{call['id']}/entry/submit/"), {"channel": "brief"})
         assert c.delete(url(club, f"calls/{call['id']}/")).status_code == 400
         assert Entry.objects.filter(call_id=call["id"]).exists()
+
+
+def test_hinweise_und_status_in_der_aktuellen_sprache(club):
+    from django.utils import translation
+
+    from entries.models import Call, CallBlock
+
+    call = Call.objects.create(
+        organization=club, title="Example cup", organizer="Example association"
+    )
+    CallBlock.objects.create(
+        organization=club,
+        call=call,
+        kind="mannschaften",
+        label="Teams",
+        required=True,
+        settings={"min_teams": 1},
+    )
+    entry = Entry.objects.create(organization=club, call=call)
+    with translation.override("en"):
+        hints = [hint.text for hint in services.check(entry)]
+        assert hints == ["Teams: no team entered yet.", "Teams: at least 1 team."]
+        assert str(Entry.Status.SUBMITTED.label) == "submitted"
+    with translation.override("de"):
+        assert [hint.text for hint in services.check(entry)] == [
+            "Teams: noch keine Mannschaft gemeldet.",
+            "Teams: mindestens 1 Mannschaft.",
+        ]
+
+
+def test_farbvalidierung_antwortet_in_der_aktuellen_sprache():
+    from django.utils import translation
+    from organizations.theme import check_primary
+
+    with translation.override("en"):
+        assert check_primary("#ffffff") == [
+            "The primary colour is too light on a white background (borders and icons)."
+        ]
+    with translation.override("de"):
+        assert check_primary("#ffffff") == [
+            "Die Primärfarbe ist auf weißem Hintergrund zu hell (Rahmen und Symbole)."
+        ]
