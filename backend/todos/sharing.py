@@ -134,7 +134,8 @@ def assign_series_owner(todo, owner_id):
         if rows.filter(shared=False).exists():
             raise ValidationError(
                 gettext(
-                    "Die Serie enthält private Ausgaben. Bitte deren Freigaben zuerst ausdrücklich prüfen."
+                    "Die Serie enthält private Ausgaben. "
+                    "Bitte deren Freigaben zuerst ausdrücklich prüfen."
                 )
             )
         rows.exclude(pk=todo.pk).update(owner_id=owner_id, version=F("version") + 1)
