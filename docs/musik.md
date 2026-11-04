@@ -10,6 +10,10 @@ Unter **Sollbesetzung** je Instrument und Stimme eine benötigte Anzahl festlege
 
 Mitglieder sehen ihre Einteilungen unter **Mein Bereich** und können zu- oder absagen. Die Musikverwaltung erfasst Rückmeldungen von Gästen. Kalenderabsagen bleiben beim Auftritt sichtbar. Technische Freigaben des Kalenders gelten auch für die Auftrittsverwaltung.
 
+Der fünfminütige Hintergrundjob `music.performance_tasks.performance_reminders` informiert aktive Mitglieder mit aktivem Portalzugang über neue Einteilungen, Änderungen an Termin, Treff-/Aufbauzeit, Uniform, Stimme und Programm sowie Absagen. Er sendet ausschließlich neutrale Hinweise mit Link zum Mitgliederbereich über die bestehende Ausgangspost. Fingerabdrücke und Zeitstempel verhindern wiederholte Hinweise zum selben Stand; zwischenzeitliche Änderungen werden zusammengefasst. Fehlgeschlagene Zustellungen bleiben wiederholbar. Gäste ohne Portalzugang werden nicht angeschrieben. Bestehende Einteilungen werden bei Migration als Ausgangsstand markiert und lösen keine rückwirkende Einladung aus.
+
+`remind_days` steuert je Auftritt die Erinnerung an offene Rückmeldungen (0 bis 30 Tage, Standard 3, 0 deaktiviert Erinnerungen). Es gilt der früheste Treff-, Aufbau- oder Spielbeginn. Erinnerungen erfolgen einmal je Informationsstand und mindestens einen Tag nach Einladung oder Änderung. Zugesagte, abgelehnte, abgesagte oder vergangene Einteilungen werden nicht erinnert. Zustandsdaten sind mandantengetrennt und im allgemeinen Export enthalten. Die Migration ist additiv; die Datenbankvorgabe des neuen Felds unterstützt den Rückweg auf die vorige Fassung.
+
 Migrationen ergänzen eigene Tabellen mit Organisations-RLS. Mitgliedschaften und Termine werden nicht kopiert. Vor Rückmigration die Musikdaten über den allgemeinen Datenexport sichern.
 
 ## Besetzungsvorlagen und Sammeleinteilung

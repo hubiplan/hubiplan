@@ -24,6 +24,9 @@ type Field = {
   type?: string
   options?: [string, string][]
   optional?: boolean
+  initial?: number
+  min?: number
+  max?: number
 }
 const formations: [string, string][] = [
   ['seated', t('Sitzend')],
@@ -140,6 +143,14 @@ function MusicWorkspace() {
       { key: 'meeting_place', label: t('Treffpunkt'), optional: true },
       { key: 'setup_at', label: t('Aufbau'), type: 'datetime-local', optional: true },
       { key: 'uniform', label: t('Uniform'), optional: true },
+      {
+        key: 'remind_days',
+        label: t('Erinnerung Tage vorher (0 = aus)'),
+        type: 'number',
+        initial: 3,
+        min: 0,
+        max: 30,
+      },
       { key: 'formation', label: t('Spielform'), options: formations },
       { key: 'notes', label: t('Weitere Hinweise'), type: 'textarea', optional: true },
     ],
@@ -432,7 +443,7 @@ function Editor({
           (f.type === 'checkbox'
             ? f.key === 'active'
             : f.type === 'number'
-              ? 1
+              ? (f.initial ?? 1)
               : f.optional
                 ? ''
                 : f.options?.[0]?.[0] || '')),
@@ -512,8 +523,8 @@ function Editor({
               <input
                 required={!f.optional && f.type !== 'checkbox'}
                 type={f.type || 'text'}
-                min={f.type === 'number' ? 1 : undefined}
-                max={f.type === 'number' ? 500 : undefined}
+                min={f.type === 'number' ? (f.min ?? 1) : undefined}
+                max={f.type === 'number' ? (f.max ?? 500) : undefined}
                 value={f.type === 'checkbox' ? undefined : String(values[f.key] ?? '')}
                 checked={f.type === 'checkbox' ? Boolean(values[f.key]) : undefined}
                 onChange={(e) => {

@@ -1,6 +1,7 @@
 """Musikprofile und Besetzung ergänzen Mitglieder und Kalendereinträge."""
 
 from django.conf import settings
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -110,6 +111,9 @@ class Performance(models.Model):
         default="standing",
     )
     notes = EncryptedCharField(max_length=5000, blank=True, strict=True)
+    remind_days = models.PositiveSmallIntegerField(
+        default=3, db_default=3, validators=[MaxValueValidator(30)]
+    )
 
     def __str__(self):
         return f"Auftritt {self.pk}"
@@ -148,6 +152,22 @@ class Assignment(models.Model):
 
     def __str__(self):
         return f"Einteilung {self.pk}"
+
+
+class PerformanceNotice(models.Model):
+    """Only fingerprints are retained; event details stay in the calendar."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    assignment = models.OneToOneField(Assignment, on_delete=models.CASCADE, related_name="notice")
+    fingerprint = models.CharField(max_length=64, blank=True)
+    reminder_fingerprint = models.CharField(max_length=64, blank=True)
+    last_status = models.CharField(max_length=12, blank=True)
+    attempted_at = models.DateTimeField(null=True, blank=True)
+    notified_at = models.DateTimeField(null=True, blank=True)
+    reminded_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Auftrittshinweis {self.pk}"
 
 
 class PerformanceAccount(models.Model):

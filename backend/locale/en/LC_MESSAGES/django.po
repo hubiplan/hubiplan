@@ -5856,3 +5856,18 @@ msgstr "The absence must end after it starts."
 
 msgid "Endzeit auf der Webseite ausblenden"
 msgstr "Hide end time on the website"
+
+msgid "Neue Auftrittseinteilung im Mitgliederbereich"
+msgstr "New performance assignment in the member area"
+
+msgid "Erinnerung an eine Auftrittsrückmeldung"
+msgstr "Reminder to respond to a performance assignment"
+
+msgid "Auftritt abgesagt"
+msgstr "Performance cancelled"
+
+msgid "Auftrittsinformationen geändert"
+msgstr "Performance information changed"
+
+msgid "Im Mitgliederbereich liegen neue oder geänderte Auftrittsinformationen oder eine noch offene Rückmeldung für Sie vor: {link}"
+msgstr "New or updated performance information or a pending response is available in your member area: {link}"

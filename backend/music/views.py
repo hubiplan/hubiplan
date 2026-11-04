@@ -143,6 +143,7 @@ class MusicPerformanceSerializer(ScopedSerializer):
             "uniform",
             "formation",
             "notes",
+            "remind_days",
         ]
 
 
