@@ -40,6 +40,11 @@ class EnsembleTemplateSerializer(ScopedSerializer):
         fields = ["id", "name", "note", "active", "positions"]
 
     def validate_positions(self, rows):
+        # PATCH ersetzt diese Liste vollständig. DRF unterdrückt bei partial=True
+        # auch in Kindobjekten Vorgaben und Pflichtfelder; hier erneut vollständig prüfen.
+        check = TemplatePositionInput(data=rows, many=True, min_length=1, max_length=100)
+        check.is_valid(raise_exception=True)
+        rows = check.validated_data
         keys = [voice(r["instrument"], r["register"]) for r in rows]
         if len(keys) != len(set(keys)):
             raise serializers.ValidationError(

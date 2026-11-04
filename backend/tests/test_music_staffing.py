@@ -102,6 +102,11 @@ def test_template_crud_validation_and_retry(c, staffing):
         url, {"positions": [{"instrument": "Tuba", "required": 4}]}, content_type=JSON
     )
     assert response.json()["positions"][0]["required"] == 4
+    assert response.json()["positions"][0]["register"] == ""
+    assert c.patch(url, {"positions": [{"required": 2}]}, content_type=JSON).status_code == 400
+    assert (
+        c.patch(url, {"positions": [{"instrument": "Tuba"}]}, content_type=JSON).status_code == 400
+    )
     assert c.patch(url, {"active": False}, content_type=JSON).json()["active"] is False
     bad = {
         **data,
