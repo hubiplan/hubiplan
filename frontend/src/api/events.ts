@@ -20,6 +20,7 @@ export interface Occurrence {
   ends_at: string
   original_start: string
   all_day: boolean
+  hide_end_time?: boolean
   location: string
   address: string
   category: EventCategory | null
@@ -120,6 +121,7 @@ export interface EventDetail {
   address: string
   category: EventCategory | null
   all_day: boolean
+  hide_end_time?: boolean
   starts_at: string
   ends_at: string
   visibility: Visibility
@@ -160,6 +162,7 @@ export interface EventInput {
   address: string
   category: number | null
   all_day: boolean
+  hide_end_time?: boolean
   starts_at: string
   ends_at: string
   visibility: Visibility

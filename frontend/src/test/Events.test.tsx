@@ -56,7 +56,7 @@ describe('Zeitrechnung', () => {
 
 describe('Kalender', () => {
   it('zeigt Termine im Monat und öffnet die Details', async () => {
-    fakeApi({
+    const calls = fakeApi({
       [monthKey()]: () =>
         listResponse([
           occurrence(),
@@ -79,6 +79,7 @@ describe('Kalender', () => {
           ...occurrence(),
           id: 1,
           description: 'Mit Neuwahlen.',
+          hide_end_time: true,
           visibility_label: 'Mitglieder',
           repeat: 'none',
           repeat_label: 'einmalig',
@@ -104,6 +105,18 @@ describe('Kalender', () => {
           },
         },
       }),
+      [`PATCH ${base}events/1/`]: (init) => ({
+        status: 200,
+        body: {
+          ...occurrence(),
+          ...JSON.parse(String(init?.body)),
+          id: 1,
+          category: occurrence().category,
+          attachments: [],
+          exceptions: [],
+          rsvp: { enabled: false },
+        },
+      }),
     })
     render(
       <MemoryRouter>
@@ -122,6 +135,20 @@ describe('Kalender', () => {
     expect(await within(dialog).findByText('Mit Neuwahlen.')).toBeInTheDocument()
     expect(within(dialog).getByText('Einladung.pdf')).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: 'Bearbeiten' })).toBeInTheDocument()
+    const user = userEvent.setup()
+    await user.click(within(dialog).getByRole('button', { name: 'Bearbeiten' }))
+    const editForm = within(dialog).getByRole('form', { name: 'Termin' })
+    const hideEnd = within(editForm).getByRole('checkbox', {
+      name: 'Endzeit auf der Webseite ausblenden',
+    })
+    expect(hideEnd).toBeChecked()
+    await user.click(hideEnd)
+    await user.click(within(editForm).getByRole('button', { name: 'Schließen' }))
+    const patch = calls.find((c) => c.key === `PATCH ${base}events/1/`)
+    const body = JSON.parse(String(patch?.init?.body))
+    expect(body.hide_end_time).toBe(false)
+    const end = berlin(occurrence().ends_at)
+    expect(body.ends_at).toBe(`${end.date}T${end.time}:00`)
   })
 
   it('öffnet einen Termin über den Direktlink', async () => {
@@ -236,11 +263,18 @@ describe('Kalender', () => {
     const dialog = await screen.findByRole('dialog', { name: 'Neuer Termin' })
     await user.type(within(dialog).getByLabelText('Titel'), 'Königsschießen')
     await user.selectOptions(within(dialog).getByLabelText(/Wer sieht den Termin/), 'public')
+    const hideEnd = within(dialog).getByRole('checkbox', {
+      name: 'Endzeit auf der Webseite ausblenden',
+    })
+    expect(hideEnd).not.toBeChecked()
+    await user.click(hideEnd)
     await user.click(within(dialog).getByRole('button', { name: 'Termin anlegen' }))
     const post = calls.find((c) => c.key === `POST ${base}events/`)
     const body = JSON.parse(String(post?.init?.body))
     expect(body.title).toBe('Königsschießen')
     expect(body.visibility).toBe('public')
+    expect(body.hide_end_time).toBe(true)
+    expect(body.ends_at).toMatch(/T21:00:00$/)
     expect(body.starts_at).toMatch(/T19:00:00$/)
     expect(body.repeat).toBe('none')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()

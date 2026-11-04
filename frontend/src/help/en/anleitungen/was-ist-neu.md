@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Events: You can hide an event’s end time on the website when only the start time is known. The setting is available when creating or editing an event; the entered end time is kept internally.
 - Events: External calendars show their events in your own calendar, e.g. the federation’s from Vereinsplaner or from a calendar subscription (iCal). HUBIplan fetches them every hour; individual ones can be hidden (Events › External calendars).
 - Website: For each text you can choose whether the caption appears below the image and in the image carousel. The default is without a caption, for existing pages too.
 - Website: New “Klassisch” (classic) design with a light header, a coloured line on top and menu buttons in the club colour. To keep the previous Klassisch, save it as a package first and import it as an own design.

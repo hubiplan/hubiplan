@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Termine: Pro Termin lässt sich die Endzeit auf der Webseite ausblenden, wenn nur der Beginn bekannt ist. Die Einstellung steht beim Anlegen und Bearbeiten; intern bleibt die eingetragene Endzeit erhalten.
 - Termine: Fremde Kalender zeigen ihre Termine im eigenen Kalender, z. B. die des Dachverbands aus Vereinsplaner oder aus einem Kalender-Abo (iCal). HUBIplan holt sie stündlich ab; einzelne lassen sich ausblenden (Termine › Fremde Kalender).
 - Webseite: Je Text lässt sich wählen, ob unter dem Bild und im Bilderkarussell die Bildunterschrift steht. Standard ist ohne Unterschrift, auch für bestehende Seiten.
 - Webseite: Neues Design „Klassisch“ mit hellem Kopf, farbiger Linie oben und Menüknöpfen in der Vereinsfarbe. Wer das bisherige Klassisch behalten will, speichert es vorher als Paket und spielt es als eigenes Design ein.

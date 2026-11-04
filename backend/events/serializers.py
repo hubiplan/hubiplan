@@ -51,6 +51,7 @@ class EventWriteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "address",
             "category",
             "all_day",
+            "hide_end_time",
             "starts_at",
             "ends_at",
             "visibility",
