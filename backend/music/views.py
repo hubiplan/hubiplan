@@ -1,6 +1,7 @@
 """Alle Verweise werden innerhalb der berechtigten Organisation aufgelöst."""
 
 from django.db import transaction
+from django.db.models.deletion import ProtectedError
 from django.utils.translation import gettext
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
@@ -71,6 +72,14 @@ class ScopedSerializer(serializers.ModelSerializer):
             ):
                 raise serializers.ValidationError(
                     gettext("Für diese Stimme fehlt die instrumentale Fähigkeit.")
+                )
+        if self.Meta.model is Position and self.instance:
+            if self.instance.assignment_set.exists() and any(
+                key in attrs and attrs[key] != getattr(self.instance, key)
+                for key in ("instrument", "register")
+            ):
+                raise serializers.ValidationError(
+                    gettext("Bitte zuerst die zugehörigen Einteilungen entfernen.")
                 )
         return attrs
 
@@ -167,6 +176,14 @@ class MusicViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     def get_create_kwargs(self):
         return {"organization": self.org}
 
+    def perform_destroy(self, instance):
+        try:
+            super().perform_destroy(instance)
+        except ProtectedError as exc:
+            raise serializers.ValidationError(
+                gettext("Bitte zuerst die zugehörigen Einteilungen entfernen.")
+            ) from exc
+
     @transaction.atomic
     def perform_create(self, serializer):
         # Auch indirekte Auftrittsverweise müssen sichtbar sein.
@@ -216,6 +233,7 @@ class MusicianViewSet(MusicViewSet):
 
 class SkillViewSet(MusicViewSet):
     serializer_class = SkillSerializer
+    http_method_names = [*MusicViewSet.http_method_names, "delete"]
 
 
 class PerformanceViewSet(MusicViewSet):
@@ -234,7 +252,9 @@ class PerformanceViewSet(MusicViewSet):
 
 class PositionViewSet(MusicViewSet):
     serializer_class = PositionSerializer
+    http_method_names = [*MusicViewSet.http_method_names, "delete"]
 
 
 class AssignmentViewSet(MusicViewSet):
     serializer_class = AssignmentSerializer
+    http_method_names = [*MusicViewSet.http_method_names, "delete"]

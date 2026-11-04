@@ -5661,3 +5661,6 @@ msgstr "The instrumental skill for this part is missing."
 
 msgid "Bestehende Verknüpfungen können nicht umgehängt werden."
 msgstr "Existing links cannot be reassigned."
+
+msgid "Bitte zuerst die zugehörigen Einteilungen entfernen."
+msgstr "Please remove the related assignments first."

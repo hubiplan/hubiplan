@@ -5,9 +5,59 @@ import pytest
 
 from core.tenancy import tenant_context
 from events.models import Event
-from music.models import Musician, Performance, Position, Skill
+from music.models import Assignment, Musician, Performance, Position, Skill
+from portal.models import PortalAccess
 
+from .factories import give_role, make_member, make_user
 from .test_m9_billing import JSON, c, club  # noqa: F401
+from .test_rls import as_app_role
+
+
+def test_personal_response_is_limited_to_own_assignment(api, club, music):
+    _, event = music
+    member = make_member(club, "Alex", "Beispiel")
+    user = make_user("musik@example.org")
+    with tenant_context(club.pk):
+        access = PortalAccess.objects.create(organization=club, membership=member, user=user)
+        musician = Musician.objects.create(organization=club, membership=member)
+        other = Musician.objects.create(organization=club, name="Anderer Gast")
+        performance = Performance.objects.create(organization=club, event=event)
+        position = Position.objects.create(
+            organization=club, performance=performance, instrument="Tuba"
+        )
+        own = Assignment.objects.create(
+            organization=club, performance=performance, position=position, musician=musician
+        )
+        foreign = Assignment.objects.create(
+            organization=club, performance=performance, position=position, musician=other
+        )
+    client = api(user)
+    url = f"/api/portal/{access.pk}/music/"
+    assert [r["id"] for r in client.get(url).json()] == [own.pk]
+    assert (
+        client.post(url, {"id": foreign.pk, "status": "accepted"}, content_type=JSON).status_code
+        == 404
+    )
+    assert (
+        client.post(url, {"id": own.pk, "status": "accepted"}, content_type=JSON).status_code == 200
+    )
+
+
+def test_calendar_right_and_read_only(api, club, music):
+    base, _ = music
+    user = make_user("musik@example.org")
+    give_role(user, club, permissions=["music.view"], name="Musik lesen")
+    client = api(user)
+    assert client.get(f"{base}/performances/").json() == []
+    assert client.post(f"{base}/musicians/", {"name": "Gast"}, content_type=JSON).status_code == 403
+
+
+def test_music_rls(club, orgs, music):
+    with tenant_context(club.pk):
+        row = Musician.objects.create(organization=club, name="Gast A")
+    with as_app_role(), tenant_context(orgs["b"].pk):
+        assert not Musician.objects.filter(pk=row.pk).exists()
+
 
 pytestmark = pytest.mark.django_db
 

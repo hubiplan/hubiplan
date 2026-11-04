@@ -6,6 +6,7 @@ import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { confirmDialog } from '../../components/dialog.ts'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; members: Row[]; partners: Row[] }
@@ -153,7 +154,7 @@ function MusicWorkspace() {
       </nav>
       <p>
         {t(
-          'Auftritte ergänzen eigene Einzeltermine. Aufgaben und Rückmeldungen der Mitglieder bleiben beim Termin erreichbar.',
+          'Auftritte ergänzen eigene Einzeltermine. Mitglieder beantworten ihre Einteilungen im eigenen Bereich.',
         )}
       </p>
       {error && <Alert kind="error">{error}</Alert>}
@@ -183,77 +184,106 @@ function MusicWorkspace() {
         />
       )}
       <div className="stack">
-        {rows.map((r) => (
-          <article className="card stack" key={r.id}>
-            <strong>
-              {kind === 'musicians'
-                ? r.display_name
-                : kind === 'performances'
-                  ? r.title
-                  : kind === 'assignments'
-                    ? musicianName(r.musician)
-                    : r.instrument}
-            </strong>
-            {kind === 'skills' && (
-              <p>
-                {musicianName(r.musician)} · {r.register} ·{' '}
-                {r.primary ? t('Hauptinstrument') : t('Nebeninstrument')}
-              </p>
-            )}
-            {kind === 'musicians' && (
-              <p>
-                {r.contact} · {r.active ? t('Aktiv') : t('Inaktiv')}
-              </p>
-            )}
-            {kind === 'performances' && (
-              <>
+        {rows
+          .filter(
+            (r) =>
+              kind !== 'musicians' ||
+              !params.get('mitglied') ||
+              String(r.membership) === params.get('mitglied'),
+          )
+          .map((r) => (
+            <article className="card stack" key={r.id}>
+              <strong>
+                {kind === 'musicians'
+                  ? r.display_name
+                  : kind === 'performances'
+                    ? r.title
+                    : kind === 'assignments'
+                      ? musicianName(r.musician)
+                      : r.instrument}
+              </strong>
+              {['positions', 'assignments'].includes(kind) && (
+                <p>{d.performances.find((p) => p.id === r.performance)?.title}</p>
+              )}
+              {kind === 'skills' && (
                 <p>
-                  {r.starts_at ? new Date(String(r.starts_at)).toLocaleString() : ''} –{' '}
-                  {r.ends_at ? new Date(String(r.ends_at)).toLocaleString() : ''} · {r.location}
+                  {musicianName(r.musician)} · {r.register} ·{' '}
+                  {r.primary ? t('Hauptinstrument') : t('Nebeninstrument')}
                 </p>
+              )}
+              {kind === 'musicians' && (
                 <p>
-                  {r.meeting_at ? new Date(String(r.meeting_at)).toLocaleString() : ''} ·{' '}
-                  {r.meeting_place} · {r.uniform} ·{' '}
-                  {formations.find((f) => f[0] === r.formation)?.[1]}{' '}
-                  {r.cancelled ? t('Abgesagt') : ''}
+                  {r.contact} · {r.active ? t('Aktiv') : t('Inaktiv')}
                 </p>
-                <p>{r.notes}</p>
-                <Link to={`/aufgaben?termin=${r.event}`}>{t('Aufgaben zum Auftritt')}</Link>
-                <Link to={`/termine?termin=${r.event}`}>{t('Zum Termin')}</Link>
+              )}
+              {kind === 'performances' && (
+                <>
+                  <p>
+                    {r.starts_at ? new Date(String(r.starts_at)).toLocaleString() : ''} –{' '}
+                    {r.ends_at ? new Date(String(r.ends_at)).toLocaleString() : ''} · {r.location}
+                  </p>
+                  <p>
+                    {r.meeting_at ? new Date(String(r.meeting_at)).toLocaleString() : ''} ·{' '}
+                    {r.meeting_place} · {r.uniform} ·{' '}
+                    {formations.find((f) => f[0] === r.formation)?.[1]}{' '}
+                    {r.cancelled ? t('Abgesagt') : ''}
+                  </p>
+                  <p>{r.notes}</p>
+                  <Link to={`/aufgaben?termin=${r.event}`}>{t('Aufgaben zum Auftritt')}</Link>
+                  <Link to={`/termine?termin=${r.event}`}>{t('Zum Termin')}</Link>
+                  <p>
+                    {t('Besetzungsgröße')}:{' '}
+                    {d.positions
+                      .filter((p) => p.performance === r.id)
+                      .reduce((n, p) => n + Number(p.required), 0)}
+                  </p>
+                </>
+              )}
+              {kind === 'positions' && (
                 <p>
-                  {t('Besetzungsgröße')}:{' '}
-                  {d.positions
-                    .filter((p) => p.performance === r.id)
-                    .reduce((n, p) => n + Number(p.required), 0)}
-                </p>
-              </>
-            )}
-            {kind === 'positions' && (
-              <p>
-                {r.register} · {t('Sollbesetzung')}: {r.required} · {t('Zugesagt')}:{' '}
-                {d.assignments.filter((a) => a.position === r.id && a.status === 'accepted').length}{' '}
-                · {t('Fehlend')}:{' '}
-                {Math.max(
-                  0,
-                  Number(r.required) -
+                  {r.register} · {t('Sollbesetzung')}: {r.required} · {t('Zugesagt')}:{' '}
+                  {
                     d.assignments.filter((a) => a.position === r.id && a.status === 'accepted')
-                      .length,
-                )}
-              </p>
-            )}
-            {kind === 'assignments' && (
-              <p>
-                {d.positions.find((p) => p.id === r.position)?.instrument} ·{' '}
-                {statuses.find((s) => s[0] === r.status)?.[1]}
-              </p>
-            )}
-            {canEdit && (
-              <button className="button button-ghost" onClick={() => choose(kind, String(r.id))}>
-                {t('Bearbeiten')}
-              </button>
-            )}
-          </article>
-        ))}
+                      .length
+                  }{' '}
+                  · {t('Fehlend')}:{' '}
+                  {Math.max(
+                    0,
+                    Number(r.required) -
+                      d.assignments.filter((a) => a.position === r.id && a.status === 'accepted')
+                        .length,
+                  )}
+                </p>
+              )}
+              {kind === 'assignments' && (
+                <p>
+                  {d.positions.find((p) => p.id === r.position)?.instrument} ·{' '}
+                  {statuses.find((s) => s[0] === r.status)?.[1]}
+                </p>
+              )}
+              {canEdit && (
+                <button className="button button-ghost" onClick={() => choose(kind, String(r.id))}>
+                  {t('Bearbeiten')}
+                </button>
+              )}
+              {canEdit && ['skills', 'positions', 'assignments'].includes(kind) && (
+                <button
+                  className="button button-ghost"
+                  onClick={async () => {
+                    if (!(await confirmDialog(t('Eintrag entfernen?')))) return
+                    try {
+                      await api.delete(`${base}${kind}/${r.id}/`)
+                      await load.reload()
+                    } catch (err) {
+                      setError(errorMessage(err))
+                    }
+                  }}
+                >
+                  {t('Entfernen')}
+                </button>
+              )}
+            </article>
+          ))}
       </div>
     </section>
   )
