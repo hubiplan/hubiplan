@@ -677,3 +677,22 @@ def test_vorpruefung_prueft_verpackung_auch_bei_gefuelltem_lesecache(orgs):
     with pytest.raises(CommandError, match="nicht entpacken"):
         start(org)
     assert not DataKeyRotation.objects.exists()
+
+
+@pytest.mark.parametrize("completed", [False, True])
+def test_leere_dateien_werden_vor_und_nach_dem_wechsel_authentifiziert(orgs, completed):
+    with rls_bypass():
+        org = orgs["c"]
+        _, path = private_file(org, b"")
+        if completed:
+            start(org)
+        damaged = bytearray(path.read_bytes())
+        damaged[-1] ^= 1
+        path.write_bytes(damaged)
+        before_keys = list(DataKey.objects.values())
+        with pytest.raises(CommandError, match="nicht vollständig lesbar"):
+            run(org, "--pruefen") if completed else start(org)
+        assert list(DataKey.objects.values()) == before_keys
+        assert DataKeyRotation.objects.exists() == completed
+        with pytest.raises(crypto.DecryptionError):
+            crypto.decrypt_bytes(path.read_bytes())
