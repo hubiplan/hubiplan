@@ -199,7 +199,7 @@ function RemoteGrant({
           <caption>{t('Fortschritt der Zieleinheit')}</caption>
           <thead>
             <tr>
-              <th>{t('Ausgabe')}</th>
+              <th>{t('Serienausgabe')}</th>
               <th>{t('Frist')}</th>
               <th>{t('Status')}</th>
             </tr>
