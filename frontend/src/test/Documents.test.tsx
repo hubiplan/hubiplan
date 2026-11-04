@@ -389,3 +389,91 @@ describe('Dokumenten-Explorer', () => {
     )
   })
 })
+
+describe('Explorer in weiteren Bereichen', () => {
+  it('zeigt im Mitgliederbereich nur lesbare Dokumente mit Abteilung und Ansichtswechsel', async () => {
+    const data = overview(false)
+    const portalBase = '/api/portal/5/documents/'
+    fakeApi({
+      [SESSION]: () => ({ status: 200, body: { status: 200, data: { user: testUser } } }),
+      'GET /api/me/contexts/': () => ({
+        status: 200,
+        body: {
+          departments: [],
+          portal: [
+            {
+              id: 5,
+              club_id: 7,
+              club_name: 'Musterverein',
+              first_name: 'Erika',
+              last_name: 'Muster',
+              theme: testOrg().theme,
+            },
+          ],
+        },
+      }),
+      [`GET ${portalBase}`]: () => ({
+        status: 200,
+        body: {
+          ...data,
+          shared: [],
+          from_below: [],
+          folders: [{ ...data.folders[0], department: 'Musikzug' }],
+        },
+      }),
+    })
+    renderApp('/dokumente')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: /Protokolle.*Musikzug/ }))
+    expect(screen.getByText('Jahreshauptversammlung')).toBeInTheDocument()
+    expect(screen.getByText('Musikzug')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Hochladen' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Bearbeiten' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Papierkorb' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Listenansicht' }))
+    await user.type(screen.getByRole('searchbox'), 'Neuwahlen')
+    expect(screen.getByText('Jahreshauptversammlung')).toBeInTheDocument()
+    expect(screen.queryByText('Vorstandssitzung')).not.toBeInTheDocument()
+  })
+
+  it('behält die Freigabe der Abteilung für den Bürger-Schützenverein bei', async () => {
+    const deptBase = '/api/depts/3/documents/'
+    const shareLabel = 'Für den Bürger-Schützenverein freigeben (nur lesen)'
+    const calls = fakeApi({
+      [SESSION]: () => ({ status: 200, body: { status: 200, data: { user: testUser } } }),
+      'GET /api/me/contexts/': () => ({
+        status: 200,
+        body: {
+          departments: [
+            {
+              id: 3,
+              name: 'Musikzug',
+              club_id: 7,
+              club_name: 'Musterverein',
+              label: 'Zug',
+              permissions: ['dept.docs.manage'],
+              theme: testOrg().theme,
+            },
+          ],
+          portal: [],
+        },
+      }),
+      [`GET ${deptBase}`]: () => ({
+        status: 200,
+        body: { ...overview(), share_up_label: shareLabel },
+      }),
+      [`PATCH ${deptBase}folders/1/`]: () => ({ status: 200, body: {} }),
+    })
+    renderApp('/dokumente')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: /Protokolle/ }))
+    expect(screen.queryByText('fester Ordner')).not.toBeInTheDocument()
+    await user.click(screen.getByLabelText(shareLabel))
+    expect(
+      calls.some(
+        (c) =>
+          c.key === `PATCH ${deptBase}folders/1/` && JSON.parse(String(c.init?.body)).shared_up,
+      ),
+    ).toBe(true)
+  })
+})

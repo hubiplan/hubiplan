@@ -396,21 +396,34 @@ function Library({
             {foundFixed.map(fixedCard)}
             {foundFolders.map(folderCard)}
           </ul>
-          {foundDocuments.map(({ entry, doc }) => (
-            <div key={`${entry.key}:${doc.id}`} className="doc-search-result">
-              <button
-                type="button"
-                className="button button-ghost"
-                onClick={() => navigate(entry.key)}
-              >
-                {entry.folder.name}
-                {entry.folder.from ? ` · ${entry.folder.from}` : ''}
-              </button>
-              <ul className="statute-list doc-list">
-                <DocumentRow doc={doc} folder={entry.folder} {...ctx} manage={entry.writable} />
-              </ul>
-            </div>
-          ))}
+          {entries.map((entry) => {
+            const documents = foundDocuments.filter((hit) => hit.entry.key === entry.key)
+            return (
+              documents.length > 0 && (
+                <div key={entry.key} className="doc-search-result">
+                  <button
+                    type="button"
+                    className="button button-ghost"
+                    onClick={() => navigate(entry.key)}
+                  >
+                    {entry.folder.name}
+                    {entry.folder.from ? ` · ${entry.folder.from}` : ''}
+                  </button>
+                  <ul className="statute-list doc-list">
+                    {documents.map(({ doc }) => (
+                      <DocumentRow
+                        key={doc.id}
+                        doc={doc}
+                        folder={entry.folder}
+                        {...ctx}
+                        manage={entry.writable}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              )
+            )
+          })}
         </section>
       ) : activeFixed && orgId ? (
         <section className="doc-folder" aria-label={activeFixed.name}>
@@ -586,6 +599,7 @@ function FolderView({
       <div className="doc-folder-heading">
         <FolderIcon locked={folder.visibility === 'board'} />
         <h2>{folder.name}</h2>
+        {folder.department && <span className="badge">{folder.department}</span>}
         <span className="badge">{from ? t('von {from}', { from }) : folder.visibility_label}</span>
         {!from && folder.shared_up && <span className="badge">{t('nach oben freigegeben')}</span>}
         <span className="muted small">
