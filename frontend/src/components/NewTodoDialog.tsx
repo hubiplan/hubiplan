@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useId, useMemo, useRef, useState } from 'react'
 import { Modal } from './Modal.tsx'
 import { TodoEditor } from './TodoEditor.tsx'
 import { TodoSharing } from './TodoSharing.tsx'
@@ -32,6 +32,8 @@ export function NewTodoDialog({
   const [perUnit, setPerUnit] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const generation = useRef(0)
+  const formId = useId()
+  const [busy, setBusy] = useState(false)
   const draft = useMemo<Todo>(
     () => ({
       id: 0,
@@ -87,6 +89,8 @@ export function NewTodoDialog({
         <TodoEditor
           key={`editor-${task?.id ?? 'draft'}`}
           base={base}
+          formId={task ? undefined : formId}
+          onBusy={setBusy}
           todo={task ?? undefined}
           initialEvent={initialEvent}
           extraValues={canShare ? { shares, ...(foreign ? { per_unit: perUnit } : {}) } : undefined}
@@ -134,11 +138,18 @@ export function NewTodoDialog({
             </div>
           </>
         ) : (
-          <p className="muted">
-            {t(
-              'Nach dem Anlegen kannst du Anhänge, Erinnerungen und Wiederholung direkt in diesem Dialog ergänzen.',
-            )}
-          </p>
+          <>
+            <p className="muted">
+              {t(
+                'Nach dem Anlegen kannst du Anhänge, Erinnerungen und Wiederholung direkt in diesem Dialog ergänzen.',
+              )}
+            </p>
+            <div className="todo-dialog-actions button-row">
+              <button className="button button-primary" type="submit" form={formId} disabled={busy}>
+                {t('Anlegen')}
+              </button>
+            </div>
+          </>
         )}
       </div>
     </Modal>

@@ -106,9 +106,33 @@
 .modal:has(.todo-dialog) {
   width: min(56rem, calc(100vw - 2rem));
   max-width: none;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
+.todo-dialog > .card {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.todo-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.todo-dialog-actions {
+  position: sticky;
+  bottom: 0;
+  padding-block: 1rem;
+  background: var(--color-surface, #fff);
 }
 
 @media (max-width: 40rem) {
+  .todo-dates {
+    grid-template-columns: 1fr;
+  }
   .todo-toolbar {
     align-items: stretch;
   }
@@ -117,5 +141,24 @@
   }
   .todo-workspace .task-list > li > .button:last-child {
     margin-inline-start: 0;
+  }
+}
+.modal-backdrop:has(.todo-dialog) {
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.modal:has(.todo-dialog) {
+  box-sizing: border-box;
+}
+
+.todo-dialog .field {
+  margin-bottom: 0;
+}
+
+@media (max-width: 40rem) {
+  .modal:has(.todo-dialog),
+  .todo-dialog > .card {
+    padding: 1rem;
   }
 }

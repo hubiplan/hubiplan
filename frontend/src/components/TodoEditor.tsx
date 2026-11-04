@@ -23,6 +23,8 @@ export function TodoEditor({
   onSaved,
   extraValues,
   onCreated,
+  formId,
+  onBusy,
 }: {
   base: string
   todo?: Todo
@@ -30,10 +32,15 @@ export function TodoEditor({
   onSaved: () => void
   extraValues?: object
   onCreated?: (todo: Todo) => void
+  formId?: string
+  onBusy?: (busy: boolean) => void
 }) {
   const version = useRef(todo?.version ?? 1)
   const baseline = useRef(todoFields(todo))
   const form = useForm(todoFields(todo))
+  useEffect(() => {
+    onBusy?.(form.busy)
+  }, [form.busy, onBusy])
   useEffect(() => {
     // Statuswechsel dürfen die eigene Versionsbasis vorziehen, externe Inhaltsänderungen nicht.
     if (todo && JSON.stringify(todoFields(todo)) === JSON.stringify(baseline.current))
@@ -73,6 +80,7 @@ export function TodoEditor({
   return (
     <form
       className="card"
+      id={formId}
       onSubmit={(event) => {
         event.preventDefault()
         if (!todo)
@@ -114,30 +122,32 @@ export function TodoEditor({
             onChange={(event) => form.set('description', event.target.value)}
           />
         </label>
-        <Field
-          label={t('Frist')}
-          type="date"
-          value={form.values.due_date}
-          disabled={!writable}
-          error={form.errors.due_date}
-          onChange={(event) => form.set('due_date', event.target.value)}
-        />
-        <Field
-          label={t('Uhrzeit')}
-          type="time"
-          value={form.values.due_time}
-          disabled={!writable || !form.values.due_date}
-          error={form.errors.due_time}
-          onChange={(event) => form.set('due_time', event.target.value)}
-        />
+        <div className="todo-dates">
+          <Field
+            label={t('Frist')}
+            type="date"
+            value={form.values.due_date}
+            disabled={!writable}
+            error={form.errors.due_date}
+            onChange={(event) => form.set('due_date', event.target.value)}
+          />
+          <Field
+            label={t('Uhrzeit')}
+            type="time"
+            value={form.values.due_time}
+            disabled={!writable || !form.values.due_date}
+            error={form.errors.due_time}
+            onChange={(event) => form.set('due_time', event.target.value)}
+          />
+        </div>
       </details>
       {todo ? (
         <SaveStatus auto={auto} />
-      ) : (
+      ) : !formId ? (
         <button className="button" disabled={form.busy}>
           {t('Anlegen')}
         </button>
-      )}
+      ) : null}
       {form.message && <p role="status">{form.message.text}</p>}
     </form>
   )
