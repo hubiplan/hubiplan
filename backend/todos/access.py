@@ -45,23 +45,31 @@ def scope_for(user, org_id=None, dept_id=None):
         and "roles.preview" in own_permissions_in(user, result.org)
     ):
         role_id = selected.role_id
-    set_rls(result.org.pk, user.pk, scope_id=scope_of(result.org.pk), todo_role_id=role_id)
+    set_rls(
+        result.org.pk,
+        user.pk,
+        scope_id=scope_of(result.org.pk),
+        todo_role_id=role_id,
+        todo_department_id=result.department_id,
+    )
     return result
 
 
 def visible(user, scope, *, deleted=False):
     qs = Todo.objects.filter(
         withdrawn=False,
-        organization=scope.org,
-        department_id=scope.department_id,
         deleted_at__isnull=not deleted,
     )
     shares = shares_for(user, scope)
     if active_preview(user, scope) is not None:
         return qs.filter(shared=True, pk__in=shares.values("todo_id"))
-    return qs.filter(
-        Q(created_by=user) | Q(owner=user) | Q(shared=True, pk__in=shares.values("todo_id"))
-    )
+    local = Q(organization=scope.org, department_id=scope.department_id)
+    shared = Q(shared=True, pk__in=shares.values("todo_id")) & (Q(per_unit=False) | local)
+    return qs.filter((local & (Q(created_by=user) | Q(owner=user))) | shared)
+
+
+def local_task(todo, scope):
+    return todo.organization_id == scope.org.pk and todo.department_id == scope.department_id
 
 
 def active_preview(user, scope):
@@ -113,13 +121,13 @@ def shares_for(user, scope):
 def can_edit(todo, user, scope):
     if preview.current() is not None or "todos.view" not in scope.permissions:
         return False
-    return todo.owner_id == user.pk or (
+    return (local_task(todo, scope) and todo.owner_id == user.pk) or (
         todo.shared and shares_for(user, scope).filter(todo=todo, level="edit").exists()
     )
 
 
 def can_delete(todo, user, scope):
-    return can_edit(todo, user, scope) and todo.owner_id == user.pk
+    return local_task(todo, scope) and can_edit(todo, user, scope) and todo.owner_id == user.pk
 
 
 def owner_available(todo):
@@ -138,13 +146,14 @@ def owner_available(todo):
 def can_take_over(todo, user, scope):
     return bool(
         todo.shared
+        and local_task(todo, scope)
         and preview.current() is None
         and {"todos.edit", "roles.edit"} <= scope.permissions
         and not owner_available(todo)
     )
 
 
-def undo_problem(change_set, user):
+def undo_problem(change_set, user, task_scope=None):
     """Keine Bereichsrechte als Ersatz für die heutige Aufgabenberechtigung."""
     records = list(change_set.records.all())
     if change_set.user_id != user.pk:
@@ -165,10 +174,14 @@ def undo_problem(change_set, user):
         if problem:
             return problem
         try:
-            scope = scope_for(user, org_id=todo.organization_id, dept_id=todo.department_id)
+            scope = task_scope or scope_for(
+                user, org_id=todo.organization_id, dept_id=todo.department_id
+            )
         except (NotFound, PermissionDenied):
             return gettext("Für diese Aufgabe fehlt dir die Berechtigung.")
         if not can_edit(todo, user, scope):
+            return gettext("Für diese Aufgabe fehlt dir die Berechtigung.")
+        if not visible(user, scope, deleted=bool(todo.deleted_at)).filter(pk=todo.pk).exists():
             return gettext("Für diese Aufgabe fehlt dir die Berechtigung.")
         fields = set(rec.before or {}) | set(rec.after or {})
         if (

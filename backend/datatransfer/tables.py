@@ -237,7 +237,15 @@ FRESH_VALUES = {
 SECRET_FIELDS = {
     "todos.todoseries": {"owner", "source_series", "shares", "documents"},
     # Zugriffsrechte werden am Ziel ausdrücklich neu vergeben, keine fremden Kontonummern.
-    "todos.todo": {"origin", "owner", "done_by", "shared", "per_unit"},
+    "todos.todo": {
+        "origin",
+        "owner",
+        "done_by",
+        "shared",
+        "per_unit",
+        "distributed",
+        "central_attachment_ids",
+    },
     # Freigaben gelten nur für die lokale Kopplung, nie für importierte Nummern.
     "competitions.starter": {"result_coupling"},
     "events.externalcalendar": {

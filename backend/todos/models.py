@@ -43,6 +43,8 @@ class Todo(models.Model):
         "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="copies"
     )
     per_unit = models.BooleanField(default=False)
+    distributed = models.BooleanField(default=False)
+    central_attachment_ids = EncryptedJSONField(default=list)
     series = models.ForeignKey(
         "TodoSeries", on_delete=models.CASCADE, null=True, blank=True, related_name="occurrences"
     )
@@ -99,6 +101,34 @@ class Todo(models.Model):
 
     def _save(self, *args, **kwargs):
         from changes.tracking import active
+        from core.tenancy import get_rls
+
+        if self.pk and self.distributed and not get_rls().bypass:
+            # Verschlüsselung würde sonst auch unveränderte zentrale Felder neu schreiben.
+            central = {
+                "title",
+                "description",
+                "due_date",
+                "due_time",
+                "timezone",
+                "central_attachment_ids",
+            }
+            before = type(self).objects.filter(pk=self.pk).values(*central).first()
+            if before and any(before[key] != getattr(self, key) for key in central):
+                from django.core.exceptions import ValidationError
+                from django.utils.translation import gettext
+
+                raise ValidationError(gettext("Diese Felder werden von der Quelle vorgegeben."))
+            fields = kwargs.get("update_fields")
+            kwargs["update_fields"] = (
+                set(fields) - central
+                if fields is not None
+                else {
+                    field.name
+                    for field in self._meta.concrete_fields
+                    if not field.primary_key and field.name not in central
+                }
+            )
 
         ctx = active()
         if ctx is not None and ctx.reverts and self.pk:
@@ -131,6 +161,7 @@ class TodoSeries(models.Model):
         choices=[("template", "Vorlage"), ("sequence", "Ausgabenfolge")],
     )
     active = models.BooleanField(default=True)
+    locally_stopped = models.BooleanField(default=False)
     anchor_date = models.DateField()
     repeat = models.CharField(
         max_length=7,
@@ -200,14 +231,16 @@ class TodoShare(models.Model):
                 name="todo_share_one_recipient",
             ),
             models.UniqueConstraint(
-                fields=["todo", "user", "target_org"],
+                fields=["todo", "user", "target_org", "target_department"],
                 condition=Q(user__isnull=False),
                 name="todo_share_user_unique",
+                nulls_distinct=False,
             ),
             models.UniqueConstraint(
-                fields=["todo", "role", "target_org"],
+                fields=["todo", "role", "target_org", "target_department"],
                 condition=Q(role__isnull=False),
                 name="todo_share_role_unique",
+                nulls_distinct=False,
             ),
         ]
 
@@ -361,3 +394,27 @@ class TodoAttachment(models.Model):
 
     def __str__(self):
         return self.name or str(self.pk)
+
+
+class TodoProgress(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    source = models.ForeignKey(Todo, on_delete=models.CASCADE, related_name="progress")
+    copy = models.OneToOneField(Todo, on_delete=models.CASCADE, related_name="progress_record")
+    target_org = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    target_department = models.ForeignKey(
+        "organizations.Department", on_delete=models.CASCADE, null=True, related_name="+"
+    )
+    sequence_no = models.PositiveIntegerField(default=1)
+    due_date = models.DateField(null=True)
+    status = models.CharField(max_length=10, default="open")
+    done_at = models.DateTimeField(null=True)
+    done_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    ended = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.source_id}: {self.target_org_id} / {self.sequence_no}"

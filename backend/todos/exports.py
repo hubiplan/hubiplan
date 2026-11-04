@@ -72,7 +72,7 @@ def personal_export(user, include_files=False):
     from core.tenancy import user_view
     from portal.services import department_contexts
 
-    from .attachments import data_for, document_for
+    from .attachments import attachment_rows, document_for, row_data
     from .models import Todo, TodoPreference, TodoReminderConfig
 
     rows = []
@@ -104,27 +104,29 @@ def personal_export(user, include_files=False):
                 "department_id",
             )
         }
+        row["local_note"] = todo.local_note if todo.distributed else ""
         row["attachments"] = []
         row["series"] = series_data(todo)
-        for attachment in todo.attachments.order_by("pk"):
-            item = data_for(attachment, scope)
-            if archive and item["available"]:
-                if attachment.kind == "file":
-                    file, name = attachment.file, attachment.name
-                else:
-                    doc = document_for(attachment, scope)
-                    version = doc.versions.first() if doc else None
-                    file, name = (version.file, version.name) if version else (None, "")
-                if file:
-                    from documents.services import storage_name
+        with attachment_rows(todo, scope) as attachments:
+            for attachment, central, aid in attachments:
+                item = row_data(attachment, central, aid, scope)
+                if archive and item["available"]:
+                    if attachment.kind == "file":
+                        file, name = attachment.file, attachment.name
+                    else:
+                        doc = document_for(attachment, scope)
+                        version = doc.versions.first() if doc else None
+                        file, name = (version.file, version.name) if version else (None, "")
+                    if file:
+                        from documents.services import storage_name
 
-                    path = f"files/{todo.pk}/{attachment.pk}/{storage_name(name)}"
-                    with file.open("rb") as source, archive.open(path, "w") as target:
-                        import shutil
+                        path = f"files/{todo.pk}/{attachment.pk}/{storage_name(name)}"
+                        with file.open("rb") as source, archive.open(path, "w") as target:
+                            import shutil
 
-                        shutil.copyfileobj(source, target, 1024 * 1024)
-                    item["file"] = path
-            row["attachments"].append(item)
+                            shutil.copyfileobj(source, target, 1024 * 1024)
+                        item["file"] = path
+                row["attachments"].append(item)
         config = (
             TodoReminderConfig.objects.filter(todo=todo, user=user)
             .values("days", "enabled", "mail", "push")
@@ -147,6 +149,7 @@ def personal_export(user, include_files=False):
                         add(todo, None)
                 else:
                     with tenant_context(todo.organization_id, user.pk):
+                        scope_for(user, todo.organization_id, todo.department_id)
                         add(todo, scope)
             contexts = [(org.pk, None) for org, _ in organizations_for(user)]
             contexts += [(c.club.pk, c.department.pk) for c in department_contexts(user).values()]

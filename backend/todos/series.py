@@ -116,6 +116,13 @@ def before_save(todo, previous, series):
             Todo.objects.filter(pk__in=successor_ids).update(
                 withdrawn=True, deleted_at=timezone.now(), version=F("version") + 1
             )
+            from .models import TodoProgress
+
+            TodoProgress.objects.filter(
+                copy_id__in=Todo.objects.filter(
+                    series=series, sequence_no__gt=todo.sequence_no, withdrawn=True
+                ).values("pk")
+            ).delete()
     if (
         Todo.objects.filter(series=series, status="open", deleted_at__isnull=True)
         .exclude(pk=todo.pk)
@@ -147,6 +154,23 @@ def after_save(todo, previous, series):
         return
     number = max(numbers, default=0) + 1
     with suppress(), rls_bypass():
+        central_ids = todo.central_attachment_ids
+        if todo.distributed:
+            source = (
+                Todo.objects.filter(pk=todo.origin_id, deleted_at__isnull=True)
+                .defer("local_note")
+                .first()
+            )
+            if (
+                source is None
+                or not source.shares.filter(
+                    target_org_id=todo.organization_id, target_department_id=todo.department_id
+                ).exists()
+            ):
+                return
+            from .distribution import attachment_ids
+
+            central_ids = attachment_ids(source, future=True)
         successor = Todo.objects.create(
             organization=series.organization,
             department_id=series.department_id,
@@ -160,6 +184,9 @@ def after_save(todo, previous, series):
             due_time=series.due_time,
             timezone=series.timezone,
             shared=bool(series.shares),
+            origin_id=todo.origin_id,
+            distributed=todo.distributed,
+            central_attachment_ids=central_ids,
         )
         TodoShare.objects.bulk_create(
             [
@@ -193,8 +220,9 @@ def after_save(todo, previous, series):
 
 
 def snapshot_template(todo, series):
-    for key in ("title", "description", "due_time", "timezone"):
-        setattr(series, key, getattr(todo, key))
+    if not todo.distributed:
+        for key in ("title", "description", "due_time", "timezone"):
+            setattr(series, key, getattr(todo, key))
     series.shares = list(
         todo.shares.order_by("pk").values(
             "user_id", "role_id", "target_org_id", "target_department_id", "level", "responsible"

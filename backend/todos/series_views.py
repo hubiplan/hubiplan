@@ -67,6 +67,10 @@ class SeriesView(TodoScopeMixin, APIView):
         serializer = SeriesInput(data=request.data)
         serializer.is_valid(raise_exception=True)
         values = serializer.validated_data
+        if todo.distributed and set(values) - {"version", "active", "deleted"}:
+            raise PermissionDenied(gettext("Diese Felder werden von der Quelle vorgegeben."))
+        if todo.distributed and values.get("active") is True:
+            raise PermissionDenied(gettext("Die Fortsetzung wird von der Quelle vorgegeben."))
         if values.pop("version") != todo.version:
             raise Conflict(gettext("Die Aufgabe wurde inzwischen geändert. Bitte neu laden."))
         ctx = active()
@@ -85,6 +89,8 @@ class SeriesView(TodoScopeMixin, APIView):
             if not deleted and stamp is None:
                 raise serializers.ValidationError(gettext("Die Serie liegt nicht im Papierkorb."))
             series.deleted_at = timezone.now() if deleted else None
+            if todo.distributed and deleted:
+                series.locally_stopped = True
             series.version += 1
             series.save()
             with suppress():
@@ -99,15 +105,24 @@ class SeriesView(TodoScopeMixin, APIView):
                     item.version += 1
                     item.save(update_fields=["deleted_at", "version", "updated_at"])
             log_change(todo, request.user, "delete" if deleted else "update")
+            from .distribution import reconcile
+
+            todo.refresh_from_db()
+            reconcile(todo)
             return Response({"series": series_data(todo)})
         if todo.series_id and set(values) == {"active"}:
             series = todo.series
             series.active = values["active"]
+            if todo.distributed:
+                series.locally_stopped = not series.active
             series.version += 1
-            series.save(update_fields=["active", "version"])
+            series.save(update_fields=["active", "locally_stopped", "version"])
             todo.version += 1
             todo.save(update_fields=["version", "updated_at"])
             log_change(todo, request.user, "update")
+            from .distribution import reconcile
+
+            reconcile(todo)
             return Response({"series": series_data(todo), "version": todo.version})
         if todo.status != "open" or not todo.due_date:
             raise serializers.ValidationError(
@@ -144,6 +159,10 @@ class SeriesView(TodoScopeMixin, APIView):
         todo.series = series
         todo.sequence_no = todo.sequence_no or 1
         todo.version += 1
-        todo.save(update_fields=["series", "sequence_no", "version", "updated_at"])
+        with rls_bypass():
+            todo.save(update_fields=["series", "sequence_no", "version", "updated_at"])
         log_change(todo, request.user, "update")
+        from .distribution import reconcile
+
+        reconcile(todo, attachments=True)
         return Response({"series": series_data(todo), "version": todo.version})

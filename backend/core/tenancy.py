@@ -41,6 +41,10 @@ class RlsState:
     # Freigabe des Dachverbands für Mitgliedsdaten: "", "read" oder "write"
     fed_access: str = ""
     todo_role_id: int | None = None
+    todo_department_id: int | None = None
+    todo_source_id: int | None = None
+    todo_change_id: str = ""
+    todo_undo_id: str = ""
 
 
 def _is_postgres() -> bool:
@@ -58,7 +62,11 @@ def _apply(state: RlsState) -> None:
             "set_config('app.bypass_rls', %s, false), "
             "set_config('app.scope_id', %s, false), "
             "set_config('app.fed_access', %s, false), "
-            "set_config('app.todo_role_id', %s, false)",
+            "set_config('app.todo_role_id', %s, false), "
+            "set_config('app.todo_department_id', %s, false), "
+            "set_config('app.todo_source_id', %s, false), "
+            "set_config('app.todo_change_id', %s, false), "
+            "set_config('app.todo_undo_id', %s, false)",
             [
                 "" if state.org_id is None else str(state.org_id),
                 "" if state.user_id is None else str(state.user_id),
@@ -66,6 +74,10 @@ def _apply(state: RlsState) -> None:
                 "" if state.scope_id is None else str(state.scope_id),
                 state.fed_access,
                 "" if state.todo_role_id is None else str(state.todo_role_id),
+                "" if state.todo_department_id is None else str(state.todo_department_id),
+                "" if state.todo_source_id is None else str(state.todo_source_id),
+                state.todo_change_id,
+                state.todo_undo_id,
             ],
         )
 
@@ -91,9 +103,24 @@ def set_rls(
     scope_id: int | None = None,
     fed_access: str = "",
     todo_role_id: int | None = None,
+    todo_department_id: int | None = None,
 ) -> None:
     """Setzt die RLS-Sitzungsvariablen der aktuellen Datenbankverbindung."""
-    _apply(RlsState(org_id, user_id, bypass, scope_id, fed_access, todo_role_id))
+    from changes.tracking import active
+
+    ctx = active()
+    _apply(
+        RlsState(
+            org_id,
+            user_id,
+            bypass,
+            scope_id,
+            fed_access,
+            todo_role_id,
+            todo_department_id,
+            todo_change_id=str(ctx.set_id) if ctx else "",
+        )
+    )
 
 
 def get_rls() -> RlsState:
@@ -118,6 +145,9 @@ def tenant_context(
             scope_id=scope_id if scope_id is not None else scope_of(org_id),
             fed_access="",
             todo_role_id=None,
+            todo_department_id=None,
+            todo_source_id=None,
+            todo_undo_id="",
         )
     )
     try:
@@ -162,6 +192,28 @@ def user_view(user_id: int | None) -> Iterator[None]:
     """
     previous = get_rls()
     _apply(RlsState(user_id=user_id))
+    try:
+        yield
+    finally:
+        _apply(previous)
+
+
+@contextmanager
+def task_source(source_id):
+    """Nur nach Prüfung der unveränderlichen Kopienbeziehung und heutigen Aufgabenrechte."""
+    previous = get_rls()
+    _apply(replace(previous, todo_source_id=source_id))
+    try:
+        yield
+    finally:
+        _apply(previous)
+
+
+@contextmanager
+def task_undo(set_id):
+    """Nur das zuvor anhand von Aufgabe und Akteur geprüfte Änderungspaket öffnen."""
+    previous = get_rls()
+    _apply(replace(previous, todo_undo_id=str(set_id)))
     try:
         yield
     finally:
