@@ -258,6 +258,10 @@ CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", False)
 CELERY_TIMEZONE = "Europe/Berlin"
 # Regelmäßige Jobs (laufen im Dienst "beat")
 CELERY_BEAT_SCHEDULE = {
+    "music-performance-notices": {
+        "task": "music.performance_tasks.performance_reminders",
+        "schedule": 300.0,
+    },
     "music-rehearsal-reminders": {
         "task": "music.practice_tasks.rehearsal_reminders",
         "schedule": 3600.0,

@@ -85,6 +85,7 @@ MODULE_MODELS = (
     "music.EnsembleTemplatePosition",
     "music.Position",
     "music.Assignment",
+    "music.PerformanceNotice",
     "music.PerformanceAccount",
     "music.MusicianClaim",
     "music.PerformanceExpense",
