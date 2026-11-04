@@ -13,6 +13,7 @@ import { ProgramPanel } from './ProgramPanel.tsx'
 import { PracticePage } from './PracticePage.tsx'
 import { EnsembleTemplatesPage } from './EnsembleTemplatesPage.tsx'
 import { StaffingPage } from './StaffingPage.tsx'
+import { AvailabilityPage } from './AvailabilityPage.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; members: Row[]; partners: Row[] }
@@ -42,6 +43,7 @@ export function MusicPage() {
   if (params.get('noten')) return <ScoresPage key={org.id} />
   if (params.get('proben')) return <PracticePage key={org.id} />
   if (params.get('vorlagen')) return <EnsembleTemplatesPage key={org.id} />
+  if (params.get('verfuegbarkeit')) return <AvailabilityPage key={org.id} />
   if (/^\d+$/.test(params.get('besetzung') || ''))
     return (
       <StaffingPage
@@ -183,6 +185,7 @@ function MusicWorkspace() {
       <Link to="/musik?noten=1">{t('Notenbestand')}</Link>
       <Link to="/musik?proben=1">{t('Proben und Notenausgabe')}</Link>
       <Link to="/musik?vorlagen=1">{t('Besetzungsvorlagen')}</Link>
+      <Link to="/musik?verfuegbarkeit=1">{t('Verfügbarkeiten')}</Link>
       <nav className="tabs">
         {Object.entries(names).map(([key, label]) => (
           <button

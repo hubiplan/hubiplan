@@ -28,7 +28,15 @@ Beim Auftritt **Besetzung planen** öffnen, eine aktive Vorlage auswählen und d
 
 Unter **Sammeleinteilung** mehrere passende aktive Mitglieder oder Gäste auswählen. Mehrinstrumentalisten einer Position zuordnen; ein Musikerprofil wird nur einmal eingeteilt. Angefragte und zugesagte Einteilungen belegen Sollplätze. Bereits eingeteilte Musiker und bestehende Absagen werden nicht neu angeboten; diese einzeln im bisherigen Einteilungsbereich bearbeiten.
 
-**Ausgewählte Musiker anfragen** erzeugt Einteilungen im Status Angefragt. Bei zu vielen ausgewählten Musikern, ungültigen Verweisen oder fehlenden Fähigkeiten wird nichts aus der Anfrage gespeichert. Wiederholungen erzeugen keine doppelten Einteilungen. Abwesenheiten und zeitliche Überschneidungen werden hier noch nicht geprüft. Für Auftritte gelten weiterhin die Kalenderfreigaben. Vorlagen sind im allgemeinen Datenexport enthalten.
+**Ausgewählte Musiker anfragen** erzeugt Einteilungen im Status Angefragt. Bei zu vielen ausgewählten Musikern, ungültigen Verweisen, fehlenden Fähigkeiten oder bekannten Verfügbarkeitskonflikten wird nichts aus der Anfrage gespeichert. Wiederholungen erzeugen keine doppelten Einteilungen. Für Auftritte gelten weiterhin die Kalenderfreigaben. Vorlagen sind im allgemeinen Datenexport enthalten.
+
+## Verfügbarkeiten und Ersatz
+
+Unter **Verfügbarkeiten** Abwesenheiten aktiver Mitglieder und Gäste verwalten. Mitglieder können im eigenen Bereich **Meine Abwesenheiten** selbst pflegen. Nur Beginn und Ende werden erfasst, keine Begründung. Direkt anschließende Zeiträume überschneiden sich nicht. Bekannte andere Auftritte einschließlich Treff- und Aufbauzeit, Probenserien und Kalenderzusagen im selben Verein werden berücksichtigt. Einzelabsagen und Terminverschiebungen wirken sofort. Andere Vereine und private Kalender ohne Vereinszusage werden nicht geprüft; Fahrt- und Pufferzeiten selbst einplanen.
+
+Die Planung zeigt **Abwesend**, **Terminüberschneidung**, **Für diesen Termin abgesagt** oder **Kein Konflikt bekannt**, ohne private Termininhalte auszugeben. Vor dem Einteilen und vor Zusagen wird erneut geprüft. Kein bekannter Konflikt ist noch keine Zusage. Spätere Änderungen markieren Konflikte bestehender Einteilungen, ändern aber weder Rückmeldungen noch Vergütungen automatisch. Bei Bedarf die Einteilung zusätzlich absagen.
+
+Bei einer abgesagten Einteilung unter **Besetzung planen** **Ersatz suchen** öffnen. Konfliktfreie Musiker derselben Stimme werden angeboten, passende Hauptinstrumente zuerst. Auswählen und anfragen; die frühere Absage bleibt erhalten. **Alle Kandidaten anzeigen** beendet den Filter, **Auswahl zurücksetzen** leert eine noch nicht gespeicherte Auswahl. Abwesenheiten sind im allgemeinen Datenexport enthalten.
 
 ## Auftrittsabrechnung
 

@@ -2,6 +2,7 @@
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,7 +11,8 @@ from audit.log import record
 from core.tenancy import tenant_context
 from portal.views import _portal_access
 
-from .models import Assignment, MusicianClaim
+from .availability import Availability, ensure_performance, performance_interval
+from .models import Assignment, Musician, MusicianClaim, Performance
 from .settlement import personal_claim
 
 
@@ -29,6 +31,15 @@ def own_program(performance):
     ]
 
 
+def own_conflicts(access, row):
+    start, end = performance_interval(row.performance)
+    if end <= timezone.now():
+        return []
+    return Availability(
+        access.organization, [row.musician], row.performance.event, start, end
+    ).reasons(row.musician)
+
+
 class OwnAssignments(APIView):
     def rows(self, request, access_id):
         access = _portal_access(request.user, access_id)
@@ -38,7 +49,7 @@ class OwnAssignments(APIView):
             organization=access.organization,
             musician__membership_id=access.membership_id,
             musician__active=True,
-        ).select_related("performance__event", "position")
+        ).select_related("performance__event", "position", "musician")
 
     def get(self, request, access_id):
         access, rows = self.rows(request, access_id)
@@ -57,6 +68,7 @@ class OwnAssignments(APIView):
                         "instrument": row.position.instrument,
                         "register": row.position.register,
                         "status": row.status,
+                        "availability": own_conflicts(access, row),
                         "program": own_program(row.performance),
                         "settlement": next(
                             (
@@ -76,10 +88,16 @@ class OwnAssignments(APIView):
     def post(self, request, access_id):
         access, rows = self.rows(request, access_id)
         with tenant_context(access.organization_id, request.user.pk):
-            row = get_object_or_404(rows.select_for_update(of=("self",)), pk=request.data.get("id"))
+            pk = serializers.IntegerField(min_value=1).run_validation(request.data.get("id"))
+            target = get_object_or_404(rows, pk=pk)
+            Performance.objects.select_for_update().get(pk=target.performance_id)
+            Musician.objects.select_for_update().get(pk=target.musician_id)
+            row = get_object_or_404(rows.select_for_update(of=("self",)), pk=pk)
             field = serializers.ChoiceField(choices=["accepted", "declined"])
             previous = row.status
             row.status = field.run_validation(request.data.get("status"))
+            if row.status == "accepted":
+                ensure_performance(row.musician, row.performance)
             row.save(update_fields=["status"])
             record(
                 access.organization,

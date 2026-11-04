@@ -14,6 +14,7 @@ from audit.log import record
 from changes import idempotency
 from core.api_base import OrgScopedMixin
 
+from .availability import Availability, performance_interval
 from .models import (
     Assignment,
     EnsembleTemplate,
@@ -130,15 +131,18 @@ def staffing_data(performance):
     assigned = list(performance.assignments.order_by("pk"))
     reserved = Counter(a.position_id for a in assigned if a.status != "declined")
     positions = list(performance.positions.order_by("pk"))
-    musicians = (
-        Musician.objects.filter(organization=performance.organization, active=True)
+    musicians = list(
+        Musician.objects.filter(organization=performance.organization)
         .select_related("membership__person")
         .prefetch_related("skills")
+    )
+    availability = Availability(
+        performance.organization, musicians, performance.event, *performance_interval(performance)
     )
     already = {a.musician_id for a in assigned}
     candidates = []
     for m in musicians:
-        if m.pk in already:
+        if m.pk in already or not m.active:
             continue
         skills = {(s.instrument, s.register) for s in m.skills.all()}
         matching = [p.pk for p in positions if (p.instrument, p.register) in skills]
@@ -148,14 +152,19 @@ def staffing_data(performance):
                     "id": m.pk,
                     "name": str(m.membership.person) if m.membership_id else m.name,
                     "positions": matching,
+                    "availability": availability.reasons(m),
+                    "preferred_positions": [
+                        p.pk
+                        for p in positions
+                        if any(
+                            s.primary and s.instrument == p.instrument and s.register == p.register
+                            for s in m.skills.all()
+                        )
+                    ],
                 }
             )
-    names = {
-        m.pk: str(m.membership.person) if m.membership_id else m.name
-        for m in Musician.objects.filter(organization=performance.organization).select_related(
-            "membership__person"
-        )
-    }
+    names = {m.pk: str(m.membership.person) if m.membership_id else m.name for m in musicians}
+    musician_map = {m.pk: m for m in musicians}
     return {
         "title": performance.event.title,
         "cancelled": performance.event.is_cancelled,
@@ -176,6 +185,7 @@ def staffing_data(performance):
                 "name": names.get(a.musician_id, ""),
                 "position": a.position_id,
                 "status": a.status,
+                "availability": availability.reasons(musician_map[a.musician_id]),
             }
             for a in assigned
         ],
@@ -327,6 +337,9 @@ class StaffingView(OrgScopedMixin, APIView):
             a.musician_id: a for a in performance.assignments.select_for_update().order_by("pk")
         }
         reserved = Counter(a.position_id for a in existing.values() if a.status != "declined")
+        availability = Availability(
+            self.org, musicians.values(), performance.event, *performance_interval(performance)
+        )
         pending = []
         for row in rows:
             musician, position = musicians.get(row["musician"]), positions.get(row["position"])
@@ -340,6 +353,13 @@ class StaffingView(OrgScopedMixin, APIView):
                     gettext(
                         "Dieser Musiker ist bereits eingeteilt oder hat abgesagt. "
                         "Bitte die bestehende Einteilung einzeln bearbeiten."
+                    )
+                )
+            if availability.reasons(musician):
+                raise serializers.ValidationError(
+                    gettext(
+                        "Für diesen Musiker liegt eine Abwesenheit, Absage "
+                        "oder Terminüberschneidung vor."
                     )
                 )
             if not any(

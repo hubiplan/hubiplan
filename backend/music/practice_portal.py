@@ -17,6 +17,7 @@ from events import recurrence
 from members.models import DepartmentMembership
 from portal.views import _portal_access
 
+from .availability import Availability, interval
 from .models import Musician, Rehearsal, RehearsalInvitation, ScoreDocument, ScoreLoan
 from .practice import loan_data, save_response, window
 from .practice_programs import program_for, with_programs
@@ -33,7 +34,7 @@ def own_musician(access):
     ).first()
 
 
-def practice_rows(musician):
+def practice_rows(musician, include_availability=False):
     if "events" not in musician.organization.enabled_modules:
         return []
     invitations = list(
@@ -64,6 +65,18 @@ def practice_rows(musician):
                     "cancelled": o.is_cancelled,
                     "can_respond": not o.is_cancelled and o.starts_at > timezone.now(),
                     "status": responses.get(o.original_start, "pending"),
+                    **(
+                        {
+                            "availability": Availability(
+                                musician.organization,
+                                [musician],
+                                rehearsal.event,
+                                *interval(rehearsal.event, o.starts_at, o.ends_at),
+                            ).reasons(musician)
+                        }
+                        if include_availability
+                        else {}
+                    ),
                 }
             )
     return sorted(rows, key=lambda r: r["starts_at"])
@@ -133,7 +146,7 @@ class OwnPractice(APIView):
             musician = own_musician(access)
             if not musician:
                 return Response({"rehearsals": [], "scores": [], "loans": []})
-            rows = practice_rows(musician)
+            rows = practice_rows(musician, include_availability=True)
             scores = score_data(access, musician, rows)
             for row in rows:
                 arrangements = {i["arrangement"] for i in row["items"]}

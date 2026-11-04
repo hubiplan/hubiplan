@@ -20,6 +20,25 @@ class Musician(models.Model):
         return self.name or f"Musiker {self.pk}"
 
 
+class MusicianAbsence(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    musician = models.ForeignKey(Musician, on_delete=models.PROTECT, related_name="absences")
+    starts_at = models.DateTimeField()
+    ends_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ["starts_at", "pk"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(ends_at__gt=models.F("starts_at")),
+                name="musik_abwesenheit_zeitraum",
+            )
+        ]
+
+    def __str__(self):
+        return f"Musikerabwesenheit {self.pk}"
+
+
 class Skill(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     musician = models.ForeignKey(Musician, on_delete=models.CASCADE, related_name="skills")

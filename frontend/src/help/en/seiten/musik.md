@@ -28,7 +28,15 @@ Open **Plan instrumentation** for a performance, select an active template and r
 
 Under **Batch assignment**, select multiple matching active members or guests. Choose one position for multi-instrumentalists; each musician profile is assigned only once. Pending and accepted assignments reserve places. Already assigned musicians and existing declines are not offered again; edit their existing assignment individually.
 
-**Request selected musicians** creates pending assignments. If the selection exceeds available places, contains invalid references or lacks skills, nothing from the request is saved. Retries create no duplicate assignments. Absences and scheduling conflicts are not checked here yet. Existing calendar permissions apply to performances. General exports include templates.
+**Request selected musicians** creates pending assignments. If the selection exceeds available places, contains invalid references, lacks skills or has known availability conflicts, nothing from the request is saved. Retries create no duplicate assignments. Existing calendar permissions apply to performances. General exports include templates.
+
+## Availability and replacements
+
+Under **Availability**, manage absences for active members and guests. Members can manage **My absences** in their own area. Only start and end are recorded, without reasons. Adjacent periods do not overlap. Other known performances including meeting and setup time, rehearsal series and accepted calendar events in the same association are considered. Individual declines and moved occurrences take effect immediately. Other associations and private calendars without an association response are not checked; plan travel and buffer time yourself.
+
+Planning shows **Absent**, **Scheduling conflict**, **Declined this event** or **No known conflict**, without revealing private calendar content. Assignment and acceptance check again before saving. No known conflict does not constitute acceptance. Later changes highlight conflicts for existing assignments without automatically changing responses or remuneration. Decline the assignment separately if needed.
+
+For a declined assignment, open **Find replacement** under **Plan instrumentation**. Conflict-free musicians with matching parts are offered, with matching primary instruments first. Select and request a replacement; the earlier decline remains. **Show all candidates** exits the filter; **Reset selection** discards an unsaved selection. General exports include absences.
 
 ## Performance settlement
 

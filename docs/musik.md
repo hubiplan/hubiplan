@@ -20,9 +20,21 @@ Beim Auftritt **Besetzung planen** öffnen. Eine aktive Vorlage auswählen, die 
 
 Unter **Sammeleinteilung** mehrere Musiker auswählen. Bei mehreren passenden Fähigkeiten die gewünschte Position wählen; ein Musikerprofil kann je Auftritt nur einmal eingeteilt sein. Angeboten werden aktive Mitglieder- und Gastmusikerprofile mit exakt passender Instrumenten-/Registerangabe und ohne vorhandene Einteilung. Angefragte und zugesagte Einteilungen belegen Sollplätze; bestehende Absagen bleiben im bisherigen Einteilungsbereich einzeln bearbeitbar.
 
-**Ausgewählte Musiker anfragen** erzeugt neue Einteilungen mit Status Angefragt. Überschreitet die Auswahl die freien Sollplätze oder ist ein Verweis bzw. eine Fähigkeit nicht mehr gültig, wird die ganze Anfrage abgewiesen. Wiederholte Anfragen erzeugen keine doppelten Einteilungen oder Vorlagen. Die Prüfung berücksichtigt Fähigkeiten und Sollplätze; Abwesenheiten und zeitliche Überschneidungen werden hier noch nicht ausgewertet. Kalenderfreigaben gelten auch für diese Auftrittsplanung.
+**Ausgewählte Musiker anfragen** erzeugt neue Einteilungen mit Status Angefragt. Überschreitet die Auswahl die freien Sollplätze oder ist ein Verweis bzw. eine Fähigkeit nicht mehr gültig, wird die ganze Anfrage abgewiesen. Wiederholte Anfragen erzeugen keine doppelten Einteilungen oder Vorlagen. Fähigkeiten, Sollplätze und bekannte Verfügbarkeitskonflikte werden erneut vor dem Speichern geprüft. Kalenderfreigaben gelten auch für diese Auftrittsplanung.
 
 Vorlagen und Vorlagenpositionen sind im allgemeinen Datenexport enthalten. Die additive Migration ergänzt zwei mandantengetrennte Tabellen. Vor einem Rückmigrieren die Vorlagen exportieren; bereits übertragene Sollpositionen und Einteilungen bleiben in den vorhandenen Tabellen erhalten.
+
+## Verfügbarkeiten und Ersatzmusiker
+
+Unter **Verfügbarkeiten** Abwesenheitszeiträume für aktive Mitglieder und Gäste eintragen, bearbeiten oder entfernen. Musikleserecht erlaubt das Anzeigen, Musikbearbeitungsrecht die Verwaltung. Aktuelle Mitglieder mit aktivem Musikerprofil können im eigenen Bereich **Meine Abwesenheiten** selbst pflegen, auch ohne bereits eingeteilt zu sein. Es werden nur Beginn und Ende gespeichert, keine Begründung. Das Ende gehört nicht mehr zum Zeitraum; direkt anschließende Termine überschneiden sich nicht.
+
+Die Prüfung berücksichtigt im selben Verein Abwesenheiten, angefragte oder zugesagte andere Auftritte, aktive Probeneinteilungen und Kalenderzusagen. Bei Auftritten beginnt der belegte Zeitraum mit der frühesten Treff-, Aufbau- oder Spielzeit und endet mit dem Kalendertermin. Probenserien berücksichtigen verschobene, abgesagte und einzeln abgelehnte Termine. Eine Kalenderabsage zum Zieltermin verhindert ebenfalls eine neue Einteilung oder Zusage. Fahrt- und Pufferzeiten über entsprechende Treffzeiten oder zusätzliche Abwesenheitszeiträume planen. Andere Vereine und private Kalender ohne Vereinszusage sind nicht Teil dieser Prüfung.
+
+Die Planung zeigt nur **Abwesend**, **Terminüberschneidung**, **Für diesen Termin abgesagt** oder **Kein Konflikt bekannt**. Titel, Orte, Notizen anderer Termine und Abwesenheitsgründe werden nicht ausgegeben. Kein bekannter Konflikt ist noch keine Zusage. Vor Einzel- und Sammeleinteilung sowie vor einer eigenen Auftritts- oder Probenzusage wird erneut geprüft. Eine ungültige Sammelauswahl wird vollständig abgewiesen; Absagen bleiben möglich.
+
+Neue Abwesenheiten oder geänderte Kalendertermine können bestehende Einteilungen nachträglich widersprüchlich machen. Sie werden markiert, aber nicht automatisch entfernt oder abgesagt; Vergütungen bleiben unverändert. Die betreffende Einteilung bei Bedarf gezielt absagen. Bei einer Absage unter **Besetzung planen** auf **Ersatz suchen** klicken. Angezeigt werden konfliktfreie aktive Musiker mit derselben Stimme, passende Hauptinstrumente zuerst. Ersatzmusiker auswählen und wie gewohnt anfragen. Die bisherige Absage bleibt bestehen. **Alle Kandidaten anzeigen** beendet den Ersatzfilter; **Auswahl zurücksetzen** leert eine noch nicht gespeicherte Auswahl.
+
+Abwesenheiten sind mit ihren Musikerbezügen im allgemeinen Datenexport enthalten. Die zusätzliche Tabelle ist mandantengetrennt. Vor einem Rückmigrieren Abwesenheiten exportieren; ältere Fassungen berücksichtigen sie bei der Besetzungsplanung nicht.
 
 ## Auftrittsabrechnung
 

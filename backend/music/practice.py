@@ -18,6 +18,7 @@ from changes import idempotency
 from core.api_base import OrgScopedMixin
 from events import recurrence, services
 
+from .availability import Availability, ensure_available, interval
 from .models import (
     Arrangement,
     Musician,
@@ -259,11 +260,20 @@ class PracticeOverview(OrgScopedMixin, APIView):
         )
         result = []
         for rehearsal in rehearsals:
+            invitations = list(
+                rehearsal.invitations.filter(active=True, musician__active=True).select_related(
+                    "musician__membership__person"
+                )
+            )
             for o in recurrence.occurrences([rehearsal.event], *window()):
                 members = []
-                for invite in rehearsal.invitations.filter(
-                    active=True, musician__active=True
-                ).select_related("musician__membership__person"):
+                availability = Availability(
+                    self.org,
+                    [i.musician for i in invitations],
+                    rehearsal.event,
+                    *interval(rehearsal.event, o.starts_at, o.ends_at),
+                )
+                for invite in invitations:
                     response = invite.responses.filter(original_start=o.original_start).first()
                     members.append(
                         {
@@ -272,6 +282,7 @@ class PracticeOverview(OrgScopedMixin, APIView):
                             if invite.musician.membership_id
                             else invite.musician.name,
                             "status": response.status if response else "pending",
+                            "availability": availability.reasons(invite.musician),
                         }
                     )
                 result.append(
@@ -314,6 +325,13 @@ def save_response(invite, data, user):
     if o is None or o.is_cancelled or o.starts_at <= timezone.now():
         raise serializers.ValidationError(
             gettext("Für diesen Probentermin ist keine Rückmeldung mehr möglich.")
+        )
+    if status == "accepted":
+        musician = Musician.objects.select_for_update().get(pk=invite.musician_id)
+        ensure_available(
+            musician,
+            invite.rehearsal.event,
+            *interval(invite.rehearsal.event, o.starts_at, o.ends_at),
         )
     row, _ = RehearsalResponse.objects.update_or_create(
         organization=invite.organization,

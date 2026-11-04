@@ -9,6 +9,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { ScoreForm } from './ScoresPage.tsx'
 import { RehearsalProgramEditor } from './RehearsalProgramEditor.tsx'
+import { AvailabilityHint } from './AvailabilityPage.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Loan = {
@@ -34,7 +35,7 @@ type Occurrence = {
   focus: string
   items: { arrangement: number; title: string; focus: string }[]
   overridden: boolean
-  members: { invitation: number; name: string; status: string }[]
+  members: { invitation: number; name: string; status: string; availability?: string[] }[]
 }
 
 export function PracticePage() {
@@ -249,6 +250,8 @@ export function PracticePage() {
                   : m.status === 'accepted'
                     ? t('Zugesagt')
                     : t('Abgesagt')}
+                {' · '}
+                <AvailabilityHint reasons={m.availability} />
                 {canEdit && !o.cancelled && (
                   <span className="actions">
                     {[
@@ -258,6 +261,7 @@ export function PracticePage() {
                       <button
                         key={status}
                         className="button button-ghost"
+                        disabled={status === 'accepted' && !!m.availability?.length}
                         onClick={async () => {
                           try {
                             await api.post(base + 'practice/', {

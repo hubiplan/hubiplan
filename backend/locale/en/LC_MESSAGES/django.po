@@ -5845,5 +5845,14 @@ msgstr "Other units reference this data. Deletion is not possible."
 msgid "Zum Löschen bitte den vollständigen Namen der Einheit eingeben."
 msgstr "Please enter the full name of the unit to delete it."
 
+msgid "Für diesen Musiker liegt eine Abwesenheit, Absage oder Terminüberschneidung vor."
+msgstr "This musician has an absence, a decline or a scheduling conflict."
+
+msgid "Dieser Auftritt ist abgesagt."
+msgstr "This performance has been cancelled."
+
+msgid "Das Ende der Abwesenheit muss nach dem Beginn liegen."
+msgstr "The absence must end after it starts."
+
 msgid "Endzeit auf der Webseite ausblenden"
 msgstr "Hide end time on the website"
