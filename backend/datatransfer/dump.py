@@ -124,6 +124,7 @@ def imprint_data(org: Organization) -> dict | None:
 JSON_NAME = "export.json"
 
 ORG_FIELDS = (
+    "shooting_facilities",
     "type",
     "name",
     "short_name",
@@ -171,8 +172,7 @@ ORG_FIELDS = (
     "enabled_modules",
     "tax_areas_enabled",
     "is_active",
-    # Dachverband mit eigenen Mitgliedern (Audit 31.10. D31-02    "shooting_facilities",
-)
+    # Dachverband mit eigenen Mitgliedern (Audit 31.10. D31-02)
     "direct_members",
     # Platzhalter einer Einheit auf einer anderen Instanz (Verbund)
     "is_remote",
