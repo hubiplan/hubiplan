@@ -86,7 +86,7 @@ class ScopedSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class MusicianSerializer(ScopedSerializer):
+class MusicMusicianSerializer(ScopedSerializer):
     display_name = serializers.SerializerMethodField()
 
     def get_display_name(self, obj) -> str:
@@ -97,13 +97,13 @@ class MusicianSerializer(ScopedSerializer):
         fields = ["id", "membership", "name", "display_name", "contact", "active"]
 
 
-class SkillSerializer(ScopedSerializer):
+class MusicSkillSerializer(ScopedSerializer):
     class Meta:
         model = Skill
         fields = ["id", "musician", "instrument", "register", "primary"]
 
 
-class PerformanceSerializer(ScopedSerializer):
+class MusicPerformanceSerializer(ScopedSerializer):
     title = serializers.CharField(source="event.title", read_only=True)
     starts_at = serializers.DateTimeField(source="event.starts_at", read_only=True)
     ends_at = serializers.DateTimeField(source="event.ends_at", read_only=True)
@@ -130,7 +130,7 @@ class PerformanceSerializer(ScopedSerializer):
         ]
 
 
-class PositionSerializer(ScopedSerializer):
+class MusicPositionSerializer(ScopedSerializer):
     required = serializers.IntegerField(min_value=1, max_value=500)
 
     class Meta:
@@ -138,7 +138,7 @@ class PositionSerializer(ScopedSerializer):
         fields = ["id", "performance", "instrument", "register", "required"]
 
 
-class AssignmentSerializer(ScopedSerializer):
+class MusicAssignmentSerializer(ScopedSerializer):
     class Meta:
         model = Assignment
         fields = ["id", "performance", "position", "musician", "status"]
@@ -230,16 +230,16 @@ class MusicViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
 
 
 class MusicianViewSet(MusicViewSet):
-    serializer_class = MusicianSerializer
+    serializer_class = MusicMusicianSerializer
 
 
 class SkillViewSet(MusicViewSet):
-    serializer_class = SkillSerializer
+    serializer_class = MusicSkillSerializer
     http_method_names = [*MusicViewSet.http_method_names, "delete"]
 
 
 class PerformanceViewSet(MusicViewSet):
-    serializer_class = PerformanceSerializer
+    serializer_class = MusicPerformanceSerializer
 
     def visible(self, performance):
         return (
@@ -253,10 +253,10 @@ class PerformanceViewSet(MusicViewSet):
 
 
 class PositionViewSet(MusicViewSet):
-    serializer_class = PositionSerializer
+    serializer_class = MusicPositionSerializer
     http_method_names = [*MusicViewSet.http_method_names, "delete"]
 
 
 class AssignmentViewSet(MusicViewSet):
-    serializer_class = AssignmentSerializer
+    serializer_class = MusicAssignmentSerializer
     http_method_names = [*MusicViewSet.http_method_names, "delete"]
