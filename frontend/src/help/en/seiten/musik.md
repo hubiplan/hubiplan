@@ -64,9 +64,9 @@ Open **Performance settlement** from the performance. Music and calendar viewing
 
 Record fees, allowances and documented expenses per assignment. Confirm attendance after the performance, then approve remuneration. Approved amounts are locked. Before payment, void approval and reopen the draft for corrections. Members see only their own approved remuneration in their personal area. Finance administrators handle guest remuneration.
 
-Record payments with receipts as expenses in the cash book first. Search the booking text and link the matching full payment. Each remuneration permits one active payment; partial payments cannot be linked. Link other performance expenses in the same way. Each booking can be used once. Linking does not initiate a bank transfer.
+Record payments with receipts as expenses in the cash book first. Search the booking text and link each matching booking in full. Each remuneration permits multiple partial payments up to the outstanding balance. Link other performance expenses in the same way. Each booking can be used once. Linking does not initiate a bank transfer.
 
-Reverse incorrect payments in the cash book. The original link remains visible, while remuneration becomes unpaid and can be linked to a corrected payment. The overview distinguishes agreed and invoiced amounts, actual income and expenses and their cash result. Approved remuneration is shown separately and does not indicate a completed payment.
+Reverse incorrect payments in the cash book. The original link remains visible, while the outstanding balance increases and can be linked to a corrected payment. The overview distinguishes agreed and invoiced amounts, actual income and expenses and their cash result. Approved remuneration is shown separately and does not indicate a completed payment.
 
 General exports and financial audit exports include agreements, remuneration and booking links. Financial retention and anonymization include settlement notes.
 
