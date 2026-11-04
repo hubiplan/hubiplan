@@ -74,7 +74,10 @@ export function financeSections(a: FinanceAccess): NavItem[] {
   return [
     { to: '/finanzen', label: t('Übersicht') },
     ...(a.finance ? [{ to: '/finanzen/entwicklung', label: t('Entwicklung') }] : []),
-    ...(a.billing || a.received ? [{ to: '/finanzen/rechnungen', label: t('Rechnungen') }] : []),
+    ...(a.billing || a.received || a.finance
+      ? [{ to: '/finanzen/rechnungen', label: t('Rechnungen') }]
+      : []),
+    { to: '/finanzen/geschaeftspartner', label: t('Geschäftspartner') },
     ...(a.sepa ? [{ to: '/finanzen/lastschrift', label: t('Lastschriften') }] : []),
     ...(a.finance ? [{ to: '/finanzen/kassenbuch', label: t('Kassenbuch') }] : []),
     ...(a.finance ? [{ to: '/finanzen/kontoauszuege', label: t('Kontoauszüge') }] : []),
@@ -93,6 +96,7 @@ export function invoiceTabs(a: FinanceAccess): NavItem[] {
     ...(a.billing
       ? [
           { to: '/finanzen/rechnungen', label: t('Rechnungen') },
+          { to: '/finanzen/rechnungen/leistungen', label: t('Leistungsrechnungen') },
           ...(a.feeRuns
             ? [{ to: '/finanzen/rechnungen/beitragslaeufe', label: t('Beitragsläufe') }]
             : []),
@@ -100,6 +104,7 @@ export function invoiceTabs(a: FinanceAccess): NavItem[] {
         ]
       : []),
     ...(a.received ? [{ to: '/finanzen/rechnungen/dachverband', label: a.receivedLabel }] : []),
+    ...(a.finance ? [{ to: '/finanzen/rechnungen/eingang', label: t('Rechnungseingang') }] : []),
   ]
 }
 

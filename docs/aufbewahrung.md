@@ -133,6 +133,13 @@ Original bytes and reported balance dates are not rewritten.
 ## Ergänzungen zur GoBD Sicherung vom 3. November 2026
 
 Buchungen mit Belegen werden storniert; ihre Originaldateien bleiben erhalten.
+Dies umfasst auch strukturierte Leistungsrechnungen und den Rechnungseingang:
+XML-Originale, eingegangene PDF-Dateien, Stornos und technische Prüfberichte sind
+in Prüfexport und Bereinigung einbezogen. Frühere Prüfberichte bleiben bei erneuter
+Validierung erhalten. Eingänge werden dem Empfangsjahr zugeordnet; ein zugeordneter
+Kassenbeleg ist eine eigenständige Kopie. Der allgemeine Rückgängig-Befehl kann
+archivierte Eingänge und ihre zugeordneten Buchungen nicht verändern.
+Details: [Geschäftspartner und E-Rechnungen](e-rechnungen.md).
 Importierte Kontoauszüge lassen sich nicht löschen. Fehlerhafte Umsätze werden ignoriert.
 Gebuchte Kategorien bleiben fachlich unverändert; für neue Zuordnungen eine neue Kategorie
 anlegen und die bisherige bei Bedarf archivieren. Konten und Kategorien sind vom allgemeinen

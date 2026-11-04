@@ -44,7 +44,14 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
     """Konservative Jahresfristen nach Entstehung und letzter Bucheintragung."""
     from audit.log import OBJECT_TYPES
     from audit.models import AuditEntry
-    from billing.models import DebitRun, Dunning, Invoice
+    from billing.models import (
+        DebitRun,
+        Dunning,
+        IncomingInvoice,
+        IncomingValidation,
+        Invoice,
+        InvoiceArtifact,
+    )
 
     from .models import (
         Booking,
@@ -60,6 +67,9 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
     start, end = org.fiscal_range(year)
     document_year = record_year = end.year
     sources = [
+        (IncomingInvoice, "created_at__date"),
+        (IncomingValidation, "incoming__created_at__date"),
+        (InvoiceArtifact, "invoice__date"),
         (Booking, "date"),
         (Invoice, "date"),
         (Dunning, "date"),
@@ -86,7 +96,7 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
         if latest_change:
             record_year = max(record_year, timezone.localdate(latest_change).year)
             # Ein Entwurf kann erst in einem späteren Jahr ausgegeben werden.
-            if model is Invoice:
+            if model in (Invoice, IncomingInvoice):
                 document_year = max(document_year, timezone.localdate(latest_change).year)
     for rows in (
         Receipt.objects.filter(organization=org, booking__date__gte=start, booking__date__lte=end),
@@ -235,6 +245,9 @@ def _purge_documents(org, start, end) -> dict[str, int]:
         i.save(update_fields=["issued_pdf"])
         n += 1
     counts["Rechnungs-PDFs"] = n
+    from billing.einvoice_retention import purge_files
+
+    counts["E-Rechnungsdateien"] = purge_files(org, start, end, _delete_file)
 
     n = 0
     for d in Dunning.objects.filter(organization=org, date__gte=start, date__lte=end).exclude(
@@ -326,9 +339,9 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
     )
     Dunning.objects.filter(invoice__in=invoices).update(text="")
     # Mitgliedsrechnungen brauchen sonst ein Mitglied (Constraint rechnung_empfaenger)
-    invoices.filter(recipient_kind=Invoice.Recipient.MEMBER).update(
-        recipient_kind=Invoice.Recipient.ANONYMIZED, membership=None
-    )
+    invoices.filter(
+        recipient_kind__in=[Invoice.Recipient.MEMBER, Invoice.Recipient.PARTNER]
+    ).update(recipient_kind=Invoice.Recipient.ANONYMIZED, membership=None, partner=None)
     counts["Rechnungen"] = update_encrypted(
         invoices,
         recipient_name=ANON,
@@ -336,7 +349,15 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
         recipient_email="",
         note="",
         membership=None,
+        electronic_data={},
     )
+    from billing.einvoice_retention import anonymize, incoming_for_period
+
+    ids(incoming_for_period(org, start, end), "incominginvoice")
+    anonymize(org, start, end)
+    commercial_lines = InvoiceLine.objects.filter(invoice__in=invoices).exclude(electronic_data={})
+    update_encrypted(commercial_lines, text=ANON, detail="")
+    update_encrypted(InvoiceLine.objects.filter(invoice__in=invoices), electronic_data={})
     # Posten nennen in Sammelrechnungen Mitglieder mit Namen (Audit 02.11. BP-F03)
     counts["Rechnungsposten"] = update_encrypted(
         InvoiceLine.objects.filter(invoice__in=invoices, membership__isnull=False),

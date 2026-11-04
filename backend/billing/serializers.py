@@ -210,6 +210,7 @@ class LineSerializer(serializers.ModelSerializer):
             "member_name",
             "is_fee",
             "is_dunning_fee",
+            "electronic_data",
         ]
         read_only_fields = ["id", "membership", "member_name", "is_fee", "is_dunning_fee"]
 
@@ -271,6 +272,8 @@ class InvoiceListSerializer(serializers.ModelSerializer):
             "status",
             "status_label",
             "recipient_kind",
+            "partner",
+            "payment_category",
             "recipient_name",
             "recipient_email",
             "membership",
@@ -338,6 +341,7 @@ class InvoiceDetailSerializer(InvoiceListSerializer):
             "payments",
             "dunnings",
             "vat",
+            "electronic_data",
         ]
 
 

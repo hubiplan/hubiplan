@@ -5223,3 +5223,162 @@ msgstr "File too large."
 
 msgid "Dateistand geändert."
 msgstr "File version changed."
+
+msgid "Für reguläre Umsatzsteuer ist ein positiver Steuersatz erforderlich."
+msgstr "Standard VAT requires a positive tax rate."
+
+msgid "Diese Steuerkategorie verlangt einen Steuersatz von null."
+msgstr "This tax category requires a zero tax rate."
+
+msgid ""
+"Bitte den Grund für die Steuerbefreiung oder Nichtsteuerbarkeit angeben."
+msgstr ""
+"Please give the reason for exemption or being outside the scope of VAT."
+
+msgid "Für diese Steuerkategorie ist kein Befreiungsgrund zulässig."
+msgstr "An exemption reason is not permitted for this tax category."
+
+msgid "Bitte den Zu- oder Abschlag begründen."
+msgstr "Please give a reason for the allowance or charge."
+
+msgid "Der Abschlag übersteigt den Positionsbetrag."
+msgstr "The allowance exceeds the line amount."
+
+msgid "Das Leistungsende liegt vor dem Leistungsbeginn."
+msgstr "The service end precedes the service start."
+
+msgid ""
+"Ohne USt-IdNr. ist eine eindeutige Kennung des Rechnungsstellers "
+"erforderlich."
+msgstr "Without a VAT identifier, a unique supplier identifier is required."
+
+msgid ""
+"Für XRechnung fehlen Kontaktperson oder Telefonnummer des Rechnungsstellers."
+msgstr "XRechnung requires the supplier’s contact name and phone number."
+
+msgid ""
+"Nicht steuerbare Positionen dürfen hier nicht mit anderen Steuerkategorien "
+"kombiniert werden."
+msgstr "Out-of-scope items cannot be combined with other tax categories here."
+
+msgid "Bitte Steuernummer oder USt-IdNr. des Rechnungsstellers angeben."
+msgstr "Please enter the supplier’s tax number or VAT ID."
+
+msgid ""
+"Bei nicht steuerbaren Rechnungen dürfen keine USt-IdNr. angegeben werden."
+msgstr "VAT IDs must not be included on out-of-scope invoices."
+
+msgid ""
+"Bei Steuerschuldnerschaft des Empfängers sind beide USt-IdNr. erforderlich."
+msgstr "Reverse charge requires both VAT IDs."
+
+msgid ""
+"Der Rechnungsbetrag muss größer als 0 sein und innerhalb der Betragsgrenze "
+"liegen."
+msgstr "The invoice amount must be positive and within the amount limit."
+
+msgid "Ein Positionsbetrag überschreitet die Betragsgrenze."
+msgstr "A line amount exceeds the amount limit."
+
+msgid "Die E-Rechnung ist ungültig."
+msgstr "The e-invoice is invalid."
+
+msgid "Die Aufbewahrungsfrist dieser Rechnung ist abgelaufen."
+msgstr "The retention period for this invoice has expired."
+
+msgid "Die Rechnung wurde noch nicht als E-Rechnung festgeschrieben."
+msgstr "The invoice has not yet been issued as an e-invoice."
+
+msgid "Die Prüfsumme des Rechnungsoriginals stimmt nicht."
+msgstr "The original invoice checksum does not match."
+
+msgid "Keine unterstützte Rechnungsstruktur erkannt."
+msgstr "No supported invoice structure detected."
+
+msgid "Die E-Rechnungsprüfung ist auf diesem Server nicht eingerichtet."
+msgstr "E-invoice validation is not configured on this server."
+
+msgid "Die E-Rechnungsprüfung konnte nicht abgeschlossen werden."
+msgstr "E-invoice validation could not be completed."
+
+msgid "Die Datei erfüllt die Prüfregeln nicht. Details stehen im Prüfbericht."
+msgstr ""
+"The file does not meet the validation rules. See the report for details."
+
+msgid "Festgeschriebene E-Rechnungen sind unveränderbar."
+msgstr "Issued e-invoices cannot be changed."
+
+msgid "Bitte eine XML- oder PDF-Datei mit höchstens 15 MB wählen."
+msgstr "Please select an XML or PDF file of up to 15 MB."
+
+msgid "Keine unterstützte E-Rechnung erkannt."
+msgstr "No supported e-invoice detected."
+
+msgid "Bitte Freigabe oder Ablehnung mit einer Begründung angeben."
+msgstr "Please approve or reject with a reason."
+
+msgid "Die Rechnung ist bereits einer Buchung zugeordnet."
+msgstr "The invoice is already linked to a booking."
+
+msgid "Nur erfolgreich geprüfte E-Rechnungen können freigegeben werden."
+msgstr "Only successfully validated e-invoices can be approved."
+
+msgid "Nur ungeprüfte Eingänge mit XML können erneut geprüft werden."
+msgstr "Only pending incoming invoices with XML can be validated again."
+
+msgid ""
+"Bitte die Rechnung zuerst freigeben; eine Zuordnung ist nur einmal möglich."
+msgstr "Please approve the invoice first; it can only be linked once."
+
+msgid ""
+"Buchungsart, Währung oder Betrag passen nicht, oder die Buchung ist bereits "
+"zugeordnet."
+msgstr ""
+"Booking type, currency or amount does not match, or the booking is already "
+"linked."
+
+msgid "Zu prüfen"
+msgstr "To review"
+
+msgid "Freigegeben"
+msgstr "Approved"
+
+msgid "Abgelehnt"
+msgstr "Rejected"
+
+msgid "Geschäftspartner"
+msgstr "Business partner"
+
+msgid ""
+"Mahngebühren bitte separat abrechnen; die E-Rechnung bleibt unverändert."
+msgstr "Please bill reminder fees separately; the e-invoice remains unchanged."
+
+msgid "Bitte E-Rechnungen im Bereich Leistungsrechnungen bearbeiten."
+msgstr "Please edit e-invoices in the customer invoices section."
+
+msgid "Die Buchung ist einer freigegebenen Eingangsrechnung zugeordnet."
+msgstr "This entry is linked to an approved incoming invoice."
+
+msgid "Bezeichnung"
+msgstr "Name"
+
+msgid "Verwendungszweck"
+msgstr "Purpose"
+
+msgid "Adresse"
+msgstr "Address"
+
+msgid "Einzeltermin"
+msgstr "Single event"
+
+msgid "Alle"
+msgstr "All"
+
+msgid "Verwendung"
+msgstr "Use"
+
+msgid "Ab"
+msgstr "From"
+
+msgid "Bis"
+msgstr "Until"

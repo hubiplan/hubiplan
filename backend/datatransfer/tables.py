@@ -36,7 +36,11 @@ MODULE_MODELS = (
     "billing.FeeRate",
     "billing.AgeRate",
     "billing.FeeRun",
+    "billing.BusinessPartner",
     "billing.Invoice",
+    "billing.InvoiceArtifact",
+    "billing.IncomingInvoice",
+    "billing.IncomingValidation",
     "billing.InvoiceLine",
     "billing.Payment",
     # Quittungen nach Buchung, Beleg (PDF), Rechnung und Zahlung (Gesamtaudit 30.10., B-F01)
@@ -322,11 +326,48 @@ FILE_TYPES = {
 FILE_HASHES = {"finance.cashcount": "pdf_sha256", "finance.bankstatement": "source_sha256"}
 
 
-def check_file(name: str, obj, content: bytes, path: str) -> None:
+def check_file(name: str, obj, content: bytes, path: str, field_name: str = "") -> None:
     """Datei aus dem Import prüfen; die Dateiart kommt aus dem Inhalt, nicht aus der Datei."""
     from django.core.exceptions import ValidationError
 
     from core.filecheck import sniff
+
+    if name in {"billing.invoiceartifact", "billing.incominginvoice", "billing.incomingvalidation"}:
+        import hashlib
+        from xml.etree.ElementTree import ParseError
+
+        from defusedxml import ElementTree
+        from defusedxml.common import DefusedXmlException
+
+        if len(content) > 15 * 1024 * 1024:
+            raise ValidationError(gettext("Die Datei ist größer als 15 MB."))
+        hash_field = {
+            "original": "sha256",
+            "xml": "sha256" if name == "billing.invoiceartifact" else "",
+            "cancellation_xml": "cancellation_sha256",
+        }.get(field_name)
+        if hash_field and hashlib.sha256(content).hexdigest() != getattr(obj, hash_field):
+            raise ValidationError(gettext("Die Prüfsumme des Rechnungsoriginals stimmt nicht."))
+        # Ungültige Eingänge bleiben absichtlich als unveränderte, private Originale
+        # erhalten. Reports und ausgegebene Rechnungen müssen sich sicher lesen lassen.
+        if name == "billing.incominginvoice" and field_name in {"original", "xml"}:
+            return
+        try:
+            ElementTree.fromstring(content, forbid_dtd=True)
+        except (ParseError, DefusedXmlException) as exc:
+            raise ValidationError(gettext("Die Datei ist kein gültiges XML.")) from exc
+        return
+    if name == "finance.receipt" and getattr(obj, "content_type", "") in {
+        "text/xml",
+        "application/xml",
+    }:
+        from finance.einvoice import EInvoiceError, parse_xml
+
+        try:
+            parse_xml(content)
+        except EInvoiceError as exc:
+            raise ValidationError(str(exc)) from exc
+        return
 
     if name in {"documents.documentversion", "todos.todoattachment"}:
         from documents.services import ALLOWED_TYPES
@@ -768,7 +809,7 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
             for field_name, path in pending_files:
                 content = files.read(path)
                 if content is not None:
-                    check_file(name, obj, content, path)
+                    check_file(name, obj, content, path, field_name)
                     getattr(obj, field_name).save(
                         path.rsplit("/", 1)[-1].split("-", 1)[-1], ContentFile(content), save=False
                     )
