@@ -47,6 +47,11 @@ def _aad(field) -> bytes:
 
 def encrypt_text(text: str, org_id: int, field) -> str:
     key_id, key = crypto.key_for_org(org_id)
+    return encrypt_text_with_key(text, field, key_id, key)
+
+
+def encrypt_text_with_key(text: str, field, key_id: int, key: bytes) -> str:
+    """Mit einer fest ausgewählten Generation schreiben (Bestandsumstellung)."""
     nonce = os.urandom(12)
     ct = AESGCM(key).encrypt(nonce, text.encode(), _aad(field))
     return PREFIX + base64.b64encode(struct.pack(">Q", key_id) + nonce + ct).decode()

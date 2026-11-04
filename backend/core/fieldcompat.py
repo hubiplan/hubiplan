@@ -29,6 +29,52 @@ def _dotted(node):
     return ""
 
 
+def require_key_rotation_support(target):
+    """Vor dem Daten-Rückweg keine Fassung ohne passende Schlüsselverwaltung zulassen."""
+    from .models import DataKey, DataKeyRotation
+
+    has_rotation = DataKeyRotation.objects.exists()
+    if not has_rotation and not DataKey.objects.filter(is_active=False).exists():
+        return
+    try:
+        tree = ast.parse((target / "core/models.py").read_text(encoding="utf-8-sig"))
+        classes = {node.name: node for node in tree.body if isinstance(node, ast.ClassDef)}
+
+        def fields(name):
+            return {
+                assigned.id: node.value
+                for node in classes[name].body
+                if isinstance(node, ast.Assign)
+                for assigned in node.targets
+                if isinstance(assigned, ast.Name)
+            }
+
+        key = fields("DataKey")
+        if (
+            _dotted(key["organization"].func) != "models.ForeignKey"
+            or _dotted(key["is_active"].func) != "models.BooleanField"
+        ):
+            raise ValueError
+        if (
+            has_rotation
+            and not {
+                "organization",
+                "target_key",
+                "source_key_ids",
+                "token",
+                "phase",
+                "completed_at",
+            }
+            <= fields("DataKeyRotation").keys()
+        ):
+            raise ValueError
+    except (OSError, SyntaxError, KeyError, AttributeError, ValueError):
+        raise CommandError(
+            "Zielfassung unterstützt die vorhandenen Schlüsselgenerationen oder "
+            "Wechselaufträge nicht; Daten-Rückweg und Neustart abgebrochen."
+        ) from None
+
+
 def rollback_fields(model, fields, target):
     relative = Path(inspect.getfile(model)).resolve().relative_to(Path(settings.BASE_DIR).resolve())
     source = target / relative
