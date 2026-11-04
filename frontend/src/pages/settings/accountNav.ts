@@ -6,6 +6,7 @@ export const ACCOUNT_SECTIONS = [
   { to: '/mein-konto', label: t('Profil') },
   { to: '/mein-konto/anmeldung', label: t('Anmeldung & Sicherheit') },
   { to: '/mein-konto/app', label: t('App & andere Instanzen') },
+  { to: '/mein-konto/benachrichtigungen', label: t('Benachrichtigungen') },
   { to: '/mein-konto/briefvorlage', label: t('Briefvorlage & Unterschrift') },
 ] as const
 

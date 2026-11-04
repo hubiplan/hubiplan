@@ -56,17 +56,25 @@ def visible(user, scope, *, deleted=False):
         deleted_at__isnull=not deleted,
     )
     shares = shares_for(user, scope)
-    if preview.current() is not None:
+    if active_preview(user, scope) is not None:
         return qs.filter(shared=True, pk__in=shares.values("todo_id"))
     return qs.filter(
         Q(created_by=user) | Q(owner=user) | Q(shared=True, pk__in=shares.values("todo_id"))
     )
 
 
+def active_preview(user, scope):
+    selected = preview.current()
+    if selected is not None and selected.user_id == user.pk and selected.org_id == scope.org.pk:
+        if "roles.preview" in own_permissions_in(user, scope.org):
+            return selected
+    return None
+
+
 def role_ids(user, scope):
     from access.models import RoleAssignment
 
-    selected = preview.current()
+    selected = active_preview(user, scope)
     if selected is not None:
         if (
             selected.user_id != user.pk
@@ -96,7 +104,7 @@ def role_ids(user, scope):
 def shares_for(user, scope):
     qs = TodoShare.objects.filter(target_org=scope.org, target_department_id=scope.department_id)
     roles = role_ids(user, scope)
-    if preview.current() is not None:
+    if active_preview(user, scope) is not None:
         return qs.filter(role_id__in=roles)
     return qs.filter(Q(user=user) | Q(role_id__in=roles))
 

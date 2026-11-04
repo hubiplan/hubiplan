@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api/client.ts'
 import { todoApi } from '../api/todos.ts'
 import type { Todo, TodoShare } from '../api/todos.ts'
@@ -24,6 +24,17 @@ export function TodoSharing({
     [base],
   )
   const [shares, setShares] = useState<TodoShare[]>(todo.shares ?? [])
+  const baseline = useRef(JSON.stringify(todo.shares ?? []))
+  const version = useRef(todo.version)
+  useEffect(() => {
+    const incoming = JSON.stringify(todo.shares ?? [])
+    if (incoming === baseline.current) version.current = todo.version
+    else if (JSON.stringify(shares) === baseline.current) {
+      baseline.current = incoming
+      version.current = todo.version
+      setShares(todo.shares ?? [])
+    }
+  }, [todo, shares])
   const [recipient, setRecipient] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -33,7 +44,9 @@ export function TodoSharing({
   async function save() {
     setBusy(true)
     try {
-      await todoApi.update(base, todo.id, { version: todo.version, shares })
+      const updated = await todoApi.update(base, todo.id, { version: version.current, shares })
+      baseline.current = JSON.stringify(updated.shares ?? [])
+      version.current = updated.version
       onSaved()
       setMessage(t('Gespeichert.'))
     } catch (err) {

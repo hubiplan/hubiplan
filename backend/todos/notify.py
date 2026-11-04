@@ -51,7 +51,12 @@ def notify_shared(todo_id, user_id, revision):
             return
         with language_of(user):
             title = gettext("Neue Aufgabe: {title}").format(title=todo.title)
-            link = f"{settings.FRONTEND_URL}/aufgaben?aufgabe={todo.pk}"
+            unit = (
+                f"abteilung={scope.department_id}"
+                if scope.department_id
+                else f"einheit={scope.org.pk}"
+            )
+            link = f"{settings.FRONTEND_URL}/aufgaben?aufgabe={todo.pk}&{unit}"
             if preferences.share_mail:
                 mail.send(
                     user.email,

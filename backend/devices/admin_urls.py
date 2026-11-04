@@ -20,6 +20,7 @@ from members import jubilee_views, photo_views, workflow_views
 from members import views as member_views
 from organizations import views as org_views
 from portal import views as portal_views
+from todos import reminder_views as todo_reminder_views
 from todos import views as todo_views
 
 from . import admin_finance, admin_members
@@ -92,6 +93,7 @@ def _p(route: str, view, name: str):
 
 
 urlpatterns = [
+    path("todos/<int:pk>/reminders/", for_app(todo_reminder_views.ReminderSettingsView).as_view()),
     path("todos/orphans/", for_app(todo_views.OrphanTasksView).as_view()),
     path("todos/<int:pk>/take-over/", for_app(todo_views.TakeOverView).as_view()),
     path("todos/choices/", for_app(todo_views.TodoChoicesView).as_view()),

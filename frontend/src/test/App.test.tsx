@@ -152,6 +152,7 @@ describe('Layout', () => {
     for (const label of [
       'Profil',
       'Anmeldung & Sicherheit',
+      'Benachrichtigungen',
       'App & andere Instanzen',
       'Briefvorlage & Unterschrift',
     ]) {

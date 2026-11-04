@@ -38,6 +38,7 @@ from outbox import views as outbox_views
 from peering import urls as peering_urls
 from portal import views as portal_views
 from statutes import views as statute_views
+from todos import reminder_views as todo_reminder_views
 from todos import views as todo_views
 from website import urls as website_urls
 
@@ -125,6 +126,8 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("todos/cleanup/", todo_reminder_views.CleanupSettingsView.as_view()),
+    path("todos/<int:pk>/reminders/", todo_reminder_views.ReminderSettingsView.as_view()),
     path("todos/orphans/", todo_views.OrphanTasksView.as_view()),
     path("todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
     path("todos/choices/", todo_views.TodoChoicesView.as_view()),
@@ -649,6 +652,12 @@ dept_patterns = [
 ]
 
 urlpatterns = [
+    path("me/todos/<int:pk>/", todo_views.PersonalTaskDeleteView.as_view()),
+    path("depts/<int:dept_id>/todos/cleanup/", todo_reminder_views.CleanupSettingsView.as_view()),
+    path(
+        "depts/<int:dept_id>/todos/<int:pk>/reminders/",
+        todo_reminder_views.ReminderSettingsView.as_view(),
+    ),
     path("depts/<int:dept_id>/todos/orphans/", todo_views.OrphanTasksView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
     path("depts/<int:dept_id>/todos/choices/", todo_views.TodoChoicesView.as_view()),

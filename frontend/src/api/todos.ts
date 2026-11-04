@@ -24,6 +24,9 @@ export interface Todo {
   deleted_at: string | null
   can_edit: boolean
   can_delete: boolean
+  overdue?: boolean
+  highlight?: boolean
+  due_label?: string
   can_share?: boolean
   can_take_over?: boolean
   shares?: TodoShare[]
@@ -34,6 +37,7 @@ export const todoBase = (org: number | null, department?: number | null) =>
   department ? `/api/depts/${department}/todos/` : `/api/orgs/${org}/todos/`
 
 export const todoApi = {
+  get: (base: string, id: number) => api.get<Todo>(`${base}${id}/`),
   list: (base: string, trash = false) =>
     api.get<{ items: Todo[] }>(`${base}${trash ? '?trash=1' : ''}`),
   create: (base: string, values: unknown) => api.post<Todo>(base, values),

@@ -5050,3 +5050,29 @@ msgstr "Sharing changes cannot be undone."
 
 msgid "Verantwortung lässt sich nicht rückgängig übertragen."
 msgstr "Responsibility transfers cannot be undone."
+
+msgid "Überfällig"
+msgstr "Overdue"
+
+msgid "Heute fällig"
+msgstr "Due today"
+
+msgid "Fällig morgen"
+msgstr "Due tomorrow"
+
+msgid "Erinnerung: {title}"
+msgstr "Reminder: {title}"
+
+msgid "Frist: {date}"
+msgstr "Due: {date}"
+
+msgid "Aufgabenerinnerung"
+msgstr "Task reminder"
+
+msgid "Verantwortung bitte getrennt von anderen Änderungen übertragen."
+msgstr "Please transfer responsibility separately from other changes."
+
+msgid "überfällig seit {n} Tag"
+msgid_plural "überfällig seit {n} Tagen"
+msgstr[0] "overdue for {n} day"
+msgstr[1] "overdue for {n} days"

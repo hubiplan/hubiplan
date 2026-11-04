@@ -56,6 +56,7 @@ def participants(todo, scope):
 def replace_shares(todo, user, scope, values):
     if todo.owner_id != user.pk or "todos.edit" not in scope.permissions:
         raise PermissionDenied()
+    todo._refresh_reminders = True
     allowed_users = {u.pk for u in eligible_users(scope)}
     roles = set(
         Role.all_objects.filter(

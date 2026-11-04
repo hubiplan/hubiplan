@@ -28,6 +28,23 @@ export function TodoPreferences() {
       {data && (
         <>
           <Checkbox
+            label={t('Per Mail an Aufgaben erinnern')}
+            checked={data.reminder_mail}
+            onChange={(v) => void change('reminder_mail', v)}
+          />
+          <Checkbox
+            label={t('Per Push an Aufgaben erinnern')}
+            checked={data.reminder_push}
+            onChange={(v) => void change('reminder_push', v)}
+          />
+          <Checkbox
+            label={t(
+              'Eigene erledigte einmalige Aufgaben nach 12 Monaten in den Papierkorb verschieben',
+            )}
+            checked={data.purge_done}
+            onChange={(v) => void change('purge_done', v)}
+          />
+          <Checkbox
             label={t('Beim Teilen per Mail informieren')}
             checked={data.share_mail}
             onChange={(v) => void change('share_mail', v)}

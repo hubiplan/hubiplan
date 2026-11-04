@@ -152,3 +152,83 @@ class TodoNotice(models.Model):
 
     def __str__(self):
         return f"{self.todo_id}: {self.user_id} ({self.revision})"
+
+
+def reminder_days():
+    return [1]
+
+
+class TodoReminderConfig(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    todo = models.ForeignKey(Todo, on_delete=models.CASCADE, related_name="reminder_configs")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    days = models.JSONField(default=reminder_days)
+    enabled = models.BooleanField(default=True)
+    mail = models.BooleanField(null=True, default=None)
+    push = models.BooleanField(null=True, default=None)
+    active = models.BooleanField(default=False)
+    revision = models.PositiveIntegerField(default=1)
+    last_due_revision = models.PositiveIntegerField(default=0)
+    enrolled_at = models.DateTimeField(default=django_timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["todo", "user"], name="todo_reminder_config_unique")
+        ]
+
+    def __str__(self):
+        return f"{self.todo_id}: {self.user_id}"
+
+
+class TodoReminder(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    todo = models.ForeignKey(Todo, on_delete=models.CASCADE, related_name="reminders")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    due_revision = models.PositiveIntegerField()
+    config_revision = models.PositiveIntegerField()
+    rule = models.CharField(max_length=24)
+    channel = models.CharField(max_length=4, choices=[("mail", "Mail"), ("push", "Push")])
+    scheduled_at = models.DateTimeField(db_index=True)
+    claimed_at = models.DateTimeField(null=True)
+    sent_at = models.DateTimeField(null=True)
+    result = models.CharField(max_length=12, default="pending")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["todo", "user", "due_revision", "config_revision", "rule", "channel"],
+                name="todo_reminder_attempt_unique",
+            )
+        ]
+        indexes = [models.Index(fields=["result", "scheduled_at"])]
+
+    def __str__(self):
+        return f"{self.todo_id}: {self.user_id} {self.rule} {self.channel}"
+
+
+class TodoCleanupSetting(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    department = models.ForeignKey(
+        "organizations.Department",
+        on_delete=models.CASCADE,
+        null=True,
+        related_name="todo_cleanup_settings",
+    )
+    purge_done = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization"],
+                condition=Q(department__isnull=True),
+                name="todo_cleanup_root_unique",
+            ),
+            models.UniqueConstraint(
+                fields=["organization", "department"],
+                condition=Q(department__isnull=False),
+                name="todo_cleanup_department_unique",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.organization_id}: {self.department_id or 0}"
