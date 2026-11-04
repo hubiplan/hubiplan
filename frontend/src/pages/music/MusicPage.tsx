@@ -272,7 +272,7 @@ function MusicWorkspace() {
                   onClick={async () => {
                     if (!(await confirmDialog(t('Eintrag entfernen?')))) return
                     try {
-                      await api.delete(`${base}${kind}/${r.id}/`)
+                      await api.del(`${base}${kind}/${r.id}/`)
                       await load.reload()
                     } catch (err) {
                       setError(errorMessage(err))
