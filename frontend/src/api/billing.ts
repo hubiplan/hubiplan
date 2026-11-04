@@ -170,7 +170,7 @@ export interface InvoiceRow {
   number: string
   status: InvoiceStatus
   status_label: string
-  recipient_kind: 'member' | 'department' | 'club' | 'anonymized'
+  recipient_kind: 'member' | 'department' | 'club' | 'anonymized' | 'partner'
   recipient_name: string
   recipient_email: string
   membership: number | null
@@ -197,6 +197,7 @@ export interface InvoiceRow {
 }
 
 export interface Invoice extends InvoiceRow {
+  electronic_data?: Record<string, unknown>
   recipient_address: string
   note: string
   cancelled_at: string | null

@@ -109,7 +109,7 @@ describe('Finanzen', () => {
     expect(screen.queryByText(/Lastschrift/)).not.toBeInTheDocument()
   })
 
-  it('zeigt Kassenprüfern nur lesend die Kasse', async () => {
+  it('zeigt Kassenprüfern Kasse und Rechnungseingang nur lesend', async () => {
     const org = testOrg({
       modules: ['members', 'finance', 'billing'],
       permissions: ['finance.view'],
@@ -121,6 +121,10 @@ describe('Finanzen', () => {
       'GET /api/orgs/7/finance/settings/': () => ({
         status: 200,
         body: { current_year: 2025, years: [], tax_areas: [], tax_areas_enabled: false },
+      }),
+      'GET /api/orgs/7/finance/incoming/?page=1': () => ({
+        status: 200,
+        body: { results: [], count: 0, next: null, previous: null },
       }),
       'GET /api/orgs/7/finance/overview/?jahr=2025': () => ({
         status: 200,
@@ -142,7 +146,7 @@ describe('Finanzen', () => {
     renderApp('/finanzen/einstellungen')
     expect(await screen.findByText('nur lesen')).toBeInTheDocument()
     const nav = subnav()
-    expect(nav.queryByRole('link', { name: 'Rechnungen' })).not.toBeInTheDocument()
+    expect(nav.getByRole('link', { name: 'Rechnungen' })).toBeInTheDocument()
     expect(nav.getByRole('link', { name: 'Kassenbuch' })).toBeInTheDocument()
     await waitFor(() =>
       expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/einstellungen/konten'),
@@ -151,6 +155,11 @@ describe('Finanzen', () => {
     await user.click(nav.getByRole('link', { name: 'Übersicht' }))
     expect(await screen.findByText('Noch keine Konten angelegt.')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Erstes Konto anlegen' })).not.toBeInTheDocument()
+    await user.click(nav.getByRole('link', { name: 'Rechnungen' }))
+    expect(await screen.findByText('Noch keine Eingangsrechnungen vorhanden.')).toBeInTheDocument()
+    expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/rechnungen/eingang')
+    expect(screen.queryByLabelText('E-Rechnung importieren')).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Leistungsrechnungen' })).not.toBeInTheDocument()
   })
 
   it('leitet alte Adressen samt Filter um', async () => {

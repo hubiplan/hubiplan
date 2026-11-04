@@ -24,6 +24,9 @@ IGNORED_FIELDS = {"created_at", "updated_at", "id", "organization", "uuid"}
 
 # Lesbare Namen der protokollierten Objekte
 OBJECT_TYPES = {
+    "businesspartner": "Geschäftspartner",
+    "incominginvoice": "Rechnungseingang",
+    "invoiceartifact": "E-Rechnungsoriginal",
     "todo": "Aufgabe",
     "organization": "Organisation",
     "department": "Abteilung",

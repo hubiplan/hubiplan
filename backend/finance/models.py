@@ -316,7 +316,7 @@ class Receipt(models.Model):
     )
     hidden_reason = models.CharField("Grund", max_length=300, blank=True)
     # E-Rechnung (XRechnung, ZUGFeRD): ausgelesene Angaben; maßgeblich bleibt die Datei
-    einvoice = models.JSONField("E-Rechnung", default=dict, blank=True)
+    einvoice = EncryptedJSONField("E-Rechnung", default=dict, blank=True, strict=True)
 
     class Meta:
         verbose_name = "Beleg"

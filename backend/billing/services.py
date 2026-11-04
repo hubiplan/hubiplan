@@ -488,7 +488,24 @@ def department_recipient(org, department) -> dict:
 
 def refresh_recipient(invoice: Invoice) -> None:
     org = invoice.organization
-    if invoice.recipient_kind == Invoice.Recipient.MEMBER and org.type == "unit":
+    if invoice.electronic_data:
+        # Anschriften sind Teil des bewusst bearbeiteten Rechnungsentwurfs.
+        return
+    if invoice.recipient_kind == Invoice.Recipient.PARTNER:
+        partner = invoice.partner
+        details = partner.details
+        data = {
+            "recipient_name": partner.name,
+            "recipient_email": details.get("email", ""),
+            "recipient_address": "\n".join(
+                [
+                    details.get("street", ""),
+                    f"{details.get('postcode', '')} {details.get('city', '')}".strip(),
+                    details.get("country", ""),
+                ]
+            ),
+        }
+    elif invoice.recipient_kind == Invoice.Recipient.MEMBER and org.type == "unit":
         from .units import member_recipient as unit_member_recipient
 
         # Arbeitsbereich einer Untereinheit: Mitgliedsdaten liegen darüber
@@ -662,7 +679,7 @@ def lock_invoice(
 
 @transaction.atomic
 def finalize(invoice: Invoice) -> None:
-    lock_invoice(invoice, ("status",))
+    lock_invoice(invoice, fields=None)
     if invoice.status != Invoice.Status.DRAFT:
         raise ValidationError(gettext("Die Rechnung ist schon festgeschrieben."))
     recalc_total(invoice)
@@ -674,6 +691,10 @@ def finalize(invoice: Invoice) -> None:
     invoice.number = next_invoice_number(org.pk, invoice.year)
     invoice.status = Invoice.Status.OPEN
     invoice.save()
+    if invoice.electronic_data:
+        from .einvoice_services import archive
+
+        archive(invoice)
     if invoice.club_id is not None and invoice.club.is_remote:
         from peering import packet_invoices
 
@@ -704,6 +725,10 @@ def cancel(invoice: Invoice) -> None:
             gettext("Zu der Rechnung gibt es Zahlungen. Bitte zuerst die Zahlungen entfernen.")
         )
     invoice.status = Invoice.Status.CANCELLED
+    if invoice.electronic_data:
+        from .einvoice_services import archive_cancellation
+
+        archive_cancellation(invoice)
     invoice.cancelled_at = timezone.now()
     invoice.save(update_fields=["status", "cancelled_at", "updated_at"])
     if invoice.club_id is not None and invoice.club.is_remote:
@@ -745,7 +770,8 @@ def add_payment(
             {"amount": f"Offen sind nur noch {invoice.outstanding:.2f} €.".replace(".", ",")}
         )
     cfg = settings_for(org)
-    if cfg.category is None:
+    payment_category = invoice.payment_category or cfg.category
+    if payment_category is None:
         raise ValidationError(
             gettext(
                 "Bitte unter Beiträge → Einstellungen eine Kategorie für Beitragszahlungen wählen."
@@ -763,7 +789,7 @@ def add_payment(
         kind=Booking.Kind.INCOME,
         amount=amount,
         account=account,
-        category=cfg.category,
+        category=payment_category,
         text=f"Zahlung {invoice.display_number} {invoice.recipient_name.splitlines()[0]}"[:200],
         reference=invoice.display_number,
         counterparty=invoice.recipient_name.splitlines()[0][:200] if invoice.recipient_name else "",
@@ -1042,6 +1068,20 @@ def included_vat(gross: Decimal, rate: Decimal) -> Decimal:
 
 def vat_breakdown(invoice: Invoice) -> list[dict]:
     """Enthaltene Umsatzsteuer je Steuersatz (Beträge sind brutto)."""
+    if invoice.electronic_data:
+        from .einvoice_xml import calculate
+
+        totals = calculate([line.electronic_data for line in invoice.lines.all()])
+        return [
+            {
+                "rate": row["rate"],
+                "net": row["net"],
+                "vat": row["tax"],
+                "gross": row["net"] + row["tax"],
+            }
+            for row in totals["taxes"]
+            if row["rate"]
+        ]
     by_rate: dict[Decimal, Decimal] = {}
     for line in invoice.lines.all():
         if line.vat_rate:
@@ -1086,6 +1126,10 @@ def dunning_proposals(org, on: datetime.date | None = None) -> list[tuple[Invoic
 @transaction.atomic
 def dun(invoice: Invoice, level: DunningLevel, user, on: datetime.date | None = None) -> Dunning:
     lock_invoice(invoice)
+    if invoice.electronic_data and level.fee > 0:
+        raise ValidationError(
+            gettext("Mahngebühren bitte separat abrechnen; die E-Rechnung bleibt unverändert.")
+        )
     on = on or timezone.localdate()
     if invoice.status != Invoice.Status.OPEN:
         raise ValidationError(gettext("Gemahnt werden nur offene Rechnungen."))

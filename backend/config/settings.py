@@ -468,6 +468,7 @@ OIDC_ISSUER = os.environ.get("OIDC_ISSUER", "")
 OIDC_KEY_FILE = os.environ.get("OIDC_KEY_FILE", "")
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
+EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")
 # Push an die App (Web-Push mit VAPID). Schlüsseldatei Standard: PRIVATE_ROOT/push/vapid.json
 PUSH_VAPID_KEY_FILE = os.environ.get("PUSH_VAPID_KEY_FILE", "")
 # Absender-Angabe für Push-Dienste (https-Adresse oder mailto:), Standard FRONTEND_URL

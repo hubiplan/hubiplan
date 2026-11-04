@@ -72,6 +72,9 @@ BLOCKING_MODELS = {
     "finance.yearclosing": "Betrifft einen Jahresabschluss.",
     "finance.donationstatement": "Betrifft eine Zuwendungsbestätigung.",
     "billing.payment": "Betrifft Zahlungen.",
+    "billing.invoiceartifact": "Betrifft ein unveränderbares E-Rechnungsoriginal.",
+    "billing.incominginvoice": "Betrifft den archivierten Rechnungseingang.",
+    "billing.incomingvalidation": "Betrifft einen archivierten Prüfbericht.",
     "billing.dunning": "Betrifft Mahnungen.",
     "billing.mandate": "Betrifft SEPA-Mandate.",
     "billing.debitrun": "Betrifft eine Lastschriftdatei.",
@@ -149,6 +152,10 @@ def _booking_lock(values: dict) -> str:
     if values.get("id") and Booking._base_manager.filter(cancels_id=values["id"]).exists():
         return "Betrifft eine stornierte Buchung."
     if booking_id := values.get("id"):
+        from billing.models import IncomingInvoice
+
+        if IncomingInvoice._base_manager.filter(booking_id=booking_id).exists():
+            return "Die Buchung ist einer freigegebenen Eingangsrechnung zugeordnet."
         try:
             services.editable_booking_donation(booking_id, lock=connection.in_atomic_block)
         except ValidationError as exc:
