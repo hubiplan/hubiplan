@@ -522,6 +522,12 @@ class PlatformOrganizationViewSet(
             )
         record(org, self.request.user, "create", org, diff({}, snapshot(org)))
 
+    def update(self, request, *args, **kwargs):
+        org = self.get_object()
+        # Auch die Validierung braucht Zugriff auf die Kontaktrolle der Zielorganisation.
+        with tenant_context(org.pk):
+            return super().update(request, *args, **kwargs)
+
     def perform_update(self, serializer):
         if serializer.instance.is_remote:
             raise serializers.ValidationError(
