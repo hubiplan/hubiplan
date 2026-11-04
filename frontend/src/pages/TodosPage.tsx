@@ -117,10 +117,10 @@ function TodoWorkspace({ base }: { base: string }) {
   }
   return (
     <section className="todo-workspace stack">
-      <div className="page-heading">
+      <div className="page-heading todo-page-heading">
         <h1>{t('Aufgaben')}</h1>
         <button
-          className="button"
+          className="button button-primary"
           onClick={() => {
             void guard(() => {
               setNewTask(true)
@@ -128,7 +128,7 @@ function TodoWorkspace({ base }: { base: string }) {
             })
           }}
         >
-          {t('Neue Aufgabe')}
+          <span aria-hidden="true">+</span> {t('Neue Aufgabe')}
         </button>
       </div>
       <div className="todo-toolbar">
@@ -173,13 +173,6 @@ function TodoWorkspace({ base }: { base: string }) {
             {t('Erneut laden')}
           </button>
         </div>
-      )}
-      {can('todos.edit') && can('roles.edit') && <TodoCleanup base={base} />}
-      {can('todos.edit') && can('roles.edit') && (
-        <OrphanTasks base={base} onSaved={() => void reload()} />
-      )}
-      {can('todos.edit') && !activeDept && (
-        <TodoRemoteInbox base={base} onSaved={() => void reload()} />
       )}
       {newTask && (
         <NewTodoDialog
@@ -354,9 +347,25 @@ function TodoWorkspace({ base }: { base: string }) {
         </div>
       )}
       {data && !items.length && <p className="muted">{t('Keine Aufgaben vorhanden.')}</p>}
-      <a className="button button-ghost" href="/api/me/todos/export/?files=1">
-        {t('Eigene Aufgaben exportieren')}
-      </a>
+      {can('todos.edit') && can('roles.edit') && (
+        <OrphanTasks base={base} onSaved={() => void reload()} />
+      )}
+      {can('todos.edit') && !activeDept && (
+        <TodoRemoteInbox base={base} onSaved={() => void reload()} />
+      )}
+      <div className="todo-footer">
+        <a className="button button-ghost" href="/api/me/todos/export/?files=1">
+          {t('Eigene Aufgaben exportieren')}
+        </a>
+        {can('todos.edit') && can('roles.edit') && (
+          <details className="todo-administration">
+            <summary>{t('Verwaltung')}</summary>
+            <div className="todo-admin-content">
+              <TodoCleanup base={base} />
+            </div>
+          </details>
+        )}
+      </div>
     </section>
   )
 }
