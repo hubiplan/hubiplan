@@ -60,6 +60,11 @@ export function NewTodoDialog({
     setShares(values)
     setPerUnit(mode)
   }, [])
+  const foreign = shares.some(
+    (entry) =>
+      (entry.target_org ?? draft.organization) !== draft.organization ||
+      (entry.target_department ?? null) !== (draft.department ?? null),
+  )
   async function refresh() {
     if (!task) return
     const current = ++generation.current
@@ -84,7 +89,7 @@ export function NewTodoDialog({
           base={base}
           todo={task ?? undefined}
           initialEvent={initialEvent}
-          extraValues={canShare ? { shares, per_unit: perUnit } : undefined}
+          extraValues={canShare ? { shares, ...(foreign ? { per_unit: perUnit } : {}) } : undefined}
           onCreated={setTask}
           onSaved={() => {
             if (task) void refresh()

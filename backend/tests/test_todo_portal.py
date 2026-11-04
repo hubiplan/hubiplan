@@ -119,8 +119,10 @@ def test_portal_rls_verhindert_private_inhalte_und_titelaenderung(api, board_a, 
         portal_scope(user, access.pk)
         assert not Todo.objects.filter(pk=private["id"]).exists()
         assert Todo.objects.filter(pk=task["id"]).exists()
+        protected = Todo.objects.get(pk=task["id"])
+        protected.title = "Nicht erlaubt"
         with pytest.raises(DatabaseError), transaction.atomic():
-            Todo.objects.filter(pk=task["id"]).update(title="Nicht erlaubt")
+            protected.save(update_fields=["title"])
 
 
 def test_portal_api_mit_echter_datenbankrolle(api, board_a, orgs):

@@ -212,3 +212,51 @@ describe('Eigene Aufgaben', () => {
     await waitFor(() => expect(task.description).toBe('Erste Notiz ergänzt'))
   })
 })
+
+describe('Aufgaben-Dialog', () => {
+  it('bietet Teilen vor dem Anlegen und ein großes Beschreibungsfeld an', async () => {
+    let created: Record<string, unknown> = {}
+    fakeApi({
+      'GET /_allauth/browser/v1/auth/session': () => ({
+        status: 200,
+        body: { status: 200, data: { user: testUser } },
+      }),
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ permissions: ['todos.view', 'todos.edit'] })],
+      }),
+      'GET /api/orgs/7/todos/': () => ({ status: 200, body: { items: [] } }),
+      'GET /api/orgs/7/todos/choices/': () => ({
+        status: 200,
+        body: { users: [{ id: 8, name: 'Erika Beispiel' }], roles: [] },
+      }),
+      'POST /api/orgs/7/todos/': (init) => {
+        created = JSON.parse(String(init?.body))
+        return {
+          status: 201,
+          body: {
+            ...created,
+            id: 12,
+            version: 1,
+            status: 'open',
+            can_edit: true,
+            can_delete: true,
+          },
+        }
+      },
+    })
+    setup()
+    await userEvent.click(await screen.findByRole('button', { name: 'Neue Aufgabe' }))
+    expect(await screen.findByRole('dialog', { name: 'Neue Aufgabe' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Beschreibung')).toHaveAttribute('rows', '8')
+    await userEvent.type(screen.getByLabelText('Titel'), 'Helferdienst')
+    await userEvent.selectOptions(await screen.findByLabelText('Empfänger'), 'u:8')
+    await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Anlegen' }))
+    await waitFor(() => expect(created.title).toBe('Helferdienst'))
+    expect(created.shares).toEqual([{ user: 8, level: 'view', responsible: false }])
+    expect(created).not.toHaveProperty('per_unit')
+    expect(await screen.findByRole('dialog', { name: 'Aufgabe angelegt' })).toBeInTheDocument()
+    expect(screen.getByText('Anhänge')).toBeInTheDocument()
+  })
+})
