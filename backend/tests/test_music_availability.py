@@ -256,7 +256,7 @@ def test_self_absences_are_scoped_and_idempotent(api, c, club, staffing):
     assert client.post(url, data, content_type=JSON, HTTP_IDEMPOTENCY_KEY=key).status_code == 200
     assert client.post(url, data, content_type=JSON, HTTP_IDEMPOTENCY_KEY=key).status_code == 200
     reader = make_user("musiklesen@example.org")
-    give_role(reader, club, permissions=["music.view"])
+    give_role(reader, club, permissions=["music.view"], name="Abwesenheiten lesen")
     assert api(reader).get(base + "/absences/").status_code == 200
     assert api(reader).delete(f"{base}/absences/{foreign.pk}/").status_code == 403
     club.enabled_modules.remove("music")
@@ -339,4 +339,4 @@ def test_revalidate_after_new_absence_and_roundtrip(c, club, orgs, staffing):
         ids = IdMap()
         ids.set("music.musician", musicians[0].pk, other.pk)
         assert load_tables(tables, orgs["b"], ids, None) == 1
-        assert MusicianAbsence.objects.get().musician_id == other.pk
+        assert MusicianAbsence.objects.get(organization=orgs["b"]).musician_id == other.pk
