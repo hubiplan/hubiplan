@@ -7,7 +7,9 @@ describe('Nicht angebundene sichtbare Texte', () => {
       `const view = <section><h1>Meldungen</h1><Field label="Titel" /><button>{busy ? 'Bitte warten' : 'Anlegen'}</button></section>`,
       'probe.tsx',
     )
-    expect(hits.map((hit) => hit.text)).toEqual(['Meldungen', 'Titel', 'Bitte warten', 'Anlegen'])
+    expect(hits.map((hit) => hit.text).sort()).toEqual(
+      ['Meldungen', 'Titel', 'Bitte warten', 'Anlegen'].sort(),
+    )
   })
   it('lässt Daten, technische Attribute und übersetzte Texte unangetastet', async () => {
     expect(

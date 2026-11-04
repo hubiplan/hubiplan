@@ -5,6 +5,8 @@ import { describe, expect, it } from 'vitest'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import { CalendarView } from '../components/calendar/CalendarView.tsx'
+import { MyResponsePanel } from '../components/calendar/Rsvp.tsx'
+import type { EventDetail } from '../api/events.ts'
 import { addDays, addMonths, monthGrid, monthStart, today } from '../components/calendar/time.ts'
 import { fakeApi } from './fakeApi.ts'
 import { occurrence } from './eventFixtures.ts'
@@ -57,6 +59,33 @@ function detail(rsvp: Record<string, unknown>, over: Record<string, unknown> = {
 }
 
 describe('Zu- und Absagen', () => {
+  it('bestätigt eine Absage und entfernt die Bestätigung beim fehlgeschlagenen erneuten Senden', async () => {
+    const base = '/api/portal/4/'
+    let fail = false
+    fakeApi({
+      [`PUT ${base}events/1/response/`]: () =>
+        fail
+          ? { status: 400, body: { detail: 'Anmeldeschluss ist vorbei.' } }
+          : { status: 200, body: detail({ can_respond: true }) },
+    })
+    render(
+      <MyResponsePanel
+        base={base}
+        event={detail({ can_respond: true }) as EventDetail}
+        onChanged={() => {}}
+      />,
+    )
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText('Bemerkung (optional)'), 'Vielleicht später')
+    await user.click(screen.getByRole('button', { name: 'Absagen' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Deine Absage ist gespeichert.')
+    fail = true
+    await user.click(screen.getByRole('button', { name: 'Zusagen' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Anmeldeschluss ist vorbei.')
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
+    expect(screen.getByLabelText('Bemerkung (optional)')).toHaveValue('Vielleicht später')
+    expect(screen.getByRole('button', { name: 'Zusagen' })).toBeEnabled()
+  })
   it('Mitglied sagt mit Begleitung zu', async () => {
     const base = '/api/portal/4/'
     const user = userEvent.setup()

@@ -310,7 +310,7 @@ export function AdmitPage() {
             </div>
             {selectedType && (
               <p className="muted small">
-                {selectedType.active ? 'aktiv' : t('nicht aktiv')}
+                {selectedType.active ? t('aktiv') : t('nicht aktiv')}
                 {fed &&
                   (selectedType.reported
                     ? t(' · wird an {dv_akk} gemeldet', { dv_akk: terms.dv_akk })
@@ -384,7 +384,7 @@ export function AdmitPage() {
             />
             <div className="grid-3">
               <Field
-                label="PLZ"
+                label={t('PLZ')}
                 required
                 value={v.postal_code}
                 error={e.postal_code}

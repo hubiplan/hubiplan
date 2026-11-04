@@ -5614,5 +5614,8 @@
   "{name} als Ersatz": "{name} as a substitute",
   "geb. {year}": "born {year}",
   " (höchstens {capacity})": " (maximum {capacity})",
-  " (Vorstand)": " (board)"
+  " (Vorstand)": " (board)",
+  "zugesagt": "accepted",
+  "abgesagt": "declined",
+  "entfernen": "remove"
 }

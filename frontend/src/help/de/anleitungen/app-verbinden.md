@@ -15,3 +15,5 @@ Das Gerät erscheint danach in der Liste. Verlierst du das Handy, meldest du es 
 ![Ausgangspunkt: HUBIplan-App mit dem Konto verbinden](bild:app-verbinden)
 
 In der Android-App fragen geänderte Verwaltungsformulare und Kurzmitteilungen vor dem Verwerfen nach. System-Zurück, sichtbares Zurück sowie Reiter- und Einheitenwechsel verwenden dieselbe Entscheidung. Buchungstext, Betrag, Konto, Kategorie und ein bereits ausgewähltes Belegfoto werden bei einer Android-Zustandswiederherstellung wiederhergestellt; eine laufende Quittungsunterschrift wird an die neue Feldgröße angepasst. Nach einem Serverfehler stehen Hinweise an den betroffenen Feldern. Fehlgeschlagene Buchungs- und Untereinheitenakten lassen sich direkt erneut laden. Private Aufgabenentwürfe bleiben entsprechend der Datenschutzregel nur im Arbeitsspeicher.
+
+Auswahllisten der Android-App melden ihren geöffneten oder geschlossenen Zustand in der gewählten Sprache. In der Mitteilungsliste ist die aktuelle Auswahl auch für Bedienungshilfen markiert. Erfolgsnachrichten für Profiländerungen und Mitteilungen werden als höfliche Statusmeldungen bereitgestellt.
