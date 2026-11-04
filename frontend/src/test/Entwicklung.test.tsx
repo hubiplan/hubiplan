@@ -1,7 +1,9 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { statsApi } from '../api/statistics.ts'
+import { ApiError } from '../api/client.ts'
 import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { niceTicks, foldSeries } from '../components/charts/chartData.ts'
@@ -114,6 +116,32 @@ const financeStats = {
 const FIVE_YEARS = `?von=${new Date().getFullYear() - 4}-01&raster=jahr`
 
 describe('Mitgliederentwicklung', () => {
+  it('zeigt nach Zeitraumwechsel und Ladefehler keine Zahlen aus dem vorherigen Zeitraum', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ modules: ['members'], permissions: ['members.view'] })],
+      }),
+    })
+    let fail!: (error: unknown) => void
+    const pending = new Promise<Awaited<ReturnType<typeof statsApi.club>>>((_resolve, reject) => {
+      fail = reject
+    })
+    vi.spyOn(statsApi, 'club')
+      .mockResolvedValueOnce(memberStats as Awaited<ReturnType<typeof statsApi.club>>)
+      .mockReturnValueOnce(pending)
+    renderApp('/mitglieder/entwicklung')
+    await screen.findByRole('heading', { name: 'Mitgliederbestand' })
+    await userEvent.selectOptions(screen.getByLabelText('Zeitraum'), '12m')
+    expect(screen.queryByRole('heading', { name: 'Mitgliederbestand' })).not.toBeInTheDocument()
+    await act(async () => {
+      fail(new ApiError(503, { detail: 'Abfrage fehlgeschlagen.' }))
+    })
+    expect(await screen.findByRole('button', { name: 'Erneut laden' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Mitgliederbestand' })).not.toBeInTheDocument()
+  })
+
   it('zeigt Bestand, Ein- und Austritte und lässt den Zeitraum wählen', async () => {
     const org = testOrg({ modules: ['members'], permissions: ['members.view'] })
     const calls = fakeApi({

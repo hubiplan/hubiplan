@@ -1,7 +1,9 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { billingApi } from '../api/billing.ts'
+import { ApiError } from '../api/client.ts'
 import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
@@ -111,6 +113,41 @@ const detail = {
 }
 
 describe('Beiträge', () => {
+  it('entfernt alte Rechnungen bei Filterwechsel und bietet nach Ladefehler einen erneuten Versuch', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [kassierer] }),
+      [`GET ${B}/settings/`]: () => ({ status: 200, body: settings }),
+      [`GET ${B}/runs/`]: () => ({ status: 200, body: [] }),
+    })
+    let fail!: (error: unknown) => void
+    const pending = new Promise<Awaited<ReturnType<typeof billingApi.invoices>>>(
+      (_resolve, reject) => {
+        fail = reject
+      },
+    )
+    const invoices = vi
+      .spyOn(billingApi, 'invoices')
+      .mockResolvedValueOnce({ count: 1, results: [row], next: null, previous: null } as Awaited<
+        ReturnType<typeof billingApi.invoices>
+      >)
+      .mockReturnValueOnce(pending)
+      .mockResolvedValueOnce({ count: 0, results: [], next: null, previous: null })
+    const user = userEvent.setup()
+    renderApp('/finanzen/rechnungen')
+    await screen.findByRole('button', { name: 'R2025-0001' })
+    await user.selectOptions(screen.getByLabelText('Status'), 'paid')
+    expect(screen.queryByRole('button', { name: 'R2025-0001' })).not.toBeInTheDocument()
+    await act(async () => {
+      fail(new ApiError(503, { detail: 'Abfrage fehlgeschlagen.' }))
+    })
+    await screen.findByText('Abfrage fehlgeschlagen.')
+    expect(screen.queryByText('Erika Muster')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Erneut laden' }))
+    await screen.findByText('Keine Rechnungen gefunden.')
+    expect(invoices).toHaveBeenLastCalledWith(7, expect.objectContaining({ status: 'paid' }))
+  })
+
   it('zeigt Rechnungen und bucht eine Zahlung', async () => {
     const calls = fakeApi({
       [SESSION]: loggedIn,

@@ -14,12 +14,19 @@ import type {
   Project,
   Receipt,
 } from '../../api/finance.ts'
-import type { MemberRow, Page } from '../../api/members.ts'
+import type { MemberRow } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import type { DepartmentChoice } from '../../api/orgs.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
-import { errorMessage, formatDate, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import {
+  errorMessage,
+  formatDate,
+  useAutoSave,
+  useForm,
+  useLoad,
+  useQueryLoad,
+} from '../../components/forms.ts'
+import { Alert, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { ApiError } from '../../api/client.ts'
@@ -64,7 +71,6 @@ export function BookingsPage() {
   const partners = useLoad(() => financeApi.counterparties(org.id), [org.id])
   const [search, setSearch] = useState(params.get('suche') ?? '')
   const [partner, setPartner] = useState(params.get('partner') ?? '')
-  const [data, setData] = useState<Page<Booking> | null>(null)
   const [error, setError] = useState<string | null>(null)
   // Geöffnete Buchung in der Adresse: ?buchung=12 bzw. ?buchung=neu-ausgabe
   const detail = useDetailParam('buchung')
@@ -72,18 +78,6 @@ export function BookingsPage() {
   const [missing, setMissing] = useState<string | null>(null)
   const openedId = detail.value && /^\d+$/.test(detail.value) ? Number(detail.value) : null
   const newKind = detail.value?.startsWith('neu-') ? NEW_KIND[detail.value.slice(4)] : undefined
-  const editing: Booking | BookingKind | null =
-    newKind ??
-    (openedId !== null
-      ? (data?.results.find((b) => b.id === openedId) ?? (loaded?.id === openedId ? loaded : null))
-      : null)
-  function setEditing(b: Booking | BookingKind | null, replace = false) {
-    if (b === null) return detail.close()
-    if (typeof b !== 'string') setLoaded(b)
-    const v = typeof b === 'string' ? `neu-${KIND_PARAM[b]}` : String(b.id)
-    if (replace) detail.replace(v)
-    else detail.open(v)
-  }
   const [version, setVersion] = useState(0)
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -101,6 +95,28 @@ export function BookingsPage() {
     page: Number(params.get('seite') ?? 1),
   }
   const filterKey = JSON.stringify(filter)
+
+  const {
+    data,
+    error: queryError,
+    reload,
+  } = useQueryLoad(
+    () => financeApi.bookings(org.id, JSON.parse(filterKey) as BookingFilter),
+    [org.id, filterKey, version],
+    !!year && search === filter.suche && partner.trim() === filter.partner,
+  )
+  const editing: Booking | BookingKind | null =
+    newKind ??
+    (openedId !== null
+      ? (data?.results.find((b) => b.id === openedId) ?? (loaded?.id === openedId ? loaded : null))
+      : null)
+  function setEditing(b: Booking | BookingKind | null, replace = false) {
+    if (b === null) return detail.close()
+    if (typeof b !== 'string') setLoaded(b)
+    const v = typeof b === 'string' ? `neu-${KIND_PARAM[b]}` : String(b.id)
+    if (replace) detail.replace(v)
+    else detail.open(v)
+  }
 
   function setFilter(key: string, value: string) {
     const next = new URLSearchParams(params)
@@ -146,29 +162,23 @@ export function BookingsPage() {
     }
   }, [org.id, openedId, loaded, data])
 
-  useEffect(() => {
-    if (!year) return
-    let alive = true
-    financeApi
-      .bookings(org.id, JSON.parse(filterKey) as BookingFilter)
-      .then((d) => {
-        if (alive) {
-          setData(d)
-          setError(null)
-        }
-      })
-      .catch((err) => alive && setError(errorMessage(err)))
-    return () => {
-      alive = false
-    }
-  }, [org.id, filterKey, year, version])
-
   const loadError = settings.error ?? accounts.error ?? categories.error
-  if (loadError) return <Alert kind="error">{loadError}</Alert>
+  const baseError = loadError ? (
+    <LoadError
+      message={loadError}
+      onRetry={() => {
+        if (settings.error) void settings.reload()
+        if (accounts.error) void accounts.reload()
+        if (categories.error) void categories.reload()
+      }}
+    />
+  ) : null
+  if (baseError && (!settings.data || !accounts.data || !categories.data)) return baseError
   if (!settings.data || !accounts.data || !categories.data)
     return <p className="muted">{t('Lädt …')}</p>
 
   const refresh = () => {
+    setError(null)
     setVersion((v) => v + 1)
     void accounts.reload()
     void partners.reload()
@@ -188,6 +198,7 @@ export function BookingsPage() {
 
   return (
     <div className="stack">
+      {baseError}
       {canEdit && editing === null && (
         <div className="button-row">
           <button
@@ -385,8 +396,13 @@ export function BookingsPage() {
       <div className="card card-wide">
         {error && <Alert kind="error">{error}</Alert>}
         {notice && <Alert kind="success">{notice}</Alert>}
+        {queryError && <LoadError message={queryError} onRetry={() => void reload()} />}
         {!data ? (
-          <p className="muted">{t('Lädt …')}</p>
+          !queryError && (
+            <p className="muted" role="status">
+              {t('Lädt …')}
+            </p>
+          )
         ) : data.results.length === 0 ? (
           <p className="muted">{t('Keine Buchungen gefunden.')}</p>
         ) : (

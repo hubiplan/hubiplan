@@ -25,3 +25,5 @@ werden beim nächsten Verbundabgleich übermittelt; bereits empfangene Kopien be
 Partnern lassen sich nicht aus der Ferne zuverlässig zurückrufen.
 
 Namenslisten verwenden eine feste alphabetische Reihenfolge: Umlaute stehen bei ihrem Grundbuchstaben. Gleiche Namen bleiben auch beim Blättern in derselben Reihenfolge.
+
+Live-Tabellen zeigen auch bei einem fehlgeschlagenen ersten Abruf einen Fehler und **Erneut laden**. Bereits geladene Ranglisten bleiben mit dem Hinweis auf den bisherigen Stand sichtbar, bis die Aktualisierung gelingt.

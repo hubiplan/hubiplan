@@ -1276,6 +1276,45 @@ fieldset {
   gap: 0 1rem;
 }
 
+.member-secondary-actions,
+.member-filter-options,
+.member-results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.member-secondary-actions {
+  margin-bottom: 0.75rem;
+}
+.member-filter-options {
+  flex: 1 1 100%;
+}
+.member-results-toolbar {
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.member-results-toolbar p,
+.member-results-toolbar .pager {
+  margin: 0;
+}
+.member-page-size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.member-page-size select {
+  font: inherit;
+  color: inherit;
+  background: var(--color-surface);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius);
+  padding: 0.55rem;
+}
+.member-mobile-toggle {
+  display: none;
+}
+
 .th-sort {
   background: var(--color-button-bg);
   border: 0;
@@ -1391,6 +1430,40 @@ button.tab.active {
 
 /* Handy: in der Mitgliederliste nur Name und Mitgliedsart */
 @media (max-width: 640px) {
+  .member-mobile-toggle {
+    display: inline-flex;
+  }
+  .member-secondary-actions:not(.is-expanded),
+  .member-filter-options:not(.is-expanded) {
+    display: none;
+  }
+  .member-list-page .page-head {
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .member-list-page .page-head h1 {
+    margin-bottom: 0.5rem;
+  }
+  .member-list-page .filters {
+    padding: 0.75rem;
+  }
+  .member-list-page .search-input {
+    flex-basis: 100%;
+  }
+  .member-filter-options > select {
+    width: 100%;
+  }
+  .member-results-toolbar .pager {
+    flex-basis: 100%;
+    gap: 0.5rem;
+  }
+  .member-table {
+    table-layout: fixed;
+    overflow-wrap: anywhere;
+  }
+  .member-table .member-avatar {
+    display: none;
+  }
   .member-table .col-optional {
     display: none;
   }
@@ -2099,12 +2172,22 @@ button.tab.active {
 .modal {
   width: 100%;
   max-width: 44rem;
+  min-width: 0;
 }
 .modal-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+.modal-head > h2 {
+  flex: 1 1 12rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.modal-head > button {
+  flex: 0 0 auto;
 }
 .event-facts {
   display: grid;
@@ -3079,7 +3162,7 @@ label:has(> .file-input:focus-visible) {
   top: 0.15rem;
   left: 0;
   font-size: 0.75rem;
-  color: #777;
+  color: #666;
 }
 .signature-clear {
   position: absolute;
@@ -3490,7 +3573,7 @@ label:has(> .file-input:focus-visible) {
   display: grid;
   place-items: center;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-weight: 700;
 }
 .image-tile-new {

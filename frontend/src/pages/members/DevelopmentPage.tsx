@@ -13,8 +13,8 @@ import {
 } from '../../components/charts/chartData.ts'
 import { RangePicker } from '../../components/charts/RangePicker.tsx'
 import { useRange } from '../../components/charts/range.ts'
-import { formatDate, useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { formatDate, useQueryLoad } from '../../components/forms.ts'
+import { LoadError } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { HowTo } from '../../learning/Aids.tsx'
@@ -68,7 +68,7 @@ export function MemberDevelopment({
   // Standard: letzte 5 Jahre nach Jahren; monatlich ist für kleine Einheiten zu fein
   const range = useRange('5j')
   const key = JSON.stringify(range.query)
-  const { data, error } = useLoad(() => load(range.query), [scope, key])
+  const { data, error, reload } = useQueryLoad(() => load(range.query), [scope, key])
   const loaded = data
 
   return (
@@ -82,8 +82,12 @@ export function MemberDevelopment({
         }
       />
       {note && <p className="muted small">{note}</p>}
-      {error && <Alert kind="error">{error}</Alert>}
-      {!loaded && !error && <p className="muted">{t('Lädt …')}</p>}
+      {error && <LoadError message={error} onRetry={() => void reload()} />}
+      {!loaded && !error && (
+        <p className="muted" role="status">
+          {t('Lädt …')}
+        </p>
+      )}
       {loaded && <MemberCharts data={loaded} />}
     </div>
   )

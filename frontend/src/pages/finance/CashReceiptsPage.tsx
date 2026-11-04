@@ -15,9 +15,10 @@ import type {
 import type { MemberRow } from '../../api/members.ts'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
+import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { SignatureFullscreen, SignatureImage } from '../../components/SignaturePad.tsx'
-import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
 import { ApiError } from '../../api/client.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
@@ -38,7 +39,7 @@ export function CashReceiptsArea({ canEdit }: { canEdit: boolean }) {
 
 function CashReceiptList({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
-  const { data, error } = useLoad(() => financeApi.cashReceipts(org.id), [org.id])
+  const { data, error, reload } = useLoad(() => financeApi.cashReceipts(org.id), [org.id])
   return (
     <div className="card card-wide">
       <div className="card-head">
@@ -56,7 +57,7 @@ function CashReceiptList({ canEdit }: { canEdit: boolean }) {
           'Für Barzahlungen: Du bereitest die Quittung vor, beide unterschreiben auf dem Bildschirm, und beim Abschluss bekommt sie die Belegnummer aus dem Kassenbuch. Das PDF hängt dann als Beleg an der Buchung.',
         )}
       </p>
-      {error && <Alert kind="error">{error}</Alert>}
+      {error && <LoadError message={error} onRetry={() => void reload()} />}
       {!data && !error && <p className="muted">{t('Lädt …')}</p>}
       {data && data.results.length === 0 && <p className="muted">{t('Noch keine Quittungen.')}</p>}
       {data && data.results.length > 0 && (
@@ -132,6 +133,16 @@ function CashReceiptForm({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [message, setMessage] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Die automatisch vorgewählte einzige Barkasse zählt nicht als eigene Eingabe.
+  const draft = useChangesGuard({
+    ...v,
+    account:
+      choices.data?.[0].filter((a) => a.kind === 'cash' && a.is_active).length === 1
+        ? (initial?.account ?? null)
+        : v.account,
+    amountText,
+    vat,
+  })
   const set = <K extends keyof CashReceiptInput>(k: K, value: CashReceiptInput[K]) =>
     setV((x) => ({ ...x, [k]: value }))
 
@@ -163,6 +174,7 @@ function CashReceiptForm({
       const saved = initial
         ? await financeApi.updateCashReceipt(org.id, initial.id, data)
         : await financeApi.createCashReceipt(org.id, data)
+      draft.markSaved()
       if (onSaved) onSaved(saved)
       else navigate(`/finanzen/quittungen/${saved.id}`, { replace: true })
     } catch (err) {
@@ -173,7 +185,8 @@ function CashReceiptForm({
     }
   }
 
-  if (choices.error) return <Alert kind="error">{choices.error}</Alert>
+  if (choices.error)
+    return <LoadError message={choices.error} onRetry={() => void choices.reload()} />
   if (!choices.data) return <p className="muted">{t('Lädt …')}</p>
   if (cash.length === 0)
     return (
@@ -310,18 +323,18 @@ function CashReceiptForm({
         <button className="button button-primary" type="submit" disabled={busy}>
           {initial ? t('Speichern') : t('Weiter zur Unterschrift')}
         </button>
-        <Link
+        <button
+          type="button"
           className="button button-ghost"
-          to={initial ? `/finanzen/quittungen/${initial.id}` : '/finanzen/quittungen'}
-          onClick={(e) => {
-            if (initial && onSaved) {
-              e.preventDefault()
-              onSaved(initial)
-            }
+          disabled={busy}
+          onClick={async () => {
+            if (!(await confirmDiscard(draft.dirty))) return
+            if (initial && onSaved) onSaved(initial)
+            else navigate(initial ? `/finanzen/quittungen/${initial.id}` : '/finanzen/quittungen')
           }}
         >
           {t('Abbrechen')}
-        </Link>
+        </button>
       </div>
     </form>
   )

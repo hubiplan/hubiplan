@@ -2,6 +2,8 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
+import { AuthProvider } from '../auth/AuthContext.tsx'
+import { OrgProvider } from '../org/OrgContext.tsx'
 import { CalendarView } from '../components/calendar/CalendarView.tsx'
 import {
   addDays,
@@ -104,7 +106,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     expect(await screen.findByText('Jahreshauptversammlung')).toBeInTheDocument()
@@ -146,7 +152,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter initialEntries={[`/termine?termin=1&datum=${today()}`]}>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     const dialog = await screen.findByRole('dialog')
@@ -186,7 +196,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     const user = userEvent.setup()
@@ -210,7 +224,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
@@ -232,7 +250,11 @@ describe('Kalender', () => {
     fakeApi({ [monthKey()]: () => listResponse([]) })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     const opener = await screen.findByRole('button', { name: 'Neuer Termin' })
@@ -264,7 +286,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     expect(await screen.findByText('Jahreshauptversammlung')).toBeInTheDocument()

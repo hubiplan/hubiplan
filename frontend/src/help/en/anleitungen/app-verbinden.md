@@ -13,3 +13,5 @@ stichworte: [app, phone, pair, Android, QR code]
 The device then appears in the list. If you lose your phone, sign it out there with **Sign out**.
 
 ![Starting point: Connect the HUBIplan app to your account](bild:app-verbinden)
+
+In the Android app, changed administration forms and short messages ask before discarding input. System Back, visible Back, tab changes and unit changes use the same decision. Booking text, amount, account, category and an already selected receipt photo are restored during Android state restoration; an unfinished receipt signature adapts to its new field size. Server errors are shown at the affected fields. Failed booking and sub-unit member details can be reloaded directly. In line with the privacy policy, private task drafts remain in memory only.

@@ -4997,5 +4997,11 @@
   "Nach dem Anlegen kannst du Anhänge, Erinnerungen und Wiederholung direkt in diesem Dialog ergänzen.": "After creating the task, add attachments, reminders and recurrence in this same dialog.",
   "Aufgabe angelegt": "Task created",
   "Fertig": "Done",
-  "Offen": "Open"
+  "Offen": "Open",
+  "Weitere Aktionen": "More actions",
+  "Filter ({count})": "Filters ({count})",
+  "Pro Seite": "Per page",
+  "alle Mitglieder": "all members",
+  "alle": "all",
+  "Untereinheiten konnten nicht geladen werden. Deine Eingaben bleiben erhalten.": "Sub-units could not be loaded. Your input is retained."
 }

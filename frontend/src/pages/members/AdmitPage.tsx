@@ -7,7 +7,7 @@ import type { Duplicate, Gender } from '../../api/members.ts'
 import { orgApi, unitName } from '../../api/orgs.ts'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { useChangesGuard } from '../../components/leaveGuard.ts'
-import { Alert, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, LoadError, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
@@ -134,6 +134,14 @@ export function AdmitPage() {
             {t('Erneut laden')}
           </button>
         </Alert>
+      )}
+      {departments.error && (
+        <LoadError
+          message={t(
+            'Untereinheiten konnten nicht geladen werden. Deine Eingaben bleiben erhalten.',
+          )}
+          onRetry={() => void departments.reload()}
+        />
       )}
       {types.data && activeTypes.length === 0 && (
         <Alert kind="error">

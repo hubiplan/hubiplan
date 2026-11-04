@@ -1,7 +1,11 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { orgApi } from '../api/orgs.ts'
+import { ApiError } from '../api/client.ts'
+import { memberApi } from '../api/members.ts'
+import type { MemberRow } from '../api/members.ts'
 import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
@@ -12,10 +16,13 @@ const loggedIn = () => ({ status: 200, body: { status: 200, data: { user: testUs
 const ORG = testOrg({ permissions: ['members.view', 'members.edit'] })
 const base = '/api/orgs/7'
 
-const row = {
+const row: MemberRow = {
   id: 11,
   last_name: 'Muster',
   first_name: 'Erika',
+  gender: '',
+  honorary_titles: [],
+  photo_url: null,
   birth_date: '1980-05-17',
   club_number: '1001',
   member_number: 5,
@@ -67,6 +74,45 @@ function renderAt(path: string) {
 }
 
 describe('Mitgliederliste', () => {
+  it('behält Filter und Seitengröße beim Einklappen und beim erneuten Öffnen der Liste', async () => {
+    fakeApi(common())
+    const list = vi
+      .spyOn(memberApi, 'list')
+      .mockResolvedValue({ count: 120, results: [row], next: 'next', previous: null })
+    const user = userEvent.setup()
+    const view = renderAt('/mitglieder')
+    await screen.findByText('Muster, Erika')
+    await user.click(screen.getByRole('button', { name: 'Filter (1)' }))
+    expect(screen.getByRole('button', { name: 'Filter (1)' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    await user.selectOptions(screen.getByLabelText('Status'), 'ehemalig')
+    await user.selectOptions(screen.getByLabelText('Pro Seite'), '10')
+    await screen.findByText('Muster, Erika')
+    await user.click(screen.getByRole('button', { name: 'Filter (1)' }))
+    expect(screen.getByRole('button', { name: 'Filter (1)' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
+    // Zwei erreichbare Seitennavigationen, oberhalb und unterhalb der Ergebnisse.
+    await user.click(screen.getAllByRole('button', { name: 'Weiter' })[0])
+    await screen.findByText('Muster, Erika')
+    expect(list).toHaveBeenLastCalledWith(
+      7,
+      expect.objectContaining({ status: 'ehemalig', page_size: 10, page: 2 }),
+    )
+    view.unmount()
+    renderAt('/mitglieder')
+    await screen.findByText('Muster, Erika')
+    expect(screen.getByLabelText('Status')).toHaveValue('ehemalig')
+    expect(screen.getByLabelText('Pro Seite')).toHaveValue('10')
+    expect(list).toHaveBeenLastCalledWith(
+      7,
+      expect.objectContaining({ status: 'ehemalig', page_size: 10, page: 2 }),
+    )
+  })
+
   it('zeigt Mitglieder mit Spalten', async () => {
     fakeApi({
       ...common(),
@@ -83,6 +129,22 @@ describe('Mitgliederliste', () => {
 })
 
 describe('Aufnahme', () => {
+  it('behält Namen bei fehlgeschlagener Untereinheitenabfrage und lokalem erneutem Laden', async () => {
+    fakeApi(common())
+    vi.spyOn(orgApi, 'departmentChoices')
+      .mockRejectedValueOnce(new ApiError(503, { detail: 'Auswahl unterbrochen.' }))
+      .mockResolvedValueOnce([])
+    const user = userEvent.setup()
+    renderAt('/mitglieder/neu')
+    await user.type(await screen.findByLabelText('Name'), 'Muster')
+    await screen.findByText(
+      'Untereinheiten konnten nicht geladen werden. Deine Eingaben bleiben erhalten.',
+    )
+    await user.click(screen.getByRole('button', { name: 'Erneut laden' }))
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+    expect(screen.getByLabelText('Name')).toHaveValue('Muster')
+  })
+
   it('schlägt Dublette vor und verknüpft', async () => {
     const calls = fakeApi({
       ...common(),

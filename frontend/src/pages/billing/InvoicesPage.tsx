@@ -1,6 +1,6 @@
 // Beiträge: Rechnungen suchen, ansehen, einzeln anlegen, Zahlungen erfassen.
 import { todayIso } from '../../api/members.ts'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDetailParam } from '../../components/detailParam.ts'
@@ -8,7 +8,7 @@ import { billingApi } from '../../api/billing.ts'
 import { ApiError, newRequestKey } from '../../api/client.ts'
 import type { BillingSettings, Invoice, InvoiceRow } from '../../api/billing.ts'
 import { euro, financeApi, parseAmount } from '../../api/finance.ts'
-import type { Page, PickedMember } from '../../api/members.ts'
+import type { PickedMember } from '../../api/members.ts'
 import { PERM } from '../../api/orgs.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import {
@@ -17,6 +17,7 @@ import {
   formatDateTime,
   useAutoSave,
   useLoad,
+  useQueryLoad,
 } from '../../components/forms.ts'
 import { Alert, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
@@ -50,8 +51,6 @@ export function InvoicesPage() {
     [org.id, org.type],
   )
   const [search, setSearch] = useState(params.get('suche') ?? '')
-  const [data, setData] = useState<Page<InvoiceRow> | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const detail = useDetailParam('rechnung')
   const creating = detail.value === 'neu'
   const openId = detail.value && /^\d+$/.test(detail.value) ? Number(detail.value) : null
@@ -65,10 +64,9 @@ export function InvoicesPage() {
   const club = params.get('verein') ?? ''
   const project = params.get('veranstaltung') ?? ''
 
-  useEffect(() => {
-    let alive = true
-    billingApi
-      .invoices(org.id, {
+  const { data, error, reload } = useQueryLoad(
+    () =>
+      billingApi.invoices(org.id, {
         status,
         lauf: run,
         suche: term,
@@ -76,18 +74,9 @@ export function InvoicesPage() {
         verein: club,
         veranstaltung: project,
         page,
-      })
-      .then((d) => {
-        if (alive) {
-          setData(d)
-          setError(null)
-        }
-      })
-      .catch((err) => alive && setError(errorMessage(err)))
-    return () => {
-      alive = false
-    }
-  }, [org.id, status, run, term, overdue, club, project, page, version])
+      }),
+    [org.id, status, run, term, overdue, club, project, page, version],
+  )
 
   function setParam(key: string, value: string) {
     const next = new URLSearchParams(params)
@@ -118,6 +107,9 @@ export function InvoicesPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <button type="submit" className="button button-ghost">
+            {t('Suchen')}
+          </button>
         </form>
         <select
           aria-label={t('Status')}
@@ -209,7 +201,12 @@ export function InvoicesPage() {
         />
       )}
 
-      {error && <Alert kind="error">{error}</Alert>}
+      {error && <LoadError message={error} onRetry={() => void reload()} />}
+      {!data && !error && (
+        <p className="muted" role="status">
+          {t('Lädt …')}
+        </p>
+      )}
       {data && (
         <div className="card card-wide">
           {data.results.length === 0 ? (
@@ -568,9 +565,22 @@ function InvoiceDetail({
         </a>
         {canEdit && inv.status === 'draft' && (
           <>
-            <button type="button" className="button button-ghost" onClick={() => setEditing(true)}>
-              {t('Bearbeiten')}
-            </button>
+            {inv.electronic_data && Object.keys(inv.electronic_data).length > 0 ? (
+              <Link
+                className="button button-ghost"
+                to={`/finanzen/rechnungen/leistungen?rechnung=${inv.id}`}
+              >
+                {t('Leistungsrechnung bearbeiten')}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => setEditing(true)}
+              >
+                {t('Bearbeiten')}
+              </button>
+            )}
             <button
               type="button"
               className="button button-primary"
