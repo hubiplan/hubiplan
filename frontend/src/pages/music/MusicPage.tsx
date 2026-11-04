@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
@@ -14,6 +14,7 @@ import { PracticePage } from './PracticePage.tsx'
 import { EnsembleTemplatesPage } from './EnsembleTemplatesPage.tsx'
 import { StaffingPage } from './StaffingPage.tsx'
 import { AvailabilityPage } from './AvailabilityPage.tsx'
+import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; members: Row[]; partners: Row[] }
@@ -37,9 +38,18 @@ const statuses: [string, string][] = [
 
 export function MusicPage() {
   const org = useActiveOrg()
-  const [params] = useSearchParams()
   if (!org.modules.includes('music') || !org.permissions.includes('music.view'))
     return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+  return (
+    <MusicLayout>
+      <MusicRoute />
+    </MusicLayout>
+  )
+}
+
+function MusicRoute() {
+  const org = useActiveOrg()
+  const [params] = useSearchParams()
   if (params.get('noten')) return <ScoresPage key={org.id} />
   if (params.get('proben')) return <PracticePage key={org.id} />
   if (params.get('vorlagen')) return <EnsembleTemplatesPage key={org.id} />
@@ -65,6 +75,7 @@ function MusicWorkspace() {
   const org = useActiveOrg()
   const [params, setParams] = useSearchParams()
   const [error, setError] = useState('')
+  const [filter, setFilter] = useState({ kind: '', value: '' })
   const base = `/api/orgs/${org.id}/music/`
   const load = useLoad(async () => {
     const [musicians, skills, performances, positions, assignments, choices] = await Promise.all([
@@ -160,6 +171,17 @@ function MusicWorkspace() {
     assignments: t('Einteilungen'),
   }
   const kind = fields[params.get('art') || ''] ? params.get('art')! : 'performances'
+  const search = filter.kind === kind ? filter.value : ''
+  const musicianArea = ['musicians', 'skills'].includes(kind)
+  const descriptions: Record<string, string> = {
+    musicians: t('Mitglieder und Gastmusiker verwalten und ihre Instrumente hinterlegen.'),
+    skills: t('Instrumente und Stimmen zuordnen, damit passende Musiker eingeplant werden können.'),
+    performances: t('Auftritte planen und Besetzung, Programm sowie Abrechnung direkt öffnen.'),
+    positions: t(
+      'Für jeden Auftritt die benötigten Instrumente, Stimmen und Sollzahlen festlegen.',
+    ),
+    assignments: t('Einteilungen und Rückmeldungen für die Auftritte verwalten.'),
+  }
   const selected = params.get('id')
   const rows =
     d[
@@ -169,6 +191,29 @@ function MusicWorkspace() {
       >
     ]
   const row = rows.find((r) => String(r.id) === selected)
+  const visibleRows = rows.filter(
+    (r) =>
+      (kind !== 'musicians' ||
+        !params.get('mitglied') ||
+        String(r.membership) === params.get('mitglied')) &&
+      [
+        r.title,
+        r.display_name,
+        r.name,
+        r.contact,
+        r.instrument,
+        r.register,
+        r.notes,
+        r.location,
+        r.uniform,
+        r.musician ? musicianName(r.musician) : '',
+        d.performances.find((p) => p.id === r.performance)?.title,
+        d.positions.find((p) => p.id === r.position)?.instrument,
+      ]
+        .join(' ')
+        .toLocaleLowerCase()
+        .includes(search.trim().toLocaleLowerCase()),
+  )
   const canEdit = org.permissions.includes('music.edit')
   const choose = async (art: string, id?: string) => {
     if (await confirmLeave()) {
@@ -177,37 +222,42 @@ function MusicWorkspace() {
       if (id) next.set('id', id)
       else next.delete('id')
       setParams(next)
+      setFilter({ kind: '', value: '' })
     }
   }
   return (
-    <section className="stack">
-      <h1>{t('Musik')}</h1>
-      <Link to="/musik?noten=1">{t('Notenbestand')}</Link>
-      <Link to="/musik?proben=1">{t('Proben und Notenausgabe')}</Link>
-      <Link to="/musik?vorlagen=1">{t('Besetzungsvorlagen')}</Link>
-      <Link to="/musik?verfuegbarkeit=1">{t('Verfügbarkeiten')}</Link>
-      <nav className="tabs">
-        {Object.entries(names).map(([key, label]) => (
-          <button
-            key={key}
-            className={`tab${kind === key ? ' active' : ''}`}
-            onClick={() => choose(key)}
-          >
-            {label}
-          </button>
-        ))}
+    <section className="stack music-page">
+      <MusicHeader title={names[kind]} description={descriptions[kind]} />
+      <nav className="tabs" aria-label={t('Ansichten')}>
+        {Object.entries(names)
+          .filter(([key]) => musicianArea === ['musicians', 'skills'].includes(key))
+          .map(([key, label]) => (
+            <button
+              key={key}
+              className={`tab${kind === key ? ' active' : ''}`}
+              aria-current={kind === key ? 'page' : undefined}
+              onClick={() => choose(key)}
+            >
+              {label}
+            </button>
+          ))}
       </nav>
-      <p>
-        {t(
-          'Auftritte ergänzen eigene Einzeltermine. Mitglieder beantworten ihre Einteilungen im eigenen Bereich.',
-        )}
-      </p>
       {error && <Alert kind="error">{error}</Alert>}
-      {canEdit && !selected && (
-        <button className="button button-primary" onClick={() => choose(kind, 'neu')}>
-          {t('Anlegen')}
-        </button>
-      )}
+      <div className="music-toolbar">
+        <label>
+          {t('Einträge suchen')}
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setFilter({ kind, value: e.target.value })}
+          />
+        </label>
+        {canEdit && !selected && (
+          <button className="button button-primary" onClick={() => choose(kind, 'neu')}>
+            {t('Anlegen')}
+          </button>
+        )}
+      </div>
       {canEdit && selected && (
         <Editor
           key={`${kind}-${selected}`}
@@ -229,51 +279,79 @@ function MusicWorkspace() {
         />
       )}
       <div className="stack">
-        {rows
-          .filter(
-            (r) =>
-              kind !== 'musicians' ||
-              !params.get('mitglied') ||
-              String(r.membership) === params.get('mitglied'),
-          )
-          .map((r) => (
-            <article className="card stack" key={r.id}>
-              <strong>
-                {kind === 'musicians'
-                  ? r.display_name
-                  : kind === 'performances'
-                    ? r.title
-                    : kind === 'assignments'
-                      ? musicianName(r.musician)
-                      : r.instrument}
-              </strong>
-              {['positions', 'assignments'].includes(kind) && (
-                <p>{d.performances.find((p) => p.id === r.performance)?.title}</p>
-              )}
-              {kind === 'skills' && (
+        {!visibleRows.length && (
+          <MusicEmptyState>
+            {search.trim()
+              ? t('Keine passenden Einträge gefunden.')
+              : t('Noch keine Einträge vorhanden.')}
+          </MusicEmptyState>
+        )}
+        {visibleRows.map((r) => (
+          <article className="card stack music-record" key={r.id}>
+            <strong>
+              {kind === 'musicians'
+                ? r.display_name
+                : kind === 'performances'
+                  ? r.title
+                  : kind === 'assignments'
+                    ? musicianName(r.musician)
+                    : r.instrument}
+            </strong>
+            {['positions', 'assignments'].includes(kind) && (
+              <p>{d.performances.find((p) => p.id === r.performance)?.title}</p>
+            )}
+            {kind === 'skills' && (
+              <p>
+                {musicianName(r.musician)} · {r.register} ·{' '}
+                {r.primary ? t('Hauptinstrument') : t('Nebeninstrument')}
+              </p>
+            )}
+            {kind === 'musicians' && (
+              <p>
+                {r.contact} · {r.active ? t('Aktiv') : t('Inaktiv')}
+              </p>
+            )}
+            {kind === 'performances' && (
+              <>
                 <p>
-                  {musicianName(r.musician)} · {r.register} ·{' '}
-                  {r.primary ? t('Hauptinstrument') : t('Nebeninstrument')}
+                  {r.starts_at ? formatDateTime(String(r.starts_at)) : ''} –{' '}
+                  {r.ends_at ? formatDateTime(String(r.ends_at)) : ''} · {r.location}
                 </p>
-              )}
-              {kind === 'musicians' && (
-                <p>
-                  {r.contact} · {r.active ? t('Aktiv') : t('Inaktiv')}
-                </p>
-              )}
-              {kind === 'performances' && (
-                <>
-                  <p>
-                    {r.starts_at ? new Date(String(r.starts_at)).toLocaleString() : ''} –{' '}
-                    {r.ends_at ? new Date(String(r.ends_at)).toLocaleString() : ''} · {r.location}
-                  </p>
-                  <p>
-                    {r.meeting_at ? new Date(String(r.meeting_at)).toLocaleString() : ''} ·{' '}
-                    {r.meeting_place} · {r.uniform} ·{' '}
-                    {formations.find((f) => f[0] === r.formation)?.[1]}{' '}
-                    {r.cancelled ? t('Abgesagt') : ''}
-                  </p>
-                  <p>{r.notes}</p>
+                <dl className="music-details">
+                  {(r.meeting_at || r.meeting_place) && (
+                    <div>
+                      <dt>{t('Treffpunkt')}</dt>
+                      <dd>
+                        {[r.meeting_at ? formatDateTime(String(r.meeting_at)) : '', r.meeting_place]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </dd>
+                    </div>
+                  )}
+                  {!!r.uniform && (
+                    <div>
+                      <dt>{t('Uniform')}</dt>
+                      <dd>{r.uniform}</dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt>{t('Spielform')}</dt>
+                    <dd>{formations.find((f) => f[0] === r.formation)?.[1] || '—'}</dd>
+                  </div>
+                  <div>
+                    <dt>{t('Besetzungsgröße')}</dt>
+                    <dd>
+                      {d.positions
+                        .filter((p) => p.performance === r.id)
+                        .reduce((n, p) => n + Number(p.required), 0)}
+                    </dd>
+                  </div>
+                </dl>
+                {!!r.cancelled && (
+                  <span className="music-status music-status-declined">{t('Abgesagt')}</span>
+                )}
+                {!!r.notes && <p>{r.notes}</p>}
+                <div className="music-record-links">
                   <Link to={`/aufgaben?termin=${r.event}`}>{t('Aufgaben zum Auftritt')}</Link>
                   <Link to={`/musik?programm=${r.id}`}>{t('Musikalisches Programm')}</Link>
                   <Link to={`/musik?besetzung=${r.id}`}>{t('Besetzung planen')}</Link>
@@ -281,59 +359,53 @@ function MusicWorkspace() {
                     <Link to={`/musik?abrechnung=${r.id}`}>{t('Auftrittsabrechnung')}</Link>
                   )}
                   <Link to={`/termine?termin=${r.event}`}>{t('Zum Termin')}</Link>
-                  <p>
-                    {t('Besetzungsgröße')}:{' '}
-                    {d.positions
-                      .filter((p) => p.performance === r.id)
-                      .reduce((n, p) => n + Number(p.required), 0)}
-                  </p>
-                </>
-              )}
-              {kind === 'positions' && (
-                <p>
-                  {r.register} · {t('Sollbesetzung')}: {r.required} · {t('Zugesagt')}:{' '}
-                  {
+                </div>
+              </>
+            )}
+            {kind === 'positions' && (
+              <p>
+                {r.register} · {t('Sollbesetzung')}: {r.required} · {t('Zugesagt')}:{' '}
+                {d.assignments.filter((a) => a.position === r.id && a.status === 'accepted').length}{' '}
+                · {t('Fehlend')}:{' '}
+                {Math.max(
+                  0,
+                  Number(r.required) -
                     d.assignments.filter((a) => a.position === r.id && a.status === 'accepted')
-                      .length
-                  }{' '}
-                  · {t('Fehlend')}:{' '}
-                  {Math.max(
-                    0,
-                    Number(r.required) -
-                      d.assignments.filter((a) => a.position === r.id && a.status === 'accepted')
-                        .length,
-                  )}
-                </p>
-              )}
-              {kind === 'assignments' && (
-                <p>
-                  {d.positions.find((p) => p.id === r.position)?.instrument} ·{' '}
-                  {statuses.find((s) => s[0] === r.status)?.[1]}
-                </p>
-              )}
-              {canEdit && (
+                      .length,
+                )}
+              </p>
+            )}
+            {kind === 'assignments' && (
+              <p>
+                {d.positions.find((p) => p.id === r.position)?.instrument} ·{' '}
+                {statuses.find((s) => s[0] === r.status)?.[1]}
+              </p>
+            )}
+            {canEdit && (
+              <div className="music-record-actions">
                 <button className="button button-ghost" onClick={() => choose(kind, String(r.id))}>
                   {t('Bearbeiten')}
                 </button>
-              )}
-              {canEdit && ['skills', 'positions', 'assignments'].includes(kind) && (
-                <button
-                  className="button button-ghost"
-                  onClick={async () => {
-                    if (!(await confirmDialog(t('Eintrag entfernen?')))) return
-                    try {
-                      await api.del(`${base}${kind}/${r.id}/`)
-                      await load.reload()
-                    } catch (err) {
-                      setError(errorMessage(err))
-                    }
-                  }}
-                >
-                  {t('Entfernen')}
-                </button>
-              )}
-            </article>
-          ))}
+                {canEdit && ['skills', 'positions', 'assignments'].includes(kind) && (
+                  <button
+                    className="button button-ghost"
+                    onClick={async () => {
+                      if (!(await confirmDialog(t('Eintrag entfernen?')))) return
+                      try {
+                        await api.del(`${base}${kind}/${r.id}/`)
+                        await load.reload()
+                      } catch (err) {
+                        setError(errorMessage(err))
+                      }
+                    }}
+                  >
+                    {t('Entfernen')}
+                  </button>
+                )}
+              </div>
+            )}
+          </article>
+        ))}
       </div>
     </section>
   )
@@ -404,56 +476,58 @@ function Editor({
         }
       }}
     >
-      {fields.map((f) => (
-        <label key={f.key}>
-          {f.label}
-          {f.options ? (
-            <select
-              required={!f.optional}
-              value={String(values[f.key] ?? '')}
-              disabled={
-                !!row &&
-                ['membership', 'event', 'performance', 'position', 'musician'].includes(f.key)
-              }
-              onChange={(e) => {
-                setValues({ ...values, [f.key]: e.target.value })
-                setDirty(true)
-              }}
-            >
-              {f.optional && <option value="">—</option>}
-              {f.options.map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
-            </select>
-          ) : f.type === 'textarea' ? (
-            <textarea
-              value={String(values[f.key])}
-              onChange={(e) => {
-                setValues({ ...values, [f.key]: e.target.value })
-                setDirty(true)
-              }}
-            />
-          ) : (
-            <input
-              required={!f.optional && f.type !== 'checkbox'}
-              type={f.type || 'text'}
-              min={f.type === 'number' ? 1 : undefined}
-              max={f.type === 'number' ? 500 : undefined}
-              value={f.type === 'checkbox' ? undefined : String(values[f.key] ?? '')}
-              checked={f.type === 'checkbox' ? Boolean(values[f.key]) : undefined}
-              onChange={(e) => {
-                setValues({
-                  ...values,
-                  [f.key]: f.type === 'checkbox' ? e.target.checked : e.target.value,
-                })
-                setDirty(true)
-              }}
-            />
-          )}
-        </label>
-      ))}
+      <div className="music-form-fields">
+        {fields.map((f) => (
+          <label key={f.key} className={f.type === 'textarea' ? 'music-field-wide' : undefined}>
+            {f.label}
+            {f.options ? (
+              <select
+                required={!f.optional}
+                value={String(values[f.key] ?? '')}
+                disabled={
+                  !!row &&
+                  ['membership', 'event', 'performance', 'position', 'musician'].includes(f.key)
+                }
+                onChange={(e) => {
+                  setValues({ ...values, [f.key]: e.target.value })
+                  setDirty(true)
+                }}
+              >
+                {f.optional && <option value="">—</option>}
+                {f.options.map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            ) : f.type === 'textarea' ? (
+              <textarea
+                value={String(values[f.key])}
+                onChange={(e) => {
+                  setValues({ ...values, [f.key]: e.target.value })
+                  setDirty(true)
+                }}
+              />
+            ) : (
+              <input
+                required={!f.optional && f.type !== 'checkbox'}
+                type={f.type || 'text'}
+                min={f.type === 'number' ? 1 : undefined}
+                max={f.type === 'number' ? 500 : undefined}
+                value={f.type === 'checkbox' ? undefined : String(values[f.key] ?? '')}
+                checked={f.type === 'checkbox' ? Boolean(values[f.key]) : undefined}
+                onChange={(e) => {
+                  setValues({
+                    ...values,
+                    [f.key]: f.type === 'checkbox' ? e.target.checked : e.target.value,
+                  })
+                  setDirty(true)
+                }}
+              />
+            )}
+          </label>
+        ))}
+      </div>
       <div className="actions">
         <button className="button button-primary" disabled={busy}>
           {t('Speichern')}

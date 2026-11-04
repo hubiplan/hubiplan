@@ -1,0 +1,306 @@
+.music-workspace {
+  width: 100%;
+  max-width: 76rem;
+  gap: 1.5rem;
+}
+
+.music-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.music-navigation-label {
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+}
+
+.music-navigation a {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-size: 0.875rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+}
+
+.music-navigation a:hover,
+.music-navigation a[aria-current='page'] {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.music-navigation a[aria-current='page'] {
+  box-shadow: inset 0 -3px var(--color-focus);
+  font-weight: 600;
+}
+
+.music-page,
+.music-personal {
+  gap: 1.25rem;
+}
+
+.music-workspace :where(h1, h2, h3, p, dl, ol, ul),
+.music-personal :where(h1, h2, h3, p, dl, ol, ul) {
+  margin-block: 0;
+}
+
+.music-workspace .card,
+.music-personal .card {
+  max-width: none;
+}
+
+.music-page-header {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.music-page-header > p {
+  max-width: 75ch;
+}
+
+.music-breadcrumb {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.music-workspace .tabs {
+  margin: 0;
+}
+
+.music-toolbar,
+.music-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.music-toolbar {
+  justify-content: space-between;
+}
+
+.music-toolbar > label {
+  flex: 1 1 18rem;
+  max-width: 30rem;
+}
+
+:where(.music-workspace, .music-personal)
+  label:has(> input:not([type='checkbox']), > select, > textarea) {
+  display: grid;
+  align-content: start;
+  gap: 0.375rem;
+}
+
+:where(.music-workspace, .music-personal)
+  label
+  > :where(input:not([type='checkbox']), select, textarea) {
+  width: 100%;
+  min-width: 0;
+}
+
+:where(.music-workspace, .music-personal) label:has(> input[type='checkbox']) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.music-form-fields,
+.music-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.music-form-fields > :where(.actions, .alert, fieldset, button),
+.music-field-wide {
+  grid-column: 1 / -1;
+}
+
+.music-form-fields > button {
+  justify-self: start;
+}
+
+.music-position-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.music-position-fields legend {
+  font-weight: 600;
+  padding-inline: 0.25rem;
+}
+
+.music-position-fields > button {
+  justify-self: start;
+}
+
+:where(.music-workspace, .music-personal) :where(.music-actions, .actions) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.music-page > .button,
+.music-workspace form > .button,
+.music-page > .card > .button,
+.music-personal > .button {
+  justify-self: start;
+}
+
+.music-record {
+  gap: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.music-record > strong {
+  font-size: 1.0625rem;
+}
+
+.music-record-links,
+.music-record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding-top: 0.875rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.music-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.75rem 1.5rem;
+}
+
+.music-details dt,
+.music-summary dt {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.music-details dd,
+.music-summary dd {
+  margin: 0.125rem 0 0;
+  font-weight: 600;
+}
+
+.music-summary {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+}
+
+.music-summary dd {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.music-row,
+.music-personal article {
+  padding-block: 0.875rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.music-candidates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+  gap: 0.875rem;
+}
+
+.music-candidate {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  align-content: start;
+}
+
+.music-status,
+.music-availability {
+  display: inline-block;
+  width: fit-content;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.music-status-accepted {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.music-status-declined,
+.music-availability-conflict {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.music-personal button[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2px var(--color-focus);
+}
+
+.music-empty {
+  padding: 1.5rem;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+}
+
+.music-workspace .table-wrap {
+  overflow-x: auto;
+}
+
+.music-workspace .table-wrap table {
+  width: 100%;
+  min-width: 68rem;
+  border-collapse: collapse;
+  overflow-wrap: normal;
+}
+
+.music-workspace .table-wrap :where(th, td) {
+  padding: 0.625rem;
+  text-align: start;
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (max-width: 640px) {
+  .music-navigation-label {
+    flex-basis: 100%;
+    padding-block: 0.25rem;
+  }
+
+  .music-navigation a {
+    flex: 1 1 calc(50% - 0.375rem);
+    overflow-wrap: anywhere;
+  }
+
+  .music-form-fields,
+  .music-position-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .music-workspace .card,
+  .music-personal .card {
+    padding: 1rem;
+  }
+
+  .music-record-links > a {
+    padding-block: 0.25rem;
+  }
+}

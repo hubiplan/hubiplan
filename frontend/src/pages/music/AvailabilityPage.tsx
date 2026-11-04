@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 type Absence = { id: number; musician: number; starts_at: string; ends_at: string }
 type Musician = { id: number; display_name: string; active: boolean }
@@ -14,7 +14,7 @@ type Values = { musician?: number; starts_at: string; ends_at: string }
 
 export function AvailabilityHint({ reasons = [] }: { reasons?: string[] }) {
   return (
-    <span>
+    <span className={`music-availability${reasons.length ? ' music-availability-conflict' : ''}`}>
       {reasons.includes('absence')
         ? t('Abwesend')
         : reasons.includes('declined')
@@ -43,14 +43,13 @@ export function AvailabilityPage() {
   const { items, musicians } = load.data,
     canEdit = org.permissions.includes('music.edit')
   return (
-    <section className="stack">
-      <Link to="/musik">{t('Zurück')}</Link>
-      <h1>{t('Verfügbarkeiten')}</h1>
-      <p>
-        {t(
+    <section className="stack music-page">
+      <MusicHeader
+        title={t('Verfügbarkeiten')}
+        description={t(
           'Abwesenheiten ohne Begründung erfassen. Die Besetzungsplanung prüft zusätzlich bekannte Auftritte, Proben und Kalenderzusagen im selben Verein.',
         )}
-      </p>
+      />
       {error && <Alert kind="error">{error}</Alert>}
       {canEdit && (
         <button
@@ -76,8 +75,9 @@ export function AvailabilityPage() {
           }}
         />
       )}
+      {!items.length && <MusicEmptyState>{t('Keine Abwesenheiten eingetragen.')}</MusicEmptyState>}
       {items.map((row) => (
-        <article className="card stack" key={row.id}>
+        <article className="card stack music-record" key={row.id}>
           <strong>{musicians.find((m) => m.id === row.musician)?.display_name}</strong>
           <AbsenceDates row={row} />
           {canEdit && (
@@ -120,7 +120,7 @@ export function AvailabilityPage() {
 function AbsenceDates({ row }: { row: Absence }) {
   return (
     <p>
-      {new Date(row.starts_at).toLocaleString()} – {new Date(row.ends_at).toLocaleString()}
+      {formatDateTime(row.starts_at)} – {formatDateTime(row.ends_at)}
     </p>
   )
 }
@@ -133,7 +133,7 @@ export function OwnAvailability({ accessId }: { accessId: number }) {
     [deleteKeys] = useState(() => new Map<number, string>())
   if (!load.data?.enabled) return null
   return (
-    <section className="card stack">
+    <section className="card stack music-personal">
       <h2>{t('Meine Abwesenheiten')}</h2>
       <p>
         {t(
@@ -164,6 +164,9 @@ export function OwnAvailability({ accessId }: { accessId: number }) {
             setSelected(null)
           }}
         />
+      )}
+      {!load.data.items.length && (
+        <MusicEmptyState>{t('Keine Abwesenheiten eingetragen.')}</MusicEmptyState>
       )}
       {load.data.items.map((row) => (
         <article className="stack" key={row.id}>
@@ -230,7 +233,7 @@ function AbsenceForm({
   useDraftGuard(JSON.stringify([musician, start, end]) !== clean)
   return (
     <form
-      className="stack"
+      className="stack music-absence-form"
       onSubmit={async (e) => {
         e.preventDefault()
         setBusy(true)
@@ -252,7 +255,7 @@ function AbsenceForm({
       }}
     >
       {error && <Alert kind="error">{error}</Alert>}
-      <fieldset disabled={busy} className="stack">
+      <fieldset disabled={busy} className="music-form-fields">
         {musicians && (
           <label>
             {t('Musiker')}

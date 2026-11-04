@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { api } from '../../api/client.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
+import { MusicStatus, MusicEmptyState } from './MusicLayout.tsx'
 
 type Score = { id: number; piece: string; title: string; url: string; usage_note: string }
 
@@ -43,26 +44,19 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
   const [error, setError] = useState(''),
     [busy, setBusy] = useState(false)
   const d = load.data
+  if (load.error) return <Alert kind="error">{load.error}</Alert>
   if (!d || (!d.rehearsals.length && !d.scores.length && !d.loans.length)) return null
   return (
-    <section className="card stack">
+    <section className="card stack music-personal">
       <h2>{t('Meine Proben und Noten')}</h2>
       {error && <Alert kind="error">{error}</Alert>}
       {d.rehearsals.map((r) => (
         <article className="stack" key={`${r.id}-${r.original_start}`}>
           <strong>
-            {r.title} · {new Date(r.starts_at).toLocaleString()}
+            {r.title} · {formatDateTime(r.starts_at)}
           </strong>
-          <p>
-            {r.location} · {r.focus} ·{' '}
-            {r.cancelled
-              ? t('Abgesagt')
-              : r.status === 'accepted'
-                ? t('Zugesagt')
-                : r.status === 'declined'
-                  ? t('Abgesagt')
-                  : t('Angefragt')}
-          </p>
+          <p>{[r.location, r.focus].filter(Boolean).join(' · ')}</p>
+          <MusicStatus status={r.cancelled ? 'declined' : r.status} />
           {r.items.map((i, index) => (
             <p key={index}>
               {i.title} · {i.focus}
@@ -91,6 +85,7 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
                 <button
                   key={status}
                   className="button button-ghost"
+                  aria-pressed={r.status === status}
                   disabled={busy || (status === 'accepted' && !!r.availability?.length)}
                   onClick={async () => {
                     setBusy(true)
@@ -113,6 +108,7 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
         </article>
       ))}
       <h3>{t('Meine Notenunterlagen')}</h3>
+      {!d.scores.length && <MusicEmptyState />}
       {d.scores.map((s) => (
         <p key={s.id}>
           <a href={s.url}>
@@ -122,6 +118,7 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
         </p>
       ))}
       <h3>{t('Meine Notenausgaben')}</h3>
+      {!d.loans.length && <MusicEmptyState />}
       {d.loans.map((l) => (
         <p key={l.id}>
           {l.title} · {t('Noch zurückzugeben')}: {l.quantity - l.returned} · {t('Rückgabe bis')}:{' '}

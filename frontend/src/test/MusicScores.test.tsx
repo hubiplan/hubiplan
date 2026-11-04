@@ -55,7 +55,7 @@ it('zeigt Programmdauer, fehlende Stimmen und lesende Exportmöglichkeiten', asy
       <ProgramPanel performance={3} />
     </MemoryRouter>,
   )
-  expect(await screen.findByText(/Programmdauer/)).toHaveTextContent('4:00')
+  expect((await screen.findByText('Programmdauer')).nextElementSibling).toHaveTextContent('4:00')
   expect(screen.getByText('Nur Vereinsnutzung')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Stimmenliste herunterladen' })).toHaveAttribute(
     'href',
