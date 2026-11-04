@@ -59,7 +59,8 @@ class Competition(models.Model):
 
     class WebsiteDepth(models.TextChoices):
         UNITS = "einheiten", gettext_lazy("nur Wertung der Untereinheiten und Mannschaften")
-        TOP3 = "top3", gettext_lazy("Plätze 1 bis 3 mit Namen")
+        # Gespeicherten Wert für bestehende Wettbewerbe und API-Clients beibehalten.
+        PRIZES = "top3", gettext_lazy("Preisplätze mit Namen")
         ALL = "alle", gettext_lazy("ganze Rangliste")
 
     class Form(models.TextChoices):
@@ -89,12 +90,12 @@ class Competition(models.Model):
     website = models.CharField(
         "auf der Webseite", max_length=10, choices=Website.choices, default=Website.OFF
     )
-    # Wie viel die Webseite zeigt: nur Zugwertung, Plätze 1–3 mit Namen oder alles
+    # Wie viel die Webseite zeigt: nur Zugwertung, Preisplätze mit Namen oder alles
     website_depth = models.CharField(
         "Umfang auf der Webseite",
         max_length=10,
         choices=WebsiteDepth.choices,
-        default=WebsiteDepth.TOP3,
+        default=WebsiteDepth.PRIZES,
     )
     # Ausschreibung an Untereinheiten: Die meldenden Untereinheiten sehen nach Abschluss
     # immer ihre eigenen Starter, Mannschaften und die Wertung der Untereinheiten; die ganze
