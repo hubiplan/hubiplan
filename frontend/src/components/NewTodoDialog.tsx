@@ -85,7 +85,7 @@ export function NewTodoDialog({
       <div className="todo-workspace todo-dialog stack">
         {error && <p role="alert">{error}</p>}
         <TodoEditor
-          key={task?.id ?? 'draft'}
+          key={`editor-${task?.id ?? 'draft'}`}
           base={base}
           todo={task ?? undefined}
           initialEvent={initialEvent}
@@ -98,7 +98,7 @@ export function NewTodoDialog({
         />
         {canShare && (
           <TodoSharing
-            key={task?.id ?? 'draft'}
+            key={`sharing-${task?.id ?? 'draft'}`}
             base={base}
             todo={task ?? draft}
             onSaved={() => void refresh()}
