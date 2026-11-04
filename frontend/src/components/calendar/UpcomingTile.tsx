@@ -1,4 +1,7 @@
 // Startseiten-Kachel „Nächste Termine“.
+import { useState } from 'react'
+import { NewEventDialog } from './EventDialog.tsx'
+import '../../pages/todos.css'
 import { Link } from 'react-router-dom'
 import { eventApi } from '../../api/events.ts'
 import type { CalendarBase } from '../../api/events.ts'
@@ -9,14 +12,22 @@ import { t } from '../../i18n/index.ts'
 
 export function UpcomingTile({ base }: { base: CalendarBase }) {
   const from = today()
-  const { data, error } = useLoad(
-    () => eventApi.upcoming(base, from, addDays(from, 90)),
+  const {
+    data: loaded,
+    error,
+    reload,
+  } = useLoad(
+    () => eventApi.upcoming(base, from, addDays(from, 90)).then((data) => ({ ...data, base })),
     [base, from],
   )
+  const data = loaded?.base === base ? loaded : null
+  const [creating, setCreating] = useState<CalendarBase | null>(null)
   const items = (data?.items ?? []).slice(0, 5)
   return (
-    <div className="card tile">
-      <h2>{t('Nächste Termine')}</h2>
+    <div className="card tile upcoming-overview">
+      <div className="task-overview-head">
+        <h2>{t('Nächste Termine')}</h2>
+      </div>
       {error && <p className="muted small">{t('Termine konnten nicht geladen werden.')}</p>}
       {data && items.length === 0 && (
         <p className="muted">{t('In den nächsten Wochen keine Termine.')}</p>
@@ -41,9 +52,27 @@ export function UpcomingTile({ base }: { base: CalendarBase }) {
           })}
         </ul>
       )}
-      <Link className="small" to="/termine">
-        {t('Zum Kalender')}
-      </Link>
+      <div className="home-tile-actions">
+        {data?.can_manage && (
+          <button type="button" className="button button-primary" onClick={() => setCreating(base)}>
+            <span aria-hidden="true">+</span> {t('Neuer Termin')}
+          </button>
+        )}
+        <Link to="/termine">{t('Zum Kalender')}</Link>
+      </div>
+      {creating === base && data?.can_manage && (
+        <NewEventDialog
+          base={base}
+          date={today()}
+          categories={data.categories}
+          rsvpAllowed={data.rsvp_allowed}
+          onClose={() => setCreating(null)}
+          onSaved={() => {
+            setCreating(null)
+            void reload()
+          }}
+        />
+      )}
     </div>
   )
 }
