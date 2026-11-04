@@ -115,6 +115,15 @@ class ElectronicInvoiceViewSet(InvoiceViewSet):
         )
         try:
             einvoice_services.save_draft(invoice, data, partner, project)
+            if hasattr(invoice, "performanceaccount"):
+                account = invoice.performanceaccount
+                if (
+                    invoice.partner_id != account.performance.customer_id
+                    or invoice.total != account.fee + account.travel + account.extras
+                ):
+                    raise serializers.ValidationError(
+                        gettext("Kunde und Bruttobetrag müssen zur Auftrittsvereinbarung passen.")
+                    )
         except DjangoValidationError as exc:
             raise _as_drf(exc) from exc
 
@@ -340,7 +349,8 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
             raise _as_drf(exc) from exc
         expected_kind = "income" if item.data.get("credit_note") else "expense"
         if (
-            booking.kind != expected_kind
+            hasattr(booking, "performance_expense")
+            or booking.kind != expected_kind
             or booking.cancels_id
             or hasattr(booking, "cancellation")
             or item.data.get("currency") != "EUR"

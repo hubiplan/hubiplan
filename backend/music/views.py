@@ -34,6 +34,19 @@ class ScopedSerializer(serializers.ModelSerializer):
         if self.Meta.model is Musician and not value("membership") and not value("name"):
             raise serializers.ValidationError(gettext("Bitte Mitglied oder Gastnamen angeben."))
         if self.Meta.model is Performance:
+            if (
+                self.instance
+                and "customer" in attrs
+                and attrs["customer"] != self.instance.customer
+            ):
+                from .models import PerformanceAccount
+
+                if PerformanceAccount.objects.filter(
+                    performance=self.instance, invoice__isnull=False
+                ).exists():
+                    raise serializers.ValidationError(
+                        gettext("Der Auftraggeber ist bereits mit einer Rechnung verbunden.")
+                    )
             event = value("event")
             view = self.context["view"]
             if (

@@ -33,6 +33,7 @@ from members import honorary as honorary_views
 from members import views as member_views
 from music import views as music_views
 from music.portal import OwnAssignments
+from music.settlement import PerformanceInvoiceView, SettlementView
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import help_views, imprint_views, social_views
@@ -149,6 +150,8 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("music/performances/<int:pk>/settlement/", SettlementView.as_view()),
+    path("music/performances/<int:pk>/invoice/", PerformanceInvoiceView.as_view()),
     path("todos/remote/", todo_remote.RemoteInboxView.as_view()),
     path("todos/remote/<int:remote_id>/adopt/", todo_remote.RemoteAdoptView.as_view()),
     path("todos/<int:pk>/remote/", todo_remote.RemoteSharesView.as_view()),

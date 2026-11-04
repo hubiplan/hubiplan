@@ -21,6 +21,13 @@ export function OwnMusic({ accessId }: { accessId: number }) {
           meeting_place: string
           uniform: string
           cancelled: boolean
+          settlement?: {
+            fee: string
+            allowance: string
+            expenses: string
+            total: string
+            paid: boolean
+          } | null
         }[]
       >(url),
     [accessId],
@@ -35,6 +42,14 @@ export function OwnMusic({ accessId }: { accessId: number }) {
       {load.data.map((r) => (
         <article className="stack" key={r.id}>
           <strong>{r.title}</strong>
+          {r.settlement && (
+            <p>
+              {t('Meine Vergütung')}: {r.settlement.total} EUR ·{' '}
+              {r.settlement.paid ? t('Ausgezahlt') : t('Freigegeben')} ({t('Gage')}:{' '}
+              {r.settlement.fee} EUR, {t('Pauschale')}: {r.settlement.allowance} EUR,{' '}
+              {t('Auslagen')}: {r.settlement.expenses} EUR)
+            </p>
+          )}
           <p>
             {new Date(r.starts_at).toLocaleString()} · {r.location} · {r.instrument} {r.register}
           </p>

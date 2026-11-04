@@ -1,6 +1,8 @@
 """Musikprofile und Besetzung ergänzen Mitglieder und Kalendereinträge."""
 
+from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from core.encfields import EncryptedCharField
 
@@ -92,3 +94,68 @@ class Assignment(models.Model):
 
     def __str__(self):
         return f"Einteilung {self.pk}"
+
+
+class PerformanceAccount(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    performance = models.OneToOneField(Performance, on_delete=models.PROTECT)
+    fee = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    travel = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    extras = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    note = EncryptedCharField(max_length=2000, blank=True, strict=True)
+    invoice = models.OneToOneField(
+        "billing.Invoice", on_delete=models.PROTECT, null=True, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    date = models.DateField(default=timezone.localdate)
+
+    def __str__(self):
+        return f"Auftrittsabrechnung {self.pk}"
+
+
+class MusicianClaim(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    assignment = models.OneToOneField(Assignment, on_delete=models.PROTECT)
+    fee = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    allowance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    expenses = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    attended = models.BooleanField(default=False)
+    note = EncryptedCharField(max_length=2000, blank=True, strict=True)
+    status = models.CharField(max_length=10, default="draft")
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    approved_at = models.DateTimeField(null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Musikerabrechnung {self.pk}"
+
+
+class PerformanceExpense(models.Model):
+    """Jede tatsächliche Ausgabe wird einmal einem Auftritt zugeordnet."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    account = models.ForeignKey(
+        PerformanceAccount, on_delete=models.PROTECT, related_name="payments"
+    )
+    claim = models.ForeignKey(
+        MusicianClaim, on_delete=models.PROTECT, null=True, blank=True, related_name="payments"
+    )
+    booking = models.OneToOneField(
+        "finance.Booking", on_delete=models.PROTECT, related_name="performance_expense"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Auftrittsausgabe {self.pk}"
+
+
+class PreviousPerformanceInvoice(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    account = models.ForeignKey(
+        PerformanceAccount, on_delete=models.PROTECT, related_name="previous_invoices"
+    )
+    invoice = models.OneToOneField("billing.Invoice", on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Frühere Auftrittsrechnung {self.pk}"

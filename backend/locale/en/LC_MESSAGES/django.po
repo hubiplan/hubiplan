@@ -5664,3 +5664,39 @@ msgstr "Existing links cannot be reassigned."
 
 msgid "Bitte zuerst die zugehörigen Einteilungen entfernen."
 msgstr "Please remove the related assignments first."
+
+msgid "Die Ausgabe gehört zu einer Auftrittsabrechnung."
+msgstr "This expense is linked to a performance settlement."
+
+msgid "Die Vereinbarung ist bereits mit einer Rechnung verbunden."
+msgstr "The agreement is already linked to an invoice."
+
+msgid "Freigegebene Vergütungen sind unveränderbar."
+msgstr "Approved remuneration cannot be changed."
+
+msgid "Bitte zuerst die Auszahlung in der Kasse stornieren."
+msgstr "Please reverse the payment in the cash book first."
+
+msgid "Freigabe erst nach dem Auftritt mit bestätigter Teilnahme und positivem Betrag."
+msgstr "Approval requires a completed performance, confirmed attendance and a positive amount."
+
+msgid "Bitte die Vergütung zuerst aufheben."
+msgstr "Please void the remuneration first."
+
+msgid "Diese Ausgabe ist bereits zugeordnet oder nicht verwendbar."
+msgstr "This expense is already linked or cannot be used."
+
+msgid "Auszahlung und freigegebene Vergütung müssen genau übereinstimmen."
+msgstr "The payment must match the approved remuneration exactly."
+
+msgid "Unbekannte Abrechnungsaktion."
+msgstr "Unknown settlement action."
+
+msgid "Kunde und Bruttobetrag müssen zur Auftrittsvereinbarung passen."
+msgstr "The customer and gross amount must match the performance agreement."
+
+msgid "Der Auftraggeber ist bereits mit einer Rechnung verbunden."
+msgstr "The customer is already linked to an invoice."
+
+msgid "Bitte die Veranstalterrechnung zuerst stornieren."
+msgstr "Please cancel the customer invoice first."

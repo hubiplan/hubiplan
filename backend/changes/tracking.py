@@ -64,6 +64,10 @@ IGNORED_MODELS = {
 
 # Schreiben hier sperrt das Paket – mit diesem Grund
 BLOCKING_MODELS = {
+    "music.performanceaccount": "Betrifft eine Auftrittsabrechnung.",
+    "music.musicianclaim": "Betrifft eine Musikervergütung.",
+    "music.performanceexpense": "Betrifft eine Auftrittsauszahlung.",
+    "music.previousperformanceinvoice": "Betrifft eine frühere Auftrittsrechnung.",
     "members.memberphoto": "Betrifft Mitgliederfotos.",
     "members.photouploadlink": "Betrifft Mitgliederfotos.",
     "members.transferrequest": "Betrifft einen Vereinswechsel.",
@@ -154,6 +158,10 @@ def _booking_lock(values: dict) -> str:
     if values.get("id") and Booking._base_manager.filter(cancels_id=values["id"]).exists():
         return "Betrifft eine stornierte Buchung."
     if booking_id := values.get("id"):
+        from music.models import PerformanceExpense
+
+        if PerformanceExpense._base_manager.filter(booking_id=booking_id).exists():
+            return "Die Ausgabe gehört zu einer Auftrittsabrechnung."
         from billing.models import IncomingInvoice
 
         if IncomingInvoice._base_manager.filter(booking_id=booking_id).exists():
