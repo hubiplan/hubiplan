@@ -16,7 +16,7 @@ from core.tenancy import rls_bypass, tenant_context
 from devices.push import send_to_user
 from outbox import mail
 
-from .access import Scope, scope_for, visible
+from .access import Scope, current_scope, scope_for, visible
 from .models import Todo, TodoPreference, TodoReminder, TodoReminderConfig
 from .sharing import participants
 
@@ -119,6 +119,10 @@ def current_recipients(todo):
             entry = eligible.setdefault(uid, {**person, "scope": scope})
             entry["responsible"] |= person["responsible"]
             entry["edit"] |= person["edit"]
+    from .portal import reminder_recipients
+
+    for uid, entry in reminder_recipients(todo).items():
+        eligible[uid] = entry
     responsible = any(row["responsible"] for row in eligible.values())
     return {
         uid: row
@@ -266,7 +270,7 @@ def deliver(pk, now=None):
     user = entry["user"]
     with tenant_context(entry["scope"].org.pk, user.pk):
         try:
-            scope = scope_for(user, entry["scope"].org.pk, entry["scope"].department_id)
+            scope = current_scope(user, entry["scope"])
             current = (
                 visible(user, scope)
                 .filter(pk=todo.pk, status="open", due_revision=item.due_revision)
@@ -284,7 +288,11 @@ def deliver(pk, now=None):
                 if scope.department_id
                 else f"einheit={scope.org.pk}"
             )
-            link = f"{settings.FRONTEND_URL}/aufgaben?aufgabe={current.pk}&{unit}"
+            link = (
+                f"{settings.FRONTEND_URL}/mein-bereich/aufgaben?zugang={scope.portal_access_id}&aufgabe={current.pk}"
+                if scope.portal_access_id
+                else f"{settings.FRONTEND_URL}/aufgaben?aufgabe={current.pk}&{unit}"
+            )
             try:
                 if item.channel == "mail":
                     sent = mail.send(
@@ -304,6 +312,11 @@ def deliver(pk, now=None):
                                 "v": 1,
                                 "t": "todo",
                                 "todo": current.pk,
+                                **(
+                                    {"access": scope.portal_access_id}
+                                    if scope.portal_access_id
+                                    else {}
+                                ),
                                 "org": scope.org.pk,
                                 "department": scope.department_id,
                                 "title": title

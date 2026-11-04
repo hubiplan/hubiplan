@@ -40,6 +40,7 @@ from portal import views as portal_views
 from statutes import views as statute_views
 from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
+from todos import portal as todo_portal
 from todos import reminder_views as todo_reminder_views
 from todos import series_views as todo_series_views
 from todos import views as todo_views
@@ -141,6 +142,7 @@ org_patterns = [
     path("todos/<int:pk>/reminders/", todo_reminder_views.ReminderSettingsView.as_view()),
     path("todos/orphans/", todo_views.OrphanTasksView.as_view()),
     path("todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
+    path("todos/<int:pk>/portal/", todo_portal.PublicationView.as_view()),
     path("todos/events/", EventChoicesView.as_view()),
     path("todos/choices/", todo_views.TodoChoicesView.as_view()),
     path("todos/", todo_views.TodoListView.as_view()),
@@ -686,11 +688,18 @@ urlpatterns = [
     ),
     path("depts/<int:dept_id>/todos/orphans/", todo_views.OrphanTasksView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
+    path("depts/<int:dept_id>/todos/<int:pk>/portal/", todo_portal.PublicationView.as_view()),
     path("depts/<int:dept_id>/todos/events/", EventChoicesView.as_view()),
     path("depts/<int:dept_id>/todos/choices/", todo_views.TodoChoicesView.as_view()),
     path("me/todos/preferences/", todo_views.TodoPreferencesView.as_view()),
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
+    path("portal/<int:access_id>/todos/", todo_portal.PortalTaskListView.as_view()),
+    path("portal/<int:access_id>/todos/<int:pk>/", todo_portal.PortalTaskDetailView.as_view()),
+    path(
+        "portal/<int:access_id>/todos/<int:pk>/attachments/<int:att_id>/",
+        todo_portal.PortalTaskFileView.as_view(),
+    ),
     path("me/todos/export/", todo_views.PersonalExportView.as_view()),
     path("health/", views.health, name="health"),
     # Android-App (Anmeldung, Geräte); Inhalte über /api/portal/…

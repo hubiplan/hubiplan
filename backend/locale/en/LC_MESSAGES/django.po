@@ -5157,3 +5157,6 @@ msgstr "Please delete distributed tasks using their trash."
 
 msgid "Lokale Notiz"
 msgstr "Local note"
+
+msgid "Diese Aufgabe wurde bereits übernommen."
+msgstr "This task has already been claimed."
