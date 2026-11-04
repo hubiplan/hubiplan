@@ -91,3 +91,20 @@ Eigene private Dateien bleiben nach Rollenverlust exportierbar. Einheitsexporte 
 nur berechtigte geteilte Aufgaben und deren eigene Dateien; der Import ordnet sie privat
 dem importierenden Konto zu und übernimmt keine fremden Freigaben oder Verantwortlichen.
 Dokumentnummern werden ausschließlich auf mitimportierte Dokumente umgesetzt.
+
+## Serien
+
+Eine konkrete Ausgabenfolge besitzt einen unveränderlichen Kalenderanker, einen Abstand,
+eine Frist- oder Erledigungsbasis und optional Enddatum oder Gesamtzahl. Die Datenbank
+erzwingt eine offene Ausgabe und eindeutige Ausgabennummern. Alle schreibenden Aufgabenwege
+sperren zuerst die Serie und danach die Ausgabe. Erledigen und Folgeanlage sind atomar.
+Verspätete Erledigung überspringt abgelaufene Kalenderplätze ohne den Zähler zu verbrauchen.
+
+Vorlagenänderungen betreffen künftige Ausgaben; erledigte Historie bleibt bestehen.
+Dokumentverweise und persönliche Erinnerungsregeln werden übernommen, Binärdateien nicht.
+Wiederöffnen und Rückgängig ziehen ausschließlich eine unberührte direkte Folge zurück.
+Diese bleibt intern mit ihren Sendemarken bestehen, ist aber aus Listen und Zählern
+ausgenommen; ihre Ausgabennummer kann eine neue Aufgaben-ID erhalten. Erzwungenes
+Rückgängig umgeht diese Prüfung nicht. Serien haben einen eigenen Papierkorb; ihre Historie
+ist von der optionalen Einzelaufgaben-Aufbewahrung ausgeschlossen. Importierte Serien
+behalten den Verlauf und starten mit abgeschalteter Fortsetzung und privaten Aufgaben.

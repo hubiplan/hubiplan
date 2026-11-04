@@ -5,9 +5,11 @@ import { errorMessage, useLoad } from './forms.ts'
 import { confirmLeave } from './leaveGuard.ts'
 import { LoadError, SelectField } from './ui.tsx'
 import { t } from '../i18n/index.ts'
+import { followingChoice } from './TodoSeries.tsx'
 
 interface Attachment {
   id: number
+  kind?: 'file' | 'document'
   name: string
   size: number | null
   available: boolean
@@ -19,11 +21,13 @@ export function TodoAttachments({
   id,
   writable,
   onSaved,
+  recurring = false,
 }: {
   base: string
   id: number
   writable: boolean
   onSaved: () => void
+  recurring?: boolean
 }) {
   const endpoint = `${base}${id}/attachments/`
   const { data, error, reload } = useLoad(
@@ -81,12 +85,16 @@ export function TodoAttachments({
                 className="button button-ghost"
                 disabled={busy}
                 onClick={() => {
-                  void mutate((version) =>
-                    api.patch(`${endpoint}${item.id}/`, {
+                  void mutate(async (version) => {
+                    const following =
+                      recurring && item.kind === 'document' ? await followingChoice() : false
+                    if (following === null) return
+                    await api.patch(`${endpoint}${item.id}/`, {
                       version,
                       deleted: !item.deleted_at,
-                    }),
-                  )
+                      following,
+                    })
+                  })
                 }}
               >
                 {t(item.deleted_at ? 'Wiederherstellen' : 'Entfernen')}
@@ -147,7 +155,9 @@ export function TodoAttachments({
                 disabled={busy || !document}
                 onClick={() => {
                   void mutate(async (version) => {
-                    await api.post(endpoint, { version, document: Number(document) })
+                    const following = recurring ? await followingChoice() : false
+                    if (following === null) return
+                    await api.post(endpoint, { version, document: Number(document), following })
                     setDocument('')
                   })
                 }}

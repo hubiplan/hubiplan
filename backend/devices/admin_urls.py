@@ -22,6 +22,7 @@ from organizations import views as org_views
 from portal import views as portal_views
 from todos import attachments as todo_attachments
 from todos import reminder_views as todo_reminder_views
+from todos import series_views as todo_series_views
 from todos import views as todo_views
 
 from . import admin_finance, admin_members
@@ -99,6 +100,7 @@ urlpatterns = [
         "todos/<int:pk>/attachments/<int:att_id>/",
         for_app(todo_attachments.AttachmentDetailView).as_view(),
     ),
+    path("todos/<int:pk>/series/", for_app(todo_series_views.SeriesView).as_view()),
     path("todos/<int:pk>/reminders/", for_app(todo_reminder_views.ReminderSettingsView).as_view()),
     path("todos/orphans/", for_app(todo_views.OrphanTasksView).as_view()),
     path("todos/<int:pk>/take-over/", for_app(todo_views.TakeOverView).as_view()),

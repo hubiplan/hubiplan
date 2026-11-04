@@ -51,6 +51,7 @@ def scope_for(user, org_id=None, dept_id=None):
 
 def visible(user, scope, *, deleted=False):
     qs = Todo.objects.filter(
+        withdrawn=False,
         organization=scope.org,
         department_id=scope.department_id,
         deleted_at__isnull=not deleted,
@@ -158,6 +159,11 @@ def undo_problem(change_set, user):
             from changes.undo import _build
 
             todo = _build(Todo, rec.before)
+        from .series import undo_problem as series_undo_problem
+
+        problem = series_undo_problem(todo, rec)
+        if problem:
+            return problem
         try:
             scope = scope_for(user, org_id=todo.organization_id, dept_id=todo.department_id)
         except (NotFound, PermissionDenied):

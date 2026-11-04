@@ -12,6 +12,7 @@ import { OrphanTasks } from '../components/OrphanTasks.tsx'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { TodoReminders } from '../components/TodoReminders.tsx'
 import { TodoAttachments } from '../components/TodoAttachments.tsx'
+import { followingChoice, TodoSeries } from '../components/TodoSeries.tsx'
 import { TodoCleanup } from '../components/TodoCleanup.tsx'
 import './todos.css'
 import { confirmLeave, useDraftGuard, useGuarded } from '../components/leaveGuard.ts'
@@ -145,6 +146,15 @@ function TodoWorkspace({ base }: { base: string }) {
       {selected && tab !== 'trash' && (
         <TodoEditor key={selected.id} base={base} todo={selected} onSaved={() => void reload()} />
       )}
+      {selected && (selected.due_date || selected.series) && (
+        <TodoSeries
+          key={`series-${selected.id}-${selected.series?.id ?? 'new'}`}
+          base={base}
+          todo={selected}
+          trash={tab === 'trash'}
+          onSaved={() => void reload()}
+        />
+      )}
       {selected?.due_date && tab !== 'trash' && (
         <TodoReminders key={`remind-${selected.id}`} base={base} id={selected.id} />
       )}
@@ -154,6 +164,7 @@ function TodoWorkspace({ base }: { base: string }) {
           base={base}
           id={selected.id}
           writable={selected.can_edit}
+          recurring={!!selected.series}
           onSaved={() => void reload()}
         />
       )}
@@ -256,6 +267,8 @@ function TodoEditor({ base, todo, onSaved }: { base: string; todo?: Todo; onSave
   const auto = useAutoSave(
     form,
     async (changes) => {
+      const following = todo?.series ? await followingChoice() : false
+      if (following === null) throw new Error(t('Änderung wurde nicht gespeichert.'))
       const update: Record<string, unknown> = { ...changes }
       if ('due_date' in update) {
         update.due_date = update.due_date || null
@@ -264,6 +277,7 @@ function TodoEditor({ base, todo, onSaved }: { base: string; todo?: Todo; onSave
       if ('due_time' in update) update.due_time = update.due_time || null
       const updated = await todoApi.update(base, todo!.id, {
         ...update,
+        following,
         version: version.current,
       })
       version.current = updated.version

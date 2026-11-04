@@ -1,5 +1,6 @@
 """Empfängerauswahl, Freigaben und verantwortliche Konten."""
 
+from django.db.models import F
 from django.utils.translation import gettext
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 
@@ -7,7 +8,7 @@ from access.models import Role, RoleAssignment
 from accounts.models import User
 from audit.log import record
 from changes.tracking import active, suppress
-from core.tenancy import tenant_context
+from core.tenancy import rls_bypass, tenant_context
 
 from .access import can_take_over, scope_for, shares_for
 from .models import TodoShare
@@ -110,6 +111,7 @@ def transfer_owner(todo, user, scope, owner_id):
     if ctx:
         ctx.block(gettext("Verantwortung lässt sich nicht rückgängig übertragen."))
     if owner_id == user.pk and can_take_over(todo, user, scope):
+        assign_series_owner(todo, owner_id)
         todo.owner = user
         return
     available = participants(todo, scope)
@@ -118,6 +120,39 @@ def transfer_owner(todo, user, scope, owner_id):
             "Das verantwortliche Konto muss beteiligt sein und bearbeiten dürfen."
         )
     todo.owner_id = owner_id
+    assign_series_owner(todo, owner_id)
+
+
+def assign_series_owner(todo, owner_id):
+    if not todo.series_id:
+        return
+    from .models import Todo, TodoSeries
+
+    # Keine privaten früheren Ausgaben durch eine Übertragung offenlegen.
+    with rls_bypass(), suppress():
+        rows = Todo.objects.filter(series_id=todo.series_id, withdrawn=False)
+        if rows.filter(shared=False).exists():
+            raise ValidationError(
+                gettext(
+                    "Die Serie enthält private Ausgaben. "
+                    "Bitte deren Freigaben zuerst ausdrücklich prüfen."
+                )
+            )
+        rows.exclude(pk=todo.pk).update(owner_id=owner_id, version=F("version") + 1)
+        series = TodoSeries.objects.select_for_update().get(pk=todo.series_id)
+        series.owner_id = owner_id
+        series.shares = list(
+            todo.shares.order_by("pk").values(
+                "user_id",
+                "role_id",
+                "target_org_id",
+                "target_department_id",
+                "level",
+                "responsible",
+            )
+        )
+        series.version += 1
+        series.save()
 
 
 def log_change(todo, user, action):

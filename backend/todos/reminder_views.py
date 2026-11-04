@@ -34,13 +34,15 @@ class ReminderSettingsView(TodoScopeMixin, APIView):
 
     @transaction.atomic
     def patch(self, request, pk, **kwargs):
-        todo = get_object_or_404(visible(request.user, self.scope).select_for_update(), pk=pk)
+        from .series import lock_task
+
+        todo = lock_task(request.user, self.scope, pk)
         config, _ = TodoReminderConfig.objects.get_or_create(
             organization=todo.organization, todo=todo, user=request.user
         )
         serializer = ReminderInput(config, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save(revision=config.revision + 1)
+        serializer.save(revision=config.revision + 1, customized=True)
         sync(todo)
         return Response(ReminderInput(config).data)
 

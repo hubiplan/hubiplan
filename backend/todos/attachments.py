@@ -61,6 +61,7 @@ def data_for(attachment, scope):
 
 
 class AttachmentInput(serializers.Serializer):
+    following = serializers.BooleanField(required=False)
     version = serializers.IntegerField(min_value=1)
     document = serializers.IntegerField(min_value=1, required=False)
     deleted = serializers.BooleanField(required=False)
@@ -72,8 +73,13 @@ class Conflict(APIException):
 
 class AttachmentScope(TodoScopeMixin):
     def task(self, request, pk, *, write=False):
-        qs = visible(request.user, self.scope)
-        todo = get_object_or_404(qs.select_for_update() if write else qs, pk=pk)
+        from .series import lock_task
+
+        todo = (
+            lock_task(request.user, self.scope, pk)
+            if write
+            else get_object_or_404(visible(request.user, self.scope), pk=pk)
+        )
         if write and not can_edit(todo, request.user, self.scope):
             raise PermissionDenied()
         return todo
@@ -91,6 +97,10 @@ class AttachmentScope(TodoScopeMixin):
             ctx.block(gettext("Anhänge werden im Anhang-Papierkorb wiederhergestellt."))
         todo.version += 1
         todo.save(update_fields=["version", "updated_at"])
+        if todo.series_id and self.request.data.get("following") is True:
+            from .series import update_template
+
+            update_template(todo)
         log_change(todo, user, "update")
 
 

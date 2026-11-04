@@ -5,6 +5,8 @@ import type { Todo, TodoShare } from '../api/todos.ts'
 import { errorMessage, useLoad } from './forms.ts'
 import { Checkbox, LoadError, SelectField } from './ui.tsx'
 import { t } from '../i18n/index.ts'
+import { followingChoice } from './TodoSeries.tsx'
+import { flushAllForms, useDraftGuard } from './leaveGuard.ts'
 
 export function TodoSharing({
   base,
@@ -38,13 +40,23 @@ export function TodoSharing({
   const [recipient, setRecipient] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  useDraftGuard(JSON.stringify(shares) !== baseline.current, () =>
+    setShares(JSON.parse(baseline.current)),
+  )
   function update(index: number, patch: Partial<TodoShare>) {
     setShares(shares.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)))
   }
   async function save() {
+    if (!(await flushAllForms())) return
+    const following = todo.series ? await followingChoice() : false
+    if (following === null) return
     setBusy(true)
     try {
-      const updated = await todoApi.update(base, todo.id, { version: version.current, shares })
+      const updated = await todoApi.update(base, todo.id, {
+        version: version.current,
+        shares,
+        following,
+      })
       baseline.current = JSON.stringify(updated.shares ?? [])
       version.current = updated.version
       onSaved()

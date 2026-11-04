@@ -5088,3 +5088,36 @@ msgstr "Please select a file or a document."
 
 msgid "Bitte den Papierkorbstatus angeben."
 msgstr "Please specify whether the attachment is in the trash."
+
+msgid "Die Folgeausgabe wurde bereits bearbeitet. Diese Ausgabe kann nicht wieder geöffnet werden."
+msgstr "The next occurrence has already been edited. This occurrence cannot be reopened."
+
+msgid "In dieser Serie gibt es bereits eine offene Ausgabe."
+msgstr "This series already has an open occurrence."
+
+msgid "Bitte diese Serie über ihren Serien-Papierkorb verwalten."
+msgstr "Please manage this series using its series trash."
+
+msgid "Bitte entweder Enddatum oder Anzahl wählen."
+msgstr "Please choose either an end date or a count."
+
+msgid "Serienregeln und Serien-Papierkorb werden an der Serie verwaltet."
+msgstr "Repeat rules and series trash are managed on the series."
+
+msgid "Bitte die Serie getrennt löschen oder wiederherstellen."
+msgstr "Please delete or restore the series separately."
+
+msgid "Die Serie liegt nicht im Papierkorb."
+msgstr "The series is not in the trash."
+
+msgid "Wiederholungen brauchen eine offene Aufgabe mit Frist."
+msgstr "Repeat rules require an open task with a due date."
+
+msgid "Bitte eine Wiederholregel wählen."
+msgstr "Please select a repeat rule."
+
+msgid "Das Serienende liegt vor der aktuellen Frist."
+msgstr "The series ends before the current due date."
+
+msgid "Die Serie enthält private Ausgaben. Bitte deren Freigaben zuerst ausdrücklich prüfen."
+msgstr "This series contains private occurrences. Please review their sharing permissions explicitly first."

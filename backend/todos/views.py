@@ -27,6 +27,7 @@ class ShareInput(serializers.Serializer):
 
 
 class TodoInput(serializers.Serializer):
+    following = serializers.BooleanField(required=False)
     shares = ShareInput(many=True, required=False)
     owner = serializers.IntegerField(required=False, min_value=1)
     title = serializers.CharField(max_length=200, required=False)
@@ -48,10 +49,12 @@ class TodoInput(serializers.Serializer):
 
 def data_for(todo, user, scope):
     from .reminders import highlight
+    from .series_views import series_data
     from .sharing import participants
 
     return {
         "id": todo.pk,
+        "series": series_data(todo),
         **highlight(todo, user),
         "title": todo.title,
         "description": todo.description,
@@ -119,7 +122,7 @@ class TodoListView(TodoScopeMixin, APIView):
             raise serializers.ValidationError(
                 {"due_time": gettext("Eine Uhrzeit braucht ein Datum.")}
             )
-        for field in ("version", "status", "deleted"):
+        for field in ("version", "status", "deleted", "following"):
             values.pop(field, None)
         todo = Todo.objects.create(
             organization=self.org,
@@ -146,9 +149,9 @@ class TodoDetailView(TodoScopeMixin, APIView):
     @transaction.atomic
     def patch(self, request, pk, **kwargs):
         deleted = bool(request.data.get("deleted") is False)
-        todo = get_object_or_404(
-            visible(request.user, self.scope, deleted=deleted).select_for_update(), pk=pk
-        )
+        from .series import lock_task
+
+        todo = lock_task(request.user, self.scope, pk, deleted=deleted)
         taking_over = request.data.get("owner") == request.user.pk and can_take_over(
             todo, request.user, self.scope
         )
@@ -157,6 +160,7 @@ class TodoDetailView(TodoScopeMixin, APIView):
         serializer = TodoInput(data=request.data)
         serializer.is_valid(raise_exception=True)
         values = serializer.validated_data
+        following = values.pop("following", False)
         if values.pop("version", None) != todo.version:
             return Response(
                 {"detail": gettext("Die Aufgabe wurde inzwischen geändert. Bitte neu laden.")},
@@ -190,6 +194,10 @@ class TodoDetailView(TodoScopeMixin, APIView):
         if old_due != (todo.due_date, todo.due_time, todo.timezone):
             todo.due_revision += 1
         todo.version += 1
+        if following and todo.series_id:
+            from .series import update_template
+
+            update_template(todo, reset_anchor="due_date" in values)
         if ownership_only:
             from core.tenancy import rls_bypass
 
@@ -197,7 +205,12 @@ class TodoDetailView(TodoScopeMixin, APIView):
             with rls_bypass():
                 todo.save(update_fields=["owner", "version", "updated_at"])
         else:
-            todo.save()
+            from django.core.exceptions import ValidationError as ModelValidationError
+
+            try:
+                todo.save()
+            except ModelValidationError as exc:
+                raise serializers.ValidationError(exc.messages) from exc
         log_change(todo, request.user, "update")
         from .notify import schedule_shared
 
@@ -288,6 +301,15 @@ class PersonalTaskDeleteView(APIView):
         from core.tenancy import tenant_context
 
         with user_view(request.user.pk):
+            from .models import TodoSeries
+
+            series_id = (
+                Todo.objects.filter(pk=pk, created_by=request.user, shared=False)
+                .values_list("series_id", flat=True)
+                .first()
+            )
+            if series_id:
+                TodoSeries.objects.select_for_update().get(pk=series_id)
             todo = get_object_or_404(
                 Todo.objects.select_for_update(), pk=pk, created_by=request.user, shared=False
             )
@@ -296,4 +318,8 @@ class PersonalTaskDeleteView(APIView):
                 records__model="todos.todo", records__object_id=str(todo.pk)
             ).delete()
             todo.delete()
+            if series_id:
+                TodoSeries.objects.filter(
+                    pk=series_id, owner=request.user, occurrences__isnull=True
+                ).delete()
         return Response(status=204)
