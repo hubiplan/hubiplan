@@ -11,25 +11,13 @@
 .help-button-mark {
   display: inline-grid;
   place-items: center;
-  width: 1.4rem;
-  height: 1.4rem;
-  border: 2px solid currentColor;
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 1.5px solid currentColor;
   border-radius: 50%;
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1;
 }
-/* Bis 1440 px nur das „?“: sonst bricht die Beschriftung um und drängt die Rollenauswahl */
-@media (max-width: 1440px) {
-  .help-button-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-}
-
 .help-panel {
   position: fixed;
   top: 0;
