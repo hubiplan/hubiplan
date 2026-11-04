@@ -162,7 +162,7 @@ def test_admin_permissions_and_rls(c, api, guest, orgs):
     g = guest
     invited(c, g)
     user = make_user("musik-leser@example.org")
-    give_role(user, g.org, permissions=["music.view", "events.view"])
+    give_role(user, g.org, permissions=["music.view", "events.view"], name="Gastzugänge nur lesen")
     assert api(user).get(g.url).status_code == 403
     editor = make_user("musik-ohne-kalender@example.org")
     give_role(editor, g.org, permissions=["music.view", "music.edit"], name="Ohne Kalender")
