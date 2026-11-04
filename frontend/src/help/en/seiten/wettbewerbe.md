@@ -12,6 +12,17 @@ Here you set up your own shooting competitions with individual and team scoring,
 
 Stand mode stores private data for the verified account or complete stand credential, for at most twelve hours and never beyond the credential's expiry. Without reception, the same stand remains available in the same browser tab. An explicit server access denial ends offline access. Signing out or switching accounts removes this browser's stand cache. Send outstanding entries before signing out; signing out asks before discarding them. Revoked or expired access also removes unsent entries. The old cache without account binding is removed on first opening this version; a notice appears if it contained unsent entries. Browser storage does not replace a backup.
 
+### Names on the website
+
+Under **Setup** → **Extent on the website**, **prize places with names** publishes
+individual places up to the number of **prize places** configured for each scoring.
+Two prize places show places 1 and 2; five prize places show places 1 to 5.
+This also applies to the results block on the home page and to external competitions.
+The results page shows the latest published competition directly;
+older competitions can be opened through links.
+Zero prize places show no individual places. Tied prize places are shown in full;
+existing consent and objections still apply. Unit and team rankings remain visible.
+
 ### Personal results for connected clubs
 
 Under **Evaluation** → **Result approval for connected clubs**, administrators with both

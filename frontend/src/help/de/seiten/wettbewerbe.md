@@ -12,6 +12,18 @@ Hier richtet ihr eigene Schießen mit Einzel- und Zugwertung ein, erfasst Ergebn
 
 Der Standmodus speichert private Daten nur für das bestätigte Konto beziehungsweise den vollständigen Standzugang, höchstens zwölf Stunden und niemals über das Ablaufdatum des Zugangs hinaus. Ohne Empfang lässt sich derselbe Stand im selben Browser-Tab weiterverwenden. Eine ausdrückliche Zugriffsablehnung durch den Server beendet diesen Offlinezugang. Beim Abmelden und Kontowechsel wird der Stand-Speicher dieses Browsers entfernt. Noch nicht übertragene Eingaben vor dem Abmelden zuerst abgleichen; die Abmeldung fragt vor dem Verwerfen nach. Bei einem Rechteentzug oder abgelaufenen Zugang werden auch unübertragene Eingaben entfernt. Der alte, nicht kontogebundene Speicher wird beim ersten Start dieser Version entfernt; bei offenen Eingaben erscheint ein Hinweis. Browser-Speicher ersetzt keine Datensicherung.
 
+### Namen auf der Webseite
+
+Unter **Einrichten** → **Umfang auf der Webseite** veröffentlicht **Preisplätze mit Namen**
+die Einzelplatzierungen bis zur Anzahl der **Preisplätze** der jeweiligen Wertung.
+Bei zwei Preisplätzen erscheinen Platz 1 und 2, bei fünf Preisplätzen Platz 1 bis 5.
+Das gilt auch für den Ergebnisblock auf der Startseite und für fremde Wettbewerbe.
+Auf der Ergebnisseite wird das neueste veröffentlichte Schießen direkt angezeigt;
+ältere Schießen sind über Links erreichbar.
+Bei null Preisplätzen erscheinen keine Einzelplatzierungen. Geteilte Preisplätze
+werden vollständig gezeigt; vorhandene Einwilligungen und Widersprüche gelten weiterhin.
+Die Wertungen der Untereinheiten und Mannschaften bleiben sichtbar.
+
 ### Persönliche Ergebnisse an gekoppelte Vereine
 
 Unter **Auswertung** → **Ergebnisfreigabe an gekoppelte Vereine** können Verwalter

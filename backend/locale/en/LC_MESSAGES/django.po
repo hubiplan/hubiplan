@@ -1199,8 +1199,8 @@ msgstr "after completion"
 msgid "nur Wertung der Untereinheiten und Mannschaften"
 msgstr "only the ranking of units and teams"
 
-msgid "Plätze 1 bis 3 mit Namen"
-msgstr "places 1 to 3 with names"
+msgid "Preisplätze mit Namen"
+msgstr "prize places with names"
 
 msgid "ganze Rangliste"
 msgstr "full ranking"

@@ -2,7 +2,7 @@
 
 Je Wettbewerb entscheidet die Einheit, ob und wann er erscheint (nicht, live während des
 Wettbewerbs, nach Abschluss) und wie viel (nur Wertung der Untereinheiten und Mannschaften,
-Plätze 1 bis 3 mit Namen, ganze Rangliste). Namen stehen im Namensformat der Webseite.
+Preisplätze je Wertung mit Namen, ganze Rangliste). Namen stehen im Namensformat der Webseite.
 
 Einwilligung: Kategorie „Wettbewerbsergebnisse“ mit Widerspruch (wie Würden). Wer
 widerspricht, erscheint „ohne Namen“, der Platz bleibt. Unter 18 am Wettbewerbstag nur mit
@@ -186,8 +186,10 @@ def detail(site, comp) -> dict:
         if depth == Competition.WebsiteDepth.UNITS and not team:
             continue
         rows = [r for r in s["rows"] if r.get("place") is not None or r.get("value_text")]
-        if not team and depth == Competition.WebsiteDepth.TOP3:
-            rows = [r for r in rows if r.get("place") is not None and r["place"] <= 3]
+        if not team and depth == Competition.WebsiteDepth.PRIZES:
+            # Die Rangliste ermittelt „prize“ anhand der Preisplätze dieser Wertung,
+            # auch bei fremden Wettbewerben und geteilten Plätzen.
+            rows = [r for r in rows if r.get("prize")]
         scorings.append(
             {
                 "name": s["name"],
@@ -195,7 +197,7 @@ def detail(site, comp) -> dict:
                 "field": len([r for r in s["rows"] if r.get("place") is not None])
                 or s.get("field_size"),
                 "rows": [_row(names, r, kind, depth) for r in rows],
-                "complete": not (not team and depth == Competition.WebsiteDepth.TOP3),
+                "complete": not (not team and depth == Competition.WebsiteDepth.PRIZES),
             }
         )
     prizes = []
@@ -424,7 +426,12 @@ def home(site, limit: int = 3) -> list:
         d = detail(site, comp)
         winners = []
         for s in d["scorings"]:
-            top = [r for r in s["rows"] if r.get("place") is not None and r["place"] <= 3]
+            # Bereits auf Preisplätze begrenzte Einzelwertungen vollständig übernehmen.
+            top = (
+                s["rows"]
+                if not s["complete"]
+                else [r for r in s["rows"] if r.get("place") is not None and r["place"] <= 3]
+            )
             winners.append({"scoring": s["name"], "rows": top})
         out.append(
             {
