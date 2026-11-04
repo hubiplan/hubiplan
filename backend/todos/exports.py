@@ -95,6 +95,11 @@ def personal_export(user, include_files=False):
     archive = zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) if output else None
 
     def add(todo, scope):
+        # Eine gemeinsame Quellaufgabe ist kein persönlicher privater Inhalt.
+        # Nach Rollenverlust bleibt eine eigene Kopie exportierbar; für aktuelle
+        # Quellinhalte und Quellanhänge ist weiterhin die örtliche Berechtigung nötig.
+        if scope is None and todo.remote_mode == "common":
+            return
         from .remote import RemoteUnavailable, refresh_common
 
         try:
@@ -151,7 +156,7 @@ def personal_export(user, include_files=False):
                 row["attachments"].append(item)
         from .remote import file_entries, remote_file
 
-        for item in file_entries(todo):
+        for item in file_entries(todo) if scope is not None else []:
             if archive and item["available"]:
                 from documents.services import storage_name
 

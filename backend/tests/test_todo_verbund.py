@@ -23,6 +23,19 @@ from .verbund_netz import release
 pytestmark = pytest.mark.django_db
 
 
+@pytest.mark.parametrize("mode", ["copy", "common"])
+def test_persoenlicher_export_nach_rollenverlust_umgeht_keine_quellrechte(net, world, linked, mode):
+    from access.models import RoleAssignment
+
+    _, target = distribute(net, world, linked, mode)
+    RoleAssignment.all_objects.filter(user=world["club_board"], organization=world["club"]).delete()
+    with net.on(VEREIN):
+        response = api(world["club_board"]).get("/api/me/todos/export/")
+    assert response.status_code == 200, response.content
+    ids = [row["id"] for row in response.json()["tasks"]]
+    assert (target["id"] in ids) == (mode == "copy")
+
+
 @pytest.fixture
 def linked(net, world):
     lower, upper = couple(net, world)
