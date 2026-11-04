@@ -5853,3 +5853,6 @@ msgstr "This performance has been cancelled."
 
 msgid "Das Ende der Abwesenheit muss nach dem Beginn liegen."
 msgstr "The absence must end after it starts."
+
+msgid "Endzeit auf der Webseite ausblenden"
+msgstr "Hide end time on the website"

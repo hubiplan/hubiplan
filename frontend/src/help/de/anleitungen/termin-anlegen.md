@@ -13,6 +13,10 @@ stichworte: [Termin, Einladung, Serie, Zusage]
 3. Wähle, wer eingeladen wird und ob Zu- und Absagen gesammelt werden.
 4. Klicke auf **Termin anlegen**.
 
+Ist die Endzeit noch offen, aktiviere **Endzeit auf der Webseite ausblenden**.
+Auf der Webseite erscheint dann nur die Beginnzeit; im internen Kalender bleibt die eingetragene Endzeit erhalten.
+Bei einer Serie gilt die Einstellung für alle Wiederholungen.
+
 Eingeladene bekommen eine E-Mail und sagen dort oder im Mitgliederbereich zu oder ab.
 
 ![Ausgangspunkt: Termin anlegen und Mitglieder einladen](bild:termin-anlegen)

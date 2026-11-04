@@ -58,7 +58,7 @@ class TestTermine:
     def test_nach_unten_und_oben(self, net, world):
         fed, club = world["fed"], world["club"]
         with net.on(VERBAND):
-            event(fed, "Schützenfest des Bundes")
+            event(fed, "Schützenfest des Bundes", hide_end_time=True)
             event(fed, "Vorstandssitzung Bund", visibility="board")
             event(fed, "Nur intern weiter", share_down=False)
         with net.on(VEREIN):
@@ -75,6 +75,7 @@ class TestTermine:
         # Die übermittelten Termine gehören dem Platzhalter
         copy = Event.objects.get(title="Schützenfest des Bundes", organization=lower.remote_unit)
         assert copy.remote_uid
+        assert copy.hide_end_time is True
 
     def test_aenderung_und_loeschen(self, net, world):
         fed, club = world["fed"], world["club"]

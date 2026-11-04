@@ -28,6 +28,7 @@ interface Values {
   address: string
   category: string
   all_day: boolean
+  hide_end_time: boolean
   start_date: string
   start_time: string
   end_date: string
@@ -64,6 +65,7 @@ function initial(event: EventDetail | null, date: string): Values {
       address: '',
       category: '',
       all_day: false,
+      hide_end_time: false,
       start_date: date,
       start_time: '19:00',
       end_date: date,
@@ -96,6 +98,7 @@ function initial(event: EventDetail | null, date: string): Values {
     address: event.address,
     category: event.category ? String(event.category.id) : '',
     all_day: event.all_day,
+    hide_end_time: event.hide_end_time ?? false,
     start_date: s.date,
     start_time: s.time,
     end_date: e.date,
@@ -127,6 +130,7 @@ function toInput(v: Values): EventInput {
     address: v.address,
     category: v.category ? Number(v.category) : null,
     all_day: v.all_day,
+    hide_end_time: v.hide_end_time,
     starts_at: toApi(v.start_date, v.all_day ? '00:00' : v.start_time),
     ends_at: toApi(v.end_date || v.start_date, v.all_day ? '00:00' : v.end_time),
     visibility: v.visibility,
@@ -386,6 +390,20 @@ export function EventForm({
           />
         )}
       </div>
+      {!v.all_day && (
+        <div className="stack-sm">
+          <Checkbox
+            label={t('Endzeit auf der Webseite ausblenden')}
+            checked={v.hide_end_time}
+            onChange={(x) => set('hide_end_time', x)}
+          />
+          <p className="muted small">
+            {t(
+              'Auf der Webseite erscheint nur die Beginnzeit. Im internen Kalender bleibt die Endzeit erhalten.',
+            )}
+          </p>
+        </div>
+      )}
       <div className="grid-2">
         <Field
           label={t('Ort')}

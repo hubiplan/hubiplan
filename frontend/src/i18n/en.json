@@ -5413,5 +5413,7 @@
   "Ersatz für diese Position": "Replacement for this position",
   "Alle Kandidaten anzeigen": "Show all candidates",
   "Einteilungen bearbeiten": "Edit assignments",
-  "Auswahl zurücksetzen": "Reset selection"
+  "Auswahl zurücksetzen": "Reset selection",
+  "Endzeit auf der Webseite ausblenden": "Hide end time on the website",
+  "Auf der Webseite erscheint nur die Beginnzeit. Im internen Kalender bleibt die Endzeit erhalten.": "The website shows only the start time. The end time is kept in the internal calendar."
 }

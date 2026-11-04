@@ -98,6 +98,9 @@ class Event(models.Model):
         related_name="events",
     )
     all_day = models.BooleanField("ganztägig", default=False)
+    hide_end_time = models.BooleanField(
+        gettext_lazy("Endzeit auf der Webseite ausblenden"), default=False, db_default=False
+    )
     # Ganztägig: Beginn = erster Tag 0:00, Ende = letzter Tag 0:00 (deutsche Zeit)
     starts_at = models.DateTimeField("Beginn")
     ends_at = models.DateTimeField("Ende")
