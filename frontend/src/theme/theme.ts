@@ -21,6 +21,9 @@ const VARS = [
   '--color-on-accent',
   '--sidebar-bg',
   '--sidebar-focus',
+  '--button-brand-primary',
+  '--button-brand-primary-hover',
+  '--button-brand-on-primary',
 ] as const
 
 /** Seitenhintergrund (--color-bg in theme.css): Links stehen auf Weiß und auf ihm. */
@@ -71,6 +74,20 @@ export function hoverColor(primary: string, onPrimary: string): string {
   return contrastRatio(darker, onPrimary) >= contrastRatio(lighter, onPrimary) ? darker : lighter
 }
 
+/** Auch eine sehr helle Vereinsfarbe darf den Aktionsknopf nicht im Hintergrund verlieren. */
+export function buttonColors(primary: string, onPrimary: string) {
+  const background = contrastRatio(primary, PAGE_BG) >= 1.35 ? primary : linkColor(primary)
+  const foreground =
+    contrastRatio(background, onPrimary) >= 4.5
+      ? onPrimary
+      : contrastRatio(background, '#ffffff') >= 4.5
+        ? '#ffffff'
+        : '#000000'
+  const candidate = hoverColor(background, foreground)
+  const hover = contrastRatio(candidate, PAGE_BG) >= 1.35 ? candidate : darken(background, 0.15)
+  return { background, foreground, hover }
+}
+
 export function applyTheme(
   theme: ThemeColors | null,
   root: HTMLElement = document.documentElement,
@@ -80,6 +97,10 @@ export function applyTheme(
     return
   }
   root.style.setProperty('--color-primary', theme.primary)
+  const button = buttonColors(theme.primary, theme.on_primary)
+  root.style.setProperty('--button-brand-primary', button.background)
+  root.style.setProperty('--button-brand-primary-hover', button.hover)
+  root.style.setProperty('--button-brand-on-primary', button.foreground)
   root.style.setProperty('--color-primary-hover', hoverColor(theme.primary, theme.on_primary))
   root.style.setProperty('--color-link', linkColor(theme.primary))
   // Fokusrahmen, Feldfokus und Häkchen: dieselbe abgedunkelte Farbe, damit sie auch bei
