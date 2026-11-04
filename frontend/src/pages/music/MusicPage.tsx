@@ -7,6 +7,7 @@ import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { confirmDialog } from '../../components/dialog.ts'
+import { SettlementPanel } from './SettlementPanel.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; members: Row[]; partners: Row[] }
@@ -54,6 +55,21 @@ function MusicWorkspace() {
   if (load.error) return <Alert kind="error">{load.error}</Alert>
   if (!load.data) return <p>{t('Lädt …')}</p>
   const d = load.data
+  const settlement = d.performances.find((p) => String(p.id) === params.get('abrechnung'))
+  if (settlement && org.modules.includes('finance') && org.permissions.includes('finance.view'))
+    return (
+      <SettlementPanel
+        performance={settlement.id}
+        title={String(settlement.title)}
+        customer={Number(settlement.customer) || null}
+        assignments={d.assignments
+          .filter((a) => a.performance === settlement.id)
+          .map((a) => ({
+            id: a.id,
+            name: String(d.musicians.find((m) => m.id === a.musician)?.display_name || a.musician),
+          }))}
+      />
+    )
   const opts = (rows: Row[], name: string): [string, string][] =>
     rows.map((r) => [String(r.id), String(r[name] || r.id)])
   const musicianName = (id: unknown) =>
@@ -230,6 +246,9 @@ function MusicWorkspace() {
                   </p>
                   <p>{r.notes}</p>
                   <Link to={`/aufgaben?termin=${r.event}`}>{t('Aufgaben zum Auftritt')}</Link>
+                  {org.modules.includes('finance') && org.permissions.includes('finance.view') && (
+                    <Link to={`/musik?abrechnung=${r.id}`}>{t('Auftrittsabrechnung')}</Link>
+                  )}
                   <Link to={`/termine?termin=${r.event}`}>{t('Zum Termin')}</Link>
                   <p>
                     {t('Besetzungsgröße')}:{' '}

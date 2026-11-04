@@ -65,8 +65,13 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
     )
 
     start, end = org.fiscal_range(year)
+    from music.models import MusicianClaim, PerformanceAccount, PerformanceExpense
+
     document_year = record_year = end.year
     sources = [
+        (PerformanceAccount, "performance__event__starts_at__date"),
+        (MusicianClaim, "assignment__performance__event__starts_at__date"),
+        (PerformanceExpense, "booking__date"),
         (IncomingInvoice, "created_at__date"),
         (IncomingValidation, "incoming__created_at__date"),
         (InvoiceArtifact, "invoice__date"),
@@ -96,7 +101,7 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
         if latest_change:
             record_year = max(record_year, timezone.localdate(latest_change).year)
             # Ein Entwurf kann erst in einem späteren Jahr ausgegeben werden.
-            if model in (Invoice, IncomingInvoice):
+            if model in (Invoice, IncomingInvoice, PerformanceAccount, MusicianClaim):
                 document_year = max(document_year, timezone.localdate(latest_change).year)
     for rows in (
         Receipt.objects.filter(organization=org, booking__date__gte=start, booking__date__lte=end),
@@ -355,6 +360,27 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
 
     ids(incoming_for_period(org, start, end), "incominginvoice")
     anonymize(org, start, end)
+    from music.models import MusicianClaim, PerformanceAccount
+
+    update_encrypted(
+        ids(
+            PerformanceAccount.objects.filter(
+                organization=org, performance__event__starts_at__date__range=(start, end)
+            ),
+            "performanceaccount",
+        ),
+        note="",
+    )
+    update_encrypted(
+        ids(
+            MusicianClaim.objects.filter(
+                organization=org,
+                assignment__performance__event__starts_at__date__range=(start, end),
+            ),
+            "musicianclaim",
+        ),
+        note="",
+    )
     commercial_lines = InvoiceLine.objects.filter(invoice__in=invoices).exclude(electronic_data={})
     update_encrypted(commercial_lines, text=ANON, detail="")
     update_encrypted(InvoiceLine.objects.filter(invoice__in=invoices), electronic_data={})

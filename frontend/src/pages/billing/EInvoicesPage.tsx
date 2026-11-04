@@ -288,14 +288,18 @@ function CommercialDetail({
   )
 }
 
-function CommercialForm({
+export function CommercialForm({
   invoice,
   onSaved,
   onClose,
+  seed,
+  saveDraft,
 }: {
   invoice?: CommercialInvoice
   onSaved: (id: number) => void
   onClose: () => void
+  seed?: Partial<CommercialInput>
+  saveDraft?: (value: CommercialInput, key: string) => Promise<CommercialInvoice>
 }) {
   const org = useActiveOrg()
   const partners = useLoad(() => einvoiceApi.partners(org.id), [org.id])
@@ -339,6 +343,7 @@ function CommercialForm({
           iban: '',
           currency: 'EUR',
           lines: [blankLine()],
+          ...seed,
         },
   )
   const [busy, setBusy] = useState(false)
@@ -360,7 +365,9 @@ function CommercialForm({
         setBusy(true)
         setError('')
         try {
-          const saved = await einvoiceApi.save(org.id, value, requestKey, invoice?.id)
+          const saved = saveDraft
+            ? await saveDraft(value, requestKey)
+            : await einvoiceApi.save(org.id, value, requestKey, invoice?.id)
           onSaved(saved.id)
         } catch (err) {
           setError(errorMessage(err))

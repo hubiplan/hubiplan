@@ -10,7 +10,8 @@ from audit.log import record
 from core.tenancy import tenant_context
 from portal.views import _portal_access
 
-from .models import Assignment
+from .models import Assignment, MusicianClaim
+from .settlement import personal_claim
 
 
 class OwnAssignments(APIView):
@@ -41,6 +42,15 @@ class OwnAssignments(APIView):
                         "instrument": row.position.instrument,
                         "register": row.position.register,
                         "status": row.status,
+                        "settlement": next(
+                            (
+                                personal_claim(c)
+                                for c in MusicianClaim.objects.filter(
+                                    assignment=row, status="approved"
+                                )
+                            ),
+                            None,
+                        ),
                     }
                     for row in rows
                 ]
