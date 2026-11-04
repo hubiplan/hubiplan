@@ -949,7 +949,7 @@
   "Straße und Hausnummer": "Street and house number",
   "Suche läuft …": "Searching …",
   "Suche nicht möglich.": "Search not possible.",
-  "Suche zurücksetzen": "Reset search",
+  "Suche zurücksetzen": "Clear search",
   "Suchen": "Search",
   "Suchen …": "Search …",
   "Tage vorher": "days before",
@@ -5374,5 +5374,21 @@
   "Ausgewählte Musiker wurden angefragt.": "Selected musicians have been requested.",
   "Bestehende Einteilungen": "Existing assignments",
   "Auftrittsbesetzung als Vorlage speichern": "Save performance instrumentation as template",
-  "Auftritt abgesagt": "Performance cancelled"
+  "Auftritt abgesagt": "Performance cancelled",
+  "Eigene Ordner": "Own folders",
+  "Kachelansicht": "Tile view",
+  "Listenansicht": "List view",
+  "Nur lesen": "Read only",
+  "Feste Ordner": "Fixed folders",
+  "Suchen (Ordner, Titel und Bemerkung)": "Search (folders, title and note)",
+  "Belegter Speicherplatz": "Storage used",
+  "Ordnerpfad": "Folder path",
+  "Suchergebnisse (alle Ordner)": "Search results (all folders)",
+  "Keine Ordner oder Dokumente passen zur Suche.": "No folders or documents match your search.",
+  "Noch keine Ordner. Lege mit „Neuer Ordner“ den ersten an.": "No folders yet. Use “New folder” to create the first one.",
+  "(Verein gesamt {used} von {budget})": "(Club total {used} of {budget})",
+  "{n} Dokument": {
+    "one": "{n} document",
+    "other": "{n} documents"
+  }
 }
