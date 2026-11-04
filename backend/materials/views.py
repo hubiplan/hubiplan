@@ -54,16 +54,28 @@ class ListView(Base):
         ):
             qs = qs.exclude(condition="retired")
         for key, targets, field in [
-            ("member", access.members(self.scope), "member_id"),
-            ("todo", access.todos(request.user, self.scope), "todo_links__todo_id"),
-            ("document", access.documents(self.scope), "document_links__document_id"),
-            ("event", access.events(request.user, self.scope), "event_links__event_id"),
+            ("member", lambda: access.members(self.scope), "member_id"),
+            (
+                "todo",
+                lambda: access.todos(request.user, self.scope),
+                "todo_links__todo_id",
+            ),
+            (
+                "document",
+                lambda: access.documents(self.scope),
+                "document_links__document_id",
+            ),
+            (
+                "event",
+                lambda: access.events(request.user, self.scope),
+                "event_links__event_id",
+            ),
         ]:
             value = request.query_params.get(key)
             if value:
                 if not value.isdecimal():
                     raise ValidationError(_("Ungültige Auswahl."))
-                target = get_object_or_404(targets, pk=int(value))
+                target = get_object_or_404(targets(), pk=int(value))
                 qs = qs.filter(**{field: target.pk})
         if condition := request.query_params.get("condition"):
             qs = qs.filter(condition=condition)
@@ -176,13 +188,18 @@ class ListView(Base):
             raise ValidationError(_("Bitte zuerst die Terminreihe zuordnen."))
         form = ItemInput(
             data=request.data,
-            context={"scope": self.scope, "has_events": bool(event_forms.validated_data)},
+            context={
+                "scope": self.scope,
+                "has_events": bool(event_forms.validated_data),
+            },
         )
         form.is_valid(raise_exception=True)
         values = dict(form.validated_data)
         values.pop("version", None)
         item = MaterialItem.objects.create(
-            organization=self.scope.org, department_id=self.scope.department_id, **values
+            organization=self.scope.org,
+            department_id=self.scope.department_id,
+            **values,
         )
         for row in event_forms.validated_data:
             MaterialEventLink.objects.get_or_create(
@@ -247,7 +264,12 @@ class ChoicesView(Base):
             rows = [{"id": r.pk, "title": str(r.person)} for r in access.members(self.scope)]
         elif kind == "event":
             rows = [
-                {"id": r.pk, "title": r.title, "series": r.is_series, "starts_at": r.starts_at}
+                {
+                    "id": r.pk,
+                    "title": r.title,
+                    "series": r.is_series,
+                    "starts_at": r.starts_at,
+                }
                 for r in access.events(request.user, self.scope)
             ]
         elif kind == "todo":
@@ -288,7 +310,8 @@ class LinksView(Base):
                     raise ValidationError(_("Bitte zuerst einen Verwendungszweck angeben."))
             else:
                 form = EventInput(
-                    data=request.data, context={"scope": self.scope, "user": request.user}
+                    data=request.data,
+                    context={"scope": self.scope, "user": request.user},
                 )
                 form.is_valid(raise_exception=True)
                 row = form.validated_data
@@ -418,7 +441,9 @@ class DocumentView(Base):
 
         item = self.item(pk)
         link = get_object_or_404(
-            item.document_links, document_id=doc_id, document__in=access.documents(self.scope)
+            item.document_links,
+            document_id=doc_id,
+            document__in=access.documents(self.scope),
         )
         version = link.document.versions.order_by("-uploaded_at", "-pk").first()
         if not version:

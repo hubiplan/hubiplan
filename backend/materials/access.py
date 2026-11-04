@@ -40,7 +40,9 @@ def items(scope, *, trash=False):
     from .models import MaterialItem
 
     return MaterialItem.objects.filter(
-        organization=scope.org, department_id=scope.department_id, deleted_at__isnull=not trash
+        organization=scope.org,
+        department_id=scope.department_id,
+        deleted_at__isnull=not trash,
     )
 
 
@@ -54,7 +56,9 @@ def members(scope):
         from members.models import DepartmentMembership
 
         ids = DepartmentMembership.objects.filter(
-            organization=scope.org, department_id=scope.department_id, valid_from__lte=today()
+            organization=scope.org,
+            department_id=scope.department_id,
+            valid_from__lte=today(),
         ).exclude(valid_until__lt=today())
         qs = qs.filter(pk__in=ids.values("membership_id"))
     return qs.select_related("person")
@@ -77,7 +81,14 @@ def documents(scope):
 def todos(user, scope):
     from todos.access import visible
     from todos.models import Todo
+    from todos.remote import fresh_rows
 
     if "todos.view" not in scope.permissions:
         return Todo.objects.none()
-    return visible(user, scope).filter(organization=scope.org)
+    qs = visible(user, scope).filter(organization=scope.org)
+    if not hasattr(scope, "_material_common_ids"):
+        common = qs.filter(remote_mode="common").select_related("remote_origin__coupling")
+        # Wie in der Aufgabenansicht: nur aktuell bestätigte gemeinsame Inhalte zeigen.
+        # Der Scope lebt nur für diese Anfrage; mehrere Verweise teilen die Prüfung.
+        scope._material_common_ids = [todo.pk for todo in fresh_rows(common)]
+    return qs.exclude(remote_mode="common") | qs.filter(pk__in=scope._material_common_ids)

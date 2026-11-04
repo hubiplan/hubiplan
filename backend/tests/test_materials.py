@@ -128,7 +128,9 @@ def event(org, **kwargs):
 
 def link(client, base, item, **kwargs):
     response = client.post(
-        f"{base}{item['id']}/links/", {"version": item["version"], **kwargs}, content_type=JSON
+        f"{base}{item['id']}/links/",
+        {"version": item["version"], **kwargs},
+        content_type=JSON,
     )
     assert response.status_code == 200, response.content
     return response.json()
@@ -192,7 +194,12 @@ def test_private_todo_and_document_permissions(material_setup, api):
     item = link(client, base, item, type="todo", id=task.pk)
     item = link(client, base, item, type="document", id=doc.pk)
     other = make_user("inventarleser@example.org")
-    give_role(other, org, permissions=["material.edit", "todos.view"], name="Material ohne Ziele")
+    give_role(
+        other,
+        org,
+        permissions=["material.edit", "todos.view"],
+        name="Material ohne Ziele",
+    )
     reader = api(other)
     hidden = reader.get(f"{base}{item['id']}/").json()
     assert hidden["todos"] == []
@@ -212,6 +219,46 @@ def test_private_todo_and_document_permissions(material_setup, api):
     fresh = client.get(f"{base}{item['id']}/").json()
     assert fresh["todos"][0]["status"] == "done"
     assert fresh["address"] == item["address"]
+
+
+def test_common_tasks_require_current_source_confirmation(material_setup, monkeypatch):
+    from materials.models import MaterialTodoLink
+    from todos import remote
+    from todos.models import Todo
+
+    org, user, client, base = material_setup
+    item = create(client, base)
+    task = Todo.objects.create(
+        organization=org,
+        owner=user,
+        created_by=user,
+        title="Alter Titel",
+        remote_mode="common",
+    )
+    MaterialTodoLink.objects.create(organization=org, item_id=item["id"], todo=task)
+    calls = []
+
+    def unavailable(rows):
+        calls.append([row.pk for row in rows])
+        return []
+
+    monkeypatch.setattr(remote, "fresh_rows", unavailable)
+    assert client.get(base).status_code == 200
+    assert calls == []  # Eine normale Materialliste braucht keine fremde Aufgabenquelle.
+    assert client.get(f"{base}{item['id']}/").json()["todos"] == []
+    assert calls == [[task.pk]]
+    assert client.get(f"{base}?todo={task.pk}").status_code == 404
+
+    def confirmed(rows):
+        for row in rows:
+            row.title = "Aktuell bestätigter Titel"
+            row.save(update_fields=["title"])
+            yield row
+
+    monkeypatch.setattr(remote, "fresh_rows", confirmed)
+    assert client.get(f"{base}{item['id']}/").json()["todos"] == [
+        {"id": task.pk, "title": "Aktuell bestätigter Titel", "status": "open"}
+    ]
 
 
 def test_photo_sanitized_private_replace_and_undo(material_setup, api, monkeypatch):
@@ -244,14 +291,20 @@ def test_photo_sanitized_private_replace_and_undo(material_setup, api, monkeypat
     assert api(make_user("ohne-recht@example.org")).get(url).status_code in (403, 404)
     invalid = client.post(
         url,
-        {"version": item["version"], "file": SimpleUploadedFile("falsch.jpg", b"kein Bild")},
+        {
+            "version": item["version"],
+            "file": SimpleUploadedFile("falsch.jpg", b"kein Bild"),
+        },
     )
     assert invalid.status_code == 400
     assert MaterialPhoto.objects.count() == 1
     old_photo = MaterialPhoto.objects.get()
     replaced = client.post(
         url,
-        {"version": item["version"], "file": SimpleUploadedFile("neu.png", stream.getvalue())},
+        {
+            "version": item["version"],
+            "file": SimpleUploadedFile("neu.png", stream.getvalue()),
+        },
     )
     assert replaced.status_code == 200, replaced.content
     item = replaced.json()
@@ -353,7 +406,10 @@ def test_deleted_events_preserve_items(material_setup):
         client,
         base,
         purpose="",
-        events=[{"event": first.pk, "kind": "event"}, {"event": second.pk, "kind": "event"}],
+        events=[
+            {"event": first.pk, "kind": "event"},
+            {"event": second.pk, "kind": "event"},
+        ],
     )
     first.delete()
     second.delete()
