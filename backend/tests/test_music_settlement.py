@@ -90,7 +90,12 @@ def post(c, url, **data):
 def expense(c, club, amount):
     base = f"/api/orgs/{club.pk}/finance"
     account = post(
-        c, f"{base}/accounts/", name="Musterkonto", kind="cash", opening_date="2025-01-01"
+        c,
+        f"{base}/accounts/",
+        name="Musterkonto",
+        kind="cash",
+        opening_date="2025-01-01",
+        opening_balance="1000",
     ).json()["id"]
     category = post(c, f"{base}/categories/", name="Musikvergütungen", kind="expense").json()["id"]
     result = post(
