@@ -3,6 +3,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connection
 
+from core.crypto import KeyUnavailable
 from core.keyrotation import Rotation, rotation_lock
 from core.tenancy import rls_bypass
 
@@ -45,11 +46,17 @@ class Command(BaseCommand):
                 raise CommandError(
                     "Schlüsselwechsel außerhalb einer übergeordneten Transaktion ausführen."
                 )
-        with rotation_lock(), rls_bypass():
-            rotation = Rotation(organisation, self.stdout)
-            if probe:
-                rotation.preflight()
-            elif pruefen:
-                rotation.verify_latest()
-            else:
-                rotation.run(start=starten)
+        try:
+            with rotation_lock(), rls_bypass():
+                rotation = Rotation(organisation, self.stdout)
+                if probe:
+                    rotation.preflight()
+                elif pruefen:
+                    rotation.verify_latest()
+                else:
+                    rotation.run(start=starten)
+        except KeyUnavailable:
+            raise CommandError(
+                "Benötigte Schlüsselquelle nicht verfügbar; "
+                "einen offenen Wechsel nach Behebung fortsetzen."
+            ) from None

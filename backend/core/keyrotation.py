@@ -183,7 +183,7 @@ class Rotation:
                 raw = crypto.unwrap_key(row["wrapped"], crypto._context(self.owner_id))
                 if len(raw) != 32:
                     raise ValueError
-            except (crypto.DecryptionError, ValueError):
+            except (crypto.DecryptionError, crypto.KeyUnavailable, ValueError):
                 raise CommandError(
                     "Ein benötigter Datenschlüssel lässt sich nicht entpacken."
                 ) from None
