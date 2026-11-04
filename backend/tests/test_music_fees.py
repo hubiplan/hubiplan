@@ -161,7 +161,9 @@ def test_template_scopes_and_negative_amount(c, api, club, settlement, orgs):
     url = f"/api/orgs/{club.pk}/music/fee-templates/"
     assert post(c, url, name="Ungültig", fee="-1", allowance="0").status_code == 400
     user = make_user("musikvorlage@example.org")
-    give_role(user, club, permissions=["music.view", "finance.view"])
+    give_role(
+        user, club, permissions=["music.view", "finance.view"], name="Vergütungsvorlagen lesen"
+    )
     assert api(user).get(url).status_code == 200
     assert post(api(user), url, name="Nicht erlaubt", fee="10", allowance="0").status_code == 403
     with as_app_role(), tenant_context(orgs["b"].pk):
