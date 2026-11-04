@@ -27,7 +27,7 @@ from .views import MusicViewSet, PerformanceViewSet, ScopedSerializer
 def visible_documents(view):
     if "docs.view" not in view.org_permissions:
         return Document.objects.none()
-    folders = documents.org_viewer(view.org, view.org_permissions).folders()
+    folders = documents.org_viewer(view.org, view.org_permissions).all_folders()
     return Document.objects.filter(organization=view.org, folder__in=folders, deleted_at=None)
 
 

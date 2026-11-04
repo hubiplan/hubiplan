@@ -7,7 +7,8 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
-import { ScoreForm, formats, duration } from './ScoresPage.tsx'
+import { ScoreForm } from './ScoresPage.tsx'
+import { formats, duration } from './scoreHelpers.ts'
 
 type Entry = {
   id: number
@@ -256,7 +257,7 @@ export function ProgramPanel({ performance }: { performance: number }) {
                   <tr key={i}>
                     <td>{v.kind === 'score' ? t('Partitur') : v.instrument}</td>
                     <td>{v.register}</td>
-                    <td>{v.required}</td>
+                    <td>{v.kind === 'score' ? '—' : v.required}</td>
                     <td>{v.planned}</td>
                     <td>{v.accepted}</td>
                     <td>{v.missing_players}</td>

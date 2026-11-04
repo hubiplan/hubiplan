@@ -7,6 +7,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { formats, duration } from './scoreHelpers.ts'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Field = {
@@ -16,13 +17,6 @@ type Field = {
   options?: [string, string][]
   optional?: boolean
 }
-export const formats = () =>
-  [
-    ['concert', t('Konzertformat')],
-    ['march', t('Marschbuchformat')],
-  ] as [string, string][]
-export const duration = (seconds: number) =>
-  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 
 export function ScoresPage() {
   const org = useActiveOrg(),
