@@ -83,7 +83,8 @@ REDACTED = "[Link aus Sicherheitsgründen nicht gespeichert]"
 
 
 def redact(text: str) -> str:
-    return SECRET_LINK.sub(lambda m: m.group(1) + REDACTED, text or "")
+    text = SECRET_LINK.sub(lambda m: m.group(1) + REDACTED, text or "")
+    return re.sub(r"(https?://\S*?/musik-gast#)\S+", lambda m: m.group(1) + REDACTED, text)
 
 
 class OutboxBackend(BaseEmailBackend):

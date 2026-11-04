@@ -23,6 +23,7 @@ function FooterLinks({ unit }: { unit: PublicImprintTarget | null }) {
 /** Rahmen der öffentlichen Seiten (ohne Anmeldung) mit Fußzeile. */
 // Titel der öffentlichen Seiten (ohne Token oder Namen aus der Adresse)
 const PUBLIC_TITLES: [string, string][] = [
+  ['/musik-gast', t('Meine Auftrittseinteilung')],
   ['/anmelden/link', t('Anmeldung per Link')],
   ['/anmelden', t('Anmelden')],
   ['/konto/email', t('E-Mail-Adresse bestätigen')],

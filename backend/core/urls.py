@@ -36,6 +36,7 @@ from music import scores as music_scores
 from music import staffing as music_staffing
 from music import views as music_views
 from music.availability_views import AbsenceViewSet, OwnAbsences
+from music.guest import GuestAccessView, GuestPerformanceView
 from music.portal import OwnAssignments
 from music.practice_portal import OwnPractice, OwnScoreFile
 from music.settlement import PerformanceInvoiceView, SettlementView
@@ -178,6 +179,7 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("music/assignments/<int:pk>/guest-access/", GuestAccessView.as_view()),
     path("music/practice/", music_practice.PracticeOverview.as_view()),
     path("music/loans/", music_practice.LoanView.as_view()),
     path("music/performances/<int:pk>/program/", music_scores.ProgramView.as_view()),
@@ -725,6 +727,7 @@ dept_patterns = [
 ]
 
 urlpatterns = [
+    path("music/guest/", GuestPerformanceView.as_view()),
     path("portal/<int:access_id>/music/practice/", OwnPractice.as_view()),
     path("portal/<int:access_id>/music/files/<int:pk>/", OwnScoreFile.as_view()),
     path("portal/<int:access_id>/music/", OwnAssignments.as_view()),

@@ -62,6 +62,10 @@ def fingerprint(row):
 
 def recipient(row):
     musician, org = row.musician, row.organization
+    if not musician.membership_id:
+        from .guest import guest_recipient
+
+        return guest_recipient(row)
     if (
         not musician.active
         or not musician.membership_id
@@ -83,6 +87,12 @@ def recipient(row):
 
 
 def send(row, access, kind):
+    from .models import GuestAccess
+
+    if isinstance(access, GuestAccess):
+        from .guest import send_guest
+
+        return send_guest(row, access, kind)
     with language_of(access.user):
         subject = (
             gettext("Neue Auftrittseinteilung im Mitgliederbereich")

@@ -123,6 +123,12 @@ function MusicWorkspace() {
       },
       { key: 'name', label: t('Gastname'), optional: true },
       { key: 'contact', label: t('Kontakt'), optional: true },
+      {
+        key: 'guest_email',
+        label: t('E-Mail-Adresse für Gasteinladungen'),
+        type: 'email',
+        optional: true,
+      },
       { key: 'active', label: t('Aktiv'), type: 'checkbox' },
     ],
     skills: [

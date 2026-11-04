@@ -6016,3 +6016,24 @@ msgstr "The source cannot be changed while results exist."
 
 msgid "Bitte einen Schießdurchgang wählen."
 msgstr "Please select a shooting round."
+
+msgid "Bitte einen neuen Einladungslink erstellen."
+msgstr "Please create a new invitation link."
+
+msgid "Persönliche Einladung zum Musikauftritt"
+msgstr "Personal invitation to a music performance"
+
+msgid "Ihre persönliche Auftrittseinteilung und Rückmeldung finden Sie hier: {link}\nBitte geben Sie diesen persönlichen Link nicht weiter."
+msgstr "Find your personal performance assignment and submit your response here: {link}\nPlease do not share this personal link."
+
+msgid "Für diesen Gast kann kein Zugang erstellt werden."
+msgstr "Access cannot be created for this guest."
+
+msgid "Bitte zuerst die E-Mail-Adresse des Gastes erfassen."
+msgstr "Please enter the guest's email address first."
+
+msgid "Diese Einladung ist ungültig oder abgelaufen."
+msgstr "This invitation is invalid or has expired."
+
+msgid "Für vergangene Auftritte ist keine Rückmeldung mehr möglich."
+msgstr "Responses can no longer be submitted for past performances."

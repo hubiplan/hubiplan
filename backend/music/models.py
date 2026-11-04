@@ -1,7 +1,9 @@
 """Musikprofile und Besetzung ergänzen Mitglieder und Kalendereinträge."""
 
+import uuid
+
 from django.conf import settings
-from django.core.validators import MaxValueValidator
+from django.core.validators import EmailValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -15,6 +17,14 @@ class Musician(models.Model):
     )
     name = EncryptedCharField(max_length=200, strict=True, blank=True)
     contact = EncryptedCharField(max_length=300, strict=True, blank=True)
+    guest_email = EncryptedCharField(
+        max_length=254,
+        strict=True,
+        blank=True,
+        default="",
+        db_default="",
+        validators=[EmailValidator()],
+    )
     active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -168,6 +178,25 @@ class PerformanceNotice(models.Model):
 
     def __str__(self):
         return f"Auftrittshinweis {self.pk}"
+
+
+class GuestAccess(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    assignment = models.OneToOneField(
+        Assignment, on_delete=models.CASCADE, related_name="guest_access"
+    )
+    nonce = models.UUIDField(default=uuid.uuid4)
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    auto_notify = models.BooleanField(default=False)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Gastmusikerzugang {self.pk}"
 
 
 class PerformanceAccount(models.Model):
