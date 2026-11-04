@@ -220,6 +220,15 @@ else
         ! -name 'datenschluessel.*' -mtime +"$KEEP_DAYS" -delete
 fi
 
+# Satzgebundener Nachweis des vollständigen lokalen Bestands. Vor der Zweitkopie
+# veröffentlichen, damit dieselbe rsync-Übertragung auch den Nachweis einschließt.
+# Ein Fehler der Zweitkopie bleibt trotzdem ein Fehler des gesamten Befehls.
+if [ -n "$RECEIPT_NAME" ]; then
+    [ ! -f "$DIR/.unvollstaendig" ] || fail "Kein Nachweis für unvollständiges Backup"
+    printf '%s\n%s\n' "$STAMP" "${KEY_EXT}" > "$DIR/$RECEIPT_NAME.receipt.tmp"
+    sign "$DIR/$RECEIPT_NAME.receipt"
+fi
+
 # Optional: Kopie an einen zweiten Ort (z. B. user@host:/pfad, per SSH-Schlüssel)
 if [ -n "${BACKUP_REMOTE:-}" ]; then
     # Fester Rechnerschlüssel (known_hosts), kein „beim ersten Mal vertrauen“
@@ -237,10 +246,13 @@ fi
 
 echo "$(date '+%F %T') Backup $STAMP ok ($(du -h "$LATEST_DB" | cut -f1))" >> "$DIR/backup.log"
 
-# Nur ein erfolgreicher vollständiger Lauf darf einen satzgebundenen Nachweis
-# veröffentlichen. Kein Auswerten von 'neuestes Backup' oder globalen Statusdateien.
-if [ -n "$RECEIPT_NAME" ]; then
-    [ ! -f "$DIR/.unvollstaendig" ] || fail "Kein Nachweis für unvollständiges Backup"
-    printf '%s\n%s\n' "$STAMP" "${KEY_EXT}" > "$DIR/$RECEIPT_NAME.receipt.tmp"
-    sign "$DIR/$RECEIPT_NAME.receipt"
+# Auch der manuelle strenge Wartungslauf aktualisiert die Backup-Überwachung,
+# allerdings erst nach dem vollständigen Erfolg einschließlich der Zweitkopie.
+if [ "${BACKUP_REQUIRE_COMPLETE:-0}" = 1 ]; then
+    STATUS_DIR=${BACKUP_STATUS_DIR:-/status}
+    if [ -d "$STATUS_DIR" ]; then
+        printf 'state=ok\nlast_ok=%s\ntime=%s\ntext=\n' "$(date +%s)" "$(date +%s)" > "$STATUS_DIR/status.tmp"
+        chmod 644 "$STATUS_DIR/status.tmp"
+        mv "$STATUS_DIR/status.tmp" "$STATUS_DIR/status"
+    fi
 fi

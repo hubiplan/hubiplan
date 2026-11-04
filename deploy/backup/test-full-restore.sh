@@ -32,6 +32,7 @@ key="/backups/datenschluessel_$stamp.$MODE"
 fingerprint="/backups/datenschluessel_$stamp.sha256"
 old_hash=$(cat "$fingerprint")
 [ "$(backup-receipt.sh complete)" = "$stamp" ]
+grep -q '^state=ok$' /status/status
 cp /backups/complete.receipt /tmp/original-receipt
 printf x >> /backups/complete.receipt
 if backup-receipt.sh complete > /dev/null 2>&1; then echo "tampered receipt accepted" >&2; exit 1; fi
