@@ -1,3 +1,4 @@
+import { TodoRemote, TodoRemoteInbox } from '../components/TodoRemote.tsx'
 import { NewTodoDialog } from '../components/NewTodoDialog.tsx'
 import { TodoEditor } from '../components/TodoEditor.tsx'
 import { useEffect, useState } from 'react'
@@ -143,6 +144,9 @@ function TodoWorkspace({ base }: { base: string }) {
       {can('todos.edit') && can('roles.edit') && (
         <OrphanTasks base={base} onSaved={() => void reload()} />
       )}
+      {can('todos.edit') && !activeDept && (
+        <TodoRemoteInbox base={base} onSaved={() => void reload()} />
+      )}
       {newTask && (
         <NewTodoDialog
           key="new"
@@ -195,6 +199,14 @@ function TodoWorkspace({ base }: { base: string }) {
           id={selected.id}
           writable={selected.can_edit}
           recurring={!!selected.series}
+          onSaved={() => void reload()}
+        />
+      )}
+      {selected?.can_share && !selected.distributed && tab !== 'trash' && (
+        <TodoRemote
+          key={`remote-${selected.id}`}
+          base={base}
+          todo={selected}
           onSaved={() => void reload()}
         />
       )}

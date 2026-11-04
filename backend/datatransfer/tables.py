@@ -239,6 +239,8 @@ SECRET_FIELDS = {
     # Zugriffsrechte werden am Ziel ausdrücklich neu vergeben, keine fremden Kontonummern.
     "todos.todo": {
         "origin",
+        "remote_origin",
+        "remote_mode",
         "owner",
         "done_by",
         "shared",

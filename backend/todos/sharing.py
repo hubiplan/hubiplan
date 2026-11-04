@@ -119,7 +119,9 @@ def replace_shares(todo, user, scope, values):
     from .models import TodoPortalPublication
 
     todo.shared = (
-        bool(rows) or TodoPortalPublication.objects.filter(todo=todo, active=True).exists()
+        bool(rows)
+        or TodoPortalPublication.objects.filter(todo=todo, active=True).exists()
+        or todo.remote_shares.filter(active=True).exists()
     )
     if not rows and todo.owner_id != todo.created_by_id:
         raise ValidationError(gettext("Eine übertragene Aufgabe muss geteilt bleiben."))

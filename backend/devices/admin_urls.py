@@ -22,6 +22,7 @@ from organizations import views as org_views
 from portal import views as portal_views
 from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
+from todos import remote_views as todo_remote
 from todos import reminder_views as todo_reminder_views
 from todos import series_views as todo_series_views
 from todos import views as todo_views
@@ -97,6 +98,12 @@ def _p(route: str, view, name: str):
 
 
 urlpatterns = [
+    path("todos/<int:pk>/remote/", for_app(todo_remote.RemoteSharesView).as_view()),
+    path(
+        "todos/<int:pk>/remote-files/<int:att_id>/", for_app(todo_remote.RemoteFileView).as_view()
+    ),
+    path("todos/remote/", for_app(todo_remote.RemoteInboxView).as_view()),
+    path("todos/remote/<int:remote_id>/adopt/", for_app(todo_remote.RemoteAdoptView).as_view()),
     path("todos/<int:pk>/progress/", for_app(todo_cross_views.ProgressView).as_view()),
     path(
         "todos/<int:pk>/changes/<uuid:set_id>/undo/",

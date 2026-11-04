@@ -22,6 +22,7 @@ export interface Todo {
   } | null
   per_unit?: boolean
   distributed?: boolean
+  remote_mode?: '' | 'copy' | 'common'
   central_readonly?: boolean
   local_note?: string
   can_complete?: boolean

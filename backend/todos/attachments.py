@@ -121,6 +121,9 @@ class AttachmentScope(TodoScopeMixin):
             if write
             else get_object_or_404(visible(request.user, self.scope), pk=pk)
         )
+        from .remote import refresh_common
+
+        todo = refresh_common(todo)
         if write and not can_edit(todo, request.user, self.scope):
             raise PermissionDenied()
         return todo
@@ -159,6 +162,9 @@ class AttachmentListView(AttachmentScope, APIView):
         todo = self.task(request, pk)
         with attachment_rows(todo, self.scope) as rows:
             items = [row_data(a, central, aid, self.scope) for a, central, aid in rows]
+        from .remote import file_entries
+
+        items += file_entries(todo)
         return Response(
             {
                 "version": todo.version,

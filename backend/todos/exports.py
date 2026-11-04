@@ -93,6 +93,12 @@ def personal_export(user, include_files=False):
     archive = zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) if output else None
 
     def add(todo, scope):
+        from .remote import RemoteUnavailable, refresh_common
+
+        try:
+            refresh_common(todo)
+        except (RemoteUnavailable, NotFound):
+            return
         if todo.pk in seen:
             return
         seen.add(todo.pk)
