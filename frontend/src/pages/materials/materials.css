@@ -63,8 +63,73 @@
   min-width: 0;
 }
 .materials label {
-  display: block;
+  display: grid;
+  gap: 0.4rem;
   margin-block: 0.7rem;
+  min-width: 0;
+}
+.materials label > :is(input:not([type='checkbox'], [type='radio']), select, textarea) {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+.material-form textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+.materials .material-form-section + .material-form-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+.material-form-section legend {
+  padding: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.material-form-section details {
+  margin-block: 1rem;
+}
+.material-address-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  column-gap: 1rem;
+}
+.material-basic-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1rem;
+}
+.material-basic-grid > label:first-child {
+  grid-column: 1 / -1;
+}
+.material-form .material-picker {
+  max-width: none;
+}
+@media (max-width: 650px) {
+  .material-basic-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.material-wide {
+  grid-column: 1 / -1;
+}
+.material-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.material-form > .button-row {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+}
+@media (max-width: 480px) {
+  .material-address-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 .material-photo {
   display: block;
@@ -85,7 +150,7 @@
   align-items: center;
   gap: 1rem;
   padding-block: 0.7rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--color-border);
 }
 .material-link > div {
   min-width: 0;
@@ -93,6 +158,20 @@
 }
 .material-picker {
   max-width: 600px;
+}
+.material-picker-results {
+  max-height: 18rem;
+  overflow-y: auto;
+}
+.material-picker-results .button {
+  display: flex;
+  justify-content: space-between;
+  border-radius: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.material-picker-results .muted {
+  font-weight: 400;
 }
 .materials section,
 .materials details.card {

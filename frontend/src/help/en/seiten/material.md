@@ -14,8 +14,15 @@ or address. Use the filters to include retired items or open the recycle bin.
 ![Equipment list with locations and condition](bild:material-liste)
 
 With editing permission, create an item with a name, short description, purpose or event,
-and location. Select an accessible member or enter a complete address. Everyone with
+and location. The default location type is **With a member**. Select an accessible member
+or enter a complete address. Everyone with
 equipment viewing permission in this unit can see manually entered addresses. Choose **Save**.
+
+The form is divided into basic data, location and condition, with labels above the fields.
+To select members, events, tasks or documents, enter at least two characters in **Search choices**.
+A result menu opens below the field; choose the matching entry. There is no separate permanent menu.
+
+![Equipment form with grouped input fields](bild:material-formular)
 
 On the detail page, add, replace or remove an **Equipment photo**. JPEG, PNG and WebP
 files up to 10 MB are accepted. Image metadata is removed. Viewing the image requires
