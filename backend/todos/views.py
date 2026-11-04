@@ -14,12 +14,14 @@ from rest_framework.views import APIView
 
 from core.tenancy import user_view
 
-from .access import can_delete, can_edit, can_take_over, scope_for, visible
+from .access import can_delete, can_edit, can_take_over, local_task, scope_for, visible
 from .models import Todo, TodoPreference
 from .sharing import eligible_users, log_change, replace_shares, transfer_owner
 
 
 class ShareInput(serializers.Serializer):
+    target_org = serializers.IntegerField(required=False, min_value=1)
+    target_department = serializers.IntegerField(required=False, allow_null=True, min_value=1)
     user = serializers.IntegerField(required=False, min_value=1)
     role = serializers.IntegerField(required=False, min_value=1)
     level = serializers.ChoiceField(choices=["view", "edit"], default="view")
@@ -27,6 +29,8 @@ class ShareInput(serializers.Serializer):
 
 
 class TodoInput(serializers.Serializer):
+    per_unit = serializers.BooleanField(required=False)
+    local_note = serializers.CharField(required=False, allow_blank=True, max_length=50000)
     following = serializers.BooleanField(required=False)
     shares = ShareInput(many=True, required=False)
     owner = serializers.IntegerField(required=False, min_value=1)
@@ -54,7 +58,14 @@ def data_for(todo, user, scope):
 
     return {
         "id": todo.pk,
+        "organization": todo.organization_id,
+        "department": todo.department_id,
         "series": series_data(todo),
+        "distributed": todo.distributed,
+        "per_unit": todo.per_unit,
+        "local_note": todo.local_note if todo.distributed else "",
+        "central_readonly": todo.distributed,
+        "can_complete": can_edit(todo, user, scope) and not todo.per_unit,
         **highlight(todo, user),
         "title": todo.title,
         "description": todo.description,
@@ -75,7 +86,11 @@ def data_for(todo, user, scope):
         "can_delete": can_delete(todo, user, scope),
         "can_take_over": can_take_over(todo, user, scope),
         "can_share": can_delete(todo, user, scope) and "todos.edit" in scope.permissions,
-        "shares": list(todo.shares.order_by("pk").values("user", "role", "level", "responsible"))
+        "shares": list(
+            todo.shares.order_by("pk").values(
+                "user", "role", "target_org", "target_department", "level", "responsible"
+            )
+        )
         if todo.shared
         else [],
         "owners": [
@@ -115,6 +130,8 @@ class TodoListView(TodoScopeMixin, APIView):
         serializer.is_valid(raise_exception=True)
         values = serializer.validated_data
         shares = values.pop("shares", None)
+        requested_mode = values.pop("per_unit", None)
+        values.pop("local_note", None)
         values.pop("owner", None)
         if not values.get("title"):
             raise serializers.ValidationError({"title": gettext("Bitte einen Titel eingeben.")})
@@ -132,8 +149,12 @@ class TodoListView(TodoScopeMixin, APIView):
             **values,
         )
         if shares:
+            from .distribution import reconcile, set_mode
+
+            set_mode(todo, self.scope, requested_mode, shares)
             added = replace_shares(todo, request.user, self.scope, shares)
             todo.save()
+            reconcile(todo, attachments=True)
             from .notify import schedule_shared
 
             schedule_shared(todo, added)
@@ -172,6 +193,18 @@ class TodoDetailView(TodoScopeMixin, APIView):
                 gettext("Verantwortung bitte getrennt von anderen Änderungen übertragen.")
             )
         shares = values.pop("shares", None)
+        requested_mode = values.pop("per_unit", None)
+        from .distribution import CENTRAL, reconcile, set_mode
+
+        if todo.distributed and (set(values) & CENTRAL or requested_mode is not None):
+            raise PermissionDenied(gettext("Diese Felder werden von der Quelle vorgegeben."))
+        if not todo.distributed and "local_note" in values:
+            raise serializers.ValidationError(gettext("Lokale Notizen gehören zu einer Zielkopie."))
+        set_mode(todo, self.scope, requested_mode, shares)
+        if todo.per_unit and "status" in values:
+            raise serializers.ValidationError(
+                gettext("Diese Aufgabe wird je Zieleinheit erledigt.")
+            )
         added = (
             replace_shares(todo, request.user, self.scope, shares) if shares is not None else set()
         )
@@ -193,11 +226,22 @@ class TodoDetailView(TodoScopeMixin, APIView):
             )
         if old_due != (todo.due_date, todo.due_time, todo.timezone):
             todo.due_revision += 1
+        if todo.series_id and not todo.due_date:
+            raise serializers.ValidationError(
+                gettext("Wiederholungen brauchen eine offene Aufgabe mit Frist.")
+            )
         todo.version += 1
         if following and todo.series_id:
-            from .series import update_template
+            from .series import require_series_edit, update_template
 
-            update_template(todo, reset_anchor="due_date" in values)
+            require_series_edit(todo, request.user, self.scope)
+
+            update_template(
+                todo,
+                reset_anchor="due_date" in values,
+                fields=set(values),
+                shares=shares is not None,
+            )
         if ownership_only:
             from core.tenancy import rls_bypass
 
@@ -212,10 +256,14 @@ class TodoDetailView(TodoScopeMixin, APIView):
             except ModelValidationError as exc:
                 raise serializers.ValidationError(exc.messages) from exc
         log_change(todo, request.user, "update")
+        reconcile(todo, changed=set(values) & CENTRAL, attachments=shares is not None)
         from .notify import schedule_shared
 
         schedule_shared(todo, added)
-        return Response(data_for(todo, request.user, self.scope))
+        response = Response(data_for(todo, request.user, self.scope))
+        if not local_task(todo, self.scope):
+            response["X-Change-Task"] = str(todo.pk)
+        return response
 
 
 class TodoChoicesView(TodoScopeMixin, APIView):
@@ -224,9 +272,40 @@ class TodoChoicesView(TodoScopeMixin, APIView):
             raise PermissionDenied()
         from access.catalog import effective
         from access.models import Role
+        from core.tenancy import tenant_context
+
+        from .targets import allowed_scopes, key, label
+
+        units = []
+        for target in allowed_scopes(self.scope).values():
+            with tenant_context(target.org.pk):
+                units.append(
+                    {
+                        "key": key(target),
+                        "organization": target.org.pk,
+                        "department": target.department_id,
+                        "name": label(target),
+                        "users": [
+                            {"id": u.pk, "name": u.get_full_name() or u.email}
+                            for u in eligible_users(target)
+                        ],
+                        "roles": [
+                            {
+                                "id": r.pk,
+                                "name": r.name,
+                                "has_task_access": "todos.view"
+                                in effective(r.permissions, dept=bool(target.department_id)),
+                            }
+                            for r in Role.all_objects.filter(
+                                organization=target.org, department_id=target.department_id
+                            )
+                        ],
+                    }
+                )
 
         return Response(
             {
+                "units": units,
                 "users": [
                     {"id": u.pk, "name": u.get_full_name() or u.email}
                     for u in eligible_users(self.scope)
@@ -298,25 +377,33 @@ class PersonalTaskDeleteView(APIView):
     def delete(self, request, pk):
         from changes.models import ChangeSet
         from changes.tracking import suppress
-        from core.tenancy import tenant_context
+        from core.tenancy import rls_bypass, tenant_context
+
+        from .models import TodoSeries
 
         with user_view(request.user.pk):
-            from .models import TodoSeries
-
-            series_id = (
-                Todo.objects.filter(pk=pk, created_by=request.user, shared=False)
-                .values_list("series_id", flat=True)
-                .first()
+            metadata = get_object_or_404(
+                Todo.objects.only("organization_id", "series_id"),
+                pk=pk,
+                created_by=request.user,
+                shared=False,
             )
-            if series_id:
-                TodoSeries.objects.select_for_update().get(pk=series_id)
+        # Kontoeigene private Daten bleiben nach Rollenverlust löschbar. Nach der
+        # Lesefreigabe werden ausschließlich diese Nummern gesperrt und erneut geprüft.
+        with tenant_context(metadata.organization_id, request.user.pk), suppress(), rls_bypass():
+            if metadata.series_id:
+                TodoSeries.objects.select_for_update().values("pk").get(pk=metadata.series_id)
             todo = get_object_or_404(
                 Todo.objects.select_for_update(), pk=pk, created_by=request.user, shared=False
             )
-        with tenant_context(todo.organization_id, request.user.pk), suppress():
+            if todo.series_id != metadata.series_id:
+                from .attachments import Conflict
+
+                raise Conflict(gettext("Die Aufgabe wurde inzwischen geändert. Bitte neu laden."))
             ChangeSet.objects.filter(
                 records__model="todos.todo", records__object_id=str(todo.pk)
             ).delete()
+            series_id = todo.series_id
             todo.delete()
             if series_id:
                 TodoSeries.objects.filter(

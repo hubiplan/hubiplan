@@ -39,6 +39,7 @@ from peering import urls as peering_urls
 from portal import views as portal_views
 from statutes import views as statute_views
 from todos import attachments as todo_attachments
+from todos import cross_views as todo_cross_views
 from todos import reminder_views as todo_reminder_views
 from todos import series_views as todo_series_views
 from todos import views as todo_views
@@ -128,6 +129,8 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("todos/<int:pk>/progress/", todo_cross_views.ProgressView.as_view()),
+    path("todos/<int:pk>/changes/<uuid:set_id>/undo/", todo_cross_views.TaskUndoView.as_view()),
     path("todos/<int:pk>/attachments/", todo_attachments.AttachmentListView.as_view()),
     path(
         "todos/<int:pk>/attachments/<int:att_id>/", todo_attachments.AttachmentDetailView.as_view()
@@ -668,6 +671,11 @@ urlpatterns = [
         todo_attachments.AttachmentDetailView.as_view(),
     ),
     path("depts/<int:dept_id>/todos/<int:pk>/series/", todo_series_views.SeriesView.as_view()),
+    path("depts/<int:dept_id>/todos/<int:pk>/progress/", todo_cross_views.ProgressView.as_view()),
+    path(
+        "depts/<int:dept_id>/todos/<int:pk>/changes/<uuid:set_id>/undo/",
+        todo_cross_views.TaskUndoView.as_view(),
+    ),
     path("me/todos/<int:pk>/", todo_views.PersonalTaskDeleteView.as_view()),
     path("depts/<int:dept_id>/todos/cleanup/", todo_reminder_views.CleanupSettingsView.as_view()),
     path(

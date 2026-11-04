@@ -12,6 +12,7 @@ from changes import views as change_views
 from events import views as event_views
 from portal import views as portal_views
 from todos import attachments as todo_attachments
+from todos import cross_views as todo_cross_views
 from todos import reminder_views as todo_reminder_views
 from todos import series_views as todo_series_views
 from todos import views as todo_views
@@ -24,6 +25,11 @@ def _p(route: str, view, name: str, read_only: bool = False):
 
 
 urlpatterns = [
+    path("todos/<int:pk>/progress/", for_app(todo_cross_views.ProgressView).as_view()),
+    path(
+        "todos/<int:pk>/changes/<uuid:set_id>/undo/",
+        for_app(todo_cross_views.TaskUndoView).as_view(),
+    ),
     path("todos/<int:pk>/attachments/", for_app(todo_attachments.AttachmentListView).as_view()),
     path(
         "todos/<int:pk>/attachments/<int:att_id>/",

@@ -18,8 +18,8 @@ from .models import Todo, TodoNotice, TodoPreference
 logger = logging.getLogger(__name__)
 
 
-def schedule_shared(todo, user_ids):
-    for user_id in sorted(set(user_ids) - {todo.created_by_id}):
+def schedule_shared(todo, user_ids, *, include_creator=False):
+    for user_id in sorted(set(user_ids) - (set() if include_creator else {todo.created_by_id})):
         transaction.on_commit(
             lambda uid=user_id: notify_shared.delay(todo.pk, uid, todo.version), robust=True
         )
@@ -33,9 +33,25 @@ def notify_shared(todo_id, user_id, revision):
         if todo is None or user is None:
             return
         preferences, _ = TodoPreference.objects.get_or_create(user=user)
-    with tenant_context(todo.organization_id, user.pk):
+        units = {
+            (todo.organization_id, todo.department_id),
+            *todo.shares.values_list("target_org_id", "target_department_id"),
+        }
+    selected = None
+    for org_id, dept_id in sorted(units, key=lambda item: (item[0], item[1] or 0)):
+        with tenant_context(org_id, user.pk):
+            try:
+                scope = scope_for(user, org_id, dept_id)
+            except (NotFound, PermissionDenied):
+                continue
+            if visible(user, scope).filter(pk=todo.pk).exists():
+                selected = (org_id, dept_id)
+                break
+    if selected is None:
+        return
+    with tenant_context(selected[0], user.pk):
         try:
-            scope = scope_for(user, todo.organization_id, todo.department_id)
+            scope = scope_for(user, selected[0], selected[1])
         except (NotFound, PermissionDenied):
             return
         if not visible(user, scope).filter(pk=todo.pk).exists():
@@ -75,8 +91,8 @@ def notify_shared(todo_id, user_id, revision):
                             "v": 1,
                             "t": "todo",
                             "todo": todo.pk,
-                            "org": todo.organization_id,
-                            "department": todo.department_id,
+                            "org": scope.org.pk,
+                            "department": scope.department_id,
                             "title": title if preferences.push_title else gettext("Neue Aufgabe"),
                             "text": str(todo.due_date or ""),
                         },

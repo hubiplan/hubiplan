@@ -5121,3 +5121,39 @@ msgstr "The series ends before the current due date."
 
 msgid "Die Serie enthält private Ausgaben. Bitte deren Freigaben zuerst ausdrücklich prüfen."
 msgstr "This series contains private occurrences. Please review their sharing permissions explicitly first."
+
+msgid "Diese Felder werden von der Quelle vorgegeben."
+msgstr "These fields are controlled by the source."
+
+msgid "Die Fortsetzung wird von der Quelle vorgegeben."
+msgstr "Continuation is controlled by the source."
+
+msgid "Diese Zieleinheit ist für Aufgaben nicht erlaubt."
+msgstr "This target unit is not allowed for tasks."
+
+msgid "Kopien können nur innerhalb ihrer eigenen Einheit geteilt werden."
+msgstr "Copies can only be shared within their own unit."
+
+msgid "Die Verteilart einer bereits verteilten Aufgabe kann nicht geändert werden."
+msgstr "The distribution mode cannot be changed after a task has been distributed."
+
+msgid "Bitte eine offene Aufgabe verteilen."
+msgstr "Please distribute an open task."
+
+msgid "Lokale Notizen gehören zu einer Zielkopie."
+msgstr "Local notes belong to a target copy."
+
+msgid "Diese Aufgabe wird je Zieleinheit erledigt."
+msgstr "This task is completed separately in each target unit."
+
+msgid "Quellanhang nicht verfügbar"
+msgstr "Source attachment unavailable"
+
+msgid "Für die aktuelle Serienausgabe fehlt dir die Berechtigung."
+msgstr "You do not have permission for the current series occurrence."
+
+msgid "Verteilte Aufgaben bitte über ihren Papierkorb löschen."
+msgstr "Please delete distributed tasks using their trash."
+
+msgid "Lokale Notiz"
+msgstr "Local note"

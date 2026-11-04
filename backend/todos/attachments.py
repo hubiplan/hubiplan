@@ -1,5 +1,7 @@
 """Dateien folgen der Aufgabe, Verweise zusätzlich der Dokumentenberechtigung."""
 
+from contextlib import contextmanager, nullcontext
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.http import FileResponse
@@ -71,6 +73,45 @@ class Conflict(APIException):
     status_code = 409
 
 
+@contextmanager
+def attachment_rows(todo, scope):
+    from core.tenancy import task_source
+
+    from .distribution import current_source
+
+    local = [(a, False, a.pk) for a in todo.attachments.order_by("pk")]
+    source = current_source(todo) if scope is not None and todo.distributed else None
+    with task_source(source.pk) if source else nullcontext():
+        central = (
+            {
+                a.pk: a
+                for a in source.attachments.filter(
+                    pk__in=todo.central_attachment_ids, deleted_at__isnull=True
+                )
+            }
+            if source
+            else {}
+        )
+        yield local + [(central.get(pk), True, pk) for pk in todo.central_attachment_ids]
+
+
+def row_data(attachment, central, pk, scope):
+    if attachment is None:
+        return {
+            "id": pk,
+            "central": True,
+            "kind": "file",
+            "name": gettext("Quellanhang nicht verfügbar"),
+            "size": None,
+            "content_type": None,
+            "document": None,
+            "available": False,
+            "uploaded_at": None,
+            "deleted_at": None,
+        }
+    return {**data_for(attachment, scope), "central": central}
+
+
 class AttachmentScope(TodoScopeMixin):
     def task(self, request, pk, *, write=False):
         from .series import lock_task
@@ -87,6 +128,10 @@ class AttachmentScope(TodoScopeMixin):
     def input(self, request, todo):
         data = AttachmentInput(data=request.data)
         data.is_valid(raise_exception=True)
+        if data.validated_data.get("following"):
+            from .series import require_series_edit
+
+            require_series_edit(todo, request.user, self.scope)
         if data.validated_data["version"] != todo.version:
             raise Conflict(gettext("Die Aufgabe wurde inzwischen geändert. Bitte neu laden."))
         return data.validated_data
@@ -97,10 +142,13 @@ class AttachmentScope(TodoScopeMixin):
             ctx.block(gettext("Anhänge werden im Anhang-Papierkorb wiederhergestellt."))
         todo.version += 1
         todo.save(update_fields=["version", "updated_at"])
+        from .distribution import reconcile
+
+        reconcile(todo, attachments=True)
         if todo.series_id and self.request.data.get("following") is True:
             from .series import update_template
 
-            update_template(todo)
+            update_template(todo, documents=True)
         log_change(todo, user, "update")
 
 
@@ -109,10 +157,12 @@ class AttachmentListView(AttachmentScope, APIView):
 
     def get(self, request, pk, **kwargs):
         todo = self.task(request, pk)
+        with attachment_rows(todo, self.scope) as rows:
+            items = [row_data(a, central, aid, self.scope) for a, central, aid in rows]
         return Response(
             {
                 "version": todo.version,
-                "items": [data_for(a, self.scope) for a in todo.attachments.order_by("pk")],
+                "items": items,
                 "documents": [{"id": d.pk, "title": d.title} for d in documents_for(self.scope)],
             }
         )
@@ -160,7 +210,16 @@ class AttachmentListView(AttachmentScope, APIView):
 class AttachmentDetailView(AttachmentScope, APIView):
     def get(self, request, pk, att_id, **kwargs):
         todo = self.task(request, pk)
-        attachment = get_object_or_404(todo.attachments, pk=att_id, deleted_at__isnull=True)
+        with attachment_rows(todo, self.scope) as rows:
+            attachment = next(
+                (a for a, _, aid in rows if aid == att_id and a is not None and not a.deleted_at),
+                None,
+            )
+            if attachment is None:
+                raise NotFound()
+            return self.file_response(request, attachment)
+
+    def file_response(self, request, attachment):
         if attachment.kind == "document":
             doc = document_for(attachment, self.scope)
             version = doc.versions.first() if doc else None

@@ -9,6 +9,7 @@ import { followingChoice } from './TodoSeries.tsx'
 
 interface Attachment {
   id: number
+  central?: boolean
   kind?: 'file' | 'document'
   name: string
   size: number | null
@@ -80,7 +81,8 @@ export function TodoAttachments({
             {item.size !== null && (
               <span className="muted"> · {Math.ceil(item.size / 1024)} KB</span>
             )}
-            {writable && (
+            {item.central && <span className="muted"> · {t('Von der Quelle')}</span>}
+            {writable && !item.central && (
               <button
                 className="button button-ghost"
                 disabled={busy}

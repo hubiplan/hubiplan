@@ -25,8 +25,37 @@ def lock_task(user, scope, pk, *, deleted=False):
     qs = visible(user, scope, deleted=deleted)
     metadata = get_object_or_404(qs.only("pk", "series_id"), pk=pk)
     if metadata.series_id:
-        TodoSeries.objects.select_for_update().get(pk=metadata.series_id)
+        with rls_bypass():
+            TodoSeries.objects.select_for_update().values("pk").get(pk=metadata.series_id)
     return get_object_or_404(qs.select_for_update(), pk=pk)
+
+
+def require_series_edit(todo, user, scope):
+    from rest_framework.exceptions import PermissionDenied
+
+    from .access import local_task, role_ids
+
+    if not todo.series_id:
+        return
+    with rls_bypass():
+        owner = (
+            TodoSeries.objects.filter(pk=todo.series_id).values_list("owner_id", flat=True).first()
+        )
+        future = TodoSeries.objects.only("shares").get(pk=todo.series_id).shares
+    if owner == user.pk and local_task(todo, scope):
+        return
+    roles = role_ids(user, scope)
+    permitted = any(
+        row.get("target_org_id") == scope.org.pk
+        and row.get("target_department_id") == scope.department_id
+        and row.get("level") == "edit"
+        and (row.get("user_id") == user.pk or row.get("role_id") in roles)
+        for row in future
+    )
+    if not permitted:
+        raise PermissionDenied(
+            gettext("Für die aktuelle Serienausgabe fehlt dir die Berechtigung.")
+        )
 
 
 def calendar_date(anchor, repeat, interval, n, last_day=False):
@@ -116,6 +145,13 @@ def before_save(todo, previous, series):
             Todo.objects.filter(pk__in=successor_ids).update(
                 withdrawn=True, deleted_at=timezone.now(), version=F("version") + 1
             )
+            from .models import TodoProgress
+
+            TodoProgress.objects.filter(
+                copy_id__in=Todo.objects.filter(
+                    series=series, sequence_no__gt=todo.sequence_no, withdrawn=True
+                ).values("pk")
+            ).delete()
     if (
         Todo.objects.filter(series=series, status="open", deleted_at__isnull=True)
         .exclude(pk=todo.pk)
@@ -147,6 +183,28 @@ def after_save(todo, previous, series):
         return
     number = max(numbers, default=0) + 1
     with suppress(), rls_bypass():
+        if not todo.owner_id and not series.shares:
+            TodoSeries.objects.filter(pk=series.pk).update(active=False)
+            return
+        central_ids = todo.central_attachment_ids
+        if todo.distributed:
+            source = (
+                Todo.objects.filter(pk=todo.origin_id, deleted_at__isnull=True)
+                .defer("local_note")
+                .first()
+            )
+            if (
+                source is None
+                or not source.shares.filter(
+                    target_org_id=todo.organization_id, target_department_id=todo.department_id
+                ).exists()
+            ):
+                return
+            if source.series_id and (not source.series.active or source.series.deleted_at):
+                return
+            from .distribution import attachment_ids
+
+            central_ids = attachment_ids(source, future=True)
         successor = Todo.objects.create(
             organization=series.organization,
             department_id=series.department_id,
@@ -160,6 +218,9 @@ def after_save(todo, previous, series):
             due_time=series.due_time,
             timezone=series.timezone,
             shared=bool(series.shares),
+            origin_id=todo.origin_id,
+            distributed=todo.distributed,
+            central_attachment_ids=central_ids,
         )
         TodoShare.objects.bulk_create(
             [
@@ -193,31 +254,58 @@ def after_save(todo, previous, series):
 
 
 def snapshot_template(todo, series):
-    for key in ("title", "description", "due_time", "timezone"):
-        setattr(series, key, getattr(todo, key))
-    series.shares = list(
-        todo.shares.order_by("pk").values(
-            "user_id", "role_id", "target_org_id", "target_department_id", "level", "responsible"
+    if not todo.distributed:
+        for key in ("title", "description", "due_time", "timezone"):
+            setattr(series, key, getattr(todo, key))
+    with rls_bypass():
+        series.shares = list(
+            todo.shares.order_by("pk").values(
+                "user_id",
+                "role_id",
+                "target_org_id",
+                "target_department_id",
+                "level",
+                "responsible",
+            )
         )
-    )
-    series.documents = list(
-        todo.attachments.filter(
-            kind="document", deleted_at__isnull=True, document__isnull=False
-        ).values_list("document_id", flat=True)
-    )
+        series.documents = list(
+            todo.attachments.filter(
+                kind="document", deleted_at__isnull=True, document__isnull=False
+            ).values_list("document_id", flat=True)
+        )
 
 
 @transaction.atomic
-def update_template(todo, *, reset_anchor=False):
+def update_template(todo, *, reset_anchor=False, fields=(), shares=False, documents=False):
     if not todo.series_id:
         return
-    series = TodoSeries.objects.select_for_update().get(pk=todo.series_id)
-    snapshot_template(todo, series)
-    if reset_anchor:
-        series.anchor_date = todo.due_date
-    series.owner = todo.owner
-    series.version += 1
-    series.save()
+    with rls_bypass():
+        series = TodoSeries.objects.select_for_update().get(pk=todo.series_id)
+        if not todo.distributed:
+            for key in set(fields) & {"title", "description", "due_time", "timezone"}:
+                setattr(series, key, getattr(todo, key))
+        if shares:
+            series.shares = list(
+                todo.shares.order_by("pk").values(
+                    "user_id",
+                    "role_id",
+                    "target_org_id",
+                    "target_department_id",
+                    "level",
+                    "responsible",
+                )
+            )
+        if documents:
+            series.documents = list(
+                todo.attachments.filter(
+                    kind="document", deleted_at__isnull=True, document__isnull=False
+                ).values_list("document_id", flat=True)
+            )
+        if reset_anchor:
+            series.anchor_date = todo.due_date
+        series.owner = todo.owner
+        series.version += 1
+        series.save()
 
 
 def undo_problem(todo, rec):

@@ -16,7 +16,7 @@ import { alertDialog, confirmDialog } from './dialog.ts'
 import { t } from '../i18n/index.ts'
 
 // base: API-Pfad des Bereichs, z. B. /api/orgs/7 oder /api/depts/3
-type Entry = { base: string; setId: string; label: string }
+type Entry = { base: string; setId: string; label: string; task?: number }
 export type Notice = {
   id: number
   base: string
@@ -98,7 +98,8 @@ export function noteChange(url: string, status: number, headers: Headers) {
   } catch {
     // unlesbare Beschreibung: Standardtext
   }
-  const undo = [...state.undo, { base, setId, label }].slice(-LIMIT)
+  const task = Number(headers.get('X-Change-Task')) || undefined
+  const undo = [...state.undo, { base, setId, label, task }].slice(-LIMIT)
   const redo = state.redo.filter((e) => e.base !== base)
   // Bei Anlegen und Löschen kurz einblenden; Ändern zeigt das Formular selbst an
   const text = KIND_TEXT[kind]
@@ -119,8 +120,8 @@ type UndoResponse = {
 }
 
 /** Schickt ein Paket an den Server. Liefert das neue Paket oder null. */
-async function revert(base: string, setId: string): Promise<string | null> {
-  const url = `${base}/changes/${setId}/undo/`
+async function revert(base: string, setId: string, task?: number): Promise<string | null> {
+  const url = `${base}${task ? `/todos/${task}` : ''}/changes/${setId}/undo/`
   let res = await request<UndoResponse>('POST', url, {})
   if (res.status === 409 && res.body.can_force) {
     const ok = await confirmDialog({
@@ -177,7 +178,7 @@ async function walk(base: string, steps: number, direction: 'undo' | 'redo') {
       // oder abgebrochener Rückfrage bleibt der Schritt zum erneuten Versuch stehen.
       let next: string | null
       try {
-        next = await revert(base, entry.setId)
+        next = await revert(base, entry.setId, entry.task)
       } catch {
         if (stale()) return
         await alertDialog({
@@ -188,7 +189,7 @@ async function walk(base: string, steps: number, direction: 'undo' | 'redo') {
       }
       if (stale()) return
       if (!next) break
-      const moved = { base, setId: next, label: entry.label }
+      const moved = { base, setId: next, label: entry.label, task: entry.task }
       const without = (list: Entry[]) => list.filter((e) => e !== entry)
       update(
         direction === 'undo'

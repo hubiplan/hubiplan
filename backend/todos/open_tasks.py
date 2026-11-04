@@ -2,14 +2,14 @@ import datetime
 
 from django.utils.translation import gettext
 
-from .access import Scope, can_edit, visible
+from .access import can_edit, scope_for, visible
 from .reminders import highlight
 
 
 def todo_tasks(user, org, perms, department_id=None):
     if "todos.view" not in perms:
         return []
-    scope = Scope(org, department_id, perms)
+    scope = scope_for(user, org.pk, department_id)
     rows = list(visible(user, scope).filter(status="open").order_by("due_date", "-created_at"))
     dated = [t for t in rows if t.due_date]
     undated = [t for t in rows if not t.due_date][:5]
@@ -30,7 +30,7 @@ def todo_tasks(user, org, perms, department_id=None):
             "ref": t.pk,
             "link": f"/aufgaben?aufgabe={t.pk}",
             "version": t.version,
-            "can_edit": can_edit(t, user, scope),
+            "can_edit": can_edit(t, user, scope) and not t.per_unit,
             **highlight(t, user),
         }
         for t in dated + undated

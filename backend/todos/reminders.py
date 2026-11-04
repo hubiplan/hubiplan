@@ -87,11 +87,12 @@ def times(todo, days):
 
 
 def current_recipients(todo):
-    if todo.deleted_at or todo.status != "open":
+    if todo.deleted_at or todo.status != "open" or todo.per_unit:
         return {}
     scopes = {(todo.organization_id, todo.department_id)}
     if todo.shared:
-        scopes.update(todo.shares.values_list("target_org_id", "target_department_id"))
+        with rls_bypass():
+            scopes.update(todo.shares.values_list("target_org_id", "target_department_id"))
     eligible = {}
     for org_id, dept_id in scopes:
         from organizations.models import Organization
@@ -130,7 +131,7 @@ def current_recipients(todo):
 def sync(todo, now=None):
     now = now or timezone.now()
     with rls_bypass():
-        todo = Todo.objects.select_for_update().get(pk=todo.pk)
+        todo = Todo.objects.defer("local_note").select_for_update().get(pk=todo.pk)
     recipients = current_recipients(todo) if todo.due_date else {}
     with rls_bypass():
         stale = todo.reminder_configs.filter(active=True).exclude(user_id__in=recipients)

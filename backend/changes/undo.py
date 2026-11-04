@@ -242,7 +242,13 @@ def _undo(change_set: ChangeSet, org, user, *, force: bool) -> None:
 
         for action, obj, changes, person_id in audit:
             person = SimpleNamespace(pk=person_id) if person_id else None
-            record(org, user, action, obj, changes, person=person)
+            if obj._meta.app_label == "todos":
+                from core.tenancy import tenant_context
+
+                with tenant_context(org.pk, user.pk):
+                    record(org, user, action, obj, changes, person=person)
+            else:
+                record(org, user, action, obj, changes, person=person)
         ChangeSet.objects.filter(pk=change_set.pk).update(reverted_by=ctx.set_id)
         if change_set.reverts:
             # Rückgängig des Rückgängig: das ursprüngliche Paket gilt wieder

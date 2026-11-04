@@ -13,6 +13,7 @@ import { useAuth } from '../auth/AuthContext.tsx'
 import { TodoReminders } from '../components/TodoReminders.tsx'
 import { TodoAttachments } from '../components/TodoAttachments.tsx'
 import { followingChoice, TodoSeries } from '../components/TodoSeries.tsx'
+import { TodoLocalNote, TodoProgress } from '../components/TodoDistribution.tsx'
 import { TodoCleanup } from '../components/TodoCleanup.tsx'
 import './todos.css'
 import { confirmLeave, useDraftGuard, useGuarded } from '../components/leaveGuard.ts'
@@ -158,6 +159,22 @@ function TodoWorkspace({ base }: { base: string }) {
       {selected?.due_date && tab !== 'trash' && (
         <TodoReminders key={`remind-${selected.id}`} base={base} id={selected.id} />
       )}
+      {selected?.distributed && tab !== 'trash' && (
+        <TodoLocalNote
+          key={`local-${selected.id}`}
+          base={base}
+          todo={selected}
+          onSaved={() => void reload()}
+        />
+      )}
+      {selected?.per_unit && tab !== 'trash' && (
+        <TodoProgress
+          key={`progress-${selected.id}`}
+          base={base}
+          id={selected.id}
+          recurring={!!selected.series}
+        />
+      )}
       {selected && tab !== 'trash' && (
         <TodoAttachments
           key={`files-${selected.id}`}
@@ -199,7 +216,7 @@ function TodoWorkspace({ base }: { base: string }) {
                 type="checkbox"
                 aria-label={t('Erledigt')}
                 checked={item.status === 'done'}
-                disabled={!item.can_edit}
+                disabled={!item.can_edit || item.can_complete === false}
                 onChange={(event) =>
                   void change(item, { status: event.target.checked ? 'done' : 'open' })
                 }
@@ -258,7 +275,7 @@ function TodoEditor({ base, todo, onSaved }: { base: string; todo?: Todo; onSave
   useDraftGuard(!todo && Object.values(form.values).some(Boolean), () =>
     form.setValues(todoFields()),
   )
-  const writable = !todo || todo.can_edit
+  const writable = !todo || (todo.can_edit && !todo.central_readonly)
   const payload = () => ({
     ...form.values,
     due_date: form.values.due_date || null,
@@ -308,6 +325,11 @@ function TodoEditor({ base, todo, onSaved }: { base: string; todo?: Todo; onSave
         onChange={(event) => form.set('title', event.target.value)}
       />
       <details open={!!todo}>
+        {todo?.central_readonly && (
+          <p className="muted">
+            {t('Titel, Beschreibung und Frist werden von der Quelle vorgegeben.')}
+          </p>
+        )}
         <summary>{t('Beschreibung und Frist')}</summary>
         <label>
           {t('Beschreibung')}

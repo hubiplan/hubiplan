@@ -108,3 +108,24 @@ ausgenommen; ihre Ausgabennummer kann eine neue Aufgaben-ID erhalten. Erzwungene
 Rückgängig umgeht diese Prüfung nicht. Serien haben einen eigenen Papierkorb; ihre Historie
 ist von der optionalen Einzelaufgaben-Aufbewahrung ausgeschlossen. Importierte Serien
 behalten den Verlauf und starten mit abgeschalteter Fortsetzung und privaten Aufgaben.
+
+## Freigaben über Ebenen
+
+Erlaubte Ziele werden aus der Beziehung der Einheiten bestimmt und beim Schreiben erneut
+geprüft. Gemeinsame Aufgaben bleiben im Quelldatenbereich; ihre RLS erlaubt ausschließlich
+aktuell berechtigten Empfängern den Abruf aus der Zieleinheit. Ein eigener Aufgabenweg für
+Rücknahmen prüft zuerst Akteur und Objektnummern und öffnet erst danach das konkrete Paket.
+
+Bei getrennter Erledigung gehören Kopien und Ausgabenfolgen der Zieleinheit. Zentrale Felder
+bleiben vorgegeben; lokale Notizen, Dateien und Beteiligte verbleiben dort. Die Quelle liest
+eine gesonderte Fortschrittsprojektion ohne lokale Inhalte oder Dateien. Änderungen betreffen
+nur offene Kopien, erhöhen ihre Versionen und erhalten erledigte Stände. Entfernte Ziele
+oder gelöschte Quellen stoppen weitere Ausgaben und Quellanhänge; lokale Bestände bleiben.
+
+RLS trennt Lesen, Schreiben und Löschen. Datenbanktrigger schützen Einheitenbeziehungen und
+zentrale Kopienfelder. Eine begrenzte SQL-Funktion beantwortet ausschließlich die Besitz-
+und Zielbeziehungsprüfung von Freigaben; ihr fester Suchpfad und die boolesche Rückgabe
+vermeiden RLS-Rekursion und geben keine Aufgabeninhalte aus. Serienvorlagen bleiben für
+andere Konten gesperrt; Regelmetadaten werden nach Aufgabenprüfung gezielt projiziert.
+Exporte verwenden ausschließlich berechtigt sichtbare Ausgaben als Inhalt einer Vorlage,
+damit eine einzeln freigegebene Ausgabe keine private Zukunftsvorlage mit exportiert.

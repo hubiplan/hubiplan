@@ -76,7 +76,7 @@ export function TodoSeries({
         {todo.series ? ` · ${t('Serienausgabe')} ${todo.series.sequence_no}` : ''}
       </summary>
       {error && <p role="alert">{error}</p>}
-      {todo.can_edit && !trash && todo.status === 'open' && (
+      {todo.can_edit && !todo.central_readonly && !trash && todo.status === 'open' && (
         <>
           <SelectField
             label={t('Wiederholregel')}
