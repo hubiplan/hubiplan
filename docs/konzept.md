@@ -35,6 +35,7 @@ Gepflegt von Ralf Philipsen; bei jeder neuen Funktion hier eine Zeile ergänzen.
 | Noten und Programme | Musikverwaltung | Stücke, Arrangements, Stimmenbestand und digitale Notenverweise; Auftrittsprogramme mit Dauer, Besetzungs-/Bestandsprüfung, Vorbereitungsaufgaben und CSV-Listen |
 | Proben und Musikerbereich | Musikverwaltung, eingeteilte Mitglieder | Proben an Kalenderterminen/Serien, persönliche Rückmeldungen und passende Noten, Erinnerungen, Notenausgabe mit Teilrückgaben und offenen Mengen |
 | Einzelprobenprogramme | Musikverwaltung, eingeteilte Mitglieder | Serienvorlage mit eigenen Programmen und Schwerpunkten je Einzeltermin, Rücksetzen auf die Vorlage, passende Noten je Probe und Erhalt bei Terminverschiebungen |
+| Besetzungsvorlagen und Sammeleinteilung | Musikverwaltung | Wiederverwendbare Sollbesetzungen, Übernahme in Auftritte und aus Auftritten, gemeinsame Anfrage passender Musiker mit Prüfung freier Sollplätze und Erhalt bestehender Rückmeldungen |
 | Mein Bereich | jedes Mitglied mit Zugang | Ausweis, Rechnungen, Rundschreiben, eigene Daten |
 | Einstellungen | Vorstand | Rollen, Erscheinungsbild, Briefvorlage, Verbund mit anderen Instanzen |
 | Plattform | Plattform-Administration | Vereine/Dachverbände anlegen, Module freischalten |

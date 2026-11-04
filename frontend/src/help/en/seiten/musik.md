@@ -20,6 +20,16 @@ Record required player counts per instrument and part, then assign musicians wit
 
 Members can accept or decline their assignments under **My area**. Music administrators record guest responses. Calendar cancellations remain visible. Calendar access restrictions also apply to performance administration.
 
+## Instrumentation templates and batch assignment
+
+Under **Instrumentation templates**, use **Create template** to store instruments, parts and required player counts. Each part may appear only once. Clear **Active** to archive a template. Editing requires music editing permission; read-only users can view templates.
+
+Open **Plan instrumentation** for a performance, select an active template and review its positions. **Apply template** adds missing parts and increases required counts if needed. Other positions and existing assignments and responses are preserved. Resolve ambiguous duplicate positions first. **Save performance instrumentation as template** copies the required positions into a new template without musicians or responses. Template changes affect performances only when applied again.
+
+Under **Batch assignment**, select multiple matching active members or guests. Choose one position for multi-instrumentalists; each musician profile is assigned only once. Pending and accepted assignments reserve places. Already assigned musicians and existing declines are not offered again; edit their existing assignment individually.
+
+**Request selected musicians** creates pending assignments. If the selection exceeds available places, contains invalid references or lacks skills, nothing from the request is saved. Retries create no duplicate assignments. Absences and scheduling conflicts are not checked here yet. Existing calendar permissions apply to performances. General exports include templates.
+
 ## Performance settlement
 
 Open **Performance settlement** from the performance. Music and calendar viewing permissions and the enabled cash book with finance viewing permission are required. Editing requires finance editing permission. Record the agreed fee, travel costs and additional services as gross amounts in EUR. With invoice editing permission, create a draft in the existing e-invoice editor. The customer and total gross amount must match the agreement. Enter net amounts, tax categories and invoice details explicitly, then validate, issue, send and manage receipts using the invoice workspace. Each performance links one customer invoice.

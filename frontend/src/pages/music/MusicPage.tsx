@@ -11,6 +11,8 @@ import { SettlementPanel } from './SettlementPanel.tsx'
 import { ScoresPage } from './ScoresPage.tsx'
 import { ProgramPanel } from './ProgramPanel.tsx'
 import { PracticePage } from './PracticePage.tsx'
+import { EnsembleTemplatesPage } from './EnsembleTemplatesPage.tsx'
+import { StaffingPage } from './StaffingPage.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Choices = { events: Row[]; members: Row[]; partners: Row[] }
@@ -39,6 +41,14 @@ export function MusicPage() {
     return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
   if (params.get('noten')) return <ScoresPage key={org.id} />
   if (params.get('proben')) return <PracticePage key={org.id} />
+  if (params.get('vorlagen')) return <EnsembleTemplatesPage key={org.id} />
+  if (/^\d+$/.test(params.get('besetzung') || ''))
+    return (
+      <StaffingPage
+        key={`${org.id}-${params.get('besetzung')}`}
+        performance={Number(params.get('besetzung'))}
+      />
+    )
   if (/^\d+$/.test(params.get('programm') || ''))
     return (
       <ProgramPanel
@@ -172,6 +182,7 @@ function MusicWorkspace() {
       <h1>{t('Musik')}</h1>
       <Link to="/musik?noten=1">{t('Notenbestand')}</Link>
       <Link to="/musik?proben=1">{t('Proben und Notenausgabe')}</Link>
+      <Link to="/musik?vorlagen=1">{t('Besetzungsvorlagen')}</Link>
       <nav className="tabs">
         {Object.entries(names).map(([key, label]) => (
           <button
@@ -262,6 +273,7 @@ function MusicWorkspace() {
                   <p>{r.notes}</p>
                   <Link to={`/aufgaben?termin=${r.event}`}>{t('Aufgaben zum Auftritt')}</Link>
                   <Link to={`/musik?programm=${r.id}`}>{t('Musikalisches Programm')}</Link>
+                  <Link to={`/musik?besetzung=${r.id}`}>{t('Besetzung planen')}</Link>
                   {org.modules.includes('finance') && org.permissions.includes('finance.view') && (
                     <Link to={`/musik?abrechnung=${r.id}`}>{t('Auftrittsabrechnung')}</Link>
                   )}

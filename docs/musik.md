@@ -12,6 +12,18 @@ Mitglieder sehen ihre Einteilungen unter **Mein Bereich** und können zu- oder a
 
 Migrationen ergänzen eigene Tabellen mit Organisations-RLS. Mitgliedschaften und Termine werden nicht kopiert. Vor Rückmigration die Musikdaten über den allgemeinen Datenexport sichern.
 
+## Besetzungsvorlagen und Sammeleinteilung
+
+Unter **Besetzungsvorlagen** wiederverwendbare Instrumente, Register/Stimmen und Sollzahlen erfassen. Jede Stimme darf nur einmal enthalten sein. Zum Beispiel eine kleine Konzertbesetzung oder eine Marschbesetzung anlegen. Nicht mehr verwendete Vorlagen mit **Aktiv** ausschalten. Anlegen und Bearbeiten benötigen Musikbearbeitungsrecht; Lesezugänge sehen die Vorlagen.
+
+Beim Auftritt **Besetzung planen** öffnen. Eine aktive Vorlage auswählen, die Positionen prüfen und **Vorlage anwenden** drücken. Fehlende Stimmen werden ergänzt, vorhandene Sollzahlen höchstens erhöht. Andere Stimmen, Einteilungen, Zusagen, Absagen und Vergütungsbezüge bleiben erhalten. Mehrfach vorhandene Positionen derselben Stimme vorher bereinigen. **Auftrittsbesetzung als Vorlage speichern** übernimmt die Sollpositionen in eine neue Vorlage; Musiker und Rückmeldungen werden nicht übernommen. Spätere Vorlagenänderungen verändern bestehende Auftritte erst beim erneuten Anwenden.
+
+Unter **Sammeleinteilung** mehrere Musiker auswählen. Bei mehreren passenden Fähigkeiten die gewünschte Position wählen; ein Musikerprofil kann je Auftritt nur einmal eingeteilt sein. Angeboten werden aktive Mitglieder- und Gastmusikerprofile mit exakt passender Instrumenten-/Registerangabe und ohne vorhandene Einteilung. Angefragte und zugesagte Einteilungen belegen Sollplätze; bestehende Absagen bleiben im bisherigen Einteilungsbereich einzeln bearbeitbar.
+
+**Ausgewählte Musiker anfragen** erzeugt neue Einteilungen mit Status Angefragt. Überschreitet die Auswahl die freien Sollplätze oder ist ein Verweis bzw. eine Fähigkeit nicht mehr gültig, wird die ganze Anfrage abgewiesen. Wiederholte Anfragen erzeugen keine doppelten Einteilungen oder Vorlagen. Die Prüfung berücksichtigt Fähigkeiten und Sollplätze; Abwesenheiten und zeitliche Überschneidungen werden hier noch nicht ausgewertet. Kalenderfreigaben gelten auch für diese Auftrittsplanung.
+
+Vorlagen und Vorlagenpositionen sind im allgemeinen Datenexport enthalten. Die additive Migration ergänzt zwei mandantengetrennte Tabellen. Vor einem Rückmigrieren die Vorlagen exportieren; bereits übertragene Sollpositionen und Einteilungen bleiben in den vorhandenen Tabellen erhalten.
+
 ## Auftrittsabrechnung
 
 Mit Musik- und Kalenderleserecht sowie freigeschalteter Kasse und Kassenleserecht öffnest du beim Auftritt die **Auftrittsabrechnung**. Zum Bearbeiten ist Kassenbearbeitungsrecht nötig. Vereinbartes Honorar, Fahrtkosten und weitere Leistungen als Bruttobeträge in EUR speichern. Mit zusätzlichem Rechnungsbearbeitungsrecht entsteht daraus ein Entwurf im bestehenden E-Rechnungseditor. Käufer und Gesamtbruttobetrag müssen zur Vereinbarung passen. Netto, Steuerkategorien und Rechnungsangaben dort ausdrücklich erfassen; prüfen, festschreiben, versenden und Zahlungseingänge in der Rechnungsansicht bearbeiten. Je Auftritt wird eine Veranstalterrechnung verknüpft.

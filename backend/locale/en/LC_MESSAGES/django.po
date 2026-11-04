@@ -5815,6 +5815,24 @@ msgstr "Available copies"
 msgid "Bei Eingeteilten"
 msgstr "Held by assigned musicians"
 
+msgid "Jede Instrumentenstimme darf in der Vorlage nur einmal vorkommen."
+msgstr "Each instrumental part may appear only once in the template."
+
+msgid "Für abgesagte Auftritte ist keine Sammeleinteilung möglich."
+msgstr "Batch assignment is not available for cancelled performances."
+
+msgid "Die Besetzungsstimme ist im Auftritt mehrfach vorhanden. Bitte zuerst die Positionen bereinigen."
+msgstr "This instrumental part appears more than once in the performance. Please resolve the duplicate positions first."
+
+msgid "Jeder Musiker darf nur einmal ausgewählt werden."
+msgstr "Each musician may be selected only once."
+
+msgid "Dieser Musiker ist bereits eingeteilt oder hat abgesagt. Bitte die bestehende Einteilung einzeln bearbeiten."
+msgstr "This musician is already assigned or has declined. Please edit the existing assignment individually."
+
+msgid "Die Auswahl überschreitet die freie Sollbesetzung. Bitte die Auswahl oder die Sollzahl anpassen."
+msgstr "The selection exceeds the available places. Please adjust the selection or required count."
+
 msgid "Diese Einheit kann nicht gelöscht werden."
 msgstr "This unit cannot be deleted."
 
