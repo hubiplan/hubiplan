@@ -45,6 +45,7 @@ APPLE_WALLET_CERTIFICATE_PASSWORD = os.environ.get("APPLE_WALLET_CERTIFICATE_PAS
 APPLE_WALLET_WWDR_FILE = os.environ.get("APPLE_WALLET_WWDR_FILE", "")
 
 INSTALLED_APPS = [
+    "music",
     "materials",
     "django.contrib.admin",
     "django.contrib.auth",

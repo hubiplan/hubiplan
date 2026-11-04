@@ -644,6 +644,8 @@ export interface OpenTask {
 }
 
 export const PERM = {
+  musicView: 'music.view',
+  musicEdit: 'music.edit',
   todosView: 'todos.view',
   todosEdit: 'todos.edit',
   membersView: 'members.view',

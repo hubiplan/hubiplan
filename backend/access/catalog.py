@@ -251,6 +251,13 @@ AREAS: tuple[Area, ...] = (
         dept_label=gettext_noop("Rechnungen {gen}"),
     ),
     Area(
+        "music",
+        gettext_noop("Musik"),
+        gettext_noop("Musiker und Auftritte lesen"),
+        gettext_noop("Musiker und Auftritte bearbeiten"),
+        module="music",
+    ),
+    Area(
         "events",
         gettext_noop("Termine"),
         gettext_noop("Kalender, Rückmeldungen und Anhänge sehen"),
@@ -372,6 +379,7 @@ AREA_BY_ID: dict[str, Area] = {a.id: a for a in AREAS}
 
 # Abschaltbare Module (Organization.enabled_modules); ihre Bereiche fehlen, wenn aus
 SWITCHABLE_MODULES: tuple[str, ...] = (
+    "music",
     "material",
     "members",
     "finance",
@@ -383,7 +391,9 @@ SWITCHABLE_MODULES: tuple[str, ...] = (
 )
 # Module, die eine neue Einheit nicht automatisch bekommt (die Plattform schaltet
 # sie gezielt frei, z. B. die Webseite nur für Einheiten, die eine haben sollen)
-OPT_IN_MODULES: frozenset[str] = frozenset({"website", "competitions", "entries", "material"})
+OPT_IN_MODULES: frozenset[str] = frozenset(
+    {"website", "competitions", "entries", "material", "music"}
+)
 DEFAULT_MODULES: tuple[str, ...] = tuple(m for m in SWITCHABLE_MODULES if m not in OPT_IN_MODULES)
 
 
