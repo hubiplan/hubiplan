@@ -42,6 +42,7 @@ from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
 from todos import portal as todo_portal
 from todos import reminder_views as todo_reminder_views
+from todos import remote_views as todo_remote
 from todos import series_views as todo_series_views
 from todos import views as todo_views
 from todos.event_links import EventChoicesView
@@ -131,6 +132,10 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("todos/remote/", todo_remote.RemoteInboxView.as_view()),
+    path("todos/remote/<int:remote_id>/adopt/", todo_remote.RemoteAdoptView.as_view()),
+    path("todos/<int:pk>/remote/", todo_remote.RemoteSharesView.as_view()),
+    path("todos/<int:pk>/remote-files/<int:att_id>/", todo_remote.RemoteFileView.as_view()),
     path("todos/<int:pk>/progress/", todo_cross_views.ProgressView.as_view()),
     path("todos/<int:pk>/changes/<uuid:set_id>/undo/", todo_cross_views.TaskUndoView.as_view()),
     path("todos/<int:pk>/attachments/", todo_attachments.AttachmentListView.as_view()),
@@ -689,12 +694,21 @@ urlpatterns = [
     path("depts/<int:dept_id>/todos/orphans/", todo_views.OrphanTasksView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/portal/", todo_portal.PublicationView.as_view()),
+    path("depts/<int:dept_id>/todos/<int:pk>/remote/", todo_remote.RemoteSharesView.as_view()),
+    path(
+        "depts/<int:dept_id>/todos/<int:pk>/remote-files/<int:att_id>/",
+        todo_remote.RemoteFileView.as_view(),
+    ),
     path("depts/<int:dept_id>/todos/events/", EventChoicesView.as_view()),
     path("depts/<int:dept_id>/todos/choices/", todo_views.TodoChoicesView.as_view()),
     path("me/todos/preferences/", todo_views.TodoPreferencesView.as_view()),
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
     path("portal/<int:access_id>/todos/", todo_portal.PortalTaskListView.as_view()),
+    path(
+        "portal/<int:access_id>/todos/<int:pk>/remote-files/<int:att_id>/",
+        todo_portal.PortalRemoteFileView.as_view(),
+    ),
     path("portal/<int:access_id>/todos/<int:pk>/", todo_portal.PortalTaskDetailView.as_view()),
     path(
         "portal/<int:access_id>/todos/<int:pk>/attachments/<int:att_id>/",

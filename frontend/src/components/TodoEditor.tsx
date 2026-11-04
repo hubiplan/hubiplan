@@ -96,6 +96,13 @@ export function TodoEditor({
           })
       }}
     >
+      {todo?.remote_mode && (
+        <p className="muted">
+          {todo.remote_mode === 'common'
+            ? t('Eine gemeinsam erledigte Aufgabe')
+            : t('Eigene Kopie mit eigenem Erledigungsstand')}
+        </p>
+      )}
       <Field
         label={t('Titel')}
         required

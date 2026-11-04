@@ -1041,6 +1041,11 @@ def _process(coupling: Coupling, kind: str, data: dict) -> int:
         hashes[key] = packets.digest(data)
         coupling.received_hashes = hashes
         return packet.persons(data) if packet.persons else 0
+    if kind == "todo.report":
+        from todos.remote import receive_report
+
+        receive_report(coupling, data)
+        return 0
     if kind == "register.numbers":
         from . import register
 

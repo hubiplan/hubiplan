@@ -69,6 +69,8 @@ class SeriesView(TodoScopeMixin, APIView):
     def patch(self, request, pk, **kwargs):
         restoring = request.data.get("deleted") is False
         todo = lock_task(request.user, self.scope, pk, deleted=restoring)
+        if todo.remote_mode == "common":
+            raise PermissionDenied(gettext("Die Fortsetzung wird von der Quelle vorgegeben."))
         if not can_edit(todo, request.user, self.scope):
             raise PermissionDenied()
         require_series_edit(todo, request.user, self.scope)

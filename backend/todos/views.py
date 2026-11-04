@@ -55,10 +55,12 @@ class TodoInput(serializers.Serializer):
 def data_for(todo, user, scope):
     from .event_links import event_data
     from .reminders import highlight
+    from .remote import completion_allowed
     from .series_views import series_data
     from .sharing import participants
 
     return {
+        "remote_mode": todo.remote_mode,
         "event": event_data(todo, user, scope),
         "id": todo.pk,
         "organization": todo.organization_id,
@@ -68,7 +70,9 @@ def data_for(todo, user, scope):
         "per_unit": todo.per_unit,
         "local_note": todo.local_note if todo.distributed else "",
         "central_readonly": todo.distributed,
-        "can_complete": can_edit(todo, user, scope) and not todo.per_unit,
+        "can_complete": can_edit(todo, user, scope)
+        and not todo.per_unit
+        and completion_allowed(todo),
         **highlight(todo, user),
         "title": todo.title,
         "description": todo.description,
@@ -116,7 +120,10 @@ class TodoScopeMixin:
 class TodoListView(TodoScopeMixin, APIView):
     def get(self, request, **kwargs):
         qs = visible(request.user, self.scope, deleted=request.query_params.get("trash") == "1")
-        items = [data_for(t, request.user, self.scope) for t in qs.order_by("-created_at")]
+        from .remote import fresh_rows
+
+        candidates = list(qs.order_by("-created_at"))
+        items = [data_for(t, request.user, self.scope) for t in fresh_rows(candidates)]
         items.sort(
             key=lambda t: (
                 not t["highlight"],
@@ -125,7 +132,7 @@ class TodoListView(TodoScopeMixin, APIView):
                 t["due_time"] or datetime.time.max,
             )
         )
-        return Response({"items": items})
+        return Response({"items": items, "source_unavailable": len(items) < len(candidates)})
 
     @transaction.atomic
     def post(self, request, **kwargs):
@@ -172,7 +179,9 @@ class TodoListView(TodoScopeMixin, APIView):
 class TodoDetailView(TodoScopeMixin, APIView):
     def get(self, request, pk, **kwargs):
         todo = get_object_or_404(visible(request.user, self.scope), pk=pk)
-        return Response(data_for(todo, request.user, self.scope))
+        from .remote import refresh_common
+
+        return Response(data_for(refresh_common(todo), request.user, self.scope))
 
     @transaction.atomic
     def patch(self, request, pk, **kwargs):
@@ -180,6 +189,9 @@ class TodoDetailView(TodoScopeMixin, APIView):
         from .series import lock_task
 
         todo = lock_task(request.user, self.scope, pk, deleted=deleted)
+        from .remote import refresh_common
+
+        todo = refresh_common(todo)
         taking_over = request.data.get("owner") == request.user.pk and can_take_over(
             todo, request.user, self.scope
         )
@@ -194,6 +206,23 @@ class TodoDetailView(TodoScopeMixin, APIView):
                 {"detail": gettext("Die Aufgabe wurde inzwischen geändert. Bitte neu laden.")},
                 status=409,
             )
+        from .remote import complete_common, completion_allowed
+
+        if "status" in values and not completion_allowed(todo):
+            raise PermissionDenied()
+        if todo.remote_mode == "common" and "status" in values:
+            if set(values) != {"status"} or following:
+                raise serializers.ValidationError(
+                    gettext("Status bitte getrennt von anderen Änderungen speichern.")
+                )
+            todo = complete_common(todo, request.user, values["status"])
+            from changes.tracking import active
+
+            ctx = active()
+            if ctx:
+                ctx.block(gettext("Diese Änderung kann hier nicht zurückgenommen werden."))
+            log_change(todo, request.user, "update")
+            return Response(data_for(todo, request.user, self.scope))
         ownership_only = "owner" in values
         if ownership_only and set(values) != {"owner"}:
             raise serializers.ValidationError(

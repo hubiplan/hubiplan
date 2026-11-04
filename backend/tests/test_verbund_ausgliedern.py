@@ -104,7 +104,7 @@ class TestVereinAlsObereSeite:
         assert data["remote"]["kind"] == "club"
         send = {p["key"] for p in data["send"]}
         receive = {p["key"] for p in data["receive"]}
-        assert send == {"unit", "events", "board", "statute", "unit_members"}
+        assert send == {"unit", "events", "board", "statute", "unit_members", "todos"}
         assert "invoices" not in receive and "circulars" not in receive
 
     def test_platzhalter_ist_untereinheit_des_vereins(self, net, world):

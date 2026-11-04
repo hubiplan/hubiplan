@@ -9,6 +9,7 @@ import { followingChoice } from './TodoSeries.tsx'
 
 interface Attachment {
   id: number
+  remote?: boolean
   central?: boolean
   kind?: 'file' | 'document'
   name: string
@@ -72,9 +73,15 @@ export function TodoAttachments({
     return (
       <ul className="plain-list">
         {items.map((item) => (
-          <li key={item.id}>
+          <li key={`${item.remote ? 'remote' : 'local'}-${item.id}`}>
             {item.available && !item.deleted_at ? (
-              <a href={`${endpoint}${item.id}/`}>{item.name}</a>
+              <a
+                href={
+                  item.remote ? `${base}${id}/remote-files/${item.id}/` : `${endpoint}${item.id}/`
+                }
+              >
+                {item.name}
+              </a>
             ) : (
               <span>{item.name}</span>
             )}

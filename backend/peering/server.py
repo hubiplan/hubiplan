@@ -251,6 +251,10 @@ class QueryView(_Signed):
         from .register import answer_query
 
         coupling = services.find_coupling(peer, payload)
+        if str(payload.get("kind", "")).startswith("todo."):
+            from todos.remote import answer
+
+            return answer(coupling, payload)
         return answer_query(coupling, payload)
 
 

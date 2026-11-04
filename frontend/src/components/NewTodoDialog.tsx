@@ -6,6 +6,7 @@ import { TodoSeries } from './TodoSeries.tsx'
 import { TodoReminders } from './TodoReminders.tsx'
 import { TodoAttachments } from './TodoAttachments.tsx'
 import { TodoEventLink } from './TodoEventLink.tsx'
+import { TodoRemote } from './TodoRemote.tsx'
 import { TodoPortal } from './TodoPortal.tsx'
 import { todoApi } from '../api/todos.ts'
 import type { Todo, TodoShare } from '../api/todos.ts'
@@ -111,6 +112,9 @@ export function NewTodoDialog({
         )}
         {task ? (
           <>
+            {canShare && !task.distributed && (
+              <TodoRemote base={base} todo={task} onSaved={() => void refresh()} />
+            )}
             <TodoEventLink base={base} todo={task} onSaved={() => void refresh()} />
             {(task.due_date || task.series) && (
               <TodoSeries base={base} todo={task} trash={false} onSaved={() => void refresh()} />
