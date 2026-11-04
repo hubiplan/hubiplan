@@ -45,6 +45,7 @@ class RlsState:
     todo_source_id: int | None = None
     todo_change_id: str = ""
     todo_undo_id: str = ""
+    todo_portal_id: int | None = None
 
 
 def _is_postgres() -> bool:
@@ -66,7 +67,8 @@ def _apply(state: RlsState) -> None:
             "set_config('app.todo_department_id', %s, false), "
             "set_config('app.todo_source_id', %s, false), "
             "set_config('app.todo_change_id', %s, false), "
-            "set_config('app.todo_undo_id', %s, false)",
+            "set_config('app.todo_undo_id', %s, false), "
+            "set_config('app.todo_portal_id', %s, false)",
             [
                 "" if state.org_id is None else str(state.org_id),
                 "" if state.user_id is None else str(state.user_id),
@@ -78,6 +80,7 @@ def _apply(state: RlsState) -> None:
                 "" if state.todo_source_id is None else str(state.todo_source_id),
                 state.todo_change_id,
                 state.todo_undo_id,
+                "" if state.todo_portal_id is None else str(state.todo_portal_id),
             ],
         )
 
@@ -104,6 +107,7 @@ def set_rls(
     fed_access: str = "",
     todo_role_id: int | None = None,
     todo_department_id: int | None = None,
+    todo_portal_id: int | None = None,
 ) -> None:
     """Setzt die RLS-Sitzungsvariablen der aktuellen Datenbankverbindung."""
     from changes.tracking import active
@@ -119,6 +123,7 @@ def set_rls(
             todo_role_id,
             todo_department_id,
             todo_change_id=str(ctx.set_id) if ctx else "",
+            todo_portal_id=todo_portal_id,
         )
     )
 
@@ -148,6 +153,7 @@ def tenant_context(
             todo_department_id=None,
             todo_source_id=None,
             todo_undo_id="",
+            todo_portal_id=None,
         )
     )
     try:

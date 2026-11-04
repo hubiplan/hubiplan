@@ -29,6 +29,7 @@ class ShareInput(serializers.Serializer):
 
 
 class TodoInput(serializers.Serializer):
+    event = serializers.IntegerField(required=False, allow_null=True, min_value=1)
     per_unit = serializers.BooleanField(required=False)
     local_note = serializers.CharField(required=False, allow_blank=True, max_length=50000)
     following = serializers.BooleanField(required=False)
@@ -52,11 +53,13 @@ class TodoInput(serializers.Serializer):
 
 
 def data_for(todo, user, scope):
+    from .event_links import event_data
     from .reminders import highlight
     from .series_views import series_data
     from .sharing import participants
 
     return {
+        "event": event_data(todo, user, scope),
         "id": todo.pk,
         "organization": todo.organization_id,
         "department": todo.department_id,
@@ -133,6 +136,10 @@ class TodoListView(TodoScopeMixin, APIView):
         requested_mode = values.pop("per_unit", None)
         values.pop("local_note", None)
         values.pop("owner", None)
+        if "event" in values:
+            from .event_links import validate_event
+
+            values["event"] = validate_event(request.user, self.scope, values["event"])
         if not values.get("title"):
             raise serializers.ValidationError({"title": gettext("Bitte einen Titel eingeben.")})
         if values.get("due_time") and not values.get("due_date"):
@@ -195,6 +202,13 @@ class TodoDetailView(TodoScopeMixin, APIView):
         shares = values.pop("shares", None)
         requested_mode = values.pop("per_unit", None)
         from .distribution import CENTRAL, reconcile, set_mode
+
+        if "event" in values:
+            from .event_links import validate_event
+
+            if not can_delete(todo, request.user, self.scope):
+                raise PermissionDenied()
+            values["event"] = validate_event(request.user, self.scope, values["event"])
 
         if todo.distributed and (set(values) & CENTRAL or requested_mode is not None):
             raise PermissionDenied(gettext("Diese Felder werden von der Quelle vorgegeben."))

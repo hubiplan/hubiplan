@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
@@ -210,5 +210,53 @@ describe('Eigene Aufgaben', () => {
     expect(task.description).toBe('Erste Notiz')
     await userEvent.type(screen.getByLabelText('Beschreibung'), ' ergänzt')
     await waitFor(() => expect(task.description).toBe('Erste Notiz ergänzt'))
+  })
+})
+
+describe('Aufgaben-Dialog', () => {
+  it('bietet Teilen vor dem Anlegen und ein großes Beschreibungsfeld an', async () => {
+    let created: Record<string, unknown> = {}
+    fakeApi({
+      'GET /_allauth/browser/v1/auth/session': () => ({
+        status: 200,
+        body: { status: 200, data: { user: testUser } },
+      }),
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ permissions: ['todos.view', 'todos.edit'] })],
+      }),
+      'GET /api/orgs/7/todos/': () => ({ status: 200, body: { items: [] } }),
+      'GET /api/orgs/7/todos/choices/': () => ({
+        status: 200,
+        body: { users: [{ id: 8, name: 'Erika Beispiel' }], roles: [] },
+      }),
+      'POST /api/orgs/7/todos/': (init) => {
+        created = JSON.parse(String(init?.body))
+        return {
+          status: 201,
+          body: {
+            ...created,
+            id: 12,
+            version: 1,
+            status: 'open',
+            can_edit: true,
+            can_delete: true,
+          },
+        }
+      },
+    })
+    setup()
+    await userEvent.click(await screen.findByRole('button', { name: 'Neue Aufgabe' }))
+    const dialog = within(await screen.findByRole('dialog', { name: 'Neue Aufgabe' }))
+    expect(dialog.getByLabelText('Beschreibung')).toHaveAttribute('rows', '8')
+    await userEvent.type(dialog.getByLabelText('Titel'), 'Helferdienst')
+    await userEvent.selectOptions(await dialog.findByLabelText('Empfänger'), 'u:8')
+    await userEvent.click(dialog.getByRole('button', { name: 'Hinzufügen' }))
+    await userEvent.click(dialog.getByRole('button', { name: 'Anlegen' }))
+    await waitFor(() => expect(created.title).toBe('Helferdienst'))
+    expect(created.shares).toEqual([{ user: 8, level: 'view', responsible: false }])
+    expect(created).not.toHaveProperty('per_unit')
+    const saved = within(await screen.findByRole('dialog', { name: 'Aufgabe angelegt' }))
+    expect(saved.getByText('Anhänge')).toBeInTheDocument()
   })
 })

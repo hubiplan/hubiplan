@@ -21,6 +21,9 @@ class Todo(models.Model):
     )
     title = EncryptedCharField("Titel", max_length=200)
     description = EncryptedTextField("Beschreibung", blank=True)
+    event = models.ForeignKey(
+        "events.Event", on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks"
+    )
     due_date = models.DateField("Frist", null=True, blank=True)
     due_time = models.TimeField("Uhrzeit", null=True, blank=True)
     timezone = models.CharField(max_length=64, default="Europe/Berlin")
@@ -425,3 +428,42 @@ class TodoProgress(models.Model):
 
     def __str__(self):
         return f"{self.source_id}: {self.target_org_id} / {self.sequence_no}"
+
+
+class TodoPortalPublication(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    todo = models.OneToOneField(Todo, on_delete=models.CASCADE, related_name="portal_publication")
+    active = models.BooleanField(default=True)
+    mode = models.CharField(
+        max_length=8,
+        default="assigned",
+        choices=[("assigned", "Zugewiesen"), ("offer", "Zum Übernehmen")],
+    )
+    claimed_by = models.ForeignKey(
+        "portal.PortalAccess", on_delete=models.SET_NULL, null=True, related_name="claimed_tasks"
+    )
+    following = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.todo_id)
+
+
+class TodoPortalGrant(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    publication = models.ForeignKey(
+        TodoPortalPublication, on_delete=models.CASCADE, related_name="grants"
+    )
+    access = models.ForeignKey(
+        "portal.PortalAccess", on_delete=models.CASCADE, related_name="task_grants"
+    )
+    can_complete = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["publication", "access"], name="todo_portal_grant_unique"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.publication_id}: {self.access_id}"

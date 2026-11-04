@@ -25,6 +25,7 @@ from todos import cross_views as todo_cross_views
 from todos import reminder_views as todo_reminder_views
 from todos import series_views as todo_series_views
 from todos import views as todo_views
+from todos.event_links import EventChoicesView
 
 from . import admin_finance, admin_members
 from .admin_api import for_app
@@ -110,6 +111,7 @@ urlpatterns = [
     path("todos/<int:pk>/reminders/", for_app(todo_reminder_views.ReminderSettingsView).as_view()),
     path("todos/orphans/", for_app(todo_views.OrphanTasksView).as_view()),
     path("todos/<int:pk>/take-over/", for_app(todo_views.TakeOverView).as_view()),
+    path("todos/events/", for_app(EventChoicesView).as_view()),
     path("todos/choices/", for_app(todo_views.TodoChoicesView).as_view()),
     path("todos/", for_app(todo_views.TodoListView).as_view()),
     path("todos/<int:pk>/", for_app(todo_views.TodoDetailView).as_view()),
