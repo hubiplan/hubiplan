@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
@@ -247,16 +247,16 @@ describe('Aufgaben-Dialog', () => {
     })
     setup()
     await userEvent.click(await screen.findByRole('button', { name: 'Neue Aufgabe' }))
-    expect(await screen.findByRole('dialog', { name: 'Neue Aufgabe' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Beschreibung')).toHaveAttribute('rows', '8')
-    await userEvent.type(screen.getByLabelText('Titel'), 'Helferdienst')
-    await userEvent.selectOptions(await screen.findByLabelText('Empfänger'), 'u:8')
-    await userEvent.click(screen.getByRole('button', { name: 'Hinzufügen' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Anlegen' }))
+    const dialog = within(await screen.findByRole('dialog', { name: 'Neue Aufgabe' }))
+    expect(dialog.getByLabelText('Beschreibung')).toHaveAttribute('rows', '8')
+    await userEvent.type(dialog.getByLabelText('Titel'), 'Helferdienst')
+    await userEvent.selectOptions(await dialog.findByLabelText('Empfänger'), 'u:8')
+    await userEvent.click(dialog.getByRole('button', { name: 'Hinzufügen' }))
+    await userEvent.click(dialog.getByRole('button', { name: 'Anlegen' }))
     await waitFor(() => expect(created.title).toBe('Helferdienst'))
     expect(created.shares).toEqual([{ user: 8, level: 'view', responsible: false }])
     expect(created).not.toHaveProperty('per_unit')
-    expect(await screen.findByRole('dialog', { name: 'Aufgabe angelegt' })).toBeInTheDocument()
-    expect(screen.getByText('Anhänge')).toBeInTheDocument()
+    const saved = within(await screen.findByRole('dialog', { name: 'Aufgabe angelegt' }))
+    expect(saved.getByText('Anhänge')).toBeInTheDocument()
   })
 })
