@@ -208,7 +208,9 @@ def test_performance_invoice_is_single_and_bound_to_agreement(c, club, settlemen
     invoice = r.json()["id"]
     retry = c.post(invoice_url, payload, content_type=JSON, HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()))
     assert retry.json()["id"] == invoice
-    assert post(c, url, action="agreement", fee="5", travel="0", extras="0").status_code == 400
+    assert post(c, url, action="agreement", fee="5", travel="0", extras="0").status_code == 200
+    assert post(c, f"/api/orgs/{club.pk}/billing/electronic/{invoice}/finalize/").status_code == 400
+    assert post(c, url, action="agreement", fee=amount, travel="0", extras="0").status_code == 200
     changed = dict(
         payload, partner=payload["partner"], lines=[{**payload["lines"][0], "unit_price": "999"}]
     )
@@ -218,6 +220,13 @@ def test_performance_invoice_is_single_and_bound_to_agreement(c, club, settlemen
         ).status_code
         == 400
     )
+
+    assert post(c, f"/api/orgs/{club.pk}/billing/electronic/{invoice}/finalize/").status_code == 200
+    assert post(c, url, action="agreement", fee="5", travel="0", extras="0").status_code == 400
+    assert post(c, f"/api/orgs/{club.pk}/billing/electronic/{invoice}/cancel/").status_code == 200
+    replaced = post(c, url, action="replace_invoice")
+    assert replaced.status_code == 200, replaced.content
+    assert replaced.json()["previous_invoices"] == [invoice]
 
 
 def test_personal_claim_is_private(api, c, club, settlement):
