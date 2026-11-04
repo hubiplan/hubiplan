@@ -129,8 +129,8 @@ function MusicWorkspace() {
     ]
   const row = rows.find((r) => String(r.id) === selected)
   const canEdit = org.permissions.includes('music.edit')
-  const choose = (art: string, id?: string) => {
-    if (confirmLeave()) {
+  const choose = async (art: string, id?: string) => {
+    if (await confirmLeave()) {
       const next = new URLSearchParams(params)
       next.set('art', art)
       if (id) next.set('id', id)
