@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 
-from access.catalog import codes_for
+from access.catalog import DEFAULT_MODULES, codes_for
 from access.models import Role, RoleAssignment
 from accounts.models import User
 from organizations.models import Organization
@@ -34,7 +34,7 @@ def make_org(name: str, type_: str = "club", parent: Organization | None = None,
         "street": "Hauptstraße 1",
         "postal_code": "12345",
         "city": "Musterstadt",
-        "enabled_modules": ["members"],
+        "enabled_modules": list(DEFAULT_MODULES),
     }
     defaults.update(extra)
     return Organization.objects.create(

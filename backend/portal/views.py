@@ -490,7 +490,11 @@ class DeptRoleSerializer(serializers.ModelSerializer):
         )
 
     def validate_permissions(self, value):
-        return clean_department_permissions(value)
+        return clean_department_permissions(
+            value,
+            org=self.context["dept"].organization,
+            stored=self.instance.permissions if self.instance else [],
+        )
 
     def validate_name(self, value):
         dept = self.context["dept"]
@@ -511,7 +515,7 @@ class DepartmentRolesView(DepartmentScopedMixin, APIView):
         return Response(
             {
                 "roles": DeptRoleSerializer(roles, many=True).data,
-                "catalog": catalog_for("department"),
+                "catalog": catalog_for("department", self.org),
             }
         )
 

@@ -46,7 +46,10 @@ function DepartmentRolesPage() {
   const { can } = useOrg()
   const terms = useTerms()
   const { data, error, reload } = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
-  const catalog = useLoad(() => orgApi.catalog('department', org.id), [org.id])
+  const catalog = useLoad(
+    () => orgApi.catalog('department', org.id),
+    [org.id, org.modules.join(',')],
+  )
   const [selected, setSelected] = useState('')
   if (!can(PERM.rolesView)) return null
   if (error || catalog.error) return <Alert kind="error">{error || catalog.error}</Alert>
@@ -175,7 +178,10 @@ function DepartmentSettingsPage() {
   const org = useActiveOrg()
   const editable = org.permissions.includes(PERM.orgEdit)
   const { data, error, reload } = useLoad(() => orgApi.departments(org.id), [org.id])
-  const catalog = useLoad(() => orgApi.catalog('department', org.id), [org.id])
+  const catalog = useLoad(
+    () => orgApi.catalog('department', org.id),
+    [org.id, org.modules.join(',')],
+  )
   const tmx = useTerms()
   const label = tmx.sg
   const labelPlural = tmx.pl

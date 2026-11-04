@@ -175,6 +175,9 @@ class TestMitgliederentwicklung:
         with tenant_context(club.pk):
             role.permissions = ["dept.invoices.view"]
             role.save()
+        # Das Rechnungsrecht bleibt aktiv, nur das Mitgliederrecht fehlt.
+        club.enabled_modules.append("billing")
+        club.save(update_fields=["enabled_modules"])
         assert api(user).get(f"/api/depts/{zug.pk}/statistics/").status_code == 403
 
 

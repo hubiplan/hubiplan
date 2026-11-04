@@ -252,6 +252,7 @@ def test_mehrere_rollen_hoechste_stufe(orgs):
 def test_hilfe_nennt_fruehere_codes_mit_neuem_namen(orgs):
     from organizations.help_views import help_state
 
+    orgs["a"].enabled_modules = list(catalog.SWITCHABLE_MODULES)
     rights = help_state(orgs["a"], set())["rights"]
     assert rights["events.manage"] == rights["events.edit"]
     assert rights["org.edit"] == rights["settings.edit"]
