@@ -77,6 +77,11 @@ MODULE_MODELS = (
     "events.EventAttachment",
     "events.CalendarPublication",
     "events.EventResponse",
+    "materials.MaterialItem",
+    "materials.MaterialEventLink",
+    "materials.MaterialTodoLink",
+    "materials.MaterialDocumentLink",
+    "materials.MaterialPhoto",
     # Wettbewerbe nach den Terminen (Verweis auf den Termin)
     "competitions.Series",
     "competitions.Trophy",
@@ -125,6 +130,11 @@ PUBLIC_MODELS = {"statutes.statuteversion", "statutes.statutepublication"}
 # Die Dokumentenablage kommt im vollständigen Export und im Export einer Abteilung
 # mit, nicht aber im Dachverbands-Export der Vereine (dort nur die Satzung).
 DEPARTMENT_MODELS = {
+    "materials.materialitem",
+    "materials.materialeventlink",
+    "materials.materialtodolink",
+    "materials.materialdocumentlink",
+    "materials.materialphoto",
     "todos.todoseries",
     "documents.folder",
     "documents.document",
@@ -176,6 +186,10 @@ DEPARTMENT_IMPORT_MODELS = PUBLIC_MODELS | DEPARTMENT_MODELS
 # Zeilen, deren Verweis auf diese Spalte in der Datei fehlt, fallen beim Import weg
 # (z. B. Ehrungen des Dachverbands an Personen, deren Daten nicht exportiert wurden).
 DROP_IF_MISSING = {
+    "materials.materialeventlink": "item",
+    "materials.materialtodolink": "todo",
+    "materials.materialdocumentlink": "document",
+    "materials.materialphoto": "item",
     "todos.todoattachment": "todo",
     "members.honorarytitleaward": "person",
     "events.eventresponse": "membership",
@@ -304,6 +318,7 @@ CORE_TARGETS = {
 
 # Erlaubte Dateiarten je Tabelle (am Inhalt erkannt, wie beim normalen Hochladen)
 FILE_TYPES = {
+    "materials.materialphoto": {"image/jpeg"},
     "finance.receipt": {
         "application/pdf",
         "image/jpeg",
@@ -570,6 +585,10 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
     secret = SECRET_FIELDS.get(label(model), set())
     fields = [f for f in model._meta.concrete_fields if f.name not in SKIP | secret]
     qs = model.objects.filter(organization=org)
+    if model._meta.app_label == "materials":
+        from materials.exports import rows as material_rows
+
+        qs = material_rows(model, org, department)
     if label(model) == "todos.todo":
         from todos.exports import shared_rows
 
@@ -610,6 +629,10 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
                 row[f.name] = packer.add(getattr(obj, f.name), label(model).replace(".", "-"))
             else:
                 row[f.name] = _plain(getattr(obj, f.attname))
+        if label(model) == "materials.materialitem":
+            from materials.exports import redact_member
+
+            redact_member(row, obj)
         if label(model) == "todos.todoattachment" and obj.kind == "document":
             from todos.attachments import document_for
             from todos.exports import export_scope
@@ -791,6 +814,14 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                 setattr(obj, field_name, make())
             fix_website_keys(name, obj, ids)
             fix_json_ids(name, obj, ids)
+            if name.startswith("materials."):
+                if name == "materials.materialitem":
+                    if obj.location_kind == "member" and not obj.member_id:
+                        obj.location_kind = "unknown"
+                    if obj.location_kind != "member":
+                        obj.member_id = None
+                elif not getattr(obj, "item_id", None):
+                    continue
             if hasattr(obj, "created_by_id") and user is not None:
                 obj.created_by_id = user.pk
             if name == "todos.todo":

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { GENDERS, memberApi, todayIso } from '../../api/members.ts'
@@ -98,6 +99,7 @@ export function MemberFilePage() {
       </nav>
       {tab === 'stammdaten' && (
         <div className="stack">
+          <MaterialReferences kind="member" id={data.id} sourceBase={`/api/orgs/${org.id}/`} />
           <PhotoSection
             key={`foto-${data.id}`}
             orgId={org.id}

@@ -140,6 +140,26 @@ class TodoListView(TodoScopeMixin, APIView):
         serializer.is_valid(raise_exception=True)
         values = serializer.validated_data
         shares = values.pop("shares", None)
+        material = None
+        material_before = None
+        if request.data.get("material") is not None:
+            from materials import access as material_access
+            from materials import services as material_services
+
+            material_scope = material_access.scope_for(
+                request.user, kwargs.get("org_id"), kwargs.get("dept_id"), write=True
+            )
+            material_id = serializers.IntegerField(min_value=1).run_validation(
+                request.data["material"]
+            )
+            material = get_object_or_404(
+                material_access.items(material_scope).select_for_update(), pk=material_id
+            )
+            if material.condition == "retired":
+                raise serializers.ValidationError(
+                    gettext("Ausgesondertes Material kann nicht neu zugeordnet werden.")
+                )
+            material_before = material_services.snapshot(material)
         requested_mode = values.pop("per_unit", None)
         values.pop("local_note", None)
         values.pop("owner", None)
@@ -173,6 +193,11 @@ class TodoListView(TodoScopeMixin, APIView):
 
             schedule_shared(todo, added)
         log_change(todo, request.user, "create")
+        if material is not None:
+            from materials.models import MaterialTodoLink
+
+            MaterialTodoLink.objects.create(**material_services.scope_values(material), todo=todo)
+            material_services.changed(material, request.user, material_before, "links")
         return Response(data_for(todo, request.user, self.scope), status=201)
 
 

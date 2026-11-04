@@ -39,3 +39,4 @@ website_websiteimage small private
 website_websiteimage original private
 website_socialpostimage file private
 website_socialpostimage small private
+materials_materialphoto file private

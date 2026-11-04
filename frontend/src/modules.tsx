@@ -147,6 +147,16 @@ export const modules: AppModule[] = [
         : !!(ws.dept?.permissions.includes(PERM.docsView) || ws.portal),
   },
   {
+    id: 'material',
+    label: t('Material'),
+    path: '/material',
+    icon: icon('M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10'),
+    visible: (org, ws) =>
+      org
+        ? org.modules.includes('material') && org.permissions.includes('material.view')
+        : !!(ws.dept?.material_enabled && ws.dept.permissions.includes('material.view')),
+  },
+  {
     id: 'rundschreiben',
     label: t('Rundschreiben'),
     path: '/rundschreiben',

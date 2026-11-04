@@ -39,6 +39,8 @@ TRACKED_APPS = {
 
 # Nie erfasst und kein Hindernis (Protokolle, Sitzungen, Anmeldung, Exporte)
 IGNORED_APPS = {
+    # Eigener, rechtegeprüfter Verlauf, damit private Aufgabenbezüge privat bleiben.
+    "materials",
     "changes",
     "audit",
     "sessions",

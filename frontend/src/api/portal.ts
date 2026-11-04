@@ -22,6 +22,7 @@ export interface DeptSummary {
   permissions: string[]
   theme: EffectiveTheme
   events_enabled?: boolean
+  material_enabled?: boolean
   imprint_key?: string
 }
 

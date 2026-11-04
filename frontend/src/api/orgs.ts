@@ -657,6 +657,8 @@ export const PERM = {
   exportRun: 'export.run',
   platformManage: 'platform.manage',
   financeView: 'finance.view',
+  materialView: 'material.view',
+  materialEdit: 'material.edit',
   financeEdit: 'finance.edit',
   billingView: 'billing.view',
   billingEdit: 'billing.edit',

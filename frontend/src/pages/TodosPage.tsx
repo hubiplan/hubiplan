@@ -1,3 +1,4 @@
+import { MaterialReferences } from '../components/MaterialReferences.tsx'
 import { TodoRemote, TodoRemoteInbox } from '../components/TodoRemote.tsx'
 import { DeleteIcon, RestoreIcon, IconButton } from '../components/icons.tsx'
 import { NewTodoDialog } from '../components/NewTodoDialog.tsx'
@@ -105,7 +106,10 @@ function TodoWorkspace({ base }: { base: string }) {
     try {
       setActionError(null)
       const current = tab === 'trash' ? item : await todoApi.get(base, item.id)
-      await todoApi.update(base, item.id, { version: current.version, ...changes })
+      await todoApi.update(base, item.id, {
+        version: current.version,
+        ...changes,
+      })
       await reload()
     } catch (err) {
       setActionError(errorMessage(err))
@@ -182,6 +186,7 @@ function TodoWorkspace({ base }: { base: string }) {
           key="new"
           onClose={() => setNewTask(false)}
           initialEvent={Number(params.get('termin')) || undefined}
+          initialMaterial={Number(params.get('material')) || undefined}
           base={base}
           onSaved={() => {
             void reload()
@@ -193,6 +198,9 @@ function TodoWorkspace({ base }: { base: string }) {
       )}
       {selected && tab !== 'trash' && (
         <TodoEventLink base={base} todo={selected} onSaved={() => void reload()} />
+      )}
+      {selected && tab !== 'trash' && (
+        <MaterialReferences kind="todo" id={selected.id} sourceBase={base} />
       )}
       {selected && selected.remote_mode !== 'common' && (selected.due_date || selected.series) && (
         <TodoSeries
@@ -297,7 +305,9 @@ function TodoWorkspace({ base }: { base: string }) {
                           checked={item.status === 'done'}
                           disabled={!item.can_edit || item.can_complete === false}
                           onChange={(event) =>
-                            void change(item, { status: event.target.checked ? 'done' : 'open' })
+                            void change(item, {
+                              status: event.target.checked ? 'done' : 'open',
+                            })
                           }
                         />
                       </label>
