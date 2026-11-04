@@ -10,6 +10,7 @@ from todos.models import Todo
 from todos.portal import portal_scope
 
 from .factories import make_member, make_user
+from .test_rls import as_app_role
 from .test_todos import create, url
 
 pytestmark = pytest.mark.django_db
@@ -114,12 +115,46 @@ def test_portal_rls_verhindert_private_inhalte_und_titelaenderung(api, board_a, 
     private = create(api, board_a, orgs["a"])
     task = create(api, board_a, orgs["a"])
     publish(api, board_a, orgs["a"], task, recipients=[{"access_id": access.pk}])
-    with tenant_context(orgs["a"].pk, user.pk):
+    with as_app_role(), tenant_context(orgs["a"].pk, user.pk):
         portal_scope(user, access.pk)
         assert not Todo.objects.filter(pk=private["id"]).exists()
         assert Todo.objects.filter(pk=task["id"]).exists()
         with pytest.raises(DatabaseError), transaction.atomic():
             Todo.objects.filter(pk=task["id"]).update(title="Nicht erlaubt")
+
+
+def test_portal_api_mit_echter_datenbankrolle(api, board_a, orgs):
+    user, access = member(orgs["a"])
+    private = create(api, board_a, orgs["a"])
+    task = create(api, board_a, orgs["a"])
+    with as_app_role():
+        publish(api, board_a, orgs["a"], task, recipients=[{"access_id": access.pk}])
+        rows = api(user).get(portal_url(access))
+        assert rows.status_code == 200, rows.content
+        row = rows.json()["items"][0]
+        response = change(api, user, access, row, status="done")
+        assert response.status_code == 200, response.content
+        assert api(user).get(portal_url(access, private["id"])).status_code == 404
+
+
+def test_serienfreigabe_ist_ausdruecklich_und_offenes_angebot_startet_neu(api, board_a, orgs):
+    user, access = member(orgs["a"])
+    task = create(api, board_a, orgs["a"], due_date="2030-01-01")
+    series = api(board_a).patch(
+        url(orgs["a"], task["id"]) + "series/",
+        {"version": task["version"], "repeat": "monthly"},
+        content_type=JSON,
+    )
+    assert series.status_code == 200, series.content
+    task = api(board_a).get(url(orgs["a"], task["id"])).json()
+    publish(api, board_a, orgs["a"], task, mode="offer", following=True)
+    row = api(user).get(portal_url(access, task["id"])).json()
+    claimed = change(api, user, access, row, action="claim").json()
+    completed = change(api, user, access, claimed, status="done")
+    assert completed.status_code == 200, completed.content
+    rows = api(user).get(portal_url(access)).json()["items"]
+    following = next(row for row in rows if row["id"] != task["id"])
+    assert following["can_claim"] and not following["claimed_by_me"]
 
 
 def test_reine_aufgabenleser_veroeffentlichen_nicht(api, board_a, orgs):
