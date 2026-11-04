@@ -14,6 +14,7 @@ from finance.models import Booking
 from music.models import (
     Assignment,
     Musician,
+    MusicianClaim,
     Performance,
     PerformanceAccount,
     Position,
