@@ -141,6 +141,14 @@ class ScorePartViewSet(MusicViewSet):
     serializer_class = MusicScorePartSerializer
     http_method_names = [*MusicViewSet.http_method_names, "delete"]
 
+    @transaction.atomic
+    def perform_update(self, serializer):
+        # Ausgaben ändern die Leihzeilen, nicht die Bestandszeile selbst.
+        # Deshalb nach ihrer Sperre immer erneut gegen die Leihsummen prüfen.
+        self._lock_and_refresh(serializer.instance)
+        serializer = self._revalidate(serializer)
+        super().perform_update(serializer)
+
 
 class ScoreDocumentViewSet(MusicViewSet):
     serializer_class = MusicScoreDocumentSerializer

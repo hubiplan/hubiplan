@@ -32,6 +32,29 @@ from .test_rls import as_app_role
 pytestmark = pytest.mark.django_db
 
 
+def test_stock_correction_rechecks_after_a_checkout(club, practice):
+    from types import SimpleNamespace
+    from rest_framework.exceptions import ValidationError
+    from music.scores import MusicScorePartSerializer, ScorePartViewSet
+
+    user, _, musician, _, _, part = practice
+    with tenant_context(club.pk):
+        view = ScorePartViewSet()
+        view.org = club
+        view.request = SimpleNamespace(user=user)
+        serializer = MusicScorePartSerializer(
+            part, data={"copies": 0}, partial=True, context={"view": view}
+        )
+        assert serializer.is_valid(), serializer.errors
+        ScoreLoan.objects.create(
+            organization=club, part=part, musician=musician, quantity=1, due_on=timezone.localdate()
+        )
+        with pytest.raises(ValidationError):
+            view.perform_update(serializer)
+        part.refresh_from_db()
+        assert part.copies == 2
+
+
 def test_preparation_counts_only_current_assignments(club, practice):
     from music.models import Assignment, Performance, Position, ProgramEntry
     from music.scores import program_data
