@@ -33,6 +33,6 @@ it('zählt bestätigte Musiker und offene Besetzungsplätze auch mit Absagen ric
   )
   await screen.findByText('Musterkonzert')
   await userEvent.click(screen.getByRole('button', { name: 'Sollbesetzung' }))
-  expect(screen.getByText(/Zugesagt.*1.*Fehlend.*2/)).toBeInTheDocument()
+  expect(await screen.findByText(/Zugesagt.*1.*Fehlend.*2/)).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Anlegen' })).not.toBeInTheDocument()
 })
