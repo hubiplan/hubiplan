@@ -82,6 +82,15 @@ def save_draft(invoice, data, partner, project):
 
 def archive(invoice):
     """Erst erfolgreiche Prüfung, dann nummeriertes Original und lesbare Ansicht festhalten."""
+    if hasattr(invoice, "performanceaccount"):
+        account = invoice.performanceaccount
+        if (
+            invoice.partner_id != account.performance.customer_id
+            or invoice.total != account.fee + account.travel + account.extras
+        ):
+            raise ValidationError(
+                gettext("Kunde und Bruttobetrag müssen zur Auftrittsvereinbarung passen.")
+            )
     xml = einvoice_xml.generate(invoice)
     report, report_xml = einvoice_validator.validate(xml)
     if report["status"] != "valid":

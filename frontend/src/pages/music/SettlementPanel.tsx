@@ -111,7 +111,7 @@ export function SettlementPanel({
           </div>
         ))}
       </dl>
-      {canEdit && !d.invoice && (
+      {canEdit && (!d.invoice || d.invoice_status === 'draft') && (
         <Amounts
           key={`agreement-${d.agreed}`}
           labels={{ fee: t('Honorar'), travel: t('Fahrtkosten'), extras: t('Weitere Leistungen') }}

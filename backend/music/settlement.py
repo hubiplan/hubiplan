@@ -184,7 +184,7 @@ class SettlementView(OrgScopedMixin, APIView):
             except DjangoValidationError as exc:
                 raise serializers.ValidationError(exc.messages) from exc
         if action == "agreement":
-            if account.invoice_id:
+            if account.invoice_id and account.invoice.status != "draft":
                 raise serializers.ValidationError(
                     gettext("Die Vereinbarung ist bereits mit einer Rechnung verbunden.")
                 )
