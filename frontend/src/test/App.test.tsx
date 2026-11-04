@@ -105,6 +105,52 @@ describe('Anmeldung', () => {
 })
 
 describe('Layout', () => {
+  it('zeigt E-Mail und Abmelden erst im Kontomenü und meldet von dort ab', async () => {
+    const calls = fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg()] }),
+      'DELETE /_allauth/browser/v1/auth/session': loggedOut,
+    })
+    renderApp()
+    await screen.findByRole('heading', { name: 'TV Beispielhausen' })
+    const header = screen.getByRole('banner')
+    expect(within(header).queryByText(testUser.email)).not.toBeInTheDocument()
+    expect(within(header).queryByRole('button', { name: 'Abmelden' })).not.toBeInTheDocument()
+
+    const user = userEvent.setup()
+    await user.click(within(header).getByRole('button', { name: /Mein Konto/ }))
+    const menu = screen.getByRole('navigation', { name: 'Mein Konto' })
+    expect(within(menu).getByText(testUser.email)).toBeInTheDocument()
+    await user.click(within(menu).getByRole('button', { name: 'Abmelden' }))
+    expect(await screen.findByRole('heading', { name: 'Anmelden' })).toBeInTheDocument()
+    expect(calls.filter((c) => c.key === 'DELETE /_allauth/browser/v1/auth/session')).toHaveLength(
+      1,
+    )
+  })
+
+  it('bleibt bei abgelehnter Abmeldung angemeldet und erlaubt einen neuen Versuch', async () => {
+    let attempts = 0
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg()] }),
+      'DELETE /_allauth/browser/v1/auth/session': () =>
+        ++attempts === 1 ? { status: 500, body: {} } : loggedOut(),
+    })
+    renderApp()
+    await screen.findByRole('heading', { name: 'TV Beispielhausen' })
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /Mein Konto/ }))
+    await user.click(screen.getByRole('button', { name: 'Abmelden' }))
+    const dialog = await screen.findByRole('alertdialog')
+    expect(dialog).toHaveTextContent('Abmelden hat nicht geklappt')
+    await user.click(within(dialog).getByRole('button', { name: 'OK' }))
+    expect(screen.getByRole('heading', { name: 'TV Beispielhausen' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Abmelden' })).toBeEnabled()
+    await user.click(screen.getByRole('button', { name: 'Abmelden' }))
+    expect(await screen.findByRole('heading', { name: 'Anmelden' })).toBeInTheDocument()
+    expect(attempts).toBe(2)
+  })
+
   it('zeigt Module je nach Organisation und Rechten', async () => {
     fakeApi({
       [SESSION]: loggedIn,

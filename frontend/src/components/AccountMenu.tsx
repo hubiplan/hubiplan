@@ -4,8 +4,15 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { ACCOUNT_SECTIONS, isAccountPath } from '../pages/settings/accountNav.ts'
 import { t } from '../i18n/index.ts'
 
-export function AccountMenu() {
+export function AccountMenu({
+  email,
+  onLogout,
+}: {
+  email: string | undefined
+  onLogout: () => Promise<void>
+}) {
   const [open, setOpen] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
   const { pathname } = useLocation()
   const ref = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -14,10 +21,11 @@ export function AccountMenu() {
   useEffect(() => {
     if (!open) return
     const onClick = (e: MouseEvent) => {
+      if (signingOut) return
       if (!ref.current?.contains(e.target as Node)) setOpen(false)
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
+      if (e.key !== 'Escape' || e.defaultPrevented || signingOut) return
       setOpen(false)
       buttonRef.current?.focus()
     }
@@ -27,7 +35,17 @@ export function AccountMenu() {
       document.removeEventListener('mousedown', onClick)
       window.removeEventListener('keydown', onKey)
     }
-  }, [open])
+  }, [open, signingOut])
+
+  async function signOut() {
+    if (signingOut) return
+    setSigningOut(true)
+    try {
+      await onLogout()
+    } finally {
+      setSigningOut(false)
+    }
+  }
 
   return (
     <div className="account-menu" ref={ref}>
@@ -43,6 +61,7 @@ export function AccountMenu() {
       </button>
       {open && (
         <nav id="konto-menue" className="account-menu-list" aria-label={t('Mein Konto')}>
+          {email && <p className="account-menu-email">{email}</p>}
           <ul>
             {ACCOUNT_SECTIONS.map((s) => (
               <li key={s.to}>
@@ -51,6 +70,11 @@ export function AccountMenu() {
                 </NavLink>
               </li>
             ))}
+            <li className="account-menu-logout">
+              <button type="button" onClick={() => void signOut()} disabled={signingOut}>
+                {t('Abmelden')}
+              </button>
+            </li>
           </ul>
         </nav>
       )}

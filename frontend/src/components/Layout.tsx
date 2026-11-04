@@ -344,11 +344,7 @@ export function Layout() {
                   </label>
                 )}
                 <HelpButton />
-                <span className="topbar-email">{user?.email}</span>
-                <AccountMenu />
-                <button type="button" className="button button-ghost" onClick={handleLogout}>
-                  {t('Abmelden')}
-                </button>
+                <AccountMenu email={user?.email} onLogout={handleLogout} />
               </div>
             </header>
 
@@ -357,8 +353,15 @@ export function Layout() {
                 <span aria-hidden="true">×</span> {t('Navigation schließen')}
               </button>
               <ul>
-                {visible.map((m) => (
-                  <li key={m.id}>
+                {visible.map((m, index) => (
+                  <li
+                    key={m.id}
+                    className={
+                      index > 0 && visible[index - 1].group !== m.group
+                        ? 'sidebar-group-start'
+                        : undefined
+                    }
+                  >
                     <NavLink
                       to={m.path}
                       end={m.path === '/'}

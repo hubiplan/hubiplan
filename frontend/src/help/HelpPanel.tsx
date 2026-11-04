@@ -17,6 +17,8 @@ export function HelpButton() {
     <button
       type="button"
       className="button button-ghost help-button"
+      aria-label={t('Hilfe zu dieser Seite')}
+      title={t('Hilfe zu dieser Seite')}
       aria-expanded={help.panelOpen}
       aria-controls="seitenhilfe"
       aria-keyshortcuts="?"
@@ -25,7 +27,7 @@ export function HelpButton() {
       <span aria-hidden="true" className="help-button-mark">
         ?
       </span>
-      <span className="help-button-label">{t('Hilfe zu dieser Seite')}</span>
+      <span className="help-button-label">{t('Hilfe')}</span>
     </button>
   )
 }

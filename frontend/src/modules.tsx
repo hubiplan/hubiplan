@@ -18,6 +18,7 @@ export interface Workspace {
 
 export interface AppModule {
   id: string
+  group: 'alltag' | 'verein' | 'organisation' | 'verwaltung'
   label: string
   /** Bezeichnung je Einheit, z. B. „Züge“ statt „Untereinheiten“ */
   labelFor?: (org: OrgSummary | null) => string
@@ -46,14 +47,8 @@ const icon = (d: string) => (
 
 export const modules: AppModule[] = [
   {
-    id: 'musik',
-    label: t('Musik'),
-    path: '/musik',
-    icon: icon('M9 18V5l11-2v13M9 8l11-2M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'),
-    visible: (org) => !!org?.modules.includes('music') && org.permissions.includes('music.view'),
-  },
-  {
     id: 'start',
+    group: 'alltag',
     label: t('Startseite'),
     path: '/',
     icon: icon('M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-5h4v5M16 7.5V4.5h2.5v5.2'),
@@ -61,6 +56,7 @@ export const modules: AppModule[] = [
   },
   {
     id: 'aufgaben',
+    group: 'alltag',
     label: t('Aufgaben'),
     path: '/aufgaben',
     icon: icon('M4 5h16v15H4zM8 12l3 3 5-7'),
@@ -68,29 +64,8 @@ export const modules: AppModule[] = [
       !!(org?.permissions.includes('todos.view') || ws.dept?.permissions.includes('todos.view')),
   },
   {
-    id: 'mitglieder',
-    label: t('Mitglieder'),
-    path: '/mitglieder',
-    icon: icon(
-      'M9 4.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M15.5 5.2a3 3 0 1 1 1.2 5.6M17.5 14.2c2.4.5 4 2.6 4 5.8',
-    ),
-    visible: membersVisible,
-    children: memberSections,
-  },
-  {
-    // Untereinheiten (z. B. Züge), benannt nach der Bezeichnung der Einheit
-    id: 'untereinheiten',
-    label: t('Untereinheiten'),
-    labelFor: (org) =>
-      org?.department_terms?.pl || org?.department_label_plural || t('Untereinheiten'),
-    path: '/untereinheiten',
-    icon: icon(
-      'M12 3.5v5M12 8.5H6v4M12 8.5h6v4M3.5 12.5h5v4h-5zM9.5 12.5h5v4h-5zM15.5 12.5h5v4h-5zM9.5 17.5v3h5v-3',
-    ),
-    visible: (org) => !!org && hasUnitsPage(org, (perm) => org.permissions.includes(perm)),
-  },
-  {
     id: 'termine',
+    group: 'alltag',
     label: t('Termine'),
     path: '/termine',
     icon: icon('M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4M8 14h2M14 14h2M8 17h2'),
@@ -105,7 +80,40 @@ export const modules: AppModule[] = [
           ),
   },
   {
+    id: 'mitglieder',
+    group: 'verein',
+    label: t('Mitglieder'),
+    path: '/mitglieder',
+    icon: icon(
+      'M9 4.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M15.5 5.2a3 3 0 1 1 1.2 5.6M17.5 14.2c2.4.5 4 2.6 4 5.8',
+    ),
+    visible: membersVisible,
+    children: memberSections,
+  },
+  {
+    // Untereinheiten (z. B. Züge), benannt nach der Bezeichnung der Einheit
+    id: 'untereinheiten',
+    group: 'verein',
+    label: t('Untereinheiten'),
+    labelFor: (org) =>
+      org?.department_terms?.pl || org?.department_label_plural || t('Untereinheiten'),
+    path: '/untereinheiten',
+    icon: icon(
+      'M12 3.5v5M12 8.5H6v4M12 8.5h6v4M3.5 12.5h5v4h-5zM9.5 12.5h5v4h-5zM15.5 12.5h5v4h-5zM9.5 17.5v3h5v-3',
+    ),
+    visible: (org) => !!org && hasUnitsPage(org, (perm) => org.permissions.includes(perm)),
+  },
+  {
+    id: 'musik',
+    group: 'verein',
+    label: t('Musik'),
+    path: '/musik',
+    icon: icon('M9 18V5l11-2v13M9 8l11-2M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'),
+    visible: (org) => !!org?.modules.includes('music') && org.permissions.includes('music.view'),
+  },
+  {
     id: 'wettbewerbe',
+    group: 'verein',
     label: t('Wettbewerbe'),
     path: '/wettbewerbe',
     icon: icon(
@@ -131,6 +139,7 @@ export const modules: AppModule[] = [
   },
   {
     id: 'meldungen',
+    group: 'verein',
     label: t('Meldungen'),
     path: '/meldungen',
     icon: icon('M5 4h10l4 4v12H5zM15 4v4h4M8.5 12.5l2 2 4-4.5M8.5 17.5h7'),
@@ -143,7 +152,41 @@ export const modules: AppModule[] = [
       ),
   },
   {
+    id: 'abteilung',
+    group: 'verein',
+    label: t('Abteilung'),
+    path: '/abteilung',
+    icon: icon(
+      'M12 6.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M5 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M19 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M7 20c0-2.8 2.2-5 5-5s5 2.2 5 5M2 19c0-2 1.3-3.5 3-3.8M22 19c0-2-1.3-3.5-3-3.8',
+    ),
+    visible: (_org, ws) => !!ws.dept,
+  },
+  {
+    id: 'mein-bereich',
+    group: 'verein',
+    label: t('Mein Bereich'),
+    path: '/mein-bereich',
+    icon: icon('M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8M4.5 21c.4-4 3.6-6.5 7.5-6.5s7.1 2.5 7.5 6.5'),
+    visible: (_org, ws) => !!ws.portal,
+    children: () => [
+      { to: '/mein-bereich', label: t('Übersicht') },
+      { to: '/mein-bereich/ausweis', label: t('Ausweis') },
+      { to: '/mein-bereich/rechnungen', label: t('Rechnungen') },
+      { to: '/mein-bereich/rundschreiben', label: t('Rundschreiben') },
+      { to: '/mein-bereich/daten', label: t('Meine Daten') },
+    ],
+  },
+  {
+    id: 'rundschreiben',
+    group: 'organisation',
+    label: t('Rundschreiben'),
+    path: '/rundschreiben',
+    icon: icon('M3 6h18v12H3zM3 6l9 7 9-7'),
+    visible: (org, ws) => circularsVisible(org, ws.dept),
+  },
+  {
     id: 'dokumente',
+    group: 'organisation',
     label: t('Dokumente'),
     path: '/dokumente',
     icon: icon('M6 3h8.5L19 7.5V21H6zM14.5 3v4.5H19M9 12h7M9 15.5h7M9 19h4'),
@@ -155,6 +198,7 @@ export const modules: AppModule[] = [
   },
   {
     id: 'material',
+    group: 'organisation',
     label: t('Material'),
     path: '/material',
     icon: icon('M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10'),
@@ -164,14 +208,8 @@ export const modules: AppModule[] = [
         : !!(ws.dept?.material_enabled && ws.dept.permissions.includes('material.view')),
   },
   {
-    id: 'rundschreiben',
-    label: t('Rundschreiben'),
-    path: '/rundschreiben',
-    icon: icon('M3 6h18v12H3zM3 6l9 7 9-7'),
-    visible: (org, ws) => circularsVisible(org, ws.dept),
-  },
-  {
     id: 'webseite',
+    group: 'organisation',
     label: t('Webseite'),
     path: '/webseite',
     icon: icon('M3 5h18v14H3zM3 9h18M6 7h.01M8.5 7h.01M7 13h6M7 16h10'),
@@ -186,6 +224,7 @@ export const modules: AppModule[] = [
   },
   {
     id: 'finanzen',
+    group: 'verwaltung',
     label: t('Finanzen'),
     path: '/finanzen',
     icon: icon('M3 6h18v12H3zM3 10h18M7 14.5h4'),
@@ -193,30 +232,8 @@ export const modules: AppModule[] = [
     children: (org) => financeSections(financeAccess(org)),
   },
   {
-    id: 'abteilung',
-    label: t('Abteilung'),
-    path: '/abteilung',
-    icon: icon(
-      'M12 6.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M5 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M19 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M7 20c0-2.8 2.2-5 5-5s5 2.2 5 5M2 19c0-2 1.3-3.5 3-3.8M22 19c0-2-1.3-3.5-3-3.8',
-    ),
-    visible: (_org, ws) => !!ws.dept,
-  },
-  {
-    id: 'mein-bereich',
-    label: t('Mein Bereich'),
-    path: '/mein-bereich',
-    icon: icon('M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8M4.5 21c.4-4 3.6-6.5 7.5-6.5s7.1 2.5 7.5 6.5'),
-    visible: (_org, ws) => !!ws.portal,
-    children: () => [
-      { to: '/mein-bereich', label: t('Übersicht') },
-      { to: '/mein-bereich/ausweis', label: t('Ausweis') },
-      { to: '/mein-bereich/rechnungen', label: t('Rechnungen') },
-      { to: '/mein-bereich/rundschreiben', label: t('Rundschreiben') },
-      { to: '/mein-bereich/daten', label: t('Meine Daten') },
-    ],
-  },
-  {
     id: 'einstellungen',
+    group: 'verwaltung',
     label: t('Einstellungen'),
     path: '/einstellungen',
     icon: icon(
@@ -226,6 +243,7 @@ export const modules: AppModule[] = [
   },
   {
     id: 'plattform',
+    group: 'verwaltung',
     label: t('Plattform'),
     path: '/plattform',
     icon: icon('M3 21h18M5 21V8l7-5 7 5v13M10 21v-5h4v5M9 11h.01M15 11h.01'),
