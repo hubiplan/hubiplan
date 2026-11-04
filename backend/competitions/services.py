@@ -432,7 +432,23 @@ def version(competition: Competition) -> str:
     parts = [competition.status, competition.updated_at.isoformat(), str(competition.generation)]
     # Geänderte Preisplätze müssen auch öffentliche Live-Ansichten neu laden lassen.
     scorings = Scoring.objects.filter(competition=competition)
-    parts.append(str(list(scorings.order_by("pk").values_list("pk", "prize_places"))))
+    parts.append(
+        str(
+            list(
+                scorings.order_by("pk").values_list(
+                    "pk",
+                    "prize_places",
+                    "source_id",
+                    "team_mode",
+                    "team_size",
+                    "higher_better",
+                    "decimals",
+                    "tie_breaks",
+                    "series_size",
+                )
+            )
+        )
+    )
     hits = Hit.objects.filter(program__competition=competition)
     parts.append(str(hits.aggregate(n=Count("pk"), t=Max("updated_at"))))
     for qs in (

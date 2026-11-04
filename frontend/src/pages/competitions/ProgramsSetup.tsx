@@ -179,7 +179,9 @@ function ProgramCard({
       }}
     >
       <div>
-        <h2>{program.name}</h2>
+        <h2>
+          {(comp.programs?.length ?? 0) === 1 ? t('Gemeinsame Schießbedingungen') : program.name}
+        </h2>
         <p className="muted small">
           {linked.map((s) => s.name).join(' · ') || t('Noch keiner Wertung zugeordnet')}
         </p>

@@ -464,6 +464,13 @@ function Setup({
     )
   }
 
+  async function addScoring(data: Partial<Scoring>) {
+    await form.submit(async () => {
+      await competitionsApi.createScoring(org, comp.id, data)
+      reload()
+    })
+  }
+
   async function reset() {
     const choice = await choiceDialog({
       title: t('Wettbewerb zurücksetzen'),
@@ -534,6 +541,7 @@ function Setup({
           </button>
         ))}
       </nav>
+      {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
       <div hidden={setupSection !== 'basic'}>
         <div className="card card-wide">
           <div className="card-head">
@@ -725,13 +733,11 @@ function Setup({
               type="button"
               className="button button-ghost"
               onClick={() =>
-                void competitionsApi
-                  .createScoring(org, comp.id, {
-                    name: t('Einzelwertung'),
-                    kind: 'einzel',
-                    ...(comp.own && comp.programs?.[0] ? { program: comp.programs[0].id } : {}),
-                  })
-                  .then(reload)
+                void addScoring({
+                  name: t('Einzelwertung'),
+                  kind: 'einzel',
+                  ...(comp.own && comp.programs?.[0] ? { program: comp.programs[0].id } : {}),
+                })
               }
             >
               {t('Einzelwertung hinzufügen')}
@@ -741,12 +747,10 @@ function Setup({
                 type="button"
                 className="button button-ghost"
                 onClick={() =>
-                  void competitionsApi
-                    .createScoring(org, comp.id, {
-                      name: t('Mannschaftswertung'),
-                      kind: 'mannschaft',
-                    })
-                    .then(reload)
+                  void addScoring({
+                    name: t('Mannschaftswertung'),
+                    kind: 'mannschaft',
+                  })
                 }
               >
                 {t('Mannschaftswertung hinzufügen')}
@@ -757,14 +761,12 @@ function Setup({
                 type="button"
                 className="button button-ghost"
                 onClick={() =>
-                  void competitionsApi
-                    .createScoring(org, comp.id, {
-                      name: t('Wertung der Untereinheiten'),
-                      kind: 'einheit',
-                      team_mode: 'beste',
-                      team_size: 5,
-                    })
-                    .then(reload)
+                  void addScoring({
+                    name: t('Wertung der Untereinheiten'),
+                    kind: 'einheit',
+                    team_mode: 'beste',
+                    team_size: 5,
+                  })
                 }
               >
                 {t('Wertung der Untereinheiten hinzufügen')}
@@ -954,8 +956,10 @@ function ScoringCard({
       confirmLabel: t('Löschen'),
     })
     if (!ok) return
-    await competitionsApi.removeScoring(org, comp.id, scoring.id)
-    onRemoved()
+    await form.submit(async () => {
+      await competitionsApi.removeScoring(org, comp.id, scoring.id)
+      onRemoved()
+    })
   }
 
   return (

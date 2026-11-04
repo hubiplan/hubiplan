@@ -422,7 +422,7 @@ class ScoringSerializer(serializers.ModelSerializer):
             )
             if (
                 changed
-                and (self.instance.scores.exists() or services.hits_for(self.instance).exists())
+                and self.get_has_results(self.instance)
                 and not attrs.get("confirm_recalculation")
             ):
                 raise serializers.ValidationError(

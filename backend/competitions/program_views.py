@@ -132,10 +132,9 @@ class ProgramSerializer(serializers.ModelSerializer):
                 target = targets.BY_KEY.get(program.target)
                 if target and target.group not in groups:
                     groups.append(target.group)
-            if groups:
-                Competition.objects.filter(pk=instance.competition_id).update(
-                    discipline=" / ".join(groups)
-                )
+            Competition.objects.filter(pk=instance.competition_id).update(
+                discipline=" / ".join(groups)
+            )
             for scoring in instance.scorings.all():
                 data = {key: getattr(instance, key) for key in ("target", "custom_target", "shots")}
                 if not instance.target:
