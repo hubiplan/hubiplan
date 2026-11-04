@@ -4,6 +4,8 @@ import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
+type Score = { id: number; piece: string; title: string; url: string; usage_note: string }
+
 export function OwnPracticePanel({ accessId }: { accessId: number }) {
   const url = `/api/portal/${accessId}/music/practice/`
   const load = useLoad(
@@ -21,8 +23,10 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
           can_respond: boolean
           status: string
           items: { title: string; focus: string }[]
+          scores?: Score[]
+          overridden?: boolean
         }[]
-        scores: { id: number; piece: string; title: string; url: string; usage_note: string }[]
+        scores: Score[]
         loans: {
           id: number
           title: string
@@ -62,6 +66,20 @@ export function OwnPracticePanel({ accessId }: { accessId: number }) {
               {i.title} · {i.focus}
             </p>
           ))}
+          {r.overridden && <p>{t('Eigenes Programm für diesen Termin')}</p>}
+          {r.scores && r.scores.length > 0 && (
+            <div>
+              <h3>{t('Noten für diesen Probentermin')}</h3>
+              {r.scores.map((s) => (
+                <p key={s.id}>
+                  <a href={s.url}>
+                    {s.piece} · {s.title}
+                  </a>{' '}
+                  · {s.usage_note}
+                </p>
+              ))}
+            </div>
+          )}
           {r.can_respond && (
             <div className="actions">
               {[

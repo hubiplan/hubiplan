@@ -19,15 +19,19 @@ from core.api_base import OrgScopedMixin
 from events import recurrence, services
 
 from .models import (
+    Arrangement,
     Musician,
     Rehearsal,
     RehearsalInvitation,
     RehearsalItem,
+    RehearsalProgram,
+    RehearsalProgramItem,
     RehearsalResponse,
     ScoreLoan,
     ScorePart,
     ScoreReturn,
 )
+from .practice_programs import content, program_for, with_programs
 from .views import MusicViewSet, ScopedSerializer
 
 
@@ -130,6 +134,96 @@ class RehearsalViewSet(PracticeViewSet):
     def choices(self, request, org_id):
         return Response(list(visible_events(self).order_by("-starts_at").values("id", "title")))
 
+    @action(detail=True, methods=["get", "post"])
+    @transaction.atomic
+    def program(self, request, org_id, pk=None):
+        rehearsal = get_object_or_404(self.get_queryset().select_for_update(), pk=pk)
+        data = request.query_params if request.method == "GET" else request.data
+        original = serializers.DateTimeField().run_validation(data.get("original_start"))
+        if occurrence(rehearsal.event, original) is None:
+            raise serializers.ValidationError(
+                gettext("Dieser Probentermin gehört nicht zur aktuellen Terminserie.")
+            )
+        if request.method == "POST":
+            scope = serializers.ChoiceField(
+                choices=["occurrence", "series", "inherit"]
+            ).run_validation(data.get("scope"))
+            if scope == "inherit":
+                RehearsalProgram.objects.filter(
+                    rehearsal=rehearsal, original_start=original
+                ).delete()
+            else:
+                values = RehearsalProgramInput(data=data)
+                values.is_valid(raise_exception=True)
+                values = values.validated_data
+                # Alle Verweise vor dem ersten Schreiben im eigenen Mandanten auflösen.
+                arrangements = {
+                    a.pk: a
+                    for a in Arrangement.objects.filter(
+                        organization=self.org,
+                        pk__in=[i["arrangement"] for i in values["items"]],
+                    )
+                }
+                if any(i["arrangement"] not in arrangements for i in values["items"]):
+                    raise NotFound()
+                if scope == "series":
+                    rehearsal.focus = values["focus"]
+                    rehearsal.save(update_fields=["focus"])
+                    rehearsal.items.all().delete()
+                    for item in values["items"]:
+                        RehearsalItem.objects.create(
+                            organization=self.org,
+                            rehearsal=rehearsal,
+                            arrangement=arrangements[item["arrangement"]],
+                            focus=item["focus"],
+                        )
+                else:
+                    program, _ = RehearsalProgram.objects.update_or_create(
+                        organization=self.org,
+                        rehearsal=rehearsal,
+                        original_start=original,
+                        defaults={"focus": values["focus"]},
+                    )
+                    program.items.all().delete()
+                    for position, item in enumerate(values["items"], 1):
+                        RehearsalProgramItem.objects.create(
+                            organization=self.org,
+                            program=program,
+                            position=position,
+                            arrangement=arrangements[item["arrangement"]],
+                            focus=item["focus"],
+                        )
+            record(
+                self.org,
+                request.user,
+                "update",
+                rehearsal,
+                {
+                    "Probenprogramm": [
+                        None,
+                        {"original_start": original.isoformat(), "scope": scope},
+                    ]
+                },
+            )
+        rehearsal = with_programs(Rehearsal.objects.filter(pk=rehearsal.pk)).get()
+        return Response(
+            {
+                **program_for(rehearsal, original),
+                "template": content(rehearsal),
+                "is_series": rehearsal.event.is_series,
+            }
+        )
+
+
+class RehearsalProgramItemInput(serializers.Serializer):
+    arrangement = serializers.IntegerField(min_value=1)
+    focus = serializers.CharField(max_length=500, allow_blank=True)
+
+
+class RehearsalProgramInput(serializers.Serializer):
+    focus = serializers.CharField(max_length=2000, allow_blank=True)
+    items = RehearsalProgramItemInput(many=True, max_length=200)
+
 
 class RehearsalItemViewSet(PracticeViewSet):
     serializer_class = RehearsalItemSerializer
@@ -158,9 +252,11 @@ class PracticeOverview(OrgScopedMixin, APIView):
             raise NotFound()
 
     def get(self, request, org_id):
-        rehearsals = Rehearsal.objects.filter(
-            organization=self.org, event__in=visible_events(self)
-        ).select_related("event")
+        rehearsals = with_programs(
+            Rehearsal.objects.filter(
+                organization=self.org, event__in=visible_events(self)
+            ).select_related("event")
+        )
         result = []
         for rehearsal in rehearsals:
             for o in recurrence.occurrences([rehearsal.event], *window()):
@@ -187,7 +283,7 @@ class PracticeOverview(OrgScopedMixin, APIView):
                         "starts_at": o.starts_at,
                         "ends_at": o.ends_at,
                         "cancelled": o.is_cancelled,
-                        "focus": rehearsal.focus,
+                        **program_for(rehearsal, o.original_start),
                         "members": members,
                     }
                 )

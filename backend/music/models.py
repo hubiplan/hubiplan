@@ -251,6 +251,40 @@ class RehearsalItem(models.Model):
         return f"Probenstück {self.pk}"
 
 
+class RehearsalProgram(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    rehearsal = models.ForeignKey(Rehearsal, on_delete=models.CASCADE, related_name="programs")
+    original_start = models.DateTimeField()
+    focus = models.CharField(max_length=2000, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["rehearsal", "original_start"], name="probe_programm_einmal"
+            )
+        ]
+
+    def __str__(self):
+        return f"Einzelprobenprogramm {self.pk}"
+
+
+class RehearsalProgramItem(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    program = models.ForeignKey(RehearsalProgram, on_delete=models.CASCADE, related_name="items")
+    arrangement = models.ForeignKey(Arrangement, on_delete=models.PROTECT)
+    position = models.PositiveSmallIntegerField()
+    focus = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        ordering = ["position", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["program", "position"], name="probe_programm_position")
+        ]
+
+    def __str__(self):
+        return f"Einzelprobenstück {self.pk}"
+
+
 class RehearsalInvitation(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     rehearsal = models.ForeignKey(Rehearsal, on_delete=models.PROTECT, related_name="invitations")

@@ -8,6 +8,7 @@ import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { ScoreForm } from './ScoresPage.tsx'
+import { RehearsalProgramEditor } from './RehearsalProgramEditor.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Loan = {
@@ -31,6 +32,8 @@ type Occurrence = {
   starts_at: string
   cancelled: boolean
   focus: string
+  items: { arrangement: number; title: string; focus: string }[]
+  overridden: boolean
   members: { invitation: number; name: string; status: string }[]
 }
 
@@ -73,6 +76,7 @@ export function PracticePage() {
   }, [org.id])
   const [tab, setTab] = useState('overview'),
     [selected, setSelected] = useState<Row | 'new' | null>(null),
+    [program, setProgram] = useState<Occurrence | null>(null),
     [error, setError] = useState(''),
     [key, setKey] = useState(newRequestKey)
   if (load.error) return <Alert kind="error">{load.error}</Alert>
@@ -141,6 +145,7 @@ export function PracticePage() {
             onClick={async () => {
               if (await confirmLeave()) {
                 setSelected(null)
+                setProgram(null)
                 setTab(id)
               }
             }}
@@ -152,9 +157,21 @@ export function PracticePage() {
       {error && <Alert kind="error">{error}</Alert>}
       <p>
         {t(
-          'Proben verwenden bestehende Kalendertermine und Terminserien. Rückmeldungen gelten für den jeweiligen Einzeltermin. Erinnerungen an offene Rückmeldungen werden über die Ausgangspost zugestellt.',
+          'Proben verwenden Kalendertermine und Terminserien. Programme und Schwerpunkte können je Einzeltermin abweichen. Rückmeldungen gelten für den jeweiligen Einzeltermin.',
         )}
       </p>
+      {canEdit && program && tab === 'overview' && (
+        <RehearsalProgramEditor
+          key={`${program.rehearsal}-${program.original_start}`}
+          url={`${base}rehearsals/${program.rehearsal}/program/`}
+          originalStart={program.original_start}
+          startsAt={program.starts_at}
+          title={program.title}
+          arrangements={d.arrangements.map((a) => ({ id: a.id, name: String(a.name) }))}
+          onClose={() => setProgram(null)}
+          onSaved={() => load.reload()}
+        />
+      )}
       {canEdit && tab !== 'overview' && (
         <button
           className="button button-primary"
@@ -199,6 +216,26 @@ export function PracticePage() {
             <p>
               {o.focus} {o.cancelled ? t('Abgesagt') : ''}
             </p>
+            <p>
+              {o.overridden
+                ? t('Eigenes Programm für diesen Termin')
+                : t('Programm aus der Serienvorlage')}
+            </p>
+            {o.items.map((item, i) => (
+              <p key={i}>
+                {item.title} · {item.focus}
+              </p>
+            ))}
+            {canEdit && (
+              <button
+                className="button button-ghost"
+                onClick={async () => {
+                  if (await confirmLeave()) setProgram(o)
+                }}
+              >
+                {t('Probenprogramm bearbeiten')}
+              </button>
+            )}
             <Link to={`/aufgaben?termin=${o.event}`}>{t('Aufgaben für Notenvorbereitung')}</Link>
             <p>
               {t('Fehlende Rückmeldungen')}:{' '}

@@ -93,6 +93,8 @@ MODULE_MODELS = (
     "music.ProgramEntry",
     "music.Rehearsal",
     "music.RehearsalItem",
+    "music.RehearsalProgram",
+    "music.RehearsalProgramItem",
     "music.RehearsalInvitation",
     "music.RehearsalResponse",
     "music.ScoreLoan",
