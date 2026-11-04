@@ -45,7 +45,7 @@ describe('Aufgabenserie', () => {
 
   it('lässt die Auswahl nur dieser Ausgabe ausdrücklich abbrechen', async () => {
     const selected = followingChoice()
-    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Abbrechen' }))
     expect(await selected).toBeNull()
   })

@@ -54,6 +54,9 @@ def take_over(user, scope, pk):
         )
         if todo is None or not can_take_over(todo, user, scope):
             raise NotFound()
+        from .sharing import assign_series_owner
+
+        assign_series_owner(todo, user.pk)
         todo.owner = user
         todo.version += 1
         todo.save(update_fields=["owner", "version", "updated_at"])

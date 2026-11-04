@@ -272,3 +272,34 @@ def test_dokumentverweise_werden_vererbt_dateien_nicht(api, board_a, orgs):
     attachments = tasks(org)[1].attachments.all()
     assert attachments.count() == 1
     assert attachments.get().kind == "document" and attachments.get().document_id == doc["id"]
+
+
+def test_serienverantwortung_wird_als_ganzes_uebertragen_aber_nicht_private_historie(
+    api, board_a, orgs
+):
+    from .factories import give_role, make_user
+
+    org = orgs["a"]
+    reader = make_user("seriennachfolge@example.org")
+    give_role(reader, org, permissions=["todos.view"], name="Nachfolge")
+    first = start(api, board_a, org)
+    complete(api, board_a, org, first)
+    second = api(board_a).get(url(org, tasks(org)[1].pk)).json()
+    second = patch(
+        api, board_a, org, second, shares=[{"user": reader.pk, "level": "edit"}], following=True
+    ).json()
+    assert patch(api, board_a, org, second, owner=reader.pk).status_code == 400
+    assert api(reader).get(url(org, first["id"])).status_code == 404
+    first = api(board_a).get(url(org, first["id"])).json()
+    assert (
+        patch(api, board_a, org, first, shares=[{"user": reader.pk, "level": "edit"}]).status_code
+        == 200
+    )
+    response = patch(api, board_a, org, second, owner=reader.pk)
+    assert response.status_code == 200, response.content
+    with rls_bypass():
+        assert set(
+            Todo.objects.filter(series_id=first["series"]["id"], withdrawn=False).values_list(
+                "owner_id", flat=True
+            )
+        ) == {reader.pk}

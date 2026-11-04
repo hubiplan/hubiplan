@@ -73,7 +73,7 @@ export function TodoSeries({
     <details className="card">
       <summary>
         {t('Wiederholen')}
-        {todo.series ? ` · ${t('Ausgabe')} ${todo.series.sequence_no}` : ''}
+        {todo.series ? ` · ${t('Serienausgabe')} ${todo.series.sequence_no}` : ''}
       </summary>
       {error && <p role="alert">{error}</p>}
       {todo.can_edit && !trash && todo.status === 'open' && (
