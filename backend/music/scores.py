@@ -5,6 +5,7 @@ import io
 from collections import Counter
 
 from django.db import transaction
+from django.db.models import F, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext
@@ -75,6 +76,27 @@ class MusicScorePartSerializer(ScopedSerializer):
             "copies",
             "location",
         ]
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if self.instance:
+            outstanding = (
+                self.instance.loans.aggregate(n=Sum(F("quantity") - F("returned")))["n"] or 0
+            )
+            if attrs.get("copies", self.instance.copies) < outstanding or (
+                outstanding
+                and any(
+                    k in attrs and attrs[k] != getattr(self.instance, k)
+                    for k in ("arrangement", "instrument", "register", "kind", "paper_format")
+                )
+            ):
+                raise serializers.ValidationError(
+                    gettext(
+                        "Bitte zuerst ausgegebene Noten zurücknehmen; der Bestand darf "
+                        "ausstehende Ausgaben nicht unterschreiten."
+                    )
+                )
+        return attrs
 
 
 class MusicScoreDocumentSerializer(ScopedSerializer):
@@ -200,6 +222,17 @@ def program_data(performance):
                 row["required"], part.required_players if part.kind == "part" else 1
             )
             if part.paper_format == entry.paper_format:
+                loaned = part.loans.aggregate(n=Sum(F("quantity") - F("returned")))["n"] or 0
+                held = (
+                    part.loans.filter(musician__assignment__performance=performance)
+                    .exclude(musician__assignment__status="declined")
+                    .aggregate(n=Sum(F("quantity") - F("returned")))["n"]
+                    or 0
+                )
+                row.setdefault("loaned", 0)
+                row.setdefault("held", 0)
+                row["loaned"] += loaned
+                row["held"] += held
                 row["copies"] += part.copies
                 if part.location:
                     row["locations"].append(part.location)
@@ -220,7 +253,12 @@ def program_data(performance):
                     if row["kind"] == "part"
                     else 0,
                     "needed_copies": need,
-                    "missing_copies": max(0, need - row["copies"]),
+                    "loaned": row.get("loaned", 0),
+                    "available": row["copies"] - row.get("loaned", 0),
+                    "held": row.get("held", 0),
+                    "missing_copies": max(
+                        0, need - row["copies"] + row.get("loaned", 0) - row.get("held", 0)
+                    ),
                 }
             )
         preparation.append(

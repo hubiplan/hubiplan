@@ -3,6 +3,7 @@ import { api } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { OwnPracticePanel } from './OwnPractice.tsx'
 
 export function OwnMusic({ accessId }: { accessId: number }) {
   const url = `/api/portal/${accessId}/music/`
@@ -21,6 +22,7 @@ export function OwnMusic({ accessId }: { accessId: number }) {
           meeting_place: string
           uniform: string
           cancelled: boolean
+          program?: { title: string; kind: string; duration_seconds: number }[]
           settlement?: {
             fee: string
             allowance: string
@@ -34,7 +36,7 @@ export function OwnMusic({ accessId }: { accessId: number }) {
   )
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  if (!load.data?.length) return null
+  if (!load.data?.length) return <OwnPracticePanel accessId={accessId} />
   return (
     <section className="card stack">
       <h2>{t('Meine Auftritte')}</h2>
@@ -42,6 +44,16 @@ export function OwnMusic({ accessId }: { accessId: number }) {
       {load.data.map((r) => (
         <article className="stack" key={r.id}>
           <strong>{r.title}</strong>
+          {(r.program?.length || 0) > 0 && (
+            <ol>
+              {r.program!.map((p, index) => (
+                <li key={index}>
+                  {p.kind === 'pause' ? t('Pause') : p.title}{' '}
+                  {p.kind === 'encore' ? `(${t('Zugabe')})` : ''}
+                </li>
+              ))}
+            </ol>
+          )}
           {r.settlement && (
             <p>
               {t('Meine Vergütung')}: {r.settlement.total} EUR ·{' '}
@@ -95,6 +107,7 @@ export function OwnMusic({ accessId }: { accessId: number }) {
           )}
         </article>
       ))}
+      <OwnPracticePanel accessId={accessId} />
     </section>
   )
 }

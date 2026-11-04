@@ -45,3 +45,17 @@ Open **Musical programme** on a performance. Add pieces and encores with an arra
 Preparation compares required instruments and parts against planned instrumentation and active musicians who accepted assignments. Names are compared without case sensitivity or surrounding whitespace; different instrument names remain distinct. Missing musicians, planned counts and missing copies in the chosen format are visible. Copies in the other format do not count. Repeated pieces need one set per format. Missing instrumentation is highlighted. Changes to stock and arrangement duration affect existing programmes.
 
 Download programme and part lists as CSV. Use **Sheet music preparation tasks** to create preparation tasks linked to the event in the existing task workspace. Programmes require music and calendar viewing permissions; editing requires music editing permission. General exports include the catalogue and programmes. Digital files remain in the existing document export.
+
+## Rehearsals and personal sheet music
+
+Open **Rehearsals and sheet music checkout** and link events or series from your own calendar. Dates, location, recurrence and cancellations remain in the existing calendar. Rehearsal focus and pieces apply to the whole rehearsal or series. Assign musicians and deactivate assignments no longer required. Administrators record guest responses.
+
+The overview covers the past 14 days and next 90 days. Each response belongs to the original occurrence start from the calendar rule, including moved occurrences. Changing the series rule requires new responses. Cancelled or started rehearsals cannot be answered. Missing responses are visible.
+
+Current members with an active musician profile see their own rehearsals and performances, programmes, focus and matching sheet music under **My area**. Downloads require the document library’s member access permissions as well as a matching part or instrumental skill. Restricted, deleted and unrelated files remain inaccessible.
+
+Record musician, part, quantity and return date for checkouts. Each checkout reduces available stock. Partial returns are recorded with timestamps. Outstanding checkouts prevent reducing or repurposing stock. Overdue returns are highlighted; members see their own outstanding quantities. Preparation distinguishes available copies from copies already held by assigned musicians.
+
+New rehearsal assignments and upcoming pending responses generate neutral notices through the existing outbox. The hourly job reminds once per occurrence within the configured number of days; 0 disables reminders. Notices link to the member area and contain no sheet music attachments or confidential event details. Guests without member access do not receive these notices. Preparation tasks and other calendar communication remain in the existing task/calendar workspace.
+
+General exports include rehearsal, response and checkout data. The additive migration includes tables, RLS and quantity constraints; export the new history before rolling back.

@@ -1,0 +1,167 @@
+"""Persönliche Proben und Noten unter den bestehenden Dokumentenfreigaben."""
+
+from django.db import transaction
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from rest_framework import serializers
+from rest_framework.exceptions import NotFound
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from core.tenancy import tenant_context
+from documents import services as documents
+from documents.models import Document
+from documents.views import file_response
+from events import recurrence
+from members.models import DepartmentMembership
+from portal.views import _portal_access
+
+from .models import Musician, RehearsalInvitation, ScoreDocument, ScoreLoan
+from .practice import loan_data, save_response, window
+from .scores import voice
+
+
+def own_musician(access):
+    if "music" not in access.organization.enabled_modules:
+        return None
+    if not access.membership.current_period() or access.membership.purged_at:
+        return None
+    return Musician.objects.filter(
+        organization=access.organization, membership_id=access.membership_id, active=True
+    ).first()
+
+
+def accessible_scores(access, musician):
+    if not musician or "events" not in access.organization.enabled_modules:
+        return ScoreDocument.objects.none()
+    today = timezone.localdate()
+    departments = (
+        DepartmentMembership.objects.filter(
+            membership_id=access.membership_id, valid_from__lte=today
+        )
+        .filter(Q(valid_until=None) | Q(valid_until__gte=today))
+        .values_list("department_id", flat=True)
+    )
+    folders = documents.member_viewer(access.organization, list(departments)).all_folders()
+    docs = Document.objects.filter(
+        organization=access.organization, folder__in=folders, deleted_at=None
+    )
+    arrangements = set(
+        musician.assignment_set.exclude(status="declined")
+        .filter(performance__event__is_cancelled=False)
+        .values_list("performance__program_entries__arrangement_id", flat=True)
+    )
+    arrangements.update(
+        musician.rehearsalinvitation_set.filter(
+            active=True, rehearsal__event__is_cancelled=False
+        ).values_list("rehearsal__items__arrangement_id", flat=True)
+    )
+    voices = {voice(s.instrument, s.register) for s in musician.skills.all()}
+    voices.update(
+        voice(a.position.instrument, a.position.register)
+        for a in musician.assignment_set.select_related("position")
+    )
+    candidates = ScoreDocument.objects.filter(
+        organization=access.organization, arrangement_id__in=arrangements, document__in=docs
+    ).select_related("part", "document", "arrangement__piece")
+    ids = [
+        r.pk
+        for r in candidates
+        if r.part_id is None or voice(r.part.instrument, r.part.register) in voices
+    ]
+    return candidates.filter(pk__in=ids)
+
+
+def score_data(access, musician):
+    return [
+        {
+            "id": s.pk,
+            "arrangement": s.arrangement_id,
+            "title": s.document.title,
+            "piece": s.arrangement.piece.title,
+            "usage_note": s.usage_note,
+            "url": f"/api/portal/{access.pk}/music/files/{s.pk}/",
+        }
+        for s in accessible_scores(access, musician)
+    ]
+
+
+class OwnPractice(APIView):
+    def get(self, request, access_id):
+        access = _portal_access(request.user, access_id)
+        with tenant_context(access.organization_id, request.user.pk):
+            musician = own_musician(access)
+            if not musician:
+                return Response({"rehearsals": [], "scores": [], "loans": []})
+            rows = []
+            for invite in musician.rehearsalinvitation_set.filter(
+                active=True, organization__enabled_modules__contains=["events"]
+            ).select_related("rehearsal__event"):
+                rehearsal = invite.rehearsal
+                items = [
+                    {
+                        "title": i.arrangement.piece.title,
+                        "arrangement": i.arrangement_id,
+                        "focus": i.focus,
+                    }
+                    for i in rehearsal.items.select_related("arrangement__piece")
+                ]
+                for o in recurrence.occurrences([rehearsal.event], *window()):
+                    response = invite.responses.filter(original_start=o.original_start).first()
+                    rows.append(
+                        {
+                            "id": invite.pk,
+                            "title": rehearsal.event.title,
+                            "original_start": o.original_start,
+                            "starts_at": o.starts_at,
+                            "ends_at": o.ends_at,
+                            "location": rehearsal.event.location,
+                            "focus": rehearsal.focus,
+                            "cancelled": o.is_cancelled,
+                            "can_respond": not o.is_cancelled and o.starts_at > timezone.now(),
+                            "status": response.status if response else "pending",
+                            "items": items,
+                        }
+                    )
+            return Response(
+                {
+                    "rehearsals": sorted(rows, key=lambda r: r["starts_at"]),
+                    "scores": score_data(access, musician),
+                    "loans": [
+                        loan_data(r)
+                        for r in ScoreLoan.objects.filter(musician=musician)
+                        .select_related("part__arrangement__piece")
+                        .order_by("-pk")
+                    ],
+                }
+            )
+
+    @transaction.atomic
+    def post(self, request, access_id):
+        access = _portal_access(request.user, access_id)
+        with tenant_context(access.organization_id, request.user.pk):
+            musician = own_musician(access)
+            if not musician or "events" not in access.organization.enabled_modules:
+                raise NotFound()
+            pk = serializers.IntegerField(min_value=1).run_validation(request.data.get("id"))
+            invite = get_object_or_404(
+                RehearsalInvitation.objects.select_for_update(),
+                pk=pk,
+                musician=musician,
+                active=True,
+            )
+            save_response(invite, request.data, request.user)
+            return Response({"ok": True})
+
+
+class OwnScoreFile(APIView):
+    def get(self, request, access_id, pk):
+        access = _portal_access(request.user, access_id)
+        with tenant_context(access.organization_id, request.user.pk):
+            musician = own_musician(access)
+            link = get_object_or_404(accessible_scores(access, musician), pk=pk)
+            version = link.document.versions.order_by("-uploaded_at", "-pk").first()
+            if not version:
+                raise NotFound()
+            return file_response(request, version)

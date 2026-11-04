@@ -5778,3 +5778,30 @@ msgstr "Title"
 
 msgid "Art"
 msgstr "Type"
+
+msgid "Bitte zuerst ausgegebene Noten zurücknehmen; der Bestand darf ausstehende Ausgaben nicht unterschreiten."
+msgstr "Please collect checked-out sheet music first; stock cannot be reduced below outstanding checkouts."
+
+msgid "Dieser Probentermin gehört nicht zur aktuellen Terminserie."
+msgstr "This rehearsal occurrence does not belong to the current series."
+
+msgid "Für diesen Probentermin ist keine Rückmeldung mehr möglich."
+msgstr "Responses are no longer possible for this rehearsal occurrence."
+
+msgid "Die Rückgabefrist liegt vor der Ausgabe."
+msgstr "The return date is before checkout."
+
+msgid "Es sind nicht genügend freie Notenexemplare vorhanden."
+msgstr "There are not enough available sheet music copies."
+
+msgid "Die Rückgabe übersteigt die ausstehende Menge."
+msgstr "The return exceeds the outstanding quantity."
+
+msgid "Unbekannte Notenausgabe-Aktion."
+msgstr "Unknown sheet music checkout action."
+
+msgid "Musikprobe im Mitgliederbereich"
+msgstr "Music rehearsal in your member area"
+
+msgid "Im Mitgliederbereich liegt eine Probeneinteilung oder eine noch offene Rückmeldung für Sie vor: {link}"
+msgstr "A rehearsal assignment or pending response is waiting in your member area: {link}"

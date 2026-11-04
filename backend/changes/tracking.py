@@ -64,6 +64,8 @@ IGNORED_MODELS = {
 
 # Schreiben hier sperrt das Paket – mit diesem Grund
 BLOCKING_MODELS = {
+    "music.scoreloan": "Betrifft eine Notenausgabe.",
+    "music.scorereturn": "Betrifft eine Notenrückgabe.",
     "music.performanceaccount": "Betrifft eine Auftrittsabrechnung.",
     "music.musicianclaim": "Betrifft eine Musikervergütung.",
     "music.performanceexpense": "Betrifft eine Auftrittsauszahlung.",

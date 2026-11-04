@@ -14,6 +14,21 @@ from .models import Assignment, MusicianClaim
 from .settlement import personal_claim
 
 
+def own_program(performance):
+    return [
+        {
+            "title": e.arrangement.piece.title if e.arrangement_id else "",
+            "kind": e.kind,
+            "duration_seconds": e.duration_seconds
+            if e.duration_seconds is not None
+            else e.arrangement.duration_seconds
+            if e.arrangement_id
+            else 0,
+        }
+        for e in performance.program_entries.select_related("arrangement__piece")
+    ]
+
+
 class OwnAssignments(APIView):
     def rows(self, request, access_id):
         access = _portal_access(request.user, access_id)
@@ -42,6 +57,7 @@ class OwnAssignments(APIView):
                         "instrument": row.position.instrument,
                         "register": row.position.register,
                         "status": row.status,
+                        "program": own_program(row.performance),
                         "settlement": next(
                             (
                                 personal_claim(c)
