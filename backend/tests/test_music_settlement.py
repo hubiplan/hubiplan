@@ -29,6 +29,41 @@ from .test_rls import as_app_role
 pytestmark = pytest.mark.django_db
 
 
+def test_export_uses_fixed_period_and_retention_clears_notes(c, club, settlement):
+    from finance.retention import _anonymize_records
+    from music.finance_export import export_tables
+
+    url, assignment = settlement
+    post(
+        c, url, action="agreement", fee="100", travel="0", extras="0", note="Vereinbarung Beispiel"
+    )
+    post(
+        c,
+        url,
+        action="claim",
+        assignment=assignment.pk,
+        fee="50",
+        allowance="0",
+        expenses="0",
+        attended=True,
+        note="Auslagen Beispiel",
+    )
+    with tenant_context(club.pk):
+        account = PerformanceAccount.objects.get(performance=assignment.performance)
+        start, end = club.fiscal_range(club.fiscal_year_of(account.date))
+        event = assignment.performance.event
+        event.starts_at += datetime.timedelta(days=800)
+        event.ends_at += datetime.timedelta(days=800)
+        event.save()
+        tables = export_tables(club, start, end)
+        assert len(tables[0].rows) == len(tables[1].rows) == 1
+        assert "Vereinbarung Beispiel" in tables[0].content().decode("utf-8-sig")
+        _anonymize_records(club, start, end)
+        account.refresh_from_db()
+        assert account.note == ""
+        assert MusicianClaim.objects.get(assignment=assignment).note == ""
+
+
 @pytest.fixture
 def settlement(c, club, music):
     _, event = music
@@ -104,6 +139,7 @@ def test_claim_payment_storno_and_overview(c, club, settlement):
         ).status_code
         == 400
     )
+    assert post(c, url, action="replace_invoice").status_code == 400
     with tenant_context(club.pk), transaction.atomic():
         services.cancel_booking(Booking.objects.get(pk=booking), None, "Auszahlung korrigieren")
     result = c.get(url).json()

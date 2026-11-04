@@ -31,3 +31,5 @@ Auszahlungen zuerst als Ausgaben mit Belegen in der Kasse erfassen. Anschließen
 Fehlerhafte Auszahlungen in der Kasse stornieren. Der ursprüngliche Bezug bleibt sichtbar; die Vergütung ist wieder unbezahlt und kann nach Korrektur neu zugeordnet werden. Die Übersicht zeigt vereinbarte und fakturierte Beträge, tatsächliche Einnahmen und Ausgaben sowie das Ergebnis aus diesen Zahlungen. Freigegebene Vergütungen sind separat ausgewiesen und stellen keine bereits erfolgte Zahlung dar.
 
 Allgemeiner Datenexport und Finanzprüfexport umfassen Vereinbarungen, Vergütungen und Buchungszuordnungen. Finanzaufbewahrung und Anonymisierung umfassen die Abrechnungsvermerke.
+
+Eine vollständig stornierte Veranstalterrechnung kann mit **Stornierte Rechnung ersetzen** abgelöst werden. Danach die Vereinbarung korrigieren und eine neue Rechnung erstellen. Frühere Rechnungen bleiben verknüpft und im Prüfexport nachvollziehbar.

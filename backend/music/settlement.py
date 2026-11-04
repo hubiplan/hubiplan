@@ -21,7 +21,14 @@ from core.api_base import OrgScopedMixin
 from finance.models import Booking
 from finance.services import ensure_open, lock_bank_sources
 
-from .models import Assignment, MusicianClaim, Performance, PerformanceAccount, PerformanceExpense
+from .models import (
+    Assignment,
+    MusicianClaim,
+    Performance,
+    PerformanceAccount,
+    PerformanceExpense,
+    PreviousPerformanceInvoice,
+)
 from .views import PerformanceViewSet
 
 
@@ -113,6 +120,7 @@ def account_data(account):
         "expenses": str(expenses),
         "result": str(revenue - expenses),
         "claims": rows,
+        "previous_invoices": list(account.previous_invoices.values_list("invoice_id", flat=True)),
         "payments": [
             {
                 "id": row.pk,
@@ -198,6 +206,28 @@ class SettlementView(OrgScopedMixin, APIView):
                     ]
                 },
             )
+        elif action == "replace_invoice":
+            if (
+                "billing" not in self.org.enabled_modules
+                or "billing.edit" not in self.org_permissions
+            ):
+                raise PermissionDenied()
+            if not account.invoice_id or account.invoice.status != "cancelled":
+                raise serializers.ValidationError(
+                    gettext("Bitte die Veranstalterrechnung zuerst stornieren.")
+                )
+            PreviousPerformanceInvoice.objects.create(
+                organization=self.org, account=account, invoice=account.invoice
+            )
+            record(
+                self.org,
+                request.user,
+                "update",
+                account,
+                {"Frühere Rechnung": [None, account.invoice_id]},
+            )
+            account.invoice = None
+            account.save(update_fields=["invoice"])
         elif action == "claim":
             data = ClaimInput(data=request.data)
             data.is_valid(raise_exception=True)

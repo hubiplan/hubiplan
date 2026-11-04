@@ -19,11 +19,19 @@ def export_tables(org, start, end):
             "Weitere Leistungen",
             "Rechnung",
             "Vermerk",
+            "Frühere Rechnungen",
         ),
     )
     for row in accounts:
         table.add(
-            row.pk, row.performance_id, row.fee, row.travel, row.extras, row.invoice_id, row.note
+            row.pk,
+            row.performance_id,
+            row.fee,
+            row.travel,
+            row.extras,
+            row.invoice_id,
+            row.note,
+            ", ".join(str(pk) for pk in row.previous_invoices.values_list("invoice_id", flat=True)),
         )
     claims = MusicianClaim.objects.filter(
         organization=org, assignment__performance__performanceaccount__date__range=(start, end)

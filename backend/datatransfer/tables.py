@@ -85,6 +85,7 @@ MODULE_MODELS = (
     "music.PerformanceAccount",
     "music.MusicianClaim",
     "music.PerformanceExpense",
+    "music.PreviousPerformanceInvoice",
     "materials.MaterialItem",
     "materials.MaterialEventLink",
     "materials.MaterialTodoLink",

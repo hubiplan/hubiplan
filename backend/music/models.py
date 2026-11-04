@@ -147,3 +147,15 @@ class PerformanceExpense(models.Model):
 
     def __str__(self):
         return f"Auftrittsausgabe {self.pk}"
+
+
+class PreviousPerformanceInvoice(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    account = models.ForeignKey(
+        PerformanceAccount, on_delete=models.PROTECT, related_name="previous_invoices"
+    )
+    invoice = models.OneToOneField("billing.Invoice", on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Frühere Auftrittsrechnung {self.pk}"

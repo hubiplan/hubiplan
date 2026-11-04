@@ -67,6 +67,7 @@ BLOCKING_MODELS = {
     "music.performanceaccount": "Betrifft eine Auftrittsabrechnung.",
     "music.musicianclaim": "Betrifft eine Musikervergütung.",
     "music.performanceexpense": "Betrifft eine Auftrittsauszahlung.",
+    "music.previousperformanceinvoice": "Betrifft eine frühere Auftrittsrechnung.",
     "members.memberphoto": "Betrifft Mitgliederfotos.",
     "members.photouploadlink": "Betrifft Mitgliederfotos.",
     "members.transferrequest": "Betrifft einen Vereinswechsel.",

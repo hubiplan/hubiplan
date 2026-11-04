@@ -5697,3 +5697,6 @@ msgstr "The customer and gross amount must match the performance agreement."
 
 msgid "Der Auftraggeber ist bereits mit einer Rechnung verbunden."
 msgstr "The customer is already linked to an invoice."
+
+msgid "Bitte die Veranstalterrechnung zuerst stornieren."
+msgstr "Please cancel the customer invoice first."

@@ -31,6 +31,7 @@ type Settlement = {
   agreed?: string
   invoice?: number
   invoice_status?: string
+  previous_invoices?: number[]
   invoiced?: string
   revenue?: string
   remuneration?: string
@@ -171,6 +172,20 @@ export function SettlementPanel({
           }
         />
       )}
+      {canEdit && d.invoice_status === 'cancelled' && org.permissions.includes('billing.edit') && (
+        <button
+          className="button button-ghost"
+          disabled={busy}
+          onClick={() => void act({ action: 'replace_invoice' }).catch(() => {})}
+        >
+          {t('Stornierte Rechnung ersetzen')}
+        </button>
+      )}
+      {d.previous_invoices?.map((id) => (
+        <Link key={id} to={`/finanzen/rechnungen/leistungen?rechnung=${id}`}>
+          {t('Frühere Veranstalterrechnung')} {id}
+        </Link>
+      ))}
       <h2>{t('Musikervergütungen')}</h2>
       {canEdit && (
         <Amounts

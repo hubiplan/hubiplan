@@ -31,3 +31,5 @@ Record payments with receipts as expenses in the cash book first. Search the boo
 Reverse incorrect payments in the cash book. The original link remains visible, while remuneration becomes unpaid and can be linked to a corrected payment. The overview distinguishes agreed and invoiced amounts, actual income and expenses and their cash result. Approved remuneration is shown separately and does not indicate a completed payment.
 
 General exports and financial audit exports include agreements, remuneration and booking links. Financial retention and anonymization include settlement notes.
+
+Use **Replace cancelled invoice** after fully cancelling the customer invoice. Then correct the agreement and create a replacement invoice. Previous invoices remain linked and traceable in the audit export.

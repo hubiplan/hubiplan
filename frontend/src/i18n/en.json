@@ -5255,5 +5255,7 @@
   "Auszahlung zuordnen": "Link payment",
   "Teilnahme bestätigt": "Attendance confirmed",
   "Abrechnungsvermerk": "Settlement note",
-  "Meine Vergütung": "My remuneration"
+  "Meine Vergütung": "My remuneration",
+  "Stornierte Rechnung ersetzen": "Replace cancelled invoice",
+  "Frühere Veranstalterrechnung": "Previous customer invoice"
 }
