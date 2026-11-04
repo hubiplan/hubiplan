@@ -46,12 +46,11 @@ const icon = (d: string) => (
 
 export const modules: AppModule[] = [
   {
-    id: 'aufgaben',
-    label: t('Aufgaben'),
-    path: '/aufgaben',
-    icon: icon('M4 5h16v15H4zM8 12l3 3 5-7'),
-    visible: (org, ws) =>
-      !!(org?.permissions.includes('todos.view') || ws.dept?.permissions.includes('todos.view')),
+    id: 'musik',
+    label: t('Musik'),
+    path: '/musik',
+    icon: icon('M9 18V5l11-2v13M9 8l11-2M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'),
+    visible: (org) => !!org?.modules.includes('music') && org.permissions.includes('music.view'),
   },
   {
     id: 'start',
@@ -59,6 +58,14 @@ export const modules: AppModule[] = [
     path: '/',
     icon: icon('M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-5h4v5M16 7.5V4.5h2.5v5.2'),
     visible: () => true,
+  },
+  {
+    id: 'aufgaben',
+    label: t('Aufgaben'),
+    path: '/aufgaben',
+    icon: icon('M4 5h16v15H4zM8 12l3 3 5-7'),
+    visible: (org, ws) =>
+      !!(org?.permissions.includes('todos.view') || ws.dept?.permissions.includes('todos.view')),
   },
   {
     id: 'mitglieder',
@@ -145,6 +152,16 @@ export const modules: AppModule[] = [
         ? (org.type === 'club' || org.type === 'federation') &&
           org.permissions.includes(PERM.docsView)
         : !!(ws.dept?.permissions.includes(PERM.docsView) || ws.portal),
+  },
+  {
+    id: 'material',
+    label: t('Material'),
+    path: '/material',
+    icon: icon('M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10'),
+    visible: (org, ws) =>
+      org
+        ? org.modules.includes('material') && org.permissions.includes('material.view')
+        : !!(ws.dept?.material_enabled && ws.dept.permissions.includes('material.view')),
   },
   {
     id: 'rundschreiben',

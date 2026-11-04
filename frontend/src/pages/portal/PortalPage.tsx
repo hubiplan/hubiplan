@@ -1,8 +1,10 @@
 // Mitgliederbereich nach Aufgaben: Ausweis, Rechnungen, Rundschreiben, eigene Daten.
 import { PortalCirculars } from './PortalCirculars.tsx'
-import { useState } from 'react'
+import { PortalTodos } from './PortalTodos.tsx'
+import { OwnMusic } from '../music/OwnMusic.tsx'
+import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes, useSearchParams } from 'react-router-dom'
 import { FIELD_LABELS, portalApi } from '../../api/portal.ts'
 import type { ChangeRequest, PortalDetail, PortalEntry } from '../../api/portal.ts'
 import {
@@ -68,10 +70,26 @@ function currentValues(d: PortalDetail): Record<FieldKey, string> {
 }
 
 export function PortalPage() {
-  const { activePortal } = useOrg()
+  const { activePortal, portal, select } = useOrg()
+  const [params] = useSearchParams()
+  const target = params.get('zugang')
+  const knownTarget = portal.some((access) => String(access.id) === target)
+  useEffect(() => {
+    if (target && knownTarget && String(activePortal?.id) !== target) select(`p:${target}`)
+  }, [target, knownTarget, activePortal?.id, select])
+  if (target && (!knownTarget || String(activePortal?.id) !== target))
+    return <p>{t('Kein Mitgliederbereich ausgewählt.')}</p>
   if (!activePortal) return <Alert kind="info">{t('Kein Mitgliederbereich ausgewählt.')}</Alert>
   return (
     <Routes>
+      <Route
+        path="aufgaben"
+        element={
+          <PortalSection title={t('Aufgaben')}>
+            <PortalTodos key={activePortal.id} accessId={activePortal.id} />
+          </PortalSection>
+        }
+      />
       <Route index element={<PortalOverview key={activePortal.id} entry={activePortal} />} />
       <Route
         path="ausweis"
@@ -150,6 +168,11 @@ function PortalSection({ title, children }: { title: string; children: ReactNode
 export function PortalTasks({ entry }: { entry: PortalEntry }) {
   const tasks: { to: string; title: string; text: string }[] = [
     {
+      to: '/mein-bereich/aufgaben',
+      title: t('Aufgaben'),
+      text: t('Freigegebene Aufgaben ansehen und übernehmen'),
+    },
+    {
       to: '/mein-bereich/ausweis',
       title: t('Ausweis zeigen'),
       text: t('QR-Code vorzeigen oder als PDF speichern'),
@@ -222,6 +245,7 @@ function PortalOverview({ entry }: { entry: PortalEntry }) {
         {data?.status === 'former' && t(' · ehemaliges Mitglied')}
       </p>
       <PortalTasks entry={entry} />
+      <OwnMusic accessId={entry.id} />
       {pending && (
         <Alert kind="info">
           {t('Deine Änderungsmeldung vom {x} wird noch geprüft.', {

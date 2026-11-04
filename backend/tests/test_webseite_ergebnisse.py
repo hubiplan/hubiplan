@@ -8,7 +8,16 @@ from decimal import Decimal
 import pytest
 from django.test import Client
 
-from competitions.models import AwardGrant, Competition, Score, Scoring, Series, Starter, Trophy
+from competitions.models import (
+    AwardGrant,
+    Competition,
+    Placing,
+    Score,
+    Scoring,
+    Series,
+    Starter,
+    Trophy,
+)
 from organizations.models import Department
 from website import services
 from website.models import Website
@@ -135,6 +144,127 @@ class TestErgebnisse:
         data = get(f"results/{token}/").json()
         assert [s["name"] for s in data["scorings"]] == ["Zugwertung"]
         assert data["scorings"][0]["rows"][0]["name"] == "Zug 1"
+
+    @pytest.mark.parametrize("own", [True, False])
+    @pytest.mark.parametrize("prize_places", [0, 1, 2, 5, 10])
+    def test_preisplaetze_je_wertung_und_startseite(self, setup, own, prize_places):
+        org, comp = setup["org"], setup["comp"]
+        comp.own = own
+        comp.status = "endgueltig"
+        comp.website_depth = "top3"  # Auch bisher gespeicherte Einstellungen gelten weiter.
+        comp.save()
+        first = comp.scorings.get(name="Einzel")
+        first.prize_places = prize_places
+        first.save()
+        second = Scoring.objects.create(
+            organization=org, competition=comp, name="Zweite Wertung", prize_places=2
+        )
+        for name, value in (("Anna Probe", 19), ("Otto Test", 18)):
+            starter = Starter.objects.create(organization=org, competition=comp, name=name)
+            Score.objects.create(organization=org, scoring=first, starter=starter, value=value)
+        starters = list(comp.starters.order_by("pk"))
+        for place, starter in enumerate(starters, 1):
+            if not own:
+                Placing.objects.create(
+                    organization=org, scoring=first, starter=starter, place=place
+                )
+                Placing.objects.create(
+                    organization=org, scoring=second, starter=starter, place=7 - place
+                )
+            else:
+                Score.objects.create(organization=org, scoring=second, starter=starter, value=place)
+
+        token = get("results/").json()["competitions"][0]["id"]
+        detail = get(f"results/{token}/").json()
+        home = get("results/?start=1").json()["competitions"][0]
+        for data in (detail, home):
+            name_key = "name" if data is detail else "scoring"
+            scorings = {s[name_key]: s for s in data["scorings"]}
+            rows = scorings["Einzel"]["rows"]
+            assert [r["place"] for r in rows] == list(range(1, min(prize_places, 6) + 1))
+            assert all(r["prize"] for r in rows)
+            if prize_places >= 3:
+                assert rows[2]["name"] == "ohne Namen"  # Minderjährig ohne Einwilligung.
+            assert [r["place"] for r in scorings["Zweite Wertung"]["rows"]] == [1, 2]
+            assert [r["name"] for r in scorings["Zweite Wertung"]["rows"]] == [
+                "Otto T.",
+                "Anna P.",
+            ]
+        assert detail["depth"] == "top3"
+        assert detail["scorings"][0]["complete"] is False
+        assert detail["scorings"][0]["field"] == 6
+        if own:
+            unit = next(s for s in detail["scorings"] if s["kind"] == "einheit")
+            assert unit["complete"] is True
+            assert unit["rows"][0]["name"] == "Zug 1"
+
+    def test_geteilte_preisplaetze_ohne_ungewertete_starter(self, setup):
+        comp = setup["comp"]
+        comp.status = "laeuft"
+        comp.website = "live"
+        comp.website_depth = "top3"
+        comp.save()
+        scoring = comp.scorings.get(name="Einzel")
+        scoring.prize_places = 2
+        scoring.save()
+        score = Score.objects.get(scoring=scoring, starter=setup["st"]["Erika"])
+        score.value = 27  # Erika und Jonas teilen sich den zweiten Preisplatz.
+        score.save()
+        gast = comp.starters.get(club="Nachbarverein")
+        gast.out_of_competition = True
+        gast.save()
+        Starter.objects.create(organization=setup["org"], competition=comp, name="Ohne Wert")
+        token = get("results/").json()["competitions"][0]["id"]
+        for data in (
+            get(f"results/{token}/").json(),
+            get("results/?start=1").json()["competitions"][0],
+        ):
+            rows = data["scorings"][0]["rows"]
+            assert [r["place"] for r in rows] == [1, 2, 2]
+            assert [r["name"] for r in rows] == ["Max M.", "Erika B.", "ohne Namen"]
+
+    def test_fremde_platzierungen_mit_luecken(self, setup):
+        comp = setup["comp"]
+        comp.own = False
+        comp.status = "endgueltig"
+        comp.website_depth = "top3"
+        comp.save()
+        scoring = comp.scorings.get(name="Einzel")
+        scoring.prize_places = 5
+        scoring.save()
+        for starter, place in zip(comp.starters.order_by("pk"), [2, 4, 8, None], strict=True):
+            Placing.objects.create(
+                organization=setup["org"], scoring=scoring, starter=starter, place=place, value=20
+            )
+        token = get("results/").json()["competitions"][0]["id"]
+        rows = get(f"results/{token}/").json()["scorings"][0]["rows"]
+        assert [r["place"] for r in rows] == [2, 4]
+
+    def test_einstellung_speichern_und_preisplaetze_live_aendern(self, setup, api, board_a):
+        comp = setup["comp"]
+        comp.status = "laeuft"
+        comp.save()
+        base = f"/api/orgs/{setup['org'].pk}/competitions/{comp.pk}/"
+        client = api(board_a)
+        response = client.patch(
+            base, {"website": "live", "website_depth": "top3"}, "application/json"
+        )
+        assert response.status_code == 200
+        comp.refresh_from_db()
+        assert comp.website_depth == "top3"
+        scoring = comp.scorings.get(name="Einzel")
+        token = get("results/").json()["competitions"][0]["id"]
+        for count in (1, 4, 0):
+            before = get(f"results/{token}/version/").json()["version"]
+            response = client.patch(
+                f"{base}scorings/{scoring.pk}/", {"prize_places": count}, "application/json"
+            )
+            assert response.status_code == 200
+            assert response.json()["prize_places"] == count
+            scoring.refresh_from_db()
+            assert scoring.prize_places == count
+            assert get(f"results/{token}/version/").json()["version"] != before
+            assert len(get(f"results/{token}/").json()["scorings"][0]["rows"]) == count
 
     def test_reihe_pokal_und_startseite(self, setup):
         org, comp = setup["org"], setup["comp"]

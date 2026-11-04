@@ -77,12 +77,29 @@ for kind, name, city in [
         street='Musterweg 1', contact_email='kontakt@example.org',
     )
 for o in Organization.objects.filter(type='club'):
-    o.enabled_modules = sorted(set(o.enabled_modules or []) | {'competitions', 'entries', 'website'})
+    o.enabled_modules = sorted(set(o.enabled_modules or []) | {'competitions', 'entries', 'website', 'material'})
     o.cash_counts_enabled = True
     # Englische Bezeichnung der Untereinheiten (sonst zeigt die englische Oberfläche „Züge“)
     if o.department_label == 'Zug' and not o.department_label_en:
         o.department_label_en, o.department_label_plural_en = 'platoon', 'platoons'
     o.save(update_fields=['enabled_modules', 'cash_counts_enabled', 'department_label_en', 'department_label_plural_en'])
+# Materialbeispiele nur in der wegwerfbaren Bildschirmfoto-Datenbank.
+from materials.models import MaterialItem
+from access.models import Role
+for o in Organization.objects.filter(type='club'):
+    for name, description, purpose in [
+        ('Beamer mit Zubehör', 'Beamer im schwarzen Koffer mit Fernbedienung und HDMI-Kabel.', 'Präsentationen und Mitgliederversammlungen'),
+        ('Kabeltrommel 25 m', 'Kabeltrommel mit vier Steckdosen für Veranstaltungen.', 'Stromversorgung bei Vereinsveranstaltungen'),
+        ('Werkzeugkoffer', 'Schraubendreher, Zangen und Schraubenschlüssel im Koffer.', 'Aufbau und kleinere Reparaturen'),
+    ]:
+        MaterialItem.objects.create(organization=o, title=name, description=description,
+            purpose=purpose, location_kind='address', address={'name': 'Vereinsheim',
+            'street': 'Musterweg 1', 'postal_code': '12345', 'city': 'Musterstadt', 'country': 'Deutschland'},
+            location_note='Materialraum, Regal links')
+    for role in Role.objects.filter(organization=o, department__isnull=True):
+        if 'roles.edit' in role.permissions:
+            role.permissions = sorted(set(role.permissions) | {'material.edit'})
+            role.save(update_fields=['permissions'])
 # Lastschrift (Beispiel-Gläubiger-ID der Bundesbank) und eine Mahnstufe
 from billing.models import BillingSettings, DunningLevel
 from finance.models import Account

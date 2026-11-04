@@ -67,6 +67,12 @@ export function fakeApi(routes: Record<string, Handler>) {
       .replace(/\/member-settings\/$/, '/')
     const handler =
       routes[key] ??
+      (/^GET \/api\/(orgs|depts)\/\d+\/todos\/remote\/$/.test(key)
+        ? () => ({ status: 200, body: { items: [] } })
+        : undefined) ??
+      (/^GET \/api\/(orgs|depts)\/\d+\/todos\/\d+\/remote\/$/.test(key)
+        ? () => ({ status: 200, body: { version: 1, couplings: [], shares: [] } })
+        : undefined) ??
       (/^GET \/api\/(orgs|depts)\/\d+\/todos\/\d+\/attachments\/$/.test(key)
         ? () => ({ status: 200, body: { items: [], documents: [] } })
         : undefined) ??

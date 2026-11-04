@@ -10,7 +10,15 @@ def todo_tasks(user, org, perms, department_id=None):
     if "todos.view" not in perms:
         return []
     scope = scope_for(user, org.pk, department_id)
-    rows = list(visible(user, scope).filter(status="open").order_by("due_date", "-created_at"))
+    from .remote import fresh_rows
+
+    rows = [
+        t
+        for t in fresh_rows(
+            visible(user, scope).filter(status="open").order_by("due_date", "-created_at")
+        )
+        if t.status == "open"
+    ]
     dated = [t for t in rows if t.due_date]
     undated = [t for t in rows if not t.due_date][:5]
     dated.sort(

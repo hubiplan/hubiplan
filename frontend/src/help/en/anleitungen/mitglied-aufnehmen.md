@@ -20,3 +20,5 @@ Before you start: there is at least one membership type (Members › Setup › M
    change them afterwards in the member record.
 
 ![The “Admit member” form](bild:mitglieder-aufnehmen)
+
+If sub-units cannot be loaded, a message offers **Reload**. You can retrieve the choices again without losing names or other details you have already entered.

@@ -181,6 +181,7 @@ AREAS: tuple[Area, ...] = (
         gettext_noop("Anmeldelinks schicken und Zugänge beenden"),
         org_types=("club",),
         dept_levels=_BOTH,
+        module="members",
     ),
     Area(
         "settings",
@@ -217,6 +218,14 @@ AREAS: tuple[Area, ...] = (
         dept_levels=_BOTH,
     ),
     Area(
+        "material",
+        gettext_noop("Material"),
+        gettext_noop("Materialbestand und Zuordnungen sehen"),
+        gettext_noop("Material, Standorte und Zuordnungen bearbeiten"),
+        dept_levels=_BOTH,
+        module="material",
+    ),
+    Area(
         "audit",
         gettext_noop("Änderungsprotokoll"),
         gettext_noop("Änderungsprotokoll und Postausgang einsehen"),
@@ -241,6 +250,13 @@ AREAS: tuple[Area, ...] = (
         dept_levels=(VIEW,),
         module="billing",
         dept_label=gettext_noop("Rechnungen {gen}"),
+    ),
+    Area(
+        "music",
+        gettext_noop("Musik"),
+        gettext_noop("Musiker und Auftritte lesen"),
+        gettext_noop("Musiker und Auftritte bearbeiten"),
+        module="music",
     ),
     Area(
         "events",
@@ -364,6 +380,8 @@ AREA_BY_ID: dict[str, Area] = {a.id: a for a in AREAS}
 
 # Abschaltbare Module (Organization.enabled_modules); ihre Bereiche fehlen, wenn aus
 SWITCHABLE_MODULES: tuple[str, ...] = (
+    "music",
+    "material",
     "members",
     "finance",
     "billing",
@@ -374,7 +392,9 @@ SWITCHABLE_MODULES: tuple[str, ...] = (
 )
 # Module, die eine neue Einheit nicht automatisch bekommt (die Plattform schaltet
 # sie gezielt frei, z. B. die Webseite nur für Einheiten, die eine haben sollen)
-OPT_IN_MODULES: frozenset[str] = frozenset({"website", "competitions", "entries"})
+OPT_IN_MODULES: frozenset[str] = frozenset(
+    {"website", "competitions", "entries", "material", "music"}
+)
 DEFAULT_MODULES: tuple[str, ...] = tuple(m for m in SWITCHABLE_MODULES if m not in OPT_IN_MODULES)
 
 
@@ -555,6 +575,44 @@ def level_of(codes, area: str) -> str | None:
     return None
 
 
+def module_available(area: Area, org) -> bool:
+    """Freigabe der Einheit; Untereinheiten bleiben an ihren Verein gebunden."""
+    if not area.module or org is None:
+        return True
+    if area.module not in (org.enabled_modules or []):
+        return False
+    if org.type == "unit":
+        owner = org.organization
+        return owner is not None and area.module in (owner.enabled_modules or [])
+    return True
+
+
+def enabled_codes_for(org, *, dept: bool = False) -> set[str]:
+    """Konfigurierbare Codes, ohne abgeschaltete Bereiche und ihre Zusatzrechte."""
+    allowed = set(codes_for("department" if dept else org.type))
+    disabled = {a.id for a in AREAS if not module_available(a, org)}
+    return {
+        c
+        for c in allowed
+        if c.rpartition(".")[0] not in disabled
+        and not any(e.code == c and e.needs in disabled for e in EXTRAS)
+    }
+
+
+def effective_for(codes, org, *, dept: bool = False) -> set[str]:
+    """Freigaben vor dem Ergänzen alter Codes prüfen; gespeicherte Rechte bleiben bestehen."""
+    active = set(normalize(codes, dept=dept)) & enabled_codes_for(org, dept=dept)
+    return effective(active, dept=dept)
+
+
+def preserve_disabled_permissions(value, stored, org, *, dept: bool = False) -> list[str]:
+    """Nur sichtbare Rechte ändern, ruhende Rechte aus dem gespeicherten Stand behalten."""
+    active = enabled_codes_for(org, dept=dept)
+    return sorted(
+        (set(normalize(value, dept=dept)) & active) | (set(normalize(stored, dept=dept)) - active)
+    )
+
+
 def catalog_for(org_type: str | None = None, org=None) -> list[dict]:
     """Katalog für die Rollenmaske: Bereiche mit Stufen, danach die Zusatzrechte.
 
@@ -578,7 +636,7 @@ def catalog_for(org_type: str | None = None, org=None) -> list[dict]:
             levels = a.levels
         else:
             levels = ()
-        if not levels:
+        if not levels or not module_available(a, org):
             continue
         labels = {VIEW: a.view_label, EDIT: a.edit_label}
         entries = [
@@ -608,6 +666,7 @@ def catalog_for(org_type: str | None = None, org=None) -> list[dict]:
         }
         for e in EXTRAS
         if (e.dept if dept else org_type is None or org_type in e.org_types)
+        and module_available(AREA_BY_ID[e.needs], org)
     ]
     if extras:
         result.append(

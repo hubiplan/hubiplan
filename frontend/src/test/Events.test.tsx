@@ -2,7 +2,10 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
+import { AuthProvider } from '../auth/AuthContext.tsx'
+import { OrgProvider } from '../org/OrgContext.tsx'
 import { CalendarView } from '../components/calendar/CalendarView.tsx'
+import { UpcomingTile } from '../components/calendar/UpcomingTile.tsx'
 import {
   addDays,
   berlin,
@@ -104,7 +107,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     expect(await screen.findByText('Jahreshauptversammlung')).toBeInTheDocument()
@@ -146,7 +153,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter initialEntries={[`/termine?termin=1&datum=${today()}`]}>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     const dialog = await screen.findByRole('dialog')
@@ -186,7 +197,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     const user = userEvent.setup()
@@ -210,7 +225,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
@@ -232,7 +251,11 @@ describe('Kalender', () => {
     fakeApi({ [monthKey()]: () => listResponse([]) })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     const opener = await screen.findByRole('button', { name: 'Neuer Termin' })
@@ -264,7 +287,11 @@ describe('Kalender', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     expect(await screen.findByText('Jahreshauptversammlung')).toBeInTheDocument()
@@ -274,4 +301,62 @@ describe('Kalender', () => {
       `${base}events/program/?year=${today().slice(0, 4)}`,
     )
   })
+})
+
+describe('Terminaktion auf der Startseite', () => {
+  function renderTile(calendar: string) {
+    return render(
+      <MemoryRouter>
+        <AuthProvider>
+          <OrgProvider>
+            <UpcomingTile base={calendar} />
+          </OrgProvider>
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  it.each(['/api/orgs/7/', '/api/depts/4/'])(
+    'legt direkt im Kalender %s an und lädt die Kachel neu',
+    async (calendar) => {
+      let items: ReturnType<typeof occurrence>[] = []
+      const list = `GET ${calendar}events/?from=${today()}&to=${addDays(today(), 90)}&upcoming=1`
+      const calls = fakeApi({
+        [list]: () => listResponse(items),
+        [`POST ${calendar}events/`]: () => {
+          items = [occurrence({ event_id: 9, title: 'Arbeitsabend' })]
+          return { status: 201, body: { id: 9 } }
+        },
+      })
+      renderTile(calendar)
+      const user = userEvent.setup()
+      await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
+      const dialog = await screen.findByRole('dialog', { name: 'Neuer Termin' })
+      await user.type(within(dialog).getByLabelText('Titel'), 'Arbeitsabend')
+      await user.selectOptions(within(dialog).getByLabelText('Kategorie'), '3')
+      await user.click(within(dialog).getByRole('button', { name: 'Termin anlegen' }))
+      expect(await screen.findByText('Arbeitsabend')).toBeInTheDocument()
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      const post = calls.find((c) => c.key === `POST ${calendar}events/`)!
+      expect(JSON.parse(String(post.init?.body))).toMatchObject({
+        title: 'Arbeitsabend',
+        category: 3,
+      })
+      expect(calls.filter((c) => c.key === list)).toHaveLength(2)
+    },
+  )
+
+  it.each(['/api/orgs/7/', '/api/portal/2/'])(
+    'bietet ohne Anlegerecht im Kalender %s nur die Übersicht an',
+    async (calendar) => {
+      fakeApi({
+        [`GET ${calendar}events/?from=${today()}&to=${addDays(today(), 90)}&upcoming=1`]: () =>
+          listResponse([], false),
+      })
+      renderTile(calendar)
+      expect(await screen.findByText('In den nächsten Wochen keine Termine.')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Neuer Termin' })).not.toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Zum Kalender' })).toHaveAttribute('href', '/termine')
+    },
+  )
 })

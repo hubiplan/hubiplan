@@ -3,12 +3,28 @@
 // Untereinheiten; die ganze Rangliste nur, wenn der Veranstalter sie freigibt.
 import type { Scope } from '../../api/entries.ts'
 import { entryResultsApi } from '../../api/entryResults.ts'
+import { ApiError } from '../../api/client.ts'
+import { LoadError } from '../../components/ui.tsx'
 import { useLoad } from '../../components/forms.ts'
 import { t } from '../../i18n/index.ts'
 
 export function EntryResultsCard({ org, call }: { org: Scope; call: number }) {
-  const res = useLoad(() => entryResultsApi.get(org, call), [org, call])
+  const res = useLoad(async () => {
+    try {
+      return await entryResultsApi.get(org, call)
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) return null
+      throw error
+    }
+  }, [org, call])
   const data = res.data
+  if (res.error)
+    return (
+      <section className="card card-wide">
+        <h2>{t('Ergebnisse')}</h2>
+        <LoadError message={res.error} onRetry={() => void res.reload()} />
+      </section>
+    )
   if (!data) return null
   return (
     <div className="card card-wide">

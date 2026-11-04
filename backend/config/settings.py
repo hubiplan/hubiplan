@@ -45,6 +45,8 @@ APPLE_WALLET_CERTIFICATE_PASSWORD = os.environ.get("APPLE_WALLET_CERTIFICATE_PAS
 APPLE_WALLET_WWDR_FILE = os.environ.get("APPLE_WALLET_WWDR_FILE", "")
 
 INSTALLED_APPS = [
+    "music",
+    "materials",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -230,6 +232,8 @@ SPECTACULAR_SETTINGS = {
     "SWAGGER_UI_FAVICON_HREF": "https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.29.5/favicon-32x32.png",
     # Eindeutige Namen für Auswahllisten, die mehrfach vorkommen
     "ENUM_NAME_OVERRIDES": {
+        "ScorePartKindEnum": ["part", "score"],
+        "ScorePaperFormatEnum": ["concert", "march"],
         "OrganizationTypeEnum": "organizations.models.Organization.Type",
         "InvoiceStatusEnum": "billing.models.Invoice.Status",
         "GenderEnum": [("f", "die (weiblich)"), ("m", "der (männlich)"), ("n", "das (sächlich)")],
@@ -254,6 +258,11 @@ CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", False)
 CELERY_TIMEZONE = "Europe/Berlin"
 # Regelmäßige Jobs (laufen im Dienst "beat")
 CELERY_BEAT_SCHEDULE = {
+    "music-rehearsal-reminders": {
+        "task": "music.practice_tasks.rehearsal_reminders",
+        "schedule": 3600.0,
+    },
+    "materials-purge": {"task": "materials.tasks.purge_deleted", "schedule": 86400.0},
     "todos-reminders": {"task": "todos.tasks.send_due_reminders", "schedule": 300.0},
     "todos-completed": {"task": "todos.tasks.purge_completed", "schedule": 86400.0},
     "todos-purge": {"task": "todos.tasks.purge_deleted", "schedule": 86400.0},
@@ -468,6 +477,7 @@ OIDC_ISSUER = os.environ.get("OIDC_ISSUER", "")
 OIDC_KEY_FILE = os.environ.get("OIDC_KEY_FILE", "")
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
+EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")
 # Push an die App (Web-Push mit VAPID). Schlüsseldatei Standard: PRIVATE_ROOT/push/vapid.json
 PUSH_VAPID_KEY_FILE = os.environ.get("PUSH_VAPID_KEY_FILE", "")
 # Absender-Angabe für Push-Dienste (https-Adresse oder mailto:), Standard FRONTEND_URL

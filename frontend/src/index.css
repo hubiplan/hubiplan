@@ -16,6 +16,31 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Schaltflächen besitzen in jedem Farbbereich eine eigene, deckende Fläche. */
+:root,
+.stand-page,
+.stand-page .live-camera,
+.stand-page .stand-block {
+  --color-button-bg: color-mix(in srgb, var(--color-text) 12%, var(--color-surface));
+  --color-button-hover: color-mix(in srgb, var(--color-text) 19%, var(--color-surface));
+  --color-button-disabled: color-mix(in srgb, var(--color-text) 10%, var(--color-surface));
+  --color-button-primary: var(--button-brand-primary);
+  --color-button-primary-hover: var(--button-brand-primary-hover);
+  --color-on-button-primary: var(--button-brand-on-primary);
+}
+
+:where(button, input[type='button'], input[type='submit'], input[type='reset']) {
+  background: var(--color-button-bg);
+  color: var(--color-text);
+}
+
+input[type='file']::file-selector-button {
+  background: var(--color-button-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius);
+}
+
 h1 {
   font-size: 1.6rem;
   margin: 0 0 0.75rem;
@@ -194,37 +219,62 @@ code {
   font-weight: 600;
   border-radius: var(--radius);
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  background: var(--color-button-bg);
   color: var(--color-text);
   cursor: pointer;
 }
 
 /* gesperrt: deutlich blasser als ein normaler Knopf */
-.button:disabled {
-  opacity: 0.45;
+button:disabled,
+.button:disabled,
+input:is([type='button'], [type='submit'], [type='reset']):disabled {
+  opacity: 1;
+  background: var(--color-button-disabled);
+  color: var(--color-text-muted);
+  border-color: var(--color-input-border);
   cursor: not-allowed;
 }
 
 .button-primary {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--color-button-primary);
+  color: var(--color-on-button-primary);
   border-color: transparent;
 }
 
 .button-primary:hover:not(:disabled) {
-  background: var(--color-primary-hover);
+  background: var(--color-button-primary-hover);
 }
 
 .button-ghost {
-  background: transparent;
+  background: var(--color-button-bg);
   color: var(--color-text);
-  border-color: var(--color-border);
+  border-color: var(--color-input-border);
+}
+
+.button:is([aria-pressed='true'], [aria-selected='true'], .is-active, .active):not(:disabled),
+button.tab.active {
+  background: var(--color-button-primary);
+  color: var(--color-on-button-primary);
+  border-color: var(--color-button-primary);
+}
+.button:is([aria-pressed='true'], [aria-selected='true'], .is-active, .active):hover:not(
+    :disabled
+  ) {
+  background: var(--color-button-primary-hover);
 }
 
 /* Mouse-over (Ralf 2026-11-01): jeder bedienbare Knopf zeigt es deutlich, sonst wirkt er
    wie gesperrt. Der frühere Hover-Ton glich dem Seitenhintergrund und war unsichtbar. */
-.button:not(.button-primary, .button-danger-solid):hover:not(:disabled) {
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+.button:not(
+    .button-primary,
+    .button-danger-solid,
+    .button-danger,
+    [aria-pressed='true'],
+    [aria-selected='true'],
+    .is-active,
+    .active
+  ):hover:not(:disabled) {
+  background: var(--color-button-hover);
   border-color: var(--color-primary);
 }
 
@@ -507,7 +557,7 @@ code {
   width: 2.5rem;
   height: 2.5rem;
   padding: 0.5rem;
-  background: none;
+  background: var(--color-button-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   cursor: pointer;
@@ -540,7 +590,7 @@ code {
   padding: 0.4rem 0.6rem;
   font: inherit;
   color: inherit;
-  background: transparent;
+  background: color-mix(in srgb, var(--sidebar-text) 14%, var(--sidebar-bg));
   border: 1px solid currentColor;
   border-radius: var(--radius);
   cursor: pointer;
@@ -838,7 +888,7 @@ fieldset {
 }
 
 .button-danger {
-  background: transparent;
+  background: color-mix(in srgb, var(--color-error) 10%, var(--color-surface));
   color: var(--color-error);
   border-color: var(--color-error);
 }
@@ -849,11 +899,12 @@ fieldset {
 }
 
 .link-button {
-  background: none;
+  background: var(--color-button-bg);
   border: 0;
-  padding: 0;
+  border-radius: var(--radius);
+  padding: 0.15rem 0.35rem;
   font: inherit;
-  color: var(--color-link);
+  color: var(--color-text);
   cursor: pointer;
   text-decoration: none;
 }
@@ -998,7 +1049,7 @@ fieldset {
 
 .chip button {
   border: 0;
-  background: none;
+  background: var(--color-button-bg);
   cursor: pointer;
   font-size: 1rem;
   line-height: 1;
@@ -1225,10 +1276,50 @@ fieldset {
   gap: 0 1rem;
 }
 
+.member-secondary-actions,
+.member-filter-options,
+.member-results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.member-secondary-actions {
+  margin-bottom: 0.75rem;
+}
+.member-filter-options {
+  flex: 1 1 100%;
+}
+.member-results-toolbar {
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.member-results-toolbar p,
+.member-results-toolbar .pager {
+  margin: 0;
+}
+.member-page-size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.member-page-size select {
+  font: inherit;
+  color: inherit;
+  background: var(--color-surface);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius);
+  padding: 0.55rem;
+}
+.member-mobile-toggle {
+  display: none;
+}
+
 .th-sort {
-  background: none;
+  background: var(--color-button-bg);
   border: 0;
-  padding: 0;
+  border-radius: var(--radius);
+  padding: 0.2rem 0.4rem;
   font: inherit;
   color: inherit;
   text-transform: inherit;
@@ -1320,7 +1411,7 @@ fieldset {
 }
 
 button.tab {
-  background: none;
+  background: var(--color-button-bg);
   border: 0;
   border-bottom: 3px solid transparent;
   font: inherit;
@@ -1328,7 +1419,7 @@ button.tab {
 }
 
 button.tab.active {
-  color: var(--color-text);
+  color: var(--color-on-button-primary);
   font-weight: 600;
   border-bottom-color: var(--color-focus);
 }
@@ -1339,6 +1430,40 @@ button.tab.active {
 
 /* Handy: in der Mitgliederliste nur Name und Mitgliedsart */
 @media (max-width: 640px) {
+  .member-mobile-toggle {
+    display: inline-flex;
+  }
+  .member-secondary-actions:not(.is-expanded),
+  .member-filter-options:not(.is-expanded) {
+    display: none;
+  }
+  .member-list-page .page-head {
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .member-list-page .page-head h1 {
+    margin-bottom: 0.5rem;
+  }
+  .member-list-page .filters {
+    padding: 0.75rem;
+  }
+  .member-list-page .search-input {
+    flex-basis: 100%;
+  }
+  .member-filter-options > select {
+    width: 100%;
+  }
+  .member-results-toolbar .pager {
+    flex-basis: 100%;
+    gap: 0.5rem;
+  }
+  .member-table {
+    table-layout: fixed;
+    overflow-wrap: anywhere;
+  }
+  .member-table .member-avatar {
+    display: none;
+  }
   .member-table .col-optional {
     display: none;
   }
@@ -1389,14 +1514,14 @@ button.tab.active {
   width: 100%;
   text-align: left;
   padding: 0.45rem 0.75rem;
-  background: none;
+  background: var(--color-button-bg);
   border: 0;
   font: inherit;
   cursor: pointer;
 }
 
 .picker-results button:hover {
-  background: var(--color-bg);
+  background: var(--color-button-hover);
 }
 
 /* --- Meilenstein 3: Abläufe --- */
@@ -1913,8 +2038,8 @@ button.tab.active {
   border-radius: 0 var(--radius) var(--radius) 0;
 }
 .segmented .is-active {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--color-button-primary);
+  color: var(--color-on-button-primary);
 }
 .calendar-grid {
   display: grid;
@@ -1961,7 +2086,7 @@ button.tab.active {
 }
 .calendar-add {
   border: none;
-  background: none;
+  background: var(--color-button-bg);
   color: var(--color-text-muted);
   cursor: pointer;
   font-size: 1rem;
@@ -1981,7 +2106,7 @@ button.tab.active {
   gap: 0.25rem;
   width: 100%;
   border: none;
-  background: none;
+  background: var(--color-button-bg);
   text-align: left;
   font: inherit;
   font-size: 0.8rem;
@@ -1995,7 +2120,7 @@ button.tab.active {
 }
 .event-item:hover,
 .event-item:focus-visible {
-  background: var(--color-bg);
+  background: var(--color-button-hover);
 }
 .calendar-day .event-allday {
   background: var(--color-success-bg);
@@ -2047,12 +2172,22 @@ button.tab.active {
 .modal {
   width: 100%;
   max-width: 44rem;
+  min-width: 0;
 }
 .modal-head {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 1rem;
+  flex-wrap: wrap;
+}
+.modal-head > h2 {
+  flex: 1 1 12rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.modal-head > button {
+  flex: 0 0 auto;
 }
 .event-facts {
   display: grid;
@@ -2288,7 +2423,7 @@ fieldset.subcard legend {
   width: 2rem;
   height: 2rem;
   padding: 0;
-  background: transparent;
+  background: var(--color-button-bg);
   color: var(--color-text-muted);
   border: 1px solid transparent;
   border-radius: var(--radius);
@@ -2299,7 +2434,7 @@ fieldset.subcard legend {
 .icon-button:focus-visible {
   color: var(--color-link);
   border-color: var(--color-border);
-  background: var(--color-bg);
+  background: var(--color-button-hover);
 }
 
 .icon-button-danger:hover,
@@ -2386,7 +2521,7 @@ fieldset.subcard legend {
   padding: 0.35rem 0.5rem;
   border: 0;
   border-radius: 6px;
-  background: none;
+  background: var(--color-button-bg);
   font: inherit;
   font-size: 0.9rem;
   color: var(--color-text);
@@ -2396,7 +2531,7 @@ fieldset.subcard legend {
 
 .undo-step:hover,
 .undo-step:focus-visible {
-  background: var(--color-bg);
+  background: var(--color-button-hover);
 }
 
 .undo-step:focus-visible {
@@ -3027,7 +3162,7 @@ label:has(> .file-input:focus-visible) {
   top: 0.15rem;
   left: 0;
   font-size: 0.75rem;
-  color: #777;
+  color: #666;
 }
 .signature-clear {
   position: absolute;
@@ -3240,7 +3375,7 @@ label:has(> .file-input:focus-visible) {
   padding: 0;
   border: 1px solid transparent;
   border-radius: 4px;
-  background: transparent;
+  background: var(--color-button-bg);
   color: var(--color-text-muted);
   cursor: grab;
   /* Finger zieht die Zeile, nicht die Seite */
@@ -3438,7 +3573,7 @@ label:has(> .file-input:focus-visible) {
   display: grid;
   place-items: center;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-primary);
   font-weight: 700;
 }
 .image-tile-new {
@@ -3621,7 +3756,7 @@ label:has(> .file-input:focus-visible) {
   padding: 0.6rem 0.75rem;
   border: 0;
   border-bottom: 1px solid var(--color-border);
-  background: transparent;
+  background: var(--color-button-bg);
   color: inherit;
   font: inherit;
   font-size: 1.1rem;
@@ -3867,6 +4002,9 @@ label:has(> .file-input:focus-visible) {
 .stand-page,
 .stand-page .live-camera {
   color-scheme: dark;
+  --color-button-primary: var(--color-focus);
+  --color-on-button-primary: #101512;
+  --color-button-primary-hover: color-mix(in srgb, var(--color-focus) 85%, #ffffff);
   --color-bg: color-mix(in srgb, var(--color-primary) 22%, #0c0e0d);
   --color-surface: color-mix(in srgb, var(--color-primary) 18%, #1c201e);
   --color-text: #f2f5f3;
@@ -3894,6 +4032,7 @@ label:has(> .file-input:focus-visible) {
   color: #66706b;
 }
 .stand-page .stand-hit {
+  background: color-mix(in srgb, var(--color-primary) 12%, #ffffff);
   border-bottom-color: #dfe4e1;
 }
 .stand-page .stand-hit.active,

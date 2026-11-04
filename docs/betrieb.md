@@ -328,10 +328,31 @@ weiterhin identifizierbar machen. Wer die laufende Anwendung samt Zugriff auf di
 Schlüssel übernimmt, kann auch die verschlüsselten Inhalte lesen.
 
 - **Schlüssel je Verein:** Jeder Verein (bzw. Dachverband, Plattform) hat einen eigenen
-  Datenschlüssel (AES-256-GCM). Untereinheiten nutzen den ihres Vereins. Die
+  aktiven Datenschlüssel (AES-256-GCM). Untereinheiten nutzen den ihres Vereins. Die
   Datenschlüssel liegen in der Tabelle `core_datakey`, verpackt mit dem Hauptschlüssel.
-  Wird ein Verein gelöscht, fällt sein Datenschlüssel weg und seine Dateien sind nicht
+  Mehrere Generationen je Schlüsselinhaber sind möglich; die Datenbank verhindert
+  zwei gleichzeitig aktive Schlüssel. Neue Schreibvorgänge verwenden ausschließlich
+  die aktive Generation. Fehlt sie bei vorhandenem Schlüsselbestand, bricht das
+  Schreiben ab, statt selbstständig eine Ersatzgeneration anzulegen.
+  Alte Werte und Dateien bleiben anhand ihrer gespeicherten Schlüsselnummer lesbar.
+  Der Cache hält nur Schlüsselmaterial nach Nummer; die aktive Nummer wird bei jeder
+  Auswahl aus der Datenbank gelesen. Das Lesen alter Daten aktiviert keinen alten
+  Schreibschlüssel. `DATA_KEY_CACHE_SECONDS` begrenzt weiterhin die Aufbewahrung des
+  entpackten Schlüsselmaterials (0: bis zum Prozessneustart), nicht die aktive Auswahl.
+  Wird ein Verein gelöscht, fallen alle seine Generationen weg und seine Dateien sind nicht
   mehr lesbar (in Backups erst, wenn die Backups mit dem Schlüssel abgelaufen sind).
+- **Vorbereitung des Datenschlüsselwechsels:** Migration `core.0033` übernimmt die
+  vorhandenen Schlüssel mit unveränderter Nummer und Verpackung als aktiv. Sie erzeugt
+  keine neue Generation und verschlüsselt keine Daten oder Dateien um. Ältere Fassungen
+  können mit diesem weiterhin unveränderten Ein-Generationen-Bestand arbeiten; Inserts
+  ohne `is_active` erhalten den Datenbank-Standardwert `true`. Sobald mehrere
+  Generationen genutzt werden, darf keine Fassung vor dieser Vorbereitung mehr
+  gestartet werden: Sie unterscheidet aktive und alte Schlüssel noch nicht.
+  Generationen nur mit dem folgenden Wechselbefehl umstellen, nicht manuell
+  umschalten oder löschen.
+  Eine explizite Rückmigration von `core.0033` wird bei inaktiven oder mehreren
+  Schlüsseln je Inhaber vor jeder Schemaänderung abgewiesen. Für den unveränderten
+  Ein-Generationen-Bestand bleibt sie möglich.
 - **Hauptschlüssel:** Datei `DATA_KEY_FILE` (Standard `/opt/hubiplan-geheim/datenschluessel`,
   UID 1000, Gruppe 70, Rechte 0440), als Docker-Secret nur in Backend, Worker, Beat und
   Backup. Er steht nicht in der `.env`. `deploy/server-setup.sh` legt ihn beim ersten
@@ -370,6 +391,88 @@ Schlüssel übernimmt, kann auch die verschlüsselten Inhalte lesen.
   Datenbankfelder offen und ist kein normaler Rückweg auf die vorherige Fassung.
   `dateien_verschluesseln --entschluesseln` öffnet die privaten Dateien; beim Rückweg auf
   eine Fassung mit vorhandener Dateiverschlüsselung bleiben sie verschlüsselt.
+
+### Datenschlüssel vollständig wechseln
+
+`datenschluessel_wechseln` stellt die aktuellen verschlüsselten Datenbankfelder,
+privaten Dateien und Personen-Suchmarken eines Schlüsselinhabers auf eine neue
+Generation um. `--organisation` erwartet die Nummer der Plattform, des Dachverbands
+oder Vereins, nicht einer Untereinheit. Untereinheiten seines Schlüsselbereichs
+werden eingeschlossen; ein Vereinsschlüsselwechsel ändert keine Personennamen im
+eigenständigen Schlüsselbereich des Dachverbands. Normale Fremdbestände bleiben
+unverändert. Auch Aufgaben, Änderungsprotokolle, Rückgängig-Pakete, Mailtexte,
+Postausgangsanhänge und verwaiste private Chiffratdateien mit diesem Schlüssel
+gehören zum Bestand. Öffentliche Dateien, andere Schlüsselarten und alte Backups
+werden nicht umgeschrieben.
+
+Voraussetzungen sind ein geprüfter Backup-Stand, genügend freier Platz für eine
+weitere Kopie der größten privaten Datei und ein Wartungsfenster. **Alle Schreiber
+(Backend, Worker, Beat, Backup sowie andere Verwaltungsbefehle) müssen während des
+gesamten Wechsels angehalten bleiben.** Die Option `--schreiber-angehalten` bestätigt
+diesen Zustand, hält Dienste aber nicht selbst an. Eine globale Datenbanksperre
+verhindert parallele Aufrufe dieses Wechselbefehls. Sie sperrt keine normalen
+Anwendungsschreiber. Der Befehl darf nicht in eine äußere Datenbanktransaktion
+eingebettet werden, weil Dateien und bestätigte Zeilentransaktionen unabhängig
+dauerhaft gespeichert werden.
+
+Beispiel mit der erfundenen Schlüsselinhaber-Nummer `42`, nach Backup und Ausrollen:
+
+```bash
+docker compose -f docker-compose.server.yml stop backend worker beat backup
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_wechseln --organisation 42 --probe
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_wechseln --organisation 42 --starten --schreiber-angehalten
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_wechseln --organisation 42 --pruefen
+```
+
+`--probe` prüft den tatsächlichen Bestand authentifiziert und schreibt nichts. Ohne
+Schreibpause ist das nur eine Momentaufnahme. Noch unverschlüsselte nichtleere
+Felder oder referenzierte private Klartextdateien müssen zuerst mit den vorhandenen
+Bestandsbefehlen umgestellt werden. Fehlende Dateien, beschädigte Chiffrate,
+fehlende Schlüssel und widersprüchliche Eigentümer verhindern den Start. Ein
+Schlüsselverweis in einem fremden Datenbereich wird als Bestandsfehler gemeldet und
+nicht stillschweigend neu zugeordnet. Symbolische Links, nicht lokale Speicher und
+Dateien auf weiteren Dateisystemen werden nicht automatisch verfolgt.
+
+`--starten` legt nach erfolgreicher Vorprüfung genau einen Auftrag in
+`core_datakeyrotation` und eine neue aktive Generation atomar an. Danach werden
+Zeilen einzeln mit Prüfung des zuvor gelesenen Stands umgeschrieben. Fachliche
+Zeitstempel, Versionsnummern und Protokollketten bleiben erhalten. Dateien werden
+blockweise in einen auftragsgebundenen temporären Ordner im privaten Speicher
+verschlüsselt, vollständig entschlüsselt gegengeprüft und atomar ersetzt. Es wird
+keine Klartextdatei angelegt. Die Dateizeit bleibt erhalten. Unterbrochene temporäre
+Chiffratdateien werden beim Fortsetzen nur aus diesem bekannten Arbeitsordner
+entfernt; Nutzdateiverweise in Arbeitsordner werden abgewiesen.
+
+Nach einem Abbruch denselben Auftrag **ohne `--starten`** fortsetzen:
+
+```bash
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_wechseln --organisation 42 --schreiber-angehalten
+```
+
+Der Befehl prüft erneut alle Phasen und überspringt nur lesbare Werte mit der festen
+Zielkennung. Eine unvollständige Phase wird nicht anhand eines Fortschrittszählers
+als erledigt betrachtet. Noch offene Aufträge verhindern einen zweiten Start.
+Ein erneuter Aufruf nach erfolgreichem Abschluss prüft nur und erzeugt keine weitere
+Generation. Erst ein ausdrückliches weiteres `--starten` beginnt einen neuen Wechsel.
+
+Ein Auftrag wird erst abgeschlossen, wenn alle aktuellen Chiffrate die Zielkennung
+tragen, sämtliche Datei-Inhalte lesbar und die Suchmarken vollständig korrekt sind.
+`--pruefen` schreibt weder Daten noch Auftragsstatus und prüft auch Zielchiffrate;
+eine gezählte Schlüsselnummer allein reicht nicht. Alte Schlüssel werden niemals
+automatisch entfernt: Sie bleiben für ältere Backups und den untersuchten Rückweg
+notwendig. Nach erfolgreicher Prüfung Dienste neu starten, die Funktionen abnehmen
+und ein neues geprüftes Backup erzeugen. Bei Fehlern bleibt der Auftrag offen und
+die Schreibpause bestehen; Ursache beheben und fortsetzen. Einen gemischten Bestand
+nicht durch manuelles Zurückschalten des aktiven Schlüssels zurückrollen.
+
+Migration `core.0034` legt nur die Auftragstabelle an. Ohne begonnenen Wechsel bleibt
+der bisherige Datenbestand unverändert und der Software-Rückweg möglich. Sobald
+Aufträge vorliegen, verhindert ihre Rückmigration den Verlust der Wiederaufnahme-
+und Nachweisdaten. Der gemeinsame Daten-Rückweg prüft vor jeder Feldänderung auch
+den Zielquelltext der Schlüsselverwaltung, ohne ihn auszuführen. Kennt die
+Zielfassung aktive Generationen oder vorhandene Wechselaufträge nicht, wird der
+Rückweg vor dem Neustart verweigert. Der automatisierte Betriebsablauf und
+zusätzliche vollständige Wiederherstellungsübungen werden separat erweitert.
 
 ## Backups
 

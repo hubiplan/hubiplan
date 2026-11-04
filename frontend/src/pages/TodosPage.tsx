@@ -1,11 +1,17 @@
-import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { MaterialReferences } from '../components/MaterialReferences.tsx'
+import { TodoRemote, TodoRemoteInbox } from '../components/TodoRemote.tsx'
+import { DeleteIcon, RestoreIcon, IconButton } from '../components/icons.tsx'
+import { NewTodoDialog } from '../components/NewTodoDialog.tsx'
+import { TodoEditor } from '../components/TodoEditor.tsx'
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { TodoPortal } from '../components/TodoPortal.tsx'
 import { TodoEventLink } from '../components/TodoEventLink.tsx'
 import { todoApi, todoBase } from '../api/todos.ts'
 import type { Todo } from '../api/todos.ts'
 import { useOrg } from '../org/OrgContext.tsx'
-import { errorMessage, useAutoSave, useForm, useLoad } from '../components/forms.ts'
-import { Field, LoadError, SaveStatus, SelectField } from '../components/ui.tsx'
+import { errorMessage, useLoad } from '../components/forms.ts'
+import { LoadError, SelectField } from '../components/ui.tsx'
 import { t } from '../i18n/index.ts'
 import { TodoSharing } from '../components/TodoSharing.tsx'
 import { TodoOwnership } from '../components/TodoOwnership.tsx'
@@ -13,11 +19,11 @@ import { OrphanTasks } from '../components/OrphanTasks.tsx'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { TodoReminders } from '../components/TodoReminders.tsx'
 import { TodoAttachments } from '../components/TodoAttachments.tsx'
-import { followingChoice, TodoSeries } from '../components/TodoSeries.tsx'
+import { TodoSeries } from '../components/TodoSeries.tsx'
 import { TodoLocalNote, TodoProgress } from '../components/TodoDistribution.tsx'
 import { TodoCleanup } from '../components/TodoCleanup.tsx'
 import './todos.css'
-import { confirmLeave, useDraftGuard, useGuarded } from '../components/leaveGuard.ts'
+import { confirmLeave, useGuarded } from '../components/leaveGuard.ts'
 
 export function TodosPage() {
   const { active, activeDept, activeKey, orgs, departments, select } = useOrg()
@@ -76,23 +82,45 @@ function TodoWorkspace({ base }: { base: string }) {
         (filter === 'sent' && item.shared && item.created_by === user?.id) ||
         (filter === 'overdue' && item.overdue)),
   )
+  function taskParams(item: Todo) {
+    const next = new URLSearchParams(params)
+    next.delete('neu')
+    next.set('aufgabe', String(item.id))
+    if (activeDept) {
+      next.delete('einheit')
+      next.set('abteilung', String(activeDept.id))
+    } else if (active) {
+      next.delete('abteilung')
+      next.set('einheit', String(active.id))
+    }
+    return next
+  }
+  function openTask(item: Todo) {
+    return guard(() => {
+      setNewTask(false)
+      setParams(taskParams(item))
+    })
+  }
   async function change(item: Todo, changes: object) {
     if (!(await confirmLeave())) return
     try {
       setActionError(null)
       const current = tab === 'trash' ? item : await todoApi.get(base, item.id)
-      await todoApi.update(base, item.id, { version: current.version, ...changes })
+      await todoApi.update(base, item.id, {
+        version: current.version,
+        ...changes,
+      })
       await reload()
     } catch (err) {
       setActionError(errorMessage(err))
     }
   }
   return (
-    <section>
-      <div className="page-heading">
+    <section className="todo-workspace stack">
+      <div className="page-heading todo-page-heading">
         <h1>{t('Aufgaben')}</h1>
         <button
-          className="button"
+          className="button button-primary"
           onClick={() => {
             void guard(() => {
               setNewTask(true)
@@ -100,51 +128,60 @@ function TodoWorkspace({ base }: { base: string }) {
             })
           }}
         >
-          {t('Neue Aufgabe')}
+          <span aria-hidden="true">+</span> {t('Neue Aufgabe')}
         </button>
       </div>
-      <div className="button-row" role="group" aria-label={t('Aufgaben')}>
-        {(['open', 'done', 'trash'] as const).map((key) => (
-          <button
-            key={key}
-            className="button button-ghost"
-            aria-pressed={tab === key}
-            onClick={() => {
-              void guard(() => {
-                setTab(key)
-                setNewTask(false)
-                setParams({})
-              })
-            }}
-          >
-            {t(key === 'open' ? 'Offen' : key === 'done' ? 'Erledigt' : 'Papierkorb')}
-          </button>
-        ))}
+      <div className="todo-toolbar">
+        <div className="button-row" role="group" aria-label={t('Aufgaben')}>
+          {(['open', 'done', 'trash'] as const).map((key) => (
+            <button
+              key={key}
+              className="button button-ghost"
+              aria-pressed={tab === key}
+              onClick={() => {
+                void guard(() => {
+                  setTab(key)
+                  setNewTask(false)
+                  setParams({})
+                })
+              }}
+            >
+              {t(key === 'open' ? 'Offen' : key === 'done' ? 'Erledigt' : 'Papierkorb')}
+            </button>
+          ))}
+        </div>
+        <SelectField
+          label={t('Filter')}
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+        >
+          <option value="all">{t('Alle Aufgaben')}</option>
+          <option value="mine">{t('Meine')}</option>
+          <option value="shared">{t('Geteilt mit mir')}</option>
+          <option value="sent">{t('Von mir geteilt')}</option>
+          <option value="overdue">{t('Überfällig')}</option>
+        </SelectField>
       </div>
-      <SelectField
-        label={t('Filter')}
-        value={filter}
-        onChange={(event) => setFilter(event.target.value)}
-      >
-        <option value="all">{t('Alle Aufgaben')}</option>
-        <option value="mine">{t('Meine')}</option>
-        <option value="shared">{t('Geteilt mit mir')}</option>
-        <option value="sent">{t('Von mir geteilt')}</option>
-        <option value="overdue">{t('Überfällig')}</option>
-      </SelectField>
       {error && <LoadError message={error} onRetry={reload} />}
       {actionError && <p role="alert">{actionError}</p>}
-      {can('todos.edit') && can('roles.edit') && <TodoCleanup base={base} />}
-      {can('todos.edit') && can('roles.edit') && (
-        <OrphanTasks base={base} onSaved={() => void reload()} />
+      {data?.source_unavailable && (
+        <div className="button-row">
+          <p role="status">
+            {t('Einige gemeinsame Aufgaben sind gerade nicht abrufbar. Bitte erneut laden.')}
+          </p>
+          <button className="button" onClick={() => void reload()}>
+            {t('Erneut laden')}
+          </button>
+        </div>
       )}
       {newTask && (
-        <TodoEditor
+        <NewTodoDialog
           key="new"
+          onClose={() => setNewTask(false)}
           initialEvent={Number(params.get('termin')) || undefined}
+          initialMaterial={Number(params.get('material')) || undefined}
           base={base}
           onSaved={() => {
-            setNewTask(false)
             void reload()
           }}
         />
@@ -155,7 +192,10 @@ function TodoWorkspace({ base }: { base: string }) {
       {selected && tab !== 'trash' && (
         <TodoEventLink base={base} todo={selected} onSaved={() => void reload()} />
       )}
-      {selected && (selected.due_date || selected.series) && (
+      {selected && tab !== 'trash' && (
+        <MaterialReferences kind="todo" id={selected.id} sourceBase={base} />
+      )}
+      {selected && selected.remote_mode !== 'common' && (selected.due_date || selected.series) && (
         <TodoSeries
           key={`series-${selected.id}-${selected.series?.id ?? 'new'}`}
           base={base}
@@ -193,6 +233,17 @@ function TodoWorkspace({ base }: { base: string }) {
           onSaved={() => void reload()}
         />
       )}
+      {selected?.can_share && !selected.distributed && tab !== 'trash' && (
+        <TodoRemote
+          key={`remote-${selected.id}`}
+          base={base}
+          todo={selected}
+          onSaved={() => void reload()}
+        />
+      )}
+      {selected?.can_share && !selected.per_unit && tab !== 'trash' && (
+        <TodoPortal base={base} todo={selected} onSaved={() => void reload()} />
+      )}
       {selected?.can_share && tab !== 'trash' && (
         <TodoSharing
           key={`share-${selected.id}`}
@@ -209,182 +260,112 @@ function TodoWorkspace({ base }: { base: string }) {
           onSaved={() => void reload()}
         />
       )}
-      <ul className="plain-list task-list">
-        {items.map((item) => (
-          <li
-            key={item.id}
-            className={
-              item.highlight
-                ? `task-reminder${item.overdue ? ' task-reminder-overdue' : ''}`
-                : undefined
-            }
-          >
-            {tab !== 'trash' && (
-              <input
-                type="checkbox"
-                aria-label={t('Erledigt')}
-                checked={item.status === 'done'}
-                disabled={!item.can_edit || item.can_complete === false}
-                onChange={(event) =>
-                  void change(item, { status: event.target.checked ? 'done' : 'open' })
-                }
-              />
-            )}
-            <button
-              className="button button-ghost"
-              onClick={() => {
-                void guard(() => {
-                  setNewTask(false)
-                  setParams({ aufgabe: String(item.id) })
-                })
-              }}
-            >
-              {item.title}
-            </button>
-            <span className="muted">{item.due_date ?? t('ohne Frist')}</span>
-            {item.highlight && <span className="badge">{item.due_label}</span>}
-            {item.can_delete && (
-              <button
-                className="button button-ghost"
-                onClick={() => void change(item, { deleted: tab !== 'trash' })}
-              >
-                {t(tab === 'trash' ? 'Wiederherstellen' : 'Löschen')}
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-      {data && !items.length && <p className="muted">{t('Keine Aufgaben vorhanden.')}</p>}
-      <a className="button button-ghost" href="/api/me/todos/export/?files=1">
-        {t('Eigene Aufgaben exportieren')}
-      </a>
-    </section>
-  )
-}
-
-function todoFields(todo?: Todo) {
-  return {
-    title: todo?.title ?? '',
-    description: todo?.description ?? '',
-    due_date: todo?.due_date ?? '',
-    due_time: todo?.due_time?.slice(0, 5) ?? '',
-  }
-}
-
-function TodoEditor({
-  base,
-  todo,
-  initialEvent,
-  onSaved,
-}: {
-  base: string
-  todo?: Todo
-  initialEvent?: number
-  onSaved: () => void
-}) {
-  const version = useRef(todo?.version ?? 1)
-  const baseline = useRef(todoFields(todo))
-  const form = useForm(todoFields(todo))
-  useEffect(() => {
-    // Statuswechsel dürfen die eigene Versionsbasis vorziehen, externe Inhaltsänderungen nicht.
-    if (todo && JSON.stringify(todoFields(todo)) === JSON.stringify(baseline.current))
-      version.current = todo.version
-  }, [todo])
-  useDraftGuard(!todo && Object.values(form.values).some(Boolean), () =>
-    form.setValues(todoFields()),
-  )
-  const writable = !todo || (todo.can_edit && !todo.central_readonly)
-  const payload = () => ({
-    ...form.values,
-    due_date: form.values.due_date || null,
-    due_time: form.values.due_date ? form.values.due_time || null : null,
-  })
-  const auto = useAutoSave(
-    form,
-    async (changes) => {
-      const following = todo?.series ? await followingChoice() : false
-      if (following === null) throw new Error(t('Änderung wurde nicht gespeichert.'))
-      const update: Record<string, unknown> = { ...changes }
-      if ('due_date' in update) {
-        update.due_date = update.due_date || null
-        if (!update.due_date) update.due_time = null
-      }
-      if ('due_time' in update) update.due_time = update.due_time || null
-      const updated = await todoApi.update(base, todo!.id, {
-        ...update,
-        following,
-        version: version.current,
-      })
-      version.current = updated.version
-      baseline.current = todoFields(updated)
-      onSaved()
-    },
-    { enabled: !!todo && writable },
-  )
-  return (
-    <form
-      className="card"
-      onSubmit={(event) => {
-        event.preventDefault()
-        if (!todo)
-          void form.submit(async () => {
-            await todoApi.create(base, {
-              ...payload(),
-              ...(initialEvent ? { event: initialEvent } : {}),
-            })
-            onSaved()
-          })
-      }}
-    >
-      <Field
-        label={t('Titel')}
-        required
-        maxLength={200}
-        value={form.values.title}
-        disabled={!writable}
-        error={form.errors.title}
-        onChange={(event) => form.set('title', event.target.value)}
-      />
-      <details open={!!todo}>
-        {todo?.central_readonly && (
-          <p className="muted">
-            {t('Titel, Beschreibung und Frist werden von der Quelle vorgegeben.')}
-          </p>
-        )}
-        <summary>{t('Beschreibung und Frist')}</summary>
-        <label>
-          {t('Beschreibung')}
-          <textarea
-            value={form.values.description}
-            disabled={!writable}
-            onChange={(event) => form.set('description', event.target.value)}
-          />
-        </label>
-        <Field
-          label={t('Frist')}
-          type="date"
-          value={form.values.due_date}
-          disabled={!writable}
-          error={form.errors.due_date}
-          onChange={(event) => form.set('due_date', event.target.value)}
-        />
-        <Field
-          label={t('Uhrzeit')}
-          type="time"
-          value={form.values.due_time}
-          disabled={!writable || !form.values.due_date}
-          error={form.errors.due_time}
-          onChange={(event) => form.set('due_time', event.target.value)}
-        />
-      </details>
-      {todo ? (
-        <SaveStatus auto={auto} />
-      ) : (
-        <button className="button" disabled={form.busy}>
-          {t('Anlegen')}
-        </button>
+      {!!items.length && (
+        <div className="table-scroll todo-list-panel">
+          <table className="table table-keep todo-table" aria-label={t('Aufgaben')}>
+            <thead>
+              <tr>
+                {tab !== 'trash' && (
+                  <th className="todo-state-cell" scope="col">
+                    {t('Status')}
+                  </th>
+                )}
+                <th scope="col">{t('Aufgabe')}</th>
+                <th className="todo-date-column" scope="col">
+                  {t('Frist')}
+                </th>
+                <th className="todo-action-cell" scope="col">
+                  {t('Aktionen')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr
+                  key={item.id}
+                  className={`clickable${selected?.id === item.id ? ' todo-row-selected' : ''}${item.highlight ? ` task-reminder${item.overdue ? ' task-reminder-overdue' : ''}` : ''}`}
+                  onClick={(event) => {
+                    if ((event.target as Element).closest('a, button, input, label')) return
+                    void openTask(item)
+                  }}
+                >
+                  {tab !== 'trash' && (
+                    <td className="todo-state-cell">
+                      <label className="todo-check">
+                        <input
+                          type="checkbox"
+                          aria-label={t('Erledigt')}
+                          checked={item.status === 'done'}
+                          disabled={!item.can_edit || item.can_complete === false}
+                          onChange={(event) =>
+                            void change(item, {
+                              status: event.target.checked ? 'done' : 'open',
+                            })
+                          }
+                        />
+                      </label>
+                    </td>
+                  )}
+                  <th scope="row" className="todo-title-cell">
+                    <Link
+                      to={`?${taskParams(item)}`}
+                      onClick={(event) => {
+                        if (
+                          event.ctrlKey ||
+                          event.metaKey ||
+                          event.shiftKey ||
+                          event.altKey ||
+                          event.button !== 0
+                        )
+                          return
+                        event.preventDefault()
+                        void openTask(item)
+                      }}
+                    >
+                      {item.title}
+                    </Link>
+                    <span className="todo-due-compact muted">
+                      {item.due_date ?? t('ohne Frist')}
+                    </span>
+                    {item.highlight && <span className="badge todo-row-due">{item.due_label}</span>}
+                  </th>
+                  <td className="todo-date-column muted">{item.due_date ?? t('ohne Frist')}</td>
+                  <td className="todo-action-cell">
+                    {item.can_delete && (
+                      <IconButton
+                        label={t(tab === 'trash' ? 'Wiederherstellen' : 'Löschen')}
+                        icon={tab === 'trash' ? <RestoreIcon /> : <DeleteIcon />}
+                        danger={tab !== 'trash'}
+                        onClick={() => void change(item, { deleted: tab !== 'trash' })}
+                      />
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-      {form.message && <p role="status">{form.message.text}</p>}
-    </form>
+      {data && !items.length && <p className="muted">{t('Keine Aufgaben vorhanden.')}</p>}
+      {can('todos.edit') && can('roles.edit') && (
+        <OrphanTasks base={base} onSaved={() => void reload()} />
+      )}
+      {can('todos.edit') && !activeDept && (
+        <TodoRemoteInbox base={base} onSaved={() => void reload()} />
+      )}
+      <div className="todo-footer">
+        <a className="button button-ghost" href="/api/me/todos/export/?files=1">
+          {t('Eigene Aufgaben exportieren')}
+        </a>
+        {can('todos.edit') && can('roles.edit') && (
+          <details className="todo-administration">
+            <summary>{t('Verwaltung')}</summary>
+            <div className="todo-admin-content">
+              <TodoCleanup base={base} />
+            </div>
+          </details>
+        )}
+      </div>
+    </section>
   )
 }

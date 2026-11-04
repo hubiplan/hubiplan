@@ -6,3 +6,414 @@
 .task-reminder-overdue {
   border-inline-start-color: var(--color-danger, #a22020);
 }
+
+/* Startseite: gleich hohe Kacheln, Aktionen gemeinsam am unteren Rand. */
+.task-overview,
+.upcoming-overview {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-tile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-block-start: auto;
+  padding-block-start: 1rem;
+}
+
+.home-tile-actions .button {
+  min-height: 2.75rem;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
+.upcoming-overview .upcoming-list {
+  padding-block-start: 0.75rem;
+}
+
+.task-overview-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding-block-end: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.task-overview-head h2 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.task-overview-head .badge {
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.task-overview-list .task-overview-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-block: 1rem;
+}
+
+.task-overview-row + .task-overview-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.task-overview-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 2.75rem;
+  min-height: 2.75rem;
+  margin: 0;
+  cursor: pointer;
+  border-radius: var(--radius);
+}
+
+.task-overview-check:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.task-overview-check input {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 0;
+}
+
+.task-overview-content {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.task-overview-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.25rem;
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.task-overview-due {
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.task-overview-row-overdue .task-overview-due {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.task-overview-title {
+  display: block;
+  padding-block: 0.25rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.task-overview-detail {
+  margin: 0.15rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.todo-workspace {
+  min-width: 0;
+}
+
+.todo-page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.todo-page-heading h1 {
+  margin: 0;
+}
+
+.todo-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 0.75rem;
+  padding-block-start: 0.5rem;
+}
+
+.todo-notice,
+.todo-administration {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.todo-notice summary,
+.todo-administration summary {
+  align-content: center;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.todo-notice .badge {
+  margin-inline-start: 0.75rem;
+}
+
+.todo-administration[open] {
+  flex: 1 1 100%;
+}
+
+.todo-administration {
+  padding-block: 0;
+}
+
+.todo-admin-content {
+  max-width: 40rem;
+  padding-block-end: 0.5rem;
+}
+
+.todo-admin-content h3 {
+  margin: 0;
+}
+
+.todo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem 1.5rem;
+}
+
+.todo-toolbar > .field {
+  flex: 0 1 22rem;
+  margin: 0;
+}
+
+.todo-toolbar > .button-row {
+  margin-block: 0;
+}
+
+.todo-toolbar .field-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.todo-toolbar select {
+  min-height: 2.75rem;
+}
+
+.todo-workspace :is(form.card, div.card, section.card) {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.todo-workspace :is(label:not(.checkbox):not(.todo-check), details[open] > label) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.todo-workspace details[open] > :not(summary) {
+  margin-block-start: 1rem;
+}
+
+.todo-workspace .button-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.todo-workspace :is(button, a.button, summary, .checkbox) {
+  min-height: 2.75rem;
+}
+
+.todo-workspace :is(button, a.button) {
+  min-width: 2.75rem;
+  justify-self: start;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.todo-workspace textarea {
+  width: 100%;
+  min-height: 12rem;
+  resize: vertical;
+  line-height: 1.55;
+  box-sizing: border-box;
+}
+
+.todo-workspace input[type='file'] {
+  max-width: 100%;
+  min-height: 2.75rem;
+}
+
+.todo-workspace input[type='file']::file-selector-button {
+  padding: 0.65rem 1rem;
+  margin-inline-end: 0.75rem;
+}
+
+.todo-list-panel {
+  overflow-x: clip;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+.todo-table :is(td, th) {
+  vertical-align: middle;
+  padding-block: 0.75rem;
+}
+.todo-table {
+  margin: 0;
+  table-layout: fixed;
+}
+.todo-table .todo-state-cell {
+  width: 3.75rem;
+  padding-inline: 0.5rem;
+}
+.todo-table .todo-date-column {
+  width: 9rem;
+}
+.todo-table .todo-action-cell {
+  width: 6.5rem;
+  padding-inline: 1rem;
+  text-align: right;
+}
+.todo-table tbody .todo-title-cell {
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+}
+.todo-title-cell > a {
+  font-weight: 600;
+}
+.todo-table tr.todo-row-selected,
+.todo-table tr:focus-within {
+  background: color-mix(in srgb, var(--color-focus) 10%, var(--color-surface));
+}
+.todo-due-compact {
+  display: none;
+}
+.todo-row-due {
+  margin-inline-start: 0.75rem;
+}
+
+.todo-workspace .todo-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+}
+
+.todo-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.modal:has(.todo-dialog) {
+  width: min(56rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+}
+
+.todo-dialog > .card {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.todo-dates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.todo-dialog-actions {
+  position: sticky;
+  bottom: 0;
+  padding-block: 1rem;
+  background: var(--color-surface, #fff);
+}
+
+@media (max-width: 40rem) {
+  .todo-dates {
+    grid-template-columns: 1fr;
+  }
+  .todo-toolbar {
+    align-items: stretch;
+  }
+  .todo-toolbar > .field {
+    flex-basis: 100%;
+  }
+  .todo-table .todo-date-column {
+    display: none;
+  }
+  .todo-table .todo-action-cell {
+    width: 6.5rem;
+  }
+  .todo-due-compact {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: normal;
+  }
+  .todo-row-due {
+    display: inline-block;
+    margin: 0.35rem 0 0;
+  }
+}
+.modal-backdrop:has(.todo-dialog) {
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.modal:has(.todo-dialog) {
+  box-sizing: border-box;
+}
+
+.todo-dialog .field {
+  margin-bottom: 0;
+}
+
+@media (max-width: 40rem) {
+  .modal:has(.todo-dialog),
+  .todo-dialog > .card {
+    padding: 1rem;
+  }
+}

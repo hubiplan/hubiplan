@@ -20,6 +20,8 @@ from django.utils.translation import gettext
 from .validation import validate_url_data, validate_urls
 
 MODULE_MODELS = (
+    "music.Musician",
+    "music.Skill",
     "todos.TodoSeries",
     "todos.Todo",
     "finance.Account",
@@ -36,7 +38,11 @@ MODULE_MODELS = (
     "billing.FeeRate",
     "billing.AgeRate",
     "billing.FeeRun",
+    "billing.BusinessPartner",
     "billing.Invoice",
+    "billing.InvoiceArtifact",
+    "billing.IncomingInvoice",
+    "billing.IncomingValidation",
     "billing.InvoiceLine",
     "billing.Payment",
     # Quittungen nach Buchung, Beleg (PDF), Rechnung und Zahlung (Gesamtaudit 30.10., B-F01)
@@ -73,6 +79,31 @@ MODULE_MODELS = (
     "events.EventAttachment",
     "events.CalendarPublication",
     "events.EventResponse",
+    "music.Performance",
+    "music.Position",
+    "music.Assignment",
+    "music.PerformanceAccount",
+    "music.MusicianClaim",
+    "music.PerformanceExpense",
+    "music.PreviousPerformanceInvoice",
+    "music.Piece",
+    "music.Arrangement",
+    "music.ScorePart",
+    "music.ScoreDocument",
+    "music.ProgramEntry",
+    "music.Rehearsal",
+    "music.RehearsalItem",
+    "music.RehearsalProgram",
+    "music.RehearsalProgramItem",
+    "music.RehearsalInvitation",
+    "music.RehearsalResponse",
+    "music.ScoreLoan",
+    "music.ScoreReturn",
+    "materials.MaterialItem",
+    "materials.MaterialEventLink",
+    "materials.MaterialTodoLink",
+    "materials.MaterialDocumentLink",
+    "materials.MaterialPhoto",
     # Wettbewerbe nach den Terminen (Verweis auf den Termin)
     "competitions.Series",
     "competitions.Trophy",
@@ -121,6 +152,11 @@ PUBLIC_MODELS = {"statutes.statuteversion", "statutes.statutepublication"}
 # Die Dokumentenablage kommt im vollständigen Export und im Export einer Abteilung
 # mit, nicht aber im Dachverbands-Export der Vereine (dort nur die Satzung).
 DEPARTMENT_MODELS = {
+    "materials.materialitem",
+    "materials.materialeventlink",
+    "materials.materialtodolink",
+    "materials.materialdocumentlink",
+    "materials.materialphoto",
     "todos.todoseries",
     "documents.folder",
     "documents.document",
@@ -172,6 +208,10 @@ DEPARTMENT_IMPORT_MODELS = PUBLIC_MODELS | DEPARTMENT_MODELS
 # Zeilen, deren Verweis auf diese Spalte in der Datei fehlt, fallen beim Import weg
 # (z. B. Ehrungen des Dachverbands an Personen, deren Daten nicht exportiert wurden).
 DROP_IF_MISSING = {
+    "materials.materialeventlink": "item",
+    "materials.materialtodolink": "todo",
+    "materials.materialdocumentlink": "document",
+    "materials.materialphoto": "item",
     "todos.todoattachment": "todo",
     "members.honorarytitleaward": "person",
     "events.eventresponse": "membership",
@@ -239,6 +279,8 @@ SECRET_FIELDS = {
     # Zugriffsrechte werden am Ziel ausdrücklich neu vergeben, keine fremden Kontonummern.
     "todos.todo": {
         "origin",
+        "remote_origin",
+        "remote_mode",
         "owner",
         "done_by",
         "shared",
@@ -298,6 +340,7 @@ CORE_TARGETS = {
 
 # Erlaubte Dateiarten je Tabelle (am Inhalt erkannt, wie beim normalen Hochladen)
 FILE_TYPES = {
+    "materials.materialphoto": {"image/jpeg"},
     "finance.receipt": {
         "application/pdf",
         "image/jpeg",
@@ -320,11 +363,48 @@ FILE_TYPES = {
 FILE_HASHES = {"finance.cashcount": "pdf_sha256", "finance.bankstatement": "source_sha256"}
 
 
-def check_file(name: str, obj, content: bytes, path: str) -> None:
+def check_file(name: str, obj, content: bytes, path: str, field_name: str = "") -> None:
     """Datei aus dem Import prüfen; die Dateiart kommt aus dem Inhalt, nicht aus der Datei."""
     from django.core.exceptions import ValidationError
 
     from core.filecheck import sniff
+
+    if name in {"billing.invoiceartifact", "billing.incominginvoice", "billing.incomingvalidation"}:
+        import hashlib
+        from xml.etree.ElementTree import ParseError
+
+        from defusedxml import ElementTree
+        from defusedxml.common import DefusedXmlException
+
+        if len(content) > 15 * 1024 * 1024:
+            raise ValidationError(gettext("Die Datei ist größer als 15 MB."))
+        hash_field = {
+            "original": "sha256",
+            "xml": "sha256" if name == "billing.invoiceartifact" else "",
+            "cancellation_xml": "cancellation_sha256",
+        }.get(field_name)
+        if hash_field and hashlib.sha256(content).hexdigest() != getattr(obj, hash_field):
+            raise ValidationError(gettext("Die Prüfsumme des Rechnungsoriginals stimmt nicht."))
+        # Ungültige Eingänge bleiben absichtlich als unveränderte, private Originale
+        # erhalten. Reports und ausgegebene Rechnungen müssen sich sicher lesen lassen.
+        if name == "billing.incominginvoice" and field_name in {"original", "xml"}:
+            return
+        try:
+            ElementTree.fromstring(content, forbid_dtd=True)
+        except (ParseError, DefusedXmlException) as exc:
+            raise ValidationError(gettext("Die Datei ist kein gültiges XML.")) from exc
+        return
+    if name == "finance.receipt" and getattr(obj, "content_type", "") in {
+        "text/xml",
+        "application/xml",
+    }:
+        from finance.einvoice import EInvoiceError, parse_xml
+
+        try:
+            parse_xml(content)
+        except EInvoiceError as exc:
+            raise ValidationError(str(exc)) from exc
+        return
 
     if name in {"documents.documentversion", "todos.todoattachment"}:
         from documents.services import ALLOWED_TYPES
@@ -527,6 +607,10 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
     secret = SECRET_FIELDS.get(label(model), set())
     fields = [f for f in model._meta.concrete_fields if f.name not in SKIP | secret]
     qs = model.objects.filter(organization=org)
+    if model._meta.app_label == "materials":
+        from materials.exports import rows as material_rows
+
+        qs = material_rows(model, org, department)
     if label(model) == "todos.todo":
         from todos.exports import shared_rows
 
@@ -567,6 +651,10 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
                 row[f.name] = packer.add(getattr(obj, f.name), label(model).replace(".", "-"))
             else:
                 row[f.name] = _plain(getattr(obj, f.attname))
+        if label(model) == "materials.materialitem":
+            from materials.exports import redact_member
+
+            redact_member(row, obj)
         if label(model) == "todos.todoattachment" and obj.kind == "document":
             from todos.attachments import document_for
             from todos.exports import export_scope
@@ -748,6 +836,14 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                 setattr(obj, field_name, make())
             fix_website_keys(name, obj, ids)
             fix_json_ids(name, obj, ids)
+            if name.startswith("materials."):
+                if name == "materials.materialitem":
+                    if obj.location_kind == "member" and not obj.member_id:
+                        obj.location_kind = "unknown"
+                    if obj.location_kind != "member":
+                        obj.member_id = None
+                elif not getattr(obj, "item_id", None):
+                    continue
             if hasattr(obj, "created_by_id") and user is not None:
                 obj.created_by_id = user.pk
             if name == "todos.todo":
@@ -766,7 +862,7 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
             for field_name, path in pending_files:
                 content = files.read(path)
                 if content is not None:
-                    check_file(name, obj, content, path)
+                    check_file(name, obj, content, path, field_name)
                     getattr(obj, field_name).save(
                         path.rsplit("/", 1)[-1].split("-", 1)[-1], ContentFile(content), save=False
                     )

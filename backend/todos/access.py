@@ -19,6 +19,7 @@ class Scope:
     org: Organization
     department_id: int | None
     permissions: set[str]
+    portal_access_id: int | None = None
 
 
 def scope_for(user, org_id=None, dept_id=None):
@@ -56,6 +57,10 @@ def scope_for(user, org_id=None, dept_id=None):
 
 
 def visible(user, scope, *, deleted=False):
+    if scope.portal_access_id:
+        from .portal import portal_visible
+
+        return Todo.objects.none() if deleted else portal_visible(user, scope)
     qs = Todo.objects.filter(
         withdrawn=False,
         deleted_at__isnull=not deleted,
@@ -66,6 +71,14 @@ def visible(user, scope, *, deleted=False):
     local = Q(organization=scope.org, department_id=scope.department_id)
     shared = Q(shared=True, pk__in=shares.values("todo_id")) & (Q(per_unit=False) | local)
     return qs.filter((local & (Q(created_by=user) | Q(owner=user))) | shared)
+
+
+def current_scope(user, scope):
+    if scope.portal_access_id:
+        from .portal import portal_scope
+
+        return portal_scope(user, scope.portal_access_id)[1]
+    return scope_for(user, scope.org.pk, scope.department_id)
 
 
 def local_task(todo, scope):
@@ -169,6 +182,8 @@ def undo_problem(change_set, user, task_scope=None):
             from changes.undo import _build
 
             todo = _build(Todo, rec.before)
+        if todo.remote_mode == "common":
+            return gettext("Diese Änderung kann hier nicht zurückgenommen werden.")
         if todo.per_unit and rec.operation == "create":
             return gettext("Verteilte Aufgaben bitte über ihren Papierkorb löschen.")
         from .series import undo_problem as series_undo_problem

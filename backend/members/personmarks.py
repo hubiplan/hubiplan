@@ -53,15 +53,7 @@ def values(person, *, using="default", create_key=True):
     if create_key:
         key_id, raw_key = crypto.key_for_org(person.scope_id)
     else:
-        from core.models import DataKey
-
-        key_id = (
-            DataKey.objects.filter(
-                organization_id=crypto.key_owner_id(person.scope_id),
-            )
-            .values_list("pk", flat=True)
-            .first()
-        )
+        key_id = crypto.active_key_id(crypto.key_owner_id(person.scope_id))
         if key_id is None:
             raise ValueError("Datenschlüssel fehlt; Suchmarken nicht geprüft.")
         raw_key = crypto.key_by_id(key_id)

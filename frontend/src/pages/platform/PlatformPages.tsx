@@ -44,12 +44,14 @@ const ACCESS_LABELS = {
   },
 }
 const MODULES = [
+  { id: 'music', label: t('Musik') },
   { id: 'members', label: t('Mitglieder') },
   { id: 'finance', label: t('Kasse') },
   { id: 'billing', label: t('Beiträge/Rechnungen') },
   { id: 'events', label: t('Termine') },
   { id: 'website', label: t('Webseite') },
   { id: 'competitions', label: t('Wettbewerbe') },
+  { id: 'material', label: t('Material') },
   { id: 'entries', label: t('Meldungen') },
 ]
 

@@ -35,6 +35,7 @@ def main():
                 recipient_name=label,
                 recipient_address=address,
                 recipient_email=email,
+                subject=label,
                 date=datetime.date(2026, 11, 3),
                 due_date=datetime.date(2026, 11, 17),
             )
@@ -61,28 +62,34 @@ def main():
             )
             assert cursor.fetchone()[0] > 0
             cursor.execute(
-                "SELECT recipient_email FROM billing_invoice WHERE recipient_name = %s",
+                "SELECT recipient_name, recipient_email FROM billing_invoice WHERE subject = %s",
                 [label],
             )
-            assert cursor.fetchone()[0].startswith("enc1:")
+            invoice_rows = cursor.fetchall()
+            assert len(invoice_rows) == 1
+            assert all(value.startswith("enc1:") for value in invoice_rows[0])
             cursor.execute(
-                "SELECT email FROM circulars_circularrecipient WHERE first_name = %s",
-                ["Audit"],
+                "SELECT r.first_name, r.last_name, r.email "
+                "FROM circulars_circularrecipient r "
+                "JOIN circulars_circular c ON c.id = r.circular_id WHERE c.subject = %s",
+                [label],
             )
-            assert cursor.fetchone()[0].startswith("enc1:")
+            recipient_rows = cursor.fetchall()
+            assert len(recipient_rows) == 1
+            assert all(value.startswith("enc1:") for value in recipient_rows[0])
         dates = list(Person.objects.order_by("pk").values_list("birth_date", flat=True))
         invoices = list(
-            Invoice.objects.filter(recipient_name=label).values_list(
-                "recipient_email", "recipient_address"
+            Invoice.objects.filter(subject=label).values_list(
+                "recipient_name", "recipient_email", "recipient_address"
             )
         )
         recipients = list(
             CircularRecipient.objects.filter(circular__subject=label).values_list(
-                "email", "address", "values"
+                "first_name", "last_name", "email", "address", "values"
             )
         )
-        assert dates and invoices == [(email, address)]
-        assert recipients == [(email, address, values)]
+        assert dates and invoices == [(label, email, address)]
+        assert recipients == [("Audit", "Beispiel", email, address, values)]
         payload = [
             [value.isoformat() if value else "" for value in dates],
             invoices,

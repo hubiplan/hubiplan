@@ -10,9 +10,13 @@ export function OrphanTasks({ base, onSaved }: { base: string; onSaved: () => vo
     [base],
   )
   const [actionError, setActionError] = useState<string | null>(null)
+  if (!data?.items.length && !error && !actionError) return null
   return (
-    <details className="card">
-      <summary>{t('Aufgaben ohne verantwortliches Konto')}</summary>
+    <details className="todo-notice" open={!!error || !!actionError || undefined}>
+      <summary>
+        {t('Aufgaben ohne verantwortliches Konto')}
+        {!!data?.items.length && <span className="badge">{data.items.length}</span>}
+      </summary>
       <p>
         {t(
           'Hier kannst du die Verantwortung für verwaiste geteilte Aufgaben übernehmen. Private Aufgaben erscheinen hier nicht.',

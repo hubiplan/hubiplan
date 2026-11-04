@@ -46,6 +46,7 @@ def test_aufgabenrechte_geben_keine_terminrechte(api, orgs):
 
 
 def test_fremder_termin_wird_nicht_verknuepft(api, board_a, orgs):
+    event(orgs["a"])
     other = event(orgs["b"])
     response = api(board_a).post(
         url(orgs["a"]), {"title": "Probe", "event": other.pk}, content_type="application/json"

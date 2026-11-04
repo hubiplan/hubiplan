@@ -39,6 +39,8 @@ TRACKED_APPS = {
 
 # Nie erfasst und kein Hindernis (Protokolle, Sitzungen, Anmeldung, Exporte)
 IGNORED_APPS = {
+    # Eigener, rechtegeprüfter Verlauf, damit private Aufgabenbezüge privat bleiben.
+    "materials",
     "changes",
     "audit",
     "sessions",
@@ -62,6 +64,12 @@ IGNORED_MODELS = {
 
 # Schreiben hier sperrt das Paket – mit diesem Grund
 BLOCKING_MODELS = {
+    "music.scoreloan": "Betrifft eine Notenausgabe.",
+    "music.scorereturn": "Betrifft eine Notenrückgabe.",
+    "music.performanceaccount": "Betrifft eine Auftrittsabrechnung.",
+    "music.musicianclaim": "Betrifft eine Musikervergütung.",
+    "music.performanceexpense": "Betrifft eine Auftrittsauszahlung.",
+    "music.previousperformanceinvoice": "Betrifft eine frühere Auftrittsrechnung.",
     "members.memberphoto": "Betrifft Mitgliederfotos.",
     "members.photouploadlink": "Betrifft Mitgliederfotos.",
     "members.transferrequest": "Betrifft einen Vereinswechsel.",
@@ -72,6 +80,9 @@ BLOCKING_MODELS = {
     "finance.yearclosing": "Betrifft einen Jahresabschluss.",
     "finance.donationstatement": "Betrifft eine Zuwendungsbestätigung.",
     "billing.payment": "Betrifft Zahlungen.",
+    "billing.invoiceartifact": "Betrifft ein unveränderbares E-Rechnungsoriginal.",
+    "billing.incominginvoice": "Betrifft den archivierten Rechnungseingang.",
+    "billing.incomingvalidation": "Betrifft einen archivierten Prüfbericht.",
     "billing.dunning": "Betrifft Mahnungen.",
     "billing.mandate": "Betrifft SEPA-Mandate.",
     "billing.debitrun": "Betrifft eine Lastschriftdatei.",
@@ -149,6 +160,14 @@ def _booking_lock(values: dict) -> str:
     if values.get("id") and Booking._base_manager.filter(cancels_id=values["id"]).exists():
         return "Betrifft eine stornierte Buchung."
     if booking_id := values.get("id"):
+        from music.models import PerformanceExpense
+
+        if PerformanceExpense._base_manager.filter(booking_id=booking_id).exists():
+            return "Die Ausgabe gehört zu einer Auftrittsabrechnung."
+        from billing.models import IncomingInvoice
+
+        if IncomingInvoice._base_manager.filter(booking_id=booking_id).exists():
+            return "Die Buchung ist einer freigegebenen Eingangsrechnung zugeordnet."
         try:
             services.editable_booking_donation(booking_id, lock=connection.in_atomic_block)
         except ValidationError as exc:

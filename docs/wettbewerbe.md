@@ -308,10 +308,15 @@ Zusage, die noch nicht Starter sind. Wird der Termin gelöscht, bleibt der Wettb
 
 - Je Wettbewerb **Auf der Webseite**: nicht, live während des Wettbewerbs (ab „läuft“, mit
   Vermerk live bzw. vorläufig) oder nach Abschluss (erst „endgültig“), dazu der **Umfang**: nur
-  Wertung der Untereinheiten und Mannschaften, Plätze 1 bis 3 mit Namen, ganze Rangliste.
+  Wertung der Untereinheiten und Mannschaften, Preisplätze mit Namen, ganze Rangliste.
+  **Preisplätze mit Namen** richtet sich für jede Einzelwertung nach deren Preisplätzen,
+  auch bei fremden Wettbewerben: null zeigt keine Einzelplatzierungen, geteilte Preisplätze
+  erscheinen vollständig. Der gespeicherte API-Wert `top3` bleibt kompatibel erhalten.
 - Baustein **„Ergebnisse“** (Webseite › Menü und Bereiche, nur mit Modul Wettbewerbe) und Block
-  **„Aktuelle Ergebnisse“** auf der Startseite (die drei neuesten mit Plätzen 1 bis 3; aus,
-  bis die Einheit ihn unter Menü und Bereiche › Startseite einschaltet).
+  **„Aktuelle Ergebnisse“** auf der Startseite (die drei neuesten, bei **Preisplätze mit Namen**
+  mit allen Preisplätzen je Einzelwertung, sonst mit Plätzen 1 bis 3; aus, bis die Einheit ihn
+  unter Menü und Bereiche › Startseite einschaltet). Die Ergebnisseite zeigt den neuesten
+  veröffentlichten Wettbewerb direkt; ältere Wettbewerbe bleiben über Links erreichbar.
 - Öffentliche Schnittstelle (`website/results.py`): `results/` (Wettbewerbe, Reihen mit
   „Archiv auf der Webseite“, Wanderpokale mit „Inhaber auf der Webseite“), `results/?start=1`
   (Startseite), `results/<Kennung>/` (Rangliste), `results/<Kennung>/version/` (kleiner Stand),

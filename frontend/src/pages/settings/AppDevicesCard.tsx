@@ -1,5 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLoad, useQueryLoad } from '../../components/forms.ts'
+import { LoadError } from '../../components/ui.tsx'
 import { devicesApi } from '../../api/devices.ts'
 import { HowTo } from '../../learning/Aids.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -13,33 +15,14 @@ function formatDate(value: string): string {
 
 // Mein Konto: HUBIplan-App mit dem Konto verbinden und Geräte abmelden.
 export function AppDevicesCard() {
-  const [visible, setVisible] = useState(false)
-  const [devices, setDevices] = useState<AppDevice[]>([])
+  const access = useLoad(() => devicesApi.hasPortal(), [])
+  const list = useQueryLoad(() => devicesApi.list(), [access.data], access.data === true)
+  const devices = list.data ?? []
+  const load = list.reload
   const [pairing, setPairing] = useState<PairingCode | null>(null)
   // Nach dem Scannen: welches Gerät hat sich verbunden? (ein fremdes fällt so sofort auf)
   const [connected, setConnected] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-
-  const load = useCallback(async () => {
-    setDevices(await devicesApi.list())
-  }, [])
-
-  useEffect(() => {
-    let active = true
-    devicesApi
-      .hasPortal()
-      .then(async (has) => {
-        if (!active || !has) return
-        setVisible(true)
-        await load()
-      })
-      .catch(() => {
-        // Ohne Mitgliederbereich bleibt die Karte einfach weg
-      })
-    return () => {
-      active = false
-    }
-  }, [load])
 
   useEffect(() => {
     if (!pairing) return
@@ -78,7 +61,14 @@ export function AppDevicesCard() {
     }
   }, [pairing, load])
 
-  if (!visible) return null
+  if (access.error)
+    return (
+      <section className="card">
+        <h2>{t('App auf dem Telefon')}</h2>
+        <LoadError message={access.error} onRetry={() => void access.reload()} />
+      </section>
+    )
+  if (access.data !== true) return null
 
   async function createCode() {
     setError(null)
@@ -155,7 +145,11 @@ export function AppDevicesCard() {
         </button>
       )}
       <h3>{t('Angemeldete Geräte')}</h3>
-      {devices.length === 0 ? (
+      {list.error ? (
+        <LoadError message={list.error} onRetry={() => void load()} />
+      ) : list.loading && !list.data ? (
+        <p role="status">{t('Lädt …')}</p>
+      ) : devices.length === 0 ? (
         <p className="muted">{t('Noch kein Gerät verbunden.')}</p>
       ) : (
         <ul className="plain-list">

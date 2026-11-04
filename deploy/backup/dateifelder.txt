@@ -3,6 +3,14 @@
 # auch in der Dateiliste des Backups steht. Ein Test (test_backup_dateifelder.py)
 # vergleicht die Liste mit den Modellen; ein neues Dateifeld gehört hier hinein.
 billing_invoice issued_pdf private
+billing_invoiceartifact xml private
+billing_invoiceartifact report_xml private
+billing_invoiceartifact cancellation_xml private
+billing_invoiceartifact cancellation_report_xml private
+billing_incominginvoice original private
+billing_incominginvoice xml private
+billing_incominginvoice report_xml private
+billing_incomingvalidation report_xml private
 billing_dunning issued_pdf private
 circulars_circularattachment file private
 competitions_certificatetemplate background private
@@ -31,3 +39,4 @@ website_websiteimage small private
 website_websiteimage original private
 website_socialpostimage file private
 website_socialpostimage small private
+materials_materialphoto file private

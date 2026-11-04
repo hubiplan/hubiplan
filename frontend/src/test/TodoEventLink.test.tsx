@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { EventTaskLink } from '../components/TodoEventLink.tsx'
 
 vi.mock('../org/OrgContext.tsx', () => ({
-  useOrg: () => ({ active: { permissions: ['todos.view'] } }),
+  useOptionalOrg: () => ({ active: { permissions: ['todos.view'] } }),
 }))
 
 describe('Aufgaben am Termin', () => {

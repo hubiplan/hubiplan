@@ -20,3 +20,5 @@ Vorher: Es gibt mindestens eine Mitgliedsart (Mitglieder › Einrichtung › Mit
    Ändern kannst du sie danach in der Mitgliedsakte.
 
 ![Formular „Mitglied aufnehmen“](bild:mitglieder-aufnehmen)
+
+Lassen sich Untereinheiten nicht laden, erscheint eine Meldung mit **Erneut laden**. Du kannst die Auswahl erneut abrufen, ohne Namen und andere bereits eingegebene Angaben zu verlieren.

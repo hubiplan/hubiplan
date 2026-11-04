@@ -4,6 +4,7 @@ from rest_framework.routers import SimpleRouter
 from access import office_views
 from access import views as access_views
 from accounts import help_done, language, learning, self_service
+from billing import einvoice_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
 from cards import views as card_views
@@ -30,6 +31,12 @@ from members import (
 )
 from members import honorary as honorary_views
 from members import views as member_views
+from music import practice as music_practice
+from music import scores as music_scores
+from music import views as music_views
+from music.portal import OwnAssignments
+from music.practice_portal import OwnPractice, OwnScoreFile
+from music.settlement import PerformanceInvoiceView, SettlementView
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import help_views, imprint_views, social_views
@@ -40,7 +47,9 @@ from portal import views as portal_views
 from statutes import views as statute_views
 from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
+from todos import portal as todo_portal
 from todos import reminder_views as todo_reminder_views
+from todos import remote_views as todo_remote
 from todos import series_views as todo_series_views
 from todos import views as todo_views
 from todos.event_links import EventChoicesView
@@ -82,6 +91,37 @@ org_router.register(
 org_router.register("billing/age-rates", billing_views.AgeRateViewSet, basename="billing-age-rate")
 org_router.register("billing/runs", billing_views.FeeRunViewSet, basename="billing-run")
 org_router.register("billing/invoices", billing_views.InvoiceViewSet, basename="billing-invoice")
+org_router.register("music/musicians", music_views.MusicianViewSet, basename="music-musician")
+org_router.register("music/skills", music_views.SkillViewSet, basename="music-skill")
+org_router.register(
+    "music/performances", music_views.PerformanceViewSet, basename="music-performance"
+)
+org_router.register("music/positions", music_views.PositionViewSet, basename="music-position")
+org_router.register("music/assignments", music_views.AssignmentViewSet, basename="music-assignment")
+org_router.register("music/rehearsals", music_practice.RehearsalViewSet, basename="music-rehearsal")
+org_router.register(
+    "music/rehearsal-items", music_practice.RehearsalItemViewSet, basename="music-rehearsal-item"
+)
+org_router.register(
+    "music/rehearsal-invitations",
+    music_practice.RehearsalInvitationViewSet,
+    basename="music-rehearsal-invitation",
+)
+org_router.register("music/pieces", music_scores.PieceViewSet, basename="music-piece")
+org_router.register(
+    "music/arrangements", music_scores.ArrangementViewSet, basename="music-arrangement"
+)
+org_router.register("music/parts", music_scores.ScorePartViewSet, basename="music-part")
+org_router.register(
+    "music/score-documents", music_scores.ScoreDocumentViewSet, basename="music-score-document"
+)
+org_router.register("billing/partners", einvoice_views.PartnerViewSet, basename="billing-partner")
+org_router.register(
+    "billing/electronic", einvoice_views.ElectronicInvoiceViewSet, basename="billing-electronic"
+)
+org_router.register(
+    "finance/incoming", einvoice_views.IncomingInvoiceViewSet, basename="finance-incoming"
+)
 org_router.register(
     "billing/dunning-levels", billing_views.DunningLevelViewSet, basename="billing-dunning-level"
 )
@@ -130,6 +170,16 @@ platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
 
 org_patterns = [
+    path("music/practice/", music_practice.PracticeOverview.as_view()),
+    path("music/loans/", music_practice.LoanView.as_view()),
+    path("music/performances/<int:pk>/program/", music_scores.ProgramView.as_view()),
+    path("music/performances/<int:pk>/settlement/", SettlementView.as_view()),
+    path("music/performances/<int:pk>/invoice/", PerformanceInvoiceView.as_view()),
+    path("todos/remote/", todo_remote.RemoteInboxView.as_view()),
+    path("todos/remote/<int:remote_id>/adopt/", todo_remote.RemoteAdoptView.as_view()),
+    path("todos/<int:pk>/remote/", todo_remote.RemoteSharesView.as_view()),
+    path("todos/<int:pk>/remote-files/<int:att_id>/", todo_remote.RemoteFileView.as_view()),
+    path("materials/", include("materials.urls")),
     path("todos/<int:pk>/progress/", todo_cross_views.ProgressView.as_view()),
     path("todos/<int:pk>/changes/<uuid:set_id>/undo/", todo_cross_views.TaskUndoView.as_view()),
     path("todos/<int:pk>/attachments/", todo_attachments.AttachmentListView.as_view()),
@@ -141,6 +191,7 @@ org_patterns = [
     path("todos/<int:pk>/reminders/", todo_reminder_views.ReminderSettingsView.as_view()),
     path("todos/orphans/", todo_views.OrphanTasksView.as_view()),
     path("todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
+    path("todos/<int:pk>/portal/", todo_portal.PublicationView.as_view()),
     path("todos/events/", EventChoicesView.as_view()),
     path("todos/choices/", todo_views.TodoChoicesView.as_view()),
     path("todos/", todo_views.TodoListView.as_view()),
@@ -527,6 +578,7 @@ org_patterns = [
 ]
 
 dept_patterns = [
+    path("materials/", include("materials.urls")),
     *entry_urls.dept_patterns,
     path(
         "changes/<uuid:set_id>/undo/",
@@ -664,6 +716,9 @@ dept_patterns = [
 ]
 
 urlpatterns = [
+    path("portal/<int:access_id>/music/practice/", OwnPractice.as_view()),
+    path("portal/<int:access_id>/music/files/<int:pk>/", OwnScoreFile.as_view()),
+    path("portal/<int:access_id>/music/", OwnAssignments.as_view()),
     path(
         "depts/<int:dept_id>/todos/<int:pk>/attachments/",
         todo_attachments.AttachmentListView.as_view(),
@@ -686,11 +741,27 @@ urlpatterns = [
     ),
     path("depts/<int:dept_id>/todos/orphans/", todo_views.OrphanTasksView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/take-over/", todo_views.TakeOverView.as_view()),
+    path("depts/<int:dept_id>/todos/<int:pk>/portal/", todo_portal.PublicationView.as_view()),
+    path("depts/<int:dept_id>/todos/<int:pk>/remote/", todo_remote.RemoteSharesView.as_view()),
+    path(
+        "depts/<int:dept_id>/todos/<int:pk>/remote-files/<int:att_id>/",
+        todo_remote.RemoteFileView.as_view(),
+    ),
     path("depts/<int:dept_id>/todos/events/", EventChoicesView.as_view()),
     path("depts/<int:dept_id>/todos/choices/", todo_views.TodoChoicesView.as_view()),
     path("me/todos/preferences/", todo_views.TodoPreferencesView.as_view()),
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
+    path("portal/<int:access_id>/todos/", todo_portal.PortalTaskListView.as_view()),
+    path(
+        "portal/<int:access_id>/todos/<int:pk>/remote-files/<int:att_id>/",
+        todo_portal.PortalRemoteFileView.as_view(),
+    ),
+    path("portal/<int:access_id>/todos/<int:pk>/", todo_portal.PortalTaskDetailView.as_view()),
+    path(
+        "portal/<int:access_id>/todos/<int:pk>/attachments/<int:att_id>/",
+        todo_portal.PortalTaskFileView.as_view(),
+    ),
     path("me/todos/export/", todo_views.PersonalExportView.as_view()),
     path("health/", views.health, name="health"),
     # Android-App (Anmeldung, Geräte); Inhalte über /api/portal/…

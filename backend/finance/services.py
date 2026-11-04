@@ -413,6 +413,10 @@ def fixed_reason(booking: Booking, today: datetime.date | None = None) -> str:
     Nachträglich erfasste Buchungen (Datum in einem alten Monat) bekommen die Frist ab dem
     Monat der Erfassung, sonst wären sie sofort gesperrt und ein Tippfehler nur per Storno
     zu beheben."""
+    if hasattr(booking, "performance_expense"):
+        return gettext("Die Ausgabe gehört zu einer Auftrittsabrechnung.")
+    if hasattr(booking, "incoming_invoice"):
+        return gettext("Die Buchung ist einer freigegebenen Eingangsrechnung zugeordnet.")
     why = fixed_on(booking.organization, booking.date, booking.created_at, today)
     return f"Die Buchung {booking.display_number} ist festgeschrieben{why}" if why else ""
 

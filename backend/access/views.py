@@ -467,7 +467,13 @@ def _catalog_org(request: Request) -> Organization | None:
 @api_view(["GET"])
 def permission_catalog(request: Request) -> Response:
     """Berechtigungskatalog, nach Modulen gegliedert (Texte mit eigener Bezeichnung)."""
-    return Response(catalog_for(request.query_params.get("org_type"), _catalog_org(request)))
+    org = _catalog_org(request)
+    if request.query_params.get("org") and org is None:
+        raise NotFound()
+    org_type = request.query_params.get("org_type")
+    if org is not None and org_type != "department":
+        org_type = org.type
+    return Response(catalog_for(org_type, org))
 
 
 def ensure_imprint(org: Organization):

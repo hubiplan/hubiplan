@@ -47,6 +47,14 @@ class Todo(models.Model):
     )
     per_unit = models.BooleanField(default=False)
     distributed = models.BooleanField(default=False)
+    remote_origin = models.ForeignKey(
+        "TodoRemoteTask",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="occurrences",
+    )
+    remote_mode = models.CharField(max_length=6, blank=True, default="")
     central_attachment_ids = EncryptedJSONField(default=list)
     series = models.ForeignKey(
         "TodoSeries", on_delete=models.CASCADE, null=True, blank=True, related_name="occurrences"
@@ -428,3 +436,92 @@ class TodoProgress(models.Model):
 
     def __str__(self):
         return f"{self.source_id}: {self.target_org_id} / {self.sequence_no}"
+
+
+class TodoPortalPublication(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    todo = models.OneToOneField(Todo, on_delete=models.CASCADE, related_name="portal_publication")
+    active = models.BooleanField(default=True)
+    mode = models.CharField(
+        max_length=8,
+        default="assigned",
+        choices=[("assigned", "Zugewiesen"), ("offer", "Zum Übernehmen")],
+    )
+    claimed_by = models.ForeignKey(
+        "portal.PortalAccess", on_delete=models.SET_NULL, null=True, related_name="claimed_tasks"
+    )
+    following = models.BooleanField(default=False)
+
+    def __str__(self):
+        return str(self.todo_id)
+
+
+class TodoPortalGrant(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    publication = models.ForeignKey(
+        TodoPortalPublication, on_delete=models.CASCADE, related_name="grants"
+    )
+    access = models.ForeignKey(
+        "portal.PortalAccess", on_delete=models.CASCADE, related_name="task_grants"
+    )
+    can_complete = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["publication", "access"], name="todo_portal_grant_unique"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.publication_id}: {self.access_id}"
+
+
+class TodoRemoteShare(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    todo = models.ForeignKey(Todo, on_delete=models.CASCADE, related_name="remote_shares")
+    coupling = models.ForeignKey(
+        "peering.Coupling", on_delete=models.CASCADE, related_name="task_shares"
+    )
+    mode = models.CharField(
+        max_length=6, choices=[("copy", "Eigene Kopie"), ("common", "Gemeinsam")]
+    )
+    can_complete = models.BooleanField(default=True)
+    active = models.BooleanField(default=True)
+    following = models.BooleanField(default=False)
+    revision = models.PositiveIntegerField(default=1)
+    progress = EncryptedJSONField(default=list)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["todo", "coupling"], name="todo_remote_share_unique")
+        ]
+
+    def __str__(self):
+        return f"{self.todo_id}: {self.coupling_id}"
+
+
+class TodoRemoteTask(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    coupling = models.ForeignKey(
+        "peering.Coupling", on_delete=models.CASCADE, related_name="received_tasks"
+    )
+    uid = models.CharField(max_length=80)
+    todo = models.ForeignKey(
+        Todo, on_delete=models.SET_NULL, null=True, related_name="remote_adoptions"
+    )
+    mode = models.CharField(max_length=6)
+    active = models.BooleanField(default=True)
+    source_version = models.PositiveIntegerField(default=0)
+    share_revision = models.PositiveIntegerField(default=0)
+    remote_series_uid = models.CharField(max_length=80, blank=True)
+    payload = EncryptedJSONField(default=dict)
+    received_at = models.DateTimeField(default=django_timezone.now)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["coupling", "uid"], name="todo_remote_task_unique")
+        ]
+
+    def __str__(self):
+        return f"{self.coupling_id}: {self.uid}"

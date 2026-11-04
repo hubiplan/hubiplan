@@ -284,6 +284,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             "membership__person",
             "department",
             "payment__invoice__organization",
+            "incoming_invoice",
             "project",
             "cancels__organization",
             "cancellation__organization",

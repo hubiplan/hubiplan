@@ -7,6 +7,8 @@ routen: [/aufgaben]
 stichworte: [Todo, Tasks]
 ---
 
+In der Übersicht stehen die Aufgaben direkt unter der Statusauswahl und dem Filter. „Neue Aufgabe“ steht rechts neben der Überschrift. Unterhalb der Liste erscheinen Hinweise auf Aufgaben ohne verantwortliches Konto oder auf eingehende Aufgaben anderer Installationen nur dann, wenn tatsächlich Einträge vorliegen; die Anzahl steht am Hinweis. Ladefehler bleiben mit einer erneuten Lademöglichkeit sichtbar. Nach der letzten Übernahme verschwindet der jeweilige Hinweis. Unter der Liste findest du den Export. Berechtigte Rollenverwalter öffnen dort außerdem „Verwaltung“, um die Aufbewahrung geteilter Aufgaben einzustellen. Dieser Bereich ist zunächst eingeklappt.
+
 Lege eigene Aufgaben mit Titel und optionaler Beschreibung und Frist an. Eigene Aufgaben sind privat. Nach dem Anlegen speichert das Formular Änderungen automatisch. Erledigte Aufgaben stehen unter „Erledigt“. Gelöschte Aufgaben kannst du 30 Tage im Papierkorb wiederherstellen. Unter „Eigene Aufgaben exportieren“ erhältst du deine privaten Aufgaben.
 
 Geteilte Aufgaben sind zusätzlich für ausgewählte Personen oder aktive Rolleninhaber sichtbar. Mit Lesen sehen sie die Aufgabe, mit Bearbeiten dürfen sie auch ändern und erledigen. Nur das verantwortliche Konto löscht oder überträgt die Verantwortung. Unter „Mein Konto › Benachrichtigungen“ kannst du Hinweise beim Teilen per Mail und Push abschalten. Bei dauerhaft weggefallenem Zugang können berechtigte Rollenverwalter die Verantwortung für verwaiste geteilte Aufgaben übernehmen; private Aufgaben bleiben verborgen. Der Postausgang speichert bei Aufgabenhinweisen nur einen neutralen Versandvermerk.
@@ -24,3 +26,26 @@ Bei Serien überträgt „Verantwortung übertragen“ die Verantwortung für de
 ## Aufgaben am Termin
 
 Verknüpfe eine Aufgabe mit einem Termin im eigenen Kalender. Im Termin führen „Aufgaben zu diesem Termin“ und „Aufgabe zu diesem Termin anlegen“ in die gefilterte Aufgabenansicht. Bestehende Aufgaben verknüpft oder löst das verantwortliche Konto unter „Terminverknüpfung“. Aufgaben- und Kalenderrechte werden unabhängig geprüft: Eine Verknüpfung teilt weder die Aufgabe noch einen internen Termin. Ohne Kalenderrecht erscheint nur „Termin nicht verfügbar“. Löschen des Termins erhält die Aufgabe und entfernt die Verknüpfung. Fristen ändern sich nicht automatisch mit einem Termin. Bei Serienterminen gilt der Bezug für die ganze Terminserie, nicht für ein einzelnes Datum.
+
+## Mitgliederaufgaben
+
+Das verantwortliche Konto kann unter „Im Mitgliederbereich teilen“ entweder aktuelle Mitglieder auswählen (nur lesen oder auch erledigen) oder ein offenes Angebot veröffentlichen. Ein Angebot ist für aktuelle Mitglieder der Einheit sichtbar, bei Untereinheiten nur für deren Mitglieder. Genau eine Person kann übernehmen, erledigen und eine offene Übernahme zurückgeben. Mitgliedschaft, Portalzugang und Freigabe werden bei jedem Abruf, jeder Änderung und jedem Dateiabruf geprüft. Ohne ausdrückliche Freigabe bleiben Aufgaben verborgen. Mitglieder erhalten dadurch keine Verwaltungsrechte und ändern weder Titel, Frist noch Beteiligte. Dokumentverweise geben keine zusätzlichen Ablagerechte.
+
+Bei Serien gilt eine Freigabe zunächst nur für diese Ausgabe. „Auch folgende Ausgaben im Mitgliederbereich freigeben“ übernimmt sie ausdrücklich in neue Ausgaben; offene Angebote werden dabei erneut zur Übernahme angeboten. Erledigen und Wiederöffnen beachten den bestehenden Schutz gegen doppelte oder bereits bearbeitete Folgeausgaben. Erinnerungen erhalten zugewiesene Mitglieder mit Erledigungsrecht oder die Person, die übernommen hat, nach den persönlichen Benachrichtigungsvorgaben.
+
+Unter „Mein Bereich › Aufgaben“ stehen offene und erledigte Aufgaben. Push- und Maillinks wählen den eigenen Portalzugang. Nach einem Entzug, Austritt oder Abschalten des Mitgliederbereichs besteht kein Zugriff mehr.
+
+## Aufgaben anlegen
+
+„Neue Aufgabe“ öffnet einen eigenen Dialog. Titel, Beschreibung, Frist und Teilen können vor dem Anlegen festgelegt werden. Nach „Anlegen“ bleibt der Dialog für Anhänge, Erinnerungen, Wiederholung und Mitgliederfreigabe geöffnet; „Fertig“ schließt ihn. Änderungen an der angelegten Aufgabe werden wie üblich gespeichert, ungespeicherte Freigaben vor dem Schließen geprüft. Die Beschreibung bietet ein breites, vergrößerbares Textfeld. Statusauswahl und Filter stehen bei ausreichendem Platz nebeneinander, auf kleinen Bildschirmen darunter.
+
+## Aufgaben zwischen getrennten Installationen
+
+Im Aufgaben-Dialog unter **Mit anderer Installation teilen** wählst du eine bestätigte Kopplung. Zuerst muss in der Kopplung das Aufgabenpaket freigegeben und auf der Gegenseite angenommen werden. Jede Aufgabe braucht zusätzlich ihre eigene Freigabe. Neue Angebote stehen unter **Aufgaben aus anderen Installationen** und werden ausdrücklich von einem verantwortlichen Konto übernommen.
+
+- **Eigene Kopie mit eigenem Erledigungsstand**: Jede Zieleinheit erledigt unabhängig. Die Quelle sieht nur Ausgabe, Frist und Fortschritt; lokale Notizen, eigene Anhänge und Kontonamen werden nicht zurückgesendet. Offene Kopien erhalten zentrale Inhaltsänderungen. Erledigte Kopien behalten ihren Stand. Ein Widerruf beendet weitere Aktualisierungen und Folgeausgaben; übernommene Inhalte bleiben vor Ort. Quellanhänge benötigen weiterhin eine aktuelle Freigabe.
+- **Eine gemeinsam erledigte Aufgabe**: Lesen und Erledigen werden bei der Quelle geprüft. Ein Erledigen gilt für alle Installationen; bei einem Versionskonflikt bitte neu laden. Ist die Quelle nicht erreichbar, kann kein neuer Erledigungsstand bestätigt werden. Widerruf, pausierte Kopplung oder ausstehender Schlüsselwechsel entziehen den Zugriff.
+
+Nach der Übernahme gelten die örtlichen Aufgabenfreigaben. Ein anderer Vorstand erhält dadurch keinen automatischen Zugriff. Die Quelle bestimmt, ob die Gegenseite erledigen darf. Die Verteilart lässt sich nach der ersten Freigabe nicht wechseln. Folgeausgaben werden nur mit **Auch folgende Ausgaben freigeben** übertragen. Bei eigenen Kopien erhält jede Zieleinheit dann ihre eigene Ausgabenfolge; bei gemeinsamen Aufgaben entstehen die Folgeausgaben an der Quelle.
+
+Die Aufgabenliste zeigt Titel, Frist und Aktionen in Tabellenzeilen. Der Titel ist ein Link; auch ein Klick auf die freie Zeilenfläche öffnet die Aufgabe. Das Häkchen ändert nur den Erledigungsstand. Am rechten Rand verschiebt das Papierkorb-Symbol die Aufgabe in den Papierkorb; dort stellt das Zurück-Symbol sie wieder her. Auf schmalen Bildschirmen steht die Frist unter dem Titel.

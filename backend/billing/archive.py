@@ -49,6 +49,15 @@ def documents_purged(invoice: Invoice) -> bool:
 
 def archived_pdf(invoice: Invoice) -> bytes:
     """PDF der Rechnung in der ausgegebenen Fassung (legt sie beim ersten Mal ab)."""
+    if invoice.electronic_data and invoice.issued_pdf:
+        with invoice.issued_pdf.open("rb") as fh:
+            return fh.read()
+    if invoice.electronic_data and invoice.status == Invoice.Status.DRAFT:
+        from finance.einvoice import as_json, parse_xml, render
+
+        from .einvoice_xml import generate
+
+        return render(as_json(parse_xml(generate(invoice))), invoice.organization.display_name)
     if invoice.status not in ARCHIVED or invoice.number is None:
         return pdf.render([invoice])
     if invoice.issued_pdf:

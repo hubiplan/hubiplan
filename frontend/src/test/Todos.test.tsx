@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
@@ -54,7 +54,7 @@ describe('Eigene Aufgaben', () => {
     })
     setup('/aufgaben?aufgabe=50&einheit=8')
     expect(
-      await screen.findByRole('button', { name: 'Aufgabe der anderen Einheit' }),
+      await screen.findByRole('link', { name: 'Aufgabe der anderen Einheit' }),
     ).toBeInTheDocument()
   })
 
@@ -101,7 +101,7 @@ describe('Eigene Aufgaben', () => {
     })
     setup()
     expect(
-      await screen.findByRole('button', { name: 'Material für die Abteilung' }),
+      await screen.findByRole('link', { name: 'Material für die Abteilung' }),
     ).toBeInTheDocument()
   })
   it('legt mit Leserecht eine Aufgabe an und zeigt sie in der Liste', async () => {
@@ -134,7 +134,7 @@ describe('Eigene Aufgaben', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Neue Aufgabe' }))
     await userEvent.type(screen.getByLabelText('Titel'), 'Material bestellen')
     await userEvent.click(screen.getByRole('button', { name: 'Anlegen' }))
-    expect(await screen.findByRole('button', { name: 'Material bestellen' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Material bestellen' })).toBeInTheDocument()
   })
 
   it('bietet einer geteilten Leserin keinen Haken zum Erledigen', async () => {
@@ -165,7 +165,8 @@ describe('Eigene Aufgaben', () => {
       }),
     })
     setup()
-    await screen.findByRole('button', { name: 'Nur lesen' })
+    await screen.findByRole('link', { name: 'Nur lesen' })
+    expect(screen.queryByRole('button', { name: 'Nur lesen' })).not.toBeInTheDocument()
     await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Erledigt' })).toBeDisabled())
     expect(screen.queryByRole('button', { name: 'Löschen' })).not.toBeInTheDocument()
   })
@@ -203,12 +204,62 @@ describe('Eigene Aufgaben', () => {
       },
     })
     setup()
-    await userEvent.click(await screen.findByRole('button', { name: 'Vorbereiten' }))
+    const taskLink = await screen.findByRole('link', { name: 'Vorbereiten' })
+    taskLink.focus()
+    await userEvent.keyboard('{Enter}')
     await userEvent.type(await screen.findByLabelText('Beschreibung'), 'Erste Notiz')
     await userEvent.click(screen.getByRole('checkbox', { name: 'Erledigt' }))
     await waitFor(() => expect(task.status).toBe('done'))
     expect(task.description).toBe('Erste Notiz')
     await userEvent.type(screen.getByLabelText('Beschreibung'), ' ergänzt')
     await waitFor(() => expect(task.description).toBe('Erste Notiz ergänzt'))
+  })
+})
+
+describe('Aufgaben-Dialog', () => {
+  it('bietet Teilen vor dem Anlegen und ein großes Beschreibungsfeld an', async () => {
+    let created: Record<string, unknown> = {}
+    fakeApi({
+      'GET /_allauth/browser/v1/auth/session': () => ({
+        status: 200,
+        body: { status: 200, data: { user: testUser } },
+      }),
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ permissions: ['todos.view', 'todos.edit'] })],
+      }),
+      'GET /api/orgs/7/todos/': () => ({ status: 200, body: { items: [] } }),
+      'GET /api/orgs/7/todos/choices/': () => ({
+        status: 200,
+        body: { users: [{ id: 8, name: 'Erika Beispiel' }], roles: [] },
+      }),
+      'POST /api/orgs/7/todos/': (init) => {
+        created = JSON.parse(String(init?.body))
+        return {
+          status: 201,
+          body: {
+            ...created,
+            id: 12,
+            version: 1,
+            status: 'open',
+            can_edit: true,
+            can_delete: true,
+          },
+        }
+      },
+    })
+    setup()
+    await userEvent.click(await screen.findByRole('button', { name: 'Neue Aufgabe' }))
+    const dialog = within(await screen.findByRole('dialog', { name: 'Neue Aufgabe' }))
+    expect(dialog.getByLabelText('Beschreibung')).toHaveAttribute('rows', '8')
+    await userEvent.type(dialog.getByLabelText('Titel'), 'Helferdienst')
+    await userEvent.selectOptions(await dialog.findByLabelText('Empfänger'), 'u:8')
+    await userEvent.click(dialog.getByRole('button', { name: 'Hinzufügen' }))
+    await userEvent.click(dialog.getByRole('button', { name: 'Anlegen' }))
+    await waitFor(() => expect(created.title).toBe('Helferdienst'))
+    expect(created.shares).toEqual([{ user: 8, level: 'view', responsible: false }])
+    expect(created).not.toHaveProperty('per_unit')
+    const saved = within(await screen.findByRole('dialog', { name: 'Aufgabe angelegt' }))
+    expect(saved.getByText('Anhänge')).toBeInTheDocument()
   })
 })

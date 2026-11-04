@@ -20,7 +20,10 @@ export function RolesPage() {
   const org = useActiveOrg()
   const { refresh } = useOrg()
   const roles = useLoad(() => orgApi.roles(org.id), [org.id])
-  const catalog = useLoad(() => orgApi.catalog(org.type, org.id), [org.type, org.id])
+  const catalog = useLoad(
+    () => orgApi.catalog(org.type, org.id),
+    [org.type, org.id, org.modules.join(',')],
+  )
   const assignments = useLoad(() => orgApi.assignments(org.id), [org.id])
   const [editing, setEditing] = useState<Role | 'new' | null>(null)
   // Bereich Rollen nur lesen: alles sehen, nichts ändern (konzepte/berechtigungen.md)

@@ -1,5 +1,8 @@
 // Termin ansehen; mit Recht auch bearbeiten, einzelne Serientermine ändern, Anhänge.
 import { EventTaskLink } from '../TodoEventLink.tsx'
+import { Link } from 'react-router-dom'
+import { useOptionalOrg } from '../../org/OrgContext.tsx'
+import { MaterialReferences } from '../MaterialReferences.tsx'
 import { useRef, useState } from 'react'
 import { eventApi } from '../../api/events.ts'
 import type { CalendarBase, EventCategory, EventDetail, Occurrence } from '../../api/events.ts'
@@ -31,6 +34,13 @@ export function VisibilityBadge({ visibility }: { visibility: string }) {
       {visibility === 'public' ? t('öffentlich') : t('nur Vorstand')}
     </span>
   )
+}
+
+function MusicLink({ eventId }: { eventId: number }) {
+  const org = useOptionalOrg()?.active
+  return org?.modules.includes('music') && org.permissions.includes('music.view') ? (
+    <Link to={`/musik?art=performances&termin=${eventId}`}>{t('Auftritt planen')}</Link>
+  ) : null
 }
 
 /** Neuen Termin anlegen (Dialog). */
@@ -357,6 +367,13 @@ export function EventDialog({
             </p>
           )}
           <EventTaskLink base={base} eventId={data.id} />
+          <MusicLink eventId={data.id} />
+          <MaterialReferences
+            kind="event"
+            id={data.id}
+            originalStart={occurrence.original_start}
+            sourceBase={base}
+          />
           <EventProjectPanel base={base} event={data} onChanged={changed} />
           {(data.attachments.length > 0 || data.can_edit) && (
             <div className="stack-sm">

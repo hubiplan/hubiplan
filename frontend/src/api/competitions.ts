@@ -34,6 +34,7 @@ export const WEBSITE_LABELS: Record<WebsiteMode, string> = {
   },
 }
 
+// „top3“ bleibt als gespeicherter API-Wert für „Preisplätze mit Namen“ erhalten.
 export type WebsiteDepth = 'einheiten' | 'top3' | 'alle'
 
 export const WEBSITE_DEPTH_LABELS: Record<WebsiteDepth, string> = {
@@ -41,7 +42,7 @@ export const WEBSITE_DEPTH_LABELS: Record<WebsiteDepth, string> = {
     return t('nur Wertung der Untereinheiten und Mannschaften')
   },
   get top3() {
-    return t('Plätze 1 bis 3 mit Namen')
+    return t('Preisplätze mit Namen')
   },
   get alle() {
     return t('ganze Rangliste')

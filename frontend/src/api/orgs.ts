@@ -644,6 +644,8 @@ export interface OpenTask {
 }
 
 export const PERM = {
+  musicView: 'music.view',
+  musicEdit: 'music.edit',
   todosView: 'todos.view',
   todosEdit: 'todos.edit',
   membersView: 'members.view',
@@ -657,6 +659,8 @@ export const PERM = {
   exportRun: 'export.run',
   platformManage: 'platform.manage',
   financeView: 'finance.view',
+  materialView: 'material.view',
+  materialEdit: 'material.edit',
   financeEdit: 'finance.edit',
   billingView: 'billing.view',
   billingEdit: 'billing.edit',

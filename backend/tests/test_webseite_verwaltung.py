@@ -52,8 +52,8 @@ class TestModul:
 
     def test_ohne_modul_keine_einrichtung(self, orgs, board_a, api):
         c = api(board_a)
-        data = c.get(url(orgs["a"])).json()
-        assert data["module_enabled"] is False and data["website"] is None
+        # Ohne Modul sind auch gespeicherte Webseitenrechte unwirksam.
+        assert c.get(url(orgs["a"])).status_code == 404
         assert c.post(url(orgs["a"])).status_code == 404
         assert not Website.objects.exists()
 

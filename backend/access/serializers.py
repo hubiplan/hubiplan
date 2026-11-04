@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from accounts.models import User
 
-from .catalog import codes_for, normalize
+from .catalog import codes_for, normalize, preserve_disabled_permissions
 from .models import Role, RoleAssignment
 
 
@@ -52,7 +52,9 @@ class RoleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 gettext("Für diese Organisation nicht erlaubt: {x}").format(x=", ".join(unknown))
             )
-        return value
+        return preserve_disabled_permissions(
+            value, self.instance.permissions if self.instance else [], org
+        )
 
     def validate_name(self, value: str) -> str:
         org = self.context["org"]

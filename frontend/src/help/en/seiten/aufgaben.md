@@ -7,6 +7,8 @@ routen: [/aufgaben]
 stichworte: [Todo, Tasks]
 ---
 
+In the overview, tasks appear directly below the status controls and filter. “New task” sits beside the heading. Below the list, notices for tasks without a responsible account and incoming tasks from other installations appear only when there are entries, with a count. Loading errors remain visible with a retry action. Adopting the last entry removes its notice. The export action is below the list. Authorised role managers can also open “Administration” there to configure retention of shared tasks. This section is initially collapsed.
+
 Create personal tasks with a title and an optional description and due date. Personal tasks are private. After creation, edits are saved automatically. Completed tasks appear under Done. Deleted tasks can be restored from the trash for 30 days. Export personal tasks downloads your private tasks.
 
 Shared tasks are also visible to selected people or current role holders. View permission allows reading; edit permission also allows changes and completion. Only the responsible account can delete or transfer responsibility. Under My account › Notifications, disable email and push notices when tasks are shared. Authorised role managers can take over orphaned shared tasks when the responsible account permanently loses access; personal tasks remain hidden. The outbox stores only a neutral delivery record for task notices.
@@ -24,3 +26,26 @@ Use Target unit to share with allowed neighbouring levels on the same instance. 
 ## Tasks linked to events
 
 Link a task to an event in your own calendar. The event offers links to its tasks and to creating a linked task. The task owner can change or remove the link under “Linked event”. Calendar and task permissions remain independent: linking does not share either object. Without calendar permission, only “Event unavailable” appears. Deleting the event keeps the task and removes its link. Due dates do not move automatically with the event. A recurring event is linked as a whole series, rather than an individual occurrence.
+
+## Member tasks
+
+The responsible account can explicitly select current members under “Share in the member portal” (view only or allowed to complete) or publish an open offer. Current unit members can view an offer; department offers are limited to their members. Exactly one person can claim it, complete it or release an open claim. Every read, change and file download checks current membership, portal access and task publication. Members receive no administration rights and cannot change titles, due dates or participants. Document references grant no additional repository access.
+
+Publication initially applies only to the selected occurrence. Explicitly enabling “Also share following occurrences in the member portal” copies it into future occurrences; offers become available to claim again. Completing and reopening preserve the existing protections for subsequent occurrences. Assigned members allowed to complete, or the member who claimed an offer, receive reminders according to their notification preferences.
+
+Use “My area › Tasks” to view open and completed tasks. Mail and push links select the matching portal access. Revoked access, ended membership or a disabled portal prevents further access.
+
+## Creating tasks
+
+“New task” opens a dialog. Enter the title, description, due date and sharing before creating the task. After “Create”, the same dialog stays open for attachments, reminders, recurrence and member access; “Done” closes it. Existing tasks save as usual and unsaved access settings are checked before closing. The description uses a wide, resizable text field. Status and filters share one row on larger screens and wrap on smaller screens.
+
+## Tasks across separate installations
+
+In the task dialog, **Share with another installation** selects a confirmed connection. Enable the task packet in the connection and have the receiving side accept it first. Each task also needs its own explicit grant. New offers appear under **Tasks from other installations** and must be adopted by a responsible local account.
+
+- **Separate copy with independent completion**: Each receiving unit completes independently. The source only sees occurrence, deadline and progress; local notes, additional attachments and account names are not returned. Open copies receive central content changes. Completed copies retain their content. Revocation stops further updates and future occurrences; adopted content stays local. Source attachments still require a current grant.
+- **One jointly completed task**: Reading and completion are checked at the source. Completion applies across installations; reload after a version conflict. An unreachable source cannot confirm a new completion state. Revocation, a paused connection or an unconfirmed key change removes access.
+
+After adoption, local task permissions apply. Another board member does not automatically gain access. The source controls whether the receiving side may complete a task. The distribution mode cannot be changed after the first grant. Future occurrences require **Also share future occurrences**. Separate copies then have independent local sequences; jointly completed tasks create successors at the source.
+
+The task list uses table rows for title, deadline and actions. The title is a link; clicking the free area of a row also opens the task. The checkbox only changes completion. The trash icon on the right moves a task to trash; the restore icon returns it from trash. On narrow screens, the deadline appears below the title.

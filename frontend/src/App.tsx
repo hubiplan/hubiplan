@@ -53,7 +53,9 @@ const NextcloudPage = lazyPage(() => import('./pages/settings/NextcloudPage.tsx'
 const CircularsPage = lazyPage(() => import('./pages/circulars/CircularsPage.tsx'), 'CircularsPage')
 const MembersPage = lazyPage(() => import('./pages/MembersPage.tsx'), 'MembersPage')
 const FinanzenPage = lazyPage(() => import('./pages/finanzen/FinanzenPage.tsx'), 'FinanzenPage')
+const MusicPage = lazyPage(() => import('./pages/music/MusicPage.tsx'), 'MusicPage')
 const DocumentsPage = lazyPage(() => import('./pages/documents/DocumentsPage.tsx'), 'DocumentsPage')
+const MaterialsPage = lazyPage(() => import('./pages/materials/MaterialsPage.tsx'), 'MaterialsPage')
 const WebsitePage = lazyPage(() => import('./pages/website/WebsitePage.tsx'), 'WebsitePage')
 const EventsPage = lazyPage(() => import('./pages/events/EventsPage.tsx'), 'EventsPage')
 const CompetitionsPage = lazyPage(
@@ -271,7 +273,16 @@ export default function App() {
           />
           <Route path="rundschreiben/*" element={<CircularsPage />} />
           <Route path="aufgaben" element={<TodosPage />} />
+          <Route path="material/*" element={<MaterialsPage />} />
           <Route path="termine/*" element={<EventsPage />} />
+          <Route
+            path="musik"
+            element={
+              <RequireOrg>
+                <MusicPage />
+              </RequireOrg>
+            }
+          />
           <Route
             path="wettbewerbe/*"
             element={

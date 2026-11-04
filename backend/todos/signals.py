@@ -32,6 +32,13 @@ def connect():
 
     pre_delete.connect(erase_private, sender=User, dispatch_uid="todos_erase_private")
     from .models import Todo, TodoAttachment, TodoSeries
+    from .portal import inherit_publication
+
+    post_save.connect(inherit_publication, sender=Todo, dispatch_uid="todos_portal_series")
+    from .remote import inherit_remote_shares, report_progress
+
+    post_save.connect(report_progress, sender=Todo, dispatch_uid="todos_remote_progress")
+    post_save.connect(inherit_remote_shares, sender=Todo, dispatch_uid="todos_remote_series")
 
     pre_save.connect(check_reminder_changes, sender=Todo, dispatch_uid="todos_reminder_changes")
     post_save.connect(plan_reminders, sender=Todo, dispatch_uid="todos_plan_reminders")

@@ -14,8 +14,8 @@ import {
 } from '../../components/charts/chartData.ts'
 import { RangePicker } from '../../components/charts/RangePicker.tsx'
 import { useRange } from '../../components/charts/range.ts'
-import { formatDate, useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { formatDate, useQueryLoad } from '../../components/forms.ts'
+import { LoadError } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { locale } from '../../i18n/index.ts'
 import { t } from '../../i18n/index.ts'
@@ -48,7 +48,10 @@ export function FinanceDevelopment({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
   const range = useRange()
   const key = JSON.stringify(range.query)
-  const { data, error } = useLoad(() => statsApi.finance(org.id, range.query), [org.id, key])
+  const { data, error, reload } = useQueryLoad(
+    () => statsApi.finance(org.id, range.query),
+    [org.id, key],
+  )
   return (
     <div className="stack">
       <RangePicker
@@ -59,8 +62,12 @@ export function FinanceDevelopment({ canEdit }: { canEdit: boolean }) {
             : undefined
         }
       />
-      {error && <Alert kind="error">{error}</Alert>}
-      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+      {error && <LoadError message={error} onRetry={() => void reload()} />}
+      {!data && !error && (
+        <p className="muted" role="status">
+          {t('Lädt …')}
+        </p>
+      )}
       {data &&
         (data.accounts.length === 0 ? (
           <div className="card empty-state">

@@ -361,6 +361,12 @@ def build(org, year: int):
         tables.append(t)
 
         tables += _billing_tables(org, start, end, add, add_file)
+        from billing.einvoice_retention import export_table
+
+        tables.append(export_table(org, start, end, add_file))
+        from music.finance_export import export_tables
+
+        tables += export_tables(org, start, end)
         tables += _donation_tables(org, start, end, add_file)
         tables += _bank_tables(org, start, end, add_file)
         tables.append(_cash_count_table(org, start, end, add_file))
@@ -926,6 +932,7 @@ def _protocol_table(org, start) -> Table:
     from audit.models import AuditEntry
 
     types = set()
+    types.update({"performanceaccount", "musicianclaim", "performanceexpense"})
     for app in ("finance", "billing"):
         for model in apps.get_app_config(app).get_models():
             name = model._meta.model_name

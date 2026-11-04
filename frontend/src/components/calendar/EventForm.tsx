@@ -1,5 +1,6 @@
 // Formular zum Anlegen und Bearbeiten eines Termins.
 import { useEffect, useRef, useState } from 'react'
+import { MaterialReferences } from '../MaterialReferences.tsx'
 import type { FormEvent } from 'react'
 import { REPEAT_LABELS, VISIBILITY_LABELS, eventApi } from '../../api/events.ts'
 import type {
@@ -424,6 +425,14 @@ export function EventForm({
             </option>
           ))}
         </SelectField>
+        {event && event.repeat !== 'none' && (
+          <div>
+            <p className="muted">
+              {t('Nach Änderungen der Terminregel müssen Materialzuordnungen geprüft werden.')}
+            </p>
+            <MaterialReferences kind="event" id={event.id} sourceBase={base} />
+          </div>
+        )}
         {v.repeat !== 'none' && (
           <>
             <Field

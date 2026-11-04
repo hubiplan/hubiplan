@@ -18,3 +18,5 @@ treated alike. Name sorting places umlauts with their base letter (`ä` with `a`
 Equal names have a fixed order so that moving between pages remains stable.
 
 ![The member list with search and filters](bild:mitglieder-liste)
+
+On a phone, search stays visible. The Filters button opens status, membership type and other restrictions; the number indicates how many filters are set. **More actions** contains export and membership cards. **Per page** lets you choose 10, 20 or 50 results; phones initially show 10. For multiple pages, navigation is available above and below the results. Your selection and page size are retained when you open a record and return. Small screens show name and membership type; open the record for other details.

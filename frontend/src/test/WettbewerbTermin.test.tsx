@@ -165,7 +165,7 @@ describe('Wettbewerb und Termin', () => {
       }),
     })
     const live = await screen.findByRole('complementary', { name: 'Aktuelle Tabellen' })
-    expect(within(live).getByRole('heading', { name: 'Einzelwertung' })).toBeVisible()
+    expect(await within(live).findByRole('heading', { name: 'Einzelwertung' })).toBeVisible()
     expect(within(live).getByText('Schütze 6')).toBeVisible()
   })
 

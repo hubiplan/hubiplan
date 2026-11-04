@@ -116,7 +116,13 @@ def replace_shares(todo, user, scope, values):
         TodoShare.objects.bulk_create(rows)
     if todo.shared and not rows:
         record(todo.organization, user, "update", todo)
-    todo.shared = bool(rows)
+    from .models import TodoPortalPublication
+
+    todo.shared = (
+        bool(rows)
+        or TodoPortalPublication.objects.filter(todo=todo, active=True).exists()
+        or todo.remote_shares.filter(active=True).exists()
+    )
     if not rows and todo.owner_id != todo.created_by_id:
         raise ValidationError(gettext("Eine übertragene Aufgabe muss geteilt bleiben."))
     ctx = active()

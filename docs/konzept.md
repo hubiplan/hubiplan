@@ -29,6 +29,12 @@ Gepflegt von Ralf Philipsen; bei jeder neuen Funktion hier eine Zeile ergänzen.
 | Rundschreiben | Vorstand | Mail/Brief/App an Mitglieder, Vorstände, Rolleninhaber; Abbestellen nur für „Information“ |
 | Webseite | Vorstand, Webseitenpflege | Inhalte, Startseiten-Bausteine, Instagram/Facebook-Beiträge, Impressum/Datenschutz |
 | Finanzen | Kassierer, Kassenprüfer | Beiträge/Rechnungen, Mahnungen, Kasse, Quittungen, Kontoauszüge (CAMT), Zuwendungsbestätigungen, Abschlüsse |
+| E-Rechnungen | Kassierer, Rechnungsverwaltung | Geschäftspartner, Leistungsrechnungen als XRechnung, XML-/ZUGFeRD-Eingang, lokale Validierung, Freigabe und Originalarchiv; siehe [E-Rechnungen](e-rechnungen.md) |
+| Musik | Musikverwaltung | Musiker und Gäste, instrumentale Fähigkeiten, Auftritte an Kalenderterminen, Sollbesetzung und Einteilungen, persönliche Rückmeldungen; siehe [Musik](musik.md) |
+| Auftrittsabrechnung | Kasse mit Musik- und Kalenderleserecht | Veranstalterrechnung, Musikervergütungen mit Teilnahme und Freigabe, Auszahlungen und weitere Kosten, Stornos und Finanzübersicht; persönliche Vergütung im Mitgliederbereich |
+| Noten und Programme | Musikverwaltung | Stücke, Arrangements, Stimmenbestand und digitale Notenverweise; Auftrittsprogramme mit Dauer, Besetzungs-/Bestandsprüfung, Vorbereitungsaufgaben und CSV-Listen |
+| Proben und Musikerbereich | Musikverwaltung, eingeteilte Mitglieder | Proben an Kalenderterminen/Serien, persönliche Rückmeldungen und passende Noten, Erinnerungen, Notenausgabe mit Teilrückgaben und offenen Mengen |
+| Einzelprobenprogramme | Musikverwaltung, eingeteilte Mitglieder | Serienvorlage mit eigenen Programmen und Schwerpunkten je Einzeltermin, Rücksetzen auf die Vorlage, passende Noten je Probe und Erhalt bei Terminverschiebungen |
 | Mein Bereich | jedes Mitglied mit Zugang | Ausweis, Rechnungen, Rundschreiben, eigene Daten |
 | Einstellungen | Vorstand | Rollen, Erscheinungsbild, Briefvorlage, Verbund mit anderen Instanzen |
 | Plattform | Plattform-Administration | Vereine/Dachverbände anlegen, Module freischalten |

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { GENDERS, memberApi, todayIso } from '../../api/members.ts'
@@ -85,6 +86,11 @@ export function MemberFilePage() {
         </div>
       </div>
       <nav className="tabs" aria-label={t('Bereiche der Mitgliedsakte')}>
+        {org.modules.includes('music') && org.permissions.includes('music.view') && (
+          <Link className="tab" to={`/musik?art=musicians&mitglied=${id}`}>
+            {t('Musikerprofil')}
+          </Link>
+        )}
         {tabs.map((tmx) => (
           <Link
             key={tmx.id}
@@ -98,6 +104,7 @@ export function MemberFilePage() {
       </nav>
       {tab === 'stammdaten' && (
         <div className="stack">
+          <MaterialReferences kind="member" id={data.id} sourceBase={`/api/orgs/${org.id}/`} />
           <PhotoSection
             key={`foto-${data.id}`}
             orgId={org.id}

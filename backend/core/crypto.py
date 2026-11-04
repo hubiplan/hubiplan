@@ -1,13 +1,14 @@
-"""Verschlüsselung gespeicherter Daten mit einem Schlüssel je Verein (Umschlagverfahren).
+"""Verschlüsselung gespeicherter Daten mit Schlüsselgenerationen je Verein.
 
 Aufbau (Konzept „Serverhack-Schutz“, Abschnitt 3.4, Stufe 1):
 
-- Jeder Verein (oberste Einheit mit eigenem Datenbestand: Plattform, Dachverband,
-  Verein) bekommt einen eigenen zufälligen **Datenschlüssel** (AES-256-GCM). Er liegt
-  in der Tabelle ``core_datakey``, selbst verschlüsselt („verpackt“).
-- Verpackt wird er von einer **Schlüsselquelle** (``DATA_KEY_PROVIDER``). Standard ist
-  :class:`EnvKeyProvider` mit dem Hauptschlüssel aus der Server-``.env``
-  (``DATA_ENCRYPTION_KEY``). Eine andere Quelle, etwa ein externer Schlüsseldienst,
+- Jeder Schlüsselinhaber (Plattform, Dachverband, Verein) hat einen aktiven zufälligen
+  **Datenschlüssel** (AES-256-GCM) für neue Schreibvorgänge. Ältere Generationen
+  bleiben anhand ihrer unveränderlichen Nummer lesbar. Die Schlüssel liegen in der
+  Tabelle ``core_datakey``, selbst verschlüsselt („verpackt“).
+- Verpackt wird er von einer **Schlüsselquelle** (``DATA_KEY_PROVIDERS``). Standard ist
+  :class:`FileKeyProvider` mit dem Hauptschlüssel aus dem Docker-Secret. Eine andere
+  Quelle, etwa ein externer Schlüsseldienst,
   braucht nur ``wrap``/``unwrap``; am übrigen Code ändert sich nichts.
 - Jede verschlüsselte Datei und jeder verschlüsselte Wert trägt die Nummer seines
   Datenschlüssels. Zum Entschlüsseln muss niemand wissen, zu welchem Verein er gehört.
@@ -33,7 +34,7 @@ from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db import IntegrityError, connection, transaction
+from django.db import IntegrityError, connection, connections, transaction
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext, gettext_lazy
 from rest_framework.exceptions import APIException
@@ -219,18 +220,18 @@ def reset() -> None:
     global _providers
     _providers = None
     _keys_by_id.clear()
-    _key_ids_by_owner.clear()
     _owner_cache.clear()
+    for conn in connections.all(initialized_only=True):
+        getattr(conn, "_crypto_pending_keys", {}).clear()
 
 
 # ---------------------------------------------------------------------------
 # Datenschlüssel je Verein
 # ---------------------------------------------------------------------------
 
-# Schlüssel nach Nummer (Nummern werden nie wieder vergeben); Zuordnung Verein →
-# Nummer erst nach dem Commit, siehe _remember
+# Nur Schlüsselmaterial nach unveränderlicher Nummer zwischenspeichern. Welcher
+# Schlüssel aktiv ist, entscheidet immer die Datenbank, auch in anderen Prozessen.
 _keys_by_id: dict[int, tuple[bytes, float]] = {}
-_key_ids_by_owner: dict[int, int] = {}
 # Organisation → Schlüsselinhaber (ändert sich nicht: Untereinheiten bleiben in ihrem Verein)
 _owner_cache: dict[int, int] = {}
 
@@ -260,17 +261,22 @@ def key_owner_id(org_id: int) -> int:
     return node_id
 
 
-def _remember(key_id: int, owner_id: int, key: bytes) -> None:
-    # Zum Entschlüsseln sofort merken: Wer die Nummer kennt, hat Daten damit gelesen
-    # oder geschrieben, und eine zurückgerollte Nummer kommt nie wieder vor.
-    _keys_by_id[key_id] = (key, time.monotonic())
+def _cache_after_commit(key_id: int, key: bytes) -> None:
+    pending = getattr(connection, "_crypto_pending_keys", None)
+    if pending is None:
+        connection._crypto_pending_keys = pending = {}
 
-    def _store():
-        _key_ids_by_owner[owner_id] = key_id
+    def store():
+        if pending.get(key_id) is entry:
+            _keys_by_id[key_id] = (key, time.monotonic())
+            pending.pop(key_id, None)
 
-    # Zum Verschlüsseln erst nach dem Commit: Rollt die Transaktion zurück, gibt es den
-    # Schlüssel nicht, und nichts Neues darf ihn benutzen.
-    transaction.on_commit(_store)
+    # Auch beim Laden kann die Zeile aus einer noch nicht bestätigten Anlage stammen.
+    # Bis zum Commit nur verbindungslokal merken. Django entfernt den Commit-Hook
+    # beim Rollback seines Savepoints; _cached prüft deshalb auch dessen Gültigkeit.
+    entry = (key, time.monotonic(), store)
+    pending[key_id] = entry
+    transaction.on_commit(store)
 
 
 def _load(key_id: int) -> bytes:
@@ -282,17 +288,28 @@ def _load(key_id: int) -> bytes:
             gettext("Datenschlüssel {key_id} fehlt (Verein gelöscht?).").format(key_id=key_id)
         )
     key = unwrap_key(row["wrapped"], _context(row["organization_id"]))
-    _remember(key_id, row["organization_id"], key)
+    # Das Lesen einer alten Generation ändert niemals die aktive Schreibgeneration.
+    _cache_after_commit(key_id, key)
     return key
 
 
 def _cached(key_id: int) -> bytes | None:
     entry = _keys_by_id.get(key_id)
+    pending = getattr(connection, "_crypto_pending_keys", {})
+    if entry is None and key_id in pending:
+        candidate = pending[key_id]
+        # run_on_commit gehört zur festgeschriebenen Django-Version. Ohne den Hook
+        # ist diese Anlage zurückgerollt oder reset() hat ihren Cache verworfen.
+        if any(callback is candidate[2] for _, callback, _ in connection.run_on_commit):
+            entry = candidate
+        else:
+            pending.pop(key_id, None)
     if entry is None:
         return None
     ttl = settings.DATA_KEY_CACHE_SECONDS
     if ttl and time.monotonic() - entry[1] > ttl:
         _keys_by_id.pop(key_id, None)
+        pending.pop(key_id, None)
         return None
     return entry[0]
 
@@ -302,18 +319,37 @@ def key_by_id(key_id: int) -> bytes:
     return key if key is not None else _load(key_id)
 
 
-def key_for_owner(owner_id: int) -> tuple[int, bytes]:
-    """(Nummer, Schlüssel) des Datenschlüssels eines Vereins; legt ihn bei Bedarf an."""
-    key_id = _key_ids_by_owner.get(owner_id)
-    if key_id is not None:
-        key = _cached(key_id)
-        if key is not None:
-            return key_id, key
+def active_key_id(owner_id: int) -> int | None:
+    """Aktive Nummer ohne Seiteneffekt lesen; keinen Schlüssel anlegen oder entpacken."""
     from .models import DataKey
 
-    row = DataKey.objects.filter(organization_id=owner_id).values("pk").first()
-    if row is not None:
-        return row["pk"], key_by_id(row["pk"])
+    return (
+        DataKey.objects.filter(organization_id=owner_id, is_active=True)
+        .values_list("pk", flat=True)
+        .first()
+    )
+
+
+def key_for_owner(owner_id: int) -> tuple[int, bytes]:
+    """Aktiven Schlüssel lesen; nur für einen bisher schlüssellosen Inhaber anlegen.
+
+    Die aktive Nummer wird nicht prozesslokal gecacht. Nach einem späteren Wechsel
+    darf weder ein anderer Prozess noch das Lesen alter Daten alte Schreibschlüssel
+    festhalten. Ein Bestand ohne aktiven Schlüssel ist ein Fehler, kein Anlass für
+    eine automatische neue Generation.
+    """
+    from .models import DataKey
+
+    key_id = active_key_id(owner_id)
+    if key_id is not None:
+        return key_id, key_by_id(key_id)
+    if DataKey.objects.filter(organization_id=owner_id).exists():
+        # Zwischen den beiden Abfragen kann ein anderer Prozess den allerersten
+        # Schlüssel angelegt haben. Diesen übernehmen, statt einen Fehler zu melden.
+        key_id = active_key_id(owner_id)
+        if key_id is not None:
+            return key_id, key_by_id(key_id)
+        raise ImproperlyConfigured("Für diesen Schlüsselinhaber fehlt der aktive Datenschlüssel.")
     key = AESGCM.generate_key(bit_length=256)
     try:
         with transaction.atomic():
@@ -323,9 +359,13 @@ def key_for_owner(owner_id: int) -> tuple[int, bytes]:
             )
     except IntegrityError:
         # Gleichzeitig angelegt: den anderen nehmen
-        row = DataKey.objects.filter(organization_id=owner_id).values("pk").get()
-        return row["pk"], key_by_id(row["pk"])
-    _remember(obj.pk, owner_id, key)
+        key_id = active_key_id(owner_id)
+        if key_id is None:
+            raise
+        return key_id, key_by_id(key_id)
+    # Nicht vor dem äußeren Commit cachen: Eine zurückgerollte Anlage darf keine
+    # Schlüssel hinterlassen, die nur noch aus dem Prozessspeicher lesbar wären.
+    _cache_after_commit(obj.pk, key)
     return obj.pk, key
 
 
@@ -454,6 +494,10 @@ class DecryptingReader(io.RawIOBase):
         self._chunks = max(1, -(-(total - HEADER) // (CHUNK + TAG)))
         self._pos = 0
         self._cached: tuple[int, bytes] | None = None
+        # Auch eine leere Datei enthält ein GCM-Tag. readinto() liefert für Größe 0
+        # sofort EOF; deshalb diesen einen Block schon beim Öffnen authentifizieren.
+        if self._size == 0:
+            self._chunk(0)
 
     @property
     def size(self) -> int:
