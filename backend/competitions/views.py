@@ -1223,7 +1223,7 @@ def _starters_with_values(comp) -> list[dict]:
         ids = program_scorings.get(h.program_id, [h.scoring_id])
         for scoring_id in ids:
             hits.setdefault(h.starter_id, {}).setdefault(str(scoring_id), []).append(
-                {"x": str(h.x), "y": str(h.y), "spot": h.spot, "source": h.source}
+                {"x": str(h.x), "y": str(h.y), "spot": h.spot}
             )
     out = []
     for s in ordered(comp.starters.select_related("unit"), "name", "pk"):
