@@ -357,6 +357,12 @@ export const memberApi = {
 
   addDepartment: (org: number, id: number, data: { department: number; valid_from: string }) =>
     api.post<DepartmentMembership>(`${base(org)}/members/${id}/departments/`, data),
+  updateDepartment: (
+    org: number,
+    id: number,
+    dm: number,
+    data: Pick<DepartmentMembership, 'valid_from' | 'valid_until'>,
+  ) => api.patch<DepartmentMembership>(`${base(org)}/members/${id}/departments/${dm}/`, data),
   endDepartment: (org: number, id: number, dm: number, valid_until: string) =>
     api.patch(`${base(org)}/members/${id}/departments/${dm}/`, { valid_until }),
   addDepartmentRole: (org: number, id: number, data: { role: number; valid_from: string }) =>

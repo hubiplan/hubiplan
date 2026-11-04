@@ -3,7 +3,7 @@ import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { GENDERS, memberApi, todayIso } from '../../api/members.ts'
-import type { DurationInfo, Gender, MemberDetail } from '../../api/members.ts'
+import type { DepartmentMembership, DurationInfo, Gender, MemberDetail } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
 import {
@@ -355,6 +355,7 @@ function MembershipTab({
   const [error, setError] = useState<string | null>(null)
   const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   const precision = org.date_precision
+  const [editingDepartment, setEditingDepartment] = useState<number | null>(null)
   const terms = orgTerms(org)
 
   async function run(action: () => Promise<unknown>) {
@@ -492,16 +493,39 @@ function MembershipTab({
               <li key={d.id}>
                 <strong>{d.department_name}</strong> · {formatMemberDate(d.valid_from, precision)} –{' '}
                 {d.valid_until ? formatMemberDate(d.valid_until, precision) : 'heute'}
+                {canEdit && editingDepartment !== d.id && (
+                  <button
+                    type="button"
+                    className="link-button spaced"
+                    aria-label={t('Mitgliedschaft in {name} bearbeiten', {
+                      name: d.department_name,
+                    })}
+                    disabled={editingDepartment !== null}
+                    onClick={() => setEditingDepartment(d.id)}
+                  >
+                    {t('Bearbeiten')}
+                  </button>
+                )}
                 {canEdit && !d.valid_until && (
                   <button
                     type="button"
                     className="link-button spaced"
+                    disabled={editingDepartment !== null}
                     onClick={() =>
                       void run(() => memberApi.endDepartment(org.id, member.id, d.id, todayIso()))
                     }
                   >
                     beenden
                   </button>
+                )}
+                {canEdit && editingDepartment === d.id && (
+                  <EditDepartmentMembership
+                    orgId={org.id}
+                    memberId={member.id}
+                    membership={d}
+                    reload={reload}
+                    onClose={() => setEditingDepartment(null)}
+                  />
                 )}
               </li>
             ))}
@@ -562,6 +586,87 @@ function MembershipTab({
       </Section>
       {error && <Alert kind="error">{error}</Alert>}
     </div>
+  )
+}
+
+function EditDepartmentMembership({
+  orgId,
+  memberId,
+  membership,
+  reload,
+  onClose,
+}: {
+  orgId: number
+  memberId: number
+  membership: DepartmentMembership
+  reload: () => Promise<void>
+  onClose: () => void
+}) {
+  const form = useForm({
+    valid_from: membership.valid_from,
+    valid_until: membership.valid_until ?? '',
+  })
+  const { dirty, markSaved } = useChangesGuard(form.values)
+
+  async function save(ev: FormEvent) {
+    ev.preventDefault()
+    const saved = await form.submit(async () => {
+      const result = await memberApi.updateDepartment(orgId, memberId, membership.id, {
+        valid_from: form.values.valid_from,
+        valid_until: form.values.valid_until || null,
+      })
+      await reload()
+      return result
+    })
+    if (saved) {
+      markSaved()
+      onClose()
+    }
+  }
+
+  return (
+    <form
+      className="subcard"
+      aria-label={t('Mitgliedschaft in {name} bearbeiten', { name: membership.department_name })}
+      onSubmit={save}
+    >
+      <div className="grid-2">
+        <Field
+          label={t('Beginn')}
+          type="date"
+          required
+          autoFocus
+          disabled={form.busy}
+          value={form.values.valid_from}
+          error={form.errors.valid_from}
+          onChange={(e) => form.set('valid_from', e.target.value)}
+        />
+        <Field
+          label={t('Ende')}
+          type="date"
+          min={form.values.valid_from}
+          disabled={form.busy}
+          hint={t('Leer lassen, solange die Mitgliedschaft besteht.')}
+          value={form.values.valid_until}
+          error={form.errors.valid_until}
+          onChange={(e) => form.set('valid_until', e.target.value)}
+        />
+      </div>
+      {form.message?.kind === 'error' && <Alert kind="error">{form.message.text}</Alert>}
+      <div className="button-row">
+        <button type="submit" className="button button-primary" disabled={form.busy}>
+          {t('Speichern')}
+        </button>
+        <button
+          type="button"
+          className="button button-ghost"
+          disabled={form.busy}
+          onClick={() => void confirmDiscard(dirty).then((yes) => yes && onClose())}
+        >
+          {t('Abbrechen')}
+        </button>
+      </div>
+    </form>
   )
 }
 
