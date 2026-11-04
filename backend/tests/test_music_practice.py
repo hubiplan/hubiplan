@@ -34,7 +34,9 @@ pytestmark = pytest.mark.django_db
 
 def test_stock_correction_rechecks_after_a_checkout(club, practice):
     from types import SimpleNamespace
+
     from rest_framework.exceptions import ValidationError
+
     from music.scores import MusicScorePartSerializer, ScorePartViewSet
 
     user, _, musician, _, _, part = practice
