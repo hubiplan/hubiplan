@@ -34,7 +34,7 @@ from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db import IntegrityError, connection, transaction
+from django.db import IntegrityError, connection, connections, transaction
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext, gettext_lazy
 from rest_framework.exceptions import APIException
@@ -221,6 +221,8 @@ def reset() -> None:
     _providers = None
     _keys_by_id.clear()
     _owner_cache.clear()
+    for conn in connections.all(initialized_only=True):
+        getattr(conn, "_crypto_pending_keys", {}).clear()
 
 
 # ---------------------------------------------------------------------------
@@ -260,10 +262,20 @@ def key_owner_id(org_id: int) -> int:
 
 
 def _cache_after_commit(key_id: int, key: bytes) -> None:
+    pending = getattr(connection, "_crypto_pending_keys", None)
+    if pending is None:
+        connection._crypto_pending_keys = pending = {}
+
     def store():
-        _keys_by_id[key_id] = (key, time.monotonic())
+        if pending.get(key_id) is entry:
+            _keys_by_id[key_id] = (key, time.monotonic())
+            pending.pop(key_id, None)
 
     # Auch beim Laden kann die Zeile aus einer noch nicht bestätigten Anlage stammen.
+    # Bis zum Commit nur verbindungslokal merken. Django entfernt den Commit-Hook
+    # beim Rollback seines Savepoints; _cached prüft deshalb auch dessen Gültigkeit.
+    entry = (key, time.monotonic(), store)
+    pending[key_id] = entry
     transaction.on_commit(store)
 
 
@@ -283,11 +295,21 @@ def _load(key_id: int) -> bytes:
 
 def _cached(key_id: int) -> bytes | None:
     entry = _keys_by_id.get(key_id)
+    pending = getattr(connection, "_crypto_pending_keys", {})
+    if entry is None and key_id in pending:
+        candidate = pending[key_id]
+        # run_on_commit gehört zur festgeschriebenen Django-Version. Ohne den Hook
+        # ist diese Anlage zurückgerollt oder reset() hat ihren Cache verworfen.
+        if any(callback is candidate[2] for _, callback, _ in connection.run_on_commit):
+            entry = candidate
+        else:
+            pending.pop(key_id, None)
     if entry is None:
         return None
     ttl = settings.DATA_KEY_CACHE_SECONDS
     if ttl and time.monotonic() - entry[1] > ttl:
         _keys_by_id.pop(key_id, None)
+        pending.pop(key_id, None)
         return None
     return entry[0]
 

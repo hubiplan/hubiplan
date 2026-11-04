@@ -14,6 +14,7 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.db import DatabaseError, IntegrityError, connection, connections, transaction
 from django.db.migrations.executor import MigrationExecutor
+from django.test.utils import CaptureQueriesContext
 
 from core import crypto
 from core.models import DataKey
@@ -135,6 +136,23 @@ class TestGenerations:
             with patch("core.crypto._load", return_value=raw) as load:
                 assert crypto.key_by_id(key_id) == raw
                 load.assert_called_once_with(key_id)
+
+    def test_transaktionscache_vermeidet_zusaetzliche_abfragen_beim_lesen(self, orgs):
+        with rls_bypass():
+            p = Person.objects.create(
+                scope=orgs["c"], last_name="Muster", first_name="Erika", birth_date=BIRTH
+            )
+            with CaptureQueriesContext(connection) as queries:
+                loaded = Person.objects.get(pk=p.pk)
+            assert loaded.last_name == "Muster" and loaded.birth_date == BIRTH
+            assert len(queries) == 1
+            # Auch nach dem Leeren höchstens einmal je unterschiedlichem Schlüssel
+            # entpacken, nicht für jedes Feld und jede gelesene Person erneut.
+            crypto.reset()
+            with CaptureQueriesContext(connection) as queries:
+                list(Person.objects.filter(pk=p.pk))
+                list(Person.objects.filter(pk=p.pk))
+            assert len(queries) == 3
 
     def test_alte_namen_dateien_und_marken_bleiben_lesbar(self, orgs):
         with rls_bypass():
