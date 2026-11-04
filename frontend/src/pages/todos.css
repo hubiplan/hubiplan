@@ -212,6 +212,22 @@
   margin: 0;
 }
 
+.todo-toolbar .field-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.todo-toolbar select {
+  min-height: 2.75rem;
+}
+
 .todo-workspace :is(form.card, div.card, section.card) {
   display: grid;
   gap: 1rem;
