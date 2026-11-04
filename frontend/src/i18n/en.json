@@ -4994,5 +4994,8 @@
   "Aufgabe übernehmen": "Claim task",
   "Übernahme zurückgeben": "Release task",
   "Freigegebene Aufgaben ansehen und übernehmen": "View and claim shared tasks",
-  "Nach dem Anlegen kannst du Anhänge, Erinnerungen und Wiederholung direkt in diesem Dialog ergänzen.": "After creating the task, add attachments, reminders and recurrence in this same dialog."
+  "Nach dem Anlegen kannst du Anhänge, Erinnerungen und Wiederholung direkt in diesem Dialog ergänzen.": "After creating the task, add attachments, reminders and recurrence in this same dialog.",
+  "Aufgabe angelegt": "Task created",
+  "Fertig": "Done",
+  "Offen": "Open"
 }
