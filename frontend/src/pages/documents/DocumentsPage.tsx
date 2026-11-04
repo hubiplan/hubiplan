@@ -247,7 +247,21 @@ function Library({
     const { folder, writable } = entry
     return (
       <li key={entry.key}>
-        <button type="button" className="doc-folder-card" onClick={() => navigate(entry.key)}>
+        <button
+          type="button"
+          className="doc-folder-card"
+          aria-label={[
+            folder.name,
+            tn('{n} Dokument', '{n} Dokumente', folder.documents.length),
+            folder.from ? t('von {from}', { from: folder.from }) : folder.visibility_label,
+            folder.department,
+            folder.shared_up ? t('nach oben freigegeben') : '',
+            !writable ? t('Nur lesen') : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          onClick={() => navigate(entry.key)}
+        >
           <FolderIcon locked={folder.visibility === 'board'} />
           <span className="doc-folder-caption">
             <strong>{folder.name}</strong>
@@ -269,7 +283,12 @@ function Library({
   function fixedCard(entry: (typeof fixed)[number]) {
     return (
       <li key={entry.key}>
-        <button type="button" className="doc-folder-card" onClick={() => navigate(entry.key)}>
+        <button
+          type="button"
+          className="doc-folder-card"
+          aria-label={`${entry.name} ${t('fester Ordner')}`}
+          onClick={() => navigate(entry.key)}
+        >
           <FolderIcon />
           <span className="doc-folder-caption">
             <strong>{entry.name}</strong>

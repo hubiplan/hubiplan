@@ -4989,5 +4989,9 @@
   "Suchergebnisse (alle Ordner)": "Search results (all folders)",
   "Keine Ordner oder Dokumente passen zur Suche.": "No folders or documents match your search.",
   "Noch keine Ordner. Lege mit „Neuer Ordner“ den ersten an.": "No folders yet. Use “New folder” to create the first one.",
-  "(Verein gesamt {used} von {budget})": "(Club total {used} of {budget})"
+  "(Verein gesamt {used} von {budget})": "(Club total {used} of {budget})",
+  "{n} Dokument": {
+    "one": "{n} document",
+    "other": "{n} documents"
+  }
 }
