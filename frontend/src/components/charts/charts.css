@@ -105,7 +105,7 @@
   padding: 0.1rem 0.2rem;
   border: 0;
   border-radius: var(--radius);
-  background: none;
+  background: var(--color-button-bg);
   color: inherit;
   font: inherit;
   cursor: pointer;

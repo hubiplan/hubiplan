@@ -28,6 +28,9 @@
   /* Fokusrahmen und Zustandsrahmen: wie Links mind. 4,5 : 1, auch bei hellen Vereinsfarben */
   --color-focus: #0e7c66;
   --color-on-primary: #ffffff;
+  --button-brand-primary: var(--color-primary);
+  --button-brand-primary-hover: var(--color-primary-hover);
+  --button-brand-on-primary: var(--color-on-primary);
   --color-accent: #f2b33d;
 
   --color-bg: #f5f6f4;

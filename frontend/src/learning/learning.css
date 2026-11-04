@@ -62,7 +62,7 @@
 .aid-hide {
   margin-top: 0.4rem;
   padding: 0.2rem 0;
-  background: none;
+  background: var(--color-button-bg);
   border: none;
   font: inherit;
   font-size: 0.8rem;
@@ -162,7 +162,7 @@
   min-width: 24px;
   min-height: 24px;
   padding: 0 0.25rem;
-  background: none;
+  background: var(--color-button-bg);
   border: none;
   font-size: 1.25rem;
   line-height: 1;
@@ -189,7 +189,7 @@
   margin: -4px -2px -4px 0;
   padding: 4px;
   vertical-align: middle;
-  background: none;
+  background: var(--color-button-bg);
   border: none;
   cursor: pointer;
   color: var(--color-text-muted);
