@@ -474,6 +474,7 @@ def test_hinweise_und_status_in_der_aktuellen_sprache(club):
 
 def test_farbvalidierung_antwortet_in_der_aktuellen_sprache():
     from django.utils import translation
+
     from organizations.theme import check_primary
 
     with translation.override("en"):
