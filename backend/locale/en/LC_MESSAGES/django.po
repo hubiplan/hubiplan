@@ -5622,3 +5622,42 @@ msgstr "Needs clarification"
 
 msgid "Inventarnummer"
 msgstr "Inventory number"
+
+msgid "Musik"
+msgstr "Music"
+
+msgid "Musiker und Auftritte lesen"
+msgstr "View musicians and performances"
+
+msgid "Musiker und Auftritte bearbeiten"
+msgstr "Manage musicians and performances"
+
+msgid "Bitte Mitglied oder Gastnamen angeben."
+msgstr "Please select a member or enter a guest name."
+
+msgid "Für Auftritte ist Kalenderleserecht erforderlich."
+msgstr "Performances require calendar viewing permission."
+
+msgid "Dieser Termin ist nicht verfügbar."
+msgstr "This event is not available."
+
+msgid "Bitte einen eigenen Einzeltermin wählen."
+msgstr "Please select an individual event from your own calendar."
+
+msgid "Der Treffpunkt liegt nach Spielbeginn."
+msgstr "The meeting time is after the start of the performance."
+
+msgid "Der Aufbau liegt nach Spielbeginn."
+msgstr "Setup is after the start of the performance."
+
+msgid "Die Stimme gehört zu einem anderen Auftritt."
+msgstr "The part belongs to another performance."
+
+msgid "Dieser Musiker ist inaktiv."
+msgstr "This musician is inactive."
+
+msgid "Für diese Stimme fehlt die instrumentale Fähigkeit."
+msgstr "The instrumental skill for this part is missing."
+
+msgid "Bestehende Verknüpfungen können nicht umgehängt werden."
+msgstr "Existing links cannot be reassigned."

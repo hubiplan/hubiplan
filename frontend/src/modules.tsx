@@ -46,6 +46,13 @@ const icon = (d: string) => (
 
 export const modules: AppModule[] = [
   {
+    id: 'musik',
+    label: t('Musik'),
+    path: '/musik',
+    icon: icon('M9 18V5l11-2v13M9 8l11-2M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'),
+    visible: (org) => !!org?.modules.includes('music') && org.permissions.includes('music.view'),
+  },
+  {
     id: 'start',
     label: t('Startseite'),
     path: '/',

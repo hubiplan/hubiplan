@@ -44,6 +44,7 @@ const ACCESS_LABELS = {
   },
 }
 const MODULES = [
+  { id: 'music', label: t('Musik') },
   { id: 'members', label: t('Mitglieder') },
   { id: 'finance', label: t('Kasse') },
   { id: 'billing', label: t('Beiträge/Rechnungen') },

@@ -1,6 +1,7 @@
 // Mitgliederbereich nach Aufgaben: Ausweis, Rechnungen, Rundschreiben, eigene Daten.
 import { PortalCirculars } from './PortalCirculars.tsx'
 import { PortalTodos } from './PortalTodos.tsx'
+import { OwnMusic } from '../music/OwnMusic.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, Route, Routes, useSearchParams } from 'react-router-dom'
@@ -244,6 +245,7 @@ function PortalOverview({ entry }: { entry: PortalEntry }) {
         {data?.status === 'former' && t(' · ehemaliges Mitglied')}
       </p>
       <PortalTasks entry={entry} />
+      <OwnMusic accessId={entry.id} />
       {pending && (
         <Alert kind="info">
           {t('Deine Änderungsmeldung vom {x} wird noch geprüft.', {

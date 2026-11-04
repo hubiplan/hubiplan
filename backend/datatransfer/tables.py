@@ -20,6 +20,8 @@ from django.utils.translation import gettext
 from .validation import validate_url_data, validate_urls
 
 MODULE_MODELS = (
+    "music.Musician",
+    "music.Skill",
     "todos.TodoSeries",
     "todos.Todo",
     "finance.Account",
@@ -77,6 +79,9 @@ MODULE_MODELS = (
     "events.EventAttachment",
     "events.CalendarPublication",
     "events.EventResponse",
+    "music.Performance",
+    "music.Position",
+    "music.Assignment",
     "materials.MaterialItem",
     "materials.MaterialEventLink",
     "materials.MaterialTodoLink",

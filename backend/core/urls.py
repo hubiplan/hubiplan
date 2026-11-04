@@ -31,6 +31,8 @@ from members import (
 )
 from members import honorary as honorary_views
 from members import views as member_views
+from music import views as music_views
+from music.portal import OwnAssignments
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import help_views, imprint_views, social_views
@@ -85,6 +87,13 @@ org_router.register(
 org_router.register("billing/age-rates", billing_views.AgeRateViewSet, basename="billing-age-rate")
 org_router.register("billing/runs", billing_views.FeeRunViewSet, basename="billing-run")
 org_router.register("billing/invoices", billing_views.InvoiceViewSet, basename="billing-invoice")
+org_router.register("music/musicians", music_views.MusicianViewSet, basename="music-musician")
+org_router.register("music/skills", music_views.SkillViewSet, basename="music-skill")
+org_router.register(
+    "music/performances", music_views.PerformanceViewSet, basename="music-performance"
+)
+org_router.register("music/positions", music_views.PositionViewSet, basename="music-position")
+org_router.register("music/assignments", music_views.AssignmentViewSet, basename="music-assignment")
 org_router.register("billing/partners", einvoice_views.PartnerViewSet, basename="billing-partner")
 org_router.register(
     "billing/electronic", einvoice_views.ElectronicInvoiceViewSet, basename="billing-electronic"
@@ -681,6 +690,7 @@ dept_patterns = [
 ]
 
 urlpatterns = [
+    path("portal/<int:access_id>/music/", OwnAssignments.as_view()),
     path(
         "depts/<int:dept_id>/todos/<int:pk>/attachments/",
         todo_attachments.AttachmentListView.as_view(),
