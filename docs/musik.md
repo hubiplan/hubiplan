@@ -1,5 +1,11 @@
 # Musik und Auftritte
 
+## Vergütungsvorlagen und Sammelabrechnung
+
+Im Abrechnungsbereich stehen mandantengetrennte **Vergütungsvorlagen** mit Gage und Pauschale zur Verfügung (Musikleserecht plus Kassenlese-/bearbeitungsrecht). Archivieren verhindert neue Anwendungen. Eine Sammelanlage übernimmt die Beträge als unveränderlichen Ausgangswert in neue Entwürfe; spätere Vorlagenänderungen beeinflussen bestehende Vergütungen nicht. Jede ausgewählte Einteilung benötigt eine ausdrückliche Teilnahmeangabe. Auslagen beginnen mit 0 und werden einzeln ergänzt. Es erfolgt keine automatische Freigabe. Der Endpunkt `batch_claims` erfordert einen Idempotenzschlüssel und speichert die Auswahl atomar; vorhandene Vergütungen werden abgewiesen statt überschrieben. Vorlagen sind im allgemeinen Datenexport enthalten.
+
+Freigegebene Vergütungen können durch mehrere vollständige Kassenbuchungen teilweise ausgezahlt werden. Zuordnungen bleiben je Buchung eindeutig; positive Teilbeträge dürfen die nach aktiven Buchungen offene Summe nicht überschreiten. Stornos zählen nicht mehr zum Auszahlungsstand. Eine aktive Teilzahlung verhindert Aufheben oder Bearbeiten der Freigabe. Der bestehende Prüfexport enthält jede Zuordnung mit Originalbuchungsbezug. Der eigene Mitgliederbereich zeigt ausgezahlten und offenen Betrag; die Gastansicht enthält weiterhin keine Finanzdaten. Die Zuordnung löst keine Banküberweisung aus.
+
 Die Plattform schaltet das Modul Musik je Verein frei. Rollen benötigen Musik-Lese- oder Bearbeitungsrecht. Für Auftritte wird zusätzlich Kalenderleserecht benötigt.
 
 Unter **Musiker** ein Mitglied oder einen Gast erfassen. Die Mitgliedsakte verlinkt zum Musikerprofil. Unter **Instrumentale Fähigkeiten** Instrument und Register/Stimme eintragen; das Hauptinstrument markieren. Gäste können mit Kontaktangaben verwaltet und später deaktiviert werden.

@@ -11,6 +11,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { CommercialForm } from '../billing/EInvoicesPage.tsx'
+import { FeeBatchPanel } from './FeeBatchPanel.tsx'
 
 type Claim = {
   id: number
@@ -23,6 +24,8 @@ type Claim = {
   total: string
   status: string
   paid: boolean
+  paid_amount?: string
+  outstanding?: string
 }
 type Settlement = {
   fee?: string
@@ -192,6 +195,13 @@ export function SettlementPanel({
       ))}
       <h2>{t('Musikervergütungen')}</h2>
       {canEdit && (
+        <FeeBatchPanel
+          url={url}
+          assignments={assignments.filter((a) => !d.claims.some((c) => c.assignment === a.id))}
+          onSaved={load.reload}
+        />
+      )}
+      {canEdit && (
         <Amounts
           key={edit?.id || 'new'}
           labels={{ fee: t('Gage'), allowance: t('Pauschale'), expenses: t('Auslagen') }}
@@ -225,9 +235,17 @@ export function SettlementPanel({
                 ? t('Aufgehoben')
                 : c.paid
                   ? t('Ausgezahlt')
-                  : t('Freigegeben')}
+                  : Number(c.paid_amount || 0) > 0
+                    ? t('Teilweise ausgezahlt')
+                    : t('Freigegeben')}
           </p>
           <p>{c.note}</p>
+          {c.paid_amount !== undefined && (
+            <p>
+              {t('Ausgezahlt')}: {euro(c.paid_amount)} · {t('Offener Vergütungsbetrag')}:{' '}
+              {euro(c.outstanding || '0')}
+            </p>
+          )}
           {canEdit && (
             <div className="actions">
               {c.status === 'draft' && (
@@ -249,7 +267,7 @@ export function SettlementPanel({
                   </button>
                 </>
               )}
-              {!c.paid && (
+              {!c.paid && Number(c.paid_amount || 0) === 0 && (
                 <button
                   className="button button-ghost"
                   disabled={busy}
@@ -274,7 +292,7 @@ export function SettlementPanel({
       {canEdit && <PaymentLink onSave={(booking) => act({ action: 'payment', booking })} />}
       <p>
         {t(
-          'Kassenbuchungen mit Belegen zuerst in der Kasse erfassen. Eine Musikervergütung wird einer passenden vollständigen Auszahlung zugeordnet. Stornos erfolgen in der Kasse.',
+          'Kassenbuchungen mit Belegen zuerst in der Kasse erfassen. Eine Vergütung kann mehreren Teilzahlungen zugeordnet werden; jede Buchung zählt vollständig. Stornos erfolgen in der Kasse.',
         )}
       </p>
       <Link to="/finanzen/kassenbuch">{t('Zum Kassenbuch')}</Link>

@@ -6037,3 +6037,9 @@ msgstr "This invitation is invalid or has expired."
 
 msgid "Für vergangene Auftritte ist keine Rückmeldung mehr möglich."
 msgstr "Responses can no longer be submitted for past performances."
+
+msgid "Bitte nur Einteilungen dieses Auftritts ohne vorhandene Vergütung auswählen."
+msgstr "Please select only assignments of this performance without existing remuneration."
+
+msgid "Die Auszahlung muss positiv sein und darf den offenen Vergütungsbetrag nicht übersteigen."
+msgstr "The payout must be positive and must not exceed the outstanding remuneration."

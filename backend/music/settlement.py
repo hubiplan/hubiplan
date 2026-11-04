@@ -4,10 +4,11 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
-from rest_framework import serializers
+from rest_framework import serializers, viewsets
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,12 +18,13 @@ from billing.einvoice_views import ElectronicInvoiceViewSet
 from billing.models import Invoice
 from billing.serializers import InvoiceDetailSerializer
 from changes import idempotency
-from core.api_base import OrgScopedMixin
+from core.api_base import AuditMixin, OrgScopedMixin
 from finance.models import Booking
 from finance.services import ensure_open, lock_bank_sources
 
 from .models import (
     Assignment,
+    FeeTemplate,
     MusicianClaim,
     Performance,
     PerformanceAccount,
@@ -60,7 +62,53 @@ def active_payments(claim):
     return claim.payments.filter(booking__cancellation__isnull=True)
 
 
+def paid_amount(claim):
+    return active_payments(claim).aggregate(amount=Sum("booking__amount"))["amount"] or Decimal(0)
+
+
+class FeeTemplateInput(serializers.ModelSerializer):
+    fee = money()
+    allowance = money()
+
+    class Meta:
+        model = FeeTemplate
+        fields = ["id", "name", "fee", "allowance", "active"]
+
+
+class FeeTemplateViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
+    read_permission = "finance.view"
+    write_permission = "finance.edit"
+    allowed_org_types = ("club", "federation")
+    serializer_class = FeeTemplateInput
+    http_method_names = ["get", "post", "patch", "head", "options"]
+    pagination_class = None
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if not {"music", "finance"} <= set(self.org.enabled_modules):
+            raise NotFound()
+        if "music.view" not in self.org_permissions:
+            raise PermissionDenied()
+
+    def get_queryset(self):
+        return FeeTemplate.objects.filter(organization=self.org).order_by("name", "pk")
+
+    def get_create_kwargs(self):
+        return {"organization": self.org}
+
+
+class BatchClaimRow(serializers.Serializer):
+    assignment = serializers.IntegerField(min_value=1)
+    attended = serializers.BooleanField()
+
+
+class BatchClaims(serializers.Serializer):
+    template = serializers.IntegerField(min_value=1)
+    rows = BatchClaimRow(many=True, allow_empty=False, max_length=500)
+
+
 def personal_claim(claim):
+    paid = paid_amount(claim)
     return {
         "id": claim.pk,
         "fee": str(claim.fee),
@@ -68,7 +116,9 @@ def personal_claim(claim):
         "expenses": str(claim.expenses),
         "total": str(total(claim)),
         "status": claim.status,
-        "paid": active_payments(claim).exists(),
+        "paid": total(claim) > 0 and paid >= total(claim),
+        "paid_amount": str(paid),
+        "outstanding": str(max(Decimal(0), total(claim) - paid)),
     }
 
 
@@ -228,6 +278,53 @@ class SettlementView(OrgScopedMixin, APIView):
             )
             account.invoice = None
             account.save(update_fields=["invoice"])
+        elif action == "batch_claims":
+            key = idempotency.claim(request, f"music.claims.{self.org.pk}.{pk}", required=True)
+            if key.done:
+                return Response(account_data(account))
+            data = BatchClaims(data=request.data)
+            data.is_valid(raise_exception=True)
+            template = get_object_or_404(
+                FeeTemplate.objects.select_for_update(),
+                organization=self.org,
+                active=True,
+                pk=data.validated_data["template"],
+            )
+            rows = data.validated_data["rows"]
+            ids = [r["assignment"] for r in rows]
+            available = set(
+                Assignment.objects.filter(
+                    organization=self.org, performance=performance, pk__in=ids
+                ).values_list("pk", flat=True)
+            )
+            if (
+                len(ids) != len(set(ids))
+                or available != set(ids)
+                or MusicianClaim.objects.filter(assignment_id__in=ids).exists()
+            ):
+                raise serializers.ValidationError(
+                    gettext(
+                        "Bitte nur Einteilungen dieses Auftritts "
+                        "ohne vorhandene Vergütung auswählen."
+                    )
+                )
+            for row in rows:
+                claim = MusicianClaim.objects.create(
+                    organization=self.org,
+                    assignment_id=row["assignment"],
+                    fee=template.fee,
+                    allowance=template.allowance,
+                    expenses=0,
+                    attended=row["attended"],
+                )
+                record(
+                    self.org,
+                    request.user,
+                    "create",
+                    claim,
+                    {"Vergütungsvorlage": [None, template.pk], "Teilnahme": [None, claim.attended]},
+                )
+            key.remember({"created": len(rows)})
         elif action == "claim":
             data = ClaimInput(data=request.data)
             data.is_valid(raise_exception=True)
@@ -349,11 +446,14 @@ class SettlementView(OrgScopedMixin, APIView):
                 )
             if claim and (
                 claim.status != "approved"
-                or active_payments(claim).exists()
-                or booking.amount != total(claim)
+                or booking.amount <= 0
+                or booking.amount > total(claim) - paid_amount(claim)
             ):
                 raise serializers.ValidationError(
-                    gettext("Auszahlung und freigegebene Vergütung müssen genau übereinstimmen.")
+                    gettext(
+                        "Die Auszahlung muss positiv sein und darf den offenen "
+                        "Vergütungsbetrag nicht übersteigen."
+                    )
                 )
             try:
                 ensure_open(self.org, date=booking.date)

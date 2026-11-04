@@ -32,6 +32,14 @@ Aktive Mitglieder mit freigeschaltetem Mitgliederzugang erhalten über die Ausga
 
 Beim Auftritt legt **Erinnerung Tage vorher (0 = aus)** den Zeitraum für eine Erinnerung an offene Rückmeldungen fest (0 bis 30 Tage, Standard 3). Maßgeblich ist die früheste Treff-, Aufbau- oder Spielzeit. Es gibt je aktuellem Informationsstand höchstens eine Erinnerung, frühestens einen Tag nach einer neuen Einladung oder Änderung. Zusagen, Absagen und vergangene oder abgesagte Auftritte werden nicht erinnert. Versandfehler werden erneut versucht; der Postausgang zeigt fehlgeschlagene Versuche.
 
+## Vergütungsvorlagen und Teilzahlungen
+
+Unter **Auftrittsabrechnung → Musikervergütungen** kannst du mit Kassenbearbeitungsrecht **Vergütungsvorlagen verwalten**. Eine Vorlage enthält Gage und Pauschale in EUR. Archivieren verhindert neue Anwendungen; bereits angelegte Vergütungen behalten ihre Beträge.
+
+Für eine Sammelabrechnung eine aktive Vorlage und Einteilungen ohne vorhandene Vergütung auswählen. **Alle ohne Vergütung auswählen** übernimmt die Auswahl, bestätigt aber keine Teilnahme. Teilnahme je Musiker ausdrücklich markieren. **Vergütungsentwürfe anlegen** erzeugt ausschließlich Entwürfe mit Auslagen 0. Auslagen einzeln ergänzen und Teilnahme prüfen; erst anschließend wie gewohnt nach dem Auftritt freigeben. Ungültige Auswahlen werden insgesamt abgewiesen. Bestehende Vergütungen werden nicht überschrieben.
+
+Einer freigegebenen Vergütung kannst du mehrere erfolgte Auszahlungen aus der Kasse zuordnen. Jede Buchung wird vollständig und nur einmal verwendet; sie darf den offenen Vergütungsbetrag nicht übersteigen. **Teilweise ausgezahlt**, **Ausgezahlt** und **Offener Vergütungsbetrag** zeigen den Stand auch im eigenen Mitgliederbereich. Solange eine aktive Teilzahlung existiert, ist die Freigabe unveränderbar. Stornos in der Kasse erhöhen den offenen Betrag wieder. Die Zuordnung löst keine Überweisung aus.
+
 ## Besetzungsvorlagen und Sammeleinteilung
 
 Unter **Besetzungsvorlagen** mit **Vorlage anlegen** Instrumente, Register/Stimmen und Sollzahlen speichern. Jede Stimme darf nur einmal vorkommen. Nicht mehr benötigte Vorlagen mit **Aktiv** ausschalten. Bearbeiten benötigt Musikbearbeitungsrecht; Lesezugänge können Vorlagen ansehen.

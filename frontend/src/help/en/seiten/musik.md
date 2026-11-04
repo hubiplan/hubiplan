@@ -32,6 +32,14 @@ Active members with enabled member access receive neutral outbox notices for new
 
 For each performance, **Reminder days before (0 = off)** sets the reminder window for pending responses (0 to 30 days, default 3). It uses the earliest meeting, setup or performance time. Each current information version receives at most one reminder, no earlier than one day after an invitation or change. Accepted or declined assignments and past or cancelled performances are not reminded. Failed deliveries are retried; failed attempts remain visible in the outbox.
 
+## Fee templates and partial payouts
+
+Under **Performance settlement → Musician remuneration**, finance editors can **Manage fee templates**. Templates contain fee and allowance amounts in EUR. Archiving prevents new use; existing remuneration retains its copied amounts.
+
+For a batch settlement, select an active template and assignments without existing remuneration. **Select all without remuneration** selects assignments without confirming attendance. Confirm attendance separately for each musician. **Create remuneration drafts** creates drafts with expenses set to zero. Add actual expenses and check attendance individually, then approve after the performance as usual. Invalid selections are rejected together. Existing remuneration is never overwritten.
+
+You can assign multiple recorded payouts from Finance to an approved remuneration claim. Each booking is used fully and only once and must not exceed the outstanding amount. **Partially paid**, **Paid out** and **Outstanding remuneration** also show the current balance in the member's own area. An active partial payment prevents approval reversal. Reversing the booking in Finance increases the outstanding amount again. Assigning a booking does not initiate a bank transfer.
+
 ## Instrumentation templates and batch assignment
 
 Under **Instrumentation templates**, use **Create template** to store instruments, parts and required player counts. Each part may appear only once. Clear **Active** to archive a template. Editing requires music editing permission; read-only users can view templates.

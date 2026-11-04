@@ -5769,5 +5769,19 @@
   "Einladungslink widerrufen": "Revoke invitation link",
   "Änderungshinweise und Erinnerungen werden auch an diesen Gast gesendet.": "Change notices and reminders will also be sent to this guest.",
   "Rückmeldung gespeichert.": "Response saved.",
-  "Aufbauzeit": "Setup time"
+  "Aufbauzeit": "Setup time",
+  "Teilweise ausgezahlt": "Partially paid",
+  "Offener Vergütungsbetrag": "Outstanding remuneration",
+  "Vergütungsvorlagen und Sammelabrechnung": "Fee templates and batch settlement",
+  "Vergütungsentwürfe wurden angelegt.": "Remuneration drafts have been created.",
+  "Vorlagen übernehmen Gage und Pauschale. Auslagen und Freigaben werden je Musiker geprüft.": "Templates copy the fee and allowance. Expenses and approvals are reviewed per musician.",
+  "Vergütungsvorlage": "Fee template",
+  "Alle ohne Vergütung auswählen": "Select all without remuneration",
+  "Teilnahme bestätigt für {name}": "Attendance confirmed for {name}",
+  "Vergütungsentwürfe anlegen": "Create remuneration drafts",
+  "Vergütungsvorlagen verwalten": "Manage fee templates",
+  "Name der Vergütungsvorlage": "Fee template name",
+  "Vergütungsvorlage speichern": "Save fee template",
+  "Vorlage archivieren: {name}": "Archive template: {name}",
+  "Kassenbuchungen mit Belegen zuerst in der Kasse erfassen. Eine Vergütung kann mehreren Teilzahlungen zugeordnet werden; jede Buchung zählt vollständig. Stornos erfolgen in der Kasse.": "Record cashbook entries and receipts in Finance first. A remuneration claim can be assigned multiple partial payments; each booking counts in full. Reverse bookings in Finance."
 }
