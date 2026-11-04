@@ -5390,5 +5390,11 @@
   "{n} Dokument": {
     "one": "{n} document",
     "other": "{n} documents"
-  }
+  },
+  "Einheit vollständig löschen": "Delete unit completely",
+  "Die Einheit und ihre Daten einschließlich Mitgliedern, Rollen, Finanzdaten und Dateien werden unwiderruflich gelöscht. Benutzerkonten bleiben erhalten. Untergeordnete Einheiten müssen vorher gelöscht oder umgehängt werden.": "The unit and its data, including members, roles, financial records and files, will be permanently deleted. User accounts are retained. Subordinate units must be deleted or moved first.",
+  "Zur Bestätigung den vollständigen Namen eingeben:": "Enter the full name to confirm:",
+  "Name zur Löschbestätigung": "Name to confirm deletion",
+  "Unwiderruflich löschen": "Delete permanently",
+  "Einheit löschen": "Delete unit"
 }

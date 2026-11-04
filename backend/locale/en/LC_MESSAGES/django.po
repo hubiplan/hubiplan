@@ -5832,3 +5832,15 @@ msgstr "This musician is already assigned or has declined. Please edit the exist
 
 msgid "Die Auswahl überschreitet die freie Sollbesetzung. Bitte die Auswahl oder die Sollzahl anpassen."
 msgstr "The selection exceeds the available places. Please adjust the selection or required count."
+
+msgid "Diese Einheit kann nicht gelöscht werden."
+msgstr "This unit cannot be deleted."
+
+msgid "Bitte zuerst alle untergeordneten Einheiten löschen oder umhängen."
+msgstr "Please delete or move all subordinate units first."
+
+msgid "Andere Einheiten verweisen auf diese Daten. Löschen nicht möglich."
+msgstr "Other units reference this data. Deletion is not possible."
+
+msgid "Zum Löschen bitte den vollständigen Namen der Einheit eingeben."
+msgstr "Please enter the full name of the unit to delete it."

@@ -12,6 +12,12 @@ Platform administration creates clubs and umbrella associations on this HUBIplan
 
 Under settings you set the deletion period after leaving. A shorter period only applies 30 days after the change. Until then, data is still deleted after the longer one, so that a typo does not immediately delete the data of former members.
 
+## Deactivating or deleting units
+
+Under **Units** → **Edit**, clear “is active” and save to deactivate a unit. Its data is retained and the unit can be activated again later.
+
+To delete it completely, choose **Delete unit** in the edit form, enter its full name and confirm with **Delete permanently**. The unit's members, roles, financial records and stored files are removed. User accounts are retained. Delete or move subordinate units first. If references from other units prevent deletion, an error is shown and the data is retained. The deletion is recorded in the platform audit log. Existing backups are unaffected.
+
 ## New versions
 
 Once a day HUBIplan asks GitHub whether a newer release is available. If so, you see the notice “A newer version of HUBIplan is available” at the top, with a link to the changes. None of your data goes to GitHub; GitHub only sees the server's IP address, and the platform's privacy policy mentions this. Whoever runs the server can switch the check off with `HUBIPLAN_UPDATE_CHECK=0` in the `.env`. Once the new release is running, the changes are listed under [News](/hilfe/neuigkeiten).
