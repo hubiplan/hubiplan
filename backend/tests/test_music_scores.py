@@ -132,9 +132,13 @@ def test_foreign_arrangement_and_calendar_rights(api, c, club, orgs, repertoire)
         event.visibility = "board"
         event.save()
     user = make_user("musik-lesen@example.org")
-    give_role(user, club, permissions=["music.view"], name="Musikleser")
+    assignment = give_role(user, club, permissions=["music.view"], name="Musikleser")
     client = api(user)
     assert client.get(url).status_code == 403
+    assignment.role.permissions = ["music.view", "events.view"]
+    assignment.role.is_board = False
+    assignment.role.save()
+    assert client.get(url).status_code == 404
     assert client.post(f"{base}/pieces/", {"title": "Neu"}, content_type=JSON).status_code == 403
     with as_app_role(), tenant_context(club.pk):
         assert not Arrangement.objects.filter(pk=arrangement.pk).exists()
