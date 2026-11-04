@@ -22,7 +22,7 @@ from core.encfields import (
     is_encrypted,
     owner_org_id,
 )
-from core.fieldcompat import rollback_fields
+from core.fieldcompat import require_key_rotation_support, rollback_fields
 from core.tenancy import rls_bypass
 
 
@@ -83,6 +83,8 @@ class Command(BaseCommand):
             raise CommandError("Prüfung, Entschlüsselung und gezielten Rückweg getrennt ausführen.")
         if rueckweg_zu is not None and not rueckweg_zu.is_dir():
             raise CommandError("Backend-Quellordner der Zielfassung fehlt.")
+        if rueckweg_zu is not None:
+            require_key_rotation_support(rueckweg_zu)
         selected, known = [], set()
         requested = {name.lower() for name in feld}
         # Vor der ersten Änderung sämtliche Zielfelddeklarationen validieren.
