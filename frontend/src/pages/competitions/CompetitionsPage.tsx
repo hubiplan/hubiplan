@@ -48,6 +48,8 @@ import {
 } from './History.tsx'
 import { StandPanel } from './StandPanel.tsx'
 import { TargetSettings } from './TargetSettings.tsx'
+import { ProgramsSetup } from './ProgramsSetup.tsx'
+import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { Checklist } from '../../learning/Checklist.tsx'
 import { competitionFinishChecks } from '../../learning/checks.ts'
@@ -332,6 +334,7 @@ function CompetitionArea() {
           element={
             <>
               <ResultsPanel org={org.id} comp={data} onChanged={reload} />
+              <CompetitionCompletion org={org.id} comp={data} reload={reload} />
               <GrantsCard org={org.id} comp={data} onChanged={reload} />
               {data.own && <CertificatesCard org={org.id} comp={data} />}
             </>
@@ -427,7 +430,8 @@ function Setup({
   reload: () => void
 }) {
   const navigate = useNavigate()
-  const canManage = comp.can_manage
+  const canManage = comp.can_manage && comp.status !== 'endgueltig'
+  const [setupSection, setSetupSection] = useState('basic')
   const form = useForm({
     title: comp.title,
     occasion: comp.occasion,
@@ -458,15 +462,6 @@ function Setup({
       'details',
       v.details.map((x, j) => (j === i ? { ...x, ...d } : x)),
     )
-  }
-
-  async function changeStatus(status: CompetitionStatus) {
-    try {
-      await competitionsApi.setStatus(org, comp.id, status)
-      reload()
-    } catch (err) {
-      form.setMessage({ kind: 'error', text: errorMessage(err) })
-    }
   }
 
   async function reset() {
@@ -519,310 +514,331 @@ function Setup({
 
   return (
     <>
-      <div className="card card-wide">
-        <div className="card-head">
-          <h2>{t('Grunddaten')}</h2>
-          {canManage && <SaveStatus auto={auto} />}
-        </div>
-        <fieldset disabled={!canManage}>
-          <div className="grid-3">
-            <Field
-              label={t('Titel')}
-              required
-              value={v.title}
-              error={errors.title}
-              onChange={(e) => set('title', e.target.value)}
-            />
-            <Field
-              label={t('Datum')}
-              type="date"
-              required
-              value={v.date}
-              error={errors.date}
-              onChange={(e) => set('date', e.target.value)}
-            />
-            <Field
-              label={t('Anlass')}
-              placeholder={t('z. B. Schützenfest')}
-              value={v.occasion}
-              error={errors.occasion}
-              onChange={(e) => set('occasion', e.target.value)}
-            />
-            <Field
-              label={t('Art')}
-              placeholder={t('z. B. Luftgewehr')}
-              value={v.discipline}
-              error={errors.discipline}
-              onChange={(e) => set('discipline', e.target.value)}
-            />
-            <Field
-              label={t('Ort')}
-              value={v.location}
-              error={errors.location}
-              onChange={(e) => set('location', e.target.value)}
-            />
-            {!comp.own && (
+      <nav className="button-row setup-navigation" aria-label={t('Wettbewerb einrichten')}>
+        {[
+          ['basic', t('Grunddaten')],
+          ...(comp.own
+            ? [['shooting', comp.form === 'vogel' ? t('Pfänder & Ablauf') : t('Schießbedingungen')]]
+            : []),
+          ...(comp.form !== 'vogel' ? [['scorings', t('Wertungen')]] : []),
+          ['output', t('Ausgabe & Freigabe')],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            className={`button ${setupSection === key ? '' : 'button-ghost'}`}
+            aria-current={setupSection === key ? 'page' : undefined}
+            onClick={() => setSetupSection(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+      <div hidden={setupSection !== 'basic'}>
+        <div className="card card-wide">
+          <div className="card-head">
+            <h2>{t('Grunddaten')}</h2>
+            {canManage && <SaveStatus auto={auto} />}
+          </div>
+          <fieldset disabled={!canManage}>
+            <div className="grid-3">
               <Field
-                label={t('Ausrichter')}
-                value={v.organizer}
-                error={errors.organizer}
-                onChange={(e) => set('organizer', e.target.value)}
+                label={t('Titel')}
+                required
+                value={v.title}
+                error={errors.title}
+                onChange={(e) => set('title', e.target.value)}
               />
-            )}
-            <SeriesSelect
-              org={org}
-              value={v.series}
-              disabled={!canManage}
-              onChange={(id) => set('series', id)}
-            />
-            {comp.own && (
-              <TemplateSelect
+              <Field
+                label={t('Datum')}
+                type="date"
+                required
+                value={v.date}
+                error={errors.date}
+                onChange={(e) => set('date', e.target.value)}
+              />
+              <Field
+                label={t('Anlass')}
+                placeholder={t('z. B. Schützenfest')}
+                value={v.occasion}
+                error={errors.occasion}
+                onChange={(e) => set('occasion', e.target.value)}
+              />
+              {(!comp.own || comp.form === 'vogel') && (
+                <Field
+                  label={t('Disziplin (optional)')}
+                  placeholder={t('z. B. Luftgewehr')}
+                  value={v.discipline}
+                  error={errors.discipline}
+                  onChange={(e) => set('discipline', e.target.value)}
+                />
+              )}
+              <Field
+                label={t('Ort')}
+                value={v.location}
+                error={errors.location}
+                onChange={(e) => set('location', e.target.value)}
+              />
+              {!comp.own && (
+                <Field
+                  label={t('Ausrichter')}
+                  value={v.organizer}
+                  error={errors.organizer}
+                  onChange={(e) => set('organizer', e.target.value)}
+                />
+              )}
+              <SeriesSelect
                 org={org}
-                value={v.certificate_template}
+                value={v.series}
                 disabled={!canManage}
-                onChange={(id) => set('certificate_template', id)}
+                onChange={(id) => set('series', id)}
               />
-            )}
-            <SelectField
-              label={t('Auf der Webseite')}
-              value={v.website}
-              onChange={(e) => set('website', e.target.value as WebsiteMode)}
-            >
-              {Object.entries(WEBSITE_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
+            </div>
+            <details>
+              <summary>{t('Beschreibung und weitere Angaben')}</summary>
+              <label className="field">
+                <span>{t('Beschreibung')}</span>
+                <textarea
+                  rows={3}
+                  value={v.description}
+                  onChange={(e) => set('description', e.target.value)}
+                />
+              </label>
+              <h3>{t('Weitere Angaben')}</h3>
+              {v.details.map((d, i) => (
+                <div className="grid-3" key={i}>
+                  <Field
+                    label={t('Angabe')}
+                    placeholder={t('z. B. Entfernung')}
+                    value={d.label}
+                    onChange={(e) => setDetail(i, { label: e.target.value })}
+                  />
+                  <Field
+                    label={t('Wert')}
+                    placeholder={t('z. B. 10 m')}
+                    value={d.value}
+                    onChange={(e) => setDetail(i, { value: e.target.value })}
+                  />
+                  <div className="button-row">
+                    <button
+                      type="button"
+                      className="button button-ghost"
+                      onClick={() =>
+                        set(
+                          'details',
+                          v.details.filter((_, j) => j !== i),
+                        )
+                      }
+                    >
+                      {t('Entfernen')}
+                    </button>
+                  </div>
+                </div>
               ))}
-            </SelectField>
-            {v.website !== 'aus' && (
-              <SelectField
-                label={t('Umfang auf der Webseite')}
-                value={v.website_depth}
-                onChange={(e) => set('website_depth', e.target.value as WebsiteDepth)}
+              <div className="button-row">
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => set('details', [...v.details, { label: '', value: '' }])}
+                >
+                  {t('Angabe hinzufügen')}
+                </button>
+              </div>
+            </details>
+          </fieldset>
+          {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
+        </div>
+
+        <EventCard
+          org={org}
+          comp={comp}
+          onChanged={(res) => {
+            // Ort und Beschreibung kommen aus dem Termin, wenn sie leer waren
+            if (res.location !== v.location) set('location', res.location)
+            if (res.description !== v.description) set('description', res.description)
+            reload()
+          }}
+        />
+      </div>
+      {comp.own && (
+        <div hidden={setupSection !== 'shooting'}>
+          {comp.form === 'vogel' ? (
+            <>
+              <div className="card card-wide">
+                <h2>{t('Vogelschießen')}</h2>
+                <fieldset disabled={!canManage}>
+                  <div className="grid-2">
+                    <Checkbox
+                      label={t('Wer ein Pfand errungen hat, scheidet aus')}
+                      checked={v.drop_out}
+                      onChange={(on) => set('drop_out', on)}
+                    />
+                    <Checkbox
+                      label={t('Pfänder in fester Reihenfolge')}
+                      checked={v.fixed_order}
+                      onChange={(on) => set('fixed_order', on)}
+                    />
+                    <Field
+                      label={t('Schüsse insgesamt')}
+                      type="number"
+                      min={1}
+                      hint={t('nur, wenn auf Papier gezählt wurde; live zählt der Standmodus')}
+                      value={v.total_shots ?? ''}
+                      error={errors.total_shots}
+                      onChange={(e) => set('total_shots', numOrNull(e.target.value))}
+                    />
+                    <Field
+                      label={t('Lose im Hut')}
+                      type="number"
+                      min={1}
+                      value={v.lots ?? ''}
+                      error={errors.lots}
+                      onChange={(e) => set('lots', numOrNull(e.target.value))}
+                    />
+                  </div>
+                </fieldset>
+                <Why k="comp_bird_rules" />
+                <Why k="comp_lots" />
+              </div>
+              <PrizesCard org={org} comp={comp} onChanged={reload} />
+            </>
+          ) : (
+            <ProgramsSetup org={org} comp={comp} reload={reload} />
+          )}
+        </div>
+      )}
+      <div hidden={setupSection !== 'scorings'}>
+        {comp.form !== 'vogel' && <h2>{t('Wertungen')}</h2>}
+        {comp.scorings.map((s) => (
+          <ScoringCard
+            key={`${s.id}-${JSON.stringify(s)}`}
+            org={org}
+            comp={comp}
+            scoring={s}
+            canManage={canManage}
+            onRemoved={reload}
+          />
+        ))}
+        {canManage && comp.form !== 'vogel' && (
+          <div className="button-row">
+            <button
+              type="button"
+              className="button button-ghost"
+              onClick={() =>
+                void competitionsApi
+                  .createScoring(org, comp.id, {
+                    name: t('Einzelwertung'),
+                    kind: 'einzel',
+                    ...(comp.own && comp.programs?.[0] ? { program: comp.programs[0].id } : {}),
+                  })
+                  .then(reload)
+              }
+            >
+              {t('Einzelwertung hinzufügen')}
+            </button>
+            {!comp.own && (
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() =>
+                  void competitionsApi
+                    .createScoring(org, comp.id, {
+                      name: t('Mannschaftswertung'),
+                      kind: 'mannschaft',
+                    })
+                    .then(reload)
+                }
               >
-                {Object.entries(WEBSITE_DEPTH_LABELS).map(([value, label]) => (
+                {t('Mannschaftswertung hinzufügen')}
+              </button>
+            )}
+            {comp.own && comp.scorings.some((s) => s.kind === 'einzel') && (
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() =>
+                  void competitionsApi
+                    .createScoring(org, comp.id, {
+                      name: t('Wertung der Untereinheiten'),
+                      kind: 'einheit',
+                      team_mode: 'beste',
+                      team_size: 5,
+                    })
+                    .then(reload)
+                }
+              >
+                {t('Wertung der Untereinheiten hinzufügen')}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      <div hidden={setupSection !== 'output'}>
+        <div className="card card-wide">
+          <div className="card-head">
+            <h2>{t('Ausgabe & Freigabe')}</h2>
+            {canManage && <SaveStatus auto={auto} />}
+          </div>
+          <fieldset disabled={!canManage}>
+            <div className="grid-2">
+              {comp.own && (
+                <TemplateSelect
+                  org={org}
+                  value={v.certificate_template}
+                  disabled={!canManage}
+                  onChange={(id) => set('certificate_template', id)}
+                />
+              )}
+              <SelectField
+                label={t('Ergebnisse auf der Webseite')}
+                value={v.website}
+                onChange={(e) => set('website', e.target.value as WebsiteMode)}
+              >
+                {Object.entries(WEBSITE_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
                     {label}
                   </option>
                 ))}
               </SelectField>
-            )}
-          </div>
-          <Why k="comp_website" />
-          {comp.from_call && (
-            <Checkbox
-              label={t('Ganze Rangliste an die meldenden Untereinheiten')}
-              hint={t(
-                'Nach dem Abschluss sieht jede meldende Untereinheit in ihrer Meldung ihre Starter, Mannschaften und die Wertung der Untereinheiten; eingeschaltet auch die ganze Einzelrangliste mit allen Namen.',
-              )}
-              checked={v.share_ranking}
-              onChange={(on) => set('share_ranking', on)}
-            />
-          )}
-          {comp.form === 'vogel' && (
-            <>
-              <h3>{t('Vogelschießen')}</h3>
-              <div className="grid-3">
-                <Checkbox
-                  label={t('Wer ein Pfand errungen hat, scheidet aus')}
-                  checked={v.drop_out}
-                  onChange={(on) => set('drop_out', on)}
-                />
-                <Checkbox
-                  label={t('Pfänder in fester Reihenfolge')}
-                  hint={t('aus: jeder Schuss kann jedes noch hängende Teil treffen')}
-                  checked={v.fixed_order}
-                  onChange={(on) => set('fixed_order', on)}
-                />
-                <Field
-                  label={t('Schüsse insgesamt')}
-                  type="number"
-                  min={1}
-                  hint={t('nur, wenn auf Papier gezählt wurde; live zählt der Standmodus')}
-                  value={v.total_shots ?? ''}
-                  error={errors.total_shots}
-                  onChange={(e) => set('total_shots', numOrNull(e.target.value))}
-                />
-                <Field
-                  label={t('Lose im Hut')}
-                  type="number"
-                  min={1}
-                  hint={t(
-                    '„Nummer ziehen“ zieht zufällig aus 1 bis zu dieser Zahl, z. B. 60; leer: bis zur Zahl der Schützen, dann bekommt ein Nachzügler meist die nächste Nummer',
-                  )}
-                  value={v.lots ?? ''}
-                  error={errors.lots}
-                  onChange={(e) => set('lots', numOrNull(e.target.value))}
-                />
-              </div>
-              <Why k="comp_bird_rules" />
-              <Why k="comp_lots" />
-            </>
-          )}
-          <label className="field">
-            <span>{t('Beschreibung')}</span>
-            <textarea
-              rows={3}
-              value={v.description}
-              onChange={(e) => set('description', e.target.value)}
-            />
-          </label>
-          <h3>{t('Weitere Angaben')}</h3>
-          {v.details.map((d, i) => (
-            <div className="grid-3" key={i}>
-              <Field
-                label={t('Angabe')}
-                placeholder={t('z. B. Entfernung')}
-                value={d.label}
-                onChange={(e) => setDetail(i, { label: e.target.value })}
-              />
-              <Field
-                label={t('Wert')}
-                placeholder={t('z. B. 10 m')}
-                value={d.value}
-                onChange={(e) => setDetail(i, { value: e.target.value })}
-              />
-              <div className="button-row">
-                <button
-                  type="button"
-                  className="button button-ghost"
-                  onClick={() =>
-                    set(
-                      'details',
-                      v.details.filter((_, j) => j !== i),
-                    )
-                  }
+              {v.website !== 'aus' && (
+                <SelectField
+                  label={t('Öffentlich sichtbar')}
+                  value={v.website_depth}
+                  onChange={(e) => set('website_depth', e.target.value as WebsiteDepth)}
                 >
-                  {t('Entfernen')}
-                </button>
-              </div>
+                  {Object.entries(WEBSITE_DEPTH_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
             </div>
-          ))}
-          <div className="button-row">
-            <button
-              type="button"
-              className="button button-ghost"
-              onClick={() => set('details', [...v.details, { label: '', value: '' }])}
-            >
-              {t('Angabe hinzufügen')}
-            </button>
-          </div>
-        </fieldset>
-        {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
+            <p className="setup-derived" aria-live="polite">
+              {v.website === 'aus'
+                ? t('Ergebnisse bleiben vereinsintern.')
+                : `${WEBSITE_LABELS[v.website]} · ${WEBSITE_DEPTH_LABELS[v.website_depth]}`}
+            </p>
+            {comp.from_call && (
+              <Checkbox
+                label={t('Ganze Rangliste an die meldenden Untereinheiten')}
+                hint={t(
+                  'Diese Freigabe gilt für meldende Untereinheiten und ist von der öffentlichen Webseite unabhängig.',
+                )}
+                checked={v.share_ranking}
+                onChange={(on) => set('share_ranking', on)}
+              />
+            )}
+          </fieldset>
+          <Why k="comp_website" />
+        </div>
+        <AwardsCard org={org} comp={comp} />
       </div>
 
-      <EventCard
-        org={org}
-        comp={comp}
-        onChanged={(res) => {
-          // Ort und Beschreibung kommen aus dem Termin, wenn sie leer waren
-          if (res.location !== v.location) set('location', res.location)
-          if (res.description !== v.description) set('description', res.description)
-          reload()
-        }}
-      />
-      {comp.form === 'vogel' && <PrizesCard org={org} comp={comp} onChanged={reload} />}
-      {comp.form !== 'vogel' && <h2>{t('Wertungen')}</h2>}
-      {comp.scorings.map((s) => (
-        <ScoringCard
-          key={s.id}
-          org={org}
-          comp={comp}
-          scoring={s}
-          canManage={canManage}
-          onRemoved={reload}
-        />
-      ))}
-      {canManage && comp.form !== 'vogel' && (
-        <div className="button-row">
-          <button
-            type="button"
-            className="button button-ghost"
-            onClick={() =>
-              void competitionsApi
-                .createScoring(org, comp.id, { name: t('Einzelwertung'), kind: 'einzel' })
-                .then(reload)
-            }
-          >
-            {t('Einzelwertung hinzufügen')}
-          </button>
-          {!comp.own && (
-            <button
-              type="button"
-              className="button button-ghost"
-              onClick={() =>
-                void competitionsApi
-                  .createScoring(org, comp.id, {
-                    name: t('Mannschaftswertung'),
-                    kind: 'mannschaft',
-                  })
-                  .then(reload)
-              }
-            >
-              {t('Mannschaftswertung hinzufügen')}
-            </button>
-          )}
-          {comp.own && comp.scorings.some((s) => s.kind === 'einzel') && (
-            <button
-              type="button"
-              className="button button-ghost"
-              onClick={() =>
-                void competitionsApi
-                  .createScoring(org, comp.id, {
-                    name: t('Wertung der Untereinheiten'),
-                    kind: 'einheit',
-                    team_mode: 'beste',
-                    team_size: 5,
-                  })
-                  .then(reload)
-              }
-            >
-              {t('Wertung der Untereinheiten hinzufügen')}
-            </button>
-          )}
-        </div>
-      )}
-      <AwardsCard org={org} comp={comp} />
-
-      {canManage && (
-        <div className="card card-wide">
-          <h2>{t('Zustand und Weiteres')}</h2>
-          <p>
-            {t('Zustand:')} <strong>{STATUS_LABELS[comp.status]}</strong>
-            <span className="muted">
-              {' '}
-              {t('· erst')} <Term k="comp_provisional_term">{t('vorläufig')}</Term>
-              {t(', nach dem Abschluss')} <Term k="comp_final_term">{t('endgültig')}</Term>
-            </span>
-          </p>
-          {comp.own && comp.status !== 'endgueltig' && <FinishChecklist org={org} comp={comp} />}
+      {comp.can_manage && (
+        <details className="card card-wide">
+          <summary>{t('Weitere Aktionen')}</summary>
           <div className="button-row">
-            {comp.status !== 'vorlaeufig' && comp.status !== 'endgueltig' && (
-              <button
-                type="button"
-                className="button button-ghost"
-                onClick={() => void changeStatus('vorlaeufig')}
-              >
-                {t('Als vorläufig kennzeichnen')}
-              </button>
-            )}
-            {comp.status !== 'endgueltig' ? (
-              <button
-                type="button"
-                className="button"
-                onClick={() => void changeStatus('endgueltig')}
-              >
-                {t('Endgültig abschließen')}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="button button-ghost"
-                onClick={() => void changeStatus('vorlaeufig')}
-              >
-                {t('Wieder öffnen')}
-              </button>
-            )}
             <button type="button" className="button button-ghost" onClick={() => void copy()}>
               {t('Für das nächste Jahr kopieren')}
             </button>
@@ -835,10 +851,8 @@ function Setup({
               {t('Löschen')}
             </button>
           </div>
-          <Why k="comp_provisional" />
-          <Why k="comp_final" />
           {comp.status !== 'endgueltig' && <Why k="comp_reset" />}
-        </div>
+        </details>
       )}
     </>
   )
@@ -868,7 +882,8 @@ function ScoringCard({
   canManage: boolean
   onRemoved: () => void
 }) {
-  const form = useForm({
+  const initial = {
+    program: scoring.program,
     name: scoring.name,
     shots: scoring.shots,
     counted_shots: scoring.counted_shots,
@@ -888,24 +903,11 @@ function ScoringCard({
     method: scoring.method ?? 'frei',
     tie_breaks: scoring.tie_breaks ?? [],
     series_size: scoring.series_size ?? 10,
-  })
+  }
+  const form = useForm(initial)
   const { values: v, set, errors } = form
-  const auto = useAutoSave(
-    form,
-    (changes) => competitionsApi.updateScoring(org, comp.id, scoring.id, changes),
-    {
-      enabled: canManage,
-      // Scheibe und Wertungsart stellen Nachkommastellen, Richtung und Höchstwert ein
-      onSaved: (result) => {
-        const r = result as Scoring | undefined
-        if (!r || r.method === 'frei') return
-        set('decimals', r.decimals)
-        set('higher_better', r.higher_better)
-        set('max_per_shot', r.max_per_shot)
-        set('unit_label', r.unit_label)
-      },
-    },
-  )
+  const dirty = JSON.stringify(v) !== JSON.stringify(initial)
+  useDraftGuard(dirty, () => form.setValues(initial))
   const unit = scoring.kind === 'einheit'
   const singles = comp.scorings.filter((s) => s.kind === 'einzel')
   const foreign = !comp.own
@@ -915,6 +917,35 @@ function ScoringCard({
     [org, single],
   )
   const fromHits = single && v.method !== 'frei'
+  const program = comp.programs?.find((p) => p.id === v.program)
+  const rulesChanged = Object.keys(v).some(
+    (key) =>
+      !['name', 'prize_places', 'shootoff_shots', 'shootoff_counted', 'field_size'].includes(key) &&
+      JSON.stringify(v[key as keyof typeof v]) !==
+        JSON.stringify(initial[key as keyof typeof initial]),
+  )
+
+  async function save() {
+    if (
+      scoring.has_results &&
+      rulesChanged &&
+      !(await confirmDialog({
+        title: t('Wertungsregeln ändern'),
+        message: t(
+          'Vorhandene Ergebnisse aus Treffern werden mit den neuen Regeln berechnet. Manuelle Summen müssen geprüft werden. Die Änderung kann Ranglisten und Preisplätze verändern.',
+        ),
+        confirmLabel: t('Ändern und neu berechnen'),
+      }))
+    )
+      return
+    const saved = await form.submit(() =>
+      competitionsApi.updateScoring(org, comp.id, scoring.id, {
+        ...v,
+        confirm_recalculation: !!scoring.has_results,
+      }),
+    )
+    if (saved) onRemoved()
+  }
 
   async function remove() {
     const ok = await confirmDialog({
@@ -928,7 +959,13 @@ function ScoringCard({
   }
 
   return (
-    <div className="card card-wide">
+    <form
+      className="card card-wide"
+      onSubmit={(e) => {
+        e.preventDefault()
+        void save()
+      }}
+    >
       <div className="card-head">
         <h3>
           {unit ? (
@@ -939,205 +976,357 @@ function ScoringCard({
             t('Einzelwertung')
           )}
         </h3>
-        {canManage && <SaveStatus auto={auto} />}
       </div>
-      <fieldset disabled={!canManage}>
-        <div className="grid-3">
-          <Field
-            label={t('Bezeichnung')}
-            value={v.name}
-            error={errors.name}
-            onChange={(e) => set('name', e.target.value)}
-          />
-          {foreign ? (
-            <>
-              <Field
-                label={t('Teilnehmer insgesamt')}
-                type="number"
-                min={1}
-                hint={t('für „Platz 2 von 14“')}
-                value={v.field_size ?? ''}
-                error={errors.field_size}
-                onChange={(e) => set('field_size', numOrNull(e.target.value))}
-              />
-              <Field
-                label={t('Einheit des Werts')}
-                value={v.unit_label}
-                error={errors.unit_label}
-                onChange={(e) => set('unit_label', e.target.value)}
-              />
-              <SelectField
-                label={t('Nachkommastellen')}
-                value={v.decimals}
-                onChange={(e) => set('decimals', Number(e.target.value))}
-              >
-                {[0, 1, 2, 3].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </SelectField>
-            </>
-          ) : unit ? (
-            <>
-              <SelectField
-                label={t('Aus der Wertung')}
-                value={v.source ?? ''}
-                error={errors.source}
-                onChange={(e) => set('source', numOrNull(e.target.value))}
-              >
-                {singles.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                label={t('Rechenweise')}
-                value={v.team_mode}
-                error={errors.team_mode}
-                onChange={(e) => set('team_mode', e.target.value as Scoring['team_mode'])}
-              >
-                {TEAM_MODES.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </SelectField>
-              {v.team_mode === 'beste' && (
+      <p className="muted">
+        {scoring.name}
+        {program ? ` · ${program.name} · ${program.shots ?? '–'} ${t('Schüsse')}` : ''}
+      </p>
+      {single && (
+        <p>
+          {v.method === 'teiler'
+            ? v.counted_shots
+              ? t('Summe der besten {n} Teiler; kleiner ist besser.', { n: v.counted_shots })
+              : t('Der beste Teiler zählt; kleiner ist besser.')
+            : v.counted_shots
+              ? t('Die besten {n} Schüsse zählen.', { n: v.counted_shots })
+              : t('Alle Schüsse zählen.')}
+        </p>
+      )}
+      <details>
+        <summary>{t('Wertung bearbeiten')}</summary>
+        <fieldset disabled={!canManage || form.busy}>
+          <div className="grid-3">
+            <Field
+              label={t('Bezeichnung')}
+              value={v.name}
+              error={errors.name}
+              onChange={(e) => set('name', e.target.value)}
+            />
+            {foreign ? (
+              <>
                 <Field
-                  label={t('Anzahl der besten')}
+                  label={t('Teilnehmer insgesamt')}
                   type="number"
                   min={1}
-                  hint={t('Weniger Schützen: die Einheit wird nicht gewertet.')}
-                  value={v.team_size ?? ''}
-                  error={errors.team_size}
-                  onChange={(e) => set('team_size', numOrNull(e.target.value))}
+                  hint={t('für „Platz 2 von 14“')}
+                  value={v.field_size ?? ''}
+                  error={errors.field_size}
+                  onChange={(e) => set('field_size', numOrNull(e.target.value))}
                 />
-              )}
-            </>
-          ) : (
-            <>
-              <Field
-                label={t('Schüsse je Schütze')}
-                type="number"
-                min={1}
-                value={v.shots ?? ''}
-                error={errors.shots}
-                onChange={(e) => set('shots', numOrNull(e.target.value))}
-              />
-              <Field
-                label={t('davon in der Wertung')}
-                type="number"
-                min={1}
-                value={v.counted_shots ?? ''}
-                error={errors.counted_shots}
-                onChange={(e) => set('counted_shots', numOrNull(e.target.value))}
-              />
-              {!fromHits && (
-                <>
+                <Field
+                  label={t('Einheit des Werts')}
+                  value={v.unit_label}
+                  error={errors.unit_label}
+                  onChange={(e) => set('unit_label', e.target.value)}
+                />
+                <SelectField
+                  label={t('Nachkommastellen')}
+                  value={v.decimals}
+                  onChange={(e) => set('decimals', Number(e.target.value))}
+                >
+                  {[0, 1, 2, 3].map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </SelectField>
+              </>
+            ) : unit ? (
+              <>
+                <SelectField
+                  label={t('Aus der Wertung')}
+                  value={v.source ?? ''}
+                  error={errors.source}
+                  onChange={(e) => set('source', numOrNull(e.target.value))}
+                >
+                  {singles.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  label={t('Rechenweise')}
+                  value={v.team_mode}
+                  error={errors.team_mode}
+                  onChange={(e) => set('team_mode', e.target.value as Scoring['team_mode'])}
+                >
+                  {TEAM_MODES.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </SelectField>
+                {v.team_mode === 'beste' && (
                   <Field
-                    label={t('Höchstwert je Schuss')}
-                    inputMode="decimal"
-                    value={v.max_per_shot ?? ''}
-                    error={errors.max_per_shot}
-                    onChange={(e) => set('max_per_shot', e.target.value.replace(',', '.') || null)}
+                    label={t('Anzahl der besten')}
+                    type="number"
+                    min={1}
+                    hint={t('Weniger Schützen: die Einheit wird nicht gewertet.')}
+                    value={v.team_size ?? ''}
+                    error={errors.team_size}
+                    onChange={(e) => set('team_size', numOrNull(e.target.value))}
                   />
-                  <Field
-                    label={t('Einheit des Werts')}
-                    value={v.unit_label}
-                    error={errors.unit_label}
-                    onChange={(e) => set('unit_label', e.target.value)}
-                  />
+                )}
+              </>
+            ) : (
+              <>
+                {program ? (
                   <SelectField
-                    label={t('Nachkommastellen')}
-                    value={v.decimals}
-                    onChange={(e) => set('decimals', Number(e.target.value))}
+                    label={t('Grundlage: Schießdurchgang')}
+                    value={v.program ?? ''}
+                    error={errors.program}
+                    onChange={(e) => {
+                      const p = comp.programs?.find((item) => item.id === Number(e.target.value))
+                      if (p) {
+                        set('program', p.id)
+                        set('shots', p.shots)
+                        set('target', p.target)
+                        set('custom_target', p.custom_target)
+                      }
+                    }}
                   >
-                    {[0, 1, 2, 3].map((n) => (
-                      <option key={n} value={n}>
-                        {n}
+                    {comp.programs?.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
                       </option>
                     ))}
                   </SelectField>
-                  <Checkbox
-                    label={t('Größer ist besser')}
-                    hint={t('aus bei Zeit oder Teiler')}
-                    checked={v.higher_better}
-                    onChange={(on) => set('higher_better', on)}
+                ) : (
+                  <Field
+                    label={t('Schüsse je Schütze')}
+                    type="number"
+                    min={1}
+                    value={v.shots ?? ''}
+                    error={errors.shots}
+                    onChange={(e) => set('shots', numOrNull(e.target.value))}
                   />
-                </>
-              )}
-            </>
-          )}
-          <Field
-            label={t('Preisplätze')}
-            type="number"
-            min={0}
-            value={v.prize_places}
-            error={errors.prize_places}
-            onChange={(e) => set('prize_places', numOrNull(e.target.value) ?? 0)}
-          />
-          {!foreign && (
+                )}
+                <SelectField
+                  label={t('Welche Schüsse zählen?')}
+                  value={v.counted_shots === null ? 'all' : 'best'}
+                  onChange={(e) =>
+                    set(
+                      'counted_shots',
+                      e.target.value === 'all' ? null : Math.min(v.shots ?? 3, 3),
+                    )
+                  }
+                >
+                  <option value="all">
+                    {v.method === 'teiler' ? t('Bester Teiler') : t('Alle Schüsse')}
+                  </option>
+                  <option value="best">
+                    {v.method === 'teiler' ? t('Summe der besten …') : t('Die besten …')}
+                  </option>
+                </SelectField>
+                {v.counted_shots !== null && (
+                  <Field
+                    label={t('davon in der Wertung')}
+                    type="number"
+                    min={1}
+                    value={v.counted_shots ?? ''}
+                    error={errors.counted_shots}
+                    onChange={(e) => set('counted_shots', numOrNull(e.target.value))}
+                  />
+                )}
+                {!fromHits && (
+                  <>
+                    <Field
+                      label={t('Höchstwert je Schuss')}
+                      inputMode="decimal"
+                      value={v.max_per_shot ?? ''}
+                      error={errors.max_per_shot}
+                      onChange={(e) =>
+                        set('max_per_shot', e.target.value.replace(',', '.') || null)
+                      }
+                    />
+                    <Field
+                      label={t('Einheit des Werts')}
+                      value={v.unit_label}
+                      error={errors.unit_label}
+                      onChange={(e) => set('unit_label', e.target.value)}
+                    />
+                    <SelectField
+                      label={t('Nachkommastellen')}
+                      value={v.decimals}
+                      onChange={(e) => set('decimals', Number(e.target.value))}
+                    >
+                      {[0, 1, 2, 3].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </SelectField>
+                    <Checkbox
+                      label={t('Größer ist besser')}
+                      hint={t('aus bei Zeit oder Teiler')}
+                      checked={v.higher_better}
+                      onChange={(on) => set('higher_better', on)}
+                    />
+                  </>
+                )}
+              </>
+            )}
             <Field
-              label={t('Schüsse im Stechen (Vorschlag)')}
+              label={t('Preisplätze')}
               type="number"
-              min={1}
-              hint={t('beim Anlegen des Stechens vor Ort änderbar')}
-              value={v.shootoff_shots ?? ''}
-              error={errors.shootoff_shots}
-              onChange={(e) => set('shootoff_shots', numOrNull(e.target.value))}
+              min={0}
+              value={v.prize_places}
+              error={errors.prize_places}
+              onChange={(e) => set('prize_places', numOrNull(e.target.value) ?? 0)}
             />
-          )}
-          {!unit && !foreign && (
-            <Field
-              label={t('davon gewertet (Vorschlag)')}
-              type="number"
-              min={1}
-              value={v.shootoff_counted ?? ''}
-              error={errors.shootoff_counted}
-              onChange={(e) => set('shootoff_counted', numOrNull(e.target.value))}
-            />
-          )}
-        </div>
-        {!foreign && !unit && (
-          <p className="muted small">
-            {t('Mit')} <Term k="comp_counted">{t('gewerteten Schüssen')}</Term>{' '}
-            {t('und Höchstwert prüft HUBIplan jede Eingabe.')}
-            {fromHits &&
-              (v.method === 'teiler'
-                ? t(
-                    ' Teiler: kleiner ist besser, es zählt der beste Teiler (bei mehreren gewerteten Schüssen ihre Summe).',
-                  )
-                : t(' Höchstwert je Schuss {x}, {x2}.', {
-                    x: String(v.max_per_shot ?? '').replace('.', ','),
-                    x2: v.decimals ? t('mit Zehnteln') : t('ganze Ringe'),
-                  }))}
-          </p>
-        )}
-        {single && catalog.data && (
-          <TargetSettings
-            catalog={catalog.data}
-            values={v}
-            set={(key, value) => set(key, value as (typeof v)[typeof key])}
-            errors={errors}
-          />
-        )}
-        {!foreign && (unit ? <Why k="comp_team_mode" /> : <Why k="comp_shots" />)}
-        {!foreign && <Why k="comp_prize_places" />}
-        {canManage && (
-          <div className="button-row">
-            <button type="button" className="button button-ghost" onClick={() => void remove()}>
-              {t('Wertung löschen')}
-            </button>
+            {!foreign && (
+              <Field
+                label={t('Schüsse im Stechen (Vorschlag)')}
+                type="number"
+                min={1}
+                hint={t('beim Anlegen des Stechens vor Ort änderbar')}
+                value={v.shootoff_shots ?? ''}
+                error={errors.shootoff_shots}
+                onChange={(e) => set('shootoff_shots', numOrNull(e.target.value))}
+              />
+            )}
+            {!unit && !foreign && (
+              <Field
+                label={t('davon gewertet (Vorschlag)')}
+                type="number"
+                min={1}
+                value={v.shootoff_counted ?? ''}
+                error={errors.shootoff_counted}
+                onChange={(e) => set('shootoff_counted', numOrNull(e.target.value))}
+              />
+            )}
           </div>
-        )}
-      </fieldset>
-    </div>
+          {!foreign && !unit && (
+            <p className="muted small">
+              {t('Mit')} <Term k="comp_counted">{t('gewerteten Schüssen')}</Term>{' '}
+              {t('und Höchstwert prüft HUBIplan jede Eingabe.')}
+              {fromHits &&
+                (v.method === 'teiler'
+                  ? t(
+                      ' Teiler: kleiner ist besser, es zählt der beste Teiler (bei mehreren gewerteten Schüssen ihre Summe).',
+                    )
+                  : t(' Höchstwert je Schuss {x}, {x2}.', {
+                      x: String(v.max_per_shot ?? '').replace('.', ','),
+                      x2: v.decimals ? t('mit Zehnteln') : t('ganze Ringe'),
+                    }))}
+            </p>
+          )}
+          {single && catalog.data && (
+            <TargetSettings
+              mode={program ? 'scoring' : 'all'}
+              catalog={catalog.data}
+              values={v}
+              set={(key, value) => set(key, value as (typeof v)[typeof key])}
+              errors={errors}
+            />
+          )}
+          {!foreign && (unit ? <Why k="comp_team_mode" /> : <Why k="comp_shots" />)}
+          {!foreign && <Why k="comp_prize_places" />}
+          {canManage && (
+            <div className="button-row">
+              <button type="submit" className="button" disabled={!dirty}>
+                {t('Wertungsregeln übernehmen')}
+              </button>
+              <button type="button" className="button button-ghost" onClick={() => void remove()}>
+                {t('Wertung löschen')}
+              </button>
+            </div>
+          )}
+        </fieldset>
+      </details>
+      {dirty && (
+        <p className="muted small" role="status">
+          {t('Änderungen noch nicht übernommen.')}
+        </p>
+      )}
+      {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
+    </form>
   )
 }
 
 /** Prüfliste vor „Endgültig abschließen“; blockiert nichts (Lernhilfen Wettbewerbe). */
+function CompetitionCompletion({
+  org,
+  comp,
+  reload,
+}: {
+  org: number
+  comp: CompetitionDetail
+  reload: () => void
+}) {
+  const form = useForm({})
+  if (!comp.can_manage) return null
+  async function change(status: CompetitionStatus) {
+    if (
+      status === 'endgueltig' &&
+      !(await confirmDialog({
+        title: t('Endgültig abschließen'),
+        message: t(
+          'Die Ergebnisse werden endgültig abgeschlossen. Anschließend sind Eingaben gesperrt und freigegebene Ergebnisse werden veröffentlicht.',
+        ),
+        confirmLabel: t('Abschließen'),
+      }))
+    )
+      return
+    const result = await form.submit(() => competitionsApi.setStatus(org, comp.id, status))
+    if (result) reload()
+  }
+  return (
+    <section className="card card-wide">
+      <h2>{t('Wettbewerb und Abschluss')}</h2>
+      <p>
+        {t('Zustand:')} {STATUS_LABELS[comp.status]}
+      </p>
+      {comp.own && comp.status !== 'endgueltig' && <FinishChecklist org={org} comp={comp} />}
+      <div className="button-row">
+        {comp.status === 'vorbereitung' && (
+          <button
+            type="button"
+            className="button"
+            disabled={form.busy}
+            onClick={() => void change('laeuft')}
+          >
+            {t('Wettbewerb starten')}
+          </button>
+        )}
+        {comp.status !== 'vorlaeufig' && comp.status !== 'endgueltig' && (
+          <button
+            type="button"
+            className="button button-ghost"
+            disabled={form.busy}
+            onClick={() => void change('vorlaeufig')}
+          >
+            {t('Als vorläufig kennzeichnen')}
+          </button>
+        )}
+        {comp.status === 'endgueltig' ? (
+          <button
+            type="button"
+            className="button button-ghost"
+            disabled={form.busy}
+            onClick={() => void change('vorlaeufig')}
+          >
+            {t('Wieder öffnen')}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="button"
+            disabled={form.busy}
+            onClick={() => void change('endgueltig')}
+          >
+            {t('Endgültig abschließen')}
+          </button>
+        )}
+      </div>
+      {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
+      <Why k="comp_provisional" />
+      <Why k="comp_final" />
+    </section>
+  )
+}
+
 function FinishChecklist({ org, comp }: { org: number; comp: CompetitionDetail }) {
   const { data } = useLoad(() => competitionsApi.standings(org, comp.id), [org, comp.id])
   if (!data) return null

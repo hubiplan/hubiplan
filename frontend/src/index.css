@@ -4453,3 +4453,20 @@ label:has(> .file-input:focus-visible) {
 .target-preview .pad-number {
   display: none;
 }
+
+.setup-navigation {
+  margin-bottom: 1rem;
+}
+.setup-derived {
+  margin: 0.75rem 0;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg-alt, var(--color-bg));
+  border-left: 3px solid var(--color-primary);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 40rem) {
+  .setup-navigation > .button {
+    flex: 1 1 45%;
+    white-space: normal;
+  }
+}

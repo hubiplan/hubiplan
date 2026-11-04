@@ -84,7 +84,7 @@ export function ResultsPanel({
       })}
       {'count' in data.stats && <StatsCard stats={data.stats as Stats} />}
       <p className="muted small">
-        {t('Zustand ändern und abschließen unter „Einrichten“.')}{' '}
+        {t('Zustand ändern und abschließen unter „Wettbewerb und Abschluss“.')}{' '}
         <button type="button" className="link-button" onClick={onChanged}>
           {t('Neu laden')}
         </button>

@@ -205,12 +205,18 @@ class TestTrefferUndWertung:
         assert self._treffer(c, verein, comp_id, sc, anna, too_many).status_code == 400
 
         # Wechsel auf Zehntel rechnet die Werte neu
-        resp = c.patch(s_url, {"method": "zehntel"}, "application/json")
+        resp = c.patch(
+            s_url, {"method": "zehntel", "confirm_recalculation": True}, "application/json"
+        )
         assert resp.json()["decimals"] == 1 and D(resp.json()["max_per_shot"]) == D("10.7")
         assert Score.objects.get(starter_id=anna).value == D("10.6") + D("10.5") + D("9.9")
 
         # Teiler: kleiner ist besser, bester Teiler zählt
-        c.patch(s_url, {"method": "teiler", "counted_shots": None}, "application/json")
+        c.patch(
+            s_url,
+            {"method": "teiler", "counted_shots": None, "confirm_recalculation": True},
+            "application/json",
+        )
         assert Score.objects.get(starter_id=anna).value == D("50.0")
 
         # alle Treffer weg: Wert weg

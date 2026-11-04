@@ -54,6 +54,12 @@ def target_of(scoring: Scoring) -> targets.Target | None:
     return targets.get(scoring.target, scoring.custom_target) if scoring.target else None
 
 
+def hits_for(scoring: Scoring):
+    if scoring.program_id:
+        return Hit.objects.filter(program_id=scoring.program_id)
+    return Hit.objects.filter(scoring=scoring)
+
+
 def shot_values(scoring: Scoring, hits) -> list[targets.ShotValue]:
     """Wertung der Treffer (in Schussreihenfolge); ohne Scheibe leer."""
     target = target_of(scoring)
@@ -64,7 +70,7 @@ def shot_values(scoring: Scoring, hits) -> list[targets.ShotValue]:
 
 def hits_by_starter(scoring: Scoring) -> dict[int, list[Hit]]:
     out: dict[int, list[Hit]] = {}
-    for h in Hit.objects.filter(scoring=scoring).order_by("starter_id", "number"):
+    for h in hits_for(scoring).order_by("starter_id", "number"):
         out.setdefault(h.starter_id, []).append(h)
     return out
 
@@ -77,7 +83,10 @@ def _tiebreaks(scoring: Scoring, starters: list[Starter]) -> dict[int, tuple]:
         return {}
     method = scoring.method if scoring.method != targets.METHOD_FREE else targets.METHOD_RINGS
     out = {}
+    computed = set(scoring.scores.filter(from_hits=True).values_list("starter_id", flat=True))
     for starter_id, hits in hits_by_starter(scoring).items():
+        if starter_id not in computed:
+            continue
         shots = targets.counted_shots(
             method, shot_values(scoring, hits), scoring.counted_shots or None
         )
@@ -420,11 +429,11 @@ def version(competition: Competition) -> str:
 
     from .models import Prize, Score, ShootOffEntry, Shot
 
-    parts = [competition.status, competition.updated_at.isoformat()]
+    parts = [competition.status, competition.updated_at.isoformat(), str(competition.generation)]
     # Geänderte Preisplätze müssen auch öffentliche Live-Ansichten neu laden lassen.
     scorings = Scoring.objects.filter(competition=competition)
     parts.append(str(list(scorings.order_by("pk").values_list("pk", "prize_places"))))
-    hits = Hit.objects.filter(scoring__competition=competition)
+    hits = Hit.objects.filter(program__competition=competition)
     parts.append(str(hits.aggregate(n=Count("pk"), t=Max("updated_at"))))
     for qs in (
         Starter.objects.filter(competition=competition),

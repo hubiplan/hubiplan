@@ -57,6 +57,7 @@ export interface Detail {
 export type CompetitionForm = 'rangliste' | 'vogel'
 
 export interface Competition {
+  generation?: number
   id: number
   title: string
   form: CompetitionForm
@@ -114,6 +115,9 @@ export type ScoringKind = 'einzel' | 'einheit' | 'mannschaft'
 export type TeamMode = 'beste' | 'summe' | 'durchschnitt'
 
 export interface Scoring {
+  program?: number | null
+  has_results?: boolean
+  confirm_recalculation?: boolean
   id: number
   competition: number
   name: string
@@ -160,6 +164,8 @@ export interface CustomTarget {
 }
 
 export interface TargetInfo {
+  facility_keys?: string[]
+  distances?: number[]
   key: string
   name: string
   group: string
@@ -181,6 +187,9 @@ export interface TargetInfo {
 }
 
 export interface TargetCatalog {
+  infrastructure_configured?: boolean
+  recommended_targets?: string[]
+  facilities?: { key: string; discipline: string; distance: number }[]
   targets: TargetInfo[]
   custom: string
   methods: { value: ScoringMethod; label: string }[]
@@ -244,6 +253,7 @@ export interface PrizeSetup {
 }
 
 export interface CompetitionDetail extends Competition {
+  programs?: ShootingProgram[]
   scorings: Scoring[]
   units: { id: number; name: string }[]
   prizes: PrizeSetup[]
@@ -257,6 +267,20 @@ export interface CompetitionDetail extends Competition {
   calendar?: CalendarAccess
   /** nur über einen Standzugang */
   stand_access?: { label: string; expires_at: string }
+}
+
+export interface ShootingProgram {
+  id: number
+  competition: number
+  name: string
+  sort_order: number
+  target: string
+  custom_target: CustomTarget | Record<string, never>
+  shots: number | null
+  position: string
+  distance: number | null
+  target_info: TargetInfo | null
+  has_results: boolean
 }
 
 export type Presence = '' | 'fehlt' | 'zurueckgezogen'
@@ -606,6 +630,17 @@ export const competitionsApi = {
     }),
   createScoring: (org: number, id: number, data: Partial<Scoring>) =>
     api.post<Scoring>(`${c(org, id)}scorings/`, data),
+  createProgram: (org: number, id: number, data: Partial<ShootingProgram>) =>
+    api.post<ShootingProgram>(`${c(org, id)}programs/`, data),
+  updateProgram: (
+    org: number,
+    id: number,
+    program: number,
+    data: Partial<ShootingProgram> & { confirm_recalculation?: boolean },
+  ) => api.patch<ShootingProgram>(`${c(org, id)}programs/${program}/`, data),
+  removeProgram: (org: number, id: number, program: number) =>
+    api.del(`${c(org, id)}programs/${program}/`),
+  clearTargetCache: (org: number) => targetCache.delete(org),
   updateScoring: (org: number, id: number, scoring: number, data: Partial<Scoring>) =>
     api.patch<Scoring>(`${c(org, id)}scorings/${scoring}/`, data),
   removeScoring: (org: number, id: number, scoring: number) =>

@@ -392,6 +392,9 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     )
 
     enabled_modules = models.JSONField("freigeschaltete Module", default=list, blank=True)
+    shooting_facilities = models.JSONField(
+        "verfügbare Schießinfrastruktur", default=None, null=True, blank=True
+    )
     # Hilfe (konzepte/hilfe-funktion.md 3.6, 3.7): Ansprechpartner für Fragen zu HUBIplan
     # [{"name", "hint", "email"}] und Hinweise des Vereins zu Anleitungen {Schlüssel: Text}
     help_contacts = models.JSONField(

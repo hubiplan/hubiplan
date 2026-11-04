@@ -44,7 +44,9 @@ export function StandPanel({
   /** angemeldet im Standmodus: dazu „Schießen beenden“ und der Abschluss */
   org?: number
 }) {
-  const scoring: Scoring | undefined = comp.scorings.find((s) => s.kind === 'einzel')
+  const singles = comp.scorings.filter((s) => s.kind === 'einzel')
+  const [selectedScoring, setSelectedScoring] = useState<number | null>(null)
+  const scoring: Scoring | undefined = singles.find((s) => s.id === selectedScoring) ?? singles[0]
   const [notice, setNotice] = useState<string | null>(null)
   const { local, setLocal, push, online, syncError, pending, statusText } = useStandStore(
     api,
@@ -83,6 +85,10 @@ export function StandPanel({
   const [photoNote, setPhotoNote] = useState<PhotoSuggestion | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const pointsRef = useRef<HTMLInputElement>(null)
+  const conditionsChanged =
+    comp.generation !== undefined &&
+    local.generation !== undefined &&
+    comp.generation !== local.generation
   const closed = (local.status ?? comp.status) === 'endgueltig'
 
   const hits: Hit[] = useMemo(() => {
@@ -408,12 +414,46 @@ export function StandPanel({
   return (
     <div className={`stand${fullscreen ? ' stand-full' : ''}`}>
       <section className="stand-block" aria-label={t('Erfassen')}>
+        {singles.length > 1 && (
+          <label className="field">
+            <span>{t('Wertung / Schießdurchgang')}</span>
+            <select
+              className="stand-input"
+              value={scoring?.id ?? ''}
+              onChange={(e) => {
+                setSelectedScoring(Number(e.target.value))
+                setChosen(null)
+                setQuery('')
+                setPoints('')
+                setPadHits([])
+                setPhotoNote(null)
+              }}
+            >
+              {singles.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <p className={`stand-sync ${pending ? 'stand-sync-wait' : 'stand-sync-ok'}`} role="status">
           {online ? '' : t('Kein Empfang · ')}
           {statusText}
         </p>
         {syncError && <p className="alert alert-error">{syncError}</p>}
-        {closed ? (
+        {conditionsChanged ? (
+          <div className="alert alert-info" role="alert">
+            <p>
+              {t(
+                'Schießbedingungen wurden geändert oder der Wettbewerb wurde zurückgesetzt. Bitte die aktuelle Einrichtung laden.',
+              )}
+            </p>
+            <button type="button" className="button" onClick={() => window.location.reload()}>
+              {t('Einrichtung neu laden')}
+            </button>
+          </div>
+        ) : closed ? (
           <p className="alert alert-info">
             {t('Der Wettbewerb ist endgültig, Eingaben sind gesperrt.')}
           </p>

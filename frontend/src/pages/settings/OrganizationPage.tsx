@@ -11,6 +11,7 @@ import { buildFederationTerms, buildTerms } from '../../org/terms.ts'
 import { Why } from '../../learning/Aids.tsx'
 import { HelpContactsCard } from '../../help/HelpExtras.tsx'
 import { t } from '../../i18n/index.ts'
+import { ShootingFacilitiesCard } from './ShootingFacilitiesCard.tsx'
 
 export function OrganizationPage() {
   const org = useActiveOrg()
@@ -26,6 +27,10 @@ export function OrganizationPage() {
   return (
     <>
       <OrganizationForm key={data.id} detail={data} roles={roles.data ?? []} onSaved={setData} />
+      {org.modules.includes('competitions') &&
+        (data.type === 'club' || data.type === 'federation') && (
+          <ShootingFacilitiesCard key={`shooting-${data.id}`} detail={data} onSaved={setData} />
+        )}
       {(data.type === 'club' || data.type === 'federation') && (
         <SocialLinksPanel orgId={org.id} editable={org.permissions.includes(PERM.orgEdit)} />
       )}

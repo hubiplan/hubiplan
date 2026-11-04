@@ -57,6 +57,9 @@ class Target:
 
     def as_dict(self) -> dict:
         data = asdict(self)
+        facilities = TARGET_FACILITIES.get(self.key, [])
+        data["facility_keys"] = facilities
+        data["distances"] = sorted({FACILITIES[key][1] for key in facilities})
         data["rings"] = [
             {"ring": r, "diameter": round(self.ring_diameter(r), 3)}
             for r in range(self.lowest, self.top + 1)
@@ -176,6 +179,27 @@ CATALOG: tuple[Target, ...] = (
 )
 
 BY_KEY = {t.key: t for t in CATALOG}
+
+# Explizite Metadaten: Namen und Übersetzungen werden nicht ausgewertet.
+FACILITIES = {
+    "lg10": ("Luftgewehr", 10),
+    "lp10": ("Luftpistole", 10),
+    "kk50": ("Kleinkaliber", 50),
+    "kk100": ("Kleinkaliber", 100),
+    "p25": ("Pistole", 25),
+    "p50": ("Pistole", 50),
+}
+TARGET_FACILITIES = {
+    "lg10_dsb": ["lg10"],
+    "lg10_kyf": ["lg10"],
+    "lg10_kyf5": ["lg10"],
+    "lg10_ufolep": ["lg10"],
+    "ls10": ["lg10"],
+    "lp10": ["lp10"],
+    "kk50": ["kk50"],
+    "kk100": ["kk100"],
+    "p25": ["p25", "p50"],
+}
 
 # Grenzen für eine eigene Scheibe
 CUSTOM_FIELDS = {

@@ -365,3 +365,40 @@ App `competitions`, Tabellen mit `organization` und RLS. Export und Datenüberna
 enthalten alles (mitgliederbezogen, auch die Treffer) außer den gesammelten
 Spiegelausschnitten und der Einwilligung dazu (`PhotoSample`, `PhotoSampleConsent`; nur für
 die Fotoerkennung, ohne Bezug zu Personen); die Wettbewerbe kommen nach den Terminen (Verweis). Keine Dateifelder.
+
+
+## Einrichtung und Schießinfrastruktur
+
+Die Einrichtung ist in **Grunddaten**, **Schießbedingungen**, **Wertungen** und
+**Ausgabe & Freigabe** gegliedert. Beim Vogelschießen ersetzt **Pfänder & Ablauf**
+die Schießbedingungen; fremde Wettbewerbe haben keine eigenen Schießdurchgänge.
+Abschließen und Wiederöffnen stehen in der **Auswertung** unter **Wettbewerb und Abschluss**.
+
+Unter **Einstellungen › Organisation › Schießinfrastruktur** lassen sich verfügbare
+Kombinationen aus Disziplin und Entfernung festlegen (z. B. Luftgewehr 10 m,
+Kleinkaliber 50 m). Ohne Festlegung bleibt der vollständige Katalog sichtbar.
+Die Scheibenwahl verwendet weiterhin Bildkacheln. Bereits verwendete Scheiben bleiben
+auch außerhalb der Infrastruktur sichtbar; **Alle Scheiben anzeigen** öffnet den
+vollständigen Katalog für fremde Anlagen. Die Infrastruktur beschränkt keine bestehenden
+Ergebnisse und ersetzt keine technische oder sportliche Zulässigkeitsprüfung.
+
+Ein **Schießdurchgang** enthält Scheibe, Schusszahl und optionale Anschlagart/Entfernung.
+Disziplin und bekannte Maße werden aus dem Katalog übernommen. Mehrere Einzelwertungen
+können denselben Durchgang verwenden: Einmal erfasste Treffer ergeben beispielsweise
+eine Ringwertung und eine Teilerwertung. Zugwertungen berechnen sich weiterhin aus
+einer Einzelwertung. Getrennt geschossene Karten erhalten getrennte Durchgänge,
+auch bei identischer Scheibe und Schusszahl. Im Standmodus ist die Wertung wählbar.
+
+Bestehende Einzelwertungen erhalten bei der Migration jeweils einen eigenen Durchgang;
+es findet keine automatische Zusammenlegung statt. Beim Kopieren bleiben gemeinsame
+Grundlagen erhalten, Ergebnisse und Treffer werden nicht kopiert. Durchgänge gehören
+zum allgemeinen Datenexport und unterliegen der Mandantentrennung.
+
+Änderungen an Schießbedingungen und Wertungsregeln werden gemeinsam mit einem eigenen
+Übernehmen-Knopf gespeichert. Liegen Ergebnisse vor, müssen Auswirkungen auf Berechnung
+und Ranglisten ausdrücklich bestätigt werden. Berechnete Ergebnisse werden neu ermittelt,
+manuelle Summen bleiben erhalten und sind zu prüfen. Aus einer Ringsumme entstehen keine
+Teiler oder Einzeltreffer; manuelle Ergebnisse verwenden keine alten Treffer zur Auflösung
+von Gleichständen. Geänderte Bedingungen sperren alte Offline-Eingaben und erfordern am
+Stand das Laden der aktuellen Einrichtung. Endgültige Wettbewerbe müssen vor Änderungen
+an Durchgängen oder Wertungen wieder geöffnet werden.

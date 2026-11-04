@@ -113,6 +113,7 @@ MODULE_MODELS = (
     "competitions.Trophy",
     "competitions.CertificateTemplate",
     "competitions.Competition",
+    "competitions.ShootingProgram",
     "competitions.Scoring",
     "competitions.Starter",
     "competitions.Score",
