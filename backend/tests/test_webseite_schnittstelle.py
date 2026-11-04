@@ -297,6 +297,23 @@ class TestInhalte:
 
 
 class TestTermine:
+    def test_endzeit_ausblenden_mit_serienterminen(self, setup):
+        start = timezone.now() + datetime.timedelta(days=3)
+        with rls_bypass():
+            Event.objects.create(
+                organization=setup["org"],
+                title="Offenes Treffen",
+                visibility="public",
+                starts_at=start,
+                ends_at=start + datetime.timedelta(hours=2),
+                hide_end_time=True,
+                repeat="weekly",
+                repeat_until=timezone.localdate(start + datetime.timedelta(days=14)),
+            )
+        items = get("schluessel-a/events/").json()["events"]
+        assert len(items) == 3
+        assert all(e["hide_end_time"] is True and e["ends_at"] for e in items)
+
     def test_oeffentliche_termine_und_abo(self, setup):
         org, unit = setup["org"], setup["unit"]
         start = timezone.now() + datetime.timedelta(days=3)
@@ -311,6 +328,9 @@ class TestTermine:
             Event.objects.create(title="Zugabend", visibility="public", department=unit, **common)
         titles = [e["title"] for e in get("schluessel-a/events/").json()["events"]]
         assert sorted(titles) == ["Schützenfest", "Zugabend"]
+        assert all(
+            e["hide_end_time"] is False for e in get("schluessel-a/events/").json()["events"]
+        )
         titles = [
             e["title"] for e in get("schluessel-a/events/?einheit=jaegerzug").json()["events"]
         ]

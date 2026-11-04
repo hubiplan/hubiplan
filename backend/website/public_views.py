@@ -645,6 +645,7 @@ class EventsView(_Public):
                         "starts_at": o.starts_at,
                         "ends_at": o.ends_at,
                         "all_day": o.event.all_day,
+                        "hide_end_time": o.event.hide_end_time,
                         "location": o.event.location,
                         "address": o.event.address,
                         "description": o.event.description,

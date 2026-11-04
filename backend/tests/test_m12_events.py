@@ -106,6 +106,28 @@ def dept_role(dept, membership, perms):
 
 
 class TestAnlegenUndRechte:
+    def test_endzeit_auf_webseite_ausblenden(self, cal, board_a, api):
+        c = api(board_a)
+        base = org_base(cal["a"])
+        visible = create(c, base)
+        assert visible["hide_end_time"] is False
+        hidden = create(c, base, hide_end_time=True, repeat="weekly")
+        assert hidden["hide_end_time"] is True
+        saved = Event.objects.get(pk=hidden["id"])
+        original_end = saved.ends_at
+        assert saved.hide_end_time is True
+        assert c.get(f"{base}events/{saved.pk}/").json()["hide_end_time"] is True
+        items = c.get(f"{base}events/?from=2026-06-01&to=2026-06-30").json()["items"]
+        series = [i for i in items if i["event_id"] == saved.pk]
+        assert len(series) == 3
+        assert all(i["hide_end_time"] for i in series)
+        response = c.patch(f"{base}events/{saved.pk}/", {"hide_end_time": False}, content_type=JSON)
+        assert response.status_code == 200
+        assert response.json()["hide_end_time"] is False
+        saved.refresh_from_db()
+        assert saved.ends_at == original_end
+        assert saved.changed_at is None
+
     def test_vorstand_legt_an_aendert_loescht(self, cal, board_a, api):
         c = api(board_a)
         base = org_base(cal["a"])

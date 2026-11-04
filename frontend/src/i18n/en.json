@@ -5396,5 +5396,7 @@
   "Zur Bestätigung den vollständigen Namen eingeben:": "Enter the full name to confirm:",
   "Name zur Löschbestätigung": "Name to confirm deletion",
   "Unwiderruflich löschen": "Delete permanently",
-  "Einheit löschen": "Delete unit"
+  "Einheit löschen": "Delete unit",
+  "Endzeit auf der Webseite ausblenden": "Hide end time on the website",
+  "Auf der Webseite erscheint nur die Beginnzeit. Im internen Kalender bleibt die Endzeit erhalten.": "The website shows only the start time. The end time is kept in the internal calendar."
 }
