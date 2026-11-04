@@ -212,6 +212,10 @@
   margin: 0;
 }
 
+.todo-toolbar > .button-row {
+  margin-block: 0;
+}
+
 .todo-toolbar .field-label {
   position: absolute;
   width: 1px;
