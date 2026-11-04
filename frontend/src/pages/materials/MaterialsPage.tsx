@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { materialApi } from '../../api/materials.ts'
 import type { Material, MaterialChoice, MaterialEvent } from '../../api/materials.ts'
-import { errorMessage, useLoad } from '../../components/forms.ts'
+import { errorMessage, useLoad, useQueryLoad } from '../../components/forms.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { t, locale } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
@@ -152,7 +152,7 @@ function MaterialList({
           </a>
         )}
         {!!query && (
-          <button type="button" onClick={() => setParams({})}>
+          <button className="button button-ghost" type="button" onClick={() => setParams({})}>
             {t('Filter zurücksetzen')}
           </button>
         )}
@@ -191,13 +191,18 @@ function MaterialList({
       </div>
       {data && data.count > 50 && (
         <div className="button-row">
-          <button disabled={data.page <= 1} onClick={() => filter('page', String(data.page - 1))}>
+          <button
+            className="button button-ghost"
+            disabled={data.page <= 1}
+            onClick={() => filter('page', String(data.page - 1))}
+          >
             {t('Zurück')}
           </button>
           <span>
             {data.page} / {Math.ceil(data.count / 50)}
           </span>
           <button
+            className="button button-ghost"
             disabled={data.page * 50 >= data.count}
             onClick={() => filter('page', String(data.page + 1))}
           >
@@ -219,39 +224,85 @@ export function MaterialPicker({
   onSelect: (choice: MaterialChoice) => void
 }) {
   const [search, setSearch] = useState('')
-  const { data, error } = useLoad(
+  const [open, setOpen] = useState(false)
+  const [debounced, setDebounced] = useState('')
+  const query = search.trim()
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(query), 250)
+    return () => clearTimeout(timer)
+  }, [query])
+  const { data, error, loading } = useQueryLoad(
     () =>
       api.get<{ items: MaterialChoice[]; more: boolean }>(
-        `${base}choices/?kind=${kind}&q=${encodeURIComponent(search)}`,
+        `${base}choices/?kind=${kind}&q=${encodeURIComponent(query)}`,
       ),
-    [base, kind, search],
+    [base, kind, query],
+    open && query.length >= 2 && debounced === query,
   )
   return (
-    <div className="material-picker">
+    <div
+      className="material-picker member-picker"
+      onFocus={() => setOpen(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.stopPropagation()
+          setOpen(false)
+        }
+      }}
+    >
       <label>
         {t('Auswahl suchen')}
-        <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
-      </label>
-      <label>
-        {t('Auswählen')}
-        <select
-          value=""
+        <input
+          type="search"
+          value={search}
           onChange={(e) => {
-            const choice = data?.items.find((r) => r.id === Number(e.target.value))
-            if (choice) onSelect(choice)
+            setSearch(e.target.value)
+            setOpen(true)
           }}
-        >
-          <option value="">{t('Bitte wählen')}</option>
-          {data?.items.map((r) => (
-            <option value={r.id} key={r.id}>
-              {r.title}
-              {r.starts_at
-                ? ` · ${new Date(r.starts_at).toLocaleDateString(locale(), { timeZone: 'Europe/Berlin' })}`
-                : ''}
-            </option>
-          ))}
-        </select>
+        />
       </label>
+      {open && query && (
+        <small className="muted" role="status">
+          {query.length < 2
+            ? t('Mindestens 2 Zeichen eingeben.')
+            : loading || debounced !== query
+              ? t('Suche läuft …')
+              : data?.items.length === 0
+                ? t('Keine passenden Einträge gefunden.')
+                : data
+                  ? t('{n} Treffer', { n: data.items.length })
+                  : ''}
+        </small>
+      )}
+      {!!data?.items.length && (
+        <ul className="picker-results material-picker-results" aria-label={t('Suchergebnisse')}>
+          {data.items.map((choice) => (
+            <li key={choice.id}>
+              <button
+                className="button button-ghost"
+                type="button"
+                onClick={() => {
+                  onSelect(choice)
+                  setSearch('')
+                  setOpen(false)
+                }}
+              >
+                {choice.title}
+                {choice.starts_at && (
+                  <span className="muted">
+                    {new Date(choice.starts_at).toLocaleDateString(locale(), {
+                      timeZone: 'Europe/Berlin',
+                    })}
+                  </span>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
       {data?.more && <p>{t('Bitte die Suche eingrenzen.')}</p>}
       {error && <p role="alert">{error}</p>}
     </div>
@@ -272,7 +323,7 @@ function ItemForm({
     title: item?.title ?? '',
     description: item?.description ?? '',
     purpose: item?.purpose ?? '',
-    location_kind: item?.location_kind === 'member' ? 'member' : 'address',
+    location_kind: item ? (item.location_kind === 'member' ? 'member' : 'address') : 'member',
     member: item?.member ?? null,
     address: item?.address ?? {
       name: '',
@@ -337,141 +388,164 @@ function ItemForm({
         }}
       >
         <fieldset disabled={busy}>
-          <label>
-            {t('Bezeichnung')}
-            <input
-              required
-              maxLength={200}
-              value={values.title}
-              onChange={(e) => setValues({ ...values, title: e.target.value })}
-            />
-          </label>
-          <label>
-            {t('Kurzbeschreibung')}
-            <textarea
-              required
-              maxLength={2000}
-              value={values.description}
-              onChange={(e) => setValues({ ...values, description: e.target.value })}
-            />
-          </label>
-          <label>
-            {t('Verwendungszweck')}
-            <textarea
-              required={!item?.events?.length && !event}
-              maxLength={2000}
-              value={values.purpose}
-              onChange={(e) => setValues({ ...values, purpose: e.target.value })}
-            />
-          </label>
-          {!item && (
-            <details>
-              <summary>{t('Termin statt freiem Verwendungszweck')}</summary>
-              {event && (
-                <p>
-                  {event.title}{' '}
-                  <button type="button" onClick={() => setEvent(null)}>
-                    {t('Entfernen')}
-                  </button>
+          <fieldset className="material-form-section">
+            <legend>{t('Grunddaten')}</legend>
+            <div className="material-basic-grid">
+              <label>
+                {t('Bezeichnung')}
+                <input
+                  required
+                  maxLength={200}
+                  value={values.title}
+                  onChange={(e) => setValues({ ...values, title: e.target.value })}
+                />
+              </label>
+              <label>
+                {t('Kurzbeschreibung')}
+                <textarea
+                  required
+                  maxLength={2000}
+                  value={values.description}
+                  onChange={(e) => setValues({ ...values, description: e.target.value })}
+                />
+              </label>
+              <label>
+                {t('Verwendungszweck')}
+                <textarea
+                  required={!item?.events?.length && !event}
+                  maxLength={2000}
+                  value={values.purpose}
+                  onChange={(e) => setValues({ ...values, purpose: e.target.value })}
+                />
+              </label>
+            </div>
+            {!item && (
+              <details>
+                <summary>{t('Termin statt freiem Verwendungszweck')}</summary>
+                {event && (
+                  <p className="material-selection">
+                    <span>{event.title}</span>
+                    <button
+                      className="button button-ghost"
+                      type="button"
+                      onClick={() => setEvent(null)}
+                    >
+                      {t('Entfernen')}
+                    </button>
+                  </p>
+                )}
+                <MaterialPicker base={base} kind="event" onSelect={setEvent} />
+              </details>
+            )}
+          </fieldset>
+          <fieldset className="material-form-section">
+            <legend>{t('Standort')}</legend>
+            <label>
+              {t('Standort')}
+              <select
+                value={values.location_kind}
+                onChange={(e) => setValues({ ...values, location_kind: e.target.value })}
+              >
+                <option value="address">{t('An einer Adresse')}</option>
+                <option value="member">{t('Bei einem Mitglied')}</option>
+              </select>
+            </label>
+            {values.location_kind === 'member' ? (
+              <>
+                <p>{memberName || t('Bitte ein Mitglied wählen.')}</p>
+                <MaterialPicker
+                  base={base}
+                  kind="member"
+                  onSelect={(m) => {
+                    setMemberName(m.title)
+                    setValues({ ...values, member: m.id })
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                <p className="muted">
+                  {t('Diese Adresse ist für Personen mit Materialleserecht sichtbar.')}
                 </p>
-              )}
-              <MaterialPicker base={base} kind="event" onSelect={setEvent} />
-            </details>
-          )}
-          <label>
-            {t('Standort')}
-            <select
-              value={values.location_kind}
-              onChange={(e) => setValues({ ...values, location_kind: e.target.value })}
-            >
-              <option value="address">{t('An einer Adresse')}</option>
-              <option value="member">{t('Bei einem Mitglied')}</option>
-            </select>
-          </label>
-          {values.location_kind === 'member' ? (
-            <>
-              <p>{memberName || t('Bitte ein Mitglied wählen.')}</p>
-              <MaterialPicker
-                base={base}
-                kind="member"
-                onSelect={(m) => {
-                  setMemberName(m.title)
-                  setValues({ ...values, member: m.id })
-                }}
+                <div className="material-address-grid">
+                  {(['name', 'street', 'postal_code', 'city', 'country'] as const).map(
+                    (key, index) => (
+                      <label
+                        key={key}
+                        className={['postal_code', 'city'].includes(key) ? '' : 'material-wide'}
+                      >
+                        {
+                          [
+                            t('Lagerortbezeichnung'),
+                            t('Straße und Hausnummer'),
+                            t('Postleitzahl'),
+                            t('Ort'),
+                            t('Land'),
+                          ][index]
+                        }
+                        <input
+                          required={key !== 'name'}
+                          maxLength={300}
+                          value={values.address[key] ?? ''}
+                          onChange={(e) =>
+                            setValues({
+                              ...values,
+                              address: { ...values.address, [key]: e.target.value },
+                            })
+                          }
+                        />
+                      </label>
+                    ),
+                  )}
+                </div>
+              </>
+            )}
+            <label>
+              {t('Standortzusatz')}
+              <input
+                maxLength={300}
+                value={values.location_note}
+                onChange={(e) => setValues({ ...values, location_note: e.target.value })}
               />
-            </>
-          ) : (
-            <>
-              <p className="muted">
-                {t('Diese Adresse ist für Personen mit Materialleserecht sichtbar.')}
-              </p>
-              {(['name', 'street', 'postal_code', 'city', 'country'] as const).map((key, index) => (
-                <label key={key}>
-                  {
-                    [
-                      t('Lagerortbezeichnung'),
-                      t('Straße und Hausnummer'),
-                      t('Postleitzahl'),
-                      t('Ort'),
-                      t('Land'),
-                    ][index]
-                  }
-                  <input
-                    required={key !== 'name'}
-                    maxLength={300}
-                    value={values.address[key] ?? ''}
-                    onChange={(e) =>
-                      setValues({
-                        ...values,
-                        address: { ...values.address, [key]: e.target.value },
-                      })
-                    }
-                  />
-                </label>
-              ))}
-            </>
-          )}
-          <label>
-            {t('Standortzusatz')}
-            <input
-              maxLength={300}
-              value={values.location_note}
-              onChange={(e) => setValues({ ...values, location_note: e.target.value })}
-            />
-          </label>
-          <label>
-            {t('Zustand')}
-            <select
-              value={values.condition}
-              onChange={(e) =>
-                setValues({ ...values, condition: e.target.value as Material['condition'] })
-              }
-            >
-              {['ready', 'limited', 'defective', 'retired'].map((v) => (
-                <option key={v} value={v}>
-                  {conditionLabel(v)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t('Zustandshinweis')}
-            <input
-              maxLength={500}
-              value={values.condition_note}
-              onChange={(e) => setValues({ ...values, condition_note: e.target.value })}
-            />
-          </label>
+            </label>
+          </fieldset>
+          <fieldset className="material-form-section">
+            <legend>{t('Zustand')}</legend>
+            <label>
+              {t('Zustand')}
+              <select
+                value={values.condition}
+                onChange={(e) =>
+                  setValues({ ...values, condition: e.target.value as Material['condition'] })
+                }
+              >
+                {['ready', 'limited', 'defective', 'retired'].map((v) => (
+                  <option key={v} value={v}>
+                    {conditionLabel(v)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              {t('Zustandshinweis')}
+              <input
+                maxLength={500}
+                value={values.condition_note}
+                onChange={(e) => setValues({ ...values, condition_note: e.target.value })}
+              />
+            </label>
+          </fieldset>
         </fieldset>
         {values.condition === 'retired' && (
           <p>{t('Bitte offene Aufgaben und kommende Verwendungen vor dem Aussondern klären.')}</p>
         )}
         {error && <p role="alert">{error}</p>}
         <div className="button-row">
-          <button className="button" disabled={busy}>
+          <button className="button button-primary" disabled={busy}>
             {t('Speichern')}
           </button>
           <button
+            className="button button-ghost"
             type="button"
             disabled={busy}
             onClick={() => {
@@ -580,6 +654,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
               </p>
               {data.photo_url && (
                 <button
+                  className="button button-ghost"
                   disabled={busy}
                   onClick={() =>
                     void act(() =>
@@ -616,6 +691,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
             </div>
             {editable && !trash && (
               <button
+                className="button button-ghost"
                 disabled={busy}
                 onClick={() =>
                   void act(() =>
@@ -673,6 +749,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
               </a>
               {editable && !trash && (
                 <button
+                  className="button button-ghost"
                   disabled={busy}
                   onClick={() =>
                     void act(() =>
@@ -715,6 +792,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
         <div className="button-row">
           {trash ? (
             <button
+              className="button button-ghost"
               disabled={busy}
               onClick={() =>
                 void act(async () => {
@@ -727,6 +805,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
             </button>
           ) : (
             <button
+              className="button button-ghost"
               disabled={busy}
               onClick={() =>
                 void act(async () => {
@@ -827,6 +906,7 @@ function EventEditor({
               <input maxLength={300} value={note} onChange={(e) => setNote(e.target.value)} />
             </label>
             <button
+              className="button button-ghost"
               type="button"
               disabled={busy || (['occurrence', 'exclude'].includes(kind) && !original)}
               onClick={() =>
@@ -894,6 +974,7 @@ function History({
           </span>
           {index === 0 && row.can_undo && editable && (
             <button
+              className="button button-ghost"
               disabled={busy}
               onClick={() =>
                 void act(async () => {
