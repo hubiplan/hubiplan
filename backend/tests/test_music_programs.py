@@ -217,8 +217,8 @@ def test_personal_notes_follow_effective_program_and_live_permissions(
     download = f"/api/portal/{access.pk}/music/files/{links[1].pk}/"
     response = client.get(download)
     assert response.status_code == 200
-    response.close()
-    # Ein entfernen des einzigen relevanten Einzelprogramms widerruft auch den Direktlink.
+    assert b"".join(response.streaming_content) == b"Nur synthetische Noten"
+    # Entfernen des einzigen relevanten Einzelprogramms widerruft auch den Direktlink.
     assert change(c, club, practice, focus="Nur Rhythmus").status_code == 200
     assert client.get(download).status_code == 404
     assert (
