@@ -4,9 +4,27 @@ titel: Competitions
 bereich: wettbewerbe
 modul: competitions
 rechte: [competitions.manage, competitions.results]
-routen: [/wettbewerbe]
+routen: [/wettbewerbe, /wettbewerbe/statistik]
 stichworte: [shooting, bird shooting, ranking, shoot-off, result]
 ---
+
+## Statistics
+
+Open **Competitions › Statistics** for participation, achievements and performance across
+all members. Select a member for their personal statistics. The same view is available in
+the member file under **Competitions**. The member area shows only your own data under
+**My results**.
+
+Filter by year, competition type and scoring conditions. Average rings, rings per counted
+shot and best results refer to the same recorded conditions. Different conditions have
+separate averages; select a row to see the corresponding progress. Averages include the
+number of valid results. The overall view also shows the equally weighted average of
+personal member averages.
+
+Only final results count. Missing values are not zero. Each person counts once per
+competition; wins and podium finishes count per individual standing. Team achievements
+are not counted as personal wins. Chart values are also available as a table. Expand
+**All starts and awards** to see ongoing competitions as well.
 
 Here you set up your own shooting competitions with individual and team scoring, record results and decide ties in a shoot-off. Bird shooting with prizes and external competitions where you only enter your places also belong here. Provisional results only become fixed when marked final.
 
