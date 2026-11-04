@@ -222,19 +222,21 @@ def test_private_todo_and_document_permissions(material_setup, api):
 
 
 def test_common_tasks_require_current_source_confirmation(material_setup, monkeypatch):
+    from core.tenancy import rls_bypass
     from materials.models import MaterialTodoLink
     from todos import remote
     from todos.models import Todo
 
     org, user, client, base = material_setup
     item = create(client, base)
-    task = Todo.objects.create(
-        organization=org,
-        owner=user,
-        created_by=user,
-        title="Alter Titel",
-        remote_mode="common",
-    )
+    with rls_bypass():
+        task = Todo.objects.create(
+            organization=org,
+            owner=user,
+            created_by=user,
+            title="Alter Titel",
+            remote_mode="common",
+        )
     MaterialTodoLink.objects.create(organization=org, item_id=item["id"], todo=task)
     calls = []
 
