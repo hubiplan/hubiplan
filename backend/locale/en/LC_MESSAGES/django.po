@@ -5805,3 +5805,12 @@ msgstr "Music rehearsal in your member area"
 
 msgid "Im Mitgliederbereich liegt eine Probeneinteilung oder eine noch offene Rückmeldung für Sie vor: {link}"
 msgstr "A rehearsal assignment or pending response is waiting in your member area: {link}"
+
+msgid "Ausgegeben"
+msgstr "Checked out"
+
+msgid "Freie Exemplare"
+msgstr "Available copies"
+
+msgid "Bei Eingeteilten"
+msgstr "Held by assigned musicians"

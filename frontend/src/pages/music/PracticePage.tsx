@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave } from '../../components/leaveGuard.ts'
+import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
@@ -304,6 +305,24 @@ export function PracticePage() {
                 {t('Bearbeiten')}
               </button>
             )
+          )}
+          {canEdit && tab === 'items' && (
+            <button
+              className="button button-ghost"
+              onClick={async () => {
+                if (!(await confirmLeave()) || !(await confirmDialog(t('Eintrag entfernen?'))))
+                  return
+                try {
+                  await api.del(`${base}rehearsal-items/${r.id}/`)
+                  setSelected(null)
+                  await load.reload()
+                } catch (e) {
+                  setError(errorMessage(e))
+                }
+              }}
+            >
+              {t('Entfernen')}
+            </button>
           )}
         </article>
       ))}
