@@ -139,6 +139,8 @@ describe('Materialverwaltung', () => {
     await user.type(await screen.findByLabelText('Bezeichnung'), 'Beamer')
     await user.type(screen.getByLabelText('Kurzbeschreibung'), 'Im schwarzen Koffer')
     await user.type(screen.getByLabelText('Verwendungszweck'), 'Präsentationen')
+    expect(screen.getByLabelText('Standort')).toHaveValue('member')
+    await user.selectOptions(screen.getByLabelText('Standort'), 'address')
     await user.type(screen.getByLabelText('Straße und Hausnummer'), 'Musterweg 1')
     await user.type(screen.getByLabelText('Postleitzahl'), '12345')
     await user.type(screen.getByLabelText('Ort'), 'Musterstadt')

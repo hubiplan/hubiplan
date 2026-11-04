@@ -5347,5 +5347,7 @@
   "Eigenes Programm für diesen Termin": "Own programme for this occurrence",
   "Programm aus der Serienvorlage": "Programme from series template",
   "Noten für diesen Probentermin": "Sheet music for this rehearsal",
-  "Proben verwenden Kalendertermine und Terminserien. Programme und Schwerpunkte können je Einzeltermin abweichen. Rückmeldungen gelten für den jeweiligen Einzeltermin.": "Rehearsals use calendar events and series. Programmes and focus can differ for each occurrence. Responses apply to each occurrence."
+  "Proben verwenden Kalendertermine und Terminserien. Programme und Schwerpunkte können je Einzeltermin abweichen. Rückmeldungen gelten für den jeweiligen Einzeltermin.": "Rehearsals use calendar events and series. Programmes and focus can differ for each occurrence. Responses apply to each occurrence.",
+  "Keine passenden Einträge gefunden.": "No matching entries found.",
+  "Suchergebnisse": "Search results"
 }

@@ -14,9 +14,17 @@ Beschreibung oder Adresse. Über die Filter erreichst du ausgesonderte Teile und
 ![Materialübersicht mit Standort und Zustand](bild:material-liste)
 
 Mit Bearbeitungsrecht kannst du ein Teil anlegen. Erfasse Bezeichnung, Kurzbeschreibung,
-einen Verwendungszweck oder Termin sowie den Standort. Wähle ein zugängliches Mitglied
+einen Verwendungszweck oder Termin sowie den Standort. **Bei einem Mitglied** ist vorausgewählt.
+Wähle ein zugängliches Mitglied
 oder trage eine vollständige Adresse ein. Freie Adressen sehen alle Materialleser dieser Einheit.
 Speichere das Formular mit **Speichern**.
+
+Das Formular gliedert sich in Grunddaten, Standort und Zustand. Beschriftungen stehen über
+den Eingabefeldern. Bei der Auswahl von Mitgliedern, Terminen, Aufgaben oder Dokumenten
+gibst du mindestens zwei Zeichen in **Auswahl suchen** ein. Darunter klappt die Trefferliste
+auf; wähle den passenden Eintrag. Ein zusätzliches dauerhaftes Auswahlmenü entfällt.
+
+![Materialformular mit gegliederten Eingabefeldern](bild:material-formular)
 
 Auf der Detailseite kannst du ein **Materialfoto** hinzufügen, ersetzen oder entfernen.
 Erlaubt sind JPEG, PNG und WebP bis 10 MB. Bildmetadaten werden entfernt. Das Bild ist
