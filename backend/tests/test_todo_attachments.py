@@ -115,7 +115,8 @@ def test_anhang_papierkorb_wiederherstellen_und_endgueltig_loeschen(
     )
     assert restored.status_code == 200
     response = api(board_a).get(file_url)
-    response.close()
+    assert b"erfundener Anhang" in b"".join(response.streaming_content)
+    response.file_to_stream.close()
     with django_capture_on_commit_callbacks(execute=True):
         TodoAttachment.objects.filter(pk=attachment.pk).update(
             deleted_at=timezone.now() - datetime.timedelta(days=31)
