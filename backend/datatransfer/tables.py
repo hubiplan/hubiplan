@@ -57,6 +57,7 @@ MODULE_MODELS = (
     "documents.Folder",
     "documents.Document",
     "documents.DocumentVersion",
+    "todos.TodoAttachment",
     "members.HonoraryTitle",
     "members.HonoraryTitleAward",
     "honors.Dignity",
@@ -118,7 +119,13 @@ MODULE_MODELS = (
 PUBLIC_MODELS = {"statutes.statuteversion", "statutes.statutepublication"}
 # Die Dokumentenablage kommt im vollständigen Export und im Export einer Abteilung
 # mit, nicht aber im Dachverbands-Export der Vereine (dort nur die Satzung).
-DEPARTMENT_MODELS = {"documents.folder", "documents.document", "documents.documentversion"}
+DEPARTMENT_MODELS = {
+    "documents.folder",
+    "documents.document",
+    "documents.documentversion",
+    "todos.todo",
+    "todos.todoattachment",
+}
 # Mitgliederbezogene Tabellen: kommen mit, wenn die Mitgliedsdaten mitkommen
 # (nicht im Export einer Abteilung).
 MEMBER_MODELS = {
@@ -163,6 +170,7 @@ DEPARTMENT_IMPORT_MODELS = PUBLIC_MODELS | DEPARTMENT_MODELS
 # Zeilen, deren Verweis auf diese Spalte in der Datei fehlt, fallen beim Import weg
 # (z. B. Ehrungen des Dachverbands an Personen, deren Daten nicht exportiert wurden).
 DROP_IF_MISSING = {
+    "todos.todoattachment": "todo",
     "members.honorarytitleaward": "person",
     "events.eventresponse": "membership",
     # Empfänger in anderen Vereinen (Rundschreiben des Dachverbands) kommen nicht mit
@@ -307,7 +315,7 @@ def check_file(name: str, obj, content: bytes, path: str) -> None:
 
     from core.filecheck import sniff
 
-    if name == "documents.documentversion":
+    if name in {"documents.documentversion", "todos.todoattachment"}:
         from documents.services import ALLOWED_TYPES
 
         fname = getattr(obj, "name", "") or path
@@ -327,6 +335,16 @@ def check_file(name: str, obj, content: bytes, path: str) -> None:
                 gettext("Datei „{fname}“: Inhalt und Dateiendung passen nicht.").format(fname=fname)
             )
         obj.content_type = ctype
+        if name == "todos.todoattachment":
+            from documents.models import MAX_DOCUMENT_BYTES
+            from documents.services import check_budget
+
+            if len(content) > MAX_DOCUMENT_BYTES:
+                raise ValidationError(gettext("Die Datei ist größer als 20 MB."))
+            check_budget(obj.organization, len(content))
+            obj.size = len(content)
+            obj.kind = "file"
+            obj.document_id = None
         return
     hash_field = FILE_HASHES.get(name)
     if hash_field and getattr(obj, hash_field, ""):
@@ -502,6 +520,10 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
         from todos.exports import shared_rows
 
         qs = shared_rows(org, department)
+    elif label(model) == "todos.todoattachment":
+        from todos.exports import attachment_rows
+
+        qs = attachment_rows(org, department)
     if department is not None:
         qs = qs.filter(department=department)
     for obj in qs.order_by("pk"):
@@ -513,6 +535,12 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
                 row[f.name] = packer.add(getattr(obj, f.name), label(model).replace(".", "-"))
             else:
                 row[f.name] = _plain(getattr(obj, f.attname))
+        if label(model) == "todos.todoattachment" and obj.kind == "document":
+            from todos.attachments import document_for
+            from todos.exports import export_scope
+
+            if document_for(obj, export_scope(org, department)) is None:
+                row["document"] = None
         rows.append(row)
     return rows
 
@@ -696,7 +724,11 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                     getattr(obj, field_name).save(
                         path.rsplit("/", 1)[-1].split("-", 1)[-1], ContentFile(content), save=False
                     )
-            if any(f.name == "file" for f in fields) and not getattr(obj, "file", True):
+            if name == "todos.todoattachment" and obj.kind == "document":
+                obj.file = ""
+                if not obj.document_id:
+                    continue
+            elif any(f.name == "file" for f in fields) and not getattr(obj, "file", True):
                 continue  # Beleg ohne Datei (Export ohne Dateien) wird nicht angelegt
             validate_urls(obj)
             obj.save()

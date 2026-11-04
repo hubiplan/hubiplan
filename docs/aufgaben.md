@@ -73,3 +73,21 @@ Papierkorb wechseln. Beide Vorgaben sind aus. Die gemeinsame Vorgabe benötigt A
 und Rollenbearbeitungsrecht; Serienhistorie bleibt ausgenommen. Nach weiteren 30 Tagen
 erfolgt die endgültige Bereinigung. Private Aufgaben bleiben im Kontoprofil auch nach
 einem Rollenverlust exportierbar und endgültig löschbar.
+
+## Anhänge und Dokumentverweise
+
+Dateien verwenden den verschlüsselten privaten Speicher und dieselben Dateiarten,
+20-MB-Grenze und Upload-Virenprüfung wie Dokumente. Das gemeinsame Speicherbudget
+zählt auch private Aufgabenanhänge und deren Papierkorb mit. Eine Sperre der Einheit
+verhindert, dass parallele Uploads gemeinsam das Budget überschreiten.
+
+Jeder Abruf prüft die aktuelle Aufgabenfreigabe. Dokumentverweise prüfen zusätzlich
+die Ablagerechte; ohne Zugriff werden weder Titel noch Dokumentnummer ausgegeben.
+Entfernte Anhänge haben einen eigenen 30-Tage-Papierkorb. Endgültige Löschungen entfernen
+Dateien erst nach erfolgreichem Commit; eine zurückgerollte Löschung erhält die Datei.
+
+Der persönliche ZIP-Export enthält berechtigte Aufgaben, eigene Einstellungen und Dateien.
+Eigene private Dateien bleiben nach Rollenverlust exportierbar. Einheitsexporte enthalten
+nur berechtigte geteilte Aufgaben und deren eigene Dateien; der Import ordnet sie privat
+dem importierenden Konto zu und übernimmt keine fremden Freigaben oder Verantwortlichen.
+Dokumentnummern werden ausschließlich auf mitimportierte Dokumente umgesetzt.

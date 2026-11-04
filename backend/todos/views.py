@@ -4,12 +4,11 @@ import datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.db import transaction
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -276,61 +275,9 @@ class TodoPreferencesView(APIView):
 
 class PersonalExportView(APIView):
     def get(self, request):
-        with user_view(request.user.pk):
-            rows = list(
-                Todo.objects.filter(created_by=request.user, shared=False).values(
-                    "id",
-                    "title",
-                    "description",
-                    "due_date",
-                    "due_time",
-                    "status",
-                    "deleted_at",
-                    "shared",
-                    "organization_id",
-                    "department_id",
-                )
-            )
-        from access.permissions import organizations_for
-        from core.tenancy import tenant_context
-        from portal.services import department_contexts
+        from .exports import personal_export
 
-        with user_view(request.user.pk):
-            contexts = [(org.pk, None) for org, _ in organizations_for(request.user)]
-            contexts += [
-                (ctx.club.pk, ctx.department.pk)
-                for ctx in department_contexts(request.user).values()
-            ]
-        seen = {row["id"] for row in rows}
-        for org_id, dept_id in contexts:
-            with tenant_context(org_id, request.user.pk):
-                try:
-                    scope = scope_for(request.user, org_id, dept_id)
-                except (NotFound, PermissionDenied):
-                    continue
-                for todo in visible(request.user, scope).filter(shared=True):
-                    if todo.pk not in seen:
-                        rows.append(
-                            {
-                                key: getattr(todo, key)
-                                for key in (
-                                    "id",
-                                    "title",
-                                    "description",
-                                    "due_date",
-                                    "due_time",
-                                    "status",
-                                    "shared",
-                                    "deleted_at",
-                                    "organization_id",
-                                    "department_id",
-                                )
-                            }
-                        )
-                        seen.add(todo.pk)
-        response = JsonResponse({"tasks": rows})
-        response["Content-Disposition"] = 'attachment; filename="aufgaben.json"'
-        return response
+        return personal_export(request.user, request.query_params.get("files") == "1")
 
 
 class PersonalTaskDeleteView(APIView):

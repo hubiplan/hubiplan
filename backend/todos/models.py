@@ -6,6 +6,8 @@ from django.db.models import Q
 from django.utils import timezone as django_timezone
 
 from core.encfields import EncryptedCharField, EncryptedTextField
+from core.privatefiles import PrivateFileField
+from exchange.models import private_storage
 
 
 class Todo(models.Model):
@@ -232,3 +234,41 @@ class TodoCleanupSetting(models.Model):
 
     def __str__(self):
         return f"{self.organization_id}: {self.department_id or 0}"
+
+
+def attachment_path(instance, filename):
+    import uuid
+
+    return f"todos/{instance.organization_id}/{uuid.uuid4().hex}/{filename}"
+
+
+class TodoAttachment(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    department = models.ForeignKey(
+        "organizations.Department", on_delete=models.CASCADE, null=True, related_name="+"
+    )
+    todo = models.ForeignKey(Todo, on_delete=models.CASCADE, related_name="attachments")
+    kind = models.CharField(max_length=8, choices=[("file", "Datei"), ("document", "Dokument")])
+    file = PrivateFileField(storage=private_storage, upload_to=attachment_path, blank=True)
+    document = models.ForeignKey(
+        "documents.Document", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    name = EncryptedCharField(max_length=200, blank=True)
+    size = models.PositiveIntegerField(default=0)
+    content_type = models.CharField(max_length=100, blank=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    uploaded_at = models.DateTimeField(default=django_timezone.now)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=Q(kind="file", document__isnull=True) | Q(kind="document", file=""),
+                name="todo_attachment_kind",
+            )
+        ]
+
+    def __str__(self):
+        return self.name or str(self.pk)

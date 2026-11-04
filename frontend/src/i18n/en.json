@@ -4923,5 +4923,10 @@
   "Hier kannst du deine privaten Aufgaben auch nach dem Ende eines Zugangs exportieren oder endgültig löschen.": "Export or permanently delete your personal tasks here, even after your access to a unit ends.",
   "Per Mail an Aufgaben erinnern": "Send task reminders by email",
   "Per Push an Aufgaben erinnern": "Send task reminders by push notification",
-  "Eigene erledigte einmalige Aufgaben nach 12 Monaten in den Papierkorb verschieben": "Move my completed one-off personal tasks to the trash after 12 months"
+  "Eigene erledigte einmalige Aufgaben nach 12 Monaten in den Papierkorb verschieben": "Move my completed one-off personal tasks to the trash after 12 months",
+  "Dateien hochladen": "Upload files",
+  "Dateien hier ablegen oder auswählen. Höchstens 20 MB je Datei.": "Drop files here or select them. Maximum 20 MB per file.",
+  "Dokument verknüpfen": "Link document",
+  "Anhang-Papierkorb": "Attachment trash",
+  "Entfernte Anhänge bleiben 30 Tage wiederherstellbar.": "Removed attachments can be restored for 30 days."
 }

@@ -25,6 +25,7 @@ organizations_organization website_image media
 peering_remoteinvoice file private
 peering_remotestate file private
 statutes_statuteversion file private
+todos_todoattachment file private
 website_websiteimage file private
 website_websiteimage small private
 website_websiteimage original private

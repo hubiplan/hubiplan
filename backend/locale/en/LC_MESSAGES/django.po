@@ -5076,3 +5076,15 @@ msgid "überfällig seit {n} Tag"
 msgid_plural "überfällig seit {n} Tagen"
 msgstr[0] "overdue for {n} day"
 msgstr[1] "overdue for {n} days"
+
+msgid "Dokument ohne Zugriff"
+msgstr "Document without access"
+
+msgid "Anhänge werden im Anhang-Papierkorb wiederhergestellt."
+msgstr "Attachments are restored from the attachment trash."
+
+msgid "Bitte eine Datei oder ein Dokument wählen."
+msgstr "Please select a file or a document."
+
+msgid "Bitte den Papierkorbstatus angeben."
+msgstr "Please specify whether the attachment is in the trash."

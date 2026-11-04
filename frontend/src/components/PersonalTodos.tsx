@@ -36,7 +36,7 @@ export function PersonalTodos() {
           'Hier kannst du deine privaten Aufgaben auch nach dem Ende eines Zugangs exportieren oder endgültig löschen.',
         )}
       </p>
-      <a className="button button-ghost" href="/api/me/todos/export/">
+      <a className="button button-ghost" href="/api/me/todos/export/?files=1">
         {t('Eigene Aufgaben exportieren')}
       </a>
       {error && <LoadError message={error} onRetry={reload} />}
