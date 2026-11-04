@@ -12,9 +12,14 @@ def forwards(apps, schema_editor):
     for table in ("todos_todoremoteshare", "todos_todoremotetask"):
         schema_editor.execute(enable_rls_sql(table))
         schema_editor.execute(f"DROP POLICY tenant_isolation ON {table}")
-    owner = f"EXISTS (SELECT 1 FROM todos_todo t WHERE t.id = todo_id AND t.organization_id = {ORG} AND t.owner_id = {USER} AND NOT t.distributed)"
+    owner = f"EXISTS (SELECT 1 FROM todos_todo t WHERE t.id = todo_id AND t.organization_id = {ORG} AND t.owner_id = {USER} AND NOT t.distributed) AND EXISTS (SELECT 1 FROM peering_coupling c WHERE c.id = coupling_id AND c.local_unit_id = {ORG})"
     parent = f"organization_id = {ORG} AND EXISTS (SELECT 1 FROM todos_todo t WHERE t.id = todo_id)"
-    rules.policies(schema_editor, "todos_todoremoteshare", parent, f"({owner}) AND ({rules.scope_access(True)}) AND organization_id = {ORG}")
+    rules.policies(
+        schema_editor,
+        "todos_todoremoteshare",
+        parent,
+        f"({owner}) AND ({rules.scope_access(True)}) AND organization_id = {ORG}",
+    )
     inbox = f"organization_id = {ORG} AND ((todo_id IS NULL AND {rules.DEPT} IS NULL AND ({rules.scope_access(True)})) OR EXISTS (SELECT 1 FROM todos_todo t WHERE t.id = todo_id))"
     rules.policies(schema_editor, "todos_todoremotetask", inbox, "false")
     # Nur Beziehungsdaten, kein Inhalt. SECURITY DEFINER vermeidet eine Rekursion

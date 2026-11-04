@@ -54,7 +54,7 @@ def usable(coupling, outgoing=False):
 
 def selected(coupling, uid, *, complete=False):
     if not usable(coupling, outgoing=True):
-        raise services.Refused(403, "Aufgabenfreigabe nicht aktiv.")
+        raise services.Refused(403, gettext("Aufgabenfreigabe nicht aktiv."))
     share = (
         TodoRemoteShare.objects.filter(
             coupling=coupling, organization_id=coupling.local_unit_id, todo_id=uid, active=True
@@ -63,9 +63,9 @@ def selected(coupling, uid, *, complete=False):
         .first()
     )
     if share is None or share.todo.deleted_at or share.todo.withdrawn or not share.todo.shared:
-        raise services.Refused(404, "Aufgabe nicht verfügbar.")
+        raise services.Refused(404, gettext("Aufgabe nicht verfügbar."))
     if complete and (share.mode != "common" or not share.can_complete or share.todo.per_unit):
-        raise services.Refused(403, "Erledigung nicht freigegeben.")
+        raise services.Refused(403, gettext("Erledigung nicht freigegeben."))
     return share
 
 
@@ -150,7 +150,7 @@ class SnapshotInput(serializers.Serializer):
         check = TodoInput(data={key: attrs[key] for key in CENTRAL})
         check.is_valid(raise_exception=True)
         if attrs["due_time"] and not attrs["due_date"]:
-            raise serializers.ValidationError("Uhrzeit ohne Datum.")
+            raise serializers.ValidationError(gettext("Uhrzeit ohne Datum."))
         for f in attrs["files"]:
             if (
                 set(f) != {"id", "name", "size", "future"}
@@ -162,7 +162,7 @@ class SnapshotInput(serializers.Serializer):
                 or len(f["name"]) > 200
                 or type(f["future"]) is not bool
             ):
-                raise serializers.ValidationError("Ungültiger Aufgabendateieintrag.")
+                raise serializers.ValidationError(gettext("Ungültiger Aufgabendateieintrag."))
         if attrs.get("series") is not None:
             from .series_views import SeriesInput
 
@@ -173,17 +173,17 @@ class SnapshotInput(serializers.Serializer):
                 or not str(rule.get("uid", "")).isdigit()
                 or type(rule.get("active")) is not bool
             ):
-                raise serializers.ValidationError("Ungültige Serienregel.")
+                raise serializers.ValidationError(gettext("Ungültige Serienregel."))
             test = SeriesInput(
                 data={"version": 1, **{key: rule[key] for key in RULE if key in rule}}
             )
             test.is_valid(raise_exception=True)
             if "repeat" not in test.validated_data or rule.get("timezone") != attrs["timezone"]:
-                raise serializers.ValidationError("Ungültige Serienregel.")
+                raise serializers.ValidationError(gettext("Ungültige Serienregel."))
             from django.utils.dateparse import parse_date
 
             if not rule.get("anchor_date") or not parse_date(str(rule["anchor_date"])):
-                raise serializers.ValidationError("Ungültiger Serienanker.")
+                raise serializers.ValidationError(gettext("Ungültiger Serienanker."))
         return attrs
 
 
@@ -215,7 +215,7 @@ def _serialize(values):
 def apply(coupling, data):
     items = data.get("items", []) if data.get("level") else []
     if not isinstance(items, list) or len(items) > LIMIT:
-        raise serializers.ValidationError("Zu viele Verbundaufgaben.")
+        raise serializers.ValidationError(gettext("Zu viele Verbundaufgaben."))
     validated = SnapshotInput(data=items, many=True)
     validated.is_valid(raise_exception=True)
     with suppress(), rls_bypass():
@@ -393,11 +393,11 @@ def report_progress(sender, instance, raw=False, **kwargs):
 
 def receive_report(coupling, data):
     if not isinstance(data.get("uid"), str) or not data["uid"].isdigit() or len(data["uid"]) > 19:
-        raise services.Refused(400, "Ungültige Aufgabennummer.")
+        raise services.Refused(400, gettext("Ungültige Aufgabennummer."))
     with rls_bypass():
         share = selected(coupling, data.get("uid"))
         if share.mode != "copy":
-            raise services.Refused(403, "Keine Einzelkopie.")
+            raise services.Refused(403, gettext("Keine Einzelkopie."))
         check = ProgressInput(data=data.get("progress"))
         check.is_valid(raise_exception=True)
         row = _serialize(check.validated_data)
@@ -585,10 +585,10 @@ def complete_common(todo, user, status):
 def answer(coupling, payload):
     """Nur die von genau dieser Kopplung autorisierte Quelle; keine freie Objektabfrage."""
     if payload.get("kind") not in {"todo.read", "todo.complete", "todo.file"}:
-        raise services.Refused(400, "Unbekannte Aufgabenabfrage.")
+        raise services.Refused(400, gettext("Unbekannte Aufgabenabfrage."))
     uid = payload.get("uid")
     if not str(uid).isdigit() or len(str(uid)) > 19:
-        raise services.Refused(400, "Ungültige Aufgabennummer.")
+        raise services.Refused(400, gettext("Ungültige Aufgabennummer."))
     with transaction.atomic(), suppress(), rls_bypass():
         try:
             share = selected(coupling, uid, complete=payload["kind"] == "todo.complete")
@@ -604,7 +604,7 @@ def answer(coupling, payload):
                 "open",
                 "done",
             }:
-                raise services.Refused(400, "Ungültige Aufgabenänderung.")
+                raise services.Refused(400, gettext("Ungültige Aufgabenänderung."))
             if todo.series_id:
                 TodoSeries.objects.only("pk").select_for_update().get(pk=todo.series_id)
             todo = Todo.objects.select_for_update().get(pk=todo.pk)
@@ -636,16 +636,16 @@ def answer(coupling, payload):
 def file_chunk(share, payload):
     offset, aid = payload.get("offset"), payload.get("attachment")
     if type(offset) is not int or not 0 <= offset <= MAX_FILE or type(aid) is not int:
-        raise services.Refused(400, "Ungültiger Dateibereich.")
+        raise services.Refused(400, gettext("Ungültiger Dateibereich."))
     row = next((row for row in source_files(share) if row[0].pk == aid), None)
     if row is None:
-        raise services.Refused(404, "Datei nicht verfügbar.")
+        raise services.Refused(404, gettext("Datei nicht verfügbar."))
     attachment, file, name, size, _ = row
     if size > MAX_FILE or offset > size:
-        raise services.Refused(413, "Datei zu groß.")
+        raise services.Refused(413, gettext("Datei zu groß."))
     fingerprint = hashlib.sha256(f"{file.name}:{size}".encode()).hexdigest()
     if payload.get("fingerprint") not in (None, fingerprint):
-        raise services.Refused(409, "Dateistand geändert.")
+        raise services.Refused(409, gettext("Dateistand geändert."))
     from core.virenscan import release_ok
 
     release_ok(file, name, "Verbundaufgabe", fingerprint)

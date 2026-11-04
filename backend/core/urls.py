@@ -41,8 +41,8 @@ from statutes import views as statute_views
 from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
 from todos import portal as todo_portal
-from todos import remote_views as todo_remote
 from todos import reminder_views as todo_reminder_views
+from todos import remote_views as todo_remote
 from todos import series_views as todo_series_views
 from todos import views as todo_views
 from todos.event_links import EventChoicesView
