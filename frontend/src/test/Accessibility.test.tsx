@@ -7,13 +7,23 @@ import { AuthProvider } from '../auth/AuthContext.tsx'
 import { DataTable } from '../components/DataTable.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import { contrastRatio } from '../theme/contrast.ts'
-import { hoverColor, linkColor } from '../theme/theme.ts'
+import { buttonColors, hoverColor, linkColor, PAGE_BG } from '../theme/theme.ts'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
 
 const SESSION = 'GET /_allauth/browser/v1/auth/session'
 const loggedIn = () => ({ status: 200, body: { status: 200, data: { user: testUser } } })
 
 describe('Farben aus dem Vereins-Theme', () => {
+  it.each(['#ffffff', '#f5f6f4', '#f2f3f1', '#808080', '#ffd700', '#0e7c66', '#000000'])(
+    '%s: Aktionsknöpfe unterscheiden sich vom Seitenhintergrund und behalten lesbare Schrift',
+    (primary) => {
+      const colors = buttonColors(primary, '#ffffff')
+      for (const background of [colors.background, colors.hover]) {
+        expect(contrastRatio(background, PAGE_BG)).toBeGreaterThanOrEqual(1.35)
+        expect(contrastRatio(background, colors.foreground)).toBeGreaterThanOrEqual(4.5)
+      }
+    },
+  )
   it('dunkelt helle Primärfarben für Links ab, bis 4,5 : 1 erreicht sind', () => {
     const link = linkColor('#909090')
     expect(contrastRatio(link, '#ffffff')).toBeGreaterThanOrEqual(4.5)

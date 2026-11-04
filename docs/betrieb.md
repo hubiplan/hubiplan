@@ -328,10 +328,31 @@ weiterhin identifizierbar machen. Wer die laufende Anwendung samt Zugriff auf di
 Schlüssel übernimmt, kann auch die verschlüsselten Inhalte lesen.
 
 - **Schlüssel je Verein:** Jeder Verein (bzw. Dachverband, Plattform) hat einen eigenen
-  Datenschlüssel (AES-256-GCM). Untereinheiten nutzen den ihres Vereins. Die
+  aktiven Datenschlüssel (AES-256-GCM). Untereinheiten nutzen den ihres Vereins. Die
   Datenschlüssel liegen in der Tabelle `core_datakey`, verpackt mit dem Hauptschlüssel.
-  Wird ein Verein gelöscht, fällt sein Datenschlüssel weg und seine Dateien sind nicht
+  Mehrere Generationen je Schlüsselinhaber sind möglich; die Datenbank verhindert
+  zwei gleichzeitig aktive Schlüssel. Neue Schreibvorgänge verwenden ausschließlich
+  die aktive Generation. Fehlt sie bei vorhandenem Schlüsselbestand, bricht das
+  Schreiben ab, statt selbstständig eine Ersatzgeneration anzulegen.
+  Alte Werte und Dateien bleiben anhand ihrer gespeicherten Schlüsselnummer lesbar.
+  Der Cache hält nur Schlüsselmaterial nach Nummer; die aktive Nummer wird bei jeder
+  Auswahl aus der Datenbank gelesen. Das Lesen alter Daten aktiviert keinen alten
+  Schreibschlüssel. `DATA_KEY_CACHE_SECONDS` begrenzt weiterhin die Aufbewahrung des
+  entpackten Schlüsselmaterials (0: bis zum Prozessneustart), nicht die aktive Auswahl.
+  Wird ein Verein gelöscht, fallen alle seine Generationen weg und seine Dateien sind nicht
   mehr lesbar (in Backups erst, wenn die Backups mit dem Schlüssel abgelaufen sind).
+- **Vorbereitung des Datenschlüsselwechsels:** Migration `core.0033` übernimmt die
+  vorhandenen Schlüssel mit unveränderter Nummer und Verpackung als aktiv. Sie erzeugt
+  keine neue Generation und verschlüsselt keine Daten oder Dateien um. Ältere Fassungen
+  können mit diesem weiterhin unveränderten Ein-Generationen-Bestand arbeiten; Inserts
+  ohne `is_active` erhalten den Datenbank-Standardwert `true`. Sobald mehrere
+  Generationen genutzt werden, darf keine Fassung vor dieser Vorbereitung mehr
+  gestartet werden: Sie unterscheidet aktive und alte Schlüssel noch nicht. Ein
+  vollständiger Wechselbefehl samt Bestandsprüfung und abgesichertem Betriebsrückweg
+  folgt separat; Generationen bis dahin nicht manuell umschalten oder löschen.
+  Eine explizite Rückmigration von `core.0033` wird bei inaktiven oder mehreren
+  Schlüsseln je Inhaber vor jeder Schemaänderung abgewiesen. Für den unveränderten
+  Ein-Generationen-Bestand bleibt sie möglich.
 - **Hauptschlüssel:** Datei `DATA_KEY_FILE` (Standard `/opt/hubiplan-geheim/datenschluessel`,
   UID 1000, Gruppe 70, Rechte 0440), als Docker-Secret nur in Backend, Worker, Beat und
   Backup. Er steht nicht in der `.env`. `deploy/server-setup.sh` legt ihn beim ersten

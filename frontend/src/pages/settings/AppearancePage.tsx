@@ -8,7 +8,7 @@ import { Alert, Checkbox, Field, SaveStatus, LoadError } from '../../components/
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { contrastRatio, readableOn } from '../../theme/contrast.ts'
-import { linkColor, PAGE_BG } from '../../theme/theme.ts'
+import { buttonColors, linkColor, PAGE_BG } from '../../theme/theme.ts'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
 import { t } from '../../i18n/index.ts'
@@ -44,6 +44,7 @@ function ThemeForm({
   const eff = theme.effective
   const primary = form.values.primary_color || eff.primary
   const accent = form.values.accent_color || eff.accent
+  const buttonPreview = buttonColors(primary, readableOn(primary))
 
   const auto = useAutoSave(form, (changes) => orgApi.updateTheme(orgId, changes), {
     enabled: editable,
@@ -106,7 +107,7 @@ function ThemeForm({
         <div className="theme-preview">
           <span
             className="preview-chip"
-            style={{ background: primary, color: readableOn(primary) }}
+            style={{ background: buttonPreview.background, color: buttonPreview.foreground }}
           >
             {t('Schaltfläche')}
           </span>
