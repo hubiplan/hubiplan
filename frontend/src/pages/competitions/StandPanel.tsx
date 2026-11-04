@@ -86,9 +86,7 @@ export function StandPanel({
   const searchRef = useRef<HTMLInputElement>(null)
   const pointsRef = useRef<HTMLInputElement>(null)
   const conditionsChanged =
-    comp.generation !== undefined &&
-    local.generation !== undefined &&
-    comp.generation !== local.generation
+    local.generation !== undefined && (comp.generation ?? 0) !== local.generation
   const closed = (local.status ?? comp.status) === 'endgueltig'
 
   const hits: Hit[] = useMemo(() => {
