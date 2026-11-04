@@ -4,7 +4,7 @@ import pytest
 from django.db import connection
 
 from access.catalog import PLATFORM_MANAGE, SWITCHABLE_MODULES
-from access.models import Role
+from access.models import Role, RoleAssignment
 from audit.models import AuditEntry
 from core.tenancy import get_rls
 from organizations.models import Organization
@@ -80,15 +80,17 @@ def test_platform_module_cycle_with_contact_role(orgs, platform_admin, api, org_
 def test_platform_update_scopes_validation_without_bypass(orgs, platform_admin, api, monkeypatch):
     org = orgs["a"]
     # Auch die gespeicherte Rolle bei derzeit eigenen Kontaktdaten wird validiert.
-    contact_role(org, Organization.ContactSource.OWN)
+    role = contact_role(org, Organization.ContactSource.OWN)
     contact_role(orgs["b"])
+    # Die eigene Plattformrolle bleibt unabhängig von der aktiven Organisation sichtbar.
+    own_roles = set(
+        RoleAssignment.objects.filter(user=platform_admin).values_list("role_id", flat=True)
+    )
     observed = []
     clean = Organization.clean
 
     def scoped_clean(instance):
-        observed.append(
-            (get_rls().bypass, set(Role.objects.values_list("organization_id", flat=True)))
-        )
+        observed.append((get_rls().bypass, set(Role.objects.values_list("pk", flat=True))))
         return clean(instance)
 
     monkeypatch.setattr(Organization, "clean", scoped_clean)
@@ -98,7 +100,7 @@ def test_platform_update_scopes_validation_without_bypass(orgs, platform_admin, 
             f"/api/platform/orgs/{org.pk}/", {"name": "Verein A 1900"}, content_type=JSON
         )
         assert response.status_code == 200, response.content
-    assert observed == [(False, {org.pk})]
+    assert observed == [(False, {role.pk} | own_roles)]
     org.refresh_from_db()
     assert org.name == "Verein A 1900"
 
