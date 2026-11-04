@@ -24,6 +24,10 @@ Record required player counts per instrument and part, then assign musicians wit
 
 Members can accept or decline their assignments under **My area**. Music administrators record guest responses. Calendar cancellations remain visible. Calendar access restrictions also apply to performance administration.
 
+Active members with enabled member access receive neutral outbox notices for new performance assignments, changes to dates, meeting details, instrumentation positions or programmes, and cancellations. The background service checks every five minutes and combines intermediate changes. Messages contain only the member-area link. Existing assignments do not generate another initial invitation when the feature is introduced. Guests without access do not receive automatic notices in this stage.
+
+For each performance, **Reminder days before (0 = off)** sets the reminder window for pending responses (0 to 30 days, default 3). It uses the earliest meeting, setup or performance time. Each current information version receives at most one reminder, no earlier than one day after an invitation or change. Accepted or declined assignments and past or cancelled performances are not reminded. Failed deliveries are retried; failed attempts remain visible in the outbox.
+
 ## Instrumentation templates and batch assignment
 
 Under **Instrumentation templates**, use **Create template** to store instruments, parts and required player counts. Each part may appear only once. Clear **Active** to archive a template. Editing requires music editing permission; read-only users can view templates.

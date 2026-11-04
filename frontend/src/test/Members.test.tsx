@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -251,6 +251,132 @@ const detail = {
 }
 
 describe('Mitgliedsakte', () => {
+  const department = {
+    id: 21,
+    department: 4,
+    department_name: 'HFC',
+    valid_from: '2015-03-01',
+    valid_until: '2020-12-31' as string | null,
+  }
+  const editName = 'Mitgliedschaft in HFC bearbeiten'
+  const departmentUrl = `${base}/members/11/departments/21/`
+
+  it.each([['2020-12-31'], [null]])(
+    'korrigiert Beginn und Ende einer Zugmitgliedschaft (bisheriges Ende: %s)',
+    async (valid_until) => {
+      let membership = { ...department, valid_until }
+      const calls = fakeApi({
+        ...common(),
+        [`GET ${base}/members/11/`]: () => ({
+          status: 200,
+          body: { ...detail, departments: [membership] },
+        }),
+        [`PATCH ${departmentUrl}`]: (init) => {
+          membership = { ...membership, ...JSON.parse(String(init?.body)) }
+          return { status: 200, body: membership }
+        },
+      })
+      const user = userEvent.setup()
+      renderAt('/mitglieder/11?bereich=mitgliedschaft')
+      await user.click(await screen.findByRole('button', { name: editName }))
+      const form = within(screen.getByRole('form', { name: editName }))
+      expect(form.getByLabelText('Beginn')).toHaveValue('2015-03-01')
+      expect(form.getByLabelText('Ende')).toHaveValue(valid_until ?? '')
+      fireEvent.change(form.getByLabelText('Beginn'), { target: { value: '2014-01-01' } })
+      fireEvent.change(form.getByLabelText('Ende'), { target: { value: '2021-12-31' } })
+      await user.click(form.getByRole('button', { name: 'Speichern' }))
+      await waitFor(() => expect(screen.queryByRole('form', { name: editName })).toBeNull())
+      const patch = calls.find((c) => c.key === `PATCH ${departmentUrl}`)!
+      expect(JSON.parse(String(patch.init?.body))).toEqual({
+        valid_from: '2014-01-01',
+        valid_until: '2021-12-31',
+      })
+      // Die Akte wurde neu geladen; erneutes Öffnen zeigt die gespeicherte Korrektur.
+      await user.click(screen.getByRole('button', { name: editName }))
+      expect(screen.getByLabelText('Beginn')).toHaveValue('2014-01-01')
+      expect(screen.getByLabelText('Ende')).toHaveValue('2021-12-31')
+    },
+  )
+
+  it('behält Eingaben bei Überschneidungen und kann ein Ende wieder entfernen', async () => {
+    let reject = true
+    let membership = { ...department }
+    const calls = fakeApi({
+      ...common(),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: { ...detail, departments: [membership] },
+      }),
+      [`PATCH ${departmentUrl}`]: (init) => {
+        if (reject) {
+          return {
+            status: 400,
+            body: { non_field_errors: ['Ein Mitglied darf nur einem Zug gleichzeitig angehören.'] },
+          }
+        }
+        membership = { ...membership, ...JSON.parse(String(init?.body)) }
+        return { status: 200, body: membership }
+      },
+    })
+    const user = userEvent.setup()
+    renderAt('/mitglieder/11?bereich=mitgliedschaft')
+    await user.click(await screen.findByRole('button', { name: editName }))
+    fireEvent.change(screen.getByLabelText('Beginn'), { target: { value: '2014-01-01' } })
+    await user.clear(screen.getByLabelText('Ende'))
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Ein Mitglied darf nur einem Zug gleichzeitig angehören.',
+    )
+    expect(screen.getByLabelText('Beginn')).toHaveValue('2014-01-01')
+    expect(screen.getByLabelText('Ende')).toHaveValue('')
+    reject = false
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+    await waitFor(() => expect(screen.queryByRole('form', { name: editName })).toBeNull())
+    const patch = calls.filter((c) => c.key === `PATCH ${departmentUrl}`).at(-1)!
+    expect(JSON.parse(String(patch.init?.body))).toEqual({
+      valid_from: '2014-01-01',
+      valid_until: null,
+    })
+  })
+
+  it('fragt beim Abbrechen einer Korrektur vor dem Verwerfen und speichert nichts', async () => {
+    const calls = fakeApi({
+      ...common(),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: { ...detail, departments: [department] },
+      }),
+    })
+    const user = userEvent.setup()
+    renderAt('/mitglieder/11?bereich=mitgliedschaft')
+    await user.click(await screen.findByRole('button', { name: editName }))
+    fireEvent.change(screen.getByLabelText('Beginn'), { target: { value: '2014-01-01' } })
+    await user.click(screen.getByRole('button', { name: 'Abbrechen' }))
+    const dialog = await screen.findByRole('alertdialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Verwerfen' }))
+    expect(screen.queryByRole('form', { name: editName })).not.toBeInTheDocument()
+    expect(calls.some((c) => c.key.startsWith('PATCH '))).toBe(false)
+    await user.click(screen.getByRole('button', { name: editName }))
+    expect(screen.getByLabelText('Beginn')).toHaveValue(department.valid_from)
+  })
+
+  it('bietet die Zeitkorrektur nur mit Mitgliederschreibrecht an', async () => {
+    fakeApi({
+      ...common(),
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ permissions: ['members.view'] })],
+      }),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: { ...detail, departments: [department] },
+      }),
+    })
+    renderAt('/mitglieder/11?bereich=mitgliedschaft')
+    await screen.findByText('HFC')
+    expect(screen.queryByRole('button', { name: editName })).not.toBeInTheDocument()
+  })
+
   it('fern geführt: Stammdaten gesperrt, Korrektur vorschlagen', async () => {
     const calls = fakeApi({
       ...common(),

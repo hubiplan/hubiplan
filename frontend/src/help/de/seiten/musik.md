@@ -24,6 +24,10 @@ Unter **Sollbesetzung** je Instrument und Stimme eine benötigte Anzahl festlege
 
 Mitglieder sehen ihre Einteilungen unter **Mein Bereich** und können zu- oder absagen. Die Musikverwaltung erfasst Rückmeldungen von Gästen. Kalenderabsagen bleiben beim Auftritt sichtbar. Technische Freigaben des Kalenders gelten auch für die Auftrittsverwaltung.
 
+Aktive Mitglieder mit freigeschaltetem Mitgliederzugang erhalten über die Ausgangspost neutrale Hinweise auf neue Auftrittseinteilungen, Änderungen an Termin, Treffpunkt, Besetzungsposition oder Programm sowie Absagen. Der Hintergrunddienst prüft alle fünf Minuten und bündelt zwischenzeitliche Änderungen. Die Nachricht enthält nur den Link zum Mitgliederbereich. Bereits bestehende Einteilungen lösen bei Einführung keine erneute Einladung aus. Gäste ohne Zugang erhalten in dieser Ausbaustufe keine automatische Nachricht.
+
+Beim Auftritt legt **Erinnerung Tage vorher (0 = aus)** den Zeitraum für eine Erinnerung an offene Rückmeldungen fest (0 bis 30 Tage, Standard 3). Maßgeblich ist die früheste Treff-, Aufbau- oder Spielzeit. Es gibt je aktuellem Informationsstand höchstens eine Erinnerung, frühestens einen Tag nach einer neuen Einladung oder Änderung. Zusagen, Absagen und vergangene oder abgesagte Auftritte werden nicht erinnert. Versandfehler werden erneut versucht; der Postausgang zeigt fehlgeschlagene Versuche.
+
 ## Besetzungsvorlagen und Sammeleinteilung
 
 Unter **Besetzungsvorlagen** mit **Vorlage anlegen** Instrumente, Register/Stimmen und Sollzahlen speichern. Jede Stimme darf nur einmal vorkommen. Nicht mehr benötigte Vorlagen mit **Aktiv** ausschalten. Bearbeiten benötigt Musikbearbeitungsrecht; Lesezugänge können Vorlagen ansehen.
