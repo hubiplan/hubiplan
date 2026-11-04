@@ -361,6 +361,9 @@ def build(org, year: int):
         tables.append(t)
 
         tables += _billing_tables(org, start, end, add, add_file)
+        from billing.einvoice_retention import export_table
+
+        tables.append(export_table(org, start, end, add_file))
         tables += _donation_tables(org, start, end, add_file)
         tables += _bank_tables(org, start, end, add_file)
         tables.append(_cash_count_table(org, start, end, add_file))

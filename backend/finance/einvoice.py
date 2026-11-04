@@ -14,6 +14,8 @@ import xml.etree.ElementTree as ET
 from decimal import Decimal, InvalidOperation
 from xml.sax.saxutils import escape
 
+from defusedxml import ElementTree as SafeET
+from defusedxml.common import DefusedXmlException
 from django.utils.translation import gettext
 
 MAX_XML = 5 * 1024 * 1024
@@ -48,7 +50,8 @@ def _text(node, *names) -> str:
 def _amount(node, *names) -> Decimal | None:
     raw = _text(node, *names)
     try:
-        return Decimal(raw) if raw else None
+        value = Decimal(raw) if raw else None
+        return value if value is None or value.is_finite() else None
     except InvalidOperation:
         return None
 
@@ -72,8 +75,8 @@ def _root(data: bytes):
             gettext("Die Datei enthält eine DTD und wird aus Sicherheitsgründen abgelehnt.")
         )
     try:
-        return ET.fromstring(data)  # noqa: S314 - DTD/Entitäten oben abgewiesen
-    except ET.ParseError:
+        return SafeET.fromstring(data, forbid_dtd=True)
+    except (ET.ParseError, DefusedXmlException):
         raise EInvoiceError(gettext("Die Datei ist kein gültiges XML.")) from None
 
 
@@ -175,7 +178,9 @@ def _cii(root) -> dict:
         "net": _amount(totals, "TaxBasisTotalAmount"),
         "tax": _amount(totals, "TaxTotalAmount"),
         "gross": _amount(totals, "GrandTotalAmount"),
-        "payable": _amount(totals, "DuePayableAmount") or _amount(totals, "GrandTotalAmount"),
+        "payable": _amount(totals, "DuePayableAmount")
+        if _amount(totals, "DuePayableAmount") is not None
+        else _amount(totals, "GrandTotalAmount"),
         "iban": iban,
         "buyer_reference": _text(agreement, "BuyerReference"),
         "lines": lines,

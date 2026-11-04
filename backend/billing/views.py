@@ -320,13 +320,23 @@ def send_invoice(invoice: Invoice) -> bool:
             f"Im Mitgliederbereich sehen Sie Ihre Rechnungen jederzeit: {settings.FRONTEND_URL}\n\n"
         )
     body += f"Viele Grüße\n{org.name}\n"
+    attachments = [(pdf.filename(invoice), archived_pdf(invoice), "application/pdf")]
+    if invoice.electronic_data:
+        from .einvoice_services import read_artifact
+
+        try:
+            attachments.insert(
+                0, (f"{invoice.display_number}.xml", read_artifact(invoice), "application/xml")
+            )
+        except DjangoValidationError as exc:
+            raise _as_drf(exc) from exc
     sent = mail.send(
         invoice.recipient_email,
         f"Rechnung {invoice.display_number} – {org.name}",
         body,
         organization=org,
         kind="rechnung",
-        attachments=[(pdf.filename(invoice), archived_pdf(invoice), "application/pdf")],
+        attachments=attachments,
         reply_to=[org.contact_email] if org.contact_email else None,
         fail_silently=True,
     )
@@ -883,6 +893,10 @@ class InvoiceViewSet(BillingMixin, viewsets.ModelViewSet):
     @transaction.atomic
     def partial_update(self, request, org_id: int, pk: int):
         invoice = self._locked_object()
+        if invoice.electronic_data:
+            raise serializers.ValidationError(
+                gettext("Bitte E-Rechnungen im Bereich Leistungsrechnungen bearbeiten.")
+            )
         # Dieselbe Änderung erneut gesendet (Wiederholung nach Verbindungsabbruch)
         claim = idempotency.claim(request, f"billing.invoice.{invoice.pk}")
         if claim.done:

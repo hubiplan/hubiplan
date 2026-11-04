@@ -4,6 +4,7 @@ from rest_framework.routers import SimpleRouter
 from access import office_views
 from access import views as access_views
 from accounts import help_done, language, learning, self_service
+from billing import einvoice_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
 from cards import views as card_views
@@ -84,6 +85,13 @@ org_router.register(
 org_router.register("billing/age-rates", billing_views.AgeRateViewSet, basename="billing-age-rate")
 org_router.register("billing/runs", billing_views.FeeRunViewSet, basename="billing-run")
 org_router.register("billing/invoices", billing_views.InvoiceViewSet, basename="billing-invoice")
+org_router.register("billing/partners", einvoice_views.PartnerViewSet, basename="billing-partner")
+org_router.register(
+    "billing/electronic", einvoice_views.ElectronicInvoiceViewSet, basename="billing-electronic"
+)
+org_router.register(
+    "finance/incoming", einvoice_views.IncomingInvoiceViewSet, basename="finance-incoming"
+)
 org_router.register(
     "billing/dunning-levels", billing_views.DunningLevelViewSet, basename="billing-dunning-level"
 )

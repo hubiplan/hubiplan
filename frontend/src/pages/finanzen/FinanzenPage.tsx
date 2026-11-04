@@ -8,6 +8,9 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { DebitsPage, MandatesPage } from '../billing/DebitsPage.tsx'
 import { DunningsPage } from '../billing/DunningsPage.tsx'
 import { InvoicesPage } from '../billing/InvoicesPage.tsx'
+import { EInvoicesPage } from '../billing/EInvoicesPage.tsx'
+import { IncomingInvoicesPage } from '../billing/IncomingInvoicesPage.tsx'
+import { PartnersPage } from '../billing/PartnersPage.tsx'
 import { ReceivedPage } from '../billing/ReceivedPage.tsx'
 import { BillingSettingsPage, DunningLevelsPage, FeeRulesPage } from '../billing/RulesPage.tsx'
 import { RunsPage } from '../billing/RunsPage.tsx'
@@ -82,7 +85,17 @@ export function FinanzenPage() {
       />
       <Route
         path="rechnungen/*"
-        element={a.billing || a.received ? <InvoicesArea access={a} /> : home}
+        element={
+          a.billing || a.received || a.finance ? <InvoicesArea key={org.id} access={a} /> : home
+        }
+      />
+      <Route
+        path="geschaeftspartner"
+        element={
+          <Section title={t('Geschäftspartner')}>
+            <PartnersPage key={org.id} canEdit={a.billingEdit || a.financeEdit} />
+          </Section>
+        }
       />
       <Route path="lastschrift/*" element={a.sepa ? <DebitsArea access={a} /> : home} />
       <Route
@@ -202,6 +215,12 @@ function InvoicesArea({ access: a }: { access: FinanceAccess }) {
         />
         {a.feeRuns && <Route path="beitragslaeufe" element={<RunsPage />} />}
         {a.billing && <Route path="mahnungen" element={<DunningsPage />} />}
+        {a.billing && (
+          <Route path="leistungen" element={<EInvoicesPage canEdit={a.billingEdit} />} />
+        )}
+        {a.finance && (
+          <Route path="eingang" element={<IncomingInvoicesPage canEdit={a.financeEdit} />} />
+        )}
         {a.received && <Route path="dachverband" element={<ReceivedPage />} />}
         <Route path="*" element={<Navigate to={tabs[0].to} replace />} />
       </Routes>

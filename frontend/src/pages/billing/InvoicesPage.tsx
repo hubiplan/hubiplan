@@ -2,7 +2,7 @@
 import { todayIso } from '../../api/members.ts'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useDetailParam } from '../../components/detailParam.ts'
 import { billingApi } from '../../api/billing.ts'
 import { ApiError, newRequestKey } from '../../api/client.ts'
@@ -565,9 +565,22 @@ function InvoiceDetail({
         </a>
         {canEdit && inv.status === 'draft' && (
           <>
-            <button type="button" className="button button-ghost" onClick={() => setEditing(true)}>
-              {t('Bearbeiten')}
-            </button>
+            {inv.electronic_data && Object.keys(inv.electronic_data).length > 0 ? (
+              <Link
+                className="button button-ghost"
+                to={`/finanzen/rechnungen/leistungen?rechnung=${inv.id}`}
+              >
+                {t('Leistungsrechnung bearbeiten')}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => setEditing(true)}
+              >
+                {t('Bearbeiten')}
+              </button>
+            )}
             <button
               type="button"
               className="button button-primary"

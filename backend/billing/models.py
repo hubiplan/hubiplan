@@ -21,12 +21,127 @@ from django.utils.translation import gettext, gettext_lazy
 from core.encfields import (
     EncryptedCharField,
     EncryptedEmailField,
+    EncryptedJSONField,
     EncryptedTextField,
 )
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
 
 ZERO = Decimal("0.00")
+
+
+class BusinessPartner(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    name = EncryptedCharField(max_length=200, strict=True)
+    is_customer = models.BooleanField(default=True)
+    is_supplier = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    # Ein Schema für Kunden, Lieferanten und die eingefrorenen Rechnungsanschriften.
+    details = EncryptedJSONField(default=dict, strict=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["pk"]
+
+    def __str__(self):
+        return self.name
+
+
+def electronic_file_path(instance, filename):
+    return f"erechnungen/{instance.organization_id}/{instance.pk}/{filename}"
+
+
+class InvoiceArtifact(models.Model):
+    """Original und Prüfnachweis einer ausgestellten Rechnung; nur einmal erzeugen."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    invoice = models.OneToOneField(
+        "billing.Invoice", on_delete=models.PROTECT, related_name="electronic_artifact"
+    )
+    xml = PrivateFileField(storage=private_storage, upload_to=electronic_file_path)
+    sha256 = models.CharField(max_length=64)
+    report = EncryptedJSONField(default=dict, strict=True)
+    report_xml = PrivateFileField(storage=private_storage, upload_to=electronic_file_path)
+    cancellation_xml = PrivateFileField(
+        storage=private_storage, upload_to=electronic_file_path, blank=True
+    )
+    cancellation_report_xml = PrivateFileField(
+        storage=private_storage, upload_to=electronic_file_path, blank=True
+    )
+    cancellation_report = EncryptedJSONField(default=dict, blank=True, strict=True)
+    cancellation_sha256 = models.CharField(max_length=64, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"E-Rechnung {self.invoice_id}"
+
+
+class IncomingInvoice(models.Model):
+    """Eingang bleibt auch bei fehlgeschlagener Prüfung im Original erhalten."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    original = PrivateFileField(storage=private_storage, upload_to=electronic_file_path)
+    xml = PrivateFileField(storage=private_storage, upload_to=electronic_file_path, blank=True)
+    report_xml = PrivateFileField(
+        storage=private_storage, upload_to=electronic_file_path, blank=True
+    )
+    name = EncryptedCharField(max_length=200, strict=True)
+    sha256 = models.CharField(max_length=64)
+    content_type = models.CharField(max_length=40)
+    data = EncryptedJSONField(default=dict, strict=True)
+    report = EncryptedJSONField(default=dict, strict=True)
+    status = models.CharField(
+        max_length=12,
+        default="review",
+        choices=[
+            ("review", gettext_lazy("Zu prüfen")),
+            ("approved", gettext_lazy("Freigegeben")),
+            ("rejected", gettext_lazy("Abgelehnt")),
+        ],
+    )
+    review_note = EncryptedCharField(max_length=2000, blank=True, strict=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    reviewed_at = models.DateTimeField(null=True)
+    booking = models.OneToOneField(
+        "finance.Booking",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="incoming_invoice",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "sha256"], name="eingangsrechnung_datei_einmal"
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class IncomingValidation(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    incoming = models.ForeignKey(
+        IncomingInvoice, on_delete=models.PROTECT, related_name="previous_checks"
+    )
+    report = EncryptedJSONField(default=dict, strict=True)
+    report_xml = PrivateFileField(
+        storage=private_storage, upload_to=electronic_file_path, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Prüfung {self.incoming_id} / {self.pk}"
 
 
 class Rhythm(models.TextChoices):
@@ -244,6 +359,7 @@ class Invoice(models.Model):
         MEMBER = "member", gettext_lazy("Mitglied")
         DEPARTMENT = "department", gettext_lazy("Abteilung")
         CLUB = "club", gettext_lazy("Verein")
+        PARTNER = "partner", gettext_lazy("Geschäftspartner")
         # Nach Ablauf der Aufbewahrungsfrist: ohne Bezug auf eine Person (Audit 02.11. BP-F03)
         ANONYMIZED = "anonymized", gettext_lazy("anonymisiert")
 
@@ -255,6 +371,18 @@ class Invoice(models.Model):
     number = models.PositiveIntegerField("Rechnungsnummer", null=True, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.DRAFT)
     recipient_kind = models.CharField(max_length=12, choices=Recipient.choices)
+    partner = models.ForeignKey(
+        "billing.BusinessPartner",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="invoices",
+    )
+    # Validierter, strukturierter Rechnungsinhalt. Leer bei bisherigen Beitragsrechnungen.
+    electronic_data = EncryptedJSONField(default=dict, blank=True, strict=True)
+    payment_category = models.ForeignKey(
+        "finance.Category", on_delete=models.PROTECT, null=True, blank=True, related_name="+"
+    )
     membership = models.ForeignKey(
         "members.Membership",
         on_delete=models.PROTECT,
@@ -331,6 +459,7 @@ class Invoice(models.Model):
                     models.Q(recipient_kind="member", membership__isnull=False)
                     | models.Q(recipient_kind="department", department__isnull=False)
                     | models.Q(recipient_kind="club", club__isnull=False)
+                    | models.Q(recipient_kind="partner", partner__isnull=False)
                     | models.Q(recipient_kind="anonymized", membership__isnull=True)
                 ),
                 name="rechnung_empfaenger",
@@ -363,6 +492,9 @@ class InvoiceLine(models.Model):
     text = EncryptedCharField("Text", max_length=200, strict=True)
     detail = EncryptedCharField("Zusatz", max_length=200, blank=True, strict=True)
     amount = models.DecimalField("Betrag", max_digits=10, decimal_places=2)
+    # Netto, Menge, Einheit und Steuerkategorie für Leistungsrechnungen; der bestehende
+    # Bruttobetrag bleibt für Kasse und alte Clients erhalten.
+    electronic_data = EncryptedJSONField(default=dict, blank=True, strict=True)
     # Beitragsposten: für welches Mitglied (auch in Sammelrechnungen)
     membership = models.ForeignKey(
         "members.Membership",
