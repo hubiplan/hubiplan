@@ -26,8 +26,8 @@ pytestmark = pytest.mark.django_db
 def repertoire(c, club, music):
     base, event = music
 
-    def create(kind, **values):
-        response = c.post(f"{base}/{kind}/", values, content_type=JSON)
+    def create(endpoint, **values):
+        response = c.post(f"{base}/{endpoint}/", values, content_type=JSON)
         assert response.status_code == 201, response.content
         return response.json()["id"]
 
