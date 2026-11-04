@@ -5,7 +5,7 @@ import { einvoiceApi } from '../../api/einvoices.ts'
 import type { CommercialInput, CommercialInvoice } from '../../api/einvoices.ts'
 import { euro } from '../../api/finance.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
-import { useDraftGuard } from '../../components/leaveGuard.ts'
+import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
@@ -227,7 +227,12 @@ export function SettlementPanel({
             <div className="actions">
               {c.status === 'draft' && (
                 <>
-                  <button className="button button-ghost" onClick={() => setEdit(c)}>
+                  <button
+                    className="button button-ghost"
+                    onClick={async () => {
+                      if (await confirmLeave()) setEdit(c)
+                    }}
+                  >
                     {t('Bearbeiten')}
                   </button>
                   <button
