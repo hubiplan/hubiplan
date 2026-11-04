@@ -23,6 +23,7 @@ from changes import idempotency
 from core.api_base import OrgScopedMixin
 from core.i18n import language_of
 from core.tenancy import rls_bypass, tenant_context
+from organizations.imprint import ensure as ensure_imprint
 from outbox import mail
 
 from .availability import Availability, ensure_performance, performance_interval
@@ -287,7 +288,7 @@ class GuestPerformanceView(NoStore, APIView):
                 {
                     "title": performance.event.title,
                     "organization": row.organization.name,
-                    "imprint_key": row.organization.imprint_key,
+                    "imprint_key": ensure_imprint(row.organization).public_key,
                     "starts_at": performance.event.starts_at,
                     "ends_at": performance.event.ends_at,
                     "location": performance.event.location,

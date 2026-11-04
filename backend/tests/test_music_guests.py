@@ -164,8 +164,9 @@ def test_admin_permissions_and_rls(c, api, guest, orgs):
     user = make_user("musik-leser@example.org")
     give_role(user, g.org, permissions=["music.view", "events.view"])
     assert api(user).get(g.url).status_code == 403
-    give_role(user, g.org, permissions=["music.edit"], name="Ohne Kalender")
-    assert api(user).get(g.url).status_code == 404
+    editor = make_user("musik-ohne-kalender@example.org")
+    give_role(editor, g.org, permissions=["music.view", "music.edit"], name="Ohne Kalender")
+    assert api(editor).get(g.url).status_code == 404
     assert g.client.get(g.url).status_code in [401, 403]
     assert g.client.get("/api/music/guest/").status_code == 404
     with as_app_role(), tenant_context(orgs["b"].pk):
@@ -238,3 +239,17 @@ def test_fallback_key_can_recover_existing_link(c, guest, settings):
     ):
         with tenant_context(g.org.pk):
             assert access_token(GuestAccess.objects.get(assignment=g.row)) == token
+
+
+@override_settings(EMAIL_BACKEND="outbox.backend.OutboxBackend", EMAIL_HOST="")
+def test_outbox_stores_no_usable_guest_credential(c, guest):
+    from outbox.models import OutgoingMail
+
+    g = guest
+    token = invited(c, g)
+    assert manage(c, g, "send").json()["sent"] is True
+    with tenant_context(g.org.pk):
+        message = OutgoingMail.objects.get(organization=g.org)
+        assert token not in message.body
+        assert "musik-gast#" in message.body
+        assert not message.attachments

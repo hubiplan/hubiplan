@@ -51,9 +51,16 @@ it('uses the fragment credential only as a bearer header without member cookies'
 })
 
 it('allows declining despite a conflict and hides revoked invitations', async () => {
+  let revoked = false
   const calls = fakeApi({
-    'GET /api/music/guest/': () => ({ status: 200, body: { ...row, availability: ['absence'] } }),
-    'POST /api/music/guest/': () => ({ status: 404, body: {} }),
+    'GET /api/music/guest/': () =>
+      revoked
+        ? { status: 404, body: {} }
+        : { status: 200, body: { ...row, availability: ['absence'] } },
+    'POST /api/music/guest/': () => {
+      revoked = true
+      return { status: 404, body: {} }
+    },
   })
   render(
     <MemoryRouter initialEntries={[`/musik-gast#${token}`]}>
@@ -63,6 +70,7 @@ it('allows declining despite a conflict and hides revoked invitations', async ()
   expect(await screen.findByRole('button', { name: 'Zusagen' })).toBeDisabled()
   await userEvent.click(screen.getByRole('button', { name: 'Absagen' }))
   await screen.findByText('Diese Einladung ist ungültig oder abgelaufen.')
+  expect(screen.queryByText('Musterkonzert')).not.toBeInTheDocument()
   expect(JSON.parse(String(calls.find((c) => c.key.startsWith('POST'))?.init?.body))).toEqual({
     status: 'declined',
   })
