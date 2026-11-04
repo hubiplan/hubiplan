@@ -50,6 +50,7 @@ const MODULES = [
   { id: 'events', label: t('Termine') },
   { id: 'website', label: t('Webseite') },
   { id: 'competitions', label: t('Wettbewerbe') },
+  { id: 'material', label: t('Material') },
   { id: 'entries', label: t('Meldungen') },
 ]
 

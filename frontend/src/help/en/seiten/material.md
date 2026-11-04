@@ -1,0 +1,35 @@
+---
+key: page.material
+titel: Manage equipment
+bereich: start
+modul: material
+rechte: [material.view]
+routen: [/material]
+stichworte: [Inventory, Equipment, Location, Photo, Image, Recurring events]
+---
+
+**Equipment** lists the items belonging to your active unit. Search by name, description
+or address. Use the filters to include retired items or open the recycle bin.
+
+![Equipment list with locations and condition](bild:material-liste)
+
+With editing permission, create an item with a name, short description, purpose or event,
+and location. Select an accessible member or enter a complete address. Everyone with
+equipment viewing permission in this unit can see manually entered addresses. Choose **Save**.
+
+On the detail page, add, replace or remove an **Equipment photo**. JPEG, PNG and WebP
+files up to 10 MB are accepted. Image metadata is removed. Viewing the image requires
+equipment access.
+
+Link multiple events, recurring series, tasks and documents. For a series, select the
+whole series, one occurrence or an exclusion. An occurrence is identified by its original
+start, even when rescheduled. If the recurrence rule changes, review and update its links.
+Upcoming uses describe demand; they are not binding reservations.
+
+Private tasks and inaccessible documents remain hidden. **Create a task for this item**
+opens the task form and links the item when saved. Completing a transport task does not
+change the location automatically: confirm the new location using **Edit**.
+
+Under **History**, undo your most recent change if current permissions and linked objects
+allow it. History and recycled items are retained for 30 days. Retiring an item preserves
+its links; resolve open tasks and future uses first.

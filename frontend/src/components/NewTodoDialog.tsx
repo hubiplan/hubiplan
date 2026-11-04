@@ -18,11 +18,13 @@ import { t } from '../i18n/index.ts'
 export function NewTodoDialog({
   base,
   initialEvent,
+  initialMaterial,
   onClose,
   onSaved,
 }: {
   base: string
   initialEvent?: number
+  initialMaterial?: number
   onClose: () => void
   onSaved: () => void
 }) {
@@ -94,7 +96,10 @@ export function NewTodoDialog({
           onBusy={setBusy}
           todo={task ?? undefined}
           initialEvent={initialEvent}
-          extraValues={canShare ? { shares, ...(foreign ? { per_unit: perUnit } : {}) } : undefined}
+          extraValues={{
+            ...(initialMaterial ? { material: initialMaterial } : {}),
+            ...(canShare ? { shares, ...(foreign ? { per_unit: perUnit } : {}) } : {}),
+          }}
           onCreated={setTask}
           onSaved={() => {
             if (task) void refresh()

@@ -1,5 +1,6 @@
 // Dokumente: Ablage der aktiven Organisation, Abteilung oder des Mitgliederbereichs.
 import { useState } from 'react'
+import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { PERM } from '../../api/orgs.ts'
@@ -658,6 +659,7 @@ function DocumentRow({ doc, folder, ...ctx }: FolderCtx & { doc: DocItem; folder
     <li>
       <div className="doc-main">
         <strong>{doc.title}</strong>
+        <MaterialReferences kind="document" id={doc.id} sourceBase={base} />
         {doc.date && <span className="muted"> · {formatDate(doc.date)}</span>}
         {doc.note && <div className="muted small">{doc.note}</div>}
         {current && (

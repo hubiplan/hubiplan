@@ -5223,3 +5223,267 @@ msgstr "File too large."
 
 msgid "Dateistand geändert."
 msgstr "File version changed."
+
+msgid "Postleitzahl"
+msgstr "Postcode"
+
+msgid "Bezeichnung"
+msgstr "Name"
+
+msgid "Adresse"
+msgstr "Address"
+
+msgid "Nach Änderungen der Terminregel müssen Materialzuordnungen geprüft werden."
+msgstr "Equipment links must be reviewed after changes to the recurrence rule."
+
+msgid "Material"
+msgstr "Equipment"
+
+msgid "Einsatzbereit"
+msgstr "Ready for use"
+
+msgid "Eingeschränkt nutzbar"
+msgstr "Limited use"
+
+msgid "Defekt"
+msgstr "Defective"
+
+msgid "Ausgesondert"
+msgstr "Retired"
+
+msgid "Standort prüfen"
+msgstr "Review location"
+
+msgid "Bei {name}"
+msgstr "With {name}"
+
+msgid "Bei einem Mitglied"
+msgstr "With a member"
+
+msgid "Material anlegen"
+msgstr "Add equipment"
+
+msgid "Alle"
+msgstr "All"
+
+msgid "Ausgesonderte anzeigen"
+msgstr "Include retired items"
+
+msgid "Nur Prüfhinweise"
+msgstr "Only items requiring review"
+
+msgid "Als CSV exportieren"
+msgstr "Export as CSV"
+
+msgid "Filter zurücksetzen"
+msgstr "Reset filters"
+
+msgid "Wird geladen…"
+msgstr "Loading…"
+
+msgid "Kein Material gefunden."
+msgstr "No equipment found."
+
+msgid "Auswahl suchen"
+msgstr "Search choices"
+
+msgid "Auswählen"
+msgstr "Select"
+
+msgid "Bitte die Suche eingrenzen."
+msgstr "Please narrow your search."
+
+msgid "Material bearbeiten"
+msgstr "Edit equipment"
+
+msgid "Kurzbeschreibung"
+msgstr "Short description"
+
+msgid "Verwendungszweck"
+msgstr "Purpose"
+
+msgid "Termin statt freiem Verwendungszweck"
+msgstr "Use an event instead of a written purpose"
+
+msgid "Standort"
+msgstr "Location"
+
+msgid "An einer Adresse"
+msgstr "At an address"
+
+msgid "Diese Adresse ist für Personen mit Materialleserecht sichtbar."
+msgstr "This address is visible to people with equipment viewing permission."
+
+msgid "Lagerortbezeichnung"
+msgstr "Storage location name"
+
+msgid "Standortzusatz"
+msgstr "Location details"
+
+msgid "Zustandshinweis"
+msgstr "Condition note"
+
+msgid "Bitte offene Aufgaben und kommende Verwendungen vor dem Aussondern klären."
+msgstr "Please resolve open tasks and upcoming uses before retiring this item."
+
+msgid "Zur Materialübersicht"
+msgstr "Back to equipment"
+
+msgid "Materialfoto"
+msgstr "Equipment photo"
+
+msgid "Noch kein Bild vorhanden."
+msgstr "No image yet."
+
+msgid "Bild hinzufügen oder ersetzen"
+msgstr "Add or replace image"
+
+msgid "JPEG, PNG oder WebP, höchstens 10 MB. Bildmetadaten werden entfernt."
+msgstr "JPEG, PNG or WebP, up to 10 MB. Image metadata is removed."
+
+msgid "Verwendung"
+msgstr "Use"
+
+msgid "Verwendung prüfen"
+msgstr "Review purpose"
+
+msgid "Ab"
+msgstr "From"
+
+msgid "Bis"
+msgstr "Until"
+
+msgid "Terminbezug prüfen"
+msgstr "Review event link"
+
+msgid "Zuordnung entfernen"
+msgstr "Remove link"
+
+msgid "Kommende Verwendungen"
+msgstr "Upcoming uses"
+
+msgid "Keine kommenden Verwendungen im nächsten Jahr."
+msgstr "No upcoming uses within the next year."
+
+msgid "Eine Zuordnung erfasst den Bedarf und ist keine verbindliche Reservierung."
+msgstr "A link records demand and is not a binding reservation."
+
+msgid "Aufgabe für dieses Material anlegen"
+msgstr "Create a task for this item"
+
+msgid "Einzeltermin"
+msgstr "Single event"
+
+msgid "Ganze Reihe"
+msgstr "Entire series"
+
+msgid "Nur dieser Termin"
+msgstr "This occurrence only"
+
+msgid "Diesen Termin ausschließen"
+msgstr "Exclude this occurrence"
+
+msgid "Termin oder Terminreihe zuordnen"
+msgstr "Link an event or series"
+
+msgid "Geltung"
+msgstr "Applies to"
+
+msgid "Ursprünglicher Beginn des Vorkommens"
+msgstr "Original start of the occurrence"
+
+msgid "Gültig ab (leer: heute)"
+msgstr "Valid from (blank: today)"
+
+msgid "Gültig bis"
+msgstr "Valid until"
+
+msgid "Verwendungshinweis"
+msgstr "Usage note"
+
+msgid "Angelegt"
+msgstr "Created"
+
+msgid "Bearbeitet"
+msgstr "Edited"
+
+msgid "Zuordnungen geändert"
+msgstr "Links changed"
+
+msgid "Bild geändert"
+msgstr "Image changed"
+
+msgid "Wiederhergestellt"
+msgstr "Restored"
+
+msgid "Zugeordnetes Material"
+msgstr "Linked equipment"
+
+msgid "Materialübersicht öffnen"
+msgstr "Open equipment list"
+
+msgid "Materialbestand und Zuordnungen sehen"
+msgstr "View equipment and links"
+
+msgid "Material, Standorte und Zuordnungen bearbeiten"
+msgstr "Edit equipment, locations and links"
+
+msgid "Bitte einen Verwendungszweck oder Termin angeben."
+msgstr "Please enter a purpose or select an event."
+
+msgid "Bitte ein zugängliches Mitglied wählen."
+msgstr "Please select an accessible member."
+
+msgid "Ungültige Adressfelder."
+msgstr "Invalid address fields."
+
+msgid "Bitte eine vollständige Adresse eingeben."
+msgstr "Please enter a complete address."
+
+msgid "Bitte zuerst die Standortart wählen."
+msgstr "Please select the location type first."
+
+msgid "Termin nicht verfügbar."
+msgstr "Event unavailable."
+
+msgid "Bitte die passende Terminzuordnung wählen."
+msgstr "Please select the appropriate event link."
+
+msgid "Dieses Vorkommen gehört nicht zur Terminreihe."
+msgstr "This occurrence does not belong to the series."
+
+msgid "Das Material wurde inzwischen geändert. Bitte neu laden."
+msgstr "This item has changed. Please reload."
+
+msgid "Die Terminreihe wurde geändert. Bitte die Zuordnung neu prüfen."
+msgstr "The recurrence rule has changed. Please review the link."
+
+msgid "Das frühere Bild ist nicht mehr vorhanden."
+msgstr "The previous image is no longer available."
+
+msgid "Bitte ein Bild mit höchstens 10 MB wählen."
+msgstr "Please select an image no larger than 10 MB."
+
+msgid "Bitte ein gültiges JPEG-, PNG- oder WebP-Bild wählen."
+msgstr "Please select a valid JPEG, PNG or WebP image."
+
+msgid "Ungültige Seite."
+msgstr "Invalid page."
+
+msgid "Bitte zuerst die Terminreihe zuordnen."
+msgstr "Please link the series first."
+
+msgid "Ausgesondertes Material kann nicht neu zugeordnet werden."
+msgstr "Retired equipment cannot be linked to new uses."
+
+msgid "Bitte zuerst einen Verwendungszweck angeben."
+msgstr "Please enter a purpose first."
+
+msgid "Nur die letzte eigene Änderung kann zurückgenommen werden."
+msgstr "Only your most recent change can be undone."
+
+msgid "Zu klären"
+msgstr "Needs clarification"
+
+msgid "Inventarnummer"
+msgstr "Inventory number"

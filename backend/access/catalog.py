@@ -217,6 +217,14 @@ AREAS: tuple[Area, ...] = (
         dept_levels=_BOTH,
     ),
     Area(
+        "material",
+        gettext_noop("Material"),
+        gettext_noop("Materialbestand und Zuordnungen sehen"),
+        gettext_noop("Material, Standorte und Zuordnungen bearbeiten"),
+        dept_levels=_BOTH,
+        module="material",
+    ),
+    Area(
         "audit",
         gettext_noop("Änderungsprotokoll"),
         gettext_noop("Änderungsprotokoll und Postausgang einsehen"),
@@ -364,6 +372,7 @@ AREA_BY_ID: dict[str, Area] = {a.id: a for a in AREAS}
 
 # Abschaltbare Module (Organization.enabled_modules); ihre Bereiche fehlen, wenn aus
 SWITCHABLE_MODULES: tuple[str, ...] = (
+    "material",
     "members",
     "finance",
     "billing",
@@ -374,7 +383,7 @@ SWITCHABLE_MODULES: tuple[str, ...] = (
 )
 # Module, die eine neue Einheit nicht automatisch bekommt (die Plattform schaltet
 # sie gezielt frei, z. B. die Webseite nur für Einheiten, die eine haben sollen)
-OPT_IN_MODULES: frozenset[str] = frozenset({"website", "competitions", "entries"})
+OPT_IN_MODULES: frozenset[str] = frozenset({"website", "competitions", "entries", "material"})
 DEFAULT_MODULES: tuple[str, ...] = tuple(m for m in SWITCHABLE_MODULES if m not in OPT_IN_MODULES)
 
 
