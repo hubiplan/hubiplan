@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client.ts'
 import { todoApi } from '../api/todos.ts'
 import type { Todo } from '../api/todos.ts'
-import { useOrg } from '../org/OrgContext.tsx'
+import { useOptionalOrg } from '../org/OrgContext.tsx'
 import { t } from '../i18n/index.ts'
 import { errorMessage, useLoad } from './forms.ts'
 import { useState } from 'react'
@@ -72,7 +72,9 @@ export function TodoEventLink({
 }
 
 export function EventTaskLink({ base, eventId }: { base: string; eventId: number }) {
-  const { active, activeDept } = useOrg()
+  const context = useOptionalOrg()
+  const active = context?.active
+  const activeDept = context?.activeDept
   const match = base.match(/^\/api\/(orgs|depts)\/(\d+)\/events\/?$/)
   if (!match) return null
   const permissions = active?.permissions ?? activeDept?.permissions ?? []

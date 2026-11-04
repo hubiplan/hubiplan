@@ -6,3 +6,113 @@
 .task-reminder-overdue {
   border-inline-start-color: var(--color-danger, #a22020);
 }
+
+.todo-workspace {
+  min-width: 0;
+}
+
+.todo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem 1.5rem;
+}
+
+.todo-toolbar > .field {
+  flex: 0 1 22rem;
+  margin: 0;
+}
+
+.todo-workspace :is(form.card, div.card, section.card) {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.todo-workspace :is(label:not(.checkbox):not(.todo-check), details[open] > label) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.todo-workspace details[open] > :not(summary) {
+  margin-block-start: 1rem;
+}
+
+.todo-workspace .button-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.todo-workspace :is(button, a.button, summary, .checkbox) {
+  min-height: 2.75rem;
+}
+
+.todo-workspace :is(button, a.button) {
+  min-width: 2.75rem;
+  justify-self: start;
+}
+
+.todo-workspace textarea {
+  width: 100%;
+  min-height: 12rem;
+  resize: vertical;
+  line-height: 1.55;
+  box-sizing: border-box;
+}
+
+.todo-workspace input[type='file'] {
+  max-width: 100%;
+  min-height: 2.75rem;
+}
+
+.todo-workspace input[type='file']::file-selector-button {
+  padding: 0.65rem 1rem;
+  margin-inline-end: 0.75rem;
+}
+
+.todo-workspace .task-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  padding: 0.75rem;
+  margin-block: 0.5rem;
+}
+
+.todo-workspace .task-list > li > .button:last-child {
+  margin-inline-start: auto;
+}
+
+.todo-workspace .todo-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+}
+
+.todo-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.modal:has(.todo-dialog) {
+  width: min(56rem, calc(100vw - 2rem));
+  max-width: none;
+}
+
+@media (max-width: 40rem) {
+  .todo-toolbar {
+    align-items: stretch;
+  }
+  .todo-toolbar > .field {
+    flex-basis: 100%;
+  }
+  .todo-workspace .task-list > li > .button:last-child {
+    margin-inline-start: 0;
+  }
+}

@@ -145,3 +145,29 @@ def test_fremde_mitgliedschaft_ist_keine_zulaessige_freigabe(api, board_a, orgs)
         content_type=JSON,
     )
     assert response.status_code == 400
+
+
+def test_mitglieder_export_beachtet_heutige_freigabe(api, board_a, orgs):
+    user, access = member(orgs["a"])
+    task = create(api, board_a, orgs["a"])
+    saved = publish(api, board_a, orgs["a"], task, recipients=[{"access_id": access.pk}])
+    exported = api(user).get("/api/me/todos/export/")
+    assert exported.status_code == 200
+    assert task["id"] in [row["id"] for row in exported.json()["tasks"]]
+    publish(api, board_a, orgs["a"], {**task, "version": saved["version"]}, active=False)
+    assert not api(user).get("/api/me/todos/export/").json()["tasks"]
+
+
+def test_mitglieder_erinnerungen_enden_mit_der_freigabe(api, board_a, orgs):
+    from core.tenancy import rls_bypass
+    from todos.reminders import current_recipients
+
+    user, access = member(orgs["a"])
+    task = create(api, board_a, orgs["a"], due_date="2030-01-01")
+    saved = publish(api, board_a, orgs["a"], task, recipients=[{"access_id": access.pk}])
+    with rls_bypass():
+        current = Todo.objects.get(pk=task["id"])
+        assert user.pk in current_recipients(current)
+    publish(api, board_a, orgs["a"], {**task, "version": saved["version"]}, active=False)
+    with rls_bypass():
+        assert user.pk not in current_recipients(Todo.objects.get(pk=task["id"]))

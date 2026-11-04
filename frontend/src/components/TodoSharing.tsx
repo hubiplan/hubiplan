@@ -28,10 +28,12 @@ export function TodoSharing({
   base,
   todo,
   onSaved,
+  onDraftChange,
 }: {
   base: string
   todo: Todo
   onSaved: () => void
+  onDraftChange?: (shares: TodoShare[], perUnit: boolean) => void
 }) {
   const { data, error, reload } = useLoad(
     () =>
@@ -100,6 +102,9 @@ export function TodoSharing({
   function update(index: number, patch: Partial<TodoShare>) {
     setShares(shares.map((entry, i) => (i === index ? { ...entry, ...patch } : entry)))
   }
+  useEffect(() => {
+    onDraftChange?.(shares, perUnit)
+  }, [shares, perUnit, onDraftChange])
   async function save() {
     if (!(await flushAllForms())) return
     const following = todo.series
@@ -285,9 +290,11 @@ export function TodoSharing({
               </button>
             </div>
           ))}
-          <button className="button" disabled={busy} onClick={() => void save()}>
-            {t('Freigaben speichern')}
-          </button>
+          {!onDraftChange && (
+            <button type="button" className="button" disabled={busy} onClick={() => void save()}>
+              {t('Freigaben speichern')}
+            </button>
+          )}
         </>
       )}
       {message && <p role="status">{message}</p>}

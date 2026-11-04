@@ -24,3 +24,15 @@ Bei Serien überträgt „Verantwortung übertragen“ die Verantwortung für de
 ## Aufgaben am Termin
 
 Verknüpfe eine Aufgabe mit einem Termin im eigenen Kalender. Im Termin führen „Aufgaben zu diesem Termin“ und „Aufgabe zu diesem Termin anlegen“ in die gefilterte Aufgabenansicht. Bestehende Aufgaben verknüpft oder löst das verantwortliche Konto unter „Terminverknüpfung“. Aufgaben- und Kalenderrechte werden unabhängig geprüft: Eine Verknüpfung teilt weder die Aufgabe noch einen internen Termin. Ohne Kalenderrecht erscheint nur „Termin nicht verfügbar“. Löschen des Termins erhält die Aufgabe und entfernt die Verknüpfung. Fristen ändern sich nicht automatisch mit einem Termin. Bei Serienterminen gilt der Bezug für die ganze Terminserie, nicht für ein einzelnes Datum.
+
+## Mitgliederaufgaben
+
+Das verantwortliche Konto kann unter „Im Mitgliederbereich teilen“ entweder aktuelle Mitglieder auswählen (nur lesen oder auch erledigen) oder ein offenes Angebot veröffentlichen. Ein Angebot ist für aktuelle Mitglieder der Einheit sichtbar, bei Untereinheiten nur für deren Mitglieder. Genau eine Person kann übernehmen, erledigen und eine offene Übernahme zurückgeben. Mitgliedschaft, Portalzugang und Freigabe werden bei jedem Abruf, jeder Änderung und jedem Dateiabruf geprüft. Ohne ausdrückliche Freigabe bleiben Aufgaben verborgen. Mitglieder erhalten dadurch keine Verwaltungsrechte und ändern weder Titel, Frist noch Beteiligte. Dokumentverweise geben keine zusätzlichen Ablagerechte.
+
+Bei Serien gilt eine Freigabe zunächst nur für diese Ausgabe. „Auch folgende Ausgaben im Mitgliederbereich freigeben“ übernimmt sie ausdrücklich in neue Ausgaben; offene Angebote werden dabei erneut zur Übernahme angeboten. Erledigen und Wiederöffnen beachten den bestehenden Schutz gegen doppelte oder bereits bearbeitete Folgeausgaben. Erinnerungen erhalten zugewiesene Mitglieder mit Erledigungsrecht oder die Person, die übernommen hat, nach den persönlichen Benachrichtigungsvorgaben.
+
+Unter „Mein Bereich › Aufgaben“ stehen offene und erledigte Aufgaben. Push- und Maillinks wählen den eigenen Portalzugang. Nach einem Entzug, Austritt oder Abschalten des Mitgliederbereichs besteht kein Zugriff mehr.
+
+## Aufgaben anlegen
+
+„Neue Aufgabe“ öffnet einen eigenen Dialog. Titel, Beschreibung, Frist und Teilen können vor dem Anlegen festgelegt werden. Nach „Anlegen“ bleibt der Dialog für Anhänge, Erinnerungen, Wiederholung und Mitgliederfreigabe geöffnet; „Fertig“ schließt ihn. Änderungen an der angelegten Aufgabe werden wie üblich gespeichert, ungespeicherte Freigaben vor dem Schließen geprüft. Die Beschreibung bietet ein breites, vergrößerbares Textfeld. Statusauswahl und Filter stehen bei ausreichendem Platz nebeneinander, auf kleinen Bildschirmen darunter.

@@ -46,19 +46,19 @@ const icon = (d: string) => (
 
 export const modules: AppModule[] = [
   {
+    id: 'start',
+    label: t('Startseite'),
+    path: '/',
+    icon: icon('M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-5h4v5M16 7.5V4.5h2.5v5.2'),
+    visible: () => true,
+  },
+  {
     id: 'aufgaben',
     label: t('Aufgaben'),
     path: '/aufgaben',
     icon: icon('M4 5h16v15H4zM8 12l3 3 5-7'),
     visible: (org, ws) =>
       !!(org?.permissions.includes('todos.view') || ws.dept?.permissions.includes('todos.view')),
-  },
-  {
-    id: 'start',
-    label: t('Startseite'),
-    path: '/',
-    icon: icon('M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-5h4v5M16 7.5V4.5h2.5v5.2'),
-    visible: () => true,
   },
   {
     id: 'mitglieder',

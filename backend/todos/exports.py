@@ -116,7 +116,9 @@ def personal_export(user, include_files=False):
                 "department_id",
             )
         }
-        row["local_note"] = todo.local_note if todo.distributed else ""
+        row["local_note"] = (
+            todo.local_note if todo.distributed and not (scope and scope.portal_access_id) else ""
+        )
         row["attachments"] = []
         row["series"] = series_data(todo)
         with attachment_rows(todo, scope) as attachments:
@@ -186,6 +188,20 @@ def personal_export(user, include_files=False):
                 for deleted in (False, True):
                     for todo in visible(user, scope, deleted=deleted).filter(shared=True):
                         add(todo, scope)
+        from portal.services import portal_accesses
+
+        from .portal import portal_scope, portal_visible
+
+        with user_view(user.pk):
+            member_accesses = portal_accesses(user)
+        for access in member_accesses:
+            with tenant_context(access.organization_id, user.pk):
+                try:
+                    _, scope = portal_scope(user, access.pk)
+                    for todo in portal_visible(user, scope):
+                        add(todo, scope)
+                except (NotFound, PermissionDenied):
+                    continue
         payload = {"tasks": rows, "preferences": preferences}
         if archive:
             archive.writestr(

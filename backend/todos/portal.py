@@ -207,6 +207,9 @@ class PortalTaskDetailView(PortalTaskMixin, APIView):
         ctx = active()
         if ctx:
             ctx.block(gettext("Diese Änderung kann hier nicht zurückgenommen werden."))
+        from .sharing import log_change
+
+        log_change(todo, request.user, "update")
         return Response(portal_data(todo, self.access, self.scope))
 
 
@@ -273,6 +276,7 @@ class PublicationView(TodoScopeMixin, APIView):
         return Response(
             {
                 "choices": choices(self.scope),
+                "enabled": self.org.member_portal_enabled and self.org.type == "club",
                 "active": bool(pub and pub.active),
                 "mode": pub.mode if pub else "assigned",
                 "following": bool(pub and pub.following),
