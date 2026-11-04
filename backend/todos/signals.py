@@ -60,12 +60,15 @@ def series_progress(sender, instance, raw=False, **kwargs):
     if not raw:
         from core.tenancy import rls_bypass
 
-        from .models import TodoProgress
+        from .models import TodoProgress, TodoSeries
 
         with rls_bypass():
             TodoProgress.objects.filter(copy__series=instance).update(
                 ended=not instance.active or bool(instance.deleted_at)
             )
+            if not instance.active or instance.deleted_at:
+                TodoSeries.objects.filter(source_series=instance).update(active=False)
+                TodoProgress.objects.filter(copy__series__source_series=instance).update(ended=True)
 
 
 def stop_distribution(sender, instance, **kwargs):

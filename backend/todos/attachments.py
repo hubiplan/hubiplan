@@ -128,6 +128,10 @@ class AttachmentScope(TodoScopeMixin):
     def input(self, request, todo):
         data = AttachmentInput(data=request.data)
         data.is_valid(raise_exception=True)
+        if data.validated_data.get("following"):
+            from .series import require_series_edit
+
+            require_series_edit(todo, request.user, self.scope)
         if data.validated_data["version"] != todo.version:
             raise Conflict(gettext("Die Aufgabe wurde inzwischen geändert. Bitte neu laden."))
         return data.validated_data
@@ -144,7 +148,7 @@ class AttachmentScope(TodoScopeMixin):
         if todo.series_id and self.request.data.get("following") is True:
             from .series import update_template
 
-            update_template(todo)
+            update_template(todo, documents=True)
         log_change(todo, user, "update")
 
 

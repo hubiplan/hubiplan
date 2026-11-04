@@ -5148,3 +5148,12 @@ msgstr "This task is completed separately in each target unit."
 
 msgid "Quellanhang nicht verfügbar"
 msgstr "Source attachment unavailable"
+
+msgid "Für die aktuelle Serienausgabe fehlt dir die Berechtigung."
+msgstr "You do not have permission for the current series occurrence."
+
+msgid "Verteilte Aufgaben bitte über ihren Papierkorb löschen."
+msgstr "Please delete distributed tasks using their trash."
+
+msgid "Lokale Notiz"
+msgstr "Local note"

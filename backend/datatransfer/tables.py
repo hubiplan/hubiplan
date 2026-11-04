@@ -541,10 +541,27 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
         qs = attachment_rows(org, department)
     if department is not None:
         qs = qs.filter(department=department)
+    templates = {}
+    if label(model) == "todos.todoseries":
+        from todos.exports import shared_rows
+
+        for task in (
+            shared_rows(org, department)
+            .only("series_id", "sequence_no", "title", "description", "due_time", "timezone")
+            .order_by("sequence_no", "pk")
+        ):
+            templates[task.series_id] = task
     for obj in qs.order_by("pk"):
         row = {"id": obj.pk}
         for f in fields:
-            if f.is_relation:
+            if label(model) == "todos.todoseries" and f.name in {
+                "title",
+                "description",
+                "due_time",
+                "timezone",
+            }:
+                row[f.name] = _plain(getattr(templates[obj.pk], f.name))
+            elif f.is_relation:
                 row[f.name] = getattr(obj, f.attname)
             elif isinstance(f, models.FileField):
                 row[f.name] = packer.add(getattr(obj, f.name), label(model).replace(".", "-"))
@@ -554,7 +571,12 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
             from todos.attachments import document_for
             from todos.exports import export_scope
 
-            if document_for(obj, export_scope(org, department)) is None:
+            if (
+                document_for(
+                    obj, export_scope(org, obj.department if obj.department_id else department)
+                )
+                is None
+            ):
                 row["document"] = None
         rows.append(row)
     return rows
@@ -732,6 +754,11 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                 # Übernahme erhält Inhalt, aber keine Freigaben der Quelle.
                 obj.owner_id = user.pk if user is not None else None
                 obj.shared = False
+                if obj.local_note:
+                    obj.description = (
+                        f"{obj.description}\n\n{gettext('Lokale Notiz')}:\n{obj.local_note}".strip()
+                    )
+                    obj.local_note = ""
             if name == "todos.todoseries":
                 obj.owner_id = user.pk if user is not None else None
                 obj.active = False

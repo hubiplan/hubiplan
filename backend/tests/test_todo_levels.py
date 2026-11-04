@@ -7,7 +7,7 @@ from django.db import DatabaseError, transaction
 from core.tenancy import rls_bypass, tenant_context
 from todos.models import Todo, TodoProgress
 
-from .factories import give_role, make_org, make_user
+from .factories import give_role, make_user
 from .test_rls import as_app_role
 from .test_todo_attachments import add, endpoint
 from .test_todo_series import complete, start
@@ -94,10 +94,11 @@ def test_graph_begrenzt_zieleinheiten_auch_in_der_datenbank(api, sender, board_a
                 target_org=orgs["c"],
                 level="edit",
             )
+    from organizations.models import Organization
     from todos.access import Scope
     from todos.targets import allowed_scopes
 
-    platform = make_org("Beispielplattform", "platform")
+    platform = Organization.objects.get(type="platform")
     assert (orgs["c"].pk, None) in allowed_scopes(Scope(platform, None, set()))
     assert (source.pk, None) in allowed_scopes(Scope(orgs["a"], None, set()))
     assert (orgs["b"].pk, None) not in allowed_scopes(Scope(orgs["a"], None, set()))
@@ -188,3 +189,46 @@ def test_rls_verbietet_umwaengung_und_fremde_fortschrittsabfragen(
                 Todo.objects.filter(pk=a["id"]).update(organization=orgs["b"])
             with pytest.raises(DatabaseError), transaction.atomic():
                 Todo.objects.filter(pk=a["id"]).update(due_date=datetime.date(2033, 1, 1))
+
+
+def test_private_serienvorlage_wird_durch_einzelfreigabe_nicht_exportiert(api, board_a, orgs):
+    from datatransfer.dump import Packer
+    from datatransfer.tables import dump_tables
+    from todos.exports import for_actor
+    from todos.models import TodoSeries
+
+    reader = make_user("einzelausgabe@example.org")
+    give_role(reader, orgs["a"], permissions=["todos.view"], name="Einzelausgabe")
+    first = start(api, board_a, orgs["a"])
+    with rls_bypass():
+        from core.encfields import update_encrypted
+
+        update_encrypted(
+            TodoSeries.objects.filter(pk=first["series"]["id"]),
+            title="Vertrauliche Zukunftsvorlage",
+        )
+    first = patch(
+        api,
+        board_a,
+        orgs["a"],
+        first,
+        title="Freigegebene Einzelausgabe",
+        shares=[{"user": reader.pk}],
+        following=False,
+    ).json()
+    with as_app_role(), tenant_context(orgs["a"].pk, reader.pk):
+        assert TodoSeries.objects.filter(pk=first["series"]["id"]).count() == 0
+    with tenant_context(orgs["a"].pk), rls_bypass(), for_actor(reader):
+        tables = dump_tables(orgs["a"], Packer(False))
+    assert tables["todos.todoseries"][0]["title"] == "Freigegebene Einzelausgabe"
+    assert "Vertrauliche Zukunftsvorlage" not in json.dumps(tables)
+
+
+def test_private_loeschung_nach_rollenverlust_funktioniert_mit_rls(api, board_a, orgs):
+    from access.models import RoleAssignment
+
+    first = start(api, board_a, orgs["a"])
+    RoleAssignment.objects.filter(user=board_a).delete()
+    with as_app_role():
+        assert api(board_a).get("/api/me/todos/export/").status_code == 200
+        assert api(board_a).delete(f"/api/me/todos/{first['id']}/").status_code == 204

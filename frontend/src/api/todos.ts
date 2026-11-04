@@ -1,6 +1,8 @@
 import { api } from './client.ts'
 
 export interface TodoShare {
+  target_org?: number
+  target_department?: number | null
   user?: number | null
   role?: number | null
   level: 'view' | 'edit'
@@ -9,6 +11,13 @@ export interface TodoShare {
 
 export interface Todo {
   id: number
+  organization?: number
+  department?: number | null
+  per_unit?: boolean
+  distributed?: boolean
+  central_readonly?: boolean
+  local_note?: string
+  can_complete?: boolean
   series?: {
     id: number
     version: number

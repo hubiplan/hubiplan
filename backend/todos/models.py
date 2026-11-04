@@ -87,7 +87,14 @@ class Todo(models.Model):
             from .series import after_save, before_save
 
             with transaction.atomic():
-                series = TodoSeries.objects.select_for_update().get(pk=self.series_id)
+                from core.tenancy import rls_bypass
+
+                with rls_bypass():
+                    series = (
+                        TodoSeries.objects.defer("title", "description", "shares", "documents")
+                        .select_for_update()
+                        .get(pk=self.series_id)
+                    )
                 previous = (
                     type(self).objects.select_for_update().filter(pk=self.pk).first()
                     if self.pk

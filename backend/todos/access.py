@@ -162,12 +162,15 @@ def undo_problem(change_set, user, task_scope=None):
         return gettext("Diese Änderung kann hier nicht zurückgenommen werden.")
     for rec in records:
         todo = Todo.objects.filter(pk=rec.object_id).first()
+        missing = todo is None
         if todo is None:
             if rec.operation != "delete" or not rec.before:
                 return gettext("Die Aufgabe ist nicht mehr vorhanden.")
             from changes.undo import _build
 
             todo = _build(Todo, rec.before)
+        if todo.per_unit and rec.operation == "create":
+            return gettext("Verteilte Aufgaben bitte über ihren Papierkorb löschen.")
         from .series import undo_problem as series_undo_problem
 
         problem = series_undo_problem(todo, rec)
@@ -181,7 +184,10 @@ def undo_problem(change_set, user, task_scope=None):
             return gettext("Für diese Aufgabe fehlt dir die Berechtigung.")
         if not can_edit(todo, user, scope):
             return gettext("Für diese Aufgabe fehlt dir die Berechtigung.")
-        if not visible(user, scope, deleted=bool(todo.deleted_at)).filter(pk=todo.pk).exists():
+        if (
+            not missing
+            and not visible(user, scope, deleted=bool(todo.deleted_at)).filter(pk=todo.pk).exists()
+        ):
             return gettext("Für diese Aufgabe fehlt dir die Berechtigung.")
         fields = set(rec.before or {}) | set(rec.after or {})
         if (

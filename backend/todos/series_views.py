@@ -12,7 +12,7 @@ from core.tenancy import rls_bypass
 from .access import can_delete, can_edit
 from .attachments import Conflict
 from .models import TodoSeries
-from .series import lock_task, snapshot_template
+from .series import lock_task, require_series_edit, snapshot_template
 from .sharing import log_change
 from .views import TodoScopeMixin
 
@@ -41,19 +41,26 @@ class SeriesInput(serializers.Serializer):
 def series_data(todo):
     if not todo.series_id:
         return None
-    series = todo.series
+    with rls_bypass():
+        series = (
+            TodoSeries.objects.filter(pk=todo.series_id)
+            .values(
+                "id",
+                "version",
+                "active",
+                "repeat",
+                "interval",
+                "basis",
+                "last_day",
+                "ends_on",
+                "count",
+                "deleted_at",
+            )
+            .get()
+        )
     return {
-        "id": series.pk,
+        **series,
         "sequence_no": todo.sequence_no,
-        "active": series.active,
-        "version": series.version,
-        "repeat": series.repeat,
-        "interval": series.interval,
-        "basis": series.basis,
-        "last_day": series.last_day,
-        "ends_on": series.ends_on,
-        "count": series.count,
-        "deleted_at": series.deleted_at,
     }
 
 
@@ -64,6 +71,11 @@ class SeriesView(TodoScopeMixin, APIView):
         todo = lock_task(request.user, self.scope, pk, deleted=restoring)
         if not can_edit(todo, request.user, self.scope):
             raise PermissionDenied()
+        require_series_edit(todo, request.user, self.scope)
+        is_new = not todo.series_id
+        if todo.series_id:
+            with rls_bypass():
+                todo.series = TodoSeries.objects.get(pk=todo.series_id)
         serializer = SeriesInput(data=request.data)
         serializer.is_valid(raise_exception=True)
         values = serializer.validated_data
@@ -92,7 +104,8 @@ class SeriesView(TodoScopeMixin, APIView):
             if todo.distributed and deleted:
                 series.locally_stopped = True
             series.version += 1
-            series.save()
+            with rls_bypass():
+                series.save()
             with suppress():
                 rows = series.occurrences.filter(withdrawn=False)
                 rows = (
@@ -105,10 +118,10 @@ class SeriesView(TodoScopeMixin, APIView):
                     item.version += 1
                     item.save(update_fields=["deleted_at", "version", "updated_at"])
             log_change(todo, request.user, "delete" if deleted else "update")
-            from .distribution import reconcile
+            from .distribution import reconcile_series
 
             todo.refresh_from_db()
-            reconcile(todo)
+            reconcile_series(series)
             return Response({"series": series_data(todo)})
         if todo.series_id and set(values) == {"active"}:
             series = todo.series
@@ -116,13 +129,14 @@ class SeriesView(TodoScopeMixin, APIView):
             if todo.distributed:
                 series.locally_stopped = not series.active
             series.version += 1
-            series.save(update_fields=["active", "locally_stopped", "version"])
+            with rls_bypass():
+                series.save(update_fields=["active", "locally_stopped", "version"])
             todo.version += 1
             todo.save(update_fields=["version", "updated_at"])
             log_change(todo, request.user, "update")
-            from .distribution import reconcile
+            from .distribution import reconcile_series
 
-            reconcile(todo)
+            reconcile_series(series)
             return Response({"series": series_data(todo), "version": todo.version})
         if todo.status != "open" or not todo.due_date:
             raise serializers.ValidationError(
@@ -151,7 +165,8 @@ class SeriesView(TodoScopeMixin, APIView):
             raise serializers.ValidationError(
                 gettext("Das Serienende liegt vor der aktuellen Frist.")
             )
-        snapshot_template(todo, series)
+        if is_new:
+            snapshot_template(todo, series)
         series.version += 1
         with rls_bypass():
             # Nur die am gesperrten Vorgang geprüfte neue bzw. geänderte Vorlage.
@@ -162,7 +177,7 @@ class SeriesView(TodoScopeMixin, APIView):
         with rls_bypass():
             todo.save(update_fields=["series", "sequence_no", "version", "updated_at"])
         log_change(todo, request.user, "update")
-        from .distribution import reconcile
+        from .distribution import reconcile_series
 
-        reconcile(todo, attachments=True)
+        reconcile_series(series)
         return Response({"series": series_data(todo), "version": todo.version})

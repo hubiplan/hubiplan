@@ -58,6 +58,8 @@ def data_for(todo, user, scope):
 
     return {
         "id": todo.pk,
+        "organization": todo.organization_id,
+        "department": todo.department_id,
         "series": series_data(todo),
         "distributed": todo.distributed,
         "per_unit": todo.per_unit,
@@ -224,11 +226,22 @@ class TodoDetailView(TodoScopeMixin, APIView):
             )
         if old_due != (todo.due_date, todo.due_time, todo.timezone):
             todo.due_revision += 1
+        if todo.series_id and not todo.due_date:
+            raise serializers.ValidationError(
+                gettext("Wiederholungen brauchen eine offene Aufgabe mit Frist.")
+            )
         todo.version += 1
         if following and todo.series_id:
-            from .series import update_template
+            from .series import require_series_edit, update_template
 
-            update_template(todo, reset_anchor="due_date" in values)
+            require_series_edit(todo, request.user, self.scope)
+
+            update_template(
+                todo,
+                reset_anchor="due_date" in values,
+                fields=set(values),
+                shares=shares is not None,
+            )
         if ownership_only:
             from core.tenancy import rls_bypass
 
@@ -364,25 +377,33 @@ class PersonalTaskDeleteView(APIView):
     def delete(self, request, pk):
         from changes.models import ChangeSet
         from changes.tracking import suppress
-        from core.tenancy import tenant_context
+        from core.tenancy import rls_bypass, tenant_context
+
+        from .models import TodoSeries
 
         with user_view(request.user.pk):
-            from .models import TodoSeries
-
-            series_id = (
-                Todo.objects.filter(pk=pk, created_by=request.user, shared=False)
-                .values_list("series_id", flat=True)
-                .first()
+            metadata = get_object_or_404(
+                Todo.objects.only("organization_id", "series_id"),
+                pk=pk,
+                created_by=request.user,
+                shared=False,
             )
-            if series_id:
-                TodoSeries.objects.select_for_update().get(pk=series_id)
+        # Kontoeigene private Daten bleiben nach Rollenverlust löschbar. Nach der
+        # Lesefreigabe werden ausschließlich diese Nummern gesperrt und erneut geprüft.
+        with tenant_context(metadata.organization_id, request.user.pk), suppress(), rls_bypass():
+            if metadata.series_id:
+                TodoSeries.objects.select_for_update().values("pk").get(pk=metadata.series_id)
             todo = get_object_or_404(
                 Todo.objects.select_for_update(), pk=pk, created_by=request.user, shared=False
             )
-        with tenant_context(todo.organization_id, request.user.pk), suppress():
+            if todo.series_id != metadata.series_id:
+                from .attachments import Conflict
+
+                raise Conflict(gettext("Die Aufgabe wurde inzwischen geändert. Bitte neu laden."))
             ChangeSet.objects.filter(
                 records__model="todos.todo", records__object_id=str(todo.pk)
             ).delete()
+            series_id = todo.series_id
             todo.delete()
             if series_id:
                 TodoSeries.objects.filter(

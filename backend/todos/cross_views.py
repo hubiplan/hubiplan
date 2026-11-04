@@ -48,7 +48,9 @@ class TaskUndoView(TodoScopeMixin, APIView):
         # Vor dem Öffnen der Rohwerte nur Akteur und betroffene Modell-/Objektnummern lesen.
         with rls_bypass():
             found = ChangeSet.objects.filter(
-                pk=set_id, user=request.user, organization_id=todo.organization_id
+                pk=set_id,
+                user=request.user,
+                organization_id__in=[todo.organization_id, self.scope.org.pk],
             ).exists()
             metadata = (
                 list(

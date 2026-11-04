@@ -273,3 +273,12 @@ def current_source(copy):
             .defer("local_note")
             .first()
         )
+
+
+def reconcile_series(series):
+    with rls_bypass():
+        sources = list(
+            Todo.objects.filter(series=series, per_unit=True, distributed=False).defer("local_note")
+        )
+        for source in sources:
+            reconcile(source)

@@ -4956,5 +4956,20 @@
   "Serienausgabe": "Occurrence",
   "Verantwortung für die Serie übertragen?": "Transfer responsibility for the series?",
   "Die Übertragung umfasst alle geteilten Ausgaben und die künftige Fortsetzung. Private frühere Ausgaben müssen zuerst ausdrücklich geprüft werden.": "The transfer includes all shared occurrences and future continuation. Earlier private occurrences must first be reviewed explicitly.",
-  "täglich": "daily"
+  "täglich": "daily",
+  "Von der Quelle": "From the source",
+  "Lokale Notiz": "Local note",
+  "Diese Notiz und deine lokalen Anhänge bleiben in dieser Einheit. Die Quelle sieht nur den Fortschritt.": "This note and your local attachments stay in this unit. The source only sees progress.",
+  "Fortschritt der Zieleinheiten": "Target unit progress",
+  "{done} von {total} erledigt": "{done} of {total} completed",
+  "Lokale Frist": "Local due date",
+  "Konto {id}": "Account {id}",
+  "Serie beendet": "Series ended",
+  "Zieleinheit": "Target unit",
+  "Erledigung über Einheiten hinweg": "Completion across units",
+  "je Einheit eine eigene Ausgabe": "a separate occurrence for each unit",
+  "eine gemeinsame Aufgabe": "one shared task",
+  "Rolle „{name}“ in {n} Zieleinheiten hinzufügen": "Add role “{name}” in {n} target units",
+  "Titel, Beschreibung und Frist werden von der Quelle vorgegeben.": "The title, description and due date are controlled by the source.",
+  "Bei Serien erhält jede Zieleinheit eine eigene Folge mit der zentralen Vorlage. Die Einheit verwaltet ihre lokalen Beteiligten selbst.": "For recurring tasks, each target unit receives its own sequence using the central template. The unit manages its local participants independently."
 }

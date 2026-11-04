@@ -98,6 +98,11 @@ def forwards(apps, schema_editor):
     policies(schema_editor, "todos_todoattachment", parent, f"{PREVIEW} IS NULL AND {parent} AND {edit_parent}")
     progress_read = "EXISTS (SELECT 1 FROM todos_todo t WHERE t.id = source_id AND t.organization_id = todos_todoprogress.organization_id)"
     policies(schema_editor, "todos_todoprogress", progress_read, "false")
+    # Vorlagentexte bleiben beim verantwortlichen Konto. Andere Beteiligte erhalten
+    # ausschließlich die nach aktueller Aufgabenprüfung projizierten Regelmetadaten.
+    series_own = f"{local} AND owner_id = {USER} AND {PREVIEW} IS NULL AND {access}"
+    personal = f"{ORG} IS NULL AND owner_id = {USER} AND EXISTS (SELECT 1 FROM todos_todo t WHERE t.series_id = todos_todoseries.id AND NOT t.shared)"
+    policies(schema_editor, "todos_todoseries", f"({series_own}) OR ({personal})", series_own)
     # Einzeln geprüfte Aufgabenrücknahmen öffnen nur ihr Paket und das neue eigene Paket.
     old = "NULLIF(current_setting('app.todo_undo_id', true), '')::uuid"
     new = "NULLIF(current_setting('app.todo_change_id', true), '')::uuid"
@@ -149,11 +154,12 @@ def backwards(apps, schema_editor):
     if schema_editor.connection.vendor != "postgresql":
         return
     schema_editor.execute("DROP TRIGGER IF EXISTS todo_immutable_scope ON todos_todo; DROP FUNCTION IF EXISTS todos_immutable_scope(); DROP TRIGGER IF EXISTS todo_attachment_scope ON todos_todoattachment; DROP FUNCTION IF EXISTS todos_attachment_scope();")
-    for table in ("todos_todo", "todos_todoshare", "todos_todoattachment", "todos_todoprogress"):
+    for table in ("todos_todo", "todos_todoshare", "todos_todoattachment", "todos_todoprogress", "todos_todoseries"):
         for name in ("task_read", "task_insert", "task_update", "task_delete"):
             schema_editor.execute(f"DROP POLICY IF EXISTS {name} ON {table}")
     import_module("todos.migrations.0004_freigaben_rls").forwards(apps, schema_editor)
     import_module("todos.migrations.0008_anhaenge_rls").forwards(apps, schema_editor)
+    import_module("todos.migrations.0010_serien_rls").forwards(apps, schema_editor)
     for table in ("changes_changeset", "changes_changerecord"):
         schema_editor.execute(enable_rls_sql(table))
     schema_editor.execute("DROP FUNCTION IF EXISTS todos_share_target_allowed(bigint, bigint, bigint)")

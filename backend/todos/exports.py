@@ -25,13 +25,25 @@ def shared_rows(org, department=None):
     user = _actor.get()
     if user is None or not user.is_active:
         return Todo.objects.none()
-    # IDs unter der heutigen Aufgabenprüfung bestimmen, erst danach exportieren.
-    with tenant_context(org.pk, user.pk):
-        try:
-            scope = scope_for(user, org.pk, department.pk if department else None)
-        except (NotFound, PermissionDenied):
-            return Todo.objects.none()
-        ids = list(visible(user, scope).filter(shared=True).values_list("pk", flat=True))
+    from core.tenancy import user_view
+    from portal.services import department_contexts
+
+    units = [department.pk] if department else [None]
+    if department is None:
+        with user_view(user.pk):
+            units += [
+                ctx.department.pk
+                for ctx in department_contexts(user).values()
+                if ctx.club.pk == org.pk
+            ]
+    ids = set()
+    for dept_id in units:
+        with tenant_context(org.pk, user.pk):
+            try:
+                scope = scope_for(user, org.pk, dept_id)
+            except (NotFound, PermissionDenied):
+                continue
+            ids.update(visible(user, scope).filter(shared=True).values_list("pk", flat=True))
     return Todo.objects.filter(organization=org, shared=True, pk__in=ids)
 
 
@@ -44,7 +56,7 @@ def attachment_rows(org, department=None):
 def series_rows(org, department=None):
     from .models import TodoSeries
 
-    return TodoSeries.objects.filter(
+    return TodoSeries.objects.defer("title", "description").filter(
         organization=org, pk__in=shared_rows(org, department).values("series_id")
     )
 
