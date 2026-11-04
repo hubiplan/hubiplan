@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, it, vi } from 'vitest'
+import { act } from 'react'
 import { OwnAvailability } from '../pages/music/AvailabilityPage.tsx'
 import { StaffingPage } from '../pages/music/StaffingPage.tsx'
 import { OwnMusic } from '../pages/music/OwnMusic.tsx'
@@ -112,4 +113,39 @@ it('zeigt den eigenen Konflikt und lässt eine Absage weiterhin zu', async () =>
     id: 3,
     status: 'declined',
   })
+})
+
+it('erhält eine begonnene Abwesenheit beim späteren Laden der Auftrittsliste', async () => {
+  let resolvePerformances: (value: Response) => void = () => {}
+  const pending = new Promise<Response>((resolve) => {
+    resolvePerformances = resolve
+  })
+  const json = (body: unknown) =>
+    new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    const path = String(input)
+    if (path === '/api/portal/9/music/') return pending
+    if (path.endsWith('/absences/')) return json({ enabled: true, items: [] })
+    return json({ rehearsals: [], scores: [], loans: [] })
+  })
+  render(<OwnMusic accessId={9} />)
+  await userEvent.click(await screen.findByRole('button', { name: 'Abwesenheit eintragen' }))
+  fireEvent.change(screen.getByLabelText('Abwesend von'), { target: { value: '2026-12-01T18:00' } })
+  await act(async () => {
+    resolvePerformances(
+      json([
+        {
+          id: 3,
+          title: 'Später geladener Auftritt',
+          starts_at: '2026-12-10T18:00:00Z',
+          status: 'pending',
+        },
+      ]),
+    )
+  })
+  await screen.findByText('Später geladener Auftritt')
+  expect(screen.getByLabelText('Abwesend von')).toHaveValue('2026-12-01T18:00')
 })
