@@ -277,7 +277,15 @@ def test_migration_erhaelt_bestand_alte_inserts_und_sicheren_rueckweg(orgs):
         assert crypto.key_by_id(old[0]) == old[1]
         assert crypto.decrypt_bytes(cipher) == b"Bestandsdatei"
         # Nur im Test: Noch keine Nutzdaten der neuen Generation, daher entfernbar.
-        DataKey.objects.filter(pk=new[0]).delete()
+        # Die leere spätere Auftragstabelle kann vor der gesperrten Rückmigration
+        # bereits entfernt sein. Den Modellstand dieser tatsächlichen Schemafassung
+        # verwenden, damit der Collector keine spätere Rückwärtsrelation abfragt.
+        current_keys = (
+            MigrationExecutor(connection)
+            .loader.project_state([("core", "0033_datenschluessel_generationen")])
+            .apps.get_model("core", "DataKey")
+        )
+        current_keys.objects.filter(pk=new[0]).delete()
         DataKey.objects.filter(pk=old[0]).update(is_active=False)
         with pytest.raises(DatabaseError, match="Generationen erhalten"):
             MigrationExecutor(connection).migrate(previous)

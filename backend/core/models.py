@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 
@@ -33,3 +35,31 @@ class DataKey(models.Model):
 
     def __str__(self) -> str:
         return f"Datenschlüssel {self.pk} ({self.organization_id})"
+
+
+class DataKeyRotation(models.Model):
+    """Wiederaufnehmbarer Betriebsauftrag; enthält nur Kennungen, keine Nutzdaten.
+
+    Wie DataKey ohne RLS: Der Verwaltungsbefehl arbeitet über Organisationsgrenzen
+    hinweg und muss auch falsch zugeordnete Schlüsselverweise erkennen können.
+    """
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    target_key = models.OneToOneField(DataKey, on_delete=models.RESTRICT, related_name="+")
+    source_key_ids = models.JSONField(default=list)
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    phase = models.CharField(max_length=20, default="database")
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization"],
+                condition=models.Q(completed_at__isnull=True),
+                name="core_ein_offener_schluesselwechsel",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Schlüsselwechsel {self.pk} ({self.organization_id})"

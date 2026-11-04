@@ -494,6 +494,10 @@ class DecryptingReader(io.RawIOBase):
         self._chunks = max(1, -(-(total - HEADER) // (CHUNK + TAG)))
         self._pos = 0
         self._cached: tuple[int, bytes] | None = None
+        # Auch eine leere Datei enthält ein GCM-Tag. readinto() liefert für Größe 0
+        # sofort EOF; deshalb diesen einen Block schon beim Öffnen authentifizieren.
+        if self._size == 0:
+            self._chunk(0)
 
     @property
     def size(self) -> int:
