@@ -1,5 +1,7 @@
 // Dokumente: Ablage der aktiven Organisation, Abteilung oder des Mitgliederbereichs.
 import { useState } from 'react'
+import { DocumentIcon, FolderIcon } from './DocumentIcons.tsx'
+import './documents.css'
 import type { FormEvent } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { PERM } from '../../api/orgs.ts'
@@ -56,7 +58,7 @@ export function DocumentsPage() {
           <h1>{t('Dokumente')}</h1>
           <p className="muted">{activePortal.club_name}</p>
         </div>
-        <MemberDocuments base={docBase.portal(activePortal.id)} />
+        <MemberDocuments key={activePortal.id} base={docBase.portal(activePortal.id)} />
       </section>
     )
   }
@@ -134,7 +136,7 @@ function DocumentArea({
 
 function matches(doc: DocItem, query: string): boolean {
   if (!query) return true
-  const q = query.toLocaleLowerCase('de')
+  const q = query.trim().toLocaleLowerCase('de')
   return (
     doc.title.toLocaleLowerCase('de').includes(q) || doc.note.toLocaleLowerCase('de').includes(q)
   )
@@ -154,6 +156,9 @@ function Library({
   canEditStatute: boolean
 }) {
   const [query, setQuery] = useState('')
+  const [view, setView] = useState<'tiles' | 'list'>('tiles')
+  const [selected, setSelected] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
   const [message, setMessage] = useState<Msg>(null)
   const [busy, setBusy] = useState(false)
   const [newName, setNewName] = useState('')
@@ -189,35 +194,135 @@ function Library({
   }
 
   const ctx = { base, manage, busy, run, folders: data.folders, visibilities, setMessage, shareUp }
-  const filtered = (f: DocFolder) => f.documents.filter((d) => matches(d, query))
-  // Suche umfasst eigene, freigegebene Ordner und die festen Ordner (UX-Audit 31.10. W05)
-  const allFolders = [...data.folders, ...(data.from_below ?? []), ...(data.shared ?? [])]
+  // Nur die vom Server nach Rechten gefilterten Ordner verwenden.
+  // Herkunft voranstellen, damit Freigaben auch bei gleichen IDs getrennt bleiben.
+  const groups = [
+    { key: 'own', label: t('Eigene Ordner'), folders: data.folders, writable: manage },
+    {
+      key: 'below',
+      label: t('Von den {pl_dat}', { pl_dat: tm.pl_dat }),
+      folders: data.from_below ?? [],
+      writable: false,
+    },
+    { key: 'shared', label: tm.dv_Vom, folders: data.shared ?? [], writable: false },
+  ]
+  const entries = groups.flatMap((group) =>
+    group.folders.map((folder) => ({
+      key: `${group.key}:${folder.id}`,
+      folder,
+      group,
+      writable: group.writable,
+    })),
+  )
+  const fixed = orgId
+    ? [
+        { key: 'statute' as const, name: t('Satzung') },
+        { key: 'fee_rules' as const, name: t('Beitragsordnung') },
+        { key: 'founding_deed' as const, name: t('Gründungsurkunde') },
+      ]
+    : []
+  const activeFolder = entries.find((entry) => entry.key === selected)
+  const activeFixed = fixed.find((entry) => entry.key === selected)
   const q = query.trim().toLocaleLowerCase('de')
-  const fixedHit = (word: string) => !!orgId && !!q && (word.includes(q) || q.includes(word))
-  const statuteHit = fixedHit('satzung')
-  const feeRulesHit = fixedHit('beitragsordnung')
-  const foundingDeedHit = fixedHit('gründungsurkunde') || fixedHit('gruendungsurkunde')
-  const hits =
-    allFolders.reduce((n, f) => n + filtered(f).length, 0) +
-    (statuteHit ? 1 : 0) +
-    (feeRulesHit ? 1 : 0) +
-    (foundingDeedHit ? 1 : 0)
-  const visible = (f: DocFolder) => !query || filtered(f).length > 0
+  const nameMatches = (name: string) => name.toLocaleLowerCase('de').includes(q)
+  const foundFolders = entries.filter((entry) => nameMatches(entry.folder.name))
+  const foundFixed = fixed.filter(
+    (entry) =>
+      nameMatches(entry.name) || (entry.key === 'founding_deed' && 'gruendungsurkunde'.includes(q)),
+  )
+  const foundDocuments = entries.flatMap((entry) =>
+    entry.folder.documents.filter((doc) => matches(doc, q)).map((doc) => ({ entry, doc })),
+  )
+  const hits = foundFolders.length + foundFixed.length + foundDocuments.length
+  const atRoot = !activeFolder && !activeFixed
+
+  function navigate(key: string | null) {
+    setSelected(key)
+    setQuery('')
+    setCreating(false)
+    setMessage(null)
+  }
+
+  function folderCard(entry: (typeof entries)[number]) {
+    const { folder, writable } = entry
+    return (
+      <li key={entry.key}>
+        <button type="button" className="doc-folder-card" onClick={() => navigate(entry.key)}>
+          <FolderIcon locked={folder.visibility === 'board'} />
+          <span className="doc-folder-caption">
+            <strong>{folder.name}</strong>
+            <span className="muted small">
+              {tn('{n} Dokument', '{n} Dokumente', folder.documents.length)}
+            </span>
+            <span className="badge">
+              {folder.from ? t('von {from}', { from: folder.from }) : folder.visibility_label}
+            </span>
+            {folder.department && <span className="badge">{folder.department}</span>}
+            {folder.shared_up && <span className="badge">{t('nach oben freigegeben')}</span>}
+            {!writable && <span className="muted small">{t('Nur lesen')}</span>}
+          </span>
+        </button>
+      </li>
+    )
+  }
+
+  function fixedCard(entry: (typeof fixed)[number]) {
+    return (
+      <li key={entry.key}>
+        <button type="button" className="doc-folder-card" onClick={() => navigate(entry.key)}>
+          <FolderIcon />
+          <span className="doc-folder-caption">
+            <strong>{entry.name}</strong>
+            <span className="badge">{t('fester Ordner')}</span>
+          </span>
+        </button>
+      </li>
+    )
+  }
 
   return (
-    <div className="documents">
+    <div className={`documents doc-explorer doc-explorer-${view}`}>
       <div className="documents-toolbar">
         <Field
-          label={t('Suchen (Titel und Bemerkung, alle Ordner)')}
+          label={t('Suchen (Ordner, Titel und Bemerkung)')}
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+        <div className="button-row" role="group" aria-label={t('Ansicht')}>
+          <button
+            type="button"
+            className="button button-ghost"
+            aria-pressed={view === 'tiles'}
+            onClick={() => setView('tiles')}
+          >
+            <span aria-hidden="true">▦</span> {t('Kachelansicht')}
+          </button>
+          <button
+            type="button"
+            className="button button-ghost"
+            aria-pressed={view === 'list'}
+            onClick={() => setView('list')}
+          >
+            <span aria-hidden="true">☰</span> {t('Listenansicht')}
+          </button>
+        </div>
+        {manage && atRoot && !q && (
+          <button
+            type="button"
+            className="button button-primary"
+            aria-expanded={creating}
+            aria-controls="doc-create-folder"
+            onClick={() => setCreating(!creating)}
+          >
+            {t('Neuer Ordner')}
+          </button>
+        )}
         {data.used_bytes !== undefined && (
           <p className="muted small">
             {t('Belegter Platz:')} {formatSize(data.used_bytes)}
             {data.budget_bytes
-              ? ` (Verein gesamt ${formatSize(data.total_bytes ?? 0)} von ${formatSize(data.budget_bytes)})`
+              ? ` ${t('(Verein gesamt {used} von {budget})', { used: formatSize(data.total_bytes ?? 0), budget: formatSize(data.budget_bytes) })}`
               : ''}
             {data.trash_count
               ? t(' · {trash_count} im Papierkorb', { trash_count: data.trash_count })
@@ -225,6 +330,43 @@ function Library({
           </p>
         )}
       </div>
+      {!!data.budget_bytes && (
+        <progress
+          className="doc-storage"
+          aria-label={t('Belegter Speicherplatz')}
+          max={data.budget_bytes}
+          value={Math.min(data.total_bytes ?? 0, data.budget_bytes)}
+        />
+      )}
+      <nav className="doc-breadcrumbs" aria-label={t('Ordnerpfad')}>
+        <button
+          type="button"
+          className="button button-ghost"
+          aria-current={atRoot && !q ? 'page' : undefined}
+          onClick={() => navigate(null)}
+        >
+          {t('Dokumente')}
+        </button>
+        {!atRoot && (
+          <>
+            <span aria-hidden="true">/</span>
+            <button
+              type="button"
+              className="button button-ghost"
+              aria-current={!q ? 'page' : undefined}
+              onClick={() => navigate(selected)}
+            >
+              {activeFolder?.folder.name ?? activeFixed?.name}
+            </button>
+          </>
+        )}
+        {q && (
+          <>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{t('Suchergebnisse (alle Ordner)')}</span>
+          </>
+        )}
+      </nav>
       {data.budget_bytes && (data.total_bytes ?? 0) >= data.budget_bytes * 0.8 ? (
         <Alert kind="info">
           {t(
@@ -234,80 +376,95 @@ function Library({
       ) : null}
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
 
-      {query && (
-        <p className="muted small" role="status">
-          {hits === 0
-            ? t(
-                'Kein Dokument passt zur Suche (gesucht in allen eigenen und freigegebenen Ordnern).',
-              )
-            : tn(
-                '{n} Treffer in eigenen und freigegebenen Ordnern.',
-                '{n} Treffer in eigenen und freigegebenen Ordnern.',
-                hits,
-              )}
-        </p>
-      )}
-
-      {orgId && (!query || statuteHit) && (
-        <details className="doc-folder">
-          <summary>
-            <span className="doc-folder-name">{t('Satzung')}</span>
-            <span className="badge">{t('fester Ordner')}</span>
-          </summary>
-          <StatutePanel orgId={orgId} heading="h3" />
+      {q ? (
+        <section aria-label={t('Suchergebnisse (alle Ordner)')}>
+          <div className="button-row">
+            <p className="muted small" role="status">
+              {hits === 0
+                ? t('Keine Ordner oder Dokumente passen zur Suche.')
+                : tn(
+                    '{n} Treffer in eigenen und freigegebenen Ordnern.',
+                    '{n} Treffer in eigenen und freigegebenen Ordnern.',
+                    hits,
+                  )}
+            </p>
+            <button type="button" className="button button-ghost" onClick={() => setQuery('')}>
+              {t('Suche zurücksetzen')}
+            </button>
+          </div>
+          <ul className="doc-folder-grid">
+            {foundFixed.map(fixedCard)}
+            {foundFolders.map(folderCard)}
+          </ul>
+          {foundDocuments.map(({ entry, doc }) => (
+            <div key={`${entry.key}:${doc.id}`} className="doc-search-result">
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => navigate(entry.key)}
+              >
+                {entry.folder.name}
+                {entry.folder.from ? ` · ${entry.folder.from}` : ''}
+              </button>
+              <ul className="statute-list doc-list">
+                <DocumentRow doc={doc} folder={entry.folder} {...ctx} manage={entry.writable} />
+              </ul>
+            </div>
+          ))}
+        </section>
+      ) : activeFixed && orgId ? (
+        <section className="doc-folder" aria-label={activeFixed.name}>
+          <StatutePanel key={activeFixed.key} orgId={orgId} heading="h2" kind={activeFixed.key} />
           {!canEditStatute && (
             <p className="muted small">
               {t('Neue Fassungen lädt hoch, wer die Organisationsdaten bearbeiten darf.')}
             </p>
           )}
-        </details>
-      )}
-
-      {orgId && (!query || feeRulesHit) && (
-        <details className="doc-folder">
-          <summary>
-            <span className="doc-folder-name">{t('Beitragsordnung')}</span>
-            <span className="badge">{t('fester Ordner')}</span>
-          </summary>
-          <StatutePanel orgId={orgId} heading="h3" kind="fee_rules" />
-          {!canEditStatute && (
-            <p className="muted small">
-              {t('Neue Fassungen lädt hoch, wer die Organisationsdaten bearbeiten darf.')}
+        </section>
+      ) : activeFolder ? (
+        <FolderView
+          key={activeFolder.key}
+          folder={activeFolder.folder}
+          docs={activeFolder.folder.documents}
+          {...ctx}
+          manage={activeFolder.writable}
+          from={activeFolder.folder.from}
+        />
+      ) : (
+        <>
+          {fixed.length > 0 && (
+            <ul className="doc-folder-grid" aria-label={t('Feste Ordner')}>
+              {fixed.map(fixedCard)}
+            </ul>
+          )}
+          {groups.map(
+            (group) =>
+              group.folders.length > 0 && (
+                <section key={group.key} className="doc-folder-group" aria-label={group.label}>
+                  <h2>{group.label}</h2>
+                  {group.key !== 'own' && (
+                    <p className="muted small">
+                      {t('Diese Ordner sind für euch freigegeben (nur lesen).')}
+                    </p>
+                  )}
+                  <ul className="doc-folder-grid">
+                    {entries.filter((entry) => entry.group.key === group.key).map(folderCard)}
+                  </ul>
+                </section>
+              ),
+          )}
+          {entries.length === 0 && (
+            <p className="muted">
+              {manage
+                ? t('Noch keine Ordner. Lege mit „Neuer Ordner“ den ersten an.')
+                : t('Noch keine Dokumente.')}
             </p>
           )}
-        </details>
+        </>
       )}
 
-      {orgId && (!query || foundingDeedHit) && (
-        <details className="doc-folder">
-          <summary>
-            <span className="doc-folder-name">{t('Gründungsurkunde')}</span>
-            <span className="badge">{t('fester Ordner')}</span>
-          </summary>
-          <StatutePanel orgId={orgId} heading="h3" kind="founding_deed" />
-          {!canEditStatute && (
-            <p className="muted small">
-              {t('Neue Fassungen lädt hoch, wer die Organisationsdaten bearbeiten darf.')}
-            </p>
-          )}
-        </details>
-      )}
-
-      {data.folders.length === 0 && (
-        <p className="muted">
-          {manage
-            ? t('Noch keine Ordner. Lege unten den ersten an, z. B. „Protokolle“ oder „Formulare“.')
-            : t('Noch keine Dokumente.')}
-        </p>
-      )}
-      {data.folders.map((f) =>
-        query && filtered(f).length === 0 ? null : (
-          <FolderView key={f.id} folder={f} docs={filtered(f)} open={!!query} {...ctx} />
-        ),
-      )}
-
-      {manage && (
-        <form className="inline-form doc-new-folder" onSubmit={createFolder}>
+      {manage && atRoot && !q && creating && (
+        <form id="doc-create-folder" className="inline-form doc-new-folder" onSubmit={createFolder}>
           <h3>{t('Neuer Ordner')}</h3>
           <div className="grid-3">
             <Field
@@ -336,41 +493,6 @@ function Library({
           </button>
         </form>
       )}
-
-      {data.from_below && data.from_below.some(visible) && (
-        <section className="doc-shared" aria-label={t('Freigaben von unten')}>
-          <h2>{t('Von den {pl_dat}', { pl_dat: tm.pl_dat })}</h2>
-          <p className="muted small">{t('Diese Ordner sind für euch freigegeben (nur lesen).')}</p>
-          {data.from_below.filter(visible).map((f) => (
-            <FolderView
-              key={`u${f.id}`}
-              folder={f}
-              docs={filtered(f)}
-              open={!!query}
-              {...ctx}
-              manage={false}
-              from={f.from}
-            />
-          ))}
-        </section>
-      )}
-
-      {data.shared && data.shared.some(visible) && (
-        <section className="doc-shared" aria-label={tm.dv_Vom}>
-          <h2>{tm.dv_Vom}</h2>
-          {data.shared.filter(visible).map((f) => (
-            <FolderView
-              key={`s${f.id}`}
-              folder={f}
-              docs={filtered(f)}
-              open={!!query}
-              {...ctx}
-              manage={false}
-              from={f.from}
-            />
-          ))}
-        </section>
-      )}
     </div>
   )
 }
@@ -389,10 +511,9 @@ interface FolderCtx {
 function FolderView({
   folder,
   docs,
-  open,
   from,
   ...ctx
-}: FolderCtx & { folder: DocFolder; docs: DocItem[]; open: boolean; from?: string }) {
+}: FolderCtx & { folder: DocFolder; docs: DocItem[]; from?: string }) {
   const { base, manage, busy, run, visibilities, setMessage, shareUp } = ctx
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState('')
@@ -461,16 +582,18 @@ function FolderView({
   }
 
   return (
-    <details className="doc-folder" open={open || undefined}>
-      <summary>
-        <span className="doc-folder-name">{folder.name}</span>
+    <section className="doc-folder" aria-label={folder.name}>
+      <div className="doc-folder-heading">
+        <FolderIcon locked={folder.visibility === 'board'} />
+        <h2>{folder.name}</h2>
         <span className="badge">{from ? t('von {from}', { from }) : folder.visibility_label}</span>
         {!from && folder.shared_up && <span className="badge">{t('nach oben freigegeben')}</span>}
         <span className="muted small">
           {' '}
           {tn('· {n} Dokument', '· {n} Dokumente', folder.documents.length)}
         </span>
-      </summary>
+        {!manage && <span className="badge">{t('Nur lesen')}</span>}
+      </div>
       {manage && (
         <div className="doc-folder-tools">
           <SelectField
@@ -500,10 +623,20 @@ function FolderView({
             />
           )}
           <div className="button-row">
-            <button type="button" className="button button-ghost" onClick={() => void rename()}>
+            <button
+              type="button"
+              className="button button-ghost"
+              disabled={busy}
+              onClick={() => void rename()}
+            >
               {t('Umbenennen')}
             </button>
-            <button type="button" className="button button-danger" onClick={() => void remove()}>
+            <button
+              type="button"
+              className="button button-danger"
+              disabled={busy}
+              onClick={() => void remove()}
+            >
               {t('Ordner löschen')}
             </button>
           </div>
@@ -538,6 +671,7 @@ function FolderView({
               <span>{t('Datei (höchstens 20 MB)')}</span>
               <input
                 key={inputKey}
+                disabled={busy}
                 type="file"
                 accept={ACCEPT}
                 aria-label={t('Datei für {name}', { name: folder.name })}
@@ -570,7 +704,7 @@ function FolderView({
           </button>
         </form>
       )}
-    </details>
+    </section>
   )
 }
 
@@ -656,6 +790,7 @@ function DocumentRow({ doc, folder, ...ctx }: FolderCtx & { doc: DocItem; folder
 
   return (
     <li>
+      <DocumentIcon name={current?.name} contentType={current?.content_type} />
       <div className="doc-main">
         <strong>{doc.title}</strong>
         {doc.date && <span className="muted"> · {formatDate(doc.date)}</span>}
@@ -735,6 +870,7 @@ function DocumentRow({ doc, folder, ...ctx }: FolderCtx & { doc: DocItem; folder
               {t('Neue Fassung')}
               <input
                 key={inputKey}
+                disabled={busy}
                 type="file"
                 accept={ACCEPT}
                 className="file-input"
@@ -742,7 +878,12 @@ function DocumentRow({ doc, folder, ...ctx }: FolderCtx & { doc: DocItem; folder
                 onChange={(e) => void addVersion(e.target.files?.[0])}
               />
             </label>
-            <button type="button" className="button button-ghost" onClick={() => setEditing(true)}>
+            <button
+              type="button"
+              className="button button-ghost"
+              disabled={busy}
+              onClick={() => setEditing(true)}
+            >
               {t('Bearbeiten')}
             </button>
             {folders.length > 1 && (
@@ -877,54 +1018,18 @@ function TrashPanel({ base }: { base: DocBase }) {
 
 /** Mitgliederbereich: freigegebene Dokumente des Vereins und der eigenen Abteilungen. */
 function MemberDocuments({ base }: { base: DocBase }) {
-  const { data, error } = useLoad(() => docApi.overview(base), [base])
-  const [query, setQuery] = useState('')
+  const { data, error, reload } = useLoad(() => docApi.overview(base), [base])
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <p className="muted">{t('Lädt …')}</p>
-  const folders = data.folders.filter((f) => f.documents.length > 0)
-  if (folders.length === 0)
+  if (!data.folders.some((folder) => folder.documents.length > 0))
     return <p className="muted">{t('Für dich sind keine Dokumente freigegeben.')}</p>
   return (
-    <div className="documents">
-      <Field
-        label={t('Suchen (Titel und Bemerkung)')}
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      {folders.map((f) => {
-        const docs = f.documents.filter((d) => matches(d, query))
-        if (query && docs.length === 0) return null
-        return (
-          <section key={f.id} className="doc-member-folder">
-            <h2>
-              {f.name}
-              {f.department && <span className="badge">{f.department}</span>}
-            </h2>
-            <ul className="statute-list">
-              {docs.map((d) => (
-                <li key={d.id}>
-                  <div>
-                    <strong>{d.title}</strong>
-                    {d.date && <span className="muted"> · {formatDate(d.date)}</span>}
-                    {d.note && <div className="muted small">{d.note}</div>}
-                  </div>
-                  {d.current && (
-                    <a
-                      className="button button-ghost"
-                      href={d.current.inline ? d.current.url : `${d.current.url}?download=1`}
-                      target={d.current.inline ? '_blank' : undefined}
-                      rel="noreferrer"
-                    >
-                      {d.current.inline ? t('Ansehen') : t('Herunterladen')}
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )
-      })}
-    </div>
+    <Library
+      base={base}
+      data={{ ...data, can_manage: false }}
+      reload={reload}
+      orgId={null}
+      canEditStatute={false}
+    />
   )
 }
