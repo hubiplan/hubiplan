@@ -232,3 +232,113 @@ def test_private_loeschung_nach_rollenverlust_funktioniert_mit_rls(api, board_a,
     with as_app_role():
         assert api(board_a).get("/api/me/todos/export/").status_code == 200
         assert api(board_a).delete(f"/api/me/todos/{first['id']}/").status_code == 204
+
+
+def test_abteilungen_teilen_im_eigenen_kontext_ohne_elternzugang(api, board_a, orgs):
+    from organizations.models import Department
+
+    from .test_m12_events import dept_role, member_with_access
+
+    club = orgs["a"]
+    club.member_portal_enabled = True
+    club.department_access_enabled = True
+    club.save()
+    dept = Department.objects.create(
+        organization=club, self_managed=True, name="Beispielzug", founding_year=1950
+    )
+    member, user, _ = member_with_access(club, "Mara", [dept])
+    role = dept_role(dept, member, ["todos.view", "todos.edit"])
+    base = f"/api/depts/{dept.pk}/todos/"
+    with as_app_role():
+        task = create(api, board_a, club)
+        response = patch(
+            api,
+            board_a,
+            club,
+            task,
+            shares=[
+                {
+                    "role": role.pk,
+                    "target_org": club.pk,
+                    "target_department": dept.pk,
+                    "level": "edit",
+                }
+            ],
+            per_unit=False,
+        )
+        assert response.status_code == 200, response.content
+        received = api(user).get(base).json()["items"][0]
+        assert received["id"] == task["id"]
+        changed = api(user).patch(
+            base + f"{task['id']}/",
+            {"version": received["version"], "status": "done"},
+            content_type="application/json",
+        )
+        assert changed.status_code == 200, changed.content
+        own = api(user).post(
+            base, {"title": "Aufgabe aus dem Zug"}, content_type="application/json"
+        )
+        assert own.status_code == 201, own.content
+        own = own.json()
+        shared = api(user).patch(
+            base + f"{own['id']}/",
+            {
+                "version": own["version"],
+                "shares": [
+                    {
+                        "user": board_a.pk,
+                        "target_org": club.pk,
+                        "target_department": None,
+                        "level": "edit",
+                    }
+                ],
+                "per_unit": False,
+            },
+            content_type="application/json",
+        )
+        assert shared.status_code == 200, shared.content
+        assert api(board_a).get(url(club, own["id"])).status_code == 200
+
+
+def test_entferntes_ziel_stoppt_folge_und_quellanhang_lokale_datei_bleibt(
+    api, sender, board_a, orgs
+):
+    source = orgs["federation"]
+    todo = start(api, sender, source)
+    added = add(api, sender, source, todo).json()
+    central = added["attachment"]["id"]
+    todo = listed(api, sender, source)[0]
+    todo = distribute(api, sender, source, todo, [(board_a, orgs["a"])])
+    local = listed(api, board_a, orgs["a"])[0]
+    own_file = add(api, board_a, orgs["a"], local).json()["attachment"]["id"]
+    with as_app_role():
+        assert patch(api, sender, source, todo, shares=[]).status_code == 200
+        assert api(board_a).get(endpoint(orgs["a"], local) + f"{central}/").status_code == 404
+        response = api(board_a).get(endpoint(orgs["a"], local) + f"{own_file}/")
+        assert response.status_code == 200
+        assert b"erfundener Anhang" in b"".join(response.streaming_content)
+        local = listed(api, board_a, orgs["a"])[0]
+        assert not local["series"]["active"]
+        complete(api, board_a, orgs["a"], local)
+        assert len(listed(api, board_a, orgs["a"])) == 1
+
+
+def test_verwaiste_einzelfreigabe_erzeugt_keine_private_ausgabe_ohne_konto(api, board_a, orgs):
+    reader = make_user("serienhelfer@example.org")
+    give_role(reader, orgs["a"], permissions=["todos.view"], name="Serienhilfe")
+    first = start(api, board_a, orgs["a"])
+    first = patch(
+        api,
+        board_a,
+        orgs["a"],
+        first,
+        shares=[{"user": reader.pk, "level": "edit"}],
+        following=False,
+    ).json()
+    board_a.delete()
+    with as_app_role():
+        current = listed(api, reader, orgs["a"])[0]
+        complete(api, reader, orgs["a"], current)
+        assert len(listed(api, reader, orgs["a"])) == 1
+    with rls_bypass():
+        assert Todo.objects.filter(series_id=first["series"]["id"]).count() == 1

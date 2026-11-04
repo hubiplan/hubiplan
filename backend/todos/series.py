@@ -183,6 +183,9 @@ def after_save(todo, previous, series):
         return
     number = max(numbers, default=0) + 1
     with suppress(), rls_bypass():
+        if not todo.owner_id and not series.shares:
+            TodoSeries.objects.filter(pk=series.pk).update(active=False)
+            return
         central_ids = todo.central_attachment_ids
         if todo.distributed:
             source = (
