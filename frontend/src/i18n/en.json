@@ -5619,5 +5619,7 @@
   " (Vorstand)": " (board)",
   "zugesagt": "accepted",
   "abgesagt": "declined",
-  "entfernen": "remove"
+  "entfernen": "remove",
+  "action|Zusagen": "Accept",
+  "action|Absagen": "Decline"
 }

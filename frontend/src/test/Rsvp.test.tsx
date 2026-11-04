@@ -2,7 +2,9 @@ import { render, screen, within } from '@testing-library/react'
 import { useState } from 'react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
+import { setCatalogForTest } from '../i18n/index.ts'
+import en from '../i18n/en.json'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import { CalendarView } from '../components/calendar/CalendarView.tsx'
@@ -60,6 +62,27 @@ function detail(rsvp: Record<string, unknown>, over: Record<string, unknown> = {
 }
 
 describe('Zu- und Absagen', () => {
+  afterEach(() => setCatalogForTest('de'))
+  it('benennt Antwortaktionen auf Englisch als Verben und bestätigt die Absage', async () => {
+    setCatalogForTest('en', en)
+    const base = '/api/portal/4/'
+    fakeApi({
+      [`PUT ${base}events/1/response/`]: () => ({
+        status: 200,
+        body: detail({ can_respond: true }),
+      }),
+    })
+    render(
+      <MyResponsePanel
+        base={base}
+        event={detail({ can_respond: true }) as EventDetail}
+        onChanged={() => {}}
+      />,
+    )
+    expect(screen.getByRole('button', { name: 'Accept' })).toBeEnabled()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Decline' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Your decline has been saved.')
+  })
   it('bestätigt die Rücknahme und fokussiert die verfügbare Antwortaktion statt des entfernten Knopfs', async () => {
     const base = '/api/portal/4/'
     const initial = detail({

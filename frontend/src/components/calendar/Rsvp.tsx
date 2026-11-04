@@ -13,7 +13,7 @@ import { Alert, Field } from '../ui.tsx'
 import { berlin, formatDay } from './time.ts'
 import { confirmDialog } from '../dialog.ts'
 import { useTerms } from '../../org/terms.ts'
-import { t, tn } from '../../i18n/index.ts'
+import { t, tc, tn } from '../../i18n/index.ts'
 
 const STATUS_LABEL: Record<ResponseStatus, string> = {
   get yes() {
@@ -152,7 +152,7 @@ export function MyResponsePanel({
               disabled={busy}
               onClick={() => void send('yes')}
             >
-              {t('Zusagen')}
+              {tc('action', 'Zusagen')}
             </button>
             <button
               type="button"
@@ -160,7 +160,7 @@ export function MyResponsePanel({
               disabled={busy}
               onClick={() => void send('no')}
             >
-              {t('Absagen')}
+              {tc('action', 'Absagen')}
             </button>
             {mine && (
               <button

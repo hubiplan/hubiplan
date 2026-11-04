@@ -11,4 +11,4 @@ Der Kalender zeigt die Termine der Einheit. Mit dem Recht dazu legst du Termine 
 
 Beim Anlegen oder Bearbeiten eines Termins kannst du **Endzeit auf der Webseite ausblenden** aktivieren, wenn öffentlich nur die Beginnzeit erscheinen soll. Intern und im Kalender-Abo bleibt die Endzeit erhalten. Bei Serien gilt die Einstellung für alle Wiederholungen.
 
-Nach erfolgreichem Zusagen, Absagen oder Zurücknehmen deiner Rückmeldung erscheint eine Bestätigung, die als Statusmeldung auch für Screenreader bereitsteht. Der Fokus bleibt bei der Aktion. Bei einem Fehler erscheint keine Erfolgsbestätigung; du kannst die Rückmeldung erneut senden.
+Nach erfolgreichem Zusagen, Absagen oder Zurücknehmen deiner Rückmeldung erscheint eine Bestätigung, die als Statusmeldung auch für Screenreader bereitsteht. Beim Zu- und Absagen bleibt der Fokus bei der Aktion; nach dem Zurücknehmen wechselt er zu **Zusagen**. Bei einem Fehler erscheint keine Erfolgsbestätigung; du kannst die Rückmeldung erneut senden.
