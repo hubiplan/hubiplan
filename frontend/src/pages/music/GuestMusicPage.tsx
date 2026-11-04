@@ -136,7 +136,7 @@ function GuestAssignment({ token }: { token: string }) {
           )}
           {row.setup_at && (
             <div>
-              <dt>{t('Aufbau')}</dt>
+              <dt>{t('Aufbauzeit')}</dt>
               <dd>{formatDateTime(row.setup_at)}</dd>
             </div>
           )}
