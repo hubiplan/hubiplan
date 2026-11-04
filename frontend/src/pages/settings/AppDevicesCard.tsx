@@ -5,7 +5,7 @@ import { LoadError } from '../../components/ui.tsx'
 import { devicesApi } from '../../api/devices.ts'
 import { HowTo } from '../../learning/Aids.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
-import type { PairingCode } from '../../api/devices.ts'
+import type { AppDevice, PairingCode } from '../../api/devices.ts'
 import { locale } from '../../i18n/index.ts'
 import { t } from '../../i18n/index.ts'
 

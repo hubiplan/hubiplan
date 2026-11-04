@@ -565,22 +565,9 @@ function InvoiceDetail({
         </a>
         {canEdit && inv.status === 'draft' && (
           <>
-            {inv.electronic_data && Object.keys(inv.electronic_data).length > 0 ? (
-              <Link
-                className="button button-ghost"
-                to={`/finanzen/rechnungen/leistungen?rechnung=${inv.id}`}
-              >
-                {t('Leistungsrechnung bearbeiten')}
-              </Link>
-            ) : (
-              <button
-                type="button"
-                className="button button-ghost"
-                onClick={() => setEditing(true)}
-              >
-                {t('Bearbeiten')}
-              </button>
-            )}
+            <button type="button" className="button button-ghost" onClick={() => setEditing(true)}>
+              {t('Bearbeiten')}
+            </button>
             <button
               type="button"
               className="button button-primary"
