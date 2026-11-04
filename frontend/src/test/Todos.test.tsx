@@ -54,7 +54,7 @@ describe('Eigene Aufgaben', () => {
     })
     setup('/aufgaben?aufgabe=50&einheit=8')
     expect(
-      await screen.findByRole('button', { name: 'Aufgabe der anderen Einheit' }),
+      await screen.findByRole('link', { name: 'Aufgabe der anderen Einheit' }),
     ).toBeInTheDocument()
   })
 
@@ -101,7 +101,7 @@ describe('Eigene Aufgaben', () => {
     })
     setup()
     expect(
-      await screen.findByRole('button', { name: 'Material für die Abteilung' }),
+      await screen.findByRole('link', { name: 'Material für die Abteilung' }),
     ).toBeInTheDocument()
   })
   it('legt mit Leserecht eine Aufgabe an und zeigt sie in der Liste', async () => {
@@ -134,7 +134,7 @@ describe('Eigene Aufgaben', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Neue Aufgabe' }))
     await userEvent.type(screen.getByLabelText('Titel'), 'Material bestellen')
     await userEvent.click(screen.getByRole('button', { name: 'Anlegen' }))
-    expect(await screen.findByRole('button', { name: 'Material bestellen' })).toBeInTheDocument()
+    expect(await screen.findByRole('link', { name: 'Material bestellen' })).toBeInTheDocument()
   })
 
   it('bietet einer geteilten Leserin keinen Haken zum Erledigen', async () => {
@@ -165,7 +165,8 @@ describe('Eigene Aufgaben', () => {
       }),
     })
     setup()
-    await screen.findByRole('button', { name: 'Nur lesen' })
+    await screen.findByRole('link', { name: 'Nur lesen' })
+    expect(screen.queryByRole('button', { name: 'Nur lesen' })).not.toBeInTheDocument()
     await waitFor(() => expect(screen.getByRole('checkbox', { name: 'Erledigt' })).toBeDisabled())
     expect(screen.queryByRole('button', { name: 'Löschen' })).not.toBeInTheDocument()
   })
@@ -203,7 +204,9 @@ describe('Eigene Aufgaben', () => {
       },
     })
     setup()
-    await userEvent.click(await screen.findByRole('button', { name: 'Vorbereiten' }))
+    const taskLink = await screen.findByRole('link', { name: 'Vorbereiten' })
+    taskLink.focus()
+    await userEvent.keyboard('{Enter}')
     await userEvent.type(await screen.findByLabelText('Beschreibung'), 'Erste Notiz')
     await userEvent.click(screen.getByRole('checkbox', { name: 'Erledigt' }))
     await waitFor(() => expect(task.status).toBe('done'))

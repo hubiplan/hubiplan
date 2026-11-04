@@ -1,8 +1,9 @@
 import { TodoRemote, TodoRemoteInbox } from '../components/TodoRemote.tsx'
+import { DeleteIcon, RestoreIcon, IconButton } from '../components/icons.tsx'
 import { NewTodoDialog } from '../components/NewTodoDialog.tsx'
 import { TodoEditor } from '../components/TodoEditor.tsx'
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { TodoPortal } from '../components/TodoPortal.tsx'
 import { TodoEventLink } from '../components/TodoEventLink.tsx'
 import { todoApi, todoBase } from '../api/todos.ts'
@@ -80,6 +81,25 @@ function TodoWorkspace({ base }: { base: string }) {
         (filter === 'sent' && item.shared && item.created_by === user?.id) ||
         (filter === 'overdue' && item.overdue)),
   )
+  function taskParams(item: Todo) {
+    const next = new URLSearchParams(params)
+    next.delete('neu')
+    next.set('aufgabe', String(item.id))
+    if (activeDept) {
+      next.delete('einheit')
+      next.set('abteilung', String(activeDept.id))
+    } else if (active) {
+      next.delete('abteilung')
+      next.set('einheit', String(active.id))
+    }
+    return next
+  }
+  function openTask(item: Todo) {
+    return guard(() => {
+      setNewTask(false)
+      setParams(taskParams(item))
+    })
+  }
   async function change(item: Todo, changes: object) {
     if (!(await confirmLeave())) return
     try {
@@ -239,53 +259,90 @@ function TodoWorkspace({ base }: { base: string }) {
           onSaved={() => void reload()}
         />
       )}
-      <ul className="plain-list task-list">
-        {items.map((item) => (
-          <li
-            key={item.id}
-            className={
-              item.highlight
-                ? `task-reminder${item.overdue ? ' task-reminder-overdue' : ''}`
-                : undefined
-            }
-          >
-            {tab !== 'trash' && (
-              <label className="todo-check">
-                <input
-                  type="checkbox"
-                  aria-label={t('Erledigt')}
-                  checked={item.status === 'done'}
-                  disabled={!item.can_edit || item.can_complete === false}
-                  onChange={(event) =>
-                    void change(item, { status: event.target.checked ? 'done' : 'open' })
-                  }
-                />
-              </label>
-            )}
-            <button
-              className="button button-ghost"
-              onClick={() => {
-                void guard(() => {
-                  setNewTask(false)
-                  setParams({ aufgabe: String(item.id) })
-                })
-              }}
-            >
-              {item.title}
-            </button>
-            <span className="muted">{item.due_date ?? t('ohne Frist')}</span>
-            {item.highlight && <span className="badge">{item.due_label}</span>}
-            {item.can_delete && (
-              <button
-                className="button button-ghost"
-                onClick={() => void change(item, { deleted: tab !== 'trash' })}
-              >
-                {t(tab === 'trash' ? 'Wiederherstellen' : 'Löschen')}
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      {!!items.length && (
+        <div className="table-scroll todo-list-panel">
+          <table className="table table-keep todo-table" aria-label={t('Aufgaben')}>
+            <thead>
+              <tr>
+                {tab !== 'trash' && (
+                  <th className="todo-state-cell" scope="col">
+                    {t('Status')}
+                  </th>
+                )}
+                <th scope="col">{t('Aufgabe')}</th>
+                <th className="todo-date-column" scope="col">
+                  {t('Frist')}
+                </th>
+                <th className="todo-action-cell" scope="col">
+                  {t('Aktionen')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => (
+                <tr
+                  key={item.id}
+                  className={`clickable${selected?.id === item.id ? ' todo-row-selected' : ''}${item.highlight ? ` task-reminder${item.overdue ? ' task-reminder-overdue' : ''}` : ''}`}
+                  onClick={(event) => {
+                    if ((event.target as Element).closest('a, button, input, label')) return
+                    void openTask(item)
+                  }}
+                >
+                  {tab !== 'trash' && (
+                    <td className="todo-state-cell">
+                      <label className="todo-check">
+                        <input
+                          type="checkbox"
+                          aria-label={t('Erledigt')}
+                          checked={item.status === 'done'}
+                          disabled={!item.can_edit || item.can_complete === false}
+                          onChange={(event) =>
+                            void change(item, { status: event.target.checked ? 'done' : 'open' })
+                          }
+                        />
+                      </label>
+                    </td>
+                  )}
+                  <th scope="row" className="todo-title-cell">
+                    <Link
+                      to={`?${taskParams(item)}`}
+                      onClick={(event) => {
+                        if (
+                          event.ctrlKey ||
+                          event.metaKey ||
+                          event.shiftKey ||
+                          event.altKey ||
+                          event.button !== 0
+                        )
+                          return
+                        event.preventDefault()
+                        void openTask(item)
+                      }}
+                    >
+                      {item.title}
+                    </Link>
+                    <span className="todo-due-compact muted">
+                      {item.due_date ?? t('ohne Frist')}
+                    </span>
+                    {item.highlight && <span className="badge todo-row-due">{item.due_label}</span>}
+                  </th>
+                  <td className="todo-date-column muted">{item.due_date ?? t('ohne Frist')}</td>
+                  <td className="todo-action-cell">
+                    {item.can_delete && (
+                      <IconButton
+                        label={t(tab === 'trash' ? 'Wiederherstellen' : 'Löschen')}
+                        icon={tab === 'trash' ? <RestoreIcon /> : <DeleteIcon />}
+                        danger={tab !== 'trash'}
+                        onClick={() => void change(item, { deleted: tab !== 'trash' })}
+                      />
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       {data && !items.length && <p className="muted">{t('Keine Aufgaben vorhanden.')}</p>}
       <a className="button button-ghost" href="/api/me/todos/export/?files=1">
         {t('Eigene Aufgaben exportieren')}
