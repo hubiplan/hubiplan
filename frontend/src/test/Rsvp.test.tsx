@@ -2,6 +2,8 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
+import { AuthProvider } from '../auth/AuthContext.tsx'
+import { OrgProvider } from '../org/OrgContext.tsx'
 import { CalendarView } from '../components/calendar/CalendarView.tsx'
 import { addDays, addMonths, monthGrid, monthStart, today } from '../components/calendar/time.ts'
 import { fakeApi } from './fakeApi.ts'
@@ -79,7 +81,11 @@ describe('Zu- und Absagen', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     await user.click(await screen.findByRole('button', { name: 'Liste' }))
@@ -154,7 +160,11 @@ describe('Zu- und Absagen', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     await user.click(await screen.findByText('Königsschießen'))
@@ -185,7 +195,11 @@ describe('Zu- und Absagen', () => {
     })
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
@@ -213,7 +227,11 @@ describe('Zu- und Absagen', () => {
     fakeApi(list(base, [], { can_manage: true, rsvp_allowed: false }))
     render(
       <MemoryRouter>
-        <CalendarView base={base} />
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
       </MemoryRouter>,
     )
     await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))

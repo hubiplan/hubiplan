@@ -27,6 +27,7 @@ import { DataTable } from '../../components/DataTable.tsx'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
+import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
 import {
   Alert,
   Checkbox,
@@ -143,6 +144,7 @@ function NewCall({
     internal: false,
   })
   const { values: v, set, errors } = form
+  const draft = useChangesGuard(v)
 
   async function save(e: FormEvent) {
     e.preventDefault()
@@ -156,7 +158,10 @@ function NewCall({
         template: v.template,
       }),
     )
-    if (created) onCreated((created as CallDetail).id)
+    if (created) {
+      draft.markSaved()
+      onCreated((created as CallDetail).id)
+    }
   }
 
   return (
@@ -164,7 +169,14 @@ function NewCall({
       <form onSubmit={save}>
         <div className="card-head">
           <h2>Neue Ausschreibung</h2>
-          <button type="button" className="button button-ghost push-right" onClick={onClose}>
+          <button
+            type="button"
+            className="button button-ghost push-right"
+            disabled={form.busy}
+            onClick={async () => {
+              if (await confirmDiscard(draft.dirty)) onClose()
+            }}
+          >
             Abbrechen
           </button>
         </div>

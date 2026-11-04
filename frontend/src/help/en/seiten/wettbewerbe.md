@@ -24,3 +24,5 @@ must also allow the own-starters packet. Changes propagate on the next peering s
 already received copies cannot reliably be recalled remotely.
 
 Name lists use a fixed alphabetical order: accented letters are placed with their base letter. Identical names keep their relative order when paging through the list.
+
+Live tables show an error and **Reload** even when the first request fails. Previously loaded rankings remain visible with a notice identifying the earlier state until updating succeeds.

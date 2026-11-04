@@ -9,3 +9,5 @@ stichworte: [income, expenses, year comparison]
 ---
 
 Development compares income and expenses over the years, by category and tax area. This lets you spot changes early.
+
+After you change the selection, previous results are hidden until the new request finishes. If loading fails, **Reload** retries the same selection.

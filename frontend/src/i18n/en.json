@@ -5016,5 +5016,11 @@
   "Aufgaben aus anderen Installationen": "Tasks from other installations",
   "Keine neuen Aufgaben zur Übernahme.": "No new tasks to adopt.",
   "Aufgaben (ausdrücklich geteilte Inhalte und Erledigungsstand)": "Tasks (explicitly shared content and completion state)",
-  "Einige gemeinsame Aufgaben sind gerade nicht abrufbar. Bitte erneut laden.": "Some shared tasks are currently unavailable. Please reload."
+  "Einige gemeinsame Aufgaben sind gerade nicht abrufbar. Bitte erneut laden.": "Some shared tasks are currently unavailable. Please reload.",
+  "Weitere Aktionen": "More actions",
+  "Filter ({count})": "Filters ({count})",
+  "Pro Seite": "Per page",
+  "alle Mitglieder": "all members",
+  "alle": "all",
+  "Untereinheiten konnten nicht geladen werden. Deine Eingaben bleiben erhalten.": "Sub-units could not be loaded. Your input is retained."
 }

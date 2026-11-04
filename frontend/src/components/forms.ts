@@ -52,6 +52,48 @@ export function useLoad<T>(loader: () => Promise<T>, deps: unknown[]) {
   return { data, error, reload, setData, loading }
 }
 
+/** Ergebnisse gehören immer zur aktuellen Auswahl. Alte Treffer sind auch im
+ * ersten Render nach einem Filterwechsel weder sichtbar noch bedienbar.
+ * deps müssen serialisierbare Abfragewerte enthalten. */
+export function useQueryLoad<T>(loader: () => Promise<T>, deps: unknown[], enabled = true) {
+  const key = JSON.stringify(deps)
+  const [result, setResult] = useState<{
+    key: string
+    data: T | null
+    error: string | null
+    loading: boolean
+  } | null>(null)
+  // oxlint-disable-next-line react-hooks/exhaustive-deps
+  const load = useCallback(loader, deps)
+  const generation = useRef(0)
+  const run = useCallback(async () => {
+    if (!enabled) return
+    const mine = ++generation.current
+    setResult({ key, data: null, error: null, loading: true })
+    try {
+      const data = await load()
+      if (mine === generation.current) setResult({ key, data, error: null, loading: false })
+    } catch (err) {
+      if (mine === generation.current)
+        setResult({ key, data: null, error: errorMessage(err), loading: false })
+    }
+  }, [enabled, key, load])
+  useEffect(() => {
+    void run()
+    return () => {
+      // oxlint-disable-next-line react-hooks/exhaustive-deps
+      generation.current++
+    }
+  }, [run])
+  const current = enabled && result?.key === key ? result : null
+  return {
+    data: current?.data ?? null,
+    error: current?.error ?? null,
+    loading: enabled && (current?.loading ?? true),
+    reload: run,
+  }
+}
+
 /** Formularzustand mit Speichern und Feldfehlern. */
 /** Nach dem Neuzeichnen das erste als fehlerhaft markierte Feld fokussieren (WCAG 3.3.1). */
 export function focusFirstInvalid(form: Element) {

@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react'
 import type { StandApi, StandingBlock } from '../../api/competitions.ts'
 import { useVersion } from './standStore.ts'
+import { errorMessage } from '../../components/forms.ts'
+import { LoadError } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 export function LiveTables({ api }: { api: StandApi }) {
   const [blocks, setBlocks] = useState<StandingBlock[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [stale, setStale] = useState(false)
   const [tick, setTick] = useState(0)
   // neu laden, sobald irgendein Gerät etwas erfasst hat
@@ -20,19 +23,43 @@ export function LiveTables({ api }: { api: StandApi }) {
         if (stop) return
         setBlocks(res.scorings)
         setStale(false)
+        setError(null)
       })
-      .catch(() => {
-        if (!stop) setStale(true) // ohne Empfang: letzter Stand bleibt stehen
+      .catch((error) => {
+        if (!stop) {
+          setError(errorMessage(error))
+          setStale(true)
+        } // Bei fehlendem Empfang bleibt ein vorhandener Stand stehen.
       })
     return () => {
       stop = true
     }
   }, [api, tick])
 
-  if (!blocks) return null
+  if (!blocks)
+    return (
+      <aside className="stand-live" aria-label={t('Aktuelle Tabellen')}>
+        {error ? (
+          <LoadError
+            message={error}
+            onRetry={() => {
+              setError(null)
+              setTick((n) => n + 1)
+            }}
+          />
+        ) : (
+          <p role="status">{t('Lädt …')}</p>
+        )}
+      </aside>
+    )
   return (
     <aside className="stand-live" aria-label={t('Aktuelle Tabellen')}>
-      {stale && <p className="muted small">{t('Ohne Empfang: Stand der letzten Abfrage.')}</p>}
+      {stale && (
+        <LoadError
+          message={t('Ohne Empfang: Stand der letzten Abfrage.')}
+          onRetry={() => setTick((n) => n + 1)}
+        />
+      )}
       {blocks.map((b) => (
         <section key={b.scoring} className="stand-live-block stand-block">
           <h2>{b.name}</h2>
