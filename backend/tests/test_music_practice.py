@@ -18,6 +18,7 @@ from music.models import (
     RehearsalInvitation,
     RehearsalItem,
     ScoreDocument,
+    ScoreLoan,
     ScorePart,
     Skill,
 )

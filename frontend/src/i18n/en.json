@@ -5326,5 +5326,11 @@
   "Meine Notenunterlagen": "My sheet music files",
   "Meine Notenausgaben": "My sheet music checkouts",
   "Noch zurückzugeben": "Still to return",
-  "Bei Eingeteilten": "Held by assigned musicians"
+  "Bei Eingeteilten": "Held by assigned musicians",
+  "Anzahl": "Quantity",
+  "Nach oben": "Move up",
+  "Nach unten": "Move down",
+  "Dokument": "Document",
+  "Archiviert": "Archived",
+  "Storniert": "Cancelled"
 }
