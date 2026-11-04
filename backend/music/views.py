@@ -19,10 +19,12 @@ from .models import Assignment, Musician, Performance, Position, Skill
 class ScopedSerializer(serializers.ModelSerializer):
     def get_fields(self):
         fields = super().get_fields()
-        org = self.context["view"].org
+        org = getattr(self.context.get("view"), "org", None)
         for field in fields.values():
             if isinstance(field, serializers.PrimaryKeyRelatedField) and field.queryset is not None:
-                field.queryset = field.queryset.filter(organization=org)
+                field.queryset = (
+                    field.queryset.filter(organization=org) if org else field.queryset.none()
+                )
         return fields
 
     def validate(self, attrs):
@@ -87,7 +89,7 @@ class ScopedSerializer(serializers.ModelSerializer):
 class MusicianSerializer(ScopedSerializer):
     display_name = serializers.SerializerMethodField()
 
-    def get_display_name(self, obj):
+    def get_display_name(self, obj) -> str:
         return str(obj.membership.person) if obj.membership_id else obj.name
 
     class Meta:

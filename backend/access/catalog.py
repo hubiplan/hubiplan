@@ -150,13 +150,6 @@ _BOTH = (VIEW, EDIT)
 
 AREAS: tuple[Area, ...] = (
     Area(
-        "music",
-        gettext_noop("Musik"),
-        gettext_noop("Musiker und Auftritte lesen"),
-        gettext_noop("Musiker und Auftritte bearbeiten"),
-        module="music",
-    ),
-    Area(
         "members",
         gettext_noop("Mitglieder"),
         gettext_noop("Liste, Akten, Ämter, Ehrungen, Würden und Jubiläen sehen"),
@@ -256,6 +249,13 @@ AREAS: tuple[Area, ...] = (
         dept_levels=(VIEW,),
         module="billing",
         dept_label=gettext_noop("Rechnungen {gen}"),
+    ),
+    Area(
+        "music",
+        gettext_noop("Musik"),
+        gettext_noop("Musiker und Auftritte lesen"),
+        gettext_noop("Musiker und Auftritte bearbeiten"),
+        module="music",
     ),
     Area(
         "events",
