@@ -118,7 +118,7 @@ def test_program_order_duration_stock_and_csv(c, club, repertoire):
     assert "Schrank A" in c.get(url + "?export=parts").content.decode("utf-8-sig")
 
 
-def test_foreign_arrangement_and_private_event_are_hidden(api, c, club, orgs, repertoire):
+def test_foreign_arrangement_and_calendar_rights(api, c, club, orgs, repertoire):
     base, performance, _ = repertoire
     with tenant_context(orgs["b"].pk):
         piece = Piece.objects.create(organization=orgs["b"], title="Fremdes Stück")
@@ -132,9 +132,9 @@ def test_foreign_arrangement_and_private_event_are_hidden(api, c, club, orgs, re
         event.visibility = "board"
         event.save()
     user = make_user("musik-lesen@example.org")
-    give_role(user, club, permissions=["music.view", "events.view"], name="Musikleser")
+    give_role(user, club, permissions=["music.view"], name="Musikleser")
     client = api(user)
-    assert client.get(url).status_code == 404
+    assert client.get(url).status_code == 403
     assert client.post(f"{base}/pieces/", {"title": "Neu"}, content_type=JSON).status_code == 403
     with as_app_role(), tenant_context(club.pk):
         assert not Arrangement.objects.filter(pk=arrangement.pk).exists()
