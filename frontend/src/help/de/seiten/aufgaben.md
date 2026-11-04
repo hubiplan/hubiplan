@@ -7,6 +7,8 @@ routen: [/aufgaben]
 stichworte: [Todo, Tasks]
 ---
 
+In der Übersicht stehen die Aufgaben direkt unter der Statusauswahl und dem Filter. „Neue Aufgabe“ steht rechts neben der Überschrift. Unterhalb der Liste erscheinen Hinweise auf Aufgaben ohne verantwortliches Konto oder auf eingehende Aufgaben anderer Installationen nur dann, wenn tatsächlich Einträge vorliegen; die Anzahl steht am Hinweis. Ladefehler bleiben mit einer erneuten Lademöglichkeit sichtbar. Nach der letzten Übernahme verschwindet der jeweilige Hinweis. Unter der Liste findest du den Export. Berechtigte Rollenverwalter öffnen dort außerdem „Verwaltung“, um die Aufbewahrung geteilter Aufgaben einzustellen. Dieser Bereich ist zunächst eingeklappt.
+
 Lege eigene Aufgaben mit Titel und optionaler Beschreibung und Frist an. Eigene Aufgaben sind privat. Nach dem Anlegen speichert das Formular Änderungen automatisch. Erledigte Aufgaben stehen unter „Erledigt“. Gelöschte Aufgaben kannst du 30 Tage im Papierkorb wiederherstellen. Unter „Eigene Aufgaben exportieren“ erhältst du deine privaten Aufgaben.
 
 Geteilte Aufgaben sind zusätzlich für ausgewählte Personen oder aktive Rolleninhaber sichtbar. Mit Lesen sehen sie die Aufgabe, mit Bearbeiten dürfen sie auch ändern und erledigen. Nur das verantwortliche Konto löscht oder überträgt die Verantwortung. Unter „Mein Konto › Benachrichtigungen“ kannst du Hinweise beim Teilen per Mail und Push abschalten. Bei dauerhaft weggefallenem Zugang können berechtigte Rollenverwalter die Verantwortung für verwaiste geteilte Aufgaben übernehmen; private Aufgaben bleiben verborgen. Der Postausgang speichert bei Aufgabenhinweisen nur einen neutralen Versandvermerk.

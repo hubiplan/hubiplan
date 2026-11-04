@@ -142,6 +142,64 @@
   min-width: 0;
 }
 
+.todo-page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.todo-page-heading h1 {
+  margin: 0;
+}
+
+.todo-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 0.75rem;
+  padding-block-start: 0.5rem;
+}
+
+.todo-notice,
+.todo-administration {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.todo-notice summary,
+.todo-administration summary {
+  align-content: center;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.todo-notice .badge {
+  margin-inline-start: 0.75rem;
+}
+
+.todo-administration[open] {
+  flex: 1 1 100%;
+}
+
+.todo-administration {
+  padding-block: 0;
+}
+
+.todo-admin-content {
+  max-width: 40rem;
+  padding-block-end: 0.5rem;
+}
+
+.todo-admin-content h3 {
+  margin: 0;
+}
+
 .todo-toolbar {
   display: flex;
   flex-wrap: wrap;

@@ -11,8 +11,8 @@ export function TodoCleanup({ base }: { base: string }) {
   )
   const [saveError, setSaveError] = useState<string | null>(null)
   return (
-    <details className="card">
-      <summary>{t('Aufbewahrung geteilter Aufgaben')}</summary>
+    <section className="stack-sm">
+      <h3>{t('Aufbewahrung geteilter Aufgaben')}</h3>
       {error && <LoadError message={error} onRetry={reload} />}
       {saveError && <p role="alert">{saveError}</p>}
       {data && (
@@ -29,6 +29,6 @@ export function TodoCleanup({ base }: { base: string }) {
           }}
         />
       )}
-    </details>
+    </section>
   )
 }

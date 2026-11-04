@@ -237,9 +237,13 @@ export function TodoRemoteInbox({ base, onSaved }: { base: string; onSaved: () =
   )
   const [busy, setBusy] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  if (!data?.items.length && !error && !actionError) return null
   return (
-    <details className="card">
-      <summary>{t('Aufgaben aus anderen Installationen')}</summary>
+    <details className="todo-notice" open={!!error || !!actionError || undefined}>
+      <summary>
+        {t('Aufgaben aus anderen Installationen')}
+        {!!data?.items.length && <span className="badge">{data.items.length}</span>}
+      </summary>
       {error && <LoadError message={error} onRetry={reload} />}
       {actionError && <p role="alert">{actionError}</p>}
       {data && !data.items.length && <p>{t('Keine neuen Aufgaben zur Übernahme.')}</p>}
