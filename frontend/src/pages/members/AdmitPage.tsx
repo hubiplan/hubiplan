@@ -324,7 +324,7 @@ export function AdmitPage() {
                 aria-describedby={e.department_ids ? unitErrorId : undefined}
                 aria-invalid={!!e.department_ids}
               >
-                <legend>{t('{units} (optional)', { units: org.department_label_plural })}</legend>
+                <legend>{t('{units} (optional)', { units: terms.Pl })}</legend>
                 <div className="chips">
                   {departments.data
                     .filter((d) => d.is_active)

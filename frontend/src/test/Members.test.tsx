@@ -1,7 +1,9 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { setCatalogForTest } from '../i18n/index.ts'
+import en from '../i18n/en.json'
 import { orgApi } from '../api/orgs.ts'
 import { ApiError } from '../api/client.ts'
 import { memberApi } from '../api/members.ts'
@@ -591,6 +593,7 @@ describe('Foto-Upload-Link', () => {
 })
 
 describe('Aufnahme mit nachvollziehbarem Fokus und Feldgruppen', () => {
+  afterEach(() => setCatalogForTest('de'))
   const search =
     'GET /api/orgs/7/members/duplicates/?name=Muster&vorname=Erika&geburtsdatum=1980-05-17'
   const departments = [
@@ -604,6 +607,25 @@ describe('Aufnahme mit nachvollziehbarem Fokus und Feldgruppen', () => {
       path: 'Turnen',
     },
   ]
+  it('benennt die Gruppe mit den englischen Untereinheitsbegriffen des Vereins', async () => {
+    setCatalogForTest('en', en)
+    fakeApi({
+      ...common(),
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [{ ...ORG, department_terms: { Pl: 'Teams', pl: 'teams' } }],
+      }),
+      [search]: () => ({ status: 200, body: [] }),
+      'GET /api/orgs/7/departments/': () => ({ status: 200, body: departments }),
+    })
+    renderAt('/mitglieder/neu')
+    const user = userEvent.setup()
+    await user.type(await screen.findByLabelText('Name'), 'Muster')
+    await user.type(screen.getByLabelText('First name'), 'Erika')
+    await user.type(screen.getByLabelText('Date of birth'), '1980-05-17')
+    await user.click(screen.getByRole('button', { name: 'Next' }))
+    expect(await screen.findByRole('group', { name: 'Teams (optional)' })).toBeVisible()
+  })
   async function firstStep() {
     const user = userEvent.setup()
     await user.type(await screen.findByLabelText('Name'), 'Muster')
