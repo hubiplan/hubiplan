@@ -37,7 +37,7 @@ Unter „Mein Bereich › Aufgaben“ stehen offene und erledigte Aufgaben. Push
 
 ## Aufgaben anlegen
 
-„Neue Aufgabe“ öffnet einen eigenen Dialog. Titel, Beschreibung, Frist und Teilen können vor dem Anlegen festgelegt werden. Nach „Anlegen“ bleibt der Dialog für Anhänge, Erinnerungen, Wiederholung und Mitgliederfreigabe geöffnet; „Fertig“ schließt ihn. Änderungen an der angelegten Aufgabe werden wie üblich gespeichert, ungespeicherte Freigaben vor dem Schließen geprüft. Die Beschreibung bietet ein breites, vergrößerbares Textfeld. Statusauswahl und Filter stehen bei ausreichendem Platz nebeneinander, auf kleinen Bildschirmen darunter.
+„Neue Aufgabe“ öffnet einen eigenen Dialog. „Schließen“ steht im abgesetzten Dialogkopf. Titel, Beschreibung, Frist und Teilen können vor dem Anlegen festgelegt werden. Nach „Anlegen“ bleibt der Dialog für Anhänge, Erinnerungen, Wiederholung und Mitgliederfreigabe geöffnet; „Fertig“ schließt ihn. Änderungen an der angelegten Aufgabe werden wie üblich gespeichert, ungespeicherte Freigaben vor dem Schließen geprüft. Die Beschreibung bietet ein breites, vergrößerbares Textfeld. Statusauswahl und Filter stehen bei ausreichendem Platz nebeneinander, auf kleinen Bildschirmen darunter.
 
 ## Aufgaben zwischen getrennten Installationen
 

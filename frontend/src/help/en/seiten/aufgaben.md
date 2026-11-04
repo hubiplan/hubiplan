@@ -37,7 +37,7 @@ Use “My area › Tasks” to view open and completed tasks. Mail and push link
 
 ## Creating tasks
 
-“New task” opens a dialog. Enter the title, description, due date and sharing before creating the task. After “Create”, the same dialog stays open for attachments, reminders, recurrence and member access; “Done” closes it. Existing tasks save as usual and unsaved access settings are checked before closing. The description uses a wide, resizable text field. Status and filters share one row on larger screens and wrap on smaller screens.
+“New task” opens a dialog. “Close” is in a separate dialog header. Enter the title, description, due date and sharing before creating the task. After “Create”, the same dialog stays open for attachments, reminders, recurrence and member access; “Done” closes it. Existing tasks save as usual and unsaved access settings are checked before closing. The description uses a wide, resizable text field. Status and filters share one row on larger screens and wrap on smaller screens.
 
 ## Tasks across separate installations
 
