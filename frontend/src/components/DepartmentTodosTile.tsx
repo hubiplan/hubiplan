@@ -26,9 +26,6 @@ export function DepartmentTodosTile({ department }: { department: number }) {
         <h2>
           {t('Offene Aufgaben')} <span className="badge">{open.length}</span>
         </h2>
-        <Link className="button" to={`/aufgaben?abteilung=${department}`}>
-          {t('Alle Aufgaben')}
-        </Link>
       </div>
       {error && <LoadError message={error} onRetry={reload} />}
       {actionError && <p role="alert">{actionError}</p>}
@@ -58,6 +55,12 @@ export function DepartmentTodosTile({ department }: { department: number }) {
           />
         ))}
       </ul>
+      <div className="home-tile-actions">
+        <Link className="button button-primary" to={`/aufgaben?abteilung=${department}&neu=1`}>
+          <span aria-hidden="true">+</span> {t('Neue Aufgabe')}
+        </Link>
+        <Link to={`/aufgaben?abteilung=${department}`}>{t('Alle Aufgaben')}</Link>
+      </div>
     </div>
   )
 }

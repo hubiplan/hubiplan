@@ -22,11 +22,6 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
           {t('Offene Aufgaben')}
           {items.length > 0 && <span className="badge">{items.length}</span>}
         </h2>
-        {org.permissions.includes('todos.view') && (
-          <Link className="button button-primary" to={`/aufgaben?einheit=${org.id}&neu=1`}>
-            <span aria-hidden="true">+</span> {t('Neue Aufgabe')}
-          </Link>
-        )}
       </div>
       {actionError && <p role="alert">{actionError}</p>}
       {error && (
@@ -65,6 +60,14 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
             />
           ))}
         </ul>
+      )}
+      {org.permissions.includes('todos.view') && (
+        <div className="home-tile-actions">
+          <Link className="button button-primary" to={`/aufgaben?einheit=${org.id}&neu=1`}>
+            <span aria-hidden="true">+</span> {t('Neue Aufgabe')}
+          </Link>
+          <Link to={`/aufgaben?einheit=${org.id}`}>{t('Alle Aufgaben')}</Link>
+        </div>
       )}
     </div>
   )

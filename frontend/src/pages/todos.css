@@ -7,7 +7,34 @@
   border-inline-start-color: var(--color-danger, #a22020);
 }
 
-/* Startseite: gleich hohe Kacheln, klar getrennte Aktionen und Aufgaben. */
+/* Startseite: gleich hohe Kacheln, Aktionen gemeinsam am unteren Rand. */
+.task-overview,
+.upcoming-overview {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-tile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-block-start: auto;
+  padding-block-start: 1rem;
+}
+
+.home-tile-actions .button {
+  min-height: 2.75rem;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+}
+
+.upcoming-overview .upcoming-list {
+  padding-block-start: 0.75rem;
+}
+
 .task-overview-head {
   display: flex;
   flex-wrap: wrap;
@@ -33,12 +60,6 @@
   align-items: center;
   justify-content: center;
   margin: 0;
-}
-
-.task-overview-head .button {
-  min-height: 2.75rem;
-  max-width: 100%;
-  box-sizing: border-box;
 }
 
 .task-overview-list .task-overview-row {
