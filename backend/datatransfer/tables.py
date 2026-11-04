@@ -80,6 +80,8 @@ MODULE_MODELS = (
     "events.CalendarPublication",
     "events.EventResponse",
     "music.Performance",
+    "music.EnsembleTemplate",
+    "music.EnsembleTemplatePosition",
     "music.Position",
     "music.Assignment",
     "music.PerformanceAccount",

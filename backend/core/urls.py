@@ -33,6 +33,7 @@ from members import honorary as honorary_views
 from members import views as member_views
 from music import practice as music_practice
 from music import scores as music_scores
+from music import staffing as music_staffing
 from music import views as music_views
 from music.portal import OwnAssignments
 from music.practice_portal import OwnPractice, OwnScoreFile
@@ -92,6 +93,11 @@ org_router.register("billing/age-rates", billing_views.AgeRateViewSet, basename=
 org_router.register("billing/runs", billing_views.FeeRunViewSet, basename="billing-run")
 org_router.register("billing/invoices", billing_views.InvoiceViewSet, basename="billing-invoice")
 org_router.register("music/musicians", music_views.MusicianViewSet, basename="music-musician")
+org_router.register(
+    "music/ensemble-templates",
+    music_staffing.EnsembleTemplateViewSet,
+    basename="music-ensemble-template",
+)
 org_router.register("music/skills", music_views.SkillViewSet, basename="music-skill")
 org_router.register(
     "music/performances", music_views.PerformanceViewSet, basename="music-performance"
@@ -173,6 +179,7 @@ org_patterns = [
     path("music/practice/", music_practice.PracticeOverview.as_view()),
     path("music/loans/", music_practice.LoanView.as_view()),
     path("music/performances/<int:pk>/program/", music_scores.ProgramView.as_view()),
+    path("music/performances/<int:pk>/staffing/", music_staffing.StaffingView.as_view()),
     path("music/performances/<int:pk>/settlement/", SettlementView.as_view()),
     path("music/performances/<int:pk>/invoice/", PerformanceInvoiceView.as_view()),
     path("todos/remote/", todo_remote.RemoteInboxView.as_view()),

@@ -265,11 +265,36 @@ class PerformanceViewSet(MusicViewSet):
         )
 
 
-class PositionViewSet(MusicViewSet):
+class PerformanceChildViewSet(MusicViewSet):
+    """Einzeländerungen teilen sich die Auftrittssperre mit Sammeländerungen."""
+
+    def lock_performance(self, pk):
+        Performance.objects.select_for_update().get(pk=pk, organization=self.org)
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        self.lock_performance(serializer.validated_data["performance"].pk)
+        fresh = self._revalidate(serializer)
+        super().perform_create(fresh)
+        serializer.instance = fresh.instance
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        self.lock_performance(serializer.instance.performance_id)
+        self._lock_and_refresh(serializer.instance)
+        super().perform_update(self._revalidate(serializer))
+
+    @transaction.atomic
+    def perform_destroy(self, instance):
+        self.lock_performance(instance.performance_id)
+        super().perform_destroy(instance)
+
+
+class PositionViewSet(PerformanceChildViewSet):
     serializer_class = MusicPositionSerializer
     http_method_names = [*MusicViewSet.http_method_names, "delete"]
 
 
-class AssignmentViewSet(MusicViewSet):
+class AssignmentViewSet(PerformanceChildViewSet):
     serializer_class = MusicAssignmentSerializer
     http_method_names = [*MusicViewSet.http_method_names, "delete"]

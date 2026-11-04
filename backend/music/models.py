@@ -38,6 +38,41 @@ class Skill(models.Model):
         return self.instrument
 
 
+class EnsembleTemplate(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    name = models.CharField(max_length=150)
+    note = models.CharField(max_length=1000, blank=True)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+
+class EnsembleTemplatePosition(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    template = models.ForeignKey(
+        EnsembleTemplate, on_delete=models.CASCADE, related_name="positions"
+    )
+    instrument = models.CharField(max_length=100)
+    register = models.CharField(max_length=100, blank=True)
+    required = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        ordering = ["pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["template", "instrument", "register"], name="besetzung_vorlage_stimme"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(required__gte=1, required__lte=500),
+                name="besetzung_vorlage_anzahl",
+            ),
+        ]
+
+    def __str__(self):
+        return self.instrument
+
+
 class Performance(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     event = models.OneToOneField(

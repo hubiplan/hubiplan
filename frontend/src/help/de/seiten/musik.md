@@ -20,6 +20,16 @@ Unter **Sollbesetzung** je Instrument und Stimme eine benötigte Anzahl festlege
 
 Mitglieder sehen ihre Einteilungen unter **Mein Bereich** und können zu- oder absagen. Die Musikverwaltung erfasst Rückmeldungen von Gästen. Kalenderabsagen bleiben beim Auftritt sichtbar. Technische Freigaben des Kalenders gelten auch für die Auftrittsverwaltung.
 
+## Besetzungsvorlagen und Sammeleinteilung
+
+Unter **Besetzungsvorlagen** mit **Vorlage anlegen** Instrumente, Register/Stimmen und Sollzahlen speichern. Jede Stimme darf nur einmal vorkommen. Nicht mehr benötigte Vorlagen mit **Aktiv** ausschalten. Bearbeiten benötigt Musikbearbeitungsrecht; Lesezugänge können Vorlagen ansehen.
+
+Beim Auftritt **Besetzung planen** öffnen, eine aktive Vorlage auswählen und die Positionen prüfen. **Vorlage anwenden** ergänzt fehlende Stimmen und erhöht vorhandene Sollzahlen bei Bedarf. Andere Positionen und bestehende Einteilungen samt Rückmeldungen bleiben erhalten. Mehrdeutige doppelte Positionen zuerst bereinigen. **Auftrittsbesetzung als Vorlage speichern** kopiert die Sollpositionen in eine neue Vorlage, ohne Musiker oder Rückmeldungen. Änderungen an Vorlagen wirken erst bei erneutem Anwenden auf einen Auftritt.
+
+Unter **Sammeleinteilung** mehrere passende aktive Mitglieder oder Gäste auswählen. Mehrinstrumentalisten einer Position zuordnen; ein Musikerprofil wird nur einmal eingeteilt. Angefragte und zugesagte Einteilungen belegen Sollplätze. Bereits eingeteilte Musiker und bestehende Absagen werden nicht neu angeboten; diese einzeln im bisherigen Einteilungsbereich bearbeiten.
+
+**Ausgewählte Musiker anfragen** erzeugt Einteilungen im Status Angefragt. Bei zu vielen ausgewählten Musikern, ungültigen Verweisen oder fehlenden Fähigkeiten wird nichts aus der Anfrage gespeichert. Wiederholungen erzeugen keine doppelten Einteilungen. Abwesenheiten und zeitliche Überschneidungen werden hier noch nicht geprüft. Für Auftritte gelten weiterhin die Kalenderfreigaben. Vorlagen sind im allgemeinen Datenexport enthalten.
+
 ## Auftrittsabrechnung
 
 Mit Musik- und Kalenderleserecht sowie freigeschalteter Kasse und Kassenleserecht öffnest du beim Auftritt die **Auftrittsabrechnung**. Zum Bearbeiten ist Kassenbearbeitungsrecht nötig. Vereinbartes Honorar, Fahrtkosten und weitere Leistungen als Bruttobeträge in EUR speichern. Mit zusätzlichem Rechnungsbearbeitungsrecht entsteht daraus ein Entwurf im bestehenden E-Rechnungseditor. Käufer und Gesamtbruttobetrag müssen zur Vereinbarung passen. Netto, Steuerkategorien und Rechnungsangaben dort ausdrücklich erfassen; prüfen, festschreiben, versenden und Zahlungseingänge in der Rechnungsansicht bearbeiten. Je Auftritt wird eine Veranstalterrechnung verknüpft.
