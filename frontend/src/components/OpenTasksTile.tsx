@@ -8,6 +8,7 @@ import { t } from '../i18n/index.ts'
 import { api } from '../api/client.ts'
 import { useState } from 'react'
 import { errorMessage } from './forms.ts'
+import { TaskTileRow } from './TaskTileRow.tsx'
 import '../pages/todos.css'
 
 export function OpenTasksTile({ org }: { org: OrgSummary }) {
@@ -15,12 +16,18 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
   const items = data?.items ?? []
   const [actionError, setActionError] = useState<string | null>(null)
   return (
-    <div className="card tile">
-      <h2>
-        {t('Offene Aufgaben')}
-        {items.length > 0 && <span className="badge"> {items.length}</span>}
-      </h2>
-      {org.permissions.includes('todos.view') && <Link to="/aufgaben">{t('Neue Aufgabe')}</Link>}
+    <div className="card tile task-overview">
+      <div className="task-overview-head">
+        <h2>
+          {t('Offene Aufgaben')}
+          {items.length > 0 && <span className="badge">{items.length}</span>}
+        </h2>
+        {org.permissions.includes('todos.view') && (
+          <Link className="button button-primary" to={`/aufgaben?einheit=${org.id}&neu=1`}>
+            <span aria-hidden="true">+</span> {t('Neue Aufgabe')}
+          </Link>
+        )}
+      </div>
       {actionError && <p role="alert">{actionError}</p>}
       {error && (
         <LoadError
@@ -32,39 +39,30 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
         <p className="muted">{t('Zurzeit ist nichts zu entscheiden.')}</p>
       )}
       {items.length > 0 && (
-        <ul className="plain-list task-list">
+        <ul className="plain-list task-overview-list">
           {items.map((tm, i) => (
-            <li
+            <TaskTileRow
               key={`${tm.kind}-${i}`}
-              className={
-                tm.highlight
-                  ? `task-reminder${tm.overdue ? ' task-reminder-overdue' : ''}`
+              title={tm.title}
+              link={tm.link}
+              kind={tm.kind_label}
+              detail={tm.detail}
+              due={tm.highlight ? tm.due_label : undefined}
+              overdue={tm.highlight && tm.overdue}
+              onComplete={
+                tm.kind === 'todo' && tm.can_edit
+                  ? () => {
+                      void api
+                        .patch(`/api/orgs/${org.id}/todos/${tm.ref}/`, {
+                          status: 'done',
+                          version: tm.version,
+                        })
+                        .then(() => reload())
+                        .catch((err: unknown) => setActionError(errorMessage(err)))
+                    }
                   : undefined
               }
-            >
-              {tm.kind === 'todo' && tm.can_edit && (
-                <input
-                  type="checkbox"
-                  aria-label={t('Erledigt')}
-                  checked={false}
-                  onChange={() => {
-                    void api
-                      .patch(`/api/orgs/${org.id}/todos/${tm.ref}/`, {
-                        status: 'done',
-                        version: tm.version,
-                      })
-                      .then(() => reload())
-                      .catch((err: unknown) => setActionError(errorMessage(err)))
-                  }}
-                />
-              )}
-              <span className="muted small">{tm.kind_label}</span>
-              {tm.highlight && <span className="badge">{tm.due_label}</span>}
-              <div>
-                <Link to={tm.link}>{tm.title}</Link>
-                <span className="muted small"> · {tm.detail}</span>
-              </div>
-            </li>
+            />
           ))}
         </ul>
       )}
