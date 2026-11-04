@@ -49,18 +49,15 @@ export function PermissionMatrix({
   const extras = catalog.filter((m) => m.kind === 'extras').flatMap((m) => m.permissions)
   const setAll = (level: Level) =>
     onChange(
-      areas.reduce(
-        (acc, a) => {
-          if (level === 'none' || (a.levels ?? []).some((l) => l.level === level)) {
-            return withLevel(acc, a, level, catalog)
-          }
-          // „überall bearbeiten“: Bereiche ohne Bearbeiten bekommen die höchste Stufe;
-          // „überall lesen“ lässt Bereiche ohne Lesen (Plattform) unverändert
-          const top = a.levels?.[a.levels.length - 1]?.level ?? 'none'
-          return level === 'edit' ? withLevel(acc, a, top, catalog) : acc
-        },
-        level === 'none' ? [] : codes,
-      ),
+      areas.reduce((acc, a) => {
+        if (level === 'none' || (a.levels ?? []).some((l) => l.level === level)) {
+          return withLevel(acc, a, level, catalog)
+        }
+        // „überall bearbeiten“: Bereiche ohne Bearbeiten bekommen die höchste Stufe;
+        // „überall lesen“ lässt Bereiche ohne Lesen (Plattform) unverändert
+        const top = a.levels?.[a.levels.length - 1]?.level ?? 'none'
+        return level === 'edit' ? withLevel(acc, a, top, catalog) : acc
+      }, codes),
     )
   return (
     <div className="permission-matrix">
@@ -164,6 +161,7 @@ export function PermissionSummary({
     stufe: catalogArea(catalog, a.label) ? a.permissions[0] : undefined,
     key: i,
   }))
+  if (areas.length === 0) return <span>{t('keine')}</span>
   return (
     <>
       <ul className="chips role-areas" aria-label={t('Bereiche')}>
@@ -337,6 +335,10 @@ export function RoleForm({
     form.set('permissions', on ? [...v.permissions, code] : v.permissions.filter((c) => c !== code))
   }
 
+  const visibleCodes = new Set(
+    catalog.flatMap((m) => [...m.permissions, ...(m.levels ?? [])].map((p) => p.code)),
+  )
+  const selectedCount = v.permissions.filter((c) => visibleCodes.has(c)).length
   const staged = catalog.some((m) => m.kind === 'area')
   const permissionGrid = staged ? (
     <PermissionMatrix
@@ -459,10 +461,13 @@ export function RoleForm({
           {showPermissions && <Why k="role_permissions" />}
         </div>
         {!showPermissions ? null : permissionsOptional ? (
-          <details className="permission-details" open={(role?.permissions.length ?? 0) > 0}>
+          <details
+            className="permission-details"
+            open={(role?.permissions ?? []).some((c) => visibleCodes.has(c))}
+          >
             <summary>
               {t('Rechte für Zugänge (optional)')}
-              {v.permissions.length > 0 && t(' · {n} gewählt', { n: v.permissions.length })}
+              {selectedCount > 0 && t(' · {n} gewählt', { n: selectedCount })}
             </summary>
             <p className="muted small">
               {t(

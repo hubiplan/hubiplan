@@ -407,8 +407,8 @@ class LogoSerializer(serializers.Serializer):
         return file
 
 
-def clean_department_permissions(value) -> list[str]:
-    from access.catalog import normalize
+def clean_department_permissions(value, *, org=None, stored=()) -> list[str]:
+    from access.catalog import normalize, preserve_disabled_permissions
 
     # Frühere Codes (dept.*) nimmt die Schnittstelle eine Fassung lang an
     value = normalize(value, dept=True)
@@ -417,6 +417,8 @@ def clean_department_permissions(value) -> list[str]:
         raise serializers.ValidationError(
             gettext("Unbekannte Berechtigungen: {x}").format(x=", ".join(unknown))
         )
+    if org is not None:
+        return preserve_disabled_permissions(value, stored, org, dept=True)
     return value
 
 
@@ -460,7 +462,11 @@ class DepartmentRoleSerializer(serializers.ModelSerializer):
         ]
 
     def validate_permissions(self, value):
-        return clean_department_permissions(value)
+        return clean_department_permissions(
+            value,
+            org=self.context["org"],
+            stored=self.instance.permissions if self.instance else [],
+        )
 
     def validate_department(self, department):
         org = self.context["org"]

@@ -13,6 +13,7 @@ from .catalog import (
     ROLES_MANAGE,
     codes_for,
     effective,
+    enabled_codes_for,
 )
 from .models import RoleAssignment
 
@@ -48,7 +49,7 @@ def own_permissions_in(user, org: Organization) -> set[str]:
     perms = _assigned(user, org)
     if org.type == Organization.Type.UNIT:
         perms |= inherited_permissions(user, org)
-    return gate(user, perms & allowed_codes(org.type), platform=platform)
+    return gate(user, perms & effective(enabled_codes_for(org)), platform=platform)
 
 
 def allowed_codes(org_type: str) -> set[str]:
@@ -83,7 +84,7 @@ def inherited_permissions(user, unit: Organization) -> set[str]:
             break
         if node.type == Organization.Type.UNIT and not node.own_workspace:
             continue
-        above |= _assigned(user, node)
+        above |= _assigned(user, node) & effective(enabled_codes_for(node))
         if node.type != Organization.Type.UNIT:
             break
     result: set[str] = set()
