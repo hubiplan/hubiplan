@@ -59,7 +59,9 @@ class Target:
         data = asdict(self)
         facilities = TARGET_FACILITIES.get(self.key, [])
         data["facility_keys"] = facilities
-        data["distances"] = sorted({FACILITIES[key][1] for key in facilities})
+        data["distances"] = sorted(
+            {FACILITIES[key][1] for key in facilities if FACILITIES[key][1] is not None}
+        )
         data["rings"] = [
             {"ring": r, "diameter": round(self.ring_diameter(r), 3)}
             for r in range(self.lowest, self.top + 1)
@@ -188,6 +190,8 @@ FACILITIES = {
     "kk100": ("Kleinkaliber", 100),
     "p25": ("Pistole", 25),
     "p50": ("Pistole", 50),
+    # Hochstand (Vogelstange) für das Vogelschießen: keine Scheibe, keine feste Entfernung
+    "vogel": ("Vogelschießen", None),
 }
 TARGET_FACILITIES = {
     "lg10_dsb": ["lg10"],
