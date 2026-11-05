@@ -120,7 +120,8 @@ def facts(website: Website) -> dict:
         ),
         # Mitgliederlisten, Gedenken, Anschrift und Instrument (Ralf 05.11.); nur wenn
         # zutreffend im Stand, damit bestehende Texte nicht als veraltet gelten
-        **({"members": True} if website.block_on("members") else {}),
+        # „consent“: seit Gesamtaudit 05.11. nur mit Einwilligung (ändert den Stand)
+        **({"members": "consent"} if website.block_on("members") else {}),
         **({"memorial": True} if website.block_on("memorial") else {}),
         **({"address": True} if website.show_address and website.block_on("board") else {}),
         **({"instrument": True} if website.show_instrument else {}),
@@ -243,11 +244,14 @@ def website_privacy(website: Website) -> str:
         people.append(
             "Mitgliederlisten: Name und Eintrittsjahr"
             + (" sowie Instrument" if f.get("instrument") else "")
-            + " der Mitglieder (berechtigtes Interesse, Art. 6 Abs. 1 lit. f DSGVO); "
-            "Fotos nur mit Einwilligung"
+            + " der Mitglieder, die eingewilligt haben (Art. 6 Abs. 1 lit. a DSGVO); "
+            "Fotos nur mit eigener Einwilligung"
         )
     if f.get("memorial"):
-        people.append("In Gedenken: Name sowie Eintritts- und Todesjahr verstorbener Mitglieder")
+        people.append(
+            "In Gedenken: Name sowie Eintritts- und Todesjahr verstorbener Mitglieder, "
+            "die der Vorstand einzeln freigegeben hat"
+        )
     if f["honors"]:
         people.append(
             "Würdenträger und Chronik (z. B. Könige, frühere Vorsitzende, Ehrenmitglieder): "

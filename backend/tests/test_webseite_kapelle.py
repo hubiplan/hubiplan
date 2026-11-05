@@ -70,11 +70,16 @@ class TestMitgliederlisten:
     def test_liste_je_mitgliedsart_erst_nach_einschalten(self, club, site):
         aktiv = MemberType.objects.create(organization=club, name="aktiv", active=True)
         passiv = MemberType.objects.create(organization=club, name="passiv")
-        make_member(
+        berta = make_member(
             club, "Berta", "Zander", member_type=aktiv, entry_date=datetime.date(2012, 4, 1)
         )
-        make_member(club, "Anton", "Alt", member_type=aktiv, entry_date=datetime.date(2019, 1, 1))
+        anton = make_member(
+            club, "Anton", "Alt", member_type=aktiv, entry_date=datetime.date(2019, 1, 1)
+        )
         make_member(club, "Carla", "Passiv", member_type=passiv)
+        make_member(club, "Olga", "Ohne", member_type=aktiv)  # ohne Einwilligung
+        for m in (berta, anton):
+            consent(m, PublicationConsent.Category.MEMBER_LIST)
         # Ohne Schalter keine Liste
         assert public("members/aktiv/").status_code == 404
         on(site, members=True)
@@ -91,8 +96,11 @@ class TestMitgliederlisten:
     def test_widerspruch_eigener_name_und_ohne_jahr(self, club, site):
         aktiv = MemberType.objects.create(organization=club, name="aktiv", active=True)
         m = make_member(club, "Dora", "Nein", member_type=aktiv)
-        make_member(club, "Emil", "Ja", member_type=aktiv)
+        emil = make_member(club, "Emil", "Ja", member_type=aktiv)
         consent(m, PublicationConsent.Category.NAME)  # Widerspruch
+        # Widerspruch beim Namen geht der Einwilligung zur Liste vor
+        consent(m, PublicationConsent.Category.MEMBER_LIST)
+        consent(emil, PublicationConsent.Category.MEMBER_LIST)
         site.block_names = {f"membertype:{aktiv.pk}": "Aktive"}
         site.show_member_since = False
         site.save()
@@ -107,7 +115,13 @@ class TestMitgliederlisten:
         died = make_member(
             club, "Gerd", "Gestorben", member_type=aktiv, entry_date=datetime.date(2009, 6, 1)
         )
-        make_member(club, "Hans", "Da", member_type=aktiv)
+        hans = make_member(club, "Hans", "Da", member_type=aktiv)
+        for m in (gone, died, hans):
+            consent(m, PublicationConsent.Category.MEMBER_LIST)
+        unapproved = make_member(club, "Ina", "Ohne", member_type=aktiv)
+        MembershipPeriod.objects.filter(membership=unapproved).update(
+            exit_date=datetime.date(2024, 5, 1), exit_reason=ExitReason.DEATH
+        )
         MembershipPeriod.objects.filter(membership=gone).update(
             exit_date=datetime.date(2020, 1, 1), exit_reason=ExitReason.EXIT
         )
@@ -117,6 +131,9 @@ class TestMitgliederlisten:
         on(site, members=True, memorial=True, **{f"membertype:{aktiv.pk}": True})
         names = [m["name"] for m in public("members/aktiv/").json()["members"]]
         assert names == ["Hans Da"]
+        # Gedenken nur mit Freigabe des Vorstands je Person
+        assert public("memorial/").status_code == 404
+        consent(died, PublicationConsent.Category.MEMORIAL)
         memorial = public("memorial/").json()
         assert memorial["members"] == [
             {"name": "Gerd Gestorben", "photo_url": None, "died": 2023, "since": 2009}

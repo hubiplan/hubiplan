@@ -592,6 +592,20 @@ def _website(club) -> None:
                     ended_at=None,
                     defaults={"since": datetime.date(2021, 3, 1), "source": "paper"},
                 )
+    # Mitgliederlisten nur mit Einwilligung, Gedenken nur mit Freigabe (Gesamtaudit 05.11.)
+    for membership in Membership.objects.filter(organization=club, purged_at__isnull=True):
+        deceased = membership.periods.filter(exit_reason=ExitReason.DEATH).exists()
+        PublicationConsent.objects.get_or_create(
+            organization=club,
+            membership=membership,
+            category=(
+                PublicationConsent.Category.MEMORIAL
+                if deceased
+                else PublicationConsent.Category.MEMBER_LIST
+            ),
+            ended_at=None,
+            defaults={"since": datetime.date(2021, 3, 1), "source": "paper"},
+        )
     package = DesignPackage.objects.filter(key=DESIGN_PACKAGE).first()
     if package is not None:
         package.websites.add(website)

@@ -7819,3 +7819,9 @@ msgstr ""
 "Please keep this email. The line lets you prove later that bookings and the "
 "change log have not been altered since (operator: manage.py "
 "kettenkoepfe_pruefen)."
+
+msgid "Mitgliederliste"
+msgstr "Member list"
+
+msgid "In Gedenken"
+msgstr "In memoriam"

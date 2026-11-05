@@ -96,7 +96,7 @@ class SiteView:
         # Bereinigte Mitgliedschaft: Widersprüche gelten weiter, Einwilligungen nicht mehr
         for m in self.memberships.values():
             if m.purged_at and m.pk in entries:
-                entries[m.pk] &= set(PublicationConsent.OBJECTION_CATEGORIES)
+                entries[m.pk] &= set(PublicationConsent.OBJECTION_CATEGORIES) | {Category.MEMORIAL}
         return entries
 
     @cached_property
@@ -255,6 +255,9 @@ class SiteView:
         rows = Membership.objects.filter(pk__in=list(since)).select_related("person")
         result = []
         for m in sorted(rows, key=lambda m: self._sort_key(m.person)):
+            # Nur mit Einwilligung (Gesamtaudit 05.11. F-01), Widerspruch beim Namen gilt weiter
+            if not self.allowed(m, Category.MEMBER_LIST):
+                continue
             entry = self.person(m.person)
             if entry is None:
                 continue
@@ -302,6 +305,9 @@ class SiteView:
             if person.pk in seen:
                 continue
             seen.add(person.pk)
+            # Je Person vom Vorstand freigegeben (Gesamtaudit 05.11. F-01)
+            if not self.allowed(self.memberships.get(person.pk), Category.MEMORIAL):
+                continue
             entry = self.person(person)
             if entry is None:
                 continue
