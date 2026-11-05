@@ -1,5 +1,5 @@
 import { LanguageSwitch } from '../i18n/LanguageControls.tsx'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import * as api from '../api/auth.ts'
@@ -25,6 +25,9 @@ export function LoginPage() {
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Nach einem Fehler steht der Fokus im Feld, das zu korrigieren ist (UX-Audit 05.11. W-03)
+  const passwordRef = useRef<HTMLInputElement>(null)
+  const codeRef = useRef<HTMLInputElement>(null)
 
   if (user) return <Navigate to={target} replace />
 
@@ -38,17 +41,30 @@ export function LoginPage() {
       setError(null)
     } else {
       setError(result.message)
+      focusAfterError()
     }
+  }
+
+  function focusAfterError() {
+    // Erst nach dem Rendern der Meldung, damit aria-describedby schon stimmt
+    setTimeout(() => {
+      const field = step === 'mfa' ? codeRef.current : passwordRef.current
+      field?.focus()
+      field?.select()
+    }, 0)
   }
 
   async function submit(e: FormEvent, action: () => Promise<LoginResult>) {
     e.preventDefault()
+    // Gesperrt wird über aria-disabled: ein echtes disabled nähme dem Knopf den Fokus
+    if (busy) return
     setBusy(true)
     setError(null)
     try {
       handle(await action())
     } catch {
       setError(t('Der Server ist nicht erreichbar.'))
+      focusAfterError()
     } finally {
       setBusy(false)
     }
@@ -77,19 +93,26 @@ export function LoginPage() {
             <label className="field">
               <span>{t('Passwort')}</span>
               <input
+                ref={passwordRef}
                 type="password"
                 autoComplete="current-password"
                 required
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? 'anmelden-fehler' : undefined}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </label>
             {error && (
-              <p className="alert alert-error" role="alert">
+              <p className="alert alert-error" role="alert" id="anmelden-fehler">
                 {error}
               </p>
             )}
-            <button type="submit" className="button button-primary button-block" disabled={busy}>
+            <button
+              type="submit"
+              className="button button-primary button-block"
+              aria-disabled={busy || undefined}
+            >
               {busy ? t('Anmelden …') : t('Anmelden')}
             </button>
             <p className="small">
@@ -114,20 +137,27 @@ export function LoginPage() {
             <label className="field">
               <span>{t('Code')}</span>
               <input
+                ref={codeRef}
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 autoFocus
                 required
+                aria-invalid={error ? true : undefined}
+                aria-describedby={error ? 'anmelden-fehler' : undefined}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />
             </label>
             {error && (
-              <p className="alert alert-error" role="alert">
+              <p className="alert alert-error" role="alert" id="anmelden-fehler">
                 {error}
               </p>
             )}
-            <button type="submit" className="button button-primary button-block" disabled={busy}>
+            <button
+              type="submit"
+              className="button button-primary button-block"
+              aria-disabled={busy || undefined}
+            >
               {busy ? t('Prüfe …') : t('Bestätigen')}
             </button>
             <button

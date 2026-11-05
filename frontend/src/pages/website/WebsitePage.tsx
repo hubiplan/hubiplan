@@ -71,8 +71,15 @@ export function WebsitePage() {
     <section>
       <div className="page-head">
         <div>
-          <p className="muted small eyebrow">{t('Webseite')}</p>
-          <h1>{data.website ? sectionTitle(location.pathname) : t('Webseite')}</h1>
+          {/* Auf der Übersicht heißt die H1 wie der Bereich (UX-Audit 05.11. W-04) */}
+          {data.website && sectionTitle(location.pathname) !== t('Übersicht') && (
+            <p className="muted small eyebrow">{t('Webseite')}</p>
+          )}
+          <h1>
+            {data.website && sectionTitle(location.pathname) !== t('Übersicht')
+              ? sectionTitle(location.pathname)
+              : t('Webseite')}
+          </h1>
         </div>
       </div>
       {!data.module_enabled && (

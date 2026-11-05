@@ -11,7 +11,15 @@ import { docApi, docBase, formatSize } from '../../api/documents.ts'
 import type { DocBase, DocFolder, DocItem, DocOverview, Visibility } from '../../api/documents.ts'
 import { StatutePanel } from '../../components/StatutePanel.tsx'
 import { errorMessage, formatDate, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SaveStatus, SelectField, Tabs } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  SaveStatus,
+  SelectField,
+  Tabs,
+  SectionTitle,
+} from '../../components/ui.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
@@ -77,10 +85,7 @@ export function DocumentsPage() {
   ]
   return (
     <section>
-      <div className="page-head">
-        <h1>{title}</h1>
-        {subtitle && <p className="muted">{subtitle}</p>}
-      </div>
+      <SectionTitle title={title} items={tabs} subtitle={subtitle} />
       {tabs.length > 1 && <Tabs items={tabs} />}
       <DocumentArea
         key={base}

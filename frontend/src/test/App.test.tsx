@@ -184,8 +184,9 @@ describe('Layout', () => {
       }),
     })
     renderApp('/einstellungen/organisation')
-    expect(await screen.findByRole('heading', { name: 'Einstellungen' })).toBeInTheDocument()
-    const tabs = screen.getByRole('heading', { name: 'Einstellungen' }).closest('section')!
+    // W-04: Die Überschrift nennt die Unterseite, darüber steht „Einstellungen“ als Bereich
+    expect(await screen.findByRole('heading', { name: 'Organisation' })).toBeInTheDocument()
+    const tabs = screen.getByRole('heading', { name: 'Organisation' }).closest('section')!
     expect(tabs).not.toHaveTextContent('Mein Konto')
     const user = userEvent.setup()
     // Oben rechts ein Aufklappmenü mit den Unterseiten, nichts in der Seitenleiste

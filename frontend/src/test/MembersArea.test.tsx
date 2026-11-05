@@ -121,7 +121,7 @@ describe('Mitglieder: Unterpunkte', () => {
       'GET /api/orgs/7/statutes/': () => ({ status: 404, body: {} }),
     })
     renderApp('/einstellungen/organisation')
-    await screen.findByRole('heading', { name: 'Einstellungen' })
+    await screen.findByRole('heading', { name: 'Organisation' })
     // Unterpunkte der Einstellungen stehen in der Seitenleiste (UX-Audit 31.10. W09)
     const nav = within(screen.getByRole('navigation', { name: 'Module' }))
     expect(await nav.findByRole('link', { name: 'Organisation' })).toBeInTheDocument()

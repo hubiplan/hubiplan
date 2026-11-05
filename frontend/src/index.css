@@ -56,6 +56,16 @@ a {
   text-decoration: none;
 }
 
+/*
+ * Links im Fließtext sind außer an der Farbe auch an der Schriftstärke erkennbar
+ * (WCAG 1.4.1; UX-Audit 05.11.2026, W-01). Links werden nie unterstrichen.
+ * :where() hält die Spezifität bei 0, eigene Klassen gewinnen weiter.
+ */
+:where(p, dd, li, blockquote, figcaption, label, small, .alert, .muted, .hint)
+  a:where(:not(.button, nav a, header a, footer a, [role='tab'])) {
+  font-weight: 600;
+}
+
 /* Links ohne Unterstreichung: Tastaturfokus bleibt deutlich sichtbar. */
 a:focus-visible,
 .link-button:focus-visible {
@@ -475,25 +485,52 @@ button.tab.active {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-@media (max-width: 640px) {
-  /* Auf dem Handy rutschen Auswahl und Knöpfe in eine zweite Zeile. */
+@media (max-width: 800px) {
+  /* W-05: Auf Handy und Tablet bleibt der Kopf eine Zeile (Menü, Name, Mein Konto).
+     Rückgängig, Ansicht als Rolle und Einheitenwahl stehen oben im Menü. */
   .topbar {
-    flex-wrap: wrap;
-    row-gap: 0.5rem;
+    gap: 0.5rem;
+    padding: 0.4rem 0.75rem;
     min-width: 0;
   }
   .topbar-brand {
     flex: 1 1 0;
-    min-width: 10rem;
   }
   .topbar-brand .logo {
     font-size: 1rem;
   }
-  .topbar-user {
-    flex-wrap: wrap;
-    row-gap: 0.5rem;
-    min-width: 0;
+  /* Langer Vereinsname bricht um (höchstens zwei Zeilen) statt abgeschnitten zu werden. */
+  .topbar-brand .logo-name {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    line-height: 1.2;
   }
+  .topbar-brand .logo-img {
+    max-height: 2.25rem;
+    width: auto;
+  }
+}
+
+.sidebar-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem 0.75rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.sidebar-tools .org-switch,
+.sidebar-tools .org-switch select {
+  width: 100%;
+  max-width: none;
+}
+.sidebar-tools .button,
+.sidebar-tools select {
+  min-height: 2.75rem;
 }
 
 .topbar-user {
@@ -2435,7 +2472,6 @@ fieldset.subcard legend {
   background: transparent;
   color: inherit;
   font-weight: 600;
-  text-decoration: underline;
 }
 
 .undo-notice .link-button:hover {
@@ -4587,4 +4623,46 @@ label:has(> .file-input:focus-visible) {
   height: 2.6rem;
   object-fit: cover;
   border-radius: 0.25rem;
+}
+
+/* Im Menü (Handy) klappt „Letzte Schritte“ unter den Knöpfen auf statt darüber zu schweben. */
+.sidebar-tools .undo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.sidebar-tools .undo-history {
+  display: contents;
+}
+.sidebar-tools .undo-history-panel {
+  position: static;
+  flex: 1 1 100%;
+  width: auto;
+  margin-top: 0.25rem;
+  box-shadow: none;
+}
+
+.mfa-hint {
+  margin: 0 0 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.account-menu-icon {
+  display: none;
+}
+@media (max-width: 800px) {
+  .account-menu-icon {
+    display: block;
+  }
+  .account-menu-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+.sidebar-tools select {
+  color: var(--color-text);
 }
