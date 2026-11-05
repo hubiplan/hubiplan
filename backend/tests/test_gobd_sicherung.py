@@ -28,9 +28,16 @@ pytestmark = pytest.mark.django_db
 
 
 @override_settings(HUBIPLAN_LANGUAGES=["de", "en"])
-def test_englische_oberflaeche_aendert_die_sprache_des_pruefexports_nicht(c, fin, setup):
+def test_englische_oberflaeche_aendert_die_sprache_des_pruefexports_nicht(c, fin, setup, base):
     booking = book(c, fin, account=setup["bank"], category=setup["cat"], tax_area="ideal")
     User.objects.filter(pk=c.session["_auth_user_id"]).update(language="en")
+    org = booking.organization
+    org.department_label_en = "team"
+    org.department_label_plural_en = "teams"
+    org.save(update_fields=["department_label_en", "department_label_plural_en"])
+    settings = c.get(f"{base}/settings/").json()
+    assert settings["department_label"] == "Team"
+    assert settings["department_label_plural"] == "Teams"
     changed = c.patch(f"{fin}/bookings/{booking.pk}/", {"text": "Updated note"}, content_type=JSON)
     assert changed.status_code == 200
     assert "Entry" in unquote(changed["X-Change-Label"])

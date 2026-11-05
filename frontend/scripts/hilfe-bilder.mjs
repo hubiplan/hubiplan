@@ -113,6 +113,11 @@ for (const language of ['de', 'en']) {
           console.log(
             `${language}: Verwaltungsansicht ${b.name} mit übersetzter Systemüberschrift geladen`,
           )
+          if (b.name === 'beitragslauf' && language === 'en') {
+            const text = await page.locator('main').innerText()
+            if (text.includes('Züge') || !/\bplatoons\b/i.test(text))
+              throw new Error(`Englische Bezeichnung der Untereinheiten fehlt: ${text}`)
+          }
         }
         if (b.name === 'kalender-kontext') {
           await page
