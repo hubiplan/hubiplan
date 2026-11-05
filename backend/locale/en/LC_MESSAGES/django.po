@@ -5857,6 +5857,108 @@ msgstr "The absence must end after it starts."
 msgid "Endzeit auf der Webseite ausblenden"
 msgstr "Hide end time on the website"
 
+#: entries/services.py organizations/theme.py
+msgid "Text auf der Primärfarbe wäre schlecht lesbar."
+msgstr "Text on the primary colour would be difficult to read."
+
+#: entries/services.py organizations/theme.py
+msgid "Die Primärfarbe ist auf weißem Hintergrund zu hell (Rahmen und Symbole)."
+msgstr "The primary colour is too light on a white background (borders and icons)."
+
+#: entries/services.py organizations/theme.py
+msgid "Text auf der Akzentfarbe wäre schlecht lesbar."
+msgstr "Text on the accent colour would be difficult to read."
+
+#: entries/services.py organizations/theme.py
+msgid "{label}: noch keine Mannschaft gemeldet."
+msgstr "{label}: no team entered yet."
+
+#: entries/services.py organizations/theme.py
+msgid "{label}: mindestens {teams}."
+msgstr "{label}: at least {teams}."
+
+#: entries/services.py organizations/theme.py
+msgid "{label}: höchstens {teams}."
+msgstr "{label}: at most {teams}."
+
+#: entries/services.py organizations/theme.py
+msgid "{name}: {count} von mindestens {minimum} Personen."
+msgstr "{name}: {count} people entered; minimum required: {minimum}."
+
+#: entries/services.py organizations/theme.py
+msgid "{name}: {count} Personen, erlaubt sind {maximum}."
+msgstr "{name}: {count} people entered; maximum allowed: {maximum}."
+
+#: entries/services.py organizations/theme.py
+msgid "{name}: {count} Ersatzleute, erlaubt sind {maximum}."
+msgstr "{name}: substitutes entered: {count}; maximum allowed: {maximum}."
+
+#: entries/services.py organizations/theme.py
+msgid "{label}: noch niemand gemeldet."
+msgstr "{label}: no one entered yet."
+
+#: entries/services.py organizations/theme.py
+msgid "{label}: mindestens {minimum} Personen."
+msgstr "{label}: minimum number of people: {minimum}."
+
+#: entries/services.py organizations/theme.py
+msgid "{label}: höchstens {maximum} Personen."
+msgstr "{label}: maximum number of people: {maximum}."
+
+#: entries/services.py organizations/theme.py
+msgid "{label}: Angabe fehlt."
+msgstr "{label}: a value is required."
+
+#: entries/services.py organizations/theme.py
+msgid "{name}: Gäste sind nicht vorgesehen."
+msgstr "{name}: guests are not allowed."
+
+#: entries/services.py organizations/theme.py
+msgid "{name} ist mehrfach gemeldet."
+msgstr "{name} is entered more than once."
+
+#: entries/services.py organizations/theme.py
+msgid "{name} ist am {date} kein aktives Mitglied."
+msgstr "{name} is not an active member on {date}."
+
+#: entries/services.py organizations/theme.py
+msgid "{name}: Mindestalter {age} am {date}"
+msgstr "{name}: minimum age {age} on {date}"
+
+#: entries/services.py organizations/theme.py
+msgid " (Geburtsdatum fehlt)."
+msgstr " (date of birth missing)."
+
+#: entries/services.py organizations/theme.py
+msgid "{name}: Höchstalter {age} am {date}."
+msgstr "{name}: maximum age {age} on {date}."
+
+#: entries/services.py organizations/theme.py
+msgid "{name}: Mitgliedsart passt nicht."
+msgstr "{name}: membership type does not match."
+
+#: entries/services.py organizations/theme.py
+msgid "{name}: {label} passt nicht."
+msgstr "{name}: {label} does not match."
+
+#: entries/services.py organizations/theme.py
+msgid "{name} ist auch von {unit} gemeldet."
+msgstr "{name} is also entered by {unit}."
+
+#: entries/services.py organizations/theme.py
+msgid "Die Ausschreibung lässt so keine Meldung zu."
+msgstr "This entry does not meet the requirements of the call."
+
+#: entries/services.py
+msgid "{n} Mannschaft"
+msgid_plural "{n} Mannschaften"
+msgstr[0] "{n} team"
+msgstr[1] "{n} teams"
+
+#: entries/models.py
+msgid "abgegeben"
+msgstr "submitted"
+
 msgid "Neue Auftrittseinteilung im Mitgliederbereich"
 msgstr "New performance assignment in the member area"
 

@@ -129,7 +129,7 @@ function CompetitionList() {
             {
               key: 'status',
               label: t('Zustand'),
-              value: (c) => c.status_label,
+              value: (c) => STATUS_LABELS[c.status],
               filter: true,
             },
           ]}

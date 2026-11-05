@@ -22,3 +22,7 @@ Before you start: there is at least one membership type (Members › Setup › M
 ![The “Admit member” form](bild:mitglieder-aufnehmen)
 
 If sub-units cannot be loaded, a message offers **Reload**. You can retrieve the choices again without losing names or other details you have already entered.
+
+Admission has two stages: **1. Person** and **2. Membership and contact**. After **Next**, keyboard focus moves to the new heading or **Possible matches**. **change** returns to the retained personal details. Optional sub-units form a named selection group; a group error is described and receives focus there.
+
+![Second stage with membership, sub-units and contact details](bild:mitglieder-aufnehmen-details)

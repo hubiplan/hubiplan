@@ -22,3 +22,7 @@ Vorher: Es gibt mindestens eine Mitgliedsart (Mitglieder › Einrichtung › Mit
 ![Formular „Mitglied aufnehmen“](bild:mitglieder-aufnehmen)
 
 Lassen sich Untereinheiten nicht laden, erscheint eine Meldung mit **Erneut laden**. Du kannst die Auswahl erneut abrufen, ohne Namen und andere bereits eingegebene Angaben zu verlieren.
+
+Die Aufnahme hat zwei Stufen: **1. Person** und **2. Mitgliedschaft und Kontakt**. Nach **Weiter** liegt der Tastaturfokus auf der neuen Überschrift beziehungsweise auf **Mögliche Treffer**. Mit **ändern** kehrst du zu den erhaltenen Personendaten zurück. Optionale Untereinheiten bilden eine benannte Auswahlgruppe; ein Fehler wird an dieser Gruppe erklärt und fokussiert.
+
+![Zweite Stufe mit Mitgliedschaft, Untereinheiten und Kontakt](bild:mitglieder-aufnehmen-details)

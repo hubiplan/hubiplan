@@ -50,6 +50,25 @@ for (const language of ['de', 'en']) {
       try {
         await page.goto(`${base}${b.seite}`)
         await page.waitForLoadState('networkidle')
+        if (b.name === 'mitglieder-aufnehmen-details') {
+          await page.getByLabel('Name', { exact: true }).fill('Muster')
+          await page
+            .getByLabel(language === 'en' ? 'First name' : 'Vorname', { exact: true })
+            .fill('Erika')
+          await page
+            .getByLabel(language === 'en' ? 'Date of birth' : 'Geburtsdatum', { exact: true })
+            .fill('1980-05-17')
+          await page
+            .getByRole('button', { name: language === 'en' ? 'Next' : 'Weiter', exact: true })
+            .click()
+          const heading = page.getByRole('heading', {
+            name: language === 'en' ? '2. Membership and contact' : '2. Mitgliedschaft und Kontakt',
+            exact: true,
+          })
+          await heading.waitFor()
+          if (!(await heading.evaluate((el) => document.activeElement === el)))
+            throw new Error('Die zweite Aufnahmestufe erhält keinen Tastaturfokus')
+        }
         await page
           .locator('main [role="status"]', { hasText: /Lädt|Loading/ })
           .waitFor({ state: 'detached' })
@@ -59,15 +78,20 @@ for (const language of ['de', 'en']) {
         const target = page.locator(b.ausschnitt ? `${root} ${b.ausschnitt}` : root).first()
         await target.waitFor({ state: 'visible', timeout: 15000 })
         // Organisationsanzeigen dieser Bilder müssen aus dem erfundenen Screenshot-Bestand stammen.
-        const requiredNames = b.name === 'modul-einschalten'
-          ? ['Dachverband Musterstadt', 'Schützenverein Beispieldorf']
-          : b.name === 'dokument-hochladen' ? ['Schützenverein Beispieldorf'] : []
+        const requiredNames =
+          b.name === 'modul-einschalten'
+            ? ['Dachverband Musterstadt', 'Schützenverein Beispieldorf']
+            : b.name === 'dokument-hochladen'
+              ? ['Schützenverein Beispieldorf']
+              : []
         const visibleText = await target.innerText()
         for (const name of requiredNames) {
           if (!visibleText.includes(name)) throw new Error('Erfundene Organisationsanzeige fehlt')
         }
         // Hinweise mit Datum (z. B. Frist für die Zwei-Faktor-Anmeldung) veralten im Bild
-        await page.addStyleTag({ content: 'main.content > .alert[role="status"] { display: none !important; }' })
+        await page.addStyleTag({
+          content: 'main.content > .alert[role="status"] { display: none !important; }',
+        })
         // Ausschnitt aus der ganzen Seite: so liegt die feste Kopfleiste nicht über dem
         // Bild, lange Seiten werden nach MAX_HOEHE abgeschnitten, leerer Rand unten fehlt
         const clip = await target.evaluate((el, maxHeight) => {
@@ -87,7 +111,13 @@ for (const language of ['de', 'en']) {
             height: Math.min(bottom - box.top, maxHeight),
           }
         }, MAX_HOEHE)
-        await page.screenshot({ path: file, clip, fullPage: true, animations: 'disabled', caret: 'hide' })
+        await page.screenshot({
+          path: file,
+          clip,
+          fullPage: true,
+          animations: 'disabled',
+          caret: 'hide',
+        })
         console.log(`${language}/${b.name}.png`)
       } catch (err) {
         failed++

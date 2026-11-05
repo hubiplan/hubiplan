@@ -151,7 +151,7 @@ class Entry(models.Model):
 
     class Status(models.TextChoices):
         DRAFT = "entwurf", gettext_lazy("Entwurf")
-        SUBMITTED = "abgegeben", "abgegeben"
+        SUBMITTED = "abgegeben", gettext_lazy("abgegeben")
         CONFIRMED = "bestaetigt", gettext_lazy("bestätigt")
         RETURNED = "rueckfrage", gettext_lazy("Rückfrage")
         WITHDRAWN = "zurueckgezogen", gettext_lazy("zurückgezogen")

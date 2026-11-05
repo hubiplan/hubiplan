@@ -116,7 +116,7 @@ export function UnitsPanel({ org, call }: { org: number; call: CallDetail }) {
             key: 'contacts',
             label: t('Ansprechpersonen'),
             value: (r) => r.contacts,
-            render: (r) => (r.contacts ? r.contacts : <span className="muted">keine</span>),
+            render: (r) => (r.contacts ? r.contacts : <span className="muted">{t('keine')}</span>),
             optional: true,
           },
         ]}
