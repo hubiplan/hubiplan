@@ -124,7 +124,6 @@ export function Checkbox({
         disabled={disabled}
         aria-disabled={busy || undefined}
         aria-busy={busy || undefined}
-        onClick={busy ? (event) => event.preventDefault() : undefined}
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           if (!busy) onChange(e.target.checked)
         }}
