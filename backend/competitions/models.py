@@ -149,6 +149,28 @@ class Competition(models.Model):
         return self.title
 
 
+class ShootingProgram(models.Model):
+    """Gemeinsame Schießbedingungen und Treffergrundlage mehrerer Wertungen."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    competition = models.ForeignKey(Competition, on_delete=models.CASCADE, related_name="programs")
+    name = models.CharField("Bezeichnung", max_length=100, default="Schießdurchgang")
+    sort_order = models.PositiveSmallIntegerField(default=0)
+    target = models.CharField("Scheibe", max_length=30, blank=True)
+    custom_target = models.JSONField("eigene Scheibe", default=dict, blank=True)
+    shots = models.PositiveSmallIntegerField("Schüsse je Person", null=True, blank=True)
+    position = models.CharField("Anschlagart", max_length=100, blank=True)
+    distance = models.PositiveSmallIntegerField("Entfernung in m", null=True, blank=True)
+
+    class Meta:
+        ordering = ["sort_order", "pk"]
+        verbose_name = "Schießdurchgang"
+        verbose_name_plural = "Schießdurchgänge"
+
+    def __str__(self):
+        return self.name
+
+
 class Scoring(models.Model):
     """Wertung: eine Rangliste innerhalb des Wettbewerbs."""
 
@@ -173,6 +195,9 @@ class Scoring(models.Model):
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
     )
     competition = models.ForeignKey(Competition, on_delete=models.CASCADE, related_name="scorings")
+    program = models.ForeignKey(
+        ShootingProgram, on_delete=models.RESTRICT, null=True, blank=True, related_name="scorings"
+    )
     name = models.CharField("Bezeichnung", max_length=100)
     kind = models.CharField("Art", max_length=10, choices=Kind.choices, default=Kind.INDIVIDUAL)
     sort_order = models.PositiveSmallIntegerField("Reihenfolge", default=0)
@@ -224,6 +249,23 @@ class Scoring(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        # Gleiche Bedingungen beweisen keine gemeinsamen Schüsse. Alte Clients
+        # erhalten deshalb beim Anlegen zunächst einen eigenen Durchgang.
+        if not self.program_id and self.kind == self.Kind.INDIVIDUAL:
+            comp = self.competition
+            if comp.own and comp.form == Competition.Form.RANKING:
+                self.program = ShootingProgram.objects.create(
+                    organization_id=self.organization_id,
+                    competition=comp,
+                    name=self.name,
+                    target=self.target,
+                    custom_target=self.custom_target,
+                    shots=self.shots,
+                    sort_order=self.sort_order,
+                )
+        return super().save(*args, **kwargs)
 
     @property
     def max_value(self):
@@ -327,6 +369,7 @@ class Score(models.Model):
     scoring = models.ForeignKey(Scoring, on_delete=models.CASCADE, related_name="scores")
     starter = models.ForeignKey(Starter, on_delete=models.CASCADE, related_name="scores")
     value = models.DecimalField("Wert", max_digits=10, decimal_places=3)
+    from_hits = models.BooleanField("aus Treffern berechnet", default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -355,7 +398,14 @@ class Hit(models.Model):
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
     )
-    scoring = models.ForeignKey(Scoring, on_delete=models.CASCADE, related_name="hits")
+    # Die ursprüngliche Eingabewertung bleibt für ältere Exporte lesbar.
+    # Treffer überleben das Löschen einer einzelnen Auswertung des Durchgangs.
+    scoring = models.ForeignKey(
+        Scoring, on_delete=models.SET_NULL, null=True, blank=True, related_name="hits"
+    )
+    program = models.ForeignKey(
+        ShootingProgram, on_delete=models.CASCADE, null=True, blank=True, related_name="hits"
+    )
     starter = models.ForeignKey(Starter, on_delete=models.CASCADE, related_name="hits")
     number = models.PositiveSmallIntegerField("Schuss Nr.")
     x = models.DecimalField("x (mm)", max_digits=8, decimal_places=3)
@@ -372,11 +422,19 @@ class Hit(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["scoring", "starter", "number"], name="competitions_treffer_nr"
-            )
+            ),
+            models.UniqueConstraint(
+                fields=["program", "starter", "number"], name="competitions_durchgang_treffer_nr"
+            ),
         ]
 
     def __str__(self) -> str:
         return f"Treffer {self.number}"
+
+    def save(self, *args, **kwargs):
+        if self.program_id is None and self.scoring_id:
+            self.program_id = self.scoring.program_id
+        return super().save(*args, **kwargs)
 
 
 class ShootOff(models.Model):

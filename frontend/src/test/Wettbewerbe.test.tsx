@@ -242,6 +242,17 @@ describe('Wettbewerbe erfassen', () => {
     version = 'b'
     await waitFor(() => expect(syncs()).toBeGreaterThan(before), { timeout: 5000 })
   })
+
+  it('verlangt nach geänderten Bedingungen auch bei älterer Einrichtung ein Neuladen', async () => {
+    renderApp({
+      [`POST ${base}3/sync/`]: () => ({
+        status: 200,
+        body: { results: [], conflicts: [], keys: {}, starters: [otto], generation: 1 },
+      }),
+    })
+    expect(await screen.findByRole('button', { name: 'Einrichtung neu laden' })).toBeVisible()
+    expect(screen.queryByLabelText('Schütze (Name oder Startnummer)')).toBeNull()
+  })
 })
 
 describe('Wettbewerbsübersicht auf Englisch', () => {

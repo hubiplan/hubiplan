@@ -13,6 +13,7 @@ from . import (
     target_views,
     views,
 )
+from .program_views import ProgramViewSet
 from .result_ownership import ResultOwnershipView
 
 router = SimpleRouter()
@@ -25,6 +26,11 @@ router.register(
     basename="competition-certificate-template",
 )
 router.register("competitions", views.CompetitionViewSet, basename="competition")
+router.register(
+    r"competitions/(?P<competition_id>\d+)/programs",
+    ProgramViewSet,
+    basename="competition-program",
+)
 router.register(
     r"competitions/(?P<competition_id>\d+)/scorings",
     views.ScoringViewSet,

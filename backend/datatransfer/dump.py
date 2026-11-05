@@ -124,6 +124,7 @@ def imprint_data(org: Organization) -> dict | None:
 JSON_NAME = "export.json"
 
 ORG_FIELDS = (
+    "shooting_facilities",
     "type",
     "name",
     "short_name",

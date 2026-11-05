@@ -12,7 +12,7 @@ import uuid
 from decimal import Decimal, InvalidOperation
 
 from django.db import IntegrityError, transaction
-from django.db.models import Count, Max, Q
+from django.db.models import Count, F, Max, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.dateparse import parse_datetime
@@ -120,6 +120,7 @@ class CompetitionSerializer(serializers.ModelSerializer):
             "details",
             "status",
             "status_label",
+            "generation",
             "website",
             "website_depth",
             "share_ranking",
@@ -132,7 +133,7 @@ class CompetitionSerializer(serializers.ModelSerializer):
             "event",
             "starter_count",
         ]
-        read_only_fields = ["status"]
+        read_only_fields = ["status", "generation"]
 
     def validate(self, attrs):
         if self.instance is not None:
@@ -184,12 +185,15 @@ class CompetitionSerializer(serializers.ModelSerializer):
 class ScoringSerializer(serializers.ModelSerializer):
     # Aufgelöste Scheibe (Maße, Ringe) zum Zeichnen und Rechnen am Stand, auch offline
     target_info = serializers.SerializerMethodField()
+    confirm_recalculation = serializers.BooleanField(write_only=True, required=False)
+    has_results = serializers.SerializerMethodField()
 
     class Meta:
         model = Scoring
         fields = [
             "id",
             "competition",
+            "program",
             "name",
             "kind",
             "sort_order",
@@ -212,6 +216,8 @@ class ScoringSerializer(serializers.ModelSerializer):
             "tie_breaks",
             "series_size",
             "target_info",
+            "confirm_recalculation",
+            "has_results",
         ]
         read_only_fields = ["competition"]
 
@@ -219,6 +225,10 @@ class ScoringSerializer(serializers.ModelSerializer):
     def get_target_info(self, obj) -> dict | None:
         target = services.target_of(obj)
         return target.as_dict() if target else None
+
+    def get_has_results(self, obj) -> bool:
+        source = obj.source if obj.kind == Scoring.Kind.UNIT else obj
+        return bool(source and (source.scores.exists() or services.hits_for(source).exists()))
 
     def validate_target(self, value):
         from . import targets
@@ -297,6 +307,40 @@ class ScoringSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         comp = self.context["competition"]
+        if comp.status == Competition.Status.FINAL:
+            raise serializers.ValidationError(
+                gettext("Der Wettbewerb ist endgültig abgeschlossen.")
+            )
+        program = attrs.get("program", getattr(self.instance, "program", None))
+        kind = attrs.get("kind", getattr(self.instance, "kind", Scoring.Kind.INDIVIDUAL))
+        if program:
+            if program.competition_id != comp.pk or kind != Scoring.Kind.INDIVIDUAL or not comp.own:
+                raise serializers.ValidationError(
+                    {"program": gettext("Bitte einen Schießdurchgang dieses Wettbewerbs wählen.")}
+                )
+            if "program" in attrs or self.instance is None:
+                if (
+                    self.instance
+                    and self.instance.program_id != program.pk
+                    and (self.instance.scores.exists() or services.hits_for(self.instance).exists())
+                ):
+                    raise serializers.ValidationError(
+                        {
+                            "program": gettext(
+                                "Die Grundlage kann mit vorhandenen Ergebnissen "
+                                "nicht gewechselt werden."
+                            )
+                        }
+                    )
+                attrs.update(
+                    target=program.target, custom_target=program.custom_target, shots=program.shots
+                )
+                if self.instance is None and program.target and "method" not in attrs:
+                    attrs["method"] = Scoring.Method.RINGS
+        elif "program" in attrs and comp.own and kind == Scoring.Kind.INDIVIDUAL:
+            raise serializers.ValidationError(
+                {"program": gettext("Bitte einen Schießdurchgang wählen.")}
+            )
         get = lambda name: attrs.get(name, getattr(self.instance, name, None))  # noqa: E731
         name = (get("name") or "").strip()
         if not name:
@@ -357,7 +401,47 @@ class ScoringSerializer(serializers.ModelSerializer):
         else:
             attrs["source"] = None
         self._target_rules(attrs, get)
+        if self.instance and not self.context.get("program_update"):
+            changed = any(
+                key in attrs and attrs[key] != getattr(self.instance, key)
+                for key in (
+                    "target",
+                    "custom_target",
+                    "method",
+                    "shots",
+                    "counted_shots",
+                    "tie_breaks",
+                    "series_size",
+                    "higher_better",
+                    "decimals",
+                    "max_per_shot",
+                    "source",
+                    "team_mode",
+                    "team_size",
+                )
+            )
+            if (
+                changed
+                and self.get_has_results(self.instance)
+                and not attrs.get("confirm_recalculation")
+            ):
+                raise serializers.ValidationError(
+                    {
+                        "confirm_recalculation": gettext(
+                            "Die Änderung betrifft vorhandene Ergebnisse. "
+                            "Bitte die Neuberechnung bestätigen."
+                        )
+                    }
+                )
         return attrs
+
+    def create(self, validated_data):
+        validated_data.pop("confirm_recalculation", None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop("confirm_recalculation", None)
+        return super().update(instance, validated_data)
 
 
 class CompetitionViewSet(_Mixin, AuditMixin, viewsets.ModelViewSet):
@@ -463,6 +547,9 @@ class CompetitionViewSet(_Mixin, AuditMixin, viewsets.ModelViewSet):
             for p in comp.prizes.all()
         ]
         data["can_manage"] = self.can_manage
+        from .program_views import ProgramSerializer
+
+        data["programs"] = ProgramSerializer(comp.programs.all(), many=True).data
         from .award_views import award_data
 
         data["awards"] = [award_data(a) for a in comp.awards.select_related("dignity", "trophy")]
@@ -497,16 +584,68 @@ class ScoringViewSet(_Mixin, AuditMixin, viewsets.ModelViewSet):
         last = comp.scorings.aggregate(m=Max("sort_order"))["m"] or 0
         return {"organization": self.org, "competition": comp, "sort_order": last + 1}
 
+    @transaction.atomic
+    def perform_create(self, serializer):
+        comp = Competition.objects.select_for_update().get(pk=serializer.context["competition"].pk)
+        serializer.context["competition"] = comp
+        fresh = self._revalidate(serializer)
+        super().perform_create(fresh)
+        serializer.instance = fresh.instance
+        from .target_views import recompute_all
+
+        scoring = serializer.instance
+        recompute_all(self.org, self.request.user, scoring.competition, scoring)
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        comp = Competition.objects.select_for_update().get(pk=serializer.instance.competition_id)
+        serializer.context["competition"] = comp
+        super().perform_update(self._revalidate(serializer))
+
+    @transaction.atomic
+    def perform_destroy(self, instance):
+        comp = Competition.objects.select_for_update().get(pk=instance.competition_id)
+        if comp.status == Competition.Status.FINAL:
+            raise ValidationError(gettext("Der Wettbewerb ist endgültig abgeschlossen."))
+        super().perform_destroy(instance)
+
     def _update(self, serializer):
         from . import target_views
 
         inst = serializer.instance
-        keys = ("target", "custom_target", "method", "counted_shots")
+        conditions = {
+            key: serializer.validated_data[key]
+            for key in ("target", "custom_target", "shots")
+            if key in serializer.validated_data
+            and serializer.validated_data[key] != getattr(inst, key)
+        }
+        if (
+            conditions
+            and inst.program_id
+            and serializer.validated_data.get("program", inst.program) == inst.program
+        ):
+            from .program_views import ProgramSerializer
+
+            program_serializer = ProgramSerializer(
+                inst.program,
+                data={
+                    **conditions,
+                    "confirm_recalculation": bool(
+                        serializer.validated_data.get("confirm_recalculation")
+                    ),
+                },
+                partial=True,
+                context={"competition": inst.competition, "request": self.request},
+            )
+            program_serializer.is_valid(raise_exception=True)
+            program_serializer.save()
+        keys = ("target", "custom_target", "method", "counted_shots", "program")
         before = {k: getattr(inst, k) for k in keys}
         super()._update(serializer)
         if any(getattr(serializer.instance, k) != before[k] for k in keys):
             sc = serializer.instance
             target_views.recompute_all(self.org, self.request.user, sc.competition, sc)
+            Competition.objects.filter(pk=sc.competition_id).update(generation=F("generation") + 1)
 
 
 # --- Starter ---
@@ -753,10 +892,12 @@ class ScoreView(_Mixin, APIView):
 
 
 @transaction.atomic
-def set_score(org, user, comp, scoring, starter, raw, at=None):
+def set_score(org, user, comp, scoring, starter, raw, at=None, *, from_hits=False):
     """Wert setzen (leer: löschen). ``at``: Zeitpunkt der Eingabe auf dem Gerät. Wurde der
     Wert auf dem Server danach geändert, gilt die spätere Eingabe; zurück kommt dann der
     gültige Wert und ``True`` (Konflikt)."""
+    comp = Competition.objects.select_for_update().get(pk=comp.pk)
+    scoring.refresh_from_db()
     _open_for_entries(comp)
     value = _decimal(raw, "value")
     existing = Score.objects.select_for_update().filter(scoring=scoring, starter=starter).first()
@@ -775,13 +916,14 @@ def set_score(org, user, comp, scoring, starter, raw, at=None):
     if existing:
         before = snapshot(existing)
         existing.value = value
+        existing.from_hits = from_hits
         existing.save()
         changes = diff(before, snapshot(existing))
         if changes:
             record(org, user, "update", existing, changes)
     else:
         existing = Score.objects.create(
-            organization=org, scoring=scoring, starter=starter, value=value
+            organization=org, scoring=scoring, starter=starter, value=value, from_hits=from_hits
         )
         record(org, user, "create", existing, diff({}, snapshot(existing)))
     if comp.status == Competition.Status.PREPARATION:
@@ -811,10 +953,12 @@ class SyncView(_Mixin, APIView):
 RESET_NOTE = "Der Wettbewerb wurde zurückgesetzt, die Eingabe ist verworfen."
 
 
+@transaction.atomic
 def sync(org, user, comp: Competition, ops, generation=None) -> dict:
     """Eingaben aus dem Standmodus nachreichen (auch für den Standzugang). ``generation``:
     der Stand des Zurücksetzens, den das Gerät kennt; passt er nicht, stammen die Eingaben
     von vor dem Zurücksetzen und werden verworfen."""
+    comp = Competition.objects.select_for_update().get(pk=comp.pk)
     ops = ops or []
     if not isinstance(ops, list) or len(ops) > 2000:
         raise ValidationError(gettext("Höchstens 2000 Eingaben auf einmal."))
@@ -1069,10 +1213,18 @@ def _starters_with_values(comp) -> list[dict]:
         if sc.starter_id not in latest or sc.updated_at > latest[sc.starter_id]:
             latest[sc.starter_id] = sc.updated_at
     hits: dict[int, dict] = {}
-    for h in Hit.objects.filter(scoring__competition=comp).order_by("number"):
-        hits.setdefault(h.starter_id, {}).setdefault(str(h.scoring_id), []).append(
-            {"x": str(h.x), "y": str(h.y), "spot": h.spot}
-        )
+    program_scorings = {}
+    for scoring_id, program_id in comp.scorings.values_list("pk", "program_id"):
+        if program_id:
+            program_scorings.setdefault(program_id, []).append(scoring_id)
+    for h in Hit.objects.filter(
+        Q(program__competition=comp) | Q(scoring__competition=comp)
+    ).order_by("number"):
+        ids = program_scorings.get(h.program_id, [h.scoring_id])
+        for scoring_id in ids:
+            hits.setdefault(h.starter_id, {}).setdefault(str(scoring_id), []).append(
+                {"x": str(h.x), "y": str(h.y), "spot": h.spot}
+            )
     out = []
     for s in ordered(comp.starters.select_related("unit"), "name", "pk"):
         data = _starter_data(s, values.get(s.pk))
@@ -1194,7 +1346,7 @@ class StatusView(_Mixin, APIView):
 
     @transaction.atomic
     def post(self, request, org_id: int, competition_id: int):
-        comp = self.competition(competition_id)
+        comp = Competition.objects.select_for_update().get(pk=self.competition(competition_id).pk)
         new = request.data.get("status")
         if new not in Competition.Status.values:
             raise ValidationError({"status": gettext("Unbekannter Zustand.")})
@@ -1242,7 +1394,7 @@ class ResetView(_Mixin, APIView):
             "Starter": 0 if keep else comp.starters.count(),
         }
         Score.objects.filter(scoring__competition=comp).delete()
-        Hit.objects.filter(scoring__competition=comp).delete()
+        Hit.objects.filter(Q(program__competition=comp) | Q(scoring__competition=comp)).delete()
         ShootOff.objects.filter(scoring__competition=comp).delete()
         Placing.objects.filter(scoring__competition=comp).delete()
         comp.prizes.update(
@@ -1309,6 +1461,14 @@ class CopyView(_Mixin, APIView):
             certificate_template=src.certificate_template,
             series=src.series,
         )
+        program_mapping = {}
+        for program in src.programs.all():
+            old_id = program.pk
+            program.pk = None
+            program._state.adding = True
+            program.competition = comp
+            program.save()
+            program_mapping[old_id] = program.pk
         mapping = {}
         for sc in src.scorings.order_by("sort_order", "pk"):
             old_pk, source_id = sc.pk, sc.source_id
@@ -1316,6 +1476,7 @@ class CopyView(_Mixin, APIView):
             sc.id = None
             sc._state.adding = True
             sc.competition = comp
+            sc.program_id = program_mapping.get(sc.program_id)
             sc.source_id = mapping.get(source_id)
             sc.save()
             mapping[old_pk] = sc.pk

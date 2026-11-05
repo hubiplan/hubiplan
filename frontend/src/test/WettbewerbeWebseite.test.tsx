@@ -60,7 +60,8 @@ it('zeigt bestehende Preisplatz-Auswahl und speichert sie weiter kompatibel', as
     </MemoryRouter>,
   )
   const user = userEvent.setup()
-  const select = await screen.findByLabelText('Umfang auf der Webseite')
+  await user.click(await screen.findByRole('button', { name: 'Ausgabe & Freigabe' }))
+  const select = await screen.findByLabelText('Öffentlich sichtbar')
   expect(select).toHaveValue('top3')
   expect(within(select).getByRole('option', { name: 'Preisplätze mit Namen' })).toBeVisible()
   expect(within(select).queryByRole('option', { name: 'Plätze 1 bis 3 mit Namen' })).toBeNull()

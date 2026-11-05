@@ -45,6 +45,17 @@ class TargetCatalogView(_Mixin, APIView):
         return Response(
             {
                 "targets": targets.catalog(),
+                "infrastructure_configured": self.org.shooting_facilities is not None,
+                "recommended_targets": [
+                    key
+                    for key, facilities in targets.TARGET_FACILITIES.items()
+                    if self.org.shooting_facilities is None
+                    or set(facilities) & set(self.org.shooting_facilities)
+                ],
+                "facilities": [
+                    {"key": key, "discipline": discipline, "distance": distance}
+                    for key, (discipline, distance) in targets.FACILITIES.items()
+                ],
                 "custom": targets.CUSTOM,
                 "methods": [{"value": v, "label": label} for v, label in Scoring.Method.choices],
                 "tie_breaks": [{"value": k, "label": label} for k, label in tiebreak.CRITERIA],
@@ -68,7 +79,7 @@ def _coord(raw, field: str) -> Decimal:
 
 
 def hits_data(scoring: Scoring, starter: Starter) -> dict:
-    hits = list(Hit.objects.filter(scoring=scoring, starter=starter).order_by("number"))
+    hits = list(services.hits_for(scoring).filter(starter=starter).order_by("number"))
     values = services.shot_values(scoring, hits)
     method = scoring.method
     counted = targets.counted_shots(
@@ -121,7 +132,15 @@ def set_hits(
     auf dem Server danach geändert, gilt die spätere Eingabe; zurück kommt dann der
     gültige Stand mit ``conflict``. ``sample_keys``: bereitgelegte Spiegelausschnitte vom
     Foto, die mit diesen bestätigten Treffern gesammelt werden (nur mit Einwilligung)."""
+    from .models import Competition
+
+    comp = Competition.objects.select_for_update().get(pk=comp.pk)
+    scoring.refresh_from_db()
     _open_for_entries(comp)
+    if scoring.program_id:
+        from .models import ShootingProgram
+
+        ShootingProgram.objects.select_for_update().get(pk=scoring.program_id)
     if scoring.kind != Scoring.Kind.INDIVIDUAL:
         raise ValidationError(gettext("Treffer gibt es nur in Einzelwertungen."))
     if services.target_of(scoring) is None:
@@ -160,8 +179,7 @@ def set_hits(
             }
         )
     existing = {
-        h.number: h
-        for h in Hit.objects.select_for_update().filter(scoring=scoring, starter=starter)
+        h.number: h for h in services.hits_for(scoring).select_for_update().filter(starter=starter)
     }
     if at is not None and existing and max(h.updated_at for h in existing.values()) > at:
         same = len(existing) == len(wanted) and all(
@@ -187,7 +205,9 @@ def set_hits(
     for h in existing.values():
         record(org, user, "delete", h, diff(snapshot(h), {}))
         h.delete()
-    recompute(org, user, comp, scoring, starter)
+    linked = scoring.program.scorings.all() if scoring.program_id else [scoring]
+    for related in linked:
+        recompute(org, user, comp, related, starter)
     samples.store(org, scoring, sample_keys, wanted)
     return hits_data(scoring, starter)
 
@@ -196,18 +216,21 @@ def recompute(org, user, comp, scoring: Scoring, starter: Starter) -> None:
     """Wert des Starters aus seinen Treffern (nur Ringe, Zehntel, Teiler)."""
     if scoring.method == targets.METHOD_FREE or services.target_of(scoring) is None:
         return
-    hits = list(Hit.objects.filter(scoring=scoring, starter=starter).order_by("number"))
+    hits = list(services.hits_for(scoring).filter(starter=starter).order_by("number"))
     value = targets.total(
         scoring.method, services.shot_values(scoring, hits), scoring.counted_shots or None
     )
-    set_score(org, user, comp, scoring, starter, None if value is None else str(value))
+    set_score(
+        org, user, comp, scoring, starter, None if value is None else str(value), from_hits=True
+    )
 
 
 def recompute_all(org, user, comp, scoring: Scoring) -> None:
     """Nach Änderung von Scheibe, Wertungsart oder gewerteten Schüssen."""
     if comp.status == comp.Status.FINAL:
         return
-    ids = set(Hit.objects.filter(scoring=scoring).values_list("starter_id", flat=True))
+    ids = set(services.hits_for(scoring).values_list("starter_id", flat=True))
+    ids -= set(scoring.scores.filter(from_hits=False).values_list("starter_id", flat=True))
     for starter in Starter.objects.filter(pk__in=ids):
         recompute(org, user, comp, scoring, starter)
 

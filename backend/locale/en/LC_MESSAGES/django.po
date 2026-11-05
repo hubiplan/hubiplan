@@ -5973,3 +5973,36 @@ msgstr "Performance information changed"
 
 msgid "Im Mitgliederbereich liegen neue oder geänderte Auftrittsinformationen oder eine noch offene Rückmeldung für Sie vor: {link}"
 msgstr "New or updated performance information or a pending response is available in your member area: {link}"
+
+msgid "Bitte gültige Schießmöglichkeiten wählen."
+msgstr "Please select valid shooting facilities."
+
+msgid "Schießdurchgänge gibt es nur bei eigenen Ranglisten."
+msgstr "Shooting rounds are only available for your own ranking competitions."
+
+msgid "Bitte 1 bis 200 Schüsse angeben."
+msgstr "Please specify 1 to 200 shots."
+
+msgid "Es sind bereits mehr Treffer erfasst. Bitte zuerst die Treffer prüfen."
+msgstr "More hits have already been recorded. Please review the hits first."
+
+msgid "Bitte eine positive Entfernung angeben."
+msgstr "Please specify a positive distance."
+
+msgid "Die Entfernung passt nicht zur Scheibe."
+msgstr "The distance does not match the target."
+
+msgid "Die Änderung betrifft vorhandene Ergebnisse. Bitte die Neuberechnung bestätigen."
+msgstr "This change affects existing results. Please confirm the recalculation."
+
+msgid "Dieser Durchgang wird noch von Wertungen oder Treffern verwendet."
+msgstr "This round is still used by rankings or recorded hits."
+
+msgid "Bitte einen Schießdurchgang dieses Wettbewerbs wählen."
+msgstr "Please select a shooting round from this competition."
+
+msgid "Die Grundlage kann mit vorhandenen Ergebnissen nicht gewechselt werden."
+msgstr "The source cannot be changed while results exist."
+
+msgid "Bitte einen Schießdurchgang wählen."
+msgstr "Please select a shooting round."

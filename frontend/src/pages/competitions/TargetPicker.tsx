@@ -2,6 +2,7 @@
 // Jedes Bild wird aus den Maßen des Katalogs gezeichnet; Karten mit mehreren Spiegeln
 // zeigen die übliche Anordnung (vier Ecken und Mitte).
 import type { TargetInfo } from '../../api/competitions.ts'
+import { useState } from 'react'
 import { TargetRings } from './TargetPad.tsx'
 import { t } from '../../i18n/index.ts'
 
@@ -81,18 +82,46 @@ export function TargetPicker({
   customKey,
   onChange,
   error,
+  recommendedTargets,
+  infrastructureConfigured = false,
 }: {
   targets: TargetInfo[]
   value: string
   customKey: string
   onChange: (key: string) => void
   error?: string
+  recommendedTargets?: string[]
+  infrastructureConfigured?: boolean
 }) {
-  const groups = [...new Set(targets.map((tm) => tm.group))]
+  const [showAll, setShowAll] = useState(false)
+  const visibleTargets =
+    infrastructureConfigured && !showAll
+      ? targets.filter((tm) => recommendedTargets?.includes(tm.key) || tm.key === value)
+      : targets
+  const groups = [...new Set(visibleTargets.map((tm) => tm.group))]
   const name = 'scheibe'
   return (
     <fieldset className="target-picker">
       <legend>{t('Scheibe')}</legend>
+      {infrastructureConfigured && (
+        <div className="stack">
+          <p className="muted small">
+            {t(
+              'Vorgefiltert nach der Schießinfrastruktur des Vereins. Bereits ausgewählte Scheiben bleiben sichtbar.',
+            )}
+          </p>
+          <button
+            type="button"
+            className="button button-ghost"
+            aria-pressed={showAll}
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {showAll
+              ? t('Nur passende Scheiben anzeigen')
+              : t('Alle Scheiben anzeigen (z. B. fremde Anlage)')}
+          </button>
+        </div>
+      )}
       <div className="target-tiles">
         <label className={`target-tile${value === '' ? ' target-tile-on' : ''}`}>
           <input
@@ -113,7 +142,7 @@ export function TargetPicker({
         <div key={g}>
           <p className="target-group">{g}</p>
           <div className="target-tiles">
-            {targets
+            {visibleTargets
               .filter((tm) => tm.group === g)
               .map((tm) => (
                 <label

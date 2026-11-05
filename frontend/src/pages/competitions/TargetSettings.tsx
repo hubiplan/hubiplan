@@ -45,11 +45,13 @@ export function TargetSettings({
   values: v,
   set,
   errors,
+  mode = 'all',
 }: {
   catalog: TargetCatalog
   values: TargetValues
   set: <K extends keyof TargetValues>(key: K, value: TargetValues[K]) => void
   errors: Record<string, string>
+  mode?: 'all' | 'conditions' | 'scoring'
 }) {
   const chosen = catalog.targets.find((tm) => tm.key === v.target)
   const custom = v.target === catalog.custom
@@ -67,36 +69,42 @@ export function TargetSettings({
 
   return (
     <div className="stack">
-      <h4>{t('Scheibe und Wertung')}</h4>
-      <TargetPicker
-        targets={catalog.targets}
-        value={v.target}
-        customKey={catalog.custom}
-        error={errors.target}
-        onChange={(key) => {
-          set('target', key)
-          if (!key && v.method !== 'frei') set('method', 'frei')
-          if (key === catalog.custom && !v.custom_target?.top_diameter) {
-            set('custom_target', EMPTY_CUSTOM)
-          }
-        }}
-      />
-      <div className="grid-3">
-        <SelectField
-          label={t('Wertungsart')}
-          value={v.method}
-          error={errors.method}
-          hint={v.target ? undefined : t('Ringe, Zehntel und Teiler brauchen eine Scheibe.')}
-          onChange={(e) => set('method', e.target.value as ScoringMethod)}
-        >
-          {catalog.methods.map((m) => (
-            <option key={m.value} value={m.value} disabled={m.value !== 'frei' && !v.target}>
-              {m.label}
-            </option>
-          ))}
-        </SelectField>
-      </div>
-      {chosen && (
+      {mode === 'all' && <h4>{t('Scheibe und Wertung')}</h4>}
+      {mode !== 'scoring' && (
+        <TargetPicker
+          targets={catalog.targets}
+          value={v.target}
+          customKey={catalog.custom}
+          error={errors.target}
+          recommendedTargets={catalog.recommended_targets}
+          infrastructureConfigured={catalog.infrastructure_configured}
+          onChange={(key) => {
+            set('target', key)
+            if (!key && v.method !== 'frei') set('method', 'frei')
+            if (key === catalog.custom && !v.custom_target?.top_diameter) {
+              set('custom_target', EMPTY_CUSTOM)
+            }
+          }}
+        />
+      )}
+      {mode !== 'conditions' && (
+        <div className="grid-3">
+          <SelectField
+            label={t('Wertungsart')}
+            value={v.method}
+            error={errors.method}
+            hint={v.target ? undefined : t('Ringe, Zehntel und Teiler brauchen eine Scheibe.')}
+            onChange={(e) => set('method', e.target.value as ScoringMethod)}
+          >
+            {catalog.methods.map((m) => (
+              <option key={m.value} value={m.value} disabled={m.value !== 'frei' && !v.target}>
+                {m.label}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+      )}
+      {chosen && mode !== 'scoring' && (
         <p className="muted small">
           {t('Zehn {x} mm, Ringe {x2} mm breit, Ringe  {lowest} bis', {
             x: fmt(chosen.top_diameter),
@@ -124,8 +132,8 @@ export function TargetSettings({
           {t('ist der Abstand in 1/100 mm.')} {chosen.note}
         </p>
       )}
-      {chosen && <HowTo k="how_comp_score" />}
-      {custom && (
+      {chosen && mode === 'all' && <HowTo k="how_comp_score" />}
+      {custom && mode !== 'scoring' && (
         <div className="grid-3">
           <Field
             label={t('Name der Scheibe')}
@@ -216,9 +224,9 @@ export function TargetSettings({
         </div>
       )}
       {errors.custom_target && <p className="field-error">{errors.custom_target}</p>}
-      {v.target && (
-        <>
-          <h4>{t('Bei Gleichstand')}</h4>
+      {v.target && mode !== 'conditions' && (
+        <details>
+          <summary>{t('Gleichstand und Stechen')}</summary>
           <p className="muted small">
             {t(
               'Die Regeln gelten der Reihe nach, wenn für alle Gleichen Treffer erfasst sind. Bleibt es gleich, teilen sie sich den Platz; auf Preisplätzen folgt ein Stechen.',
@@ -306,7 +314,7 @@ export function TargetSettings({
               onChange={(e) => set('series_size', Number(e.target.value) || 10)}
             />
           )}
-        </>
+        </details>
       )}
       <Why k="comp_target" />
     </div>

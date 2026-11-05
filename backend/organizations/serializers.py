@@ -194,11 +194,23 @@ class OrganizationSerializer(KeepsMembersMixin, ModelCleanMixin, serializers.Mod
             "fiscal_label",
             "logo_url",
             "imprint_key",
+            "shooting_facilities",
         ]
         read_only_fields = ["id", "type"]
 
     fiscal_label = serializers.SerializerMethodField()
     imprint_key = serializers.SerializerMethodField()
+
+    def validate_shooting_facilities(self, value):
+        from competitions.targets import FACILITIES
+
+        if value is None:
+            return None
+        if not isinstance(value, list) or any(
+            not isinstance(key, str) or key not in FACILITIES for key in value
+        ):
+            raise serializers.ValidationError(gettext("Bitte gültige Schießmöglichkeiten wählen."))
+        return sorted(set(value))
 
     def get_imprint_key(self, obj) -> str:
         from .imprint import ensure
