@@ -6,21 +6,59 @@ import csv
 import datetime
 import io
 import zipfile
+from urllib.parse import unquote
 
 import pytest
 from django.core.files.base import ContentFile
+from django.test import override_settings
 from django.utils import timezone
 
+from accounts.models import User
 from audit.log import record
+from audit.models import AuditEntry
 from billing import archive, services
 from billing.models import DunningLevel, Invoice
 from finance import retention
-from finance.models import BankStatement, Booking, Receipt, YearClosing
+from finance.models import BankStatement, Booking, Category, Receipt, YearClosing
 
 from .test_m9_billing import JSON, base, c, club, members, setup, start_run, zug  # noqa: F401
 from .test_storno_festschreibung import book, fin  # noqa: F401
 
 pytestmark = pytest.mark.django_db
+
+
+@override_settings(HUBIPLAN_LANGUAGES=["de", "en"])
+def test_englische_oberflaeche_aendert_die_sprache_des_pruefexports_nicht(
+    c, fin, setup, base, club
+):
+    club.tax_areas_enabled = True
+    club.save(update_fields=["tax_areas_enabled"])
+    Category.objects.filter(pk=setup["cat"]).update(tax_area="ideal")
+    booking = book(c, fin, account=setup["bank"], category=setup["cat"])
+    assert booking.tax_area_value == "ideal"
+    User.objects.filter(pk=c.session["_auth_user_id"]).update(language="en")
+    org = booking.organization
+    org.department_label_en = "team"
+    org.department_label_plural_en = "teams"
+    org.save(update_fields=["department_label_en", "department_label_plural_en"])
+    settings = c.get(f"{base}/settings/").json()
+    assert settings["department_label"] == "Team"
+    assert settings["department_label_plural"] == "Teams"
+    changed = c.patch(f"{fin}/bookings/{booking.pk}/", {"text": "Updated note"}, content_type=JSON)
+    assert changed.status_code == 200
+    assert "Entry" in unquote(changed["X-Change-Label"])
+    assert "changed" in unquote(changed["X-Change-Label"])
+    assert AuditEntry.objects.filter(object_type="Buchung", object_id=str(booking.pk)).exists()
+    response = c.get(f"{fin}/export/?jahr={timezone.localdate().year}")
+    assert response.status_code == 200
+    with zipfile.ZipFile(io.BytesIO(b"".join(response.streaming_content))) as exported:
+        rows = list(
+            csv.DictReader(
+                io.StringIO(exported.read("buchungen.csv").decode("utf-8-sig")), delimiter=";"
+            )
+        )
+    assert rows[0]["Art"] == "Einnahme"
+    assert rows[0]["Steuerbereich"] == "ideeller Bereich"
 
 
 def test_beleg_bleibt_bei_buchungsloeschung(c, fin, setup):

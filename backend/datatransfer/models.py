@@ -41,11 +41,11 @@ class TransferJob(models.Model):
         DEPARTMENT = "department", gettext_lazy("Abteilung")
 
     class Status(models.TextChoices):
-        PENDING = "pending", "wartet"
+        PENDING = "pending", gettext_lazy("wartet")
         RUNNING = "running", gettext_lazy("läuft")
         CHECKED = "checked", gettext_lazy("geprüft")
-        DONE = "done", "fertig"
-        FAILED = "failed", "fehlgeschlagen"
+        DONE = "done", gettext_lazy("fertig")
+        FAILED = "failed", gettext_lazy("fehlgeschlagen")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"

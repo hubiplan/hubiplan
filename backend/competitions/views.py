@@ -247,7 +247,9 @@ class ScoringSerializer(serializers.ModelSerializer):
             return targets.clean_custom(value)
         except targets.TargetError as exc:
             label = targets.FIELD_LABELS.get(exc.field, "Scheibe")
-            raise serializers.ValidationError(f"{label}: {exc.message}") from exc
+            raise serializers.ValidationError(
+                gettext("{label}: {x1}").format(label=label, x1=exc.message)
+            ) from exc
 
     def validate_tie_breaks(self, value):
         from . import tiebreak

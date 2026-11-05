@@ -22,8 +22,10 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext
 
 from core import virenscan
+from core.i18n import date_text
 
 from .models import Coupling, RemoteInvoice
 from .packets import DOWN, Packet, register
@@ -163,15 +165,15 @@ def on_paid_changed(invoice) -> None:
 def receive(coupling: Coupling, kind: str, data: dict) -> None:
     uid = str(data.get("uid") or "")[:80]
     if not uid:
-        raise ValidationError("Rechnung ohne Kennung.")
+        raise ValidationError(gettext("Rechnung ohne Kennung."))
     if kind == "invoice.issue":
         if coupling.direction != Coupling.Direction.PARENT:
-            raise ValidationError("Rechnungen kommen nur von der Einheit darüber.")
+            raise ValidationError(gettext("Rechnungen kommen nur von der Einheit darüber."))
         _receive_issue(coupling, uid, data)
         return
     remote = RemoteInvoice.objects.filter(coupling=coupling, uid=uid).first()
     if remote is None:
-        raise ValidationError("Rechnung unbekannt.")
+        raise ValidationError(gettext("Rechnung unbekannt."))
     if kind == "invoice.cancel" and coupling.direction == Coupling.Direction.PARENT:
         remote.status = RemoteInvoice.Status.CANCELLED
         remote.save(update_fields=["status", "updated_at"])
@@ -194,7 +196,7 @@ def receive(coupling: Coupling, kind: str, data: dict) -> None:
             **{"bezahlt am": remote.paid_reported_on.isoformat()},
         )
     else:
-        raise ValidationError("Unpassende Rechnungsmeldung.")
+        raise ValidationError(gettext("Unpassende Rechnungsmeldung."))
 
 
 def _receive_issue(coupling: Coupling, uid: str, data: dict) -> None:
@@ -243,8 +245,10 @@ def _receive_issue(coupling: Coupling, uid: str, data: dict) -> None:
         )
         if not same:
             raise ValidationError(
-                f"Rechnung {existing.number or uid} liegt schon vor und wird nicht geändert. "
-                "Bitte stornieren und als neue Rechnung schicken."
+                gettext(
+                    "Rechnung {x0} liegt schon vor und wird nicht geändert. Bitte "
+                    "stornieren und als neue Rechnung schicken."
+                ).format(x0=existing.number or uid)
             )
         return
     remote = RemoteInvoice.objects.create(
@@ -271,24 +275,26 @@ def report_paid(remote: RemoteInvoice, *, date, account=None, category=None, use
     remote = RemoteInvoice.objects.select_for_update().select_related("coupling").get(pk=remote.pk)
     if remote.paid_reported_on is not None:
         raise ValidationError(
-            f"Die Rechnung wurde am {remote.paid_reported_on:%d.%m.%Y} schon als bezahlt gemeldet."
+            gettext("Die Rechnung wurde am {x0} schon als bezahlt gemeldet.").format(
+                x0=date_text(remote.paid_reported_on)
+            )
         )
     coupling = remote.coupling
     if coupling.direction != Coupling.Direction.PARENT:
-        raise ValidationError("Nur Eingangsrechnungen lassen sich als bezahlt melden.")
+        raise ValidationError(gettext("Nur Eingangsrechnungen lassen sich als bezahlt melden."))
     if remote.status != RemoteInvoice.Status.OPEN:
-        raise ValidationError("Die Rechnung ist storniert.")
+        raise ValidationError(gettext("Die Rechnung ist storniert."))
     if not coupling.is_open:
-        raise ValidationError("Die Kopplung ist nicht aktiv.")
+        raise ValidationError(gettext("Die Kopplung ist nicht aktiv."))
     org = coupling.local_unit
     booking = None
     if account is not None:
         if account.organization_id != org.pk:
-            raise ValidationError("Bitte ein Konto dieser Einheit wählen.")
+            raise ValidationError(gettext("Bitte ein Konto dieser Einheit wählen."))
         if category is None or category.organization_id != org.pk:
-            raise ValidationError("Bitte eine Kategorie wählen.")
+            raise ValidationError(gettext("Bitte eine Kategorie wählen."))
         if not category.allows(Booking.Kind.EXPENSE):
-            raise ValidationError("Die Kategorie ist nicht für Ausgaben vorgesehen.")
+            raise ValidationError(gettext("Die Kategorie ist nicht für Ausgaben vorgesehen."))
         finance_services.ensure_open(org, date=date)
         year = org.fiscal_year_of(date)
         booking = Booking(

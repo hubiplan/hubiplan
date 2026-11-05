@@ -24,7 +24,12 @@ export function LiveCamera({
   onFail: (message: string) => void
 }) {
   const video = useRef<HTMLVideoElement>(null)
-  const [aim, setAim] = useState<Aim>({ ok: false, hint: 'Kamera wird gestartet …' })
+  const [aim, setAim] = useState<Aim>({
+    ok: false,
+    get hint() {
+      return t('Kamera wird gestartet …')
+    },
+  })
   const [steady, setSteady] = useState(0)
   const done = useRef(false)
   // neueste Rückmeldung, ohne die Kamera bei jedem Neuzeichnen neu zu starten

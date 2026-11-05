@@ -185,7 +185,7 @@ function CategoryRow({
         onChange={(e) => form.set('name', e.target.value)}
       />
       <Checkbox
-        label="aktiv"
+        label={t('aktiv')}
         checked={cat.is_active !== false}
         onChange={(v) =>
           void run(() => eventApi.updateCategory(base, cat.id, { is_active: v }), t('Gespeichert.'))

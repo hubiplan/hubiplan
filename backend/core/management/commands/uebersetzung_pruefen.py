@@ -101,6 +101,26 @@ class Command(BaseCommand):
         path.write_text(re.sub(r'"POT-Creation-Date: [^"]*"\n', "", text), "utf-8")
         all_entries = entries(path)
         gaps = missing(path)
+        from core.i18n_source import untranslated_ui
+
+        source_gaps = []
+        root = Path(settings.BASE_DIR)
+        for source in root.rglob("*.py"):
+            relative = source.relative_to(root)
+            if any(
+                part in ("tests", "migrations", "management", ".venv", "venv")
+                for part in relative.parts
+            ) or source.name.startswith("test_"):
+                continue
+            source_gaps.extend(
+                (relative, line, text)
+                for line, text in untranslated_ui(source.read_text("utf-8-sig"))
+            )
+        self.stdout.write(
+            f"Quelltextprüfung Backend: {len(source_gaps)} nicht angebundene UI-Literale"
+        )
+        for source, line, text in source_gaps:
+            self.stdout.write(f"  nicht angebunden: {source}:{line}: {text}")
         self.stdout.write(
             f"Übersetzung Backend: {len(all_entries)} Texte, "
             f"{len(all_entries) - len(gaps)} englisch, {len(gaps)} fehlen"
@@ -109,5 +129,7 @@ class Command(BaseCommand):
             for e in gaps:
                 ctx = f"[{e['msgctxt']}] " if e.get("msgctxt") else ""
                 self.stdout.write(f"  fehlt: {ctx}{e['msgid']!r}")
+        if source_gaps:
+            raise CommandError(f"{len(source_gaps)} sichtbare Systemtexte sind nicht angebunden.")
         if options["streng"] and gaps:
             raise CommandError(f"{len(gaps)} Übersetzungen fehlen.")

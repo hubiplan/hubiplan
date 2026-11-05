@@ -12,8 +12,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, LoadError } from '../../components/ui.tsx'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
-import { locale } from '../../i18n/index.ts'
-import { t } from '../../i18n/index.ts'
+import { locale, t } from '../../i18n/index.ts'
 
 function numOrNull(text: string): number | null {
   const n = parseInt(text, 10)
@@ -179,7 +178,7 @@ export function ManualPrizes({ org, comp }: { org: number; comp: CompetitionDeta
     <details className="card card-wide">
       <summary>
         <strong>{t('Nachträglich erfassen')}</strong>{' '}
-        <span className="muted">(wenn am Stand auf Papier gezählt wurde)</span>
+        <span className="muted">{t('(wenn am Stand auf Papier gezählt wurde)')}</span>
       </summary>
       <div className="table-scroll">
         <table className="table">
@@ -357,7 +356,7 @@ export function StandAccessCard({ org, comp }: { org: number; comp: CompetitionD
             <li key={a.id}>
               {a.label || t('Standzugang')}{' '}
               <span className="muted">
-                bis{' '}
+                {t('bis')}{' '}
                 {new Date(a.expires_at).toLocaleString(locale(), {
                   dateStyle: 'short',
                   timeStyle: 'short',

@@ -126,8 +126,8 @@ function ScalarInput({
         onChange={(e) => onChange(e.target.value === '' ? null : e.target.value === 'ja')}
       >
         <option value="">–</option>
-        <option value="ja">ja</option>
-        <option value="nein">nein</option>
+        <option value="ja">{t('ja')}</option>
+        <option value="nein">{t('nein')}</option>
       </select>
     )
   }
@@ -246,7 +246,7 @@ function RepeatableInput({
                     className="link-button"
                     onClick={() => onChange(rows.filter((_, j) => j !== i))}
                   >
-                    entfernen
+                    {t('entfernen')}
                   </button>
                 </td>
               </tr>

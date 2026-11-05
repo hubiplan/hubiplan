@@ -380,7 +380,7 @@ class PublicPhotoUploadView(APIView):
         link = _valid_link(token)
         if str(request.data.get("consent", "")).lower() not in ("1", "true", "on"):
             raise serializers.ValidationError(
-                {"consent": gettext("Bitte stimmen Sie der Verwendung des Fotos zu.")}
+                {"consent": gettext("Bitte stimme der Verwendung des Fotos zu.")}
             )
         upload = request.FILES.get("file")
         if upload is None:

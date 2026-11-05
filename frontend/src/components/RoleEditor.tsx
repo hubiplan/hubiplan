@@ -17,7 +17,7 @@ import { t } from '../i18n/index.ts'
 /** Angaben einer Rolle; nicht jede Einheit kennt alle. */
 function holderText(holders: number | string[]): ReactNode {
   if (typeof holders === 'number') return holders
-  return holders.length > 0 ? holders.join(', ') : <span className="muted">unbesetzt</span>
+  return holders.length > 0 ? holders.join(', ') : <span className="muted">{t('unbesetzt')}</span>
 }
 
 function catalogArea(catalog: CatalogModule[], label: string): boolean {
@@ -175,7 +175,7 @@ export function PermissionSummary({
             {a.stufe ? (
               <span className={a.full ? undefined : 'muted'}>: {a.stufe}</span>
             ) : (
-              !a.full && <span className="muted"> (teilweise)</span>
+              !a.full && <span className="muted"> {t('(teilweise)')}</span>
             )}
           </li>
         ))}

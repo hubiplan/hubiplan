@@ -82,9 +82,9 @@ def clean_crop(value) -> dict:
         try:
             value = json.loads(value)
         except ValueError as exc:
-            raise ValidationError({"crop": "Ungültiger Ausschnitt."}) from exc
+            raise ValidationError({"crop": gettext("Ungültiger Ausschnitt.")}) from exc
     if not isinstance(value, dict):
-        raise ValidationError({"crop": "Ungültiger Ausschnitt."})
+        raise ValidationError({"crop": gettext("Ungültiger Ausschnitt.")})
     result = {}
     try:
         for key in ("x", "y", "width", "height"):
@@ -94,11 +94,11 @@ def clean_crop(value) -> dict:
             result[key] = round(number, 4)
         rotation = int(value.get("rotation") or 0)
     except (KeyError, TypeError, ValueError) as exc:
-        raise ValidationError({"crop": "Ungültiger Ausschnitt."}) from exc
+        raise ValidationError({"crop": gettext("Ungültiger Ausschnitt.")}) from exc
     if rotation % 90 or not 0 <= rotation < 360:
-        raise ValidationError({"crop": "Ungültige Drehung."})
+        raise ValidationError({"crop": gettext("Ungültige Drehung.")})
     if result["width"] <= 0 or result["height"] <= 0:
-        raise ValidationError({"crop": "Ungültiger Ausschnitt."})
+        raise ValidationError({"crop": gettext("Ungültiger Ausschnitt.")})
     result["rotation"] = rotation
     aspect = value.get("aspect")
     if isinstance(aspect, str) and len(aspect) <= 12:

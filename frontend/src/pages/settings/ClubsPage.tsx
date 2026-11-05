@@ -243,7 +243,9 @@ function ClubEditCard({
   return (
     <form className="card card-wide" onSubmit={(e) => e.preventDefault()}>
       <div className="card-head">
-        <h2>{club.name} bearbeiten</h2>
+        <h2>
+          {club.name} {t('bearbeiten')}
+        </h2>
       </div>
       <SaveStatus auto={auto} />
       <div className="grid-3">
@@ -277,7 +279,7 @@ function ClubEditCard({
           onChange={(e) => form.set('street', e.target.value)}
         />
         <Field
-          label="PLZ"
+          label={t('PLZ')}
           maxLength={10}
           value={v.postal_code}
           error={form.errors.postal_code}
@@ -311,7 +313,7 @@ function ClubEditCard({
         />
       </div>
       <Checkbox
-        label={v.name ? t('{name} ist aktiv', { name: v.name }) : 'aktiv'}
+        label={v.name ? t('{name} ist aktiv', { name: v.name }) : t('aktiv')}
         checked={v.is_active}
         onChange={(on) => form.set('is_active', on)}
       />

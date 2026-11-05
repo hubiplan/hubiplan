@@ -62,7 +62,7 @@ function CheckList({
       <div className="button-row">
         <label className="checkbox">
           <input type="radio" name={name} checked={!some} onChange={() => setSome(false)} />
-          <span>alle</span>
+          <span>{t('alle')}</span>
         </label>
         <label className="checkbox">
           <input type="radio" name={name} checked={some} onChange={() => setSome(true)} />
@@ -468,7 +468,7 @@ export function RecipientPanel({
                       <td>
                         {c.last_name}
                         {c.first_name && t(', {first_name}', { first_name: c.first_name })}
-                        {c.included && <span className="badge">einzeln</span>}
+                        {c.included && <span className="badge">{t('einzeln')}</span>}
                         {c.email && <div className="muted small">{c.email}</div>}
                       </td>
                       {showGroup && (

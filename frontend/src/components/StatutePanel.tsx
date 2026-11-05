@@ -135,7 +135,7 @@ export function StatutePanel({
                 <strong>
                   {texts.version ?? t('Fassung vom')} {formatDate(v.valid_from)}
                 </strong>
-                {v.is_current && <span className="badge"> aktuell</span>}
+                {v.is_current && <span className="badge"> {t('aktuell')}</span>}
                 {v.note && <span className="muted"> · {v.note}</span>}
                 <div className="muted small">
                   {v.name} {t('· {x} · hochgeladen am', { x: formatSize(v.size) })}{' '}

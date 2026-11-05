@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { api } from '../api/client.ts'
 import { todoApi } from '../api/todos.ts'
 import type { Todo } from '../api/todos.ts'
-import { useAutoSave, useForm, useLoad } from './forms.ts'
+import { formatDateTime, useAutoSave, useForm, useLoad } from './forms.ts'
 import { LoadError, SaveStatus } from './ui.tsx'
 import { t } from '../i18n/index.ts'
 
@@ -118,7 +118,7 @@ export function TodoProgress({
                   {row.done_at && !row.deleted && (
                     <>
                       {' '}
-                      · {new Date(row.done_at).toLocaleString()}
+                      · {formatDateTime(row.done_at)}
                       {row.done_by_id && <> · {t('Konto {id}', { id: row.done_by_id })}</>}
                     </>
                   )}

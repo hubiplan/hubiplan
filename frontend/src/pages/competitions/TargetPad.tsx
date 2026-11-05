@@ -317,7 +317,7 @@ export function TargetPad({
                   onKeyDown={(e) => onKey(e, i)}
                 >
                   {i + 1}. {shotLabel(method, s)}
-                  {s.inner ? ' (Innenzehner)' : ''}
+                  {s.inner ? t(' (Innenzehner)') : ''}
                 </button>
                 {h.source === 'foto' && <span className="muted small"> {t('aus Foto')}</span>}
                 {!keep.has(i) && <span className="muted small"> {t('zählt nicht')}</span>}
@@ -333,7 +333,7 @@ export function TargetPad({
                   aria-label={t('Schuss {x} entfernen', { x: i + 1 })}
                   onClick={() => remove(i)}
                 >
-                  entfernen
+                  {t('entfernen')}
                 </button>
               </li>
             )

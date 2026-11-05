@@ -21,6 +21,7 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.utils.translation import gettext
 
 from .models import Coupling, RemoteMember
 from .packets import UP, Packet, register
@@ -381,16 +382,16 @@ def resolve(rm: RemoteMember, person_id: int | None) -> RemoteMember:
     from members.models import Person
 
     if rm.status != RemoteMember.Status.UNCLEAR:
-        raise ValidationError("Kein offener Klärfall.")
+        raise ValidationError(gettext("Kein offener Klärfall."))
     row = _clean({**((rm.data or {}).get("row") or {}), "uid": rm.uid})
     if row is None:
-        raise ValidationError("Die gemeldeten Angaben sind unvollständig.")
+        raise ValidationError(gettext("Die gemeldeten Angaben sind unvollständig."))
     coupling = rm.coupling
     club = coupling.remote_unit.organization
     with unit_context(club.pk), suppress():
         if person_id is not None:
             if person_id not in (rm.data or {}).get("candidates", []):
-                raise ValidationError("Diese Person steht nicht zur Auswahl.")
+                raise ValidationError(gettext("Diese Person steht nicht zur Auswahl."))
             person = Person.objects.get(pk=person_id, scope=services.scope_for(club))
         else:
             # „Andere Person“: trotz gleichem Namen eine neue Person anlegen

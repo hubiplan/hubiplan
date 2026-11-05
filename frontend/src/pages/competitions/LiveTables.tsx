@@ -97,7 +97,7 @@ export function LiveTables({ api }: { api: StandApi }) {
                           <span className="muted small"> · {r.unit_name || r.club}</span>
                         )
                       )}
-                      {r.out_of_competition && <span className="muted small"> (a. K.)</span>}
+                      {r.out_of_competition && <span className="muted small"> {t('(a. K.)')}</span>}
                     </td>
                     <td className="num">{r.value_text}</td>
                   </tr>

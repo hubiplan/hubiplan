@@ -60,9 +60,9 @@ RESERVED_SLUGS = frozenset(
 
 class WebsiteText(models.Model):
     class Kind(models.TextChoices):
-        GREETING = "greeting", "Begrüßung (Startseite)"
-        PAGE = "page", "Textseite"
-        UNIT = "unit", "Text einer Untereinheit"
+        GREETING = "greeting", gettext_lazy("Begrüßung (Startseite)")
+        PAGE = "page", gettext_lazy("Textseite")
+        UNIT = "unit", gettext_lazy("Text einer Untereinheit")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -185,13 +185,19 @@ class WebsiteText(models.Model):
 
         if self.kind == self.Kind.PAGE:
             if not self.title.strip():
-                raise ValidationError({"title": "Bitte einen Titel angeben."})
+                raise ValidationError({"title": gettext("Bitte einen Titel angeben.")})
             if not re.match(SLUG_RE, self.slug or ""):
                 raise ValidationError(
-                    {"slug": "Nur Kleinbuchstaben, Ziffern und Bindestriche, z. B. „geschichte“."}
+                    {
+                        "slug": gettext(
+                            "Nur Kleinbuchstaben, Ziffern und Bindestriche, z. B. „geschichte“."
+                        )
+                    }
                 )
             if self.slug in RESERVED_SLUGS:
-                raise ValidationError({"slug": "Diese Adresse ist für die Webseite reserviert."})
+                raise ValidationError(
+                    {"slug": gettext("Diese Adresse ist für die Webseite reserviert.")}
+                )
 
 
 class WebsiteRevision(models.Model):

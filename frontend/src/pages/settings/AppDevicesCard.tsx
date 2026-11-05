@@ -6,8 +6,7 @@ import { devicesApi } from '../../api/devices.ts'
 import { HowTo } from '../../learning/Aids.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import type { AppDevice, PairingCode } from '../../api/devices.ts'
-import { locale } from '../../i18n/index.ts'
-import { t } from '../../i18n/index.ts'
+import { locale, t } from '../../i18n/index.ts'
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleString(locale(), { dateStyle: 'medium', timeStyle: 'short' })
@@ -122,8 +121,8 @@ export function AppDevicesCard() {
       )}
       {connected && (
         <p className="alert alert-success" role="status">
-          {t('Verbunden:')} <strong>{connected}</strong>. Warst du das nicht? Dann das Gerät unten
-          sofort abmelden.
+          {t('Verbunden:')} <strong>{connected}</strong>
+          {t('. Warst du das nicht? Dann das Gerät unten sofort abmelden.')}
         </p>
       )}
       {pairing ? (

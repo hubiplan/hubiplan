@@ -150,7 +150,8 @@ export function VerbundConfirmPage() {
               </>
             ) : (
               <>
-                {t('Bei')} <strong>{host}</strong> als <strong>{user?.email}</strong> anmelden?
+                {t('Bei')} <strong>{host}</strong> {t('als')} <strong>{user?.email}</strong>{' '}
+                {t('anmelden?')}
               </>
             )}
           </p>

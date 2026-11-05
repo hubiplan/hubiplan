@@ -65,7 +65,7 @@ export function BankStatementsPage({ canEdit }: { canEdit: boolean }) {
                 <th>{t('Konto')}</th>
                 <th>{t('Zeitraum')}</th>
                 <th className="num">{t('Umsätze')}</th>
-                <th className="num">offen</th>
+                <th className="num">{t('offen')}</th>
                 <th>{t('Saldo')}</th>
               </tr>
             </thead>
@@ -398,10 +398,10 @@ function LinesCard({
             setPage(1)
           }}
         >
-          <option value="open">offene</option>
-          <option value="done">erledigte</option>
+          <option value="open">{t('offene')}</option>
+          <option value="done">{t('erledigte')}</option>
           <option value="ignored">{t('übergangene')}</option>
-          <option value="">alle</option>
+          <option value="">{t('alle')}</option>
         </SelectField>
       </div>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}

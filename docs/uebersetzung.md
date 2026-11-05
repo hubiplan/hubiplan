@@ -96,9 +96,25 @@ Revisionsprotokoll speichert sie immer deutsch (`audit.log.record`).
   `backend/locale/en/LC_MESSAGES/django.po` und zählt fehlende (braucht GNU gettext; im
   Testabbild vorhanden).
 - Frontend: `npm run i18n:check -- [--list] [--add] [--strict]`.
-- `scripts/test.sh` zeigt beide Berichte; nach der Abnahme (Schritt Ü8) werden Lücken zum
-  Fehler.
+- `scripts/test.sh` zeigt beide Berichte. Die Frontendprüfung lehnt fehlende angebundene
+  Übersetzungen und nicht angebundene sichtbare Literale ab.
 
 Die `.mo`-Datei entsteht beim Bauen des Docker-Abbilds und liegt nicht im Repository.
 
-Die Katalogprüfung wird für die vier Meldungsansichten und die Kalender-Rückmeldungen durch eine statische Prüfung sichtbarer Literale ergänzt (`frontend/scripts/i18n-source.mjs`). Sie erkennt direkte JSX-Texte, Beschriftungen und sichtbare Literalzweige auch ohne Umlaute. Neue unübersetzte Literale im abgegrenzten Umfang lassen die Prüfung scheitern. Das ersetzt weder Laufzeitprüfungen dynamischer Texte noch eine Vollständigkeitsprüfung aller Module.
+Die Katalogprüfung umfasst alle produktiven TS/TSX-Dateien. Die ergänzende Quelltextprüfung
+(`frontend/scripts/i18n-source.mjs`) erkennt direkte JSX-Texte, Beschriftungen, sichtbare
+Literalzweige, Übersetzungsparameter und Beschriftungstabellen auch ohne Umlaute.
+Endliche bedingte Schlüssel wie `t(on ? 'An' : 'Aus')` werden in beiden Zweigen geprüft.
+Technische Enum-Werte, Marken, Dateiformate und gespeicherte Vereinsinhalte bleiben erhalten.
+Einzelne absichtliche Ausnahmen stehen mit Fundstelle und Grund in `i18n-exceptions.json`.
+Ausnahmen gelten nur für diesen Ort und Text, nicht für ganze Ansichten.
+
+Die statische Prüfung verfolgt keinen beliebigen Datenfluss. Texte aus Serverantworten,
+zusammengesetzte Meldungen, Hilfsmittelansagen und das tatsächliche Erscheinungsbild brauchen
+zusätzlich Laufzeitprüfungen. Systemauswahlen, Fehler und Verwaltungsansichten werden übersetzt;
+Vereinsnamen, selbst verfasste Schreiben und Finanzbelege behalten die vereinbarte Vereinssprache.
+
+Die Backendprüfung ergänzt den Katalog um eine AST-Prüfung für direkte API-Fehler,
+Antwortmeldungen, `TextChoices`-/`IntegerChoices`-Beschriftungen und übliche Fehlerlisten.
+Nicht angebundene Texte an diesen Stellen lassen `scripts/test.sh` scheitern. Zusammengesetzte
+Meldungen, freie Inhalte und indirekte Funktionsrückgaben bleiben eine gesonderte Prüfaufgabe.

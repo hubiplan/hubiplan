@@ -550,7 +550,7 @@ function CollectiveExit({ spin, onDone }: { spin: SpinOff; onDone: () => void })
               key={m.id}
               label={t('{name} bleibt{x}', {
                 name: m.name,
-                x: m.also_in.length ? ` (auch in ${m.also_in.join(', ')})` : '',
+                x: m.also_in.length ? t(' (auch in {x0})', { x0: m.also_in.join(', ') }) : '',
               })}
               checked={!!keep[m.id]}
               onChange={(on) => setKeep({ ...keep, [m.id]: on })}
@@ -693,12 +693,12 @@ function JoinCard({ onJoined }: { onJoined: () => void }) {
       {preview && (
         <>
           <p>
-            <strong>{preview.remote.name}</strong> auf {preview.remote.base_url}
-            {preview.remote.country && ` (Server in ${preview.remote.country})`}
+            <strong>{preview.remote.name}</strong> {t('auf')} {preview.remote.base_url}
+            {preview.remote.country && t(' (Server in {x0})', { x0: preview.remote.country })}
             <br />
             <span className="muted small">
-              {t('Fingerabdruck')} <code>{preview.remote.fingerprint}</code>. Vergleiche ihn am
-              besten am Telefon mit der anderen Seite.
+              {t('Fingerabdruck')} <code>{preview.remote.fingerprint}</code>
+              {t('. Vergleiche ihn am besten am Telefon mit der anderen Seite.')}
             </span>
           </p>
           {preview.remote.kind === 'club' && (
@@ -712,7 +712,7 @@ function JoinCard({ onJoined }: { onJoined: () => void }) {
           <PacketToggles choices={preview.send} levels={levels} onChange={setLevels} />
           <p className="muted small">
             {t('Von dort kann kommen:')}{' '}
-            {preview.receive.map((r) => r.label).join(', ') || 'nichts'}.
+            {preview.receive.map((r) => r.label).join(', ') || t('nichts')}.
           </p>
         </>
       )}
@@ -779,7 +779,7 @@ function PacketToggles({
               })()
             }}
           >
-            <option value="">aus</option>
+            <option value="">{t('aus')}</option>
             {c.levels.map((l) => (
               <option key={l.value} value={l.value}>
                 {l.label}
@@ -908,7 +908,7 @@ function CouplingCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
         {coupling.receive
           .filter((r) => r.value)
           .map((r) => r.label)
-          .join(', ') || 'nichts'}
+          .join(', ') || t('nichts')}
         .
       </p>
       <ReceivedInfo coupling={coupling} />
@@ -1036,7 +1036,7 @@ function CouplingCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
             {details.messages.map((m) => (
               <tr key={`${m.direction}-${m.seq}-${m.created_at}`}>
                 <td>{formatDateTime(m.created_at)}</td>
-                <td>{m.direction === 'out' ? 'gesendet' : 'empfangen'}</td>
+                <td>{m.direction === 'out' ? t('gesendet') : t('empfangen')}</td>
                 <td>{kindLabel(m.kind, coupling)}</td>
                 <td>{m.persons || '–'}</td>
                 <td>
@@ -1075,15 +1075,16 @@ function MoveConfirm({ coupling, onChange }: { coupling: Coupling; onChange: () 
   return (
     <div className="move-confirm">
       <Alert kind="info">
-        {coupling.remote.name} {t('meldet einen Umzug von')} <strong>{move.from}</strong> nach{' '}
-        <strong>{move.base_url}</strong>
-        {move.country && ` (Server in ${move.country})`}. Bis zur Bestätigung ruht die Kopplung, es
-        gehen keine Daten hinaus.
+        {coupling.remote.name} {t('meldet einen Umzug von')} <strong>{move.from}</strong>{' '}
+        {t('nach')} <strong>{move.base_url}</strong>
+        {move.country && t(' (Server in {x0})', { x0: move.country })}
+        {t('. Bis zur Bestätigung ruht die Kopplung, es gehen keine Daten hinaus.')}
       </Alert>
       <p>
-        {t('Fingerabdruck der neuen Instanz:')} <code>{move.fingerprint}</code>. Lass ihn dir von
-        der anderen Seite auf anderem Weg (Telefon, Mail) nennen und gib ihn hier ein. Wenn ihr
-        nichts von einem Umzug wisst: ablehnen.
+        {t('Fingerabdruck der neuen Instanz:')} <code>{move.fingerprint}</code>
+        {t(
+          '. Lass ihn dir von der anderen Seite auf anderem Weg (Telefon, Mail) nennen und gib ihn hier ein. Wenn ihr nichts von einem Umzug wisst: ablehnen.',
+        )}
       </p>
       <label className="field">
         <span>{t('Fingerabdruck von der anderen Seite')}</span>
@@ -1147,7 +1148,7 @@ function MoreWanted({ coupling, onChange }: { coupling: Coupling; onChange: () =
       <ul className="plain-list">
         {coupling.wants_more.map((w) => (
           <li key={w.key}>
-            <strong>{w.label}</strong>: {w.level_label} (bisher {w.accepted_label})
+            <strong>{w.label}</strong>: {w.level_label} {t('(bisher')} {w.accepted_label})
             {w.personal && <span className="muted small"> · {w.personal}</span>}
             <div className="button-row">
               <button
@@ -1190,10 +1191,10 @@ function KeysPending({ coupling }: { coupling: Coupling }) {
         )}
       </Alert>
       <p>
-        {t('Neuer Fingerabdruck:')} <code>{keys.fingerprint}</code>. Den Wechsel prüft und bestätigt
-        die Plattformverwaltung dieser HUBIplan-Instanz, weil er für alle Kopplungen mit dieser
-        Instanz gilt. Ihr bekommt danach eine Mitteilung. Wisst ihr von keinem Notfall bei der
-        anderen Seite, sagt bitte der Plattformverwaltung Bescheid.
+        {t('Neuer Fingerabdruck:')} <code>{keys.fingerprint}</code>
+        {t(
+          '. Den Wechsel prüft und bestätigt die Plattformverwaltung dieser HUBIplan-Instanz, weil er für alle Kopplungen mit dieser Instanz gilt. Ihr bekommt danach eine Mitteilung. Wisst ihr von keinem Notfall bei der anderen Seite, sagt bitte der Plattformverwaltung Bescheid.',
+        )}
       </p>
     </div>
   )
@@ -1211,7 +1212,8 @@ function ReceivedInfo({ coupling }: { coupling: Coupling }) {
             x: formatDate(r.members.on),
             total: r.members.total,
           })}
-          {r.members.counts.filter((c) => c.kind === 'active').reduce((a, c) => a + c.n, 0)} aktiv,{' '}
+          {r.members.counts.filter((c) => c.kind === 'active').reduce((a, c) => a + c.n, 0)}{' '}
+          {t('aktiv,')}{' '}
           {r.members.counts.filter((c) => c.kind === 'passive').reduce((a, c) => a + c.n, 0)}{' '}
           {t('passiv). Die Beitragsrechnung an diese Einheit nutzt diese Zahlen.')}
         </p>
@@ -1352,7 +1354,7 @@ function InvoiceList({ coupling, onChange }: { coupling: Coupling; onChange: () 
 }
 
 function InvoiceState({ inv }: { inv: CouplingInvoice }) {
-  if (inv.status === 'cancelled') return <>storniert</>
+  if (inv.status === 'cancelled') return <>{t('storniert')}</>
   const parts: string[] = []
   if (inv.settled) parts.push('ausgeglichen')
   else if (inv.paid && Number(inv.paid) > 0) parts.push(t('{x} eingegangen', { x: euro(inv.paid) }))
@@ -1526,13 +1528,14 @@ function RegisterCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
     <div>
       <h4>{t('Namentliche Meldung')}</h4>
       <p className="muted small">
-        {reg.counts.active} gemeldet
+        {reg.counts.active} {t('gemeldet')}
         {reg.counts.withdrawn > 0 &&
           t(' · {withdrawn} nicht mehr gemeldet (nur Minimum)', {
             withdrawn: reg.counts.withdrawn,
           })}
-        {reg.counts.unclear > 0 && t(' · {unclear} Klärfälle', { unclear: reg.counts.unclear })}.
-        Die Personen stehen in der Mitgliederliste des Dachverbands unter {coupling.remote.name}.
+        {reg.counts.unclear > 0 && t(' · {unclear} Klärfälle', { unclear: reg.counts.unclear })}
+        {t('. Die Personen stehen in der Mitgliederliste des Dachverbands unter')}{' '}
+        {coupling.remote.name}.
       </p>
       {reg.unclear.map((u) => (
         <div key={u.id} className="card">
@@ -1614,7 +1617,7 @@ function RegisterCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
               }),
             )
             .join(', ')}
-          . Bitte mit den Vereinen klären.
+          {t('. Bitte mit den Vereinen klären.')}
         </Alert>
       )}
       {err && <Alert kind="error">{err}</Alert>}
@@ -1780,7 +1783,7 @@ function TransferRow({
     <li>
       <strong>{tm.name}</strong>{' '}
       {outgoing
-        ? t('· Aufnahme als {x}', { x: tm.member_type_name || 'aktives Mitglied' })
+        ? t('· Aufnahme als {x}', { x: tm.member_type_name || t('aktives Mitglied') })
         : t('· möchte zu {to_unit} wechseln ({member_type_name})', {
             to_unit: tm.to_unit,
             member_type_name: tm.member_type_name,
@@ -1839,7 +1842,7 @@ function TransferRow({
             disabled={disabled}
             onClick={() => onDecide({ decision: 'reject', response })}
           >
-            ablehnen
+            {t('ablehnen')}
           </button>
         </div>
       )}

@@ -141,8 +141,8 @@ class BillingSettingsView(BillingMixin, APIView):
                 for y in (year - 1, year, year + 1)
             },
             "org_type": self.org.type,
-            "department_label": self.org.department_label,
-            "department_label_plural": self.org.department_label_plural,
+            "department_label": department_terms(self.org)["Sg"],
+            "department_label_plural": department_terms(self.org)["Pl"],
             "department_terms": department_terms(self.org),
             "clubs": [
                 {"id": c.pk, "name": c.display_name}

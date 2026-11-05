@@ -82,10 +82,10 @@ export function PhotoSection({
                   x: formatDate(state.photo_consent_at),
                   x2:
                     state.photo_consent_source === 'member'
-                      ? 'vom Mitglied'
+                      ? t('vom Mitglied')
                       : state.photo_consent_source === 'app'
-                        ? 'vom Mitglied in der App'
-                        : 'durch den Vorstand erfasst',
+                        ? t('vom Mitglied in der App')
+                        : t('durch den Vorstand erfasst'),
                 })
               : t('liegt nicht vor')}
           </p>
@@ -285,7 +285,7 @@ function UploadLinks({
               }
             }}
           >
-            {copied ? 'kopiert' : 'kopieren'}
+            {copied ? t('kopiert') : t('kopieren')}
           </button>
         </Alert>
       )}
@@ -305,7 +305,7 @@ function UploadLinks({
                     await reload()
                   }}
                 >
-                  widerrufen
+                  {t('widerrufen')}
                 </button>
               )}
             </li>

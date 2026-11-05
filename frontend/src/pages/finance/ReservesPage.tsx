@@ -241,7 +241,7 @@ function ReserveCard({
       <div className="card-head">
         <h3>
           {reserve.name}
-          {!reserve.is_active && <span className="muted small"> (archiviert)</span>}
+          {!reserve.is_active && <span className="muted small"> {t('(archiviert)')}</span>}
         </h3>
         <strong className="push-right">{euro(reserve.balance)}</strong>
       </div>

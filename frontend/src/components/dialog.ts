@@ -17,7 +17,7 @@ import type {
   DialogSpec,
   PromptOptions,
 } from './AppDialog.tsx'
-import { t } from '../i18n/index.ts'
+import { t, tn } from '../i18n/index.ts'
 
 export type { AlertOptions, ChoiceOptions, ConfirmOptions, PromptOptions }
 
@@ -71,8 +71,10 @@ export function confirmRoleRemoval(name: string, holders: string[] | number): Pr
   const count = typeof holders === 'number' ? holders : holders.length
   const who =
     typeof holders === 'number'
-      ? t('{x} diese Rolle.', { x: count === 1 ? 'Ein Mitglied hat' : `${count} Mitglieder haben` })
-      : t('{x} {x2} diese Rolle.', { x: holders.join(', '), x2: count === 1 ? 'hat' : 'haben' })
+      ? tn('Ein Mitglied hat diese Rolle.', '{n} Mitglieder haben diese Rolle.', count)
+      : count === 1
+        ? t('{names} hat diese Rolle.', { names: holders.join(', ') })
+        : t('{names} haben diese Rolle.', { names: holders.join(', ') })
   return confirmDialog({
     title: t('Rolle „{name}“ entfernen?', { name }),
     message:

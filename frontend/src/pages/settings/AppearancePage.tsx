@@ -64,7 +64,7 @@ function ThemeForm({
             'Ohne eigene Farbe übernimmt die Organisation das Erscheinungsbild der übergeordneten Ebene',
           )}
           {eff.inherited_from.colors && !theme.primary_color
-            ? ` (derzeit von „${eff.inherited_from.colors}“)`
+            ? t(' (derzeit von „{x0}“)', { x0: eff.inherited_from.colors })
             : ''}
           .
         </p>
@@ -127,8 +127,8 @@ function ThemeForm({
         </div>
         <ContrastHints primary={primary} accent={accent} />
         <p className="muted small">
-          {t('Welches Design die Webseite hat und wo es welche Farbe einsetzt, stellst du unter')}{' '}
-          <Link to="/webseite/gestaltung">{t('Webseite › Gestaltung')}</Link> ein.
+          {t('Das Design und seine Farbverwendung stellst du hier ein:')}{' '}
+          <Link to="/webseite/gestaltung">{t('Webseite › Gestaltung')}</Link>.
         </p>
       </form>
 

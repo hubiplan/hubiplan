@@ -96,10 +96,9 @@ export function HomePage() {
           </p>
           <p className="muted small">
             {t(
-              'Bitte wende dich an deinen Vorstand. Dein Konto und die Zwei-Faktor-Anmeldung kannst du unter',
+              'Bitte wende dich an deinen Vorstand. Dein Konto und die Zwei-Faktor-Anmeldung verwaltest du hier:',
             )}{' '}
-            <Link to="/mein-konto/anmeldung">{t('Mein Konto › Anmeldung & Sicherheit')}</Link>{' '}
-            verwalten.
+            <Link to="/mein-konto/anmeldung">{t('Mein Konto › Anmeldung & Sicherheit')}</Link>.
           </p>
         </div>
       </section>

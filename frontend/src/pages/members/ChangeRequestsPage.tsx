@@ -28,10 +28,10 @@ export function ChangeRequestsPage() {
     <>
       <div className="card card-wide filters">
         <select aria-label={t('Status')} value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="pending">offen</option>
+          <option value="pending">{t('offen')}</option>
           <option value="accepted">{t('übernommen')}</option>
-          <option value="rejected">abgelehnt</option>
-          <option value="alle">alle</option>
+          <option value="rejected">{t('abgelehnt')}</option>
+          <option value="alle">{t('alle')}</option>
         </select>
       </div>
       {error && (

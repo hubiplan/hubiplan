@@ -310,7 +310,7 @@ export function BirdStand({
                   disabled={!current}
                   onClick={() => shot([hanging[0].id])}
                 >
-                  {hanging[0].name} gefallen
+                  {hanging[0].name} {t('gefallen')}
                 </button>
                 {hanging.length > 1 && (
                   <button
@@ -530,7 +530,7 @@ function ShooterRow({
               <input
                 aria-label={t('Losnummer aus dem Hut für {name}', { name: s.name })}
                 inputMode="numeric"
-                placeholder="Nr."
+                placeholder={t('Nr.')}
                 value={hat}
                 onChange={(e) => setHat(e.target.value)}
               />

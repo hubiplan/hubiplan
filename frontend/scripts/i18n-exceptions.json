@@ -1,0 +1,38 @@
+[
+  {
+    "file": "i18n/LanguageControls.tsx",
+    "text": "Sprache / Language",
+    "kind": "JSXText",
+    "reason": "Absichtlich zweisprachiger Rückweg zur Sprachwahl."
+  },
+  {
+    "file": "pages/platform/PlatformPages.tsx",
+    "text": "Dachverband",
+    "kind": "Property",
+    "reason": "Gespeicherter Vorschlag für den frei änderbaren Vereinsbegriff; Vereinssprache bleibt Deutsch."
+  },
+  {
+    "file": "pages/platform/PlatformPages.tsx",
+    "text": "Verein",
+    "kind": "Property",
+    "reason": "Gespeicherter Vorschlag für den frei änderbaren Vereinsbegriff; Vereinssprache bleibt Deutsch."
+  },
+  {
+    "file": "components/DataTransfer.tsx",
+    "text": "{Pl}",
+    "kind": "Literal",
+    "reason": "Wird bereits von fillTerms mit dem lokalisierten Vereinsbegriff ersetzt."
+  },
+  {
+    "file": "components/circulars/MarkupEditor.tsx",
+    "text": "{Vorname}",
+    "kind": "Literal",
+    "reason": "Beispiel für die feste Platzhaltersyntax im vereinsseitigen Schreiben."
+  },
+  {
+    "file": "components/DataTransfer.tsx",
+    "text": "{Pl}",
+    "kind": "Property",
+    "reason": "Beschriftung wird über fillTerms mit dem lokalisierten Vereinsbegriff erzeugt."
+  }
+]

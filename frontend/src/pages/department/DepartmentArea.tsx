@@ -447,7 +447,9 @@ const CONTACT_LABEL: Record<(typeof CONTACT_KEYS)[number], string> = {
   email: t('E-Mail'),
   phone: t('Telefon'),
   street: t('Straße und Hausnummer'),
-  postal_code: 'PLZ',
+  get postal_code() {
+    return t('PLZ')
+  },
   city: t('Ort'),
   country: t('Land'),
 }

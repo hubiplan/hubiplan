@@ -97,7 +97,7 @@ export function MemberTypesPage() {
         <p className="muted small">
           {t('Jede Art hat drei Kennzeichen:')}{' '}
           <strong>{fillTerms(t('an {dv_akk} melden'), terms)}</strong>{' '}
-          {t('(zählt für {dv_akk}),', { dv_akk: terms.dv_akk })} <strong>aktiv</strong>{' '}
+          {t('(zählt für {dv_akk}),', { dv_akk: terms.dv_akk })} <strong>{t('aktiv')}</strong>{' '}
           {t('({dv_im} nur in {e_einem}  erlaubt) und', {
             dv_im: terms.dv_im,
             e_einem: terms.e_einem,
@@ -106,7 +106,7 @@ export function MemberTypesPage() {
         </p>
       ) : (
         <p className="muted small">
-          {t('Jede Art hat zwei Kennzeichen:')} <strong>aktiv</strong> und{' '}
+          {t('Jede Art hat zwei Kennzeichen:')} <strong>{t('aktiv')}</strong> {t('und')}{' '}
           <strong>{t('zählt für Mitgliedsdauer')}</strong>.
         </p>
       )}
@@ -134,7 +134,7 @@ export function MemberTypesPage() {
             <>
               <p>
                 {t('„{name}“ wird noch verwendet und wird deshalb', { name: removing.type.name })}{' '}
-                <strong>archiviert</strong> {t('statt gelöscht:')}
+                <strong>{t('archiviert')}</strong> {t('statt gelöscht:')}
               </p>
               <ul>
                 {removing.usage.reasons.map((r) => (
@@ -174,9 +174,9 @@ export function MemberTypesPage() {
               </th>
             )}
             <th>{t('Art')}</th>
-            {fed && <th>melden</th>}
+            {fed && <th>{t('melden')}</th>}
             <th>
-              <Term k="active_passive">aktiv</Term>
+              <Term k="active_passive">{t('aktiv')}</Term>
             </th>
             <th>
               <Term k="membership_duration">{t('zählt für Dauer')}</Term>
@@ -189,9 +189,9 @@ export function MemberTypesPage() {
             <tr key={tm.id} {...sort.rowProps(tm)}>
               {sort.active && <td className="drag-cell">{sort.handle(tm)}</td>}
               <td>{tm.name}</td>
-              {fed && <td>{tm.reported ? 'ja' : 'nein'}</td>}
-              <td>{tm.active ? 'ja' : 'nein'}</td>
-              <td>{tm.counts_for_duration ? 'ja' : 'nein'}</td>
+              {fed && <td>{tm.reported ? t('ja') : t('nein')}</td>}
+              <td>{tm.active ? t('ja') : t('nein')}</td>
+              <td>{tm.counts_for_duration ? t('ja') : t('nein')}</td>
               <td className="actions">
                 {editable && (
                   <>
@@ -308,7 +308,7 @@ function TypeForm({
         />
       )}
       {terms.dv_has && <Why k="member_type_reported" />}
-      <Checkbox label="aktiv" checked={v.active} onChange={(x) => form.set('active', x)} />
+      <Checkbox label={t('aktiv')} checked={v.active} onChange={(x) => form.set('active', x)} />
       <Why k="member_type_active" />
       <Checkbox
         label={t('zählt für Mitgliedsdauer')}

@@ -40,7 +40,7 @@ export function RangePicker({
       {preset === 'eigen' && (
         <>
           <label className="inline-label">
-            von
+            {t('von')}
             <input
               type="month"
               value={custom.von ?? ''}
@@ -49,7 +49,7 @@ export function RangePicker({
             />
           </label>
           <label className="inline-label">
-            bis
+            {t('bis')}
             <input
               type="month"
               value={custom.bis ?? ''}
@@ -63,7 +63,7 @@ export function RangePicker({
             value={custom.raster ?? ''}
             onChange={(e) => set({ raster: e.target.value })}
           >
-            <option value="">automatisch</option>
+            <option value="">{t('automatisch')}</option>
             <option value="monat">{t('nach Monaten')}</option>
             <option value="jahr">{t('nach Jahren')}</option>
           </select>

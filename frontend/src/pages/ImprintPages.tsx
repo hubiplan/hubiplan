@@ -307,7 +307,7 @@ export function PrivacyPage() {
     <PublicCard title={t('Datenschutz')}>
       {unit && (
         <Section
-          title={t('Datenschutzhinweise {x}', { x: unit.data?.owner ?? 'des Vereins' })}
+          title={t('Datenschutzhinweise {x}', { x: unit.data?.owner ?? t('des Vereins') })}
           state={unit}
         >
           {(data) => <PrivacyBody data={data} />}
@@ -429,7 +429,7 @@ export function AccessibilityPage() {
       <h2>{t('Barriere melden')}</h2>
       <p>
         {t(
-          'Wenn Ihnen etwas den Zugang erschwert, schreiben Sie bitte dem Vorstand Ihres Vereins oder dem Betreiber dieser Instanz. Die Kontaktdaten stehen im',
+          'Wenn dir etwas den Zugang erschwert, schreibe bitte dem Vorstand deines Vereins oder dem Betreiber dieser Instanz. Die Kontaktdaten stehen im',
         )}{' '}
         <Link to="/impressum">{t('Impressum')}</Link>.
       </p>

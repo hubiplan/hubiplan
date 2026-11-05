@@ -24,7 +24,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 from django.utils import timezone
-from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext, gettext_lazy
 
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
@@ -68,9 +68,9 @@ class Event(models.Model):
         BOARD = "board", gettext_lazy("nur Vorstand")
 
     class Repeat(models.TextChoices):
-        NONE = "none", "einmalig"
+        NONE = "none", gettext_lazy("einmalig")
         WEEKLY = "weekly", gettext_lazy("wöchentlich")
-        MONTHLY = "monthly", "monatlich"
+        MONTHLY = "monthly", gettext_lazy("monatlich")
         YEARLY = "yearly", gettext_lazy("jährlich")
 
     organization = models.ForeignKey(
@@ -185,17 +185,17 @@ class Event(models.Model):
     def clean(self) -> None:
         errors = {}
         if self.starts_at and self.ends_at and self.ends_at < self.starts_at:
-            errors["ends_at"] = "Das Ende liegt vor dem Beginn."
+            errors["ends_at"] = gettext("Das Ende liegt vor dem Beginn.")
         if (
             self.is_series
             and self.repeat_until
             and self.starts_at
             and self.repeat_until < timezone.localdate(self.starts_at)
         ):
-            errors["repeat_until"] = "Das Ende der Serie liegt vor dem ersten Termin."
+            errors["repeat_until"] = gettext("Das Ende der Serie liegt vor dem ersten Termin.")
         if self.category_id and self.organization_id:
             if self.category.organization_id != self.organization_id:
-                errors["category"] = "Unbekannte Kategorie."
+                errors["category"] = gettext("Unbekannte Kategorie.")
         if (
             self.department_id
             and self.organization_id
@@ -204,19 +204,21 @@ class Event(models.Model):
             errors["department"] = fill("Unbekannt{adj} {sg}.", self.organization)
         if self.rsvp_enabled:
             if self.is_series:
-                errors["rsvp_enabled"] = "Zu- und Absagen gibt es nur bei einmaligen Terminen."
+                errors["rsvp_enabled"] = gettext(
+                    "Zu- und Absagen gibt es nur bei einmaligen Terminen."
+                )
             elif self.visibility == self.Visibility.BOARD:
-                errors["rsvp_enabled"] = (
+                errors["rsvp_enabled"] = gettext(
                     "Bei Terminen „nur Vorstand“ gibt es keine Zu- und Absagen."
                 )
             elif self.organization_id and self.organization.type != "club":
-                errors["rsvp_enabled"] = (
+                errors["rsvp_enabled"] = gettext(
                     "Zu- und Absagen gibt es nicht bei Terminen der übergeordneten Einheit."
                 )
             if self.rsvp_deadline and self.ends_at and self.rsvp_deadline > self.ends_at:
-                errors["rsvp_deadline"] = "Der Anmeldeschluss liegt nach dem Termin."
+                errors["rsvp_deadline"] = gettext("Der Anmeldeschluss liegt nach dem Termin.")
         if self.remind_days and self.is_series:
-            errors["remind_days"] = "Erinnerungen gibt es nur bei einmaligen Terminen."
+            errors["remind_days"] = gettext("Erinnerungen gibt es nur bei einmaligen Terminen.")
         if errors:
             raise ValidationError(errors)
 
@@ -413,7 +415,7 @@ class ExternalCalendar(models.Model):
     """
 
     class Kind(models.TextChoices):
-        VEREINSPLANER = "vereinsplaner", "Vereinsplaner"
+        VEREINSPLANER = "vereinsplaner", gettext_lazy("Vereinsplaner")
         ICAL = "ical", gettext_lazy("Kalender-Abo (iCal)")
 
     organization = models.ForeignKey(

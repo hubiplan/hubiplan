@@ -137,7 +137,7 @@ export function OwnAvailability({ accessId }: { accessId: number }) {
       <h2>{t('Meine Abwesenheiten')}</h2>
       <p>
         {t(
-          'Zeiträume eintragen, in denen Sie nicht mitspielen können. Eine Begründung wird nicht erfasst. Bestehende Einteilungen bleiben erhalten; bitte dort zusätzlich absagen.',
+          'Trage Zeiträume ein, in denen du nicht mitspielen kannst. Eine Begründung wird nicht erfasst. Bestehende Einteilungen bleiben erhalten; bitte dort zusätzlich absagen.',
         )}
       </p>
       {error && <Alert kind="error">{error}</Alert>}

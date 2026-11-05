@@ -17,8 +17,7 @@ import { StandAccessCard } from './BirdSetup.tsx'
 import { BirdStand } from './BirdStand.tsx'
 import { LiveTables } from './LiveTables.tsx'
 import { StandPanel } from './StandPanel.tsx'
-import { locale } from '../../i18n/index.ts'
-import { t } from '../../i18n/index.ts'
+import { locale, t } from '../../i18n/index.ts'
 import { useAuth } from '../../auth/AuthContext.tsx'
 import {
   isStandNetworkError,
@@ -122,7 +121,7 @@ function StandShell({ api, exit, org }: { api: StandApi; exit: ReactNode; org?: 
         {data?.stand_access && (
           <span className="muted small">
             {t('Standzugang')}
-            {data.stand_access.label ? ` ${data.stand_access.label}` : ''} bis{' '}
+            {data.stand_access.label ? ` ${data.stand_access.label}` : ''} {t('bis')}{' '}
             {new Date(data.stand_access.expires_at).toLocaleTimeString(locale(), {
               hour: '2-digit',
               minute: '2-digit',

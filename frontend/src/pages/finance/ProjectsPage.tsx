@@ -29,9 +29,24 @@ import { berlin } from '../../components/calendar/time.ts'
 import { t } from '../../i18n/index.ts'
 
 const STATUS: { value: ProjectStatus; label: string }[] = [
-  { value: 'planned', label: 'geplant' },
-  { value: 'running', label: 'laufend' },
-  { value: 'done', label: 'abgeschlossen' },
+  {
+    value: 'planned',
+    get label() {
+      return t('geplant')
+    },
+  },
+  {
+    value: 'running',
+    get label() {
+      return t('laufend')
+    },
+  },
+  {
+    value: 'done',
+    get label() {
+      return t('abgeschlossen')
+    },
+  },
 ]
 
 function period(starts: string, ends: string | null): string {
@@ -307,7 +322,7 @@ function ProjectForm({
                 else set('series', e.target.value)
               }}
             >
-              <option value="">keine</option>
+              <option value="">{t('keine')}</option>
               {allSeries.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -322,7 +337,7 @@ function ProjectForm({
                 error={errors.department}
                 onChange={(e) => set('department', e.target.value)}
               >
-                <option value="">keine</option>
+                <option value="">{t('keine')}</option>
                 {departments.data!.map((d) => (
                   <option key={d.id} value={d.id}>
                     {unitName(d)}
@@ -596,7 +611,7 @@ function ProjectDetail() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Nr.</th>
+                  <th>{t('Nr.')}</th>
                   <th>{t('Datum')}</th>
                   <th>{t('Text')}</th>
                   <th>{t('Kategorie')}</th>
@@ -723,8 +738,8 @@ function AssignBookings({ project, onDone }: { project: ProjectEvaluation; onDon
     <div className="subcard">
       <h3>{t('Buchungen ohne Veranstaltung')}</h3>
       <div className="filters">
-        <Field label="von" type="date" value={von} onChange={(e) => setVon(e.target.value)} />
-        <Field label="bis" type="date" value={bis} onChange={(e) => setBis(e.target.value)} />
+        <Field label={t('von')} type="date" value={von} onChange={(e) => setVon(e.target.value)} />
+        <Field label={t('bis')} type="date" value={bis} onChange={(e) => setBis(e.target.value)} />
         <Field
           label={t('Suche')}
           type="search"
@@ -793,7 +808,7 @@ function AssignBookings({ project, onDone }: { project: ProjectEvaluation; onDon
                 {b.display_number} · {formatDate(b.date)} · {b.text} ·{' '}
                 {euro(b.kind === 'expense' ? -Number(b.amount) : Number(b.amount))}{' '}
                 <button type="button" className="link-button" onClick={() => toggle(b)}>
-                  entfernen
+                  {t('entfernen')}
                 </button>
               </li>
             ))}
@@ -916,8 +931,8 @@ function EventsCard({
             <p className="muted">{t('Lädt …')}</p>
           ) : free.length === 0 ? (
             <p className="muted small">
-              {t('Keine passenden Termine. Neue Termine legst du im')}{' '}
-              <Link to="/termine">{t('Kalender')}</Link> an.
+              {t('Keine passenden Termine. Neue Termine legst du hier an:')}{' '}
+              <Link to="/termine">{t('Kalender')}</Link>.
             </p>
           ) : (
             <ul className="plain-list">

@@ -19,8 +19,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { HowTo } from '../../learning/Aids.tsx'
 import { ownMembers } from './access.ts'
-import { locale } from '../../i18n/index.ts'
-import { t } from '../../i18n/index.ts'
+import { locale, t } from '../../i18n/index.ts'
 
 /** Mitglieder › Entwicklung: eigene Mitglieder (``own``) oder alle Einheiten darunter
  *  (``all``, mit Freigabe der Plattform). */
@@ -121,7 +120,7 @@ function MemberCharts({ data }: { data: MemberStats }) {
           </h2>
           <p className="amount-big">{count(s.end)}</p>
           <p className="small muted">
-            {signed(change)} seit {formatDate(data.von)} ({count(s.start)})
+            {signed(change)} {t('seit')} {formatDate(data.von)} ({count(s.start)})
           </p>
           <p className="small muted">{t('Bestand nach den Austritten dieses Tages')}</p>
         </div>
@@ -138,9 +137,11 @@ function MemberCharts({ data }: { data: MemberStats }) {
 
       <ChartCard
         title={t('Mitgliederbestand')}
-        note={t('Bestand am Ende jedes {x}, nach den Austritten des Tages', {
-          x: data.raster === 'monat' ? 'Monats' : 'Jahres',
-        })}
+        note={
+          data.raster === 'monat'
+            ? t('Bestand am Ende jedes Monats, nach den Austritten des Tages')
+            : t('Bestand am Ende jedes Jahres, nach den Austritten des Tages')
+        }
       >
         <TimeChart
           title={t('Mitgliederbestand')}

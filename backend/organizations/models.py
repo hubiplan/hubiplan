@@ -60,9 +60,9 @@ class DatePrecision(models.TextChoices):
     und Berechnung.
     """
 
-    DAY = "day", "tagesgenau"
-    MONTH = "month", "monatsgenau"
-    YEAR = "year", "jahresgenau"
+    DAY = "day", gettext_lazy("tagesgenau")
+    MONTH = "month", gettext_lazy("monatsgenau")
+    YEAR = "year", gettext_lazy("jahresgenau")
 
 
 def founding_year_validators():
@@ -546,16 +546,18 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         errors = {}
         if self.type == self.Type.PLATFORM:
             if self.parent_id:
-                errors["parent"] = "Die Plattform hat keine übergeordnete Organisation."
+                errors["parent"] = gettext("Die Plattform hat keine übergeordnete Organisation.")
         elif self.type == self.Type.FEDERATION:
             if self.parent and self.parent.type != self.Type.PLATFORM:
-                errors["parent"] = "Ein Dachverband hängt direkt unter der Plattform."
+                errors["parent"] = gettext("Ein Dachverband hängt direkt unter der Plattform.")
         elif self.type == self.Type.CLUB:
             if self.parent and self.parent.type not in (self.Type.PLATFORM, self.Type.FEDERATION):
-                errors["parent"] = "Ein Verein gehört zur Plattform oder zu einem Dachverband."
+                errors["parent"] = gettext(
+                    "Ein Verein gehört zur Plattform oder zu einem Dachverband."
+                )
         elif self.type == self.Type.UNIT:
             if self.parent_id is None or self.organization_id is None:
-                errors["parent"] = "Eine Untereinheit braucht eine übergeordnete Einheit."
+                errors["parent"] = gettext("Eine Untereinheit braucht eine übergeordnete Einheit.")
             else:
                 error = self.parent_error()
                 if error:
@@ -563,13 +565,13 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         if self.type in (self.Type.FEDERATION, self.Type.CLUB):
             for field in ("founding_year", "street", "postal_code", "city"):
                 if not getattr(self, field):
-                    errors[field] = "Pflichtfeld."
+                    errors[field] = gettext("Pflichtfeld.")
         if self.contact_role_id and (
             self.contact_role.organization_id != self.pk or self.contact_role.department_id
         ):
-            errors["contact_role"] = "Die Rolle muss zu dieser Organisation gehören."
+            errors["contact_role"] = gettext("Die Rolle muss zu dieser Organisation gehören.")
         if self.contact_source == self.ContactSource.ROLE and not self.contact_role_id:
-            errors["contact_role"] = "Bitte eine Rolle wählen."
+            errors["contact_role"] = gettext("Bitte eine Rolle wählen.")
         if errors:
             raise ValidationError(errors)
 
@@ -917,11 +919,11 @@ class Imprint(models.Model):
     def clean(self) -> None:
         errors = {}
         if self.mode == self.Mode.LINK and not self.external_url:
-            errors["external_url"] = "Bitte die Adresse des Impressums angeben."
+            errors["external_url"] = gettext("Bitte die Adresse des Impressums angeben.")
         if self.mode == self.Mode.INHERIT and self.organization.type == Organization.Type.PLATFORM:
-            errors["mode"] = "Die Plattform braucht ein eigenes Impressum."
+            errors["mode"] = gettext("Die Plattform braucht ein eigenes Impressum.")
         if self.privacy_mode == self.PrivacyMode.LINK and not self.privacy_url:
-            errors["privacy_url"] = "Bitte die Adresse der Datenschutzhinweise angeben."
+            errors["privacy_url"] = gettext("Bitte die Adresse der Datenschutzhinweise angeben.")
         if errors:
             raise ValidationError(errors)
 
@@ -941,7 +943,7 @@ class SocialLink(models.Model):
         INSTAGRAM = "instagram", gettext_lazy("Instagram")
         YOUTUBE = "youtube", gettext_lazy("YouTube")
         TIKTOK = "tiktok", gettext_lazy("TikTok")
-        X = "x", "X"
+        X = "x", gettext_lazy("X")
         MASTODON = "mastodon", gettext_lazy("Mastodon")
         BLUESKY = "bluesky", gettext_lazy("Bluesky")
         THREADS = "threads", gettext_lazy("Threads")

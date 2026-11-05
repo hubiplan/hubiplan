@@ -284,8 +284,8 @@ class Scoring(models.Model):
 
 
 class Presence(models.TextChoices):
-    PRESENT = "", "dabei"
-    ABSENT = "fehlt", "fehlt"
+    PRESENT = "", gettext_lazy("dabei")
+    ABSENT = "fehlt", gettext_lazy("fehlt")
     WITHDRAWN = "zurueckgezogen", gettext_lazy("zurückgezogen")
 
 
@@ -391,7 +391,7 @@ class Hit(models.Model):
     Foto erkannt oder von Hand eingegeben."""
 
     class Source(models.TextChoices):
-        TAP = "tippen", "angetippt"
+        TAP = "tippen", gettext_lazy("angetippt")
         PHOTO = "foto", gettext_lazy("aus Foto erkannt")
         MANUAL = "hand", gettext_lazy("von Hand")
 

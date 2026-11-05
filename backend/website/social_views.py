@@ -9,6 +9,7 @@ from __future__ import annotations
 from django.db import transaction
 from django.http import FileResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticated
@@ -136,16 +137,18 @@ class FeedListView(_WebsiteMixin, APIView):
         ser.is_valid(raise_exception=True)
         data = ser.validated_data
         if "kind" not in data:
-            raise ValidationError({"kind": "Bitte Instagram oder Facebook wählen."})
+            raise ValidationError({"kind": gettext("Bitte Instagram oder Facebook wählen.")})
         department = None
         if data.get("department"):
             department = services.units_below(self.org).filter(pk=data["department"]).first()
             if department is None:
-                raise ValidationError({"department": "Diese Untereinheit gibt es hier nicht."})
+                raise ValidationError(
+                    {"department": gettext("Diese Untereinheit gibt es hier nicht.")}
+                )
         if SocialFeed.objects.filter(
             website=website, kind=data["kind"], department=department
         ).exists():
-            raise ValidationError({"kind": "Diesen Kanal gibt es hier schon."})
+            raise ValidationError({"kind": gettext("Diesen Kanal gibt es hier schon.")})
         feed = SocialFeed(
             organization=self.org,
             website=website,
@@ -258,7 +261,7 @@ class FeedSyncView(_FeedMixin, APIView):
     def post(self, request, org_id: int, pk: int):
         feed = self.feed()
         if not feed.is_connected:
-            raise ValidationError("Der Kanal ist nicht verbunden.")
+            raise ValidationError(gettext("Der Kanal ist nicht verbunden."))
         from .social_jobs import request_sync
 
         queued = request_sync(feed)

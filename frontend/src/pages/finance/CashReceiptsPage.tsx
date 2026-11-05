@@ -80,7 +80,7 @@ function CashReceiptList({ canEdit }: { canEdit: boolean }) {
                     <Link to={`/finanzen/quittungen/${r.id}`}>{r.number || t('Entwurf')}</Link>
                   </td>
                   <td>{r.receipt_date ? formatDate(r.receipt_date) : '–'}</td>
-                  <td>{r.direction === 'in' ? 'erhalten' : 'ausgezahlt'}</td>
+                  <td>{r.direction === 'in' ? t('erhalten') : t('ausgezahlt')}</td>
                   <td>{r.counterparty_name}</td>
                   <td className="num">{euro(r.amount)}</td>
                   <td>{r.status_label}</td>
@@ -533,8 +533,8 @@ function CashReceiptDetail({ canEdit }: { canEdit: boolean }) {
       )}
       {r.status === 'cancelled' && (
         <Alert kind="info">
-          {t('Storniert am')} {r.cancelled_at ? formatDateTime(r.cancelled_at) : ''} (Gegenbuchung{' '}
-          {r.cancel_number}): {r.cancel_reason}
+          {t('Storniert am')} {r.cancelled_at ? formatDateTime(r.cancelled_at) : ''}{' '}
+          {t('(Gegenbuchung')} {r.cancel_number}): {r.cancel_reason}
         </Alert>
       )}
 

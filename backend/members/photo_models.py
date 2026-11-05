@@ -26,7 +26,7 @@ def photo_path(instance, filename: str) -> str:
 
 class MemberPhoto(models.Model):
     class Status(models.TextChoices):
-        APPROVED = "approved", "freigegeben"
+        APPROVED = "approved", gettext_lazy("freigegeben")
         PENDING = "pending", gettext_lazy("wartet auf Freigabe")
 
     class Source(models.TextChoices):

@@ -529,7 +529,10 @@ export function StandPanel({
                     <p className="stand-label">
                       {t('Treffer antippen')}
                       {scoring.counted_shots
-                        ? ` (${scoring.counted_shots} von ${scoring.shots ?? '?'} zählen)`
+                        ? t(' ({x0} von {x1} zählen)', {
+                            x0: scoring.counted_shots,
+                            x1: scoring.shots ?? '?',
+                          })
                         : ''}
                     </p>
                     {target.photo && (
@@ -590,7 +593,9 @@ export function StandPanel({
                   <>
                     <label className="stand-label" htmlFor="stand-punkte">
                       {scoring.unit_label}
-                      {scoring.counted_shots ? ` (${scoring.counted_shots} gewertete Schuss)` : ''}
+                      {scoring.counted_shots
+                        ? t(' ({x0} gewertete Schuss)', { x0: scoring.counted_shots })
+                        : ''}
                     </label>
                     <input
                       id="stand-punkte"
@@ -788,7 +793,11 @@ function hitLabel(h: Hit, scoring: Scoring) {
       <>
         <strong>{h.starter.name}</strong>
         <span className="muted"> {h.starter.unit_name || h.starter.club}</span>
-        {v ? <span className="push-right">schon {showValue(v, scoring.decimals)}</span> : null}
+        {v ? (
+          <span className="push-right">
+            {t('schon')} {showValue(v, scoring.decimals)}
+          </span>
+        ) : null}
       </>
     )
   }
@@ -801,7 +810,7 @@ function hitLabel(h: Hit, scoring: Scoring) {
           {h.member.unit_name}
           {h.member.birth_year ? t(' · {birth_year}', { birth_year: h.member.birth_year }) : ''}
         </span>
-        <span className="push-right muted">neu</span>
+        <span className="push-right muted">{t('neu')}</span>
       </>
     )
   return (

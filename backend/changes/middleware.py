@@ -6,6 +6,7 @@ import logging
 from urllib.parse import quote
 
 from django.apps import apps
+from django.utils.translation import gettext
 
 from audit.models import AuditEntry
 from core.tenancy import rls_bypass
@@ -48,7 +49,7 @@ class ChangeSetMiddleware:
             except Exception:  # noqa: BLE001
                 # Nur die Beschriftung fehlt; die Änderung ist gespeichert (kein 500)
                 logger.exception("Beschriftung des Änderungspakets fehlgeschlagen")
-                text = "Änderung"
+                text = gettext("Änderung")
             response["X-Change-Label"] = quote(text)
         return response
 
@@ -81,15 +82,19 @@ def label(change_set: ChangeSet) -> str:
         if entries:
             first = entries[0]
             from audit.log import type_label
-            from organizations.terms import rename_word
+            from organizations.terms import ui_word
 
-            kind = rename_word(type_label(first.object_type), change_set.organization)
-            text = f"{kind} „{first.object_repr}“ {first.get_action_display()}"
+            kind = ui_word(type_label(first.object_type), change_set.organization)
+            text = gettext("{kind} „{name}“ {action}").format(
+                kind=kind, name=first.object_repr, action=first.get_action_display()
+            )
             if len(entries) > 1:
                 text += f" (+{len(entries) - 1})"
             return text[:200]
         record = change_set.records.order_by("seq").first()
     if record is None:
-        return "Änderung"
+        return gettext("Änderung")
     model = apps.get_model(record.model)
-    return f"{model._meta.verbose_name} {record.get_operation_display()}"
+    return gettext("{kind} {action}").format(
+        kind=gettext(str(model._meta.verbose_name)), action=record.get_operation_display()
+    )

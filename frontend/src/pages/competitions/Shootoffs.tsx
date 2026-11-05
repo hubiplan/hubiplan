@@ -156,7 +156,7 @@ function RulesForm({
               min={1}
               value={counted}
               onChange={(e) => setCounted(e.target.value)}
-              placeholder="alle"
+              placeholder={t('alle')}
             />
           </label>
         )}
@@ -236,7 +236,8 @@ function ShootOffCard({
     <div className="card">
       <div className="card-head">
         <h3>
-          {so.number}. Stechen
+          {so.number}
+          {t('. Stechen')}
           {so.shots ? t(' · {shots} Schuss', { shots: so.shots }) : ''}
           {so.counted_shots && so.counted_shots !== so.shots
             ? t(', davon {counted_shots} gewertet', { counted_shots: so.counted_shots })

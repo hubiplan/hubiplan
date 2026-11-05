@@ -27,8 +27,7 @@ import { RolePreviewBanner, RolePreviewSelect } from './RolePreview.tsx'
 import { UpdateNotice } from '../news/UpdateNotice.tsx'
 import { NewReleaseNotice } from '../news/NewReleaseNotice.tsx'
 import { PERM, rolePreviewApi } from '../api/orgs.ts'
-import { locale } from '../i18n/index.ts'
-import { t } from '../i18n/index.ts'
+import { locale, t } from '../i18n/index.ts'
 
 // Seiten außerhalb der Bereiche in der Seitenleiste
 const OTHER_PAGES: Record<string, string> = {
@@ -191,7 +190,7 @@ export function Layout() {
       await alertDialog({
         title: t('Abmelden hat nicht geklappt'),
         message: t(
-          'Der Server hat die Abmeldung nicht bestätigt. Sie sind noch angemeldet. Bitte erneut versuchen.',
+          'Der Server hat die Abmeldung nicht bestätigt. Du bist noch angemeldet. Bitte erneut versuchen.',
         ),
       })
       return

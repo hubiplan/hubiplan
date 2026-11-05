@@ -148,34 +148,40 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
     def validate_kind(self, value):
         if self.instance is not None and value != self.instance.kind:
-            raise serializers.ValidationError("Die Art eines Textes lässt sich nicht ändern.")
+            raise serializers.ValidationError(
+                gettext("Die Art eines Textes lässt sich nicht ändern.")
+            )
         if self.instance is None and value == WebsiteText.Kind.GREETING:
-            raise serializers.ValidationError("Die Begrüßung gibt es schon.")
+            raise serializers.ValidationError(gettext("Die Begrüßung gibt es schon."))
         return value
 
     def validate_department(self, value):
         if value is not None and not (
             services.units_below(self.context["website"].organization).filter(pk=value.pk).exists()
         ):
-            raise serializers.ValidationError("Unbekannte Untereinheit.")
+            raise serializers.ValidationError(gettext("Unbekannte Untereinheit."))
         return value
 
     def validate_gallery(self, value):
         if not isinstance(value, list) or not all(
             isinstance(v, int) and not isinstance(v, bool) for v in value
         ):
-            raise serializers.ValidationError("Bitte eine Liste von Bildern angeben.")
+            raise serializers.ValidationError(gettext("Bitte eine Liste von Bildern angeben."))
         if len(value) > MAX_GALLERY:
-            raise serializers.ValidationError(f"Höchstens {MAX_GALLERY} Bilder im Karussell.")
+            raise serializers.ValidationError(
+                gettext("Höchstens {MAX_GALLERY} Bilder im Karussell.").format(
+                    MAX_GALLERY=MAX_GALLERY
+                )
+            )
         if len(set(value)) != len(value):
-            raise serializers.ValidationError("Jedes Bild nur einmal.")
+            raise serializers.ValidationError(gettext("Jedes Bild nur einmal."))
         known = set(
             WebsiteImage.objects.filter(website=self.context["website"], pk__in=value).values_list(
                 "pk", flat=True
             )
         )
         if set(value) - known:
-            raise serializers.ValidationError("Unbekanntes Bild.")
+            raise serializers.ValidationError(gettext("Unbekanntes Bild."))
         return value
 
     def validate_timeline(self, value):
@@ -183,7 +189,7 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
     def validate_image(self, value):
         if value is not None and value.website_id != self.context["website"].pk:
-            raise serializers.ValidationError("Unbekanntes Bild.")
+            raise serializers.ValidationError(gettext("Unbekanntes Bild."))
         return value
 
     def validate(self, attrs):
@@ -191,12 +197,18 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
         attrs["kind"] = kind
         department = attrs.get("department", self.instance.department if self.instance else None)
         if kind == WebsiteText.Kind.UNIT and department is None:
-            raise serializers.ValidationError({"department": "Bitte die Untereinheit wählen."})
+            raise serializers.ValidationError(
+                {"department": gettext("Bitte die Untereinheit wählen.")}
+            )
         if kind != WebsiteText.Kind.UNIT:
             attrs["department"] = None
         if kind == WebsiteText.Kind.PAGE and attrs.get("gallery"):
             raise serializers.ValidationError(
-                {"gallery": "Ein Bilderkarussell gibt es nur auf Startseiten von Einheiten."}
+                {
+                    "gallery": gettext(
+                        "Ein Bilderkarussell gibt es nur auf Startseiten von Einheiten."
+                    )
+                }
             )
         slug = attrs.get("slug", self.instance.slug if self.instance else "")
         if attrs.get("timeline") and not (kind == WebsiteText.Kind.PAGE and slug == TIMELINE_SLUG):
@@ -214,10 +226,12 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
                 slug=attrs.get("slug", self.instance.slug if self.instance else "")
             ).exists()
         ):
-            raise serializers.ValidationError({"slug": "Diese Adresse ist schon vergeben."})
+            raise serializers.ValidationError(
+                {"slug": gettext("Diese Adresse ist schon vergeben.")}
+            )
         if kind == WebsiteText.Kind.UNIT and clash.filter(department=department).exists():
             raise serializers.ValidationError(
-                {"department": "Für diese Untereinheit gibt es schon einen Text."}
+                {"department": gettext("Für diese Untereinheit gibt es schon einen Text.")}
             )
         return attrs
 
@@ -291,7 +305,7 @@ class TextDetailView(_TextMixin, APIView):
     def delete(self, request, org_id: int, pk: int):
         text = self.text()
         if text.kind == WebsiteText.Kind.GREETING:
-            raise ValidationError("Die Begrüßung lässt sich nicht löschen, nur leeren.")
+            raise ValidationError(gettext("Die Begrüßung lässt sich nicht löschen, nur leeren."))
         record(self.org, request.user, "delete", text, {"Text": [str(text), None]})
         text.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -370,7 +384,7 @@ def _department(website, value):
         return None
     dept = services.units_below(website.organization).filter(pk=value).first()
     if dept is None:
-        raise ValidationError({"department": "Unbekannte Untereinheit."})
+        raise ValidationError({"department": gettext("Unbekannte Untereinheit.")})
     return dept
 
 
@@ -378,7 +392,7 @@ def _image_files(request) -> tuple:
     """Hochgeladener Ausschnitt (``file``), optional ganzes Original und Ausschnitt."""
     upload = request.FILES.get("file")
     if upload is None:
-        raise ValidationError({"file": "Bitte ein Bild auswählen."})
+        raise ValidationError({"file": gettext("Bitte ein Bild auswählen.")})
     original = request.FILES.get("original")
     crop = content.clean_crop(request.data.get("crop")) if original is not None else {}
     return upload, original, crop
@@ -508,7 +522,7 @@ class ImageCropView(_ImageMixin, APIView):
         image = self.image()
         upload = request.FILES.get("file")
         if upload is None:
-            raise ValidationError({"file": "Bitte ein Bild auswählen."})
+            raise ValidationError({"file": gettext("Bitte ein Bild auswählen.")})
         crop = content.clean_crop(request.data.get("crop"))
         content.recrop_image(image, upload, crop, request.user)
         record(self.org, request.user, "update", image, {"Ausschnitt": ["", "neu gewählt"]})
@@ -535,7 +549,7 @@ class ImageCopyView(_ImageMixin, APIView):
         image = self.image()
         upload = request.FILES.get("file")
         if upload is None:
-            raise ValidationError({"file": "Bitte ein Bild auswählen."})
+            raise ValidationError({"file": gettext("Bitte ein Bild auswählen.")})
         crop = content.clean_crop(request.data.get("crop"))
         copy = content.copy_image(image, upload, crop, request.user)
         record(self.org, request.user, "create", copy, {"Bild": [None, str(copy)]})

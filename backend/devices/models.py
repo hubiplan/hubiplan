@@ -38,8 +38,8 @@ def hash_token(token: str) -> str:
 class Device(models.Model):
     class Platform(models.TextChoices):
         ANDROID = "android", gettext_lazy("Android")
-        IOS = "ios", "iOS"
-        OTHER = "other", "anderes"
+        IOS = "ios", gettext_lazy("iOS")
+        OTHER = "other", gettext_lazy("anderes")
 
     class Push(models.TextChoices):
         NONE = "none", gettext_lazy("kein Push (Abruf)")

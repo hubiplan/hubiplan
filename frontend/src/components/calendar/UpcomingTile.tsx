@@ -8,7 +8,7 @@ import type { CalendarBase } from '../../api/events.ts'
 import { useLoad } from '../forms.ts'
 import { RsvpBadge } from './Rsvp.tsx'
 import { addDays, berlin, formatDay, today } from './time.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 export function UpcomingTile({ base }: { base: CalendarBase }) {
   const from = today()
@@ -44,7 +44,9 @@ export function UpcomingTile({ base }: { base: CalendarBase }) {
                 </span>
                 <div>
                   <span className="event-title">{o.title}</span>
-                  {o.is_cancelled && <span className="badge badge-cancelled"> abgesagt</span>}{' '}
+                  {o.is_cancelled && (
+                    <span className="badge badge-cancelled"> {tc('event-status', 'abgesagt')}</span>
+                  )}{' '}
                   <RsvpBadge o={o} />
                 </div>
               </li>
