@@ -6566,3 +6566,28 @@ msgstr "Another album already uses this address."
 
 msgid "Unbekannte Sortierung."
 msgstr "Unknown sort order."
+
+msgid "Mitgliedsausweis"
+msgstr "Membership card"
+
+msgid "Mitgliedsart"
+msgstr "Membership type"
+
+msgid "Gültigkeit prüfen"
+msgstr "Check validity"
+
+msgid "Bitte den QR-Code scannen. Die aktuelle Gültigkeit wird online geprüft."
+msgstr "Please scan the QR code. Current validity is checked online."
+
+msgid ""
+"Bitte den QR-Code scannen. Die aktuelle Gültigkeit wird online geprüft. "
+"Dieser Pass wird nicht automatisch aktualisiert."
+msgstr ""
+"Please scan the QR code. Current validity is checked online. This pass is "
+"not updated automatically."
+
+msgid "Prüfseite"
+msgstr "Verification page"
+
+msgid "Ungültiger Ausweis"
+msgstr "Invalid membership card"

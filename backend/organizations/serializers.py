@@ -333,7 +333,17 @@ class MemberSettingsSerializer(OrganizationSerializer):
             "member_portal_enabled",
             "contact_changes_need_approval",
             "photo_approval_required",
+            "card_wallet_enabled",
+            "wallet_available",
         ]
+
+    wallet_available = serializers.SerializerMethodField()
+
+    def get_wallet_available(self, obj) -> bool:
+        """Hat der Betreiber Apple oder Google Wallet eingerichtet?"""
+        from cards import apple, wallet
+
+        return wallet.enabled() or apple.enabled()
 
 
 class ThemeSerializer(serializers.ModelSerializer):

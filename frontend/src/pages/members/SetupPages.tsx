@@ -25,6 +25,7 @@ const PORTAL_FIELDS: (keyof MemberSettings)[] = [
   'member_portal_enabled',
   'contact_changes_need_approval',
   'photo_approval_required',
+  'card_wallet_enabled',
 ]
 
 /** Lädt die Organisation und zeigt ein automatisch speicherndes Teilformular. */
@@ -161,7 +162,7 @@ export function MemberPortalSettings() {
   const tm = useTerms()
   return (
     <OrgSettingsCard fields={PORTAL_FIELDS} title={t('Mitgliederbereich und Fotos')}>
-      {({ values: v, set }) => (
+      {({ values: v, set }, detail) => (
         <>
           <h3>{t('Zugänge für Mitglieder')}</h3>
           <Checkbox
@@ -187,6 +188,23 @@ export function MemberPortalSettings() {
             checked={v.photo_approval_required}
             onChange={(val) => set('photo_approval_required', val)}
           />
+          {detail.wallet_available && (
+            <>
+              <h3>{t('Mitgliedsausweis')}</h3>
+              <Checkbox
+                label={t(
+                  'Mitglieder können ihren Ausweis in Apple Wallet oder Google Wallet speichern',
+                )}
+                checked={v.card_wallet_enabled}
+                onChange={(val) => set('card_wallet_enabled', val)}
+              />
+              <p className="muted small">
+                {t(
+                  'Ausschalten macht gespeicherte Google-Wallet-Pässe ungültig. Apple-Pässe bleiben auf dem Telefon; der QR-Code darauf zeigt weiter den aktuellen Stand der Mitgliedschaft.',
+                )}
+              </p>
+            </>
+          )}
         </>
       )}
     </OrgSettingsCard>
