@@ -2203,6 +2203,20 @@ button.tab.active {
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
+.event-summary {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.calendar-day .event-title,
+.calendar-day .event-time,
+.event-context {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.event-context {
+  color: var(--color-text-muted);
+}
 .event-dot {
   display: inline-block;
   width: 0.6rem;
@@ -2296,8 +2310,7 @@ button.tab.active {
   .calendar-day {
     min-height: 4rem;
   }
-  .calendar-day .event-time,
-  .calendar-day .event-title {
+  .calendar-day .event-summary {
     display: none;
   }
   .calendar-day .event-item {

@@ -50,6 +50,58 @@ for (const language of ['de', 'en']) {
       try {
         await page.goto(`${base}${b.seite}`)
         await page.waitForLoadState('networkidle')
+        if (b.name === 'kalender-kontext') {
+          await page
+            .getByRole('button', { name: language === 'en' ? 'Month' : 'Monat', exact: true })
+            .click()
+          const continuation = page.getByRole('button', {
+            name:
+              language === 'en'
+                ? /Nachtwanderung.*Continued until 01:05/
+                : /Nachtwanderung.*Fortsetzung bis 01:05/,
+          })
+          await continuation.waitFor()
+          const names = await page
+            .locator('.calendar-day .event-item')
+            .filter({ hasText: 'Übungsabend' })
+            .allTextContents()
+          if (names.length < 2 || new Set(names).size < 2)
+            throw new Error('Kalenderkontext der gleichnamigen Termine fehlt')
+          await continuation.focus()
+          await page.keyboard.press('Enter')
+          const dialog = page.getByRole('dialog')
+          await dialog.waitFor()
+          await page.keyboard.press('Escape')
+          await dialog.waitFor({ state: 'detached' })
+          if (!(await continuation.evaluate((el) => document.activeElement === el)))
+            throw new Error('Kalender verliert Rückfokus')
+          await page.setViewportSize({ width: 320, height: 720 })
+          await page
+            .getByRole('button', { name: language === 'en' ? 'List' : 'Liste', exact: true })
+            .click()
+          await page
+            .locator('.calendar-list .event-item')
+            .filter({ hasText: 'Nachtwanderung' })
+            .waitFor()
+          const fits = await page.locator('.calendar-list').evaluate(
+            (el) =>
+              el.scrollWidth <= el.clientWidth &&
+              [...el.querySelectorAll('.event-item')].every((item) => {
+                const box = item.getBoundingClientRect()
+                return box.left >= 0 && box.right <= document.documentElement.clientWidth
+              }),
+          )
+          if (!fits) throw new Error('Kalenderliste läuft bei 320 CSS-Pixeln über')
+          await page.screenshot({
+            path: join(out, language, 'kalender-kontext-mobil.png'),
+            fullPage: true,
+          })
+          await page.setViewportSize({ width: 1280, height: 860 })
+          await page
+            .getByRole('button', { name: language === 'en' ? 'Month' : 'Monat', exact: true })
+            .click()
+          await continuation.waitFor()
+        }
         if (b.name === 'mitglieder-aufnehmen-details') {
           await page.getByLabel('Name', { exact: true }).fill('Muster')
           await page
