@@ -1,12 +1,12 @@
 // Hilfe, Teile mit Bezug zur Einheit und zur Person (konzepte/hilfe-funktion.md, H4–H6):
 // „Warum sehe ich das nicht?“, Ansprechpartner, Hinweise des Vereins, „Für dich“ mit
 // abhakbaren ersten Schritten und „Zeig es mir“.
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { helpApi } from '../api/help.ts'
-import type { HelpContact } from '../api/help.ts'
-import { errorMessage, useLoad } from '../components/forms.ts'
-import { Alert, Field } from '../components/ui.tsx'
+import type { HelpContact, OrgHelp } from '../api/help.ts'
+import { errorMessage, useAutoSave, useForm, useLoad } from '../components/forms.ts'
+import { Alert, Field, SaveStatus } from '../components/ui.tsx'
 import { t } from '../i18n/index.ts'
 import { TextArea } from '../pages/settings/TextArea.tsx'
 import { AREAS } from './content.ts'
@@ -108,19 +108,33 @@ const EMPTY: HelpContact = { name: '', hint: '', email: '' }
 export function HelpContactsCard({ orgId, editable }: { orgId: number; editable: boolean }) {
   const { data, error } = useLoad(() => helpApi.org(orgId), [orgId])
   return (
-    <div className="card card-wide">
-      <h2>{t('Ansprechpartner für Fragen zu HUBIplan')}</h2>
+    <section className="card card-wide">
+      {data ? (
+        <ContactsEditor key={orgId} orgId={orgId} initial={data.own_contacts} editable={editable} />
+      ) : (
+        <>
+          <ContactsIntro />
+          {error && <Alert kind="error">{error}</Alert>}
+          {!error && <p className="muted">{t('Lädt …')}</p>}
+        </>
+      )}
+    </section>
+  )
+}
+
+function ContactsIntro({ status }: { status?: ReactNode }) {
+  return (
+    <>
+      <div className="card-head">
+        <h2>{t('Ansprechpartner für Fragen zu HUBIplan')}</h2>
+        {status}
+      </div>
       <p className="muted small">
         {t(
           'Erscheinen in der Hilfe unter „Wer hilft bei uns?“ für alle mit einer Rolle hier und in den Untereinheiten, die keine eigenen eintragen. Ohne Eintrag nennt die Hilfe nur die Rollen, die Rechte vergeben dürfen.',
         )}
       </p>
-      {error && <Alert kind="error">{error}</Alert>}
-      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
-      {data && (
-        <ContactsEditor key={orgId} orgId={orgId} initial={data.own_contacts} editable={editable} />
-      )}
-    </div>
+    </>
   )
 }
 
@@ -133,38 +147,41 @@ function ContactsEditor({
   initial: HelpContact[]
   editable: boolean
 }) {
-  const [rows, setRows] = useState<HelpContact[]>(initial)
-  const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
-  const [busy, setBusy] = useState(false)
+  // Autospeichern wie im übrigen Bereich „Organisation“; Zeilen ohne Namen bleiben
+  // nur im Formular stehen, bis ein Name eingetragen ist
+  const form = useForm({ contacts: initial })
+  const rows = form.values.contacts
   const help = useHelp()
-
+  const named = (list: HelpContact[]) => list.filter((c) => c.name.trim())
+  // Leere neue Zeile: nichts Neues zu speichern
+  const sent = useRef(JSON.stringify(named(initial)))
+  const auto = useAutoSave(
+    form,
+    async (changes) => {
+      const list = named(changes.contacts ?? rows)
+      const json = JSON.stringify(list)
+      if (json === sent.current) return null
+      const data = await helpApi.saveContacts(orgId, list)
+      sent.current = json
+      return data
+    },
+    {
+      enabled: editable,
+      onSaved: (data) => {
+        if (data && help?.orgId === orgId) help.setOrg(data as OrgHelp)
+      },
+    },
+  )
+  const setRows = (next: HelpContact[]) => form.set('contacts', next)
   const update = (i: number, field: keyof HelpContact, value: string) =>
-    setRows((r) => r.map((c, j) => (j === i ? { ...c, [field]: value } : c)))
-
-  async function save() {
-    setBusy(true)
-    setMessage(null)
-    try {
-      const data = await helpApi.saveContacts(
-        orgId,
-        rows.filter((c) => c.name.trim()),
-      )
-      setRows(data.own_contacts)
-      if (help?.orgId === orgId) help.setOrg(data)
-      setMessage({ kind: 'success', text: t('Gespeichert.') })
-    } catch (err) {
-      setMessage({ kind: 'error', text: errorMessage(err) })
-    } finally {
-      setBusy(false)
-    }
-  }
+    setRows(rows.map((c, j) => (j === i ? { ...c, [field]: value } : c)))
 
   return (
     <>
-      {message && <Alert kind={message.kind}>{message.text}</Alert>}
+      <ContactsIntro status={editable && <SaveStatus auto={auto} />} />
       {rows.length === 0 && <p className="muted">{t('Noch niemand eingetragen.')}</p>}
       {rows.map((c, i) => (
-        <fieldset key={i} className="help-contact-row" disabled={!editable || busy}>
+        <fieldset key={i} className="help-contact-row" disabled={!editable}>
           <legend>{t('Ansprechpartner {n}', { n: i + 1 })}</legend>
           <div className="grid-2">
             <Field
@@ -188,30 +205,26 @@ function ContactsEditor({
             />
           </div>
           {editable && (
-            <button
-              type="button"
-              className="button button-ghost"
-              onClick={() => setRows(rows.filter((_, j) => j !== i))}
-            >
-              {t('Entfernen')}
-            </button>
+            <div className="button-row">
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => setRows(rows.filter((_, j) => j !== i))}
+              >
+                {t('Entfernen')}
+              </button>
+            </div>
           )}
         </fieldset>
       ))}
-      {editable && (
-        <div className="actions">
-          {rows.length < 10 && (
-            <button
-              type="button"
-              className="button button-ghost"
-              disabled={busy}
-              onClick={() => setRows([...rows, { ...EMPTY }])}
-            >
-              {t('Ansprechpartner hinzufügen')}
-            </button>
-          )}
-          <button type="button" className="button" disabled={busy} onClick={save}>
-            {t('Speichern')}
+      {editable && rows.length < 10 && (
+        <div className="button-row">
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() => setRows([...rows, { ...EMPTY }])}
+          >
+            {t('Ansprechpartner hinzufügen')}
           </button>
         </div>
       )}

@@ -19,6 +19,7 @@ import {
 } from '../help/content.ts'
 import type { HelpEntry } from '../help/content.ts'
 import { highlight, labelsIn } from '../help/extras.ts'
+import { HelpContactsCard } from '../help/HelpExtras.tsx'
 import { renderHelp } from '../help/markdown.ts'
 import SPEC from '../help/bilder.json'
 import EN from '../i18n/en.json'
@@ -426,6 +427,41 @@ describe('Oberfläche', () => {
       'mailto:anna@example.org',
     )
     expect(screen.getByText('Angegeben von Testbund.')).toBeInTheDocument()
+  })
+})
+
+describe('Ansprechpartner in den Einstellungen', () => {
+  it('speichert automatisch, ohne Speichern-Knopf; leere Zeile wird nicht gesendet', async () => {
+    const user = userEvent.setup()
+    const api = fakeApi({
+      'GET /api/orgs/7/help/': () => ({ status: 200, body: ORG_HELP }),
+      'PATCH /api/orgs/7/help/': (init) => ({
+        status: 200,
+        body: { ...ORG_HELP, own_contacts: JSON.parse(String(init?.body)).contacts },
+      }),
+    })
+    render(<HelpContactsCard orgId={7} editable />)
+    const add = await screen.findByRole('button', { name: 'Ansprechpartner hinzufügen' })
+    expect(screen.queryByRole('button', { name: 'Speichern' })).not.toBeInTheDocument()
+    // Knöpfe stehen in einer Zeile mit Abstand
+    expect(add.parentElement).toHaveClass('button-row')
+    await user.click(add)
+    await new Promise((r) => setTimeout(r, 900))
+    expect(api.filter((c) => c.key.startsWith('PATCH '))).toHaveLength(0)
+    await user.type(screen.getByLabelText('Name'), 'Anna Beispiel')
+    await waitFor(
+      () => {
+        const patches = api.filter((c) => c.key.startsWith('PATCH '))
+        expect(JSON.parse(String(patches.at(-1)?.init?.body))).toEqual({
+          contacts: [{ name: 'Anna Beispiel', hint: '', email: '' }],
+        })
+      },
+      { timeout: 3000 },
+    )
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('✓ Gespeichert'))
+    expect(screen.getByRole('button', { name: 'Entfernen' }).parentElement).toHaveClass(
+      'button-row',
+    )
   })
 })
 
