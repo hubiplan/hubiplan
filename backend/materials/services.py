@@ -22,11 +22,19 @@ FIELDS = (
     "location_note",
     "condition",
     "condition_note",
+    "facility_id",
+    "belongs_to_id",
 )
+# Nur Infrastruktur
+FACILITY_FIELDS = ("facility_type", "ownership", "capacity", "lanes", "access_note")
+
+
+def fields(item):
+    return FIELDS + FACILITY_FIELDS if item.kind == "facility" else FIELDS
 
 
 def snapshot(item):
-    data = {key: getattr(item, key) for key in FIELDS}
+    data = {key: getattr(item, key) for key in fields(item)}
     data["deleted"] = item.deleted_at is not None
     data["events"] = list(
         item.event_links.values(
@@ -90,9 +98,19 @@ def restore_snapshot(item, data, user, scope):
     """Rückgängig validiert die heutigen Ziele, einschließlich der zu entfernenden Links."""
     if data["deleted"]:
         ensure_no_music_loan(item)
-    payload = {key: data[key] for key in FIELDS if key != "member_id"}
+    ids = ("member_id", "facility_id", "belongs_to_id")
+    payload = {key: data[key] for key in fields(item) if key not in ids and key in data}
     payload["member"] = data["member_id"]
-    form = ItemInput(data=payload, context={"scope": scope, "has_events": bool(data["events"])})
+    payload["facility"] = data.get("facility_id")
+    if item.kind == "facility":
+        if payload.get("ownership") is None:
+            payload["ownership"] = ""
+    else:
+        payload["belongs_to"] = data.get("belongs_to_id")
+    form = ItemInput(
+        data=payload,
+        context={"scope": scope, "has_events": bool(data["events"]), "kind": item.kind},
+    )
     form.is_valid(raise_exception=True)
     event_rows = []
     for row in data["events"]:

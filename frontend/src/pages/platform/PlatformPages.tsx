@@ -52,6 +52,7 @@ const MODULES = [
   { id: 'website', label: t('Webseite') },
   { id: 'competitions', label: t('Wettbewerbe') },
   { id: 'material', label: t('Material') },
+  { id: 'infrastructure', label: t('Infrastruktur') },
   { id: 'entries', label: t('Meldungen') },
 ]
 

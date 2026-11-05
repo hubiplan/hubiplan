@@ -204,8 +204,8 @@ class OrganizationSerializer(KeepsMembersMixin, ModelCleanMixin, serializers.Mod
     def validate_shooting_facilities(self, value):
         from competitions.targets import FACILITIES
 
-        if value is None:
-            return None
+        if value is None or value == "infrastructure":
+            return value
         if not isinstance(value, list) or any(
             not isinstance(key, str) or key not in FACILITIES for key in value
         ):

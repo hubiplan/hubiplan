@@ -31,6 +31,7 @@ class Base(APIView):
             kwargs.get("org_id"),
             kwargs.get("dept_id"),
             write=request.method not in ("GET", "HEAD", "OPTIONS"),
+            kind=kwargs.get("kind", "material"),
         )
 
     def item(self, pk, *, lock=False, trash=False):
@@ -70,6 +71,8 @@ class ListView(Base):
                 lambda: access.events(request.user, self.scope),
                 "event_links__event_id",
             ),
+            ("facility", lambda: access.facilities(self.scope), "facility_id"),
+            ("belongs_to", lambda: access.facilities(self.scope), "belongs_to_id"),
         ]:
             value = request.query_params.get(key)
             if value:
@@ -146,7 +149,9 @@ class ListView(Base):
                     row["inventory_number"],
                     row["title"],
                     row["description"],
-                    row["member_name"] or ", ".join(row["address"].values()),
+                    row["member_name"]
+                    or row["facility_title"]
+                    or ", ".join(row["address"].values()),
                     row["purpose"],
                 ]
                 writer.writerow(
@@ -155,7 +160,8 @@ class ListView(Base):
             response = HttpResponse(
                 "\ufeff" + output.getvalue(), content_type="text/csv; charset=utf-8"
             )
-            response["Content-Disposition"] = 'attachment; filename="material.csv"'
+            name = "infrastruktur" if self.scope.kind == "facility" else "material"
+            response["Content-Disposition"] = f'attachment; filename="{name}.csv"'
             return response
         try:
             page = max(1, int(request.query_params.get("page", 1)))
@@ -172,7 +178,7 @@ class ListView(Base):
                 "items": page_rows,
                 "count": len(rows),
                 "page": page,
-                "can_edit": "material.edit" in self.scope.permissions,
+                "can_edit": f"{access.AREAS[self.scope.kind][1]}.edit" in self.scope.permissions,
             }
         )
 
@@ -199,6 +205,7 @@ class ListView(Base):
         item = MaterialItem.objects.create(
             organization=self.scope.org,
             department_id=self.scope.department_id,
+            kind=self.scope.kind,
             **values,
         )
         for row in event_forms.validated_data:
@@ -281,6 +288,11 @@ class ChoicesView(Base):
             ]
         elif kind == "document":
             rows = [{"id": r.pk, "title": r.title} for r in access.documents(self.scope)]
+        elif kind == "facility":
+            rows = [
+                {"id": r.pk, "title": r.title, "area": r.location_kind == "facility"}
+                for r in access.facilities(self.scope)
+            ]
         else:
             raise ValidationError(_("Ungültige Auswahl."))
         rows = [r for r in rows if query in r["title"].casefold()]

@@ -15,7 +15,10 @@ export function ShootingFacilitiesCard({
   const org = useActiveOrg()
   const editable = org.permissions.includes(PERM.orgEdit)
   const form = useForm({ shooting_facilities: detail.shooting_facilities ?? null })
-  const selected = form.values.shooting_facilities
+  const value = form.values.shooting_facilities
+  const fromInfrastructure = value === 'infrastructure'
+  const selected = Array.isArray(value) ? value : null
+  const infrastructure = org.modules.includes('infrastructure')
   const auto = useAutoSave(form, (changes) => orgApi.update(org.id, changes), {
     enabled: editable,
     onSaved: (result) => {
@@ -52,10 +55,18 @@ export function ShootingFacilitiesCard({
       <fieldset disabled={!editable}>
         <Checkbox
           label={t('Verfügbare Schießmöglichkeiten festlegen')}
-          checked={selected !== null}
+          checked={value !== null}
           onChange={(on) => form.set('shooting_facilities', on ? [] : null)}
           hint={t('Ohne Festlegung wird der vollständige Scheibenkatalog angeboten.')}
         />
+        {value !== null && (infrastructure || fromInfrastructure) && (
+          <Checkbox
+            label={t('Aus der Infrastruktur übernehmen')}
+            checked={fromInfrastructure}
+            onChange={(on) => form.set('shooting_facilities', on ? 'infrastructure' : [])}
+            hint={t('Die Schießbahnen der erfassten Schießstände bestimmen die Auswahl.')}
+          />
+        )}
         {selected !== null && (
           <>
             <div className="grid-2">

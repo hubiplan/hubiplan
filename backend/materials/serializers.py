@@ -5,6 +5,19 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from . import access
+from .models import FACILITY_TYPES, OWNERSHIP
+
+
+class LaneInput(serializers.Serializer):
+    facility = serializers.CharField(max_length=20)
+    count = serializers.IntegerField(min_value=1, max_value=500)
+
+    def validate_facility(self, value):
+        from competitions.targets import FACILITIES
+
+        if value not in FACILITIES:
+            raise serializers.ValidationError(_("Bitte gültige Schießmöglichkeiten wählen."))
+        return value
 
 
 class ItemInput(serializers.Serializer):
@@ -12,38 +25,89 @@ class ItemInput(serializers.Serializer):
     title = serializers.CharField(max_length=200)
     description = serializers.CharField(max_length=2000)
     purpose = serializers.CharField(max_length=2000, allow_blank=True, required=False)
-    location_kind = serializers.ChoiceField(choices=["member", "address"])
+    location_kind = serializers.ChoiceField(choices=["member", "address", "facility"])
     member = serializers.IntegerField(min_value=1, allow_null=True, required=False)
     address = serializers.DictField(
         child=serializers.CharField(max_length=300, allow_blank=True), required=False
     )
+    facility = serializers.IntegerField(min_value=1, allow_null=True, required=False)
+    belongs_to = serializers.IntegerField(min_value=1, allow_null=True, required=False)
     location_note = serializers.CharField(max_length=300, allow_blank=True, required=False)
     condition = serializers.ChoiceField(
         choices=["ready", "limited", "defective", "retired"], required=False
     )
     condition_note = serializers.CharField(max_length=500, allow_blank=True, required=False)
+    # Nur Infrastruktur
+    facility_type = serializers.ChoiceField(
+        choices=[k for k, _label in FACILITY_TYPES], required=False
+    )
+    ownership = serializers.ChoiceField(
+        choices=[k for k, _label in OWNERSHIP], allow_blank=True, required=False
+    )
+    capacity = serializers.IntegerField(
+        min_value=1, max_value=100000, allow_null=True, required=False
+    )
+    lanes = LaneInput(many=True, required=False)
+    access_note = serializers.CharField(max_length=500, allow_blank=True, required=False)
+
+    FACILITY_ONLY = ("facility_type", "ownership", "capacity", "lanes", "access_note")
 
     def validate(self, data):
         item = self.context.get("item")
         scope = self.context["scope"]
+        kind = item.kind if item else self.context.get("kind", getattr(scope, "kind", "material"))
         current = {key: getattr(item, key) for key in ["location_kind", "purpose"]} if item else {}
-        kind = data.get("location_kind", current.get("location_kind"))
-        if not item and not data.get("purpose", "").strip():
-            # Das Anlageformular kann alternativ seine Terminzuordnungen mitsenden.
-            if not self.context.get("has_events"):
+        location_kind = data.get("location_kind", current.get("location_kind"))
+        if kind == "facility":
+            if location_kind == "member":
+                raise serializers.ValidationError(
+                    {"location_kind": _("Infrastruktur liegt an einer Adresse.")}
+                )
+            if "belongs_to" in data and data["belongs_to"]:
+                raise serializers.ValidationError({"belongs_to": _("Ungültige Auswahl.")})
+            data.pop("belongs_to", None)
+            if not item:
+                data.setdefault("facility_type", "other")
+            facility_type = data.get("facility_type", item.facility_type if item else "other")
+            if facility_type != "range":
+                data["lanes"] = []
+            elif "lanes" in data:
+                keys = [row["facility"] for row in data["lanes"]]
+                if len(keys) != len(set(keys)):
+                    raise serializers.ValidationError(
+                        {"lanes": _("Jede Disziplin bitte nur einmal angeben.")}
+                    )
+                data["lanes"] = [dict(row) for row in data["lanes"]]
+        else:
+            if any(key in data for key in self.FACILITY_ONLY):
+                raise serializers.ValidationError(_("Diese Angaben gibt es nur bei Infrastruktur."))
+            if not item and not data.get("purpose", "").strip():
+                # Das Anlageformular kann alternativ seine Terminzuordnungen mitsenden.
+                if not self.context.get("has_events"):
+                    raise serializers.ValidationError(
+                        {"purpose": _("Bitte einen Verwendungszweck oder Termin angeben.")}
+                    )
+            if (
+                item
+                and "purpose" in data
+                and not data["purpose"].strip()
+                and not item.event_links.exclude(kind="exclude").exists()
+            ):
                 raise serializers.ValidationError(
                     {"purpose": _("Bitte einen Verwendungszweck oder Termin angeben.")}
                 )
-        if (
-            item
-            and "purpose" in data
-            and not data["purpose"].strip()
-            and not item.event_links.exclude(kind="exclude").exists()
-        ):
-            raise serializers.ValidationError(
-                {"purpose": _("Bitte einen Verwendungszweck oder Termin angeben.")}
-            )
-        if kind == "member" and (not item or "member" in data or "location_kind" in data):
+            if data.get("belongs_to"):
+                target = access.facilities(scope).filter(pk=data["belongs_to"]).first()
+                if target is None:
+                    raise serializers.ValidationError(
+                        {"belongs_to": _("Bitte eine zugängliche Infrastruktur wählen.")}
+                    )
+                data["belongs_to_id"] = target.pk
+            elif "belongs_to" in data:
+                data["belongs_to_id"] = None
+            data.pop("belongs_to", None)
+        changing = not item or "location_kind" in data
+        if location_kind == "member" and (changing or "member" in data):
             member_id = data.get("member", item.member_id if item else None)
             if not access.members(scope).filter(pk=member_id).exists():
                 raise serializers.ValidationError(
@@ -51,7 +115,8 @@ class ItemInput(serializers.Serializer):
                 )
             data["member_id"] = member_id
             data["address"] = {}
-        elif kind == "address" and (not item or "address" in data or "location_kind" in data):
+            data["facility_id"] = None
+        elif location_kind == "address" and (changing or "address" in data):
             address = data.get("address", item.address if item else {})
             if set(address) - {"name", "street", "postal_code", "city", "country"}:
                 raise serializers.ValidationError({"address": _("Ungültige Adressfelder.")})
@@ -63,9 +128,31 @@ class ItemInput(serializers.Serializer):
                 )
             data["address"] = address
             data["member_id"] = None
-        elif "member" in data or "address" in data:
+            data["facility_id"] = None
+        elif location_kind == "facility" and (changing or "facility" in data):
+            target_id = data.get("facility", item.facility_id if item else None)
+            target = access.facilities(scope).filter(pk=target_id).first()
+            if target is None or (item and target.pk == item.pk):
+                raise serializers.ValidationError(
+                    {"facility": _("Bitte eine zugängliche Infrastruktur wählen.")}
+                )
+            if kind == "facility":
+                # Nur eine Ebene: Gebäude → Bereich
+                if target.location_kind == "facility":
+                    raise serializers.ValidationError(
+                        {"facility": _("Ein Bereich kann keine weiteren Bereiche haben.")}
+                    )
+                if item and item.contents.filter(kind="facility", deleted_at__isnull=True).exists():
+                    raise serializers.ValidationError(
+                        {"facility": _("Diese Infrastruktur hat selbst Bereiche.")}
+                    )
+            data["facility_id"] = target.pk
+            data["member_id"] = None
+            data["address"] = {}
+        elif "member" in data or "address" in data or "facility" in data:
             raise serializers.ValidationError(_("Bitte zuerst die Standortart wählen."))
         data.pop("member", None)
+        data.pop("facility", None)
         return data
 
 
@@ -189,8 +276,20 @@ def effective_links(item, user, scope, *, start=None, end=None):
 
 def item_data(item, user, scope, *, detail=False):
     member = access.members(scope).filter(pk=item.member_id).first() if item.member_id else None
-    location_review = item.location_kind == "unknown" or (
-        item.location_kind == "member" and not item.member_id
+    location_review = (
+        item.location_kind == "unknown"
+        or (item.location_kind == "member" and not item.member_id)
+        or (item.location_kind == "facility" and not item.facility_id)
+    )
+    facility = (
+        access.facilities(scope).filter(pk=item.facility_id).first() if item.facility_id else None
+    )
+    if item.facility_id and facility is None and access.facilities_enabled(scope):
+        location_review = True
+    belongs_to = (
+        access.facilities(scope).filter(pk=item.belongs_to_id).first()
+        if item.belongs_to_id
+        else None
     )
     if member and member.current_period(timezone.localdate()) is None:
         location_review = True
@@ -200,6 +299,7 @@ def item_data(item, user, scope, *, detail=False):
     )
     data = {
         "id": item.pk,
+        "kind": item.kind,
         "inventory_number": item.inventory_number,
         "title": item.title,
         "description": item.description,
@@ -208,14 +308,30 @@ def item_data(item, user, scope, *, detail=False):
         "member": member.pk if member else None,
         "member_name": str(member.person) if member else "",
         "address": item.address,
+        "facility": facility.pk if facility else None,
+        "facility_title": facility.title if facility else "",
+        "belongs_to": belongs_to.pk if belongs_to else None,
+        "belongs_to_title": belongs_to.title if belongs_to else "",
         "location_note": item.location_note,
         "condition": item.condition,
         "condition_note": item.condition_note,
         "version": item.version,
         "deleted_at": item.deleted_at,
         "location_review": location_review,
-        "photo_url": f"{prefix}/materials/{item.pk}/photo/?v={photo.pk}" if photo else None,
+        "photo_url": f"{prefix}/{collection(item)}/{item.pk}/photo/?v={photo.pk}"
+        if photo
+        else None,
     }
+    if item.kind == "facility":
+        data.update(
+            {
+                "facility_type": item.facility_type,
+                "ownership": item.ownership,
+                "capacity": item.capacity,
+                "lanes": item.lanes,
+                "access_note": item.access_note,
+            }
+        )
     if detail:
         if "music" in scope.org.enabled_modules and "music.view" in scope.permissions:
             equipment = getattr(item, "music_equipment", None)
@@ -245,8 +361,47 @@ def item_data(item, user, scope, *, detail=False):
             ).select_related("document")
         ]
         data["uses"] = effective_links(item, user, scope)
+        if item.kind == "facility":
+            data.update(facility_details(item, scope))
         data["usage_review"] = not item.purpose and (
             not item.event_links.exclude(kind="exclude").exists()
             or item.event_links.filter(event__isnull=True).exists()
         )
+    return data
+
+
+def collection(item):
+    return "facilities" if item.kind == "facility" else "materials"
+
+
+def facility_details(item, scope):
+    """Bereiche, hier gelagertes Material und zugehörige Teile (z. B. Schlüssel)."""
+
+    members = set(access.members(scope).values_list("pk", flat=True))
+
+    def rows(qs):
+        # Den Namen des Mitglieds nur mit Mitgliederleserecht zeigen
+        return [
+            {
+                "id": r.pk,
+                "kind": r.kind,
+                "inventory_number": r.inventory_number,
+                "title": r.title,
+                "condition": r.condition,
+                "location_kind": r.location_kind,
+                "member_name": str(r.member.person) if r.member_id in members else "",
+                "location_note": r.location_note,
+            }
+            for r in qs.select_related("member__person").order_by("pk")
+        ]
+
+    live = {"organization": scope.org, "department_id": scope.department_id, "deleted_at": None}
+    data = {"areas": rows(item.contents.filter(kind="facility", **live)), "parent": None}
+    if item.facility_id:
+        parent = access.facilities(scope).filter(pk=item.facility_id).first()
+        if parent:
+            data["parent"] = {"id": parent.pk, "title": parent.title, "address": parent.address}
+    if access.can_view(scope, "material"):
+        data["contents"] = rows(item.contents.filter(kind="material", **live))
+        data["accessories"] = rows(item.accessories.filter(kind="material", **live))
     return data

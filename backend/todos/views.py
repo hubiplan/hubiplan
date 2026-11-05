@@ -150,7 +150,11 @@ class TodoListView(TodoScopeMixin, APIView):
             from materials import services as material_services
 
             material_scope = material_access.scope_for(
-                request.user, kwargs.get("org_id"), kwargs.get("dept_id"), write=True
+                request.user,
+                kwargs.get("org_id"),
+                kwargs.get("dept_id"),
+                write=True,
+                kind="facility" if request.data.get("material_kind") == "facility" else "material",
             )
             material_id = serializers.IntegerField(min_value=1).run_validation(
                 request.data["material"]

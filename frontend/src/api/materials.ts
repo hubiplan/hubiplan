@@ -1,15 +1,42 @@
 import { api } from './client.ts'
 
+export type StockKind = 'material' | 'facility'
+
+export interface StockRow {
+  id: number
+  kind: StockKind
+  inventory_number: string
+  title: string
+  condition: string
+  location_kind: string
+  member_name: string
+  location_note: string
+}
+
 export interface Material {
   id: number
+  kind?: StockKind
   inventory_number: string
   title: string
   description: string
   purpose: string
-  location_kind: 'member' | 'address' | 'unknown'
+  location_kind: 'member' | 'address' | 'facility' | 'unknown'
   member: number | null
   member_name: string
   address: Record<string, string>
+  facility?: number | null
+  facility_title?: string
+  belongs_to?: number | null
+  belongs_to_title?: string
+  facility_type?: string
+  ownership?: string
+  capacity?: number | null
+  lanes?: { facility: string; count: number }[]
+  access_note?: string
+  areas?: StockRow[]
+  contents?: StockRow[]
+  accessories?: StockRow[]
+  parent?: { id: number; title: string; address: Record<string, string> } | null
   location_note: string
   condition: 'ready' | 'limited' | 'defective' | 'retired'
   condition_note: string
@@ -52,6 +79,7 @@ export interface MaterialChoice {
   title: string
   series?: boolean
   starts_at?: string
+  area?: boolean
 }
 
 export const materialApi = {

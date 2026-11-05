@@ -7557,6 +7557,56 @@ msgstr "today"
 msgid "„{name}“ ist nicht mehr aktiv. Bitte ein Ende angeben."
 msgstr "“{name}” is no longer active. Please enter an end date."
 
+msgid "Infrastruktur"
+msgstr "Facilities"
+
+msgid "Infrastruktur wie Schießstand oder Vereinsheim sehen"
+msgstr "View facilities such as shooting ranges or clubhouses"
+
+msgid "Infrastruktur, Bereiche und Zuordnungen bearbeiten"
+msgstr "Edit facilities, areas and links"
+
+msgid "Gebäude oder Vereinsheim"
+msgstr "Building or clubhouse"
+
+msgid "Raum"
+msgstr "Room"
+
+msgid "Schießstand"
+msgstr "Shooting range"
+
+msgid "Platz oder Gelände"
+msgstr "Grounds or site"
+
+msgid "Lager"
+msgstr "Storage"
+
+msgid "Eigentum"
+msgstr "Owned"
+
+msgid "Pacht oder Miete"
+msgstr "Leased or rented"
+
+msgid "Nutzungsrecht bei Dritten"
+msgstr "Right of use from a third party"
+
+msgid "Infrastruktur liegt an einer Adresse."
+msgstr "A facility is located at an address."
+
+msgid "Jede Disziplin bitte nur einmal angeben."
+msgstr "Please list each discipline only once."
+
+msgid "Diese Angaben gibt es nur bei Infrastruktur."
+msgstr "These details only apply to facilities."
+
+msgid "Bitte eine zugängliche Infrastruktur wählen."
+msgstr "Please select an accessible facility."
+
+msgid "Ein Bereich kann keine weiteren Bereiche haben."
+msgstr "An area cannot contain further areas."
+
+msgid "Diese Infrastruktur hat selbst Bereiche."
+msgstr "This facility has areas of its own."
 #: accounts/self_service.py
 #, python-brace-format
 msgid ""
