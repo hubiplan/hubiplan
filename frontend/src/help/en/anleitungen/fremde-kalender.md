@@ -22,10 +22,10 @@ External sources default to members-only visibility; making their copies public
 requires a separate deliberate selection. A failed fetch retains the existing
 copies unchanged. The source shows the error, last attempt and last successful
 fetch. Legacy data and sources that never fetched successfully explicitly show an
-unknown success time. There is no automatic deletion deadline for repeated fetch
-failures: copies remain until the next successful sync or deliberate source
-maintenance. A successful sync removes deleted, hidden or out-of-window events.
+unknown success time. If no fetch succeeds for 14 days, the events are hidden:
+in the calendar, the member area, the app and on the website. They remain stored
+and reappear as soon as a fetch succeeds. Everyone who manages events receives
+one email when they are hidden. A successful sync removes deleted, hidden or out-of-window events.
 Disabling a source removes all copies immediately; an inactive new source does
 not fetch anything. Deleting a source also deletes its copies and hidden-item
-history. A strict automatic maximum age requires a separate policy decision and
-is not an existing guarantee.
+history.
