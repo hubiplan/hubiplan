@@ -70,15 +70,16 @@ def send(net, world, subject: str, pdf: bytes = b"%PDF-1.4 erfunden") -> None:
         circular_services.start_sending(circular, world["fed_board"])
 
 
-def arrived(net, subject: str) -> bool:
+def arrived(net, world, subject: str) -> bool:
+    """Weitergabe beim Verein angekommen (eigene Kopie, nicht das Original oben)."""
     with net.on(VEREIN):
-        return Circular.objects.filter(subject=subject).exists()
+        return Circular.objects.filter(organization=world["club"], subject=subject).exists()
 
 
 @pytest.mark.parametrize("size", [4 * MB, 9 * MB])
 def test_rundschreiben_mit_grossem_pdf_kommt_an(net, world, setup, size):
     send(net, world, "Großer Anhang", b"%PDF-1.4\n" + os.urandom(size))
-    assert arrived(net, "Großer Anhang")
+    assert arrived(net, world, "Großer Anhang")
 
 
 def test_abgelehntes_paket_haelt_die_folgenden_nicht_auf(net, world, setup, monkeypatch):
@@ -108,7 +109,7 @@ def test_abgelehntes_paket_haelt_die_folgenden_nicht_auf(net, world, setup, monk
         assert Message.objects.filter(coupling=upper, direction="out").count() > first
 
     send(net, world, "Zweites Rundschreiben")  # wartet hinter dem ersten
-    assert not arrived(net, "Zweites Rundschreiben")
+    assert not arrived(net, world, "Zweites Rundschreiben")
     with net.on(VERBAND):
         Message.objects.filter(pk=stuck.pk).update(
             attempts=services.GIVE_UP_AFTER - 1, next_try_at=timezone.now()
@@ -116,7 +117,7 @@ def test_abgelehntes_paket_haelt_die_folgenden_nicht_auf(net, world, setup, monk
         services.deliver(upper.pk)
         stuck.refresh_from_db()
         assert stuck.state == Message.State.REJECTED
-    assert arrived(net, "Zweites Rundschreiben")
+    assert arrived(net, world, "Zweites Rundschreiben")
 
 
 def test_413_wird_sofort_abgelehnt(net, world, setup, monkeypatch):
