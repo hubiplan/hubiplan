@@ -2430,10 +2430,20 @@ fieldset.subcard legend {
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.2);
 }
 
+/* Im dunklen Hinweis kein heller Knopfgrund: sonst helle Schrift auf hellem Grau */
 .undo-notice .link-button {
+  background: transparent;
   color: inherit;
   font-weight: 600;
   text-decoration: underline;
+}
+
+.undo-notice .link-button:hover {
+  background: color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.undo-notice .link-button:focus-visible {
+  outline-color: currentColor;
 }
 
 .undo-notice .undo-notice-close {
