@@ -332,8 +332,12 @@ const LICENSE_FILES = {
   thirdParty: '/lizenzen/drittanbieter.txt',
 }
 
-/** Öffentliches Repository mit dem Quellcode (AGPL § 13). Wer HUBIplan verändert betreibt, trägt hier sein eigenes ein. */
-const SOURCE_REPO = 'https://github.com/hubiplan/hubiplan'
+/** Öffentliches Repository mit dem Quellcode (AGPL § 13). Wer HUBIplan verändert betreibt,
+ * setzt beim Bauen sein eigenes (Build-Argument HUBIPLAN_SOURCE_URL in deploy/web.Dockerfile). */
+const SOURCE_REPO = (
+  (import.meta.env.VITE_HUBIPLAN_SOURCE_URL as string | undefined) ||
+  'https://github.com/hubiplan/hubiplan'
+).replace(/\/+$/, '')
 
 /** /lizenz: Lizenz von HUBIplan, Quellcode und Lizenzen der enthaltenen Bibliotheken. */
 export function LicensePage() {

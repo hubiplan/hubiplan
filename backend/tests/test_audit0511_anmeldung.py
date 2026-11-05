@@ -80,3 +80,21 @@ def test_ausweisgrenze_nimmt_adresse_hinter_dem_proxy():
         scan(f"10.0.0.{i}, 203.0.113.50")
     assert scan("10.9.9.9, 203.0.113.50") == 429
     assert scan("203.0.113.51") == 404
+
+
+@pytest.mark.parametrize(
+    ("address", "public"),
+    [
+        ("64:ff9b::a00:1", False),  # NAT64 auf 10.0.0.1
+        ("64:ff9b::808:808", True),  # NAT64 auf 8.8.8.8
+        ("2002:a00:1::1", False),  # 6to4 auf 10.0.0.1
+        ("::ffff:127.0.0.1", False),
+        ("2001:db8::1", False),
+        ("8.8.8.8", True),
+    ],
+)
+def test_safehttp_prueft_eingebettete_ipv4(address, public):
+    """GA-13: Hinter NAT64/6to4 steckende interne IPv4-Adressen sind nicht öffentlich."""
+    from core.safehttp import is_public
+
+    assert is_public(address) is public

@@ -5,6 +5,10 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json frontend/.npmrc ./
 RUN npm ci
 COPY frontend/ ./
+# Quellcode-Adresse für /lizenz (AGPL § 13). Wer eine veränderte Fassung betreibt, setzt hier
+# sein eigenes öffentliches Repository (docker compose build --build-arg …).
+ARG HUBIPLAN_SOURCE_URL=https://github.com/hubiplan/hubiplan
+ENV VITE_HUBIPLAN_SOURCE_URL=$HUBIPLAN_SOURCE_URL
 RUN npm run build
 
 FROM caddy:2-alpine@sha256:eb4d35b7452d1ab6171fbdbe8d9275b2301dad6dad92115d91e19fb9b24d510f
