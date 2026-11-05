@@ -160,7 +160,11 @@ def test_printable_pdf_exports_keep_csv(c, club, repertoire, kind, expected):
     )
     with pdfium.PdfDocument(response.content) as document:
         page = document[0]
-        with page.get_textpage() as text:
+        text = page.get_textpage()
+        try:
             content = text.get_text_range()
             assert expected in content and "=Musterlied" in content
+        finally:
+            text.close()
+            page.close()
     assert c.get(url, {"export": kind})["Content-Type"].startswith("text/csv")
