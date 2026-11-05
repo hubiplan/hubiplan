@@ -30,7 +30,7 @@ from .models import Peer
 log = logging.getLogger(__name__)
 
 MAX_SKEW = datetime.timedelta(minutes=5)
-MAX_REQUEST = 20 * 1024 * 1024
+MAX_REQUEST = transport.MAX_BODY
 # Anfragen je Minute und Absender-Instanz (zusätzlich zur Grenze je IP)
 PER_SENDER = 300
 
@@ -67,7 +67,15 @@ class _Signed(APIView):
             raise Http404
         if too_many(f"peering:in:{client_ip(request)}", 600, 60):
             return _plain(429, "Zu viele Anfragen.")
-        body = request.body
+        # Selbst lesen statt request.body: Djangos allgemeine Grenze (5 MB) würde
+        # größere Pakete mit einer HTML-Seite abweisen (Gesamtaudit 05.11. GA-02).
+        try:
+            length = int(request.META.get("CONTENT_LENGTH") or 0)
+        except ValueError:
+            return _plain(400, "Länge fehlt.")
+        if length > MAX_REQUEST:
+            return _plain(413, "Zu groß.")
+        body = request._request.read(MAX_REQUEST + 1)
         if len(body) > MAX_REQUEST:
             return _plain(413, "Zu groß.")
         sender = request.headers.get(transport.H_INSTANCE, "")
