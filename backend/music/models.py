@@ -286,7 +286,7 @@ class PreviousPerformanceInvoice(models.Model):
 class Equipment(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     item = models.OneToOneField(
-        "materials.MaterialItem", on_delete=models.PROTECT, related_name="music_equipment"
+        "materials.MaterialItem", on_delete=models.CASCADE, related_name="music_equipment"
     )
     kind = models.CharField(
         max_length=12, choices=[("instrument", "instrument"), ("uniform", "uniform")]
@@ -301,7 +301,7 @@ class Equipment(models.Model):
 
 class EquipmentLoan(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
-    equipment = models.ForeignKey(Equipment, on_delete=models.PROTECT, related_name="loans")
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name="loans")
     musician = models.ForeignKey(Musician, on_delete=models.PROTECT)
     issued_at = models.DateTimeField(auto_now_add=True)
     due_date = models.DateField()
@@ -333,7 +333,7 @@ class EquipmentLoan(models.Model):
 
 class EquipmentMaintenance(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
-    equipment = models.ForeignKey(Equipment, on_delete=models.PROTECT, related_name="maintenance")
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name="maintenance")
     date = models.DateField()
     next_due = models.DateField(null=True, blank=True)
     condition = models.CharField(max_length=15)

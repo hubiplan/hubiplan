@@ -111,3 +111,5 @@ Aktuelle Mitglieder mit aktivem Musikerprofil sehen unter **Mein Bereich** eigen
 Neue Probeneinteilungen und bevorstehende offene Rückmeldungen erzeugen neutrale Hinweise über die bestehende Ausgangspost. Der stündliche Job erinnert je Probentermin einmal innerhalb der eingestellten Tage; 0 schaltet Erinnerungen aus. Nachrichten enthalten einen Link zum Mitgliederbereich, keine Notenanhänge oder vertraulichen Termininhalte. Gäste ohne Mitgliederzugang erhalten diese Hinweise nicht. Vorbereitungsaufgaben und weitere Kalenderkommunikation bleiben im bestehenden Aufgaben-/Terminbereich.
 
 Die Proben-, Rückmeldungs- und Notenausgabedaten sind im allgemeinen Datenexport enthalten. Die Datenbankmigration ergänzt Tabellen, RLS und Mengengrenzen; vor einem Rückweg die neuen Verläufe exportieren.
+
+Nach dem Löschen geschlossener Ausgaben gilt für den Materialpapierkorb die vorhandene Frist von 30 Tagen; anschließend werden die zugehörigen Musikverknüpfungen entfernt. Gegenstände mit offener Ausgabe werden vom endgültigen Bereinigen ausgenommen.

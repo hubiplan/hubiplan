@@ -229,3 +229,23 @@ def test_return_to_new_address_and_future_maintenance_rejected(c, equipment):
         ).status_code
         == 400
     )
+
+
+def test_inventory_trash_purges_closed_equipment_but_keeps_open_custody(c, equipment):
+    from materials.tasks import purge_deleted
+
+    e = equipment
+    identifier = register(c, e)
+    assert issue(c, e).status_code == 200
+    with tenant_context(e.org.pk):
+        MaterialItem.objects.filter(pk=e.item["id"]).update(
+            deleted_at=timezone.now() - datetime.timedelta(days=31)
+        )
+    purge_deleted.run()
+    with tenant_context(e.org.pk):
+        assert MaterialItem.objects.filter(pk=e.item["id"]).exists()
+        EquipmentLoan.objects.filter(equipment_id=identifier).update(returned_at=timezone.now())
+    purge_deleted.run()
+    with tenant_context(e.org.pk):
+        assert not MaterialItem.objects.filter(pk=e.item["id"]).exists()
+        assert not Equipment.objects.filter(pk=identifier).exists()

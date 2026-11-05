@@ -111,3 +111,5 @@ Record musician, part, quantity and return date for checkouts. Each checkout red
 New rehearsal assignments and upcoming pending responses generate neutral notices through the existing outbox. The hourly job reminds once per occurrence within the configured number of days; 0 disables reminders. Notices link to the member area and contain no sheet music attachments or confidential event details. Guests without member access do not receive these notices. Preparation tasks and other calendar communication remain in the existing task/calendar workspace.
 
 General exports include rehearsal, response and checkout data. The additive migration includes tables, RLS and quantity constraints; export the new history before rolling back.
+
+After an inventory item with closed issues is deleted, the existing 30-day trash period applies; its music links are then removed. Items with an outstanding issue are excluded from permanent cleanup.

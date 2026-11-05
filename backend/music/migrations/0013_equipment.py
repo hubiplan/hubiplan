@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 (
                     "item",
                     models.OneToOneField(
-                        on_delete=django.db.models.deletion.PROTECT,
+                        on_delete=django.db.models.deletion.CASCADE,
                         related_name="music_equipment",
                         to="materials.materialitem",
                     ),
@@ -80,7 +80,7 @@ class Migration(migrations.Migration):
                 (
                     "equipment",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
+                        on_delete=django.db.models.deletion.CASCADE,
                         related_name="maintenance",
                         to="music.equipment",
                     ),
@@ -119,7 +119,7 @@ class Migration(migrations.Migration):
                 (
                     "equipment",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
+                        on_delete=django.db.models.deletion.CASCADE,
                         related_name="loans",
                         to="music.equipment",
                     ),
