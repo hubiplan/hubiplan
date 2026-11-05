@@ -18,7 +18,7 @@ from billing.advances import split_amount
 from billing.einvoice_retention import export_table, purge_files
 from billing.models import Invoice, InvoiceAdvance, InvoiceDelivery, InvoiceHybridArtifact
 from core.tenancy import tenant_context
-from finance.einvoice import parse_xml, xml_from_pdf
+from finance.einvoice import as_json, parse_xml, xml_from_pdf
 from finance.models import Booking
 
 from .factories import give_role, make_user
@@ -159,6 +159,11 @@ def test_incomplete_incoming_tax_identifier_remains_readable():
       </Party></AccountingSupplierParty><LegalMonetaryTotal><PayableAmount>1</PayableAmount>
       </LegalMonetaryTotal></Invoice>"""
     assert parse_xml(xml)["seller_vat_id"] == ""
+
+
+def test_incoming_unit_price_preserves_precision_in_stored_view():
+    data = as_json({"lines": [{"unit_price": Decimal("100.123456"), "amount": Decimal("100.12")}]})
+    assert data["lines"][0] == {"unit_price": "100.123456", "amount": "100.12"}
 
 
 def test_real_hybrid_original_and_cancellation_are_validated_and_immutable(c, base, payload, club):

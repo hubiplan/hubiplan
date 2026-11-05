@@ -397,15 +397,15 @@ def read(data: bytes, content_type: str) -> dict | None:
 def as_json(info: dict) -> dict:
     """Für die API und das Speichern am Beleg: Beträge als Text, Daten ISO."""
 
-    def conv(value):
+    def conv(value, field=""):
         if isinstance(value, Decimal):
-            return f"{value:.2f}"
+            return format(value, "f") if field == "unit_price" else f"{value:.2f}"
         if isinstance(value, datetime.date):
             return value.isoformat()
         if isinstance(value, list):
             return [conv(v) for v in value]
         if isinstance(value, dict):
-            return {k: conv(v) for k, v in value.items()}
+            return {k: conv(v, k) for k, v in value.items()}
         return value
 
     return conv(info)
