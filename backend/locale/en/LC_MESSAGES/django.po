@@ -6591,3 +6591,9 @@ msgstr "Verification page"
 
 msgid "Ungültiger Ausweis"
 msgstr "Invalid membership card"
+
+msgid "Gestaltung"
+msgstr "Design"
+
+msgid "Kopfbild"
+msgstr "Header image"

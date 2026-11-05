@@ -856,12 +856,23 @@ class SiteView:
             ):
                 if t.kind != WebsiteText.Kind.UNIT or t.department_id in self.unit_slugs:
                     return image
+        if image.header:
+            return image  # Kopfbild der Webseite (Ralf 05.11.)
         # Galerie (Ralf 05.11.): Bilder und Titelbilder sichtbarer Alben
         from . import gallery
 
         if image.pk in gallery.visible_image_ids(self.site):
             return image
         return None
+
+    def header_image(self) -> dict | None:
+        """Kopfbild statt Wappen und Vereinsname (Ralf 05.11.)."""
+        image = WebsiteImage.objects.filter(website=self.site, header=True).first()
+        data = self.image(image)
+        if data is not None:
+            # Das Bild ersetzt den Vereinsnamen: ohne eigenen Alternativtext steht er dort
+            data["alt"] = image.alt_text or self.org.name
+        return data
 
     def menu(self) -> list[dict]:
         return [

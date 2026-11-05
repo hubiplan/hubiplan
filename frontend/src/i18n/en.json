@@ -6018,5 +6018,7 @@
   "Bilder für das Album wählen": "Choose images for the album",
   "Titelbild": "Cover image",
   "Als Titelbild": "Use as cover",
-  "Aus dem Album nehmen": "Remove from album"
+  "Aus dem Album nehmen": "Remove from album",
+  "Kopfbild": "Header image",
+  "Ohne Kopfbild zeigt die Webseite oben Wappen und Vereinsnamen. Mit Kopfbild steht dort nur das Bild, z. B. ein Banner mit Schriftzug. Es sollte den Vereinsnamen enthalten und breit sein, etwa 1200 × 300 Pixel.": "Without a header image the website shows the coat of arms and the club name at the top. With a header image only the image appears there, for example a banner with lettering. It should contain the club name and be wide, about 1200 × 300 pixels."
 }

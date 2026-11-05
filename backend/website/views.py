@@ -47,6 +47,7 @@ from .models import (
     PublicationConsent,
     Website,
     WebsiteDomain,
+    WebsiteImage,
     is_extra_block,
     normalize_home_sections,
 )
@@ -80,9 +81,25 @@ SETTINGS_FIELDS = [
 
 
 class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
+    # Kopfbild (Ralf 05.11.): Nummer eines Bildes der Bilderverwaltung oder null
+    header_image = serializers.IntegerField(required=False, allow_null=True)
+
     class Meta:
         model = Website
-        fields = SETTINGS_FIELDS
+        fields = [*SETTINGS_FIELDS, "header_image"]
+
+    def validate_header_image(self, value):
+        if value is not None and (
+            self.instance is None
+            or not WebsiteImage.objects.filter(website=self.instance, pk=value).exists()
+        ):
+            raise serializers.ValidationError(_("Unbekanntes Bild."))
+        return value
+
+    def update(self, instance, validated_data):
+        if "header_image" in validated_data:
+            set_header_image(instance, validated_data.pop("header_image"))
+        return super().update(instance, validated_data)
 
     def validate_language(self, value):
         # Nur freigeschaltete Sprachen (HUBIPLAN_LANGUAGES); die bisherige bleibt erlaubt
@@ -184,7 +201,22 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             instance.color_roles, designs.package_roles(instance.packages())
         )
         data["design"] = instance.effective_design()
+        data["header_image"] = header_image_id(instance)
         return data
+
+
+def header_image_id(website: Website) -> int | None:
+    return (
+        WebsiteImage.objects.filter(website=website, header=True)
+        .values_list("pk", flat=True)
+        .first()
+    )
+
+
+def set_header_image(website: Website, pk: int | None) -> None:
+    WebsiteImage.objects.filter(website=website, header=True).exclude(pk=pk).update(header=False)
+    if pk is not None:
+        WebsiteImage.objects.filter(website=website, pk=pk).update(header=True)
 
 
 def can_import_designs(user) -> bool:
@@ -331,6 +363,7 @@ class WebsiteView(_WebsiteMixin, APIView):
         website = self.website()
         before = snapshot(website)
         old_state = website.state
+        old_header = header_image_id(website)
         ser = WebsiteSerializer(website, data=request.data, partial=True, context={"org": self.org})
         ser.is_valid(raise_exception=True)
         ser.save()
@@ -344,6 +377,9 @@ class WebsiteView(_WebsiteMixin, APIView):
                     {"state": ["Vor dem Veröffentlichen fehlt noch: " + " · ".join(missing)]}
                 )
         changes = diff(before, snapshot(website))
+        new_header = header_image_id(website)
+        if new_header != old_header:
+            changes["Kopfbild"] = [old_header, new_header]
         if changes:
             record(self.org, request.user, "update", website, changes)
         return Response(self.payload(website))
