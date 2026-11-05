@@ -2,10 +2,12 @@ import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { t } from '../../i18n/index.ts'
 import './music.css'
+import { useActiveOrg } from '../../org/OrgContext.tsx'
 
 export function MusicLayout({ children }: { children: ReactNode }) {
   const [params] = useSearchParams()
-  const area = params.get('noten')
+  const org = useActiveOrg()
+  const area = params.get('ausstattung') ? 'equipment' : params.get('noten')
     ? 'scores'
     : params.get('proben')
       ? 'practice'
@@ -23,6 +25,7 @@ export function MusicLayout({ children }: { children: ReactNode }) {
     ['practice', '/musik?proben=1', t('Proben und Notenausgabe')],
     ['availability', '/musik?verfuegbarkeit=1', t('Verfügbarkeiten')],
     ['templates', '/musik?vorlagen=1', t('Besetzungsvorlagen')],
+    ...(org.modules.includes('material') && org.permissions.includes('material.view') ? [['equipment','/musik?ausstattung=1',t('Instrumente und Uniformen')]] : []),
   ]
   return (
     <div className="music-workspace stack">

@@ -215,6 +215,11 @@ def item_data(item, user, scope, *, detail=False):
         "photo_url": f"{prefix}/materials/{item.pk}/photo/?v={photo.pk}" if photo else None,
     }
     if detail:
+        if "music" in scope.org.enabled_modules and "music.view" in scope.permissions:
+            equipment = getattr(item, "music_equipment", None)
+            if equipment:
+                loan = equipment.loans.filter(returned_at=None).first()
+                data["music_equipment"] = {"id": equipment.pk, "loaned": bool(loan), "due_date": loan.due_date if loan else None}
         data["events"] = [
             event_data(r)
             for r in item.event_links.filter(event__in=access.events(user, scope)).select_related(

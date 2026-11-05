@@ -88,6 +88,8 @@ def validate_todos(ids, user, scope):
 
 def restore_snapshot(item, data, user, scope):
     """Rückgängig validiert die heutigen Ziele, einschließlich der zu entfernenden Links."""
+    if data["deleted"]:
+        ensure_no_music_loan(item)
     payload = {key: data[key] for key in FIELDS if key != "member_id"}
     payload["member"] = data["member_id"]
     form = ItemInput(data=payload, context={"scope": scope, "has_events": bool(data["events"])})
@@ -168,3 +170,10 @@ def delete_photo_files(photos):
     for photo in photos:
         storage, name = photo.file.storage, photo.file.name
         transaction.on_commit(lambda s=storage, n=name: s.delete(n))
+
+
+def ensure_no_music_loan(item):
+    from music.models import EquipmentLoan
+
+    if EquipmentLoan.objects.filter(equipment__item=item, returned_at=None).exists():
+        raise ValidationError(_("Bitte die Musikausstattung vor dem Löschen zurücknehmen."))

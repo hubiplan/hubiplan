@@ -14,6 +14,7 @@ export interface Material {
   condition: 'ready' | 'limited' | 'defective' | 'retired'
   condition_note: string
   version: number
+  music_equipment?: {id:number;loaned:boolean;due_date:string|null}
   deleted_at: string | null
   location_review: boolean
   usage_review?: boolean

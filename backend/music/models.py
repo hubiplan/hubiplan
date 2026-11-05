@@ -7,7 +7,7 @@ from django.core.validators import EmailValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 
-from core.encfields import EncryptedCharField
+from core.encfields import EncryptedCharField, EncryptedJSONField
 
 
 class Musician(models.Model):
@@ -281,6 +281,54 @@ class PreviousPerformanceInvoice(models.Model):
 
     def __str__(self):
         return f"Frühere Auftrittsrechnung {self.pk}"
+
+
+class Equipment(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    item = models.OneToOneField("materials.MaterialItem", on_delete=models.PROTECT, related_name="music_equipment")
+    kind = models.CharField(max_length=12, choices=[("instrument", "instrument"), ("uniform", "uniform")])
+    instrument = models.CharField(max_length=100, blank=True)
+    size = models.CharField(max_length=100, blank=True)
+    maintenance_due = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Musikausstattung {self.pk}"
+
+
+class EquipmentLoan(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    equipment = models.ForeignKey(Equipment, on_delete=models.PROTECT, related_name="loans")
+    musician = models.ForeignKey(Musician, on_delete=models.PROTECT)
+    issued_at = models.DateTimeField(auto_now_add=True)
+    due_date = models.DateField()
+    returned_at = models.DateTimeField(null=True, blank=True)
+    issued_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
+    returned_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
+    location_before = EncryptedJSONField(default=dict)
+    issue_condition = models.CharField(max_length=15)
+    return_condition = models.CharField(max_length=15, blank=True)
+    note = EncryptedCharField(max_length=1000, blank=True, strict=True)
+    return_note = EncryptedCharField(max_length=1000, blank=True, strict=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["equipment"], condition=models.Q(returned_at__isnull=True), name="music_equipment_one_open_loan")]
+
+    def __str__(self):
+        return f"Musikausgabe {self.pk}"
+
+
+class EquipmentMaintenance(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    equipment = models.ForeignKey(Equipment, on_delete=models.PROTECT, related_name="maintenance")
+    date = models.DateField()
+    next_due = models.DateField(null=True, blank=True)
+    condition = models.CharField(max_length=15)
+    note = EncryptedCharField(max_length=1000, blank=True, strict=True)
+    actor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Musikwartung {self.pk}"
 
 
 class Piece(models.Model):
