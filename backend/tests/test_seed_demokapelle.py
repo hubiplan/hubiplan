@@ -48,16 +48,24 @@ def test_kapelle_mit_musikern_vorstand_und_webseite():
     assert website.block_on("gallery") and not website.block_on("honors")
     assert website.block_names["group:history"] == "Kapelle"
     assert website.design == "classic"  # ohne eingespieltes Paket
-    # Chronik ist der Bereich „Chronik“ (keine zweite Textseite), Ehrenmitglieder unter „Kapelle“
+    # Chronik ist der Bereich „Chronik“ (keine zweite Textseite), Ehrenmitglieder, Listen
+    # und Gedenken unter „Mitglieder“
     assert not WebsiteText.objects.filter(website=website, slug="chronik").exists()
     nav = menu.public_nav(SiteView(website))
     kapelle = next(item for item in nav if item.get("label") == "Kapelle")
-    children = [child.get("key") for child in kapelle.get("children", [])]
-    assert children[:3] == ["history", "board", "honorary"]
+    assert [child.get("key") for child in kapelle.get("children", [])] == ["history", "offices"]
     assert [item.get("key") for item in nav if item.get("label") == "Chronik"] == []
+    mitglieder = next(item for item in nav if item.get("label") == "Mitglieder")
+    labels = [child.get("label") for child in mitglieder["children"]]
+    assert labels[0] == "Vorstand" and labels[-3:] == ["Aktive", "Passive", "In Gedenken"]
     site = SiteView(website)
     names = " ".join(str(entry.get("name")) for entry in site.board())
     assert all(name in names for name in demo_kapelle.BOARD_POSITIONS)
+    # Instrument unter dem Namen, Anschrift der Vorsitzenden, Gedenken mit Todesjahr
+    holders = [h for entry in site.board() for h in entry["holders"]]
+    assert any(h.get("instrument") for h in holders)
+    assert sum(1 for h in holders if h.get("address")) >= 2
+    assert all(m.get("died") for m in site.memorial()) and len(site.memorial()) >= 2
     assert "Passwort: Test-Passwort-123" not in out
     assert set(User.objects.values_list("email", flat=True)) == set(demo_kapelle.all_emails())
 

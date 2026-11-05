@@ -461,3 +461,53 @@ class GalleryItem(models.Model):
 
     def __str__(self) -> str:
         return f"{self.album} · {self.image}"
+
+
+def document_path(instance, filename: str) -> str:
+    return f"website/{instance.organization_id}/dokumente/{instance.key}-{filename}"
+
+
+class WebsiteDocument(models.Model):
+    """Datei zum Ansehen auf der Webseite (Ralf 05.11., Kapelle): Pressespiegel oder
+    weitere Dokumente neben Satzung und Beitragsordnung. PDF oder Bild; Bilder werden
+    beim Hochladen neu geschrieben (ohne Metadaten), PDFs bekommen ein Vorschaubild."""
+
+    class Section(models.TextChoices):
+        PRESS = "press", "Presse"
+        DOCUMENTS = "documents", "Dokumente"
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name="documents")
+    section = models.CharField(
+        "Bereich", max_length=10, choices=Section.choices, default=Section.PRESS
+    )
+    key = models.CharField(max_length=24, unique=True)
+    title = models.CharField("Titel", max_length=200)
+    source = models.CharField("Quelle", max_length=200, blank=True)
+    date = models.DateField("Datum", null=True, blank=True)
+    file = PrivateFileField("Datei", storage=private_storage, upload_to=document_path)
+    preview = PrivateFileField(
+        "Vorschau", storage=private_storage, upload_to=document_path, blank=True
+    )
+    content_type = models.CharField(max_length=40)
+    size = models.PositiveIntegerField(default=0)
+    file_name = models.CharField("Dateiname", max_length=200, blank=True)
+    published = models.BooleanField("auf der Webseite zeigen", default=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Dokument der Webseite"
+        verbose_name_plural = "Dokumente der Webseite"
+        ordering = ["-date", "title", "pk"]
+
+    def __str__(self) -> str:
+        return self.title
+
+    @staticmethod
+    def new_key() -> str:
+        return secrets.token_urlsafe(12)[:16]

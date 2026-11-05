@@ -9,35 +9,40 @@ Punkte kommen an ihren Standardplatz.
 Schlüssel: die Bausteine aus ``BLOCKS`` (ohne „social“), ``page:<id>`` für eigene
 Textseiten, ``dignity:<id>`` und ``honorary`` für die Unterpunkte von „Würdenträger“
 (einzeln ausschaltbar über ``blocks`` mit demselben Schlüssel) und ``group:history``
-für die Überschrift „Geschichte“. Überschriften (``heading``)
+für die Überschrift „Geschichte“, ``members`` mit ``membertype:<id>`` je Mitgliedsart
+und ``memorial`` (Ralf 05.11.) sowie ``heading:<n>`` für frei benannte Überschriften
+(Name in ``Website.block_names``). Überschriften (``heading``)
 haben keine eigene Seite; ohne Unterpunkte entfallen sie, mit nur einem steht dieser
 direkt im Menü.
 """
 
 from __future__ import annotations
 
-from .models import BLOCK_HINTS, BLOCKS, RENAMABLE_BLOCKS, Website
+from .models import BLOCK_HINTS, BLOCKS, Website, is_renamable
 
 # Bausteine, die kein Menüpunkt sind
-NOT_IN_MENU = {"social"}
+NOT_IN_MENU = {"social", "search"}
 # Überschriften ohne eigene Seite: Schlüssel → (Bezeichnung, Standard-Unterpunkte)
 HEADINGS = {"group:history": ("Geschichte", ("history", "offices"))}
 # Textseite „Geschichte“ ist der Baustein „history“, kein eigener Menüpunkt
 HISTORY_SLUG = "geschichte"
+# Textseite „In Gedenken“ ist die Einleitung des Bausteins „memorial“ (Ralf 05.11.)
+MEMORIAL_SLUG = "in-gedenken"
 
 
 def _block_keys() -> list[str]:
     return [k for k in BLOCKS if k not in NOT_IN_MENU]
 
 
-def items(website: Website, *, public_site=None) -> dict[str, dict]:
+def items(website: Website, *, public_site=None, names: dict | None = None) -> dict[str, dict]:
     """Alle möglichen Menüpunkte in Standardreihenfolge.
 
     Je Punkt: ``label`` (eigener Name oder Standard), ``default_label``,
     ``renamable``, ``hint``, ``toggle`` (Baustein-Schlüssel für ein/aus oder
     None), ``heading`` (Überschrift ohne eigene Seite), ``parent`` (Standard-
     Oberpunkt oder None). Mit ``public_site`` (SiteView) kommen öffentliche Angaben
-    dazu (``visible``, ``slug``, ``id``)."""
+    dazu (``visible``, ``slug``, ``id``). ``names``: eigene Namen, die noch nicht
+    gespeichert sind (Prüfung einer Änderung mit neuen Überschriften)."""
 
     from .content_models import WebsiteText
     from .public import SiteView
@@ -46,9 +51,11 @@ def items(website: Website, *, public_site=None) -> dict[str, dict]:
     site = public_site or SiteView(website)
     result: dict[str, dict] = {}
     heading_of = {child: key for key, (_l, children) in HEADINGS.items() for child in children}
+    if names is not None:
+        website = Website(pk=website.pk, organization=org, block_names=names, blocks=website.blocks)
 
     def add(key, label, *, hint="", toggle=None, heading=False, parent=None, **extra):
-        renamable = key in RENAMABLE_BLOCKS
+        renamable = is_renamable(key)
         result[key] = {
             "label": (website.block_name(key) if renamable else "") or label,
             "default_label": label,
@@ -62,7 +69,7 @@ def items(website: Website, *, public_site=None) -> dict[str, dict]:
 
     pages = list(
         WebsiteText.objects.filter(website=website, kind=WebsiteText.Kind.PAGE)
-        .exclude(slug=HISTORY_SLUG)
+        .exclude(slug__in=(HISTORY_SLUG, MEMORIAL_SLUG))
         .order_by("menu_position", "title", "pk")
     )
     for key in _block_keys():
@@ -120,7 +127,29 @@ def items(website: Website, *, public_site=None) -> dict[str, dict]:
                     visible=website.block_on("honorary"),
                 )
             continue
+        if key == "members":
+            # Überschrift mit einer Liste je Mitgliedsart (Ralf 05.11.); jede einzeln an
+            add("members", label, hint=BLOCK_HINTS["members"], toggle="members", heading=True)
+            for mt, slug in site.member_type_slugs().items():
+                add(
+                    f"membertype:{mt.pk}",
+                    mt.name,
+                    hint="Mitgliederliste dieser Mitgliedsart",
+                    toggle=f"membertype:{mt.pk}",
+                    parent="members",
+                    id=slug,
+                    visible=website.block_on("members")
+                    and website.block_on(f"membertype:{mt.pk}")
+                    and bool(site.member_list(mt)),
+                )
+            continue
+        if key == "memorial":
+            add(key, label, hint=BLOCK_HINTS[key], toggle=key, parent="members")
+            continue
         add(key, label, hint=BLOCK_HINTS.get(key, ""), toggle=key, parent=heading_of.get(key))
+    # Freie Überschriften (Ralf 05.11.): ohne festen Platz, neue stehen am Ende
+    for key, name in website.headings().items():
+        add(key, name, hint="eigene Überschrift ohne eigene Seite", heading=True)
     return result
 
 
@@ -219,7 +248,7 @@ def public_nav(site) -> list[dict]:
         out = {"key": key.split(":", 1)[0], "label": item.get("public_label") or item["label"]}
         if key.startswith("page:"):
             out["slug"] = item["slug"]
-        if key.startswith("dignity:"):
+        if key.startswith(("dignity:", "membertype:")):
             out["id"] = item["id"]
         if key == "honors" and not item["heading"]:
             out["label"] = site.honors_label()
@@ -261,14 +290,25 @@ def _available(site, key: str) -> bool:
 
         return gallery.has_albums(website)
     if key == "statutes":
+        from . import documents
         from .public_views import DOCUMENT_KINDS, _statute_publication
 
-        # Satzung, Beitragsordnung oder Gründungsurkunde öffentlich
-        return any(_statute_publication(site, kind) is not None for kind in DOCUMENT_KINDS)
+        # Satzung, Beitragsordnung, Gründungsurkunde oder eigene Dokumente öffentlich
+        return any(_statute_publication(site, kind) is not None for kind in DOCUMENT_KINDS) or bool(
+            documents.public_list(site, "documents")
+        )
     if key == "history":
         return site.page(HISTORY_SLUG) is not None
     if key == "offices":
         return bool(site.chairs())
+    if key == "memorial":
+        return bool(site.memorial())
+    if key == "repertoire":
+        return bool(site.repertoire())
+    if key == "press":
+        from . import documents
+
+        return bool(documents.public_list(site, "press"))
     if key == "results":
         from . import results
 

@@ -491,6 +491,10 @@ class Piece(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     composer = models.CharField(max_length=200, blank=True)
+    # Repertoire auf der Webseite (Ralf 05.11., Kapelle): nur angehakte Stücke
+    on_website = models.BooleanField(
+        "im Repertoire auf der Webseite", default=False, db_default=False
+    )
 
     def __str__(self):
         return self.title

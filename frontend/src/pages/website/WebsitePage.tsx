@@ -8,6 +8,7 @@ import { SubpageUnavailable } from '../NoticePages.tsx'
 import { heldApi, websiteApi } from '../../api/website.ts'
 import type {
   HomeSection,
+  MenuItem,
   PreviewLink,
   Website,
   WebsiteData,
@@ -32,6 +33,7 @@ import { HeaderImage } from './HeaderImage.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
 import { t } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
+import { DocumentsPage } from './DocumentsPage.tsx'
 import { SocialPage } from './SocialPage.tsx'
 import { MenuTree } from './MenuTree.tsx'
 import { sectionTitle } from './sections.ts'
@@ -115,6 +117,35 @@ export function WebsitePage() {
   )
 }
 
+/** Eigene Überschrift im Menü (Ralf 05.11.): ``heading:<Nummer>``, Name in ``block_names`` */
+const HEADING = /^heading:[1-9][0-9]{0,2}$/
+
+/** Menüpunkte vom Server plus noch nicht gespeicherte eigene Überschriften; gelöschte fallen weg */
+function menuItems(items: MenuItem[], names: Record<string, string>): MenuItem[] {
+  const known = new Set(items.map((it) => it.key))
+  const added: MenuItem[] = Object.keys(names)
+    .filter((key) => HEADING.test(key) && !known.has(key))
+    .map((key) => ({
+      key,
+      label: names[key],
+      default_label: '',
+      renamable: true,
+      hint: t('eigene Überschrift ohne eigene Seite; Name leer lassen entfernt sie'),
+      toggle: null,
+      heading: true,
+      parent: null,
+    }))
+  return [...items.filter((it) => !HEADING.test(it.key) || it.key in names), ...added]
+}
+
+function withNewHeading(names: Record<string, string>): Record<string, string> {
+  const used = Object.keys(names)
+    .filter((key) => HEADING.test(key))
+    .map((key) => Number(key.split(':')[1]))
+  const next = Math.max(0, ...used) + 1
+  return { ...names, [`heading:${next}`]: t('Neue Überschrift') }
+}
+
 const SETTINGS: (keyof WebsiteSettings)[] = [
   'state',
   'maintenance_text',
@@ -127,6 +158,9 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'header_image',
   'name_format',
   'show_vacant',
+  'show_instrument',
+  'show_address',
+  'show_member_since',
   'missing_consent',
   'units_mode',
   'unit_ids',
@@ -282,21 +316,35 @@ function WebsiteAdmin({
             )}
           </p>
           {website.menu_items && (
-            <MenuTree
-              items={website.menu_items}
-              value={v.menu ?? []}
-              blocks={v.blocks}
-              names={v.block_names ?? {}}
-              disabled={!data.can_manage}
-              onChange={(next) => set('menu', next)}
-              onRename={(key, name) => {
-                const next = { ...(v.block_names ?? {}) }
-                if (name.trim()) next[key] = name
-                else delete next[key]
-                set('block_names', next)
-              }}
-              onToggle={(key, on) => set('blocks', { ...v.blocks, [key]: on })}
-            />
+            <>
+              <MenuTree
+                items={menuItems(website.menu_items, v.block_names ?? {})}
+                value={v.menu ?? []}
+                blocks={v.blocks}
+                names={v.block_names ?? {}}
+                disabled={!data.can_manage}
+                onChange={(next) => set('menu', next)}
+                onRename={(key, name) => {
+                  const next = { ...(v.block_names ?? {}) }
+                  // Eigene Überschrift: leer lassen entfernt sie beim Speichern
+                  if (name.trim() || HEADING.test(key)) next[key] = name
+                  else delete next[key]
+                  set('block_names', next)
+                }}
+                onToggle={(key, on) => set('blocks', { ...v.blocks, [key]: on })}
+              />
+              {data.can_manage && (
+                <div className="actions">
+                  <button
+                    type="button"
+                    className="button button-ghost"
+                    onClick={() => set('block_names', withNewHeading(v.block_names ?? {}))}
+                  >
+                    {t('Überschrift hinzufügen')}
+                  </button>
+                </div>
+              )}
+            </>
           )}
           {errors.block_names && <Alert kind="error">{errors.block_names}</Alert>}
           {Object.entries(data.block_labels)
@@ -354,6 +402,23 @@ function WebsiteAdmin({
             label={t('Unbesetzte Funktionen als „derzeit unbesetzt“ zeigen')}
             checked={v.show_vacant}
             onChange={(on) => set('show_vacant', on)}
+          />
+          <Checkbox
+            label={t('Hauptinstrument unter dem Namen zeigen')}
+            hint={t('aus Musik › Musiker; bei Vorstand und Mitgliederlisten')}
+            checked={v.show_instrument ?? false}
+            onChange={(on) => set('show_instrument', on)}
+          />
+          <Checkbox
+            label={t('Anschrift beim Vorstand zeigen')}
+            hint={t('nur bei Personen mit Einwilligung „Anschrift“')}
+            checked={v.show_address ?? false}
+            onChange={(on) => set('show_address', on)}
+          />
+          <Checkbox
+            label={t('Mitgliederlisten mit Eintrittsjahr')}
+            checked={v.show_member_since ?? true}
+            onChange={(on) => set('show_member_since', on)}
           />
           <p className="muted small">
             {t(
@@ -488,6 +553,16 @@ function WebsiteAdmin({
           element={
             data.can_edit_content ? (
               <GalleryPage />
+            ) : (
+              <Alert kind="info">{t('Dafür fehlt dir das Recht „Inhalte bearbeiten“.')}</Alert>
+            )
+          }
+        />
+        <Route
+          path="dokumente"
+          element={
+            data.can_edit_content ? (
+              <DocumentsPage />
             ) : (
               <Alert kind="info">{t('Dafür fehlt dir das Recht „Inhalte bearbeiten“.')}</Alert>
             )

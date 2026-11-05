@@ -35,7 +35,7 @@ def visible_documents(view):
 class MusicPieceSerializer(ScopedSerializer):
     class Meta:
         model = Piece
-        fields = ["id", "title", "composer"]
+        fields = ["id", "title", "composer", "on_website"]
 
 
 class MusicArrangementSerializer(ScopedSerializer):

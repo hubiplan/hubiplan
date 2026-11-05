@@ -56,6 +56,7 @@ export function ScoresPage() {
     pieces: [
       { key: 'title', label: t('Titel') },
       { key: 'composer', label: t('Komponist'), optional: true },
+      { key: 'on_website', label: t('Im Repertoire auf der Webseite'), type: 'checkbox' },
     ],
     arrangements: [
       { key: 'piece', label: t('Stück'), options: opts(d.pieces, 'title') },
@@ -201,7 +202,12 @@ export function ScoresPage() {
       {visibleRows.map((r) => (
         <article key={r.id} className="card stack music-record">
           <strong>{String(r.title || r.name || r.instrument)}</strong>
-          {tab === 'pieces' && <p>{r.composer}</p>}
+          {tab === 'pieces' && (
+            <p>
+              {r.composer}
+              {r.on_website ? ` · ${t('im Repertoire auf der Webseite')}` : ''}
+            </p>
+          )}
           {tab === 'arrangements' && (
             <>
               <p>

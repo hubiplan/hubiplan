@@ -42,16 +42,18 @@ from .models import (
     HOME_SECTIONS,
     HOSTNAME_RE,
     PREVIEW_LINK_MAX_DAYS,
-    RENAMABLE_BLOCKS,
     PreviewLink,
     PublicationConsent,
     Website,
     WebsiteDomain,
     WebsiteImage,
     is_extra_block,
+    is_heading_key,
+    is_renamable,
     normalize_home_sections,
 )
 
+MAX_HEADINGS = 20
 MENU_ITEM_FIELDS = ("label", "default_label", "renamable", "hint", "toggle", "heading", "parent")
 
 SETTINGS_FIELDS = [
@@ -65,6 +67,9 @@ SETTINGS_FIELDS = [
     "color_roles",
     "name_format",
     "show_vacant",
+    "show_instrument",
+    "show_address",
+    "show_member_since",
     "missing_consent",
     "units_mode",
     "unit_ids",
@@ -135,8 +140,9 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
                 if is_extra_block(item["toggle"])
             }
             for key, on in value.items():
-                if key in toggles and not on:
-                    result[key] = False
+                # Listen je Mitgliedsart sind ohne Eintrag aus: dort zählt auch „an“
+                if key in toggles and (not on or key.startswith("membertype:")):
+                    result[key] = on
         return result
 
     def validate_home_sections(self, value):
@@ -162,7 +168,7 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             raise serializers.ValidationError(_("Bitte die Namen der Bausteine als Text angeben."))
         result = {}
         for key, name in value.items():
-            if key not in RENAMABLE_BLOCKS:
+            if not is_renamable(key):
                 raise serializers.ValidationError(
                     _("Dieser Baustein lässt sich nicht umbenennen: {key}").format(key=key)
                 )
@@ -173,13 +179,23 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
                 )
             if name:
                 result[key] = name
+        if sum(1 for key in result if is_heading_key(key)) > MAX_HEADINGS:
+            raise serializers.ValidationError(
+                _("Höchstens {n} eigene Überschriften.").format(n=MAX_HEADINGS)
+            )
         return result
 
     def validate_menu(self, value):
         if self.instance is None:
             return []
+        # Neue freie Überschriften kommen mit ihren Namen in derselben Änderung
+        names = self.initial_data.get("block_names") if hasattr(self, "initial_data") else None
         try:
-            return menu.validate(value, menu.items(self.instance))
+            names = self.validate_block_names(names) if names is not None else None
+        except serializers.ValidationError:
+            names = None
+        try:
+            return menu.validate(value, menu.items(self.instance, names=names))
         except ValueError as exc:
             raise serializers.ValidationError(str(exc)) from exc
 

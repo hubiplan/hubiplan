@@ -88,6 +88,8 @@ For each performance, **Programme list as PDF** and **Parts list as PDF** comple
 
 Open **Music** → **Sheet music library**. Create pieces with composers, then editions/arrangements with arrangers, publishers, duration in seconds, difficulty, instrumentation and licence notes. Archive unused arrangements. Record required musicians, copy counts, storage locations and concert or march book format for each instrument and part. Record full scores separately. Stocks at multiple locations are added together for the same part; the highest player requirement applies.
 
+With **In the repertoire on the website** a piece appears with title and composer in the “Repertoire” section of the club website. Switch the section on under **Website** → **Menu and sections**.
+
 Upload digital files in the existing document library, then link them to an arrangement and optionally a part under **Sheet music documents**. Document viewing permission is also required to link and open files. Access changes and deletions apply immediately. Music permissions do not extend document access. Record licence and usage notes; a stock count or file does not grant copying or performance rights.
 
 Open **Musical programme** on a performance. Add pieces and encores with an arrangement, and breaks with their own duration. A blank duration uses the arrangement duration; an explicit value overrides it. Edit, remove and move items up/down. Regular duration includes breaks; encore and total durations are shown separately. Zero indicates an unknown duration and is highlighted.

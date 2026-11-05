@@ -156,6 +156,8 @@ MODULE_MODELS = (
     # Galerie (Ralf 05.11.2026): Alben vor ihren Bildern
     "website.GalleryAlbum",
     "website.GalleryItem",
+    # Pressespiegel und eigene Dokumente (Ralf 05.11.)
+    "website.WebsiteDocument",
     "website.PublicationConsent",
     # Social-Media-Beiträge mit Freigabe/Ausblendung (Audit 31.10. D31-03); Zugangsdaten
     # zu Meta kommen nicht mit (SECRET_FIELDS), der Kanal muss neu verbunden werden
@@ -374,6 +376,7 @@ FILE_TYPES = {
     "events.eventattachment": {"application/pdf", "image/jpeg", "image/png"},
     "circulars.circularattachment": {"application/pdf"},
     "website.websiteimage": {"image/jpeg", "image/png"},
+    "website.websitedocument": {"application/pdf", "image/jpeg", "image/png"},
     "website.socialpostimage": {"image/jpeg", "image/png", "image/webp"},
     "honors.reignphoto": {"image/jpeg", "image/png"},
     "finance.cashcount": {"application/pdf"},
@@ -519,26 +522,33 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
     """Bilder der Webseite behalten ihre Kennung (Texte verweisen mit ``bild:<key>``
     darauf). Ist sie hier schon vergeben, bekommt das Bild eine neue, und die Texte
     werden angepasst."""
-    from website.models import WebsiteImage
+    from website.models import WebsiteDocument, WebsiteImage
     from website.timeline import entry_images, with_images
 
     renamed = ids.maps.setdefault("website.imagekey", {})
-    if name == "website.websiteimage":
+    if name == "website.websitedocument":
+        if not obj.key or WebsiteDocument.objects.filter(key=obj.key).exists():
+            obj.key = WebsiteDocument.new_key()
+    elif name == "website.websiteimage":
         if not obj.key or WebsiteImage.objects.filter(key=obj.key).exists():
             new = WebsiteImage.new_key()
             if obj.key:
                 renamed[obj.key] = new
             obj.key = new
     elif name == "website.website":
-        # Menü und Häkchen verweisen mit ``dignity:<Nummer>`` auf Würden: neue Nummern
+        # Menü und Häkchen verweisen mit ``dignity:<Nummer>`` auf Würden und mit
+        # ``membertype:<Nummer>`` auf Mitgliedsarten: neue Nummern
+        targets = {"dignity": "honors.dignity", "membertype": "member_type"}
+
         def remap(key):
-            if not isinstance(key, str) or not key.startswith("dignity:"):
+            prefix = key.split(":", 1)[0] if isinstance(key, str) else None
+            if prefix not in targets:
                 return key
             try:
-                new = ids.get("honors.dignity", key.split(":", 1)[1])
+                new = ids.get(targets[prefix], key.split(":", 1)[1])
             except ValueError:
                 return None
-            return f"dignity:{new}" if new is not None else None
+            return f"{prefix}:{new}" if new is not None else None
 
         if isinstance(obj.blocks, dict):
             obj.blocks = {remap(k): v for k, v in obj.blocks.items() if remap(k) is not None}
@@ -556,6 +566,10 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
                 for node in obj.menu
                 if isinstance(node, dict) and remap(node.get("key")) is not None
             ]
+        if isinstance(obj.block_names, dict):
+            obj.block_names = {
+                remap(k): v for k, v in obj.block_names.items() if remap(k) is not None
+            }
     elif name in ("website.websitetext", "website.websiterevision"):
         for old, new in renamed.items():
             for field in ("body", "published_body"):

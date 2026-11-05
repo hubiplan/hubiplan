@@ -125,6 +125,10 @@ HISTORY = (
     "Die Kapelle wurde 2009 von zwölf Musikern gegründet und ist seitdem stetig gewachsen.\n\n"
     "Diese Chronik ist ein **erfundener Beispieltext** für den Testserver."
 )
+MEMORIAL = (
+    "Wir denken an unsere verstorbenen Musikerinnen, Musiker und Mitglieder.\n\n"
+    "*Alle Namen auf dieser Testseite sind erfunden.*"
+)
 TIMELINE = [
     ("event", 2009, None, "Gründung", "Zwölf Musiker gründen die Kapelle im Pfarrheim."),
     ("event", 2011, None, "Erstes Schützenfest", "Die Kapelle spielt zum ersten Mal beim Fest."),
@@ -462,8 +466,8 @@ def _image(website, name: str, data: bytes, alt: str, caption: str = ""):
 def _website(club) -> None:
     from website import privacy
     from website.content_models import GalleryAlbum, GalleryItem, WebsiteImage, WebsiteText
-    from website.menu import HISTORY_SLUG
-    from website.models import DesignPackage, Website, WebsiteDomain
+    from website.menu import HISTORY_SLUG, MEMORIAL_SLUG
+    from website.models import DesignPackage, PublicationConsent, Website, WebsiteDomain
     from website.views import set_header_image
 
     website = Website.objects.filter(organization=club).first()
@@ -493,6 +497,7 @@ def _website(club) -> None:
     for kind, slug, title, body, position, entries in (
         (WebsiteText.Kind.GREETING, "", "Willkommen", GREETING, 0, []),
         (WebsiteText.Kind.PAGE, HISTORY_SLUG, "Chronik", HISTORY, 1, timeline),
+        (WebsiteText.Kind.PAGE, MEMORIAL_SLUG, "In Gedenken", MEMORIAL, 2, []),
     ):
         if WebsiteText.objects.filter(website=website, kind=kind, slug=slug).exists():
             continue
@@ -540,27 +545,53 @@ def _website(club) -> None:
                 if n == 0:
                     album.cover = image
                     album.save(update_fields=["cover"])
-    # Bereiche, Namen und Menü wie bei einer Kapellen-Webseite
+    # Bereiche, Namen und Menü wie bei einer Kapellen-Webseite: „Kapelle“ mit der Chronik,
+    # „Mitglieder“ mit Vorstand, Ehrenmitgliedern, Aktiven, Passiven und Gedenken
+    types = {mt.name: mt.pk for mt in MemberType.objects.filter(organization=club)}
+    lists = [f"membertype:{types[name]}" for name in ("aktiv", "passiv") if name in types]
     blocks = dict(website.blocks or {})
     blocks.update({"gallery": True, "honors": False, "results": False, "units": False})
+    blocks.update({"members": True, "memorial": True, "search": True})
+    blocks.update({key: True for key in lists})
     website.blocks = blocks
-    website.block_names = {**(website.block_names or {}), "group:history": "Kapelle"}
+    website.block_names = {
+        **(website.block_names or {}),
+        "group:history": "Kapelle",
+        **dict(zip(lists, ("Aktive", "Passive"), strict=False)),
+    }
     website.menu = [
         {"key": "posts", "children": []},
+        {"key": "group:history", "children": [{"key": "history"}, {"key": "offices"}]},
         {
-            "key": "group:history",
+            "key": "members",
             "children": [
-                {"key": "history"},
                 {"key": "board"},
                 {"key": "honorary"},
-                {"key": "offices"},
+                *({"key": key} for key in lists),
+                {"key": "memorial"},
             ],
         },
         {"key": "events", "children": []},
         {"key": "gallery", "children": []},
         {"key": "contact", "children": []},
     ]
-    fields = ["blocks", "block_names", "menu"]
+    website.show_instrument = True
+    website.show_address = True
+    fields = ["blocks", "block_names", "menu", "show_instrument", "show_address"]
+    # Die beiden Vorsitzenden zeigen auf der Webseite auch ihre Anschrift (erfunden)
+    for name in BOARD_POSITIONS[:2]:
+        for a in RoleAssignment.objects.filter(
+            organization=club, role__name=name, valid_until__isnull=True
+        ):
+            membership = Membership.objects.filter(organization=club, person=a.person).first()
+            if membership is not None:
+                PublicationConsent.objects.get_or_create(
+                    organization=club,
+                    membership=membership,
+                    category=PublicationConsent.Category.ADDRESS,
+                    ended_at=None,
+                    defaults={"since": datetime.date(2021, 3, 1), "source": "paper"},
+                )
     package = DesignPackage.objects.filter(key=DESIGN_PACKAGE).first()
     if package is not None:
         package.websites.add(website)

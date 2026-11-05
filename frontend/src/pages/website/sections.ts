@@ -13,6 +13,7 @@ const ALL: NavItem[] = [
   { to: '/webseite/inhalte', label: t('Texte') },
   { to: '/webseite/bilder', label: t('Bilder') },
   { to: '/webseite/galerie', label: t('Galerie') },
+  { to: '/webseite/dokumente', label: t('Dokumente') },
   { to: '/webseite/beitraege', label: t('Social Media') },
   { to: '/webseite/aufbau', label: t('Menü und Bereiche') },
   { to: '/webseite/gestaltung', label: t('Gestaltung') },
@@ -20,7 +21,7 @@ const ALL: NavItem[] = [
   { to: '/webseite/domain', label: t('Internetadresse') },
 ]
 
-/** Wer nur Inhalte pflegt, sieht nur „Texte“, „Bilder“, „Galerie“ und „Social Media“. */
+/** Wer nur Inhalte pflegt, sieht nur „Texte“, „Bilder“, „Galerie“, „Dokumente“ und „Social Media“. */
 export function websiteSections(org: OrgSummary | null): NavItem[] {
   if (!org) return []
   if (org.permissions.includes(PERM.websiteManage)) return ALL
@@ -30,6 +31,7 @@ export function websiteSections(org: OrgSummary | null): NavItem[] {
         '/webseite/inhalte',
         '/webseite/bilder',
         '/webseite/galerie',
+        '/webseite/dokumente',
         '/webseite/beitraege',
       ].includes(s.to),
     )
