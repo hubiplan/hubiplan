@@ -348,18 +348,24 @@ class TestVeralteteQuelle:
         remote.vp_status = 401
         return data
 
-    def test_unter_14_tagen_bleibt_sichtbar(self, cal, board_a, api, remote, mailoutbox):
+    def test_unter_14_tagen_bleibt_sichtbar(
+        self, cal, board_a, api, remote, mailoutbox, django_capture_on_commit_callbacks
+    ):
         data = self._veraltet(api(board_a), cal["a"], remote, days=13)
-        resp = api(board_a).post(f"{org_base(cal['a'])}events/external/{data['id']}/sync/")
+        with django_capture_on_commit_callbacks(execute=True):
+            resp = api(board_a).post(f"{org_base(cal['a'])}events/external/{data['id']}/sync/")
         assert resp.json()["stale_hidden"] is False
         assert "Kreisfest" in window_titles(api(board_a), cal["a"])
         assert not mailoutbox
 
-    def test_ausblenden_hinweis_und_rueckkehr(self, cal, board_a, api, remote, mailoutbox):
+    def test_ausblenden_hinweis_und_rueckkehr(
+        self, cal, board_a, api, remote, mailoutbox, django_capture_on_commit_callbacks
+    ):
         c = api(board_a)
         data = self._veraltet(c, cal["a"], remote)
         url = f"{org_base(cal['a'])}events/external/{data['id']}/sync/"
-        resp = c.post(url)
+        with django_capture_on_commit_callbacks(execute=True):
+            resp = c.post(url)
         assert resp.json()["stale_hidden"] is True
         assert resp.json()["event_count"] == 1  # gespeichert, nur ausgeblendet
         assert "Kreisfest" not in window_titles(c, cal["a"])
@@ -367,7 +373,8 @@ class TestVeralteteQuelle:
         assert "BSV Musterstadt" in mailoutbox[0].subject
         assert board_a.email in mailoutbox[0].to
         # weitere Fehlschläge: kein zweiter Hinweis
-        c.post(url)
+        with django_capture_on_commit_callbacks(execute=True):
+            c.post(url)
         assert len(mailoutbox) == 1
         # wieder abrufbar: Termine sind zurück
         remote.vp_status = 206
