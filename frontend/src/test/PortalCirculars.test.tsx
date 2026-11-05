@@ -113,7 +113,7 @@ describe('Genaues Rundschreiben aus der App', () => {
     expect(await screen.findByRole('heading', { name: 'Einladung' })).toHaveFocus()
     await userEvent.click(screen.getByRole('button', { name: 'Zur Übersicht' }))
     expect(screen.queryByRole('link', { name: 'Einladung.pdf' })).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Rundschreiben' })).toHaveFocus()
+    expect(screen.getByRole('heading', { name: 'Mitteilungen' })).toHaveFocus()
   })
   it('stellt bei Browser-Zurück den Fokus an der auslösenden Zeile wieder her', async () => {
     fakeApi(routes())
@@ -147,7 +147,9 @@ describe('Genaues Rundschreiben aus der App', () => {
     async (id) => {
       const calls = fakeApi(routes())
       view(`/?schreiben=${id}`)
-      expect(screen.getByRole('alert')).toHaveTextContent('Dieser Rundschreiben-Link ist ungültig.')
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        'Dieser Link zur Mitteilung ist ungültig.',
+      )
       await screen.findByRole('button', { name: 'Einladung' })
       expect(calls.filter((c) => /circulars\/\d+\/$/.test(c.key))).toHaveLength(0)
     },

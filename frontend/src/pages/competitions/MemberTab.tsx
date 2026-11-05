@@ -1,4 +1,4 @@
-// Mitgliedsakte › Wettbewerbe: alle Starts mit Platz und Wert, Titel und Auszeichnungen.
+// Mitgliedsakte › Wettbewerbe: alle Starts mit Platz und Wert, Titel und Würden.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { historyApi } from '../../api/competitionHistory.ts'
@@ -29,7 +29,7 @@ function MemberHistory({ org, membership }: { org: number; membership: number })
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   return (
     <div>
-      <h2>{t('Titel und Auszeichnungen')}</h2>
+      <h2>{t('Titel und Würden')}</h2>
       {data.grants.length === 0 ? (
         <p className="muted">{t('Noch keine Titel.')}</p>
       ) : (

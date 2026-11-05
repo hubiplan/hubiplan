@@ -17,7 +17,8 @@ def send_event_reminders() -> int:
     return notify.send_reminders()
 
 
-@shared_task
+# Ruft fremde Server ab: Laufzeit begrenzen (Gesamtaudit 05.11. GA-03)
+@shared_task(soft_time_limit=2700, time_limit=2760)
 def sync_external_calendars() -> int:
     """Stündlich: Termine der fremden Kalender (Vereinsplaner, iCal) abholen."""
     from core.tenancy import rls_bypass

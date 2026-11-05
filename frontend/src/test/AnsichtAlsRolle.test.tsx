@@ -69,6 +69,8 @@ describe('Ansicht als Rolle', () => {
     const calls = server()
     renderApp()
     const user = userEvent.setup()
+    // Seltene Prüfung: steht im Menü „Mein Konto“ (UX-Audit W-06)
+    await user.click(await screen.findByRole('button', { name: /Mein Konto/ }))
     const select = await screen.findByRole('combobox', { name: 'Ansicht als Rolle' })
     await within(select).findByRole('option', { name: 'Ansicht als Kassierer' })
     const nav = screen.getByRole('navigation', { name: 'Module' })

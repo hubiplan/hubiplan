@@ -87,3 +87,34 @@ def test_nur_mit_passendem_recht(api, orgs, erika):
     reader = make_user("lesen@example.org")
     give_role(reader, a, permissions=["members.view"], name="Lesen")
     assert api(reader).get(url(a)).json()["items"] == []
+
+
+def test_ueberfaellige_rechnungen_als_ein_eintrag(api, orgs, board_a, erika):
+    """UX-Audit 10.6: „Zu erledigen“ nennt überfällige Rechnungen gesammelt."""
+    from decimal import Decimal
+
+    from billing.models import Invoice
+
+    a = orgs["a"]
+    a.enabled_modules = ["members", "billing"]
+    a.save()
+    with tenant_context(a.pk):
+        for number, due in ((1, datetime.date(2025, 1, 15)), (2, datetime.date(2025, 3, 1))):
+            Invoice.objects.create(
+                organization=a,
+                membership=erika,
+                recipient_kind="member",
+                recipient_name="Erika Muster",
+                date=datetime.date(2025, 1, 1),
+                due_date=due,
+                year=2025,
+                number=number,
+                status="open",
+                total=Decimal("10.00"),
+            )
+    items = api(board_a).get(url(a)).json()["items"]
+    overdue = [i for i in items if i["kind"] == "invoices_overdue"]
+    assert len(overdue) == 1
+    assert overdue[0]["title"] == "2 Rechnungen überfällig"
+    assert "15.01.2025" in overdue[0]["detail"]
+    assert overdue[0]["link"] == "/finanzen/rechnungen?status=open&ueberfaellig=1"

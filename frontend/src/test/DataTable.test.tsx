@@ -57,7 +57,7 @@ describe('DataTable', () => {
     render(<DataTable label="Test" rows={rows} columns={columns} rowKey={(r) => r.id} />)
     expect(names()).toHaveLength(10)
     expect(screen.getByText(/1–10 von 25/)).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Weiter' }))
+    await user.click(screen.getByRole('button', { name: 'Nächste Seite' }))
     expect(names()[0]).toBe('Eintrag 11')
     await user.selectOptions(screen.getByLabelText('Zeilen pro Seite'), '20')
     expect(names()).toHaveLength(20)

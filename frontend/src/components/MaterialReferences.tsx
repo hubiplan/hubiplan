@@ -9,11 +9,14 @@ export function MaterialReferences({
   id,
   originalStart,
   sourceBase,
+  level = 3,
 }: {
   kind: 'member' | 'event' | 'todo' | 'document'
   id: number
   originalStart?: string
   sourceBase?: string
+  /** Überschriftenebene passend zur Seite (Mitgliedsakte: 2) */
+  level?: 2 | 3
 }) {
   const { active, activeDept } = useOrg()
   const permissions = active?.permissions ?? activeDept?.permissions ?? []
@@ -28,15 +31,21 @@ export function MaterialReferences({
   const query = new URLSearchParams({ [kind]: String(id) })
   if (originalStart) query.set('original_start', originalStart)
   return (
-    <References key={`${prefix}-${query}`} base={`${prefix}materials/`} query={query.toString()} />
+    <References
+      key={`${prefix}-${query}`}
+      base={`${prefix}materials/`}
+      query={query.toString()}
+      level={level}
+    />
   )
 }
 
-function References({ base, query }: { base: string; query: string }) {
+function References({ base, query, level }: { base: string; query: string; level: 2 | 3 }) {
+  const Heading = level === 2 ? 'h2' : 'h3'
   const { data, error } = useLoad(() => materialApi.list(base, query), [base, query])
   return (
     <section className="card">
-      <h3>{t('Zugeordnetes Material')}</h3>
+      <Heading>{t('Zugeordnetes Material')}</Heading>
       {error && <p role="alert">{error}</p>}
       {data?.items.map((item) => (
         <p key={item.id}>

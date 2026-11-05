@@ -4,6 +4,8 @@
 # Geheimnisse liegen nur in dieser .env auf dem Server, nie im Repository.
 
 x-backend-env: &backend-env
+  # Uploads über 5 MB auf die Platte (eigenes Volume), nicht in den Arbeitsspeicher
+  FILE_UPLOAD_TEMP_DIR: /app/upload-tmp
   PEERING_RECEPTION_INSTANCE_BYTES: ${PEERING_RECEPTION_INSTANCE_BYTES:-10737418240}
   PEERING_RECEPTION_INSTANCE_MESSAGES: ${PEERING_RECEPTION_INSTANCE_MESSAGES:-200000}
   PEERING_RECEPTION_UNIT_BYTES: ${PEERING_RECEPTION_UNIT_BYTES:-2147483648}
@@ -121,6 +123,7 @@ x-backend: &backend
     - media-data:/app/media
     - private-data:/app/private
     - loeschliste:/app/loeschliste
+    - upload-tmp:/app/upload-tmp
   depends_on:
     postgres:
       condition: service_healthy
@@ -325,3 +328,5 @@ volumes:
   # Löschliste außerhalb der Datenbank (Fachfrage 7, 31.10.b); beim Einspielen eines Backups
   # NICHT zurücksetzen
   loeschliste:
+  # Zwischendateien laufender Uploads; nicht im Backup, darf jederzeit leer sein
+  upload-tmp:

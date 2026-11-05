@@ -135,6 +135,14 @@ const OrganizationPage = lazyPage(
   () => import('./pages/settings/OrganizationPage.tsx'),
   'OrganizationPage',
 )
+const OrganizationTermsPage = lazyPage(
+  () => import('./pages/settings/OrganizationPage.tsx'),
+  'OrganizationTermsPage',
+)
+const OrganizationDocumentsPage = lazyPage(
+  () => import('./pages/settings/OrganizationPage.tsx'),
+  'OrganizationDocumentsPage',
+)
 const RolesPage = lazyPage(() => import('./pages/settings/RolesPage.tsx'), 'RolesPage')
 const SettingsLayout = lazyPage(
   () => import('./pages/settings/SettingsLayout.tsx'),
@@ -352,6 +360,22 @@ export default function App() {
               element={
                 <RequireOrg>
                   <OrganizationPage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="bezeichnungen"
+              element={
+                <RequireOrg>
+                  <OrganizationTermsPage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="vereinsdokumente"
+              element={
+                <RequireOrg>
+                  <OrganizationDocumentsPage />
                 </RequireOrg>
               }
             />

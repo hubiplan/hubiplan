@@ -705,7 +705,7 @@ export function TitlesPage() {
   const proposals = (data ?? []).filter((g) => g.dignity_state === 'vorschlag')
   return (
     <section>
-      <h1>{t('Titel und Auszeichnungen')}</h1>
+      <h1>{t('Titel und Würden')}</h1>
       <p className="muted">
         {t('Alles, was in Wettbewerben vergeben wurde, und von Hand nachgetragene frühere Jahre.')}
       </p>

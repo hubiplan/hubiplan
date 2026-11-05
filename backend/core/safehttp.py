@@ -3,6 +3,10 @@
 Der Name wird **einmal** aufgelöst, alle Adressen werden geprüft (keine internen), und
 verbunden wird genau mit der geprüften Adresse. Zertifikat und SNI gelten weiter für den
 Namen. Weiterleitungen folgt ``http.client`` nie.
+
+``timeout`` gilt je Lesevorgang, ``deadline`` für die ganze Anfrage: Ein Server, der
+nur tröpfchenweise antwortet, hält sonst einen Worker beliebig lange fest
+(Gesamtaudit 05.11. GA-03).
 """
 
 from __future__ import annotations
@@ -11,6 +15,8 @@ import http.client
 import ipaddress
 import socket
 import ssl
+import threading
+import time
 import urllib.parse
 from dataclasses import dataclass
 
@@ -81,7 +87,10 @@ def request(
     max_body: int = 1024 * 1024,
     allow_internal: bool = False,
     allow_http: bool = False,
+    deadline: float | None = None,
 ) -> Response:
+    """``deadline``: Sekunden für die ganze Anfrage (Standard: doppelter ``timeout``,
+    mindestens 30)."""
     parts = urllib.parse.urlsplit(url)
     if parts.scheme not in (("https", "http") if allow_http else ("https",)):
         raise SafeHTTPError(gettext("Nur https-Adressen sind erlaubt."))
@@ -94,14 +103,36 @@ def request(
     path = parts.path or "/"
     if parts.query:
         path = f"{path}?{parts.query}"
+    total = deadline if deadline is not None else max(30.0, 2 * timeout)
+    expired = threading.Event()
+
+    def _abort() -> None:
+        # Blockierendes Lesen abbrechen: die Verbindung von außen schließen
+        expired.set()
+        sock = conn.sock
+        if sock is not None:
+            try:
+                sock.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+
+    watchdog = threading.Timer(total, _abort)
+    watchdog.daemon = True
+    started = time.monotonic()
+    watchdog.start()
     try:
         conn.request(method, path, body=body, headers=headers or {})
         resp = conn.getresponse()
         data = resp.read(max_body + 1)
+        if expired.is_set() or time.monotonic() - started > total:
+            raise SafeHTTPError(gettext("Zeitüberschreitung."))
         return Response(resp.status, dict(resp.getheaders()), data)
     except (OSError, ssl.SSLError, http.client.HTTPException) as exc:
+        if expired.is_set():
+            raise SafeHTTPError(gettext("Zeitüberschreitung.")) from exc
         raise SafeHTTPError(
             gettext("nicht erreichbar ({name2})").format(name2=exc.__class__.__name__)
         ) from exc
     finally:
+        watchdog.cancel()
         conn.close()

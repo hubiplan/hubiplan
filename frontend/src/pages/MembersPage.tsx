@@ -126,7 +126,7 @@ function ClubMembers() {
         path="import"
         element={
           canEdit ? (
-            <MembersSection title={t('Altdaten importieren')}>
+            <MembersSection title={t('Mitglieder importieren')}>
               <ImportPage />
             </MembersSection>
           ) : (
