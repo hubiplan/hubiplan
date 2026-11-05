@@ -150,11 +150,18 @@ export function Layout() {
     }
   }, [])
 
+  // Handy/Tablet (W-05): Rückgängig, Rollenansicht und Einheitenwahl stehen im Menü statt im Kopf
+  const [narrow, setNarrow] = useState(
+    () => window.matchMedia?.('(max-width: 800px)').matches ?? false,
+  )
   // Breiter als der Handy-Umbruch: Navigation steht fest, also zuklappen
   useEffect(() => {
     const wide = window.matchMedia?.('(min-width: 801px)')
     if (!wide) return
-    const onChange = () => wide.matches && setNavOpen(false)
+    const onChange = () => {
+      setNarrow(!wide.matches)
+      if (wide.matches) setNavOpen(false)
+    }
     wide.addEventListener?.('change', onChange)
     return () => wide.removeEventListener?.('change', onChange)
   }, [])
@@ -277,6 +284,50 @@ export function Layout() {
       </ul>
     )
 
+  const headerTools = (
+    <>
+      {undoBase && !previewOrg && <UndoControls base={undoBase} />}
+      {active && <RolePreviewSelect org={active} onChanged={previewChanged} />}
+      {contextCount > 1 && (
+        <label className="org-switch">
+          <span className="sr-only">{t('Organisation wechseln')}</span>
+          <select
+            value={activeKey ?? ''}
+            onChange={(e) => void switchOrg(e.target.value)}
+            aria-label={t('Organisation wechseln')}
+          >
+            {orgs.map((o) => (
+              <option key={o.id} value={String(o.id)}>
+                {displayName(o)} ({o.type_label})
+              </option>
+            ))}
+            {departments.map((d) => (
+              <option key={`d${d.id}`} value={`d:${d.id}`}>
+                {d.path?.includes('›') ? d.path : displayName(d)} (
+                {d.club_display_name || d.club_name})
+              </option>
+            ))}
+            {portal.map((p) => (
+              <option key={`p${p.id}`} value={`p:${p.id}`}>
+                {t('Meine Daten: {first_name} (', { first_name: p.first_name })}
+                {p.club_display_name || p.club_name})
+              </option>
+            ))}
+            {remoteAccounts.length > 0 && (
+              <optgroup label={t('Auf anderen Instanzen')}>
+                {remoteAccounts.map((a) => (
+                  <option key={`r${a.id}`} value={`r:${a.id}`}>
+                    {a.base_url.replace(/^https:\/\//, '')} {t('öffnen')}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+        </label>
+      )}
+    </>
+  )
+
   return (
     <SubNavContext.Provider value={subNavApi}>
       <LearningProvider off={!active && !activeDept}>
@@ -303,46 +354,8 @@ export function Layout() {
                 <Logo name={brandName} logoUrl={brandLogo} />
               </NavLink>
               <div className="topbar-user">
-                {undoBase && !previewOrg && <UndoControls base={undoBase} />}
-                {active && <RolePreviewSelect org={active} onChanged={previewChanged} />}
-                {contextCount > 1 && (
-                  <label className="org-switch">
-                    <span className="sr-only">{t('Organisation wechseln')}</span>
-                    <select
-                      value={activeKey ?? ''}
-                      onChange={(e) => void switchOrg(e.target.value)}
-                      aria-label={t('Organisation wechseln')}
-                    >
-                      {orgs.map((o) => (
-                        <option key={o.id} value={String(o.id)}>
-                          {displayName(o)} ({o.type_label})
-                        </option>
-                      ))}
-                      {departments.map((d) => (
-                        <option key={`d${d.id}`} value={`d:${d.id}`}>
-                          {d.path?.includes('›') ? d.path : displayName(d)} (
-                          {d.club_display_name || d.club_name})
-                        </option>
-                      ))}
-                      {portal.map((p) => (
-                        <option key={`p${p.id}`} value={`p:${p.id}`}>
-                          {t('Meine Daten: {first_name} (', { first_name: p.first_name })}
-                          {p.club_display_name || p.club_name})
-                        </option>
-                      ))}
-                      {remoteAccounts.length > 0 && (
-                        <optgroup label={t('Auf anderen Instanzen')}>
-                          {remoteAccounts.map((a) => (
-                            <option key={`r${a.id}`} value={`r:${a.id}`}>
-                              {a.base_url.replace(/^https:\/\//, '')} {t('öffnen')}
-                            </option>
-                          ))}
-                        </optgroup>
-                      )}
-                    </select>
-                  </label>
-                )}
-                <HelpButton />
+                {!narrow && headerTools}
+                {!narrow && <HelpButton />}
                 <AccountMenu email={user?.email} onLogout={handleLogout} />
               </div>
             </header>
@@ -351,6 +364,7 @@ export function Layout() {
               <button type="button" className="sidebar-close" onClick={closeNav}>
                 <span aria-hidden="true">×</span> {t('Navigation schließen')}
               </button>
+              {narrow && <div className="sidebar-tools">{headerTools}</div>}
               <ul>
                 {visible.map((m, index) => (
                   <li
@@ -407,7 +421,11 @@ export function Layout() {
             <main className="content" id="inhalt" tabIndex={-1} inert={navOpen || undefined}>
               {previewOrg && <RolePreviewBanner org={previewOrg} onChanged={previewChanged} />}
               {user?.mfa_required_by && (
-                <MfaNotice by={user.mfa_required_by} overdue={!!user.mfa_overdue} />
+                <MfaNotice
+                  by={user.mfa_required_by}
+                  overdue={!!user.mfa_overdue}
+                  short={pathname !== '/' && !pathname.startsWith('/mein-konto')}
+                />
               )}
               {/* Verwalter (Rechte in einer Einheit) sehen nach einem Release-Update „Das ist neu“ */}
               {orgs.length > 0 && !previewOrg && <UpdateNotice />}
@@ -444,8 +462,16 @@ export function Layout() {
 }
 
 /** Pflicht-2FA für heikle Rechte (Gesamtaudit 31.10.b, Frage 1). */
-function MfaNotice({ by, overdue }: { by: string; overdue: boolean }) {
+function MfaNotice({ by, overdue, short }: { by: string; overdue: boolean; short: boolean }) {
   const date = new Date(by).toLocaleDateString(locale())
+  // W-05: Außer auf der Startseite und in „Mein Konto“ nur eine kurze Zeile, solange die Frist läuft
+  if (short && !overdue)
+    return (
+      <p className="mfa-hint small" role="status">
+        {t('Zwei-Faktor-Anmeldung nötig ab {date}.', { date })}{' '}
+        <NavLink to="/mein-konto/anmeldung">{t('Jetzt einrichten')}</NavLink>
+      </p>
+    )
   return (
     <div className={overdue ? 'alert alert-error' : 'alert alert-info'} role="status">
       {overdue

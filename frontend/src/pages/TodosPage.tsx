@@ -3,8 +3,8 @@ import { TodoRemote, TodoRemoteInbox } from '../components/TodoRemote.tsx'
 import { DeleteIcon, RestoreIcon, IconButton } from '../components/icons.tsx'
 import { NewTodoDialog } from '../components/NewTodoDialog.tsx'
 import { TodoEditor } from '../components/TodoEditor.tsx'
-import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { TodoPortal } from '../components/TodoPortal.tsx'
 import { TodoEventLink } from '../components/TodoEventLink.tsx'
 import { todoApi, todoBase } from '../api/todos.ts'
@@ -69,6 +69,26 @@ function TodoWorkspace({ base }: { base: string }) {
     () => new URLSearchParams(location.search).get('neu') === '1',
   )
   const [params, setParams] = useSearchParams()
+  const navigate = useNavigate()
+  // Über „Neue Aufgabe“ von einer anderen Seite gekommen: Abbrechen führt dorthin zurück
+  // (UX-Audit 05.11. W-03). Nach dem Anlegen bleibt man bei der neuen Aufgabe.
+  const openedFromElsewhere = useRef(
+    newTask && ((window.history.state as { idx?: number } | null)?.idx ?? 0) > 0,
+  )
+  const createdNew = useRef(false)
+  function closeNewTask() {
+    setNewTask(false)
+    if (openedFromElsewhere.current && !createdNew.current) {
+      openedFromElsewhere.current = false
+      navigate(-1)
+      return
+    }
+    if (params.get('neu')) {
+      const next = new URLSearchParams(params)
+      next.delete('neu')
+      setParams(next, { replace: true })
+    }
+  }
   const { data, error, reload } = useLoad(() => todoApi.list(base, tab === 'trash'), [base, tab])
   const [actionError, setActionError] = useState<string | null>(null)
   const selected = data?.items.find((item) => String(item.id) === params.get('aufgabe'))
@@ -177,11 +197,12 @@ function TodoWorkspace({ base }: { base: string }) {
       {newTask && (
         <NewTodoDialog
           key="new"
-          onClose={() => setNewTask(false)}
+          onClose={closeNewTask}
           initialEvent={Number(params.get('termin')) || undefined}
           initialMaterial={Number(params.get('material')) || undefined}
           base={base}
           onSaved={() => {
+            createdNew.current = true
             void reload()
           }}
         />

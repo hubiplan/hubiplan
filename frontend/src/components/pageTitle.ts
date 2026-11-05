@@ -23,9 +23,10 @@ export function useTitleOverride(): string | null {
   )
 }
 
-/** Titel einer Seite ohne eigenen Bereich; ohne Token oder Personendaten. */
-export function usePageTitle(title: string) {
+/** Titel einer Seite ohne eigenen Bereich; ohne Token oder Personendaten. null: keiner. */
+export function usePageTitle(title: string | null) {
   useEffect(() => {
+    if (title === null) return
     setOverride(title)
     return () => setOverride(null)
   }, [title])
