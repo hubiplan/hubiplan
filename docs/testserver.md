@@ -159,6 +159,22 @@ Testzugänge: `vorstand@`, `kasse@`, `schriftfuehrer@sv-musterstadt.test` (Verei
 `mitglied@sv-musterstadt.test` (einfaches Mitglied). Ohne `--password` wird ein zufälliges
 Passwort erzeugt und einmal ausgegeben.
 
+### Zweiter Demoverein: Musikkapelle
+
+„Musikkapelle Musterdorf 2009 e.V.“ direkt unter der Plattform, ohne Untereinheiten, in Blau
+und Gold: Musiker mit Instrumenten, Vorstand mit Dirigent auf der Webseite, Ehrenmitglieder,
+verstorbene Mitglieder im Archiv, Termine, Stücke und eine Webseite mit Kopfbild, Galerie und
+dem Menü „Aktuelles · Kapelle · Termine · Galerie · Kontakt“ (`organizations/demo_kapelle.py`).
+Ist ein Designpaket mit dem Schlüssel `kapelle-furth` eingespielt, nimmt die Webseite es.
+Wiederholbar wie oben.
+
+```bash
+docker compose -f docker-compose.server.yml exec backend python manage.py seed_demokapelle
+```
+
+Testzugänge: `vorstand@`, `kasse@`, `schriftfuehrer@mk-musterdorf.test`. Ohne `--password`
+wird ein zufälliges Passwort erzeugt und einmal ausgegeben.
+
 ## Tests gegen PostgreSQL
 
 Nur lokal, siehe „Ausrollen“: `scripts/test.sh` (mit `BACKUP_TEST=1` auch Backup
