@@ -30,7 +30,7 @@ for stage in before during after; do
         after) rot_app hubiplan_rotation "$ROT_DATA" "$WORK/test-data-key" finish ;;
     esac
     for mode in enc age; do
-        docker run --rm --network "$ID" "$CPUS" --tmpfs /tmp -v "$ROT_BACKUPS:/backups" \
+        docker run --rm --group-add 1000 --network "$ID" "$CPUS" --tmpfs /tmp -v "$ROT_BACKUPS:/backups" \
             -v "$ROT_DATA:/data:ro" -v "$WORK/test-data-key:/run/secrets/datenschluessel:ro" \
             -e PGHOST="$ID-db" -e PGUSER=test -e PGPASSWORD=test -e PGDATABASE=hubiplan_rotation \
             -e BACKUP_PASSPHRASE=nur-test -e BACKUP_HMAC_KEY=nur-test \

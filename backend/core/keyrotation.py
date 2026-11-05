@@ -541,7 +541,10 @@ class Rotation:
         path = self.staging_path(self.rotation)
         if path.is_symlink():
             raise CommandError("Unsicherer temporärer Schlüsselwechsel-Bereich.")
-        path.mkdir(mode=0o700, exist_ok=True)
+        # Die Backup-Gruppe 1000 muss auch einen abgebrochenen Mischbestand sichern
+        # können. Im Arbeitsbereich liegen ausschließlich Chiffrate, kein Klartext.
+        path.mkdir(mode=0o750, exist_ok=True)
+        path.chmod(0o750)
         return path
 
     def cleanup_temporary(self):
@@ -571,6 +574,7 @@ class Rotation:
                 crypto.open_plain(raw) as source,
                 temporary.open("xb") as target,
             ):
+                os.fchmod(target.fileno(), 0o640)
                 reader = HashingReader(source)
                 for chunk in crypto.encrypt_chunks(reader, *self.target):
                     target.write(chunk)
