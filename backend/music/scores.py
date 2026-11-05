@@ -332,6 +332,18 @@ class ProgramView(OrgScopedMixin, APIView):
         export = request.query_params.get("export")
         if export not in ("program", "parts"):
             return Response(data)
+        if request.query_params.get("filetype") == "pdf":
+            from .program_pdf import render
+
+            response = HttpResponse(
+                render(performance, data, export), content_type="application/pdf"
+            )
+            response["Content-Disposition"] = (
+                f'attachment; filename="{export}-{performance.pk}.pdf"'
+            )
+            response["Cache-Control"] = "private, no-store"
+            response["X-Content-Type-Options"] = "nosniff"
+            return response
         buf = io.StringIO()
         writer = csv.writer(buf, delimiter=";")
 
