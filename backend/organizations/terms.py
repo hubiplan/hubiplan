@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 
 from django.utils import translation
+from django.utils.translation import gettext, gettext_noop
 
 FEMININE = "f"
 MASCULINE = "m"
@@ -358,33 +359,35 @@ def fill(text: str, terms_or_org=None) -> str:
 
 # Feste Wörter aus Modell- und Feldnamen (z. B. im Änderungsprotokoll)
 _WORDS = {
-    "Abteilung": "{Sg}",
-    "Abteilungen": "{Pl}",
-    "Abteilung (optional)": "{Sg} (optional)",
-    "Abteilungsrolle": "Rolle {im}",
-    "Abteilungsrollen": "Rollen in {pl_dat}",
-    "Abteilungsrolle (Inhaber)": "Rolle {im} (Inhaber)",
-    "Abteilungszugehörigkeit": "Zugehörigkeit {zum}",
-    "Mitglied darf mehreren Abteilungen angehören": "Mitglied darf mehreren {pl_dat} angehören",
-    "Zugang für Abteilungen freigeschaltet": "Zugang für {pl} freigeschaltet",
+    "Abteilung": gettext_noop("{Sg}"),
+    "Abteilungen": gettext_noop("{Pl}"),
+    "Abteilung (optional)": gettext_noop("{Sg} (optional)"),
+    "Abteilungsrolle": gettext_noop("Rolle {im}"),
+    "Abteilungsrollen": gettext_noop("Rollen in {pl_dat}"),
+    "Abteilungsrolle (Inhaber)": gettext_noop("Rolle {im} (Inhaber)"),
+    "Abteilungszugehörigkeit": gettext_noop("Zugehörigkeit {zum}"),
+    "Mitglied darf mehreren Abteilungen angehören": gettext_noop(
+        "Mitglied darf mehreren {pl_dat} angehören"
+    ),
+    "Zugang für Abteilungen freigeschaltet": gettext_noop("Zugang für {pl} freigeschaltet"),
     "zahlt Beitrag selbst (keine Sammelrechnung über die Abteilung)": (
-        "zahlt Beitrag selbst (keine Sammelrechnung über {akk})"
+        gettext_noop("zahlt Beitrag selbst (keine Sammelrechnung über {akk})")
     ),
     # Dachverband: im Verein sein Name
-    "Dachverband": "{dv_Sg}",
-    "an Dachverband melden": "an {dv_akk} melden",
-    "Eintritt in den Dachverband (manuell)": "Eintritt in {dv_akk} (manuell)",
-    "Zugriff durch Dachverband": "Zugriff durch {dv_akk}",
-    "geändert durch Dachverband": "geändert durch {dv_akk}",
+    "Dachverband": gettext_noop("{dv_Sg}"),
+    "an Dachverband melden": gettext_noop("an {dv_akk} melden"),
+    "Eintritt in den Dachverband (manuell)": gettext_noop("Eintritt in {dv_akk} (manuell)"),
+    "Zugriff durch Dachverband": gettext_noop("Zugriff durch {dv_akk}"),
+    "geändert durch Dachverband": gettext_noop("geändert durch {dv_akk}"),
     # Eigene Bezeichnung der Einheit bzw. ihrer Untereinheiten
-    "Mitgliedsnummer im Verein": "Mitgliedsnummer {e_im}",
+    "Mitgliedsnummer im Verein": gettext_noop("Mitgliedsnummer {e_im}"),
     "Änderungen an Kontaktdaten erst nach Bestätigung durch den Verein": (
-        "Änderungen an Kontaktdaten erst nach Bestätigung durch {e_akk}"
+        gettext_noop("Änderungen an Kontaktdaten erst nach Bestätigung durch {e_akk}")
     ),
-    "Grundbetrag je Verein": "Grundbetrag je {sg}",
-    "Eintritt im neuen Verein": "Eintritt {e_im} (neu)",
-    "Austritt im alten Verein": "Austritt {e_beim_anderen}",
-    "Wechsel in anderen Verein": "Wechsel in {e_einen_anderen}",
+    "Grundbetrag je Verein": gettext_noop("Grundbetrag je {sg}"),
+    "Eintritt im neuen Verein": gettext_noop("Eintritt {e_im} (neu)"),
+    "Austritt im alten Verein": gettext_noop("Austritt {e_beim_anderen}"),
+    "Wechsel in anderen Verein": gettext_noop("Wechsel in {e_einen_anderen}"),
 }
 
 
@@ -392,3 +395,9 @@ def rename_word(text: str, org) -> str:
     """Bekannte feste Bezeichnungen mit „Abteilung“ in die eigene Bezeichnung umsetzen."""
     template = _WORDS.get(text)
     return fill(template, org) if template else text
+
+
+def ui_word(text: str, org) -> str:
+    """Feste Objektbezeichnung nur zur Anzeige übersetzen; eigene Begriffe erhalten."""
+    template = _WORDS.get(text)
+    return fill(gettext(template), org) if template else gettext(text)

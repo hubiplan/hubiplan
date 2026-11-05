@@ -371,7 +371,9 @@ class AuditEntrySerializer(serializers.ModelSerializer):
         return self.context.get("org")
 
     def get_object_type(self, obj) -> str:
-        return rename_word(type_label(obj.object_type), self._org())
+        from organizations.terms import ui_word
+
+        return ui_word(type_label(obj.object_type), self._org())
 
     def get_undo(self, obj) -> dict | None:
         """Rückgängig aus dem Protokoll: möglich, schon erledigt oder gesperrt (mit Grund)."""

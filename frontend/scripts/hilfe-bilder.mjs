@@ -77,7 +77,9 @@ for (const language of ['de', 'en']) {
           if (!(await heading.evaluate((el) => document.activeElement === el)))
             throw new Error('Schreiben erhält keinen Fokus')
           const attachment = page.getByRole('link', { name: 'Einladung.pdf', exact: true })
-          const response = await page.request.get(await attachment.getAttribute('href'))
+          const response = await page.request.get(
+            new URL(await attachment.getAttribute('href'), base).href,
+          )
           if (
             response.status() !== 200 ||
             !(await response.body()).toString('ascii').startsWith('%PDF-')
@@ -93,6 +95,23 @@ for (const language of ['de', 'en']) {
           await page.setViewportSize({ width: 1280, height: 860 })
           console.log(
             `${language}: App-Ziel → Browseranmeldung → richtiges Schreiben → PDF; Fokus und 320px geprüft`,
+          )
+        }
+        if (b.name === 'beitragslauf' || b.name === 'rolle-anlegen') {
+          if (b.name === 'beitragslauf')
+            await page
+              .getByRole('button', {
+                name: language === 'en' ? 'New fee run' : 'Neuer Beitragslauf',
+                exact: true,
+              })
+              .waitFor()
+          else
+            await page
+              .getByRole('heading', { name: language === 'en' ? 'Roles' : 'Rollen', exact: true })
+              .first()
+              .waitFor()
+          console.log(
+            `${language}: Verwaltungsansicht ${b.name} mit übersetzter Systemüberschrift geladen`,
           )
         }
         if (b.name === 'kalender-kontext') {

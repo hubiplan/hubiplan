@@ -33,3 +33,21 @@ def test_quittungsfehler_nennen_fehlende_angaben_auf_englisch():
         assert missing(receipt) == ["Treasurer’s signature", "Payer’s signature"]
     with translation.override("de"):
         assert missing(receipt) == ["Unterschrift des Kassierers", "Unterschrift des Zahlers"]
+
+
+def test_objektbezeichnungen_behalten_eigene_englische_begriffe():
+    from organizations.models import Organization
+    from organizations.terms import rename_word, ui_word
+
+    org = Organization(
+        department_label="Zug",
+        department_label_plural="Züge",
+        department_label_en="team",
+        department_label_plural_en="teams",
+    )
+    with translation.override("en"):
+        assert ui_word("Buchung", org) == "Entry"
+        assert ui_word("Abteilung", org) == "Team"
+        assert ui_word("Abteilungsrolle", org) == "Role in the team"
+    with translation.override("de"):
+        assert rename_word("Abteilung", org) == "Zug"

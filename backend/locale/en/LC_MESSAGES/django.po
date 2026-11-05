@@ -7269,3 +7269,210 @@ msgstr "Another album already uses this address."
 
 msgid "Unbekannte Sortierung."
 msgstr "Unknown sort order."
+
+msgid "Rechnungseingang"
+msgstr "Incoming invoice"
+
+msgid "E-Rechnungsoriginal"
+msgstr "E-invoice original"
+
+msgid "Rolle"
+msgstr "Role"
+
+msgid "Rollenzuordnung"
+msgstr "Role assignment"
+
+msgid "Mitgliedsart"
+msgstr "Membership type"
+
+msgid "Mitgliedschaft"
+msgstr "Membership"
+
+msgid "Mitgliedszeitraum"
+msgstr "Membership period"
+
+msgid "Mitgliedsart-Zuordnung"
+msgstr "Membership type assignment"
+
+msgid "Ehrung"
+msgstr "Honour"
+
+msgid "Ehrung (Verleihung)"
+msgstr "Honour award"
+
+msgid "Verbandsmitgliedschaft"
+msgstr "Umbrella association membership"
+
+msgid "Kontaktdaten"
+msgstr "Contact details"
+
+msgid "Person"
+msgstr "Person"
+
+msgid "Zusatzfeld-Wert"
+msgstr "Custom field value"
+
+msgid "Mitgliederfoto"
+msgstr "Member photo"
+
+msgid "Foto-Upload-Link"
+msgstr "Photo upload link"
+
+msgid "Konto"
+msgstr "Account"
+
+msgid "Buchung"
+msgstr "Entry"
+
+msgid "Beleg"
+msgstr "Document"
+
+msgid "Rücklage"
+msgstr "reserve"
+
+msgid "Rücklagenbewegung"
+msgstr "Reserve movement"
+
+msgid "Datenübernahme"
+msgstr "Data transfer"
+
+msgid "Terminkategorie"
+msgstr "Event category"
+
+msgid "Serientermin"
+msgstr "Recurring event"
+
+msgid "Terminanhang"
+msgstr "Event attachment"
+
+msgid "Öffentlicher Kalender"
+msgstr "Public calendar"
+
+msgid "Fremder Kalender"
+msgstr "External calendar"
+
+msgid "Vorlage für Rundschreiben"
+msgstr "Circular template"
+
+msgid "Anhang eines Rundschreibens"
+msgstr "Circular attachment"
+
+msgid "Webseite"
+msgstr "Website"
+
+msgid "Domain der Webseite"
+msgstr "Website domain"
+
+msgid "Vorschau-Link"
+msgstr "Preview link"
+
+msgid "Text der Webseite"
+msgstr "Website text"
+
+msgid "Bild der Webseite"
+msgstr "Website image"
+
+msgid "Nachricht von der Webseite"
+msgstr "Website message"
+
+msgid "Würde"
+msgstr "Title"
+
+msgid "Begleitperson"
+msgstr "Companion"
+
+msgid "Foto einer Regentschaft"
+msgstr "Reign photo"
+
+msgid "Rolle {im}"
+msgstr "Role {im}"
+
+msgid "Rollen in {pl_dat}"
+msgstr "Roles in {pl_dat}"
+
+msgid "Rolle {im} (Inhaber)"
+msgstr "Role {im} (holder)"
+
+msgid "Zugehörigkeit {zum}"
+msgstr "Assignment {zum}"
+
+msgid "Mitglied darf mehreren {pl_dat} angehören"
+msgstr "Member may belong to several {pl_dat}"
+
+msgid "Zugang für {pl} freigeschaltet"
+msgstr "Access enabled for {pl}"
+
+msgid "zahlt Beitrag selbst (keine Sammelrechnung über {akk})"
+msgstr "pays contribution directly (no combined invoice via {akk})"
+
+msgid "an {dv_akk} melden"
+msgstr "report to {dv_akk}"
+
+msgid "Eintritt in {dv_akk} (manuell)"
+msgstr "Join {dv_akk} (manual)"
+
+msgid "Zugriff durch {dv_akk}"
+msgstr "Access by {dv_akk}"
+
+msgid "geändert durch {dv_akk}"
+msgstr "changed by {dv_akk}"
+
+msgid "Mitgliedsnummer {e_im}"
+msgstr "Membership number {e_im}"
+
+msgid "Änderungen an Kontaktdaten erst nach Bestätigung durch {e_akk}"
+msgstr "Contact details change only after approval by {e_akk}"
+
+msgid "Grundbetrag je {sg}"
+msgstr "Base amount per {sg}"
+
+msgid "Eintritt {e_im} (neu)"
+msgstr "Membership starts {e_im} (new)"
+
+msgid "Austritt {e_beim_anderen}"
+msgstr "Membership ends {e_beim_anderen}"
+
+msgid "Wechsel in {e_einen_anderen}"
+msgstr "Transfer to {e_einen_anderen}"
+
+msgid "{kind} „{name}“ {action}"
+msgstr "{kind} “{name}” {action}"
+
+msgid "{kind} {action}"
+msgstr "{kind} {action}"
+
+msgid "Änderung"
+msgstr "Change"
+
+msgid "Abteilungsrolle"
+msgstr "Department role"
+
+msgid "Plattform-Einstellungen"
+msgstr "Platform settings"
+
+msgid "Abteilungszugehörigkeit"
+msgstr "Department membership"
+
+msgid "Zusatzfeld"
+msgstr "Custom field"
+
+msgid "Exportvorlage"
+msgstr "Export template"
+
+msgid "Importvorlage"
+msgstr "Import template"
+
+msgid "Designpaket"
+msgstr "Design package"
+
+msgid "Regentschaft"
+msgstr "Reign"
+
+msgid "{Sg}"
+msgstr "{Sg}"
+
+msgid "{Sg} (optional)"
+msgstr "{Sg} (optional)"
+
+msgid "{dv_Sg}"
+msgstr "{dv_Sg}"
