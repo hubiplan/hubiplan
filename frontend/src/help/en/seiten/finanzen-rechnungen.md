@@ -15,3 +15,8 @@ Name searches ignore letter case and normalize Unicode spelling variants; “ß�
 Enter a search term and choose **Search** or press Enter. Status and other filters apply immediately.
 
 After you change the selection, previous results are hidden until the new request finishes. If loading fails, **Reload** retries the same selection.
+
+Final invoices show credited advances and the remaining outstanding amount. A credited
+advance invoice is marked “Settled”. Its receipts remain in the cashbook. Cancel the
+associated final invoice before removing those payments. A final invoice fully covered
+by advances can also be cancelled if it has no additional payments.

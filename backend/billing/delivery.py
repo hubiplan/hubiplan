@@ -48,7 +48,9 @@ def config(org):
     value["base_url"] = value["base_url"].rstrip("/")
     value["signature"] = hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
     value["label"] = str(raw.get("label", raw["channel"]))[:100]
-    value["token"] = os.environ.get(raw["token_env"], "")
+    value["token"] = os.environ.get(raw["token_env"]) or settings.EINVOICE_GATEWAY_TOKENS.get(
+        raw["token_env"], ""
+    )
     if not value["token"]:
         raise ValidationError(gettext("Die Zugangsdaten der Versandanbindung fehlen."))
     return value

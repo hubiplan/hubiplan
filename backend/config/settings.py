@@ -485,11 +485,16 @@ PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
 EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")
 # Server-only tenant mapping; credential VALUES stay in their named environment variables.
 try:
-    EINVOICE_GATEWAYS = json.loads(os.environ.get("EINVOICE_GATEWAYS", "{}"))
+    EINVOICE_GATEWAYS = json.loads(os.environ.get("EINVOICE_GATEWAYS") or "{}")
+    EINVOICE_GATEWAY_TOKENS = json.loads(os.environ.get("EINVOICE_GATEWAY_TOKENS") or "{}")
     if not isinstance(EINVOICE_GATEWAYS, dict) or not all(
         isinstance(value, dict) for value in EINVOICE_GATEWAYS.values()
     ):
         raise ValueError("Expected tenant mapping")
+    if not isinstance(EINVOICE_GATEWAY_TOKENS, dict) or not all(
+        isinstance(value, str) for value in EINVOICE_GATEWAY_TOKENS.values()
+    ):
+        raise ValueError("Expected credential mapping")
 except ValueError as exc:
     raise ImproperlyConfigured(
         "EINVOICE_GATEWAYS must be a JSON object of tenant settings"

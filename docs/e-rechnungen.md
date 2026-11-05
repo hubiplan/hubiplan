@@ -141,8 +141,12 @@ KoSIT-Prüfung allein garantiert keine Annahme durch einen bestimmten Empfänger
 {"123":{"base_url":"https://gateway.example.org/v1","channel":"peppol","participant":"0204:BEISPIEL","label":"Vereinsgateway","token_env":"EINVOICE_GATEWAY_EXAMPLE_TOKEN"}}
 ```
 
-Das benannte Secret wird separat als Umgebungsvariable bereitgestellt, niemals im
-JSON, Datenexport oder Browser. `channel` ist `peppol` oder `portal`. Nur HTTPS ohne
+Das benannte Secret wird separat als Umgebungsvariable bereitgestellt, niemals in der
+Gateway-Konfiguration, im Datenexport oder Browser. Das Standard-Server-Compose leitet
+alternativ `EINVOICE_GATEWAY_TOKENS` weiter: ein JSON-Objekt, das `token_env`-Namen auf
+die jeweiligen Secrets abbildet. Beide JSON-Werte in der privaten Server-`.env` mit
+einfachen Anführungszeichen umschließen; Zugangsdaten niemals ins Repository übernehmen.
+`channel` ist `peppol` oder `portal`. Nur HTTPS ohne
 URL-Zugangsdaten, Query oder Fragment ist zulässig. HTTP-Redirects sind gesperrt.
 Absender und Empfänger kommen aus den elektronischen Adressen des festgeschriebenen
 Originals; für Peppol sind vierstellige EAS-Codes erforderlich. Der Absender muss
