@@ -214,8 +214,8 @@ def seed(password: str, reset: bool = False) -> dict:
     _letterhead(club)
     _website(club)
     _music(club)
-    _todos(club)
-    _material(club)
+    todos = _todos(club)
+    _material(club, todos)
     return {"club": club, "created": created["count"]}
 
 
@@ -1296,12 +1296,14 @@ def _music(club) -> None:
         )
 
 
-def _todos(club) -> None:
+def _todos(club) -> dict:
+    """Aufgaben des Vorstands; zurück: Titel → Aufgabe (Titel sind verschlüsselt)."""
     from events.models import Event
     from todos.models import Todo, TodoShare
 
     if Todo.objects.filter(organization=club).exists():
-        return
+        return {}
+    created = {}
     board = User.objects.get(email=USERS[0][0])
     writer = Role.objects.get(organization=club, name="Schriftführer")
     treasurer = Role.objects.get(organization=club, name="Kassierer")
@@ -1329,6 +1331,7 @@ def _todos(club) -> None:
             owner=board,
             shared=share is not None,
         )
+        created[title] = todo
         if share:
             role, level, responsible = share
             TodoShare.objects.create(
@@ -1339,13 +1342,13 @@ def _todos(club) -> None:
                 level=level,
                 responsible=responsible,
             )
+    return created
 
 
-def _material(club) -> None:
+def _material(club, todos: dict) -> None:
     from events.models import Event
     from materials.models import MaterialEventLink, MaterialItem, MaterialTodoLink
     from music.models import Equipment
-    from todos.models import Todo
 
     if MaterialItem.objects.filter(organization=club).exists():
         return
@@ -1392,6 +1395,6 @@ def _material(club) -> None:
         ("Festzelt 10 × 20 m", "Festzelt für das Schützenfest bestellen"),
         ("Königssilber", "Königssilber zur Reinigung bringen"),
     ):
-        todo = Todo.objects.filter(organization=club, title=todo_title).first()
+        todo = todos.get(todo_title)
         if todo:
             MaterialTodoLink.objects.create(organization=club, item=items[title], todo=todo)
