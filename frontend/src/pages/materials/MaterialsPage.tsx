@@ -3,7 +3,7 @@ import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 're
 import { api } from '../../api/client.ts'
 import { materialApi } from '../../api/materials.ts'
 import type { Material, MaterialChoice, MaterialEvent } from '../../api/materials.ts'
-import { errorMessage, useLoad, useQueryLoad } from '../../components/forms.ts'
+import { errorMessage, useLoad, useQueryLoad, whenLabel } from '../../components/forms.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { t, locale } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
@@ -180,10 +180,7 @@ function MaterialList({
             <p>{conditionLabel(item.condition)}</p>
             {item.next_use && (
               <p>
-                {item.next_use.title} ·{' '}
-                {new Date(item.next_use.starts_at).toLocaleString(locale(), {
-                  timeZone: 'Europe/Berlin',
-                })}
+                {item.next_use.title} · {whenLabel(item.next_use.starts_at, item.next_use.all_day)}
               </p>
             )}
           </article>
@@ -685,9 +682,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
               <strong>{link.title}</strong>
               <p>
                 {eventLabel(link.kind)}
-                {link.original_start
-                  ? ` · ${new Date(link.original_start).toLocaleString(locale(), { timeZone: 'Europe/Berlin' })}`
-                  : ''}
+                {link.original_start ? ` · ${whenLabel(link.original_start, link.all_day)}` : ''}
                 {link.valid_from ? ` · ${t('Ab')} ${link.valid_from}` : ''}
                 {link.valid_until ? ` · ${t('Bis')} ${link.valid_until}` : ''}
               </p>
@@ -717,8 +712,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
               <ul>
                 {data.uses.map((u) => (
                   <li key={`${u.event}-${u.original_start}`}>
-                    {u.title} ·{' '}
-                    {new Date(u.starts_at).toLocaleString(locale(), { timeZone: 'Europe/Berlin' })}
+                    {u.title} · {whenLabel(u.starts_at, u.all_day)}
                   </li>
                 ))}
               </ul>

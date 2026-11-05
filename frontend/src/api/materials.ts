@@ -19,11 +19,18 @@ export interface Material {
   location_review: boolean
   usage_review?: boolean
   photo_url: string | null
-  next_use?: { title: string; starts_at: string } | null
+  next_use?: { title: string; starts_at: string; all_day?: boolean } | null
   events?: MaterialEvent[]
   todos?: { id: number; title: string; status: string }[]
   documents?: { id: number; title: string }[]
-  uses?: { event: number; title: string; starts_at: string; original_start: string; kind: string }[]
+  uses?: {
+    event: number
+    title: string
+    starts_at: string
+    original_start: string
+    all_day?: boolean
+    kind: string
+  }[]
 }
 
 export interface MaterialEvent {
@@ -32,6 +39,7 @@ export interface MaterialEvent {
   title: string
   kind: 'event' | 'series' | 'occurrence' | 'exclude'
   original_start: string | null
+  all_day?: boolean
   valid_from: string | null
   valid_until: string | null
   note: string

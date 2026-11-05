@@ -457,3 +457,12 @@ def test_import_keeps_missing_member_as_review(material_setup):
     assert load_tables(rows, org, IdMap(), None, user=user) == 1
     item = MaterialItem.objects.get()
     assert item.location_kind == "unknown" and item.member_id is None
+
+
+def test_uses_and_links_report_all_day(material_setup):
+    org, user, client, base = material_setup
+    fest = event(org, all_day=True)
+    item = create(client, base)
+    item = link(client, base, item, type="event", event=fest.pk, kind="event")
+    assert item["uses"][0]["all_day"] is True
+    assert item["events"][0]["all_day"] is True
