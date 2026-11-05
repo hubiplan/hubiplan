@@ -6353,5 +6353,6 @@
   "Zugehöriges Material": "Associated equipment",
   "Kein zugehöriges Material, zum Beispiel Schlüssel.": "No associated equipment, such as keys.",
   "Aus der Infrastruktur übernehmen": "Take from facilities",
-  "Die Schießbahnen der erfassten Schießstände bestimmen die Auswahl.": "The lanes of the recorded shooting ranges determine the selection."
+  "Die Schießbahnen der erfassten Schießstände bestimmen die Auswahl.": "The lanes of the recorded shooting ranges determine the selection.",
+  "Zwei-Faktor-Anmeldung nötig ab {date}.": "Two-factor sign-in required from {date}."
 }

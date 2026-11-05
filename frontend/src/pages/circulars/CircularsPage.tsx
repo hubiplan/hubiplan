@@ -11,7 +11,7 @@ import { CircularsArea } from '../../components/circulars/CircularsArea.tsx'
 import { MailingListsArea } from '../../components/circulars/MailingListsArea.tsx'
 import { MarkupPreview } from '../../components/circulars/MarkupEditor.tsx'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, Tabs } from '../../components/ui.tsx'
+import { Alert, Tabs, SectionTitle } from '../../components/ui.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { canWriteCirculars } from './access.ts'
@@ -50,10 +50,7 @@ export function CircularsPage() {
   ]
   return (
     <section>
-      <div className="page-head">
-        <h1>{t('Rundschreiben')}</h1>
-        {subtitle && <p className="muted">{subtitle}</p>}
-      </div>
+      <SectionTitle title={t('Rundschreiben')} items={tabs} subtitle={subtitle} />
       {tabs.length > 1 && <Tabs items={tabs} />}
       <Routes>
         {receive && <Route path="empfangen" element={<ReceivedList orgId={orgId} />} />}

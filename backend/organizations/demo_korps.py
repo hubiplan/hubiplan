@@ -272,6 +272,8 @@ def _units(club) -> dict[str, Department]:
                     "founding_year": year + 10 * z_order,
                     "sort_order": z_order,
                     "label": "Zug",
+                    "label_plural": "Züge",
+                    "label_gender": "m",
                     "label_en": "Platoon",
                     "label_plural_en": "Platoons",
                 },

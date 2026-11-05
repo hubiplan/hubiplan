@@ -10,7 +10,7 @@ import type { CalendarBase, EventCategory } from '../../api/events.ts'
 import { CalendarView } from '../../components/calendar/CalendarView.tsx'
 import { FeedPanel } from '../../components/calendar/Rsvp.tsx'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SaveStatus, Tabs } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, Tabs, SectionTitle } from '../../components/ui.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useTerms } from '../../org/terms.ts'
@@ -63,10 +63,7 @@ export function EventsPage() {
   ]
   return (
     <section>
-      <div className="page-head">
-        <h1>{title}</h1>
-        {subtitle && <p className="muted">{subtitle}</p>}
-      </div>
+      <SectionTitle title={title} items={tabs} subtitle={subtitle} />
       {tabs.length > 1 && <Tabs items={tabs} />}
       <Routes>
         <Route
