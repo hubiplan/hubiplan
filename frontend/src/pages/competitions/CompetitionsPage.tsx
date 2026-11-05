@@ -1287,6 +1287,11 @@ function CompetitionCompletion({
       <h2>{t('Wettbewerb und Abschluss')}</h2>
       <p>
         {t('Zustand:')} {STATUS_LABELS[comp.status]}
+        <span className="muted">
+          {' '}
+          {t('· erst')} <Term k="comp_provisional_term">{t('vorläufig')}</Term>
+          {t(', nach dem Abschluss')} <Term k="comp_final_term">{t('endgültig')}</Term>
+        </span>
       </p>
       {comp.own && comp.status !== 'endgueltig' && <FinishChecklist org={org} comp={comp} />}
       <div className="button-row">

@@ -12,9 +12,15 @@ Hier richtet ihr eigene Schießen mit Einzel- und Zugwertung ein, erfasst Ergebn
 
 Der Standmodus speichert private Daten nur für das bestätigte Konto beziehungsweise den vollständigen Standzugang, höchstens zwölf Stunden und niemals über das Ablaufdatum des Zugangs hinaus. Ohne Empfang lässt sich derselbe Stand im selben Browser-Tab weiterverwenden. Eine ausdrückliche Zugriffsablehnung durch den Server beendet diesen Offlinezugang. Beim Abmelden und Kontowechsel wird der Stand-Speicher dieses Browsers entfernt. Noch nicht übertragene Eingaben vor dem Abmelden zuerst abgleichen; die Abmeldung fragt vor dem Verwerfen nach. Bei einem Rechteentzug oder abgelaufenen Zugang werden auch unübertragene Eingaben entfernt. Der alte, nicht kontogebundene Speicher wird beim ersten Start dieser Version entfernt; bei offenen Eingaben erscheint ein Hinweis. Browser-Speicher ersetzt keine Datensicherung.
 
+### Einrichtung
+
+Unter **Einrichten** sind **Grunddaten**, **Schießbedingungen**, **Wertungen** und **Ausgabe & Freigabe** getrennt. Die Scheibe wird mit Bild einmal pro Schießdurchgang gewählt. Einzel- und Teilerwertungen können dieselben Treffer verwenden; eine Zugwertung berechnet sich aus einer Einzelwertung. Die Infrastruktur unter [Einstellungen › Organisation](/einstellungen/organisation) filtert die angebotenen Scheiben, ohne vorhandene Auswahlen zu entfernen.
+
+Bei vorhandenen Ergebnissen müssen Änderungen an Bedingungen oder Berechnung bestätigt werden. Berechnete Ergebnisse werden neu ermittelt, manuelle Summen bleiben erhalten und sind zu prüfen. Nach geänderten Bedingungen verlangt der Standmodus die aktuelle Einrichtung; alte Offline-Eingaben werden verworfen. Abschließen und Wiederöffnen stehen unter **Auswertung** → **Wettbewerb und Abschluss**.
+
 ### Namen auf der Webseite
 
-Unter **Einrichten** → **Umfang auf der Webseite** veröffentlicht **Preisplätze mit Namen**
+Unter **Einrichten** → **Ausgabe & Freigabe** → **Öffentlich sichtbar** veröffentlicht **Preisplätze mit Namen**
 die Einzelplatzierungen bis zur Anzahl der **Preisplätze** der jeweiligen Wertung.
 Bei zwei Preisplätzen erscheinen Platz 1 und 2, bei fünf Preisplätzen Platz 1 bis 5.
 Das gilt auch für den Ergebnisblock auf der Startseite und für fremde Wettbewerbe.

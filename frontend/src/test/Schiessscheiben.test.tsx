@@ -127,40 +127,60 @@ function renderAt(path: string, routes: Parameters<typeof fakeApi>[0]) {
 }
 
 describe('Scheibe und Wertung', () => {
-  it('stellt Scheibe, Wertungsart und Gleichstandsregeln ein', async () => {
+  it('stellt gemeinsame Scheibenbedingungen und getrennte Wertungsregeln ein', async () => {
+    let program = {
+      id: 10,
+      competition: 3,
+      name: 'Schießdurchgang',
+      sort_order: 1,
+      target: '',
+      custom_target: {},
+      shots: 5,
+      position: '',
+      distance: null,
+      target_info: null as TargetInfo | null,
+      has_results: false,
+    }
+    let single = { ...scoring, program: 10 }
     const calls = renderAt('/wettbewerbe/3/einrichten', {
-      [`PATCH ${base}3/scorings/11/`]: () => ({
+      [`GET ${base}3/`]: () => ({
         status: 200,
-        body: { ...scoring, target: 'lg10_kyf', method: 'ringe', unit_label: 'Ringe' },
+        body: { ...detail, programs: [program], scorings: [single] },
       }),
+      [`PATCH ${base}3/programs/10/`]: (init) => {
+        program = { ...program, ...JSON.parse(String(init?.body)), target_info: kyf as TargetInfo }
+        single = { ...single, target: program.target, method: 'ringe', unit_label: 'Ringe' }
+        return { status: 200, body: program }
+      },
+      [`PATCH ${base}3/scorings/11/`]: (init) => {
+        single = { ...single, ...JSON.parse(String(init?.body)) }
+        return { status: 200, body: single }
+      },
     })
     const user = userEvent.setup()
-    const method = await screen.findByLabelText('Wertungsart')
-    // ohne Scheibe nur „frei“
-    expect(screen.getByRole('option', { name: 'Ringe' })).toBeDisabled()
-    // Auswahl mit Vorschaubild und Kurzbeschreibung
-    const kyfTile = screen.getByRole('radio', { name: /Luftgewehr 10 m Kyffhäuser/ })
-    expect(kyfTile.closest('label')?.querySelector('svg.target-preview')).not.toBeNull()
-    await user.click(kyfTile)
+    await user.click(await screen.findByRole('button', { name: 'Wertungen' }))
+    await user.click(screen.getByText('Wertung bearbeiten'))
+    const before = await screen.findByLabelText('Wertungsart')
+    expect(within(before).getByRole('option', { name: 'Ringe' })).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: 'Schießbedingungen' }))
+    const tile = await screen.findByRole('radio', { name: /Luftgewehr 10 m Kyffhäuser/ })
+    expect(tile.closest('label')?.querySelector('svg.target-preview')).not.toBeNull()
+    await user.click(tile)
     expect(screen.getByText(/Alte Kyffhäuser-Scheibe/)).toBeVisible()
-    await user.selectOptions(method, 'ringe')
-    // Wert kommt aus den Treffern: keine freie Einheit mehr
+    await user.click(screen.getByRole('button', { name: 'Schießbedingungen übernehmen' }))
+    await waitFor(() => expect(program.target).toBe('lg10_kyf'))
+    await user.click(screen.getByRole('button', { name: 'Wertungen' }))
+    await user.click(screen.getByText('Wertung bearbeiten'))
+    const method = await screen.findByLabelText('Wertungsart')
+    expect(method).toHaveValue('ringe')
     expect(screen.queryByLabelText('Einheit des Werts')).toBeNull()
+    await user.click(screen.getByText('Gleichstand und Stechen'))
     await user.click(screen.getByRole('button', { name: 'wie DSB (Auflage)' }))
     expect(screen.getByText(/1\. Serien von hinten verglichen/)).toBeVisible()
-    const patches = () =>
-      calls
-        .filter((c) => c.key === `PATCH ${base}3/scorings/11/`)
-        .map((c) => JSON.parse(String(c.init?.body)))
-    await waitFor(
-      () =>
-        expect(Object.assign({}, ...patches())).toMatchObject({
-          target: 'lg10_kyf',
-          method: 'ringe',
-          tie_breaks: ['serien', 'ringzahlen', 'innenzehner'],
-        }),
-      { timeout: 3000 },
-    )
+    await user.click(screen.getByRole('button', { name: 'Wertungsregeln übernehmen' }))
+    await waitFor(() => expect(single.tie_breaks).toEqual(['serien', 'ringzahlen', 'innenzehner']))
+    expect(calls.filter((call) => call.key === `PATCH ${base}3/programs/10/`)).toHaveLength(1)
+    expect(calls.filter((call) => call.key === `PATCH ${base}3/scorings/11/`)).toHaveLength(1)
   })
 
   it('zeigt, welche Regel einen Gleichstand entschieden hat', async () => {
