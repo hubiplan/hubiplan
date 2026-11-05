@@ -10,7 +10,7 @@ import { TodoEventLink } from '../components/TodoEventLink.tsx'
 import { todoApi, todoBase } from '../api/todos.ts'
 import type { Todo } from '../api/todos.ts'
 import { useOrg } from '../org/OrgContext.tsx'
-import { errorMessage, useLoad } from '../components/forms.ts'
+import { errorMessage, formatDate, useLoad } from '../components/forms.ts'
 import { LoadError, SelectField } from '../components/ui.tsx'
 import { t } from '../i18n/index.ts'
 import { TodoSharing } from '../components/TodoSharing.tsx'
@@ -330,11 +330,13 @@ function TodoWorkspace({ base }: { base: string }) {
                       {item.title}
                     </Link>
                     <span className="todo-due-compact muted">
-                      {item.due_date ?? t('ohne Frist')}
+                      {item.due_date ? formatDate(item.due_date) : t('ohne Frist')}
                     </span>
                     {item.highlight && <span className="badge todo-row-due">{item.due_label}</span>}
                   </th>
-                  <td className="todo-date-column muted">{item.due_date ?? t('ohne Frist')}</td>
+                  <td className="todo-date-column muted">
+                    {item.due_date ? formatDate(item.due_date) : t('ohne Frist')}
+                  </td>
                   <td className="todo-action-cell">
                     {item.can_delete && (
                       <IconButton
