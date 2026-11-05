@@ -7556,3 +7556,45 @@ msgstr "today"
 #: members/serializers.py
 msgid "„{name}“ ist nicht mehr aktiv. Bitte ein Ende angeben."
 msgstr "“{name}” is no longer active. Please enter an end date."
+
+#: members/open_tasks.py
+msgid "Wechselanfrage"
+msgstr "Change request"
+
+#: members/open_tasks.py
+msgid "{org} möchte aufnehmen"
+msgstr "{org} would like to admit"
+
+#: members/open_tasks.py
+msgid "Foto freigeben"
+msgstr "Approve photo"
+
+#: members/open_tasks.py
+msgid "möchte eigene Daten ändern"
+msgstr "wants to change their details"
+
+#: members/open_tasks.py
+msgid "hat ein Foto hochgeladen"
+msgstr "uploaded a photo"
+
+#: members/open_tasks.py
+msgid "Rückmeldungen"
+msgstr "Responses"
+
+#: members/open_tasks.py
+msgid "am {date}: {yes} Zusagen, {no} Absagen"
+msgstr "on {date}: {yes} yes, {no} no"
+
+#: members/open_tasks.py
+msgid "Rechnungen"
+msgstr "Invoices"
+
+#: members/open_tasks.py
+msgid "{n} Rechnung überfällig"
+msgid_plural "{n} Rechnungen überfällig"
+msgstr[0] "{n} invoice overdue"
+msgstr[1] "{n} invoices overdue"
+
+#: members/open_tasks.py
+msgid "älteste fällig seit {date}"
+msgstr "oldest due since {date}"

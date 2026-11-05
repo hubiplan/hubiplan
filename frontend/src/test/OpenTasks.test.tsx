@@ -45,7 +45,7 @@ describe('Offene Aufgaben auf der Startseite', () => {
       'GET /api/orgs/7/jubilees/?von=': () => ({ status: 200, body: [] }),
     })
     renderAt('/')
-    expect(await screen.findByRole('heading', { name: /Offene Aufgaben/ })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Zu erledigen/ })).toBeInTheDocument()
     const link = await screen.findByRole('link', { name: 'Erika Muster' })
     expect(link).toHaveAttribute('href', '/mitglieder/anfragen/aenderungen')
     expect(screen.getByText('Änderungsmeldung')).toBeInTheDocument()
@@ -59,6 +59,6 @@ describe('Offene Aufgaben auf der Startseite', () => {
     })
     renderAt('/')
     expect(await screen.findByText('Übersicht')).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: /Offene Aufgaben/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /Zu erledigen/ })).not.toBeInTheDocument()
   })
 })

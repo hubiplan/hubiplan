@@ -4766,3 +4766,9 @@ label:has(> .file-input:focus-visible) {
 .home-event {
   margin: 0 0 0.75rem;
 }
+
+/* Startseite Vorstand: „Zu erledigen“ zuerst und über die ganze Breite (UX-Audit 10.6) */
+.tiles > .tile-wide {
+  grid-column: 1 / -1;
+  max-width: none;
+}

@@ -649,7 +649,7 @@ export interface SelfUpdate {
 
 /** Vorgang, der eine Entscheidung braucht (Startseite „Offene Aufgaben“) */
 export interface OpenTask {
-  kind: 'change_request' | 'transfer' | 'photo' | 'event' | 'todo'
+  kind: 'change_request' | 'transfer' | 'photo' | 'event' | 'todo' | 'invoices_overdue'
   ref?: number
   version?: number
   can_edit?: boolean
