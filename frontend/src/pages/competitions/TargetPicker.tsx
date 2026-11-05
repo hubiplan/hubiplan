@@ -164,6 +164,7 @@ export function TargetPicker({
           </div>
         </div>
       ))}
+      <p className="target-group">{t('Sonstige')}</p>
       <div className="target-tiles">
         <label className={`target-tile${value === customKey ? ' target-tile-on' : ''}`}>
           <input
