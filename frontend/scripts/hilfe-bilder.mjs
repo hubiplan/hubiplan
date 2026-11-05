@@ -100,6 +100,7 @@ for (const language of ['de', 'en']) {
           await page
             .getByRole('button', { name: language === 'en' ? 'Month' : 'Monat', exact: true })
             .click()
+          await continuation.waitFor()
         }
         if (b.name === 'mitglieder-aufnehmen-details') {
           await page.getByLabel('Name', { exact: true }).fill('Muster')
