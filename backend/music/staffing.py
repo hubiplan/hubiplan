@@ -185,6 +185,7 @@ def staffing_data(performance):
                 "name": names.get(a.musician_id, ""),
                 "position": a.position_id,
                 "status": a.status,
+                "is_guest": not musician_map[a.musician_id].membership_id,
                 "availability": availability.reasons(musician_map[a.musician_id]),
             }
             for a in assigned

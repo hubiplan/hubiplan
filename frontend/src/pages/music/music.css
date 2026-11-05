@@ -4,6 +4,17 @@
   gap: 1.5rem;
 }
 
+.music-guest-page {
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.music-guest-notes {
+  white-space: pre-wrap;
+}
+
 .music-navigation {
   display: flex;
   flex-wrap: wrap;

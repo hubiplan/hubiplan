@@ -108,9 +108,25 @@ class MusicMusicianSerializer(ScopedSerializer):
     def get_display_name(self, obj) -> str:
         return str(obj.membership.person) if obj.membership_id else obj.name
 
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        from django.utils import timezone
+
+        from .models import GuestAccess
+
+        instance = Musician.objects.select_for_update().get(pk=instance.pk)
+        previous = (instance.guest_email, instance.membership_id)
+        instance = super().update(instance, validated_data)
+        if previous != (instance.guest_email, instance.membership_id):
+            GuestAccess.objects.filter(assignment__musician=instance).update(
+                revoked_at=timezone.now(),
+                auto_notify=False,
+            )
+        return instance
+
     class Meta:
         model = Musician
-        fields = ["id", "membership", "name", "display_name", "contact", "active"]
+        fields = ["id", "membership", "name", "display_name", "contact", "guest_email", "active"]
 
 
 class MusicSkillSerializer(ScopedSerializer):

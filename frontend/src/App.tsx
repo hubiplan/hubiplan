@@ -54,6 +54,7 @@ const CircularsPage = lazyPage(() => import('./pages/circulars/CircularsPage.tsx
 const MembersPage = lazyPage(() => import('./pages/MembersPage.tsx'), 'MembersPage')
 const FinanzenPage = lazyPage(() => import('./pages/finanzen/FinanzenPage.tsx'), 'FinanzenPage')
 const MusicPage = lazyPage(() => import('./pages/music/MusicPage.tsx'), 'MusicPage')
+const GuestMusicPage = lazyPage(() => import('./pages/music/GuestMusicPage.tsx'), 'GuestMusicPage')
 const DocumentsPage = lazyPage(() => import('./pages/documents/DocumentsPage.tsx'), 'DocumentsPage')
 const MaterialsPage = lazyPage(() => import('./pages/materials/MaterialsPage.tsx'), 'MaterialsPage')
 const WebsitePage = lazyPage(() => import('./pages/website/WebsitePage.tsx'), 'WebsitePage')
@@ -189,6 +190,7 @@ export default function App() {
       <LeaveGuard />
       <Routes>
         <Route element={<PublicShell />}>
+          <Route path="/musik-gast" element={<GuestMusicPage />} />
           <Route path="/anmelden" element={<LoginPage />} />
           <Route path="/anmelden/link" element={<LoginLinkRequestPage />} />
           <Route path="/anmelden/link/:token" element={<LoginLinkRedeemPage />} />

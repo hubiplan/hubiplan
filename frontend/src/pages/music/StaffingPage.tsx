@@ -9,6 +9,7 @@ import { t } from '../../i18n/index.ts'
 import type { EnsembleTemplate } from './EnsembleTemplatesPage.tsx'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
 import { MusicHeader, MusicEmptyState, MusicStatus } from './MusicLayout.tsx'
+import { GuestAccessPanel } from './GuestAccessPanel.tsx'
 
 type Position = {
   id: number
@@ -27,6 +28,7 @@ type Plan = {
     position: number
     status: string
     availability?: string[]
+    is_guest?: boolean
   }[]
   candidates: {
     id: number
@@ -49,6 +51,7 @@ export function StaffingPage({ performance }: { performance: number }) {
     return { plan, templates }
   }, [org.id, performance])
   const [replacement, setReplacement] = useState<number | null>(null)
+  const [guest, setGuest] = useState<number | null>(null)
   const [template, setTemplate] = useState(''),
     [selected, setSelected] = useState<Record<number, number>>({}),
     [busy, setBusy] = useState(false),
@@ -319,6 +322,11 @@ export function StaffingPage({ performance }: { performance: number }) {
             </span>
             <MusicStatus status={a.status} />
             <AvailabilityHint reasons={a.availability} />
+            {canEdit && a.is_guest && (
+              <button className="button button-ghost" onClick={() => setGuest(a.id)}>
+                {t('Gasteinladung verwalten')}
+              </button>
+            )}
             {canEdit && a.status === 'declined' && !plan.cancelled && (
               <button
                 className="button button-ghost"
@@ -335,6 +343,14 @@ export function StaffingPage({ performance }: { performance: number }) {
           </div>
         ))}
       </article>
+      {canEdit && guest !== null && (
+        <GuestAccessPanel
+          key={guest}
+          assignment={guest}
+          name={plan.assignments.find((a) => a.id === guest)?.name || ''}
+          onClose={() => setGuest(null)}
+        />
+      )}
     </section>
   )
 }
