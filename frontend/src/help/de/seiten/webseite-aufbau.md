@@ -16,6 +16,8 @@ Eigene Überschriften: „Überschrift hinzufügen“ legt einen Menüpunkt ohne
 
 Repertoire und Presse: „Repertoire“ zeigt die Stücke aus dem Notenarchiv mit dem Haken „Im Repertoire auf der Webseite“. „Presse“ zeigt den Pressespiegel aus Webseite › Dokumente.
 
+Belegung: „Belegung“ zeigt Infrastruktur und Material, deren Buchungskalender unter „Auf der Webseite“ nicht „nicht zeigen“ steht, als Wochenansicht mit Kalender-Abo. Je nach Einstellung erscheint nur „Belegt“ oder bei öffentlichen Buchungen auch der Zweck; Namen erscheinen nie.
+
 Suche: Mit dem Bereich „Suche“ erscheint eine Lupe im Menü. Gesucht wird in Textseiten, Alben, Dokumenten und Terminen, nicht in Personen.
 
 Personen: „Hauptinstrument unter dem Namen zeigen“ nimmt das Hauptinstrument aus Musik › Musiker. „Anschrift beim Vorstand zeigen“ gilt nur für Personen mit der Einwilligung „Anschrift“ in der Mitgliederakte.

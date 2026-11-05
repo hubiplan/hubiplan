@@ -241,6 +241,8 @@ public_patterns = [
     ),
     path(f"{SITE}events/", public_views.EventsView.as_view(), name="site-events"),
     path(f"{SITE}events.ics", public_views.EventsIcsView.as_view(), name="site-events-ics"),
+    path(f"{SITE}bookings/", public_views.BookingsView.as_view(), name="site-bookings"),
+    path(f"{SITE}bookings.ics", public_views.BookingsIcsView.as_view(), name="site-bookings-ics"),
     path(f"{SITE}posts/", public_views.PostsView.as_view(), name="site-posts"),
     path(
         f"{SITE}posts/images/<str:image_key>/",

@@ -40,3 +40,5 @@ item's history.
 Booking from a demand: If a material item with a booking calendar is assigned to an event, its
 detail page shows **Book firmly**. This opens a booking for that event; for "This occurrence only"
 exactly that date is booked.
+
+On the website: Under **Booking calendar** you choose per item whether the “Bookings” section of the website shows nothing, only booked times or, for public bookings, also the purpose. Switch the section on under Website › Menu and sections.

@@ -777,6 +777,61 @@ class EventsView(_Public):
         )
 
 
+class BookingsView(_Public):
+    """Belegung von Infrastruktur und Material mit „auf der Webseite“ (``?start=``, 7 Tage)."""
+
+    def get(self, request, key: str):
+        site = self.load(request, key)
+        if not site.site.block_on("bookings"):
+            raise Http404
+        from bookings import public as bookings
+
+        start, end = bookings.window(request.query_params.get("start"), 7)
+        shown = bookings.items(site)
+        token = {i.pk: site.token("booking-item", i.pk) for i in shown}
+        rows = [
+            {
+                "item": token[row["item"].pk],
+                "title": row["title"],
+                "starts_at": row["starts_at"],
+                "ends_at": row["ends_at"],
+                "all_day": row["all_day"],
+            }
+            for row in bookings.occurrences(site, start, end, shown)
+        ]
+        return self.respond(
+            {
+                "start": start.date(),
+                "end": end.date(),
+                "items": [
+                    {
+                        "id": token[i.pk],
+                        "title": i.title,
+                        "kind": i.kind,
+                        "area": bool(i.facility_id),
+                    }
+                    for i in shown
+                ],
+                "occurrences": rows,
+                "ics_url": site.url("bookings.ics"),
+            },
+            site,
+        )
+
+
+class BookingsIcsView(_Public):
+    def get(self, request, key: str):
+        site = self.load(request, key)
+        if not site.site.block_on("bookings"):
+            raise Http404
+        from bookings import public as bookings
+
+        body = bookings.calendar(site, request.get_host().split(":")[0])
+        response = HttpResponse(body, content_type="text/calendar; charset=utf-8")
+        response["Content-Disposition"] = 'inline; filename="belegung.ics"'
+        return self.decorate(response, site)
+
+
 class EventsIcsView(_Public):
     def get(self, request, key: str):
         site = self.load(request, key)

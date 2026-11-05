@@ -16,6 +16,8 @@ Custom headings: “Add heading” creates a menu item without its own page, for
 
 Repertoire and press: “Repertoire” shows the pieces from the sheet music library that are ticked “In the repertoire on the website”. “Press” shows the press clippings from Website › Documents.
 
+Bookings: “Bookings” shows facilities and material whose booking calendar is not set to “do not show” under “On the website”, as a week view with a calendar subscription. Depending on the setting it shows only “Booked” or, for public bookings, also the purpose; names never appear.
+
 Search: With the “Search” section a magnifying glass appears in the menu. It searches text pages, albums, documents and events, not people.
 
 People: “Show main instrument below the name” takes the main instrument from Music › Musicians. “Show postal address for the board” only applies to people with the consent “Postal address” in their member record.
