@@ -9,6 +9,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { formats, duration } from './scoreHelpers.ts'
+import { CatalogueImportPanel } from './CatalogueImportPanel.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Field = {
@@ -151,6 +152,12 @@ export function ScoresPage() {
         )}
       </p>
       <Link to="/dokumente">{t('Zur Dokumentenablage')}</Link>
+      {canEdit && (
+        <details>
+          <summary>{t('Notenkatalog importieren')}</summary>
+          <CatalogueImportPanel onSaved={load.reload} />
+        </details>
+      )}
       {error && <Alert kind="error">{error}</Alert>}
       <div className="music-toolbar">
         <label>

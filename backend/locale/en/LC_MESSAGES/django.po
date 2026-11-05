@@ -6043,3 +6043,90 @@ msgstr "Please select only assignments of this performance without existing remu
 
 msgid "Die Auszahlung muss positiv sein und darf den offenen Vergütungsbetrag nicht übersteigen."
 msgstr "The payout must be positive and must not exceed the outstanding remuneration."
+
+msgid "Benötigt"
+msgstr "Needed"
+
+msgid "Besetzungsangaben fehlen."
+msgstr "Instrumentation details are missing."
+
+msgid "Bitte eine CSV-Datei mit höchstens 2 MB wählen."
+msgstr "Please choose a CSV file no larger than 2 MB."
+
+msgid "Bitte eine gültige UTF-8-CSV mit Titel und Arrangement sowie höchstens 1000 Zeilen wählen."
+msgstr "Please choose a valid UTF-8 CSV with title and arrangement and no more than 1000 rows."
+
+msgid "Datei oder Katalog haben sich geändert. Bitte die Vorschau neu erstellen."
+msgstr "The file or catalogue has changed. Please create a new preview."
+
+msgid "Dauer"
+msgstr "Duration"
+
+msgid "Dauer unbekannt"
+msgstr "Unknown duration"
+
+msgid "Die Datei hat sich geändert. Bitte die Vorschau neu erstellen."
+msgstr "The file has changed. Please create a new preview."
+
+msgid "Die Importdatei enthält keine Noteneinträge."
+msgstr "The import file contains no sheet music entries."
+
+msgid "Fehlend"
+msgstr "Missing"
+
+msgid "Fehlende Musiker"
+msgstr "Missing musicians"
+
+msgid "Frei"
+msgstr "Available"
+
+msgid "Für einen Stimmenbestand bitte ein Instrument angeben."
+msgstr "Please specify an instrument for a part stock entry."
+
+msgid "Gesamtdauer"
+msgstr "Total duration"
+
+msgid "Instrument / Stimme"
+msgstr "Instrument / part"
+
+msgid "Konzertformat"
+msgstr "Concert format"
+
+msgid "Marschformat"
+msgstr "Marching format"
+
+msgid "Mehrdeutiger vorhandener Katalogeintrag; bitte zuerst bereinigen."
+msgstr "An existing catalogue entry is ambiguous; please resolve it first."
+
+msgid "Noch keine Programmpunkte vorhanden."
+msgstr "No programme items yet."
+
+msgid "Partitur"
+msgstr "Full score"
+
+msgid "Programmliste"
+msgstr "Programme list"
+
+msgid "Reguläre Dauer"
+msgstr "Regular duration"
+
+msgid "Seite {number}"
+msgstr "Page {number}"
+
+msgid "Stand: {date}"
+msgstr "As of: {date}"
+
+msgid "Stimmenliste"
+msgstr "Parts list"
+
+msgid "Vorhandene Angaben oder Bestände weichen ab; es wird nichts überschrieben."
+msgstr "Existing details or stock differ; nothing will be overwritten."
+
+msgid "Zeile {number}: {error}"
+msgstr "Row {number}: {error}"
+
+msgid "Zugaben"
+msgstr "Encores"
+
+msgid "Nr."
+msgstr "No."

@@ -5783,5 +5783,18 @@
   "Name der Vergütungsvorlage": "Fee template name",
   "Vergütungsvorlage speichern": "Save fee template",
   "Vorlage archivieren: {name}": "Archive template: {name}",
-  "Kassenbuchungen mit Belegen zuerst in der Kasse erfassen. Eine Vergütung kann mehreren Teilzahlungen zugeordnet werden; jede Buchung zählt vollständig. Stornos erfolgen in der Kasse.": "Record cashbook entries and receipts in Finance first. A remuneration claim can be assigned multiple partial payments; each booking counts in full. Reverse bookings in Finance."
+  "Kassenbuchungen mit Belegen zuerst in der Kasse erfassen. Eine Vergütung kann mehreren Teilzahlungen zugeordnet werden; jede Buchung zählt vollständig. Stornos erfolgen in der Kasse.": "Record cashbook entries and receipts in Finance first. A remuneration claim can be assigned multiple partial payments; each booking counts in full. Reverse bookings in Finance.",
+  "Notenkatalog importieren": "Import sheet music catalogue",
+  "UTF-8-CSV bis 2 MB und 1000 Zeilen. Gleiche Einträge werden übersprungen; abweichende Bestände werden nicht überschrieben.": "UTF-8 CSV up to 2 MB and 1000 rows. Identical entries are skipped; differing stock is not overwritten.",
+  "CSV-Vorlage herunterladen": "Download CSV template",
+  "CSV-Datei für den Notenkatalog": "Sheet music catalogue CSV file",
+  "Importvorschau erstellen": "Preview import",
+  "Neue Stücke": "New pieces",
+  "Neue Arrangements": "New arrangements",
+  "Neue Stimmenbestände": "New part stock entries",
+  "Unveränderte Zeilen": "Unchanged rows",
+  "Notenkatalog wurde importiert.": "Sheet music catalogue imported.",
+  "Geprüften Notenkatalog importieren": "Import reviewed sheet music catalogue",
+  "Programmliste als PDF": "Programme list as PDF",
+  "Stimmenliste als PDF": "Parts list as PDF"
 }
