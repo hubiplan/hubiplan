@@ -74,7 +74,11 @@ def test_pflicht_2fa_nach_uebergang(orgs, api, board_a):
     )
     board_a.refresh_from_db()
     perms = permissions_in(board_a, orgs["a"])
-    assert ROLES_MANAGE not in perms and MEMBERS_VIEW in perms
+    from accounts.mfa_policy import MFA_PERMISSIONS
+
+    # Gesamtaudit 05.11. F-02: auch das Lesen aller Mitglieder ruht, Unkritisches bleibt
+    assert ROLES_MANAGE not in perms and MEMBERS_VIEW not in perms
+    assert perms and not perms & MFA_PERMISSIONS
     # Rollen lesen geht weiter (nur Bearbeiten braucht den zweiten Faktor)
     assert api(board_a).get(f"/api/orgs/{orgs['a'].pk}/roles/").status_code == 200
     created = api(board_a).post(
