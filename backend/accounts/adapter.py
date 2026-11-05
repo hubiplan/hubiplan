@@ -7,6 +7,17 @@ class AccountAdapter(DefaultAccountAdapter):
         # Konten werden von Verwaltenden angelegt, nicht selbst registriert.
         return False
 
+    def get_client_ip(self, request) -> str:
+        """Adresse des Aufrufers wie bei allen eigenen Grenzen (``core.ratelimit``).
+
+        allauth nähme sonst ``REMOTE_ADDR``. Hinter Caddy ist das für alle Aufrufer
+        dieselbe Adresse, und die Grenzen für Anmeldungen würden für alle zugleich
+        greifen (Gesamtaudit 05.11. GA-01).
+        """
+        from core.ratelimit import client_ip
+
+        return client_ip(request) or super().get_client_ip(request)
+
     def send_mail(self, template_prefix, email, context):
         """Mails von allauth (z. B. „Passwort vergessen“) in der Sprache des Kontos."""
         from django.utils import translation

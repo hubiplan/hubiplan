@@ -6334,5 +6334,9 @@
   "Termin öffnen": "Open event",
   "home|Alle Termine": "All events",
   "Eine Rechnung ist offen ({x}).": "One invoice is open ({x}).",
-  "{n} Rechnungen sind offen ({x}).": "{n} invoices are open ({x})."
+  "{n} Rechnungen sind offen ({x}).": "{n} invoices are open ({x}).",
+  "Danke. Bitte bestätige den Wechsel jetzt noch mit dem Link, der an deine bisherige Adresse gegangen ist.": "Thank you. Please now also confirm the change with the link sent to your previous address.",
+  "Danke. Bitte bestätige den Wechsel jetzt noch mit dem Link, der an {email} gegangen ist.": "Thank you. Please now also confirm the change with the link sent to {email}.",
+  "Wir haben Bestätigungslinks an die neue und an die bisherige Adresse geschickt. Bitte beide öffnen.": "We have sent confirmation links to the new and to your previous address. Please open both.",
+  "Neue Adresse {pending_email} wartet auf Bestätigung. Bitte die Links in den Mails an diese und an deine bisherige Adresse öffnen.": "New address {pending_email} is waiting for confirmation. Please open the links in the emails sent to this address and to your previous address."
 }
