@@ -90,9 +90,12 @@ MODULE_MODELS = (
     "music.Assignment",
     "music.PerformanceNotice",
     "music.PerformanceAccount",
+    "music.EngagementDocument",
     "music.FeeTemplate",
     "music.MusicianClaim",
     "music.PerformanceExpense",
+    "music.PayoutRun",
+    "music.PayoutItem",
     "music.PreviousPerformanceInvoice",
     "music.Piece",
     "music.Arrangement",
@@ -150,6 +153,9 @@ MODULE_MODELS = (
     "website.WebsiteImage",
     "website.WebsiteText",
     "website.WebsiteRevision",
+    # Galerie (Ralf 05.11.2026): Alben vor ihren Bildern
+    "website.GalleryAlbum",
+    "website.GalleryItem",
     "website.PublicationConsent",
     # Social-Media-Beiträge mit Freigabe/Ausblendung (Audit 31.10. D31-03); Zugangsdaten
     # zu Meta kommen nicht mit (SECRET_FIELDS), der Kanal muss neu verbunden werden
@@ -229,6 +235,8 @@ DROP_IF_MISSING = {
     "events.eventresponse": "membership",
     # Empfänger in anderen Vereinen (Rundschreiben des Dachverbands) kommen nicht mit
     "circulars.circularrecipient": "club",
+    # Bild nicht in der Datei (Export ohne Dateien): fällt aus dem Album
+    "website.galleryitem": "image",
 }
 
 
@@ -855,6 +863,9 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
         secret = SECRET_FIELDS.get(name, set())
         fields = [f for f in model._meta.concrete_fields if f.name not in SKIP | secret]
         drop_key = DROP_IF_MISSING.get(name)
+        if name == "website.galleryalbum":
+            # Oberalben zuerst, damit Unteralben ihr Oberalbum finden
+            rows = sorted(rows, key=lambda r: isinstance(r, dict) and r.get("parent") is not None)
         for row in rows:
             if drop_key:
                 field = model._meta.get_field(drop_key)

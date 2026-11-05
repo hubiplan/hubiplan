@@ -17,6 +17,6 @@ stichworte: [shooting, competition, scoring, ranking, certificate]
 7. Open **Evaluation**, choose **Mark as provisional** and decide ties in a shoot-off.
 8. Under **Competition and finalisation**, click **Close as final** and print the certificates.
 
-Available shooting facilities can be configured under [Settings › Organisation](/einstellungen/organisation). Target selection then shows matching targets first; the full catalogue remains available for other venues. Bird shooting uses bird parts instead of shooting rounds; external competitions record your own places.
+Available shooting facilities can be configured under [Settings › Organisation](/einstellungen/organisation), including a high stand for the bird shoot. Target selection then shows matching targets first; the full catalogue remains available for other venues. Bird shooting uses bird parts instead of shooting rounds; external competitions record your own places.
 
 ![Starting point: Create and evaluate a competition](bild:wettbewerb-anlegen)

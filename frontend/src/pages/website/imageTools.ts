@@ -1,5 +1,6 @@
 // Hilfen für die Bilder der Webseite (Übersicht, Bearbeiten, Auswahl in images.tsx).
 import { useEffect, useRef, useState } from 'react'
+import type { DragEvent } from 'react'
 import { ApiError } from '../../api/client.ts'
 import { contentApi } from '../../api/website.ts'
 import type { WebsiteImage } from '../../api/website.ts'
@@ -25,17 +26,23 @@ export function useImageUpload() {
   // auch während des Zuschneidens, damit Strg+V nicht ein zweites Fenster öffnet
   const [working, setWorking] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Fortschritt bei vielen Bildern (Galerie): erledigt / gesamt
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
 
+  /** ``cropEach: false``: ohne Zuschnitt-Fenster hochladen (viele Fotos für die Galerie;
+   *  der Ausschnitt lässt sich danach unter „Bild bearbeiten“ wählen). */
   async function upload(
     files: File[],
-    extra: { department?: number | null; alt_text?: string } = {},
+    extra: { department?: number | null; alt_text?: string; cropEach?: boolean } = {},
   ): Promise<WebsiteImage[]> {
     setError(null)
     setWorking(true)
     const done: WebsiteImage[] = []
+    const errors: string[] = []
+    setProgress(files.length > 1 ? { done: 0, total: files.length } : null)
     try {
-      for (const file of files) {
-        const result = await crop.pickArea(file)
+      for (const [index, file] of files.entries()) {
+        const result = extra.cropEach === false ? { file, crop: null } : await crop.pickArea(file)
         if (!result) continue
         setBusy(true)
         try {
@@ -49,18 +56,21 @@ export function useImageUpload() {
             }),
           )
         } catch (err) {
-          setError(t('{name}: {x}', { name: file.name, x: errorMessage(err) }))
+          errors.push(t('{name}: {x}', { name: file.name, x: errorMessage(err) }))
+          setError(errors.join(' · '))
         } finally {
           setBusy(false)
+          if (files.length > 1) setProgress({ done: index + 1, total: files.length })
         }
       }
     } finally {
       setWorking(false)
+      setProgress(null)
     }
     return done
   }
 
-  return { upload, busy, working, error, dialog: crop.dialog }
+  return { upload, busy, working, error, progress, dialog: crop.dialog }
 }
 
 /** Löschen mit Rückfrage; wird das Bild verwendet, nennt die zweite Rückfrage die Stellen. */
@@ -146,4 +156,11 @@ export function usePasteImages(enabled: boolean, onFiles: (files: File[]) => voi
     document.addEventListener('paste', paste)
     return () => document.removeEventListener('paste', paste)
   }, [enabled])
+}
+
+const DROP_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+/** Auf eine Fläche gezogene Bilddateien (JPEG, PNG, WebP) */
+export function droppedImages(e: DragEvent): File[] {
+  return Array.from(e.dataTransfer.files).filter((f) => DROP_TYPES.includes(f.type))
 }

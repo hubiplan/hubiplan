@@ -30,6 +30,7 @@ BLOCKS = {
     "units": "Untereinheiten",
     "honors": "Majestäten",
     "results": "Ergebnisse",
+    "gallery": "Galerie",
     "history": "Chronik",
     "offices": "Ämter",
     "statutes": "Dokumente",
@@ -43,13 +44,16 @@ BLOCK_HINTS = {
     "units": "Seiten der Untereinheiten",
     "honors": "aktuelle und frühere Würdenträger",
     "results": "Wettbewerbe mit „auf der Webseite“, Reihen und Wanderpokale",
+    "gallery": "Fotoalben unter Webseite › Galerie",
     "history": "Textseite zur Geschichte des Vereins (Webseite › Texte)",
     "offices": "heutige und frühere Inhaber der Rollen mit „unter Ämter zeigen“",
     "statutes": "Satzung, Beitragsordnung und Gründungsurkunde zum Herunterladen",
     "contact": "Kontaktformular",
     "social": "oben im Kopf, auf dem Handy im Menü",
 }
-DEFAULT_BLOCKS = {key: True for key in BLOCKS}
+# Neue Bereiche, die erst nach dem Einschalten erscheinen (die Galerie, Ralf 05.11.)
+DEFAULT_OFF_BLOCKS = {"gallery"}
+DEFAULT_BLOCKS = {key: key not in DEFAULT_OFF_BLOCKS for key in BLOCKS}
 # Menüpunkte unter „Würdenträger“, die sich einzeln ausschalten lassen (Ralf 2026-10-31):
 # ``dignity:<Nummer>`` je Würde und ``honorary`` für die Ehrungen. Ohne Eintrag: an.
 EXTRA_BLOCK = re.compile(r"^(dignity:[1-9][0-9]{0,9}|honorary)$")
@@ -165,6 +169,10 @@ class Website(models.Model):
     # Auch der Schlüssel eines freigegebenen Designpakets (DesignPackage, Ralf 2026-11-02);
     # geprüft wird im Code (design_choices), nicht über feste choices.
     design = models.CharField("Design", max_length=40, default=DEFAULT_DESIGN)
+    # Galerie (Ralf 05.11.): Reihenfolge der Alben auf der Galerie-Seite
+    gallery_order = models.CharField(
+        "Alben sortieren nach", max_length=20, default="date_desc", blank=True
+    )
     color_roles = models.JSONField("Farbzuordnung je Design", default=dict, blank=True)
     name_format = models.CharField(
         "Namensform", max_length=10, choices=NameFormat.choices, default=NameFormat.FULL
@@ -465,5 +473,11 @@ class PublicationConsent(models.Model):
 
 
 from .contact_models import HeldMessage  # noqa: E402, F401
-from .content_models import WebsiteImage, WebsiteRevision, WebsiteText  # noqa: E402, F401
+from .content_models import (  # noqa: E402, F401
+    GalleryAlbum,
+    GalleryItem,
+    WebsiteImage,
+    WebsiteRevision,
+    WebsiteText,
+)
 from .social_models import SocialFeed, SocialPost, SocialPostImage  # noqa: E402, F401

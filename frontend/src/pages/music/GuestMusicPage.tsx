@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { ApiError, parseBody, send } from '../../api/client.ts'
+import { ApiError, parseBody, send, saveBlob } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { usePublicImprint } from '../../components/publicImprint.ts'
 import { Alert } from '../../components/ui.tsx'
@@ -9,6 +9,8 @@ import { MusicStatus } from './MusicLayout.tsx'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
 
 type GuestPerformance = {
+  kind?: string
+  scores?: { id: number; title: string; filename: string; usage_note: string }[]
   title: string
   organization: string
   imprint_key: string
@@ -32,7 +34,8 @@ type GuestPerformance = {
 
 export function GuestMusicPage() {
   const { hash } = useLocation()
-  const token = hash.slice(1)
+  const rehearsal = hash.startsWith('#probe-')
+  const token = hash.slice(rehearsal ? 7 : 1)
   if (!/^[0-9a-f]{64}$/.test(token))
     return (
       <main className="music-guest-page">
@@ -40,13 +43,14 @@ export function GuestMusicPage() {
         <Alert kind="error">{t('Diese Einladung ist ungültig oder abgelaufen.')}</Alert>
       </main>
     )
-  return <GuestAssignment key={token} token={token} />
+  return <GuestAssignment key={token} token={token} rehearsal={rehearsal} />
 }
 
-function GuestAssignment({ token }: { token: string }) {
+function GuestAssignment({ token, rehearsal }: { token: string; rehearsal: boolean }) {
+  const endpoint = rehearsal ? '/api/music/guest-rehearsal/' : '/api/music/guest/'
   async function call(method: 'GET' | 'POST', status?: string) {
     const response = await send(
-      '/api/music/guest/',
+      endpoint,
       {
         method,
         credentials: 'omit',
@@ -92,7 +96,7 @@ function GuestAssignment({ token }: { token: string }) {
       <meta name="referrer" content="no-referrer" />
       <meta name="robots" content="noindex,nofollow" />
       <header className="music-page-header">
-        <h1>{t('Meine Auftrittseinteilung')}</h1>
+        <h1>{rehearsal ? t('Meine Probeneinteilung') : t('Meine Auftrittseinteilung')}</h1>
         <p className="muted">{row.organization}</p>
       </header>
       <article className="card stack music-record">
@@ -100,7 +104,9 @@ function GuestAssignment({ token }: { token: string }) {
         <MusicStatus status={row.cancelled ? 'declined' : row.status} />
         {error && <Alert kind="error">{error}</Alert>}
         {message && <Alert kind="success">{message}</Alert>}
-        {row.cancelled && <Alert kind="error">{t('Auftritt abgesagt')}</Alert>}
+        {row.cancelled && (
+          <Alert kind="error">{rehearsal ? t('Probe abgesagt') : t('Auftritt abgesagt')}</Alert>
+        )}
         <dl className="music-details">
           <div>
             <dt>{t('Termin')}</dt>
@@ -160,6 +166,40 @@ function GuestAssignment({ token }: { token: string }) {
                 </li>
               ))}
             </ol>
+          </section>
+        )}
+        {!!row.scores?.length && (
+          <section className="stack">
+            <h3>{t('Freigegebene Noten')}</h3>
+            {row.scores.map((score) => (
+              <div key={score.id}>
+                <button
+                  className="button button-ghost"
+                  disabled={busy}
+                  onClick={async () => {
+                    setBusy(true)
+                    setError('')
+                    try {
+                      const response = await send(`${endpoint}?score=${score.id}`, {
+                        method: 'GET',
+                        credentials: 'omit',
+                        headers: { Authorization: `Bearer ${token}` },
+                      })
+                      if (!response.ok)
+                        throw new ApiError(response.status, parseBody(await response.text()))
+                      saveBlob(await response.blob(), score.filename)
+                    } catch (e) {
+                      setError(errorMessage(e))
+                    } finally {
+                      setBusy(false)
+                    }
+                  }}
+                >
+                  {score.title}
+                </button>
+                {score.usage_note && <p>{score.usage_note}</p>}
+              </div>
+            ))}
           </section>
         )}
         {!!row.availability.length && <AvailabilityHint reasons={row.availability} />}

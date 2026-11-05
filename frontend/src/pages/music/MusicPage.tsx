@@ -1,4 +1,7 @@
 import { useState } from 'react'
+import { CustodyRemindersPage } from './CustodyRemindersPage.tsx'
+import { EngagementPage } from './EngagementPage.tsx'
+import { PayoutRunsPage } from './PayoutRunsPage.tsx'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
@@ -15,6 +18,7 @@ import { EnsembleTemplatesPage } from './EnsembleTemplatesPage.tsx'
 import { StaffingPage } from './StaffingPage.tsx'
 import { AvailabilityPage } from './AvailabilityPage.tsx'
 import { EquipmentPage } from './EquipmentPage.tsx'
+import { PerformanceOverview } from './PerformanceOverview.tsx'
 import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
@@ -54,6 +58,16 @@ export function MusicPage() {
 function MusicRoute() {
   const org = useActiveOrg()
   const [params] = useSearchParams()
+  if (params.get('erinnerungen')) return <CustodyRemindersPage key={org.id} />
+  if (/^\d+$/.test(params.get('vereinbarung') || ''))
+    return (
+      <EngagementPage
+        key={`${org.id}-${params.get('vereinbarung')}`}
+        performance={Number(params.get('vereinbarung'))}
+      />
+    )
+  if (params.get('auszahlungen')) return <PayoutRunsPage key={org.id} />
+  if (params.get('uebersicht')) return <PerformanceOverview key={org.id} />
   if (params.get('ausstattung')) return <EquipmentPage key={org.id} />
   if (params.get('noten')) return <ScoresPage key={org.id} />
   if (params.get('proben')) return <PracticePage key={org.id} />

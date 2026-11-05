@@ -3,7 +3,7 @@
 // Untereinheit, ersetzen, kopieren, löschen) und ein Auswahl-Dialog für Texte, der
 // auf Seiten einer Untereinheit zuerst deren Bilder zeigt.
 import { useEffect, useRef, useState } from 'react'
-import type { DragEvent, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { contentApi } from '../../api/website.ts'
 import type { WebsiteImage, WebsiteImageDetail } from '../../api/website.ts'
@@ -22,6 +22,7 @@ import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../.
 import { Why } from '../../learning/Aids.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import {
+  droppedImages,
   IMAGE_ORDERS,
   imageLabel,
   needsAlt,
@@ -43,7 +44,7 @@ const PAGE_SIZE = 40
 const FULL: CropArea = { x: 0, y: 0, width: 100, height: 100, rotation: 0, aspect: 'original' }
 
 /** Knopf „Bilder hochladen“ (mehrere Dateien) samt Ziehen auf die Fläche */
-function UploadButton({
+export function UploadButton({
   label = t('Bilder hochladen'),
   multiple = true,
   disabled,
@@ -80,10 +81,6 @@ function UploadButton({
       />
     </>
   )
-}
-
-function droppedImages(e: DragEvent): File[] {
-  return Array.from(e.dataTransfer.files).filter((f) => ACCEPT.split(',').includes(f.type))
 }
 
 // --- Filter ---
@@ -136,7 +133,7 @@ function OrderField({
 }
 
 /** Kachelraster; mit ``selected`` zum Ankreuzen, sonst zum Öffnen */
-function ImageTiles({
+export function ImageTiles({
   images,
   selected,
   onClick,
@@ -545,8 +542,15 @@ function ImageEditForm({
           <>
             <ul className="plain-list small">
               {image.usage.map((u) => (
-                <li key={u.text}>
-                  <Link to={`/webseite/inhalte?text=${u.text}`} onClick={onClose}>
+                <li key={u.album ? `a${u.album}` : `t${u.text}`}>
+                  <Link
+                    to={
+                      u.album
+                        ? `/webseite/galerie?album=${u.album}`
+                        : `/webseite/inhalte?text=${u.text}`
+                    }
+                    onClick={onClose}
+                  >
                     {u.label}
                   </Link>
                   : {u.places.join(', ')}

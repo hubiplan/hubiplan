@@ -189,7 +189,7 @@ export interface TargetInfo {
 export interface TargetCatalog {
   infrastructure_configured?: boolean
   recommended_targets?: string[]
-  facilities?: { key: string; discipline: string; distance: number }[]
+  facilities?: { key: string; discipline: string; distance: number | null }[]
   targets: TargetInfo[]
   custom: string
   methods: { value: ScoringMethod; label: string }[]

@@ -17,6 +17,6 @@ stichworte: [Schießen, Wettbewerb, Wertung, Rangliste, Urkunde]
 7. Öffne **Auswertung**, wähle **Als vorläufig kennzeichnen** und entscheide Gleichstände im Stechen.
 8. Klicke unter **Wettbewerb und Abschluss** auf **Endgültig abschließen** und drucke die Urkunden.
 
-Unter [Einstellungen › Organisation](/einstellungen/organisation) kannst du die verfügbare Schießinfrastruktur festlegen. Die Scheibenwahl zeigt dann zuerst passende Scheiben; für fremde Anlagen bleibt der vollständige Katalog erreichbar. Vogelschießen verwendet Pfänder statt Schießdurchgängen, bei fremden Wettbewerben werden die eigenen Plätze eingetragen.
+Unter [Einstellungen › Organisation](/einstellungen/organisation) kannst du die verfügbare Schießinfrastruktur festlegen, auch einen Hochstand für das Vogelschießen. Die Scheibenwahl zeigt dann zuerst passende Scheiben; für fremde Anlagen bleibt der vollständige Katalog erreichbar. Vogelschießen verwendet Pfänder statt Schießdurchgängen, bei fremden Wettbewerben werden die eigenen Plätze eingetragen.
 
 ![Ausgangspunkt: Wettbewerb anlegen und auswerten](bild:wettbewerb-anlegen)

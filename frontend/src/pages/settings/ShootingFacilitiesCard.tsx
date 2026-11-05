@@ -31,6 +31,13 @@ export function ShootingFacilitiesCard({
     ['p25', t('Pistole'), 25],
     ['p50', t('Pistole'), 50],
   ] as const
+  const labels: [string, string][] = [
+    ...facilities.map(([key, label, distance]): [string, string] => [
+      key,
+      `${label} · ${distance} m`,
+    ]),
+    ['vogel', t('Vogelschießen · Hochstand')],
+  ]
   return (
     <section className="card card-wide">
       <div className="card-head">
@@ -52,10 +59,10 @@ export function ShootingFacilitiesCard({
         {selected !== null && (
           <>
             <div className="grid-2">
-              {facilities.map(([key, label, distance]) => (
+              {labels.map(([key, label]) => (
                 <Checkbox
                   key={key}
-                  label={`${label} · ${distance} m`}
+                  label={label}
                   checked={selected.includes(key)}
                   onChange={(on) =>
                     form.set(

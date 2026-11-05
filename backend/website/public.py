@@ -856,6 +856,11 @@ class SiteView:
             ):
                 if t.kind != WebsiteText.Kind.UNIT or t.department_id in self.unit_slugs:
                     return image
+        # Galerie (Ralf 05.11.): Bilder und Titelbilder sichtbarer Alben
+        from . import gallery
+
+        if image.pk in gallery.visible_image_ids(self.site):
+            return image
         return None
 
     def menu(self) -> list[dict]:

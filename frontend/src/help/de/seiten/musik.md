@@ -10,6 +10,14 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Musik und Auftritte
 
+Unter **Auftrittsübersicht** siehst du Besetzung, ausstehende Rückmeldungen, bekannte
+Konflikte, Notenbedarf und berechtigte Abrechnungshinweise gemeinsam. Wähle bei Bedarf
+den Zeitraum und bestätige **Übersicht aktualisieren**. Hinweise führen direkt zur
+Besetzung, zum Programm oder zur Auftrittsabrechnung. „Vorbereitet“ bezieht sich nur auf
+die für dich sichtbaren Angaben und ist keine automatische Zusage. Noch nicht geplante
+Angaben bleiben offen. Finanzhinweise erscheinen nur mit Kassenleserecht. Abgesagte
+Auftritte sind gesondert markiert. Es werden zwölf Auftritte je Seite angezeigt.
+
 Die Plattform schaltet das Modul Musik je Verein frei. Rollen benötigen Musik-Lese- oder Bearbeitungsrecht. Für Auftritte wird zusätzlich Kalenderleserecht benötigt.
 
 Die Bereichsnavigation bleibt auf allen Musikseiten sichtbar: **Auftritte**, **Musiker**, **Notenbestand**, **Proben und Notenausgabe**, **Verfügbarkeiten** und **Besetzungsvorlagen**. Unter **Auftritte** wechselst du zwischen Auftritten, Sollbesetzung und Einteilungen; unter **Musiker** zwischen Profilen und instrumentalen Fähigkeiten. Der aktive Bereich ist markiert. Auf kleinen Bildschirmen werden Navigation und Eingabefelder untereinander angeordnet.
@@ -113,3 +121,72 @@ Neue Probeneinteilungen und bevorstehende offene Rückmeldungen erzeugen neutral
 Die Proben-, Rückmeldungs- und Notenausgabedaten sind im allgemeinen Datenexport enthalten. Die Datenbankmigration ergänzt Tabellen, RLS und Mengengrenzen; vor einem Rückweg die neuen Verläufe exportieren.
 
 Nach dem Löschen geschlossener Ausgaben gilt für den Materialpapierkorb die vorhandene Frist von 30 Tagen; anschließend werden die zugehörigen Musikverknüpfungen entfernt. Gegenstände mit offener Ausgabe werden vom endgültigen Bereinigen ausgenommen.
+
+## Sammelauszahlungen
+
+Unter **Sammelauszahlungen** wählt die Kasse freigegebene Restvergütungen,
+Bankkonto und Ausführungstag. Für jeden Empfänger werden Kontoinhaber, IBAN und
+gegebenenfalls BIC geprüft. **Zahlungslauf zur Prüfung speichern** reserviert die
+Vergütungen und hält Beträge und Empfängerdaten unveränderlich fest.
+Nach der Prüfung lässt sich eine SEPA-Datei (pain.001.001.09, EUR) herunterladen.
+Die Datei muss bei der Bank geprüft und freigegeben werden. Wiederholtes
+Herunterladen liefert denselben Auftrag: nicht mehrfach einreichen.
+Der Export führt keine Überweisung aus und setzt keine Vergütung auf bezahlt.
+Die Bank soll Einzelbuchungen liefern; jede tatsächliche Ausgabe wird anschließend
+in der jeweiligen Auftrittsabrechnung zugeordnet. Bankkonto und Betrag müssen zum
+Lauf passen. Stornierte Buchungen öffnen den Abgleich wieder.
+Ein aufgehobener Lauf gibt die Vergütungen frei. Bereits eingereichte Aufträge müssen
+zusätzlich bei der Bank gestoppt werden. Kassenleserecht erlaubt Einsicht,
+Kassenbearbeitungsrecht erlaubt Vorbereitung, Export und Aufhebung.
+
+## Gäste bei Proben und gezielte Notenfreigaben
+
+In der Probenübersicht öffnet **Gasteinladung** den persönlichen Zugang für genau
+­diesen Probentermin. Bei Serien sind getrennte Einladungslinks je Einzeltermin möglich.
+Den Link vertraulich weitergeben; der Gast kann ausschließlich seine eigene Zu- oder
+Absage abgeben. Ein anderer Einzeltermin lässt sich über die Rückmeldung nicht auswählen.
+Die Links können erneuert oder widerrufen werden und laufen spätestens nach 180 Tagen ab.
+Eine Änderung der Gast-E-Mail-Adresse widerruft bestehende Proben- und Auftrittslinks.
+
+Mit Verwaltungs- und Bearbeitungsrecht für Dokumente können unter der Gasteinladung
+passende Noten des aktuellen Programms ausdrücklich freigegeben werden.
+Nutzungsrechte vorher prüfen. Die Freigabe gilt nur für die ausgewählte Dateifassung,
+nicht für spätere Uploads. Unpassende Stimmen, abgesagte Termine, eine Absage des Gastes,
+entfernte Programmstücke, gelöschte/verschobene Dokumente oder entzogene Rechte der
+freigebenden Person sperren den Download. Auftrittslinks unterstützen dieselbe Freigabe.
+Abteilungs- und fremde Dokumente können auf diesem Weg nicht freigegeben werden.
+
+## Angebote und Zusagen
+
+In der Auftrittsabrechnung führt **Angebote und Zusagen** von der Anfrage zum Angebot.
+Zuerst Auftraggeber mit vollständiger Anschrift und Bruttobeträge erfassen. Danach
+Gültigkeitsfrist und Vereinbarungen prüfen und das Angebot als PDF ausgeben.
+Ausgegebene PDFs bleiben mit ihrem damaligen Inhalt und einer Prüfsumme archiviert.
+Ein neues Angebot ersetzt ein bisher noch offenes Angebot. Rechnungsnummern werden
+hierfür nicht verwendet. Die Ausgabe sendet das Dokument nicht automatisch.
+Die tatsächliche Annahme des Auftraggebers mit einem Nachweis dokumentieren;
+erst dann lässt sich eine Auftragsbestätigung ausgeben. Wiederholtes Ausgeben
+liefert dieselbe Bestätigung. Eine feste Zusage sperrt die Vereinbarungsbeträge
+und Auftrittsdaten gegen versehentliches Ändern. Für Änderungen zuerst die Aufhebung
+mit Begründung erfassen und ein neues Angebot erstellen. Ursprüngliche PDFs bleiben
+als Nachweis erhalten, auch nach einer Aufhebung. Kalenderänderungen werden nicht
+rückwirkend in archivierte Dokumente übernommen. Die Dokumente sind keine Rechnungen.
+Kassenleserecht erlaubt Einsicht; Ausgeben und Statuswechsel brauchen zusätzlich
+Musik- und Kassenbearbeitungsrecht. Für PDFs wird der bestehende Briefbogen verwendet.
+
+## Persönliche Rückgabe- und Wartungserinnerungen
+
+Unter **Erinnerungen** kannst du für dich private Aufgaben zu Notenrückgaben sowie
+Rückgaben und Wartungen der Ausstattung aktivieren. Die Vorschau umfasst null bis
+30 Tage und bereits überfällige Vorgänge. Aufgaben werden beim Speichern und danach
+stündlich abgeglichen. Für Ausstattung brauchst du weiterhin Materialleserecht;
+Abteilungsausstattung wird hier nicht einbezogen. Aufgabenlese- und Bearbeitungsrecht
+sind für die Aktivierung nötig. Du kannst keine andere Person als Empfänger eintragen.
+
+Die Aufgaben enthalten einen direkten Link zum Vorgang. Benachrichtigungen laufen
+über deine bestehenden Aufgabeneinstellungen. Eine unveränderte Aufgabe wird nach
+erfasster Rückgabe oder verschobener/erledigter Wartung automatisch erledigt. Eigene
+Bearbeitungen, Erledigungen und Löschungen bleiben erhalten und werden nicht durch
+den nächsten Abgleich rückgängig gemacht. Erst ein neuer Fälligkeitstag erzeugt eine
+neue Aufgabe. Ausschalten erledigt unveränderte automatisch angelegte Aufgaben.
+Ungefähre Prüfaufgaben ersetzen nicht die tatsächliche Rücknahme oder Wartungsbuchung.
