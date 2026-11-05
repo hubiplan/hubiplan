@@ -839,7 +839,13 @@ Backend und Worker haben feste Grenzen für Arbeitsspeicher und `/tmp`, damit ei
 Upload oder Import nicht den ganzen Server lahmlegt. Anpassbar in der `.env`:
 `BACKEND_MEM_LIMIT` (Standard `1536m`), `BACKEND_TMP_SIZE` (Standard `768m`),
 `WORKER_MEM_LIMIT` (Standard `2g`). Der Worker läuft mit zwei parallelen Aufgaben. Caddy
-nimmt höchstens 520 MB je Anfrage an.
+nimmt für die Datenübernahme höchstens 520 MB je Anfrage an, für alle anderen Pfade 64 MB.
+Uploads über 5 MB schreibt Django in das Volume `upload-tmp` (Platte, nicht im Backup),
+nicht nach `/tmp`, das im Arbeitsspeicher liegt.
+
+Abrufe bei fremden Servern (Kalender, Homepage-Vorschau, Social Media, Verbund) haben neben
+der Frist je Lesevorgang eine Gesamtfrist; die zugehörigen Hintergrundaufgaben haben eine
+Laufzeitgrenze. Ein Server, der nur tröpfchenweise antwortet, hält so keinen Worker fest.
 
 Seit dem Audit vom 02.11. (O-P01) haben alle Dienste Obergrenzen, damit HUBIplan andere
 Dienste auf einem geteilten Server (Hestia, Mail, Nextcloud) nicht verdrängt. Es sind

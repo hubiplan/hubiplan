@@ -446,6 +446,10 @@ PRIVATE_ROOT = Path(os.environ.get("PRIVATE_ROOT", BASE_DIR / "private"))
 LOESCHLISTE_PATH = os.environ.get("LOESCHLISTE_PATH", "")
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
+# Größere Uploads auf die Platte statt nach /tmp: /tmp liegt im Arbeitsspeicher des
+# Containers, mehrere große Uploads zugleich brächten ihn an seine Speichergrenze
+# (Gesamtaudit 05.11. GA-09). Leer: Standard des Systems.
+FILE_UPLOAD_TEMP_DIR = os.environ.get("FILE_UPLOAD_TEMP_DIR") or None
 # Virenprüfung mit dem clamd des Servers (Fachfrage 4, 31.10.b); leer: keine Prüfung
 CLAMD_SOCKET = os.environ.get("CLAMD_SOCKET", "")
 CLAMD_MAX_BYTES = int(os.environ.get("CLAMD_MAX_BYTES", str(25 * 1024 * 1024 - 64 * 1024)))

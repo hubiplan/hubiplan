@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import io
 import logging
+import time
 import urllib.parse
 from html.parser import HTMLParser
 
@@ -30,6 +31,9 @@ MAX_PAGE = 1024 * 1024
 MAX_IMAGE = 5 * 1024 * 1024
 MAX_REDIRECTS = 4
 TIMEOUT = 8
+# Höchstens so viele Sekunden für Seite, Weiterleitungen und Bild zusammen: Der Abruf
+# läuft auch direkt in einer Anfrage (Gesamtaudit 05.11. GA-03).
+BUDGET = 20
 PREVIEW_MAX_SIDE = 1200
 MAX_PIXELS = 40_000_000
 FORMATS = {"PNG", "JPEG", "MPO", "WEBP", "GIF"}
@@ -76,10 +80,18 @@ def _https(url: str) -> str | None:
     return urllib.parse.urlunsplit(parts)
 
 
-def _get(url: str, max_body: int) -> tuple[str, safehttp.Response]:
-    """GET mit eigener Weiterleitung; liefert die letzte Adresse und die Antwort."""
+def _get(url: str, max_body: int, until: float | None = None) -> tuple[str, safehttp.Response]:
+    """GET mit eigener Weiterleitung; liefert die letzte Adresse und die Antwort.
+
+    ``until``: Zeitpunkt (``time.monotonic``), bis zu dem alles fertig sein muss."""
+    until = until if until is not None else time.monotonic() + BUDGET
     for _ in range(MAX_REDIRECTS + 1):
-        resp = safehttp.request("GET", url, headers=HEADERS, timeout=TIMEOUT, max_body=max_body)
+        left = until - time.monotonic()
+        if left <= 0:
+            raise safehttp.SafeHTTPError(gettext("Zeitüberschreitung."))
+        resp = safehttp.request(
+            "GET", url, headers=HEADERS, timeout=TIMEOUT, max_body=max_body, deadline=left
+        )
         if resp.status in (301, 302, 303, 307, 308):
             location = {k.lower(): v for k, v in resp.headers.items()}.get("location")
             nxt = _https(urllib.parse.urljoin(url, location or ""))
@@ -131,8 +143,9 @@ def fetch_preview(homepage: str) -> bytes:
     start = _https(homepage)
     if not start:
         raise NoPreview("Die Adresse der Homepage ist ungültig.")
+    until = time.monotonic() + BUDGET
     try:
-        page_url, page = _get(start, MAX_PAGE)
+        page_url, page = _get(start, MAX_PAGE, until)
     except safehttp.SafeHTTPError as exc:
         raise NoPreview(f"Die Homepage ist nicht erreichbar ({exc}).") from exc
     ctype = {k.lower(): v for k, v in page.headers.items()}.get("content-type", "")
@@ -142,7 +155,7 @@ def fetch_preview(homepage: str) -> bytes:
     if not image_url:
         raise NoPreview("Die Homepage bietet kein Vorschaubild an (og:image fehlt).")
     try:
-        _, image = _get(image_url, MAX_IMAGE)
+        _, image = _get(image_url, MAX_IMAGE, until)
         return clean_preview(image.body)
     except (safehttp.SafeHTTPError, ValidationError) as exc:
         raise NoPreview("Das Vorschaubild der Homepage ließ sich nicht laden.") from exc

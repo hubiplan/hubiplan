@@ -104,6 +104,8 @@ def _http(method: str, url: str, headers: dict, body: bytes | None, limit: int):
             body=body,
             timeout=TIMEOUT,
             max_body=limit,
+            # Große Pakete brauchen länger; mindestens etwa 250 KB/s sind verlangt
+            deadline=60 + len(body or b"") / 250_000,
             allow_internal=insecure,
             allow_http=insecure,
         )
