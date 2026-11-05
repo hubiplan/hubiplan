@@ -1,5 +1,24 @@
 # Musik und Auftritte
 
+## Auftrittsübersicht und Handlungsbedarf
+
+Unter **Auftrittsübersicht** werden sichtbare Auftritte standardmäßig von 90 Tagen
+zurück bis 180 Tage voraus angezeigt. Ein gewählter Zeitraum darf höchstens ein Jahr
+umfassen; die Ausgabe ist mit zwölf Auftritten je Seite begrenzt. Jede Karte zeigt
+Sollplätze, Zusagen, offene Antworten und konkrete Links zu Besetzung, Programm
+oder Abrechnung. Farben werden stets durch beschriftete Zustände ergänzt.
+
+Fehlende Besetzungen, bekannte Verfügbarkeitskonflikte und fehlende Exemplare erzeugen
+Handlungsbedarf. Nicht geplante Besetzungen/Programme bleiben offen. Der Notenbedarf
+verwendet dieselbe Berechnung wie die Programmliste; bereits bei eingeplanten Musikern
+befindliche Exemplare werden berücksichtigt. Programm-Stimmen werden je Stück gezählt,
+nicht als zusätzliche unterschiedliche Personen. Absagen erzeugen keine Arbeitsaufträge.
+Finanzhinweise benötigen ein aktives Kassenmodul und Kassenleserecht. Sie umfassen
+fehlende Vereinbarung/Rechnung nach dem Auftritt, überfällige tatsächliche Forderungen,
+Vergütungsentwürfe und noch nicht vollständig ausgezahlte freigegebene Vergütungen.
+Die Übersicht ändert keine Daten, Rückmeldungen oder Freigaben. Kalenderfreigaben
+bleiben maßgeblich; Inhalte anderer Termine und private Abwesenheitsgründe bleiben verborgen.
+
 ## Vergütungsvorlagen und Sammelabrechnung
 
 Im Abrechnungsbereich stehen mandantengetrennte **Vergütungsvorlagen** mit Gage und Pauschale zur Verfügung (Musikleserecht plus Kassenlese-/bearbeitungsrecht). Archivieren verhindert neue Anwendungen. Eine Sammelanlage übernimmt die Beträge als unveränderlichen Ausgangswert in neue Entwürfe; spätere Vorlagenänderungen beeinflussen bestehende Vergütungen nicht. Jede ausgewählte Einteilung benötigt eine ausdrückliche Teilnahmeangabe. Auslagen beginnen mit 0 und werden einzeln ergänzt. Es erfolgt keine automatische Freigabe. Der Endpunkt `batch_claims` erfordert einen Idempotenzschlüssel und speichert die Auswahl atomar; vorhandene Vergütungen werden abgewiesen statt überschrieben. Vorlagen sind im allgemeinen Datenexport enthalten.
@@ -107,3 +126,24 @@ Neue Probeneinteilungen und bevorstehende offene Rückmeldungen erzeugen neutral
 Die Proben-, Rückmeldungs-, Einzelprogramm- und Notenausgabedaten sind im allgemeinen Datenexport enthalten. Die Datenbankmigration ergänzt Tabellen, RLS und Mengengrenzen; vor einem Rückweg die neuen Verläufe exportieren. Einzelprogramme sind zusätzliche Tabellen; frühere Fassungen ignorieren sie und zeigen nur die Serienvorlage.
 
 Nach dem Löschen geschlossener Ausgaben gilt für den Materialpapierkorb die vorhandene Frist von 30 Tagen; anschließend werden die zugehörigen Musikverknüpfungen entfernt. Gegenstände mit offener Ausgabe werden vom endgültigen Bereinigen ausgenommen.
+
+## Ergänzende Arbeitsabläufe
+
+- Sammelauszahlungen: unveränderliche, verschlüsselte Zahlungsläufe reservieren freigegebene
+  Restvergütungen. pain.001.001.09 wird gegen das mitgelieferte GBIC-5-Schema geprüft.
+  Der Download ist reproduzierbar und führt keine Zahlung aus. Tatsächliche Einzelbuchungen
+  werden unter derselben Kassen-Sperre abgeglichen; Stornos bleiben sichtbar.
+- Proben-Gastzugänge gelten genau für eine Einladung und einen ursprünglichen Einzeltermin.
+  Eigene Token-Domäne, Rotation, Widerruf, begrenzte Laufzeit und erneute Rechteprüfung
+  entsprechen Auftrittslinks. Token und Freigaben werden nicht als Vereinsdaten exportiert.
+  Explizite Notenfreigaben frieren die Version ein, sind an Programm/Stimme gebunden und
+  prüfen aktuelle Dokumentenverwaltungsrechte. Abteilungs-/fremde Dokumente bleiben außen vor.
+- Angebote und Auftragsbestätigungen archivieren private PDFs mit Prüfsumme und vollständigem
+  Datenstand, eigener Nummerierung und Annahmenachweis. Die Kasse und Kalenderrechte grenzen
+  den Zugriff ein. Neue Angebote ersetzen offene Fassungen; Zusagen müssen für Änderungen
+  begründet aufgehoben werden. Finanzielle Aufbewahrung, Datei-Backup und Datenübertragung
+  beziehen die Originale ein. Es findet kein automatischer Versand statt.
+- Rückgabe-/Wartungsaufgaben sind persönliche Opt-ins. Sie verwenden reguläre private Todos,
+  generische Titel ohne Personenangaben, bestehende Erinnerungen und Links zum Quellvorgang.
+  Ein Ledger verhindert doppelte Aufgaben bei Wiederholung oder manueller Löschung.
+  Automatisch abgeschlossen werden nur unveränderte Aufgaben; Fristwechsel sind neue Vorgänge.

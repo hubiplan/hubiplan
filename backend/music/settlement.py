@@ -26,6 +26,7 @@ from .models import (
     Assignment,
     FeeTemplate,
     MusicianClaim,
+    PayoutItem,
     Performance,
     PerformanceAccount,
     PerformanceExpense,
@@ -238,6 +239,10 @@ class SettlementView(OrgScopedMixin, APIView):
             except DjangoValidationError as exc:
                 raise serializers.ValidationError(exc.messages) from exc
         if action == "agreement":
+            if performance.engagement_documents.filter(kind="offer", status="accepted").exists():
+                raise serializers.ValidationError(
+                    gettext("Bitte zuerst die bestehende Zusage aufheben.")
+                )
             if account.invoice_id and account.invoice.status != "draft":
                 raise serializers.ValidationError(
                     gettext("Die Vereinbarung ist bereits mit einer Rechnung verbunden.")
@@ -371,6 +376,10 @@ class SettlementView(OrgScopedMixin, APIView):
                 assignment__performance=performance,
                 organization=self.org,
             )
+            if PayoutItem.objects.filter(claim=claim, released=False).exists():
+                raise serializers.ValidationError(
+                    gettext("Bitte zuerst den Zahlungslauf aufheben.")
+                )
             if active_payments(claim).exists():
                 raise serializers.ValidationError(
                     gettext("Bitte zuerst die Auszahlung in der Kasse stornieren.")
@@ -463,9 +472,26 @@ class SettlementView(OrgScopedMixin, APIView):
                 ensure_open(self.org, date=booking.date)
             except DjangoValidationError as exc:
                 raise serializers.ValidationError(exc.messages) from exc
-            PerformanceExpense.objects.create(
+            payout_item = (
+                PayoutItem.objects.filter(claim=claim, released=False).select_related("run").first()
+                if claim
+                else None
+            )
+            if payout_item and (
+                payout_item.expense_id
+                or booking.amount != payout_item.amount
+                or booking.account_id != payout_item.run.bank_account_id
+                or not payout_item.run.exported_at
+            ):
+                raise serializers.ValidationError(
+                    gettext("Die Buchung muss zum exportierten Zahlungslauf passen.")
+                )
+            expense = PerformanceExpense.objects.create(
                 organization=self.org, account=account, claim=claim, booking=booking
             )
+            if payout_item:
+                payout_item.expense = expense
+                payout_item.save(update_fields=["expense"])
             record(
                 self.org,
                 request.user,

@@ -10,6 +10,14 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Music and performances
 
+**Performance overview** combines staffing, pending responses, known conflicts,
+sheet music requirements and permitted settlement issues. Select a period and choose
+**Update overview** when needed. Each issue links to staffing, the programme or the
+performance settlement. “Prepared” refers only to information you can access; it does not
+confirm attendance. Missing planning details remain open. Finance issues require
+cashbook read access. Cancelled performances are marked separately. Each page shows
+twelve performances.
+
 The platform enables Music per organization. Roles need music viewing or editing permission. Performances also require calendar viewing permission.
 
 Section navigation remains visible on every music page: **Performances**, **Musicians**, **Sheet music library**, **Rehearsals and sheet music checkout**, **Availability** and **Instrumentation templates**. Under **Performances**, switch between performances, required instrumentation and assignments; under **Musicians**, switch between profiles and instrumental skills. The active section is marked. Navigation and form fields stack on smaller screens.
@@ -113,3 +121,56 @@ New rehearsal assignments and upcoming pending responses generate neutral notice
 General exports include rehearsal, response and checkout data. The additive migration includes tables, RLS and quantity constraints; export the new history before rolling back.
 
 After an inventory item with closed issues is deleted, the existing 30-day trash period applies; its music links are then removed. Items with an outstanding issue are excluded from permanent cleanup.
+
+## Batch payouts
+
+In **Batch payouts**, select approved outstanding remuneration, a bank account
+and an execution date. Check each holder, IBAN and optional BIC. Saving a run for
+review reserves claims and freezes amounts and recipient details.
+Download the SEPA file (pain.001.001.09, EUR), check it and approve it at your bank.
+Repeated downloads contain the same instruction; do not submit the file twice.
+Export does not execute transfers or mark claims paid. The file requests individual
+bank entries. Assign each actual expense in the performance settlement; bank account
+and amount must match. Reversed bookings reopen reconciliation.
+Cancelling a run releases claims; submitted transfers must also be stopped at the bank.
+Finance read access permits inspection; edit access is required to prepare, export or cancel.
+
+## Rehearsal guests and explicit sheet music sharing
+
+In the rehearsal overview, **Guest invitation** creates a personal link for exactly
+one occurrence. Series occurrences can have separate links. Share links confidentially.
+Guests can only accept or decline their own assigned occurrence. Links can be rotated
+or revoked and expire within 180 days. Changing a guest email revokes rehearsal and
+performance links.
+Document managers with edit rights may explicitly share matching sheet music from the
+current programme. Check usage rights first. A grant covers the selected file version;
+later uploads are not shared automatically. Downloads stop when the guest declines,
+the event is cancelled, the piece leaves the programme, the document is deleted or moved,
+or the grantor loses permission. Performance invitations support the same sharing.
+Department documents and documents from other organisations cannot be shared this way.
+
+## Offers and confirmations
+
+Open **Offers and confirmations** from a performance settlement. First complete the
+customer address and gross amounts. Check expiry date and agreements before issuing
+the offer PDF. Issued PDFs and checksums preserve their original content. A new offer
+supersedes a pending offer. Invoice numbering is separate. Issuing does not send mail.
+Record the customer's actual acceptance with evidence, then issue an order confirmation.
+Repeated issuance returns the same confirmation. Firm confirmation locks agreed amounts
+and performance details. Record cancellation with a reason before making changes and
+issuing a new offer. Original PDFs remain as evidence after cancellation. Calendar changes
+do not alter archived documents. These documents are not invoices. Finance readers can
+inspect documents; issuance and status changes require finance and music edit rights.
+PDFs use the existing letterhead.
+
+## Personal return and maintenance reminders
+
+In **Reminders**, enable private tasks for your own sheet music returns and equipment
+returns and maintenance. Choose zero to 30 days ahead; overdue records are included.
+Tasks are reconciled on save and hourly. Equipment still requires inventory read access;
+department equipment is excluded. Enabling requires task read and edit permission.
+You cannot select another recipient. Each task links directly to its source record.
+Notifications use your existing task settings. Unchanged tasks are completed after a
+recorded return or changed/completed maintenance. Your edits, completions and deletions
+are preserved; only a new due date creates another task. Disabling completes unchanged
+automatically created tasks. A review task does not itself record return or maintenance.

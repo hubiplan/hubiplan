@@ -8,6 +8,37 @@ from django.db import models
 from django.utils import timezone
 
 from core.encfields import EncryptedCharField, EncryptedJSONField
+from core.privatefiles import PrivateFileField
+from exchange.models import private_storage
+
+
+def engagement_path(instance, filename):
+    return f"music-agreements/{instance.organization_id}/{instance.reference}/{filename}"
+
+
+class EngagementDocument(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    performance = models.ForeignKey(
+        "Performance", on_delete=models.PROTECT, related_name="engagement_documents"
+    )
+    reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    kind = models.CharField(max_length=12)
+    status = models.CharField(max_length=12, default="issued")
+    snapshot = EncryptedJSONField(default=dict, strict=True)
+    file = PrivateFileField(storage=private_storage, upload_to=engagement_path, blank=True)
+    sha256 = models.CharField(max_length=64, blank=True)
+    valid_until = models.DateField(null=True, blank=True)
+    offer = models.ForeignKey(
+        "self", on_delete=models.PROTECT, null=True, blank=True, related_name="confirmations"
+    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    acceptance_note = EncryptedCharField(max_length=1000, strict=True, blank=True)
+    resolution_note = EncryptedCharField(max_length=1000, strict=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"Auftrittsdokument {self.reference}"
 
 
 class Musician(models.Model):
@@ -29,6 +60,46 @@ class Musician(models.Model):
 
     def __str__(self):
         return self.name or f"Musiker {self.pk}"
+
+
+class PayoutRun(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    bank_account = models.ForeignKey("finance.Account", on_delete=models.PROTECT)
+    execution_date = models.DateField()
+    debtor = EncryptedJSONField(default=dict, strict=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    exported_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"Zahlungslauf {self.reference}"
+
+
+class PayoutItem(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    run = models.ForeignKey(PayoutRun, on_delete=models.CASCADE, related_name="items")
+    claim = models.ForeignKey(
+        "MusicianClaim", on_delete=models.PROTECT, related_name="payout_items"
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payee = EncryptedJSONField(default=dict, strict=True)
+    released = models.BooleanField(default=False)
+    expense = models.OneToOneField(
+        "PerformanceExpense", null=True, blank=True, on_delete=models.PROTECT
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["claim"], condition=models.Q(released=False), name="music_claim_one_payout"
+            ),
+            models.CheckConstraint(condition=models.Q(amount__gt=0), name="music_payout_positive"),
+        ]
+
+    def __str__(self):
+        return f"Zahlungslaufposten {self.pk}"
 
 
 class MusicianAbsence(models.Model):
@@ -190,6 +261,7 @@ class GuestAccess(models.Model):
     expires_at = models.DateTimeField()
     revoked_at = models.DateTimeField(null=True, blank=True)
     auto_notify = models.BooleanField(default=False)
+    score_shares = EncryptedJSONField(default=list, db_default=[], strict=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
     )
@@ -197,6 +269,33 @@ class GuestAccess(models.Model):
 
     def __str__(self):
         return f"Gastmusikerzugang {self.pk}"
+
+
+class RehearsalGuestAccess(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    invitation = models.ForeignKey(
+        "RehearsalInvitation", on_delete=models.CASCADE, related_name="guest_accesses"
+    )
+    original_start = models.DateTimeField()
+    nonce = models.UUIDField(default=uuid.uuid4)
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    score_shares = EncryptedJSONField(default=list, strict=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["invitation", "original_start"], name="music_guest_rehearsal_once"
+            )
+        ]
+
+    def __str__(self):
+        return f"Proben-Gastzugang {self.pk}"
 
 
 class PerformanceAccount(models.Model):
@@ -281,6 +380,49 @@ class PreviousPerformanceInvoice(models.Model):
 
     def __str__(self):
         return f"Frühere Auftrittsrechnung {self.pk}"
+
+
+class MusicReminderPreference(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    enabled = models.BooleanField(default=False)
+    days_ahead = models.PositiveSmallIntegerField(default=7)
+    scores = models.BooleanField(default=True)
+    equipment = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "user"], name="music_reminder_preference_once"
+            )
+        ]
+
+    def __str__(self):
+        return f"Musikerinnerungen {self.pk}"
+
+
+class MusicReminderTask(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    preference = models.ForeignKey(
+        MusicReminderPreference, on_delete=models.CASCADE, related_name="tasks"
+    )
+    kind = models.CharField(max_length=16)
+    source = models.PositiveBigIntegerField()
+    deadline = models.DateField()
+    todo = models.OneToOneField("todos.Todo", on_delete=models.SET_NULL, null=True, blank=True)
+    managed_version = models.PositiveIntegerField(default=1)
+    auto_closed = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["preference", "kind", "source", "deadline"],
+                name="music_reminder_source_once",
+            )
+        ]
+
+    def __str__(self):
+        return f"Musikerinnerungsaufgabe {self.pk}"
 
 
 class Equipment(models.Model):

@@ -37,10 +37,14 @@ from music import staffing as music_staffing
 from music import views as music_views
 from music.availability_views import AbsenceViewSet, OwnAbsences
 from music.catalogue_import import CatalogueImportView
+from music.custody_reminders import CustodyReminderView
+from music.engagements import EngagementView
 from music.equipment import EquipmentView
 from music.guest import GuestAccessView, GuestPerformanceView
+from music.payouts import PayoutRunAction, PayoutRuns
 from music.portal import OwnAssignments
 from music.practice_portal import OwnPractice, OwnScoreFile
+from music.rehearsal_guest import GuestRehearsalView, RehearsalGuestAccessView
 from music.settlement import FeeTemplateViewSet, PerformanceInvoiceView, SettlementView
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
@@ -183,13 +187,18 @@ platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename
 
 org_patterns = [
     path("music/equipment/", EquipmentView.as_view()),
+    path("music/custody-reminders/", CustodyReminderView.as_view()),
+    path("music/payout-runs/", PayoutRuns.as_view()),
+    path("music/payout-runs/<int:pk>/", PayoutRunAction.as_view()),
     path("music/catalogue-import/", CatalogueImportView.as_view()),
     path("music/assignments/<int:pk>/guest-access/", GuestAccessView.as_view()),
+    path("music/rehearsal-invitations/<int:pk>/guest-access/", RehearsalGuestAccessView.as_view()),
     path("music/practice/", music_practice.PracticeOverview.as_view()),
     path("music/loans/", music_practice.LoanView.as_view()),
     path("music/performances/<int:pk>/program/", music_scores.ProgramView.as_view()),
     path("music/performances/<int:pk>/staffing/", music_staffing.StaffingView.as_view()),
     path("music/performances/<int:pk>/settlement/", SettlementView.as_view()),
+    path("music/performances/<int:pk>/engagement/", EngagementView.as_view()),
     path("music/performances/<int:pk>/invoice/", PerformanceInvoiceView.as_view()),
     path("todos/remote/", todo_remote.RemoteInboxView.as_view()),
     path("todos/remote/<int:remote_id>/adopt/", todo_remote.RemoteAdoptView.as_view()),
@@ -733,6 +742,7 @@ dept_patterns = [
 
 urlpatterns = [
     path("music/guest/", GuestPerformanceView.as_view()),
+    path("music/guest-rehearsal/", GuestRehearsalView.as_view()),
     path("portal/<int:access_id>/music/practice/", OwnPractice.as_view()),
     path("portal/<int:access_id>/music/files/<int:pk>/", OwnScoreFile.as_view()),
     path("portal/<int:access_id>/music/", OwnAssignments.as_view()),
