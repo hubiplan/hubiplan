@@ -28,6 +28,9 @@ WARN_AFTER = datetime.timedelta(hours=24)
 # Pakete im Postausgang, die so lange nicht zugestellt sind, werden verworfen (Härtung H4).
 # Die Stände entstehen beim nächsten Abgleich neu aus den aktuellen Daten.
 MAX_QUEUE_AGE = datetime.timedelta(days=14)
+# Unsignierte 4xx-Antworten: nach so vielen Versuchen (gut 5 Stunden) gilt das Paket als
+# abgelehnt, die folgenden werden zugestellt.
+GIVE_UP_AFTER = 8
 
 
 def enabled() -> bool:
@@ -667,6 +670,16 @@ def deliver(coupling_id: int) -> None:
                 return
             _mark(msg, Message.State.REJECTED, str(exc))
             continue
+        except transport.UnsignedResponse as exc:
+            # 413: zu groß, jeder weitere Versuch scheitert gleich. Andere 4xx nach
+            # einigen Stunden aufgeben, damit ein einzelnes Paket die Kopplung nicht
+            # bis zum Verwerfen nach 14 Tagen aufhält (Gesamtaudit 05.11. GA-02).
+            if exc.status == 413 or (400 <= exc.status < 500 and msg.attempts + 1 >= GIVE_UP_AFTER):
+                _mark(msg, Message.State.REJECTED, str(exc))
+                _on_rejected(coupling, msg, str(exc))
+                continue
+            _retry(coupling, msg, str(exc))
+            break
         except transport.PeerError as exc:
             _retry(coupling, msg, str(exc))
             break
@@ -701,6 +714,33 @@ def _on_dropped(coupling: Coupling) -> None:
                 ),
                 remote=remote,
                 base=base,
+            )
+        )
+
+
+def _on_rejected(coupling: Coupling, msg: Message, error: str) -> None:
+    """Ein Paket kam dauerhaft nicht an: Stände neu bauen lassen, Vorstand täglich
+    höchstens einmal informieren. Die folgenden Pakete gehen normal weiter."""
+    from django.core.cache import cache
+
+    Coupling.objects.filter(pk=coupling.pk).update(sent_hashes={}, last_error=error[:500])
+    coupling.sent_hashes = {}
+    if cache.add(f"peering:rejected:{coupling.pk}", 1, 24 * 3600):
+        unit, remote, base = coupling.local_unit, coupling.remote_unit.name, coupling.peer.base_url
+        kind = msg.kind
+        transaction.on_commit(
+            lambda: _mail(
+                unit,
+                gettext_noop("Verbund: Paket an {remote} nicht angenommen"),
+                gettext_noop(
+                    "{remote} ({base}) hat ein Paket ({kind}) nicht angenommen, zum Beispiel "
+                    "weil es zu groß war. Die übrigen Daten werden weiter abgeglichen. Bei "
+                    "einem Rundschreiben zur Weitergabe bitte prüfen, ob die Anhänge kleiner "
+                    "gehen, und es bei Bedarf erneut senden."
+                ),
+                remote=remote,
+                base=base,
+                kind=kind,
             )
         )
 

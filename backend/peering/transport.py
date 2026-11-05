@@ -21,7 +21,9 @@ from django.utils.translation import gettext
 from . import crypto, identity
 
 TIMEOUT = 15
-MAX_BODY = 20 * 1024 * 1024
+# Ein Rundschreiben darf 20 MB Anhänge haben; base64 im Inhalt und im Umschlag machen
+# daraus gut 36 MB (Gesamtaudit 05.11. GA-02).
+MAX_BODY = 48 * 1024 * 1024
 H_INSTANCE = "X-Hubiplan-Instance"
 H_DATE = "X-Hubiplan-Date"
 H_NONCE = "X-Hubiplan-Nonce"
@@ -191,8 +193,9 @@ def call(
         signatures_of(resp_headers),
     )
     if not ok:
-        raise PeerError(
-            gettext("Antwort ohne gültige Unterschrift (HTTP {status}).").format(status=status)
+        raise UnsignedResponse(
+            status,
+            gettext("Antwort ohne gültige Unterschrift (HTTP {status}).").format(status=status),
         )
     try:
         data = crypto.open_sealed(json.loads(resp_body), ident)
@@ -201,6 +204,15 @@ def call(
     if status >= 400:
         raise RemoteRefused(status, data.get("error") or f"HTTP {status}", data)
     return data
+
+
+class UnsignedResponse(PeerError):
+    """Antwort ohne gültige Unterschrift, etwa von einem Proxy oder einer Grenze vor der
+    Prüfung. Ein 4xx-Status deutet auf ein dauerhaftes Problem mit diesem Paket hin."""
+
+    def __init__(self, status: int, message: str):
+        super().__init__(message)
+        self.status = status
 
 
 class RemoteRefused(PeerError):

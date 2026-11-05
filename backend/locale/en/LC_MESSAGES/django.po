@@ -7574,3 +7574,21 @@ msgid ""
 "sie ist."
 msgstr ""
 "Was this not you? Then ignore this email; your address stays as it is."
+
+#: peering/services.py
+#, python-brace-format
+msgid "Verbund: Paket an {remote} nicht angenommen"
+msgstr "Federation: package not accepted by {remote}"
+
+#: peering/services.py
+#, python-brace-format
+msgid ""
+"{remote} ({base}) hat ein Paket ({kind}) nicht angenommen, zum Beispiel weil "
+"es zu groß war. Die übrigen Daten werden weiter abgeglichen. Bei einem "
+"Rundschreiben zur Weitergabe bitte prüfen, ob die Anhänge kleiner gehen, und "
+"es bei Bedarf erneut senden."
+msgstr ""
+"{remote} ({base}) did not accept a package ({kind}), for example because it "
+"was too large. The remaining data keeps being synchronised. For a circular to "
+"pass on, please check whether the attachments can be smaller and send it "
+"again if needed."
