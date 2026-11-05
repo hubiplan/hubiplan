@@ -301,8 +301,22 @@ export function useAutoSave<T extends object>(
 
 export function formatDate(value: string | null): string {
   if (!value) return '–'
-  const d = new Date(value)
+  // Reines Datum (2026-11-19) als Ortsdatum lesen, sonst verschiebt die Zeitzone den Tag.
+  const day = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  const d = day ? new Date(+day[1], +day[2] - 1, +day[3]) : new Date(value)
   return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString(locale())
+}
+
+// Ganztägige Termine ohne Uhrzeit, sonst Datum und Uhrzeit ohne Sekunden.
+export function whenLabel(value: string, allDay?: boolean) {
+  const date = new Date(value)
+  return allDay
+    ? date.toLocaleDateString(locale(), { timeZone: 'Europe/Berlin' })
+    : date.toLocaleString(locale(), {
+        timeZone: 'Europe/Berlin',
+        dateStyle: 'short',
+        timeStyle: 'short',
+      })
 }
 
 export function formatDateTime(value: string): string {

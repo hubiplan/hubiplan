@@ -1,5 +1,6 @@
 import datetime
 
+from django.utils.formats import date_format
 from django.utils.translation import gettext
 
 from .access import can_edit, scope_for, visible
@@ -33,7 +34,11 @@ def todo_tasks(user, org, perms, department_id=None):
             "kind": "todo",
             "kind_label": gettext("Aufgabe"),
             "title": t.title,
-            "detail": str(t.due_date) if t.due_date else gettext("ohne Frist"),
+            "detail": (
+                date_format(t.due_date, "SHORT_DATE_FORMAT", use_l10n=True)
+                if t.due_date
+                else gettext("ohne Frist")
+            ),
             "created_at": t.created_at,
             "ref": t.pk,
             "link": f"/aufgaben?aufgabe={t.pk}",

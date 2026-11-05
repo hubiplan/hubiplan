@@ -138,6 +138,7 @@ def event_data(link):
         "title": event.title if event else "",
         "kind": link.kind,
         "original_start": link.original_start,
+        "all_day": event.all_day if event else False,
         "valid_from": link.valid_from,
         "valid_until": link.valid_until,
         "note": link.note,
@@ -180,6 +181,7 @@ def effective_links(item, user, scope, *, start=None, end=None):
                 "title": link.event.title,
                 "starts_at": occ.starts_at,
                 "original_start": occ.original_start,
+                "all_day": link.event.all_day,
                 "kind": link.kind,
             }
     return sorted(result.values(), key=lambda r: r["starts_at"])
