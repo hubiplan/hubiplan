@@ -80,6 +80,10 @@ export function CompetitionStatistics({
               onChange={(e) => filter('stat_mitglied', e.target.value)}
             >
               <option value="">{t('Alle Mitglieder')}</option>
+              {query.membership &&
+                !data?.member_options?.some((m) => String(m.membership) === query.membership) && (
+                  <option value={query.membership}>{t('Gewähltes Mitglied')}</option>
+                )}
               {(data?.member_options ?? []).map((m) => (
                 <option key={m.membership} value={m.membership}>
                   {m.name}
@@ -129,7 +133,7 @@ export function CompetitionStatistics({
           </SelectField>
         )}
         <p className="muted small">
-          {t('Nur endgültige Ergebnisse · Mitglieder ohne Gäste und außer Konkurrenz.')}
+          {t('Nur endgültige Ergebnisse · ohne Gäste und Starts außer Konkurrenz.')}
         </p>
       </div>
       {error && <LoadError message={error} onRetry={() => void reload()} />}
@@ -175,33 +179,11 @@ function StatisticsContent({
   onGroup: (id: string) => void
 }) {
   const { summary: s, performance: p, selected_group: group } = data
-  const rings = group?.method === 'ringe' || group?.method === 'zehntel'
+  const rings = group?.is_rings ?? (group?.method === 'ringe' || group?.method === 'zehntel')
   const unit = group?.unit_label ?? ''
   const value = (n: number | null | undefined) => (n == null ? '–' : `${number(n)} ${unit}`)
   return (
     <>
-      <div className="tiles tiles-figures competition-statistics-figures">
-        <Figure
-          label={t('Teilnahmen')}
-          value={number(s.starts, 0)}
-          note={t('{n} Wettbewerbe', { n: s.competitions })}
-        />
-        <Figure
-          label={personal ? t('Siege') : t('Teilnehmende Mitglieder')}
-          value={number(personal ? s.wins : s.members, 0)}
-          note={personal ? t('Nur Einzelwertungen') : t('Jede Person einmal')}
-        />
-        <Figure
-          label={t('Podestplätze')}
-          value={number(s.podiums, 0)}
-          note={t('Platz 1 bis 3 · Einzelwertungen')}
-        />
-        <Figure
-          label={t('Errungene Pfänder')}
-          value={number(s.prizes, 0)}
-          note={t('Vogelschießen')}
-        />
-      </div>
       {group && p && (
         <section className="stack" aria-label={t('Leistungsstatistik')}>
           <div>
@@ -234,7 +216,7 @@ function StatisticsContent({
             )}
             {!personal && (
               <Figure
-                label={t('Mitgliederdurchschnitt')}
+                label={t('Durchschnitt je Mitglied')}
                 value={value(p.member_average)}
                 note={t('Jeder persönliche Durchschnitt zählt gleich')}
               />
@@ -246,13 +228,38 @@ function StatisticsContent({
                 note={
                   p.previous_average == null
                     ? t('Keine vergleichbaren Vorjahresergebnisse')
-                    : t('Jüngstes Jahr gegenüber {year}', { year: p.previous_year ?? '' })
+                    : t('{year} gegenüber {previous}', {
+                        year: (p.previous_year ?? 0) + 1,
+                        previous: p.previous_year ?? '',
+                      })
                 }
               />
             )}
           </div>
         </section>
       )}
+      <div className="tiles tiles-figures competition-statistics-figures">
+        <Figure
+          label={t('Teilnahmen')}
+          value={number(s.starts, 0)}
+          note={t('{n} Wettbewerbe', { n: s.competitions })}
+        />
+        <Figure
+          label={personal ? t('Siege') : t('Teilnehmende Mitglieder')}
+          value={number(personal ? s.wins : s.members, 0)}
+          note={personal ? t('Nur Einzelwertungen') : t('Jede Person einmal')}
+        />
+        <Figure
+          label={t('Podestplätze')}
+          value={number(s.podiums, 0)}
+          note={t('Platz 1 bis 3 · Einzelwertungen')}
+        />
+        <Figure
+          label={t('Errungene Pfänder')}
+          value={number(s.prizes, 0)}
+          note={t('Vogelschießen')}
+        />
+      </div>
       {!group && data.group_summary.length > 0 && (
         <div className="card card-wide">
           <h2>{t('Durchschnitt nach Wertungsbedingungen')}</h2>
@@ -297,9 +304,11 @@ function StatisticsContent({
         <div className="card card-wide empty-state">
           <h2>{t('Noch keine Statistik für diese Auswahl')}</h2>
           <p className="muted">
-            {t(
-              'Andere Filter wählen oder einen Wettbewerb endgültig abschließen. Fehlende Ergebnisse werden nicht als null gerechnet.',
-            )}
+            {portal
+              ? t('Deine Statistik erscheint, sobald endgültige Ergebnisse vorliegen.')
+              : t(
+                  'Für diese Auswahl liegen noch keine endgültigen Ergebnisse vor. Passe bei Bedarf die Filter an.',
+                )}
           </p>
         </div>
       )}

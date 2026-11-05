@@ -15,6 +15,7 @@ export interface StatisticsGroup {
   higher_better: boolean
   counted_shots: number | null
   maximum: number | null
+  is_rings?: boolean
 }
 
 export interface Performance {

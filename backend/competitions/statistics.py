@@ -70,6 +70,12 @@ def _conditions(scoring):
         "higher_better": scoring.higher_better,
         "counted_shots": scoring.counted_shots or scoring.shots,
         "maximum": _number(scoring.max_value),
+        "is_rings": scoring.method in (Scoring.Method.RINGS, Scoring.Method.DECIMAL)
+        or (
+            scoring.method == Scoring.Method.FREE
+            and scoring.higher_better
+            and scoring.unit_label.strip().casefold() == "ringe"
+        ),
     }
 
 
@@ -205,9 +211,7 @@ def _performance(rows, group):
         "average": _number(average),
         "member_average": _number(_mean([_mean(v) for v in by_person.values()])),
         "per_shot": _number(average / counted)
-        if average is not None
-        and counted
-        and group["method"] in (Scoring.Method.RINGS, Scoring.Method.DECIMAL)
+        if average is not None and counted and group["is_rings"]
         else None,
         "best": _number(best),
         "best_names": sorted({r["name"] for r in valid if r["value"] == best}),
@@ -246,28 +250,17 @@ def competition_statistics(org, *, person_id=None, year=None, form="", group_id=
     )
     performance = _performance(results, selected) if selected else None
     if performance is not None:
-        previous_year = (year if year is not None else max(years, default=0)) - 1
-        previous = _performance(
-            [
-                r
-                for r in all_results
-                if r["group"] == selected["id"] and int(r["date"][:4]) == previous_year
-            ],
-            selected,
-        )
-        current = _performance(
-            [
-                r
-                for r in results
-                if r["group"] == selected["id"] and int(r["date"][:4]) == previous_year + 1
-            ],
-            selected,
-        )
+        valid = [r for r in all_results if r["group"] == selected["id"] and r["value"] is not None]
+        previous_year = (
+            year if year is not None else max((int(r["date"][:4]) for r in valid), default=0)
+        ) - 1
+        previous = _mean([r["value"] for r in valid if int(r["date"][:4]) == previous_year])
+        current = _mean([r["value"] for r in valid if int(r["date"][:4]) == previous_year + 1])
         performance.update(
             previous_year=previous_year,
-            previous_average=previous["average"],
-            change=current["average"] - previous["average"]
-            if current["average"] is not None and previous["average"] is not None
+            previous_average=_number(previous),
+            change=_number(current - previous)
+            if current is not None and previous is not None
             else None,
         )
     per_group = []

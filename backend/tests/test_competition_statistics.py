@@ -86,6 +86,14 @@ def test_real_zero_counts_but_provisional_and_out_of_competition_do_not(club, pe
     assert data["performance"]["change"] is None
 
 
+def test_manually_entered_ring_totals_also_provide_ring_averages(club, people):  # noqa: F811
+    add_competition(club, people, [27], method="frei", unit_label="Ringe")
+    data = competition_statistics(club)
+    assert data["selected_group"]["is_rings"] is True
+    assert data["performance"]["average"] == 27
+    assert data["performance"]["per_shot"] == 9
+
+
 @pytest.mark.parametrize(
     "different",
     [
@@ -187,6 +195,25 @@ def test_foreign_places_keep_explicit_field_size(club, people):  # noqa: F811
     assert data["performance"]["average"] == 29
 
 
+def test_change_uses_latest_comparable_year_not_later_bird_competition(club, people):  # noqa: F811
+    add_competition(club, people, [24], date="2024-06-01")
+    add_competition(club, people, [27], date="2025-06-01")
+    comp = Competition.objects.create(
+        organization=club,
+        title="Vogelschießen",
+        date="2026-08-01",
+        status="endgueltig",
+        form="vogel",
+    )
+    Starter.objects.create(
+        organization=club, competition=comp, membership=people[0], name="Anna Weber"
+    )
+    data = competition_statistics(club, person_id=people[0].person_id)
+    assert data["performance"]["previous_year"] == 2024
+    assert data["performance"]["change"] == 3
+    assert data["buckets"][-1]["average"] is None
+
+
 def test_statistics_read_permissions_module_and_tenant(club, people, orgs, api):  # noqa: F811
     add_competition(club, people, [27, 26])
     reader = make_user("statistics-reader@example.org")
@@ -216,6 +243,8 @@ def test_statistics_read_permissions_module_and_tenant(club, people, orgs, api):
 def test_portal_statistics_never_return_other_members(club, people, api):  # noqa: F811
     from portal.models import PortalAccess
 
+    club.member_portal_enabled = True
+    club.save(update_fields=["member_portal_enabled"])
     add_competition(club, people, [27, 30])
     user = make_user("statistics-anna@example.org")
     access = PortalAccess.objects.create(organization=club, membership=people[0], user=user)

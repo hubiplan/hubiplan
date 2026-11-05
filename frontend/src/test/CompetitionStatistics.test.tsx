@@ -96,7 +96,7 @@ describe('Wettbewerbsstatistik', () => {
     expect(average.closest('.tile')).toHaveTextContent('23,8 Ringe')
     expect(average.closest('.tile')).toHaveTextContent('Aus 5 gültigen Ergebnissen')
     expect(
-      screen.getByRole('heading', { name: 'Mitgliederdurchschnitt' }).closest('.tile'),
+      screen.getByRole('heading', { name: 'Durchschnitt je Mitglied' }).closest('.tile'),
     ).toHaveTextContent('23 Ringe')
     expect(
       screen.getByRole('heading', { name: 'Ringe pro gewertetem Schuss' }).closest('.tile'),

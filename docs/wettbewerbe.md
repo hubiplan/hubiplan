@@ -26,7 +26,7 @@ die zugehörige Leistungsstatistik.
 - **Mitgliederdurchschnitt:** Mittel der persönlichen Durchschnitte; jedes Mitglied gleich
   gewichtet. Beide Werte stehen in der Gesamtsicht nebeneinander.
 - **Ringe pro gewertetem Schuss:** Ringdurchschnitt geteilt durch die gewertete Schusszahl,
-  nur bei Ringen oder Zehntelwertung und bekannter Schusszahl.
+  bei Ringen, Zehntelwertung oder frei erfassten Ringwerten mit bekannter Schusszahl.
 - **Bestleistung:** höchster beziehungsweise niedrigster Wert gemäß Wertungsrichtung.
 - **Veränderung:** Durchschnitt des ausgewählten beziehungsweise jüngsten Jahres minus
   Durchschnitt seines direkten Vorjahres, nur bei vergleichbaren Ergebnissen in beiden Jahren.
