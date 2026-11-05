@@ -186,9 +186,11 @@ def detail(site, comp) -> dict:
         if depth == Competition.WebsiteDepth.UNITS and not team:
             continue
         rows = [r for r in s["rows"] if r.get("place") is not None or r.get("value_text")]
-        if not team and depth == Competition.WebsiteDepth.PRIZES:
-            # Die Rangliste ermittelt „prize“ anhand der Preisplätze dieser Wertung,
-            # auch bei fremden Wettbewerben und geteilten Plätzen.
+        # Nur „ganze Rangliste“ zeigt alle Plätze; sonst gelten die Preisplätze der Wertung,
+        # auch für Zug- und Mannschaftswertungen (Ralf 2026-11-05). Die Rangliste ermittelt
+        # „prize“ je Wertung, auch bei fremden Wettbewerben und geteilten Plätzen.
+        limited = depth != Competition.WebsiteDepth.ALL
+        if limited:
             rows = [r for r in rows if r.get("prize")]
         scorings.append(
             {
@@ -197,7 +199,7 @@ def detail(site, comp) -> dict:
                 "field": len([r for r in s["rows"] if r.get("place") is not None])
                 or s.get("field_size"),
                 "rows": [_row(names, r, kind, depth) for r in rows],
-                "complete": not (not team and depth == Competition.WebsiteDepth.PRIZES),
+                "complete": not limited,
             }
         )
     prizes = []
