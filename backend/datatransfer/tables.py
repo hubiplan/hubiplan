@@ -145,6 +145,10 @@ MODULE_MODELS = (
     "entries.EntryPerson",
     "entries.EntryAnswer",
     "entries.EntryVersion",
+    # Buchungskalender nach Material, Terminen und Wettbewerben; Belegungen (BookingSlot)
+    # werden nach dem Import neu ausgerechnet
+    "bookings.Booking",
+    "bookings.BookingException",
     "circulars.CircularTemplate",
     "circulars.Circular",
     "circulars.CircularAttachment",
@@ -172,6 +176,8 @@ PUBLIC_MODELS = {"statutes.statuteversion", "statutes.statutepublication"}
 # Die Dokumentenablage kommt im vollständigen Export und im Export einer Abteilung
 # mit, nicht aber im Dachverbands-Export der Vereine (dort nur die Satzung).
 DEPARTMENT_MODELS = {
+    "bookings.booking",
+    "bookings.bookingexception",
     "materials.materialitem",
     "materials.materialeventlink",
     "materials.materialtodolink",
@@ -228,6 +234,8 @@ DEPARTMENT_IMPORT_MODELS = PUBLIC_MODELS | DEPARTMENT_MODELS
 # Zeilen, deren Verweis auf diese Spalte in der Datei fehlt, fallen beim Import weg
 # (z. B. Ehrungen des Dachverbands an Personen, deren Daten nicht exportiert wurden).
 DROP_IF_MISSING = {
+    "bookings.booking": "item",
+    "bookings.bookingexception": "booking",
     "materials.materialeventlink": "item",
     "materials.materialtodolink": "todo",
     "materials.materialdocumentlink": "document",
@@ -656,6 +664,14 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
         from materials.exports import rows as material_rows
 
         qs = material_rows(model, org, department)
+    if model._meta.app_label == "bookings":
+        from materials.exports import rows as material_rows
+        from materials.models import MaterialItem
+
+        items = material_rows(MaterialItem, org, department)
+        qs = qs.filter(
+            **{"item__in" if label(model) == "bookings.booking" else "booking__item__in": items}
+        )
     if label(model) == "todos.todo":
         from todos.exports import shared_rows
 
@@ -957,4 +973,13 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
             obj.save()
             ids.set(name, row.get("id"), obj.pk)
             count += 1
+    if (tables or {}).get("bookings.booking"):
+        from bookings.models import Booking
+        from bookings.services import rebuild
+
+        # Belegungen werden nicht übertragen, sondern neu ausgerechnet
+        for booking in Booking.objects.filter(
+            pk__in=ids.maps.get("bookings.booking", {}).values()
+        ).select_related("item"):
+            rebuild(booking, strict=False)
     return count

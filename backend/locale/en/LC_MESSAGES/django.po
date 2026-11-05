@@ -7642,3 +7642,84 @@ msgstr ""
 "was too large. The remaining data keeps being synchronised. For a circular to "
 "pass on, please check whether the attachments can be smaller and send it "
 "again if needed."
+
+msgid "Belegung"
+msgstr "Bookings"
+
+msgid "Buchungskalender sehen und buchen"
+msgstr "View booking calendars and book"
+
+msgid "Buchungen für andere eintragen und freigeben"
+msgstr "Book for others and approve bookings"
+
+msgid "Rüstzeiten bitte in Schritten von 5 Minuten."
+msgstr "Please give set-up times in steps of 5 minutes."
+
+msgid "Das Objekt ist in dieser Zeit schon belegt."
+msgstr "The item is already booked at this time."
+
+msgid "angefragt"
+msgstr "requested"
+
+msgid "öffentlich"
+msgstr "public"
+
+msgid "nur Verwalter"
+msgstr "managers only"
+
+msgid "Zweck"
+msgstr "Purpose"
+
+msgid "Notiz"
+msgstr "Note"
+
+msgid "Beginn"
+msgstr "Start"
+
+msgid "Ende"
+msgstr "End"
+
+msgid "Die Buchung wurde inzwischen geändert. Bitte neu laden."
+msgstr "The booking has been changed in the meantime. Please reload."
+
+msgid "Belegt"
+msgstr "Booked"
+
+msgid "Bitte ein Objekt mit Buchungskalender wählen."
+msgstr "Please choose an item with a booking calendar."
+
+msgid "Wettbewerb nicht verfügbar."
+msgstr "Competition not available."
+
+msgid "Bitte einen Zweck angeben."
+msgstr "Please enter a purpose."
+
+msgid "Bitte Beginn und Ende angeben."
+msgstr "Please enter start and end."
+
+msgid "Eine Buchung dauert höchstens 60 Tage."
+msgstr "A booking lasts at most 60 days."
+
+msgid "Das Ende der Serie liegt vor dem Beginn."
+msgstr "The series ends before it starts."
+
+msgid "Vergangene Zeiten kann nur die Verwaltung eintragen."
+msgstr "Only managers can book times in the past."
+
+msgid "So weit im Voraus ist dieses Objekt nicht buchbar."
+msgstr "This item cannot be booked that far ahead."
+
+msgid "Bitte einen Zeitraum bis 400 Tage wählen."
+msgstr "Please choose a period of up to 400 days."
+
+msgid "Diese Buchung ist nicht mehr aktiv."
+msgstr "This booking is no longer active."
+
+msgid "Das Objekt einer Buchung lässt sich nicht ändern."
+msgstr "The item of a booking cannot be changed."
+
+msgid "Nur bei Serien lässt sich ein einzelner Termin absagen."
+msgstr "Only a series allows cancelling a single date."
+
+msgid "Dieses Vorkommen gehört nicht zur Serie."
+msgstr "This date does not belong to the series."

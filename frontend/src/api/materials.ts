@@ -32,6 +32,7 @@ export interface Material {
   ownership?: string
   capacity?: number | null
   lanes?: { facility: string; count: number }[]
+  booking_rules?: Partial<import('./bookings.ts').BookingRules>
   access_note?: string
   areas?: StockRow[]
   contents?: StockRow[]

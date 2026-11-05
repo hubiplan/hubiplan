@@ -234,6 +234,15 @@ AREAS: tuple[Area, ...] = (
         module="infrastructure",
     ),
     Area(
+        "bookings",
+        gettext_noop("Belegung"),
+        gettext_noop("Buchungskalender sehen und buchen"),
+        gettext_noop("Buchungen für andere eintragen und freigeben"),
+        dept_levels=_BOTH,
+        # eines der beiden Module genügt
+        module="material|infrastructure",
+    ),
+    Area(
         "audit",
         gettext_noop("Änderungsprotokoll"),
         gettext_noop("Änderungsprotokoll und Postausgang einsehen"),
@@ -588,11 +597,12 @@ def module_available(area: Area, org) -> bool:
     """Freigabe der Einheit; Untereinheiten bleiben an ihren Verein gebunden."""
     if not area.module or org is None:
         return True
-    if area.module not in (org.enabled_modules or []):
+    modules = set(area.module.split("|"))
+    if not modules & set(org.enabled_modules or []):
         return False
     if org.type == "unit":
         owner = org.organization
-        return owner is not None and area.module in (owner.enabled_modules or [])
+        return owner is not None and bool(modules & set(owner.enabled_modules or []))
     return True
 
 
