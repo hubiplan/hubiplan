@@ -4,7 +4,18 @@ titel: Bookings and booking calendars
 bereich: start
 rechte: [bookings.view, bookings.edit, infrastructure.view, material.view]
 routen: [/belegung]
-stichworte: [Booking, Booking calendar, Reservation, Request, Approval, Set-up time, Series, Shooting range, Hall]
+stichworte:
+  [
+    Booking,
+    Booking calendar,
+    Reservation,
+    Request,
+    Approval,
+    Set-up time,
+    Series,
+    Shooting range,
+    Hall,
+  ]
 ---
 
 **Bookings** shows when facilities and material with a booking calendar are in use. The week

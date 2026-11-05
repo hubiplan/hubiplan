@@ -4,7 +4,8 @@ titel: Belegung und Buchungskalender
 bereich: start
 rechte: [bookings.view, bookings.edit, infrastructure.view, material.view]
 routen: [/belegung]
-stichworte: [Buchung, Buchungskalender, Reservierung, Anfrage, Freigabe, Rüstzeit, Serie, Schießstand, Saal]
+stichworte:
+  [Buchung, Buchungskalender, Reservierung, Anfrage, Freigabe, Rüstzeit, Serie, Schießstand, Saal]
 ---
 
 Unter **Belegung** siehst du, wann Infrastruktur und Material mit Buchungskalender belegt
