@@ -344,6 +344,15 @@ class DepartmentMembershipSerializer(serializers.ModelSerializer):
         department = attrs.get("department", getattr(self.instance, "department", None))
         if department.is_remote:
             raise serializers.ValidationError({"department": REMOTE_UNIT})
+        if self.instance is None and not department.is_active and not end:
+            # Nicht mehr aktive Einheit: nur frühere Zeiten nachtragen (Ralf 2026-11-05)
+            raise serializers.ValidationError(
+                {
+                    "valid_until": gettext(
+                        "„{name}“ ist nicht mehr aktiv. Bitte ein Ende angeben."
+                    ).format(name=department.display_name)
+                }
+            )
         others = membership.department_memberships.select_related("department")
         if self.instance:
             others = others.exclude(pk=self.instance.pk)

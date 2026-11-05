@@ -533,6 +533,24 @@ class TestAkte:
         # Anschließender Zug ab dem Tag nach dem HFC-Ende
         assert post(neu, "2018-01-01").status_code == 201
 
+    def test_aufgeloesten_zug_nur_mit_ende_nachtragen(self, api, orgs, member, board_a):
+        """Ralf 2026-11-05: nicht mehr aktive Züge lassen sich für frühere Zeiten nachtragen."""
+        org = orgs["a"]
+        weg = Department.objects.create(
+            organization=org, name="Aufgelöst", founding_year=1950, is_active=False
+        )
+        c = api(board_a)
+        url = self.url(orgs, member, "departments/")
+        resp = c.post(url, {"department": weg.pk, "valid_from": "1980-01-01"}, content_type=JSON)
+        assert resp.status_code == 400
+        assert "valid_until" in resp.json()
+        resp = c.post(
+            url,
+            {"department": weg.pk, "valid_from": "1980-01-01", "valid_until": "1990-12-31"},
+            content_type=JSON,
+        )
+        assert resp.status_code == 201
+
     def test_vorstandsrolle_in_akte_und_als_kontakt(self, api, orgs, member, board_a):
         role = Role.objects.get(organization=orgs["a"], name="Vorstand")
         resp = api(board_a).post(
