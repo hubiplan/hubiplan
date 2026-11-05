@@ -23,6 +23,11 @@ class Command(BaseCommand):
         mode.add_argument(
             "--pruefen", action="store_true", help="Letzten Wechsel nur vollständig prüfen."
         )
+        mode.add_argument(
+            "--status",
+            action="store_true",
+            help="Letzte Auftragsnummer und Zustand maschinenlesbar ausgeben.",
+        )
         parser.add_argument(
             "--schreiber-angehalten",
             action="store_true",
@@ -36,10 +41,11 @@ class Command(BaseCommand):
         probe=False,
         starten=False,
         pruefen=False,
+        status=False,
         schreiber_angehalten=False,
         **options,
     ):
-        if not (probe or pruefen):
+        if not (probe or pruefen or status):
             if not schreiber_angehalten:
                 raise CommandError("Schreibdienste anhalten und --schreiber-angehalten angeben.")
             if connection.in_atomic_block or not connection.get_autocommit():
@@ -49,7 +55,20 @@ class Command(BaseCommand):
         try:
             with rotation_lock(), rls_bypass():
                 rotation = Rotation(organisation, self.stdout)
-                if probe:
+                if status:
+                    from core.models import DataKeyRotation
+
+                    latest = (
+                        DataKeyRotation.objects.filter(organization_id=organisation)
+                        .order_by("-pk")
+                        .first()
+                    )
+                    self.stdout.write(
+                        f"{latest.pk} {'completed' if latest.completed_at else 'running'}"
+                        if latest
+                        else "0 none"
+                    )
+                elif probe:
                     rotation.preflight()
                 elif pruefen:
                     rotation.verify_latest()

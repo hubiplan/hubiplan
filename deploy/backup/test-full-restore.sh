@@ -25,12 +25,22 @@ restore() {
 }
 
 STAGE=initial-backup
-backup /run/secrets/datenschluessel
+BACKUP_REQUIRE_COMPLETE=1 BACKUP_PRESERVE_EXISTING=1 BACKUP_RECEIPT_NAME=complete backup /run/secrets/datenschluessel
 old=$(ls -1t /backups/db_*.sql.gz."$MODE" | head -1)
 stamp=$(basename "$old"); stamp=${stamp#db_}; stamp=${stamp%.sql.gz.*}
 key="/backups/datenschluessel_$stamp.$MODE"
 fingerprint="/backups/datenschluessel_$stamp.sha256"
 old_hash=$(cat "$fingerprint")
+[ "$(backup-receipt.sh complete)" = "$stamp" ]
+grep -q '^state=ok$' /status/status
+cp /backups/complete.receipt /tmp/original-receipt
+printf x >> /backups/complete.receipt
+if backup-receipt.sh complete > /dev/null 2>&1; then echo "tampered receipt accepted" >&2; exit 1; fi
+cp /tmp/original-receipt /backups/complete.receipt
+mv "/backups/files_$stamp.tar.gz.$MODE" /tmp/original-files
+if backup-receipt.sh complete > /dev/null 2>&1; then echo "incomplete set accepted" >&2; exit 1; fi
+mv /tmp/original-files "/backups/files_$stamp.tar.gz.$MODE"
+if backup-receipt.sh ../invalid > /dev/null 2>&1; then exit 1; fi
 STAGE=strict-original
 restore ""
 cp "$key" /tmp/original-key
@@ -88,6 +98,8 @@ cp /run/secrets/datenschluessel /tmp/unreadable-key
 chmod 000 /tmp/unreadable-key
 backup /tmp/unreadable-key
 test -f /backups/.unvollstaendig
+if BACKUP_REQUIRE_COMPLETE=1 BACKUP_RECEIPT_NAME=invalid backup /tmp/unreadable-key; then echo "strict incomplete backup accepted" >&2; exit 1; fi
+test ! -e /backups/invalid.receipt
 previous="$old"
 old=$(ls -1t /backups/db_*.sql.gz."$MODE" | head -1)
 if restore "" 2> /dev/null; then echo "unreadable key accepted" >&2; exit 1; fi

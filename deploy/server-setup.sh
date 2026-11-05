@@ -16,6 +16,30 @@ set -eu
 
 ZIEL="${ZIEL:-$(pwd)}"
 NEU="$(pwd)"
+if [ -e "$ZIEL.datenschluesselwechsel/status" ] || [ -d "$ZIEL.datenschluesselwechsel/offen" ]; then
+    echo "Schlüsselwechsel-Wartung offen; zuerst mit dem bestehenden Quellstand fortsetzen." >&2
+    exit 1
+fi
+SETUP_SPERRE="$ZIEL.sperre"
+DEPLOY_SPERRE_GEHALTEN=0
+# Auch ältere deploy.sh-Fassungen halten diese Sperre bereits, ohne ein neues
+# Umgebungsflag zu kennen. Nur der passende entpackte Zielstand darf sie übernehmen.
+if [ "$NEU" = "$ZIEL.neu" ] && [ -f "$SETUP_SPERRE/lauf" ] && [ -f "$NEU/.fassung" ]; then
+    SPERR_FASSUNG=$(cut -d ' ' -f 1 "$SETUP_SPERRE/lauf")
+    QUELL_FASSUNG=$(cat "$NEU/.fassung")
+    case "$SPERR_FASSUNG" in
+        ''|*[!0-9a-f]*) ;;
+        *)
+            if [ "${#SPERR_FASSUNG}" -ge 7 ]; then
+                case "$QUELL_FASSUNG" in "$SPERR_FASSUNG"*) DEPLOY_SPERRE_GEHALTEN=1;; esac
+            fi ;;
+    esac
+fi
+if [ "$DEPLOY_SPERRE_GEHALTEN" != 1 ]; then
+    mkdir "$SETUP_SPERRE" 2>/dev/null || { echo "Ein anderer Betriebslauf hält die Sperre." >&2; exit 1; }
+    trap 'rm -f "$SETUP_SPERRE/lauf"; rmdir "$SETUP_SPERRE"' EXIT
+    echo "Manuelles Setup" > "$SETUP_SPERRE/lauf"
+fi
 
 # Beim ersten Mal: .env mit zufälligen Geheimnissen anlegen (nur auf dem Server)
 if [ ! -f .env ]; then

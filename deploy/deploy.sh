@@ -82,6 +82,10 @@ sperre_loesen() {
         echo "Warnung: Sperre $SPERRE konnte nicht entfernt werden." >&2
 }
 trap sperre_loesen EXIT
+if ! "$SSH" "${SSH_ARGS[@]}" "$HOST" "test ! -e '$DIR.datenschluesselwechsel/status' && test ! -d '$DIR.datenschluesselwechsel/offen'"; then
+    echo "Abbruch: Schlüsselwechsel-Wartung offen; zuerst im bestehenden Stand fortsetzen." >&2
+    exit 1
+fi
 
 echo "Rolle $(git rev-parse --short "$REF") nach $HOST:$DIR aus …"
 

@@ -9,6 +9,14 @@
 set -eu
 
 ZIEL="$(pwd)"
+if [ -e "$ZIEL.datenschluesselwechsel/status" ] || [ -d "$ZIEL.datenschluesselwechsel/offen" ]; then
+    echo "Schlüsselwechsel-Wartung offen; kein Quellstandwechsel während der Schreibpause." >&2
+    exit 1
+fi
+RUECKWEG_SPERRE="$ZIEL.sperre"
+mkdir "$RUECKWEG_SPERRE" 2>/dev/null || { echo "Ein anderer Betriebslauf hält die Sperre." >&2; exit 1; }
+trap 'rm -f "$RUECKWEG_SPERRE/lauf"; rmdir "$RUECKWEG_SPERRE"' EXIT
+echo "Manueller Rückweg" > "$RUECKWEG_SPERRE/lauf"
 if [ ! -d "$ZIEL.vorher" ]; then
     echo "Keine vorige Fassung vorhanden ($ZIEL.vorher fehlt)." >&2
     exit 1

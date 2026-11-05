@@ -58,9 +58,9 @@ def rotation_lock():
             cursor.execute("SELECT pg_advisory_unlock(%s)", [LOCK_ID])
 
 
-def rows(model):
+def rows(model, selected=None):
     """Rohwerte ohne die toleranten ORM-Entschlüsselungs-Fallbacks lesen."""
-    fields = list(model._meta.concrete_fields)
+    fields = [f for f in model._meta.concrete_fields if selected is None or f.attname in selected]
     quote = connection.ops.quote_name
     table, pk = quote(model._meta.db_table), quote(model._meta.pk.column)
     columns = ", ".join(quote(field.column) for field in fields)
@@ -82,15 +82,14 @@ def rows(model):
 
 
 def instance(model, data):
-    # Eigentümerauflösung benötigt keine entschlüsselten Felder. Alle übrigen
-    # Spalten sind gesetzt, damit auch relationale Dateieigentümer auflösbar sind.
-    return model(
-        **{
-            field.attname: data[field.attname]
-            for field in model._meta.concrete_fields
-            if not isinstance(field, EncryptedMixin)
-        }
-    )
+    # Fehlende Spalten bleiben deferred statt durch Modell-Defaults ersetzt zu
+    # werden. Eigentümer benötigen nur die geladenen Organisations-/Relations-IDs.
+    fields = [
+        f.attname
+        for f in model._meta.concrete_fields
+        if not isinstance(f, EncryptedMixin) and f.attname in data
+    ]
+    return model.from_db(connection.alias, fields, [data[name] for name in fields])
 
 
 def cipher_key_id(value):
@@ -417,14 +416,19 @@ class Rotation:
             ]
             if not fields:
                 continue
-            for data in rows(model):
+            selected = {
+                f.attname
+                for f in model._meta.concrete_fields
+                if f.primary_key or f.is_relation or f in fields
+            }
+            for data in rows(model, selected):
                 obj = instance(model, data)
                 for field in fields:
                     if data[field.attname]:
                         add(field.storage, data[field.attname], org_id_of(obj))
         from outbox.models import OutgoingMail
 
-        for data in rows(OutgoingMail):
+        for data in rows(OutgoingMail, {"id", "organization_id", "attachments"}):
             items = data["attachments"]
             items = json.loads(items) if isinstance(items, str) else items
             if not isinstance(items, list):
@@ -537,7 +541,10 @@ class Rotation:
         path = self.staging_path(self.rotation)
         if path.is_symlink():
             raise CommandError("Unsicherer temporärer Schlüsselwechsel-Bereich.")
-        path.mkdir(mode=0o700, exist_ok=True)
+        # Die Backup-Gruppe 1000 muss auch einen abgebrochenen Mischbestand sichern
+        # können. Im Arbeitsbereich liegen ausschließlich Chiffrate, kein Klartext.
+        path.mkdir(mode=0o750, exist_ok=True)
+        path.chmod(0o750)
         return path
 
     def cleanup_temporary(self):
@@ -567,6 +574,7 @@ class Rotation:
                 crypto.open_plain(raw) as source,
                 temporary.open("xb") as target,
             ):
+                os.fchmod(target.fileno(), 0o640)
                 reader = HashingReader(source)
                 for chunk in crypto.encrypt_chunks(reader, *self.target):
                     target.write(chunk)
