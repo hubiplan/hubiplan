@@ -19,7 +19,7 @@ from audit.models import AuditEntry
 from billing import archive, services
 from billing.models import DunningLevel, Invoice
 from finance import retention
-from finance.models import BankStatement, Booking, Receipt, YearClosing
+from finance.models import BankStatement, Booking, Category, Receipt, YearClosing
 
 from .test_m9_billing import JSON, base, c, club, members, setup, start_run, zug  # noqa: F401
 from .test_storno_festschreibung import book, fin  # noqa: F401
@@ -28,8 +28,14 @@ pytestmark = pytest.mark.django_db
 
 
 @override_settings(HUBIPLAN_LANGUAGES=["de", "en"])
-def test_englische_oberflaeche_aendert_die_sprache_des_pruefexports_nicht(c, fin, setup, base):
-    booking = book(c, fin, account=setup["bank"], category=setup["cat"], tax_area="ideal")
+def test_englische_oberflaeche_aendert_die_sprache_des_pruefexports_nicht(
+    c, fin, setup, base, club
+):
+    club.tax_areas_enabled = True
+    club.save(update_fields=["tax_areas_enabled"])
+    Category.objects.filter(pk=setup["cat"]).update(tax_area="ideal")
+    booking = book(c, fin, account=setup["bank"], category=setup["cat"])
+    assert booking.tax_area_value == "ideal"
     User.objects.filter(pk=c.session["_auth_user_id"]).update(language="en")
     org = booking.organization
     org.department_label_en = "team"

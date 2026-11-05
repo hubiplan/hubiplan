@@ -6532,7 +6532,7 @@ msgid "{label}: {x1}"
 msgstr "{label}: {x1}"
 
 msgid "Nur eine übergeordnete Einheit kann verbandsweite Felder anlegen."
-msgstr "Only a parent unit can create federation-wide fields."
+msgstr "Only a parent unit can create fields for the entire umbrella association."
 
 msgid "Ein wiederholbares Feld braucht mindestens ein Unterfeld."
 msgstr "A repeatable field needs at least one subfield."
@@ -6787,10 +6787,10 @@ msgid "Die Plattform hat keine übergeordnete Organisation."
 msgstr "The platform has no parent organisation."
 
 msgid "Ein Dachverband hängt direkt unter der Plattform."
-msgstr "A federation belongs directly under the platform."
+msgstr "An umbrella association belongs directly under the platform."
 
 msgid "Ein Verein gehört zur Plattform oder zu einem Dachverband."
-msgstr "A club belongs to the platform or a federation."
+msgstr "A club belongs to the platform or an umbrella association."
 
 msgid "Eine Untereinheit braucht eine übergeordnete Einheit."
 msgstr "A sub-unit needs a parent unit."

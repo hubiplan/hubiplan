@@ -315,10 +315,16 @@ class TestHaertung:
         start(net, other, coupled["verband"])
         assert finish(net, other, token).status_code == 400
 
-    def test_vorstand_braucht_eigene_2fa(self, net, world, coupled):
+    def test_vorstand_braucht_eigene_2fa(self, net, world, coupled, monkeypatch):
+        import time
+
         from allauth.mfa.totp.internal.auth import TOTP, generate_totp_secret
         from django.core import mail
 
+        # Ausgabe und Prüfung desselben echten TOTP bleiben im selben Zeitfenster.
+        # Ablauf und veraltete Bestätigungen werden in eigenen Tests geprüft.
+        frozen_time = time.time()
+        monkeypatch.setattr(time, "time", lambda: frozen_time)
         link(net, world, coupled, local_user=world["club_board"])
         # Ohne eigene 2FA keine Anmeldung über die andere Instanz
         browser = Client()
