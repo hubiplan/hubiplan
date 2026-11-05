@@ -37,6 +37,28 @@ class ScopedSerializer(serializers.ModelSerializer):
         if self.Meta.model is Performance:
             if (
                 self.instance
+                and self.instance.engagement_documents.filter(
+                    kind="offer", status="accepted"
+                ).exists()
+                and any(
+                    k in attrs and attrs[k] != getattr(self.instance, k)
+                    for k in [
+                        "customer",
+                        "meeting_at",
+                        "meeting_place",
+                        "setup_at",
+                        "uniform",
+                        "formation",
+                        "notes",
+                        "event",
+                    ]
+                )
+            ):
+                raise serializers.ValidationError(
+                    gettext("Bitte zuerst die bestehende Zusage aufheben.")
+                )
+            if (
+                self.instance
                 and "customer" in attrs
                 and attrs["customer"] != self.instance.customer
             ):

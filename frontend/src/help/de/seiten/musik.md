@@ -155,3 +155,21 @@ nicht für spätere Uploads. Unpassende Stimmen, abgesagte Termine, eine Absage 
 entfernte Programmstücke, gelöschte/verschobene Dokumente oder entzogene Rechte der
 freigebenden Person sperren den Download. Auftrittslinks unterstützen dieselbe Freigabe.
 Abteilungs- und fremde Dokumente können auf diesem Weg nicht freigegeben werden.
+
+## Angebote und Zusagen
+
+In der Auftrittsabrechnung führt **Angebote und Zusagen** von der Anfrage zum Angebot.
+Zuerst Auftraggeber mit vollständiger Anschrift und Bruttobeträge erfassen. Danach
+Gültigkeitsfrist und Vereinbarungen prüfen und das Angebot als PDF ausgeben.
+Ausgegebene PDFs bleiben mit ihrem damaligen Inhalt und einer Prüfsumme archiviert.
+Ein neues Angebot ersetzt ein bisher noch offenes Angebot. Rechnungsnummern werden
+hierfür nicht verwendet. Die Ausgabe sendet das Dokument nicht automatisch.
+Die tatsächliche Annahme des Auftraggebers mit einem Nachweis dokumentieren;
+erst dann lässt sich eine Auftragsbestätigung ausgeben. Wiederholtes Ausgeben
+liefert dieselbe Bestätigung. Eine feste Zusage sperrt die Vereinbarungsbeträge
+und Auftrittsdaten gegen versehentliches Ändern. Für Änderungen zuerst die Aufhebung
+mit Begründung erfassen und ein neues Angebot erstellen. Ursprüngliche PDFs bleiben
+als Nachweis erhalten, auch nach einer Aufhebung. Kalenderänderungen werden nicht
+rückwirkend in archivierte Dokumente übernommen. Die Dokumente sind keine Rechnungen.
+Kassenleserecht erlaubt Einsicht; Ausgeben und Statuswechsel brauchen zusätzlich
+Musik- und Kassenbearbeitungsrecht. Für PDFs wird der bestehende Briefbogen verwendet.

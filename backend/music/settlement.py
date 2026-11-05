@@ -239,6 +239,10 @@ class SettlementView(OrgScopedMixin, APIView):
             except DjangoValidationError as exc:
                 raise serializers.ValidationError(exc.messages) from exc
         if action == "agreement":
+            if performance.engagement_documents.filter(kind="offer", status="accepted").exists():
+                raise serializers.ValidationError(
+                    gettext("Bitte zuerst die bestehende Zusage aufheben.")
+                )
             if account.invoice_id and account.invoice.status != "draft":
                 raise serializers.ValidationError(
                     gettext("Die Vereinbarung ist bereits mit einer Rechnung verbunden.")

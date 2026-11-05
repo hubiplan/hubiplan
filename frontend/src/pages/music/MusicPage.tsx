@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { EngagementPage } from './EngagementPage.tsx'
 import { PayoutRunsPage } from './PayoutRunsPage.tsx'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
@@ -56,6 +57,13 @@ export function MusicPage() {
 function MusicRoute() {
   const org = useActiveOrg()
   const [params] = useSearchParams()
+  if (/^\d+$/.test(params.get('vereinbarung') || ''))
+    return (
+      <EngagementPage
+        key={`${org.id}-${params.get('vereinbarung')}`}
+        performance={Number(params.get('vereinbarung'))}
+      />
+    )
   if (params.get('auszahlungen')) return <PayoutRunsPage key={org.id} />
   if (params.get('uebersicht')) return <PerformanceOverview key={org.id} />
   if (params.get('ausstattung')) return <EquipmentPage key={org.id} />

@@ -6407,3 +6407,81 @@ msgstr "The booking must match the exported payout run."
 
 msgid "Bitte einen Kontoinhaber im SEPA-Zeichensatz angeben."
 msgstr "Enter an account holder using SEPA characters."
+
+msgid "Bitte die Rechnungsanschrift des Auftraggebers vervollständigen."
+msgstr "Complete the customer's billing address."
+
+msgid "Dokumentnummer"
+msgstr "Document number"
+
+msgid "Angebot"
+msgstr "Offer"
+
+msgid "Auftragsbestätigung"
+msgstr "Order confirmation"
+
+msgid "Weitere Informationen"
+msgstr "Further information"
+
+msgid "Honorar"
+msgstr "Fee"
+
+msgid "Fahrtkosten"
+msgstr "Travel costs"
+
+msgid "Weitere Leistungen"
+msgstr "Additional services"
+
+msgid "Gesamtbetrag brutto"
+msgstr "Gross total"
+
+msgid "Vereinbarungen"
+msgstr "Agreements"
+
+msgid "Angebot gültig bis"
+msgstr "Offer valid until"
+
+msgid "Bestätigtes Angebot"
+msgstr "Accepted offer"
+
+msgid "Dieses Dokument ist keine Rechnung."
+msgstr "This document is not an invoice."
+
+msgid "Das archivierte Dokument konnte nicht geprüft werden."
+msgstr "The archived document could not be verified."
+
+msgid "Bitte einen zukünftigen, nicht abgesagten Auftritt wählen."
+msgstr "Choose a future performance that has not been cancelled."
+
+msgid "Bitte zuerst die bestehende Zusage aufheben."
+msgstr "Cancel the existing confirmation first."
+
+msgid "Die Angebotsfrist liegt in der Vergangenheit."
+msgstr "The offer expiry date is in the past."
+
+msgid "Bitte das Angebot zuerst als angenommen erfassen."
+msgstr "Record offer acceptance first."
+
+msgid "Dieses Angebot kann nicht mehr angenommen werden."
+msgstr "This offer can no longer be accepted."
+
+msgid "Die Auftrittsdaten haben sich geändert. Bitte ein neues Angebot ausgeben."
+msgstr "Performance details have changed. Issue a new offer."
+
+msgid "Dieser Statuswechsel ist nicht möglich."
+msgstr "This status change is not possible."
+
+msgid "Bitte einen aktiven Auftraggeber wählen."
+msgstr "Choose an active customer."
+
+msgid "Uniform"
+msgstr "Uniform"
+
+msgid "Datum"
+msgstr "Date"
+
+msgid "Ort"
+msgstr "Location"
+
+msgid "Treffpunkt"
+msgstr "Meeting point"

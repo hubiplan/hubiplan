@@ -90,6 +90,7 @@ MODULE_MODELS = (
     "music.Assignment",
     "music.PerformanceNotice",
     "music.PerformanceAccount",
+    "music.EngagementDocument",
     "music.FeeTemplate",
     "music.MusicianClaim",
     "music.PerformanceExpense",
