@@ -236,6 +236,7 @@ class DetailView(Base):
     def delete(self, request, pk, **kwargs):
         item = self.item(pk, lock=True)
         services.expected(item, request.data.get("version"))
+        services.ensure_no_music_loan(item)
         before = services.snapshot(item)
         item.deleted_at = timezone.now()
         services.changed(item, request.user, before, "delete")
@@ -363,7 +364,8 @@ class HistoryView(Base):
                     "at": r.created_at,
                     "action": r.action,
                     "actor": str(r.actor) if r.actor else "",
-                    "can_undo": r == revisions[0]
+                    "can_undo": not r.action.startswith("music_")
+                    and r == revisions[0]
                     and bool(r.data)
                     and r.actor_id == request.user.pk,
                 }
@@ -379,6 +381,7 @@ class HistoryView(Base):
         revision = item.revisions.first()
         if (
             not revision
+            or revision.action.startswith("music_")
             or revision.pk != request.data.get("revision")
             or revision.actor_id != request.user.pk
             or not revision.data

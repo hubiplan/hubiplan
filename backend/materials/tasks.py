@@ -15,6 +15,13 @@ def purge_deleted():
     cutoff = timezone.now() - datetime.timedelta(days=30)
     with transaction.atomic(), rls_bypass():
         items = MaterialItem.objects.filter(deleted_at__lt=cutoff)
+        from music.models import EquipmentLoan
+
+        items = items.exclude(
+            pk__in=EquipmentLoan.objects.filter(returned_at=None).values_list(
+                "equipment__item_id", flat=True
+            )
+        )
         photos = MaterialPhoto.objects.filter(item__in=items) | MaterialPhoto.objects.filter(
             deleted_at__lt=cutoff
         )

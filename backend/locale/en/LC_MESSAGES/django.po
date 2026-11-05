@@ -6130,3 +6130,21 @@ msgstr "Encores"
 
 msgid "Nr."
 msgstr "No."
+
+msgid "Dieses Material gehört bereits zur Musikausstattung."
+msgstr "This inventory item is already linked to music equipment."
+
+msgid "Bitte einsatzfähiges, nicht ausgegebenes Material und eine gültige Rückgabefrist wählen."
+msgstr "Please choose usable equipment that has not been issued and a valid return deadline."
+
+msgid "Ausgegeben an Gastmusiker; Zuordnung in der Musikausstattung."
+msgstr "Issued to a guest musician; assignment in music equipment."
+
+msgid "Bitte Wartungsdatum und nächste Fälligkeit prüfen."
+msgstr "Please check the maintenance date and next due date."
+
+msgid "Bitte die Musikausstattung vor dem Löschen zurücknehmen."
+msgstr "Please record the return of music equipment before deleting it."
+
+msgid "Bitte einen gültigen Rückgabeort wählen."
+msgstr "Please choose a valid return location."

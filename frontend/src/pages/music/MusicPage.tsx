@@ -14,6 +14,7 @@ import { PracticePage } from './PracticePage.tsx'
 import { EnsembleTemplatesPage } from './EnsembleTemplatesPage.tsx'
 import { StaffingPage } from './StaffingPage.tsx'
 import { AvailabilityPage } from './AvailabilityPage.tsx'
+import { EquipmentPage } from './EquipmentPage.tsx'
 import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
@@ -53,6 +54,7 @@ export function MusicPage() {
 function MusicRoute() {
   const org = useActiveOrg()
   const [params] = useSearchParams()
+  if (params.get('ausstattung')) return <EquipmentPage key={org.id} />
   if (params.get('noten')) return <ScoresPage key={org.id} />
   if (params.get('proben')) return <PracticePage key={org.id} />
   if (params.get('vorlagen')) return <EnsembleTemplatesPage key={org.id} />
