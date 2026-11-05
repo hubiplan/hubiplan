@@ -142,6 +142,11 @@ class EmailChange(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="email_changes")
     new_email = models.EmailField("neue E-Mail-Adresse")
     token_hash = models.CharField(max_length=64, unique=True)
+    # Konten ohne Passwort bestätigen den Wechsel auch über die bisherige Adresse
+    # (Gesamtaudit 05.11. GA-10); leer: nicht nötig.
+    old_token_hash = models.CharField(max_length=64, blank=True, default="", db_index=True)
+    new_confirmed_at = models.DateTimeField(null=True, blank=True)
+    old_confirmed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     used_at = models.DateTimeField(null=True, blank=True)

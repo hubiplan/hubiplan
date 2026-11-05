@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.crypto import constant_time_compare
 from django.utils.translation import gettext
@@ -29,7 +30,7 @@ from core.ratelimit import too_many
 from outbox import mail
 
 from .models import EmailChange, User
-from .security import revoke_links, secure_account
+from .security import secure_account
 
 EMAIL_CHANGE_DAYS = 2
 
@@ -185,7 +186,9 @@ class EmailChangeView(APIView):
             raise serializers.ValidationError(
                 {"email": gettext("Diese E-Mail-Adresse gehört schon zu einem anderen Konto.")}
             )
-        request_email_change(user, new)
+        # Ohne Passwort bestätigt auch die bisherige Adresse: Eine übernommene Sitzung
+        # allein reicht so nicht, um das Konto umzulenken (Gesamtaudit 05.11. GA-10).
+        request_email_change(user, new, confirm_old=not user.has_usable_password())
         return Response(account_data(user), status=status.HTTP_201_CREATED)
 
     def delete(self, request):
@@ -200,19 +203,25 @@ def apply_email(user: User, new: str) -> None:
     EmailAddress.objects.filter(user=user).delete()
 
 
-def request_email_change(user: User, new: str, org_name: str = "") -> None:
+def request_email_change(
+    user: User, new: str, org_name: str = "", *, confirm_old: bool = False
+) -> None:
     """Neue Anmelde-E-Mail anfordern: Sie gilt erst, wenn der Link an die neue
     Adresse bestätigt ist; die alte Adresse erfährt davon. ``org_name``: Die Einheit hat
-    die Adresse aus einer Änderungsmeldung übernommen (Mitgliederbereich)."""
+    die Adresse aus einer Änderungsmeldung übernommen (Mitgliederbereich).
+    ``confirm_old``: Auch die bisherige Adresse muss den Wechsel per Link bestätigen."""
     user.email_changes.filter(used_at__isnull=True).delete()
     token = secrets.token_urlsafe(32)
+    old_token = secrets.token_urlsafe(32) if confirm_old else ""
     EmailChange.objects.create(
         user=user,
         new_email=new,
         token_hash=_hash(token),
+        old_token_hash=_hash(old_token) if old_token else "",
         expires_at=timezone.now() + datetime.timedelta(days=EMAIL_CHANGE_DAYS),
     )
     url = f"{settings.FRONTEND_URL}/konto/email/{token}"
+    old_url = f"{settings.FRONTEND_URL}/konto/email/{old_token}" if old_token else ""
     language = user_language(user)
     with language_of(user):
         if org_name:
@@ -238,24 +247,43 @@ def request_email_change(user: User, new: str, org_name: str = "") -> None:
             + "\n"
         )
         notice_subject = gettext("Änderung Ihrer Anmelde-E-Mail angefordert")
-        notice_body = (
-            gettext("Guten Tag,")
-            + "\n\n"
-            + gettext(
-                "für Ihr HUBIplan-Konto wurde die neue Anmelde-E-Mail {new} angefordert. Sie "
-                "wird erst wirksam, wenn sie über den Link an die neue Adresse bestätigt ist."
-            ).format(new=new)
-            + "\n\n"
-            + gettext("Waren Sie das nicht? Dann ändern Sie bitte Ihr Passwort.")
-            + "\n"
-        )
+        if old_url:
+            notice_body = (
+                gettext("Guten Tag,")
+                + "\n\n"
+                + gettext(
+                    "für Ihr HUBIplan-Konto wurde die neue Anmelde-E-Mail {new} angefordert. "
+                    "Sie wird erst wirksam, wenn Sie den Wechsel auch hier bestätigen "
+                    "(Link gültig {days} Tage):"
+                ).format(new=new, days=EMAIL_CHANGE_DAYS)
+                + f"\n\n{old_url}\n\n"
+                + gettext(
+                    "Waren Sie das nicht? Dann ignorieren Sie diese Mail; die Adresse bleibt, "
+                    "wie sie ist."
+                )
+                + "\n"
+            )
+        else:
+            notice_body = (
+                gettext("Guten Tag,")
+                + "\n\n"
+                + gettext(
+                    "für Ihr HUBIplan-Konto wurde die neue Anmelde-E-Mail {new} angefordert. "
+                    "Sie wird erst wirksam, wenn sie über den Link an die neue Adresse "
+                    "bestätigt ist."
+                ).format(new=new)
+                + "\n\n"
+                + gettext("Waren Sie das nicht? Dann ändern Sie bitte Ihr Passwort.")
+                + "\n"
+            )
     mail.send(new, confirm_subject, confirm_body, kind="konto", language=language)
     mail.send(
         user.email,
         notice_subject,
         notice_body,
         kind="konto",
-        fail_silently=True,
+        # Muss die alte Adresse bestätigen, darf die Mail nicht still verloren gehen
+        fail_silently=not old_url,
         language=language,
     )
 
@@ -268,14 +296,12 @@ class EmailConfirmView(APIView):
 
     @transaction.atomic
     def post(self, request, token: str):
+        digest = _hash(token)
         change = (
             EmailChange.objects.select_for_update()
             .select_related("user")
-            .filter(
-                token_hash=_hash(token),
-                used_at__isnull=True,
-                expires_at__gt=timezone.now(),
-            )
+            .filter(Q(token_hash=digest) | (Q(old_token_hash=digest) & ~Q(old_token_hash="")))
+            .filter(used_at__isnull=True, expires_at__gt=timezone.now())
             .first()
         )
         if change is None:
@@ -292,8 +318,20 @@ class EmailConfirmView(APIView):
                 },
                 status=409,
             )
-        change.used_at = timezone.now()
-        change.save(update_fields=["used_at"])
+        now = timezone.now()
+        if change.token_hash == digest:
+            change.new_confirmed_at = change.new_confirmed_at or now
+        else:
+            change.old_confirmed_at = change.old_confirmed_at or now
+        if change.old_token_hash and not (change.new_confirmed_at and change.old_confirmed_at):
+            # Noch eine Bestätigung offen: Adresse bleibt vorerst die alte
+            change.save(update_fields=["new_confirmed_at", "old_confirmed_at"])
+            waiting = "old" if change.new_confirmed_at else "new"
+            return Response({"email": change.new_email, "waiting_for": waiting})
+        change.used_at = now
+        change.save(update_fields=["used_at", "new_confirmed_at", "old_confirmed_at"])
         apply_email(change.user, change.new_email)
-        revoke_links(change.user)  # Anmeldelinks an die alte Adresse gelten nicht mehr
+        # Andere Sitzungen und Zugänge abmelden, Anmeldelinks an die alte Adresse
+        # gelten nicht mehr (Gesamtaudit 05.11. GA-10). App-Geräte bleiben gekoppelt.
+        secure_account(change.user, devices=False)
         return Response({"email": change.new_email})

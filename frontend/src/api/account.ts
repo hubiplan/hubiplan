@@ -22,11 +22,15 @@ export const accountApi = {
 
 export async function confirmEmail(
   token: string,
-): Promise<{ ok: true; email: string } | { ok: false; message: string }> {
-  const { status, body } = await request<{ email?: string; detail?: string }>(
-    'POST',
-    `/api/public/email-confirm/${token}/`,
-  )
-  if (status === 200 && body.email) return { ok: true, email: body.email }
+): Promise<
+  { ok: true; email: string; waitingFor?: 'old' | 'new' } | { ok: false; message: string }
+> {
+  const { status, body } = await request<{
+    email?: string
+    detail?: string
+    waiting_for?: 'old' | 'new'
+  }>('POST', `/api/public/email-confirm/${token}/`)
+  if (status === 200 && body.email)
+    return { ok: true, email: body.email, waitingFor: body.waiting_for }
   return { ok: false, message: body.detail ?? 'Der Link ist ungültig oder abgelaufen.' }
 }

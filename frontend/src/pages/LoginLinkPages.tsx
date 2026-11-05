@@ -138,7 +138,20 @@ export function EmailConfirmPage() {
     setBusy(true)
     try {
       const r = await confirmEmail(token)
-      if (r.ok) {
+      if (r.ok && r.waitingFor) {
+        setResult({
+          kind: 'success',
+          text:
+            r.waitingFor === 'old'
+              ? t(
+                  'Danke. Bitte bestätige den Wechsel jetzt noch mit dem Link, der an deine bisherige Adresse gegangen ist.',
+                )
+              : t(
+                  'Danke. Bitte bestätige den Wechsel jetzt noch mit dem Link, der an {email} gegangen ist.',
+                  { email: r.email },
+                ),
+        })
+      } else if (r.ok) {
         setResult({
           kind: 'success',
           text: t('Bestätigt. Du meldest dich jetzt mit {email} an.', { email: r.email }),
