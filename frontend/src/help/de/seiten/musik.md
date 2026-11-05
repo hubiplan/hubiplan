@@ -173,3 +173,20 @@ als Nachweis erhalten, auch nach einer Aufhebung. Kalenderänderungen werden nic
 rückwirkend in archivierte Dokumente übernommen. Die Dokumente sind keine Rechnungen.
 Kassenleserecht erlaubt Einsicht; Ausgeben und Statuswechsel brauchen zusätzlich
 Musik- und Kassenbearbeitungsrecht. Für PDFs wird der bestehende Briefbogen verwendet.
+
+## Persönliche Rückgabe- und Wartungserinnerungen
+
+Unter **Erinnerungen** kannst du für dich private Aufgaben zu Notenrückgaben sowie
+Rückgaben und Wartungen der Ausstattung aktivieren. Die Vorschau umfasst null bis
+30 Tage und bereits überfällige Vorgänge. Aufgaben werden beim Speichern und danach
+stündlich abgeglichen. Für Ausstattung brauchst du weiterhin Materialleserecht;
+Abteilungsausstattung wird hier nicht einbezogen. Aufgabenlese- und Bearbeitungsrecht
+sind für die Aktivierung nötig. Du kannst keine andere Person als Empfänger eintragen.
+
+Die Aufgaben enthalten einen direkten Link zum Vorgang. Benachrichtigungen laufen
+über deine bestehenden Aufgabeneinstellungen. Eine unveränderte Aufgabe wird nach
+erfasster Rückgabe oder verschobener/erledigter Wartung automatisch erledigt. Eigene
+Bearbeitungen, Erledigungen und Löschungen bleiben erhalten und werden nicht durch
+den nächsten Abgleich rückgängig gemacht. Erst ein neuer Fälligkeitstag erzeugt eine
+neue Aufgabe. Ausschalten erledigt unveränderte automatisch angelegte Aufgaben.
+Ungefähre Prüfaufgaben ersetzen nicht die tatsächliche Rücknahme oder Wartungsbuchung.

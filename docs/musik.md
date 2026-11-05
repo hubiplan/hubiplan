@@ -126,3 +126,24 @@ Neue Probeneinteilungen und bevorstehende offene Rückmeldungen erzeugen neutral
 Die Proben-, Rückmeldungs-, Einzelprogramm- und Notenausgabedaten sind im allgemeinen Datenexport enthalten. Die Datenbankmigration ergänzt Tabellen, RLS und Mengengrenzen; vor einem Rückweg die neuen Verläufe exportieren. Einzelprogramme sind zusätzliche Tabellen; frühere Fassungen ignorieren sie und zeigen nur die Serienvorlage.
 
 Nach dem Löschen geschlossener Ausgaben gilt für den Materialpapierkorb die vorhandene Frist von 30 Tagen; anschließend werden die zugehörigen Musikverknüpfungen entfernt. Gegenstände mit offener Ausgabe werden vom endgültigen Bereinigen ausgenommen.
+
+## Ergänzende Arbeitsabläufe
+
+- Sammelauszahlungen: unveränderliche, verschlüsselte Zahlungsläufe reservieren freigegebene
+  Restvergütungen. pain.001.001.09 wird gegen das mitgelieferte GBIC-5-Schema geprüft.
+  Der Download ist reproduzierbar und führt keine Zahlung aus. Tatsächliche Einzelbuchungen
+  werden unter derselben Kassen-Sperre abgeglichen; Stornos bleiben sichtbar.
+- Proben-Gastzugänge gelten genau für eine Einladung und einen ursprünglichen Einzeltermin.
+  Eigene Token-Domäne, Rotation, Widerruf, begrenzte Laufzeit und erneute Rechteprüfung
+  entsprechen Auftrittslinks. Token und Freigaben werden nicht als Vereinsdaten exportiert.
+  Explizite Notenfreigaben frieren die Version ein, sind an Programm/Stimme gebunden und
+  prüfen aktuelle Dokumentenverwaltungsrechte. Abteilungs-/fremde Dokumente bleiben außen vor.
+- Angebote und Auftragsbestätigungen archivieren private PDFs mit Prüfsumme und vollständigem
+  Datenstand, eigener Nummerierung und Annahmenachweis. Die Kasse und Kalenderrechte grenzen
+  den Zugriff ein. Neue Angebote ersetzen offene Fassungen; Zusagen müssen für Änderungen
+  begründet aufgehoben werden. Finanzielle Aufbewahrung, Datei-Backup und Datenübertragung
+  beziehen die Originale ein. Es findet kein automatischer Versand statt.
+- Rückgabe-/Wartungsaufgaben sind persönliche Opt-ins. Sie verwenden reguläre private Todos,
+  generische Titel ohne Personenangaben, bestehende Erinnerungen und Links zum Quellvorgang.
+  Ein Ledger verhindert doppelte Aufgaben bei Wiederholung oder manueller Löschung.
+  Automatisch abgeschlossen werden nur unveränderte Aufgaben; Fristwechsel sind neue Vorgänge.

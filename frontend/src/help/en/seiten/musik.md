@@ -162,3 +162,15 @@ issuing a new offer. Original PDFs remain as evidence after cancellation. Calend
 do not alter archived documents. These documents are not invoices. Finance readers can
 inspect documents; issuance and status changes require finance and music edit rights.
 PDFs use the existing letterhead.
+
+## Personal return and maintenance reminders
+
+In **Reminders**, enable private tasks for your own sheet music returns and equipment
+returns and maintenance. Choose zero to 30 days ahead; overdue records are included.
+Tasks are reconciled on save and hourly. Equipment still requires inventory read access;
+department equipment is excluded. Enabling requires task read and edit permission.
+You cannot select another recipient. Each task links directly to its source record.
+Notifications use your existing task settings. Unchanged tasks are completed after a
+recorded return or changed/completed maintenance. Your edits, completions and deletions
+are preserved; only a new due date creates another task. Disabling completes unchanged
+automatically created tasks. A review task does not itself record return or maintenance.

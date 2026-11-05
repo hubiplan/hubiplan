@@ -37,6 +37,7 @@ from music import staffing as music_staffing
 from music import views as music_views
 from music.availability_views import AbsenceViewSet, OwnAbsences
 from music.catalogue_import import CatalogueImportView
+from music.custody_reminders import CustodyReminderView
 from music.engagements import EngagementView
 from music.equipment import EquipmentView
 from music.guest import GuestAccessView, GuestPerformanceView
@@ -186,6 +187,7 @@ platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename
 
 org_patterns = [
     path("music/equipment/", EquipmentView.as_view()),
+    path("music/custody-reminders/", CustodyReminderView.as_view()),
     path("music/payout-runs/", PayoutRuns.as_view()),
     path("music/payout-runs/<int:pk>/", PayoutRunAction.as_view()),
     path("music/catalogue-import/", CatalogueImportView.as_view()),

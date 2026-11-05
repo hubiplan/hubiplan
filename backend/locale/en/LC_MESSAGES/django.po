@@ -6485,3 +6485,15 @@ msgstr "Location"
 
 msgid "Treffpunkt"
 msgstr "Meeting point"
+
+msgid "Notenrückgabe prüfen"
+msgstr "Check sheet music return"
+
+msgid "Ausstattungsrückgabe prüfen"
+msgstr "Check equipment return"
+
+msgid "Wartung der Ausstattung prüfen"
+msgstr "Check equipment maintenance"
+
+msgid "Im Musikbereich prüfen: {link}\nVorgang: {number}"
+msgstr "Check in the music area: {link}\nRecord: {number}"

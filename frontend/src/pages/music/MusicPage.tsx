@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CustodyRemindersPage } from './CustodyRemindersPage.tsx'
 import { EngagementPage } from './EngagementPage.tsx'
 import { PayoutRunsPage } from './PayoutRunsPage.tsx'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -57,6 +58,7 @@ export function MusicPage() {
 function MusicRoute() {
   const org = useActiveOrg()
   const [params] = useSearchParams()
+  if (params.get('erinnerungen')) return <CustodyRemindersPage key={org.id} />
   if (/^\d+$/.test(params.get('vereinbarung') || ''))
     return (
       <EngagementPage
