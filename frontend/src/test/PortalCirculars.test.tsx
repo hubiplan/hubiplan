@@ -34,7 +34,7 @@ function Location() {
     go = useNavigate()
   return (
     <>
-      <output data-testid="location">{at.pathname + at.search}</output>
+      <span data-testid="location">{at.pathname + at.search}</span>
       <button onClick={() => go(-1)}>Browser zurück</button>
       <button onClick={() => go('?zugang=9&schreiben=18')}>Anderes Schreiben</button>
     </>

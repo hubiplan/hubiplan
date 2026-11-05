@@ -13,4 +13,4 @@ A mailing list turns a mail sent to a club address into a circular. Anyone may w
 
 Name lists use a fixed alphabetical order: accented letters are placed with their base letter. Identical names keep their relative order when paging through the list.
 
-Received circulars and their attachments are also available under **My area → Circulars**. The Android app calls this shared inbox **Messages**. Changes to information emails are confirmed; official notices are unaffected.
+Received circulars and their attachments are also available in the member area under **Circulars**. The Android app calls this shared inbox “Messages”. Changes to information emails are confirmed; official notices are unaffected.
