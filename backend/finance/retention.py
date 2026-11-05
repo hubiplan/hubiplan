@@ -68,10 +68,11 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
     )
 
     start, end = org.fiscal_range(year)
-    from music.models import MusicianClaim, PerformanceAccount, PerformanceExpense
+    from music.models import MusicianClaim, PayoutRun, PerformanceAccount, PerformanceExpense
 
     document_year = record_year = end.year
     sources = [
+        (PayoutRun, "execution_date"),
         (PerformanceAccount, "date"),
         (MusicianClaim, "assignment__performance__performanceaccount__date"),
         (PerformanceExpense, "booking__date"),
@@ -373,7 +374,14 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
 
     ids(incoming_for_period(org, start, end), "incominginvoice")
     anonymize(org, start, end)
-    from music.models import MusicianClaim, PerformanceAccount
+    from music.models import MusicianClaim, PayoutItem, PayoutRun, PerformanceAccount
+
+    payout_runs = PayoutRun.objects.filter(organization=org, execution_date__range=(start, end))
+    update_encrypted(ids(payout_runs, "payoutrun"), debtor={"holder": ANON, "iban": "", "bic": ""})
+    update_encrypted(
+        ids(PayoutItem.objects.filter(organization=org, run__in=payout_runs), "payoutitem"),
+        payee={"holder": ANON, "iban": "", "bic": ""},
+    )
 
     update_encrypted(
         ids(

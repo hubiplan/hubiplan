@@ -121,3 +121,16 @@ New rehearsal assignments and upcoming pending responses generate neutral notice
 General exports include rehearsal, response and checkout data. The additive migration includes tables, RLS and quantity constraints; export the new history before rolling back.
 
 After an inventory item with closed issues is deleted, the existing 30-day trash period applies; its music links are then removed. Items with an outstanding issue are excluded from permanent cleanup.
+
+## Batch payouts
+
+In **Batch payouts**, select approved outstanding remuneration, a bank account
+and an execution date. Check each holder, IBAN and optional BIC. Saving a run for
+review reserves claims and freezes amounts and recipient details.
+Download the SEPA file (pain.001.001.09, EUR), check it and approve it at your bank.
+Repeated downloads contain the same instruction; do not submit the file twice.
+Export does not execute transfers or mark claims paid. The file requests individual
+bank entries. Assign each actual expense in the performance settlement; bank account
+and amount must match. Reversed bookings reopen reconciliation.
+Cancelling a run releases claims; submitted transfers must also be stopped at the bank.
+Finance read access permits inspection; edit access is required to prepare, export or cancel.

@@ -5915,5 +5915,20 @@
   "Keine sichtbaren Auftritte im gewählten Zeitraum.": "No visible performances in the selected period.",
   "Besetzung: {accepted} Zusagen bei {required} Sollplätzen; {pending} Antworten offen.": "Staffing: {accepted} accepted for {required} required places; {pending} responses pending.",
   "Nach den sichtbaren Angaben ist der Auftritt vorbereitet.": "The performance is ready according to the information you can access.",
-  "Seite {page} · {count} Auftritte": "Page {page} · {count} performances"
+  "Seite {page} · {count} Auftritte": "Page {page} · {count} performances",
+  "Sammelauszahlungen": "Batch payouts",
+  "Freigegebene Restbeträge prüfen, als SEPA-Datei exportieren und mit tatsächlichen Ausgaben abgleichen.": "Review approved outstanding amounts, export a SEPA file and reconcile actual expenses.",
+  "Den Bankexport vor der Freigabe bei der Bank prüfen. Ein Export löst keine Überweisung aus und markiert keine Vergütung als bezahlt. Jede Überweisung braucht später eine eigene Ausgabenbuchung.": "Check the bank export before approving it at your bank. Export does not execute transfers or mark remuneration paid. Each transfer subsequently needs its own expense booking.",
+  "Zahlungslauf vorbereiten": "Prepare payout run",
+  "Ausführungstag": "Execution date",
+  "Keine freigegebenen offenen Vergütungen verfügbar.": "No approved outstanding remuneration available.",
+  "Zahlungslauf zur Prüfung speichern": "Save payout run for review",
+  "Zahlungsläufe": "Payout runs",
+  "Mit Buchungen abgeglichen": "Reconciled with bookings",
+  "Bankdatei exportiert": "Bank file exported",
+  "Zur Prüfung": "For review",
+  "SEPA-Datei herunterladen": "Download SEPA file",
+  "Zahlungslauf aufheben": "Cancel payout run",
+  "Zahlungslauf aufheben? Bereits bei der Bank eingereichte Überweisungen müssen dort gesondert gestoppt werden. Bereits zugeordnete Buchungen bleiben erhalten.": "Cancel payout run? Transfers already submitted to the bank must be stopped separately there. Bookings already assigned are retained.",
+  "BIC": "BIC"
 }

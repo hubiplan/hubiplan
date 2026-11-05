@@ -31,6 +31,46 @@ class Musician(models.Model):
         return self.name or f"Musiker {self.pk}"
 
 
+class PayoutRun(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    bank_account = models.ForeignKey("finance.Account", on_delete=models.PROTECT)
+    execution_date = models.DateField()
+    debtor = EncryptedJSONField(default=dict, strict=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    exported_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"Zahlungslauf {self.reference}"
+
+
+class PayoutItem(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    run = models.ForeignKey(PayoutRun, on_delete=models.CASCADE, related_name="items")
+    claim = models.ForeignKey(
+        "MusicianClaim", on_delete=models.PROTECT, related_name="payout_items"
+    )
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payee = EncryptedJSONField(default=dict, strict=True)
+    released = models.BooleanField(default=False)
+    expense = models.OneToOneField(
+        "PerformanceExpense", null=True, blank=True, on_delete=models.PROTECT
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["claim"], condition=models.Q(released=False), name="music_claim_one_payout"
+            ),
+            models.CheckConstraint(condition=models.Q(amount__gt=0), name="music_payout_positive"),
+        ]
+
+    def __str__(self):
+        return f"Zahlungslaufposten {self.pk}"
+
+
 class MusicianAbsence(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     musician = models.ForeignKey(Musician, on_delete=models.PROTECT, related_name="absences")
