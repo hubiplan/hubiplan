@@ -5,10 +5,12 @@ bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/gestaltung]
-stichworte: [design, colours, logo, font, design package, export, import]
+stichworte: [design, colours, logo, header image, banner, font, design package, export, import]
 ---
 
 Under Design you choose the look, colours and logo of the website. The colours usually come from the unit's appearance and can be adjusted here.
+
+With **Header image** you choose an image from the image library that appears at the top of the website instead of the coat of arms and club name, for example a banner with lettering. It should contain the club name and be wide, about 1200 × 300 pixels. Without a header image the coat of arms and name stay.
 
 Under **Share design** you save a design as a ZIP file with **Save as package**. The package contains the styling, the layout of header, footer and home page and the colour defaults, but no coat of arms, texts or images.
 

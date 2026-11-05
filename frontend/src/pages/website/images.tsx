@@ -542,12 +542,14 @@ function ImageEditForm({
           <>
             <ul className="plain-list small">
               {image.usage.map((u) => (
-                <li key={u.album ? `a${u.album}` : `t${u.text}`}>
+                <li key={u.album ? `a${u.album}` : u.header ? 'kopf' : `t${u.text}`}>
                   <Link
                     to={
                       u.album
                         ? `/webseite/galerie?album=${u.album}`
-                        : `/webseite/inhalte?text=${u.text}`
+                        : u.header
+                          ? '/webseite/gestaltung'
+                          : `/webseite/inhalte?text=${u.text}`
                     }
                     onClick={onClose}
                   >

@@ -286,6 +286,10 @@ class WebsiteImage(models.Model):
     # beim Hochladen gemerkt; die Bilddatei selbst bleibt ohne Metadaten
     taken_at = models.DateTimeField("aufgenommen", null=True, blank=True)
     file_name = models.CharField("Dateiname", max_length=200, blank=True)
+    # Kopfbild der Webseite (Ralf 05.11.): zeigt die Webseite statt Wappen und Vereinsname
+    # im Kopf. Höchstens eines je Webseite (website/views.py). Am Bild statt an der Webseite,
+    # damit Export und Import es ohne Verweis in beide Richtungen mitnehmen.
+    header = models.BooleanField("Kopfbild der Webseite", default=False)
 
     class Meta:
         verbose_name = "Bild der Webseite"

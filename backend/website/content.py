@@ -346,6 +346,16 @@ def image_usage(image: WebsiteImage, texts=None) -> list[dict]:
         result.append(
             {"text": None, "album": album.pk, "label": f"Galerie: {album}", "places": places}
         )
+    # Kopfbild (Ralf 05.11.)
+    if image.header:
+        result.append(
+            {
+                "text": None,
+                "header": True,
+                "label": gettext("Gestaltung"),
+                "places": [gettext("Kopfbild")],
+            }
+        )
     return result
 
 
@@ -374,6 +384,9 @@ def used_image_ids(website) -> set[int]:
         pk
         for pk in GalleryAlbum.objects.filter(website=website).values_list("cover_id", flat=True)
         if pk
+    )
+    used.update(
+        WebsiteImage.objects.filter(website=website, header=True).values_list("pk", flat=True)
     )
     return used
 

@@ -198,6 +198,8 @@ class SiteInfoView(_Public):
             "honors_menu": site.honors_menu(),
             # Bausteine der Startseite (eingeschaltet, in Reihenfolge)
             "home": [k for k in site.site.home() if k != "results" or results.enabled(site)],
+            # Kopfbild statt Wappen und Name (Ralf 05.11.); ältere Webseiten übergehen es
+            "header_image": site.header_image(),
             # Wettbewerbsergebnisse (Schritt 5 der Wettbewerbe): Übersicht und Startseite
             "results_url": site.url("results/") if results.enabled(site) else None,
             "menu": site.menu(),
