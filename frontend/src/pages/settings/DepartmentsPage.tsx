@@ -324,7 +324,7 @@ function DepartmentSettingsPage() {
             emptyText={t('Noch keine {labelPlural} angelegt.', { labelPlural })}
             countText={(n, total) =>
               n === total
-                ? t('{total} {x}', { total, x: total === 1 ? label : labelPlural })
+                ? levelCounts(data, label, labelPlural)
                 : t('{n} von {total}', { n, total })
             }
             rowClassName={(d) =>
@@ -1185,4 +1185,20 @@ function UnitOrder({
       )}
     />
   )
+}
+
+/** Anzahl je Ebene („6 Korps · 16 Züge“), damit tiefere Ebenen nicht unter der obersten Bezeichnung mitgezählt werden. */
+function levelCounts(rows: Department[], label: string, labelPlural: string): string {
+  const en = lang() === 'en'
+  const groups = new Map<string, { sg: string; pl: string; n: number }>()
+  for (const d of rows) {
+    const sg = (en && d.label_en) || d.label || label
+    const pl = (en && d.label_plural_en) || d.label_plural || (sg === label ? labelPlural : sg)
+    const g = groups.get(sg) ?? { sg, pl, n: 0 }
+    g.n += 1
+    groups.set(sg, g)
+  }
+  return [...groups.values()]
+    .map((g) => t('{total} {x}', { total: g.n, x: g.n === 1 ? g.sg : g.pl }))
+    .join(' · ')
 }

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Field } from '../components/ui.tsx'
+import { usePageTitle } from '../components/pageTitle.ts'
 import { t } from '../i18n/index.ts'
 import { DECISIONS, TERMS, decisionAnchor, termAnchor, tr } from '../learning/content.ts'
 import type { DecisionKey, TermKey } from '../learning/content.ts'
@@ -239,6 +240,11 @@ export function HelpEntryPage() {
           (e) => e.kind === 'guide' && e.routes.some((r) => entry.routes.includes(r)),
         )
       : []
+  // Tab-Titel nennt die Anleitung (UX-Audit 05.11. W-04)
+  const articleTitle = entry?.title ?? hidden?.title ?? null
+  usePageTitle(
+    articleTitle ? t('{label} · {modLabel}', { label: articleTitle, modLabel: t('Hilfe') }) : null,
+  )
   return (
     <section className="help-page">
       <p>

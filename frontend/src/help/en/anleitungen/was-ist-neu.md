@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Usability: On a phone the header is a single row; undo, “view as role” and the unit selection are at the top of the menu (☰), and the full club name stays readable. Heading and browser tab name the subpage, e.g. “Organisation · Settings”. Links in text are bold instead of underlined. Units are counted per level, e.g. “7 corps · 15 platoons”.
 - Usability: Member admission guides keyboard focus through two clearly named stages. Calendar responses confirm saving for screen readers; submission methods and validation hints appear in English when English is selected.
 
 - Members: Past unit memberships (such as platoons) can be added with start and end in one step. This also works for units that are no longer active. If they overlap, the message names the affected membership with its exact dates.

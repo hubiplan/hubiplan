@@ -1,7 +1,8 @@
 // Kleine, wiederverwendbare Bausteine für Formulare und Seiten.
 import { useId } from 'react'
 import type { ChangeEvent, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
+import { usePageTitle } from './pageTitle.ts'
 import { useSubNav } from './subnav.ts'
 import type { AutoSave, SaveState } from './forms.ts'
 import { t } from '../i18n/index.ts'
@@ -176,6 +177,48 @@ export function Tabs({ items }: { items: { to: string; label: string }[] }) {
         </NavLink>
       ))}
     </nav>
+  )
+}
+
+/** Der Unterpunkt, dessen Pfad am längsten zum aktuellen Pfad passt. */
+export function currentItem<T extends { to: string }>(items: T[], pathname: string): T | null {
+  const path = pathname.replace(/\/$/, '')
+  return (
+    items
+      .filter((i) => path === i.to || path.startsWith(`${i.to}/`))
+      .sort((a, b) => b.to.length - a.to.length)[0] ?? null
+  )
+}
+
+/**
+ * Überschrift eines Bereichs mit Unterpunkten: Auf einem Unterpunkt heißt die H1 wie der
+ * Unterpunkt, der Bereich steht als Überzeile darüber, und der Tab-Titel nennt beides
+ * (WCAG 2.4.2/2.4.6, UX-Audit 05.11. W-04). Auf dem ersten Punkt (Übersicht) bleibt der
+ * Bereichsname die H1, außer `always` ist gesetzt.
+ */
+export function SectionTitle({
+  title,
+  items,
+  subtitle,
+  always = false,
+}: {
+  title: string
+  items: { to: string; label: string }[]
+  subtitle?: ReactNode
+  always?: boolean
+}) {
+  const { pathname } = useLocation()
+  const current = currentItem(items, pathname)
+  const sub = current && (always || current !== items[0]) ? current.label : null
+  usePageTitle(sub ? t('{label} · {modLabel}', { label: sub, modLabel: title }) : null)
+  return (
+    <div className="page-head">
+      <div>
+        {sub && <p className="muted small eyebrow">{title}</p>}
+        <h1>{sub ?? title}</h1>
+      </div>
+      {subtitle && <p className="muted">{subtitle}</p>}
+    </div>
   )
 }
 

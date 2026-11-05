@@ -57,7 +57,23 @@ export function AccountMenu({
         aria-controls="konto-menue"
         onClick={() => setOpen((o) => !o)}
       >
-        {t('Mein Konto')} <span aria-hidden="true">▾</span>
+        <svg
+          className="account-menu-icon"
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+          aria-hidden="true"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+        </svg>
+        {/* Auf dem Handy nur das Symbol (W-05), der Name bleibt für Screenreader */}
+        <span className="account-menu-label">{t('Mein Konto')}</span>{' '}
+        <span aria-hidden="true">▾</span>
       </button>
       {open && (
         <nav id="konto-menue" className="account-menu-list" aria-label={t('Mein Konto')}>

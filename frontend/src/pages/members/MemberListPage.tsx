@@ -10,7 +10,7 @@ import { Freshness, LoadError } from '../../components/ui.tsx'
 import { ExportPanel } from '../../components/ExportPanel.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
-import { t } from '../../i18n/index.ts'
+import { lang, t } from '../../i18n/index.ts'
 
 interface Column {
   key: string
@@ -138,6 +138,8 @@ export function MemberListPage() {
   const query = JSON.stringify(params)
   const types = useLoad(() => memberApi.types(org.id), [org.id])
   const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
+  // Mehrere Ebenen (z. B. Korps und Züge): Spalte und Filter nennen alle Bezeichnungen.
+  const unitTerms = levelTerms(departments.data ?? [], terms)
   const titles = useLoad(() => memberApi.honoraryTitles(org.id, true), [org.id])
   const [defaultPageSize] = useState(() =>
     window.matchMedia?.('(max-width: 640px)').matches ? 10 : 50,
@@ -351,11 +353,11 @@ export function MemberListPage() {
           </select>
           {departments.data && departments.data.length > 0 && (
             <select
-              aria-label={terms.Sg}
+              aria-label={unitTerms.Sg}
               value={params.abteilung ?? ''}
               onChange={(e) => setParams((p) => ({ ...p, abteilung: e.target.value, page: 1 }))}
             >
-              <option value="">{t('alle {pl}', { pl: terms.pl })}</option>
+              <option value="">{t('alle {pl}', { pl: unitTerms.pl })}</option>
               {departments.data.map((d) => (
                 <option key={d.id} value={d.id}>
                   {unitName(d)}
@@ -399,7 +401,7 @@ export function MemberListPage() {
                     checked={columns.includes(c.key)}
                     onChange={(e) => toggleColumn(c.key, e.target.checked)}
                   />
-                  <span>{c.key === 'departments' ? terms.Sg : c.label}</span>
+                  <span>{c.key === 'departments' ? unitTerms.Sg : c.label}</span>
                 </label>
               ))}
             </div>
@@ -468,11 +470,11 @@ export function MemberListPage() {
                     >
                       {c.sort ? (
                         <button type="button" className="th-sort" onClick={() => sortBy(c.sort!)}>
-                          {c.key === 'departments' ? terms.Sg : c.label}
+                          {c.key === 'departments' ? unitTerms.Sg : c.label}
                           {sortMark(c.sort)}
                         </button>
                       ) : c.key === 'departments' ? (
-                        terms.Sg
+                        unitTerms.Sg
                       ) : (
                         c.label
                       )}
@@ -515,4 +517,27 @@ export function MemberListPage() {
       )}
     </section>
   )
+}
+
+function levelTerms(
+  rows: {
+    label?: string
+    label_plural?: string
+    label_en?: string
+    label_plural_en?: string
+    depth?: number
+  }[],
+  terms: Record<string, string>,
+): { Sg: string; pl: string } {
+  const en = lang() === 'en'
+  const sg: string[] = []
+  const pl: string[] = []
+  for (const d of [...rows].sort((a, b) => (a.depth ?? 0) - (b.depth ?? 0))) {
+    const one = (en && d.label_en) || d.label
+    if (!one || sg.includes(one)) continue
+    sg.push(one)
+    pl.push((en && d.label_plural_en) || d.label_plural || one)
+  }
+  if (sg.length < 2) return { Sg: terms.Sg, pl: terms.pl }
+  return { Sg: sg.join(' / '), pl: pl.join(' / ') }
 }

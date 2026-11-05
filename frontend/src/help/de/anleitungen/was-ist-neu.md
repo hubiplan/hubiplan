@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Bedienung: Auf dem Handy ist der Kopf nur noch eine Zeile; Rückgängig, „Ansicht als Rolle“ und die Wahl der Einheit stehen oben im Menü (☰), der volle Vereinsname bleibt lesbar. Überschrift und Browser-Tab nennen die Unterseite, etwa „Organisation · Einstellungen“. Links im Text sind fett statt unterstrichen. Untereinheiten werden je Ebene gezählt, etwa „7 Korps · 15 Züge“.
 - Bedienung: Die Mitgliedsaufnahme führt den Tastaturfokus durch zwei klar benannte Stufen. Kalender-Rückmeldungen bestätigen das Speichern auch für Screenreader; Meldewege und Prüfhinweise erscheinen bei englischer Oberflächensprache auf Englisch.
 
 - Mitglieder: Frühere Zuordnungen zu Untereinheiten (etwa Zügen) lassen sich gleich mit Beginn und Ende nachtragen. Das geht auch für nicht mehr aktive Untereinheiten. Bei einer Überschneidung nennt die Meldung die betroffene Zuordnung mit genauem Zeitraum.

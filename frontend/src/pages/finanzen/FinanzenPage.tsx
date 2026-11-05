@@ -44,8 +44,9 @@ function Section({
     <section>
       <div className="page-head">
         <div>
-          <p className="muted small eyebrow">{t('Finanzen')}</p>
-          <h1>{title}</h1>
+          {/* Auf der Übersicht heißt die H1 wie der Bereich (UX-Audit 05.11. W-04) */}
+          {title !== t('Übersicht') && <p className="muted small eyebrow">{t('Finanzen')}</p>}
+          <h1>{title === t('Übersicht') ? t('Finanzen') : title}</h1>
         </div>
         {readOnly && <span className="muted small push-right">{t('nur lesen')}</span>}
       </div>

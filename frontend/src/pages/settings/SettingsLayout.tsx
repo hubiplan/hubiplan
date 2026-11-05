@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { PERM } from '../../api/orgs.ts'
-import { Tabs } from '../../components/ui.tsx'
+import { Tabs, SectionTitle } from '../../components/ui.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { federationAccess } from '../members/access.ts'
 import { t } from '../../i18n/index.ts'
@@ -63,8 +63,7 @@ export function SettingsLayout() {
 
   return (
     <section>
-      <h1>{t('Einstellungen')}</h1>
-      <p className="muted">{active.name}</p>
+      <SectionTitle title={t('Einstellungen')} items={items} subtitle={active.name} always />
       <Tabs items={items} />
       <Outlet />
     </section>
