@@ -274,6 +274,12 @@ class SkillViewSet(MusicViewSet):
 class PerformanceViewSet(MusicViewSet):
     serializer_class = MusicPerformanceSerializer
 
+    @action(detail=False, methods=["get"])
+    def overview(self, request, org_id):
+        from .overview import result
+
+        return result(self, request)
+
     def visible(self, performance):
         return (
             services.org_viewer(self.request.user, self.org, self.org_permissions)

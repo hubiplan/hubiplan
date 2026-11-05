@@ -10,6 +10,14 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Musik und Auftritte
 
+Unter **Auftrittsübersicht** siehst du Besetzung, ausstehende Rückmeldungen, bekannte
+Konflikte, Notenbedarf und berechtigte Abrechnungshinweise gemeinsam. Wähle bei Bedarf
+den Zeitraum und bestätige **Übersicht aktualisieren**. Hinweise führen direkt zur
+Besetzung, zum Programm oder zur Auftrittsabrechnung. „Vorbereitet“ bezieht sich nur auf
+die für dich sichtbaren Angaben und ist keine automatische Zusage. Noch nicht geplante
+Angaben bleiben offen. Finanzhinweise erscheinen nur mit Kassenleserecht. Abgesagte
+Auftritte sind gesondert markiert. Es werden zwölf Auftritte je Seite angezeigt.
+
 Die Plattform schaltet das Modul Musik je Verein frei. Rollen benötigen Musik-Lese- oder Bearbeitungsrecht. Für Auftritte wird zusätzlich Kalenderleserecht benötigt.
 
 Die Bereichsnavigation bleibt auf allen Musikseiten sichtbar: **Auftritte**, **Musiker**, **Notenbestand**, **Proben und Notenausgabe**, **Verfügbarkeiten** und **Besetzungsvorlagen**. Unter **Auftritte** wechselst du zwischen Auftritten, Sollbesetzung und Einteilungen; unter **Musiker** zwischen Profilen und instrumentalen Fähigkeiten. Der aktive Bereich ist markiert. Auf kleinen Bildschirmen werden Navigation und Eingabefelder untereinander angeordnet.

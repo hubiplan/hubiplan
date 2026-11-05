@@ -1,5 +1,24 @@
 # Musik und Auftritte
 
+## Auftrittsübersicht und Handlungsbedarf
+
+Unter **Auftrittsübersicht** werden sichtbare Auftritte standardmäßig von 90 Tagen
+zurück bis 180 Tage voraus angezeigt. Ein gewählter Zeitraum darf höchstens ein Jahr
+umfassen; die Ausgabe ist mit zwölf Auftritten je Seite begrenzt. Jede Karte zeigt
+Sollplätze, Zusagen, offene Antworten und konkrete Links zu Besetzung, Programm
+oder Abrechnung. Farben werden stets durch beschriftete Zustände ergänzt.
+
+Fehlende Besetzungen, bekannte Verfügbarkeitskonflikte und fehlende Exemplare erzeugen
+Handlungsbedarf. Nicht geplante Besetzungen/Programme bleiben offen. Der Notenbedarf
+verwendet dieselbe Berechnung wie die Programmliste; bereits bei eingeplanten Musikern
+befindliche Exemplare werden berücksichtigt. Programm-Stimmen werden je Stück gezählt,
+nicht als zusätzliche unterschiedliche Personen. Absagen erzeugen keine Arbeitsaufträge.
+Finanzhinweise benötigen ein aktives Kassenmodul und Kassenleserecht. Sie umfassen
+fehlende Vereinbarung/Rechnung nach dem Auftritt, überfällige tatsächliche Forderungen,
+Vergütungsentwürfe und noch nicht vollständig ausgezahlte freigegebene Vergütungen.
+Die Übersicht ändert keine Daten, Rückmeldungen oder Freigaben. Kalenderfreigaben
+bleiben maßgeblich; Inhalte anderer Termine und private Abwesenheitsgründe bleiben verborgen.
+
 ## Vergütungsvorlagen und Sammelabrechnung
 
 Im Abrechnungsbereich stehen mandantengetrennte **Vergütungsvorlagen** mit Gage und Pauschale zur Verfügung (Musikleserecht plus Kassenlese-/bearbeitungsrecht). Archivieren verhindert neue Anwendungen. Eine Sammelanlage übernimmt die Beträge als unveränderlichen Ausgangswert in neue Entwürfe; spätere Vorlagenänderungen beeinflussen bestehende Vergütungen nicht. Jede ausgewählte Einteilung benötigt eine ausdrückliche Teilnahmeangabe. Auslagen beginnen mit 0 und werden einzeln ergänzt. Es erfolgt keine automatische Freigabe. Der Endpunkt `batch_claims` erfordert einen Idempotenzschlüssel und speichert die Auswahl atomar; vorhandene Vergütungen werden abgewiesen statt überschrieben. Vorlagen sind im allgemeinen Datenexport enthalten.

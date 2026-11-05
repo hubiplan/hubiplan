@@ -6380,3 +6380,6 @@ msgstr "Advance allocation"
 
 msgid "Die Datei ist keine PDF-Datei."
 msgstr "The file is not a PDF document."
+
+msgid "Bitte einen Zeitraum bis zu einem Jahr wählen."
+msgstr "Please select a period of up to one year."
