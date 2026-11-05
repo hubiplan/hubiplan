@@ -5886,5 +5886,8 @@
   "Betrifft den E-Rechnungsversand.": "Concerns electronic invoice delivery.",
   "E-Rechnungsversand": "Electronic invoice delivery",
   "ZUGFeRD-Original": "Original ZUGFeRD invoice",
-  "Anzahlungszuordnung": "Advance allocation"
+  "Anzahlungszuordnung": "Advance allocation",
+  "Fortsetzung · ganztägig": "Continued · all day",
+  "Fortsetzung bis {time}": "Continued until {time}",
+  "Fortsetzung": "Continued"
 }
