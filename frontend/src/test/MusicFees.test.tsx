@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
@@ -97,5 +97,6 @@ it('shows partial payouts and the balance without permitting approval reversal',
   await waitFor(() =>
     expect(screen.queryByRole('button', { name: 'Freigabe aufheben' })).not.toBeInTheDocument(),
   )
-  expect(screen.getByRole('button', { name: 'Auszahlung zuordnen' })).toBeInTheDocument()
+  const musician = screen.getByText('Muster Eins').closest('article')!
+  expect(within(musician).getByRole('button', { name: 'Auszahlung zuordnen' })).toBeDisabled()
 })
