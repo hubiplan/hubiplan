@@ -87,7 +87,7 @@ export function CatalogueImportPanel({ onSaved }: { onSaved: () => Promise<unkno
       {preview && (
         <>
           {!!preview.errors.length && (
-            <Alert kind="error">
+            <Alert kind="error" as="div">
               <ul>
                 {preview.errors.map((e, i) => (
                   <li key={i}>{e}</li>
