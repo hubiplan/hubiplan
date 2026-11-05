@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import type { ListQuery, Paged } from '../api/client.ts'
-import { t } from '../i18n/index.ts'
+import { t, tc } from '../i18n/index.ts'
 
 export function ListSearch({
   query,
@@ -36,11 +36,11 @@ export function ListSearch({
         />
       </label>
       <label className="field">
-        <span>von</span>
+        <span>{t('von')}</span>
         <input type="date" value={von} onChange={(e) => setVon(e.target.value)} />
       </label>
       <label className="field">
-        <span>bis</span>
+        <span>{t('bis')}</span>
         <input type="date" value={bis} onChange={(e) => setBis(e.target.value)} />
       </label>
       {children}
@@ -134,7 +134,7 @@ export function RangePager({
         {t('Zurück')}
       </button>
       <span className="small" aria-live="polite">
-        {from}–{to} von {total} {noun}
+        {from}–{to} {tc('count', 'von')} {total} {noun}
       </span>
       <button
         type="button"

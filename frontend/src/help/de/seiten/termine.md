@@ -16,3 +16,7 @@ An jedem Eintrag steht die zugehörige Einheit und gegebenenfalls der fremde Kal
 Beim Anlegen oder Bearbeiten eines Termins kannst du **Endzeit auf der Webseite ausblenden** aktivieren, wenn öffentlich nur die Beginnzeit erscheinen soll. Intern und im Kalender-Abo bleibt die Endzeit erhalten. Bei Serien gilt die Einstellung für alle Wiederholungen.
 
 Nach erfolgreichem Zusagen, Absagen oder Zurücknehmen deiner Rückmeldung erscheint eine Bestätigung, die als Statusmeldung auch für Screenreader bereitsteht. Beim Zu- und Absagen bleibt der Fokus bei der Aktion; nach dem Zurücknehmen wechselt er zu **Zusagen**. Bei einem Fehler erscheint keine Erfolgsbestätigung; du kannst die Rückmeldung erneut senden.
+
+Für das Kalender-Abo erzeugst du einen persönlichen Link. Gib ihn nur an deine eigene Kalender-App weiter. Ein neuer Link macht den bisherigen Link ungültig. Nach dem Erzeugen wird **Dein Link ist bereit.** als Status bestätigt.
+
+![Persönliches Kalender-Abo erstellen](bild:kalender-abo)

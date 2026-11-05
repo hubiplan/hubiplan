@@ -77,8 +77,15 @@ export function PortalPage() {
   useEffect(() => {
     if (target && knownTarget && String(activePortal?.id) !== target) select(`p:${target}`)
   }, [target, knownTarget, activePortal?.id, select])
-  if (target && (!knownTarget || String(activePortal?.id) !== target))
-    return <p>{t('Kein Mitgliederbereich ausgewählt.')}</p>
+  if (target && !knownTarget)
+    return (
+      <Alert kind="error">
+        {t('Dieser Mitgliederzugang steht deinem Konto nicht zur Verfügung.')}{' '}
+        <Link to="/mein-bereich">{t('Zu meinem Bereich')}</Link>
+      </Alert>
+    )
+  if (target && String(activePortal?.id) !== target)
+    return <p role="status">{t('Mitgliederzugang wird geöffnet …')}</p>
   if (!activePortal) return <Alert kind="info">{t('Kein Mitgliederbereich ausgewählt.')}</Alert>
   return (
     <Routes>
@@ -524,7 +531,9 @@ export function ChangeRequestItem({ request: c }: { request: ChangeRequest }) {
   return (
     <li>
       <strong>{c.status_label}</strong>{' '}
-      <span className="muted small">gemeldet {formatDateTime(c.created_at)}</span>
+      <span className="muted small">
+        {t('gemeldet')} {formatDateTime(c.created_at)}
+      </span>
       <ChangeTable request={c} />
       {c.response && (
         <p className="small">

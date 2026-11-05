@@ -24,8 +24,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useTerms } from '../../org/terms.ts'
 import { Term } from '../../learning/Aids.tsx'
-import { locale } from '../../i18n/index.ts'
-import { t } from '../../i18n/index.ts'
+import { locale, t } from '../../i18n/index.ts'
 
 export function StatusBadge({
   row,
@@ -126,11 +125,11 @@ export function InvoicesPage() {
         >
           <option value="">{t('alle Status')}</option>
           <option value="draft">{t('Entwürfe')}</option>
-          <option value="open">offen</option>
+          <option value="open">{t('offen')}</option>
           <option value="ueberfaellig">{t('überfällig')}</option>
-          <option value="paid">bezahlt</option>
+          <option value="paid">{t('bezahlt')}</option>
           <option value="settled">{t('Abgerechnet')}</option>
-          <option value="cancelled">storniert</option>
+          <option value="cancelled">{t('storniert')}</option>
         </select>
         {s.org_type === 'federation' && (
           <select
@@ -138,7 +137,9 @@ export function InvoicesPage() {
             value={params.get('verein') ?? ''}
             onChange={(e) => setParam('verein', e.target.value)}
           >
-            <option value="">alle {tm.pl}</option>
+            <option value="">
+              {t('alle')} {tm.pl}
+            </option>
             {s.clubs.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -223,7 +224,7 @@ export function InvoicesPage() {
                     <th>{t('Status')}</th>
                     <th className="num">{t('Betrag')}</th>
                     <th className="num">
-                      <Term k="outstanding">offen</Term>
+                      <Term k="outstanding">{t('offen')}</Term>
                     </th>
                   </tr>
                 </thead>
@@ -394,7 +395,7 @@ function InvoiceDetail({
           )}
           {inv.sent_at && (
             <>
-              <dt>verschickt</dt>
+              <dt>{t('verschickt')}</dt>
               <dd>{formatDateTime(inv.sent_at)}</dd>
             </>
           )}
@@ -437,9 +438,11 @@ function InvoiceDetail({
           {inv.vat.map((v) => (
             <tr key={v.rate} className="muted small">
               <td>
-                darin {v.rate.replace('.', ',')} % <Term k="vat">{t('Umsatzsteuer')}</Term>
+                {t('darin')} {v.rate.replace('.', ',')} % <Term k="vat">{t('Umsatzsteuer')}</Term>
               </td>
-              <td>netto {euro(v.net)}</td>
+              <td>
+                {t('netto')} {euro(v.net)}
+              </td>
               <td className="num">{euro(v.vat)}</td>
             </tr>
           ))}
@@ -737,7 +740,7 @@ function PaymentForm({
           }}
         >
           <option value="transfer">{t('Überweisung')}</option>
-          <option value="cash">bar</option>
+          <option value="cash">{t('bar')}</option>
         </SelectField>
         <SelectField
           label={t('Konto')}
@@ -997,7 +1000,9 @@ function InvoiceForm({
               search={unit ? searchUnitMembers : undefined}
             />
             {keepMember && (
-              <small className="muted">bisher: {invoice?.recipient_name.split('\n')[0]}</small>
+              <small className="muted">
+                {t('bisher:')} {invoice?.recipient_name.split('\n')[0]}
+              </small>
             )}
           </div>
         ) : (
@@ -1044,7 +1049,7 @@ function InvoiceForm({
           hint={t('Zahlungen werden in der Kasse dieser Veranstaltung zugeordnet')}
           onChange={(e) => setProject(e.target.value)}
         >
-          <option value="">keine</option>
+          <option value="">{t('keine')}</option>
           {usableProjects.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -1079,7 +1084,7 @@ function InvoiceForm({
               value={l.vat_rate ? String(Number(l.vat_rate)) : ''}
               onChange={(e) => setLine(i, { vat_rate: e.target.value })}
             >
-              <option value="">keine</option>
+              <option value="">{t('keine')}</option>
               {[...new Set([Number(settings.vat_rate), 19, 7])].map((r) => (
                 <option key={r} value={String(r)}>
                   {r.toLocaleString(locale())} {t('% enthalten')}
@@ -1109,7 +1114,7 @@ function InvoiceForm({
         </button>
         <strong className="push-right">
           {t('Summe')} {euro(total)}
-          {incomplete && <span className="muted small"> (unvollständige Posten offen)</span>}
+          {incomplete && <span className="muted small"> {t('(unvollständige Posten offen)')}</span>}
         </strong>
       </div>
       <label className="field">

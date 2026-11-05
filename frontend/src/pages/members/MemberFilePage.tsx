@@ -287,7 +287,7 @@ function MasterData({
         />
         <div className="grid-3">
           <Field
-            label="PLZ"
+            label={t('PLZ')}
             required
             value={v.postal_code}
             error={e.postal_code}
@@ -399,7 +399,7 @@ function MembershipTab({
             {member.periods.map((p) => (
               <tr key={p.id}>
                 <td>{formatMemberDate(p.entry_date, precision)}</td>
-                <td>{p.exit_date ? formatMemberDate(p.exit_date, precision) : 'heute'}</td>
+                <td>{p.exit_date ? formatMemberDate(p.exit_date, precision) : t('heute')}</td>
                 <td>{p.exit_reason_label || '–'}</td>
                 <td className="actions">
                   {canEdit && member.periods.length > 1 && (
@@ -434,11 +434,11 @@ function MembershipTab({
             <li key={tmx.id}>
               <strong>{tmx.member_type_name}</strong> ·{' '}
               {formatMemberDate(tmx.valid_from, precision)} –{' '}
-              {tmx.valid_until ? formatMemberDate(tmx.valid_until, precision) : 'heute'}
+              {tmx.valid_until ? formatMemberDate(tmx.valid_until, precision) : t('heute')}
               <span className="muted small">
                 {' '}
-                ({tmx.active ? 'aktiv' : t('nicht aktiv')},{' '}
-                {tmx.reported ? 'gemeldet' : t('nicht gemeldet')})
+                ({tmx.active ? t('aktiv') : t('nicht aktiv')},{' '}
+                {tmx.reported ? t('gemeldet') : t('nicht gemeldet')})
               </span>
             </li>
           ))}
@@ -462,7 +462,9 @@ function MembershipTab({
                 member.federation.entry_date,
                 member.duration.federation?.precision ?? precision,
               )}
-              {member.federation.entry_date_manual ? ' (von Hand eingetragen)' : ' (berechnet)'}
+              {member.federation.entry_date_manual
+                ? t(' (von Hand eingetragen)')
+                : t(' (berechnet)')}
             </p>
           )}
           {canEdit && !member.federation.remote && member.federation.member_number && (
@@ -477,7 +479,7 @@ function MembershipTab({
             {member.other_memberships.map((m, i) => (
               <li key={i}>
                 <strong>{m.club}</strong> · {formatMemberDate(m.entry_date, precision)} –{' '}
-                {m.exit_date ? formatMemberDate(m.exit_date, precision) : 'heute'}
+                {m.exit_date ? formatMemberDate(m.exit_date, precision) : t('heute')}
               </li>
             ))}
           </ul>
@@ -492,7 +494,7 @@ function MembershipTab({
             {member.departments.map((d) => (
               <li key={d.id}>
                 <strong>{d.department_name}</strong> · {formatMemberDate(d.valid_from, precision)} –{' '}
-                {d.valid_until ? formatMemberDate(d.valid_until, precision) : 'heute'}
+                {d.valid_until ? formatMemberDate(d.valid_until, precision) : t('heute')}
                 {canEdit && editingDepartment !== d.id && (
                   <button
                     type="button"
@@ -515,7 +517,7 @@ function MembershipTab({
                       void run(() => memberApi.endDepartment(org.id, member.id, d.id, todayIso()))
                     }
                   >
-                    beenden
+                    {t('beenden')}
                   </button>
                 )}
                 {canEdit && editingDepartment === d.id && (
@@ -547,7 +549,7 @@ function MembershipTab({
         {org.modules.includes('billing') && member.departments.some((d) => !d.valid_until) && (
           <Checkbox
             label={t('zahlt den Beitrag selbst (nicht über die Sammelrechnung {x})', {
-              x: org.department_terms?.gen ?? `der ${org.department_label}`,
+              x: org.department_terms?.gen ?? t('der {x0}', { x0: org.department_label }),
             })}
             checked={member.pays_fee_self}
             disabled={!canEdit}
@@ -876,7 +878,12 @@ function AddWithDate({
           </option>
         ))}
       </select>
-      <input type="date" aria-label="ab" value={date} onChange={(e) => setDate(e.target.value)} />
+      <input
+        type="date"
+        aria-label={t('ab')}
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+      />
       <button type="submit" className="button button-ghost">
         {t('Hinzufügen')}
       </button>
@@ -937,7 +944,7 @@ function RolesTab({
             {member.board_roles.map((r) => (
               <li key={r.id}>
                 <strong>{r.role_name}</strong> · {formatDate(r.valid_from)} –{' '}
-                {r.valid_until ? formatDate(r.valid_until) : 'heute'}
+                {r.valid_until ? formatDate(r.valid_until) : t('heute')}
               </li>
             ))}
           </ul>
@@ -955,7 +962,7 @@ function RolesTab({
             {member.department_roles.map((r) => (
               <li key={r.id}>
                 <strong>{r.role_name}</strong> ({r.department_name}) · {formatDate(r.valid_from)} –{' '}
-                {r.valid_until ? formatDate(r.valid_until) : 'heute'}
+                {r.valid_until ? formatDate(r.valid_until) : t('heute')}
                 {canEditRoles && !r.valid_until && (
                   <button
                     type="button"
@@ -966,7 +973,7 @@ function RolesTab({
                       )
                     }
                   >
-                    beenden
+                    {t('beenden')}
                   </button>
                 )}
               </li>

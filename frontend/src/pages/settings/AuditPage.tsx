@@ -140,7 +140,7 @@ function AuditChain({ orgId }: { orgId: number }) {
         </Alert>
       )}
       <p className="muted small">
-        {t('Das Protokoll ist')} <Term k="chained_log">verkettet</Term>
+        {t('Das Protokoll ist')} <Term k="chained_log">{t('verkettet')}</Term>
         {t(
           ': Jeder Eintrag enthält eine Prüfsumme seines Vorgängers. Wird ein Eintrag direkt in der Datenbank geändert oder gelöscht, fällt das hier auf. Die Prüfung läuft täglich; bei einem Fehler geht eine Warnung an die Betreiber.',
         )}

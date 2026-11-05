@@ -16,6 +16,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext, gettext_lazy
 
 from .designs import DEFAULT_DESIGN, DESIGNS
 
@@ -120,22 +121,22 @@ class Website(models.Model):
     """Eingerichtete Webseite einer Einheit (höchstens eine je Einheit)."""
 
     class State(models.TextChoices):
-        OFF = "off", "Aus"
-        MAINTENANCE = "maintenance", "Wartung"
-        PUBLIC = "public", "Öffentlich"
+        OFF = "off", gettext_lazy("Aus")
+        MAINTENANCE = "maintenance", gettext_lazy("Wartung")
+        PUBLIC = "public", gettext_lazy("Öffentlich")
 
     class NameFormat(models.TextChoices):
-        FULL = "full", "Vorname Name"
-        INITIAL = "initial", "Vorname N."
+        FULL = "full", gettext_lazy("Vorname Name")
+        INITIAL = "initial", gettext_lazy("Vorname N.")
 
     class MissingConsent(models.TextChoices):
-        OMIT = "omit", "auslassen"
-        NN = "nn", "als „N. N.“ zeigen"
+        OMIT = "omit", gettext_lazy("auslassen")
+        NN = "nn", gettext_lazy("als „N. N.“ zeigen")
 
     class Units(models.TextChoices):
-        ALL = "all", "alle"
-        SELECTED = "selected", "ausgewählte"
-        NONE = "none", "keine"
+        ALL = "all", gettext_lazy("alle")
+        SELECTED = "selected", gettext_lazy("ausgewählte")
+        NONE = "none", gettext_lazy("keine")
 
     organization = models.OneToOneField(
         "organizations.Organization", on_delete=models.CASCADE, related_name="site"
@@ -272,10 +273,12 @@ class Website(models.Model):
     def clean(self):
         unknown = {k for k in self.blocks or {} if k not in BLOCKS and not is_extra_block(k)}
         if unknown:
-            raise ValidationError({"blocks": f"Unbekannter Baustein: {sorted(unknown)[0]}"})
+            raise ValidationError(
+                {"blocks": gettext("Unbekannter Baustein: {x0}").format(x0=sorted(unknown)[0])}
+            )
         if not 1 <= (self.contact_limit_per_hour or 0) <= 100:
             raise ValidationError(
-                {"contact_limit_per_hour": "Bitte einen Wert zwischen 1 und 100 angeben."}
+                {"contact_limit_per_hour": gettext("Bitte einen Wert zwischen 1 und 100 angeben.")}
             )
 
 
@@ -402,19 +405,19 @@ class PublicationConsent(models.Model):
     """
 
     class Category(models.TextChoices):
-        NAME = "name", "Name mit Funktion"
-        PHOTO = "photo", "Foto"
-        EMAIL = "email", "E-Mail-Adresse"
-        PHONE = "phone", "Telefonnummer"
-        HONORS = "honors", "Würden und Chronik"
-        JUBILEES = "jubilees", "Jubiläen"
-        RESULTS = "results", "Wettbewerbsergebnisse"
-        RESULTS_MINOR = "minor_res", "Wettbewerbsergebnisse unter 18"
+        NAME = "name", gettext_lazy("Name mit Funktion")
+        PHOTO = "photo", gettext_lazy("Foto")
+        EMAIL = "email", gettext_lazy("E-Mail-Adresse")
+        PHONE = "phone", gettext_lazy("Telefonnummer")
+        HONORS = "honors", gettext_lazy("Würden und Chronik")
+        JUBILEES = "jubilees", gettext_lazy("Jubiläen")
+        RESULTS = "results", gettext_lazy("Wettbewerbsergebnisse")
+        RESULTS_MINOR = "minor_res", gettext_lazy("Wettbewerbsergebnisse unter 18")
 
     class Source(models.TextChoices):
-        BOARD = "board", "Vorstand"
-        MEMBER = "member", "Mitglied selbst"
-        PAPER = "paper", "Papierformular"
+        BOARD = "board", gettext_lazy("Vorstand")
+        MEMBER = "member", gettext_lazy("Mitglied selbst")
+        PAPER = "paper", gettext_lazy("Papierformular")
 
     # Name und Würden erscheinen aus berechtigtem Interesse, solange kein
     # Widerspruch vorliegt; alles andere nur mit Einwilligung.

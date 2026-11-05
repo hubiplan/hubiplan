@@ -340,10 +340,10 @@ export function EventForm({
                 <option value="">
                   {preset === undefined
                     ? t('wie voreingestellt')
-                    : t('wie voreingestellt ({x})', { x: preset ? 'ja' : 'nein' })}
+                    : t('wie voreingestellt ({x})', { x: preset ? t('ja') : t('nein') })}
                 </option>
-                <option value="yes">ja</option>
-                <option value="no">nein</option>
+                <option value="yes">{t('ja')}</option>
+                <option value="no">{t('nein')}</option>
               </SelectField>
             )
           })}

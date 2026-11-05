@@ -10,7 +10,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.utils.translation import get_language
+from django.utils.translation import get_language, gettext
 from django.utils.translation import gettext as _
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, ValidationError
@@ -97,16 +97,18 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
     def validate_unit_ids(self, value):
         if not isinstance(value, list) or not all(isinstance(v, int) for v in value):
-            raise serializers.ValidationError("Bitte eine Liste von Untereinheiten angeben.")
+            raise serializers.ValidationError(
+                gettext("Bitte eine Liste von Untereinheiten angeben.")
+            )
         org = self.context["org"]
         known = set(services.units_below(org).values_list("pk", flat=True))
         if set(value) - known:
-            raise serializers.ValidationError("Unbekannte Untereinheit.")
+            raise serializers.ValidationError(gettext("Unbekannte Untereinheit."))
         return sorted(set(value))
 
     def validate_blocks(self, value):
         if not isinstance(value, dict) or not all(isinstance(v, bool) for v in value.values()):
-            raise serializers.ValidationError("Bausteine bitte als Schalter angeben.")
+            raise serializers.ValidationError(gettext("Bausteine bitte als Schalter angeben."))
         result = {key: bool(value.get(key, True)) for key in BLOCKS}
         # Unterpunkte von „Würdenträger“ (je Würde, Ehrungen): nur bekannte, nur „aus“ merken
         if self.instance is not None:
@@ -125,10 +127,14 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             isinstance(v, dict) and isinstance(v.get("key"), str) and isinstance(v.get("on"), bool)
             for v in value
         ):
-            raise serializers.ValidationError("Bausteine der Startseite bitte als Liste angeben.")
+            raise serializers.ValidationError(
+                gettext("Bausteine der Startseite bitte als Liste angeben.")
+            )
         unknown = {v["key"] for v in value} - set(HOME_SECTIONS)
         if unknown:
-            raise serializers.ValidationError(f"Unbekannter Baustein: {sorted(unknown)[0]}")
+            raise serializers.ValidationError(
+                gettext("Unbekannter Baustein: {x0}").format(x0=sorted(unknown)[0])
+            )
         return normalize_home_sections(value)
 
     def validate_block_names(self, value):
@@ -173,7 +179,7 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
     def validate_color_roles(self, value):
         if not isinstance(value, dict):
-            raise serializers.ValidationError("Farbzuordnung bitte je Design angeben.")
+            raise serializers.ValidationError(gettext("Farbzuordnung bitte je Design angeben."))
         return designs.normalize_color_roles(value, self._package_roles())
 
     def to_representation(self, instance):
@@ -239,12 +245,14 @@ class _WebsiteMixin(OrgScopedMixin):
         if request.method not in ("GET", "HEAD", "OPTIONS") and not services.module_enabled(
             self.org
         ):
-            raise NotFound("Das Modul „Webseite“ ist für diese Einheit nicht freigeschaltet.")
+            raise NotFound(
+                gettext("Das Modul „Webseite“ ist für diese Einheit nicht freigeschaltet.")
+            )
 
     def website(self) -> Website:
         website = services.website_of(self.org)
         if website is None:
-            raise NotFound("Für diese Einheit ist keine Webseite eingerichtet.")
+            raise NotFound(gettext("Für diese Einheit ist keine Webseite eingerichtet."))
         return website
 
 
@@ -321,7 +329,7 @@ class WebsiteView(_WebsiteMixin, APIView):
     @transaction.atomic
     def post(self, request, org_id: int):
         if services.website_of(self.org) is not None:
-            raise ValidationError("Die Webseite ist schon eingerichtet.")
+            raise ValidationError(gettext("Die Webseite ist schon eingerichtet."))
         website = Website.objects.create(organization=self.org, public_key=Website.new_key())
         record(self.org, request.user, "create", website, {"Webseite": [None, "eingerichtet"]})
         return Response(self.payload(website), status=status.HTTP_201_CREATED)
@@ -383,7 +391,7 @@ class PrivacyPublishView(WebsiteView):
     def post(self, request, org_id: int):
         website = self.website()
         if not website.privacy_text.strip():
-            raise serializers.ValidationError({"privacy_text": "Der Entwurf ist leer."})
+            raise serializers.ValidationError({"privacy_text": gettext("Der Entwurf ist leer.")})
         before = website.privacy_published_at
         website.privacy_published_text = website.privacy_text
         website.privacy_published_at = timezone.now()
@@ -411,11 +419,13 @@ class DomainSerializer(serializers.Serializer):
         host = value.strip().lower().rstrip(".")
         host = re.sub(r"^https?://", "", host).split("/", 1)[0]
         if not re.match(HOSTNAME_RE, host):
-            raise serializers.ValidationError("Bitte eine Domain wie „www.beispiel.de“ angeben.")
+            raise serializers.ValidationError(
+                gettext("Bitte eine Domain wie „www.beispiel.de“ angeben.")
+            )
         with rls_bypass():
             taken = WebsiteDomain.objects.filter(hostname=host).exists()
         if taken:
-            raise serializers.ValidationError("Diese Domain ist schon vergeben.")
+            raise serializers.ValidationError(gettext("Diese Domain ist schon vergeben."))
         return host
 
 
@@ -439,7 +449,9 @@ class DomainListView(_WebsiteMixin, APIView):
                     is_primary=primary,
                 )
         except IntegrityError as exc:
-            raise ValidationError({"hostname": ["Diese Domain ist schon vergeben."]}) from exc
+            raise ValidationError(
+                {"hostname": [gettext("Diese Domain ist schon vergeben.")]}
+            ) from exc
         record(self.org, request.user, "create", domain, diff({}, snapshot(domain)))
         return Response(domain_data(domain), status=status.HTTP_201_CREATED)
 
@@ -564,7 +576,9 @@ class ConsentSerializer(serializers.Serializer):
 
     def validate_on(self, value):
         if value > timezone.localdate():
-            raise serializers.ValidationError("Das Datum darf nicht in der Zukunft liegen.")
+            raise serializers.ValidationError(
+                gettext("Das Datum darf nicht in der Zukunft liegen.")
+            )
         return value
 
 
@@ -656,7 +670,7 @@ class HeldDetailView(_WebsiteMixin, APIView):
         message = self.message(pk)
         target = SiteView(message.website).resolve_recipient(message.recipient)
         if target is None:
-            raise ValidationError("Den Empfänger gibt es nicht mehr. Bitte verwerfen.")
+            raise ValidationError(gettext("Den Empfänger gibt es nicht mehr. Bitte verwerfen."))
         name, emails = target
         delivered = contact.deliver(
             message.website,
@@ -674,8 +688,10 @@ class HeldDetailView(_WebsiteMixin, APIView):
             # (kein raise: der Eintrag im Postausgang soll gespeichert bleiben)
             return Response(
                 {
-                    "detail": "Die Nachricht konnte nicht zugestellt werden und bleibt in "
-                    "der Liste. Bitte den Postausgang prüfen und später erneut freigeben."
+                    "detail": gettext(
+                        "Die Nachricht konnte nicht zugestellt werden und bleibt in der "
+                        "Liste. Bitte den Postausgang prüfen und später erneut freigeben."
+                    )
                 },
                 status=status.HTTP_409_CONFLICT,
             )

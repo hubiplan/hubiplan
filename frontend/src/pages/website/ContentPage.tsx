@@ -83,9 +83,9 @@ export function ContentPage() {
               {items.length === 0 && <p className="muted">{t('Noch keine.')}</p>}
               {g.kind === 'page' && items.length > 0 && (
                 <p className="muted small">
-                  {t('Wo die Textseiten im Menü stehen, legst du unter')}{' '}
-                  <Link to="/webseite/aufbau">{t('Webseite › Menü und Bereiche › Bausteine')}</Link>{' '}
-                  fest.
+                  {t('Die Position der Textseiten im Menü legst du hier fest:')}{' '}
+                  <Link to="/webseite/aufbau">{t('Webseite › Menü und Bereiche › Bausteine')}</Link>
+                  .
                 </p>
               )}
               <TextList
@@ -629,7 +629,7 @@ function GalleryPicker({
           <SelectField
             label={t('Beginnt mit')}
             value={random ? 'random' : 'first'}
-            hint={random ? undefined : t('Das erste Bild legen Sie mit ↑ ↓ fest.')}
+            hint={random ? undefined : t('Das erste Bild legst du mit ↑ ↓ fest.')}
             onChange={(e) => onRandomChange(e.target.value === 'random')}
           >
             <option value="first">{t('dem ersten Bild der Liste')}</option>

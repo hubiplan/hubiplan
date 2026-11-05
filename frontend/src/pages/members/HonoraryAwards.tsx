@@ -21,7 +21,7 @@ function AwardLine({ a, children }: { a: HonoraryAward; children?: ReactNode }) 
         t('verliehen {x}', { x: a.valid_from.split('-')[0] })
       ) : (
         <>
-          {formatDate(a.valid_from)} – {a.valid_until ? formatDate(a.valid_until) : 'heute'}
+          {formatDate(a.valid_from)} – {a.valid_until ? formatDate(a.valid_until) : t('heute')}
         </>
       )}
       {a.fee_text && (
@@ -70,7 +70,7 @@ function AwardDates({
     <>
       <input
         type="date"
-        aria-label="ab"
+        aria-label={t('ab')}
         required
         value={from}
         onChange={(e) => setFrom(e.target.value)}
@@ -286,7 +286,7 @@ export function HonoraryAwards({
                           )
                         }
                       >
-                        beenden
+                        {t('beenden')}
                       </button>
                     )}
                     <IconButton

@@ -337,7 +337,7 @@ function DepartmentSettingsPage() {
                 <IconButton
                   label={t('{name} {x}', {
                     name: d.name,
-                    x: editable && !d.is_remote ? 'bearbeiten' : 'anzeigen',
+                    x: editable && !d.is_remote ? t('bearbeiten') : t('anzeigen'),
                   })}
                   icon={editable && !d.is_remote ? <EditIcon /> : <ViewIcon />}
                   aria-pressed={d.id === selected}
@@ -451,7 +451,9 @@ function NewDepartment({
   }
   return (
     <form className="card" onSubmit={create}>
-      <h2>{label} anlegen</h2>
+      <h2>
+        {label} {t('anlegen')}
+      </h2>
       <SelectField
         label={t('Gehört zu')}
         value={form.values.parent_unit}
@@ -459,7 +461,9 @@ function NewDepartment({
         hint={t('Untereinheiten können selbst wieder Untereinheiten haben.')}
         onChange={(e) => form.set('parent_unit', e.target.value)}
       >
-        <option value="">direkt {terms.e_zum}</option>
+        <option value="">
+          {t('direkt')} {terms.e_zum}
+        </option>
         {units
           .filter((u) => u.is_active)
           .map((u) => (
@@ -718,7 +722,9 @@ function DepartmentCard({
             hint={t('Umhängen: Untereinheiten und Mitglieder wandern mit.')}
             onChange={(e) => form.set('parent_unit', e.target.value)}
           >
-            <option value="">direkt {terms.e_zum}</option>
+            <option value="">
+              {t('direkt')} {terms.e_zum}
+            </option>
             {units
               .filter((u) => u.is_active && !blocked.has(u.id))
               .map((u) => (
@@ -743,7 +749,9 @@ function DepartmentCard({
             hint={t('Wie Ein- und Austritt in {inThis} angezeigt werden.', { inThis })}
             onChange={(e) => form.set('date_precision', e.target.value as DatePrecision | '')}
           >
-            <option value="">wie {tm.e_nom}</option>
+            <option value="">
+              {t('wie')} {tm.e_nom}
+            </option>
             {DATE_PRECISION_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
@@ -1002,7 +1010,7 @@ function UnitHolders({
             <tr>
               <th>{t('Mitglied')}</th>
               <th>{t('Rolle')}</th>
-              <th>seit</th>
+              <th>{t('seit')}</th>
               <th />
             </tr>
           </thead>
@@ -1050,7 +1058,7 @@ function UnitHolders({
               ))}
             </SelectField>
             <Field
-              label="seit"
+              label={t('seit')}
               type="date"
               required
               value={from}
@@ -1129,7 +1137,7 @@ function ManagerSetup({
       <h3>{t('Verwalter einrichten')}</h3>
       <p className="muted small">
         {t('Gibt einem Mitglied die Rolle „Leitung“ mit allen Rechten in')} {inThis}
-        {dep.own_workspace ? ' (auch für Kasse und Rechnungen)' : ''}{' '}
+        {dep.own_workspace ? t(' (auch für Kasse und Rechnungen)') : ''}{' '}
         {t(
           'und richtet ihm einen Zugang ein. Die Person braucht eine E-Mail-Adresse und kann danach selbst weitere Rollen vergeben. Nur nötig, wenn jemand selbst in HUBIplan arbeiten soll; Ämter ohne Zugang vergibst du unter „Wer hat welche Rolle?“.',
         )}
@@ -1170,7 +1178,7 @@ function UnitOrder({
         <>
           <span className={u.is_active ? undefined : 'muted'}>
             {u.name}
-            {!u.is_active && ' (inaktiv)'}
+            {!u.is_active && t(' (inaktiv)')}
           </span>
           <UnitOrder orgId={orgId} units={units} parent={u.id} onChange={onChange} />
         </>

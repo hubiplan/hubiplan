@@ -67,7 +67,7 @@ export function DeptInvoices({ deptId }: { deptId: number }) {
               </tr>
               {Number(inv.paid) > 0 && (
                 <tr>
-                  <th>bezahlt</th>
+                  <th>{t('bezahlt')}</th>
                   <th />
                   <th className="num">{euro(inv.paid)}</th>
                 </tr>
@@ -113,7 +113,9 @@ export function PortalInvoices({ accessId, empty }: { accessId: number; empty?: 
                 <td className="num">
                   {euro(inv.total)}
                   {Number(inv.paid) > 0 && Number(inv.outstanding) > 0 && (
-                    <div className="muted small">offen {euro(inv.outstanding)}</div>
+                    <div className="muted small">
+                      {t('offen')} {euro(inv.outstanding)}
+                    </div>
                   )}
                 </td>
               </tr>

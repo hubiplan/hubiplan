@@ -90,9 +90,9 @@ class LoginLink(models.Model):
 
 class ChangeRequest(models.Model):
     class Status(models.TextChoices):
-        PENDING = "pending", "offen"
+        PENDING = "pending", gettext_lazy("offen")
         ACCEPTED = "accepted", gettext_lazy("übernommen")
-        REJECTED = "rejected", "abgelehnt"
+        REJECTED = "rejected", gettext_lazy("abgelehnt")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"

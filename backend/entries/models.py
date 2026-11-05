@@ -27,7 +27,7 @@ class Call(models.Model):
     class FeePer(models.TextChoices):
         TEAM = "mannschaft", gettext_lazy("je Mannschaft")
         PERSON = "person", gettext_lazy("je Person")
-        FLAT = "pauschal", "pauschal"
+        FLAT = "pauschal", gettext_lazy("pauschal")
 
     class Changes(models.TextChoices):
         NONE = "keine", gettext_lazy("nach Meldeschluss keine Änderungen")

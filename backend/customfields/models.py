@@ -83,23 +83,31 @@ class FieldDefinition(models.Model):
     def clean(self) -> None:
         errors = {}
         if self.federation_wide and self.organization.type != "federation":
-            errors["federation_wide"] = (
+            errors["federation_wide"] = gettext(
                 "Nur eine übergeordnete Einheit kann verbandsweite Felder anlegen."
             )
         if self.repeatable:
             if not self.subfields:
-                errors["subfields"] = "Ein wiederholbares Feld braucht mindestens ein Unterfeld."
+                errors["subfields"] = gettext(
+                    "Ein wiederholbares Feld braucht mindestens ein Unterfeld."
+                )
             keys = set()
             for sub in self.subfields:
                 if sub.get("type") not in TYPE_KEYS:
-                    errors["subfields"] = f"Unbekannter Typ: {sub.get('type')}"
+                    errors["subfields"] = gettext("Unbekannter Typ: {x0}").format(
+                        x0=sub.get("type")
+                    )
                 if sub.get("type") == "choice" and not sub.get("choices"):
-                    errors["subfields"] = f"„{sub.get('label')}“ braucht Auswahlwerte."
+                    errors["subfields"] = gettext("„{x0}“ braucht Auswahlwerte.").format(
+                        x0=sub.get("label")
+                    )
                 if sub.get("key") in keys:
-                    errors["subfields"] = "Unterfelder brauchen unterschiedliche Bezeichnungen."
+                    errors["subfields"] = gettext(
+                        "Unterfelder brauchen unterschiedliche Bezeichnungen."
+                    )
                 keys.add(sub.get("key"))
         elif self.field_type == "choice" and not self.choices:
-            errors["choices"] = "Bitte Auswahlwerte angeben."
+            errors["choices"] = gettext("Bitte Auswahlwerte angeben.")
         if errors:
             raise ValidationError(errors)
 

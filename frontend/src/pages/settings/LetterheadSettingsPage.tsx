@@ -136,7 +136,7 @@ function LetterheadEditor({
           onChange={(e) => set('mode', e.target.value as LetterheadFields['mode'])}
         >
           <option value="inherit">
-            wie {current.owner.is_self ? t('darüber') : current.owner.name}
+            {t('wie')} {current.owner.is_self ? t('darüber') : current.owner.name}
             {t(', mit eigenem Namen als Zusatzzeile')}
           </option>
           <option value="own">{t('eigener Briefbogen')}</option>

@@ -93,11 +93,12 @@ export function ExportSection({
             onChange={(e) => setTarget(e.target.value)}
           >
             <option value="">
-              ganz{tm.e_adj} {tm.e_sg}
+              {t('ganz')}
+              {tm.e_adj} {tm.e_sg}
             </option>
             {departments.map((d) => (
               <option key={d.id} value={d.id}>
-                nur {tm.sg} {unitName(d)}
+                {t('nur')} {tm.sg} {unitName(d)}
               </option>
             ))}
           </select>
@@ -120,7 +121,9 @@ export function ExportSection({
       {last?.status === 'done' && (
         <Alert kind="success">
           {t('Fertig.')}{' '}
-          <a href={transferApi.downloadUrl(base, last.id)}>{last.file_name} herunterladen</a>
+          <a href={transferApi.downloadUrl(base, last.id)}>
+            {last.file_name} {t('herunterladen')}
+          </a>
         </Alert>
       )}
       {last?.status === 'failed' && (
@@ -691,7 +694,7 @@ function ImportPreviewView({
             onChange={(e) => setAddress({ ...address, street: e.target.value })}
           />
           <Field
-            label="PLZ"
+            label={t('PLZ')}
             value={address.postal_code}
             onChange={(e) => setAddress({ ...address, postal_code: e.target.value })}
           />
@@ -747,7 +750,9 @@ function ImportPreviewView({
                 <tr key={d.person}>
                   <td>
                     <strong>{d.name}</strong>
-                    <div className="small muted">geb. {d.birth_date}</div>
+                    <div className="small muted">
+                      {t('geb.')} {d.birth_date}
+                    </div>
                   </td>
                   <td>
                     <SelectField
@@ -760,7 +765,7 @@ function ImportPreviewView({
                       {d.candidates.map((c) => (
                         <option key={c.id} value={String(c.id)}>
                           {t('zusammenführen mit')} {c.name}
-                          {c.member_number ? ` (Nr. ${c.member_number})` : ''}
+                          {c.member_number ? t(' (Nr. {x0})', { x0: c.member_number }) : ''}
                           {c.clubs.length
                             ? t(' – {x}', { x: c.clubs.map((x) => x.name).join(', ') })
                             : ''}
@@ -888,7 +893,7 @@ export function ClubCreateForm({
           required
         />
         <Field
-          label="PLZ"
+          label={t('PLZ')}
           value={v.postal_code}
           error={form.errors.postal_code}
           onChange={(e) => form.set('postal_code', e.target.value)}
@@ -919,7 +924,7 @@ export function ClubCreateForm({
       </div>
       {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
       <button type="submit" className="button button-primary" disabled={form.busy}>
-        {tm.Sg} anlegen
+        {tm.Sg} {t('anlegen')}
       </button>
     </form>
   )

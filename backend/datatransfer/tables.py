@@ -765,17 +765,25 @@ def check_tables(
     count = 0
     models_by_label = {label(m): m for m in module_models()}
     if not isinstance(tables, dict):
-        errors.append(f"{where}: Die Tabellen in der Datei sind ungültig.")
+        errors.append(
+            gettext("{where}: Die Tabellen in der Datei sind ungültig.").format(where=where)
+        )
         return 0
     for name in list(tables):
         if name in models_by_label and allowed is not None and name not in allowed:
             errors.append(
-                f"{where}: Tabelle „{name}“ darf bei diesem Import nicht übernommen werden."
+                gettext(
+                    "{where}: Tabelle „{name}“ darf bei diesem Import nicht übernommen werden."
+                ).format(where=where, name=name)
             )
     for name, rows in tables.items():
         model = models_by_label.get(name)
         if model is None:
-            errors.append(f"{where}: Tabelle „{name}“ ist hier unbekannt.")
+            errors.append(
+                gettext("{where}: Tabelle „{name}“ ist hier unbekannt.").format(
+                    where=where, name=name
+                )
+            )
             continue
         if allowed is not None and name not in allowed:
             continue
@@ -800,7 +808,11 @@ def check_tables(
             try:
                 validate_url_data(model, row)
             except ValidationError as exc:
-                errors.append(f"{where}: {name} {row.get('id')}: {'; '.join(exc.messages)}")
+                errors.append(
+                    gettext("{where}: {name} {x2}: {x3}").format(
+                        where=where, name=name, x2=row.get("id"), x3="; ".join(exc.messages)
+                    )
+                )
             for f in relations:
                 value = row.get(f.name)
                 if value is None:
@@ -809,8 +821,16 @@ def check_tables(
                     if f.null or DROP_IF_MISSING.get(name) == f.name:
                         continue  # Verweis fällt weg (z. B. Mitglied nicht in der Datei)
                     errors.append(
-                        f"{where}: {model._meta.verbose_name} {row.get('id')} verweist auf "
-                        f"„{f.verbose_name}“ {value}, das in der Datei fehlt."
+                        gettext(
+                            "{where}: {x1} {x2} verweist auf „{x3}“ {value}, das in der Datei "
+                            "fehlt."
+                        ).format(
+                            where=where,
+                            x1=model._meta.verbose_name,
+                            x2=row.get("id"),
+                            x3=f.verbose_name,
+                            value=value,
+                        )
                     )
     return count
 

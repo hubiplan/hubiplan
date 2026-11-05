@@ -429,7 +429,7 @@ function DonationsList({ canEdit }: { canEdit: boolean }) {
                   )}
                 </td>
                 <td className="num">{euro(d.amount)}</td>
-                <td>{d.statement_number ?? <span className="muted">offen</span>}</td>
+                <td>{d.statement_number ?? <span className="muted">{t('offen')}</span>}</td>
                 <td className="actions">
                   {canEdit && !d.statement && (
                     <>
@@ -739,7 +739,7 @@ function StatementsList({ canEdit }: { canEdit: boolean }) {
           <thead>
             <tr>
               <th>{t('Nummer')}</th>
-              <th>ausgestellt</th>
+              <th>{t('ausgestellt')}</th>
               <th>{t('Zuwendender')}</th>
               <th>{t('Art')}</th>
               <th className="num">{t('Betrag')}</th>

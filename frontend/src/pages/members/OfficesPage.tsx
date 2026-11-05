@@ -148,8 +148,8 @@ function HoldersPanel() {
                         {h.former_entry && h.person === null && (
                           <span className="muted small">
                             {h.name_public
-                              ? ' (kein Mitglied)'
-                              : ' (kein Mitglied, nicht auf der Webseite)'}
+                              ? t(' (kein Mitglied)')
+                              : t(' (kein Mitglied, nicht auf der Webseite)')}
                           </span>
                         )}
                       </td>
@@ -550,7 +550,8 @@ function ImportPanel() {
       <h2>{t('Frühere Amtsinhaber importieren')}</h2>
       <p className="muted small">
         {t('Excel- oder CSV-Datei mit den Spalten')} <strong>{t('Amt')}</strong>,{' '}
-        <strong>{t('Name')}</strong>, <strong>von</strong> und <strong>bis</strong>{' '}
+        <strong>{t('Name')}</strong>, <strong>{t('von')}</strong> {t('und')}{' '}
+        <strong>{t('bis')}</strong>{' '}
         {t(
           '(jeweils das Jahr; ohne „bis“ gilt nur das eine Jahr). Für Ämter einer Untereinheit (z. B. Zugführer) zusätzlich die Spalte',
         )}{' '}
@@ -575,8 +576,10 @@ function ImportPanel() {
         <>
           {newRoles.length > 0 && (
             <Alert kind="info">
-              {t('Neue Ämter werden angelegt:')} {newRoles.join(', ')}. Sie erscheinen nicht auf der
-              Webseite, bis ihr in der Rolle „unter Ämter zeigen“ einschaltet.
+              {t('Neue Ämter werden angelegt:')} {newRoles.join(', ')}
+              {t(
+                '. Sie erscheinen nicht auf der Webseite, bis ihr in der Rolle „unter Ämter zeigen“ einschaltet.',
+              )}
             </Alert>
           )}
           <div className="table-scroll">

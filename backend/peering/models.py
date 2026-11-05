@@ -84,12 +84,12 @@ class Coupling(models.Model):
     class State(models.TextChoices):
         REQUESTED = "requested", gettext_lazy("angefragt, wartet auf die andere Seite")
         PENDING = "pending", gettext_lazy("Anfrage eingegangen, wartet auf Bestätigung")
-        ACTIVE = "active", "aktiv"
-        PAUSED = "paused", "pausiert"
+        ACTIVE = "active", gettext_lazy("aktiv")
+        PAUSED = "paused", gettext_lazy("pausiert")
         # Gegenstelle meldet einen Umzug; erst nach Bestätigung hier geht es weiter
         MOVING = "moving", gettext_lazy("Umzug angekündigt, wartet auf Bestätigung")
         ENDED = "ended", gettext_lazy("gelöst")
-        MOVED = "moved", "umgezogen"
+        MOVED = "moved", gettext_lazy("umgezogen")
 
     local_unit = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="couplings"
@@ -187,14 +187,14 @@ class Message(models.Model):
     """
 
     class Direction(models.TextChoices):
-        OUT = "out", "gesendet"
-        IN = "in", "empfangen"
+        OUT = "out", gettext_lazy("gesendet")
+        IN = "in", gettext_lazy("empfangen")
 
     class State(models.TextChoices):
-        QUEUED = "queued", "wartet"
-        DONE = "done", "erledigt"
-        FAILED = "failed", "fehlgeschlagen"
-        REJECTED = "rejected", "abgelehnt"
+        QUEUED = "queued", gettext_lazy("wartet")
+        DONE = "done", gettext_lazy("erledigt")
+        FAILED = "failed", gettext_lazy("fehlgeschlagen")
+        REJECTED = "rejected", gettext_lazy("abgelehnt")
 
     coupling = models.ForeignKey(Coupling, on_delete=models.CASCADE, related_name="messages")
     direction = models.CharField(max_length=3, choices=Direction.choices)
@@ -270,8 +270,8 @@ class RemoteInvoice(models.Model):
     """
 
     class Status(models.TextChoices):
-        OPEN = "open", "offen"
-        CANCELLED = "cancelled", "storniert"
+        OPEN = "open", gettext_lazy("offen")
+        CANCELLED = "cancelled", gettext_lazy("storniert")
 
     coupling = models.ForeignKey(Coupling, on_delete=models.CASCADE, related_name="invoices")
     uid = models.CharField(max_length=80)
@@ -323,7 +323,7 @@ class RemoteMember(models.Model):
     """
 
     class Status(models.TextChoices):
-        ACTIVE = "active", "gemeldet"
+        ACTIVE = "active", gettext_lazy("gemeldet")
         UNCLEAR = "unclear", gettext_lazy("Klärfall: Person schon bekannt?")
         WITHDRAWN = "withdrawn", gettext_lazy("nicht mehr gemeldet")
 
@@ -363,9 +363,9 @@ class RemoteTransfer(models.Model):
         TO = "to", gettext_lazy("neuer Verein")
 
     class Status(models.TextChoices):
-        PENDING = "pending", "offen"
+        PENDING = "pending", gettext_lazy("offen")
         ACCEPTED = "accepted", gettext_lazy("bestätigt")
-        REJECTED = "rejected", "abgelehnt"
+        REJECTED = "rejected", gettext_lazy("abgelehnt")
         CANCELLED = "cancelled", gettext_lazy("zurückgezogen")
         FAILED = "failed", gettext_lazy("Aufnahme fehlgeschlagen")
 
@@ -412,9 +412,9 @@ class RemoteCircular(models.Model):
     """
 
     class Status(models.TextChoices):
-        FORWARDED = "forwarded", "weitergegeben"
+        FORWARDED = "forwarded", gettext_lazy("weitergegeben")
         DRAFT = "draft", gettext_lazy("liegt als Entwurf vor")
-        SENT = "sent", "versendet"
+        SENT = "sent", gettext_lazy("versendet")
         DISCARDED = "discarded", gettext_lazy("nicht weitergegeben")
 
     coupling = models.ForeignKey(Coupling, on_delete=models.CASCADE, related_name="circulars")
@@ -526,8 +526,8 @@ class SpinOff(models.Model):
     class State(models.TextChoices):
         PREPARED = "prepared", gettext_lazy("vorbereitet (Export und Code erstellt)")
         REQUESTED = "requested", gettext_lazy("Kopplung angefragt")
-        DONE = "done", "ausgegliedert"
-        CANCELLED = "cancelled", "abgebrochen"
+        DONE = "done", gettext_lazy("ausgegliedert")
+        CANCELLED = "cancelled", gettext_lazy("abgebrochen")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="spin_offs"

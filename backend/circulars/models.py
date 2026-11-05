@@ -59,7 +59,7 @@ class Circular(models.Model):
         DRAFT = "draft", gettext_lazy("Entwurf")
         SENDING = "sending", gettext_lazy("wird versendet")
         # Fachfrage 14 (Audit 31.10.): „abgearbeitet“ – ob jede Mail ankam, zeigen die Zahlen
-        SENT = "sent", "abgearbeitet"
+        SENT = "sent", gettext_lazy("abgearbeitet")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -162,12 +162,12 @@ class CircularRecipient(models.Model):
         PORTAL = "portal", gettext_lazy("nur Mitgliederbereich")
 
     class Status(models.TextChoices):
-        PENDING = "pending", "wartet"
+        PENDING = "pending", gettext_lazy("wartet")
         # Beansprucht, Ergebnis steht noch aus. Bleibt es länger so (Absturz mitten
         # im Versand), zeigt HUBIplan „Versand unklar“ (Audit 29.10. B-V04)
         SENDING = "sending", gettext_lazy("wird versendet")
-        SENT = "sent", "versendet"
-        FAILED = "failed", "fehlgeschlagen"
+        SENT = "sent", gettext_lazy("versendet")
+        FAILED = "failed", gettext_lazy("fehlgeschlagen")
         LETTER = "letter", gettext_lazy("Brief zum Drucken")
         PORTAL = "portal", gettext_lazy("im Mitgliederbereich")
 
@@ -311,10 +311,10 @@ class InboundMail(models.Model):
     """Eingegangene Mail an eine Verteiler-Adresse (Protokoll)."""
 
     class Status(models.TextChoices):
-        REJECTED = "rejected", "abgewiesen"
+        REJECTED = "rejected", gettext_lazy("abgewiesen")
         WAITING = "waiting", gettext_lazy("wartet auf Bestätigung")
         DRAFT = "draft", gettext_lazy("als Entwurf abgelegt")
-        SENT = "sent", "versendet"
+        SENT = "sent", gettext_lazy("versendet")
         FAILED = "failed", gettext_lazy("Fehler")
 
     # Leer, solange keinem Verteiler zugeordnet (nur im Betriebsprotokoll)

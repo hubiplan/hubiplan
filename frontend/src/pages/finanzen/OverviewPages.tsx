@@ -11,7 +11,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import type { FinanceAccess } from './access.ts'
 import { HowTo, Term } from '../../learning/Aids.tsx'
 import type { TermKey } from '../../learning/content.ts'
-import { t, tn } from '../../i18n/index.ts'
+import { t, tn, tc } from '../../i18n/index.ts'
 
 /** Steuerliche Bereiche und ihre Begriffe im Glossar */
 const AREA_TERMS: Record<string, TermKey> = {
@@ -182,7 +182,8 @@ function BillingSummary({ feeRuns }: { feeRuns: boolean }) {
           <h2>{t('Offene Rechnungen')}</h2>
           <p className="amount-big">{euro(data.open.amount)}</p>
           <Link className="small" to="/finanzen/rechnungen?status=open">
-            {data.open.count} {data.open.count === 1 ? t('Rechnung') : t('Rechnungen')} ansehen
+            {data.open.count} {data.open.count === 1 ? t('Rechnung') : t('Rechnungen')}{' '}
+            {t('ansehen')}
           </Link>
         </div>
         <div className="card tile">
@@ -194,7 +195,7 @@ function BillingSummary({ feeRuns }: { feeRuns: boolean }) {
           </p>
           <Link className="small" to="/finanzen/rechnungen?status=open&ueberfaellig=1">
             {data.overdue.count} {data.overdue.count === 1 ? t('Rechnung') : t('Rechnungen')}{' '}
-            ansehen
+            {t('ansehen')}
           </Link>
         </div>
         {feeRuns && (
@@ -241,8 +242,8 @@ function ReceivedSummary() {
   const sum = open.reduce((s, i) => s + Number(i.outstanding), 0)
   return (
     <Alert kind="info">
-      {open.length === 1 ? t('Eine Rechnung') : t('{n} Rechnungen', { n: open.length })} von{' '}
-      {data.federation} {open.length === 1 ? 'ist' : 'sind'}{' '}
+      {open.length === 1 ? t('Eine Rechnung') : t('{n} Rechnungen', { n: open.length })}{' '}
+      {tc('count', 'von')} {data.federation} {open.length === 1 ? t('ist') : t('sind')}{' '}
       {t('offen ({x}).', { x: euro(sum.toFixed(2)) })}{' '}
       <Link to="/finanzen/rechnungen/dachverband">{t('Ansehen')}</Link>
     </Alert>

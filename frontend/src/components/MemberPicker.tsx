@@ -68,7 +68,7 @@ export function MemberPicker<T extends PickedMember = MemberRow>({
         <p>
           {value.last_name}, {value.first_name}{' '}
           <button type="button" className="link-button" onClick={() => onChange(null)}>
-            entfernen
+            {t('entfernen')}
           </button>
         </p>
       </div>

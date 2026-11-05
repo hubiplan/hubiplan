@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext
 
+from core.i18n import date_text
 from finance.models import iban_valid
 
 from .models import DebitItem, DebitRun, Invoice, Mandate
@@ -102,13 +103,13 @@ def validate_mandate_data(holder: str, iban: str, bic: str) -> dict:
     iban = clean_iban(iban)
     bic = (bic or "").replace(" ", "").upper()
     if not holder.strip():
-        errors["holder"] = "Bitte den Kontoinhaber angeben."
+        errors["holder"] = gettext("Bitte den Kontoinhaber angeben.")
     if not iban_valid(iban):
-        errors["iban"] = "Die IBAN ist ungültig."
+        errors["iban"] = gettext("Die IBAN ist ungültig.")
     elif not iban.startswith(SEPA_COUNTRIES):
-        errors["iban"] = "Die IBAN gehört nicht zum SEPA-Raum."
+        errors["iban"] = gettext("Die IBAN gehört nicht zum SEPA-Raum.")
     if bic and not re.fullmatch(r"[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?", bic):
-        errors["bic"] = "Der BIC ist ungültig."
+        errors["bic"] = gettext("Der BIC ist ungültig.")
     if errors:
         raise ValidationError(errors)
     return {"holder": holder.strip()[:70], "iban": iban, "bic": bic}
@@ -219,22 +220,25 @@ def create_run(org, invoice_ids: list[int], collection_date: datetime.date, user
     cfg = settings_for(org)
     errors = {}
     if not creditor_id_valid(cfg.creditor_id):
-        errors["creditor_id"] = (
-            f"Bitte unter {SETTINGS_PATH} eine gültige Gläubiger-Identifikationsnummer eintragen."
-        )
+        errors["creditor_id"] = gettext(
+            "Bitte unter {SETTINGS_PATH} eine gültige Gläubiger-Identifikationsnummer eintragen."
+        ).format(SETTINGS_PATH=SETTINGS_PATH)
     account = cfg.account
     if account is None or not account.iban:
-        errors["account"] = f"Bitte unter {SETTINGS_PATH} ein Konto mit IBAN für den Einzug wählen."
+        errors["account"] = gettext(
+            "Bitte unter {SETTINGS_PATH} ein Konto mit IBAN für den Einzug wählen."
+        ).format(SETTINGS_PATH=SETTINGS_PATH)
     if cfg.category is None:
-        errors["category"] = f"Bitte unter {SETTINGS_PATH} eine Kategorie für Zahlungen wählen."
+        errors["category"] = gettext(
+            "Bitte unter {SETTINGS_PATH} eine Kategorie für Zahlungen wählen."
+        ).format(SETTINGS_PATH=SETTINGS_PATH)
     earliest = earliest_collection(org)
     if collection_date < earliest:
-        errors["collection_date"] = (
-            f"Frühestens am {earliest:%d.%m.%Y}: Die Zahler müssen "
-            f"{cfg.prenotification_days} Tage vorher benachrichtigt werden."
-        )
+        errors["collection_date"] = gettext(
+            "Frühestens am {earliest}: Die Zahler müssen {x1} Tage vorher benachrichtigt werden."
+        ).format(earliest=date_text(earliest), x1=cfg.prenotification_days)
     if collection_date.weekday() >= 5:
-        errors["collection_date"] = "Der Einzug muss auf einen Bankarbeitstag fallen."
+        errors["collection_date"] = gettext("Der Einzug muss auf einen Bankarbeitstag fallen.")
     if errors:
         raise ValidationError(errors)
     # Gewählte Rechnungen sperren (in fester Reihenfolge) und danach erst prüfen: Eine
@@ -293,13 +297,27 @@ def run_problems(run: DebitRun) -> list[str]:
     for item in run.items.select_related("invoice", "mandate").order_by("pk"):
         invoice, mandate = item.invoice, item.mandate
         if mandate.status != Mandate.Status.ACTIVE:
-            problems.append(f"{invoice.display_number}: Mandat {mandate.reference} widerrufen")
+            problems.append(
+                gettext("{x0}: Mandat {x1} widerrufen").format(
+                    x0=invoice.display_number, x1=mandate.reference
+                )
+            )
         elif mandate_expired(mandate, run.collection_date):
-            problems.append(f"{invoice.display_number}: Mandat {mandate.reference} verfallen")
+            problems.append(
+                gettext("{x0}: Mandat {x1} verfallen").format(
+                    x0=invoice.display_number, x1=mandate.reference
+                )
+            )
         if invoice.status != Invoice.Status.OPEN:
-            problems.append(f"{invoice.display_number}: Rechnung {invoice.get_status_display()}")
+            problems.append(
+                gettext("{x0}: Rechnung {x1}").format(
+                    x0=invoice.display_number, x1=invoice.get_status_display()
+                )
+            )
         elif invoice.outstanding < item.amount:
-            problems.append(f"{invoice.display_number}: inzwischen teilweise bezahlt")
+            problems.append(
+                gettext("{x0}: inzwischen teilweise bezahlt").format(x0=invoice.display_number)
+            )
     return problems
 
 

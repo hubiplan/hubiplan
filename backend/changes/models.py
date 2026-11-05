@@ -50,7 +50,7 @@ class ChangeSet(models.Model):
 
 class ChangeRecord(models.Model):
     class Operation(models.TextChoices):
-        CREATE = "create", "angelegt"
+        CREATE = "create", gettext_lazy("angelegt")
         UPDATE = "update", gettext_lazy("geändert")
         DELETE = "delete", gettext_lazy("gelöscht")
 

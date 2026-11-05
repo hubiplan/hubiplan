@@ -132,10 +132,12 @@ def missing(receipt: CashReceipt) -> list[str]:
     """Was zum Abschluss noch fehlt (leer = bereit)."""
     result = []
     if not receipt.treasurer_signature:
-        result.append("Unterschrift des Kassierers")
+        result.append(gettext("Unterschrift des Kassierers"))
     if not receipt.counterparty_signature and not receipt.no_signature_reason:
         result.append(
-            "Unterschrift des Zahlers" if receipt.receives else "Unterschrift des Empfängers"
+            gettext("Unterschrift des Zahlers")
+            if receipt.receives
+            else gettext("Unterschrift des Empfängers")
         )
     return result
 
@@ -171,7 +173,7 @@ def finalize(receipt: CashReceipt, user, *, confirmed: bool, signed_at=None) -> 
     _draft(receipt)
     org = receipt.organization
     if gaps := missing(receipt):
-        raise ValidationError("Es fehlt noch: " + ", ".join(gaps) + ".")
+        raise ValidationError(gettext("Es fehlt noch: {items}.").format(items=", ".join(gaps)))
     if receipt.treasurer_user_id != user.pk:
         raise ValidationError(
             gettext(

@@ -111,7 +111,7 @@ export function FieldsPage() {
                   label: removing.field.label,
                   x: persons(removing.usage.value_count),
                 })}
-                {removing.field.federation_wide && ` (in allen ${terms.pl_dat})`}.
+                {removing.field.federation_wide && t(' (in allen {x0})', { x0: terms.pl_dat })}.
               </p>
               <p className="muted small">
                 <strong>{t('Archivieren')}</strong>
@@ -188,7 +188,7 @@ export function FieldsPage() {
                     </div>
                   )}
                   {f.federation_wide && !f.inherited && (
-                    <div className="small muted">verbandsweit</div>
+                    <div className="small muted">{t('verbandsweit')}</div>
                   )}
                 </td>
                 <td className="small">
@@ -437,7 +437,7 @@ function FieldForm({
                 />
               )}
               <button type="button" className="link-button" onClick={() => void removeSub(i)}>
-                entfernen
+                {t('entfernen')}
               </button>
             </div>
           ))}

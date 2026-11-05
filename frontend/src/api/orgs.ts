@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.ts'
 // Organisationen, Abteilungen, Rollen, Erscheinungsbild, Protokoll, Plattform.
 import { api, listParams } from './client.ts'
 import type { ListQuery, Paged } from './client.ts'
@@ -339,9 +340,19 @@ export const SOCIAL_KINDS: { value: SocialKind; label: string }[] = [
   { value: 'mastodon', label: 'Mastodon' },
   { value: 'bluesky', label: 'Bluesky' },
   { value: 'threads', label: 'Threads' },
-  { value: 'whatsapp', label: 'WhatsApp-Kanal' },
+  {
+    value: 'whatsapp',
+    get label() {
+      return t('WhatsApp-Kanal')
+    },
+  },
   { value: 'linkedin', label: 'LinkedIn' },
-  { value: 'other', label: 'Sonstiges' },
+  {
+    value: 'other',
+    get label() {
+      return t('Sonstiges')
+    },
+  },
 ]
 
 /** Social-Media-Kanal einer Einheit */

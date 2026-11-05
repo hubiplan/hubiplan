@@ -17,8 +17,7 @@ import { useRange } from '../../components/charts/range.ts'
 import { formatDate, useQueryLoad } from '../../components/forms.ts'
 import { LoadError } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
-import { locale } from '../../i18n/index.ts'
-import { t } from '../../i18n/index.ts'
+import { locale, t } from '../../i18n/index.ts'
 
 const num = (v: string | null) => (v === null ? null : Number(v))
 const money = (n: number) => euro(n)
@@ -163,7 +162,7 @@ function FinanceCharts({ data }: { data: FinanceStats }) {
           <p className="amount-big">{euro(s.balance_end)}</p>
           <p className="small muted">
             {change >= 0 ? '+' : '−'}
-            {euro(Math.abs(change))} seit {formatDate(data.von)}
+            {euro(Math.abs(change))} {t('seit')} {formatDate(data.von)}
           </p>
         </div>
       </div>

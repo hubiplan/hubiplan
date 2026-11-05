@@ -24,8 +24,8 @@ class Letterhead(models.Model):
         B = "b", gettext_lazy("DIN 5008 Form B (Anschriftfeld 45 mm von oben)")
 
     class LogoPosition(models.TextChoices):
-        RIGHT = "right", "rechts"
-        LEFT = "left", "links"
+        RIGHT = "right", gettext_lazy("rechts")
+        LEFT = "left", gettext_lazy("links")
         NONE = "none", gettext_lazy("ohne Logo/Wappen")
 
     class Font(models.TextChoices):

@@ -388,7 +388,7 @@ function PlatformOrgForm({
         />
         <div className="grid-3">
           <Field
-            label="PLZ"
+            label={t('PLZ')}
             required
             value={v.postal_code}
             error={e.postal_code}
@@ -728,12 +728,13 @@ function PeerKeysConfirm({
         {t(
           'meldet einen Notfallwechsel der Schlüssel: Die alten wurden dort vermutlich gestohlen. Bis zur Bestätigung ruht der Austausch mit dieser Instanz',
         )}
-        {pending.units.length > 0 && ` (betrifft: ${pending.units.join(', ')})`}.
+        {pending.units.length > 0 && t(' (betrifft: {x0})', { x0: pending.units.join(', ') })}.
       </Alert>
       <p>
-        {t('Neuer Fingerabdruck:')} <code>{pending.fingerprint}</code>. Lass ihn dir von der anderen
-        Seite auf anderem Weg (Telefon) nennen und gib ihn hier ein. Wenn dort niemand von einem
-        Notfall weiß: ablehnen. Die betroffenen Einheiten bekommen danach eine Mitteilung.
+        {t('Neuer Fingerabdruck:')} <code>{pending.fingerprint}</code>
+        {t(
+          '. Lass ihn dir von der anderen Seite auf anderem Weg (Telefon) nennen und gib ihn hier ein. Wenn dort niemand von einem Notfall weiß: ablehnen. Die betroffenen Einheiten bekommen danach eine Mitteilung.',
+        )}
       </p>
       <Field
         label={t('Fingerabdruck von der anderen Seite')}
@@ -826,7 +827,7 @@ export function InstanceKeysBox({ keys, onChange }: { keys: InstanceKeys; onChan
               : t(
                   'Geplanter Wechsel: Die Partner übernehmen den neuen Schlüssel automatisch, der alte gilt noch 30 Tage.',
                 )}{' '}
-            {t('Zum Bestätigen')} <strong>{needed}</strong> eintippen.
+            {t('Zum Bestätigen bitte {word} eingeben.', { word: needed })}
           </p>
           <Field label={t('Bestätigung')} value={word} onChange={(e) => setWord(e.target.value)} />
           {err && <Alert kind="error">{err}</Alert>}

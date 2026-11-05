@@ -32,8 +32,8 @@ class Gender(models.TextChoices):
     """Geschlecht einer Person. Leer = keine Angabe."""
 
     MALE = "männlich", gettext_lazy("männlich")
-    FEMALE = "weiblich", "weiblich"
-    DIVERSE = "divers", "divers"
+    FEMALE = "weiblich", gettext_lazy("weiblich")
+    DIVERSE = "divers", gettext_lazy("divers")
 
 
 class PersonQuerySet(models.QuerySet):
@@ -502,7 +502,7 @@ class HonoraryTitle(models.Model):
 
     class FeeMode(models.TextChoices):
         NONE = "none", gettext_lazy("keine Beitragsänderung")
-        FREE = "free", "beitragsfrei"
+        FREE = "free", gettext_lazy("beitragsfrei")
         AMOUNT = "amount", gettext_lazy("fester Jahresbeitrag")
         DISCOUNT = "discount", gettext_lazy("Abschlag in Prozent")
 
@@ -608,9 +608,9 @@ class TransferRequest(models.Model):
     zu einer nicht aktiven Art – danach wird die Aufnahme aktiv gespeichert."""
 
     class Status(models.TextChoices):
-        PENDING = "pending", "offen"
+        PENDING = "pending", gettext_lazy("offen")
         ACCEPTED = "accepted", gettext_lazy("bestätigt")
-        REJECTED = "rejected", "abgelehnt"
+        REJECTED = "rejected", gettext_lazy("abgelehnt")
         CANCELLED = "cancelled", gettext_lazy("zurückgezogen")
 
     class Decision(models.TextChoices):

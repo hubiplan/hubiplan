@@ -398,7 +398,7 @@ export function FeedPanel({ base }: { base: CalendarBase }) {
     <div className="card card-wide stack">
       <p className="muted small">
         {t(
-          'Mit diesem persönlichen Link erscheinen Ihre Termine im Kalender von Handy oder Outlook („Kalender abonnieren“ bzw. „Kalender aus dem Internet hinzufügen“). Der Link ist nur für Sie. Geben Sie ihn nicht weiter. Sie können ihn jederzeit erneuern, dann gilt der alte nicht mehr.',
+          'Mit diesem persönlichen Link erscheinen deine Termine im Kalender von Handy oder Outlook („Kalender abonnieren“ bzw. „Kalender aus dem Internet hinzufügen“). Der Link ist nur für dich. Gib ihn nicht weiter. Du kannst ihn jederzeit erneuern, dann gilt der alte nicht mehr.',
         )}
       </p>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
@@ -451,7 +451,7 @@ export function FeedPanel({ base }: { base: CalendarBase }) {
           type="button"
           className="button button-primary"
           disabled={busy}
-          onClick={() => void run(() => eventApi.renewFeed(base), t('Ihr Link ist bereit.'))}
+          onClick={() => void run(() => eventApi.renewFeed(base), t('Dein Link ist bereit.'))}
         >
           {t('Persönlichen Link erstellen')}
         </button>

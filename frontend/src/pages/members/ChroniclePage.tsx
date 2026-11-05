@@ -106,7 +106,9 @@ function ReignsPanel() {
       render: (r) => (
         <>
           {r.numbered_name}
-          {r.person === null && <span className="muted small"> (kein Mitglied verknüpft)</span>}
+          {r.person === null && (
+            <span className="muted small"> {t('(kein Mitglied verknüpft)')}</span>
+          )}
         </>
       ),
     },
@@ -499,7 +501,7 @@ function ReignForm({
               {d.unit_name
                 ? t('{name} ({unit_name})', { name: d.name, unit_name: d.unit_name })
                 : d.name}
-              {d.is_archived ? ' (nicht mehr verwendet)' : ''}
+              {d.is_archived ? t(' (nicht mehr verwendet)') : ''}
             </option>
           ))}
         </SelectField>
@@ -827,7 +829,7 @@ function DignitiesPanel() {
                 render={(d) => (
                   <span className={d.is_archived ? 'muted' : undefined}>
                     {d.name}
-                    {d.is_archived && ' (nicht mehr verwendet)'}
+                    {d.is_archived && t(' (nicht mehr verwendet)')}
                   </span>
                 )}
                 onReorder={(ids) =>
@@ -1126,8 +1128,8 @@ function ImportPanel() {
         <>
           {newDignities.length > 0 && (
             <Alert kind="info">
-              {t('Neue Würden werden angelegt:')} {newDignities.join(', ')}. Sie erscheinen nicht
-              auf der Webseite, bis ihr sie unter „Würden“ freigebt.
+              {t('Neue Würden werden angelegt:')} {newDignities.join(', ')}
+              {t('. Sie erscheinen nicht auf der Webseite, bis ihr sie unter „Würden“ freigebt.')}
             </Alert>
           )}
           <div className="table-scroll">
@@ -1201,7 +1203,7 @@ function ImportPanel() {
                     <td>{r.note}</td>
                     <td>
                       {r.origin_text}
-                      {r.origin_name && <span className="muted small"> (frei)</span>}
+                      {r.origin_name && <span className="muted small"> {t('(frei)')}</span>}
                     </td>
                   </tr>
                 ))}
@@ -1247,7 +1249,7 @@ export function CandidateSelect({
       {candidates.map((c) => (
         <option key={c.id} value={c.id}>
           {c.name}
-          {c.birth_year ? ` (geb. ${c.birth_year})` : ''}
+          {c.birth_year ? t(' (geb. {x0})', { x0: c.birth_year }) : ''}
         </option>
       ))}
     </select>

@@ -9,8 +9,10 @@ import zipfile
 
 import pytest
 from django.core.files.base import ContentFile
+from django.test import override_settings
 from django.utils import timezone
 
+from accounts.models import User
 from audit.log import record
 from billing import archive, services
 from billing.models import DunningLevel, Invoice
@@ -21,6 +23,22 @@ from .test_m9_billing import JSON, base, c, club, members, setup, start_run, zug
 from .test_storno_festschreibung import book, fin  # noqa: F401
 
 pytestmark = pytest.mark.django_db
+
+
+@override_settings(HUBIPLAN_LANGUAGES=["de", "en"])
+def test_englische_oberflaeche_aendert_die_sprache_des_pruefexports_nicht(c, fin, setup):
+    book(c, fin, account=setup["bank"], category=setup["cat"], tax_area="ideal")
+    User.objects.filter(pk=c.session["_auth_user_id"]).update(language="en")
+    response = c.get(f"{fin}/export/?jahr={timezone.localdate().year}")
+    assert response.status_code == 200
+    with zipfile.ZipFile(io.BytesIO(b"".join(response.streaming_content))) as exported:
+        rows = list(
+            csv.DictReader(
+                io.StringIO(exported.read("buchungen.csv").decode("utf-8-sig")), delimiter=";"
+            )
+        )
+    assert rows[0]["Art"] == "Einnahme"
+    assert rows[0]["Steuerbereich"] == "ideeller Bereich"
 
 
 def test_beleg_bleibt_bei_buchungsloeschung(c, fin, setup):

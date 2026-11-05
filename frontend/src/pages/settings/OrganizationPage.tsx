@@ -155,7 +155,7 @@ function OrganizationForm({
             />
             <div className="grid-3">
               <Field
-                label="PLZ"
+                label={t('PLZ')}
                 required
                 value={v.postal_code}
                 error={errors.postal_code}
@@ -214,7 +214,7 @@ function OrganizationForm({
               )}
               {contact.source === 'role' &&
                 t(' Aktuell: {x}{x2}.', {
-                  x: contact.holder ?? 'niemand',
+                  x: contact.holder ?? t('niemand'),
                   x2: contact.email ? `, ${contact.email}` : '',
                 })}
             </p>

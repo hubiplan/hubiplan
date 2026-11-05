@@ -77,7 +77,7 @@ export function PublicCardPage() {
         {state === 'invalid' && (
           <Alert kind="error">
             {t(
-              'Dieser Mitgliedsausweis ist nicht (mehr) gültig. Bitte wenden Sie sich an den Vorstand.',
+              'Dieser Mitgliedsausweis ist nicht (mehr) gültig. Bitte wende dich an den Vorstand.',
             )}
           </Alert>
         )}

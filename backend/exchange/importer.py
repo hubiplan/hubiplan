@@ -25,6 +25,7 @@ from openpyxl import Workbook
 
 from access.models import Role, RoleAssignment
 from audit.models import AuditEntry
+from core.i18n import date_text
 from customfields.models import FieldDefinition, FieldValue, clean_scalar
 from customfields.views import definitions_for
 from members import services
@@ -364,8 +365,10 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
             gender = parse_gender(raw_gender)
             if gender is None:
                 g.errors.append(
-                    f"Zeile {index}: Geschlecht: „{raw_gender}“ ist unbekannt "
-                    "(erlaubt: männlich, weiblich, divers oder leer)."
+                    gettext(
+                        "Zeile {index}: Geschlecht: „{raw_gender}“ ist unbekannt (erlaubt: "
+                        "männlich, weiblich, divers oder leer)."
+                    ).format(index=index, raw_gender=raw_gender)
                 )
             elif gender:
                 g.data["gender"] = gender
@@ -380,7 +383,7 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
             deps = lookups.departments_of(_value(row, mapping, "departments"))
             g.departments.extend(d for d in deps if d not in g.departments)
         except ValueError as exc:
-            g.errors.append(f"Zeile {index}: {exc}")
+            g.errors.append(gettext("Zeile {index}: {exc}").format(index=index, exc=exc))
         _read_role(g, row, mapping, lookups, index)
         _read_fields(g, row, mapping, lookups, index)
     return [groups[k] for k in order]
@@ -416,8 +419,12 @@ def _conflict(g, target: str, value, index: int) -> None:
     shown = value.strftime("%d.%m.%Y") if hasattr(value, "strftime") else value
     before = known.strftime("%d.%m.%Y") if hasattr(known, "strftime") else known
     g.errors.append(
-        f"Zeile {index}: {CONFLICT_LABELS[target]} „{shown}“ widerspricht Zeile {first_row} "
-        f"(„{before}“). Bitte in der Datei vereinheitlichen."
+        gettext(
+            "Zeile {index}: {x1} „{shown}“ widerspricht Zeile {first_row} "
+            "(„{before}“). Bitte in der Datei vereinheitlichen."
+        ).format(
+            index=index, x1=CONFLICT_LABELS[target], shown=shown, first_row=first_row, before=before
+        )
     )
 
 
@@ -429,14 +436,18 @@ def _read_periods(g, row, mapping, lookups, index):
             raw_type = _value(row, mapping, f"member_type{suffix}")
             if entry is None:
                 if exit_ or raw_type:
-                    g.errors.append(f"Zeile {index}: Eintritt{suffix.replace('_', ' ')} fehlt.")
+                    g.errors.append(
+                        gettext("Zeile {index}: Eintritt{x1} fehlt.").format(
+                            index=index, x1=suffix.replace("_", " ")
+                        )
+                    )
                 continue
             member_type = lookups.member_type(raw_type) if raw_type else None
             reason = (
                 lookups.exit_reason(_value(row, mapping, f"exit_reason{suffix}")) if exit_ else ""
             )
         except ValueError as exc:
-            g.errors.append(f"Zeile {index}: {exc}")
+            g.errors.append(gettext("Zeile {index}: {exc}").format(index=index, exc=exc))
             continue
         if any(p.entry == entry for p in g.periods):
             continue  # gleicher Zeitraum in mehreren Zeilen
@@ -451,10 +462,10 @@ def _read_role(g, row, mapping, lookups, index):
         start = parse_date(_value(row, mapping, "board_role_from"))
         end = parse_date(_value(row, mapping, "board_role_until"))
     except ValueError as exc:
-        g.errors.append(f"Zeile {index}: {exc}")
+        g.errors.append(gettext("Zeile {index}: {exc}").format(index=index, exc=exc))
         return
     if start is None:
-        g.errors.append(f"Zeile {index}: Vorstandsrolle ohne Beginn.")
+        g.errors.append(gettext("Zeile {index}: Vorstandsrolle ohne Beginn.").format(index=index))
         return
     g.board_roles.append((role, start, end))
 
@@ -490,7 +501,11 @@ def _read_fields(g, row, mapping, lookups, index):
                 if isinstance(exc, DjangoValidationError)
                 else "Unbekanntes Feld"
             )
-            g.errors.append(f"Zeile {index}: {definition.label}: {message}")
+            g.errors.append(
+                gettext("Zeile {index}: {x1}: {message}").format(
+                    index=index, x1=definition.label, message=message
+                )
+            )
     for def_id, entry in repeat_rows.items():
         g.fields.setdefault(def_id, [])
         if entry not in g.fields[def_id]:
@@ -510,25 +525,31 @@ def check_group(g: PersonGroup, org: Organization, link_duplicates: bool) -> Non
     d = g.data
     for target in ("last_name", "first_name", "birth_date"):
         if not d.get(target):
-            g.errors.append(f"{BASE_TARGETS[target]} fehlt.")
+            g.errors.append(gettext("{x0} fehlt.").format(x0=BASE_TARGETS[target]))
     if not g.periods:
-        g.errors.append("Kein Eintrittsdatum.")
+        g.errors.append(gettext("Kein Eintrittsdatum."))
     periods = sorted(g.periods, key=lambda p: p.entry)
     for i, p in enumerate(periods):
         if p.member_type is None:
-            g.errors.append(f"Zeitraum ab {p.entry:%d.%m.%Y}: Mitgliedsart fehlt.")
+            g.errors.append(
+                gettext("Zeitraum ab {x0}: Mitgliedsart fehlt.").format(x0=date_text(p.entry))
+            )
         if p.exit and p.exit < p.entry:
-            g.errors.append(f"Zeitraum ab {p.entry:%d.%m.%Y}: Austritt vor Eintritt.")
+            g.errors.append(
+                gettext("Zeitraum ab {x0}: Austritt vor Eintritt.").format(x0=date_text(p.entry))
+            )
         if d.get("birth_date") and p.entry < d["birth_date"]:
-            g.errors.append(f"Zeitraum ab {p.entry:%d.%m.%Y}: Eintritt vor der Geburt.")
+            g.errors.append(
+                gettext("Zeitraum ab {x0}: Eintritt vor der Geburt.").format(x0=date_text(p.entry))
+            )
         for q in periods[i + 1 :]:
             if overlaps(p.entry, p.exit, q.entry, q.exit):
-                g.errors.append("Zeiträume überschneiden sich.")
+                g.errors.append(gettext("Zeiträume überschneiden sich."))
     current = [p for p in periods if p.exit is None]
     if len(current) > 1:
-        g.errors.append("Mehr als ein offener Zeitraum.")
+        g.errors.append(gettext("Mehr als ein offener Zeitraum."))
     if current and not all(d.get(k) for k in ("street", "postal_code", "city")):
-        g.errors.append("Für aktuelle Mitglieder ist die Anschrift Pflicht.")
+        g.errors.append(gettext("Für aktuelle Mitglieder ist die Anschrift Pflicht."))
     if g.errors or not d.get("birth_date"):
         return
     found = services.find_duplicates(org, d["last_name"], d["first_name"], d["birth_date"])

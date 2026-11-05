@@ -21,7 +21,7 @@ import { DeliveryField } from './DeliveryField.tsx'
 import { RecipientPanel } from './RecipientPanel.tsx'
 import { useOptionalOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 
 export function CircularsArea({ base, root }: { base: CircularBase; root: string }) {
   return (
@@ -332,10 +332,8 @@ function DraftEditor({
       }
       const parts = [
         app ? t('{app} per App', { app }) : '',
-        mail ? t('{mail} {x}', { mail, x: mail === 1 ? 'E-Mail' : 'E-Mails' }) : '',
-        letter
-          ? t('{letter} {x} zum Drucken', { letter, x: letter === 1 ? 'Brief' : 'Briefe' })
-          : '',
+        mail ? tn('{n} E-Mail', '{n} E-Mails', mail) : '',
+        letter ? tn('{n} Brief zum Drucken', '{n} Briefe zum Drucken', letter) : '',
         portal ? t('{portal} nur im Mitgliederbereich', { portal }) : '',
       ].filter(Boolean)
       const ok = await confirmDialog({
@@ -535,7 +533,7 @@ function DraftEditor({
                     })
                   }
                 >
-                  entfernen
+                  {t('entfernen')}
                 </button>
               </li>
             ))}
@@ -746,7 +744,7 @@ function SentView({
             {(counts.app ?? 0) > 0 && t('{app} per App · ', { app: counts.app })}
             {counts.mail} {t('E-Mails')}
             {counts.sent !== undefined && t(': {sent} gesendet', { sent: counts.sent })}
-            {counts.pending > 0 && ` (${counts.pending} noch offen)`}
+            {counts.pending > 0 && t(' ({x0} noch offen)', { x0: counts.pending })}
             {counts.failed > 0 && t(', {failed} fehlgeschlagen', { failed: counts.failed })}
             {(counts.unclear ?? 0) > 0 &&
               t(', {unclear} Versand unklar', { unclear: counts.unclear })}{' '}

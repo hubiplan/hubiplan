@@ -55,7 +55,7 @@ export function AccessPanel({
           email: access.email,
         }) +
         t('{x} an; die bisherige Adresse bekommt eine ', {
-          x: contactEmail ?? 'der neuen Adresse',
+          x: contactEmail ?? t('der neuen Adresse'),
         }) +
         t(
           'Mitteilung. Nur übertragen, wenn sicher ist, dass die neue Adresse dem Mitglied gehört.',
@@ -74,7 +74,8 @@ export function AccessPanel({
       <h2>{t('Zugang')}</h2>
       {access ? (
         <p>
-          {t('Zugang mit')} <strong>{access.email}</strong> seit {formatDateTime(access.created_at)}
+          {t('Zugang mit')} <strong>{access.email}</strong> {t('seit')}{' '}
+          {formatDateTime(access.created_at)}
           <br />
           <span className="muted small">
             {access.last_login
@@ -117,7 +118,7 @@ export function AccessPanel({
             }
           >
             {access
-              ? t('Neuen Link senden{x}', { x: moved ? ` an ${access.email}` : '' })
+              ? t('Neuen Link senden{x}', { x: moved ? t(' an {x0}', { x0: access.email }) : '' })
               : t('Zugang einrichten und Link senden')}
           </button>
           {moved && (

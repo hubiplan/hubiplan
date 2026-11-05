@@ -6380,3 +6380,709 @@ msgstr "Advance allocation"
 
 msgid "Die Datei ist keine PDF-Datei."
 msgstr "The file is not a PDF document."
+
+msgid "Amt fehlt."
+msgstr "Office is missing."
+
+msgid "Name fehlt."
+msgstr "Name is missing."
+
+msgid "Endjahr ist ungültig."
+msgstr "End year is invalid."
+
+msgid "Untereinheit „{unit_name}“ gibt es nicht."
+msgstr "Sub-unit “{unit_name}” does not exist."
+
+msgid "Nr. {first_missing} bis {known_seq} fehlen (Ende der Kette gelöscht)."
+msgstr "Nos. {first_missing} to {known_seq} are missing (end of chain deleted)."
+
+msgid "Nr. {known_seq} fehlt (gelöscht)."
+msgstr "No. {known_seq} is missing (deleted)."
+
+msgid "Nr. {expected_seq} bis {x1} fehlen (gelöscht)."
+msgstr "Nos. {expected_seq} to {x1} are missing (deleted)."
+
+msgid "Nr. {x0} ist doppelt."
+msgstr "No. {x0} is duplicated."
+
+msgid "Nr. {x0}: Verweis auf den Vorgänger passt nicht."
+msgstr "No. {x0}: reference to the previous entry does not match."
+
+msgid "Nr. {x0}: Angaben wurden nachträglich geändert."
+msgstr "No. {x0}: details were subsequently changed."
+
+msgid "Nr. {x0}: Inhalt wurde nachträglich geändert."
+msgstr "No. {x0}: content was subsequently changed."
+
+msgid "Nr. {x0}: weicht vom zuletzt geprüften Stand ab (Kette neu berechnet?)."
+msgstr "No. {x0}: differs from the last verified state (chain recalculated?)."
+
+msgid "angelegt"
+msgstr "created"
+
+msgid "angesehen"
+msgstr "viewed"
+
+msgid "monatlich"
+msgstr "monthly"
+
+msgid "offen"
+msgstr "open"
+
+msgid "bezahlt"
+msgstr "paid"
+
+msgid "storniert"
+msgstr "cancelled"
+
+msgid "bar"
+msgstr "cash"
+
+msgid "schriftlich"
+msgstr "in writing"
+
+msgid "widerrufen"
+msgstr "revoked"
+
+msgid "erstellt"
+msgstr "created"
+
+msgid "gebucht"
+msgstr "posted"
+
+msgid "verworfen"
+msgstr "discarded"
+
+msgid "Bitte ein Mindest- oder Höchstalter angeben."
+msgstr "Please specify a minimum or maximum age."
+
+msgid "Bitte entweder einen eigenen Beitrag oder einen Abschlag angeben."
+msgstr "Please specify either a separate fee or a discount."
+
+msgid "Bitte den Kontoinhaber angeben."
+msgstr "Please enter the account holder."
+
+msgid "Der BIC ist ungültig."
+msgstr "The BIC is invalid."
+
+msgid "Bitte unter {SETTINGS_PATH} eine gültige Gläubiger-Identifikationsnummer eintragen."
+msgstr "Please enter a valid creditor identifier under {SETTINGS_PATH}."
+
+msgid "Bitte unter {SETTINGS_PATH} ein Konto mit IBAN für den Einzug wählen."
+msgstr "Please select an account with an IBAN for collection under {SETTINGS_PATH}."
+
+msgid "Bitte unter {SETTINGS_PATH} eine Kategorie für Zahlungen wählen."
+msgstr "Please select a category for payments under {SETTINGS_PATH}."
+
+msgid "Frühestens am {earliest}: Die Zahler müssen {x1} Tage vorher benachrichtigt werden."
+msgstr "No earlier than {earliest}: payers must be notified {x1} days in advance."
+
+msgid "Der Einzug muss auf einen Bankarbeitstag fallen."
+msgstr "Collection must fall on a banking day."
+
+msgid "Die IBAN gehört nicht zum SEPA-Raum."
+msgstr "The IBAN is outside the SEPA area."
+
+msgid "{x0}: Mandat {x1} widerrufen"
+msgstr "{x0}: mandate {x1} revoked"
+
+msgid "{x0}: Rechnung {x1}"
+msgstr "{x0}: invoice {x1}"
+
+msgid "{x0}: Mandat {x1} verfallen"
+msgstr "{x0}: mandate {x1} expired"
+
+msgid "{x0}: inzwischen teilweise bezahlt"
+msgstr "{x0}: now partly paid"
+
+msgid "abgearbeitet"
+msgstr "processed"
+
+msgid "wartet"
+msgstr "waiting"
+
+msgid "versendet"
+msgstr "sent"
+
+msgid "fehlgeschlagen"
+msgstr "failed"
+
+msgid "abgewiesen"
+msgstr "rejected"
+
+msgid "Bitte einen Betreff eingeben."
+msgstr "Please enter a subject."
+
+msgid "Bitte einen Text eingeben."
+msgstr "Please enter some text."
+
+msgid "Unbekannte Platzhalter: {names}. Möglich sind {known}."
+msgstr "Unknown placeholders: {names}. Available placeholders: {known}."
+
+msgid "dabei"
+msgstr "present"
+
+msgid "fehlt"
+msgstr "absent"
+
+msgid "angetippt"
+msgstr "tapped"
+
+msgid "{label}: {x1}"
+msgstr "{label}: {x1}"
+
+msgid "Nur eine übergeordnete Einheit kann verbandsweite Felder anlegen."
+msgstr "Only a parent unit can create federation-wide fields."
+
+msgid "Ein wiederholbares Feld braucht mindestens ein Unterfeld."
+msgstr "A repeatable field needs at least one subfield."
+
+msgid "Bitte Auswahlwerte angeben."
+msgstr "Please specify selection values."
+
+msgid "Unbekannter Typ: {x0}"
+msgstr "Unknown type: {x0}"
+
+msgid "„{x0}“ braucht Auswahlwerte."
+msgstr "“{x0}” needs selection values."
+
+msgid "Unterfelder brauchen unterschiedliche Bezeichnungen."
+msgstr "Subfields need distinct labels."
+
+msgid "Das Feld ist bei {n} Personen ausgefüllt; „wiederholbar“ lässt sich nicht mehr umstellen. Bitte ein neues Feld anlegen und dieses archivieren."
+msgstr "This field contains data for {n} people; its repeatable setting can no longer be changed. Please create a new field and archive this one."
+
+msgid "Das Feld ist bei {n} Personen ausgefüllt; der Typ lässt sich nicht mehr ändern. Bitte ein neues Feld anlegen und dieses archivieren."
+msgstr "This field contains data for {n} people; its type can no longer be changed. Please create a new field and archive this one."
+
+msgid "Unbekanntes Feld."
+msgstr "Unknown field."
+
+msgid "„{x0}“ ist bei {used} Personen ausgefüllt. Entfernen geht nur ausdrücklich samt diesen Werten."
+msgstr "“{x0}” contains data for {used} people. Removing it requires explicitly deleting those values too."
+
+msgid "„{x0}“ ist bei {used} Personen ausgefüllt; der Typ lässt sich nicht mehr ändern."
+msgstr "“{x0}” contains data for {used} people; its type can no longer be changed."
+
+msgid "{x0}: {x1}"
+msgstr "{x0}: {x1}"
+
+msgid "fertig"
+msgstr "complete"
+
+msgid "{where}: Die Tabellen in der Datei sind ungültig."
+msgstr "{where}: the tables in the file are invalid."
+
+msgid "{where}: Tabelle „{name}“ darf bei diesem Import nicht übernommen werden."
+msgstr "{where}: table “{name}” cannot be included in this import."
+
+msgid "{where}: Tabelle „{name}“ ist hier unbekannt."
+msgstr "{where}: table “{name}” is unknown here."
+
+msgid "{where}: {name} {x2}: {x3}"
+msgstr "{where}: {name} {x2}: {x3}"
+
+msgid "{where}: {x1} {x2} verweist auf „{x3}“ {value}, das in der Datei fehlt."
+msgstr "{where}: {x1} {x2} references “{x3}” {value}, which is missing from the file."
+
+msgid "iOS"
+msgstr "iOS"
+
+msgid "anderes"
+msgstr "other"
+
+msgid "pauschal"
+msgstr "flat rate"
+
+msgid "einmalig"
+msgstr "once"
+
+msgid "Vereinsplaner"
+msgstr "Vereinsplaner"
+
+msgid "Das Ende der Serie liegt vor dem ersten Termin."
+msgstr "The series ends before its first event."
+
+msgid "Erinnerungen gibt es nur bei einmaligen Terminen."
+msgstr "Reminders are only available for non-recurring events."
+
+msgid "Zu- und Absagen gibt es nur bei einmaligen Terminen."
+msgstr "Responses are only available for non-recurring events."
+
+msgid "Der Anmeldeschluss liegt nach dem Termin."
+msgstr "The response deadline is after the event."
+
+msgid "Bei Terminen „nur Vorstand“ gibt es keine Zu- und Absagen."
+msgstr "Responses are not available for board-only events."
+
+msgid "Zu- und Absagen gibt es nicht bei Terminen der übergeordneten Einheit."
+msgstr "Responses are not available for events of the parent unit."
+
+msgid "Zeile {index}: {x1} „{shown}“ widerspricht Zeile {first_row} („{before}“). Bitte in der Datei vereinheitlichen."
+msgstr "Row {index}: {x1} “{shown}” conflicts with row {first_row} (“{before}”). Please make the values consistent in the file."
+
+msgid "Zeile {index}: Vorstandsrolle ohne Beginn."
+msgstr "Row {index}: board role has no start date."
+
+msgid "Kein Eintrittsdatum."
+msgstr "No joining date."
+
+msgid "Mehr als ein offener Zeitraum."
+msgstr "More than one open period."
+
+msgid "Für aktuelle Mitglieder ist die Anschrift Pflicht."
+msgstr "An address is required for current members."
+
+msgid "Zeile {index}: {exc}"
+msgstr "Row {index}: {exc}"
+
+msgid "{x0} fehlt."
+msgstr "{x0} is missing."
+
+msgid "Zeitraum ab {x0}: Mitgliedsart fehlt."
+msgstr "Period from {x0}: membership type is missing."
+
+msgid "Zeitraum ab {x0}: Austritt vor Eintritt."
+msgstr "Period from {x0}: leaving date precedes joining date."
+
+msgid "Zeitraum ab {x0}: Eintritt vor der Geburt."
+msgstr "Period from {x0}: joining date precedes birth date."
+
+msgid "Zeile {index}: Geschlecht: „{raw_gender}“ ist unbekannt (erlaubt: männlich, weiblich, divers oder leer)."
+msgstr "Row {index}: gender “{raw_gender}” is unknown (accepted source values: männlich, weiblich, divers or blank)."
+
+msgid "Zeile {index}: {x1}: {message}"
+msgstr "Row {index}: {x1}: {message}"
+
+msgid "Zeiträume überschneiden sich."
+msgstr "Periods overlap."
+
+msgid "Zeile {index}: Eintritt{x1} fehlt."
+msgstr "Row {index}: joining date{x1} is missing."
+
+msgid "hochgeladen"
+msgstr "uploaded"
+
+msgid "importiert"
+msgstr "imported"
+
+msgid "Der DATEV-Export ist nicht eingeschaltet."
+msgstr "DATEV export is not enabled."
+
+msgid "Beraternummer fehlt."
+msgstr "Adviser number is missing."
+
+msgid "Mandantennummer fehlt."
+msgstr "Client number is missing."
+
+msgid "Bitte einen Betrag größer als 0 angeben."
+msgstr "Please enter an amount greater than 0."
+
+msgid "Bitte den Namen des Zuwendenden angeben."
+msgstr "Please enter the donor’s name."
+
+msgid "Mitgliedsbeiträge werden nicht bestätigt. Das lässt sich unter „Zuwendungsbestätigungen › Einstellungen“ einschalten, wenn die Beiträge abziehbar sind."
+msgstr "Membership fees are excluded from donation receipts. You can enable them under “Donation receipts › Settings” if they are deductible."
+
+msgid "Der Betrag ist zu groß für eine Zuwendungsbestätigung."
+msgstr "The amount is too large for a donation receipt."
+
+msgid "Bitte die Sache genau bezeichnen (Alter, Zustand, Kaufpreis)."
+msgstr "Please describe the item precisely (age, condition, purchase price)."
+
+msgid "Bitte angeben, woher die Sache stammt."
+msgstr "Please specify the item’s origin."
+
+msgid "Der Verzicht auf Aufwendungsersatz ist eine Geldzuwendung."
+msgstr "Waiving reimbursement of expenses is a cash donation."
+
+msgid "{reason}. Bitte zuerst in der Zuwendung ergänzen."
+msgstr "{reason}. Please first add the missing details to the donation."
+
+msgid "geplant"
+msgstr "planned"
+
+msgid "laufend"
+msgstr "ongoing"
+
+msgid "abgeschlossen"
+msgstr "completed"
+
+msgid "erledigt"
+msgstr "completed"
+
+msgid "Das Datum liegt vor dem Stichtag des Anfangsbestands von „{x0}“ ({x1})."
+msgstr "The date precedes the opening balance date of “{x0}” ({x1})."
+
+msgid "Das Datum liegt vor dem Stichtag des Zielkontos."
+msgstr "The date precedes the target account’s opening balance date."
+
+msgid "Bitte das Zielkonto wählen."
+msgstr "Please select the target account."
+
+msgid "Unbekannte Reihe."
+msgstr "Unknown series."
+
+msgid "Zielkonto und Konto müssen verschieden sein."
+msgstr "The source and target accounts must be different."
+
+msgid "Die Kategorie passt nicht zu dieser Art der Buchung."
+msgstr "The category does not match this type of entry."
+
+msgid "Jahr fehlt oder ist ungültig."
+msgstr "Year is missing or invalid."
+
+msgid "Würde fehlt."
+msgstr "Dignity is missing."
+
+msgid "rechts"
+msgstr "right"
+
+msgid "links"
+msgstr "left"
+
+msgid "weiblich"
+msgstr "female"
+
+msgid "divers"
+msgstr "diverse"
+
+msgid "beitragsfrei"
+msgstr "exempt from fees"
+
+msgid "freigegeben"
+msgstr "approved"
+
+msgid "Vorstand und Rollen"
+msgstr "Board and roles"
+
+msgid "nur Rollen dieser Einheit"
+msgstr "only roles of this unit"
+
+msgid "zusätzlich Mitglieder mit Zugang"
+msgstr "also members with access"
+
+msgid "tagesgenau"
+msgstr "day precision"
+
+msgid "monatsgenau"
+msgstr "month precision"
+
+msgid "jahresgenau"
+msgstr "year precision"
+
+msgid "X"
+msgstr "X"
+
+msgid "Die Rolle muss zu dieser Organisation gehören."
+msgstr "The role must belong to this organisation."
+
+msgid "Bitte die Adresse des Impressums angeben."
+msgstr "Please enter the legal notice address."
+
+msgid "Bitte die Adresse der Datenschutzhinweise angeben."
+msgstr "Please enter the privacy notice address."
+
+msgid "Die Plattform hat keine übergeordnete Organisation."
+msgstr "The platform has no parent organisation."
+
+msgid "Ein Dachverband hängt direkt unter der Plattform."
+msgstr "A federation belongs directly under the platform."
+
+msgid "Ein Verein gehört zur Plattform oder zu einem Dachverband."
+msgstr "A club belongs to the platform or a federation."
+
+msgid "Eine Untereinheit braucht eine übergeordnete Einheit."
+msgstr "A sub-unit needs a parent unit."
+
+msgid "aktiv"
+msgstr "active"
+
+msgid "pausiert"
+msgstr "paused"
+
+msgid "umgezogen"
+msgstr "moved"
+
+msgid "gesendet"
+msgstr "sent"
+
+msgid "empfangen"
+msgstr "received"
+
+msgid "gemeldet"
+msgstr "reported"
+
+msgid "weitergegeben"
+msgstr "forwarded"
+
+msgid "ausgegliedert"
+msgstr "separated"
+
+msgid "abgebrochen"
+msgstr "cancelled"
+
+msgid "Rechnung ohne Kennung."
+msgstr "Invoice has no identifier."
+
+msgid "Rechnung unbekannt."
+msgstr "Unknown invoice."
+
+msgid "Die Rechnung wurde am {x0} schon als bezahlt gemeldet."
+msgstr "The invoice was already reported as paid on {x0}."
+
+msgid "Nur Eingangsrechnungen lassen sich als bezahlt melden."
+msgstr "Only incoming invoices can be reported as paid."
+
+msgid "Die Rechnung ist storniert."
+msgstr "The invoice is cancelled."
+
+msgid "Rechnungen kommen nur von der Einheit darüber."
+msgstr "Invoices can only come from the parent unit."
+
+msgid "Rechnung {x0} liegt schon vor und wird nicht geändert. Bitte stornieren und als neue Rechnung schicken."
+msgstr "Invoice {x0} already exists and will not be changed. Please cancel it and send a new invoice."
+
+msgid "Bitte ein Konto dieser Einheit wählen."
+msgstr "Please select an account belonging to this unit."
+
+msgid "Die Kategorie ist nicht für Ausgaben vorgesehen."
+msgstr "The category is not intended for expenses."
+
+msgid "Unpassende Rechnungsmeldung."
+msgstr "Incompatible invoice report."
+
+msgid "Ungültiger Ausschnitt."
+msgstr "Invalid crop."
+
+msgid "Ungültige Drehung."
+msgstr "Invalid rotation."
+
+msgid "Begrüßung (Startseite)"
+msgstr "Welcome (home page)"
+
+msgid "Textseite"
+msgstr "Text page"
+
+msgid "Text einer Untereinheit"
+msgstr "Sub-unit text"
+
+msgid "Nur Kleinbuchstaben, Ziffern und Bindestriche, z. B. „geschichte“."
+msgstr "Only lower-case letters, digits and hyphens, e.g. “history”."
+
+msgid "Diese Adresse ist für die Webseite reserviert."
+msgstr "This address is reserved for the website."
+
+msgid "Die Art eines Textes lässt sich nicht ändern."
+msgstr "The text type cannot be changed."
+
+msgid "Die Begrüßung gibt es schon."
+msgstr "A welcome text already exists."
+
+msgid "Bitte eine Liste von Bildern angeben."
+msgstr "Please provide a list of images."
+
+msgid "Höchstens {MAX_GALLERY} Bilder im Karussell."
+msgstr "At most {MAX_GALLERY} images in the carousel."
+
+msgid "Jedes Bild nur einmal."
+msgstr "Each image may appear only once."
+
+msgid "Unbekanntes Bild."
+msgstr "Unknown image."
+
+msgid "Bitte die Untereinheit wählen."
+msgstr "Please select the sub-unit."
+
+msgid "Ein Bilderkarussell gibt es nur auf Startseiten von Einheiten."
+msgstr "Image carousels are only available on unit home pages."
+
+msgid "Diese Adresse ist schon vergeben."
+msgstr "This address is already in use."
+
+msgid "Für diese Untereinheit gibt es schon einen Text."
+msgstr "A text already exists for this sub-unit."
+
+msgid "Die Begrüßung lässt sich nicht löschen, nur leeren."
+msgstr "The welcome text can be cleared but not deleted."
+
+msgid "Aus"
+msgstr "Off"
+
+msgid "Wartung"
+msgstr "Maintenance"
+
+msgid "Öffentlich"
+msgstr "Public"
+
+msgid "Vorname Name"
+msgstr "First name Last name"
+
+msgid "Vorname N."
+msgstr "First name L."
+
+msgid "auslassen"
+msgstr "skip"
+
+msgid "als „N. N.“ zeigen"
+msgstr "show as “N. N.”"
+
+msgid "alle"
+msgstr "all"
+
+msgid "ausgewählte"
+msgstr "selected"
+
+msgid "keine"
+msgstr "none"
+
+msgid "Name mit Funktion"
+msgstr "Name and role"
+
+msgid "Foto"
+msgstr "Photo"
+
+msgid "E-Mail-Adresse"
+msgstr "Email address"
+
+msgid "Telefonnummer"
+msgstr "Phone number"
+
+msgid "Würden und Chronik"
+msgstr "Dignities and history"
+
+msgid "Jubiläen"
+msgstr "Anniversaries"
+
+msgid "Wettbewerbsergebnisse"
+msgstr "Competition results"
+
+msgid "Wettbewerbsergebnisse unter 18"
+msgstr "Competition results for under-18s"
+
+msgid "Mitglied selbst"
+msgstr "The member"
+
+msgid "Papierformular"
+msgstr "Paper form"
+
+msgid "Unbekannter Baustein: {x0}"
+msgstr "Unknown block: {x0}"
+
+msgid "Bitte einen Wert zwischen 1 und 100 angeben."
+msgstr "Please enter a value between 1 and 100."
+
+msgid "Facebook-Seite"
+msgstr "Facebook page"
+
+msgid "automatisch zeigen"
+msgstr "show automatically"
+
+msgid "erst nach Freigabe"
+msgstr "only after approval"
+
+msgid "nicht verbunden"
+msgstr "not connected"
+
+msgid "Seite auswählen"
+msgstr "Select a page"
+
+msgid "verbunden"
+msgstr "connected"
+
+msgid "Störung"
+msgstr "fault"
+
+msgid "neu verbinden"
+msgstr "reconnect"
+
+msgid "Bild"
+msgstr "Image"
+
+msgid "Album"
+msgstr "Album"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "nur Text"
+msgstr "text only"
+
+msgid "sichtbar"
+msgstr "visible"
+
+msgid "ausgeblendet"
+msgstr "hidden"
+
+msgid "Bitte Instagram oder Facebook wählen."
+msgstr "Please select Instagram or Facebook."
+
+msgid "Diesen Kanal gibt es hier schon."
+msgstr "This channel already exists here."
+
+msgid "Der Kanal ist nicht verbunden."
+msgstr "The channel is not connected."
+
+msgid "Diese Untereinheit gibt es hier nicht."
+msgstr "This sub-unit does not exist here."
+
+msgid "Bitte eine Liste von Untereinheiten angeben."
+msgstr "Please provide a list of sub-units."
+
+msgid "Bausteine bitte als Schalter angeben."
+msgstr "Please specify blocks as switches."
+
+msgid "Bausteine der Startseite bitte als Liste angeben."
+msgstr "Please provide home page blocks as a list."
+
+msgid "Farbzuordnung bitte je Design angeben."
+msgstr "Please specify colour assignments for each design."
+
+msgid "Das Modul „Webseite“ ist für diese Einheit nicht freigeschaltet."
+msgstr "The Website module is not enabled for this unit."
+
+msgid "Für diese Einheit ist keine Webseite eingerichtet."
+msgstr "No website is configured for this unit."
+
+msgid "Die Webseite ist schon eingerichtet."
+msgstr "The website is already configured."
+
+msgid "Bitte eine Domain wie „www.beispiel.de“ angeben."
+msgstr "Please enter a domain such as “www.example.org”."
+
+msgid "Diese Domain ist schon vergeben."
+msgstr "This domain is already in use."
+
+msgid "Das Datum darf nicht in der Zukunft liegen."
+msgstr "The date must not be in the future."
+
+msgid "Den Empfänger gibt es nicht mehr. Bitte verwerfen."
+msgstr "The recipient no longer exists. Please discard this item."
+
+msgid "Die Nachricht konnte nicht zugestellt werden und bleibt in der Liste. Bitte den Postausgang prüfen und später erneut freigeben."
+msgstr "The message could not be delivered and remains in the list. Please check the outbox and approve it again later."
+
+msgid "Das ist schon deine Anmelde-E-Mail."
+msgstr "This is already your sign-in email."
+
+msgid "Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an."
+msgstr "The link is invalid or has expired. Please request a new one."
+
+msgid "Es sind nur noch {free} Plätze frei (mit dir selbst)."
+msgstr "Only {free} places remain (including yourself)."
+
+#: finance/quittung.py
+msgid "Unterschrift des Kassierers"
+msgstr "Treasurer’s signature"
+
+#: finance/quittung.py
+msgid "Unterschrift des Zahlers"
+msgstr "Payer’s signature"
+
+#: finance/quittung.py
+msgid "Unterschrift des Empfängers"
+msgstr "Recipient’s signature"
+
+#: finance/quittung.py
+msgid "Es fehlt noch: {items}."
+msgstr "Still missing: {items}."

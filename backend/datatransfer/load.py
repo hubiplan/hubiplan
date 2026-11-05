@@ -998,7 +998,9 @@ class Loader:
             validate_urls(org)
             org.clean()
         except ValidationError as exc:
-            raise ValidationError(f"{org.name}: {'; '.join(exc.messages)}") from exc
+            raise ValidationError(
+                gettext("{x0}: {x1}").format(x0=org.name, x1="; ".join(exc.messages))
+            ) from exc
         org.save()
         if data.get("logo") and self.save_logo(org.logo, data["logo"]):
             org.save(update_fields=["logo"])
@@ -1388,7 +1390,9 @@ class Loader:
             validate_urls(org)
             org.clean()
         except ValidationError as exc:
-            raise ValidationError(f"{org.name}: {'; '.join(exc.messages)}") from exc
+            raise ValidationError(
+                gettext("{x0}: {x1}").format(x0=org.name, x1="; ".join(exc.messages))
+            ) from exc
         org.save()
         if data.get("logo") and self.save_logo(org.logo, data["logo"]):
             org.save(update_fields=["logo"])

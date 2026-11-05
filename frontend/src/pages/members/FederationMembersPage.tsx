@@ -155,7 +155,9 @@ function FederationList({ prefix }: { prefix: string }) {
           value={params.verein ?? ''}
           onChange={(e) => set('verein', e.target.value)}
         >
-          <option value="">alle {tm.pl}</option>
+          <option value="">
+            {t('alle')} {tm.pl}
+          </option>
           {clubs.data?.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -168,8 +170,8 @@ function FederationList({ prefix }: { prefix: string }) {
           onChange={(e) => set('status', e.target.value)}
         >
           <option value="aktiv">{t('aktuelle Mitglieder')}</option>
-          <option value="ehemalig">ehemalige</option>
-          <option value="alle">alle</option>
+          <option value="ehemalig">{t('ehemalige')}</option>
+          <option value="alle">{t('alle')}</option>
         </select>
         {titles.data && titles.data.length > 0 && (
           <select
@@ -184,7 +186,7 @@ function FederationList({ prefix }: { prefix: string }) {
             {titles.data.map((tmx) => (
               <option key={tmx.id} value={tmx.id}>
                 {tmx.name}
-                {tmx.is_archived ? ' (archiviert)' : ''}
+                {tmx.is_archived ? t(' (archiviert)') : ''}
               </option>
             ))}
           </select>
@@ -366,7 +368,7 @@ function FederationDetail({ prefix }: { prefix: string }) {
             {data.periods.map((p) => (
               <li key={p.id}>
                 {data.club}: {formatMemberDate(p.entry_date, org.date_precision)} –{' '}
-                {p.exit_date ? formatMemberDate(p.exit_date, org.date_precision) : 'heute'}
+                {p.exit_date ? formatMemberDate(p.exit_date, org.date_precision) : t('heute')}
               </li>
             ))}
           </ul>
@@ -434,7 +436,7 @@ function FederationMasterData({
         />
         <div className="grid-2">
           <Field
-            label="PLZ"
+            label={t('PLZ')}
             value={form.values.postal_code}
             onChange={(e) => form.set('postal_code', e.target.value)}
           />

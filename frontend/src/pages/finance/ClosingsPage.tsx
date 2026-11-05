@@ -244,9 +244,11 @@ export function ClosingsPage() {
         {t(
           'zeigt Anfangs- und Endbestand je Konto sowie Einnahmen und Ausgaben nach Kategorie, mit Feldern für die Unterschriften der',
         )}{' '}
-        <Term k="auditors">{t('Kassenprüfer')}</Term>. Nach dem Abschluss ist das Geschäftsjahr
-        gesperrt. Korrekturen laufen dann als neue Buchung im laufenden Jahr. Der Datenexport (ZIP)
-        dient der <Term k="data_access">{t('Datenträgerüberlassung')}</Term>{' '}
+        <Term k="auditors">{t('Kassenprüfer')}</Term>
+        {t(
+          '. Nach dem Abschluss ist das Geschäftsjahr gesperrt. Korrekturen laufen dann als neue Buchung im laufenden Jahr. Der Datenexport (ZIP) dient der',
+        )}{' '}
+        <Term k="data_access">{t('Datenträgerüberlassung')}</Term>{' '}
         {t('bei einer Prüfung. Nach Ablauf der')}{' '}
         <Term k="retention_period">{t('Aufbewahrungsfrist')}</Term>{' '}
         {t('lassen sich Belege löschen und Bücher anonymisieren.')}

@@ -296,11 +296,11 @@ export function EventDialog({
             <dt>{t('Wann')}</dt>
             <dd>
               {formatRange(occurrence.starts_at, occurrence.ends_at, occurrence.all_day)}
-              {occurrence.is_moved && <span className="badge"> verschoben</span>}
+              {occurrence.is_moved && <span className="badge"> {t('verschoben')}</span>}
               {data.repeat !== 'none' && (
                 <div className="muted small">
                   {t('Serie:')} {data.repeat_label}
-                  {data.repeat_interval > 1 && ` (alle ${data.repeat_interval})`}
+                  {data.repeat_interval > 1 && t(' (alle {x0})', { x0: data.repeat_interval })}
                   {data.repeat_until && t(' bis {x}', { x: formatDay(data.repeat_until, false) })}
                 </div>
               )}
@@ -409,7 +409,7 @@ export function EventDialog({
                           }
                         }}
                       >
-                        entfernen
+                        {t('entfernen')}
                       </button>
                     )}
                   </li>

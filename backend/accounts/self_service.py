@@ -179,7 +179,7 @@ class EmailChangeView(APIView):
         new = User.objects.normalize_email(data.validated_data["email"]).lower()
         if new == user.email:
             raise serializers.ValidationError(
-                {"email": gettext("Das ist schon Ihre Anmelde-E-Mail.")}
+                {"email": gettext("Das ist schon deine Anmelde-E-Mail.")}
             )
         if User.objects.filter(email__iexact=new).exists():
             raise serializers.ValidationError(

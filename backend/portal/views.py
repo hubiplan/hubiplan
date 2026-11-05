@@ -955,7 +955,7 @@ class LoginLinkUseView(APIView):
         )
         if link is None or not link.is_open:
             raise NotFound(
-                gettext("Der Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an.")
+                gettext("Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.")
             )
         user = link.user
         set_rls(None, user.pk)

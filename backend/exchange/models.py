@@ -83,10 +83,10 @@ class ExportTemplate(models.Model):
 
 class ExportJob(models.Model):
     class Status(models.TextChoices):
-        PENDING = "pending", "wartet"
+        PENDING = "pending", gettext_lazy("wartet")
         RUNNING = "running", gettext_lazy("läuft")
-        DONE = "done", "fertig"
-        FAILED = "failed", "fehlgeschlagen"
+        DONE = "done", gettext_lazy("fertig")
+        FAILED = "failed", gettext_lazy("fehlgeschlagen")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="export_jobs"
@@ -144,13 +144,13 @@ class ImportTemplate(models.Model):
 
 class ImportJob(models.Model):
     class Status(models.TextChoices):
-        UPLOADED = "uploaded", "hochgeladen"
+        UPLOADED = "uploaded", gettext_lazy("hochgeladen")
         VALIDATING = "validating", gettext_lazy("wird geprüft")
         VALIDATED = "validated", gettext_lazy("geprüft")
         IMPORTING = "importing", gettext_lazy("wird importiert")
-        IMPORTED = "imported", "importiert"
+        IMPORTED = "imported", gettext_lazy("importiert")
         UNDONE = "undone", gettext_lazy("rückgängig gemacht")
-        FAILED = "failed", "fehlgeschlagen"
+        FAILED = "failed", gettext_lazy("fehlgeschlagen")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="import_jobs"

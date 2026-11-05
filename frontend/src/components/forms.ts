@@ -2,8 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError } from '../api/client.ts'
 import { registerLeave } from './leaveGuard.ts'
-import { locale } from '../i18n/index.ts'
-import { t } from '../i18n/index.ts'
+import { locale, t } from '../i18n/index.ts'
 
 export function errorMessage(err: unknown): string {
   if (err instanceof ApiError) return err.message
@@ -313,9 +312,15 @@ export function formatDateTime(value: string): string {
 export type DatePrecision = 'day' | 'month' | 'year'
 
 export const DATE_PRECISION_WORD: Record<DatePrecision, string> = {
-  day: 'tagesgenau',
-  month: 'monatsgenau',
-  year: 'jahresgenau',
+  get day() {
+    return t('tagesgenau')
+  },
+  get month() {
+    return t('monatsgenau')
+  },
+  get year() {
+    return t('jahresgenau')
+  },
 }
 
 export const DATE_PRECISION_OPTIONS: { value: DatePrecision; label: string }[] = [

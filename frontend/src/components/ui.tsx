@@ -139,9 +139,22 @@ export function Alert({
   as?: 'p' | 'div'
 }) {
   return (
-    <Tag className={`alert alert-${kind}`} role={kind === 'error' ? 'alert' : 'status'}>
+    <Tag
+      className={`alert alert-${kind}`}
+      role={kind === 'error' ? 'alert' : 'status'}
+      aria-atomic="true"
+    >
       {children}
     </Tag>
+  )
+}
+
+/** Vor der Aktion vorhandene Statusregion; gleicher Fokus und sichtbarer Erfolg nach Bestätigung. */
+export function StatusMessage({ message }: { message: string | null }) {
+  return (
+    <p className={message ? 'alert alert-success' : 'sr-only'} role="status" aria-atomic="true">
+      {message}
+    </p>
   )
 }
 

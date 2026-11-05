@@ -17,7 +17,7 @@ EMPTIED = "(Inhalt nach Ablauf der Aufbewahrungsfrist entfernt)"
 class OutgoingMail(models.Model):
     class Status(models.TextChoices):
         STORED = "stored", gettext_lazy("nur gespeichert (kein Mailserver)")
-        SENT = "sent", "versendet"
+        SENT = "sent", gettext_lazy("versendet")
         FAILED = "failed", gettext_lazy("Versand fehlgeschlagen")
 
     # Leer bei Mails ohne Organisationsbezug (z. B. „Passwort vergessen“)

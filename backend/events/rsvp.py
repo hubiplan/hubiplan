@@ -118,7 +118,7 @@ def check_capacity(event: Event, response: EventResponse | None, status: str, gu
         raise ValidationError(
             {
                 "guests": [
-                    gettext("Es sind nur noch {free} Plätze frei (mit Ihnen selbst).").format(
+                    gettext("Es sind nur noch {free} Plätze frei (mit dir selbst).").format(
                         free=free
                     )
                 ]

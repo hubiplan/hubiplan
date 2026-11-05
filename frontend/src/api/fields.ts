@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.ts'
 // Zusatzfelder und Jubiläen (Meilenstein 4).
 import { api } from './client.ts'
 import type { DatePrecision } from '../components/forms.ts'
@@ -5,12 +6,42 @@ import type { DatePrecision } from '../components/forms.ts'
 export type FieldType = 'text' | 'number' | 'date' | 'bool' | 'choice' | 'yearrange'
 
 export const FIELD_TYPES: { value: FieldType; label: string }[] = [
-  { value: 'text', label: 'Text' },
-  { value: 'number', label: 'Zahl' },
-  { value: 'date', label: 'Datum' },
-  { value: 'bool', label: 'Ja/Nein' },
-  { value: 'choice', label: 'Auswahlliste' },
-  { value: 'yearrange', label: 'Startjahr/Endjahr' },
+  {
+    value: 'text',
+    get label() {
+      return t('Text')
+    },
+  },
+  {
+    value: 'number',
+    get label() {
+      return t('Zahl')
+    },
+  },
+  {
+    value: 'date',
+    get label() {
+      return t('Datum')
+    },
+  },
+  {
+    value: 'bool',
+    get label() {
+      return t('Ja/Nein')
+    },
+  },
+  {
+    value: 'choice',
+    get label() {
+      return t('Auswahlliste')
+    },
+  },
+  {
+    value: 'yearrange',
+    get label() {
+      return t('Startjahr/Endjahr')
+    },
+  },
 ]
 
 export interface Subfield {

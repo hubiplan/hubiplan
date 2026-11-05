@@ -53,7 +53,7 @@ export function EventPicker({
       {events.map((e) => (
         <option key={e.id} value={e.id} disabled={!!e.competition}>
           {eventLabel(e)}
-          {e.competition ? ` (schon bei „${e.competition}“)` : ''}
+          {e.competition ? t(' (schon bei „{x0}“)', { x0: e.competition }) : ''}
         </option>
       ))}
     </SelectField>

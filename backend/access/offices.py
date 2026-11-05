@@ -17,6 +17,7 @@ from __future__ import annotations
 import datetime
 
 from django.db.models import Q
+from django.utils.translation import gettext
 
 from exchange.reading import ReadError, read_table
 from honors.importer import Matcher, _plain, _too_long, _year
@@ -184,11 +185,11 @@ def preview(org, path, file_name: str) -> dict:
         from_raw, until_raw = cell(row, "from_year"), cell(row, "until_year")
         from_year, until_year = _year(from_raw), _year(until_raw)
         if not role_name:
-            errors.append("Amt fehlt.")
+            errors.append(gettext("Amt fehlt."))
         if not name:
-            errors.append("Name fehlt.")
+            errors.append(gettext("Name fehlt."))
         if str(until_raw).strip() and until_year is None:
-            errors.append("Endjahr ist ungültig.")
+            errors.append(gettext("Endjahr ist ungültig."))
         elif until_year is None and from_year is not None:
             until_year = from_year  # nur ein Jahr angegeben
         if message := check_years(from_year, until_year):
@@ -198,7 +199,9 @@ def preview(org, path, file_name: str) -> dict:
                 errors.append(message)
         unit = units.get(unit_name.lower()) if unit_name else None
         if unit_name and unit is None:
-            errors.append(f"Untereinheit „{unit_name}“ gibt es nicht.")
+            errors.append(
+                gettext("Untereinheit „{unit_name}“ gibt es nicht.").format(unit_name=unit_name)
+            )
         role = by_key.get(_key(role_name, unit.name if unit else "")) if role_name else None
         person_id, candidates = matcher.candidates(name) if name else (None, [])
         key = (role_name.lower(), unit_name.lower(), from_year, _plain(name))
