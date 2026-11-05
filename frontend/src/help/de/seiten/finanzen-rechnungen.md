@@ -15,3 +15,9 @@ Die Namenssuche unterscheidet nicht zwischen Groß- und Kleinschreibung. Unicode
 Gib einen Suchbegriff ein und bestätige mit **Suchen** oder der Eingabetaste. Status und weitere Filter werden direkt übernommen.
 
 Nach einem Wechsel der Auswahl werden die bisherigen Ergebnisse ausgeblendet, bis die neue Abfrage abgeschlossen ist. Falls das Laden fehlschlägt, kannst du mit **Erneut laden** dieselbe Auswahl erneut abfragen.
+
+Bei Schlussrechnungen siehst du die angerechneten Anzahlungen und den verbleibenden
+offenen Betrag. Eine verrechnete Anzahlungsrechnung hat den Status „Abgerechnet“.
+Ihre Zahlungseingänge bleiben in der Kasse erhalten. Vor dem Entfernen dieser Zahlungen
+musst du die zugehörige Schlussrechnung stornieren. Auch eine vollständig durch
+Anzahlungen gedeckte Schlussrechnung ohne weitere Zahlungen kann storniert werden.

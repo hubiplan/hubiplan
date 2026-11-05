@@ -152,6 +152,10 @@ def account_data(account):
         if invoice
         else Decimal(0)
     )
+    if invoice:
+        revenue += sum(
+            (row.amount for row in invoice.advance_allocations.filter(active=True)), Decimal(0)
+        )
     return {
         "id": account.pk,
         "performance": account.performance_id,
@@ -493,6 +497,10 @@ class PerformanceInvoiceView(SettlementView):
             return Response(InvoiceDetailSerializer(account.invoice).data)
         invoice = Invoice(organization=self.org, created_by=request.user)
         ElectronicInvoiceViewSet._save_commercial(self, invoice, request)
+        if invoice.document_kind == "advance":
+            raise serializers.ValidationError(
+                gettext("Für die Auftrittsabrechnung bitte Rechnung oder Schlussrechnung wählen.")
+            )
         if (
             invoice.partner_id != performance.customer_id
             or invoice.total != account.fee + account.travel + account.extras

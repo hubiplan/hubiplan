@@ -18,6 +18,9 @@ x-backend-env: &backend-env
   DJANGO_API_DOCS_ENABLED: ${DJANGO_API_DOCS_ENABLED:-false}
   # Alarm-Mails (große Exporte, neue Plattformzugänge); leer = an alle Superuser
   SECURITY_ALERT_EMAIL: ${SECURITY_ALERT_EMAIL:-}
+  # Optionales mandantenbezogenes Gateway; Zugangsdaten nur in der privaten Server-.env.
+  EINVOICE_GATEWAYS: ${EINVOICE_GATEWAYS:-}
+  EINVOICE_GATEWAY_TOKENS: ${EINVOICE_GATEWAY_TOKENS:-}
   DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY fehlt in .env}
   # Verschlüsselt die 2FA-Geheimnisse in der Datenbank (liegt nicht im Backup)
   MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?MFA_ENCRYPTION_KEY fehlt in .env}

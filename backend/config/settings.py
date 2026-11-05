@@ -5,6 +5,7 @@ Alle umgebungsabhängigen Werte kommen aus Umgebungsvariablen (siehe .env.exampl
 
 import base64
 import hashlib
+import json
 import os
 from pathlib import Path
 
@@ -482,6 +483,22 @@ OIDC_KEY_FILE = os.environ.get("OIDC_KEY_FILE", "")
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
 EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")
+# Server-only tenant mapping; credential VALUES stay in their named environment variables.
+try:
+    EINVOICE_GATEWAYS = json.loads(os.environ.get("EINVOICE_GATEWAYS") or "{}")
+    EINVOICE_GATEWAY_TOKENS = json.loads(os.environ.get("EINVOICE_GATEWAY_TOKENS") or "{}")
+    if not isinstance(EINVOICE_GATEWAYS, dict) or not all(
+        isinstance(value, dict) for value in EINVOICE_GATEWAYS.values()
+    ):
+        raise ValueError("Expected tenant mapping")
+    if not isinstance(EINVOICE_GATEWAY_TOKENS, dict) or not all(
+        isinstance(value, str) for value in EINVOICE_GATEWAY_TOKENS.values()
+    ):
+        raise ValueError("Expected credential mapping")
+except ValueError as exc:
+    raise ImproperlyConfigured(
+        "EINVOICE_GATEWAYS must be a JSON object of tenant settings"
+    ) from exc
 # Push an die App (Web-Push mit VAPID). Schlüsseldatei Standard: PRIVATE_ROOT/push/vapid.json
 PUSH_VAPID_KEY_FILE = os.environ.get("PUSH_VAPID_KEY_FILE", "")
 # Absender-Angabe für Push-Dienste (https-Adresse oder mailto:), Standard FRONTEND_URL

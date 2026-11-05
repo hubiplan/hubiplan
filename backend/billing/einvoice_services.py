@@ -8,8 +8,6 @@ from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.utils.translation import gettext
 
-from finance.einvoice import as_json
-
 from . import einvoice_validator, einvoice_xml
 from .models import InvoiceArtifact, InvoiceLine
 
@@ -28,6 +26,8 @@ def json_data(value):
 
 
 def save_draft(invoice, data, partner, project):
+    from .advances import prepare, save_references
+
     totals = einvoice_xml.calculate(data["lines"])
     if not 0 < totals["gross"] <= Decimal("9999999999.99"):
         raise ValidationError(
@@ -43,6 +43,9 @@ def save_draft(invoice, data, partner, project):
     invoice.recipient_kind = "partner"
     invoice.project = project
     invoice.total = totals["gross"]
+    invoice.document_kind = data["document_kind"]
+    advances = prepare(invoice, data["advance_invoices"], data["lines"])
+    invoice.prepaid = sum((Decimal(info["received"]) for _, info in advances), Decimal("0.00"))
     invoice.electronic_data = json_data(
         {
             key: value
@@ -50,6 +53,8 @@ def save_draft(invoice, data, partner, project):
             if key
             not in {
                 "lines",
+                "document_kind",
+                "advance_invoices",
                 "partner",
                 "payment_category",
                 "project",
@@ -67,6 +72,7 @@ def save_draft(invoice, data, partner, project):
     )
     invoice.recipient_email = buyer["email"]
     invoice.save()
+    save_references(invoice, advances)
     invoice.lines.all().delete()
     for position, line in enumerate(totals["lines"]):
         InvoiceLine.objects.create(
@@ -83,6 +89,10 @@ def save_draft(invoice, data, partner, project):
 def archive(invoice):
     """Erst erfolgreiche Prüfung, dann nummeriertes Original und lesbare Ansicht festhalten."""
     if hasattr(invoice, "performanceaccount"):
+        if invoice.document_kind == "advance":
+            raise ValidationError(
+                gettext("Für die Auftrittsabrechnung bitte Rechnung oder Schlussrechnung wählen.")
+            )
         account = invoice.performanceaccount
         if (
             invoice.partner_id != account.performance.customer_id
@@ -91,6 +101,9 @@ def archive(invoice):
             raise ValidationError(
                 gettext("Kunde und Bruttobetrag müssen zur Auftrittsvereinbarung passen.")
             )
+    from .advances import reconcile
+
+    reconcile(invoice)
     xml = einvoice_xml.generate(invoice)
     report, report_xml = einvoice_validator.validate(xml)
     if report["status"] != "valid":
@@ -109,7 +122,7 @@ def archive(invoice):
     artifact.save()
     from finance.einvoice import parse_xml, render
 
-    readable = render(as_json(parse_xml(xml)), invoice.electronic_data["seller"]["name"])
+    readable = render(parse_xml(xml), invoice.electronic_data["seller"]["name"])
     invoice.issued_pdf.save("invoice.pdf", ContentFile(readable), save=False)
     invoice.issued_pdf_sha256 = hashlib.sha256(readable).hexdigest()
     invoice.save(update_fields=["issued_pdf", "issued_pdf_sha256", "updated_at"])
@@ -153,7 +166,7 @@ def archive_cancellation(invoice):
     kind = original.find(f"{{{ns['cbc']}}}InvoiceTypeCode")
     kind.tag, kind.text = f"{{{ns['cbc']}}}CreditNoteTypeCode", "381"
     note = original.find(f"{{{ns['cbc']}}}Note")
-    note.text = f"Storno zu {invoice.display_number}"
+    note.text = f"Storno zu {invoice.display_number}\n{note.text or ''}"
     for line in original.findall(f"{{{ns['cac']}}}InvoiceLine"):
         line.tag = f"{{{ns['cac']}}}CreditNoteLine"
         line.find(f"{{{ns['cbc']}}}InvoicedQuantity").tag = f"{{{ns['cbc']}}}CreditedQuantity"

@@ -48,8 +48,10 @@ Die technische Validierung bezieht sich auf den XML-Inhalt und das vom Regelpake
 erkannte Profil. Sie zertifiziert weder die PDF/A-Konformität noch die inhaltliche
 Übereinstimmung eines fremden PDF-Sichtteils mit dem XML. Maßgeblich ist das XML.
 
-Noch nicht enthalten: ZUGFeRD-Ausgabe, Peppol/Portalübertragung, andere Ausgabewährungen,
-Abschlags-/Schlussrechnungsautomatik, automatische Bankauszahlungen sowie Zuordnung
+Zusätzlich verfügbar: Anzahlungsrechnungen (Typ 386), Schlussrechnungen mit Anrechnung
+tatsächlich eingegangener Anzahlungen, ZUGFeRD/Factur-X EN16931 und eine konfigurierbare
+HTTPS-Anbindung für Peppol-/Portal-Gateways. Noch nicht enthalten: andere Ausgabewährungen,
+automatische Bankauszahlungen sowie Zuordnung
 von Teilzahlungen zu Eingangsrechnungen. Unterschiedliche Dateien mit gleicher
 Lieferanten-Rechnungsnummer müssen fachlich auf Dubletten geprüft werden.
 
@@ -88,3 +90,94 @@ Offizielle Quellen:
 - [KoSIT Validator](https://github.com/itplr-kosit/validator)
 - [Prüfkonfiguration XRechnung](https://github.com/itplr-kosit/validator-configuration-xrechnung)
 - [FeRD: ZUGFeRD](https://www.ferd-net.de/standards/zugferd)
+
+## Anzahlungs- und Schlussrechnungen
+
+Unter **Rechnungsart** die Anzahlungsrechnung wählen, prüfen und festschreiben.
+Zahlungseingänge wie bisher bei der Rechnung erfassen. Eine Schlussrechnung enthält
+die gesamte Leistung und wählt bereits bezahlte Anzahlungsrechnungen desselben Kunden
+und Projekts. Auch Teilzahlungen werden angerechnet. EUR, positive Leistungen und
+passende Steuergruppen sind erforderlich; Überanrechnung wird abgewiesen.
+
+Das Original enthält BG-3-Bezüge, BT-113 (vereinnahmte Bruttoanzahlungen) und in BT-22
+die Einzelaufstellung mit Zahlungstagen, Nettobeträgen und Umsatzsteuer. Die Aufstellung
+muss fachlich geprüft werden. Änderungen der Zahlungseingänge nach Entwurfserstellung
+verlangen erneutes Speichern und Prüfen. Beim Festschreiben werden die Zahlungen
+einmalig zugeordnet; es entstehen keine weiteren Kassenbuchungen. Die Anzahlungsrechnung
+erhält den Status „Abgerechnet“ und wird nicht weiter gemahnt. Die Schlussrechnung
+weist nur den verbleibenden Zahlbetrag als offen aus. Ein Storno der Schlussrechnung
+gibt die Anzahlungen wieder frei. Zugeordnete Anzahlungen und ihre Zahlungen können
+erst danach storniert bzw. entfernt werden. Das ist keine automatische Bankauszahlung.
+
+## ZUGFeRD erstellen
+
+Bei festgeschriebenen Rechnungen bzw. Stornobelegen **ZUGFeRD erstellen und prüfen**
+wählen. Der Server konvertiert das unveränderte UBL-Original nach CII EN16931 und
+vergleicht Beträge, Steuergruppen, Positionen, Anschriften und Hinweise. Aus denselben
+Daten wird eine lesbare Ansicht erzeugt, mit Ghostscript nach PDF/A-3b konvertiert
+und das XML mit factur-x eingebettet. Lokale XSD-/Schematron-Prüfung sowie veraPDF
+prüfen XML und endgültiges PDF. Erst danach steht die Ausgabe zur Verfügung.
+XML, PDF und beide Prüfberichte werden privat mit Prüfsummen aufbewahrt. Wiederholte
+Abrufe liefern dieselbe Datei. Die vorhandene XRechnung bleibt parallel erhalten.
+
+Das Backend-Image enthält zusätzlich factur-x 7.9, Ghostscript und veraPDF 1.30.3.
+Bei eigener Installation ist `install_pdf_validator.py` auszuführen; Ghostscript samt
+sRGB-ICC-Profil muss verfügbar sein. Eine fehlende/fehlerhafte Prüfung sperrt nur
+die neue Hybrid-Ausgabe. Es werden keine externen Prüfstellen aufgerufen.
+
+## Anbieterneutrales Versand-Gateway
+
+Eine Peppol-Teilnehmerregistrierung und ein Access Point sind weiterhin erforderlich.
+HUBIplan selbst wird durch dieses Modul kein Access Point. Die Plattformverwaltung
+richtet pro Verein ein Gateway ein, das folgenden festen HTTPS-Vertrag implementiert.
+Ein vorhandener Anbieter wird über einen kleinen Adapter an diesen Vertrag angebunden.
+Ohne Konfiguration bleiben Download und manueller Upload im Empfängerportal möglich.
+Das Gateway ist für die Netz-/Empfängerprofilprüfung (z. B. Peppol BIS) verantwortlich;
+KoSIT-Prüfung allein garantiert keine Annahme durch einen bestimmten Empfänger.
+
+`EINVOICE_GATEWAYS` ist ein JSON-Objekt mit Organisations-IDs als Schlüsseln, z. B.:
+
+```json
+{"123":{"base_url":"https://gateway.example.org/v1","channel":"peppol","participant":"0204:BEISPIEL","label":"Vereinsgateway","token_env":"EINVOICE_GATEWAY_EXAMPLE_TOKEN"}}
+```
+
+Das benannte Secret wird separat als Umgebungsvariable bereitgestellt, niemals in der
+Gateway-Konfiguration, im Datenexport oder Browser. Das Standard-Server-Compose leitet
+alternativ `EINVOICE_GATEWAY_TOKENS` weiter: ein JSON-Objekt, das `token_env`-Namen auf
+die jeweiligen Secrets abbildet. Beide JSON-Werte in der privaten Server-`.env` mit
+einfachen Anführungszeichen umschließen; Zugangsdaten niemals ins Repository übernehmen.
+`channel` ist `peppol` oder `portal`. Nur HTTPS ohne
+URL-Zugangsdaten, Query oder Fragment ist zulässig. HTTP-Redirects sind gesperrt.
+Absender und Empfänger kommen aus den elektronischen Adressen des festgeschriebenen
+Originals; für Peppol sind vierstellige EAS-Codes erforderlich. Der Absender muss
+zur für den Verein konfigurierten Teilnehmerkennung passen.
+
+- `GET /documents/{request_id}`: Status lesen, `404` falls unbekannt.
+- `POST /documents`: JSON mit `request_id` (UUID), `sha256`, `channel`, `sender`,
+  `recipient`, `document` (`invoice`/`cancellation`), `content_type` (`application/xml`)
+  und `content_base64` (unverändertes UBL-Original).
+- Beide Aufrufe tragen `Authorization: Bearer <secret>`; POST zusätzlich einen stabilen
+  `Idempotency-Key` mit derselben UUID. Der Adapter muss gleiche UUIDs dauerhaft
+  deduplizieren und GET nach einem akzeptierten POST konsistent beantworten.
+- Erfolg: HTTP `200`, `201` oder `202`, JSON mit passender `request_id`, `sha256`,
+  `status` (`submitted`, `delivered`, `rejected`) und optional `reference` (max. 200 Zeichen).
+  Referenzen dürfen keine personenbezogenen Daten, Geheimnisse oder URLs enthalten.
+- `submitted` bedeutet nur Annahme durch den Anbieter. Zustellung wird über
+  **Versandstatus abrufen** ausdrücklich abgefragt. Fehler/Timeouts führen zu
+  „Übermittlung unbestätigt“. Jeder Wiederholungsversuch gleicht zuerst per GET ab;
+  nur bei `404` wird dieselbe UUID erneut per POST übermittelt. Keine automatische
+  Neuübermittlung, keine stillen Anbieterwechsel und kein automatischer Stornoversand.
+
+Vor Freischaltung sind Sandbox-Registrierung, Empfängerprofil, Deduplizierung,
+Statusabfrage und Quittung mit dem tatsächlichen Anbieter zu prüfen. Der lokale
+Test verwendet ausschließlich einen simulierten Gateway-Vertrag.
+
+Die Migration `0018` ergänzt Felder mit Datenbank-Defaults sowie RLS-Tabellen für
+Zuordnungen, Hybrid-Archive und Versandprotokolle. Vor einem Software-Rollback neue
+Ausstellungen und Übermittlungen anhalten; alte Software versteht angerechnete
+Anzahlungen und „Abgerechnet“ nicht. Tabellen und Originale bleiben erhalten.
+
+Quellen: [factur-x](https://github.com/akretion/factur-x),
+[veraPDF](https://verapdf.org/software/),
+[Ghostscript PDF/A](https://ghostscript.readthedocs.io/en/latest/VectorDevices.html),
+[FeRD: Pflichtangaben](https://www.ferd-net.de/fileadmin/user_upload/FeRD/Downloads/Empfehlungen_zu_Pflichtangaben_in_einer_E-Rechnung/Empfehlungen_Pflichtangaben_E-Rechnung_gem_UStG_20250725.pdf).

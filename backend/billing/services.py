@@ -665,7 +665,8 @@ def recalc_total(invoice: Invoice) -> None:
 
 
 def lock_invoice(
-    invoice: Invoice, fields: tuple | None = ("status", "paid", "total", "dunning_level")
+    invoice: Invoice,
+    fields: tuple | None = ("status", "paid", "total", "dunning_level", "prepaid", "document_kind"),
 ) -> None:
     """Rechnung bis zum Ende der Transaktion sperren und den aktuellen Stand nachladen.
 
@@ -716,7 +717,15 @@ def in_open_debit_run(invoice: Invoice) -> bool:
 @transaction.atomic
 def cancel(invoice: Invoice) -> None:
     lock_invoice(invoice)
-    if invoice.status != Invoice.Status.OPEN:
+    from .advances import ensure_unallocated, release
+
+    ensure_unallocated(invoice)
+    fully_prepaid = (
+        invoice.document_kind == "final"
+        and invoice.status == Invoice.Status.PAID
+        and invoice.paid == 0
+    )
+    if invoice.status != Invoice.Status.OPEN and not fully_prepaid:
         raise ValidationError(gettext("Nur offene Rechnungen lassen sich stornieren."))
     if in_open_debit_run(invoice):
         raise ValidationError(IN_DEBIT_RUN)
@@ -731,6 +740,7 @@ def cancel(invoice: Invoice) -> None:
         archive_cancellation(invoice)
     invoice.cancelled_at = timezone.now()
     invoice.save(update_fields=["status", "cancelled_at", "updated_at"])
+    release(invoice)
     if invoice.club_id is not None and invoice.club.is_remote:
         from peering import packet_invoices
 
@@ -742,7 +752,13 @@ def cancel(invoice: Invoice) -> None:
 
 def _update_paid(invoice: Invoice) -> None:
     invoice.paid = invoice.payments.aggregate(s=Sum("amount"))["s"] or ZERO
-    invoice.status = Invoice.Status.PAID if invoice.paid >= invoice.total else Invoice.Status.OPEN
+    invoice.status = (
+        Invoice.Status.PAID
+        if invoice.paid + invoice.prepaid >= invoice.total
+        else Invoice.Status.OPEN
+    )
+    if invoice.final_allocations.filter(active=True).exists():
+        invoice.status = Invoice.Status.SETTLED
     invoice.save(update_fields=["paid", "status", "updated_at"])
     if invoice.club_id is not None and invoice.club.is_remote:
         from peering import packet_invoices
@@ -824,6 +840,9 @@ def remove_payment(payment: Payment, user=None) -> Booking | None:
     receipt = CashReceipt.objects.select_for_update().filter(payment_id=payment.pk).first()
     invoice = payment.invoice
     lock_invoice(invoice)
+    from .advances import ensure_unallocated
+
+    ensure_unallocated(invoice)
     if not Payment.objects.filter(pk=payment.pk).exists():
         raise ValidationError(gettext("Diese Zahlung gibt es nicht mehr."))
     if receipt is not None and receipt.status != CashReceipt.Status.DRAFT:

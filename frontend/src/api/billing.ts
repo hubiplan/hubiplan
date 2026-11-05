@@ -4,7 +4,7 @@ import type { Page, PickedMember } from './members.ts'
 import type { DeptTerms } from '../org/terms.ts'
 
 export type Rhythm = 'yearly' | 'halfyearly' | 'quarterly' | 'monthly'
-export type InvoiceStatus = 'draft' | 'open' | 'paid' | 'cancelled'
+export type InvoiceStatus = 'draft' | 'open' | 'paid' | 'settled' | 'cancelled'
 
 export interface PeriodInfo {
   index: number
@@ -166,6 +166,8 @@ export interface Payment {
 }
 
 export interface InvoiceRow {
+  document_kind?: 'invoice' | 'advance' | 'final'
+  prepaid?: string
   id: number
   number: string
   status: InvoiceStatus

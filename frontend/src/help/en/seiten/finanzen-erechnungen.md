@@ -27,5 +27,20 @@ Technical validation does not replace checking the service or tax treatment.
 and readable view. Cancelling an open, unpaid invoice creates a separate structured
 cancellation document. Download and deliver that document to the recipient yourself.
 
-ZUGFeRD output, portal delivery and automatic advance/final invoices are not included
-yet. Existing membership invoices remain available.
+Use **Invoice type** to choose an invoice, advance invoice or final invoice. A final
+invoice includes the entire service and credits payments already received against
+advance invoices for the same customer and event. This creates no duplicate income.
+If payments change after drafting, save and validate the draft again. Credited advances
+are marked “Settled”. Cancel the final invoice before removing their payments.
+
+**Create and validate ZUGFeRD** generates a locally validated PDF/A file with embedded
+XML from the original. Then **Download ZUGFeRD**, including cancellation documents.
+Originals and validation reports remain available.
+
+For Peppol, enter registered electronic addresses and EAS codes for the business
+partner and supplier. The platform administrator configures the selected provider
+for each club. **Transmit electronically** explicitly sends the original;
+**Fetch delivery status** retrieves confirmation. Unconfirmed attempts are reconciled
+with the provider before retrying. Send cancellations separately. Without a provider
+connection, download the document and upload it manually to the recipient's portal.
+Existing membership invoices remain available.

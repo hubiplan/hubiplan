@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import uuid
 from decimal import Decimal
 
 from django.conf import settings
@@ -353,6 +354,7 @@ class Invoice(models.Model):
         DRAFT = "draft", gettext_lazy("Entwurf")
         OPEN = "open", "offen"
         PAID = "paid", "bezahlt"
+        SETTLED = "settled", gettext_lazy("Abgerechnet")
         CANCELLED = "cancelled", "storniert"
 
     class Recipient(models.TextChoices):
@@ -429,6 +431,13 @@ class Invoice(models.Model):
     subject = models.CharField("Betreff", max_length=200, default="Rechnung")
     note = models.TextField("Hinweis", blank=True)
     total = models.DecimalField("Betrag", max_digits=12, decimal_places=2, default=ZERO)
+    document_kind = models.CharField(
+        max_length=10,
+        default="invoice",
+        db_default="invoice",
+        choices=[("invoice", "invoice"), ("advance", "advance"), ("final", "final")],
+    )
+    prepaid = models.DecimalField(max_digits=12, decimal_places=2, default=ZERO, db_default=ZERO)
     paid = models.DecimalField("bezahlt", max_digits=12, decimal_places=2, default=ZERO)
     sent_at = models.DateTimeField("per E-Mail verschickt", null=True, blank=True)
     # Die Rechnung, wie sie ausgegeben wurde (Fachfrage 4, Audit 31.10.): spätere Änderungen
@@ -478,9 +487,92 @@ class Invoice(models.Model):
 
     @property
     def outstanding(self) -> Decimal:
-        if self.status in (self.Status.DRAFT, self.Status.CANCELLED):
+        if self.status in (self.Status.DRAFT, self.Status.CANCELLED, self.Status.SETTLED):
             return ZERO
-        return max(self.total - self.paid, ZERO)
+        return max(self.total - self.paid - self.prepaid, ZERO)
+
+
+class InvoiceAdvance(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    final_invoice = models.ForeignKey(
+        Invoice, on_delete=models.CASCADE, related_name="advance_allocations"
+    )
+    advance = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="final_allocations")
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    snapshot = EncryptedJSONField(default=dict, strict=True)
+    active = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["advance"],
+                condition=models.Q(active=True),
+                name="invoice_advance_one_active_final",
+            )
+        ]
+
+    def __str__(self):
+        return f"Anzahlungszuordnung {self.pk}"
+
+
+def hybrid_file_path(instance, filename):
+    return f"erechnungen/{instance.organization_id}/hybrid/{instance.pk}/{filename}"
+
+
+class InvoiceHybridArtifact(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="hybrid_artifacts")
+    document = models.CharField(max_length=12, default="invoice")
+    pdf = PrivateFileField(storage=private_storage, upload_to=hybrid_file_path)
+    xml = PrivateFileField(storage=private_storage, upload_to=hybrid_file_path)
+    cii_report = PrivateFileField(storage=private_storage, upload_to=hybrid_file_path)
+    pdf_report = PrivateFileField(storage=private_storage, upload_to=hybrid_file_path)
+    sha256 = models.CharField(max_length=64)
+    xml_sha256 = models.CharField(max_length=64)
+    source_sha256 = models.CharField(max_length=64)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["invoice", "document"], name="invoice_hybrid_document_once"
+            )
+        ]
+
+    def __str__(self):
+        return f"Hybridrechnung {self.invoice_id}"
+
+
+class InvoiceDelivery(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    invoice = models.ForeignKey(Invoice, on_delete=models.PROTECT, related_name="deliveries")
+    document = models.CharField(
+        max_length=12, choices=[("invoice", "invoice"), ("cancellation", "cancellation")]
+    )
+    # Preserved in data transfers as external delivery evidence. The request ID may
+    # consequently also exist in an imported organisation's historical records.
+    request_id = models.UUIDField(default=uuid.uuid4)
+    provider_signature = models.CharField(max_length=64)
+    provider_label = models.CharField(max_length=100)
+    sha256 = models.CharField(max_length=64)
+    status = models.CharField(max_length=15, default="prepared")
+    receipt = EncryptedJSONField(default=dict, strict=True)
+    error_code = models.CharField(max_length=30, blank=True)
+    attempted_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["invoice", "document", "provider_signature"],
+                name="invoice_delivery_provider_document",
+            )
+        ]
+
+    def __str__(self):
+        return f"Rechnungsversand {self.pk}"
 
 
 class InvoiceLine(models.Model):

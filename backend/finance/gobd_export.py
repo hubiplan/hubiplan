@@ -435,6 +435,8 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
             "Mahnstufe",
             "PDF",
             "SHA-256 PDF",
+            "Rechnungsart",
+            "angerechnete Anzahlungen",
             num=("Betrag", "bezahlt"),
             date=("Rechnungsdatum", "fällig am"),
         ),
@@ -459,6 +461,8 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
             i.dunning_level,
             path,
             i.issued_pdf_sha256,
+            i.document_kind,
+            _money(i.prepaid),
         )
     lines = Table(
         "rechnungsposten.csv",

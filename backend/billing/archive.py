@@ -18,7 +18,7 @@ from rest_framework.exceptions import ValidationError
 from . import pdf
 from .models import Invoice
 
-ARCHIVED = (Invoice.Status.OPEN, Invoice.Status.PAID)
+ARCHIVED = (Invoice.Status.OPEN, Invoice.Status.PAID, Invoice.Status.SETTLED)
 
 
 def _purged_years():
@@ -53,11 +53,11 @@ def archived_pdf(invoice: Invoice) -> bytes:
         with invoice.issued_pdf.open("rb") as fh:
             return fh.read()
     if invoice.electronic_data and invoice.status == Invoice.Status.DRAFT:
-        from finance.einvoice import as_json, parse_xml, render
+        from finance.einvoice import parse_xml, render
 
         from .einvoice_xml import generate
 
-        return render(as_json(parse_xml(generate(invoice))), invoice.organization.display_name)
+        return render(parse_xml(generate(invoice)), invoice.organization.display_name)
     if invoice.status not in ARCHIVED or invoice.number is None:
         return pdf.render([invoice])
     if invoice.issued_pdf:

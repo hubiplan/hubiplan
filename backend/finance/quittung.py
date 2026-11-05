@@ -269,6 +269,9 @@ def cancel(receipt: CashReceipt, user, reason: str) -> CashReceipt:
         # Die Rechnung ist wieder offen; Buchung und Beleg bleiben, die Gegenbuchung gleicht aus
         invoice = receipt.payment.invoice
         billing_services.lock_invoice(invoice)
+        from billing.advances import ensure_unallocated
+
+        ensure_unallocated(invoice)
         receipt.payment.delete()
         receipt.payment = None
         billing_services._update_paid(invoice)

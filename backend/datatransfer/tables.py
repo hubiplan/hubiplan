@@ -42,10 +42,13 @@ MODULE_MODELS = (
     "billing.BusinessPartner",
     "billing.Invoice",
     "billing.InvoiceArtifact",
+    "billing.InvoiceHybridArtifact",
+    "billing.InvoiceDelivery",
     "billing.IncomingInvoice",
     "billing.IncomingValidation",
     "billing.InvoiceLine",
     "billing.Payment",
+    "billing.InvoiceAdvance",
     # Quittungen nach Buchung, Beleg (PDF), Rechnung und Zahlung (Gesamtaudit 30.10., B-F01)
     "finance.CashReceipt",
     "billing.DunningLevel",
@@ -378,7 +381,12 @@ def check_file(name: str, obj, content: bytes, path: str, field_name: str = "") 
 
     from core.filecheck import sniff
 
-    if name in {"billing.invoiceartifact", "billing.incominginvoice", "billing.incomingvalidation"}:
+    if name in {
+        "billing.invoiceartifact",
+        "billing.incominginvoice",
+        "billing.incomingvalidation",
+        "billing.invoicehybridartifact",
+    }:
         import hashlib
         from xml.etree.ElementTree import ParseError
 
@@ -392,8 +400,14 @@ def check_file(name: str, obj, content: bytes, path: str, field_name: str = "") 
             "xml": "sha256" if name == "billing.invoiceartifact" else "",
             "cancellation_xml": "cancellation_sha256",
         }.get(field_name)
+        if name == "billing.invoicehybridartifact":
+            hash_field = {"pdf": "sha256", "xml": "xml_sha256"}.get(field_name)
         if hash_field and hashlib.sha256(content).hexdigest() != getattr(obj, hash_field):
             raise ValidationError(gettext("Die Prüfsumme des Rechnungsoriginals stimmt nicht."))
+        if name == "billing.invoicehybridartifact" and field_name == "pdf":
+            if sniff(content) != "application/pdf":
+                raise ValidationError(gettext("Die Datei ist keine PDF-Datei."))
+            return
         # Ungültige Eingänge bleiben absichtlich als unveränderte, private Originale
         # erhalten. Reports und ausgegebene Rechnungen müssen sich sicher lesen lassen.
         if name == "billing.incominginvoice" and field_name in {"original", "xml"}:

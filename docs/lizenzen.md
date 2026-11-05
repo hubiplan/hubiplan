@@ -77,6 +77,11 @@ Installationspakete an Dritte gehen (siehe unten).
 | Caddy | Apache-2.0 | |
 | KoSIT Validator 1.6.3 und Prüfkonfiguration XRechnung 3.0.2 (2026-08-31) | Apache-2.0 für die KoSIT-Projekte | Unveränderte offizielle Veröffentlichungen, beim Image-Bau mit festen SHA-256-Prüfsummen installiert. [Validator-Lizenz](https://github.com/itplr-kosit/validator/blob/v1.6.3/LICENSE), [Konfigurationslizenz](https://github.com/itplr-kosit/validator-configuration-xrechnung/blob/v2026-08-31/LICENSE). Das Regelpaket und das Standalone-JAR enthalten zusätzlich fremde Schemas, Regelwerke und Java-Bibliotheken; bei Weitergabe deren jeweilige Hinweise mitliefern. |
 | OpenJDK (Debian `default-jre-headless`) | GPL-2.0 mit Classpath Exception | Separater Java-Prozess für die XML-Prüfung; Debian-Copyright-Dateien bleiben im Image. Bei Image-Weitergabe auch die Pflichten für die enthaltene Laufzeit beachten. |
+| factur-x 7.9, pypdf, iso4217 | BSD | Konvertierung und Einbettung des CII-XML; Lizenztexte verbleiben in den installierten Python-Paketen. |
+| lxml | BSD mit Hinweisen für libxml2/libxslt | XML-Schema-Prüfung und Serialisierung; native Komponenten mit eigenen Copyright-Hinweisen. |
+| python-stdnum | LGPL-2.1-or-later | Validierung von Kennungen als Abhängigkeit von factur-x. |
+| Ghostscript (Debian) | AGPL-3.0 | Unveränderter separater Prozess für PDF/A-3. Enthaltene Schrift- und ICC-Profildateien behalten ihre jeweiligen Hinweise. Bei Weitergabe des Images vollständige Lizenz-/Quellcodepflichten beachten. |
+| veraPDF 1.30.3 | MPL-2.0 oder GPL-3.0-or-later | Unveränderter offizieller CLI-Validator, Installer mit SHA-256 geprüft; Lizenztexte bleiben in der Installation. Enthaltene Java-Abhängigkeiten haben eigene Hinweise. |
 | Hestia-Vorlagen `deploy/hestia/app-8110.*` | GPL-3.0 | Aufgebaut nach den Standardvorlagen von HestiaCP 1.9.4 (Commit `aae8b2b`), als solche gekennzeichnet mit Änderungsvermerk; GPL-Volltext in `deploy/hestia/LICENSE-GPL-3.0.txt`. Die Vorlagen bleiben GPL-3.0; GPL-3.0 und AGPL-3.0 dürfen kombiniert werden (jeweils § 13) |
 | Passwortliste `backend/accounts/data/geleakte-passwoerter.txt.gz` | MIT (SecLists) | Umgewandelte Fassung der NCSC-Liste aus SecLists (Commit `1a7bb91`); MIT-Text in `LICENSE-SecLists.txt` daneben, Herkunft und Umwandlung in der README dort |
 

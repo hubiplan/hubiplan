@@ -18,6 +18,15 @@ class PartySerializer(serializers.Serializer):
     contact = serializers.CharField(max_length=100, allow_blank=True, default="")
     phone = serializers.CharField(max_length=50, allow_blank=True, default="")
     identifier = serializers.CharField(max_length=100, allow_blank=True, default="")
+    endpoint_id = serializers.CharField(max_length=100, allow_blank=True, default="")
+    endpoint_scheme = serializers.RegexField(r"^(EM|[0-9]{4})$", default="EM")
+
+    def validate(self, attrs):
+        if attrs.get("endpoint_scheme", "EM") != "EM" and not attrs.get("endpoint_id"):
+            raise serializers.ValidationError(gettext("Bitte die elektronische Adresse angeben."))
+        if attrs.get("endpoint_scheme", "EM") == "EM" and attrs.get("endpoint_id"):
+            serializers.EmailField().run_validation(attrs["endpoint_id"])
+        return attrs
 
 
 class CommercialLineSerializer(serializers.Serializer):
@@ -67,6 +76,12 @@ class CommercialLineSerializer(serializers.Serializer):
 
 
 class CommercialInvoiceSerializer(serializers.Serializer):
+    document_kind = serializers.ChoiceField(
+        choices=["invoice", "advance", "final"], default="invoice"
+    )
+    advance_invoices = serializers.ListField(
+        child=serializers.IntegerField(min_value=1), max_length=20, default=list
+    )
     partner = serializers.IntegerField(min_value=1)
     payment_category = serializers.IntegerField(min_value=1)
     date = serializers.DateField()
