@@ -501,6 +501,38 @@ class TestAkte:
             == 400
         )
 
+    def test_fruehere_zuege_nachtragen(self, api, orgs, member, board_a):
+        """Ralf 2026-11-05: frühere Züge mit Ende in einem Schritt nachtragen; die Meldung
+        nennt den Zug und den tagesgenauen Zeitraum der Überschneidung."""
+        org = orgs["a"]
+        org.allow_multiple_departments = False
+        org.save()
+        hfc = Department.objects.create(organization=org, name="HFC", founding_year=1950)
+        alt = Department.objects.create(organization=org, name="Alter Zug", founding_year=1950)
+        neu = Department.objects.create(organization=org, name="Neuer Zug", founding_year=1950)
+        c = api(board_a)
+        url = self.url(orgs, member, "departments/")
+
+        def post(dep, start, end=None):
+            return c.post(
+                url,
+                {"department": dep.pk, "valid_from": start, "valid_until": end},
+                content_type=JSON,
+            )
+
+        assert post(hfc, "1975-01-01", "2017-12-31").status_code == 201
+        resp = post(neu, "2017-11-05")
+        assert resp.status_code == 400
+        [message] = resp.json()["non_field_errors"]
+        assert message.startswith("Ein Mitglied darf nur einer Abteilung gleichzeitig")
+        assert message.endswith("Überschneidung mit „HFC“ (01.01.1975 bis 31.12.2017).")
+        # Früherer Zug mit Ende vor HFC: geht, obwohl HFC später liegt
+        assert post(alt, "1960-01-01", "1974-12-31").status_code == 201
+        # Ohne Ende überschneidet sich der frühere Zug mit HFC
+        assert post(alt, "1950-01-01").status_code == 400
+        # Anschließender Zug ab dem Tag nach dem HFC-Ende
+        assert post(neu, "2018-01-01").status_code == 201
+
     def test_vorstandsrolle_in_akte_und_als_kontakt(self, api, orgs, member, board_a):
         role = Role.objects.get(organization=orgs["a"], name="Vorstand")
         resp = api(board_a).post(

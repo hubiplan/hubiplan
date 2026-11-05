@@ -341,6 +341,56 @@ describe('Mitgliedsakte', () => {
     })
   })
 
+  it('trägt einen früheren Zug mit Ende in einem Schritt nach', async () => {
+    const calls = fakeApi({
+      ...common(),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: { ...detail, departments: [department] },
+      }),
+      [`GET ${base}/department-choices/`]: () => ({
+        status: 200,
+        body: [
+          {
+            id: 5,
+            name: 'Alter Zug',
+            short_name: '',
+            display_name: 'Alter Zug',
+            is_active: true,
+            parent_unit: null,
+            depth: 0,
+            path: '',
+            roles: [],
+          },
+        ],
+      }),
+      [`POST ${base}/members/11/departments/`]: (init) => ({
+        status: 201,
+        body: { id: 22, department_name: 'Alter Zug', ...JSON.parse(String(init?.body)) },
+      }),
+    })
+    const user = userEvent.setup()
+    renderAt('/mitglieder/11?bereich=mitgliedschaft')
+    await user.selectOptions(
+      await screen.findByRole('combobox', { name: 'Abteilung hinzufügen' }),
+      '5',
+    )
+    fireEvent.change(screen.getByLabelText('ab'), { target: { value: '2010-01-01' } })
+    fireEvent.change(screen.getByLabelText('bis (leer = heute)'), {
+      target: { value: '2015-02-28' },
+    })
+    await user.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === `POST ${base}/members/11/departments/`)).toBe(true),
+    )
+    const post = calls.find((c) => c.key === `POST ${base}/members/11/departments/`)!
+    expect(JSON.parse(String(post.init?.body))).toEqual({
+      department: 5,
+      valid_from: '2010-01-01',
+      valid_until: '2015-02-28',
+    })
+  })
+
   it('fragt beim Abbrechen einer Korrektur vor dem Verwerfen und speichert nichts', async () => {
     const calls = fakeApi({
       ...common(),

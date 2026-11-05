@@ -539,9 +539,14 @@ function MembershipTab({
             options={departments.data
               .filter((d) => d.is_active)
               .map((d) => ({ id: d.id, name: unitName(d) }))}
-            onAdd={(id, date) =>
+            withEnd
+            onAdd={(id, date, until) =>
               run(() =>
-                memberApi.addDepartment(org.id, member.id, { department: id, valid_from: date }),
+                memberApi.addDepartment(org.id, member.id, {
+                  department: id,
+                  valid_from: date,
+                  valid_until: until,
+                }),
               )
             }
           />
@@ -855,19 +860,27 @@ function AddWithDate({
   label,
   options,
   onAdd,
+  withEnd = false,
 }: {
   label: string
   options: { id: number; name: string }[]
-  onAdd: (id: number, date: string) => Promise<void>
+  onAdd: (id: number, date: string, until: string | null) => Promise<void>
+  // Optionales Ende, damit sich frühere Zeiten in einem Schritt nachtragen lassen
+  withEnd?: boolean
 }) {
   const [id, setId] = useState('')
   const [date, setDate] = useState(todayIso)
+  const [until, setUntil] = useState('')
   return (
     <form
       className="inline-add"
       onSubmit={(e) => {
         e.preventDefault()
-        if (id) void onAdd(Number(id), date).then(() => setId(''))
+        if (id)
+          void onAdd(Number(id), date, until || null).then(() => {
+            setId('')
+            setUntil('')
+          })
       }}
     >
       <select aria-label={label} value={id} onChange={(e) => setId(e.target.value)}>
@@ -884,6 +897,16 @@ function AddWithDate({
         value={date}
         onChange={(e) => setDate(e.target.value)}
       />
+      {withEnd && (
+        <input
+          type="date"
+          aria-label={t('bis (leer = heute)')}
+          title={t('bis (leer = heute)')}
+          value={until}
+          min={date}
+          onChange={(e) => setUntil(e.target.value)}
+        />
+      )}
       <button type="submit" className="button button-ghost">
         {t('Hinzufügen')}
       </button>

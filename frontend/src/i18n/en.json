@@ -1592,6 +1592,7 @@
   "· Beitrag:": "· Fee:",
   "Jahr der Verleihung": "Year awarded",
   "bis (optional)": "until (optional)",
+  "bis (leer = heute)": "until (empty = today)",
   "{title_name} bearbeiten": "Edit {title_name}",
   "Ehrung": "Honour",
   "„{title_name}“ löschen?": "Delete “{title_name}”?",

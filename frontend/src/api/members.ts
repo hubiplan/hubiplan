@@ -355,8 +355,11 @@ export const memberApi = {
   deletePeriod: (org: number, id: number, period: number) =>
     api.del(`${base(org)}/members/${id}/periods/${period}/`),
 
-  addDepartment: (org: number, id: number, data: { department: number; valid_from: string }) =>
-    api.post<DepartmentMembership>(`${base(org)}/members/${id}/departments/`, data),
+  addDepartment: (
+    org: number,
+    id: number,
+    data: { department: number; valid_from: string; valid_until?: string | null },
+  ) => api.post<DepartmentMembership>(`${base(org)}/members/${id}/departments/`, data),
   updateDepartment: (
     org: number,
     id: number,
