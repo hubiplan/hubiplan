@@ -395,6 +395,9 @@ org_patterns = [
     ),
     path("outbox/", outbox_views.OrgOutboxView.as_view(), name="org-outbox"),
     path(
+        "outbox/settings/", outbox_views.OrgOutboxSettingsView.as_view(), name="org-outbox-settings"
+    ),
+    path(
         "outbox/<int:pk>/attachments/<int:index>/",
         outbox_views.OrgOutboxAttachmentView.as_view(),
         name="org-outbox-attachment",

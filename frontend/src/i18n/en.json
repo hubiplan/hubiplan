@@ -6449,5 +6449,9 @@
   "Deine Anfrage ist eingegangen.": "Your request has been received.",
   "Meine Anfragen und Buchungen": "My requests and bookings",
   "Schützenhaus, Stand oder Material anfragen": "Request the clubhouse, range or equipment",
-  "Mitglieder dürfen im Mitgliederbereich anfragen": "Members may send requests from the members' area"
+  "Mitglieder dürfen im Mitgliederbereich anfragen": "Members may send requests from the members' area",
+  "Zwei-Faktor-Anmeldung nötig ab {date}.": "Two-factor sign-in required from {date}.",
+  "Inhalt und Anhänge sieht nur der Verein. Er kann sie unter Einstellungen › Postausgang für die Plattform-Betreuung freigeben.": "Only the club sees the content and attachments. It can share them with platform support under Settings › Outbox.",
+  "Plattform-Betreuung darf Text und Anhänge sehen": "Platform support may see text and attachments",
+  "Sonst sieht sie nur Empfänger, Betreff und Status, etwa zur Fehlersuche.": "Otherwise it only sees recipients, subject and status, for example when troubleshooting."
 }

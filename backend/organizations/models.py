@@ -349,6 +349,13 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         db_default=True,
         help_text="Nur wirksam, wenn der Betreiber Wallet eingerichtet hat.",
     )
+    # Gesamtaudit 05.11. F-04: Plattform-Betreuung sieht im Postausgang sonst nur Kopfdaten
+    outbox_platform_content = models.BooleanField(
+        "Plattform-Betreuung darf Inhalte im Postausgang sehen",
+        default=False,
+        db_default=False,
+        help_text="Text und Anhänge der Mails dieser Einheit, etwa zur Fehlersuche.",
+    )
     contact_changes_need_approval = models.BooleanField(
         "Änderungen an Kontaktdaten erst nach Bestätigung durch den Verein", default=False
     )
