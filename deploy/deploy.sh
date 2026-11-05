@@ -127,7 +127,7 @@ protokoll() {
         echo "Warnung: Rollout-Protokoll $DIR.protokoll nicht geschrieben." >&2
 }
 
-if "$SSH" "${SSH_ARGS[@]}" "$HOST" "cd '$NEU' && ${SUDO}env$SETUP_ENV HUBIPLAN_DEPLOY_LOCK_HELD=1 ZIEL='$DIR' sh deploy/server-setup.sh"; then
+if "$SSH" "${SSH_ARGS[@]}" "$HOST" "cd '$NEU' && ${SUDO}env$SETUP_ENV ZIEL='$DIR' sh deploy/server-setup.sh"; then
     protokoll ausgerollt
 else
     rc=$?

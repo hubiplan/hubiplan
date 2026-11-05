@@ -101,6 +101,23 @@ for helper in server-setup.sh zurueck.sh; do
 done
 rmdir "$CASE/app.datenschluesselwechsel/offen"
 
+# Früher gestartetes deploy.sh: Zielquellstand und bereits gehaltene Sperre passen
+# zusammen. Nur den tatsächlichen Setup-Vorspann ausführen, keine Installation.
+awk '/^# Beim ersten Mal:/{exit} {print}' "$ROOT/deploy/server-setup.sh" > "$CASE/setup-prefix.sh"
+printf '\n[ -d "$ZIEL.sperre" ]\n' >> "$CASE/setup-prefix.sh"
+(cd "$CASE/app" && ZIEL="$CASE/app" sh "$CASE/setup-prefix.sh")
+[ ! -d "$CASE/app.sperre" ]
+mkdir "$CASE/app.neu" "$CASE/app.sperre"
+cp "$CASE/app/.fassung" "$CASE/app.neu/.fassung"
+short=$(cut -c1-8 "$CASE/app/.fassung")
+printf '%s testcaller\n' "$short" > "$CASE/app.sperre/lauf"
+(cd "$CASE/app.neu" && ZIEL="$CASE/app" sh "$CASE/setup-prefix.sh")
+[ -d "$CASE/app.sperre" ]
+printf 'ffffffff anderer-stand\n' > "$CASE/app.sperre/lauf"
+if (cd "$CASE/app.neu" && ZIEL="$CASE/app" sh "$CASE/setup-prefix.sh" > /dev/null 2>&1); then exit 1; fi
+rm "$CASE/app.sperre/lauf"
+rmdir "$CASE/app.sperre"
+
 # Nach Aktivierung darf ein verlorener Vorher-Nachweis nicht ersetzt/übergangen werden.
 CASE="$TEST_ROOT/verlorener-nachweis"
 export CASE FAIL=rotation
