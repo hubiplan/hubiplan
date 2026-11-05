@@ -20,7 +20,7 @@ import {
   today,
   daysOf,
 } from './time.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 type View = 'month' | 'list'
 
@@ -66,7 +66,7 @@ function eventName(o: Occurrence, day?: string): string {
     calendarContext(o),
     day ? dayTime(o, day) : '',
     formatRange(o.starts_at, o.ends_at, o.all_day),
-    o.is_cancelled ? t('abgesagt') : '',
+    o.is_cancelled ? tc('event-status', 'abgesagt') : '',
   ]
     .filter(Boolean)
     .join(' · ')
@@ -304,7 +304,9 @@ export function CalendarView({
                       <strong className="event-title">{o.title}</strong>{' '}
                       <VisibilityBadge visibility={o.visibility} />
                       {o.is_cancelled && (
-                        <span className="badge badge-cancelled">{t('abgesagt')}</span>
+                        <span className="badge badge-cancelled">
+                          {tc('event-status', 'abgesagt')}
+                        </span>
                       )}
                       {o.changed_at && !o.is_cancelled && (
                         <span className="badge">{t('geändert')}</span>

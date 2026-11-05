@@ -5890,5 +5890,6 @@
   "Fortsetzung · ganztägig": "Continued · all day",
   "Fortsetzung bis {time}": "Continued until {time}",
   "Fortsetzung": "Continued",
-  "Passwort vergessen? Im Browser zurücksetzen": "Forgot password? Reset in browser"
+  "Passwort vergessen? Im Browser zurücksetzen": "Forgot password? Reset in browser",
+  "event-status|abgesagt": "cancelled"
 }
