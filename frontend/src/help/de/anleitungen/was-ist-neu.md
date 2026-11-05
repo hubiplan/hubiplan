@@ -14,6 +14,7 @@ November 2026:
 
 - Bedienung: Die Mitgliedsaufnahme führt den Tastaturfokus durch zwei klar benannte Stufen. Kalender-Rückmeldungen bestätigen das Speichern auch für Screenreader; Meldewege und Prüfhinweise erscheinen bei englischer Oberflächensprache auf Englisch.
 
+- Termine: Klappt der Abruf eines fremden Kalenders 14 Tage lang nicht, werden seine Termine ausgeblendet, bis ein Abruf wieder klappt. Wer Termine verwaltet, bekommt dazu eine E-Mail.
 - Termine: Pro Termin lässt sich die Endzeit auf der Webseite ausblenden, wenn nur der Beginn bekannt ist. Die Einstellung steht beim Anlegen und Bearbeiten; intern bleibt die eingetragene Endzeit erhalten.
 - Termine: Fremde Kalender zeigen ihre Termine im eigenen Kalender, z. B. die des Dachverbands aus Vereinsplaner oder aus einem Kalender-Abo (iCal). HUBIplan holt sie stündlich ab; einzelne lassen sich ausblenden (Termine › Fremde Kalender).
 - Webseite: Je Text lässt sich wählen, ob unter dem Bild und im Bilderkarussell die Bildunterschrift steht. Standard ist ohne Unterschrift, auch für bestehende Seiten.

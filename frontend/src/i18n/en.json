@@ -6299,5 +6299,7 @@
   "z. B. Name der Zeitung": "e.g. name of the newspaper",
   "{x} öffnen": "Open {x}",
   "Überschrift hinzufügen": "Add heading",
-  "„{x}“ verschwindet von der Webseite und aus HUBIplan.": "“{x}” will be removed from the website and from HUBIplan."
+  "„{x}“ verschwindet von der Webseite und aus HUBIplan.": "“{x}” will be removed from the website and from HUBIplan.",
+  "Seit 14 Tagen kein erfolgreicher Abruf: Die Termine sind ausgeblendet und erscheinen wieder, sobald ein Abruf klappt.": "No successful fetch for 14 days: the events are hidden and will reappear as soon as a fetch succeeds.",
+  "Nach 14 Tagen ohne erfolgreichen Abruf werden die Termine ausgeblendet.": "After 14 days without a successful fetch, the events are hidden."
 }

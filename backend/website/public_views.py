@@ -684,7 +684,7 @@ def _parent_events(site: SiteView):
     from organizations.models import Organization
     from organizations.tree import UnitTree
 
-    public = Event.objects.filter(visibility=Event.Visibility.PUBLIC)
+    public = Event.objects.filter(visibility=Event.Visibility.PUBLIC, source_stale=False)
     q = Q(pk__in=[])
     if site.is_unit:
         above = UnitTree.of(site.area.pk).ancestors(site.org.pk)[1:]
@@ -715,7 +715,9 @@ def _events(site: SiteView, unit_slug: str | None):
     from events.models import Event
     from events.recurrence import occurrences
 
-    qs = Event.objects.filter(organization=site.area, visibility=Event.Visibility.PUBLIC)
+    qs = Event.objects.filter(
+        organization=site.area, visibility=Event.Visibility.PUBLIC, source_stale=False
+    )
     # Eigene Termine: bei einer Untereinheit die mit ihr als Untereinheit
     own = {"department": site.org} if site.is_unit else {"department__isnull": True}
     if unit_slug:

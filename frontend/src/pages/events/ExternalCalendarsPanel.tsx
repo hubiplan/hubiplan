@@ -291,6 +291,13 @@ function ExternalCard({
                 })
               : t('Letzter erfolgreicher Abruf unbekannt. Vorhandene Kopien können veraltet sein.')}
           </p>
+          <p>
+            {cal.stale_hidden
+              ? t(
+                  'Seit 14 Tagen kein erfolgreicher Abruf: Die Termine sind ausgeblendet und erscheinen wieder, sobald ein Abruf klappt.',
+                )
+              : t('Nach 14 Tagen ohne erfolgreichen Abruf werden die Termine ausgeblendet.')}
+          </p>
         </Alert>
       ) : (
         <>

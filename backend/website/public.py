@@ -816,6 +816,7 @@ class SiteView:
             organization=self.area,
             department__in=self.units,
             visibility=Event.Visibility.PUBLIC,
+            source_stale=False,
         )
         return {
             o.event.department_id for o in occurrences(qs, now, now + datetime.timedelta(days=400))

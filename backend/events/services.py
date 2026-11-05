@@ -136,6 +136,10 @@ class Viewer:
     finance: str = ""
 
     def visible_q(self) -> Q:
+        # Kopien eines seit 14 Tagen nicht abrufbaren fremden Kalenders zeigt niemand (FQ22)
+        return self._visible_q() & Q(source_stale=False)
+
+    def _visible_q(self) -> Q:
         org = self.org
         fed = federation_of(org)
         if self.kind == "public":

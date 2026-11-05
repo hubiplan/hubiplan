@@ -14,6 +14,7 @@ November 2026:
 
 - Usability: Member admission guides keyboard focus through two clearly named stages. Calendar responses confirm saving for screen readers; submission methods and validation hints appear in English when English is selected.
 
+- Events: If an external calendar cannot be fetched for 14 days, its events are hidden until a fetch succeeds again. Everyone who manages events receives an email about it.
 - Events: You can hide an event’s end time on the website when only the start time is known. The setting is available when creating or editing an event; the entered end time is kept internally.
 - Events: External calendars show their events in your own calendar, e.g. the federation’s from Vereinsplaner or from a calendar subscription (iCal). HUBIplan fetches them every hour; individual ones can be hidden (Events › External calendars).
 - Website: For each text you can choose whether the caption appears below the image and in the image carousel. The default is without a caption, for existing pages too.

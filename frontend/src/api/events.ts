@@ -227,6 +227,7 @@ export interface ExternalCalendar {
   last_successful_sync_at?: string | null
   last_error: string
   event_count: number
+  stale_hidden?: boolean
   hidden: { key: string; title: string; starts_at: string }[]
 }
 

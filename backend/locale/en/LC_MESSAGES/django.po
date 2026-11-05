@@ -7519,3 +7519,24 @@ msgstr "The PDF file may be at most 20 MB."
 
 msgid "Bitte eine PDF-Datei oder ein JPEG-, PNG- oder WebP-Bild hochladen."
 msgstr "Please upload a PDF file or a JPEG, PNG or WebP image."
+
+#, python-brace-format
+msgid "Fremder Kalender „{name}“: Termine ausgeblendet"
+msgstr "External calendar “{name}”: events hidden"
+
+#, python-brace-format
+msgid ""
+"Der fremde Kalender „{name}“ ({unit}) ließ sich seit 14 Tagen nicht abrufen. "
+"Letzter Fehler: {error}\n"
+"\n"
+"Seine Termine sind deshalb vorerst ausgeblendet, damit keine veralteten Termine "
+"im Kalender oder auf der Webseite stehen. Sie bleiben gespeichert und erscheinen "
+"wieder, sobald ein Abruf klappt. Bitte unter Termine › Fremde Kalender den Zugang "
+"prüfen."
+msgstr ""
+"The external calendar “{name}” ({unit}) could not be fetched for 14 days. Last "
+"error: {error}\n"
+"\n"
+"Its events are therefore hidden for now, so that no outdated events appear in "
+"the calendar or on the website. They remain stored and will reappear as soon as "
+"a fetch succeeds. Please check the access under Events › External calendars."

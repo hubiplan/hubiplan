@@ -27,7 +27,7 @@ from dataclasses import dataclass
 
 from django.db import transaction
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_noop
 
 from core import safehttp
 
@@ -38,6 +38,8 @@ log = logging.getLogger(__name__)
 VEREINSPLANER_URL = "https://api.vereinsplaner.com/public/v1/resources/public-events"
 PER_PAGE = 100
 MAX_PAGES = 30
+# So lange bleiben Kopien nach dem letzten erfolgreichen Abruf sichtbar (Fachfrage FQ22)
+STALE_AFTER = datetime.timedelta(days=14)
 MAX_EVENTS = 1000
 # Schritte über alle Serien eines Kalenders zusammen (GA-P04)
 MAX_RRULE_STEPS = 100_000
@@ -542,6 +544,7 @@ def sync(cal: ExternalCalendar) -> int:
             cal.last_error = str(exc)[:500]
             cal.last_sync_at = timezone.now()
             cal.save(update_fields=["last_error", "last_sync_at"])
+            hide_if_stale(cal)
             return 0
         with transaction.atomic():
             current = (
@@ -552,12 +555,79 @@ def sync(cal: ExternalCalendar) -> int:
             if current is None:
                 return 0  # Deactivated/deleted while the provider request was running.
             cal = current
+            # Wieder abrufbar: ausgeblendete Kopien gelten wieder (danach gleicht apply ab)
+            cal.events.filter(source_stale=True).update(source_stale=False)
             count = apply(cal, items)
             cal.last_error = ""
             cal.last_sync_at = timezone.now()
             cal.last_successful_sync_at = cal.last_sync_at
             cal.save(update_fields=["last_error", "last_sync_at", "last_successful_sync_at"])
         return count
+
+
+def hide_if_stale(cal: ExternalCalendar) -> int:
+    """Kopien ausblenden, wenn der letzte erfolgreiche Abruf 14 Tage zurückliegt.
+
+    Die Kopien bleiben gespeichert und kommen beim nächsten erfolgreichen Abruf zurück.
+    Beim Ausblenden bekommen alle mit Terminverwaltung der Einheit einen Hinweis."""
+    since = cal.last_successful_sync_at or cal.created_at
+    if since is None or since > timezone.now() - STALE_AFTER:
+        return 0
+    with transaction.atomic():
+        count = cal.events.filter(source_stale=False).update(source_stale=True)
+        if count:
+            pk = cal.pk
+            transaction.on_commit(lambda: _notify_stale(pk))
+    return count
+
+
+def _managers(org) -> list:
+    """Konten mit Terminverwaltung in der Einheit (dürfen fremde Kalender pflegen)."""
+    from access.catalog import EVENTS_MANAGE, effective
+    from access.models import RoleAssignment
+
+    users = {}
+    for a in (
+        RoleAssignment.objects.active().filter(organization=org).select_related("role", "user")
+    ):
+        if a.user_id and a.user.email and EVENTS_MANAGE in effective(a.role.permissions):
+            users[a.user_id] = a.user
+    return list(users.values())
+
+
+def _notify_stale(pk: int) -> None:
+    from django.core.mail import send_mail
+    from django.utils import translation
+
+    from core.i18n import user_language
+    from core.tenancy import rls_bypass
+
+    with rls_bypass():
+        cal = ExternalCalendar.objects.select_related("organization").filter(pk=pk).first()
+        if cal is None:
+            return
+        managers = _managers(cal.organization)
+    by_language: dict[str, list[str]] = {}
+    for user in managers:
+        by_language.setdefault(user_language(user), []).append(user.email)
+    subject = gettext_noop("Fremder Kalender „{name}“: Termine ausgeblendet")
+    text = gettext_noop(
+        "Der fremde Kalender „{name}“ ({unit}) ließ sich seit 14 Tagen nicht abrufen. "
+        "Letzter Fehler: {error}\n\n"
+        "Seine Termine sind deshalb vorerst ausgeblendet, damit keine veralteten Termine "
+        "im Kalender oder auf der Webseite stehen. Sie bleiben gespeichert und erscheinen "
+        "wieder, sobald ein Abruf klappt. Bitte unter Termine › Fremde Kalender den Zugang "
+        "prüfen."
+    )
+    for language, emails in by_language.items():
+        with translation.override(language):
+            values = {"name": cal.name, "unit": cal.organization.name, "error": cal.last_error}
+            send_mail(
+                gettext(subject).format(**values),
+                gettext(text).format(**values),
+                None,
+                sorted(emails),
+            )
 
 
 def sync_all() -> int:
