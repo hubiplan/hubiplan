@@ -536,9 +536,14 @@ function MembershipTab({
         {canEdit && departments.data && departments.data.length > 0 && (
           <AddWithDate
             label={t('{department_label} hinzufügen', { department_label: org.department_label })}
-            options={departments.data
-              .filter((d) => d.is_active)
-              .map((d) => ({ id: d.id, name: unitName(d) }))}
+            // Nicht mehr aktive Einheiten nur zum Nachtragen früherer Zeiten (mit Ende)
+            options={[...departments.data]
+              .sort((a, b) => Number(b.is_active) - Number(a.is_active))
+              .map((d) => ({
+                id: d.id,
+                name: d.is_active ? unitName(d) : unitName(d) + t(' (inaktiv)'),
+                needsEnd: !d.is_active,
+              }))}
             withEnd
             onAdd={(id, date, until) =>
               run(() =>
@@ -863,7 +868,7 @@ function AddWithDate({
   withEnd = false,
 }: {
   label: string
-  options: { id: number; name: string }[]
+  options: { id: number; name: string; needsEnd?: boolean }[]
   onAdd: (id: number, date: string, until: string | null) => Promise<void>
   // Optionales Ende, damit sich frühere Zeiten in einem Schritt nachtragen lassen
   withEnd?: boolean
@@ -871,6 +876,7 @@ function AddWithDate({
   const [id, setId] = useState('')
   const [date, setDate] = useState(todayIso)
   const [until, setUntil] = useState('')
+  const needsEnd = options.some((o) => String(o.id) === id && o.needsEnd)
   return (
     <form
       className="inline-add"
@@ -904,6 +910,7 @@ function AddWithDate({
           title={t('bis (leer = heute)')}
           value={until}
           min={date}
+          required={needsEnd}
           onChange={(e) => setUntil(e.target.value)}
         />
       )}

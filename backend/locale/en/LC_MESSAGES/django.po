@@ -7552,3 +7552,7 @@ msgstr "Overlaps with “{name}” ({start} to {end})."
 #: members/serializers.py
 msgid "heute"
 msgstr "today"
+
+#: members/serializers.py
+msgid "„{name}“ ist nicht mehr aktiv. Bitte ein Ende angeben."
+msgstr "“{name}” is no longer active. Please enter an end date."

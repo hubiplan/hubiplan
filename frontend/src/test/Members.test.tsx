@@ -341,7 +341,7 @@ describe('Mitgliedsakte', () => {
     })
   })
 
-  it('trägt einen früheren Zug mit Ende in einem Schritt nach', async () => {
+  it('trägt einen früheren, aufgelösten Zug mit Ende in einem Schritt nach', async () => {
     const calls = fakeApi({
       ...common(),
       [`GET ${base}/members/11/`]: () => ({
@@ -356,7 +356,7 @@ describe('Mitgliedsakte', () => {
             name: 'Alter Zug',
             short_name: '',
             display_name: 'Alter Zug',
-            is_active: true,
+            is_active: false,
             parent_unit: null,
             depth: 0,
             path: '',
@@ -375,6 +375,8 @@ describe('Mitgliedsakte', () => {
       await screen.findByRole('combobox', { name: 'Abteilung hinzufügen' }),
       '5',
     )
+    expect(screen.getByRole('option', { name: 'Alter Zug (inaktiv)' })).toBeInTheDocument()
+    expect(screen.getByLabelText('bis (leer = heute)')).toBeRequired()
     fireEvent.change(screen.getByLabelText('ab'), { target: { value: '2010-01-01' } })
     fireEvent.change(screen.getByLabelText('bis (leer = heute)'), {
       target: { value: '2015-02-28' },
