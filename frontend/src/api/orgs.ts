@@ -103,7 +103,8 @@ export const rolePreviewApi = {
 
 export interface OrgDetail {
   /** null: noch nicht festgelegt; []: keine eigene Schießinfrastruktur */
-  shooting_facilities?: string[] | null
+  // 'infrastructure': aus den Schießständen der Infrastruktur übernehmen
+  shooting_facilities?: string[] | 'infrastructure' | null
   id: number
   type: OrgType
   type_label: string

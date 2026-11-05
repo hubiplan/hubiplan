@@ -216,6 +216,7 @@ def seed(password: str, reset: bool = False) -> dict:
     _music(club)
     todos = _todos(club)
     _material(club, todos)
+    _infrastructure(club)
     return {"club": club, "created": created["count"]}
 
 
@@ -1343,6 +1344,53 @@ def _todos(club) -> dict:
                 responsible=responsible,
             )
     return created
+
+
+def _infrastructure(club) -> None:
+    """Demo-Infrastruktur: Schützenhaus mit Saal und Luftgewehrstand, Schlüssel dazu."""
+    from materials.models import MaterialItem
+
+    if MaterialItem.objects.filter(organization=club, kind="facility").exists():
+        return
+    address = {"name": "Schützenhaus", "street": "Am Schützenplatz 3", "postal_code": POSTAL_CODE,
+               "city": CITY, "country": "DE"}  # fmt: skip
+    common = {"organization": club, "kind": "facility"}
+    house = MaterialItem.objects.create(
+        **common,
+        title="Schützenhaus",
+        description="Vereinsheim mit Saal, Küche und Luftgewehrstand",
+        location_kind="address",
+        address=address,
+        facility_type="building",
+        ownership="own",
+        capacity=120,
+        access_note="Schlüsselkasten am Seiteneingang",
+    )
+    for title, description, kind, capacity, lanes in (
+        ("Saal", "Saal mit Theke und Bühne", "room", 120, []),
+        ("Luftgewehrstand", "Zehn Stände mit elektronischer Anzeige", "range", 10,
+         [{"facility": "lg10", "count": 10}, {"facility": "lp10", "count": 4}]),
+    ):  # fmt: skip
+        MaterialItem.objects.create(
+            **common,
+            title=title,
+            description=description,
+            location_kind="facility",
+            facility=house,
+            facility_type=kind,
+            capacity=capacity,
+            lanes=lanes,
+        )
+    MaterialItem.objects.create(
+        organization=club,
+        title="Schlüssel Haupteingang",
+        description="Sicherheitsschlüssel mit rotem Anhänger",
+        purpose="Zugang zum Schützenhaus",
+        location_kind="address",
+        address=address,
+        location_note="Schlüsselkasten",
+        belongs_to=house,
+    )
 
 
 def _material(club, todos: dict) -> None:

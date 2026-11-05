@@ -40,3 +40,7 @@ change the location automatically: confirm the new location using **Edit**.
 Under **History**, undo your most recent change if current permissions and linked objects
 allow it. History and recycled items are retained for 30 days. Retiring an item preserves
 its links; resolve open tasks and future uses first.
+
+If the facilities module is enabled, the location can also be **In a facility**, for example
+the clubhouse cellar. Use **Belongs to** to link an item to a facility, for example a key kept
+by a member.

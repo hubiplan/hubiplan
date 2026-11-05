@@ -6,8 +6,11 @@ from core.tenancy import scope_of, set_rls
 from organizations.models import Organization
 from todos.access import Scope
 
+# Bestandsart → (Modul, Rechtebereich)
+AREAS = {"material": ("material", "material"), "facility": ("infrastructure", "infrastructure")}
 
-def scope_for(user, org_id=None, dept_id=None, *, write=False):
+
+def scope_for(user, org_id=None, dept_id=None, *, write=False, kind="material"):
     if dept_id is not None:
         from portal.services import department_contexts
 
@@ -18,10 +21,12 @@ def scope_for(user, org_id=None, dept_id=None, *, write=False):
     else:
         org = get_object_or_404(Organization, pk=org_id, type__in=["club", "federation"])
         scope = Scope(org, None, permissions_in(user, org))
-    if "material" not in (scope.org.enabled_modules or []):
+    module, area = AREAS[kind]
+    if module not in (scope.org.enabled_modules or []):
         raise NotFound()
-    if ("material.edit" if write else "material.view") not in scope.permissions:
+    if (f"{area}.edit" if write else f"{area}.view") not in scope.permissions:
         raise PermissionDenied()
+    scope.kind = kind
     set_rls(
         scope.org.pk,
         user.pk,
@@ -36,14 +41,33 @@ def scope_for(user, org_id=None, dept_id=None, *, write=False):
     return scope
 
 
-def items(scope, *, trash=False):
+def items(scope, *, trash=False, kind=None):
     from .models import MaterialItem
 
     return MaterialItem.objects.filter(
         organization=scope.org,
         department_id=scope.department_id,
+        kind=kind or getattr(scope, "kind", "material"),
         deleted_at__isnull=not trash,
     )
+
+
+def facilities_enabled(scope):
+    return "infrastructure" in (scope.org.enabled_modules or [])
+
+
+def facilities(scope):
+    """Infrastruktur als Standort oder Zugehörigkeit (nur Bezeichnung sichtbar)."""
+    from .models import MaterialItem
+
+    if not facilities_enabled(scope):
+        return MaterialItem.objects.none()
+    return items(scope, kind="facility").exclude(condition="retired")
+
+
+def can_view(scope, kind):
+    module, area = AREAS[kind]
+    return module in (scope.org.enabled_modules or []) and f"{area}.view" in scope.permissions
 
 
 def members(scope):

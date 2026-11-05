@@ -2,23 +2,59 @@ import { useEffect, useState } from 'react'
 import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { materialApi } from '../../api/materials.ts'
-import type { Material, MaterialChoice, MaterialEvent } from '../../api/materials.ts'
+import type {
+  Material,
+  MaterialChoice,
+  MaterialEvent,
+  StockKind,
+  StockRow,
+} from '../../api/materials.ts'
 import { errorMessage, useLoad, useQueryLoad, whenLabel } from '../../components/forms.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
-import { t, locale } from '../../i18n/index.ts'
+import { t, tn, locale } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import './materials.css'
 
-export function MaterialsPage() {
+// Bestand: Material oder Infrastruktur (Schießstand, Schützenhaus, Vereinsheim)
+interface Stock {
+  kind: StockKind
+  // Oberfläche, z. B. /material
+  root: string
+  // Schnittstelle, z. B. /api/orgs/1/materials/
+  base: string
+  // Schnittstelle der Einheit, z. B. /api/orgs/1/
+  prefix: string
+  infrastructure: boolean
+  materialView: boolean
+}
+
+function stockRoot(kind: StockKind) {
+  return kind === 'facility' ? '/infrastruktur' : '/material'
+}
+
+export function MaterialsPage({ kind = 'material' }: { kind?: StockKind }) {
   const { active, activeDept } = useOrg()
   const permissions = active?.permissions ?? activeDept?.permissions ?? []
-  const enabled = active ? active.modules.includes('material') : activeDept?.material_enabled
-  if (!enabled || !permissions.includes('material.view'))
+  const has = (module: 'material' | 'infrastructure') =>
+    active
+      ? active.modules.includes(module)
+      : module === 'material'
+        ? !!activeDept?.material_enabled
+        : !!activeDept?.infrastructure_enabled
+  const area = kind === 'facility' ? 'infrastructure' : 'material'
+  if (!has(area) || !permissions.includes(`${area}.view`))
     return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
-  const base = active
-    ? `/api/orgs/${active.id}/materials/`
-    : `/api/depts/${activeDept!.id}/materials/`
-  const editable = permissions.includes('material.edit')
+  const prefix = active ? `/api/orgs/${active.id}/` : `/api/depts/${activeDept!.id}/`
+  const stock: Stock = {
+    kind,
+    root: stockRoot(kind),
+    base: `${prefix}${kind === 'facility' ? 'facilities' : 'materials'}/`,
+    prefix,
+    infrastructure: has('infrastructure'),
+    materialView: has('material') && permissions.includes('material.view'),
+  }
+  const base = stock.base
+  const editable = permissions.includes(`${area}.edit`)
   return (
     <div className="materials" key={base}>
       <Routes>
@@ -26,6 +62,7 @@ export function MaterialsPage() {
           index
           element={
             <MaterialList
+              stock={stock}
               base={base}
               editable={editable}
               canExport={permissions.some((p) => ['export.lists', 'export.full'].includes(p))}
@@ -35,16 +72,32 @@ export function MaterialsPage() {
         <Route
           path="neu"
           element={
-            editable ? <ItemForm base={base} /> : <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+            editable ? (
+              <ItemForm stock={stock} base={base} />
+            ) : (
+              <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
+            )
           }
         />
-        <Route path=":id" element={<MaterialDetail base={base} editable={editable} />} />
+        <Route
+          path=":id"
+          element={<MaterialDetail stock={stock} base={base} editable={editable} />}
+        />
       </Routes>
     </div>
   )
 }
 
-function conditionLabel(value: string) {
+function conditionLabel(value: string, kind: StockKind = 'material') {
+  if (kind === 'facility')
+    return (
+      {
+        ready: t('Nutzbar'),
+        limited: t('Eingeschränkt nutzbar'),
+        defective: t('Gesperrt'),
+        retired: t('Aufgegeben'),
+      }[value] ?? value
+    )
   return (
     {
       ready: t('Einsatzbereit'),
@@ -55,8 +108,59 @@ function conditionLabel(value: string) {
   )
 }
 
+function facilityTypeLabel(value: string) {
+  return (
+    {
+      building: t('Gebäude oder Vereinsheim'),
+      room: t('Raum'),
+      range: t('Schießstand'),
+      ground: t('Platz oder Gelände'),
+      storage: t('Lager'),
+      other: t('Sonstiges'),
+    }[value] ?? value
+  )
+}
+
+function ownershipLabel(value: string) {
+  return (
+    {
+      own: t('Eigentum'),
+      lease: t('Pacht oder Miete'),
+      third_party: t('Nutzungsrecht bei Dritten'),
+    }[value] ?? value
+  )
+}
+
+const LANES: [string, string][] = [
+  ['lg10', 'lg10'],
+  ['lp10', 'lp10'],
+  ['kk50', 'kk50'],
+  ['kk100', 'kk100'],
+  ['p25', 'p25'],
+  ['p50', 'p50'],
+  ['vogel', 'vogel'],
+]
+
+function laneLabel(key: string) {
+  return (
+    {
+      lg10: `${t('Luftgewehr')} · 10 m`,
+      lp10: `${t('Luftpistole')} · 10 m`,
+      kk50: `${t('Kleinkaliber')} · 50 m`,
+      kk100: `${t('Kleinkaliber')} · 100 m`,
+      p25: `${t('Pistole')} · 25 m`,
+      p50: `${t('Pistole')} · 50 m`,
+      vogel: t('Vogelschießen · Hochstand'),
+    }[key] ?? key
+  )
+}
+
 function location(item: Material) {
   if (item.location_review) return t('Standort prüfen')
+  if (item.location_kind === 'facility')
+    return item.kind === 'facility'
+      ? t('Bereich von {name}', { name: item.facility_title ?? '' })
+      : t('In {name}', { name: item.facility_title ?? '' })
   if (item.location_kind === 'member')
     return item.member_name ? t('Bei {name}', { name: item.member_name }) : t('Bei einem Mitglied')
   return [
@@ -71,10 +175,12 @@ function location(item: Material) {
 }
 
 function MaterialList({
+  stock,
   base,
   editable,
   canExport,
 }: {
+  stock: Stock
   base: string
   editable: boolean
   canExport: boolean
@@ -92,10 +198,10 @@ function MaterialList({
   return (
     <>
       <div className="page-heading">
-        <h1>{t('Material')}</h1>
+        <h1>{stock.kind === 'facility' ? t('Infrastruktur') : t('Material')}</h1>
         {editable && (
           <Link className="button" to="neu">
-            {t('Material anlegen')}
+            {stock.kind === 'facility' ? t('Infrastruktur anlegen') : t('Material anlegen')}
           </Link>
         )}
       </div>
@@ -117,7 +223,7 @@ function MaterialList({
             <option value="">{t('Alle')}</option>
             {['ready', 'limited', 'defective', 'retired'].map((v) => (
               <option key={v} value={v}>
-                {conditionLabel(v)}
+                {conditionLabel(v, stock.kind)}
               </option>
             ))}
           </select>
@@ -128,7 +234,7 @@ function MaterialList({
             checked={params.get('archived') === '1'}
             onChange={(e) => filter('archived', e.target.checked ? '1' : '')}
           />{' '}
-          {t('Ausgesonderte anzeigen')}
+          {stock.kind === 'facility' ? t('Aufgegebene anzeigen') : t('Ausgesonderte anzeigen')}
         </label>
         <label>
           <input
@@ -159,7 +265,13 @@ function MaterialList({
       </div>
       {error && <p role="alert">{error}</p>}
       {loading && <p role="status">{t('Wird geladen…')}</p>}
-      {!loading && data?.count === 0 && <p>{t('Kein Material gefunden.')}</p>}
+      {!loading && data?.count === 0 && (
+        <p>
+          {stock.kind === 'facility'
+            ? t('Keine Infrastruktur gefunden.')
+            : t('Kein Material gefunden.')}
+        </p>
+      )}
       <div className="material-grid">
         {data?.items.map((item) => (
           <article className="card" key={item.id}>
@@ -176,8 +288,9 @@ function MaterialList({
               <Link to={`${item.id}${item.deleted_at ? '?trash=1' : ''}`}>{item.title}</Link>
             </h2>
             <p>{item.description}</p>
+            {item.facility_type && <p>{facilityTypeLabel(item.facility_type)}</p>}
             <p>{location(item)}</p>
-            <p>{conditionLabel(item.condition)}</p>
+            <p>{conditionLabel(item.condition, stock.kind)}</p>
             {item.next_use && (
               <p>
                 {item.next_use.title} · {whenLabel(item.next_use.starts_at, item.next_use.all_day)}
@@ -307,21 +420,37 @@ export function MaterialPicker({
 }
 
 function ItemForm({
+  stock,
   base,
   item,
   onSaved,
 }: {
+  stock: Stock
   base: string
   item?: Material
   onSaved?: () => void
 }) {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const facility = stock.kind === 'facility'
+  // „Bereich anlegen“ auf der Detailseite: ?bereich=<id>&name=<Bezeichnung>
+  const parentId = Number(params.get('bereich')) || null
   const initial = {
     title: item?.title ?? '',
     description: item?.description ?? '',
     purpose: item?.purpose ?? '',
-    location_kind: item ? (item.location_kind === 'member' ? 'member' : 'address') : 'member',
+    location_kind: (item
+      ? item.location_kind === 'unknown'
+        ? 'address'
+        : item.location_kind
+      : facility
+        ? parentId
+          ? 'facility'
+          : 'address'
+        : 'member') as 'address' | 'member' | 'facility',
     member: item?.member ?? null,
+    facility: item?.facility ?? parentId,
+    belongs_to: item?.belongs_to ?? null,
     address: item?.address ?? {
       name: '',
       street: '',
@@ -332,9 +461,16 @@ function ItemForm({
     location_note: item?.location_note ?? '',
     condition: item?.condition ?? 'ready',
     condition_note: item?.condition_note ?? '',
+    facility_type: item?.facility_type ?? (parentId ? 'room' : 'building'),
+    ownership: item?.ownership ?? '',
+    capacity: item?.capacity ?? null,
+    lanes: item?.lanes ?? [],
+    access_note: item?.access_note ?? '',
   }
   const [values, setValues] = useState(initial)
   const [memberName, setMemberName] = useState(item?.member_name ?? '')
+  const [facilityName, setFacilityName] = useState(item?.facility_title ?? params.get('name') ?? '')
+  const [belongsName, setBelongsName] = useState(item?.belongs_to_title ?? '')
   const [event, setEvent] = useState<MaterialChoice | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -343,9 +479,18 @@ function ItemForm({
     setValues(initial)
     setEvent(null)
   })
+  const lanes = values.lanes
   return (
     <>
-      <h1>{item ? t('Material bearbeiten') : t('Material anlegen')}</h1>
+      <h1>
+        {facility
+          ? item
+            ? t('Infrastruktur bearbeiten')
+            : t('Infrastruktur anlegen')
+          : item
+            ? t('Material bearbeiten')
+            : t('Material anlegen')}
+      </h1>
       <form
         className="card material-form"
         onSubmit={async (e) => {
@@ -353,11 +498,17 @@ function ItemForm({
           setBusy(true)
           setError(null)
           try {
-            const payload = {
+            const payload: Record<string, unknown> = {
               ...values,
               member: values.location_kind === 'member' ? values.member : null,
+              facility: values.location_kind === 'facility' ? values.facility : null,
               events: event ? [{ event: event.id, kind: event.series ? 'series' : 'event' }] : [],
             }
+            if (facility) delete payload.belongs_to
+            else
+              for (const key of ['facility_type', 'ownership', 'capacity', 'lanes', 'access_note'])
+                delete payload[key]
+            if (facility && values.facility_type !== 'range') payload.lanes = []
             // Unveränderte Mitgliedsreferenzen nicht ohne Mitgliederdatenrecht neu validieren.
             const changes: Record<string, unknown> = item
               ? Object.fromEntries(
@@ -376,7 +527,7 @@ function ItemForm({
               : await materialApi.create(base, payload)
             setSaved(true)
             if (onSaved) onSaved()
-            else navigate(`/material/${result.id}`)
+            else navigate(`${stock.root}/${result.id}`)
           } catch (err) {
             setError(errorMessage(err))
           } finally {
@@ -397,6 +548,21 @@ function ItemForm({
                   onChange={(e) => setValues({ ...values, title: e.target.value })}
                 />
               </label>
+              {facility && (
+                <label>
+                  {t('Art')}
+                  <select
+                    value={values.facility_type}
+                    onChange={(e) => setValues({ ...values, facility_type: e.target.value })}
+                  >
+                    {['building', 'room', 'range', 'ground', 'storage', 'other'].map((v) => (
+                      <option key={v} value={v}>
+                        {facilityTypeLabel(v)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <label>
                 {t('Kurzbeschreibung')}
                 <textarea
@@ -407,16 +573,16 @@ function ItemForm({
                 />
               </label>
               <label>
-                {t('Verwendungszweck')}
+                {facility ? t('Nutzung (optional)') : t('Verwendungszweck')}
                 <textarea
-                  required={!item?.events?.length && !event}
+                  required={!facility && !item?.events?.length && !event}
                   maxLength={2000}
                   value={values.purpose}
                   onChange={(e) => setValues({ ...values, purpose: e.target.value })}
                 />
               </label>
             </div>
-            {!item && (
+            {!item && !facility && (
               <details>
                 <summary>{t('Termin statt freiem Verwendungszweck')}</summary>
                 {event && (
@@ -435,16 +601,150 @@ function ItemForm({
               </details>
             )}
           </fieldset>
+          {facility && (
+            <fieldset className="material-form-section">
+              <legend>{t('Nutzung und Ausstattung')}</legend>
+              <div className="material-basic-grid">
+                <label>
+                  {t('Kapazität (Personen oder Plätze)')}
+                  <input
+                    type="number"
+                    min={1}
+                    max={100000}
+                    value={values.capacity ?? ''}
+                    onChange={(e) =>
+                      setValues({
+                        ...values,
+                        capacity: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  {t('Eigentum und Nutzung')}
+                  <select
+                    value={values.ownership}
+                    onChange={(e) => setValues({ ...values, ownership: e.target.value })}
+                  >
+                    <option value="">{t('Keine Angabe')}</option>
+                    {['own', 'lease', 'third_party'].map((v) => (
+                      <option key={v} value={v}>
+                        {ownershipLabel(v)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  {t('Zugangshinweis')}
+                  <input
+                    maxLength={500}
+                    value={values.access_note}
+                    onChange={(e) => setValues({ ...values, access_note: e.target.value })}
+                  />
+                  <small className="muted">
+                    {t('Nur für Personen mit Leserecht auf die Infrastruktur sichtbar.')}
+                  </small>
+                </label>
+              </div>
+              {values.facility_type === 'range' && (
+                <fieldset className="material-lanes">
+                  <legend>{t('Schießbahnen')}</legend>
+                  {lanes.map((lane, index) => (
+                    <div className="material-lane" key={index}>
+                      <label>
+                        {t('Disziplin')}
+                        <select
+                          value={lane.facility}
+                          onChange={(e) =>
+                            setValues({
+                              ...values,
+                              lanes: lanes.map((l, i) =>
+                                i === index ? { ...l, facility: e.target.value } : l,
+                              ),
+                            })
+                          }
+                        >
+                          {LANES.map(([key]) => (
+                            <option key={key} value={key}>
+                              {laneLabel(key)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        {t('Anzahl')}
+                        <input
+                          type="number"
+                          min={1}
+                          max={500}
+                          required
+                          value={lane.count}
+                          onChange={(e) =>
+                            setValues({
+                              ...values,
+                              lanes: lanes.map((l, i) =>
+                                i === index ? { ...l, count: Number(e.target.value) } : l,
+                              ),
+                            })
+                          }
+                        />
+                      </label>
+                      <button
+                        className="button button-ghost"
+                        type="button"
+                        onClick={() =>
+                          setValues({ ...values, lanes: lanes.filter((_, i) => i !== index) })
+                        }
+                      >
+                        {t('Entfernen')}
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    className="button button-ghost"
+                    type="button"
+                    onClick={() =>
+                      setValues({
+                        ...values,
+                        lanes: [
+                          ...lanes,
+                          {
+                            facility:
+                              LANES.map(([k]) => k).find(
+                                (k) => !lanes.some((l) => l.facility === k),
+                              ) ?? 'lg10',
+                            count: 1,
+                          },
+                        ],
+                      })
+                    }
+                  >
+                    {t('Bahnen hinzufügen')}
+                  </button>
+                </fieldset>
+              )}
+            </fieldset>
+          )}
           <fieldset className="material-form-section">
             <legend>{t('Standort')}</legend>
             <label>
               {t('Standort')}
               <select
                 value={values.location_kind}
-                onChange={(e) => setValues({ ...values, location_kind: e.target.value })}
+                onChange={(e) =>
+                  setValues({
+                    ...values,
+                    location_kind: e.target.value as 'address' | 'member' | 'facility',
+                  })
+                }
               >
                 <option value="address">{t('An einer Adresse')}</option>
-                <option value="member">{t('Bei einem Mitglied')}</option>
+                {!facility && <option value="member">{t('Bei einem Mitglied')}</option>}
+                {stock.infrastructure && (
+                  <option value="facility">
+                    {facility ? t('Bereich einer Infrastruktur') : t('In einer Infrastruktur')}
+                  </option>
+                )}
               </select>
             </label>
             {values.location_kind === 'member' ? (
@@ -459,10 +759,26 @@ function ItemForm({
                   }}
                 />
               </>
+            ) : values.location_kind === 'facility' ? (
+              <>
+                <p>{facilityName || t('Bitte eine Infrastruktur wählen.')}</p>
+                <MaterialPicker
+                  base={base}
+                  kind="facility"
+                  onSelect={(m) => {
+                    setFacilityName(m.title)
+                    setValues({ ...values, facility: m.id })
+                  }}
+                />
+              </>
             ) : (
               <>
                 <p className="muted">
-                  {t('Diese Adresse ist für Personen mit Materialleserecht sichtbar.')}
+                  {facility
+                    ? t(
+                        'Diese Adresse ist für Personen mit Leserecht auf die Infrastruktur sichtbar.',
+                      )
+                    : t('Diese Adresse ist für Personen mit Materialleserecht sichtbar.')}
                 </p>
                 <div className="material-address-grid">
                   {(['name', 'street', 'postal_code', 'city', 'country'] as const).map(
@@ -473,7 +789,7 @@ function ItemForm({
                       >
                         {
                           [
-                            t('Lagerortbezeichnung'),
+                            facility ? t('Name des Ortes') : t('Lagerortbezeichnung'),
                             t('Straße und Hausnummer'),
                             t('Postleitzahl'),
                             t('Ort'),
@@ -505,6 +821,40 @@ function ItemForm({
                 onChange={(e) => setValues({ ...values, location_note: e.target.value })}
               />
             </label>
+            {!facility && stock.infrastructure && (
+              <div>
+                <p>
+                  {t('Gehört zu')}:{' '}
+                  {values.belongs_to ? belongsName : t('Keiner Infrastruktur zugeordnet')}
+                  {!!values.belongs_to && (
+                    <>
+                      {' '}
+                      <button
+                        className="button button-ghost"
+                        type="button"
+                        onClick={() => {
+                          setBelongsName('')
+                          setValues({ ...values, belongs_to: null })
+                        }}
+                      >
+                        {t('Entfernen')}
+                      </button>
+                    </>
+                  )}
+                </p>
+                <p className="muted">
+                  {t('Zum Beispiel ein Schlüssel, der zum Schützenhaus gehört.')}
+                </p>
+                <MaterialPicker
+                  base={base}
+                  kind="facility"
+                  onSelect={(m) => {
+                    setBelongsName(m.title)
+                    setValues({ ...values, belongs_to: m.id })
+                  }}
+                />
+              </div>
+            )}
           </fieldset>
           <fieldset className="material-form-section">
             <legend>{t('Zustand')}</legend>
@@ -518,7 +868,7 @@ function ItemForm({
               >
                 {['ready', 'limited', 'defective', 'retired'].map((v) => (
                   <option key={v} value={v}>
-                    {conditionLabel(v)}
+                    {conditionLabel(v, stock.kind)}
                   </option>
                 ))}
               </select>
@@ -534,7 +884,11 @@ function ItemForm({
           </fieldset>
         </fieldset>
         {values.condition === 'retired' && (
-          <p>{t('Bitte offene Aufgaben und kommende Verwendungen vor dem Aussondern klären.')}</p>
+          <p>
+            {facility
+              ? t('Bitte Bereiche, gelagertes Material und offene Aufgaben vorher klären.')
+              : t('Bitte offene Aufgaben und kommende Verwendungen vor dem Aussondern klären.')}
+          </p>
         )}
         {error && <p role="alert">{error}</p>}
         <div className="button-row">
@@ -548,7 +902,7 @@ function ItemForm({
             onClick={() => {
               setSaved(true)
               if (onSaved) onSaved()
-              else navigate('/material')
+              else navigate(stock.root)
             }}
           >
             {t('Abbrechen')}
@@ -559,7 +913,15 @@ function ItemForm({
   )
 }
 
-function MaterialDetail({ base, editable }: { base: string; editable: boolean }) {
+function MaterialDetail({
+  stock,
+  base,
+  editable,
+}: {
+  stock: Stock
+  base: string
+  editable: boolean
+}) {
   const { id } = useParams()
   const [params] = useSearchParams()
   const trash = params.get('trash') === '1'
@@ -589,6 +951,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
     return (
       <ItemForm
         key={data.version}
+        stock={stock}
         base={base}
         item={data}
         onSaved={() => {
@@ -599,7 +962,9 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
     )
   return (
     <>
-      <Link to="/material">{t('Zur Materialübersicht')}</Link>
+      <Link to={stock.root}>
+        {stock.kind === 'facility' ? t('Zur Infrastrukturübersicht') : t('Zur Materialübersicht')}
+      </Link>
       <div className="page-heading">
         <h1>{data.title}</h1>
         {data.music_equipment && (
@@ -618,16 +983,53 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
       <section className="card">
         <p className="muted">{data.inventory_number}</p>
         <p>{data.description}</p>
+        {data.facility_type && (
+          <p>
+            {facilityTypeLabel(data.facility_type)}
+            {data.ownership ? ` · ${ownershipLabel(data.ownership)}` : ''}
+            {data.capacity ? ` · ${t('Kapazität {n}', { n: data.capacity })}` : ''}
+          </p>
+        )}
+        {!!data.lanes?.length && (
+          <ul>
+            {data.lanes.map((lane) => (
+              <li key={lane.facility}>
+                {laneLabel(lane.facility)}: {tn('{n} Bahn', '{n} Bahnen', lane.count)}
+              </li>
+            ))}
+          </ul>
+        )}
         <h2>{t('Standort')}</h2>
-        <p>{location(data)}</p>
-        <p>{data.location_note}</p>
         <p>
-          {conditionLabel(data.condition)} · {data.condition_note}
+          {data.location_kind === 'facility' && data.facility && !data.location_review ? (
+            <Link to={`/infrastruktur/${data.facility}`}>{location(data)}</Link>
+          ) : (
+            location(data)
+          )}
+        </p>
+        {data.parent && <p>{Object.values(data.parent.address).filter(Boolean).join(', ')}</p>}
+        <p>{data.location_note}</p>
+        {data.access_note && (
+          <p>
+            {t('Zugangshinweis')}: {data.access_note}
+          </p>
+        )}
+        {data.belongs_to && (
+          <p>
+            {t('Gehört zu')}:{' '}
+            <Link to={`/infrastruktur/${data.belongs_to}`}>{data.belongs_to_title}</Link>
+          </p>
+        )}
+        <p>
+          {conditionLabel(data.condition, stock.kind)} · {data.condition_note}
         </p>
       </section>
+      {stock.kind === 'facility' && !trash && (
+        <FacilityParts stock={stock} item={data} editable={editable} />
+      )}
       {!trash && (
         <section className="card">
-          <h2>{t('Materialfoto')}</h2>
+          <h2>{stock.kind === 'facility' ? t('Foto') : t('Materialfoto')}</h2>
           {data.photo_url ? (
             <img className="material-photo" src={data.photo_url} alt={data.title} />
           ) : (
@@ -772,8 +1174,12 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
                 }
               />
               {kind === 'todo' && (
-                <Link to={`/aufgaben?neu=1&material=${data.id}`}>
-                  {t('Aufgabe für dieses Material anlegen')}
+                <Link
+                  to={`/aufgaben?neu=1&material=${data.id}${stock.kind === 'facility' ? '&art=facility' : ''}`}
+                >
+                  {stock.kind === 'facility'
+                    ? t('Aufgabe für diese Infrastruktur anlegen')
+                    : t('Aufgabe für dieses Material anlegen')}
                 </Link>
               )}
             </fieldset>
@@ -782,6 +1188,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
       ))}
       <History
         key={data.version}
+        root={stock.root}
         base={base}
         item={data}
         editable={editable}
@@ -797,7 +1204,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
               onClick={() =>
                 void act(async () => {
                   await materialApi.restore(base, data)
-                  navigate(`/material/${data.id}`)
+                  navigate(`${stock.root}/${data.id}`)
                 })
               }
             >
@@ -810,7 +1217,7 @@ function MaterialDetail({ base, editable }: { base: string; editable: boolean })
               onClick={() =>
                 void act(async () => {
                   await materialApi.remove(base, data)
-                  navigate('/material?trash=1&archived=1')
+                  navigate(`${stock.root}?trash=1&archived=1`)
                 })
               }
             >
@@ -930,12 +1337,14 @@ function EventEditor({
 }
 
 function History({
+  root,
   base,
   item,
   editable,
   act,
   busy,
 }: {
+  root: string
   base: string
   item: Material
   editable: boolean
@@ -983,7 +1392,7 @@ function History({
                     revision: row.id,
                   })
                   if (!!restored.deleted_at !== !!item.deleted_at)
-                    navigate(`/material/${item.id}${restored.deleted_at ? '?trash=1' : ''}`)
+                    navigate(`${root}/${item.id}${restored.deleted_at ? '?trash=1' : ''}`)
                 })
               }
             >
@@ -993,5 +1402,65 @@ function History({
         </div>
       ))}
     </details>
+  )
+}
+
+function FacilityParts({
+  stock,
+  item,
+  editable,
+}: {
+  stock: Stock
+  item: Material
+  editable: boolean
+}) {
+  const row = (r: StockRow) => (
+    <li key={r.id}>
+      <Link to={`${stockRoot(r.kind)}/${r.id}`}>
+        {r.inventory_number} · {r.title}
+      </Link>
+      {r.member_name ? ` · ${t('Bei {name}', { name: r.member_name })}` : ''}
+      {r.location_note ? ` · ${r.location_note}` : ''}
+      {r.condition !== 'ready' ? ` · ${conditionLabel(r.condition, r.kind)}` : ''}
+    </li>
+  )
+  return (
+    <>
+      {item.location_kind !== 'facility' && (
+        <section className="card">
+          <h2>{t('Bereiche')}</h2>
+          {item.areas?.length ? (
+            <ul>{item.areas.map(row)}</ul>
+          ) : (
+            <p>
+              {t('Keine Bereiche. Bereiche sind zum Beispiel Saal, Küche oder einzelne Stände.')}
+            </p>
+          )}
+          {editable && item.condition !== 'retired' && (
+            <Link
+              to={`${stock.root}/neu?bereich=${item.id}&name=${encodeURIComponent(item.title)}`}
+            >
+              {t('Bereich anlegen')}
+            </Link>
+          )}
+        </section>
+      )}
+      {item.contents && (
+        <section className="card">
+          <h2>{t('Hier gelagertes Material')}</h2>
+          {item.contents.length ? (
+            <ul>{item.contents.map(row)}</ul>
+          ) : (
+            <p>{t('Kein Material hier gelagert.')}</p>
+          )}
+          <h2>{t('Zugehöriges Material')}</h2>
+          {item.accessories?.length ? (
+            <ul>{item.accessories.map(row)}</ul>
+          ) : (
+            <p>{t('Kein zugehöriges Material, zum Beispiel Schlüssel.')}</p>
+          )}
+        </section>
+      )}
+    </>
   )
 }

@@ -33,13 +33,63 @@ class Scoped(models.Model):
         return f"{self._meta.model_name} {self.pk}"
 
 
+# Arten von Infrastruktur (konzepte/infrastruktur.md 3.1)
+FACILITY_TYPES = [
+    ("building", _("Gebäude oder Vereinsheim")),
+    ("room", _("Raum")),
+    ("range", _("Schießstand")),
+    ("ground", _("Platz oder Gelände")),
+    ("storage", _("Lager")),
+    ("other", _("Sonstiges")),
+]
+OWNERSHIP = [
+    ("own", _("Eigentum")),
+    ("lease", _("Pacht oder Miete")),
+    ("third_party", _("Nutzungsrecht bei Dritten")),
+]
+
+
 class MaterialItem(Scoped):
+    """Ein Teil des Bestands: bewegliches Material oder ortsfeste Infrastruktur.
+
+    Infrastruktur (``kind="facility"``) teilt Foto, Verknüpfungen, Verlauf und Papierkorb
+    mit dem Material, hat aber ein eigenes Modul und eigene Rechte. Liegt eine Infrastruktur
+    in einer anderen (``location_kind="facility"``), ist sie deren Bereich (Saal, Stand).
+    """
+
+    kind = models.CharField(
+        max_length=10,
+        default="material",
+        db_default="material",
+        choices=[("material", _("Material")), ("facility", _("Infrastruktur"))],
+    )
     title = EncryptedCharField(_("Bezeichnung"), max_length=200)
     description = EncryptedTextField(_("Kurzbeschreibung"))
     purpose = EncryptedTextField(_("Verwendungszweck"), blank=True)
     location_kind = models.CharField(
         max_length=10,
-        choices=[("member", _("Mitglied")), ("address", _("Adresse")), ("unknown", _("Zu klären"))],
+        choices=[
+            ("member", _("Mitglied")),
+            ("address", _("Adresse")),
+            ("facility", _("Infrastruktur")),
+            ("unknown", _("Zu klären")),
+        ],
+    )
+    # Standort „In einer Infrastruktur“; bei Infrastruktur: Bereich von …
+    facility = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="contents",
+    )
+    # Gehört zu einer Infrastruktur, z. B. ein Schlüssel zum Schützenhaus
+    belongs_to = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="accessories",
     )
     member = models.ForeignKey(
         "members.Membership",
@@ -61,6 +111,13 @@ class MaterialItem(Scoped):
         ],
     )
     condition_note = EncryptedCharField(max_length=500, blank=True)
+    # Nur Infrastruktur
+    facility_type = models.CharField(max_length=10, blank=True, choices=FACILITY_TYPES)
+    ownership = models.CharField(max_length=12, blank=True, choices=OWNERSHIP)
+    capacity = models.PositiveIntegerField(null=True, blank=True)
+    # Schießstand: [{"facility": "lg10", "count": 10}] (Schlüssel aus competitions.targets)
+    lanes = models.JSONField(default=list, blank=True)
+    access_note = EncryptedCharField(max_length=500, blank=True)
     version = models.PositiveIntegerField(default=1)
     deleted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -73,7 +130,15 @@ class MaterialItem(Scoped):
             models.CheckConstraint(
                 condition=Q(location_kind="member") | Q(member__isnull=True),
                 name="material_member_only_at_member",
-            )
+            ),
+            models.CheckConstraint(
+                condition=Q(location_kind="facility") | Q(facility__isnull=True),
+                name="material_facility_only_at_facility",
+            ),
+            models.CheckConstraint(
+                condition=Q(kind="facility") | Q(lanes=[], facility_type="", capacity=None),
+                name="material_facility_fields",
+            ),
         ]
 
     def __str__(self):
@@ -81,7 +146,7 @@ class MaterialItem(Scoped):
 
     @property
     def inventory_number(self):
-        return f"MAT-{self.pk:06d}"
+        return f"{'INF' if self.kind == 'facility' else 'MAT'}-{self.pk:06d}"
 
 
 class MaterialEventLink(Scoped):

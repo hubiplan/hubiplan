@@ -180,6 +180,7 @@ function TodoWorkspace({ base }: { base: string }) {
           onClose={() => setNewTask(false)}
           initialEvent={Number(params.get('termin')) || undefined}
           initialMaterial={Number(params.get('material')) || undefined}
+          initialMaterialKind={params.get('art') === 'facility' ? 'facility' : 'material'}
           base={base}
           onSaved={() => {
             void reload()

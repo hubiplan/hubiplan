@@ -86,3 +86,32 @@ Fotos erst nach gesicherter Entscheidung zur endgültigen Entfernung bereinigen.
 
 Die native Android-Oberfläche und verbindliche Reservierungen sind eigenständige spätere
 Erweiterungen. Die Weboberfläche ist auch auf dem Smartphone nutzbar.
+
+## Infrastruktur
+
+Ortsfeste Einrichtungen wie Schießstand, Schützenhaus oder Vereinsheim stehen im selben
+Bestand (`MaterialItem.kind = "facility"`, Kennung `INF-…`). Sie haben ein eigenes optionales
+Modul `infrastructure`, eigene Rechte (`infrastructure.view`/`.edit`), die Oberfläche
+`/infrastruktur` und die Schnittstellen `/api/orgs/<id>/facilities/` bzw.
+`/api/depts/<id>/facilities/` mit denselben Unteradressen wie beim Material.
+Konzept: Projektordner `konzepte/infrastruktur.md`.
+
+Zusätzliche Angaben: Art (`facility_type`), Eigentum und Nutzung, Kapazität, Zugangshinweis
+(verschlüsselt) und bei Schießständen die Bahnen je Disziplin (`lanes`, Schlüssel aus
+`competitions.targets.FACILITIES`). Ein Verwendungszweck ist nicht nötig.
+
+- **Bereiche:** Eine Infrastruktur mit Standort „Bereich einer Infrastruktur“
+  (`location_kind = "facility"`) ist Teil einer anderen, z. B. Saal oder Luftgewehrstand.
+  Es gibt nur eine Ebene.
+- **Material in einer Infrastruktur:** Material kann als Standort eine Infrastruktur haben;
+  „Gehört zu“ (`belongs_to`) verbindet Material wie Schlüssel mit einer Infrastruktur.
+  Die Detailseite der Infrastruktur zeigt beides nur mit Materialleserecht.
+- Ein Datenbanktrigger erlaubt Standort und Zugehörigkeit nur innerhalb derselben Einheit
+  und nur auf Infrastruktur.
+- **Schießinfrastruktur:** `Organization.shooting_facilities = "infrastructure"` übernimmt
+  die Disziplinen aus den Bahnen aller nutzbaren Schießstände
+  (`competitions.targets.available_facilities`).
+
+Migration `materials 0004` ergänzt nur Spalten mit Vorgaben, Constraints und den Trigger;
+eine vorherige Programmfassung ignoriert sie. Beim Rückweg auf eine ältere Fassung
+erscheint Infrastruktur dort als gewöhnliches Material.

@@ -23,6 +23,7 @@ export interface DeptSummary {
   theme: EffectiveTheme
   events_enabled?: boolean
   material_enabled?: boolean
+  infrastructure_enabled?: boolean
   imprint_key?: string
 }
 

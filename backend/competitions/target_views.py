@@ -42,15 +42,15 @@ class TargetCatalogView(_Mixin, APIView):
     manage_only = False
 
     def get(self, request, org_id: int):
+        available = targets.available_facilities(self.org)
         return Response(
             {
                 "targets": targets.catalog(),
-                "infrastructure_configured": self.org.shooting_facilities is not None,
+                "infrastructure_configured": available is not None,
                 "recommended_targets": [
                     key
                     for key, facilities in targets.TARGET_FACILITIES.items()
-                    if self.org.shooting_facilities is None
-                    or set(facilities) & set(self.org.shooting_facilities)
+                    if available is None or set(facilities) & set(available)
                 ],
                 "facilities": [
                     {"key": key, "discipline": discipline, "distance": distance}
