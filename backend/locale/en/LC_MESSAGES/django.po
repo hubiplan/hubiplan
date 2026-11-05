@@ -137,6 +137,9 @@ msgstr "Events of {gen}"
 msgid "Dokumente"
 msgstr "Documents"
 
+msgid "Presse"
+msgstr "Press"
+
 msgid "Dokumentenablage lesen"
 msgstr "Read the document store"
 
@@ -6948,6 +6951,9 @@ msgstr "Email address"
 msgid "Telefonnummer"
 msgstr "Phone number"
 
+msgid "Anschrift"
+msgstr "Postal address"
+
 msgid "Würden und Chronik"
 msgstr "Dignities and history"
 
@@ -7504,6 +7510,15 @@ msgstr "Design"
 
 msgid "Kopfbild"
 msgstr "Header image"
+
+msgid "Höchstens {n} eigene Überschriften."
+msgstr "At most {n} custom headings."
+
+msgid "Die PDF-Datei darf höchstens 20 MB groß sein."
+msgstr "The PDF file may be at most 20 MB."
+
+msgid "Bitte eine PDF-Datei oder ein JPEG-, PNG- oder WebP-Bild hochladen."
+msgstr "Please upload a PDF file or a JPEG, PNG or WebP image."
 
 #, python-brace-format
 msgid "Fremder Kalender „{name}“: Termine ausgeblendet"

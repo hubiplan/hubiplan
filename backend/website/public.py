@@ -20,9 +20,13 @@ from django.utils.text import slugify
 from access.models import Role, RoleAssignment
 from members.models import (
     DepartmentRoleHolder,
+    ExitReason,
     HonoraryTitle,
     HonoraryTitleAward,
     Membership,
+    MembershipPeriod,
+    MemberType,
+    MemberTypeAssignment,
     Person,
 )
 from members.photo_models import MemberPhoto
@@ -141,13 +145,170 @@ class SiteView:
         data = {"name": name, "photo_url": None}
         if membership and membership.pk in self.photos and self.allowed(membership, Category.PHOTO):
             data["photo_url"] = self.url(f"photos/{self.token('photo', membership.pk)}/")
+        # Hauptinstrument aus dem Musikmodul (Ralf 05.11.): gehört zu „Name mit Funktion“
+        if membership is not None and self.site.show_instrument:
+            instrument = self.instruments.get(membership.pk)
+            if instrument:
+                data["instrument"] = instrument
         if details and membership is not None:
             contact = self.contact(person)
             if contact and contact.email and self.allowed(membership, Category.EMAIL):
                 data["email"] = contact.email
             if contact and contact.phone and self.allowed(membership, Category.PHONE):
                 data["phone"] = contact.phone
+            # Anschrift nur mit Schalter der Webseite und Einwilligung der Person (Ralf 05.11.)
+            if (
+                contact
+                and self.site.show_address
+                and contact.street
+                and self.allowed(membership, Category.ADDRESS)
+            ):
+                data["address"] = {
+                    "street": contact.street,
+                    "postal_code": contact.postal_code,
+                    "city": contact.city,
+                }
         return data
+
+    @cached_property
+    def instruments(self) -> dict[int, str]:
+        """Hauptinstrument je Mitgliedschaft (Musikmodul, Fähigkeit „Hauptinstrument“)."""
+        from music.models import Skill
+
+        result: dict[int, str] = {}
+        rows = (
+            Skill.objects.filter(
+                organization=self.area, primary=True, musician__membership__isnull=False
+            )
+            .order_by("pk")
+            .values_list("musician__membership_id", "instrument")
+        )
+        for membership_id, instrument in rows:
+            result.setdefault(membership_id, instrument)
+        return result
+
+    # --- Mitgliederlisten und Gedenken (Ralf 05.11., Kapelle) ---
+
+    @cached_property
+    def _member_types(self) -> dict[MemberType, str]:
+        result: dict[MemberType, str] = {}
+        used: set[str] = set()
+        for mt in MemberType.objects.filter(organization=self.area, is_archived=False):
+            base = unit_slug(self.site.block_name(f"membertype:{mt.pk}") or mt.name)
+            slug, n = base, 2
+            while slug in used:
+                slug, n = f"{base}-{n}", n + 1
+            used.add(slug)
+            result[mt] = slug
+        return result
+
+    def member_type_slugs(self) -> dict[MemberType, str]:
+        """Mitgliedsarten der Einheit mit Adresse auf der Webseite."""
+        return self._member_types
+
+    def member_type_by_slug(self, slug: str) -> MemberType | None:
+        return next((mt for mt, s in self._member_types.items() if s == slug), None)
+
+    def member_type_on(self, mt: MemberType) -> bool:
+        return self.site.block_on("members") and self.site.block_on(f"membertype:{mt.pk}")
+
+    def member_type_label(self, mt: MemberType) -> str:
+        return self.site.block_name(f"membertype:{mt.pk}") or mt.name
+
+    @staticmethod
+    def _sort_key(person: Person):
+        from honors.numbering import split_name
+
+        first, last = split_name(person, "")
+        return (last.casefold(), first.casefold())
+
+    def member_list(self, mt: MemberType) -> list[dict]:
+        """Heutige Mitglieder einer Mitgliedsart, nach Nachnamen; ``since`` = Jahr des
+        Eintritts (laufender Zeitraum). Name wie überall nur ohne Widerspruch."""
+        if mt.pk not in self._member_lists:
+            self._member_lists[mt.pk] = self._member_list(mt)
+        return self._member_lists[mt.pk]
+
+    @cached_property
+    def _member_lists(self) -> dict[int, list[dict]]:
+        return {}
+
+    def _member_list(self, mt: MemberType) -> list[dict]:
+        today = self.today
+        ids = set(
+            MemberTypeAssignment.objects.filter(
+                member_type=mt,
+                membership__organization=self.area,
+                membership__purged_at__isnull=True,
+                valid_from__lte=today,
+            )
+            .filter(Q(valid_until__isnull=True) | Q(valid_until__gte=today))
+            .values_list("membership_id", flat=True)
+        )
+        since: dict[int, datetime.date] = {}
+        for p in (
+            MembershipPeriod.objects.filter(membership_id__in=ids, entry_date__lte=today)
+            .filter(Q(exit_date__isnull=True) | Q(exit_date__gte=today))
+            .order_by("entry_date")
+        ):
+            since.setdefault(p.membership_id, p.entry_date)
+        rows = Membership.objects.filter(pk__in=list(since)).select_related("person")
+        result = []
+        for m in sorted(rows, key=lambda m: self._sort_key(m.person)):
+            entry = self.person(m.person)
+            if entry is None:
+                continue
+            if self.site.show_member_since:
+                entry["since"] = since[m.pk].year
+            result.append(entry)
+        return result
+
+    def repertoire(self) -> list[dict]:
+        """Stücke aus dem Notenarchiv mit „im Repertoire auf der Webseite“, nach Titel."""
+        return self._repertoire
+
+    @cached_property
+    def _repertoire(self) -> list[dict]:
+        from music.models import Piece
+
+        if "music" not in (self.area.enabled_modules or []):
+            return []
+        rows = Piece.objects.filter(organization=self.area, on_website=True)
+        items = [{"title": p.title, "composer": p.composer} for p in rows]
+        return sorted(items, key=lambda p: (p["title"].casefold(), p["composer"].casefold()))
+
+    def memorial(self) -> list[dict]:
+        """Verstorbene Mitglieder (Austrittsgrund „Tod“), zuletzt Verstorbene zuerst;
+        ``died`` = Todesjahr, ``since`` = Jahr des ersten Eintritts."""
+        return self._memorial
+
+    @cached_property
+    def _memorial(self) -> list[dict]:
+        deaths = (
+            MembershipPeriod.objects.filter(
+                membership__organization=self.area, exit_reason=ExitReason.DEATH
+            )
+            .select_related("membership__person")
+            .order_by("-exit_date", "pk")
+        )
+        first = dict(
+            MembershipPeriod.objects.filter(membership__organization=self.area)
+            .order_by("-entry_date")
+            .values_list("membership_id", "entry_date")
+        )
+        result, seen = [], set()
+        for p in deaths:
+            person = p.membership.person
+            if person.pk in seen:
+                continue
+            seen.add(person.pk)
+            entry = self.person(person)
+            if entry is None:
+                continue
+            entry["died"] = p.exit_date.year if p.exit_date else None
+            entry["since"] = first[p.membership_id].year if p.membership_id in first else None
+            result.append(entry)
+        return result
 
     def photo_membership(self, token: str) -> Membership | None:
         """Mitgliedschaft zum Foto-Kennzeichen, ohne alle Mitglieder zu laden (GA-P02).

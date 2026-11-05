@@ -23,6 +23,12 @@ export interface WebsiteSettings {
   header_image?: number | null
   name_format: 'full' | 'initial'
   show_vacant: boolean
+  /** Hauptinstrument aus dem Musikmodul unter dem Namen (fehlt bei älteren Ständen) */
+  show_instrument?: boolean
+  /** Anschrift beim Vorstand, nur mit Einwilligung der Person */
+  show_address?: boolean
+  /** Mitgliederlisten mit Eintrittsjahr */
+  show_member_since?: boolean
   missing_consent: 'omit' | 'nn'
   units_mode: 'all' | 'selected' | 'none'
   unit_ids: number[]
@@ -649,4 +655,46 @@ export const socialApi = {
     id: number,
     data: { state?: SocialPost['state']; alt_texts?: Record<string, string> },
   ) => api.put<SocialPost>(`${base(org)}social/posts/${id}/`, data),
+}
+
+// --- Dokumente: Pressespiegel und eigene Dokumente (Ralf 05.11.2026) ---
+
+export type DocumentSection = 'press' | 'documents'
+
+export interface WebsiteDocument {
+  id: number
+  section: DocumentSection
+  title: string
+  source: string
+  date: string | null
+  published: boolean
+  kind: 'pdf' | 'image'
+  size: number
+  file_name: string
+  url: string
+  preview_url: string | null
+  uploaded_at: string
+}
+
+export interface DocumentDraft {
+  section?: DocumentSection
+  title?: string
+  source?: string
+  date?: string | null
+  published?: boolean
+}
+
+export const documentApi = {
+  list: (org: number) => api.get<WebsiteDocument[]>(`${base(org)}documents/`),
+  upload: (org: number, file: File, data: DocumentDraft) => {
+    const form = new FormData()
+    form.append('file', file)
+    for (const [k, v] of Object.entries(data)) {
+      if (v !== undefined && v !== null) form.append(k, String(v))
+    }
+    return api.post<WebsiteDocument>(`${base(org)}documents/`, form)
+  },
+  save: (org: number, id: number, data: DocumentDraft) =>
+    api.patch<WebsiteDocument>(`${base(org)}documents/${id}/`, data),
+  remove: (org: number, id: number) => api.del(`${base(org)}documents/${id}/`),
 }

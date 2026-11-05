@@ -2,7 +2,15 @@
 
 from django.urls import path
 
-from . import content_views, design_views, gallery_views, public_views, social_views, views
+from . import (
+    content_views,
+    design_views,
+    document_views,
+    gallery_views,
+    public_views,
+    social_views,
+    views,
+)
 
 org_patterns = [
     path("website/", views.WebsiteView.as_view(), name="website"),
@@ -90,6 +98,17 @@ org_patterns = [
         content_views.ImageFileView.as_view(),
         name="website-image-file",
     ),
+    path("website/documents/", document_views.DocumentListView.as_view(), name="website-documents"),
+    path(
+        "website/documents/<int:pk>/",
+        document_views.DocumentDetailView.as_view(),
+        name="website-document",
+    ),
+    path(
+        "website/documents/<int:pk>/file/",
+        document_views.DocumentFileView.as_view(),
+        name="website-document-file",
+    ),
     path("website/albums/", gallery_views.AlbumListView.as_view(), name="website-albums"),
     path(
         "website/albums/reorder/",
@@ -175,6 +194,16 @@ public_patterns = [
     ),
     path(f"{SITE}photos/<str:token>/", public_views.PhotoView.as_view(), name="site-photo"),
     path(f"{SITE}honors/", public_views.HonorsView.as_view(), name="site-honors"),
+    path(f"{SITE}members/<str:slug>/", public_views.MembersView.as_view(), name="site-members"),
+    path(f"{SITE}memorial/", public_views.MemorialView.as_view(), name="site-memorial"),
+    path(f"{SITE}search/", public_views.SearchView.as_view(), name="site-search"),
+    path(f"{SITE}repertoire/", public_views.RepertoireView.as_view(), name="site-repertoire"),
+    path(f"{SITE}documents/", public_views.DocumentsView.as_view(), name="site-documents"),
+    path(
+        f"{SITE}files/<str:token>/",
+        public_views.DocumentFileView.as_view(),
+        name="site-document-file",
+    ),
     path(f"{SITE}results/", public_views.ResultsView.as_view(), name="site-results"),
     path(
         f"{SITE}results/series/<str:token>/",

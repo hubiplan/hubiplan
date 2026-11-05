@@ -370,6 +370,94 @@ class BoardView(_Public):
         )
 
 
+class MembersView(_Public):
+    """Mitgliederliste einer Mitgliedsart (Ralf 05.11.): Name, Eintrittsjahr, Instrument."""
+
+    def get(self, request, key: str, slug: str):
+        site = self.load(request, key)
+        mt = site.member_type_by_slug(slug)
+        if mt is None or not site.member_type_on(mt):
+            raise Http404
+        members = site.member_list(mt)
+        if not members:
+            raise Http404
+        return self.respond({"title": site.member_type_label(mt), "members": members}, site)
+
+
+class MemorialView(_Public):
+    """In Gedenken (Ralf 05.11.): verstorbene Mitglieder, Einleitung aus der Textseite."""
+
+    def get(self, request, key: str):
+        site = self.load(request, key)
+        if not site.site.block_on("memorial"):
+            raise Http404
+        people = site.memorial()
+        if not people:
+            raise Http404
+        return self.respond({"intro": site.page(menu.MEMORIAL_SLUG), "members": people}, site)
+
+
+class RepertoireView(_Public):
+    """Repertoire aus dem Notenarchiv (Ralf 05.11.): Titel und Komponist."""
+
+    def get(self, request, key: str):
+        site = self.load(request, key)
+        if not site.site.block_on("repertoire"):
+            raise Http404
+        return self.respond({"pieces": site.repertoire()}, site)
+
+
+class DocumentsView(_Public):
+    """GET ?section=press|documents: Pressespiegel bzw. eigene Dokumente (Ralf 05.11.)."""
+
+    def get(self, request, key: str):
+        site = self.load(request, key)
+        section = request.query_params.get("section") or "press"
+        block = {"press": "press", "documents": "statutes"}.get(section)
+        if block is None or not site.site.block_on(block):
+            raise Http404
+        from . import documents
+
+        return self.respond({"documents": documents.public_list(site, section)}, site)
+
+
+class DocumentFileView(_Public):
+    """Datei eines Dokuments (``?size=small``: Vorschaubild)."""
+
+    def get(self, request, key: str, token: str):
+        site = self.load(request, key)
+        from . import documents
+
+        doc = documents.find(site, token)
+        if doc is None:
+            raise Http404
+        if request.query_params.get("size") == "small":
+            if not doc.preview.name:
+                raise Http404
+            f = doc.preview
+            ctype = "image/png" if f.name.endswith(".png") else "image/jpeg"
+        else:
+            f, ctype = doc.file, doc.content_type
+        response = FileResponse(f.open("rb"), content_type=ctype)
+        if ctype == "application/pdf":
+            response["Content-Disposition"] = "inline"
+        return self.decorate(response, site)
+
+
+class SearchView(_Public):
+    """GET ?q=…: Suche in Textseiten, Alben und Terminen (Lupe, Ralf 05.11.)."""
+
+    def get(self, request, key: str):
+        site = self.load(request, key)
+        if not site.site.block_on("search"):
+            raise Http404
+        from . import search
+
+        query = request.query_params.get("q") or ""
+        hits = search.search(site, query, lambda: _events(site, None))
+        return self.respond({"query": query[: search.MAX_QUERY], "results": hits}, site)
+
+
 class HonorsView(_Public):
     """Würden und Chronik (Majestäten): aktuelle Träger und alle früheren."""
 

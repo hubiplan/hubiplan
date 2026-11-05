@@ -27,48 +27,80 @@ BLOCKS = {
     "posts": "Aktuelles",
     "events": "Termine",
     "board": "Vorstand",
+    "members": "Mitglieder",
+    "memorial": "In Gedenken",
     "units": "Untereinheiten",
     "honors": "Majestäten",
     "results": "Ergebnisse",
     "gallery": "Galerie",
     "history": "Chronik",
     "offices": "Ämter",
+    "repertoire": "Repertoire",
+    "press": "Presse",
     "statutes": "Dokumente",
     "contact": "Kontakt",
     "social": "Social-Media-Symbole",
+    "search": "Suche",
 }
 BLOCK_HINTS = {
     "posts": "Beiträge aus Instagram und Facebook (lokal gespeichert)",
     "events": "mit Kalender-Abo",
     "board": "Vorstand und Ansprechpartner",
+    "members": "Überschrift mit den Mitgliederlisten je Mitgliedsart",
+    "memorial": "verstorbene Mitglieder mit Todesjahr; Einleitung unter Webseite › Texte",
     "units": "Seiten der Untereinheiten",
     "honors": "aktuelle und frühere Würdenträger",
     "results": "Wettbewerbe mit „auf der Webseite“, Reihen und Wanderpokale",
     "gallery": "Fotoalben unter Webseite › Galerie",
     "history": "Textseite zur Geschichte des Vereins (Webseite › Texte)",
     "offices": "heutige und frühere Inhaber der Rollen mit „unter Ämter zeigen“",
-    "statutes": "Satzung, Beitragsordnung und Gründungsurkunde zum Herunterladen",
+    "repertoire": "Stücke aus dem Notenarchiv mit „im Repertoire auf der Webseite“",
+    "press": "Pressespiegel: Zeitungsartikel als PDF oder Bild (Webseite › Dokumente)",
+    "statutes": "Satzung, Beitragsordnung, Gründungsurkunde und eigene Dokumente",
     "contact": "Kontaktformular",
     "social": "oben im Kopf, auf dem Handy im Menü",
+    "search": "Lupe im Menü: sucht in Textseiten, Terminen und Alben",
 }
 # Neue Bereiche, die erst nach dem Einschalten erscheinen (die Galerie, Ralf 05.11.)
-DEFAULT_OFF_BLOCKS = {"gallery"}
+# Mitgliederlisten, Gedenken und Suche (Ralf 05.11., Kapelle) ebenso
+DEFAULT_OFF_BLOCKS = {"gallery", "members", "memorial", "search", "repertoire", "press"}
 DEFAULT_BLOCKS = {key: key not in DEFAULT_OFF_BLOCKS for key in BLOCKS}
 # Menüpunkte unter „Würdenträger“, die sich einzeln ausschalten lassen (Ralf 2026-10-31):
 # ``dignity:<Nummer>`` je Würde und ``honorary`` für die Ehrungen. Ohne Eintrag: an.
-EXTRA_BLOCK = re.compile(r"^(dignity:[1-9][0-9]{0,9}|honorary)$")
+# Dazu ``membertype:<Nummer>`` je Mitgliedsart unter „Mitglieder“ (Ralf 05.11.); ohne
+# Eintrag aus, denn eine Liste aller Mitglieder erscheint nur nach bewusstem Einschalten.
+EXTRA_BLOCK = re.compile(r"^(dignity:[1-9][0-9]{0,9}|honorary|membertype:[1-9][0-9]{0,9})$")
+DEFAULT_OFF_PREFIXES = ("membertype:",)
+# Frei benannte Überschriften im Menü (Ralf 05.11.): ``heading:<Nummer>``, Name in
+# ``block_names``; ohne Namen gibt es die Überschrift nicht.
+HEADING_KEY = re.compile(r"^heading:[1-9][0-9]{0,2}$")
 
 
 def is_extra_block(key) -> bool:
     return isinstance(key, str) and bool(EXTRA_BLOCK.match(key))
 
 
+def is_heading_key(key) -> bool:
+    return isinstance(key, str) and bool(HEADING_KEY.match(key))
+
+
 # Eigene Namen der Bausteine (Ralf 2026-11-01): erscheinen im Menü und als Überschrift
 # auf der Webseite; leer = Standardname. Umbenennbar sind die Bausteine (ohne „social“),
 # die Überschrift „Geschichte“ und die Ehrungen. Würden und Textseiten tragen ihren
 # Namen schon selbst.
-RENAMABLE_BLOCKS = tuple(k for k in BLOCKS if k != "social") + ("group:history", "honorary")
+RENAMABLE_BLOCKS = tuple(k for k in BLOCKS if k not in ("social", "search")) + (
+    "group:history",
+    "honorary",
+)
 BLOCK_NAME_MAX = 60
+MEMBERTYPE_KEY = re.compile(r"^membertype:[1-9][0-9]{0,9}$")
+
+
+def is_renamable(key) -> bool:
+    """Feste Bausteine, Listen je Mitgliedsart und freie Überschriften."""
+    return isinstance(key, str) and (
+        key in RENAMABLE_BLOCKS or bool(MEMBERTYPE_KEY.match(key)) or is_heading_key(key)
+    )
 
 
 # Bausteine der Startseite: ein- und ausschaltbar, Reihenfolge frei. Die
@@ -180,6 +212,17 @@ class Website(models.Model):
     show_vacant = models.BooleanField(
         "unbesetzte Funktionen als „derzeit unbesetzt“ zeigen", default=False
     )
+    # Kapelle (Ralf 05.11.): Hauptinstrument aus dem Musikmodul unter dem Namen, Anschrift
+    # beim Vorstand nur mit Einwilligung der Person und diesem Schalter
+    show_instrument = models.BooleanField(
+        "Hauptinstrument unter dem Namen zeigen", default=False, db_default=False
+    )
+    show_address = models.BooleanField(
+        "Anschrift beim Vorstand zeigen (nur mit Einwilligung)", default=False, db_default=False
+    )
+    show_member_since = models.BooleanField(
+        "Mitgliederlisten mit Eintrittsjahr", default=True, db_default=True
+    )
     missing_consent = models.CharField(
         "Personen ohne Einwilligung",
         max_length=10,
@@ -257,17 +300,29 @@ class Website(models.Model):
         return self.design if self.design in self.design_choices() else DEFAULT_DESIGN
 
     def block_on(self, key: str) -> bool:
-        default = True if is_extra_block(key) else DEFAULT_BLOCKS.get(key, False)
+        if is_extra_block(key):
+            default = not key.startswith(DEFAULT_OFF_PREFIXES)
+        else:
+            default = DEFAULT_BLOCKS.get(key, False)
         return bool((self.blocks or {}).get(key, default))
 
     def block_name(self, key: str) -> str:
         """Eigener Name eines Bausteins oder leer (dann gilt der Standardname)."""
-        name = (self.block_names or {}).get(key) if key in RENAMABLE_BLOCKS else None
+        name = (self.block_names or {}).get(key) if is_renamable(key) else None
         return name.strip() if isinstance(name, str) else ""
 
     def names(self) -> dict[str, str]:
         """Alle gesetzten eigenen Namen (für die öffentliche Schnittstelle)."""
-        return {k: n for k in RENAMABLE_BLOCKS if (n := self.block_name(k))}
+        keys = [
+            *RENAMABLE_BLOCKS,
+            *(k for k in self.block_names or {} if k not in RENAMABLE_BLOCKS),
+        ]
+        return {k: n for k in keys if (n := self.block_name(k))}
+
+    def headings(self) -> dict[str, str]:
+        """Freie Überschriften im Menü: Schlüssel → Name, in Reihenfolge der Nummer."""
+        found = {k: self.block_name(k) for k in self.block_names or {} if is_heading_key(k)}
+        return {k: found[k] for k in sorted(found, key=lambda k: int(k.split(":")[1])) if found[k]}
 
     def home(self) -> list[str]:
         """Eingeschaltete Bausteine der Startseite in ihrer Reihenfolge."""
@@ -417,6 +472,7 @@ class PublicationConsent(models.Model):
         PHOTO = "photo", gettext_lazy("Foto")
         EMAIL = "email", gettext_lazy("E-Mail-Adresse")
         PHONE = "phone", gettext_lazy("Telefonnummer")
+        ADDRESS = "address", gettext_lazy("Anschrift")
         HONORS = "honors", gettext_lazy("Würden und Chronik")
         JUBILEES = "jubilees", gettext_lazy("Jubiläen")
         RESULTS = "results", gettext_lazy("Wettbewerbsergebnisse")
@@ -476,6 +532,7 @@ from .contact_models import HeldMessage  # noqa: E402, F401
 from .content_models import (  # noqa: E402, F401
     GalleryAlbum,
     GalleryItem,
+    WebsiteDocument,
     WebsiteImage,
     WebsiteRevision,
     WebsiteText,
