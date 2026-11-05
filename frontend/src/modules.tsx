@@ -131,6 +131,7 @@ export const modules: AppModule[] = [
       ].some((p) => org.permissions.includes(p)),
     children: () => [
       { to: '/wettbewerbe', label: t('Wettbewerbe') },
+      { to: '/wettbewerbe/statistik', label: t('Statistik') },
       { to: '/wettbewerbe/reihen', label: t('Reihen') },
       { to: '/wettbewerbe/pokale', label: t('Wanderpokale') },
       { to: '/wettbewerbe/titel', label: t('Titel und Würden') },

@@ -5971,6 +5971,16 @@ msgstr "Performance cancelled"
 msgid "Auftrittsinformationen geändert"
 msgstr "Performance information changed"
 
+#: competitions/statistics.py
+#, python-format
+msgid "%(n)s Schuss"
+msgstr "%(n)s shots"
+
+#: competitions/statistics.py
+#, python-format
+msgid "beste %(n)s gewertet"
+msgstr "best %(n)s counted"
+
 msgid "Im Mitgliederbereich liegen neue oder geänderte Auftrittsinformationen oder eine noch offene Rückmeldung für Sie vor: {link}"
 msgstr "New or updated performance information or a pending response is available in your member area: {link}"
 

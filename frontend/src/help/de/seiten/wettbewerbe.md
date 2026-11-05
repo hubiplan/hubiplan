@@ -4,9 +4,28 @@ titel: Wettbewerbe
 bereich: wettbewerbe
 modul: competitions
 rechte: [competitions.manage, competitions.results]
-routen: [/wettbewerbe]
+routen: [/wettbewerbe, /wettbewerbe/statistik]
 stichworte: [Schießen, Vogelschießen, Rangliste, Stechen, Ergebnis]
 ---
+
+## Statistik
+
+Unter **Wettbewerbe** › **Statistik** siehst du Teilnahmen, Erfolge und Leistungsentwicklung
+aller Mitglieder. Wähle ein Mitglied für dessen persönliche Auswertung. Dieselbe Statistik
+findest du in der Mitgliedsakte unter **Wettbewerbe**, eigene Ergebnisse im Mitgliederbereich
+unter **Meine Ergebnisse**.
+
+Mit Jahr, Wettbewerbsart und Wertungsbedingungen grenzt du die Auswertung ein. Der
+Ringdurchschnitt, Ringe pro gewertetem Schuss und die Bestleistung beziehen sich auf
+dieselben hinterlegten Bedingungen. Bei mehreren Bedingungen werden Mittelwerte getrennt
+angezeigt; wähle eine Zeile für die zugehörige Entwicklung. Die Ergebnisanzahl steht beim
+Durchschnitt. Die Gesamtsicht zeigt zusätzlich den gleich gewichteten Durchschnitt der
+persönlichen Mitgliederdurchschnitte.
+
+Nur endgültige Ergebnisse zählen. Fehlende Werte zählen nicht als null. Eine Person zählt
+je Wettbewerb einmal; Siege und Podestplätze zählen je Einzelwertung. Mannschaftserfolge
+werden nicht als persönliche Siege gezählt. Diagrammwerte lassen sich als Tabelle öffnen.
+Unter **Alle Starts und Auszeichnungen** findest du auch laufende Wettbewerbe.
 
 Hier richtet ihr eigene Schießen mit Einzel- und Zugwertung ein, erfasst Ergebnisse und entscheidet Gleichstände im Stechen. Auch Vogelschießen mit Pfändern und fremde Wettbewerbe, bei denen ihr nur eure Plätze eintragt, gehören hierher. Vorläufige Ergebnisse werden erst mit „endgültig“ fest.
 

@@ -10,6 +10,7 @@ from . import (
     event_views,
     foreign_views,
     stand_views,
+    statistics_views,
     target_views,
     views,
 )
@@ -40,6 +41,16 @@ router.register(
 C = "competitions/<int:competition_id>/"
 
 org_patterns = [
+    path(
+        "competitions/statistics/",
+        statistics_views.StatisticsView.as_view(),
+        name="competition-statistics",
+    ),
+    path(
+        "competitions/member/<int:membership_id>/statistics/",
+        statistics_views.MemberStatisticsView.as_view(),
+        name="competition-member-statistics",
+    ),
     path(
         "competitions/event-candidates/",
         event_views.EventCandidatesView.as_view(),
@@ -176,6 +187,11 @@ public_patterns = [
 
 # Mitgliederbereich und App: „Meine Ergebnisse“ (Schritt 5)
 portal_patterns = [
+    path(
+        "portal/<int:access_id>/competition-statistics/",
+        statistics_views.PortalStatisticsView.as_view(),
+        name="portal-competition-statistics",
+    ),
     path(
         "portal/<int:access_id>/results/",
         award_views.PortalResultsView.as_view(),

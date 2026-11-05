@@ -1,11 +1,26 @@
 // Mitgliedsakte › Wettbewerbe: alle Starts mit Platz und Wert, Titel und Auszeichnungen.
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { historyApi } from '../../api/competitionHistory.ts'
 import { useLoad } from '../../components/forms.ts'
 import { LoadError } from '../../components/ui.tsx'
 import { locale, t } from '../../i18n/index.ts'
+import { CompetitionStatistics } from './Statistics.tsx'
 
 export function CompetitionsTab({ org, membership }: { org: number; membership: number }) {
+  const [historyOpen, setHistoryOpen] = useState(false)
+  return (
+    <div className="stack">
+      <CompetitionStatistics key={`${org}:${membership}`} org={org} membership={membership} />
+      <details className="card card-wide" onToggle={(e) => setHistoryOpen(e.currentTarget.open)}>
+        <summary>{t('Alle Starts und Auszeichnungen')}</summary>
+        {historyOpen && <MemberHistory org={org} membership={membership} />}
+      </details>
+    </div>
+  )
+}
+
+function MemberHistory({ org, membership }: { org: number; membership: number }) {
   const { data, error, reload } = useLoad(
     () => historyApi.member(org, membership),
     [org, membership],
@@ -13,7 +28,7 @@ export function CompetitionsTab({ org, membership }: { org: number; membership: 
   if (error) return <LoadError message={error} onRetry={reload} />
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   return (
-    <div className="card card-wide">
+    <div>
       <h2>{t('Titel und Auszeichnungen')}</h2>
       {data.grants.length === 0 ? (
         <p className="muted">{t('Noch keine Titel.')}</p>

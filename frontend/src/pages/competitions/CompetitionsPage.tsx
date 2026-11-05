@@ -35,6 +35,7 @@ import { EventCard, EventPicker } from './CalendarLink.tsx'
 import { ManualPrizes, PrizesCard, StandAccessCard } from './BirdSetup.tsx'
 import { ForeignPanel } from './ForeignPanel.tsx'
 import { ResultsPanel } from './ResultsPanel.tsx'
+import { CompetitionStatisticsPage } from './Statistics.tsx'
 import { certificatesApi } from '../../api/certificates.ts'
 import { CertificatesCard, CertificateTemplatesPage, TemplateSelect } from './Certificates.tsx'
 import {
@@ -59,6 +60,7 @@ export function CompetitionsPage() {
   return (
     <Routes>
       <Route index element={<CompetitionList />} />
+      <Route path="statistik" element={<CompetitionStatisticsPage />} />
       <Route path="reihen" element={<SeriesListPage />} />
       <Route path="reihen/:id" element={<SeriesPage />} />
       <Route path="pokale" element={<TrophiesPage />} />

@@ -1,5 +1,48 @@
 # Wettbewerbe
 
+## Wettbewerbsstatistik
+
+Unter **Wettbewerbe › Statistik** stehen die Gesamtsicht und die persönliche Statistik
+eines ausgewählten Mitglieds. Die Mitgliedsakte zeigt dieselbe persönliche Auswertung im
+Reiter **Wettbewerbe**, der Mitgliederbereich unter **Meine Ergebnisse** nur eigene Daten.
+Mitglied, Jahr, Wettbewerbsart und Wertungsbedingungen stehen in der URL; Zurück, Neuladen
+und Links erhalten die Auswahl.
+
+Nur endgültige Wettbewerbe zählen. Gäste, gelöschte Mitgliedsdaten und Starts außer
+Konkurrenz gehören nicht in die Mitgliederzahlen. Eine Person zählt je Wettbewerb einmal,
+auch bei mehreren Wertungen oder nach Wiedereintritt. Siege und Podestplätze (Platz 1–3)
+zählen pro Einzelwertung; Mannschaftswertungen bleiben getrennt. Für die Platzierung bleibt
+das ganze Starterfeld einschließlich Gästen maßgeblich. Bei fremden Wettbewerben kommt
+die Feldgröße aus der ausdrücklich hinterlegten Gesamtteilnehmerzahl.
+
+Durchschnitte, Bestleistungen und Jahresverläufe werden nach den hinterlegten Bedingungen
+getrennt: Disziplin, weitere Angaben, Wertungsbezeichnung, Wertungsart, Scheibe und eigene
+Scheibenmaße, Schusszahl, gewertete Schüsse, Einheit, Nachkommastellen, Höchstwert und
+Wertungsrichtung. Ohne Disziplin und Scheibe bleiben Wettbewerbe getrennt. Bei mehreren
+Bedingungen zeigt eine Tabelle die jeweiligen Mittelwerte; Auswahl einer Bedingung öffnet
+die zugehörige Leistungsstatistik.
+
+- **Ergebnisdurchschnitt:** Summe gültiger Ergebnisse geteilt durch deren Anzahl.
+- **Mitgliederdurchschnitt:** Mittel der persönlichen Durchschnitte; jedes Mitglied gleich
+  gewichtet. Beide Werte stehen in der Gesamtsicht nebeneinander.
+- **Ringe pro gewertetem Schuss:** Ringdurchschnitt geteilt durch die gewertete Schusszahl,
+  bei Ringen, Zehntelwertung oder frei erfassten Ringwerten mit bekannter Schusszahl.
+- **Bestleistung:** höchster beziehungsweise niedrigster Wert gemäß Wertungsrichtung.
+- **Veränderung:** Durchschnitt des ausgewählten beziehungsweise jüngsten Jahres minus
+  Durchschnitt seines direkten Vorjahres, nur bei vergleichbaren Ergebnissen in beiden Jahren.
+
+Fehlende Werte zählen nicht als null. Erfasste null zählt als Ergebnis. Die Oberfläche
+nennt die Ergebnisanzahl; Diagramme bieten dieselben Werte als Tabelle. Vogelschießen
+liefert Teilnahmen und Pfänder. Auszeichnungen zählen nur ohne offenen oder abgelehnten
+Würdenvorschlag. Die bisherige Liste aller Starts einschließlich laufender Wettbewerbe
+und aller Auszeichnungen bleibt aufklappbar erreichbar.
+
+API: `competitions/statistics/`, `competitions/member/<id>/statistics/` und
+`portal/<access_id>/competition-statistics/`. Filter: `year`, `form`, `group`, in der
+Gesamtsicht zusätzlich `membership`. Wettbewerbs-Leserechte erlauben die Gesamtsicht;
+„Mitglieder ansehen“ erlaubt die persönliche Statistik in der Mitgliedsakte. Der Portalzugang
+ignoriert fremde Mitgliedsauswahlen und liefert keine Mitgliedsnummern oder Verwaltungslinks.
+
 Eigene Schießen und andere Wettbewerbe mit Einzel- und Zugwertung, Stechen, Auswertung,
 Druckvorlagen und einem Standmodus für Tablet und Handy; Vogelschießen mit Pfändern; fremde
 Wettbewerbe, bei denen die Einheit ihre Plätze einträgt. Konzept im Projektordner
