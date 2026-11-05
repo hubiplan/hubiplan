@@ -2,6 +2,7 @@
 # ruff: noqa: F811
 
 import copy
+import datetime
 import hashlib
 import uuid
 from decimal import Decimal
@@ -13,6 +14,7 @@ from django.core.exceptions import ValidationError
 from django.test import override_settings
 
 from billing import delivery, hybrid
+from billing.einvoice_retention import export_table, purge_files
 from billing.advances import split_amount
 from billing.models import Invoice, InvoiceAdvance, InvoiceDelivery, InvoiceHybridArtifact
 from core.tenancy import tenant_context
@@ -174,6 +176,22 @@ def test_real_hybrid_original_and_cancellation_are_validated_and_immutable(c, ba
         row = InvoiceHybridArtifact.objects.filter(document="invoice").get()
         assert row.source_sha256 == hashlib.sha256(original).hexdigest()
         assert b'isCompliant="true"' in row.pdf_report.read()
+        row.pdf_report.close()
+        paths = []
+
+        def include(name, field):
+            with field.open("rb") as stream:
+                assert stream.read()
+            paths.append(name)
+            return name
+
+        period = (datetime.date(2026, 1, 1), datetime.date(2026, 12, 31))
+        table = export_table(club, *period, include)
+        assert sum(row[0] == "ZUGFeRD" for row in table.rows) == 2
+        assert len([path for path in paths if path.endswith("/pdf.pdf")]) == 2
+        count = purge_files(club, *period, lambda field: field.delete(save=False))
+        assert count == 12
+        assert not InvoiceHybridArtifact.objects.exclude(pdf="").exists()
 
 
 def test_hybrid_never_publishes_failed_conversion(c, base, payload, monkeypatch, club):
