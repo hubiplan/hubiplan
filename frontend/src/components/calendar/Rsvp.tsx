@@ -1,5 +1,5 @@
 // Zu- und Absagen: eigene Rückmeldung, Teilnehmerliste des Vorstands, Kalender-Abo.
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { eventApi } from '../../api/events.ts'
 import type {
   CalendarBase,
@@ -13,9 +13,16 @@ import { Alert, Field } from '../ui.tsx'
 import { berlin, formatDay } from './time.ts'
 import { confirmDialog } from '../dialog.ts'
 import { useTerms } from '../../org/terms.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc, tn } from '../../i18n/index.ts'
 
-const STATUS_LABEL: Record<ResponseStatus, string> = { yes: t('Zusage'), no: t('Absage') }
+const STATUS_LABEL: Record<ResponseStatus, string> = {
+  get yes() {
+    return t('Zusage')
+  },
+  get no() {
+    return t('Absage')
+  },
+}
 
 function deadlineText(iso: string): string {
   const d = berlin(iso)
@@ -25,8 +32,8 @@ function deadlineText(iso: string): string {
 /** Kennzeichen in Listen: eigene Rückmeldung oder „Rückmeldung offen“. */
 export function RsvpBadge({ o }: { o: Occurrence }) {
   if (!o.rsvp_enabled || o.is_cancelled) return null
-  if (o.my_response === 'yes') return <span className="badge badge-yes">zugesagt</span>
-  if (o.my_response === 'no') return <span className="badge">abgesagt</span>
+  if (o.my_response === 'yes') return <span className="badge badge-yes">{t('zugesagt')}</span>
+  if (o.my_response === 'no') return <span className="badge">{t('abgesagt')}</span>
   if (o.my_response === null)
     return <span className="badge badge-open">{t('Rückmeldung offen')}</span>
   return null
@@ -48,12 +55,25 @@ export function MyResponsePanel({
   const [note, setNote] = useState(mine?.note ?? '')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [notice, setNotice] = useState('')
+  const responseAction = useRef<HTMLButtonElement>(null)
+  const focusAfterWithdrawal = useRef(false)
+  useLayoutEffect(() => {
+    if (notice && focusAfterWithdrawal.current) {
+      responseAction.current?.focus()
+      focusAfterWithdrawal.current = false
+    }
+  }, [notice])
 
-  async function run(action: () => Promise<EventDetail>) {
+  async function run(action: () => Promise<EventDetail>, success: string, withdrawing = false) {
     setBusy(true)
     setError(null)
+    setNotice('')
     try {
       onChanged(await action())
+      // Die Rücknahme entfernt ihren eigenen Knopf. Danach zur nächsten Antwortaktion.
+      focusAfterWithdrawal.current = withdrawing
+      setNotice(success)
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -62,33 +82,34 @@ export function MyResponsePanel({
   }
 
   const send = (status: ResponseStatus) =>
-    run(() =>
-      eventApi.respond(base, event.id, {
-        status,
-        guests: status === 'yes' && info.guests_allowed ? Number(guests) || 0 : 0,
-        note,
-      }),
+    run(
+      () =>
+        eventApi.respond(base, event.id, {
+          status,
+          guests: status === 'yes' && info.guests_allowed ? Number(guests) || 0 : 0,
+          note,
+        }),
+      status === 'yes' ? t('Deine Zusage ist gespeichert.') : t('Deine Absage ist gespeichert.'),
     )
 
   return (
     <div className="subcard stack-sm rsvp-panel">
-      <strong>{t('Ihre Rückmeldung')}</strong>
+      <strong>{t('Deine Rückmeldung')}</strong>
+      <p className={notice ? 'muted small' : 'sr-only'} role="status" aria-atomic="true">
+        {notice}
+      </p>
       {mine ? (
         <p>
           <span className={mine.status === 'yes' ? 'badge badge-yes' : 'badge'}>
             {STATUS_LABEL[mine.status]}
           </span>
-          {mine.guests > 0 &&
-            t(' mit {guests} Begleitperson{x}', {
-              guests: mine.guests,
-              x: mine.guests > 1 ? 'en' : '',
-            })}
+          {mine.guests > 0 && tn(' mit {n} Begleitperson', ' mit {n} Begleitpersonen', mine.guests)}
           {mine.source === 'board' && (
-            <span className="muted small"> (vom Vorstand eingetragen)</span>
+            <span className="muted small">{t(' (vom Vorstand eingetragen)')}</span>
           )}
         </p>
       ) : (
-        <p className="muted">{t('Sie haben sich noch nicht zurückgemeldet.')}</p>
+        <p className="muted">{t('Du hast dich noch nicht zurückgemeldet.')}</p>
       )}
       {info.deadline && (
         <p className="muted small">
@@ -125,12 +146,13 @@ export function MyResponsePanel({
           </div>
           <div className="button-row">
             <button
+              ref={responseAction}
               type="button"
               className="button button-primary"
               disabled={busy}
               onClick={() => void send('yes')}
             >
-              {t('Zusagen')}
+              {tc('action', 'Zusagen')}
             </button>
             <button
               type="button"
@@ -138,14 +160,20 @@ export function MyResponsePanel({
               disabled={busy}
               onClick={() => void send('no')}
             >
-              {t('Absagen')}
+              {tc('action', 'Absagen')}
             </button>
             {mine && (
               <button
                 type="button"
                 className="link-button"
                 disabled={busy}
-                onClick={() => void run(() => eventApi.withdraw(base, event.id))}
+                onClick={() =>
+                  void run(
+                    () => eventApi.withdraw(base, event.id),
+                    t('Deine Rückmeldung ist zurückgenommen.'),
+                    true,
+                  )
+                }
               >
                 {t('Rückmeldung zurücknehmen')}
               </button>
@@ -242,7 +270,7 @@ export function ResponsesPanel({ base, event }: { base: CalendarBase; event: Eve
             guests: s.guests,
             persons: s.persons,
           })}
-        {data.capacity ? ` (höchstens ${data.capacity})` : ''}{' '}
+        {data.capacity ? t(' (höchstens {capacity})', { capacity: data.capacity }) : ''}{' '}
         {t('· {no} Absagen · {open} noch offen', { no: s.no, open: s.open })}
       </p>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
@@ -266,13 +294,15 @@ export function ResponsesPanel({ base, event }: { base: CalendarBase; event: Eve
                   <td>
                     {r.status && STATUS_LABEL[r.status]}
                     {r.guests > 0 && t(' + {guests}', { guests: r.guests })}
-                    {r.source === 'board' && <span className="muted small"> (Vorstand)</span>}
+                    {r.source === 'board' && (
+                      <span className="muted small">{t(' (Vorstand)')}</span>
+                    )}
                   </td>
                   <td>{r.note}</td>
                   {canEnter && (
                     <td>
                       <button type="button" className="link-button" onClick={() => remove(r)}>
-                        entfernen
+                        {t('entfernen')}
                       </button>
                     </td>
                   )}

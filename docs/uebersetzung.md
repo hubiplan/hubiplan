@@ -100,3 +100,5 @@ Revisionsprotokoll speichert sie immer deutsch (`audit.log.record`).
   Fehler.
 
 Die `.mo`-Datei entsteht beim Bauen des Docker-Abbilds und liegt nicht im Repository.
+
+Die Katalogprüfung wird für die vier Meldungsansichten und die Kalender-Rückmeldungen durch eine statische Prüfung sichtbarer Literale ergänzt (`frontend/scripts/i18n-source.mjs`). Sie erkennt direkte JSX-Texte, Beschriftungen und sichtbare Literalzweige auch ohne Umlaute. Neue unübersetzte Literale im abgegrenzten Umfang lassen die Prüfung scheitern. Das ersetzt weder Laufzeitprüfungen dynamischer Texte noch eine Vollständigkeitsprüfung aller Module.

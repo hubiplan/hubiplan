@@ -3,7 +3,9 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { setCatalogForTest } from '../i18n/index.ts'
+import en from '../i18n/en.json'
 import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
@@ -74,7 +76,10 @@ const otto = {
   values: { '11': '25.000' },
 }
 
-function renderApp(routes: Record<string, () => { status: number; body?: unknown }>) {
+function renderApp(
+  routes: Record<string, () => { status: number; body?: unknown }>,
+  path = '/wettbewerbe/3',
+) {
   const org = testOrg({
     permissions: ['competitions.results'],
     modules: ['competitions'],
@@ -94,7 +99,7 @@ function renderApp(routes: Record<string, () => { status: number; body?: unknown
     ...routes,
   })
   render(
-    <MemoryRouter initialEntries={['/wettbewerbe/3']}>
+    <MemoryRouter initialEntries={[path]}>
       <AuthProvider>
         <OrgProvider>
           <App />
@@ -236,5 +241,18 @@ describe('Wettbewerbe erfassen', () => {
     const before = syncs()
     version = 'b'
     await waitFor(() => expect(syncs()).toBeGreaterThan(before), { timeout: 5000 })
+  })
+})
+
+describe('Wettbewerbsübersicht auf Englisch', () => {
+  afterEach(() => setCatalogForTest('de'))
+  it('übersetzt einen bekannten Status unabhängig vom gelieferten deutschen Label und zählt einen Eintrag', async () => {
+    setCatalogForTest('en', en)
+    renderApp({ [`GET ${base}`]: () => ({ status: 200, body: [detail] }) }, '/wettbewerbe')
+    expect(await screen.findByRole('heading', { name: 'Competitions' })).toBeVisible()
+    expect(await screen.findByText('1 entry')).toBeVisible()
+    expect(screen.getByRole('table')).toHaveTextContent('running')
+    expect(screen.getByRole('table')).not.toHaveTextContent('läuft')
+    expect(screen.getByRole('link', { name: detail.title })).toBeVisible()
   })
 })

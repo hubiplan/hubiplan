@@ -2,7 +2,9 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { setCatalogForTest } from '../i18n/index.ts'
+import en from '../i18n/en.json'
 import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
@@ -284,5 +286,38 @@ describe('Meldungen', () => {
     )
     // Wieder Entwurf: die nächste Abgabe ist eine neue Meldung
     expect(await screen.findByRole('heading', { name: 'Meldung abgeben' })).toBeVisible()
+  })
+})
+
+describe('Meldungen auf Englisch', () => {
+  afterEach(() => setCatalogForTest('de'))
+  it('zeigt Status, Meldeweg und Formularaktionen englisch; ein Serverfehler erhält die Eingabe', async () => {
+    setCatalogForTest('en', en)
+    renderApp({
+      ['GET ' + base + 'calls/4/entry/']: () => ({ status: 200, body: entry({ hints: [] }) }),
+      ['GET ' + base + 'calls/']: () => ({ status: 200, body: [call] }),
+      ['POST ' + base + 'calls/']: () => ({
+        status: 400,
+        body: { title: ['A call with this title already exists.'] },
+      }),
+    })
+    const user = userEvent.setup()
+    expect(await screen.findByRole('heading', { name: 'Entry: Draft' })).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Submit entry' })).toBeEnabled()
+    expect(screen.getByLabelText('Submission method')).toBeVisible()
+    expect(screen.getByLabelText('Organiser’s email')).toHaveValue(call.organizer_email)
+    await user.click(screen.getByRole('link', { name: '← All entries' }))
+    expect(await screen.findByRole('heading', { name: 'Entries' })).toBeVisible()
+    expect(await screen.findByText('1 entry')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Create call for entries' }))
+    await user.type(screen.getByLabelText('Title'), 'Sample call')
+    await user.type(screen.getByLabelText('Organiser'), 'Sample association')
+    await user.click(screen.getByRole('button', { name: 'Create' }))
+    await waitFor(() => expect(screen.getByLabelText('Title')).toHaveFocus())
+    expect(screen.getByLabelText('Title')).toHaveValue('Sample call')
+    expect(screen.getByLabelText('Title')).toHaveAccessibleDescription(
+      'A call with this title already exists.',
+    )
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeVisible()
   })
 })

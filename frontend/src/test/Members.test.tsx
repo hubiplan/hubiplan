@@ -1,7 +1,9 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { setCatalogForTest } from '../i18n/index.ts'
+import en from '../i18n/en.json'
 import { orgApi } from '../api/orgs.ts'
 import { ApiError } from '../api/client.ts'
 import { memberApi } from '../api/members.ts'
@@ -173,7 +175,7 @@ describe('Aufnahme', () => {
     await user.type(screen.getByLabelText('Geburtsdatum'), '1980-05-17')
     await user.click(screen.getByRole('button', { name: 'Weiter' }))
 
-    expect(await screen.findByText('Mögliche Treffer')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Mögliche Treffer' })).toHaveFocus()
     await user.click(screen.getByRole('radio', { name: /Verbandsnr\. 5/ }))
     await user.selectOptions(screen.getByLabelText('Mitgliedsart'), '3')
     await user.type(screen.getByLabelText(/E-Mail-Adresse \(optional\)/), 'erika@beispiel.test')
@@ -587,5 +589,86 @@ describe('Foto-Upload-Link', () => {
     })
     renderAt('/foto/alt')
     expect(await screen.findByText(/nicht \(mehr\) gültig/)).toBeInTheDocument()
+  })
+})
+
+describe('Aufnahme mit nachvollziehbarem Fokus und Feldgruppen', () => {
+  afterEach(() => setCatalogForTest('de'))
+  const search =
+    'GET /api/orgs/7/members/duplicates/?name=Muster&vorname=Erika&geburtsdatum=1980-05-17'
+  const departments = [
+    {
+      id: 2,
+      name: 'Turnen',
+      display_name: 'Turnen',
+      short_name: '',
+      is_active: true,
+      depth: 0,
+      path: 'Turnen',
+    },
+  ]
+  it('benennt die Gruppe mit den englischen Untereinheitsbegriffen des Vereins', async () => {
+    setCatalogForTest('en', en)
+    fakeApi({
+      ...common(),
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [{ ...ORG, department_terms: { Pl: 'Teams', pl: 'teams' } }],
+      }),
+      [search]: () => ({ status: 200, body: [] }),
+      'GET /api/orgs/7/departments/': () => ({ status: 200, body: departments }),
+    })
+    renderAt('/mitglieder/neu')
+    const user = userEvent.setup()
+    await user.type(await screen.findByLabelText('Name'), 'Muster')
+    await user.type(screen.getByLabelText('First name'), 'Erika')
+    await user.type(screen.getByLabelText('Date of birth'), '1980-05-17')
+    await user.click(screen.getByRole('button', { name: 'Next' }))
+    expect(await screen.findByRole('group', { name: 'Teams (optional)' })).toBeVisible()
+  })
+  async function firstStep() {
+    const user = userEvent.setup()
+    await user.type(await screen.findByLabelText('Name'), 'Muster')
+    await user.type(screen.getByLabelText('Vorname'), 'Erika')
+    await user.type(screen.getByLabelText('Geburtsdatum'), '1980-05-17')
+    await user.click(screen.getByRole('button', { name: 'Weiter' }))
+    return user
+  }
+  it('fokussiert die neue Stufe und beim Zurückgehen wieder die erhaltene Eingabe', async () => {
+    fakeApi({ ...common(), [search]: () => ({ status: 200, body: [] }) })
+    renderAt('/mitglieder/neu')
+    const user = await firstStep()
+    expect(
+      await screen.findByRole('heading', { name: '2. Mitgliedschaft und Kontakt' }),
+    ).toHaveFocus()
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'ändern' })).toHaveFocus()
+    await user.click(screen.getByRole('button', { name: 'ändern' }))
+    expect(screen.getByLabelText('Name')).toHaveFocus()
+    expect(screen.getByLabelText('Name')).toHaveValue('Muster')
+    expect(screen.getByLabelText('Vorname')).toHaveValue('Erika')
+  })
+  it('verbindet Gruppenname und Serverfehler mit den Untereinheiten und fokussiert die Fehlergruppe', async () => {
+    fakeApi({
+      ...common(),
+      [search]: () => ({ status: 200, body: [] }),
+      'GET /api/orgs/7/departments/': () => ({ status: 200, body: departments }),
+      'POST /api/orgs/7/members/admit/': () => ({
+        status: 400,
+        body: { department_ids: ['Diese Einheit ist nicht freigegeben.'] },
+      }),
+    })
+    renderAt('/mitglieder/neu')
+    const user = await firstStep()
+    const group = await screen.findByRole('group', { name: 'Abteilungen (optional)' })
+    await user.click(within(group).getByRole('checkbox', { name: 'Turnen' }))
+    await user.selectOptions(screen.getByLabelText('Mitgliedsart'), '3')
+    await user.type(screen.getByLabelText('Straße und Hausnummer'), 'Musterweg 1')
+    await user.type(screen.getByLabelText('PLZ'), '12345')
+    await user.type(screen.getByLabelText('Ort'), 'Musterstadt')
+    await user.click(screen.getByRole('button', { name: 'Aufnehmen' }))
+    await waitFor(() => expect(group).toHaveFocus())
+    expect(group).toHaveAccessibleDescription('Diese Einheit ist nicht freigegeben.')
+    expect(within(group).getByRole('checkbox', { name: 'Turnen' })).toBeChecked()
   })
 })

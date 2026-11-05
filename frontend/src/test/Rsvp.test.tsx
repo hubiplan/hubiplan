@@ -1,10 +1,15 @@
 import { render, screen, within } from '@testing-library/react'
+import { useState } from 'react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
+import { setCatalogForTest } from '../i18n/index.ts'
+import en from '../i18n/en.json'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import { CalendarView } from '../components/calendar/CalendarView.tsx'
+import { MyResponsePanel } from '../components/calendar/Rsvp.tsx'
+import type { EventDetail } from '../api/events.ts'
 import { addDays, addMonths, monthGrid, monthStart, today } from '../components/calendar/time.ts'
 import { fakeApi } from './fakeApi.ts'
 import { occurrence } from './eventFixtures.ts'
@@ -57,6 +62,80 @@ function detail(rsvp: Record<string, unknown>, over: Record<string, unknown> = {
 }
 
 describe('Zu- und Absagen', () => {
+  afterEach(() => setCatalogForTest('de'))
+  it('benennt Antwortaktionen auf Englisch als Verben und bestätigt die Absage', async () => {
+    setCatalogForTest('en', en)
+    const base = '/api/portal/4/'
+    fakeApi({
+      [`PUT ${base}events/1/response/`]: () => ({
+        status: 200,
+        body: detail({ can_respond: true }),
+      }),
+    })
+    render(
+      <MyResponsePanel
+        base={base}
+        event={detail({ can_respond: true }) as EventDetail}
+        onChanged={() => {}}
+      />,
+    )
+    expect(screen.getByRole('button', { name: 'Accept' })).toBeEnabled()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Decline' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Your decline has been saved.')
+  })
+  it('bestätigt die Rücknahme und fokussiert die verfügbare Antwortaktion statt des entfernten Knopfs', async () => {
+    const base = '/api/portal/4/'
+    const initial = detail({
+      mine: { status: 'yes', guests: 0, note: '', source: 'member' },
+      can_respond: true,
+    }) as EventDetail
+    fakeApi({
+      [`DELETE ${base}events/1/response/`]: () => ({
+        status: 200,
+        body: detail({ mine: null, can_respond: true }),
+      }),
+    })
+    function Response() {
+      const [event, setEvent] = useState(initial)
+      return <MyResponsePanel base={base} event={event} onChanged={setEvent} />
+    }
+    render(<Response />)
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Rückmeldung zurücknehmen' }))
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Deine Rückmeldung ist zurückgenommen.',
+    )
+    expect(
+      screen.queryByRole('button', { name: 'Rückmeldung zurücknehmen' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Zusagen' })).toHaveFocus()
+  })
+  it('bestätigt eine Absage und entfernt die Bestätigung beim fehlgeschlagenen erneuten Senden', async () => {
+    const base = '/api/portal/4/'
+    let fail = false
+    fakeApi({
+      [`PUT ${base}events/1/response/`]: () =>
+        fail
+          ? { status: 400, body: { detail: 'Anmeldeschluss ist vorbei.' } }
+          : { status: 200, body: detail({ can_respond: true }) },
+    })
+    render(
+      <MyResponsePanel
+        base={base}
+        event={detail({ can_respond: true }) as EventDetail}
+        onChanged={() => {}}
+      />,
+    )
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText('Bemerkung (optional)'), 'Vielleicht später')
+    await user.click(screen.getByRole('button', { name: 'Absagen' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('Deine Absage ist gespeichert.')
+    fail = true
+    await user.click(screen.getByRole('button', { name: 'Zusagen' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Anmeldeschluss ist vorbei.')
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
+    expect(screen.getByLabelText('Bemerkung (optional)')).toHaveValue('Vielleicht später')
+    expect(screen.getByRole('button', { name: 'Zusagen' })).toBeEnabled()
+  })
   it('Mitglied sagt mit Begleitung zu', async () => {
     const base = '/api/portal/4/'
     const user = userEvent.setup()
@@ -105,6 +184,11 @@ describe('Zu- und Absagen', () => {
     expect(
       within(dialog).getByRole('button', { name: 'Rückmeldung zurücknehmen' }),
     ).toBeInTheDocument()
+    const success = within(dialog).getByText('Deine Zusage ist gespeichert.')
+    expect(success).toHaveAttribute('role', 'status')
+    expect(success).toHaveAttribute('aria-atomic', 'true')
+    expect(within(dialog).getAllByText('Deine Zusage ist gespeichert.')).toHaveLength(1)
+    expect(within(dialog).getByRole('button', { name: 'Zusagen' })).toHaveFocus()
   })
 
   it('Vorstand sieht die Liste und trägt eine Zusage ein', async () => {

@@ -53,15 +53,17 @@ def validate_hex_color(value: str) -> None:
 def check_primary(color: str) -> list[str]:
     problems = []
     if contrast(color, text_color_on(color)) < MIN_TEXT_CONTRAST:
-        problems.append("Text auf der Primärfarbe wäre schlecht lesbar.")
+        problems.append(gettext("Text auf der Primärfarbe wäre schlecht lesbar."))
     if contrast(color, SURFACE) < MIN_UI_CONTRAST:
-        problems.append("Die Primärfarbe ist auf weißem Hintergrund zu hell (Rahmen und Symbole).")
+        problems.append(
+            gettext("Die Primärfarbe ist auf weißem Hintergrund zu hell (Rahmen und Symbole).")
+        )
     return problems
 
 
 def check_accent(color: str) -> list[str]:
     if contrast(color, text_color_on(color)) < MIN_TEXT_CONTRAST:
-        return ["Text auf der Akzentfarbe wäre schlecht lesbar."]
+        return [gettext("Text auf der Akzentfarbe wäre schlecht lesbar.")]
     return []
 
 

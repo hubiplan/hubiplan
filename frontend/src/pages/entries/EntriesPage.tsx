@@ -42,7 +42,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { CallEventCard, InterestCard } from './CallEvent.tsx'
 import { UnitEntryPage, UnitsPanel } from './UnitEntries.tsx'
 import { EntryResultsCard } from './EntryResults.tsx'
-import { locale } from '../../i18n/index.ts'
+import { locale, t } from '../../i18n/index.ts'
 
 export function EntriesPage() {
   return (
@@ -54,8 +54,9 @@ export function EntriesPage() {
 }
 
 function statusText(c: Call): string {
-  if (c.unit_counts) return `${c.unit_counts.submitted} von ${c.unit_counts.addressed} gemeldet`
-  if (!c.entry_status) return 'noch nicht gemeldet'
+  if (c.unit_counts)
+    return t('{x1} von {x2} gemeldet', { x1: c.unit_counts.submitted, x2: c.unit_counts.addressed })
+  if (!c.entry_status) return t('noch nicht gemeldet')
   const label = STATUS_LABELS[c.entry_status]
   return c.entry_changed && c.entry_status !== 'entwurf' ? `${label}, geändert` : label
 }
@@ -67,17 +68,17 @@ function CallList() {
   const [creating, setCreating] = useState(false)
   return (
     <section>
-      <h1>Meldungen</h1>
+      <h1>{t('Meldungen')}</h1>
       <p className="muted">
-        Mannschaften, Personen und Angaben an einen Veranstalter melden, etwa zu einem
-        Vergleichsschießen oder einem Verbandsfest. Die Meldung geht als Brief auf eurem Briefbogen,
-        per E-Mail oder als Tabelle hinaus; Änderungen werden als neue Fassung festgehalten.
+        {t(
+          'Mannschaften, Personen und Angaben an einen Veranstalter melden, etwa zu einem Vergleichsschießen oder einem Verbandsfest. Die Meldung geht als Brief auf eurem Briefbogen, per E-Mail oder als Tabelle hinaus; Änderungen werden als neue Fassung festgehalten.',
+        )}
       </p>
       {error && <LoadError message={error} onRetry={reload} />}
       {!creating && (
         <div className="button-row">
           <button type="button" className="button" onClick={() => setCreating(true)}>
-            Neue Ausschreibung erfassen
+            {t('Neue Ausschreibung erfassen')}
           </button>
         </div>
       )}
@@ -90,33 +91,33 @@ function CallList() {
       )}
       {data && (
         <DataTable<Call>
-          label="Ausschreibungen"
+          label={t('Ausschreibungen')}
           rows={data}
           rowKey={(c) => c.id}
           initialSort={{ key: 'deadline', dir: 'desc' }}
-          emptyText="Noch keine Ausschreibungen."
+          emptyText={t('Noch keine Ausschreibungen.')}
           columns={[
             {
               key: 'deadline',
-              label: 'Meldeschluss',
+              label: t('Meldeschluss'),
               value: (c) => c.deadline ?? '',
               render: (c) => (c.deadline ? formatDate(c.deadline) : '—'),
             },
             {
               key: 'title',
-              label: 'Ausschreibung',
+              label: t('Ausschreibung'),
               value: (c) => c.title,
               render: (c) => <Link to={`/meldungen/${c.id}`}>{c.title}</Link>,
             },
-            { key: 'organizer', label: 'Veranstalter', value: (c) => c.organizer },
+            { key: 'organizer', label: t('Veranstalter'), value: (c) => c.organizer },
             {
               key: 'date',
-              label: 'Datum',
+              label: t('Datum'),
               value: (c) => c.date ?? '',
               render: (c) => (c.date ? formatDate(c.date) : '—'),
               optional: true,
             },
-            { key: 'status', label: 'Meldung', value: statusText, filter: true },
+            { key: 'status', label: t('Meldung'), value: statusText, filter: true },
           ]}
         />
       )}
@@ -168,7 +169,7 @@ function NewCall({
     <div className="card card-wide">
       <form onSubmit={save}>
         <div className="card-head">
-          <h2>Neue Ausschreibung</h2>
+          <h2>{t('Neue Ausschreibung')}</h2>
           <button
             type="button"
             className="button button-ghost push-right"
@@ -177,58 +178,62 @@ function NewCall({
               if (await confirmDiscard(draft.dirty)) onClose()
             }}
           >
-            Abbrechen
+            {t('Abbrechen')}
           </button>
         </div>
         {canIssue && (
           <Checkbox
-            label="Wir schreiben selbst aus, unsere Untereinheiten melden"
-            hint="z. B. ein Preisschießen, zu dem die Züge ihre Schützen melden"
+            label={t('Wir schreiben selbst aus, unsere Untereinheiten melden')}
+            hint={t('z. B. ein Preisschießen, zu dem die Züge ihre Schützen melden')}
             checked={v.internal}
             onChange={(on) => set('internal', on)}
           />
         )}
         <p className="muted">
           {v.internal
-            ? 'Die Untereinheiten finden die Ausschreibung in ihrem Bereich unter „Meldungen“ und melden dort; ihr bestätigt im Eingang.'
-            : 'Übertragt hier die Ausschreibung, die ihr per Brief oder Mail bekommen habt. Bei jährlichen Anlässen könnt ihr später die Ausschreibung des Vorjahres kopieren.'}
+            ? t(
+                'Die Untereinheiten finden die Ausschreibung in ihrem Bereich unter „Meldungen“ und melden dort; ihr bestätigt im Eingang.',
+              )
+            : t(
+                'Übertragt hier die Ausschreibung, die ihr per Brief oder Mail bekommen habt. Bei jährlichen Anlässen könnt ihr später die Ausschreibung des Vorjahres kopieren.',
+              )}
         </p>
         <div className="grid-3">
           <Field
-            label="Titel"
+            label={t('Titel')}
             required
-            placeholder="z. B. Vergleichsschießen 2027"
+            placeholder={t('z. B. Vergleichsschießen 2027')}
             value={v.title}
             error={errors.title}
             onChange={(e) => set('title', e.target.value)}
           />
           {!v.internal && (
             <Field
-              label="Veranstalter"
+              label={t('Veranstalter')}
               required
-              placeholder="z. B. Bürger-Schützenverein"
+              placeholder={t('z. B. Bürger-Schützenverein')}
               value={v.organizer}
               error={errors.organizer}
               onChange={(e) => set('organizer', e.target.value)}
             />
           )}
           <SelectField
-            label="Vorlage"
+            label={t('Vorlage')}
             value={v.template}
             onChange={(e) => set('template', e.target.value)}
           >
-            <option value="mannschaften">Mannschaften melden</option>
-            <option value="">leer (Bausteine selbst anlegen)</option>
+            <option value="mannschaften">{t('Mannschaften melden')}</option>
+            <option value="">{t('leer (Bausteine selbst anlegen)')}</option>
           </SelectField>
           <Field
-            label="Datum des Anlasses"
+            label={t('Datum des Anlasses')}
             type="date"
             value={v.date}
             error={errors.date}
             onChange={(e) => set('date', e.target.value)}
           />
           <Field
-            label="Meldeschluss"
+            label={t('Meldeschluss')}
             type="date"
             value={v.deadline}
             error={errors.deadline}
@@ -238,7 +243,7 @@ function NewCall({
         {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
         <div className="button-row">
           <button type="submit" className="button" disabled={form.busy}>
-            Anlegen
+            {t('Anlegen')}
           </button>
         </div>
       </form>
@@ -265,34 +270,35 @@ function CallArea() {
       />
     )
   if (!call.data || !options.data || (entry.loading && entry.data === null))
-    return <p className="muted">Wird geladen …</p>
+    return <p className="muted">{t('Wird geladen …')}</p>
   const c = call.data
   const base = `/meldungen/${id}`
   return (
     <section>
       <p>
-        <Link to="/meldungen">← Alle Meldungen</Link>
+        <Link to="/meldungen">{t('← Alle Meldungen')}</Link>
       </p>
       <h1>{c.title}</h1>
       <p className="muted">
-        Veranstalter: {c.organizer}
+        {t('Veranstalter: ')}
+        {c.organizer}
         {c.date ? ` · ${formatDate(c.date)}` : ''}
         {c.location ? ` · ${c.location}` : ''}
-        {c.deadline ? ` · Meldeschluss ${formatDate(c.deadline)}` : ''}
+        {c.deadline ? t(' · Meldeschluss {x1}', { x1: formatDate(c.deadline) }) : ''}
       </p>
       {c.internal ? (
         <Tabs
           items={[
-            { to: base, label: 'Eingang' },
-            { to: `${base}/ausschreibung`, label: 'Ausschreibung' },
+            { to: base, label: t('Eingang') },
+            { to: `${base}/ausschreibung`, label: t('Ausschreibung') },
           ]}
         />
       ) : (
         <Tabs
           items={[
-            { to: base, label: 'Meldung' },
-            { to: `${base}/ausschreibung`, label: 'Ausschreibung' },
-            { to: `${base}/fassungen`, label: 'Fassungen' },
+            { to: base, label: t('Meldung') },
+            { to: `${base}/ausschreibung`, label: t('Ausschreibung') },
+            { to: `${base}/fassungen`, label: t('Fassungen') },
           ]}
         />
       )}
@@ -384,11 +390,12 @@ export function EntryPanel({
   if (!entry) {
     return (
       <div className="card card-wide">
-        <p>Zu dieser Ausschreibung gibt es noch keine Meldung.</p>
+        <p>{t('Zu dieser Ausschreibung gibt es noch keine Meldung.')}</p>
         {call.blocks.length === 0 && (
           <Alert kind="info">
-            Die Ausschreibung hat noch keine Bausteine. Legt unter „Ausschreibung“ fest, was
-            gemeldet wird, z. B. Mannschaften.
+            {t(
+              'Die Ausschreibung hat noch keine Bausteine. Legt unter „Ausschreibung“ fest, was gemeldet wird, z. B. Mannschaften.',
+            )}
           </Alert>
         )}
         {message && <Alert kind="error">{message}</Alert>}
@@ -398,7 +405,7 @@ export function EntryPanel({
             className="button"
             onClick={() => void run(() => entriesApi.createEntry(org, call.id))}
           >
-            Meldung zusammenstellen
+            {t('Meldung zusammenstellen')}
           </button>
         </div>
       </div>
@@ -412,31 +419,40 @@ export function EntryPanel({
       <div className="card card-wide">
         <div className="card-head">
           <h2>
-            Meldung: {entry.status_label}
-            {entry.changed && entry.status !== 'entwurf' ? ' (geändert, noch nicht gemeldet)' : ''}
+            {t('Meldung: ')}
+            {STATUS_LABELS[entry.status]}
+            {entry.changed && entry.status !== 'entwurf'
+              ? t(' (geändert, noch nicht gemeldet)')
+              : ''}
           </h2>
         </div>
-        {entry.confirmed_note && <p className="muted">Bestätigung: {entry.confirmed_note}</p>}
+        {entry.confirmed_note && (
+          <p className="muted">
+            {t('Bestätigung: ')}
+            {entry.confirmed_note}
+          </p>
+        )}
         {entry.question && (
           <Alert kind="info">
-            Rückfrage {call.internal ? `von ${call.organizer}` : ''}: {entry.question}
-            {!organizer && ' Bitte prüfen und die Meldung erneut abgeben.'}
+            {t('Rückfrage ')}
+            {call.internal ? t('von {x1}', { x1: call.organizer }) : ''}: {entry.question}
+            {!organizer && t(' Bitte prüfen und die Meldung erneut abgeben.')}
           </Alert>
         )}
         {entry.after_deadline && !withdrawn && (
           <Alert kind="info">
-            Der Meldeschluss ist vorbei.{' '}
+            {t('Der Meldeschluss ist vorbei.')}{' '}
             {call.changes_after_deadline === 'frei'
-              ? 'Änderungen sind bis zum Anlass möglich.'
+              ? t('Änderungen sind bis zum Anlass möglich.')
               : call.changes_after_deadline === 'ersatz'
-                ? 'Möglich ist nur noch der Ersatz von Personen.'
-                : 'Änderungen sind nicht mehr vorgesehen.'}
+                ? t('Möglich ist nur noch der Ersatz von Personen.')
+                : t('Änderungen sind nicht mehr vorgesehen.')}
           </Alert>
         )}
         {entry.hints.length > 0 && (
           <div className="alert alert-info" role="status">
-            <strong>Bitte prüfen</strong>
-            {call.strict ? ' (so lässt sich nicht abgeben):' : ' (Abgeben bleibt möglich):'}
+            <strong>{t('Bitte prüfen')}</strong>
+            {call.strict ? t(' (so lässt sich nicht abgeben):') : t(' (Abgeben bleibt möglich):')}
             <ul>
               {entry.hints.map((h, i) => (
                 <li key={i}>{h.text}</li>
@@ -446,9 +462,9 @@ export function EntryPanel({
         )}
         {entry.competition && !call.internal && (
           <p>
-            Zur Meldung gehört der Wettbewerb{' '}
-            <Link to={`/wettbewerbe/${entry.competition}`}>{call.title}</Link>; dort tragt ihr
-            später eure Plätze ein.
+            {t('Zur Meldung gehört der Wettbewerb')}{' '}
+            <Link to={`/wettbewerbe/${entry.competition}`}>{call.title}</Link>
+            {t('; dort tragt ihr später eure Plätze ein.')}
           </p>
         )}
         {message && <Alert kind="error">{message}</Alert>}
@@ -508,9 +524,12 @@ function WithdrawnCard({
 }) {
   async function remove() {
     const ok = await confirmDialog({
-      title: 'Meldung löschen',
-      message: `Die Meldung mit allen Mannschaften, Personen und ${entry.versions.length} Fassungen löschen? Die Ausschreibung bleibt erhalten.`,
-      confirmLabel: 'Löschen',
+      title: t('Meldung löschen'),
+      message: t(
+        'Die Meldung mit allen Mannschaften, Personen und {x1} Fassungen löschen? Die Ausschreibung bleibt erhalten.',
+        { x1: entry.versions.length },
+      ),
+      confirmLabel: t('Löschen'),
       danger: true,
     })
     if (ok && (await run(() => entriesApi.discard(org, call.id)))) onDeleted()
@@ -518,12 +537,12 @@ function WithdrawnCard({
   return (
     <div className="card card-wide">
       <div className="card-head">
-        <h2>Zurückgezogen</h2>
+        <h2>{t('Zurückgezogen')}</h2>
       </div>
       <p className="muted">
-        Öffnet ihr die Meldung wieder, wird sie zum Entwurf mit den bisherigen Angaben; die
-        Fassungen bleiben erhalten. Beim Löschen verschwindet die Meldung mit allen Fassungen, und
-        ihr könnt neu anfangen.
+        {t(
+          'Öffnet ihr die Meldung wieder, wird sie zum Entwurf mit den bisherigen Angaben; die Fassungen bleiben erhalten. Beim Löschen verschwindet die Meldung mit allen Fassungen, und ihr könnt neu anfangen.',
+        )}
       </p>
       <div className="button-row">
         <button
@@ -531,10 +550,10 @@ function WithdrawnCard({
           className="button"
           onClick={() => void run(() => entriesApi.reopen(org, call.id))}
         >
-          Wieder öffnen
+          {t('Wieder öffnen')}
         </button>
         <button type="button" className="button button-ghost" onClick={remove}>
-          Meldung löschen
+          {t('Meldung löschen')}
         </button>
       </div>
     </div>
@@ -568,11 +587,11 @@ function BlockEntry({
         </div>
         {block.help_text && <p className="muted">{block.help_text}</p>}
         <p className="muted small">
-          {rangeText(s.min_teams, s.max_teams, 'Mannschaft', 'Mannschaften')}
+          {rangeText(s.min_teams, s.max_teams, t('Mannschaft'), t('Mannschaften'))}
           {s.min_size || s.max_size
-            ? ` · je ${rangeText(s.min_size, s.max_size, 'Person', 'Personen')}`
+            ? t(' · je {x1}', { x1: rangeText(s.min_size, s.max_size, t('Person'), t('Personen')) })
             : ''}
-          {s.substitutes ? ` · bis ${s.substitutes} Ersatz` : ''}
+          {s.substitutes ? t(' · bis {x1} Ersatz', { x1: s.substitutes }) : ''}
         </p>
         {teams.map((t) => (
           <TeamCard
@@ -593,7 +612,7 @@ function BlockEntry({
               className="button button-ghost"
               onClick={() => void run(() => entriesApi.addTeam(org, call.id, block.id))}
             >
-              Mannschaft hinzufügen
+              {t('Mannschaft hinzufügen')}
             </button>
           </div>
         )}
@@ -640,11 +659,11 @@ function BlockEntry({
 
 function rangeText(min: number | undefined, max: number | undefined, one: string, many: string) {
   const word = (n: number) => (n === 1 ? one : many)
-  if (min && max != null && min === max) return `genau ${min} ${word(min)}`
-  if (min && max != null) return `${min} bis ${max} ${many}`
-  if (min) return `mindestens ${min} ${word(min)}`
-  if (max != null) return `höchstens ${max} ${word(max)}`
-  return `beliebig viele ${many}`
+  if (min && max != null && min === max) return t('genau {x1} {x2}', { x1: min, x2: word(min) })
+  if (min && max != null) return t('{x1} bis {x2} {x3}', { x1: min, x2: max, x3: many })
+  if (min) return t('mindestens {x1} {x2}', { x1: min, x2: word(min) })
+  if (max != null) return t('höchstens {x1} {x2}', { x1: max, x2: word(max) })
+  return t('beliebig viele {x1}', { x1: many })
 }
 
 function TeamCard({
@@ -669,9 +688,12 @@ function TeamCard({
 
   async function remove() {
     const ok = await confirmDialog({
-      title: 'Mannschaft entfernen',
-      message: `„${team.name}“ mit ${persons.length} Personen aus der Meldung nehmen?`,
-      confirmLabel: 'Entfernen',
+      title: t('Mannschaft entfernen'),
+      message: t('„{x1}“ mit {x2} Personen aus der Meldung nehmen?', {
+        x1: team.name,
+        x2: persons.length,
+      }),
+      confirmLabel: t('Entfernen'),
       danger: true,
     })
     if (ok) await run(() => entriesApi.removeTeam(org, call.id, team.id))
@@ -684,7 +706,7 @@ function TeamCard({
           <h3>{team.name}</h3>
         ) : (
           <Field
-            label="Name der Mannschaft"
+            label={t('Name der Mannschaft')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={() => {
@@ -695,7 +717,7 @@ function TeamCard({
         )}
         {!locked && (
           <button type="button" className="button button-ghost push-right" onClick={remove}>
-            Mannschaft entfernen
+            {t('Mannschaft entfernen')}
           </button>
         )}
       </div>
@@ -734,17 +756,17 @@ function PersonList({
 }) {
   const [replacing, setReplacing] = useState<number | null>(null)
   const positions = block.settings.positions ?? []
-  if (persons.length === 0) return <p className="muted">Noch niemand gemeldet.</p>
+  if (persons.length === 0) return <p className="muted">{t('Noch niemand gemeldet.')}</p>
   const hintsFor = (p: EntryPerson) => entry.hints.filter((h) => h.person === p.id)
   return (
     <table className="table">
       <thead>
         <tr>
-          <th scope="col">Nr.</th>
-          <th scope="col">Name</th>
-          {positions.length > 0 && <th scope="col">Aufgabe</th>}
-          {block.kind === 'mannschaften' && <th scope="col">Ersatz</th>}
-          {!locked && <th scope="col">Aktionen</th>}
+          <th scope="col">{t('Nr.')}</th>
+          <th scope="col">{t('Name')}</th>
+          {positions.length > 0 && <th scope="col">{t('Aufgabe')}</th>}
+          {block.kind === 'mannschaften' && <th scope="col">{t('Ersatz')}</th>}
+          {!locked && <th scope="col">{t('Aktionen')}</th>}
         </tr>
       </thead>
       <tbody>
@@ -754,7 +776,7 @@ function PersonList({
             <td>
               {p.name}
               {p.club && <span className="muted"> ({p.club})</span>}
-              {p.guest && <span className="muted small"> · Gast</span>}
+              {p.guest && <span className="muted small">{t(' · Gast')}</span>}
               {hintsFor(p).map((h, j) => (
                 <div key={j} className="muted small">
                   ⚠ {h.text}
@@ -764,7 +786,7 @@ function PersonList({
                 <MemberChooser
                   org={org}
                   call={call}
-                  label="Ersatz: neues Mitglied auf diesem Platz"
+                  label={t('Ersatz: neues Mitglied auf diesem Platz')}
                   onPick={async (m) => {
                     const ok = await run(() =>
                       entriesApi.updatePerson(org, call.id, p.id, { membership: m }),
@@ -777,7 +799,7 @@ function PersonList({
             {positions.length > 0 && (
               <td>
                 <select
-                  aria-label={`Aufgabe von ${p.name}`}
+                  aria-label={t('Aufgabe von {name}', { name: p.name })}
                   value={p.position}
                   disabled={locked}
                   onChange={(e) =>
@@ -799,7 +821,7 @@ function PersonList({
               <td>
                 <input
                   type="checkbox"
-                  aria-label={`${p.name} als Ersatz`}
+                  aria-label={t('{name} als Ersatz', { name: p.name })}
                   checked={p.substitute}
                   disabled={locked}
                   onChange={(e) =>
@@ -820,7 +842,7 @@ function PersonList({
                     className="link-button"
                     onClick={() => setReplacing(replacing === p.id ? null : p.id)}
                   >
-                    {replacing === p.id ? 'kein Ersatz' : 'ersetzen'}
+                    {replacing === p.id ? t('kein Ersatz') : t('ersetzen')}
                   </button>
                 )}{' '}
                 <button
@@ -828,7 +850,7 @@ function PersonList({
                   className="link-button"
                   onClick={() => void run(() => entriesApi.removePerson(org, call.id, p.id))}
                 >
-                  streichen
+                  {t('streichen')}
                 </button>
               </td>
             )}
@@ -864,10 +886,10 @@ function MemberChooser({
           last_name: r.last_name,
           email: [
             r.unit_name,
-            r.birth_year ? `geb. ${r.birth_year}` : '',
-            r.active ? '' : 'nicht aktiv',
-            r.taken ? 'schon gemeldet' : '',
-            r.response === 'yes' ? 'hat zugesagt' : r.response === 'no' ? 'hat abgesagt' : '',
+            r.birth_year ? t('geb. {year}', { year: r.birth_year }) : '',
+            r.active ? '' : t('nicht aktiv'),
+            r.taken ? t('schon gemeldet') : '',
+            r.response === 'yes' ? t('hat zugesagt') : r.response === 'no' ? t('hat abgesagt') : '',
           ]
             .filter(Boolean)
             .join(' · '),
@@ -885,7 +907,7 @@ function MemberChooser({
         search={search}
         onChange={(m) => m && onPick(m.id)}
       />
-      <Checkbox label="auch ausgetretene Mitglieder" checked={all} onChange={setAll} />
+      <Checkbox label={t('auch ausgetretene Mitglieder')} checked={all} onChange={setAll} />
     </div>
   )
 }
@@ -915,7 +937,7 @@ function PersonAdder({
         <MemberChooser
           org={org}
           call={call}
-          label="Mitglied hinzufügen"
+          label={t('Mitglied hinzufügen')}
           onPick={(m) =>
             void run(() => entriesApi.addPerson(org, call.id, { ...target, membership: m }))
           }
@@ -923,8 +945,12 @@ function PersonAdder({
       )}
       {(guest || !entry.can_pick_members) && (
         <>
-          <Field label="Name des Gastes" value={name} onChange={(e) => setName(e.target.value)} />
-          <Field label="Verein" value={club} onChange={(e) => setClub(e.target.value)} />
+          <Field
+            label={t('Name des Gastes')}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <Field label={t('Verein')} value={club} onChange={(e) => setClub(e.target.value)} />
           <div className="button-row">
             <button
               type="button"
@@ -940,13 +966,13 @@ function PersonAdder({
                 }
               }}
             >
-              Gast hinzufügen
+              {t('Gast hinzufügen')}
             </button>
           </div>
         </>
       )}
       {entry.can_pick_members && (
-        <Checkbox label="Gast (kein Mitglied)" checked={guest} onChange={setGuest} />
+        <Checkbox label={t('Gast (kein Mitglied)')} checked={guest} onChange={setGuest} />
       )}
     </div>
   )
@@ -1056,7 +1082,7 @@ function NoteCard({
   return (
     <div className="card card-wide">
       <label className="field">
-        <span>Interne Notiz (geht nicht an den Veranstalter)</span>
+        <span>{t('Interne Notiz (geht nicht an den Veranstalter)')}</span>
         <textarea
           rows={2}
           value={note}
@@ -1110,11 +1136,12 @@ function SubmitCard({
 
   async function withdraw() {
     const reason = await promptDialog({
-      title: 'Meldung zurückziehen',
-      message:
+      title: t('Meldung zurückziehen'),
+      message: t(
         'Die Rückzugserklärung wird als neue Fassung festgehalten und über den gewählten Meldeweg verschickt bzw. als Brief erstellt.',
-      label: 'Grund (optional)',
-      confirmLabel: 'Zurückziehen',
+      ),
+      label: t('Grund (optional)'),
+      confirmLabel: t('Zurückziehen'),
       danger: true,
     })
     if (reason === null) return
@@ -1132,21 +1159,21 @@ function SubmitCard({
 
   async function confirmed() {
     const note = await promptDialog({
-      title: 'Bestätigung vermerken',
-      label: 'Wie und wann bestätigt?',
-      defaultValue: `per Mail am ${new Date().toLocaleDateString(locale())}`,
+      title: t('Bestätigung vermerken'),
+      label: t('Wie und wann bestätigt?'),
+      defaultValue: t('per Mail am {x1}', { x1: new Date().toLocaleDateString(locale()) }),
     })
     if (note !== null) await run(() => entriesApi.confirm(org, call.id, note))
   }
 
   async function discard() {
     const ok = await confirmDialog({
-      title: 'Entwurf verwerfen',
+      title: t('Entwurf verwerfen'),
       message:
         entry.versions.length > 0
           ? `Alle Mannschaften, Personen und Angaben dieses Entwurfs samt ${entry.versions.length} früheren Fassungen löschen?`
-          : 'Alle Mannschaften, Personen und Angaben dieses Entwurfs löschen?',
-      confirmLabel: 'Verwerfen',
+          : t('Alle Mannschaften, Personen und Angaben dieses Entwurfs löschen?'),
+      confirmLabel: t('Verwerfen'),
       danger: true,
     })
     if (ok && (await run(() => entriesApi.discard(org, call.id)))) onDiscarded()
@@ -1156,33 +1183,35 @@ function SubmitCard({
     return (
       <div className="card card-wide">
         <div className="card-head">
-          <h2>{first ? 'Meldung abgeben' : 'Änderung melden'}</h2>
+          <h2>{first ? t('Meldung abgeben') : t('Änderung melden')}</h2>
         </div>
         <p className="muted">
-          Die Meldung geht in HUBIplan an {call.organizer}; dort wird sie bestätigt.
+          {t('Die Meldung geht in HUBIplan an ')}
+          {call.organizer}
+          {t('; dort wird sie bestätigt.')}
         </p>
         {nothingNew && entry.status !== 'rueckfrage' ? (
-          <p className="muted">Seit der letzten Fassung hat sich nichts geändert.</p>
+          <p className="muted">{t('Seit der letzten Fassung hat sich nichts geändert.')}</p>
         ) : (
           <div className="button-row">
             <button type="button" className="button" disabled={busy} onClick={submit}>
               {entry.status === 'rueckfrage' && nothingNew
-                ? 'Erneut abgeben'
+                ? t('Erneut abgeben')
                 : first
-                  ? 'Meldung abgeben'
-                  : 'Änderung melden'}
+                  ? t('Meldung abgeben')
+                  : t('Änderung melden')}
             </button>
           </div>
         )}
         <div className="button-row">
           {!first && (
             <button type="button" className="button button-ghost" onClick={withdraw}>
-              Meldung zurückziehen
+              {t('Meldung zurückziehen')}
             </button>
           )}
           {first && (
             <button type="button" className="button button-ghost" onClick={discard}>
-              Entwurf verwerfen
+              {t('Entwurf verwerfen')}
             </button>
           )}
         </div>
@@ -1192,22 +1221,22 @@ function SubmitCard({
   return (
     <div className="card card-wide">
       <div className="card-head">
-        <h2>{first ? 'Meldung abgeben' : 'Änderung melden'}</h2>
+        <h2>{first ? t('Meldung abgeben') : t('Änderung melden')}</h2>
       </div>
       <p>
-        Vorschau:{' '}
+        {t('Vorschau:')}{' '}
         <a href={preview('pdf')} target="_blank" rel="noreferrer">
-          Brief (PDF)
+          {t('Brief (PDF)')}
         </a>{' '}
-        · <a href={preview('xlsx')}>Tabelle (Excel)</a> · <a href={preview('csv')}>CSV</a>
+        · <a href={preview('xlsx')}>{t('Tabelle (Excel)')}</a> · <a href={preview('csv')}>CSV</a>
       </p>
       {nothingNew ? (
-        <p className="muted">Seit der letzten Fassung hat sich nichts geändert.</p>
+        <p className="muted">{t('Seit der letzten Fassung hat sich nichts geändert.')}</p>
       ) : (
         <>
           <div className="grid-3">
             <SelectField
-              label="Meldeweg"
+              label={t('Meldeweg')}
               value={channel}
               onChange={(e) => setChannel(e.target.value as Channel)}
             >
@@ -1219,7 +1248,7 @@ function SubmitCard({
             </SelectField>
             {channel === 'email' && (
               <Field
-                label="E-Mail des Veranstalters"
+                label={t('E-Mail des Veranstalters')}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -1227,15 +1256,15 @@ function SubmitCard({
             )}
             {channel === 'sonstiges' && (
               <Field
-                label="Vermerk"
-                placeholder="z. B. persönlich übergeben"
+                label={t('Vermerk')}
+                placeholder={t('z. B. persönlich übergeben')}
                 value={sentTo}
                 onChange={(e) => setSentTo(e.target.value)}
               />
             )}
             {options.functions.length > 0 && (
               <SelectField
-                label="Unterschrift als"
+                label={t('Unterschrift als')}
                 value={fn}
                 onChange={(e) => setFn(e.target.value)}
               >
@@ -1248,15 +1277,16 @@ function SubmitCard({
             )}
           </div>
           <p className="muted small">
-            Unterzeichnet von {options.signer}. Im Brief bleibt Platz für die eigenhändige
-            Unterschrift.
+            {t('Unterzeichnet von ')}
+            {options.signer}
+            {t('. Im Brief bleibt Platz für die eigenhändige Unterschrift.')}
             {channel === 'brief' &&
-              ' Nach dem Abgeben findet ihr den Brief unter „Fassungen“ zum Drucken.'}
-            {channel === 'email' && ' Ihr bekommt eine Kopie an eure eigene Adresse.'}
+              t(' Nach dem Abgeben findet ihr den Brief unter „Fassungen“ zum Drucken.')}
+            {channel === 'email' && t(' Ihr bekommt eine Kopie an eure eigene Adresse.')}
           </p>
           <div className="button-row">
             <button type="button" className="button" disabled={busy} onClick={submit}>
-              {first ? 'Meldung abgeben' : 'Änderung melden'}
+              {first ? t('Meldung abgeben') : t('Änderung melden')}
             </button>
           </div>
         </>
@@ -1264,7 +1294,7 @@ function SubmitCard({
       <div className="button-row">
         {entry.status === 'abgegeben' && (
           <button type="button" className="button button-ghost" onClick={confirmed}>
-            Bestätigung des Veranstalters vermerken
+            {t('Bestätigung des Veranstalters vermerken')}
           </button>
         )}
         {entry.status === 'bestaetigt' && (
@@ -1273,17 +1303,17 @@ function SubmitCard({
             className="button button-ghost"
             onClick={() => void run(() => entriesApi.unconfirm(org, call.id))}
           >
-            Bestätigung zurücknehmen
+            {t('Bestätigung zurücknehmen')}
           </button>
         )}
         {!first && (
           <button type="button" className="button button-ghost" onClick={withdraw}>
-            Meldung zurückziehen
+            {t('Meldung zurückziehen')}
           </button>
         )}
         {first && (
           <button type="button" className="button button-ghost" onClick={discard}>
-            Entwurf verwerfen
+            {t('Entwurf verwerfen')}
           </button>
         )}
       </div>
@@ -1305,17 +1335,19 @@ function OrganizerCard({
 }) {
   async function giveBack() {
     const question = await promptDialog({
-      title: 'Mit Rückfrage zurückgeben',
-      label: 'Rückfrage',
-      message: 'Die Zugführung bekommt eine Mail und gibt danach erneut ab.',
-      confirmLabel: 'Zurückgeben',
+      title: t('Mit Rückfrage zurückgeben'),
+      label: t('Rückfrage'),
+      message: t('Die Zugführung bekommt eine Mail und gibt danach erneut ab.'),
+      confirmLabel: t('Zurückgeben'),
     })
     if (question) await run(() => entriesApi.returnEntry(org, call.id, question))
   }
   return (
     <div className="card card-wide">
-      <h2>Als Veranstalter</h2>
-      {entry.status === 'entwurf' && <p className="muted">Die Meldung ist noch nicht abgegeben.</p>}
+      <h2>{t('Als Veranstalter')}</h2>
+      {entry.status === 'entwurf' && (
+        <p className="muted">{t('Die Meldung ist noch nicht abgegeben.')}</p>
+      )}
       <div className="button-row">
         {entry.status === 'abgegeben' && (
           <button
@@ -1323,7 +1355,7 @@ function OrganizerCard({
             className="button"
             onClick={() => void run(() => entriesApi.confirm(org, call.id, ''))}
           >
-            Meldung bestätigen
+            {t('Meldung bestätigen')}
           </button>
         )}
         {entry.status === 'bestaetigt' && (
@@ -1332,18 +1364,18 @@ function OrganizerCard({
             className="button button-ghost"
             onClick={() => void run(() => entriesApi.unconfirm(org, call.id))}
           >
-            Bestätigung zurücknehmen
+            {t('Bestätigung zurücknehmen')}
           </button>
         )}
         {(entry.status === 'abgegeben' || entry.status === 'bestaetigt') && (
           <button type="button" className="button button-ghost" onClick={giveBack}>
-            Mit Rückfrage zurückgeben
+            {t('Mit Rückfrage zurückgeben')}
           </button>
         )}
       </div>
       {entry.competition && (
         <p className="muted small">
-          Bestätigte Personen stehen als Starter im Wettbewerb{' '}
+          {t('Bestätigte Personen stehen als Starter im Wettbewerb')}{' '}
           <Link to={`/wettbewerbe/${entry.competition}`}>{call.title}</Link>.
         </p>
       )}
@@ -1362,7 +1394,8 @@ function VersionsPanel({
   call: CallDetail
   entry: Entry | null
 }) {
-  if (!entry || entry.versions.length === 0) return <p className="muted">Noch nichts abgegeben.</p>
+  if (!entry || entry.versions.length === 0)
+    return <p className="muted">{t('Noch nichts abgegeben.')}</p>
   const url = (n: number, fmt: 'pdf' | 'xlsx' | 'csv') =>
     entriesApi.versionUrl(org, call.id, n, fmt)
   return (
@@ -1370,11 +1403,11 @@ function VersionsPanel({
       <table className="table">
         <thead>
           <tr>
-            <th scope="col">Fassung</th>
-            <th scope="col">Abgegeben</th>
-            <th scope="col">Meldeweg</th>
-            <th scope="col">Inhalt</th>
-            <th scope="col">Belege</th>
+            <th scope="col">{t('Fassung')}</th>
+            <th scope="col">{t('Abgegeben')}</th>
+            <th scope="col">{t('Meldeweg')}</th>
+            <th scope="col">{t('Inhalt')}</th>
+            <th scope="col">{t('Belege')}</th>
           </tr>
         </thead>
         <tbody>
@@ -1402,16 +1435,21 @@ function VersionsPanel({
                     ))}
                   </ul>
                 ) : (
-                  'vollständige Meldung'
+                  t('vollständige Meldung')
                 )}
-                {v.reason && <div className="muted small">Grund: {v.reason}</div>}
+                {v.reason && (
+                  <div className="muted small">
+                    {t('Grund: ')}
+                    {v.reason}
+                  </div>
+                )}
                 {v.shortened && (
-                  <div className="muted small">nach Ablauf der Frist auf Namen gekürzt</div>
+                  <div className="muted small">{t('nach Ablauf der Frist auf Namen gekürzt')}</div>
                 )}
               </td>
               <td>
                 <a href={url(v.number, 'pdf')} target="_blank" rel="noreferrer">
-                  Brief
+                  {t('Brief')}
                 </a>{' '}
                 · <a href={url(v.number, 'xlsx')}>Excel</a> · <a href={url(v.number, 'csv')}>CSV</a>
               </td>
@@ -1488,9 +1526,9 @@ function CallEditor({
 
   async function remove() {
     const ok = await confirmDialog({
-      title: 'Ausschreibung löschen',
-      message: `„${call.title}“ samt Entwurf löschen?`,
-      confirmLabel: 'Löschen',
+      title: t('Ausschreibung löschen'),
+      message: t('„{x1}“ samt Entwurf löschen?', { x1: call.title }),
+      confirmLabel: t('Löschen'),
       danger: true,
     })
     if (!ok) return
@@ -1506,51 +1544,51 @@ function CallEditor({
     <>
       <div className="card card-wide">
         <div className="card-head">
-          <h2>Ausschreibung</h2>
+          <h2>{t('Ausschreibung')}</h2>
           <SaveStatus auto={auto} />
         </div>
         <div className="grid-3">
           <Field
-            label="Titel"
+            label={t('Titel')}
             value={v.title}
             error={errors.title}
             onChange={(e) => set('title', e.target.value)}
           />
           <Field
-            label="Datum des Anlasses"
+            label={t('Datum des Anlasses')}
             type="date"
             value={v.date}
             error={errors.date}
             onChange={(e) => set('date', e.target.value)}
           />
           <Field
-            label="Ort"
+            label={t('Ort')}
             value={v.location}
             error={errors.location}
             onChange={(e) => set('location', e.target.value)}
           />
           <Field
-            label="Meldeschluss"
+            label={t('Meldeschluss')}
             type="date"
             value={v.deadline}
             error={errors.deadline}
             onChange={(e) => set('deadline', e.target.value)}
           />
           <SelectField
-            label="Nach Meldeschluss"
+            label={t('Nach Meldeschluss')}
             value={v.changes_after_deadline}
             onChange={(e) =>
               set('changes_after_deadline', e.target.value as Call['changes_after_deadline'])
             }
           >
-            <option value="ersatz">nur Ersatz von Personen</option>
-            <option value="keine">keine Änderungen</option>
-            <option value="frei">Änderungen bis zum Anlass</option>
+            <option value="ersatz">{t('nur Ersatz von Personen')}</option>
+            <option value="keine">{t('keine Änderungen')}</option>
+            <option value="frei">{t('Änderungen bis zum Anlass')}</option>
           </SelectField>
           <Field
-            label="Stichtag für Alter und Mitgliedschaft"
+            label={t('Stichtag für Alter und Mitgliedschaft')}
             type="date"
-            hint="leer: Datum des Anlasses"
+            hint={t('leer: Datum des Anlasses')}
             value={v.reference_date}
             error={errors.reference_date}
             onChange={(e) => set('reference_date', e.target.value)}
@@ -1559,7 +1597,9 @@ function CallEditor({
         {call.internal && (
           <fieldset>
             <legend>
-              Angeschriebene {options.unit_label}-Einheiten (keine Auswahl: alle direkt darunter)
+              {t('Angeschriebene ')}
+              {options.unit_label}
+              {t('-Einheiten (keine Auswahl: alle direkt darunter)')}
             </legend>
             {options.units.map((u) => (
               <Checkbox
@@ -1571,17 +1611,17 @@ function CallEditor({
             ))}
           </fieldset>
         )}
-        {!call.internal && <h3>Veranstalter</h3>}
+        {!call.internal && <h3>{t('Veranstalter')}</h3>}
         {!call.internal && (
           <div className="grid-3">
             <Field
-              label="Name"
+              label={t('Name')}
               value={v.organizer}
               error={errors.organizer}
               onChange={(e) => set('organizer', e.target.value)}
             />
             <label className="field">
-              <span>Anschrift (ohne Name)</span>
+              <span>{t('Anschrift (ohne Name)')}</span>
               <textarea
                 rows={3}
                 value={v.organizer_address}
@@ -1589,14 +1629,14 @@ function CallEditor({
               />
             </label>
             <Field
-              label="E-Mail"
+              label={t('E-Mail')}
               type="email"
               value={v.organizer_email}
               error={errors.organizer_email}
               onChange={(e) => set('organizer_email', e.target.value)}
             />
             <Field
-              label="Anrede im Brief"
+              label={t('Anrede im Brief')}
               value={v.salutation}
               error={errors.salutation}
               onChange={(e) => set('salutation', e.target.value)}
@@ -1604,35 +1644,35 @@ function CallEditor({
           </div>
         )}
         <label className="field">
-          <span>Beschreibung (z. B. Auszug aus der Ausschreibung)</span>
+          <span>{t('Beschreibung (z. B. Auszug aus der Ausschreibung)')}</span>
           <textarea
             rows={3}
             value={v.description}
             onChange={(e) => set('description', e.target.value)}
           />
         </label>
-        <h3>Meldegebühr</h3>
+        <h3>{t('Meldegebühr')}</h3>
         <div className="grid-3">
           <Field
-            label="Betrag (€)"
+            label={t('Betrag (€)')}
             inputMode="decimal"
             value={v.fee_amount}
             error={errors.fee_amount}
             onChange={(e) => set('fee_amount', e.target.value)}
           />
           <SelectField
-            label="berechnet"
+            label={t('berechnet')}
             value={v.fee_per}
             onChange={(e) => set('fee_per', e.target.value as Call['fee_per'])}
           >
-            <option value="mannschaft">je Mannschaft</option>
-            <option value="person">je Person</option>
-            <option value="pauschal">pauschal</option>
+            <option value="mannschaft">{t('je Mannschaft')}</option>
+            <option value="person">{t('je Person')}</option>
+            <option value="pauschal">{t('pauschal')}</option>
           </SelectField>
         </div>
-        <h3>Angaben je Person</h3>
+        <h3>{t('Angaben je Person')}</h3>
         <p className="muted small">
-          Nur angekreuzte Angaben gehen an den Veranstalter. Der Name steht immer drin.
+          {t('Nur angekreuzte Angaben gehen an den Veranstalter. Der Name steht immer drin.')}
         </p>
         <div className="grid-3">
           {options.person_fields.map((f) => (
@@ -1649,36 +1689,38 @@ function CallEditor({
             />
           ))}
         </div>
-        <h3>Bedingungen</h3>
+        <h3>{t('Bedingungen')}</h3>
         <p className="muted small">
-          HUBIplan weist auf Verstöße hin; abgeben bleibt möglich, der Veranstalter entscheidet.
+          {t(
+            'HUBIplan weist auf Verstöße hin; abgeben bleibt möglich, der Veranstalter entscheidet.',
+          )}
         </p>
         {call.internal && (
           <Checkbox
-            label="Verstöße sperren das Abgeben"
-            hint="sonst nur Hinweise; ihr entscheidet beim Bestätigen"
+            label={t('Verstöße sperren das Abgeben')}
+            hint={t('sonst nur Hinweise; ihr entscheidet beim Bestätigen')}
             checked={v.strict}
             onChange={(on) => set('strict', on)}
           />
         )}
         <div className="grid-3">
           <Checkbox
-            label="nur aktive Mitglieder am Stichtag"
+            label={t('nur aktive Mitglieder am Stichtag')}
             checked={!!cond.active}
             onChange={(on) => setCond({ active: on })}
           />
           <Checkbox
-            label="Gäste (Nichtmitglieder) erlaubt"
+            label={t('Gäste (Nichtmitglieder) erlaubt')}
             checked={!!cond.guests}
             onChange={(on) => setCond({ guests: on })}
           />
           <Checkbox
-            label="jede Person nur in einer Mannschaft"
+            label={t('jede Person nur in einer Mannschaft')}
             checked={!!cond.one_team}
             onChange={(on) => setCond({ one_team: on })}
           />
           <Field
-            label="Mindestalter"
+            label={t('Mindestalter')}
             type="number"
             min={0}
             value={cond.min_age ?? ''}
@@ -1686,7 +1728,7 @@ function CallEditor({
             onChange={(e) => setCond({ min_age: numOrNull(e.target.value) ?? undefined })}
           />
           <Field
-            label="Höchstalter"
+            label={t('Höchstalter')}
             type="number"
             min={0}
             value={cond.max_age ?? ''}
@@ -1696,7 +1738,7 @@ function CallEditor({
         </div>
         {options.member_types.length > 0 && (
           <fieldset>
-            <legend>nur diese Mitgliedsarten (keine Auswahl: alle)</legend>
+            <legend>{t('nur diese Mitgliedsarten (keine Auswahl: alle)')}</legend>
             {options.member_types.map((t) => (
               <Checkbox
                 key={t.id}
@@ -1709,7 +1751,11 @@ function CallEditor({
         )}
         {options.units.length > 0 && (
           <fieldset>
-            <legend>nur aus diesen {options.unit_label}-Einheiten (keine Auswahl: alle)</legend>
+            <legend>
+              {t('nur aus diesen ')}
+              {options.unit_label}
+              {t('-Einheiten (keine Auswahl: alle)')}
+            </legend>
             {options.units.map((u) => (
               <Checkbox
                 key={u.id}
@@ -1724,13 +1770,15 @@ function CallEditor({
           <Checkbox
             label={
               call.internal
-                ? 'bestätigte Meldungen als Starter in einen eigenen Wettbewerb übernehmen'
-                : 'beim Abgeben einen fremden Wettbewerb mit den Mannschaften anlegen'
+                ? t('bestätigte Meldungen als Starter in einen eigenen Wettbewerb übernehmen')
+                : t('beim Abgeben einen fremden Wettbewerb mit den Mannschaften anlegen')
             }
             hint={
               call.internal
-                ? 'der Wettbewerb entsteht beim ersten Bestätigen, mit Wertung der Untereinheiten'
-                : 'dort tragt ihr später eure Plätze ein'
+                ? t(
+                    'der Wettbewerb entsteht beim ersten Bestätigen, mit Wertung der Untereinheiten',
+                  )
+                : t('dort tragt ihr später eure Plätze ein')
             }
             checked={v.create_competition}
             onChange={(on) => set('create_competition', on)}
@@ -1739,11 +1787,11 @@ function CallEditor({
         {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
         <div className="button-row">
           <button type="button" className="button button-ghost" onClick={copy}>
-            Für das nächste Jahr kopieren
+            {t('Für das nächste Jahr kopieren')}
           </button>
           {!call.has_versions && (
             <button type="button" className="button button-ghost" onClick={remove}>
-              Ausschreibung löschen
+              {t('Ausschreibung löschen')}
             </button>
           )}
         </div>
@@ -1781,11 +1829,12 @@ function BlocksEditor({
   return (
     <div className="card card-wide">
       <div className="card-head">
-        <h2>Was gemeldet wird</h2>
+        <h2>{t('Was gemeldet wird')}</h2>
       </div>
       <p className="muted">
-        Bausteine des Meldeformulars: Mannschaften, eine Personenliste (z. B. Delegierte), eine Zahl
-        (z. B. Teilnehmer am Umzug), eine Auswahl oder ein Text.
+        {t(
+          'Bausteine des Meldeformulars: Mannschaften, eine Personenliste (z. B. Delegierte), eine Zahl (z. B. Teilnehmer am Umzug), eine Auswahl oder ein Text.',
+        )}
       </p>
       {call.blocks.map((b) => (
         <BlockCard key={b.id} org={org} call={call} block={b} reload={reload} />
@@ -1793,7 +1842,7 @@ function BlocksEditor({
       {message && <Alert kind="error">{message}</Alert>}
       <div className="grid-3">
         <SelectField
-          label="Baustein"
+          label={t('Baustein')}
           value={kind}
           onChange={(e) => setKind(e.target.value as BlockKind)}
         >
@@ -1805,7 +1854,7 @@ function BlocksEditor({
         </SelectField>
         <div className="button-row">
           <button type="button" className="button button-ghost" onClick={add}>
-            Baustein hinzufügen
+            {t('Baustein hinzufügen')}
           </button>
         </div>
       </div>
@@ -1865,9 +1914,9 @@ function BlockCard({
 
   async function remove() {
     const ok = await confirmDialog({
-      title: 'Baustein entfernen',
-      message: `„${block.label}“ samt den Einträgen der Meldung entfernen?`,
-      confirmLabel: 'Entfernen',
+      title: t('Baustein entfernen'),
+      message: t('„{x1}“ samt den Einträgen der Meldung entfernen?', { x1: block.label }),
+      confirmLabel: t('Entfernen'),
       danger: true,
     })
     if (!ok) return
@@ -1885,51 +1934,55 @@ function BlockCard({
         <h3>{BLOCK_LABELS[block.kind]}</h3>
         <SaveStatus auto={auto} />
         <button type="button" className="button button-ghost push-right" onClick={remove}>
-          Entfernen
+          {t('Entfernen')}
         </button>
       </div>
       <div className="grid-3">
         <Field
-          label="Bezeichnung"
+          label={t('Bezeichnung')}
           value={v.label}
           error={errors.label}
           onChange={(e) => set('label', e.target.value)}
         />
         <Field
-          label="Hinweis"
+          label={t('Hinweis')}
           value={v.help_text}
           error={errors.help_text}
           onChange={(e) => set('help_text', e.target.value)}
         />
-        <Checkbox label="Pflicht" checked={v.required} onChange={(on) => set('required', on)} />
+        <Checkbox
+          label={t('Pflicht')}
+          checked={v.required}
+          onChange={(on) => set('required', on)}
+        />
         {block.kind === 'mannschaften' && (
           <>
-            {num('min_teams', 'Mannschaften mindestens')}
-            {num('max_teams', 'Mannschaften höchstens')}
-            {num('min_size', 'Personen je Mannschaft mindestens')}
-            {num('max_size', 'Personen je Mannschaft höchstens')}
-            {num('substitutes', 'Ersatzleute je Mannschaft höchstens')}
-            {list('positions', 'Aufgaben', 'z. B. Mannschaftsführer, mit Komma getrennt')}
+            {num('min_teams', t('Mannschaften mindestens'))}
+            {num('max_teams', t('Mannschaften höchstens'))}
+            {num('min_size', t('Personen je Mannschaft mindestens'))}
+            {num('max_size', t('Personen je Mannschaft höchstens'))}
+            {num('substitutes', t('Ersatzleute je Mannschaft höchstens'))}
+            {list('positions', t('Aufgaben'), t('z. B. Mannschaftsführer, mit Komma getrennt'))}
           </>
         )}
         {block.kind === 'personen' && (
           <>
-            {num('min', 'Personen mindestens')}
-            {num('max', 'Personen höchstens')}
-            {list('positions', 'Aufgaben', 'z. B. Delegierter, Fahnenträger')}
+            {num('min', t('Personen mindestens'))}
+            {num('max', t('Personen höchstens'))}
+            {list('positions', t('Aufgaben'), t('z. B. Delegierter, Fahnenträger'))}
           </>
         )}
         {block.kind === 'zahl' && (
           <>
-            {num('min', 'kleinster Wert')}
-            {num('max', 'größter Wert')}
+            {num('min', t('kleinster Wert'))}
+            {num('max', t('größter Wert'))}
           </>
         )}
         {block.kind === 'auswahl' && (
           <>
-            {list('options', 'Antworten', 'mit Komma getrennt')}
+            {list('options', t('Antworten'), t('mit Komma getrennt'))}
             <Checkbox
-              label="mehrere Antworten möglich"
+              label={t('mehrere Antworten möglich')}
               checked={!!s.multiple}
               onChange={(on) => setS({ multiple: on })}
             />
@@ -1937,7 +1990,7 @@ function BlockCard({
         )}
         {block.kind === 'text' && (
           <Checkbox
-            label="mehrzeilig"
+            label={t('mehrzeilig')}
             checked={!!s.multiline}
             onChange={(on) => setS({ multiline: on })}
           />
