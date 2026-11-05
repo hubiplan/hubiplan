@@ -91,7 +91,7 @@ BACKUP_IMG="hubiplan-test-backup:$ID"
 FE_PID=""
 WORK=$(mktemp -d)
 cleanup() {
-    [ -n "$FE_PID" ] && kill "$FE_PID" 2> /dev/null && wait "$FE_PID" 2> /dev/null
+    [ -n "$FE_PID" ] && kill "$FE_PID" 2> /dev/null && wait "$FE_PID" 2> /dev/null || true
     docker rm -f "$ID-fe" > /dev/null 2>&1 || true
     docker rm -f "$ID-db" > /dev/null 2>&1 || true
     docker network rm "$ID" > /dev/null 2>&1 || true
@@ -145,7 +145,7 @@ docker exec "$ID-db" psql -q -U test -d test -c \
     "CREATE ROLE hubiplan_app NOLOGIN NOSUPERUSER NOBYPASSRLS" > /dev/null
 
 docker run --rm "$CPUS" --entrypoint sh "$BACKEND_IMG" \
-    -c "ruff check . && ruff format --check . > /dev/null"
+    -c "ruff check . && ruff format --check ."
 echo "Backend: ruff ok"
 # Übersetzung (konzepte/englisch.md): bis zur Abnahme nur Bericht, danach --streng
 docker run --rm "$CPUS" -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test --entrypoint sh \

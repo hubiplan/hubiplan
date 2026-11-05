@@ -144,9 +144,9 @@ def billing_tasks(org: Organization, perms: set[str]) -> list[dict]:
         {
             "kind": "invoices_overdue",
             "kind_label": gettext("Rechnungen"),
-            "title": ngettext(
-                "{n} Rechnung überfällig", "{n} Rechnungen überfällig", n
-            ).format(n=n),
+            "title": ngettext("{n} Rechnung überfällig", "{n} Rechnungen überfällig", n).format(
+                n=n
+            ),
             "detail": gettext("älteste fällig seit {date}").format(
                 date=date_format(first, "SHORT_DATE_FORMAT", use_l10n=True)
             ),
