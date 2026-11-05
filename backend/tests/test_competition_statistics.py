@@ -125,6 +125,40 @@ def test_unknown_discipline_does_not_merge_competitions(club, people):  # noqa: 
     assert len(data["groups"]) == 2
 
 
+@pytest.mark.parametrize("position,distance", [("aufgelegt", 10), ("stehend", 50)])
+def test_program_position_and_distance_separate_averages(club, people, position, distance):  # noqa: F811
+    for date, value, pos, metres in (
+        ("2025-06-01", 27, "stehend", 10),
+        ("2026-06-01", 24, position, distance),
+    ):
+        _, scoring, _ = add_competition(club, people, [value], date=date)
+        scoring.program.position = pos
+        scoring.program.distance = metres
+        scoring.program.save()
+    data = competition_statistics(club)
+    assert data["performance"] is None
+    assert len(data["group_summary"]) == 2
+    assert {g["average"] for g in data["group_summary"]} == {24, 27}
+    chosen = next(g for g in data["group_summary"] if g["average"] == 24)
+    assert position in chosen["label"] and f"{distance} m" in chosen["label"]
+    assert competition_statistics(club, group_id=chosen["id"])["performance"]["average"] == 24
+
+
+def test_matching_program_conditions_remain_comparable(club, people):  # noqa: F811
+    for date, value, position in (
+        ("2025-06-01", 27, "Stehend"),
+        ("2026-06-01", 24, " stehend "),
+    ):
+        _, scoring, _ = add_competition(club, people, [value], date=date)
+        scoring.program.position = position
+        scoring.program.distance = 10
+        scoring.program.save()
+    data = competition_statistics(club)
+    assert len(data["groups"]) == 1
+    assert data["performance"]["average"] == 25.5
+    assert data["performance"]["change"] == -3
+
+
 def test_multiple_scorings_count_one_start_and_teams_are_not_personal_wins(club, people):  # noqa: F811
     comp, sc, starters = add_competition(club, people, [28, 27])
     second = Scoring.objects.create(

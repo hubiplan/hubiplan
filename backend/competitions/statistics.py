@@ -28,6 +28,7 @@ def _mean(values):
 
 def _conditions(scoring):
     comp = scoring.competition
+    program = scoring.program
     config = {
         "discipline": comp.discipline.strip().casefold(),
         "details": sorted(
@@ -46,6 +47,9 @@ def _conditions(scoring):
         "maximum": str(scoring.max_per_shot),
         "higher_better": scoring.higher_better,
     }
+    if program and (program.position.strip() or program.distance is not None):
+        config["position"] = program.position.strip().casefold()
+        config["distance"] = program.distance
     # Ohne bekannte Disziplin oder Scheibe beweist eine gleiche Bezeichnung nichts.
     if not scoring.target and not comp.discipline.strip():
         config["competition"] = comp.pk
@@ -54,6 +58,10 @@ def _conditions(scoring):
     parts = [comp.discipline or (target.name if target else comp.title), scoring.name]
     if target and target.name.casefold() != (comp.discipline or "").casefold():
         parts.append(target.name)
+    if program and program.position.strip():
+        parts.append(program.position.strip())
+    if program and program.distance is not None:
+        parts.append(f"{program.distance} m")
     if scoring.shots:
         parts.append(gettext("%(n)s Schuss") % {"n": scoring.shots})
     if scoring.counted_shots and scoring.counted_shots != scoring.shots:
@@ -95,7 +103,7 @@ def _load(org, person_id=None):
     scorings = list(
         Scoring.objects.filter(
             organization=org, competition__in=competitions, kind=Scoring.Kind.INDIVIDUAL
-        ).select_related("competition")
+        ).select_related("competition", "program")
     )
     scores = defaultdict(dict)
     for sc_id, st_id, value in Score.objects.filter(

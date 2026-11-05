@@ -18,7 +18,8 @@ die Feldgröße aus der ausdrücklich hinterlegten Gesamtteilnehmerzahl.
 Durchschnitte, Bestleistungen und Jahresverläufe werden nach den hinterlegten Bedingungen
 getrennt: Disziplin, weitere Angaben, Wertungsbezeichnung, Wertungsart, Scheibe und eigene
 Scheibenmaße, Schusszahl, gewertete Schüsse, Einheit, Nachkommastellen, Höchstwert und
-Wertungsrichtung. Ohne Disziplin und Scheibe bleiben Wettbewerbe getrennt. Bei mehreren
+Wertungsrichtung sowie Anschlagart und Entfernung des Schießdurchgangs. Ohne Disziplin
+und Scheibe bleiben Wettbewerbe getrennt. Bei mehreren
 Bedingungen zeigt eine Tabelle die jeweiligen Mittelwerte; Auswahl einer Bedingung öffnet
 die zugehörige Leistungsstatistik.
 
