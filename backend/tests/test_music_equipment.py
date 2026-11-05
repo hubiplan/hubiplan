@@ -168,6 +168,8 @@ def test_retries_and_versions(c, equipment):
 def test_permission_module_tenant_and_deleted_scopes(c, api, equipment, orgs):
     e = equipment
     identifier = register(c, e)
+    assert issue(c, e).status_code == 200
+    assert c.get(e.url).json()["items"][0]["return_location"]["location_kind"] == "address"
     for permissions in [["music.view"], ["material.view"]]:
         user = make_user(f"leser{len(permissions[0])}@example.org")
         give_role(user, e.org, permissions=permissions, name=permissions[0])
