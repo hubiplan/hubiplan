@@ -240,10 +240,10 @@ def test_infrastruktur_filtert_kombinationen_und_belaesst_katalog(shooting_org, 
         == 400
     )
     response = client.patch(
-        endpoint, {"shooting_facilities": ["lg10", "p50", "lg10"]}, "application/json"
+        endpoint, {"shooting_facilities": ["lg10", "p50", "lg10", "vogel"]}, "application/json"
     )
     assert response.status_code == 200, response.content
-    assert response.json()["shooting_facilities"] == ["lg10", "p50"]
+    assert response.json()["shooting_facilities"] == ["lg10", "p50", "vogel"]
     catalog = client.get(url(org, "targets/")).json()
     assert catalog["infrastructure_configured"]
     assert "lg10_kyf5" in catalog["recommended_targets"] and "p25" in catalog["recommended_targets"]

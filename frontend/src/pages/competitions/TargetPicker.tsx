@@ -137,6 +137,20 @@ export function TargetPicker({
           <span className="target-tile-name">{t('keine Scheibe')}</span>
           <span className="target-tile-note">{t('nur die Summe eingeben')}</span>
         </label>
+        <label className={`target-tile${value === customKey ? ' target-tile-on' : ''}`}>
+          <input
+            type="radio"
+            name={name}
+            value={customKey}
+            checked={value === customKey}
+            onChange={() => onChange(customKey)}
+          />
+          <span className="target-tile-none" aria-hidden="true">
+            ✎
+          </span>
+          <span className="target-tile-name">{t('Eigene Scheibe')}</span>
+          <span className="target-tile-note">{t('Maße selbst eingeben')}</span>
+        </label>
       </div>
       {groups.map((g) => (
         <div key={g}>
@@ -164,22 +178,6 @@ export function TargetPicker({
           </div>
         </div>
       ))}
-      <div className="target-tiles">
-        <label className={`target-tile${value === customKey ? ' target-tile-on' : ''}`}>
-          <input
-            type="radio"
-            name={name}
-            value={customKey}
-            checked={value === customKey}
-            onChange={() => onChange(customKey)}
-          />
-          <span className="target-tile-none" aria-hidden="true">
-            ✎
-          </span>
-          <span className="target-tile-name">{t('Eigene Scheibe')}</span>
-          <span className="target-tile-note">{t('Maße selbst eingeben')}</span>
-        </label>
-      </div>
       {error && <p className="field-error">{error}</p>}
     </fieldset>
   )
