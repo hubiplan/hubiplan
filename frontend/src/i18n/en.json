@@ -6326,5 +6326,12 @@
   "Alltag": "Everyday",
   "Kommunikation": "Communication",
   "Bezeichnungen": "Names and terms",
-  "Vereinsdokumente": "Club documents"
+  "Vereinsdokumente": "Club documents",
+  "Nächster Termin": "Next event",
+  "Rückmeldung ändern": "Change response",
+  "Zu- oder absagen": "Accept or decline",
+  "Termin öffnen": "Open event",
+  "home|Alle Termine": "All events",
+  "Eine Rechnung ist offen ({x}).": "One invoice is open ({x}).",
+  "{n} Rechnungen sind offen ({x}).": "{n} invoices are open ({x})."
 }

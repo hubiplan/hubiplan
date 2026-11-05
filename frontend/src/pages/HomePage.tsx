@@ -24,6 +24,7 @@ function ImprintHint({ org }: { org: OrgSummary }) {
   return data ? <ImprintMissing missing={data.missing} /> : null
 }
 import { PortalTasks } from './portal/PortalPage.tsx'
+import { MemberHomeTop } from '../components/home/MemberHome.tsx'
 import { t } from '../i18n/index.ts'
 
 /** Rechte, mit denen es offene Aufgaben geben kann (Entscheidungen) */
@@ -71,7 +72,9 @@ export function HomePage() {
         <h1>
           {t('Hallo')} {activePortal.first_name}
         </h1>
-        <PortalTasks entry={activePortal} />
+        <MemberHomeTop entry={activePortal} />
+        <h2 className="section-heading">{t('Mein Bereich')}</h2>
+        <PortalTasks entry={activePortal} skip={['/mein-bereich/ausweis', '/termine']} />
         {activePortal.events_enabled && (
           <div className="tiles">
             {activeDept?.permissions.includes('todos.view') && (
