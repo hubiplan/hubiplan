@@ -112,7 +112,7 @@ class MusicMusicianSerializer(ScopedSerializer):
     def update(self, instance, validated_data):
         from django.utils import timezone
 
-        from .models import GuestAccess
+        from .models import GuestAccess, RehearsalGuestAccess
 
         instance = Musician.objects.select_for_update().get(pk=instance.pk)
         previous = (instance.guest_email, instance.membership_id)
@@ -121,6 +121,9 @@ class MusicMusicianSerializer(ScopedSerializer):
             GuestAccess.objects.filter(assignment__musician=instance).update(
                 revoked_at=timezone.now(),
                 auto_notify=False,
+            )
+            RehearsalGuestAccess.objects.filter(invitation__musician=instance).update(
+                revoked_at=timezone.now()
             )
         return instance
 

@@ -138,3 +138,20 @@ Lauf passen. Stornierte Buchungen öffnen den Abgleich wieder.
 Ein aufgehobener Lauf gibt die Vergütungen frei. Bereits eingereichte Aufträge müssen
 zusätzlich bei der Bank gestoppt werden. Kassenleserecht erlaubt Einsicht,
 Kassenbearbeitungsrecht erlaubt Vorbereitung, Export und Aufhebung.
+
+## Gäste bei Proben und gezielte Notenfreigaben
+
+In der Probenübersicht öffnet **Gasteinladung** den persönlichen Zugang für genau
+­diesen Probentermin. Bei Serien sind getrennte Einladungslinks je Einzeltermin möglich.
+Den Link vertraulich weitergeben; der Gast kann ausschließlich seine eigene Zu- oder
+Absage abgeben. Ein anderer Einzeltermin lässt sich über die Rückmeldung nicht auswählen.
+Die Links können erneuert oder widerrufen werden und laufen spätestens nach 180 Tagen ab.
+Eine Änderung der Gast-E-Mail-Adresse widerruft bestehende Proben- und Auftrittslinks.
+
+Mit Verwaltungs- und Bearbeitungsrecht für Dokumente können unter der Gasteinladung
+passende Noten des aktuellen Programms ausdrücklich freigegeben werden.
+Nutzungsrechte vorher prüfen. Die Freigabe gilt nur für die ausgewählte Dateifassung,
+nicht für spätere Uploads. Unpassende Stimmen, abgesagte Termine, eine Absage des Gastes,
+entfernte Programmstücke, gelöschte/verschobene Dokumente oder entzogene Rechte der
+freigebenden Person sperren den Download. Auftrittslinks unterstützen dieselbe Freigabe.
+Abteilungs- und fremde Dokumente können auf diesem Weg nicht freigegeben werden.

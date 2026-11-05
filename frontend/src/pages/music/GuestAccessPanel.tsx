@@ -13,25 +13,33 @@ type Access = {
   auto_notify?: boolean
   url?: string
   sent?: boolean
+  scores?: { id: number; title: string; selected: boolean }[]
 }
 
 export function GuestAccessPanel({
   assignment,
   name,
   onClose,
+  original,
 }: {
   assignment: number
   name: string
   onClose: () => void
+  original?: string
 }) {
   const org = useActiveOrg()
-  const url = `/api/orgs/${org.id}/music/assignments/${assignment}/guest-access/`
-  const load = useLoad(() => api.get<Access>(url), [org.id, assignment])
+  const url = `/api/orgs/${org.id}/music/${original ? 'rehearsal-invitations' : 'assignments'}/${assignment}/guest-access/`
+  const load = useLoad(
+    () =>
+      api.get<Access>(url + (original ? `?original_start=${encodeURIComponent(original)}` : '')),
+    [org.id, assignment, original],
+  )
   const [value, setValue] = useState<Access | null>(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [keys] = useState(() => new Map<string, string>())
+  const [selectedScores, setSelectedScores] = useState<number[] | null>(null)
   const data = value || load.data
   async function act(action: string) {
     if (
@@ -48,8 +56,22 @@ export function GuestAccessPanel({
     setMessage('')
     if (!keys.has(action)) keys.set(action, newRequestKey())
     try {
-      const next = await api.post<Access>(url, { action }, keys.get(action))
+      const next = await api.post<Access>(
+        url,
+        {
+          action,
+          ...(original ? { original_start: original } : {}),
+          ...(action === 'share'
+            ? {
+                scores:
+                  selectedScores ?? data?.scores?.filter((s) => s.selected).map((s) => s.id) ?? [],
+              }
+            : {}),
+        },
+        keys.get(action),
+      )
       setValue(next)
+      setSelectedScores(null)
       keys.delete(action)
       if (action === 'send') {
         if (next.sent) setMessage(t('Die Gasteinladung wurde an die Ausgangspost übergeben.'))
@@ -66,7 +88,7 @@ export function GuestAccessPanel({
       <h2>{t('Gasteinladung für {name}', { name })}</h2>
       <p>
         {t(
-          'Der persönliche Link gibt nur diese Auftrittseinteilung frei. Bitte vertraulich weitergeben.',
+          'Der persönliche Link gibt nur diese Einteilung und ausdrücklich freigegebene Noten frei. Bitte vertraulich weitergeben.',
         )}
       </p>
       {(error || load.error) && <Alert kind="error">{error || load.error}</Alert>}
@@ -98,7 +120,7 @@ export function GuestAccessPanel({
               </button>
             </>
           )}
-          {!data.has_email && (
+          {!original && !data.has_email && (
             <p className="muted">
               {t('Zum Versand die E-Mail-Adresse für Gasteinladungen beim Musiker hinterlegen.')}
             </p>
@@ -111,13 +133,15 @@ export function GuestAccessPanel({
             >
               {data.active ? t('Neuen Einladungslink erstellen') : t('Einladungslink erstellen')}
             </button>
-            <button
-              className="button button-ghost"
-              disabled={busy || !data.has_email}
-              onClick={() => void act('send')}
-            >
-              {t('Gasteinladung senden')}
-            </button>
+            {!original && (
+              <button
+                className="button button-ghost"
+                disabled={busy || !data.has_email}
+                onClick={() => void act('send')}
+              >
+                {t('Gasteinladung senden')}
+              </button>
+            )}
             {data.active && (
               <button
                 className="button button-ghost"
@@ -131,6 +155,46 @@ export function GuestAccessPanel({
               {t('Schließen')}
             </button>
           </div>
+          {data.active && !!data.scores?.length && (
+            <fieldset className="stack" disabled={busy}>
+              <legend>{t('Noten ausdrücklich freigeben')}</legend>
+              <p>
+                {t(
+                  'Nur passende Noten des aktuellen Programms. Die Freigabe gilt für die aktuelle Dateifassung. Nutzungsrechte vor der Freigabe prüfen.',
+                )}
+              </p>
+              {data.scores.map((score) => (
+                <label key={score.id}>
+                  <input
+                    type="checkbox"
+                    checked={(
+                      selectedScores ??
+                      data.scores?.filter((s) => s.selected).map((s) => s.id) ??
+                      []
+                    ).includes(score.id)}
+                    onChange={(e) => {
+                      const ids =
+                        selectedScores ??
+                        data.scores?.filter((s) => s.selected).map((s) => s.id) ??
+                        []
+                      setSelectedScores(
+                        e.target.checked ? [...ids, score.id] : ids.filter((id) => id !== score.id),
+                      )
+                      keys.delete('share')
+                    }}
+                  />{' '}
+                  {score.title}
+                </label>
+              ))}
+              <button
+                className="button button-primary"
+                type="button"
+                onClick={() => void act('share')}
+              >
+                {t('Notenfreigabe speichern')}
+              </button>
+            </fieldset>
+          )}
           {data.auto_notify && data.active && (
             <p className="muted">
               {t('Änderungshinweise und Erinnerungen werden auch an diesen Gast gesendet.')}

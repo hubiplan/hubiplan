@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { GuestAccessPanel } from './GuestAccessPanel.tsx'
 import { Link } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
@@ -36,7 +37,13 @@ type Occurrence = {
   focus: string
   items: { arrangement: number; title: string; focus: string }[]
   overridden: boolean
-  members: { invitation: number; name: string; status: string; availability?: string[] }[]
+  members: {
+    invitation: number
+    name: string
+    status: string
+    guest?: boolean
+    availability?: string[]
+  }[]
 }
 
 export function PracticePage() {
@@ -81,6 +88,9 @@ export function PracticePage() {
     [program, setProgram] = useState<Occurrence | null>(null),
     [error, setError] = useState(''),
     [key, setKey] = useState(newRequestKey)
+  const [guest, setGuest] = useState<{ invitation: number; name: string; original: string } | null>(
+    null,
+  )
   if (load.error) return <Alert kind="error">{load.error}</Alert>
   if (!load.data) return <p>{t('Lädt …')}</p>
   const d = load.data,
@@ -137,6 +147,15 @@ export function PracticePage() {
   const rows = tab === 'overview' ? [] : d[tab as 'rehearsals' | 'items' | 'invitations' | 'loans']
   return (
     <section className="stack music-page">
+      {guest && (
+        <GuestAccessPanel
+          key={`${guest.invitation}-${guest.original}`}
+          assignment={guest.invitation}
+          original={guest.original}
+          name={guest.name}
+          onClose={() => setGuest(null)}
+        />
+      )}
       <MusicHeader
         title={t('Proben und Notenausgabe')}
         description={t(
@@ -254,6 +273,20 @@ export function PracticePage() {
                 <div className="music-actions">
                   <strong>{m.name}</strong>
                   <MusicStatus status={m.status} />
+                  {canEdit && m.guest && (
+                    <button
+                      className="button button-ghost"
+                      onClick={() =>
+                        setGuest({
+                          invitation: m.invitation,
+                          name: m.name,
+                          original: o.original_start,
+                        })
+                      }
+                    >
+                      {t('Gasteinladung')}
+                    </button>
+                  )}
                   <AvailabilityHint reasons={m.availability} />
                 </div>
                 {canEdit && !o.cancelled && (

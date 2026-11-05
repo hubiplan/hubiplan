@@ -122,8 +122,14 @@ def metadata(access):
     }
 
 
-def access_data(row, access):
-    return {**metadata(access), "has_email": bool(row.musician.guest_email)}
+def access_data(row, access, view=None):
+    from .guest_scores import choices
+
+    return {
+        **metadata(access),
+        "has_email": bool(row.musician.guest_email),
+        "scores": choices(view, access) if view and access else [],
+    }
 
 
 class GuestAccessView(NoStore, OrgScopedMixin, APIView):
@@ -160,19 +166,36 @@ class GuestAccessView(NoStore, OrgScopedMixin, APIView):
 
     def get(self, request, org_id, pk):
         row = self.row(pk)
-        return Response(access_data(row, GuestAccess.objects.filter(assignment=row).first()))
+        return Response(access_data(row, GuestAccess.objects.filter(assignment=row).first(), self))
 
     @transaction.atomic
     def post(self, request, org_id, pk):
         row = self.row(pk, lock=True)
         action = serializers.ChoiceField(
-            choices=["create", "rotate", "send", "revoke"]
+            choices=["create", "rotate", "send", "revoke", "share"]
         ).run_validation(request.data.get("action"))
         key = idempotency.claim(request, f"music.guest.{self.org.pk}.{pk}", required=True)
         access = GuestAccess.objects.filter(assignment=row).first()
         if key.done:
             # Results contain only an object ID, never a reusable bearer credential.
-            return Response({**access_data(row, access), "sent": key.result.get("sent", False)})
+            return Response(
+                {**access_data(row, access, self), "sent": key.result.get("sent", False)}
+            )
+        if action == "share":
+            from .guest_scores import save
+
+            if not access or not active_access(access):
+                raise NotFound()
+            save(self, access, request.data.get("scores"))
+            key.remember({"access": access.pk})
+            record(
+                self.org,
+                request.user,
+                "update",
+                row,
+                {"Notenfreigabe": [None, request.data.get("scores")]},
+            )
+            return Response(access_data(row, access, self))
         if action == "revoke":
             if access:
                 access.revoked_at = timezone.now()
@@ -192,6 +215,7 @@ class GuestAccessView(NoStore, OrgScopedMixin, APIView):
             if not access:
                 access = GuestAccess(organization=self.org, assignment=row, created_by=request.user)
             if not access.pk or action == "rotate" or not active_access(access):
+                access.score_shares = []
                 access.nonce = uuid.uuid4()
                 access.token_hash = token_hash(derive_token(access, settings.SECRET_KEY))
                 access.expires_at = min(
@@ -226,7 +250,7 @@ class GuestAccessView(NoStore, OrgScopedMixin, APIView):
             {"Gastzugang": [None, {"action": action, "sent": sent}]},
         )
         key.remember({"access": access.pk if access else None, "sent": sent})
-        return Response({**access_data(row, access), "sent": sent})
+        return Response({**access_data(row, access, self), "sent": sent})
 
 
 class GuestThrottle(SimpleRateThrottle):
@@ -279,6 +303,13 @@ class GuestPerformanceView(NoStore, APIView):
         pk, org = self.access_id(request)
         with tenant_context(org):
             access = self.access(pk, request)
+            from .guest_scores import descriptions, download
+
+            if "score" in request.query_params:
+                score = serializers.IntegerField(min_value=1).run_validation(
+                    request.query_params["score"]
+                )
+                return download(request, access, score)
             row, performance = access.assignment, access.assignment.performance
             start, end = performance_interval(performance)
             reasons = Availability(
@@ -306,6 +337,7 @@ class GuestPerformanceView(NoStore, APIView):
                     "availability": reasons,
                     "program": own_program(performance),
                     "expires_at": access.expires_at,
+                    "scores": descriptions(access),
                 }
             )
 

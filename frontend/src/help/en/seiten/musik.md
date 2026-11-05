@@ -134,3 +134,17 @@ bank entries. Assign each actual expense in the performance settlement; bank acc
 and amount must match. Reversed bookings reopen reconciliation.
 Cancelling a run releases claims; submitted transfers must also be stopped at the bank.
 Finance read access permits inspection; edit access is required to prepare, export or cancel.
+
+## Rehearsal guests and explicit sheet music sharing
+
+In the rehearsal overview, **Guest invitation** creates a personal link for exactly
+one occurrence. Series occurrences can have separate links. Share links confidentially.
+Guests can only accept or decline their own assigned occurrence. Links can be rotated
+or revoked and expire within 180 days. Changing a guest email revokes rehearsal and
+performance links.
+Document managers with edit rights may explicitly share matching sheet music from the
+current programme. Check usage rights first. A grant covers the selected file version;
+later uploads are not shared automatically. Downloads stop when the guest declines,
+the event is cancelled, the piece leaves the programme, the document is deleted or moved,
+or the grantor loses permission. Performance invitations support the same sharing.
+Department documents and documents from other organisations cannot be shared this way.
