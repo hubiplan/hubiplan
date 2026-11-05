@@ -8,6 +8,37 @@ from django.db import models
 from django.utils import timezone
 
 from core.encfields import EncryptedCharField, EncryptedJSONField
+from core.privatefiles import PrivateFileField
+from exchange.models import private_storage
+
+
+def engagement_path(instance, filename):
+    return f"music-agreements/{instance.organization_id}/{instance.reference}/{filename}"
+
+
+class EngagementDocument(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    performance = models.ForeignKey(
+        "Performance", on_delete=models.PROTECT, related_name="engagement_documents"
+    )
+    reference = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    kind = models.CharField(max_length=12)
+    status = models.CharField(max_length=12, default="issued")
+    snapshot = EncryptedJSONField(default=dict, strict=True)
+    file = PrivateFileField(storage=private_storage, upload_to=engagement_path, blank=True)
+    sha256 = models.CharField(max_length=64, blank=True)
+    valid_until = models.DateField(null=True, blank=True)
+    offer = models.ForeignKey(
+        "self", on_delete=models.PROTECT, null=True, blank=True, related_name="confirmations"
+    )
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    acceptance_note = EncryptedCharField(max_length=1000, strict=True, blank=True)
+    resolution_note = EncryptedCharField(max_length=1000, strict=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"Auftrittsdokument {self.reference}"
 
 
 class Musician(models.Model):

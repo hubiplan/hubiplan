@@ -148,3 +148,17 @@ later uploads are not shared automatically. Downloads stop when the guest declin
 the event is cancelled, the piece leaves the programme, the document is deleted or moved,
 or the grantor loses permission. Performance invitations support the same sharing.
 Department documents and documents from other organisations cannot be shared this way.
+
+## Offers and confirmations
+
+Open **Offers and confirmations** from a performance settlement. First complete the
+customer address and gross amounts. Check expiry date and agreements before issuing
+the offer PDF. Issued PDFs and checksums preserve their original content. A new offer
+supersedes a pending offer. Invoice numbering is separate. Issuing does not send mail.
+Record the customer's actual acceptance with evidence, then issue an order confirmation.
+Repeated issuance returns the same confirmation. Firm confirmation locks agreed amounts
+and performance details. Record cancellation with a reason before making changes and
+issuing a new offer. Original PDFs remain as evidence after cancellation. Calendar changes
+do not alter archived documents. These documents are not invoices. Finance readers can
+inspect documents; issuance and status changes require finance and music edit rights.
+PDFs use the existing letterhead.

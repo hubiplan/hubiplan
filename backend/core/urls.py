@@ -37,6 +37,7 @@ from music import staffing as music_staffing
 from music import views as music_views
 from music.availability_views import AbsenceViewSet, OwnAbsences
 from music.catalogue_import import CatalogueImportView
+from music.engagements import EngagementView
 from music.equipment import EquipmentView
 from music.guest import GuestAccessView, GuestPerformanceView
 from music.payouts import PayoutRunAction, PayoutRuns
@@ -195,6 +196,7 @@ org_patterns = [
     path("music/performances/<int:pk>/program/", music_scores.ProgramView.as_view()),
     path("music/performances/<int:pk>/staffing/", music_staffing.StaffingView.as_view()),
     path("music/performances/<int:pk>/settlement/", SettlementView.as_view()),
+    path("music/performances/<int:pk>/engagement/", EngagementView.as_view()),
     path("music/performances/<int:pk>/invoice/", PerformanceInvoiceView.as_view()),
     path("todos/remote/", todo_remote.RemoteInboxView.as_view()),
     path("todos/remote/<int:remote_id>/adopt/", todo_remote.RemoteAdoptView.as_view()),
