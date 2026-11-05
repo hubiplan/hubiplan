@@ -39,6 +39,21 @@ Bei mehreren Vereinen verwendet jeder Pass seinen Vereinsnamen; Issuer und optio
 Logo gehören zum Betreiber. Die Ausgabe im Namen der angeschlossenen Vereine ist bei
 der Einrichtung des Ausstellerkontos zu berücksichtigen.
 
+## Aussehen, Sprache und Schalter je Einheit
+
+- Beide Pässe zeigen Name, Verein, Mitgliedsart, Abteilung(en) mit der Bezeichnung der
+  Einheit (z. B. „Zug“) und den Dachverband. Kein Foto, keine Mitgliedsnummer, kein Datum.
+  Inhalt: `cards/passcontent.py`.
+- Farben und Logo kommen aus dem Erscheinungsbild der Einheit (wie Prüfseite). Bei Google
+  braucht das Logo eine öffentliche `https`-Adresse (`FRONTEND_URL` + Logo-Pfad); ohne
+  `https` gilt `GOOGLE_WALLET_LOGO_URL`. Apple bekommt das Logo als Datei im Pass.
+- Feste Texte gibt es in Deutsch und Englisch: Apple über `de.lproj`/`en.lproj/pass.strings`,
+  Google über `translatedValues`. Die Wallet wählt nach der Sprache des Telefons.
+- Mitglieder › Einrichtung › Mitgliederbereich & Fotos: Schalter „Mitgliedsausweis“
+  (`Organization.card_wallet_enabled`, Standard an). Er erscheint nur, wenn Apple oder
+  Google eingerichtet ist. Ausschalten blendet die Knöpfe aus und setzt Google-Pässe beim
+  nächsten Abgleich auf inaktiv.
+
 ## Gültigkeit und Betrieb
 
 Die bestehende QR-Prüfseite bleibt maßgeblich: Sperren und Neuausstellen wirken dort
@@ -74,7 +89,7 @@ vorhanden sein. Einrichtung:
    beziehen sich auf den Container. Danach Backend neu starten.
 
 Im Mitgliederbereich erscheint „Zu Apple Wallet hinzufügen“. Der Download enthält
-einen signierten generischen Pass mit Name, Verein und QR-Code. Das Paket enthält
+einen signierten generischen Pass (Inhalt siehe oben). Das Paket enthält
 keine Mitgliederfotos. Google-Zugangsdaten sind dafür nicht erforderlich.
 
 Der Apple-Pass wird **nicht automatisch aktualisiert**: Änderungen werden durch

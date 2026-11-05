@@ -179,7 +179,12 @@ export type MemberSettings = Pick<
   | 'member_portal_enabled'
   | 'contact_changes_need_approval'
   | 'photo_approval_required'
->
+> & {
+  /** Ausweis in Apple und Google Wallet anbieten */
+  card_wallet_enabled: boolean
+  /** Betreiber hat Apple oder Google Wallet eingerichtet (nur lesen) */
+  wallet_available: boolean
+}
 
 export interface ThemeSettings {
   primary_color: string

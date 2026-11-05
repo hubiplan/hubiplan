@@ -253,7 +253,7 @@ function GoogleWalletButton({ accessId }: { accessId: number }) {
     <div className="stack-sm">
       <p className="small muted">
         {t(
-          'Dabei werden dein Name, dein Verein und der QR-Code an Google übertragen. Dein Foto wird nicht übertragen. Die aktuelle Gültigkeit wird beim Scannen online geprüft.',
+          'Dabei werden Name, Verein, Mitgliedsart, Abteilung, Dachverband und QR-Code an Google übertragen. Dein Foto wird nicht übertragen. Die aktuelle Gültigkeit wird beim Scannen online geprüft.',
         )}
       </p>
       <button
