@@ -178,7 +178,12 @@ def test_verweise_und_unvollstaendige_pruefung_sperren_ausmusterung(rotated, org
                     last_name="Test",
                     birth_date=datetime.date(1980, 5, 17),
                 )
-            Person.objects.filter(pk=person.pk).update(marks_key_id=old[0])
+            # Den geschützten Fach-Schreibweg absichtlich umgehen, um einen
+            # bereits beschädigten Altbestand für die Prüfung zu simulieren.
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "UPDATE members_person SET marks_key_id=%s WHERE id=%s", [old[0], person.pk]
+                )
         elif kind == "missing":
             Path(job.file.path).unlink()
         elif kind == "symlink":
