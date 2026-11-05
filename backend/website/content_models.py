@@ -473,8 +473,8 @@ class WebsiteDocument(models.Model):
     beim Hochladen neu geschrieben (ohne Metadaten), PDFs bekommen ein Vorschaubild."""
 
     class Section(models.TextChoices):
-        PRESS = "press", "Presse"
-        DOCUMENTS = "documents", "Dokumente"
+        PRESS = "press", gettext_lazy("Presse")
+        DOCUMENTS = "documents", gettext_lazy("Dokumente")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"

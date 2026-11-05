@@ -137,6 +137,9 @@ msgstr "Events of {gen}"
 msgid "Dokumente"
 msgstr "Documents"
 
+msgid "Presse"
+msgstr "Press"
+
 msgid "Dokumentenablage lesen"
 msgstr "Read the document store"
 
