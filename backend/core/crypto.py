@@ -282,10 +282,16 @@ def _cache_after_commit(key_id: int, key: bytes) -> None:
 def _load(key_id: int) -> bytes:
     from .models import DataKey
 
-    row = DataKey.objects.filter(pk=key_id).values("organization_id", "wrapped").first()
+    row = (
+        DataKey.objects.filter(pk=key_id).values("organization_id", "wrapped", "retired_at").first()
+    )
     if row is None:
         raise DecryptionError(
             gettext("Datenschlüssel {key_id} fehlt (Verein gelöscht?).").format(key_id=key_id)
+        )
+    if row["retired_at"] is not None:
+        raise DecryptionError(
+            gettext("Datenschlüssel {key_id} wurde ausgemustert.").format(key_id=key_id)
         )
     key = unwrap_key(row["wrapped"], _context(row["organization_id"]))
     # Das Lesen einer alten Generation ändert niemals die aktive Schreibgeneration.

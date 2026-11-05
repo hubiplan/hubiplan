@@ -24,10 +24,11 @@ docker run --rm --network "$ID" "$CPUS" -e DJANGO_DEBUG=true -e DJANGO_SECRET_KE
     "$BACKEND_IMG" manage.py migrate -v0
 rot_app hubiplan_rotation "$ROT_DATA" "$WORK/test-data-key" seed
 EXPECTED=$(rot_app hubiplan_rotation "$ROT_DATA" "$WORK/test-data-key" fingerprint)
-for stage in before during after; do
+for stage in before during after retired; do
     case "$stage" in
         during) rot_app hubiplan_rotation "$ROT_DATA" "$WORK/test-data-key" interrupt ;;
         after) rot_app hubiplan_rotation "$ROT_DATA" "$WORK/test-data-key" finish ;;
+        retired) rot_app hubiplan_rotation "$ROT_DATA" "$WORK/test-data-key" retire ;;
     esac
     for mode in enc age; do
         docker run --rm --group-add 1000 --network "$ID" "$CPUS" --tmpfs /tmp -v "$ROT_BACKUPS:/backups" \
