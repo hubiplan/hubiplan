@@ -38,7 +38,7 @@ Under **Performance settlement** → **Musician remuneration**, finance editors 
 
 For a batch settlement, select an active template and assignments without existing remuneration. **Select all without remuneration** selects assignments without confirming attendance. Confirm attendance separately for each musician. **Create remuneration drafts** creates drafts with expenses set to zero. Add actual expenses and check attendance individually, then approve after the performance as usual. Invalid selections are rejected together. Existing remuneration is never overwritten.
 
-You can assign multiple recorded payouts from Finance to an approved remuneration claim. Each booking is used fully and only once and must not exceed the outstanding amount. **Partially paid**, **Paid out** and **Outstanding remuneration** also show the current balance in the member's own area. An active partial payment prevents approval reversal. Reversing the booking in Finance increases the outstanding amount again. Assigning a booking does not initiate a bank transfer.
+You can assign multiple recorded payouts from Finance to an approved remuneration claim. Each booking is used fully and only once and must not exceed the outstanding amount. **Partially paid**, **Paid** and **Outstanding remuneration** also show the current balance in the member's own area. An active partial payment prevents approval reversal. Reversing the booking in Finance increases the outstanding amount again. Assigning a booking does not initiate a bank transfer.
 
 ## Instrumentation templates and batch assignment
 
