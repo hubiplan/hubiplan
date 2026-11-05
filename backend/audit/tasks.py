@@ -43,3 +43,79 @@ def check_chains() -> int:
             lines.extend(f"  {p}" for p in problems)
         send_alert("Änderungsprotokoll wurde verändert", lines)
     return len(org_ids)
+
+
+def _auditors(org) -> list:
+    """Kassenprüfer: Kasse lesen, aber nicht bearbeiten."""
+    from access.catalog import FINANCE_EDIT, FINANCE_VIEW, effective
+    from access.models import RoleAssignment
+
+    users: dict[int, object] = {}
+    rights: dict[int, set] = {}
+    for a in (
+        RoleAssignment.objects.active().filter(organization=org).select_related("role", "user")
+    ):
+        if a.user_id and a.user.is_active and a.user.email:
+            users[a.user_id] = a.user
+            rights.setdefault(a.user_id, set()).update(effective(a.role.permissions))
+    return [
+        users[uid]
+        for uid, perms in rights.items()
+        if FINANCE_VIEW in perms and FINANCE_EDIT not in perms
+    ]
+
+
+@shared_task(soft_time_limit=1500, time_limit=1560)
+def mail_heads() -> int:
+    """Wöchentlich den Kettenkopf an die Kassenprüfer (Gesamtaudit 05.11. GA-08, F-06).
+
+    Die Zeile „STEMPEL ORG NUMMER PRÜFSUMME“ lässt sich später mit
+    ``manage.py kettenkoepfe_pruefen`` gegen die Datenbank prüfen. So fällt eine
+    nachträgliche Änderung auch auf, wenn Backups fehlen."""
+    from django.utils import timezone, translation
+    from django.utils.translation import gettext, gettext_noop
+
+    from core.i18n import user_language
+    from organizations.models import Organization
+    from outbox import mail
+
+    from .models import AuditCheck
+
+    stamp = timezone.now().strftime("%Y%m%d-%H%M%S")
+    sent = 0
+    with rls_bypass():
+        heads = list(
+            AuditCheck.objects.filter(head_seq__isnull=False)
+            .exclude(head_hash="")
+            .values_list("organization_id", "head_seq", "head_hash")
+        )
+        orgs = Organization.objects.in_bulk([org_id for org_id, _, _ in heads])
+        for org_id, seq, digest in heads:
+            org = orgs.get(org_id)
+            if org is None or org.is_remote:
+                continue
+            line = f"{stamp} {org_id} {seq} {digest}"
+            for user in _auditors(org):
+                language = user_language(user)
+                with translation.override(language):
+                    subject = gettext(gettext_noop("Prüfsumme des Änderungsprotokolls: {org}"))
+                    body = gettext(
+                        gettext_noop(
+                            "Diese Mail bekommen alle, die die Kasse von {org} prüfen dürfen.\n\n"
+                            "Stand des Änderungsprotokolls (Eintrag Nr. {seq}):\n\n{line}\n\n"
+                            "Bitte diese Mail aufbewahren. Mit der Zeile lässt sich später "
+                            "nachweisen, dass Buchungen und Protokoll seitdem nicht verändert "
+                            "wurden (Betreiber: manage.py kettenkoepfe_pruefen)."
+                        )
+                    )
+                if mail.send(
+                    user.email,
+                    subject.format(org=org.name),
+                    body.format(org=org.name, seq=seq, line=line),
+                    organization=org,
+                    kind="kettenkopf",
+                    language=language,
+                    fail_silently=True,
+                ):
+                    sent += 1
+    return sent

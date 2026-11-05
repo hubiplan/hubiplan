@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from core.files import delete_on_commit
 from core.tenancy import rls_bypass
+from finance import gobd
 
 from .models import Organization
 
@@ -93,7 +94,8 @@ def erase_organization(org, actor):
                 for instance in instances:
                     delete_on_commit(*(getattr(instance, f.name) for f in fields))
             name, pk = org.name, org.pk
-            collector.delete()
+            with gobd.erasure():
+                collector.delete()
         except (models.ProtectedError, models.RestrictedError) as exc:
             raise serializers.ValidationError(
                 gettext("Andere Einheiten verweisen auf diese Daten. Löschen nicht möglich.")
