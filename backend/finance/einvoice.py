@@ -317,7 +317,7 @@ def _details(root):
                 if cii and identifier is not None
                 else _text(node, "TaxScheme", "ID")
             )
-            if code == scheme:
+            if code == scheme and identifier is not None:
                 return (identifier.text or "").strip()
         return ""
 

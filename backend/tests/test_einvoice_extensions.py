@@ -153,6 +153,14 @@ def test_remainder_distribution_preserves_exact_cents():
     ]
 
 
+def test_incomplete_incoming_tax_identifier_remains_readable():
+    xml = b"""<Invoice><ID>INCOMPLETE</ID><AccountingSupplierParty><Party>
+      <PartyTaxScheme><TaxScheme><ID>VAT</ID></TaxScheme></PartyTaxScheme>
+      </Party></AccountingSupplierParty><LegalMonetaryTotal><PayableAmount>1</PayableAmount>
+      </LegalMonetaryTotal></Invoice>"""
+    assert parse_xml(xml)["seller_vat_id"] == ""
+
+
 def test_real_hybrid_original_and_cancellation_are_validated_and_immutable(c, base, payload, club):
     item = issued(c, base, payload)
     path = f"{base}/electronic/{item['id']}"
