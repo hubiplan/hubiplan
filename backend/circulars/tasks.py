@@ -11,7 +11,8 @@ def send_circular(circular_id: int) -> int:
     return services.send_pending(circular_id)
 
 
-@shared_task
+# Ruft fremde Server ab: Laufzeit begrenzen (Gesamtaudit 05.11. GA-03)
+@shared_task(soft_time_limit=1500, time_limit=1560)
 def fetch_inbound() -> int:
     """Mailverteiler: Sammelpostfach abholen."""
     from . import inbound

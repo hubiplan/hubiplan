@@ -4,10 +4,17 @@
 encode zstd gzip
 
 @backend path /api/* /_allauth/* /admin /admin/* /static/*
+# Nur die Vollübernahme (Datenimport) braucht bis 500 MB (Gesamtaudit 31.10.b, INF-S02);
+# alles andere höchstens 64 MB (Rundschreiben mit Anhängen, Verbundpakete bis 48 MB).
+# So belegt kein anderer Pfad mit Riesenanfragen Speicher und Platte (Gesamtaudit 05.11. GA-09).
+@grossupload path_regexp ^/api/(orgs/[0-9]+/|platform/)datatransfer/imports/$
+@normalupload not path_regexp ^/api/(orgs/[0-9]+/|platform/)datatransfer/imports/$
 handle @backend {
-	# Größte erlaubte Anfrage: Vollübernahme bis 500 MB (Gesamtaudit 31.10.b, INF-S02)
-	request_body {
+	request_body @grossupload {
 		max_size 520MB
+	}
+	request_body @normalupload {
+		max_size 64MB
 	}
 	reverse_proxy backend:8000 {
 		import upstream

@@ -20,6 +20,10 @@ fi
 if [ -d /app/private ]; then
     find /app/private -type f -user "$(id -u)" -perm 0600 -exec chmod 0640 {} + 2> /dev/null || true
 fi
+# Reste abgebrochener Uploads entfernen (älter als einen Tag)
+if [ -d /app/upload-tmp ]; then
+    find /app/upload-tmp -type f -mmin +1440 -delete 2> /dev/null || true
+fi
 # Der Zugang des Tabelleneigentümers gelangt nicht in den laufenden Prozess
 unset MIGRATE_DATABASE_URL APP_DB_PASSWORD
 

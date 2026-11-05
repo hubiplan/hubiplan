@@ -34,7 +34,7 @@ RUN apt-get update -q && apt-get install -y -q --no-install-recommends gettext >
     && if [ "$REQUIREMENTS" = requirements.txt ]; then \
            apt-get purge -y -q gettext > /dev/null && apt-get autoremove -y -q > /dev/null; fi \
     && rm -rf /var/lib/apt/lists/*
-RUN useradd --create-home --uid 1000 app && mkdir -p /app/media /app/private /app/loeschliste && chown -R app /app
+RUN useradd --create-home --uid 1000 app && mkdir -p /app/media /app/private /app/loeschliste /app/upload-tmp && chown -R app /app
 USER app
 
 EXPOSE 8000
