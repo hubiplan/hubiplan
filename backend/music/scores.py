@@ -174,19 +174,37 @@ def voice(instrument, register):
     return instrument.strip().casefold(), register.strip().casefold()
 
 
-def program_data(performance):
+def program_data(performance, loan_balances=None):
     positions = performance.positions.all()
     planned = Counter()
     accepted = Counter()
     for p in positions:
         planned[voice(p.instrument, p.register)] += p.required
-    for a in performance.assignments.filter(
-        status="accepted", musician__active=True
-    ).select_related("position"):
-        accepted[voice(a.position.instrument, a.position.register)] += 1
+    assignments = (
+        performance._prefetched_objects_cache.get("assignments")
+        if hasattr(performance, "_prefetched_objects_cache")
+        else None
+    )
+    if assignments is None:
+        assignments = list(performance.assignments.select_related("musician", "position"))
+    held_by = {
+        a.musician_id
+        for a in assignments
+        if a.status in ["pending", "accepted"] and a.musician.active
+    }
+    for a in assignments:
+        if a.status == "accepted" and a.musician.active:
+            accepted[voice(a.position.instrument, a.position.register)] += 1
     entries, preparation = [], []
     seen = set()
-    for entry in performance.program_entries.select_related("arrangement__piece"):
+    program_entries = (
+        performance._prefetched_objects_cache.get("program_entries")
+        if hasattr(performance, "_prefetched_objects_cache")
+        else None
+    )
+    if program_entries is None:
+        program_entries = performance.program_entries.select_related("arrangement__piece")
+    for entry in program_entries:
         arrangement = entry.arrangement
         duration = (
             entry.duration_seconds
@@ -230,14 +248,26 @@ def program_data(performance):
                 row["required"], part.required_players if part.kind == "part" else 1
             )
             if part.paper_format == entry.paper_format:
-                loaned = part.loans.aggregate(n=Sum(F("quantity") - F("returned")))["n"] or 0
+                loaned = (
+                    sum(loan_balances.get(part.pk, {}).values())
+                    if loan_balances is not None
+                    else part.loans.aggregate(n=Sum(F("quantity") - F("returned")))["n"] or 0
+                )
                 held = (
-                    part.loans.filter(
-                        musician__assignment__performance=performance,
-                        musician__assignment__status__in=["pending", "accepted"],
-                        musician__active=True,
-                    ).aggregate(n=Sum(F("quantity") - F("returned")))["n"]
-                    or 0
+                    sum(
+                        quantity
+                        for musician, quantity in loan_balances.get(part.pk, {}).items()
+                        if musician in held_by
+                    )
+                    if loan_balances is not None
+                    else (
+                        part.loans.filter(
+                            musician__assignment__performance=performance,
+                            musician__assignment__status__in=["pending", "accepted"],
+                            musician__active=True,
+                        ).aggregate(n=Sum(F("quantity") - F("returned")))["n"]
+                        or 0
+                    )
                 )
                 row.setdefault("loaned", 0)
                 row.setdefault("held", 0)

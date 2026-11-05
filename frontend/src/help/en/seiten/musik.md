@@ -10,6 +10,14 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Music and performances
 
+**Performance overview** combines staffing, pending responses, known conflicts,
+sheet music requirements and permitted settlement issues. Select a period and choose
+**Update overview** when needed. Each issue links to staffing, the programme or the
+performance settlement. “Prepared” refers only to information you can access; it does not
+confirm attendance. Missing planning details remain open. Finance issues require
+cashbook read access. Cancelled performances are marked separately. Each page shows
+twelve performances.
+
 The platform enables Music per organization. Roles need music viewing or editing permission. Performances also require calendar viewing permission.
 
 Section navigation remains visible on every music page: **Performances**, **Musicians**, **Sheet music library**, **Rehearsals and sheet music checkout**, **Availability** and **Instrumentation templates**. Under **Performances**, switch between performances, required instrumentation and assignments; under **Musicians**, switch between profiles and instrumental skills. The active section is marked. Navigation and form fields stack on smaller screens.

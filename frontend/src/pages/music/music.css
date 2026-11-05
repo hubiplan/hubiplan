@@ -4,6 +4,42 @@
   gap: 1.5rem;
 }
 
+.music-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 29rem), 1fr));
+  gap: 1rem;
+}
+
+.music-overview-card {
+  align-content: start;
+}
+.music-readiness {
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+.music-readiness-critical {
+  background: var(--color-bg);
+  border: 2px solid #b42318;
+}
+.music-readiness-attention {
+  background: var(--color-bg);
+  border: 2px solid #b7791f;
+}
+.music-readiness-ready {
+  background: var(--color-bg);
+  border: 2px solid #16803c;
+}
+.music-readiness-cancelled {
+  background: var(--color-bg);
+  border: 2px solid var(--color-border);
+}
+.music-readiness-issues {
+  display: grid;
+  gap: 0.5rem;
+  padding-inline-start: 1.25rem;
+}
+
 .music-guest-page {
   width: 100%;
   max-width: 60rem;

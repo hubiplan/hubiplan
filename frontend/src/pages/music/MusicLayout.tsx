@@ -7,20 +7,23 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 export function MusicLayout({ children }: { children: ReactNode }) {
   const [params] = useSearchParams()
   const org = useActiveOrg()
-  const area = params.get('ausstattung')
-    ? 'equipment'
-    : params.get('noten')
-      ? 'scores'
-      : params.get('proben')
-        ? 'practice'
-        : params.get('vorlagen')
-          ? 'templates'
-          : params.get('verfuegbarkeit')
-            ? 'availability'
-            : ['musicians', 'skills'].includes(params.get('art') || '')
-              ? 'musicians'
-              : 'performances'
+  const area = params.get('uebersicht')
+    ? 'overview'
+    : params.get('ausstattung')
+      ? 'equipment'
+      : params.get('noten')
+        ? 'scores'
+        : params.get('proben')
+          ? 'practice'
+          : params.get('vorlagen')
+            ? 'templates'
+            : params.get('verfuegbarkeit')
+              ? 'availability'
+              : ['musicians', 'skills'].includes(params.get('art') || '')
+                ? 'musicians'
+                : 'performances'
   const items = [
+    ['overview', '/musik?uebersicht=1', t('Auftrittsübersicht')],
     ['performances', '/musik', t('Auftritte')],
     ['musicians', '/musik?art=musicians', t('Musiker')],
     ['scores', '/musik?noten=1', t('Notenbestand')],
