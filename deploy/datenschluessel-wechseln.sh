@@ -3,6 +3,7 @@
 set -euo pipefail
 umask 077
 ORG= MODE= ACTION=wechsel KEY= PROOF= APPROVAL= ACK=0
+NEW_PROOF= NEW_APPROVAL=
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --organisation) ORG=${2:-}; shift 2 ;;
@@ -20,7 +21,13 @@ validate_retirement() {
         && [[ "$APPROVAL" =~ ^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,99}$ ]]
 }
 if [ "$MODE" = fortsetzen ]; then
-    [ "$ACTION" = wechsel ] && [ -z "$KEY$PROOF$APPROVAL" ] && [ "$ACK" = 0 ] || exit 2
+    [ "$ACTION" = wechsel ] && [ -z "$KEY" ] || exit 2
+    if [ -n "$PROOF$APPROVAL" ] || [ "$ACK" != 0 ]; then
+        [[ "$PROOF" =~ ^[0-9a-f]{64}$ ]] && [[ "$APPROVAL" =~ ^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,99}$ ]] \
+            && [ "$ACK" = 1 ] || exit 2
+        NEW_PROOF=$PROOF; NEW_APPROVAL=$APPROVAL
+        PROOF= APPROVAL=
+    fi
 elif [ "$ACTION" = ausmustern ]; then
     validate_retirement && [ "$ACK" = 1 ] || { echo "Prüfkennung, Freigabe und --sicherungen-geprueft erforderlich." >&2; exit 2; }
 else
@@ -114,6 +121,7 @@ else
             *) exit 1 ;;
         esac
     fi
+    [ -z "$NEW_PROOF" ] || [ "$ACTION" = ausmustern ] || exit 2
 fi
 mkdir -p "$OPEN"
 sync -f "$STATE_DIR"
@@ -128,6 +136,13 @@ ensure_stopped() {
     }
 }
 ensure_stopped
+if [ -n "$NEW_PROOF" ]; then
+    # Eine bewusste Neufreigabe nur vor Materialentfernung übernehmen. --probe
+    # verweigert auch nach einem Abbruch bereits ausgemusterte Generationen.
+    PROOF=$NEW_PROOF; APPROVAL=$NEW_APPROVAL
+    retire_manage --probe
+    save_state
+fi
 receipt() {
     compose run -T --rm --no-deps --entrypoint backup-receipt.sh backup "$1"
 }

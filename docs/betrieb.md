@@ -588,13 +588,20 @@ Prüfkennung und Freigabereferenz bleiben als Nachweis erhalten. Das Material is
 diesem aktuellen Datenbestand nicht wiederherstellbar. Es gibt keinen automatischen
 Zeitplan, kein pauschales Entfernen aller alten Generationen und kein Zurückschalten.
 
-Bei Fehlern bleiben die Dienste angehalten; mit derselben Fassung und ausschließlich
+Bei Fehlern bleiben die Dienste angehalten; mit derselben Fassung und
 `--organisation 42 --fortsetzen` wiederaufnehmen. Der Wartungsvermerk enthält die
-unveränderliche Freigabe. Ein Abbruch nach Materialentfernung wiederholt diese nicht;
+Freigabe. Ein Abbruch nach Materialentfernung wiederholt diese nicht;
 der ursprüngliche Vorher-Nachweis bleibt erforderlich. Danach werden Nachher-Sicherung
 und Neustart erneut geprüft. Die Dienste müssen als neue Prozesse starten, damit
 auch zuvor im Arbeitsspeicher gelesene Schlüssel verworfen sind. Der normale Lesecache
 ist kein prozessübergreifender Widerruf bereits entpackten Materials.
+
+Ist die Prüfkennung bereits vor der Materialentfernung veraltet, bei angehaltenen
+Diensten den lesenden Bericht erneut ausführen und die neue Freigabe bewusst mit
+`--organisation 42 --fortsetzen --pruefsumme PRUEFKENNUNG --freigabe TEST-FREIGABE-43 --sicherungen-geprueft`
+übergeben. Nur eine erfolgreiche erneute Vorprüfung der weiterhin vorhandenen
+Generation übernimmt diese Freigabe; nach Materialentfernung wird sie verweigert.
+Ein vorhandener ursprünglicher Vorher-Satz bleibt weiterhin erforderlich.
 
 Für isolierte Verwaltungsabläufe gibt es `datenschluessel_ausmustern` mit
 `--organisation`, `--schluessel`, `--pruefsumme`, `--freigabe`,

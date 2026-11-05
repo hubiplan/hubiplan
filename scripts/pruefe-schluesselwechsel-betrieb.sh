@@ -177,7 +177,19 @@ for fault in ok stop ps_error stale backup_before retirement verify backup_after
             mv "$CASE/beleg" "$CASE/$token-vorher"
         fi
         FAIL=ok; export FAIL
-        (cd "$CASE/app" && bash "$ROOT/deploy/datenschluessel-wechseln.sh" --organisation 42 --fortsetzen > "$CASE/resume" 2>&1) || { cat "$CASE/resume" >&2; exit 1; }
+        if [ "$fault" = retirement ]; then
+            # Nach Entfernung darf eine andere Freigabe nicht übernommen werden.
+            if (cd "$CASE/app" && bash "$ROOT/deploy/datenschluessel-wechseln.sh" --organisation 42 --fortsetzen \
+                --pruefsumme "$(printf 'b%.0s' {1..64})" --freigabe TEST-43 --sicherungen-geprueft > /dev/null 2>&1); then exit 1; fi
+            grep -q '^approval=TEST-42$' "$CASE/app.datenschluesselwechsel/status"
+        fi
+        if [ "$fault" = stale ]; then
+            (cd "$CASE/app" && bash "$ROOT/deploy/datenschluessel-wechseln.sh" --organisation 42 --fortsetzen \
+                --pruefsumme "$(printf 'b%.0s' {1..64})" --freigabe TEST-43 --sicherungen-geprueft > "$CASE/resume" 2>&1) || { cat "$CASE/resume" >&2; exit 1; }
+            grep -q '^approval=TEST-43$' "$CASE/app.datenschluesselwechsel/letzter-abschluss"
+        else
+            (cd "$CASE/app" && bash "$ROOT/deploy/datenschluessel-wechseln.sh" --organisation 42 --fortsetzen > "$CASE/resume" 2>&1) || { cat "$CASE/resume" >&2; exit 1; }
+        fi
     fi
     [ ! -e "$CASE/app.datenschluesselwechsel/status" ]
     [ "$(wc -l < "$CASE/material-removals")" = 1 ]
