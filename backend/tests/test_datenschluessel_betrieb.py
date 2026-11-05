@@ -16,7 +16,9 @@ from exchange.models import ImportJob
 
 
 @pytest.mark.django_db(transaction=True)
-def test_maschinenstatus_ist_lesend_und_erzeugt_keinen_schluessel(orgs):
+def test_maschinenstatus_ist_lesend_und_erzeugt_keinen_schluessel(orgs, settings, tmp_path):
+    settings.PRIVATE_ROOT = tmp_path / "private"
+
     def status():
         out = io.StringIO()
         call_command("datenschluessel_wechseln", organisation=orgs["c"].pk, status=True, stdout=out)
