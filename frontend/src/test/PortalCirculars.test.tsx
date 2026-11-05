@@ -152,6 +152,34 @@ describe('Genaues Rundschreiben aus der App', () => {
       expect(calls.filter((c) => /circulars\/\d+\/$/.test(c.key))).toHaveLength(0)
     },
   )
+  it('erhält beim Speichern den Fokus und verhindert weitere Änderungen bis zur Bestätigung', async () => {
+    fakeApi(routes())
+    let finish!: (value: { info_opt_out: boolean }) => void
+    const save = vi.spyOn(portalCircularApi, 'setOptOut').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        }),
+    )
+    view('/')
+    const checkbox = await screen.findByRole('checkbox')
+    await userEvent.click(checkbox)
+    expect(checkbox).toHaveFocus()
+    expect(checkbox).not.toBeDisabled()
+    expect(checkbox).toHaveAttribute('aria-busy', 'true')
+    expect(checkbox).toHaveAttribute('aria-disabled', 'true')
+    await userEvent.keyboard(' ')
+    await userEvent.click(checkbox)
+    expect(save).toHaveBeenCalledTimes(1)
+    expect(checkbox).toBeChecked()
+    await act(async () => finish({ info_opt_out: true }))
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Informationen per E-Mail sind abbestellt.',
+    )
+    expect(checkbox).toHaveFocus()
+    expect(checkbox).not.toBeChecked()
+    expect(checkbox).not.toHaveAttribute('aria-busy')
+  })
   it('bestätigt nur erfolgreiche Änderungen, räumt alte Erfolge weg und erhält die Serverauswahl', async () => {
     setCatalogForTest('en', en)
     let fail = false

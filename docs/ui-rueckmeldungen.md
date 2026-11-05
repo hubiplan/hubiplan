@@ -23,6 +23,11 @@ Test jeder möglichen Kombination aus Rolle, Aktion und Unterbrechung. Eine rein
 Auswahl, Downloadöffnung oder automatische Hintergrundabfrage braucht keine zusätzliche
 Erfolgsmeldung. Meldungen und fokussierte Abschlussansichten dürfen nicht doppelt angesagt werden.
 
+Die Checkbox für Informations-E-Mails bleibt beim Speichern fokussierbar. Sie kennzeichnet den
+laufenden Vorgang und sperrt weitere Änderungen, ohne das native `disabled` kurz einzuschalten;
+dies würde den Browserfokus entfernen. Ein bloßes `aria-disabled` reicht nicht: Maus- und
+Tastaturaktionen werden während des laufenden Vorgangs auch tatsächlich abgefangen.
+
 ## Technische Prüfungen
 
 Alle Tests werden über `scripts/test.sh` ausgeführt. Webregressionen prüfen erfolgreiche und

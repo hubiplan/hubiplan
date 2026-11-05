@@ -104,12 +104,15 @@ export function Checkbox({
   checked,
   onChange,
   disabled,
+  busy,
   hint,
 }: {
   label: string
   checked: boolean
   onChange: (value: boolean) => void
   disabled?: boolean
+  /** Sperrt weitere Änderungen beim Speichern, erhält aber den Tastaturfokus. */
+  busy?: boolean
   /** kurze Erklärung hinter der Beschriftung */
   hint?: string
 }) {
@@ -119,7 +122,11 @@ export function Checkbox({
         type="checkbox"
         checked={checked}
         disabled={disabled}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.checked)}
+        aria-disabled={busy || undefined}
+        aria-busy={busy || undefined}
+        onChange={(e: ChangeEvent<HTMLInputElement>) => {
+          if (!busy) onChange(e.target.checked)
+        }}
       />
       <span>
         {label}

@@ -141,7 +141,7 @@ export function PortalCirculars({ accessId }: { accessId: number }) {
         <Checkbox
           label={t('Informationen per E-Mail erhalten (offizielle Mitteilungen kommen immer)')}
           checked={!settings.data.info_opt_out}
-          disabled={busy}
+          busy={busy}
           onChange={(on) => void setOptOut(!on)}
         />
       )}

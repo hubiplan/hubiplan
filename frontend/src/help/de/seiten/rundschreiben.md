@@ -13,4 +13,4 @@ Rundschreiben gehen per E-Mail, als Brief oder in die App an Mitglieder, Vorstä
 
 Namenslisten verwenden eine feste alphabetische Reihenfolge: Umlaute stehen bei ihrem Grundbuchstaben. Gleiche Namen bleiben auch beim Blättern in derselben Reihenfolge.
 
-Empfangene Schreiben und ihre Anhänge findest du auch im Mitgliederbereich unter **Rundschreiben**. Die Android-App nennt diesen gemeinsamen Eingang „Mitteilungen“. Die Einstellung für Informations-E-Mails bestätigt Änderungen; offizielle Mitteilungen bleiben davon unberührt.
+Empfangene Schreiben und ihre Anhänge findest du auch im Mitgliederbereich unter **Rundschreiben**. Die Android-App nennt diesen gemeinsamen Eingang „Mitteilungen“. Die Einstellung für Informations-E-Mails bestätigt Änderungen und behält beim Speichern den Tastaturfokus. Weitere Änderungen sind währenddessen gesperrt; offizielle Mitteilungen bleiben davon unberührt.
