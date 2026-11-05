@@ -239,7 +239,7 @@ class TestOeffentlich:
         top = data["albums"][0]
         assert top["year"] == 2024 and top["images"] == 2 and top["albums"] == 1
         # Titelbild aus dem Unteralbum
-        assert top["cover"]["key"] == alben["keys"][alben["a"]["id"]]
+        assert top["cover"]["url"].endswith(f"images/{alben['keys'][alben['a']['id']]}/")
         album = public("galleries/2024/").json()
         assert album["albums"][0]["slug"] == "schuetzenfest"
         fest = public("galleries/schuetzenfest/").json()

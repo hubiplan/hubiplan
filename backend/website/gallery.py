@@ -176,26 +176,20 @@ def has_albums(website) -> bool:
     return visible_albums(website).filter(parent__isnull=True).exists()
 
 
-def _image(image: WebsiteImage | None, captions: bool = True) -> dict | None:
-    if image is None:
-        return None
-    return {
-        "key": image.public_key,
-        "width": image.width,
-        "height": image.height,
-        "alt": "" if image.decorative else (image.alt_text or image.caption),
-        "caption": image.caption if captions else "",
-    }
+def _image(show, image: WebsiteImage | None, captions: bool = True) -> dict | None:
+    """Bild wie in der übrigen öffentlichen Schnittstelle (``show`` = PublicSite.image)."""
+    data = show(image)
+    if data is not None and not captions:
+        data["caption"] = ""
+    return data
 
 
-def _cover(album: GalleryAlbum, first: dict) -> dict | None:
+def _cover(show, album: GalleryAlbum, first: dict) -> dict | None:
     """Titelbild: das gewählte, sonst das erste Bild (auch aus einem Unteralbum)."""
-    if album.cover_id:
-        return _image(album.cover, captions=False)
-    return _image(first.get(album.pk), captions=False)
+    return _image(show, album.cover if album.cover_id else first.get(album.pk), captions=False)
 
 
-def _summaries(albums: list[GalleryAlbum], visible) -> list[dict]:
+def _summaries(show, albums: list[GalleryAlbum], visible) -> list[dict]:
     """Kurzangaben je Album: Titel, Jahr, Titelbild, Zahl der Bilder und Unteralben."""
     ids = [a.pk for a in albums]
     children = {}
@@ -228,7 +222,7 @@ def _summaries(albums: list[GalleryAlbum], visible) -> list[dict]:
                 "title": a.title,
                 "year": a.date.year if a.date else None,
                 "date": a.date.isoformat() if a.date else None,
-                "cover": _cover(a, first),
+                "cover": _cover(show, a, first),
                 "images": own + sum(c.n for c in children.get(a.pk, [])),
                 "albums": len(children.get(a.pk, [])),
             }
@@ -236,15 +230,15 @@ def _summaries(albums: list[GalleryAlbum], visible) -> list[dict]:
     return result
 
 
-def public_list(website) -> list[dict]:
+def public_list(website, show) -> list[dict]:
     visible = visible_albums(website)
     top = list(
         visible.filter(parent__isnull=True).select_related("cover").annotate(n=Count("items"))
     )
-    return _summaries(sort_albums(top, website.gallery_order), visible)
+    return _summaries(show, sort_albums(top, website.gallery_order), visible)
 
 
-def public_album(website, slug: str) -> dict | None:
+def public_album(website, slug: str, show) -> dict | None:
     visible = visible_albums(website)
     album = (
         visible.filter(slug=slug)
@@ -265,9 +259,9 @@ def public_album(website, slug: str) -> dict | None:
         "parent": {"slug": album.parent.slug, "title": album.parent.title}
         if album.parent_id
         else None,
-        "albums": _summaries(subs, visible),
+        "albums": _summaries(show, subs, visible),
         "images": [
-            _image(i.image, album.show_captions)
+            _image(show, i.image, album.show_captions)
             for i in sort_items(list(album.items.all()), album.image_order)
         ],
     }

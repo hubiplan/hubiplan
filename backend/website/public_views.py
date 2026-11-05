@@ -491,7 +491,7 @@ class GalleryListView(_Public):
         site = self.load(request, key)
         if not site.site.block_on("gallery"):
             raise Http404
-        return self.respond({"albums": gallery.public_list(site.site)}, site)
+        return self.respond({"albums": gallery.public_list(site.site, site.image)}, site)
 
 
 class GalleryDetailView(_Public):
@@ -499,7 +499,7 @@ class GalleryDetailView(_Public):
 
     def get(self, request, key: str, slug: str):
         site = self.load(request, key)
-        data = gallery.public_album(site.site, slug)
+        data = gallery.public_album(site.site, slug, site.image)
         if data is None:
             raise Http404
         return self.respond(data, site)
