@@ -252,9 +252,10 @@ class PortalCardView(APIView):
                 display = services.public_data(card)
                 display["club_number"] = membership.club_number or ""
                 data["display"] = display
+                offered = display["status"] == "active" and club.card_wallet_enabled
                 data["wallet"] = {
-                    "google": wallet.enabled() and display["status"] == "active",
-                    "apple": apple.enabled() and display["status"] == "active",
+                    "google": wallet.enabled() and offered,
+                    "apple": apple.enabled() and offered,
                 }
         return Response(data)
 
@@ -270,7 +271,7 @@ class PortalCardWalletView(APIView):
             card = MemberCard.objects.filter(
                 membership_id=access.membership_id, revoked_at__isnull=True
             ).first()
-            if card is None or card.membership.purged_at or not card.membership.current_period():
+            if card is None or not wallet.offered(card):
                 raise NotFound()
             try:
                 url = wallet.issue_google(card.pk)
@@ -303,12 +304,7 @@ class PortalCardWalletView(APIView):
                 .filter(membership_id=access.membership_id, revoked_at__isnull=True)
                 .first()
             )
-            if (
-                card is None
-                or card.membership.purged_at
-                or not card.organization.is_active
-                or not card.membership.current_period()
-            ):
+            if card is None or not wallet.offered(card):
                 raise NotFound()
             try:
                 content = apple.render_pass(card)

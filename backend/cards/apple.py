@@ -14,7 +14,11 @@ from cryptography.x509.oid import NameOID
 from django.conf import settings
 from PIL import Image, ImageDraw
 
+from . import passcontent
 from .wallet import WalletError
+
+# Schlüssel der festen Texte in pass.json; die Wallet ersetzt sie aus <Sprache>.lproj/pass.strings
+KEY = "hubiplan."
 
 
 def enabled():
@@ -24,6 +28,90 @@ def enabled():
         and settings.APPLE_WALLET_CERTIFICATE_FILE
         and settings.APPLE_WALLET_WWDR_FILE
     )
+
+
+def _rgb_tuple(color: str) -> tuple[int, int, int]:
+    return tuple(int(color[i : i + 2], 16) for i in (1, 3, 5))
+
+
+def _field(key: str, label: str, value: str) -> dict:
+    return {"key": key, "label": KEY + label, "value": value}
+
+
+def _payload(card, content) -> dict:
+    secondary = [_field("club", "club", content.club)]
+    auxiliary = []
+    if content.member_type:
+        auxiliary.append(_field("member_type", "member_type", content.member_type))
+    if content.departments:
+        auxiliary.append(_field("departments", "departments", ", ".join(content.departments)))
+    if content.federation:
+        secondary.append(_field("federation", "federation", content.federation))
+    return {
+        "formatVersion": 1,
+        "passTypeIdentifier": settings.APPLE_WALLET_PASS_TYPE_ID,
+        "teamIdentifier": settings.APPLE_WALLET_TEAM_ID,
+        "serialNumber": hashlib.sha256(card.url.encode()).hexdigest(),
+        "organizationName": content.club,
+        "description": KEY + "description",
+        "logoText": content.club,
+        "backgroundColor": passcontent.rgb(content.background),
+        "foregroundColor": passcontent.rgb(content.foreground),
+        "labelColor": passcontent.rgb(content.foreground),
+        "barcodes": [
+            {
+                "format": "PKBarcodeFormatQR",
+                "message": content.url,
+                "messageEncoding": "iso-8859-1",
+            }
+        ],
+        "generic": {
+            "primaryFields": [_field("name", "member", content.name)],
+            "secondaryFields": secondary,
+            "auxiliaryFields": auxiliary,
+            "backFields": [
+                _field("verification", "verify", KEY + "verify_body_static"),
+                _field("url", "verify_page", content.url),
+            ],
+        },
+    }
+
+
+def _escape(text: str) -> str:
+    return text.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+
+
+def _strings(content) -> dict[str, bytes]:
+    """pass.strings je Sprache (UTF-16, wie Apple es verlangt)."""
+    labels = {key: passcontent.texts(key) for key in passcontent.TEXTS}
+    files = {}
+    for language in passcontent.LANGUAGES:
+        lines = [f'"{KEY}{key}" = "{_escape(values[language])}";' for key, values in labels.items()]
+        lines.append(f'"{KEY}departments" = "{_escape(content.department_label[language])}";')
+        files[f"{language}.lproj/pass.strings"] = ("\n".join(lines) + "\n").encode("utf-16")
+    return files
+
+
+def _logo(content) -> dict[str, bytes]:
+    """Logo der Einheit in den drei Auflösungen (höchstens 160 × 50 Punkte)."""
+    if not content.logo:
+        return {}
+    try:
+        with content.logo.open("rb") as handle:
+            source = Image.open(handle)
+            source.load()
+    except (OSError, ValueError):
+        return {}
+    source = source.convert("RGBA")
+    files = {}
+    for scale in (1, 2, 3):
+        image = source.copy()
+        image.thumbnail((160 * scale, 50 * scale))
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        suffix = "" if scale == 1 else f"@{scale}x"
+        files[f"logo{suffix}.png"] = buffer.getvalue()
+    return files
 
 
 def render_pass(card):
@@ -51,63 +139,32 @@ def render_pass(card):
             or not certificate.not_valid_before_utc <= now < certificate.not_valid_after_utc
         ):
             raise ValueError("certificate identity or validity mismatch")
-        person = card.membership.person
-        payload = {
-            "formatVersion": 1,
-            "passTypeIdentifier": settings.APPLE_WALLET_PASS_TYPE_ID,
-            "teamIdentifier": settings.APPLE_WALLET_TEAM_ID,
-            "serialNumber": hashlib.sha256(card.url.encode()).hexdigest(),
-            "organizationName": card.organization.name,
-            "description": "Mitgliedsausweis",
-            "logoText": card.organization.name,
-            "backgroundColor": "rgb(25, 55, 90)",
-            "foregroundColor": "rgb(255, 255, 255)",
-            "labelColor": "rgb(230, 235, 240)",
-            "barcodes": [
-                {
-                    "format": "PKBarcodeFormatQR",
-                    "message": card.url,
-                    "messageEncoding": "iso-8859-1",
-                }
-            ],
-            "generic": {
-                "primaryFields": [
-                    {
-                        "key": "name",
-                        "label": "MITGLIED",
-                        "value": f"{person.first_name} {person.last_name}".strip(),
-                    }
-                ],
-                "secondaryFields": [
-                    {"key": "club", "label": "VEREIN", "value": card.organization.name}
-                ],
-                "backFields": [
-                    {
-                        "key": "verification",
-                        "label": "Gültigkeit prüfen",
-                        "value": "Bitte den QR-Code scannen. Die aktuelle Gültigkeit "
-                        "wird online geprüft. Dieser Pass wird nicht "
-                        "automatisch aktualisiert.",
-                    },
-                    {"key": "url", "label": "Prüfseite", "value": card.url},
-                ],
-            },
-        }
-        files = {"pass.json": json.dumps(payload, ensure_ascii=False).encode()}
+        content = passcontent.build(card)
+        files = {"pass.json": json.dumps(_payload(card, content), ensure_ascii=False).encode()}
+        files.update(_strings(content))
+        files.update(_logo(content))
         # Eigenes schlichtes Ausweissymbol in den von Apple vorgesehenen Auflösungen.
         for scale in (1, 2, 3):
             size = 29 * scale
-            image = Image.new("RGB", (size, size), (25, 55, 90))
+            image = Image.new("RGB", (size, size), _rgb_tuple(content.background))
             draw = ImageDraw.Draw(image)
             draw.rounded_rectangle(
                 (4 * scale, 7 * scale, 25 * scale, 22 * scale),
                 radius=2 * scale,
-                outline="white",
+                outline=content.foreground,
                 width=scale,
             )
-            draw.ellipse((7 * scale, 10 * scale, 12 * scale, 15 * scale), fill="white")
-            draw.line((15 * scale, 11 * scale, 22 * scale, 11 * scale), fill="white", width=scale)
-            draw.line((15 * scale, 16 * scale, 22 * scale, 16 * scale), fill="white", width=scale)
+            draw.ellipse((7 * scale, 10 * scale, 12 * scale, 15 * scale), fill=content.foreground)
+            draw.line(
+                (15 * scale, 11 * scale, 22 * scale, 11 * scale),
+                fill=content.foreground,
+                width=scale,
+            )
+            draw.line(
+                (15 * scale, 16 * scale, 22 * scale, 16 * scale),
+                fill=content.foreground,
+                width=scale,
+            )
             buffer = io.BytesIO()
             image.save(buffer, format="PNG")
             suffix = "" if scale == 1 else f"@{scale}x"
