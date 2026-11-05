@@ -43,3 +43,8 @@ auf seiner Detailseite **Verbindlich buchen**. Das öffnet die Buchung mit diese
 „Nur dieser Termin“ wird genau dieses Vorkommen gebucht.
 
 Auf der Webseite: Unter **Buchungskalender** wählst du je Objekt, ob die Webseite im Bereich „Belegung“ nichts, nur belegte Zeiten oder bei öffentlichen Buchungen auch den Zweck zeigt. Den Bereich schaltest du unter Webseite › Menü und Bereiche ein.
+
+Anfragen aus dem Mitgliederbereich: Mit **Mitglieder dürfen im Mitgliederbereich anfragen**
+erscheint ein Objekt in Mein Bereich auf der Kachel Belegung. Solche Anfragen brauchen immer eine Freigabe.
+Wer eine Anfrage oder Buchung gestellt hat, bekommt eine E-Mail, wenn jemand anderes sie
+bestätigt, ablehnt oder storniert.

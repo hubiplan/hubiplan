@@ -314,3 +314,65 @@ def test_bedarf_eines_einzeltermins_wird_buchung(setup):
         content_type=JSON,
     )
     assert wrong.status_code == 400
+
+
+def test_anfrage_im_portal_und_benachrichtigung(
+    setup, api, mailoutbox, django_capture_on_commit_callbacks
+):
+    from portal.models import PortalAccess
+
+    from .factories import make_member
+
+    s = setup
+    org = s["org"]
+    org.member_portal_enabled = True
+    org.save(update_fields=["member_portal_enabled"])
+    s["hall"].booking_rules = {"enabled": True, "approval": True, "portal": True}
+    s["hall"].save()
+    membership = make_member(org, "Erika", "Beispiel", email="erika@example.org")
+    user = make_user("erika@example.org")
+    access = PortalAccess.objects.create(organization=org, membership=membership, user=user)
+    portal = api(user)
+    url = f"/api/portal/{access.pk}/bookings/"
+    data = portal.get(url).json()
+    # Nur Objekte mit „im Portal anfragen“
+    assert [i["title"] for i in data["items"]] == ["Saal"]
+    assert book(s["admin"], s["url"], s["hall"], at(6, 10), at(6, 12)).status_code == 201
+    busy = portal.get(url + f"?start={timezone.localdate() + datetime.timedelta(days=6)}").json()
+    assert {r["title"] for r in busy["occurrences"]} == {"Belegt"}
+    response = portal.post(
+        url,
+        {"item": s["hall"].pk, "title": "Geburtstag", "starts_at": at(7, 15), "ends_at": at(7, 20)},
+        content_type=JSON,
+    )
+    assert response.status_code == 201, response.content
+    request = response.json()
+    assert request["status"] == "requested"
+    # Fremde Objekte lassen sich nicht anfragen
+    assert (
+        portal.post(
+            url,
+            {"item": s["stand"].pk, "title": "x", "starts_at": at(7, 15), "ends_at": at(7, 20)},
+            content_type=JSON,
+        ).status_code
+        == 400
+    )
+    booking = s["admin"].get(f"{s['url']}{request['id']}/").json()
+    with django_capture_on_commit_callbacks(execute=True):
+        confirm = s["admin"].post(
+            f"{s['url']}{request['id']}/decision/",
+            {"action": "confirm", "version": booking["version"]},
+            content_type=JSON,
+        )
+    assert confirm.status_code == 200, confirm.content
+    assert [m.to for m in mailoutbox] == [["erika@example.org"]]
+    assert "Geburtstag" in mailoutbox[0].subject
+    own = portal.get(url).json()["own"]
+    assert own[0]["status"] == "confirmed"
+    cancel = portal.post(
+        f"{url}{request['id']}/cancel/", {"version": own[0]["version"]}, content_type=JSON
+    )
+    assert cancel.json()["status"] == "cancelled"
+    # Ein anderes Mitglied sieht den Portalzugang nicht
+    other = make_user("fremd@example.org")
+    assert api(other).get(url).status_code == 404

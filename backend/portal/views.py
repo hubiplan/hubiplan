@@ -710,6 +710,13 @@ def _portal_access(user, access_id: int) -> PortalAccess:
     return access
 
 
+def _bookings_enabled(club) -> bool:
+    """Gibt es Objekte, die Mitglieder im Mitgliederbereich anfragen dürfen?"""
+    from bookings.portal import portal_items
+
+    return portal_items(club).exists()
+
+
 def portal_summary(access: PortalAccess) -> dict:
     club = access.organization
     with tenant_context(club.pk, access.user_id):
@@ -726,6 +733,7 @@ def portal_summary(access: PortalAccess) -> dict:
             "events_enabled": "events" in (club.enabled_modules or []),
             "entries_enabled": "entries" in (club.enabled_modules or []),
             "competitions_enabled": "competitions" in (club.enabled_modules or []),
+            "bookings_enabled": _bookings_enabled(club),
             "terms": department_terms(club),
             "imprint_key": ensure_imprint(club).public_key,
         }

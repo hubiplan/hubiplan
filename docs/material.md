@@ -157,3 +157,11 @@ nur belegte Zeiten („Belegt“), `titles` zusätzlich den Zweck von Buchungen 
 anfangs aus. Öffentliche Schnittstelle: `/api/public/site/v1/<key>/bookings/?start=JJJJ-MM-TT`
 (sieben Tage, Objekte mit Kennung statt Nummer) und `/api/public/site/v1/<key>/bookings.ics`
 (Abo, eine Woche zurück und 180 Tage voraus). Die Vereinswebseite zeigt das unter `/belegung/`.
+
+### Anfragen aus dem Mitgliederbereich
+
+Mit `booking_rules.portal` dürfen Mitglieder ein Objekt im Mitgliederbereich anfragen
+(`/api/portal/<zugang>/bookings/`, Stornieren über `…/<pk>/cancel/`). Sie sehen nur belegte
+Zeiten (fremde Zwecke als „Belegt“) und ihre eigenen Anfragen; jede Anfrage braucht eine
+Freigabe, höchstens 20 offene je Person. Bestätigt, lehnt ab oder storniert jemand anderes eine
+Buchung, bekommt die buchende Person eine E-Mail über den Postausgang (Art `buchung`).

@@ -1,6 +1,7 @@
 // Mitgliederbereich nach Aufgaben: Ausweis, Rechnungen, Rundschreiben, eigene Daten.
 import { PortalCirculars } from './PortalCirculars.tsx'
 import { PortalTodos } from './PortalTodos.tsx'
+import { PortalBookings } from './PortalBookings.tsx'
 import { OwnMusic } from '../music/OwnMusic.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
@@ -97,6 +98,14 @@ export function PortalPage() {
           </PortalSection>
         }
       />
+      <Route
+        path="belegung"
+        element={
+          <PortalSection title={t('Belegung')}>
+            <PortalBookings key={activePortal.id} accessId={activePortal.id} />
+          </PortalSection>
+        }
+      />
       <Route index element={<PortalOverview key={activePortal.id} entry={activePortal} />} />
       <Route
         path="ausweis"
@@ -190,6 +199,15 @@ export function PortalTasks({ entry, skip = [] }: { entry: PortalEntry; skip?: s
             to: '/termine',
             title: t('Meine Termine'),
             text: t('Termine ansehen, zu- oder absagen'),
+          },
+        ]
+      : []),
+    ...(entry.bookings_enabled
+      ? [
+          {
+            to: '/mein-bereich/belegung',
+            title: t('Belegung'),
+            text: t('Schützenhaus, Stand oder Material anfragen'),
           },
         ]
       : []),

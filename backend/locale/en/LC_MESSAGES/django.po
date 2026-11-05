@@ -7783,3 +7783,15 @@ msgstr "The item has not been handed out."
 
 msgid "Dieser Termin findet nicht statt."
 msgstr "This date does not take place."
+
+msgid "Buchung bestätigt: {title}"
+msgstr "Booking confirmed: {title}"
+
+msgid "Buchung abgelehnt: {title}"
+msgstr "Booking rejected: {title}"
+
+msgid "Buchung storniert: {title}"
+msgstr "Booking cancelled: {title}"
+
+msgid "Du hast schon 20 offene Anfragen."
+msgstr "You already have 20 open requests."

@@ -39,6 +39,7 @@ export interface PortalEntry {
   events_enabled?: boolean
   entries_enabled?: boolean
   competitions_enabled?: boolean
+  bookings_enabled?: boolean
   terms?: DeptTerms
   imprint_key?: string
 }
