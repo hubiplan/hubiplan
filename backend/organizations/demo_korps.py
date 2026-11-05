@@ -3,7 +3,8 @@
 Aufbau: Verein → Korps → Züge (das Tambourkorps ohne Züge). Alle schaltbaren Module und
 Zusatzfunktionen sind an. Angelegt werden Mitglieder, Ämter in Verein, Korps und Zügen,
 Zugänge, Kasse, Beiträge, Satzung, Dokumente, Termine, Würden, Wettbewerbe, Meldungen,
-Rundschreiben-Entwurf, Webseite mit Chronik, Impressum und Briefbogen.
+Rundschreiben-Entwurf, Webseite mit Chronik, Impressum, Briefbogen, Musik (Tambourkorps mit
+Auftritt und Notenbestand), Aufgaben und Material.
 
 Wiederholbar: Vorhandenes bleibt, wie es ist. Andere Organisationen (z. B. die
 Pilotorganisationen aus ``seed_testdata``) fasst der Befehl nicht an.
@@ -212,6 +213,9 @@ def seed(password: str, reset: bool = False) -> dict:
     _imprint(club)
     _letterhead(club)
     _website(club)
+    _music(club)
+    todos = _todos(club)
+    _material(club, todos)
     return {"club": club, "created": created["count"]}
 
 
@@ -1158,3 +1162,239 @@ def _board(club) -> None:
             valid_from=datetime.date(start, 3, 1),
             valid_until=datetime.date(end, 2, 28),
         )
+
+
+# --- Musik, Aufgaben, Material (für Bildschirmfotos der Produktwebseite) ---
+
+# Instrument, Stimme, Sollzahl beim Auftritt
+TAMBOUR_STIMMEN = [
+    ("Kleine Trommel", "", 4),
+    ("Flöte", "1. Stimme", 3),
+    ("Flöte", "2. Stimme", 3),
+    ("Lyra", "", 2),
+    ("Große Trommel", "", 1),
+    ("Becken", "", 1),
+]
+# Titel, Komponist (erfunden), Dauer in Sekunden
+STUECKE = [
+    ("Musterstädter Schützenmarsch", "Heinrich Erfunden", 190),
+    ("Gruß an das Königspaar", "Anna Beispiel", 150),
+    ("Festplatz-Fanfare", "Heinrich Erfunden", 75),
+    ("Parademarsch Nr. 3", "Otto Vorlage", 210),
+    ("Biwak-Polka", "Anna Beispiel", 165),
+]
+
+
+def _music(club) -> None:
+    from events.models import Event
+    from events.seed import _at, _cat, _event, _next
+    from music.models import (
+        Arrangement,
+        Assignment,
+        EnsembleTemplate,
+        EnsembleTemplatePosition,
+        Musician,
+        Performance,
+        Piece,
+        Position,
+        ProgramEntry,
+        Skill,
+    )
+
+    if Musician.objects.filter(organization=club).exists():
+        return
+    rnd = random.Random(1888)  # noqa: S311 – nur Testdaten
+    tambour = Department.objects.get(organization=club, name="Tambourkorps Musterstadt")
+    slots = [(i, r) for i, r, n in TAMBOUR_STIMMEN for _ in range(n)]
+    musicians = []
+    for membership, (instrument, register) in zip(_current(club, tambour), slots, strict=False):
+        musician = Musician.objects.create(organization=club, membership=membership)
+        Skill.objects.create(
+            organization=club,
+            musician=musician,
+            instrument=instrument,
+            register=register,
+            primary=True,
+        )
+        musicians.append((musician, instrument, register))
+    guest = Musician.objects.create(
+        organization=club, name="Gerd Gastflöter", contact="Musikzug Nachbarstadt (erfunden)"
+    )
+    Skill.objects.create(
+        organization=club, musician=guest, instrument="Flöte", register="1. Stimme", primary=True
+    )
+    musicians.append((guest, "Flöte", "1. Stimme"))
+
+    template = EnsembleTemplate.objects.create(organization=club, name="Marschbesetzung")
+    for instrument, register, required in TAMBOUR_STIMMEN:
+        EnsembleTemplatePosition.objects.create(
+            organization=club,
+            template=template,
+            instrument=instrument,
+            register=register,
+            required=required,
+        )
+
+    arrangements = []
+    for title, composer, seconds in STUECKE:
+        piece = Piece.objects.create(organization=club, title=title, composer=composer)
+        arrangements.append(
+            Arrangement.objects.create(
+                organization=club,
+                piece=piece,
+                name=f"{title} (Tambourkorps)",
+                ensemble="Tambourkorps",
+                duration_seconds=seconds,
+                difficulty="mittel",
+            )
+        )
+
+    day = _next(7, 10)
+    _event(
+        club,
+        "Ständchen für das Königspaar",
+        _at(day, 18),
+        _at(day, 19),
+        department=tambour,
+        visibility="members",
+        location="Vor dem Haus des Königspaars",
+        category=_cat(club, "Fest"),
+    )
+    event = Event.objects.get(
+        organization=club, department=tambour, title="Ständchen für das Königspaar"
+    )
+    performance = Performance.objects.create(
+        organization=club,
+        event=event,
+        meeting_at=_at(day, 17, 30),
+        meeting_place="Schützenhaus, Am Schützenplatz 3",
+        uniform="Ausgehuniform mit Tschako",
+        formation="march",
+        notes="Anschließend Umtrunk mit dem Königspaar.",
+    )
+    positions = {
+        (i, r): Position.objects.create(
+            organization=club, performance=performance, instrument=i, register=r, required=n
+        )
+        for i, r, n in TAMBOUR_STIMMEN
+    }
+    for musician, instrument, register in musicians:
+        Assignment.objects.create(
+            organization=club,
+            performance=performance,
+            position=positions[(instrument, register)],
+            musician=musician,
+            status=rnd.choice(["accepted", "accepted", "accepted", "pending", "declined"]),
+        )
+    for position, arrangement in enumerate(arrangements[:4], start=1):
+        ProgramEntry.objects.create(
+            organization=club,
+            performance=performance,
+            arrangement=arrangement,
+            position=position,
+            duration_seconds=arrangement.duration_seconds,
+        )
+
+
+def _todos(club) -> dict:
+    """Aufgaben des Vorstands; zurück: Titel → Aufgabe (Titel sind verschlüsselt)."""
+    from events.models import Event
+    from todos.models import Todo, TodoShare
+
+    if Todo.objects.filter(organization=club).exists():
+        return {}
+    created = {}
+    board = User.objects.get(email=USERS[0][0])
+    writer = Role.objects.get(organization=club, name="Schriftführer")
+    treasurer = Role.objects.get(organization=club, name="Kassierer")
+    fest = Event.objects.filter(organization=club, title="Schützenfest").first()
+    assembly = Event.objects.filter(organization=club, title="Generalversammlung").first()
+    today = timezone.localdate()
+    plan = [
+        # Titel, Frist in Tagen, Termin, geteilt mit (Rolle, Stufe, zuständig), erledigt
+        ("Festzelt für das Schützenfest bestellen", 14, fest, (writer, "edit", True), False),
+        ("Königssilber zur Reinigung bringen", 30, fest, None, False),
+        ("Einladung zur Generalversammlung versenden", -10, assembly, (writer, "edit", True), True),
+        ("Kassenprüfung terminieren", 21, assembly, (treasurer, "edit", True), False),
+        ("Jahresprogramm drucken lassen", 45, None, None, False),
+    ]
+    for title, days, event, share, done in plan:
+        todo = Todo.objects.create(
+            organization=club,
+            title=title,
+            event=event,
+            due_date=today + datetime.timedelta(days=days),
+            status="done" if done else "open",
+            done_at=timezone.now() if done else None,
+            done_by=board if done else None,
+            created_by=board,
+            owner=board,
+            shared=share is not None,
+        )
+        created[title] = todo
+        if share:
+            role, level, responsible = share
+            TodoShare.objects.create(
+                organization=club,
+                todo=todo,
+                role=role,
+                target_org=club,
+                level=level,
+                responsible=responsible,
+            )
+    return created
+
+
+def _material(club, todos: dict) -> None:
+    from events.models import Event
+    from materials.models import MaterialEventLink, MaterialItem, MaterialTodoLink
+    from music.models import Equipment
+
+    if MaterialItem.objects.filter(organization=club).exists():
+        return
+    house = {"name": "Schützenhaus", "street": "Am Schützenplatz 3", "postal_code": POSTAL_CODE,
+             "city": CITY, "country": "DE"}  # fmt: skip
+    tambour = Department.objects.get(organization=club, name="Tambourkorps Musterstadt")
+    keeper = _current(club, tambour)[0]
+    plan = [
+        # Titel, Beschreibung, Zweck, Standort (Mitglied oder Adresse), Zustand
+        ("Vereinsfahne von 1923", "Seidenfahne mit Stickerei, Fahnenstange und Schärpe",
+         "Festzug, Parade, Beerdigungen von Ehrenmitgliedern", house, "ready"),
+        ("Festzelt 10 × 20 m", "Zelt mit Seitenwänden, Boden und Beleuchtung",
+         "Schützenfest und Biwak", house, "ready"),
+        ("Bierzeltgarnituren (25 Stück)", "Tische und Bänke, klappbar",
+         "Biwak, Sommerfest, Generalversammlung", house, "limited"),
+        ("Königssilber", "Königskette mit Plaketten, Zepter und Brosche",
+         "Königsehrung und Festzug", house, "ready"),
+        ("Lyra Nr. 2", "Glockenspiel in Lyraform mit Tragegurt",
+         "Auftritte des Tambourkorps", keeper, "ready"),
+    ]  # fmt: skip
+    fest = Event.objects.filter(organization=club, title="Schützenfest").first()
+    items = {}
+    for title, description, purpose, place, condition in plan:
+        is_member = isinstance(place, Membership)
+        items[title] = MaterialItem.objects.create(
+            organization=club,
+            title=title,
+            description=description,
+            purpose=purpose,
+            location_kind="member" if is_member else "address",
+            member=place if is_member else None,
+            address={} if is_member else place,
+            condition=condition,
+        )
+    Equipment.objects.create(
+        organization=club, item=items["Lyra Nr. 2"], kind="instrument", instrument="Lyra"
+    )
+    if fest:
+        for title in ("Vereinsfahne von 1923", "Festzelt 10 × 20 m", "Königssilber"):
+            MaterialEventLink.objects.create(
+                organization=club, item=items[title], event=fest, kind="event"
+            )
+    for title, todo_title in (
+        ("Festzelt 10 × 20 m", "Festzelt für das Schützenfest bestellen"),
+        ("Königssilber", "Königssilber zur Reinigung bringen"),
+    ):
+        todo = todos.get(todo_title)
+        if todo:
+            MaterialTodoLink.objects.create(organization=club, item=items[title], todo=todo)

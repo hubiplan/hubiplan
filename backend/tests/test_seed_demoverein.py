@@ -11,9 +11,12 @@ from competitions.models import Competition
 from entries.models import Entry
 from finance.models import Booking
 from honors.models import Dignity
+from materials.models import MaterialItem
 from members.models import ContactDetails, Membership
+from music.models import Assignment, Musician, Performance, Piece
 from organizations import demo_korps
 from organizations.models import Department, Organization
+from todos.models import Todo, TodoShare
 from website.models import Website
 
 pytestmark = [pytest.mark.django_db, pytest.mark.langsam]
@@ -49,6 +52,15 @@ def test_verein_mit_korps_und_zuegen():
     assert Entry.objects.filter(organization=club).count() == 4
     assert Dignity.objects.filter(organization=club, unit__isnull=False).count() == 7
     assert Website.objects.filter(organization=club).exists()
+    # Musik, Aufgaben, Material (Bildschirmfotos der Produktwebseite)
+    assert Musician.objects.filter(organization=club, membership__isnull=False).count() >= 14
+    performance = Performance.objects.get(organization=club)
+    assert Assignment.objects.filter(performance=performance).count() >= 15
+    assert performance.program_entries.count() == 4
+    assert Piece.objects.filter(organization=club).count() == len(demo_korps.STUECKE)
+    assert Todo.objects.filter(organization=club).count() == 5
+    assert TodoShare.objects.filter(organization=club).count() == 3
+    assert MaterialItem.objects.filter(organization=club).count() == 5
     assert "Passwort: Test-Passwort-123" not in out
     assert set(User.objects.values_list("email", flat=True)) == set(demo_korps.all_emails())
 
