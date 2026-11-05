@@ -256,6 +256,10 @@ def _available(site, key: str) -> bool:
         return any(site.posts_available().values())
     if key == "units":
         return bool(site.units)
+    if key == "gallery":
+        from . import gallery
+
+        return gallery.has_albums(website)
     if key == "statutes":
         from .public_views import DOCUMENT_KINDS, _statute_publication
 

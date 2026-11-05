@@ -2,7 +2,7 @@
 
 from django.urls import path
 
-from . import content_views, design_views, public_views, social_views, views
+from . import content_views, design_views, gallery_views, public_views, social_views, views
 
 org_patterns = [
     path("website/", views.WebsiteView.as_view(), name="website"),
@@ -90,6 +90,18 @@ org_patterns = [
         content_views.ImageFileView.as_view(),
         name="website-image-file",
     ),
+    path("website/albums/", gallery_views.AlbumListView.as_view(), name="website-albums"),
+    path(
+        "website/albums/reorder/",
+        gallery_views.AlbumOrderView.as_view(),
+        name="website-albums-reorder",
+    ),
+    path("website/albums/<int:pk>/", gallery_views.AlbumDetailView.as_view(), name="website-album"),
+    path(
+        "website/albums/<int:pk>/images/",
+        gallery_views.AlbumImagesView.as_view(),
+        name="website-album-images",
+    ),
     path("website/social/", social_views.FeedListView.as_view(), name="website-social"),
     path(
         "website/social/<int:pk>/",
@@ -155,6 +167,12 @@ public_patterns = [
     path(f"{SITE}units/<str:slug>/", public_views.UnitDetailView.as_view(), name="site-unit"),
     path(f"{SITE}pages/<str:slug>/", public_views.PageView.as_view(), name="site-page"),
     path(f"{SITE}images/<str:image_key>/", public_views.ImageView.as_view(), name="site-image"),
+    path(f"{SITE}galleries/", public_views.GalleryListView.as_view(), name="site-galleries"),
+    path(
+        f"{SITE}galleries/<slug:slug>/",
+        public_views.GalleryDetailView.as_view(),
+        name="site-gallery",
+    ),
     path(f"{SITE}photos/<str:token>/", public_views.PhotoView.as_view(), name="site-photo"),
     path(f"{SITE}honors/", public_views.HonorsView.as_view(), name="site-honors"),
     path(f"{SITE}results/", public_views.ResultsView.as_view(), name="site-results"),

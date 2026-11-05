@@ -58,6 +58,8 @@ def image_data(org_id: int, image: WebsiteImage | None, used: bool | None = None
         "crop": image.crop or {},
         "version": image.version,
         "uploaded_at": image.uploaded_at,
+        "taken_at": image.taken_at,
+        "file_name": image.file_name,
         "updated_at": image.updated_at,
     }
     if used is not None:
