@@ -10,7 +10,7 @@ stichworte: [shooting, bird shooting, ranking, shoot-off, result]
 
 ## Statistics
 
-Open **Competitions › Statistics** for participation, achievements and performance across
+Open **Competitions** › **Statistics** for participation, achievements and performance across
 all members. Select a member for their personal statistics. The same view is available in
 the member file under **Competitions**. The member area shows only your own data under
 **My results**.

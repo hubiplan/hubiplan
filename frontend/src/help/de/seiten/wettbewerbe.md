@@ -10,7 +10,7 @@ stichworte: [Schießen, Vogelschießen, Rangliste, Stechen, Ergebnis]
 
 ## Statistik
 
-Unter **Wettbewerbe › Statistik** siehst du Teilnahmen, Erfolge und Leistungsentwicklung
+Unter **Wettbewerbe** › **Statistik** siehst du Teilnahmen, Erfolge und Leistungsentwicklung
 aller Mitglieder. Wähle ein Mitglied für dessen persönliche Auswertung. Dieselbe Statistik
 findest du in der Mitgliedsakte unter **Wettbewerbe**, eigene Ergebnisse im Mitgliederbereich
 unter **Meine Ergebnisse**.
