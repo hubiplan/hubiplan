@@ -18,7 +18,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         count = 0
         with transaction.atomic():
-            for row in DataKey.objects.select_for_update().order_by("pk"):
+            for row in (
+                DataKey.objects.select_for_update().filter(retired_at__isnull=True).order_by("pk")
+            ):
                 context = crypto._context(row.organization_id)
                 key = crypto.unwrap_key(row.wrapped, context)
                 row.wrapped = crypto.wrap_key(key, context)

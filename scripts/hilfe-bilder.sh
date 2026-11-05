@@ -125,6 +125,19 @@ user, _ = get_user_model().objects.get_or_create(email='mitglied@hubertus-grimli
 user.set_password('$PASSWORD')
 user.save()
 PortalAccess.objects.get_or_create(membership=membership, defaults={'organization': club, 'user': user})
+# Kalenderbeispiele: gleicher Titel in zwei Einheiten und ein Termin über Mitternacht.
+# Ausschließlich in dieser Wegwerf-Datenbank, damit die Hilfebilder den Kontext zeigen.
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from organizations.models import Department
+from events.models import Event
+month = datetime.now(ZoneInfo('Europe/Berlin')).replace(day=5, hour=20, minute=0, second=0, microsecond=0)
+for department in Department.objects.filter(organization=club).order_by('pk')[:2]:
+    Event.objects.create(organization=club, department=department, title='Übungsabend',
+        starts_at=month, ends_at=month.replace(hour=22), visibility='members', share_up=True)
+Event.objects.create(organization=club, title='Nachtwanderung',
+    starts_at=month.replace(hour=23, minute=5), ends_at=month.replace(day=6, hour=1, minute=5),
+    visibility='members')
 " > /dev/null
 echo "Backend mit Demodaten bereit"
 

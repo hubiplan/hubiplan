@@ -14,12 +14,13 @@ import {
   addMonths,
   berlin,
   formatDay,
+  formatRange,
   monthGrid,
   monthStart,
   today,
   daysOf,
 } from './time.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 
 type View = 'month' | 'list'
 
@@ -43,13 +44,43 @@ function itemClass(o: Occurrence): string {
   return `event-item${o.is_cancelled ? ' event-cancelled' : ''}${o.all_day ? ' event-allday' : ''}`
 }
 
-function EventLabel({ o }: { o: Occurrence }) {
-  const time = o.all_day ? '' : `${berlin(o.starts_at).time} `
+function calendarContext(o: Occurrence): string {
+  return [...new Set([o.owner, o.source].filter(Boolean))].join(' · ')
+}
+
+/** Beschriftung des angezeigten Tages, nicht erneut der Beginn des ganzen Termins. */
+function dayTime(o: Occurrence, day: string): string {
+  const start = berlin(o.starts_at)
+  const end = berlin(o.ends_at)
+  if (o.all_day) return day > start.date ? t('Fortsetzung · ganztägig') : t('ganztägig')
+  if (day === start.date) return start.time
+  if (day === end.date || (end.time === '00:00' && day === addDays(end.date, -1))) {
+    return t('Fortsetzung bis {time}', { time: end.time === '00:00' ? '24:00' : end.time })
+  }
+  return t('Fortsetzung')
+}
+
+function eventName(o: Occurrence, day?: string): string {
+  return [
+    o.title,
+    calendarContext(o),
+    day ? dayTime(o, day) : '',
+    formatRange(o.starts_at, o.ends_at, o.all_day),
+    o.is_cancelled ? tc('event-status', 'abgesagt') : '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
+}
+
+function EventLabel({ o, day }: { o: Occurrence; day: string }) {
   return (
     <>
       <span className="event-dot" style={{ background: o.category?.color ?? '#7a847f' }} />
-      <span className="event-time">{time}</span>
-      <span className="event-title">{o.title}</span>
+      <span className="event-summary">
+        <span className="event-time">{dayTime(o, day)}</span>
+        <span className="event-title">{o.title}</span>
+        <span className="event-context">{calendarContext(o)}</span>
+      </span>
     </>
   )
 }
@@ -239,13 +270,11 @@ export function CalendarView({
                     type="button"
                     key={`${o.key}-${day}`}
                     className={itemClass(o)}
-                    title={o.title}
-                    aria-label={`${o.all_day ? '' : `${berlin(o.starts_at).time} `}${o.title}${
-                      o.is_cancelled ? ' (abgesagt)' : ''
-                    }`}
+                    title={eventName(o, day)}
+                    aria-label={eventName(o, day)}
                     onClick={() => setSelected(o)}
                   >
-                    <EventLabel o={o} />
+                    <EventLabel o={o} day={day} />
                   </button>
                 ))}
               </div>
@@ -261,20 +290,11 @@ export function CalendarView({
           )}
           <ul className="plain-list">
             {data.items.map((o) => {
-              const s = berlin(o.starts_at)
-              const e = berlin(o.ends_at)
-              const range =
-                s.date === e.date
-                  ? formatDay(s.date)
-                  : t('{x} – {x2}', { x: formatDay(s.date), x2: formatDay(e.date) })
               return (
                 <li key={o.key}>
                   <button type="button" className={itemClass(o)} onClick={() => setSelected(o)}>
                     <span className="calendar-list-date">
-                      {range}
-                      {!o.all_day && (
-                        <span className="muted"> {t('· {time} Uhr', { time: s.time })}</span>
-                      )}
+                      {formatRange(o.starts_at, o.ends_at, o.all_day)}
                     </span>
                     <span className="calendar-list-main">
                       <span
@@ -283,14 +303,18 @@ export function CalendarView({
                       />{' '}
                       <strong className="event-title">{o.title}</strong>{' '}
                       <VisibilityBadge visibility={o.visibility} />
-                      {o.is_cancelled && <span className="badge badge-cancelled">abgesagt</span>}
+                      {o.is_cancelled && (
+                        <span className="badge badge-cancelled">
+                          {tc('event-status', 'abgesagt')}
+                        </span>
+                      )}
                       {o.changed_at && !o.is_cancelled && (
                         <span className="badge">{t('geändert')}</span>
                       )}
                       <RsvpBadge o={o} />
                       <span className="muted small">
                         {' '}
-                        {[o.location, o.own ? '' : o.owner].filter(Boolean).join(' · ')}
+                        {[o.location, calendarContext(o)].filter(Boolean).join(' · ')}
                       </span>
                     </span>
                   </button>

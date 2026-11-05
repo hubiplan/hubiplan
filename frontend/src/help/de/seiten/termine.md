@@ -9,6 +9,10 @@ stichworte: [Kalender, Termin, Zusage, Absage, Abo]
 
 Der Kalender zeigt die Termine der Einheit. Mit dem Recht dazu legst du Termine an, auch wiederkehrende, und lädst Mitglieder ein, die zu- oder absagen. Über das Kalender-Abo erscheinen die Termine im eigenen Kalender auf Handy oder PC. Unter „Fremde Kalender“ übernimmt der Kalender stündlich Termine anderer, z. B. des Dachverbands aus Vereinsplaner.
 
+An jedem Eintrag steht die zugehörige Einheit und gegebenenfalls der fremde Kalender. So unterscheidest du gleichnamige Termine vor dem Öffnen. Im Monat beginnt ein mehrtägiger Termin mit seiner Startzeit; an weiteren Tagen steht „Fortsetzung“, am letzten Tag beispielsweise „Fortsetzung bis 01:05“. Ein Ende genau um Mitternacht erscheint am Vortag als 24:00, ohne zusätzlichen Eintrag am neuen Tag. Ganztägige Termine bleiben als solche bezeichnet. Die Liste und die zugänglichen Namen enthalten den vollständigen Zeitraum; auf kleinen Bildschirmen ist die Liste die voreingestellte Ansicht.
+
+![Kalender mit Einheiten und Fortsetzung über Mitternacht](bild:kalender-kontext)
+
 Beim Anlegen oder Bearbeiten eines Termins kannst du **Endzeit auf der Webseite ausblenden** aktivieren, wenn öffentlich nur die Beginnzeit erscheinen soll. Intern und im Kalender-Abo bleibt die Endzeit erhalten. Bei Serien gilt die Einstellung für alle Wiederholungen.
 
 Nach erfolgreichem Zusagen, Absagen oder Zurücknehmen deiner Rückmeldung erscheint eine Bestätigung, die als Statusmeldung auch für Screenreader bereitsteht. Beim Zu- und Absagen bleibt der Fokus bei der Aktion; nach dem Zurücknehmen wechselt er zu **Zusagen**. Bei einem Fehler erscheint keine Erfolgsbestätigung; du kannst die Rückmeldung erneut senden.

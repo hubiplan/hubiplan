@@ -273,6 +273,9 @@ def test_migration_erhaelt_bestand_alte_inserts_und_sicheren_rueckweg(orgs):
         new = next_generation(orgs["c"])
         with pytest.raises(DatabaseError, match="Generationen erhalten"):
             MigrationExecutor(connection).migrate(previous)
+        # Frühere additive Migrationen können vor der gesperrten Stufe bereits
+        # rückgängig sein; vor Zugriff mit den aktuellen Modellen wiederherstellen.
+        MigrationExecutor(connection).migrate(latest)
         assert DataKey.objects.get(pk=new[0]).is_active
         assert crypto.key_by_id(old[0]) == old[1]
         assert crypto.decrypt_bytes(cipher) == b"Bestandsdatei"

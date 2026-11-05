@@ -37,6 +37,28 @@ class ScopedSerializer(serializers.ModelSerializer):
         if self.Meta.model is Performance:
             if (
                 self.instance
+                and self.instance.engagement_documents.filter(
+                    kind="offer", status="accepted"
+                ).exists()
+                and any(
+                    k in attrs and attrs[k] != getattr(self.instance, k)
+                    for k in [
+                        "customer",
+                        "meeting_at",
+                        "meeting_place",
+                        "setup_at",
+                        "uniform",
+                        "formation",
+                        "notes",
+                        "event",
+                    ]
+                )
+            ):
+                raise serializers.ValidationError(
+                    gettext("Bitte zuerst die bestehende Zusage aufheben.")
+                )
+            if (
+                self.instance
                 and "customer" in attrs
                 and attrs["customer"] != self.instance.customer
             ):
@@ -112,7 +134,7 @@ class MusicMusicianSerializer(ScopedSerializer):
     def update(self, instance, validated_data):
         from django.utils import timezone
 
-        from .models import GuestAccess
+        from .models import GuestAccess, RehearsalGuestAccess
 
         instance = Musician.objects.select_for_update().get(pk=instance.pk)
         previous = (instance.guest_email, instance.membership_id)
@@ -121,6 +143,9 @@ class MusicMusicianSerializer(ScopedSerializer):
             GuestAccess.objects.filter(assignment__musician=instance).update(
                 revoked_at=timezone.now(),
                 auto_notify=False,
+            )
+            RehearsalGuestAccess.objects.filter(invitation__musician=instance).update(
+                revoked_at=timezone.now()
             )
         return instance
 
@@ -273,6 +298,12 @@ class SkillViewSet(MusicViewSet):
 
 class PerformanceViewSet(MusicViewSet):
     serializer_class = MusicPerformanceSerializer
+
+    @action(detail=False, methods=["get"])
+    def overview(self, request, org_id):
+        from .overview import result
+
+        return result(self, request)
 
     def visible(self, performance):
         return (

@@ -68,10 +68,18 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
     )
 
     start, end = org.fiscal_range(year)
-    from music.models import MusicianClaim, PerformanceAccount, PerformanceExpense
+    from music.models import (
+        EngagementDocument,
+        MusicianClaim,
+        PayoutRun,
+        PerformanceAccount,
+        PerformanceExpense,
+    )
 
     document_year = record_year = end.year
     sources = [
+        (EngagementDocument, "created_at__date"),
+        (PayoutRun, "execution_date"),
         (PerformanceAccount, "date"),
         (MusicianClaim, "assignment__performance__performanceaccount__date"),
         (PerformanceExpense, "booking__date"),
@@ -266,6 +274,14 @@ def _purge_documents(org, start, end) -> dict[str, int]:
     from billing.einvoice_retention import purge_files
 
     counts["E-Rechnungsdateien"] = purge_files(org, start, end, _delete_file)
+    from music.models import EngagementDocument
+
+    for document in EngagementDocument.objects.filter(
+        organization=org, created_at__date__range=(start, end)
+    ).exclude(file=""):
+        _delete_file(document.file)
+        document.file = ""
+        document.save(update_fields=["file"])
 
     n = 0
     for d in Dunning.objects.filter(organization=org, date__gte=start, date__lte=end).exclude(
@@ -373,7 +389,32 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
 
     ids(incoming_for_period(org, start, end), "incominginvoice")
     anonymize(org, start, end)
-    from music.models import MusicianClaim, PerformanceAccount
+    from music.models import (
+        EngagementDocument,
+        MusicianClaim,
+        PayoutItem,
+        PayoutRun,
+        PerformanceAccount,
+    )
+
+    update_encrypted(
+        ids(
+            EngagementDocument.objects.filter(
+                organization=org, created_at__date__range=(start, end)
+            ),
+            "engagementdocument",
+        ),
+        snapshot={},
+        acceptance_note="",
+        resolution_note="",
+    )
+
+    payout_runs = PayoutRun.objects.filter(organization=org, execution_date__range=(start, end))
+    update_encrypted(ids(payout_runs, "payoutrun"), debtor={"holder": ANON, "iban": "", "bic": ""})
+    update_encrypted(
+        ids(PayoutItem.objects.filter(organization=org, run__in=payout_runs), "payoutitem"),
+        payee={"holder": ANON, "iban": "", "bic": ""},
+    )
 
     update_encrypted(
         ids(

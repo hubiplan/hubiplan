@@ -164,6 +164,12 @@
       "ausschnitt": ""
     },
     {
+      "name": "kalender-kontext",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/termine",
+      "ausschnitt": ".calendar"
+    },
+    {
       "name": "termin-anlegen",
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/termine",

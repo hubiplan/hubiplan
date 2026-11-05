@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { GuestAccessPanel } from './GuestAccessPanel.tsx'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmLeave } from '../../components/leaveGuard.ts'
@@ -36,10 +37,17 @@ type Occurrence = {
   focus: string
   items: { arrangement: number; title: string; focus: string }[]
   overridden: boolean
-  members: { invitation: number; name: string; status: string; availability?: string[] }[]
+  members: {
+    invitation: number
+    name: string
+    status: string
+    guest?: boolean
+    availability?: string[]
+  }[]
 }
 
 export function PracticePage() {
+  const [query] = useSearchParams()
   const org = useActiveOrg(),
     base = `/api/orgs/${org.id}/music/`
   const load = useLoad(async () => {
@@ -76,11 +84,14 @@ export function PracticePage() {
       events,
     }
   }, [org.id])
-  const [tab, setTab] = useState('overview'),
+  const [tab, setTab] = useState(query.has('notenausgabe') ? 'loans' : 'overview'),
     [selected, setSelected] = useState<Row | 'new' | null>(null),
     [program, setProgram] = useState<Occurrence | null>(null),
     [error, setError] = useState(''),
     [key, setKey] = useState(newRequestKey)
+  const [guest, setGuest] = useState<{ invitation: number; name: string; original: string } | null>(
+    null,
+  )
   if (load.error) return <Alert kind="error">{load.error}</Alert>
   if (!load.data) return <p>{t('Lädt …')}</p>
   const d = load.data,
@@ -134,9 +145,26 @@ export function PracticePage() {
     invitations: t('Probeneinteilung'),
     loans: t('Notenausgabe'),
   }
-  const rows = tab === 'overview' ? [] : d[tab as 'rehearsals' | 'items' | 'invitations' | 'loans']
+  const rows = (
+    tab === 'overview' ? [] : d[tab as 'rehearsals' | 'items' | 'invitations' | 'loans']
+  ).filter(
+    (row) =>
+      tab !== 'loans' || !query.has('notenausgabe') || String(row.id) === query.get('notenausgabe'),
+  )
   return (
     <section className="stack music-page">
+      {query.has('notenausgabe') && (
+        <Link to="/musik?proben=1">{t('Alle Notenausgaben anzeigen')}</Link>
+      )}
+      {guest && (
+        <GuestAccessPanel
+          key={`${guest.invitation}-${guest.original}`}
+          assignment={guest.invitation}
+          original={guest.original}
+          name={guest.name}
+          onClose={() => setGuest(null)}
+        />
+      )}
       <MusicHeader
         title={t('Proben und Notenausgabe')}
         description={t(
@@ -254,6 +282,20 @@ export function PracticePage() {
                 <div className="music-actions">
                   <strong>{m.name}</strong>
                   <MusicStatus status={m.status} />
+                  {canEdit && m.guest && (
+                    <button
+                      className="button button-ghost"
+                      onClick={() =>
+                        setGuest({
+                          invitation: m.invitation,
+                          name: m.name,
+                          original: o.original_start,
+                        })
+                      }
+                    >
+                      {t('Gasteinladung')}
+                    </button>
+                  )}
                   <AvailabilityHint reasons={m.availability} />
                 </div>
                 {canEdit && !o.cancelled && (

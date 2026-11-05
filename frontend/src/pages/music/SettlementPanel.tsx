@@ -97,6 +97,7 @@ export function SettlementPanel({
   return (
     <section className="stack music-page">
       <MusicHeader title={t('Auftrittsabrechnung')} context={title} />
+      <Link to={`/musik?vereinbarung=${performance}`}>{t('Angebote und Zusagen')}</Link>
       {error && <Alert kind="error">{error}</Alert>}
       <p>
         {t(
@@ -194,6 +195,7 @@ export function SettlementPanel({
         </Link>
       ))}
       <h2>{t('Musikervergütungen')}</h2>
+      <Link to="/musik?auszahlungen=1">{t('Sammelauszahlungen')}</Link>
       {canEdit && (
         <FeeBatchPanel
           url={url}
