@@ -48,6 +48,7 @@ APPLE_WALLET_WWDR_FILE = os.environ.get("APPLE_WALLET_WWDR_FILE", "")
 INSTALLED_APPS = [
     "music",
     "materials",
+    "bookings",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -272,6 +273,7 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 3600.0,
     },
     "materials-purge": {"task": "materials.tasks.purge_deleted", "schedule": 86400.0},
+    "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": 86400.0},
     "todos-reminders": {"task": "todos.tasks.send_due_reminders", "schedule": 300.0},
     "todos-completed": {"task": "todos.tasks.purge_completed", "schedule": 86400.0},
     "todos-purge": {"task": "todos.tasks.purge_deleted", "schedule": 86400.0},
