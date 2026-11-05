@@ -301,8 +301,8 @@ function RunCard({
       {notice && <Alert kind={notice.kind}>{notice.text}</Alert>}
       {problems.length > 0 && (
         <Alert kind="error">
-          {t('Die Datei für die Bank passt nicht mehr zum Stand:')} {problems.join('; ')}. Bitte den
-          Lauf verwerfen und neu erstellen.
+          {t('Die Datei für die Bank passt nicht mehr zum Stand:')} {problems.join('; ')}
+          {t('. Bitte den Lauf verwerfen und neu erstellen.')}
         </Alert>
       )}
       {run.status !== 'cancelled' && (
@@ -478,7 +478,7 @@ function MandatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
                 <th>
                   <Term k="iban_bic">{t('Konto')}</Term>
                 </th>
-                <th>erteilt</th>
+                <th>{t('erteilt')}</th>
                 <th>{t('Status')}</th>
                 <th />
               </tr>
@@ -503,7 +503,9 @@ function MandatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
                       m.status_label
                     )}
                     {m.last_used_on && (
-                      <div className="muted small">zuletzt {formatDate(m.last_used_on)}</div>
+                      <div className="muted small">
+                        {t('zuletzt')} {formatDate(m.last_used_on)}
+                      </div>
                     )}
                   </td>
                   <td className="actions">

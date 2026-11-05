@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy
 
 
 def hash_secret(secret: str) -> str:
@@ -65,9 +66,9 @@ def clean_groups(value) -> list[str]:
 
 class Client(models.Model):
     class Audience(models.TextChoices):
-        BOARD = "board", "Vorstand und Rollen"
-        ROLES = "roles", "nur Rollen dieser Einheit"
-        MEMBERS = "members", "zusätzlich Mitglieder mit Zugang"
+        BOARD = "board", gettext_lazy("Vorstand und Rollen")
+        ROLES = "roles", gettext_lazy("nur Rollen dieser Einheit")
+        MEMBERS = "members", gettext_lazy("zusätzlich Mitglieder mit Zugang")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="oidc_clients"

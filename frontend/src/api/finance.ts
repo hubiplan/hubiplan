@@ -2,7 +2,7 @@
 import { api } from './client.ts'
 import type { Page } from './members.ts'
 import type { ClosingInput } from '../learning/checks.ts'
-import { locale } from '../i18n/index.ts'
+import { locale, t } from '../i18n/index.ts'
 
 export type AccountKind = 'bank' | 'cash' | 'savings'
 export type BookingKind = 'income' | 'expense' | 'transfer'
@@ -644,10 +644,30 @@ export const cashCountApi = {
 export type ReserveKind = 'purpose' | 'replacement' | 'free' | 'other'
 
 export const RESERVE_KINDS: { value: ReserveKind; label: string }[] = [
-  { value: 'purpose', label: 'Projektrücklage (§ 62 Abs. 1 Nr. 1 AO)' },
-  { value: 'replacement', label: 'Wiederbeschaffungsrücklage (§ 62 Abs. 1 Nr. 2 AO)' },
-  { value: 'free', label: 'freie Rücklage (§ 62 Abs. 1 Nr. 3 AO)' },
-  { value: 'other', label: 'sonstige Rücklage' },
+  {
+    value: 'purpose',
+    get label() {
+      return t('Projektrücklage (§ 62 Abs. 1 Nr. 1 AO)')
+    },
+  },
+  {
+    value: 'replacement',
+    get label() {
+      return t('Wiederbeschaffungsrücklage (§ 62 Abs. 1 Nr. 2 AO)')
+    },
+  },
+  {
+    value: 'free',
+    get label() {
+      return t('freie Rücklage (§ 62 Abs. 1 Nr. 3 AO)')
+    },
+  },
+  {
+    value: 'other',
+    get label() {
+      return t('sonstige Rücklage')
+    },
+  },
 ]
 
 export interface ReserveMovement {

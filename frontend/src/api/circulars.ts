@@ -1,5 +1,6 @@
 // Rundschreiben: Mails und Serienbriefe an ausgewählte Mitglieder.
 import { api } from './client.ts'
+import { t } from '../i18n/index.ts'
 
 /** Zugang: Vorstand einer Organisation oder Abteilungsrolle */
 export type CircularBase = { org: number } | { dept: number }
@@ -269,10 +270,18 @@ export const receivedApi = {
 
 /** Versandweg in Worten */
 export const channelLabel: Record<Channel, string> = {
-  app: 'App',
-  mail: 'E-Mail',
-  letter: 'Brief',
-  portal: 'nur Mitgliederbereich',
+  get app() {
+    return t('App')
+  },
+  get mail() {
+    return t('E-Mail')
+  },
+  get letter() {
+    return t('Brief')
+  },
+  get portal() {
+    return t('nur Mitgliederbereich')
+  },
 }
 
 // --- Mailverteiler: Rundschreiben aus dem eigenen Mailprogramm ---

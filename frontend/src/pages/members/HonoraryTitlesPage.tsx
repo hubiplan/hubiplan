@@ -20,7 +20,12 @@ import { t } from '../../i18n/index.ts'
 
 const FEE_MODES: { value: HonoraryFeeMode; label: string }[] = [
   { value: 'none', label: t('keine Beitragsänderung') },
-  { value: 'free', label: 'beitragsfrei' },
+  {
+    value: 'free',
+    get label() {
+      return t('beitragsfrei')
+    },
+  },
   { value: 'amount', label: t('fester Jahresbeitrag') },
   { value: 'discount', label: t('Abschlag in Prozent') },
 ]

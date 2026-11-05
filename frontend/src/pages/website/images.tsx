@@ -255,7 +255,7 @@ export function ImagesPage() {
               setShown(PAGE_SIZE)
             }}
           >
-            <option value="all">alle</option>
+            <option value="all">{t('alle')}</option>
             <option value="general">{t('Verein allgemein')}</option>
             {units.map((u) => (
               <option key={u.id} value={u.id}>
@@ -272,7 +272,7 @@ export function ImagesPage() {
             setShown(PAGE_SIZE)
           }}
         >
-          <option value="all">alle</option>
+          <option value="all">{t('alle')}</option>
           <option value="unused">{t('nicht verwendet')}</option>
           <option value="no_alt">{t('ohne Beschreibung')}</option>
         </SelectField>
@@ -720,7 +720,7 @@ export function ImagePicker({
                   checked={scope === 'unit'}
                   onChange={() => setScope('unit')}
                 />{' '}
-                nur {unit.name}
+                {t('nur')} {unit.name}
               </label>
             )}
             <label>
@@ -793,7 +793,7 @@ export function ImagePicker({
             onClick={() => onPick(chosen.map((id) => byId.get(id)).filter((i) => !!i))}
           >
             {t('Übernehmen')}
-            {max !== undefined ? ` (${chosen.length} von ${max})` : ''}
+            {max !== undefined ? t(' ({x0} von {x1})', { x0: chosen.length, x1: max }) : ''}
           </button>
           <button type="button" className="button button-ghost" onClick={onCancel}>
             {t('Abbrechen')}

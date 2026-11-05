@@ -59,7 +59,10 @@ export function unitJubileeHeading(rows: UnitJubileeRow[]): { title: string; col
       : parts[0]
   const labels = new Set(rows.map((r) => r.label))
   return {
-    title: t('{x} {x2}', { x: rows.length === 1 ? 'Jubiläum' : 'Jubiläen', x2: list ?? '' }).trim(),
+    title: (rows.length === 1
+      ? t('Jubiläum {list}', { list })
+      : t('Jubiläen {list}', { list })
+    ).trim(),
     column: labels.size === 1 ? [...labels][0] : t('Name'),
   }
 }
@@ -96,10 +99,10 @@ export function JubileesPage() {
     <>
       <div className="card card-wide filters">
         <label className="inline-label">
-          von <input type="date" value={von} onChange={(e) => setVon(e.target.value)} />
+          {t('von')} <input type="date" value={von} onChange={(e) => setVon(e.target.value)} />
         </label>
         <label className="inline-label">
-          bis <input type="date" value={bis} onChange={(e) => setBis(e.target.value)} />
+          {t('bis')} <input type="date" value={bis} onChange={(e) => setBis(e.target.value)} />
         </label>
         {org.permissions.includes('export.run') && (
           <button
@@ -246,7 +249,9 @@ export function JubileeTile() {
                 </Link>
                 {p.items.map((r) => (
                   <span key={`${r.kind}-${r.years}`} className="tile-entry-meta muted small">
-                    <span>{r.years} J.</span>
+                    <span>
+                      {r.years} {t('J.')}
+                    </span>
                     <span aria-hidden="true">·</span>
                     <span className="tile-entry-org" title={r.organization}>
                       {r.organization_short ?? r.organization}
@@ -329,7 +334,7 @@ export function BirthdayTile() {
             </button>
           ) : (
             <>
-              und {rows.length - BIRTHDAY_PREVIEW}{' '}
+              {t('und')} {rows.length - BIRTHDAY_PREVIEW}{' '}
               {t('weitere in den nächsten {BIRTHDAY_DAYS} Tagen ·', { BIRTHDAY_DAYS })}{' '}
               <button type="button" className="link-button" onClick={() => setShowAll(true)}>
                 {t('alle zeigen')}

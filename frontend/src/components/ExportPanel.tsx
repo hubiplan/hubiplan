@@ -166,8 +166,11 @@ export function ExportPanel({
       {job?.status === 'done' && (
         <Alert kind="success">
           {t('Fertig: {row_count} Einträge.', { row_count: job.row_count })}{' '}
-          <a href={exchangeApi.downloadUrl(orgId, job.id)}>{job.file_name} herunterladen</a>
-          {job.keep_until && ` (bis ${formatDate(job.keep_until.slice(0, 10))}, danach gelöscht)`}
+          <a href={exchangeApi.downloadUrl(orgId, job.id)}>
+            {job.file_name} {t('herunterladen')}
+          </a>
+          {job.keep_until &&
+            t(' (bis {x0}, danach gelöscht)', { x0: formatDate(job.keep_until.slice(0, 10)) })}
         </Alert>
       )}
       {job?.status === 'failed' && (

@@ -12,7 +12,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { useAuth } from '../../auth/AuthContext.tsx'
 import { RoleForm, RoleTable } from '../../components/RoleEditor.tsx'
 import { ALL_ROLE_FIELDS } from '../../components/roles.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 
 const INVITATION_DAYS = 7
 
@@ -121,14 +121,11 @@ function confirmAssignedRoleRemoval(role: Role): Promise<boolean> {
   const count = role.assignment_count
   const message =
     count > 0
-      ? t('{x} diese Rolle noch. ', {
-          x: count === 1 ? 'Ein Benutzer hat' : `${count} Benutzer haben`,
-        }) +
-        t('{x} beendet, ', {
-          x: count === 1 ? 'Die Zuordnung wird' : `Alle ${count} Zuordnungen werden`,
-        }) +
-        t('die Rechte der Rolle entfallen sofort. Auch frühere Zuordnungen dieser Rolle ') +
-        t('verschwinden aus der Historie.')
+      ? tn(
+          'Ein Benutzer hat diese Rolle noch. Die Zuordnung wird beendet, die Rechte der Rolle entfallen sofort. Auch frühere Zuordnungen dieser Rolle verschwinden aus der Historie.',
+          '{n} Benutzer haben diese Rolle noch. Alle {n} Zuordnungen werden beendet, die Rechte der Rolle entfallen sofort. Auch frühere Zuordnungen dieser Rolle verschwinden aus der Historie.',
+          count,
+        )
       : undefined
   return confirmDialog({
     title: t('Rolle „{name}“ löschen?', { name: role.name }),
@@ -270,7 +267,7 @@ function UsersCard({
               ))}
             </SelectField>
             <Field
-              label="von"
+              label={t('von')}
               type="date"
               required
               value={form.values.valid_from}
@@ -475,7 +472,7 @@ function AssignmentRow({
         {editing ? (
           <div className="assignment-dates">
             <label>
-              von
+              {t('von')}
               <input
                 type="date"
                 className="inline-edit"
@@ -485,7 +482,7 @@ function AssignmentRow({
               />
             </label>
             <label>
-              bis
+              {t('bis')}
               <input
                 type="date"
                 className="inline-edit"
@@ -497,7 +494,7 @@ function AssignmentRow({
           </div>
         ) : (
           <>
-            {formatDate(a.valid_from)} – {a.valid_until ? formatDate(a.valid_until) : 'heute'}
+            {formatDate(a.valid_from)} – {a.valid_until ? formatDate(a.valid_until) : t('heute')}
           </>
         )}
       </td>

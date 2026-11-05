@@ -342,7 +342,7 @@ function WebsiteAdmin({
                 set('missing_consent', e.target.value as WebsiteSettings['missing_consent'])
               }
             >
-              <option value="omit">auslassen</option>
+              <option value="omit">{t('auslassen')}</option>
               <option value="nn">{t('als „N. N.“ zeigen')}</option>
             </SelectField>
           </div>
@@ -370,9 +370,9 @@ function WebsiteAdmin({
             value={v.units_mode}
             onChange={(e) => set('units_mode', e.target.value as WebsiteSettings['units_mode'])}
           >
-            <option value="all">alle</option>
+            <option value="all">{t('alle')}</option>
             <option value="selected">{t('ausgewählte')}</option>
-            <option value="none">keine</option>
+            <option value="none">{t('keine')}</option>
           </SelectField>
           {v.units_mode === 'selected' &&
             data.units.map((u) => (
@@ -630,7 +630,7 @@ function DomainsCard({
         {website.domains.map((d) => (
           <li key={d.id}>
             <strong>{d.hostname}</strong>
-            {d.is_primary ? ' (Hauptadresse)' : ''}
+            {d.is_primary ? t(' (Hauptadresse)') : ''}
             {data.can_manage && (
               <span className="button-row">
                 {!d.is_primary && (
@@ -711,7 +711,7 @@ function ChecklistCard({ website }: { website: Website }) {
               <>
                 {' '}
                 <span className="muted small">
-                  {c.blocking ? '(nötig) ' : '(Empfehlung) '}
+                  {c.blocking ? t('(nötig) ') : t('(Empfehlung) ')}
                   {c.hint}
                 </span>
                 {CHECK_LINKS[c.key] && (
@@ -835,7 +835,7 @@ function PreviewCard({
               <li key={link.id}>
                 {link.label || t('Vorschau-Link')} {t('· gültig bis')}{' '}
                 {formatDateTime(link.expires_at)}
-                {!link.is_active ? ' (abgelaufen)' : ''}{' '}
+                {!link.is_active ? t(' (abgelaufen)') : ''}{' '}
                 <button
                   type="button"
                   className="button button-ghost"

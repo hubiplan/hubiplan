@@ -10,8 +10,7 @@ import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../component
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
-import { locale } from '../../i18n/index.ts'
-import { t } from '../../i18n/index.ts'
+import { locale, t } from '../../i18n/index.ts'
 
 function useBillingSettings() {
   const org = useActiveOrg()
@@ -120,11 +119,11 @@ function FeesForm({
       </p>
       {rows.length === 0 ? (
         <p className="muted">
-          {t('Noch keine Mitgliedsarten. Lege sie zuerst unter')}{' '}
+          {t('Noch keine Mitgliedsarten. Lege sie zuerst hier an:')}{' '}
           <Link to="/mitglieder/einrichtung/mitgliedsarten">
             {t('Mitglieder → Einrichtung → Mitgliedsarten')}
-          </Link>{' '}
-          an.
+          </Link>
+          .
         </p>
       ) : (
         <div className="grid-3">
@@ -134,7 +133,7 @@ function FeesForm({
               label={t('{name} (€ im Jahr)', { name: r.name })}
               inputMode="decimal"
               disabled={!canEdit}
-              placeholder="beitragsfrei"
+              placeholder={t('beitragsfrei')}
               value={form.values[String(r.member_type)] ?? ''}
               error={form.errors[String(r.member_type)]}
               onChange={(e) => form.set(String(r.member_type), e.target.value)}
@@ -431,7 +430,7 @@ function SettingsCard({
               .map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name}
-                  {a.has_iban ? '' : ' (ohne IBAN)'}
+                  {a.has_iban ? '' : t(' (ohne IBAN)')}
                 </option>
               ))}
           </SelectField>
@@ -460,8 +459,8 @@ function SettingsCard({
         </div>
         {settings.accounts.length === 0 && (
           <p className="muted small">
-            {t('Konten und Kategorien legst du unter')}{' '}
-            <Link to="/finanzen/einstellungen/konten">{t('Einrichtung › Konten')}</Link> an.
+            {t('Konten und Kategorien legst du hier an:')}{' '}
+            <Link to="/finanzen/einstellungen/konten">{t('Einrichtung › Konten')}</Link>.
           </p>
         )}
         {/* Im Arbeitsbereich einer Untereinheit gibt es keine Lastschrift */}

@@ -177,7 +177,7 @@ export function DeptEntries({ deptId }: { deptId: number }) {
 function deptStatus(c: Call): string {
   if (!c.entry_status) return t('noch nicht gemeldet')
   if (c.entry_status === 'rueckfrage') return t('Rückfrage')
-  const label = { entwurf: t('Entwurf'), abgegeben: 'abgegeben', bestaetigt: t('bestätigt') }[
+  const label = { entwurf: t('Entwurf'), abgegeben: t('abgegeben'), bestaetigt: t('bestätigt') }[
     c.entry_status as string
   ]
   return (

@@ -9,7 +9,12 @@ import { t } from '../i18n/index.ts'
 
 const ASPECTS = [
   { value: 3 / 4, label: t('Passbild (3:4)') },
-  { value: 1, label: 'quadratisch' },
+  {
+    value: 1,
+    get label() {
+      return t('quadratisch')
+    },
+  },
 ]
 const MAX_FILE = 10 * 1024 * 1024
 

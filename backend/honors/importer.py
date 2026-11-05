@@ -25,6 +25,8 @@ import difflib
 import re
 import unicodedata
 
+from django.utils.translation import gettext
+
 from exchange.reading import ReadError, read_table
 from members.models import Membership
 
@@ -225,24 +227,24 @@ def preview(org, path, file_name: str) -> dict:
         errors = []
         year = _year(cell(row, "year"))
         if year is None or not (1000 <= year <= 2999):
-            errors.append("Jahr fehlt oder ist ungültig.")
+            errors.append(gettext("Jahr fehlt oder ist ungültig."))
         end_raw = cell(row, "end_year")
         end_year = _year(end_raw)
         if str(end_raw).strip() and end_year is None:
-            errors.append("Endjahr ist ungültig.")
+            errors.append(gettext("Endjahr ist ungültig."))
         elif end_year is not None and not (1000 <= end_year <= 2999):
-            errors.append("Endjahr ist ungültig.")
+            errors.append(gettext("Endjahr ist ungültig."))
             end_year = None
         elif end_year is not None and year is not None and end_year < year:
-            errors.append("Das Endjahr liegt vor dem Startjahr.")
+            errors.append(gettext("Das Endjahr liegt vor dem Startjahr."))
         if end_year == year:
             end_year = None
         dignity_name = str(cell(row, "dignity")).strip()
         if not dignity_name:
-            errors.append("Würde fehlt.")
+            errors.append(gettext("Würde fehlt."))
         name = str(cell(row, "name")).strip()
         if not name:
-            errors.append("Name fehlt.")
+            errors.append(gettext("Name fehlt."))
         note = str(cell(row, "note")).strip()
         origin_raw = str(cell(row, "origin")).strip()
         origin = origins.get(_plain(origin_raw)) if origin_raw else None

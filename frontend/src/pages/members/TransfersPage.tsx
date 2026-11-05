@@ -81,7 +81,7 @@ function Summary({ t: tm }: { t: Transfer }) {
       </div>
       {tm.message && <div className="small muted">„{tm.message}“</div>}
       <div className="small muted">
-        gestellt {formatDateTime(tm.created_at)} · {tm.status_label}
+        {t('gestellt')} {formatDateTime(tm.created_at)} · {tm.status_label}
         {tm.decision_label && t(' · {decision_label}', { decision_label: tm.decision_label })}
         {tm.response && t(' · Antwort: „{response}“', { response: tm.response })}
       </div>

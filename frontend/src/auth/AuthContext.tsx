@@ -3,8 +3,7 @@ import type { ReactNode } from 'react'
 import * as api from '../api/auth.ts'
 import type { User } from '../api/auth.ts'
 import { bindUndoToUser, clearUndo } from '../components/undo.ts'
-import { lang, switchLanguage } from '../i18n/index.ts'
-import { t } from '../i18n/index.ts'
+import { lang, switchLanguage, t } from '../i18n/index.ts'
 import {
   bindStandUser,
   clearStandCache,

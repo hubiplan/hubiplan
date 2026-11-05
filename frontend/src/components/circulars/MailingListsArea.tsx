@@ -185,7 +185,7 @@ function ListOverview({ base, root }: { base: CircularBase; root: string }) {
             domain
               ? t(
                   'Teil vor dem @: {x}@{domain}. Kleinbuchstaben, Ziffern, Punkt und Bindestrich.',
-                  { x: local || 'alle', domain },
+                  { x: local || t('alle'), domain },
                 )
               : t('Teil vor dem @. Kleinbuchstaben, Ziffern, Punkt und Bindestrich.')
           }
@@ -512,8 +512,9 @@ function ListSettings({
           {initial.department
             ? t(' im Verein oder in {name}', { name: initial.department.name })
             : ''}
-          . Geschrieben wird von der E-Mail-Adresse des HUBIplan-Kontos; der Bestätigungslink geht
-          immer an diese Adresse.
+          {t(
+            '. Geschrieben wird von der E-Mail-Adresse des HUBIplan-Kontos; der Bestätigungslink geht immer an diese Adresse.',
+          )}
         </p>
       </fieldset>
       <div className="button-row">
@@ -687,10 +688,10 @@ function Inbound({
                 <td>
                   {r.circular_id ? (
                     <Link to={`${circularsRoot}/${r.circular_id}`}>
-                      {r.subject || '(ohne Betreff)'}
+                      {r.subject || t('(ohne Betreff)')}
                     </Link>
                   ) : (
-                    r.subject || '(ohne Betreff)'
+                    r.subject || t('(ohne Betreff)')
                   )}
                 </td>
                 <td>

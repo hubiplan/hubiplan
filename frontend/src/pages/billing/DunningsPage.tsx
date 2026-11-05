@@ -88,13 +88,13 @@ export function DunningsPage() {
                   <th>{t('Rechnung')}</th>
                   <th>{t('Empfänger')}</th>
                   <th>
-                    <Term k="due_date">{t('fällig')}</Term> seit
+                    <Term k="due_date">{t('fällig')}</Term> {t('seit')}
                   </th>
                   <th>
                     {t('nächste')} <Term k="dunning_level">{t('Stufe')}</Term>
                   </th>
                   <th className="num">
-                    <Term k="outstanding">offen</Term>
+                    <Term k="outstanding">{t('offen')}</Term>
                   </th>
                 </tr>
               </thead>

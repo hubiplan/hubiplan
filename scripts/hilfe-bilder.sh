@@ -138,6 +138,27 @@ for department in Department.objects.filter(organization=club).order_by('pk')[:2
 Event.objects.create(organization=club, title='Nachtwanderung',
     starts_at=month.replace(hour=23, minute=5), ends_at=month.replace(day=6, hour=1, minute=5),
     visibility='members')
+# Ein empfangenes Schreiben mit echtem PDF, ausschließlich für die wegwerfbare Bilderdatenbank.
+import io
+from django.core.files.base import ContentFile
+from django.utils import timezone
+from reportlab.pdfgen import canvas
+from portal.models import PortalAccess
+from circulars.models import Circular, CircularRecipient, CircularAttachment
+access = PortalAccess.objects.filter(user__email='mitglied@hubertus-grimlinghausen.test').select_related('organization').first()
+if access:
+    letter = Circular.objects.create(organization=access.organization, subject='Einladung zur Mitgliederversammlung',
+        body='**Einladung**\\n\\nBitte bringe mit:\\n- Deinen Mitgliedsausweis\\n- Einen Stift\\n\\n1. Ankommen\\n2. Anmelden\\n\\n[Weitere Informationen](https://example.org)',
+        kind='notice', status='sent', sent_at=timezone.now())
+    CircularRecipient.objects.create(circular=letter, club=access.organization, membership_id=access.membership_id,
+        channel='app', status='sent', sent_at=timezone.now())
+    pdf = io.BytesIO()
+    page = canvas.Canvas(pdf)
+    page.drawString(72, 760, 'Einladung zur Mitgliederversammlung - erfundene Beispieldaten')
+    page.showPage()
+    page.save()
+    attachment = CircularAttachment(circular=letter, name='Einladung.pdf', size=len(pdf.getvalue()))
+    attachment.file.save('Einladung.pdf', ContentFile(pdf.getvalue()))
 " > /dev/null
 echo "Backend mit Demodaten bereit"
 

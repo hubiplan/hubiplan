@@ -414,7 +414,7 @@ export function BookingsPage() {
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Nr.</th>
+                    <th>{t('Nr.')}</th>
                     <th>{t('Datum')}</th>
                     <th>{t('Text')}</th>
                     <th>{t('Konto')}</th>
@@ -495,7 +495,7 @@ function BookingRow({
           {b.display_number}
         </button>
         {b.fixed && (
-          <span className="muted" title="festgeschrieben" aria-label="festgeschrieben">
+          <span className="muted" title={t('festgeschrieben')} aria-label={t('festgeschrieben')}>
             {' '}
             🔒
           </span>
@@ -919,7 +919,7 @@ function BookingForm({
                 error={errors.project}
                 onChange={(e) => set('project', e.target.value)}
               >
-                <option value="">keine</option>
+                <option value="">{t('keine')}</option>
                 {usableProjects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -937,7 +937,7 @@ function BookingForm({
             <details className="booking-assign" open={assignedOpen}>
               <summary>
                 {t('Mitglied oder {sg} zuordnen', { sg: tm.sg })}{' '}
-                <span className="muted">(optional)</span>
+                <span className="muted">{t('(optional)')}</span>
               </summary>
               <div className="grid-2">
                 <MemberPicker orgId={orgId} value={member} onChange={pickMember} />
@@ -947,7 +947,7 @@ function BookingForm({
                     value={v.department}
                     onChange={(e) => set('department', e.target.value)}
                   >
-                    <option value="">keine</option>
+                    <option value="">{t('keine')}</option>
                     {departments.map((d) => (
                       <option key={d.id} value={d.id}>
                         {unitName(d)}
@@ -979,7 +979,7 @@ function BookingForm({
               disabled={form.busy}
               onChange={(e) => set('project', e.target.value)}
             >
-              <option value="">keine</option>
+              <option value="">{t('keine')}</option>
               {usableProjects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -1005,7 +1005,7 @@ function BookingForm({
                   onChange={(e) => setAgain(e.target.checked)}
                 />
                 <span>
-                  {t('danach nächste')} {KIND_LABEL[kind]} erfassen
+                  {t('danach nächste')} {KIND_LABEL[kind]} {t('erfassen')}
                 </span>
               </label>
             )}
@@ -1158,7 +1158,7 @@ function Receipts({
               ) : (
                 canEdit && (
                   <button type="button" className="link-button" onClick={() => void remove(r)}>
-                    entfernen
+                    {t('entfernen')}
                   </button>
                 )
               )}

@@ -295,7 +295,7 @@ function FeedCard({
                   type="password"
                   autoComplete="off"
                   value={secret}
-                  placeholder={feed.has_secret ? 'gespeichert' : ''}
+                  placeholder={feed.has_secret ? t('gespeichert') : ''}
                   onChange={(e) => setSecret(e.target.value.trim())}
                   hint={t('Wird verschlüsselt gespeichert und nie wieder angezeigt.')}
                 />
@@ -335,7 +335,8 @@ function FeedCard({
                   disabled={busy || !appId || (!secret && !feed.has_secret)}
                   onClick={() => void connect()}
                 >
-                  {t('Mit')} {feed.kind === 'instagram' ? t('Instagram') : t('Facebook')} verbinden
+                  {t('Mit')} {feed.kind === 'instagram' ? t('Instagram') : t('Facebook')}{' '}
+                  {t('verbinden')}
                 </button>
               </div>
             </>
@@ -579,7 +580,7 @@ function PostImages({ post, onSaved }: { post: SocialPost; onSaved: () => void }
     <div className="social-post-images">
       <p className="small">
         {post.images.length === 1 ? t('1 Bild') : t('{n} Bilder', { n: post.images.length })}
-        {post.images.some((i) => i.is_video) && ' (Video: nur Vorschaubild)'}
+        {post.images.some((i) => i.is_video) && t(' (Video: nur Vorschaubild)')}
       </p>
       <div className="social-post-thumbs">
         {post.images.map((i, n) => (
@@ -664,7 +665,7 @@ function SetupGuide({ redirectUri }: { redirectUri: string }) {
         <li>
           {t('Instagram: Unter „API-Einrichtung mit Facebook-Login“ bzw. „Unified Login“ eine')}{' '}
           <strong>{t('Konfiguration')}</strong> {t('anlegen: Zugriffstoken')}{' '}
-          <strong>„Nutzerzugriffstoken“</strong>
+          <strong>{t('„Nutzerzugriffstoken“')}</strong>
           {t(
             '(Ablauf „läuft nie ab“, falls angeboten; „Systemnutzer“ funktioniert im Entwicklungsmodus nicht), Assets nur',
           )}{' '}
@@ -683,7 +684,7 @@ function SetupGuide({ redirectUri }: { redirectUri: string }) {
         </li>
         <li>{t('Als Datenschutz-URL die Datenschutzhinweise eurer Webseite eintragen.')}</li>
         <li>
-          <strong>{t('App-ID')}</strong> und <strong>{t('App-Geheimcode')}</strong>{' '}
+          <strong>{t('App-ID')}</strong> {t('und')} <strong>{t('App-Geheimcode')}</strong>{' '}
           {t(
             'aus App-Einstellungen › Allgemein oben eintragen und auf „verbinden“ klicken. Nur beim alten Weg „Instagram-Login“ gelten stattdessen „Instagram-App-ID“ und „Instagram-App-Geheimcode“.',
           )}

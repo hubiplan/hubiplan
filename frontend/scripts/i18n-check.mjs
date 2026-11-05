@@ -10,7 +10,7 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { sourceChecked, untranslatedUi } from './i18n-source.mjs'
+import { conditionalTranslationKeys, untranslatedUi } from './i18n-source.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const src = join(root, 'src')
@@ -80,6 +80,14 @@ for (const file of files(src)) {
   }
 }
 
+for (const file of files(src)) {
+  for (const { line, keys } of await conditionalTranslationKeys(readFileSync(file, 'utf8'), file)) {
+    const where = `${relative(root, file)}:${line}`
+    const index = dynamic.indexOf(where)
+    if (index >= 0) dynamic.splice(index, 1)
+    for (const key of keys) if (!used.has(key)) used.set(key, where)
+  }
+}
 const catalog = JSON.parse(readFileSync(catalogPath, 'utf8'))
 const filled = (v) => (typeof v === 'string' ? v !== '' : !!v && v.one !== '' && v.other !== '')
 const missing = [...used.keys()].filter((k) => !filled(catalog[k]))
@@ -101,12 +109,18 @@ if (args.has('--add') && missing.length) {
   console.log(`${missing.length} Schlüssel in en.json eingetragen.`)
 }
 const raw = []
-for (const name of sourceChecked)
-  raw.push(...(await untranslatedUi(readFileSync(join(src, name), 'utf8'), name)))
+const sourceChecked = files(src)
+for (const file of sourceChecked)
+  raw.push(
+    ...(await untranslatedUi(
+      readFileSync(file, 'utf8'),
+      relative(src, file).replaceAll('\\', '/'),
+    )),
+  )
 console.log(
-  `Quelltextprüfung: ${sourceChecked.length} umgestellte Dateien, ${raw.length} nicht angebundene UI-Literale`,
+  `Quelltextprüfung: ${sourceChecked.length} produktive Dateien, ${raw.length} nicht angebundene UI-Literale`,
 )
 for (const hit of raw)
   console.log(`  nicht angebunden: ${hit.file}:${hit.line}: ${JSON.stringify(hit.text)}`)
-// Im abgegrenzten, bereits umgestellten Umfang sind neue direkte UI-Texte ein Fehler.
-if (raw.length || (args.has('--strict') && missing.length)) process.exit(1)
+// Neue sichtbare Literale und fehlende gebundene Übersetzungen sind Fehler.
+if (raw.length || missing.length) process.exit(1)

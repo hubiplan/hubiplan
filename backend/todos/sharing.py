@@ -165,7 +165,7 @@ def transfer_owner(todo, user, scope, owner_id):
     available = participants(todo, scope)
     if owner_id not in available or not available[owner_id]["edit"]:
         raise ValidationError(
-            "Das verantwortliche Konto muss beteiligt sein und bearbeiten dürfen."
+            gettext("Das verantwortliche Konto muss beteiligt sein und bearbeiten dürfen.")
         )
     todo.owner_id = owner_id
     assign_series_owner(todo, owner_id)

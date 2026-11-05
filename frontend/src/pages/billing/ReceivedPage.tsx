@@ -39,7 +39,7 @@ export function ReceivedPage() {
                 <th>{t('fällig')}</th>
                 <th>{t('Status')}</th>
                 <th className="num">{t('Betrag')}</th>
-                <th className="num">offen</th>
+                <th className="num">{t('offen')}</th>
                 <th />
               </tr>
             </thead>

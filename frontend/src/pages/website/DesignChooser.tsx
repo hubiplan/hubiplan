@@ -78,9 +78,8 @@ export function DesignChooser({
           'Das Design bestimmt, wie die Webseite aussieht: Kopf, Menü, Fuß und die Anordnung der Startseite. Inhalte und Bausteine (unter',
         )}{' '}
         <Link to="/webseite/aufbau">{t('Webseite › Menü und Bereiche')}</Link>
-        {t(') bleiben bei jedem Design gleich. Die Farben selbst legst du unter')}{' '}
-        <Link to="/einstellungen/erscheinungsbild">{t('Einstellungen › Erscheinungsbild')}</Link>{' '}
-        fest.
+        {t(') bleiben bei jedem Design gleich. Die Farben legst du hier fest:')}{' '}
+        <Link to="/einstellungen/erscheinungsbild">{t('Einstellungen › Erscheinungsbild')}</Link>.
       </p>
       {error && <Alert kind="error">{error}</Alert>}
       <div className="design-grid" role="radiogroup" aria-label={t('Design der Webseite')}>
@@ -115,7 +114,7 @@ export function DesignChooser({
           <a href={opened} target="_blank" rel="noopener noreferrer">
             {t('Vorschau hier öffnen')}
           </a>
-          . Die Vorschau übernimmt nichts; gewählt ist das markierte Design.
+          {t('. Die Vorschau übernimmt nichts; gewählt ist das markierte Design.')}
         </p>
       )}
       {current && (

@@ -2,6 +2,18 @@
   "_hinweis": "Bildschirmfotos der Hilfe, erzeugt mit scripts/hilfe-bilder.sh aus den Demodaten (seed_testdata). zugang: Demozugang ohne Domain; ausschnitt: CSS-Auswahl des Bereichs (leer: Inhalt der Seite); wurzel (wahlweise): Bereich, in dem ausschnitt gesucht wird, etwa header.topbar für die Kopfleiste (Standard: main).",
   "bilder": [
     {
+      "name": "kalender-abo",
+      "zugang": "mitglied@hubertus-grimlinghausen.test",
+      "seite": "/termine/abo",
+      "ausschnitt": ".card-wide"
+    },
+    {
+      "name": "mitteilungen-lesen",
+      "zugang": "mitglied@hubertus-grimlinghausen.test",
+      "seite": "/mein-bereich/rundschreiben",
+      "ausschnitt": ".card-wide"
+    },
+    {
       "name": "material-formular",
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/material/neu",

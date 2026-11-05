@@ -50,7 +50,7 @@ export function PublicPhotoPage() {
 
   async function upload(blob: Blob) {
     if (!consent) {
-      setError(t('Bitte bestätigen Sie Ihre Einwilligung.'))
+      setError(t('Bitte bestätige deine Einwilligung.'))
       return
     }
     setBusy(true)
@@ -77,8 +77,7 @@ export function PublicPhotoPage() {
         {state === 'loading' && <p className="muted">{t('Lädt …')}</p>}
         {state === 'invalid' && (
           <Alert kind="error">
-            {error ??
-              t('Dieser Link ist nicht (mehr) gültig. Bitte wenden Sie sich an den Vorstand.')}
+            {error ?? t('Dieser Link ist nicht (mehr) gültig. Bitte wende dich an den Vorstand.')}
           </Alert>
         )}
         {state === 'unavailable' && (
@@ -102,10 +101,10 @@ export function PublicPhotoPage() {
             </div>
           </>
         )}
-        {state === 'done' && <Alert kind="success">{t('Danke! Ihr Foto ist gespeichert.')}</Alert>}
+        {state === 'done' && <Alert kind="success">{t('Danke! Dein Foto ist gespeichert.')}</Alert>}
         {state === 'pending' && (
           <Alert kind="success">
-            {t('Danke! Ihr Foto ist eingegangen und wird vom Vorstand noch freigegeben.')}
+            {t('Danke! Dein Foto ist eingegangen und wird vom Vorstand noch freigegeben.')}
           </Alert>
         )}
         {state === 'ready' && info && (
@@ -113,7 +112,7 @@ export function PublicPhotoPage() {
             <h1>{t('Hallo {first_name}!', { first_name: info.first_name })}</h1>
             <p>
               {t(
-                'Hier können Sie ein Foto für {organization} hochladen. Sie können es drehen, spiegeln und den Ausschnitt wählen.',
+                'Hier kannst du ein Foto für {organization} hochladen. Du kannst es drehen, spiegeln und den Ausschnitt wählen.',
                 { organization: info.organization },
               )}
             </p>

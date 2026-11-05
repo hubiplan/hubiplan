@@ -13,6 +13,7 @@ import secrets
 
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy
 
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
@@ -24,19 +25,19 @@ class SocialFeed(models.Model):
     """Ein verbundener Kanal (Instagram-Profikonto oder Facebook-Seite)."""
 
     class Kind(models.TextChoices):
-        INSTAGRAM = "instagram", "Instagram"
-        FACEBOOK = "facebook", "Facebook-Seite"
+        INSTAGRAM = "instagram", gettext_lazy("Instagram")
+        FACEBOOK = "facebook", gettext_lazy("Facebook-Seite")
 
     class Mode(models.TextChoices):
-        AUTO = "auto", "automatisch zeigen"
-        APPROVAL = "approval", "erst nach Freigabe"
+        AUTO = "auto", gettext_lazy("automatisch zeigen")
+        APPROVAL = "approval", gettext_lazy("erst nach Freigabe")
 
     class Status(models.TextChoices):
-        NEW = "new", "nicht verbunden"
-        CHOOSE = "choose", "Seite auswählen"
-        OK = "ok", "verbunden"
-        ERROR = "error", "Störung"
-        EXPIRED = "expired", "neu verbinden"
+        NEW = "new", gettext_lazy("nicht verbunden")
+        CHOOSE = "choose", gettext_lazy("Seite auswählen")
+        OK = "ok", gettext_lazy("verbunden")
+        ERROR = "error", gettext_lazy("Störung")
+        EXPIRED = "expired", gettext_lazy("neu verbinden")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -128,15 +129,15 @@ def post_image_path(instance, filename: str) -> str:
 
 class SocialPost(models.Model):
     class MediaType(models.TextChoices):
-        IMAGE = "image", "Bild"
-        ALBUM = "album", "Album"
-        VIDEO = "video", "Video"
-        TEXT = "text", "nur Text"
+        IMAGE = "image", gettext_lazy("Bild")
+        ALBUM = "album", gettext_lazy("Album")
+        VIDEO = "video", gettext_lazy("Video")
+        TEXT = "text", gettext_lazy("nur Text")
 
     class State(models.TextChoices):
-        VISIBLE = "visible", "sichtbar"
-        PENDING = "pending", "wartet auf Freigabe"
-        HIDDEN = "hidden", "ausgeblendet"
+        VISIBLE = "visible", gettext_lazy("sichtbar")
+        PENDING = "pending", gettext_lazy("wartet auf Freigabe")
+        HIDDEN = "hidden", gettext_lazy("ausgeblendet")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"

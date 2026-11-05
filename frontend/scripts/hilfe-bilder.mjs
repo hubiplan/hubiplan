@@ -50,6 +50,75 @@ for (const language of ['de', 'en']) {
       try {
         await page.goto(`${base}${b.seite}`)
         await page.waitForLoadState('networkidle')
+        if (b.name === 'mitteilungen-lesen') {
+          await page
+            .getByRole('button', { name: 'Einladung zur Mitgliederversammlung', exact: true })
+            .click()
+          const heading = page.getByRole('heading', {
+            name: 'Einladung zur Mitgliederversammlung',
+            exact: true,
+          })
+          await heading.waitFor()
+          const initial = new URL(page.url())
+          const contexts = await (await page.request.get(`${base}/api/me/contexts/`)).json()
+          const access = contexts.portal[0].id
+          initial.searchParams.set('zugang', String(access))
+          const target = initial.pathname + initial.search
+          // Neue Browsersitzung: normale Anmeldung muss beide Zielparameter erhalten.
+          await context.clearCookies()
+          await page.goto(`${base}${target}`)
+          await page.locator('input[autocomplete="username"]').fill(user)
+          await page.locator('input[autocomplete="current-password"]').fill(password)
+          await page.locator('button[type="submit"]').first().click()
+          await heading.waitFor()
+          await page.waitForLoadState('networkidle')
+          if (new URL(page.url()).search !== initial.search)
+            throw new Error('Rundschreibenziel nach Anmeldung verloren')
+          if (!(await heading.evaluate((el) => document.activeElement === el)))
+            throw new Error('Schreiben erhält keinen Fokus')
+          const attachment = page.getByRole('link', { name: 'Einladung.pdf', exact: true })
+          const response = await page.request.get(
+            new URL(await attachment.getAttribute('href'), base).href,
+          )
+          if (
+            response.status() !== 200 ||
+            !(await response.body()).toString('ascii').startsWith('%PDF-')
+          )
+            throw new Error('Gewählter Anhang nicht erreichbar')
+          await page.setViewportSize({ width: 320, height: 720 })
+          if (
+            !(await page
+              .locator('main .card-wide')
+              .evaluate((el) => el.scrollWidth <= el.clientWidth))
+          )
+            throw new Error('Schreiben läuft bei 320px über')
+          await page.setViewportSize({ width: 1280, height: 860 })
+          console.log(
+            `${language}: App-Ziel → Browseranmeldung → richtiges Schreiben → PDF; Fokus und 320px geprüft`,
+          )
+        }
+        if (b.name === 'beitragslauf' || b.name === 'rolle-anlegen') {
+          if (b.name === 'beitragslauf')
+            await page
+              .getByRole('button', {
+                name: language === 'en' ? 'New fee run' : 'Neuer Beitragslauf',
+                exact: true,
+              })
+              .waitFor()
+          else
+            await page
+              .getByRole('heading', { name: language === 'en' ? 'Roles' : 'Rollen', exact: true })
+              .first()
+              .waitFor()
+          console.log(
+            `${language}: Verwaltungsansicht ${b.name} mit übersetzter Systemüberschrift geladen`,
+          )
+          if (b.name === 'beitragslauf' && language === 'en') {
+            const text = await page.locator('main').innerText()
+            if (text.includes('Züge') || !/\bplatoons\b/i.test(text))
+              throw new Error(`Englische Bezeichnung der Untereinheiten fehlt: ${text}`)
+          }
+        }
         if (b.name === 'kalender-kontext') {
           await page
             .getByRole('button', { name: language === 'en' ? 'Month' : 'Monat', exact: true })

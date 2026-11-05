@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.ts'
 // Anbindung an die allauth-Headless-API (Anmeldung, 2FA, Abmeldung).
 // Doku der Endpunkte: http://localhost:8000/_allauth/openapi.html
 import { ApiError, request } from './client.ts'
@@ -43,7 +44,13 @@ function pendingFlow(body: AuthBody): string | undefined {
 function toLoginResult(status: number, body: AuthBody, fallback: string): LoginResult {
   if (status === 200 && body.data?.user) return { kind: 'ok', user: body.data.user }
   if (status === 401 && pendingFlow(body) === 'mfa_authenticate') return { kind: 'mfa' }
-  if (status === 429) return { kind: 'error', message: 'Zu viele Versuche. Bitte später erneut.' }
+  if (status === 429)
+    return {
+      kind: 'error',
+      get message() {
+        return t('Zu viele Versuche. Bitte später erneut.')
+      },
+    }
   return { kind: 'error', message: errorMessage(body, fallback) }
 }
 
@@ -61,14 +68,14 @@ export async function login(email: string, password: string): Promise<LoginResul
     email,
     password,
   })
-  return toLoginResult(status, body, 'Anmeldung fehlgeschlagen.')
+  return toLoginResult(status, body, t('Anmeldung fehlgeschlagen.'))
 }
 
 export async function authenticateMfa(code: string): Promise<LoginResult> {
   const { status, body } = await request<AuthBody>('POST', `${BASE}/auth/2fa/authenticate`, {
     code,
   })
-  return toLoginResult(status, body, 'Der Code ist ungültig.')
+  return toLoginResult(status, body, t('Der Code ist ungültig.'))
 }
 
 export async function logout(): Promise<void> {
@@ -104,7 +111,7 @@ async function securityChange(
   if (status === 200) return { kind: 'ok' }
   // Für Sicherheitsänderungen verlangt allauth eine frische Passwortbestätigung.
   if (status === 401) return { kind: 'reauthenticate' }
-  return { kind: 'error', message: errorMessage(body, 'Das hat nicht geklappt.') }
+  return { kind: 'error', message: errorMessage(body, t('Das hat nicht geklappt.')) }
 }
 
 export function activateTotp(code: string): Promise<ChangeResult> {
@@ -120,7 +127,7 @@ export async function reauthenticate(password: string): Promise<ChangeResult> {
     password,
   })
   if (status === 200) return { kind: 'ok' }
-  return { kind: 'error', message: errorMessage(body, 'Passwort ist falsch.') }
+  return { kind: 'error', message: errorMessage(body, t('Passwort ist falsch.')) }
 }
 
 export async function getRecoveryCodes(): Promise<string[]> {

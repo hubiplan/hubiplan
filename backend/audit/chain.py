@@ -20,6 +20,7 @@ import logging
 
 from django.db import connection, transaction
 from django.utils import timezone
+from django.utils.translation import gettext
 
 from core.tenancy import tenant_context
 
@@ -124,26 +125,38 @@ def verify(org_id: int) -> dict:
             count += 1
             if entry.seq != expected_seq:
                 problems.append(
-                    f"Nr. {expected_seq} bis {entry.seq - 1} fehlen (gelöscht)."
+                    gettext("Nr. {expected_seq} bis {x1} fehlen (gelöscht).").format(
+                        expected_seq=expected_seq, x1=entry.seq - 1
+                    )
                     if entry.seq > expected_seq
-                    else f"Nr. {entry.seq} ist doppelt."
+                    else gettext("Nr. {x0} ist doppelt.").format(x0=entry.seq)
                 )
                 expected_seq = entry.seq
             if entry.prev_hash != prev:
-                problems.append(f"Nr. {entry.seq}: Verweis auf den Vorgänger passt nicht.")
+                problems.append(
+                    gettext("Nr. {x0}: Verweis auf den Vorgänger passt nicht.").format(x0=entry.seq)
+                )
             if changes_digest(entry) != entry.changes_hash:
                 if entry.cleared and not entry.changes:
                     cleared += 1
                 else:
-                    problems.append(f"Nr. {entry.seq}: Inhalt wurde nachträglich geändert.")
+                    problems.append(
+                        gettext("Nr. {x0}: Inhalt wurde nachträglich geändert.").format(
+                            x0=entry.seq
+                        )
+                    )
             if entry_digest(entry, entry.seq, entry.prev_hash, entry.changes_hash) != entry.hash:
-                problems.append(f"Nr. {entry.seq}: Angaben wurden nachträglich geändert.")
+                problems.append(
+                    gettext("Nr. {x0}: Angaben wurden nachträglich geändert.").format(x0=entry.seq)
+                )
             if known_seq is not None and entry.seq == known_seq:
                 known_seen = True
                 if known_hash and entry.hash != known_hash:
                     problems.append(
-                        f"Nr. {entry.seq}: weicht vom zuletzt geprüften Stand ab "
-                        "(Kette neu berechnet?)."
+                        gettext(
+                            "Nr. {x0}: weicht vom zuletzt geprüften Stand ab (Kette neu "
+                            "berechnet?)."
+                        ).format(x0=entry.seq)
                     )
             prev = entry.hash
             head_seq = entry.seq
@@ -151,9 +164,11 @@ def verify(org_id: int) -> dict:
         if known_seq is not None and not known_seen:
             first_missing = (head_seq or 0) + 1
             problems.append(
-                f"Nr. {first_missing} bis {known_seq} fehlen (Ende der Kette gelöscht)."
+                gettext(
+                    "Nr. {first_missing} bis {known_seq} fehlen (Ende der Kette gelöscht)."
+                ).format(first_missing=first_missing, known_seq=known_seq)
                 if first_missing <= known_seq
-                else f"Nr. {known_seq} fehlt (gelöscht)."
+                else gettext("Nr. {known_seq} fehlt (gelöscht).").format(known_seq=known_seq)
             )
         if len(problems) > MAX_PROBLEMS:
             problems = [*problems[:MAX_PROBLEMS], f"… und {len(problems) - MAX_PROBLEMS} weitere."]

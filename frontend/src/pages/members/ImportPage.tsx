@@ -594,12 +594,15 @@ function Preview({ job }: { job: ImportJob }) {
       <h2>{t('Vorschau')}</h2>
       <p>
         {job.counts.persons} {t('Personen aus {rows} Zeilen ·', { rows: job.counts.rows })}{' '}
-        <strong>{job.counts.ok} fehlerfrei</strong>{' '}
+        <strong>
+          {job.counts.ok} {t('fehlerfrei')}
+        </strong>{' '}
         {t('· {errors} mit Fehlern ·  {duplicates} schon', {
           errors: job.counts.errors,
           duplicates: job.counts.duplicates,
         })}{' '}
-        {terms.dv_has ? `${terms.dv_im} ` : ''}vorhanden
+        {terms.dv_has ? `${terms.dv_im} ` : ''}
+        {t('vorhanden')}
       </p>
       <label className="checkbox">
         <input
@@ -650,7 +653,7 @@ function Preview({ job }: { job: ImportJob }) {
                 {p.name}
                 {p.birth_date && <span className="muted small"> · {formatDate(p.birth_date)}</span>}
               </td>
-              <td className="small">{p.status === 'ok' ? 'ok' : p.messages.join(' ')}</td>
+              <td className="small">{p.status === 'ok' ? t('ok') : p.messages.join(' ')}</td>
             </tr>
           ))}
         </tbody>

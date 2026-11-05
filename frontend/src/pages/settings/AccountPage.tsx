@@ -12,6 +12,7 @@ import { RemoteLoginCard } from './RemoteLoginCard.tsx'
 import { SignatureCard } from './SignatureCard.tsx'
 import { t } from '../../i18n/index.ts'
 import { TodoPreferences } from '../../components/TodoPreferences.tsx'
+import { StatusMessage } from '../../components/ui.tsx'
 import { PersonalTodos } from '../../components/PersonalTodos.tsx'
 
 // Mein Konto: persönliche Einstellungen, unabhängig von der gewählten Organisation.
@@ -202,7 +203,7 @@ function TwoFactorCard() {
   return (
     <div className="card">
       <h2>{t('Zwei-Faktor-Anmeldung')}</h2>
-      {message && <p className="alert alert-success">{message}</p>}
+      <StatusMessage message={message} />
       {error && (
         <p className="alert alert-error" role="alert">
           {error}

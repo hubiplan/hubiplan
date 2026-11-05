@@ -133,29 +133,29 @@ def check_donation(org, donation: Donation, cfg: DonationSettings | None = None)
     cfg = cfg or settings_for(org)
     errors: dict[str, str] = {}
     if donation.amount is None or donation.amount <= 0:
-        errors["amount"] = "Bitte einen Betrag größer als 0 angeben."
+        errors["amount"] = gettext("Bitte einen Betrag größer als 0 angeben.")
     elif donation.amount > MAX_AMOUNT:
         # Der Betrag steht in Worten auf der Bestätigung (Audit 31.10. FIN31-R04)
-        errors["amount"] = "Der Betrag ist zu groß für eine Zuwendungsbestätigung."
+        errors["amount"] = gettext("Der Betrag ist zu groß für eine Zuwendungsbestätigung.")
     if not donation.donor_name.strip():
-        errors["donor_name"] = "Bitte den Namen des Zuwendenden angeben."
+        errors["donor_name"] = gettext("Bitte den Namen des Zuwendenden angeben.")
     if donation.kind == Donation.Kind.FEE and not cfg.fees_allowed:
-        errors["kind"] = (
+        errors["kind"] = gettext(
             "Mitgliedsbeiträge werden nicht bestätigt. Das lässt sich unter "
-            "„Zuwendungsbestätigungen › Einstellungen“ einschalten, wenn die Beiträge "
-            "abziehbar sind."
+            "„Zuwendungsbestätigungen › Einstellungen“ einschalten, wenn die "
+            "Beiträge abziehbar sind."
         )
     if donation.kind == Donation.Kind.GOODS:
         if not donation.goods_description.strip():
-            errors["goods_description"] = (
+            errors["goods_description"] = gettext(
                 "Bitte die Sache genau bezeichnen (Alter, Zustand, Kaufpreis)."
             )
         if not donation.goods_origin:
-            errors["goods_origin"] = "Bitte angeben, woher die Sache stammt."
+            errors["goods_origin"] = gettext("Bitte angeben, woher die Sache stammt.")
         if donation.waiver:
-            errors["waiver"] = "Der Verzicht auf Aufwendungsersatz ist eine Geldzuwendung."
+            errors["waiver"] = gettext("Der Verzicht auf Aufwendungsersatz ist eine Geldzuwendung.")
     if donation.date and donation.date > timezone.localdate():
-        errors["date"] = "Das Datum liegt in der Zukunft."
+        errors["date"] = gettext("Das Datum liegt in der Zukunft.")
     if errors:
         raise ValidationError(errors)
 
@@ -285,7 +285,9 @@ def issue(org, donations: list[Donation], user, *, signer_name: str = "") -> Don
     if len({donor_key(d) for d in donations}) > 1:
         raise ValidationError(gettext("Eine Bestätigung gilt immer nur für einen Zuwendenden."))
     if reason := next((r for d in donations if (r := incomplete(d))), ""):
-        raise ValidationError(f"{reason}. Bitte zuerst in der Zuwendung ergänzen.")
+        raise ValidationError(
+            gettext("{reason}. Bitte zuerst in der Zuwendung ergänzen.").format(reason=reason)
+        )
     if len({d.date.year for d in donations}) > 1:
         raise ValidationError(
             gettext("Eine Sammelbestätigung umfasst nur Zuwendungen eines Jahres.")

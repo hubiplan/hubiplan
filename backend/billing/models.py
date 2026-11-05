@@ -149,7 +149,7 @@ class Rhythm(models.TextChoices):
     YEARLY = "yearly", gettext_lazy("jährlich")
     HALFYEARLY = "halfyearly", gettext_lazy("halbjährlich")
     QUARTERLY = "quarterly", gettext_lazy("vierteljährlich")
-    MONTHLY = "monthly", "monatlich"
+    MONTHLY = "monthly", gettext_lazy("monatlich")
 
 
 PERIODS_PER_YEAR = {
@@ -292,15 +292,17 @@ class AgeRate(models.Model):
     def clean(self):
         errors = {}
         if self.min_age is None and self.max_age is None:
-            errors["max_age"] = "Bitte ein Mindest- oder Höchstalter angeben."
+            errors["max_age"] = gettext("Bitte ein Mindest- oder Höchstalter angeben.")
         if self.min_age is not None and self.max_age is not None and self.min_age > self.max_age:
-            errors["max_age"] = "Das Höchstalter liegt unter dem Mindestalter."
+            errors["max_age"] = gettext("Das Höchstalter liegt unter dem Mindestalter.")
         if (self.amount is None) == (self.discount_percent is None):
-            errors["amount"] = "Bitte entweder einen eigenen Beitrag oder einen Abschlag angeben."
+            errors["amount"] = gettext(
+                "Bitte entweder einen eigenen Beitrag oder einen Abschlag angeben."
+            )
         if self.amount is not None and self.amount < 0:
-            errors["amount"] = "Der Beitrag darf nicht negativ sein."
+            errors["amount"] = gettext("Der Beitrag darf nicht negativ sein.")
         if self.discount_percent is not None and not (0 < self.discount_percent <= 100):
-            errors["discount_percent"] = "Der Abschlag liegt zwischen 0 und 100 Prozent."
+            errors["discount_percent"] = gettext("Der Abschlag liegt zwischen 0 und 100 Prozent.")
         if errors:
             raise ValidationError(errors)
 
@@ -352,10 +354,10 @@ def invoice_pdf_path(instance, filename: str) -> str:
 class Invoice(models.Model):
     class Status(models.TextChoices):
         DRAFT = "draft", gettext_lazy("Entwurf")
-        OPEN = "open", "offen"
-        PAID = "paid", "bezahlt"
+        OPEN = "open", gettext_lazy("offen")
+        PAID = "paid", gettext_lazy("bezahlt")
         SETTLED = "settled", gettext_lazy("Abgerechnet")
-        CANCELLED = "cancelled", "storniert"
+        CANCELLED = "cancelled", gettext_lazy("storniert")
 
     class Recipient(models.TextChoices):
         MEMBER = "member", gettext_lazy("Mitglied")
@@ -614,7 +616,7 @@ class InvoiceLine(models.Model):
 class Payment(models.Model):
     class Method(models.TextChoices):
         TRANSFER = "transfer", gettext_lazy("Überweisung")
-        CASH = "cash", "bar"
+        CASH = "cash", gettext_lazy("bar")
         DEBIT = "debit", gettext_lazy("Lastschrift")
 
     organization = models.ForeignKey(
@@ -715,12 +717,12 @@ class Mandate(models.Model):
     """SEPA-Lastschriftmandat (Basislastschrift) eines Mitglieds oder Vereins."""
 
     class Source(models.TextChoices):
-        PAPER = "paper", "schriftlich"
+        PAPER = "paper", gettext_lazy("schriftlich")
         ONLINE = "online", gettext_lazy("im Mitgliederbereich")
 
     class Status(models.TextChoices):
         ACTIVE = "active", gettext_lazy("gültig")
-        REVOKED = "revoked", "widerrufen"
+        REVOKED = "revoked", gettext_lazy("widerrufen")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -778,9 +780,9 @@ class DebitRun(models.Model):
     """Lastschriftlauf: eine SEPA-XML-Datei für das Online-Banking."""
 
     class Status(models.TextChoices):
-        CREATED = "created", "erstellt"
-        BOOKED = "booked", "gebucht"
-        CANCELLED = "cancelled", "verworfen"
+        CREATED = "created", gettext_lazy("erstellt")
+        BOOKED = "booked", gettext_lazy("gebucht")
+        CANCELLED = "cancelled", gettext_lazy("verworfen")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"

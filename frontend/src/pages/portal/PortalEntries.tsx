@@ -54,7 +54,7 @@ function EntryList({ title, rows }: { title: string; rows: MyEntry[] }) {
             <br />
             {t('Gemeldet in')} {r.group}
             {r.position ? t(' als {position}', { position: r.position }) : ''}
-            {r.substitute ? ' (Ersatz)' : ''}
+            {r.substitute ? t(' (Ersatz)') : ''}
             {r.confirmed ? t(', vom Veranstalter bestätigt') : ''}
           </li>
         ))}

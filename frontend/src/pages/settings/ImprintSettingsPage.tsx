@@ -125,7 +125,7 @@ export function ImprintEditor({
         {v.mode === 'inherit' && !current.owner.is_self && (
           <p className="muted">
             {t('Es gilt das Impressum von')} {current.owner.name}
-            {isUnit ? '' : ' (bzw. der Plattform, wenn darüber keine Einheit eines hat)'}.
+            {isUnit ? '' : t(' (bzw. der Plattform, wenn darüber keine Einheit eines hat)')}.
           </p>
         )}
         {v.mode === 'link' && (
@@ -177,7 +177,7 @@ export function ImprintEditor({
             />
             <div className="grid-3">
               <Field
-                label="PLZ"
+                label={t('PLZ')}
                 value={v.postal_code}
                 placeholder={p.address.postal_code}
                 error={errors.postal_code}
@@ -202,8 +202,8 @@ export function ImprintEditor({
                     })
                   : t('Noch keine Rolle mit „vertritt die Einheit (§ 26 BGB)“ besetzt.')}{' '}
                 {t('Das Kennzeichen setzt du unter')}{' '}
-                <Link to="/einstellungen/rollen">{t('Rollen & Benutzer')}</Link>. Ein Text hier
-                ersetzt die Angaben aus den Rollen.
+                <Link to="/einstellungen/rollen">{t('Rollen & Benutzer')}</Link>
+                {t('. Ein Text hier ersetzt die Angaben aus den Rollen.')}
               </p>
             )}
             <TextArea
@@ -238,7 +238,8 @@ export function ImprintEditor({
               />
             </div>
             <h3>
-              <Term k="register">{t('Register')}</Term> und <Term k="vat_id">{t('Steuer')}</Term>
+              <Term k="register">{t('Register')}</Term> {t('und')}{' '}
+              <Term k="vat_id">{t('Steuer')}</Term>
             </h3>
             <Checkbox
               label={

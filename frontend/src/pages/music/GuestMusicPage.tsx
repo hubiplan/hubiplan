@@ -236,7 +236,7 @@ function GuestAssignment({ token, rehearsal }: { token: string; rehearsal: boole
           </div>
         )}
         <p className="muted">
-          {t('Dieser persönliche Link ist nur für Sie bestimmt. Bitte nicht weitergeben.')}
+          {t('Dieser persönliche Link ist nur für dich bestimmt. Bitte nicht weitergeben.')}
         </p>
       </article>
     </main>

@@ -322,12 +322,12 @@ function ChangeType({
             .map((tm) => (
               <option key={tm.id} value={tm.id}>
                 {tm.name}
-                {tm.active ? ' (aktiv)' : ''}
+                {tm.active ? t(' (aktiv)') : ''}
               </option>
             ))}
         </SelectField>
         <Field
-          label="ab"
+          label={t('ab')}
           type="date"
           required
           value={form.values.valid_from}
@@ -513,7 +513,7 @@ function Reentry({
           />
           <div className="grid-2">
             <Field
-              label="PLZ"
+              label={t('PLZ')}
               required
               value={v.postal_code}
               error={e.postal_code}

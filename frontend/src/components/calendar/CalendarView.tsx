@@ -228,7 +228,7 @@ export function CalendarView({
       )}
       {!data && !error && (
         <p className="muted" role="status">
-          {t('Termine')} {view === 'month' ? t('für') : 'ab'}{' '}
+          {t('Termine')} {view === 'month' ? t('für') : t('ab')}{' '}
           {MONTHS[Number(month.slice(5, 7)) - 1]} {year} {t('werden geladen …')}
         </p>
       )}

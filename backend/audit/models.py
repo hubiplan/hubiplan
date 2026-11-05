@@ -9,10 +9,10 @@ class AuditEntry(models.Model):
     """Wer hat wann was geändert."""
 
     class Action(models.TextChoices):
-        CREATE = "create", "angelegt"
+        CREATE = "create", gettext_lazy("angelegt")
         UPDATE = "update", gettext_lazy("geändert")
         DELETE = "delete", gettext_lazy("gelöscht")
-        VIEW = "view", "angesehen"
+        VIEW = "view", gettext_lazy("angesehen")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="audit_entries"

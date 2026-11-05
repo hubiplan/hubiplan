@@ -70,8 +70,8 @@ export function RunsPage() {
                   'Ein Beitragslauf erstellt für einen Abrechnungszeitraum die Rechnungen an alle Mitglieder und Sammelrechnungen an die {department_label_plural}.',
                   { department_label_plural: s.department_label_plural },
                 )}{' '}
-            {t('Vorher bitte die')}{' '}
-            <Link to="/finanzen/einstellungen/beitraege">{t('Beitragssätze')}</Link> festlegen.
+            {t('Lege vorher bitte die Beitragssätze fest:')}{' '}
+            <Link to="/finanzen/einstellungen/beitraege">{t('Beitragssätze')}</Link>.
           </p>
         </div>
       )}
@@ -165,7 +165,7 @@ function NewRun({
         >
           {periods.map((p) => (
             <option key={p.index} value={p.index}>
-              {p.label} ({formatDate(p.start)} bis {formatDate(p.end)})
+              {p.label} ({formatDate(p.start)} {t('bis')} {formatDate(p.end)})
             </option>
           ))}
         </SelectField>
@@ -547,7 +547,7 @@ function RunSteps({ run }: { run: FeeRun }) {
           aria-current={i === current ? 'step' : undefined}
         >
           <span className="sr-only">
-            {st.done ? 'erledigt: ' : i === current ? 'jetzt: ' : t('später: ')}
+            {st.done ? t('erledigt: ') : i === current ? t('jetzt: ') : t('später: ')}
           </span>
           {st.label}
         </li>

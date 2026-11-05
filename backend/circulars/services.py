@@ -74,19 +74,23 @@ def reply_to(circular: Circular, user=None) -> list[str]:
 def problems(circular: Circular) -> dict[str, str]:
     errors = {}
     if not circular.subject.strip():
-        errors["subject"] = "Bitte einen Betreff eingeben."
+        errors["subject"] = gettext("Bitte einen Betreff eingeben.")
     if not circular.body.strip():
-        errors["body"] = "Bitte einen Text eingeben."
+        errors["body"] = gettext("Bitte einen Text eingeben.")
     if circular.kind == Circular.Kind.SHORT:
         if len(circular.body) > MAX_SHORT_BODY:
-            errors["body"] = f"Eine Kurzmitteilung hat höchstens {MAX_SHORT_BODY} Zeichen."
+            errors["body"] = gettext(
+                "Eine Kurzmitteilung hat höchstens {MAX_SHORT_BODY} Zeichen."
+            ).format(MAX_SHORT_BODY=MAX_SHORT_BODY)
         if circular.pk and circular.attachments.exists():
-            errors["attachments"] = "Kurzmitteilungen haben keine Anhänge."
+            errors["attachments"] = gettext("Kurzmitteilungen haben keine Anhänge.")
     unknown = text.unknown_placeholders(circular.subject, circular.body)
     if unknown:
         names = ", ".join("{" + u + "}" for u in unknown)
         known = ", ".join("{" + p + "}" for p in text.PLACEHOLDERS)
-        errors["body"] = f"Unbekannte Platzhalter: {names}. Möglich sind {known}."
+        errors["body"] = gettext("Unbekannte Platzhalter: {names}. Möglich sind {known}.").format(
+            names=names, known=known
+        )
     return errors
 
 

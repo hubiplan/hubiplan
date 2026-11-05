@@ -104,19 +104,21 @@ class FieldDefinitionSerializer(ModelCleanMixin, serializers.ModelSerializer):
         n = len(values)
         errors = {}
         if "repeatable" in attrs and attrs["repeatable"] != field.repeatable:
-            errors["repeatable"] = (
-                f"Das Feld ist bei {n} Personen ausgefüllt; „wiederholbar“ lässt sich nicht mehr "
-                "umstellen. Bitte ein neues Feld anlegen und dieses archivieren."
-            )
+            errors["repeatable"] = gettext(
+                "Das Feld ist bei {n} Personen ausgefüllt; „wiederholbar“ lässt "
+                "sich nicht mehr umstellen. Bitte ein neues Feld anlegen und "
+                "dieses archivieren."
+            ).format(n=n)
         if (
             not field.repeatable
             and "field_type" in attrs
             and attrs["field_type"] != field.field_type
         ):
-            errors["field_type"] = (
-                f"Das Feld ist bei {n} Personen ausgefüllt; der Typ lässt sich nicht mehr ändern. "
-                "Bitte ein neues Feld anlegen und dieses archivieren."
-            )
+            errors["field_type"] = gettext(
+                "Das Feld ist bei {n} Personen ausgefüllt; der Typ lässt sich "
+                "nicht mehr ändern. Bitte ein neues Feld anlegen und dieses "
+                "archivieren."
+            ).format(n=n)
         if field.repeatable and "subfields" in attrs:
             new = {sub["key"]: sub for sub in attrs["subfields"]}
             drop = []
@@ -134,15 +136,15 @@ class FieldDefinitionSerializer(ModelCleanMixin, serializers.ModelSerializer):
                 if old["key"] not in new:
                     drop.append(old["key"])
                     if not self.context.get("with_values"):
-                        errors["subfields"] = (
-                            f"„{old['label']}“ ist bei {used} Personen ausgefüllt. "
-                            "Entfernen geht nur ausdrücklich samt diesen Werten."
-                        )
+                        errors["subfields"] = gettext(
+                            "„{x0}“ ist bei {used} Personen ausgefüllt. Entfernen geht nur "
+                            "ausdrücklich samt diesen Werten."
+                        ).format(x0=old["label"], used=used)
                 elif new[old["key"]]["type"] != old["type"]:
-                    errors["subfields"] = (
-                        f"„{old['label']}“ ist bei {used} Personen ausgefüllt; "
-                        "der Typ lässt sich nicht mehr ändern."
-                    )
+                    errors["subfields"] = gettext(
+                        "„{x0}“ ist bei {used} Personen ausgefüllt; der Typ lässt sich "
+                        "nicht mehr ändern."
+                    ).format(x0=old["label"], used=used)
             self._drop_keys = drop
         if errors:
             raise serializers.ValidationError(errors)
@@ -306,7 +308,7 @@ class MemberFieldsView(OrgScopedMixin, APIView):
         for def_id, raw in incoming.items():
             definition = definitions.get(str(def_id))
             if definition is None:
-                errors[def_id] = "Unbekanntes Feld."
+                errors[def_id] = gettext("Unbekanntes Feld.")
                 continue
             try:
                 value = clean_value(definition, raw)

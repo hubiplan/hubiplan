@@ -105,7 +105,7 @@ export function PublicationSection({
                       </small>
                     )}
                   </td>
-                  <td>{c.published ? 'ja' : 'nein'}</td>
+                  <td>{c.published ? t('ja') : t('nein')}</td>
                   {canEdit && (
                     <td>
                       <button

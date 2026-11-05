@@ -33,7 +33,9 @@ import zipfile
 from dataclasses import dataclass, field
 from xml.sax.saxutils import escape
 
-from django.utils import timezone
+from django.utils import timezone, translation
+
+from core.i18n import german
 
 from . import services
 from .models import Account, Booking, CashReceipt, TaxArea
@@ -191,6 +193,7 @@ def index_xml(org, label: str, start, end, tables: list[Table]) -> bytes:
     return "\n".join(out).encode("utf-8")
 
 
+@translation.override("de")
 def build(org, year: int):
     """ZIP als temporäre Datei (Belege können groß sein); Rückgabe: offene Datei."""
     start, end = org.fiscal_range(year)
@@ -267,12 +270,12 @@ def build(org, year: int):
             t.add(
                 b.display_number,
                 _date(b.date),
-                b.get_kind_display(),
+                german(b.get_kind_display),
                 _money(b.amount),
                 b.account.name,
                 b.to_account.name if b.to_account_id else "",
                 b.category_label or "",
-                TAX_AREA_LABELS.get(b.tax_area_value, ""),
+                german(TAX_AREA_LABELS.get(b.tax_area_value, "")),
                 b.text,
                 b.counterparty,
                 b.reference,
@@ -304,7 +307,7 @@ def build(org, year: int):
         for a in Account.objects.filter(organization=org).order_by("position", "name"):
             t.add(
                 a.name,
-                a.get_kind_display(),
+                german(a.get_kind_display),
                 a.iban,
                 _money(a.opening_balance),
                 _date(a.opening_date),
@@ -344,11 +347,11 @@ def build(org, year: int):
             t.add(
                 q.number,
                 _date(q.receipt_date),
-                q.get_direction_display(),
+                german(q.get_direction_display),
                 _money(q.amount),
                 q.counterparty_name,
                 q.purpose,
-                q.get_status_display(),
+                german(q.get_status_display),
                 q.treasurer_name,
                 _stamp(q.counterparty_signed_at),
                 q.no_signature_reason,
@@ -456,7 +459,7 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
             i.subject,
             _money(i.total),
             _money(i.paid),
-            i.get_status_display(),
+            german(i.get_status_display),
             _stamp(i.cancelled_at),
             i.dunning_level,
             path,
@@ -505,7 +508,7 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
             p.invoice.display_number,
             _date(p.date),
             _money(p.amount),
-            p.get_method_display(),
+            german(p.get_method_display),
             p.booking.display_number,
         )
     dun = Table(
@@ -592,7 +595,7 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
             _date(r.collection_date),
             r.account.name,
             r.message_id,
-            r.get_status_display(),
+            german(r.get_status_display),
             _money(r.total),
             path,
             digest,
@@ -639,7 +642,7 @@ def _donation_tables(org, start, end, add_file) -> list[Table]:
     ):
         don.add(
             _date(d.date),
-            d.get_kind_display(),
+            german(d.get_kind_display),
             _money(d.amount),
             d.donor_name,
             "ja" if d.waiver else "nein",
@@ -673,7 +676,7 @@ def _donation_tables(org, start, end, add_file) -> list[Table]:
         path = add_file(f"zuwendungsbestaetigungen/{s.number}.pdf", s.file) if s.file else ""
         st.add(
             s.number,
-            s.get_kind_display(),
+            german(s.get_kind_display),
             s.donor_name,
             _money(s.total),
             _date(s.period_from),
@@ -775,7 +778,7 @@ def _bank_tables(org, start, end, add_file) -> list[Table]:
             line.iban,
             line.purpose,
             line.end_to_end,
-            line.get_status_display(),
+            german(line.get_status_display),
             line.booking.display_number if line.booking_id else "",
             line.statement_id,
         )
@@ -831,13 +834,13 @@ def _reserve_table(org, start, end) -> Table:
         opening = reserves.balance(r, before)
         if not moves and not opening:
             continue
-        common = (r.name, r.get_kind_display(), r.purpose)
+        common = (r.name, german(r.get_kind_display), r.purpose)
         t.add(*common, _date(start), "Stand zu Beginn", _money(opening), "", "")
         for m in moves:
             t.add(
                 *common,
                 _date(m.date),
-                m.get_direction_display(),
+                german(m.get_direction_display),
                 _money(m.amount),
                 m.note,
                 m.created_by_name,
@@ -906,7 +909,7 @@ def _cash_count_table(org, start, end, add_file) -> Table:
         )
         t.add(
             item.pk,
-            item.get_kind_display(),
+            german(item.get_kind_display),
             _date(item.date),
             item.account.name,
             item.title,
@@ -970,7 +973,7 @@ def _protocol_table(org, start) -> Table:
         t.add(
             _stamp(e.timestamp),
             e.user_email,
-            e.get_action_display(),
+            german(e.get_action_display),
             e.object_type,
             e.object_id,
             e.object_repr,

@@ -376,7 +376,7 @@ export function MemberListPage() {
                   {tm.own
                     ? tm.name
                     : t('{name} ({owner_name})', { name: tm.name, owner_name: tm.owner_name })}
-                  {tm.is_archived ? ' (archiviert)' : ''}
+                  {tm.is_archived ? t(' (archiviert)') : ''}
                 </option>
               ))}
             </select>

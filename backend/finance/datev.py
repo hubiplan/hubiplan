@@ -18,6 +18,7 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.utils.translation import gettext
 
 from .models import Booking
 
@@ -52,11 +53,11 @@ def _amount(value: Decimal) -> str:
 def check_settings(org) -> list[str]:
     problems = []
     if not org.datev_enabled:
-        problems.append("Der DATEV-Export ist nicht eingeschaltet.")
+        problems.append(gettext("Der DATEV-Export ist nicht eingeschaltet."))
     if not (org.datev_consultant or "").isdigit():
-        problems.append("Beraternummer fehlt.")
+        problems.append(gettext("Beraternummer fehlt."))
     if not (org.datev_client or "").isdigit():
-        problems.append("Mandantennummer fehlt.")
+        problems.append(gettext("Mandantennummer fehlt."))
     return problems
 
 

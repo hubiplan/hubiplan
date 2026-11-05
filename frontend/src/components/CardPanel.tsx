@@ -130,8 +130,8 @@ function CardView({
       <div className="stack-sm">
         {revoked ? (
           <Alert kind="info">
-            {t('Gesperrt seit')} {formatDateTime(card.revoked_at ?? '')}. Beim Scannen erscheint
-            „ungültig“.
+            {t('Gesperrt seit')} {formatDateTime(card.revoked_at ?? '')}
+            {t('. Beim Scannen erscheint „ungültig“.')}
           </Alert>
         ) : (
           <p className="small">

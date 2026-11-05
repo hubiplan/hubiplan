@@ -16,3 +16,7 @@ Each entry names its unit and, where applicable, its external calendar, so you c
 When creating or editing an event, enable **Hide end time on the website** to show only the start time publicly. The internal calendar and calendar subscription keep the end time. For recurring events, the setting applies to all occurrences.
 
 After successfully accepting, declining or withdrawing your response, a confirmation is provided as a status message for screen readers. Focus stays at the action when accepting or declining; after withdrawal it moves to **Accept**. An error produces no success confirmation; you can retry your response.
+
+Create a personal calendar-subscription link for your own calendar app. Keep it private. Creating a new link invalidates the previous link. A status confirms when your link is ready.
+
+![Create a personal calendar subscription](bild:kalender-abo)

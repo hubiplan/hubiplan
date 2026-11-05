@@ -119,7 +119,7 @@ export function TargetSettings({
           ) : (
             ''
           )}
-          {t(', höchstens')} {chosen.max_decimal.replace('.', ',')} in{' '}
+          {t(', höchstens')} {chosen.max_decimal.replace('.', ',')} {t('in')}{' '}
           <Term k="comp_decimal">{t('Zehnteln')}</Term>
           {chosen.black_diameter ? (
             <>
@@ -266,7 +266,7 @@ export function TargetSettings({
                       )
                     }
                   >
-                    entfernen
+                    {t('entfernen')}
                   </button>
                 </li>
               ))}

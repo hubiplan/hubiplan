@@ -92,7 +92,9 @@ export function AccountsPage() {
                 </td>
                 <td>
                   {euro(a.opening_balance)}
-                  <div className="muted small">zum {formatDate(a.opening_date)}</div>
+                  <div className="muted small">
+                    {t('zum')} {formatDate(a.opening_date)}
+                  </div>
                 </td>
                 <td className="num">
                   <strong>{euro(a.balance)}</strong>
@@ -314,7 +316,7 @@ function AccountForm({
           <div className="field">
             <span>&nbsp;</span>
             <Checkbox
-              label="aktiv"
+              label={t('aktiv')}
               checked={v.is_active}
               onChange={(val) => set('is_active', val)}
             />
@@ -469,7 +471,7 @@ export function CategoriesPage() {
                 {t('„{name}“ wird noch verwendet und wird deshalb', {
                   name: removing.category.name,
                 })}{' '}
-                <strong>archiviert</strong> {t('statt gelöscht:')}
+                <strong>{t('archiviert')}</strong> {t('statt gelöscht:')}
               </p>
               <ul>
                 {removing.usage.reasons.map((r) => (

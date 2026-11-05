@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
 from core.encfields import EncryptedCharField, EncryptedJSONField
+from core.i18n import date_text
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
 
@@ -239,39 +240,38 @@ class Booking(models.Model):
         errors: dict[str, str] = {}
         self.counterparty = " ".join((self.counterparty or "").split())
         if self.amount is not None and self.amount <= 0:
-            errors["amount"] = "Der Betrag muss größer als 0 sein."
+            errors["amount"] = gettext("Der Betrag muss größer als 0 sein.")
         if self.kind == self.Kind.TRANSFER:
             if not self.to_account_id:
-                errors["to_account"] = "Bitte das Zielkonto wählen."
+                errors["to_account"] = gettext("Bitte das Zielkonto wählen.")
             elif self.to_account_id == self.account_id:
-                errors["to_account"] = "Zielkonto und Konto müssen verschieden sein."
+                errors["to_account"] = gettext("Zielkonto und Konto müssen verschieden sein.")
             self.category = None
             self.project = None
             self.counterparty = ""
         else:
             self.to_account = None
             if not self.category_id:
-                errors["category"] = "Bitte eine Kategorie wählen."
+                errors["category"] = gettext("Bitte eine Kategorie wählen.")
             elif not self.category.allows(self.kind):
-                errors["category"] = "Die Kategorie passt nicht zu dieser Art der Buchung."
+                errors["category"] = gettext("Die Kategorie passt nicht zu dieser Art der Buchung.")
         if self.date and self.account_id and self.date < self.account.opening_date:
-            errors["date"] = (
-                f"Das Datum liegt vor dem Stichtag des Anfangsbestands von "
-                f"„{self.account.name}“ ({self.account.opening_date:%d.%m.%Y})."
-            )
+            errors["date"] = gettext(
+                "Das Datum liegt vor dem Stichtag des Anfangsbestands von „{x0}“ ({x1})."
+            ).format(x0=self.account.name, x1=date_text(self.account.opening_date))
         if (
             self.date
             and self.to_account_id
             and self.to_account_id != self.account_id
             and self.date < self.to_account.opening_date
         ):
-            errors["date"] = "Das Datum liegt vor dem Stichtag des Zielkontos."
+            errors["date"] = gettext("Das Datum liegt vor dem Stichtag des Zielkontos.")
         if (
             self.project_id
             and self.organization_id
             and self.project.organization_id != self.organization_id
         ):
-            errors["project"] = "Unbekannte Veranstaltung."
+            errors["project"] = gettext("Unbekannte Veranstaltung.")
         if errors:
             raise ValidationError(errors)
 
@@ -428,9 +428,9 @@ class Project(models.Model):
     """
 
     class Status(models.TextChoices):
-        PLANNED = "planned", "geplant"
-        RUNNING = "running", "laufend"
-        DONE = "done", "abgeschlossen"
+        PLANNED = "planned", gettext_lazy("geplant")
+        RUNNING = "running", gettext_lazy("laufend")
+        DONE = "done", gettext_lazy("abgeschlossen")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -477,10 +477,10 @@ class Project(models.Model):
     def clean(self):
         errors: dict[str, str] = {}
         if self.ends_on and self.starts_on and self.ends_on < self.starts_on:
-            errors["ends_on"] = "Das Ende liegt vor dem Beginn."
+            errors["ends_on"] = gettext("Das Ende liegt vor dem Beginn.")
         if self.organization_id:
             if self.series_id and self.series.organization_id != self.organization_id:
-                errors["series"] = "Unbekannte Reihe."
+                errors["series"] = gettext("Unbekannte Reihe.")
             if self.department_id and self.department.organization_id != self.organization_id:
                 from organizations.terms import fill
 
@@ -504,8 +504,8 @@ class CashReceipt(models.Model):
 
     class Status(models.TextChoices):
         DRAFT = "draft", gettext_lazy("Entwurf")
-        FINAL = "final", "abgeschlossen"
-        CANCELLED = "cancelled", "storniert"
+        FINAL = "final", gettext_lazy("abgeschlossen")
+        CANCELLED = "cancelled", gettext_lazy("storniert")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
@@ -869,8 +869,8 @@ class BankLine(models.Model):
     """Ein Umsatz aus dem Kontoauszug; wird zugeordnet, gebucht oder übergangen."""
 
     class Status(models.TextChoices):
-        OPEN = "open", "offen"
-        DONE = "done", "erledigt"
+        OPEN = "open", gettext_lazy("offen")
+        DONE = "done", gettext_lazy("erledigt")
         IGNORED = "ignored", gettext_lazy("übergangen")
 
     class Suggestion(models.TextChoices):
