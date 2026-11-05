@@ -941,6 +941,11 @@ fieldset {
   margin-top: 0.3rem;
 }
 
+.checkbox:has(input[aria-busy='true']),
+.checkbox input[aria-busy='true'] {
+  cursor: progress;
+}
+
 /* Kästchen in einem Formularfeld nicht wie ein Textfeld auf volle Breite ziehen */
 .field .checkbox input {
   width: auto;
