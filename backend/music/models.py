@@ -382,6 +382,49 @@ class PreviousPerformanceInvoice(models.Model):
         return f"Frühere Auftrittsrechnung {self.pk}"
 
 
+class MusicReminderPreference(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    enabled = models.BooleanField(default=False)
+    days_ahead = models.PositiveSmallIntegerField(default=7)
+    scores = models.BooleanField(default=True)
+    equipment = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "user"], name="music_reminder_preference_once"
+            )
+        ]
+
+    def __str__(self):
+        return f"Musikerinnerungen {self.pk}"
+
+
+class MusicReminderTask(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    preference = models.ForeignKey(
+        MusicReminderPreference, on_delete=models.CASCADE, related_name="tasks"
+    )
+    kind = models.CharField(max_length=16)
+    source = models.PositiveBigIntegerField()
+    deadline = models.DateField()
+    todo = models.OneToOneField("todos.Todo", on_delete=models.SET_NULL, null=True, blank=True)
+    managed_version = models.PositiveIntegerField(default=1)
+    auto_closed = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["preference", "kind", "source", "deadline"],
+                name="music_reminder_source_once",
+            )
+        ]
+
+    def __str__(self):
+        return f"Musikerinnerungsaufgabe {self.pk}"
+
+
 class Equipment(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     item = models.OneToOneField(

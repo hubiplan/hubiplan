@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
@@ -61,6 +61,7 @@ export function EquipmentPage() {
 }
 
 function EquipmentWorkspace() {
+  const [query] = useSearchParams()
   const org = useActiveOrg()
   const url = `/api/orgs/${org.id}/music/equipment/`
   const load = useLoad(
@@ -137,7 +138,16 @@ function EquipmentWorkspace() {
         />
       )}
       {!data.items.length && <MusicEmptyState />}
+      {(query.has('ausleihe') || query.has('wartung')) && (
+        <Link to="/musik?ausstattung=1">{t('Gesamte Ausstattung anzeigen')}</Link>
+      )}
       {data.items
+        .filter(
+          (item) =>
+            (!query.has('ausleihe') ||
+              item.loans.some((loan) => String(loan.id) === query.get('ausleihe'))) &&
+            (!query.has('wartung') || String(item.id) === query.get('wartung')),
+        )
         .filter((x) =>
           [x.title, x.number, x.instrument, x.size]
             .join(' ')

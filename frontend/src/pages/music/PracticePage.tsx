@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { GuestAccessPanel } from './GuestAccessPanel.tsx'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmLeave } from '../../components/leaveGuard.ts'
@@ -47,6 +47,7 @@ type Occurrence = {
 }
 
 export function PracticePage() {
+  const [query] = useSearchParams()
   const org = useActiveOrg(),
     base = `/api/orgs/${org.id}/music/`
   const load = useLoad(async () => {
@@ -83,7 +84,7 @@ export function PracticePage() {
       events,
     }
   }, [org.id])
-  const [tab, setTab] = useState('overview'),
+  const [tab, setTab] = useState(query.has('notenausgabe') ? 'loans' : 'overview'),
     [selected, setSelected] = useState<Row | 'new' | null>(null),
     [program, setProgram] = useState<Occurrence | null>(null),
     [error, setError] = useState(''),
@@ -144,9 +145,17 @@ export function PracticePage() {
     invitations: t('Probeneinteilung'),
     loans: t('Notenausgabe'),
   }
-  const rows = tab === 'overview' ? [] : d[tab as 'rehearsals' | 'items' | 'invitations' | 'loans']
+  const rows = (
+    tab === 'overview' ? [] : d[tab as 'rehearsals' | 'items' | 'invitations' | 'loans']
+  ).filter(
+    (row) =>
+      tab !== 'loans' || !query.has('notenausgabe') || String(row.id) === query.get('notenausgabe'),
+  )
   return (
     <section className="stack music-page">
+      {query.has('notenausgabe') && (
+        <Link to="/musik?proben=1">{t('Alle Notenausgaben anzeigen')}</Link>
+      )}
       {guest && (
         <GuestAccessPanel
           key={`${guest.invitation}-${guest.original}`}

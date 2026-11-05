@@ -41,6 +41,7 @@ export interface Todo {
   } | null
   title: string
   description: string
+  music_url?: string
   due_date: string | null
   due_time: string | null
   timezone: string

@@ -7,23 +7,25 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 export function MusicLayout({ children }: { children: ReactNode }) {
   const [params] = useSearchParams()
   const org = useActiveOrg()
-  const area = params.get('auszahlungen')
-    ? 'payouts'
-    : params.get('uebersicht')
-      ? 'overview'
-      : params.get('ausstattung')
-        ? 'equipment'
-        : params.get('noten')
-          ? 'scores'
-          : params.get('proben')
-            ? 'practice'
-            : params.get('vorlagen')
-              ? 'templates'
-              : params.get('verfuegbarkeit')
-                ? 'availability'
-                : ['musicians', 'skills'].includes(params.get('art') || '')
-                  ? 'musicians'
-                  : 'performances'
+  const area = params.get('erinnerungen')
+    ? 'reminders'
+    : params.get('auszahlungen')
+      ? 'payouts'
+      : params.get('uebersicht')
+        ? 'overview'
+        : params.get('ausstattung')
+          ? 'equipment'
+          : params.get('noten')
+            ? 'scores'
+            : params.get('proben')
+              ? 'practice'
+              : params.get('vorlagen')
+                ? 'templates'
+                : params.get('verfuegbarkeit')
+                  ? 'availability'
+                  : ['musicians', 'skills'].includes(params.get('art') || '')
+                    ? 'musicians'
+                    : 'performances'
   const items = [
     ['overview', '/musik?uebersicht=1', t('Auftrittsübersicht')],
     ['performances', '/musik', t('Auftritte')],
@@ -32,6 +34,9 @@ export function MusicLayout({ children }: { children: ReactNode }) {
     ['practice', '/musik?proben=1', t('Proben und Notenausgabe')],
     ['availability', '/musik?verfuegbarkeit=1', t('Verfügbarkeiten')],
     ['templates', '/musik?vorlagen=1', t('Besetzungsvorlagen')],
+    ...(org.modules.includes('todos') && org.permissions.includes('todos.view')
+      ? [['reminders', '/musik?erinnerungen=1', t('Erinnerungen')]]
+      : []),
     ...(org.modules.includes('finance') &&
     org.permissions.includes('finance.view') &&
     org.permissions.includes('events.view')

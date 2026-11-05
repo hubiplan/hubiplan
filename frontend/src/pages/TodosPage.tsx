@@ -192,6 +192,11 @@ function TodoWorkspace({ base }: { base: string }) {
       {selected && tab !== 'trash' && (
         <TodoEventLink base={base} todo={selected} onSaved={() => void reload()} />
       )}
+      {selected?.music_url && tab !== 'trash' && (
+        <p>
+          <Link to={selected.music_url}>{t('Zum Musikvorgang')}</Link>
+        </p>
+      )}
       {selected && tab !== 'trash' && (
         <MaterialReferences kind="todo" id={selected.id} sourceBase={base} />
       )}

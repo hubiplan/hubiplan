@@ -5960,5 +5960,21 @@
   "Auftragsbestätigung ausgegeben": "Order confirmation issued",
   "Archiviertes PDF herunterladen": "Download archived PDF",
   "Angebot": "Offer",
-  "Auftragsbestätigung": "Order confirmation"
+  "Auftragsbestätigung": "Order confirmation",
+  "Persönliche Musikerinnerungen": "Personal music reminders",
+  "Rückgaben und Wartungen als eigene private Aufgaben vormerken.": "Track returns and maintenance as your own private tasks.",
+  "Meine Aufgaben öffnen": "Open my tasks",
+  "Erinnerungseinstellungen gespeichert.": "Reminder settings saved.",
+  "Nur für dich und nur nach Aktivierung. Fällige Rückgaben und Wartungen erzeugen private Aufgaben; Benachrichtigungen folgen deinen vorhandenen Aufgabeneinstellungen. Es werden keine Aufgaben an andere Personen verteilt.": "Only for you and only after you enable it. Upcoming returns and maintenance create private tasks; notifications follow your existing task settings. Tasks are not distributed to other people.",
+  "Meine Erinnerungsauswahl": "My reminder selection",
+  "Musikerinnerungen aktivieren": "Enable music reminders",
+  "Aufgaben so viele Tage vorher anlegen": "Create tasks this many days ahead",
+  "Notenrückgaben": "Sheet music returns",
+  "Rückgaben und Wartungen der Ausstattung": "Equipment returns and maintenance",
+  "Erinnerungseinstellungen speichern": "Save reminder settings",
+  "Unveränderte Erinnerungsaufgaben werden nach Rückgabe oder Wartung automatisch erledigt. Selbst bearbeitete oder gelöschte Aufgaben werden nicht überschrieben oder erneut angelegt. Ein neuer Fälligkeitstag erzeugt eine neue Erinnerung.": "Unchanged reminder tasks are automatically completed after return or maintenance. Tasks you edited or deleted are not overwritten or recreated. A new due date creates a new reminder.",
+  "Alle Notenausgaben anzeigen": "Show all sheet music loans",
+  "Gesamte Ausstattung anzeigen": "Show all equipment",
+  "Erinnerungen": "Reminders",
+  "Zum Musikvorgang": "Open music record"
 }

@@ -53,6 +53,8 @@ class TodoInput(serializers.Serializer):
 
 
 def data_for(todo, user, scope):
+    from music.custody_reminders import task_link
+
     from .event_links import event_data
     from .reminders import highlight
     from .remote import completion_allowed
@@ -60,6 +62,7 @@ def data_for(todo, user, scope):
     from .sharing import participants
 
     return {
+        "music_url": task_link(todo, scope),
         "remote_mode": todo.remote_mode,
         "event": event_data(todo, user, scope),
         "id": todo.pk,
