@@ -14,8 +14,8 @@ from django.core.exceptions import ValidationError
 from django.test import override_settings
 
 from billing import delivery, hybrid
-from billing.einvoice_retention import export_table, purge_files
 from billing.advances import split_amount
+from billing.einvoice_retention import export_table, purge_files
 from billing.models import Invoice, InvoiceAdvance, InvoiceDelivery, InvoiceHybridArtifact
 from core.tenancy import tenant_context
 from finance.einvoice import parse_xml, xml_from_pdf

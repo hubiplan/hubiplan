@@ -332,10 +332,8 @@ function AdvanceSelection({
           key={row.id}
           label={`${row.number} · ${euro(row.paid)}`}
           checked={selected.includes(row.id)}
-          onChange={(e) =>
-            update(
-              e.target.checked ? [...selected, row.id] : selected.filter((id) => id !== row.id),
-            )
+          onChange={(checked) =>
+            update(checked ? [...selected, row.id] : selected.filter((id) => id !== row.id))
           }
         />
       ))}
