@@ -169,6 +169,7 @@ describe('Scheibe und Wertung', () => {
     expect(screen.getByText(/Alte Kyffhäuser-Scheibe/)).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Schießbedingungen übernehmen' }))
     await waitFor(() => expect(program.target).toBe('lg10_kyf'))
+    await waitFor(() => expect(screen.getByLabelText('Wertungsart')).toHaveValue('ringe'))
     await user.click(screen.getByRole('button', { name: 'Wertungen' }))
     await user.click(screen.getByText('Wertung bearbeiten'))
     const method = await screen.findByLabelText('Wertungsart')
