@@ -18,9 +18,12 @@ async function report(err: unknown) {
 export function RolePreviewSelect({
   org,
   onChanged,
+  labelled = false,
 }: {
   org: OrgSummary
   onChanged: () => Promise<void> | void
+  /** sichtbare Beschriftung (im Kontomenü) */
+  labelled?: boolean
 }) {
   const preview = org.role_preview
   const available = !!preview?.available
@@ -56,8 +59,8 @@ export function RolePreviewSelect({
   }
 
   return (
-    <label className="org-switch role-preview-switch">
-      <span className="sr-only">{t('Ansicht als Rolle')}</span>
+    <label className={`org-switch role-preview-switch${labelled ? ' field' : ''}`}>
+      <span className={labelled ? 'small muted' : 'sr-only'}>{t('Ansicht als Rolle')}</span>
       <select
         value={active ? String(active.id) : ''}
         onChange={(e) => void choose(e.target.value)}

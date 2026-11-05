@@ -347,10 +347,11 @@ export function DataTable<T>({
           <button
             type="button"
             className="button button-ghost"
+            aria-label={t('Vorherige Seite')}
             disabled={current <= 1}
             onClick={() => setPage(current - 1)}
           >
-            {t('Zurück')}
+            <span aria-hidden="true">‹</span> {t('Vorherige')}
           </button>
           <span className="small">
             {visible.length === 0 ? 0 : start + 1}
@@ -364,10 +365,11 @@ export function DataTable<T>({
           <button
             type="button"
             className="button button-ghost"
+            aria-label={t('Nächste Seite')}
             disabled={current >= pages}
             onClick={() => setPage(current + 1)}
           >
-            {t('Weiter')}
+            {t('Nächste')} <span aria-hidden="true">›</span>
           </button>
         </div>
       ) : null}

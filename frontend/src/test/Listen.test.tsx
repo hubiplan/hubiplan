@@ -58,7 +58,7 @@ describe('Änderungsprotokoll', () => {
     const user = userEvent.setup()
     expect(await screen.findByText(/Person 230/)).toBeInTheDocument()
     expect(screen.getByText('230 Einträge · Seite 1 von 5')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Weiter' }))
+    await user.click(screen.getByRole('button', { name: 'Nächste Seite' }))
     expect(await screen.findByText(/Person 180/)).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Suchen'), 'Person 001')

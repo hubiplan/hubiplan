@@ -59,6 +59,7 @@ Verbindlich für die englische Oberfläche von HUBIplan, der App und der Vereins
 | Rolle | role |
 | Rücklage | reserve |
 | Rundschreiben | circular |
+| Mitteilungen (Mitgliedersicht der Rundschreiben) | messages |
 | Satzung | constitution |
 | Schützenkönig | shooting king (Schützenkönig) |
 | Schützenverein | marksmen's club |

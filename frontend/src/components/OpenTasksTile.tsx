@@ -1,4 +1,4 @@
-// Startseiten-Kachel „Offene Aufgaben“: Vorgänge, die eine Entscheidung brauchen.
+// Startseiten-Kachel „Zu erledigen“: Aufgaben, Freigaben, Anfragen, überfällige Rechnungen.
 import { Link } from 'react-router-dom'
 import { orgApi } from '../api/orgs.ts'
 import type { OrgSummary } from '../api/orgs.ts'
@@ -16,10 +16,10 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
   const items = data?.items ?? []
   const [actionError, setActionError] = useState<string | null>(null)
   return (
-    <div className="card tile task-overview">
+    <div className="card tile task-overview tile-wide">
       <div className="task-overview-head">
         <h2>
-          {t('Offene Aufgaben')}
+          {t('Zu erledigen')}
           {items.length > 0 && <span className="badge">{items.length}</span>}
         </h2>
       </div>
@@ -30,9 +30,7 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
           onRetry={reload}
         />
       )}
-      {data && items.length === 0 && (
-        <p className="muted">{t('Zurzeit ist nichts zu entscheiden.')}</p>
-      )}
+      {data && items.length === 0 && <p className="muted">{t('Keine offenen Aufgaben.')}</p>}
       {items.length > 0 && (
         <ul className="plain-list task-overview-list">
           {items.map((tm, i) => (

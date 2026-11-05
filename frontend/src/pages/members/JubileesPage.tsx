@@ -241,7 +241,7 @@ export function JubileeTile() {
       ) : (
         <ul className="plain-list">
           {groupByPerson(data.results)
-            .slice(0, 6)
+            .slice(0, 5)
             .map((p) => (
               <li key={p.member_id} className="tile-entry">
                 <Link to={`/mitglieder/${p.member_id}`} className="tile-entry-title">
@@ -272,7 +272,7 @@ export function JubileeTile() {
 }
 
 const BIRTHDAY_DAYS = 30
-const BIRTHDAY_PREVIEW = 8
+const BIRTHDAY_PREVIEW = 5
 // Eigene Kürzel: Intl schreibt je nach Laufzeit „Do“ oder „Do.“
 const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'].map((w) => tc('Wochentag', w))
 

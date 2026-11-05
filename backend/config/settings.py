@@ -428,6 +428,7 @@ LANGUAGE_CODE = "de"
 LANGUAGES = [("de", "Deutsch"), ("en", "English")]
 HUBIPLAN_LANGUAGES = env_list("HUBIPLAN_LANGUAGES", "de")
 LOCALE_PATHS = [BASE_DIR / "locale"]
+FORMAT_MODULE_PATH = ["config.formats"]
 TIME_ZONE = "Europe/Berlin"
 USE_I18N = True
 USE_TZ = True

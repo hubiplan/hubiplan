@@ -10,11 +10,13 @@ from __future__ import annotations
 import datetime
 
 from django.utils import timezone
+from django.utils.formats import date_format
+from django.utils.translation import gettext, ngettext
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import EVENTS_MANAGE, MEMBERS_EDIT, PHOTOS_MANAGE
+from access.catalog import BILLING_VIEW, EVENTS_MANAGE, MEMBERS_EDIT, PHOTOS_MANAGE
 from core.api_base import OrgScopedMixin
 from organizations.models import Organization
 
@@ -42,9 +44,9 @@ def member_tasks(org: Organization, perms: set[str]) -> list[dict]:
             items.append(
                 {
                     "kind": "change_request",
-                    "kind_label": "Änderungsmeldung",
+                    "kind_label": gettext("Änderungsmeldung"),
                     "title": _person(cr.membership),
-                    "detail": "möchte eigene Daten ändern",
+                    "detail": gettext("möchte eigene Daten ändern"),
                     "created_at": cr.created_at,
                     "link": "/mitglieder/anfragen/aenderungen",
                     "ref": cr.pk,
@@ -57,9 +59,9 @@ def member_tasks(org: Organization, perms: set[str]) -> list[dict]:
             items.append(
                 {
                     "kind": "transfer",
-                    "kind_label": "Wechselanfrage",
+                    "kind_label": gettext("Wechselanfrage"),
                     "title": f"{tr.person.first_name} {tr.person.last_name}",
-                    "detail": f"{tr.to_org.display_name} möchte aufnehmen",
+                    "detail": gettext("{org} möchte aufnehmen").format(org=tr.to_org.display_name),
                     "created_at": tr.created_at,
                     "link": "/mitglieder/anfragen",
                 }
@@ -71,9 +73,9 @@ def member_tasks(org: Organization, perms: set[str]) -> list[dict]:
             items.append(
                 {
                     "kind": "photo",
-                    "kind_label": "Foto freigeben",
+                    "kind_label": gettext("Foto freigeben"),
                     "title": _person(photo.membership),
-                    "detail": "hat ein Foto hochgeladen",
+                    "detail": gettext("hat ein Foto hochgeladen"),
                     "created_at": photo.created_at,
                     "link": f"/mitglieder/{photo.membership_id}",
                     "ref": photo.pk,
@@ -110,14 +112,48 @@ def event_tasks(org: Organization, perms: set[str]) -> list[dict]:
     return [
         {
             "kind": "event",
-            "kind_label": "Rückmeldungen",
+            "kind_label": gettext("Rückmeldungen"),
             "title": e.title,
-            "detail": f"am {local(e.starts_at):%d.%m.%Y}: {e.yes} Zusagen, {e.no} Absagen",
+            "detail": gettext("am {date}: {yes} Zusagen, {no} Absagen").format(
+                date=date_format(local(e.starts_at).date(), "SHORT_DATE_FORMAT", use_l10n=True),
+                yes=e.yes,
+                no=e.no,
+            ),
             "created_at": e.starts_at,
             "link": f"/termine?termin={e.pk}&datum={local(e.starts_at):%Y-%m-%d}",
             "ref": e.pk,
         }
         for e in events
+    ]
+
+
+def billing_tasks(org: Organization, perms: set[str]) -> list[dict]:
+    """Überfällige Rechnungen als ein Eintrag „Zu erledigen“ (UX-Audit 10.6)."""
+    from billing.models import Invoice
+
+    if BILLING_VIEW not in perms or "billing" not in (org.enabled_modules or []):
+        return []
+    overdue = Invoice.objects.filter(
+        organization=org, status=Invoice.Status.OPEN, due_date__lt=timezone.localdate()
+    )
+    n = overdue.count()
+    if not n:
+        return []
+    first = overdue.order_by("due_date").values_list("due_date", flat=True).first()
+    return [
+        {
+            "kind": "invoices_overdue",
+            "kind_label": gettext("Rechnungen"),
+            "title": ngettext("{n} Rechnung überfällig", "{n} Rechnungen überfällig", n).format(
+                n=n
+            ),
+            "detail": gettext("älteste fällig seit {date}").format(
+                date=date_format(first, "SHORT_DATE_FORMAT", use_l10n=True)
+            ),
+            "created_at": first,
+            "link": "/finanzen/rechnungen?status=open&ueberfaellig=1",
+            "highlight": True,
+        }
     ]
 
 
@@ -131,6 +167,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
         if org.keeps_members and "members" in (org.enabled_modules or []):
             items += member_tasks(org, perms)
         items += event_tasks(org, perms)
+        items += billing_tasks(org, perms)
         from todos.open_tasks import todo_tasks
 
         items += todo_tasks(request.user, org, perms)

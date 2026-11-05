@@ -253,3 +253,16 @@ def test_finanzbelege_bleiben_deutsch():
         assert i18n.german(gettext_lazy("Zusage")) == "Zusage"
         assert i18n.date_text(datetime.date(2026, 11, 1)) == "01/11/2026"
     assert i18n.date_text(datetime.date(2026, 11, 1)) == "01.11.2026"
+
+
+def test_kurzes_datum_auf_englisch_britisch():
+    """UX-Audit W-12: ein Datumsformat in der englischen Oberfläche (31/10/2026)."""
+    import datetime
+
+    from django.utils.formats import date_format
+
+    day = datetime.date(2026, 11, 19)
+    with translation.override("en"):
+        assert date_format(day, "SHORT_DATE_FORMAT", use_l10n=True) == "19/11/2026"
+    with translation.override("de"):
+        assert date_format(day, "SHORT_DATE_FORMAT", use_l10n=True) == "19.11.2026"

@@ -26,6 +26,7 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   // Nach einem Fehler steht der Fokus im Feld, das zu korrigieren ist (UX-Audit 05.11. W-03)
+  const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
   const codeRef = useRef<HTMLInputElement>(null)
 
@@ -45,19 +46,33 @@ export function LoginPage() {
     }
   }
 
-  function focusAfterError() {
+  function focusAfterError(target?: HTMLInputElement | null) {
     // Erst nach dem Rendern der Meldung, damit aria-describedby schon stimmt
     setTimeout(() => {
-      const field = step === 'mfa' ? codeRef.current : passwordRef.current
+      const field = target ?? (step === 'mfa' ? codeRef.current : passwordRef.current)
       field?.focus()
       field?.select()
     }, 0)
+  }
+
+  /** Eigene Meldung statt Browser-Hinweis in Browsersprache (W-18); leer = alles ausgefüllt. */
+  function missing(): [string, HTMLInputElement | null] | null {
+    if (step === 'mfa') return code.trim() ? null : [t('Bitte den Code eingeben.'), codeRef.current]
+    if (!email.trim()) return [t('Bitte E-Mail-Adresse eingeben.'), emailRef.current]
+    if (!password) return [t('Bitte Passwort eingeben.'), passwordRef.current]
+    return null
   }
 
   async function submit(e: FormEvent, action: () => Promise<LoginResult>) {
     e.preventDefault()
     // Gesperrt wird über aria-disabled: ein echtes disabled nähme dem Knopf den Fokus
     if (busy) return
+    const empty = missing()
+    if (empty) {
+      setError(empty[0])
+      focusAfterError(empty[1])
+      return
+    }
     setBusy(true)
     setError(null)
     try {
@@ -78,14 +93,17 @@ export function LoginPage() {
         </div>
 
         {step === 'password' ? (
-          <form onSubmit={(e) => submit(e, () => api.login(email.trim(), password))}>
+          <form noValidate onSubmit={(e) => submit(e, () => api.login(email.trim(), password))}>
             <h1>{t('Anmelden')}</h1>
             <label className="field">
               <span>{t('E-Mail-Adresse')}</span>
               <input
+                ref={emailRef}
                 type="email"
                 autoComplete="username"
                 required
+                aria-invalid={error && !email.trim() ? true : undefined}
+                aria-describedby={error ? 'anmelden-fehler' : undefined}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -127,7 +145,7 @@ export function LoginPage() {
             <RemoteLoginChoices target={target} />
           </form>
         ) : (
-          <form onSubmit={(e) => submit(e, () => api.authenticateMfa(code.trim()))}>
+          <form noValidate onSubmit={(e) => submit(e, () => api.authenticateMfa(code.trim()))}>
             <h1>{t('Bestätigungscode')}</h1>
             <p className="muted">
               {t(

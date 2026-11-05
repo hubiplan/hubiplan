@@ -132,7 +132,7 @@ export function PortalPage() {
       <Route
         path="rundschreiben"
         element={
-          <PortalSection title={t('Rundschreiben')}>
+          <PortalSection title={t('Mitteilungen')}>
             <PortalCirculars key={activePortal.id} accessId={activePortal.id} />
           </PortalSection>
         }
@@ -172,7 +172,7 @@ function PortalSection({ title, children }: { title: string; children: ReactNode
 }
 
 /** Aufgaben im Mitgliederbereich als Kacheln (Startseite und Übersicht). */
-export function PortalTasks({ entry }: { entry: PortalEntry }) {
+export function PortalTasks({ entry, skip = [] }: { entry: PortalEntry; skip?: string[] }) {
   const tasks: { to: string; title: string; text: string }[] = [
     {
       to: '/mein-bereich/aufgaben',
@@ -197,7 +197,7 @@ export function PortalTasks({ entry }: { entry: PortalEntry }) {
       ? [
           {
             to: '/mein-bereich/gemeldet',
-            title: t('Gemeldet'),
+            title: t('Meine Meldungen'),
             text: t('Wettbewerbe, für die der Verein dich gemeldet hat'),
           },
         ]
@@ -218,8 +218,8 @@ export function PortalTasks({ entry }: { entry: PortalEntry }) {
     },
     {
       to: '/mein-bereich/rundschreiben',
-      title: t('Rundschreiben'),
-      text: t('Empfangene Schreiben lesen'),
+      title: t('Mitteilungen'),
+      text: t('Mitteilungen des Vereins lesen'),
     },
     {
       to: '/mein-bereich/daten',
@@ -229,14 +229,16 @@ export function PortalTasks({ entry }: { entry: PortalEntry }) {
   ]
   return (
     <ul className="task-tiles">
-      {tasks.map((tmx) => (
-        <li key={tmx.to}>
-          <Link to={tmx.to} className="task-tile">
-            <strong>{tmx.title}</strong>
-            <span className="muted small">{tmx.text}</span>
-          </Link>
-        </li>
-      ))}
+      {tasks
+        .filter((tmx) => !skip.includes(tmx.to))
+        .map((tmx) => (
+          <li key={tmx.to}>
+            <Link to={tmx.to} className="task-tile">
+              <strong>{tmx.title}</strong>
+              <span className="muted small">{tmx.text}</span>
+            </Link>
+          </li>
+        ))}
     </ul>
   )
 }

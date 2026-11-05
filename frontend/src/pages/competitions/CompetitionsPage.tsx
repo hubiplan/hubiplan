@@ -17,6 +17,7 @@ import {
   type WebsiteMode,
 } from '../../api/competitions.ts'
 import { PERM } from '../../api/orgs.ts'
+import { ShootingSetupPage } from '../settings/OrganizationPage.tsx'
 import { DataTable } from '../../components/DataTable.tsx'
 import { choiceDialog, confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
@@ -66,6 +67,7 @@ export function CompetitionsPage() {
       <Route path="pokale" element={<TrophiesPage />} />
       <Route path="titel" element={<TitlesPage />} />
       <Route path="urkunden" element={<CertificateTemplatesPage />} />
+      <Route path="einrichtung" element={<ShootingSetupPage />} />
       <Route path=":id/*" element={<CompetitionArea />} />
     </Routes>
   )

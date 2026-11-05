@@ -1,6 +1,6 @@
 ---
 key: page.portal_invoices
-titel: My details › Invoices
+titel: My area › Invoices
 bereich: mein-bereich
 routen: [/mein-bereich/rechnungen]
 stichworte: [invoice, fee, paid, open]

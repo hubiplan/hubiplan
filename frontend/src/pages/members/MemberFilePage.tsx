@@ -104,7 +104,12 @@ export function MemberFilePage() {
       </nav>
       {tab === 'stammdaten' && (
         <div className="stack">
-          <MaterialReferences kind="member" id={data.id} sourceBase={`/api/orgs/${org.id}/`} />
+          <MaterialReferences
+            kind="member"
+            id={data.id}
+            sourceBase={`/api/orgs/${org.id}/`}
+            level={2}
+          />
           <PhotoSection
             key={`foto-${data.id}`}
             orgId={org.id}

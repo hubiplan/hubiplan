@@ -1,4 +1,4 @@
-// Mitgliederbereich: empfangene Rundschreiben lesen, Informationen abbestellen.
+// Mitgliederbereich: empfangene Mitteilungen (Rundschreiben) lesen, Informationen abbestellen.
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { portalCircularApi } from '../../api/circulars.ts'
@@ -64,7 +64,7 @@ export function PortalCirculars({ accessId }: { accessId: number }) {
   return (
     <div className="card card-wide">
       <h2 ref={listHeading} tabIndex={-1}>
-        {t('Rundschreiben')}
+        {t('Mitteilungen')}
       </h2>
       {raw !== null && (
         <section className="subcard" aria-busy={detail.loading}>
@@ -72,12 +72,12 @@ export function PortalCirculars({ accessId }: { accessId: number }) {
             {t('Zur Übersicht')}
           </button>
           {linked === null && (
-            <Alert kind="error">{t('Dieser Rundschreiben-Link ist ungültig.')}</Alert>
+            <Alert kind="error">{t('Dieser Link zur Mitteilung ist ungültig.')}</Alert>
           )}
-          {detail.loading && <p role="status">{t('Rundschreiben wird geladen …')}</p>}
+          {detail.loading && <p role="status">{t('Mitteilung wird geladen …')}</p>}
           {detail.error && (
             <LoadError
-              message={t('Das Rundschreiben konnte nicht geladen werden ({error}).', {
+              message={t('Die Mitteilung konnte nicht geladen werden ({error}).', {
                 error: detail.error,
               })}
               onRetry={() => void detail.reload()}
@@ -111,7 +111,7 @@ export function PortalCirculars({ accessId }: { accessId: number }) {
         </section>
       )}
       {list.data && list.data.length === 0 && (
-        <p className="muted">{t('Du hast noch keine Rundschreiben bekommen.')}</p>
+        <p className="muted">{t('Du hast noch keine Mitteilungen bekommen.')}</p>
       )}
       {list.data && list.data.length > 0 && (
         <ul className="plain-list">

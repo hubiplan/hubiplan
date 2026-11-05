@@ -154,7 +154,7 @@ describe('Mitgliederbereich nach Aufgaben', () => {
     renderApp('/mein-bereich')
     const user = userEvent.setup()
     expect(await screen.findByRole('heading', { name: 'Mein Bereich' })).toBeInTheDocument()
-    for (const name of ['Rechnungen', 'Rundschreiben', 'Meine Daten']) {
+    for (const name of ['Rechnungen', 'Mitteilungen', 'Meine Daten']) {
       expect(screen.getAllByRole('link', { name: new RegExp(name) }).length).toBeGreaterThan(0)
     }
     await user.click(screen.getByRole('link', { name: /Ausweis zeigen/ }))
@@ -375,5 +375,33 @@ describe('Mein Konto', () => {
     )
     await user.click(screen.getByRole('button', { name: 'Bestätigungslink senden' }))
     expect(await screen.findByText(/wartet auf Bestätigung/)).toBeInTheDocument()
+  })
+})
+
+describe('Persönliches im Kontomenü', () => {
+  it('führt aus der Verwaltung direkt zum eigenen Ausweis', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg()] }),
+      'GET /api/me/contexts/': () => ({
+        status: 200,
+        body: { departments: [], portal: [portalEntry] },
+      }),
+      'GET /api/portal/5/': () => ({ status: 200, body: portalDetail }),
+    })
+    renderApp('/')
+    const user = userEvent.setup()
+    await screen.findByRole('heading', { name: 'TV Beispielhausen' })
+    // Die Auswahl oben zeigt nur Verwaltungsbereiche
+    expect(screen.queryByRole('combobox', { name: 'Organisation wechseln' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: /Mein Konto/ }))
+    const menu = screen.getByRole('navigation', { name: 'Mein Konto' })
+    expect(within(menu).getByText('Mein Bereich')).toBeInTheDocument()
+    await user.click(within(menu).getByRole('button', { name: 'Mein Ausweis' }))
+    const nav = await screen.findByRole('navigation', { name: 'Module' })
+    expect(await within(nav).findByRole('link', { name: 'Ausweis' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
   })
 })

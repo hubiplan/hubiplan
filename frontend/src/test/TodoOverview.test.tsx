@@ -44,10 +44,12 @@ describe('Aufgabenübersicht', () => {
     await screen.findByText('Keine Aufgaben vorhanden.')
     expect(screen.queryByText('Aufgaben aus anderen Installationen')).not.toBeInTheDocument()
     expect(screen.queryByText('Aufgaben ohne verantwortliches Konto')).not.toBeInTheDocument()
-    const administration = screen.getByText('Verwaltung').closest('details')!
+    // „Verwaltung“ heißt auch eine Gruppe der Seitenleiste; hier ist der Aufklapper gemeint
+    const summary = screen.getByText('Verwaltung', { selector: 'summary, summary *' })
+    const administration = summary.closest('details')!
     expect(administration).not.toHaveAttribute('open')
     const user = userEvent.setup()
-    await user.click(screen.getByText('Verwaltung'))
+    await user.click(summary)
     const setting = await screen.findByRole('checkbox', { name: /nach 12 Monaten/ })
     await user.click(setting)
     await waitFor(() => expect(purge).toBe(true))

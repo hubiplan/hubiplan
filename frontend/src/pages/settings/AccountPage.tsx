@@ -271,7 +271,13 @@ function TwoFactorCard() {
             )}
           </p>
           <div className="totp-setup">
-            <QRCodeSVG value={totp.totpUrl} size={168} marginSize={2} />
+            <QRCodeSVG
+              value={totp.totpUrl}
+              size={168}
+              marginSize={2}
+              role="img"
+              aria-label={t('QR-Code für die Authenticator-App')}
+            />
             <p className="muted">
               {t('Manuell:')} <code>{totp.secret}</code>
             </p>
