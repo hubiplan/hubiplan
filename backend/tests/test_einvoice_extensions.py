@@ -301,3 +301,9 @@ def test_gateway_contract_blocks_redirects_and_mismatched_receipts(
     with override_settings(EINVOICE_GATEWAYS=bad):
         with pytest.raises(ValidationError):
             delivery.config(club)
+
+
+def test_server_credential_mapping_is_used_without_exposure(gateway, club, monkeypatch, settings):
+    monkeypatch.delenv("EXAMPLE_GATEWAY_TOKEN")
+    settings.EINVOICE_GATEWAY_TOKENS = {"EXAMPLE_GATEWAY_TOKEN": "private-server-value"}
+    assert delivery.config(club)["token"] == "private-server-value"
