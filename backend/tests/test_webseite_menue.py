@@ -98,7 +98,9 @@ class TestVerwaltung:
         url = f"/api/orgs/{orgs['a'].pk}/website/"
         data = c.get(url).json()
         keys = [i["key"] for i in data["website"]["menu_items"]]
-        assert keys[:4] == ["posts", "events", "board", "units"]
+        # „Mitglieder“ (Listen, Gedenken) steht ausgeschaltet nach dem Vorstand
+        assert keys[:4] == ["posts", "events", "board", "members"]
+        assert keys.index("units") > keys.index("members")
         assert f"page:{p.pk}" in keys and "social" not in keys
         assert [n["key"] for n in data["website"]["menu"]][:3] == ["posts", "events", "board"]
         # Kontakt nach vorn, Vorstand und Textseite unter Termine
