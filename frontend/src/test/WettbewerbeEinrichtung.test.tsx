@@ -139,12 +139,15 @@ it('übernimmt die Disziplin aus der Bildauswahl und speichert gemeinsame Beding
   await user.click(screen.getByRole('radio', { name: /Luftpistole 10 m/ }))
   expect(screen.getByText(/Luftpistole · 10 m · 4,5 mm/)).toBeVisible()
   expect(screen.queryByLabelText('Art')).toBeNull()
+  const shots = screen.getByLabelText('Schüsse pro Person')
+  await user.clear(shots)
+  await user.type(shots, '6')
   expect(calls.filter((call) => call.key.startsWith('PATCH'))).toHaveLength(0)
   await user.click(screen.getByRole('button', { name: 'Schießbedingungen übernehmen' }))
   await waitFor(() => expect(reload).toHaveBeenCalledOnce())
   expect(
     JSON.parse(String(calls.find((call) => call.key.startsWith('PATCH'))?.init?.body)),
-  ).toMatchObject({ target: 'lp10', shots: 5, confirm_recalculation: false })
+  ).toMatchObject({ target: 'lp10', shots: 6, confirm_recalculation: false })
 })
 
 it('übernimmt abgebrochene Änderungen mit vorhandenen Ergebnissen nicht', async () => {
@@ -202,5 +205,31 @@ it('bestätigt zwischenzeitlich auf einem anderen Gerät erfasste Ergebnisse ohn
   expect(JSON.parse(String(updates[1]?.init?.body))).toMatchObject({
     shots: 6,
     confirm_recalculation: true,
+  })
+})
+
+it('überträgt bei einer Umbenennung keine unveränderten Schießbedingungen', async () => {
+  const user = userEvent.setup(),
+    reload = vi.fn()
+  const comp = competition(true)
+  comp.programs!.push({ ...program, id: 20, name: 'Zweiter Durchgang' })
+  const calls = fakeApi({
+    'GET /api/orgs/7/competitions/targets/': () => ({ status: 200, body: catalog }),
+    'PATCH /api/orgs/7/competitions/3/programs/10/': () => ({ status: 200, body: program }),
+  })
+  render(
+    <MemoryRouter>
+      <ProgramsSetup org={7} comp={comp} reload={reload} />
+    </MemoryRouter>,
+  )
+  const names = await screen.findAllByLabelText('Bezeichnung des Durchgangs')
+  await user.clear(names[0]!)
+  await user.type(names[0]!, 'Neuer Name')
+  await user.click(screen.getAllByRole('button', { name: 'Schießbedingungen übernehmen' })[0]!)
+  await waitFor(() => expect(reload).toHaveBeenCalledOnce())
+  const call = calls.find((entry) => entry.key.startsWith('PATCH'))
+  expect(JSON.parse(String(call?.init?.body))).toEqual({
+    name: 'Neuer Name',
+    confirm_recalculation: false,
   })
 })

@@ -908,6 +908,12 @@ function ScoringCard({
   const form = useForm(initial)
   const { values: v, set, errors } = form
   const needsConfirmation = scoring.has_results || !!errors.confirm_recalculation
+  const changes = Object.fromEntries(
+    Object.entries(v).filter(
+      ([key, value]) =>
+        JSON.stringify(value) !== JSON.stringify(initial[key as keyof typeof initial]),
+    ),
+  ) as Partial<typeof v>
   const dirty = JSON.stringify(v) !== JSON.stringify(initial)
   useDraftGuard(dirty, () => form.setValues(initial))
   const unit = scoring.kind === 'einheit'
@@ -942,8 +948,8 @@ function ScoringCard({
       return
     const saved = await form.submit(() =>
       competitionsApi.updateScoring(org, comp.id, scoring.id, {
-        ...v,
-        confirm_recalculation: !!needsConfirmation,
+        ...changes,
+        confirm_recalculation: !!needsConfirmation && rulesChanged,
       }),
     )
     if (saved) onRemoved()

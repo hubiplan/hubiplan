@@ -91,14 +91,15 @@ function ProgramCard({
   catalog: TargetCatalog
   reload: () => void
 }) {
-  const form = useForm({
+  const initial = {
     name: program.name,
     target: program.target,
     custom_target: program.custom_target,
     shots: program.shots,
     position: program.position,
     distance: program.distance,
-  })
+  }
+  const form = useForm(initial)
   const { values: v, set, errors } = form
   const needsConfirmation = program.has_results || !!errors.confirm_recalculation
   const editable = comp.can_manage && comp.status !== 'endgueltig'
@@ -114,6 +115,12 @@ function ProgramCard({
       position: program.position,
       distance: program.distance,
     })
+  const changes = Object.fromEntries(
+    Object.entries(v).filter(
+      ([key, value]) =>
+        JSON.stringify(value) !== JSON.stringify(initial[key as keyof typeof initial]),
+    ),
+  ) as Partial<typeof v>
   const conditionsChanged =
     v.target !== program.target ||
     JSON.stringify(v.custom_target) !== JSON.stringify(program.custom_target) ||
@@ -147,7 +154,7 @@ function ProgramCard({
       return
     const saved = await form.submit(() =>
       competitionsApi.updateProgram(org, comp.id, program.id, {
-        ...v,
+        ...changes,
         confirm_recalculation: needsConfirmation && conditionsChanged,
       }),
     )
