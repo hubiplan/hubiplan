@@ -22,7 +22,7 @@ from core.ratelimit import client_ip, too_many
 from core.tenancy import rls_bypass
 from core.version import running_version
 
-from . import contact, designs, menu, results, services
+from . import contact, designs, gallery, menu, results, services
 from .models import BLOCKS, Website, WebsiteDomain
 from .public import SiteView
 
@@ -482,6 +482,27 @@ class ImageView(_Public):
         f = image.small if request.query_params.get("size") == "small" else image.file
         ctype = "image/png" if f.name.endswith(".png") else "image/jpeg"
         return self.decorate(FileResponse(f.open("rb"), content_type=ctype), site)
+
+
+class GalleryListView(_Public):
+    """Galerie (Ralf 05.11.2026): Alben der obersten Ebene mit Titelbild."""
+
+    def get(self, request, key: str):
+        site = self.load(request, key)
+        if not site.site.block_on("gallery"):
+            raise Http404
+        return self.respond({"albums": gallery.public_list(site.site, site.image)}, site)
+
+
+class GalleryDetailView(_Public):
+    """Ein Album mit Unteralben und Bildern."""
+
+    def get(self, request, key: str, slug: str):
+        site = self.load(request, key)
+        data = gallery.public_album(site.site, slug, site.image)
+        if data is None:
+            raise Http404
+        return self.respond(data, site)
 
 
 POST_KINDS = ("instagram", "facebook")

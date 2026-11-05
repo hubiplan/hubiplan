@@ -14,10 +14,11 @@ from cryptography.hazmat.primitives.serialization import pkcs7, pkcs12
 from cryptography.x509.oid import NameOID
 from django.db import connection
 
-from cards import apple, services, wallet
+from cards import apple, passcontent, services, wallet
 from cards.models import MemberCard
 from core.tenancy import tenant_context
 from members.models import MembershipPeriod
+from organizations.theme import effective_theme
 from portal.models import PortalAccess
 
 from .test_cards import club as club
@@ -132,11 +133,9 @@ def test_renewal_does_not_reactivate_old_wallet(google, own_access):
                 for call in remote.call_args_list
                 if call.args[1] == "genericObject/" + old_id
             ]
-            assert old_updates == [
-                {
-                    "state": "INACTIVE",
-                    "header": {"defaultValue": {"language": "de", "value": "Ungültiger Ausweis"}},
-                }
+            assert old_updates == [wallet.inactive_payload()]
+            assert old_updates[0]["header"]["translatedValues"] == [
+                {"language": "en", "value": "Invalid membership card"}
             ]
             remote.reset_mock()
             wallet.sync_google(card.pk)
@@ -170,7 +169,7 @@ def test_membership_end_marks_existing_pass_inactive(google, own_access):
                 wallet.issue_google(card.pk)
 
 
-def test_apple_download_package_and_access(own_access, api, board_a, settings, tmp_path):
+def apple_settings(settings, tmp_path):
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     subject = x509.Name(
         [
@@ -202,6 +201,11 @@ def test_apple_download_package_and_access(own_access, api, board_a, settings, t
     settings.APPLE_WALLET_TEAM_ID = "TESTTEAM"
     settings.APPLE_WALLET_CERTIFICATE_FILE = str(cert_file)
     settings.APPLE_WALLET_WWDR_FILE = str(wwdr_file)
+    return certificate, cert_file
+
+
+def test_apple_download_package_and_access(own_access, api, board_a, settings, tmp_path):
+    certificate, cert_file = apple_settings(settings, tmp_path)
     access = own_access
     url = f"/api/portal/{access.pk}/card/wallet/apple/"
     assert api(board_a).get(url).status_code == 404
@@ -227,3 +231,71 @@ def test_apple_download_package_and_access(own_access, api, board_a, settings, t
     settings.APPLE_WALLET_CERTIFICATE_FILE = str(cert_file)
     settings.APPLE_WALLET_TEAM_ID = "WRONGTEAM"
     assert api(access.user).get(url).status_code == 503
+
+
+def _unzip(content):
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        return {name: archive.read(name) for name in archive.namelist()}
+
+
+def test_apple_pass_bilingual_with_theme(own_access, api, settings, tmp_path):
+    apple_settings(settings, tmp_path)
+    access = own_access
+    files = _unzip(api(access.user).get(f"/api/portal/{access.pk}/card/wallet/apple/").content)
+    payload = json.loads(files["pass.json"])
+    theme = effective_theme(access.organization.ancestors())
+    assert payload["backgroundColor"] == passcontent.rgb(theme["primary"])
+    assert payload["description"] == "hubiplan.description"
+    assert payload["generic"]["primaryFields"][0]["label"] == "hubiplan.member"
+    german = files["de.lproj/pass.strings"].decode("utf-16")
+    english = files["en.lproj/pass.strings"].decode("utf-16")
+    assert '"hubiplan.member" = "Mitglied";' in german
+    assert '"hubiplan.member" = "Member";' in english
+    assert '"hubiplan.description" = "Membership card";' in english
+    # Personen- und Vereinsnamen stehen nur in pass.json, nicht in den Sprachdateien
+    assert "Erika" not in german + english
+    assert "photo" not in json.dumps(payload)
+
+
+def test_google_pass_bilingual_with_theme(google, own_access):
+    with tenant_context(own_access.organization_id):
+        card = MemberCard.objects.get(membership_id=own_access.membership_id)
+        with patch.object(wallet.GoogleWallet, "request", return_value={}) as remote:
+            wallet.issue_google(card.pk)
+        issued = remote.call_args_list[1].args[2]
+    theme = effective_theme(own_access.organization.ancestors())
+    assert issued["hexBackgroundColor"] == theme["primary"]
+    assert issued["subheader"]["translatedValues"] == [
+        {"language": "en", "value": "Membership card"}
+    ]
+    verification = [m for m in issued["textModulesData"] if m["id"] == "verification"][0]
+    assert verification["localizedHeader"]["translatedValues"][0]["value"] == "Check validity"
+    # Testinstanz ohne Logo: kein Logo, kein Foto
+    assert "logo" not in issued
+
+
+def test_wallet_switch_per_unit(google, own_access, api, board_a):
+    access = own_access
+    club = access.organization
+    client = api(access.user)
+    endpoint = f"/api/portal/{access.pk}/card/wallet/google/"
+    with tenant_context(club.pk):
+        card = MemberCard.objects.get(membership_id=access.membership_id)
+    with patch.object(wallet.GoogleWallet, "request", return_value={}) as remote:
+        wallet.issue_google(card.pk)
+        settings_url = f"/api/orgs/{club.pk}/member-settings/"
+        data = api(board_a).get(settings_url).json()
+        assert data["card_wallet_enabled"] is True
+        assert data["wallet_available"] is True
+        response = api(board_a).patch(
+            settings_url, {"card_wallet_enabled": False}, content_type="application/json"
+        )
+        assert response.status_code == 200
+        assert client.get(f"/api/portal/{access.pk}/card/").json()["wallet"] == {
+            "google": False,
+            "apple": False,
+        }
+        assert client.post(endpoint).status_code == 404
+        remote.reset_mock()
+        wallet.sync_google(card.pk)
+        assert remote.call_args.args[2] == wallet.inactive_payload()

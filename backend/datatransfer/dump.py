@@ -162,6 +162,7 @@ ORG_FIELDS = (
     "photo_approval_required",
     "member_portal_enabled",
     "contact_changes_need_approval",
+    "card_wallet_enabled",
     "department_access_enabled",
     "federation_member_access",
     "federation_show_former_memberships",

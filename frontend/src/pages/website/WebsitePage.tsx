@@ -30,6 +30,7 @@ import { ImagesPage } from './images.tsx'
 import { DesignChooser } from './DesignChooser.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
 import { t } from '../../i18n/index.ts'
+import { GalleryPage } from './GalleryPage.tsx'
 import { SocialPage } from './SocialPage.tsx'
 import { MenuTree } from './MenuTree.tsx'
 import { sectionTitle } from './sections.ts'
@@ -467,6 +468,16 @@ function WebsiteAdmin({
           element={
             data.can_edit_content ? (
               <ImagesPage />
+            ) : (
+              <Alert kind="info">{t('Dafür fehlt dir das Recht „Inhalte bearbeiten“.')}</Alert>
+            )
+          }
+        />
+        <Route
+          path="galerie"
+          element={
+            data.can_edit_content ? (
+              <GalleryPage />
             ) : (
               <Alert kind="info">{t('Dafür fehlt dir das Recht „Inhalte bearbeiten“.')}</Alert>
             )

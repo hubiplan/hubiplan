@@ -15,6 +15,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext, gettext_lazy
 
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
@@ -275,6 +276,10 @@ class WebsiteImage(models.Model):
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
+    # Zum Sortieren der Galerie (Ralf 05.11.): Aufnahmezeit aus der Kamera und Dateiname,
+    # beim Hochladen gemerkt; die Bilddatei selbst bleibt ohne Metadaten
+    taken_at = models.DateTimeField("aufgenommen", null=True, blank=True)
+    file_name = models.CharField("Dateiname", max_length=200, blank=True)
 
     class Meta:
         verbose_name = "Bild der Webseite"
@@ -293,3 +298,156 @@ class WebsiteImage(models.Model):
         """Kennung in öffentlichen Adressen, mit Fassung (``<key>-v3``), damit nach
         neuem Ausschnitt kein Zwischenspeicher das alte Bild zeigt."""
         return f"{self.key}-v{self.version}" if self.version else self.key
+
+
+# Galerie (Ralf 05.11.2026): Alben mit Bildern, höchstens zwei Ebenen (Album › Unteralbum),
+# für alle Vereine. Die Bilder kommen aus der Bilderverwaltung (WebsiteImage).
+MAX_ALBUM_TITLE = 120
+MAX_ALBUM_TEXT = 2000
+MAX_ALBUM_IMAGES = 1000
+
+# Sortierung (Ralf 05.11.): Bilder je Album, Alben je Ebene; „manual“ = eigene Reihenfolge
+IMAGE_ORDERS = {
+    "manual": gettext_lazy("eigene Reihenfolge"),
+    "taken": gettext_lazy("Aufnahmedatum, älteste zuerst"),
+    "taken_desc": gettext_lazy("Aufnahmedatum, neueste zuerst"),
+    "name": gettext_lazy("Dateiname A–Z"),
+    "name_desc": gettext_lazy("Dateiname Z–A"),
+    "uploaded": gettext_lazy("Hochladedatum, älteste zuerst"),
+    "uploaded_desc": gettext_lazy("Hochladedatum, neueste zuerst"),
+    "caption": gettext_lazy("Bildunterschrift A–Z"),
+    "caption_desc": gettext_lazy("Bildunterschrift Z–A"),
+}
+ALBUM_ORDERS = {
+    "manual": gettext_lazy("eigene Reihenfolge"),
+    "date_desc": gettext_lazy("Datum, neueste zuerst"),
+    "date": gettext_lazy("Datum, älteste zuerst"),
+    "title": gettext_lazy("Titel A–Z"),
+    "title_desc": gettext_lazy("Titel Z–A"),
+}
+DEFAULT_IMAGE_ORDER = "taken"
+DEFAULT_ALBUM_ORDER = "date_desc"
+
+
+class GalleryAlbum(models.Model):
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name="albums")
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="children",
+        verbose_name="gehört zu Album",
+    )
+    title = models.CharField("Titel", max_length=MAX_ALBUM_TITLE)
+    slug = models.CharField("Adresse", max_length=60)
+    description = models.TextField("Beschreibung", max_length=MAX_ALBUM_TEXT, blank=True)
+    # Datum des Anlasses (optional); die Webseite zeigt das Jahr
+    date = models.DateField("Datum", null=True, blank=True)
+    cover = models.ForeignKey(
+        "website.WebsiteImage",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Titelbild",
+    )
+    position = models.PositiveIntegerField("Reihenfolge", default=0)
+    published = models.BooleanField("auf der Webseite zeigen", default=False)
+    show_captions = models.BooleanField("Bildunterschriften zeigen", default=True)
+    image_order = models.CharField(
+        "Bilder sortieren nach",
+        max_length=20,
+        choices=list(IMAGE_ORDERS.items()),
+        default=DEFAULT_IMAGE_ORDER,
+    )
+    children_order = models.CharField(
+        "Unteralben sortieren nach",
+        max_length=20,
+        choices=list(ALBUM_ORDERS.items()),
+        default=DEFAULT_ALBUM_ORDER,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    class Meta:
+        verbose_name = "Album"
+        verbose_name_plural = "Alben"
+        ordering = ["position", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["website", "slug"], name="galerie_album_adresse"),
+        ]
+
+    def __str__(self) -> str:
+        return self.title
+
+    def save(self, *args, **kwargs):
+        from core.reorder import append_if_new
+
+        append_if_new(
+            self,
+            "position",
+            GalleryAlbum.objects.filter(website_id=self.website_id, parent_id=self.parent_id),
+        )
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        import re
+
+        if not (self.title or "").strip():
+            raise ValidationError({"title": gettext("Bitte einen Titel angeben.")})
+        if not re.match(SLUG_RE, self.slug or ""):
+            raise ValidationError(
+                {
+                    "slug": gettext(
+                        "Nur Kleinbuchstaben, Ziffern und Bindestriche, z. B. „schuetzenfest-2024“."
+                    )
+                }
+            )
+        if self.parent_id:
+            if self.parent_id == self.pk:
+                raise ValidationError(
+                    {"parent": gettext("Ein Album kann nicht in sich selbst liegen.")}
+                )
+            if self.parent.website_id != self.website_id:
+                raise ValidationError({"parent": gettext("Unbekanntes Album.")})
+            if self.parent.parent_id:
+                raise ValidationError({"parent": gettext("Alben haben höchstens zwei Ebenen.")})
+            if self.pk and GalleryAlbum.objects.filter(parent_id=self.pk).exists():
+                raise ValidationError(
+                    {
+                        "parent": gettext(
+                            "Ein Album mit Unteralben kann nicht selbst Unteralbum werden."
+                        )
+                    }
+                )
+
+
+class GalleryItem(models.Model):
+    """Bild in einem Album, in der gewählten Reihenfolge."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    album = models.ForeignKey(GalleryAlbum, on_delete=models.CASCADE, related_name="items")
+    image = models.ForeignKey(
+        "website.WebsiteImage", on_delete=models.CASCADE, related_name="gallery_items"
+    )
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Bild im Album"
+        verbose_name_plural = "Bilder im Album"
+        ordering = ["position", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["album", "image"], name="galerie_bild_einmal"),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.album} · {self.image}"

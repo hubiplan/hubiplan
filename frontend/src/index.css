@@ -4483,3 +4483,52 @@ label:has(> .file-input:focus-visible) {
     white-space: normal;
   }
 }
+
+/* Galerie der Webseite (Ralf 05.11.2026) */
+.gallery-albums,
+.gallery-subalbums {
+  display: grid;
+  gap: 0.4rem;
+}
+.gallery-subalbums {
+  margin: 0.4rem 0 0 2.5rem;
+}
+.gallery-album-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.gallery-album-row:hover,
+.gallery-album-row:focus-visible {
+  border-color: var(--color-focus);
+}
+.gallery-album-row img,
+.gallery-album-empty {
+  flex: none;
+  width: 4rem;
+  height: 3rem;
+  object-fit: cover;
+  border-radius: 0.3rem;
+  background: var(--color-button-bg);
+}
+.gallery-image-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.gallery-image-row img {
+  width: 3.5rem;
+  height: 2.6rem;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}

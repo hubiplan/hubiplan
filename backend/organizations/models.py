@@ -343,6 +343,12 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         default=False,
         help_text="Mitglieder können sich anmelden und ihre Daten und Rechnungen sehen.",
     )
+    card_wallet_enabled = models.BooleanField(
+        "Mitgliedsausweis in Apple und Google Wallet anbieten",
+        default=True,
+        db_default=True,
+        help_text="Nur wirksam, wenn der Betreiber Wallet eingerichtet hat.",
+    )
     contact_changes_need_approval = models.BooleanField(
         "Änderungen an Kontaktdaten erst nach Bestätigung durch den Verein", default=False
     )

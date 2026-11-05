@@ -284,11 +284,15 @@ export interface WebsiteImage {
   updated_at?: string
   /** steht in einem Text (Entwurf oder veröffentlicht) */
   used?: boolean
+  /** Aufnahmezeit aus der Kamera (zum Sortieren der Galerie) */
+  taken_at?: string | null
+  file_name?: string
 }
 
 /** Bild mit den Stellen, an denen es verwendet wird */
 export interface WebsiteImageDetail extends WebsiteImage {
-  usage: { text: number; label: string; places: string[] }[]
+  /** ``text`` bei Texten, ``album`` bei Alben der Galerie */
+  usage: { text: number | null; album?: number; label: string; places: string[] }[]
 }
 
 /** Neues Bild: ``file`` ist der Ausschnitt, ``original`` die ganze Datei */
@@ -449,6 +453,80 @@ export const contentApi = {
   /** Ohne `confirmed` lehnt der Server ein verwendetes Bild mit 409 und den Stellen ab. */
   removeImage: (org: number, id: number, confirmed = false) =>
     api.del(`${base(org)}images/${id}/${confirmed ? '?trotzdem=1' : ''}`),
+}
+
+// --- Galerie (Ralf 05.11.2026) ---
+
+export type ImageSort =
+  | 'manual'
+  | 'taken'
+  | 'taken_desc'
+  | 'name'
+  | 'name_desc'
+  | 'uploaded'
+  | 'uploaded_desc'
+  | 'caption'
+  | 'caption_desc'
+export type AlbumSort = 'manual' | 'date_desc' | 'date' | 'title' | 'title_desc'
+
+export interface GalleryAlbum {
+  id: number
+  parent: number | null
+  title: string
+  slug: string
+  description: string
+  date: string | null
+  cover: number | null
+  published: boolean
+  show_captions: boolean
+  image_order: ImageSort
+  children_order: AlbumSort
+  position: number
+  image_count: number
+  updated_at: string
+  /** nur in der Liste: kleines Titelbild */
+  cover_url?: string | null
+  /** nur einzeln: Bilder in Anzeigereihenfolge */
+  images?: WebsiteImage[]
+}
+
+export interface GalleryListing {
+  albums: GalleryAlbum[]
+  block_on: boolean
+  gallery_order: AlbumSort
+  image_orders: { value: ImageSort; label: string }[]
+  album_orders: { value: AlbumSort; label: string }[]
+}
+
+export type AlbumDraft = Partial<
+  Pick<
+    GalleryAlbum,
+    | 'parent'
+    | 'title'
+    | 'slug'
+    | 'description'
+    | 'date'
+    | 'cover'
+    | 'published'
+    | 'show_captions'
+    | 'image_order'
+    | 'children_order'
+  >
+> & { images?: number[] }
+
+export const galleryApi = {
+  list: (org: number) => api.get<GalleryListing>(`${base(org)}albums/`),
+  setOrder: (org: number, order: AlbumSort) =>
+    api.put<GalleryListing>(`${base(org)}albums/`, { gallery_order: order }),
+  create: (org: number, data: AlbumDraft) => api.post<GalleryAlbum>(`${base(org)}albums/`, data),
+  get: (org: number, id: number) => api.get<GalleryAlbum>(`${base(org)}albums/${id}/`),
+  save: (org: number, id: number, data: AlbumDraft) =>
+    api.put<GalleryAlbum>(`${base(org)}albums/${id}/`, data),
+  remove: (org: number, id: number) => api.del(`${base(org)}albums/${id}/`),
+  addImages: (org: number, id: number, images: number[]) =>
+    api.post<GalleryAlbum>(`${base(org)}albums/${id}/images/`, { images }),
+  reorder: (org: number, ids: number[], parent: number | null) =>
+    api.post(`${base(org)}albums/reorder/`, { ids, parent }),
 }
 
 export interface HeldMessage {

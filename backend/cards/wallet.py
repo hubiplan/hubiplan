@@ -18,6 +18,7 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from django.conf import settings
 from django.db import transaction
 
+from . import passcontent
 from .models import MemberCard
 
 API = "https://walletobjects.googleapis.com/walletobjects/v1/"
@@ -120,29 +121,22 @@ class GoogleWallet:
         return f"{self.issuer}.hubiplan_{version}"
 
     def payload(self, card):
-        def text(value):
-            return {"defaultValue": {"language": "de", "value": value}}
-
-        person = card.membership.person
+        content = passcontent.build(card)
         result = {
             "id": self.object_id(card),
             "classId": self.class_id,
             "state": "ACTIVE",
-            "cardTitle": text(card.organization.name),
-            "header": text(f"{person.first_name} {person.last_name}".strip()),
-            "subheader": text("Mitgliedsausweis"),
-            "barcode": {"type": "QR_CODE", "value": card.url},
-            "textModulesData": [
-                {
-                    "id": "verification",
-                    "header": "Mitgliedschaft prüfen",
-                    "body": "Bitte QR-Code scannen. Die aktuelle Gültigkeit wird online geprüft.",
-                }
-            ],
+            "cardTitle": plain(content.club),
+            "header": plain(content.name),
+            "subheader": localized(passcontent.texts("description")),
+            "hexBackgroundColor": content.background,
+            "barcode": {"type": "QR_CODE", "value": content.url},
+            "textModulesData": _modules(content),
         }
         # Nur ein öffentliches Vereinslogo; niemals Mitgliederfotos übertragen.
-        if settings.GOOGLE_WALLET_LOGO_URL:
-            result["logo"] = {"sourceUri": {"uri": settings.GOOGLE_WALLET_LOGO_URL}}
+        logo = content.logo_url or settings.GOOGLE_WALLET_LOGO_URL
+        if logo:
+            result["logo"] = {"sourceUri": {"uri": logo}}
         return result
 
     def save_url(self, object_id):
@@ -161,6 +155,72 @@ class GoogleWallet:
         return "https://pay.google.com/gp/v/save/" + token
 
 
+def localized(values: dict[str, str]) -> dict:
+    """Text in Deutsch (Vorgabe) und Englisch; Google wählt nach der Sprache des Telefons."""
+    result = {"defaultValue": {"language": "de", "value": values["de"]}}
+    translated = [
+        {"language": language, "value": value}
+        for language, value in values.items()
+        if language != "de" and value != values["de"]
+    ]
+    if translated:
+        result["translatedValues"] = translated
+    return result
+
+
+def plain(value: str) -> dict:
+    """Name aus der Einheit (Verein, Person): in allen Sprachen gleich."""
+    return {"defaultValue": {"language": "de", "value": value}}
+
+
+def _module(key: str, header: dict[str, str], body: dict[str, str]) -> dict:
+    return {
+        "id": key,
+        "header": header["de"],
+        "body": body["de"],
+        "localizedHeader": localized(header),
+        "localizedBody": localized(body),
+    }
+
+
+def _modules(content) -> list[dict]:
+    def same(value):
+        return dict.fromkeys(passcontent.LANGUAGES, value)
+
+    modules = []
+    if content.member_type:
+        modules.append(
+            _module("member_type", passcontent.texts("member_type"), same(content.member_type))
+        )
+    if content.departments:
+        modules.append(
+            _module("departments", content.department_label, same(", ".join(content.departments)))
+        )
+    if content.federation:
+        modules.append(
+            _module("federation", passcontent.texts("federation"), same(content.federation))
+        )
+    modules.append(
+        _module("verification", passcontent.texts("verify"), passcontent.texts("verify_body"))
+    )
+    return modules
+
+
+def inactive_payload() -> dict:
+    return {"state": "INACTIVE", "header": localized(passcontent.texts("invalid"))}
+
+
+def offered(card) -> bool:
+    """Darf dieser Ausweis gerade als Wallet-Pass gelten?"""
+    return bool(
+        not card.revoked_at
+        and not card.membership.purged_at
+        and card.organization.is_active
+        and card.organization.card_wallet_enabled
+        and card.membership.current_period()
+    )
+
+
 def _fingerprint(payload):
     return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
 
@@ -173,12 +233,7 @@ def issue_google(card_id):
             .select_related("membership__person", "organization")
             .get(pk=card_id)
         )
-        if (
-            card.revoked_at
-            or card.membership.purged_at
-            or not card.organization.is_active
-            or not card.membership.current_period()
-        ):
+        if not offered(card):
             raise WalletError("Für diese Mitgliedschaft ist kein gültiger Ausweis verfügbar.")
         payload = client.payload(card)
         # Vor der Netzübertragung merken: ein späterer Fehler bleibt abgleichbar.
@@ -205,12 +260,7 @@ def sync_google(card_id, client=None):
         )
         refs = dict(card.wallet_passes)
         google = dict(refs.get("google", {}))
-        active = (
-            not card.revoked_at
-            and not card.membership.purged_at
-            and card.organization.is_active
-            and card.membership.current_period()
-        )
+        active = offered(card)
         current_id = client.object_id(card)
         for object_id, previous in google.items():
             if not object_id.startswith(client.issuer + "."):
@@ -218,10 +268,7 @@ def sync_google(card_id, client=None):
             if active and object_id == current_id:
                 payload = client.payload(card)
             else:
-                payload = {
-                    "state": "INACTIVE",
-                    "header": {"defaultValue": {"language": "de", "value": "Ungültiger Ausweis"}},
-                }
+                payload = inactive_payload()
             fingerprint = _fingerprint(payload)
             if fingerprint != previous:
                 response = client.request(
