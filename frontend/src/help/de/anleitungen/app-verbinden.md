@@ -12,6 +12,8 @@ stichworte: [App, Handy, koppeln, Android, QR-Code]
 
 Das Gerät erscheint danach in der Liste. Verlierst du das Handy, meldest du es dort mit **Abmelden** ab.
 
+Wenn du dein Passwort nicht mehr kennst, trage in der Android-App zuerst die gültige Adresse deines Vereins ein und tippe auf **Passwort vergessen? Im Browser zurücksetzen**. Die App öffnet die Passwortwiederherstellung dieser Instanz; danach kehrst du zur App zurück und meldest dich mit dem neuen Passwort an. E-Mail und Passwort werden nicht im Link übergeben. Ohne verfügbaren Browser zeigt die App eine kopierbare Zieladresse.
+
 ![Ausgangspunkt: HUBIplan-App mit dem Konto verbinden](bild:app-verbinden)
 
 In der Android-App fragen geänderte Verwaltungsformulare und Kurzmitteilungen vor dem Verwerfen nach. System-Zurück, sichtbares Zurück sowie Reiter- und Einheitenwechsel verwenden dieselbe Entscheidung. Buchungstext, Betrag, Konto, Kategorie und ein bereits ausgewähltes Belegfoto werden bei einer Android-Zustandswiederherstellung wiederhergestellt; eine laufende Quittungsunterschrift wird an die neue Feldgröße angepasst. Nach einem Serverfehler stehen Hinweise an den betroffenen Feldern. Fehlgeschlagene Buchungs- und Untereinheitenakten lassen sich direkt erneut laden. Private Aufgabenentwürfe bleiben entsprechend der Datenschutzregel nur im Arbeitsspeicher.

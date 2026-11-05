@@ -34,6 +34,7 @@ def require_key_rotation_support(target):
     from .models import DataKey, DataKeyRotation
 
     has_rotation = DataKeyRotation.objects.exists()
+    has_retired = DataKey.objects.filter(retired_at__isnull=False).exists()
     if not has_rotation and not DataKey.objects.filter(is_active=False).exists():
         return
     try:
@@ -50,6 +51,11 @@ def require_key_rotation_support(target):
             }
 
         key = fields("DataKey")
+        if (
+            has_retired
+            and not {"retired_at", "retirement_reference", "retirement_checksum"} <= key.keys()
+        ):
+            raise ValueError
         if (
             _dotted(key["organization"].func) != "models.ForeignKey"
             or _dotted(key["is_active"].func) != "models.BooleanField"

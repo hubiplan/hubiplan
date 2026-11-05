@@ -171,7 +171,7 @@ class Rotation:
     def key_state(self):
         self.key_owners = dict(DataKey.objects.values_list("pk", "organization_id"))
         state = list(
-            DataKey.objects.filter(organization_id=self.owner_id)
+            DataKey.objects.filter(organization_id=self.owner_id, retired_at__isnull=True)
             .order_by("pk")
             .values("pk", "wrapped", "is_active")
         )
@@ -213,8 +213,17 @@ class Rotation:
             or any(type(pk) is not int or pk <= 0 for pk in sources)
         ):
             raise CommandError("Ungültiger Schlüsselwechsel-Auftrag.")
+        retired = set(
+            DataKey.objects.filter(
+                organization_id=self.owner_id, retired_at__isnull=False
+            ).values_list("pk", flat=True)
+        )
+        expected = set(sources) | {rotation.target_key_id}
         if (
-            self.allowed_keys != set(sources) | {rotation.target_key_id}
+            self.allowed_keys != expected - retired
+            or not expected <= self.allowed_keys | retired
+            or (rotation.completed_at is None and bool(expected & retired))
+            or rotation.target_key_id in retired
             or len(set(sources)) != len(sources)
             or rotation.target_key_id in sources
         ):
@@ -241,7 +250,7 @@ class Rotation:
             Organization.objects.select_for_update().get(pk=self.owner_id)
             current = list(
                 DataKey.objects.select_for_update()
-                .filter(organization_id=self.owner_id)
+                .filter(organization_id=self.owner_id, retired_at__isnull=True)
                 .order_by("pk")
                 .values("pk", "wrapped", "is_active")
             )
@@ -323,6 +332,8 @@ class Rotation:
                             if selected:
                                 raise
                             continue
+                        if mode == "preflight":
+                            self.record_reference("fields", key_id)
                         if not selected:
                             if key_id in self.allowed_keys:
                                 raise CommandError(
@@ -377,6 +388,9 @@ class Rotation:
         if pk is None:
             raise CommandError("Plattform als Schlüsselinhaber fehlt.")
         return pk
+
+    def record_reference(self, kind, key_id):
+        """Lesender Bestandsbericht kann Verweise mitzählen, ohne Klartext auszugeben."""
 
     def safe_path(self, storage, name):
         try:
@@ -499,6 +513,8 @@ class Rotation:
             for path, owners, required in self.inventory():
                 info, _ = fingerprint(path)
                 key_id = file_key_id(path)
+                if mode == "preflight":
+                    self.record_reference("files", key_id)
                 key_owner = self.key_owners.get(key_id)
                 selected = self.owner_id in owners or key_owner == self.owner_id
                 needed = selected or self.owner_id in required

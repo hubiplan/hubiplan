@@ -81,6 +81,22 @@ def main():
             )
             return
         org = Organization.objects.get(name="Rotations-Testverein")
+        if mode == "retire":
+            from core.keyinventory import KeyInventory
+
+            report = KeyInventory(org.pk).read()
+            key = next(k["id"] for k in report["keys"] if k["eligible"])
+            call_command(
+                "datenschluessel_ausmustern",
+                organisation=org.pk,
+                schluessel=key,
+                pruefsumme=report["checksum"],
+                freigabe="TEST-RESTORE",
+                schreiber_angehalten=True,
+                sicherungen_geprueft=True,
+            )
+            assert DataKey.objects.get(pk=key).wrapped == ""
+            return
         if mode in {"interrupt", "finish", "benchmark"}:
             started = time.perf_counter()
             if mode == "interrupt":
@@ -172,6 +188,15 @@ def main():
                 assert DataKey.objects.filter(organization=org).count() == count
             else:
                 assert DataKeyRotation.objects.get(organization=org).completed_at
+                if stage == "retired":
+                    key = DataKey.objects.get(organization=org, retired_at__isnull=False)
+                    assert not key.wrapped
+                    try:
+                        crypto.key_by_id(key.pk)
+                    except crypto.DecryptionError:
+                        pass
+                    else:
+                        raise AssertionError("Ausgemusterter Testschlüssel noch lesbar")
             call_command(
                 "datenschluessel_wechseln", organisation=org.pk, pruefen=True, stdout=io.StringIO()
             )

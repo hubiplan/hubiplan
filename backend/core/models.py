@@ -21,6 +21,9 @@ class DataKey(models.Model):
     wrapped = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     rewrapped_at = models.DateTimeField(null=True, blank=True)
+    retired_at = models.DateTimeField(null=True, blank=True)
+    retirement_reference = models.CharField(max_length=100, default="", db_default="")
+    retirement_checksum = models.CharField(max_length=64, default="", db_default="")
 
     class Meta:
         verbose_name = "Datenschlüssel"
@@ -30,6 +33,19 @@ class DataKey(models.Model):
                 fields=["organization"],
                 condition=models.Q(is_active=True),
                 name="core_datakey_ein_aktiver",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(
+                        retired_at__isnull=True, retirement_reference="", retirement_checksum=""
+                    )
+                    | (
+                        models.Q(retired_at__isnull=False, is_active=False, wrapped="")
+                        & ~models.Q(retirement_reference="")
+                        & ~models.Q(retirement_checksum="")
+                    )
+                ),
+                name="core_datakey_ausmusterung",
             ),
         ]
 
