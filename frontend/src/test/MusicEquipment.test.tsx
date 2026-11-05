@@ -98,7 +98,11 @@ it('shows custody and requires an explicit return destination and condition', as
   expect(screen.getByLabelText('Bisherigen Lagerort bei Rückgabe wiederherstellen')).toBeChecked()
   fireEvent.change(screen.getByLabelText('Zustand'), { target: { value: 'defective' } })
   await userEvent.click(
-    within(screen.getByRole('group')).getByRole('button', { name: 'Speichern' }),
+    within(
+      screen
+        .getByLabelText('Bisherigen Lagerort bei Rückgabe wiederherstellen')
+        .closest('fieldset')!,
+    ).getByRole('button', { name: 'Speichern' }),
   )
   await screen.findByText('Musikausstattung wurde gespeichert.')
   expect(JSON.parse(String(calls.find((c) => c.key.startsWith('POST'))?.init?.body))).toMatchObject(
