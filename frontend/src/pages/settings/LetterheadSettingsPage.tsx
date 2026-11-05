@@ -278,7 +278,7 @@ function LetterheadEditor({
         </fieldset>
       )}
       {current.hints.length > 0 && (
-        <Alert kind="info">
+        <Alert kind="info" as="div">
           <ul className="plain-list">
             {current.hints.map((h) => (
               <li key={h}>{h}</li>

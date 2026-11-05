@@ -1,5 +1,5 @@
 // Mitgliederbereich: „Meine Ergebnisse“ (Wettbewerbe Schritt 5) – eigene Starts mit Platz
-// und Wert, Titel und Auszeichnungen über alle Jahre.
+// und Wert, Titel und Würden über alle Jahre.
 import { historyApi } from '../../api/competitionHistory.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
@@ -23,7 +23,7 @@ export function PortalResults({ accessId }: { accessId: number }) {
         <summary>{t('Alle Starts und Auszeichnungen')}</summary>
         {data.grants.length > 0 && (
           <>
-            <h2>{t('Titel und Auszeichnungen')}</h2>
+            <h2>{t('Titel und Würden')}</h2>
             <ul className="plain-list">
               {data.grants.map((g) => (
                 <li key={g.id}>

@@ -420,7 +420,7 @@ function StatisticsContent({
       )}
       {data.awards.length > 0 && (
         <div className="card card-wide">
-          <h2>{t('Titel und Auszeichnungen')}</h2>
+          <h2>{t('Titel und Würden')}</h2>
           <p className="muted small">{t('{n} bestätigte Auszeichnungen', { n: s.awards })}</p>
           <ul className="plain-list">
             {data.awards.map((a) => (

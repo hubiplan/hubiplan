@@ -385,7 +385,11 @@ function DonationsList({ canEdit }: { canEdit: boolean }) {
         <table className="table">
           <thead>
             <tr>
-              {canEdit && <th aria-label={t('Auswahl')} />}
+              {canEdit && (
+                <th>
+                  <span className="sr-only">{t('Auswahl')}</span>
+                </th>
+              )}
               <th>{t('Datum')}</th>
               <th>{t('Zuwendender')}</th>
               <th>{t('Art')}</th>

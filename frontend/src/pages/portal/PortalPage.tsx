@@ -197,7 +197,7 @@ export function PortalTasks({ entry }: { entry: PortalEntry }) {
       ? [
           {
             to: '/mein-bereich/gemeldet',
-            title: t('Gemeldet'),
+            title: t('Meine Meldungen'),
             text: t('Wettbewerbe, für die der Verein dich gemeldet hat'),
           },
         ]

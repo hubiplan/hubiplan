@@ -1,6 +1,6 @@
 // Datum und Uhrzeit in deutscher Zeit, unabhängig von der Zeitzone des Geräts.
 import type { Occurrence } from '../../api/events.ts'
-import { t, tc } from '../../i18n/index.ts'
+import { lang, t, tc } from '../../i18n/index.ts'
 
 const TZ = 'Europe/Berlin'
 
@@ -93,7 +93,9 @@ export function monthGrid(month: string): string[] {
 
 export function formatDay(date: string, withWeekday = true): string {
   const [y, m, d] = date.split('-')
-  return `${withWeekday ? `${WEEKDAYS[weekday(date)]} ` : ''}${d}.${m}.${y}`
+  // W-12: auf Englisch wie überall britisch (31/10/2026)
+  const day = lang() === 'en' ? `${d}/${m}/${y}` : `${d}.${m}.${y}`
+  return `${withWeekday ? `${WEEKDAYS[weekday(date)]} ` : ''}${day}`
 }
 
 /** Lesbarer Zeitraum eines Termins, z. B. „Sa 13.06.2026, 14:00 – 18:00 Uhr“. */

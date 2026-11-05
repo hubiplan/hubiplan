@@ -74,7 +74,9 @@ describe('Kalenderkontext', () => {
       ).toBeInTheDocument()
       expect(end.queryByText('23:05')).not.toBeInTheDocument()
       expect(end.getByRole('button')).toHaveAccessibleName(
-        /20\.11\.2026, 23:05.*22\.11\.2026, 01:05/,
+        language === 'en'
+          ? /20\/11\/2026, 23:05.*22\/11\/2026, 01:05/
+          : /20\.11\.2026, 23:05.*22\.11\.2026, 01:05/,
       )
     },
   )

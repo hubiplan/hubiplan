@@ -73,7 +73,11 @@ export function PublicationSection({
                 <th>{t('Angabe')}</th>
                 <th>{t('Stand')}</th>
                 <th>{t('Zur Veröffentlichung freigegeben')}</th>
-                {canEdit && <th aria-label={t('Ändern')} />}
+                {canEdit && (
+                  <th>
+                    <span className="sr-only">{t('Ändern')}</span>
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>

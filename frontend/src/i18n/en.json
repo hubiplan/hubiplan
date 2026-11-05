@@ -6309,5 +6309,18 @@
   "Dieser Link zur Mitteilung ist ungültig.": "This message link is invalid.",
   "Mitteilung wird geladen …": "Loading message …",
   "Die Mitteilung konnte nicht geladen werden ({error}).": "The message could not be loaded ({error}).",
-  "Du hast noch keine Mitteilungen bekommen.": "You haven't received any messages yet."
+  "Du hast noch keine Mitteilungen bekommen.": "You haven't received any messages yet.",
+  "Vorherige Seite": "Previous page",
+  "Nächste Seite": "Next page",
+  "Vorherige": "Previous",
+  "Nächste": "Next",
+  "Mitglieder importieren": "Import members",
+  "Keine offenen Aufgaben.": "No open tasks.",
+  "Meine Meldungen": "My entries",
+  "Keine": "None",
+  "Kasse im Geschäftsjahr": "Cash in the financial year",
+  "Bitte den Code eingeben.": "Please enter the code.",
+  "Bitte E-Mail-Adresse eingeben.": "Please enter your email address.",
+  "Bitte Passwort eingeben.": "Please enter your password.",
+  "QR-Code für die Authenticator-App": "QR code for the authenticator app"
 }

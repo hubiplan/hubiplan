@@ -287,7 +287,6 @@ export function Layout() {
   const headerTools = (
     <>
       {undoBase && !previewOrg && <UndoControls base={undoBase} />}
-      {active && <RolePreviewSelect org={active} onChanged={previewChanged} />}
       {contextCount > 1 && (
         <label className="org-switch">
           <span className="sr-only">{t('Organisation wechseln')}</span>
@@ -356,7 +355,13 @@ export function Layout() {
               <div className="topbar-user">
                 {!narrow && headerTools}
                 {!narrow && <HelpButton />}
-                <AccountMenu email={user?.email} onLogout={handleLogout} />
+                <AccountMenu
+                  email={user?.email}
+                  onLogout={handleLogout}
+                  extra={
+                    active && <RolePreviewSelect org={active} onChanged={previewChanged} labelled />
+                  }
+                />
               </div>
             </header>
 

@@ -181,10 +181,14 @@ function BillingSummary({ feeRuns }: { feeRuns: boolean }) {
         <div className="card tile">
           <h2>{t('Offene Rechnungen')}</h2>
           <p className="amount-big">{euro(data.open.amount)}</p>
-          <Link className="small" to="/finanzen/rechnungen?status=open">
-            {data.open.count} {data.open.count === 1 ? t('Rechnung') : t('Rechnungen')}{' '}
-            {t('ansehen')}
-          </Link>
+          {data.open.count === 0 ? (
+            <p className="small muted">{t('Keine')}</p>
+          ) : (
+            <Link className="small" to="/finanzen/rechnungen?status=open">
+              {data.open.count} {data.open.count === 1 ? t('Rechnung') : t('Rechnungen')}{' '}
+              {t('ansehen')}
+            </Link>
+          )}
         </div>
         <div className="card tile">
           <h2>
@@ -193,10 +197,14 @@ function BillingSummary({ feeRuns }: { feeRuns: boolean }) {
           <p className={`amount-big${data.overdue.count > 0 ? ' amount-out' : ''}`}>
             {euro(data.overdue.amount)}
           </p>
-          <Link className="small" to="/finanzen/rechnungen?status=open&ueberfaellig=1">
-            {data.overdue.count} {data.overdue.count === 1 ? t('Rechnung') : t('Rechnungen')}{' '}
-            {t('ansehen')}
-          </Link>
+          {data.overdue.count === 0 ? (
+            <p className="small muted">{t('Keine')}</p>
+          ) : (
+            <Link className="small" to="/finanzen/rechnungen?status=open&ueberfaellig=1">
+              {data.overdue.count} {data.overdue.count === 1 ? t('Rechnung') : t('Rechnungen')}{' '}
+              {t('ansehen')}
+            </Link>
+          )}
         </div>
         {feeRuns && (
           <div className="card tile">
@@ -258,6 +266,7 @@ function CashSummary({ canEdit }: { canEdit: boolean }) {
   const tm = data.totals
   return (
     <>
+      <h2 className="section-heading">{t('Kasse im Geschäftsjahr')}</h2>
       <div className="card card-wide filters">
         <YearSelect data={data} onChange={setYear} />
         <span className="muted small">
@@ -282,7 +291,7 @@ function CashSummary({ canEdit }: { canEdit: boolean }) {
           <h2>
             {t('Ausgaben')} {data.label}
           </h2>
-          <p className="amount-big amount-out">{euro(tm.expense)}</p>
+          <p className="amount-big">{euro(tm.expense)}</p>
         </div>
         <div className="card tile">
           <h2>
@@ -336,6 +345,7 @@ export function EvaluationPage() {
   const tm = data.totals
   return (
     <div className="stack">
+      <h2 className="section-heading">{t('Kasse im Geschäftsjahr')}</h2>
       <div className="card card-wide filters">
         <YearSelect data={data} onChange={setYear} />
         <span className="muted small">

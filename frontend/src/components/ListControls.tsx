@@ -82,10 +82,11 @@ export function Pager({
       <button
         type="button"
         className="button button-ghost"
+        aria-label={t('Vorherige Seite')}
         disabled={data.page <= 1}
         onClick={() => onPage(data.page - 1)}
       >
-        {t('Zurück')}
+        <span aria-hidden="true">‹</span> {t('Vorherige')}
       </button>
       <span className="small" aria-live="polite">
         {data.count} {noun} {t('· Seite {page} von', { page: data.page })} {Math.max(data.pages, 1)}
@@ -93,10 +94,11 @@ export function Pager({
       <button
         type="button"
         className="button button-ghost"
+        aria-label={t('Nächste Seite')}
         disabled={data.page >= data.pages}
         onClick={() => onPage(data.page + 1)}
       >
-        {t('Weiter')}
+        {t('Nächste')} <span aria-hidden="true">›</span>
       </button>
     </div>
   )
@@ -128,10 +130,11 @@ export function RangePager({
       <button
         type="button"
         className="button button-ghost"
+        aria-label={t('Vorherige Seite')}
         disabled={page <= 1}
         onClick={() => onPage(page - 1)}
       >
-        {t('Zurück')}
+        <span aria-hidden="true">‹</span> {t('Vorherige')}
       </button>
       <span className="small" aria-live="polite">
         {from}–{to} {tc('count', 'von')} {total} {noun}
@@ -139,10 +142,11 @@ export function RangePager({
       <button
         type="button"
         className="button button-ghost"
+        aria-label={t('Nächste Seite')}
         disabled={page >= pages}
         onClick={() => onPage(page + 1)}
       >
-        {t('Weiter')}
+        {t('Nächste')} <span aria-hidden="true">›</span>
       </button>
     </div>
   )

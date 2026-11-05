@@ -12,7 +12,8 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
-- Usability: On a phone the header is a single row; undo, “view as role” and the unit selection are at the top of the menu (☰), and the full club name stays readable. Heading and browser tab name the subpage, e.g. “Organisation · Settings”. Links in text are bold instead of underlined. Units are counted per level, e.g. “7 corps · 15 platoons”.
+- Usability: On a phone the header is a single row; undo and the unit selection are at the top of the menu (☰), “view as role” is under “My account”, and the full club name stays readable. Heading and browser tab name the subpage, e.g. “Organisation · Settings”. Links in text are bold instead of underlined. Units are counted per level, e.g. “7 corps · 15 platoons”.
+- Usability: Members read circulars under “My area › Messages”, as in the app. The event list has a heading per month and shows the category. Checkboxes are larger, sign-in reports empty fields itself, and in English dates appear as 31/10/2026 everywhere.
 - Usability: Member admission guides keyboard focus through two clearly named stages. Calendar responses confirm saving for screen readers; submission methods and validation hints appear in English when English is selected.
 
 - Members: Past unit memberships (such as platoons) can be added with start and end in one step. This also works for units that are no longer active. If they overlap, the message names the affected membership with its exact dates.

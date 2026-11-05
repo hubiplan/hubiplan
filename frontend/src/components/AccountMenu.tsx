@@ -1,5 +1,6 @@
 // „Mein Konto“ oben rechts: klappt die Unterseiten auf (statt eines Eintrags in der Seitenleiste).
 import { useEffect, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { ACCOUNT_SECTIONS, isAccountPath } from '../pages/settings/accountNav.ts'
 import { t } from '../i18n/index.ts'
@@ -7,9 +8,12 @@ import { t } from '../i18n/index.ts'
 export function AccountMenu({
   email,
   onLogout,
+  extra,
 }: {
   email: string | undefined
   onLogout: () => Promise<void>
+  /** Selten gebrauchte Werkzeuge, z. B. „Ansicht als Rolle“ (UX-Audit W-06) */
+  extra?: ReactNode
 }) {
   const [open, setOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
@@ -78,6 +82,7 @@ export function AccountMenu({
       {open && (
         <nav id="konto-menue" className="account-menu-list" aria-label={t('Mein Konto')}>
           {email && <p className="account-menu-email">{email}</p>}
+          {extra && <div className="account-menu-extra">{extra}</div>}
           <ul>
             {ACCOUNT_SECTIONS.map((s) => (
               <li key={s.to}>

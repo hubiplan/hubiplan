@@ -30,9 +30,7 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
           onRetry={reload}
         />
       )}
-      {data && items.length === 0 && (
-        <p className="muted">{t('Zurzeit ist nichts zu entscheiden.')}</p>
-      )}
+      {data && items.length === 0 && <p className="muted">{t('Keine offenen Aufgaben.')}</p>}
       {items.length > 0 && (
         <ul className="plain-list task-overview-list">
           {items.map((tm, i) => (

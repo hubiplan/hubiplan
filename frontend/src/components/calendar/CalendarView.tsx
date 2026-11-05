@@ -288,40 +288,46 @@ export function CalendarView({
           {data.items.length === 0 && (
             <p className="muted">{emptyHint ?? t('Keine Termine in diesem Zeitraum.')}</p>
           )}
-          <ul className="plain-list">
-            {data.items.map((o) => {
-              return (
-                <li key={o.key}>
-                  <button type="button" className={itemClass(o)} onClick={() => setSelected(o)}>
-                    <span className="calendar-list-date">
-                      {formatRange(o.starts_at, o.ends_at, o.all_day)}
-                    </span>
-                    <span className="calendar-list-main">
-                      <span
-                        className="event-dot"
-                        style={{ background: o.category?.color ?? '#7a847f' }}
-                      />{' '}
-                      <strong className="event-title">{o.title}</strong>{' '}
-                      <VisibilityBadge visibility={o.visibility} />
-                      {o.is_cancelled && (
-                        <span className="badge badge-cancelled">
-                          {tc('event-status', 'abgesagt')}
-                        </span>
-                      )}
-                      {o.changed_at && !o.is_cancelled && (
-                        <span className="badge">{t('geändert')}</span>
-                      )}
-                      <RsvpBadge o={o} />
-                      <span className="muted small">
-                        {' '}
-                        {[o.location, calendarContext(o)].filter(Boolean).join(' · ')}
+          {/* W-16: Zwischenüberschrift je Monat, damit lange Listen gegliedert sind */}
+          {monthGroups(data.items).map(([key, items]) => (
+            <section key={key} className="calendar-list-month">
+              <h2 className="calendar-list-month-head">{monthHeading(key)}</h2>
+              <ul className="plain-list">
+                {items.map((o) => (
+                  <li key={o.key}>
+                    <button type="button" className={itemClass(o)} onClick={() => setSelected(o)}>
+                      <span className="calendar-list-date">
+                        {formatRange(o.starts_at, o.ends_at, o.all_day)}
                       </span>
-                    </span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
+                      <span className="calendar-list-main">
+                        <span
+                          className="event-dot"
+                          style={{ background: o.category?.color ?? '#7a847f' }}
+                        />{' '}
+                        <strong className="event-title">{o.title}</strong>{' '}
+                        <VisibilityBadge visibility={o.visibility} />
+                        {o.is_cancelled && (
+                          <span className="badge badge-cancelled">
+                            {tc('event-status', 'abgesagt')}
+                          </span>
+                        )}
+                        {o.changed_at && !o.is_cancelled && (
+                          <span className="badge">{t('geändert')}</span>
+                        )}
+                        <RsvpBadge o={o} />
+                        <span className="muted small">
+                          {' '}
+                          {[o.category?.name, o.location, calendarContext(o)]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
         </div>
       )}
 
@@ -354,4 +360,21 @@ export function CalendarView({
       )}
     </div>
   )
+}
+
+/** Termine der Liste nach Monat (Berliner Zeit) gruppiert, Schlüssel „JJJJ-MM“. */
+function monthGroups(items: Occurrence[]): [string, Occurrence[]][] {
+  const groups = new Map<string, Occurrence[]>()
+  for (const o of items) {
+    const key = berlin(o.starts_at).date.slice(0, 7)
+    const list = groups.get(key)
+    if (list) list.push(o)
+    else groups.set(key, [o])
+  }
+  return [...groups.entries()]
+}
+
+function monthHeading(key: string): string {
+  const [year, month] = key.split('-').map(Number)
+  return t('{x} {year}', { x: MONTHS[month - 1], year })
 }
