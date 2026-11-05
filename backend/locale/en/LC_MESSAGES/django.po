@@ -6383,3 +6383,27 @@ msgstr "The file is not a PDF document."
 
 msgid "Bitte einen Zeitraum bis zu einem Jahr wählen."
 msgstr "Please select a period of up to one year."
+
+msgid "Bitte einen zukünftigen Ausführungstag innerhalb eines Jahres wählen."
+msgstr "Choose an execution date from today to one year ahead."
+
+msgid "Bitte unterschiedliche verfügbare Vergütungen wählen."
+msgstr "Choose different available remuneration claims."
+
+msgid "Diese Vergütung ist bezahlt, nicht freigegeben oder bereits in einem Zahlungslauf."
+msgstr "This claim is paid, not approved or already reserved in a payout run."
+
+msgid "Dieser Zahlungslauf kann nicht exportiert werden."
+msgstr "This payout run cannot be exported."
+
+msgid "Die Zahlungen haben sich geändert. Bitte den Zahlungslauf prüfen."
+msgstr "Payments have changed. Please review the payout run."
+
+msgid "Bitte zuerst den Zahlungslauf aufheben."
+msgstr "Please cancel the payout run first."
+
+msgid "Die Buchung muss zum exportierten Zahlungslauf passen."
+msgstr "The booking must match the exported payout run."
+
+msgid "Bitte einen Kontoinhaber im SEPA-Zeichensatz angeben."
+msgstr "Enter an account holder using SEPA characters."

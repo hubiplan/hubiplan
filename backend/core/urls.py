@@ -39,6 +39,7 @@ from music.availability_views import AbsenceViewSet, OwnAbsences
 from music.catalogue_import import CatalogueImportView
 from music.equipment import EquipmentView
 from music.guest import GuestAccessView, GuestPerformanceView
+from music.payouts import PayoutRunAction, PayoutRuns
 from music.portal import OwnAssignments
 from music.practice_portal import OwnPractice, OwnScoreFile
 from music.settlement import FeeTemplateViewSet, PerformanceInvoiceView, SettlementView
@@ -183,6 +184,8 @@ platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename
 
 org_patterns = [
     path("music/equipment/", EquipmentView.as_view()),
+    path("music/payout-runs/", PayoutRuns.as_view()),
+    path("music/payout-runs/<int:pk>/", PayoutRunAction.as_view()),
     path("music/catalogue-import/", CatalogueImportView.as_view()),
     path("music/assignments/<int:pk>/guest-access/", GuestAccessView.as_view()),
     path("music/practice/", music_practice.PracticeOverview.as_view()),

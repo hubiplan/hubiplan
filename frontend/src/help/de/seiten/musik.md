@@ -121,3 +121,20 @@ Neue Probeneinteilungen und bevorstehende offene Rückmeldungen erzeugen neutral
 Die Proben-, Rückmeldungs- und Notenausgabedaten sind im allgemeinen Datenexport enthalten. Die Datenbankmigration ergänzt Tabellen, RLS und Mengengrenzen; vor einem Rückweg die neuen Verläufe exportieren.
 
 Nach dem Löschen geschlossener Ausgaben gilt für den Materialpapierkorb die vorhandene Frist von 30 Tagen; anschließend werden die zugehörigen Musikverknüpfungen entfernt. Gegenstände mit offener Ausgabe werden vom endgültigen Bereinigen ausgenommen.
+
+## Sammelauszahlungen
+
+Unter **Sammelauszahlungen** wählt die Kasse freigegebene Restvergütungen,
+Bankkonto und Ausführungstag. Für jeden Empfänger werden Kontoinhaber, IBAN und
+gegebenenfalls BIC geprüft. **Zahlungslauf zur Prüfung speichern** reserviert die
+Vergütungen und hält Beträge und Empfängerdaten unveränderlich fest.
+Nach der Prüfung lässt sich eine SEPA-Datei (pain.001.001.09, EUR) herunterladen.
+Die Datei muss bei der Bank geprüft und freigegeben werden. Wiederholtes
+Herunterladen liefert denselben Auftrag: nicht mehrfach einreichen.
+Der Export führt keine Überweisung aus und setzt keine Vergütung auf bezahlt.
+Die Bank soll Einzelbuchungen liefern; jede tatsächliche Ausgabe wird anschließend
+in der jeweiligen Auftrittsabrechnung zugeordnet. Bankkonto und Betrag müssen zum
+Lauf passen. Stornierte Buchungen öffnen den Abgleich wieder.
+Ein aufgehobener Lauf gibt die Vergütungen frei. Bereits eingereichte Aufträge müssen
+zusätzlich bei der Bank gestoppt werden. Kassenleserecht erlaubt Einsicht,
+Kassenbearbeitungsrecht erlaubt Vorbereitung, Export und Aufhebung.

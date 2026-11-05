@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { PayoutRunsPage } from './PayoutRunsPage.tsx'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
@@ -55,6 +56,7 @@ export function MusicPage() {
 function MusicRoute() {
   const org = useActiveOrg()
   const [params] = useSearchParams()
+  if (params.get('auszahlungen')) return <PayoutRunsPage key={org.id} />
   if (params.get('uebersicht')) return <PerformanceOverview key={org.id} />
   if (params.get('ausstattung')) return <EquipmentPage key={org.id} />
   if (params.get('noten')) return <ScoresPage key={org.id} />
