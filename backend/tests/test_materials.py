@@ -461,7 +461,7 @@ def test_import_keeps_missing_member_as_review(material_setup):
 
 def test_uses_and_links_report_all_day(material_setup):
     org, user, client, base = material_setup
-    fest = event(org, title="Schützenfest", all_day=True)
+    fest = event(org, all_day=True)
     item = create(client, base)
     item = link(client, base, item, type="event", event=fest.pk, kind="event")
     assert item["uses"][0]["all_day"] is True
