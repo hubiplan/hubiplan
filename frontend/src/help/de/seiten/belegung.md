@@ -13,12 +13,12 @@ blätterst du.
 
 Buchungskalender einschalten: Auf der Detailseite einer Infrastruktur oder eines Materials
 schaltet die Verwaltung unter **Buchungskalender** das Buchen ein. Dort legst du auch fest, ob
-Buchungen eine **Freigabe** brauchen, wie lange vorher und nachher eine **Rüstzeit** frei
+Buchungen eine Freigabe brauchen, wie lange vorher und nachher eine Rüstzeit frei
 bleiben soll und wie weit im Voraus gebucht werden darf.
 
 Buchen: Wähle **Buchen**, dann Objekt, Zweck und Zeit. Eine Buchung kann sich wöchentlich,
-monatlich oder jährlich wiederholen. Statt einer Zeit kannst du einen **Termin** oder
-**Wettbewerb** wählen; die Buchung folgt ihm dann, wenn er verschoben oder abgesagt wird.
+monatlich oder jährlich wiederholen. Statt einer Zeit kannst du einen Termin oder
+Wettbewerb wählen; die Buchung folgt ihm dann, wenn er verschoben oder abgesagt wird.
 Wer ein ganzes Gebäude bucht, belegt auch alle seine Bereiche.
 
 Überschneidungen: Ist das Objekt einschließlich Rüstzeit schon belegt, lehnt HUBIplan die
@@ -26,7 +26,7 @@ Buchung ab und nennt die belegte Zeit. Verschiebt sich später ein verknüpfter 
 belegte Zeit, wird die Buchung mit **prüfen** markiert.
 
 Anfragen und Freigabe: Braucht ein Objekt eine Freigabe, ist deine Buchung zunächst eine
-Anfrage und blockiert noch nichts. Personen mit dem Recht **Belegung** (bearbeiten) oder mit
+Anfrage und blockiert noch nichts. Personen mit dem Recht „Buchungen für andere eintragen und freigeben“ oder mit
 Bearbeitungsrecht auf das Objekt sehen **Offene Anfragen** und geben frei oder lehnen ab. Deine
 eigene Anfrage oder Buchung kannst du selbst stornieren.
 

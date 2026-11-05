@@ -12,11 +12,11 @@ view has one row per item; use **Previous week** and **Next week** to move throu
 
 Switch on a booking calendar: On the detail page of a facility or a material item, the
 managers switch on booking under **Booking calendar**. There you also decide whether bookings
-need **approval**, how much **set-up time** stays free before and after, and how far ahead
+need approval, how much set-up time stays free before and after, and how far ahead
 people may book.
 
 Book: Choose **Book**, then the item, the purpose and the time. A booking can repeat
-weekly, monthly or yearly. Instead of a time you can choose an **event** or a **competition**;
+weekly, monthly or yearly. Instead of a time you can choose an event or a competition;
 the booking then follows it when it is moved or cancelled. Booking a whole building also books
 all of its areas.
 
@@ -25,7 +25,7 @@ booking and shows the booked time. If a linked event later moves onto a booked t
 booking is marked **check**.
 
 Requests and approval: If an item needs approval, your booking starts as a request and does
-not block anything yet. People with the **Bookings** edit permission, or with edit permission
+not block anything yet. People with the permission “Book for others and approve bookings”, or with edit permission
 on the item, see **Open requests** and approve or reject them. You can cancel your own request
 or booking yourself.
 
