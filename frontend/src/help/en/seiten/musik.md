@@ -88,6 +88,14 @@ Preparation compares required instruments and parts against planned instrumentat
 
 Download programme and part lists as CSV. Use **Sheet music preparation tasks** to create preparation tasks linked to the event in the existing task workspace. Programmes require music and calendar viewing permissions; editing requires music editing permission. General exports include the catalogue and programmes. Digital files remain in the existing document export.
 
+## Instruments and uniforms
+
+When the inventory module and inventory viewing permission are also enabled, **Instruments and uniforms** appears. Editing requires both music and inventory editing permissions. **Link inventory item as music equipment** selects an existing inventory item; create items and maintain photos, documents and tasks in inventory management. Inventory number and condition remain shared. Use **Edit equipment details** for type, instrument, size/specification and the next maintenance date.
+
+**Issue equipment** assigns an item to an active musician with a return deadline and handover note. Issuing equipment to members also requires member viewing permission. The inventory location changes to that member. For guests, the location is marked for review with a reference to the music issue; the guest assignment appears in Music. Items already issued, defective or retired cannot be issued again. Overdue returns are marked.
+
+**Record equipment return** confirms condition and destination: explicitly restore the previous storage location or enter a complete new address. Inaccessible member locations must be replaced with a valid destination. **Record maintenance** saves completed maintenance with date, condition, note and next due date. Schedule planned maintenance in equipment details. The last 100 issues and maintenance entries are displayed; general exports retain all records. Correct issues and returns through these workflows rather than Undo in inventory history. An outstanding issue prevents deletion. The inventory record links back to music equipment when music viewing permission is available.
+
 ## Rehearsals and personal sheet music
 
 Open **Rehearsals and sheet music checkout** and link events or series from your own calendar. Dates, location, recurrence and cancellations remain in the existing calendar. Rehearsal focus and pieces form the shared series template. Assign musicians and deactivate assignments no longer required. Administrators record guest responses.

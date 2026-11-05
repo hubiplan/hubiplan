@@ -88,6 +88,14 @@ Die Vorbereitungsliste vergleicht benötigte Instrumente/Stimmen mit Sollbesetzu
 
 **Programmliste herunterladen** und **Stimmenliste herunterladen** geben CSV-Dateien aus. Über **Aufgaben für Notenvorbereitung** im bestehenden Aufgabenbereich Aufgaben mit dem Auftrittstermin anlegen. Programme erfordern Musik- und Kalenderleserecht; Änderungen Musikbearbeitungsrecht. Der allgemeine Datenexport enthält den Katalog und Programme. Digitale Dateien verbleiben im vorhandenen Dokumentenexport.
 
+## Instrumente und Uniformen
+
+Wenn zusätzlich das Materialmodul und Materialleserecht freigeschaltet sind, erscheint **Instrumente und Uniformen**. Zum Ändern werden Musik- und Materialbearbeitungsrecht benötigt. **Material als Musikausstattung verbinden** wählt einen vorhandenen Gegenstand aus der Materialverwaltung; dort werden neue Gegenstände, Fotos, Dokumente und Aufgaben gepflegt. Inventarnummer und Zustand bleiben dieselben. Unter **Ausstattungsdaten bearbeiten** Art, Instrument, Größe/Ausführung und nächsten Wartungstermin ergänzen.
+
+**Ausstattung ausgeben** ordnet einem aktiven Musiker einen Gegenstand mit Rückgabefrist und Übergabevermerk zu. Für die Ausgabe an Mitglieder ist zusätzlich Mitgliederleserecht erforderlich. Der Materialstandort wird zum Mitglied geändert. Bei Gästen wird der Standort als zu klären mit Hinweis auf die Musikausgabe geführt; die Gastzuordnung steht im Musikbereich. Bereits ausgegebene, defekte oder ausgesonderte Gegenstände können nicht erneut ausgegeben werden. Überfällige Rückgaben sind markiert.
+
+**Ausstattung zurücknehmen** bestätigt Zustand und Rückgabeort: entweder ausdrücklich den bisherigen Lagerort wiederherstellen oder eine vollständige neue Adresse erfassen. Nicht mehr zugängliche Mitgliederstandorte müssen durch einen gültigen Rückgabeort ersetzt werden. **Wartung dokumentieren** speichert eine erfolgte Wartung mit Datum, Zustand, Vermerk und nächster Fälligkeit. Geplante Wartungen über die Ausstattungsdaten vormerken. Die letzten 100 Ausgaben und Wartungen werden angezeigt; alle Vorgänge bleiben im Datenexport erhalten. Ausgaben und Rücknahmen werden über diese Abläufe korrigiert, nicht über Rückgängig im Materialverlauf. Offene Ausgaben verhindern das Löschen eines Gegenstands. Die Materialakte verlinkt zurück zur Musikausstattung, sofern Musikleserecht besteht.
+
 ## Proben und persönliche Noten
 
 Unter **Proben und Notenausgabe** eigene Kalendertermine oder Terminserien als Proben verknüpfen. Datum, Ort, Wiederholung und Einzelabsagen werden im bestehenden Kalender gepflegt. Probenschwerpunkt und Probenstücke bilden die gemeinsame Serienvorlage. Unter **Probeneinteilung** Musiker zuordnen; nicht mehr benötigte Einteilungen deaktivieren. Gäste werden durch die Musikverwaltung betreut.

@@ -364,7 +364,8 @@ class HistoryView(Base):
                     "at": r.created_at,
                     "action": r.action,
                     "actor": str(r.actor) if r.actor else "",
-                    "can_undo": not r.action.startswith("music_") and r == revisions[0]
+                    "can_undo": not r.action.startswith("music_")
+                    and r == revisions[0]
                     and bool(r.data)
                     and r.actor_id == request.user.pk,
                 }

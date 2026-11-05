@@ -219,7 +219,11 @@ def item_data(item, user, scope, *, detail=False):
             equipment = getattr(item, "music_equipment", None)
             if equipment:
                 loan = equipment.loans.filter(returned_at=None).first()
-                data["music_equipment"] = {"id": equipment.pk, "loaned": bool(loan), "due_date": loan.due_date if loan else None}
+                data["music_equipment"] = {
+                    "id": equipment.pk,
+                    "loaned": bool(loan),
+                    "due_date": loan.due_date if loan else None,
+                }
         data["events"] = [
             event_data(r)
             for r in item.event_links.filter(event__in=access.events(user, scope)).select_related(

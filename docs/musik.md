@@ -80,6 +80,14 @@ Die Vorbereitungsliste vergleicht benötigte Instrumente/Stimmen mit Sollbesetzu
 
 **Programmliste herunterladen** und **Stimmenliste herunterladen** geben CSV-Dateien aus. Über **Aufgaben für Notenvorbereitung** im bestehenden Aufgabenbereich Aufgaben mit dem Auftrittstermin anlegen. Programme erfordern Musik- und Kalenderleserecht; Änderungen Musikbearbeitungsrecht. Der allgemeine Datenexport enthält den Katalog und Programme. Digitale Dateien verbleiben im vorhandenen Dokumentenexport.
 
+## Instrumente, Uniformen und Materialbestand
+
+`music.Equipment` ergänzt einen bestehenden Materialgegenstand durch Art, Instrument, Größe/Ausführung und Wartungsfälligkeit. Es wird kein zweiter Inventarbestand angelegt. Die Organisation und der unveränderte Materialbereich begrenzen Zugriff und Auswahl; Abteilungsmaterial wird nicht über den Vereinsmusikbereich freigegeben. Lesen erfordert Musik- und Materialleserecht, Schreiben beide Bearbeitungsrechte und beide aktiven Module.
+
+Ausgaben und Rücknahmen sperren denselben Materialgegenstand und prüfen seine Versionsnummer. Ein Gegenstand kann nur einmal gleichzeitig ausgegeben sein. Rückgabefrist, Musiker, Ausgabe-/Rücknahmezustand, Zeitpunkte und Vermerke bleiben nachvollziehbar. Mitgliederstandorte werden nur mit zugänglichem Mitglied gesetzt. Gäste erhalten eine explizite Ausgabeverknüpfung; der Materialstandort wird mit entsprechendem Hinweis als unbekannt geführt. Der frühere Standort ist verschlüsselt gespeichert. Bei Rücknahme wird er ausdrücklich wiederhergestellt und nach heutigen Rechten validiert oder durch eine neue vollständige Adresse ersetzt. Wartungen ändern den gemeinsamen Materialzustand und die nächste Fälligkeit. Vergangene Ausgaben werden dadurch nicht umgeschrieben. Die Anzeige umfasst die letzten 100 Ausgaben/Wartungen je Gegenstand, der allgemeine Datenexport alle Datensätze.
+
+Die Abläufe schreiben Materialversionen und eigene Prüfvermerke. Musikbezogene Änderungen sind nicht isoliert im Materialverlauf rückgängig zu machen, da sonst Ausgabeverknüpfungen und Standorte auseinanderlaufen würden. Offene Ausgaben verhindern auch ein Löschen über den Materialbereich. Änderungen an Materialstammdaten beenden keine Ausgabeverknüpfung. Bei fachlichen Korrekturen zurücknehmen und erneut ausgeben. Tabellen verwenden Organisations-RLS. Vor einer Rückmigration alle Ausgaben zurücknehmen und den Datenexport sichern; ältere Fassungen kennen diese Verknüpfungen nicht.
+
 ## Proben und persönliche Noten
 
 Unter **Proben und Notenausgabe** eigene Kalendertermine oder Terminserien als Proben verknüpfen. Datum, Ort, Wiederholung und Einzelabsagen werden im bestehenden Kalender gepflegt. Probenschwerpunkt und Probenstücke bilden die gemeinsame Serienvorlage. Unter **Probeneinteilung** Musiker zuordnen; nicht mehr benötigte Einteilungen deaktivieren. Gäste werden durch die Musikverwaltung betreut.
