@@ -131,6 +131,11 @@ class Event(models.Model):
         editable=False,
         related_name="events",
     )
+    # Kopie eines fremden Kalenders, der seit 14 Tagen nicht mehr abrufbar ist: bleibt
+    # gespeichert, wird aber nirgends gezeigt, bis ein Abruf wieder klappt (FQ22)
+    source_stale = models.BooleanField(
+        "Quelle veraltet (ausgeblendet)", default=False, db_default=False, editable=False
+    )
     # Zeit oder Ort nach dem Anlegen geändert: im Kalender markiert
     changed_at = models.DateTimeField("Zeit oder Ort geändert am", null=True, blank=True)
     # Zu- und Absagen (Meilenstein 13): nur einmalige Termine eines Vereins oder Zugs

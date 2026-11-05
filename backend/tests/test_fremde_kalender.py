@@ -334,3 +334,64 @@ class TestIcal:
         remote.ical = "<html>Anmeldung</html>"
         data = add(api(board_a), cal["a"], kind="ical", token="https://x.example.org/a.ics")
         assert "kein Kalender" in data["last_error"]
+
+
+class TestVeralteteQuelle:
+    """FQ22: Nach 14 Tagen ohne erfolgreichen Abruf werden die Kopien ausgeblendet."""
+
+    def _veraltet(self, client, org, remote, days=15):
+        remote.vp_events = [vp_event("u1", "Kreisfest")]
+        data = add(client, org)
+        ExternalCalendar.objects.filter(pk=data["id"]).update(
+            last_successful_sync_at=timezone.now() - datetime.timedelta(days=days)
+        )
+        remote.vp_status = 401
+        return data
+
+    def test_unter_14_tagen_bleibt_sichtbar(
+        self, cal, board_a, api, remote, mailoutbox, django_capture_on_commit_callbacks
+    ):
+        data = self._veraltet(api(board_a), cal["a"], remote, days=13)
+        with django_capture_on_commit_callbacks(execute=True):
+            resp = api(board_a).post(f"{org_base(cal['a'])}events/external/{data['id']}/sync/")
+        assert resp.json()["stale_hidden"] is False
+        assert "Kreisfest" in window_titles(api(board_a), cal["a"])
+        assert not mailoutbox
+
+    def test_ausblenden_hinweis_und_rueckkehr(
+        self, cal, board_a, api, remote, mailoutbox, django_capture_on_commit_callbacks
+    ):
+        c = api(board_a)
+        data = self._veraltet(c, cal["a"], remote)
+        url = f"{org_base(cal['a'])}events/external/{data['id']}/sync/"
+        with django_capture_on_commit_callbacks(execute=True):
+            resp = c.post(url)
+        assert resp.json()["stale_hidden"] is True
+        assert resp.json()["event_count"] == 1  # gespeichert, nur ausgeblendet
+        assert "Kreisfest" not in window_titles(c, cal["a"])
+        assert len(mailoutbox) == 1
+        assert "BSV Musterstadt" in mailoutbox[0].subject
+        assert board_a.email in mailoutbox[0].to
+        # weitere Fehlschläge: kein zweiter Hinweis
+        with django_capture_on_commit_callbacks(execute=True):
+            c.post(url)
+        assert len(mailoutbox) == 1
+        # wieder abrufbar: Termine sind zurück
+        remote.vp_status = 206
+        resp = c.post(url)
+        assert resp.json()["stale_hidden"] is False and resp.json()["last_error"] == ""
+        assert "Kreisfest" in window_titles(c, cal["a"])
+
+    def test_ausgeblendet_auch_auf_der_webseite(self, cal, board_a, api, remote):
+        from events.services import Viewer
+
+        data = self._veraltet(api(board_a), cal["a"], remote)
+        ExternalCalendar.objects.filter(pk=data["id"]).update(visibility="public")
+        Event.objects.filter(external_source_id=data["id"]).update(visibility="public")
+        public = Viewer(cal["a"], None, kind="public")
+        assert public.events().filter(title="Kreisfest").exists()
+        external.sync(ExternalCalendar.objects.get(pk=data["id"]))
+        assert not public.events().filter(title="Kreisfest").exists()
+        assert not Event.objects.filter(
+            external_source_id=data["id"], visibility="public", source_stale=False
+        ).exists()

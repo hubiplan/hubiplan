@@ -31,6 +31,11 @@ höchstens 1000 Termine).
   öffentlich“ bringt sie auch in den öffentlichen Link und auf die Webseite.
 - Was die Quelle nicht mehr liefert, verschwindet. Geht ein Abruf schief, bleibt der letzte Stand
   stehen und der Fehler steht am fremden Kalender.
+- Liegt der letzte erfolgreiche Abruf 14 Tage zurück (`external.STALE_AFTER`), setzt der nächste
+  Fehlschlag `Event.source_stale` an allen Kopien. `Viewer.visible_q()` und die Webseite zeigen
+  solche Kopien nicht; gespeichert bleiben sie. Wer in der Einheit Termine verwaltet, bekommt
+  dabei einmal eine Mail. Der nächste erfolgreiche Abruf setzt das Feld zurück (Fachfrage FQ22,
+  Gesamtaudit 03.11.).
 - **Hier ausblenden** am Termin merkt sich die Kennung (`ExternalCalendar.hidden`); der Termin
   bleibt bei jedem Abruf weg, bis jemand ihn unter „Fremde Kalender“ wieder zeigt.
 - Abruf aus oder fremden Kalender entfernen: Die Kopien verschwinden.
