@@ -87,7 +87,11 @@ function EmailCard({ data, onSaved }: { data: AccountData; onSaved: (d: AccountD
           email: form.values.email.trim(),
           ...(data.has_password ? { password: form.values.password } : {}),
         }),
-      t('Wir haben einen Bestätigungslink an die neue Adresse geschickt.'),
+      data.has_password
+        ? t('Wir haben einen Bestätigungslink an die neue Adresse geschickt.')
+        : t(
+            'Wir haben Bestätigungslinks an die neue und an die bisherige Adresse geschickt. Bitte beide öffnen.',
+          ),
     )) as AccountData | undefined
     if (saved) {
       onSaved(saved)
@@ -109,10 +113,15 @@ function EmailCard({ data, onSaved }: { data: AccountData; onSaved: (d: AccountD
       </p>
       {data.pending_email && (
         <Alert kind="info">
-          {t(
-            'Neue Adresse {pending_email} wartet auf Bestätigung. Bitte den Link in der Mail an diese Adresse öffnen.',
-            { pending_email: data.pending_email },
-          )}{' '}
+          {data.has_password
+            ? t(
+                'Neue Adresse {pending_email} wartet auf Bestätigung. Bitte den Link in der Mail an diese Adresse öffnen.',
+                { pending_email: data.pending_email },
+              )
+            : t(
+                'Neue Adresse {pending_email} wartet auf Bestätigung. Bitte die Links in den Mails an diese und an deine bisherige Adresse öffnen.',
+                { pending_email: data.pending_email },
+              )}{' '}
           <button type="button" className="link-button" onClick={() => void cancel()}>
             {t('Verwerfen')}
           </button>

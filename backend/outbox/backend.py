@@ -77,7 +77,9 @@ class NotAccepted(Exception):
 # Links, mit denen man sich anmelden oder ein Konto übernehmen kann. Sie stehen nur in
 # der verschickten Mail, nie im Postausgang, den der Vorstand lesen kann.
 SECRET_LINK = re.compile(
-    r"(https?://\S*?/(?:anmelden/link|passwort-zuruecksetzen|konto/email)/)\S+"
+    # Alles, was ein Geheimnis im Pfad trägt (Gesamtaudit 05.11. GA-04)
+    r"(https?://\S*?/(?:anmelden/link|passwort-zuruecksetzen|konto/email|foto|ausweis"
+    r"|rundschreiben/bestaetigen|rundschreiben/abmelden)/)\S+"
 )
 REDACTED = "[Link aus Sicherheitsgründen nicht gespeichert]"
 

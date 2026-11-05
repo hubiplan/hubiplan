@@ -7556,3 +7556,21 @@ msgstr "today"
 #: members/serializers.py
 msgid "„{name}“ ist nicht mehr aktiv. Bitte ein Ende angeben."
 msgstr "“{name}” is no longer active. Please enter an end date."
+
+#: accounts/self_service.py
+#, python-brace-format
+msgid ""
+"für Ihr HUBIplan-Konto wurde die neue Anmelde-E-Mail {new} angefordert. Sie "
+"wird erst wirksam, wenn Sie den Wechsel auch hier bestätigen (Link gültig "
+"{days} Tage):"
+msgstr ""
+"the new sign-in email {new} has been requested for your HUBIplan account. It "
+"only takes effect once you also confirm the change here (link valid for "
+"{days} days):"
+
+#: accounts/self_service.py
+msgid ""
+"Waren Sie das nicht? Dann ignorieren Sie diese Mail; die Adresse bleibt, wie "
+"sie ist."
+msgstr ""
+"Was this not you? Then ignore this email; your address stays as it is."

@@ -113,3 +113,66 @@ def test_ohne_anmeldung_kein_zugriff():
     c = Client()
     assert c.get("/api/me/account/").status_code in (401, 403)
     assert c.post("/api/me/password/", {}, content_type=JSON).status_code in (401, 403)
+
+
+def _link(to: str) -> str:
+    sent = next(m for m in reversed(djmail.outbox) if to in m.to)
+    return re.search(r"/konto/email/([\w-]+)", sent.body).group(1)
+
+
+def test_email_wechsel_ohne_passwort_braucht_auch_die_alte_adresse(api):
+    """Gesamtaudit 05.11. GA-10: Eine übernommene Sitzung allein lenkt das Konto nicht um."""
+    u = User.objects.create_user(email="link@example.org", password=None)
+    r = api(u).post("/api/me/email/", {"email": "dieb@example.org"}, content_type=JSON)
+    assert r.status_code == 201, r.json()
+    new_token, old_token = _link("dieb@example.org"), _link("link@example.org")
+    assert new_token != old_token
+
+    anon = Client()
+    r = anon.post(f"/api/public/email-confirm/{new_token}/")
+    assert r.status_code == 200 and r.json()["waiting_for"] == "old"
+    u.refresh_from_db()
+    assert u.email == "link@example.org"  # neue Adresse allein reicht nicht
+    # Derselbe Link noch einmal ändert nichts
+    assert anon.post(f"/api/public/email-confirm/{new_token}/").json()["waiting_for"] == "old"
+
+    r = anon.post(f"/api/public/email-confirm/{old_token}/")
+    assert r.status_code == 200 and "waiting_for" not in r.json()
+    u.refresh_from_db()
+    assert u.email == "dieb@example.org"
+    assert anon.post(f"/api/public/email-confirm/{old_token}/").status_code == 404
+
+
+def test_email_wechsel_alte_adresse_zuerst(api):
+    u = User.objects.create_user(email="link@example.org", password=None)
+    api(u).post("/api/me/email/", {"email": "neu@example.org"}, content_type=JSON)
+    anon = Client()
+    r = anon.post(f"/api/public/email-confirm/{_link('link@example.org')}/")
+    assert r.json()["waiting_for"] == "new"
+    r = anon.post(f"/api/public/email-confirm/{_link('neu@example.org')}/")
+    assert r.status_code == 200
+    u.refresh_from_db()
+    assert u.email == "neu@example.org"
+
+
+def test_email_wechsel_mit_passwort_ohne_zweite_bestaetigung(api):
+    u = make_user("alt@example.org")
+    api(u).post(
+        "/api/me/email/", {"email": "neu@example.org", "password": PASSWORD}, content_type=JSON
+    )
+    notice = next(m for m in djmail.outbox if "alt@example.org" in m.to)
+    assert "/konto/email/" not in notice.body
+    assert EmailChange.objects.get().old_token_hash == ""
+
+
+def test_email_wechsel_meldet_andere_sitzungen_ab(api):
+    u = make_user("alt@example.org")
+    other = api(u)
+    assert other.get("/api/me/").status_code == 200
+    api(u).post(
+        "/api/me/email/", {"email": "neu@example.org", "password": PASSWORD}, content_type=JSON
+    )
+    Client().post(f"/api/public/email-confirm/{_link('neu@example.org')}/")
+    u.refresh_from_db()
+    assert u.auth_version >= 1
+    assert other.get("/api/me/").status_code in (401, 403)
