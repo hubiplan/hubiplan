@@ -100,6 +100,7 @@ function ProgramCard({
     distance: program.distance,
   })
   const { values: v, set, errors } = form
+  const needsConfirmation = program.has_results || !!errors.confirm_recalculation
   const editable = comp.can_manage && comp.status !== 'endgueltig'
   const chosen = catalog.targets.find((target) => target.key === v.target)
   const linked = comp.scorings.filter((s) => s.program === program.id)
@@ -132,7 +133,7 @@ function ProgramCard({
 
   async function save() {
     if (
-      program.has_results &&
+      needsConfirmation &&
       conditionsChanged &&
       !(await confirmDialog({
         title: t('Schießbedingungen ändern'),
@@ -147,7 +148,7 @@ function ProgramCard({
     const saved = await form.submit(() =>
       competitionsApi.updateProgram(org, comp.id, program.id, {
         ...v,
-        confirm_recalculation: program.has_results && conditionsChanged,
+        confirm_recalculation: needsConfirmation && conditionsChanged,
       }),
     )
     if (saved) reload()
@@ -267,7 +268,7 @@ function ProgramCard({
             <button type="submit" className="button" disabled={!changed}>
               {t('Schießbedingungen übernehmen')}
             </button>
-            {linked.length === 0 && !program.has_results && (
+            {linked.length === 0 && !needsConfirmation && (
               <button type="button" className="button button-ghost" onClick={() => void remove()}>
                 {t('Durchgang löschen')}
               </button>

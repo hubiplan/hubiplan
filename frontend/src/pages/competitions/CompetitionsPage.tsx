@@ -907,6 +907,7 @@ function ScoringCard({
   }
   const form = useForm(initial)
   const { values: v, set, errors } = form
+  const needsConfirmation = scoring.has_results || !!errors.confirm_recalculation
   const dirty = JSON.stringify(v) !== JSON.stringify(initial)
   useDraftGuard(dirty, () => form.setValues(initial))
   const unit = scoring.kind === 'einheit'
@@ -928,7 +929,7 @@ function ScoringCard({
 
   async function save() {
     if (
-      scoring.has_results &&
+      needsConfirmation &&
       rulesChanged &&
       !(await confirmDialog({
         title: t('Wertungsregeln ändern'),
@@ -942,7 +943,7 @@ function ScoringCard({
     const saved = await form.submit(() =>
       competitionsApi.updateScoring(org, comp.id, scoring.id, {
         ...v,
-        confirm_recalculation: !!scoring.has_results,
+        confirm_recalculation: !!needsConfirmation,
       }),
     )
     if (saved) onRemoved()

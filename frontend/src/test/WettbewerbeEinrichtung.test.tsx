@@ -168,3 +168,39 @@ it('übernimmt abgebrochene Änderungen mit vorhandenen Ergebnissen nicht', asyn
   expect(calls.filter((call) => call.key.startsWith('PATCH'))).toHaveLength(0)
   expect(shots).toHaveValue(6)
 })
+
+it('bestätigt zwischenzeitlich auf einem anderen Gerät erfasste Ergebnisse ohne Eingabeverlust', async () => {
+  const user = userEvent.setup(),
+    reload = vi.fn()
+  let attempt = 0
+  const calls = fakeApi({
+    'GET /api/orgs/7/competitions/targets/': () => ({ status: 200, body: catalog }),
+    'PATCH /api/orgs/7/competitions/3/programs/10/': () =>
+      ++attempt === 1
+        ? {
+            status: 400,
+            body: { confirm_recalculation: ['Inzwischen sind Ergebnisse vorhanden.'] },
+          }
+        : { status: 200, body: program },
+  })
+  render(
+    <MemoryRouter>
+      <ProgramsSetup org={7} comp={competition()} reload={reload} />
+    </MemoryRouter>,
+  )
+  const shots = await screen.findByLabelText('Schüsse pro Person')
+  await user.clear(shots)
+  await user.type(shots, '6')
+  await user.click(screen.getByRole('button', { name: 'Schießbedingungen übernehmen' }))
+  await screen.findByRole('alert')
+  expect(shots).toHaveValue(6)
+  await user.click(screen.getByRole('button', { name: 'Schießbedingungen übernehmen' }))
+  await screen.findByRole('alertdialog')
+  await user.click(screen.getByRole('button', { name: 'Ändern und neu berechnen' }))
+  await waitFor(() => expect(reload).toHaveBeenCalledOnce())
+  const updates = calls.filter((call) => call.key.startsWith('PATCH'))
+  expect(JSON.parse(String(updates[1]?.init?.body))).toMatchObject({
+    shots: 6,
+    confirm_recalculation: true,
+  })
+})
