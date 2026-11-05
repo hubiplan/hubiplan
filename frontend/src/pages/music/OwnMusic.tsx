@@ -32,6 +32,8 @@ export function OwnMusic({ accessId }: { accessId: number }) {
             expenses: string
             total: string
             paid: boolean
+            paid_amount?: string
+            outstanding?: string
           } | null
         }[]
       >(url),
@@ -63,9 +65,20 @@ export function OwnMusic({ accessId }: { accessId: number }) {
               {r.settlement && (
                 <p>
                   {t('Meine Vergütung')}: {r.settlement.total} EUR ·{' '}
-                  {r.settlement.paid ? t('Ausgezahlt') : t('Freigegeben')} ({t('Gage')}:{' '}
-                  {r.settlement.fee} EUR, {t('Pauschale')}: {r.settlement.allowance} EUR,{' '}
-                  {t('Auslagen')}: {r.settlement.expenses} EUR)
+                  {r.settlement.paid
+                    ? t('Ausgezahlt')
+                    : Number(r.settlement.paid_amount || 0) > 0
+                      ? t('Teilweise ausgezahlt')
+                      : t('Freigegeben')}{' '}
+                  ({t('Gage')}: {r.settlement.fee} EUR, {t('Pauschale')}: {r.settlement.allowance}{' '}
+                  EUR, {t('Auslagen')}: {r.settlement.expenses} EUR)
+                  {r.settlement.paid_amount !== undefined && (
+                    <>
+                      {' '}
+                      · {t('Ausgezahlt')}: {r.settlement.paid_amount} EUR ·{' '}
+                      {t('Offener Vergütungsbetrag')}: {r.settlement.outstanding} EUR
+                    </>
+                  )}
                 </p>
               )}
               <p>

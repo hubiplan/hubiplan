@@ -39,7 +39,7 @@ from music.availability_views import AbsenceViewSet, OwnAbsences
 from music.guest import GuestAccessView, GuestPerformanceView
 from music.portal import OwnAssignments
 from music.practice_portal import OwnPractice, OwnScoreFile
-from music.settlement import PerformanceInvoiceView, SettlementView
+from music.settlement import FeeTemplateViewSet, PerformanceInvoiceView, SettlementView
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import help_views, imprint_views, social_views
@@ -95,6 +95,7 @@ org_router.register("billing/age-rates", billing_views.AgeRateViewSet, basename=
 org_router.register("billing/runs", billing_views.FeeRunViewSet, basename="billing-run")
 org_router.register("billing/invoices", billing_views.InvoiceViewSet, basename="billing-invoice")
 org_router.register("music/musicians", music_views.MusicianViewSet, basename="music-musician")
+org_router.register("music/fee-templates", FeeTemplateViewSet, basename="music-fee-template")
 org_router.register("music/absences", AbsenceViewSet, basename="music-absence")
 org_router.register(
     "music/ensemble-templates",

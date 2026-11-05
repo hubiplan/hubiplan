@@ -216,6 +216,25 @@ class PerformanceAccount(models.Model):
         return f"Auftrittsabrechnung {self.pk}"
 
 
+class FeeTemplate(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    name = models.CharField(max_length=150)
+    fee = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    allowance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(fee__gte=0, allowance__gte=0),
+                name="music_fee_template_nonnegative",
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+
 class MusicianClaim(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     assignment = models.OneToOneField(Assignment, on_delete=models.PROTECT)

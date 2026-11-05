@@ -32,6 +32,14 @@ Aktive Mitglieder mit freigeschaltetem Mitgliederzugang erhalten über die Ausga
 
 Beim Auftritt legt **Erinnerung Tage vorher (0 = aus)** den Zeitraum für eine Erinnerung an offene Rückmeldungen fest (0 bis 30 Tage, Standard 3). Maßgeblich ist die früheste Treff-, Aufbau- oder Spielzeit. Es gibt je aktuellem Informationsstand höchstens eine Erinnerung, frühestens einen Tag nach einer neuen Einladung oder Änderung. Zusagen, Absagen und vergangene oder abgesagte Auftritte werden nicht erinnert. Versandfehler werden erneut versucht; der Postausgang zeigt fehlgeschlagene Versuche.
 
+## Vergütungsvorlagen und Teilzahlungen
+
+Unter **Auftrittsabrechnung** → **Musikervergütungen** kannst du mit Kassenbearbeitungsrecht **Vergütungsvorlagen verwalten**. Eine Vorlage enthält Gage und Pauschale in EUR. Archivieren verhindert neue Anwendungen; bereits angelegte Vergütungen behalten ihre Beträge.
+
+Für eine Sammelabrechnung eine aktive Vorlage und Einteilungen ohne vorhandene Vergütung auswählen. **Alle ohne Vergütung auswählen** übernimmt die Auswahl, bestätigt aber keine Teilnahme. Teilnahme je Musiker ausdrücklich markieren. **Vergütungsentwürfe anlegen** erzeugt ausschließlich Entwürfe mit Auslagen 0. Auslagen einzeln ergänzen und Teilnahme prüfen; erst anschließend wie gewohnt nach dem Auftritt freigeben. Ungültige Auswahlen werden insgesamt abgewiesen. Bestehende Vergütungen werden nicht überschrieben.
+
+Einer freigegebenen Vergütung kannst du mehrere erfolgte Auszahlungen aus der Kasse zuordnen. Jede Buchung wird vollständig und nur einmal verwendet; sie darf den offenen Vergütungsbetrag nicht übersteigen. **Teilweise ausgezahlt**, **Ausgezahlt** und **Offener Vergütungsbetrag** zeigen den Stand auch im eigenen Mitgliederbereich. Solange eine aktive Teilzahlung existiert, ist die Freigabe unveränderbar. Stornos in der Kasse erhöhen den offenen Betrag wieder. Die Zuordnung löst keine Überweisung aus.
+
 ## Besetzungsvorlagen und Sammeleinteilung
 
 Unter **Besetzungsvorlagen** mit **Vorlage anlegen** Instrumente, Register/Stimmen und Sollzahlen speichern. Jede Stimme darf nur einmal vorkommen. Nicht mehr benötigte Vorlagen mit **Aktiv** ausschalten. Bearbeiten benötigt Musikbearbeitungsrecht; Lesezugänge können Vorlagen ansehen.
@@ -56,9 +64,9 @@ Mit Musik- und Kalenderleserecht sowie freigeschalteter Kasse und Kassenleserech
 
 Für jede Einteilung Gage, Pauschale und belegte Auslagen erfassen. Nach dem Auftritt die Teilnahme bestätigen und die Vergütung freigeben. Freigegebene Beträge sind gesperrt; ohne Auszahlung kann die Freigabe aufgehoben und der Entwurf erneut bearbeitet werden. Mitglieder sehen ausschließlich ihre eigene freigegebene Vergütung im eigenen Bereich. Die Abrechnung von Gästen führt die Kassenverwaltung.
 
-Auszahlungen zuerst als Ausgaben mit Belegen in der Kasse erfassen. Anschließend nach Buchungstext suchen und die passende vollständige Zahlung zuordnen. Je Vergütung ist eine aktive Auszahlung möglich; Teilzahlungen werden nicht zugeordnet. Weitere Auftrittskosten werden ebenso mit vorhandenen Ausgaben verknüpft. Dieselbe Buchung kann nur einmal verwendet werden. Dies erzeugt keine Überweisung.
+Auszahlungen zuerst als Ausgaben mit Belegen in der Kasse erfassen. Anschließend nach Buchungstext suchen und die passende Buchung vollständig zuordnen. Je Vergütung sind mehrere Teilzahlungen bis zum offenen Betrag möglich. Weitere Auftrittskosten werden ebenso mit vorhandenen Ausgaben verknüpft. Dieselbe Buchung kann nur einmal verwendet werden. Dies erzeugt keine Überweisung.
 
-Fehlerhafte Auszahlungen in der Kasse stornieren. Der ursprüngliche Bezug bleibt sichtbar; die Vergütung ist wieder unbezahlt und kann nach Korrektur neu zugeordnet werden. Die Übersicht zeigt vereinbarte und fakturierte Beträge, tatsächliche Einnahmen und Ausgaben sowie das Ergebnis aus diesen Zahlungen. Freigegebene Vergütungen sind separat ausgewiesen und stellen keine bereits erfolgte Zahlung dar.
+Fehlerhafte Auszahlungen in der Kasse stornieren. Der ursprüngliche Bezug bleibt sichtbar; der offene Vergütungsbetrag erhöht sich und kann nach Korrektur neu zugeordnet werden. Die Übersicht zeigt vereinbarte und fakturierte Beträge, tatsächliche Einnahmen und Ausgaben sowie das Ergebnis aus diesen Zahlungen. Freigegebene Vergütungen sind separat ausgewiesen und stellen keine bereits erfolgte Zahlung dar.
 
 Allgemeiner Datenexport und Finanzprüfexport umfassen Vereinbarungen, Vergütungen und Buchungszuordnungen. Finanzaufbewahrung und Anonymisierung umfassen die Abrechnungsvermerke.
 
