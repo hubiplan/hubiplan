@@ -13,7 +13,8 @@ import { HelpContactsCard } from '../../help/HelpExtras.tsx'
 import { t } from '../../i18n/index.ts'
 import { ShootingFacilitiesCard } from './ShootingFacilitiesCard.tsx'
 
-export function OrganizationPage() {
+/** Lädt die Angaben der Einheit; die drei Seiten unter „Organisation“ teilen sich das. */
+function useOrgDetail() {
   const org = useActiveOrg()
   const { data, error, setData } = useLoad(() => orgApi.detail(org.id), [org.id])
   const canEditRoles = org.permissions.includes(PERM.rolesManage)
@@ -21,33 +22,81 @@ export function OrganizationPage() {
     () => (canEditRoles ? orgApi.roles(org.id) : Promise.resolve([] as Role[])),
     [org.id, canEditRoles],
   )
+  return { org, data, error, setData, roles: roles.data ?? [] }
+}
 
+/** Einstellungen › Organisation: Name, Anschrift, Kontakt, Geschäftsjahr, Social-Media-Kanäle. */
+export function OrganizationPage() {
+  const { org, data, error, setData, roles } = useOrgDetail()
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   return (
     <>
-      <OrganizationForm key={data.id} detail={data} roles={roles.data ?? []} onSaved={setData} />
-      {org.modules.includes('competitions') &&
-        (data.type === 'club' || data.type === 'federation') && (
-          <ShootingFacilitiesCard key={`shooting-${data.id}`} detail={data} onSaved={setData} />
-        )}
+      <OrganizationForm
+        key={data.id}
+        detail={data}
+        roles={roles}
+        onSaved={setData}
+        part="stammdaten"
+      />
       {(data.type === 'club' || data.type === 'federation') && (
         <SocialLinksPanel orgId={org.id} editable={org.permissions.includes(PERM.orgEdit)} />
       )}
       {data.type !== 'platform' && (
-        <>
-          <div className="card card-wide">
-            <StatutePanel orgId={org.id} />
-          </div>
-          <div className="card card-wide">
-            <StatutePanel orgId={org.id} kind="fee_rules" />
-          </div>
-          <div className="card card-wide">
-            <StatutePanel orgId={org.id} kind="founding_deed" />
-          </div>
-          <HelpContactsCard orgId={org.id} editable={org.permissions.includes(PERM.orgEdit)} />
-        </>
+        <HelpContactsCard orgId={org.id} editable={org.permissions.includes(PERM.orgEdit)} />
       )}
+    </>
+  )
+}
+
+/** Einstellungen › Bezeichnungen: wie Einheit und Untereinheiten heißen, auch auf Englisch. */
+export function OrganizationTermsPage() {
+  const { data, error, setData, roles } = useOrgDetail()
+  if (error) return <Alert kind="error">{error}</Alert>
+  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  return (
+    <OrganizationForm
+      key={data.id}
+      detail={data}
+      roles={roles}
+      onSaved={setData}
+      part="bezeichnungen"
+    />
+  )
+}
+
+/** Einstellungen › Vereinsdokumente: Satzung, Beitragsordnung, Gründungsurkunde. */
+export function OrganizationDocumentsPage() {
+  const org = useActiveOrg()
+  return (
+    <>
+      <div className="card card-wide">
+        <StatutePanel orgId={org.id} />
+      </div>
+      <div className="card card-wide">
+        <StatutePanel orgId={org.id} kind="fee_rules" />
+      </div>
+      <div className="card card-wide">
+        <StatutePanel orgId={org.id} kind="founding_deed" />
+      </div>
+    </>
+  )
+}
+
+/** Wettbewerbe › Einrichtung: eigene Schießstände (vorher unter Organisation). */
+export function ShootingSetupPage() {
+  const { data, error, setData } = useOrgDetail()
+  if (error) return <Alert kind="error">{error}</Alert>
+  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  return (
+    <>
+      <div className="page-head">
+        <div>
+          <p className="muted small eyebrow">{t('Wettbewerbe')}</p>
+          <h1>{t('Einrichtung')}</h1>
+        </div>
+      </div>
+      <ShootingFacilitiesCard key={`shooting-${data.id}`} detail={data} onSaved={setData} />
     </>
   )
 }
@@ -56,10 +105,13 @@ function OrganizationForm({
   detail,
   roles,
   onSaved,
+  part,
 }: {
   detail: OrgDetail
   roles: Role[]
   onSaved: (d: OrgDetail) => void
+  /** Einstellungen › Organisation ist dreigeteilt (UX-Audit S-02): Stammdaten, Bezeichnungen */
+  part: 'stammdaten' | 'bezeichnungen'
 }) {
   const { can, refresh } = useOrg()
   const editable = can(PERM.orgEdit)
@@ -101,291 +153,310 @@ function OrganizationForm({
   return (
     <form className="card card-wide" onSubmit={(e) => e.preventDefault()}>
       {editable && <SaveStatus auto={auto} />}
-      <h2>{detail.type_label}</h2>
+      {part === 'stammdaten' && <h2>{detail.type_label}</h2>}
       {detail.parent_name && (
         <p className="muted">
           {t('Gehört zu:')} {detail.parent_name}
         </p>
       )}
       <fieldset disabled={!editable}>
-        <div className="grid-2">
-          <Field
-            label={isPlatform ? t('Name') : t('Vollständiger Name')}
-            required
-            value={v.name}
-            error={errors.name}
-            hint={
-              isPlatform ? undefined : t('Erscheint auf Rechnungen, Ausweisen, PDFs und in Mails.')
-            }
-            onChange={(e) => set('name', e.target.value)}
-          />
-          {!isPlatform && (
-            <Field
-              label={t('Kurzname (optional)')}
-              maxLength={50}
-              value={v.short_name ?? ''}
-              error={errors.short_name}
-              hint={t('Für Navigation, Listen und Auswahlfelder. Leer = vollständiger Name.')}
-              onChange={(e) => set('short_name', e.target.value)}
-            />
-          )}
-          {!isPlatform && (
-            <Field
-              label={t('Gründungsjahr')}
-              type="number"
-              required
-              min={800}
-              max={2100}
-              value={v.founding_year ?? ''}
-              error={errors.founding_year}
-              onChange={(e) => set('founding_year', e.target.value ? Number(e.target.value) : null)}
-            />
-          )}
-        </div>
-
-        {!isPlatform && (
+        {part === 'stammdaten' && (
           <>
-            <h3>{t('Anschrift')}</h3>
-            <Field
-              label={t('Straße und Hausnummer')}
-              required
-              value={v.street}
-              error={errors.street}
-              onChange={(e) => set('street', e.target.value)}
-            />
-            <div className="grid-3">
+            <div className="grid-2">
               <Field
-                label={t('PLZ')}
+                label={isPlatform ? t('Name') : t('Vollständiger Name')}
                 required
-                value={v.postal_code}
-                error={errors.postal_code}
-                onChange={(e) => set('postal_code', e.target.value)}
+                value={v.name}
+                error={errors.name}
+                hint={
+                  isPlatform
+                    ? undefined
+                    : t('Erscheint auf Rechnungen, Ausweisen, PDFs und in Mails.')
+                }
+                onChange={(e) => set('name', e.target.value)}
               />
-              <Field
-                label={t('Ort')}
-                required
-                value={v.city}
-                error={errors.city}
-                onChange={(e) => set('city', e.target.value)}
-              />
-              <Field
-                label={t('Land')}
-                value={v.country}
-                error={errors.country}
-                onChange={(e) => set('country', e.target.value)}
-              />
+              {!isPlatform && (
+                <Field
+                  label={t('Kurzname (optional)')}
+                  maxLength={50}
+                  value={v.short_name ?? ''}
+                  error={errors.short_name}
+                  hint={t('Für Navigation, Listen und Auswahlfelder. Leer = vollständiger Name.')}
+                  onChange={(e) => set('short_name', e.target.value)}
+                />
+              )}
+              {!isPlatform && (
+                <Field
+                  label={t('Gründungsjahr')}
+                  type="number"
+                  required
+                  min={800}
+                  max={2100}
+                  value={v.founding_year ?? ''}
+                  error={errors.founding_year}
+                  onChange={(e) =>
+                    set('founding_year', e.target.value ? Number(e.target.value) : null)
+                  }
+                />
+              )}
             </div>
-          </>
-        )}
 
-        <h3>{t('Kontakt')}</h3>
-        {!isPlatform && (
-          <SelectField
-            label={t('Kontaktdaten')}
-            value={v.contact_source}
-            error={errors.contact_source}
-            onChange={(e) => set('contact_source', e.target.value as OrgDetail['contact_source'])}
-          >
-            <option value="own">{t('eigene Angaben')}</option>
-            <option value="role">{t('von einer Vorstandsrolle übernehmen')}</option>
-          </SelectField>
-        )}
-        {v.contact_source === 'role' ? (
-          <>
-            <SelectField
-              label={t('Rolle')}
-              value={v.contact_role ?? ''}
-              error={errors.contact_role}
-              onChange={(e) => set('contact_role', e.target.value ? Number(e.target.value) : null)}
-            >
-              <option value="">{t('– bitte wählen –')}</option>
-              {boardRoles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-              {!canListRoles(roles, v.contact_role) && v.contact_role && (
-                <option value={v.contact_role}>{contact.role ?? t('gewählte Rolle')}</option>
-              )}
-            </SelectField>
-            <p className="muted small">
-              {t(
-                'Die Kontaktdaten kommen von der Person, die die Rolle gerade innehat. Wechselt die Person, ändern sich die Kontaktdaten automatisch.',
-              )}
-              {contact.source === 'role' &&
-                t(' Aktuell: {x}{x2}.', {
-                  x: contact.holder ?? t('niemand'),
-                  x2: contact.email ? `, ${contact.email}` : '',
-                })}
-            </p>
-          </>
-        ) : (
-          <div className="grid-2">
-            <Field
-              label={t('E-Mail')}
-              type="email"
-              value={v.contact_email}
-              error={errors.contact_email}
-              onChange={(e) => set('contact_email', e.target.value)}
-            />
-            <Field
-              label={t('Telefon')}
-              value={v.contact_phone}
-              error={errors.contact_phone}
-              onChange={(e) => set('contact_phone', e.target.value)}
-            />
-          </div>
-        )}
-        <Field
-          label={t('Website')}
-          type="url"
-          placeholder="https://"
-          value={v.website}
-          error={errors.website}
-          onChange={(e) => set('website', e.target.value)}
-        />
+            {!isPlatform && (
+              <>
+                <h3>{t('Anschrift')}</h3>
+                <Field
+                  label={t('Straße und Hausnummer')}
+                  required
+                  value={v.street}
+                  error={errors.street}
+                  onChange={(e) => set('street', e.target.value)}
+                />
+                <div className="grid-3">
+                  <Field
+                    label={t('PLZ')}
+                    required
+                    value={v.postal_code}
+                    error={errors.postal_code}
+                    onChange={(e) => set('postal_code', e.target.value)}
+                  />
+                  <Field
+                    label={t('Ort')}
+                    required
+                    value={v.city}
+                    error={errors.city}
+                    onChange={(e) => set('city', e.target.value)}
+                  />
+                  <Field
+                    label={t('Land')}
+                    value={v.country}
+                    error={errors.country}
+                    onChange={(e) => set('country', e.target.value)}
+                  />
+                </div>
+              </>
+            )}
 
-        {detail.type === 'federation' && (
-          <FederationNameGrammar
-            name={v.short_name?.trim() || v.name}
-            gender={v.name_gender ?? 'm'}
-            genitive={v.name_genitive ?? ''}
-            errors={errors}
-            onGender={(g) => set('name_gender', g)}
-            onGenitive={(g) => set('name_genitive', g)}
-          />
-        )}
-        {!isPlatform && (
-          <>
-            <h3>{t('Bezeichnung dieser Einheit')}</h3>
-            <p className="muted small">
-              {t(
-                'Wie heißt diese Einheit in den Texten der App? Zum Beispiel Verein, Gesellschaft, Dachverband oder Bruderschaft.',
-              )}
-            </p>
-            <LabelFields
-              testId="own-terms-preview"
-              value={{
-                label: v.label ?? '',
-                plural: v.label_plural ?? '',
-                gender: v.label_gender ?? 'm',
-                genitive: v.label_genitive ?? '',
-                labelEn: v.label_en ?? '',
-                pluralEn: v.label_plural_en ?? '',
-              }}
-              errors={{
-                label: errors.label,
-                plural: errors.label_plural,
-                gender: errors.label_gender,
-                genitive: errors.label_genitive,
-              }}
-              onChange={(l) => {
-                set('label', l.label)
-                set('label_plural', l.plural)
-                set('label_gender', l.gender)
-                set('label_genitive', l.genitive)
-                set('label_en', l.labelEn ?? '')
-                set('label_plural_en', l.pluralEn ?? '')
-              }}
-            />
-          </>
-        )}
-        {(detail.type === 'club' || detail.type === 'federation') && (
-          <>
-            <h3>{t('Bezeichnung der Untereinheiten')}</h3>
-            <p className="muted small">
-              {detail.type === 'club'
-                ? t(
-                    'Wie sollen die Untereinheiten heißen? Zum Beispiel Zug, Sparte, Kompanie oder Gruppe.',
-                  )
-                : t(
-                    'Wie heißen die Einheiten, die zu dieser Einheit gehören? Zum Beispiel Verein oder Gesellschaft.',
+            <h3>{t('Kontakt')}</h3>
+            {!isPlatform && (
+              <SelectField
+                label={t('Kontaktdaten')}
+                value={v.contact_source}
+                error={errors.contact_source}
+                onChange={(e) =>
+                  set('contact_source', e.target.value as OrgDetail['contact_source'])
+                }
+              >
+                <option value="own">{t('eigene Angaben')}</option>
+                <option value="role">{t('von einer Vorstandsrolle übernehmen')}</option>
+              </SelectField>
+            )}
+            {v.contact_source === 'role' ? (
+              <>
+                <SelectField
+                  label={t('Rolle')}
+                  value={v.contact_role ?? ''}
+                  error={errors.contact_role}
+                  onChange={(e) =>
+                    set('contact_role', e.target.value ? Number(e.target.value) : null)
+                  }
+                >
+                  <option value="">{t('– bitte wählen –')}</option>
+                  {boardRoles.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                  {!canListRoles(roles, v.contact_role) && v.contact_role && (
+                    <option value={v.contact_role}>{contact.role ?? t('gewählte Rolle')}</option>
                   )}
-            </p>
-            <LabelFields
-              preview="children"
-              testId="dept-terms-preview"
-              value={{
-                label: v.department_label,
-                plural: v.department_label_plural,
-                gender: v.department_label_gender,
-                genitive: v.department_label_genitive,
-                labelEn: v.department_label_en ?? '',
-                pluralEn: v.department_label_plural_en ?? '',
-              }}
-              errors={{
-                label: errors.department_label,
-                plural: errors.department_label_plural,
-                gender: errors.department_label_gender,
-                genitive: errors.department_label_genitive,
-              }}
-              onChange={(l) => {
-                set('department_label', l.label)
-                set('department_label_plural', l.plural)
-                set('department_label_gender', l.gender)
-                set('department_label_genitive', l.genitive)
-                set('department_label_en', l.labelEn ?? '')
-                set('department_label_plural_en', l.pluralEn ?? '')
-              }}
+                </SelectField>
+                <p className="muted small">
+                  {t(
+                    'Die Kontaktdaten kommen von der Person, die die Rolle gerade innehat. Wechselt die Person, ändern sich die Kontaktdaten automatisch.',
+                  )}
+                  {contact.source === 'role' &&
+                    t(' Aktuell: {x}{x2}.', {
+                      x: contact.holder ?? t('niemand'),
+                      x2: contact.email ? `, ${contact.email}` : '',
+                    })}
+                </p>
+              </>
+            ) : (
+              <div className="grid-2">
+                <Field
+                  label={t('E-Mail')}
+                  type="email"
+                  value={v.contact_email}
+                  error={errors.contact_email}
+                  onChange={(e) => set('contact_email', e.target.value)}
+                />
+                <Field
+                  label={t('Telefon')}
+                  value={v.contact_phone}
+                  error={errors.contact_phone}
+                  onChange={(e) => set('contact_phone', e.target.value)}
+                />
+              </div>
+            )}
+            <Field
+              label={t('Website')}
+              type="url"
+              placeholder="https://"
+              value={v.website}
+              error={errors.website}
+              onChange={(e) => set('website', e.target.value)}
             />
           </>
         )}
-        {(detail.can_switch_members || detail.type === 'federation') && (
+        {part === 'bezeichnungen' && (
           <>
-            <Checkbox
-              label={
-                detail.type === 'federation'
-                  ? t(
-                      'Führt eigene Mitglieder (z. B. passive Mitglieder ohne Mitgliedschaft in {einem})',
-                      { einem: preview.einem },
-                    )
-                  : t(
-                      'Führt eigene Mitglieder (Mitgliederliste, Mitgliedsarten, Ein- und Austritt)',
-                    )
-              }
-              checked={!!v.keeps_members}
-              onChange={(val) => set('keeps_members', val)}
-            />
-            {errors.keeps_members && <Alert kind="error">{errors.keeps_members}</Alert>}
+            {detail.type === 'federation' && (
+              <FederationNameGrammar
+                name={v.short_name?.trim() || v.name}
+                gender={v.name_gender ?? 'm'}
+                genitive={v.name_genitive ?? ''}
+                errors={errors}
+                onGender={(g) => set('name_gender', g)}
+                onGenitive={(g) => set('name_genitive', g)}
+              />
+            )}
+            {!isPlatform && (
+              <>
+                <h3>{t('Bezeichnung dieser Einheit')}</h3>
+                <p className="muted small">
+                  {t(
+                    'Wie heißt diese Einheit in den Texten der App? Zum Beispiel Verein, Gesellschaft, Dachverband oder Bruderschaft.',
+                  )}
+                </p>
+                <LabelFields
+                  testId="own-terms-preview"
+                  value={{
+                    label: v.label ?? '',
+                    plural: v.label_plural ?? '',
+                    gender: v.label_gender ?? 'm',
+                    genitive: v.label_genitive ?? '',
+                    labelEn: v.label_en ?? '',
+                    pluralEn: v.label_plural_en ?? '',
+                  }}
+                  errors={{
+                    label: errors.label,
+                    plural: errors.label_plural,
+                    gender: errors.label_gender,
+                    genitive: errors.label_genitive,
+                  }}
+                  onChange={(l) => {
+                    set('label', l.label)
+                    set('label_plural', l.plural)
+                    set('label_gender', l.gender)
+                    set('label_genitive', l.genitive)
+                    set('label_en', l.labelEn ?? '')
+                    set('label_plural_en', l.pluralEn ?? '')
+                  }}
+                />
+              </>
+            )}
+            {(detail.type === 'club' || detail.type === 'federation') && (
+              <>
+                <h3>{t('Bezeichnung der Untereinheiten')}</h3>
+                <p className="muted small">
+                  {detail.type === 'club'
+                    ? t(
+                        'Wie sollen die Untereinheiten heißen? Zum Beispiel Zug, Sparte, Kompanie oder Gruppe.',
+                      )
+                    : t(
+                        'Wie heißen die Einheiten, die zu dieser Einheit gehören? Zum Beispiel Verein oder Gesellschaft.',
+                      )}
+                </p>
+                <LabelFields
+                  preview="children"
+                  testId="dept-terms-preview"
+                  value={{
+                    label: v.department_label,
+                    plural: v.department_label_plural,
+                    gender: v.department_label_gender,
+                    genitive: v.department_label_genitive,
+                    labelEn: v.department_label_en ?? '',
+                    pluralEn: v.department_label_plural_en ?? '',
+                  }}
+                  errors={{
+                    label: errors.department_label,
+                    plural: errors.department_label_plural,
+                    gender: errors.department_label_gender,
+                    genitive: errors.department_label_genitive,
+                  }}
+                  onChange={(l) => {
+                    set('department_label', l.label)
+                    set('department_label_plural', l.plural)
+                    set('department_label_gender', l.gender)
+                    set('department_label_genitive', l.genitive)
+                    set('department_label_en', l.labelEn ?? '')
+                    set('department_label_plural_en', l.pluralEn ?? '')
+                  }}
+                />
+              </>
+            )}
+            {(detail.can_switch_members || detail.type === 'federation') && (
+              <>
+                <Checkbox
+                  label={
+                    detail.type === 'federation'
+                      ? t(
+                          'Führt eigene Mitglieder (z. B. passive Mitglieder ohne Mitgliedschaft in {einem})',
+                          { einem: preview.einem },
+                        )
+                      : t(
+                          'Führt eigene Mitglieder (Mitgliederliste, Mitgliedsarten, Ein- und Austritt)',
+                        )
+                  }
+                  checked={!!v.keeps_members}
+                  onChange={(val) => set('keeps_members', val)}
+                />
+                {errors.keeps_members && <Alert kind="error">{errors.keeps_members}</Alert>}
+              </>
+            )}
+            {detail.type === 'club' && (
+              <>
+                <Checkbox
+                  label={t('Ein Mitglied darf mehreren {pl_dat} gleichzeitig angehören', {
+                    pl_dat: preview.pl_dat,
+                  })}
+                  checked={v.allow_multiple_departments}
+                  onChange={(val) => set('allow_multiple_departments', val)}
+                />
+                <Checkbox
+                  label={t(
+                    '{pl} arbeiten selbst: Inhaber von Rollen mit Rechten verwalten ihre {pl2}',
+                    { pl: preview.pl, pl2: preview.pl },
+                  )}
+                  checked={v.department_access_enabled}
+                  onChange={(val) => set('department_access_enabled', val)}
+                />
+              </>
+            )}
           </>
         )}
-        {detail.type === 'club' && (
+        {part === 'stammdaten' && (
           <>
-            <Checkbox
-              label={t('Ein Mitglied darf mehreren {pl_dat} gleichzeitig angehören', {
-                pl_dat: preview.pl_dat,
-              })}
-              checked={v.allow_multiple_departments}
-              onChange={(val) => set('allow_multiple_departments', val)}
-            />
-            <Checkbox
-              label={t(
-                '{pl} arbeiten selbst: Inhaber von Rollen mit Rechten verwalten ihre {pl2}',
-                { pl: preview.pl, pl2: preview.pl },
-              )}
-              checked={v.department_access_enabled}
-              onChange={(val) => set('department_access_enabled', val)}
-            />
-          </>
-        )}
-        {!isPlatform && (
-          <>
-            <h3>{t('Geschäftsjahr')}</h3>
-            <Why k="fiscal_year" />
-            <FiscalYearFields
-              month={v.fiscal_start_month}
-              day={v.fiscal_start_day}
-              error={errors.fiscal_start_month ?? errors.fiscal_start_day}
-              onChange={(m, d) => {
-                set('fiscal_start_month', m)
-                set('fiscal_start_day', d)
-              }}
-            />
-            <p className="muted small">
-              {t(
-                'Mitgliederbezogene Einstellungen wie Jubiläumsstufen und Zusatzfelder stehen unter Mitglieder → Einrichtung.',
-              )}
-            </p>
+            {!isPlatform && (
+              <>
+                <h3>{t('Geschäftsjahr')}</h3>
+                <Why k="fiscal_year" />
+                <FiscalYearFields
+                  month={v.fiscal_start_month}
+                  day={v.fiscal_start_day}
+                  error={errors.fiscal_start_month ?? errors.fiscal_start_day}
+                  onChange={(m, d) => {
+                    set('fiscal_start_month', m)
+                    set('fiscal_start_day', d)
+                  }}
+                />
+                <p className="muted small">
+                  {t(
+                    'Mitgliederbezogene Einstellungen wie Jubiläumsstufen und Zusatzfelder stehen unter Mitglieder → Einrichtung.',
+                  )}
+                </p>
+              </>
+            )}
           </>
         )}
       </fieldset>

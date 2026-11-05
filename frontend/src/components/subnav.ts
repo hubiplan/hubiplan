@@ -7,6 +7,8 @@ import { createContext, useContext, useLayoutEffect, useId } from 'react'
 export interface SubNavItem {
   to: string
   label: string
+  /** Zwischenüberschrift in der Seitenleiste, z. B. Arbeitsschritt bei Finanzen */
+  section?: string
 }
 
 export interface SubNavApi {
@@ -31,6 +33,7 @@ export function useSubNav(items: SubNavItem[]): boolean {
 export interface NavNode {
   to: string
   label: string
+  section?: string
   /** NavLink nur bei genau diesem Pfad aktiv */
   end: boolean
   children: NavNode[]

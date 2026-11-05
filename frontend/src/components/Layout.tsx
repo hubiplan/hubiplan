@@ -6,7 +6,7 @@ import { formatTitle, useTitleOverride } from './pageTitle.ts'
 import { confirmLeave } from './leaveGuard.ts'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.tsx'
-import { modules } from '../modules.tsx'
+import { GROUP_LABELS, modules } from '../modules.tsx'
 import { displayName } from '../api/orgs.ts'
 import { leaveTo, ssoApi } from '../api/peering.ts'
 import type { SsoAccount } from '../api/peering.ts'
@@ -271,8 +271,11 @@ export function Layout() {
   const renderNav = (nodes: NavNode[], level = 1): ReactNode =>
     nodes.length > 0 && (
       <ul className={`sidebar-sub${level > 1 ? ' sidebar-sub-deep' : ''}`}>
-        {nodes.map((c) => (
+        {nodes.map((c, i) => (
           <li key={c.to}>
+            {c.section && c.section !== nodes[i - 1]?.section && (
+              <span className="sidebar-sub-section">{c.section}</span>
+            )}
             <NavLink to={c.to} end={c.end} className="sidebar-sublink" onClick={choseInNav}>
               {c.label}
             </NavLink>
@@ -380,6 +383,9 @@ export function Layout() {
                         : undefined
                     }
                   >
+                    {(index === 0 || visible[index - 1].group !== m.group) && (
+                      <span className="sidebar-group-label">{GROUP_LABELS[m.group]}</span>
+                    )}
                     <NavLink
                       to={m.path}
                       end={m.path === '/'}

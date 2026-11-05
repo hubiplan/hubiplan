@@ -748,6 +748,17 @@ button.tab.active {
   margin-top: 0.85rem;
 }
 
+/* Name der Gruppe über ihren Bereichen (Alltag, Verein, Kommunikation, Verwaltung) */
+.sidebar-group-label {
+  display: block;
+  padding: 0.2rem 0.75rem 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sidebar-muted, color-mix(in srgb, var(--sidebar-text) 70%, transparent));
+}
+
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -2515,6 +2526,17 @@ fieldset.subcard legend {
   margin: 0 0 0.75rem;
   font-size: 0.875rem;
   color: var(--color-text-muted);
+}
+
+/* Lange Formulare (z. B. Einstellungen › Organisation): Speicherstand bleibt beim Scrollen
+   unter der Kopfzeile sichtbar (UX-Audit S-02). */
+form.card > .save-status:first-child {
+  position: sticky;
+  top: 3.6rem;
+  z-index: 5;
+  margin: -0.25rem -0.25rem 0.75rem;
+  padding: 0.25rem;
+  background: var(--color-surface);
 }
 
 .save-status > p {
@@ -4717,4 +4739,16 @@ label:has(> .file-input:focus-visible) {
 .account-menu-extra .role-preview-switch select {
   max-width: none;
   width: 100%;
+}
+
+/* Arbeitsschritt über Unterpunkten (Finanzen: Abrechnen, Buchen, Abschließen, Einrichten) */
+.sidebar-sub-section {
+  display: block;
+  margin-top: 0.5rem;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--sidebar-text) 70%, transparent);
 }

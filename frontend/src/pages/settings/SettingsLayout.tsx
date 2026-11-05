@@ -20,6 +20,12 @@ export function SettingsLayout() {
     ...(unit || active.type === 'platform'
       ? []
       : [
+          { to: '/einstellungen/bezeichnungen', label: t('Bezeichnungen') },
+          { to: '/einstellungen/vereinsdokumente', label: t('Vereinsdokumente') },
+        ]),
+    ...(unit || active.type === 'platform'
+      ? []
+      : [
           { to: '/einstellungen/impressum', label: t('Impressum') },
           { to: '/einstellungen/datenschutz', label: t('Datenschutz') },
           { to: '/einstellungen/briefbogen', label: t('Briefbogen') },

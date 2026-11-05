@@ -66,28 +66,45 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
 export interface NavItem {
   to: string
   label: string
+  section?: string
 }
 
 /** Unterpunkte von Finanzen (Seitenleiste). */
 export function financeSections(a: FinanceAccess): NavItem[] {
   if (!a.finance && !a.billing) return []
+  // Gegliedert nach den Arbeitsschritten der Übersicht (UX-Audit S-02); Einrichtung zuletzt
+  const bill = t('Beiträge abrechnen')
+  const pay = t('Zahlungen verarbeiten')
+  const book = t('Buchen')
+  const close = t('Jahr abschließen')
+  const setup = t('Einrichten')
   return [
     { to: '/finanzen', label: t('Übersicht') },
     ...(a.finance ? [{ to: '/finanzen/entwicklung', label: t('Entwicklung') }] : []),
     ...(a.billing || a.received || a.finance
-      ? [{ to: '/finanzen/rechnungen', label: t('Rechnungen') }]
+      ? [{ to: '/finanzen/rechnungen', label: t('Rechnungen'), section: bill }]
       : []),
-    { to: '/finanzen/geschaeftspartner', label: t('Geschäftspartner') },
-    ...(a.sepa ? [{ to: '/finanzen/lastschrift', label: t('Lastschriften') }] : []),
-    ...(a.finance ? [{ to: '/finanzen/kassenbuch', label: t('Kassenbuch') }] : []),
-    ...(a.finance ? [{ to: '/finanzen/kontoauszuege', label: t('Kontoauszüge') }] : []),
-    ...(a.finance ? [{ to: '/finanzen/quittungen', label: t('Quittungen') }] : []),
-    ...(a.cashCounts ? [{ to: '/finanzen/kassenzaehlung', label: t('Kassenzählung') }] : []),
-    ...(a.reserves ? [{ to: '/finanzen/ruecklagen', label: t('Rücklagen') }] : []),
-    ...(a.donations ? [{ to: '/finanzen/zuwendungen', label: t('Zuwendungsbestätigungen') }] : []),
-    ...(a.finance ? [{ to: '/finanzen/veranstaltungen', label: t('Veranstaltungen') }] : []),
-    ...(a.finance ? [{ to: '/finanzen/abschluss', label: t('Abschluss & Berichte') }] : []),
-    { to: '/finanzen/einstellungen', label: t('Einrichtung') },
+    { to: '/finanzen/geschaeftspartner', label: t('Geschäftspartner'), section: bill },
+    ...(a.sepa ? [{ to: '/finanzen/lastschrift', label: t('Lastschriften'), section: pay }] : []),
+    ...(a.finance
+      ? [{ to: '/finanzen/kontoauszuege', label: t('Kontoauszüge'), section: pay }]
+      : []),
+    ...(a.finance ? [{ to: '/finanzen/kassenbuch', label: t('Kassenbuch'), section: book }] : []),
+    ...(a.finance ? [{ to: '/finanzen/quittungen', label: t('Quittungen'), section: book }] : []),
+    ...(a.cashCounts
+      ? [{ to: '/finanzen/kassenzaehlung', label: t('Kassenzählung'), section: book }]
+      : []),
+    ...(a.reserves ? [{ to: '/finanzen/ruecklagen', label: t('Rücklagen'), section: book }] : []),
+    ...(a.finance
+      ? [{ to: '/finanzen/veranstaltungen', label: t('Veranstaltungen'), section: book }]
+      : []),
+    ...(a.donations
+      ? [{ to: '/finanzen/zuwendungen', label: t('Zuwendungsbestätigungen'), section: close }]
+      : []),
+    ...(a.finance
+      ? [{ to: '/finanzen/abschluss', label: t('Abschluss & Berichte'), section: close }]
+      : []),
+    { to: '/finanzen/einstellungen', label: t('Einrichtung'), section: setup },
   ]
 }
 

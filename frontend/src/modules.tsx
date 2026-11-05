@@ -45,6 +45,14 @@ const icon = (d: string) => (
   </svg>
 )
 
+/** Benannte Gruppen der Seitenleiste (UX-Audit S-02, Gestalt: gemeinsame Region) */
+export const GROUP_LABELS: Record<AppModule['group'], string> = {
+  alltag: t('Alltag'),
+  verein: t('Verein'),
+  organisation: t('Kommunikation'),
+  verwaltung: t('Verwaltung'),
+}
+
 export const modules: AppModule[] = [
   {
     id: 'start',
@@ -136,6 +144,8 @@ export const modules: AppModule[] = [
       { to: '/wettbewerbe/pokale', label: t('Wanderpokale') },
       { to: '/wettbewerbe/titel', label: t('Titel und Würden') },
       { to: '/wettbewerbe/urkunden', label: t('Urkundenvorlagen') },
+      // Modul-Einstellungen heißen überall „Einrichtung“ und stehen zuletzt (docs/begriffe.md)
+      { to: '/wettbewerbe/einrichtung', label: t('Einrichtung') },
     ],
   },
   {
@@ -199,17 +209,6 @@ export const modules: AppModule[] = [
         : !!(ws.dept?.permissions.includes(PERM.docsView) || ws.portal),
   },
   {
-    id: 'material',
-    group: 'organisation',
-    label: t('Material'),
-    path: '/material',
-    icon: icon('M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10'),
-    visible: (org, ws) =>
-      org
-        ? org.modules.includes('material') && org.permissions.includes('material.view')
-        : !!(ws.dept?.material_enabled && ws.dept.permissions.includes('material.view')),
-  },
-  {
     id: 'webseite',
     group: 'organisation',
     label: t('Webseite'),
@@ -232,6 +231,17 @@ export const modules: AppModule[] = [
     icon: icon('M3 6h18v12H3zM3 10h18M7 14.5h4'),
     visible: (org) => financeSections(financeAccess(org)).length > 0,
     children: (org) => financeSections(financeAccess(org)),
+  },
+  {
+    id: 'material',
+    group: 'verwaltung',
+    label: t('Material'),
+    path: '/material',
+    icon: icon('M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10'),
+    visible: (org, ws) =>
+      org
+        ? org.modules.includes('material') && org.permissions.includes('material.view')
+        : !!(ws.dept?.material_enabled && ws.dept.permissions.includes('material.view')),
   },
   {
     id: 'einstellungen',

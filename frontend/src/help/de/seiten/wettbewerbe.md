@@ -33,7 +33,7 @@ Der Standmodus speichert private Daten nur für das bestätigte Konto beziehungs
 
 ### Einrichtung
 
-Unter **Einrichten** sind **Grunddaten**, **Schießbedingungen**, **Wertungen** und **Ausgabe & Freigabe** getrennt. Die Scheibe wird mit Bild einmal pro Schießdurchgang gewählt. Einzel- und Teilerwertungen können dieselben Treffer verwenden; eine Zugwertung berechnet sich aus einer Einzelwertung. Die Infrastruktur unter [Einstellungen › Organisation](/einstellungen/organisation) filtert die angebotenen Scheiben, ohne vorhandene Auswahlen zu entfernen.
+Unter **Einrichten** sind **Grunddaten**, **Schießbedingungen**, **Wertungen** und **Ausgabe & Freigabe** getrennt. Die Scheibe wird mit Bild einmal pro Schießdurchgang gewählt. Einzel- und Teilerwertungen können dieselben Treffer verwenden; eine Zugwertung berechnet sich aus einer Einzelwertung. Die Schießinfrastruktur unter [Wettbewerbe › Einrichtung](/wettbewerbe/einrichtung) filtert die angebotenen Scheiben, ohne vorhandene Auswahlen zu entfernen.
 
 Bei vorhandenen Ergebnissen müssen Änderungen an Bedingungen oder Berechnung bestätigt werden. Berechnete Ergebnisse werden neu ermittelt, manuelle Summen bleiben erhalten und sind zu prüfen. Nach geänderten Bedingungen verlangt der Standmodus die aktuelle Einrichtung; alte Offline-Eingaben werden verworfen. Abschließen und Wiederöffnen stehen unter **Auswertung** → **Wettbewerb und Abschluss**.
 
