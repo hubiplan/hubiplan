@@ -7642,3 +7642,7 @@ msgstr ""
 "was too large. The remaining data keeps being synchronised. For a circular to "
 "pass on, please check whether the attachments can be smaller and send it "
 "again if needed."
+
+#: core/safehttp.py organizations/homepage_preview.py
+msgid "Zeitüberschreitung."
+msgstr "Timed out."

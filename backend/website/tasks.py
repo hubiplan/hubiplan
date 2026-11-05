@@ -11,7 +11,8 @@ def purge_held_messages() -> int:
     return purge_held()
 
 
-@shared_task
+# Ruft fremde Server ab: Laufzeit begrenzen (Gesamtaudit 05.11. GA-03)
+@shared_task(soft_time_limit=600, time_limit=660)
 def sync_social_feed(feed_id: int, token: str) -> int:
     """Manual fetch: tenant is determined from the stored feed, never client input."""
     from core.tenancy import rls_bypass, tenant_context
@@ -33,7 +34,8 @@ def sync_social_feed(feed_id: int, token: str) -> int:
             )
 
 
-@shared_task
+# Ruft fremde Server ab: Laufzeit begrenzen (Gesamtaudit 05.11. GA-03)
+@shared_task(soft_time_limit=1500, time_limit=1560)
 def sync_social_feeds() -> int:
     """Alle 30 Minuten: dieselben deduplizierten Aufträge wie beim manuellen Abruf."""
     from core.tenancy import rls_bypass
@@ -49,7 +51,8 @@ def sync_social_feeds() -> int:
         )
 
 
-@shared_task
+# Ruft fremde Server ab: Laufzeit begrenzen (Gesamtaudit 05.11. GA-03)
+@shared_task(soft_time_limit=1500, time_limit=1560)
 def maintain_social_feeds() -> None:
     """Täglich: Instagram-Zugänge verlängern, Facebook-Zugänge prüfen."""
     from core.tenancy import rls_bypass
