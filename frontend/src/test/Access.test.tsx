@@ -154,7 +154,7 @@ describe('Mitgliederbereich nach Aufgaben', () => {
     renderApp('/mein-bereich')
     const user = userEvent.setup()
     expect(await screen.findByRole('heading', { name: 'Mein Bereich' })).toBeInTheDocument()
-    for (const name of ['Rechnungen', 'Rundschreiben', 'Meine Daten']) {
+    for (const name of ['Rechnungen', 'Mitteilungen', 'Meine Daten']) {
       expect(screen.getAllByRole('link', { name: new RegExp(name) }).length).toBeGreaterThan(0)
     }
     await user.click(screen.getByRole('link', { name: /Ausweis zeigen/ }))

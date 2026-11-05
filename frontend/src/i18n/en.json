@@ -6303,5 +6303,11 @@
   "„{x}“ verschwindet von der Webseite und aus HUBIplan.": "“{x}” will be removed from the website and from HUBIplan.",
   "Seit 14 Tagen kein erfolgreicher Abruf: Die Termine sind ausgeblendet und erscheinen wieder, sobald ein Abruf klappt.": "No successful fetch for 14 days: the events are hidden and will reappear as soon as a fetch succeeds.",
   "Nach 14 Tagen ohne erfolgreichen Abruf werden die Termine ausgeblendet.": "After 14 days without a successful fetch, the events are hidden.",
-  "Zwei-Faktor-Anmeldung nötig ab {date}.": "Two-factor sign-in required from {date}."
+  "Zwei-Faktor-Anmeldung nötig ab {date}.": "Two-factor sign-in required from {date}.",
+  "Mitteilungen": "Messages",
+  "Mitteilungen des Vereins lesen": "Read your club's messages",
+  "Dieser Link zur Mitteilung ist ungültig.": "This message link is invalid.",
+  "Mitteilung wird geladen …": "Loading message …",
+  "Die Mitteilung konnte nicht geladen werden ({error}).": "The message could not be loaded ({error}).",
+  "Du hast noch keine Mitteilungen bekommen.": "You haven't received any messages yet."
 }

@@ -56,6 +56,12 @@ const NAV_SOURCES = import.meta.glob(
   ],
   { query: '?raw', import: 'default', eager: true },
 ) as Record<string, string>
+// Unterpunkte, die Seiten selbst als Reiter in die Seitenleiste stellen
+const PAGE_SOURCES = import.meta.glob('../pages/**/*.tsx', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>
 const NAV_ROUTES = [
   ...new Set(
     Object.values(NAV_SOURCES).flatMap((src) =>
@@ -80,6 +86,25 @@ const TOP_ROUTES = new Set(
 const bold = (body: string) => [...body.matchAll(/\*\*([^*]+)\*\*/g)].map((m) => m[1])
 
 describe('Hilfedateien', () => {
+  it('Menüpfade („Bereich › Punkt“) nennen Punkte, die es im Menü gibt', () => {
+    // UX-Audit X-01: Hilfe, Web und App nutzen dieselben Begriffe (docs/begriffe.md)
+    const labels = new Set(
+      [...Object.values(NAV_SOURCES), ...Object.values(PAGE_SOURCES)].flatMap((src) =>
+        [...src.matchAll(/to: '\/[^']*', label: t\('([^']+)'\)/g)].map((m) => m[1]),
+      ),
+    )
+    const areas =
+      /(?:Mein Konto|Mein Bereich|Mitglieder|Finanzen|Wettbewerbe|Termine|Einstellungen|Webseite|Dokumente|Rundschreiben) › /g
+    const wrong: string[] = []
+    for (const [name, e] of DE)
+      for (const m of e.body.matchAll(areas)) {
+        const rest = e.body.slice(m.index! + m[0].length)
+        if (![...labels].some((l) => rest.startsWith(l)))
+          wrong.push(`${name}: ${m[0]}${rest.slice(0, 30)}`)
+      }
+    expect(wrong).toEqual([])
+  })
+
   it('jede Datei gibt es auf Deutsch und Englisch mit gleichem Kopf', () => {
     expect(DE.size).toBeGreaterThan(0)
     expect([...ENG.keys()].sort()).toEqual([...DE.keys()].sort())

@@ -132,7 +132,7 @@ export function PortalPage() {
       <Route
         path="rundschreiben"
         element={
-          <PortalSection title={t('Rundschreiben')}>
+          <PortalSection title={t('Mitteilungen')}>
             <PortalCirculars key={activePortal.id} accessId={activePortal.id} />
           </PortalSection>
         }
@@ -218,8 +218,8 @@ export function PortalTasks({ entry }: { entry: PortalEntry }) {
     },
     {
       to: '/mein-bereich/rundschreiben',
-      title: t('Rundschreiben'),
-      text: t('Empfangene Schreiben lesen'),
+      title: t('Mitteilungen'),
+      text: t('Mitteilungen des Vereins lesen'),
     },
     {
       to: '/mein-bereich/daten',

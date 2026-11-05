@@ -171,9 +171,10 @@ export const modules: AppModule[] = [
     visible: (_org, ws) => !!ws.portal,
     children: () => [
       { to: '/mein-bereich', label: t('Übersicht') },
+      { to: '/mein-bereich/aufgaben', label: t('Aufgaben') },
       { to: '/mein-bereich/ausweis', label: t('Ausweis') },
       { to: '/mein-bereich/rechnungen', label: t('Rechnungen') },
-      { to: '/mein-bereich/rundschreiben', label: t('Rundschreiben') },
+      { to: '/mein-bereich/rundschreiben', label: t('Mitteilungen') },
       { to: '/mein-bereich/daten', label: t('Meine Daten') },
     ],
   },

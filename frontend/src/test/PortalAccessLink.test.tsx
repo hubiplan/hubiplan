@@ -33,5 +33,5 @@ it('wählt den im Link genannten eigenen Zugang, bevor es einen Inhalt lädt', a
   )
   expect(screen.getByRole('status')).toHaveTextContent('Mitgliederzugang wird geöffnet …')
   await waitFor(() => expect(scope.select).toHaveBeenCalledWith('p:12'))
-  expect(screen.queryByRole('heading', { name: 'Rundschreiben' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Mitteilungen' })).not.toBeInTheDocument()
 })
