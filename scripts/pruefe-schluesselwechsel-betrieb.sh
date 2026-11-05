@@ -22,7 +22,10 @@ esac
 ARGS=" $* "
 if [[ "$ARGS" == *" datenschluessel_wechseln "* ]]; then
     if [[ "$ARGS" == *" --status "* ]]; then
+        count=$(cat "$CASE/status-count" 2>/dev/null || echo 0)
+        count=$((count + 1)); echo "$count" > "$CASE/status-count"
         [ ! -e "$CASE/current" ] && echo '0 none' || cat "$CASE/current"
+        if [ "${FAIL:-}" = status_after ] && [ "$count" -gt 1 ]; then exit 1; fi
     elif [[ "$ARGS" == *" --probe "* ]]; then
         [ "${FAIL:-}" != probe ]
     elif [[ "$ARGS" == *" --pruefen "* ]]; then
@@ -56,7 +59,7 @@ else
 fi
 MOCK
 chmod +x "$TEST_ROOT/bin/docker"
-for fault in ok stop active backup_before probe rotation verify backup_after receipt restart; do
+for fault in ok stop active status_after backup_before probe rotation verify backup_after receipt restart; do
     CASE="$TEST_ROOT/$fault mit Leerzeichen"
     export CASE FAIL=$fault
     mkdir -p "$CASE/app"

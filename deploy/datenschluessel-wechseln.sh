@@ -59,7 +59,7 @@ save_state() {
 }
 status_id() {
     local status
-    status=$(manage --status)
+    status=$(manage --status) || return 1
     [[ "$status" =~ ^([0-9]+)\ (none|running|completed)$ ]] || {
         echo "Ungültige Auftragsauskunft; keine automatische Fortsetzung." >&2; return 1;
     }
