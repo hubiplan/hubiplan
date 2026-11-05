@@ -34,7 +34,7 @@ For each performance, **Reminder days before (0 = off)** sets the reminder windo
 
 ## Fee templates and partial payouts
 
-Under **Performance settlement → Musician remuneration**, finance editors can **Manage fee templates**. Templates contain fee and allowance amounts in EUR. Archiving prevents new use; existing remuneration retains its copied amounts.
+Under **Performance settlement** → **Musician remuneration**, finance editors can **Manage fee templates**. Templates contain fee and allowance amounts in EUR. Archiving prevents new use; existing remuneration retains its copied amounts.
 
 For a batch settlement, select an active template and assignments without existing remuneration. **Select all without remuneration** selects assignments without confirming attendance. Confirm attendance separately for each musician. **Create remuneration drafts** creates drafts with expenses set to zero. Add actual expenses and check attendance individually, then approve after the performance as usual. Invalid selections are rejected together. Existing remuneration is never overwritten.
 

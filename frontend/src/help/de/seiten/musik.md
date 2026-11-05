@@ -34,7 +34,7 @@ Beim Auftritt legt **Erinnerung Tage vorher (0 = aus)** den Zeitraum für eine E
 
 ## Vergütungsvorlagen und Teilzahlungen
 
-Unter **Auftrittsabrechnung → Musikervergütungen** kannst du mit Kassenbearbeitungsrecht **Vergütungsvorlagen verwalten**. Eine Vorlage enthält Gage und Pauschale in EUR. Archivieren verhindert neue Anwendungen; bereits angelegte Vergütungen behalten ihre Beträge.
+Unter **Auftrittsabrechnung** → **Musikervergütungen** kannst du mit Kassenbearbeitungsrecht **Vergütungsvorlagen verwalten**. Eine Vorlage enthält Gage und Pauschale in EUR. Archivieren verhindert neue Anwendungen; bereits angelegte Vergütungen behalten ihre Beträge.
 
 Für eine Sammelabrechnung eine aktive Vorlage und Einteilungen ohne vorhandene Vergütung auswählen. **Alle ohne Vergütung auswählen** übernimmt die Auswahl, bestätigt aber keine Teilnahme. Teilnahme je Musiker ausdrücklich markieren. **Vergütungsentwürfe anlegen** erzeugt ausschließlich Entwürfe mit Auslagen 0. Auslagen einzeln ergänzen und Teilnahme prüfen; erst anschließend wie gewohnt nach dem Auftritt freigeben. Ungültige Auswahlen werden insgesamt abgewiesen. Bestehende Vergütungen werden nicht überschrieben.
 
