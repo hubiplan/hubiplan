@@ -226,7 +226,7 @@ class ScoringSerializer(serializers.ModelSerializer):
         target = services.target_of(obj)
         return target.as_dict() if target else None
 
-    def get_has_results(self, obj):
+    def get_has_results(self, obj) -> bool:
         source = obj.source if obj.kind == Scoring.Kind.UNIT else obj
         return bool(source and (source.scores.exists() or services.hits_for(source).exists()))
 

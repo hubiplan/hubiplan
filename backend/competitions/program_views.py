@@ -3,6 +3,8 @@
 from django.db import transaction
 from django.db.models import Count, F, Max
 from django.utils.translation import gettext
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers, viewsets
 from rest_framework.exceptions import ValidationError
 
@@ -41,11 +43,12 @@ class ProgramSerializer(serializers.ModelSerializer):
     validate_target = ScoringSerializer.validate_target
     validate_custom_target = ScoringSerializer.validate_custom_target
 
-    def get_target_info(self, obj):
+    @extend_schema_field(OpenApiTypes.OBJECT)
+    def get_target_info(self, obj) -> dict | None:
         target = targets.get(obj.target, obj.custom_target) if obj.target else None
         return target.as_dict() if target else None
 
-    def get_has_results(self, obj):
+    def get_has_results(self, obj) -> bool:
         return obj.hits.exists() or Score.objects.filter(scoring__program=obj).exists()
 
     def validate(self, attrs):
