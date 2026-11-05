@@ -8,6 +8,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from core.i18n import date_text
 from organizations.models import Department, DepartmentRole
 from organizations.terms import fill
 
@@ -343,7 +344,7 @@ class DepartmentMembershipSerializer(serializers.ModelSerializer):
         department = attrs.get("department", getattr(self.instance, "department", None))
         if department.is_remote:
             raise serializers.ValidationError({"department": REMOTE_UNIT})
-        others = membership.department_memberships.all()
+        others = membership.department_memberships.select_related("department")
         if self.instance:
             others = others.exclude(pk=self.instance.pk)
         for other in others:
@@ -354,8 +355,16 @@ class DepartmentMembershipSerializer(serializers.ModelSerializer):
                     fill("Im Zeitraum bereits Mitglied {dieses}.", org)
                 )
             if not org.allow_multiple_departments:
+                # Zug und Zeitraum nennen: Die Akte zeigt je nach Genauigkeit nur Jahre, die
+                # Prüfung rechnet aber tagesgenau (Ralf 2026-11-05).
                 raise serializers.ValidationError(
-                    fill("Ein Mitglied darf nur {einem} gleichzeitig angehören.", org)
+                    fill(gettext("Ein Mitglied darf nur {einem} gleichzeitig angehören."), org)
+                    + " "
+                    + gettext("Überschneidung mit „{name}“ ({start} bis {end}).").format(
+                        name=other.department.display_name,
+                        start=date_text(other.valid_from),
+                        end=date_text(other.valid_until) if other.valid_until else gettext("heute"),
+                    )
                 )
         return attrs
 

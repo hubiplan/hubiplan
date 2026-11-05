@@ -7540,3 +7540,15 @@ msgstr ""
 "Its events are therefore hidden for now, so that no outdated events appear in "
 "the calendar or on the website. They remain stored and will reappear as soon as "
 "a fetch succeeds. Please check the access under Events › External calendars."
+
+#: members/serializers.py
+msgid "Ein Mitglied darf nur {einem} gleichzeitig angehören."
+msgstr "A member may only belong to {einem} at a time."
+
+#: members/serializers.py
+msgid "Überschneidung mit „{name}“ ({start} bis {end})."
+msgstr "Overlaps with “{name}” ({start} to {end})."
+
+#: members/serializers.py
+msgid "heute"
+msgstr "today"
