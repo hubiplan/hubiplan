@@ -6497,3 +6497,72 @@ msgstr "Check equipment maintenance"
 
 msgid "Im Musikbereich prüfen: {link}\nVorgang: {number}"
 msgstr "Check in the music area: {link}\nRecord: {number}"
+
+msgid "eigene Reihenfolge"
+msgstr "custom order"
+
+msgid "Aufnahmedatum, älteste zuerst"
+msgstr "Date taken, oldest first"
+
+msgid "Aufnahmedatum, neueste zuerst"
+msgstr "Date taken, newest first"
+
+msgid "Dateiname A–Z"
+msgstr "File name A–Z"
+
+msgid "Dateiname Z–A"
+msgstr "File name Z–A"
+
+msgid "Hochladedatum, älteste zuerst"
+msgstr "Upload date, oldest first"
+
+msgid "Hochladedatum, neueste zuerst"
+msgstr "Upload date, newest first"
+
+msgid "Bildunterschrift A–Z"
+msgstr "Caption A–Z"
+
+msgid "Bildunterschrift Z–A"
+msgstr "Caption Z–A"
+
+msgid "Datum, neueste zuerst"
+msgstr "Date, newest first"
+
+msgid "Datum, älteste zuerst"
+msgstr "Date, oldest first"
+
+msgid "Titel A–Z"
+msgstr "Title A–Z"
+
+msgid "Titel Z–A"
+msgstr "Title Z–A"
+
+msgid "Nur Kleinbuchstaben, Ziffern und Bindestriche, z. B. „schuetzenfest-2024“."
+msgstr "Only lower-case letters, digits and hyphens, e.g. “summer-fair-2024”."
+
+msgid "Ein Album kann nicht in sich selbst liegen."
+msgstr "An album cannot be inside itself."
+
+msgid "Unbekanntes Album."
+msgstr "Unknown album."
+
+msgid "Alben haben höchstens zwei Ebenen."
+msgstr "Albums have at most two levels."
+
+msgid "Ein Album mit Unteralben kann nicht selbst Unteralbum werden."
+msgstr "An album with sub-albums cannot become a sub-album itself."
+
+msgid "Erwartet eine Liste von Bildnummern."
+msgstr "Expected a list of image numbers."
+
+msgid "Ein Album fasst höchstens {n} Bilder."
+msgstr "An album holds at most {n} images."
+
+msgid "Unbekanntes Bild."
+msgstr "Unknown image."
+
+msgid "Diese Adresse hat schon ein anderes Album."
+msgstr "Another album already uses this address."
+
+msgid "Unbekannte Sortierung."
+msgstr "Unknown sort order."

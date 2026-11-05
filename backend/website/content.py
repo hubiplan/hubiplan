@@ -6,7 +6,7 @@ import io
 import re
 
 from django.core.files.base import ContentFile
-from django.db import transaction
+from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext
 from PIL import Image, ImageOps, UnidentifiedImageError
@@ -14,7 +14,7 @@ from rest_framework.exceptions import ValidationError
 
 from core.filecheck import JPEG_FORMATS, heic_message, is_heic
 
-from .content_models import WebsiteImage, WebsiteRevision, WebsiteText
+from .content_models import GalleryAlbum, GalleryItem, WebsiteImage, WebsiteRevision, WebsiteText
 
 MAX_BYTES = 15 * 1024 * 1024
 MAX_PIXELS = 60_000_000
@@ -124,6 +124,34 @@ def _save_files(image: WebsiteImage, upload, original=None) -> list:
     return old
 
 
+def capture_info(upload) -> tuple:
+    """Aufnahmezeit aus der Kamera (EXIF DateTimeOriginal) und Dateiname, bevor die
+    Metadaten entfernt werden; nur zum Sortieren der Galerie (Ralf 05.11.)."""
+    import datetime
+
+    name = (getattr(upload, "name", "") or "")[:200]
+    taken = None
+    try:
+        upload.seek(0)
+        with Image.open(upload) as img:
+            exif = img.getexif()
+            raw = exif.get_ifd(0x8769).get(0x9003) or exif.get(0x0132)
+        if isinstance(raw, bytes):
+            raw = raw.decode("ascii", "ignore")
+        if isinstance(raw, str) and raw.strip():
+            naive = datetime.datetime.strptime(raw.strip()[:19], "%Y:%m:%d %H:%M:%S")
+            if 1900 <= naive.year <= 2999:
+                taken = timezone.make_aware(naive)
+    except (OSError, ValueError, UnidentifiedImageError, Image.DecompressionBombError):
+        taken = None
+    finally:
+        try:
+            upload.seek(0)
+        except (OSError, ValueError):
+            pass
+    return taken, name
+
+
 def _remove_later(storage, names: list) -> None:
     def _remove():
         for name in names:
@@ -159,7 +187,9 @@ def store_image(
         uploaded_by=user,
         updated_by=user,
     )
-    _save_files(image, upload, original if original is not None else upload)
+    source = original if original is not None else upload
+    image.taken_at, image.file_name = capture_info(source)
+    _save_files(image, upload, source)
     image.save()
     return image
 
@@ -303,6 +333,19 @@ def image_usage(image: WebsiteImage, texts=None) -> list[dict]:
                 parts.append(place)
         if parts:
             result.append({"text": t.pk, "label": str(t), "places": parts})
+    # Galerie (Ralf 05.11.): Alben, in denen das Bild steht oder Titelbild ist
+    albums = GalleryAlbum.objects.filter(website=image.website).filter(
+        models.Q(items__image=image) | models.Q(cover=image)
+    )
+    for album in albums.distinct().order_by("title", "pk"):
+        places = []
+        if album.cover_id == image.pk:
+            places.append("Titelbild")
+        if album.items.filter(image=image).exists():
+            places.append("Bild im Album")
+        result.append(
+            {"text": None, "album": album.pk, "label": f"Galerie: {album}", "places": places}
+        )
     return result
 
 
@@ -325,6 +368,13 @@ def used_image_ids(website) -> set[int]:
             for key in _IMAGE_KEY.findall(body or ""):
                 if key in keys:
                     used.add(keys[key])
+    items = GalleryItem.objects.filter(album__website=website)
+    used.update(items.values_list("image_id", flat=True))
+    used.update(
+        pk
+        for pk in GalleryAlbum.objects.filter(website=website).values_list("cover_id", flat=True)
+        if pk
+    )
     return used
 
 
