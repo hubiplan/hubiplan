@@ -24,7 +24,7 @@ def name(musician):
     return str(musician.membership.person) if musician.membership_id else musician.name
 
 
-def data(equipment):
+def data(equipment, include_location=False):
     item = equipment.item
     loans = list(
         equipment.loans.select_related("musician__membership__person").order_by("-pk")[:100]
@@ -46,7 +46,7 @@ def data(equipment):
             equipment.maintenance_due and equipment.maintenance_due <= timezone.localdate()
         ),
         "active_loan": active.pk if active else None,
-        "return_location": active.location_before if active else None,
+        "return_location": active.location_before if active and include_location else None,
         "loans": [
             {
                 "id": row.pk,
@@ -100,7 +100,10 @@ class EquipmentView(OrgScopedMixin, APIView):
     def get(self, request, org_id):
         return Response(
             {
-                "items": [data(row) for row in self.rows().order_by("pk")],
+                "items": [
+                    data(row, {"music.edit", "material.edit"} <= self.org_permissions)
+                    for row in self.rows().order_by("pk")
+                ],
                 "available": [
                     {
                         "id": row.pk,

@@ -177,6 +177,7 @@ def test_permission_module_tenant_and_deleted_scopes(c, api, equipment, orgs):
         reader, e.org, permissions=["music.view", "material.view"], name="Musikinventar lesen"
     )
     assert api(reader).get(e.url).status_code == 200
+    assert api(reader).get(e.url).json()["items"][0]["return_location"] is None
     assert issue(api(reader), e).status_code == 403
     with as_app_role(), tenant_context(orgs["b"].pk):
         assert not Equipment.objects.filter(pk=identifier).exists()
