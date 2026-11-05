@@ -1470,6 +1470,10 @@ msgid "Datenschlüssel lässt sich nicht entpacken."
 msgstr "Data key cannot be unwrapped."
 
 #, python-brace-format
+msgid "Datenschlüssel {key_id} wurde ausgemustert."
+msgstr "Data key {key_id} has been retired."
+
+#, python-brace-format
 msgid "Datenschlüssel {key_id} fehlt (Verein gelöscht?)."
 msgstr "Data key {key_id} is missing (club deleted?)."
 

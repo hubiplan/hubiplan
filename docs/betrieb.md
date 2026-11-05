@@ -539,10 +539,82 @@ prüfen und einen offenen Auftrag mit dem Verwaltungsbefehl derselben Fassung
 fortsetzen; ohne Wartungsvermerk wird kein neuer Betriebsablauf über einen offenen
 Datenauftrag gelegt.
 
+### Schlüsselbestand lesen und alte Generationen ausmustern
+
+`datenschluessel_bestand --organisation 42` liefert einen **lesenden JSON-Bericht**:
+aktive, ältere und ausgemusterte Generationen mit Zeitpunkten, letzter Wechsel,
+Verweiszahlen für verschlüsselte Datenbankfelder, private Dateien einschließlich
+verwaister Chiffrate sowie Personen-Suchmarken. Schlüsselmaterial, entschlüsselte
+Nutzdaten und Dateinamen werden nicht ausgegeben; es werden keine Schlüssel oder
+Wechselaufträge angelegt. Der Bericht entschlüsselt und prüft den aktuellen Bestand.
+Er kann entsprechend lange dauern. Bei laufenden Schreibern ist er eine Momentaufnahme.
+
+```bash
+docker compose -f docker-compose.server.yml run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_bestand --organisation 42
+```
+
+`complete=false`, Einträge in `blockers` oder `eligible=false` verhindern die
+Ausmusterung der jeweiligen Generation. Ein fehlender abgeschlossener Wechsel,
+ein noch offener Wechsel auch eines anderen Inhabers, fehlende oder beschädigte
+Dateien/Felder, fremde Schlüsselverweise und fehlerhafte Suchmarken sperren die
+Freigabe. Aktive Generationen und Generationen mit aktuellen Verweisen sind niemals
+geeignet. Nach erfolgreichem Wechsel muss auch dessen vollständige Abschlussprüfung
+bestehen. Die Prüfkennung `checksum` bindet die Freigabe an den geprüften Schlüssel-
+und Auftragsbestand; Änderungen erfordern einen neuen Bericht.
+
+**Vor einer Freigabe alle aufbewahrten Sicherungen, Zweitkopien, Exporte und Rückwege
+prüfen.** Benötigte ältere Bestände müssen entweder abgelaufen sein oder mit ihren
+eigenen vollständigen, unabhängig wiederherstellbaren Schlüsselkopien erhalten
+bleiben. Der Bericht prüft den aktuellen Anwendungsbestand, kennt aber keine externen
+Archive oder betrieblichen Aufbewahrungsentscheidungen. `--sicherungen-geprueft`
+bestätigt diese Prüfung ausdrücklich. Die Freigabereferenz bezeichnet einen separat
+verwahrten Nachweis; keine Geheimnisse oder personenbezogenen Angaben verwenden.
+Die hier erzeugten Wartungssicherungen enthalten weiterhin das frühere Material.
+Ausmusterung ist daher keine Löschzusage für alle Kopien oder Datenbank-WAL/Altseiten.
+
+Der normale Betriebsweg verwendet dieselbe Sperre, dauerhafte Wartungsmarkierung,
+strengen Vorher-/Nachher-Sicherungen und Gesundheitsprüfungen wie der Schlüsselwechsel.
+Beispiel mit erfundenen Kennungen; `PRUEFKENNUNG` durch `checksum` aus dem Bericht ersetzen:
+
+```bash
+sudo bash deploy/datenschluessel-wechseln.sh --organisation 42 --starten --ausmustern 17 --pruefsumme PRUEFKENNUNG --freigabe TEST-FREIGABE-42 --sicherungen-geprueft
+```
+
+Das Skript hält alle Anwendungsleser und Schreiber an. Direkte Verwaltungsprozesse
+müssen ebenfalls beendet sein; sie dürfen während der Wartung nicht gestartet werden.
+Nach erneuter Bestandsprüfung entfernt es **nur das verpackte Material der gewählten
+alten Generation** in einer Transaktion. Nummer, Inhaber, Wechselhistorie, Zeitpunkt,
+Prüfkennung und Freigabereferenz bleiben als Nachweis erhalten. Das Material ist aus
+diesem aktuellen Datenbestand nicht wiederherstellbar. Es gibt keinen automatischen
+Zeitplan, kein pauschales Entfernen aller alten Generationen und kein Zurückschalten.
+
+Bei Fehlern bleiben die Dienste angehalten; mit derselben Fassung und ausschließlich
+`--organisation 42 --fortsetzen` wiederaufnehmen. Der Wartungsvermerk enthält die
+unveränderliche Freigabe. Ein Abbruch nach Materialentfernung wiederholt diese nicht;
+der ursprüngliche Vorher-Nachweis bleibt erforderlich. Danach werden Nachher-Sicherung
+und Neustart erneut geprüft. Die Dienste müssen als neue Prozesse starten, damit
+auch zuvor im Arbeitsspeicher gelesene Schlüssel verworfen sind. Der normale Lesecache
+ist kein prozessübergreifender Widerruf bereits entpackten Materials.
+
+Für isolierte Verwaltungsabläufe gibt es `datenschluessel_ausmustern` mit
+`--organisation`, `--schluessel`, `--pruefsumme`, `--freigabe`,
+`--schreiber-angehalten` und `--sicherungen-geprueft`. Diese Bestätigungen halten selbst
+keine Dienste an; bevorzugt den obigen Betriebsweg verwenden. `--probe` prüft eine
+noch nicht ausgemusterte Generation ohne Materialentfernung. Eine Wiederholung mit
+derselben gespeicherten Freigabe ist nach erneuter Abschlussprüfung idempotent.
+
+Migration `core.0035` ergänzt zunächst nur leere Nachweisfelder und ist ohne
+Ausmusterung abwärtsverträglich; ältere Inserts erhalten Datenbank-Standardwerte.
+Sobald Material entfernt wurde, werden Rückmigration und Daten-Rückweg auf eine
+Fassung ohne Ausmusterungsunterstützung verweigert. Umverpacken überspringt diese
+Generation; spätere Wechsel und Prüfungen behalten die unveränderten historischen
+Nummern bei und verwenden nur noch vorhandenes Schlüsselmaterial.
+
 ### Lokale Wiederherstellungs- und Lastprüfung
 
 `BACKUP_TEST=1 scripts/test.sh <Commit>` prüft lokal komplette Sicherungen vor dem
-Wechsel, nach einem echten Abbruch während der Dateiphase und nach Abschluss.
+Wechsel, nach einem echten Abbruch während der Dateiphase, nach Abschluss und nach
+Ausmusterung einer alten Generation.
 Jeder Stand wird sowohl mit Passphrase als auch mit `age` gesichert, mit dem
 satzgebunden wiederhergestellten Hauptschlüssel in eine unabhängige Datenbank und
 ein frisches Dateivolume eingespielt und von der Anwendung entschlüsselt. Ein

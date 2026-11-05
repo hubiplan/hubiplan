@@ -2,15 +2,30 @@
 # Auf dem Server im ausgerollten Checkout ausführen. Keine Tests/kein Ausrollen.
 set -euo pipefail
 umask 077
-ORG= MODE=
+ORG= MODE= ACTION=wechsel KEY= PROOF= APPROVAL= ACK=0
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --organisation) ORG=${2:-}; shift 2 ;;
         --starten|--fortsetzen) [ -z "$MODE" ] || exit 2; MODE=${1#--}; shift ;;
+        --ausmustern) ACTION=ausmustern; KEY=${2:-}; shift 2 ;;
+        --pruefsumme) PROOF=${2:-}; shift 2 ;;
+        --freigabe) APPROVAL=${2:-}; shift 2 ;;
+        --sicherungen-geprueft) ACK=1; shift ;;
         *) echo "Aufruf: bash deploy/datenschluessel-wechseln.sh --organisation NUMMER --starten|--fortsetzen" >&2; exit 2 ;;
     esac
 done
 [[ "$ORG" =~ ^[1-9][0-9]*$ ]] && [ -n "$MODE" ] || exit 2
+validate_retirement() {
+    [[ "$KEY" =~ ^[1-9][0-9]*$ ]] && [[ "$PROOF" =~ ^[0-9a-f]{64}$ ]] \
+        && [[ "$APPROVAL" =~ ^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,99}$ ]]
+}
+if [ "$MODE" = fortsetzen ]; then
+    [ "$ACTION" = wechsel ] && [ -z "$KEY$PROOF$APPROVAL" ] && [ "$ACK" = 0 ] || exit 2
+elif [ "$ACTION" = ausmustern ]; then
+    validate_retirement && [ "$ACK" = 1 ] || { echo "Prüfkennung, Freigabe und --sicherungen-geprueft erforderlich." >&2; exit 2; }
+else
+    [ -z "$KEY$PROOF$APPROVAL" ] && [ "$ACK" = 0 ] || exit 2
+fi
 ZIEL=$(pwd -P)
 [ -f .env ] && [ -f docker-compose.server.yml ] && [ -f .fassung ] || {
     echo "Im ausgerollten Checkout mit .env und .fassung ausführen." >&2; exit 1;
@@ -31,6 +46,11 @@ COMPOSE=(docker compose --project-directory "$ZIEL" -p "$PROJECT" -f docker-comp
 [ "$(env_value HUBIPLAN_SELBSTUPDATE)" != 1 ] || COMPOSE+=(-f docker-compose.selbstupdate.yml)
 compose() { "${COMPOSE[@]}" "$@"; }
 manage() { compose run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_wechseln --organisation "$ORG" "$@"; }
+retire_manage() {
+    compose run -T --rm --no-deps --entrypoint python backend manage.py datenschluessel_ausmustern \
+        --organisation "$ORG" --schluessel "$KEY" --pruefsumme "$PROOF" --freigabe "$APPROVAL" \
+        --schreiber-angehalten --sicherungen-geprueft "$@"
+}
 read_state() { sed -n "s/^$1=//p" "$STATUS"; }
 PHASE=vorbereitung TOKEN= BASELINE= BEFORE= AFTER=
 PAUSE=0 SUCCESS=0
@@ -51,8 +71,9 @@ trap 'exit 130' INT
 trap 'exit 143' TERM HUP
 printf 'Datenschluesselwechsel %s\n' "$ORG" > "$LOCK/lauf"
 save_state() {
-    printf 'format=1\norganisation=%s\nversion=%s\ntoken=%s\nbaseline=%s\nphase=%s\nbefore=%s\nafter=%s\n' \
-        "$ORG" "$VERSION" "$TOKEN" "$BASELINE" "$PHASE" "$BEFORE" "$AFTER" > "$STATUS.tmp"
+    printf 'format=2\norganisation=%s\nversion=%s\ntoken=%s\nbaseline=%s\nphase=%s\nbefore=%s\nafter=%s\naction=%s\nkey=%s\nproof=%s\napproval=%s\n' \
+        "$ORG" "$VERSION" "$TOKEN" "$BASELINE" "$PHASE" "$BEFORE" "$AFTER" \
+        "$ACTION" "$KEY" "$PROOF" "$APPROVAL" > "$STATUS.tmp"
     sync -f "$STATUS.tmp"
     mv "$STATUS.tmp" "$STATUS"
     sync -f "$STATE_DIR"
@@ -76,7 +97,7 @@ if [ "$MODE" = starten ]; then
     mkdir -p "$STATE_DIR"
     chmod 700 "$STATE_DIR"
 else
-    [ -f "$STATUS" ] && [ "$(read_state format)" = 1 ] \
+    [ -f "$STATUS" ] && [[ "$(read_state format)" =~ ^[12]$ ]] \
         && [ "$(read_state organisation)" = "$ORG" ] \
         && [ "$(read_state version)" = "$VERSION" ] || {
         echo "Passender Wartungsvermerk dieser Fassung fehlt; nicht automatisch fortsetzen." >&2; exit 1;
@@ -84,6 +105,15 @@ else
     TOKEN=$(read_state token); BASELINE=$(read_state baseline)
     BEFORE=$(read_state before); AFTER=$(read_state after)
     [[ "$TOKEN" =~ ^[0-9a-f]{24}$ ]] && [[ "$BASELINE" =~ ^[0-9]+$ ]] || exit 1
+    if [ "$(read_state format)" = 2 ]; then
+        ACTION=$(read_state action); KEY=$(read_state key)
+        PROOF=$(read_state proof); APPROVAL=$(read_state approval)
+        case "$ACTION" in
+            ausmustern) validate_retirement || exit 1 ;;
+            wechsel) [ -z "$KEY$PROOF$APPROVAL" ] || exit 1 ;;
+            *) exit 1 ;;
+        esac
+    fi
 fi
 mkdir -p "$OPEN"
 sync -f "$STATE_DIR"
@@ -91,7 +121,9 @@ PAUSE=1
 save_state
 compose stop -t 60 backend worker beat backup
 ensure_stopped() {
-    [ -z "$(compose ps --status running -q backend worker beat backup)" ] || {
+    local running
+    running=$(compose ps --status running -q backend worker beat backup) || return 1
+    [ -z "$running" ] || {
         echo "Schreibdienste sind noch aktiv; Wechsel abgebrochen." >&2; return 1;
     }
 }
@@ -108,6 +140,7 @@ backup_set() {
 if [ -z "$BEFORE" ]; then
     # Einen neuen 'Vorher'-Satz nur anlegen, solange noch kein neuer Auftrag existiert.
     [ "$(status_id)" = "$BASELINE" ] || { echo "Vorher-Nachweis fehlt bei verändertem Schlüsselauftrag." >&2; exit 1; }
+    [ "$ACTION" != ausmustern ] || retire_manage --probe
     PHASE=backup_vorher; save_state
     backup_set "$TOKEN-vorher"
     BEFORE=$(receipt "$TOKEN-vorher")
@@ -120,7 +153,10 @@ PHASE=vorpruefung; save_state
 manage --probe
 PHASE=wechsel; save_state
 CURRENT=$(status_id)
-if [ "$CURRENT" = "$BASELINE" ]; then
+if [ "$ACTION" = ausmustern ]; then
+    [ "$CURRENT" = "$BASELINE" ] || { echo "Wechselauftrag seit Freigabe verändert." >&2; exit 1; }
+    retire_manage
+elif [ "$CURRENT" = "$BASELINE" ]; then
     manage --starten --schreiber-angehalten
 elif [ "$CURRENT" -gt "$BASELINE" ]; then
     manage --schreiber-angehalten
@@ -145,4 +181,4 @@ rmdir "$OPEN"
 mv "$STATUS" "$STATE_DIR/letzter-abschluss"
 sync -f "$STATE_DIR"
 SUCCESS=1
-echo "Schlüsselwechsel und Neustart geprüft. Sicherungssätze: vorher $BEFORE; nachher $AFTER. Alte Schlüssel bleiben erhalten."
+echo "Schlüsselwartung ($ACTION) und Neustart geprüft. Sicherungssätze: vorher $BEFORE; nachher $AFTER. Vorhandene Backups bleiben erhalten."
