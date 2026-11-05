@@ -129,6 +129,7 @@ export function InvoicesPage() {
           <option value="open">offen</option>
           <option value="ueberfaellig">{t('überfällig')}</option>
           <option value="paid">bezahlt</option>
+          <option value="settled">{t('Abgerechnet')}</option>
           <option value="cancelled">storniert</option>
         </select>
         {s.org_type === 'federation' && (
@@ -426,6 +427,13 @@ function InvoiceDetail({
             <th />
             <th className="num">{euro(inv.total)}</th>
           </tr>
+          {Number(inv.prepaid ?? 0) > 0 && (
+            <tr>
+              <th>{t('Angerechnete Anzahlungen')}</th>
+              <th />
+              <th className="num">−{euro(inv.prepaid!)}</th>
+            </tr>
+          )}
           {inv.vat.map((v) => (
             <tr key={v.rate} className="muted small">
               <td>
@@ -435,7 +443,7 @@ function InvoiceDetail({
               <td className="num">{euro(v.vat)}</td>
             </tr>
           ))}
-          {Number(inv.paid) > 0 && (
+          {(Number(inv.paid) > 0 || Number(inv.prepaid ?? 0) > 0) && (
             <tr>
               <th>{t('noch offen')}</th>
               <th />
@@ -621,24 +629,27 @@ function InvoiceDetail({
             {inv.sent_at ? t('Erneut per E-Mail senden') : t('Per E-Mail senden')}
           </button>
         )}
-        {canEdit && inv.status === 'open' && inv.payments.length === 0 && (
-          <button
-            type="button"
-            className="button button-danger push-right"
-            disabled={busy}
-            onClick={async () => {
-              if (
-                await confirmDialog({
-                  title: t('Rechnung {number} stornieren?', { number: inv.number }),
-                  confirmLabel: t('Stornieren'),
-                })
-              )
-                void act(() => billingApi.cancel(org.id, inv.id), t('Storniert.'))
-            }}
-          >
-            {t('Stornieren')}
-          </button>
-        )}
+        {canEdit &&
+          (inv.status === 'open' ||
+            (inv.document_kind === 'final' && inv.status === 'paid' && Number(inv.prepaid) > 0)) &&
+          inv.payments.length === 0 && (
+            <button
+              type="button"
+              className="button button-danger push-right"
+              disabled={busy}
+              onClick={async () => {
+                if (
+                  await confirmDialog({
+                    title: t('Rechnung {number} stornieren?', { number: inv.number }),
+                    confirmLabel: t('Stornieren'),
+                  })
+                )
+                  void act(() => billingApi.cancel(org.id, inv.id), t('Storniert.'))
+              }}
+            >
+              {t('Stornieren')}
+            </button>
+          )}
       </div>
     </div>
   )

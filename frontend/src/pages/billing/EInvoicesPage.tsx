@@ -13,10 +13,11 @@ import { euro, financeApi } from '../../api/finance.ts'
 import { todayIso } from '../../api/members.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
-import { Alert, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { emptyParty, PartyFields } from './PartnersPage.tsx'
+import { InvoiceDocumentsPanel } from './InvoiceDocumentsPanel.tsx'
 
 const blankLine = (): CommercialLine => ({
   text: '',
@@ -201,6 +202,12 @@ function CommercialDetail({
       <p>
         {invoice.subject} · {euro(invoice.total)} · {invoice.status_label}
       </p>
+      {Number(invoice.prepaid ?? 0) > 0 && (
+        <p>
+          {t('Angerechnete Anzahlungen')}: {euro(invoice.prepaid!)} · {t('Noch offen')}:{' '}
+          {euro(invoice.outstanding)}
+        </p>
+      )}
       {error && <Alert kind="error">{error}</Alert>}
       {report && <ValidationResult report={report} />}
       <div className="table-wrap">
@@ -284,7 +291,62 @@ function CommercialDetail({
           {t('Zahlungen und Versand')}
         </Link>
       </div>
+      {invoice.status !== 'draft' && (
+        <InvoiceDocumentsPanel
+          org={org.id}
+          invoice={invoice}
+          canEdit={canEdit}
+          reload={load.reload}
+        />
+      )}
     </div>
+  )
+}
+
+function AdvanceSelection({
+  org,
+  value,
+  update,
+}: {
+  org: number
+  value: CommercialInput
+  update: (ids: number[]) => void
+}) {
+  const load = useLoad(
+    () =>
+      value.partner ? einvoiceApi.advances(org, value.partner, value.project) : Promise.resolve([]),
+    [org, value.partner, value.project],
+  )
+  const selected = value.advance_invoices ?? []
+  return (
+    <section className="subcard stack">
+      <h3>{t('Bereits vereinnahmte Anzahlungen')}</h3>
+      <p className="muted">
+        {t(
+          'Erfasse die gesamte Leistung. Ausgewählte Zahlungseingänge werden einmalig vom Zahlbetrag abgezogen; es entsteht keine zweite Einnahme.',
+        )}
+      </p>
+      {load.error && <Alert kind="error">{load.error}</Alert>}
+      {load.data?.map((row) => (
+        <Checkbox
+          key={row.id}
+          label={`${row.number} · ${euro(row.paid)}`}
+          checked={selected.includes(row.id)}
+          onChange={(e) =>
+            update(
+              e.target.checked ? [...selected, row.id] : selected.filter((id) => id !== row.id),
+            )
+          }
+        />
+      ))}
+      {load.data?.length === 0 && (
+        <p>
+          {t(
+            'Keine passenden bezahlten Anzahlungsrechnungen vorhanden. Auftraggeber und Veranstaltung müssen übereinstimmen.',
+          )}
+        </p>
+      )}
+    </section>
   )
 }
 
@@ -317,6 +379,8 @@ export function CommercialForm({
     invoice
       ? {
           ...invoice.electronic_data,
+          document_kind: invoice.document_kind ?? 'invoice',
+          advance_invoices: invoice.advance_invoices ?? [],
           partner: invoice.partner,
           payment_category: invoice.payment_category,
           date: invoice.date,
@@ -327,6 +391,8 @@ export function CommercialForm({
           lines: invoice.lines.map((line) => line.electronic_data),
         }
       : {
+          document_kind: 'invoice',
+          advance_invoices: [],
           partner: 0,
           payment_category: 0,
           date: today,
@@ -380,6 +446,30 @@ export function CommercialForm({
       {error && <Alert kind="error">{error}</Alert>}
       {partners.error && <Alert kind="error">{partners.error}</Alert>}
       <fieldset disabled={busy} className="stack">
+        {
+          <SelectField
+            label={t('Rechnungsart')}
+            value={value.document_kind ?? 'invoice'}
+            onChange={(e) =>
+              setValue({
+                ...value,
+                document_kind: e.target.value as CommercialInput['document_kind'],
+                advance_invoices: [],
+              })
+            }
+          >
+            <option value="invoice">{t('Rechnung')}</option>
+            {!saveDraft && <option value="advance">{t('Anzahlungsrechnung')}</option>}
+            <option value="final">{t('Schlussrechnung')}</option>
+          </SelectField>
+        }
+        {value.document_kind === 'final' && (
+          <AdvanceSelection
+            org={org.id}
+            value={value}
+            update={(ids) => update('advance_invoices', ids)}
+          />
+        )}
         {settings.error && <Alert kind="error">{settings.error}</Alert>}
         <SelectField
           label={t('Kategorie für Zahlungseingänge')}

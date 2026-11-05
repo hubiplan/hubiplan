@@ -14,6 +14,8 @@ export interface Party {
   contact: string
   phone: string
   identifier: string
+  endpoint_id?: string
+  endpoint_scheme?: string
 }
 export interface Partner {
   id: number
@@ -46,6 +48,8 @@ export interface Header {
   currency: 'EUR'
 }
 export interface CommercialInput extends Header {
+  document_kind?: 'invoice' | 'advance' | 'final'
+  advance_invoices?: number[]
   partner: number
   payment_category: number
   date: string
@@ -56,6 +60,9 @@ export interface CommercialInput extends Header {
   lines: CommercialLine[]
 }
 export type CommercialInvoice = Omit<Invoice, 'electronic_data' | 'lines'> & {
+  advance_invoices?: number[]
+  has_hybrid?: boolean
+  has_cancellation_hybrid?: boolean
   partner: number
   payment_category: number
   electronic_data: Header
@@ -90,7 +97,39 @@ export interface IncomingInvoice {
   created_at: string
 }
 const base = (org: number) => `/api/orgs/${org}`
+export interface DeliveryState {
+  id: number
+  document: 'invoice' | 'cancellation'
+  request_id: string
+  provider: string
+  status: string
+  receipt: { reference?: string }
+  error_code: string
+  updated_at: string
+}
+export interface DeliveryOverview {
+  configuration: { enabled: boolean; label?: string; channel?: string; participant?: string }
+  deliveries: DeliveryState[]
+}
 export const einvoiceApi = {
+  advances: (org: number, partner: number, project: number | null) =>
+    api.get<CommercialInvoice[]>(
+      `${base(org)}/billing/electronic/advances/?partner=${partner}${project ? `&project=${project}` : ''}`,
+    ),
+  createHybrid: (org: number, id: number, cancel: boolean) =>
+    api.post<CommercialInvoice>(
+      `${base(org)}/billing/electronic/${id}/hybrid/${cancel ? '?cancellation=1' : ''}`,
+      {},
+    ),
+  hybrid: (org: number, id: number, cancel: boolean) =>
+    `${base(org)}/billing/electronic/${id}/hybrid/${cancel ? '?cancellation=1' : ''}`,
+  delivery: (org: number, id: number) =>
+    api.get<DeliveryOverview>(`${base(org)}/billing/electronic/${id}/delivery/`),
+  dispatch: (org: number, id: number, document: string, operation: string) =>
+    api.post<DeliveryState>(`${base(org)}/billing/electronic/${id}/delivery/`, {
+      document,
+      operation,
+    }),
   partners: (org: number) => api.get<Partner[]>(`${base(org)}/billing/partners/`),
   savePartner: (org: number, value: Omit<Partner, 'id'>, id?: number) =>
     id

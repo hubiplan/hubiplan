@@ -74,7 +74,12 @@ def amount(parent, name, value):
 
 def party(root, name, data, seller=False):
     node = element(element(root, "cac:" + name), "cac:Party")
-    element(node, "cbc:EndpointID", data["email"], schemeID="EM")
+    element(
+        node,
+        "cbc:EndpointID",
+        data.get("endpoint_id") or data["email"],
+        schemeID=data.get("endpoint_scheme", "EM"),
+    )
     if data.get("identifier"):
         element(element(node, "cac:PartyIdentification"), "cbc:ID", data["identifier"])
     address = element(node, "cac:PostalAddress")
@@ -109,6 +114,8 @@ def tax_category(parent, name, category, rate, reason=""):
 
 
 def generate(invoice):
+    from .advances import notes
+
     data = invoice.electronic_data
     totals = calculate([line.electronic_data for line in invoice.lines.all()])
     root = ET.Element(f"{{{NS['']}}}Invoice")
@@ -121,8 +128,10 @@ def generate(invoice):
     element(root, "cbc:ID", invoice.display_number)
     element(root, "cbc:IssueDate", invoice.date.isoformat())
     element(root, "cbc:DueDate", invoice.due_date.isoformat())
-    element(root, "cbc:InvoiceTypeCode", "380")
-    element(root, "cbc:Note", "\n".join(filter(None, [invoice.subject, invoice.note])))
+    element(root, "cbc:InvoiceTypeCode", "386" if invoice.document_kind == "advance" else "380")
+    element(
+        root, "cbc:Note", "\n".join(filter(None, [invoice.subject, invoice.note, notes(invoice)]))
+    )
     element(root, "cbc:DocumentCurrencyCode", "EUR")
     element(root, "cbc:BuyerReference", data["buyer_reference"])
     period = element(root, "cac:InvoicePeriod")
@@ -130,6 +139,12 @@ def generate(invoice):
     element(period, "cbc:EndDate", data["service_end"])
     if data.get("order_reference"):
         element(element(root, "cac:OrderReference"), "cbc:ID", data["order_reference"])
+    if invoice.document_kind == "final":
+        for allocation in invoice.advance_allocations.order_by("advance_id"):
+            reference = element(root, "cac:BillingReference")
+            document = element(reference, "cac:InvoiceDocumentReference")
+            element(document, "cbc:ID", allocation.snapshot["number"])
+            element(document, "cbc:IssueDate", allocation.snapshot["date"])
     party(root, "AccountingSupplierParty", data["seller"], seller=True)
     party(root, "AccountingCustomerParty", data["buyer"])
     payment = element(root, "cac:PaymentMeans")
@@ -148,7 +163,8 @@ def generate(invoice):
         ("LineExtensionAmount", totals["net"]),
         ("TaxExclusiveAmount", totals["net"]),
         ("TaxInclusiveAmount", totals["gross"]),
-        ("PayableAmount", totals["gross"]),
+        *([("PrepaidAmount", invoice.prepaid)] if invoice.prepaid else []),
+        ("PayableAmount", totals["gross"] - invoice.prepaid),
     ]:
         amount(summary, name, value)
     for index, data in enumerate(totals["lines"], start=1):

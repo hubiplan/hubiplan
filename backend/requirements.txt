@@ -18,6 +18,8 @@ openpyxl==3.1.5
 defusedxml==0.7.1
 reportlab==5.1.0
 pypdfium2==5.14.0
+# Hybrid invoices (CII / PDF/A-3), with local validation only
+factur-x==7.9
 # Schießscheiben-Fotoerkennung (ohne Oberflächenbibliotheken)
 opencv-python-headless==4.14.0.94
 numpy==2.4.6

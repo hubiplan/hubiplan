@@ -3,7 +3,7 @@ import { einvoiceApi } from '../../api/einvoices.ts'
 import type { Partner, Party } from '../../api/einvoices.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
-import { Alert, Checkbox, Field } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 
@@ -58,7 +58,41 @@ export function PartyFields({
             onChange={(e) => onChange({ ...value, [key]: e.target.value })}
           />
         ))}
+        <SelectField
+          label={t('Schema der elektronischen Adresse')}
+          value={value.endpoint_scheme === 'EM' || !value.endpoint_scheme ? 'EM' : 'EAS'}
+          onChange={(e) =>
+            onChange({
+              ...value,
+              endpoint_scheme: e.target.value === 'EM' ? 'EM' : '0204',
+              endpoint_id: '',
+            })
+          }
+        >
+          <option value="EM">{t('E-Mail')}</option>
+          <option value="EAS">{t('Registrierte Adresse (Peppol)')}</option>
+        </SelectField>
+        {value.endpoint_scheme && value.endpoint_scheme !== 'EM' && (
+          <Field
+            label={t('EAS-Schemacode')}
+            required
+            pattern="[0-9]{4}"
+            value={value.endpoint_scheme}
+            onChange={(e) => onChange({ ...value, endpoint_scheme: e.target.value })}
+          />
+        )}
+        <Field
+          label={t('Elektronische Adresse')}
+          value={value.endpoint_id ?? ''}
+          required={!!value.endpoint_scheme && value.endpoint_scheme !== 'EM'}
+          onChange={(e) => onChange({ ...value, endpoint_id: e.target.value })}
+        />
       </div>
+      <p className="muted small">
+        {t(
+          'Ohne registrierte Adresse wird die E-Mail-Adresse verwendet. Peppol erfordert eine Registrierung beim Access Point.',
+        )}
+      </p>
     </fieldset>
   )
 }

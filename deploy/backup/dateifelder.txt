@@ -7,6 +7,10 @@ billing_invoiceartifact xml private
 billing_invoiceartifact report_xml private
 billing_invoiceartifact cancellation_xml private
 billing_invoiceartifact cancellation_report_xml private
+billing_invoicehybridartifact pdf private
+billing_invoicehybridartifact xml private
+billing_invoicehybridartifact cii_report private
+billing_invoicehybridartifact pdf_report private
 billing_incominginvoice original private
 billing_incominginvoice xml private
 billing_incominginvoice report_xml private

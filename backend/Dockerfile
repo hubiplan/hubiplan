@@ -13,12 +13,14 @@ ARG REQUIREMENTS=requirements.txt
 COPY requirements.txt requirements-dev.txt ./
 RUN pip install -r "$REQUIREMENTS"
 
-COPY . .
-
 # XRechnung: lokale XSD-/Schematron-Prüfung. Keine Rechnungsdaten an externe Dienste.
-RUN apt-get update -q && apt-get install -y -q --no-install-recommends default-jre-headless > /dev/null \
+COPY install_einvoice_validator.py install_pdf_validator.py ./
+RUN apt-get update -q && apt-get install -y -q --no-install-recommends default-jre-headless ghostscript > /dev/null \
     && rm -rf /var/lib/apt/lists/* \
-    && python install_einvoice_validator.py /opt/hubiplan-einvoice
+    && python install_einvoice_validator.py /opt/hubiplan-einvoice \
+    && python install_pdf_validator.py
+
+COPY . .
 
 # Statische Dateien schon beim Bauen einsammeln: Im Betrieb ist das Dateisystem
 # schreibgeschützt (read_only in docker-compose.server.yml). Ohne die Dateien von

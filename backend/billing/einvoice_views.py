@@ -89,7 +89,70 @@ class ElectronicInvoiceViewSet(InvoiceViewSet):
     """Gleiche Rechnungen, Nummern, Zahlungen und Rechte; eigener strukturierter Editor."""
 
     def get_queryset(self):
-        return super().get_queryset().exclude(electronic_data={})
+        qs = super().get_queryset().exclude(electronic_data={})
+        if self.action == "advances":
+            qs = qs.filter(document_kind="advance", status__in=["open", "paid"], paid__gt=0)
+            for field in ["partner", "project"]:
+                value = self.request.query_params.get(field)
+                if value and value.isdigit():
+                    qs = qs.filter(**{field + "_id": int(value)})
+            if not self.request.query_params.get("project"):
+                qs = qs.filter(project__isnull=True)
+        return qs
+
+    @action(detail=False, methods=["get"])
+    def advances(self, request, org_id):
+        return Response(InvoiceDetailSerializer(self.get_queryset()[:100], many=True).data)
+
+    @action(detail=True, methods=["get", "post"])
+    def hybrid(self, request, org_id, pk):
+        from . import hybrid
+
+        document = "cancellation" if request.query_params.get("cancellation") == "1" else "invoice"
+        try:
+            if request.method == "POST":
+                with transaction.atomic():
+                    invoice = self._locked_object()
+                    if document == "cancellation" and invoice.status != "cancelled":
+                        raise NotFound()
+                    hybrid.create(invoice, document)
+                return self._detail(invoice)
+            invoice = self.get_object()
+            if not invoice.hybrid_artifacts.filter(document=document).exclude(pdf="").exists():
+                raise NotFound()
+            pdf = hybrid.read(invoice, document)
+        except DjangoValidationError as exc:
+            raise _as_drf(exc) from exc
+        suffix = "-S" if document == "cancellation" else ""
+        return file_response(
+            pdf, "application/pdf", f"{invoice.display_number}{suffix}-zugferd.pdf"
+        )
+
+    @action(detail=True, methods=["get", "post"])
+    def delivery(self, request, org_id, pk):
+        from . import delivery
+
+        invoice = self.get_object()
+        try:
+            if request.method == "GET":
+                return Response(delivery.overview(invoice))
+            document = serializers.ChoiceField(choices=["invoice", "cancellation"]).run_validation(
+                request.data.get("document", "invoice")
+            )
+            operation = serializers.ChoiceField(choices=["send", "refresh"]).run_validation(
+                request.data.get("operation", "send")
+            )
+            result = delivery.dispatch(invoice, document, operation)
+            record(
+                self.org,
+                request.user,
+                "update",
+                invoice,
+                {"E-Rechnungsversand": [None, result["status"]]},
+            )
+            return Response(result)
+        except DjangoValidationError as exc:
+            raise _as_drf(exc) from exc
 
     def _save_commercial(self, invoice, request):
         serializer = CommercialInvoiceSerializer(data=request.data)
@@ -116,6 +179,13 @@ class ElectronicInvoiceViewSet(InvoiceViewSet):
         try:
             einvoice_services.save_draft(invoice, data, partner, project)
             if hasattr(invoice, "performanceaccount"):
+                if invoice.document_kind == "advance":
+                    raise serializers.ValidationError(
+                        gettext(
+                            "Für die Auftrittsabrechnung bitte Rechnung oder "
+                            "Schlussrechnung wählen."
+                        )
+                    )
                 account = invoice.performanceaccount
                 if (
                     invoice.partner_id != account.performance.customer_id
@@ -160,6 +230,12 @@ class ElectronicInvoiceViewSet(InvoiceViewSet):
         invoice = self.get_object()
         if invoice.status != Invoice.Status.DRAFT:
             return Response(invoice.electronic_artifact.report)
+        from .advances import ensure_current
+
+        try:
+            ensure_current(invoice)
+        except DjangoValidationError as exc:
+            raise _as_drf(exc) from exc
         report, _ = einvoice_validator.validate(einvoice_xml.generate(invoice))
         return Response(report)
 

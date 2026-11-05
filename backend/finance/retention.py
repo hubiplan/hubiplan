@@ -50,7 +50,10 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
         IncomingInvoice,
         IncomingValidation,
         Invoice,
+        InvoiceAdvance,
         InvoiceArtifact,
+        InvoiceDelivery,
+        InvoiceHybridArtifact,
     )
 
     from .models import (
@@ -75,6 +78,9 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
         (IncomingInvoice, "created_at__date"),
         (IncomingValidation, "incoming__created_at__date"),
         (InvoiceArtifact, "invoice__date"),
+        (InvoiceAdvance, "final_invoice__date"),
+        (InvoiceDelivery, "invoice__date"),
+        (InvoiceHybridArtifact, "invoice__date"),
         (Booking, "date"),
         (Invoice, "date"),
         (Dunning, "date"),
@@ -110,6 +116,13 @@ def due_dates(org, year: int) -> tuple[datetime.date, datetime.date]:
         latest = rows.aggregate(latest=Max("created_at"))["latest"]
         if latest:
             document_year = max(document_year, timezone.localdate(latest).year)
+    # A later final invoice keeps the underlying advance evidence for at least
+    # as long as the reconciliation, including delayed issue/cancellation.
+    latest_final = InvoiceAdvance.objects.filter(
+        organization=org, advance__date__gte=start, advance__date__lte=end
+    ).aggregate(latest=Max("final_invoice__updated_at"))["latest"]
+    if latest_final:
+        document_year = max(document_year, timezone.localdate(latest_final).year)
     closed = YearClosing.objects.filter(organization=org, year=year).aggregate(
         latest=Max("closed_at")
     )["latest"]

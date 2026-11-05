@@ -6148,3 +6148,228 @@ msgstr "Please record the return of music equipment before deleting it."
 
 msgid "Bitte einen gültigen Rückgabeort wählen."
 msgstr "Please choose a valid return location."
+
+msgid "Abgerechnet"
+msgstr "Settled"
+
+msgid "Für die Auftrittsabrechnung bitte Rechnung oder Schlussrechnung wählen."
+msgstr "Please choose an invoice or final invoice for the performance settlement."
+
+msgid "Angerechnete Anzahlungen (bereits vereinnahmt):"
+msgstr "Credited advances (already received):"
+
+msgid "Anschrift Empfänger"
+msgstr "Customer address"
+
+msgid "Anschrift Rechnungssteller"
+msgstr "Supplier address"
+
+msgid "Anzahlungen können nur in einer Schlussrechnung angerechnet werden."
+msgstr "Advances can only be credited against a final invoice."
+
+msgid "Anzahlungsrechnung"
+msgstr "Advance invoice"
+
+msgid "Bitte Anzahlungsrechnungen genau einmal auswählen."
+msgstr "Please select each advance invoice exactly once."
+
+msgid "Bitte die elektronische Adresse angeben."
+msgstr "Please enter the electronic address."
+
+msgid "Bitte eine passende, bezahlte Anzahlungsrechnung desselben Auftraggebers und Projekts wählen."
+msgstr "Please select a matching paid advance invoice for the same customer and project."
+
+msgid "Bitte zuerst die zugehörige Schlussrechnung stornieren."
+msgstr "Please cancel the associated final invoice first."
+
+msgid "Brutto"
+msgstr "Gross"
+
+msgid "Das Original ist keine Anzahlungsrechnung."
+msgstr "The original is not an advance invoice."
+
+msgid "Der Absender des Originals passt nicht zur Versandanbindung."
+msgstr "The sender in the original does not match the delivery connection."
+
+msgid "Die Anzahlung hat sich geändert. Bitte den Rechnungsentwurf erneut speichern und prüfen."
+msgstr "The advance has changed. Please save and validate the invoice draft again."
+
+msgid "Die Anzahlung ist nicht bezahlt oder die Zahlung liegt nach dem Schlussrechnungsdatum."
+msgstr "The advance has not been paid or the payment is after the final invoice date."
+
+msgid "Die Anzahlungen übersteigen den Rechnungsbetrag."
+msgstr "The advances exceed the invoice amount."
+
+msgid "Die Summen des Anzahlungsoriginals stimmen nicht überein."
+msgstr "The totals in the original advance invoice do not match."
+
+msgid "Die Versandanbindung ist nicht korrekt eingerichtet."
+msgstr "The delivery connection is not configured correctly."
+
+msgid "Die ZUGFeRD-Prüfung ist fehlgeschlagen. Es wurde keine Datei freigegeben."
+msgstr "ZUGFeRD validation failed. No file was released."
+
+msgid "Die Zugangsdaten der Versandanbindung fehlen."
+msgstr "The delivery connection credentials are missing."
+
+msgid "Die angerechneten Anzahlungen übersteigen die Schlussrechnung oder ihre Steuergruppen."
+msgstr "The credited advances exceed the final invoice or its VAT groups."
+
+msgid "Eine Anzahlungsrechnung ist nicht verfügbar."
+msgstr "An advance invoice is unavailable."
+
+msgid "Einzelpreis netto"
+msgstr "Net unit price"
+
+msgid "Elektronische Absender- und Empfängeradresse fehlen."
+msgstr "Electronic sender and recipient addresses are missing."
+
+msgid "Es liegt kein Stornooriginal vor."
+msgstr "No original cancellation document is available."
+
+msgid "Für Peppol sind registrierte elektronische Adressen erforderlich."
+msgstr "Peppol requires registered electronic addresses."
+
+msgid "Für diesen Verein ist keine Versandanbindung eingerichtet."
+msgstr "No delivery connection is configured for this club."
+
+msgid "Hinweise zur Rechnung"
+msgstr "Invoice notes"
+
+msgid "Kategorie"
+msgstr "Category"
+
+msgid "Leistungsbeginn"
+msgstr "Service start"
+
+msgid "Leistungsende"
+msgstr "Service end"
+
+msgid "Netto"
+msgstr "Net"
+
+msgid "Nur festgeschriebene Rechnungen können versendet werden."
+msgstr "Only issued invoices can be sent."
+
+msgid "Rechnung"
+msgstr "Invoice"
+
+msgid "Schlussrechnung"
+msgstr "Final invoice"
+
+msgid "Steuer"
+msgstr "Tax"
+
+msgid "Steueraufteilung"
+msgstr "VAT breakdown"
+
+msgid "Steuersatz"
+msgstr "VAT rate"
+
+msgid "Stornorechnung"
+msgstr "Cancellation invoice"
+
+msgid "USt-IdNr. Empfänger"
+msgstr "Customer VAT identifier"
+
+msgid "Umsatzsteuer"
+msgstr "VAT"
+
+msgid "Zahlung"
+msgstr "Payment"
+
+msgid "abzüglich Anzahlungen"
+msgstr "less advances"
+
+msgid "Rechnungsart"
+msgstr "Invoice type"
+
+msgid "Angerechnete Anzahlungen"
+msgstr "Credited advances"
+
+msgid "Noch offen"
+msgstr "Outstanding"
+
+msgid "Bereits vereinnahmte Anzahlungen"
+msgstr "Advances already received"
+
+msgid "Erfasse die gesamte Leistung. Ausgewählte Zahlungseingänge werden einmalig vom Zahlbetrag abgezogen; es entsteht keine zweite Einnahme."
+msgstr "Enter the entire service. Selected payments are deducted from the amount due once; no duplicate income is created."
+
+msgid "Keine passenden bezahlten Anzahlungsrechnungen vorhanden. Auftraggeber und Veranstaltung müssen übereinstimmen."
+msgstr "No matching paid advance invoices available. The customer and event must match."
+
+msgid "Schema der elektronischen Adresse"
+msgstr "Electronic address scheme"
+
+msgid "Registrierte Adresse (Peppol)"
+msgstr "Registered address (Peppol)"
+
+msgid "EAS-Schemacode"
+msgstr "EAS scheme code"
+
+msgid "Elektronische Adresse"
+msgstr "Electronic address"
+
+msgid "Ohne registrierte Adresse wird die E-Mail-Adresse verwendet. Peppol erfordert eine Registrierung beim Access Point."
+msgstr "Without a registered address, the email address is used. Peppol requires registration with an access point."
+
+msgid "Vorbereitet"
+msgstr "Prepared"
+
+msgid "Übermittlung läuft"
+msgstr "Transmission in progress"
+
+msgid "Übermittlung unbestätigt"
+msgstr "Transmission unconfirmed"
+
+msgid "Beim Anbieter eingereicht"
+msgstr "Submitted to provider"
+
+msgid "Zugestellt"
+msgstr "Delivered"
+
+msgid "Vom Anbieter abgelehnt"
+msgstr "Rejected by provider"
+
+msgid "ZUGFeRD und elektronische Übermittlung"
+msgstr "ZUGFeRD and electronic transmission"
+
+msgid "ZUGFeRD enthält eine lesbare PDF/A-Datei und das geprüfte Rechnungs-XML. Originale bleiben unverändert."
+msgstr "ZUGFeRD contains a readable PDF/A file and the validated invoice XML. Originals remain unchanged."
+
+msgid "Rechnungsoriginal"
+msgstr "Original invoice"
+
+msgid "ZUGFeRD herunterladen"
+msgstr "Download ZUGFeRD"
+
+msgid "ZUGFeRD erstellen und prüfen"
+msgstr "Create and validate ZUGFeRD"
+
+msgid "Übermittlung erneut abgleichen"
+msgstr "Reconcile transmission again"
+
+msgid "Elektronisch übermitteln"
+msgstr "Transmit electronically"
+
+msgid "Versandstatus abrufen"
+msgstr "Fetch delivery status"
+
+msgid "Die Zustellung ist noch nicht bestätigt. Vor einem erneuten Versand wird die bestehende Übermittlung beim Anbieter abgeglichen."
+msgstr "Delivery has not yet been confirmed. The existing transmission is reconciled with the provider before retrying."
+
+msgid "Eine Versandanbindung kann die Plattformverwaltung für diesen Verein einrichten. Bis dahin können Rechnungen heruntergeladen und im Empfängerportal hochgeladen werden."
+msgstr "The platform administrator can configure a delivery connection for this club. Until then, download invoices and upload them to the recipient portal."
+
+msgid "Betrifft den E-Rechnungsversand."
+msgstr "Concerns electronic invoice delivery."
+
+msgid "E-Rechnungsversand"
+msgstr "Electronic invoice delivery"
+
+msgid "ZUGFeRD-Original"
+msgstr "Original ZUGFeRD invoice"
+
+msgid "Anzahlungszuordnung"
+msgstr "Advance allocation"

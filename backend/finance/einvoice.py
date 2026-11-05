@@ -102,6 +102,17 @@ def _ubl(root) -> dict:
                 "quantity": " ".join((qty.text or "").split()) if qty is not None else "",
                 "unit": qty.get("unitCode", "") if qty is not None else "",
                 "amount": _amount(line, "LineExtensionAmount"),
+                "unit_price": _amount(line, "Price", "PriceAmount"),
+                "tax_category": _text(line, "Item", "ClassifiedTaxCategory", "ID"),
+                "tax_rate": _amount(line, "Item", "ClassifiedTaxCategory", "Percent") or Decimal(0),
+                "adjustments": [
+                    {
+                        "charge": _text(n, "ChargeIndicator") == "true",
+                        "amount": _amount(n, "Amount"),
+                        "reason": _text(n, "AllowanceChargeReason"),
+                    }
+                    for n in _children(line, "AllowanceCharge")
+                ],
             }
         )
     iban = ""
@@ -144,6 +155,30 @@ def _cii(root) -> dict:
                 "text": _text(item, "SpecifiedTradeProduct", "Name"),
                 "quantity": " ".join((qty.text or "").split()) if qty is not None else "",
                 "unit": qty.get("unitCode", "") if qty is not None else "",
+                "unit_price": _amount(
+                    item, "SpecifiedLineTradeAgreement", "NetPriceProductTradePrice", "ChargeAmount"
+                ),
+                "tax_category": _text(
+                    item, "SpecifiedLineTradeSettlement", "ApplicableTradeTax", "CategoryCode"
+                ),
+                "tax_rate": _amount(
+                    item,
+                    "SpecifiedLineTradeSettlement",
+                    "ApplicableTradeTax",
+                    "RateApplicablePercent",
+                )
+                or Decimal(0),
+                "adjustments": [
+                    {
+                        "charge": _text(n, "ChargeIndicator", "Indicator") == "true",
+                        "amount": _amount(n, "ActualAmount"),
+                        "reason": _text(n, "Reason"),
+                    }
+                    for n in _children(
+                        _child(item, "SpecifiedLineTradeSettlement"),
+                        "SpecifiedTradeAllowanceCharge",
+                    )
+                ],
                 "amount": _amount(
                     item,
                     "SpecifiedLineTradeSettlement",
@@ -187,6 +222,121 @@ def _cii(root) -> dict:
     }
 
 
+def _details(root):
+    """Details required by the human-readable half of a hybrid invoice."""
+    cii = _local(root.tag) == "CrossIndustryInvoice"
+    if cii:
+        trade = _child(root, "SupplyChainTradeTransaction")
+        agreement = _child(trade, "ApplicableHeaderTradeAgreement")
+        settlement = _child(trade, "ApplicableHeaderTradeSettlement")
+        seller, buyer = _child(agreement, "SellerTradeParty"), _child(agreement, "BuyerTradeParty")
+        doc = _child(root, "ExchangedDocument")
+        totals = _child(settlement, "SpecifiedTradeSettlementHeaderMonetarySummation")
+        period = _child(settlement, "BillingSpecifiedPeriod")
+        notes = [
+            (_child(n, "Content").text or "")
+            for n in _children(doc, "IncludedNote")
+            if _child(n, "Content") is not None
+        ]
+        taxes = [
+            {
+                "category": _text(n, "CategoryCode"),
+                "rate": _amount(n, "RateApplicablePercent") or Decimal(0),
+                "net": _amount(n, "BasisAmount"),
+                "tax": _amount(n, "CalculatedAmount"),
+                "reason": _text(n, "ExemptionReason"),
+            }
+            for n in _children(settlement, "ApplicableTradeTax")
+        ]
+        invoice_type = _text(doc, "TypeCode")
+        prepaid = _amount(totals, "TotalPrepaidAmount") or Decimal(0)
+        start = _date(_text(period, "StartDateTime", "DateTimeString"))
+        end = _date(_text(period, "EndDateTime", "DateTimeString"))
+        references = [
+            {
+                "number": _text(n, "IssuerAssignedID"),
+                "date": _date(_text(n, "FormattedIssueDateTime", "DateTimeString")),
+            }
+            for n in _children(settlement, "InvoiceReferencedDocument")
+        ]
+    else:
+        seller = _child(root, "AccountingSupplierParty", "Party")
+        buyer = _child(root, "AccountingCustomerParty", "Party")
+        totals = _child(root, "LegalMonetaryTotal")
+        period = _child(root, "InvoicePeriod")
+        notes = [n.text or "" for n in _children(root, "Note")]
+        taxes = [
+            {
+                "category": _text(n, "TaxCategory", "ID"),
+                "rate": _amount(n, "TaxCategory", "Percent") or Decimal(0),
+                "net": _amount(n, "TaxableAmount"),
+                "tax": _amount(n, "TaxAmount"),
+                "reason": _text(n, "TaxCategory", "TaxExemptionReason"),
+            }
+            for n in _children(_child(root, "TaxTotal"), "TaxSubtotal")
+        ]
+        invoice_type = _text(root, "InvoiceTypeCode") or _text(root, "CreditNoteTypeCode")
+        prepaid = _amount(totals, "PrepaidAmount") or Decimal(0)
+        start, end = _date(_text(period, "StartDate")), _date(_text(period, "EndDate"))
+        references = [
+            {
+                "number": _text(n, "InvoiceDocumentReference", "ID"),
+                "date": _date(_text(n, "InvoiceDocumentReference", "IssueDate")),
+            }
+            for n in _children(root, "BillingReference")
+        ]
+
+    def address(party):
+        node = _child(party, "PostalTradeAddress" if cii else "PostalAddress")
+        lines = [
+            _text(node, key)
+            for key in (
+                ["LineOne", "LineTwo", "LineThree"]
+                if cii
+                else ["StreetName", "AdditionalStreetName"]
+            )
+        ]
+        if not cii:
+            lines += [_text(n, "Line") for n in _children(node, "AddressLine")]
+        lines += [
+            " ".join(
+                filter(
+                    None,
+                    [_text(node, "PostcodeCode" if cii else "PostalZone"), _text(node, "CityName")],
+                )
+            ),
+            _text(node, "CountryID") if cii else _text(node, "Country", "IdentificationCode"),
+        ]
+        return "\n".join(filter(None, lines))
+
+    def tax_id(party, scheme):
+        for node in _children(party, "SpecifiedTaxRegistration" if cii else "PartyTaxScheme"):
+            identifier = _child(node, "ID" if cii else "CompanyID")
+            code = (
+                identifier.get("schemeID")
+                if cii and identifier is not None
+                else _text(node, "TaxScheme", "ID")
+            )
+            if code == scheme:
+                return (identifier.text or "").strip()
+        return ""
+
+    return {
+        "document_type": invoice_type,
+        "prepaid": prepaid,
+        "note": "\n".join(notes),
+        "seller_address": address(seller),
+        "buyer_address": address(buyer),
+        "seller_vat_id": tax_id(seller, "VA" if cii else "VAT"),
+        "seller_tax_number": tax_id(seller, "FC"),
+        "buyer_vat_id": tax_id(buyer, "VA" if cii else "VAT"),
+        "service_start": start,
+        "service_end": end,
+        "taxes": taxes,
+        "references": references,
+    }
+
+
 def parse_xml(data: bytes) -> dict:
     root = _root(data)
     name = _local(root.tag)
@@ -204,6 +354,7 @@ def parse_xml(data: bytes) -> dict:
         raise EInvoiceError(
             gettext("Die E-Rechnung enthält keine Rechnungsnummer oder keinen Betrag.")
         )
+    result.update(_details(root))
     return result
 
 
@@ -276,7 +427,15 @@ def render(info: dict, org_name: str) -> bytes:
     def money(value) -> str:
         return _euro(value) if value not in (None, "") else ""
 
-    title = "Gutschrift" if info.get("credit_note") else "Rechnung"
+    title = (
+        gettext("Stornorechnung")
+        if info.get("credit_note")
+        else gettext("Anzahlungsrechnung")
+        if info.get("document_type") == "386"
+        else gettext("Schlussrechnung")
+        if info.get("prepaid")
+        else gettext("Rechnung")
+    )
     story: list = [
         Paragraph(f"<b>{title} {escape(info.get('number') or '')}</b>", st["title"]),
         Paragraph(
@@ -288,8 +447,14 @@ def render(info: dict, org_name: str) -> bytes:
     ]
     facts = [
         ("Rechnungssteller", info.get("seller")),
+        (gettext("Anschrift Rechnungssteller"), info.get("seller_address")),
         ("USt-IdNr.", info.get("seller_vat_id")),
+        (gettext("Steuernummer"), info.get("seller_tax_number")),
         ("Empfänger", info.get("buyer")),
+        (gettext("Anschrift Empfänger"), info.get("buyer_address")),
+        (gettext("USt-IdNr. Empfänger"), info.get("buyer_vat_id")),
+        (gettext("Leistungsbeginn"), _de(info.get("service_start"))),
+        (gettext("Leistungsende"), _de(info.get("service_end"))),
         ("Rechnungsdatum", _de(info.get("date"))),
         ("fällig am", _de(info.get("due_date"))),
         ("IBAN", info.get("iban")),
@@ -297,7 +462,11 @@ def render(info: dict, org_name: str) -> bytes:
     ]
     for label, value in facts:
         if value:
-            story.append(Paragraph(f"<b>{label}:</b> {escape(str(value))}", st["normal"]))
+            story.append(
+                Paragraph(
+                    f"<b>{label}:</b> {escape(str(value)).replace(chr(10), '<br/>')}", st["normal"]
+                )
+            )
     if info.get("lines"):
         story.append(Paragraph("<b>Positionen</b>", st["h2"]))
         rows = [
@@ -310,7 +479,25 @@ def render(info: dict, org_name: str) -> bytes:
         for line in info["lines"]:
             rows.append(
                 [
-                    Paragraph(escape(line.get("text") or ""), st["normal"]),
+                    Paragraph(
+                        escape(line.get("text") or "")
+                        + (
+                            f"<br/>{gettext('Einzelpreis netto')}: "
+                            f"{escape(str(line['unit_price']))} EUR"
+                            if line.get("unit_price") is not None
+                            else ""
+                        )
+                        + (
+                            f"<br/>{gettext('Steuer')}: {escape(line.get('tax_category', ''))} / "
+                            f"{escape(str(line.get('tax_rate', 0)))} %"
+                        )
+                        + "".join(
+                            f"<br/>{'+' if a['charge'] else '-'} {money(a['amount'])} "
+                            f"{escape(a['reason'])}"
+                            for a in line.get("adjustments", [])
+                        ),
+                        st["normal"],
+                    ),
                     Paragraph(escape(f"{line.get('quantity', '')} {line.get('unit', '')}"), r),
                     Paragraph(money(line.get("amount")), r),
                 ]
@@ -323,11 +510,45 @@ def render(info: dict, org_name: str) -> bytes:
             ("netto", "net", r),
             ("Umsatzsteuer", "tax", r),
             ("brutto", "gross", r),
+            (gettext("abzüglich Anzahlungen"), "prepaid", r),
             ("<b>zu zahlen</b>", "payable", rb),
         ]
-        if info.get(key) not in (None, "")
+        if info.get(key) not in (None, "") and (key != "prepaid" or info.get(key))
     ]
     story.append(_table(rows, [60 * mm, 35 * mm], grey))
+    if info.get("taxes"):
+        story.append(Paragraph(gettext("Steueraufteilung"), st["h2"]))
+        rows = [
+            [
+                Paragraph(escape(label), st["normal"])
+                for label in [
+                    gettext("Kategorie"),
+                    gettext("Steuersatz"),
+                    gettext("Netto"),
+                    gettext("Umsatzsteuer"),
+                    gettext("Hinweis"),
+                ]
+            ]
+        ]
+        for tax in info["taxes"]:
+            rows.append(
+                [
+                    Paragraph(escape(str(value)), st["normal"])
+                    for value in [
+                        tax["category"],
+                        f"{tax['rate']} %",
+                        money(tax["net"]),
+                        money(tax["tax"]),
+                        tax["reason"],
+                    ]
+                ]
+            )
+        story.append(
+            _table(rows, [20 * mm, 25 * mm, 30 * mm, 30 * mm, 60 * mm], grey, total_row=False)
+        )
+    if info.get("note"):
+        story.append(Paragraph(gettext("Hinweise zur Rechnung"), st["h2"]))
+        story.append(Paragraph(escape(info["note"]).replace("\n", "<br/>"), st["normal"]))
     buf = io.BytesIO()
     SimpleDocTemplate(buf, pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm).build(story)
     return buf.getvalue()

@@ -31,5 +31,21 @@ Versand wird das XML zusammen mit der lesbaren Ansicht angehängt. Ein Storno ei
 offenen, unbezahlten Rechnung erzeugt einen eigenen strukturierten Stornobeleg.
 Diesen heruntergeladenen Beleg musst du dem Empfänger selbst übermitteln.
 
-ZUGFeRD-Ausgabe, Portalübertragung und automatische Abschlags-/Schlussrechnungen
-sind noch nicht enthalten. Bestehende Beitragsrechnungen bleiben unverändert nutzbar.
+Unter **Rechnungsart** wählst du Rechnung, Anzahlungsrechnung oder Schlussrechnung.
+Bei der Schlussrechnung erfasst du die gesamte Leistung und wählst bereits eingegangene
+Anzahlungen desselben Auftraggebers und derselben Veranstaltung. Es entstehen keine
+doppelten Einnahmen. Ändern sich Zahlungen zwischen Entwurf und Ausstellung, speichere
+und prüfe den Entwurf erneut. Verrechnete Anzahlungsrechnungen heißen „Abgerechnet“.
+Vor dem Entfernen ihrer Zahlungen musst du die Schlussrechnung stornieren.
+
+**ZUGFeRD erstellen und prüfen** erzeugt aus dem Original eine lokal geprüfte PDF/A-Datei
+mit eingebettetem XML. Danach kannst du **ZUGFeRD herunterladen**. Das gilt auch für
+Stornobelege; Originale und Prüfberichte bleiben erhalten.
+
+Für Peppol hinterlegst du beim Geschäftspartner und Rechnungssteller registrierte
+elektronische Adressen samt EAS-Code. Die Plattformverwaltung richtet den gewählten
+Anbieter pro Verein ein. **Elektronisch übermitteln** sendet ausdrücklich das Original;
+**Versandstatus abrufen** fragt die Zustellbestätigung ab. Unbestätigte Übermittlungen
+werden vor einem erneuten Versand beim Anbieter abgeglichen. Ein Storno wird separat
+übermittelt. Ohne Anbieteranbindung nutzt du Download und manuellen Portal-Upload.
+Bestehende Beitragsrechnungen bleiben unverändert nutzbar.

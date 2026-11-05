@@ -290,6 +290,8 @@ class InvoiceListSerializer(serializers.ModelSerializer):
             "due_date",
             "subject",
             "total",
+            "document_kind",
+            "prepaid",
             "paid",
             "outstanding",
             "sent_at",
@@ -318,6 +320,19 @@ class DunningSerializer(serializers.ModelSerializer):
 
 
 class InvoiceDetailSerializer(InvoiceListSerializer):
+    advance_invoices = serializers.SerializerMethodField()
+    has_hybrid = serializers.SerializerMethodField()
+    has_cancellation_hybrid = serializers.SerializerMethodField()
+
+    def get_advance_invoices(self, obj) -> list[int]:
+        return list(obj.advance_allocations.values_list("advance_id", flat=True))
+
+    def get_has_hybrid(self, obj) -> bool:
+        return obj.hybrid_artifacts.filter(document="invoice").exclude(pdf="").exists()
+
+    def get_has_cancellation_hybrid(self, obj) -> bool:
+        return obj.hybrid_artifacts.filter(document="cancellation").exclude(pdf="").exists()
+
     lines = LineSerializer(many=True, read_only=True)
     payments = PaymentSerializer(many=True, read_only=True)
     dunnings = DunningSerializer(many=True, read_only=True)
@@ -333,6 +348,9 @@ class InvoiceDetailSerializer(InvoiceListSerializer):
 
     class Meta(InvoiceListSerializer.Meta):
         fields = [
+            "advance_invoices",
+            "has_hybrid",
+            "has_cancellation_hybrid",
             *InvoiceListSerializer.Meta.fields,
             "recipient_address",
             "note",

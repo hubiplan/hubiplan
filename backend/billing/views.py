@@ -1305,10 +1305,13 @@ class BillingOverviewView(BillingMixin, APIView):
         invoices = Invoice.objects.filter(organization=self.org)
 
         def sums(qs):
-            agg = qs.aggregate(n=Count("pk"), total=Sum("total"), paid=Sum("paid"))
+            agg = qs.aggregate(
+                n=Count("pk"), total=Sum("total"), paid=Sum("paid"), prepaid=Sum("prepaid")
+            )
             total = agg["total"] or Decimal("0")
             paid = agg["paid"] or Decimal("0")
-            return {"count": agg["n"], "amount": f"{max(total - paid, Decimal('0')):.2f}"}
+            prepaid = agg["prepaid"] or Decimal("0")
+            return {"count": agg["n"], "amount": f"{max(total - paid - prepaid, Decimal('0')):.2f}"}
 
         drafts = invoices.filter(status=Invoice.Status.DRAFT).aggregate(
             n=Count("pk"), total=Sum("total")
