@@ -23,6 +23,7 @@ import { HelpProvider } from '../help/HelpContext.tsx'
 import { HelpButton, HelpPanel } from '../help/HelpPanel.tsx'
 import { ACCOUNT_PATH, accountSectionLabel } from '../pages/settings/accountNav.ts'
 import { AccountMenu } from './AccountMenu.tsx'
+import type { PersonalArea } from './AccountMenu.tsx'
 import { RolePreviewBanner, RolePreviewSelect } from './RolePreview.tsx'
 import { UpdateNotice } from '../news/UpdateNotice.tsx'
 import { NewReleaseNotice } from '../news/NewReleaseNotice.tsx'
@@ -205,7 +206,7 @@ export function Layout() {
     navigate('/anmelden')
   }
 
-  async function switchOrg(key: string) {
+  async function switchOrg(key: string, to = '/') {
     // Erst Offenes speichern; scheitert das und bleibt man, ändert sich nichts (NMF-01)
     if (!(await confirmLeave())) return
     const remote = remoteAccounts.find((a) => `r:${a.id}` === key)
@@ -225,13 +226,27 @@ export function Layout() {
     }
     select(key)
     setNavOpen(false)
-    navigate('/')
+    navigate(to)
   }
+
+  // Persönliches im Kontomenü (UX-Audit 10.7); die Auswahl oben zeigt nur Verwaltungsbereiche
+  const personal: PersonalArea[] = portal.map((p) => ({
+    key: `p:${p.id}`,
+    title: portal.length > 1 ? p.club_display_name || p.club_name : undefined,
+    links: [
+      { to: '/mein-bereich', label: t('Übersicht') },
+      { to: '/mein-bereich/ausweis', label: t('Mein Ausweis') },
+      ...(p.events_enabled ? [{ to: '/termine', label: t('Meine Termine') }] : []),
+      { to: '/mein-bereich/rechnungen', label: t('Meine Rechnungen') },
+    ],
+  }))
+  const portalInPicker = portal.filter((p) => activeKey === `p:${p.id}`)
 
   const visible = modules.filter((m) =>
     m.visible(active, { dept: activeDept, portal: activePortal }),
   )
-  const contextCount = orgs.length + departments.length + portal.length + remoteAccounts.length
+  const contextCount =
+    orgs.length + departments.length + portalInPicker.length + remoteAccounts.length
   // Im Kopf steht immer der volle Name, der Kurzname nur in der Auswahl.
   const brandName = active?.name ?? activeDept?.name ?? activePortal?.club_name ?? 'HUBIplan'
   const brandLogo =
@@ -309,7 +324,7 @@ export function Layout() {
                 {d.club_display_name || d.club_name})
               </option>
             ))}
-            {portal.map((p) => (
+            {portalInPicker.map((p) => (
               <option key={`p${p.id}`} value={`p:${p.id}`}>
                 {t('Meine Daten: {first_name} (', { first_name: p.first_name })}
                 {p.club_display_name || p.club_name})
@@ -364,6 +379,8 @@ export function Layout() {
                   extra={
                     active && <RolePreviewSelect org={active} onChanged={previewChanged} labelled />
                   }
+                  personal={personal}
+                  onPersonal={(key, to) => void switchOrg(key, to)}
                 />
               </div>
             </header>

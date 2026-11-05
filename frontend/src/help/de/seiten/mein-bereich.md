@@ -1,12 +1,14 @@
 ---
 key: page.portal
-titel: Meine Daten › Übersicht
+titel: Mein Bereich › Übersicht
 bereich: mein-bereich
 routen: [/mein-bereich]
 stichworte: [Mitglied, meine Daten, Übersicht]
 ---
 
 Das ist dein Bereich als Mitglied. Hier findest du deinen Ausweis, deine Rechnungen, Mitteilungen und die Daten, die der Verein über dich gespeichert hat. Was davon erscheint, legt dein Verein fest.
+
+Ausweis, Termine und Rechnungen erreichst du auch aus jeder anderen Ansicht: oben rechts unter **Mein Konto** steht der Abschnitt **Mein Bereich** mit **Mein Ausweis**, **Meine Termine** und **Meine Rechnungen**. Bist du in mehreren Vereinen Mitglied, steht dort jeder Verein mit seinem Namen. Die Auswahl der Einheit oben zeigt dagegen nur die Bereiche, in denen du mitarbeitest.
 
 Bei freigeschaltetem Musikmodul findest du hier auch deine Auftritte, Proben, Noten und Abwesenheiten. Die einzelnen Termine sind voneinander getrennt; Treffpunkt, Uniform und Rückmeldestatus sind beschriftet. **Zusagen** und **Absagen** markieren deine aktuelle Rückmeldung. Bekannte Verfügbarkeitskonflikte werden zusätzlich als Text angezeigt.
 

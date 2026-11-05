@@ -5,15 +5,28 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { ACCOUNT_SECTIONS, isAccountPath } from '../pages/settings/accountNav.ts'
 import { t } from '../i18n/index.ts'
 
+/** Persönliches eines Mitglieds (Mein Bereich), direkt aus dem Kontomenü erreichbar */
+export interface PersonalArea {
+  key: string
+  /** Vereinsname, nur gezeigt, wenn jemand in mehreren Vereinen Mitglied ist */
+  title?: string
+  links: { to: string; label: string }[]
+}
+
 export function AccountMenu({
   email,
   onLogout,
   extra,
+  personal = [],
+  onPersonal,
 }: {
   email: string | undefined
   onLogout: () => Promise<void>
   /** Selten gebrauchte Werkzeuge, z. B. „Ansicht als Rolle“ (UX-Audit W-06) */
   extra?: ReactNode
+  personal?: PersonalArea[]
+  /** Wechselt in den Bereich des Mitglieds und öffnet dort die Seite */
+  onPersonal?: (key: string, to: string) => void
 }) {
   const [open, setOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
@@ -83,6 +96,29 @@ export function AccountMenu({
         <nav id="konto-menue" className="account-menu-list" aria-label={t('Mein Konto')}>
           {email && <p className="account-menu-email">{email}</p>}
           {extra && <div className="account-menu-extra">{extra}</div>}
+          {personal.map((area) => (
+            <div key={area.key} className="account-menu-personal">
+              <p className="account-menu-heading">
+                {area.title ? t('Mein Bereich: {club}', { club: area.title }) : t('Mein Bereich')}
+              </p>
+              <ul>
+                {area.links.map((l) => (
+                  <li key={l.to}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpen(false)
+                        onPersonal?.(area.key, l.to)
+                      }}
+                    >
+                      {l.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          {personal.length > 0 && <p className="account-menu-heading">{t('Mein Konto')}</p>}
           <ul>
             {ACCOUNT_SECTIONS.map((s) => (
               <li key={s.to}>
