@@ -97,6 +97,6 @@ it('shows partial payouts and the balance without permitting approval reversal',
   await waitFor(() =>
     expect(screen.queryByRole('button', { name: 'Freigabe aufheben' })).not.toBeInTheDocument(),
   )
-  const musician = screen.getByText('Muster Eins').closest('article')!
+  const musician = screen.getByText('Muster Eins', { selector: 'strong' }).closest('article')!
   expect(within(musician).getByRole('button', { name: 'Auszahlung zuordnen' })).toBeDisabled()
 })
