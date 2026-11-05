@@ -278,6 +278,7 @@ class PracticeOverview(OrgScopedMixin, APIView):
                     members.append(
                         {
                             "invitation": invite.pk,
+                            "guest": not bool(invite.musician.membership_id),
                             "name": str(invite.musician.membership.person)
                             if invite.musician.membership_id
                             else invite.musician.name,

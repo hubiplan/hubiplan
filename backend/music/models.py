@@ -230,6 +230,7 @@ class GuestAccess(models.Model):
     expires_at = models.DateTimeField()
     revoked_at = models.DateTimeField(null=True, blank=True)
     auto_notify = models.BooleanField(default=False)
+    score_shares = EncryptedJSONField(default=list, db_default=[], strict=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
     )
@@ -237,6 +238,33 @@ class GuestAccess(models.Model):
 
     def __str__(self):
         return f"Gastmusikerzugang {self.pk}"
+
+
+class RehearsalGuestAccess(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    invitation = models.ForeignKey(
+        "RehearsalInvitation", on_delete=models.CASCADE, related_name="guest_accesses"
+    )
+    original_start = models.DateTimeField()
+    nonce = models.UUIDField(default=uuid.uuid4)
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    score_shares = EncryptedJSONField(default=list, strict=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["invitation", "original_start"], name="music_guest_rehearsal_once"
+            )
+        ]
+
+    def __str__(self):
+        return f"Proben-Gastzugang {self.pk}"
 
 
 class PerformanceAccount(models.Model):

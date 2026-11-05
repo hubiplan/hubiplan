@@ -5930,5 +5930,13 @@
   "SEPA-Datei herunterladen": "Download SEPA file",
   "Zahlungslauf aufheben": "Cancel payout run",
   "Zahlungslauf aufheben? Bereits bei der Bank eingereichte Überweisungen müssen dort gesondert gestoppt werden. Bereits zugeordnete Buchungen bleiben erhalten.": "Cancel payout run? Transfers already submitted to the bank must be stopped separately there. Bookings already assigned are retained.",
-  "BIC": "BIC"
+  "BIC": "BIC",
+  "Der persönliche Link gibt nur diese Einteilung und ausdrücklich freigegebene Noten frei. Bitte vertraulich weitergeben.": "This personal link only grants access to this assignment and explicitly shared sheet music. Please share it confidentially.",
+  "Noten ausdrücklich freigeben": "Explicitly share sheet music",
+  "Nur passende Noten des aktuellen Programms. Die Freigabe gilt für die aktuelle Dateifassung. Nutzungsrechte vor der Freigabe prüfen.": "Only matching sheet music from the current programme. The grant covers the current file version. Check usage rights before sharing.",
+  "Notenfreigabe speichern": "Save sheet music sharing",
+  "Gasteinladung": "Guest invitation",
+  "Meine Probeneinteilung": "My rehearsal assignment",
+  "Freigegebene Noten": "Shared sheet music",
+  "Probe abgesagt": "Rehearsal cancelled"
 }
