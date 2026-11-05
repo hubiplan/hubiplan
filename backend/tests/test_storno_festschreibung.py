@@ -19,7 +19,11 @@ from .test_m9_billing import _private, base, c, club, members, setup, start_run,
 
 pytestmark = pytest.mark.django_db
 JSON = "application/json"
-TODAY = timezone.localdate()
+
+
+def heute():
+    # Bei jedem Aufruf neu: ein Lauf über Mitternacht darf kein altes Datum vergleichen
+    return timezone.localdate()
 
 
 @pytest.fixture
@@ -38,7 +42,7 @@ def cats(c, fin):
 
 
 def book(c, fin, **data):
-    payload = {"date": TODAY.isoformat(), "kind": "income", "amount": "100.00", "text": "Test"}
+    payload = {"date": heute().isoformat(), "kind": "income", "amount": "100.00", "text": "Test"}
     payload.update(data)
     resp = c.post(f"{fin}/bookings/", payload, content_type=JSON)
     assert resp.status_code == 201, resp.json()
@@ -75,14 +79,14 @@ class TestFestschreibung:
         assert c.delete(f"{fin}/bookings/{b.pk}/").status_code == 400
 
     def test_nachtraeglich_erfasst_bleibt_aenderbar(self, c, fin, setup, cats):
-        old = (TODAY - datetime.timedelta(days=70)).isoformat()
+        old = (heute() - datetime.timedelta(days=70)).isoformat()
         b = book(c, fin, account=setup["bank"], category=cats["fest"], date=old)
         assert c.get(f"{fin}/bookings/{b.pk}/").json()["fixed"] is False
         resp = c.patch(f"{fin}/bookings/{b.pk}/", {"amount": "90.00"}, content_type=JSON)
         assert resp.status_code == 200, resp.json()
 
     def test_festschreiben_bis(self, club, c, fin, setup, cats):
-        yesterday = TODAY - datetime.timedelta(days=1)
+        yesterday = heute() - datetime.timedelta(days=1)
         b = book(c, fin, account=setup["bank"], category=cats["fest"], date=yesterday.isoformat())
         resp = c.patch(
             f"{fin}/settings/", {"locked_until": yesterday.isoformat()}, content_type=JSON
@@ -99,7 +103,7 @@ class TestFestschreibung:
             c.patch(f"{fin}/settings/", {"locked_until": earlier}, content_type=JSON).status_code
             == 400
         )
-        tomorrow = (TODAY + datetime.timedelta(days=1)).isoformat()
+        tomorrow = (heute() + datetime.timedelta(days=1)).isoformat()
         assert (
             c.patch(f"{fin}/settings/", {"locked_until": tomorrow}, content_type=JSON).status_code
             == 400
@@ -151,7 +155,7 @@ class TestStorno:
         assert counter.kind == "expense"
         assert counter.amount == b.amount
         assert counter.category_id == b.category_id
-        assert counter.date == TODAY
+        assert counter.date == heute()
         assert counter.reference == b.display_number
         assert services.balance(b.account) == before - b.amount
         # Ursprüngliche Buchung unverändert
@@ -206,7 +210,7 @@ class TestStorno:
         assert import_bookings(club, b.date.year, None) == []
 
     def test_abgeschlossenes_jahr(self, club, c, fin, setup, cats):
-        last_year = TODAY.year - 1
+        last_year = heute().year - 1
         b = book(
             c,
             fin,
@@ -220,7 +224,7 @@ class TestStorno:
             services.close_year(club, last_year, None)
         resp = c.post(f"{fin}/bookings/{b.pk}/storno/", {"reason": "falsch"}, content_type=JSON)
         assert resp.status_code == 201, resp.json()
-        assert Booking.objects.get(cancels=b).year == club.fiscal_year_of(TODAY)
+        assert Booking.objects.get(cancels=b).year == club.fiscal_year_of(heute())
 
 
 class TestBelege:
