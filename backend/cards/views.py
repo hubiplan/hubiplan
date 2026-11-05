@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import base64
 
-from django.core.cache import cache
 from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -27,6 +26,7 @@ from rest_framework.views import APIView
 from access.catalog import CARDS_MANAGE, CARDS_VIEW, DEPT_CARDS_MANAGE
 from audit.log import record
 from core.api_base import OrgScopedMixin, has_needed
+from core.ratelimit import client_ip, too_many
 from core.tenancy import rls_bypass, tenant_context
 from members.federation_views import federation_queryset, filter_federation
 from members.models import Membership
@@ -350,14 +350,7 @@ RATE = (60, 600)  # 60 Aufrufe je 10 Minuten und IP
 
 
 def _rate_limited(request) -> bool:
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
-    ip = forwarded.split(",")[0].strip() or request.META.get("REMOTE_ADDR", "")
-    key = f"card:{ip}"
-    count = cache.get(key, 0)
-    if count >= RATE[0]:
-        return True
-    cache.set(key, count + 1, RATE[1])
-    return False
+    return too_many(f"card:{client_ip(request)}", RATE[0], RATE[1])
 
 
 class PublicCardView(APIView):
