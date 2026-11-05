@@ -28,6 +28,7 @@ import type { TermKey } from '../../learning/content.ts'
 import { ContentPage } from './ContentPage.tsx'
 import { ImagesPage } from './images.tsx'
 import { DesignChooser } from './DesignChooser.tsx'
+import { HeaderImage } from './HeaderImage.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
 import { t } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
@@ -123,6 +124,7 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'home_sections',
   'design',
   'color_roles',
+  'header_image',
   'name_format',
   'show_vacant',
   'missing_consent',
@@ -251,6 +253,14 @@ function WebsiteAdmin({
         )
       ) : (
         <Alert kind="info">{t('Auf diesem Server gibt es keine Designs zur Auswahl.')}</Alert>
+      )}
+      {settings(
+        t('Kopfbild'),
+        <HeaderImage
+          value={v.header_image ?? null}
+          units={data.units}
+          onChange={(id) => set('header_image', id)}
+        />,
       )}
       <SiteLanguage
         value={v.language ?? 'de'}

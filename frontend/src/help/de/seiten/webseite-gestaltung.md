@@ -5,10 +5,12 @@ bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/gestaltung]
-stichworte: [Design, Farben, Logo, Schrift, Designpaket, Export, Import]
+stichworte: [Design, Farben, Logo, Kopfbild, Banner, Schrift, Designpaket, Export, Import]
 ---
 
 Unter Gestaltung wählt ihr Aussehen, Farben und Logo der Webseite. Die Farben kommen meist aus dem Erscheinungsbild der Einheit und lassen sich hier anpassen.
+
+Mit **Kopfbild** wählt ihr ein Bild aus der Bilderverwaltung, das oben auf der Webseite statt Wappen und Vereinsnamen steht, zum Beispiel ein Banner mit Schriftzug. Es sollte den Vereinsnamen enthalten und breit sein, etwa 1200 × 300 Pixel. Ohne Kopfbild bleibt es bei Wappen und Namen.
 
 Unter **Design weitergeben** speichert ihr ein Design mit **Als Paket speichern** als ZIP-Datei. Das Paket enthält die Gestaltung, die Anordnung von Kopf, Fuß und Startseite und die Vorgaben für die Farben, aber kein Wappen, keine Texte und keine Bilder.
 

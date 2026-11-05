@@ -19,6 +19,8 @@ export interface WebsiteSettings {
   design: string
   /** Eigene Farbzuordnung je Design: Rolle → Palettenplatz oder „light“/„dark“ */
   color_roles: ColorRoles
+  /** Kopfbild statt Wappen und Vereinsname (Bild der Bilderverwaltung) */
+  header_image?: number | null
   name_format: 'full' | 'initial'
   show_vacant: boolean
   missing_consent: 'omit' | 'nn'
@@ -292,7 +294,13 @@ export interface WebsiteImage {
 /** Bild mit den Stellen, an denen es verwendet wird */
 export interface WebsiteImageDetail extends WebsiteImage {
   /** ``text`` bei Texten, ``album`` bei Alben der Galerie */
-  usage: { text: number | null; album?: number; label: string; places: string[] }[]
+  usage: {
+    text: number | null
+    album?: number
+    header?: boolean
+    label: string
+    places: string[]
+  }[]
 }
 
 /** Neues Bild: ``file`` ist der Ausschnitt, ``original`` die ganze Datei */
