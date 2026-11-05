@@ -195,8 +195,40 @@ class TestErgebnisse:
         assert detail["scorings"][0]["field"] == 6
         if own:
             unit = next(s for s in detail["scorings"] if s["kind"] == "einheit")
-            assert unit["complete"] is True
+            assert unit["complete"] is False
             assert unit["rows"][0]["name"] == "Zug 1"
+
+    @pytest.mark.parametrize("depth", ["top3", "einheiten", "alle"])
+    def test_zugwertung_nur_preisplaetze(self, setup, depth):
+        """Ralf 2026-11-05: 3 Preisplätze in der Zugwertung, die Webseite zeigte 5 Züge."""
+        org, comp, zugw = setup["org"], setup["comp"], setup["zugw"]
+        comp.status = "endgueltig"
+        comp.website_depth = depth
+        comp.save()
+        zugw.prize_places = 3
+        zugw.save()
+        einzel = comp.scorings.get(name="Einzel")
+        for i, value in enumerate((26, 25, 24, 23), 2):
+            zug = Department.objects.create(organization=org, parent=org, name=f"Zug {i}")
+            for n in range(2):
+                s = Starter.objects.create(
+                    organization=org, competition=comp, name=f"Probe{i} Test{n}", unit=zug
+                )
+                Score.objects.create(
+                    organization=org, scoring=einzel, starter=s, value=Decimal(value - n)
+                )
+        token = get("results/").json()["competitions"][0]["id"]
+        scorings = get(f"results/{token}/").json()["scorings"]
+        unit = next(s for s in scorings if s["kind"] == "einheit")
+        names = [r["name"] for r in unit["rows"]]
+        if depth == "alle":
+            assert names == ["Zug 1", "Zug 2", "Zug 3", "Zug 4", "Zug 5"]
+            assert unit["complete"] is True
+        else:
+            assert names == ["Zug 1", "Zug 2", "Zug 3"]
+            assert all(r["prize"] for r in unit["rows"])
+            assert unit["complete"] is False
+        assert unit["field"] == 5
 
     def test_geteilte_preisplaetze_ohne_ungewertete_starter(self, setup):
         comp = setup["comp"]

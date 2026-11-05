@@ -47,7 +47,9 @@ Auf der Ergebnisseite wird das neueste veröffentlichte Schießen direkt angezei
 ältere Schießen sind über Links erreichbar.
 Bei null Preisplätzen erscheinen keine Einzelplatzierungen. Geteilte Preisplätze
 werden vollständig gezeigt; vorhandene Einwilligungen und Widersprüche gelten weiterhin.
-Die Wertungen der Untereinheiten und Mannschaften bleiben sichtbar.
+Auch Zug- und Mannschaftswertungen zeigen nur ihre Preisplätze, ebenso bei
+**nur Wertung der Untereinheiten und Mannschaften**. Alle Plätze erscheinen nur mit
+**ganze Rangliste**.
 
 ### Persönliche Ergebnisse an gekoppelte Vereine
 

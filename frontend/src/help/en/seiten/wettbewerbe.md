@@ -45,7 +45,8 @@ This also applies to the results block on the home page and to external competit
 The results page shows the latest published competition directly;
 older competitions can be opened through links.
 Zero prize places show no individual places. Tied prize places are shown in full;
-existing consent and objections still apply. Unit and team rankings remain visible.
+existing consent and objections still apply. Unit and team rankings also show only their prize places, likewise
+with **only the scoring of subunits and teams**. All places appear only with **full ranking**.
 
 ### Personal results for connected clubs
 
