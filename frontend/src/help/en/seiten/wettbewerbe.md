@@ -60,4 +60,4 @@ already received copies cannot reliably be recalled remotely.
 
 Name lists use a fixed alphabetical order: accented letters are placed with their base letter. Identical names keep their relative order when paging through the list.
 
-Live tables show an error and **Reload** even when the first request fails. Previously loaded rankings remain visible with a notice identifying the earlier state until updating succeeds.
+On wide screens the live tables of the scorings (for example individual and unit ranking) appear side by side, on narrow screens one below the other. Live tables show an error and **Reload** even when the first request fails. Previously loaded rankings remain visible with a notice identifying the earlier state until updating succeeds.
