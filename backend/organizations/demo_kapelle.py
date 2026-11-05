@@ -4,7 +4,7 @@ Gedacht für Musikvereine und Kapellen, die ihre Webseite mit HUBIplan betreiben
 Verein ohne Untereinheiten, Mitglieder mit Instrumenten, Vorstand und Dirigent auf der
 Webseite, Ehrenmitglieder, verstorbene Mitglieder im Archiv, Termine, Stücke und ein
 Auftritt, eine Webseite in Blau und Gold mit Kopfbild, Galerie und dem Menü
-„Aktuelles · Kapelle (Chronik, Vorstand, Ämter) · Termine · Galerie · Kontakt“.
+„Aktuelles · Kapelle (Chronik, Vorstand, Ehrenmitglieder, Ämter) · Termine · Galerie · Kontakt“.
 
 Ist auf dem Server ein Designpaket mit dem Schlüssel ``kapelle-furth`` eingespielt, wird
 es für die Webseite freigegeben und gewählt; sonst bleibt das Standarddesign.
@@ -462,6 +462,7 @@ def _image(website, name: str, data: bytes, alt: str, caption: str = ""):
 def _website(club) -> None:
     from website import privacy
     from website.content_models import GalleryAlbum, GalleryItem, WebsiteImage, WebsiteText
+    from website.menu import HISTORY_SLUG
     from website.models import DesignPackage, Website, WebsiteDomain
     from website.views import set_header_image
 
@@ -485,9 +486,13 @@ def _website(club) -> None:
         }
         for kind, year, until, title, text in TIMELINE
     ]
+    # Erste Fassung legte die Chronik als eigene Seite an; sie ist der Bereich „Chronik“
+    pages = WebsiteText.objects.filter(website=website, kind=WebsiteText.Kind.PAGE)
+    if not pages.filter(slug=HISTORY_SLUG).exists():
+        pages.filter(slug="chronik").update(slug=HISTORY_SLUG)
     for kind, slug, title, body, position, entries in (
         (WebsiteText.Kind.GREETING, "", "Willkommen", GREETING, 0, []),
-        (WebsiteText.Kind.PAGE, "chronik", "Chronik", HISTORY, 1, timeline),
+        (WebsiteText.Kind.PAGE, HISTORY_SLUG, "Chronik", HISTORY, 1, timeline),
     ):
         if WebsiteText.objects.filter(website=website, kind=kind, slug=slug).exists():
             continue
@@ -544,7 +549,12 @@ def _website(club) -> None:
         {"key": "posts", "children": []},
         {
             "key": "group:history",
-            "children": [{"key": "history"}, {"key": "board"}, {"key": "offices"}],
+            "children": [
+                {"key": "history"},
+                {"key": "board"},
+                {"key": "honorary"},
+                {"key": "offices"},
+            ],
         },
         {"key": "events", "children": []},
         {"key": "gallery", "children": []},

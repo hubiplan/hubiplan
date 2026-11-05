@@ -10,7 +10,8 @@ from members.models import ContactDetails, ExitReason, HonoraryTitleAward, Membe
 from music.models import Musician, Piece, Skill
 from organizations import demo_kapelle, demo_korps
 from organizations.models import Organization
-from website.content_models import GalleryAlbum, WebsiteImage
+from website import menu
+from website.content_models import GalleryAlbum, WebsiteImage, WebsiteText
 from website.models import DesignPackage, Website
 from website.public import SiteView
 
@@ -47,6 +48,13 @@ def test_kapelle_mit_musikern_vorstand_und_webseite():
     assert website.block_on("gallery") and not website.block_on("honors")
     assert website.block_names["group:history"] == "Kapelle"
     assert website.design == "classic"  # ohne eingespieltes Paket
+    # Chronik ist der Bereich „Chronik“ (keine zweite Textseite), Ehrenmitglieder unter „Kapelle“
+    assert not WebsiteText.objects.filter(website=website, slug="chronik").exists()
+    nav = menu.public_nav(SiteView(website))
+    kapelle = next(item for item in nav if item.get("label") == "Kapelle")
+    children = [child.get("key") for child in kapelle.get("children", [])]
+    assert children[:3] == ["history", "board", "honorary"]
+    assert [item.get("key") for item in nav if item.get("label") == "Chronik"] == []
     site = SiteView(website)
     names = " ".join(str(entry.get("name")) for entry in site.board())
     assert all(name in names for name in demo_kapelle.BOARD_POSITIONS)
