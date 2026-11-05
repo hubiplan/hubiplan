@@ -60,7 +60,14 @@ def test_verein_mit_korps_und_zuegen():
     assert Piece.objects.filter(organization=club).count() == len(demo_korps.STUECKE)
     assert Todo.objects.filter(organization=club).count() == 5
     assert TodoShare.objects.filter(organization=club).count() == 3
-    assert MaterialItem.objects.filter(organization=club).count() == 5
+    assert MaterialItem.objects.filter(organization=club, kind="material").count() == 6
+    # Schützenhaus mit Saal und Luftgewehrstand; der Schlüssel gehört zum Haus
+    facilities = {
+        i.title: i for i in MaterialItem.objects.filter(organization=club, kind="facility")
+    }
+    assert set(facilities) == {"Schützenhaus", "Saal", "Luftgewehrstand"}
+    key = MaterialItem.objects.get(organization=club, belongs_to__isnull=False)
+    assert key.belongs_to == facilities["Schützenhaus"]
     assert "Passwort: Test-Passwort-123" not in out
     assert set(User.objects.values_list("email", flat=True)) == set(demo_korps.all_emails())
 

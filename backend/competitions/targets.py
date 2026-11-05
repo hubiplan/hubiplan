@@ -193,6 +193,34 @@ FACILITIES = {
     # Hochstand (Vogelstange) für das Vogelschießen: keine Scheibe, keine feste Entfernung
     "vogel": ("Vogelschießen", None),
 }
+# Schießinfrastruktur „aus der Infrastruktur übernehmen“ (konzepte/infrastruktur.md 3.3)
+FROM_INFRASTRUCTURE = "infrastructure"
+
+
+def available_facilities(org) -> list[str] | None:
+    """Schießmöglichkeiten der Einheit; ``None``: nicht festgelegt (ganzer Katalog)."""
+    value = org.shooting_facilities
+    if value != FROM_INFRASTRUCTURE:
+        return value
+    if "infrastructure" not in (org.enabled_modules or []):
+        return None
+    from core.tenancy import rls_bypass
+    from materials.models import MaterialItem
+
+    with rls_bypass():
+        rows = MaterialItem.objects.filter(
+            organization=org, kind="facility", deleted_at=None, facility_type="range"
+        ).exclude(condition="retired")
+        return sorted(
+            {
+                lane["facility"]
+                for item in rows
+                for lane in item.lanes
+                if lane["facility"] in FACILITIES
+            }
+        )
+
+
 TARGET_FACILITIES = {
     "lg10_dsb": ["lg10"],
     "lg10_kyf": ["lg10"],

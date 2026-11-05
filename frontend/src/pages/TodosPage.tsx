@@ -200,6 +200,7 @@ function TodoWorkspace({ base }: { base: string }) {
           onClose={closeNewTask}
           initialEvent={Number(params.get('termin')) || undefined}
           initialMaterial={Number(params.get('material')) || undefined}
+          initialMaterialKind={params.get('art') === 'facility' ? 'facility' : 'material'}
           base={base}
           onSaved={() => {
             createdNew.current = true

@@ -43,3 +43,7 @@ Ein erledigter Transport ändert den Standort nicht automatisch: bestätige ihn 
 Unter **Verlauf** kannst du die letzte eigene Änderung zurücknehmen, sofern die heutigen
 Rechte und Zielobjekte das zulassen. Verlauf und Papierkorb werden 30 Tage aufbewahrt.
 Material auszusondern erhält seine Zuordnungen; kläre vorher offene Aufgaben und künftige Einsätze.
+
+Ist das Modul Infrastruktur eingeschaltet, kann der Standort auch **In einer Infrastruktur**
+liegen, etwa im Keller des Schützenhauses. Unter **Gehört zu** verbindest du ein Teil mit einer
+Infrastruktur, zum Beispiel einen Schlüssel, der bei einem Mitglied liegt.

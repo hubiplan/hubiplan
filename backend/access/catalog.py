@@ -226,6 +226,14 @@ AREAS: tuple[Area, ...] = (
         module="material",
     ),
     Area(
+        "infrastructure",
+        gettext_noop("Infrastruktur"),
+        gettext_noop("Infrastruktur wie Schießstand oder Vereinsheim sehen"),
+        gettext_noop("Infrastruktur, Bereiche und Zuordnungen bearbeiten"),
+        dept_levels=_BOTH,
+        module="infrastructure",
+    ),
+    Area(
         "audit",
         gettext_noop("Änderungsprotokoll"),
         gettext_noop("Änderungsprotokoll und Postausgang einsehen"),
@@ -382,6 +390,7 @@ AREA_BY_ID: dict[str, Area] = {a.id: a for a in AREAS}
 SWITCHABLE_MODULES: tuple[str, ...] = (
     "music",
     "material",
+    "infrastructure",
     "members",
     "finance",
     "billing",
@@ -393,7 +402,7 @@ SWITCHABLE_MODULES: tuple[str, ...] = (
 # Module, die eine neue Einheit nicht automatisch bekommt (die Plattform schaltet
 # sie gezielt frei, z. B. die Webseite nur für Einheiten, die eine haben sollen)
 OPT_IN_MODULES: frozenset[str] = frozenset(
-    {"website", "competitions", "entries", "material", "music"}
+    {"website", "competitions", "entries", "material", "infrastructure", "music"}
 )
 DEFAULT_MODULES: tuple[str, ...] = tuple(m for m in SWITCHABLE_MODULES if m not in OPT_IN_MODULES)
 

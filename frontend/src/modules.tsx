@@ -244,6 +244,19 @@ export const modules: AppModule[] = [
         : !!(ws.dept?.material_enabled && ws.dept.permissions.includes('material.view')),
   },
   {
+    id: 'infrastruktur',
+    group: 'verwaltung',
+    label: t('Infrastruktur'),
+    path: '/infrastruktur',
+    icon: icon('M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6'),
+    visible: (org, ws) =>
+      org
+        ? org.modules.includes('infrastructure') && org.permissions.includes('infrastructure.view')
+        : !!(
+            ws.dept?.infrastructure_enabled && ws.dept.permissions.includes('infrastructure.view')
+          ),
+  },
+  {
     id: 'einstellungen',
     group: 'verwaltung',
     label: t('Einstellungen'),

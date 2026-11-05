@@ -19,12 +19,14 @@ export function NewTodoDialog({
   base,
   initialEvent,
   initialMaterial,
+  initialMaterialKind,
   onClose,
   onSaved,
 }: {
   base: string
   initialEvent?: number
   initialMaterial?: number
+  initialMaterialKind?: 'material' | 'facility'
   onClose: () => void
   onSaved: () => void
 }) {
@@ -97,7 +99,9 @@ export function NewTodoDialog({
           todo={task ?? undefined}
           initialEvent={initialEvent}
           extraValues={{
-            ...(initialMaterial ? { material: initialMaterial } : {}),
+            ...(initialMaterial
+              ? { material: initialMaterial, material_kind: initialMaterialKind ?? 'material' }
+              : {}),
             ...(canShare ? { shares, ...(foreign ? { per_unit: perUnit } : {}) } : {}),
           }}
           onCreated={setTask}

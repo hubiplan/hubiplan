@@ -880,6 +880,15 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
         if name == "website.galleryalbum":
             # Oberalben zuerst, damit Unteralben ihr Oberalbum finden
             rows = sorted(rows, key=lambda r: isinstance(r, dict) and r.get("parent") is not None)
+        if name == "materials.materialitem":
+            # Infrastruktur vor Material, Gebäude vor ihren Bereichen (Verweise auf sich selbst)
+            rows = sorted(
+                rows,
+                key=lambda r: (
+                    isinstance(r, dict) and r.get("kind", "material") != "facility",
+                    isinstance(r, dict) and r.get("location_kind") == "facility",
+                ),
+            )
         for row in rows:
             if drop_key:
                 field = model._meta.get_field(drop_key)
@@ -910,6 +919,10 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
                         obj.location_kind = "unknown"
                     if obj.location_kind != "member":
                         obj.member_id = None
+                    if obj.location_kind == "facility" and not obj.facility_id:
+                        obj.location_kind = "unknown"
+                    if obj.location_kind != "facility":
+                        obj.facility_id = None
                 elif not getattr(obj, "item_id", None):
                     continue
             if hasattr(obj, "created_by_id") and user is not None:
