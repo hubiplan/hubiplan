@@ -47,3 +47,4 @@ website_socialpostimage small private
 website_websitedocument file private
 website_websitedocument preview private
 materials_materialphoto file private
+meetings_minutesversion file private
