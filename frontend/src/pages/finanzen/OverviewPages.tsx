@@ -12,6 +12,7 @@ import type { FinanceAccess } from './access.ts'
 import { HowTo, Term } from '../../learning/Aids.tsx'
 import type { TermKey } from '../../learning/content.ts'
 import { t, tn, tc } from '../../i18n/index.ts'
+import { TaxSignal } from './TaxPage.tsx'
 
 /** Steuerliche Bereiche und ihre Begriffe im Glossar */
 const AREA_TERMS: Record<string, TermKey> = {
@@ -259,7 +260,7 @@ function ReceivedSummary() {
 }
 
 function CashSummary({ canEdit }: { canEdit: boolean }) {
-  const { data, error, setYear } = useFinanceYear()
+  const { org, data, error, setYear } = useFinanceYear()
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   if (data.accounts.length === 0) return <NoAccounts canEdit={canEdit} />
@@ -280,6 +281,7 @@ function CashSummary({ canEdit }: { canEdit: boolean }) {
           {t('Auswertung & Kassenbericht')}
         </Link>
       </div>
+      {data.tax_areas_enabled && <TaxSignal orgId={org.id} year={data.year} />}
       <div className="tiles tiles-figures">
         <div className="card tile">
           <h2>

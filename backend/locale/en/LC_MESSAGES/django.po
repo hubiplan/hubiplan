@@ -8336,3 +8336,21 @@ msgstr "Draft without subject"
 
 msgid "Entwurf seit {date} unverändert"
 msgstr "Draft unchanged since {date}"
+
+msgid "Für die Erinnerung an die Steuererklärung fehlt der letzte geprüfte Zeitraum (Einstellungen der Zuwendungsbestätigungen)."
+msgstr "The last assessed period is missing for the tax return reminder (donation receipt settings)."
+
+msgid "Die Jahre {a} bis {b} sind noch nicht vom Finanzamt geprüft. Die Steuererklärung dafür ist fällig, sobald das Finanzamt dazu auffordert, spätestens im Jahr {c} (Erklärung samt Anlage Gem)."
+msgstr "The years {a} to {b} have not yet been assessed by the tax office. The tax return for them is due when the tax office asks for it, at the latest in {c} (return including Anlage Gem)."
+
+msgid "Die Jahre {a} bis {b} sind abgelaufen und noch nicht geprüft. Bitte die Steuererklärung (samt Anlage Gem) abgeben und danach den neuen Bescheid in den Einstellungen der Zuwendungsbestätigungen eintragen."
+msgstr "The years {a} to {b} are over and not yet assessed. Please file the tax return (including Anlage Gem) and then enter the new notice in the donation receipt settings."
+
+msgid "ohne Zuordnung"
+msgstr "not assigned"
+
+msgid "Der wirtschaftliche Geschäftsbetrieb hat einen Verlust von {x} €. Verluste dürfen nicht aus Mitgliedsbeiträgen, Spenden oder anderen Mitteln des ideellen Bereichs ausgeglichen werden (§ 55 Abs. 1 Nr. 1 AO). Zulässig ist ein Ausgleich aus Gewinnen dieses Bereichs in den sechs Vorjahren; in den beiden Vorjahren waren es {y} €."
+msgstr "The commercial operation has a loss of €{x}. Losses must not be covered by membership fees, donations or other funds of the non-profit area (§ 55 (1) no. 1 AO). They may be offset against profits of this area in the six previous years; the two previous years show €{y}."
+
+msgid "Buchungen über {x} € haben keinen steuerlichen Bereich. Bitte den Kategorien einen Bereich zuordnen, sonst fehlen sie in der Ampel."
+msgstr "Bookings totalling €{x} have no tax area. Please assign an area to the categories, otherwise they are missing from the traffic light."

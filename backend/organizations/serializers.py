@@ -560,6 +560,7 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "own_website",
             "self_managed",
             "fee_exempt",
+            "tax_independent",
             "is_remote",
         ]
         read_only_fields = [
