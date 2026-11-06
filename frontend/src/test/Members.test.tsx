@@ -60,6 +60,8 @@ function common() {
       ],
     }),
     [`GET ${base}/departments/`]: () => ({ status: 200, body: [] }),
+    // Ehrungen stehen im Reiter Mitgliedschaft
+    [`GET ${base}/honorary-titles/`]: () => ({ status: 200, body: [] }),
   }
 }
 

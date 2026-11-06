@@ -78,7 +78,7 @@ In der Nextcloud dazu beim Anbieter:
 
 Die Liste wird bewusst von Hand gepflegt und nicht aus Vor- und Nachnamen abgeleitet:
 Sonst könnte jemand mit einer Namensänderung in HUBIplan ein fremdes Konto bekommen. Wer
-die Liste ändern darf („Rollen und Benutzer verwalten“), kann damit jede Person mit jedem
+die Liste ändern darf („Rollen und Rechte verwalten“), kann damit jede Person mit jedem
 Nextcloud-Konto verbinden, also nur eintragen, was sicher dieselbe Person ist. Nicht
 aufgeführte Personen bekommen wie bisher ein neues Konto mit der Kennung `sub`.
 
@@ -103,7 +103,7 @@ das Konto wieder, aber nur, wenn HUBIplan es selbst deaktiviert hat. Dateien ble
 - Obergrenze: Würde ein Lauf mehr als 3 Konten oder mehr als die Hälfte auf einmal
   deaktivieren, hält er an (Hinweis auf der Seite, E-Mail). „Jetzt abgleichen“ auf der Seite
   bestätigt dann von Hand.
-- Jede Änderung ins Änderungsprotokoll und per E-Mail an alle mit „Rollen und Benutzer
+- Jede Änderung ins Änderungsprotokoll und per E-Mail an alle mit „Rollen und Rechte
   verwalten“ in der Einheit. Die Seite zeigt je Konto, was der nächste Abgleich täte.
 
 Einrichtung in der Nextcloud:
@@ -172,7 +172,7 @@ Kürzer geht es in der Nextcloud, z. B. `occ config:system:set session_lifetime 
   und Konto.
 - Einträge stehen unter RLS (Tabelle `oidc_client`), Änderungen im Änderungsprotokoll
   (ohne Geheimnis). Beim Umzug auf eine andere Instanz werden sie nicht mitgenommen.
-- Einstellen darf, wer „Rollen und Benutzer verwalten“ hat (damit auch die Pflicht zur
+- Einstellen darf, wer „Rollen und Rechte verwalten“ hat (damit auch die Pflicht zur
   Zwei-Faktor-Anmeldung für dieses Recht).
 
 ## Erneute Anmeldung, Sperren und Löschen

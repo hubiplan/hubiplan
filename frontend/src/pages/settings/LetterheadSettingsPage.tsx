@@ -266,7 +266,7 @@ function LetterheadEditor({
                   })
                 : t('Heute steht dort niemand.')}{' '}
               {t('Welche Rollen erscheinen, legst du unter')}{' '}
-              <Link to="/einstellungen/rollen">{t('Rollen & Benutzer')}</Link>{' '}
+              <Link to="/einstellungen/rollen">{t('Rollen und Rechte')}</Link>{' '}
               {t('fest; private Kontaktdaten anderer erscheinen nie.')}
             </p>
           )}

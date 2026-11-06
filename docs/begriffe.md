@@ -39,6 +39,12 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Titel, Königswürden | **Titel und Würden** | Titles and honours | „Titel und Auszeichnungen“ |
 | Blättern in Listen | **Vorherige Seite / Nächste Seite** | Previous page / Next page | „Zurück / Weiter“ |
 | Aufgabe für Mitglieder | **Aufgabe** | Task | „To-do“ |
+| Funktion in einer Einheit (Kassierer, Zugführer), mit oder ohne Rechte | **Rolle** | Role | „Funktion“ in der Oberfläche |
+| Was eine Rolle darf; Seite in den Einstellungen | **Rechte**, **Einstellungen › Rollen und Rechte** | Permissions, Settings › Roles and permissions | „Rechte für Zugänge“, „Rollen & Benutzer“ |
+| Person hat eine Rolle von … bis … | **Amtszeit**; Handlungen **besetzen** und **beenden** | Term of office; assign, end | „Zuordnung“, „zuordnen“, „vergeben“ |
+| Anmeldung einer Person (E-Mail, Passwort, Zwei-Faktor) | **Konto** | Account | „Benutzer“, „Benutzerkonto“ |
+| Konto darf in den Mitgliederbereich | **Mitgliederbereich freigeschaltet**; **freischalten**, **sperren** | Member area enabled; enable, block | „Zugang“ allein |
+| Rolle mit allen Rechten in einer Untereinheit | **Leitung**, Handlung **Leitung besetzen** | Head, Assign head | „Verwalter“ |
 | Was auf eine Entscheidung oder Handlung wartet (Startseite, App) | **Zu erledigen** | To do | „Offene Punkte“, „Offene Aufgaben“ dafür |
 | Rechnungen im App-Bereich Verwaltung | **Rechnungen** | Invoices | „Beiträge“ |
 | Buchungen im App-Bereich Verwaltung | **Kassenbuch** | Cash book | „Kasse“ |

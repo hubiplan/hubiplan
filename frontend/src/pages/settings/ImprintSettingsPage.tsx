@@ -202,7 +202,7 @@ export function ImprintEditor({
                     })
                   : t('Noch keine Rolle mit „vertritt die Einheit (§ 26 BGB)“ besetzt.')}{' '}
                 {t('Das Kennzeichen setzt du unter')}{' '}
-                <Link to="/einstellungen/rollen">{t('Rollen & Benutzer')}</Link>
+                <Link to="/einstellungen/rollen">{t('Rollen und Rechte')}</Link>
                 {t('. Ein Text hier ersetzt die Angaben aus den Rollen.')}
               </p>
             )}

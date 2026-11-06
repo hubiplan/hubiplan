@@ -56,7 +56,7 @@ export function SettingsLayout() {
       : []),
     // Untereinheiten stehen als eigener Punkt im Hauptmenü (modules.tsx)
     ...(can(PERM.rolesView) || can(PERM.rolesManage)
-      ? [{ to: '/einstellungen/rollen', label: t('Rollen & Benutzer'), section: access }]
+      ? [{ to: '/einstellungen/rollen', label: t('Rollen und Rechte'), section: access }]
       : []),
     ...((active.type === 'federation' || active.type === 'club') && can(PERM.peeringManage)
       ? [{ to: '/einstellungen/verbund', label: t('Verbund'), section: access }]

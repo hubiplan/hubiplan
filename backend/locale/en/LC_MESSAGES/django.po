@@ -79,14 +79,14 @@ msgstr "See colours, logo and designs"
 msgid "Erscheinungsbild ändern"
 msgstr "Change appearance"
 
-msgid "Rollen und Benutzer"
-msgstr "Roles and users"
+msgid "Rollen und Rechte"
+msgstr "Roles and permissions"
 
 msgid "Rollen, Rechte und Inhaber sehen"
 msgstr "See roles, rights and holders"
 
-msgid "Rollen und Benutzer verwalten"
-msgstr "Manage roles and users"
+msgid "Rollen festlegen und besetzen"
+msgstr "Define and assign roles"
 
 #, python-brace-format
 msgid "Rollen {gen}"

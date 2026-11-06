@@ -551,7 +551,7 @@ function PlatformOrgForm({
           <h2>{t('Vorstand festlegen')}</h2>
           <p className="muted small">
             {t(
-              'Die Person bekommt die Rolle „Vorstand“ mit allen Rechten in {diesem} und kann danach selbst Rollen und Benutzer verwalten.',
+              'Die Person bekommt die Rolle „Vorstand“ mit allen Rechten in {diesem} und kann danach selbst Rollen festlegen und besetzen.',
               { diesem: tm.diesem },
             )}
           </p>
