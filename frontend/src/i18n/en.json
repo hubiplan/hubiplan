@@ -6428,5 +6428,16 @@
   "Buchbar bis (Tage im Voraus)": "Bookable up to (days ahead)",
   "nicht zeigen": "do not show",
   "nur belegt oder frei": "only booked or free",
-  "mit Zweck öffentlicher Buchungen": "with the purpose of public bookings"
+  "mit Zweck öffentlicher Buchungen": "with the purpose of public bookings",
+  "Ausleihe": "Loan",
+  "Ausgegeben am {date}": "Handed out on {date}",
+  "Noch nicht ausgegeben.": "Not handed out yet.",
+  "Zurückgegeben am {date}": "Returned on {date}",
+  "Zustand des Materials bei der Rückgabe übernehmen": "Record the item's condition on return",
+  "Hinweis zum Zustand": "Condition note",
+  "Ausgabe bestätigen": "Confirm hand-out",
+  "Rückgabe bestätigen": "Confirm return",
+  "Rückgabe zurücknehmen": "Undo return",
+  "Ausgabe zurücknehmen": "Undo hand-out",
+  "Verbindlich buchen": "Book firmly"
 }

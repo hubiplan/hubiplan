@@ -7768,3 +7768,18 @@ msgstr "This date does not belong to the series."
 #: core/safehttp.py organizations/homepage_preview.py
 msgid "Zeitüberschreitung."
 msgstr "Timed out."
+
+msgid "Ausgabe und Rückgabe gibt es nur bei einmaligen Ausleihen."
+msgstr "Hand-out and return only exist for one-off loans."
+
+msgid "Diese Buchung ist nicht bestätigt."
+msgstr "This booking is not confirmed."
+
+msgid "Das Material ist schon ausgegeben."
+msgstr "The item has already been handed out."
+
+msgid "Das Material ist nicht ausgegeben."
+msgstr "The item has not been handed out."
+
+msgid "Dieser Termin findet nicht statt."
+msgstr "This date does not take place."

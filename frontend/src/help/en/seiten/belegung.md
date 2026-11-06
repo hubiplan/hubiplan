@@ -31,3 +31,12 @@ or booking yourself.
 
 Visibility: With **Only the managers see the purpose**, other members only see "Booked".
 Cancel a single date of a series with **Cancel this date only**.
+
+Lending material: For one-off bookings of material, the managers use **Confirm hand-out** in
+the booking and later **Confirm return**. Only if you tick
+**Record the item's condition on return** does HUBIplan change the item's condition and note; the change then appears in the
+item's history.
+
+Booking from a demand: If a material item with a booking calendar is assigned to an event, its
+detail page shows **Book firmly**. This opens a booking for that event; for "This occurrence only"
+exactly that date is booked.

@@ -88,6 +88,11 @@ def booking_data(booking, scope, user):
         "can_manage": manage,
         "can_cancel": manage or booking.booked_by_id == user.pk,
         "version": booking.version,
+        "loan": booking.item.kind == "material" and not booking.is_series,
+        "handed_out_at": booking.handed_out_at,
+        "handed_out_by": str(booking.handed_out_by) if manage and booking.handed_out_by_id else "",
+        "returned_at": booking.returned_at,
+        "returned_by": str(booking.returned_by) if manage and booking.returned_by_id else "",
         "exceptions": [
             e.isoformat()
             for e in booking.exceptions.order_by("original_start").values_list(
@@ -119,6 +124,8 @@ class BookingInput(serializers.Serializer):
     )
     contact = ContactInput(required=False)
     event = serializers.IntegerField(min_value=1, required=False, allow_null=True)
+    # Nur ein Vorkommen einer Terminreihe buchen (aus dem Material-Bedarf „Nur dieser Termin“)
+    occurrence = serializers.DateTimeField(required=False)
     competition = serializers.IntegerField(min_value=1, required=False, allow_null=True)
 
     def validate(self, data):
@@ -138,6 +145,9 @@ class BookingInput(serializers.Serializer):
                 raise ValidationError({"event": _("Termin nicht verfügbar.")})
             data["event"] = event
             data.setdefault("title", event.title)
+            if data.get("occurrence"):
+                data["event"] = None
+                data.update(occurrence_times(event, data["occurrence"]))
         elif "event" in data:
             data["event"] = None
         if data.get("competition"):
@@ -199,7 +209,26 @@ class BookingInput(serializers.Serializer):
                 )
         for key in ("starts_at", "ends_at", "all_day", "repeat", "repeat_interval", "repeat_until"):
             data[key] = getattr(target, key)
+        data.pop("occurrence", None)
         return data
+
+
+def occurrence_times(event, original):
+    from events.recurrence import occurrences
+
+    for occ in occurrences(
+        [event], original - datetime.timedelta(days=1), original + datetime.timedelta(days=1)
+    ):
+        if occ.original_start == original and not occ.is_cancelled:
+            # Ganztägig: das Tagesende ergänzt die Prüfung unten wie bei einer Eingabe
+            return {
+                "starts_at": occ.starts_at,
+                "ends_at": occ.ends_at,
+                "all_day": event.all_day,
+                "repeat": "none",
+                "repeat_until": None,
+            }
+    raise ValidationError({"occurrence": _("Dieser Termin findet nicht statt.")})
 
 
 def window(request):
@@ -376,6 +405,69 @@ class DecisionView(Base):
         booking.save()
         services.rebuild(booking)
         return Response(self.data(booking))
+
+
+class HandoverInput(serializers.Serializer):
+    version = serializers.IntegerField()
+    action = serializers.ChoiceField(choices=["out", "return", "undo"])
+    # Zustand nur übernehmen, wenn ausdrücklich angekreuzt (keine Automatik)
+    update_item = serializers.BooleanField(required=False, default=False)
+    condition = serializers.ChoiceField(
+        choices=["ready", "limited", "defective", "retired"], required=False
+    )
+    condition_note = serializers.CharField(max_length=500, allow_blank=True, required=False)
+
+
+class HandoverView(Base):
+    """Ausleihe von Material: Ausgabe und Rückgabe bestätigen."""
+
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        booking = self.booking(pk, lock=True)
+        if not access.can_manage(self.scope, booking.item):
+            raise PermissionDenied()
+        expected(booking, request.data.get("version"))
+        form = HandoverInput(data=request.data)
+        form.is_valid(raise_exception=True)
+        data = form.validated_data
+        if booking.item.kind != "material" or booking.is_series:
+            raise ValidationError(_("Ausgabe und Rückgabe gibt es nur bei einmaligen Ausleihen."))
+        if booking.status != Booking.Status.CONFIRMED:
+            raise ValidationError(_("Diese Buchung ist nicht bestätigt."))
+        now = timezone.now()
+        if data["action"] == "out":
+            if booking.handed_out_at:
+                raise ValidationError(_("Das Material ist schon ausgegeben."))
+            booking.handed_out_at, booking.handed_out_by = now, request.user
+        elif data["action"] == "return":
+            if not booking.handed_out_at or booking.returned_at:
+                raise ValidationError(_("Das Material ist nicht ausgegeben."))
+            booking.returned_at, booking.returned_by = now, request.user
+            if data["update_item"]:
+                self.update_item(booking.item, data)
+        elif booking.returned_at:
+            booking.returned_at = booking.returned_by = None
+        else:
+            booking.handed_out_at = booking.handed_out_by = None
+        booking.version += 1
+        booking.save()
+        return Response(self.data(booking))
+
+    def update_item(self, item, data):
+        from materials import services as material_services
+        from materials.models import MaterialItem
+
+        if not {"condition", "condition_note"} & set(data):
+            return
+        if "material.edit" not in self.scope.permissions:
+            raise PermissionDenied()
+        item = MaterialItem.objects.select_for_update().get(pk=item.pk)
+        before = material_services.snapshot(item)
+        if "condition" in data:
+            item.condition = data["condition"]
+        if "condition_note" in data:
+            item.condition_note = data["condition_note"]
+        material_services.changed(item, self.request.user, before, "update")
 
 
 class SkipView(Base):

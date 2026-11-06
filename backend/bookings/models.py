@@ -84,6 +84,15 @@ class Booking(models.Model):
         settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     decided_at = models.DateTimeField(null=True, blank=True)
+    # Ausleihe von Material: Ausgabe und Rückgabe (nur einmalige Buchungen)
+    handed_out_at = models.DateTimeField(null=True, blank=True)
+    handed_out_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    returned_at = models.DateTimeField(null=True, blank=True)
+    returned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
     version = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

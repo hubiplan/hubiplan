@@ -220,3 +220,97 @@ def test_ohne_recht_und_ohne_kalender(setup, orgs, api):
     s["hall"].condition = "defective"
     s["hall"].save()
     assert book(s["member"], s["url"], s["hall"], at(1, 10), at(1, 11)).status_code == 403
+
+
+def test_ausleihe_mit_ausgabe_und_rueckgabe(setup):
+    s = setup
+    beamer = MaterialItem.objects.create(
+        organization=s["org"],
+        title="Beamer",
+        description="Vereinsbeamer",
+        location_kind="unknown",
+        booking_rules={"enabled": True},
+    )
+    response = book(s["member"], s["url"], beamer, at(4, 9), at(5, 18), title="Vortrag")
+    assert response.status_code == 201, response.content
+    booking = response.json()
+    assert booking["status"] == "confirmed"
+    assert booking["loan"] is True
+    url = f"{s['url']}{booking['id']}/handover/"
+    # Ausgeben darf nur die Verwaltung
+    assert (
+        s["member"]
+        .post(url, {"action": "out", "version": booking["version"]}, content_type=JSON)
+        .status_code
+        == 403
+    )
+    out = s["admin"].post(url, {"action": "out", "version": booking["version"]}, content_type=JSON)
+    assert out.status_code == 200, out.content
+    assert out.json()["handed_out_at"]
+    back = s["admin"].post(
+        url,
+        {
+            "action": "return",
+            "version": out.json()["version"],
+            "update_item": True,
+            "condition": "limited",
+            "condition_note": "Lampe flackert",
+        },
+        content_type=JSON,
+    )
+    assert back.status_code == 200, back.content
+    assert back.json()["returned_at"]
+    beamer.refresh_from_db()
+    assert beamer.condition == "limited"
+    assert beamer.condition_note == "Lampe flackert"
+    assert beamer.revisions.count() == 1
+    # Ohne Häkchen bleibt der Zustand unberührt
+    undo = s["admin"].post(
+        url, {"action": "undo", "version": back.json()["version"]}, content_type=JSON
+    )
+    assert undo.json()["returned_at"] is None
+    again = s["admin"].post(
+        url,
+        {"action": "return", "version": undo.json()["version"], "condition": "ready"},
+        content_type=JSON,
+    )
+    assert again.status_code == 200
+    beamer.refresh_from_db()
+    assert beamer.condition == "limited"
+
+
+def test_bedarf_eines_einzeltermins_wird_buchung(setup):
+    s = setup
+    from events.models import Event
+
+    begin = (timezone.now() + datetime.timedelta(days=3)).replace(microsecond=0)
+    series = Event.objects.create(
+        organization=s["org"],
+        title="Übungsabend",
+        starts_at=begin,
+        ends_at=begin + datetime.timedelta(hours=2),
+        repeat="weekly",
+    )
+    second = begin + datetime.timedelta(days=7)
+    response = s["admin"].post(
+        s["url"],
+        {"item": s["hall"].pk, "event": series.pk, "occurrence": second.isoformat()},
+        content_type=JSON,
+    )
+    assert response.status_code == 201, response.content
+    booking = Booking.objects.get(pk=response.json()["id"])
+    assert booking.title == "Übungsabend"
+    assert booking.event_id is None
+    assert booking.repeat == "none"
+    assert booking.starts_at == second
+    assert booking.ends_at == second + datetime.timedelta(hours=2)
+    wrong = s["admin"].post(
+        s["url"],
+        {
+            "item": s["stand"].pk,
+            "event": series.pk,
+            "occurrence": (second + datetime.timedelta(hours=1)).isoformat(),
+        },
+        content_type=JSON,
+    )
+    assert wrong.status_code == 400
