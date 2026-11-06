@@ -468,3 +468,40 @@ def test_abteilung_loescht_vergebene_rolle(club, zug, kassierer, api):
     assert resp.status_code == 204
     assert not DepartmentRoleHolder.objects.filter(membership=m).exists()
     assert DepartmentRoleHolder.objects.filter(role=role).exists()
+
+
+def test_zug_besetzt_mit_vorgaenger_ende(club, zug, kassierer, api):
+    """Zug-Arbeitsbereich: Besetzen beendet den Vorgänger, die eigene Verwaltung bleibt (R3)."""
+    import datetime
+
+    own_role = DepartmentRole.objects.get()
+    own_role.permissions = [*own_role.permissions, "dept.roles.manage"]
+    own_role.save()
+    role = DepartmentRole.objects.create(
+        organization=club, department=zug, name="Fahnenträger", permissions=[]
+    )
+    alt = make_member(club, "Anton", "Alt", departments=[zug])
+    old = DepartmentRoleHolder.objects.create(
+        organization=club, membership=alt, role=role, valid_from="2020-01-01"
+    )
+    neu = make_member(club, "Nora", "Neu", departments=[zug])
+    c = api(kassierer)
+    resp = c.post(
+        f"/api/depts/{zug.pk}/holders/",
+        {"member": neu.pk, "role": role.pk, "valid_from": "2026-03-15", "end_previous": True},
+        content_type=JSON,
+    )
+    assert resp.status_code == 201, resp.json()
+    assert resp.json()["ended"] == ["Anton Alt"]
+    old.refresh_from_db()
+    assert old.valid_until == datetime.date(2026, 3, 14)
+
+    # Eigene Rolle mit Rollenverwaltung: Nachfolger besetzen beendet die eigene nicht
+    resp = c.post(
+        f"/api/depts/{zug.pk}/holders/",
+        {"member": alt.pk, "role": own_role.pk, "end_previous": True},
+        content_type=JSON,
+    )
+    assert resp.status_code == 201, resp.json()
+    assert resp.json()["ended"] == []
+    assert all(h.valid_until is None for h in DepartmentRoleHolder.objects.filter(role=own_role))

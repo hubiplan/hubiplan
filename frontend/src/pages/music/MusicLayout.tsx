@@ -1,64 +1,11 @@
 import type { ReactNode } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { t } from '../../i18n/index.ts'
 import './music.css'
-import { useActiveOrg } from '../../org/OrgContext.tsx'
 
+/** Rahmen der Musikseiten; die Unterpunkte stehen in der Seitenleiste (Menüprüfung M-08). */
 export function MusicLayout({ children }: { children: ReactNode }) {
-  const [params] = useSearchParams()
-  const org = useActiveOrg()
-  const area = params.get('erinnerungen')
-    ? 'reminders'
-    : params.get('auszahlungen')
-      ? 'payouts'
-      : params.get('uebersicht')
-        ? 'overview'
-        : params.get('ausstattung')
-          ? 'equipment'
-          : params.get('noten')
-            ? 'scores'
-            : params.get('proben')
-              ? 'practice'
-              : params.get('vorlagen')
-                ? 'templates'
-                : params.get('verfuegbarkeit')
-                  ? 'availability'
-                  : ['musicians', 'skills'].includes(params.get('art') || '')
-                    ? 'musicians'
-                    : 'performances'
-  const items = [
-    ['overview', '/musik?uebersicht=1', t('Auftrittsübersicht')],
-    ['performances', '/musik', t('Auftritte')],
-    ['musicians', '/musik?art=musicians', t('Musiker')],
-    ['scores', '/musik?noten=1', t('Notenbestand')],
-    ['practice', '/musik?proben=1', t('Proben und Notenausgabe')],
-    ['availability', '/musik?verfuegbarkeit=1', t('Verfügbarkeiten')],
-    ['templates', '/musik?vorlagen=1', t('Besetzungsvorlagen')],
-    ...(org.modules.includes('todos') && org.permissions.includes('todos.view')
-      ? [['reminders', '/musik?erinnerungen=1', t('Erinnerungen')]]
-      : []),
-    ...(org.modules.includes('finance') &&
-    org.permissions.includes('finance.view') &&
-    org.permissions.includes('events.view')
-      ? [['payouts', '/musik?auszahlungen=1', t('Sammelauszahlungen')]]
-      : []),
-    ...(org.modules.includes('material') && org.permissions.includes('material.view')
-      ? [['equipment', '/musik?ausstattung=1', t('Instrumente und Uniformen')]]
-      : []),
-  ]
-  return (
-    <div className="music-workspace stack">
-      <nav className="music-navigation" aria-label={t('Musikbereiche')}>
-        <span className="music-navigation-label">{t('Musik')}</span>
-        {items.map(([key, to, label]) => (
-          <Link key={key} to={to} aria-current={area === key ? 'page' : undefined}>
-            {label}
-          </Link>
-        ))}
-      </nav>
-      {children}
-    </div>
-  )
+  return <div className="music-workspace stack">{children}</div>
 }
 
 export function MusicHeader({

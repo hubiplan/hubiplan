@@ -970,7 +970,7 @@ function MaterialDetail({
         <h1>{data.title}</h1>
         {data.music_equipment && (
           <p>
-            <Link to="/musik?ausstattung=1">{t('Musikausstattung öffnen')}</Link>
+            <Link to="/musik/ausstattung">{t('Musikausstattung öffnen')}</Link>
             {data.music_equipment.loaned ? ` · ${t('Über den Musikbereich ausgegeben')}` : ''}
           </p>
         )}

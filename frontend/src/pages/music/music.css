@@ -132,6 +132,8 @@
 
 .music-toolbar {
   justify-content: space-between;
+  /* Knopf unten bündig mit dem Suchfeld, nicht mit dessen Beschriftung */
+  align-items: flex-end;
 }
 
 .music-toolbar > label {

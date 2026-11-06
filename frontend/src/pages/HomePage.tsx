@@ -28,7 +28,18 @@ import { MemberHomeTop } from '../components/home/MemberHome.tsx'
 import { t } from '../i18n/index.ts'
 
 /** Rechte, mit denen es etwas zu erledigen geben kann (Entscheidungen, überfällige Rechnungen) */
-const TASK_PERMS = [PERM.membersEdit, PERM.photosManage, PERM.eventsManage, PERM.billingView]
+const TASK_PERMS = [
+  PERM.membersEdit,
+  PERM.photosManage,
+  PERM.eventsManage,
+  PERM.billingView,
+  // Belegungsanfragen, Kontaktformular, Rundschreiben-Entwürfe (Menüprüfung M-13)
+  PERM.bookingsEdit,
+  PERM.materialEdit,
+  PERM.infrastructureEdit,
+  PERM.websiteManage,
+  PERM.circularsSend,
+]
 
 function showsOpenTasks(org: OrgSummary): boolean {
   if (org.permissions.includes('todos.view')) return true

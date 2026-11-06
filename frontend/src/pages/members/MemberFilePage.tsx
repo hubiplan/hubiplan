@@ -27,6 +27,7 @@ import { FieldsTab } from './FieldsTab.tsx'
 import { PhotoSection } from './PhotoSection.tsx'
 import { PublicationSection } from './PublicationSection.tsx'
 import { HonoraryAwards } from './HonoraryAwards.tsx'
+import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
 import { MemberAccessSection } from '../../components/AccessPanel.tsx'
 import { AuditUndo } from '../../components/AuditUndo.tsx'
 import { firstOfSet } from '../../components/undo.ts'
@@ -87,7 +88,7 @@ export function MemberFilePage() {
       </div>
       <nav className="tabs" aria-label={t('Bereiche der Mitgliedsakte')}>
         {org.modules.includes('music') && org.permissions.includes('music.view') && (
-          <Link className="tab" to={`/musik?art=musicians&mitglied=${id}`}>
+          <Link className="tab" to={`/musik/musiker?mitglied=${id}`}>
             {t('Musikerprofil')}
           </Link>
         )}
@@ -939,6 +940,16 @@ function RolesTab({
 }) {
   const canEditRoles = org.permissions.includes(PERM.rolesManage)
   const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
+  // Vorstandsrollen besetzen im selben Dialog wie unter Ämter (Rollen-Vorschlag R2)
+  const [assigning, setAssigning] = useState(false)
+  const roles = useLoad(
+    () => (assigning ? orgApi.roles(org.id) : Promise.resolve(null)),
+    [org.id, assigning],
+  )
+  const assignments = useLoad(
+    () => (assigning ? orgApi.assignments(org.id) : Promise.resolve(null)),
+    [org.id, assigning],
+  )
   const [error, setError] = useState<string | null>(null)
   const roleOptions =
     departments.data?.flatMap((d) =>
@@ -972,9 +983,7 @@ function RolesTab({
       )}
       <Section title={t('Vorstandsrollen')}>
         {member.board_roles.length === 0 ? (
-          <p className="muted">
-            {t('Keine. Vorstandsrollen besetzt du unter Einstellungen › Rollen und Rechte.')}
-          </p>
+          <p className="muted">{t('Keine.')}</p>
         ) : (
           <ul className="plain-list">
             {member.board_roles.map((r) => (
@@ -985,7 +994,27 @@ function RolesTab({
             ))}
           </ul>
         )}
+        {canEditRoles && member.status === 'active' && (
+          <button type="button" className="button button-ghost" onClick={() => setAssigning(true)}>
+            {t('Rolle besetzen')}
+          </button>
+        )}
       </Section>
+      {assigning && roles.data && assignments.data && (
+        <AssignRoleDialog
+          orgId={org.id}
+          roles={roles.data}
+          assignments={assignments.data}
+          member={{
+            id: member.id,
+            first_name: member.first_name,
+            last_name: member.last_name,
+            email: member.contact?.email ?? '',
+          }}
+          onClose={() => setAssigning(false)}
+          onDone={reload}
+        />
+      )}
       <Section
         title={t('Rollen in {x}', {
           x: org.department_terms?.pl_dat ?? org.department_label_plural,

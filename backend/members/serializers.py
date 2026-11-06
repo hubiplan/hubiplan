@@ -382,10 +382,33 @@ class DepartmentRoleHolderSerializer(serializers.ModelSerializer):
     role = OrgPrimaryKeyField(DepartmentRole)
     role_name = serializers.CharField(source="role.name", read_only=True)
     department_name = serializers.CharField(source="role.department.display_name", read_only=True)
+    # Besetzen: laufende Amtszeiten anderer in derselben Rolle zum Vortag beenden (R3)
+    end_previous = serializers.BooleanField(write_only=True, required=False, default=False)
+    ended = serializers.SerializerMethodField()
 
     class Meta:
         model = DepartmentRoleHolder
-        fields = ["id", "role", "role_name", "department_name", "valid_from", "valid_until"]
+        fields = [
+            "id",
+            "role",
+            "role_name",
+            "department_name",
+            "valid_from",
+            "valid_until",
+            "end_previous",
+            "ended",
+        ]
+
+    def get_ended(self, obj) -> list[str]:
+        return getattr(obj, "_ended", [])
+
+    def create(self, validated_data):
+        validated_data.pop("end_previous", None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop("end_previous", None)
+        return super().update(instance, validated_data)
 
     def validate(self, attrs):
         start = attrs.get("valid_from", getattr(self.instance, "valid_from", None))

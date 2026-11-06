@@ -28,6 +28,7 @@ import { PortalResults } from './PortalResults.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { NotFoundPage } from '../NoticePages.tsx'
 import { t } from '../../i18n/index.ts'
+import { portalSections } from './sections.ts'
 
 const FIELDS = [
   'last_name',
@@ -200,87 +201,9 @@ function PortalSection({ title, children }: { title: string; children: ReactNode
 
 /** Aufgaben im Mitgliederbereich als Kacheln (Startseite und Übersicht). */
 export function PortalTasks({ entry, skip = [] }: { entry: PortalEntry; skip?: string[] }) {
-  const tasks: { to: string; title: string; text: string }[] = [
-    {
-      to: '/mein-bereich/aufgaben',
-      title: t('Aufgaben'),
-      text: t('Freigegebene Aufgaben ansehen und übernehmen'),
-    },
-    {
-      to: '/mein-bereich/ausweis',
-      title: t('Ausweis zeigen'),
-      text: t('QR-Code vorzeigen oder als PDF speichern'),
-    },
-    ...(entry.events_enabled
-      ? [
-          {
-            to: '/termine',
-            title: t('Meine Termine'),
-            text: t('Termine ansehen, zu- oder absagen'),
-          },
-        ]
-      : []),
-    ...(entry.bookings_enabled
-      ? [
-          {
-            to: '/mein-bereich/belegung',
-            title: t('Belegung'),
-            text: t('Schützenhaus, Stand oder Material anfragen'),
-          },
-        ]
-      : []),
-    ...(entry.helpers_enabled
-      ? [
-          {
-            to: '/mein-bereich/helferdienste',
-            title: t('Helferdienste'),
-            text: t('Für Dienste eintragen und eigene Dienste sehen'),
-          },
-        ]
-      : []),
-    ...(entry.meetings_enabled
-      ? [
-          {
-            to: '/mein-bereich/versammlungen',
-            title: t('Versammlungen'),
-            text: t('Einladungen mit Tagesordnung und Protokolle'),
-          },
-        ]
-      : []),
-    ...(entry.entries_enabled
-      ? [
-          {
-            to: '/mein-bereich/gemeldet',
-            title: t('Meine Meldungen'),
-            text: t('Wettbewerbe, für die der Verein dich gemeldet hat'),
-          },
-        ]
-      : []),
-    ...(entry.competitions_enabled
-      ? [
-          {
-            to: '/mein-bereich/ergebnisse',
-            title: t('Meine Ergebnisse'),
-            text: t('Plätze, Werte und Titel aus Wettbewerben'),
-          },
-        ]
-      : []),
-    {
-      to: '/mein-bereich/rechnungen',
-      title: t('Rechnungen'),
-      text: t('Beiträge, offene Beträge und Lastschrift'),
-    },
-    {
-      to: '/mein-bereich/rundschreiben',
-      title: t('Mitteilungen'),
-      text: t('Mitteilungen des Vereins lesen'),
-    },
-    {
-      to: '/mein-bereich/daten',
-      title: t('Meine Daten'),
-      text: t('Anschrift und Kontakt ansehen, Änderungen melden'),
-    },
-  ]
+  const tasks = portalSections(entry).flatMap((s) =>
+    s.tile ? [{ to: s.to, title: s.tile.title, text: s.tile.text }] : [],
+  )
   return (
     <ul className="task-tiles">
       {tasks

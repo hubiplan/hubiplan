@@ -146,6 +146,7 @@ const OrganizationDocumentsPage = lazyPage(
   'OrganizationDocumentsPage',
 )
 const RolesPage = lazyPage(() => import('./pages/settings/RolesPage.tsx'), 'RolesPage')
+const AccountsPage = lazyPage(() => import('./pages/settings/AccountsPage.tsx'), 'AccountsPage')
 const SettingsLayout = lazyPage(
   () => import('./pages/settings/SettingsLayout.tsx'),
   'SettingsLayout',
@@ -296,7 +297,7 @@ export default function App() {
           <Route path="helferdienste" element={<HelpersPage />} />
           <Route path="termine/*" element={<EventsPage />} />
           <Route
-            path="musik"
+            path="musik/*"
             element={
               <RequireOrg>
                 <MusicPage />
@@ -425,6 +426,14 @@ export default function App() {
               element={
                 <RequireOrg permission={[PERM.rolesView, PERM.rolesManage]}>
                   <RolesPage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="konten"
+              element={
+                <RequireOrg permission={[PERM.rolesView, PERM.loginsView]}>
+                  <AccountsPage />
                 </RequireOrg>
               }
             />

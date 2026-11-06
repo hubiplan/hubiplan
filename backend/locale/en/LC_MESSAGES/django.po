@@ -8314,3 +8314,25 @@ msgstr "implemented"
 
 msgid "aufgehoben"
 msgstr "repealed"
+msgid "Belegungsanfrage"
+msgstr "Booking request"
+
+msgid "am {date} angefragt"
+msgstr "requested for {date}"
+
+msgid "Kontaktformular"
+msgstr "Contact form"
+
+msgid "{n} Nachricht wartet auf Freigabe"
+msgid_plural "{n} Nachrichten warten auf Freigabe"
+msgstr[0] "{n} message awaiting release"
+msgstr[1] "{n} messages awaiting release"
+
+msgid "wird nach 7 Tagen gelöscht"
+msgstr "deleted after 7 days"
+
+msgid "Entwurf ohne Betreff"
+msgstr "Draft without subject"
+
+msgid "Entwurf seit {date} unverändert"
+msgstr "Draft unchanged since {date}"

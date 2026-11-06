@@ -390,6 +390,8 @@ export interface Assignment {
   has_mfa?: boolean
   /** Konto hat noch kein Passwort festgelegt (Einladung offen oder abgelaufen) */
   awaiting_password?: boolean
+  /** beim Besetzen beendete Amtszeiten der Vorgänger (Namen) */
+  ended?: string[]
 }
 
 export interface AuditEntry {
@@ -578,6 +580,8 @@ export const orgApi = {
       valid_from?: string
       valid_until?: string | null
       member?: number | null
+      /** laufende Amtszeiten anderer Personen in dieser Rolle zum Vortag beenden */
+      end_previous?: boolean
     },
   ) => api.post<Assignment>(`${org(id)}/assignments/`, data),
   resendInvitation: (id: number, a: number) =>

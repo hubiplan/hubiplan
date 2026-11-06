@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from access import office_views
+from access import accounts_view, office_views
 from access import views as access_views
 from accounts import help_done, language, learning, self_service
 from billing import einvoice_views
@@ -390,6 +390,8 @@ org_patterns = [
         name="transfer-cancel",
     ),
     path("members/<int:pk>/access/", portal_views.MemberAccessView.as_view(), name="member-access"),
+    path("accounts/", accounts_view.AccountsView.as_view(), name="accounts"),
+    path("accounts/resend/", accounts_view.AccountsResendView.as_view(), name="accounts-resend"),
     path("change-requests/", portal_views.ChangeRequestListView.as_view(), name="change-requests"),
     path("open-tasks/", open_tasks.OpenTasksView.as_view(), name="open-tasks"),
     path(

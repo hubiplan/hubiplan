@@ -10,6 +10,8 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Musik und Auftritte
 
+Die Unterpunkte von Musik stehen in der Seitenleiste, gegliedert nach Auftritte (Übersicht, Auftritte, Verfügbarkeiten), Musiker (Musiker, Proben und Notenausgabe), Noten (Notenbestand, Erinnerungen), Ausstattung und Abrechnung (Instrumente und Uniformen, Sammelauszahlungen) und Einrichtung (Besetzungsvorlagen). Jeder Punkt hat eine eigene Adresse, etwa `/musik/noten`.
+
 Unter **Auftrittsübersicht** siehst du Besetzung, ausstehende Rückmeldungen, bekannte
 Konflikte, Notenbedarf und berechtigte Abrechnungshinweise gemeinsam. Wähle bei Bedarf
 den Zeitraum und bestätige **Übersicht aktualisieren**. Hinweise führen direkt zur

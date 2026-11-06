@@ -67,6 +67,10 @@ export function SettingsLayout() {
     ...(can(PERM.rolesView) || can(PERM.rolesManage)
       ? [{ to: '/einstellungen/rollen', label: t('Rollen und Rechte'), section: access }]
       : []),
+    // Konten (Rollen-Vorschlag R4): alle Anmeldungen der Einheit
+    ...(active.type !== 'platform' && !unit && (can(PERM.rolesView) || can(PERM.loginsView))
+      ? [{ to: '/einstellungen/konten', label: t('Konten'), section: access }]
+      : []),
     ...((active.type === 'federation' || active.type === 'club') && can(PERM.peeringManage)
       ? [{ to: '/einstellungen/verbund', label: t('Verbund'), section: access }]
       : []),

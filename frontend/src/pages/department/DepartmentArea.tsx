@@ -25,7 +25,6 @@ import {
   Checkbox,
   Field,
   SaveStatus,
-  SelectField,
   Tabs,
   LoadError,
   Freshness,
@@ -37,7 +36,9 @@ import { DeptEntries } from '../entries/UnitEntries.tsx'
 import { MovedCirculars } from '../circulars/CircularsPage.tsx'
 import { MemberDevelopment } from '../members/DevelopmentPage.tsx'
 import { statsApi } from '../../api/statistics.ts'
-import { alertDialog, confirmDialog, confirmRoleRemoval } from '../../components/dialog.ts'
+import { alertDialog, confirmRoleRemoval } from '../../components/dialog.ts'
+import { confirmEndHolder, UnitRoleDialog, UnitRolesTable } from '../../components/UnitRoles.tsx'
+import type { UnitRole } from '../../components/UnitRoles.tsx'
 import { t } from '../../i18n/index.ts'
 import { PermissionMatrix, PermissionSummary } from '../../components/RoleEditor.tsx'
 
@@ -621,146 +622,53 @@ function HoldersCard({
   onRun: (action: () => Promise<unknown>) => Promise<void>
   canEdit: boolean
 }) {
-  const [member, setMember] = useState('')
-  const [role, setRole] = useState('')
-  const [options, setOptions] = useState<MemberRow[]>([])
-  // Ladefehler nicht als „keine Mitglieder“ zeigen (Audit 29.10.)
-  const [load, setLoad] = useState<'loading' | 'ready' | 'failed'>('loading')
-  const [attempt, setAttempt] = useState(0)
-
-  useEffect(() => {
-    // Nur zum Vergeben nötig (wer Rollen nur liest, darf die Liste evtl. nicht sehen)
-    if (!canEdit) return
-    let alive = true
-    // Alle Seiten laden: auch in großen Einheiten muss jedes Mitglied wählbar sein
-    async function loadAll() {
-      const all: MemberRow[] = []
-      for (let page = 1; page <= 100; page++) {
-        const p = await portalApi.deptMembers(dept.id, { page, page_size: 200 })
-        all.push(...p.results)
-        if (!p.next) break
-      }
-      return all
-    }
-    loadAll()
-      .then((all) => {
-        if (!alive) return
-        setOptions(all)
-        setLoad('ready')
-      })
-      .catch(() => alive && setLoad('failed'))
-    return () => {
-      alive = false
-    }
-  }, [dept.id, attempt, canEdit])
+  const [assigning, setAssigning] = useState<UnitRole | null>(null)
+  // Gleiche Ansicht wie unter Mitglieder › Ämter (Rollen-Vorschlag R3)
+  const rows: UnitRole[] = roles.map((r) => ({
+    id: r.id,
+    name: r.name,
+    holders: holders
+      .filter((h) => h.role === r.id)
+      .map((h) => ({
+        id: h.id,
+        membership: h.member_id,
+        name: h.member_name,
+        valid_from: h.valid_from,
+      })),
+  }))
 
   return (
     <div className="card card-wide">
       <h2>{t('Wer hat welche Rolle?')}</h2>
-      {holders.length === 0 ? (
-        <p className="muted small">{t('Noch niemand.')}</p>
-      ) : (
-        <table className="table">
-          <thead>
-            <tr>
-              <th>{t('Mitglied')}</th>
-              <th>{t('Rolle')}</th>
-              <th>{t('seit')}</th>
-              {canEdit && <th />}
-            </tr>
-          </thead>
-          <tbody>
-            {holders.map((h) => (
-              <tr key={h.id}>
-                <td>{h.member_name}</td>
-                <td>{h.role_name}</td>
-                <td>{formatDate(h.valid_from)}</td>
-                {canEdit && (
-                  <td className="actions">
-                    <button
-                      type="button"
-                      className="link-button"
-                      onClick={async () => {
-                        if (
-                          await confirmDialog({
-                            title: t('Rolle von {member_name} beenden?', {
-                              member_name: h.member_name,
-                            }),
-                            confirmLabel: t('Beenden'),
-                          })
-                        ) {
-                          void onRun(() => portalApi.endHolder(dept.id, h.id))
-                        }
-                      }}
-                    >
-                      {t('Beenden')}
-                    </button>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {canEdit && (
-        <form
-          className="grid-3"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (!member || !role) return
-            void onRun(() =>
-              portalApi.addHolder(dept.id, { member: Number(member), role: Number(role) }),
-            ).then(() => setMember(''))
-          }}
-        >
-          <SelectField
-            label={t('Mitglied')}
-            value={member}
-            onChange={(e) => setMember(e.target.value)}
-          >
-            <option value="">
-              {load === 'loading'
-                ? t('Mitglieder werden geladen …')
-                : load === 'failed'
-                  ? t('Mitglieder konnten nicht geladen werden')
-                  : t('bitte wählen')}
-            </option>
-            {options.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.last_name}, {m.first_name}
-              </option>
-            ))}
-          </SelectField>
-          <SelectField label={t('Rolle')} value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="">{t('bitte wählen')}</option>
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </SelectField>
-          <div className="field">
-            <span>&nbsp;</span>
-            <button type="submit" className="button button-primary" disabled={!member || !role}>
-              {t('Rolle besetzen')}
-            </button>
-          </div>
-        </form>
-      )}
-      {canEdit && load === 'failed' && (
-        <p className="alert alert-error" role="alert">
-          {t('Die Mitglieder konnten nicht geladen werden.')}{' '}
-          <button
-            type="button"
-            className="link-button"
-            onClick={() => {
-              setLoad('loading')
-              setAttempt((n) => n + 1)
-            }}
-          >
-            {t('Erneut laden')}
-          </button>
-        </p>
+      <UnitRolesTable
+        label={t('Heutige Inhaber')}
+        roles={rows}
+        canEdit={canEdit}
+        onAssign={setAssigning}
+        onEnd={(r, h) =>
+          void confirmEndHolder(r, h).then((ok) => {
+            if (ok) void onRun(() => portalApi.endHolder(dept.id, h.id))
+          })
+        }
+      />
+      {assigning && (
+        <UnitRoleDialog
+          orgId={0}
+          role={assigning}
+          search={(term) =>
+            portalApi.deptMembers(dept.id, { suche: term, page_size: 20 }).then((p) => p.results)
+          }
+          submit={(d) =>
+            portalApi.addHolder(dept.id, {
+              member: d.member,
+              role: d.role,
+              valid_from: d.valid_from,
+              end_previous: d.end_previous,
+            })
+          }
+          onClose={() => setAssigning(null)}
+          onDone={() => onRun(async () => undefined)}
+        />
       )}
     </div>
   )

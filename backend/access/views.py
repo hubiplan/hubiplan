@@ -188,6 +188,12 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
         return {}
 
     @transaction.atomic
+    def perform_create(self, serializer):
+        # „Vorgänger beenden“ darf die eigene Rollenverwaltung nicht beenden
+        with _keeps_roles_manage(self.request.user, self.org):
+            super().perform_create(serializer)
+
+    @transaction.atomic
     def perform_update(self, serializer):
         # Auch Zeitraum oder Rolle der eigenen Zuordnung ändern darf die eigene
         # Rollenverwaltung nicht beenden (wie beim Löschen).

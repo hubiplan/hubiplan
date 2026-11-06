@@ -127,6 +127,8 @@ export interface Holder {
   role_name: string
   valid_from: string
   valid_until: string | null
+  /** beim Besetzen beendete Vorgänger */
+  ended?: string[]
 }
 
 export interface OutgoingMail {
@@ -231,8 +233,10 @@ export const portalApi = {
   deleteDeptRole: (id: number, role: number) => api.del(`${dept(id)}/roles/${role}/`),
   reorderDeptRoles: (id: number, ids: number[]) => api.post(`${dept(id)}/roles/reorder/`, { ids }),
   holders: (id: number) => api.get<Holder[]>(`${dept(id)}/holders/`),
-  addHolder: (id: number, data: { member: number; role: number; valid_from?: string }) =>
-    api.post<Holder>(`${dept(id)}/holders/`, data),
+  addHolder: (
+    id: number,
+    data: { member: number; role: number; valid_from?: string; end_previous?: boolean },
+  ) => api.post<Holder>(`${dept(id)}/holders/`, data),
   endHolder: (id: number, holder: number) => api.post<Holder>(`${dept(id)}/holders/${holder}/end/`),
 
   // Mitgliederbereich
