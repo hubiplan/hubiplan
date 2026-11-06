@@ -1,11 +1,16 @@
-"""White Label W1: Erscheinungsbild der Instanz ohne Anmeldung (konzepte/white-label.md)."""
+"""White Label W1 und W2: Erscheinungsbild der Instanz ohne Anmeldung (konzepte/white-label.md)."""
+# ruff: noqa: F811  (Fixture platform_admin aus test_impressum als Parameter)
+
+import io
 
 import pytest
 from django.test import Client
+from PIL import Image
 
-from organizations.models import Organization
+from organizations.models import Organization, PlatformSettings
 
-from .factories import make_org
+from .factories import make_org, make_user
+from .test_impressum import platform_admin  # noqa: F401
 
 pytestmark = pytest.mark.django_db
 URL = "/api/public/platform/"
@@ -63,3 +68,74 @@ def test_kontrastpruefung_gilt_fuer_die_plattform():
     s = ThemeSerializer(platform(), data={"primary_color": "#f2f2f2"}, partial=True)
     assert not s.is_valid()
     assert "primary_color" in s.errors
+
+
+# --- W2: Symbol und Manifest ---
+
+
+def _png(width: int, height: int, color=(31, 78, 121, 255)) -> io.BytesIO:
+    buf = io.BytesIO()
+    Image.new("RGBA", (width, height), color).save(buf, "PNG")
+    buf.seek(0)
+    buf.name = "symbol.png"
+    return buf
+
+
+def test_manifest_ohne_eigenes_symbol_wie_bisher():
+    data = Client().get("/api/public/platform/manifest.webmanifest").json()
+    assert data["name"] == "HUBIplan"
+    assert data["theme_color"] == "#0e7c66"
+    assert data["icons"][0]["src"] == "/favicon.svg"
+    assert Client().get("/api/public/platform/icon-192.png").status_code == 404
+
+
+def test_symbol_hochladen_und_abholen(api, platform_admin):
+    p = platform()
+    p.name = "Vereinsportal Musterkreis"
+    p.primary_color = "#1f4e79"
+    p.save()
+    c = api(platform_admin)
+    # Breites Bild wird quadratisch (durchsichtiger Rand oben und unten)
+    resp = c.post("/api/platform/icon/", {"logo": _png(800, 400)})
+    assert resp.status_code == 200, resp.content
+    assert PlatformSettings.load().brand_icon
+    assert Client().get(URL).json()["icon"] is True
+
+    for name, size in (("32", 32), ("180", 180), ("192", 192), ("512", 512), ("maskable", 512)):
+        r = Client().get(f"/api/public/platform/icon-{name}.png")
+        assert r.status_code == 200
+        assert r["Content-Type"] == "image/png"
+        img = Image.open(io.BytesIO(r.content))
+        assert img.size == (size, size)
+    # Apple-Symbol ohne Durchsichtigkeit (iOS füllt sie schwarz)
+    apple = Image.open(io.BytesIO(Client().get("/api/public/platform/icon-180.png").content))
+    assert apple.mode == "RGB"
+    assert Client().get("/api/public/platform/icon-64.png").status_code == 404
+
+    manifest = Client().get("/api/public/platform/manifest.webmanifest")
+    assert manifest["Content-Type"] == "application/manifest+json"
+    data = manifest.json()
+    assert data["name"] == "Vereinsportal Musterkreis"
+    assert data["short_name"] == "Vereinsporta"
+    assert data["theme_color"] == "#1f4e79"
+    assert {i["src"] for i in data["icons"]} == {
+        "/api/public/platform/icon-192.png",
+        "/api/public/platform/icon-512.png",
+        "/api/public/platform/icon-maskable.png",
+    }
+
+    assert c.delete("/api/platform/icon/").status_code == 204
+    assert not PlatformSettings.load().brand_icon
+    assert Client().get("/api/public/platform/icon-192.png").status_code == 404
+
+
+def test_symbol_zu_klein(api, platform_admin):
+    resp = api(platform_admin).post("/api/platform/icon/", {"logo": _png(200, 200)})
+    assert resp.status_code == 400
+    assert not PlatformSettings.load().brand_icon
+
+
+def test_symbol_nur_fuer_plattformverwaltung(api):
+    user = make_user("vorstand@example.org")
+    resp = api(user).post("/api/platform/icon/", {"logo": _png(600, 600)})
+    assert resp.status_code == 403

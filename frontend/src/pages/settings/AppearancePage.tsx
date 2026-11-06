@@ -12,7 +12,7 @@ import { buttonColors, linkColor, PAGE_BG } from '../../theme/theme.ts'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
 import { t } from '../../i18n/index.ts'
-import { loadPlatform } from '../../theme/platform.ts'
+import { loadPlatform, usePlatform } from '../../theme/platform.ts'
 
 export function AppearancePage() {
   const org = useActiveOrg()
@@ -176,6 +176,65 @@ function ThemeForm({
           </p>
         )}
       </div>
+      {isPlatform && <PlatformIconCard editable={editable} />}
+    </div>
+  )
+}
+
+/** Symbol der Instanz für Browser-Tab und Handy (White Label W2). */
+function PlatformIconCard({ editable }: { editable: boolean }) {
+  const instance = usePlatform()
+  // Nach dem Hochladen neu laden, am Zwischenspeicher des Browsers vorbei
+  const [version, setVersion] = useState(0)
+  const src = (name: string) => `/api/public/platform/icon-${name}.png?v=${version}`
+  const shown = instance.icon ? src('512') : null
+  return (
+    <div className="card card-wide">
+      <h2>{t('Symbol der Instanz')}</h2>
+      <p className="small">
+        {t(
+          'Das Symbol erscheint im Browser-Tab und auf dem Startbildschirm des Handys. Am besten ein quadratisches Bild ohne Schrift, mindestens 512 × 512 Pixel. Ohne eigenes Symbol zeigt HUBIplan sein H-Zeichen in den Farben der Instanz.',
+        )}
+      </p>
+      {editable ? (
+        <LogoUpload
+          uploadUrl="/api/platform/icon/"
+          logoUrl={shown}
+          onChange={async () => {
+            await loadPlatform(true)
+            setVersion(Date.now())
+          }}
+        />
+      ) : (
+        !shown && <p className="muted">{t('Kein eigenes Symbol.')}</p>
+      )}
+      {instance.icon && (
+        <>
+          <h3>{t('Vorschau')}</h3>
+          <div className="icon-preview">
+            <span className="icon-preview-tab">
+              <img src={src('32')} alt="" width={16} height={16} />
+              {t('Heller Browser-Tab')}
+            </span>
+            <span className="icon-preview-tab icon-preview-dark">
+              <img src={src('32')} alt="" width={16} height={16} />
+              {t('Dunkler Browser-Tab')}
+            </span>
+            <img
+              src={src('maskable')}
+              alt={t('Symbol auf dem Handy (rund ausgeschnitten)')}
+              className="icon-preview-round"
+              width={64}
+              height={64}
+            />
+          </div>
+          <p className="muted small">
+            {t(
+              'Wer HUBIplan schon auf dem Startbildschirm hat, sieht das neue Symbol erst, wenn das Handy es neu abholt. Auf dem iPhone muss die Seite dazu neu zum Startbildschirm hinzugefügt werden.',
+            )}
+          </p>
+        </>
+      )}
     </div>
   )
 }

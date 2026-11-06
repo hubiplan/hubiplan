@@ -8336,3 +8336,6 @@ msgstr "Draft without subject"
 
 msgid "Entwurf seit {date} unverändert"
 msgstr "Draft unchanged since {date}"
+
+msgid "Das Symbol braucht mindestens {px} Pixel Breite oder Höhe."
+msgstr "The icon needs to be at least {px} pixels wide or high."

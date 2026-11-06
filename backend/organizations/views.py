@@ -730,6 +730,46 @@ class PlatformUpdateView(APIView):
         return Response(update_check.selbstupdate_status(), status=status.HTTP_202_ACCEPTED)
 
 
+class PlatformIconView(APIView):
+    """Symbol der Instanz hochladen oder entfernen (White Label W2)."""
+
+    permission_classes = [IsPlatformAdmin]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        from django.core.files.base import ContentFile
+
+        from .brand_icon import clean_icon
+
+        serializer = LogoSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            data = clean_icon(
+                serializer.validated_data["logo"].read(),
+                remove_background=False,
+            )
+        except DjangoValidationError as exc:
+            return Response({"logo": exc.messages}, status=status.HTTP_400_BAD_REQUEST)
+        row = PlatformSettings.load()
+        before = snapshot(row)
+        if row.brand_icon:
+            row.brand_icon.delete(save=False)
+        row.brand_icon.save("symbol.png", ContentFile(data), save=True)
+        record(Organization.platform(), request.user, "update", row, diff(before, snapshot(row)))
+        return Response({"icon": True})
+
+    def delete(self, request):
+        row = PlatformSettings.load()
+        if row.brand_icon:
+            before = snapshot(row)
+            row.brand_icon.delete(save=True)
+            record(
+                Organization.platform(), request.user, "update", row, diff(before, snapshot(row))
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class PlatformSettingsView(generics.RetrieveUpdateAPIView):
     serializer_class = PlatformSettingsSerializer
     permission_classes = [IsPlatformAdmin]
