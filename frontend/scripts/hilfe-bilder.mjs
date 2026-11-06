@@ -211,7 +211,8 @@ for (const language of ['de', 'en']) {
         }
         // Hinweise mit Datum (z. B. Frist für die Zwei-Faktor-Anmeldung) veralten im Bild
         await page.addStyleTag({
-          content: 'main.content > .alert[role="status"] { display: none !important; }',
+          content:
+            'main.content > .alert[role="status"], main.content > .mfa-hint { display: none !important; }',
         })
         // Ausschnitt aus der ganzen Seite: so liegt die feste Kopfleiste nicht über dem
         // Bild, lange Seiten werden nach MAX_HOEHE abgeschnitten, leerer Rand unten fehlt
