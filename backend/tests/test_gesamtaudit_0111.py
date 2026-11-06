@@ -243,7 +243,9 @@ def test_kettenkoepfe_aus_backup_abgleichen(orgs, board_a, tmp_path):
     call_command("kettenkoepfe_pruefen", str(log), stdout=out)
     assert "1 Kettenköpfe geprüft, 0 Abweichungen" in out.getvalue()
     # Wer die Datenbank beherrscht, rechnet die Kette neu; das Backup weiß es besser
-    with rls_bypass():
+    from .gobd_hilfe import protokoll_offen
+
+    with rls_bypass(), protokoll_offen():
         AuditEntry.objects.filter(organization=club, seq=check.head_seq).update(hash="0" * 64)
     with pytest.raises(CommandError):
         call_command("kettenkoepfe_pruefen", str(log), stdout=StringIO())

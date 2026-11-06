@@ -61,11 +61,13 @@ def _delete_files(org) -> int:
 
 
 def _delete_org(org) -> None:
+    from finance import gobd
     from finance.models import Account, Booking, Category
     from members.models import Membership, Person, TransferRequest
 
     # Kasse zuerst: Buchungen schützen ihre Konten und Kategorien vor dem Löschen
-    Booking.objects.filter(organization=org).delete()
+    with gobd.erasure():
+        Booking.objects.filter(organization=org).delete()
     Account.objects.filter(organization=org).delete()
     Category.objects.filter(organization=org).delete()
     TransferRequest.objects.filter(Q(from_org=org) | Q(to_org=org) | Q(scope=org)).delete()

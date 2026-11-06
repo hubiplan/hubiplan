@@ -789,6 +789,18 @@ bleiben in den Schnappschüssen. Abgleich mit der Datenbank:
 Neuberechnen der Kette sichtbar, solange die getrennte Kopie unberührt ist; gegen jemanden mit
 vollem Zugriff auf Server und zweiten Sicherungsort schützt es nicht.
 
+Zusätzlich bekommen die Kassenprüfer (Rolle mit „Kasse lesen“, ohne „Kasse bearbeiten“)
+wöchentlich eine Mail mit derselben Zeile; auch sie lässt sich mit `kettenkoepfe_pruefen`
+prüfen. So liegt ein Stand außerhalb des Servers, selbst wenn Backups fehlen.
+
+**Schreibschutz in der Datenbank:** Trigger verhindern, dass festgeschriebene Buchungen
+(abgeschlossenes Geschäftsjahr oder bis „Kasse festgeschrieben bis“) und ihre Belege gelöscht
+oder in Betrag, Datum, Konten usw. geändert werden, und dass versiegelte Einträge des
+Änderungsprotokolls umgeschrieben werden (Leeren des Inhalts nach Löschfristen bleibt
+möglich). Das gilt auch für die Datenbankrolle der Anwendung. Nur das Löschen einer ganzen
+Einheit durch die Plattform und der Löschlauf nach Ablauf der Aufbewahrungsfrist setzen für
+ihre eigene Transaktion eine Ausnahme (`finance/gobd.py`).
+
 **Alte Startpasswörter:** `python manage.py startpasswoerter` zeigt nur die Anzahl der Konten,
 die noch ein Startpasswort haben; mit `--umstellen` wird es unbrauchbar und die Person bekommt
 einen Link zum Festlegen des Passworts.

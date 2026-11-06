@@ -259,7 +259,11 @@ def _purge_documents(org, start, end) -> dict[str, int]:
     for r in receipts:
         _delete_file(r.file)
         n += 1
-    receipts.delete()
+    # Aufbewahrungsfrist abgelaufen: Ausnahme vom Datenbankschutz (finance/0024)
+    from . import gobd
+
+    with gobd.erasure():
+        receipts.delete()
     counts["Belege"] = n
 
     n = 0
