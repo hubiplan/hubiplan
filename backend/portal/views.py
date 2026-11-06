@@ -614,6 +614,8 @@ class HolderSerializer(serializers.Serializer):
     member = serializers.IntegerField()
     role = serializers.IntegerField()
     valid_from = serializers.DateField(required=False)
+    # Vorgänger in derselben Rolle zum Vortag beenden (Rollen-Vorschlag R3)
+    end_previous = serializers.BooleanField(required=False, default=False)
 
 
 def holder_data(h: DepartmentRoleHolder) -> dict:
@@ -667,7 +669,18 @@ class DepartmentHoldersView(DepartmentScopedMixin, APIView):
             {"Abteilungsrolle": [None, role.name]},
             person=membership.person,
         )
-        return Response(holder_data(holder), status=status.HTTP_201_CREATED)
+        ended = []
+        if data.validated_data["end_previous"]:
+            from access.terms import end_unit_predecessors
+
+            # Die eigene Rollenverwaltung bleibt, wie beim Beenden (siehe unten)
+            keep = (
+                self.ctx.membership_id
+                if DEPT_ROLES_MANAGE in effective(role.permissions, dept=True)
+                else None
+            )
+            ended = end_unit_predecessors(holder, self.org, request.user, keep=keep)
+        return Response({**holder_data(holder), "ended": ended}, status=status.HTTP_201_CREATED)
 
 
 class DepartmentHolderEndView(DepartmentScopedMixin, APIView):

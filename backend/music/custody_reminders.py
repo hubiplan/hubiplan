@@ -44,7 +44,7 @@ def task_link(todo, scope):
         return ""
     if link.kind == "score":
         return (
-            f"/musik?proben=1&notenausgabe={link.source}"
+            f"/musik/proben?notenausgabe={link.source}"
             if ScoreLoan.objects.filter(organization=scope.org, pk=link.source).exists()
             else ""
         )
@@ -57,12 +57,12 @@ def task_link(todo, scope):
             equipment__item__department=None,
             equipment__item__deleted_at=None,
         ).exists()
-        return f"/musik?ausstattung=1&ausleihe={link.source}" if exists else ""
+        return f"/musik/ausstattung?ausleihe={link.source}" if exists else ""
     if link.kind == "maintenance":
         exists = Equipment.objects.filter(
             organization=scope.org, pk=link.source, item__department=None, item__deleted_at=None
         ).exists()
-        return f"/musik?ausstattung=1&wartung={link.source}" if exists else ""
+        return f"/musik/ausstattung?wartung={link.source}" if exists else ""
     return ""
 
 
@@ -76,7 +76,7 @@ def sources(pref, permissions):
                 row.pk,
                 row.due_on,
                 gettext("Notenrückgabe prüfen"),
-                f"/musik?proben=1&notenausgabe={row.pk}",
+                f"/musik/proben?notenausgabe={row.pk}",
             )
     if (
         pref.equipment
@@ -94,7 +94,7 @@ def sources(pref, permissions):
                 row.pk,
                 row.due_date,
                 gettext("Ausstattungsrückgabe prüfen"),
-                f"/musik?ausstattung=1&ausleihe={row.pk}",
+                f"/musik/ausstattung?ausleihe={row.pk}",
             )
         for row in Equipment.objects.filter(
             organization=pref.organization,
@@ -107,7 +107,7 @@ def sources(pref, permissions):
                 row.pk,
                 row.maintenance_due,
                 gettext("Wartung der Ausstattung prüfen"),
-                f"/musik?ausstattung=1&wartung={row.pk}",
+                f"/musik/ausstattung?wartung={row.pk}",
             )
 
 

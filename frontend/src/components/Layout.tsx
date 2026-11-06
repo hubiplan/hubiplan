@@ -7,6 +7,7 @@ import { confirmLeave } from './leaveGuard.ts'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { GROUP_LABELS, modules } from '../modules.tsx'
+import { portalSections } from '../pages/portal/sections.ts'
 import { displayName } from '../api/orgs.ts'
 import { leaveTo, ssoApi } from '../api/peering.ts'
 import type { SsoAccount } from '../api/peering.ts'
@@ -233,12 +234,7 @@ export function Layout() {
   const personal: PersonalArea[] = portal.map((p) => ({
     key: `p:${p.id}`,
     title: portal.length > 1 ? p.club_display_name || p.club_name : undefined,
-    links: [
-      { to: '/mein-bereich', label: t('Übersicht') },
-      { to: '/mein-bereich/ausweis', label: t('Mein Ausweis') },
-      ...(p.events_enabled ? [{ to: '/termine', label: t('Meine Termine') }] : []),
-      { to: '/mein-bereich/rechnungen', label: t('Meine Rechnungen') },
-    ],
+    links: portalSections(p).flatMap((s) => (s.account ? [{ to: s.to, label: s.account }] : [])),
   }))
   const portalInPicker = portal.filter((p) => activeKey === `p:${p.id}`)
 

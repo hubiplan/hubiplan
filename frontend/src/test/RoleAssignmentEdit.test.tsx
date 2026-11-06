@@ -40,6 +40,7 @@ describe('Rollenzuordnung bearbeiten', () => {
           },
         ],
       }),
+      'GET /api/orgs/7/accounts/': () => ({ status: 200, body: [] }),
       'GET /api/orgs/7/assignments/': () => ({ status: 200, body: [assignment] }),
       'GET /api/permissions/?org_type=club&org=7': () => ({ status: 200, body: [] }),
       'PATCH /api/orgs/7/assignments/5/': () => ({
@@ -48,7 +49,7 @@ describe('Rollenzuordnung bearbeiten', () => {
       }),
     })
     render(
-      <MemoryRouter initialEntries={['/einstellungen/rollen']}>
+      <MemoryRouter initialEntries={['/einstellungen/konten']}>
         <AuthProvider>
           <OrgProvider>
             <App />

@@ -6,6 +6,8 @@ export interface OfficeHolder {
   role: number
   name: string
   person: number | null
+  /** Mitgliedschaft bei Rollen einer Untereinheit */
+  membership?: number | null
   from_year: number
   until_year: number | null
   current: boolean

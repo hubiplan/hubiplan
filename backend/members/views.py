@@ -646,6 +646,16 @@ class DepartmentRoleHolderViewSet(_MemberChildMixin, viewsets.ModelViewSet):
     child_model = DepartmentRoleHolder
     http_method_names = ["get", "post", "patch", "delete", "options", "head"]
 
+    def perform_create(self, serializer):
+        from access.terms import end_unit_predecessors
+
+        end_previous = serializer.validated_data.get("end_previous", False)
+        super().perform_create(serializer)
+        holder = serializer.instance
+        holder._ended = (
+            end_unit_predecessors(holder, self.org, self.request.user) if end_previous else []
+        )
+
 
 class FederationEntrySerializer(serializers.Serializer):
     manual_entry_date = serializers.DateField(allow_null=True)

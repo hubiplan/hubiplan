@@ -48,7 +48,7 @@ def test_score_tasks_are_private_idempotent_and_resolved(c, club, practice):
     assert custody_reminders() == 0
     response = c.get(f"/api/orgs/{club.pk}/todos/")
     assert response.status_code == 200, response.content
-    assert response.json()["items"][0]["music_url"] == f"/musik?proben=1&notenausgabe={loan.pk}"
+    assert response.json()["items"][0]["music_url"] == f"/musik/proben?notenausgabe={loan.pk}"
     with tenant_context(club.pk, pref.user_id):
         link = MusicReminderTask.objects.get()
         todo = link.todo
