@@ -97,4 +97,30 @@ describe('Instanz (White Label)', () => {
     await waitFor(() => expect(document.title).toBe('Anmelden · Vereinsportal Musterkreis'))
     view.unmount()
   })
+
+  it('eigenes Symbol: Browser-Tab, Apple-Symbol und Manifest kommen von der Instanz', () => {
+    document.head.insertAdjacentHTML(
+      'beforeend',
+      '<link rel="icon" type="image/svg+xml" href="/favicon.svg" id="t-icon">' +
+        '<link rel="apple-touch-icon" href="/apple-touch-icon.png" id="t-apple">' +
+        '<link rel="manifest" href="/manifest.webmanifest" id="t-manifest">' +
+        '<meta name="theme-color" content="#0e7c66" id="t-color">',
+    )
+    const href = (id: string) => document.getElementById(id)?.getAttribute('href')
+    act(() => setPlatform({ ...MUSTERKREIS, icon: true }))
+    expect(href('t-icon')).toBe('/api/public/platform/icon-32.png')
+    expect(href('t-apple')).toBe('/api/public/platform/icon-180.png')
+    expect(href('t-manifest')).toBe('/api/public/platform/manifest.webmanifest')
+    expect(document.getElementById('t-color')?.getAttribute('content')).toBe('#1f4e79')
+    // Ohne Symbol: wieder die Dateien aus index.html, das Manifest bleibt das der Instanz
+    act(() => setPlatform({ ...MUSTERKREIS, icon: false }))
+    expect(href('t-icon')).toBe('/favicon.svg')
+    expect(href('t-apple')).toBe('/apple-touch-icon.png')
+    expect(href('t-manifest')).toBe('/api/public/platform/manifest.webmanifest')
+    standard()
+    expect(href('t-manifest')).toBe('/manifest.webmanifest')
+    expect(document.getElementById('t-color')?.getAttribute('content')).toBe('#0e7c66')
+    for (const id of ['t-icon', 't-apple', 't-manifest', 't-color'])
+      document.getElementById(id)?.remove()
+  })
 })
