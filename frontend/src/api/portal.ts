@@ -36,6 +36,9 @@ export interface PortalEntry {
   club_display_name?: string
   first_name: string
   last_name: string
+  /** „organization“: Zugang als Ansprechpartner einer Organisation */
+  member_kind?: 'person' | 'organization'
+  member_name?: string
   date_precision?: DatePrecision
   theme: EffectiveTheme
   events_enabled?: boolean
@@ -71,6 +74,9 @@ export interface ContactData {
 
 export interface DeptMember {
   id: number
+  /** „organization“ bei Organisationsmitgliedern (Ansprechpartner-Zugang) */
+  kind?: 'person' | 'organization'
+  display_name?: string
   last_name: string
   first_name: string
   birth_date: string
@@ -203,6 +209,11 @@ export const FIELD_LABELS: Record<string, string> = {
 const dept = (id: number) => `/api/depts/${id}`
 const org = (id: number) => `/api/orgs/${id}`
 
+/** Zugang eines Ansprechpartners statt des Mitglieds (Organisationsmitglieder) */
+function contactQuery(contact?: number): string {
+  return contact ? `?ansprechpartner=${contact}` : ''
+}
+
 export const portalApi = {
   contexts: () => api.get<Contexts>('/api/me/contexts/'),
 
@@ -248,19 +259,19 @@ export const portalApi = {
     ),
 
   // Vereinsseite
-  memberAccess: (orgId: number, member: number) =>
+  memberAccess: (orgId: number, member: number, contact?: number) =>
     api.get<{
       access: AccessInfo | null
       portal_enabled: boolean
       department_access_enabled: boolean
-    }>(`${org(orgId)}/members/${member}/access/`),
-  sendMemberAccess: (orgId: number, member: number, transfer = false) =>
+    }>(`${org(orgId)}/members/${member}/access/${contactQuery(contact)}`),
+  sendMemberAccess: (orgId: number, member: number, transfer = false, contact?: number) =>
     api.post<{ access: AccessInfo; sent: 'link' | 'password' }>(
-      `${org(orgId)}/members/${member}/access/`,
+      `${org(orgId)}/members/${member}/access/${contactQuery(contact)}`,
       { transfer },
     ),
-  removeMemberAccess: (orgId: number, member: number) =>
-    api.del(`${org(orgId)}/members/${member}/access/`),
+  removeMemberAccess: (orgId: number, member: number, contact?: number) =>
+    api.del(`${org(orgId)}/members/${member}/access/${contactQuery(contact)}`),
   changeRequests: (orgId: number, status = 'pending') =>
     api.get<ChangeRequest[]>(`${org(orgId)}/change-requests/?status=${status}`),
   decide: (orgId: number, id: number, accept: boolean, response = '', overwrite = false) =>

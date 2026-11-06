@@ -16,7 +16,7 @@ import hashlib
 import hmac
 from dataclasses import dataclass, field
 
-from django.db.models import Q
+from django.db.models import F, Q
 from django.utils.translation import gettext
 
 from access.models import RoleAssignment
@@ -70,9 +70,11 @@ def profile(client: Client, user) -> Profile:
             .active(on)
             .select_related("role", "person")
         )
+        # Eigener Zugang vor dem Zugang als Ansprechpartner einer Organisation (J5)
         access = (
             PortalAccess.objects.filter(user=user, organization=org)
-            .select_related("membership__person")
+            .select_related("membership__person", "contact_person__person")
+            .order_by(F("contact_person").asc(nulls_first=True), "pk")
             .first()
         )
         membership = access.membership if access else None
@@ -138,10 +140,21 @@ def profile(client: Client, user) -> Profile:
             unique.append(g)
 
     person = membership.person if membership is not None else None
-    if person is None:
+    contact_names = None
+    if access is not None and access.contact_person_id is not None:
+        # Ansprechpartner: eigener Name, nicht der Name der Organisation
+        from portal.services import contact_names as names_of
+
+        person = None
+        with tenant_context(org.pk, user.pk):
+            contact_names = names_of(access.contact_person)
+    if person is None and contact_names is None:
         person = next((a.person for a in roles if a.person_id), None)
-    given = (getattr(person, "first_name", "") or user.first_name or "").strip()
-    family = (getattr(person, "last_name", "") or user.last_name or "").strip()
+    if contact_names is not None:
+        given, family = (n.strip() for n in contact_names)
+    else:
+        given = (getattr(person, "first_name", "") or user.first_name or "").strip()
+        family = (getattr(person, "last_name", "") or user.last_name or "").strip()
     name = " ".join(p for p in (given, family) if p) or user.email.split("@")[0]
     return Profile(
         name=name,

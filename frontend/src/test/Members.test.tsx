@@ -588,6 +588,80 @@ describe('Mitgliedsakte', () => {
     })
   })
 
+  it('Organisation: Mitgliederbereich je Ansprechpartner', async () => {
+    const contact = {
+      id: 5,
+      linked_member: null,
+      display_name: 'Max Muster',
+      last_name: 'Muster',
+      first_name: 'Max',
+      gender: '',
+      function: '',
+      email: 'max@musterbau.example',
+      phone: '',
+      contact_email: 'max@musterbau.example',
+      contact_phone: '',
+      is_primary: true,
+      receives_mail: true,
+      receives_invoices: true,
+      represents: true,
+      member_access: false,
+      since: null,
+    }
+    const firma = {
+      ...detail,
+      kind: 'organization',
+      last_name: 'Musterbau GmbH',
+      first_name: '',
+      birth_date: null,
+      organization: {
+        name_suffix: '',
+        legal_form: 'gmbh',
+        legal_form_label: 'GmbH',
+        legal_form_other: '',
+        register: '',
+        vat_id: '',
+        website: '',
+      },
+      contact_persons: [contact],
+    }
+    const access = `${base}/members/11/access/?ansprechpartner=5`
+    const withLogins = testOrg({
+      permissions: ['members.view', 'members.edit', 'logins.view', 'logins.edit'],
+    })
+    const calls = fakeApi({
+      ...common(),
+      'GET /api/me/organizations/': () => ({ status: 200, body: [withLogins] }),
+      [`GET ${base}/members/11/`]: () => ({ status: 200, body: firma }),
+      [`GET ${access}`]: () => ({
+        status: 200,
+        body: { access: null, portal_enabled: true, department_access_enabled: false },
+      }),
+      [`POST ${access}`]: () => ({
+        status: 200,
+        body: {
+          access: {
+            email: 'max@musterbau.example',
+            created_at: '2026-11-06T20:00:00Z',
+            last_login: null,
+            login: 'link',
+          },
+          sent: 'link',
+        },
+      }),
+    })
+    renderAt('/mitglieder/11')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('link', { name: 'Rollen und Konto' }))
+    expect(
+      await screen.findByRole('heading', { name: 'Mitgliederbereich für Max Muster' }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Freischalten und Anmeldelink senden' }))
+    expect(await screen.findByText('Anmeldelink per E-Mail gesendet.')).toBeInTheDocument()
+    expect(calls.some((c) => c.key === `POST ${access}`)).toBe(true)
+    expect(calls.some((c) => c.key === `GET ${base}/members/11/access/`)).toBe(false)
+  })
+
   it('Rechnungsanschrift festlegen', async () => {
     const billingOrg = testOrg({
       permissions: ['members.view', 'members.edit'],

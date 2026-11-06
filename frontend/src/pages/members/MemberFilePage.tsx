@@ -127,6 +127,7 @@ export function MemberFilePage() {
             }}
             canManage={org.permissions.includes(PERM.photosManage)}
             hasEmail={!!data.contact?.email}
+            organization={data.kind === 'organization'}
             onChange={() => void reload()}
           />
           <MasterData
@@ -1075,16 +1076,27 @@ function RolesTab({
 
   return (
     <div className="stack">
-      {member.status === 'active' && org.permissions.includes(PERM.loginsView) && (
-        <MemberAccessSection
-          key={`zugang-${member.id}`}
-          orgId={org.id}
-          memberId={member.id}
-          hasEmail={!!member.contact?.email}
-          contactEmail={member.contact?.email}
-          canManage={canEdit && org.permissions.includes(PERM.loginsEdit)}
-        />
-      )}
+      {member.status === 'active' &&
+        org.permissions.includes(PERM.loginsView) &&
+        member.kind === 'organization' && (
+          <OrganizationAccess
+            orgId={org.id}
+            member={member}
+            canManage={canEdit && org.permissions.includes(PERM.loginsEdit)}
+          />
+        )}
+      {member.status === 'active' &&
+        org.permissions.includes(PERM.loginsView) &&
+        member.kind !== 'organization' && (
+          <MemberAccessSection
+            key={`zugang-${member.id}`}
+            orgId={org.id}
+            memberId={member.id}
+            hasEmail={!!member.contact?.email}
+            contactEmail={member.contact?.email}
+            canManage={canEdit && org.permissions.includes(PERM.loginsEdit)}
+          />
+        )}
       <Section title={t('Vorstandsrollen')}>
         {member.board_roles.length === 0 ? (
           <p className="muted">{t('Keine.')}</p>
@@ -1201,5 +1213,45 @@ function HistoryTab({ orgId, memberId }: { orgId: number; memberId: number }) {
         </ul>
       )}
     </Section>
+  )
+}
+
+/** Organisationen: ein Zugang je Ansprechpartner statt eines Zugangs für das Mitglied. */
+function OrganizationAccess({
+  orgId,
+  member,
+  canManage,
+}: {
+  orgId: number
+  member: MemberDetail
+  canManage: boolean
+}) {
+  const contacts = member.contact_persons ?? []
+  if (contacts.length === 0)
+    return (
+      <div className="card card-wide">
+        <h2>{t('Konto und Mitgliederbereich')}</h2>
+        <p className="muted">
+          {t(
+            'Organisationen kommen über ihre Ansprechpartner in den Mitgliederbereich. Bitte zuerst unter „Stammdaten“ einen Ansprechpartner eintragen.',
+          )}
+        </p>
+      </div>
+    )
+  return (
+    <>
+      {contacts.map((c) => (
+        <MemberAccessSection
+          key={`zugang-${member.id}-${c.id}`}
+          orgId={orgId}
+          memberId={member.id}
+          contactId={c.id}
+          title={t('Mitgliederbereich für {name}', { name: c.display_name })}
+          hasEmail={!!c.contact_email}
+          contactEmail={c.contact_email}
+          canManage={canManage}
+        />
+      ))}
+    </>
   )
 }

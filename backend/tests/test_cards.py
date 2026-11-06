@@ -112,6 +112,7 @@ class TestVerwaltung:
             "club_label",
             "federation_label",
             "imprint_key",
+            "kind",
         }
 
         c.post(card_url(club, erika), {"action": "renew"}, content_type=JSON)

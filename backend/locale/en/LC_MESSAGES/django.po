@@ -8498,3 +8498,17 @@ msgstr "Unknown contact person."
 
 msgid "Bitte den Vertreter angeben."
 msgstr "Please enter the representative."
+
+msgid "Für diesen Ansprechpartner ist keine E-Mail-Adresse hinterlegt."
+msgstr "No email address is stored for this contact person."
+
+msgid "Bei Organisationen bekommt jeder Ansprechpartner einen eigenen Zugang."
+msgstr "For organisations, each contact person gets their own access."
+
+msgid ""
+"{org} lädt Sie als Ansprechpartner von {member} in den Mitgliederbereich von "
+"{instanz} ein. Dort sehen Sie die Daten der Mitgliedschaft und können "
+"Änderungen melden."
+msgstr ""
+"{org} invites you, as contact person of {member}, to the member area of "
+"{instanz}. There you can see the membership data and report changes."

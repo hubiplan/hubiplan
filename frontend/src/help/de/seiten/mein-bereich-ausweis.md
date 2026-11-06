@@ -16,3 +16,5 @@ Telefons. Bei Google werden diese Angaben übertragen, dein Foto wird nicht übe
 werden nicht automatisch aktualisiert; lade sie nach Änderungen erneut herunter.
 Für beide gilt: Erst das Scannen des QR-Codes prüft die aktuelle Gültigkeit online.
 Nach einem neu erzeugten QR-Code musst du den neuen Pass hinzufügen.
+
+Bist du Ansprechpartner einer Organisation, zeigt der Ausweis die Organisation mit ihrem Logo statt eines Fotos, und die Prüfseite nennt sie als Organisationsmitglied. Der Ausweis zeigt nicht, wer ihn vorzeigt.
