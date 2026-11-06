@@ -88,6 +88,33 @@ export function buttonColors(primary: string, onPrimary: string) {
   return { background, foreground, hover }
 }
 
+/** CSS-Variablen, die ein Erscheinungsbild setzt (Namen wie in theme.css). */
+export function themeVars(theme: ThemeColors): Record<(typeof VARS)[number], string> {
+  const button = buttonColors(theme.primary, theme.on_primary)
+  const sidebar = sidebarColor(theme.primary)
+  return {
+    '--color-primary': theme.primary,
+    '--button-brand-primary': button.background,
+    '--button-brand-primary-hover': button.hover,
+    '--button-brand-on-primary': button.foreground,
+    '--color-primary-hover': hoverColor(theme.primary, theme.on_primary),
+    '--color-link': linkColor(theme.primary),
+    // Fokusrahmen, Feldfokus und Häkchen: dieselbe abgedunkelte Farbe, damit sie auch bei
+    // hellen Vereinsfarben (Gold, Gelb, Hellblau) deutlich zu sehen sind (WCAG 1.4.11)
+    '--color-focus': linkColor(theme.primary),
+    '--color-on-primary': theme.on_primary,
+    '--color-accent': theme.accent,
+    '--color-on-accent': theme.on_accent,
+    '--sidebar-bg': sidebar,
+    // Fokusrahmen in der Seitenleiste: Weiß oder Schwarz, je nachdem was dort absticht
+    '--sidebar-focus': readableOn(sidebar),
+  }
+}
+
+/**
+ * Erscheinungsbild der aktiven Einheit direkt am Wurzelelement. null: keines, dann gilt
+ * das der Instanz (applyPlatformTheme) und darunter der Standard aus theme.css.
+ */
 export function applyTheme(
   theme: ThemeColors | null,
   root: HTMLElement = document.documentElement,
@@ -96,21 +123,30 @@ export function applyTheme(
     for (const v of VARS) root.style.removeProperty(v)
     return
   }
-  root.style.setProperty('--color-primary', theme.primary)
-  const button = buttonColors(theme.primary, theme.on_primary)
-  root.style.setProperty('--button-brand-primary', button.background)
-  root.style.setProperty('--button-brand-primary-hover', button.hover)
-  root.style.setProperty('--button-brand-on-primary', button.foreground)
-  root.style.setProperty('--color-primary-hover', hoverColor(theme.primary, theme.on_primary))
-  root.style.setProperty('--color-link', linkColor(theme.primary))
-  // Fokusrahmen, Feldfokus und Häkchen: dieselbe abgedunkelte Farbe, damit sie auch bei
-  // hellen Vereinsfarben (Gold, Gelb, Hellblau) deutlich zu sehen sind (WCAG 1.4.11)
-  root.style.setProperty('--color-focus', linkColor(theme.primary))
-  root.style.setProperty('--color-on-primary', theme.on_primary)
-  root.style.setProperty('--color-accent', theme.accent)
-  root.style.setProperty('--color-on-accent', theme.on_accent)
-  const sidebar = sidebarColor(theme.primary)
-  root.style.setProperty('--sidebar-bg', sidebar)
-  // Fokusrahmen in der Seitenleiste: Weiß oder Schwarz, je nachdem was dort absticht
-  root.style.setProperty('--sidebar-focus', readableOn(sidebar))
+  for (const [name, value] of Object.entries(themeVars(theme))) root.style.setProperty(name, value)
+}
+
+const PLATFORM_STYLE_ID = 'plattform-farben'
+
+/**
+ * Farben der Instanz (White Label) als eigene Stilregel für :root. Sie liegt über
+ * theme.css, aber unter den Farben einer Einheit, die applyTheme direkt am Element
+ * setzt. So gewinnt immer die Einheit, und ohne Einheit gilt die Instanz.
+ */
+export function applyPlatformTheme(theme: ThemeColors | null, doc: Document = document) {
+  let el = doc.getElementById(PLATFORM_STYLE_ID)
+  if (!theme) {
+    el?.remove()
+    return
+  }
+  if (!el) {
+    el = doc.createElement('style')
+    el.id = PLATFORM_STYLE_ID
+  }
+  // Immer ans Ende, damit die Regel nach theme.css kommt
+  doc.head.appendChild(el)
+  const vars = Object.entries(themeVars(theme))
+    .map(([name, value]) => `${name}: ${value};`)
+    .join(' ')
+  el.textContent = `:root { ${vars} }`
 }

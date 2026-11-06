@@ -22,6 +22,7 @@ from audit.log import record
 from core.ratelimit import client_ip, too_many
 from core.tenancy import rls_bypass, tenant_context
 from devices.push import notify_membership
+from organizations.addresses import base_url
 from organizations.imprint import ensure as ensure_imprint
 from organizations.theme import effective_theme
 
@@ -260,7 +261,7 @@ class PhotoLinkView(_PhotoView):
             created_by=request.user,
             expires_at=timezone.now() + datetime.timedelta(days=LINK_DAYS),
         )
-        url = f"{settings.FRONTEND_URL}/foto/{token}"
+        url = f"{base_url(self.org)}/foto/{token}"
         if str(request.data.get("send_email", "")).lower() in ("1", "true", "on"):
             contact = services.contact_for(membership.person, self.org)
             if contact is None or not contact.email:

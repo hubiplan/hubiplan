@@ -347,8 +347,8 @@ msgid "Für dieses Konto ist keine Zwei-Faktor-Anmeldung eingerichtet."
 msgstr "This account has no two-factor authentication set up."
 
 #, python-brace-format
-msgid "Ihre Zwei-Faktor-Anmeldung bei HUBIplan – {org} wurde zurückgesetzt"
-msgstr "Your two-factor authentication at HUBIplan – {org} has been reset"
+msgid "Ihre Zwei-Faktor-Anmeldung bei {instanz} – {org} wurde zurückgesetzt"
+msgstr "Your two-factor authentication at {instanz} – {org} has been reset"
 
 msgid "Guten Tag,"
 msgstr "Hello,"
@@ -385,7 +385,7 @@ msgstr "Unknown step."
 msgid ""
 "Guten Tag,\n"
 "\n"
-"für Sie wurde bei HUBIplan ein Konto angelegt: Rolle „{role}“ in „{org}“.\n"
+"für Sie wurde bei {instanz} ein Konto angelegt: Rolle „{role}“ in „{org}“.\n"
 "\n"
 "Bitte legen Sie über diesen Link Ihr Passwort fest (gültig {days} Tage):\n"
 "{link}\n"
@@ -397,7 +397,7 @@ msgid ""
 msgstr ""
 "Hello,\n"
 "\n"
-"an account has been created for you at HUBIplan: role “{role}” in “{org}”.\n"
+"an account has been created for you at {instanz}: role “{role}” in “{org}”.\n"
 "\n"
 "Please set your password using this link (valid for {days} days):\n"
 "{link}\n"
@@ -408,14 +408,14 @@ msgstr ""
 "→ My account”.\n"
 
 #, python-brace-format
-msgid "Einladung zu HUBIplan – {org}"
-msgstr "Invitation to HUBIplan – {org}"
+msgid "Einladung zu {instanz} – {org}"
+msgstr "Invitation to {instanz} – {org}"
 
 #, python-brace-format
 msgid ""
 "Guten Tag,\n"
 "\n"
-"HUBIplan verschickt keine Startpasswörter mehr. Ihr bisheriges Startpasswort "
+"{instanz} verschickt keine Startpasswörter mehr. Ihr bisheriges Startpasswort "
 "gilt nicht mehr.\n"
 "\n"
 "Bitte legen Sie über diesen Link Ihr eigenes Passwort fest (gültig {days} "
@@ -428,7 +428,7 @@ msgid ""
 msgstr ""
 "Hello,\n"
 "\n"
-"HUBIplan no longer sends initial passwords. Your previous initial password "
+"{instanz} no longer sends initial passwords. Your previous initial password "
 "is no longer valid.\n"
 "\n"
 "Please set your own password using this link (valid for {days} days):\n"
@@ -438,8 +438,9 @@ msgstr ""
 "\n"
 "If the link has expired, use “Forgot password” on the sign-in page.\n"
 
-msgid "HUBIplan: Passwort festlegen"
-msgstr "HUBIplan: set your password"
+#, python-brace-format
+msgid "{instanz}: Passwort festlegen"
+msgstr "{instanz}: set your password"
 
 msgid "Diese Sprache gibt es nicht."
 msgstr "This language is not available."
@@ -466,15 +467,15 @@ msgid "Ihr Passwort wurde geändert"
 msgstr "Your password has been changed"
 
 #, python-brace-format
-msgid "für Ihr HUBIplan-Konto {email} wurde soeben das Passwort geändert."
-msgstr "the password for your HUBIplan account {email} has just been changed."
+msgid "für Ihr Konto {email} bei {instanz} wurde soeben das Passwort geändert."
+msgstr "the password for your account {email} at {instanz} has just been changed."
 
 msgid "Ihr Passwort wurde festgelegt"
 msgstr "Your password has been set"
 
 #, python-brace-format
-msgid "für Ihr HUBIplan-Konto {email} wurde soeben das Passwort festgelegt."
-msgstr "the password for your HUBIplan account {email} has just been set."
+msgid "für Ihr Konto {email} bei {instanz} wurde soeben das Passwort festgelegt."
+msgstr "the password for your account {email} at {instanz} has just been set."
 
 msgid ""
 "Waren Sie das nicht? Dann setzen Sie es bitte sofort über „Passwort "
@@ -522,10 +523,11 @@ msgstr "Change of your sign-in email requested"
 
 #, python-brace-format
 msgid ""
-"für Ihr HUBIplan-Konto wurde die neue Anmelde-E-Mail {new} angefordert. Sie "
-"wird erst wirksam, wenn sie über den Link an die neue Adresse bestätigt ist."
+"für Ihr Konto bei {instanz} wurde die neue Anmelde-E-Mail {new} angefordert. "
+"Sie wird erst wirksam, wenn sie über den Link an die neue Adresse bestätigt "
+"ist."
 msgstr ""
-"the new sign-in email {new} has been requested for your HUBIplan account. It "
+"the new sign-in email {new} has been requested for your account at {instanz}. It "
 "only takes effect once it has been confirmed via the link sent to the new "
 "address."
 
@@ -3938,12 +3940,13 @@ msgstr ""
 msgid "Rolle bei {org} durch die Plattform vergeben"
 msgstr "Role at {org} assigned by the platform"
 
-msgid "Diese Nachricht wurde über HUBIplan versandt."
-msgstr "This message was sent via HUBIplan."
+#, python-brace-format
+msgid "Diese Nachricht wurde über {instanz} versandt."
+msgstr "This message was sent via {instanz}."
 
 #, python-brace-format
-msgid "Diese Nachricht wurde im Auftrag von {name} über HUBIplan versandt."
-msgstr "This message was sent via HUBIplan on behalf of {name}."
+msgid "Diese Nachricht wurde im Auftrag von {name} über {instanz} versandt."
+msgstr "This message was sent via {instanz} on behalf of {name}."
 
 msgid "Impressum"
 msgstr "Legal notice"
@@ -7652,11 +7655,11 @@ msgstr "This facility has areas of its own."
 #: accounts/self_service.py
 #, python-brace-format
 msgid ""
-"für Ihr HUBIplan-Konto wurde die neue Anmelde-E-Mail {new} angefordert. Sie "
-"wird erst wirksam, wenn Sie den Wechsel auch hier bestätigen (Link gültig "
+"für Ihr Konto bei {instanz} wurde die neue Anmelde-E-Mail {new} angefordert. "
+"Sie wird erst wirksam, wenn Sie den Wechsel auch hier bestätigen (Link gültig "
 "{days} Tage):"
 msgstr ""
-"the new sign-in email {new} has been requested for your HUBIplan account. It "
+"the new sign-in email {new} has been requested for your account at {instanz}. It "
 "only takes effect once you also confirm the change here (link valid for "
 "{days} days):"
 
@@ -8354,3 +8357,138 @@ msgstr "The commercial operation has a loss of €{x}. Losses must not be covere
 
 msgid "Buchungen über {x} € haben keinen steuerlichen Bereich. Bitte den Kategorien einen Bereich zuordnen, sonst fehlen sie in der Ampel."
 msgstr "Bookings totalling €{x} have no tax area. Please assign an area to the categories, otherwise they are missing from the traffic light."
+
+msgid "Das Symbol braucht mindestens {px} Pixel Breite oder Höhe."
+msgstr "The icon needs to be at least {px} pixels wide or high."
+
+msgid "für **{title}** suchen wir noch Helferinnen und Helfer."
+msgstr "we are still looking for volunteers for **{title}**."
+
+msgid "{day}, {start}–{end}: {n} frei"
+msgstr "{day}, {start}–{end}: {n} free"
+
+msgid "Trag dich im Mitgliederbereich ein: {url}"
+msgstr "Sign up in the member area: {url}"
+
+msgid "Bitte melde dich bei der Verwaltung, wenn du helfen kannst."
+msgstr "Please contact the administration if you can help."
+
+msgid "Vielen Dank!"
+msgstr "Thank you!"
+
+msgid "Helfer gesucht: {title} (noch {n} Plätze frei)"
+msgstr "Volunteers wanted: {title} ({n} places still free)"
+
+msgid "Bitte den Plan zuerst veröffentlichen."
+msgstr "Please publish the roster first."
+
+msgid "Alle Schichten sind besetzt."
+msgstr "All shifts are filled."
+
+msgid "Aufruf als Rundschreiben"
+msgstr "Call-out as circular"
+
+msgid "Die Tagesordnung steht schon fest."
+msgstr "The agenda is already fixed."
+
+msgid "Zu viele Tagesordnungspunkte."
+msgstr "Too many agenda items."
+
+msgid "Antrag von {name}: {title}"
+msgstr "Motion by {name}: {title}"
+
+msgid "Bitte eine Begründung angeben."
+msgstr "Please give a reason."
+
+msgid "Antrag {title}"
+msgstr "Motion {title}"
+
+msgid "Zu dieser Versammlung sind keine Anträge vorgesehen."
+msgstr "Motions are not accepted for this meeting."
+
+msgid "Die Frist für Anträge ist vorbei."
+msgstr "The deadline for motions has passed."
+
+msgid "Bitte Titel und Begründung angeben."
+msgstr "Please enter a title and a reason."
+
+msgid "Du hast schon zu viele Anträge gestellt."
+msgstr "You have already submitted too many motions."
+
+msgid "eingereicht"
+msgstr "submitted"
+
+msgid "in die Tagesordnung aufgenommen"
+msgstr "added to the agenda"
+
+msgid "nicht aufgenommen"
+msgstr "not added"
+
+msgid "Begründung"
+msgstr "Reason"
+
+msgid "Antwort"
+msgstr "Reply"
+
+msgid "Ein Amt hat immer ein Mensch, keine Organisation."
+msgstr "Only a person can hold an office, not an organisation."
+
+msgid "GmbH"
+msgstr "GmbH (limited company)"
+
+msgid "UG (haftungsbeschränkt)"
+msgstr "UG (limited liability)"
+
+msgid "AG"
+msgstr "AG (stock corporation)"
+
+msgid "eingetragener Verein (e. V.)"
+msgstr "registered association (e. V.)"
+
+msgid "nicht eingetragener Verein"
+msgstr "unregistered association"
+
+msgid "Genossenschaft (eG)"
+msgstr "cooperative (eG)"
+
+msgid "KG / GmbH & Co. KG"
+msgstr "limited partnership (KG / GmbH & Co. KG)"
+
+msgid "oHG"
+msgstr "general partnership (oHG)"
+
+msgid "GbR"
+msgstr "civil law partnership (GbR)"
+
+msgid "Stiftung"
+msgstr "foundation"
+
+msgid "Körperschaft des öffentlichen Rechts"
+msgstr "public-law corporation"
+
+msgid "Gebietskörperschaft (Stadt, Gemeinde, Kreis)"
+msgstr "local authority (town, municipality, district)"
+
+msgid "Sonstige"
+msgstr "other"
+
+msgid "Bitte eine Adresse wie mitglieder.example.org angeben."
+msgstr "Please enter an address such as members.example.org."
+
+msgid "Das ist schon die Hauptadresse der Instanz."
+msgstr "This is already the main address of the instance."
+
+msgid "Diese Adresse gehört schon zu einer Vereinswebseite."
+msgstr "This address already belongs to a club website."
+
+msgid "Diese Adresse ist schon eingetragen."
+msgstr "This address has already been added."
+
+msgid "Ansprechpartner ist immer ein Mensch, keine Organisation."
+msgstr "A contact person is always a natural person, not an organisation."
+
+msgid "Diese Person ist hier schon Ansprechpartner."
+msgstr "This person is already a contact person here."
+
+msgid "Ansprechpartner gibt es nur bei Organisationsmitgliedern."
+msgstr "Only organisation members have contact persons."

@@ -71,6 +71,8 @@ MODULE_MODELS = (
     "todos.TodoAttachment",
     "members.HonoraryTitle",
     "members.HonoraryTitleAward",
+    # Ansprechpartner von Organisationsmitgliedern (J2)
+    "members.ContactPerson",
     "honors.Dignity",
     "honors.Reign",
     "honors.Companion",
@@ -156,6 +158,7 @@ MODULE_MODELS = (
     "meetings.Resolution",
     "meetings.Attendance",
     "meetings.MinutesVersion",
+    "meetings.Motion",
     # Helferdienste nach den Terminen (ein Plan kann an einem Termin hängen)
     "helpers.HelperPlan",
     "helpers.Duty",
@@ -250,6 +253,8 @@ MEMBER_MODELS = {
     "entries.entryversion",
     # Anwesenheit nennt Mitglieder (Name, Vertretung)
     "meetings.attendance",
+    # Anträge nennen das Mitglied, das sie gestellt hat
+    "meetings.motion",
     # Einteilungen nennen Mitglieder und Externe mit Telefon
     "helpers.shiftassignment",
 }

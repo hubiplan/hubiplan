@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { GENDERS, memberApi, todayIso } from '../../api/members.ts'
+import { GENDERS, LEGAL_FORMS, memberApi, todayIso } from '../../api/members.ts'
 import type { DepartmentMembership, DurationInfo, Gender, MemberDetail } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
@@ -25,6 +25,7 @@ import { MembershipActions } from './MembershipActions.tsx'
 import { SuggestCorrection } from './FederationMembersPage.tsx'
 import { FieldsTab } from './FieldsTab.tsx'
 import { PhotoSection } from './PhotoSection.tsx'
+import { ContactPersons } from './ContactPersons.tsx'
 import { PublicationSection } from './PublicationSection.tsx'
 import { HonoraryAwards } from './HonoraryAwards.tsx'
 import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
@@ -76,9 +77,12 @@ export function MemberFilePage() {
         )}
         <div>
           <h1>
-            {data.first_name} {data.last_name}
+            {data.kind === 'organization'
+              ? [data.last_name, data.organization?.name_suffix].filter(Boolean).join(' – ')
+              : `${data.first_name} ${data.last_name}`}
           </h1>
           <p className="muted">
+            {data.kind === 'organization' && `${t('Organisation')} · `}
             {data.status === 'active' ? t('Mitglied') : t('ehemaliges Mitglied')}
             {data.current_type &&
               t(' · {member_type_name}', { member_type_name: data.current_type.member_type_name })}
@@ -131,6 +135,27 @@ export function MemberFilePage() {
             canEdit={canEdit && !data.managed_by}
             onSaved={setData}
           />
+          {data.kind === 'organization' && (
+            <ContactPersons
+              key={`ansprechpartner-${data.id}`}
+              orgId={org.id}
+              memberId={data.id}
+              contacts={data.contact_persons ?? []}
+              canEdit={canEdit}
+              onChange={() => void reload()}
+            />
+          )}
+          {(data.contact_for ?? []).length > 0 && (
+            <p className="muted">
+              {t('Ansprechpartner für:')}{' '}
+              {(data.contact_for ?? []).map((c, i) => (
+                <span key={c.member_id}>
+                  {i > 0 && ', '}
+                  <Link to={`/mitglieder/${c.member_id}`}>{c.name}</Link>
+                </span>
+              ))}
+            </p>
+          )}
           {data.managed_by && (
             <SuggestCorrection
               orgId={org.id}
@@ -187,11 +212,19 @@ function MasterData({
 }) {
   const tm = useTerms()
   const c = member.contact
+  const o = member.organization
+  const organization = member.kind === 'organization'
   const form = useForm({
     last_name: member.last_name,
     first_name: member.first_name,
-    birth_date: member.birth_date,
+    birth_date: member.birth_date ?? '',
     gender: member.gender ?? '',
+    name_suffix: o?.name_suffix ?? '',
+    legal_form: o?.legal_form ?? '',
+    legal_form_other: o?.legal_form_other ?? '',
+    register: o?.register ?? '',
+    vat_id: o?.vat_id ?? '',
+    website: o?.website ?? '',
     club_number: member.club_number,
     email: c?.email ?? '',
     phone: c?.phone ?? '',
@@ -214,51 +247,112 @@ function MasterData({
     <form className="card card-wide" onSubmit={(ev) => ev.preventDefault()}>
       {canEdit && <SaveStatus auto={auto} />}
       <fieldset disabled={!canEdit}>
-        <div className="grid-4">
-          <Field
-            label={t('Name')}
-            required
-            value={v.last_name}
-            error={e.last_name}
-            onChange={(ev) => form.set('last_name', ev.target.value)}
-          />
-          <Field
-            label={t('Vorname')}
-            required
-            value={v.first_name}
-            error={e.first_name}
-            onChange={(ev) => form.set('first_name', ev.target.value)}
-          />
-          {member.birth_year_only && v.birth_date === member.birth_date ? (
+        {organization ? (
+          <>
+            <div className="grid-2">
+              <Field
+                label={t('Name der Organisation')}
+                required
+                value={v.last_name}
+                error={e.last_name}
+                onChange={(ev) => form.set('last_name', ev.target.value)}
+              />
+              <Field
+                label={t('Namenszusatz')}
+                value={v.name_suffix}
+                error={e.name_suffix}
+                onChange={(ev) => form.set('name_suffix', ev.target.value)}
+              />
+            </div>
+            <div className="grid-4">
+              <SelectField
+                label={t('Rechtsform')}
+                value={v.legal_form}
+                error={e.legal_form}
+                onChange={(ev) => form.set('legal_form', ev.target.value)}
+              >
+                <option value="">{t('– keine Angabe –')}</option>
+                {LEGAL_FORMS.map((f) => (
+                  <option key={f.value} value={f.value}>
+                    {f.label}
+                  </option>
+                ))}
+              </SelectField>
+              {v.legal_form === 'other' && (
+                <Field
+                  label={t('Rechtsform (Freitext)')}
+                  value={v.legal_form_other}
+                  error={e.legal_form_other}
+                  onChange={(ev) => form.set('legal_form_other', ev.target.value)}
+                />
+              )}
+              <Field
+                label={t('Register (Gericht und Nummer)')}
+                value={v.register}
+                error={e.register}
+                onChange={(ev) => form.set('register', ev.target.value)}
+              />
+              <Field
+                label={t('USt-IdNr.')}
+                value={v.vat_id}
+                error={e.vat_id}
+                onChange={(ev) => form.set('vat_id', ev.target.value)}
+              />
+            </div>
             <Field
-              label={t('Geburtsjahr')}
-              value={member.birth_date.slice(0, 4)}
-              hint={t('Nach der Löschfrist ist nur noch das Jahr gespeichert.')}
-              readOnly
+              label={t('Webseite')}
+              value={v.website}
+              error={e.website}
+              onChange={(ev) => form.set('website', ev.target.value)}
             />
-          ) : (
+          </>
+        ) : (
+          <div className="grid-4">
             <Field
-              label={t('Geburtsdatum')}
-              type="date"
+              label={t('Name')}
               required
-              value={v.birth_date}
-              error={e.birth_date}
-              onChange={(ev) => form.set('birth_date', ev.target.value)}
+              value={v.last_name}
+              error={e.last_name}
+              onChange={(ev) => form.set('last_name', ev.target.value)}
             />
-          )}
-          <SelectField
-            label={t('Geschlecht')}
-            value={v.gender}
-            error={e.gender}
-            onChange={(ev) => form.set('gender', ev.target.value as Gender)}
-          >
-            {GENDERS.map((g) => (
-              <option key={g.value} value={g.value}>
-                {g.label}
-              </option>
-            ))}
-          </SelectField>
-        </div>
+            <Field
+              label={t('Vorname')}
+              required
+              value={v.first_name}
+              error={e.first_name}
+              onChange={(ev) => form.set('first_name', ev.target.value)}
+            />
+            {member.birth_year_only && member.birth_date && v.birth_date === member.birth_date ? (
+              <Field
+                label={t('Geburtsjahr')}
+                value={member.birth_date.slice(0, 4)}
+                hint={t('Nach der Löschfrist ist nur noch das Jahr gespeichert.')}
+                readOnly
+              />
+            ) : (
+              <Field
+                label={t('Geburtsdatum')}
+                type="date"
+                required
+                value={v.birth_date}
+                error={e.birth_date}
+                onChange={(ev) => form.set('birth_date', ev.target.value)}
+              />
+            )}
+            <SelectField
+              label={t('Geschlecht')}
+              value={v.gender}
+              error={e.gender}
+              onChange={(ev) => form.set('gender', ev.target.value as Gender)}
+            >
+              {GENDERS.map((g) => (
+                <option key={g.value} value={g.value}>
+                  {g.label}
+                </option>
+              ))}
+            </SelectField>
+          </div>
+        )}
         <div className="grid-2">
           <Field
             label={t('E-Mail-Adresse (optional)')}

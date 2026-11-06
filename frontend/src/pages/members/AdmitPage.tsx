@@ -2,8 +2,8 @@ import { useId, useLayoutEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { newRequestKey } from '../../api/client.ts'
-import { GENDERS, memberApi, todayIso } from '../../api/members.ts'
-import type { Duplicate, Gender } from '../../api/members.ts'
+import { GENDERS, LEGAL_FORMS, memberApi, memberName, todayIso } from '../../api/members.ts'
+import type { Duplicate, Gender, MemberKind } from '../../api/members.ts'
 import { orgApi, unitName } from '../../api/orgs.ts'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { useChangesGuard } from '../../components/leaveGuard.ts'
@@ -29,7 +29,8 @@ export function AdmitPage() {
   useLayoutEffect(() => {
     if (previousStep.current === step) return
     previousStep.current = step
-    if (step === 'person') personForm.current?.querySelector('input')?.focus()
+    if (step === 'person')
+      personForm.current?.querySelector<HTMLInputElement>('input:not([type="radio"])')?.focus()
     else stepHeading.current?.focus()
   }, [step])
   const [duplicates, setDuplicates] = useState<Duplicate[]>([])
@@ -41,7 +42,14 @@ export function AdmitPage() {
   // Ein Schlüssel je Aufnahme: erneutes Absenden legt die Person nicht doppelt an
   const [requestKey] = useState(newRequestKey)
   const form = useForm({
+    kind: 'person' as MemberKind,
     last_name: '',
+    name_suffix: '',
+    legal_form: '',
+    legal_form_other: '',
+    register: '',
+    vat_id: '',
+    website: '',
     first_name: '',
     birth_date: '',
     gender: '' as Gender,
@@ -58,6 +66,10 @@ export function AdmitPage() {
   })
   const v = form.values
   const e = form.errors
+  const organization = v.kind === 'organization'
+  const summary = organization
+    ? [v.last_name, v.name_suffix].filter(Boolean).join(' – ')
+    : `${v.last_name}, ${v.first_name} · ${formatDate(v.birth_date)}`
   // Eingaben vor dem Absenden nicht unbemerkt verlieren (UX-Audit 31.10. W01)
   const [done, setDone] = useState(false)
   useChangesGuard(v, !done && !transferSent)
@@ -67,7 +79,9 @@ export function AdmitPage() {
     setChecking(true)
     setCheckError(null)
     try {
-      const found = await memberApi.duplicates(org.id, v.last_name, v.first_name, v.birth_date)
+      const found = organization
+        ? await memberApi.organizationDuplicates(org.id, v.last_name)
+        : await memberApi.duplicates(org.id, v.last_name, v.first_name, v.birth_date)
       setDuplicates(found)
       setLinked(null)
       setStep('details')
@@ -165,47 +179,112 @@ export function AdmitPage() {
 
       {step === 'person' ? (
         <form ref={personForm} className="card card-wide" onSubmit={checkPerson}>
-          <h2>{t('1. Person')}</h2>
+          <h2>{organization ? t('1. Organisation') : t('1. Person')}</h2>
+          <fieldset className="field">
+            <legend>{t('Mitglied ist')}</legend>
+            <div className="chips">
+              <label className="checkbox chip">
+                <input
+                  type="radio"
+                  name="kind"
+                  checked={!organization}
+                  onChange={() => form.set('kind', 'person')}
+                />
+                <span>{t('eine Person')}</span>
+              </label>
+              <label className="checkbox chip">
+                <input
+                  type="radio"
+                  name="kind"
+                  checked={organization}
+                  onChange={() => form.set('kind', 'organization')}
+                />
+                <span>{t('eine Organisation (Firma, Verein, Behörde …)')}</span>
+              </label>
+            </div>
+          </fieldset>
           <p className="muted small">
-            {fed
-              ? t(
-                  'Zuerst prüfen wir, ob es die Person schon gibt – zum Beispiel als Mitglied {e_eines_anderen} {dv_im}.',
-                  { e_eines_anderen: terms.e_eines_anderen, dv_im: terms.dv_im },
-                )
-              : t('Zuerst prüfen wir, ob es die Person schon gibt.')}
+            {organization
+              ? t('Zuerst prüfen wir, ob es die Organisation schon gibt.')
+              : fed
+                ? t(
+                    'Zuerst prüfen wir, ob es die Person schon gibt – zum Beispiel als Mitglied {e_eines_anderen} {dv_im}.',
+                    { e_eines_anderen: terms.e_eines_anderen, dv_im: terms.dv_im },
+                  )
+                : t('Zuerst prüfen wir, ob es die Person schon gibt.')}
           </p>
-          <div className="grid-4">
-            <Field
-              label={t('Name')}
-              required
-              value={v.last_name}
-              onChange={(ev) => form.set('last_name', ev.target.value)}
-            />
-            <Field
-              label={t('Vorname')}
-              required
-              value={v.first_name}
-              onChange={(ev) => form.set('first_name', ev.target.value)}
-            />
-            <Field
-              label={t('Geburtsdatum')}
-              type="date"
-              required
-              value={v.birth_date}
-              onChange={(ev) => form.set('birth_date', ev.target.value)}
-            />
-            <SelectField
-              label={t('Geschlecht')}
-              value={v.gender}
-              onChange={(ev) => form.set('gender', ev.target.value as Gender)}
-            >
-              {GENDERS.map((g) => (
-                <option key={g.value} value={g.value}>
-                  {g.label}
-                </option>
-              ))}
-            </SelectField>
-          </div>
+          {organization ? (
+            <>
+              <div className="grid-2">
+                <Field
+                  label={t('Name der Organisation')}
+                  required
+                  value={v.last_name}
+                  onChange={(ev) => form.set('last_name', ev.target.value)}
+                />
+                <Field
+                  label={t('Namenszusatz (optional)')}
+                  hint={t('Zum Beispiel Niederlassung oder Abteilung')}
+                  value={v.name_suffix}
+                  onChange={(ev) => form.set('name_suffix', ev.target.value)}
+                />
+              </div>
+              <div className="grid-2">
+                <SelectField
+                  label={t('Rechtsform (optional)')}
+                  value={v.legal_form}
+                  onChange={(ev) => form.set('legal_form', ev.target.value)}
+                >
+                  <option value="">{t('– keine Angabe –')}</option>
+                  {LEGAL_FORMS.map((f) => (
+                    <option key={f.value} value={f.value}>
+                      {f.label}
+                    </option>
+                  ))}
+                </SelectField>
+                {v.legal_form === 'other' && (
+                  <Field
+                    label={t('Rechtsform (Freitext)')}
+                    value={v.legal_form_other}
+                    onChange={(ev) => form.set('legal_form_other', ev.target.value)}
+                  />
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="grid-4">
+              <Field
+                label={t('Name')}
+                required
+                value={v.last_name}
+                onChange={(ev) => form.set('last_name', ev.target.value)}
+              />
+              <Field
+                label={t('Vorname')}
+                required
+                value={v.first_name}
+                onChange={(ev) => form.set('first_name', ev.target.value)}
+              />
+              <Field
+                label={t('Geburtsdatum')}
+                type="date"
+                required
+                value={v.birth_date}
+                onChange={(ev) => form.set('birth_date', ev.target.value)}
+              />
+              <SelectField
+                label={t('Geschlecht')}
+                value={v.gender}
+                onChange={(ev) => form.set('gender', ev.target.value as Gender)}
+              >
+                {GENDERS.map((g) => (
+                  <option key={g.value} value={g.value}>
+                    {g.label}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
+          )}
           {checkError && <Alert kind="error">{checkError}</Alert>}
           <button type="submit" className="button button-primary" disabled={checking}>
             {t('Weiter')}
@@ -219,12 +298,14 @@ export function AdmitPage() {
                 {t('Mögliche Treffer')}
               </h2>
               <p className="muted small">
-                {fed
-                  ? t(
-                      'Ist eine dieser Personen gemeint? Dann wird sie verknüpft: Verbandsnummer und Eintritt in {dv_akk} bleiben erhalten.',
-                      { dv_akk: terms.dv_akk },
-                    )
-                  : t('Ist eine dieser Personen gemeint? Dann wird sie verknüpft.')}
+                {organization
+                  ? t('Ist eine dieser Organisationen gemeint? Dann wird sie verknüpft.')
+                  : fed
+                    ? t(
+                        'Ist eine dieser Personen gemeint? Dann wird sie verknüpft: Verbandsnummer und Eintritt in {dv_akk} bleiben erhalten.',
+                        { dv_akk: terms.dv_akk },
+                      )
+                    : t('Ist eine dieser Personen gemeint? Dann wird sie verknüpft.')}
               </p>
               <ul className="duplicates">
                 {duplicates.map((d) => (
@@ -238,10 +319,8 @@ export function AdmitPage() {
                         onChange={() => setLinked(d)}
                       />
                       <span>
-                        <strong>
-                          {d.last_name}, {d.first_name}
-                        </strong>{' '}
-                        · {formatDate(d.birth_date)}
+                        <strong>{memberName(d)}</strong>
+                        {d.birth_date && ` · ${formatDate(d.birth_date)}`}
                         {d.member_number &&
                           t(' · Verbandsnr. {member_number}', { member_number: d.member_number })}
                         {d.clubs &&
@@ -261,7 +340,11 @@ export function AdmitPage() {
                       checked={linked === null}
                       onChange={() => setLinked(null)}
                     />
-                    <span>{t('Keine davon – neue Person anlegen')}</span>
+                    <span>
+                      {organization
+                        ? t('Keine davon – neue Organisation anlegen')
+                        : t('Keine davon – neue Person anlegen')}
+                    </span>
                   </label>
                 </li>
               </ul>
@@ -273,7 +356,7 @@ export function AdmitPage() {
               {t('2. Mitgliedschaft und Kontakt')}
             </h2>
             <p className="muted small">
-              {v.last_name}, {v.first_name} · {formatDate(v.birth_date)}{' '}
+              {summary}{' '}
               <button type="button" className="link-button" onClick={() => setStep('person')}>
                 {t('ändern')}
               </button>
@@ -355,8 +438,39 @@ export function AdmitPage() {
             )}
           </div>
 
+          {organization && (
+            <div className="card card-wide">
+              <h3>{t('Angaben zur Organisation (optional)')}</h3>
+              <div className="grid-3">
+                <Field
+                  label={t('Register (Gericht und Nummer)')}
+                  hint={t('Zum Beispiel Amtsgericht Musterstadt HRB 12345')}
+                  value={v.register}
+                  error={e.register}
+                  onChange={(ev) => form.set('register', ev.target.value)}
+                />
+                <Field
+                  label={t('USt-IdNr.')}
+                  value={v.vat_id}
+                  error={e.vat_id}
+                  onChange={(ev) => form.set('vat_id', ev.target.value)}
+                />
+                <Field
+                  label={t('Webseite')}
+                  value={v.website}
+                  error={e.website}
+                  onChange={(ev) => form.set('website', ev.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="card card-wide">
-            <h3>{t('Kontakt und Anschrift')}</h3>
+            <h3>
+              {organization
+                ? t('Anschrift und Kontakt der Organisation')
+                : t('Kontakt und Anschrift')}
+            </h3>
             <div className="grid-2">
               <Field
                 label={t('E-Mail-Adresse (optional)')}

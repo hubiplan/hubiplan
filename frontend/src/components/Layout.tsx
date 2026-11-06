@@ -14,6 +14,7 @@ import type { SsoAccount } from '../api/peering.ts'
 import { useOrg } from '../org/OrgContext.tsx'
 import { AppFooter } from './ImprintFooter.tsx'
 import { Logo } from './Logo.tsx'
+import { usePlatform } from '../theme/platform.ts'
 import { UndoControls } from './UndoControls.tsx'
 import { useUndo } from './undo.ts'
 import { alertDialog } from './dialog.ts'
@@ -246,9 +247,14 @@ export function Layout() {
   const contextCount =
     orgs.length + departments.length + portalInPicker.length + remoteAccounts.length
   // Im Kopf steht immer der volle Name, der Kurzname nur in der Auswahl.
-  const brandName = active?.name ?? activeDept?.name ?? activePortal?.club_name ?? 'HUBIplan'
+  // Ohne Einheit: Name und Logo der Instanz (White Label, Vorgabe „HUBIplan“)
+  const instance = usePlatform()
+  const brandName = active?.name ?? activeDept?.name ?? activePortal?.club_name ?? instance.name
   const brandLogo =
-    active?.theme.logo_url ?? activeDept?.theme.logo_url ?? activePortal?.theme.logo_url ?? null
+    active?.theme.logo_url ??
+    activeDept?.theme.logo_url ??
+    activePortal?.theme.logo_url ??
+    instance.logo_url
 
   // Seitentitel im Browser-Tab: Bereich · Arbeitsbereich · HUBIplan (WCAG 2.4.2)
   const pageLabel = (() => {
@@ -273,11 +279,9 @@ export function Layout() {
   })()
   const titleOverride = useTitleOverride()
   useEffect(() => {
-    document.title = formatTitle(
-      titleOverride ?? pageLabel,
-      brandName !== 'HUBIplan' ? brandName : null,
-    )
-  }, [titleOverride, pageLabel, brandName])
+    // formatTitle hängt den Namen der Instanz an und lässt ihn hier dann weg
+    document.title = formatTitle(titleOverride ?? pageLabel, brandName)
+  }, [titleOverride, pageLabel, brandName, instance.name])
 
   // Lernhilfen nur in der Oberfläche der Bearbeitenden, nie im Mitgliederbereich
   // Unterpunkte als verschachtelte Liste; tiefere Ebenen nur unter dem aktiven Punkt

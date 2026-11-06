@@ -53,6 +53,12 @@ from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import help_views, imprint_views, social_views
 from organizations import views as org_views
+from organizations.addresses import TlsAskView
+from organizations.platform_public import (
+    PublicManifestView,
+    PublicPlatformIconView,
+    PublicPlatformView,
+)
 from outbox import views as outbox_views
 from peering import urls as peering_urls
 from portal import views as portal_views
@@ -169,6 +175,9 @@ org_router.register(
 member_router = SimpleRouter()
 member_router.register("periods", member_views.PeriodViewSet, basename="member-period")
 member_router.register(
+    "contacts", member_views.ContactPersonViewSet, basename="member-contact-person"
+)
+member_router.register(
     "departments", member_views.DepartmentMembershipViewSet, basename="member-department"
 )
 member_router.register(
@@ -187,6 +196,7 @@ federation_member_router.register(
 
 platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
+platform_router.register("addresses", org_views.InstanceAddressViewSet, basename="platform-address")
 
 org_patterns = [
     path("music/equipment/", EquipmentView.as_view()),
@@ -261,6 +271,7 @@ org_patterns = [
         name="org-letterhead-publish",
     ),
     path("logo/", org_views.OrganizationLogoView.as_view(), name="org-logo"),
+    path("icon/", org_views.OrganizationIconView.as_view(), name="org-icon"),
     path(
         "departments/<int:pk>/logo/",
         org_views.DepartmentLogoView.as_view(),
@@ -799,6 +810,11 @@ urlpatterns = [
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
     path("portal/<int:access_id>/bookings/", booking_portal.ListView.as_view()),
     path("portal/<int:access_id>/meetings/", meeting_portal.ListView.as_view()),
+    path("portal/<int:access_id>/meetings/<int:pk>/motions/", meeting_portal.MotionsView.as_view()),
+    path(
+        "portal/<int:access_id>/meetings/motions/<int:pk>/withdraw/",
+        meeting_portal.WithdrawView.as_view(),
+    ),
     path("portal/<int:access_id>/meetings/<int:pk>/minutes/", meeting_portal.MinutesView.as_view()),
     path("portal/<int:access_id>/helpers/", helper_portal.ListView.as_view()),
     path("portal/<int:access_id>/helpers/calendar/", helper_portal.CalendarView.as_view()),
@@ -919,6 +935,18 @@ urlpatterns = [
     path("me/email/", self_service.EmailChangeView.as_view(), name="my-email"),
     path("me/language/", language.MyLanguageView.as_view(), name="my-language"),
     path("public/languages/", language.PublicLanguagesView.as_view(), name="public-languages"),
+    path("public/platform/", PublicPlatformView.as_view(), name="public-platform"),
+    path("intern/tls/", TlsAskView.as_view(), name="intern-tls-ask"),
+    path(
+        "public/platform/icon-<str:name>.png",
+        PublicPlatformIconView.as_view(),
+        name="public-platform-icon",
+    ),
+    path(
+        "public/platform/manifest.webmanifest",
+        PublicManifestView.as_view(),
+        name="public-platform-manifest",
+    ),
     path("me/learning/", learning.LearningView.as_view(), name="my-learning"),
     path("me/help/", help_done.HelpDoneView.as_view(), name="my-help"),
     path("me/help/<str:key>/", help_done.HelpDoneKeyView.as_view(), name="my-help-step"),
@@ -1038,6 +1066,7 @@ urlpatterns = [
         name="platform-outbox-attachment",
     ),
     path("platform/settings/", org_views.PlatformSettingsView.as_view(), name="platform-settings"),
+    path("platform/icon/", org_views.PlatformIconView.as_view(), name="platform-icon"),
     path("platform/update/", org_views.PlatformUpdateView.as_view(), name="platform-update"),
     path("platform/imprint/", imprint_views.PlatformImprintView.as_view(), name="platform-imprint"),
     path(

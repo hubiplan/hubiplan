@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 from audit.log import record
 from changes import idempotency
 from core.tenancy import rls_bypass, tenant_context
+from organizations.addresses import base_url
 from organizations.imprint import ensure as ensure_imprint
 
 from . import guest_scores
@@ -60,9 +61,7 @@ def metadata(view, row, access):
         "active": valid,
         "has_email": False,
         "expires_at": access.expires_at if access else None,
-        "url": f"{settings.FRONTEND_URL.rstrip('/')}/musik-gast#probe-{token(access)}"
-        if valid
-        else "",
+        "url": f"{base_url(access.organization)}/musik-gast#probe-{token(access)}" if valid else "",
         "scores": guest_scores.choices(view, access) if access else [],
     }
 

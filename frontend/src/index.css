@@ -471,7 +471,43 @@ button.tab.active {
   margin: 0;
 }
 
+/* „mit HUBIplan“ unter der Anmeldung bei eigenem Instanznamen (White Label) */
+.powered-by {
+  margin: 0;
+  text-align: center;
+}
+
 /* --- Einstellungen --- */
+
+/* Vorschau des Instanzsymbols (Einstellungen › Erscheinungsbild, White Label W2) */
+.icon-preview {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.icon-preview-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: #ffffff;
+  color: #1d2421;
+  font-size: 0.875rem;
+}
+
+.icon-preview-dark {
+  background: #202124;
+  border-color: #202124;
+  color: #e8eaed;
+}
+
+.icon-preview-round {
+  border-radius: 50%;
+}
 
 .totp-setup {
   display: flex;

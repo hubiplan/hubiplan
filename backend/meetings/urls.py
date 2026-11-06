@@ -17,5 +17,6 @@ urlpatterns = [
     path("<int:pk>/minutes/confirm/", views.ConfirmView.as_view()),
     path("<int:pk>/minutes/pdf/", views.MinutesPdfView.as_view()),
     path("<int:pk>/attendance/", views.AttendanceView.as_view()),
+    path("<int:pk>/motions/<int:motion>/", views.MotionDecisionView.as_view()),
     path("<int:pk>/attendance/<int:entry>/", views.AttendanceDetailView.as_view()),
 ]

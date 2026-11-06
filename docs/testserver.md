@@ -45,6 +45,33 @@ DEPLOY_HOST=deploy@test.example.org DEPLOY_SUDO=1 deploy/deploy.sh  # erst nach 
 `~/.local/state/hubiplan/tested-trees`. `deploy/deploy.sh` bricht ab, wenn der Stand dort
 fehlt. Ein Merge-Commit mit unverändertem Inhalt gilt als getestet.
 
+### Nur geänderte Teile
+
+`scripts/test.sh` merkt sich in `~/.local/state/hubiplan/tested-parts` zusätzlich, welche
+Teile mit welchem Inhalt grün waren. Der Schlüssel ist ein Hash über die Dateien, die in
+die Prüfungen des Teils eingehen:
+
+| Teil | Dateien | Prüfungen |
+|---|---|---|
+| `backend` | alles außer `frontend/`, `docs/` und `*.md` im Hauptverzeichnis | ruff, Migrationen, Proxy-/Rückweg-Prüfungen, pytest |
+| `frontend` | `frontend/`, `scripts/test.sh` und Backend-Dateien, die der Frontend-Code beim Namen nennt (z. B. `backend/accounts/learning_keys.json`) | Typprüfung, Lint, Format, i18n, Vitest |
+| `migration` | Vorlagen-Schlüssel (s. u.), Tests mit `@pytest.mark.migration`, `conftest.py`, `factories.py` und die von diesen Tests eingebundenen Module | Tests, die hin- und zurückmigrieren |
+
+Ein Teil, dessen Inhalt schon grün war, läuft nicht noch einmal; sind alle Teile schon grün,
+braucht der Lauf keinen Testplatz. Danach wird der Git-Tree wie immer in `tested-trees`
+vermerkt (mit dem Zusatz `teilweise`), `deploy/deploy.sh` prüft unverändert nur ihn.
+Ändert ein PR nur das Frontend oder die Hilfe, laufen also nur die Frontend-Prüfungen;
+ändert er nur Doku, läuft nichts.
+
+Werden zwei PRs nacheinander gemergt, hat main danach einen neuen Backend-Inhalt, und das
+Backend läuft vollständig. Zwei Migrationen mit derselben Nummer in einer App fallen so
+nicht durch. `makemigrations --check` läuft gleich nach ruff und meldet fehlende oder
+widersprüchliche Migrationen nach Sekunden.
+
+`TEST_ALLES=1 scripts/test.sh …` prüft alles, auch die Migrationstests. Vor einem Release
+den Stand so testen (siehe [releases.md](releases.md)). Läufe mit eigenen
+pytest-Argumenten und `BACKUP_TEST=1` laufen ebenfalls vollständig.
+
 Fehlt der angegebene Commit im Klon, holt `scripts/test.sh` erst von allen Remotes
 (`git fetch --all`). Ist er dann immer noch nicht da, bricht es mit Exit 2 ab. Jeder
 Fehlschlag endet mit der Zeile `FEHLGESCHLAGEN (Exit …)`, nur ein vollständiger Lauf mit
@@ -99,6 +126,10 @@ installierte `testplatz`). Andere Projekte: Testbefehl mit `testplatz` starten u
   woanders ab.
 - **Schneller Passwort-Hasher in Tests** (`tests/conftest.py`): PBKDF2 kostet je Passwort
   ~0,2 s. Im Betrieb bleibt PBKDF2.
+- **Migrationstests nur bei Bedarf:** Tests mit `@pytest.mark.migration` migrieren über
+  den ganzen Baum hin und zurück und brauchen über ein Drittel der Rechenzeit. Sie laufen
+  nur, wenn ihr Schlüssel (siehe „Nur geänderte Teile“) noch nicht grün war.
+  `tests/test_migrations.py` prüft, dass jeder Test mit `MigrationExecutor` die Markierung trägt.
 - **Langsame Tests zuerst:** Tests mit `@pytest.mark.langsam` (Migrationstest, Demodaten)
   sammelt pytest zuerst; mit `--maxschedchunk=2` verteilt xdist sie auf verschiedene Worker,
   statt dass einer am Ende allein läuft.

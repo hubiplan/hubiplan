@@ -14,15 +14,18 @@ from organizations.terms import fill
 
 from . import services
 from .models import (
+    ContactPerson,
     DepartmentMembership,
     DepartmentRoleHolder,
     ExitReason,
     Gender,
+    LegalForm,
     Membership,
     MembershipPeriod,
     MemberType,
     MemberTypeAssignment,
     Person,
+    PersonKind,
     overlaps,
 )
 
@@ -86,6 +89,34 @@ class ContactSerializer(serializers.Serializer):
     country = serializers.CharField(required=False, max_length=100, default="Deutschland")
 
 
+class OrganizationFieldsMixin(serializers.Serializer):
+    """Angaben, die es nur bei Organisationsmitgliedern gibt."""
+
+    name_suffix = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    legal_form = serializers.ChoiceField(
+        choices=LegalForm.choices, required=False, allow_blank=True
+    )
+    legal_form_other = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    register = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    vat_id = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    website = serializers.CharField(max_length=200, required=False, allow_blank=True)
+
+
+def organization_data(person: Person) -> dict | None:
+    """Organisationsangaben für Akte und Listen; ``None`` bei Personen."""
+    if not person.is_organization:
+        return None
+    return {
+        "name_suffix": person.name_suffix,
+        "legal_form": person.legal_form,
+        "legal_form_other": person.legal_form_other,
+        "legal_form_label": person.legal_form_label,
+        "register": person.register,
+        "vat_id": person.vat_id,
+        "website": person.website,
+    }
+
+
 @extend_schema_field(OpenApiTypes.INT)
 class OrgPrimaryKeyField(serializers.PrimaryKeyRelatedField):
     """Fremdschlüssel, eingeschränkt auf die aktive Organisation."""
@@ -99,9 +130,15 @@ class OrgPrimaryKeyField(serializers.PrimaryKeyRelatedField):
         super().__init__(**kwargs)
 
 
-class AdmitSerializer(ContactSerializer):
-    """Aufnahme: neue Person oder Verknüpfung mit einer gefundenen (``person``)."""
+class AdmitSerializer(OrganizationFieldsMixin, ContactSerializer):
+    """Aufnahme: neue Person oder Verknüpfung mit einer gefundenen (``person``).
 
+    ``kind = organization``: Organisation (Firma, Verein, Behörde …) ohne Vorname,
+    Geburtsdatum und Geschlecht."""
+
+    kind = serializers.ChoiceField(
+        choices=PersonKind.choices, required=False, default=PersonKind.PERSON
+    )
     person = serializers.PrimaryKeyRelatedField(
         queryset=Person.objects.all(), required=False, allow_null=True
     )
@@ -118,15 +155,23 @@ class AdmitSerializer(ContactSerializer):
 
     def validate(self, attrs):
         org = self.context["org"]
+        organization = attrs["kind"] == PersonKind.ORGANIZATION
+        if organization:
+            for name in ("first_name", "birth_date", "gender"):
+                attrs.pop(name, None)
+        else:
+            for name in services.ORGANIZATION_FIELDS:
+                attrs.pop(name, None)
         check_plausible(attrs, "entry_date", "birth_date")
-        missing = [f for f in ("last_name", "first_name", "birth_date") if not attrs.get(f)]
+        required = ("last_name",) if organization else ("last_name", "first_name", "birth_date")
+        missing = [f for f in required if not attrs.get(f)]
         if missing:
             raise serializers.ValidationError({f: gettext("Pflichtfeld.") for f in missing})
         if attrs.get("person"):
             # Nur eine mit diesen Angaben gefundene Person (Audit 02.11. GA-S01)
             services.check_found(attrs["person"], org, attrs)
             attrs["birth_date"] = attrs["person"].birth_date
-        birth = attrs["birth_date"]
+        birth = attrs.get("birth_date")
         if birth and attrs["entry_date"] < birth:
             raise serializers.ValidationError(
                 {"entry_date": gettext("Der Eintritt liegt vor der Geburt.")}
@@ -168,6 +213,7 @@ class DuplicateSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "last_name",
+            "kind",
             "first_name",
             "birth_date",
             "member_number",
@@ -259,7 +305,8 @@ class PeriodSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"exit_date": gettext("Der Austritt liegt vor dem Eintritt.")}
             )
-        if entry < membership.person.birth_date:
+        birth = membership.person.birth_date
+        if birth is not None and entry < birth:
             raise serializers.ValidationError(
                 {"entry_date": gettext("Der Eintritt liegt vor der Geburt.")}
             )
@@ -420,8 +467,120 @@ class DepartmentRoleHolderSerializer(serializers.ModelSerializer):
         return attrs
 
 
-class MemberUpdateSerializer(serializers.Serializer):
-    """Stammdaten ändern (Person + Kontakt + Vereinsnummer)."""
+class ContactPersonSerializer(serializers.ModelSerializer):
+    """Ansprechpartner eines Organisationsmitglieds (J2).
+
+    Entweder verknüpft mit einem Mitglied desselben Vereins (``member``) oder frei
+    erfasst (Name, Vorname, Kontakt). Bei Verknüpften kommen Name und Kontakt aus der
+    Akte der Person."""
+
+    member = serializers.IntegerField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+        help_text="Mitgliedschaft (in diesem Verein) der Person, die Ansprechpartner ist.",
+    )
+    linked_member = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
+    contact_email = serializers.SerializerMethodField()
+    contact_phone = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContactPerson
+        fields = [
+            "id",
+            "member",
+            "linked_member",
+            "display_name",
+            "last_name",
+            "first_name",
+            "gender",
+            "function",
+            "email",
+            "phone",
+            "contact_email",
+            "contact_phone",
+            "is_primary",
+            "receives_mail",
+            "receives_invoices",
+            "represents",
+            "member_access",
+            "since",
+        ]
+
+    def _contact(self, obj):
+        if obj.person_id is None:
+            return None
+        cache = self.context.setdefault("_contacts", {})
+        if obj.person_id not in cache:
+            cache[obj.person_id] = services.contact_for(obj.person, self.context["org"])
+        return cache[obj.person_id]
+
+    def get_linked_member(self, obj) -> int | None:
+        if obj.person_id is None:
+            return None
+        return (
+            Membership.objects.filter(organization=self.context["org"], person_id=obj.person_id)
+            .values_list("pk", flat=True)
+            .first()
+        )
+
+    def get_display_name(self, obj) -> str:
+        return obj.display_name
+
+    def get_contact_email(self, obj) -> str:
+        contact = self._contact(obj)
+        return (contact.email if contact else "") if obj.person_id else obj.email
+
+    def get_contact_phone(self, obj) -> str:
+        contact = self._contact(obj)
+        return (contact.phone if contact else "") if obj.person_id else obj.phone
+
+    def validate_member(self, value):
+        if value is None:
+            return None
+        membership = (
+            Membership.objects.filter(organization=self.context["org"], pk=value)
+            .select_related("person")
+            .first()
+        )
+        if membership is None:
+            raise serializers.ValidationError(gettext("Unbekanntes Mitglied."))
+        if membership.person.is_organization:
+            raise serializers.ValidationError(
+                gettext("Ansprechpartner ist immer ein Mensch, keine Organisation.")
+            )
+        return membership.person
+
+    def validate(self, attrs):
+        person = attrs.pop("member", getattr(self.instance, "person", None))
+        if "member" in self.initial_data:
+            attrs["person"] = person
+        if person is not None:
+            # Name und Kontakt stehen in der Akte der Person
+            for name in ("last_name", "first_name", "gender", "email", "phone"):
+                attrs[name] = ""
+        else:
+            last = attrs.get("last_name", getattr(self.instance, "last_name", ""))
+            if not (last or "").strip():
+                raise serializers.ValidationError({"last_name": gettext("Pflichtfeld.")})
+        membership = self.context.get("membership") or getattr(self.instance, "membership", None)
+        if person is not None and membership is not None:
+            taken = ContactPerson.objects.filter(membership=membership, person=person)
+            if self.instance is not None:
+                taken = taken.exclude(pk=self.instance.pk)
+            if taken.exists():
+                raise serializers.ValidationError(
+                    {"member": gettext("Diese Person ist hier schon Ansprechpartner.")}
+                )
+        return attrs
+
+
+class MemberUpdateSerializer(OrganizationFieldsMixin, serializers.Serializer):
+    """Stammdaten ändern (Person + Kontakt + Vereinsnummer).
+
+    Der Mitgliedstyp lässt sich nicht ändern (Person ↔ Organisation); bei einer
+    Verwechslung wird das Mitglied neu angelegt."""
 
     last_name = serializers.CharField(max_length=100, required=False)
     first_name = serializers.CharField(max_length=100, required=False)
@@ -497,11 +656,26 @@ def member_detail(membership: Membership, org) -> dict:
     return {
         "id": membership.pk,
         "person_id": person.pk,
+        "kind": person.kind,
         "last_name": person.last_name,
         "first_name": person.first_name,
         "birth_date": person.birth_date,
         "birth_year_only": person.birth_year_only,
         "gender": person.gender,
+        "organization": organization_data(person),
+        "contact_persons": ContactPersonSerializer(
+            membership.contact_persons.select_related("person"),
+            many=True,
+            context={"org": org},
+        ).data
+        if person.is_organization
+        else [],
+        "contact_for": [
+            {"member_id": c.membership_id, "name": c.membership.person.display_name}
+            for c in ContactPerson.objects.filter(person=person, organization=org)
+            .select_related("membership__person")
+            .order_by("pk")
+        ],
         "club_number": membership.club_number,
         "pays_fee_self": membership.pays_fee_self,
         "info_opt_out_at": membership.info_opt_out_at,

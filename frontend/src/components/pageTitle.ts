@@ -4,6 +4,7 @@
 // (z. B. „Seite nicht gefunden“) melden ihren Titel über usePageTitle; der gilt
 // dann vorrangig, solange die Seite zu sehen ist.
 import { useEffect, useSyncExternalStore } from 'react'
+import { instanceName } from '../theme/platform.ts'
 
 let override: string | null = null
 const listeners = new Set<() => void>()
@@ -32,6 +33,8 @@ export function usePageTitle(title: string | null) {
   }, [title])
 }
 
+/** Titel aus Teilen, am Ende der Name der Instanz (Vorgabe „HUBIplan“, White Label). */
 export function formatTitle(...parts: (string | null | undefined)[]): string {
-  return [...parts, 'HUBIplan'].filter(Boolean).join(' · ')
+  const name = instanceName()
+  return [...parts.filter((p) => p !== name), name].filter(Boolean).join(' · ')
 }

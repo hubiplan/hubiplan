@@ -33,7 +33,7 @@ außerordentliche Mitgliederversammlung, Vorstandssitzung; Untereinheit: Versamm
 der Leitung). Eine neue Versammlung übernimmt die Tagesordnung der letzten Versammlung
 derselben Art oder bekommt eine übliche Tagesordnung.
 
-## Abläufe (Stand V5)
+## Abläufe (Stand V6)
 
 - Anlegen erzeugt den Termin. Mitgliederversammlungen sind für Mitglieder sichtbar,
   Vorstandssitzungen nur für den Vorstand.
@@ -84,8 +84,20 @@ derselben Art oder bekommt eine übliche Tagesordnung.
   eingeladene anstehende Versammlungen mit Tagesordnung und freigegebene Protokolle der letzten
   fünf Jahre, jeweils nur, wenn das Mitglied heute nach der Auswahl der Art stimmberechtigt ist;
   Protokolle nur bei Arten mit `minutes_for = voters`. `…/meetings/<pk>/minutes/` liefert das PDF.
-- Offen aus V5: Übernahme von Wahlen in Mitglieder › Ämter (Vorschlag mit Bestätigung) folgt
-  nach dem Rollenumbau R1–R4.
+- Anträge (V6): `MeetingKind.motion_days` (Standard 7 bei Mitgliederversammlungen, leer: keine
+  Anträge). Eingeladene Stimmberechtigte stellen bis `Beginn − motion_days` im Mitgliederbereich
+  Anträge (`POST /api/portal/<zugang>/meetings/<pk>/motions/`, höchstens fünf je Person und
+  Versammlung, Titel und Begründung verschlüsselt) und ziehen sie zurück, solange sie eingereicht
+  sind (`…/meetings/motions/<pk>/withdraw/`). `POST …/meetings/<pk>/motions/<id>/` mit
+  `decision` (`accept` hängt einen Tagesordnungspunkt „Antrag von …“ vom Typ Beschluss an,
+  `reject` braucht `reply`) geht in den Ständen „in Vorbereitung“ und „eingeladen“. Anträge
+  kommen nur zusammen mit den Mitgliedsdaten in Export und Import und stehen in der Datenauskunft.
+- Offen aus V6 (später, Konzept A2): Anwesenheit per App, Online-Abstimmung.
+- Wahlen ins Amt (V5, nach dem Rollenumbau): Das Beschlussbuch liefert `elected` (Mitgliedschaft
+  der gewählten Person). Im Verein öffnet „Ins Amt übernehmen“ mit Recht `roles.manage` den
+  Dialog „Rolle besetzen“ (`AssignRoleDialog`) mit der Rolle gleichen Namens, Beginn am Tag der
+  Versammlung und Beenden des Vorgängers; danach setzt die Oberfläche den Stand auf umgesetzt.
+  Die Bestätigung im Dialog bleibt nötig, Ämter von Untereinheiten laufen über deren Rollen.
 - Export und Import nehmen Arten, Versammlungen und Tagesordnungen mit (auch im Export einer
   Untereinheit), ebenso Protokoll und Beschlüsse, die Anwesenheit nur zusammen mit den Mitgliedsdaten.
 
@@ -108,3 +120,6 @@ derselben Art oder bekommt eine übliche Tagesordnung.
 | `POST …/meetings/resolutions/<pk>/todo/` | Beschluss als Aufgabe |
 | `GET /api/portal/<zugang>/meetings/` | Einladungen und Protokolle im Mitgliederbereich |
 | `GET /api/portal/<zugang>/meetings/<pk>/minutes/` | Freigegebenes Protokoll als PDF |
+| `POST /api/portal/<zugang>/meetings/<pk>/motions/` | Antrag stellen |
+| `POST /api/portal/<zugang>/meetings/motions/<pk>/withdraw/` | Antrag zurückziehen |
+| `POST …/meetings/<pk>/motions/<id>/` | Antrag aufnehmen oder ablehnen |

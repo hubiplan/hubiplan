@@ -54,7 +54,7 @@ export function PublicCardPage() {
     <main className="login-page">
       <div className="card public-card">
         <div className="login-logo">
-          <Logo name={card?.club ?? 'HUBIplan'} logoUrl={card?.logo_url ?? null} />
+          <Logo name={card?.club} logoUrl={card?.logo_url ?? null} />
         </div>
         {state === 'loading' && <p className="muted">{t('Lädt …')}</p>}
         {state === 'busy' && (

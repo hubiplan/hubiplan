@@ -45,3 +45,15 @@ Quotas: In a club roster, **Quota** on a shift gives part of the places to a uni
 volunteer duties under **Quotas from the club** and assigns its own members there. Places of a
 quota that are still open count as taken in the member area. Setting 0 places removes a quota;
 people already assigned stay on the shift.
+
+Copy roster: **Copy roster** creates a new roster in preparation, for example for next year's
+festival. The copy takes over duties, shifts, quotas and settings, but no assignments. If you
+enter the first day of the new roster, HUBIplan moves all shifts by the same distance.
+
+Call-out: If a published roster still has free places, **Call-out as circular** creates a draft
+to all members of the unit with the free shifts and the link to sign up. You check and send it
+like any circular. You also need the right to send circulars.
+
+Completed duties: Once a shift has started, tick **done** for each person. **Completed duties**
+in the overview shows per year who took on how many shifts and hours, for example for a thank
+you or required hours.

@@ -62,6 +62,10 @@ class MeetingKind(models.Model):
     minutes_for = models.CharField(
         max_length=10, choices=MinutesFor.choices, default=MinutesFor.BOARD
     )
+    # Anträge von Mitgliedern bis so viele Tage vorher (Schritt V6); leer: keine Anträge
+    motion_days = models.PositiveSmallIntegerField(
+        null=True, blank=True, validators=[MaxValueValidator(90)]
+    )
     position = models.PositiveSmallIntegerField(default=0)
     active = models.BooleanField(default=True)
 
@@ -272,3 +276,41 @@ class MinutesVersion(models.Model):
 
     def __str__(self):
         return f"minutes {self.meeting_id}/{self.number}"
+
+
+class Motion(models.Model):
+    """Antrag eines Mitglieds zu einer Versammlung, gestellt im Mitgliederbereich (Schritt V6).
+
+    Die Leitung nimmt ihn als Tagesordnungspunkt auf oder lehnt ihn mit Begründung ab.
+    """
+
+    class Status(models.TextChoices):
+        SUBMITTED = "submitted", _("eingereicht")
+        ACCEPTED = "accepted", _("in die Tagesordnung aufgenommen")
+        REJECTED = "rejected", _("nicht aufgenommen")
+        WITHDRAWN = "withdrawn", _("zurückgezogen")
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="motions")
+    membership = models.ForeignKey(
+        "members.Membership", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    name = EncryptedCharField(_("Name"), max_length=200)
+    title = EncryptedCharField(_("Titel"), max_length=300)
+    text = EncryptedTextField(_("Begründung"))
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.SUBMITTED)
+    reply = EncryptedTextField(_("Antwort"), blank=True)
+    agenda_item = models.ForeignKey(
+        AgendaItem, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    decided_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "pk"]
+
+    def __str__(self):
+        return f"motion {self.pk}"

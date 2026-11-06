@@ -63,6 +63,9 @@ def build(coupling: Coupling, level) -> dict:
             if not current and not m.origin_ref:
                 continue  # Frühere eigene Mitglieder gehen den Verein nichts an
             person = m.person
+            if person.is_organization:
+                # Organisationsmitglieder gehen erst mit Schritt J6 an Gegenstellen
+                continue
             contact = services.contact_for(person, unit)
             assignment = m.current_type(today) if current else None
             entries = sorted(p.entry_date for p in m.periods.all())

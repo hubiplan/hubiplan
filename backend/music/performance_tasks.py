@@ -6,13 +6,13 @@ import json
 import logging
 
 from celery import shared_task
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext
 
 from core.i18n import language_of, user_language
 from core.tenancy import rls_bypass, tenant_context
+from organizations.addresses import base_url
 from outbox import mail
 from portal.models import PortalAccess
 
@@ -106,7 +106,7 @@ def send(row, access, kind):
         body = gettext(
             "Im Mitgliederbereich liegen neue oder geänderte Auftrittsinformationen "
             "oder eine noch offene Rückmeldung für Sie vor: {link}"
-        ).format(link=f"{settings.FRONTEND_URL}/mein-bereich")
+        ).format(link=f"{base_url(row.organization)}/mein-bereich")
         return mail.send(
             access.user.email,
             subject,

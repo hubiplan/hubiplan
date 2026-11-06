@@ -12,22 +12,34 @@ import { buttonColors, linkColor, PAGE_BG } from '../../theme/theme.ts'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
 import { t } from '../../i18n/index.ts'
+import { loadPlatform, usePlatform } from '../../theme/platform.ts'
 
 export function AppearancePage() {
   const org = useActiveOrg()
   const { data, error, setData, reload } = useLoad(() => orgApi.theme(org.id), [org.id])
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
   if (!data) return <p className="muted">{t('Lädt …')}</p>
-  return <ThemeForm key={org.id} orgId={org.id} theme={data} onSaved={setData} reload={reload} />
+  return (
+    <ThemeForm
+      key={org.id}
+      orgId={org.id}
+      isPlatform={org.type === 'platform'}
+      theme={data}
+      onSaved={setData}
+      reload={reload}
+    />
+  )
 }
 
 function ThemeForm({
   orgId,
+  isPlatform,
   theme,
   onSaved,
   reload,
 }: {
   orgId: number
+  isPlatform: boolean
   theme: ThemeSettings
   onSaved: (tm: ThemeSettings) => void
   reload: () => Promise<void>
@@ -51,6 +63,8 @@ function ThemeForm({
     onSaved: (saved) => {
       onSaved(saved as ThemeSettings)
       void refresh()
+      // Farben der Instanz gelten auch für Anmeldeseite und Seiten ohne Einheit
+      if (isPlatform) void loadPlatform(true)
     },
   })
 
@@ -59,6 +73,13 @@ function ThemeForm({
       <form className="card card-wide" onSubmit={(e) => e.preventDefault()}>
         <h2>{t('Farben')}</h2>
         {editable && <SaveStatus auto={auto} />}
+        {isPlatform && (
+          <p className="small">
+            {t(
+              'Farben und Logo der Instanz gelten für die Anmeldeseite, die öffentlichen Seiten und alle Einheiten ohne eigene Farben oder eigenes Logo. Den Namen der Instanz legst du unter Einstellungen › Organisation fest.',
+            )}
+          </p>
+        )}
         <p className="muted small">
           {t(
             'Ohne eigene Farbe übernimmt die Organisation das Erscheinungsbild der übergeordneten Ebene',
@@ -141,6 +162,7 @@ function ThemeForm({
             onChange={async () => {
               await reload()
               await refresh()
+              if (isPlatform) await loadPlatform(true)
             }}
           />
         ) : theme.logo_url ? (
@@ -154,6 +176,117 @@ function ThemeForm({
           </p>
         )}
       </div>
+      {isPlatform && <PlatformIconCard editable={editable} />}
+      {!isPlatform && (theme.addresses?.length ?? 0) > 0 && (
+        <UnitIconCard
+          orgId={orgId}
+          addresses={theme.addresses ?? []}
+          hasIcon={Boolean(theme.has_icon)}
+          editable={editable}
+          reload={reload}
+        />
+      )}
+    </div>
+  )
+}
+
+/** Symbol einer Einheit mit eigener Adresse (White Label W7). */
+function UnitIconCard({
+  orgId,
+  addresses,
+  hasIcon,
+  editable,
+  reload,
+}: {
+  orgId: number
+  addresses: string[]
+  hasIcon: boolean
+  editable: boolean
+  reload: () => Promise<void>
+}) {
+  const [version, setVersion] = useState(0)
+  const shown = hasIcon ? `${orgApi.iconUrl(orgId)}?v=${version}` : null
+  return (
+    <div className="card card-wide">
+      <h2>{t('Symbol')}</h2>
+      <p className="small">
+        {t(
+          'Diese Einheit hat eine eigene Adresse ({x}). Dort erscheint das Symbol im Browser-Tab und auf dem Startbildschirm des Handys. Ohne eigenes Symbol nimmt HUBIplan das Logo bzw. Wappen, sonst das Symbol der Instanz.',
+          { x: addresses.join(', ') },
+        )}
+      </p>
+      {editable ? (
+        <LogoUpload
+          uploadUrl={orgApi.iconUrl(orgId)}
+          logoUrl={shown}
+          onChange={async () => {
+            await reload()
+            setVersion(Date.now())
+          }}
+        />
+      ) : shown ? (
+        <img src={shown} alt={t('Symbol')} className="logo-preview" />
+      ) : (
+        <p className="muted">{t('Kein eigenes Symbol.')}</p>
+      )}
+    </div>
+  )
+}
+
+/** Symbol der Instanz für Browser-Tab und Handy (White Label W2). */
+function PlatformIconCard({ editable }: { editable: boolean }) {
+  const instance = usePlatform()
+  // Nach dem Hochladen neu laden, am Zwischenspeicher des Browsers vorbei
+  const [version, setVersion] = useState(0)
+  const src = (name: string) => `/api/public/platform/icon-${name}.png?v=${version}`
+  const shown = instance.icon ? src('512') : null
+  return (
+    <div className="card card-wide">
+      <h2>{t('Symbol der Instanz')}</h2>
+      <p className="small">
+        {t(
+          'Das Symbol erscheint im Browser-Tab und auf dem Startbildschirm des Handys. Am besten ein quadratisches Bild ohne Schrift, mindestens 512 × 512 Pixel. Ohne eigenes Symbol zeigt HUBIplan sein H-Zeichen in den Farben der Instanz.',
+        )}
+      </p>
+      {editable ? (
+        <LogoUpload
+          uploadUrl="/api/platform/icon/"
+          logoUrl={shown}
+          onChange={async () => {
+            await loadPlatform(true)
+            setVersion(Date.now())
+          }}
+        />
+      ) : (
+        !shown && <p className="muted">{t('Kein eigenes Symbol.')}</p>
+      )}
+      {instance.icon && (
+        <>
+          <h3>{t('Vorschau')}</h3>
+          <div className="icon-preview">
+            <span className="icon-preview-tab">
+              <img src={src('32')} alt="" width={16} height={16} />
+              {t('Heller Browser-Tab')}
+            </span>
+            <span className="icon-preview-tab icon-preview-dark">
+              <img src={src('32')} alt="" width={16} height={16} />
+              {t('Dunkler Browser-Tab')}
+            </span>
+            <img
+              src={src('maskable')}
+              alt={t('Symbol auf dem Handy (rund ausgeschnitten)')}
+              className="icon-preview-round"
+              width={64}
+              height={64}
+            />
+          </div>
+          <p className="muted small">
+            {t(
+              'Wer HUBIplan schon auf dem Startbildschirm hat, sieht das neue Symbol erst, wenn das Handy es neu abholt. Auf dem iPhone muss die Seite dazu neu zum Startbildschirm hinzugefügt werden.',
+            )}
+          </p>
+        </>
+      )}
     </div>
   )
 }

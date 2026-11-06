@@ -41,6 +41,7 @@ const plan = {
   show_names: true,
   version: 1,
   can_edit: true,
+  can_callout: true,
   needed: 2,
   open: 1,
   note: '',
@@ -79,6 +80,18 @@ function show(permissions: string[], path = '/helferdienste', overlap = false) {
       ],
     }),
     'POST /api/orgs/7/helpers/shifts/31/quotas/': () => ({ status: 200, body: shift }),
+    [`GET /api/orgs/7/helpers/done/?jahr=${new Date().getFullYear()}`]: () => ({
+      status: 200,
+      body: {
+        year: new Date().getFullYear(),
+        people: [{ membership: 7, name: 'Anna Muster', external: false, shifts: 2, minutes: 450 }],
+      },
+    }),
+    'POST /api/orgs/7/helpers/5/copy/': () => ({ status: 201, body: { ...plan, id: 6 } }),
+    'GET /api/orgs/7/helpers/6/': () => ({
+      status: 200,
+      body: { ...plan, id: 6, title: 'Schützenfest 2100' },
+    }),
     'POST /api/orgs/7/helpers/duties/21/shifts/': () => ({ status: 201, body: [] }),
     'POST /api/orgs/7/helpers/shifts/31/assignments/': () => {
       calls += 1
@@ -165,6 +178,32 @@ describe('Helferdienste', () => {
     )
     const call = api.find((c) => c.key === 'POST /api/orgs/7/helpers/shifts/31/quotas/')!
     expect(JSON.parse(String(call.init?.body))).toEqual({ department: 10, count: 1 })
+  })
+
+  it('zeigt geleistete Dienste je Person', async () => {
+    show(['helpers.view'])
+    fireEvent.click(await screen.findByText('Geleistete Dienste'))
+    expect(await screen.findByText('Anna Muster')).toBeInTheDocument()
+    expect(screen.getByText('7,5')).toBeInTheDocument()
+  })
+
+  it('kopiert einen Plan um ein Jahr verschoben', async () => {
+    const api = show(['helpers.view', 'helpers.edit'], '/helferdienste?plan=5')
+    fireEvent.click(await screen.findByRole('button', { name: 'Plan kopieren' }))
+    const form = screen.getByRole('form', { name: 'Plan kopieren' })
+    fireEvent.change(within(form).getByLabelText('Titel'), {
+      target: { value: 'Schützenfest 2100' },
+    })
+    fireEvent.change(within(form).getByLabelText('Erster Tag des neuen Plans'), {
+      target: { value: '2100-06-10' },
+    })
+    fireEvent.click(within(form).getByRole('button', { name: 'Kopie anlegen' }))
+    await waitFor(() =>
+      expect(api.some((c) => c.key === 'POST /api/orgs/7/helpers/5/copy/')).toBe(true),
+    )
+    const call = api.find((c) => c.key === 'POST /api/orgs/7/helpers/5/copy/')!
+    expect(JSON.parse(String(call.init?.body))).toEqual({ title: 'Schützenfest 2100', days: 365 })
+    expect(await screen.findByRole('heading', { name: /Schützenfest 2100/ })).toBeInTheDocument()
   })
 
   it('ohne Recht kein Zugang', async () => {

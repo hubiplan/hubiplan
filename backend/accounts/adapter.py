@@ -36,6 +36,16 @@ class AccountAdapter(DefaultAccountAdapter):
 
 
 class HeadlessAdapter(DefaultHeadlessAdapter):
+    def get_frontend_url(self, urlname: str, **kwargs) -> str | None:
+        """Links (Passwort vergessen) auf der Adresse, auf der sie angefordert wurden (W7b)."""
+        from organizations.addresses import base_url, rebase
+
+        url = super().get_frontend_url(urlname, **kwargs)
+        request = getattr(self, "request", None)
+        if url and request is not None:
+            url = rebase(url, base_url(request=request))
+        return url
+
     def serialize_user(self, user) -> dict:
         data = super().serialize_user(user)
         # Mit Startpasswort angemeldet: die Oberfläche verlangt zuerst ein eigenes Passwort

@@ -30,6 +30,9 @@ x-backend-env: &backend-env
   MFA_ENCRYPTION_KEYS: ${MFA_ENCRYPTION_KEYS:-}
   DJANGO_ALLOWED_HOSTS: ${SITE_HOST:?SITE_HOST fehlt in .env},localhost
   DJANGO_CSRF_TRUSTED_ORIGINS: https://${SITE_HOST}
+  # Weitere Adressen aus „Adressen je Einheit“ zulassen, mit Zertifikat beim ersten Aufruf
+  # (White Label W7c; hinter einem vorgeschalteten Webserver dort als Alias eintragen)
+  HUBIPLAN_ADRESSEN_AUS_LISTE: ${HUBIPLAN_ADRESSEN_AUS_LISTE:-0}
   FRONTEND_URL: https://${SITE_HOST}
   GOOGLE_WALLET_ISSUER_ID: ${GOOGLE_WALLET_ISSUER_ID:-}
   GOOGLE_WALLET_CREDENTIALS_FILE: ${GOOGLE_WALLET_CREDENTIALS_FILE:-}

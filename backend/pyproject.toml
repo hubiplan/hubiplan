@@ -10,7 +10,10 @@ DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["test_*.py"]
 addopts = "-ra"
 filterwarnings = ["ignore:No directory at:UserWarning"]
-markers = ["langsam: dauert mehrere Sekunden; läuft zuerst, damit es parallel nicht am Ende hängt"]
+markers = [
+    "langsam: dauert mehrere Sekunden; läuft zuerst, damit es parallel nicht am Ende hängt",
+    "migration: migriert hin und zurück; scripts/test.sh lässt sie aus, solange Migrationen und diese Tests schon grün waren",
+]
 
 [tool.ruff]
 line-length = 100

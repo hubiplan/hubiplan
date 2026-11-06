@@ -247,6 +247,7 @@ def test_parallele_erste_anlage_verwendet_denselben_schluessel(orgs):
 
 @pytest.mark.langsam
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.migration
 def test_migration_erhaelt_bestand_alte_inserts_und_sicheren_rueckweg(orgs):
     old = crypto.key_for_org(orgs["c"].pk)
     before = DataKey.objects.values().get(pk=old[0])

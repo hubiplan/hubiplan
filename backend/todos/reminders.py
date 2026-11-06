@@ -4,7 +4,6 @@ import datetime
 import logging
 from zoneinfo import ZoneInfo
 
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.utils.formats import date_format
@@ -14,6 +13,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from core.i18n import language_of, user_language
 from core.tenancy import rls_bypass, tenant_context
 from devices.push import send_to_user
+from organizations.addresses import base_url
 from outbox import mail
 
 from .access import Scope, current_scope, scope_for, visible
@@ -297,9 +297,9 @@ def deliver(pk, now=None):
                 else f"einheit={scope.org.pk}"
             )
             link = (
-                f"{settings.FRONTEND_URL}/mein-bereich/aufgaben?zugang={scope.portal_access_id}&aufgabe={current.pk}"
+                f"{base_url(scope.org)}/mein-bereich/aufgaben?zugang={scope.portal_access_id}&aufgabe={current.pk}"
                 if scope.portal_access_id
-                else f"{settings.FRONTEND_URL}/aufgaben?aufgabe={current.pk}&{unit}"
+                else f"{base_url(scope.org)}/aufgaben?aufgabe={current.pk}&{unit}"
             )
             try:
                 if item.channel == "mail":

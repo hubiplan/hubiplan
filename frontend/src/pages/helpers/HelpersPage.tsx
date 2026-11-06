@@ -1,7 +1,8 @@
 // Helferdienste und Schichtpläne (konzepte/helferdienste.md, Schritte H1–H3): Dienstpläne,
 // Dienste, Schichten mit Schnelleingabe, Einteilung durch die Verwaltung, Druck und Export,
-// Kontingente für Untereinheiten.
+// Kontingente für Untereinheiten, Kopie, Aufruf per Rundschreiben und geleistete Dienste (H4).
 import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { FormEvent } from 'react'
 import { ApiError, saveBlob } from '../../api/client.ts'
 import { helperApi } from '../../api/helpers.ts'
@@ -41,6 +42,10 @@ function timeText(value: string) {
   })
 }
 
+function started(s: Shift) {
+  return new Date(s.starts_at).getTime() <= Date.now()
+}
+
 function shiftText(s: Shift) {
   return `${dayText(s.starts_at)} ${timeText(s.starts_at)}–${timeText(s.ends_at)}`
 }
@@ -76,6 +81,10 @@ function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit:
         onClose={async () => {
           detail.close()
           await list.reload()
+        }}
+        onOpen={async (id) => {
+          await list.reload()
+          detail.open(String(id))
         }}
       />
     )
@@ -142,6 +151,7 @@ function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit:
           </tbody>
         </table>
       )}
+      {rows.length > 0 && <DoneCard base={base} />}
     </div>
   )
 }
@@ -231,12 +241,16 @@ function PlanDetail({
   orgId,
   id,
   onClose,
+  onOpen,
 }: {
   base: string
   orgId: number
   id: number
   onClose: () => void
+  onOpen: (id: number) => Promise<void>
 }) {
+  const navigate = useNavigate()
+  const [copying, setCopying] = useState(false)
   const loaded = useLoad(() => helperApi.get(base, id), [base, id])
   const club = base.startsWith('/api/orgs/')
   const unitList = useLoad(
@@ -334,6 +348,31 @@ function PlanDetail({
             {plan.status === 'closed' ? t('Wieder öffnen') : t('Zurück in Vorbereitung')}
           </button>
         )}
+        {plan.can_callout && plan.status === 'published' && plan.open > 0 && (
+          <button
+            type="button"
+            className="button button-ghost"
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
+                const { circular } = await helperApi.callout(base, plan.id)
+                navigate(`/rundschreiben/${circular}`)
+              })
+            }
+          >
+            {t('Aufruf als Rundschreiben')}
+          </button>
+        )}
+        {plan.can_edit && !copying && (
+          <button
+            type="button"
+            className="button button-ghost"
+            disabled={busy}
+            onClick={() => setCopying(true)}
+          >
+            {t('Plan kopieren')}
+          </button>
+        )}
         {plan.can_edit && plan.status !== 'published' && (
           <button
             type="button"
@@ -360,6 +399,16 @@ function PlanDetail({
           </button>
         )}
       </div>
+      {copying && (
+        <CopyForm
+          base={base}
+          plan={plan}
+          onDone={async (created) => {
+            setCopying(false)
+            if (created) await onOpen(created)
+          }}
+        />
+      )}
       <p className="muted">
         {plan.status === 'draft'
           ? t('Im Mitgliederbereich erscheint der Plan erst nach dem Veröffentlichen.')
@@ -377,6 +426,7 @@ function PlanDetail({
           orgId={orgId}
           duty={duty}
           editable={editable}
+          canMark={plan.can_edit}
           units={editable ? (unitList.data ?? []) : []}
           onChanged={loaded.reload}
         />
@@ -465,6 +515,7 @@ function DutyCard({
   orgId,
   duty,
   editable,
+  canMark,
   units,
   onChanged,
 }: {
@@ -472,6 +523,7 @@ function DutyCard({
   orgId: number
   duty: Duty
   editable: boolean
+  canMark: boolean
   units: { id: number; name: string }[]
   onChanged: () => Promise<void>
 }) {
@@ -559,6 +611,22 @@ function DutyCard({
                             </span>
                           )}
                           {a.phone && <span className="muted small"> {a.phone}</span>}
+                          {canMark && started(s) && (
+                            <label className="done-mark">
+                              <input
+                                type="checkbox"
+                                checked={a.done === true}
+                                onChange={(e) =>
+                                  act(() =>
+                                    helperApi.updateAssignment(base, a.id, {
+                                      done: e.target.checked,
+                                    }),
+                                  )
+                                }
+                              />
+                              <span>{t('geleistet')}</span>
+                            </label>
+                          )}
                           {editable && (
                             <button
                               type="button"
@@ -1137,5 +1205,122 @@ function UnitQuotas({ base, orgId, canEdit }: { base: string; orgId: number; can
         </tbody>
       </table>
     </section>
+  )
+}
+
+function CopyForm({
+  base,
+  plan,
+  onDone,
+}: {
+  base: string
+  plan: HelperPlan
+  onDone: (created: number | null) => Promise<void>
+}) {
+  const starts = (plan.duties ?? []).flatMap((d) => d.shifts.map((x) => x.starts_at)).sort()
+  const firstDay = starts.length
+    ? new Date(starts[0]).toLocaleDateString('sv-SE', { timeZone: ZONE })
+    : ''
+  const [title, setTitle] = useState(plan.title)
+  const [day, setDay] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const days =
+    firstDay && day
+      ? Math.round(
+          (Date.parse(day + 'T12:00:00Z') - Date.parse(firstDay + 'T12:00:00Z')) / 86400000,
+        )
+      : 0
+  return (
+    <form
+      className="card stack"
+      aria-label={t('Plan kopieren')}
+      onSubmit={async (e) => {
+        e.preventDefault()
+        setBusy(true)
+        setError('')
+        try {
+          const created = await helperApi.copy(base, plan.id, { title, days })
+          await onDone(created.id)
+        } catch (err) {
+          setError(errorMessage(err))
+          setBusy(false)
+        }
+      }}
+    >
+      <p className="muted">
+        {t(
+          'Die Kopie übernimmt Dienste, Schichten, Kontingente und Einstellungen, aber keine Einteilungen.',
+        )}
+      </p>
+      <label className="field">
+        <span>{t('Titel')}</span>
+        <input value={title} maxLength={200} required onChange={(e) => setTitle(e.target.value)} />
+      </label>
+      {firstDay && (
+        <label className="field">
+          <span>{t('Erster Tag des neuen Plans')}</span>
+          <input type="date" value={day} onChange={(e) => setDay(e.target.value)} />
+        </label>
+      )}
+      {error && <p role="alert">{error}</p>}
+      <div className="button-row">
+        <button type="button" className="button button-ghost" onClick={() => onDone(null)}>
+          {t('Abbrechen')}
+        </button>
+        <button className="button button-primary" disabled={busy || !title.trim()}>
+          {t('Kopie anlegen')}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function DoneCard({ base }: { base: string }) {
+  const [year, setYear] = useState(() => new Date().getFullYear())
+  const done = useLoad(() => helperApi.done(base, year), [base, year])
+  const people = done.data?.people ?? []
+  const hours = (minutes: number) =>
+    (minutes / 60).toLocaleString(locale(), { maximumFractionDigits: 1 })
+  return (
+    <details className="card stack">
+      <summary>{t('Geleistete Dienste')}</summary>
+      <label className="field">
+        <span>{t('Jahr')}</span>
+        <input
+          type="number"
+          min={2000}
+          max={2100}
+          value={year}
+          onChange={(e) => setYear(Number(e.target.value) || new Date().getFullYear())}
+        />
+      </label>
+      {done.error && <p role="alert">{done.error}</p>}
+      {done.data && people.length === 0 ? (
+        <p className="muted">{t('Noch keine geleisteten Dienste in diesem Jahr.')}</p>
+      ) : (
+        <table className="table">
+          <thead>
+            <tr>
+              <th>{t('Name')}</th>
+              <th>{t('Schichten')}</th>
+              <th>{t('Stunden')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {people.map((p) => (
+              <tr key={`${p.membership ?? 'x'}-${p.name}`}>
+                <td>
+                  {p.name}
+                  {p.external && <span className="badge">{t('extern')}</span>}
+                </td>
+                <td>{p.shifts}</td>
+                <td>{hours(p.minutes)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </details>
   )
 }

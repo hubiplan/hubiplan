@@ -24,6 +24,7 @@ from organizations.terms import fill
 from . import services
 from .models import (
     ContactDetails,
+    ContactPerson,
     DepartmentMembership,
     DepartmentRoleHolder,
     ExitReason,
@@ -412,6 +413,9 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     services.lock_person(person.pk)
     DepartmentMembership.objects.filter(membership=membership).delete()
     DepartmentRoleHolder.objects.filter(membership=membership).delete()
+    # Ansprechpartner der Organisation und Einträge der Person als Ansprechpartner (J2)
+    ContactPerson.objects.filter(membership=membership).delete()
+    ContactPerson.objects.filter(organization=club, person=person).delete()
     from .photos import remove_all
 
     remove_all(membership)
@@ -450,9 +454,11 @@ def _reduce_identity(person) -> None:
 
     with rls_bypass(), transaction.atomic():
         person = Person.objects.select_for_update().get(pk=person.pk)
-        person.birth_date = person.birth_date.replace(month=1, day=1)
-        person.birth_year_only = True
-        person.save(update_fields=["birth_date", "birth_year_only"])
+        if person.birth_date is not None:
+            # Organisationen haben kein Geburtsdatum
+            person.birth_date = person.birth_date.replace(month=1, day=1)
+            person.birth_year_only = True
+            person.save(update_fields=["birth_date", "birth_year_only"])
         FederationMember.objects.filter(person_id=person.pk).delete()
 
 

@@ -28,7 +28,8 @@ Erstellt: {when}
 
 Inhalt
 - akte.json: Stammdaten, Kontaktdaten, Mitgliedschaftszeiten, Mitgliedsarten, Zugehörigkeit zu
-  Untereinheiten, Ämter, Ehrungen, Verbandsmeldung
+  Untereinheiten, Ämter, Ehrungen, Verbandsmeldung; bei Organisationen deren
+  Ansprechpartner, bei Personen die Organisationen, für die sie Ansprechpartner sind
 - zusatzfelder.json: vom Verein festgelegte zusätzliche Angaben
 - rechnungen.json / rechnungen.pdf: Rechnungen an die Person mit Zahlungen; aus
   Sammelrechnungen an andere nur die eigenen Posten mit Nummer, Datum und Empfänger
@@ -239,7 +240,7 @@ def build(membership: Membership, org) -> bytes:
     )
 
     from helpers.models import ShiftAssignment
-    from meetings.models import Attendance, Resolution
+    from meetings.models import Attendance, Motion, Resolution
 
     files["versammlungen.json"] = _dump(
         {
@@ -261,6 +262,19 @@ def build(membership: Membership, org) -> bytes:
                     "nummer": r.number,
                 }
                 for r in Resolution.objects.filter(elected=membership).select_related(
+                    "meeting__event"
+                )
+            ],
+            "antraege": [
+                {
+                    "versammlung": m.meeting.event.title,
+                    "titel": m.title,
+                    "begruendung": m.text,
+                    "stand": m.get_status_display(),
+                    "antwort": m.reply,
+                    "eingereicht": m.created_at,
+                }
+                for m in Motion.objects.filter(membership=membership).select_related(
                     "meeting__event"
                 )
             ],

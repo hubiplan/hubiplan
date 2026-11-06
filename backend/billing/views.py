@@ -5,7 +5,6 @@ from __future__ import annotations
 import datetime
 from decimal import Decimal
 
-from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import Count, Q, Sum
@@ -30,6 +29,7 @@ from finance import services as finance_services
 from finance.models import Account, Category
 from members.models import Membership, MemberType
 from members.personsearch import name_ids, ordered
+from organizations.addresses import base_url
 from organizations.models import Department, Organization
 from organizations.terms import department_terms, fill
 from outbox import mail
@@ -316,9 +316,7 @@ def send_invoice(invoice: Invoice) -> bool:
         f"Betreff: {invoice.subject}\n\n"
     )
     if invoice.recipient_kind == Invoice.Recipient.MEMBER and org.member_portal_enabled:
-        body += (
-            f"Im Mitgliederbereich sehen Sie Ihre Rechnungen jederzeit: {settings.FRONTEND_URL}\n\n"
-        )
+        body += f"Im Mitgliederbereich sehen Sie Ihre Rechnungen jederzeit: {base_url(org)}\n\n"
     body += f"Viele Grüße\n{org.name}\n"
     attachments = [(pdf.filename(invoice), archived_pdf(invoice), "application/pdf")]
     if invoice.electronic_data:

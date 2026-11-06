@@ -58,6 +58,7 @@ export interface HelperPlan {
   remind_days: number | null
   version: number
   can_edit: boolean
+  can_callout?: boolean
   needed: number
   open: number
   note?: string
@@ -82,6 +83,17 @@ export interface UnitQuota {
   ends_at: string
   note: string
   assignments: Assignment[]
+}
+
+export interface DoneList {
+  year: number
+  people: {
+    membership: number | null
+    name: string
+    external: boolean
+    shifts: number
+    minutes: number
+  }[]
 }
 
 export const helperApi = {
@@ -117,6 +129,10 @@ export const helperApi = {
     api.post<UnitQuota>(`${base}quotas/${quota}/assignments/`, data),
   removeFromQuota: (base: string, assignment: number) =>
     api.del(`${base}quotas/assignments/${assignment}/`),
+  copy: (base: string, id: number, data: { title: string; days: number }) =>
+    api.post<HelperPlan>(`${base}${id}/copy/`, data),
+  callout: (base: string, id: number) => api.post<{ circular: number }>(`${base}${id}/callout/`),
+  done: (base: string, year: number) => api.get<DoneList>(`${base}done/?jahr=${year}`),
   export: (base: string, id: number, format: 'pdf' | 'xlsx') =>
     requestBlob('GET', `${base}${id}/export/?datei=${format}`),
 }

@@ -11,15 +11,21 @@ from django.core.mail import send_mail
 from django.utils.translation import gettext as _
 
 from core.i18n import language_of
+from organizations.addresses import base_url, rebase
+from organizations.platform_public import instance_name
+from outbox.mail import from_address
 
 logger = logging.getLogger(__name__)
 
 
-def password_link(user) -> str:
-    """Link zum Setzen des Passworts (gleiches Verfahren wie „Passwort vergessen“)."""
+def password_link(user, organization=None) -> str:
+    """Link zum Setzen des Passworts (gleiches Verfahren wie „Passwort vergessen“).
+
+    Mit Einheit: auf deren Adresse (W7b)."""
     token = account_settings.PASSWORD_RESET_TOKEN_GENERATOR().make_token(user)
     key = f"{user_pk_to_url_str(user)}-{token}"
-    return settings.HEADLESS_FRONTEND_URLS["account_reset_password_from_key"].format(key=key)
+    url = settings.HEADLESS_FRONTEND_URLS["account_reset_password_from_key"].format(key=key)
+    return rebase(url, base_url(organization)) if organization is not None else url
 
 
 def send_invitation(user, organization, role_name: str) -> bool:
@@ -28,27 +34,25 @@ def send_invitation(user, organization, role_name: str) -> bool:
     with language_of(user):
         body = _(
             "Guten Tag,\n\n"
-            "für Sie wurde bei HUBIplan ein Konto angelegt: Rolle „{role}“ in „{org}“.\n\n"
+            "für Sie wurde bei {instanz} ein Konto angelegt: Rolle „{role}“ in „{org}“.\n\n"
             "Bitte legen Sie über diesen Link Ihr Passwort fest (gültig {days} Tage):\n"
             "{link}\n\n"
             "Ihre Anmeldung: {email}\n\n"
             "Wir empfehlen, danach unter „Einstellungen → Mein Konto“ die "
             "Zwei-Faktor-Anmeldung einzurichten.\n"
         ).format(
+            instanz=instance_name(),
             role=role_name,
             org=organization.name,
             days=days,
-            link=password_link(user),
+            link=password_link(user, organization),
             email=user.email,
         )
-        subject = _("Einladung zu HUBIplan – {org}").format(org=organization.name)
-    try:
-        send_mail(
-            subject,
-            body,
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
+        subject = _("Einladung zu {instanz} – {org}").format(
+            instanz=instance_name(), org=organization.name
         )
+    try:
+        send_mail(subject, body, from_address(), [user.email])
     except Exception:  # noqa: BLE001 – Versandfehler dürfen die Zuordnung nicht verhindern
         logger.exception("Einladung an %s konnte nicht gesendet werden", user.email)
         return False
@@ -62,16 +66,16 @@ def send_password_link(user) -> bool:
     with language_of(user):
         body = _(
             "Guten Tag,\n\n"
-            "HUBIplan verschickt keine Startpasswörter mehr. Ihr bisheriges Startpasswort "
+            "{instanz} verschickt keine Startpasswörter mehr. Ihr bisheriges Startpasswort "
             "gilt nicht mehr.\n\n"
             "Bitte legen Sie über diesen Link Ihr eigenes Passwort fest (gültig {days} Tage):\n"
             "{link}\n\n"
             "Ihre Anmeldung: {email}\n\n"
             "Ist der Link abgelaufen, hilft „Passwort vergessen“ auf der Anmeldeseite.\n"
-        ).format(days=days, link=password_link(user), email=user.email)
-        subject = _("HUBIplan: Passwort festlegen")
+        ).format(instanz=instance_name(), days=days, link=password_link(user), email=user.email)
+        subject = _("{instanz}: Passwort festlegen").format(instanz=instance_name())
     try:
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [user.email])
+        send_mail(subject, body, from_address(), [user.email])
     except Exception:  # noqa: BLE001 – ein Versandfehler soll die übrigen nicht aufhalten
         logger.exception("Passwort-Link an %s konnte nicht gesendet werden", user.email)
         return False
