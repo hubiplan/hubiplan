@@ -373,3 +373,65 @@ def test_passwort_vergessen_auf_der_aufgerufenen_adresse(mailoutbox, adressen, s
         )
         assert resp.status_code == 200, resp.content
         assert f"{expected}/passwort-zuruecksetzen/" in mailoutbox[-1].body
+
+
+# --- W7c: Erlaubte Hosts und Zertifikate aus der Liste ---
+
+
+@pytest.fixture
+def aus_liste(settings):
+    from organizations.addresses import forget_hosts
+
+    settings.ADDRESSES_FROM_LIST = True
+    settings.ALLOWED_HOSTS = ["*"]
+    settings.FIXED_ALLOWED_HOSTS = ["testserver", "localhost"]
+    forget_hosts()
+    yield
+    forget_hosts()
+
+
+def test_hosts_aus_der_liste(aus_liste):
+    club = make_org("Schützenverein Musterstadt")
+    _adresse(club)
+    assert Client().get("/api/public/platform/").status_code == 200
+    assert Client(HTTP_HOST=VEREIN_HOST).get("/api/public/platform/").json()["unit"] == club.pk
+    assert Client(HTTP_HOST="fremd.example").get("/api/public/platform/").status_code == 400
+    # Abgeschaltete Einheit: Adresse gilt nicht mehr (nach Ablauf des Zwischenspeichers)
+    club.is_active = False
+    club.save()
+    from organizations.addresses import forget_hosts
+
+    forget_hosts()
+    assert Client(HTTP_HOST=VEREIN_HOST).get("/api/public/platform/").status_code == 400
+
+
+def test_neue_adresse_gilt_sofort(api, platform_admin, aus_liste):
+    club = make_org("Schützenverein Musterstadt")
+    assert Client(HTTP_HOST=VEREIN_HOST).get("/api/public/platform/").status_code == 400
+    resp = api(platform_admin).post(
+        "/api/platform/addresses/",
+        {"hostname": VEREIN_HOST, "organization": club.pk},
+        content_type="application/json",
+    )
+    assert resp.status_code == 201, resp.content
+    assert Client(HTTP_HOST=VEREIN_HOST).get("/api/public/platform/").status_code == 200
+
+
+def test_zertifikatsabfrage(aus_liste, settings):
+    club = make_org("Schützenverein Musterstadt")
+    _adresse(club)
+    caddy = Client(HTTP_HOST="backend:8000")
+    assert caddy.get("/api/intern/tls/", {"domain": VEREIN_HOST}).status_code == 200
+    assert caddy.get("/api/intern/tls/", {"domain": "fremd.example"}).status_code == 404
+    assert caddy.get("/api/intern/tls/").status_code == 404
+    # Ausgeschaltet: nie ein Zertifikat
+    settings.ADDRESSES_FROM_LIST = False
+    settings.ALLOWED_HOSTS = ["backend"]
+    assert caddy.get("/api/intern/tls/", {"domain": VEREIN_HOST}).status_code == 404
+
+
+def test_ohne_schalter_bleibt_django_pruefung(settings):
+    settings.ALLOWED_HOSTS = ["testserver"]
+    club = make_org("Schützenverein Musterstadt")
+    _adresse(club)
+    assert Client(HTTP_HOST=VEREIN_HOST).get("/api/public/platform/").status_code == 400

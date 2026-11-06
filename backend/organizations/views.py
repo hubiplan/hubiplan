@@ -42,6 +42,7 @@ from core.tenancy import rls_bypass, set_rls, tenant_context
 from members import services as member_services
 
 from . import homepage_preview
+from .addresses import forget_hosts
 from .models import Department, DepartmentRole, InstanceAddress, Organization, PlatformSettings
 from .serializers import (
     DepartmentChoiceSerializer,
@@ -822,6 +823,7 @@ class InstanceAddressViewSet(
 
     def perform_create(self, serializer):
         obj = serializer.save()
+        forget_hosts()
         record(
             Organization.platform(),
             self.request.user,
@@ -839,6 +841,7 @@ class InstanceAddressViewSet(
             {"Adresse": [f"{instance.hostname} → {instance.organization.name}", None]},
         )
         instance.delete()
+        forget_hosts()
 
 
 class PlatformSettingsView(generics.RetrieveUpdateAPIView):

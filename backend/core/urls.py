@@ -53,6 +53,7 @@ from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import help_views, imprint_views, social_views
 from organizations import views as org_views
+from organizations.addresses import tls_ask
 from organizations.platform_public import (
     PublicManifestView,
     PublicPlatformIconView,
@@ -931,6 +932,7 @@ urlpatterns = [
     path("me/language/", language.MyLanguageView.as_view(), name="my-language"),
     path("public/languages/", language.PublicLanguagesView.as_view(), name="public-languages"),
     path("public/platform/", PublicPlatformView.as_view(), name="public-platform"),
+    path("intern/tls/", tls_ask, name="intern-tls-ask"),
     path(
         "public/platform/icon-<str:name>.png",
         PublicPlatformIconView.as_view(),

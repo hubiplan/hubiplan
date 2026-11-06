@@ -31,6 +31,13 @@ if not SECRET_KEY:
     SECRET_KEY = "unsicherer-entwicklungs-schluessel"  # nur mit DJANGO_DEBUG=true
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
+# Weitere Adressen aus der Liste „Adressen je Einheit“ zulassen (White Label W7c). Dann prüft
+# organizations.addresses.HostMiddleware jede Anfrage gegen die feste Liste und die
+# eingetragenen Adressen; Django selbst lässt jeden Host durch.
+ADDRESSES_FROM_LIST = env_bool("HUBIPLAN_ADRESSEN_AUS_LISTE", False)
+FIXED_ALLOWED_HOSTS = list(ALLOWED_HOSTS)
+if ADDRESSES_FROM_LIST:
+    ALLOWED_HOSTS = ["*"]
 CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
 )
@@ -94,6 +101,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "organizations.addresses.HostMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

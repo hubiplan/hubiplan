@@ -100,3 +100,77 @@ def rebase(url: str, base: str) -> str:
     if url and base != main and (url == main or url.startswith(main + "/")):
         return base + url[len(main) :]
     return url
+
+
+# --- Erlaubte Hosts und Zertifikate aus der Liste (W7c) ---
+
+HOSTS_CACHE_KEY = "hubiplan:adressen"
+HOSTS_CACHE_SECONDS = 60
+TLS_ASK_PATH = "/api/intern/tls/"
+
+
+def listed_hosts() -> frozenset[str]:
+    """Eingetragene Adressen aktiver Einheiten (eine Minute zwischengespeichert)."""
+    from django.core.cache import cache
+
+    hosts = cache.get(HOSTS_CACHE_KEY)
+    if hosts is None:
+        hosts = list(
+            InstanceAddress.objects.filter(organization__is_active=True).values_list(
+                "hostname", flat=True
+            )
+        )
+        cache.set(HOSTS_CACHE_KEY, hosts, HOSTS_CACHE_SECONDS)
+    return frozenset(hosts)
+
+
+def forget_hosts() -> None:
+    from django.core.cache import cache
+
+    cache.delete(HOSTS_CACHE_KEY)
+
+
+def host_allowed(host: str) -> bool:
+    from django.conf import settings
+    from django.http.request import split_domain_port, validate_host
+
+    domain, _port = split_domain_port(host or "")
+    if not domain:
+        return False
+    if validate_host(domain, settings.FIXED_ALLOWED_HOSTS):
+        return True
+    return normalize_host(domain) in listed_hosts()
+
+
+class HostMiddleware:
+    """Mit HUBIPLAN_ADRESSEN_AUS_LISTE: nur feste und eingetragene Adressen zulassen.
+
+    Django lässt dann jeden Host durch (ALLOWED_HOSTS = ["*"]); diese Prüfung ersetzt seine.
+    Ausnahme ist nur die Zertifikatsabfrage von Caddy, die das Backend direkt anspricht.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        from django.conf import settings
+
+        if getattr(settings, "ADDRESSES_FROM_LIST", False) and request.path != TLS_ASK_PATH:
+            # Wie Django: Host ungeprüft lesen (X-Forwarded-Host nur, wenn eingeschaltet)
+            if not host_allowed(request._get_raw_host()):
+                from django.http import HttpResponseBadRequest
+
+                return HttpResponseBadRequest("Unbekannte Adresse.")
+        return self.get_response(request)
+
+
+def tls_ask(request):
+    """Caddy fragt vor einem Zertifikat nach (on_demand_tls ask): 200 nur für eingetragene
+    Adressen. Von außen gesperrt (deploy/caddy/site.caddy)."""
+    from django.conf import settings
+    from django.http import HttpResponse, HttpResponseNotFound
+
+    domain = normalize_host(request.GET.get("domain", ""))
+    if not getattr(settings, "ADDRESSES_FROM_LIST", False) or domain not in listed_hosts():
+        return HttpResponseNotFound()
+    return HttpResponse("ok", content_type="text/plain")

@@ -845,6 +845,25 @@ Datum bleiben als Nachweis. Nicht zugestellte (und nur gespeicherte) Mails bleib
 vollständig, damit man sie erneut senden kann, aber nicht unbegrenzt: nach
 `OUTBOX_FAILED_RETENTION_DAYS` Tagen (Standard 90, Fachfrage FQ14) werden auch sie geleert.
 
+## Weitere Adressen je Einheit
+
+Unter Plattform › Einstellungen › „Adressen je Einheit“ ordnet die Plattformverwaltung weitere
+Adressen einer Einheit zu (Anmeldeseite, Symbol und Mail-Links im Erscheinungsbild der Einheit).
+Damit der Server sie annimmt:
+
+1. DNS-Eintrag der Adresse auf den Server setzen.
+2. In `.env` `HUBIPLAN_ADRESSEN_AUS_LISTE=1` setzen und neu ausrollen. Das Backend lässt dann
+   neben `SITE_HOST` jede eingetragene Adresse aktiver Einheiten zu (Liste eine Minute
+   zwischengespeichert); alle anderen Hosts bekommen 400.
+3. Mit eigenem HTTPS (`deploy/Caddyfile`) holt Caddy das Zertifikat beim ersten Aufruf. Vorher
+   fragt es `http://backend:8000/api/intern/tls/?domain=…`; nur eingetragene Adressen
+   bekommen ein Zertifikat. Von außen ist dieser Pfad gesperrt.
+4. Hinter einem vorgeschalteten Webserver (`Caddyfile.proxy`, HestiaCP) die Adresse dort als
+   Alias der HUBIplan-Domain eintragen; Zertifikat und Weiterleitung übernimmt er.
+
+Ohne `HUBIPLAN_ADRESSEN_AUS_LISTE=1` bleibt alles wie bisher: nur `DJANGO_ALLOWED_HOSTS`, keine
+weiteren Zertifikate.
+
 ## Grenzen der Container
 
 Backend und Worker haben feste Grenzen für Arbeitsspeicher und `/tmp`, damit ein großer

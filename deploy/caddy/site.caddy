@@ -3,6 +3,10 @@
 # Kopfzeilen an das Backend.
 encode zstd gzip
 
+# Nur für Caddy selbst (Zertifikatsabfrage, direkt im Docker-Netz), nie von außen
+@intern path /api/intern/*
+respond @intern 404
+
 @backend path /api/* /_allauth/* /admin /admin/* /static/*
 # Nur die Vollübernahme (Datenimport) braucht bis 500 MB (Gesamtaudit 31.10.b, INF-S02);
 # alles andere höchstens 64 MB (Rundschreiben mit Anhängen, Verbundpakete bis 48 MB).

@@ -2,6 +2,13 @@
 # ausgeliefertes React-Frontend und Weiterleitung der API ans Django-Backend.
 # Hinter einem vorgeschalteten Webserver gilt stattdessen Caddyfile.proxy.
 
+# Zertifikate für weitere Adressen (W7c, siehe unten) nur nach Rückfrage beim Backend
+{
+	on_demand_tls {
+		ask http://backend:8000/api/intern/tls/
+	}
+}
+
 # Caddy ist der einzige Proxy vor dem Backend und setzt X-Forwarded-For selbst
 # (verwirft, was der Aufrufer mitschickt). Hier nur zur Klarheit ausgeschrieben.
 (upstream) {
@@ -9,6 +16,16 @@
 }
 
 {$SITE_HOST} {
+	import caddy/site.caddy
+}
+
+# Weitere Adressen aus „Adressen je Einheit“ (White Label W7c): Zertifikate holt Caddy erst
+# beim ersten Aufruf, und nur wenn das Backend die Adresse in seiner Liste hat. Ohne
+# HUBIPLAN_ADRESSEN_AUS_LISTE=1 lehnt das Backend jede Anfrage ab, es gibt also kein Zertifikat.
+https:// {
+	tls {
+		on_demand
+	}
 	import caddy/site.caddy
 }
 
