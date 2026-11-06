@@ -8134,3 +8134,96 @@ msgstr "Minutes"
 
 msgid "Protokoll {title}"
 msgstr "Minutes {title}"
+
+msgid "Der Dienstplan wurde inzwischen geändert. Bitte neu laden."
+msgstr "The duty roster has been changed in the meantime. Please reload."
+
+msgid "Der Dienstplan ist abgeschlossen."
+msgstr "The duty roster is closed."
+
+msgid "Einen veröffentlichten Plan bitte zuerst abschließen."
+msgstr "Please close a published roster first."
+
+msgid "Zu viele Dienste in diesem Plan."
+msgstr "Too many duties in this roster."
+
+msgid "In diesem Dienst sind noch Personen eingeteilt."
+msgstr "People are still assigned to this duty."
+
+msgid "„{part}“ ist keine Zeitangabe wie 14-18."
+msgstr "“{part}” is not a time range such as 14-18."
+
+msgid "Bitte mindestens ein Zeitfenster angeben."
+msgstr "Please enter at least one time range."
+
+msgid "Zu viele Schichten in diesem Dienst."
+msgstr "Too many shifts in this duty."
+
+msgid "In dieser Schicht sind noch Personen eingeteilt."
+msgstr "People are still assigned to this shift."
+
+msgid "Die Person ist schon eingeteilt."
+msgstr "This person is already assigned."
+
+msgid "Eingeteilt"
+msgstr "Assigned"
+
+msgid "veröffentlicht"
+msgstr "published"
+
+msgid "Mitglieder tragen sich selbst ein"
+msgstr "Members sign up themselves"
+
+msgid "nur Einteilung"
+msgstr "assignment only"
+
+msgid "Dienst"
+msgstr "Duty"
+
+msgid "Beschreibung"
+msgstr "Description"
+
+msgid "selbst eingetragen"
+msgstr "signed up"
+
+msgid "eingeteilt"
+msgstr "assigned"
+
+msgid "eingetragen"
+msgstr "signed up"
+
+msgid "Telefon"
+msgstr "Phone"
+
+msgid "Die Schicht ist schon voll besetzt."
+msgstr "The shift is already full."
+
+msgid "Überschneidet sich mit {shift}."
+msgstr "Overlaps with {shift}."
+
+msgid "Für diesen Dienst gilt ein Mindestalter von {age} Jahren."
+msgstr "This duty has a minimum age of {age}."
+
+msgid "{when} · {taken} von {needed}"
+msgstr "{when} · {taken} of {needed}"
+
+msgid "Noch keine Dienste angelegt."
+msgstr "No duties created yet."
+
+msgid "Dienstplan"
+msgstr "Duty roster"
+
+msgid "Bedarf"
+msgstr "Needed"
+
+msgid "Helferdienste"
+msgstr "Volunteer duties"
+
+msgid "Dienstpläne und Einteilungen sehen"
+msgstr "View duty rosters and assignments"
+
+msgid "Dienstpläne anlegen und Helfer einteilen"
+msgstr "Create duty rosters and assign volunteers"
+
+msgid "Helferdienste {gen}"
+msgstr "Volunteer duties {gen}"

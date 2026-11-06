@@ -25,6 +25,7 @@ export interface DeptSummary {
   material_enabled?: boolean
   infrastructure_enabled?: boolean
   meetings_enabled?: boolean
+  helpers_enabled?: boolean
   imprint_key?: string
 }
 

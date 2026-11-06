@@ -219,6 +219,21 @@ export const modules: AppModule[] = [
         : !!(ws.dept?.meetings_enabled && ws.dept.permissions.includes(PERM.meetingsView)),
   },
   {
+    id: 'helferdienste',
+    group: 'verein',
+    label: t('Helferdienste'),
+    path: '/helferdienste',
+    icon: icon(
+      'M8 7a3 3 0 1 0 0-.01M16 7a3 3 0 1 0 0-.01M3 20v-2a5 5 0 0 1 10 0v2M11 20v-2a5 5 0 0 1 10 0v2',
+    ),
+    visible: (org, ws) =>
+      org
+        ? (org.type === 'club' || org.type === 'federation') &&
+          org.modules.includes('helpers') &&
+          org.permissions.includes(PERM.helpersView)
+        : !!(ws.dept?.helpers_enabled && ws.dept.permissions.includes(PERM.helpersView)),
+  },
+  {
     id: 'abteilung',
     group: 'verein',
     label: t('Abteilung'),

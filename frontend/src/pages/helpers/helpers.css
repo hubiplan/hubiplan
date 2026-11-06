@@ -1,0 +1,40 @@
+.helper-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr);
+  gap: 0.5rem 1rem;
+}
+.helper-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.duty-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.shift-table .people {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+.shift-table .people li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.shift-open {
+  color: var(--color-error);
+  font-weight: 600;
+}
+.assign-form {
+  max-width: 28rem;
+}
+@media (max-width: 40rem) {
+  .helper-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

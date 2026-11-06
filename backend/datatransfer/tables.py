@@ -156,6 +156,11 @@ MODULE_MODELS = (
     "meetings.Resolution",
     "meetings.Attendance",
     "meetings.MinutesVersion",
+    # Helferdienste nach den Terminen (ein Plan kann an einem Termin hängen)
+    "helpers.HelperPlan",
+    "helpers.Duty",
+    "helpers.Shift",
+    "helpers.ShiftAssignment",
     "circulars.CircularTemplate",
     "circulars.Circular",
     "circulars.CircularAttachment",
@@ -188,6 +193,9 @@ DEPARTMENT_MODELS = {
     "meetings.agendaitem",
     "meetings.resolution",
     "meetings.minutesversion",
+    "helpers.helperplan",
+    "helpers.duty",
+    "helpers.shift",
     "bookings.booking",
     "bookings.bookingexception",
     "materials.materialitem",
@@ -240,6 +248,8 @@ MEMBER_MODELS = {
     "entries.entryversion",
     # Anwesenheit nennt Mitglieder (Name, Vertretung)
     "meetings.attendance",
+    # Einteilungen nennen Mitglieder und Externe mit Telefon
+    "helpers.shiftassignment",
 }
 # Ein Abteilungsimport legt eine neue Untereinheit im bestehenden Verein an. Er darf nur
 # die Tabellen schreiben, die auch der Export einer Abteilung enthält, nie Kasse oder
@@ -406,6 +416,7 @@ FILE_TYPES = {
 
 # Versammlungsdaten ohne eigene Spalte für die Untereinheit
 MEETING_CHILDREN = ("meetings.agendaitem", "meetings.resolution", "meetings.minutesversion")
+HELPER_CHILDREN = {"helpers.duty": "plan__department", "helpers.shift": "duty__plan__department"}
 # Dateien mit gespeicherter Prüfsumme: Inhalt muss unverändert sein
 FILE_HASHES = {
     "finance.cashcount": "pdf_sha256",
@@ -710,6 +721,8 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
         qs = attachment_rows(org, department)
     if department is not None and label(model) in MEETING_CHILDREN:
         qs = qs.filter(meeting__department=department)
+    elif department is not None and label(model) in HELPER_CHILDREN:
+        qs = qs.filter(**{HELPER_CHILDREN[label(model)]: department})
     elif department is not None and label(model) != "bookings.bookingexception":
         # Ausfälle hängen an der Buchung; die ist oben schon auf die Abteilung begrenzt
         qs = qs.filter(department=department)

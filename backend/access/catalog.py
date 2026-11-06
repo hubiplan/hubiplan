@@ -294,6 +294,15 @@ AREAS: tuple[Area, ...] = (
         dept_label=gettext_noop("Versammlungen {gen}"),
     ),
     Area(
+        "helpers",
+        gettext_noop("Helferdienste"),
+        gettext_noop("Dienstpläne und Einteilungen sehen"),
+        gettext_noop("Dienstpläne anlegen und Helfer einteilen"),
+        dept_levels=_BOTH,
+        module="helpers",
+        dept_label=gettext_noop("Helferdienste {gen}"),
+    ),
+    Area(
         "docs",
         gettext_noop("Dokumente"),
         gettext_noop("Dokumentenablage lesen"),
@@ -417,11 +426,12 @@ SWITCHABLE_MODULES: tuple[str, ...] = (
     "competitions",
     "entries",
     "meetings",
+    "helpers",
 )
 # Module, die eine neue Einheit nicht automatisch bekommt (die Plattform schaltet
 # sie gezielt frei, z. B. die Webseite nur für Einheiten, die eine haben sollen)
 OPT_IN_MODULES: frozenset[str] = frozenset(
-    {"website", "competitions", "entries", "material", "infrastructure", "music", "meetings"}
+    {"website", "competitions", "entries", "material", "infrastructure", "music", "meetings", "helpers"}
 )
 DEFAULT_MODULES: tuple[str, ...] = tuple(m for m in SWITCHABLE_MODULES if m not in OPT_IN_MODULES)
 

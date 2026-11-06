@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "materials",
     "bookings",
     "meetings",
+    "helpers",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
