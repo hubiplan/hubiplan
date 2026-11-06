@@ -87,11 +87,14 @@ class MemberPreviewView(_MemberMixin, APIView):
     # --- einzelne Änderungen ---
 
     def _fee(self, membership, member_type, on):
-        """Jahresbeitrag dieser Mitgliedsart (nur mit Beitragsmodul und Geburtsdatum)."""
+        """Jahresbeitrag dieser Mitgliedsart (nur mit Beitragsmodul; Personen nur mit
+        Geburtsdatum, Organisationen ohne Altersstufe)."""
         from billing.services import yearly_fee
 
         birth = membership.person.birth_date
-        if "billing" not in (self.org.enabled_modules or []) or birth is None:
+        if "billing" not in (self.org.enabled_modules or []) or (
+            birth is None and not membership.person.is_organization
+        ):
             return None
         return yearly_fee(self.org, member_type, birth, on.year)[0]
 

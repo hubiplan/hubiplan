@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { cardApi } from '../../api/cards.ts'
-import { GENDERS, memberApi } from '../../api/members.ts'
+import { GENDERS, memberApi, memberName } from '../../api/members.ts'
 import type { ListParams, MemberRow, Page } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import { errorMessage, formatDate, formatMemberDate, useLoad } from '../../components/forms.ts'
@@ -29,7 +29,8 @@ const COLUMNS: Column[] = [
   {
     key: 'birth_date',
     label: t('Geburtsdatum'),
-    value: (r) => (r.birth_year_only ? r.birth_date.slice(0, 4) : formatDate(r.birth_date)),
+    value: (r) =>
+      !r.birth_date ? '–' : r.birth_year_only ? r.birth_date.slice(0, 4) : formatDate(r.birth_date),
     sort: 'geburtsdatum',
   },
   { key: 'gender', label: t('Geschlecht'), value: (r) => r.gender || '–' },
@@ -151,6 +152,7 @@ export function MemberListPage() {
     params.status !== 'alle',
     params.art,
     params.geschlecht,
+    params.typ,
     params.abteilung,
     params.ehrentitel,
   ].filter(Boolean).length
@@ -273,6 +275,7 @@ export function MemberListPage() {
                   suche: params.suche,
                   art: params.art,
                   geschlecht: params.geschlecht,
+                  typ: params.typ,
                   abteilung: params.abteilung,
                   ehrentitel: params.ehrentitel,
                   sortierung: params.sortierung,
@@ -337,6 +340,15 @@ export function MemberListPage() {
                 {tm.name}
               </option>
             ))}
+          </select>
+          <select
+            aria-label={t('Mitgliedstyp')}
+            value={params.typ ?? ''}
+            onChange={(e) => setParams((p) => ({ ...p, typ: e.target.value, page: 1 }))}
+          >
+            <option value="">{t('Personen und Organisationen')}</option>
+            <option value="person">{t('nur Personen')}</option>
+            <option value="organisation">{t('nur Organisationen')}</option>
           </select>
           <select
             aria-label={t('Geschlecht')}
@@ -494,13 +506,17 @@ export function MemberListPage() {
                         <img src={r.photo_url} alt="" className="member-avatar" loading="lazy" />
                       ) : (
                         <span className="member-avatar member-avatar-empty" aria-hidden="true">
-                          {r.first_name.charAt(0)}
-                          {r.last_name.charAt(0)}
+                          {r.kind === 'organization'
+                            ? r.last_name.charAt(0)
+                            : `${r.first_name.charAt(0)}${r.last_name.charAt(0)}`}
                         </span>
                       )}
                       <Link to={`/mitglieder/${r.id}`} onClick={(e) => e.stopPropagation()}>
-                        {r.last_name}, {r.first_name}
+                        {memberName(r)}
                       </Link>
+                      {r.kind === 'organization' && (
+                        <span className="muted small"> · {t('Organisation')}</span>
+                      )}
                     </td>
                     {visible.map((c) => (
                       <td key={c.key} className={c.key === 'member_type' ? '' : 'col-optional'}>

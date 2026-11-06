@@ -5,7 +5,7 @@ bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder]
-stichworte: [Aufnahme, Eintritt, neu, Beitritt, anlegen]
+stichworte: [Aufnahme, Eintritt, neu, Beitritt, anlegen, Organisation, Firma, Fördermitglied]
 ---
 
 Vorher: Es gibt mindestens eine Mitgliedsart (Mitglieder › Einrichtung › Mitgliedsarten).
@@ -26,3 +26,16 @@ Lassen sich Untereinheiten nicht laden, erscheint eine Meldung mit **Erneut lade
 Die Aufnahme hat zwei Stufen: **1. Person** und **2. Mitgliedschaft und Kontakt**. Nach **Weiter** liegt der Tastaturfokus auf der neuen Überschrift beziehungsweise auf **Mögliche Treffer**. Mit **ändern** kehrst du zu den erhaltenen Personendaten zurück. Optionale Untereinheiten bilden eine benannte Auswahlgruppe; ein Fehler wird an dieser Gruppe erklärt und fokussiert.
 
 ![Zweite Stufe mit Mitgliedschaft, Untereinheiten und Kontakt](bild:mitglieder-aufnehmen-details)
+
+## Organisation als Mitglied
+
+Auch eine Firma, ein anderer Verein, eine Stadt oder eine Behörde kann Mitglied sein. Wähle dafür in
+der ersten Stufe bei **Mitglied ist** die Auswahl **eine Organisation (Firma, Verein, Behörde …)**. Statt Name,
+Vorname und Geburtsdatum füllst du **Name der Organisation** aus, optional einen
+**Namenszusatz** (etwa eine Niederlassung) und die **Rechtsform**. HUBIplan prüft dann, ob es eine
+Organisation mit diesem Namen schon gibt. In der zweiten Stufe kommen optional Register,
+USt-IdNr. und Webseite dazu; die Anschrift ist die der Organisation.
+
+Für Organisationen gibt es keine Altersstufen beim Beitrag: Es gilt der Betrag der Mitgliedsart,
+zum Beispiel einer eigenen Art „Fördermitglied Unternehmen“. Geburtstage, Alters- und
+Geschlechtsstatistik lassen Organisationen aus, und ein Amt kann nur ein Mensch innehaben.

@@ -36,6 +36,31 @@ class Gender(models.TextChoices):
     DIVERSE = "divers", gettext_lazy("divers")
 
 
+class PersonKind(models.TextChoices):
+    """Mitgliedstyp: Mensch oder Organisation (Firma, Verein, Behörde …)."""
+
+    PERSON = "person", gettext_lazy("Person")
+    ORGANIZATION = "organization", gettext_lazy("Organisation")
+
+
+class LegalForm(models.TextChoices):
+    """Rechtsform einer Organisation. Leer = keine Angabe."""
+
+    GMBH = "gmbh", gettext_lazy("GmbH")
+    UG = "ug", gettext_lazy("UG (haftungsbeschränkt)")
+    AG = "ag", gettext_lazy("AG")
+    EV = "ev", gettext_lazy("eingetragener Verein (e. V.)")
+    VEREIN = "verein", gettext_lazy("nicht eingetragener Verein")
+    EG = "eg", gettext_lazy("Genossenschaft (eG)")
+    KG = "kg", gettext_lazy("KG / GmbH & Co. KG")
+    OHG = "ohg", gettext_lazy("oHG")
+    GBR = "gbr", gettext_lazy("GbR")
+    STIFTUNG = "stiftung", gettext_lazy("Stiftung")
+    KOERPERSCHAFT = "koerperschaft", gettext_lazy("Körperschaft des öffentlichen Rechts")
+    GEBIET = "gebiet", gettext_lazy("Gebietskörperschaft (Stadt, Gemeinde, Kreis)")
+    OTHER = "other", gettext_lazy("Sonstige")
+
+
 class PersonQuerySet(models.QuerySet):
     def update(self, **kwargs):
         from .personmarks import DERIVED_FIELDS, IDENTITY_FIELDS
@@ -81,16 +106,44 @@ class Person(models.Model):
         on_delete=models.PROTECT,
         related_name="persons",
     )
+    # Organisation: Name der Organisation in ``last_name``, Vorname und Geburtsdatum leer
+    kind = models.CharField(
+        "Mitgliedstyp",
+        max_length=12,
+        choices=PersonKind.choices,
+        default=PersonKind.PERSON,
+        db_default=PersonKind.PERSON,
+    )
     last_name = EncryptedCharField("Name", max_length=100, strict=True)
-    first_name = EncryptedCharField("Vorname", max_length=100, strict=True)
+    first_name = EncryptedCharField("Vorname", max_length=100, strict=True, blank=True)
     # Verschlüsselt mit dem Schlüssel des Verbandsbereichs; Vergleiche nur in Python
-    # (members.services.same_birth)
-    birth_date = EncryptedDateField("Geburtsdatum")
+    # (members.services.same_birth). Pflicht für Personen, leer für Organisationen.
+    birth_date = EncryptedDateField("Geburtsdatum", null=True, blank=True)
     # Nach der Löschfrist bleibt nur das Geburtsjahr (Datum auf den 1. Januar gekürzt)
     birth_year_only = models.BooleanField("nur Geburtsjahr bekannt", default=False)
     gender = models.CharField(
         "Geschlecht", max_length=10, choices=Gender.choices, blank=True, default=""
     )
+    # Nur für Organisationen
+    name_suffix = models.CharField(
+        "Namenszusatz", max_length=100, blank=True, default="", db_default=""
+    )
+    legal_form = models.CharField(
+        "Rechtsform",
+        max_length=20,
+        choices=LegalForm.choices,
+        blank=True,
+        default="",
+        db_default="",
+    )
+    legal_form_other = models.CharField(
+        "Rechtsform (Freitext)", max_length=100, blank=True, default="", db_default=""
+    )
+    register = models.CharField(
+        "Register (Gericht und Nummer)", max_length=100, blank=True, default="", db_default=""
+    )
+    vat_id = models.CharField("USt-IdNr.", max_length=20, blank=True, default="", db_default="")
+    website = models.CharField("Webseite", max_length=200, blank=True, default="", db_default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_birth_mark = models.CharField(
@@ -139,9 +192,18 @@ class Person(models.Model):
                 ),
                 name="person_marks_complete",
             ),
+            models.CheckConstraint(
+                condition=Q(kind="organization") | Q(birth_date__isnull=False),
+                name="person_birth_date_required",
+            ),
+            models.CheckConstraint(
+                condition=Q(kind__in=["person", "organization"]), name="person_kind_valid"
+            ),
         ]
 
     def __str__(self) -> str:
+        if self.is_organization:
+            return self.last_name
         return f"{self.last_name}, {self.first_name}"
 
     def save(self, *args, **kwargs):
@@ -165,6 +227,7 @@ class Person(models.Model):
                 fields = set(fields)
                 for name in (
                     "scope_id",
+                    "kind",
                     "last_name",
                     "first_name",
                     "birth_date",
@@ -180,6 +243,23 @@ class Person(models.Model):
             # Der DB-Trigger entwertet die alten Marken beim Schreiben der Quelldaten.
             # Erst nach erfolgreicher Neuberechnung wird dieselbe Transaktion sichtbar.
             write(self, using=using)
+
+    @property
+    def is_organization(self) -> bool:
+        return self.kind == PersonKind.ORGANIZATION
+
+    @property
+    def display_name(self) -> str:
+        """„Vorname Name“ bzw. Name der Organisation (mit Zusatz)."""
+        if self.is_organization:
+            return f"{self.last_name} – {self.name_suffix}" if self.name_suffix else self.last_name
+        return f"{self.first_name} {self.last_name}".strip()
+
+    @property
+    def legal_form_label(self) -> str:
+        if self.legal_form == LegalForm.OTHER:
+            return self.legal_form_other
+        return LegalForm(self.legal_form).label if self.legal_form else ""
 
 
 class ContactDetails(models.Model):

@@ -5,7 +5,7 @@ bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder]
-stichworte: [admission, joining, new, join, create]
+stichworte: [admission, joining, new, join, create, organisation, company, supporting member]
 ---
 
 Before you start: there is at least one membership type (Members › Setup › Membership types).
@@ -26,3 +26,16 @@ If sub-units cannot be loaded, a message offers **Reload**. You can retrieve the
 Admission has two stages: **1. Person** and **2. Membership and contact**. After **Next**, keyboard focus moves to the new heading or **Possible matches**. **change** returns to the retained personal details. Optional sub-units form a named selection group; a group error is described and receives focus there.
 
 ![Second stage with membership, sub-units and contact details](bild:mitglieder-aufnehmen-details)
+
+## An organisation as a member
+
+A company, another club, a town or a public body can also be a member. In the first stage, under
+**The member is**, choose **an organisation (company, association, public body …)**.
+Instead of surname, first name and date of birth, fill in **Name of the organisation**,
+optionally a **Name addition** (such as a branch) and the **Legal form (optional)**.
+HUBIplan then checks whether an organisation with this name already exists. In the second stage
+you can add the register, VAT ID and website; the address is the organisation's address.
+
+Organisations have no age bands for fees: the amount of the membership type applies, for example
+a separate type “Supporting member (company)”. Birthdays and the age and gender statistics leave
+organisations out, and only a person can hold an office.

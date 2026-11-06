@@ -48,6 +48,7 @@ from .models import (
     MemberType,
     MemberTypeAssignment,
     Person,
+    PersonKind,
     today,
 )
 from .personsearch import name_ids_many, ordered
@@ -225,9 +226,14 @@ def filter_members(qs, params, org: Organization):
         qs = qs.filter(is_current=False)
     if params.get("art"):
         qs = qs.filter(current_type_id=params["art"])
+    kind = params.get("typ")
+    if kind == "person":
+        qs = qs.filter(person__kind=PersonKind.PERSON)
+    elif kind == "organisation":
+        qs = qs.filter(person__kind=PersonKind.ORGANIZATION)
     gender = params.get("geschlecht")
     if gender == "ohne":
-        qs = qs.filter(person__gender="")
+        qs = qs.filter(person__gender="", person__kind=PersonKind.PERSON)
     elif gender in Gender.values:
         qs = qs.filter(person__gender=gender)
     if params.get("abteilung"):
@@ -371,8 +377,10 @@ def member_rows(memberships, org: Organization, full_names: bool = False) -> lis
         rows.append(
             {
                 "id": m.pk,
+                "kind": m.person.kind,
                 "last_name": m.person.last_name,
                 "first_name": m.person.first_name,
+                "name_suffix": m.person.name_suffix,
                 "birth_date": m.person.birth_date,
                 "birth_year_only": m.person.birth_year_only,
                 "gender": m.person.gender,
@@ -408,6 +416,7 @@ class MemberListView(_ClubMixin, generics.GenericAPIView):
             OpenApiParameter("suche", str),
             OpenApiParameter("status", str, enum=["aktiv", "ehemalig", "alle"]),
             OpenApiParameter("art", int),
+            OpenApiParameter("typ", str, enum=["person", "organisation"]),
             OpenApiParameter("geschlecht", str, enum=[*Gender.values, "ohne"]),
             OpenApiParameter("abteilung", int),
             OpenApiParameter("ehrentitel", str, description="Nummer oder „mit“ (beliebiger)"),
@@ -425,6 +434,14 @@ class DuplicateView(_ClubMixin, APIView):
 
     def get(self, request, org_id: int):
         params = request.query_params
+        if params.get("typ") == "organisation":
+            name = (params.get("name") or "").strip()
+            found = (
+                services.find_duplicates(self.org, name, "", None, organization=True)
+                if name
+                else []
+            )
+            return Response(DuplicateSerializer(found, many=True, context={"org": self.org}).data)
         try:
             birth_date = serializers.DateField().to_internal_value(params.get("geburtsdatum"))
         except serializers.ValidationError:
@@ -487,7 +504,14 @@ class MemberDetailView(_ClubMixin, APIView):
         if membership.managed_by_id:
             locked = sorted(
                 set(data.validated_data)
-                & {"last_name", "first_name", "birth_date", "gender", *services.CONTACT_FIELDS}
+                & {
+                    "last_name",
+                    "first_name",
+                    "birth_date",
+                    "gender",
+                    *services.ORGANIZATION_FIELDS,
+                    *services.CONTACT_FIELDS,
+                }
             )
             if locked:
                 raise serializers.ValidationError(
@@ -506,10 +530,17 @@ class MemberDetailView(_ClubMixin, APIView):
 def update_member(org: Organization, membership: Membership, values: dict, user) -> dict:
     """Ändert Name, Geburtsdatum, Vereinsnummer und Kontakt; schreibt das Protokoll."""
     person = membership.person
-    if "birth_date" in values and values["birth_date"] != person.birth_date:
-        check_birth_before_entries(person, values["birth_date"])
+    if person.is_organization:
+        # Organisationen haben weder Vorname noch Geburtsdatum noch Geschlecht
+        fields = ("last_name", *services.ORGANIZATION_FIELDS)
+        if "last_name" in values and not values["last_name"].strip():
+            raise serializers.ValidationError({"last_name": gettext("Pflichtfeld.")})
+    else:
+        fields = ("last_name", "first_name", "birth_date", "gender")
+        if "birth_date" in values and values["birth_date"] != person.birth_date:
+            check_birth_before_entries(person, values["birth_date"])
     before_person = snapshot(person)
-    for field in ("last_name", "first_name", "birth_date", "gender"):
+    for field in fields:
         if field in values:
             setattr(person, field, values[field])
     person.save()
@@ -649,6 +680,10 @@ class DepartmentRoleHolderViewSet(_MemberChildMixin, viewsets.ModelViewSet):
     def perform_create(self, serializer):
         from access.terms import end_unit_predecessors
 
+        if self.get_membership().person.is_organization:
+            raise serializers.ValidationError(
+                {"role": gettext("Ein Amt hat immer ein Mensch, keine Organisation.")}
+            )
         end_previous = serializer.validated_data.get("end_previous", False)
         super().perform_create(serializer)
         holder = serializer.instance

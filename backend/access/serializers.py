@@ -164,6 +164,10 @@ class AssignmentSerializer(serializers.ModelSerializer):
         )
         if membership is None:
             raise serializers.ValidationError(gettext("Unbekanntes Mitglied."))
+        if membership.person.is_organization:
+            raise serializers.ValidationError(
+                gettext("Ein Amt hat immer ein Mensch, keine Organisation.")
+            )
         return membership.person
 
     def get_invited(self, obj) -> bool:

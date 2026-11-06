@@ -47,6 +47,7 @@ from members.models import (
     DepartmentRoleHolder,
     FederationMember,
     Gender,
+    LegalForm,
     Membership,
     MembershipPeriod,
     MemberType,
@@ -56,6 +57,7 @@ from members.models import (
 )
 from members.photo_models import MemberPhoto
 from members.photos import FULL_SIZE, THUMB_SIZE, clean_photo
+from members.services import ORGANIZATION_FIELDS
 from organizations.models import (
     SHORT_NAME_MAX,
     Department,
@@ -502,6 +504,10 @@ class Checker:
     def check_persons(self) -> None:
         for p in self.persons.values():
             where = f"Person {full_name(p) or p.get('id')}"
+            if p.get("kind") == "organization":
+                if not p.get("last_name"):
+                    self.p.error(f"Organisation {p.get('id')}: Name fehlt.")
+                continue
             if not p.get("last_name") or not p.get("first_name"):
                 self.p.error(f"{where}: Name oder Vorname fehlt.")
             try:
@@ -689,6 +695,8 @@ class Checker:
 
         with rls_bypass():
             for pid, p in self.persons.items():
+                if p.get("kind") == "organization":
+                    continue  # Organisationen werden neu angelegt
                 try:
                     birth = parse_date(p.get("birth_date"))
                 except ValueError:
@@ -744,7 +752,7 @@ class Checker:
         return {
             "id": person.pk,
             "name": str(person),
-            "birth_date": person.birth_date.isoformat(),
+            "birth_date": person.birth_date.isoformat() if person.birth_date else None,
             "member_number": fm.member_number if fm else None,
             "clubs": clubs,
             "member_here": member_here,
@@ -891,6 +899,22 @@ class Loader:
             choice = self.choices.get(pid)
             if choice and choice != "new":
                 self.ids.set("person", pid, int(choice))
+                continue
+            if p.get("kind") == "organization":
+                person = Person.objects.create(
+                    scope=scope,
+                    kind="organization",
+                    last_name=p["last_name"].strip(),
+                    **{
+                        f: str(p.get(f) or "")[: Person._meta.get_field(f).max_length]
+                        for f in ORGANIZATION_FIELDS
+                    },
+                )
+                if person.legal_form not in LegalForm.values:
+                    person.legal_form = ""
+                    person.save(update_fields=["legal_form"])
+                self.ids.set("person", pid, person.pk)
+                self.new_person_ids.add(person.pk)
                 continue
             person = Person.objects.create(
                 scope=scope,

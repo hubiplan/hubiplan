@@ -23,7 +23,18 @@ from core import crypto
 VERSION = 1
 MARK_FIELDS = ("last_birth_mark", "first_birth_mark", "last_year_mark", "first_year_mark")
 DERIVED_FIELDS = (*MARK_FIELDS, "marks_version", "marks_key_id")
-IDENTITY_FIELDS = {"scope", "scope_id", "last_name", "first_name", "birth_date", "birth_year_only"}
+IDENTITY_FIELDS = {
+    "scope",
+    "scope_id",
+    "kind",
+    "last_name",
+    "first_name",
+    "birth_date",
+    "birth_year_only",
+}
+# Organisationen haben kein Geburtsdatum: ihre Marken nehmen diesen festen Wert statt
+# des Datums. Er kann mit keinem ISO-Datum zusammenfallen.
+ORGANIZATION_DATE = "organization"
 
 
 def names(last_name, first_name, *, using="default"):
@@ -47,8 +58,9 @@ def _mark(raw_key, scope_id, purpose, name, date):
 
 
 def values(person, *, using="default", create_key=True):
+    organization = person.kind == "organization"
     birth = person._meta.get_field("birth_date").to_python(person.birth_date)
-    if birth is None:
+    if birth is None and not organization:
         raise ValueError("Geburtsdatum nicht lesbar; Suchmarken nicht berechnet.")
     if create_key:
         key_id, raw_key = crypto.key_for_org(person.scope_id)
@@ -58,8 +70,10 @@ def values(person, *, using="default", create_key=True):
             raise ValueError("Datenschlüssel fehlt; Suchmarken nicht geprüft.")
         raw_key = crypto.key_by_id(key_id)
     last, first = names(person.last_name, person.first_name, using=using)
-    day = birth.isoformat()
-    year = str(birth.year)
+    if organization:
+        day, year = ORGANIZATION_DATE, ""
+    else:
+        day, year = birth.isoformat(), str(birth.year)
     result = {"marks_version": VERSION, "marks_key_id": key_id}
     for field, name, date in (
         ("last_birth_mark", last, day),
@@ -69,7 +83,7 @@ def values(person, *, using="default", create_key=True):
     ):
         result[field] = (
             _mark(raw_key, person.scope_id, field, name, date)
-            if "year" not in field or person.birth_year_only
+            if "year" not in field or (person.birth_year_only and not organization)
             else ""
         )
     return result
@@ -89,18 +103,24 @@ def write(person, *, using="default"):
         setattr(person, field, value)
 
 
-def candidates(scope_id, last_name, first_name, birth_date, *, strict):
+def candidates(scope_id, last_name, first_name, birth_date, *, strict, organization=False):
+    """Mögliche Treffer im Verbandsbereich. ``organization``: Organisation mit diesem
+    Namen (ohne Vorname und Datum); Treffer dann nur über den Namen."""
     from .models import Person
 
-    if birth_date is None:
+    if birth_date is None and not organization:
         return Person.objects.none()
     key_id, raw_key = crypto.key_for_org(scope_id)
-    last, first = names(last_name, first_name)
-    day, year = birth_date.isoformat(), str(birth_date.year)
+    if organization:
+        last, first = names(last_name, "")
+        day = ORGANIZATION_DATE
+    else:
+        last, first = names(last_name, first_name)
+        day, year = birth_date.isoformat(), str(birth_date.year)
     last_day = Q(last_birth_mark=_mark(raw_key, scope_id, "last_birth_mark", last, day))
     first_day = Q(first_birth_mark=_mark(raw_key, scope_id, "first_birth_mark", first, day))
-    match = last_day & first_day if strict else last_day | first_day
-    if not strict:
+    match = last_day & first_day if strict or organization else last_day | first_day
+    if not strict and not organization:
         match |= Q(birth_year_only=True) & (
             Q(last_year_mark=_mark(raw_key, scope_id, "last_year_mark", last, year))
             | Q(first_year_mark=_mark(raw_key, scope_id, "first_year_mark", first, year))
@@ -117,9 +137,15 @@ def candidates(scope_id, last_name, first_name, birth_date, *, strict):
     return scope.filter(pk__in=indexed.union(legacy))
 
 
-def verified(person, last_name, first_name, birth_date, *, strict):
+def verified(person, last_name, first_name, birth_date, *, strict, organization=False):
     from .services import same_birth
 
+    if organization or person.kind == "organization":
+        return (
+            organization
+            and person.kind == "organization"
+            and names(person.last_name, "")[0] == names(last_name, "")[0]
+        )
     wanted = names(last_name, first_name)
     actual = names(person.last_name, person.first_name)
     equal = (actual[0] == wanted[0], actual[1] == wanted[1])

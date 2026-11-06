@@ -70,6 +70,9 @@ def build_rows(coupling: Coupling) -> list[dict]:
                 continue
             uid = f"m{m.pk}"
             person = m.person
+            if person.is_organization:
+                # Organisationsmitglieder gehen erst mit Schritt J6 an Gegenstellen
+                continue
             rows.append(
                 {
                     "uid": uid,
@@ -568,6 +571,8 @@ def ask_active_elsewhere(club, person, on, membership=None) -> str | None:
 
     if skip_remote_check.get():
         return None  # Aufnahme nach bestätigtem Wechsel
+    if person.is_organization:
+        return None  # Organisationsmitglieder meldet der Verbund noch nicht (Schritt J6)
     coupling = parent_coupling(club)
     if coupling is None:
         return None

@@ -450,9 +450,11 @@ def _reduce_identity(person) -> None:
 
     with rls_bypass(), transaction.atomic():
         person = Person.objects.select_for_update().get(pk=person.pk)
-        person.birth_date = person.birth_date.replace(month=1, day=1)
-        person.birth_year_only = True
-        person.save(update_fields=["birth_date", "birth_year_only"])
+        if person.birth_date is not None:
+            # Organisationen haben kein Geburtsdatum
+            person.birth_date = person.birth_date.replace(month=1, day=1)
+            person.birth_year_only = True
+            person.save(update_fields=["birth_date", "birth_year_only"])
         FederationMember.objects.filter(person_id=person.pk).delete()
 
 

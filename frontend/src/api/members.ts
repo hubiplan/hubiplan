@@ -98,11 +98,120 @@ export const GENDERS: { readonly value: Gender; readonly label: string }[] = [
   },
 ]
 
-export interface MemberRow {
-  id: number
+/** Mitgliedstyp: Mensch oder Organisation (Firma, Verein, Behörde …) */
+export type MemberKind = 'person' | 'organization'
+
+export const LEGAL_FORMS: { value: string; label: string }[] = [
+  {
+    value: 'gmbh',
+    get label() {
+      return t('GmbH')
+    },
+  },
+  {
+    value: 'ug',
+    get label() {
+      return t('UG (haftungsbeschränkt)')
+    },
+  },
+  {
+    value: 'ag',
+    get label() {
+      return t('AG')
+    },
+  },
+  {
+    value: 'ev',
+    get label() {
+      return t('eingetragener Verein (e. V.)')
+    },
+  },
+  {
+    value: 'verein',
+    get label() {
+      return t('nicht eingetragener Verein')
+    },
+  },
+  {
+    value: 'eg',
+    get label() {
+      return t('Genossenschaft (eG)')
+    },
+  },
+  {
+    value: 'kg',
+    get label() {
+      return t('KG / GmbH & Co. KG')
+    },
+  },
+  {
+    value: 'ohg',
+    get label() {
+      return t('oHG')
+    },
+  },
+  {
+    value: 'gbr',
+    get label() {
+      return t('GbR')
+    },
+  },
+  {
+    value: 'stiftung',
+    get label() {
+      return t('Stiftung')
+    },
+  },
+  {
+    value: 'koerperschaft',
+    get label() {
+      return t('Körperschaft des öffentlichen Rechts')
+    },
+  },
+  {
+    value: 'gebiet',
+    get label() {
+      return t('Gebietskörperschaft (Stadt, Gemeinde, Kreis)')
+    },
+  },
+  {
+    value: 'other',
+    get label() {
+      return t('Sonstige')
+    },
+  },
+]
+
+/** Angaben, die es nur bei Organisationsmitgliedern gibt */
+export interface OrganizationInfo {
+  name_suffix: string
+  legal_form: string
+  legal_form_other: string
+  legal_form_label: string
+  register: string
+  vat_id: string
+  website: string
+}
+
+/** Anzeigename: „Name, Vorname“ bzw. Name der Organisation */
+export function memberName(m: {
+  kind?: MemberKind
   last_name: string
   first_name: string
-  birth_date: string
+}): string {
+  if (m.kind === 'organization') return m.last_name
+  return [m.last_name, m.first_name].filter(Boolean).join(', ')
+}
+
+export interface MemberRow {
+  id: number
+  kind?: MemberKind
+  last_name: string
+  first_name: string
+  /** nur bei Organisationen */
+  name_suffix?: string
+  /** leer bei Organisationen */
+  birth_date: string | null
   /** nach der Löschfrist: nur das Jahr ist bekannt */
   birth_year_only?: boolean
   gender: Gender
@@ -179,9 +288,13 @@ export interface DepartmentRoleHolder {
 export interface MemberDetail {
   id: number
   person_id: number
+  kind?: MemberKind
   last_name: string
   first_name: string
-  birth_date: string
+  /** leer bei Organisationen */
+  birth_date: string | null
+  /** nur bei Organisationen */
+  organization?: OrganizationInfo | null
   birth_year_only?: boolean
   gender: Gender
   club_number: string
@@ -250,9 +363,10 @@ export interface Transfer {
 
 export interface Duplicate {
   id: number
+  kind?: MemberKind
   last_name: string
   first_name: string
-  birth_date: string
+  birth_date: string | null
   member_number: number | null
   clubs: string[] | null
   already_member_here: boolean
@@ -263,6 +377,8 @@ export interface ListParams {
   status?: string
   art?: string
   geschlecht?: string
+  /** „person“ oder „organisation“ */
+  typ?: string
   abteilung?: string
   ehrentitel?: string
   sortierung?: string
@@ -340,6 +456,10 @@ export const memberApi = {
   duplicates: (org: number, name: string, vorname: string, geburtsdatum: string) =>
     api.get<Duplicate[]>(
       `${base(org)}/members/duplicates/?${query({ name, vorname, geburtsdatum })}`,
+    ),
+  organizationDuplicates: (org: number, name: string) =>
+    api.get<Duplicate[]>(
+      `${base(org)}/members/duplicates/?${query({ typ: 'organisation', name })}`,
     ),
   admit: (org: number, data: Record<string, unknown>, requestKey?: string) =>
     api.post<MemberDetail>(`${base(org)}/members/admit/`, data, requestKey),
