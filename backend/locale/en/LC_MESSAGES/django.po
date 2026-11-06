@@ -8363,3 +8363,45 @@ msgstr "All shifts are filled."
 
 msgid "Aufruf als Rundschreiben"
 msgstr "Call-out as circular"
+
+msgid "Die Tagesordnung steht schon fest."
+msgstr "The agenda is already fixed."
+
+msgid "Zu viele Tagesordnungspunkte."
+msgstr "Too many agenda items."
+
+msgid "Antrag von {name}: {title}"
+msgstr "Motion by {name}: {title}"
+
+msgid "Bitte eine Begründung angeben."
+msgstr "Please give a reason."
+
+msgid "Antrag {title}"
+msgstr "Motion {title}"
+
+msgid "Zu dieser Versammlung sind keine Anträge vorgesehen."
+msgstr "Motions are not accepted for this meeting."
+
+msgid "Die Frist für Anträge ist vorbei."
+msgstr "The deadline for motions has passed."
+
+msgid "Bitte Titel und Begründung angeben."
+msgstr "Please enter a title and a reason."
+
+msgid "Du hast schon zu viele Anträge gestellt."
+msgstr "You have already submitted too many motions."
+
+msgid "eingereicht"
+msgstr "submitted"
+
+msgid "in die Tagesordnung aufgenommen"
+msgstr "added to the agenda"
+
+msgid "nicht aufgenommen"
+msgstr "not added"
+
+msgid "Begründung"
+msgstr "Reason"
+
+msgid "Antwort"
+msgstr "Reply"

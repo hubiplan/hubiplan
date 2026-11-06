@@ -13,7 +13,7 @@ from members.models import MemberType
 
 from . import access, services
 from . import minutes as minutes_service
-from .models import AgendaItem, Attendance, Meeting, MeetingKind, Resolution
+from .models import AgendaItem, Attendance, Meeting, MeetingKind, Motion, Resolution
 
 MAX_AGENDA = 60
 
@@ -58,6 +58,7 @@ def kind_data(kind):
         "quorum_percent": kind.quorum_percent,
         "quorum_count": kind.quorum_count,
         "proxies_allowed": kind.proxies_allowed,
+        "motion_days": kind.motion_days,
         "minutes_for": kind.minutes_for,
         "position": kind.position,
         "active": kind.active,
@@ -102,6 +103,20 @@ def _confirmation(user, at):
     return {"name": minutes_service.user_name(user), "at": at}
 
 
+def motion_data(m) -> dict:
+    return {
+        "id": m.pk,
+        "name": m.name,
+        "title": m.title,
+        "text": m.text,
+        "status": m.status,
+        "reply": m.reply,
+        "agenda_item": m.agenda_item_id,
+        "created_at": m.created_at,
+        "decided_at": m.decided_at,
+    }
+
+
 def meeting_data(meeting, scope, *, full=False):
     event = meeting.event
     data = {
@@ -124,6 +139,7 @@ def meeting_data(meeting, scope, *, full=False):
         "can_edit": scope.can_edit,
         "can_invite": scope.can_edit and can_write_circulars(scope),
         "can_attendance": members_allowed(scope),
+        "motions_open": meeting.motions.filter(status=Motion.Status.SUBMITTED).count(),
     }
     if full:
         released = meeting.minutes_versions.first()
@@ -142,6 +158,7 @@ def meeting_data(meeting, scope, *, full=False):
             minute_taker=meeting.minute_taker,
             note=meeting.note,
             agenda=[agenda_data(a, resolutions) for a in meeting.agenda.all()],
+            motions=[motion_data(m) for m in meeting.motions.all()],
         )
     return data
 
@@ -164,6 +181,9 @@ class KindInput(serializers.Serializer):
         min_value=1, max_value=100000, allow_null=True, required=False
     )
     proxies_allowed = serializers.BooleanField(required=False)
+    motion_days = serializers.IntegerField(
+        min_value=0, max_value=90, allow_null=True, required=False
+    )
     minutes_for = serializers.ChoiceField(choices=MeetingKind.MinutesFor.choices, required=False)
     position = serializers.IntegerField(min_value=0, max_value=1000, required=False)
     active = serializers.BooleanField(required=False)
@@ -817,3 +837,70 @@ class MinutesPdfView(Base):
         response["Cache-Control"] = "private, no-store"
         response["X-Content-Type-Options"] = "nosniff"
         return response
+
+
+# --- Anträge von Mitgliedern (Schritt V6) -----------------------------------------------------
+
+OPEN_FOR_MOTIONS = (Meeting.Status.DRAFT, Meeting.Status.INVITED)
+
+
+class MotionInput(serializers.Serializer):
+    decision = serializers.ChoiceField(choices=["accept", "reject"])
+    reply = serializers.CharField(max_length=2000, required=False, allow_blank=True)
+
+
+class MotionDecisionView(Base):
+    @transaction.atomic
+    def post(self, request, pk, motion, **kwargs):
+        """Antrag in die Tagesordnung aufnehmen oder mit Begründung ablehnen."""
+        access.require_edit(self.scope)
+        meeting = self.meeting(pk, lock=True)
+        item = get_object_or_404(
+            meeting.motions.filter(status=Motion.Status.SUBMITTED).select_for_update(), pk=motion
+        )
+        if meeting.status not in OPEN_FOR_MOTIONS:
+            raise ValidationError({"detail": _("Die Tagesordnung steht schon fest.")})
+        ser = MotionInput(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        reply = (data.get("reply") or "").strip()
+        if data["decision"] == "accept":
+            if meeting.agenda.count() >= MAX_AGENDA:
+                raise ValidationError({"detail": _("Zu viele Tagesordnungspunkte.")})
+            last = meeting.agenda.order_by("-position").first()
+            agenda = AgendaItem.objects.create(
+                organization=self.scope.org,
+                meeting=meeting,
+                position=(last.position + 1) if last else 1,
+                title=_("Antrag von {name}: {title}").format(name=item.name, title=item.title)[
+                    :300
+                ],
+                description=item.text,
+                type=AgendaItem.Type.RESOLUTION,
+            )
+            item.status = Motion.Status.ACCEPTED
+            item.agenda_item = agenda
+            meeting.version += 1
+            meeting.save(update_fields=["version", "updated_at"])
+        else:
+            if not reply:
+                raise ValidationError({"reply": _("Bitte eine Begründung angeben.")})
+            item.status = Motion.Status.REJECTED
+        item.reply = reply
+        item.decided_by = request.user
+        item.decided_at = timezone.now()
+        item.save()
+        record(
+            self.scope.org,
+            request.user,
+            "update",
+            meeting,
+            {
+                _("Antrag {title}").format(title=item.title): [
+                    Motion.Status.SUBMITTED.label,
+                    item.get_status_display(),
+                ]
+            },
+        )
+        meeting = self.meeting(pk)
+        return Response(meeting_data(meeting, self.scope, full=True))

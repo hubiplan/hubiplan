@@ -25,6 +25,7 @@ import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { locale, t } from '../../i18n/index.ts'
 import { PERM } from '../../api/orgs.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
+import { MotionsCard } from './MotionsCard.tsx'
 import { ResolutionBook } from './ResolutionBook.tsx'
 import './meetings.css'
 
@@ -428,6 +429,9 @@ function MeetingDetail({
       )}
       {error && <p role="alert">{error}</p>}
       <InvitationCard base={base} meeting={meeting} onChanged={loaded.reload} />
+      {(meeting.motions ?? []).length > 0 && (
+        <MotionsCard base={base} meeting={meeting} onChanged={loaded.reload} />
+      )}
       <DetailsForm
         key={`d${meeting.version}`}
         base={base}
@@ -937,6 +941,7 @@ function KindForm({
     minutes_for: kind?.minutes_for ?? 'board',
     quorum_percent: kind?.quorum_percent ? String(kind.quorum_percent) : '',
     proxies_allowed: kind?.proxies_allowed ?? false,
+    motion_days: kind ? (kind.motion_days === null ? '' : String(kind.motion_days)) : '7',
     active: kind?.active ?? true,
   }
   const [form, setForm] = useState(initial)
@@ -954,6 +959,7 @@ function KindForm({
           ...form,
           invite_days: Number(form.invite_days),
           quorum_percent: form.quorum_percent ? Number(form.quorum_percent) : null,
+          motion_days: form.motion_days === '' ? null : Number(form.motion_days),
         }
         try {
           if (kind) await meetingApi.updateKind(base, kind.id, data)
@@ -1040,6 +1046,16 @@ function KindForm({
           onChange={(e) => setForm({ ...form, proxies_allowed: e.target.checked })}
         />
         {t('Vertretung mit Vollmacht erlaubt')}
+      </label>
+      <label>
+        {t('Anträge von Mitgliedern bis Tage vorher (leer: keine Anträge)')}
+        <input
+          type="number"
+          min={0}
+          max={90}
+          value={form.motion_days}
+          onChange={(e) => setForm({ ...form, motion_days: e.target.value })}
+        />
       </label>
       <label className="checkbox">
         <input

@@ -9,19 +9,24 @@ from __future__ import annotations
 
 import datetime
 
+from django.db import transaction
 from django.http import FileResponse
 from django.utils import timezone
-from rest_framework.exceptions import NotFound
+from django.utils.translation import gettext as _
+from rest_framework import serializers
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.tenancy import scope_of, set_rls, user_view
 
 from . import services
-from .models import Meeting, MeetingKind
+from .models import Meeting, MeetingKind, Motion
 
 # Protokolle der letzten Jahre; ältere stehen in der Dokumentenablage
 YEARS_BACK = 5
+# Anträge je Mitglied und Versammlung
+MAX_OWN = 5
 
 
 def portal_access(user, access_id):
@@ -67,6 +72,28 @@ def visible(access) -> tuple[list[Meeting], list[Meeting]]:
     return upcoming, minutes
 
 
+def motion_until(meeting: Meeting):
+    """Letzter Zeitpunkt für Anträge oder None, wenn die Art keine Anträge vorsieht."""
+    days = meeting.kind.motion_days
+    if days is None:
+        return None
+    return meeting.event.starts_at - datetime.timedelta(days=days)
+
+
+def own_motions(meeting: Meeting, membership_id: int) -> list[dict]:
+    return [
+        {
+            "id": m.pk,
+            "title": m.title,
+            "text": m.text,
+            "status": m.status,
+            "reply": m.reply,
+            "created_at": m.created_at,
+        }
+        for m in meeting.motions.filter(membership_id=membership_id)
+    ]
+
+
 def unit_name(meeting: Meeting) -> str:
     return meeting.department.name if meeting.department_id else ""
 
@@ -96,6 +123,8 @@ class ListView(Base):
                         "starts_at": m.event.starts_at,
                         "location": m.event.location,
                         "address": m.event.address,
+                        "motion_until": motion_until(m),
+                        "motions": own_motions(m, self.access.membership_id),
                         "agenda": [
                             {
                                 "position": item.position,
@@ -137,3 +166,59 @@ class MinutesView(Base):
         )
         response["X-Content-Type-Options"] = "nosniff"
         return response
+
+
+class MotionInput(serializers.Serializer):
+    title = serializers.CharField(max_length=300)
+    text = serializers.CharField(max_length=10000)
+
+
+class MotionsView(Base):
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        """Antrag zu einer Versammlung stellen, zu der das Mitglied eingeladen ist."""
+        upcoming, _minutes = visible(self.access)
+        meeting = next((m for m in upcoming if m.pk == pk), None)
+        if meeting is None:
+            raise NotFound()
+        until = motion_until(meeting)
+        if until is None:
+            raise ValidationError(
+                {"detail": _("Zu dieser Versammlung sind keine Anträge vorgesehen.")}
+            )
+        if timezone.now() >= until:
+            raise ValidationError({"detail": _("Die Frist für Anträge ist vorbei.")})
+        ser = MotionInput(data=request.data)
+        ser.is_valid(raise_exception=True)
+        title = ser.validated_data["title"].strip()
+        text = ser.validated_data["text"].strip()
+        if not title or not text:
+            raise ValidationError({"detail": _("Bitte Titel und Begründung angeben.")})
+        if meeting.motions.filter(membership_id=self.access.membership_id).count() >= MAX_OWN:
+            raise ValidationError({"detail": _("Du hast schon zu viele Anträge gestellt.")})
+        person = self.access.membership.person
+        Motion.objects.create(
+            organization=meeting.organization,
+            meeting=meeting,
+            membership_id=self.access.membership_id,
+            name=f"{person.first_name} {person.last_name}".strip(),
+            title=title,
+            text=text,
+        )
+        return Response(own_motions(meeting, self.access.membership_id), status=201)
+
+
+class WithdrawView(Base):
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        motion = Motion.objects.filter(
+            organization=self.access.organization,
+            membership_id=self.access.membership_id,
+            status=Motion.Status.SUBMITTED,
+            pk=pk,
+        ).first()
+        if motion is None:
+            raise NotFound()
+        motion.status = Motion.Status.WITHDRAWN
+        motion.save(update_fields=["status"])
+        return Response(status=204)

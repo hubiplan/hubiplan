@@ -45,6 +45,7 @@ def kinds(scope):
                         "base": base,
                         "invite_days": days,
                         "minutes_for": minutes_for,
+                        "motion_days": 7 if base == MeetingKind.Base.GENERAL else None,
                         "position": position,
                     },
                 )
