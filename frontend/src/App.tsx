@@ -292,7 +292,7 @@ export default function App() {
           <Route path="belegung" element={<BookingsPage />} />
           <Route path="termine/*" element={<EventsPage />} />
           <Route
-            path="musik"
+            path="musik/*"
             element={
               <RequireOrg>
                 <MusicPage />

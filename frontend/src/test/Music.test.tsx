@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { it, expect, vi } from 'vitest'
@@ -37,9 +37,32 @@ it('zählt bestätigte Musiker und offene Besetzungsplätze auch mit Absagen ric
   expect(screen.queryByRole('button', { name: 'Anlegen' })).not.toBeInTheDocument()
   await userEvent.type(screen.getByRole('searchbox', { name: 'Einträge suchen' }), 'Posaune')
   expect(screen.getByText('Keine passenden Einträge gefunden.')).toBeInTheDocument()
-  await userEvent.click(screen.getByRole('link', { name: 'Musiker' }))
+  // Musiker hat eine eigene Adresse; der Punkt steht in der Seitenleiste (Menüprüfung M-08)
+  cleanup()
+  render(
+    <MemoryRouter initialEntries={['/musik/musiker']}>
+      <MusicPage />
+    </MemoryRouter>,
+  )
   expect(await screen.findByText('Alex Beispiel')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Musiker' })).toHaveAttribute('aria-current', 'page')
   expect(screen.getByRole('button', { name: 'Instrumentale Fähigkeiten' })).toBeInTheDocument()
   expect(screen.getByRole('searchbox', { name: 'Einträge suchen' })).toHaveValue('')
+})
+
+it('zeigt die Musik-Unterpunkte mit echten Pfaden in der Seitenleiste', async () => {
+  const { musicSections } = await import('../pages/music/access.ts')
+  const items = musicSections({
+    id: 7,
+    modules: ['music'],
+    permissions: ['music.view'],
+  } as unknown as Parameters<typeof musicSections>[0])
+  expect(items.map((i) => i.to)).toEqual([
+    '/musik/uebersicht',
+    '/musik',
+    '/musik/verfuegbarkeit',
+    '/musik/musiker',
+    '/musik/proben',
+    '/musik/noten',
+    '/musik/vorlagen',
+  ])
 })

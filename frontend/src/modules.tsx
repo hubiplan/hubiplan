@@ -9,6 +9,7 @@ import { memberSections, membersVisible } from './pages/members/access.ts'
 import { websiteSections } from './pages/website/sections.ts'
 import { circularsVisible } from './pages/circulars/access.ts'
 import { portalNav } from './pages/portal/sections.ts'
+import { musicSections } from './pages/music/access.ts'
 import { hasUnitsPage } from './pages/settings/units.ts'
 import { t } from './i18n/index.ts'
 
@@ -155,6 +156,7 @@ export const modules: AppModule[] = [
     path: '/musik',
     icon: icon('M9 18V5l11-2v13M9 8l11-2M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'),
     visible: (org) => !!org?.modules.includes('music') && org.permissions.includes('music.view'),
+    children: musicSections,
   },
   {
     id: 'wettbewerbe',

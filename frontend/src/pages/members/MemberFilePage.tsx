@@ -87,7 +87,7 @@ export function MemberFilePage() {
       </div>
       <nav className="tabs" aria-label={t('Bereiche der Mitgliedsakte')}>
         {org.modules.includes('music') && org.permissions.includes('music.view') && (
-          <Link className="tab" to={`/musik?art=musicians&mitglied=${id}`}>
+          <Link className="tab" to={`/musik/musiker?mitglied=${id}`}>
             {t('Musikerprofil')}
           </Link>
         )}

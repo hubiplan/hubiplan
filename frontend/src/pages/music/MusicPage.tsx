@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { CustodyRemindersPage } from './CustodyRemindersPage.tsx'
 import { EngagementPage } from './EngagementPage.tsx'
 import { PayoutRunsPage } from './PayoutRunsPage.tsx'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
@@ -55,10 +55,36 @@ export function MusicPage() {
   )
 }
 
+/** Frühere Adressen /musik/noten … → /musik/noten (Menüprüfung M-08) */
+const OLD_AREAS: Record<string, string> = {
+  uebersicht: 'uebersicht',
+  noten: 'noten',
+  proben: 'proben',
+  verfuegbarkeit: 'verfuegbarkeit',
+  vorlagen: 'vorlagen',
+  erinnerungen: 'erinnerungen',
+  auszahlungen: 'auszahlungen',
+  ausstattung: 'ausstattung',
+}
+
+/** Bereich aus der Adresse /musik/<bereich> */
+export function musicArea(pathname: string): string {
+  return pathname.replace(/^\/musik\/?/, '').split('/')[0] ?? ''
+}
+
 function MusicRoute() {
   const org = useActiveOrg()
   const [params] = useSearchParams()
-  if (params.get('erinnerungen')) return <CustodyRemindersPage key={org.id} />
+  const { pathname } = useLocation()
+  const old = Object.keys(OLD_AREAS).find((k) => params.get(k))
+  if (old) {
+    const rest = new URLSearchParams(params)
+    rest.delete(old)
+    const query = rest.toString()
+    return <Navigate to={`/musik/${OLD_AREAS[old]}${query ? `?${query}` : ''}`} replace />
+  }
+  const area = musicArea(pathname)
+  if (area === 'erinnerungen') return <CustodyRemindersPage key={org.id} />
   if (/^\d+$/.test(params.get('vereinbarung') || ''))
     return (
       <EngagementPage
@@ -66,13 +92,13 @@ function MusicRoute() {
         performance={Number(params.get('vereinbarung'))}
       />
     )
-  if (params.get('auszahlungen')) return <PayoutRunsPage key={org.id} />
-  if (params.get('uebersicht')) return <PerformanceOverview key={org.id} />
-  if (params.get('ausstattung')) return <EquipmentPage key={org.id} />
-  if (params.get('noten')) return <ScoresPage key={org.id} />
-  if (params.get('proben')) return <PracticePage key={org.id} />
-  if (params.get('vorlagen')) return <EnsembleTemplatesPage key={org.id} />
-  if (params.get('verfuegbarkeit')) return <AvailabilityPage key={org.id} />
+  if (area === 'auszahlungen') return <PayoutRunsPage key={org.id} />
+  if (area === 'uebersicht') return <PerformanceOverview key={org.id} />
+  if (area === 'ausstattung') return <EquipmentPage key={org.id} />
+  if (area === 'noten') return <ScoresPage key={org.id} />
+  if (area === 'proben') return <PracticePage key={org.id} />
+  if (area === 'vorlagen') return <EnsembleTemplatesPage key={org.id} />
+  if (area === 'verfuegbarkeit') return <AvailabilityPage key={org.id} />
   if (/^\d+$/.test(params.get('besetzung') || ''))
     return (
       <StaffingPage
@@ -87,6 +113,7 @@ function MusicRoute() {
         performance={Number(params.get('programm'))}
       />
     )
+  if (area !== '' && area !== 'musiker') return <Navigate to="/musik" replace />
   return <MusicWorkspace key={org.id} />
 }
 
@@ -203,7 +230,12 @@ function MusicWorkspace() {
     positions: t('Sollbesetzung'),
     assignments: t('Einteilungen'),
   }
-  const kind = fields[params.get('art') || ''] ? params.get('art')! : 'performances'
+  const { pathname } = useLocation()
+  const kind = fields[params.get('art') || '']
+    ? params.get('art')!
+    : musicArea(pathname) === 'musiker'
+      ? 'musicians'
+      : 'performances'
   const search = filter.kind === kind ? filter.value : ''
   const musicianArea = ['musicians', 'skills'].includes(kind)
   const descriptions: Record<string, string> = {

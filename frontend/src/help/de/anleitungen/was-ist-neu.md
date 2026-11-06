@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Musik: Die Unterpunkte stehen jetzt in der Seitenleiste statt in einer eigenen Leiste über dem Inhalt, gegliedert nach Auftritte, Musiker, Noten, Ausstattung und Abrechnung und Einrichtung. Jeder Punkt hat eine eigene Adresse; alte Lesezeichen leiten weiter.
 - Startseite: „Zu erledigen“ nennt jetzt auch offene Belegungsanfragen, zurückgehaltene Nachrichten aus dem Kontaktformular und eigene Rundschreiben-Entwürfe, die seit einer Woche liegen. Mein Bereich zeigt in der Seitenleiste dieselben Punkte wie auf der Übersicht, etwa Belegung und Ergebnisse, wenn sie freigeschaltet sind.
 - Menü zusammengelegt: Material, Infrastruktur und Belegung stehen unter einem Punkt „Material & Räume“ (Infrastruktur heißt dort „Räume und Anlagen“). Briefvorlagen gibt es unter Rundschreiben › Brief, die Social-Media-Kanäle unter Webseite › Social Media. Neue Namen: Wettbewerbe › Titel und Sieger, Mitglieder › Änderungen und Wechsel.
 - Einrichtung: Termine haben eine eigene „Einrichtung“ mit Kategorien, fremden Kalendern, Weitergabe und Webseiten-Link. Die Angaben für Zuwendungsbestätigungen stehen jetzt unter Finanzen › Einrichtung › Zuwendungen. Rollen, Konten und Ämter heißen überall gleich (Konto, Amtszeit, Leitung, Rechte); in der Mitgliederakte stehen Ämter und Konto im Reiter „Rollen und Konto“.
