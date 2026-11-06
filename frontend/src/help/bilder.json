@@ -228,7 +228,7 @@
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/einstellungen/rollen",
       "wurzel": "header.topbar",
-      "ausschnitt": ".topbar-user"
+      "ausschnitt": "#konto-menue"
     },
     {
       "name": "modul-einschalten",
