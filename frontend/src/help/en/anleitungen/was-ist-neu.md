@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Accounts: Settings › Accounts lists all accounts of the unit with roles, member area, last sign-in and two-factor. Filters show, for example, who has never signed in or whose invitation has expired; selected accounts get the sign-in link again. The terms of office per account moved here from Roles and permissions.
 - Assigning offices: under Members › Offices every office has an “Assign” button, as does the member record (“Assign role”). The dialog says beforehand what will happen and can end the predecessor’s term at the same time. With the “Unit” filter this also works for sub-unit offices; their page and workspace assign with the same dialog.
 - Music: the sub-items are now in the sidebar instead of a separate bar above the content, grouped as performances, musicians, sheet music, equipment and payments, and setup. Each item has its own address; old bookmarks redirect.
 - Home: “To do” now also lists open booking requests, held contact form messages and your own circular drafts untouched for a week. My area shows the same items in the sidebar as on its overview, such as bookings and results when they are enabled.

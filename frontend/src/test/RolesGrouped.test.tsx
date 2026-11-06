@@ -24,6 +24,7 @@ describe('Benutzer mit mehreren Rollen', () => {
       'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg()] }),
       'GET /api/orgs/7/roles/': () => ({ status: 200, body: [] }),
       'GET /api/permissions/?org_type=club&org=7': () => ({ status: 200, body: [] }),
+      'GET /api/orgs/7/accounts/': () => ({ status: 200, body: [] }),
       'GET /api/orgs/7/assignments/': () => ({
         status: 200,
         body: [
@@ -42,7 +43,7 @@ describe('Benutzer mit mehreren Rollen', () => {
       }),
     })
     render(
-      <MemoryRouter initialEntries={['/einstellungen/rollen']}>
+      <MemoryRouter initialEntries={['/einstellungen/konten']}>
         <AuthProvider>
           <OrgProvider>
             <App />

@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Konten: Unter Einstellungen › Konten stehen alle Konten der Einheit mit Rollen, Mitgliederbereich, letzter Anmeldung und Zwei-Faktor. Filter zeigen etwa, wer sich nie angemeldet hat oder wessen Einladung abgelaufen ist; ausgewählte Konten bekommen den Anmeldelink erneut. Die Amtszeiten je Konto sind von Rollen und Rechte hierher gezogen.
 - Ämter besetzen: Unter Mitglieder › Ämter hat jedes Amt den Knopf „Besetzen“, ebenso die Mitgliederakte („Rolle besetzen“). Der Dialog sagt vorher, was passiert, und beendet auf Wunsch gleich die Amtszeit des Vorgängers. Mit dem Filter „Einheit“ gilt das auch für die Ämter der Untereinheiten; ihre Seite und ihr Arbeitsbereich besetzen mit demselben Dialog.
 - Musik: Die Unterpunkte stehen jetzt in der Seitenleiste statt in einer eigenen Leiste über dem Inhalt, gegliedert nach Auftritte, Musiker, Noten, Ausstattung und Abrechnung und Einrichtung. Jeder Punkt hat eine eigene Adresse; alte Lesezeichen leiten weiter.
 - Startseite: „Zu erledigen“ nennt jetzt auch offene Belegungsanfragen, zurückgehaltene Nachrichten aus dem Kontaktformular und eigene Rundschreiben-Entwürfe, die seit einer Woche liegen. Mein Bereich zeigt in der Seitenleiste dieselben Punkte wie auf der Übersicht, etwa Belegung und Ergebnisse, wenn sie freigeschaltet sind.

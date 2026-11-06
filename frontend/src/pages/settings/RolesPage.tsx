@@ -25,25 +25,23 @@ export function RolesPage() {
     () => orgApi.catalog(org.type, org.id),
     [org.type, org.id, org.modules.join(',')],
   )
-  const assignments = useLoad(() => orgApi.assignments(org.id), [org.id])
   const [editing, setEditing] = useState<Role | 'new' | null>(null)
   // Bereich Rollen nur lesen: alles sehen, nichts ändern (konzepte/berechtigungen.md)
   const canEdit = org.permissions.includes(PERM.rolesManage)
 
-  const error = roles.error ?? catalog.error ?? assignments.error
+  const error = roles.error ?? catalog.error
   if (error)
     return (
       <LoadError
         message={error}
-        onRetry={() => void Promise.all([roles.reload(), catalog.reload(), assignments.reload()])}
+        onRetry={() => void Promise.all([roles.reload(), catalog.reload()])}
       />
     )
-  if (!roles.data || !catalog.data || !assignments.data)
-    return <p className="muted">{t('Lädt …')}</p>
+  if (!roles.data || !catalog.data) return <p className="muted">{t('Lädt …')}</p>
 
   const catalogData = catalog.data
   const reloadAll = async () => {
-    await Promise.all([roles.reload(), assignments.reload()])
+    await roles.reload()
   }
 
   return (
@@ -106,14 +104,14 @@ export function RolesPage() {
         />
       </div>
 
-      <UsersCard
-        orgId={org.id}
-        isClub={org.type === 'club' && org.modules.includes('members')}
-        roles={roles.data}
-        assignments={assignments.data}
-        onChange={reloadAll}
-        readOnly={!canEdit}
-      />
+      <p className="muted small">
+        {t('Wer welche Rolle hat, steht unter')}{' '}
+        <Link to={org.modules.includes('members') ? '/mitglieder/aemter' : '/einstellungen/konten'}>
+          {org.modules.includes('members') ? t('Mitglieder › Ämter') : t('Einstellungen › Konten')}
+        </Link>
+        {t('; Konten, Einladungen und Zwei-Faktor unter')}{' '}
+        <Link to="/einstellungen/konten">{t('Einstellungen › Konten')}</Link>.
+      </p>
     </div>
   )
 }
@@ -135,7 +133,7 @@ function confirmAssignedRoleRemoval(role: Role): Promise<boolean> {
   })
 }
 
-function UsersCard({
+export function UsersCard({
   orgId,
   isClub,
   roles,

@@ -6538,5 +6538,36 @@
   "und richtet ihm ein Konto ein. Die Person braucht eine E-Mail-Adresse und kann danach selbst weitere Rollen besetzen. Nur nötig, wenn jemand selbst in HUBIplan arbeiten soll; Ämter ohne Konto besetzt du unter „Wer hat welche Rolle?“ mit „Besetzen“.": "and sets up an account for them. The person needs an email address and can then assign further roles themselves. Only needed if someone is to work in HUBIplan themselves; offices without an account are assigned under “Who has which role?” with “Assign”.",
   "Rollen besetzt ihr unter": "You assign roles under",
   "Mitglieder › Ämter": "Members › Offices",
-  ". Dort endet die Amtszeit des Vorgängers gleich mit.": ". The predecessor's term ends there in the same step."
+  ". Dort endet die Amtszeit des Vorgängers gleich mit.": ". The predecessor's term ends there in the same step.",
+  "mit Rechten": "with permissions",
+  "nie angemeldet": "never signed in",
+  "Einladung abgelaufen": "invitation expired",
+  "ohne Zwei-Faktor trotz Pflicht": "no two-factor although required",
+  "Nicht gesendet (Passwort schon festgelegt oder kein Recht): {x}": "Not sent (password already set or no permission): {x}",
+  "Ein Konto ist die Anmeldung einer Person. Hier stehen alle Konten mit Rollen in dieser Einheit und alle, die den Mitgliederbereich nutzen dürfen. Rollen besetzt ihr unter Mitglieder › Ämter, einzelne Konten bearbeitet ihr in der Mitgliederakte.": "An account is a person's sign-in. This lists all accounts with roles in this unit and everyone allowed to use the member area. Roles are assigned under Members › Offices; individual accounts are edited in the member record.",
+  "Alle auswählen": "Select all",
+  "Mitgliederbereich": "Member area",
+  "Letzte Anmeldung": "Last sign-in",
+  "Zwei-Faktor": "Two-factor",
+  "{name} auswählen": "Select {name}",
+  "freigeschaltet": "enabled",
+  "nie (Einladung abgelaufen)": "never (invitation expired)",
+  "nie (Einladung offen)": "never (invitation pending)",
+  "nie": "never",
+  "eingerichtet": "set up",
+  "fehlt (Pflicht)": "missing (required)",
+  "Keine Konten für diesen Filter.": "No accounts for this filter.",
+  "Anmeldelink erneut senden ({n})": "Resend sign-in link ({n})",
+  "Konten mit Rolle bekommen eine neue Einladung, solange sie noch kein Passwort festgelegt haben. Konten für den Mitgliederbereich bekommen einen neuen Anmeldelink.": "Accounts with a role get a new invitation as long as they have not set a password yet. Member area accounts get a new sign-in link.",
+  "Wer welche Rolle hat, steht unter": "Who holds which role is shown under",
+  "Einstellungen › Konten": "Settings › Accounts",
+  "; Konten, Einladungen und Zwei-Faktor unter": "; accounts, invitations and two-factor under",
+  "Gesendet an ein Konto.": {
+    "one": "Sent to one account.",
+    "other": "Sent to {n} accounts."
+  },
+  "Ein Konto": {
+    "one": "One account",
+    "other": "{n} accounts"
+  }
 }
