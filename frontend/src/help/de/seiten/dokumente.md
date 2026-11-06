@@ -7,7 +7,7 @@ routen: [/dokumente]
 stichworte: [Datei, Ablage, Ordner, Satzung, Protokoll]
 ---
 
-Die Dokumentenablage sammelt Satzung, Protokolle, Formulare und andere Dateien der Einheit in Ordnern. Je Ordner legt ihr fest, wer ihn sieht, zum Beispiel nur der Vorstand oder alle Mitglieder. Gelöschtes landet zuerst im Papierkorb.
+Die Dokumentenablage sammelt Satzung, Protokolle, Formulare und andere Dateien der Einheit in Ordnern. Je Ordner legt ihr fest, wer ihn sieht, zum Beispiel nur der Vorstand oder alle Mitglieder. Gelöschtes landet zuerst im Papierkorb; der Link „Papierkorb“ steht oben in der Ablage.
 
 Die Ablage öffnet in der **Kachelansicht** mit Ordner- und Dateityp-Symbolen. Mit **Listenansicht** wechselst du zur kompakten Darstellung. Klicke auf einen Ordner, um ihn zu öffnen, und im Ordnerpfad auf **Dokumente**, um zur Übersicht zurückzukehren.
 

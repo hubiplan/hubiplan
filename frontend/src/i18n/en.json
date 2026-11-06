@@ -6453,5 +6453,13 @@
   "Zwei-Faktor-Anmeldung nötig ab {date}.": "Two-factor sign-in required from {date}.",
   "Inhalt und Anhänge sieht nur der Verein. Er kann sie unter Einstellungen › Postausgang für die Plattform-Betreuung freigeben.": "Only the club sees the content and attachments. It can share them with platform support under Settings › Outbox.",
   "Plattform-Betreuung darf Text und Anhänge sehen": "Platform support may see text and attachments",
-  "Sonst sieht sie nur Empfänger, Betreff und Status, etwa zur Fehlersuche.": "Otherwise it only sees recipients, subject and status, for example when troubleshooting."
+  "Sonst sieht sie nur Empfänger, Betreff und Status, etwa zur Fehlersuche.": "Otherwise it only sees recipients, subject and status, for example when troubleshooting.",
+  "Allgemein": "General",
+  "Recht": "Legal",
+  "Rollen und Anbindungen": "Roles and connections",
+  "Daten": "Data",
+  "Inhalte": "Content",
+  "Betrieb": "Operation",
+  "Einrichtung der Bereiche": "Setup of the areas",
+  "Was nur einen Bereich betrifft, stellst du dort unter „Einrichtung“ ein.": "Settings that only affect one area are found there under “Setup”."
 }

@@ -6,19 +6,25 @@ import { t } from '../../i18n/index.ts'
 export interface NavItem {
   to: string
   label: string
+  /** Zwischenüberschrift in der Seitenleiste (Menüprüfung M-09), Reihenfolge unverändert */
+  section?: string
 }
+
+const content = t('Inhalte')
+const structure = t('Aufbau')
+const operation = t('Betrieb')
 
 const ALL: NavItem[] = [
   { to: '/webseite', label: t('Übersicht') },
-  { to: '/webseite/inhalte', label: t('Texte') },
-  { to: '/webseite/bilder', label: t('Bilder') },
-  { to: '/webseite/galerie', label: t('Galerie') },
-  { to: '/webseite/dokumente', label: t('Dokumente') },
-  { to: '/webseite/beitraege', label: t('Social Media') },
-  { to: '/webseite/aufbau', label: t('Menü und Bereiche') },
-  { to: '/webseite/gestaltung', label: t('Gestaltung') },
-  { to: '/webseite/kontakt', label: t('Kontaktformular') },
-  { to: '/webseite/domain', label: t('Internetadresse') },
+  { to: '/webseite/inhalte', label: t('Texte'), section: content },
+  { to: '/webseite/bilder', label: t('Bilder'), section: content },
+  { to: '/webseite/galerie', label: t('Galerie'), section: content },
+  { to: '/webseite/dokumente', label: t('Dokumente'), section: content },
+  { to: '/webseite/beitraege', label: t('Social Media'), section: content },
+  { to: '/webseite/aufbau', label: t('Menü und Bereiche'), section: structure },
+  { to: '/webseite/gestaltung', label: t('Gestaltung'), section: structure },
+  { to: '/webseite/kontakt', label: t('Kontaktformular'), section: operation },
+  { to: '/webseite/domain', label: t('Internetadresse'), section: operation },
 ]
 
 /** Wer nur Inhalte pflegt, sieht nur „Texte“, „Bilder“, „Galerie“, „Dokumente“ und „Social Media“. */

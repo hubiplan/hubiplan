@@ -1,4 +1,5 @@
 import { FiscalYearFields } from '../../components/FiscalYearFields.tsx'
+import { ModuleSetupLinks } from './SettingsLayout.tsx'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import type { OrgDetail, Role } from '../../api/orgs.ts'
 import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
@@ -45,6 +46,7 @@ export function OrganizationPage() {
       {data.type !== 'platform' && (
         <HelpContactsCard orgId={org.id} editable={org.permissions.includes(PERM.orgEdit)} />
       )}
+      {data.type !== 'platform' && <ModuleSetupLinks />}
     </>
   )
 }
