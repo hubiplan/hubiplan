@@ -248,7 +248,16 @@ def build(membership: Membership, org) -> bytes:
                 {
                     "versammlung": a.meeting.event.title,
                     "beginn": a.meeting.event.starts_at,
-                    **_row(a, {"meeting", "membership", "organization", "represented_by"}),
+                    **_row(
+                        a,
+                        {
+                            "meeting",
+                            "membership",
+                            "organization",
+                            "represented_by",
+                            "delegate_membership",
+                        },
+                    ),
                 }
                 for a in Attendance.objects.filter(membership=membership).select_related(
                     "meeting__event"

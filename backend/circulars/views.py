@@ -60,7 +60,7 @@ FILTER_LIST_KEYS = (
 )
 FILTER_KEY_LISTS = ("include", "exclude", "role_names")
 FILTER_INT_KEYS = ("age_min", "age_max", "jubilee_year")
-FILTER_BOOL_KEYS = ("board", "reported")
+FILTER_BOOL_KEYS = ("board", "reported", "organizations_any_age")
 
 
 def user_name(user) -> str:

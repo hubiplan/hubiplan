@@ -147,6 +147,8 @@ def invitation_filters(meeting) -> tuple[str, dict]:
             filters["member_types"] = list(kind.voter_types)
         if kind.voter_min_age:
             filters["age_min"] = kind.voter_min_age
+            # Das Mindestalter gilt nicht für Organisationsmitglieder (J4)
+            filters["organizations_any_age"] = True
         return Circular.Audience.MEMBERS, filters
     if meeting.department_id is not None:
         roles = DepartmentRole.objects.filter(department_id=meeting.department_id)

@@ -8480,3 +8480,21 @@ msgid ""
 "Für eine eigene Rechnungsanschrift bitte Straße (oder Postfach) und Ort "
 "angeben."
 msgstr "For a separate billing address, please enter street (or PO box) and town."
+
+msgid "Durch Vertreter anwesend: {x}."
+msgstr "Present through representative: {x}."
+
+msgid "durch Vertreter"
+msgstr "by representative"
+
+msgid "Vertreter"
+msgstr "Representative"
+
+msgid "„Durch Vertreter“ gibt es nur bei Organisationsmitgliedern."
+msgstr "“By representative” is only available for organisation members."
+
+msgid "Unbekannter Ansprechpartner."
+msgstr "Unknown contact person."
+
+msgid "Bitte den Vertreter angeben."
+msgstr "Please enter the representative."

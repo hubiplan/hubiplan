@@ -305,7 +305,11 @@ def test_einladung_als_rundschreiben(setup):
     circular = Circular.objects.get(pk=data["circular"])
     assert data["circular_status"] == "draft" and data["status"] == "draft"
     assert circular.kind == "notice" and circular.audience == "members"
-    assert circular.filters == {"member_types": [aktiv.pk], "age_min": 16}
+    assert circular.filters == {
+        "member_types": [aktiv.pk],
+        "age_min": 16,
+        "organizations_any_age": True,
+    }
     assert "Jahreshauptversammlung" in circular.subject
     assert "1. Begrüßung und Feststellung der Beschlussfähigkeit" in circular.body
     assert "Schützenhaus" in circular.body and "{Anrede}" in circular.body
