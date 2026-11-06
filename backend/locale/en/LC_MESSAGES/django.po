@@ -8447,3 +8447,12 @@ msgstr "local authority (town, municipality, district)"
 
 msgid "Sonstige"
 msgstr "other"
+
+msgid "Ansprechpartner ist immer ein Mensch, keine Organisation."
+msgstr "A contact person is always a natural person, not an organisation."
+
+msgid "Diese Person ist hier schon Ansprechpartner."
+msgstr "This person is already a contact person here."
+
+msgid "Ansprechpartner gibt es nur bei Organisationsmitgliedern."
+msgstr "Only organisation members have contact persons."

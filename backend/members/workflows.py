@@ -24,6 +24,7 @@ from organizations.terms import fill
 from . import services
 from .models import (
     ContactDetails,
+    ContactPerson,
     DepartmentMembership,
     DepartmentRoleHolder,
     ExitReason,
@@ -412,6 +413,9 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     services.lock_person(person.pk)
     DepartmentMembership.objects.filter(membership=membership).delete()
     DepartmentRoleHolder.objects.filter(membership=membership).delete()
+    # Ansprechpartner der Organisation und Einträge der Person als Ansprechpartner (J2)
+    ContactPerson.objects.filter(membership=membership).delete()
+    ContactPerson.objects.filter(organization=club, person=person).delete()
     from .photos import remove_all
 
     remove_all(membership)
