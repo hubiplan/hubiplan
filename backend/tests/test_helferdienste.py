@@ -406,3 +406,98 @@ def test_erinnerung_per_mail(setup, mailoutbox):
     assert send_reminders() == 0
     mails = [m for m in mailoutbox if "anna@example.org" in m.to]
     assert len(mails) == 1 and "Aufbau" in mails[0].subject and "Festplatz" in mails[0].body
+
+
+def test_kontingente_fuer_untereinheiten(orgs, api):
+    """H3: Der Verein vergibt Plätze an Züge, die Zugleitung füllt sie mit eigenen Leuten."""
+    from members.models import DepartmentRoleHolder
+    from organizations.models import Department, DepartmentRole
+    from portal.models import PortalAccess
+
+    org = orgs["a"]
+    org.enabled_modules = sorted({*org.enabled_modules, "members", "helpers", "events"})
+    org.department_access_enabled = True
+    org.member_portal_enabled = True
+    org.save()
+    chef_user = make_user("festwart3@example.org")
+    give_role(chef_user, org, permissions=["helpers.edit"], name="Festwart")
+    chef = api(chef_user)
+    base = f"/api/orgs/{org.pk}/helpers/"
+    zug = Department.objects.create(
+        self_managed=True, organization=org, name="Jägerzug", short_name="Jäger"
+    )
+    andere = Department.objects.create(
+        self_managed=True, organization=org, name="Grenadiere", short_name="Gren"
+    )
+    max_ = make_member(org, "Max", "Muster", departments=[zug])
+    lisa = make_member(org, "Lisa", "Muster", departments=[zug])
+    otto = make_member(org, "Otto", "Muster", departments=[andere])
+    role = DepartmentRole.objects.create(
+        department=zug, name="Zugführer", permissions=["helpers.edit"]
+    )
+    DepartmentRoleHolder.objects.create(
+        organization=org, membership=max_, role=role, valid_from=datetime.date(2020, 1, 1)
+    )
+    zf_user = make_user("zugfuehrer3@example.org")
+    access_zf = PortalAccess.objects.create(organization=org, membership=max_, user=zf_user)
+    zf = api(zf_user)
+    unit = f"/api/depts/{zug.pk}/helpers/"
+
+    plan = ok(chef.post(base, {"title": "Schützenfest 2099"}, content_type=JSON))
+    duty = ok(chef.post(f"{base}{plan['id']}/duties/", {"name": "Theke"}, content_type=JSON))
+    shift = ok(
+        chef.post(
+            f"{base}duties/{duty['id']}/shifts/",
+            {"day": day().isoformat(), "quick": "14-18", "needed": 3},
+            content_type=JSON,
+        )
+    )[0]
+    assert {u["name"] for u in ok(chef.get(f"{base}units/"))} == {"Jägerzug", "Grenadiere"}
+    quotas = f"{base}shifts/{shift['id']}/quotas/"
+    data = ok(chef.post(quotas, {"department": zug.pk, "count": 2}, content_type=JSON))
+    assert [(q["unit"], q["count"], q["filled"]) for q in data["quotas"]] == [("Jägerzug", 2, 0)]
+    # Mehr als der Bedarf geht nicht, auch nicht durch Verkleinern der Schicht
+    too_many = chef.post(quotas, {"department": andere.pk, "count": 2}, content_type=JSON)
+    assert too_many.status_code == 400
+    assert (
+        chef.patch(f"{base}shifts/{shift['id']}/", {"needed": 1}, content_type=JSON).status_code
+        == 400
+    )
+    # Kontingente vergibt nur der Verein
+    assert zf.get(f"{unit}units/").status_code == 404
+
+    # Die Zugleitung sieht und füllt ihr Kontingent, nur mit eigenen Mitgliedern
+    rows = ok(zf.get(f"{unit}quotas/"))
+    assert [(r["duty"], r["count"], r["filled"]) for r in rows] == [("Theke", 2, 0)]
+    fill = f"{unit}quotas/{rows[0]['id']}/assignments/"
+    assert zf.post(fill, {"membership": otto.pk}, content_type=JSON).status_code == 404
+    ok(zf.post(fill, {"membership": max_.pk}, content_type=JSON))
+    row = ok(zf.post(fill, {"membership": lisa.pk}, content_type=JSON))
+    assert row["filled"] == 2 and {a["name"] for a in row["assignments"]} == {
+        "Max Muster",
+        "Lisa Muster",
+    }
+    assert ShiftAssignment.objects.filter(quota_id=rows[0]["id"], origin="unit").count() == 2
+    # Andere Züge sehen das Kontingent nicht
+    assert (
+        ok(chef.get(f"{base}{plan['id']}/"))["duties"][0]["shifts"][0]["quotas"][0]["filled"] == 2
+    )
+
+    # Freie Plätze außerhalb des Kontingents: einer; ein noch offenes Kontingent zählt als belegt
+    ok(chef.post(quotas, {"department": zug.pk, "count": 3}, content_type=JSON))
+    resp = chef.post(
+        f"{base}shifts/{shift['id']}/assignments/", {"name": "Gerd Gast"}, content_type=JSON
+    )
+    assert resp.status_code == 400 and "full" in resp.json()["warnings"]
+    ok(chef.patch(f"{base}{plan['id']}/", {"status": "published"}, content_type=JSON))
+    portal = ok(zf.get(f"/api/portal/{access_zf.pk}/helpers/"))
+    assert portal["plans"][0]["duties"][0]["shifts"][0]["taken"] == 3
+
+    # Austragen durch die Zugleitung
+    lisa_row = ShiftAssignment.objects.get(membership=lisa)
+    assert zf.delete(f"{unit}quotas/assignments/{lisa_row.pk}/").status_code == 204
+    assert ok(zf.get(f"{unit}quotas/"))[0]["filled"] == 1
+    # Kontingent auf 0 entfernt es; die Einteilung bleibt ohne Kontingent
+    data = ok(chef.post(quotas, {"department": zug.pk, "count": 0}, content_type=JSON))
+    assert data["quotas"] == [] and ok(zf.get(f"{unit}quotas/")) == []
+    assert ShiftAssignment.objects.get(membership=max_).quota_id is None

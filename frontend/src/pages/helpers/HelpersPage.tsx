@@ -1,10 +1,11 @@
-// Helferdienste und Schichtpläne (konzepte/helferdienste.md, Schritt H1): Dienstpläne,
-// Dienste, Schichten mit Schnelleingabe, Einteilung durch die Verwaltung, Druck und Export.
+// Helferdienste und Schichtpläne (konzepte/helferdienste.md, Schritte H1–H3): Dienstpläne,
+// Dienste, Schichten mit Schnelleingabe, Einteilung durch die Verwaltung, Druck und Export,
+// Kontingente für Untereinheiten.
 import { useCallback, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, saveBlob } from '../../api/client.ts'
 import { helperApi } from '../../api/helpers.ts'
-import type { Duty, HelperPlan, PlanStatus, Shift } from '../../api/helpers.ts'
+import type { Duty, HelperPlan, PlanStatus, Shift, UnitQuota } from '../../api/helpers.ts'
 import type { PickedMember } from '../../api/members.ts'
 import { PERM } from '../../api/orgs.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
@@ -102,6 +103,7 @@ function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit:
           }}
         />
       )}
+      {!base.startsWith('/api/orgs/') && <UnitQuotas base={base} orgId={orgId} canEdit={canEdit} />}
       {list.error && <p role="alert">{list.error}</p>}
       {list.data && rows.length === 0 ? (
         <p className="muted">{t('Noch kein Dienstplan.')}</p>
@@ -236,6 +238,11 @@ function PlanDetail({
   onClose: () => void
 }) {
   const loaded = useLoad(() => helperApi.get(base, id), [base, id])
+  const club = base.startsWith('/api/orgs/')
+  const unitList = useLoad(
+    () => (club ? helperApi.units(base).catch(() => []) : Promise.resolve([])),
+    [base, club],
+  )
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const plan = loaded.data
@@ -370,6 +377,7 @@ function PlanDetail({
           orgId={orgId}
           duty={duty}
           editable={editable}
+          units={editable ? (unitList.data ?? []) : []}
           onChanged={loaded.reload}
         />
       ))}
@@ -457,16 +465,19 @@ function DutyCard({
   orgId,
   duty,
   editable,
+  units,
   onChanged,
 }: {
   base: string
   orgId: number
   duty: Duty
   editable: boolean
+  units: { id: number; name: string }[]
   onChanged: () => Promise<void>
 }) {
   const [error, setError] = useState('')
   const [assigning, setAssigning] = useState<number | null>(null)
+  const [quotaFor, setQuotaFor] = useState<number | null>(null)
   const act = async (action: () => Promise<unknown>) => {
     setError('')
     try {
@@ -526,6 +537,15 @@ function DutyCard({
                   </td>
                   <td className={people.length < s.needed ? 'shift-open' : undefined}>
                     {t('{taken} von {needed}', { taken: people.length, needed: s.needed })}
+                    {s.quotas.map((q) => (
+                      <div key={q.id} className="muted small">
+                        {t('Kontingent {unit}: {filled} von {count}', {
+                          unit: q.unit,
+                          filled: q.filled,
+                          count: q.count,
+                        })}
+                      </div>
+                    ))}
                   </td>
                   <td>
                     <ul className="people">
@@ -533,6 +553,11 @@ function DutyCard({
                         <li key={a.id}>
                           {a.name}
                           {a.external && <span className="badge">{t('extern')}</span>}
+                          {a.quota && (
+                            <span className="badge">
+                              {s.quotas.find((q) => q.id === a.quota)?.unit}
+                            </span>
+                          )}
                           {a.phone && <span className="muted small"> {a.phone}</span>}
                           {editable && (
                             <button
@@ -550,13 +575,26 @@ function DutyCard({
                         </li>
                       ))}
                     </ul>
+                    {quotaFor === s.id && (
+                      <QuotaForm
+                        base={base}
+                        shift={s}
+                        label={label}
+                        units={units}
+                        onDone={async (changed) => {
+                          setQuotaFor(null)
+                          if (changed) await onChanged()
+                        }}
+                      />
+                    )}
                     {editable &&
+                      quotaFor !== s.id &&
                       (assigning === s.id ? (
                         <AssignForm
                           base={base}
                           orgId={orgId}
-                          shift={s}
                           label={label}
+                          assign={(data) => helperApi.assign(base, s.id, data)}
                           onDone={async (changed) => {
                             setAssigning(null)
                             if (changed) await onChanged()
@@ -572,6 +610,16 @@ function DutyCard({
                           >
                             {t('Einteilen')}
                           </button>
+                          {units.length > 0 && (
+                            <button
+                              type="button"
+                              className="button button-ghost"
+                              aria-label={t('Kontingent vergeben: {shift}', { shift: label })}
+                              onClick={() => setQuotaFor(s.id)}
+                            >
+                              {t('Kontingent')}
+                            </button>
+                          )}
                           {people.length === 0 && (
                             <button
                               type="button"
@@ -664,14 +712,16 @@ function NewShifts({
 function AssignForm({
   base,
   orgId,
-  shift,
   label,
+  assign,
+  membersOnly = false,
   onDone,
 }: {
   base: string
   orgId: number
-  shift: Shift
   label: string
+  assign: (data: object) => Promise<unknown>
+  membersOnly?: boolean
   onDone: (changed: boolean) => Promise<void>
 }) {
   const [external, setExternal] = useState(false)
@@ -688,7 +738,7 @@ function AssignForm({
     setError('')
     try {
       try {
-        await helperApi.assign(base, shift.id, data)
+        await assign(data)
       } catch (err) {
         const body = err instanceof ApiError ? (err.body as { warnings?: string[] }) : null
         if (!body?.warnings?.length) throw err
@@ -698,7 +748,7 @@ function AssignForm({
           confirmLabel: t('Trotzdem einteilen'),
         })
         if (!yes) return
-        await helperApi.assign(base, shift.id, { ...data, force: true })
+        await assign({ ...data, force: true })
       }
       await onDone(true)
     } catch (err) {
@@ -713,24 +763,26 @@ function AssignForm({
       aria-label={t('Einteilen: {shift}', { shift: label })}
       onSubmit={submit}
     >
-      <div className="segmented" role="group" aria-label={t('Wer?')}>
-        <button
-          type="button"
-          className={`button button-ghost${!external ? ' is-active' : ''}`}
-          aria-pressed={!external}
-          onClick={() => setExternal(false)}
-        >
-          {t('Mitglied')}
-        </button>
-        <button
-          type="button"
-          className={`button button-ghost${external ? ' is-active' : ''}`}
-          aria-pressed={external}
-          onClick={() => setExternal(true)}
-        >
-          {t('Externe Person')}
-        </button>
-      </div>
+      {!membersOnly && (
+        <div className="segmented" role="group" aria-label={t('Wer?')}>
+          <button
+            type="button"
+            className={`button button-ghost${!external ? ' is-active' : ''}`}
+            aria-pressed={!external}
+            onClick={() => setExternal(false)}
+          >
+            {t('Mitglied')}
+          </button>
+          <button
+            type="button"
+            className={`button button-ghost${external ? ' is-active' : ''}`}
+            aria-pressed={external}
+            onClick={() => setExternal(true)}
+          >
+            {t('Externe Person')}
+          </button>
+        </div>
+      )}
       {external ? (
         <>
           <label className="field">
@@ -907,5 +959,183 @@ function PlanSettings({
         </div>
       </form>
     </details>
+  )
+}
+
+function QuotaForm({
+  base,
+  shift,
+  label,
+  units,
+  onDone,
+}: {
+  base: string
+  shift: Shift
+  label: string
+  units: { id: number; name: string }[]
+  onDone: (changed: boolean) => Promise<void>
+}) {
+  const [unit, setUnit] = useState(String(units[0]?.id ?? ''))
+  const current = shift.quotas.find((q) => String(q.department) === unit)
+  const [count, setCount] = useState(String(current?.count ?? 1))
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  return (
+    <form
+      className="assign-form stack"
+      aria-label={t('Kontingent vergeben: {shift}', { shift: label })}
+      onSubmit={async (e) => {
+        e.preventDefault()
+        setBusy(true)
+        setError('')
+        try {
+          await helperApi.setQuota(base, shift.id, Number(unit), Number(count) || 0)
+          await onDone(true)
+        } catch (err) {
+          setError(errorMessage(err))
+        } finally {
+          setBusy(false)
+        }
+      }}
+    >
+      <label className="field">
+        <span>{t('Untereinheit')}</span>
+        <select
+          value={unit}
+          onChange={(e) => {
+            setUnit(e.target.value)
+            const q = shift.quotas.find((x) => String(x.department) === e.target.value)
+            setCount(String(q?.count ?? 1))
+          }}
+        >
+          {units.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="field">
+        <span>{t('Plätze (0 entfernt das Kontingent)')}</span>
+        <input
+          type="number"
+          min={0}
+          max={shift.needed}
+          value={count}
+          onChange={(e) => setCount(e.target.value)}
+        />
+      </label>
+      {error && <p role="alert">{error}</p>}
+      <div className="button-row">
+        <button type="button" className="button button-ghost" onClick={() => onDone(false)}>
+          {t('Abbrechen')}
+        </button>
+        <button className="button button-primary" disabled={busy || !unit}>
+          {t('Kontingent speichern')}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function UnitQuotas({ base, orgId, canEdit }: { base: string; orgId: number; canEdit: boolean }) {
+  const loaded = useLoad(() => helperApi.unitQuotas(base), [base])
+  const [filling, setFilling] = useState<number | null>(null)
+  const [error, setError] = useState('')
+  const rows = loaded.data ?? []
+  if (rows.length === 0) return null
+  const remove = async (id: number) => {
+    setError('')
+    try {
+      await helperApi.removeFromQuota(base, id)
+      await loaded.reload()
+    } catch (err) {
+      setError(errorMessage(err))
+    }
+  }
+  return (
+    <section className="card stack" aria-labelledby="unit-quotas">
+      <h2 id="unit-quotas">{t('Kontingente vom Verein')}</h2>
+      <p className="muted">
+        {t('Diese Plätze hat der Verein eurer Untereinheit gegeben. Teile eigene Mitglieder ein.')}
+      </p>
+      {error && <p role="alert">{error}</p>}
+      <table className="table shift-table">
+        <thead>
+          <tr>
+            <th>{t('Schicht')}</th>
+            <th>{t('Besetzt')}</th>
+            <th>{t('Eingeteilt')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((q: UnitQuota) => {
+            const label = `${q.duty} ${dayText(q.starts_at)} ${timeText(q.starts_at)}–${timeText(q.ends_at)}`
+            return (
+              <tr key={q.id}>
+                <td>
+                  <strong>{q.duty}</strong> · {q.plan}
+                  <div>
+                    {dayText(q.starts_at)} {timeText(q.starts_at)}–{timeText(q.ends_at)}
+                    {q.location && ` · ${q.location}`}
+                  </div>
+                  {q.note && <div className="muted small">{q.note}</div>}
+                </td>
+                <td className={q.filled < q.count ? 'shift-open' : undefined}>
+                  {t('{taken} von {needed}', { taken: q.filled, needed: q.count })}
+                </td>
+                <td>
+                  <ul className="people">
+                    {q.assignments.map((a) => (
+                      <li key={a.id}>
+                        {a.name}
+                        {canEdit && (
+                          <button
+                            type="button"
+                            className="link-button"
+                            aria-label={t('{name} aus der Schicht {shift} nehmen', {
+                              name: a.name,
+                              shift: label,
+                            })}
+                            onClick={() => remove(a.id)}
+                          >
+                            {t('Entfernen')}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  {canEdit &&
+                    (filling === q.id ? (
+                      <AssignForm
+                        base={base}
+                        orgId={orgId}
+                        label={label}
+                        membersOnly
+                        assign={(data) => helperApi.fillQuota(base, q.id, data)}
+                        onDone={async (changed) => {
+                          setFilling(null)
+                          if (changed) await loaded.reload()
+                        }}
+                      />
+                    ) : (
+                      q.filled < q.count && (
+                        <button
+                          type="button"
+                          className="button button-ghost"
+                          aria-label={t('Person einteilen: {shift}', { shift: label })}
+                          onClick={() => setFilling(q.id)}
+                        >
+                          {t('Einteilen')}
+                        </button>
+                      )
+                    ))}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </section>
   )
 }

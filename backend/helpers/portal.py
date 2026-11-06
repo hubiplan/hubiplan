@@ -61,10 +61,12 @@ def cancel_until(plan: HelperPlan, shift: Shift) -> datetime.datetime:
 
 def plan_data(plan: HelperPlan, membership_id: int, now) -> dict:
     duties = []
-    for duty in plan.duties.prefetch_related("shifts__assignments"):
+    for duty in plan.duties.prefetch_related("shifts__assignments", "shifts__quotas__assignments"):
         shifts = []
         for shift in duty.shifts.all():
             people = [a for a in shift.assignments.all() if a.status == "active"]
+            # Plätze in Kontingenten der Untereinheiten füllt deren Leitung, nicht das Mitglied
+            held = services.reserved(shift)
             mine = next((a for a in people if a.membership_id == membership_id), None)
             shifts.append(
                 {
@@ -72,7 +74,7 @@ def plan_data(plan: HelperPlan, membership_id: int, now) -> dict:
                     "starts_at": shift.starts_at,
                     "ends_at": shift.ends_at,
                     "needed": shift.needed,
-                    "taken": len(people),
+                    "taken": len(people) + held,
                     "note": shift.note,
                     "names": [a.name for a in people] if plan.show_names else [],
                     "mine": mine.pk if mine else None,

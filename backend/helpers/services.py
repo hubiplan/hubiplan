@@ -7,7 +7,7 @@ import datetime
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from .models import HelperPlan, Shift, ShiftAssignment
+from .models import HelperPlan, Shift, ShiftAssignment, ShiftQuota
 
 
 def person_name(membership) -> str:
@@ -41,6 +41,21 @@ def taken(shift: Shift) -> int:
     return active(shift.assignments).count()
 
 
+def filled(quota: ShiftQuota) -> int:
+    # Zählt auch vorab geladene Einteilungen, ohne neue Abfrage
+    return sum(1 for a in quota.assignments.all() if a.status == ShiftAssignment.Status.ACTIVE)
+
+
+def reserved(shift: Shift) -> int:
+    """Noch nicht gefüllte Plätze in Kontingenten der Untereinheiten."""
+    return sum(max(q.count - filled(q), 0) for q in shift.quotas.all())
+
+
+def free(shift: Shift) -> int:
+    """Plätze, die ohne Kontingent noch frei sind."""
+    return shift.needed - taken(shift) - reserved(shift)
+
+
 def overlapping(shift: Shift, membership_id: int, *, exclude: int | None = None):
     """Andere Schichten derselben Person, die sich zeitlich überschneiden (alle Pläne)."""
     qs = active(
@@ -62,10 +77,13 @@ def shift_label(shift: Shift) -> str:
     return f"{shift.duty.name} {start:%d.%m. %H:%M}–{end:%H:%M}"
 
 
-def warnings(shift: Shift, membership=None) -> list[dict]:
-    """Hinweise vor einer Einteilung: Schicht voll, Überschneidung, Mindestalter."""
+def warnings(shift: Shift, membership=None, quota: ShiftQuota | None = None) -> list[dict]:
+    """Hinweise vor einer Einteilung: Schicht oder Kontingent voll, Überschneidung, Alter."""
     found = []
-    if taken(shift) >= shift.needed:
+    if quota is not None:
+        if filled(quota) >= quota.count:
+            found.append({"code": "full", "text": _("Das Kontingent ist schon voll.")})
+    elif free(shift) <= 0:
         found.append({"code": "full", "text": _("Die Schicht ist schon voll besetzt.")})
     if membership is None:
         return found

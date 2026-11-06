@@ -9,14 +9,14 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from rest_framework import serializers
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import APIException, NotFound, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from audit.log import diff, record, snapshot
 
 from . import access, exports, services
-from .models import Duty, HelperPlan, Shift, ShiftAssignment
+from .models import Duty, HelperPlan, Shift, ShiftAssignment, ShiftQuota
 
 MAX_DUTIES = 50
 MAX_SHIFTS = 100
@@ -90,10 +90,21 @@ def assignment_data(a: ShiftAssignment, scope) -> dict:
         "origin": a.origin,
         "status": a.status,
         "done": a.done,
+        "quota": a.quota_id,
     }
     if scope.can_edit:
         data["phone"] = a.phone
     return data
+
+
+def quota_data(quota: ShiftQuota, rows: list[dict]) -> dict:
+    return {
+        "id": quota.pk,
+        "department": quota.department_id,
+        "unit": quota.department.name,
+        "count": quota.count,
+        "filled": sum(1 for a in rows if a["quota"] == quota.pk and a["status"] == "active"),
+    }
 
 
 def shift_data(shift: Shift, scope) -> dict:
@@ -106,6 +117,7 @@ def shift_data(shift: Shift, scope) -> dict:
         "note": shift.note,
         "taken": sum(1 for a in rows if a["status"] == ShiftAssignment.Status.ACTIVE),
         "assignments": rows,
+        "quotas": [quota_data(q, rows) for q in shift.quotas.all()],
     }
 
 
@@ -140,7 +152,7 @@ def plan_data(plan: HelperPlan, scope, *, full=False, counts=None) -> dict:
     if counts is not None:
         data.update(counts)
     if full:
-        duties = plan.duties.prefetch_related("shifts__assignments")
+        duties = plan.duties.prefetch_related("shifts__assignments", "shifts__quotas__department")
         data["note"] = plan.note
         data["duties"] = [duty_data(d, scope) for d in duties]
         needed = sum(s["needed"] for d in data["duties"] for s in d["shifts"])
@@ -387,6 +399,8 @@ class ShiftDetailView(Base):
                 setattr(shift, field, data[field])
         if shift.ends_at <= shift.starts_at:
             raise ValidationError({"ends_at": _("Das Ende liegt vor dem Beginn.")})
+        if shift.needed < sum(q.count for q in shift.quotas.all()):
+            raise ValidationError({"needed": _("Die Kontingente sind größer als der Bedarf.")})
         shift.save()
         return Response(shift_data(shift, self.scope))
 
@@ -548,3 +562,185 @@ class ExportView(Base):
         response["Content-Disposition"] = f'attachment; filename="dienstplan-{plan.pk}.{fmt}"'
         response["Cache-Control"] = "private, no-store"
         return response
+
+
+# Kontingente (Schritt H3): Der Verein vergibt Plätze einer Schicht an Untereinheiten, deren
+# Leitung sie mit eigenen Mitgliedern füllt.
+
+
+def require_club(scope) -> None:
+    if scope.department_id is not None:
+        raise NotFound()
+
+
+def require_unit(scope) -> None:
+    if scope.department_id is None:
+        raise NotFound()
+
+
+def units(scope):
+    from organizations.models import Department
+
+    return Department.objects.filter(organization=scope.org, is_active=True)
+
+
+class UnitsView(Base):
+    """Untereinheiten, an die Kontingente gehen können."""
+
+    def get(self, request, **kwargs):
+        access.require_edit(self.scope)
+        require_club(self.scope)
+        return Response([{"id": d.pk, "name": d.name} for d in units(self.scope)])
+
+
+class QuotaInput(serializers.Serializer):
+    department = serializers.IntegerField(min_value=1)
+    count = serializers.IntegerField(min_value=0, max_value=500)
+
+
+class QuotasView(Base):
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        """Kontingent einer Untereinheit setzen; 0 entfernt es."""
+        access.require_edit(self.scope)
+        require_club(self.scope)
+        shift = self.shift(pk, lock=True)
+        require_open(shift.duty.plan)
+        ser = QuotaInput(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        unit = get_object_or_404(units(self.scope), pk=data["department"])
+        quota = shift.quotas.filter(department=unit).first()
+        others = sum(q.count for q in shift.quotas.exclude(department=unit))
+        if others + data["count"] > shift.needed:
+            raise ValidationError({"count": _("Die Kontingente sind größer als der Bedarf.")})
+        before = quota.count if quota else None
+        if data["count"] == 0:
+            if quota:
+                quota.delete()
+        elif quota:
+            quota.count = data["count"]
+            quota.save(update_fields=["count"])
+        else:
+            ShiftQuota.objects.create(
+                organization=self.scope.org, shift=shift, department=unit, count=data["count"]
+            )
+        record(
+            self.scope.org,
+            request.user,
+            "update",
+            shift.duty.plan,
+            {
+                _("Kontingent {unit} · {shift}").format(
+                    unit=unit.name, shift=services.shift_label(shift)
+                ): [before, data["count"] or None]
+            },
+        )
+        shift = Shift.objects.prefetch_related("assignments", "quotas__department").get(pk=shift.pk)
+        return Response(shift_data(shift, self.scope))
+
+
+def unit_quotas(scope):
+    return (
+        ShiftQuota.objects.filter(organization=scope.org, department_id=scope.department_id)
+        .exclude(shift__duty__plan__status=HelperPlan.Status.CLOSED)
+        .select_related("shift__duty__plan", "department")
+    )
+
+
+def unit_quota_data(quota: ShiftQuota, scope) -> dict:
+    shift = quota.shift
+    rows = [assignment_data(a, scope) for a in quota.assignments.all()]
+    active_rows = [a for a in rows if a["status"] == ShiftAssignment.Status.ACTIVE]
+    return {
+        "id": quota.pk,
+        "count": quota.count,
+        "filled": len(active_rows),
+        "plan": shift.duty.plan.title,
+        "plan_status": shift.duty.plan.status,
+        "duty": shift.duty.name,
+        "location": shift.duty.location,
+        "starts_at": shift.starts_at,
+        "ends_at": shift.ends_at,
+        "note": shift.note,
+        "assignments": active_rows,
+    }
+
+
+class UnitQuotasView(Base):
+    """Kontingente der eigenen Untereinheit in Plänen des Vereins."""
+
+    def get(self, request, **kwargs):
+        require_unit(self.scope)
+        qs = unit_quotas(self.scope).prefetch_related("assignments").order_by("shift__starts_at")
+        return Response([unit_quota_data(q, self.scope) for q in qs])
+
+
+class UnitQuotaAssignView(Base):
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        """Mitglied der Untereinheit ins Kontingent einteilen."""
+        access.require_edit(self.scope)
+        require_unit(self.scope)
+        quota = get_object_or_404(unit_quotas(self.scope).select_for_update(of=("self",)), pk=pk)
+        shift = quota.shift
+        ser = AssignInput(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        if not data.get("membership"):
+            raise ValidationError({"membership": _("Bitte ein Mitglied wählen.")})
+        membership = get_object_or_404(
+            services.members(self.scope).select_related("person"), pk=data["membership"]
+        )
+        if services.active(shift.assignments.filter(membership=membership)).exists():
+            raise ValidationError({"membership": _("Die Person ist schon eingeteilt.")})
+        found = services.warnings(shift, membership, quota)
+        if found and not data["force"]:
+            raise ValidationError(
+                {
+                    "detail": " ".join(w["text"] for w in found),
+                    "warnings": [w["code"] for w in found],
+                }
+            )
+        name = services.person_name(membership)
+        ShiftAssignment.objects.create(
+            organization=self.scope.org,
+            shift=shift,
+            quota=quota,
+            membership=membership,
+            name=name,
+            origin=ShiftAssignment.Origin.UNIT,
+            created_by=request.user,
+        )
+        record(
+            self.scope.org,
+            request.user,
+            "update",
+            shift.duty.plan,
+            {_("Eingeteilt"): [None, f"{name} · {services.shift_label(shift)}"]},
+        )
+        quota = unit_quotas(self.scope).prefetch_related("assignments").get(pk=quota.pk)
+        return Response(unit_quota_data(quota, self.scope), status=201)
+
+
+class UnitQuotaAssignmentView(Base):
+    @transaction.atomic
+    def delete(self, request, pk, **kwargs):
+        access.require_edit(self.scope)
+        require_unit(self.scope)
+        assignment = get_object_or_404(
+            ShiftAssignment.objects.filter(quota__in=unit_quotas(self.scope)).select_related(
+                "shift__duty__plan"
+            ),
+            pk=pk,
+        )
+        shift = assignment.shift
+        record(
+            self.scope.org,
+            request.user,
+            "update",
+            shift.duty.plan,
+            {_("Eingeteilt"): [f"{assignment.name} · {services.shift_label(shift)}", None]},
+        )
+        assignment.delete()
+        return Response(status=204)

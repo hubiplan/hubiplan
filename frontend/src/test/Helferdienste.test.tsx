@@ -22,9 +22,11 @@ const shift = {
       origin: 'assigned',
       status: 'active',
       done: null,
+      quota: null,
       phone: '',
     },
   ],
+  quotas: [{ id: 51, department: 9, unit: 'Jägerzug', count: 1, filled: 0 }],
 }
 const plan = {
   id: 5,
@@ -69,6 +71,14 @@ function show(permissions: string[], path = '/helferdienste', overlap = false) {
     'GET /api/orgs/7/helpers/': () => ({ status: 200, body: [plan] }),
     'GET /api/orgs/7/helpers/5/': () => ({ status: 200, body: plan }),
     'GET /api/orgs/7/helpers/events/': () => ({ status: 200, body: [] }),
+    'GET /api/orgs/7/helpers/units/': () => ({
+      status: 200,
+      body: [
+        { id: 9, name: 'Jägerzug' },
+        { id: 10, name: 'Grenadiere' },
+      ],
+    }),
+    'POST /api/orgs/7/helpers/shifts/31/quotas/': () => ({ status: 200, body: shift }),
     'POST /api/orgs/7/helpers/duties/21/shifts/': () => ({ status: 201, body: [] }),
     'POST /api/orgs/7/helpers/shifts/31/assignments/': () => {
       calls += 1
@@ -138,6 +148,23 @@ describe('Helferdienste', () => {
     )
     const last = api.filter((c) => c.key === 'POST /api/orgs/7/helpers/shifts/31/assignments/')[1]
     expect(JSON.parse(String(last.init?.body))).toMatchObject({ name: 'Gerd Gast', force: true })
+  })
+
+  it('vergibt ein Kontingent an eine Untereinheit', async () => {
+    const api = show(['helpers.view', 'helpers.edit'], '/helferdienste?plan=5')
+    expect(await screen.findByText('Kontingent Jägerzug: 0 von 1')).toBeInTheDocument()
+    fireEvent.click(await screen.findByRole('button', { name: /^Kontingent vergeben:/ }))
+    const form = screen.getByRole('form', { name: /^Kontingent vergeben:/ })
+    fireEvent.change(within(form).getByLabelText('Untereinheit'), { target: { value: '10' } })
+    fireEvent.change(within(form).getByLabelText('Plätze (0 entfernt das Kontingent)'), {
+      target: { value: '1' },
+    })
+    fireEvent.click(within(form).getByRole('button', { name: 'Kontingent speichern' }))
+    await waitFor(() =>
+      expect(api.some((c) => c.key === 'POST /api/orgs/7/helpers/shifts/31/quotas/')).toBe(true),
+    )
+    const call = api.find((c) => c.key === 'POST /api/orgs/7/helpers/shifts/31/quotas/')!
+    expect(JSON.parse(String(call.init?.body))).toEqual({ department: 10, count: 1 })
   })
 
   it('ohne Recht kein Zugang', async () => {

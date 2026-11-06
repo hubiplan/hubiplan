@@ -8,10 +8,19 @@ export interface Assignment {
   membership: number | null
   name: string
   external: boolean
-  origin: 'self' | 'assigned'
+  origin: 'self' | 'assigned' | 'unit'
   status: 'active' | 'cancelled'
   done: boolean | null
+  quota: number | null
   phone?: string
+}
+
+export interface Quota {
+  id: number
+  department: number
+  unit: string
+  count: number
+  filled: number
 }
 
 export interface Shift {
@@ -22,6 +31,7 @@ export interface Shift {
   note: string
   taken: number
   assignments: Assignment[]
+  quotas: Quota[]
 }
 
 export interface Duty {
@@ -60,6 +70,20 @@ export interface PlanEvent {
   starts_at: string
 }
 
+export interface UnitQuota {
+  id: number
+  count: number
+  filled: number
+  plan: string
+  plan_status: PlanStatus
+  duty: string
+  location: string
+  starts_at: string
+  ends_at: string
+  note: string
+  assignments: Assignment[]
+}
+
 export const helperApi = {
   list: (base: string) => api.get<HelperPlan[]>(base),
   get: (base: string, id: number) => api.get<HelperPlan>(`${base}${id}/`),
@@ -85,6 +109,14 @@ export const helperApi = {
   updateAssignment: (base: string, id: number, data: object) =>
     api.patch<Assignment>(`${base}assignments/${id}/`, data),
   removeAssignment: (base: string, id: number) => api.del(`${base}assignments/${id}/`),
+  units: (base: string) => api.get<{ id: number; name: string }[]>(`${base}units/`),
+  setQuota: (base: string, shift: number, department: number, count: number) =>
+    api.post<Shift>(`${base}shifts/${shift}/quotas/`, { department, count }),
+  unitQuotas: (base: string) => api.get<UnitQuota[]>(`${base}quotas/`),
+  fillQuota: (base: string, quota: number, data: object) =>
+    api.post<UnitQuota>(`${base}quotas/${quota}/assignments/`, data),
+  removeFromQuota: (base: string, assignment: number) =>
+    api.del(`${base}quotas/assignments/${assignment}/`),
   export: (base: string, id: number, format: 'pdf' | 'xlsx') =>
     requestBlob('GET', `${base}${id}/export/?datei=${format}`),
 }

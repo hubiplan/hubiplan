@@ -1,7 +1,7 @@
 # Helferdienste und Schichtpläne
 
 Modul `helpers` (abschaltbar, von der Plattform freigeschaltet), App `backend/helpers`. Konzept
-mit den Ausbaustufen H1–H5; dieser Stand ist H2.
+mit den Ausbaustufen H1–H5; dieser Stand ist H3.
 
 ## Modul und Rechte
 
@@ -17,7 +17,8 @@ mit den Ausbaustufen H1–H5; dieser Stand ist H2.
 | `HelperPlan` | Dienstplan: Titel, optional Termin der Einheit, Stand (in Vorbereitung, veröffentlicht, abgeschlossen), Einstellungen (Selbsteintragung, Absagefrist, Höchstzahl Schichten, Namen sichtbar, Erinnerung Tage vorher), Hinweis (verschlüsselt) |
 | `Duty` | Dienst mit Ort, Beschreibung, Mindestalter, Reihenfolge |
 | `Shift` | Schicht mit Beginn, Ende, Bedarf, Hinweis |
-| `ShiftAssignment` | Einteilung: Mitgliedschaft oder externe Person, Name und Telefon verschlüsselt, Herkunft, Stand (eingetragen, abgesagt), geleistet, Zeitpunkt der Erinnerung |
+| `ShiftQuota` | Kontingent: Schicht, Untereinheit, Zahl der Plätze (je Schicht und Untereinheit eines) |
+| `ShiftAssignment` | Einteilung: Mitgliedschaft oder externe Person, optional Kontingent, Name und Telefon verschlüsselt, Herkunft, Stand (eingetragen, abgesagt), geleistet, Zeitpunkt der Erinnerung |
 
 RLS trennt nach Organisation; Untereinheiten trennt die Anwendung über `department`. Ein
 Datenbank-Trigger stellt sicher, dass Dienste, Schichten und Einteilungen zur Organisation ihres
@@ -79,7 +80,30 @@ Plans gehören und der Termin zur Einheit des Plans.
 | `POST …/helpers/assignments/<pk>/cancel/` | Selbst absagen |
 | `GET …/helpers/calendar/` | Meine Dienste als `.ics` |
 
+## Kontingente (H3)
+
+- Nur in Plänen des Vereins (nicht in Plänen einer Untereinheit) vergibt `helpers.edit` je
+  Schicht Plätze an aktive Untereinheiten. Die Summe der Kontingente darf den Bedarf nicht
+  übersteigen, auch nicht beim späteren Verkleinern der Schicht. 0 entfernt ein Kontingent; die
+  Einteilungen darin bleiben ohne Kontingent bestehen.
+- Rollen der Untereinheit mit `helpers.view` sehen ihre Kontingente in nicht abgeschlossenen
+  Plänen des Vereins, mit `helpers.edit` teilen sie eigene Mitglieder ein (Herkunft „von der
+  Untereinheit eingeteilt“) und nehmen sie wieder heraus. Die Prüfungen aus H1 gelten; „voll“
+  bezieht sich dann auf das Kontingent.
+- Offene Kontingentplätze zählen außerhalb des Kontingents als belegt: bei der Einteilung
+  durch die Verwaltung und im Mitgliederbereich.
+- Der Datenbank-Trigger prüft, dass Untereinheit und Schicht zur Organisation gehören und eine
+  Einteilung nur im Kontingent ihrer eigenen Schicht steht.
+
+| Weg | Zweck |
+| --- | --- |
+| `GET /api/orgs/<id>/helpers/units/` | Untereinheiten für Kontingente |
+| `POST …/helpers/shifts/<pk>/quotas/` | Kontingent setzen (`department`, `count`) |
+| `GET /api/depts/<id>/helpers/quotas/` | Kontingente der Untereinheit |
+| `POST …/helpers/quotas/<pk>/assignments/` | Mitglied ins Kontingent einteilen |
+| `DELETE …/helpers/quotas/assignments/<pk>/` | Aus dem Kontingent nehmen |
+
 ## Nächste Stufen
 
-H3 Kontingente für Untereinheiten; H4 Plan kopieren, Aufruf per
+H4 Plan kopieren, Aufruf per
 Rundschreiben, geleistete Dienste; H5 Android-App.

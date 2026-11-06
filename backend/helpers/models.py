@@ -95,12 +95,33 @@ class Shift(models.Model):
         return f"shift {self.pk}"
 
 
+class ShiftQuota(models.Model):
+    """Kontingent: Teil des Bedarfs einer Schicht, den eine Untereinheit füllt (Schritt H3)."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    shift = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name="quotas")
+    department = models.ForeignKey(
+        "organizations.Department", on_delete=models.CASCADE, related_name="+"
+    )
+    count = models.PositiveSmallIntegerField(validators=[MaxValueValidator(500)])
+
+    class Meta:
+        ordering = ["pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["shift", "department"], name="quota_once_per_unit")
+        ]
+
+    def __str__(self):
+        return f"quota {self.pk}"
+
+
 class ShiftAssignment(models.Model):
     """Eine Person in einer Schicht. Externe nur mit Name und Telefon (verschlüsselt)."""
 
     class Origin(models.TextChoices):
         SELF = "self", _("selbst eingetragen")
         ASSIGNED = "assigned", _("eingeteilt")
+        UNIT = "unit", _("von der Untereinheit eingeteilt")
 
     class Status(models.TextChoices):
         ACTIVE = "active", _("eingetragen")
@@ -110,6 +131,9 @@ class ShiftAssignment(models.Model):
     shift = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name="assignments")
     membership = models.ForeignKey(
         "members.Membership", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    quota = models.ForeignKey(
+        ShiftQuota, null=True, blank=True, on_delete=models.SET_NULL, related_name="assignments"
     )
     name = EncryptedCharField(_("Name"), max_length=200)
     phone = EncryptedCharField(_("Telefon"), max_length=50, blank=True)

@@ -6693,5 +6693,12 @@
   "nur Einteilung durch die Verwaltung": "assignment by the administration only",
   "Art der Eintragung": "Sign-up",
   "Dienst absagen": "Cancel duty",
-  "Mich eintragen": "Sign me up"
+  "Mich eintragen": "Sign me up",
+  "Diese Plätze hat der Verein eurer Untereinheit gegeben. Teile eigene Mitglieder ein.": "The club has given these places to your unit. Assign your own members.",
+  "Kontingent": "Quota",
+  "Kontingent speichern": "Save quota",
+  "Kontingent vergeben: {shift}": "Assign quota: {shift}",
+  "Kontingent {unit}: {filled} von {count}": "Quota {unit}: {filled} of {count}",
+  "Kontingente vom Verein": "Quotas from the club",
+  "Plätze (0 entfernt das Kontingent)": "Places (0 removes the quota)"
 }

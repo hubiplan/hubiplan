@@ -160,6 +160,7 @@ MODULE_MODELS = (
     "helpers.HelperPlan",
     "helpers.Duty",
     "helpers.Shift",
+    "helpers.ShiftQuota",
     "helpers.ShiftAssignment",
     "circulars.CircularTemplate",
     "circulars.Circular",
@@ -196,6 +197,7 @@ DEPARTMENT_MODELS = {
     "helpers.helperplan",
     "helpers.duty",
     "helpers.shift",
+    "helpers.shiftquota",
     "bookings.booking",
     "bookings.bookingexception",
     "materials.materialitem",
@@ -416,7 +418,11 @@ FILE_TYPES = {
 
 # Versammlungsdaten ohne eigene Spalte für die Untereinheit
 MEETING_CHILDREN = ("meetings.agendaitem", "meetings.resolution", "meetings.minutesversion")
-HELPER_CHILDREN = {"helpers.duty": "plan__department", "helpers.shift": "duty__plan__department"}
+HELPER_CHILDREN = {
+    "helpers.duty": "plan__department",
+    "helpers.shift": "duty__plan__department",
+    "helpers.shiftquota": "shift__duty__plan__department",
+}
 # Dateien mit gespeicherter Prüfsumme: Inhalt muss unverändert sein
 FILE_HASHES = {
     "finance.cashcount": "pdf_sha256",

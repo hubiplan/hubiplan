@@ -42,3 +42,9 @@ Nach Ablauf der Absagefrist geht eine Absage nur noch über die Verwaltung.
 
 Untereinheiten: Hat eine Rolle einer Untereinheit (etwa die Zugführung) das Recht dazu, plant
 sie eigene Dienste und teilt nur Mitglieder dieser Untereinheit ein.
+
+Kontingente: In einem Plan des Vereins gibt **Kontingent** an einer Schicht einen Teil der
+Plätze an eine Untereinheit, etwa „Jägerzug stellt 4 Personen für die Theke“. Die Leitung der
+Untereinheit sieht ihre Plätze in ihren Helferdiensten unter **Kontingente vom Verein** und teilt
+dort eigene Mitglieder ein. Noch offene Plätze eines Kontingents gelten im Mitgliederbereich als
+vergeben. Mit 0 Plätzen entfernst du ein Kontingent; schon Eingeteilte bleiben in der Schicht.

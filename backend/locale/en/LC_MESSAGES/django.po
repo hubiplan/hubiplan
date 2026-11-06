@@ -8257,3 +8257,15 @@ msgstr "Where: {place}"
 
 msgid "Deine Dienste siehst du im Mitgliederbereich: {url}"
 msgstr "You can see your shifts in the member area: {url}"
+
+msgid "Das Kontingent ist schon voll."
+msgstr "The quota is already full."
+
+msgid "von der Untereinheit eingeteilt"
+msgstr "assigned by the unit"
+
+msgid "Die Kontingente sind größer als der Bedarf."
+msgstr "The quotas exceed the number of people needed."
+
+msgid "Kontingent {unit} · {shift}"
+msgstr "Quota {unit} · {shift}"

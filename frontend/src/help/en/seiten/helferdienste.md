@@ -39,3 +39,9 @@ deadline, only the administration can cancel a shift.
 
 Units: If a role of a unit (such as the platoon leadership) has the right, it plans its own
 duties and only assigns members of that unit.
+
+Quotas: In a club roster, **Quota** on a shift gives part of the places to a unit, for example
+“the rifle platoon provides 4 people for the bar”. The unit's leadership sees its places in its
+volunteer duties under **Quotas from the club** and assigns its own members there. Places of a
+quota that are still open count as taken in the member area. Setting 0 places removes a quota;
+people already assigned stay on the shift.
