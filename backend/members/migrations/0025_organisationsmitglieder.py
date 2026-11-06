@@ -129,13 +129,6 @@ class Migration(migrations.Migration):
             name="birth_date",
             field=core.encfields.EncryptedDateField("Geburtsdatum", blank=True, null=True),
         ),
-        migrations.AlterField(
-            model_name="person",
-            name="first_name",
-            field=core.encfields.EncryptedCharField(
-                "Vorname", blank=True, max_length=100, strict=True
-            ),
-        ),
         migrations.AddConstraint(
             model_name="person",
             constraint=models.CheckConstraint(

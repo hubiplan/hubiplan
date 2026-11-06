@@ -115,7 +115,8 @@ class Person(models.Model):
         db_default=PersonKind.PERSON,
     )
     last_name = EncryptedCharField("Name", max_length=100, strict=True)
-    first_name = EncryptedCharField("Vorname", max_length=100, strict=True, blank=True)
+    # Organisationen: leer (``blank`` nicht gesetzt, die API prüft den Mitgliedstyp)
+    first_name = EncryptedCharField("Vorname", max_length=100, strict=True)
     # Verschlüsselt mit dem Schlüssel des Verbandsbereichs; Vergleiche nur in Python
     # (members.services.same_birth). Pflicht für Personen, leer für Organisationen.
     birth_date = EncryptedDateField("Geburtsdatum", null=True, blank=True)

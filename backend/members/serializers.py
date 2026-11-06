@@ -88,7 +88,6 @@ class ContactSerializer(serializers.Serializer):
     country = serializers.CharField(required=False, max_length=100, default="Deutschland")
 
 
-@extend_schema_field(OpenApiTypes.INT)
 class OrganizationFieldsMixin(serializers.Serializer):
     """Angaben, die es nur bei Organisationsmitgliedern gibt."""
 
@@ -117,6 +116,7 @@ def organization_data(person: Person) -> dict | None:
     }
 
 
+@extend_schema_field(OpenApiTypes.INT)
 class OrgPrimaryKeyField(serializers.PrimaryKeyRelatedField):
     """Fremdschlüssel, eingeschränkt auf die aktive Organisation."""
 
