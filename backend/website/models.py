@@ -37,6 +37,7 @@ BLOCKS = {
     "offices": "Ämter",
     "repertoire": "Repertoire",
     "press": "Presse",
+    "bookings": "Belegung",
     "statutes": "Dokumente",
     "contact": "Kontakt",
     "social": "Social-Media-Symbole",
@@ -56,6 +57,7 @@ BLOCK_HINTS = {
     "offices": "heutige und frühere Inhaber der Rollen mit „unter Ämter zeigen“",
     "repertoire": "Stücke aus dem Notenarchiv mit „im Repertoire auf der Webseite“",
     "press": "Pressespiegel: Zeitungsartikel als PDF oder Bild (Webseite › Dokumente)",
+    "bookings": "Infrastruktur und Material, deren Buchungskalender „auf der Webseite“ zeigt",
     "statutes": "Satzung, Beitragsordnung, Gründungsurkunde und eigene Dokumente",
     "contact": "Kontaktformular",
     "social": "oben im Kopf, auf dem Handy im Menü",
@@ -63,7 +65,15 @@ BLOCK_HINTS = {
 }
 # Neue Bereiche, die erst nach dem Einschalten erscheinen (die Galerie, Ralf 05.11.)
 # Mitgliederlisten, Gedenken und Suche (Ralf 05.11., Kapelle) ebenso
-DEFAULT_OFF_BLOCKS = {"gallery", "members", "memorial", "search", "repertoire", "press"}
+DEFAULT_OFF_BLOCKS = {
+    "gallery",
+    "members",
+    "memorial",
+    "search",
+    "repertoire",
+    "press",
+    "bookings",
+}
 DEFAULT_BLOCKS = {key: key not in DEFAULT_OFF_BLOCKS for key in BLOCKS}
 # Menüpunkte unter „Würdenträger“, die sich einzeln ausschalten lassen (Ralf 2026-10-31):
 # ``dignity:<Nummer>`` je Würde und ``honorary`` für die Ehrungen. Ohne Eintrag: an.

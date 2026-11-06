@@ -41,3 +41,5 @@ Hinweis des Materials; die Änderung steht dann im Verlauf des Materials.
 Aus dem Bedarf buchen: Ist ein Material mit Buchungskalender einem Termin zugeordnet, steht
 auf seiner Detailseite **Verbindlich buchen**. Das öffnet die Buchung mit diesem Termin; bei
 „Nur dieser Termin“ wird genau dieses Vorkommen gebucht.
+
+Auf der Webseite: Unter **Buchungskalender** wählst du je Objekt, ob die Webseite im Bereich „Belegung“ nichts, nur belegte Zeiten oder bei öffentlichen Buchungen auch den Zweck zeigt. Den Bereich schaltest du unter Webseite › Menü und Bereiche ein.

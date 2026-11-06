@@ -148,3 +148,12 @@ und importiert; die Belegungen werden beim Import neu ausgerechnet.
 Migration und Rückweg: `materials/0005` ergänzt `booking_rules` (Standard leer), `bookings/0001`
 legt die Tabellen samt Zeilensicherheit an. Für den Rückweg `migrate bookings zero` und
 `migrate materials 0004` vor dem Zurückspielen der älteren Fassung.
+
+### Belegung auf der Webseite
+
+`booking_rules.website` bestimmt je Objekt, was die Webseite zeigt: `off` (Standard) nichts, `busy`
+nur belegte Zeiten („Belegt“), `titles` zusätzlich den Zweck von Buchungen mit Sichtbarkeit
+„öffentlich“. Namen und Kontaktdaten erscheinen nie. Der Webseitenbaustein `bookings` ist
+anfangs aus. Öffentliche Schnittstelle: `/api/public/site/v1/<key>/bookings/?start=JJJJ-MM-TT`
+(sieben Tage, Objekte mit Kennung statt Nummer) und `/api/public/site/v1/<key>/bookings.ics`
+(Abo, eine Woche zurück und 180 Tage voraus). Die Vereinswebseite zeigt das unter `/belegung/`.

@@ -94,6 +94,10 @@ def items(website: Website, *, public_site=None, names: dict | None = None) -> d
                 )
         if key == "results" and "competitions" not in (org.enabled_modules or []):
             continue
+        if key == "bookings" and not {"material", "infrastructure"} & set(
+            org.enabled_modules or []
+        ):
+            continue
         label = BLOCKS[key]
         if key == "units":
             label = org.department_label_plural or label
@@ -313,4 +317,8 @@ def _available(site, key: str) -> bool:
         from . import results
 
         return results.available(site)
+    if key == "bookings":
+        from bookings import public as bookings
+
+        return bookings.available(site)
     return True
