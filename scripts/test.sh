@@ -293,12 +293,23 @@ if [ "$RUN_BACKEND" = 1 ]; then
         mods=""
         if [ -n "$tests" ]; then
             # shellcheck disable=SC2086
-            mods=$(git grep -h -E '^(from|import) [a-z_]+' "$REF" -- $tests \
-                | sed -E 's/^(from|import) ([a-z_.]+).*/\2/' | sort -u | sed 's#\.#/#g; s#^#backend/#' || true)
+            # „from a.b import c, d“ → a/b.py, a/b/__init__.py, a/b/c.py, a/b/c (Paket) …;
+            # eingeklammerte Importlisten nehmen vorsichtshalber das ganze Paket a/b.
+            mods=$(git grep -h -E '^(from|import) [a-z_]+' "$REF" -- $tests | awk '
+                { m = $2; gsub(/\./, "/", m); print m ".py"; print m "/__init__.py" }
+                $1 == "import" { print m }
+                $1 == "from" && $4 ~ /^\(/ { print m }
+                $1 == "from" && $4 !~ /^\(/ {
+                    sub(/^from [^ ]+ import /, ""); n = split($0, teile, ",")
+                    for (i = 1; i <= n; i++) {
+                        split(teile[i], w, " "); if (w[1] == "") continue
+                        print m "/" w[1] ".py"; print m "/" w[1]
+                    }
+                }' | sed 's#^#backend/#' | sort -u || true)
         fi
-        { db_key; printf '%s\n' $tests backend/tests/conftest.py backend/tests/factories.py \
-            $mods $(printf '%s.py\n' $mods) | sort -u | xargs git ls-tree "$REF" -- 2> /dev/null; } \
-            | sha256sum | cut -c1-16
+        # shellcheck disable=SC2086
+        { db_key; printf '%s\n' $tests backend/tests/conftest.py backend/tests/factories.py $mods \
+            | sort -u | xargs git ls-tree "$REF" -- 2> /dev/null; } | sha256sum | cut -c1-16
     }
     MIG_KEY=$(mig_schluessel)
     MIG_MARK=()
