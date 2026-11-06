@@ -120,6 +120,7 @@ function MusicRoute() {
 function MusicWorkspace() {
   const org = useActiveOrg()
   const [params, setParams] = useSearchParams()
+  const { pathname } = useLocation()
   const [error, setError] = useState('')
   const [filter, setFilter] = useState({ kind: '', value: '' })
   const base = `/api/orgs/${org.id}/music/`
@@ -230,7 +231,6 @@ function MusicWorkspace() {
     positions: t('Sollbesetzung'),
     assignments: t('Einteilungen'),
   }
-  const { pathname } = useLocation()
   const kind = fields[params.get('art') || '']
     ? params.get('art')!
     : musicArea(pathname) === 'musiker'
