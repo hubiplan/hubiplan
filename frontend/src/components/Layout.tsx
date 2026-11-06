@@ -326,7 +326,7 @@ export function Layout() {
             ))}
             {portalInPicker.map((p) => (
               <option key={`p${p.id}`} value={`p:${p.id}`}>
-                {t('Meine Daten: {first_name} (', { first_name: p.first_name })}
+                {t('Mein Bereich: {first_name} (', { first_name: p.first_name })}
                 {p.club_display_name || p.club_name})
               </option>
             ))}
