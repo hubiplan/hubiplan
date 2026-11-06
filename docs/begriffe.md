@@ -25,7 +25,7 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Nachrichten des Vereins an Mitglieder | **Mitteilungen** (Mitgliedersicht) | Messages | „Schreiben“ |
 | Verfassen und Versenden im Vorstand | **Rundschreiben** (Verwaltung) | Circulars | – |
 | Eigenes Benutzerkonto | **Mein Konto** | My account | „Konto“ allein |
-| Bereich des Mitglieds | **Mein Bereich** | My area | „Meine Daten“ als Bereichsname |
+| Bereich des Mitglieds (auch in der Einheitenwahl) | **Mein Bereich** | My area | „Meine Daten“ als Bereichsname |
 | Gespeicherte eigene Angaben | **Meine Daten** (Unterpunkt) | My data | „Profil“ für Vereinsdaten |
 | Anmeldedaten und Name der Person | **Profil** (Mein Konto) | Profile | – |
 | Mitgliedsausweis | **Ausweis**, Aktion „Ausweis zeigen“ | Card, “Show ID card” | „Mitgliedskarte“ |
@@ -39,6 +39,10 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Titel, Königswürden | **Titel und Würden** | Titles and honours | „Titel und Auszeichnungen“ |
 | Blättern in Listen | **Vorherige Seite / Nächste Seite** | Previous page / Next page | „Zurück / Weiter“ |
 | Aufgabe für Mitglieder | **Aufgabe** | Task | „To-do“ |
+| Was auf eine Entscheidung oder Handlung wartet (Startseite, App) | **Zu erledigen** | To do | „Offene Punkte“, „Offene Aufgaben“ dafür |
+| Rechnungen im App-Bereich Verwaltung | **Rechnungen** | Invoices | „Beiträge“ |
+| Buchungen im App-Bereich Verwaltung | **Kassenbuch** | Cash book | „Kasse“ |
+| Geburtstage und Jubiläen der nächsten Wochen | **Jubiläen und Geburtstage** | Anniversaries and birthdays | „Anlässe“ |
 
 ## Pflege
 

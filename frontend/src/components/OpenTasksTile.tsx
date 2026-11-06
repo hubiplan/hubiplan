@@ -25,12 +25,9 @@ export function OpenTasksTile({ org }: { org: OrgSummary }) {
       </div>
       {actionError && <p role="alert">{actionError}</p>}
       {error && (
-        <LoadError
-          message={t('Die offenen Aufgaben konnten nicht geladen werden.')}
-          onRetry={reload}
-        />
+        <LoadError message={t('Was zu erledigen ist, ließ sich nicht laden.')} onRetry={reload} />
       )}
-      {data && items.length === 0 && <p className="muted">{t('Keine offenen Aufgaben.')}</p>}
+      {data && items.length === 0 && <p className="muted">{t('Nichts zu erledigen.')}</p>}
       {items.length > 0 && (
         <ul className="plain-list task-overview-list">
           {items.map((tm, i) => (
