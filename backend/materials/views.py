@@ -237,6 +237,13 @@ class DetailView(Base):
             if key != "version":
                 setattr(item, key, value)
         services.changed(item, request.user, before, "update")
+        if before.get("booking_rules") != item.booking_rules or (
+            before.get("facility_id") != item.facility_id
+        ):
+            from bookings.services import rebuild_for_item
+
+            # Rüstzeiten oder Bereiche geändert: künftige Belegungen neu ausrechnen
+            rebuild_for_item(item)
         return Response(self.data(item))
 
     @transaction.atomic

@@ -206,6 +206,7 @@ org_patterns = [
     path("todos/<int:pk>/remote-files/<int:att_id>/", todo_remote.RemoteFileView.as_view()),
     path("materials/", include("materials.urls")),
     path("facilities/", include("materials.urls"), {"kind": "facility"}),
+    path("bookings/", include("bookings.urls")),
     path("todos/<int:pk>/progress/", todo_cross_views.ProgressView.as_view()),
     path("todos/<int:pk>/changes/<uuid:set_id>/undo/", todo_cross_views.TaskUndoView.as_view()),
     path("todos/<int:pk>/attachments/", todo_attachments.AttachmentListView.as_view()),
@@ -606,6 +607,7 @@ org_patterns = [
 dept_patterns = [
     path("materials/", include("materials.urls")),
     path("facilities/", include("materials.urls"), {"kind": "facility"}),
+    path("bookings/", include("bookings.urls")),
     *entry_urls.dept_patterns,
     path(
         "changes/<uuid:set_id>/undo/",

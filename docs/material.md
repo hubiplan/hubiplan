@@ -115,3 +115,36 @@ Zusätzliche Angaben: Art (`facility_type`), Eigentum und Nutzung, Kapazität, Z
 Migration `materials 0004` ergänzt nur Spalten mit Vorgaben, Constraints und den Trigger;
 eine vorherige Programmfassung ignoriert sie. Beim Rückweg auf eine ältere Fassung
 erscheint Infrastruktur dort als gewöhnliches Material.
+
+## Buchungskalender und Belegung
+
+Infrastruktur und Material können einen Buchungskalender bekommen (`MaterialItem.booking_rules`,
+Feld `enabled`). Die Regeln legen fest, ob Buchungen eine Freigabe brauchen (`approval`), wie viele
+Minuten Rüstzeit vor und nach einer Buchung frei bleiben (`buffer_before`, `buffer_after`), wie weit
+im Voraus gebucht werden darf (`horizon_days`) und was später die Webseite zeigen darf (`website`).
+
+Die App `bookings` speichert `Booking` (Zweck, Zeit, Wiederholung, Status, Sichtbarkeit,
+optionaler externer Kontakt, Verknüpfung mit Termin oder Wettbewerb), `BookingException`
+(abgesagte Einzeltermine einer Serie) und `BookingSlot` (ausgerechnete Belegungen je Objekt).
+Eine Datenbank-Ausschlussbedingung (btree_gist) verhindert überlappende bestätigte Belegungen
+desselben Objekts einschließlich Rüstzeit. Wer ein Gebäude bucht, belegt auch alle Bereiche.
+Serien werden zwei Jahre im Voraus ausgerechnet; die nächtliche Aufgabe `bookings.extend_series`
+rollt sie weiter.
+
+Ist eine Buchung mit einem Termin oder Wettbewerb verknüpft, übernimmt sie dessen Zeiten. Wird der
+Termin verschoben und ist die neue Zeit belegt, bleibt die Buchung als Anfrage mit „prüfen“
+stehen; wird er abgesagt, wird auch die Buchung storniert.
+
+Rechte: Den Kalender sieht, wer das Leserecht auf Material bzw. Infrastruktur oder das neue Recht
+**Belegung** (`bookings.view`) hat. Buchen darf, wer `bookings.view` oder Bearbeitungsrecht auf
+das Objekt hat; ohne Freigaberecht ist die Buchung bei Objekten mit Freigabe zunächst eine
+Anfrage. Freigeben und für andere eintragen darf, wer `bookings.edit` oder Bearbeitungsrecht auf
+das Objekt hat. Defekte und ausgemusterte Objekte sind nicht buchbar.
+
+Schnittstelle: `/api/orgs/<id>/bookings/` bzw. `/api/depts/<id>/bookings/` mit `items/`,
+`choices/`, `<pk>/`, `<pk>/decision/` und `<pk>/skip/`. Buchungen werden mit dem Modul exportiert
+und importiert; die Belegungen werden beim Import neu ausgerechnet.
+
+Migration und Rückweg: `materials/0005` ergänzt `booking_rules` (Standard leer), `bookings/0001`
+legt die Tabellen samt Zeilensicherheit an. Für den Rückweg `migrate bookings zero` und
+`migrate materials 0004` vor dem Zurückspielen der älteren Fassung.

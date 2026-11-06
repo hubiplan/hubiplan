@@ -257,6 +257,29 @@ export const modules: AppModule[] = [
           ),
   },
   {
+    id: 'belegung',
+    group: 'verwaltung',
+    label: t('Belegung'),
+    path: '/belegung',
+    icon: icon('M4 5h16v15H4zM4 10h16M9 3v4M15 3v4M8 14h3v3H8z'),
+    visible: (org, ws) => {
+      const see = (perms: string[], material: boolean, facility: boolean) =>
+        (material && (perms.includes('material.view') || perms.includes('bookings.view'))) ||
+        (facility && (perms.includes('infrastructure.view') || perms.includes('bookings.view')))
+      return org
+        ? (org.type === 'club' || org.type === 'federation') &&
+            see(
+              org.permissions,
+              org.modules.includes('material'),
+              org.modules.includes('infrastructure'),
+            )
+        : !!(
+            ws.dept &&
+            see(ws.dept.permissions, !!ws.dept.material_enabled, !!ws.dept.infrastructure_enabled)
+          )
+    },
+  },
+  {
     id: 'einstellungen',
     group: 'verwaltung',
     label: t('Einstellungen'),

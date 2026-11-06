@@ -118,6 +118,9 @@ class MaterialItem(Scoped):
     # Schießstand: [{"facility": "lg10", "count": 10}] (Schlüssel aus competitions.targets)
     lanes = models.JSONField(default=list, blank=True)
     access_note = EncryptedCharField(max_length=500, blank=True)
+    # Buchungskalender (bookings): {"enabled", "approval", "buffer_before", "buffer_after",
+    # "horizon_days", "website"}; leer = kein Buchungskalender
+    booking_rules = models.JSONField(default=dict, blank=True)
     version = models.PositiveIntegerField(default=1)
     deleted_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

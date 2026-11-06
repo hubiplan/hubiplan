@@ -13,6 +13,7 @@ import { errorMessage, useLoad, useQueryLoad, whenLabel } from '../../components
 import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { t, tn, locale } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
+import { BookingRulesCard } from '../bookings/BookingsPage.tsx'
 import './materials.css'
 
 // Bestand: Material oder Infrastruktur (Schießstand, Schützenhaus, Vereinsheim)
@@ -1026,6 +1027,9 @@ function MaterialDetail({
       </section>
       {stock.kind === 'facility' && !trash && (
         <FacilityParts stock={stock} item={data} editable={editable} />
+      )}
+      {!trash && (
+        <BookingRulesCard itemBase={base} item={data} editable={editable} onSaved={reload} />
       )}
       {!trash && (
         <section className="card">

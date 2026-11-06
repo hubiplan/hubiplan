@@ -49,12 +49,19 @@ class ItemInput(serializers.Serializer):
     )
     lanes = LaneInput(many=True, required=False)
     access_note = serializers.CharField(max_length=500, allow_blank=True, required=False)
+    booking_rules = serializers.DictField(required=False)
 
     FACILITY_ONLY = ("facility_type", "ownership", "capacity", "lanes", "access_note")
 
     def validate(self, data):
         item = self.context.get("item")
         scope = self.context["scope"]
+        if data.get("booking_rules"):
+            from bookings.rules import RulesInput
+
+            form = RulesInput(data=data["booking_rules"])
+            form.is_valid(raise_exception=True)
+            data["booking_rules"] = dict(form.validated_data)
         kind = item.kind if item else self.context.get("kind", getattr(scope, "kind", "material"))
         current = {key: getattr(item, key) for key in ["location_kind", "purpose"]} if item else {}
         location_kind = data.get("location_kind", current.get("location_kind"))
@@ -318,6 +325,7 @@ def item_data(item, user, scope, *, detail=False):
         "version": item.version,
         "deleted_at": item.deleted_at,
         "location_review": location_review,
+        "booking_rules": item.booking_rules,
         "photo_url": f"{prefix}/{collection(item)}/{item.pk}/photo/?v={photo.pk}"
         if photo
         else None,

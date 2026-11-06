@@ -24,6 +24,7 @@ FIELDS = (
     "condition_note",
     "facility_id",
     "belongs_to_id",
+    "booking_rules",
 )
 # Nur Infrastruktur
 FACILITY_FIELDS = ("facility_type", "ownership", "capacity", "lanes", "access_note")
