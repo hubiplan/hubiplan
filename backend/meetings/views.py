@@ -10,7 +10,7 @@ from audit.log import diff, record, snapshot
 from members.models import MemberType
 
 from . import access, services
-from .models import AgendaItem, Attendance, Meeting, MeetingKind
+from .models import AgendaItem, Attendance, Meeting, MeetingKind, Resolution
 
 MAX_AGENDA = 60
 
@@ -62,14 +62,35 @@ def kind_data(kind):
     }
 
 
-def agenda_data(item):
+def resolution_data(r):
     return {
+        "id": r.pk,
+        "kind": r.kind,
+        "text": r.text,
+        "votes_yes": r.votes_yes,
+        "votes_no": r.votes_no,
+        "votes_abstain": r.votes_abstain,
+        "unanimous": r.unanimous,
+        "result": r.result,
+        "office": r.office,
+        "elected_name": r.elected_name,
+        "elected": r.elected_id,
+        "number": r.number,
+    }
+
+
+def agenda_data(item, resolutions=None):
+    data = {
         "id": item.pk,
         "position": item.position,
         "title": item.title,
         "description": item.description,
         "type": item.type,
     }
+    if resolutions is not None:
+        data["minutes"] = item.minutes
+        data["resolutions"] = [resolution_data(r) for r in resolutions.get(item.pk, [])]
+    return data
 
 
 def meeting_data(meeting, scope, *, full=False):
@@ -96,11 +117,14 @@ def meeting_data(meeting, scope, *, full=False):
         "can_attendance": members_allowed(scope),
     }
     if full:
+        resolutions = {}
+        for r in meeting.resolutions.all():
+            resolutions.setdefault(r.agenda_item_id, []).append(r)
         data.update(
             chair=meeting.chair,
             minute_taker=meeting.minute_taker,
             note=meeting.note,
-            agenda=[agenda_data(a) for a in meeting.agenda.all()],
+            agenda=[agenda_data(a, resolutions) for a in meeting.agenda.all()],
         )
     return data
 
@@ -202,7 +226,8 @@ class MeetingInput(serializers.Serializer):
     minute_taker = serializers.CharField(max_length=200, allow_blank=True, required=False)
     note = serializers.CharField(max_length=5000, allow_blank=True, required=False)
     status = serializers.ChoiceField(
-        choices=[Meeting.Status.DRAFT, Meeting.Status.CANCELLED], required=False
+        choices=[Meeting.Status.DRAFT, Meeting.Status.HELD, Meeting.Status.CANCELLED],
+        required=False,
     )
     agenda_from_last = serializers.BooleanField(required=False, default=True)
 
@@ -290,6 +315,8 @@ class DetailView(Base):
                     Meeting.Status.INVITED,
                 },
                 Meeting.Status.DRAFT: {Meeting.Status.CANCELLED},
+                # Nach der Versammlung: Protokoll schreiben (V4)
+                Meeting.Status.HELD: {Meeting.Status.DRAFT, Meeting.Status.INVITED},
             }
             if meeting.status not in allowed[data["status"]]:
                 raise ValidationError({"status": _("Dieser Wechsel ist nicht möglich.")})
@@ -559,3 +586,122 @@ class AttendanceDetailView(Base):
         record_.proxies.update(status=Attendance.Status.EXCUSED, represented_by=None)
         record_.delete()
         return Response(attendance_data(meeting, self.scope))
+
+
+# --- Protokoll und Beschlüsse (Schritt V4) -------------------------------------------------
+
+OPEN_FOR_MINUTES = (Meeting.Status.HELD, Meeting.Status.MINUTES)
+MAX_RESOLUTIONS = 30
+
+
+class ResolutionInput(serializers.Serializer):
+    id = serializers.IntegerField(required=False, allow_null=True)
+    kind = serializers.ChoiceField(choices=Resolution.Kind.choices, required=False)
+    text = serializers.CharField(max_length=5000, allow_blank=True, required=False)
+    votes_yes = serializers.IntegerField(min_value=0, allow_null=True, required=False)
+    votes_no = serializers.IntegerField(min_value=0, allow_null=True, required=False)
+    votes_abstain = serializers.IntegerField(min_value=0, allow_null=True, required=False)
+    unanimous = serializers.BooleanField(required=False)
+    result = serializers.ChoiceField(choices=Resolution.Result.choices, required=False)
+    office = serializers.CharField(max_length=200, allow_blank=True, required=False)
+    elected_name = serializers.CharField(max_length=200, allow_blank=True, required=False)
+    elected = serializers.IntegerField(min_value=1, allow_null=True, required=False)
+
+
+class MinutesItemInput(serializers.Serializer):
+    id = serializers.IntegerField()
+    minutes = serializers.CharField(max_length=50000, allow_blank=True, required=False)
+    resolutions = ResolutionInput(many=True, max_length=MAX_RESOLUTIONS, required=False)
+
+
+class MinutesInput(serializers.Serializer):
+    version = serializers.IntegerField()
+    chair = serializers.CharField(max_length=200, allow_blank=True, required=False)
+    minute_taker = serializers.CharField(max_length=200, allow_blank=True, required=False)
+    items = MinutesItemInput(many=True, max_length=MAX_AGENDA)
+
+
+def _resolution(scope, meeting, item, entry, existing) -> Resolution:
+    r = existing.get(entry.get("id")) if entry.get("id") else None
+    if r is None:
+        r = Resolution(organization=scope.org, meeting=meeting, agenda_item=item)
+    r.kind = entry.get("kind", r.kind or Resolution.Kind.RESOLUTION)
+    r.text = (entry.get("text") or "").strip()
+    r.office = (entry.get("office") or "").strip()
+    r.elected_name = (entry.get("elected_name") or "").strip()
+    r.elected = None
+    if entry.get("elected"):
+        from members.models import Membership
+
+        r.elected = get_object_or_404(
+            Membership.objects.filter(organization=scope.org).select_related("person"),
+            pk=entry["elected"],
+        )
+        if not r.elected_name:
+            r.elected_name = person_name(r.elected)
+    if r.kind == Resolution.Kind.ELECTION:
+        if not r.office or not r.elected_name:
+            raise ValidationError(
+                {"resolutions": _("Bei einer Wahl bitte Amt und gewählte Person angeben.")}
+            )
+        if not r.text:
+            r.text = _("Wahl: {office}").format(office=r.office)
+    elif not r.text:
+        raise ValidationError({"resolutions": _("Jeder Beschluss braucht einen Text.")})
+    r.unanimous = bool(entry.get("unanimous"))
+    for field in ("votes_yes", "votes_no", "votes_abstain"):
+        setattr(r, field, None if r.unanimous else entry.get(field))
+    r.result = entry.get("result", r.result or Resolution.Result.ACCEPTED)
+    if r.unanimous:
+        r.result = Resolution.Result.ACCEPTED
+    return r
+
+
+class MinutesView(Base):
+    """Protokoll als Ganzes speichern: Text je TOP, Beschlüsse und Wahlen."""
+
+    @transaction.atomic
+    def put(self, request, pk, **kwargs):
+        access.require_edit(self.scope)
+        meeting = self.meeting(pk, lock=True)
+        ser = MinutesInput(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        if data["version"] != meeting.version:
+            raise conflict()
+        if meeting.status not in OPEN_FOR_MINUTES:
+            raise ValidationError({"detail": _("Das Protokoll lässt sich jetzt nicht ändern.")})
+        before = snapshot(meeting)
+        items = {a.pk: a for a in meeting.agenda.all()}
+        existing = {r.pk: r for r in meeting.resolutions.all()}
+        keep = set()
+        for entry in data["items"]:
+            item = items.get(entry["id"])
+            if item is None:
+                raise ValidationError({"items": _("Unbekannter Tagesordnungspunkt.")})
+            if "minutes" in entry:
+                item.minutes = entry["minutes"]
+                item.save(update_fields=["minutes"])
+            if "resolutions" not in entry:
+                keep.update(r.pk for r in existing.values() if r.agenda_item_id == item.pk)
+                continue
+            for position, raw in enumerate(entry["resolutions"], start=1):
+                r = _resolution(self.scope, meeting, item, raw, existing)
+                if r.pk and r.agenda_item_id != item.pk:
+                    raise ValidationError({"resolutions": _("Unbekannter Beschluss.")})
+                r.position = position
+                r.save()
+                keep.add(r.pk)
+        touched = {e["id"] for e in data["items"]}
+        keep.update(r.pk for r in existing.values() if r.agenda_item_id not in touched)
+        meeting.resolutions.exclude(pk__in=keep).delete()
+        for field in ("chair", "minute_taker"):
+            if field in data:
+                setattr(meeting, field, data[field].strip())
+        meeting.status = Meeting.Status.MINUTES
+        meeting.version += 1
+        meeting.save()
+        changes = diff(before, snapshot(meeting))
+        changes[_("Protokoll")] = [None, _("bearbeitet")]
+        record(self.scope.org, request.user, "update", meeting, changes)
+        return Response(meeting_data(meeting, self.scope, full=True))

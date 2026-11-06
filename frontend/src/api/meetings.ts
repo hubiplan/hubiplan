@@ -21,12 +21,35 @@ export interface MeetingKind {
   used: boolean
 }
 
+export interface Resolution {
+  id?: number | null
+  kind: 'resolution' | 'election'
+  text: string
+  votes_yes: number | null
+  votes_no: number | null
+  votes_abstain: number | null
+  unanimous: boolean
+  result: 'accepted' | 'rejected'
+  office: string
+  elected_name: string
+  elected?: number | null
+  number?: string
+}
+
 export interface AgendaItem {
   id?: number | null
   position?: number
   title: string
   description: string
   type: AgendaType
+  minutes?: string
+  resolutions?: Resolution[]
+}
+
+export interface MinutesItem {
+  id: number
+  minutes: string
+  resolutions: Resolution[]
 }
 
 export interface Meeting {
@@ -86,6 +109,8 @@ export const meetingApi = {
   remove: (base: string, id: number) => api.del(`${base}${id}/`),
   saveAgenda: (base: string, meeting: Meeting, items: AgendaItem[]) =>
     api.put<Meeting>(`${base}${meeting.id}/agenda/`, { version: meeting.version, items }),
+  saveMinutes: (base: string, meeting: Meeting, items: MinutesItem[]) =>
+    api.put<Meeting>(`${base}${meeting.id}/minutes/`, { version: meeting.version, items }),
   prepareInvitation: (base: string, meeting: Meeting) =>
     api.post<Meeting>(`${base}${meeting.id}/invitation/`),
   attendance: (base: string, id: number) => api.get<AttendanceList>(`${base}${id}/attendance/`),

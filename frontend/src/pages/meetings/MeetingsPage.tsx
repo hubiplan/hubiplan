@@ -1,5 +1,5 @@
-// Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V3): Übersicht,
-// Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit und Arten mit Voreinstellungen.
+// Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V4): Übersicht,
+// Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit, Protokoll und Arten.
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { meetingApi } from '../../api/meetings.ts'
@@ -13,6 +13,8 @@ import type {
   MeetingBase,
   MeetingKind,
   MeetingStatus,
+  MinutesItem,
+  Resolution,
 } from '../../api/meetings.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useDetailParam } from '../../components/detailParam.ts'
@@ -415,13 +417,23 @@ function MeetingDetail({
         editable={editable}
         onSaved={loaded.reload}
       />
-      <AgendaEditor
-        key={`a${meeting.version}`}
-        base={base}
-        meeting={meeting}
-        editable={editable && (meeting.status === 'draft' || meeting.status === 'invited')}
-        onSaved={loaded.reload}
-      />
+      {MINUTES_STATES.includes(meeting.status) ? (
+        <MinutesEditor
+          key={`m${meeting.version}`}
+          base={base}
+          meeting={meeting}
+          editable={meeting.can_edit && (meeting.status === 'held' || meeting.status === 'minutes')}
+          onSaved={loaded.reload}
+        />
+      ) : (
+        <AgendaEditor
+          key={`a${meeting.version}`}
+          base={base}
+          meeting={meeting}
+          editable={editable && (meeting.status === 'draft' || meeting.status === 'invited')}
+          onSaved={loaded.reload}
+        />
+      )}
       {meeting.can_attendance && meeting.status !== 'cancelled' && (
         <AttendanceCard base={base} meeting={meeting} />
       )}
@@ -444,6 +456,27 @@ function MeetingDetail({
               }
             >
               {t('Absagen')}
+            </button>
+          )}
+          {(meeting.status === 'draft' || meeting.status === 'invited') && (
+            <button
+              className="button"
+              onClick={() =>
+                run(async () => {
+                  const yes = await confirmDialog({
+                    title: t('Versammlung als durchgeführt markieren?'),
+                    message: t(
+                      'Danach schreibst du das Protokoll. Die Tagesordnung lässt sich dann nicht mehr ändern.',
+                    ),
+                    confirmLabel: t('Durchgeführt'),
+                  })
+                  if (!yes) return
+                  await meetingApi.update(base, meeting, { status: 'held' })
+                  await loaded.reload()
+                })
+              }
+            >
+              {t('Als durchgeführt markieren')}
             </button>
           )}
           {meeting.status === 'cancelled' && (
@@ -1287,5 +1320,291 @@ function AttendanceCard({ base, meeting }: { base: string; meeting: Meeting }) {
         </form>
       )}
     </section>
+  )
+}
+
+const MINUTES_STATES: MeetingStatus[] = ['held', 'minutes', 'done']
+
+function emptyResolution(kind: Resolution['kind']): Resolution {
+  return {
+    kind,
+    text: '',
+    votes_yes: null,
+    votes_no: null,
+    votes_abstain: null,
+    unanimous: false,
+    result: 'accepted',
+    office: '',
+    elected_name: '',
+  }
+}
+
+function resultLabel(r: Resolution) {
+  if (r.kind === 'election') return r.result === 'accepted' ? t('gewählt') : t('nicht gewählt')
+  return r.result === 'accepted' ? t('angenommen') : t('abgelehnt')
+}
+
+function voteSummary(r: Resolution) {
+  if (r.unanimous) return t('einstimmig')
+  if (r.votes_yes === null && r.votes_no === null && r.votes_abstain === null) return ''
+  return t('Ja {yes}, Nein {no}, Enthaltung {abstain}', {
+    yes: r.votes_yes ?? 0,
+    no: r.votes_no ?? 0,
+    abstain: r.votes_abstain ?? 0,
+  })
+}
+
+function count(value: string): number | null {
+  if (value === '') return null
+  const n = Number(value)
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : null
+}
+
+function MinutesEditor({
+  base,
+  meeting,
+  editable,
+  onSaved,
+}: {
+  base: string
+  meeting: Meeting
+  editable: boolean
+  onSaved: () => Promise<void>
+}) {
+  const agenda = meeting.agenda ?? []
+  const initial: MinutesItem[] = agenda.map((a) => ({
+    id: a.id!,
+    minutes: a.minutes ?? '',
+    resolutions: (a.resolutions ?? []).map((r) => ({ ...r })),
+  }))
+  const [items, setItems] = useState(initial)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const dirty = JSON.stringify(items) !== JSON.stringify(initial)
+  useDraftGuard(dirty, () => setItems(initial))
+  const change = (index: number, patch: Partial<MinutesItem>) =>
+    setItems(items.map((item, i) => (i === index ? { ...item, ...patch } : item)))
+  const changeResolution = (index: number, r: number, patch: Partial<Resolution>) =>
+    change(index, {
+      resolutions: items[index].resolutions.map((x, j) => (j === r ? { ...x, ...patch } : x)),
+    })
+  if (!editable) {
+    return (
+      <section className="card stack">
+        <h2>{t('Protokoll der Versammlung')}</h2>
+        <ol className="agenda-list">
+          {agenda.map((a) => (
+            <li key={a.id!}>
+              <strong>{a.title}</strong>
+              {a.minutes && <p className="minutes-text">{a.minutes}</p>}
+              {(a.resolutions ?? []).map((r) => (
+                <p key={r.id!} className="resolution">
+                  <strong>
+                    {r.kind === 'election'
+                      ? t('Wahl {office}: {name}', { office: r.office, name: r.elected_name })
+                      : t('Beschluss')}
+                  </strong>
+                  {r.kind === 'resolution' && <> {r.text}</>} (
+                  {[voteSummary(r), resultLabel(r)].filter(Boolean).join(', ')})
+                </p>
+              ))}
+            </li>
+          ))}
+        </ol>
+      </section>
+    )
+  }
+  return (
+    <form
+      className="card stack"
+      onSubmit={async (e) => {
+        e.preventDefault()
+        setBusy(true)
+        setError('')
+        try {
+          await meetingApi.saveMinutes(base, meeting, items)
+          await onSaved()
+        } catch (err) {
+          setError(errorMessage(err))
+        } finally {
+          setBusy(false)
+        }
+      }}
+    >
+      <h2>{t('Protokoll der Versammlung')}</h2>
+      <p className="muted">
+        {t(
+          'Halte je Tagesordnungspunkt fest, was besprochen wurde, und trage Beschlüsse und Wahlen mit dem Ergebnis ein.',
+        )}
+      </p>
+      <ol className="agenda-edit">
+        {items.map((item, index) => (
+          <li key={item.id} className="agenda-row">
+            <h3>{agenda[index].title}</h3>
+            <label>
+              {t('Protokoll zu TOP {n}', { n: index + 1 })}
+              <textarea
+                value={item.minutes}
+                rows={4}
+                maxLength={50000}
+                onChange={(e) => change(index, { minutes: e.target.value })}
+              />
+            </label>
+            {item.resolutions.map((r, j) => (
+              <fieldset key={r.id ?? `neu-${j}`} className="resolution-edit">
+                <legend>{r.kind === 'election' ? t('Wahl') : t('Beschluss')}</legend>
+                {r.kind === 'election' ? (
+                  <div className="agenda-fields">
+                    <label>
+                      {t('Amt')}
+                      <input
+                        value={r.office}
+                        maxLength={200}
+                        required
+                        onChange={(e) => changeResolution(index, j, { office: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      {t('Gewählt')}
+                      <input
+                        value={r.elected_name}
+                        maxLength={200}
+                        required
+                        onChange={(e) =>
+                          changeResolution(index, j, {
+                            elected_name: e.target.value,
+                            elected: null,
+                          })
+                        }
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <label>
+                    {t('Beschlusstext')}
+                    <textarea
+                      value={r.text}
+                      rows={2}
+                      maxLength={5000}
+                      required
+                      onChange={(e) => changeResolution(index, j, { text: e.target.value })}
+                    />
+                  </label>
+                )}
+                <label className="checkbox">
+                  <input
+                    type="checkbox"
+                    checked={r.unanimous}
+                    onChange={(e) =>
+                      changeResolution(index, j, {
+                        unanimous: e.target.checked,
+                        ...(e.target.checked ? { result: 'accepted' as const } : {}),
+                      })
+                    }
+                  />
+                  {t('einstimmig')}
+                </label>
+                {!r.unanimous && (
+                  <div className="vote-fields">
+                    <label>
+                      {t('Ja')}
+                      <input
+                        type="number"
+                        min={0}
+                        value={r.votes_yes ?? ''}
+                        onChange={(e) =>
+                          changeResolution(index, j, { votes_yes: count(e.target.value) })
+                        }
+                      />
+                    </label>
+                    <label>
+                      {t('Nein')}
+                      <input
+                        type="number"
+                        min={0}
+                        value={r.votes_no ?? ''}
+                        onChange={(e) =>
+                          changeResolution(index, j, { votes_no: count(e.target.value) })
+                        }
+                      />
+                    </label>
+                    <label>
+                      {t('Enthaltung')}
+                      <input
+                        type="number"
+                        min={0}
+                        value={r.votes_abstain ?? ''}
+                        onChange={(e) =>
+                          changeResolution(index, j, { votes_abstain: count(e.target.value) })
+                        }
+                      />
+                    </label>
+                    <label>
+                      {t('Ergebnis')}
+                      <select
+                        value={r.result}
+                        onChange={(e) =>
+                          changeResolution(index, j, {
+                            result: e.target.value as Resolution['result'],
+                          })
+                        }
+                      >
+                        <option value="accepted">
+                          {r.kind === 'election' ? t('gewählt') : t('angenommen')}
+                        </option>
+                        <option value="rejected">
+                          {r.kind === 'election' ? t('nicht gewählt') : t('abgelehnt')}
+                        </option>
+                      </select>
+                    </label>
+                  </div>
+                )}
+                <div className="button-row">
+                  <button
+                    type="button"
+                    className="button button-ghost"
+                    onClick={() =>
+                      change(index, {
+                        resolutions: item.resolutions.filter((_, k) => k !== j),
+                      })
+                    }
+                  >
+                    {t('Entfernen')}
+                  </button>
+                </div>
+              </fieldset>
+            ))}
+            <div className="button-row">
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() =>
+                  change(index, {
+                    resolutions: [...item.resolutions, emptyResolution('resolution')],
+                  })
+                }
+              >
+                {t('Beschluss hinzufügen')}
+              </button>
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() =>
+                  change(index, { resolutions: [...item.resolutions, emptyResolution('election')] })
+                }
+              >
+                {t('Wahl hinzufügen')}
+              </button>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {error && <p role="alert">{error}</p>}
+      <div className="button-row">
+        <button className="button button-primary" disabled={busy || !dirty}>
+          {t('Protokoll speichern')}
+        </button>
+      </div>
+    </form>
   )
 }

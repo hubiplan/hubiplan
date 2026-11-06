@@ -19,6 +19,7 @@ Konzept und Ausbaustufen: `konzepte/versammlungen.md` im Projektordner (V1 bis V
 | `MeetingKind` | Art mit Voreinstellungen: Grundtyp, Einladungsfrist, Form der Einladung, Stimmberechtigte, Beschlussfähigkeit, Vollmacht, Sichtbarkeit des Protokolls |
 | `Meeting` | Versammlung mit genau einem Termin (`events.Event`, geschützt), Stand, Leitung, Protokollführung, Notiz |
 | `AgendaItem` | Tagesordnungspunkt mit Nummer, Titel, Art und Erläuterung |
+| `Resolution` | Beschluss oder Wahl zu einem TOP: Text, Ja/Nein/Enthaltung oder einstimmig, Ergebnis, bei Wahlen Amt und gewählte Person (verschlüsselt, optional Mitgliedschaft), später Nummer im Beschlussbuch |
 | `Attendance` | Anwesenheit: Mitgliedschaft oder Gast, Name (verschlüsselt), Stand (anwesend, entschuldigt, vertreten), Vertreter |
 
 Leitung, Protokollführung, Notiz sowie Titel und Erläuterung der Tagesordnung sind
@@ -31,7 +32,7 @@ außerordentliche Mitgliederversammlung, Vorstandssitzung; Untereinheit: Versamm
 der Leitung). Eine neue Versammlung übernimmt die Tagesordnung der letzten Versammlung
 derselben Art oder bekommt eine übliche Tagesordnung.
 
-## Abläufe (Stand V3)
+## Abläufe (Stand V4, Teil 1)
 
 - Anlegen erzeugt den Termin. Mitgliederversammlungen sind für Mitglieder sichtbar,
   Vorstandssitzungen nur für den Vorstand.
@@ -57,8 +58,13 @@ derselben Art oder bekommt eine übliche Tagesordnung.
   entschuldigt). Beschlussfähigkeit: anwesende plus vertretene Stimmberechtigte gegen den Anteil
   bzw. die Mindestzahl der Art. Nötig ist zusätzlich das Leserecht auf Mitglieder; ändern nur mit
   `meetings.edit`, solange die Versammlung nicht abgeschlossen ist.
+- Protokoll (V4): `PATCH` mit `status: held` beendet die Vorbereitung (aus „in Vorbereitung“
+  oder „eingeladen“); die Tagesordnung ist dann fest. `PUT …/minutes/` speichert Protokolltext je
+  TOP (`AgendaItem.minutes`, verschlüsselt), Beschlüsse und Wahlen sowie Leitung und
+  Protokollführung, mit `version` wie die Tagesordnung. Ein TOP ohne `resolutions` lässt seine
+  Beschlüsse unverändert. Erstes Speichern setzt den Stand auf „Protokoll in Arbeit“.
 - Export und Import nehmen Arten, Versammlungen und Tagesordnungen mit (auch im Export einer
-  Untereinheit), die Anwesenheit nur zusammen mit den Mitgliedsdaten.
+  Untereinheit), ebenso Protokoll und Beschlüsse, die Anwesenheit nur zusammen mit den Mitgliedsdaten.
 
 ## Schnittstelle
 
@@ -68,5 +74,6 @@ derselben Art oder bekommt eine übliche Tagesordnung.
 | `GET/PATCH/DELETE …/meetings/<pk>/` | Einzelne Versammlung; `status` nur `cancelled` oder zurück zu `draft` |
 | `PUT …/meetings/<pk>/agenda/` | Tagesordnung speichern |
 | `POST …/meetings/<pk>/invitation/` | Einladung als Rundschreiben-Entwurf |
+| `PUT …/meetings/<pk>/minutes/` | Protokoll, Beschlüsse und Wahlen |
 | `GET/POST …/meetings/<pk>/attendance/`, `DELETE …/attendance/<id>/` | Anwesenheit |
 | `GET/POST …/meetings/kinds/`, `PATCH/DELETE …/kinds/<pk>/` | Arten |

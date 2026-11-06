@@ -35,4 +35,6 @@ Invitation: **Prepare invitation** creates a draft circular with the agenda. For
 
 Attendance: If you also have read access to members, **Attendance** lists everyone entitled to vote at the meeting. For each person choose **Present**, **Excused** or, if the type allows proxies, **Represented** and then who holds the proxy. Only a present member with voting rights can act as proxy. Enter guests under **Guest without a vote**. The figures at the top show whether the meeting has a quorum under the rule of its type.
 
-Minutes follow in the next stage.
+Minutes: After the meeting choose **Mark as held**. The agenda is then fixed and the minutes appear in its place. For each agenda item write down what was discussed. Use **Add resolution** to record a resolution with its text and result, and **Add election** to record an election with the office and the person elected. Enter the vote as yes, no and abstentions or tick **unanimous**. **Save minutes** stores all changes.
+
+Approval, minutes as PDF and filing in the documents follow in the next stage.

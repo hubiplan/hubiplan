@@ -135,12 +135,55 @@ class AgendaItem(models.Model):
     title = EncryptedCharField(_("Titel"), max_length=300)
     description = EncryptedTextField(_("Erläuterung"), blank=True)
     type = models.CharField(max_length=10, choices=Type.choices, default=Type.OTHER)
+    minutes = EncryptedTextField(_("Protokoll"), blank=True)
 
     class Meta:
         ordering = ["position", "pk"]
 
     def __str__(self):
         return f"agenda item {self.pk}"
+
+
+class Resolution(models.Model):
+    """Beschluss oder Wahl zu einem Tagesordnungspunkt (Schritt V4).
+
+    Eine Wahl ist ein Beschluss mit gewählter Person und Amt. Die Nummer im Beschlussbuch
+    vergibt HUBIplan bei der Freigabe des Protokolls.
+    """
+
+    class Kind(models.TextChoices):
+        RESOLUTION = "resolution", _("Beschluss")
+        ELECTION = "election", _("Wahl")
+
+    class Result(models.TextChoices):
+        ACCEPTED = "accepted", _("angenommen")
+        REJECTED = "rejected", _("abgelehnt")
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="resolutions")
+    agenda_item = models.ForeignKey(
+        AgendaItem, on_delete=models.CASCADE, related_name="resolutions"
+    )
+    position = models.PositiveSmallIntegerField(default=0)
+    kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.RESOLUTION)
+    text = EncryptedTextField(_("Beschlusstext"))
+    votes_yes = models.PositiveIntegerField(null=True, blank=True)
+    votes_no = models.PositiveIntegerField(null=True, blank=True)
+    votes_abstain = models.PositiveIntegerField(null=True, blank=True)
+    unanimous = models.BooleanField(default=False)
+    result = models.CharField(max_length=10, choices=Result.choices, default=Result.ACCEPTED)
+    office = EncryptedCharField(_("Amt"), max_length=200, blank=True)
+    elected_name = EncryptedCharField(_("Gewählt"), max_length=200, blank=True)
+    elected = models.ForeignKey(
+        "members.Membership", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    number = models.CharField(max_length=20, blank=True)
+
+    class Meta:
+        ordering = ["agenda_item__position", "position", "pk"]
+
+    def __str__(self):
+        return f"resolution {self.pk}"
 
 
 class Attendance(models.Model):

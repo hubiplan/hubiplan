@@ -8032,3 +8032,39 @@ msgstr "excused"
 
 msgid "vertreten"
 msgstr "represented"
+
+msgid "Bei einer Wahl bitte Amt und gewählte Person angeben."
+msgstr "For an election, please enter the office and the person elected."
+
+msgid "Wahl: {office}"
+msgstr "Election: {office}"
+
+msgid "Jeder Beschluss braucht einen Text."
+msgstr "Every resolution needs a text."
+
+msgid "Das Protokoll lässt sich jetzt nicht ändern."
+msgstr "The minutes cannot be changed now."
+
+msgid "Unbekannter Tagesordnungspunkt."
+msgstr "Unknown agenda item."
+
+msgid "Unbekannter Beschluss."
+msgstr "Unknown resolution."
+
+msgid "Protokoll"
+msgstr "Minutes"
+
+msgid "bearbeitet"
+msgstr "edited"
+
+msgid "angenommen"
+msgstr "adopted"
+
+msgid "Beschlusstext"
+msgstr "Resolution text"
+
+msgid "Amt"
+msgstr "Office"
+
+msgid "Gewählt"
+msgstr "Elected"

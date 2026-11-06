@@ -38,4 +38,6 @@ Einladung: **Einladung vorbereiten** legt ein Rundschreiben mit Tagesordnung als
 
 Anwesenheit: Hast du zusätzlich Leserecht auf die Mitglieder, zeigt **Anwesenheit** alle Stimmberechtigten der Versammlung. Je Person wählst du **Anwesend**, **Entschuldigt** oder, wenn die Art Vollmachten erlaubt, **Vertreten** und dann, wer die Vollmacht hat. Vertreten kann nur ein anwesendes stimmberechtigtes Mitglied. Gäste trägst du unter **Gast ohne Stimmrecht** ein. Oben stehen die Zahlen und ob die Versammlung nach der Regel der Art beschlussfähig ist.
 
-Das Protokoll folgt in der nächsten Ausbaustufe.
+Protokoll: Nach der Versammlung wählst du **Als durchgeführt markieren**. Die Tagesordnung steht dann fest, und an ihrer Stelle erscheint das Protokoll. Zu jedem Tagesordnungspunkt schreibst du, was besprochen wurde. Mit **Beschluss hinzufügen** hältst du einen Beschluss mit Text und Ergebnis fest, mit **Wahl hinzufügen** eine Wahl mit Amt und gewählter Person. Das Abstimmungsergebnis trägst du als Ja, Nein und Enthaltung ein oder kreuzt **einstimmig** an. **Protokoll speichern** übernimmt alle Änderungen.
+
+Freigabe, Protokoll als PDF und Ablage in den Dokumenten folgen in der nächsten Ausbaustufe.

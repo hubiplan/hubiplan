@@ -422,3 +422,89 @@ def test_anwesenheit_und_beschlussfaehigkeit(setup):
         cur.execute("SELECT name FROM meetings_attendance")
         assert all("Carla" not in str(v) and "Dora" not in str(v) for (v,) in cur.fetchall())
     assert carla  # stimmberechtigt, aber nicht erschienen
+
+
+def test_protokoll_mit_beschluessen_und_wahl(setup):
+    from meetings.models import Resolution
+
+    s = setup
+    org = s["org"]
+    anna = make_member(org, "Anna", "Muster")
+    meeting = new_meeting(s)
+    url = f"{s['url']}{meeting['id']}/"
+    minutes_url = url + "minutes/"
+    items = meeting["agenda"]
+    payload = {"version": meeting["version"], "items": [{"id": items[0]["id"], "minutes": "x"}]}
+    # Vor der Versammlung kein Protokoll
+    assert s["chef"].put(minutes_url, payload, content_type=JSON).status_code == 400
+    meeting = ok(s["chef"].patch(url, {"status": "held"}, content_type=JSON))
+    assert meeting["status"] == "held"
+    # Tagesordnung steht jetzt fest
+    agenda = {"version": meeting["version"], "items": [{"title": "Neu"}]}
+    assert s["chef"].put(url + "agenda/", agenda, content_type=JSON).status_code == 400
+    payload = {
+        "version": meeting["version"],
+        "chair": "Erika Vorsitz",
+        "minute_taker": "Max Schrift",
+        "items": [
+            {"id": items[0]["id"], "minutes": "Begrüßung durch die Vorsitzende."},
+            {
+                "id": items[1]["id"],
+                "minutes": "Der Kassenbericht wurde vorgetragen.",
+                "resolutions": [
+                    {
+                        "text": "Der Vorstand wird entlastet.",
+                        "votes_yes": 20,
+                        "votes_no": 1,
+                        "votes_abstain": 2,
+                        "result": "accepted",
+                    },
+                    {"kind": "election", "office": "Kassierer", "elected": anna.pk},
+                ],
+            },
+        ],
+    }
+    data = ok(s["chef"].put(minutes_url, payload, content_type=JSON))
+    assert data["status"] == "minutes" and data["chair"] == "Erika Vorsitz"
+    second = data["agenda"][1]
+    assert second["minutes"] == "Der Kassenbericht wurde vorgetragen."
+    election = second["resolutions"][1]
+    assert election["elected_name"] == "Anna Muster" and election["text"] == "Wahl: Kassierer"
+    assert second["resolutions"][0]["votes_no"] == 1
+    # Veralteter Stand
+    assert s["chef"].put(minutes_url, payload, content_type=JSON).status_code == 409
+    # Nur ein TOP geändert: Beschlüsse anderer TOPs bleiben, entfernte fallen weg
+    keep = second["resolutions"][0]
+    payload = {
+        "version": data["version"],
+        "items": [
+            {
+                "id": items[1]["id"],
+                "resolutions": [{**keep, "unanimous": True}],
+            }
+        ],
+    }
+    data = ok(s["chef"].put(minutes_url, payload, content_type=JSON))
+    rs = data["agenda"][1]["resolutions"]
+    assert len(rs) == 1 and rs[0]["id"] == keep["id"] and rs[0]["unanimous"]
+    assert rs[0]["votes_yes"] is None
+    assert data["agenda"][0]["minutes"] == "Begrüßung durch die Vorsitzende."
+    # Wahl ohne Amt geht nicht
+    bad = {
+        "version": data["version"],
+        "items": [
+            {"id": items[1]["id"], "resolutions": [{"kind": "election", "elected_name": "X"}]}
+        ],
+    }
+    assert s["chef"].put(minutes_url, bad, content_type=JSON).status_code == 400
+    # Lesen darf jeder mit meetings.view, ändern nicht
+    assert ok(s["reader"].get(url))["agenda"][1]["resolutions"][0]["text"]
+    payload["version"] = data["version"]
+    assert s["reader"].put(minutes_url, payload, content_type=JSON).status_code == 403
+    # Verschlüsselt gespeichert
+    with connection.cursor() as cur:
+        cur.execute("SELECT text FROM meetings_resolution")
+        assert all("entlastet" not in str(v) for (v,) in cur.fetchall())
+        cur.execute("SELECT minutes FROM meetings_agendaitem")
+        assert all("Kassenbericht" not in str(v) for (v,) in cur.fetchall())
+    assert Resolution.objects.count() == 1

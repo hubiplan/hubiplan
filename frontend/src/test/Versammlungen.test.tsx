@@ -87,7 +87,7 @@ const attendance = {
   ],
 }
 
-function show(permissions: string[], path = '/versammlungen') {
+function show(permissions: string[], path = '/versammlungen', current: object = meeting) {
   const api = fakeApi({
     'GET /_allauth/browser/v1/auth/session': () => ({
       status: 200,
@@ -99,7 +99,11 @@ function show(permissions: string[], path = '/versammlungen') {
     }),
     'GET /api/orgs/7/meetings/': () => ({ status: 200, body: [meeting] }),
     'GET /api/orgs/7/meetings/kinds/': () => ({ status: 200, body: [kind] }),
-    'GET /api/orgs/7/meetings/5/': () => ({ status: 200, body: meeting }),
+    'GET /api/orgs/7/meetings/5/': () => ({ status: 200, body: current }),
+    'PUT /api/orgs/7/meetings/5/minutes/': () => ({
+      status: 200,
+      body: { ...current, version: 9 },
+    }),
     'POST /api/orgs/7/meetings/5/invitation/': () => ({
       status: 200,
       body: { ...meeting, version: 4, circular: 77, circular_status: 'draft' },
@@ -183,6 +187,34 @@ describe('Versammlungen', () => {
     expect(await screen.findByText('Beschlussfähig: 2 Stimmen, nötig sind 2.')).toBeInTheDocument()
     const call = api.find((c) => c.key === 'POST /api/orgs/7/meetings/5/attendance/')!
     expect(JSON.parse(String(call.init?.body))).toMatchObject({ membership: 32, status: 'present' })
+  })
+
+  it('schreibt das Protokoll mit Beschluss', async () => {
+    const held = { ...meeting, status: 'held', version: 8 }
+    const api = show(['meetings.view', 'meetings.edit'], '/versammlungen?versammlung=5', held)
+    const form = (
+      await screen.findByRole('heading', { name: 'Protokoll der Versammlung' })
+    ).closest('form')!
+    fireEvent.change(within(form).getByLabelText('Protokoll zu TOP 2'), {
+      target: { value: 'Bericht vorgetragen.' },
+    })
+    fireEvent.click(within(form).getAllByRole('button', { name: 'Beschluss hinzufügen' })[1])
+    fireEvent.change(within(form).getByLabelText('Beschlusstext'), {
+      target: { value: 'Entlastung des Vorstands.' },
+    })
+    fireEvent.click(within(form).getByLabelText('einstimmig'))
+    fireEvent.click(within(form).getByRole('button', { name: 'Protokoll speichern' }))
+    await waitFor(() =>
+      expect(api.some((c) => c.key === 'PUT /api/orgs/7/meetings/5/minutes/')).toBe(true),
+    )
+    const call = api.find((c) => c.key === 'PUT /api/orgs/7/meetings/5/minutes/')!
+    const body = JSON.parse(String(call.init?.body))
+    expect(body.version).toBe(8)
+    expect(body.items[1]).toMatchObject({
+      id: 12,
+      minutes: 'Bericht vorgetragen.',
+      resolutions: [{ text: 'Entlastung des Vorstands.', unanimous: true, result: 'accepted' }],
+    })
   })
 
   it('ohne Recht kein Zugang', async () => {
