@@ -16,6 +16,7 @@ export interface MeetingKind {
   quorum_count: number | null
   proxies_allowed: boolean
   minutes_for: 'board' | 'voters'
+  motion_days: number | null
   position: number
   active: boolean
   used: boolean
@@ -81,6 +82,31 @@ export interface Meeting {
   released_at?: string | null
   minutes_sha256?: string
   minutes_document?: number | null
+  motions_open?: number
+  motions?: Motion[]
+}
+
+export type MotionStatus = 'submitted' | 'accepted' | 'rejected' | 'withdrawn'
+
+export interface Motion {
+  id: number
+  name: string
+  title: string
+  text: string
+  status: MotionStatus
+  reply: string
+  agenda_item: number | null
+  created_at: string
+  decided_at: string | null
+}
+
+export interface OwnMotion {
+  id: number
+  title: string
+  text: string
+  status: MotionStatus
+  reply: string
+  created_at: string
 }
 
 export interface Confirmation {
@@ -150,6 +176,8 @@ export interface PortalMeetings {
     starts_at: string
     location: string
     address: string
+    motion_until: string | null
+    motions: OwnMotion[]
     agenda: { position: number; title: string; description: string }[]
   }[]
   minutes: { id: number; title: string; kind_name: string; unit: string; starts_at: string }[]
@@ -159,6 +187,10 @@ export const portalMeetingApi = {
   list: (access: number) => api.get<PortalMeetings>(`/api/portal/${access}/meetings/`),
   minutes: (access: number, id: number) =>
     requestBlob('GET', `/api/portal/${access}/meetings/${id}/minutes/`),
+  submitMotion: (access: number, id: number, data: { title: string; text: string }) =>
+    api.post<OwnMotion[]>(`/api/portal/${access}/meetings/${id}/motions/`, data),
+  withdrawMotion: (access: number, id: number) =>
+    api.post(`/api/portal/${access}/meetings/motions/${id}/withdraw/`),
 }
 
 export const meetingApi = {
@@ -188,6 +220,8 @@ export const meetingApi = {
   updateKind: (base: string, id: number, data: object) =>
     api.patch<MeetingKind>(`${base}kinds/${id}/`, data),
   removeKind: (base: string, id: number) => api.del(`${base}kinds/${id}/`),
+  decideMotion: (base: string, meeting: number, motion: number, data: object) =>
+    api.post<Meeting>(`${base}${meeting}/motions/${motion}/`, data),
   book: (base: string, query: string) => api.get<Book>(`${base}resolutions/${query}`),
   bookExport: (base: string, query: string) =>
     requestBlob('GET', `${base}resolutions/export/${query}`),

@@ -1,7 +1,7 @@
 # Helferdienste und Schichtpläne
 
 Modul `helpers` (abschaltbar, von der Plattform freigeschaltet), App `backend/helpers`. Konzept
-mit den Ausbaustufen H1–H5; dieser Stand ist H3.
+mit den Ausbaustufen H1–H5; dieser Stand ist H4.
 
 ## Modul und Rechte
 
@@ -103,7 +103,19 @@ Plans gehören und der Termin zur Einheit des Plans.
 | `POST …/helpers/quotas/<pk>/assignments/` | Mitglied ins Kontingent einteilen |
 | `DELETE …/helpers/quotas/assignments/<pk>/` | Aus dem Kontingent nehmen |
 
+## Kopie, Aufruf, geleistete Dienste (H4)
+
+- `POST …/helpers/<pk>/copy/` (`title`, `days`, optional `event`) legt einen neuen Plan in
+  Vorbereitung an: Einstellungen, Hinweis, Dienste, Schichten (um `days` Tage verschoben) und
+  Kontingente aktiver Untereinheiten, keine Einteilungen.
+- `POST …/helpers/<pk>/callout/` legt für einen veröffentlichten Plan mit freien Plätzen einen
+  Rundschreiben-Entwurf (Art Information, an alle Mitglieder der Einheit) mit den freien
+  Schichten ab jetzt an; offene Kontingentplätze zählen nicht als frei. Braucht zusätzlich
+  `circulars.send`/`circulars.edit` bzw. `dept.circulars.send` (`can_callout` im Plan).
+- `PATCH …/assignments/<pk>/` mit `done` markiert geleistete Dienste, auch in abgeschlossenen
+  Plänen. `GET …/helpers/done/?jahr=` zählt je Person (Mitglied oder externer Name) Schichten
+  und Minuten mit `done = true` und Schichtbeginn im Jahr.
+
 ## Nächste Stufen
 
-H4 Plan kopieren, Aufruf per
-Rundschreiben, geleistete Dienste; H5 Android-App.
+H5 Android-App (Meine Dienste, eintragen).

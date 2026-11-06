@@ -239,7 +239,7 @@ def build(membership: Membership, org) -> bytes:
     )
 
     from helpers.models import ShiftAssignment
-    from meetings.models import Attendance, Resolution
+    from meetings.models import Attendance, Motion, Resolution
 
     files["versammlungen.json"] = _dump(
         {
@@ -261,6 +261,19 @@ def build(membership: Membership, org) -> bytes:
                     "nummer": r.number,
                 }
                 for r in Resolution.objects.filter(elected=membership).select_related(
+                    "meeting__event"
+                )
+            ],
+            "antraege": [
+                {
+                    "versammlung": m.meeting.event.title,
+                    "titel": m.title,
+                    "begruendung": m.text,
+                    "stand": m.get_status_display(),
+                    "antwort": m.reply,
+                    "eingereicht": m.created_at,
+                }
+                for m in Motion.objects.filter(membership=membership).select_related(
                     "meeting__event"
                 )
             ],
