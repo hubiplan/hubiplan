@@ -338,6 +338,8 @@ CELERY_BEAT_SCHEDULE = {
     # Backup-Stand prüfen, Alarm-Mail bei Fehler oder Lücke (ohne Statusordner: nichts)
     # Änderungsprotokoll versiegeln und Kette prüfen (Finanzamt-Prüfung C3)
     "protokoll-pruefen": {"task": "audit.tasks.check_chains", "schedule": 24 * 60 * 60},
+    # Kettenkopf wöchentlich an die Kassenprüfer (Gesamtaudit 05.11. GA-08)
+    "protokoll-kassenpruefer": {"task": "audit.tasks.mail_heads", "schedule": 7 * 24 * 60 * 60},
     # Nextcloud-Konten mit den Rollen abgleichen (ohne „Konten automatisch deaktivieren“: nichts)
     "nextcloud-konten": {"task": "oidc.tasks.sync_all", "schedule": 24 * 60 * 60},
     "meldungen-kuerzen": {"task": "entries.tasks.shorten_old_entries", "schedule": 24 * 60 * 60},

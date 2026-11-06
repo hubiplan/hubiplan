@@ -1,7 +1,8 @@
 """Pflicht zur Zwei-Faktor-Anmeldung für heikle Rechte (Gesamtaudit 31.10.b, Frage 1).
 
-Wer Plattform, Rollen, vollständige Exporte oder die Kasse (schreibend) verwaltet, braucht
-eine eingerichtete Zwei-Faktor-Anmeldung. Ab dem ersten Mal, dass ein Konto solche Rechte
+Wer Plattform, Rollen, vollständige Exporte oder die Kasse (schreibend) verwaltet, alle
+Mitglieder lesen darf oder Protokoll und Postausgang sieht (Gesamtaudit 05.11. F-02),
+braucht eine eingerichtete Zwei-Faktor-Anmeldung. Ab dem ersten Mal, dass ein Konto solche Rechte
 hat, bleiben ``GRACE_DAYS`` Tage zum Einrichten; danach ruhen genau diese Rechte, bis die
 Zwei-Faktor-Anmeldung eingerichtet ist. Alles andere geht weiter, auch „Mein Konto“.
 """
@@ -30,6 +31,11 @@ MFA_PERMISSIONS = frozenset(
         catalog.EXPORT_FULL,
         catalog.UNITS_EDIT,
         catalog.PLATFORM_EDIT,
+        # Lesen aller Mitglieder, Protokoll und Postausgang (Gesamtaudit 05.11. F-02);
+        # Rechte nur für eine Abteilung bleiben ohne Pflicht
+        catalog.MEMBERS_VIEW,
+        catalog.MEMBERS_EDIT,
+        catalog.AUDIT_VIEW,
     }
 )
 

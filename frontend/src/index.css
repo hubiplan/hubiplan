@@ -348,6 +348,7 @@ button.tab.active {
     .card-head,
     .filters,
     .calendar-toolbar,
+    .booking-toolbar,
     .doc-folder-tools,
     .photo-editor,
     .photo-row,
@@ -1389,6 +1390,7 @@ fieldset {
 }
 
 .filters select,
+.booking-toolbar select,
 .search-input,
 .inline-add select,
 .inline-add input[type='date'] {

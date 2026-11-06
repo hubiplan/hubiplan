@@ -146,7 +146,9 @@ def test_jede_einheit_nur_einmal(c, fin, club, setup):
         AuditEntry.objects.update(seq=None, prev_hash="", hash="", changes_hash="")
     assert check_chains() == len(orgs)
 
-    with rls_bypass():
+    from .gobd_hilfe import protokoll_offen
+
+    with rls_bypass(), protokoll_offen():
         AuditEntry.objects.update(seq=None, prev_hash="", hash="", changes_hash="")
     migration = importlib.import_module("audit.migrations.0006_protokollkette")
 
