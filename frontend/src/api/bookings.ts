@@ -8,6 +8,7 @@ export interface BookingRules {
   buffer_after: number
   horizon_days: number
   website: 'off' | 'busy' | 'titles'
+  portal?: boolean
 }
 
 export interface BookableItem {
@@ -106,6 +107,49 @@ export const bookingApi = {
     api.post<Booking>(`${base}${booking.id}/skip/`, {
       original_start: originalStart,
       restore,
+      version: booking.version,
+    }),
+}
+
+export interface PortalBookingItem {
+  id: number
+  kind: StockKind
+  title: string
+  facility: number | null
+  horizon_days: number
+}
+
+export interface PortalBusy {
+  item: number
+  title: string
+  starts_at: string
+  ends_at: string
+  all_day: boolean
+  own: boolean
+}
+
+export interface PortalOwnBooking {
+  id: number
+  item: number
+  item_title: string
+  title: string
+  note: string
+  starts_at: string
+  ends_at: string
+  all_day: boolean
+  status: BookingStatus
+  version: number
+}
+
+export const portalBookingApi = {
+  list: (access: number, start: string) =>
+    api.get<{ items: PortalBookingItem[]; occurrences: PortalBusy[]; own: PortalOwnBooking[] }>(
+      `/api/portal/${access}/bookings/?start=${start}`,
+    ),
+  request: (access: number, data: object) =>
+    api.post<PortalOwnBooking>(`/api/portal/${access}/bookings/`, data),
+  cancel: (access: number, booking: PortalOwnBooking) =>
+    api.post<PortalOwnBooking>(`/api/portal/${access}/bookings/${booking.id}/cancel/`, {
       version: booking.version,
     }),
 }

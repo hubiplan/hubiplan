@@ -42,3 +42,7 @@ detail page shows **Book firmly**. This opens a booking for that event; for "Thi
 exactly that date is booked.
 
 On the website: Under **Booking calendar** you choose per item whether the “Bookings” section of the website shows nothing, only booked times or, for public bookings, also the purpose. Switch the section on under Website › Menu and sections.
+
+Requests from the members' area: With **Members may send requests from the members' area** an
+item appears in My area on the Bookings tile. Such requests always need approval. Whoever made a
+request or booking receives an email when someone else confirms, rejects or cancels it.

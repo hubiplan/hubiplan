@@ -486,7 +486,7 @@ function BookingDetail({
               disabled={busy}
               onClick={() => act(() => bookingApi.decide(base, data, 'cancel'))}
             >
-              {data.repeat !== 'none' ? t('Ganze Serie stornieren') : t('Stornieren')}
+              {data.repeat !== 'none' ? t('Ganze Serie stornieren') : t('Buchung stornieren')}
             </button>
           )}
         </div>
@@ -935,6 +935,7 @@ export function BookingRulesCard({
     buffer_after: 0,
     horizon_days: 365,
     website: 'off' as 'off' | 'busy' | 'titles',
+    portal: false,
     ...(item.booking_rules ?? {}),
   }
   const [rules, setRules] = useState(initial)
@@ -986,6 +987,14 @@ export function BookingRulesCard({
                     onChange={(e) => setRules({ ...rules, approval: e.target.checked })}
                   />{' '}
                   {t('Buchungen ohne Freigaberecht sind Anfragen')}
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={rules.portal}
+                    onChange={(e) => setRules({ ...rules, portal: e.target.checked })}
+                  />{' '}
+                  {t('Mitglieder dürfen im Mitgliederbereich anfragen')}
                 </label>
                 <div className="booking-times">
                   <label>

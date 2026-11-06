@@ -404,6 +404,9 @@ class DecisionView(Base):
         booking.version += 1
         booking.save()
         services.rebuild(booking)
+        from .notify import decision
+
+        decision(booking, request.user)
         return Response(self.data(booking))
 
 

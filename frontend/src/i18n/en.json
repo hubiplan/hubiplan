@@ -6439,5 +6439,15 @@
   "Rückgabe bestätigen": "Confirm return",
   "Rückgabe zurücknehmen": "Undo return",
   "Ausgabe zurücknehmen": "Undo hand-out",
-  "Verbindlich buchen": "Book firmly"
+  "Verbindlich buchen": "Book firmly",
+  "Buchung stornieren": "Cancel booking",
+  "Zurzeit lassen sich hier keine Objekte anfragen.": "There are currently no items you can request here.",
+  "Belegte Zeiten": "Booked times",
+  "In dieser Woche frei.": "Free this week.",
+  "Anfrage stellen": "Make a request",
+  "Die Verwaltung bestätigt deine Anfrage oder lehnt sie ab; du bekommst eine E-Mail.": "The managers confirm or reject your request; you will receive an email.",
+  "Deine Anfrage ist eingegangen.": "Your request has been received.",
+  "Meine Anfragen und Buchungen": "My requests and bookings",
+  "Schützenhaus, Stand oder Material anfragen": "Request the clubhouse, range or equipment",
+  "Mitglieder dürfen im Mitgliederbereich anfragen": "Members may send requests from the members' area"
 }

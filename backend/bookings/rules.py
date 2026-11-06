@@ -13,6 +13,8 @@ DEFAULTS = {
     "horizon_days": 365,
     # Webseite: aus, nur belegt/frei, mit Titel öffentlicher Buchungen
     "website": "off",
+    # Mitglieder dürfen im Mitgliederbereich (Portal) anfragen
+    "portal": False,
 }
 
 
@@ -35,6 +37,7 @@ class RulesInput(serializers.Serializer):
     website = serializers.ChoiceField(
         choices=["off", "busy", "titles"], required=False, default="off"
     )
+    portal = serializers.BooleanField(required=False, default=False)
 
     def validate(self, data):
         if data["buffer_before"] % 5 or data["buffer_after"] % 5:

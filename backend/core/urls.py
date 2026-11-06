@@ -7,6 +7,7 @@ from accounts import help_done, language, learning, self_service
 from billing import einvoice_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
+from bookings import portal as booking_portal
 from cards import views as card_views
 from changes import views as change_views
 from circulars import urls as circular_urls
@@ -784,6 +785,11 @@ urlpatterns = [
     path("me/todos/preferences/", todo_views.TodoPreferencesView.as_view()),
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
+    path("portal/<int:access_id>/bookings/", booking_portal.ListView.as_view()),
+    path(
+        "portal/<int:access_id>/bookings/<int:pk>/cancel/",
+        booking_portal.CancelView.as_view(),
+    ),
     path("portal/<int:access_id>/todos/", todo_portal.PortalTaskListView.as_view()),
     path(
         "portal/<int:access_id>/todos/<int:pk>/remote-files/<int:att_id>/",
