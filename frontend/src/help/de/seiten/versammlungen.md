@@ -36,4 +36,6 @@ Protokoll sieht.
 
 Einladung: **Einladung vorbereiten** legt ein Rundschreiben mit Tagesordnung als Entwurf an. Empfänger sind bei Mitgliederversammlungen die Stimmberechtigten der Art (Mitgliedsarten und Mindestalter), bei Vorstandssitzungen der Vorstand, bei Sitzungen der Leitung einer Untereinheit deren Rolleninhaber. Mit **Rundschreiben öffnen** prüfst du Empfänger und Text und verschickst die Einladung. Danach gilt die Versammlung als eingeladen; ging sie nach dem letzten Tag der Frist hinaus, weist HUBIplan darauf hin. Dafür brauchst du zusätzlich das Recht, Rundschreiben zu versenden. Ändert sich die Tagesordnung, nachdem der Entwurf angelegt ist, passe den Text im Rundschreiben an.
 
-Anwesenheit und Protokoll folgen in den nächsten Ausbaustufen.
+Anwesenheit: Hast du zusätzlich Leserecht auf die Mitglieder, zeigt **Anwesenheit** alle Stimmberechtigten der Versammlung. Je Person wählst du **Anwesend**, **Entschuldigt** oder, wenn die Art Vollmachten erlaubt, **Vertreten** und dann, wer die Vollmacht hat. Vertreten kann nur ein anwesendes stimmberechtigtes Mitglied. Gäste trägst du unter **Gast ohne Stimmrecht** ein. Oben stehen die Zahlen und ob die Versammlung nach der Regel der Art beschlussfähig ist.
+
+Das Protokoll folgt in der nächsten Ausbaustufe.

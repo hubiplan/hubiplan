@@ -31,3 +31,17 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+.attendance-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.attendance .segmented {
+  flex-wrap: wrap;
+}
+.attendance td .badge {
+  margin-left: 0.5rem;
+}
+.attendance form.button-row {
+  align-items: flex-end;
+}

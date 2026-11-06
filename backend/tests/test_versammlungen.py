@@ -332,3 +332,93 @@ def test_einladung_vorstandssitzung_an_vorstand(setup):
     meeting = new_meeting(s, "Vorstandssitzung")
     data = ok(s["chef"].post(f"{s['url']}{meeting['id']}/invitation/"))
     assert Circular.objects.get(pk=data["circular"]).filters == {"board": True}
+
+
+def test_anwesenheit_und_beschlussfaehigkeit(setup):
+    from access.models import Role
+    from meetings.models import Attendance
+    from members.models import MemberType
+
+    s = setup
+    org = s["org"]
+    aktiv, _ = MemberType.objects.get_or_create(organization=org, name="aktiv")
+    passiv = MemberType.objects.create(organization=org, name="passiv")
+    anna = make_member(org, "Anna", "Muster", member_type=aktiv)
+    bernd = make_member(org, "Bernd", "Beispiel", member_type=aktiv)
+    carla = make_member(org, "Carla", "Probe", member_type=aktiv)
+    dora = make_member(org, "Dora", "Passiv", member_type=passiv)
+    kind = kind_named(s["chef"], s["url"], "Jahreshauptversammlung")
+    ok(
+        s["chef"].patch(
+            f"{s['url']}kinds/{kind['id']}/",
+            {"voter_types": [aktiv.pk], "quorum_percent": 50},
+            content_type=JSON,
+        )
+    )
+    meeting = new_meeting(s)
+    url = f"{s['url']}{meeting['id']}/attendance/"
+    # Ohne Recht auf Mitgliedsdaten keine Anwesenheitsliste
+    assert s["chef"].get(url).status_code == 403
+    Role.objects.filter(organization=org, name="Vorsitz").update(
+        permissions=["meetings.edit", "members.view"]
+    )
+    data = ok(s["chef"].get(url))
+    names = {r["name"] for r in data["rows"]}
+    assert data["voters"] == 3 and "Dora Passiv" not in str(names)
+    assert data["quorum"] == {"needed": 2, "reached": False, "rule": True}
+
+    def mark(**body):
+        return ok(s["chef"].post(url, body, content_type=JSON))
+
+    mark(membership=anna.pk, status="present")
+    data = mark(membership=dora.pk, status="present")
+    assert data["present"] == 1 and data["guests"] == 1 and not data["quorum"]["reached"]
+    # Vertretung nur, wenn die Art sie vorsieht
+    anna_row = next(r for r in data["rows"] if r["membership"] == anna.pk)
+    resp = s["chef"].post(
+        url,
+        {"membership": bernd.pk, "status": "represented", "represented_by": anna_row["id"]},
+        content_type=JSON,
+    )
+    assert resp.status_code == 400
+    ok(
+        s["chef"].patch(
+            f"{s['url']}kinds/{kind['id']}/", {"proxies_allowed": True}, content_type=JSON
+        )
+    )
+    # Gäste und Nichtstimmberechtigte können nicht vertreten
+    dora_row = next(r for r in data["rows"] if r["membership"] == dora.pk)
+    resp = s["chef"].post(
+        url,
+        {"membership": bernd.pk, "status": "represented", "represented_by": dora_row["id"]},
+        content_type=JSON,
+    )
+    assert resp.status_code == 400
+    data = mark(membership=bernd.pk, status="represented", represented_by=anna_row["id"])
+    assert data["represented"] == 1 and data["quorum"]["reached"]
+    # Gast ohne Mitgliedschaft
+    data = mark(name="Gerd Gast", status="present")
+    assert data["guests"] == 2
+    # Anna geht: Bernds Vollmacht fällt weg
+    data = mark(membership=anna.pk, status="excused")
+    assert data["present"] == 0 and data["represented"] == 0
+    assert Attendance.objects.get(membership=bernd).status == "excused"
+    # Eintrag löschen
+    gast = next(r for r in data["rows"] if r["name"] == "Gerd Gast")
+    data = ok(s["chef"].delete(f"{url}{gast['id']}/"))
+    assert data["guests"] == 1
+    # Nur Lesen: kein Ändern
+    Role.objects.filter(organization=org, name="Beisitz").update(
+        permissions=["meetings.view", "members.view"]
+    )
+    data = ok(s["reader"].get(url))
+    assert data["editable"] is False
+    assert (
+        s["reader"].post(url, {"name": "X", "status": "present"}, content_type=JSON).status_code
+        == 403
+    )
+    # Name verschlüsselt gespeichert
+    with connection.cursor() as cur:
+        cur.execute("SELECT name FROM meetings_attendance")
+        assert all("Carla" not in str(v) and "Dora" not in str(v) for (v,) in cur.fetchall())
+    assert carla  # stimmberechtigt, aber nicht erschienen

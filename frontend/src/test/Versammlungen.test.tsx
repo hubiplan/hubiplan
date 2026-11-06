@@ -44,9 +44,46 @@ const meeting = {
   chair: '',
   minute_taker: '',
   note: '',
+  can_attendance: true,
   agenda: [
     { id: 11, position: 1, title: 'Begrüßung', description: '', type: 'other' },
     { id: 12, position: 2, title: 'Kassenbericht', description: '', type: 'report' },
+  ],
+}
+
+const attendance = {
+  voters: 3,
+  present: 1,
+  represented: 0,
+  guests: 0,
+  quorum: { needed: 2, reached: false, rule: true },
+  proxies_allowed: false,
+  editable: true,
+  rows: [
+    {
+      id: 91,
+      membership: 31,
+      name: 'Anna Muster',
+      voter: true,
+      status: 'present',
+      represented_by: null,
+    },
+    {
+      id: null,
+      membership: 32,
+      name: 'Bernd Beispiel',
+      voter: true,
+      status: '',
+      represented_by: null,
+    },
+    {
+      id: null,
+      membership: 33,
+      name: 'Carla Probe',
+      voter: true,
+      status: '',
+      represented_by: null,
+    },
   ],
 }
 
@@ -66,6 +103,18 @@ function show(permissions: string[], path = '/versammlungen') {
     'POST /api/orgs/7/meetings/5/invitation/': () => ({
       status: 200,
       body: { ...meeting, version: 4, circular: 77, circular_status: 'draft' },
+    }),
+    'GET /api/orgs/7/meetings/5/attendance/': () => ({ status: 200, body: attendance }),
+    'POST /api/orgs/7/meetings/5/attendance/': () => ({
+      status: 200,
+      body: {
+        ...attendance,
+        present: 2,
+        quorum: { needed: 2, reached: true, rule: true },
+        rows: attendance.rows.map((r) =>
+          r.membership === 32 ? { ...r, id: 92, status: 'present' } : r,
+        ),
+      },
     }),
     'PUT /api/orgs/7/meetings/5/agenda/': () => ({
       status: 200,
@@ -118,6 +167,22 @@ describe('Versammlungen', () => {
     await waitFor(() =>
       expect(api.some((c) => c.key === 'POST /api/orgs/7/meetings/5/invitation/')).toBe(true),
     )
+  })
+
+  it('erfasst die Anwesenheit und zeigt die Beschlussfähigkeit', async () => {
+    const api = show(
+      ['meetings.view', 'meetings.edit', 'members.view'],
+      '/versammlungen?versammlung=5',
+    )
+    expect(
+      await screen.findByText('Noch nicht beschlussfähig: 1 Stimmen, nötig sind 2.'),
+    ).toBeInTheDocument()
+    const bernd = screen.getByRole('group', { name: 'Bernd Beispiel' })
+    expect(within(bernd).queryByRole('button', { name: 'Vertreten' })).not.toBeInTheDocument()
+    fireEvent.click(within(bernd).getByRole('button', { name: 'Anwesend' }))
+    expect(await screen.findByText('Beschlussfähig: 2 Stimmen, nötig sind 2.')).toBeInTheDocument()
+    const call = api.find((c) => c.key === 'POST /api/orgs/7/meetings/5/attendance/')!
+    expect(JSON.parse(String(call.init?.body))).toMatchObject({ membership: 32, status: 'present' })
   })
 
   it('ohne Recht kein Zugang', async () => {

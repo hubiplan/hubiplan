@@ -8011,3 +8011,24 @@ msgstr "Invitations for this meeting have already been sent."
 
 msgid "Bitte zuerst die Tagesordnung anlegen."
 msgstr "Please create the agenda first."
+
+msgid "Für die Anwesenheitsliste ist zusätzlich das Leserecht auf Mitglieder nötig."
+msgstr "The attendance list also requires read access to members."
+
+msgid "Die Anwesenheit lässt sich jetzt nicht mehr ändern."
+msgstr "Attendance can no longer be changed."
+
+msgid "Bei dieser Art ist keine Vertretung mit Vollmacht vorgesehen."
+msgstr "This type does not allow representation by proxy."
+
+msgid "Vertreten kann nur ein anwesendes stimmberechtigtes Mitglied."
+msgstr "Only a present member with voting rights can act as proxy."
+
+msgid "anwesend"
+msgstr "present"
+
+msgid "entschuldigt"
+msgstr "excused"
+
+msgid "vertreten"
+msgstr "represented"

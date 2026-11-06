@@ -141,3 +141,41 @@ class AgendaItem(models.Model):
 
     def __str__(self):
         return f"agenda item {self.pk}"
+
+
+class Attendance(models.Model):
+    """Anwesenheit bei einer Versammlung (Schritt V3).
+
+    Mitglieder stehen mit ihrer Mitgliedschaft hier, Gäste nur mit Namen. Der Name wird
+    beim Eintragen festgehalten, damit die Liste auch nach einem Austritt lesbar bleibt.
+    """
+
+    class Status(models.TextChoices):
+        PRESENT = "present", _("anwesend")
+        EXCUSED = "excused", _("entschuldigt")
+        REPRESENTED = "represented", _("vertreten")
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="attendance")
+    membership = models.ForeignKey(
+        "members.Membership", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    name = EncryptedCharField(_("Name"), max_length=200)
+    status = models.CharField(max_length=12, choices=Status.choices)
+    voter = models.BooleanField(default=False)
+    represented_by = models.ForeignKey(
+        "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="proxies"
+    )
+    recorded_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["meeting", "membership"],
+                condition=models.Q(membership__isnull=False),
+                name="attendance_once_per_member",
+            )
+        ]
+
+    def __str__(self):
+        return f"attendance {self.pk}"

@@ -45,6 +45,7 @@ export interface Meeting {
   version: number
   can_edit: boolean
   can_invite: boolean
+  can_attendance?: boolean
   invited_at: string | null
   circular: number | null
   circular_status: '' | 'draft' | 'sending' | 'sent'
@@ -52,6 +53,28 @@ export interface Meeting {
   minute_taker?: string
   note?: string
   agenda?: AgendaItem[]
+}
+
+export type AttendanceStatus = 'present' | 'excused' | 'represented'
+
+export interface AttendanceRow {
+  id: number | null
+  membership: number | null
+  name: string
+  voter: boolean
+  status: '' | AttendanceStatus
+  represented_by: number | null
+}
+
+export interface AttendanceList {
+  voters: number
+  present: number
+  represented: number
+  guests: number
+  quorum: { needed: number; reached: boolean; rule: boolean }
+  proxies_allowed: boolean
+  editable: boolean
+  rows: AttendanceRow[]
 }
 
 export const meetingApi = {
@@ -65,6 +88,11 @@ export const meetingApi = {
     api.put<Meeting>(`${base}${meeting.id}/agenda/`, { version: meeting.version, items }),
   prepareInvitation: (base: string, meeting: Meeting) =>
     api.post<Meeting>(`${base}${meeting.id}/invitation/`),
+  attendance: (base: string, id: number) => api.get<AttendanceList>(`${base}${id}/attendance/`),
+  markAttendance: (base: string, id: number, data: object) =>
+    api.post<AttendanceList>(`${base}${id}/attendance/`, data),
+  removeAttendance: (base: string, id: number, entry: number) =>
+    api.del(`${base}${id}/attendance/${entry}/`),
   kinds: (base: string) => api.get<MeetingKind[]>(`${base}kinds/`),
   createKind: (base: string, data: object) => api.post<MeetingKind>(`${base}kinds/`, data),
   updateKind: (base: string, id: number, data: object) =>

@@ -217,3 +217,34 @@ def circular_sent(circular) -> None:
         meeting.invited_at = circular.sent_at or timezone.now()
         meeting.version += 1
         meeting.save(update_fields=["status", "invited_at", "version", "updated_at"])
+
+
+# --- Anwesenheit (Schritt V3) ---------------------------------------------------------------
+
+
+def voters(meeting):
+    """Stimmberechtigte Mitgliedschaften (heute), nach derselben Auswahl wie die Einladung."""
+    from circulars.recipients import club_base, club_filtered
+    from members.models import Membership
+    from organizations.models import Department
+
+    if meeting.organization.type != "club":
+        return Membership.objects.none()
+    department = Department.objects.get(pk=meeting.department_id) if meeting.department_id else None
+    _audience, filters = invitation_filters(meeting)
+    base = club_base(meeting.organization, department)
+    matched, _jubilees = club_filtered(meeting.organization, base, filters)
+    return matched
+
+
+def quorum(meeting, voter_count: int, counted: int) -> dict:
+    """Beschlussfähigkeit nach der Art: nötige Zahl und ob sie erreicht ist."""
+    import math
+
+    kind = meeting.kind
+    needed = 0
+    if kind.quorum_percent:
+        needed = math.ceil(voter_count * kind.quorum_percent / 100)
+    if kind.quorum_count:
+        needed = max(needed, kind.quorum_count)
+    return {"needed": needed, "reached": counted >= needed, "rule": bool(needed)}

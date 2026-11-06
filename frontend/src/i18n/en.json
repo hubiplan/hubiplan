@@ -6575,5 +6575,19 @@
   "Die Einladung entsteht als Rundschreiben mit Tagesordnung an die Stimmberechtigten. Du prüfst es dort und verschickst es selbst.": "The invitation is created as a circular with the agenda to the members entitled to vote. You check it there and send it yourself.",
   "Rundschreiben öffnen": "Open circular",
   "Einladung vorbereiten": "Prepare invitation",
-  "Für die Einladung ist zusätzlich das Recht nötig, Rundschreiben zu versenden.": "The invitation also requires the right to send circulars."
+  "Für die Einladung ist zusätzlich das Recht nötig, Rundschreiben zu versenden.": "The invitation also requires the right to send circulars.",
+  "Anwesend": "Present",
+  "Anwesenheit": "Attendance",
+  "Beschlussfähig: {counted} Stimmen, nötig sind {needed}.": "Quorum reached: {counted} votes, {needed} required.",
+  "Entschuldigt": "Excused",
+  "Es gibt keine Stimmberechtigten für diese Versammlung.": "There are no eligible voters for this meeting.",
+  "Für diese Art ist keine Mindestzahl für die Beschlussfähigkeit festgelegt.": "No quorum is set for this type.",
+  "Gast eintragen": "Add guest",
+  "Gast ohne Stimmrecht": "Guest without a vote",
+  "Name suchen": "Search name",
+  "Noch nicht beschlussfähig: {counted} Stimmen, nötig sind {needed}.": "Quorum not yet reached: {counted} votes, {needed} required.",
+  "Vertreten": "Represented",
+  "nicht erfasst": "not recorded",
+  "vertreten durch {name}": "represented by {name}",
+  "{present} von {voters} Stimmberechtigten anwesend, {represented} vertreten, {guests} Gäste.": "{present} of {voters} eligible voters present, {represented} represented, {guests} guests."
 }

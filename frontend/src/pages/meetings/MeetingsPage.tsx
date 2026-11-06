@@ -1,10 +1,13 @@
-// Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritt V1): Übersicht,
-// Anlegen mit Termin, Tagesordnung und Arten mit Voreinstellungen.
+// Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V3): Übersicht,
+// Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit und Arten mit Voreinstellungen.
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { meetingApi } from '../../api/meetings.ts'
 import type {
   AgendaItem,
+  AttendanceList,
+  AttendanceRow,
+  AttendanceStatus,
   AgendaType,
   Meeting,
   MeetingBase,
@@ -419,6 +422,9 @@ function MeetingDetail({
         editable={editable && (meeting.status === 'draft' || meeting.status === 'invited')}
         onSaved={loaded.reload}
       />
+      {meeting.can_attendance && meeting.status !== 'cancelled' && (
+        <AttendanceCard base={base} meeting={meeting} />
+      )}
       {meeting.can_edit && (
         <div className="button-row">
           {(meeting.status === 'draft' || meeting.status === 'invited') && (
@@ -1068,6 +1074,217 @@ function InvitationCard({
         <p className="muted small">
           {t('Für die Einladung ist zusätzlich das Recht nötig, Rundschreiben zu versenden.')}
         </p>
+      )}
+    </section>
+  )
+}
+
+const ATTENDANCE: AttendanceStatus[] = ['present', 'excused', 'represented']
+
+function attendanceLabel(status: AttendanceStatus) {
+  if (status === 'present') return t('Anwesend')
+  if (status === 'excused') return t('Entschuldigt')
+  return t('Vertreten')
+}
+
+function AttendanceCard({ base, meeting }: { base: string; meeting: Meeting }) {
+  const loaded = useLoad(() => meetingApi.attendance(base, meeting.id), [base, meeting.id])
+  const [list, setList] = useState<AttendanceList | null>(null)
+  const [query, setQuery] = useState('')
+  const [guest, setGuest] = useState('')
+  const [proxyFor, setProxyFor] = useState<number | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const data = list ?? loaded.data
+  if (loaded.error) return <p role="alert">{loaded.error}</p>
+  if (!data) return <p>{t('Wird geladen …')}</p>
+  const send = async (action: () => Promise<AttendanceList | unknown>, reload = false) => {
+    setBusy(true)
+    setError('')
+    try {
+      const result = await action()
+      if (reload) setList(await meetingApi.attendance(base, meeting.id))
+      else setList(result as AttendanceList)
+      return true
+    } catch (err) {
+      setError(errorMessage(err))
+      return false
+    } finally {
+      setBusy(false)
+    }
+  }
+  const mark = (row: AttendanceRow, status: AttendanceStatus, holder?: number) =>
+    send(() =>
+      meetingApi.markAttendance(
+        base,
+        meeting.id,
+        row.membership
+          ? { membership: row.membership, status, represented_by: holder ?? null }
+          : { name: row.name, status },
+      ),
+    )
+  const holders = data.rows.filter((r) => r.voter && r.status === 'present' && r.id)
+  const names = new Map(data.rows.filter((r) => r.id).map((r) => [r.id, r.name]))
+  const needle = query.trim().toLowerCase()
+  const shown = needle ? data.rows.filter((r) => r.name.toLowerCase().includes(needle)) : data.rows
+  const counted = data.present + data.represented
+  return (
+    <section className="card stack attendance">
+      <h2>{t('Anwesenheit')}</h2>
+      <p>
+        {t(
+          '{present} von {voters} Stimmberechtigten anwesend, {represented} vertreten, {guests} Gäste.',
+          {
+            present: data.present,
+            voters: data.voters,
+            represented: data.represented,
+            guests: data.guests,
+          },
+        )}
+      </p>
+      {data.quorum.rule ? (
+        <p className={data.quorum.reached ? undefined : 'alert alert-error'} role="status">
+          {data.quorum.reached
+            ? t('Beschlussfähig: {counted} Stimmen, nötig sind {needed}.', {
+                counted,
+                needed: data.quorum.needed,
+              })
+            : t('Noch nicht beschlussfähig: {counted} Stimmen, nötig sind {needed}.', {
+                counted,
+                needed: data.quorum.needed,
+              })}
+        </p>
+      ) : (
+        <p className="muted">
+          {t('Für diese Art ist keine Mindestzahl für die Beschlussfähigkeit festgelegt.')}
+        </p>
+      )}
+      {error && <p role="alert">{error}</p>}
+      {data.rows.length > 10 && (
+        <label className="field">
+          <span>{t('Name suchen')}</span>
+          <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} />
+        </label>
+      )}
+      {data.rows.length === 0 ? (
+        <p className="muted">{t('Es gibt keine Stimmberechtigten für diese Versammlung.')}</p>
+      ) : (
+        <table className="table">
+          <thead>
+            <tr>
+              <th>{t('Name')}</th>
+              <th>{t('Anwesenheit')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shown.map((row) => (
+              <tr key={row.membership ? `m${row.membership}` : `g${row.id}`}>
+                <td>
+                  {row.name}
+                  {!row.voter && <span className="badge">{t('Gast')}</span>}
+                  {row.status === 'represented' && row.represented_by && (
+                    <div className="muted small">
+                      {t('vertreten durch {name}', { name: names.get(row.represented_by) ?? '' })}
+                    </div>
+                  )}
+                </td>
+                <td>
+                  {data.editable ? (
+                    <div className="attendance-cell">
+                      <div className="segmented" role="group" aria-label={row.name}>
+                        {ATTENDANCE.filter(
+                          (s) => s !== 'represented' || (data.proxies_allowed && row.voter),
+                        ).map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            className={`button button-ghost${row.status === s ? ' is-active' : ''}`}
+                            aria-pressed={row.status === s}
+                            disabled={busy}
+                            onClick={() => {
+                              if (s === 'represented') setProxyFor(row.membership)
+                              else {
+                                setProxyFor(null)
+                                void mark(row, s)
+                              }
+                            }}
+                          >
+                            {attendanceLabel(s)}
+                          </button>
+                        ))}
+                        {row.id && !row.voter && (
+                          <button
+                            type="button"
+                            className="button button-ghost"
+                            disabled={busy}
+                            onClick={() =>
+                              void send(
+                                () => meetingApi.removeAttendance(base, meeting.id, row.id!),
+                                true,
+                              )
+                            }
+                          >
+                            {t('Entfernen')}
+                          </button>
+                        )}
+                      </div>
+                      {proxyFor !== null && proxyFor === row.membership && (
+                        <label className="field">
+                          <span>{t('Vertreten durch')}</span>
+                          <select
+                            value=""
+                            onChange={async (e) => {
+                              if (!e.target.value) return
+                              if (await mark(row, 'represented', Number(e.target.value)))
+                                setProxyFor(null)
+                            }}
+                          >
+                            <option value="">{t('Bitte wählen')}</option>
+                            {holders
+                              .filter((h) => h.membership !== row.membership)
+                              .map((h) => (
+                                <option key={h.id!} value={h.id!}>
+                                  {h.name}
+                                </option>
+                              ))}
+                          </select>
+                        </label>
+                      )}
+                    </div>
+                  ) : row.status ? (
+                    attendanceLabel(row.status)
+                  ) : (
+                    <span className="muted">{t('nicht erfasst')}</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {data.editable && (
+        <form
+          className="button-row"
+          onSubmit={async (e) => {
+            e.preventDefault()
+            const name = guest.trim()
+            if (!name) return
+            if (
+              await send(() =>
+                meetingApi.markAttendance(base, meeting.id, { name, status: 'present' }),
+              )
+            )
+              setGuest('')
+          }}
+        >
+          <label className="field">
+            <span>{t('Gast ohne Stimmrecht')}</span>
+            <input value={guest} maxLength={200} onChange={(e) => setGuest(e.target.value)} />
+          </label>
+          <button className="button" type="submit" disabled={busy || !guest.trim()}>
+            {t('Gast eintragen')}
+          </button>
+        </form>
       )}
     </section>
   )

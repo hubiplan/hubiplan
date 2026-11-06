@@ -19,6 +19,7 @@ Konzept und Ausbaustufen: `konzepte/versammlungen.md` im Projektordner (V1 bis V
 | `MeetingKind` | Art mit Voreinstellungen: Grundtyp, Einladungsfrist, Form der Einladung, Stimmberechtigte, Beschlussfähigkeit, Vollmacht, Sichtbarkeit des Protokolls |
 | `Meeting` | Versammlung mit genau einem Termin (`events.Event`, geschützt), Stand, Leitung, Protokollführung, Notiz |
 | `AgendaItem` | Tagesordnungspunkt mit Nummer, Titel, Art und Erläuterung |
+| `Attendance` | Anwesenheit: Mitgliedschaft oder Gast, Name (verschlüsselt), Stand (anwesend, entschuldigt, vertreten), Vertreter |
 
 Leitung, Protokollführung, Notiz sowie Titel und Erläuterung der Tagesordnung sind
 verschlüsselt gespeichert. Titel, Zeit und Ort stehen im Termin. RLS trennt nach Organisation;
@@ -30,7 +31,7 @@ außerordentliche Mitgliederversammlung, Vorstandssitzung; Untereinheit: Versamm
 der Leitung). Eine neue Versammlung übernimmt die Tagesordnung der letzten Versammlung
 derselben Art oder bekommt eine übliche Tagesordnung.
 
-## Abläufe (Stand V2)
+## Abläufe (Stand V3)
 
 - Anlegen erzeugt den Termin. Mitgliederversammlungen sind für Mitglieder sichtbar,
   Vorstandssitzungen nur für den Vorstand.
@@ -48,8 +49,16 @@ derselben Art oder bekommt eine übliche Tagesordnung.
   Vorstände der Vereine. Nötig sind `meetings.edit` und das Recht, Rundschreiben zu versenden.
   Geprüft und verschickt wird im Rundschreiben. Sobald es nicht mehr Entwurf ist, setzt ein
   Signal die Versammlung auf „eingeladen“ (`invited_at` = Versandzeit).
+- Anwesenheit (V3): `GET …/attendance/` listet die Stimmberechtigten (dieselbe Auswahl wie die
+  Einladung, Stand heute) mit ihrem Eintrag und weitere Einträge (Gäste, Nichtstimmberechtigte).
+  `POST` trägt ein oder ändert (`membership` oder `name`, `status`, `represented_by`). Vertreten
+  nur, wenn die Art Vollmachten erlaubt, und nur durch ein anwesendes stimmberechtigtes Mitglied;
+  wer nicht mehr anwesend ist, verliert seine Vollmachten (die Vertretenen gelten als
+  entschuldigt). Beschlussfähigkeit: anwesende plus vertretene Stimmberechtigte gegen den Anteil
+  bzw. die Mindestzahl der Art. Nötig ist zusätzlich das Leserecht auf Mitglieder; ändern nur mit
+  `meetings.edit`, solange die Versammlung nicht abgeschlossen ist.
 - Export und Import nehmen Arten, Versammlungen und Tagesordnungen mit (auch im Export einer
-  Untereinheit).
+  Untereinheit), die Anwesenheit nur zusammen mit den Mitgliedsdaten.
 
 ## Schnittstelle
 
@@ -59,4 +68,5 @@ derselben Art oder bekommt eine übliche Tagesordnung.
 | `GET/PATCH/DELETE …/meetings/<pk>/` | Einzelne Versammlung; `status` nur `cancelled` oder zurück zu `draft` |
 | `PUT …/meetings/<pk>/agenda/` | Tagesordnung speichern |
 | `POST …/meetings/<pk>/invitation/` | Einladung als Rundschreiben-Entwurf |
+| `GET/POST …/meetings/<pk>/attendance/`, `DELETE …/attendance/<id>/` | Anwesenheit |
 | `GET/POST …/meetings/kinds/`, `PATCH/DELETE …/kinds/<pk>/` | Arten |

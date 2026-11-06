@@ -10,7 +10,7 @@ from audit.log import diff, record, snapshot
 from members.models import MemberType
 
 from . import access, services
-from .models import AgendaItem, Meeting, MeetingKind
+from .models import AgendaItem, Attendance, Meeting, MeetingKind
 
 MAX_AGENDA = 60
 
@@ -93,6 +93,7 @@ def meeting_data(meeting, scope, *, full=False):
         "version": meeting.version,
         "can_edit": scope.can_edit,
         "can_invite": scope.can_edit and can_write_circulars(scope),
+        "can_attendance": members_allowed(scope),
     }
     if full:
         data.update(
@@ -390,3 +391,171 @@ class InvitationView(Base):
             {"Einladung": [None, circular.subject]},
         )
         return Response(meeting_data(meeting, self.scope, full=True))
+
+
+# --- Anwesenheit (Schritt V3) ---------------------------------------------------------------
+
+OPEN_FOR_ATTENDANCE = (Meeting.Status.DRAFT, Meeting.Status.INVITED, Meeting.Status.HELD)
+
+
+def members_allowed(scope) -> bool:
+    codes = {"members.view", "dept.members.view"} if scope.department_id else {"members.view"}
+    return bool(codes & scope.permissions)
+
+
+def require_members(scope) -> None:
+    if not members_allowed(scope):
+        raise PermissionDenied(
+            _("Für die Anwesenheitsliste ist zusätzlich das Leserecht auf Mitglieder nötig.")
+        )
+
+
+def person_name(membership) -> str:
+    person = membership.person
+    return f"{person.first_name} {person.last_name}".strip()
+
+
+def attendance_data(meeting, scope):
+    from members.personsearch import ordered
+
+    eligible = list(ordered(services.voters(meeting).select_related("person")))
+    voter_ids = {m.pk for m in eligible}
+    records = list(meeting.attendance.select_related("represented_by"))
+    by_member = {r.membership_id: r for r in records if r.membership_id}
+    rows = []
+    for m in eligible:
+        r = by_member.get(m.pk)
+        rows.append(
+            {
+                "id": r.pk if r else None,
+                "membership": m.pk,
+                "name": person_name(m),
+                "voter": True,
+                "status": r.status if r else "",
+                "represented_by": r.represented_by_id if r else None,
+            }
+        )
+    others = [r for r in records if r.membership_id not in voter_ids]
+    others.sort(key=lambda r: r.name.lower())
+    for r in others:
+        rows.append(
+            {
+                "id": r.pk,
+                "membership": r.membership_id,
+                "name": r.name,
+                "voter": False,
+                "status": r.status,
+                "represented_by": r.represented_by_id,
+            }
+        )
+    present = sum(1 for r in records if r.membership_id in voter_ids and r.status == "present")
+    represented = sum(
+        1 for r in records if r.membership_id in voter_ids and r.status == "represented"
+    )
+    guests = sum(1 for r in records if r.membership_id not in voter_ids and r.status == "present")
+    return {
+        "voters": len(voter_ids),
+        "present": present,
+        "represented": represented,
+        "guests": guests,
+        "quorum": services.quorum(meeting, len(voter_ids), present + represented),
+        "proxies_allowed": meeting.kind.proxies_allowed,
+        "editable": scope.can_edit and meeting.status in OPEN_FOR_ATTENDANCE,
+        "rows": rows,
+    }
+
+
+class AttendanceInput(serializers.Serializer):
+    membership = serializers.IntegerField(min_value=1, required=False, allow_null=True)
+    name = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    status = serializers.ChoiceField(choices=Attendance.Status.choices)
+    represented_by = serializers.IntegerField(min_value=1, required=False, allow_null=True)
+
+
+class AttendanceView(Base):
+    def get(self, request, pk, **kwargs):
+        require_members(self.scope)
+        meeting = self.meeting(pk)
+        return Response(attendance_data(meeting, self.scope))
+
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        """Eintrag anlegen oder ändern (Mitglied über ``membership``, Gast über ``name``)."""
+        access.require_edit(self.scope)
+        require_members(self.scope)
+        meeting = self.meeting(pk, lock=True)
+        if meeting.status not in OPEN_FOR_ATTENDANCE:
+            raise ValidationError(
+                {"detail": _("Die Anwesenheit lässt sich jetzt nicht mehr ändern.")}
+            )
+        ser = AttendanceInput(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        voter_ids = set(services.voters(meeting).values_list("pk", flat=True))
+        if data.get("membership"):
+            from members.models import Membership
+
+            membership = get_object_or_404(
+                Membership.objects.filter(organization=self.scope.org).select_related("person"),
+                pk=data["membership"],
+            )
+            record_, _created = Attendance.objects.get_or_create(
+                meeting=meeting,
+                membership=membership,
+                defaults={
+                    "organization": self.scope.org,
+                    "name": person_name(membership),
+                    "status": data["status"],
+                },
+            )
+            record_.voter = membership.pk in voter_ids
+        else:
+            name = (data.get("name") or "").strip()
+            if not name:
+                raise ValidationError({"name": _("Bitte einen Namen angeben.")})
+            record_ = Attendance(organization=self.scope.org, meeting=meeting, name=name)
+        record_.status = data["status"]
+        record_.represented_by = None
+        if record_.status == Attendance.Status.REPRESENTED:
+            if not meeting.kind.proxies_allowed:
+                raise ValidationError(
+                    {"status": _("Bei dieser Art ist keine Vertretung mit Vollmacht vorgesehen.")}
+                )
+            holder = meeting.attendance.filter(
+                pk=data.get("represented_by") or 0, status=Attendance.Status.PRESENT
+            ).first()
+            if (
+                holder is None
+                or holder.membership_id not in voter_ids
+                or holder.pk == record_.pk
+                or not record_.voter
+            ):
+                raise ValidationError(
+                    {
+                        "represented_by": _(
+                            "Vertreten kann nur ein anwesendes stimmberechtigtes Mitglied."
+                        )
+                    }
+                )
+            record_.represented_by = holder
+        record_.save()
+        if record_.status != Attendance.Status.PRESENT:
+            # Wer nicht mehr da ist, vertritt auch niemanden mehr
+            record_.proxies.update(status=Attendance.Status.EXCUSED, represented_by=None)
+        return Response(attendance_data(meeting, self.scope))
+
+
+class AttendanceDetailView(Base):
+    @transaction.atomic
+    def delete(self, request, pk, entry, **kwargs):
+        access.require_edit(self.scope)
+        require_members(self.scope)
+        meeting = self.meeting(pk, lock=True)
+        if meeting.status not in OPEN_FOR_ATTENDANCE:
+            raise ValidationError(
+                {"detail": _("Die Anwesenheit lässt sich jetzt nicht mehr ändern.")}
+            )
+        record_ = get_object_or_404(meeting.attendance, pk=entry)
+        record_.proxies.update(status=Attendance.Status.EXCUSED, represented_by=None)
+        record_.delete()
+        return Response(attendance_data(meeting, self.scope))
