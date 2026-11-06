@@ -109,12 +109,28 @@ a:focus-visible,
   textarea
 ) {
   max-width: 100%;
-  padding: 0.5rem 0.7rem;
+  padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
   color: inherit;
   background-color: var(--color-surface);
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
+}
+
+/* Gleiche Höhe wie Knöpfe (--control-height), egal ob Textfeld, Datum oder Auswahl */
+:where(
+  input:not(
+    [type='checkbox'],
+    [type='radio'],
+    [type='color'],
+    [type='file'],
+    [type='range'],
+    [type='hidden'],
+    [type='image']
+  ),
+  select:not([multiple], [size])
+) {
+  min-height: var(--control-height);
 }
 
 :where(input, select, textarea):focus-visible {
@@ -223,7 +239,7 @@ code {
 
 .field input {
   width: 100%;
-  padding: 0.6rem 0.75rem;
+  padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
   color: inherit;
   background: var(--color-surface);
@@ -242,7 +258,8 @@ code {
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  padding: 0.6rem 1.1rem;
+  min-height: var(--control-height);
+  padding: var(--control-padding-y) 1.1rem;
   font: inherit;
   font-weight: 600;
   border-radius: var(--radius);
@@ -363,10 +380,21 @@ button.tab.active {
     .chart-pair,
     .image-filters,
     .image-choice-row,
-    .button-row
+    .button-row,
+    /* Neue Leisten, Kopf- und Aktionszeilen gelten nach ihrem Namen automatisch */
+    [class*='toolbar'],
+    [class*='-actions'],
+    [class*='-head'],
+    [class*='-tools'],
+    [class*='-filters']
   )
   > :is(.button-row, .card) {
   margin-top: 0;
+  margin-bottom: 0;
+}
+/* Ein Feld mit Beschriftung in einer Leiste: kein Rand nach unten, sonst sitzt es höher
+   als die Knöpfe daneben (Dokumente, Musik) */
+:where([class*='toolbar'], .filters, .list-search) > .field {
   margin-bottom: 0;
 }
 
@@ -941,7 +969,10 @@ fieldset {
 .grid-3,
 .grid-4 {
   display: grid;
-  gap: 0 1rem;
+  gap: 0 var(--space-4);
+  /* Felder oben bündig: eine Auswahl wird nicht auf die Höhe des Nachbarn (mit Hinweis
+     darunter) gestreckt */
+  align-items: start;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -971,7 +1002,7 @@ fieldset {
 .org-switch select,
 .inline-add input {
   width: 100%;
-  padding: 0.55rem 0.7rem;
+  padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
   color: inherit;
   background: var(--color-surface);
@@ -1394,7 +1425,7 @@ fieldset {
 .search-input,
 .inline-add select,
 .inline-add input[type='date'] {
-  padding: 0.55rem 0.7rem;
+  padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
   color: inherit;
   background: var(--color-surface);
@@ -2585,7 +2616,7 @@ form.card > .save-status:first-child {
 }
 
 .page-size select {
-  padding: 0.3rem 0.4rem;
+  padding: var(--control-padding-y) var(--control-padding-x);
   margin-left: 0.25rem;
 }
 

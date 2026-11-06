@@ -53,6 +53,20 @@
   --sidebar-width: 15rem;
 
   --radius: 0.5rem;
+
+  /* Einheitliche Abstände und Größen (Ralf 06.11.2026). Neue Regeln nehmen diese Stufen
+     statt eigener Werte; so bleiben Leisten, Formulare und Karten überall gleich. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  /* Eine Höhe für Knöpfe, Textfelder und Auswahllisten, damit sie nebeneinander bündig
+     stehen; 44 px sind auch mit dem Finger gut zu treffen */
+  --control-height: 2.75rem;
+  --control-padding-y: 0.5rem;
+  --control-padding-x: 0.75rem;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
   --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
