@@ -40,6 +40,37 @@ if [ "$#" -le 1 ] && nur_aenderungshinweise "${1:-HEAD}"; then
     exit 0
 fi
 
+# Teile (docs/testserver.md, „Nur geänderte Teile“): Backend und Frontend werden je für
+# sich als grün vermerkt, mit einem Schlüssel über genau die Dateien, die in ihre Prüfungen
+# eingehen. Ein Stand gilt als getestet, wenn jeder Teil mit genau diesem Inhalt schon grün
+# war. Die Zuordnung ist bewusst großzügig: Backend ist alles außer frontend/, docs/ und
+# den Markdown-Dateien im Hauptverzeichnis; Frontend ist frontend/, dieses Skript und die
+# Backend-Dateien, die der Frontend-Code beim Namen nennt (z. B. learning_keys.json).
+# TEST_ALLES=1 prüft immer alles (vor einem Release).
+PARTS="${HUBIPLAN_TESTED_PARTS_FILE:-$(dirname "$STATE")/tested-parts}"
+teil_schluessel() {
+    local pfade
+    case "$1" in
+        backend)
+            git ls-tree -r "$2" | awk -F '\t' '$2 !~ /^"?(frontend|docs)\// && $2 !~ /^"?[^\/]+\.md"?$/' ;;
+        frontend)
+            pfade=$(git grep -ohE 'backend/[A-Za-z0-9_./-]+' "$2" -- frontend | sort -u || true)
+            # shellcheck disable=SC2086 # Pfade ohne Leerzeichen
+            git ls-tree -r "$2" -- frontend scripts/test.sh $pfade ;;
+    esac | sha256sum | cut -c1-16
+}
+teil_gruen() { grep -q "^$1 $2 " "$PARTS" 2> /dev/null; }
+if [ "$#" -le 1 ] && [ "${TEST_ALLES:-0}" != 1 ] && [ "${BACKUP_TEST:-0}" != 1 ]; then
+    c=$(git rev-parse --verify --quiet "${1:-HEAD}^{commit}" 2> /dev/null || true)
+    if [ -n "$c" ] && teil_gruen backend "$(teil_schluessel backend "$c")" \
+        && teil_gruen frontend "$(teil_schluessel frontend "$c")"; then
+        mkdir -p "$(dirname "$STATE")"
+        echo "$(git rev-parse "$c^{tree}") $(git rev-parse --short "$c") $(date -Iseconds) teile-schon-gruen" >> "$STATE"
+        echo "Alles grün: $(git rev-parse --short "$c") hat Backend und Frontend mit einem Inhalt, der schon grün war, und ist als getestet vermerkt."
+        exit 0
+    fi
+fi
+
 if [ -z "${TESTPLATZ:-}" ]; then
     exec "$(dirname "$0")/testplatz.sh" "$0" "$@"
 fi
@@ -107,7 +138,18 @@ cleanup() {
     docker image rm "$BACKEND_IMG" "$BACKUP_IMG" > /dev/null 2>&1 || true
 }
 
+B_KEY=$(teil_schluessel backend "$COMMIT")
+F_KEY=$(teil_schluessel frontend "$COMMIT")
+RUN_BACKEND=1
+RUN_FRONTEND=1
+if [ "$#" -eq 0 ] && [ "${TEST_ALLES:-0}" != 1 ]; then
+    if teil_gruen backend "$B_KEY" && [ "${BACKUP_TEST:-0}" != 1 ]; then RUN_BACKEND=0; fi
+    if teil_gruen frontend "$F_KEY"; then RUN_FRONTEND=0; fi
+fi
+
 echo "Teste $SHA ($(git log -1 --format=%s "$COMMIT")) lokal mit $WORKERS Kernen …"
+[ "$RUN_BACKEND" = 1 ] || echo "Backend: dieser Inhalt war schon grün, wird nicht erneut geprüft"
+[ "$RUN_FRONTEND" = 1 ] || echo "Frontend: dieser Inhalt war schon grün, wird nicht erneut geprüft"
 git archive --format=tar "$REF" backend frontend deploy/backup | tar -x -C "$WORK"
 start=$(date +%s)
 
@@ -125,123 +167,164 @@ fe_checks() {
         && npm run -s i18n:check"
     echo "Frontend: Typprüfung, Lint, Format ok"
 }
-if [ "${TEST_PARALLEL:-1}" = 1 ]; then
+if [ "$RUN_FRONTEND" = 1 ] && [ "${TEST_PARALLEL:-1}" = 1 ]; then
     fe_checks > "$WORK/frontend.log" 2>&1 &
     FE_PID=$!
 fi
 
 # --- Backend ---
-# Die Schichten mit den Abhängigkeiten nutzt Docker über die Läufe hinweg wieder
-docker build -q --build-arg REQUIREMENTS=requirements-dev.txt -t "$BACKEND_IMG" "$WORK/backend" > /dev/null
-docker network create "$ID" > /dev/null
-# Dasselbe festgeschriebene Datenbank-Image wie auf dem Server (docker-compose.server.yml)
-PG_IMAGE=$(git show "$REF:docker-compose.server.yml" | grep -m1 -oE 'image: postgres:[0-9][^ ]*' | cut -d' ' -f2)
-docker run -d --name "$ID-db" --network "$ID" "$CPUS" --tmpfs /var/lib/postgresql \
-    -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test \
-    "$PG_IMAGE" -c max_connections=200 > /dev/null
-until docker exec "$ID-db" pg_isready -U test > /dev/null 2>&1; do sleep 1; done
-# App-Rolle vorab anlegen, damit parallele Test-Datenbanken nicht darum konkurrieren
-docker exec "$ID-db" psql -q -U test -d test -c \
-    "CREATE ROLE hubiplan_app NOLOGIN NOSUPERUSER NOBYPASSRLS" > /dev/null
+MIG_SKIP=0
+if [ "$RUN_BACKEND" = 1 ]; then
+    # Die Schichten mit den Abhängigkeiten nutzt Docker über die Läufe hinweg wieder
+    docker build -q --build-arg REQUIREMENTS=requirements-dev.txt -t "$BACKEND_IMG" "$WORK/backend" > /dev/null
+    docker network create "$ID" > /dev/null
+    # Dasselbe festgeschriebene Datenbank-Image wie auf dem Server (docker-compose.server.yml)
+    PG_IMAGE=$(git show "$REF:docker-compose.server.yml" | grep -m1 -oE 'image: postgres:[0-9][^ ]*' | cut -d' ' -f2)
+    docker run -d --name "$ID-db" --network "$ID" "$CPUS" --tmpfs /var/lib/postgresql \
+        -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test -e POSTGRES_DB=test \
+        "$PG_IMAGE" -c max_connections=200 > /dev/null
+    until docker exec "$ID-db" pg_isready -U test > /dev/null 2>&1; do sleep 1; done
+    # App-Rolle vorab anlegen, damit parallele Test-Datenbanken nicht darum konkurrieren
+    docker exec "$ID-db" psql -q -U test -d test -c \
+        "CREATE ROLE hubiplan_app NOLOGIN NOSUPERUSER NOBYPASSRLS" > /dev/null
 
-docker run --rm "$CPUS" --entrypoint sh "$BACKEND_IMG" \
-    -c "ruff check . && ruff format --check ."
-echo "Backend: ruff ok"
-# Übersetzung (konzepte/englisch.md): bis zur Abnahme nur Bericht, danach --streng
-docker run --rm "$CPUS" -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test --entrypoint sh \
-    "$BACKEND_IMG" -c "python manage.py uebersetzung_pruefen"
-
-# Webserver-Konfiguration (Caddy, nginx-Vorlagen für HestiaCP), aus dem geprüften Stand
-if git cat-file -e "$REF:scripts/pruefe-proxy.sh" 2> /dev/null; then
-    git archive --format=tar "$REF" scripts/pruefe-proxy.sh deploy/web.Dockerfile deploy/Caddyfile \
-        deploy/Caddyfile.proxy deploy/caddy deploy/hestia | tar -x -C "$WORK"
-    "$WORK/scripts/pruefe-proxy.sh" "$WORK" "$CPUS"
-fi
-# Selbstupdate: Aktualisierer mit Wegwerf-Repository (braucht git und ssh-keygen)
-if git cat-file -e "$REF:scripts/pruefe-aktualisierer.sh" 2> /dev/null; then
-    git archive --format=tar "$REF" scripts/pruefe-aktualisierer.sh deploy/aktualisierer \
-        | tar -x -C "$WORK"
-    "$WORK/scripts/pruefe-aktualisierer.sh" "$WORK"
-fi
-
-# Gemeinsamer Daten-Rückweg, nur mit Befehlsersatz und synthetischem Zielquellstand.
-if git cat-file -e "$REF:scripts/pruefe-daten-rueckweg.sh" 2> /dev/null; then
-    git archive --format=tar "$REF" scripts/pruefe-daten-rueckweg.sh \
-        deploy/daten-rueckweg.sh deploy/zurueck.sh deploy/server-setup.sh | tar -x -C "$WORK"
-    sh "$WORK/scripts/pruefe-daten-rueckweg.sh" "$WORK"
-fi
-
-if git cat-file -e "$REF:scripts/pruefe-schluesselwechsel-betrieb.sh" 2> /dev/null; then
-    git archive "$REF" scripts/pruefe-schluesselwechsel-betrieb.sh deploy/datenschluessel-wechseln.sh \
-        deploy/server-setup.sh deploy/zurueck.sh deploy/deploy.sh | tar -x -C "$WORK"
-    bash "$WORK/scripts/pruefe-schluesselwechsel-betrieb.sh" "$WORK"
-fi
-
-# Testdatenbank: einmal migrieren und je Worker kopieren (CREATE DATABASE … TEMPLATE, 0,2 s)
-# statt in jedem Worker alle Migrationen (je ~40 s Rechenzeit). Die migrierte Datenbank
-# wird als Vorlage zwischengespeichert. Ihr Schlüssel umfasst alles, was den Stand nach
-# migrate bestimmt: Migrationen, die von ihnen eingebundenen Module, Modelle, apps.py,
-# Einstellungen, Abhängigkeiten und das Datenbank-Image. TEST_DB_CACHE=0: ohne Vorlage.
-db_key() {
-    local mods files
-    # Module, die Migrationen einbinden (z. B. core.rls, exchange.models)
-    mods=$(git grep -h -E '^(from|import) [a-z_]+\.[a-z_.]+' "$REF" -- 'backend/*/migrations/*.py' \
-        | sed -E 's/^(from|import) ([a-z_.]+).*/\2/' | sort -u | sed 's#\.#/#g; s#^#backend/#; s#$#.py#')
-    files=$(git ls-tree -r --name-only "$REF" -- backend \
-        | grep -E '/migrations/|/models/|models[a-z_]*\.py$|/apps\.py$|^backend/config/settings\.py$|^backend/requirements' || true)
-    { printf '%s\n' "$PG_IMAGE"; printf '%s\n' $mods $files | sort -u \
-        | xargs git ls-tree "$REF" -- 2> /dev/null; } | sha256sum | cut -c1-16
-}
-if [ -d /mnt/e/tmp ]; then DB_CACHE_DEFAULT=/mnt/e/tmp/hubiplan-tests/db-vorlagen
-else DB_CACHE_DEFAULT="$HOME/.cache/hubiplan-test-db"; fi
-DB_CACHE="${TEST_DB_CACHE:-$DB_CACHE_DEFAULT}"
-TEST_DB=test_test   # so nennt pytest-django die Testdatenbank zu „test“, mit -n dann test_test_gwN
-docker exec "$ID-db" createdb -U test "$TEST_DB"
-dbstart=$(date +%s)
-DUMP=""
-if [ "$DB_CACHE" != 0 ]; then
-    mkdir -p "$DB_CACHE"
-    DUMP="$DB_CACHE/$(db_key).dump"
-fi
-if [ -n "$DUMP" ] && [ -s "$DUMP" ] && docker exec -i "$ID-db" pg_restore -U test -d "$TEST_DB" -1 < "$DUMP"; then
-    echo "Backend: Testdatenbank aus der Vorlage ($(($(date +%s) - dbstart)) s)"
-else
-    if [ -n "$DUMP" ] && [ -s "$DUMP" ]; then
-        echo "Warnung: Vorlage $DUMP ließ sich nicht einspielen, migriere neu." >&2
-        docker exec "$ID-db" dropdb -U test "$TEST_DB"
-        docker exec "$ID-db" createdb -U test "$TEST_DB"
+    docker run --rm "$CPUS" --entrypoint sh "$BACKEND_IMG" \
+        -c "ruff check . && ruff format --check ."
+    echo "Backend: ruff ok"
+    # Fehlende oder widersprüchliche Migrationen (z. B. zwei parallel gemergte 0007 derselben
+    # App) gleich hier melden, nach Sekunden statt am Ende des Laufs. Ohne Datenbank.
+    if ! out=$(docker run --rm "$CPUS" -e PYTHONWARNINGS=ignore -e DJANGO_DEBUG=true \
+        -e DJANGO_SECRET_KEY=nur-test -e DATABASE_URL=postgres://keine@127.0.0.1:1/keine \
+        --entrypoint python "$BACKEND_IMG" manage.py makemigrations --check --dry-run 2>&1); then
+        echo "$out" >&2
+        echo "Backend: Migrationen fehlen oder widersprechen sich (makemigrations --check)" >&2
+        exit 1
     fi
+    echo "Backend: Migrationen vollständig und ohne Konflikt"
+    # Übersetzung (konzepte/englisch.md): bis zur Abnahme nur Bericht, danach --streng
+    docker run --rm "$CPUS" -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test --entrypoint sh \
+        "$BACKEND_IMG" -c "python manage.py uebersetzung_pruefen"
+
+    # Webserver-Konfiguration (Caddy, nginx-Vorlagen für HestiaCP), aus dem geprüften Stand
+    if git cat-file -e "$REF:scripts/pruefe-proxy.sh" 2> /dev/null; then
+        git archive --format=tar "$REF" scripts/pruefe-proxy.sh deploy/web.Dockerfile deploy/Caddyfile \
+            deploy/Caddyfile.proxy deploy/caddy deploy/hestia | tar -x -C "$WORK"
+        "$WORK/scripts/pruefe-proxy.sh" "$WORK" "$CPUS"
+    fi
+    # Selbstupdate: Aktualisierer mit Wegwerf-Repository (braucht git und ssh-keygen)
+    if git cat-file -e "$REF:scripts/pruefe-aktualisierer.sh" 2> /dev/null; then
+        git archive --format=tar "$REF" scripts/pruefe-aktualisierer.sh deploy/aktualisierer \
+            | tar -x -C "$WORK"
+        "$WORK/scripts/pruefe-aktualisierer.sh" "$WORK"
+    fi
+
+    # Gemeinsamer Daten-Rückweg, nur mit Befehlsersatz und synthetischem Zielquellstand.
+    if git cat-file -e "$REF:scripts/pruefe-daten-rueckweg.sh" 2> /dev/null; then
+        git archive --format=tar "$REF" scripts/pruefe-daten-rueckweg.sh \
+            deploy/daten-rueckweg.sh deploy/zurueck.sh deploy/server-setup.sh | tar -x -C "$WORK"
+        sh "$WORK/scripts/pruefe-daten-rueckweg.sh" "$WORK"
+    fi
+
+    if git cat-file -e "$REF:scripts/pruefe-schluesselwechsel-betrieb.sh" 2> /dev/null; then
+        git archive "$REF" scripts/pruefe-schluesselwechsel-betrieb.sh deploy/datenschluessel-wechseln.sh \
+            deploy/server-setup.sh deploy/zurueck.sh deploy/deploy.sh | tar -x -C "$WORK"
+        bash "$WORK/scripts/pruefe-schluesselwechsel-betrieb.sh" "$WORK"
+    fi
+
+    # Testdatenbank: einmal migrieren und je Worker kopieren (CREATE DATABASE … TEMPLATE, 0,2 s)
+    # statt in jedem Worker alle Migrationen (je ~40 s Rechenzeit). Die migrierte Datenbank
+    # wird als Vorlage zwischengespeichert. Ihr Schlüssel umfasst alles, was den Stand nach
+    # migrate bestimmt: Migrationen, die von ihnen eingebundenen Module, Modelle, apps.py,
+    # Einstellungen, Abhängigkeiten und das Datenbank-Image. TEST_DB_CACHE=0: ohne Vorlage.
+    db_key() {
+        local mods files
+        # Module, die Migrationen einbinden (z. B. core.rls, exchange.models)
+        mods=$(git grep -h -E '^(from|import) [a-z_]+\.[a-z_.]+' "$REF" -- 'backend/*/migrations/*.py' \
+            | sed -E 's/^(from|import) ([a-z_.]+).*/\2/' | sort -u | sed 's#\.#/#g; s#^#backend/#; s#$#.py#')
+        files=$(git ls-tree -r --name-only "$REF" -- backend \
+            | grep -E '/migrations/|/models/|models[a-z_]*\.py$|/apps\.py$|^backend/config/settings\.py$|^backend/requirements' || true)
+        { printf '%s\n' "$PG_IMAGE"; printf '%s\n' $mods $files | sort -u \
+            | xargs git ls-tree "$REF" -- 2> /dev/null; } | sha256sum | cut -c1-16
+    }
+    if [ -d /mnt/e/tmp ]; then DB_CACHE_DEFAULT=/mnt/e/tmp/hubiplan-tests/db-vorlagen
+    else DB_CACHE_DEFAULT="$HOME/.cache/hubiplan-test-db"; fi
+    DB_CACHE="${TEST_DB_CACHE:-$DB_CACHE_DEFAULT}"
+    TEST_DB=test_test   # so nennt pytest-django die Testdatenbank zu „test“, mit -n dann test_test_gwN
+    docker exec "$ID-db" createdb -U test "$TEST_DB"
+    dbstart=$(date +%s)
+    DUMP=""
+    if [ "$DB_CACHE" != 0 ]; then
+        mkdir -p "$DB_CACHE"
+        DUMP="$DB_CACHE/$(db_key).dump"
+    fi
+    if [ -n "$DUMP" ] && [ -s "$DUMP" ] && docker exec -i "$ID-db" pg_restore -U test -d "$TEST_DB" -1 < "$DUMP"; then
+        echo "Backend: Testdatenbank aus der Vorlage ($(($(date +%s) - dbstart)) s)"
+    else
+        if [ -n "$DUMP" ] && [ -s "$DUMP" ]; then
+            echo "Warnung: Vorlage $DUMP ließ sich nicht einspielen, migriere neu." >&2
+            docker exec "$ID-db" dropdb -U test "$TEST_DB"
+            docker exec "$ID-db" createdb -U test "$TEST_DB"
+        fi
+        docker run --rm --network "$ID" "$CPUS" \
+            -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
+            -e DATABASE_URL="postgres://test:test@$ID-db:5432/$TEST_DB" \
+            --entrypoint python "$BACKEND_IMG" manage.py migrate -v0
+        if [ -n "$DUMP" ]; then
+            # Erst fertig schreiben, dann umbenennen: ein paralleler Lauf liest nie eine halbe Datei
+            docker exec "$ID-db" pg_dump -U test -Fc "$TEST_DB" > "$DUMP.$ID" && mv "$DUMP.$ID" "$DUMP"
+            rm -f "$DUMP.$ID"
+            # Nur die zehn neuesten Vorlagen behalten
+            ls -1t "$DB_CACHE"/*.dump 2> /dev/null | tail -n +11 | xargs -r rm -f
+        fi
+        echo "Backend: Testdatenbank migriert ($(($(date +%s) - dbstart)) s)"
+    fi
+    for i in $(seq 0 $((WORKERS - 1))); do
+        docker exec "$ID-db" psql -q -U test -d test -c \
+            "CREATE DATABASE ${TEST_DB}_gw$i TEMPLATE $TEST_DB" > /dev/null
+    done
+
+    # Migrationstests (@pytest.mark.migration) migrieren hin und zurück und brauchen über ein
+    # Drittel der Rechenzeit. Sie laufen nur, wenn ihr Schlüssel noch nicht grün war: der
+    # Vorlagen-Schlüssel (Migrationen, Modelle, …), die markierten Testdateien, conftest.py,
+    # factories.py und die Module, die diese Tests einbinden.
+    mig_schluessel() {
+        local tests mods
+        tests=$(git grep -l 'mark\.migration' "$REF" -- 'backend/tests/test_*.py' | sed "s#^$REF:##" || true)
+        mods=""
+        if [ -n "$tests" ]; then
+            # shellcheck disable=SC2086
+            mods=$(git grep -h -E '^(from|import) [a-z_]+' "$REF" -- $tests \
+                | sed -E 's/^(from|import) ([a-z_.]+).*/\2/' | sort -u | sed 's#\.#/#g; s#^#backend/#' || true)
+        fi
+        { db_key; printf '%s\n' $tests backend/tests/conftest.py backend/tests/factories.py \
+            $mods $(printf '%s.py\n' $mods) | sort -u | xargs git ls-tree "$REF" -- 2> /dev/null; } \
+            | sha256sum | cut -c1-16
+    }
+    MIG_KEY=$(mig_schluessel)
+    MIG_MARK=()
+    if [ "$#" -eq 0 ] && [ "${TEST_ALLES:-0}" != 1 ] && teil_gruen migration "$MIG_KEY"; then
+        MIG_SKIP=1
+        MIG_MARK=(-m "not migration")
+        echo "Backend: Migrationstests mit diesem Stand schon grün, werden ausgelassen"
+    fi
+
+    # --reuse-db: die Kopien nehmen (migrate prüft nur noch, dass nichts fehlt).
+    # --maxschedchunk=2: kleine Pakete, damit die langsamen Tests (zuerst gesammelt, siehe
+    # tests/conftest.py) auf verschiedene Worker verteilt werden.
     docker run --rm --network "$ID" "$CPUS" \
         -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
-        -e DATABASE_URL="postgres://test:test@$ID-db:5432/$TEST_DB" \
-        --entrypoint python "$BACKEND_IMG" manage.py migrate -v0
-    if [ -n "$DUMP" ]; then
-        # Erst fertig schreiben, dann umbenennen: ein paralleler Lauf liest nie eine halbe Datei
-        docker exec "$ID-db" pg_dump -U test -Fc "$TEST_DB" > "$DUMP.$ID" && mv "$DUMP.$ID" "$DUMP"
-        rm -f "$DUMP.$ID"
-        # Nur die zehn neuesten Vorlagen behalten
-        ls -1t "$DB_CACHE"/*.dump 2> /dev/null | tail -n +11 | xargs -r rm -f
-    fi
-    echo "Backend: Testdatenbank migriert ($(($(date +%s) - dbstart)) s)"
+        -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
+        -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
+        --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
+        "${MIG_MARK[@]}" $PYTEST_ARGS
+    echo "Backend: Tests ok ($(($(date +%s) - start)) s)"
 fi
-for i in $(seq 0 $((WORKERS - 1))); do
-    docker exec "$ID-db" psql -q -U test -d test -c \
-        "CREATE DATABASE ${TEST_DB}_gw$i TEMPLATE $TEST_DB" > /dev/null
-done
-
-# --reuse-db: die Kopien nehmen (migrate prüft nur noch, dass nichts fehlt).
-# --maxschedchunk=2: kleine Pakete, damit die langsamen Tests (zuerst gesammelt, siehe
-# tests/conftest.py) auf verschiedene Worker verteilt werden.
-docker run --rm --network "$ID" "$CPUS" \
-    -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
-    -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
-    -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
-    --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 $PYTEST_ARGS
-echo "Backend: Tests ok ($(($(date +%s) - start)) s)"
 
 # --- Frontend, Teil 2 ---
 fstart=$(date +%s)
-if [ -n "$FE_PID" ]; then
+if [ "$RUN_FRONTEND" = 0 ]; then
+    :
+elif [ -n "$FE_PID" ]; then
     rc=0
     wait "$FE_PID" || rc=$?
     FE_PID=""
@@ -250,8 +333,10 @@ if [ -n "$FE_PID" ]; then
 else
     fe_checks
 fi
-fe_run "npx vitest run --maxWorkers=$WORKERS --reporter=dot"
-echo "Frontend: ok ($(($(date +%s) - fstart)) s nach dem Backend)"
+if [ "$RUN_FRONTEND" = 1 ]; then
+    fe_run "npx vitest run --maxWorkers=$WORKERS --reporter=dot"
+    echo "Frontend: ok ($(($(date +%s) - fstart)) s nach dem Backend)"
+fi
 
 # --- Backup und Rücksicherung (optional) ---
 if [ "${BACKUP_TEST:-0}" = "1" ]; then
@@ -435,6 +520,14 @@ if [ "$#" -gt 0 ]; then
     exit 0
 fi
 mkdir -p "$(dirname "$STATE")"
-echo "$TREE $SHA $(date -Iseconds)" >> "$STATE"
+jetzt=$(date -Iseconds)
+if [ "$RUN_BACKEND" = 1 ]; then
+    echo "backend $B_KEY $SHA $jetzt" >> "$PARTS"
+    if [ "$MIG_SKIP" = 0 ]; then echo "migration $MIG_KEY $SHA $jetzt" >> "$PARTS"; fi
+fi
+if [ "$RUN_FRONTEND" = 1 ]; then echo "frontend $F_KEY $SHA $jetzt" >> "$PARTS"; fi
+vermerk=""
+if [ "$RUN_BACKEND" = 0 ] || [ "$RUN_FRONTEND" = 0 ] || [ "$MIG_SKIP" = 1 ]; then vermerk=" teilweise"; fi
+echo "$TREE $SHA $jetzt$vermerk" >> "$STATE"
 echo "Alles grün: $SHA ist als getestet vermerkt ($(($(date +%s) - start)) s gesamt)."
 RESULT_OK=1

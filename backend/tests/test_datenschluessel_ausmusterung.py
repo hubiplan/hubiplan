@@ -250,6 +250,7 @@ def test_veraenderung_nach_bestandspruefung_und_db_constraint_schuetzen_material
         DataKey.objects.filter(pk=old[0]).update(retired_at=datetime.datetime.now(datetime.UTC))
 
 
+@pytest.mark.migration
 def test_ausmusterungsschema_und_rueckweg_erhalten_nachweise(rotated, tmp_path):
     org, old, _, _ = rotated
     retire(org, old[0], report(org)["checksum"])

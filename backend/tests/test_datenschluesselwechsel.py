@@ -462,6 +462,7 @@ def test_schluesselwechsel_erlaubt_spaetere_generation_ohne_alte_zu_loeschen(org
         assert not DataKey.objects.filter(pk__in=[first[0], second[0], third[0]]).exists()
 
 
+@pytest.mark.migration
 def test_migration_schuetzt_auftraege_vor_verlust_beim_rueckweg(orgs):
     org = orgs["c"]
     crypto.key_for_org(org.pk)

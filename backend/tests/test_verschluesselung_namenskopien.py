@@ -287,6 +287,7 @@ def test_sammelloeschung_hat_je_organisation_den_richtigen_schluessel(orgs):
 
 @pytest.mark.langsam
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.migration
 def test_rueckmigration_der_kopien_erfordert_gezielten_rueckweg(orgs, tmp_path):
     with rls_bypass():
         member, invoice, _, _, _ = records(orgs)
