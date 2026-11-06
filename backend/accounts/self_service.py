@@ -27,6 +27,7 @@ from rest_framework.views import APIView
 
 from core.i18n import language_of, user_language
 from core.ratelimit import too_many
+from organizations.platform_public import instance_name
 from outbox import mail
 
 from .models import EmailChange, User
@@ -126,17 +127,17 @@ class PasswordView(APIView):
             if had_password:
                 subject = gettext("Ihr Passwort wurde geändert")
                 intro = gettext(
-                    "für Ihr HUBIplan-Konto {email} wurde soeben das Passwort geändert."
+                    "für Ihr Konto {email} bei {instanz} wurde soeben das Passwort geändert."
                 )
             else:
                 subject = gettext("Ihr Passwort wurde festgelegt")
                 intro = gettext(
-                    "für Ihr HUBIplan-Konto {email} wurde soeben das Passwort festgelegt."
+                    "für Ihr Konto {email} bei {instanz} wurde soeben das Passwort festgelegt."
                 )
             body = (
                 gettext("Guten Tag,")
                 + "\n\n"
-                + intro.format(email=user.email)
+                + intro.format(email=user.email, instanz=instance_name())
                 + "\n\n"
                 + gettext(
                     "Waren Sie das nicht? Dann setzen Sie es bitte sofort über „Passwort "
@@ -252,10 +253,10 @@ def request_email_change(
                 gettext("Guten Tag,")
                 + "\n\n"
                 + gettext(
-                    "für Ihr HUBIplan-Konto wurde die neue Anmelde-E-Mail {new} angefordert. "
+                    "für Ihr Konto bei {instanz} wurde die neue Anmelde-E-Mail {new} angefordert. "
                     "Sie wird erst wirksam, wenn Sie den Wechsel auch hier bestätigen "
                     "(Link gültig {days} Tage):"
-                ).format(new=new, days=EMAIL_CHANGE_DAYS)
+                ).format(instanz=instance_name(), new=new, days=EMAIL_CHANGE_DAYS)
                 + f"\n\n{old_url}\n\n"
                 + gettext(
                     "Waren Sie das nicht? Dann ignorieren Sie diese Mail; die Adresse bleibt, "
@@ -268,10 +269,10 @@ def request_email_change(
                 gettext("Guten Tag,")
                 + "\n\n"
                 + gettext(
-                    "für Ihr HUBIplan-Konto wurde die neue Anmelde-E-Mail {new} angefordert. "
+                    "für Ihr Konto bei {instanz} wurde die neue Anmelde-E-Mail {new} angefordert. "
                     "Sie wird erst wirksam, wenn sie über den Link an die neue Adresse "
                     "bestätigt ist."
-                ).format(new=new)
+                ).format(instanz=instance_name(), new=new)
                 + "\n\n"
                 + gettext("Waren Sie das nicht? Dann ändern Sie bitte Ihr Passwort.")
                 + "\n"

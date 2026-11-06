@@ -21,6 +21,7 @@ from core.reorder import reorder_response
 from core.tenancy import tenant_context
 from organizations import theme
 from organizations.models import Organization
+from organizations.platform_public import instance_name
 from organizations.terms import department_terms, rename_word
 
 from . import preview
@@ -323,8 +324,8 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
         actor_email = request.user.email
         with language_of(target):
             subject = gettext(
-                "Ihre Zwei-Faktor-Anmeldung bei HUBIplan – {org} wurde zurückgesetzt"
-            ).format(org=org.name)
+                "Ihre Zwei-Faktor-Anmeldung bei {instanz} – {org} wurde zurückgesetzt"
+            ).format(instanz=instance_name(), org=org.name)
             body = (
                 gettext("Guten Tag,")
                 + "\n\n"

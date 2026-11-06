@@ -13,4 +13,4 @@ Unten legt ihr die Ansprechpartner für Fragen zu HUBIplan fest. Sie erscheinen 
 
 Ganz unten führt „Einrichtung der Bereiche“ zu den Einstellungen, die nur einen Bereich betreffen, etwa Mitglieder › Einrichtung oder Finanzen › Einrichtung. In der Seitenleiste sind die Einstellungen in Allgemein, Recht, Rollen und Anbindungen sowie Daten gegliedert.
 
-Auf der Ebene der Plattform heißt das erste Feld „Name dieser Instanz“. Wer HUBIplan selbst betreibt, gibt seiner Installation hier einen eigenen Namen, zum Beispiel „Vereinsportal Musterkreis“. Er steht dann auf der Anmeldeseite und im Browser-Tab. Darunter steht auf der Anmeldeseite klein „mit HUBIplan“ mit einem Link zur Lizenz und zum Quellcode.
+Auf der Ebene der Plattform heißt das erste Feld „Name dieser Instanz“. Wer HUBIplan selbst betreibt, gibt seiner Installation hier einen eigenen Namen, zum Beispiel „Vereinsportal Musterkreis“. Er steht dann auf der Anmeldeseite, im Browser-Tab und in den E-Mails, die HUBIplan verschickt (Einladungen, Passwort, Absendername). Darunter steht auf der Anmeldeseite klein „mit HUBIplan“ mit einem Link zur Lizenz und zum Quellcode.

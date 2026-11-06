@@ -13,4 +13,4 @@ At the bottom you set the contacts for questions about HUBIplan. They appear in 
 
 At the very bottom, “Setup of the areas” leads to the settings that only affect one area, such as Members › Setup or Finances › Setup. In the sidebar, settings are grouped into General, Legal, Roles and connections, and Data.
 
-At platform level the first field is called “Name of this instance”. If you run HUBIplan yourself, give your installation its own name here, for example “Vereinsportal Musterkreis”. It then appears on the sign-in page and in the browser tab. Below that, the sign-in page shows a small “powered by HUBIplan” linking to the licence and the source code.
+At platform level the first field is called “Name of this instance”. If you run HUBIplan yourself, give your installation its own name here, for example “Vereinsportal Musterkreis”. It then appears on the sign-in page, in the browser tab and in the emails HUBIplan sends (invitations, passwords, sender name). Below that, the sign-in page shows a small “powered by HUBIplan” linking to the licence and the source code.

@@ -21,6 +21,16 @@ from .models import Organization, PlatformSettings
 PRODUCT_NAME = "HUBIplan"
 
 
+def instance_name() -> str:
+    """Name der Instanz für Mails und Texte (Vorgabe „HUBIplan“, White Label)."""
+    name = (
+        Organization.objects.filter(type=Organization.Type.PLATFORM)
+        .values_list("name", flat=True)
+        .first()
+    )
+    return (name or "").strip() or PRODUCT_NAME
+
+
 class PlatformThemeSerializer(serializers.Serializer):
     primary = serializers.CharField()
     on_primary = serializers.CharField()

@@ -139,3 +139,51 @@ def test_symbol_nur_fuer_plattformverwaltung(api):
     user = make_user("vorstand@example.org")
     resp = api(user).post("/api/platform/icon/", {"logo": _png(600, 600)})
     assert resp.status_code == 403
+
+
+# --- W3: E-Mails mit dem Namen der Instanz ---
+
+
+def _musterkreis() -> Organization:
+    p = platform()
+    p.name = "Vereinsportal Musterkreis"
+    p.save()
+    return p
+
+
+def test_mails_ohne_eigenen_namen_wie_bisher(mailoutbox, settings):
+    from accounts.invitations import send_password_link
+    from outbox.mail import from_address
+
+    assert from_address() == settings.DEFAULT_FROM_EMAIL
+    platform()
+    send_password_link(make_user("anna@example.org"))
+    (m,) = mailoutbox
+    assert m.subject == "HUBIplan: Passwort festlegen"
+    assert "HUBIplan verschickt keine Startpasswörter mehr." in m.body
+    assert m.from_email == settings.DEFAULT_FROM_EMAIL
+
+
+def test_mails_mit_instanzname(mailoutbox, settings):
+    from accounts.invitations import send_invitation, send_password_link
+    from outbox import mail
+
+    settings.DEFAULT_FROM_EMAIL = "HUBIplan <noreply@example.org>"
+    _musterkreis()
+    club = make_org("Schützenverein Musterstadt")
+    send_password_link(make_user("anna@example.org"))
+    send_invitation(make_user("bernd@example.org"), club, "Kassierer")
+    mail.send("carla@example.org", "Hinweis", "Text", organization=club)
+    reset, invite, note = mailoutbox
+    assert reset.subject == "Vereinsportal Musterkreis: Passwort festlegen"
+    assert "Vereinsportal Musterkreis verschickt keine Startpasswörter mehr." in reset.body
+    assert reset.from_email == '"Vereinsportal Musterkreis" <noreply@example.org>'
+    assert invite.subject == "Einladung zu Vereinsportal Musterkreis – Schützenverein Musterstadt"
+    assert "bei Vereinsportal Musterkreis ein Konto angelegt" in invite.body
+    assert invite.from_email == '"Vereinsportal Musterkreis" <noreply@example.org>'
+    # Mails einer Einheit: Fußzeile mit Instanz, Adresse bleibt die feste (DMARC)
+    assert (
+        "im Auftrag von Schützenverein Musterstadt über Vereinsportal Musterkreis versandt"
+        in note.body
+    )
+    assert note.from_email.endswith("<noreply@example.org>")

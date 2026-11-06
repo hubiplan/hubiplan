@@ -28,11 +28,14 @@ def imprint_footer(organization) -> tuple[str, str] | None:
     except Exception:  # noqa: BLE001
         logger.exception("Impressum-Links für die Mail fehlen")
         return None
+    from organizations.platform_public import instance_name
+
+    instance = instance_name()
     if org.type == Organization.Type.PLATFORM:
-        sender = _("Diese Nachricht wurde über HUBIplan versandt.")
+        sender = _("Diese Nachricht wurde über {instanz} versandt.").format(instanz=instance)
     else:
-        sender = _("Diese Nachricht wurde im Auftrag von {name} über HUBIplan versandt.").format(
-            name=org.name
+        sender = _("Diese Nachricht wurde im Auftrag von {name} über {instanz} versandt.").format(
+            name=org.name, instanz=instance
         )
     imprint_label, privacy_label = _("Impressum"), _("Datenschutz")
     text = f"--\n{sender}\n{imprint_label}: {urls['imprint']}\n{privacy_label}: {urls['privacy']}"
@@ -64,10 +67,19 @@ def html_document(html: str, subject: str = "", language: str = "de") -> str:
 
 
 def from_address(name: str = "") -> str:
-    """Absender: eigener Anzeigename vor der festen Absenderadresse."""
+    """Absender: eigener Anzeigename vor der festen Absenderadresse.
+
+    Ohne Namen: DEFAULT_FROM_EMAIL, bei eigenem Instanznamen (White Label) mit diesem
+    Namen davor.
+    """
+    from organizations.platform_public import PRODUCT_NAME, instance_name
+
     name = " ".join((name or "").replace('"', "").replace("\\", "").split())[:120]
     if not name:
-        return settings.DEFAULT_FROM_EMAIL
+        instance = instance_name()
+        if instance == PRODUCT_NAME:
+            return settings.DEFAULT_FROM_EMAIL
+        return from_address(instance)
     # In Anführungszeichen, sonst gälten die Klammern als Kommentar; Django kodiert Umlaute
     return f'"{name}" <{parseaddr(settings.DEFAULT_FROM_EMAIL)[1]}>'
 
