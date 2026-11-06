@@ -501,3 +501,96 @@ def test_kontingente_fuer_untereinheiten(orgs, api):
     data = ok(chef.post(quotas, {"department": zug.pk, "count": 0}, content_type=JSON))
     assert data["quotas"] == [] and ok(zf.get(f"{unit}quotas/")) == []
     assert ShiftAssignment.objects.get(membership=max_).quota_id is None
+
+
+def test_kopieren_aufruf_und_geleistete_dienste(setup, api):
+    """H4: Plan aus dem Vorjahr kopieren, Aufruf als Rundschreiben, geleistete Dienste zählen."""
+    from circulars.models import Circular
+    from helpers.models import Shift
+
+    s = setup
+    org = s["org"]
+    anna = make_member(org, "Anna", "Muster")
+    plan = new_plan(s, note="Bitte festes Schuhwerk.", max_shifts=2)
+    duty = ok(
+        s["chef"].post(
+            f"{s['url']}{plan['id']}/duties/",
+            {"name": "Theke", "location": "Festzelt"},
+            content_type=JSON,
+        )
+    )
+    shifts = ok(
+        s["chef"].post(
+            f"{s['url']}duties/{duty['id']}/shifts/",
+            {"day": day().isoformat(), "quick": "14-18, 18-22", "needed": 3},
+            content_type=JSON,
+        )
+    )
+    first = ok(
+        s["chef"].post(
+            f"{s['url']}shifts/{shifts[0]['id']}/assignments/",
+            {"membership": anna.pk},
+            content_type=JSON,
+        )
+    )
+    # Kopie ein Jahr später: Dienste und Schichten, keine Einteilungen
+    copy = ok(
+        s["chef"].post(
+            f"{s['url']}{plan['id']}/copy/",
+            {"title": "Schützenfest 2100", "days": 364},
+            content_type=JSON,
+        ),
+        201,
+    )
+    assert copy["status"] == "draft" and copy["note"] == "Bitte festes Schuhwerk."
+    assert copy["max_shifts"] == 2
+    copied = copy["duties"][0]["shifts"]
+    assert [x["assignments"] for x in copied] == [[], []]
+    old = Shift.objects.get(pk=shifts[0]["id"])
+    new = Shift.objects.get(pk=copied[0]["id"])
+    assert new.starts_at - old.starts_at == datetime.timedelta(days=364)
+    assert (
+        s["reader"]
+        .post(f"{s['url']}{plan['id']}/copy/", {"title": "X", "days": 1}, content_type=JSON)
+        .status_code
+        == 403
+    )
+
+    # Aufruf: nur veröffentlicht und mit Recht für Rundschreiben
+    callout = f"{s['url']}{plan['id']}/callout/"
+    assert s["chef"].post(callout).status_code == 403
+    from access.models import Role
+
+    Role.objects.filter(organization=org, name="Festwart").update(
+        permissions=["helpers.edit", "circulars.edit"]
+    )
+    assert ok(s["chef"].get(f"{s['url']}{plan['id']}/"))["can_callout"] is True
+    assert s["chef"].post(callout).status_code == 400
+    ok(s["chef"].patch(f"{s['url']}{plan['id']}/", {"status": "published"}, content_type=JSON))
+    data = ok(s["chef"].post(callout), 201)
+    circular = Circular.objects.get(pk=data["circular"])
+    assert circular.status == "draft" and "noch 5 Plätze frei" in circular.subject
+    assert "**Theke** (Festzelt)" in circular.body and "2 frei" in circular.body
+    assert "mein-bereich/helferdienste" in circular.body
+
+    # Geleistete Dienste
+    ok(s["chef"].patch(f"{s['url']}assignments/{first['id']}/", {"done": True}, content_type=JSON))
+    ok(
+        s["chef"].post(
+            f"{s['url']}shifts/{shifts[1]['id']}/assignments/",
+            {"name": "Gerd Gast"},
+            content_type=JSON,
+        )
+    )
+    year = timezone.localtime(old.starts_at).year
+    done = ok(s["reader"].get(f"{s['url']}done/?jahr={year}"))
+    assert done["people"] == [
+        {
+            "membership": anna.pk,
+            "name": "Anna Muster",
+            "external": False,
+            "shifts": 1,
+            "minutes": 240,
+        }
+    ]
+    assert ok(s["reader"].get(f"{s['url']}done/?jahr={year - 1}"))["people"] == []

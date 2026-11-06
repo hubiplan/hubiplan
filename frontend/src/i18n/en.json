@@ -6780,5 +6780,14 @@
   "Ein Konto": {
     "one": "One account",
     "other": "{n} accounts"
-  }
+  },
+  "Aufruf als Rundschreiben": "Call-out as circular",
+  "Die Kopie übernimmt Dienste, Schichten, Kontingente und Einstellungen, aber keine Einteilungen.": "The copy takes over duties, shifts, quotas and settings, but no assignments.",
+  "Erster Tag des neuen Plans": "First day of the new roster",
+  "Geleistete Dienste": "Completed duties",
+  "Kopie anlegen": "Create copy",
+  "Noch keine geleisteten Dienste in diesem Jahr.": "No completed duties this year yet.",
+  "Plan kopieren": "Copy roster",
+  "Schichten": "Shifts",
+  "geleistet": "done"
 }

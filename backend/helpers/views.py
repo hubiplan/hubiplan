@@ -133,6 +133,11 @@ def duty_data(duty: Duty, scope) -> dict:
     }
 
 
+def can_callout(scope) -> bool:
+    codes = {"dept.circulars.send"} if scope.department_id else {"circulars.send", "circulars.edit"}
+    return bool(codes & scope.permissions)
+
+
 def plan_data(plan: HelperPlan, scope, *, full=False, counts=None) -> dict:
     data = {
         "id": plan.pk,
@@ -148,6 +153,7 @@ def plan_data(plan: HelperPlan, scope, *, full=False, counts=None) -> dict:
         "remind_days": plan.remind_days,
         "version": plan.version,
         "can_edit": scope.can_edit,
+        "can_callout": scope.can_edit and can_callout(scope),
     }
     if counts is not None:
         data.update(counts)
