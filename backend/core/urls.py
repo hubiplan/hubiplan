@@ -53,7 +53,11 @@ from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import help_views, imprint_views, social_views
 from organizations import views as org_views
-from organizations.platform_public import PublicPlatformView
+from organizations.platform_public import (
+    PublicManifestView,
+    PublicPlatformIconView,
+    PublicPlatformView,
+)
 from outbox import views as outbox_views
 from peering import urls as peering_urls
 from portal import views as portal_views
@@ -925,6 +929,16 @@ urlpatterns = [
     path("me/language/", language.MyLanguageView.as_view(), name="my-language"),
     path("public/languages/", language.PublicLanguagesView.as_view(), name="public-languages"),
     path("public/platform/", PublicPlatformView.as_view(), name="public-platform"),
+    path(
+        "public/platform/icon-<str:name>.png",
+        PublicPlatformIconView.as_view(),
+        name="public-platform-icon",
+    ),
+    path(
+        "public/platform/manifest.webmanifest",
+        PublicManifestView.as_view(),
+        name="public-platform-manifest",
+    ),
     path("me/learning/", learning.LearningView.as_view(), name="my-learning"),
     path("me/help/", help_done.HelpDoneView.as_view(), name="my-help"),
     path("me/help/<str:key>/", help_done.HelpDoneKeyView.as_view(), name="my-help-step"),
@@ -1044,6 +1058,7 @@ urlpatterns = [
         name="platform-outbox-attachment",
     ),
     path("platform/settings/", org_views.PlatformSettingsView.as_view(), name="platform-settings"),
+    path("platform/icon/", org_views.PlatformIconView.as_view(), name="platform-icon"),
     path("platform/update/", org_views.PlatformUpdateView.as_view(), name="platform-update"),
     path("platform/imprint/", imprint_views.PlatformImprintView.as_view(), name="platform-imprint"),
     path(

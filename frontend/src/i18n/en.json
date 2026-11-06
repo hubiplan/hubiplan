@@ -1,4 +1,11 @@
 {
+  "Symbol der Instanz": "Instance icon",
+  "Das Symbol erscheint im Browser-Tab und auf dem Startbildschirm des Handys. Am besten ein quadratisches Bild ohne Schrift, mindestens 512 × 512 Pixel. Ohne eigenes Symbol zeigt HUBIplan sein H-Zeichen in den Farben der Instanz.": "The icon appears in the browser tab and on the phone's home screen. Ideally a square image without text, at least 512 × 512 pixels. Without its own icon, HUBIplan shows its H mark in the instance's colours.",
+  "Kein eigenes Symbol.": "No custom icon.",
+  "Heller Browser-Tab": "Light browser tab",
+  "Dunkler Browser-Tab": "Dark browser tab",
+  "Symbol auf dem Handy (rund ausgeschnitten)": "Icon on a phone (round crop)",
+  "Wer HUBIplan schon auf dem Startbildschirm hat, sieht das neue Symbol erst, wenn das Handy es neu abholt. Auf dem iPhone muss die Seite dazu neu zum Startbildschirm hinzugefügt werden.": "Anyone who already has HUBIplan on their home screen will only see the new icon once the phone fetches it again. On an iPhone, the page has to be added to the home screen again.",
   "mit HUBIplan": "powered by HUBIplan",
   "{instanz} verwendet HUBIplan, freie Software unter der AGPL-3.0-or-later.": "{instanz} uses HUBIplan, free software under the AGPL-3.0-or-later.",
   "Farben und Logo der Instanz gelten für die Anmeldeseite, die öffentlichen Seiten und alle Einheiten ohne eigene Farben oder eigenes Logo. Den Namen der Instanz legst du unter Einstellungen › Organisation fest.": "The instance's colours and logo apply to the sign-in page, the public pages and all units without their own colours or logo. You set the instance name under Settings › Organisation.",

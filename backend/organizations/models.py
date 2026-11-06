@@ -40,6 +40,11 @@ def logo_path(instance, filename: str) -> str:
     return f"logos/{prefix}/{instance.pk or 'neu'}-{stamp}.{ext}"
 
 
+def brand_icon_path(instance, filename: str) -> str:
+    stamp = timezone.now().strftime("%Y%m%d%H%M%S")
+    return f"marke/symbol-{stamp}.png"
+
+
 def homepage_image_path(instance, filename: str) -> str:
     stamp = timezone.now().strftime("%Y%m%d%H%M%S")
     return f"homepages/{instance.pk or 'neu'}-{stamp}.jpg"
@@ -692,6 +697,9 @@ class PlatformSettings(models.Model):
     # Verbund Schritt 7: Personen melden sich hier mit ihrem Zugang einer gekoppelten
     # Instanz an (nach eigener Verknüpfung). Aus: nur Zugänge dieser Instanz.
     peering_login = models.BooleanField("Anmeldung über gekoppelte Instanzen", default=False)
+    # White Label W2: quadratisches Symbol der Instanz für Browser-Tab und Handy (PWA).
+    # Leer: das H-Zeichen von HUBIplan (konzepte/white-label.md)
+    brand_icon = models.ImageField("Symbol der Instanz", upload_to=brand_icon_path, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
