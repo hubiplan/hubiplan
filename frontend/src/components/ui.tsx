@@ -166,7 +166,8 @@ export function StatusMessage({ message }: { message: string | null }) {
   )
 }
 
-export function Tabs({ items }: { items: { to: string; label: string }[] }) {
+/** Unterpunkte; `section` setzt in der Seitenleiste eine Zwischenüberschrift. */
+export function Tabs({ items }: { items: { to: string; label: string; section?: string }[] }) {
   // Im App-Rahmen stehen die Punkte in der Seitenleiste (UX-Audit 31.10. W09)
   if (useSubNav(items)) return null
   return (

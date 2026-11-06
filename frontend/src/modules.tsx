@@ -26,7 +26,7 @@ export interface AppModule {
   icon: ReactNode
   visible: (org: OrgSummary | null, ws: Workspace) => boolean
   /** Unterpunkte, in der Seitenleiste unter dem aktiven Modul */
-  children?: (org: OrgSummary | null) => { to: string; label: string }[]
+  children?: (org: OrgSummary | null) => { to: string; label: string; section?: string }[]
 }
 
 const icon = (d: string) => (
@@ -61,6 +61,23 @@ export const modules: AppModule[] = [
     path: '/',
     icon: icon('M4 11 12 4l8 7M6 9.5V20h12V9.5M10 20v-5h4v5M16 7.5V4.5h2.5v5.2'),
     visible: () => true,
+  },
+  // Persönlicher Bereich gehört zum Alltag, nicht zum Verein (Menüprüfung M-20)
+  {
+    id: 'mein-bereich',
+    group: 'alltag',
+    label: t('Mein Bereich'),
+    path: '/mein-bereich',
+    icon: icon('M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8M4.5 21c.4-4 3.6-6.5 7.5-6.5s7.1 2.5 7.5 6.5'),
+    visible: (_org, ws) => !!ws.portal,
+    children: () => [
+      { to: '/mein-bereich', label: t('Übersicht') },
+      { to: '/mein-bereich/aufgaben', label: t('Aufgaben') },
+      { to: '/mein-bereich/ausweis', label: t('Ausweis') },
+      { to: '/mein-bereich/rechnungen', label: t('Rechnungen') },
+      { to: '/mein-bereich/rundschreiben', label: t('Mitteilungen') },
+      { to: '/mein-bereich/daten', label: t('Meine Daten') },
+    ],
   },
   {
     id: 'aufgaben',
@@ -171,22 +188,6 @@ export const modules: AppModule[] = [
       'M12 6.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M5 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M19 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M7 20c0-2.8 2.2-5 5-5s5 2.2 5 5M2 19c0-2 1.3-3.5 3-3.8M22 19c0-2-1.3-3.5-3-3.8',
     ),
     visible: (_org, ws) => !!ws.dept,
-  },
-  {
-    id: 'mein-bereich',
-    group: 'verein',
-    label: t('Mein Bereich'),
-    path: '/mein-bereich',
-    icon: icon('M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8M4.5 21c.4-4 3.6-6.5 7.5-6.5s7.1 2.5 7.5 6.5'),
-    visible: (_org, ws) => !!ws.portal,
-    children: () => [
-      { to: '/mein-bereich', label: t('Übersicht') },
-      { to: '/mein-bereich/aufgaben', label: t('Aufgaben') },
-      { to: '/mein-bereich/ausweis', label: t('Ausweis') },
-      { to: '/mein-bereich/rechnungen', label: t('Rechnungen') },
-      { to: '/mein-bereich/rundschreiben', label: t('Mitteilungen') },
-      { to: '/mein-bereich/daten', label: t('Meine Daten') },
-    ],
   },
   {
     id: 'rundschreiben',

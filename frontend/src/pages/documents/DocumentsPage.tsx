@@ -4,7 +4,7 @@ import { DocumentIcon, FolderIcon } from './DocumentIcons.tsx'
 import './documents.css'
 import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes } from 'react-router-dom'
 import { PERM } from '../../api/orgs.ts'
 import { DEPT_PERM } from '../../api/portal.ts'
 import { docApi, docBase, formatSize } from '../../api/documents.ts'
@@ -17,7 +17,6 @@ import {
   Field,
   SaveStatus,
   SelectField,
-  Tabs,
   SectionTitle,
 } from '../../components/ui.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
@@ -86,7 +85,6 @@ export function DocumentsPage() {
   return (
     <section>
       <SectionTitle title={title} items={tabs} subtitle={subtitle} />
-      {tabs.length > 1 && <Tabs items={tabs} />}
       <DocumentArea
         key={base}
         base={base}
@@ -117,6 +115,12 @@ function DocumentArea({
         index
         element={
           <>
+            {/* Papierkorb als Link in der Seite wie bei Aufgaben und Material (Menüprüfung M-21) */}
+            {trash && (
+              <p className="small">
+                <Link to="papierkorb">{t('Papierkorb')}</Link>
+              </p>
+            )}
             {error && <Alert kind="error">{error}</Alert>}
             {!data && !error && <p className="muted">{t('Lädt …')}</p>}
             {data && (
@@ -1000,6 +1004,9 @@ function TrashPanel({ base }: { base: DocBase }) {
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   return (
     <div>
+      <p className="small">
+        <Link to="/dokumente">{t('Zur Dokumentenablage')}</Link>
+      </p>
       <p className="muted small">
         {t(
           'Gelöschte Dokumente bleiben 30 Tage im Papierkorb und werden danach endgültig entfernt.',

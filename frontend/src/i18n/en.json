@@ -6449,5 +6449,13 @@
   "Deine Anfrage ist eingegangen.": "Your request has been received.",
   "Meine Anfragen und Buchungen": "My requests and bookings",
   "Schützenhaus, Stand oder Material anfragen": "Request the clubhouse, range or equipment",
-  "Mitglieder dürfen im Mitgliederbereich anfragen": "Members may send requests from the members' area"
+  "Mitglieder dürfen im Mitgliederbereich anfragen": "Members may send requests from the members' area",
+  "Allgemein": "General",
+  "Recht": "Legal",
+  "Zugänge": "Access",
+  "Daten": "Data",
+  "Inhalte": "Content",
+  "Betrieb": "Operation",
+  "Einrichtung der Bereiche": "Setup of the areas",
+  "Was nur einen Bereich betrifft, stellst du dort unter „Einrichtung“ ein.": "Settings that only affect one area are found there under “Setup”."
 }
