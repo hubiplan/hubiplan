@@ -16,11 +16,15 @@
 .booking-toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
+  /* Knöpfe, Beschriftung und Auswahl auf einer Linie und gleich hoch */
+  align-items: stretch;
   gap: 0.75rem;
 }
 .booking-toolbar label {
   margin: 0;
+}
+.booking-toolbar select {
+  align-self: stretch;
 }
 .booking-scroll {
   overflow-x: auto;
