@@ -138,6 +138,8 @@ export interface OutgoingMail {
   status_label: string
   error: string
   attachments: { index: number; name: string; size: number }[]
+  /** Plattform-Postausgang ohne Freigabe des Vereins: nur Kopfdaten */
+  content_hidden?: boolean
 }
 
 export const DEPT_PERM = {
@@ -263,6 +265,12 @@ export const portalApi = {
   // Postausgang
   outbox: (orgId: number, query: ListQuery = {}) =>
     api.get<Paged<OutgoingMail>>(`${org(orgId)}/outbox/${listParams(query)}`),
+  outboxSettings: (orgId: number) =>
+    api.get<{ platform_content: boolean }>(`${org(orgId)}/outbox/settings/`),
+  saveOutboxSettings: (orgId: number, platform_content: boolean) =>
+    api.patch<{ platform_content: boolean }>(`${org(orgId)}/outbox/settings/`, {
+      platform_content,
+    }),
   outboxAttachmentUrl: (orgId: number, mail: number, index: number) =>
     `${org(orgId)}/outbox/${mail}/attachments/${index}/`,
   platformOutbox: (query: ListQuery = {}) =>

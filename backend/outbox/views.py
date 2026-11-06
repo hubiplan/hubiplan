@@ -7,10 +7,13 @@ from pathlib import Path
 from django.conf import settings
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext
 from rest_framework import generics, serializers
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import AUDIT_VIEW
+from access.catalog import AUDIT_VIEW, ORG_EDIT
+from audit.log import diff, record, snapshot
 from core.api_base import OrgScopedMixin
 from core.listing import ListPagination, search
 from core.tenancy import rls_bypass
@@ -43,11 +46,25 @@ class OutgoingMailSerializer(serializers.ModelSerializer):
             "attachments",
         ]
 
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        data["content_hidden"] = self.context.get("platform", False) and not _platform_may_read(obj)
+        if data["content_hidden"]:
+            data["body"] = ""
+            data["error"] = ""
+        return data
+
     def get_attachments(self, obj) -> list[dict]:
         return [
             {"index": i, "name": a["name"], "size": a["size"]}
             for i, a in enumerate(obj.attachments or [])
         ]
+
+
+def _platform_may_read(mail: OutgoingMail) -> bool:
+    """Plattform-Betreuung: Inhalt nur bei Mails ohne Verein (Plattform selbst) oder mit
+    Freigabe des Vereins (Gesamtaudit 05.11. F-04)."""
+    return mail.organization is None or mail.organization.outbox_platform_content
 
 
 def _attachment_response(mail: OutgoingMail, index: int) -> FileResponse:
@@ -110,7 +127,8 @@ class PlatformOutboxView(generics.ListAPIView):
                 OutgoingMail.objects.select_related("organization"), request.query_params
             )
             page = self.paginate_queryset(qs)
-            return self.get_paginated_response(self.get_serializer(page, many=True).data)
+            data = self.get_serializer(page, many=True, context={"platform": True}).data
+            return self.get_paginated_response(data)
 
 
 class PlatformOutboxAttachmentView(APIView):
@@ -118,5 +136,29 @@ class PlatformOutboxAttachmentView(APIView):
 
     def get(self, request, pk: int, index: int):
         with rls_bypass():
-            mail = get_object_or_404(OutgoingMail, pk=pk)
+            mail = get_object_or_404(OutgoingMail.objects.select_related("organization"), pk=pk)
+            if not _platform_may_read(mail):
+                raise Http404
         return _attachment_response(mail, index)
+
+
+class OrgOutboxSettingsView(OrgScopedMixin, APIView):
+    """Freigabe der Inhalte für die Plattform-Betreuung (Gesamtaudit 05.11. F-04)."""
+
+    read_permission = AUDIT_VIEW
+    write_permission = ORG_EDIT
+
+    def get(self, request, org_id: int):
+        return Response({"platform_content": self.org.outbox_platform_content})
+
+    def patch(self, request, org_id: int):
+        value = request.data.get("platform_content")
+        if not isinstance(value, bool):
+            raise serializers.ValidationError(
+                {"platform_content": gettext("Bitte ja oder nein angeben.")}
+            )
+        before = snapshot(self.org)
+        self.org.outbox_platform_content = value
+        self.org.save(update_fields=["outbox_platform_content"])
+        record(self.org, request.user, "update", self.org, diff(before, snapshot(self.org)))
+        return Response({"platform_content": value})

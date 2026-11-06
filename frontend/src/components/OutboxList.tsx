@@ -101,13 +101,22 @@ export function OutboxList({
           </div>
           {open === m.id && (
             <div className="subcard">
-              <pre className="mail-body">{m.body}</pre>
-              {m.attachments.map((a) => (
-                <p key={a.index} className="small">
-                  <a href={attachmentUrl(m.id, a.index)}>📎 {a.name}</a> ({Math.ceil(a.size / 1024)}{' '}
-                  KB)
+              {m.content_hidden ? (
+                <p className="muted small">
+                  {t(
+                    'Inhalt und Anhänge sieht nur der Verein. Er kann sie unter Einstellungen › Postausgang für die Plattform-Betreuung freigeben.',
+                  )}
                 </p>
-              ))}
+              ) : (
+                <pre className="mail-body">{m.body}</pre>
+              )}
+              {!m.content_hidden &&
+                m.attachments.map((a) => (
+                  <p key={a.index} className="small">
+                    <a href={attachmentUrl(m.id, a.index)}>📎 {a.name}</a> (
+                    {Math.ceil(a.size / 1024)} KB)
+                  </p>
+                ))}
               {m.error && <p className="field-error small">{m.error}</p>}
             </div>
           )}
