@@ -6987,5 +6987,22 @@
   "E-Mail für Rechnungsfragen": "Email for invoice questions",
   "Kennung des Rechnungsstellers": "Seller identifier",
   "z. B. Vereinsregisternummer; leer: aus dem Impressum": "e.g. register number; empty: taken from the legal notice",
-  "Die Leitweg-ID steht in der Rechnungsanschrift des Mitglieds. Beim Festschreiben entsteht dann eine geprüfte XRechnung; die Rechnungsmail trägt sie als Anhang.": "The Leitweg-ID is part of the member's billing address. Finalising then creates a validated XRechnung, which the invoice email carries as an attachment."
+  "Die Leitweg-ID steht in der Rechnungsanschrift des Mitglieds. Beim Festschreiben entsteht dann eine geprüfte XRechnung; die Rechnungsmail trägt sie als Anhang.": "The Leitweg-ID is part of the member's billing address. Finalising then creates a validated XRechnung, which the invoice email carries as an attachment.",
+  "Rundschreiben, Rechnungen, Versammlungen und der Mitgliederzugang berücksichtigen diese Angaben noch nicht; das folgt in den nächsten Fassungen.": "Circulars, invoices, meetings and member access do not use these settings yet; this follows in the next versions.",
+  "Ansprechpartner für:": "Contact person for:",
+  "aufgeteilt, weitere Teile: {numbers}": "split, further parts: {numbers}",
+  "Teil von {number}": "Part of {number}",
+  "Splitbuchung: Weitere Teile sind {numbers}. Belege und Kontoumsatz gehören zu dieser Buchung.": "Split booking: further parts are {numbers}. Receipts and the bank transaction belong to this booking.",
+  "Teil der Splitbuchung {number}. Belege und Kontoumsatz stehen dort; Datum, Art und Konto gelten für alle Teile.": "Part of split booking {number}. Receipts and the bank transaction are there; date, type and account apply to all parts.",
+  "Aufteilen": "Split",
+  "Buchung aufteilen": "Split booking",
+  "Ein Zahlungsvorgang, mehrere Kategorien: Jeder Teil wird eine eigene Buchung. Datum, Konto und Empfänger bzw. Zahler bleiben gleich; Belege und Kontoumsatz bleiben beim ersten Teil.": "One payment, several categories: each part becomes a booking of its own. Date, account and payee or payer stay the same; receipts and the bank transaction stay with the first part.",
+  "Buchungstext (optional)": "Description (optional)",
+  "Kategorie von Teil {n}": "Category of part {n}",
+  "Betrag von Teil {n}": "Amount of part {n}",
+  "Veranstaltung von Teil {n}": "Event of part {n}",
+  "Buchungstext von Teil {n}": "Description of part {n}",
+  "Die Teile ergeben genau den Betrag der Buchung.": "The parts add up exactly to the booking amount.",
+  "Noch zu verteilen: {x}": "Still to allocate: {x}",
+  "Teil hinzufügen": "Add part"
 }

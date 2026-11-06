@@ -200,6 +200,17 @@ class Booking(models.Model):
         verbose_name="storniert Buchung",
     )
     cancel_reason = models.CharField("Grund des Stornos", max_length=300, blank=True)
+    # Splitbuchung: ein Zahlungsvorgang, aufgeteilt auf mehrere Kategorien bzw. Bereiche.
+    # Jeder Teil ist eine eigene Buchung; die Teile verweisen auf die erste (Kopf), dort
+    # liegen Belege und die Zuordnung zum Kontoumsatz.
+    split_of = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="split_parts",
+        verbose_name="Teil der Buchung",
+    )
 
     class Meta:
         verbose_name = "Buchung"

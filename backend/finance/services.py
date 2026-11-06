@@ -723,3 +723,116 @@ def reopen_year(closing: YearClosing, user, reason: str):
     )
     closing.delete()
     return archived
+
+
+# --- Splitbuchung (Konzept vereinskasse-steuern, S1b) ---
+
+MAX_SPLIT_PARTS = 20
+
+
+def _comma(value: Decimal) -> str:
+    return f"{value:.2f}".replace(".", ",")
+
+
+def group_amount(booking: Booking) -> Decimal:
+    """Betrag des ganzen Zahlungsvorgangs: Kopf und alle Teile einer Splitbuchung."""
+    total = booking.split_parts.aggregate(total=Sum("amount"))["total"] or ZERO
+    return booking.amount + total
+
+
+def split_blocker(booking: Booking) -> str:
+    """Warum sich eine Buchung nicht aufteilen lässt; leer, wenn es geht."""
+    from .models import CashReceipt
+
+    if booking.kind == Booking.Kind.TRANSFER:
+        return gettext("Umbuchungen lassen sich nicht aufteilen.")
+    if booking.split_of_id or booking.split_parts.exists():
+        return gettext("Die Buchung ist schon aufgeteilt.")
+    if in_storno(booking):
+        return gettext("Die Buchung gehört zu einem Storno.")
+    if hasattr(booking, "payment"):
+        return gettext("Die Buchung gehört zu einem Zahlungseingang einer Rechnung.")
+    if CashReceipt.objects.filter(booking=booking).exists():
+        return gettext("Die Buchung gehört zu einer unterschriebenen Quittung.")
+    if Donation.objects.filter(booking=booking).exists():
+        return gettext("Zur Buchung gibt es eine Zuwendung. Bitte zuerst die Zuwendung lösen.")
+    reason = fixed_reason(booking)
+    if reason:
+        return reason + FIX_HINT
+    return ""
+
+
+def split_booking(booking: Booking, parts: list[dict], user) -> list[Booking]:
+    """Teilt eine Buchung auf mehrere Kategorien auf, ohne den Zahlungsvorgang zu ändern.
+
+    ``parts``: [{category, amount, project?, text?}, …], mindestens zwei, zusammen genau der
+    Betrag der Buchung. Der erste Teil bleibt die Buchung selbst (Nummer, Belege,
+    Kontoumsatz); die weiteren Teile werden neue Buchungen mit eigener Nummer und Verweis
+    auf den Kopf. Gleich bleiben Datum, Art, Konto, Empfänger/Zahler, Referenz, Mitglied
+    und Abteilung."""
+    if not connection.in_atomic_block:
+        raise RuntimeError("split_booking nur innerhalb einer Transaktion aufrufen.")
+    booking = Booking.objects.select_for_update().select_related("organization").get(pk=booking.pk)
+    org = booking.organization
+    ensure_open(org, year=booking.year)
+    blocker = split_blocker(booking)
+    if blocker:
+        raise ValidationError(blocker)
+    if not isinstance(parts, list) or not 2 <= len(parts) <= MAX_SPLIT_PARTS:
+        raise ValidationError(
+            gettext("Bitte zwei bis {n} Teile angeben.").format(n=MAX_SPLIT_PARTS)
+        )
+    total = sum((p["amount"] for p in parts), ZERO)
+    if total != booking.amount:
+        raise ValidationError(
+            gettext(
+                "Die Teile ergeben {x} €, die Buchung hat {y} €. Zusammen müssen sie genau "
+                "den Betrag der Buchung ergeben."
+            ).format(x=_comma(total), y=_comma(booking.amount))
+        )
+    for part in parts:
+        category = part["category"]
+        if part["amount"] <= 0:
+            raise ValidationError(gettext("Jeder Teil braucht einen Betrag größer als 0."))
+        if category is None or category.organization_id != org.pk:
+            raise ValidationError(gettext("Bitte für jeden Teil eine Kategorie wählen."))
+        if not category.allows(booking.kind):
+            raise ValidationError(
+                gettext("Die Kategorie „{name}“ passt nicht zu dieser Art der Buchung.").format(
+                    name=category.name
+                )
+            )
+        project = part.get("project")
+        if project is not None and project.organization_id != org.pk:
+            raise ValidationError(gettext("Unbekannte Veranstaltung."))
+
+    first, rest = parts[0], parts[1:]
+    booking.amount = first["amount"]
+    booking.category = first["category"]
+    booking.project = first.get("project")
+    if (first.get("text") or "").strip():
+        booking.text = first["text"].strip()[:200]
+    booking.save(update_fields=["amount", "category", "project", "text", "updated_at"])
+    created = []
+    for part in rest:
+        created.append(
+            Booking.objects.create(
+                organization=org,
+                year=booking.year,
+                number=next_number(org.pk, booking.year),
+                date=booking.date,
+                kind=booking.kind,
+                amount=part["amount"],
+                account=booking.account,
+                category=part["category"],
+                project=part.get("project"),
+                text=((part.get("text") or "").strip() or booking.text)[:200],
+                reference=booking.reference,
+                counterparty=booking.counterparty,
+                membership=booking.membership,
+                department=booking.department,
+                split_of=booking,
+                created_by=user,
+            )
+        )
+    return [booking, *created]

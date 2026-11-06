@@ -5,7 +5,7 @@ bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/kassenbuch]
-stichworte: [Buchung, Beleg, Einnahme, Ausgabe, Kasse]
+stichworte: [Buchung, Beleg, Einnahme, Ausgabe, Kasse, Splitbuchung, Aufteilen]
 ---
 
 Im Kassenbuch steht jede Einnahme und Ausgabe mit Datum, Konto, Kategorie und Beleg. Buchungen eines abgeschlossenen Zeitraums lassen sich nicht mehr ändern, nur mit einer Gegenbuchung berichtigen. So bleibt das Kassenbuch prüfbar.
@@ -17,3 +17,5 @@ Die Namenssuche unterscheidet nicht zwischen Groß- und Kleinschreibung. Unicode
 Nach einem Wechsel der Auswahl werden die bisherigen Ergebnisse ausgeblendet, bis die neue Abfrage abgeschlossen ist. Falls das Laden fehlschlägt, kannst du mit **Erneut laden** dieselbe Auswahl erneut abfragen.
 
 Schlägt das Laden der Konten oder Kategorien fehl, bietet **Erneut laden** einen lokalen Wiederholungsweg. Bereits eingegebene Buchungsangaben bleiben bei einer fehlgeschlagenen Aktualisierung erhalten.
+
+**Aufteilen (Splitbuchung):** Gehört eine Zahlung zu mehreren Kategorien oder steuerlichen Bereichen, etwa die Abrechnung des Festwirts mit Getränken, Eintritt und Bandenwerbung, öffne die Buchung und wähle **Aufteilen**. Jeder Teil bekommt Kategorie, Betrag und auf Wunsch Veranstaltung und Text. Zusammen müssen die Teile genau den Betrag ergeben. Jeder Teil wird eine eigene Buchung mit eigener Nummer. Datum, Konto und Empfänger bzw. Zahler gelten für alle Teile, Belege und Kontoumsatz bleiben beim ersten Teil. Aufteilen geht, solange die Buchung nicht festgeschrieben ist und nicht zu einem Storno, einer Quittung, einer Rechnungszahlung oder einer Zuwendung gehört.

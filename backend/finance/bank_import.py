@@ -480,7 +480,11 @@ def link_booking(line: BankLine, booking: Booking, user) -> BankLine:
     if booking.organization_id != line.organization_id or booking.account_id != line.account_id:
         raise ValidationError({"booking": gettext("Die Buchung gehört zu einem anderen Konto.")})
     kind = Booking.Kind.INCOME if line.credit else Booking.Kind.EXPENSE
-    if booking.kind != kind or booking.amount != line.amount:
+    if booking.split_of_id:
+        raise ValidationError(
+            {"booking": gettext("Bitte den Umsatz dem ersten Teil der Splitbuchung zuordnen.")}
+        )
+    if booking.kind != kind or services.group_amount(booking) != line.amount:
         raise ValidationError(
             {"booking": gettext("Betrag oder Richtung der Buchung passen nicht zu diesem Umsatz.")}
         )

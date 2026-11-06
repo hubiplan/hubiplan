@@ -28,6 +28,7 @@ import {
 } from '../../components/forms.ts'
 import { Alert, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { SplitEditor } from './SplitEditor.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { ApiError } from '../../api/client.ts'
 import { useTerms } from '../../org/terms.ts'
@@ -509,6 +510,15 @@ function BookingRow({
             {t('storniert durch')} {b.cancelled_by.number}
           </div>
         )}
+        {b.split && (
+          <div className="small">
+            {b.split.is_lead
+              ? t('aufgeteilt, weitere Teile: {numbers}', {
+                  numbers: b.split.parts.map((p) => p.number).join(', '),
+                })
+              : t('Teil von {number}', { number: b.split.lead.number })}
+          </div>
+        )}
         <div className="muted small">
           {[
             b.counterparty
@@ -605,6 +615,7 @@ function BookingForm({
       : null,
   )
   const [again, setAgain] = useState(false)
+  const [splitting, setSplitting] = useState(false)
   // E-Rechnung: gelesene Angaben füllen das Formular, die Datei wird nach dem Buchen Beleg
   const [einvoice, setEinvoice] = useState<{ file: File; info: EInvoiceInfo } | null>(null)
   const [einvoiceError, setEinvoiceError] = useState<string | null>(null)
@@ -763,6 +774,19 @@ function BookingForm({
           <Alert kind="info">
             {t('Storno von Buchung {number}:', { number: booking.cancels.number })}{' '}
             {booking.cancel_reason}
+          </Alert>
+        )}
+        {booking?.split && (
+          <Alert kind="info">
+            {booking.split.is_lead
+              ? t(
+                  'Splitbuchung: Weitere Teile sind {numbers}. Belege und Kontoumsatz gehören zu dieser Buchung.',
+                  { numbers: booking.split.parts.map((p) => p.number).join(', ') },
+                )
+              : t(
+                  'Teil der Splitbuchung {number}. Belege und Kontoumsatz stehen dort; Datum, Art und Konto gelten für alle Teile.',
+                  { number: booking.split.lead.number },
+                )}
           </Alert>
         )}
         {booking?.fixed && !booking.cancels && !booking.cancelled_by && (
@@ -1009,6 +1033,16 @@ function BookingForm({
                 </span>
               </label>
             )}
+            {booking && kind !== 'transfer' && !locked && !booking.split && !splitting && (
+              <button
+                type="button"
+                className="button button-ghost"
+                disabled={form.busy}
+                onClick={() => setSplitting(true)}
+              >
+                {t('Aufteilen')}
+              </button>
+            )}
             {booking && !booking.cancels && !booking.cancelled_by && (
               <button
                 type="button"
@@ -1027,6 +1061,19 @@ function BookingForm({
           </div>
         )}
       </form>
+      {booking && splitting && (
+        <SplitEditor
+          orgId={orgId}
+          booking={booking}
+          categories={usable}
+          projects={usableProjects}
+          onCancel={() => setSplitting(false)}
+          onDone={(lead) => {
+            setSplitting(false)
+            onSaved(lead, false)
+          }}
+        />
+      )}
       {booking ? (
         <Receipts orgId={orgId} booking={booking} canEdit={canEdit} />
       ) : (

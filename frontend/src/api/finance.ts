@@ -124,6 +124,19 @@ export interface Booking {
   cancels: { id: number; number: string } | null
   cancel_reason: string
   cancelled_by: { id: number; number: string; reason: string; date: string } | null
+  /** Splitbuchung: erster Teil (Belege, Kontoumsatz) und weitere Teile */
+  split?: {
+    lead: { id: number; number: string }
+    parts: { id: number; number: string; amount: string }[]
+    is_lead: boolean
+  } | null
+}
+
+export interface SplitPart {
+  category: number
+  amount: string
+  project?: number | null
+  text?: string
 }
 
 export interface Overview {
@@ -444,6 +457,8 @@ export const financeApi = {
   updateBooking: (org: number, id: number, data: Record<string, unknown>) =>
     api.patch<Booking>(`${base(org)}/bookings/${id}/`, data),
   deleteBooking: (org: number, id: number) => api.del(`${base(org)}/bookings/${id}/`),
+  splitBooking: (org: number, id: number, parts: SplitPart[]) =>
+    api.post<Booking[]>(`${base(org)}/bookings/${id}/split/`, { parts }),
   stornoBooking: (org: number, id: number, reason: string) =>
     api.post<Booking>(`${base(org)}/bookings/${id}/storno/`, { reason }),
   renumber: (org: number, year: number) =>

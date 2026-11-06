@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from decimal import Decimal
+
 from django.db.models import Q
 from django.utils.translation import gettext
 from rest_framework import serializers
@@ -179,6 +181,15 @@ class OrgRelatedField(serializers.PrimaryKeyRelatedField):
         return self.queryset.model.objects.filter(organization=self.context["org"])
 
 
+class SplitPartSerializer(serializers.Serializer):
+    """Ein Teil einer Splitbuchung."""
+
+    category = OrgRelatedField(queryset=Category.objects.none())
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("0.01"))
+    project = OrgRelatedField(queryset=Project.objects.none(), allow_null=True, required=False)
+    text = serializers.CharField(max_length=200, allow_blank=True, required=False)
+
+
 class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
     kind_label = serializers.CharField(source="get_kind_display", read_only=True)
     display_number = serializers.CharField(read_only=True)
@@ -208,6 +219,7 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
     deletable = serializers.SerializerMethodField()
     cancels = serializers.SerializerMethodField()
     cancelled_by = serializers.SerializerMethodField()
+    split = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
@@ -244,6 +256,7 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "cancels",
             "cancel_reason",
             "cancelled_by",
+            "split",
         ]
         read_only_fields = ["year", "cancel_reason"]
         extra_kwargs = {"number": {"required": False, "min_value": 1}}
@@ -280,6 +293,18 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "number": counter.display_number,
             "reason": counter.cancel_reason,
             "date": counter.date,
+        }
+
+    def get_split(self, obj) -> dict | None:
+        """Splitbuchung: Kopf und Teile mit Nummern; None, wenn nicht aufgeteilt."""
+        lead = obj.split_of if obj.split_of_id else obj
+        parts = list(lead.split_parts.all())
+        if not parts:
+            return None
+        return {
+            "lead": {"id": lead.pk, "number": lead.display_number},
+            "parts": [{"id": p.pk, "number": p.display_number, "amount": p.amount} for p in parts],
+            "is_lead": lead.pk == obj.pk,
         }
 
     def get_member_name(self, obj) -> str | None:
