@@ -9,7 +9,6 @@ import {
   DATE_PRECISION_OPTIONS,
   DATE_PRECISION_WORD,
   errorMessage,
-  formatDate,
   useAutoSave,
   useForm,
   useLoad,
@@ -34,6 +33,8 @@ import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { SortableList, SortHint } from '../../components/Sortable.tsx'
 import { memberApi, todayIso } from '../../api/members.ts'
 import type { MemberRow } from '../../api/members.ts'
+import { confirmEndHolder, UnitRoleDialog, UnitRolesTable } from '../../components/UnitRoles.tsx'
+import type { UnitHolder, UnitRole } from '../../components/UnitRoles.tsx'
 import { lang, t, tn } from '../../i18n/index.ts'
 
 export function DepartmentsPage() {
@@ -930,7 +931,7 @@ function DepartmentCard({
   )
 }
 
-/** Rollen der Untereinheit an Mitglieder vergeben: ohne Konto, ohne E-Mail. */
+/** Rollen der Untereinheit besetzen: ohne Konto, ohne E-Mail (gleiche Ansicht wie Ämter, R3). */
 function UnitHolders({
   orgId,
   dep,
@@ -941,138 +942,61 @@ function UnitHolders({
   onChange: () => void
 }) {
   const { can } = useOrg()
-  const [today] = useState(todayIso)
-  const [member, setMember] = useState<MemberRow | null>(null)
-  const [role, setRole] = useState('')
-  const [from, setFrom] = useState(today)
-  const [busy, setBusy] = useState(false)
+  const org = useActiveOrg()
+  const [assigning, setAssigning] = useState<UnitRole | null>(null)
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   if (dep.roles.length === 0 || !can(PERM.membersView)) return null
   const canEdit = can(PERM.rolesManage)
-  const rows = dep.roles.flatMap((r) => r.holders.map((h) => ({ ...h, role: r })))
-  const roleId = role || String(dep.roles[0].id)
+  const roles: UnitRole[] = dep.roles.map((r) => ({ id: r.id, name: r.name, holders: r.holders }))
 
-  async function run(action: () => Promise<unknown>, text: string): Promise<boolean> {
-    setBusy(true)
+  async function end(role: UnitRole, h: UnitHolder) {
+    if (!(await confirmEndHolder(role, h))) return
     setMessage(null)
     try {
-      await action()
-      setMessage({ kind: 'success', text })
+      await memberApi.endDepartmentRole(orgId, h.membership, h.id, todayIso())
+      setMessage({
+        kind: 'success',
+        text: t('Die Rolle „{name}“ von {name2} ist beendet.', { name: role.name, name2: h.name }),
+      })
       onChange()
-      return true
     } catch (err) {
       setMessage({ kind: 'error', text: errorMessage(err) })
-      return false
-    } finally {
-      setBusy(false)
     }
-  }
-
-  async function add(e: FormEvent) {
-    e.preventDefault()
-    const picked = dep.roles.find((r) => String(r.id) === roleId)
-    if (!member || !picked) return
-    const name = t('{first_name} {last_name}', {
-      first_name: member.first_name,
-      last_name: member.last_name,
-    })
-    const ok = await run(
-      () => memberApi.addDepartmentRole(orgId, member.id, { role: picked.id, valid_from: from }),
-      t(
-        '{name} hat jetzt die Rolle „{name2}“. Es wurde kein Konto angelegt und keine E-Mail verschickt.',
-        { name, name2: picked.name },
-      ),
-    )
-    if (ok) setMember(null)
-  }
-
-  async function end(h: (typeof rows)[number]) {
-    const ok = await confirmDialog({
-      title: t('Rolle „{name}“ von {name2} beenden?', { name: h.role.name, name2: h.name }),
-      message: t('Die Amtszeit endet heute und bleibt in der Mitgliederakte erhalten.'),
-      confirmLabel: t('Beenden'),
-    })
-    if (!ok) return
-    await run(
-      () => memberApi.endDepartmentRole(orgId, h.membership, h.id, today),
-      t('Die Rolle „{name}“ von {name2} ist beendet.', { name: h.role.name, name2: h.name }),
-    )
   }
 
   return (
     <div className="subcard" data-testid="unit-holders">
       <h3>{t('Wer hat welche Rolle?')}</h3>
-      {rows.length === 0 ? (
-        <p className="muted small">{t('Noch niemand.')}</p>
-      ) : (
-        <table className="table">
-          <thead>
-            <tr>
-              <th>{t('Mitglied')}</th>
-              <th>{t('Rolle')}</th>
-              <th>{t('seit')}</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((h) => (
-              <tr key={h.id}>
-                <td>{h.name}</td>
-                <td>{h.role.name}</td>
-                <td>{formatDate(h.valid_from)}</td>
-                <td className="actions">
-                  {canEdit && (
-                    <button
-                      type="button"
-                      className="link-button"
-                      disabled={busy}
-                      onClick={() => void end(h)}
-                    >
-                      {t('Beenden')}
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {canEdit && (
-        <form onSubmit={add} className="stack">
-          <p className="muted small">
-            {t(
-              'Mitglied aus der Mitgliederliste wählen. Es wird kein Konto angelegt und keine E-Mail verschickt.',
-            )}
-          </p>
-          <MemberPicker orgId={orgId} value={member} onChange={setMember} label={t('Mitglied')} />
-          <div className="grid-2">
-            <SelectField
-              label={t('Rolle')}
-              value={roleId}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              {dep.roles.map((r) => (
-                <option key={r.id} value={String(r.id)}>
-                  {r.name}
-                </option>
-              ))}
-            </SelectField>
-            <Field
-              label={t('seit')}
-              type="date"
-              required
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-            />
-          </div>
-          <div className="button-row">
-            <button type="submit" className="button button-primary" disabled={!member || busy}>
-              {t('Rolle besetzen')}
-            </button>
-          </div>
-        </form>
+      <UnitRolesTable
+        label={t('Heutige Inhaber')}
+        roles={roles}
+        canEdit={canEdit}
+        onAssign={setAssigning}
+        onEnd={(r, h) => void end(r, h)}
+      />
+      {org.modules.includes('members') && (
+        <p className="muted small">
+          <Link to={`/mitglieder/aemter?einheit=${dep.id}`}>
+            {t('Frühere Amtszeiten unter Mitglieder › Ämter')}
+          </Link>
+        </p>
       )}
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
+      {assigning && (
+        <UnitRoleDialog
+          orgId={orgId}
+          role={assigning}
+          submit={(d) =>
+            memberApi.addDepartmentRole(orgId, d.member, {
+              role: d.role,
+              valid_from: d.valid_from,
+              end_previous: d.end_previous,
+            })
+          }
+          onClose={() => setAssigning(null)}
+          onDone={onChange}
+        />
+      )}
     </div>
   )
 }
@@ -1139,7 +1063,7 @@ function ManagerSetup({
         {t('Gibt einem Mitglied die Rolle „Leitung“ mit allen Rechten in')} {inThis}
         {dep.own_workspace ? t(' (auch für Kasse und Rechnungen)') : ''}{' '}
         {t(
-          'und richtet ihm ein Konto ein. Die Person braucht eine E-Mail-Adresse und kann danach selbst weitere Rollen besetzen. Nur nötig, wenn jemand selbst in HUBIplan arbeiten soll; Ämter ohne Konto besetzt du unter „Wer hat welche Rolle?“.',
+          'und richtet ihm ein Konto ein. Die Person braucht eine E-Mail-Adresse und kann danach selbst weitere Rollen besetzen. Nur nötig, wenn jemand selbst in HUBIplan arbeiten soll; Ämter ohne Konto besetzt du unter „Wer hat welche Rolle?“ mit „Besetzen“.',
         )}
       </p>
       <MemberPicker orgId={orgId} value={member} onChange={setMember} label={t('Mitglied')} />

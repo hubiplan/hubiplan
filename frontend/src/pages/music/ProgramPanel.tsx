@@ -126,7 +126,7 @@ export function ProgramPanel({ performance }: { performance: number }) {
           {t('Stimmenliste als PDF')}
         </a>
         <Link to={`/aufgaben?termin=${event.event}`}>{t('Aufgaben für Notenvorbereitung')}</Link>
-        <Link to="/musik?noten=1">{t('Zum Notenbestand')}</Link>
+        <Link to="/musik/noten">{t('Zum Notenbestand')}</Link>
       </div>
       {canEdit && (
         <button

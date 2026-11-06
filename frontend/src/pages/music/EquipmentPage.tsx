@@ -139,7 +139,7 @@ function EquipmentWorkspace() {
       )}
       {!data.items.length && <MusicEmptyState />}
       {(query.has('ausleihe') || query.has('wartung')) && (
-        <Link to="/musik?ausstattung=1">{t('Gesamte Ausstattung anzeigen')}</Link>
+        <Link to="/musik/ausstattung">{t('Gesamte Ausstattung anzeigen')}</Link>
       )}
       {data.items
         .filter(

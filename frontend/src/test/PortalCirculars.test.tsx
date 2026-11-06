@@ -87,7 +87,9 @@ describe('Genaues Rundschreiben aus der App', () => {
     await userEvent.type(await screen.findByLabelText('E-Mail-Adresse'), 'mitglied@example.org')
     await userEvent.type(screen.getByLabelText('Passwort'), 'Nur-im-Test-123')
     await userEvent.click(screen.getByRole('button', { name: 'Anmelden' }))
-    expect(await screen.findByRole('heading', { name: 'Einladung' })).toHaveFocus()
+    // Fokus folgt nach dem Laden; auf langsamen Rechnern einen Takt später
+    const invitation = await screen.findByRole('heading', { name: 'Einladung' })
+    await waitFor(() => expect(invitation).toHaveFocus())
     expect(screen.getByTestId('location')).toHaveTextContent(
       '/mein-bereich/rundschreiben?zugang=9&schreiben=17',
     )

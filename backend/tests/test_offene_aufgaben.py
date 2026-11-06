@@ -118,3 +118,77 @@ def test_ueberfaellige_rechnungen_als_ein_eintrag(api, orgs, board_a, erika):
     assert overdue[0]["title"] == "2 Rechnungen überfällig"
     assert "15.01.2025" in overdue[0]["detail"]
     assert overdue[0]["link"] == "/finanzen/rechnungen?status=open&ueberfaellig=1"
+
+
+def test_belegung_kontaktformular_und_alte_entwuerfe(api, orgs, board_a):
+    """Menüprüfung M-13: auch Belegungsanfragen, zurückgehaltene Nachrichten, alte Entwürfe."""
+    from bookings.models import Booking
+    from circulars.models import Circular
+    from materials.models import MaterialItem
+    from website.contact_models import HeldMessage
+    from website.models import Website
+
+    a = orgs["a"]
+    a.enabled_modules = ["members", "website", "infrastructure", "circulars"]
+    a.save()
+    with tenant_context(a.pk):
+        house = MaterialItem.objects.create(
+            organization=a,
+            kind="facility",
+            title="Schützenhaus",
+            description="Vereinsheim",
+            location_kind="address",
+            address={"street": "Musterweg 1", "postal_code": "12345", "city": "Musterstadt"},
+            facility_type="building",
+            booking_rules={"enabled": True, "approval": True},
+        )
+        start = timezone.now() + datetime.timedelta(days=5)
+        Booking.objects.create(
+            organization=a,
+            item=house,
+            title="Geburtstag",
+            starts_at=start,
+            ends_at=start + datetime.timedelta(hours=3),
+        )
+        Booking.objects.create(
+            organization=a,
+            item=house,
+            title="Schon bestätigt",
+            starts_at=start,
+            ends_at=start + datetime.timedelta(hours=1),
+            status="confirmed",
+        )
+        site = Website.objects.create(organization=a, public_key="k" * 20, state="public")
+        HeldMessage.objects.create(
+            organization=a,
+            website=site,
+            recipient="allgemein",
+            recipient_name="Vorstand",
+            sender_name="Max Beispiel",
+            sender_email="max@example.org",
+            subject="Frage",
+            body="Hallo",
+            reason="Link",
+        )
+        old = Circular.objects.create(organization=a, subject="Einladung", created_by=board_a)
+        fresh = Circular.objects.create(organization=a, subject="Neu", created_by=board_a)
+        Circular.objects.filter(pk=old.pk).update(
+            updated_at=timezone.now() - datetime.timedelta(days=10)
+        )
+
+    items = api(board_a).get(url(a)).json()["items"]
+    kinds = sorted(i["kind"] for i in items)
+    assert kinds == ["booking", "circular_draft", "contact_held"]
+    booking = next(i for i in items if i["kind"] == "booking")
+    assert booking["title"] == "Schützenhaus"
+    assert booking["link"].startswith("/belegung?ab=")
+    held = next(i for i in items if i["kind"] == "contact_held")
+    assert held["title"] == "1 Nachricht wartet auf Freigabe"
+    assert held["link"] == "/webseite/kontakt"
+    draft = next(i for i in items if i["kind"] == "circular_draft")
+    assert draft["link"] == f"/rundschreiben/{old.pk}"
+    assert fresh.pk != old.pk
+
+    reader = make_user("lesen2@example.org")
+    give_role(reader, a, permissions=["infrastructure.view"], name="Lesen")
+    assert api(reader).get(url(a)).json()["items"] == []

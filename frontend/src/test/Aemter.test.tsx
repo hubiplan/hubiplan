@@ -47,8 +47,12 @@ const offices = [
   { id: 2, name: 'Zugführer', unit: 5, unit_name: 'Zug 1', in_chronicle: false, holders: [] },
 ]
 
-function renderApp(routes: Record<string, () => { status: number; body?: unknown }>, path: string) {
-  const org = testOrg({ permissions: ['members.view', 'members.edit'] })
+function renderApp(
+  routes: Record<string, () => { status: number; body?: unknown }>,
+  path: string,
+  permissions = ['members.view', 'members.edit'],
+) {
+  const org = testOrg({ permissions })
   const calls = fakeApi({
     [SESSION]: loggedIn,
     'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
@@ -282,5 +286,164 @@ describe('Ämter', () => {
         until_year: 1960,
       },
     ])
+  })
+})
+
+describe('Ämter besetzen (Rollen-Vorschlag R2)', () => {
+  it('besetzt ein Amt und beendet die Amtszeit des Vorgängers', async () => {
+    const role = {
+      id: 1,
+      name: '1. Vorsitzender',
+      description: '',
+      permissions: ['members.edit'],
+      is_board: true,
+      represents: true,
+      assignment_count: 1,
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: offices }),
+        'GET /api/orgs/7/roles/': () => ({ status: 200, body: [role] }),
+        'GET /api/orgs/7/assignments/': () => ({
+          status: 200,
+          body: [
+            {
+              id: 30,
+              user_email: 'erika@example.org',
+              user_name: 'Erika Beispiel',
+              person_name: 'Erika Beispiel',
+              role: 1,
+              role_name: '1. Vorsitzender',
+              valid_from: '2020-01-01',
+              valid_until: null,
+              is_active: true,
+            },
+          ],
+        }),
+        'POST /api/orgs/7/assignments/': () => ({
+          status: 201,
+          body: {
+            id: 31,
+            user_email: 'max@example.org',
+            user_name: '',
+            person_name: null,
+            role: 1,
+            role_name: '1. Vorsitzender',
+            valid_from: '2026-11-06',
+            valid_until: null,
+            is_active: true,
+            new_account: true,
+            invited: true,
+            ended: ['Erika Beispiel'],
+          },
+        }),
+      },
+      '/mitglieder/aemter',
+      ['members.view', 'members.edit', 'roles.view', 'roles.manage'],
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: '1. Vorsitzender besetzen' }))
+    const dialog = await screen.findByRole('dialog')
+    await user.type(within(dialog).getByLabelText(/E-Mail-Adresse/), 'max@example.org')
+    const end = within(dialog).getByRole('checkbox', { name: /Amtszeit von Erika Beispiel/ })
+    expect(end).toBeChecked()
+    expect(within(dialog).getByText(/Die Rolle hat Rechte in HUBIplan/)).toBeInTheDocument()
+    await user.click(within(dialog).getByRole('button', { name: 'Besetzen' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === 'POST /api/orgs/7/assignments/')).toBe(true),
+    )
+    const sent = calls.find((c) => c.key === 'POST /api/orgs/7/assignments/')!
+    expect(JSON.parse(sent.init!.body as string)).toMatchObject({
+      email: 'max@example.org',
+      role: 1,
+      end_previous: true,
+    })
+    expect(await screen.findByText('Amtszeit beendet: Erika Beispiel')).toBeInTheDocument()
+    const done = screen.getByRole('dialog')
+    expect(within(done).getByRole('link', { name: 'Impressum' })).toHaveAttribute(
+      'href',
+      '/einstellungen/impressum',
+    )
+  })
+})
+
+describe('Ämter einer Untereinheit (Rollen-Vorschlag R3)', () => {
+  const unitOffices = [
+    offices[0],
+    {
+      id: 2,
+      name: 'Zugführer',
+      unit: 5,
+      unit_name: 'Zug 1',
+      in_chronicle: false,
+      holders: [
+        {
+          id: 50,
+          role: 2,
+          name: 'Karl Kette',
+          person: 8,
+          membership: 80,
+          from_year: 2019,
+          until_year: null,
+          current: true,
+          former_entry: false,
+          name_public: true,
+        },
+      ],
+    },
+  ]
+
+  it('filtert nach Einheit, besetzt mit Vorgänger-Ende und beendet', async () => {
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: unitOffices }),
+        'GET /api/orgs/7/roles/': () => ({ status: 200, body: [] }),
+        'GET /api/orgs/7/assignments/': () => ({ status: 200, body: [] }),
+        'GET /api/orgs/7/members/?suche=An&status=aktiv&page_size=8': () => ({
+          status: 200,
+          body: {
+            count: 1,
+            next: null,
+            previous: null,
+            results: [{ id: 31, first_name: 'Anna', last_name: 'Neu', email: '' }],
+          },
+        }),
+        'POST /api/orgs/7/members/31/department-roles/': () => ({
+          status: 201,
+          body: { id: 51, role: 2, ended: ['Karl Kette'] },
+        }),
+        'PATCH /api/orgs/7/members/80/department-roles/50/': () => ({
+          status: 200,
+          body: { id: 50 },
+        }),
+      },
+      '/mitglieder/aemter?einheit=5',
+      ['members.view', 'members.edit', 'roles.view', 'roles.manage'],
+    )
+    const user = userEvent.setup()
+    expect(await screen.findByRole('heading', { name: 'Zugführer (Zug 1)' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '1. Vorsitzender' })).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Einheit')).toHaveValue('5')
+
+    await user.click(screen.getByRole('button', { name: 'Zugführer (Zug 1) besetzen' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('checkbox', { name: /Amtszeit von Karl Kette/ })).toBeChecked()
+    await user.type(within(dialog).getByLabelText('Person aus der Mitgliederliste'), 'An')
+    await user.click(await within(dialog).findByRole('button', { name: /Neu, Anna/ }))
+    await user.click(within(dialog).getByRole('button', { name: 'Besetzen' }))
+    expect(await screen.findByText('Amtszeit beendet: Karl Kette')).toBeInTheDocument()
+    const sent = calls.find((c) => c.key === 'POST /api/orgs/7/members/31/department-roles/')!
+    expect(JSON.parse(sent.init!.body as string)).toMatchObject({ role: 2, end_previous: true })
+    await user.click(screen.getByRole('button', { name: 'Fertig' }))
+
+    await user.click(screen.getByRole('button', { name: 'Zugführer von Karl Kette beenden' }))
+    await user.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Beenden' }),
+    )
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === 'PATCH /api/orgs/7/members/80/department-roles/50/')).toBe(
+        true,
+      ),
+    )
   })
 })

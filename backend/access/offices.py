@@ -82,6 +82,8 @@ def holder_entry(a: RoleAssignment) -> dict:
         "role": a.role_id,
         "name": holder_name(a),
         "person": person_id,
+        # Mitgliedschaft bei Rollen einer Untereinheit (zum Beenden unter Ämter)
+        "membership": a.membership_id,
         "from_year": a.valid_from.year,
         "until_year": a.valid_until.year if a.valid_until else None,
         "current": a.valid_until is None or a.valid_until >= today(),

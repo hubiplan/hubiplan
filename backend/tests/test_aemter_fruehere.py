@@ -70,6 +70,7 @@ class TestErfassen:
                 "role": chair.pk,
                 "name": "Wilhelm Vorzeit",
                 "person": None,
+                "membership": None,
                 "from_year": 1955,
                 "until_year": 1972,
                 "current": False,

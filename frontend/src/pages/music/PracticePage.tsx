@@ -154,7 +154,7 @@ export function PracticePage() {
   return (
     <section className="stack music-page">
       {query.has('notenausgabe') && (
-        <Link to="/musik?proben=1">{t('Alle Notenausgaben anzeigen')}</Link>
+        <Link to="/musik/proben">{t('Alle Notenausgaben anzeigen')}</Link>
       )}
       {guest && (
         <GuestAccessPanel

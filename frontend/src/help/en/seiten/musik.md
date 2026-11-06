@@ -10,6 +10,8 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Music and performances
 
+The music sub-items are in the sidebar, grouped as Performances (Overview, Performances, Availability), Musicians (Musicians, Rehearsals and sheet music checkout), Sheet music (Sheet music library, Reminders), Equipment and payments (Instruments and uniforms, Batch payouts) and Setup (Instrumentation templates). Each item has its own address, e.g. `/musik/noten`.
+
 **Performance overview** combines staffing, pending responses, known conflicts,
 sheet music requirements and permitted settlement issues. Select a period and choose
 **Update overview** when needed. Each issue links to staffing, the programme or the
