@@ -149,6 +149,19 @@ MODULE_MODELS = (
     # werden nach dem Import neu ausgerechnet
     "bookings.Booking",
     "bookings.BookingException",
+    # Versammlungen nach den Terminen (jede Versammlung hat ihren Termin)
+    "meetings.MeetingKind",
+    "meetings.Meeting",
+    "meetings.AgendaItem",
+    "meetings.Resolution",
+    "meetings.Attendance",
+    "meetings.MinutesVersion",
+    # Helferdienste nach den Terminen (ein Plan kann an einem Termin hängen)
+    "helpers.HelperPlan",
+    "helpers.Duty",
+    "helpers.Shift",
+    "helpers.ShiftQuota",
+    "helpers.ShiftAssignment",
     "circulars.CircularTemplate",
     "circulars.Circular",
     "circulars.CircularAttachment",
@@ -176,6 +189,15 @@ PUBLIC_MODELS = {"statutes.statuteversion", "statutes.statutepublication"}
 # Die Dokumentenablage kommt im vollständigen Export und im Export einer Abteilung
 # mit, nicht aber im Dachverbands-Export der Vereine (dort nur die Satzung).
 DEPARTMENT_MODELS = {
+    "meetings.meetingkind",
+    "meetings.meeting",
+    "meetings.agendaitem",
+    "meetings.resolution",
+    "meetings.minutesversion",
+    "helpers.helperplan",
+    "helpers.duty",
+    "helpers.shift",
+    "helpers.shiftquota",
     "bookings.booking",
     "bookings.bookingexception",
     "materials.materialitem",
@@ -226,6 +248,10 @@ MEMBER_MODELS = {
     "entries.entryperson",
     "entries.entryanswer",
     "entries.entryversion",
+    # Anwesenheit nennt Mitglieder (Name, Vertretung)
+    "meetings.attendance",
+    # Einteilungen nennen Mitglieder und Externe mit Telefon
+    "helpers.shiftassignment",
 }
 # Ein Abteilungsimport legt eine neue Untereinheit im bestehenden Verein an. Er darf nur
 # die Tabellen schreiben, die auch der Export einer Abteilung enthält, nie Kasse oder
@@ -390,8 +416,19 @@ FILE_TYPES = {
     "finance.cashcount": {"application/pdf"},
 }
 
+# Versammlungsdaten ohne eigene Spalte für die Untereinheit
+MEETING_CHILDREN = ("meetings.agendaitem", "meetings.resolution", "meetings.minutesversion")
+HELPER_CHILDREN = {
+    "helpers.duty": "plan__department",
+    "helpers.shift": "duty__plan__department",
+    "helpers.shiftquota": "shift__duty__plan__department",
+}
 # Dateien mit gespeicherter Prüfsumme: Inhalt muss unverändert sein
-FILE_HASHES = {"finance.cashcount": "pdf_sha256", "finance.bankstatement": "source_sha256"}
+FILE_HASHES = {
+    "finance.cashcount": "pdf_sha256",
+    "finance.bankstatement": "source_sha256",
+    "meetings.minutesversion": "sha256",
+}
 
 
 def check_file(name: str, obj, content: bytes, path: str, field_name: str = "") -> None:
@@ -524,6 +561,10 @@ def fix_json_ids(name: str, obj, ids: IdMap) -> None:
             line["category"] = ids.get("finance.category", line.get("category"))
             lines.append(line)
         obj.lines = lines
+    if name == "meetings.meetingkind":
+        obj.voter_types = [
+            new for old in obj.voter_types or [] if (new := ids.get("member_type", old))
+        ]
 
 
 def fix_website_keys(name: str, obj, ids: IdMap) -> None:
@@ -684,7 +725,11 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
         from todos.exports import attachment_rows
 
         qs = attachment_rows(org, department)
-    if department is not None and label(model) != "bookings.bookingexception":
+    if department is not None and label(model) in MEETING_CHILDREN:
+        qs = qs.filter(meeting__department=department)
+    elif department is not None and label(model) in HELPER_CHILDREN:
+        qs = qs.filter(**{HELPER_CHILDREN[label(model)]: department})
+    elif department is not None and label(model) != "bookings.bookingexception":
         # Ausfälle hängen an der Buchung; die ist oben schon auf die Abteilung begrenzt
         qs = qs.filter(department=department)
     templates = {}
@@ -897,6 +942,11 @@ def load_tables(tables: dict, org, ids: IdMap, files, user=None, allowed=None) -
         if name == "website.galleryalbum":
             # Oberalben zuerst, damit Unteralben ihr Oberalbum finden
             rows = sorted(rows, key=lambda r: isinstance(r, dict) and r.get("parent") is not None)
+        if name == "meetings.attendance":
+            # Vertretene nach ihren Vertretern (Verweis auf die eigene Tabelle)
+            rows = sorted(
+                rows, key=lambda r: isinstance(r, dict) and r.get("represented_by") is not None
+            )
         if name == "materials.materialitem":
             # Infrastruktur vor Material, Gebäude vor ihren Bereichen (Verweise auf sich selbst)
             rows = sorted(

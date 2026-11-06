@@ -20,8 +20,10 @@ from events import views as event_views
 from exchange import views as exchange_views
 from finance import bank_views, cash_count_views, donation_views, quittung_views, reserve_views
 from finance import views as finance_views
+from helpers import portal as helper_portal
 from honors import urls as honors_urls
 from letterhead import views as letterhead_views
+from meetings import portal as meeting_portal
 from members import (
     federation_views,
     jubilee_views,
@@ -208,6 +210,8 @@ org_patterns = [
     path("materials/", include("materials.urls")),
     path("facilities/", include("materials.urls"), {"kind": "facility"}),
     path("bookings/", include("bookings.urls")),
+    path("meetings/", include("meetings.urls")),
+    path("helpers/", include("helpers.urls")),
     path("todos/<int:pk>/progress/", todo_cross_views.ProgressView.as_view()),
     path("todos/<int:pk>/changes/<uuid:set_id>/undo/", todo_cross_views.TaskUndoView.as_view()),
     path("todos/<int:pk>/attachments/", todo_attachments.AttachmentListView.as_view()),
@@ -614,6 +618,8 @@ dept_patterns = [
     path("materials/", include("materials.urls")),
     path("facilities/", include("materials.urls"), {"kind": "facility"}),
     path("bookings/", include("bookings.urls")),
+    path("meetings/", include("meetings.urls")),
+    path("helpers/", include("helpers.urls")),
     *entry_urls.dept_patterns,
     path(
         "changes/<uuid:set_id>/undo/",
@@ -791,6 +797,18 @@ urlpatterns = [
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
     path("portal/<int:access_id>/bookings/", booking_portal.ListView.as_view()),
+    path("portal/<int:access_id>/meetings/", meeting_portal.ListView.as_view()),
+    path("portal/<int:access_id>/meetings/<int:pk>/minutes/", meeting_portal.MinutesView.as_view()),
+    path("portal/<int:access_id>/helpers/", helper_portal.ListView.as_view()),
+    path("portal/<int:access_id>/helpers/calendar/", helper_portal.CalendarView.as_view()),
+    path(
+        "portal/<int:access_id>/helpers/shifts/<int:pk>/signup/",
+        helper_portal.SignupView.as_view(),
+    ),
+    path(
+        "portal/<int:access_id>/helpers/assignments/<int:pk>/cancel/",
+        helper_portal.CancelView.as_view(),
+    ),
     path(
         "portal/<int:access_id>/bookings/<int:pk>/cancel/",
         booking_portal.CancelView.as_view(),

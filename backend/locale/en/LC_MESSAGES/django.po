@@ -7826,6 +7826,494 @@ msgstr "Member list"
 msgid "In Gedenken"
 msgstr "In memoriam"
 
+msgid "Versammlungen"
+msgstr "Meetings"
+
+msgid "Versammlungen, Tagesordnungen und Protokolle sehen"
+msgstr "See meetings, agendas and minutes"
+
+msgid "Versammlungen vorbereiten, einladen und protokollieren"
+msgstr "Prepare meetings, send invitations and take minutes"
+
+msgid "Versammlungen {gen}"
+msgstr "Meetings {gen}"
+
+msgid "Der Termin gehört zu einer Versammlung. Bitte die Versammlung absagen oder dort löschen."
+msgstr "This event belongs to a meeting. Please cancel or delete the meeting instead."
+
+msgid "Mitgliederversammlung"
+msgstr "General meeting"
+
+msgid "Vorstandssitzung"
+msgstr "Board meeting"
+
+msgid "Gremium oder Ausschuss"
+msgstr "Committee"
+
+msgid "E-Mail, sonst Brief"
+msgstr "Email, otherwise letter"
+
+msgid "Brief an alle"
+msgstr "Letter to everyone"
+
+msgid "nur Rollen mit Leserecht"
+msgstr "only roles with read access"
+
+msgid "auch alle Stimmberechtigten"
+msgstr "also all members entitled to vote"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Einladungsfrist in Tagen"
+msgstr "Notice period in days"
+
+msgid "Vertretung mit Vollmacht"
+msgstr "Proxy voting"
+
+msgid "in Vorbereitung"
+msgstr "in preparation"
+
+msgid "eingeladen"
+msgstr "invited"
+
+msgid "durchgeführt"
+msgstr "held"
+
+msgid "Protokoll in Arbeit"
+msgstr "minutes in progress"
+
+msgid "Protokoll freigegeben"
+msgstr "minutes approved"
+
+msgid "abgesagt"
+msgstr "cancelled"
+
+msgid "Leitung"
+msgstr "Chair"
+
+msgid "Protokollführung"
+msgstr "Minute taker"
+
+msgid "Bericht"
+msgstr "Report"
+
+msgid "Beschluss"
+msgstr "Resolution"
+
+msgid "Wahl"
+msgstr "Election"
+
+msgid "Erläuterung"
+msgstr "Explanation"
+
+msgid "Versammlung"
+msgstr "Meeting"
+
+msgid "Sitzung der Leitung"
+msgstr "Leadership meeting"
+
+msgid "Jahreshauptversammlung"
+msgstr "Annual general meeting"
+
+msgid "Außerordentliche Mitgliederversammlung"
+msgstr "Extraordinary general meeting"
+
+msgid "Begrüßung"
+msgstr "Welcome"
+
+msgid "Genehmigung des letzten Protokolls"
+msgstr "Approval of the last minutes"
+
+msgid "Verschiedenes"
+msgstr "Any other business"
+
+msgid "Begrüßung und Feststellung der Beschlussfähigkeit"
+msgstr "Welcome and confirmation of the quorum"
+
+msgid "Genehmigung der Tagesordnung"
+msgstr "Approval of the agenda"
+
+msgid "Genehmigung des Protokolls der letzten Versammlung"
+msgstr "Approval of the minutes of the last meeting"
+
+msgid "Berichte des Vorstands"
+msgstr "Board reports"
+
+msgid "Bericht der Kassenprüfer"
+msgstr "Auditors’ report"
+
+msgid "Entlastung des Vorstands"
+msgstr "Discharge of the board"
+
+msgid "Wahlen"
+msgstr "Elections"
+
+msgid "Anträge"
+msgstr "Motions"
+
+msgid "Die Versammlung wurde inzwischen geändert. Bitte neu laden."
+msgstr "The meeting has been changed in the meantime. Please reload."
+
+msgid "Diese Art gibt es schon."
+msgstr "This type already exists."
+
+msgid "Diese Art wird schon verwendet. Sie lässt sich nur abschalten."
+msgstr "This type is already in use. It can only be switched off."
+
+msgid "Pflichtangabe."
+msgstr "Required."
+
+msgid "Unbekannte Art."
+msgstr "Unknown type."
+
+msgid "Dieser Wechsel ist nicht möglich."
+msgstr "This change is not possible."
+
+msgid "Nach der Einladung lässt sich eine Versammlung nur absagen."
+msgstr "Once invitations have gone out, a meeting can only be cancelled."
+
+msgid "Die Tagesordnung lässt sich jetzt nicht mehr ändern."
+msgstr "The agenda can no longer be changed."
+
+msgid "Jeder Punkt braucht einen Titel."
+msgstr "Every item needs a title."
+
+msgid "Einladung: {title} am {date}"
+msgstr "Invitation: {title} on {date}"
+
+msgid "hiermit laden wir zur **{title}** ein."
+msgstr "we hereby invite you to the **{title}**."
+
+msgid "**Wann:** {date}, {time} Uhr"
+msgstr "**When:** {date}, {time}"
+
+msgid "**Wo:** {place}"
+msgstr "**Where:** {place}"
+
+msgid "**Tagesordnung**"
+msgstr "**Agenda**"
+
+msgid "Mit freundlichen Grüßen"
+msgstr "Kind regards"
+
+msgid "Die Leitung"
+msgstr "The leadership"
+
+msgid "Der Vorstand"
+msgstr "The board"
+
+msgid "Für die Einladung ist zusätzlich das Recht nötig, Rundschreiben zu versenden."
+msgstr "The invitation also requires the right to send circulars."
+
+msgid "Zu dieser Versammlung wurde schon eingeladen."
+msgstr "Invitations for this meeting have already been sent."
+
+msgid "Bitte zuerst die Tagesordnung anlegen."
+msgstr "Please create the agenda first."
+
+msgid "Für die Anwesenheitsliste ist zusätzlich das Leserecht auf Mitglieder nötig."
+msgstr "The attendance list also requires read access to members."
+
+msgid "Die Anwesenheit lässt sich jetzt nicht mehr ändern."
+msgstr "Attendance can no longer be changed."
+
+msgid "Bei dieser Art ist keine Vertretung mit Vollmacht vorgesehen."
+msgstr "This type does not allow representation by proxy."
+
+msgid "Vertreten kann nur ein anwesendes stimmberechtigtes Mitglied."
+msgstr "Only a present member with voting rights can act as proxy."
+
+msgid "anwesend"
+msgstr "present"
+
+msgid "entschuldigt"
+msgstr "excused"
+
+msgid "vertreten"
+msgstr "represented"
+
+msgid "Bei einer Wahl bitte Amt und gewählte Person angeben."
+msgstr "For an election, please enter the office and the person elected."
+
+msgid "Wahl: {office}"
+msgstr "Election: {office}"
+
+msgid "Jeder Beschluss braucht einen Text."
+msgstr "Every resolution needs a text."
+
+msgid "Das Protokoll lässt sich jetzt nicht ändern."
+msgstr "The minutes cannot be changed now."
+
+msgid "Unbekannter Tagesordnungspunkt."
+msgstr "Unknown agenda item."
+
+msgid "Unbekannter Beschluss."
+msgstr "Unknown resolution."
+
+msgid "Protokoll"
+msgstr "Minutes"
+
+msgid "bearbeitet"
+msgstr "edited"
+
+msgid "angenommen"
+msgstr "adopted"
+
+msgid "Beschlusstext"
+msgstr "Resolution text"
+
+msgid "Amt"
+msgstr "Office"
+
+msgid "Gewählt"
+msgstr "Elected"
+
+msgid "Bestätigen lässt sich nur ein Protokoll in Arbeit."
+msgstr "Only minutes in progress can be confirmed."
+
+msgid "Bitte zuerst Leitung und Protokollführung eintragen."
+msgstr "Please enter the chair and the minute taker first."
+
+msgid "Bestätigt (Leitung)"
+msgstr "Confirmed (chair)"
+
+msgid "Bestätigt (Protokollführung)"
+msgstr "Confirmed (minute taker)"
+
+msgid "Es gibt noch kein Protokoll."
+msgstr "There are no minutes yet."
+
+msgid "Datei"
+msgstr "File"
+
+msgid "einstimmig"
+msgstr "unanimous"
+
+msgid "Ja {yes}, Nein {no}, Enthaltung {abstain}"
+msgstr "Yes {yes}, No {no}, Abstentions {abstain}"
+
+msgid "gewählt"
+msgstr "elected"
+
+msgid "nicht gewählt"
+msgstr "not elected"
+
+msgid "{present} Stimmberechtigte anwesend, {represented} vertreten, {guests} Gäste."
+msgstr "{present} eligible voters present, {represented} represented, {guests} guests."
+
+msgid "Die Versammlung war beschlussfähig."
+msgstr "The meeting had a quorum."
+
+msgid "Die Versammlung war nicht beschlussfähig."
+msgstr "The meeting did not have a quorum."
+
+msgid "Protokoll: {title}"
+msgstr "Minutes: {title}"
+
+msgid "Entwurf, noch nicht freigegeben"
+msgstr "Draft, not yet approved"
+
+msgid "Anwesenheit"
+msgstr "Attendance"
+
+msgid "TOP {n}: {title}"
+msgstr "Item {n}: {title}"
+
+msgid "Wahl {office}: {name}"
+msgstr "Election {office}: {name}"
+
+msgid "{role}: bestätigt von {name} am {day}"
+msgstr "{role}: confirmed by {name} on {day}"
+
+msgid "Erstellt am {day} in HUBIplan."
+msgstr "Created on {day} in HUBIplan."
+
+msgid "Protokolle"
+msgstr "Minutes"
+
+msgid "Protokoll {title}"
+msgstr "Minutes {title}"
+
+msgid "Der Dienstplan wurde inzwischen geändert. Bitte neu laden."
+msgstr "The duty roster has been changed in the meantime. Please reload."
+
+msgid "Der Dienstplan ist abgeschlossen."
+msgstr "The duty roster is closed."
+
+msgid "Einen veröffentlichten Plan bitte zuerst abschließen."
+msgstr "Please close a published roster first."
+
+msgid "Zu viele Dienste in diesem Plan."
+msgstr "Too many duties in this roster."
+
+msgid "In diesem Dienst sind noch Personen eingeteilt."
+msgstr "People are still assigned to this duty."
+
+msgid "„{part}“ ist keine Zeitangabe wie 14-18."
+msgstr "“{part}” is not a time range such as 14-18."
+
+msgid "Bitte mindestens ein Zeitfenster angeben."
+msgstr "Please enter at least one time range."
+
+msgid "Zu viele Schichten in diesem Dienst."
+msgstr "Too many shifts in this duty."
+
+msgid "In dieser Schicht sind noch Personen eingeteilt."
+msgstr "People are still assigned to this shift."
+
+msgid "Die Person ist schon eingeteilt."
+msgstr "This person is already assigned."
+
+msgid "Eingeteilt"
+msgstr "Assigned"
+
+msgid "veröffentlicht"
+msgstr "published"
+
+msgid "Mitglieder tragen sich selbst ein"
+msgstr "Members sign up themselves"
+
+msgid "nur Einteilung"
+msgstr "assignment only"
+
+msgid "Dienst"
+msgstr "Duty"
+
+msgid "Beschreibung"
+msgstr "Description"
+
+msgid "selbst eingetragen"
+msgstr "signed up"
+
+msgid "eingeteilt"
+msgstr "assigned"
+
+msgid "eingetragen"
+msgstr "signed up"
+
+msgid "Telefon"
+msgstr "Phone"
+
+msgid "Die Schicht ist schon voll besetzt."
+msgstr "The shift is already full."
+
+msgid "Überschneidet sich mit {shift}."
+msgstr "Overlaps with {shift}."
+
+msgid "Für diesen Dienst gilt ein Mindestalter von {age} Jahren."
+msgstr "This duty has a minimum age of {age}."
+
+msgid "{when} · {taken} von {needed}"
+msgstr "{when} · {taken} of {needed}"
+
+msgid "Noch keine Dienste angelegt."
+msgstr "No duties created yet."
+
+msgid "Dienstplan"
+msgstr "Duty roster"
+
+msgid "Bedarf"
+msgstr "Needed"
+
+msgid "Helferdienste"
+msgstr "Volunteer duties"
+
+msgid "Dienstpläne und Einteilungen sehen"
+msgstr "View duty rosters and assignments"
+
+msgid "Dienstpläne anlegen und Helfer einteilen"
+msgstr "Create duty rosters and assign volunteers"
+
+msgid "Helferdienste {gen}"
+msgstr "Volunteer duties {gen}"
+
+msgid "In diesen Plan trägt nur die Verwaltung ein."
+msgstr "Only the administration assigns people in this plan."
+
+msgid "Die Schicht hat schon begonnen."
+msgstr "The shift has already started."
+
+msgid "Du bist schon eingetragen."
+msgstr "You are already signed up."
+
+msgid "In diesem Plan sind höchstens {n} Schichten je Person möglich."
+msgstr "This plan allows at most {n} shifts per person."
+
+msgid "Die Frist zum Absagen ist vorbei. Bitte wende dich an die Verwaltung."
+msgstr "The cancellation deadline has passed. Please contact the administration."
+
+msgid "Erinnerung: {duty} am {day}"
+msgstr "Reminder: {duty} on {day}"
+
+msgid "eine Erinnerung an deinen Dienst:"
+msgstr "a reminder of your shift:"
+
+msgid "Wann: {when}"
+msgstr "When: {when}"
+
+msgid "Wo: {place}"
+msgstr "Where: {place}"
+
+msgid "Deine Dienste siehst du im Mitgliederbereich: {url}"
+msgstr "You can see your shifts in the member area: {url}"
+
+msgid "Das Kontingent ist schon voll."
+msgstr "The quota is already full."
+
+msgid "von der Untereinheit eingeteilt"
+msgstr "assigned by the unit"
+
+msgid "Die Kontingente sind größer als der Bedarf."
+msgstr "The quotas exceed the number of people needed."
+
+msgid "Kontingent {unit} · {shift}"
+msgstr "Quota {unit} · {shift}"
+
+msgid "Beschlussbuch"
+msgstr "Resolution book"
+
+msgid "Nummer"
+msgstr "Number"
+
+msgid "Tagesordnungspunkt"
+msgstr "Agenda item"
+
+msgid "Ergebnis"
+msgstr "Result"
+
+msgid "Ja"
+msgstr "Yes"
+
+msgid "Nein"
+msgstr "No"
+
+msgid "Enthaltung"
+msgstr "Abstention"
+
+msgid "Stand"
+msgstr "Status"
+
+msgid "Beschluss {number}"
+msgstr "Resolution {number}"
+
+msgid "Für diesen Beschluss gibt es schon eine Aufgabe."
+msgstr "There is already a task for this resolution."
+
+msgid "Beschluss {number} umsetzen"
+msgstr "Implement resolution {number}"
+
+msgid "Beschluss {number} vom {day} ({meeting}):\n{text}"
+msgstr "Resolution {number} of {day} ({meeting}):\n{text}"
+
+msgid "Aufgabe zu Beschluss {number}"
+msgstr "Task for resolution {number}"
+
+msgid "umgesetzt"
+msgstr "implemented"
+
+msgid "aufgehoben"
+msgstr "repealed"
 msgid "Belegungsanfrage"
 msgstr "Booking request"
 

@@ -24,6 +24,8 @@ export interface DeptSummary {
   events_enabled?: boolean
   material_enabled?: boolean
   infrastructure_enabled?: boolean
+  meetings_enabled?: boolean
+  helpers_enabled?: boolean
   imprint_key?: string
 }
 
@@ -40,6 +42,8 @@ export interface PortalEntry {
   entries_enabled?: boolean
   competitions_enabled?: boolean
   bookings_enabled?: boolean
+  helpers_enabled?: boolean
+  meetings_enabled?: boolean
   terms?: DeptTerms
   imprint_key?: string
 }

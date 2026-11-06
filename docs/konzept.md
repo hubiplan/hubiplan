@@ -25,6 +25,8 @@ Gepflegt von Ralf Philipsen; bei jeder neuen Funktion hier eine Zeile ergänzen.
 | Untereinheiten | Vorstand, Verantwortliche der Einheit | frei verschachtelbare Einheiten (z. B. Züge, Abteilungen) mit eigenen Rollen, Kasse und Webseite |
 | Termine | Vorstand, Mitglieder | Kalender, Zu-/Absagen bei einmaligen Terminen, Kalender-Abo |
 | Dokumente | Vorstand, je nach Ordnerfreigabe Mitglieder | Ablage, Satzung |
+| Versammlungen | Vorstand, Leitung von Untereinheiten | Mitgliederversammlungen und Sitzungen mit Termin, Tagesordnung, Arten mit Einladungsfrist; siehe [Versammlungen](versammlungen.md) |
+| Helferdienste | Vorstand, Festausschuss, Leitung von Untereinheiten | Dienstpläne mit Diensten und Schichten, Einteilung von Mitgliedern und Externen, Aushang und Liste; siehe [Helferdienste](helferdienste.md) |
 | Meldungen | Vorstand | Mannschaften, Personen und Angaben an Veranstalter melden (Brief, E-Mail, Tabelle), Fassungen und Änderungsmeldungen, fremder Wettbewerb aus der Meldung |
 | Rundschreiben | Vorstand | Mail/Brief/App an Mitglieder, Vorstände, Rolleninhaber; Abbestellen nur für „Information“ |
 | Webseite | Vorstand, Webseitenpflege | Inhalte, Startseiten-Bausteine, Instagram/Facebook-Beiträge, Impressum/Datenschutz |

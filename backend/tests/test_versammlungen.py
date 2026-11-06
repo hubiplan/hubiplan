@@ -1,0 +1,728 @@
+"""Versammlungen und Sitzungen, Schritt V1 (konzepte/versammlungen.md)."""
+
+import datetime
+from zoneinfo import ZoneInfo
+
+import pytest
+from django.db import connection
+from django.utils import timezone
+
+from events.models import Event
+from meetings.models import AgendaItem, Meeting, MeetingKind
+from members.models import DepartmentRoleHolder
+from organizations.models import Department, DepartmentRole
+from portal.models import PortalAccess
+
+from .factories import give_role, make_member, make_user
+
+pytestmark = pytest.mark.django_db
+JSON = "application/json"
+BERLIN = ZoneInfo("Europe/Berlin")
+
+
+def at(days, hour):
+    day = timezone.localdate() + datetime.timedelta(days=days)
+    return datetime.datetime.combine(day, datetime.time(hour), BERLIN).isoformat()
+
+
+def ok(resp, code=(200, 201)):
+    assert resp.status_code in ((code,) if isinstance(code, int) else code), resp.content
+    return resp.json() if resp.content else None
+
+
+@pytest.fixture
+def setup(orgs, api):
+    org = orgs["a"]
+    org.enabled_modules = sorted({*org.enabled_modules, "meetings", "events"})
+    org.save()
+    chef = make_user("vorsitz@example.org")
+    give_role(chef, org, permissions=["meetings.edit"], name="Vorsitz")
+    reader = make_user("beisitz@example.org")
+    give_role(reader, org, permissions=["meetings.view"], name="Beisitz")
+    return {
+        "org": org,
+        "chef": api(chef),
+        "reader": api(reader),
+        "url": f"/api/orgs/{org.pk}/meetings/",
+    }
+
+
+def kind_named(client, url, name):
+    return next(k for k in ok(client.get(url + "kinds/")) if k["name"] == name)
+
+
+def new_meeting(s, name="Jahreshauptversammlung", **extra):
+    kind = kind_named(s["chef"], s["url"], name)
+    payload = {"kind": kind["id"], "starts_at": at(30, 19), "ends_at": at(30, 22), **extra}
+    return ok(s["chef"].post(s["url"], payload, content_type=JSON), 201)
+
+
+def test_voreingestellte_arten_und_tagesordnung(setup):
+    s = setup
+    kinds = ok(s["reader"].get(s["url"] + "kinds/"))
+    assert [k["name"] for k in kinds] == [
+        "Jahreshauptversammlung",
+        "Außerordentliche Mitgliederversammlung",
+        "Vorstandssitzung",
+    ]
+    meeting = new_meeting(s, location="Schützenhaus")
+    assert meeting["title"] == "Jahreshauptversammlung"
+    assert meeting["status"] == "draft"
+    titles = [a["title"] for a in meeting["agenda"]]
+    assert titles[0].startswith("Begrüßung") and "Entlastung des Vorstands" in titles
+    assert [a["position"] for a in meeting["agenda"]] == list(range(1, len(titles) + 1))
+    # Einladungsfrist 14 Tage vor dem Termin
+    start = datetime.date.fromisoformat(at(30, 19)[:10])
+    assert meeting["invite_by"] == (start - datetime.timedelta(days=14)).isoformat()
+    # Der Termin steht im Kalender
+    event = Event.objects.get(pk=meeting["event"])
+    assert event.location == "Schützenhaus" and event.visibility == "members"
+
+
+def test_vorstandssitzung_nur_fuer_vorstand_im_kalender(setup):
+    meeting = new_meeting(setup, "Vorstandssitzung")
+    assert Event.objects.get(pk=meeting["event"]).visibility == "board"
+    assert len(meeting["agenda"]) == 3
+
+
+def test_tagesordnung_aus_letzter_versammlung(setup):
+    s = setup
+    first = new_meeting(s)
+    items = [
+        {"id": first["agenda"][0]["id"], "title": "Begrüßung", "type": "other"},
+        {"title": "Ehrungen", "description": "25 Jahre Mitgliedschaft", "type": "other"},
+    ]
+    saved = ok(
+        s["chef"].put(
+            f"{s['url']}{first['id']}/agenda/",
+            {"version": first["version"], "items": items},
+            content_type=JSON,
+        )
+    )
+    assert [a["title"] for a in saved["agenda"]] == ["Begrüßung", "Ehrungen"]
+    assert saved["agenda"][0]["id"] == first["agenda"][0]["id"]
+    second = new_meeting(s)
+    assert [(a["title"], a["description"]) for a in second["agenda"]] == [
+        ("Begrüßung", ""),
+        ("Ehrungen", "25 Jahre Mitgliedschaft"),
+    ]
+    # Veralteter Stand wird abgelehnt
+    stale = s["chef"].put(
+        f"{s['url']}{first['id']}/agenda/",
+        {"version": first["version"], "items": items},
+        content_type=JSON,
+    )
+    assert stale.status_code == 409
+
+
+def test_inhalte_verschluesselt(setup):
+    s = setup
+    meeting = new_meeting(s)
+    ok(
+        s["chef"].patch(
+            f"{s['url']}{meeting['id']}/",
+            {"chair": "Erika Beispiel", "note": "Saal reservieren"},
+            content_type=JSON,
+        )
+    )
+    with connection.cursor() as cur:
+        cur.execute("SELECT chair, note FROM meetings_meeting WHERE id = %s", [meeting["id"]])
+        chair, note = cur.fetchone()
+        cur.execute("SELECT title FROM meetings_agendaitem WHERE meeting_id = %s", [meeting["id"]])
+        titles = [r[0] for r in cur.fetchall()]
+    assert "Erika" not in chair and "Saal" not in note
+    assert not any("Begrüßung" in t for t in titles)
+    assert ok(s["reader"].get(f"{s['url']}{meeting['id']}/"))["chair"] == "Erika Beispiel"
+
+
+def test_nur_mit_recht_und_modul(setup, orgs, api):
+    s = setup
+    meeting = new_meeting(s)
+    kind = kind_named(s["chef"], s["url"], "Vorstandssitzung")
+    payload = {"kind": kind["id"], "starts_at": at(3, 19), "ends_at": at(3, 21)}
+    assert s["reader"].post(s["url"], payload, content_type=JSON).status_code == 403
+    assert (
+        s["reader"]
+        .patch(f"{s['url']}{meeting['id']}/", {"title": "x"}, content_type=JSON)
+        .status_code
+        == 403
+    )
+    nobody = make_user("mitglied@example.org")
+    give_role(nobody, s["org"], permissions=["events.view"], name="Mitglied")
+    assert api(nobody).get(s["url"]).status_code == 403
+    # Fremder Verein sieht nichts
+    other = make_user("fremd@example.org")
+    give_role(other, orgs["b"], permissions=["meetings.edit"], name="Vorsitz")
+    orgs["b"].enabled_modules = ["meetings"]
+    orgs["b"].save()
+    assert ok(api(other).get(f"/api/orgs/{orgs['b'].pk}/meetings/")) == []
+    assert api(other).get(f"/api/orgs/{orgs['b'].pk}/meetings/{meeting['id']}/").status_code == 404
+    # Modul aus: nicht erreichbar
+    s["org"].enabled_modules = ["members"]
+    s["org"].save()
+    assert s["chef"].get(s["url"]).status_code == 404
+
+
+def test_absagen_und_loeschen(setup, board_a, api):
+    s = setup
+    meeting = new_meeting(s)
+    url = f"{s['url']}{meeting['id']}/"
+    cancelled = ok(s["chef"].patch(url, {"status": "cancelled"}, content_type=JSON))
+    assert cancelled["status"] == "cancelled"
+    assert Event.objects.get(pk=meeting["event"]).is_cancelled
+    # Der Termin lässt sich nicht im Kalender löschen, nur über die Versammlung
+    give_role(board_a, s["org"], permissions=["events.edit"], name="Termine")
+    event_url = f"/api/orgs/{s['org'].pk}/events/{meeting['event']}/"
+    assert api(board_a).delete(event_url).status_code == 400
+    assert s["chef"].delete(url).status_code == 204
+    assert not Meeting.objects.filter(pk=meeting["id"]).exists()
+    assert not Event.objects.filter(pk=meeting["event"]).exists()
+    assert not AgendaItem.objects.filter(meeting_id=meeting["id"]).exists()
+
+
+def test_nach_einladung_nur_absagen(setup):
+    s = setup
+    meeting = new_meeting(s)
+    Meeting.objects.filter(pk=meeting["id"]).update(status="invited")
+    url = f"{s['url']}{meeting['id']}/"
+    assert s["chef"].delete(url).status_code == 400
+    assert s["chef"].patch(url, {"status": "draft"}, content_type=JSON).status_code == 400
+    assert ok(s["chef"].patch(url, {"status": "cancelled"}, content_type=JSON))
+
+
+def test_arten_bearbeiten(setup):
+    s = setup
+    from members.models import MemberType
+
+    aktiv = MemberType.objects.create(organization=s["org"], name="aktiv")
+    kind = ok(
+        s["chef"].post(
+            s["url"] + "kinds/",
+            {"name": "Festausschuss", "base": "committee", "invite_days": 5},
+            content_type=JSON,
+        ),
+        201,
+    )
+    assert kind["invite_days"] == 5 and not kind["used"]
+    dup = s["chef"].post(s["url"] + "kinds/", {"name": "Festausschuss"}, content_type=JSON)
+    assert dup.status_code == 400
+    changed = ok(
+        s["chef"].patch(
+            f"{s['url']}kinds/{kind['id']}/",
+            {"voter_types": [aktiv.pk], "voter_min_age": 16, "quorum_percent": 10},
+            content_type=JSON,
+        )
+    )
+    assert changed["voter_types"] == [aktiv.pk] and changed["quorum_percent"] == 10
+    bad = s["chef"].patch(
+        f"{s['url']}kinds/{kind['id']}/", {"voter_types": [999999]}, content_type=JSON
+    )
+    assert bad.status_code == 400
+    jhv = kind_named(s["chef"], s["url"], "Jahreshauptversammlung")
+    new_meeting(s)
+    assert s["chef"].delete(f"{s['url']}kinds/{jhv['id']}/").status_code == 400
+    assert s["chef"].delete(f"{s['url']}kinds/{kind['id']}/").status_code == 204
+    assert not MeetingKind.objects.filter(pk=kind["id"]).exists()
+
+
+def test_zugversammlung(orgs, api):
+    club = orgs["a"]
+    club.enabled_modules = ["members", "meetings", "events"]
+    club.department_access_enabled = True
+    club.member_portal_enabled = True
+    club.save()
+    zug = Department.objects.create(
+        self_managed=True, organization=club, name="Jägerzug", short_name="Jäger"
+    )
+    andere = Department.objects.create(
+        self_managed=True, organization=club, name="Grenadiere", short_name="Gren"
+    )
+    max_ = make_member(club, "Max", "Muster", departments=[zug])
+    role = DepartmentRole.objects.create(
+        department=zug, name="Zugführer", permissions=["meetings.edit"]
+    )
+    DepartmentRoleHolder.objects.create(
+        organization=club, membership=max_, role=role, valid_from=datetime.date(2020, 1, 1)
+    )
+    user = make_user("zugfuehrer@example.org")
+    PortalAccess.objects.create(organization=club, membership=max_, user=user)
+    c = api(user)
+    url = f"/api/depts/{zug.pk}/meetings/"
+    kinds = ok(c.get(url + "kinds/"))
+    assert [k["name"] for k in kinds] == ["Versammlung", "Sitzung der Leitung"]
+    meeting = ok(
+        c.post(
+            url,
+            {"kind": kinds[0]["id"], "starts_at": at(10, 20), "ends_at": at(10, 22)},
+            content_type=JSON,
+        ),
+        201,
+    )
+    event = Event.objects.get(pk=meeting["event"])
+    assert event.department_id == zug.pk
+    # Andere Untereinheit und Verein sehen die Zugversammlung nicht
+    assert c.get(f"/api/depts/{andere.pk}/meetings/").status_code == 404
+    chef = make_user("vorsitz@example.org")
+    give_role(chef, club, permissions=["meetings.edit"], name="Vorsitz")
+    assert ok(api(chef).get(f"/api/orgs/{club.pk}/meetings/")) == []
+    # Arten des Vereins sind im Zug nicht wählbar
+    club_kind = kind_named(api(chef), f"/api/orgs/{club.pk}/meetings/", "Vorstandssitzung")
+    bad = c.post(
+        url,
+        {"kind": club_kind["id"], "starts_at": at(10, 20), "ends_at": at(10, 22)},
+        content_type=JSON,
+    )
+    assert bad.status_code == 400
+
+
+# --- V2: Einladung ---------------------------------------------------------------------
+
+
+def test_einladung_als_rundschreiben(setup):
+    from circulars.models import Circular
+    from members.models import MemberType
+
+    s = setup
+    aktiv = MemberType.objects.create(organization=s["org"], name="aktiv")
+    kind = kind_named(s["chef"], s["url"], "Jahreshauptversammlung")
+    ok(
+        s["chef"].patch(
+            f"{s['url']}kinds/{kind['id']}/",
+            {"voter_types": [aktiv.pk], "voter_min_age": 16},
+            content_type=JSON,
+        )
+    )
+    meeting = new_meeting(s, location="Schützenhaus")
+    url = f"{s['url']}{meeting['id']}/invitation/"
+    # Ohne Recht für Rundschreiben geht es nicht
+    assert s["chef"].post(url).status_code == 403
+    from access.models import Role
+
+    Role.objects.filter(organization=s["org"], name="Vorsitz").update(
+        permissions=["meetings.edit", "circulars.edit"]
+    )
+    data = ok(s["chef"].post(url))
+    circular = Circular.objects.get(pk=data["circular"])
+    assert data["circular_status"] == "draft" and data["status"] == "draft"
+    assert circular.kind == "notice" and circular.audience == "members"
+    assert circular.filters == {"member_types": [aktiv.pk], "age_min": 16}
+    assert "Jahreshauptversammlung" in circular.subject
+    assert "1. Begrüßung und Feststellung der Beschlussfähigkeit" in circular.body
+    assert "Schützenhaus" in circular.body and "{Anrede}" in circular.body
+    # Noch einmal: derselbe Entwurf
+    assert ok(s["chef"].post(url))["circular"] == circular.pk
+    assert Circular.objects.filter(organization=s["org"]).count() == 1
+    # Versand macht die Versammlung „eingeladen“
+    circular.status = Circular.Status.SENT
+    circular.sent_at = timezone.now()
+    circular.save()
+    detail = ok(s["chef"].get(f"{s['url']}{meeting['id']}/"))
+    assert detail["status"] == "invited" and detail["invited_at"]
+    assert s["chef"].post(url).status_code == 400
+
+
+def test_einladung_vorstandssitzung_an_vorstand(setup):
+    from access.models import Role
+    from circulars.models import Circular
+
+    s = setup
+    Role.objects.filter(organization=s["org"], name="Vorsitz").update(
+        permissions=["meetings.edit", "circulars.edit"]
+    )
+    meeting = new_meeting(s, "Vorstandssitzung")
+    data = ok(s["chef"].post(f"{s['url']}{meeting['id']}/invitation/"))
+    assert Circular.objects.get(pk=data["circular"]).filters == {"board": True}
+
+
+def test_anwesenheit_und_beschlussfaehigkeit(setup):
+    from access.models import Role
+    from meetings.models import Attendance
+    from members.models import MemberType
+
+    s = setup
+    org = s["org"]
+    aktiv, _ = MemberType.objects.get_or_create(organization=org, name="aktiv")
+    passiv = MemberType.objects.create(organization=org, name="passiv")
+    anna = make_member(org, "Anna", "Muster", member_type=aktiv)
+    bernd = make_member(org, "Bernd", "Beispiel", member_type=aktiv)
+    carla = make_member(org, "Carla", "Probe", member_type=aktiv)
+    dora = make_member(org, "Dora", "Passiv", member_type=passiv)
+    kind = kind_named(s["chef"], s["url"], "Jahreshauptversammlung")
+    ok(
+        s["chef"].patch(
+            f"{s['url']}kinds/{kind['id']}/",
+            {"voter_types": [aktiv.pk], "quorum_percent": 50},
+            content_type=JSON,
+        )
+    )
+    meeting = new_meeting(s)
+    url = f"{s['url']}{meeting['id']}/attendance/"
+    # Ohne Recht auf Mitgliedsdaten keine Anwesenheitsliste
+    assert s["chef"].get(url).status_code == 403
+    Role.objects.filter(organization=org, name="Vorsitz").update(
+        permissions=["meetings.edit", "members.view"]
+    )
+    data = ok(s["chef"].get(url))
+    names = {r["name"] for r in data["rows"]}
+    assert data["voters"] == 3 and "Dora Passiv" not in str(names)
+    assert data["quorum"] == {"needed": 2, "reached": False, "rule": True}
+
+    def mark(**body):
+        return ok(s["chef"].post(url, body, content_type=JSON))
+
+    mark(membership=anna.pk, status="present")
+    data = mark(membership=dora.pk, status="present")
+    assert data["present"] == 1 and data["guests"] == 1 and not data["quorum"]["reached"]
+    # Vertretung nur, wenn die Art sie vorsieht
+    anna_row = next(r for r in data["rows"] if r["membership"] == anna.pk)
+    resp = s["chef"].post(
+        url,
+        {"membership": bernd.pk, "status": "represented", "represented_by": anna_row["id"]},
+        content_type=JSON,
+    )
+    assert resp.status_code == 400
+    ok(
+        s["chef"].patch(
+            f"{s['url']}kinds/{kind['id']}/", {"proxies_allowed": True}, content_type=JSON
+        )
+    )
+    # Gäste und Nichtstimmberechtigte können nicht vertreten
+    dora_row = next(r for r in data["rows"] if r["membership"] == dora.pk)
+    resp = s["chef"].post(
+        url,
+        {"membership": bernd.pk, "status": "represented", "represented_by": dora_row["id"]},
+        content_type=JSON,
+    )
+    assert resp.status_code == 400
+    data = mark(membership=bernd.pk, status="represented", represented_by=anna_row["id"])
+    assert data["represented"] == 1 and data["quorum"]["reached"]
+    # Gast ohne Mitgliedschaft
+    data = mark(name="Gerd Gast", status="present")
+    assert data["guests"] == 2
+    # Anna geht: Bernds Vollmacht fällt weg
+    data = mark(membership=anna.pk, status="excused")
+    assert data["present"] == 0 and data["represented"] == 0
+    assert Attendance.objects.get(membership=bernd).status == "excused"
+    # Eintrag löschen
+    gast = next(r for r in data["rows"] if r["name"] == "Gerd Gast")
+    data = ok(s["chef"].delete(f"{url}{gast['id']}/"))
+    assert data["guests"] == 1
+    # Nur Lesen: kein Ändern
+    Role.objects.filter(organization=org, name="Beisitz").update(
+        permissions=["meetings.view", "members.view"]
+    )
+    data = ok(s["reader"].get(url))
+    assert data["editable"] is False
+    assert (
+        s["reader"].post(url, {"name": "X", "status": "present"}, content_type=JSON).status_code
+        == 403
+    )
+    # Name verschlüsselt gespeichert
+    with connection.cursor() as cur:
+        cur.execute("SELECT name FROM meetings_attendance")
+        assert all("Carla" not in str(v) and "Dora" not in str(v) for (v,) in cur.fetchall())
+    assert carla  # stimmberechtigt, aber nicht erschienen
+
+
+def test_protokoll_mit_beschluessen_und_wahl(setup):
+    from meetings.models import Resolution
+
+    s = setup
+    org = s["org"]
+    anna = make_member(org, "Anna", "Muster")
+    meeting = new_meeting(s)
+    url = f"{s['url']}{meeting['id']}/"
+    minutes_url = url + "minutes/"
+    items = meeting["agenda"]
+    payload = {"version": meeting["version"], "items": [{"id": items[0]["id"], "minutes": "x"}]}
+    # Vor der Versammlung kein Protokoll
+    assert s["chef"].put(minutes_url, payload, content_type=JSON).status_code == 400
+    meeting = ok(s["chef"].patch(url, {"status": "held"}, content_type=JSON))
+    assert meeting["status"] == "held"
+    # Tagesordnung steht jetzt fest
+    agenda = {"version": meeting["version"], "items": [{"title": "Neu"}]}
+    assert s["chef"].put(url + "agenda/", agenda, content_type=JSON).status_code == 400
+    payload = {
+        "version": meeting["version"],
+        "chair": "Erika Vorsitz",
+        "minute_taker": "Max Schrift",
+        "items": [
+            {"id": items[0]["id"], "minutes": "Begrüßung durch die Vorsitzende."},
+            {
+                "id": items[1]["id"],
+                "minutes": "Der Kassenbericht wurde vorgetragen.",
+                "resolutions": [
+                    {
+                        "text": "Der Vorstand wird entlastet.",
+                        "votes_yes": 20,
+                        "votes_no": 1,
+                        "votes_abstain": 2,
+                        "result": "accepted",
+                    },
+                    {"kind": "election", "office": "Kassierer", "elected": anna.pk},
+                ],
+            },
+        ],
+    }
+    data = ok(s["chef"].put(minutes_url, payload, content_type=JSON))
+    assert data["status"] == "minutes" and data["chair"] == "Erika Vorsitz"
+    second = data["agenda"][1]
+    assert second["minutes"] == "Der Kassenbericht wurde vorgetragen."
+    election = second["resolutions"][1]
+    assert election["elected_name"] == "Anna Muster" and election["text"] == "Wahl: Kassierer"
+    assert second["resolutions"][0]["votes_no"] == 1
+    # Veralteter Stand
+    assert s["chef"].put(minutes_url, payload, content_type=JSON).status_code == 409
+    # Nur ein TOP geändert: Beschlüsse anderer TOPs bleiben, entfernte fallen weg
+    keep = second["resolutions"][0]
+    payload = {
+        "version": data["version"],
+        "items": [
+            {
+                "id": items[1]["id"],
+                "resolutions": [{**keep, "unanimous": True}],
+            }
+        ],
+    }
+    data = ok(s["chef"].put(minutes_url, payload, content_type=JSON))
+    rs = data["agenda"][1]["resolutions"]
+    assert len(rs) == 1 and rs[0]["id"] == keep["id"] and rs[0]["unanimous"]
+    assert rs[0]["votes_yes"] is None
+    assert data["agenda"][0]["minutes"] == "Begrüßung durch die Vorsitzende."
+    # Wahl ohne Amt geht nicht
+    bad = {
+        "version": data["version"],
+        "items": [
+            {"id": items[1]["id"], "resolutions": [{"kind": "election", "elected_name": "X"}]}
+        ],
+    }
+    assert s["chef"].put(minutes_url, bad, content_type=JSON).status_code == 400
+    # Lesen darf jeder mit meetings.view, ändern nicht
+    assert ok(s["reader"].get(url))["agenda"][1]["resolutions"][0]["text"]
+    payload["version"] = data["version"]
+    assert s["reader"].put(minutes_url, payload, content_type=JSON).status_code == 403
+    # Verschlüsselt gespeichert
+    with connection.cursor() as cur:
+        cur.execute("SELECT text FROM meetings_resolution")
+        assert all("entlastet" not in str(v) for (v,) in cur.fetchall())
+        cur.execute("SELECT minutes FROM meetings_agendaitem")
+        assert all("Kassenbericht" not in str(v) for (v,) in cur.fetchall())
+    assert Resolution.objects.count() == 1
+
+
+def test_protokoll_freigeben_pdf_und_ablage(setup):
+    import hashlib
+
+    from documents.models import Document, DocumentVersion
+    from meetings.models import MinutesVersion
+
+    s = setup
+    org = s["org"]
+    org.enabled_modules = sorted({*org.enabled_modules, "documents"})
+    org.save()
+    meeting = new_meeting(s)
+    url = f"{s['url']}{meeting['id']}/"
+    meeting = ok(s["chef"].patch(url, {"status": "held"}, content_type=JSON))
+    items = meeting["agenda"]
+    payload = {
+        "version": meeting["version"],
+        "items": [
+            {
+                "id": items[1]["id"],
+                "minutes": "Bericht.",
+                "resolutions": [{"text": "Entlastung.", "unanimous": True}],
+            }
+        ],
+    }
+    meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
+    confirm = url + "minutes/confirm/"
+    # Erst Leitung und Protokollführung eintragen
+    body = {"version": meeting["version"], "role": "chair"}
+    assert s["chef"].post(confirm, body, content_type=JSON).status_code == 400
+    meeting = ok(
+        s["chef"].patch(
+            url, {"chair": "Erika Vorsitz", "minute_taker": "Max Schrift"}, content_type=JSON
+        )
+    )
+    # Vorschau als Entwurf
+    resp = s["reader"].get(url + "minutes/pdf/")
+    assert resp.status_code == 200 and resp.content.startswith(b"%PDF")
+    meeting = ok(
+        s["chef"].post(confirm, {"version": meeting["version"], "role": "chair"}, content_type=JSON)
+    )
+    assert meeting["chair_confirmed"]["name"] and meeting["status"] == "minutes"
+    # Änderung am Protokoll hebt die Bestätigung auf
+    payload["version"] = meeting["version"]
+    meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
+    assert meeting["chair_confirmed"] is None
+    for role in ("chair", "taker"):
+        meeting = ok(
+            s["chef"].post(
+                confirm, {"version": meeting["version"], "role": role}, content_type=JSON
+            )
+        )
+    assert meeting["status"] == "done" and meeting["released_at"]
+    assert meeting["agenda"][1]["resolutions"][0]["number"].endswith("/01")
+    version = MinutesVersion.objects.get(meeting_id=meeting["id"])
+    content = version.file.read()
+    assert hashlib.sha256(content).hexdigest() == version.sha256 == meeting["minutes_sha256"]
+    resp = s["reader"].get(url + "minutes/pdf/")
+    assert b"".join(resp.streaming_content) == content
+    # Abgelegt im Ordner „Protokolle“ (nur Vorstand)
+    doc = Document.objects.get(pk=meeting["minutes_document"])
+    assert doc.folder.name == "Protokolle" and doc.folder.visibility == "board"
+    assert DocumentVersion.objects.filter(document=doc).count() == 1
+    # Danach unveränderlich
+    payload["version"] = meeting["version"]
+    assert s["chef"].put(url + "minutes/", payload, content_type=JSON).status_code == 400
+    # Nächste Versammlung im selben Jahr: Beschlussnummer läuft weiter
+    second = new_meeting(s, starts_at=meeting["starts_at"], ends_at=meeting["ends_at"])
+    url2 = f"{s['url']}{second['id']}/"
+    second = ok(
+        s["chef"].patch(
+            url2, {"status": "held", "chair": "A", "minute_taker": "B"}, content_type=JSON
+        )
+    )
+    payload = {
+        "version": second["version"],
+        "items": [{"id": second["agenda"][0]["id"], "resolutions": [{"text": "X."}]}],
+    }
+    second = ok(s["chef"].put(url2 + "minutes/", payload, content_type=JSON))
+    for role in ("chair", "taker"):
+        second = ok(
+            s["chef"].post(
+                url2 + "minutes/confirm/",
+                {"version": second["version"], "role": role},
+                content_type=JSON,
+            )
+        )
+    assert second["agenda"][0]["resolutions"][0]["number"].endswith("/02")
+    assert Document.objects.filter(folder=doc.folder).count() == 2
+
+
+def release(s, meeting, resolutions):
+    """Versammlung durchführen und das Protokoll mit Beschlüssen freigeben."""
+    url = f"{s['url']}{meeting['id']}/"
+    meeting = ok(
+        s["chef"].patch(
+            url,
+            {"status": "held", "chair": "Erika Vorsitz", "minute_taker": "Max Schrift"},
+            content_type=JSON,
+        )
+    )
+    payload = {
+        "version": meeting["version"],
+        "items": [{"id": meeting["agenda"][1]["id"], "resolutions": resolutions}],
+    }
+    meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
+    for role in ("chair", "taker"):
+        meeting = ok(
+            s["chef"].post(
+                url + "minutes/confirm/",
+                {"version": meeting["version"], "role": role},
+                content_type=JSON,
+            )
+        )
+    assert meeting["status"] == "done"
+    return meeting
+
+
+def test_beschlussbuch(setup, api):
+    """V5: Beschlüsse suchen, filtern, als umgesetzt markieren und als Aufgabe anlegen."""
+    from meetings.models import Resolution
+    from todos.models import Todo
+
+    s = setup
+    org = s["org"]
+    release(
+        s,
+        new_meeting(s),
+        [
+            {"text": "Der Beitrag steigt auf 60 Euro.", "votes_yes": 40, "votes_no": 3},
+            {
+                "kind": "election",
+                "text": "Wahl des Kassierers",
+                "office": "Kassierer",
+                "elected_name": "Gerd Geld",
+                "unanimous": True,
+            },
+        ],
+    )
+    # Noch nicht freigegebene Versammlungen fehlen im Beschlussbuch
+    draft = new_meeting(s)
+    ok(s["chef"].patch(f"{s['url']}{draft['id']}/", {"status": "held"}, content_type=JSON))
+    book = s["url"] + "resolutions/"
+    data = ok(s["reader"].get(book))
+    assert [r["kind"] for r in data["rows"]] == ["resolution", "election"]
+    assert data["years"] and data["can_todo"] is False
+    first = data["rows"][0]
+    assert first["number"].endswith("/01") and first["status"] == "open"
+    assert [r["office"] for r in ok(s["reader"].get(book + "?typ=election"))["rows"]] == [
+        "Kassierer"
+    ]
+    assert [r["text"] for r in ok(s["reader"].get(book + "?suche=beitrag"))["rows"]] == [
+        "Der Beitrag steigt auf 60 Euro."
+    ]
+    year = data["years"][0]
+    assert len(ok(s["reader"].get(f"{book}?jahr={year - 1}"))["rows"]) == 0
+    # Stand ändern nur mit Bearbeitungsrecht
+    detail = f"{book}{first['id']}/"
+    assert s["reader"].patch(detail, {"status": "done"}, content_type=JSON).status_code == 403
+    assert ok(s["chef"].patch(detail, {"status": "done"}, content_type=JSON))["status"] == "done"
+    assert [r["id"] for r in ok(s["reader"].get(book + "?stand=open"))["rows"]] == [
+        data["rows"][1]["id"]
+    ]
+    # Excel
+    resp = s["reader"].get(book + "export/")
+    assert resp.status_code == 200 and resp.content[:2] == b"PK"
+    # Als Aufgabe: braucht das Modul Aufgaben und das Recht dazu
+    assert s["chef"].post(f"{detail}todo/", {}, content_type=JSON).status_code == 403
+    org.enabled_modules = sorted({*org.enabled_modules, "todos"})
+    org.save()
+    planner = make_user("schrift@example.org")
+    give_role(
+        planner, org, permissions=["meetings.edit", "todos.view", "todos.edit"], name="Schrift"
+    )
+    client = api(planner)
+    assert ok(client.get(book))["can_todo"] is True
+    row = ok(client.post(f"{detail}todo/", {"due_date": "2099-03-01"}, content_type=JSON))
+    assert row["todo"]["title"] == f"Beschluss {first['number']} umsetzen"
+    todo = Todo.objects.get(pk=row["todo"]["id"])
+    assert todo.owner == planner and str(todo.due_date) == "2099-03-01"
+    assert "60 Euro" in todo.description
+    assert Resolution.objects.get(pk=first["id"]).todo_id == todo.pk
+    assert client.post(f"{detail}todo/", {}, content_type=JSON).status_code == 400
+
+
+def test_versammlungen_im_mitgliederbereich(setup, api):
+    """V5: Einladungen mit Tagesordnung und freigegebene Protokolle für Stimmberechtigte."""
+    s = setup
+    org = s["org"]
+    org.member_portal_enabled = True
+    org.save(update_fields=["member_portal_enabled"])
+    erika = make_member(org, "Erika", "Beispiel", email="erika@example.org")
+    user = make_user("erika@example.org")
+    access = PortalAccess.objects.create(organization=org, membership=erika, user=user)
+    portal = api(user)
+    url = f"/api/portal/{access.pk}/meetings/"
+    done = release(s, new_meeting(s), [{"text": "Entlastung.", "unanimous": True}])
+    coming = new_meeting(s, location="Schützenhaus")
+    Meeting.objects.filter(pk=coming["id"]).update(status="invited")
+    board = new_meeting(s, name="Vorstandssitzung")
+    release(s, board, [{"text": "Intern.", "unanimous": True}])
+    data = ok(portal.get(url))
+    assert [m["id"] for m in data["upcoming"]] == [coming["id"]]
+    assert data["upcoming"][0]["location"] == "Schützenhaus"
+    assert data["upcoming"][0]["agenda"][0]["title"]
+    # Vorstandsprotokolle bleiben dem Vorstand vorbehalten
+    assert [m["id"] for m in data["minutes"]] == [done["id"]]
+    resp = portal.get(f"{url}{done['id']}/minutes/")
+    assert resp.status_code == 200 and b"".join(resp.streaming_content).startswith(b"%PDF")
+    assert portal.get(f"{url}{board['id']}/minutes/").status_code == 404
+    # Art auf „nur Rollen mit Leserecht“: Protokoll verschwindet
+    MeetingKind.objects.filter(meetings__pk=done["id"]).update(minutes_for="board")
+    assert ok(portal.get(url))["minutes"] == []
+    # Modul aus: nicht vorhanden
+    org.enabled_modules = [m for m in org.enabled_modules if m != "meetings"]
+    org.save()
+    assert portal.get(url).status_code == 404

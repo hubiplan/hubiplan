@@ -2,6 +2,8 @@
 import { PortalCirculars } from './PortalCirculars.tsx'
 import { PortalTodos } from './PortalTodos.tsx'
 import { PortalBookings } from './PortalBookings.tsx'
+import { PortalHelpers } from './PortalHelpers.tsx'
+import { PortalMeetings } from './PortalMeetings.tsx'
 import { OwnMusic } from '../music/OwnMusic.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
@@ -104,6 +106,22 @@ export function PortalPage() {
         element={
           <PortalSection title={t('Belegung')}>
             <PortalBookings key={activePortal.id} accessId={activePortal.id} />
+          </PortalSection>
+        }
+      />
+      <Route
+        path="helferdienste"
+        element={
+          <PortalSection title={t('Helferdienste')}>
+            <PortalHelpers key={activePortal.id} accessId={activePortal.id} />
+          </PortalSection>
+        }
+      />
+      <Route
+        path="versammlungen"
+        element={
+          <PortalSection title={t('Versammlungen')}>
+            <PortalMeetings key={activePortal.id} accessId={activePortal.id} />
           </PortalSection>
         }
       />

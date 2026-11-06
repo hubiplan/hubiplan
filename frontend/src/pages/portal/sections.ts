@@ -48,6 +48,30 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           },
         ]
       : []),
+    ...(entry.helpers_enabled
+      ? [
+          {
+            to: '/mein-bereich/helferdienste',
+            label: t('Helferdienste'),
+            tile: {
+              title: t('Helferdienste'),
+              text: t('Für Dienste eintragen und eigene Dienste sehen'),
+            },
+          },
+        ]
+      : []),
+    ...(entry.meetings_enabled
+      ? [
+          {
+            to: '/mein-bereich/versammlungen',
+            label: t('Versammlungen'),
+            tile: {
+              title: t('Versammlungen'),
+              text: t('Einladungen mit Tagesordnung und Protokolle'),
+            },
+          },
+        ]
+      : []),
     ...(entry.entries_enabled
       ? [
           {

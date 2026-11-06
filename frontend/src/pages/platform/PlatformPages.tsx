@@ -54,6 +54,8 @@ const MODULES = [
   { id: 'material', label: t('Material') },
   { id: 'infrastructure', label: t('Infrastruktur') },
   { id: 'entries', label: t('Meldungen') },
+  { id: 'meetings', label: t('Versammlungen') },
+  { id: 'helpers', label: t('Helferdienste') },
 ]
 
 export function PlatformLayout() {
