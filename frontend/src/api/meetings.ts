@@ -1,4 +1,4 @@
-import { api } from './client.ts'
+import { api, requestBlob } from './client.ts'
 
 export type MeetingBase = 'general' | 'board' | 'committee'
 export type MeetingStatus = 'draft' | 'invited' | 'held' | 'minutes' | 'done' | 'cancelled'
@@ -76,6 +76,16 @@ export interface Meeting {
   minute_taker?: string
   note?: string
   agenda?: AgendaItem[]
+  chair_confirmed?: Confirmation | null
+  taker_confirmed?: Confirmation | null
+  released_at?: string | null
+  minutes_sha256?: string
+  minutes_document?: number | null
+}
+
+export interface Confirmation {
+  name: string
+  at: string
 }
 
 export type AttendanceStatus = 'present' | 'excused' | 'represented'
@@ -111,6 +121,10 @@ export const meetingApi = {
     api.put<Meeting>(`${base}${meeting.id}/agenda/`, { version: meeting.version, items }),
   saveMinutes: (base: string, meeting: Meeting, items: MinutesItem[]) =>
     api.put<Meeting>(`${base}${meeting.id}/minutes/`, { version: meeting.version, items }),
+  confirmMinutes: (base: string, meeting: Meeting, role: 'chair' | 'taker') =>
+    api.post<Meeting>(`${base}${meeting.id}/minutes/confirm/`, { version: meeting.version, role }),
+  minutesPdf: (base: string, meeting: Meeting) =>
+    requestBlob('GET', `${base}${meeting.id}/minutes/pdf/`),
   prepareInvitation: (base: string, meeting: Meeting) =>
     api.post<Meeting>(`${base}${meeting.id}/invitation/`),
   attendance: (base: string, id: number) => api.get<AttendanceList>(`${base}${id}/attendance/`),

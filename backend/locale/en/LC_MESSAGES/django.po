@@ -8068,3 +8068,69 @@ msgstr "Office"
 
 msgid "Gewählt"
 msgstr "Elected"
+
+msgid "Bestätigen lässt sich nur ein Protokoll in Arbeit."
+msgstr "Only minutes in progress can be confirmed."
+
+msgid "Bitte zuerst Leitung und Protokollführung eintragen."
+msgstr "Please enter the chair and the minute taker first."
+
+msgid "Bestätigt (Leitung)"
+msgstr "Confirmed (chair)"
+
+msgid "Bestätigt (Protokollführung)"
+msgstr "Confirmed (minute taker)"
+
+msgid "Es gibt noch kein Protokoll."
+msgstr "There are no minutes yet."
+
+msgid "Datei"
+msgstr "File"
+
+msgid "einstimmig"
+msgstr "unanimous"
+
+msgid "Ja {yes}, Nein {no}, Enthaltung {abstain}"
+msgstr "Yes {yes}, No {no}, Abstentions {abstain}"
+
+msgid "gewählt"
+msgstr "elected"
+
+msgid "nicht gewählt"
+msgstr "not elected"
+
+msgid "{present} Stimmberechtigte anwesend, {represented} vertreten, {guests} Gäste."
+msgstr "{present} eligible voters present, {represented} represented, {guests} guests."
+
+msgid "Die Versammlung war beschlussfähig."
+msgstr "The meeting had a quorum."
+
+msgid "Die Versammlung war nicht beschlussfähig."
+msgstr "The meeting did not have a quorum."
+
+msgid "Protokoll: {title}"
+msgstr "Minutes: {title}"
+
+msgid "Entwurf, noch nicht freigegeben"
+msgstr "Draft, not yet approved"
+
+msgid "Anwesenheit"
+msgstr "Attendance"
+
+msgid "TOP {n}: {title}"
+msgstr "Item {n}: {title}"
+
+msgid "Wahl {office}: {name}"
+msgstr "Election {office}: {name}"
+
+msgid "{role}: bestätigt von {name} am {day}"
+msgstr "{role}: confirmed by {name} on {day}"
+
+msgid "Erstellt am {day} in HUBIplan."
+msgstr "Created on {day} in HUBIplan."
+
+msgid "Protokolle"
+msgstr "Minutes"
+
+msgid "Protokoll {title}"
+msgstr "Minutes {title}"

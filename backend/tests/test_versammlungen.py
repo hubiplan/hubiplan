@@ -508,3 +508,93 @@ def test_protokoll_mit_beschluessen_und_wahl(setup):
         cur.execute("SELECT minutes FROM meetings_agendaitem")
         assert all("Kassenbericht" not in str(v) for (v,) in cur.fetchall())
     assert Resolution.objects.count() == 1
+
+
+def test_protokoll_freigeben_pdf_und_ablage(setup):
+    import hashlib
+
+    from documents.models import Document, DocumentVersion
+    from meetings.models import MinutesVersion
+
+    s = setup
+    org = s["org"]
+    org.enabled_modules = sorted({*org.enabled_modules, "documents"})
+    org.save()
+    meeting = new_meeting(s)
+    url = f"{s['url']}{meeting['id']}/"
+    meeting = ok(s["chef"].patch(url, {"status": "held"}, content_type=JSON))
+    items = meeting["agenda"]
+    payload = {
+        "version": meeting["version"],
+        "items": [
+            {
+                "id": items[1]["id"],
+                "minutes": "Bericht.",
+                "resolutions": [{"text": "Entlastung.", "unanimous": True}],
+            }
+        ],
+    }
+    meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
+    confirm = url + "minutes/confirm/"
+    # Erst Leitung und Protokollführung eintragen
+    body = {"version": meeting["version"], "role": "chair"}
+    assert s["chef"].post(confirm, body, content_type=JSON).status_code == 400
+    meeting = ok(
+        s["chef"].patch(
+            url, {"chair": "Erika Vorsitz", "minute_taker": "Max Schrift"}, content_type=JSON
+        )
+    )
+    # Vorschau als Entwurf
+    resp = s["reader"].get(url + "minutes/pdf/")
+    assert resp.status_code == 200 and resp.content.startswith(b"%PDF")
+    meeting = ok(
+        s["chef"].post(confirm, {"version": meeting["version"], "role": "chair"}, content_type=JSON)
+    )
+    assert meeting["chair_confirmed"]["name"] and meeting["status"] == "minutes"
+    # Änderung am Protokoll hebt die Bestätigung auf
+    payload["version"] = meeting["version"]
+    meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
+    assert meeting["chair_confirmed"] is None
+    for role in ("chair", "taker"):
+        meeting = ok(
+            s["chef"].post(
+                confirm, {"version": meeting["version"], "role": role}, content_type=JSON
+            )
+        )
+    assert meeting["status"] == "done" and meeting["released_at"]
+    assert meeting["agenda"][1]["resolutions"][0]["number"].endswith("/01")
+    version = MinutesVersion.objects.get(meeting_id=meeting["id"])
+    content = version.file.read()
+    assert hashlib.sha256(content).hexdigest() == version.sha256 == meeting["minutes_sha256"]
+    resp = s["reader"].get(url + "minutes/pdf/")
+    assert b"".join(resp.streaming_content) == content
+    # Abgelegt im Ordner „Protokolle“ (nur Vorstand)
+    doc = Document.objects.get(pk=meeting["minutes_document"])
+    assert doc.folder.name == "Protokolle" and doc.folder.visibility == "board"
+    assert DocumentVersion.objects.filter(document=doc).count() == 1
+    # Danach unveränderlich
+    payload["version"] = meeting["version"]
+    assert s["chef"].put(url + "minutes/", payload, content_type=JSON).status_code == 400
+    # Nächste Versammlung im selben Jahr: Beschlussnummer läuft weiter
+    second = new_meeting(s, starts_at=meeting["starts_at"], ends_at=meeting["ends_at"])
+    url2 = f"{s['url']}{second['id']}/"
+    second = ok(
+        s["chef"].patch(
+            url2, {"status": "held", "chair": "A", "minute_taker": "B"}, content_type=JSON
+        )
+    )
+    payload = {
+        "version": second["version"],
+        "items": [{"id": second["agenda"][0]["id"], "resolutions": [{"text": "X."}]}],
+    }
+    second = ok(s["chef"].put(url2 + "minutes/", payload, content_type=JSON))
+    for role in ("chair", "taker"):
+        second = ok(
+            s["chef"].post(
+                url2 + "minutes/confirm/",
+                {"version": second["version"], "role": role},
+                content_type=JSON,
+            )
+        )
+    assert second["agenda"][0]["resolutions"][0]["number"].endswith("/02")
+    assert Document.objects.filter(folder=doc.folder).count() == 2

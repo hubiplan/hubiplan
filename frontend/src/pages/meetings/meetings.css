@@ -71,3 +71,17 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+.confirm-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.confirm-list .button {
+  margin-left: 0.5rem;
+}
+.meetings .small {
+  overflow-wrap: anywhere;
+}

@@ -10,6 +10,8 @@ urlpatterns = [
     path("<int:pk>/agenda/", views.AgendaView.as_view()),
     path("<int:pk>/invitation/", views.InvitationView.as_view()),
     path("<int:pk>/minutes/", views.MinutesView.as_view()),
+    path("<int:pk>/minutes/confirm/", views.ConfirmView.as_view()),
+    path("<int:pk>/minutes/pdf/", views.MinutesPdfView.as_view()),
     path("<int:pk>/attendance/", views.AttendanceView.as_view()),
     path("<int:pk>/attendance/<int:entry>/", views.AttendanceDetailView.as_view()),
 ]

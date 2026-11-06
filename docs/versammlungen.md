@@ -20,6 +20,7 @@ Konzept und Ausbaustufen: `konzepte/versammlungen.md` im Projektordner (V1 bis V
 | `Meeting` | Versammlung mit genau einem Termin (`events.Event`, geschützt), Stand, Leitung, Protokollführung, Notiz |
 | `AgendaItem` | Tagesordnungspunkt mit Nummer, Titel, Art und Erläuterung |
 | `Resolution` | Beschluss oder Wahl zu einem TOP: Text, Ja/Nein/Enthaltung oder einstimmig, Ergebnis, bei Wahlen Amt und gewählte Person (verschlüsselt, optional Mitgliedschaft), später Nummer im Beschlussbuch |
+| `MinutesVersion` | Freigegebenes Protokoll: PDF (privater Speicher), SHA-256, Zeitpunkt, abgelegtes Dokument |
 | `Attendance` | Anwesenheit: Mitgliedschaft oder Gast, Name (verschlüsselt), Stand (anwesend, entschuldigt, vertreten), Vertreter |
 
 Leitung, Protokollführung, Notiz sowie Titel und Erläuterung der Tagesordnung sind
@@ -32,7 +33,7 @@ außerordentliche Mitgliederversammlung, Vorstandssitzung; Untereinheit: Versamm
 der Leitung). Eine neue Versammlung übernimmt die Tagesordnung der letzten Versammlung
 derselben Art oder bekommt eine übliche Tagesordnung.
 
-## Abläufe (Stand V4, Teil 1)
+## Abläufe (Stand V4)
 
 - Anlegen erzeugt den Termin. Mitgliederversammlungen sind für Mitglieder sichtbar,
   Vorstandssitzungen nur für den Vorstand.
@@ -63,6 +64,14 @@ derselben Art oder bekommt eine übliche Tagesordnung.
   TOP (`AgendaItem.minutes`, verschlüsselt), Beschlüsse und Wahlen sowie Leitung und
   Protokollführung, mit `version` wie die Tagesordnung. Ein TOP ohne `resolutions` lässt seine
   Beschlüsse unverändert. Erstes Speichern setzt den Stand auf „Protokoll in Arbeit“.
+- Freigabe (V4): `POST …/minutes/confirm/` mit `role` (`chair` oder `taker`) und `version`
+  bestätigt das Protokoll; Leitung und Protokollführung müssen eingetragen sein. Änderungen am
+  Protokoll oder an der Anwesenheit heben Bestätigungen auf. Mit der zweiten Bestätigung
+  (`meetings/minutes.py`): Beschlussnummern je Einheit und Jahr (`2027/03`), PDF in der Sprache
+  der Einheit mit SHA-256 als `MinutesVersion`, Stand „Protokoll freigegeben“, danach keine
+  Änderung mehr. Mit Modul `documents` zusätzlich Ablage im Ordner „Protokolle“ der Einheit
+  (Sichtbarkeit Vorstand, wird bei Bedarf angelegt; bei vollem Speicher keine Ablage).
+  `GET …/minutes/pdf/` liefert das freigegebene PDF oder vorher eine Vorschau als Entwurf.
 - Export und Import nehmen Arten, Versammlungen und Tagesordnungen mit (auch im Export einer
   Untereinheit), ebenso Protokoll und Beschlüsse, die Anwesenheit nur zusammen mit den Mitgliedsdaten.
 
@@ -75,5 +84,7 @@ derselben Art oder bekommt eine übliche Tagesordnung.
 | `PUT …/meetings/<pk>/agenda/` | Tagesordnung speichern |
 | `POST …/meetings/<pk>/invitation/` | Einladung als Rundschreiben-Entwurf |
 | `PUT …/meetings/<pk>/minutes/` | Protokoll, Beschlüsse und Wahlen |
+| `POST …/meetings/<pk>/minutes/confirm/` | Protokoll bestätigen (Leitung, Protokollführung) |
+| `GET …/meetings/<pk>/minutes/pdf/` | Protokoll als PDF (Entwurf oder freigegeben) |
 | `GET/POST …/meetings/<pk>/attendance/`, `DELETE …/attendance/<id>/` | Anwesenheit |
 | `GET/POST …/meetings/kinds/`, `PATCH/DELETE …/kinds/<pk>/` | Arten |

@@ -8,6 +8,7 @@ import type {
   AttendanceList,
   AttendanceRow,
   AttendanceStatus,
+  Confirmation,
   AgendaType,
   Meeting,
   MeetingBase,
@@ -16,6 +17,7 @@ import type {
   MinutesItem,
   Resolution,
 } from '../../api/meetings.ts'
+import { saveBlob } from '../../api/client.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useDetailParam } from '../../components/detailParam.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
@@ -434,8 +436,16 @@ function MeetingDetail({
           onSaved={loaded.reload}
         />
       )}
+      {(meeting.status === 'minutes' || meeting.status === 'done') && (
+        <ReleaseCard base={base} meeting={meeting} onChanged={loaded.reload} />
+      )}
       {meeting.can_attendance && meeting.status !== 'cancelled' && (
-        <AttendanceCard base={base} meeting={meeting} />
+        <AttendanceCard
+          key={`t${meeting.status}`}
+          base={base}
+          meeting={meeting}
+          onChanged={loaded.reload}
+        />
       )}
       {meeting.can_edit && (
         <div className="button-row">
@@ -1120,7 +1130,15 @@ function attendanceLabel(status: AttendanceStatus) {
   return t('Vertreten')
 }
 
-function AttendanceCard({ base, meeting }: { base: string; meeting: Meeting }) {
+function AttendanceCard({
+  base,
+  meeting,
+  onChanged,
+}: {
+  base: string
+  meeting: Meeting
+  onChanged: () => Promise<void>
+}) {
   const loaded = useLoad(() => meetingApi.attendance(base, meeting.id), [base, meeting.id])
   const [list, setList] = useState<AttendanceList | null>(null)
   const [query, setQuery] = useState('')
@@ -1138,6 +1156,8 @@ function AttendanceCard({ base, meeting }: { base: string; meeting: Meeting }) {
       const result = await action()
       if (reload) setList(await meetingApi.attendance(base, meeting.id))
       else setList(result as AttendanceList)
+      // Im Protokoll: Bestätigungen fallen weg, der Stand der Versammlung ändert sich
+      if (meeting.chair_confirmed || meeting.taker_confirmed) await onChanged()
       return true
     } catch (err) {
       setError(errorMessage(err))
@@ -1606,5 +1626,127 @@ function MinutesEditor({
         </button>
       </div>
     </form>
+  )
+}
+
+function ReleaseCard({
+  base,
+  meeting,
+  onChanged,
+}: {
+  base: string
+  meeting: Meeting
+  onChanged: () => Promise<void>
+}) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const run = async (action: () => Promise<unknown>) => {
+    setBusy(true)
+    setError('')
+    try {
+      await action()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+  const dayOf = (value: string) => new Date(value).toLocaleDateString(locale(), { timeZone: ZONE })
+  const done = meeting.status === 'done'
+  const roles: {
+    role: 'chair' | 'taker'
+    label: string
+    ask: string
+    info?: Confirmation | null
+  }[] = [
+    {
+      role: 'chair',
+      label: t('Leitung'),
+      ask: t('Als Leitung bestätigen'),
+      info: meeting.chair_confirmed,
+    },
+    {
+      role: 'taker',
+      label: t('Protokollführung'),
+      ask: t('Als Protokollführung bestätigen'),
+      info: meeting.taker_confirmed,
+    },
+  ]
+  return (
+    <section className="card stack">
+      <h2>{t('Freigabe des Protokolls')}</h2>
+      {done ? (
+        <p>
+          {t('Freigegeben am {day}. Das Protokoll lässt sich nicht mehr ändern.', {
+            day: meeting.released_at ? dayOf(meeting.released_at) : '',
+          })}
+          {meeting.minutes_document
+            ? ' ' + t('Es liegt in den Dokumenten im Ordner „Protokolle“.')
+            : ''}
+        </p>
+      ) : (
+        <p className="muted">
+          {t(
+            'Leitung und Protokollführung bestätigen das Protokoll. Mit der zweiten Bestätigung ist es freigegeben, die Beschlüsse bekommen ihre Nummer, und es lässt sich nicht mehr ändern. Jede Änderung am Protokoll oder an der Anwesenheit hebt die Bestätigungen auf.',
+          )}
+        </p>
+      )}
+      <ul className="confirm-list">
+        {roles.map((r) => (
+          <li key={r.role}>
+            <strong>{r.label}:</strong>{' '}
+            {r.info
+              ? t('bestätigt von {name} am {day}', { name: r.info.name, day: dayOf(r.info.at) })
+              : t('noch nicht bestätigt')}
+            {!done && !r.info && meeting.can_edit && (
+              <button
+                type="button"
+                className="button button-ghost"
+                disabled={busy}
+                onClick={() =>
+                  run(async () => {
+                    const yes = await confirmDialog({
+                      title: r.ask + '?',
+                      message: t(
+                        'Bitte nur bestätigen, wenn du das Protokoll gelesen hast und es stimmt.',
+                      ),
+                      confirmLabel: t('Bestätigen'),
+                    })
+                    if (!yes) return
+                    await meetingApi.confirmMinutes(base, meeting, r.role)
+                    await onChanged()
+                  })
+                }
+              >
+                {r.ask}
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {meeting.minutes_sha256 && (
+        <p className="muted small">
+          {t('Prüfsumme (SHA-256): {hash}', { hash: meeting.minutes_sha256 })}
+        </p>
+      )}
+      {error && <p role="alert">{error}</p>}
+      <div className="button-row">
+        <button
+          type="button"
+          className="button"
+          disabled={busy}
+          onClick={() =>
+            run(async () =>
+              saveBlob(
+                await meetingApi.minutesPdf(base, meeting),
+                done ? 'protokoll.pdf' : 'protokoll-entwurf.pdf',
+              ),
+            )
+          }
+        >
+          {done ? t('Protokoll als PDF') : t('Vorschau als PDF')}
+        </button>
+      </div>
+    </section>
   )
 }

@@ -6609,5 +6609,17 @@
   "nicht gewählt": "not elected",
   "angenommen": "adopted",
   "einstimmig": "unanimous",
-  "Protokoll der Versammlung": "Minutes of the meeting"
+  "Protokoll der Versammlung": "Minutes of the meeting",
+  "Als Leitung bestätigen": "Confirm as chair",
+  "Als Protokollführung bestätigen": "Confirm as minute taker",
+  "Bitte nur bestätigen, wenn du das Protokoll gelesen hast und es stimmt.": "Only confirm if you have read the minutes and they are correct.",
+  "Es liegt in den Dokumenten im Ordner „Protokolle“.": "It is filed in the documents in the folder “Minutes”.",
+  "Freigabe des Protokolls": "Approval of the minutes",
+  "Freigegeben am {day}. Das Protokoll lässt sich nicht mehr ändern.": "Approved on {day}. The minutes can no longer be changed.",
+  "Leitung und Protokollführung bestätigen das Protokoll. Mit der zweiten Bestätigung ist es freigegeben, die Beschlüsse bekommen ihre Nummer, und es lässt sich nicht mehr ändern. Jede Änderung am Protokoll oder an der Anwesenheit hebt die Bestätigungen auf.": "The chair and the minute taker confirm the minutes. With the second confirmation they are approved, the resolutions receive their numbers and the minutes can no longer be changed. Any change to the minutes or the attendance cancels the confirmations.",
+  "Protokoll als PDF": "Minutes as PDF",
+  "Prüfsumme (SHA-256): {hash}": "Checksum (SHA-256): {hash}",
+  "Vorschau als PDF": "Preview as PDF",
+  "bestätigt von {name} am {day}": "confirmed by {name} on {day}",
+  "noch nicht bestätigt": "not yet confirmed"
 }

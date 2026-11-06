@@ -1,5 +1,7 @@
 from django.db import transaction
+from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from rest_framework import serializers
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
@@ -10,6 +12,7 @@ from audit.log import diff, record, snapshot
 from members.models import MemberType
 
 from . import access, services
+from . import minutes as minutes_service
 from .models import AgendaItem, Attendance, Meeting, MeetingKind, Resolution
 
 MAX_AGENDA = 60
@@ -93,6 +96,12 @@ def agenda_data(item, resolutions=None):
     return data
 
 
+def _confirmation(user, at):
+    if not at:
+        return None
+    return {"name": minutes_service.user_name(user), "at": at}
+
+
 def meeting_data(meeting, scope, *, full=False):
     event = meeting.event
     data = {
@@ -117,6 +126,14 @@ def meeting_data(meeting, scope, *, full=False):
         "can_attendance": members_allowed(scope),
     }
     if full:
+        released = meeting.minutes_versions.first()
+        data.update(
+            chair_confirmed=_confirmation(meeting.chair_confirmed_by, meeting.chair_confirmed_at),
+            taker_confirmed=_confirmation(meeting.taker_confirmed_by, meeting.taker_confirmed_at),
+            released_at=released.released_at if released else None,
+            minutes_sha256=released.sha256 if released else "",
+            minutes_document=released.document_id if released else None,
+        )
         resolutions = {}
         for r in meeting.resolutions.all():
             resolutions.setdefault(r.agenda_item_id, []).append(r)
@@ -422,7 +439,21 @@ class InvitationView(Base):
 
 # --- Anwesenheit (Schritt V3) ---------------------------------------------------------------
 
-OPEN_FOR_ATTENDANCE = (Meeting.Status.DRAFT, Meeting.Status.INVITED, Meeting.Status.HELD)
+OPEN_FOR_ATTENDANCE = (
+    Meeting.Status.DRAFT,
+    Meeting.Status.INVITED,
+    Meeting.Status.HELD,
+    Meeting.Status.MINUTES,
+)
+
+
+def unconfirm(meeting) -> None:
+    """Geänderter Inhalt: Bestätigungen des Protokolls gelten nicht mehr."""
+    if meeting.chair_confirmed_at or meeting.taker_confirmed_at:
+        meeting.chair_confirmed_by = meeting.taker_confirmed_by = None
+        meeting.chair_confirmed_at = meeting.taker_confirmed_at = None
+        meeting.version += 1
+        meeting.save()
 
 
 def members_allowed(scope) -> bool:
@@ -566,6 +597,7 @@ class AttendanceView(Base):
                 )
             record_.represented_by = holder
         record_.save()
+        unconfirm(meeting)
         if record_.status != Attendance.Status.PRESENT:
             # Wer nicht mehr da ist, vertritt auch niemanden mehr
             record_.proxies.update(status=Attendance.Status.EXCUSED, represented_by=None)
@@ -585,6 +617,7 @@ class AttendanceDetailView(Base):
         record_ = get_object_or_404(meeting.attendance, pk=entry)
         record_.proxies.update(status=Attendance.Status.EXCUSED, represented_by=None)
         record_.delete()
+        unconfirm(meeting)
         return Response(attendance_data(meeting, self.scope))
 
 
@@ -699,9 +732,88 @@ class MinutesView(Base):
             if field in data:
                 setattr(meeting, field, data[field].strip())
         meeting.status = Meeting.Status.MINUTES
+        # Geänderter Inhalt: Bestätigungen gelten nicht mehr
+        meeting.chair_confirmed_by = meeting.taker_confirmed_by = None
+        meeting.chair_confirmed_at = meeting.taker_confirmed_at = None
         meeting.version += 1
         meeting.save()
         changes = diff(before, snapshot(meeting))
         changes[_("Protokoll")] = [None, _("bearbeitet")]
         record(self.scope.org, request.user, "update", meeting, changes)
         return Response(meeting_data(meeting, self.scope, full=True))
+
+
+class ConfirmInput(serializers.Serializer):
+    version = serializers.IntegerField()
+    role = serializers.ChoiceField(choices=["chair", "taker"])
+
+
+class ConfirmView(Base):
+    """Protokoll als Leitung oder Protokollführung bestätigen; die zweite Bestätigung gibt frei."""
+
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        access.require_edit(self.scope)
+        meeting = self.meeting(pk, lock=True)
+        ser = ConfirmInput(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        if data["version"] != meeting.version:
+            raise conflict()
+        if meeting.status != Meeting.Status.MINUTES:
+            raise ValidationError(
+                {"detail": _("Bestätigen lässt sich nur ein Protokoll in Arbeit.")}
+            )
+        if not meeting.chair.strip() or not meeting.minute_taker.strip():
+            raise ValidationError(
+                {"detail": _("Bitte zuerst Leitung und Protokollführung eintragen.")}
+            )
+        now = timezone.now()
+        if data["role"] == "chair":
+            meeting.chair_confirmed_by, meeting.chair_confirmed_at = request.user, now
+            label = _("Bestätigt (Leitung)")
+        else:
+            meeting.taker_confirmed_by, meeting.taker_confirmed_at = request.user, now
+            label = _("Bestätigt (Protokollführung)")
+        meeting.version += 1
+        meeting.save()
+        record(
+            self.scope.org,
+            request.user,
+            "update",
+            meeting,
+            {label: [None, minutes_service.user_name(request.user)]},
+        )
+        if meeting.chair_confirmed_at and meeting.taker_confirmed_at:
+            version = minutes_service.release(meeting, request.user)
+            record(
+                self.scope.org,
+                request.user,
+                "update",
+                meeting,
+                {_("Protokoll freigegeben"): [None, version.sha256]},
+            )
+        return Response(meeting_data(meeting, self.scope, full=True))
+
+
+class MinutesPdfView(Base):
+    """Freigegebenes Protokoll als PDF, vorher eine Vorschau als Entwurf."""
+
+    def get(self, request, pk, **kwargs):
+        meeting = self.meeting(pk)
+        released = meeting.minutes_versions.first()
+        name = f"protokoll-{timezone.localtime(meeting.event.starts_at):%Y-%m-%d}.pdf"
+        if released is not None:
+            response = FileResponse(
+                released.file.open("rb"), content_type="application/pdf", filename=name
+            )
+        else:
+            if meeting.status not in OPEN_FOR_MINUTES:
+                raise ValidationError({"detail": _("Es gibt noch kein Protokoll.")})
+            response = HttpResponse(
+                minutes_service.render(meeting, draft=True), content_type="application/pdf"
+            )
+            response["Content-Disposition"] = f'inline; filename="entwurf-{name}"'
+        response["Cache-Control"] = "private, no-store"
+        response["X-Content-Type-Options"] = "nosniff"
+        return response

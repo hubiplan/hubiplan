@@ -100,6 +100,14 @@ function show(permissions: string[], path = '/versammlungen', current: object = 
     'GET /api/orgs/7/meetings/': () => ({ status: 200, body: [meeting] }),
     'GET /api/orgs/7/meetings/kinds/': () => ({ status: 200, body: [kind] }),
     'GET /api/orgs/7/meetings/5/': () => ({ status: 200, body: current }),
+    'POST /api/orgs/7/meetings/5/minutes/confirm/': () => ({
+      status: 200,
+      body: {
+        ...current,
+        version: 10,
+        chair_confirmed: { name: 'Erika Vorsitz', at: '2099-01-16T10:00:00Z' },
+      },
+    }),
     'PUT /api/orgs/7/meetings/5/minutes/': () => ({
       status: 200,
       body: { ...current, version: 9 },
@@ -215,6 +223,28 @@ describe('Versammlungen', () => {
       minutes: 'Bericht vorgetragen.',
       resolutions: [{ text: 'Entlastung des Vorstands.', unanimous: true, result: 'accepted' }],
     })
+  })
+
+  it('bestätigt das Protokoll als Leitung', async () => {
+    const minutes = {
+      ...meeting,
+      status: 'minutes',
+      version: 9,
+      chair: 'Erika Vorsitz',
+      minute_taker: 'Max Schrift',
+      chair_confirmed: null,
+      taker_confirmed: null,
+    }
+    const api = show(['meetings.view', 'meetings.edit'], '/versammlungen?versammlung=5', minutes)
+    fireEvent.click(await screen.findByRole('button', { name: 'Als Leitung bestätigen' }))
+    const dialog = await screen.findByRole('alertdialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Bestätigen' }))
+    await waitFor(() =>
+      expect(api.some((c) => c.key === 'POST /api/orgs/7/meetings/5/minutes/confirm/')).toBe(true),
+    )
+    const call = api.find((c) => c.key === 'POST /api/orgs/7/meetings/5/minutes/confirm/')!
+    expect(JSON.parse(String(call.init?.body))).toEqual({ version: 9, role: 'chair' })
+    expect(screen.getByRole('button', { name: 'Vorschau als PDF' })).toBeInTheDocument()
   })
 
   it('ohne Recht kein Zugang', async () => {

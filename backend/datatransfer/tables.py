@@ -155,6 +155,7 @@ MODULE_MODELS = (
     "meetings.AgendaItem",
     "meetings.Resolution",
     "meetings.Attendance",
+    "meetings.MinutesVersion",
     "circulars.CircularTemplate",
     "circulars.Circular",
     "circulars.CircularAttachment",
@@ -186,6 +187,7 @@ DEPARTMENT_MODELS = {
     "meetings.meeting",
     "meetings.agendaitem",
     "meetings.resolution",
+    "meetings.minutesversion",
     "bookings.booking",
     "bookings.bookingexception",
     "materials.materialitem",
@@ -402,8 +404,14 @@ FILE_TYPES = {
     "finance.cashcount": {"application/pdf"},
 }
 
+# Versammlungsdaten ohne eigene Spalte für die Untereinheit
+MEETING_CHILDREN = ("meetings.agendaitem", "meetings.resolution", "meetings.minutesversion")
 # Dateien mit gespeicherter Prüfsumme: Inhalt muss unverändert sein
-FILE_HASHES = {"finance.cashcount": "pdf_sha256", "finance.bankstatement": "source_sha256"}
+FILE_HASHES = {
+    "finance.cashcount": "pdf_sha256",
+    "finance.bankstatement": "source_sha256",
+    "meetings.minutesversion": "sha256",
+}
 
 
 def check_file(name: str, obj, content: bytes, path: str, field_name: str = "") -> None:
@@ -700,7 +708,7 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
         from todos.exports import attachment_rows
 
         qs = attachment_rows(org, department)
-    if department is not None and label(model) in ("meetings.agendaitem", "meetings.resolution"):
+    if department is not None and label(model) in MEETING_CHILDREN:
         qs = qs.filter(meeting__department=department)
     elif department is not None and label(model) != "bookings.bookingexception":
         # Ausfälle hängen an der Buchung; die ist oben schon auf die Abteilung begrenzt

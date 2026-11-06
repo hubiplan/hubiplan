@@ -10,9 +10,12 @@ Versammlungen gehören zu einem Verein oder Dachverband oder zu einer Untereinhe
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.encfields import EncryptedCharField, EncryptedTextField
+from core.privatefiles import PrivateFileField
+from exchange.models import private_storage
 
 
 class MeetingKind(models.Model):
@@ -108,6 +111,15 @@ class Meeting(models.Model):
         related_name="meetings",
     )
     invited_at = models.DateTimeField(null=True, blank=True)
+    # Freigabe des Protokolls (V4): Leitung und Protokollführung bestätigen
+    chair_confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    chair_confirmed_at = models.DateTimeField(null=True, blank=True)
+    taker_confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    taker_confirmed_at = models.DateTimeField(null=True, blank=True)
     version = models.PositiveIntegerField(default=1)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
@@ -222,3 +234,31 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"attendance {self.pk}"
+
+
+def minutes_path(instance, filename: str) -> str:
+    stamp = timezone.now().strftime("%Y%m%d%H%M%S%f")
+    return f"protokolle/{instance.organization_id}/{stamp}.pdf"
+
+
+class MinutesVersion(models.Model):
+    """Freigegebenes Protokoll als PDF mit Prüfsumme (V4). Nachträge werden neue Fassungen."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="minutes_versions")
+    number = models.PositiveSmallIntegerField(default=1)
+    file = PrivateFileField(_("Datei"), storage=private_storage, upload_to=minutes_path)
+    sha256 = models.CharField(max_length=64)
+    released_at = models.DateTimeField(default=timezone.now)
+    document = models.ForeignKey(
+        "documents.Document", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["-number"]
+        constraints = [
+            models.UniqueConstraint(fields=["meeting", "number"], name="minutesversion_unique")
+        ]
+
+    def __str__(self):
+        return f"minutes {self.meeting_id}/{self.number}"
