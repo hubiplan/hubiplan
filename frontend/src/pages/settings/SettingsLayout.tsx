@@ -29,7 +29,16 @@ export function SettingsLayout() {
       ? []
       : [
           { to: '/einstellungen/bezeichnungen', label: t('Bezeichnungen'), section: general },
-          { to: '/einstellungen/vereinsdokumente', label: t('Vereinsdokumente'), section: general },
+          // Vereinsdokumente stehen unter Dokumente; hier nur ohne Zugriff auf die Ablage
+          ...(active.permissions.includes(PERM.docsView)
+            ? []
+            : [
+                {
+                  to: '/einstellungen/vereinsdokumente',
+                  label: t('Vereinsdokumente'),
+                  section: general,
+                },
+              ]),
         ]),
     ...(unit
       ? []

@@ -8,7 +8,7 @@ routen: [/material]
 stichworte: [Inventory, Equipment, Location, Photo, Image, Recurring events]
 ---
 
-**Equipment** lists the items belonging to your active unit. Search by name, description
+Equipment & rooms › **Equipment** lists the items belonging to your active unit. Search by name, description
 or address. Use the filters to include retired items or open the recycle bin.
 
 ![Equipment list with locations and condition](bild:material-liste)

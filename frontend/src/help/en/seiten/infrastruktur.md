@@ -1,6 +1,6 @@
 ---
 key: page.infrastructure
-titel: Manage facilities
+titel: Manage rooms and facilities
 bereich: start
 modul: infrastructure
 rechte: [infrastructure.view]
@@ -8,7 +8,7 @@ routen: [/infrastruktur]
 stichworte: [Shooting range, Clubhouse, Hall, Room, Area, Key, Shooting lanes]
 ---
 
-**Facilities** lists the fixed premises of your active unit, for example a shooting range,
+Equipment & rooms › **Rooms and facilities** (Facilities module) lists the fixed premises of your active unit, for example a shooting range,
 a clubhouse or a club hall. Each facility has its own number (INF-…), a type, a short
 description and an address.
 

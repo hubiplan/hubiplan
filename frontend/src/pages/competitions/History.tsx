@@ -705,9 +705,11 @@ export function TitlesPage() {
   const proposals = (data ?? []).filter((g) => g.dignity_state === 'vorschlag')
   return (
     <section>
-      <h1>{t('Titel und Würden')}</h1>
+      <h1>{t('Titel und Sieger')}</h1>
       <p className="muted">
-        {t('Alles, was in Wettbewerben vergeben wurde, und von Hand nachgetragene frühere Jahre.')}
+        {t('Alles, was in Wettbewerben vergeben wurde, und von Hand nachgetragene frühere Jahre.')}{' '}
+        {t('Könige und andere Würden früherer Jahre:')}{' '}
+        <Link to="/mitglieder/wuerdentraeger">{t('Mitglieder › Würdenträger')}</Link>
       </p>
       {error && <LoadError message={error} onRetry={reload} />}
       {proposals.length > 0 && (

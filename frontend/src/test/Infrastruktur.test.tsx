@@ -101,11 +101,11 @@ describe('Infrastruktur', () => {
   it('listet Infrastruktur mit Art', async () => {
     show('/infrastruktur', ['infrastructure.view', 'infrastructure.edit'])
     expect(
-      await screen.findByRole('heading', { name: 'Infrastruktur', level: 1 }),
+      await screen.findByRole('heading', { name: 'Räume und Anlagen', level: 1 }),
     ).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: 'Schützenhaus' })).toBeInTheDocument()
     expect(screen.getByText('Gebäude oder Vereinsheim')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Infrastruktur anlegen' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Raum oder Anlage anlegen' })).toBeInTheDocument()
   })
 
   it('zeigt Bereiche, zugehöriges Material und den Zugangshinweis', async () => {

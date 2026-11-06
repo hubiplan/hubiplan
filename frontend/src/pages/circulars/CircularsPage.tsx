@@ -12,6 +12,7 @@ import { MailingListsArea } from '../../components/circulars/MailingListsArea.ts
 import { MarkupPreview } from '../../components/circulars/MarkupEditor.tsx'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { Alert, Tabs, SectionTitle } from '../../components/ui.tsx'
+import { LetterheadPage } from '../LetterheadPage.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { canWriteCirculars } from './access.ts'
@@ -46,6 +47,7 @@ export function CircularsPage() {
   const tabs = [
     ...(write ? [{ to: ROOT, label: t('Verfassen') }] : []),
     ...(write ? [{ to: `${ROOT}/verteiler`, label: t('Verteiler') }] : []),
+    ...(write ? [{ to: '/rundschreiben/brief', label: t('Brief') }] : []),
     ...(receive ? [{ to: `${ROOT}/empfangen`, label: t('Empfangen') }] : []),
   ]
   return (
@@ -62,6 +64,7 @@ export function CircularsPage() {
             }
           />
         )}
+        {write && <Route path="brief" element={<LetterheadPage embedded />} />}
         {write ? (
           <Route path="*" element={<CircularsArea base={base} root={ROOT} />} />
         ) : (

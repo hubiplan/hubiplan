@@ -8,7 +8,7 @@ routen: [/material]
 stichworte: [Inventar, Material, Standort, Foto, Bild, Terminreihe]
 ---
 
-Unter **Material** findest du die Teile deiner aktiven Einheit. Suche nach Bezeichnung,
+Unter Material & Räume › **Material** findest du die Teile deiner aktiven Einheit. Suche nach Bezeichnung,
 Beschreibung oder Adresse. Über die Filter erreichst du ausgesonderte Teile und den Papierkorb.
 
 ![Materialübersicht mit Standort und Zustand](bild:material-liste)

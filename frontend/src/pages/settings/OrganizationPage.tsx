@@ -4,6 +4,7 @@ import { orgApi, PERM } from '../../api/orgs.ts'
 import type { OrgDetail, Role } from '../../api/orgs.ts'
 import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
 import { useAutoSave, useForm, useLoad } from '../../components/forms.ts'
+import { Link, Navigate } from 'react-router-dom'
 import { SocialLinksPanel } from '../../components/SocialLinksPanel.tsx'
 import { StatutePanel } from '../../components/StatutePanel.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
@@ -40,9 +41,16 @@ export function OrganizationPage() {
         onSaved={setData}
         part="stammdaten"
       />
-      {(data.type === 'club' || data.type === 'federation') && (
-        <SocialLinksPanel orgId={org.id} editable={org.permissions.includes(PERM.orgEdit)} />
-      )}
+      {(data.type === 'club' || data.type === 'federation') &&
+        (org.modules.includes('website') &&
+        [PERM.websiteManage, PERM.websiteContent].some((p) => org.permissions.includes(p)) ? (
+          <p className="muted">
+            {t('Die Social-Media-Kanäle pflegt ihr unter')}{' '}
+            <Link to="/webseite/beitraege">{t('Webseite › Social Media')}</Link>
+          </p>
+        ) : (
+          <SocialLinksPanel orgId={org.id} editable={org.permissions.includes(PERM.orgEdit)} />
+        ))}
       {data.type !== 'platform' && (
         <HelpContactsCard orgId={org.id} editable={org.permissions.includes(PERM.orgEdit)} />
       )}
@@ -70,6 +78,9 @@ export function OrganizationTermsPage() {
 /** Einstellungen › Vereinsdokumente: Satzung, Beitragsordnung, Gründungsurkunde. */
 export function OrganizationDocumentsPage() {
   const org = useActiveOrg()
+  // Mit Zugriff auf die Ablage stehen sie dort (Menüprüfung M-03)
+  if (org.permissions.includes(PERM.docsView) && (org.type === 'club' || org.type === 'federation'))
+    return <Navigate to="/dokumente" replace />
   return (
     <>
       <div className="card card-wide">

@@ -36,7 +36,10 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Rechnungen an Mitglieder | **Finanzen › Rechnungen** | Finances › Invoices | „Beiträge“ als Menüpunkt |
 | Wechsel zwischen Untereinheiten | **Wechselanfragen** | Change requests | „Anfragen“ allein in Überschriften |
 | Von Mitgliedern gemeldete Änderungen | **Änderungsmeldungen** | Change notices | – |
-| Titel, Königswürden | **Titel und Würden** | Titles and honours | „Titel und Auszeichnungen“ |
+| Material, Infrastruktur und Belegung zusammen (Seitenleiste) | **Material & Räume** mit **Material**, **Räume und Anlagen**, **Belegung** | Equipment & rooms with Equipment, Rooms and facilities, Bookings | drei eigene Hauptpunkte |
+| Wettbewerbstitel und ihre Träger (Wettbewerbe) | **Titel und Sieger** | Titles and winners | „Titel und Würden“ als Menüpunkt |
+| König, Prinz und andere Würden (Mitglieder) | **Würdenträger** | Title holders | Würden an zwei Stellen pflegen |
+| Wechselanfragen und Änderungsmeldungen zusammen | **Mitglieder › Änderungen und Wechsel** | Members › Changes and transfers | „Anfragen“ als Menüpunkt |
 | Blättern in Listen | **Vorherige Seite / Nächste Seite** | Previous page / Next page | „Zurück / Weiter“ |
 | Aufgabe für Mitglieder | **Aufgabe** | Task | „To-do“ |
 | Funktion in einer Einheit (Kassierer, Zugführer), mit oder ohne Rechte | **Rolle** | Role | „Funktion“ in der Oberfläche |

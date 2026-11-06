@@ -7,7 +7,7 @@ routen: [/belegung]
 stichworte: [Booking, Booking calendar, Reservation, Request, Approval, Set-up time, Hall]
 ---
 
-**Bookings** shows when facilities and material with a booking calendar are in use. The week
+Equipment & rooms › **Bookings** shows when facilities and material with a booking calendar are in use. The week
 view has one row per item; use **Previous week** and **Next week** to move through the weeks.
 
 Switch on a booking calendar: On the detail page of a facility or a material item, the

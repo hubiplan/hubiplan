@@ -120,15 +120,24 @@ function requestFor(data: MyLetterheads, ctx: SenderContext, unit: number): Lett
   }
 }
 
-/** Mein Konto › Briefvorlage & Unterschrift: persönliche Word-Vorlage erzeugen. */
-export function LetterheadPage() {
+/**
+ * Briefvorlage erzeugen (persönliche Word-Vorlage). Eigene Seite /briefvorlage und als
+ * Rundschreiben › Brief (Menüprüfung M-04); dort steht die Überschrift schon darüber.
+ */
+export function LetterheadPage({ embedded = false }: { embedded?: boolean }) {
   const [params] = useSearchParams()
   const { data, error, reload } = useLoad(() => letterheadApi.mine(), [])
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   return (
     <section>
-      <h1>{t('Briefvorlage erstellen')}</h1>
+      {embedded ? (
+        <p className="muted">
+          {t('Erzeuge eine Word-Vorlage mit Briefbogen und deinem Absender für einen Brief.')}
+        </p>
+      ) : (
+        <h1>{t('Briefvorlage erstellen')}</h1>
+      )}
       {data.contexts.length === 0 ? (
         <div className="card card-wide">
           <p>
