@@ -39,6 +39,7 @@ from organizations.tree import with_descendants
 from . import services, type_usage
 from .models import (
     ContactDetails,
+    ContactPerson,
     DepartmentMembership,
     DepartmentRoleHolder,
     FederationMember,
@@ -54,6 +55,7 @@ from .models import (
 from .personsearch import name_ids_many, ordered
 from .serializers import (
     AdmitSerializer,
+    ContactPersonSerializer,
     DepartmentMembershipSerializer,
     DepartmentRoleHolderSerializer,
     DuplicateSerializer,
@@ -690,6 +692,68 @@ class DepartmentRoleHolderViewSet(_MemberChildMixin, viewsets.ModelViewSet):
         holder._ended = (
             end_unit_predecessors(holder, self.org, self.request.user) if end_previous else []
         )
+
+
+class ContactPersonViewSet(_MemberChildMixin, viewsets.ModelViewSet):
+    """Ansprechpartner eines Organisationsmitglieds (J2). Entfernen löscht die Zeile
+    samt Kontaktangaben; eingefrorene Namen in Belegen bleiben (Konzept J-9)."""
+
+    serializer_class = ContactPersonSerializer
+    child_model = ContactPerson
+    http_method_names = ["get", "post", "patch", "delete", "options", "head"]
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("person")
+
+    def _check_organization(self, membership):
+        if not membership.person.is_organization:
+            raise serializers.ValidationError(
+                {"detail": gettext("Ansprechpartner gibt es nur bei Organisationsmitgliedern.")}
+            )
+
+    @staticmethod
+    def _one_primary(instance):
+        """Genau ein Hauptansprechpartner: der zuletzt gewählte bzw. der erste."""
+        others = ContactPerson.objects.filter(membership_id=instance.membership_id).exclude(
+            pk=instance.pk
+        )
+        if instance.is_primary:
+            others.filter(is_primary=True).update(is_primary=False)
+        elif not others.filter(is_primary=True).exists():
+            instance.is_primary = True
+            instance.save(update_fields=["is_primary"])
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        membership = self.get_membership()
+        self._check_organization(membership)
+        Membership.objects.select_for_update().filter(pk=membership.pk).first()
+        if serializer.validated_data.get("is_primary"):
+            ContactPerson.objects.filter(membership=membership, is_primary=True).update(
+                is_primary=False
+            )
+        super().perform_create(serializer)
+        self._one_primary(serializer.instance)
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        Membership.objects.select_for_update().filter(pk=serializer.instance.membership_id).first()
+        if serializer.validated_data.get("is_primary"):
+            ContactPerson.objects.filter(
+                membership_id=serializer.instance.membership_id, is_primary=True
+            ).exclude(pk=serializer.instance.pk).update(is_primary=False)
+        super().perform_update(serializer)
+        self._one_primary(serializer.instance)
+
+    @transaction.atomic
+    def perform_destroy(self, instance):
+        membership_id, was_primary = instance.membership_id, instance.is_primary
+        super().perform_destroy(instance)
+        if was_primary:
+            nxt = ContactPerson.objects.filter(membership_id=membership_id).order_by("pk").first()
+            if nxt is not None:
+                nxt.is_primary = True
+                nxt.save(update_fields=["is_primary"])
 
 
 class FederationEntrySerializer(serializers.Serializer):

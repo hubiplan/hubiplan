@@ -574,6 +574,73 @@ class DepartmentRoleHolder(RoleAssignment):
         default_manager_name = "objects"
 
 
+class ContactPerson(models.Model):
+    """Ansprechpartner eines Organisationsmitglieds (Konzept juristische Personen, J2).
+
+    Gilt je Mitgliedschaft: Dieselbe Firma kann in zwei Vereinen verschiedene
+    Ansprechpartner haben. Ist der Ansprechpartner selbst Mitglied im Verbandsbereich,
+    wird er verknüpft (``person``); Name und Kontakt kommen dann aus seiner Akte.
+    Beim Entfernen wird die Zeile gelöscht; eingefrorene Namen in Belegen bleiben.
+    """
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    membership = models.ForeignKey(
+        Membership, on_delete=models.CASCADE, related_name="contact_persons"
+    )
+    person = models.ForeignKey(
+        Person,
+        verbose_name="verknüpfte Person",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="contact_for",
+    )
+    last_name = EncryptedCharField("Name", max_length=100, blank=True)
+    first_name = EncryptedCharField("Vorname", max_length=100, blank=True)
+    gender = models.CharField(
+        "Geschlecht", max_length=10, choices=Gender.choices, blank=True, default=""
+    )
+    function = EncryptedCharField("Funktion", max_length=100, blank=True)
+    email = EncryptedEmailField("E-Mail-Adresse", blank=True)
+    phone = EncryptedCharField("Telefon", max_length=50, blank=True)
+    is_primary = models.BooleanField("Hauptansprechpartner", default=False)
+    receives_mail = models.BooleanField("erhält Rundschreiben", default=True)
+    receives_invoices = models.BooleanField("erhält Rechnungen", default=True)
+    represents = models.BooleanField("vertritt in Versammlungen", default=True)
+    member_access = models.BooleanField("Mitgliederzugang", default=False)
+    since = models.DateField("Ansprechpartner seit", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Ansprechpartner"
+        verbose_name_plural = "Ansprechpartner"
+        ordering = ["-is_primary", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["membership"],
+                condition=Q(is_primary=True),
+                name="ein_hauptansprechpartner",
+            ),
+            models.UniqueConstraint(
+                fields=["membership", "person"],
+                condition=Q(person__isnull=False),
+                name="ansprechpartner_person_einmal",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"Ansprechpartner {self.pk}"
+
+    @property
+    def display_name(self) -> str:
+        if self.person_id is not None:
+            return f"{self.person.first_name} {self.person.last_name}".strip()
+        return f"{self.first_name} {self.last_name}".strip()
+
+
 class HonoraryTitle(models.Model):
     """Ehrung eines Vereins oder Dachverbands (z. B. Ehrenmitglied, Ehrenmajor),
     optional mit Beitragsanpassung. Vergeben wird er am Mitglied mit Von-/Bis-Datum.

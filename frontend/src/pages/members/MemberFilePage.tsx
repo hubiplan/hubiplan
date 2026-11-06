@@ -25,6 +25,7 @@ import { MembershipActions } from './MembershipActions.tsx'
 import { SuggestCorrection } from './FederationMembersPage.tsx'
 import { FieldsTab } from './FieldsTab.tsx'
 import { PhotoSection } from './PhotoSection.tsx'
+import { ContactPersons } from './ContactPersons.tsx'
 import { PublicationSection } from './PublicationSection.tsx'
 import { HonoraryAwards } from './HonoraryAwards.tsx'
 import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
@@ -134,6 +135,27 @@ export function MemberFilePage() {
             canEdit={canEdit && !data.managed_by}
             onSaved={setData}
           />
+          {data.kind === 'organization' && (
+            <ContactPersons
+              key={`ansprechpartner-${data.id}`}
+              orgId={org.id}
+              memberId={data.id}
+              contacts={data.contact_persons ?? []}
+              canEdit={canEdit}
+              onChange={() => void reload()}
+            />
+          )}
+          {(data.contact_for ?? []).length > 0 && (
+            <p className="muted">
+              {t('Ansprechpartner für:')}{' '}
+              {(data.contact_for ?? []).map((c, i) => (
+                <span key={c.member_id}>
+                  {i > 0 && ', '}
+                  <Link to={`/mitglieder/${c.member_id}`}>{c.name}</Link>
+                </span>
+              ))}
+            </p>
+          )}
           {data.managed_by && (
             <SuggestCorrection
               orgId={org.id}

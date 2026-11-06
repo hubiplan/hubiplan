@@ -71,6 +71,8 @@ MODULE_MODELS = (
     "todos.TodoAttachment",
     "members.HonoraryTitle",
     "members.HonoraryTitleAward",
+    # Ansprechpartner von Organisationsmitgliedern (J2)
+    "members.ContactPerson",
     "honors.Dignity",
     "honors.Reign",
     "honors.Companion",
