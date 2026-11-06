@@ -368,6 +368,7 @@ def department_summary(ctx: services.DepartmentContext) -> dict:
         "events_enabled": "events" in (club.enabled_modules or []),
         "material_enabled": "material" in (club.enabled_modules or []),
         "infrastructure_enabled": "infrastructure" in (club.enabled_modules or []),
+        "meetings_enabled": "meetings" in (club.enabled_modules or []),
         "imprint_key": ensure_imprint(ctx.department).public_key,
     }
 

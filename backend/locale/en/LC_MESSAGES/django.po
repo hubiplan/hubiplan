@@ -7825,3 +7825,156 @@ msgstr "Member list"
 
 msgid "In Gedenken"
 msgstr "In memoriam"
+
+msgid "Versammlungen"
+msgstr "Meetings"
+
+msgid "Versammlungen, Tagesordnungen und Protokolle sehen"
+msgstr "See meetings, agendas and minutes"
+
+msgid "Versammlungen vorbereiten, einladen und protokollieren"
+msgstr "Prepare meetings, send invitations and take minutes"
+
+msgid "Versammlungen {gen}"
+msgstr "Meetings {gen}"
+
+msgid "Der Termin gehört zu einer Versammlung. Bitte die Versammlung absagen oder dort löschen."
+msgstr "This event belongs to a meeting. Please cancel or delete the meeting instead."
+
+msgid "Mitgliederversammlung"
+msgstr "General meeting"
+
+msgid "Vorstandssitzung"
+msgstr "Board meeting"
+
+msgid "Gremium oder Ausschuss"
+msgstr "Committee"
+
+msgid "E-Mail, sonst Brief"
+msgstr "Email, otherwise letter"
+
+msgid "Brief an alle"
+msgstr "Letter to everyone"
+
+msgid "nur Rollen mit Leserecht"
+msgstr "only roles with read access"
+
+msgid "auch alle Stimmberechtigten"
+msgstr "also all members entitled to vote"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Einladungsfrist in Tagen"
+msgstr "Notice period in days"
+
+msgid "Vertretung mit Vollmacht"
+msgstr "Proxy voting"
+
+msgid "in Vorbereitung"
+msgstr "in preparation"
+
+msgid "eingeladen"
+msgstr "invited"
+
+msgid "durchgeführt"
+msgstr "held"
+
+msgid "Protokoll in Arbeit"
+msgstr "minutes in progress"
+
+msgid "Protokoll freigegeben"
+msgstr "minutes approved"
+
+msgid "abgesagt"
+msgstr "cancelled"
+
+msgid "Leitung"
+msgstr "Chair"
+
+msgid "Protokollführung"
+msgstr "Minute taker"
+
+msgid "Bericht"
+msgstr "Report"
+
+msgid "Beschluss"
+msgstr "Resolution"
+
+msgid "Wahl"
+msgstr "Election"
+
+msgid "Erläuterung"
+msgstr "Explanation"
+
+msgid "Versammlung"
+msgstr "Meeting"
+
+msgid "Sitzung der Leitung"
+msgstr "Leadership meeting"
+
+msgid "Jahreshauptversammlung"
+msgstr "Annual general meeting"
+
+msgid "Außerordentliche Mitgliederversammlung"
+msgstr "Extraordinary general meeting"
+
+msgid "Begrüßung"
+msgstr "Welcome"
+
+msgid "Genehmigung des letzten Protokolls"
+msgstr "Approval of the last minutes"
+
+msgid "Verschiedenes"
+msgstr "Any other business"
+
+msgid "Begrüßung und Feststellung der Beschlussfähigkeit"
+msgstr "Welcome and confirmation of the quorum"
+
+msgid "Genehmigung der Tagesordnung"
+msgstr "Approval of the agenda"
+
+msgid "Genehmigung des Protokolls der letzten Versammlung"
+msgstr "Approval of the minutes of the last meeting"
+
+msgid "Berichte des Vorstands"
+msgstr "Board reports"
+
+msgid "Bericht der Kassenprüfer"
+msgstr "Auditors’ report"
+
+msgid "Entlastung des Vorstands"
+msgstr "Discharge of the board"
+
+msgid "Wahlen"
+msgstr "Elections"
+
+msgid "Anträge"
+msgstr "Motions"
+
+msgid "Die Versammlung wurde inzwischen geändert. Bitte neu laden."
+msgstr "The meeting has been changed in the meantime. Please reload."
+
+msgid "Diese Art gibt es schon."
+msgstr "This type already exists."
+
+msgid "Diese Art wird schon verwendet. Sie lässt sich nur abschalten."
+msgstr "This type is already in use. It can only be switched off."
+
+msgid "Pflichtangabe."
+msgstr "Required."
+
+msgid "Unbekannte Art."
+msgstr "Unknown type."
+
+msgid "Dieser Wechsel ist nicht möglich."
+msgstr "This change is not possible."
+
+msgid "Nach der Einladung lässt sich eine Versammlung nur absagen."
+msgstr "Once invitations have gone out, a meeting can only be cancelled."
+
+msgid "Die Tagesordnung lässt sich jetzt nicht mehr ändern."
+msgstr "The agenda can no longer be changed."
+
+msgid "Jeder Punkt braucht einen Titel."
+msgstr "Every item needs a title."

@@ -554,6 +554,15 @@ class _EventDetail(APIView):
     @transaction.atomic
     def delete(self, request, pk: int, **kwargs):
         event = self.own_event(pk)
+        if hasattr(event, "meeting"):
+            raise serializers.ValidationError(
+                {
+                    "detail": gettext(
+                        "Der Termin gehört zu einer Versammlung. Bitte die Versammlung absagen "
+                        "oder dort löschen."
+                    )
+                }
+            )
         self.audit("delete", event, diff(snapshot(event), {}))
         event.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -149,6 +149,10 @@ MODULE_MODELS = (
     # werden nach dem Import neu ausgerechnet
     "bookings.Booking",
     "bookings.BookingException",
+    # Versammlungen nach den Terminen (jede Versammlung hat ihren Termin)
+    "meetings.MeetingKind",
+    "meetings.Meeting",
+    "meetings.AgendaItem",
     "circulars.CircularTemplate",
     "circulars.Circular",
     "circulars.CircularAttachment",
@@ -176,6 +180,9 @@ PUBLIC_MODELS = {"statutes.statuteversion", "statutes.statutepublication"}
 # Die Dokumentenablage kommt im vollständigen Export und im Export einer Abteilung
 # mit, nicht aber im Dachverbands-Export der Vereine (dort nur die Satzung).
 DEPARTMENT_MODELS = {
+    "meetings.meetingkind",
+    "meetings.meeting",
+    "meetings.agendaitem",
     "bookings.booking",
     "bookings.bookingexception",
     "materials.materialitem",
@@ -524,6 +531,10 @@ def fix_json_ids(name: str, obj, ids: IdMap) -> None:
             line["category"] = ids.get("finance.category", line.get("category"))
             lines.append(line)
         obj.lines = lines
+    if name == "meetings.meetingkind":
+        obj.voter_types = [
+            new for old in obj.voter_types or [] if (new := ids.get("member_type", old))
+        ]
 
 
 def fix_website_keys(name: str, obj, ids: IdMap) -> None:

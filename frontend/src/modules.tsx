@@ -206,6 +206,19 @@ export const modules: AppModule[] = [
       ),
   },
   {
+    id: 'versammlungen',
+    group: 'verein',
+    label: t('Versammlungen'),
+    path: '/versammlungen',
+    icon: icon('M4 20h16M6 20v-6h12v6M9 14V9.5M15 14V9.5M12 4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5'),
+    visible: (org, ws) =>
+      org
+        ? (org.type === 'club' || org.type === 'federation') &&
+          org.modules.includes('meetings') &&
+          org.permissions.includes(PERM.meetingsView)
+        : !!(ws.dept?.meetings_enabled && ws.dept.permissions.includes(PERM.meetingsView)),
+  },
+  {
     id: 'abteilung',
     group: 'verein',
     label: t('Abteilung'),

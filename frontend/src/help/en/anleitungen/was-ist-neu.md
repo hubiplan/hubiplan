@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: Meetings. General meetings, board meetings and meetings of units can be prepared with an event and an agenda. For each type the club sets the notice period; HUBIplan shows the date by which invitations must go out. The platform switches the module on. Invitations, attendance and minutes follow.
 - Menu merged: equipment, facilities and bookings are under one item, “Equipment & rooms” (facilities are called “Rooms and facilities” there). Letter templates are under Circulars › Letter, social media channels under Website › Social media. New names: Competitions › Titles and winners, Members › Changes and transfers.
 - Setup: Events have their own “Setup” with categories, external calendars, sharing and the website link. The donation receipt details are now under Finance › Setup › Donations. Roles, accounts and offices use the same terms everywhere (account, term of office, leadership, permissions); in the member file, offices and the account are on the “Roles and account” tab.
 - Menu: “My area” is now in the “Everyday” group. Settings and Website have subheadings in the sidebar (Settings: General, Legal, Roles and connections, Data; Website: Content, Layout, Operation). The document bin is a link at the top of the library. Organisation shows links to the setup of all areas. The home page shows “To do” to treasurers too, and the app uses the same words as the browser (To do, Cash book, Invoices).

@@ -61,6 +61,7 @@ const MaterialsPage = lazyPage<{ kind?: 'material' | 'facility' }>(
   'MaterialsPage',
 )
 const BookingsPage = lazyPage(() => import('./pages/bookings/BookingsPage.tsx'), 'BookingsPage')
+const MeetingsPage = lazyPage(() => import('./pages/meetings/MeetingsPage.tsx'), 'MeetingsPage')
 const WebsitePage = lazyPage(() => import('./pages/website/WebsitePage.tsx'), 'WebsitePage')
 const EventsPage = lazyPage(() => import('./pages/events/EventsPage.tsx'), 'EventsPage')
 const CompetitionsPage = lazyPage(
@@ -290,6 +291,7 @@ export default function App() {
           <Route path="material/*" element={<MaterialsPage />} />
           <Route path="infrastruktur/*" element={<MaterialsPage kind="facility" />} />
           <Route path="belegung" element={<BookingsPage />} />
+          <Route path="versammlungen" element={<MeetingsPage />} />
           <Route path="termine/*" element={<EventsPage />} />
           <Route
             path="musik"
