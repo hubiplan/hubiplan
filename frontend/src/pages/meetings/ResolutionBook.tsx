@@ -2,8 +2,10 @@
 // Wahlen mit Suche, Filtern, Stand der Umsetzung, Aufgabe und Excel-Liste.
 import { useState } from 'react'
 import { saveBlob } from '../../api/client.ts'
+import { orgApi } from '../../api/orgs.ts'
 import { meetingApi } from '../../api/meetings.ts'
 import type { BookRow, MeetingKind, ResolutionStatus } from '../../api/meetings.ts'
+import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { locale, t } from '../../i18n/index.ts'
 
@@ -32,14 +34,23 @@ function dateText(value: string) {
   })
 }
 
+/** Rolle passend zum Amt aus der Wahl (gleicher Name, Groß-/Kleinschreibung egal) */
+function roleForOffice(roles: { id: number; name: string }[], office: string) {
+  const wanted = office.trim().toLocaleLowerCase()
+  return wanted ? roles.find((r) => r.name.trim().toLocaleLowerCase() === wanted)?.id : undefined
+}
+
 export function ResolutionBook({
   base,
   canEdit,
   kinds,
+  assignOrg = null,
 }: {
   base: string
   canEdit: boolean
   kinds: MeetingKind[]
+  /** Verein, in dem Gewählte ins Amt übernommen werden dürfen (Rollenverwaltung) */
+  assignOrg?: number | null
 }) {
   const [term, setTerm] = useState('')
   const [year, setYear] = useState('')
@@ -65,6 +76,24 @@ export function ResolutionBook({
     }
   }
   const rows = book.data?.rows ?? []
+  // Wahlen ins Amt übernehmen: Rollen und heutige Amtszeiten nur mit Rollenverwaltung
+  const roles = useLoad(
+    () => (assignOrg ? orgApi.roles(assignOrg) : Promise.resolve([])),
+    [assignOrg],
+  )
+  const assignments = useLoad(
+    () => (assignOrg ? orgApi.assignments(assignOrg) : Promise.resolve([])),
+    [assignOrg],
+  )
+  const [electing, setElecting] = useState<BookRow | null>(null)
+  const canTakeOver = (r: BookRow) =>
+    !!assignOrg &&
+    canEdit &&
+    r.kind === 'election' &&
+    r.result === 'accepted' &&
+    r.elected !== null &&
+    r.status === 'open' &&
+    (roles.data?.length ?? 0) > 0
   return (
     <section className="card stack" aria-labelledby="resolution-book">
       <h2 id="resolution-book">{t('Beschlussbuch')}</h2>
@@ -190,6 +219,18 @@ export function ResolutionBook({
                   ) : (
                     statusLabel(r.status)
                   )}
+                  {canTakeOver(r) && (
+                    <div>
+                      <button
+                        type="button"
+                        className="link-button"
+                        aria-label={t('Wahl {number} ins Amt übernehmen', { number: r.number })}
+                        onClick={() => setElecting(r)}
+                      >
+                        {t('Ins Amt übernehmen')}
+                      </button>
+                    </div>
+                  )}
                   {r.todo ? (
                     <div className="muted small">
                       {t('Aufgabe: {title}', { title: r.todo.title })}
@@ -217,6 +258,22 @@ export function ResolutionBook({
             ))}
           </tbody>
         </table>
+      )}
+      {electing && assignOrg && electing.elected !== null && roles.data && assignments.data && (
+        <AssignRoleDialog
+          orgId={assignOrg}
+          roles={roles.data}
+          assignments={assignments.data}
+          suggestedRole={roleForOffice(roles.data, electing.office)}
+          from={electing.date}
+          member={{ id: electing.elected, first_name: electing.elected_name, last_name: '' }}
+          onClose={() => setElecting(null)}
+          onDone={async () => {
+            // Gewählte Person ist im Amt: Beschluss gilt als umgesetzt
+            await meetingApi.setResolutionStatus(base, electing.id, 'done')
+            await Promise.all([book.reload(), assignments.reload()])
+          }}
+        />
       )}
     </section>
   )

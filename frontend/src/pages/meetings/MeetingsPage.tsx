@@ -90,10 +90,28 @@ export function MeetingsPage() {
   const base = active
     ? `/api/orgs/${active.id}/meetings/`
     : `/api/depts/${activeDept!.id}/meetings/`
-  return <Meetings key={base} base={base} canEdit={permissions.includes(PERM.meetingsEdit)} />
+  // Wahlen ins Amt übernehmen: nur im Verein und mit Rollenverwaltung (Ämter der
+  // Untereinheiten besetzt deren eigene Rollenseite)
+  const assignOrg = active && permissions.includes(PERM.rolesManage) ? active.id : null
+  return (
+    <Meetings
+      key={base}
+      base={base}
+      canEdit={permissions.includes(PERM.meetingsEdit)}
+      assignOrg={assignOrg}
+    />
+  )
 }
 
-function Meetings({ base, canEdit }: { base: string; canEdit: boolean }) {
+function Meetings({
+  base,
+  canEdit,
+  assignOrg,
+}: {
+  base: string
+  canEdit: boolean
+  assignOrg: number | null
+}) {
   const [params, setParams] = useSearchParams()
   const view =
     params.get('ansicht') === 'arten'
@@ -168,7 +186,12 @@ function Meetings({ base, canEdit }: { base: string; canEdit: boolean }) {
         </button>
       </nav>
       {view === 'book' ? (
-        <ResolutionBook base={base} canEdit={canEdit} kinds={kinds.data ?? []} />
+        <ResolutionBook
+          base={base}
+          canEdit={canEdit}
+          kinds={kinds.data ?? []}
+          assignOrg={assignOrg}
+        />
       ) : view === 'kinds' ? (
         <KindsCard
           base={base}

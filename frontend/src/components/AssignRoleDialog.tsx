@@ -29,6 +29,8 @@ export function AssignRoleDialog({
   roles,
   assignments,
   role: initialRole,
+  suggestedRole,
+  from: initialFrom,
   member: fixedMember,
   onClose,
   onDone,
@@ -38,15 +40,19 @@ export function AssignRoleDialog({
   /** heutige Amtszeiten, um Vorgänger zu nennen */
   assignments: Assignment[]
   role?: number
+  /** vorgeschlagene Rolle; anders als `role` bleibt sie in der Auswahl änderbar */
+  suggestedRole?: number
+  /** Beginn der Amtszeit (sonst heute), etwa das Datum der Wahl */
+  from?: string
   /** feste Person (Mitgliederakte); sonst Auswahl aus der Mitgliederliste */
   member?: PickedMember
   onClose: () => void
   onDone: () => Promise<void> | void
 }) {
-  const [roleId, setRoleId] = useState(initialRole ?? roles[0]?.id ?? 0)
+  const [roleId, setRoleId] = useState(initialRole ?? suggestedRole ?? roles[0]?.id ?? 0)
   const [member, setMember] = useState<PickedMember | null>(fixedMember ?? null)
   const [email, setEmail] = useState(fixedMember?.email ?? '')
-  const [from, setFrom] = useState(todayIso)
+  const [from, setFrom] = useState(initialFrom ?? todayIso)
   const [endPrevious, setEndPrevious] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)

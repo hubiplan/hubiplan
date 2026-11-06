@@ -150,6 +150,8 @@ export interface BookRow {
   unanimous: boolean
   office: string
   elected_name: string
+  /** Mitgliedschaft der gewählten Person (nur bei Auswahl aus der Mitgliederliste) */
+  elected: number | null
   status: ResolutionStatus
   meeting: number
   meeting_title: string
