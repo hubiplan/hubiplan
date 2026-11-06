@@ -11,4 +11,4 @@ Hier pflegt ihr Namen, Kurznamen, Gründungsjahr, Anschrift und Kontakt der Einh
 
 Unten legt ihr die Ansprechpartner für Fragen zu HUBIplan fest. Sie erscheinen in der Hilfe unter „Wer hilft bei uns?“, auch für Untereinheiten ohne eigene Ansprechpartner. Wie die übrigen Angaben auf dieser Seite speichert HUBIplan sie automatisch, sobald ein Name eingetragen ist.
 
-Ganz unten führt „Einrichtung der Bereiche“ zu den Einstellungen, die nur einen Bereich betreffen, etwa Mitglieder › Einrichtung oder Finanzen › Einrichtung. In der Seitenleiste sind die Einstellungen in Allgemein, Recht, Zugänge und Daten gegliedert.
+Ganz unten führt „Einrichtung der Bereiche“ zu den Einstellungen, die nur einen Bereich betreffen, etwa Mitglieder › Einrichtung oder Finanzen › Einrichtung. In der Seitenleiste sind die Einstellungen in Allgemein, Recht, Rollen und Anbindungen sowie Daten gegliedert.

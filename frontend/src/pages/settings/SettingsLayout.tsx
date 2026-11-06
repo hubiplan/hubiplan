@@ -19,7 +19,7 @@ export function SettingsLayout() {
   // Zwischenüberschriften in der Seitenleiste (Menüprüfung M-11)
   const general = t('Allgemein')
   const legal = t('Recht')
-  const access = t('Zugänge')
+  const access = t('Rollen und Anbindungen')
   const records = t('Daten')
   const items = [
     ...(unit

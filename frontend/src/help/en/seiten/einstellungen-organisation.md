@@ -11,4 +11,4 @@ Here you maintain the unit's name, short name, founding year, address and contac
 
 At the bottom you set the contacts for questions about HUBIplan. They appear in the help under “Who helps us?”, also for sub-units without their own contacts. Like everything else on this page, HUBIplan saves them automatically as soon as a name is entered.
 
-At the very bottom, “Setup of the areas” leads to the settings that only affect one area, such as Members › Setup or Finances › Setup. In the sidebar, settings are grouped into General, Legal, Access and Data.
+At the very bottom, “Setup of the areas” leads to the settings that only affect one area, such as Members › Setup or Finances › Setup. In the sidebar, settings are grouped into General, Legal, Roles and connections, and Data.
