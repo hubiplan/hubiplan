@@ -182,7 +182,7 @@ function Bookings({ base }: { base: string }) {
             {t('Nächste Woche')}
           </button>
         </div>
-        <label>
+        <label className="inline-label">
           {t('Objekt')}
           <select value={only ?? ''} onChange={(e) => set('objekt', e.target.value)}>
             <option value="">{t('Alle')}</option>
