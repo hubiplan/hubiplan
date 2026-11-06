@@ -504,10 +504,10 @@ function MfaNotice({ by, overdue, short }: { by: string; overdue: boolean; short
     <div className={overdue ? 'alert alert-error' : 'alert alert-info'} role="status">
       {overdue
         ? t(
-            'Rollenverwaltung, vollständige Exporte und das Buchen in der Kasse ruhen, bis du die Zwei-Faktor-Anmeldung einrichtest. ',
+            'Mitgliederdaten, Protokoll, Rollenverwaltung, vollständige Exporte und das Buchen in der Kasse ruhen, bis du die Zwei-Faktor-Anmeldung einrichtest. ',
           )
         : t(
-            'Für deine Rechte (Rollen, Exporte oder Kasse) brauchst du ab dem {date} die Zwei-Faktor-Anmeldung. ',
+            'Für deine Rechte (Mitglieder, Protokoll, Rollen, Exporte oder Kasse) brauchst du ab dem {date} die Zwei-Faktor-Anmeldung. ',
             { date },
           )}
       <NavLink to="/mein-konto/anmeldung">{t('Jetzt einrichten')}</NavLink>
