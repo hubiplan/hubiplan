@@ -588,6 +588,52 @@ describe('Mitgliedsakte', () => {
     })
   })
 
+  it('Rechnungsanschrift festlegen', async () => {
+    const billingOrg = testOrg({
+      permissions: ['members.view', 'members.edit'],
+      modules: ['members', 'billing'],
+    })
+    const address = {
+      name: 'Musterbau Holding AG',
+      attention: 'Buchhaltung',
+      street: 'Postfach 10 20 30',
+      postal_code: '54321',
+      city: 'Beispielstadt',
+      country: '',
+      email: 'rechnung@musterbau.example',
+      order_reference: '',
+      leitweg_id: '991-12345-67',
+    }
+    const calls = fakeApi({
+      ...common(),
+      'GET /api/me/organizations/': () => ({ status: 200, body: [billingOrg] }),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: { ...detail, billing_address: null },
+      }),
+      [`PUT ${base}/members/11/billing-address/`]: () => ({
+        status: 200,
+        body: { ...detail, billing_address: address },
+      }),
+    })
+    renderAt('/mitglieder/11')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Rechnungsanschrift festlegen' }))
+    const section = screen.getByRole('region', { name: 'Rechnungsanschrift' })
+    await user.type(within(section).getByLabelText(/^Straße oder Postfach/), address.street)
+    await user.type(within(section).getByLabelText(/^PLZ/), address.postal_code)
+    await user.type(within(section).getByLabelText(/^Ort/), address.city)
+    await user.type(within(section).getByLabelText(/^Leitweg-ID/), address.leitweg_id)
+    await user.click(within(section).getByRole('button', { name: 'Speichern' }))
+    expect(await screen.findByText(/Leitweg-ID: 991-12345-67/)).toBeInTheDocument()
+    const put = calls.find((c) => c.key === `PUT ${base}/members/11/billing-address/`)
+    expect(JSON.parse(String(put?.init?.body))).toMatchObject({
+      street: 'Postfach 10 20 30',
+      city: 'Beispielstadt',
+      leitweg_id: '991-12345-67',
+    })
+  })
+
   it('nennt den Namen des Dachverbands nur einmal', async () => {
     fakeApi({
       ...common(),

@@ -124,6 +124,11 @@ def invoice_story(
     membership = visible_membership(invoice)
     if membership is not None and membership.club_number:
         meta.append(("Mitgliedsnr.", membership.club_number))
+    # Angaben des Empfängers, z. B. für Behörden und Firmen (J3)
+    if invoice.order_reference:
+        meta.append(("Bestellnr.", invoice.order_reference))
+    if invoice.leitweg_id:
+        meta.append(("Leitweg-ID", invoice.leitweg_id))
     meta += _contact_rows(data)
     if cfg.tax_number:
         meta.append(("Steuernummer", cfg.tax_number))

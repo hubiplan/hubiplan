@@ -312,10 +312,24 @@ export type ContactPersonInput = Partial<
   Omit<ContactPerson, 'id' | 'linked_member' | 'display_name' | 'contact_email' | 'contact_phone'>
 > & { member?: number | null }
 
+/** Abweichende Rechnungsanschrift und Rechnungsangaben (alle Mitglieder) */
+export interface BillingAddress {
+  name: string
+  attention: string
+  street: string
+  postal_code: string
+  city: string
+  country: string
+  email: string
+  order_reference: string
+  leitweg_id: string
+}
+
 export interface MemberDetail {
   id: number
   person_id: number
   kind?: MemberKind
+  billing_address?: BillingAddress | null
   /** nur bei Organisationen */
   contact_persons?: ContactPerson[]
   /** Organisationen, für die diese Person Ansprechpartner ist */
@@ -496,6 +510,10 @@ export const memberApi = {
     api.post<MemberDetail>(`${base(org)}/members/admit/`, data, requestKey),
 
   detail: (org: number, id: number) => api.get<MemberDetail>(`${base(org)}/members/${id}/`),
+  setBillingAddress: (org: number, id: number, data: Partial<BillingAddress>) =>
+    api.put<MemberDetail>(`${base(org)}/members/${id}/billing-address/`, data),
+  removeBillingAddress: (org: number, id: number) =>
+    api.del(`${base(org)}/members/${id}/billing-address/`) as Promise<MemberDetail>,
   contacts: (org: number, id: number) =>
     api.get<ContactPerson[]>(`${base(org)}/members/${id}/contacts/`),
   addContact: (org: number, id: number, data: ContactPersonInput) =>

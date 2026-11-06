@@ -23,6 +23,7 @@ PLACEHOLDERS: dict[str, str] = {
     "Anrede Du": "„Lieber …“ / „Liebe …“ mit Vorname (sonst „Hallo …“)",
     "Abteilung": "Abteilung(en) des Mitglieds",
     "Verein": "Verein des Empfängers",
+    "Organisation": "Name der Organisation bei Organisationsmitgliedern (sonst leer)",
     "Mitgliedsjahre": "volle Jahre im Verein",
     "Jubiläumsjahre": "Jubiläum im gewählten Jahr (nur mit Auswahl „Jubilare“)",
 }

@@ -8474,3 +8474,8 @@ msgstr "This person is already a contact person here."
 
 msgid "Ansprechpartner gibt es nur bei Organisationsmitgliedern."
 msgstr "Only organisation members have contact persons."
+
+msgid ""
+"Für eine eigene Rechnungsanschrift bitte Straße (oder Postfach) und Ort "
+"angeben."
+msgstr "For a separate billing address, please enter street (or PO box) and town."

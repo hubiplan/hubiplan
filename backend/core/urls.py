@@ -291,6 +291,11 @@ org_patterns = [
     path("members/admit/", member_views.AdmitView.as_view(), name="member-admit"),
     path("members/<int:pk>/", member_views.MemberDetailView.as_view(), name="member-detail"),
     path(
+        "members/<int:pk>/billing-address/",
+        member_views.BillingAddressView.as_view(),
+        name="member-billing-address",
+    ),
+    path(
         "members/<int:pk>/federation/",
         member_views.FederationEntryView.as_view(),
         name="member-federation",

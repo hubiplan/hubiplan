@@ -26,6 +26,7 @@ import { SuggestCorrection } from './FederationMembersPage.tsx'
 import { FieldsTab } from './FieldsTab.tsx'
 import { PhotoSection } from './PhotoSection.tsx'
 import { ContactPersons } from './ContactPersons.tsx'
+import { BillingAddressSection } from './BillingAddressSection.tsx'
 import { PublicationSection } from './PublicationSection.tsx'
 import { HonoraryAwards } from './HonoraryAwards.tsx'
 import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
@@ -143,6 +144,15 @@ export function MemberFilePage() {
               contacts={data.contact_persons ?? []}
               canEdit={canEdit}
               onChange={() => void reload()}
+            />
+          )}
+          {org.modules.includes('billing') && (
+            <BillingAddressSection
+              key={`rechnung-${data.id}`}
+              orgId={org.id}
+              member={data}
+              canEdit={canEdit && !data.managed_by}
+              onSaved={setData}
             />
           )}
           {(data.contact_for ?? []).length > 0 && (
