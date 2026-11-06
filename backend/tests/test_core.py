@@ -51,3 +51,11 @@ def test_benutzer_mit_email(django_user_model):
     assert str(user) == "a@example.org"
     admin = django_user_model.objects.create_superuser(email="admin@example.org", password="x")
     assert admin.is_staff and admin.is_superuser
+
+
+@pytest.mark.django_db
+def test_health_von_aussen_ohne_einzelheiten(client):
+    """Gesamtaudit 05.11. GA-15: über Caddy nur der Gesamtzustand."""
+    response = client.get("/api/health/", HTTP_X_FORWARDED_FOR="198.51.100.7")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}

@@ -49,9 +49,33 @@ def resolve(host: str, port: int, *, allow_internal: bool = False) -> str:
         raise SafeHTTPError(gettext("{host} ist nicht auflösbar.").format(host=host))
     if not allow_internal:
         for address in addresses:
-            if not ipaddress.ip_address(address).is_global:
+            if not is_public(address):
                 raise BlockedAddress(f"{host} zeigt auf eine interne Adresse.")
     return addresses[0]
+
+
+# Präfixe, hinter denen eine IPv4-Adresse steckt (NAT64 nach RFC 6052/8215)
+_NAT64 = (ipaddress.ip_network("64:ff9b::/96"), ipaddress.ip_network("64:ff9b:1::/48"))
+
+
+def is_public(address: str) -> bool:
+    """Öffentlich erreichbar, auch nach Übersetzung: IPv6-Adressen, die eine IPv4-Adresse
+    tragen (NAT64, 6to4, Teredo, IPv4-mapped), zählen nur, wenn diese öffentlich ist
+    (Gesamtaudit 05.11. GA-13)."""
+    ip = ipaddress.ip_address(address)
+    if isinstance(ip, ipaddress.IPv6Address):
+        embedded = []
+        if ip.ipv4_mapped:
+            embedded.append(ip.ipv4_mapped)
+        if ip.sixtofour:
+            embedded.append(ip.sixtofour)
+        if ip.teredo:
+            embedded.append(ip.teredo[1])
+        if any(ip in net for net in _NAT64):
+            embedded.append(ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF))
+        if embedded:
+            return all(v4.is_global for v4 in embedded)
+    return ip.is_global
 
 
 class _PinnedHTTPS(http.client.HTTPSConnection):

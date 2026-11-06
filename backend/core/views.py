@@ -34,9 +34,12 @@ def health(request: Request) -> Response:
 
     keys = "ok" if crypto.ready() else "fehler"
     ok = db == "ok" and keys == "ok"
-    return Response(
-        {"status": "ok" if ok else "fehler", "database": db, "keys": keys}, 200 if ok else 503
-    )
+    data = {"status": "ok" if ok else "fehler"}
+    # Einzelheiten nur für Prüfungen im Container (Docker, Ausrollen); von außen kommt jede
+    # Anfrage über Caddy und trägt X-Forwarded-For (Gesamtaudit 05.11. GA-15).
+    if not request.META.get("HTTP_X_FORWARDED_FOR"):
+        data.update(database=db, keys=keys)
+    return Response(data, 200 if ok else 503)
 
 
 @extend_schema(responses=inline_serializer("Csrf", {"csrfToken": serializers.CharField()}))
