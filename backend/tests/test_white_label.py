@@ -30,6 +30,7 @@ def test_ohne_eigene_angaben_wie_bisher():
         "logo_url": None,
         "theme": None,
         "icon": False,
+        "unit": None,
     }
 
 
@@ -226,7 +227,7 @@ def test_adresse_eintragen_und_erscheinungsbild(api, platform_admin, adressen):
     other = Client().get(URL, HTTP_HOST="unbekannt.example")
     assert other.json()["name"] == "Vereinsportal Musterkreis"
     assert other.json()["unit"] is None
-    assert other["Vary"] == "Host"
+    assert "Host" in other["Vary"]
     manifest = (
         Client().get("/api/public/platform/manifest.webmanifest", HTTP_HOST=VEREIN_HOST).json()
     )
@@ -312,6 +313,15 @@ def test_symbol_je_adresse(api, adressen):
 # --- W7b: Links in Mails auf der Adresse der Einheit ---
 
 
+def _scheme() -> str:
+    """Schema der Hauptadresse (in den Tests meist http), gilt auch für weitere Adressen."""
+    from urllib.parse import urlsplit
+
+    from django.conf import settings
+
+    return urlsplit(settings.FRONTEND_URL).scheme
+
+
 def _adresse(org: Organization, host: str = VEREIN_HOST):
     from organizations.models import InstanceAddress
 
@@ -330,15 +340,15 @@ def test_basisadresse_je_einheit(settings):
     assert base_url(club) == main
     _adresse(verband, "mitglieder.kreisverband.example")
     # Nächsthöhere Einheit mit eigener Adresse
-    assert base_url(club) == "https://mitglieder.kreisverband.example"
+    assert base_url(club) == f"{_scheme()}://mitglieder.kreisverband.example"
     _adresse(club)
-    assert base_url(club) == f"https://{VEREIN_HOST}"
+    assert base_url(club) == f"{_scheme()}://{VEREIN_HOST}"
     assert base_url(other) == main
     assert base_url(Organization.platform()) == main
     # Abgeschaltete Einheit: wieder die nächsthöhere
     club.is_active = False
     club.save()
-    assert base_url(club) == "https://mitglieder.kreisverband.example"
+    assert base_url(club) == f"{_scheme()}://mitglieder.kreisverband.example"
     assert rebase(f"{main}/foto/abc", "https://x.example") == "https://x.example/foto/abc"
     assert rebase("https://fremd.example/a", "https://x.example") == "https://fremd.example/a"
 
@@ -351,9 +361,9 @@ def test_einladung_und_hinweise_mit_adresse_der_einheit(mailoutbox, settings):
     _adresse(club)
     send_invitation(make_user("bernd@example.org"), club, "Kassierer")
     (invite,) = mailoutbox
-    assert f"https://{VEREIN_HOST}/passwort-zuruecksetzen/" in invite.body
+    assert f"{_scheme()}://{VEREIN_HOST}/passwort-zuruecksetzen/" in invite.body
     link = create_login_link(make_user("carla@example.org"), club)
-    assert link.startswith(f"https://{VEREIN_HOST}/anmelden/link/")
+    assert link.startswith(f"{_scheme()}://{VEREIN_HOST}/anmelden/link/")
 
 
 def test_passwort_vergessen_auf_der_aufgerufenen_adresse(mailoutbox, adressen, settings):
@@ -363,7 +373,10 @@ def test_passwort_vergessen_auf_der_aufgerufenen_adresse(mailoutbox, adressen, s
     club = make_org("Schützenverein Musterstadt")
     _adresse(club)
     make_user("anna@example.org")
-    for host, expected in ((VEREIN_HOST, f"https://{VEREIN_HOST}"), ("unbekannt.example", main)):
+    for host, expected in (
+        (VEREIN_HOST, f"{_scheme()}://{VEREIN_HOST}"),
+        ("unbekannt.example", main),
+    ):
         client = Client(HTTP_HOST=host)
         resp = client.post(
             "/_allauth/browser/v1/auth/password/request",

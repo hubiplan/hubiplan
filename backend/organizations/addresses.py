@@ -11,6 +11,9 @@ from __future__ import annotations
 import re
 
 from django.utils.translation import gettext
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
 
 from .models import InstanceAddress, Organization
 
@@ -164,13 +167,22 @@ class HostMiddleware:
         return self.get_response(request)
 
 
-def tls_ask(request):
+class TlsAskView(APIView):
     """Caddy fragt vor einem Zertifikat nach (on_demand_tls ask): 200 nur für eingetragene
     Adressen. Von außen gesperrt (deploy/caddy/site.caddy)."""
-    from django.conf import settings
-    from django.http import HttpResponse, HttpResponseNotFound
 
-    domain = normalize_host(request.GET.get("domain", ""))
-    if not getattr(settings, "ADDRESSES_FROM_LIST", False) or domain not in listed_hosts():
-        return HttpResponseNotFound()
-    return HttpResponse("ok", content_type="text/plain")
+    permission_classes = [AllowAny]
+    authentication_classes: list = []
+
+    @extend_schema(
+        parameters=[OpenApiParameter("domain", str, description="Angefragter Hostname")],
+        responses={(200, "text/plain"): str, 404: None},
+    )
+    def get(self, request):
+        from django.conf import settings
+        from django.http import HttpResponse, HttpResponseNotFound
+
+        domain = normalize_host(request.GET.get("domain", ""))
+        if not getattr(settings, "ADDRESSES_FROM_LIST", False) or domain not in listed_hosts():
+            return HttpResponseNotFound()
+        return HttpResponse("ok", content_type="text/plain")
