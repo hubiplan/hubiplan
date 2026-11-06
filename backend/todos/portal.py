@@ -403,10 +403,9 @@ def member_notice(todo_id, access_id):
 
 
 def _member_notice(todo_id, access):
-    from django.conf import settings
-
     from core.i18n import language_of, user_language
     from devices.push import send_to_user
+    from organizations.addresses import base_url
     from outbox import mail
 
     from .models import TodoPreference
@@ -422,7 +421,7 @@ def _member_notice(todo_id, access):
     pref, _ = TodoPreference.objects.get_or_create(user=access.user)
     with language_of(access.user):
         title = gettext("Neue Aufgabe: {title}").format(title=todo.title)
-        link = f"{settings.FRONTEND_URL}/mein-bereich/aufgaben?zugang={access_id}&aufgabe={todo_id}"
+        link = f"{base_url(scope.org)}/mein-bereich/aufgaben?zugang={access_id}&aufgabe={todo_id}"
         if pref.share_mail:
             mail.send(
                 access.user.email,

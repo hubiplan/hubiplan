@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -24,6 +23,7 @@ def decision(booking, actor) -> None:
 
     def send():
         from core.i18n import language_of, user_language
+        from organizations.addresses import base_url
         from outbox import mail
 
         with language_of(user):
@@ -33,7 +33,7 @@ def decision(booking, actor) -> None:
                 [
                     subject,
                     f"{item_title} · {when}",
-                    f"{settings.FRONTEND_URL}/mein-bereich/belegung",
+                    f"{base_url(org)}/mein-bereich/belegung",
                 ]
             )
             mail.send(

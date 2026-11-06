@@ -23,6 +23,7 @@ from changes import idempotency
 from core.api_base import OrgScopedMixin
 from core.i18n import language_of
 from core.tenancy import rls_bypass, tenant_context
+from organizations.addresses import base_url
 from organizations.imprint import ensure as ensure_imprint
 from outbox import mail
 
@@ -51,7 +52,7 @@ def access_token(access):
 
 
 def access_url(access):
-    return f"{settings.FRONTEND_URL.rstrip('/')}/musik-gast#{access_token(access)}"
+    return f"{base_url(access.organization)}/musik-gast#{access_token(access)}"
 
 
 def eligible(row):

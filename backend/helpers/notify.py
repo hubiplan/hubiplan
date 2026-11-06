@@ -9,12 +9,12 @@ from __future__ import annotations
 import datetime
 import logging
 
-from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from core.i18n import date_text, language_of_org
 from core.tenancy import rls_bypass
+from organizations.addresses import base_url
 from outbox import mail
 
 from .models import HelperPlan, ShiftAssignment
@@ -67,7 +67,7 @@ def text(assignment: ShiftAssignment) -> tuple[str, str]:
     lines += [
         "",
         _("Deine Dienste siehst du im Mitgliederbereich: {url}").format(
-            url=f"{settings.FRONTEND_URL}/mein-bereich/helferdienste"
+            url=f"{base_url(plan.organization)}/mein-bereich/helferdienste"
         ),
         "",
         plan.organization.name,

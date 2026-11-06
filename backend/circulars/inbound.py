@@ -46,6 +46,7 @@ from rest_framework import serializers
 from access.catalog import CIRCULARS_SEND, DEPT_CIRCULARS_SEND
 from core import virenscan
 from core.tenancy import rls_bypass
+from organizations.addresses import base_url
 from outbox import mail
 from outbox.backend import ORG_HEADER
 
@@ -658,7 +659,7 @@ def confirm_token(entry: InboundMail) -> str:
 
 
 def confirm_url(entry: InboundMail) -> str:
-    return f"{settings.FRONTEND_URL}/rundschreiben/bestaetigen/{confirm_token(entry)}"
+    return f"{base_url(entry.organization)}/rundschreiben/bestaetigen/{confirm_token(entry)}"
 
 
 def entry_from_token(token: str) -> InboundMail | None:
@@ -769,7 +770,8 @@ def notify_draft(entry: InboundMail, skipped: list[str]) -> None:
         f"Hallo,\n\ndeine Mail „{entry.subject}“ an den Verteiler {ml.name} "
         f"({address_of(ml)}) liegt als Entwurf in HUBIplan unter Rundschreiben.\n\n"
         f"Empfänger: {_counts_text(entry.circular)}.\n\n"
-        f"Versendet wird erst dort: {settings.FRONTEND_URL}/rundschreiben/{entry.circular_id}"
+        f"Versendet wird erst dort: "
+        f"{base_url(entry.organization)}/rundschreiben/{entry.circular_id}"
         f"{_skipped_text(skipped)}\n"
     )
     _send(entry, f"Als Entwurf abgelegt: {entry.subject}"[:300], body)
@@ -796,7 +798,7 @@ def notify_moderators(entry: InboundMail, reason: str) -> None:
         f"({address_of(ml)}) wartet auf Freigabe.\n\n"
         f"Betreff: {entry.subject}\n{reason}\n\n"
         f"Ansehen und versenden oder löschen: "
-        f"{settings.FRONTEND_URL}/rundschreiben/{entry.circular_id}\n"
+        f"{base_url(entry.organization)}/rundschreiben/{entry.circular_id}\n"
     )
     for user in moderators(ml):
         mail.send(
@@ -817,7 +819,7 @@ def notify_sent(entry: InboundMail, skipped: list[str]) -> None:
         f"({address_of(ml)}) wird jetzt versendet.\n\n"
         f"Empfänger: {_counts_text(entry.circular)}.\n\n"
         f"Stand und Briefe in HUBIplan: "
-        f"{settings.FRONTEND_URL}/rundschreiben/{entry.circular_id}\n\n"
+        f"{base_url(entry.organization)}/rundschreiben/{entry.circular_id}\n\n"
         "Hast du die Mail nicht geschickt, melde dich bitte sofort beim Vorstand."
         f"{_skipped_text(skipped)}\n"
     )

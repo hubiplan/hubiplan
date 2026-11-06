@@ -307,3 +307,69 @@ def test_symbol_je_adresse(api, adressen):
     assert theme["addresses"] == [VEREIN_HOST]
     # Auf der Hauptadresse bleibt es beim (fehlenden) Symbol der Instanz
     assert Client().get("/api/public/platform/icon-192.png").status_code == 404
+
+
+# --- W7b: Links in Mails auf der Adresse der Einheit ---
+
+
+def _adresse(org: Organization, host: str = VEREIN_HOST):
+    from organizations.models import InstanceAddress
+
+    return InstanceAddress.objects.create(hostname=host, organization=org)
+
+
+def test_basisadresse_je_einheit(settings):
+    from organizations.addresses import base_url, rebase
+
+    main = settings.FRONTEND_URL.rstrip("/")
+    verband = make_org("Kreisverband Musterkreis", type_="federation")
+    club = make_org("Schützenverein Musterstadt", parent=verband)
+    other = make_org("Musikverein Musterdorf")
+    # Ohne eingetragene Adresse: Hauptadresse
+    assert base_url() == main
+    assert base_url(club) == main
+    _adresse(verband, "mitglieder.kreisverband.example")
+    # Nächsthöhere Einheit mit eigener Adresse
+    assert base_url(club) == "https://mitglieder.kreisverband.example"
+    _adresse(club)
+    assert base_url(club) == f"https://{VEREIN_HOST}"
+    assert base_url(other) == main
+    assert base_url(Organization.platform()) == main
+    # Abgeschaltete Einheit: wieder die nächsthöhere
+    club.is_active = False
+    club.save()
+    assert base_url(club) == "https://mitglieder.kreisverband.example"
+    assert rebase(f"{main}/foto/abc", "https://x.example") == "https://x.example/foto/abc"
+    assert rebase("https://fremd.example/a", "https://x.example") == "https://fremd.example/a"
+
+
+def test_einladung_und_hinweise_mit_adresse_der_einheit(mailoutbox, settings):
+    from accounts.invitations import send_invitation
+    from portal.services import create_login_link
+
+    club = make_org("Schützenverein Musterstadt")
+    _adresse(club)
+    send_invitation(make_user("bernd@example.org"), club, "Kassierer")
+    (invite,) = mailoutbox
+    assert f"https://{VEREIN_HOST}/passwort-zuruecksetzen/" in invite.body
+    link = create_login_link(make_user("carla@example.org"), club)
+    assert link.startswith(f"https://{VEREIN_HOST}/anmelden/link/")
+
+
+def test_passwort_vergessen_auf_der_aufgerufenen_adresse(mailoutbox, adressen, settings):
+    from .conftest import csrf_headers
+
+    main = settings.FRONTEND_URL.rstrip("/")
+    club = make_org("Schützenverein Musterstadt")
+    _adresse(club)
+    make_user("anna@example.org")
+    for host, expected in ((VEREIN_HOST, f"https://{VEREIN_HOST}"), ("unbekannt.example", main)):
+        client = Client(HTTP_HOST=host)
+        resp = client.post(
+            "/_allauth/browser/v1/auth/password/request",
+            {"email": "anna@example.org"},
+            content_type="application/json",
+            headers=csrf_headers(client),
+        )
+        assert resp.status_code == 200, resp.content
+        assert f"{expected}/passwort-zuruecksetzen/" in mailoutbox[-1].body
