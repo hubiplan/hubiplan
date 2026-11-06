@@ -23,7 +23,13 @@ def platform() -> Organization:
 def test_ohne_eigene_angaben_wie_bisher():
     platform()
     data = Client().get(URL).json()
-    assert data == {"name": "HUBIplan", "short_name": "", "logo_url": None, "theme": None}
+    assert data == {
+        "name": "HUBIplan",
+        "short_name": "",
+        "logo_url": None,
+        "theme": None,
+        "icon": False,
+    }
 
 
 def test_ohne_plattform_einheit_legt_nichts_an():
