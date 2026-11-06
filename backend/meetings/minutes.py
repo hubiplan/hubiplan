@@ -61,12 +61,19 @@ def _attendance_line(meeting: Meeting) -> str:
     if not records:
         return ""
     voters = [r for r in records if r.voter]
-    present = sum(1 for r in voters if r.status == "present")
+    present = sum(1 for r in voters if r.status in ("present", "delegate"))
     represented = sum(1 for r in voters if r.status == "represented")
     guests = sum(1 for r in records if not r.voter and r.status == "present")
     line = _(
         "{present} Stimmberechtigte anwesend, {represented} vertreten, {guests} Gäste."
     ).format(present=present, represented=represented, guests=guests)
+    delegates = [
+        f"{r.name} ({r.delegate_name})"
+        for r in voters
+        if r.status == "delegate" and r.delegate_name
+    ]
+    if delegates:
+        line += " " + _("Durch Vertreter anwesend: {x}.").format(x=", ".join(delegates))
     from .services import voters as eligible
 
     q = quorum(meeting, eligible(meeting).count(), present + represented)

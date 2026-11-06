@@ -10,6 +10,8 @@ Verein bzw. Abteilung (aktuelle Mitglieder):
 - ``roles``         Inhaber dieser Abteilungsrollen
 - ``board``         nur Mitglieder mit einer Vorstandsrolle des Vereins
 - ``age_min``/``age_max``  Alter heute
+- ``organizations_any_age``  Organisationsmitglieder (ohne Alter) bleiben trotz Altersfilter
+  (Einladung zur Versammlung, J4)
 - ``jubilee_year``  Jubilare dieses Jahres (Verein oder Dachverband)
 - ``honorary_titles``  Inhaber dieser Ehrungen (des Vereins oder des Dachverbands)
 
@@ -233,12 +235,16 @@ def club_filtered(club: Organization, qs, filters: dict):
         # Geburtsdatum verschlüsselt: Alter in Python prüfen
         oldest = years_ago(on, age_max + 1) if age_max is not None else None
         youngest = years_ago(on, age_min) if age_min is not None else None
+        any_age = bool(filters.get("organizations_any_age"))
         keep = [
             pk
-            for pk, birth in qs.values_list("pk", "person__birth_date")
-            if birth is not None
-            and (youngest is None or birth <= youngest)
-            and (oldest is None or birth > oldest)
+            for pk, birth, kind in qs.values_list("pk", "person__birth_date", "person__kind")
+            if (any_age and kind == "organization")
+            or (
+                birth is not None
+                and (youngest is None or birth <= youngest)
+                and (oldest is None or birth > oldest)
+            )
         ]
         qs = qs.filter(pk__in=keep)
     year = as_int(filters.get("jubilee_year"))

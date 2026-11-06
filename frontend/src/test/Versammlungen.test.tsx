@@ -84,6 +84,16 @@ const attendance = {
       status: '',
       represented_by: null,
     },
+    {
+      id: null,
+      membership: 34,
+      name: 'Musterbau GmbH',
+      kind: 'organization',
+      voter: true,
+      status: '',
+      represented_by: null,
+      delegates: [{ id: 5, name: 'Erika Muster', function: 'Geschäftsführerin', membership: null }],
+    },
   ],
 }
 
@@ -195,6 +205,26 @@ describe('Versammlungen', () => {
     expect(await screen.findByText('Beschlussfähig: 2 Stimmen, nötig sind 2.')).toBeInTheDocument()
     const call = api.find((c) => c.key === 'POST /api/orgs/7/meetings/5/attendance/')!
     expect(JSON.parse(String(call.init?.body))).toMatchObject({ membership: 32, status: 'present' })
+  })
+
+  it('Organisation ist durch Vertreter anwesend', async () => {
+    const api = show(
+      ['meetings.view', 'meetings.edit', 'members.view'],
+      '/versammlungen?versammlung=5',
+    )
+    const firma = await screen.findByRole('group', { name: 'Musterbau GmbH' })
+    expect(within(firma).queryByRole('button', { name: 'Anwesend' })).not.toBeInTheDocument()
+    fireEvent.click(within(firma).getByRole('button', { name: 'Durch Vertreter' }))
+    fireEvent.change(await screen.findByLabelText('Vertreter'), { target: { value: '5' } })
+    await waitFor(() =>
+      expect(api.find((c) => c.key === 'POST /api/orgs/7/meetings/5/attendance/')).toBeTruthy(),
+    )
+    const call = api.find((c) => c.key === 'POST /api/orgs/7/meetings/5/attendance/')!
+    expect(JSON.parse(String(call.init?.body))).toMatchObject({
+      membership: 34,
+      status: 'delegate',
+      delegate: 5,
+    })
   })
 
   it('schreibt das Protokoll mit Beschluss', async () => {

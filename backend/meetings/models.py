@@ -223,6 +223,8 @@ class Attendance(models.Model):
         PRESENT = "present", _("anwesend")
         EXCUSED = "excused", _("entschuldigt")
         REPRESENTED = "represented", _("vertreten")
+        # Organisationsmitglied, anwesend durch seinen Vertreter (J4)
+        DELEGATE = "delegate", _("durch Vertreter")
 
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="attendance")
@@ -234,6 +236,14 @@ class Attendance(models.Model):
     voter = models.BooleanField(default=False)
     represented_by = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.SET_NULL, related_name="proxies"
+    )
+    # Vertreter eines Organisationsmitglieds, beim Eintragen festgehalten (J4); ist er
+    # selbst Mitglied, steht seine Mitgliedschaft dabei (Hinweis „vertritt zusätzlich“)
+    delegate_name = EncryptedCharField(
+        _("Vertreter"), max_length=200, blank=True, default="", db_default=""
+    )
+    delegate_membership = models.ForeignKey(
+        "members.Membership", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     recorded_at = models.DateTimeField(auto_now=True)
 

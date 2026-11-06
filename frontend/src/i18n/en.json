@@ -6905,5 +6905,11 @@
   "Rechnungs-E-Mail": "Billing email",
   "Bestellnummer": "Purchase order number",
   "Leitweg-ID": "Leitweg-ID",
-  "für Rechnungen an Behörden": "for invoices to public authorities"
+  "für Rechnungen an Behörden": "for invoices to public authorities",
+  "Durch Vertreter": "By representative",
+  "Vertreter": "Representative",
+  "Oder anderer Vertreter": "Or another representative",
+  "Name des Vertreters": "Name of representative",
+  "anwesend durch {name}": "present through {name}",
+  "vertritt zusätzlich: {x}": "also represents: {x}"
 }

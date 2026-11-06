@@ -490,7 +490,39 @@ def require_members(scope) -> None:
 
 def person_name(membership) -> str:
     person = membership.person
+    if person.is_organization:
+        return person.display_name
     return f"{person.first_name} {person.last_name}".strip()
+
+
+def delegates_of(memberships, org) -> dict[int, list[dict]]:
+    """Ansprechpartner mit „vertritt in Versammlungen“ je Organisationsmitglied (J4)."""
+    from members.models import ContactPerson, Membership
+
+    ids = [m.pk for m in memberships if m.person.is_organization]
+    if not ids:
+        return {}
+    contacts = (
+        ContactPerson.objects.filter(membership_id__in=ids, represents=True)
+        .select_related("person")
+        .order_by("-is_primary", "pk")
+    )
+    linked = dict(
+        Membership.objects.filter(
+            organization=org, person_id__in=[c.person_id for c in contacts if c.person_id]
+        ).values_list("person_id", "pk")
+    )
+    result: dict[int, list[dict]] = {}
+    for c in contacts:
+        result.setdefault(c.membership_id, []).append(
+            {
+                "id": c.pk,
+                "name": c.display_name,
+                "function": c.function,
+                "membership": linked.get(c.person_id) if c.person_id else None,
+            }
+        )
+    return result
 
 
 def attendance_data(meeting, scope):
@@ -500,6 +532,12 @@ def attendance_data(meeting, scope):
     voter_ids = {m.pk for m in eligible}
     records = list(meeting.attendance.select_related("represented_by"))
     by_member = {r.membership_id: r for r in records if r.membership_id}
+    delegates = delegates_of(eligible, meeting.organization)
+    # Wer ein Organisationsmitglied vertritt und selbst Mitglied ist (Hinweis, kein Verbot)
+    also: dict[int, list[str]] = {}
+    for r in records:
+        if r.status == Attendance.Status.DELEGATE and r.delegate_membership_id:
+            also.setdefault(r.delegate_membership_id, []).append(r.name)
     rows = []
     for m in eligible:
         r = by_member.get(m.pk)
@@ -508,9 +546,13 @@ def attendance_data(meeting, scope):
                 "id": r.pk if r else None,
                 "membership": m.pk,
                 "name": person_name(m),
+                "kind": m.person.kind,
                 "voter": True,
                 "status": r.status if r else "",
                 "represented_by": r.represented_by_id if r else None,
+                "delegate_name": r.delegate_name if r else "",
+                "delegates": delegates.get(m.pk, []),
+                "also_represents": also.get(m.pk, []),
             }
         )
     others = [r for r in records if r.membership_id not in voter_ids]
@@ -521,12 +563,19 @@ def attendance_data(meeting, scope):
                 "id": r.pk,
                 "membership": r.membership_id,
                 "name": r.name,
+                "kind": "",
                 "voter": False,
                 "status": r.status,
                 "represented_by": r.represented_by_id,
+                "delegate_name": r.delegate_name,
+                "delegates": [],
+                "also_represents": also.get(r.membership_id, []) if r.membership_id else [],
             }
         )
-    present = sum(1 for r in records if r.membership_id in voter_ids and r.status == "present")
+    # Anwesend durch Vertreter zählt wie anwesend (eine Stimme je Organisation)
+    present = sum(
+        1 for r in records if r.membership_id in voter_ids and r.status in ("present", "delegate")
+    )
     represented = sum(
         1 for r in records if r.membership_id in voter_ids and r.status == "represented"
     )
@@ -548,6 +597,40 @@ class AttendanceInput(serializers.Serializer):
     name = serializers.CharField(max_length=200, required=False, allow_blank=True)
     status = serializers.ChoiceField(choices=Attendance.Status.choices)
     represented_by = serializers.IntegerField(min_value=1, required=False, allow_null=True)
+    # Vertreter eines Organisationsmitglieds: Ansprechpartner oder freier Name (J4)
+    delegate = serializers.IntegerField(min_value=1, required=False, allow_null=True)
+    delegate_name = serializers.CharField(max_length=200, required=False, allow_blank=True)
+
+
+def set_delegate(record_, data, org) -> None:
+    """Vertreter eines Organisationsmitglieds festhalten: ein Ansprechpartner mit „vertritt
+    in Versammlungen“ oder ein frei eingegebener Name. Keine Vollmacht, geht auch, wenn die
+    Art keine Vollmachten erlaubt (J4)."""
+    from members.models import ContactPerson, Membership
+
+    membership = record_.membership
+    if membership is None or not membership.person.is_organization:
+        raise ValidationError(
+            {"status": _("„Durch Vertreter“ gibt es nur bei Organisationsmitgliedern.")}
+        )
+    if data.get("delegate"):
+        contact = (
+            ContactPerson.objects.filter(membership=membership, pk=data["delegate"])
+            .select_related("person")
+            .first()
+        )
+        if contact is None:
+            raise ValidationError({"delegate": _("Unbekannter Ansprechpartner.")})
+        record_.delegate_name = contact.display_name
+        if contact.person_id:
+            record_.delegate_membership = Membership.objects.filter(
+                organization=org, person_id=contact.person_id
+            ).first()
+        return
+    name = (data.get("delegate_name") or "").strip()
+    if not name:
+        raise ValidationError({"delegate_name": _("Bitte den Vertreter angeben.")})
+    record_.delegate_name = name
 
 
 class AttendanceView(Base):
@@ -594,6 +677,10 @@ class AttendanceView(Base):
             record_ = Attendance(organization=self.scope.org, meeting=meeting, name=name)
         record_.status = data["status"]
         record_.represented_by = None
+        record_.delegate_name = ""
+        record_.delegate_membership = None
+        if record_.status == Attendance.Status.DELEGATE:
+            set_delegate(record_, data, self.scope.org)
         if record_.status == Attendance.Status.REPRESENTED:
             if not meeting.kind.proxies_allowed:
                 raise ValidationError(
