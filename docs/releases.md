@@ -51,7 +51,9 @@ Wann ein Release kommt, entscheidet der Betreuer. Ablauf im Klon (in WSL):
 3. Entwurf lesen und glätten, als PR „Release 2026.11.0“ mergen, und zwar per **Squash**
    (ein einzelner Commit, sonst erkennt Schritt 4 ihn nicht als reinen Changelog-Commit).
 4. `scripts/test.sh <Merge-Commit>`: Ändert der Commit gegenüber dem getesteten Vorgänger
-   nur die beiden Changelogs, gilt er sofort als getestet (kein neuer Testlauf).
+   nur die beiden Changelogs, gilt er sofort als getestet (kein neuer Testlauf). Den
+   Vorgänger vorher einmal mit `TEST_ALLES=1 scripts/test.sh <Vorgänger>` vollständig
+   prüfen, auch die sonst ausgelassenen Teile (docs/testserver.md, „Nur geänderte Teile“).
 5. Auf den Testserver ausrollen wie immer.
 6. `scripts/release.sh taggen` prüft:
    - der Stand ist lokal getestet,

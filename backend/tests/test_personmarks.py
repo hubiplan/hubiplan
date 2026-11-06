@@ -360,6 +360,7 @@ class TestPersonMarks:
 
 @pytest.mark.langsam
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.migration
 def test_migration_bestand_und_rueckweg(orgs):
     with rls_bypass():
         a = person(orgs["c"])
