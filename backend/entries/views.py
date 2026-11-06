@@ -37,6 +37,7 @@ from core.tenancy import scope_of, set_rls
 from members.models import Membership
 from members.personsearch import filter_names, ordered
 from organizations.models import Department, Organization
+from organizations.platform_public import instance_name
 
 from . import documents, services
 from .models import Call, CallBlock, Entry, EntryAnswer, EntryPerson, EntryTeam, EntryVersion
@@ -1249,7 +1250,8 @@ class ReturnView(_Mixin, APIView):
                     to,
                     f"Rückfrage zur Meldung: {call.title}",
                     f"zu eurer Meldung für „{call.title}“ gibt es eine Rückfrage:\n\n"
-                    f"{question}\n\nBitte die Meldung in HUBIplan prüfen und erneut abgeben.",
+                    f"{question}\n\nBitte die Meldung in {instance_name()} prüfen "
+                    "und erneut abgeben.",
                 )
             )
         return Response(_entry_detail(self, entry))
@@ -1339,7 +1341,7 @@ class RemindView(_Mixin, APIView):
                     to,
                     f"Erinnerung: Meldung zu {call.title}",
                     f"für „{call.title}“ fehlt noch die Meldung von {dept.name}.{deadline}\n\n"
-                    "Die Ausschreibung steht in HUBIplan unter Meldungen.",
+                    f"Die Ausschreibung steht in {instance_name()} unter Meldungen.",
                 )
             )
         if reminded:
