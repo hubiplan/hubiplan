@@ -53,6 +53,7 @@ from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import help_views, imprint_views, social_views
 from organizations import views as org_views
+from organizations.addresses import TlsAskView
 from organizations.platform_public import (
     PublicManifestView,
     PublicPlatformIconView,
@@ -195,6 +196,7 @@ federation_member_router.register(
 
 platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
+platform_router.register("addresses", org_views.InstanceAddressViewSet, basename="platform-address")
 
 org_patterns = [
     path("music/equipment/", EquipmentView.as_view()),
@@ -269,6 +271,7 @@ org_patterns = [
         name="org-letterhead-publish",
     ),
     path("logo/", org_views.OrganizationLogoView.as_view(), name="org-logo"),
+    path("icon/", org_views.OrganizationIconView.as_view(), name="org-icon"),
     path(
         "departments/<int:pk>/logo/",
         org_views.DepartmentLogoView.as_view(),
@@ -932,6 +935,7 @@ urlpatterns = [
     path("me/language/", language.MyLanguageView.as_view(), name="my-language"),
     path("public/languages/", language.PublicLanguagesView.as_view(), name="public-languages"),
     path("public/platform/", PublicPlatformView.as_view(), name="public-platform"),
+    path("intern/tls/", TlsAskView.as_view(), name="intern-tls-ask"),
     path(
         "public/platform/icon-<str:name>.png",
         PublicPlatformIconView.as_view(),

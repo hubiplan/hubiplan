@@ -53,4 +53,6 @@ class MemberCard(models.Model):
 
     @property
     def url(self) -> str:
-        return f"{settings.FRONTEND_URL}/ausweis/{self.token}"
+        from organizations.addresses import base_url
+
+        return f"{base_url(self.organization)}/ausweis/{self.token}"

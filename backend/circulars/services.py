@@ -17,6 +17,7 @@ from rest_framework import serializers
 
 from core.tenancy import rls_bypass
 from members.personsearch import ordered
+from organizations.addresses import base_url
 from outbox import mail
 
 from . import recipients as rcp
@@ -43,8 +44,8 @@ def opt_out_membership(token: str) -> int | None:
     return data.get("m") if isinstance(data, dict) else None
 
 
-def opt_out_url(membership_id: int) -> str:
-    return f"{settings.FRONTEND_URL}/rundschreiben/abmelden/{opt_out_token(membership_id)}"
+def opt_out_url(membership_id: int, organization=None) -> str:
+    return f"{base_url(organization)}/rundschreiben/abmelden/{opt_out_token(membership_id)}"
 
 
 # --- Absender ---
@@ -122,7 +123,7 @@ def mail_footer(circular: Circular, membership_id: int | None) -> tuple[str, str
     plain: list[str] = []
     html: list[str] = []
     if unsubscribable(circular) and membership_id:
-        url = opt_out_url(membership_id)
+        url = opt_out_url(membership_id, circular.organization)
         plain.append(f"Keine Informationen mehr per E-Mail? Abmelden: {url}")
         html.append(
             f'Keine Informationen mehr per E-Mail? <a href="{escape(url)}">Hier abmelden</a>.'
@@ -145,7 +146,7 @@ def render_mail(circular: Circular, values: dict, membership_id: int | None) -> 
     )
     headers = {}
     if unsubscribable(circular) and membership_id:
-        headers["List-Unsubscribe"] = f"<{opt_out_url(membership_id)}>"
+        headers["List-Unsubscribe"] = f"<{opt_out_url(membership_id, circular.organization)}>"
     return {"subject": subject[:300], "body": plain, "html": html, "headers": headers}
 
 

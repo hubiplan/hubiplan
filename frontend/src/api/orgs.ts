@@ -195,6 +195,19 @@ export interface ThemeSettings {
   extra_colors: ExtraColor[]
   logo_url: string | null
   effective: EffectiveTheme
+  /** eigene Adressen der Einheit (White Label W7) */
+  addresses?: string[]
+  /** eigenes Symbol für Browser-Tab und Handy (W7) */
+  has_icon?: boolean
+}
+
+/** Adresse der Instanz → Einheit (White Label W7) */
+export interface InstanceAddress {
+  id: number
+  hostname: string
+  organization: number
+  organization_name: string
+  created_at: string
 }
 
 export interface DepartmentRoleHolderInfo {
@@ -522,6 +535,7 @@ export const orgApi = {
     return api.post<{ logo_url: string }>(url, form)
   },
   logoUrl: (id: number) => `${org(id)}/logo/`,
+  iconUrl: (id: number) => `${org(id)}/icon/`,
   departmentLogoUrl: (id: number, dep: number) => `${org(id)}/departments/${dep}/logo/`,
   departmentHomepageImageUrl: (id: number, dep: number) =>
     `${org(id)}/departments/${dep}/homepage-image/`,
@@ -630,6 +644,10 @@ export const platformApi = {
       { email },
     ),
   settings: () => api.get<PlatformSettings>('/api/platform/settings/'),
+  addresses: () => api.get<InstanceAddress[]>('/api/platform/addresses/'),
+  addAddress: (hostname: string, organization: number) =>
+    api.post<InstanceAddress>('/api/platform/addresses/', { hostname, organization }),
+  removeAddress: (id: number) => api.del(`/api/platform/addresses/${id}/`),
   updateSettings: (data: Partial<PlatformSettings>) =>
     api.patch<PlatformSettings>('/api/platform/settings/', data),
   /** Neueres Release laut täglicher Prüfung (abschaltbar mit HUBIPLAN_UPDATE_CHECK=0) */

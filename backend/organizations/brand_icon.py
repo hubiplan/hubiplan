@@ -36,6 +36,10 @@ def clean_icon(content: bytes, *, remove_background: bool = False) -> bytes:
                 px=MIN_SIDE
             )
         )
+    return _square(img)
+
+
+def _square(img: Image.Image) -> bytes:
     side = max(img.size)
     square = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     square.paste(img, ((side - img.width) // 2, (side - img.height) // 2), img)
@@ -43,6 +47,15 @@ def clean_icon(content: bytes, *, remove_background: bool = False) -> bytes:
     buf = io.BytesIO()
     square.save(buf, "PNG", optimize=True)
     return buf.getvalue()
+
+
+@lru_cache(maxsize=16)
+def square(content: bytes) -> bytes:
+    """Gespeichertes Wappen quadratisch (durchsichtiger Rand) als Ersatz für ein Symbol (W7).
+
+    Ohne Mindestgröße: Ein kleines Wappen ist auf dem Handy besser als ein fremdes Zeichen.
+    """
+    return _square(Image.open(io.BytesIO(content)).convert("RGBA"))
 
 
 @lru_cache(maxsize=16)

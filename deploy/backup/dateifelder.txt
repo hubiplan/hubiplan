@@ -35,6 +35,7 @@ members_memberphoto image private
 members_memberphoto thumbnail private
 organizations_organization logo media
 organizations_organization website_image media
+organizations_organization brand_icon media
 organizations_platformsettings brand_icon media
 peering_remoteinvoice file private
 peering_remotestate file private

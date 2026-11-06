@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import datetime
 
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -13,6 +12,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from audit.log import diff, record, snapshot
+from organizations.addresses import base_url
 
 from . import access, services
 from .models import HelperPlan, Shift, ShiftAssignment, ShiftQuota
@@ -115,7 +115,7 @@ def callout_text(plan: HelperPlan) -> tuple[str, str, int]:
     if plan.signup == HelperPlan.Signup.SELF:
         lines.append(
             _("Trag dich im Mitgliederbereich ein: {url}").format(
-                url=f"{settings.FRONTEND_URL}/mein-bereich/helferdienste"
+                url=f"{base_url(plan.organization)}/mein-bereich/helferdienste"
             )
         )
     else:

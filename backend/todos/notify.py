@@ -1,7 +1,6 @@
 import logging
 
 from celery import shared_task
-from django.conf import settings
 from django.db import transaction
 from django.utils.translation import gettext
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -10,6 +9,7 @@ from accounts.models import User
 from core.i18n import language_of, user_language
 from core.tenancy import rls_bypass, tenant_context
 from devices.push import send_to_user
+from organizations.addresses import base_url
 from outbox import mail
 
 from .access import scope_for, visible
@@ -72,7 +72,7 @@ def notify_shared(todo_id, user_id, revision):
                 if scope.department_id
                 else f"einheit={scope.org.pk}"
             )
-            link = f"{settings.FRONTEND_URL}/aufgaben?aufgabe={todo.pk}&{unit}"
+            link = f"{base_url(scope.org)}/aufgaben?aufgabe={todo.pk}&{unit}"
             if preferences.share_mail:
                 mail.send(
                     user.email,

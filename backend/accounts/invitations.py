@@ -11,17 +11,21 @@ from django.core.mail import send_mail
 from django.utils.translation import gettext as _
 
 from core.i18n import language_of
+from organizations.addresses import base_url, rebase
 from organizations.platform_public import instance_name
 from outbox.mail import from_address
 
 logger = logging.getLogger(__name__)
 
 
-def password_link(user) -> str:
-    """Link zum Setzen des Passworts (gleiches Verfahren wie „Passwort vergessen“)."""
+def password_link(user, organization=None) -> str:
+    """Link zum Setzen des Passworts (gleiches Verfahren wie „Passwort vergessen“).
+
+    Mit Einheit: auf deren Adresse (W7b)."""
     token = account_settings.PASSWORD_RESET_TOKEN_GENERATOR().make_token(user)
     key = f"{user_pk_to_url_str(user)}-{token}"
-    return settings.HEADLESS_FRONTEND_URLS["account_reset_password_from_key"].format(key=key)
+    url = settings.HEADLESS_FRONTEND_URLS["account_reset_password_from_key"].format(key=key)
+    return rebase(url, base_url(organization)) if organization is not None else url
 
 
 def send_invitation(user, organization, role_name: str) -> bool:
@@ -41,7 +45,7 @@ def send_invitation(user, organization, role_name: str) -> bool:
             role=role_name,
             org=organization.name,
             days=days,
-            link=password_link(user),
+            link=password_link(user, organization),
             email=user.email,
         )
         subject = _("Einladung zu {instanz} – {org}").format(

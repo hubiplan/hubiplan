@@ -10,10 +10,10 @@ from __future__ import annotations
 import datetime
 import logging
 
-from django.conf import settings
 from django.utils import timezone
 
 from core.tenancy import rls_bypass
+from organizations.addresses import base_url
 from outbox import mail
 
 from . import rsvp
@@ -70,9 +70,8 @@ def body(event: Event, kind: str, first_name: str, response: EventResponse | Non
             if event.rsvp_deadline:
                 deadline = timezone.localtime(event.rsvp_deadline)
                 lines.append(f"Rückmeldung bitte bis {deadline:%d.%m.%Y, %H:%M} Uhr.")
-            lines.append(
-                f"Zu- oder absagen können Sie im Mitgliederbereich: {settings.FRONTEND_URL}/termine"
-            )
+            base = base_url(event.organization)
+            lines.append(f"Zu- oder absagen können Sie im Mitgliederbereich: {base}/termine")
     lines += ["", "Viele Grüße", owner]
     return "\n".join(lines) + "\n"
 

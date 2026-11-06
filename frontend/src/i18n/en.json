@@ -1,4 +1,13 @@
 {
+  "Bitte Adresse und Einheit angeben.": "Please enter an address and a unit.",
+  "Adresse „{x}“ entfernen?": "Remove address “{x}”?",
+  "Adressen je Einheit": "Addresses per unit",
+  "HUBIplan kann unter weiteren Adressen erreichbar sein. Wer eine solche Adresse aufruft, sieht auf der Anmeldeseite Name, Farben, Wappen und Symbol der zugeordneten Einheit; nach der Anmeldung ist sie vorausgewählt. Die Adresse muss per DNS auf diesen Server zeigen und beim Betrieb als erlaubte Adresse eingetragen sein.": "HUBIplan can be reachable under further addresses. Anyone opening such an address sees the name, colours, coat of arms and icon of the assigned unit on the sign-in page; after signing in, that unit is preselected. The address must point to this server via DNS and be entered as an allowed address in the server configuration.",
+  "Noch keine weiteren Adressen.": "No further addresses yet.",
+  "Adresse hinzufügen": "Add address",
+  "Symbol": "Icon",
+  "Diese Einheit hat eine eigene Adresse ({x}). Dort erscheint das Symbol im Browser-Tab und auf dem Startbildschirm des Handys. Ohne eigenes Symbol nimmt HUBIplan das Logo bzw. Wappen, sonst das Symbol der Instanz.": "This unit has its own address ({x}). There the icon appears in the browser tab and on the phone home screen. Without its own icon, HUBIplan uses the logo or coat of arms, otherwise the instance icon.",
+  "z. B. mitglieder.verein.example": "e.g. members.club.example",
   "Symbol der Instanz": "Instance icon",
   "Das Symbol erscheint im Browser-Tab und auf dem Startbildschirm des Handys. Am besten ein quadratisches Bild ohne Schrift, mindestens 512 × 512 Pixel. Ohne eigenes Symbol zeigt HUBIplan sein H-Zeichen in den Farben der Instanz.": "The icon appears in the browser tab and on the phone's home screen. Ideally a square image without text, at least 512 × 512 pixels. Without its own icon, HUBIplan shows its H mark in the instance's colours.",
   "Kein eigenes Symbol.": "No custom icon.",

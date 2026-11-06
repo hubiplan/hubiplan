@@ -8454,6 +8454,18 @@ msgstr "local authority (town, municipality, district)"
 msgid "Sonstige"
 msgstr "other"
 
+msgid "Bitte eine Adresse wie mitglieder.example.org angeben."
+msgstr "Please enter an address such as members.example.org."
+
+msgid "Das ist schon die Hauptadresse der Instanz."
+msgstr "This is already the main address of the instance."
+
+msgid "Diese Adresse gehört schon zu einer Vereinswebseite."
+msgstr "This address already belongs to a club website."
+
+msgid "Diese Adresse ist schon eingetragen."
+msgstr "This address has already been added."
+
 msgid "Ansprechpartner ist immer ein Mensch, keine Organisation."
 msgstr "A contact person is always a natural person, not an organisation."
 

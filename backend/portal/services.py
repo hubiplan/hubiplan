@@ -5,7 +5,6 @@ from __future__ import annotations
 import datetime
 from dataclasses import dataclass, field
 
-from django.conf import settings
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext
@@ -18,6 +17,7 @@ from core.i18n import language_of, user_language
 from core.tenancy import tenant_context, user_view
 from members.models import DepartmentRoleHolder, Membership, today
 from members.services import contact_for
+from organizations.addresses import base_url
 from organizations.models import Department, Organization
 from organizations.tree import UnitTree
 from outbox import mail
@@ -245,7 +245,7 @@ def create_login_link(user, organization=None, created_by=None) -> str:
         created_by=created_by,
         expires_at=timezone.now() + datetime.timedelta(days=LINK_DAYS),
     )
-    return f"{settings.FRONTEND_URL}/anmelden/link/{token}"
+    return f"{base_url(organization)}/anmelden/link/{token}"
 
 
 def send_access_mail(club: Organization, access: PortalAccess, created_by) -> str:
@@ -289,7 +289,7 @@ def send_access_mail(club: Organization, access: PortalAccess, created_by) -> st
                 + "\n\n"
                 + gettext(
                     "Melden Sie sich wie gewohnt mit Ihrem bestehenden Konto ({email}) an: {url}"
-                ).format(email=user.email, url=f"{settings.FRONTEND_URL}/anmelden")
+                ).format(email=user.email, url=f"{base_url(club)}/anmelden")
                 + "\n\n"
                 + gettext(
                     "Falls Sie Ihr Passwort nicht kennen, wählen Sie dort „Passwort vergessen“."

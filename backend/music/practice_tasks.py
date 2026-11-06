@@ -1,7 +1,6 @@
 """Probenhinweise über die vorhandene Ausgangspost, ohne Notenanhänge."""
 
 from celery import shared_task
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext
@@ -9,6 +8,7 @@ from django.utils.translation import gettext
 from core.i18n import language_of
 from core.tenancy import rls_bypass, tenant_context
 from events import recurrence
+from organizations.addresses import base_url
 from outbox import mail
 from portal.models import PortalAccess
 
@@ -51,7 +51,7 @@ def send_notice(invite, original, kind):
                 gettext(
                     "Im Mitgliederbereich liegt eine Probeneinteilung oder eine noch offene "
                     "Rückmeldung für Sie vor: {link}"
-                ).format(link=f"{settings.FRONTEND_URL}/mein-bereich"),
+                ).format(link=f"{base_url(invite.organization)}/mein-bereich"),
                 organization=invite.organization,
                 kind="termin",
                 fail_silently=True,

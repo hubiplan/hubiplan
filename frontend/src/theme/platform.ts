@@ -19,6 +19,8 @@ export interface PlatformInfo {
   theme: ThemeColors | null
   /** true: eigenes Symbol für Browser-Tab und Handy (W2) */
   icon?: boolean
+  /** Einheit der aufgerufenen Adresse (W7); nach der Anmeldung vorausgewählt */
+  unit?: number | null
 }
 
 const DEFAULT: PlatformInfo = {
@@ -27,6 +29,7 @@ const DEFAULT: PlatformInfo = {
   logo_url: null,
   theme: null,
   icon: false,
+  unit: null,
 }
 
 const ICON = '/api/public/platform/icon-'
