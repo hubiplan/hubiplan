@@ -59,6 +59,8 @@ def book_data(r: Resolution) -> dict:
         "unanimous": r.unanimous,
         "office": r.office,
         "elected_name": r.elected_name,
+        # Mitgliedschaft der gewählten Person: „Ins Amt übernehmen“ (Rollen besetzen)
+        "elected": r.elected_id,
         "status": r.status,
         "meeting": r.meeting_id,
         "meeting_title": r.meeting.event.title,

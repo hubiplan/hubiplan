@@ -93,8 +93,11 @@ derselben Art oder bekommt eine übliche Tagesordnung.
   `reject` braucht `reply`) geht in den Ständen „in Vorbereitung“ und „eingeladen“. Anträge
   kommen nur zusammen mit den Mitgliedsdaten in Export und Import und stehen in der Datenauskunft.
 - Offen aus V6 (später, Konzept A2): Anwesenheit per App, Online-Abstimmung.
-- Offen aus V5: Übernahme von Wahlen in Mitglieder › Ämter (Vorschlag mit Bestätigung) folgt
-  nach dem Rollenumbau R1–R4.
+- Wahlen ins Amt (V5, nach dem Rollenumbau): Das Beschlussbuch liefert `elected` (Mitgliedschaft
+  der gewählten Person). Im Verein öffnet „Ins Amt übernehmen“ mit Recht `roles.manage` den
+  Dialog „Rolle besetzen“ (`AssignRoleDialog`) mit der Rolle gleichen Namens, Beginn am Tag der
+  Versammlung und Beenden des Vorgängers; danach setzt die Oberfläche den Stand auf umgesetzt.
+  Die Bestätigung im Dialog bleibt nötig, Ämter von Untereinheiten laufen über deren Rollen.
 - Export und Import nehmen Arten, Versammlungen und Tagesordnungen mit (auch im Export einer
   Untereinheit), ebenso Protokoll und Beschlüsse, die Anwesenheit nur zusammen mit den Mitgliedsdaten.
 

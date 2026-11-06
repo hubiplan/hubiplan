@@ -6813,5 +6813,7 @@
   "Antrag stellen": "Submit a motion",
   "Anträge bis {day}": "Motions until {day}",
   "Anträge von Mitgliedern bis Tage vorher (leer: keine Anträge)": "Member motions up to days before (empty: no motions)",
-  "eingereicht": "submitted"
+  "eingereicht": "submitted",
+  "Ins Amt übernehmen": "Take into office",
+  "Wahl {number} ins Amt übernehmen": "Take election {number} into office"
 }
