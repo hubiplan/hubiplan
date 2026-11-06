@@ -8269,3 +8269,48 @@ msgstr "The quotas exceed the number of people needed."
 
 msgid "Kontingent {unit} · {shift}"
 msgstr "Quota {unit} · {shift}"
+
+msgid "Beschlussbuch"
+msgstr "Resolution book"
+
+msgid "Nummer"
+msgstr "Number"
+
+msgid "Tagesordnungspunkt"
+msgstr "Agenda item"
+
+msgid "Ergebnis"
+msgstr "Result"
+
+msgid "Ja"
+msgstr "Yes"
+
+msgid "Nein"
+msgstr "No"
+
+msgid "Enthaltung"
+msgstr "Abstention"
+
+msgid "Stand"
+msgstr "Status"
+
+msgid "Beschluss {number}"
+msgstr "Resolution {number}"
+
+msgid "Für diesen Beschluss gibt es schon eine Aufgabe."
+msgstr "There is already a task for this resolution."
+
+msgid "Beschluss {number} umsetzen"
+msgstr "Implement resolution {number}"
+
+msgid "Beschluss {number} vom {day} ({meeting}):\n{text}"
+msgstr "Resolution {number} of {day} ({meeting}):\n{text}"
+
+msgid "Aufgabe zu Beschluss {number}"
+msgstr "Task for resolution {number}"
+
+msgid "umgesetzt"
+msgstr "implemented"
+
+msgid "aufgehoben"
+msgstr "repealed"

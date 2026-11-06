@@ -23,6 +23,7 @@ from finance import views as finance_views
 from helpers import portal as helper_portal
 from honors import urls as honors_urls
 from letterhead import views as letterhead_views
+from meetings import portal as meeting_portal
 from members import (
     federation_views,
     jubilee_views,
@@ -794,6 +795,8 @@ urlpatterns = [
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
     path("portal/<int:access_id>/bookings/", booking_portal.ListView.as_view()),
+    path("portal/<int:access_id>/meetings/", meeting_portal.ListView.as_view()),
+    path("portal/<int:access_id>/meetings/<int:pk>/minutes/", meeting_portal.MinutesView.as_view()),
     path("portal/<int:access_id>/helpers/", helper_portal.ListView.as_view()),
     path("portal/<int:access_id>/helpers/calendar/", helper_portal.CalendarView.as_view()),
     path(

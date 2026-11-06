@@ -1,5 +1,5 @@
-// Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V4): Übersicht,
-// Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit, Protokoll und Arten.
+// Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V5): Übersicht,
+// Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit, Protokoll, Arten, Beschlussbuch.
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { meetingApi } from '../../api/meetings.ts'
@@ -25,6 +25,7 @@ import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { locale, t } from '../../i18n/index.ts'
 import { PERM } from '../../api/orgs.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
+import { ResolutionBook } from './ResolutionBook.tsx'
 import './meetings.css'
 
 const ZONE = 'Europe/Berlin'
@@ -93,15 +94,21 @@ export function MeetingsPage() {
 
 function Meetings({ base, canEdit }: { base: string; canEdit: boolean }) {
   const [params, setParams] = useSearchParams()
-  const view = params.get('ansicht') === 'arten' ? 'kinds' : 'list'
+  const view =
+    params.get('ansicht') === 'arten'
+      ? 'kinds'
+      : params.get('ansicht') === 'beschluesse'
+        ? 'book'
+        : 'list'
   const detail = useDetailParam('versammlung')
   const list = useLoad(() => meetingApi.list(base), [base])
   const kinds = useLoad(() => meetingApi.kinds(base), [base])
   const [creating, setCreating] = useState(false)
   const [now] = useState(() => Date.now())
-  const show = (next: 'list' | 'kinds') => {
+  const show = (next: 'list' | 'kinds' | 'book') => {
     const p = new URLSearchParams(params)
     if (next === 'kinds') p.set('ansicht', 'arten')
+    else if (next === 'book') p.set('ansicht', 'beschluesse')
     else p.delete('ansicht')
     setParams(p)
   }
@@ -150,8 +157,18 @@ function Meetings({ base, canEdit }: { base: string; canEdit: boolean }) {
         >
           {t('Arten und Fristen')}
         </button>
+        <button
+          type="button"
+          className={`tab${view === 'book' ? ' active' : ''}`}
+          aria-current={view === 'book' ? 'page' : undefined}
+          onClick={() => show('book')}
+        >
+          {t('Beschlussbuch')}
+        </button>
       </nav>
-      {view === 'kinds' ? (
+      {view === 'book' ? (
+        <ResolutionBook base={base} canEdit={canEdit} kinds={kinds.data ?? []} />
+      ) : view === 'kinds' ? (
         <KindsCard
           base={base}
           canEdit={canEdit}

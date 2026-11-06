@@ -737,6 +737,7 @@ def portal_summary(access: PortalAccess) -> dict:
             "competitions_enabled": "competitions" in (club.enabled_modules or []),
             "bookings_enabled": _bookings_enabled(club),
             "helpers_enabled": "helpers" in (club.enabled_modules or []),
+            "meetings_enabled": "meetings" in (club.enabled_modules or []),
             "terms": department_terms(club),
             "imprint_key": ensure_imprint(club).public_key,
         }

@@ -3,6 +3,7 @@ import { PortalCirculars } from './PortalCirculars.tsx'
 import { PortalTodos } from './PortalTodos.tsx'
 import { PortalBookings } from './PortalBookings.tsx'
 import { PortalHelpers } from './PortalHelpers.tsx'
+import { PortalMeetings } from './PortalMeetings.tsx'
 import { OwnMusic } from '../music/OwnMusic.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
@@ -112,6 +113,14 @@ export function PortalPage() {
         element={
           <PortalSection title={t('Helferdienste')}>
             <PortalHelpers key={activePortal.id} accessId={activePortal.id} />
+          </PortalSection>
+        }
+      />
+      <Route
+        path="versammlungen"
+        element={
+          <PortalSection title={t('Versammlungen')}>
+            <PortalMeetings key={activePortal.id} accessId={activePortal.id} />
           </PortalSection>
         }
       />
@@ -226,6 +235,15 @@ export function PortalTasks({ entry, skip = [] }: { entry: PortalEntry; skip?: s
             to: '/mein-bereich/helferdienste',
             title: t('Helferdienste'),
             text: t('Für Dienste eintragen und eigene Dienste sehen'),
+          },
+        ]
+      : []),
+    ...(entry.meetings_enabled
+      ? [
+          {
+            to: '/mein-bereich/versammlungen',
+            title: t('Versammlungen'),
+            text: t('Einladungen mit Tagesordnung und Protokolle'),
           },
         ]
       : []),

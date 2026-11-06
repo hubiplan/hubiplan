@@ -33,7 +33,7 @@ außerordentliche Mitgliederversammlung, Vorstandssitzung; Untereinheit: Versamm
 der Leitung). Eine neue Versammlung übernimmt die Tagesordnung der letzten Versammlung
 derselben Art oder bekommt eine übliche Tagesordnung.
 
-## Abläufe (Stand V4)
+## Abläufe (Stand V5)
 
 - Anlegen erzeugt den Termin. Mitgliederversammlungen sind für Mitglieder sichtbar,
   Vorstandssitzungen nur für den Vorstand.
@@ -72,6 +72,20 @@ derselben Art oder bekommt eine übliche Tagesordnung.
   Änderung mehr. Mit Modul `documents` zusätzlich Ablage im Ordner „Protokolle“ der Einheit
   (Sichtbarkeit Vorstand, wird bei Bedarf angelegt; bei vollem Speicher keine Ablage).
   `GET …/minutes/pdf/` liefert das freigegebene PDF oder vorher eine Vorschau als Entwurf.
+- Beschlussbuch (V5, `meetings/book.py`): `GET …/resolutions/` listet nummerierte Beschlüsse
+  und Wahlen freigegebener Protokolle der Einheit (höchstens 2000), Filter `suche`, `jahr`,
+  `art` (Art der Versammlung), `typ` (`resolution`, `election`), `stand` (`open`, `done`,
+  `repealed`). Gesucht wird in Python, weil die Texte verschlüsselt sind. `…/resolutions/export/`
+  liefert dieselbe Auswahl als Excel. `PATCH …/resolutions/<pk>/` setzt `status`
+  (`meetings.edit`). `POST …/resolutions/<pk>/todo/` legt eine eigene Aufgabe mit Beschlusstext
+  an (`title`, `due_date` optional; braucht Modul `todos` und `todos.edit`); `Resolution.todo`
+  verweist darauf. Private Aufgaben anderer zeigt das Beschlussbuch nur als „Aufgabe angelegt“.
+- Mitgliederbereich (V5, `meetings/portal.py`): `GET /api/portal/<zugang>/meetings/` liefert
+  eingeladene anstehende Versammlungen mit Tagesordnung und freigegebene Protokolle der letzten
+  fünf Jahre, jeweils nur, wenn das Mitglied heute nach der Auswahl der Art stimmberechtigt ist;
+  Protokolle nur bei Arten mit `minutes_for = voters`. `…/meetings/<pk>/minutes/` liefert das PDF.
+- Offen aus V5: Übernahme von Wahlen in Mitglieder › Ämter (Vorschlag mit Bestätigung) folgt
+  nach dem Rollenumbau R1–R4.
 - Export und Import nehmen Arten, Versammlungen und Tagesordnungen mit (auch im Export einer
   Untereinheit), ebenso Protokoll und Beschlüsse, die Anwesenheit nur zusammen mit den Mitgliedsdaten.
 
@@ -88,3 +102,9 @@ derselben Art oder bekommt eine übliche Tagesordnung.
 | `GET …/meetings/<pk>/minutes/pdf/` | Protokoll als PDF (Entwurf oder freigegeben) |
 | `GET/POST …/meetings/<pk>/attendance/`, `DELETE …/attendance/<id>/` | Anwesenheit |
 | `GET/POST …/meetings/kinds/`, `PATCH/DELETE …/kinds/<pk>/` | Arten |
+| `GET …/meetings/resolutions/` | Beschlussbuch mit Filtern |
+| `GET …/meetings/resolutions/export/` | Beschlussbuch als Excel |
+| `PATCH …/meetings/resolutions/<pk>/` | Stand der Umsetzung |
+| `POST …/meetings/resolutions/<pk>/todo/` | Beschluss als Aufgabe |
+| `GET /api/portal/<zugang>/meetings/` | Einladungen und Protokolle im Mitgliederbereich |
+| `GET /api/portal/<zugang>/meetings/<pk>/minutes/` | Freigegebenes Protokoll als PDF |

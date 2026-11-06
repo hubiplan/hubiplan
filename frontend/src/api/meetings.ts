@@ -110,6 +110,57 @@ export interface AttendanceList {
   rows: AttendanceRow[]
 }
 
+export type ResolutionStatus = 'open' | 'done' | 'repealed'
+
+export interface BookRow {
+  id: number
+  number: string
+  kind: 'resolution' | 'election'
+  text: string
+  result: 'accepted' | 'rejected'
+  votes_yes: number | null
+  votes_no: number | null
+  votes_abstain: number | null
+  unanimous: boolean
+  office: string
+  elected_name: string
+  status: ResolutionStatus
+  meeting: number
+  meeting_title: string
+  meeting_kind: number
+  meeting_kind_name: string
+  date: string
+  agenda_title: string
+  has_todo: boolean
+  todo: { id: number; title: string; status: string } | null
+}
+
+export interface Book {
+  rows: BookRow[]
+  years: number[]
+  can_todo: boolean
+}
+
+export interface PortalMeetings {
+  upcoming: {
+    id: number
+    title: string
+    kind_name: string
+    unit: string
+    starts_at: string
+    location: string
+    address: string
+    agenda: { position: number; title: string; description: string }[]
+  }[]
+  minutes: { id: number; title: string; kind_name: string; unit: string; starts_at: string }[]
+}
+
+export const portalMeetingApi = {
+  list: (access: number) => api.get<PortalMeetings>(`/api/portal/${access}/meetings/`),
+  minutes: (access: number, id: number) =>
+    requestBlob('GET', `/api/portal/${access}/meetings/${id}/minutes/`),
+}
+
 export const meetingApi = {
   list: (base: string) => api.get<Meeting[]>(base),
   get: (base: string, id: number) => api.get<Meeting>(`${base}${id}/`),
@@ -137,4 +188,11 @@ export const meetingApi = {
   updateKind: (base: string, id: number, data: object) =>
     api.patch<MeetingKind>(`${base}kinds/${id}/`, data),
   removeKind: (base: string, id: number) => api.del(`${base}kinds/${id}/`),
+  book: (base: string, query: string) => api.get<Book>(`${base}resolutions/${query}`),
+  bookExport: (base: string, query: string) =>
+    requestBlob('GET', `${base}resolutions/export/${query}`),
+  setResolutionStatus: (base: string, id: number, status: ResolutionStatus) =>
+    api.patch<BookRow>(`${base}resolutions/${id}/`, { status }),
+  resolutionTodo: (base: string, id: number, data: object) =>
+    api.post<BookRow>(`${base}resolutions/${id}/todo/`, data),
 }

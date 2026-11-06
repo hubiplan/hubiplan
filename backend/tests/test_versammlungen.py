@@ -598,3 +598,131 @@ def test_protokoll_freigeben_pdf_und_ablage(setup):
         )
     assert second["agenda"][0]["resolutions"][0]["number"].endswith("/02")
     assert Document.objects.filter(folder=doc.folder).count() == 2
+
+
+def release(s, meeting, resolutions):
+    """Versammlung durchführen und das Protokoll mit Beschlüssen freigeben."""
+    url = f"{s['url']}{meeting['id']}/"
+    meeting = ok(
+        s["chef"].patch(
+            url,
+            {"status": "held", "chair": "Erika Vorsitz", "minute_taker": "Max Schrift"},
+            content_type=JSON,
+        )
+    )
+    payload = {
+        "version": meeting["version"],
+        "items": [{"id": meeting["agenda"][1]["id"], "resolutions": resolutions}],
+    }
+    meeting = ok(s["chef"].put(url + "minutes/", payload, content_type=JSON))
+    for role in ("chair", "taker"):
+        meeting = ok(
+            s["chef"].post(
+                url + "minutes/confirm/",
+                {"version": meeting["version"], "role": role},
+                content_type=JSON,
+            )
+        )
+    assert meeting["status"] == "done"
+    return meeting
+
+
+def test_beschlussbuch(setup, api):
+    """V5: Beschlüsse suchen, filtern, als umgesetzt markieren und als Aufgabe anlegen."""
+    from meetings.models import Resolution
+    from todos.models import Todo
+
+    s = setup
+    org = s["org"]
+    release(
+        s,
+        new_meeting(s),
+        [
+            {"text": "Der Beitrag steigt auf 60 Euro.", "votes_yes": 40, "votes_no": 3},
+            {
+                "kind": "election",
+                "text": "Wahl des Kassierers",
+                "office": "Kassierer",
+                "elected_name": "Gerd Geld",
+                "unanimous": True,
+            },
+        ],
+    )
+    # Noch nicht freigegebene Versammlungen fehlen im Beschlussbuch
+    draft = new_meeting(s)
+    ok(s["chef"].patch(f"{s['url']}{draft['id']}/", {"status": "held"}, content_type=JSON))
+    book = s["url"] + "resolutions/"
+    data = ok(s["reader"].get(book))
+    assert [r["kind"] for r in data["rows"]] == ["resolution", "election"]
+    assert data["years"] and data["can_todo"] is False
+    first = data["rows"][0]
+    assert first["number"].endswith("/01") and first["status"] == "open"
+    assert [r["office"] for r in ok(s["reader"].get(book + "?typ=election"))["rows"]] == [
+        "Kassierer"
+    ]
+    assert [r["text"] for r in ok(s["reader"].get(book + "?suche=beitrag"))["rows"]] == [
+        "Der Beitrag steigt auf 60 Euro."
+    ]
+    year = data["years"][0]
+    assert len(ok(s["reader"].get(f"{book}?jahr={year - 1}"))["rows"]) == 0
+    # Stand ändern nur mit Bearbeitungsrecht
+    detail = f"{book}{first['id']}/"
+    assert s["reader"].patch(detail, {"status": "done"}, content_type=JSON).status_code == 403
+    assert ok(s["chef"].patch(detail, {"status": "done"}, content_type=JSON))["status"] == "done"
+    assert [r["id"] for r in ok(s["reader"].get(book + "?stand=open"))["rows"]] == [
+        data["rows"][1]["id"]
+    ]
+    # Excel
+    resp = s["reader"].get(book + "export/")
+    assert resp.status_code == 200 and resp.content[:2] == b"PK"
+    # Als Aufgabe: braucht das Modul Aufgaben und das Recht dazu
+    assert s["chef"].post(f"{detail}todo/", {}, content_type=JSON).status_code == 403
+    org.enabled_modules = sorted({*org.enabled_modules, "todos"})
+    org.save()
+    planner = make_user("schrift@example.org")
+    give_role(
+        planner, org, permissions=["meetings.edit", "todos.view", "todos.edit"], name="Schrift"
+    )
+    client = api(planner)
+    assert ok(client.get(book))["can_todo"] is True
+    row = ok(client.post(f"{detail}todo/", {"due_date": "2099-03-01"}, content_type=JSON))
+    assert row["todo"]["title"] == f"Beschluss {first['number']} umsetzen"
+    todo = Todo.objects.get(pk=row["todo"]["id"])
+    assert todo.owner == planner and str(todo.due_date) == "2099-03-01"
+    assert "60 Euro" in todo.description
+    assert Resolution.objects.get(pk=first["id"]).todo_id == todo.pk
+    assert client.post(f"{detail}todo/", {}, content_type=JSON).status_code == 400
+
+
+def test_versammlungen_im_mitgliederbereich(setup, api):
+    """V5: Einladungen mit Tagesordnung und freigegebene Protokolle für Stimmberechtigte."""
+    s = setup
+    org = s["org"]
+    org.member_portal_enabled = True
+    org.save(update_fields=["member_portal_enabled"])
+    erika = make_member(org, "Erika", "Beispiel", email="erika@example.org")
+    user = make_user("erika@example.org")
+    access = PortalAccess.objects.create(organization=org, membership=erika, user=user)
+    portal = api(user)
+    url = f"/api/portal/{access.pk}/meetings/"
+    done = release(s, new_meeting(s), [{"text": "Entlastung.", "unanimous": True}])
+    coming = new_meeting(s, location="Schützenhaus")
+    Meeting.objects.filter(pk=coming["id"]).update(status="invited")
+    board = new_meeting(s, name="Vorstandssitzung")
+    release(s, board, [{"text": "Intern.", "unanimous": True}])
+    data = ok(portal.get(url))
+    assert [m["id"] for m in data["upcoming"]] == [coming["id"]]
+    assert data["upcoming"][0]["location"] == "Schützenhaus"
+    assert data["upcoming"][0]["agenda"][0]["title"]
+    # Vorstandsprotokolle bleiben dem Vorstand vorbehalten
+    assert [m["id"] for m in data["minutes"]] == [done["id"]]
+    resp = portal.get(f"{url}{done['id']}/minutes/")
+    assert resp.status_code == 200 and b"".join(resp.streaming_content).startswith(b"%PDF")
+    assert portal.get(f"{url}{board['id']}/minutes/").status_code == 404
+    # Art auf „nur Rollen mit Leserecht“: Protokoll verschwindet
+    MeetingKind.objects.filter(meetings__pk=done["id"]).update(minutes_for="board")
+    assert ok(portal.get(url))["minutes"] == []
+    # Modul aus: nicht vorhanden
+    org.enabled_modules = [m for m in org.enabled_modules if m != "meetings"]
+    org.save()
+    assert portal.get(url).status_code == 404

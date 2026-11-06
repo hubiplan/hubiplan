@@ -171,6 +171,11 @@ class Resolution(models.Model):
         ACCEPTED = "accepted", _("angenommen")
         REJECTED = "rejected", _("abgelehnt")
 
+    class Status(models.TextChoices):
+        OPEN = "open", _("offen")
+        DONE = "done", _("umgesetzt")
+        REPEALED = "repealed", _("aufgehoben")
+
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="resolutions")
     agenda_item = models.ForeignKey(
@@ -190,6 +195,11 @@ class Resolution(models.Model):
         "members.Membership", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
     number = models.CharField(max_length=20, blank=True)
+    # Beschlussbuch (Schritt V5): Stand der Umsetzung und verknüpfte Aufgabe
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
+    todo = models.ForeignKey(
+        "todos.Todo", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
 
     class Meta:
         ordering = ["agenda_item__position", "position", "pk"]

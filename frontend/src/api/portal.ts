@@ -43,6 +43,7 @@ export interface PortalEntry {
   competitions_enabled?: boolean
   bookings_enabled?: boolean
   helpers_enabled?: boolean
+  meetings_enabled?: boolean
   terms?: DeptTerms
   imprint_key?: string
 }
