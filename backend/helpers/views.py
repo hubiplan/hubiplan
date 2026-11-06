@@ -133,6 +133,7 @@ def plan_data(plan: HelperPlan, scope, *, full=False, counts=None) -> dict:
         "cancel_days": plan.cancel_days,
         "max_shifts": plan.max_shifts,
         "show_names": plan.show_names,
+        "remind_days": plan.remind_days,
         "version": plan.version,
         "can_edit": scope.can_edit,
     }
@@ -159,10 +160,13 @@ class PlanInput(serializers.Serializer):
         min_value=1, max_value=50, allow_null=True, required=False
     )
     show_names = serializers.BooleanField(required=False)
+    remind_days = serializers.IntegerField(
+        min_value=1, max_value=14, allow_null=True, required=False
+    )
     note = serializers.CharField(max_length=5000, allow_blank=True, required=False)
 
 
-PLAN_FIELDS = ("signup", "cancel_days", "max_shifts", "show_names", "note")
+PLAN_FIELDS = ("signup", "cancel_days", "max_shifts", "show_names", "remind_days", "note")
 
 
 class ListView(Base):

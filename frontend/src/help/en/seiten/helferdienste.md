@@ -28,7 +28,14 @@ Printing: **Notice as PDF** creates one page per duty with the shifts and empty 
 signing up. **List as Excel** contains all shifts with the people assigned.
 
 Status: **Publish** marks the roster as final, **Close** ends it; after that it cannot be changed
-until you reopen it. Self sign-up by members in the member area follows in the next stage.
+until you reopen it. Only a published roster appears in the member area.
+
+Roster settings: Under **Roster settings** you choose whether members sign up themselves or only
+the administration assigns people, until how many days before a shift members can cancel
+themselves, the maximum number of shifts per person and how many days before a shift HUBIplan
+sends a reminder email (empty: no reminder). You also choose whether people who signed up see
+who else is on their shift, and you can write a note for the helpers. After the cancellation
+deadline, only the administration can cancel a shift.
 
 Units: If a role of a unit (such as the platoon leadership) has the right, it plans its own
 duties and only assigns members of that unit.

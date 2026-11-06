@@ -30,8 +30,15 @@ Drucken: **Aushang als PDF** erzeugt je Dienst eine Seite mit den Schichten und 
 zum Eintragen. **Liste als Excel** enthält alle Schichten mit den Eingeteilten.
 
 Stand: **Veröffentlichen** markiert den Plan als fertig, **Abschließen** beendet ihn; danach
-lässt er sich nicht mehr ändern, bis du ihn wieder öffnest. Die Selbsteintragung der Mitglieder
-im Mitgliederbereich folgt in der nächsten Ausbaustufe.
+lässt er sich nicht mehr ändern, bis du ihn wieder öffnest. Erst ein veröffentlichter Plan
+erscheint im Mitgliederbereich.
+
+Einstellungen des Plans: Unter **Einstellungen des Plans** legst du fest, ob sich Mitglieder
+selbst eintragen oder nur die Verwaltung einteilt, bis wie viele Tage vorher Mitglieder selbst
+absagen können, wie viele Schichten eine Person höchstens übernimmt und wie viele Tage vorher
+HUBIplan per E-Mail an den Dienst erinnert (leer: keine Erinnerung). Außerdem wählst du, ob
+Eingetragene sehen, wer noch in ihrer Schicht ist, und schreibst einen Hinweis für die Helfer.
+Nach Ablauf der Absagefrist geht eine Absage nur noch über die Verwaltung.
 
 Untereinheiten: Hat eine Rolle einer Untereinheit (etwa die Zugführung) das Recht dazu, plant
 sie eigene Dienste und teilt nur Mitglieder dieser Untereinheit ein.

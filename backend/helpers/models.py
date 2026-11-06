@@ -43,6 +43,10 @@ class HelperPlan(models.Model):
         null=True, blank=True, validators=[MaxValueValidator(50)]
     )
     show_names = models.BooleanField(default=True)
+    # Erinnerung per Mail so viele Tage vor der Schicht (leer: keine)
+    remind_days = models.PositiveSmallIntegerField(
+        null=True, blank=True, default=1, validators=[MaxValueValidator(14)]
+    )
     note = EncryptedTextField(_("Hinweis"), blank=True)
     version = models.PositiveIntegerField(default=1)
     created_by = models.ForeignKey(
@@ -112,6 +116,7 @@ class ShiftAssignment(models.Model):
     origin = models.CharField(max_length=10, choices=Origin.choices, default=Origin.ASSIGNED)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     done = models.BooleanField(null=True, blank=True)
+    reminded_at = models.DateTimeField(null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )

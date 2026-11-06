@@ -238,6 +238,49 @@ def build(membership: Membership, org) -> bytes:
         ]
     )
 
+    from helpers.models import ShiftAssignment
+    from meetings.models import Attendance, Resolution
+
+    files["versammlungen.json"] = _dump(
+        {
+            "anwesenheit": [
+                {
+                    "versammlung": a.meeting.event.title,
+                    "beginn": a.meeting.event.starts_at,
+                    **_row(a, {"meeting", "membership", "organization", "represented_by"}),
+                }
+                for a in Attendance.objects.filter(membership=membership).select_related(
+                    "meeting__event"
+                )
+            ],
+            "gewaehlt": [
+                {
+                    "versammlung": r.meeting.event.title,
+                    "amt": r.office,
+                    "ergebnis": r.get_result_display(),
+                    "nummer": r.number,
+                }
+                for r in Resolution.objects.filter(elected=membership).select_related(
+                    "meeting__event"
+                )
+            ],
+        }
+    )
+    files["helferdienste.json"] = _dump(
+        [
+            {
+                "dienstplan": a.shift.duty.plan.title,
+                "dienst": a.shift.duty.name,
+                "beginn": a.shift.starts_at,
+                "ende": a.shift.ends_at,
+                **_row(a, {"shift", "membership", "organization", "created_by", "phone"}),
+            }
+            for a in ShiftAssignment.objects.filter(membership=membership).select_related(
+                "shift__duty__plan"
+            )
+        ]
+    )
+
     files["verbund.json"] = _dump(
         [
             {

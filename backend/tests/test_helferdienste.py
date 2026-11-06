@@ -276,3 +276,133 @@ def test_modul_und_untereinheit(orgs, api):
     # Einteilen nur aus dem eigenen Zug
     assert [m["first_name"] for m in ok(c.get(f"{url}members/?suche=muster"))] == ["Max"]
     assert c.get(f"/api/depts/{andere.pk}/helpers/").status_code == 404
+
+
+def test_selbst_eintragen_absagen_und_kalender(setup, api):
+    from organizations.models import Department
+    from portal.models import PortalAccess
+
+    s = setup
+    org = s["org"]
+    org.member_portal_enabled = True
+    org.save(update_fields=["member_portal_enabled"])
+    erika = make_member(
+        org, "Erika", "Beispiel", email="erika@example.org", birth_date=datetime.date(1990, 1, 1)
+    )
+    user = make_user("erika@example.org")
+    access = PortalAccess.objects.create(organization=org, membership=erika, user=user)
+    portal = api(user)
+    url = f"/api/portal/{access.pk}/helpers/"
+    plan = new_plan(s, max_shifts=1, cancel_days=2)
+    duty = ok(
+        s["chef"].post(f"{s['url']}{plan['id']}/duties/", {"name": "Kasse"}, content_type=JSON)
+    )
+    shifts = ok(
+        s["chef"].post(
+            f"{s['url']}duties/{duty['id']}/shifts/",
+            {"day": day().isoformat(), "quick": "10-14, 14-18", "needed": 1},
+            content_type=JSON,
+        )
+    )
+    soon = ok(
+        s["chef"].post(
+            f"{s['url']}duties/{duty['id']}/shifts/",
+            {"day": day(1).isoformat(), "quick": "10-14", "needed": 2},
+            content_type=JSON,
+        )
+    )[0]
+    # Entwurf ist im Mitgliederbereich unsichtbar
+    assert ok(portal.get(url))["plans"] == []
+    ok(s["chef"].patch(f"{s['url']}{plan['id']}/", {"status": "published"}, content_type=JSON))
+    # Plan einer fremden Untereinheit bleibt unsichtbar
+    zug = Department.objects.create(organization=org, name="Jägerzug", short_name="Jäger")
+    HelperPlan.objects.create(organization=org, department=zug, title="Zugfest", status="published")
+    data = ok(portal.get(url))
+    assert [p["title"] for p in data["plans"]] == ["Schützenfest 2099"]
+    signup = f"{url}shifts/{shifts[0]['id']}/signup/"
+    data = ok(portal.post(signup))
+    first = next(x for x in data["duties"][0]["shifts"] if x["id"] == shifts[0]["id"])
+    assert first["mine"] and first["can_cancel"] and first["names"] == ["Erika Beispiel"]
+    # Höchstzahl je Person
+    resp = portal.post(f"{url}shifts/{shifts[1]['id']}/signup/")
+    assert resp.status_code == 400 and "höchstens 1" in str(resp.json())
+    # Schicht voll
+    ok(s["chef"].patch(f"{s['url']}{plan['id']}/", {"max_shifts": None}, content_type=JSON))
+    ok(
+        s["chef"].post(
+            f"{s['url']}shifts/{shifts[1]['id']}/assignments/",
+            {"name": "Gerd Gast"},
+            content_type=JSON,
+        )
+    )
+    assert portal.post(f"{url}shifts/{shifts[1]['id']}/signup/").status_code == 400
+    # Meine Dienste und Kalenderdatei
+    ok(portal.post(f"{url}shifts/{soon['id']}/signup/"))
+    data = ok(portal.get(url))
+    assert [m["duty"] for m in data["mine"]] == ["Kasse", "Kasse"]
+    ics = portal.get(f"{url}calendar/")
+    assert ics.status_code == 200 and ics.content.count(b"BEGIN:VEVENT") == 2
+    # Absage: früh genug selbst, kurz vorher nur über die Verwaltung
+    late, early = (m["id"] for m in data["mine"])  # morgen, in 20 Tagen
+    from helpers.models import Shift
+
+    Shift.objects.filter(pk=soon["id"]).update(
+        starts_at=timezone.now() + datetime.timedelta(hours=20),
+        ends_at=timezone.now() + datetime.timedelta(hours=24),
+    )
+    assert portal.post(f"{url}assignments/{late}/cancel/").status_code == 400
+    assert portal.post(f"{url}assignments/{early}/cancel/").status_code == 204
+    assert ShiftAssignment.objects.get(pk=early).status == "cancelled"
+    # Nur Einteilung: keine Selbsteintragung
+    ok(s["chef"].patch(f"{s['url']}{plan['id']}/", {"signup": "assign"}, content_type=JSON))
+    assert portal.post(signup).status_code == 400
+
+
+def test_erinnerung_per_mail(setup, mailoutbox):
+    from helpers.models import Shift
+    from helpers.notify import send_reminders
+
+    s = setup
+    org = s["org"]
+    anna = make_member(org, "Anna", "Muster", email="anna@example.org")
+    plan = new_plan(s)
+    duty = ok(
+        s["chef"].post(
+            f"{s['url']}{plan['id']}/duties/",
+            {"name": "Aufbau", "location": "Festplatz"},
+            content_type=JSON,
+        )
+    )
+    shift = ok(
+        s["chef"].post(
+            f"{s['url']}duties/{duty['id']}/shifts/",
+            {"day": day().isoformat(), "quick": "9-12"},
+            content_type=JSON,
+        )
+    )[0]
+    ok(
+        s["chef"].post(
+            f"{s['url']}shifts/{shift['id']}/assignments/",
+            {"membership": anna.pk},
+            content_type=JSON,
+        )
+    )
+    ok(
+        s["chef"].post(
+            f"{s['url']}shifts/{shift['id']}/assignments/",
+            {"name": "Extern", "force": True},
+            content_type=JSON,
+        )
+    )
+    Shift.objects.filter(pk=shift["id"]).update(
+        starts_at=timezone.now() + datetime.timedelta(hours=10),
+        ends_at=timezone.now() + datetime.timedelta(hours=13),
+    )
+    # Entwurf: keine Erinnerung
+    assert send_reminders() == 0
+    ok(s["chef"].patch(f"{s['url']}{plan['id']}/", {"status": "published"}, content_type=JSON))
+    mailoutbox.clear()
+    assert send_reminders() == 1
+    assert send_reminders() == 0
+    mails = [m for m in mailoutbox if "anna@example.org" in m.to]
+    assert len(mails) == 1 and "Aufbau" in mails[0].subject and "Festplatz" in mails[0].body

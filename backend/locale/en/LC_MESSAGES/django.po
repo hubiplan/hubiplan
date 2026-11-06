@@ -8227,3 +8227,33 @@ msgstr "Create duty rosters and assign volunteers"
 
 msgid "Helferdienste {gen}"
 msgstr "Volunteer duties {gen}"
+
+msgid "In diesen Plan trägt nur die Verwaltung ein."
+msgstr "Only the administration assigns people in this plan."
+
+msgid "Die Schicht hat schon begonnen."
+msgstr "The shift has already started."
+
+msgid "Du bist schon eingetragen."
+msgstr "You are already signed up."
+
+msgid "In diesem Plan sind höchstens {n} Schichten je Person möglich."
+msgstr "This plan allows at most {n} shifts per person."
+
+msgid "Die Frist zum Absagen ist vorbei. Bitte wende dich an die Verwaltung."
+msgstr "The cancellation deadline has passed. Please contact the administration."
+
+msgid "Erinnerung: {duty} am {day}"
+msgstr "Reminder: {duty} on {day}"
+
+msgid "eine Erinnerung an deinen Dienst:"
+msgstr "a reminder of your shift:"
+
+msgid "Wann: {when}"
+msgstr "When: {when}"
+
+msgid "Wo: {place}"
+msgstr "Where: {place}"
+
+msgid "Deine Dienste siehst du im Mitgliederbereich: {url}"
+msgstr "You can see your shifts in the member area: {url}"

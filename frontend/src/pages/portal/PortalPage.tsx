@@ -2,6 +2,7 @@
 import { PortalCirculars } from './PortalCirculars.tsx'
 import { PortalTodos } from './PortalTodos.tsx'
 import { PortalBookings } from './PortalBookings.tsx'
+import { PortalHelpers } from './PortalHelpers.tsx'
 import { OwnMusic } from '../music/OwnMusic.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
@@ -103,6 +104,14 @@ export function PortalPage() {
         element={
           <PortalSection title={t('Belegung')}>
             <PortalBookings key={activePortal.id} accessId={activePortal.id} />
+          </PortalSection>
+        }
+      />
+      <Route
+        path="helferdienste"
+        element={
+          <PortalSection title={t('Helferdienste')}>
+            <PortalHelpers key={activePortal.id} accessId={activePortal.id} />
           </PortalSection>
         }
       />
@@ -208,6 +217,15 @@ export function PortalTasks({ entry, skip = [] }: { entry: PortalEntry; skip?: s
             to: '/mein-bereich/belegung',
             title: t('Belegung'),
             text: t('Schützenhaus, Stand oder Material anfragen'),
+          },
+        ]
+      : []),
+    ...(entry.helpers_enabled
+      ? [
+          {
+            to: '/mein-bereich/helferdienste',
+            title: t('Helferdienste'),
+            text: t('Für Dienste eintragen und eigene Dienste sehen'),
           },
         ]
       : []),

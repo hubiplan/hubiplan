@@ -45,6 +45,7 @@ export interface HelperPlan {
   cancel_days: number
   max_shifts: number | null
   show_names: boolean
+  remind_days: number | null
   version: number
   can_edit: boolean
   needed: number
@@ -86,4 +87,55 @@ export const helperApi = {
   removeAssignment: (base: string, id: number) => api.del(`${base}assignments/${id}/`),
   export: (base: string, id: number, format: 'pdf' | 'xlsx') =>
     requestBlob('GET', `${base}${id}/export/?datei=${format}`),
+}
+
+export interface PortalShift {
+  id: number
+  starts_at: string
+  ends_at: string
+  needed: number
+  taken: number
+  note: string
+  names: string[]
+  mine: number | null
+  can_cancel: boolean
+  past: boolean
+}
+
+export interface PortalPlan {
+  id: number
+  title: string
+  unit: string
+  event_title: string
+  signup: 'self' | 'assign'
+  cancel_days: number
+  max_shifts: number | null
+  note: string
+  duties: {
+    id: number
+    name: string
+    description: string
+    location: string
+    min_age: number | null
+    shifts: PortalShift[]
+  }[]
+}
+
+export interface MyDuty {
+  id: number
+  plan: string
+  duty: string
+  location: string
+  starts_at: string
+  ends_at: string
+}
+
+export const portalHelperApi = {
+  list: (access: number) =>
+    api.get<{ plans: PortalPlan[]; mine: MyDuty[] }>(`/api/portal/${access}/helpers/`),
+  signup: (access: number, shift: number) =>
+    api.post<PortalPlan>(`/api/portal/${access}/helpers/shifts/${shift}/signup/`),
+  cancel: (access: number, assignment: number) =>
+    api.post(`/api/portal/${access}/helpers/assignments/${assignment}/cancel/`),
+  calendar: (access: number) => requestBlob('GET', `/api/portal/${access}/helpers/calendar/`),
 }

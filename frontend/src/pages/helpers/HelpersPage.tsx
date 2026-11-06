@@ -353,12 +353,15 @@ function PlanDetail({
           </button>
         )}
       </div>
-      {plan.status === 'published' && (
-        <p className="muted">
-          {t(
-            'Veröffentlicht heißt: Der Plan steht fest. Die Selbsteintragung im Mitgliederbereich folgt in der nächsten Ausbaustufe.',
-          )}
-        </p>
+      <p className="muted">
+        {plan.status === 'draft'
+          ? t('Im Mitgliederbereich erscheint der Plan erst nach dem Veröffentlichen.')
+          : plan.status === 'published'
+            ? t('Der Plan steht im Mitgliederbereich.')
+            : t('Der Plan ist abgeschlossen.')}
+      </p>
+      {editable && (
+        <PlanSettings key={plan.version} base={base} plan={plan} onSaved={loaded.reload} />
       )}
       {(plan.duties ?? []).map((duty) => (
         <DutyCard
@@ -771,5 +774,138 @@ function AssignForm({
         </button>
       </div>
     </form>
+  )
+}
+
+function PlanSettings({
+  base,
+  plan,
+  onSaved,
+}: {
+  base: string
+  plan: HelperPlan
+  onSaved: () => Promise<void>
+}) {
+  const initial = {
+    title: plan.title,
+    event: plan.event,
+    signup: plan.signup,
+    cancel_days: String(plan.cancel_days),
+    max_shifts: plan.max_shifts ? String(plan.max_shifts) : '',
+    remind_days: plan.remind_days ? String(plan.remind_days) : '',
+    show_names: plan.show_names,
+    note: plan.note ?? '',
+  }
+  const [v, setV] = useState(initial)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const dirty = JSON.stringify(v) !== JSON.stringify(initial)
+  const set = <K extends keyof typeof v>(key: K, value: (typeof v)[K]) =>
+    setV((prev) => ({ ...prev, [key]: value }))
+  return (
+    <details className="card">
+      <summary>{t('Einstellungen des Plans')}</summary>
+      <form
+        className="stack"
+        onSubmit={async (e) => {
+          e.preventDefault()
+          setBusy(true)
+          setError('')
+          try {
+            await helperApi.update(base, plan, {
+              title: v.title,
+              event: v.event,
+              signup: v.signup,
+              cancel_days: Number(v.cancel_days) || 0,
+              max_shifts: v.max_shifts ? Number(v.max_shifts) : null,
+              remind_days: v.remind_days ? Number(v.remind_days) : null,
+              show_names: v.show_names,
+              note: v.note,
+            })
+            await onSaved()
+          } catch (err) {
+            setError(errorMessage(err))
+          } finally {
+            setBusy(false)
+          }
+        }}
+      >
+        <div className="helper-fields">
+          <label className="field">
+            <span>{t('Titel')}</span>
+            <input
+              value={v.title}
+              maxLength={200}
+              required
+              onChange={(e) => set('title', e.target.value)}
+            />
+          </label>
+          <EventSelect base={base} value={v.event} onChange={(id) => set('event', id)} />
+          <label className="field">
+            <span>{t('Art der Eintragung')}</span>
+            <select
+              value={v.signup}
+              onChange={(e) => set('signup', e.target.value as HelperPlan['signup'])}
+            >
+              <option value="self">{t('Mitglieder tragen sich selbst ein')}</option>
+              <option value="assign">{t('nur Einteilung durch die Verwaltung')}</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>{t('Absagen bis Tage vorher')}</span>
+            <input
+              type="number"
+              min={0}
+              max={60}
+              value={v.cancel_days}
+              onChange={(e) => set('cancel_days', e.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>{t('Höchstens Schichten je Person')}</span>
+            <input
+              type="number"
+              min={1}
+              max={50}
+              value={v.max_shifts}
+              onChange={(e) => set('max_shifts', e.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>{t('Erinnerung Tage vorher')}</span>
+            <input
+              type="number"
+              min={1}
+              max={14}
+              value={v.remind_days}
+              onChange={(e) => set('remind_days', e.target.value)}
+            />
+          </label>
+        </div>
+        <label className="checkbox">
+          <input
+            type="checkbox"
+            checked={v.show_names}
+            onChange={(e) => set('show_names', e.target.checked)}
+          />
+          {t('Eingetragene sehen, wer noch in ihrer Schicht ist')}
+        </label>
+        <label className="field">
+          <span>{t('Hinweis für die Helfer')}</span>
+          <textarea
+            value={v.note}
+            rows={3}
+            maxLength={5000}
+            onChange={(e) => set('note', e.target.value)}
+          />
+        </label>
+        {error && <p role="alert">{error}</p>}
+        <div className="button-row">
+          <button className="button button-primary" disabled={busy || !dirty}>
+            {t('Einstellungen speichern')}
+          </button>
+        </div>
+      </form>
+    </details>
   )
 }
