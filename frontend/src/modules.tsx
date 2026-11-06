@@ -8,6 +8,7 @@ import { financeAccess, financeSections } from './pages/finanzen/access.ts'
 import { memberSections, membersVisible } from './pages/members/access.ts'
 import { websiteSections } from './pages/website/sections.ts'
 import { circularsVisible } from './pages/circulars/access.ts'
+import { portalNav } from './pages/portal/sections.ts'
 import { hasUnitsPage } from './pages/settings/units.ts'
 import { t } from './i18n/index.ts'
 
@@ -96,14 +97,7 @@ export const modules: AppModule[] = [
     path: '/mein-bereich',
     icon: icon('M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8M4.5 21c.4-4 3.6-6.5 7.5-6.5s7.1 2.5 7.5 6.5'),
     visible: (_org, ws) => !!ws.portal,
-    children: () => [
-      { to: '/mein-bereich', label: t('Übersicht') },
-      { to: '/mein-bereich/aufgaben', label: t('Aufgaben') },
-      { to: '/mein-bereich/ausweis', label: t('Ausweis') },
-      { to: '/mein-bereich/rechnungen', label: t('Rechnungen') },
-      { to: '/mein-bereich/rundschreiben', label: t('Mitteilungen') },
-      { to: '/mein-bereich/daten', label: t('Meine Daten') },
-    ],
+    children: (_org, ws) => portalNav(ws?.portal ?? null),
   },
   {
     id: 'aufgaben',

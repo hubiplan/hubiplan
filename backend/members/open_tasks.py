@@ -16,13 +16,22 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import BILLING_VIEW, EVENTS_MANAGE, MEMBERS_EDIT, PHOTOS_MANAGE
+from access.catalog import (
+    BILLING_VIEW,
+    CIRCULARS_SEND,
+    EVENTS_MANAGE,
+    MEMBERS_EDIT,
+    PHOTOS_MANAGE,
+    WEBSITE_MANAGE,
+)
 from core.api_base import OrgScopedMixin
 from organizations.models import Organization
 
 LIMIT = 20
 # Termine mit Zu-/Absagen, die bald stattfinden
 EVENT_DAYS = 14
+# Rundschreiben-Entwürfe, die so lange liegen, erscheinen unter „Zu erledigen“
+DRAFT_DAYS = 7
 
 
 def _person(membership) -> str:
@@ -157,6 +166,105 @@ def billing_tasks(org: Organization, perms: set[str]) -> list[dict]:
     ]
 
 
+def booking_tasks(org: Organization, perms: set[str]) -> list[dict]:
+    """Offene Belegungsanfragen, die diese Person freigeben darf (Menüprüfung M-13)."""
+    from bookings import access
+    from bookings.models import Booking
+    from todos.access import Scope
+
+    if org.type not in ("club", "federation") or not access.MODULES & set(
+        org.enabled_modules or []
+    ):
+        return []
+    scope = Scope(org, None, perms)
+    if not access.kinds(scope):
+        return []
+    pending = [
+        b
+        for b in Booking.objects.filter(
+            organization=org,
+            department__isnull=True,
+            item__in=access.items(scope),
+            status=Booking.Status.REQUESTED,
+        )
+        .select_related("item")
+        .order_by("starts_at")[:LIMIT]
+        if access.can_manage(scope, b.item)
+    ]
+    local = timezone.localtime
+    return [
+        {
+            "kind": "booking",
+            "kind_label": gettext("Belegungsanfrage"),
+            "title": b.item.title,
+            "detail": gettext("am {date} angefragt").format(
+                date=date_format(local(b.starts_at).date(), "SHORT_DATE_FORMAT", use_l10n=True)
+            ),
+            "created_at": b.created_at,
+            "link": f"/belegung?ab={local(b.starts_at):%Y-%m-%d}",
+            "ref": b.pk,
+        }
+        for b in pending
+    ]
+
+
+def website_tasks(org: Organization, perms: set[str]) -> list[dict]:
+    """Zurückgehaltene Nachrichten aus dem Kontaktformular (Menüprüfung M-13)."""
+    from website.contact_models import HeldMessage
+
+    if WEBSITE_MANAGE not in perms or "website" not in (org.enabled_modules or []):
+        return []
+    held = HeldMessage.objects.filter(organization=org)
+    n = held.count()
+    if not n:
+        return []
+    first = held.order_by("created_at").values_list("created_at", flat=True).first()
+    return [
+        {
+            "kind": "contact_held",
+            "kind_label": gettext("Kontaktformular"),
+            "title": ngettext(
+                "{n} Nachricht wartet auf Freigabe", "{n} Nachrichten warten auf Freigabe", n
+            ).format(n=n),
+            "detail": gettext("wird nach 7 Tagen gelöscht"),
+            "created_at": first,
+            "link": "/webseite/kontakt",
+        }
+    ]
+
+
+def circular_tasks(user, org: Organization, perms: set[str]) -> list[dict]:
+    """Eigene Rundschreiben-Entwürfe, die seit einer Woche liegen (Menüprüfung M-13)."""
+    from circulars.models import Circular
+
+    if CIRCULARS_SEND not in perms or org.type not in ("club", "federation"):
+        return []
+    old = timezone.now() - datetime.timedelta(days=DRAFT_DAYS)
+    drafts = Circular.objects.filter(
+        organization=org,
+        department__isnull=True,
+        status=Circular.Status.DRAFT,
+        created_by=user,
+        updated_at__lt=old,
+    ).order_by("updated_at")[:LIMIT]
+    return [
+        {
+            "kind": "circular_draft",
+            "kind_label": gettext("Rundschreiben"),
+            "title": c.subject or gettext("Entwurf ohne Betreff"),
+            "detail": gettext("Entwurf seit {date} unverändert").format(
+                date=date_format(
+                    timezone.localtime(c.updated_at).date(), "SHORT_DATE_FORMAT", use_l10n=True
+                )
+            ),
+            "created_at": c.updated_at,
+            "link": f"/rundschreiben/{c.pk}",
+            "ref": c.pk,
+        }
+        for c in drafts
+    ]
+
+
 @extend_schema(responses=dict)
 class OpenTasksView(OrgScopedMixin, APIView):
     """Offene Aufgaben der Organisation, nach den Rechten des Benutzers."""
@@ -168,6 +276,9 @@ class OpenTasksView(OrgScopedMixin, APIView):
             items += member_tasks(org, perms)
         items += event_tasks(org, perms)
         items += billing_tasks(org, perms)
+        items += booking_tasks(org, perms)
+        items += website_tasks(org, perms)
+        items += circular_tasks(request.user, org, perms)
         from todos.open_tasks import todo_tasks
 
         items += todo_tasks(request.user, org, perms)
