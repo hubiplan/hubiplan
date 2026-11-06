@@ -12,3 +12,5 @@ Hier pflegt ihr Namen, Kurznamen, Gründungsjahr, Anschrift und Kontakt der Einh
 Unten legt ihr die Ansprechpartner für Fragen zu HUBIplan fest. Sie erscheinen in der Hilfe unter „Wer hilft bei uns?“, auch für Untereinheiten ohne eigene Ansprechpartner. Wie die übrigen Angaben auf dieser Seite speichert HUBIplan sie automatisch, sobald ein Name eingetragen ist.
 
 Ganz unten führt „Einrichtung der Bereiche“ zu den Einstellungen, die nur einen Bereich betreffen, etwa Mitglieder › Einrichtung oder Finanzen › Einrichtung. In der Seitenleiste sind die Einstellungen in Allgemein, Recht, Rollen und Anbindungen sowie Daten gegliedert.
+
+Auf der Ebene der Plattform heißt das erste Feld „Name dieser Instanz“. Wer HUBIplan selbst betreibt, gibt seiner Installation hier einen eigenen Namen, zum Beispiel „Vereinsportal Musterkreis“. Er steht dann auf der Anmeldeseite und im Browser-Tab. Darunter steht auf der Anmeldeseite klein „mit HUBIplan“ mit einem Link zur Lizenz und zum Quellcode.

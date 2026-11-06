@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { isWhiteLabel, usePlatform } from '../theme/platform.ts'
 import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError } from '../api/client.ts'
@@ -343,8 +344,16 @@ const SOURCE_REPO = (
 export function LicensePage() {
   const commit = useRunningFile(COMMIT_FILE, COMMIT_PATTERN)
   const version = useRunningVersion()
+  const instance = usePlatform()
   return (
     <PublicCard title={t('Lizenzen')}>
+      {isWhiteLabel(instance) && (
+        <p>
+          {t('{instanz} verwendet HUBIplan, freie Software unter der AGPL-3.0-or-later.', {
+            instanz: instance.name,
+          })}
+        </p>
+      )}
       <p>
         {t(
           'HUBIplan ist freie Software unter der GNU Affero General Public License, Version 3 oder später (AGPL-3.0-or-later). Ihr dürft HUBIplan nutzen, verändern und weitergeben. Wer eine veränderte Fassung weitergibt oder als Online-Dienst betreibt, muss den Quellcode dieser Fassung unter derselben Lizenz zugänglich machen.',

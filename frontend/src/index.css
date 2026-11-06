@@ -471,6 +471,12 @@ button.tab.active {
   margin: 0;
 }
 
+/* „mit HUBIplan“ unter der Anmeldung bei eigenem Instanznamen (White Label) */
+.powered-by {
+  margin: 0;
+  text-align: center;
+}
+
 /* --- Einstellungen --- */
 
 .totp-setup {
