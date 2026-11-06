@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Ämter besetzen: Unter Mitglieder › Ämter hat jedes Amt den Knopf „Besetzen“, ebenso die Mitgliederakte („Rolle besetzen“). Der Dialog sagt vorher, was passiert, und beendet auf Wunsch gleich die Amtszeit des Vorgängers.
 - Musik: Die Unterpunkte stehen jetzt in der Seitenleiste statt in einer eigenen Leiste über dem Inhalt, gegliedert nach Auftritte, Musiker, Noten, Ausstattung und Abrechnung und Einrichtung. Jeder Punkt hat eine eigene Adresse; alte Lesezeichen leiten weiter.
 - Startseite: „Zu erledigen“ nennt jetzt auch offene Belegungsanfragen, zurückgehaltene Nachrichten aus dem Kontaktformular und eigene Rundschreiben-Entwürfe, die seit einer Woche liegen. Mein Bereich zeigt in der Seitenleiste dieselben Punkte wie auf der Übersicht, etwa Belegung und Ergebnisse, wenn sie freigeschaltet sind.
 - Menü zusammengelegt: Material, Infrastruktur und Belegung stehen unter einem Punkt „Material & Räume“ (Infrastruktur heißt dort „Räume und Anlagen“). Briefvorlagen gibt es unter Rundschreiben › Brief, die Social-Media-Kanäle unter Webseite › Social Media. Neue Namen: Wettbewerbe › Titel und Sieger, Mitglieder › Änderungen und Wechsel.

@@ -81,6 +81,14 @@ class AssignmentSerializer(serializers.ModelSerializer):
         allow_null=True,
         help_text="Mitgliedschaft (Mitgliedsakte) der Person, die die Rolle innehat.",
     )
+    end_previous = serializers.BooleanField(
+        write_only=True,
+        required=False,
+        default=False,
+        help_text="Beim Besetzen die laufenden Amtszeiten anderer Personen in dieser Rolle "
+        "zum Vortag beenden.",
+    )
+    ended = serializers.SerializerMethodField()
     person_name = serializers.SerializerMethodField()
     member_record = serializers.SerializerMethodField()
     invited = serializers.SerializerMethodField()
@@ -107,6 +115,8 @@ class AssignmentSerializer(serializers.ModelSerializer):
             "new_account",
             "has_mfa",
             "awaiting_password",
+            "end_previous",
+            "ended",
         ]
 
     def get_fields(self):
@@ -170,6 +180,10 @@ class AssignmentSerializer(serializers.ModelSerializer):
 
         return bool(obj.user_id) and is_invitation(obj.user)
 
+    def get_ended(self, obj) -> list[str]:
+        """Namen der Vorgänger, deren Amtszeit beim Besetzen beendet wurde."""
+        return getattr(obj, "_ended", [])
+
     def get_new_account(self, obj) -> bool:
         return getattr(obj, "_new_account", False)
 
@@ -191,6 +205,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
         person = validated_data.pop("member", None)
         if person is not None:
             validated_data["person"] = person
+        end_previous = validated_data.pop("end_previous", False)
         email = validated_data.pop("email").lower()
         user, created = User.objects.get_or_create(email=email)
         if created:
@@ -199,6 +214,7 @@ class AssignmentSerializer(serializers.ModelSerializer):
             user.save(update_fields=["password"])
         assignment = RoleAssignment.objects.create(user=user, **validated_data)
         assignment._new_account = created
+        assignment._ended = self._end_previous(assignment) if end_previous else []
         if created:
             from accounts.invitations import send_invitation
 
@@ -207,8 +223,45 @@ class AssignmentSerializer(serializers.ModelSerializer):
             )
         return assignment
 
+    def _end_previous(self, assignment) -> list[str]:
+        """Laufende Amtszeiten anderer Personen in derselben Rolle zum Vortag beenden.
+
+        So geht ein Wechsel (etwa nach der Jahreshauptversammlung) in einem Schritt und die
+        Amtszeiten bleiben lückenlos (Rollen-Vorschlag R2). Protokolliert wie jede Änderung.
+        """
+        import datetime
+
+        from audit.log import diff, record, snapshot
+
+        until = assignment.valid_from - datetime.timedelta(days=1)
+        others = (
+            RoleAssignment.objects.filter(
+                organization=assignment.organization_id, role=assignment.role_id, name=""
+            )
+            .active(assignment.valid_from)
+            .exclude(pk=assignment.pk)
+            .exclude(user_id=assignment.user_id)
+            .select_related("user", "role", "person")
+        )
+        request = self.context.get("request")
+        ended = []
+        for other in others:
+            before = snapshot(other)
+            other.valid_until = max(other.valid_from, until)
+            other.save(update_fields=["valid_until"])
+            record(
+                self.context["org"],
+                getattr(request, "user", None),
+                "update",
+                other,
+                diff(before, snapshot(other)),
+            )
+            ended.append(str(other.person) if other.person_id else other.user.email)
+        return ended
+
     def update(self, instance, validated_data):
         validated_data.pop("email", None)
+        validated_data.pop("end_previous", None)
         if "member" not in validated_data:
             return super().update(instance, validated_data)
         person = validated_data.pop("member")

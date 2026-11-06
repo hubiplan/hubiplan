@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Assigning offices: under Members › Offices every office has an “Assign” button, as does the member record (“Assign role”). The dialog says beforehand what will happen and can end the predecessor’s term at the same time.
 - Music: the sub-items are now in the sidebar instead of a separate bar above the content, grouped as performances, musicians, sheet music, equipment and payments, and setup. Each item has its own address; old bookmarks redirect.
 - Home: “To do” now also lists open booking requests, held contact form messages and your own circular drafts untouched for a week. My area shows the same items in the sidebar as on its overview, such as bookings and results when they are enabled.
 - Menu merged: equipment, facilities and bookings are under one item, “Equipment & rooms” (facilities are called “Rooms and facilities” there). Letter templates are under Circulars › Letter, social media channels under Website › Social media. New names: Competitions › Titles and winners, Members › Changes and transfers.

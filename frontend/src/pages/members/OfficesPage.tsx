@@ -5,7 +5,8 @@ import { Route, Routes } from 'react-router-dom'
 import { newRequestKey } from '../../api/client.ts'
 import { officesApi } from '../../api/offices.ts'
 import type { Office, OfficeEntryInput, OfficeHolder, OfficeImportRow } from '../../api/offices.ts'
-import { PERM } from '../../api/orgs.ts'
+import { orgApi, PERM } from '../../api/orgs.ts'
+import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
 import { DataTable } from '../../components/DataTable.tsx'
 import type { Column } from '../../components/DataTable.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -13,7 +14,7 @@ import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/fo
 import { useChangesGuard } from '../../components/leaveGuard.ts'
 import { DeleteIcon, EditIcon, IconButton } from '../../components/icons.tsx'
 import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
-import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { MembersSection } from '../MembersPage.tsx'
 import { CandidateSelect, PersonField } from './ChroniclePage.tsx'
 import { t } from '../../i18n/index.ts'
@@ -53,8 +54,17 @@ interface Row extends OfficeHolder {
 
 function HoldersPanel() {
   const org = useActiveOrg()
+  const { refresh } = useOrg()
   const canEdit = org.permissions.includes(PERM.membersEdit)
+  const canAssign = org.permissions.includes(PERM.rolesManage)
   const offices = useLoad(() => officesApi.list(org.id), [org.id])
+  // Besetzen (Rollen-Vorschlag R2): Rollen und heutige Amtszeiten nur mit Rollenverwaltung
+  const roles = useLoad(() => (canAssign ? orgApi.roles(org.id) : Promise.resolve([])), [org.id])
+  const assignments = useLoad(
+    () => (canAssign ? orgApi.assignments(org.id) : Promise.resolve([])),
+    [org.id],
+  )
+  const [assigning, setAssigning] = useState<number | null>(null)
   const [editing, setEditing] = useState<Row | 'new' | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -63,7 +73,8 @@ function HoldersPanel() {
   // Je Amt eine eigene Tabelle (Ralf 2026-10-31)
   // Nur Ämter der eigenen Einheit, keine der Untereinheiten (Ralf 2026-10-31)
   const own = offices.data.filter((o) => o.unit === null)
-  const groups = own.filter((o) => o.holders.length > 0)
+  // Mit Rollenverwaltung alle Ämter, damit auch unbesetzte einen Knopf „Besetzen“ haben
+  const groups = canAssign ? own : own.filter((o) => o.holders.length > 0)
 
   async function remove(r: Row) {
     const ok = await confirmDialog({
@@ -97,7 +108,7 @@ function HoldersPanel() {
         </div>
         <p className="muted small">
           {t(
-            'Wer wann welches Amt hatte, auf das Jahr genau. Heutige Inhaber vergebt ihr wie bisher unter den Rollen. Frühere Inhaber, die keine Mitglieder mehr sind, tragt ihr hier mit Namen ein oder importiert eine Liste. Auf der Webseite erscheinen die Ämter, bei denen in der Rolle „unter Ämter zeigen“ eingeschaltet ist.',
+            'Wer wann welches Amt hatte, auf das Jahr genau. Mit „Besetzen“ gebt ihr ein Amt an eine neue Person und beendet dabei die Amtszeit des Vorgängers. Frühere Inhaber, die keine Mitglieder mehr sind, tragt ihr hier mit Namen ein oder importiert eine Liste. Auf der Webseite erscheinen die Ämter, bei denen in der Rolle „unter Ämter zeigen“ eingeschaltet ist.',
           )}
         </p>
         {own.length === 0 && (
@@ -120,67 +131,98 @@ function HoldersPanel() {
         )}
         {message && <Alert kind="error">{message}</Alert>}
       </div>
+      {assigning !== null && roles.data && assignments.data && (
+        <AssignRoleDialog
+          orgId={org.id}
+          roles={roles.data}
+          assignments={assignments.data}
+          role={assigning}
+          onClose={() => setAssigning(null)}
+          onDone={async () => {
+            await Promise.all([offices.reload(), assignments.reload()])
+            await refresh()
+          }}
+        />
+      )}
       {groups.map((o) => (
         <div className="card card-wide" key={o.id}>
-          <h2>{officeLabel(o)}</h2>
+          <div className="card-head">
+            <h2>{officeLabel(o)}</h2>
+            {canAssign && roles.data?.some((r) => r.id === o.id) && (
+              <button
+                type="button"
+                className="button push-right"
+                aria-label={t('{x} besetzen', { x: officeLabel(o) })}
+                onClick={() => setAssigning(o.id)}
+              >
+                {t('Besetzen')}
+              </button>
+            )}
+          </div>
+          {o.holders.length === 0 && <p className="muted">{t('Noch nicht besetzt.')}</p>}
           {o.in_chronicle && <p className="muted small">{t('Auf der Webseite unter „Ämter“.')}</p>}
-          <div className="table-scroll">
-            <table className="table" aria-label={t('{x}: Inhaber', { x: officeLabel(o) })}>
-              <thead>
-                <tr>
-                  <th scope="col">{t('Zeitraum')}</th>
-                  <th scope="col">{t('Name')}</th>
-                  {canEdit && (
-                    <th scope="col">
-                      <span className="sr-only">{t('Aktionen')}</span>
-                    </th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {o.holders.map((h) => {
-                  const r: Row = { ...h, office: o }
-                  return (
-                    <tr key={h.id}>
-                      <td>{periodText(h)}</td>
-                      <td>
-                        {h.name}
-                        {h.former_entry && h.person === null && (
-                          <span className="muted small">
-                            {h.name_public
-                              ? t(' (kein Mitglied)')
-                              : t(' (kein Mitglied, nicht auf der Webseite)')}
-                          </span>
-                        )}
-                      </td>
-                      {canEdit && (
-                        <td className="actions">
-                          {h.former_entry && (
-                            <>
-                              <IconButton
-                                label={t('{name} {x} bearbeiten', {
-                                  name: h.name,
-                                  x: periodText(h),
-                                })}
-                                icon={<EditIcon />}
-                                onClick={() => setEditing(r)}
-                              />
-                              <IconButton
-                                label={t('{name} {x} löschen', { name: h.name, x: periodText(h) })}
-                                icon={<DeleteIcon />}
-                                danger
-                                onClick={() => void remove(r)}
-                              />
-                            </>
+          {o.holders.length > 0 && (
+            <div className="table-scroll">
+              <table className="table" aria-label={t('{x}: Inhaber', { x: officeLabel(o) })}>
+                <thead>
+                  <tr>
+                    <th scope="col">{t('Zeitraum')}</th>
+                    <th scope="col">{t('Name')}</th>
+                    {canEdit && (
+                      <th scope="col">
+                        <span className="sr-only">{t('Aktionen')}</span>
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {o.holders.map((h) => {
+                    const r: Row = { ...h, office: o }
+                    return (
+                      <tr key={h.id}>
+                        <td>{periodText(h)}</td>
+                        <td>
+                          {h.name}
+                          {h.former_entry && h.person === null && (
+                            <span className="muted small">
+                              {h.name_public
+                                ? t(' (kein Mitglied)')
+                                : t(' (kein Mitglied, nicht auf der Webseite)')}
+                            </span>
                           )}
                         </td>
-                      )}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                        {canEdit && (
+                          <td className="actions">
+                            {h.former_entry && (
+                              <>
+                                <IconButton
+                                  label={t('{name} {x} bearbeiten', {
+                                    name: h.name,
+                                    x: periodText(h),
+                                  })}
+                                  icon={<EditIcon />}
+                                  onClick={() => setEditing(r)}
+                                />
+                                <IconButton
+                                  label={t('{name} {x} löschen', {
+                                    name: h.name,
+                                    x: periodText(h),
+                                  })}
+                                  icon={<DeleteIcon />}
+                                  danger
+                                  onClick={() => void remove(r)}
+                                />
+                              </>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       ))}
     </>

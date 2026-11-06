@@ -6513,5 +6513,21 @@
   "Die Social-Media-Kanäle pflegt ihr unter": "You manage the social media channels under",
   "Webseite › Social Media": "Website › Social media",
   "Noten": "Sheet music",
-  "Ausstattung und Abrechnung": "Equipment and payments"
+  "Ausstattung und Abrechnung": "Equipment and payments",
+  "die Person": "the person",
+  "Rolle besetzt": "Role assigned",
+  "{name} hat jetzt die Rolle {role}.": "{name} now holds the role {role}.",
+  "Amtszeit beendet: {names}": "Term of office ended: {names}",
+  "Neues Konto angelegt, die Einladung ist an {email} unterwegs.": "New account created, the invitation is on its way to {email}.",
+  "Neues Konto angelegt, aber die Einladung an {email} ging nicht hinaus. Die Person kann „Passwort vergessen“ nutzen.": "New account created, but the invitation to {email} could not be sent. The person can use “Forgot password”.",
+  "Bitte prüfen:": "Please check:",
+  "Person aus der Mitgliederliste": "Person from the member list",
+  "Für die Anmeldung. Gibt es noch kein Konto, wird eines angelegt.": "For signing in. If there is no account yet, one is created.",
+  "Amtszeit von {names} zum {date} beenden": "End the term of office of {names} on {date}",
+  "Was passiert": "What happens",
+  "Die Rolle hat Rechte in HUBIplan. {name} meldet sich mit dem Konto für {email} an; gibt es noch keins, geht eine Einladung dorthin.": "The role has permissions in HUBIplan. {name} signs in with the account for {email}; if there is none yet, an invitation is sent there.",
+  "Die Rolle hat keine Rechte in HUBIplan. {name} bekommt nur das Amt; ein neues Konto wird nur für die Anmeldung angelegt.": "The role has no permissions in HUBIplan. {name} only gets the office; a new account is only created for signing in.",
+  "Wer wann welches Amt hatte, auf das Jahr genau. Mit „Besetzen“ gebt ihr ein Amt an eine neue Person und beendet dabei die Amtszeit des Vorgängers. Frühere Inhaber, die keine Mitglieder mehr sind, tragt ihr hier mit Namen ein oder importiert eine Liste. Auf der Webseite erscheinen die Ämter, bei denen in der Rolle „unter Ämter zeigen“ eingeschaltet ist.": "Who held which office when, to the year. With “Assign” you give an office to a new person and end the predecessor’s term at the same time. Former holders who are no longer members are entered here by name or imported as a list. The website shows the offices whose role has “show under offices” switched on.",
+  "{x} besetzen": "Assign {x}",
+  "Noch nicht besetzt.": "Not assigned yet."
 }
