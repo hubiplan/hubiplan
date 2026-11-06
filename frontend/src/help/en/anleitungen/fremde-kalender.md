@@ -4,7 +4,7 @@ titel: Show events from an external calendar
 bereich: termine
 modul: events
 rechte: [events.manage]
-routen: [/termine/fremde]
+routen: [/termine/einrichtung/fremde]
 stichworte: [Vereinsplaner, iCal, federation, external events, subscription, token]
 ---
 

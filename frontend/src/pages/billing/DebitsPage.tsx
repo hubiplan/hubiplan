@@ -56,8 +56,7 @@ export function DebitsPage() {
           {!p.creditor_id && !p.account_has_iban && t(' und ')}
           {!p.account_has_iban && t('ein Konto mit IBAN')}
           {t('. Beides steht unter')}{' '}
-          <Link to="/finanzen/einstellungen/rechnung">{t('Einrichtung › Rechnung & Zahlung')}</Link>
-          .
+          <Link to="/finanzen/einrichtung/rechnung">{t('Einrichtung › Rechnung & Zahlung')}</Link>.
         </Alert>
       )}
       {ready && canEdit && <NewRun orgId={org.id} proposals={p} onCreated={reload} />}

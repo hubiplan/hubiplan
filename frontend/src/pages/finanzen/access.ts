@@ -84,7 +84,7 @@ export function financeSections(a: FinanceAccess): NavItem[] {
     ...(a.billing || a.received || a.finance
       ? [{ to: '/finanzen/rechnungen', label: t('Rechnungen'), section: bill }]
       : []),
-    { to: '/finanzen/geschaeftspartner', label: t('Geschäftspartner'), section: bill },
+
     ...(a.sepa ? [{ to: '/finanzen/lastschrift', label: t('Lastschriften'), section: pay }] : []),
     ...(a.finance
       ? [{ to: '/finanzen/kontoauszuege', label: t('Kontoauszüge'), section: pay }]
@@ -104,7 +104,9 @@ export function financeSections(a: FinanceAccess): NavItem[] {
     ...(a.finance
       ? [{ to: '/finanzen/abschluss', label: t('Abschluss & Berichte'), section: close }]
       : []),
-    { to: '/finanzen/einstellungen', label: t('Einrichtung'), section: setup },
+    // Geschäftspartner gelten für Ein- und Ausgang, deshalb bei „Einrichten“ (Menüprüfung M-10)
+    { to: '/finanzen/geschaeftspartner', label: t('Geschäftspartner'), section: setup },
+    { to: '/finanzen/einrichtung', label: t('Einrichtung'), section: setup },
   ]
 }
 
@@ -130,17 +132,18 @@ export function settingsTabs(a: FinanceAccess): NavItem[] {
     ...(a.billing
       ? [
           ...(a.feeRuns
-            ? [{ to: '/finanzen/einstellungen/beitraege', label: t('Beitragssätze') }]
+            ? [{ to: '/finanzen/einrichtung/beitraege', label: t('Beitragssätze') }]
             : []),
-          { to: '/finanzen/einstellungen/mahnstufen', label: t('Mahnstufen') },
-          { to: '/finanzen/einstellungen/rechnung', label: t('Rechnung & Zahlung') },
+          { to: '/finanzen/einrichtung/mahnstufen', label: t('Mahnstufen') },
+          { to: '/finanzen/einrichtung/rechnung', label: t('Rechnung & Zahlung') },
         ]
       : []),
     ...(a.finance
       ? [
-          { to: '/finanzen/einstellungen/konten', label: t('Konten') },
-          { to: '/finanzen/einstellungen/kategorien', label: t('Kategorien') },
+          { to: '/finanzen/einrichtung/konten', label: t('Konten') },
+          { to: '/finanzen/einrichtung/kategorien', label: t('Kategorien') },
         ]
       : []),
+    ...(a.donations ? [{ to: '/finanzen/einrichtung/zuwendungen', label: t('Zuwendungen') }] : []),
   ]
 }

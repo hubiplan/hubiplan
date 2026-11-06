@@ -4,7 +4,7 @@ titel: Finance › Setup › Invoice & payment
 bereich: beitraege
 modul: billing
 rechte: [billing.edit]
-routen: [/finanzen/einstellungen/rechnung]
+routen: [/finanzen/einrichtung/rechnung]
 stichworte: [invoice, payment term, creditor ID, e-invoice]
 ---
 

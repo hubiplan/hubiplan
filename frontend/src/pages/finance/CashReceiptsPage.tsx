@@ -192,7 +192,7 @@ function CashReceiptForm({
     return (
       <Alert kind="info">
         {t('Für Quittungen braucht es eine Barkasse. Lege sie unter')}{' '}
-        <Link to="/finanzen/einstellungen/konten">{t('Einrichtung › Konten')}</Link>{' '}
+        <Link to="/finanzen/einrichtung/konten">{t('Einrichtung › Konten')}</Link>{' '}
         {t('an (Art „Barkasse“).')}
       </Alert>
     )

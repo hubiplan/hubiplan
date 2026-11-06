@@ -4,7 +4,7 @@ titel: Finance › Setup › Accounts
 bereich: finanzen
 modul: finance
 rechte: [finance.edit]
-routen: [/finanzen/einstellungen/konten]
+routen: [/finanzen/einrichtung/konten]
 stichworte: [account, bank account, petty cash, IBAN]
 ---
 

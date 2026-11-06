@@ -4,7 +4,7 @@ titel: Finanzen › Einrichtung › Rechnung & Zahlung
 bereich: beitraege
 modul: billing
 rechte: [billing.edit]
-routen: [/finanzen/einstellungen/rechnung]
+routen: [/finanzen/einrichtung/rechnung]
 stichworte: [Rechnung, Zahlungsziel, Gläubiger-ID, E-Rechnung]
 ---
 

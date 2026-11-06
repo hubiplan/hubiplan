@@ -653,7 +653,7 @@ describe('Prüflisten', () => {
     expect(screen.getByText(/Zahlungsziel 7 Tage/)).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Zur Stelle' })[0]).toHaveAttribute(
       'href',
-      '/finanzen/einstellungen/rechnung',
+      '/finanzen/einrichtung/rechnung',
     )
     expect(await screen.findByText(DECISIONS.due_days.title.de)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Erstellen' })).toBeEnabled()

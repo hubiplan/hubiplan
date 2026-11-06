@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Setup: Events have their own “Setup” with categories, external calendars, sharing and the website link. The donation receipt details are now under Finance › Setup › Donations. Roles, accounts and offices use the same terms everywhere (account, term of office, leadership, permissions); in the member file, offices and the account are on the “Roles and account” tab.
 - Menu: “My area” is now in the “Everyday” group. Settings and Website have subheadings in the sidebar (Settings: General, Legal, Roles and connections, Data; Website: Content, Layout, Operation). The document bin is a link at the top of the library. Organisation shows links to the setup of all areas. The home page shows “To do” to treasurers too, and the app uses the same words as the browser (To do, Cash book, Invoices).
 - Usability: On a phone the header is a single row; undo and the unit selection are at the top of the menu (☰), “view as role” is under “My account”, and the full club name stays readable. Heading and browser tab name the subpage, e.g. “Organisation · Settings”. Links in text are bold instead of underlined. Units are counted per level, e.g. “7 corps · 15 platoons”.
 - Usability: Members read circulars under “My area › Messages”, as in the app. The event list has a heading per month and shows the category. Checkboxes are larger, sign-in reports empty fields itself, and in English dates appear as 31/10/2026 everywhere.
@@ -21,7 +22,7 @@ November 2026:
 - Members: Past unit memberships (such as platoons) can be added with start and end in one step. This also works for units that are no longer active. If they overlap, the message names the affected membership with its exact dates.
 - Events: If an external calendar cannot be fetched for 14 days, its events are hidden until a fetch succeeds again. Everyone who manages events receives an email about it.
 - Events: You can hide an event’s end time on the website when only the start time is known. The setting is available when creating or editing an event; the entered end time is kept internally.
-- Events: External calendars show their events in your own calendar, e.g. the federation’s from Vereinsplaner or from a calendar subscription (iCal). HUBIplan fetches them every hour; individual ones can be hidden (Events › External calendars).
+- Events: External calendars show their events in your own calendar, e.g. the federation’s from Vereinsplaner or from a calendar subscription (iCal). HUBIplan fetches them every hour; individual ones can be hidden (Events › Setup › External calendars).
 - Website: For each text you can choose whether the caption appears below the image and in the image carousel. The default is without a caption, for existing pages too.
 - Website: New “Klassisch” (classic) design with a light header, a coloured line on top and menu buttons in the club colour. To keep the previous Klassisch, save it as a package first and import it as an own design.
 - Website: A design can be saved as a package and imported again by platform administrators as an own design, with custom CSS and colours on maintained built-in layouts (Website › Design › Share design).

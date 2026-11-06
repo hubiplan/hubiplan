@@ -4,7 +4,7 @@ titel: Finanzen › Einrichtung › Beitragssätze
 bereich: beitraege
 modul: billing
 rechte: [billing.edit]
-routen: [/finanzen/einstellungen/beitraege]
+routen: [/finanzen/einrichtung/beitraege]
 stichworte: [Beitrag, Beitragssatz, Mitgliedsart, Ermäßigung]
 ---
 

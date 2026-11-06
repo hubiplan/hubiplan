@@ -4,7 +4,7 @@ titel: Finanzen › Einrichtung › Kategorien
 bereich: finanzen
 modul: finance
 rechte: [finance.edit]
-routen: [/finanzen/einstellungen/kategorien]
+routen: [/finanzen/einrichtung/kategorien]
 stichworte: [Kategorie, Steuerbereich, Zweckbetrieb]
 ---
 

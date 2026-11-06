@@ -4,7 +4,7 @@ titel: Finance › Setup › Categories
 bereich: finanzen
 modul: finance
 rechte: [finance.edit]
-routen: [/finanzen/einstellungen/kategorien]
+routen: [/finanzen/einrichtung/kategorien]
 stichworte: [category, tax area, purpose-related business]
 ---
 

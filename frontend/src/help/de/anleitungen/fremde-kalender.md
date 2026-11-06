@@ -4,7 +4,7 @@ titel: Termine eines fremden Kalenders zeigen
 bereich: termine
 modul: events
 rechte: [events.manage]
-routen: [/termine/fremde]
+routen: [/termine/einrichtung/fremde]
 stichworte: [Vereinsplaner, iCal, Dachverband, fremde Termine, Abo, Token]
 ---
 

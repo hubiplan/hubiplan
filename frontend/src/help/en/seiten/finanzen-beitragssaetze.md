@@ -4,7 +4,7 @@ titel: Finance › Setup › Fee rates
 bereich: beitraege
 modul: billing
 rechte: [billing.edit]
-routen: [/finanzen/einstellungen/beitraege]
+routen: [/finanzen/einrichtung/beitraege]
 stichworte: [fee, fee rate, membership type, reduction]
 ---
 
