@@ -726,3 +726,92 @@ def test_versammlungen_im_mitgliederbereich(setup, api):
     org.enabled_modules = [m for m in org.enabled_modules if m != "meetings"]
     org.save()
     assert portal.get(url).status_code == 404
+
+
+def test_antraege_aus_dem_mitgliederbereich(setup, api):
+    """V6: Mitglieder stellen bis zur Frist Anträge; die Leitung nimmt sie auf oder lehnt ab."""
+    from meetings.models import Motion
+
+    s = setup
+    org = s["org"]
+    org.member_portal_enabled = True
+    org.save(update_fields=["member_portal_enabled"])
+    erika = make_member(org, "Erika", "Beispiel", email="erika@example.org")
+    user = make_user("erika@example.org")
+    access = PortalAccess.objects.create(organization=org, membership=erika, user=user)
+    portal = api(user)
+    kind = kind_named(s["chef"], s["url"], "Jahreshauptversammlung")
+    assert kind["motion_days"] == 7
+    meeting = new_meeting(s)
+    Meeting.objects.filter(pk=meeting["id"]).update(status="invited")
+    url = f"/api/portal/{access.pk}/meetings/"
+    row = ok(portal.get(url))["upcoming"][0]
+    assert row["motion_until"] and row["motions"] == []
+    submit = f"{url}{meeting['id']}/motions/"
+    assert portal.post(submit, {"title": "", "text": "x"}, content_type=JSON).status_code == 400
+    mine = ok(
+        portal.post(
+            submit,
+            {"title": "Neue Fahne", "text": "Die alte Fahne ist verschlissen."},
+            content_type=JSON,
+        ),
+        201,
+    )
+    assert [m["status"] for m in mine] == ["submitted"]
+    second = ok(
+        portal.post(submit, {"title": "Grillfest", "text": "Im Sommer."}, content_type=JSON), 201
+    )
+    # Inhalte verschlüsselt
+    with connection.cursor() as cur:
+        cur.execute("SELECT title FROM meetings_motion")
+        assert all("Fahne" not in row[0] for row in cur.fetchall())
+    # Verwaltung sieht die Anträge
+    detail = ok(s["chef"].get(f"{s['url']}{meeting['id']}/"))
+    assert detail["motions_open"] == 2
+    assert [m["name"] for m in detail["motions"]] == ["Erika Beispiel", "Erika Beispiel"]
+    fahne, grill = (m["id"] for m in detail["motions"])
+    decide = f"{s['url']}{meeting['id']}/motions/"
+    assert (
+        s["reader"].post(f"{decide}{fahne}/", {"decision": "accept"}, content_type=JSON).status_code
+        == 403
+    )
+    detail = ok(s["chef"].post(f"{decide}{fahne}/", {"decision": "accept"}, content_type=JSON))
+    assert detail["agenda"][-1]["title"] == "Antrag von Erika Beispiel: Neue Fahne"
+    assert detail["agenda"][-1]["type"] == "resolution"
+    # Ablehnen nur mit Begründung
+    assert (
+        s["chef"].post(f"{decide}{grill}/", {"decision": "reject"}, content_type=JSON).status_code
+        == 400
+    )
+    ok(
+        s["chef"].post(
+            f"{decide}{grill}/",
+            {"decision": "reject", "reply": "Gehört nicht in die Versammlung."},
+            content_type=JSON,
+        )
+    )
+    states = {
+        m["title"]: (m["status"], m["reply"]) for m in ok(portal.get(url))["upcoming"][0]["motions"]
+    }
+    assert states == {
+        "Neue Fahne": ("accepted", ""),
+        "Grillfest": ("rejected", "Gehört nicht in die Versammlung."),
+    }
+    # Zurückziehen nur, solange eingereicht
+    third = ok(portal.post(submit, {"title": "X", "text": "Y"}, content_type=JSON), 201)[-1]
+    assert portal.post(f"{url}motions/{fahne}/withdraw/").status_code == 404
+    assert portal.post(f"{url}motions/{third['id']}/withdraw/").status_code == 204
+    assert Motion.objects.get(pk=third["id"]).status == "withdrawn"
+    # Nach der Frist keine Anträge mehr
+    Event.objects.filter(meeting__pk=meeting["id"]).update(
+        starts_at=timezone.now() + datetime.timedelta(days=3),
+        ends_at=timezone.now() + datetime.timedelta(days=3, hours=2),
+    )
+    assert (
+        portal.post(submit, {"title": "Spät", "text": "Zu spät."}, content_type=JSON).status_code
+        == 400
+    )
+    # Art ohne Anträge
+    MeetingKind.objects.filter(pk=kind["id"]).update(motion_days=None)
+    assert ok(portal.get(url))["upcoming"][0]["motion_until"] is None
+    assert second

@@ -8342,3 +8342,72 @@ msgstr "Draft unchanged since {date}"
 
 msgid "Das Symbol braucht mindestens {px} Pixel Breite oder Höhe."
 msgstr "The icon needs to be at least {px} pixels wide or high."
+
+msgid "für **{title}** suchen wir noch Helferinnen und Helfer."
+msgstr "we are still looking for volunteers for **{title}**."
+
+msgid "{day}, {start}–{end}: {n} frei"
+msgstr "{day}, {start}–{end}: {n} free"
+
+msgid "Trag dich im Mitgliederbereich ein: {url}"
+msgstr "Sign up in the member area: {url}"
+
+msgid "Bitte melde dich bei der Verwaltung, wenn du helfen kannst."
+msgstr "Please contact the administration if you can help."
+
+msgid "Vielen Dank!"
+msgstr "Thank you!"
+
+msgid "Helfer gesucht: {title} (noch {n} Plätze frei)"
+msgstr "Volunteers wanted: {title} ({n} places still free)"
+
+msgid "Bitte den Plan zuerst veröffentlichen."
+msgstr "Please publish the roster first."
+
+msgid "Alle Schichten sind besetzt."
+msgstr "All shifts are filled."
+
+msgid "Aufruf als Rundschreiben"
+msgstr "Call-out as circular"
+
+msgid "Die Tagesordnung steht schon fest."
+msgstr "The agenda is already fixed."
+
+msgid "Zu viele Tagesordnungspunkte."
+msgstr "Too many agenda items."
+
+msgid "Antrag von {name}: {title}"
+msgstr "Motion by {name}: {title}"
+
+msgid "Bitte eine Begründung angeben."
+msgstr "Please give a reason."
+
+msgid "Antrag {title}"
+msgstr "Motion {title}"
+
+msgid "Zu dieser Versammlung sind keine Anträge vorgesehen."
+msgstr "Motions are not accepted for this meeting."
+
+msgid "Die Frist für Anträge ist vorbei."
+msgstr "The deadline for motions has passed."
+
+msgid "Bitte Titel und Begründung angeben."
+msgstr "Please enter a title and a reason."
+
+msgid "Du hast schon zu viele Anträge gestellt."
+msgstr "You have already submitted too many motions."
+
+msgid "eingereicht"
+msgstr "submitted"
+
+msgid "in die Tagesordnung aufgenommen"
+msgstr "added to the agenda"
+
+msgid "nicht aufgenommen"
+msgstr "not added"
+
+msgid "Begründung"
+msgstr "Reason"
+
+msgid "Antwort"
+msgstr "Reply"

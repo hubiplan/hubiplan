@@ -1,11 +1,14 @@
-// Versammlungen im Mitgliederbereich (konzepte/versammlungen.md, Schritt V5): Einladungen mit
-// Tagesordnung und freigegebene Protokolle für Stimmberechtigte.
+// Versammlungen im Mitgliederbereich (konzepte/versammlungen.md, Schritte V5 und V6):
+// Einladungen mit Tagesordnung, eigene Anträge und freigegebene Protokolle für Stimmberechtigte.
 import { useState } from 'react'
 import { saveBlob } from '../../api/client.ts'
 import { portalMeetingApi } from '../../api/meetings.ts'
+import type { PortalMeetings as Data } from '../../api/meetings.ts'
+import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { LoadError } from '../../components/ui.tsx'
 import { locale, t } from '../../i18n/index.ts'
+import { motionStatusLabel } from '../meetings/MotionsCard.tsx'
 
 const ZONE = 'Europe/Berlin'
 
@@ -71,6 +74,7 @@ export function PortalMeetings({ accessId }: { accessId: number }) {
                   </li>
                 ))}
               </ol>
+              <Motions accessId={accessId} meeting={m} onChanged={reload} />
             </article>
           ))
         )}
@@ -102,5 +106,135 @@ export function PortalMeetings({ accessId }: { accessId: number }) {
         )}
       </section>
     </>
+  )
+}
+
+function Motions({
+  accessId,
+  meeting,
+  onChanged,
+}: {
+  accessId: number
+  meeting: Data['upcoming'][number]
+  onChanged: () => Promise<void>
+}) {
+  const [writing, setWriting] = useState(false)
+  const [title, setTitle] = useState('')
+  const [text, setText] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [now] = useState(() => Date.now())
+  const own = meeting.motions ?? []
+  const open = !!meeting.motion_until && new Date(meeting.motion_until).getTime() > now
+  if (!open && own.length === 0) return null
+  const act = async (action: () => Promise<unknown>) => {
+    setBusy(true)
+    setError('')
+    try {
+      await action()
+      await onChanged()
+      return true
+    } catch (err) {
+      setError(errorMessage(err))
+      return false
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="stack">
+      <h4>{t('Anträge')}</h4>
+      {own.length > 0 && (
+        <ul>
+          {own.map((m) => (
+            <li key={m.id}>
+              <strong>{m.title}</strong> · {motionStatusLabel(m.status)}
+              {m.reply && <div className="muted small">{m.reply}</div>}
+              {m.status === 'submitted' && (
+                <button
+                  type="button"
+                  className="link-button"
+                  disabled={busy}
+                  aria-label={t('Antrag zurückziehen: {title}', { title: m.title })}
+                  onClick={async () => {
+                    const yes = await confirmDialog({
+                      title: t('Antrag zurückziehen?'),
+                      message: m.title,
+                      confirmLabel: t('Zurückziehen'),
+                    })
+                    if (yes) await act(() => portalMeetingApi.withdrawMotion(accessId, m.id))
+                  }}
+                >
+                  {t('Zurückziehen')}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {error && <p role="alert">{error}</p>}
+      {open &&
+        (writing ? (
+          <form
+            className="stack"
+            aria-label={t('Antrag stellen: {title}', { title: meeting.title })}
+            onSubmit={async (e) => {
+              e.preventDefault()
+              const done = await act(() =>
+                portalMeetingApi.submitMotion(accessId, meeting.id, { title, text }),
+              )
+              if (done) {
+                setWriting(false)
+                setTitle('')
+                setText('')
+              }
+            }}
+          >
+            <label className="field">
+              <span>{t('Titel des Antrags')}</span>
+              <input
+                value={title}
+                maxLength={300}
+                required
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>{t('Begründung')}</span>
+              <textarea
+                value={text}
+                maxLength={10000}
+                required
+                onChange={(e) => setText(e.target.value)}
+              />
+            </label>
+            <div className="button-row">
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => setWriting(false)}
+              >
+                {t('Abbrechen')}
+              </button>
+              <button className="button" disabled={busy || !title.trim() || !text.trim()}>
+                {t('Antrag einreichen')}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="button-row">
+            <button type="button" className="button button-ghost" onClick={() => setWriting(true)}>
+              {t('Antrag stellen')}
+            </button>
+            <span className="muted small">
+              {t('Anträge bis {day}', {
+                day: new Date(meeting.motion_until!).toLocaleDateString(locale(), {
+                  timeZone: ZONE,
+                }),
+              })}
+            </span>
+          </div>
+        ))}
+    </div>
   )
 }

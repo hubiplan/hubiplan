@@ -803,6 +803,11 @@ urlpatterns = [
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
     path("portal/<int:access_id>/bookings/", booking_portal.ListView.as_view()),
     path("portal/<int:access_id>/meetings/", meeting_portal.ListView.as_view()),
+    path("portal/<int:access_id>/meetings/<int:pk>/motions/", meeting_portal.MotionsView.as_view()),
+    path(
+        "portal/<int:access_id>/meetings/motions/<int:pk>/withdraw/",
+        meeting_portal.WithdrawView.as_view(),
+    ),
     path("portal/<int:access_id>/meetings/<int:pk>/minutes/", meeting_portal.MinutesView.as_view()),
     path("portal/<int:access_id>/helpers/", helper_portal.ListView.as_view()),
     path("portal/<int:access_id>/helpers/calendar/", helper_portal.CalendarView.as_view()),

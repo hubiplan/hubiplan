@@ -48,3 +48,17 @@ Plätze an eine Untereinheit, etwa „Jägerzug stellt 4 Personen für die Theke
 Untereinheit sieht ihre Plätze in ihren Helferdiensten unter **Kontingente vom Verein** und teilt
 dort eigene Mitglieder ein. Noch offene Plätze eines Kontingents gelten im Mitgliederbereich als
 vergeben. Mit 0 Plätzen entfernst du ein Kontingent; schon Eingeteilte bleiben in der Schicht.
+
+Plan kopieren: **Plan kopieren** legt einen neuen Plan in Vorbereitung an, etwa für das
+Schützenfest im nächsten Jahr. Die Kopie übernimmt Dienste, Schichten, Kontingente und
+Einstellungen, aber keine Einteilungen. Gibst du den ersten Tag des neuen Plans an, verschiebt
+HUBIplan alle Schichten um denselben Abstand.
+
+Aufruf: Sind in einem veröffentlichten Plan noch Plätze frei, legt **Aufruf als Rundschreiben**
+einen Entwurf an alle Mitglieder der Einheit an, mit den freien Schichten und dem Link zum
+Eintragen. Du prüfst und versendest ihn wie jedes Rundschreiben. Dafür brauchst du zusätzlich
+das Recht für Rundschreiben.
+
+Geleistete Dienste: Nach Beginn einer Schicht hakst du bei jeder Person **geleistet** an. Unter
+**Geleistete Dienste** in der Übersicht steht je Jahr, wer wie viele Schichten und Stunden
+übernommen hat, etwa für einen Dank oder Pflichtstunden.
