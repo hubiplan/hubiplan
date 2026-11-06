@@ -695,7 +695,9 @@ def dump_rows(model, org, packer, department=None) -> list[dict]:
         from todos.exports import attachment_rows
 
         qs = attachment_rows(org, department)
-    if department is not None and label(model) != "bookings.bookingexception":
+    if department is not None and label(model) == "meetings.agendaitem":
+        qs = qs.filter(meeting__department=department)
+    elif department is not None and label(model) != "bookings.bookingexception":
         # Ausfälle hängen an der Buchung; die ist oben schon auf die Abteilung begrenzt
         qs = qs.filter(department=department)
     templates = {}
