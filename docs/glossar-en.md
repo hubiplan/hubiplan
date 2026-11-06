@@ -53,6 +53,10 @@ Verbindlich für die englische Oberfläche von HUBIplan, der App und der Vereins
 | Mitglied | member |
 | Mitgliederbereich | member area |
 | Mitgliedsart | membership type |
+| Mitgliedstyp (Person / Organisation) | member kind (person / organisation) |
+| Organisationsmitglied | organisation member |
+| Rechtsform | legal form |
+| Namenszusatz | name addition |
 | Mitgliedsausweis | membership card |
 | Quittung | receipt |
 | Revisionsprotokoll | audit log |

@@ -43,6 +43,7 @@ from members.models import (
     Person,
 )
 from members.photo_models import MemberPhoto
+from members.services import ORGANIZATION_FIELDS
 from organizations.models import (
     Department,
     DepartmentRole,
@@ -580,6 +581,13 @@ class Dumper:
                 {
                     "id": p.pk,
                     **values(p, ("last_name", "first_name", "birth_date", "gender")),
+                    # Organisationsmitglieder (Firma, Verein, Behörde …); ältere Dateien
+                    # ohne diese Angaben enthalten nur Personen
+                    **(
+                        {"kind": p.kind, **values(p, ORGANIZATION_FIELDS)}
+                        if p.is_organization
+                        else {}
+                    ),
                     "federation": (
                         {
                             "member_number": fm.member_number,

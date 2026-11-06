@@ -8405,3 +8405,45 @@ msgstr "Reason"
 
 msgid "Antwort"
 msgstr "Reply"
+
+msgid "Ein Amt hat immer ein Mensch, keine Organisation."
+msgstr "Only a person can hold an office, not an organisation."
+
+msgid "GmbH"
+msgstr "GmbH (limited company)"
+
+msgid "UG (haftungsbeschränkt)"
+msgstr "UG (limited liability)"
+
+msgid "AG"
+msgstr "AG (stock corporation)"
+
+msgid "eingetragener Verein (e. V.)"
+msgstr "registered association (e. V.)"
+
+msgid "nicht eingetragener Verein"
+msgstr "unregistered association"
+
+msgid "Genossenschaft (eG)"
+msgstr "cooperative (eG)"
+
+msgid "KG / GmbH & Co. KG"
+msgstr "limited partnership (KG / GmbH & Co. KG)"
+
+msgid "oHG"
+msgstr "general partnership (oHG)"
+
+msgid "GbR"
+msgstr "civil law partnership (GbR)"
+
+msgid "Stiftung"
+msgstr "foundation"
+
+msgid "Körperschaft des öffentlichen Rechts"
+msgstr "public-law corporation"
+
+msgid "Gebietskörperschaft (Stadt, Gemeinde, Kreis)"
+msgstr "local authority (town, municipality, district)"
+
+msgid "Sonstige"
+msgstr "other"

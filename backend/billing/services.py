@@ -136,6 +136,9 @@ def yearly_fee(
     if rate is _MISSING:
         rate = rates[member_type.pk] = FeeRate.objects.filter(member_type=member_type).first()
     base = rate.amount if rate else None
+    if birth_date is None:
+        # Organisationsmitglieder: keine Altersstufe, nur der Betrag der Mitgliedsart
+        return (base if base is not None else ZERO), ""
     age = age_on(birth_date, org.fiscal_start(year))
     if "stages" not in cache:
         cache["stages"] = list(AgeRate.objects.filter(organization=org))
@@ -954,14 +957,18 @@ def reported_counts(
             if assignment is None or not assignment.member_type.reported:
                 continue
             kind = "active" if assignment.member_type.active else "passive"
-            age = age_on(
-                m.person.birth_date, federation.fiscal_start(federation.fiscal_year_of(on))
+            birth = m.person.birth_date
+            # Organisationsmitglieder: ohne Altersstufe (Stufe 0)
+            age = (
+                age_on(birth, federation.fiscal_start(federation.fiscal_year_of(on)))
+                if birth is not None
+                else None
             )
             stage = next(
                 (
                     st.pk
                     for st in sorted(stages, key=lambda x: (x.min_age or 0, x.pk))
-                    if st.matches(age)
+                    if age is not None and st.matches(age)
                 ),
                 0,
             )

@@ -198,6 +198,44 @@ describe('Aufnahme', () => {
     expect(body.last_name).toBe('Muster')
     expect(body.birth_date).toBe('1980-05-17')
   })
+
+  it('nimmt eine Organisation ohne Vorname und Geburtsdatum auf', async () => {
+    const calls = fakeApi({
+      ...common(),
+      [`GET ${base}/members/duplicates/?typ=organisation&name=Musterbau+GmbH`]: () => ({
+        status: 200,
+        body: [],
+      }),
+      [`POST ${base}/members/admit/`]: () => ({ status: 201, body: { id: 99 } }),
+      [`GET ${base}/members/99/`]: () => ({ status: 404, body: { detail: 'Nicht gefunden.' } }),
+    })
+    renderAt('/mitglieder/neu')
+    const user = userEvent.setup()
+    await user.click(
+      await screen.findByRole('radio', { name: 'eine Organisation (Firma, Verein, Behörde …)' }),
+    )
+    expect(screen.queryByLabelText('Vorname')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Geburtsdatum')).not.toBeInTheDocument()
+    await user.type(screen.getByLabelText('Name der Organisation'), 'Musterbau GmbH')
+    await user.selectOptions(screen.getByLabelText('Rechtsform (optional)'), 'gmbh')
+    await user.click(screen.getByRole('button', { name: 'Weiter' }))
+
+    await screen.findByRole('heading', { name: '2. Mitgliedschaft und Kontakt' })
+    await user.selectOptions(screen.getByLabelText('Mitgliedsart'), '3')
+    await user.type(screen.getByLabelText('USt-IdNr.'), 'DE123456789')
+    await user.type(screen.getByLabelText('Straße und Hausnummer'), 'Musterstraße 1')
+    await user.type(screen.getByLabelText('PLZ'), '12345')
+    await user.type(screen.getByLabelText('Ort'), 'Musterstadt')
+    await user.click(screen.getByRole('button', { name: 'Aufnehmen' }))
+
+    await screen.findByText(/Nicht gefunden|Lädt/)
+    const admit = calls.find((c) => c.key === `POST ${base}/members/admit/`)!
+    const body = JSON.parse(String(admit.init?.body))
+    expect(body.kind).toBe('organization')
+    expect(body.last_name).toBe('Musterbau GmbH')
+    expect(body.legal_form).toBe('gmbh')
+    expect(body.vat_id).toBe('DE123456789')
+  })
 })
 
 const detail = {

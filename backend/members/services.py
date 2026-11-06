@@ -24,11 +24,21 @@ from .models import (
     MemberType,
     MemberTypeAssignment,
     Person,
+    PersonKind,
     overlaps,
     today,
 )
 
 CONTACT_FIELDS = ("email", "phone", "street", "postal_code", "city", "country")
+# Angaben, die es nur bei Organisationsmitgliedern gibt
+ORGANIZATION_FIELDS = (
+    "name_suffix",
+    "legal_form",
+    "legal_form_other",
+    "register",
+    "vat_id",
+    "website",
+)
 
 
 def federation_of(club: Organization) -> Organization | None:
@@ -263,6 +273,17 @@ def check_found(person: Person, club: Organization, data: dict) -> None:
     """Eine vorhandene Person darf nur verknüpft werden, wenn die Dublettensuche sie mit
     den mitgeschickten Angaben findet (Name und Geburtsdatum). Die Personen-ID allein
     berechtigt nicht (Audit 02.11. GA-S01)."""
+    if data.get("kind") == "organization" or person.kind == "organization":
+        found = (
+            data.get("kind") == "organization"
+            and person.kind == "organization"
+            and person.scope_id == scope_for(club).pk
+            and person.last_name.strip().casefold()
+            == (data.get("last_name") or "").strip().casefold()
+        )
+        if not found:
+            raise ValidationError({"person": gettext("Unbekannte Person.")})
+        return
     missing = [f for f in ("last_name", "first_name", "birth_date") if not data.get(f)]
     if missing:
         raise ValidationError({f: gettext("Pflichtfeld.") for f in missing})
@@ -278,8 +299,11 @@ def check_found(person: Person, club: Organization, data: dict) -> None:
         raise ValidationError({"person": gettext("Unbekannte Person.")})
 
 
-def find_duplicates(club: Organization, last_name: str, first_name: str, birth_date):
-    """Mögliche Dubletten im Verbandsbereich: gleiches Geburtsdatum und Name.
+def find_duplicates(
+    club: Organization, last_name: str, first_name: str, birth_date, *, organization=False
+):
+    """Mögliche Dubletten im Verbandsbereich: gleiches Geburtsdatum und Name, bei
+    Organisationen gleicher Name.
 
     Die Personentabelle ist per RLS auf den Verbandsbereich beschränkt.
     """
@@ -287,16 +311,16 @@ def find_duplicates(club: Organization, last_name: str, first_name: str, birth_d
     from .personmarks import candidates, verified
     from .personsearch import ordered
 
-    last, first = last_name.strip(), first_name.strip()
+    last, first = last_name.strip(), ("" if organization else first_name.strip())
     qs = ordered(
-        candidates(scope.pk, last, first, birth_date, strict=False),
+        candidates(scope.pk, last, first, birth_date, strict=False, organization=organization),
         "last_name",
         "first_name",
     )
     found = [
         p
         for p in qs.select_related("federation")
-        if verified(p, last, first, birth_date, strict=False)
+        if verified(p, last, first, birth_date, strict=False, organization=organization)
     ]
     return found[:10]
 
@@ -341,12 +365,15 @@ def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Memb
             person.save(update_fields=["gender"])
     else:
         keep_contact = False
+        organization = data.get("kind") == PersonKind.ORGANIZATION
         person = Person.objects.create(
             scope=scope,
+            kind=PersonKind.ORGANIZATION if organization else PersonKind.PERSON,
             last_name=data["last_name"].strip(),
-            first_name=data["first_name"].strip(),
-            birth_date=data["birth_date"],
-            gender=data.get("gender", ""),
+            first_name="" if organization else data["first_name"].strip(),
+            birth_date=None if organization else data["birth_date"],
+            gender="" if organization else data.get("gender", ""),
+            **{f: data.get(f, "") for f in ORGANIZATION_FIELDS if organization},
         )
 
     check_active_rule(person, club, member_type, entry_date)

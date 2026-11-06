@@ -461,7 +461,7 @@ export function SuggestCorrection({
   intro,
 }: {
   orgId: number
-  member: { id: number; last_name: string; first_name: string; birth_date: string }
+  member: { id: number; last_name: string; first_name: string; birth_date: string | null }
   /** Einheit, die die Daten pflegt */
   owner: string
   intro: string
@@ -469,7 +469,7 @@ export function SuggestCorrection({
   const [values, setValues] = useState({
     last_name: member.last_name,
     first_name: member.first_name,
-    birth_date: member.birth_date,
+    birth_date: member.birth_date ?? '',
     message: '',
   })
   const [msg, setMsg] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)

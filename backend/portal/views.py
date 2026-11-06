@@ -195,7 +195,7 @@ def current_values(club, membership) -> dict:
     return {
         "last_name": current["last_name"],
         "first_name": current["first_name"],
-        "birth_date": current["birth_date"].isoformat(),
+        "birth_date": current["birth_date"].isoformat() if current["birth_date"] else None,
         "gender": current["gender"],
         **(current["contact"] or {}),
     }
