@@ -47,6 +47,7 @@ from access.catalog import CIRCULARS_SEND, DEPT_CIRCULARS_SEND
 from core import virenscan
 from core.tenancy import rls_bypass
 from organizations.addresses import base_url
+from organizations.platform_public import instance_name
 from outbox import mail
 from outbox.backend import ORG_HEADER
 
@@ -723,7 +724,7 @@ def _counts_text(circular: Circular) -> str:
         parts.append(f"{counts['app']} per App")
     parts.append(f"{counts['mail']} per E-Mail")
     if counts["letter"]:
-        parts.append(f"{counts['letter']} per Brief (zum Drucken in HUBIplan)")
+        parts.append(f"{counts['letter']} per Brief (zum Drucken in {instance_name()})")
     if counts["portal"]:
         parts.append(f"{counts['portal']} nur im Mitgliederbereich")
     return ", ".join(parts)
@@ -768,7 +769,7 @@ def notify_draft(entry: InboundMail, skipped: list[str]) -> None:
     ml = entry.mailing_list
     body = (
         f"Hallo,\n\ndeine Mail „{entry.subject}“ an den Verteiler {ml.name} "
-        f"({address_of(ml)}) liegt als Entwurf in HUBIplan unter Rundschreiben.\n\n"
+        f"({address_of(ml)}) liegt als Entwurf in {instance_name()} unter Rundschreiben.\n\n"
         f"Empfänger: {_counts_text(entry.circular)}.\n\n"
         f"Versendet wird erst dort: "
         f"{base_url(entry.organization)}/rundschreiben/{entry.circular_id}"
@@ -818,7 +819,7 @@ def notify_sent(entry: InboundMail, skipped: list[str]) -> None:
         f"Hallo,\n\ndeine Mail „{entry.subject}“ an den Verteiler {ml.name} "
         f"({address_of(ml)}) wird jetzt versendet.\n\n"
         f"Empfänger: {_counts_text(entry.circular)}.\n\n"
-        f"Stand und Briefe in HUBIplan: "
+        f"Stand und Briefe in {instance_name()}: "
         f"{base_url(entry.organization)}/rundschreiben/{entry.circular_id}\n\n"
         "Hast du die Mail nicht geschickt, melde dich bitte sofort beim Vorstand."
         f"{_skipped_text(skipped)}\n"

@@ -496,16 +496,16 @@ msgstr "This email address already belongs to another account."
 #, python-brace-format
 msgid ""
 "{org} hat Ihre neue E-Mail-Adresse {new} übernommen. Möchten Sie sich bei "
-"HUBIplan künftig auch damit anmelden (bisher {old})?"
+"{instanz} künftig auch damit anmelden (bisher {old})?"
 msgstr ""
 "{org} has taken over your new email address {new}. Would you like to sign in "
-"to HUBIplan with it from now on (previously {old})?"
+"to {instanz} with it from now on (previously {old})?"
 
 #, python-brace-format
 msgid ""
-"Sie möchten sich bei HUBIplan künftig mit {new} anmelden (bisher {old})."
+"Sie möchten sich bei {instanz} künftig mit {new} anmelden (bisher {old})."
 msgstr ""
-"You would like to sign in to HUBIplan with {new} from now on (previously "
+"You would like to sign in to {instanz} with {new} from now on (previously "
 "{old})."
 
 msgid "Bitte bestätigen Sie Ihre neue E-Mail-Adresse"
@@ -4531,8 +4531,8 @@ msgid "übernommen"
 msgstr "taken over"
 
 #, python-brace-format
-msgid "Ihr Zugang zu HUBIplan – {org} wurde übertragen"
-msgstr "Your HUBIplan access – {org} has been transferred"
+msgid "Ihr Zugang zu {instanz} – {org} wurde übertragen"
+msgstr "Your {instanz} access – {org} has been transferred"
 
 #, python-brace-format
 msgid "Hallo {name},"
@@ -4550,10 +4550,10 @@ msgstr ""
 
 #, python-brace-format
 msgid ""
-"{org} lädt Sie in den Mitgliederbereich von HUBIplan ein. Dort sehen Sie "
+"{org} lädt Sie in den Mitgliederbereich von {instanz} ein. Dort sehen Sie "
 "Ihre Daten und können Änderungen melden."
 msgstr ""
-"{org} invites you to the HUBIplan member area. There you can see your "
+"{org} invites you to the {instanz} member area. There you can see your "
 "details and report changes."
 
 #, python-brace-format
@@ -4572,8 +4572,8 @@ msgstr ""
 "use a password, choose “Forgot password” there."
 
 #, python-brace-format
-msgid "{org} hat Ihnen den Mitgliederbereich von HUBIplan freigeschaltet."
-msgstr "{org} has activated the HUBIplan member area for you."
+msgid "{org} hat Ihnen den Mitgliederbereich von {instanz} freigeschaltet."
+msgstr "{org} has activated the {instanz} member area for you."
 
 #, python-brace-format
 msgid ""
@@ -4585,8 +4585,8 @@ msgid ""
 msgstr "If you do not know your password, choose “Forgot password” there."
 
 #, python-brace-format
-msgid "Ihr Zugang zu HUBIplan – {org}"
-msgstr "Your HUBIplan access – {org}"
+msgid "Ihr Zugang zu {instanz} – {org}"
+msgstr "Your {instanz} access – {org}"
 
 msgid "Bitte ein aktuelles Mitglied auswählen."
 msgstr "Please choose a current member."
@@ -4617,8 +4617,9 @@ msgstr "You cannot remove role administration from yourself."
 msgid "Es wurde nichts geändert."
 msgstr "Nothing was changed."
 
-msgid "Ihr Anmeldelink für HUBIplan"
-msgstr "Your sign-in link for HUBIplan"
+#, python-brace-format
+msgid "Ihr Anmeldelink für {instanz}"
+msgstr "Your sign-in link for {instanz}"
 
 #, python-brace-format
 msgid ""

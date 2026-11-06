@@ -62,6 +62,7 @@ from members.views import (
 )
 from organizations.imprint import ensure as ensure_imprint
 from organizations.models import DepartmentRole
+from organizations.platform_public import instance_name
 from organizations.serializers import clean_department_permissions
 from organizations.terms import department_terms, fill
 from organizations.theme import effective_theme
@@ -926,7 +927,9 @@ class LoginLinkRequestView(APIView):
                 from outbox import mail
 
                 with language_of(user):
-                    subject = gettext("Ihr Anmeldelink für HUBIplan")
+                    subject = gettext("Ihr Anmeldelink für {instanz}").format(
+                        instanz=instance_name()
+                    )
                     body = (
                         gettext("Guten Tag,")
                         + "\n\n"

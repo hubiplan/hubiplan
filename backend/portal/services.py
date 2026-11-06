@@ -19,6 +19,7 @@ from members.models import DepartmentRoleHolder, Membership, today
 from members.services import contact_for
 from organizations.addresses import base_url
 from organizations.models import Department, Organization
+from organizations.platform_public import instance_name
 from organizations.tree import UnitTree
 from outbox import mail
 
@@ -211,7 +212,9 @@ def _notify_transfer(club: Organization, membership: Membership, old_user, new: 
     local, _, domain = new.partition("@")
     hint = f"{local[:1]}…@{domain}"
     with language_of(old_user):
-        subject = gettext("Ihr Zugang zu HUBIplan – {org} wurde übertragen").format(org=club.name)
+        subject = gettext("Ihr Zugang zu {instanz} – {org} wurde übertragen").format(
+            instanz=instance_name(), org=club.name
+        )
         body = (
             gettext("Hallo {name},").format(name=membership.person.first_name)
             + "\n\n"
@@ -263,9 +266,9 @@ def send_access_mail(club: Organization, access: PortalAccess, created_by) -> st
             body = (
                 greeting
                 + gettext(
-                    "{org} lädt Sie in den Mitgliederbereich von HUBIplan ein. Dort sehen Sie "
+                    "{org} lädt Sie in den Mitgliederbereich von {instanz} ein. Dort sehen Sie "
                     "Ihre Daten und können Änderungen melden."
-                ).format(org=club.name)
+                ).format(org=club.name, instanz=instance_name())
                 + "\n\n"
                 + gettext(
                     "Mit diesem persönlichen Link melden Sie sich ohne Passwort an "
@@ -284,8 +287,8 @@ def send_access_mail(club: Organization, access: PortalAccess, created_by) -> st
             body = (
                 greeting
                 + gettext(
-                    "{org} hat Ihnen den Mitgliederbereich von HUBIplan freigeschaltet."
-                ).format(org=club.name)
+                    "{org} hat Ihnen den Mitgliederbereich von {instanz} freigeschaltet."
+                ).format(org=club.name, instanz=instance_name())
                 + "\n\n"
                 + gettext(
                     "Melden Sie sich wie gewohnt mit Ihrem bestehenden Konto ({email}) an: {url}"
@@ -296,7 +299,9 @@ def send_access_mail(club: Organization, access: PortalAccess, created_by) -> st
                 )
                 + "\n"
             )
-        subject = gettext("Ihr Zugang zu HUBIplan – {org}").format(org=club.name)
+        subject = gettext("Ihr Zugang zu {instanz} – {org}").format(
+            instanz=instance_name(), org=club.name
+        )
     mail.send(
         user.email,
         subject,
