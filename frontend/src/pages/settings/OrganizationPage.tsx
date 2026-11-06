@@ -13,6 +13,7 @@ import { buildFederationTerms, buildTerms } from '../../org/terms.ts'
 import { Why } from '../../learning/Aids.tsx'
 import { HelpContactsCard } from '../../help/HelpExtras.tsx'
 import { t } from '../../i18n/index.ts'
+import { loadPlatform } from '../../theme/platform.ts'
 import { ShootingFacilitiesCard } from './ShootingFacilitiesCard.tsx'
 
 /** Lädt die Angaben der Einheit; die drei Seiten unter „Organisation“ teilen sich das. */
@@ -156,6 +157,8 @@ function OrganizationForm({
         }
         onSaved(saved as OrgDetail)
         void refresh()
+        // Name der Instanz (White Label) gilt auch auf Anmeldeseite und im Browser-Tab
+        if (isPlatform) void loadPlatform(true)
       },
     },
   )
@@ -177,13 +180,15 @@ function OrganizationForm({
           <>
             <div className="grid-2">
               <Field
-                label={isPlatform ? t('Name') : t('Vollständiger Name')}
+                label={isPlatform ? t('Name dieser Instanz') : t('Vollständiger Name')}
                 required
                 value={v.name}
                 error={errors.name}
                 hint={
                   isPlatform
-                    ? undefined
+                    ? t(
+                        'Erscheint auf der Anmeldeseite, im Browser-Tab und überall, wo keine Einheit gewählt ist. Vorgabe: HUBIplan.',
+                      )
                     : t('Erscheint auf Rechnungen, Ausweisen, PDFs und in Mails.')
                 }
                 onChange={(e) => set('name', e.target.value)}

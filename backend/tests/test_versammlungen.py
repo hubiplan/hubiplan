@@ -657,6 +657,8 @@ def test_beschlussbuch(setup, api):
     assert data["years"] and data["can_todo"] is False
     first = data["rows"][0]
     assert first["number"].endswith("/01") and first["status"] == "open"
+    # Gewählte nur mit Namen: ohne Mitgliedschaft kein „Ins Amt übernehmen“
+    assert data["rows"][1]["elected"] is None
     assert [r["office"] for r in ok(s["reader"].get(book + "?typ=election"))["rows"]] == [
         "Kassierer"
     ]

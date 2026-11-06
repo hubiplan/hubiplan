@@ -52,7 +52,7 @@ export function PublicCircularConfirmPage() {
     <main className="login-page">
       <div className="card public-photo">
         <div className="login-logo">
-          <Logo name={info?.organization || 'HUBIplan'} logoUrl={null} />
+          <Logo name={info?.organization} logoUrl={null} />
         </div>
         <h1>{t('Rundschreiben bestätigen')}</h1>
         {invalid && <Alert kind="error">{t('Dieser Link ist ungültig oder abgelaufen.')}</Alert>}

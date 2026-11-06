@@ -1,3 +1,5 @@
+import { PRODUCT_NAME, usePlatform } from '../theme/platform.ts'
+
 // Zeichen von HUBIplan: Akte mit H, der Querstrich ist ein ansteigender Steg
 // (Entwurf C3, Ralf 31.10.2026). Akte in der Primärfarbe, Reiter und Steg in der
 // Akzentfarbe, H-Striche weiß. Die Akte ist zugleich der Hintergrund, so bleibt das
@@ -16,22 +18,24 @@ export function LogoMark({ className = 'logo-img' }: { className?: string }) {
   )
 }
 
-export function Logo({
-  name = 'HUBIplan',
-  logoUrl = null,
-}: {
-  name?: string
-  logoUrl?: string | null
-}) {
+/**
+ * Logo mit Namen. Ohne Namen: Name und Logo der Instanz (White Label, Vorgabe „HUBIplan“
+ * mit dem H-Zeichen). Mit Namen einer Einheit: deren Logo, sonst das H-Zeichen in den
+ * Farben, die gerade gelten.
+ */
+export function Logo({ name, logoUrl = null }: { name?: string; logoUrl?: string | null }) {
+  const instance = usePlatform()
+  const shown = name || instance.name
+  const logo = name ? logoUrl : (logoUrl ?? instance.logo_url)
   return (
     <span className="logo">
-      {logoUrl ? <img src={logoUrl} alt="" className="logo-img logo-upload" /> : <LogoMark />}
-      {name === 'HUBIplan' ? (
+      {logo ? <img src={logo} alt="" className="logo-img logo-upload" /> : <LogoMark />}
+      {shown === PRODUCT_NAME ? (
         <span className="logo-name logo-wordmark">
           HUBI<span className="logo-wordmark-light">plan</span>
         </span>
       ) : (
-        <span className="logo-name">{name}</span>
+        <span className="logo-name">{shown}</span>
       )}
     </span>
   )

@@ -12,22 +12,34 @@ import { buttonColors, linkColor, PAGE_BG } from '../../theme/theme.ts'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
 import { t } from '../../i18n/index.ts'
+import { loadPlatform } from '../../theme/platform.ts'
 
 export function AppearancePage() {
   const org = useActiveOrg()
   const { data, error, setData, reload } = useLoad(() => orgApi.theme(org.id), [org.id])
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
   if (!data) return <p className="muted">{t('Lädt …')}</p>
-  return <ThemeForm key={org.id} orgId={org.id} theme={data} onSaved={setData} reload={reload} />
+  return (
+    <ThemeForm
+      key={org.id}
+      orgId={org.id}
+      isPlatform={org.type === 'platform'}
+      theme={data}
+      onSaved={setData}
+      reload={reload}
+    />
+  )
 }
 
 function ThemeForm({
   orgId,
+  isPlatform,
   theme,
   onSaved,
   reload,
 }: {
   orgId: number
+  isPlatform: boolean
   theme: ThemeSettings
   onSaved: (tm: ThemeSettings) => void
   reload: () => Promise<void>
@@ -51,6 +63,8 @@ function ThemeForm({
     onSaved: (saved) => {
       onSaved(saved as ThemeSettings)
       void refresh()
+      // Farben der Instanz gelten auch für Anmeldeseite und Seiten ohne Einheit
+      if (isPlatform) void loadPlatform(true)
     },
   })
 
@@ -59,6 +73,13 @@ function ThemeForm({
       <form className="card card-wide" onSubmit={(e) => e.preventDefault()}>
         <h2>{t('Farben')}</h2>
         {editable && <SaveStatus auto={auto} />}
+        {isPlatform && (
+          <p className="small">
+            {t(
+              'Farben und Logo der Instanz gelten für die Anmeldeseite, die öffentlichen Seiten und alle Einheiten ohne eigene Farben oder eigenes Logo. Den Namen der Instanz legst du unter Einstellungen › Organisation fest.',
+            )}
+          </p>
+        )}
         <p className="muted small">
           {t(
             'Ohne eigene Farbe übernimmt die Organisation das Erscheinungsbild der übergeordneten Ebene',
@@ -141,6 +162,7 @@ function ThemeForm({
             onChange={async () => {
               await reload()
               await refresh()
+              if (isPlatform) await loadPlatform(true)
             }}
           />
         ) : theme.logo_url ? (

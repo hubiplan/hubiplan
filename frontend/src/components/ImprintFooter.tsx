@@ -6,6 +6,7 @@ import { useOrg } from '../org/OrgContext.tsx'
 import { PublicImprintContext } from './publicImprint.ts'
 import type { PublicImprintTarget } from './publicImprint.ts'
 import { formatTitle } from './pageTitle.ts'
+import { usePlatform } from '../theme/platform.ts'
 import { t } from '../i18n/index.ts'
 
 // Ein Link je Seite: Mit Einheit zeigt die Seite zuerst die Einheit, dann die Plattform.
@@ -42,9 +43,10 @@ export function PublicShell() {
   const [unit, setUnit] = useState<PublicImprintTarget | null>(null)
   const { pathname } = useLocation()
   const title = PUBLIC_TITLES.find(([prefix]) => pathname.startsWith(prefix))?.[1]
+  const instance = usePlatform().name
   useEffect(() => {
     document.title = formatTitle(title)
-  }, [title])
+  }, [title, instance])
   return (
     <PublicImprintContext.Provider value={setUnit}>
       <div className="public-shell">

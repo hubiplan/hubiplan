@@ -53,6 +53,7 @@ from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import help_views, imprint_views, social_views
 from organizations import views as org_views
+from organizations.platform_public import PublicPlatformView
 from outbox import views as outbox_views
 from peering import urls as peering_urls
 from portal import views as portal_views
@@ -923,6 +924,7 @@ urlpatterns = [
     path("me/email/", self_service.EmailChangeView.as_view(), name="my-email"),
     path("me/language/", language.MyLanguageView.as_view(), name="my-language"),
     path("public/languages/", language.PublicLanguagesView.as_view(), name="public-languages"),
+    path("public/platform/", PublicPlatformView.as_view(), name="public-platform"),
     path("me/learning/", learning.LearningView.as_view(), name="my-learning"),
     path("me/help/", help_done.HelpDoneView.as_view(), name="my-help"),
     path("me/help/<str:key>/", help_done.HelpDoneKeyView.as_view(), name="my-help-step"),
