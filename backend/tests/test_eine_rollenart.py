@@ -127,6 +127,7 @@ OLD = [
 
 @pytest.mark.langsam
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.migration
 def test_umzug_der_alten_rollen():
     """Die Migration kopiert Rollen, Inhaber und Verweise in die gemeinsamen Tabellen."""
     executor = MigrationExecutor(connection)

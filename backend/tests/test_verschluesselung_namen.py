@@ -221,6 +221,7 @@ class TestNames:
 
 @pytest.mark.langsam
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.migration
 def test_migration_schuetzt_chiffrate_beim_rueckweg(orgs):
     with rls_bypass():
         m = make_member(orgs["c"], "É" * 100, "Ö" * 100)
