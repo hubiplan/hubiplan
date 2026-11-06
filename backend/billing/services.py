@@ -445,13 +445,64 @@ def _address(contact) -> str:
     return "\n".join(line for line in lines if line)
 
 
-def member_recipient(org, membership: Membership) -> dict:
+def _invoice_contact(org, membership: Membership):
+    """Ansprechpartner einer Organisation für Rechnungen: zuerst einer mit „erhält
+    Rechnungen“ (Hauptansprechpartner vorn), sonst der Hauptansprechpartner (J3)."""
+    from members.models import ContactPerson
+
+    contacts = list(
+        ContactPerson.objects.filter(membership=membership)
+        .select_related("person")
+        .order_by("-is_primary", "pk")
+    )
+    chosen = next((c for c in contacts if c.receives_invoices), None)
+    chosen = chosen or next((c for c in contacts if c.is_primary), None)
+    if chosen is None:
+        return None, ""
+    if chosen.person_id is not None:
+        linked = contact_for(chosen.person, org)
+        return chosen, linked.email if linked else ""
+    return chosen, chosen.email
+
+
+def member_recipient(org, membership: Membership, for_invoice: bool = True) -> dict:
+    """Empfänger einer Rechnung an ein Mitglied, in dieser Reihenfolge (J3):
+    abweichende Rechnungsanschrift, sonst Anschrift des Mitglieds; bei Organisationen
+    mit „z. Hd.“ des Ansprechpartners für Rechnungen. Die Mail geht an die
+    Rechnungs-E-Mail, sonst an diesen Ansprechpartner, sonst an das Mitglied.
+
+    ``for_invoice=False`` (z. B. Zuwendungsbestätigung): nur Name und Anschrift des
+    Mitglieds selbst."""
+    from members.models import BillingAddress
+
     person = membership.person
     contact = contact_for(person, org)
+    billing = BillingAddress.objects.filter(membership=membership).first() if for_invoice else None
+    name = (
+        person.display_name
+        if person.is_organization
+        else (f"{person.first_name} {person.last_name}")
+    )
+    email = contact.email if contact else ""
+    attention = ""
+    if person.is_organization and for_invoice:
+        chosen, chosen_email = _invoice_contact(org, membership)
+        if chosen is not None:
+            attention = f"z. Hd. {chosen.display_name}"
+            email = chosen_email or email
+    address = _address(contact)
+    if billing is not None and billing.has_address:
+        name = billing.name.strip() or name
+        attention = billing.attention.strip()
+        address = _address(billing)
+    if billing is not None and billing.email:
+        email = billing.email
     return {
-        "recipient_name": f"{person.first_name} {person.last_name}",
-        "recipient_address": _address(contact),
-        "recipient_email": contact.email if contact else "",
+        "recipient_name": "\n".join(line for line in (name, attention) if line),
+        "recipient_address": address,
+        "recipient_email": email,
+        "order_reference": billing.order_reference if billing else "",
+        "leitweg_id": billing.leitweg_id if billing else "",
     }
 
 

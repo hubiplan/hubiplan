@@ -14,6 +14,7 @@ from organizations.terms import fill
 
 from . import services
 from .models import (
+    BillingAddress,
     ContactPerson,
     DepartmentMembership,
     DepartmentRoleHolder,
@@ -576,6 +577,39 @@ class ContactPersonSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class BillingAddressSerializer(serializers.ModelSerializer):
+    """Abweichende Rechnungsanschrift und Rechnungsangaben (J3)."""
+
+    class Meta:
+        model = BillingAddress
+        fields = [
+            "name",
+            "attention",
+            "street",
+            "postal_code",
+            "city",
+            "country",
+            "email",
+            "order_reference",
+            "leitweg_id",
+        ]
+
+    def validate(self, attrs):
+        street = attrs.get("street", getattr(self.instance, "street", "")).strip()
+        city = attrs.get("city", getattr(self.instance, "city", "")).strip()
+        postal_code = attrs.get("postal_code", getattr(self.instance, "postal_code", "")).strip()
+        if (street or city or postal_code) and not (street and city):
+            raise serializers.ValidationError(
+                {
+                    "street" if not street else "city": gettext(
+                        "Für eine eigene Rechnungsanschrift bitte Straße (oder Postfach) und "
+                        "Ort angeben."
+                    )
+                }
+            )
+        return attrs
+
+
 class MemberUpdateSerializer(OrganizationFieldsMixin, serializers.Serializer):
     """Stammdaten ändern (Person + Kontakt + Vereinsnummer).
 
@@ -676,6 +710,9 @@ def member_detail(membership: Membership, org) -> dict:
             .select_related("membership__person")
             .order_by("pk")
         ],
+        "billing_address": BillingAddressSerializer(membership.billing_address).data
+        if hasattr(membership, "billing_address")
+        else None,
         "club_number": membership.club_number,
         "pays_fee_self": membership.pays_fee_self,
         "info_opt_out_at": membership.info_opt_out_at,

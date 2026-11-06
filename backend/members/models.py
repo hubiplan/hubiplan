@@ -641,6 +641,44 @@ class ContactPerson(models.Model):
         return f"{self.first_name} {self.last_name}".strip()
 
 
+class BillingAddress(models.Model):
+    """Abweichende Rechnungsanschrift und Rechnungsangaben einer Mitgliedschaft
+    (Konzept juristische Personen, J3; für alle Mitglieder, z. B. Eltern für ein Kind).
+
+    Ist eine Anschrift eingetragen (Ort), gehen Rechnungen und Mahnungen dorthin.
+    Rechnungs-E-Mail, Bestellnummer und Leitweg-ID gelten auch ohne eigene Anschrift.
+    Briefe, Rundschreiben und Einladungen gehen nie an diese Anschrift.
+    """
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    membership = models.OneToOneField(
+        Membership, on_delete=models.CASCADE, related_name="billing_address"
+    )
+    name = EncryptedCharField("Rechnungsempfänger", max_length=200, blank=True)
+    attention = EncryptedCharField("Abteilung / z. Hd.", max_length=200, blank=True)
+    street = EncryptedCharField("Straße oder Postfach", max_length=200, blank=True)
+    postal_code = EncryptedCharField("PLZ", max_length=20, blank=True)
+    city = EncryptedCharField("Ort", max_length=100, blank=True)
+    country = models.CharField("Land", max_length=100, blank=True, default="")
+    email = EncryptedEmailField("Rechnungs-E-Mail", blank=True)
+    order_reference = models.CharField("Bestellnummer", max_length=100, blank=True, default="")
+    leitweg_id = models.CharField("Leitweg-ID", max_length=50, blank=True, default="")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Rechnungsanschrift"
+        verbose_name_plural = "Rechnungsanschriften"
+
+    def __str__(self) -> str:
+        return f"Rechnungsanschrift {self.pk}"
+
+    @property
+    def has_address(self) -> bool:
+        return bool(self.city.strip() or self.street.strip())
+
+
 class HonoraryTitle(models.Model):
     """Ehrung eines Vereins oder Dachverbands (z. B. Ehrenmitglied, Ehrenmajor),
     optional mit Beitragsanpassung. Vergeben wird er am Mitglied mit Von-/Bis-Datum.

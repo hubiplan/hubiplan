@@ -279,6 +279,7 @@ def candidate_data(c: rcp.Candidate) -> dict:
         "key": c.key,
         "first_name": c.first_name,
         "last_name": c.last_name,
+        "organization": c.organization_name,
         "club": c.club.display_name,
         "email": c.email,
         "departments": c.departments,

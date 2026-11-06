@@ -122,7 +122,10 @@ def unit_privacy(org: Organization) -> str:
             "weitere Angaben, die wir für die Vereinsarbeit festgelegt haben (Zusatzfelder)"
         )
     if "billing" in f["modules"]:
-        data.append("Beiträge, Rechnungen und Zahlungen")
+        data.append(
+            "Beiträge, Rechnungen und Zahlungen, ggf. eine abweichende Rechnungsanschrift "
+            "mit Rechnungs-E-Mail, Bestellnummer und Leitweg-ID"
+        )
     if f["sepa"]:
         data.append("Bankverbindung (IBAN, BIC, Kontoinhaber) und SEPA-Lastschriftmandat")
     data.append(

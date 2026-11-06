@@ -38,6 +38,7 @@ from organizations.tree import with_descendants
 
 from . import services, type_usage
 from .models import (
+    BillingAddress,
     ContactDetails,
     ContactPerson,
     DepartmentMembership,
@@ -55,6 +56,7 @@ from .models import (
 from .personsearch import name_ids_many, ordered
 from .serializers import (
     AdmitSerializer,
+    BillingAddressSerializer,
     ContactPersonSerializer,
     DepartmentMembershipSerializer,
     DepartmentRoleHolderSerializer,
@@ -758,6 +760,51 @@ class ContactPersonViewSet(_MemberChildMixin, viewsets.ModelViewSet):
 
 class FederationEntrySerializer(serializers.Serializer):
     manual_entry_date = serializers.DateField(allow_null=True)
+
+
+class BillingAddressView(_ClubMixin, APIView):
+    """Abweichende Rechnungsanschrift einer Mitgliedschaft setzen oder entfernen (J3)."""
+
+    @transaction.atomic
+    def put(self, request, org_id: int, pk: int):
+        membership = get_object_or_404(
+            Membership.objects.select_related("person").select_for_update(),
+            organization=self.org,
+            pk=pk,
+        )
+        instance = BillingAddress.objects.filter(membership=membership).first()
+        before = snapshot(instance) if instance else {}
+        data = BillingAddressSerializer(instance, data=request.data, partial=instance is not None)
+        data.is_valid(raise_exception=True)
+        saved = data.save(organization=self.org, membership=membership)
+        record(
+            self.org,
+            request.user,
+            "update" if instance else "create",
+            saved,
+            diff(before, snapshot(saved)),
+            person=membership.person,
+        )
+        return Response(member_detail(membership, self.org))
+
+    @transaction.atomic
+    def delete(self, request, org_id: int, pk: int):
+        membership = get_object_or_404(
+            Membership.objects.select_related("person"), organization=self.org, pk=pk
+        )
+        instance = BillingAddress.objects.filter(membership=membership).first()
+        if instance is not None:
+            record(
+                self.org,
+                request.user,
+                "delete",
+                instance,
+                diff(snapshot(instance), {}),
+                person=membership.person,
+            )
+            instance.delete()
+            membership = Membership.objects.select_related("person").get(pk=membership.pk)
+        return Response(member_detail(membership, self.org))
 
 
 class FederationEntryView(_ClubMixin, APIView):
