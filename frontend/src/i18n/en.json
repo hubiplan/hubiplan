@@ -6496,7 +6496,6 @@
   },
   "Eine Rolle ohne Rechte ist ein reines Amt: Die Inhaber brauchen kein Konto und bekommen keine E-Mail. Rechte wirken nur, wenn der Mitgliederbereich für diese Einheit eingeschaltet ist und der Inhaber ein Konto hat (z. B. über „Leitung besetzen“).": "A role without permissions is just an office: holders need no account and get no email. Permissions only take effect if the member area is switched on for this unit and the holder has an account (e.g. via “Assign head”).",
   "Leitung besetzen": "Assign head",
-  "und richtet ihm ein Konto ein. Die Person braucht eine E-Mail-Adresse und kann danach selbst weitere Rollen besetzen. Nur nötig, wenn jemand selbst in HUBIplan arbeiten soll; Ämter ohne Konto besetzt du unter „Wer hat welche Rolle?“.": "and sets up an account. The person needs an email address and can then assign further roles. Only needed if someone is to work in HUBIplan; offices without an account are assigned under “Who has which role?”.",
   "Rechte (optional)": "Permissions (optional)",
   "Die Person bekommt die Rolle „Vorstand“ mit allen Rechten in {diesem} und kann danach selbst Rollen festlegen und besetzen.": "The person gets the role “Board” with all permissions in {diesem} and can then define and assign roles.",
   "Änderungen und Wechsel": "Changes and transfers",
@@ -6529,5 +6528,15 @@
   "Die Rolle hat keine Rechte in HUBIplan. {name} bekommt nur das Amt; ein neues Konto wird nur für die Anmeldung angelegt.": "The role has no permissions in HUBIplan. {name} only gets the office; a new account is only created for signing in.",
   "Wer wann welches Amt hatte, auf das Jahr genau. Mit „Besetzen“ gebt ihr ein Amt an eine neue Person und beendet dabei die Amtszeit des Vorgängers. Frühere Inhaber, die keine Mitglieder mehr sind, tragt ihr hier mit Namen ein oder importiert eine Liste. Auf der Webseite erscheinen die Ämter, bei denen in der Rolle „unter Ämter zeigen“ eingeschaltet ist.": "Who held which office when, to the year. With “Assign” you give an office to a new person and end the predecessor’s term at the same time. Former holders who are no longer members are entered here by name or imported as a list. The website shows the offices whose role has “show under offices” switched on.",
   "{x} besetzen": "Assign {x}",
-  "Noch nicht besetzt.": "Not assigned yet."
+  "Noch nicht besetzt.": "Not assigned yet.",
+  "Noch keine Rollen angelegt.": "No roles created yet.",
+  "seit {date}": "since {date}",
+  "{role} von {name} beenden": "End {role} for {name}",
+  "Es wird kein Konto angelegt und keine E-Mail verschickt.": "No account is created and no email is sent.",
+  "Heutige Inhaber": "Current holders",
+  "Frühere Amtszeiten unter Mitglieder › Ämter": "Earlier terms under Members › Offices",
+  "und richtet ihm ein Konto ein. Die Person braucht eine E-Mail-Adresse und kann danach selbst weitere Rollen besetzen. Nur nötig, wenn jemand selbst in HUBIplan arbeiten soll; Ämter ohne Konto besetzt du unter „Wer hat welche Rolle?“ mit „Besetzen“.": "and sets up an account for them. The person needs an email address and can then assign further roles themselves. Only needed if someone is to work in HUBIplan themselves; offices without an account are assigned under “Who has which role?” with “Assign”.",
+  "Rollen besetzt ihr unter": "You assign roles under",
+  "Mitglieder › Ämter": "Members › Offices",
+  ". Dort endet die Amtszeit des Vorgängers gleich mit.": ". The predecessor's term ends there in the same step."
 }

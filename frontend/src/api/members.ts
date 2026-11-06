@@ -172,6 +172,8 @@ export interface DepartmentRoleHolder {
   department_name: string
   valid_from: string
   valid_until: string | null
+  /** beim Besetzen beendete Vorgänger */
+  ended?: string[]
 }
 
 export interface MemberDetail {
@@ -368,8 +370,11 @@ export const memberApi = {
   ) => api.patch<DepartmentMembership>(`${base(org)}/members/${id}/departments/${dm}/`, data),
   endDepartment: (org: number, id: number, dm: number, valid_until: string) =>
     api.patch(`${base(org)}/members/${id}/departments/${dm}/`, { valid_until }),
-  addDepartmentRole: (org: number, id: number, data: { role: number; valid_from: string }) =>
-    api.post<DepartmentRoleHolder>(`${base(org)}/members/${id}/department-roles/`, data),
+  addDepartmentRole: (
+    org: number,
+    id: number,
+    data: { role: number; valid_from: string; end_previous?: boolean },
+  ) => api.post<DepartmentRoleHolder>(`${base(org)}/members/${id}/department-roles/`, data),
   endDepartmentRole: (org: number, id: number, holder: number, valid_until: string) =>
     api.patch(`${base(org)}/members/${id}/department-roles/${holder}/`, { valid_until }),
 

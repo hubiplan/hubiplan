@@ -1,12 +1,15 @@
 // Mitglieder › Ämter: wer hatte wann welches Amt (jahresgenau). Frühere Inhaber, die
 // keine Mitglieder mehr sind, stehen als Name ohne Konto; Erfassen und Excel-Import.
 import { useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useSearchParams } from 'react-router-dom'
 import { newRequestKey } from '../../api/client.ts'
+import { memberApi, todayIso } from '../../api/members.ts'
 import { officesApi } from '../../api/offices.ts'
 import type { Office, OfficeEntryInput, OfficeHolder, OfficeImportRow } from '../../api/offices.ts'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
+import { confirmEndHolder, UnitRoleDialog } from '../../components/UnitRoles.tsx'
+import type { UnitRole } from '../../components/UnitRoles.tsx'
 import { DataTable } from '../../components/DataTable.tsx'
 import type { Column } from '../../components/DataTable.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -65,16 +68,49 @@ function HoldersPanel() {
     [org.id],
   )
   const [assigning, setAssigning] = useState<number | null>(null)
+  const [unitRole, setUnitRole] = useState<UnitRole | null>(null)
   const [editing, setEditing] = useState<Row | 'new' | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  // Filter „Einheit“: Verein oder eine Untereinheit (Rollen-Vorschlag R3)
+  const [params, setParams] = useSearchParams()
+  const unit = Number(params.get('einheit')) || null
 
   if (offices.error) return <Alert kind="error">{offices.error}</Alert>
   if (!offices.data) return <p className="muted">{t('Lädt …')}</p>
-  // Je Amt eine eigene Tabelle (Ralf 2026-10-31)
-  // Nur Ämter der eigenen Einheit, keine der Untereinheiten (Ralf 2026-10-31)
-  const own = offices.data.filter((o) => o.unit === null)
+  const units = [
+    ...new Map(offices.data.flatMap((o) => (o.unit !== null ? [[o.unit, o.unit_name ?? '']] : []))),
+  ] as [number, string][]
+  // Je Amt eine eigene Tabelle (Ralf 2026-10-31); je Einheit getrennt (Ralf 2026-10-31)
+  const own = offices.data.filter((o) => o.unit === unit)
   // Mit Rollenverwaltung alle Ämter, damit auch unbesetzte einen Knopf „Besetzen“ haben
   const groups = canAssign ? own : own.filter((o) => o.holders.length > 0)
+  const showActions = canEdit || (unit !== null && canAssign)
+
+  /** Rolle einer Untereinheit mit ihren heutigen Inhabern (für den Dialog) */
+  function asUnitRole(o: Office): UnitRole {
+    return {
+      id: o.id,
+      name: o.name,
+      holders: o.holders.flatMap((h) =>
+        h.current && h.membership
+          ? [{ id: h.id, membership: h.membership, name: h.name, valid_from: '' }]
+          : [],
+      ),
+    }
+  }
+
+  async function endUnitHolder(o: Office, h: OfficeHolder) {
+    if (!h.membership) return
+    const role = asUnitRole(o)
+    const holder = role.holders.find((x) => x.id === h.id)
+    if (!holder || !(await confirmEndHolder(role, holder))) return
+    try {
+      await memberApi.endDepartmentRole(org.id, h.membership, h.id, todayIso())
+      await offices.reload()
+    } catch (err) {
+      setMessage(errorMessage(err))
+    }
+  }
 
   async function remove(r: Row) {
     const ok = await confirmDialog({
@@ -106,12 +142,29 @@ function HoldersPanel() {
             </button>
           )}
         </div>
+        {units.length > 0 && (
+          <SelectField
+            label={t('Einheit')}
+            value={unit ?? ''}
+            onChange={(e) => {
+              setEditing(null)
+              setParams(e.target.value ? { einheit: e.target.value } : {}, { replace: true })
+            }}
+          >
+            <option value="">{org.name}</option>
+            {units.map(([id, name]) => (
+              <option key={id} value={id}>
+                {name}
+              </option>
+            ))}
+          </SelectField>
+        )}
         <p className="muted small">
           {t(
             'Wer wann welches Amt hatte, auf das Jahr genau. Mit „Besetzen“ gebt ihr ein Amt an eine neue Person und beendet dabei die Amtszeit des Vorgängers. Frühere Inhaber, die keine Mitglieder mehr sind, tragt ihr hier mit Namen ein oder importiert eine Liste. Auf der Webseite erscheinen die Ämter, bei denen in der Rolle „unter Ämter zeigen“ eingeschaltet ist.',
           )}
         </p>
-        {own.length === 0 && (
+        {own.length === 0 && unit === null && (
           <Alert kind="info">{t('Legt zuerst unter Einstellungen › Rollen die Ämter an.')}</Alert>
         )}
         {own.length > 0 && groups.length === 0 && (
@@ -144,16 +197,31 @@ function HoldersPanel() {
           }}
         />
       )}
+      {unitRole && (
+        <UnitRoleDialog
+          orgId={org.id}
+          role={unitRole}
+          submit={(d) =>
+            memberApi.addDepartmentRole(org.id, d.member, {
+              role: d.role,
+              valid_from: d.valid_from,
+              end_previous: d.end_previous,
+            })
+          }
+          onClose={() => setUnitRole(null)}
+          onDone={() => offices.reload()}
+        />
+      )}
       {groups.map((o) => (
         <div className="card card-wide" key={o.id}>
           <div className="card-head">
             <h2>{officeLabel(o)}</h2>
-            {canAssign && roles.data?.some((r) => r.id === o.id) && (
+            {canAssign && (unit !== null || roles.data?.some((r) => r.id === o.id)) && (
               <button
                 type="button"
                 className="button push-right"
                 aria-label={t('{x} besetzen', { x: officeLabel(o) })}
-                onClick={() => setAssigning(o.id)}
+                onClick={() => (unit === null ? setAssigning(o.id) : setUnitRole(asUnitRole(o)))}
               >
                 {t('Besetzen')}
               </button>
@@ -168,7 +236,7 @@ function HoldersPanel() {
                   <tr>
                     <th scope="col">{t('Zeitraum')}</th>
                     <th scope="col">{t('Name')}</th>
-                    {canEdit && (
+                    {showActions && (
                       <th scope="col">
                         <span className="sr-only">{t('Aktionen')}</span>
                       </th>
@@ -191,9 +259,22 @@ function HoldersPanel() {
                             </span>
                           )}
                         </td>
-                        {canEdit && (
+                        {showActions && (
                           <td className="actions">
-                            {h.former_entry && (
+                            {unit !== null && canAssign && h.current && h.membership && (
+                              <button
+                                type="button"
+                                className="link-button"
+                                aria-label={t('{role} von {name} beenden', {
+                                  role: o.name,
+                                  name: h.name,
+                                })}
+                                onClick={() => void endUnitHolder(o, h)}
+                              >
+                                {t('Beenden')}
+                              </button>
+                            )}
+                            {canEdit && h.former_entry && (
                               <>
                                 <IconButton
                                   label={t('{name} {x} bearbeiten', {

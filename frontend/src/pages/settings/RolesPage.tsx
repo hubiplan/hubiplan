@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { todayIso } from '../../api/members.ts'
 import type { FormEvent } from 'react'
 import { orgApi, PERM } from '../../api/orgs.ts'
@@ -7,7 +8,7 @@ import { Alert, Checkbox, Field, SelectField, LoadError } from '../../components
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
-import type { MemberRow, PickedMember } from '../../api/members.ts'
+import type { PickedMember } from '../../api/members.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useAuth } from '../../auth/AuthContext.tsx'
 import { RoleForm, RoleTable } from '../../components/RoleEditor.tsx'
@@ -155,7 +156,6 @@ function UsersCard({
   const form = useForm({ email: '', role: roles[0]?.id ?? 0, valid_from: today, valid_until: '' })
   const [created, setCreated] = useState<{ email: string; invited: boolean } | null>(null)
   const [showAll, setShowAll] = useState(false)
-  const [member, setMember] = useState<MemberRow | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function add(e: FormEvent) {
@@ -168,14 +168,13 @@ function UsersCard({
           role: Number(form.values.role),
           valid_from: form.values.valid_from,
           valid_until: form.values.valid_until || null,
-          member: member?.id ?? null,
+          member: null,
         }),
       t('Rolle besetzt.'),
     )) as Assignment | undefined
     if (result) {
       if (result.new_account) setCreated({ email: result.user_email, invited: !!result.invited })
       form.setValues((v) => ({ ...v, email: '' }))
-      setMember(null)
       await onChange()
       await refresh()
     }
@@ -241,7 +240,14 @@ function UsersCard({
       />
       {error && <Alert kind="error">{error}</Alert>}
 
-      {!readOnly && (
+      {!readOnly && isClub && (
+        <p className="muted small">
+          {t('Rollen besetzt ihr unter')}{' '}
+          <Link to="/mitglieder/aemter">{t('Mitglieder › Ämter')}</Link>
+          {t('. Dort endet die Amtszeit des Vorgängers gleich mit.')}
+        </p>
+      )}
+      {!readOnly && !isClub && (
         <form className="subcard" onSubmit={add}>
           <h3>{t('Rolle besetzen')}</h3>
           <div className="grid-2">
@@ -282,17 +288,6 @@ function UsersCard({
               onChange={(e) => form.set('valid_until', e.target.value)}
             />
           </div>
-          {isClub && (
-            <MemberPicker
-              orgId={orgId}
-              value={member}
-              label={t('Mitgliedsakte der Person (optional, für die Rollen-Historie)')}
-              onChange={(m) => {
-                setMember(m)
-                if (m && m.email && !form.values.email) form.set('email', m.email)
-              }}
-            />
-          )}
           {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
           {created && (
             <Alert kind={created.invited ? 'info' : 'error'}>

@@ -205,14 +205,19 @@ describe('Abteilungsrollen entfernen', () => {
     await user.click(await screen.findByRole('button', { name: 'Herolde bearbeiten' }))
     const box = await screen.findByTestId('unit-holders')
     expect(within(box).getByText('Christian Modellmann')).toBeInTheDocument()
-    expect(within(box).getByText(/kein Konto angelegt und keine E-Mail/)).toBeInTheDocument()
-    await user.type(within(box).getByLabelText('Mitglied'), 'An')
-    await user.click(await within(box).findByRole('button', { name: /Zugmitglied, Anna/ }))
-    await user.selectOptions(within(box).getByLabelText('Rolle'), 'Fahnenträger')
-    await user.click(within(box).getByRole('button', { name: 'Rolle besetzen' }))
-    expect(await within(box).findByText(/Anna Zugmitglied hat jetzt die Rolle/)).toBeInTheDocument()
+    // Gleicher Dialog wie unter Ämter (R3)
+    await user.click(within(box).getByRole('button', { name: 'Fahnenträger besetzen' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText(/kein Konto angelegt und keine E-Mail/)).toBeInTheDocument()
+    await user.type(within(dialog).getByLabelText('Person aus der Mitgliederliste'), 'An')
+    await user.click(await within(dialog).findByRole('button', { name: /Zugmitglied, Anna/ }))
+    await user.click(within(dialog).getByRole('button', { name: 'Besetzen' }))
+    expect(
+      await screen.findByText('Anna Zugmitglied hat jetzt die Rolle Fahnenträger.'),
+    ).toBeInTheDocument()
     const post = calls.find((c) => c.key === 'POST /api/orgs/7/members/31/department-roles/')!
-    expect(JSON.parse(String(post.init?.body))).toMatchObject({ role: 9 })
+    // Fahnenträger ist unbesetzt: kein Vorgänger zu beenden
+    expect(JSON.parse(String(post.init?.body))).toMatchObject({ role: 9, end_previous: false })
     // kein Zugang, keine Einladung
     expect(calls.some((c) => c.key.includes('unit-manager') || c.key.includes('access'))).toBe(
       false,
@@ -224,7 +229,9 @@ describe('Abteilungsrollen entfernen', () => {
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Herolde bearbeiten' }))
     const box = await screen.findByTestId('unit-holders')
-    await user.click(within(box).getByRole('button', { name: 'Beenden' }))
+    await user.click(
+      within(box).getByRole('button', { name: 'Oberleutnant von Christian Modellmann beenden' }),
+    )
     await user.click(
       within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Beenden' }),
     )
