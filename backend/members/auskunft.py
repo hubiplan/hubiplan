@@ -28,7 +28,8 @@ Erstellt: {when}
 
 Inhalt
 - akte.json: Stammdaten, Kontaktdaten, Mitgliedschaftszeiten, Mitgliedsarten, Zugehörigkeit zu
-  Untereinheiten, Ämter, Ehrungen, Verbandsmeldung
+  Untereinheiten, Ämter, Ehrungen, Verbandsmeldung; bei Organisationen deren
+  Ansprechpartner, bei Personen die Organisationen, für die sie Ansprechpartner sind
 - zusatzfelder.json: vom Verein festgelegte zusätzliche Angaben
 - rechnungen.json / rechnungen.pdf: Rechnungen an die Person mit Zahlungen; aus
   Sammelrechnungen an andere nur die eigenen Posten mit Nummer, Datum und Empfänger

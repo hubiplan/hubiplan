@@ -14,6 +14,7 @@ from organizations.terms import fill
 
 from . import services
 from .models import (
+    ContactPerson,
     DepartmentMembership,
     DepartmentRoleHolder,
     ExitReason,
@@ -466,6 +467,115 @@ class DepartmentRoleHolderSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class ContactPersonSerializer(serializers.ModelSerializer):
+    """Ansprechpartner eines Organisationsmitglieds (J2).
+
+    Entweder verknüpft mit einem Mitglied desselben Vereins (``member``) oder frei
+    erfasst (Name, Vorname, Kontakt). Bei Verknüpften kommen Name und Kontakt aus der
+    Akte der Person."""
+
+    member = serializers.IntegerField(
+        write_only=True,
+        required=False,
+        allow_null=True,
+        help_text="Mitgliedschaft (in diesem Verein) der Person, die Ansprechpartner ist.",
+    )
+    linked_member = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
+    contact_email = serializers.SerializerMethodField()
+    contact_phone = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ContactPerson
+        fields = [
+            "id",
+            "member",
+            "linked_member",
+            "display_name",
+            "last_name",
+            "first_name",
+            "gender",
+            "function",
+            "email",
+            "phone",
+            "contact_email",
+            "contact_phone",
+            "is_primary",
+            "receives_mail",
+            "receives_invoices",
+            "represents",
+            "member_access",
+            "since",
+        ]
+
+    def _contact(self, obj):
+        if obj.person_id is None:
+            return None
+        cache = self.context.setdefault("_contacts", {})
+        if obj.person_id not in cache:
+            cache[obj.person_id] = services.contact_for(obj.person, self.context["org"])
+        return cache[obj.person_id]
+
+    def get_linked_member(self, obj) -> int | None:
+        if obj.person_id is None:
+            return None
+        return (
+            Membership.objects.filter(organization=self.context["org"], person_id=obj.person_id)
+            .values_list("pk", flat=True)
+            .first()
+        )
+
+    def get_display_name(self, obj) -> str:
+        return obj.display_name
+
+    def get_contact_email(self, obj) -> str:
+        contact = self._contact(obj)
+        return (contact.email if contact else "") if obj.person_id else obj.email
+
+    def get_contact_phone(self, obj) -> str:
+        contact = self._contact(obj)
+        return (contact.phone if contact else "") if obj.person_id else obj.phone
+
+    def validate_member(self, value):
+        if value is None:
+            return None
+        membership = (
+            Membership.objects.filter(organization=self.context["org"], pk=value)
+            .select_related("person")
+            .first()
+        )
+        if membership is None:
+            raise serializers.ValidationError(gettext("Unbekanntes Mitglied."))
+        if membership.person.is_organization:
+            raise serializers.ValidationError(
+                gettext("Ansprechpartner ist immer ein Mensch, keine Organisation.")
+            )
+        return membership.person
+
+    def validate(self, attrs):
+        person = attrs.pop("member", getattr(self.instance, "person", None))
+        if "member" in self.initial_data:
+            attrs["person"] = person
+        if person is not None:
+            # Name und Kontakt stehen in der Akte der Person
+            for name in ("last_name", "first_name", "gender", "email", "phone"):
+                attrs[name] = ""
+        else:
+            last = attrs.get("last_name", getattr(self.instance, "last_name", ""))
+            if not (last or "").strip():
+                raise serializers.ValidationError({"last_name": gettext("Pflichtfeld.")})
+        membership = self.context.get("membership") or getattr(self.instance, "membership", None)
+        if person is not None and membership is not None:
+            taken = ContactPerson.objects.filter(membership=membership, person=person)
+            if self.instance is not None:
+                taken = taken.exclude(pk=self.instance.pk)
+            if taken.exists():
+                raise serializers.ValidationError(
+                    {"member": gettext("Diese Person ist hier schon Ansprechpartner.")}
+                )
+        return attrs
+
+
 class MemberUpdateSerializer(OrganizationFieldsMixin, serializers.Serializer):
     """Stammdaten ändern (Person + Kontakt + Vereinsnummer).
 
@@ -553,6 +663,19 @@ def member_detail(membership: Membership, org) -> dict:
         "birth_year_only": person.birth_year_only,
         "gender": person.gender,
         "organization": organization_data(person),
+        "contact_persons": ContactPersonSerializer(
+            membership.contact_persons.select_related("person"),
+            many=True,
+            context={"org": org},
+        ).data
+        if person.is_organization
+        else [],
+        "contact_for": [
+            {"member_id": c.membership_id, "name": c.membership.person.display_name}
+            for c in ContactPerson.objects.filter(person=person, organization=org)
+            .select_related("membership__person")
+            .order_by("pk")
+        ],
         "club_number": membership.club_number,
         "pays_fee_self": membership.pays_fee_self,
         "info_opt_out_at": membership.info_opt_out_at,

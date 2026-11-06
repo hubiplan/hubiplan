@@ -175,6 +175,9 @@ org_router.register(
 member_router = SimpleRouter()
 member_router.register("periods", member_views.PeriodViewSet, basename="member-period")
 member_router.register(
+    "contacts", member_views.ContactPersonViewSet, basename="member-contact-person"
+)
+member_router.register(
     "departments", member_views.DepartmentMembershipViewSet, basename="member-department"
 )
 member_router.register(

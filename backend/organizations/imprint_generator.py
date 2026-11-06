@@ -73,7 +73,7 @@ def _facts(org: Organization) -> dict:
     """Was die Einheit eingeschaltet hat (ohne Mitgliederdaten)."""
     from billing.models import BillingSettings
     from customfields.models import FieldDefinition
-    from members.models import MemberType
+    from members.models import Membership, MemberType
 
     modules = set(org.enabled_modules or [])
     with rls_bypass():
@@ -84,6 +84,9 @@ def _facts(org: Organization) -> dict:
         reported = MemberType.objects.filter(organization=org, reported=True).exists()
         has_fields = FieldDefinition.objects.filter(organization=org, is_archived=False).exists()
         has_units = Department.objects.filter(organization=org, is_active=True).exists()
+        has_org_members = Membership.objects.filter(
+            organization=org, person__kind="organization"
+        ).exists()
     parent = org.parent if org.parent and org.parent.type == Organization.Type.FEDERATION else None
     return {
         "modules": modules,
@@ -92,6 +95,7 @@ def _facts(org: Organization) -> dict:
         "parent": parent,
         "has_fields": has_fields,
         "has_units": has_units,
+        "has_org_members": has_org_members,
         "keeps_members": org.keeps_members or org.type == Organization.Type.UNIT,
     }
 
@@ -175,6 +179,19 @@ def unit_privacy(org: Organization) -> str:
         "(Art. 6 Abs. 1 lit. a DSGVO). Der QR-Code zeigt beim Scannen nur Name, Status der "
         "Mitgliedschaft und Zugehörigkeit."
     )
+    if f["has_org_members"]:
+        data.append(
+            "bei Organisationen als Mitglied (z. B. Firmen, Vereine, Behörden): Name, "
+            "Rechtsform und Anschrift der Organisation sowie Name, Funktion, E-Mail-Adresse "
+            "und Telefon ihrer Ansprechpartner"
+        )
+        purposes.append(
+            "Ansprechpartner von Organisationsmitgliedern: Die Organisation nennt uns ihre "
+            "Ansprechpartner. Wir nutzen deren Daten nur für die Mitgliedschaft der "
+            "Organisation, z. B. für Rundschreiben, Rechnungen und Einladungen "
+            "(Art. 6 Abs. 1 lit. b und f DSGVO). Wird ein Ansprechpartner entfernt, löschen "
+            "wir seine Kontaktdaten sofort; sein Name bleibt nur in Belegen und Protokollen."
+        )
     if org.member_portal_enabled:
         purposes.append(
             "Mitgliederbereich: Sie können Ihre Daten online einsehen und Änderungen melden "

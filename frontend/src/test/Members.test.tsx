@@ -518,6 +518,76 @@ describe('Mitgliedsakte', () => {
     expect(JSON.parse(String(call.init?.body)).exit_reason).toBe('death')
   })
 
+  it('Organisation: Ansprechpartner hinzufügen', async () => {
+    const contact = {
+      id: 5,
+      linked_member: null,
+      display_name: 'Max Muster',
+      last_name: 'Muster',
+      first_name: 'Max',
+      gender: '',
+      function: 'Geschäftsführer',
+      email: 'max@musterbau.example',
+      phone: '',
+      contact_email: 'max@musterbau.example',
+      contact_phone: '',
+      is_primary: true,
+      receives_mail: true,
+      receives_invoices: true,
+      represents: true,
+      member_access: false,
+      since: null,
+    }
+    const firma = {
+      ...detail,
+      kind: 'organization',
+      last_name: 'Musterbau GmbH',
+      first_name: '',
+      birth_date: null,
+      organization: {
+        name_suffix: '',
+        legal_form: 'gmbh',
+        legal_form_label: 'GmbH',
+        legal_form_other: '',
+        register: '',
+        vat_id: '',
+        website: '',
+      },
+      contact_persons: [],
+    }
+    let saved = false
+    const calls = fakeApi({
+      ...common(),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: { ...firma, contact_persons: saved ? [contact] : [] },
+      }),
+      [`POST ${base}/members/11/contacts/`]: () => {
+        saved = true
+        return { status: 201, body: contact }
+      },
+    })
+    renderAt('/mitglieder/11')
+    const user = userEvent.setup()
+    expect(await screen.findByText('Noch kein Ansprechpartner eingetragen.')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Ansprechpartner hinzufügen' }))
+    const section = screen.getByRole('region', { name: 'Ansprechpartner' })
+    await user.type(within(section).getByRole('textbox', { name: /^Name/ }), 'Muster')
+    await user.type(within(section).getByLabelText(/^Vorname/), 'Max')
+    await user.type(within(section).getByLabelText(/^Funktion/), 'Geschäftsführer')
+    expect(within(section).getByLabelText('Hauptansprechpartner')).toBeChecked()
+    await user.click(within(section).getByRole('button', { name: 'Speichern' }))
+    expect(await screen.findByText('Max Muster')).toBeInTheDocument()
+    const post = calls.find((c) => c.key === `POST ${base}/members/11/contacts/`)
+    expect(JSON.parse(String(post?.init?.body))).toMatchObject({
+      last_name: 'Muster',
+      first_name: 'Max',
+      function: 'Geschäftsführer',
+      is_primary: true,
+      member: null,
+    })
+  })
+
   it('nennt den Namen des Dachverbands nur einmal', async () => {
     fakeApi({
       ...common(),

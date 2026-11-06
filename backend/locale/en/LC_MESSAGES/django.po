@@ -8465,3 +8465,12 @@ msgstr "This address already belongs to a club website."
 
 msgid "Diese Adresse ist schon eingetragen."
 msgstr "This address has already been added."
+
+msgid "Ansprechpartner ist immer ein Mensch, keine Organisation."
+msgstr "A contact person is always a natural person, not an organisation."
+
+msgid "Diese Person ist hier schon Ansprechpartner."
+msgstr "This person is already a contact person here."
+
+msgid "Ansprechpartner gibt es nur bei Organisationsmitgliedern."
+msgstr "Only organisation members have contact persons."

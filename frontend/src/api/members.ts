@@ -285,10 +285,41 @@ export interface DepartmentRoleHolder {
   ended?: string[]
 }
 
+/** Ansprechpartner eines Organisationsmitglieds (frei erfasst oder ein Mitglied) */
+export interface ContactPerson {
+  id: number
+  /** Mitgliedschaft der verknüpften Person in diesem Verein */
+  linked_member: number | null
+  display_name: string
+  last_name: string
+  first_name: string
+  gender: Gender
+  function: string
+  email: string
+  phone: string
+  /** Kontakt aus der Akte (verknüpft) bzw. eigene Angaben */
+  contact_email: string
+  contact_phone: string
+  is_primary: boolean
+  receives_mail: boolean
+  receives_invoices: boolean
+  represents: boolean
+  member_access: boolean
+  since: string | null
+}
+
+export type ContactPersonInput = Partial<
+  Omit<ContactPerson, 'id' | 'linked_member' | 'display_name' | 'contact_email' | 'contact_phone'>
+> & { member?: number | null }
+
 export interface MemberDetail {
   id: number
   person_id: number
   kind?: MemberKind
+  /** nur bei Organisationen */
+  contact_persons?: ContactPerson[]
+  /** Organisationen, für die diese Person Ansprechpartner ist */
+  contact_for?: { member_id: number; name: string }[]
   last_name: string
   first_name: string
   /** leer bei Organisationen */
@@ -465,6 +496,14 @@ export const memberApi = {
     api.post<MemberDetail>(`${base(org)}/members/admit/`, data, requestKey),
 
   detail: (org: number, id: number) => api.get<MemberDetail>(`${base(org)}/members/${id}/`),
+  contacts: (org: number, id: number) =>
+    api.get<ContactPerson[]>(`${base(org)}/members/${id}/contacts/`),
+  addContact: (org: number, id: number, data: ContactPersonInput) =>
+    api.post<ContactPerson>(`${base(org)}/members/${id}/contacts/`, data),
+  updateContact: (org: number, id: number, contact: number, data: ContactPersonInput) =>
+    api.patch<ContactPerson>(`${base(org)}/members/${id}/contacts/${contact}/`, data),
+  deleteContact: (org: number, id: number, contact: number) =>
+    api.del(`${base(org)}/members/${id}/contacts/${contact}/`),
   update: (org: number, id: number, data: Record<string, unknown>) =>
     api.patch<MemberDetail>(`${base(org)}/members/${id}/`, data),
   history: (org: number, id: number) =>
