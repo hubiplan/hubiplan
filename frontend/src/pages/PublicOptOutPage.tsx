@@ -52,7 +52,7 @@ export function PublicOptOutPage() {
     <main className="login-page">
       <div className="card public-photo">
         <div className="login-logo">
-          <Logo name={info?.club ?? 'HUBIplan'} logoUrl={null} />
+          <Logo name={info?.club} logoUrl={null} />
         </div>
         <h1>{t('Informationen per E-Mail')}</h1>
         {invalid && <Alert kind="error">{t('Dieser Link ist ungültig.')}</Alert>}
