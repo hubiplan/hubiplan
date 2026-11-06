@@ -177,6 +177,58 @@ function ThemeForm({
         )}
       </div>
       {isPlatform && <PlatformIconCard editable={editable} />}
+      {!isPlatform && (theme.addresses?.length ?? 0) > 0 && (
+        <UnitIconCard
+          orgId={orgId}
+          addresses={theme.addresses ?? []}
+          hasIcon={Boolean(theme.has_icon)}
+          editable={editable}
+          reload={reload}
+        />
+      )}
+    </div>
+  )
+}
+
+/** Symbol einer Einheit mit eigener Adresse (White Label W7). */
+function UnitIconCard({
+  orgId,
+  addresses,
+  hasIcon,
+  editable,
+  reload,
+}: {
+  orgId: number
+  addresses: string[]
+  hasIcon: boolean
+  editable: boolean
+  reload: () => Promise<void>
+}) {
+  const [version, setVersion] = useState(0)
+  const shown = hasIcon ? `${orgApi.iconUrl(orgId)}?v=${version}` : null
+  return (
+    <div className="card card-wide">
+      <h2>{t('Symbol')}</h2>
+      <p className="small">
+        {t(
+          'Diese Einheit hat eine eigene Adresse ({x}). Dort erscheint das Symbol im Browser-Tab und auf dem Startbildschirm des Handys. Ohne eigenes Symbol nimmt HUBIplan das Logo bzw. Wappen, sonst das Symbol der Instanz.',
+          { x: addresses.join(', ') },
+        )}
+      </p>
+      {editable ? (
+        <LogoUpload
+          uploadUrl={orgApi.iconUrl(orgId)}
+          logoUrl={shown}
+          onChange={async () => {
+            await reload()
+            setVersion(Date.now())
+          }}
+        />
+      ) : shown ? (
+        <img src={shown} alt={t('Symbol')} className="logo-preview" />
+      ) : (
+        <p className="muted">{t('Kein eigenes Symbol.')}</p>
+      )}
     </div>
   )
 }

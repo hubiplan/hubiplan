@@ -6,6 +6,7 @@ import { portalApi } from '../api/portal.ts'
 import type { DeptSummary, PortalEntry } from '../api/portal.ts'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { applyTheme } from '../theme/theme.ts'
+import { usePlatform } from '../theme/platform.ts'
 import type { DatePrecision } from '../components/forms.ts'
 import { t } from '../i18n/index.ts'
 
@@ -69,6 +70,7 @@ export function OrgProvider({ children }: { children: ReactNode }) {
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [activeKey, setActiveKey] = useState<string | null>(readStored)
   const userId = user?.id ?? null
+  const unitOfAddress = usePlatform().unit
 
   const refresh = useCallback(async () => {
     if (userId === null) return
@@ -113,12 +115,19 @@ export function OrgProvider({ children }: { children: ReactNode }) {
       const o = orgs.find((x) => String(x.id) === key)
       if (o) return { key, org: o, dept: null, portal: null }
     }
+    // Noch nichts gewählt: Einheit der aufgerufenen Adresse (White Label W7)
+    if (unitOfAddress !== null && unitOfAddress !== undefined) {
+      const o = orgs.find((x) => x.id === unitOfAddress)
+      if (o) return { key: String(o.id), org: o, dept: null, portal: null }
+      const d = departments.find((x) => x.id === unitOfAddress)
+      if (d) return { key: `d:${d.id}`, org: null, dept: d, portal: null }
+    }
     if (orgs[0]) return { key: String(orgs[0].id), org: orgs[0], dept: null, portal: null }
     if (departments[0])
       return { key: `d:${departments[0].id}`, org: null, dept: departments[0], portal: null }
     if (portal[0]) return { key: `p:${portal[0].id}`, org: null, dept: null, portal: portal[0] }
     return { key: null, org: null, dept: null, portal: null }
-  }, [current, activeKey])
+  }, [current, activeKey, unitOfAddress])
 
   useEffect(() => {
     const theme = resolved.org?.theme ?? resolved.dept?.theme ?? resolved.portal?.theme ?? null

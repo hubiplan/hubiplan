@@ -122,6 +122,9 @@ class ThemeFields(models.Model):
     logo = models.ImageField(
         "Logo/Wappen", upload_to=logo_path, blank=True, validators=[validate_logo]
     )
+    # Quadratisches Symbol für Browser-Tab und Handy, wenn die Einheit eine eigene Adresse
+    # hat (White Label W7). Leer: Wappen quadratisch, sonst Symbol der Instanz
+    brand_icon = models.ImageField("Symbol", upload_to=brand_icon_path, blank=True)
 
     class Meta:
         abstract = True
@@ -995,3 +998,28 @@ class SocialLink(models.Model):
         text = self.url.split("://", 1)[-1]
         text = text[4:] if text.startswith("www.") else text
         return text.rstrip("/")
+
+
+class InstanceAddress(models.Model):
+    """Weitere Adresse der Instanz für eine Einheit (White Label W7).
+
+    Wer HUBIplan über diese Adresse aufruft, sieht auf der Anmeldeseite Name, Farben, Wappen
+    und Symbol der Einheit; nach der Anmeldung ist sie vorausgewählt.
+    """
+
+    hostname = models.CharField("Adresse", max_length=253, unique=True)
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name="instance_addresses",
+        verbose_name="Einheit",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["hostname"]
+        verbose_name = "Adresse der Instanz"
+        verbose_name_plural = "Adressen der Instanz"
+
+    def __str__(self) -> str:
+        return self.hostname

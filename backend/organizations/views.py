@@ -42,13 +42,14 @@ from core.tenancy import rls_bypass, set_rls, tenant_context
 from members import services as member_services
 
 from . import homepage_preview
-from .models import Department, DepartmentRole, Organization, PlatformSettings
+from .models import Department, DepartmentRole, InstanceAddress, Organization, PlatformSettings
 from .serializers import (
     DepartmentChoiceSerializer,
     DepartmentRoleSerializer,
     DepartmentSerializer,
     FederationClubSerializer,
     HomepageImageSerializer,
+    InstanceAddressSerializer,
     LogoSerializer,
     MemberSettingsSerializer,
     OrganizationSerializer,
@@ -730,13 +731,30 @@ class PlatformUpdateView(APIView):
         return Response(update_check.selbstupdate_status(), status=status.HTTP_202_ACCEPTED)
 
 
-class PlatformIconView(APIView):
-    """Symbol der Instanz hochladen oder entfernen (White Label W2)."""
+class _IconMixin:
+    """Symbol hochladen oder entfernen (White Label W2/W7): quadratisch, 512 px."""
 
-    permission_classes = [IsPlatformAdmin]
     parser_classes = [MultiPartParser, FormParser]
 
-    def post(self, request):
+    def icon_owner(self):
+        raise NotImplementedError
+
+    def audit_org(self) -> Organization:
+        raise NotImplementedError
+
+    def get(self, request, *args, **kwargs):
+        """Gespeichertes Symbol (512 px) für die Vorschau in den Einstellungen."""
+        from django.http import Http404, HttpResponse
+
+        owner = self.icon_owner()
+        if not owner.brand_icon:
+            raise Http404
+        with owner.brand_icon.open("rb") as fh:
+            response = HttpResponse(fh.read(), content_type="image/png")
+        response["Cache-Control"] = "private, no-cache"
+        return response
+
+    def post(self, request, *args, **kwargs):
         from django.core.exceptions import ValidationError as DjangoValidationError
         from django.core.files.base import ContentFile
 
@@ -745,29 +763,82 @@ class PlatformIconView(APIView):
         serializer = LogoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            data = clean_icon(
-                serializer.validated_data["logo"].read(),
-                remove_background=False,
-            )
+            data = clean_icon(serializer.validated_data["logo"].read())
         except DjangoValidationError as exc:
             return Response({"logo": exc.messages}, status=status.HTTP_400_BAD_REQUEST)
-        row = PlatformSettings.load()
-        before = snapshot(row)
-        if row.brand_icon:
-            row.brand_icon.delete(save=False)
-        row.brand_icon.save("symbol.png", ContentFile(data), save=True)
-        record(Organization.platform(), request.user, "update", row, diff(before, snapshot(row)))
+        owner = self.icon_owner()
+        before = snapshot(owner)
+        if owner.brand_icon:
+            owner.brand_icon.delete(save=False)
+        owner.brand_icon.save("symbol.png", ContentFile(data), save=True)
+        record(self.audit_org(), request.user, "update", owner, diff(before, snapshot(owner)))
         return Response({"icon": True})
 
-    def delete(self, request):
-        row = PlatformSettings.load()
-        if row.brand_icon:
-            before = snapshot(row)
-            row.brand_icon.delete(save=True)
-            record(
-                Organization.platform(), request.user, "update", row, diff(before, snapshot(row))
-            )
+    def delete(self, request, *args, **kwargs):
+        owner = self.icon_owner()
+        if owner.brand_icon:
+            before = snapshot(owner)
+            owner.brand_icon.delete(save=True)
+            record(self.audit_org(), request.user, "update", owner, diff(before, snapshot(owner)))
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PlatformIconView(_IconMixin, APIView):
+    """Symbol der Instanz (White Label W2)."""
+
+    permission_classes = [IsPlatformAdmin]
+
+    def icon_owner(self):
+        return PlatformSettings.load()
+
+    def audit_org(self) -> Organization:
+        return Organization.platform()
+
+
+class OrganizationIconView(OrgScopedMixin, _IconMixin, APIView):
+    """Symbol einer Einheit für ihre eigene Adresse (White Label W7)."""
+
+    read_permission = THEME_VIEW
+    write_permission = THEME_EDIT
+
+    def icon_owner(self):
+        return self.org
+
+    def audit_org(self) -> Organization:
+        return self.org
+
+
+class InstanceAddressViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Weitere Adressen der Instanz je Einheit (White Label W7), nur Plattformverwaltung."""
+
+    serializer_class = InstanceAddressSerializer
+    permission_classes = [IsPlatformAdmin]
+    queryset = InstanceAddress.objects.select_related("organization")
+
+    def perform_create(self, serializer):
+        obj = serializer.save()
+        record(
+            Organization.platform(),
+            self.request.user,
+            "create",
+            obj,
+            {"Adresse": [None, f"{obj.hostname} → {obj.organization.name}"]},
+        )
+
+    def perform_destroy(self, instance):
+        record(
+            Organization.platform(),
+            self.request.user,
+            "delete",
+            instance,
+            {"Adresse": [f"{instance.hostname} → {instance.organization.name}", None]},
+        )
+        instance.delete()
 
 
 class PlatformSettingsView(generics.RetrieveUpdateAPIView):

@@ -7,9 +7,10 @@ import pytest
 from django.test import Client
 from PIL import Image
 
+from core.tenancy import tenant_context
 from organizations.models import Organization, PlatformSettings
 
-from .factories import make_org, make_user
+from .factories import give_role, make_org, make_user
 from .test_impressum import platform_admin  # noqa: F401
 
 pytestmark = pytest.mark.django_db
@@ -193,3 +194,116 @@ def test_mails_mit_instanzname(mailoutbox, settings):
         in note.body
     )
     assert note.from_email.endswith("<noreply@example.org>")
+
+
+# --- W7a: Erscheinungsbild je Adresse ---
+
+VEREIN_HOST = "mitglieder.sv-musterstadt.example"
+
+
+@pytest.fixture
+def adressen(settings):
+    settings.ALLOWED_HOSTS = ["testserver", VEREIN_HOST, "unbekannt.example"]
+
+
+def test_adresse_eintragen_und_erscheinungsbild(api, platform_admin, adressen):
+    _musterkreis()
+    club = make_org("Schützenverein Musterstadt", primary_color="#7a1f1f")
+    c = api(platform_admin)
+    resp = c.post(
+        "/api/platform/addresses/",
+        {"hostname": "Mitglieder.SV-Musterstadt.example.", "organization": club.pk},
+        content_type="application/json",
+    )
+    assert resp.status_code == 201, resp.content
+    assert resp.json()["hostname"] == VEREIN_HOST
+
+    data = Client().get(URL, HTTP_HOST=VEREIN_HOST).json()
+    assert data["name"] == "Schützenverein Musterstadt"
+    assert data["unit"] == club.pk
+    assert data["theme"]["primary"] == "#7a1f1f"
+    # Unbekannte Adresse und Hauptadresse: Instanz wie bisher
+    other = Client().get(URL, HTTP_HOST="unbekannt.example")
+    assert other.json()["name"] == "Vereinsportal Musterkreis"
+    assert other.json()["unit"] is None
+    assert other["Vary"] == "Host"
+    manifest = (
+        Client().get("/api/public/platform/manifest.webmanifest", HTTP_HOST=VEREIN_HOST).json()
+    )
+    assert manifest["name"] == "Schützenverein Musterstadt"
+    assert manifest["theme_color"] == "#7a1f1f"
+
+    pk = resp.json()["id"]
+    assert c.delete(f"/api/platform/addresses/{pk}/").status_code == 204
+    assert Client().get(URL, HTTP_HOST=VEREIN_HOST).json()["unit"] is None
+
+
+def test_adresse_pruefung(api, platform_admin, adressen, settings):
+    from website.models import Website, WebsiteDomain
+
+    settings.FRONTEND_URL = "https://portal.musterkreis.example"
+    club = make_org("Schützenverein Musterstadt")
+    c = api(platform_admin)
+
+    def post(host):
+        return c.post(
+            "/api/platform/addresses/",
+            {"hostname": host, "organization": club.pk},
+            content_type="application/json",
+        )
+
+    assert post("kein host").status_code == 400
+    assert post("portal.musterkreis.example").status_code == 400
+    with tenant_context(club.pk):
+        site = Website.objects.create(organization=club)
+        WebsiteDomain.objects.create(
+            organization=club, website=site, hostname="www.sv-musterstadt.example"
+        )
+    assert post("www.sv-musterstadt.example").status_code == 400
+    assert post(VEREIN_HOST).status_code == 201
+    assert post(VEREIN_HOST).status_code == 400
+    # Die Plattform selbst bekommt keine Adresse
+    resp = c.post(
+        "/api/platform/addresses/",
+        {"hostname": "x.example", "organization": platform().pk},
+        content_type="application/json",
+    )
+    assert resp.status_code == 400
+
+
+def test_adressen_nur_fuer_plattformverwaltung(api):
+    user = make_user("vorstand@example.org")
+    assert api(user).get("/api/platform/addresses/").status_code == 403
+
+
+def test_symbol_je_adresse(api, adressen):
+    from organizations.models import InstanceAddress
+
+    club = make_org("Schützenverein Musterstadt")
+    InstanceAddress.objects.create(hostname=VEREIN_HOST, organization=club)
+    # Ohne Symbol und Wappen: kein Symbol
+    assert Client().get(URL, HTTP_HOST=VEREIN_HOST).json()["icon"] is False
+    # Wappen wird quadratisch zum Symbol
+    from django.core.files.base import ContentFile
+
+    club.logo.save("wappen.png", ContentFile(_png(300, 150).getvalue()), save=True)
+    assert Client().get(URL, HTTP_HOST=VEREIN_HOST).json()["icon"] is True
+    r = Client().get("/api/public/platform/icon-192.png", HTTP_HOST=VEREIN_HOST)
+    assert r.status_code == 200
+    assert Image.open(io.BytesIO(r.content)).size == (192, 192)
+    # Eigenes Symbol der Einheit, hochgeladen vom Vorstand
+    board = make_user("vorstand@example.org")
+    with tenant_context(club.pk):
+        give_role(board, club)
+    resp = api(board).post(f"/api/orgs/{club.pk}/icon/", {"logo": _png(600, 600)})
+    assert resp.status_code == 200, resp.content
+    club.refresh_from_db()
+    assert club.brand_icon
+    theme = api(board).get(f"/api/orgs/{club.pk}/theme/").json()
+    assert theme["has_icon"] is True
+    preview = api(board).get(f"/api/orgs/{club.pk}/icon/")
+    assert preview.status_code == 200
+    assert Image.open(io.BytesIO(preview.content)).size == (512, 512)
+    assert theme["addresses"] == [VEREIN_HOST]
+    # Auf der Hauptadresse bleibt es beim (fehlenden) Symbol der Instanz
+    assert Client().get("/api/public/platform/icon-192.png").status_code == 404

@@ -45,6 +45,8 @@ class PublicPlatformSerializer(serializers.Serializer):
     theme = PlatformThemeSerializer(allow_null=True)
     # True: eigenes Symbol unter /api/public/platform/icon-<Größe>.png und eigenes Manifest
     icon = serializers.BooleanField()
+    # Einheit der aufgerufenen Adresse (W7); null: Instanz
+    unit = serializers.IntegerField(allow_null=True)
 
 
 def platform_data() -> dict:
@@ -60,6 +62,7 @@ def platform_data() -> dict:
             "logo_url": None,
             "theme": None,
             "icon": icon,
+            "unit": None,
         }
     own_colors = bool(platform.primary_color or platform.accent_color)
     effective = theme.effective_theme([platform]) if own_colors else None
@@ -73,7 +76,35 @@ def platform_data() -> dict:
             else None
         ),
         "icon": icon,
+        "unit": None,
     }
+
+
+def _colors(effective: dict) -> dict:
+    return {k: effective[k] for k in ("primary", "on_primary", "accent", "on_accent")}
+
+
+def unit_data(unit: Organization) -> dict:
+    """Erscheinungsbild der Einheit einer eigenen Adresse (W7), geerbt bis zur Instanz."""
+    chain = unit.ancestors()
+    own_colors = any(o.primary_color or o.accent_color for o in chain)
+    effective = theme.effective_theme(chain)
+    return {
+        "name": unit.name,
+        "short_name": unit.short_name or "",
+        "logo_url": effective["logo_url"],
+        "theme": _colors(effective) if own_colors else None,
+        "icon": _icon_file(unit) is not None,
+        "unit": unit.pk,
+    }
+
+
+def appearance(request) -> dict:
+    """Erscheinungsbild für die aufgerufene Adresse: Einheit (W7) oder Instanz."""
+    from .addresses import request_unit
+
+    unit = request_unit(request)
+    return unit_data(unit) if unit is not None else platform_data()
 
 
 class PublicPlatformView(APIView):
@@ -84,9 +115,11 @@ class PublicPlatformView(APIView):
 
     @extend_schema(responses=PublicPlatformSerializer)
     def get(self, request):
-        response = Response(platform_data())
-        # Kurz zwischenspeichern: Änderungen sind nach spätestens fünf Minuten überall zu sehen
+        response = Response(appearance(request))
+        # Kurz zwischenspeichern: Änderungen sind nach spätestens fünf Minuten überall zu sehen.
+        # Je Adresse ein anderes Bild (W7): Zwischenspeicher nach Host trennen
         response["Cache-Control"] = "public, max-age=300"
+        response["Vary"] = "Host"
         return response
 
 
@@ -102,15 +135,40 @@ DEFAULT_ICONS = [
 BACKGROUND_COLOR = "#f3f7f5"
 
 
-def _icon_file() -> tuple[str, bytes] | None:
+def _read(field) -> bytes | None:
+    try:
+        with field.open("rb") as fh:
+            return fh.read()
+    except OSError:
+        return None
+
+
+def _icon_file(unit: Organization | None = None) -> tuple[str, bytes] | None:
+    """Quadratisches Symbol (512 px) als (Schlüssel, PNG).
+
+    Mit Einheit (W7): eigenes Symbol einer Ebene bis unter die Plattform, sonst ihr Wappen
+    quadratisch gemacht, sonst das Symbol der Instanz.
+    """
+    if unit is not None:
+        chain = [o for o in unit.ancestors() if o.type != Organization.Type.PLATFORM]
+        for org in chain:
+            if org.brand_icon:
+                data = _read(org.brand_icon)
+                if data:
+                    return org.brand_icon.name, data
+        for org in chain:
+            if org.logo:
+                data = _read(org.logo)
+                if data:
+                    try:
+                        return f"wappen:{org.logo.name}", brand_icon.square(data)
+                    except Exception:  # noqa: BLE001 – kaputtes Wappen: Symbol der Instanz
+                        break
     row = PlatformSettings.objects.filter(pk=1).first()
     if not row or not row.brand_icon:
         return None
-    try:
-        with row.brand_icon.open("rb") as fh:
-            return row.brand_icon.name, fh.read()
-    except OSError:
-        return None
+    data = _read(row.brand_icon)
+    return (row.brand_icon.name, data) if data else None
 
 
 class PublicPlatformIconView(APIView):
@@ -125,7 +183,9 @@ class PublicPlatformIconView(APIView):
         size = 512 if maskable else int(name) if name.isdigit() else 0
         if size not in brand_icon.SIZES:
             raise Http404
-        found = _icon_file()
+        from .addresses import request_unit
+
+        found = _icon_file(request_unit(request))
         if found is None:
             raise Http404
         response = HttpResponse(
@@ -133,11 +193,12 @@ class PublicPlatformIconView(APIView):
             content_type="image/png",
         )
         response["Cache-Control"] = "public, max-age=3600"
+        response["Vary"] = "Host"
         return response
 
 
-def manifest_data() -> dict:
-    data = platform_data()
+def manifest_data(request=None) -> dict:
+    data = appearance(request) if request is not None else platform_data()
     colors = data["theme"] or {"primary": theme.DEFAULT_PRIMARY}
     if data["icon"]:
         icons = [
@@ -174,6 +235,7 @@ class PublicManifestView(APIView):
 
     @extend_schema(responses={(200, "application/manifest+json"): dict})
     def get(self, request):
-        response = JsonResponse(manifest_data(), content_type="application/manifest+json")
+        response = JsonResponse(manifest_data(request), content_type="application/manifest+json")
         response["Cache-Control"] = "public, max-age=300"
+        response["Vary"] = "Host"
         return response

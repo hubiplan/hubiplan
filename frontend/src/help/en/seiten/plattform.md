@@ -27,3 +27,7 @@ Once a day HUBIplan asks GitHub whether a newer release is available. If so, you
 Platform › Version shows which version is running and whether a newer release is available. If the operator has turned on self-update (`HUBIPLAN_SELBSTUPDATE=1`, see `docs/betrieb.md`), you can install the new release there with “Update to …”. This needs two-factor sign-in, and you enter your password again.
 
 HUBIplan only leaves an order. A service on the server first backs up the database, checks the release signature and that it is newer than the running version, and then installs it. HUBIplan is unavailable for a few minutes meanwhile; the page checks back on its own and then shows the result. If anything fails, the previous version keeps running. Every order is recorded in the change log, and the operator receives a security email.
+
+## Addresses per unit
+
+Under Settings › **Addresses per unit** you assign further addresses to a unit, for example `mitglieder.sv-musterstadt.example` to Schützenverein Musterstadt. Anyone opening HUBIplan via that address sees the unit's name, colours, coat of arms and icon on the sign-in page; after signing in, the unit is preselected. Unknown addresses and the main address show the instance. The unit uploads its own icon under Settings › Appearance; without one, HUBIplan uses its coat of arms. Sign-in applies per address. The address must point to the server via DNS and be entered there as an allowed address (`DJANGO_ALLOWED_HOSTS`, certificate). Nextcloud, the app connection and federation stay on the main address.

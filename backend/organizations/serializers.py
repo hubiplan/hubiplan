@@ -15,7 +15,7 @@ from access.models import Role, RoleAssignment
 from core.api_base import ModelCleanMixin
 
 from . import theme
-from .models import Department, DepartmentRole, Organization, PlatformSettings
+from .models import Department, DepartmentRole, InstanceAddress, Organization, PlatformSettings
 from .terms import department_terms, fill
 
 WEBSITE_MODULE = "website"
@@ -351,6 +351,9 @@ class ThemeSerializer(serializers.ModelSerializer):
 
     effective = serializers.SerializerMethodField()
     logo_url = serializers.SerializerMethodField()
+    # Eigene Adressen der Einheit und ob sie ein eigenes Symbol hat (White Label W7)
+    addresses = serializers.SerializerMethodField()
+    has_icon = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
@@ -362,7 +365,15 @@ class ThemeSerializer(serializers.ModelSerializer):
             "extra_colors",
             "logo_url",
             "effective",
+            "addresses",
+            "has_icon",
         ]
+
+    def get_addresses(self, obj) -> list[str]:
+        return list(obj.instance_addresses.values_list("hostname", flat=True))
+
+    def get_has_icon(self, obj) -> bool:
+        return bool(obj.brand_icon)
 
     def get_logo_url(self, obj) -> str | None:
         return logo_url(obj)
@@ -929,6 +940,51 @@ KIND_FIELDS = (
     "department_label_gender",
     "department_label_genitive",
 )
+
+
+class InstanceAddressSerializer(serializers.ModelSerializer):
+    """Adresse → Einheit (White Label W7)."""
+
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.exclude(type=Organization.Type.PLATFORM)
+    )
+    organization_name = serializers.CharField(source="organization.name", read_only=True)
+
+    class Meta:
+        model = InstanceAddress
+        fields = ["id", "hostname", "organization", "organization_name", "created_at"]
+        read_only_fields = ["created_at"]
+
+    def validate_hostname(self, value: str) -> str:
+        from urllib.parse import urlparse
+
+        from django.conf import settings
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        from website.models import WebsiteDomain
+
+        from .addresses import clean_hostname
+
+        try:
+            host = clean_hostname(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(exc.messages) from exc
+        if host == (urlparse(settings.FRONTEND_URL).hostname or "").lower():
+            raise serializers.ValidationError(
+                gettext("Das ist schon die Hauptadresse der Instanz.")
+            )
+        from core.tenancy import rls_bypass
+
+        # Domains der Vereinswebseiten liegen im Datenbereich der Vereine (RLS)
+        with rls_bypass():
+            taken_by_website = WebsiteDomain.objects.filter(hostname__iexact=host).exists()
+        if taken_by_website:
+            raise serializers.ValidationError(
+                gettext("Diese Adresse gehört schon zu einer Vereinswebseite.")
+            )
+        if InstanceAddress.objects.filter(hostname=host).exists():
+            raise serializers.ValidationError(gettext("Diese Adresse ist schon eingetragen."))
+        return host
 
 
 class PlatformSettingsSerializer(serializers.ModelSerializer):

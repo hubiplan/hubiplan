@@ -15,6 +15,7 @@ import { LabelFields } from '../../components/LabelFields.tsx'
 import { buildTerms } from '../../org/terms.ts'
 import { Why } from '../../learning/Aids.tsx'
 import { t, tn } from '../../i18n/index.ts'
+import { confirmDialog } from '../../components/dialog.ts'
 
 // Vorschlag für die Bezeichnung neuer Einheiten, je nachdem, ob sie eigene Mitglieder
 // führen (wie im Backend). Jede Einheit kann ihre Bezeichnung frei ändern.
@@ -578,7 +579,134 @@ export function PlatformSettingsPage() {
   const { data, error, setData } = useLoad(() => platformApi.settings(), [])
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <p className="muted">{t('Lädt …')}</p>
-  return <SettingsForm settings={data} onSaved={setData} />
+  return (
+    <div className="stack">
+      <SettingsForm settings={data} onSaved={setData} />
+      <AddressesCard />
+    </div>
+  )
+}
+
+/**
+ * Weitere Adressen der Instanz je Einheit (White Label W7): Wer HUBIplan über eine
+ * solche Adresse aufruft, sieht Name, Farben, Wappen und Symbol der Einheit.
+ */
+function AddressesCard() {
+  const list = useLoad(() => platformApi.addresses(), [])
+  const orgs = useLoad(() => platformApi.orgs(), [])
+  const [hostname, setHostname] = useState('')
+  const [organization, setOrganization] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  async function add(e: FormEvent) {
+    e.preventDefault()
+    if (!hostname.trim() || !organization) {
+      setError(t('Bitte Adresse und Einheit angeben.'))
+      return
+    }
+    setBusy(true)
+    setError(null)
+    try {
+      await platformApi.addAddress(hostname.trim(), Number(organization))
+      setHostname('')
+      setOrganization('')
+      await list.reload()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function remove(id: number, host: string) {
+    if (!(await confirmDialog(t('Adresse „{x}“ entfernen?', { x: host })))) return
+    setBusy(true)
+    setError(null)
+    try {
+      await platformApi.removeAddress(id)
+      await list.reload()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="card card-wide">
+      <h2>{t('Adressen je Einheit')}</h2>
+      <p className="small">
+        {t(
+          'HUBIplan kann unter weiteren Adressen erreichbar sein. Wer eine solche Adresse aufruft, sieht auf der Anmeldeseite Name, Farben, Wappen und Symbol der zugeordneten Einheit; nach der Anmeldung ist sie vorausgewählt. Die Adresse muss per DNS auf diesen Server zeigen und beim Betrieb als erlaubte Adresse eingetragen sein.',
+        )}
+      </p>
+      {list.error && <LoadError message={list.error} onRetry={() => void list.reload()} />}
+      {list.data && list.data.length > 0 && (
+        <table className="table">
+          <thead>
+            <tr>
+              <th scope="col">{t('Adresse')}</th>
+              <th scope="col">{t('Einheit')}</th>
+              <th scope="col">
+                <span className="sr-only">{t('Aktionen')}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.data.map((a) => (
+              <tr key={a.id}>
+                <td>{a.hostname}</td>
+                <td>{a.organization_name}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="button button-ghost"
+                    disabled={busy}
+                    onClick={() => void remove(a.id, a.hostname)}
+                  >
+                    {t('Entfernen')}
+                    <span className="sr-only"> {a.hostname}</span>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {list.data && list.data.length === 0 && (
+        <p className="muted">{t('Noch keine weiteren Adressen.')}</p>
+      )}
+      <form onSubmit={add} className="stack">
+        <div className="grid-2">
+          <Field
+            label={t('Adresse')}
+            value={hostname}
+            placeholder={t('z. B. mitglieder.verein.example')}
+            onChange={(e) => setHostname(e.target.value)}
+          />
+          <SelectField
+            label={t('Einheit')}
+            value={organization}
+            onChange={(e) => setOrganization(e.target.value)}
+          >
+            <option value="">{t('Bitte wählen')}</option>
+            {(orgs.data ?? []).map((o) => (
+              <option key={o.id} value={o.id}>
+                {displayName(o)}
+              </option>
+            ))}
+          </SelectField>
+        </div>
+        {error && <Alert kind="error">{error}</Alert>}
+        <div>
+          <button type="submit" className="button button-primary" disabled={busy}>
+            {t('Adresse hinzufügen')}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
 }
 
 function SettingsForm({

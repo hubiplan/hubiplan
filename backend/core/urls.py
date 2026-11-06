@@ -192,6 +192,7 @@ federation_member_router.register(
 
 platform_router = SimpleRouter()
 platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename="platform-org")
+platform_router.register("addresses", org_views.InstanceAddressViewSet, basename="platform-address")
 
 org_patterns = [
     path("music/equipment/", EquipmentView.as_view()),
@@ -266,6 +267,7 @@ org_patterns = [
         name="org-letterhead-publish",
     ),
     path("logo/", org_views.OrganizationLogoView.as_view(), name="org-logo"),
+    path("icon/", org_views.OrganizationIconView.as_view(), name="org-icon"),
     path(
         "departments/<int:pk>/logo/",
         org_views.DepartmentLogoView.as_view(),
