@@ -52,11 +52,21 @@ const request = {
   can_manage: true,
   can_cancel: true,
   version: 1,
+  loan: false,
+  handed_out_at: null,
+  handed_out_by: '',
+  returned_at: null,
+  returned_by: '',
   exceptions: [],
 }
 
-function show(permissions: string[]) {
+function show(
+  permissions: string[],
+  extra: Parameters<typeof fakeApi>[0] = {},
+  more: object[] = [],
+) {
   const api = fakeApi({
+    ...extra,
     'GET /_allauth/browser/v1/auth/session': () => ({
       status: 200,
       body: { status: 200, data: { user: testUser } },
@@ -87,6 +97,7 @@ function show(permissions: string[]) {
             own: false,
             needs_review: false,
           },
+          ...more,
         ],
         requests: [request],
       },
@@ -131,5 +142,48 @@ describe('Belegung', () => {
   it('verlangt ein Leserecht', async () => {
     show(['members.view'])
     expect(await screen.findByText('Dafür fehlt dir die Berechtigung.')).toBeInTheDocument()
+  })
+
+  it('bestätigt die Ausgabe einer Ausleihe', async () => {
+    const loan = {
+      ...request,
+      id: 11,
+      item: 6,
+      item_title: 'Beamer',
+      title: 'Vortrag',
+      status: 'confirmed',
+      loan: true,
+    }
+    const api = show(
+      ['infrastructure.view', 'infrastructure.edit'],
+      {
+        'GET /api/orgs/7/bookings/11/': () => ({ status: 200, body: loan }),
+        'POST /api/orgs/7/bookings/11/handover/': () => ({
+          status: 200,
+          body: { ...loan, version: 2, handed_out_at: '2026-11-06T08:00:00Z' },
+        }),
+      },
+      [
+        {
+          booking: 11,
+          item: 3,
+          item_title: 'Schützenhaus',
+          title: 'Vortrag',
+          starts_at: '2026-11-05T08:00:00Z',
+          ends_at: '2026-11-05T10:00:00Z',
+          original_start: '2026-11-05T08:00:00Z',
+          all_day: false,
+          status: 'confirmed',
+          series: false,
+          own: false,
+          needs_review: false,
+        },
+      ],
+    )
+    fireEvent.click((await screen.findAllByRole('button', { name: /Vortrag/ }))[0])
+    fireEvent.click(await screen.findByRole('button', { name: 'Ausgabe bestätigen' }))
+    await waitFor(() =>
+      expect(api.some((c) => c.key === 'POST /api/orgs/7/bookings/11/handover/')).toBe(true),
+    )
   })
 })

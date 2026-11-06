@@ -1095,6 +1095,25 @@ function MaterialDetail({
               <p>{link.note}</p>
               {link.needs_review && <p>{t('Terminbezug prüfen')}</p>}
               {link.cancelled && <p>{t('Abgesagt')}</p>}
+              {data.booking_rules?.enabled &&
+                !trash &&
+                !link.cancelled &&
+                link.kind !== 'exclude' &&
+                (link.kind !== 'occurrence' || link.original_start) && (
+                  <Link
+                    to={`/belegung?${new URLSearchParams({
+                      buchen: '1',
+                      objekt: String(data.id),
+                      termin: String(link.event),
+                      titel: link.title,
+                      ...(link.kind === 'occurrence' && link.original_start
+                        ? { vorkommen: link.original_start }
+                        : {}),
+                    }).toString()}`}
+                  >
+                    {t('Verbindlich buchen')}
+                  </Link>
+                )}
             </div>
             {editable && !trash && (
               <button

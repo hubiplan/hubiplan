@@ -9,4 +9,5 @@ urlpatterns = [
     path("<int:pk>/", views.DetailView.as_view()),
     path("<int:pk>/decision/", views.DecisionView.as_view()),
     path("<int:pk>/skip/", views.SkipView.as_view()),
+    path("<int:pk>/handover/", views.HandoverView.as_view()),
 ]

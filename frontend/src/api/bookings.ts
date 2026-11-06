@@ -51,6 +51,11 @@ export interface Booking {
   can_manage: boolean
   can_cancel: boolean
   version: number
+  loan: boolean
+  handed_out_at: string | null
+  handed_out_by: string
+  returned_at: string | null
+  returned_by: string
   exceptions: string[]
 }
 
@@ -86,6 +91,17 @@ export const bookingApi = {
     api.patch<Booking>(`${base}${booking.id}/`, { ...data, version: booking.version }),
   decide: (base: string, booking: Booking, action: 'confirm' | 'reject' | 'cancel') =>
     api.post<Booking>(`${base}${booking.id}/decision/`, { action, version: booking.version }),
+  handover: (
+    base: string,
+    booking: Booking,
+    action: 'out' | 'return' | 'undo',
+    extra: { update_item?: boolean; condition?: string; condition_note?: string } = {},
+  ) =>
+    api.post<Booking>(`${base}${booking.id}/handover/`, {
+      action,
+      version: booking.version,
+      ...extra,
+    }),
   skip: (base: string, booking: Booking, originalStart: string, restore = false) =>
     api.post<Booking>(`${base}${booking.id}/skip/`, {
       original_start: originalStart,

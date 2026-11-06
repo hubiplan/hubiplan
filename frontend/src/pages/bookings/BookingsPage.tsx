@@ -106,7 +106,17 @@ function Bookings({ base }: { base: string }) {
   if (only) query.set('item', String(only))
   const list = useLoad(() => bookingApi.list(base, query.toString()), [base, query.toString()])
   const [selected, setSelected] = useState<{ id: number; original: string } | null>(null)
-  const [creating, setCreating] = useState(false)
+  // Aus dem Material-Bedarf: ?buchen=1&objekt=…&termin=…&titel=…[&vorkommen=…]
+  const [demand] = useState(() =>
+    params.get('buchen') === '1' && params.get('termin')
+      ? {
+          kind: 'event' as const,
+          choice: { id: Number(params.get('termin')), title: params.get('titel') ?? '' },
+          occurrence: params.get('vorkommen') ?? undefined,
+        }
+      : undefined,
+  )
+  const [creating, setCreating] = useState(params.get('buchen') === '1')
   const set = (key: string, value: string) => {
     const next = new URLSearchParams(params)
     if (value) next.set(key, value)
@@ -145,6 +155,7 @@ function Bookings({ base }: { base: string }) {
           base={base}
           items={bookable}
           initialItem={only ?? undefined}
+          initialLink={demand}
           onDone={async (saved) => {
             setCreating(false)
             if (saved) await reload()
@@ -431,6 +442,9 @@ function BookingDetail({
           )}
         </p>
       )}
+      {data.loan && data.status === 'confirmed' && (
+        <Handover base={base} booking={data} busy={busy} act={act} />
+      )}
       {failure && <p role="alert">{failure}</p>}
       {active && (
         <div className="button-row">
@@ -500,6 +514,115 @@ function BookingDetail({
   )
 }
 
+function stamp(value: string) {
+  return new Date(value).toLocaleString(locale(), {
+    timeZone: ZONE,
+    dateStyle: 'short',
+    timeStyle: 'short',
+  })
+}
+
+function Handover({
+  base,
+  booking,
+  busy,
+  act,
+}: {
+  base: string
+  booking: Booking
+  busy: boolean
+  act: (fn: () => Promise<unknown>) => Promise<void>
+}) {
+  const [update, setUpdate] = useState(false)
+  const [condition, setCondition] = useState('ready')
+  const [note, setNote] = useState('')
+  const out = booking.handed_out_at
+  const back = booking.returned_at
+  return (
+    <div className="booking-handover">
+      <h3>{t('Ausleihe')}</h3>
+      {out ? (
+        <p>
+          {t('Ausgegeben am {date}', { date: stamp(out) })}
+          {booking.handed_out_by ? ` · ${booking.handed_out_by}` : ''}
+        </p>
+      ) : (
+        <p>{t('Noch nicht ausgegeben.')}</p>
+      )}
+      {back && (
+        <p>
+          {t('Zurückgegeben am {date}', { date: stamp(back) })}
+          {booking.returned_by ? ` · ${booking.returned_by}` : ''}
+        </p>
+      )}
+      {booking.can_manage && out && !back && (
+        <fieldset disabled={busy}>
+          <label className="checkbox">
+            <input type="checkbox" checked={update} onChange={(e) => setUpdate(e.target.checked)} />{' '}
+            {t('Zustand des Materials bei der Rückgabe übernehmen')}
+          </label>
+          {update && (
+            <>
+              <label>
+                {t('Zustand')}
+                <select value={condition} onChange={(e) => setCondition(e.target.value)}>
+                  <option value="ready">{t('Einsatzbereit')}</option>
+                  <option value="limited">{t('Eingeschränkt nutzbar')}</option>
+                  <option value="defective">{t('Defekt')}</option>
+                </select>
+              </label>
+              <label>
+                {t('Hinweis zum Zustand')}
+                <input value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} />
+              </label>
+            </>
+          )}
+        </fieldset>
+      )}
+      {booking.can_manage && (
+        <div className="button-row">
+          {!out && (
+            <button
+              className="button button-primary"
+              disabled={busy}
+              onClick={() => act(() => bookingApi.handover(base, booking, 'out'))}
+            >
+              {t('Ausgabe bestätigen')}
+            </button>
+          )}
+          {out && !back && (
+            <button
+              className="button button-primary"
+              disabled={busy}
+              onClick={() =>
+                act(() =>
+                  bookingApi.handover(
+                    base,
+                    booking,
+                    'return',
+                    update ? { update_item: true, condition, condition_note: note } : {},
+                  ),
+                )
+              }
+            >
+              {t('Rückgabe bestätigen')}
+            </button>
+          )}
+          {out && (
+            <button
+              className="button button-ghost"
+              disabled={busy}
+              onClick={() => act(() => bookingApi.handover(base, booking, 'undo'))}
+            >
+              {back ? t('Rückgabe zurücknehmen') : t('Ausgabe zurücknehmen')}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function local(value: string | undefined, allDay: boolean) {
   if (!value) return ''
   const d = new Date(value)
@@ -513,12 +636,18 @@ function BookingForm({
   items,
   booking,
   initialItem,
+  initialLink,
   onDone,
 }: {
   base: string
   items: BookableItem[]
   booking?: Booking
   initialItem?: number
+  initialLink?: {
+    kind: 'event' | 'competition'
+    choice: MaterialChoice
+    occurrence?: string
+  }
   onDone: (saved: boolean) => Promise<void>
 }) {
   const allDay = booking?.all_day ?? false
@@ -539,7 +668,8 @@ function BookingForm({
   const [link, setLink] = useState<{
     kind: 'event' | 'competition'
     choice: MaterialChoice
-  } | null>(null)
+    occurrence?: string
+  } | null>(initialLink ?? null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -562,8 +692,10 @@ function BookingForm({
             note: values.note,
             visibility: values.visibility,
           }
-          if (link) payload[link.kind] = link.choice.id
-          else {
+          if (link) {
+            payload[link.kind] = link.choice.id
+            if (link.occurrence) payload.occurrence = link.occurrence
+          } else {
             payload.all_day = values.all_day
             payload.starts_at = values.all_day
               ? `${values.starts_at}T00:00:00`
@@ -610,11 +742,14 @@ function BookingForm({
           </p>
         )}
         {!booking && (
-          <details>
+          <details open={!!initialLink}>
             <summary>{t('Zeit aus einem Termin oder Wettbewerb übernehmen')}</summary>
             {link ? (
               <p className="material-selection">
-                <span>{link.choice.title}</span>
+                <span>
+                  {link.choice.title}
+                  {link.occurrence ? ` · ${stamp(link.occurrence)}` : ''}
+                </span>
                 <button className="button button-ghost" type="button" onClick={() => setLink(null)}>
                   {t('Entfernen')}
                 </button>

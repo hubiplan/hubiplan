@@ -32,3 +32,12 @@ eigene Anfrage oder Buchung kannst du selbst stornieren.
 
 Sichtbarkeit: Bei **Nur die Verwaltung sieht den Zweck** sehen andere Mitglieder nur
 „Belegt“. Einzelne Termine einer Serie sagst du mit **Nur diesen Termin absagen** ab.
+
+Ausleihe von Material: Bei einmaligen Buchungen von Material bestätigt die Verwaltung in der
+Buchung **Ausgabe bestätigen** und später **Rückgabe bestätigen**. Nur wenn du dabei
+**Zustand des Materials bei der Rückgabe übernehmen** ankreuzt, ändert HUBIplan Zustand und
+Hinweis des Materials; die Änderung steht dann im Verlauf des Materials.
+
+Aus dem Bedarf buchen: Ist ein Material mit Buchungskalender einem Termin zugeordnet, steht
+auf seiner Detailseite **Verbindlich buchen**. Das öffnet die Buchung mit diesem Termin; bei
+„Nur dieser Termin“ wird genau dieses Vorkommen gebucht.
