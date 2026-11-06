@@ -485,9 +485,12 @@ class ContactPersonSerializer(serializers.ModelSerializer):
     display_name = serializers.SerializerMethodField()
     contact_email = serializers.SerializerMethodField()
     contact_phone = serializers.SerializerMethodField()
+    access_email = serializers.SerializerMethodField()
 
     class Meta:
         model = ContactPerson
+        # Mitgliederzugang richtet „Zugang einrichten“ ein (J5), nicht das Kennzeichen
+        read_only_fields = ["member_access"]
         fields = [
             "id",
             "member",
@@ -501,6 +504,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
             "phone",
             "contact_email",
             "contact_phone",
+            "access_email",
             "is_primary",
             "receives_mail",
             "receives_invoices",
@@ -528,6 +532,13 @@ class ContactPersonSerializer(serializers.ModelSerializer):
 
     def get_display_name(self, obj) -> str:
         return obj.display_name
+
+    def get_access_email(self, obj) -> str:
+        """Anmelde-E-Mail des Mitgliederzugangs (leer ohne Zugang)."""
+        from portal.models import PortalAccess
+
+        access = PortalAccess.objects.filter(contact_person=obj).select_related("user").first()
+        return access.user.email if access else ""
 
     def get_contact_email(self, obj) -> str:
         contact = self._contact(obj)

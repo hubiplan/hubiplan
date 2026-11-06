@@ -23,6 +23,7 @@ export function PhotoSection({
   initial,
   canManage,
   hasEmail,
+  organization = false,
   onChange,
 }: {
   orgId: number
@@ -30,6 +31,8 @@ export function PhotoSection({
   initial: PhotoState
   canManage: boolean
   hasEmail: boolean
+  /** Organisationsmitglied: das Bild ist ein Logo, ohne Einwilligung und Upload-Link */
+  organization?: boolean
   onChange?: () => void
 }) {
   const [state, setState] = useState<PhotoState>(initial)
@@ -58,14 +61,23 @@ export function PhotoSection({
 
   return (
     <div className="card card-wide photo-section">
-      <h2>{t('Foto')}</h2>
-      <Why k="photo_consent" />
+      <h2>{organization ? t('Logo') : t('Foto')}</h2>
+      {organization ? (
+        <p className="muted small">
+          {t('Das Logo erscheint in der Mitgliederliste, in der Akte und auf dem Ausweis.')}
+        </p>
+      ) : (
+        <Why k="photo_consent" />
+      )}
       <div className="photo-row">
         <div className="photo-frame">
           {photo ? (
-            <img src={photo.url} alt={t('Foto des Mitglieds')} />
+            <img
+              src={photo.url}
+              alt={organization ? t('Logo der Organisation') : t('Foto des Mitglieds')}
+            />
           ) : (
-            <span className="muted small">{t('kein Foto')}</span>
+            <span className="muted small">{organization ? t('kein Logo') : t('kein Foto')}</span>
           )}
         </div>
         <div className="photo-info">
@@ -74,21 +86,23 @@ export function PhotoSection({
               {photo.source_label} · {formatDateTime(photo.uploaded_at)}
             </p>
           )}
-          <p className="small">
-            {t('Foto-')}
-            <Term k="consent">{t('Einwilligung')}</Term>:{' '}
-            {state.photo_consent_at
-              ? t('{x} ({x2})', {
-                  x: formatDate(state.photo_consent_at),
-                  x2:
-                    state.photo_consent_source === 'member'
-                      ? t('vom Mitglied')
-                      : state.photo_consent_source === 'app'
-                        ? t('vom Mitglied in der App')
-                        : t('durch den Vorstand erfasst'),
-                })
-              : t('liegt nicht vor')}
-          </p>
+          {!organization && (
+            <p className="small">
+              {t('Foto-')}
+              <Term k="consent">{t('Einwilligung')}</Term>:{' '}
+              {state.photo_consent_at
+                ? t('{x} ({x2})', {
+                    x: formatDate(state.photo_consent_at),
+                    x2:
+                      state.photo_consent_source === 'member'
+                        ? t('vom Mitglied')
+                        : state.photo_consent_source === 'app'
+                          ? t('vom Mitglied in der App')
+                          : t('durch den Vorstand erfasst'),
+                  })
+                : t('liegt nicht vor')}
+            </p>
+          )}
           {canManage && !editing && (
             <div className="button-row">
               <button
@@ -96,7 +110,13 @@ export function PhotoSection({
                 className="button button-ghost"
                 onClick={() => setEditing(true)}
               >
-                {photo ? t('Foto ersetzen') : t('Foto hochladen')}
+                {organization
+                  ? photo
+                    ? t('Logo ersetzen')
+                    : t('Logo hochladen')
+                  : photo
+                    ? t('Foto ersetzen')
+                    : t('Foto hochladen')}
               </button>
               {photo && (
                 <>
@@ -104,7 +124,9 @@ export function PhotoSection({
                     type="button"
                     className="button button-ghost"
                     disabled={busy}
-                    aria-label={t('Foto nach links drehen')}
+                    aria-label={
+                      organization ? t('Logo nach links drehen') : t('Foto nach links drehen')
+                    }
                     onClick={() => void run(() => photoApi.rotate(orgId, memberId, 'left'))}
                   >
                     ⟲
@@ -113,7 +135,9 @@ export function PhotoSection({
                     type="button"
                     className="button button-ghost"
                     disabled={busy}
-                    aria-label={t('Foto nach rechts drehen')}
+                    aria-label={
+                      organization ? t('Logo nach rechts drehen') : t('Foto nach rechts drehen')
+                    }
                     onClick={() => void run(() => photoApi.rotate(orgId, memberId, 'right'))}
                   >
                     ⟳
@@ -125,7 +149,7 @@ export function PhotoSection({
                     onClick={async () => {
                       if (
                         await confirmDialog({
-                          title: t('Foto löschen?'),
+                          title: organization ? t('Logo löschen?') : t('Foto löschen?'),
                           confirmLabel: t('Löschen'),
                         })
                       )
@@ -136,7 +160,7 @@ export function PhotoSection({
                   </button>
                 </>
               )}
-              {state.photo_consent_at ? (
+              {state.photo_consent_at && !organization ? (
                 <button
                   type="button"
                   className="link-button"
@@ -190,14 +214,14 @@ export function PhotoSection({
         <div className="subcard">
           <PhotoEditor
             busy={busy}
-            submitLabel={t('Foto speichern')}
+            submitLabel={organization ? t('Logo speichern') : t('Foto speichern')}
             onCancel={() => setEditing(false)}
             onDone={async (blob) => {
               const ok = await run(() => photoApi.upload(orgId, memberId, blob, consent))
               if (ok) setEditing(false)
             }}
           >
-            {!state.photo_consent_at && (
+            {!state.photo_consent_at && !organization && (
               <label className="checkbox">
                 <input
                   type="checkbox"
@@ -216,7 +240,9 @@ export function PhotoSection({
         </div>
       )}
 
-      {canManage && <UploadLinks orgId={orgId} memberId={memberId} hasEmail={hasEmail} />}
+      {canManage && !organization && (
+        <UploadLinks orgId={orgId} memberId={memberId} hasEmail={hasEmail} />
+      )}
       {error && <Alert kind="error">{error}</Alert>}
     </div>
   )

@@ -6886,7 +6886,6 @@
   "Name und Kontakt kommen aus der Akte des Mitglieds.": "Name and contact details come from the member's file.",
   "z. B. Geschäftsführer, Bürgermeister": "e.g. managing director, mayor",
   "Ansprechpartner seit": "Contact person since",
-  "Rundschreiben, Rechnungen, Versammlungen und der Mitgliederzugang berücksichtigen diese Angaben noch nicht; das folgt in den nächsten Fassungen.": "Circulars, invoices, meetings and member access do not use these settings yet; this follows in the next versions.",
   "Ansprechpartner für:": "Contact person for:",
   "Rechnungsangaben entfernen?": "Remove billing details?",
   "Rechnungen gehen dann wieder an die Anschrift des Mitglieds.": "Invoices will then go to the member's address again.",
@@ -6911,5 +6910,19 @@
   "Oder anderer Vertreter": "Or another representative",
   "Name des Vertreters": "Name of representative",
   "anwesend durch {name}": "present through {name}",
-  "vertritt zusätzlich: {x}": "also represents: {x}"
+  "vertritt zusätzlich: {x}": "also represents: {x}",
+  "Mein Bereich: {member} als Ansprechpartner (": "My area: {member} as contact person (",
+  "Organisationsmitglied": "Organisation member",
+  "Den Mitgliederzugang richtet ihr je Ansprechpartner im Reiter „Rollen und Konto“ ein.": "You set up member access for each contact person on the “Roles and account” tab.",
+  "Organisationen kommen über ihre Ansprechpartner in den Mitgliederbereich. Bitte zuerst unter „Stammdaten“ einen Ansprechpartner eintragen.": "Organisations reach the member area through their contact persons. Please add a contact person under “Personal data” first.",
+  "Mitgliederbereich für {name}": "Member area for {name}",
+  "Das Logo erscheint in der Mitgliederliste, in der Akte und auf dem Ausweis.": "The logo appears in the member list, in the member file and on the membership card.",
+  "Logo der Organisation": "Logo of the organisation",
+  "kein Logo": "no logo",
+  "Logo ersetzen": "Replace logo",
+  "Logo hochladen": "Upload logo",
+  "Logo nach links drehen": "Rotate logo left",
+  "Logo nach rechts drehen": "Rotate logo right",
+  "Logo löschen?": "Delete logo?",
+  "Logo speichern": "Save logo"
 }

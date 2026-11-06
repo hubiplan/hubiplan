@@ -193,7 +193,6 @@ function ContactForm({
       receives_mail: v.receives_mail,
       receives_invoices: v.receives_invoices,
       represents: v.represents,
-      member_access: v.member_access,
     }
     if (linked) {
       const member = picked?.id ?? linkedAtStart
@@ -341,7 +340,7 @@ function ContactForm({
             onChange={(ev) => set('since', ev.target.value)}
           />
         </div>
-        {FLAGS.map((f) => (
+        {FLAGS.filter((f) => f.key !== 'member_access').map((f) => (
           <Checkbox
             key={f.key}
             label={f.label}
@@ -351,7 +350,7 @@ function ContactForm({
         ))}
         <p className="muted small">
           {t(
-            'Rundschreiben, Rechnungen, Versammlungen und der Mitgliederzugang berücksichtigen diese Angaben noch nicht; das folgt in den nächsten Fassungen.',
+            'Den Mitgliederzugang richtet ihr je Ansprechpartner im Reiter „Rollen und Konto“ ein.',
           )}
         </p>
         <div className="actions">

@@ -485,8 +485,8 @@ def _purge_related(membership: Membership, person, club) -> None:
         status=ChangeRequest.Status.REJECTED, decided_at=timezone.now()
     )
     # Zugang sperren: Mitgliederzugang und offene Anmeldelinks dieses Vereins
-    access = PortalAccess.objects.filter(membership=membership).first()
-    if access is not None:
+    # (bei Organisationen die Zugänge aller Ansprechpartner)
+    for access in PortalAccess.objects.filter(membership=membership):
         LoginLink.objects.filter(
             user_id=access.user_id, organization=club, used_at__isnull=True
         ).update(used_at=timezone.now())
