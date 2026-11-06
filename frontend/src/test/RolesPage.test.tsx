@@ -48,7 +48,7 @@ function setup() {
   return calls
 }
 
-// Rollenname nur in der Tabelle suchen (er steht auch im Zuordnungsformular)
+// Rollenname nur in der Tabelle suchen (er steht auch im Formular zum Besetzen)
 const IN_TABLE = { selector: 'td > strong' }
 
 async function openRole(name: string) {
@@ -60,12 +60,12 @@ async function openRole(name: string) {
 }
 
 describe('Rollen löschen', () => {
-  it('löscht eine vergebene Rolle nach Rückfrage mit Anzahl der Zuordnungen', async () => {
+  it('löscht eine vergebene Rolle nach Rückfrage mit Anzahl der Amtszeiten', async () => {
     const calls = setup()
     const user = await openRole('Kassierer')
     const dialog = await screen.findByRole('alertdialog', { name: 'Rolle „Kassierer“ löschen?' })
-    expect(dialog).toHaveTextContent('2 Benutzer haben diese Rolle noch.')
-    expect(dialog).toHaveTextContent('Alle 2 Zuordnungen werden beendet')
+    expect(dialog).toHaveTextContent('2 Personen haben diese Rolle noch.')
+    expect(dialog).toHaveTextContent('Alle 2 Amtszeiten werden beendet')
     await user.click(within(dialog).getByRole('button', { name: 'Löschen' }))
     await waitFor(() =>
       expect(calls.some((c) => c.key === 'DELETE /api/orgs/7/roles/3/')).toBe(true),
@@ -73,11 +73,11 @@ describe('Rollen löschen', () => {
     await waitFor(() => expect(screen.queryByText('Kassierer', IN_TABLE)).not.toBeInTheDocument())
   })
 
-  it('fragt bei einer freien Rolle ohne Hinweis auf Zuordnungen', async () => {
+  it('fragt bei einer freien Rolle ohne Hinweis auf Amtszeiten', async () => {
     const calls = setup()
     const user = await openRole('Beisitzer')
     const dialog = await screen.findByRole('alertdialog', { name: 'Rolle „Beisitzer“ löschen?' })
-    expect(dialog).not.toHaveTextContent('Zuordnung')
+    expect(dialog).not.toHaveTextContent('Amtszeit')
     await user.click(within(dialog).getByRole('button', { name: 'Abbrechen' }))
     expect(calls.some((c) => c.key === 'DELETE /api/orgs/7/roles/4/')).toBe(false)
   })

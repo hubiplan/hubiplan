@@ -122,8 +122,8 @@ function confirmAssignedRoleRemoval(role: Role): Promise<boolean> {
   const message =
     count > 0
       ? tn(
-          'Ein Benutzer hat diese Rolle noch. Die Zuordnung wird beendet, die Rechte der Rolle entfallen sofort. Auch frühere Zuordnungen dieser Rolle verschwinden aus der Historie.',
-          '{n} Benutzer haben diese Rolle noch. Alle {n} Zuordnungen werden beendet, die Rechte der Rolle entfallen sofort. Auch frühere Zuordnungen dieser Rolle verschwinden aus der Historie.',
+          'Eine Person hat diese Rolle noch. Ihre Amtszeit wird beendet, die Rechte der Rolle entfallen sofort. Auch frühere Amtszeiten dieser Rolle verschwinden aus der Historie.',
+          '{n} Personen haben diese Rolle noch. Alle {n} Amtszeiten werden beendet, die Rechte der Rolle entfallen sofort. Auch frühere Amtszeiten dieser Rolle verschwinden aus der Historie.',
           count,
         )
       : undefined
@@ -170,7 +170,7 @@ function UsersCard({
           valid_until: form.values.valid_until || null,
           member: member?.id ?? null,
         }),
-      t('Rolle zugeordnet.'),
+      t('Rolle besetzt.'),
     )) as Assignment | undefined
     if (result) {
       if (result.new_account) setCreated({ email: result.user_email, invited: !!result.invited })
@@ -197,16 +197,16 @@ function UsersCard({
 
   return (
     <div className="card card-wide">
-      <h2>{t('Benutzer')}</h2>
+      <h2>{t('Amtszeiten')}</h2>
       <p className="muted small">
         {t(
-          'Ein Benutzerkonto ist der Login einer Person. Es kann Rollen in mehreren Organisationen haben. Zuordnungen haben einen Zeitraum – so bleibt die Historie erhalten.',
+          'Wer welche Rolle von wann bis wann hat. Ein Konto ist die Anmeldung einer Person; es kann Rollen in mehreren Organisationen haben. Jede Amtszeit hat einen Zeitraum – so bleibt die Historie erhalten.',
         )}
       </p>
       <table className="table">
         <thead>
           <tr>
-            <th>{t('Benutzer')}</th>
+            <th>{t('Konto')}</th>
             <th>{t('Rolle')}</th>
             <th>{t('Zeitraum')}</th>
             <th />
@@ -235,7 +235,7 @@ function UsersCard({
         </tbody>
       </table>
       <Checkbox
-        label={t('Auch frühere Zuordnungen zeigen')}
+        label={t('Auch frühere Amtszeiten zeigen')}
         checked={showAll}
         onChange={setShowAll}
       />
@@ -243,7 +243,7 @@ function UsersCard({
 
       {!readOnly && (
         <form className="subcard" onSubmit={add}>
-          <h3>{t('Rolle zuordnen')}</h3>
+          <h3>{t('Rolle besetzen')}</h3>
           <div className="grid-2">
             <Field
               label={t('E-Mail-Adresse')}
@@ -314,7 +314,7 @@ function UsersCard({
             </Alert>
           )}
           <button type="submit" className="button button-primary" disabled={form.busy}>
-            {t('Zuordnen')}
+            {t('Besetzen')}
           </button>
         </form>
       )}
@@ -417,9 +417,9 @@ function AssignmentRow({
 
   async function remove() {
     const ok = await confirmDialog({
-      title: t('Zuordnung löschen?'),
+      title: t('Amtszeit löschen?'),
       message:
-        t('{who} verliert die Rolle „{role_name}“, und die Zuordnung verschwindet aus der ', {
+        t('{who} verliert die Rolle „{role_name}“, und die Amtszeit verschwindet aus der ', {
           who,
           role_name: a.role_name,
         }) + t('Historie. Für ein normales Ende der Amtszeit lieber „bis“ setzen.'),

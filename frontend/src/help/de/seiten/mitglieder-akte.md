@@ -8,7 +8,7 @@ routen: [/mitglieder/:id]
 stichworte: [Akte, Stammdaten, Zeiträume, Austritt, Ehrungen]
 ---
 
-Die Akte zeigt alles zu einer Person: Stammdaten, Mitgliedschaften mit Zeiträumen und Mitgliedsarten, Ehrungen, Ämter, Kontakt, SEPA-Mandat und Foto. Änderungen werden kurz nach der Eingabe gespeichert; oben rechts machst du sie bei Bedarf rückgängig. Einen Austritt erfasst du als Ende der Mitgliedschaft, die Akte bleibt erhalten.
+Die Akte zeigt alles zu einer Person: Stammdaten, Mitgliedschaften mit Zeiträumen und Mitgliedsarten, Ehrungen, Ämter, Kontakt, SEPA-Mandat und Foto. Änderungen werden kurz nach der Eingabe gespeichert; oben rechts machst du sie bei Bedarf rückgängig. Einen Austritt erfasst du als Ende der Mitgliedschaft, die Akte bleibt erhalten. Ehrungen stehen im Reiter **Mitgliedschaft**. Im Reiter **Rollen und Konto** siehst du die Rollen der Person und schaltest ihr den Mitgliederbereich frei oder sperrst ihn.
 
 Im Reiter **Mitgliedschaft** korrigierst du bei einer Zuordnung zu einer Untereinheit (etwa einem Zug) über **Bearbeiten** den Beginn und das Ende. Das gilt auch für frühere Zuordnungen. Ein leeres Ende bedeutet, dass die Mitgliedschaft weiter besteht. Übernimm die Korrektur mit **Speichern**. Überschneidungen mit anderen Zuordnungen werden geprüft. Frühere Zuordnungen trägst du direkt mit Beginn und Ende nach: Untereinheit wählen, „ab“ und „bis“ eingeben, dann **Hinzufügen**. Ohne „bis“ gilt die Zuordnung bis heute. Auch nicht mehr aktive Untereinheiten stehen zur Auswahl, mit dem Zusatz „(inaktiv)“; für sie ist „bis“ Pflicht. Meldet HUBIplan eine Überschneidung, nennt es die betroffene Zuordnung mit genauem Zeitraum; auch wenn die Akte nur Jahre zeigt, wird tagesgenau geprüft.
 

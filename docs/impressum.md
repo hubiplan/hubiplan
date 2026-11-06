@@ -20,7 +20,7 @@ technisch ab; ob sie vollständig sind, prüft der Betreiber bzw. die Einheit
 Leere Felder kommen aus den Stammdaten (Name, Anschrift, Kontakt aus
 Einstellungen › Organisation). **Vertretungsberechtigte** sind die heutigen
 Inhaber der Rollen mit dem Kennzeichen „vertritt die Einheit (§ 26 BGB)“
-(Einstellungen › Rollen & Benutzer); ein Freitext ersetzt sie. Öffentlich
+(Einstellungen › Rollen und Rechte); ein Freitext ersetzt sie. Öffentlich
 erscheinen nur Name und Funktion.
 
 Die **Datenschutzhinweise** (Einheit, Art. 13 DSGVO) bzw. die

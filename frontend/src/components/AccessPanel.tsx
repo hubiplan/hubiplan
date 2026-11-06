@@ -49,9 +49,9 @@ export function AccessPanel({
   async function transfer() {
     if (!access) return
     const ok = await confirmDialog({
-      title: t('Zugang auf neue Adresse übertragen?'),
+      title: t('Freischaltung auf neue Adresse übertragen?'),
       message:
-        t('Der Zugang hängt bisher an {email}. Danach meldet sich das Mitglied mit ', {
+        t('Die Freischaltung hängt bisher an {email}. Danach meldet sich das Mitglied mit ', {
           email: access.email,
         }) +
         t('{x} an; die bisherige Adresse bekommt eine ', {
@@ -65,16 +65,16 @@ export function AccessPanel({
     if (!ok) return
     void run(async () => {
       await onSend(true)
-      return t('Zugang übertragen; Link an die neue Adresse gesendet.')
+      return t('Freischaltung übertragen; Link an die neue Adresse gesendet.')
     })
   }
 
   return (
     <div className="card card-wide">
-      <h2>{t('Zugang')}</h2>
+      <h2>{t('Konto und Mitgliederbereich')}</h2>
       {access ? (
         <p>
-          {t('Zugang mit')} <strong>{access.email}</strong> {t('seit')}{' '}
+          {t('Mitgliederbereich freigeschaltet für')} <strong>{access.email}</strong> {t('seit')}{' '}
           {formatDateTime(access.created_at)}
           <br />
           <span className="muted small">
@@ -88,7 +88,7 @@ export function AccessPanel({
       ) : (
         <p className="muted">
           {t(
-            'Noch kein Zugang. Mit einem Zugang sieht das Mitglied seine Daten und kann Änderungen melden; Inhaber von Rollen {im} arbeiten damit in {ihrem}.',
+            'Mitgliederbereich nicht freigeschaltet. Mit der Freischaltung sieht das Mitglied seine Daten und kann Änderungen melden; Inhaber von Rollen {im} arbeiten mit demselben Konto in {ihrem}.',
             { im: tm.im, ihrem: tm.ihrem },
           )}
         </p>
@@ -97,7 +97,7 @@ export function AccessPanel({
       {moved && canManage && (
         <Alert kind="info">
           {t(
-            'Die Kontakt-Adresse ist jetzt {contactEmail}. Der Zugang bleibt bei {email}, bis ihr ihn ausdrücklich überträgt.',
+            'Die Kontakt-Adresse ist jetzt {contactEmail}. Die Freischaltung bleibt bei {email}, bis ihr sie ausdrücklich übertragt.',
             { contactEmail, email: access?.email },
           )}
         </Alert>
@@ -119,7 +119,7 @@ export function AccessPanel({
           >
             {access
               ? t('Neuen Link senden{x}', { x: moved ? t(' an {x0}', { x0: access.email }) : '' })
-              : t('Zugang einrichten und Link senden')}
+              : t('Freischalten und Anmeldelink senden')}
           </button>
           {moved && (
             <button
@@ -128,7 +128,7 @@ export function AccessPanel({
               disabled={busy}
               onClick={() => void transfer()}
             >
-              {t('Zugang auf neue Adresse übertragen')}
+              {t('Freischaltung auf neue Adresse übertragen')}
             </button>
           )}
           {access && (
@@ -139,28 +139,28 @@ export function AccessPanel({
               onClick={async () => {
                 if (
                   await confirmDialog({
-                    title: t('Zugang entfernen?'),
+                    title: t('Mitgliederbereich sperren?'),
                     message: t(
-                      'Die Person kann sich danach nicht mehr mit diesem Zugang anmelden.',
+                      'Die Person kommt danach nicht mehr in den Mitgliederbereich. Rollen mit Rechten behalten ihr Konto.',
                     ),
-                    confirmLabel: t('Entfernen'),
+                    confirmLabel: t('Sperren'),
                   })
                 ) {
                   void run(async () => {
                     await onRemove()
-                    return t('Zugang entfernt.')
+                    return t('Mitgliederbereich gesperrt.')
                   })
                 }
               }}
             >
-              {t('Zugang entfernen')}
+              {t('Mitgliederbereich sperren')}
             </button>
           )}
         </div>
       )}
       {!hasEmail && canManage && (
         <p className="muted small">
-          {t('Für einen Zugang braucht das Mitglied eine E-Mail-Adresse.')}
+          {t('Für die Freischaltung braucht das Mitglied eine E-Mail-Adresse.')}
         </p>
       )}
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
@@ -199,12 +199,12 @@ export function MemberAccessSection({
       disabledHint={
         enabled || data.access ? undefined : (
           <>
-            {t('Zugänge sind ausgeschaltet. Den Mitgliederbereich schaltet ihr unter')}{' '}
+            {t('Der Mitgliederbereich ist ausgeschaltet. Ihr schaltet ihn unter')}{' '}
             <Link to="/mitglieder/einrichtung/mitgliederbereich">
-              {t('Mitglieder → Einrichtung → Mitgliederbereich & Fotos')}
+              {t('Mitglieder › Einrichtung › Mitgliederbereich & Fotos')}
             </Link>{' '}
-            {t('ein, den Zugang für {pl} unter', { pl: tm.pl })}{' '}
-            <Link to="/einstellungen/organisation">{t('Einstellungen → Organisation')}</Link>.
+            {t('ein, die Freischaltung für {pl} unter', { pl: tm.pl })}{' '}
+            <Link to="/einstellungen/organisation">{t('Einstellungen › Organisation')}</Link>.
           </>
         )
       }

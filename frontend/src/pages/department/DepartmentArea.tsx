@@ -742,7 +742,7 @@ function HoldersCard({
           <div className="field">
             <span>&nbsp;</span>
             <button type="submit" className="button button-primary" disabled={!member || !role}>
-              {t('Rolle vergeben')}
+              {t('Rolle besetzen')}
             </button>
           </div>
         </form>

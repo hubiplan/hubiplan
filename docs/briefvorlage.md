@@ -16,7 +16,7 @@ PDF-Vorschau `preview.py`, Schnittstelle `views.py`). Konzept:
   Kasse), Vorstand, Registerangaben, Social Media. Jede Spalte einzeln
   abschaltbar.
 - **Vorstand in der Fußzeile**: Inhaber der Rollen „vertritt die Einheit“, dazu
-  Rollen mit „auf dem Briefbogen nennen“ (Einstellungen › Rollen & Benutzer bzw.
+  Rollen mit „auf dem Briefbogen nennen“ (Einstellungen › Rollen und Rechte bzw.
   bei Untereinheiten deren Rollen). Rollen können eine **Funktionsadresse**
   haben (z. B. kasse@…).
 - **Untereinheiten** übernehmen den Briefbogen der Einheit darüber und bekommen

@@ -202,9 +202,9 @@ AREAS: tuple[Area, ...] = (
     ),
     Area(
         "roles",
-        gettext_noop("Rollen und Benutzer"),
+        gettext_noop("Rollen und Rechte"),
         gettext_noop("Rollen, Rechte und Inhaber sehen"),
-        gettext_noop("Rollen und Benutzer verwalten"),
+        gettext_noop("Rollen festlegen und besetzen"),
         org_types=ALL_TYPES,
         dept_levels=_BOTH,
         dept_label=gettext_noop("Rollen {gen}"),

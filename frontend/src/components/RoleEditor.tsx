@@ -466,7 +466,7 @@ export function RoleForm({
             open={(role?.permissions ?? []).some((c) => visibleCodes.has(c))}
           >
             <summary>
-              {t('Rechte für Zugänge (optional)')}
+              {t('Rechte (optional)')}
               {selectedCount > 0 && t(' · {n} gewählt', { n: selectedCount })}
             </summary>
             <p className="muted small">

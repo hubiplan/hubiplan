@@ -43,7 +43,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'stammdaten', label: t('Stammdaten') },
   { id: 'mitgliedschaft', label: t('Mitgliedschaft') },
   { id: 'zusatzfelder', label: t('Zusatzfelder') },
-  { id: 'rollen', label: t('Rollen & Ehrungen') },
+  { id: 'rollen', label: t('Rollen und Konto') },
   { id: 'wettbewerbe', label: t('Wettbewerbe') },
   { id: 'verlauf', label: t('Verlauf') },
 ]
@@ -144,16 +144,6 @@ export function MemberFilePage() {
               orgId={org.id}
               memberId={data.id}
               canEdit={canEdit}
-            />
-          )}
-          {data.status === 'active' && org.permissions.includes(PERM.loginsView) && (
-            <MemberAccessSection
-              key={`zugang-${data.id}`}
-              orgId={org.id}
-              memberId={data.id}
-              hasEmail={!!data.contact?.email}
-              contactEmail={data.contact?.email}
-              canManage={canEdit && org.permissions.includes(PERM.loginsEdit)}
             />
           )}
           {org.permissions.includes(PERM.cardsView) && (
@@ -376,6 +366,16 @@ function MembershipTab({
   return (
     <div className="stack">
       {canEdit && <MembershipActions org={org} member={member} onChanged={setData} />}
+      {/* Ehrungen gehören zur Mitgliedschaft, sie können den Beitrag ändern (Rollen-Vorschlag F-3) */}
+      <HonoraryAwards
+        orgId={org.id}
+        memberId={member.id}
+        awards={member.honorary_titles?.own ?? []}
+        otherAwards={member.honorary_titles?.federation}
+        otherLabel={`Verliehen ${orgTerms(org).dv_vom}`}
+        canEdit={canEdit}
+        onChanged={reload}
+      />
 
       <Section title={t('Mitgliedsdauer')}>
         <DurationLine label={tm.e_im} info={member.duration.club} />
@@ -960,19 +960,20 @@ function RolesTab({
 
   return (
     <div className="stack">
-      <HonoraryAwards
-        orgId={org.id}
-        memberId={member.id}
-        awards={member.honorary_titles?.own ?? []}
-        otherAwards={member.honorary_titles?.federation}
-        otherLabel={`Verliehen ${orgTerms(org).dv_vom}`}
-        canEdit={canEdit}
-        onChanged={reload}
-      />
+      {member.status === 'active' && org.permissions.includes(PERM.loginsView) && (
+        <MemberAccessSection
+          key={`zugang-${member.id}`}
+          orgId={org.id}
+          memberId={member.id}
+          hasEmail={!!member.contact?.email}
+          contactEmail={member.contact?.email}
+          canManage={canEdit && org.permissions.includes(PERM.loginsEdit)}
+        />
+      )}
       <Section title={t('Vorstandsrollen')}>
         {member.board_roles.length === 0 ? (
           <p className="muted">
-            {t('Keine. Vorstandsrollen vergibst du unter Einstellungen → Rollen & Benutzer.')}
+            {t('Keine. Vorstandsrollen besetzt du unter Einstellungen › Rollen und Rechte.')}
           </p>
         ) : (
           <ul className="plain-list">
@@ -1017,7 +1018,7 @@ function RolesTab({
         )}
         {canEditRoles && roleOptions.length > 0 && (
           <AddWithDate
-            label={t('Rolle hinzufügen')}
+            label={t('Rolle besetzen')}
             options={roleOptions}
             onAdd={(id, date) =>
               run(() =>

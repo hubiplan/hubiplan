@@ -258,7 +258,7 @@ def _finish(client: Client, error: str, now) -> None:
 
 
 def _notify(client: Client, error: str, done: list[str]) -> None:
-    """E-Mail an alle, die Rollen und Benutzer der Einheit verwalten."""
+    """E-Mail an alle, die Rollen der Einheit festlegen und besetzen."""
     from access.catalog import ROLES_MANAGE, effective
     from access.models import RoleAssignment
     from outbox.mail import send

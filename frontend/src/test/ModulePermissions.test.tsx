@@ -75,8 +75,6 @@ describe('Modulfreigaben in Rollen', () => {
       />,
     )
     expect(screen.queryByText(/gewählt/)).not.toBeInTheDocument()
-    expect(
-      screen.getByText('Rechte für Zugänge (optional)').closest('details'),
-    ).not.toHaveAttribute('open')
+    expect(screen.getByText('Rechte (optional)').closest('details')).not.toHaveAttribute('open')
   })
 })

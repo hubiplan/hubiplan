@@ -171,6 +171,11 @@ for (const language of ['de', 'en']) {
             .click()
           await continuation.waitFor()
         }
+        // „Ansicht als Rolle“ steht im Menü „Mein Konto“ oben rechts
+        if (b.name === 'ansicht-als-rolle') {
+          await page.locator('header.topbar .account-menu > button').click()
+          await page.locator('#konto-menue').waitFor()
+        }
         if (b.name === 'mitglieder-aufnehmen-details') {
           await page.getByLabel('Name', { exact: true }).fill('Muster')
           await page
@@ -211,7 +216,8 @@ for (const language of ['de', 'en']) {
         }
         // Hinweise mit Datum (z. B. Frist für die Zwei-Faktor-Anmeldung) veralten im Bild
         await page.addStyleTag({
-          content: 'main.content > .alert[role="status"] { display: none !important; }',
+          content:
+            'main.content > .alert[role="status"], main.content > .mfa-hint { display: none !important; }',
         })
         // Ausschnitt aus der ganzen Seite: so liegt die feste Kopfleiste nicht über dem
         // Bild, lange Seiten werden nach MAX_HOEHE abgeschnitten, leerer Rand unten fehlt

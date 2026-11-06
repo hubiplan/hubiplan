@@ -903,7 +903,7 @@ function DepartmentCard({
       {dep.self_managed ? (
         <p className="muted small">
           {t(
-            'Eine Rolle ohne Rechte ist ein reines Amt: Die Inhaber brauchen kein Konto und bekommen keine E-Mail. Rechte wirken nur, wenn unter Organisation → Zugänge für Mitglieder eingeschaltet sind und der Inhaber einen Zugang hat (z. B. über „Verwalter einrichten“).',
+            'Eine Rolle ohne Rechte ist ein reines Amt: Die Inhaber brauchen kein Konto und bekommen keine E-Mail. Rechte wirken nur, wenn der Mitgliederbereich für diese Einheit eingeschaltet ist und der Inhaber ein Konto hat (z. B. über „Leitung besetzen“).',
           )}
         </p>
       ) : (
@@ -1067,7 +1067,7 @@ function UnitHolders({
           </div>
           <div className="button-row">
             <button type="submit" className="button button-primary" disabled={!member || busy}>
-              {t('Rolle zuordnen')}
+              {t('Rolle besetzen')}
             </button>
           </div>
         </form>
@@ -1077,7 +1077,7 @@ function UnitHolders({
   )
 }
 
-/** Ersten Verwalter einer Einheit in einem Schritt einrichten. */
+/** Erste Leitung einer Einheit in einem Schritt einrichten. */
 function ManagerSetup({
   orgId,
   dep,
@@ -1134,18 +1134,18 @@ function ManagerSetup({
 
   return (
     <form onSubmit={submit} className="stack" data-testid="unit-manager">
-      <h3>{t('Verwalter einrichten')}</h3>
+      <h3>{t('Leitung besetzen')}</h3>
       <p className="muted small">
         {t('Gibt einem Mitglied die Rolle „Leitung“ mit allen Rechten in')} {inThis}
         {dep.own_workspace ? t(' (auch für Kasse und Rechnungen)') : ''}{' '}
         {t(
-          'und richtet ihm einen Zugang ein. Die Person braucht eine E-Mail-Adresse und kann danach selbst weitere Rollen vergeben. Nur nötig, wenn jemand selbst in HUBIplan arbeiten soll; Ämter ohne Zugang vergibst du unter „Wer hat welche Rolle?“.',
+          'und richtet ihm ein Konto ein. Die Person braucht eine E-Mail-Adresse und kann danach selbst weitere Rollen besetzen. Nur nötig, wenn jemand selbst in HUBIplan arbeiten soll; Ämter ohne Konto besetzt du unter „Wer hat welche Rolle?“.',
         )}
       </p>
       <MemberPicker orgId={orgId} value={member} onChange={setMember} label={t('Mitglied')} />
       <div className="button-row">
         <button type="submit" className="button button-primary" disabled={!member || busy}>
-          {t('Verwalter einrichten')}
+          {t('Leitung besetzen')}
         </button>
       </div>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
