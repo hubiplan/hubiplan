@@ -63,6 +63,7 @@
     "sepa_use",
     "tax_areas",
     "unit_self_managed",
+    "unit_tax_independent",
     "vat_show",
     "web_alt_text",
     "web_consent",

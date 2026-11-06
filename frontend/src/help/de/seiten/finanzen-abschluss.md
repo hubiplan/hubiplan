@@ -5,19 +5,7 @@ bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/abschluss]
-stichworte:
-  [
-    Jahresabschluss,
-    Kassenbericht,
-    Kassenprüfung,
-    DATEV,
-    Aufbewahrungsfrist,
-    Löschsperre,
-    Steuern,
-    Freigrenze,
-    Kleinunternehmer,
-    Steuererklärung,
-  ]
+stichworte: [Jahresabschluss, Kassenbericht, Kassenprüfung, DATEV, Löschsperre, Steuern, Freigrenze]
 ---
 
 Hier erstellt ihr den Kassenbericht für die Versammlung und schließt ein Geschäftsjahr ab. Nach dem Abschluss lassen sich die Buchungen nicht mehr ändern. Außerdem gibt es Exporte, etwa für DATEV oder für die Kassenprüfung.

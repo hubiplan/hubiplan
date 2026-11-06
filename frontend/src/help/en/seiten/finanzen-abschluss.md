@@ -5,19 +5,7 @@ bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/abschluss]
-stichworte:
-  [
-    year-end closing,
-    cash report,
-    audit,
-    DATEV,
-    retention period,
-    deletion hold,
-    taxes,
-    tax-free limit,
-    small business,
-    tax return,
-  ]
+stichworte: [year-end closing, cash report, audit, DATEV, retention period, deletion hold, taxes]
 ---
 
 Here you produce the cash report for the general meeting and close a financial year. After closing, the bookings can no longer be changed. There are also exports, for example for DATEV or the cash audit.
