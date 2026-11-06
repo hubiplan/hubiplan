@@ -7,7 +7,7 @@ routen: [/termine]
 stichworte: [calendar, event, accept, decline, subscription]
 ---
 
-The calendar shows the unit's events. With the right to do so, you create events, including recurring ones, and invite members who accept or decline. With the calendar subscription the events appear in your own calendar on phone or PC. Under “External calendars” the calendar imports other calendars’ events every hour, e.g. the federation’s from Vereinsplaner.
+The calendar shows the unit's events. With the right to do so, you create events, including recurring ones, and invite members who accept or decline. With the calendar subscription the events appear in your own calendar on phone or PC. Under Events › Setup you manage categories, external calendars, sharing with other units and the website link. Under “External calendars” the calendar imports other calendars’ events every hour, e.g. the federation’s from Vereinsplaner.
 
 Each entry names its unit and, where applicable, its external calendar, so you can distinguish events with the same title before opening them. In the month view, a multi-day event starts with its start time; subsequent days show “Continued”, and the last day shows, for example, “Continued until 01:05”. An end exactly at midnight is shown on the preceding day as 24:00, without an extra entry on the new day. All-day events remain labelled as such. The list and accessible names include the complete date and time range; the list is the default view on small screens.
 

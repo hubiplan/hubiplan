@@ -21,12 +21,38 @@ export interface AppModule {
   group: 'alltag' | 'verein' | 'organisation' | 'verwaltung'
   label: string
   /** Bezeichnung je Einheit, z. B. „Züge“ statt „Untereinheiten“ */
-  labelFor?: (org: OrgSummary | null) => string
+  labelFor?: (org: OrgSummary | null, ws?: Workspace) => string
   path: string
+  /** Weitere Pfade, unter denen der Menüpunkt als aktiv gilt */
+  also?: string[]
+  /** Ziel des Menüpunkts, wenn es nicht immer path ist */
+  linkFor?: (org: OrgSummary | null, ws: Workspace) => string
   icon: ReactNode
   visible: (org: OrgSummary | null, ws: Workspace) => boolean
   /** Unterpunkte, in der Seitenleiste unter dem aktiven Modul */
-  children?: (org: OrgSummary | null) => { to: string; label: string; section?: string }[]
+  children?: (
+    org: OrgSummary | null,
+    ws?: Workspace,
+  ) => { to: string; label: string; section?: string }[]
+}
+
+const NO_WS: Workspace = { dept: null, portal: null }
+
+/** Welche Teile von Material & Räume die Person sieht (Organisation oder Abteilung). */
+function stockAccess(org: OrgSummary | null, ws: Workspace) {
+  const perms = org ? org.permissions : (ws.dept?.permissions ?? [])
+  const materialOn = org ? org.modules.includes('material') : !!ws.dept?.material_enabled
+  const facilityOn = org
+    ? org.modules.includes('infrastructure')
+    : !!ws.dept?.infrastructure_enabled
+  const material = materialOn && perms.includes('material.view')
+  const facility = facilityOn && perms.includes('infrastructure.view')
+  const bookingsAllowed = org ? org.type === 'club' || org.type === 'federation' : !!ws.dept
+  const bookings =
+    bookingsAllowed &&
+    ((materialOn && (perms.includes('material.view') || perms.includes('bookings.view'))) ||
+      (facilityOn && (perms.includes('infrastructure.view') || perms.includes('bookings.view'))))
+  return { material, facility, bookings }
 }
 
 const icon = (d: string) => (
@@ -159,7 +185,7 @@ export const modules: AppModule[] = [
       { to: '/wettbewerbe/statistik', label: t('Statistik') },
       { to: '/wettbewerbe/reihen', label: t('Reihen') },
       { to: '/wettbewerbe/pokale', label: t('Wanderpokale') },
-      { to: '/wettbewerbe/titel', label: t('Titel und Würden') },
+      { to: '/wettbewerbe/titel', label: t('Titel und Sieger') },
       { to: '/wettbewerbe/urkunden', label: t('Urkundenvorlagen') },
       // Modul-Einstellungen heißen überall „Einrichtung“ und stehen zuletzt (docs/begriffe.md)
       { to: '/wettbewerbe/einrichtung', label: t('Einrichtung') },
@@ -234,50 +260,35 @@ export const modules: AppModule[] = [
     children: (org) => financeSections(financeAccess(org)),
   },
   {
+    // Material, Räume und Anlagen und Belegung: ein Ablauf, ein Menüpunkt (Menüprüfung M-02)
     id: 'material',
     group: 'verwaltung',
-    label: t('Material'),
+    label: t('Material & Räume'),
+    labelFor: (org, ws) => {
+      const s = stockAccess(org, ws ?? NO_WS)
+      if (s.material && s.facility) return t('Material & Räume')
+      if (s.material) return t('Material')
+      return s.facility ? t('Räume und Anlagen') : t('Belegung')
+    },
     path: '/material',
+    also: ['/infrastruktur', '/belegung'],
+    linkFor: (org, ws) => {
+      const s = stockAccess(org, ws)
+      return s.material ? '/material' : s.facility ? '/infrastruktur' : '/belegung'
+    },
     icon: icon('M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10'),
-    visible: (org, ws) =>
-      org
-        ? org.modules.includes('material') && org.permissions.includes('material.view')
-        : !!(ws.dept?.material_enabled && ws.dept.permissions.includes('material.view')),
-  },
-  {
-    id: 'infrastruktur',
-    group: 'verwaltung',
-    label: t('Infrastruktur'),
-    path: '/infrastruktur',
-    icon: icon('M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6'),
-    visible: (org, ws) =>
-      org
-        ? org.modules.includes('infrastructure') && org.permissions.includes('infrastructure.view')
-        : !!(
-            ws.dept?.infrastructure_enabled && ws.dept.permissions.includes('infrastructure.view')
-          ),
-  },
-  {
-    id: 'belegung',
-    group: 'verwaltung',
-    label: t('Belegung'),
-    path: '/belegung',
-    icon: icon('M4 5h16v15H4zM4 10h16M9 3v4M15 3v4M8 14h3v3H8z'),
     visible: (org, ws) => {
-      const see = (perms: string[], material: boolean, facility: boolean) =>
-        (material && (perms.includes('material.view') || perms.includes('bookings.view'))) ||
-        (facility && (perms.includes('infrastructure.view') || perms.includes('bookings.view')))
-      return org
-        ? (org.type === 'club' || org.type === 'federation') &&
-            see(
-              org.permissions,
-              org.modules.includes('material'),
-              org.modules.includes('infrastructure'),
-            )
-        : !!(
-            ws.dept &&
-            see(ws.dept.permissions, !!ws.dept.material_enabled, !!ws.dept.infrastructure_enabled)
-          )
+      const s = stockAccess(org, ws)
+      return s.material || s.facility || s.bookings
+    },
+    children: (org, ws) => {
+      const s = stockAccess(org, ws ?? NO_WS)
+      const items = [
+        ...(s.material ? [{ to: '/material', label: t('Material') }] : []),
+        ...(s.facility ? [{ to: '/infrastruktur', label: t('Räume und Anlagen') }] : []),
+        ...(s.bookings ? [{ to: '/belegung', label: t('Belegung') }] : []),
+      ]
+      return items.length > 1 ? items : []
     },
   },
   {

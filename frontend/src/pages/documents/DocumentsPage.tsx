@@ -474,10 +474,12 @@ function Library({
         />
       ) : (
         <>
+          {/* Satzung, Beitragsordnung und Gründungsurkunde nur hier (Menüprüfung M-03) */}
           {fixed.length > 0 && (
-            <ul className="doc-folder-grid" aria-label={t('Feste Ordner')}>
-              {fixed.map(fixedCard)}
-            </ul>
+            <section className="doc-folder-group" aria-label={t('Vereinsdokumente')}>
+              <h2>{t('Vereinsdokumente')}</h2>
+              <ul className="doc-folder-grid">{fixed.map(fixedCard)}</ul>
+            </section>
           )}
           {groups.map(
             (group) =>

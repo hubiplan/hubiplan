@@ -242,9 +242,11 @@ export function Layout() {
   }))
   const portalInPicker = portal.filter((p) => activeKey === `p:${p.id}`)
 
-  const visible = modules.filter((m) =>
-    m.visible(active, { dept: activeDept, portal: activePortal }),
-  )
+  const ws = { dept: activeDept, portal: activePortal }
+  const visible = modules.filter((m) => m.visible(active, ws))
+  const modulePaths = (m: (typeof modules)[number]) => [m.path, ...(m.also ?? [])]
+  const inModule = (m: (typeof modules)[number]) =>
+    modulePaths(m).some((p) => pathname === p || pathname.startsWith(`${p}/`))
   const contextCount =
     orgs.length + departments.length + portalInPicker.length + remoteAccounts.length
   // Im Kopf steht immer der volle Name, der Kurzname nur in der Auswahl.
@@ -256,7 +258,7 @@ export function Layout() {
   const pageLabel = (() => {
     const matches = (path: string) => pathname === path || pathname.startsWith(`${path}/`)
     const mod = visible
-      .filter((m) => matches(m.path))
+      .filter((m) => modulePaths(m).some(matches))
       .sort((a, b) => b.path.length - a.path.length)[0]
     if (!mod) {
       const section = accountSectionLabel(pathname)
@@ -264,13 +266,13 @@ export function Layout() {
       return OTHER_PAGES[pathname] ?? null
     }
     const sub = mod
-      .children?.(active)
+      .children?.(active, ws)
       .filter((c) => c.to !== mod.path && matches(c.to))
       .sort((a, b) => b.to.length - a.to.length)[0]
     const modLabel =
       mod.id === 'abteilung' && activeDept
         ? activeDept.label
-        : (mod.labelFor?.(active) ?? mod.label)
+        : (mod.labelFor?.(active, ws) ?? mod.label)
     return sub ? t('{label} · {modLabel}', { label: sub.label, modLabel }) : modLabel
   })()
   const titleOverride = useTitleOverride()
@@ -404,7 +406,7 @@ export function Layout() {
                       <span className="sidebar-group-label">{GROUP_LABELS[m.group]}</span>
                     )}
                     <NavLink
-                      to={m.path}
+                      to={m.linkFor?.(active, ws) ?? m.path}
                       end={m.path === '/'}
                       className="sidebar-link"
                       onClick={choseInNav}
@@ -413,12 +415,12 @@ export function Layout() {
                       <span>
                         {m.id === 'abteilung' && activeDept
                           ? activeDept.label
-                          : (m.labelFor?.(active) ?? m.label)}
+                          : (m.labelFor?.(active, ws) ?? m.label)}
                       </span>
                     </NavLink>
-                    {(pathname === m.path || pathname.startsWith(`${m.path}/`)) &&
+                    {inModule(m) &&
                       renderNav(
-                        buildNavTree(m.path, m.children?.(active) ?? [], Object.values(subNav)),
+                        buildNavTree(m.path, m.children?.(active, ws) ?? [], Object.values(subNav)),
                       )}
                   </li>
                 ))}

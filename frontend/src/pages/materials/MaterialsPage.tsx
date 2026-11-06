@@ -199,10 +199,10 @@ function MaterialList({
   return (
     <>
       <div className="page-heading">
-        <h1>{stock.kind === 'facility' ? t('Infrastruktur') : t('Material')}</h1>
+        <h1>{stock.kind === 'facility' ? t('Räume und Anlagen') : t('Material')}</h1>
         {editable && (
           <Link className="button" to="neu">
-            {stock.kind === 'facility' ? t('Infrastruktur anlegen') : t('Material anlegen')}
+            {stock.kind === 'facility' ? t('Raum oder Anlage anlegen') : t('Material anlegen')}
           </Link>
         )}
       </div>
@@ -269,7 +269,7 @@ function MaterialList({
       {!loading && data?.count === 0 && (
         <p>
           {stock.kind === 'facility'
-            ? t('Keine Infrastruktur gefunden.')
+            ? t('Keine Räume und Anlagen gefunden.')
             : t('Kein Material gefunden.')}
         </p>
       )}
@@ -486,8 +486,8 @@ function ItemForm({
       <h1>
         {facility
           ? item
-            ? t('Infrastruktur bearbeiten')
-            : t('Infrastruktur anlegen')
+            ? t('Raum oder Anlage bearbeiten')
+            : t('Raum oder Anlage anlegen')
           : item
             ? t('Material bearbeiten')
             : t('Material anlegen')}
@@ -964,7 +964,7 @@ function MaterialDetail({
   return (
     <>
       <Link to={stock.root}>
-        {stock.kind === 'facility' ? t('Zur Infrastrukturübersicht') : t('Zur Materialübersicht')}
+        {stock.kind === 'facility' ? t('Zu den Räumen und Anlagen') : t('Zur Materialübersicht')}
       </Link>
       <div className="page-heading">
         <h1>{data.title}</h1>

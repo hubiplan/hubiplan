@@ -4,7 +4,7 @@ titel: Finanzen › Einrichtung › Mahnstufen
 bereich: beitraege
 modul: billing
 rechte: [billing.edit]
-routen: [/finanzen/einstellungen/mahnstufen]
+routen: [/finanzen/einrichtung/mahnstufen]
 stichworte: [Mahnstufe, Frist, Mahngebühr]
 ---
 

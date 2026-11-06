@@ -1,6 +1,6 @@
 ---
 key: page.infrastructure
-titel: Infrastruktur verwalten
+titel: Räume und Anlagen verwalten
 bereich: start
 modul: infrastructure
 rechte: [infrastructure.view]
@@ -8,7 +8,7 @@ routen: [/infrastruktur]
 stichworte: [Schießstand, Schützenhaus, Vereinsheim, Raum, Saal, Bereich, Schlüssel, Schießbahnen]
 ---
 
-Unter **Infrastruktur** stehen die ortsfesten Einrichtungen deiner aktiven Einheit, zum
+Unter Material & Räume › **Räume und Anlagen** (Modul Infrastruktur) stehen die ortsfesten Einrichtungen deiner aktiven Einheit, zum
 Beispiel Schießstand, Schützenhaus oder Vereinsheim. Jede Infrastruktur erhält eine eigene
 Kennung (INF-…), eine Art, eine Kurzbeschreibung und eine Anschrift.
 

@@ -419,7 +419,7 @@ describe('Kasse', () => {
         },
       }),
     })
-    renderApp('/finanzen/einstellungen/kategorien')
+    renderApp('/finanzen/einrichtung/kategorien')
     const user = userEvent.setup()
     await user.click(await screen.findByLabelText(/steuerlichen Bereichen zuordnen/))
     expect(
@@ -660,7 +660,7 @@ describe('Kategorien löschen und umbenennen', () => {
         }),
       }),
     )
-    renderApp('/finanzen/einstellungen/kategorien')
+    renderApp('/finanzen/einrichtung/kategorien')
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Beiträge löschen' }))
     expect(
@@ -687,7 +687,7 @@ describe('Kategorien löschen und umbenennen', () => {
         [`PATCH ${F}/categories/3/`]: () => ({ status: 200, body: cat(3, 'Mitgliedsbeiträge') }),
       }),
     )
-    renderApp('/finanzen/einstellungen/kategorien')
+    renderApp('/finanzen/einrichtung/kategorien')
     const user = userEvent.setup()
     expect(await screen.findByText('Archivierte Kategorien')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Tombola löschen' }))
@@ -801,7 +801,7 @@ describe('DATEV-Export', () => {
         return { status: 200, body: current }
       },
     })
-    renderApp('/finanzen/einstellungen/konten')
+    renderApp('/finanzen/einrichtung/konten')
     const user = userEvent.setup()
     await user.click(await screen.findByLabelText('DATEV-Export für die Steuerberatung nutzen'))
     await user.type(await screen.findByLabelText('Beraternummer'), '1234567')

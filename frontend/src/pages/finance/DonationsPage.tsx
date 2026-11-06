@@ -4,7 +4,7 @@
 // (finance/donations.py).
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { donationApi } from '../../api/donations.ts'
 import type {
   Donation,
@@ -94,7 +94,11 @@ export function DonationsArea({ canEdit }: { canEdit: boolean }) {
     <Routes>
       <Route index element={<DonationsList canEdit={canEdit} />} />
       <Route path="bestaetigungen" element={<StatementsList canEdit={canEdit} />} />
-      <Route path="einstellungen" element={<DonationSettingsForm canEdit={canEdit} />} />
+      {/* Die Einrichtung steht unter Finanzen › Einrichtung › Zuwendungen */}
+      <Route
+        path="einstellungen"
+        element={<Navigate to="/finanzen/einrichtung/zuwendungen" replace />}
+      />
     </Routes>
   )
 }
@@ -800,7 +804,7 @@ function StatementsList({ canEdit }: { canEdit: boolean }) {
 
 // --- Einstellungen ---
 
-function DonationSettingsForm({ canEdit }: { canEdit: boolean }) {
+export function DonationSettingsForm({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
   const load = useLoad(() => donationApi.settings(org.id), [org.id])
   if (load.error) return <LoadError message={load.error} onRetry={() => void load.reload()} />

@@ -6498,5 +6498,18 @@
   "Leitung besetzen": "Assign head",
   "und richtet ihm ein Konto ein. Die Person braucht eine E-Mail-Adresse und kann danach selbst weitere Rollen besetzen. Nur nötig, wenn jemand selbst in HUBIplan arbeiten soll; Ämter ohne Konto besetzt du unter „Wer hat welche Rolle?“.": "and sets up an account. The person needs an email address and can then assign further roles. Only needed if someone is to work in HUBIplan; offices without an account are assigned under “Who has which role?”.",
   "Rechte (optional)": "Permissions (optional)",
-  "Die Person bekommt die Rolle „Vorstand“ mit allen Rechten in {diesem} und kann danach selbst Rollen festlegen und besetzen.": "The person gets the role “Board” with all permissions in {diesem} and can then define and assign roles."
+  "Die Person bekommt die Rolle „Vorstand“ mit allen Rechten in {diesem} und kann danach selbst Rollen festlegen und besetzen.": "The person gets the role “Board” with all permissions in {diesem} and can then define and assign roles.",
+  "Änderungen und Wechsel": "Changes and transfers",
+  "Titel und Sieger": "Titles and winners",
+  "Könige und andere Würden früherer Jahre:": "Kings and other honours of past years:",
+  "Mitglieder › Würdenträger": "Members › Title holders",
+  "Räume und Anlagen": "Rooms and facilities",
+  "Raum oder Anlage anlegen": "Add room or facility",
+  "Raum oder Anlage bearbeiten": "Edit room or facility",
+  "Keine Räume und Anlagen gefunden.": "No rooms or facilities found.",
+  "Zu den Räumen und Anlagen": "To rooms and facilities",
+  "Material & Räume": "Equipment & rooms",
+  "Erzeuge eine Word-Vorlage mit Briefbogen und deinem Absender für einen Brief.": "Create a Word template with the letterhead and your sender details for a letter.",
+  "Die Social-Media-Kanäle pflegt ihr unter": "You manage the social media channels under",
+  "Webseite › Social Media": "Website › Social media"
 }

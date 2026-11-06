@@ -187,3 +187,16 @@ describe('Belegung', () => {
     )
   })
 })
+
+describe('Material & Räume in der Seitenleiste', () => {
+  it('zeigt Räume und Anlagen und Belegung unter einem Punkt', async () => {
+    show(['infrastructure.view'])
+    await screen.findByRole('heading', { name: 'Belegung', level: 1 })
+    const nav = screen.getByRole('navigation', { name: 'Module' })
+    // Hauptpunkt und Unterpunkt heißen gleich, wenn nur Räume eingeschaltet sind
+    for (const link of within(nav).getAllByRole('link', { name: 'Räume und Anlagen' }))
+      expect(link).toHaveAttribute('href', '/infrastruktur')
+    expect(within(nav).getByRole('link', { name: 'Belegung' })).toHaveAttribute('href', '/belegung')
+    expect(within(nav).queryByRole('link', { name: 'Material' })).toBeNull()
+  })
+})

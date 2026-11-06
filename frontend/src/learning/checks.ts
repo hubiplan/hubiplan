@@ -69,7 +69,7 @@ export function feeRunChecks(input: FeeRunInput): CheckItem[] {
       ? t('Konto für Überweisungen mit IBAN hinterlegt.')
       : t('Auf der Rechnung steht noch kein Konto mit IBAN.'),
     fix: t('Konto unter Rechnung & Zahlung wählen.'),
-    to: '/finanzen/einstellungen/rechnung',
+    to: '/finanzen/einrichtung/rechnung',
   })
   items.push({
     key: 'due_days',
@@ -82,7 +82,7 @@ export function feeRunChecks(input: FeeRunInput): CheckItem[] {
             min: MIN_DUE_DAYS,
           }),
     fix: t('Zahlungsziel unter Rechnung & Zahlung anpassen.'),
-    to: '/finanzen/einstellungen/rechnung',
+    to: '/finanzen/einrichtung/rechnung',
     why: 'due_days',
   })
   const c = input.checks
@@ -182,7 +182,7 @@ export function debitChecks(input: DebitInput): CheckItem[] {
       ? t('Gläubiger-ID hinterlegt.')
       : t('Gläubiger-ID fehlt oder ist ungültig.'),
     fix: t('Unter Rechnung & Zahlung → SEPA-Lastschrift eintragen.'),
-    to: '/finanzen/einstellungen/rechnung',
+    to: '/finanzen/einrichtung/rechnung',
   })
   if (input.date) {
     const business = isBankBusinessDay(input.date)
@@ -239,7 +239,7 @@ export function debitChecks(input: DebitInput): CheckItem[] {
       fix: t(
         'Nur zulässig, wenn die kürzere Frist im Mandat oder in den Beitragsbedingungen steht.',
       ),
-      to: '/finanzen/einstellungen/rechnung',
+      to: '/finanzen/einrichtung/rechnung',
       why: 'prenotification',
     })
   if (input.expiringSoon)
@@ -303,7 +303,7 @@ export function closingChecks(c: ClosingInput): CheckItem[] {
               c.categories_without_area,
             ),
       fix: t('Bereich unter Finanzen → Einrichtung → Kategorien zuordnen.'),
-      to: '/finanzen/einstellungen/kategorien',
+      to: '/finanzen/einrichtung/kategorien',
       why: 'tax_areas',
     })
   if (c.unbooked_debit_runs !== undefined && c.unbooked_debit_runs > 0)
@@ -362,7 +362,7 @@ export function donationChecks(c: DonationInput): CheckItem[] {
           ? t('Angaben zum Bescheid vollständig und noch gültig.')
           : c.problems.join(' '),
       fix: t('Unter „Einstellungen“ den aktuellen Bescheid eintragen.'),
-      to: '/finanzen/zuwendungen/einstellungen',
+      to: '/finanzen/einrichtung/zuwendungen',
       why: 'donation_notice',
     },
   ]

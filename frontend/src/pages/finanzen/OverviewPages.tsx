@@ -56,7 +56,7 @@ function NoAccounts({ canEdit }: { canEdit: boolean }) {
       <p>{t('Noch keine Konten angelegt.')}</p>
       {canEdit && (
         <p>
-          <Link to="/finanzen/einstellungen/konten">{t('Erstes Konto anlegen')}</Link>{' '}
+          <Link to="/finanzen/einrichtung/konten">{t('Erstes Konto anlegen')}</Link>{' '}
           {t('– zum Beispiel Girokonto und Barkasse mit ihrem Anfangsbestand.')}
         </p>
       )}
@@ -71,7 +71,7 @@ function financeSteps(a: FinanceAccess): { title: string; text: string; to: stri
     steps.push({
       title: t('Einrichten'),
       text: a.billing ? t('Beitragssätze, Zahlungsangaben, Konten') : t('Konten und Kategorien'),
-      to: '/finanzen/einstellungen',
+      to: '/finanzen/einrichtung',
     })
   if (a.billing)
     steps.push({

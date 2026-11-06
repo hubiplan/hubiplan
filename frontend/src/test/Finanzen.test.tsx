@@ -143,13 +143,13 @@ describe('Finanzen', () => {
         },
       }),
     })
-    renderApp('/finanzen/einstellungen')
+    renderApp('/finanzen/einrichtung')
     expect(await screen.findByText('nur lesen')).toBeInTheDocument()
     const nav = subnav()
     expect(nav.getByRole('link', { name: 'Rechnungen' })).toBeInTheDocument()
     expect(nav.getByRole('link', { name: 'Kassenbuch' })).toBeInTheDocument()
     await waitFor(() =>
-      expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/einstellungen/konten'),
+      expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/einrichtung/konten'),
     )
     const user = userEvent.setup()
     await user.click(nav.getByRole('link', { name: 'Übersicht' }))

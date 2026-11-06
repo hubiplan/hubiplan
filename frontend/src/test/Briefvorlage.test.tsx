@@ -108,6 +108,25 @@ describe('Briefvorlage erstellen', () => {
     expect(await screen.findByText(/Die Vorlage ist heruntergeladen/)).toBeInTheDocument()
   })
 
+  it('steht als Rundschreiben › Brief im Menü', async () => {
+    show('/rundschreiben/brief', {
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ permissions: ['circulars.view', 'circulars.send'] })],
+      }),
+      'GET /api/me/letterheads/': () => ({
+        status: 200,
+        body: { contexts: [context], choices: [], notices: [] },
+      }),
+    })
+    expect(await screen.findByRole('heading', { name: 'Brief', level: 1 })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Herunterladen' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Brief' })).toHaveAttribute(
+      'href',
+      '/rundschreiben/brief',
+    )
+  })
+
   it('sagt ohne Funktion, wer Vorlagen erstellt', async () => {
     show('/briefvorlage', {})
     expect(await screen.findByText(/Du hast gerade keine solche Funktion/)).toBeInTheDocument()

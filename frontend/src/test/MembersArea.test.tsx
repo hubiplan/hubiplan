@@ -49,7 +49,7 @@ const detail = (overrides = {}) => ({
 })
 
 describe('Mitglieder: Unterpunkte', () => {
-  it('zeigt im Verein Liste, Entwicklung, Jubiläen, Anfragen, Import und Einrichtung', async () => {
+  it('zeigt im Verein Liste, Entwicklung, Jubiläen, Änderungen und Wechsel, Import und Einrichtung', async () => {
     setup(testOrg({ permissions: ['members.view', 'members.edit', 'org.edit'] }), {
       'GET /api/orgs/7/member-types/': () => ({ status: 200, body: [] }),
     })
@@ -59,7 +59,7 @@ describe('Mitglieder: Unterpunkte', () => {
       'Mitgliederliste',
       'Entwicklung',
       'Jubiläen',
-      'Anfragen',
+      'Änderungen und Wechsel',
       'Import',
       'Einrichtung',
     ]

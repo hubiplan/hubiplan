@@ -2,7 +2,7 @@
 // Unterpunkte stehen in der Seitenleiste (siehe access.ts), innerhalb eines
 // Unterpunkts führen Reiter weiter.
 import type { ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Tabs } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { DebitsPage, MandatesPage } from '../billing/DebitsPage.tsx'
@@ -20,7 +20,7 @@ import { CashCountsPage } from '../finance/CashCountsPage.tsx'
 import { CashReceiptsArea } from '../finance/CashReceiptsPage.tsx'
 import { ReservesPage } from '../finance/ReservesPage.tsx'
 import { ClosingsPage } from '../finance/ClosingsPage.tsx'
-import { DonationsArea } from '../finance/DonationsPage.tsx'
+import { DonationSettingsForm, DonationsArea } from '../finance/DonationsPage.tsx'
 import { ProjectsArea } from '../finance/ProjectsPage.tsx'
 import { AccountsPage, CategoriesPage } from '../finance/MasterDataPages.tsx'
 import { financeAccess, invoiceTabs, settingsTabs } from './access.ts'
@@ -169,7 +169,6 @@ export function FinanzenPage() {
               tabs={[
                 { to: '/finanzen/zuwendungen', label: t('Zuwendungen') },
                 { to: '/finanzen/zuwendungen/bestaetigungen', label: t('Bestätigungen') },
-                { to: '/finanzen/zuwendungen/einstellungen', label: t('Einrichtung') },
               ]}
             >
               <DonationsArea canEdit={a.financeEdit} />
@@ -199,7 +198,9 @@ export function FinanzenPage() {
         }
       />
       <Route path="abschluss/*" element={a.finance ? <ClosingArea access={a} /> : home} />
-      <Route path="einstellungen/*" element={<SettingsArea access={a} />} />
+      <Route path="einrichtung/*" element={<SettingsArea access={a} />} />
+      {/* Frühere Adresse der Einrichtung leitet weiter (Menüprüfung M-01) */}
+      <Route path="einstellungen/*" element={<OldSetupRedirect />} />
       <Route path="*" element={home} />
     </Routes>
   )
@@ -280,8 +281,22 @@ function SettingsArea({ access: a }: { access: FinanceAccess }) {
         {a.billing && <Route path="rechnung" element={<BillingSettingsPage />} />}
         {a.finance && <Route path="konten" element={<AccountsPage />} />}
         {a.finance && <Route path="kategorien" element={<CategoriesPage />} />}
+        {a.donations && (
+          <Route path="zuwendungen" element={<DonationSettingsForm canEdit={a.financeEdit} />} />
+        )}
         <Route path="*" element={first} />
       </Routes>
     </Section>
+  )
+}
+
+/** /finanzen/einstellungen/… → /finanzen/einrichtung/… */
+function OldSetupRedirect() {
+  const { pathname, search } = useLocation()
+  return (
+    <Navigate
+      to={pathname.replace('/finanzen/einstellungen', '/finanzen/einrichtung') + search}
+      replace
+    />
   )
 }

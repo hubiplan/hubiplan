@@ -60,7 +60,7 @@ export function memberSections(org: OrgSummary | null): NavItem[] {
     { to: '/mitglieder/jubilaeen', label: t('Jubiläen') },
     { to: '/mitglieder/wuerdentraeger', label: t('Würdenträger') },
     { to: '/mitglieder/aemter', label: t('Ämter') },
-    { to: '/mitglieder/anfragen', label: t('Anfragen') },
+    { to: '/mitglieder/anfragen', label: t('Änderungen und Wechsel') },
     ...(canEdit ? [{ to: '/mitglieder/import', label: t('Import') }] : []),
     { to: '/mitglieder/einrichtung', label: t('Einrichtung') },
   ]

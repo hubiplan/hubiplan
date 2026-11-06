@@ -305,7 +305,7 @@ describe('Beiträge', () => {
         ],
       }),
     })
-    renderApp('/finanzen/einstellungen/beitraege')
+    renderApp('/finanzen/einrichtung/beitraege')
     const user = userEvent.setup()
     await user.type(await screen.findByLabelText('passiv (€ im Jahr)'), '30,50')
     // Autospeichern, kein Knopf

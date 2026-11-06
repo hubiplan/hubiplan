@@ -66,7 +66,7 @@ export function DunningsPage() {
           <p>{t('Noch keine Mahnstufen.')}</p>
           <p className="muted small">
             {t('Lege sie unter')}{' '}
-            <Link to="/finanzen/einstellungen/mahnstufen">{t('Einrichtung › Mahnstufen')}</Link>{' '}
+            <Link to="/finanzen/einrichtung/mahnstufen">{t('Einrichtung › Mahnstufen')}</Link>{' '}
             {t('an, zum Beispiel eine Zahlungserinnerung 14 Tage nach Fälligkeit.')}
           </p>
         </div>

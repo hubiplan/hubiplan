@@ -2,7 +2,7 @@
 
 Eine Einheit (Verein oder Dachverband) übernimmt die Termine eines fremden Kalenders in ihren
 eigenen Kalender, z. B. die des Dachverbands, der Vereinsplaner nutzt. Oberfläche:
-**Termine › Fremde Kalender** (Recht „Termine verwalten“). Konzept: `konzepte/fremde-termine.md`
+**Termine › Einrichtung › Fremde Kalender** (Recht „Termine verwalten“). Konzept: `konzepte/fremde-termine.md`
 im Projektordner.
 
 ## Quellen

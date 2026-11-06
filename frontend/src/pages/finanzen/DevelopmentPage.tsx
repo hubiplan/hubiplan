@@ -73,7 +73,7 @@ export function FinanceDevelopment({ canEdit }: { canEdit: boolean }) {
             <p>{t('Für diesen Zeitraum gibt es noch keine Konten.')}</p>
             {canEdit && (
               <p>
-                <Link to="/finanzen/einstellungen/konten">{t('Konto anlegen')}</Link>
+                <Link to="/finanzen/einrichtung/konten">{t('Konto anlegen')}</Link>
               </p>
             )}
           </div>

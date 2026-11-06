@@ -190,7 +190,7 @@ export function BookingsPage() {
       <div className="card empty-state">
         <p>
           {t('Zum Buchen muss zuerst ein Konto eingerichtet werden:')}{' '}
-          <Link to="/finanzen/einstellungen/konten">{t('Finanzen → Einrichtung → Konten')}</Link>.
+          <Link to="/finanzen/einrichtung/konten">{t('Finanzen → Einrichtung → Konten')}</Link>.
         </p>
       </div>
     )
@@ -963,7 +963,7 @@ function BookingForm({
               {kind === 'income'
                 ? t('Für Einnahmen gibt es noch keine Kategorie. Bitte unter')
                 : t('Für Ausgaben gibt es noch keine Kategorie. Bitte unter')}{' '}
-              <Link to="/finanzen/einstellungen/kategorien">
+              <Link to="/finanzen/einrichtung/kategorien">
                 {t('Finanzen → Einrichtung → Kategorien')}
               </Link>{' '}
               {t('anlegen.')}

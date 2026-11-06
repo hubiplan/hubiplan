@@ -1,7 +1,7 @@
 // Termine: Kalender der aktiven Organisation, Abteilung oder des Mitgliederbereichs.
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { SubpageUnavailable } from '../NoticePages.tsx'
 import { PERM } from '../../api/orgs.ts'
 import { DEPT_PERM } from '../../api/portal.ts'
@@ -53,18 +53,23 @@ export function EventsPage() {
       </section>
     )
   }
+  // Einstellungen des Kalenders unter „Einrichtung“, zuletzt (Menüprüfung M-01)
+  const setupTabs = [
+    ...(categories ? [{ to: '/termine/einrichtung/kategorien', label: t('Kategorien') }] : []),
+    ...(categories ? [{ to: '/termine/einrichtung/fremde', label: t('Fremde Kalender') }] : []),
+    ...(manage ? [{ to: '/termine/einrichtung/weitergabe', label: t('Weitergabe') }] : []),
+    ...(manage ? [{ to: '/termine/einrichtung/link', label: t('Öffentlicher Link') }] : []),
+  ]
   const tabs = [
     { to: '/termine', label: t('Kalender') },
-    ...(categories ? [{ to: '/termine/kategorien', label: t('Kategorien') }] : []),
-    ...(manage ? [{ to: '/termine/weitergabe', label: t('Weitergabe') }] : []),
-    ...(manage ? [{ to: '/termine/link', label: t('Öffentlicher Link') }] : []),
-    ...(categories ? [{ to: '/termine/fremde', label: t('Fremde Kalender') }] : []),
     ...(isPortal ? [{ to: '/termine/abo', label: t('Kalender-Abo') }] : []),
+    ...(setupTabs.length > 0 ? [{ to: '/termine/einrichtung', label: t('Einrichtung') }] : []),
   ]
   return (
     <section>
-      <SectionTitle title={title} items={tabs} subtitle={subtitle} />
+      <SectionTitle title={title} items={[...tabs, ...setupTabs]} subtitle={subtitle} />
       {tabs.length > 1 && <Tabs items={tabs} />}
+      {setupTabs.length > 1 && <Tabs items={setupTabs} />}
       <Routes>
         <Route
           index
@@ -78,10 +83,21 @@ export function EventsPage() {
             />
           }
         />
-        {categories && <Route path="kategorien" element={<CategoriesPanel base={base} />} />}
-        {manage && <Route path="weitergabe" element={<SharingPanel base={base} />} />}
-        {manage && <Route path="link" element={<PublicationPanel base={base} />} />}
-        {categories && <Route path="fremde" element={<ExternalCalendarsPanel base={base} />} />}
+        {setupTabs.length > 0 && (
+          <Route path="einrichtung" element={<Navigate to={setupTabs[0].to} replace />} />
+        )}
+        {categories && (
+          <Route path="einrichtung/kategorien" element={<CategoriesPanel base={base} />} />
+        )}
+        {manage && <Route path="einrichtung/weitergabe" element={<SharingPanel base={base} />} />}
+        {manage && <Route path="einrichtung/link" element={<PublicationPanel base={base} />} />}
+        {categories && (
+          <Route path="einrichtung/fremde" element={<ExternalCalendarsPanel base={base} />} />
+        )}
+        {/* Frühere Adressen leiten weiter */}
+        {['kategorien', 'weitergabe', 'link', 'fremde'].map((p) => (
+          <Route key={p} path={p} element={<Navigate to={`/termine/einrichtung/${p}`} replace />} />
+        ))}
         {isPortal && <Route path="abo" element={<FeedPanel base={base} />} />}
         <Route path="*" element={<SubpageUnavailable to="/termine" label={t('Zum Kalender')} />} />
       </Routes>

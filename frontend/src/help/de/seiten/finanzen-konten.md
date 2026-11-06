@@ -4,7 +4,7 @@ titel: Finanzen › Einrichtung › Konten
 bereich: finanzen
 modul: finance
 rechte: [finance.edit]
-routen: [/finanzen/einstellungen/konten]
+routen: [/finanzen/einrichtung/konten]
 stichworte: [Konto, Bankkonto, Barkasse, IBAN]
 ---
 

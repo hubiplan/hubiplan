@@ -71,7 +71,7 @@ export function RunsPage() {
                   { department_label_plural: s.department_label_plural },
                 )}{' '}
             {t('Lege vorher bitte die Beitragssätze fest:')}{' '}
-            <Link to="/finanzen/einstellungen/beitraege">{t('Beitragssätze')}</Link>.
+            <Link to="/finanzen/einrichtung/beitraege">{t('Beitragssätze')}</Link>.
           </p>
         </div>
       )}

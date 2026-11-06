@@ -174,8 +174,8 @@ function RequireDept({ children }: { children: ReactNode }) {
 const LEGACY_KASSE: Record<string, string> = {
   '': '/finanzen',
   buchungen: '/finanzen/kassenbuch',
-  konten: '/finanzen/einstellungen/konten',
-  kategorien: '/finanzen/einstellungen/kategorien',
+  konten: '/finanzen/einrichtung/konten',
+  kategorien: '/finanzen/einrichtung/kategorien',
   abschluss: '/finanzen/abschluss/jahresabschluss',
 }
 
@@ -185,7 +185,7 @@ const LEGACY_BEITRAEGE: Record<string, string> = {
   mahnungen: '/finanzen/rechnungen/mahnungen',
   dachverband: '/finanzen/rechnungen/dachverband',
   lastschrift: '/finanzen/lastschrift',
-  regeln: '/finanzen/einstellungen',
+  regeln: '/finanzen/einrichtung',
 }
 
 /** Leitet alte Lesezeichen (/kasse/…, /beitraege/…) samt Filtern auf Finanzen um. */

@@ -10,6 +10,8 @@ import type { SocialFeed, SocialKind, SocialPost } from '../../api/website.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { SocialLinksPanel } from '../../components/SocialLinksPanel.tsx'
+import { PERM } from '../../api/orgs.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
@@ -40,6 +42,10 @@ export function SocialPage() {
             {t('Ausblenden')}
           </button>
         </Alert>
+      )}
+      {/* Kanäle (Profil-Links im Kopf der Webseite) und Beiträge an einer Stelle (Menüprüfung M-06) */}
+      {(org.type === 'club' || org.type === 'federation') && (
+        <SocialLinksPanel orgId={org.id} editable={org.permissions.includes(PERM.orgEdit)} />
       )}
       <div className="card card-wide">
         <h2>{t('Instagram und Facebook')}</h2>

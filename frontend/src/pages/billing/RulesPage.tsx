@@ -460,7 +460,7 @@ function SettingsCard({
         {settings.accounts.length === 0 && (
           <p className="muted small">
             {t('Konten und Kategorien legst du hier an:')}{' '}
-            <Link to="/finanzen/einstellungen/konten">{t('Einrichtung › Konten')}</Link>.
+            <Link to="/finanzen/einrichtung/konten">{t('Einrichtung › Konten')}</Link>.
           </p>
         )}
         {/* Im Arbeitsbereich einer Untereinheit gibt es keine Lastschrift */}
