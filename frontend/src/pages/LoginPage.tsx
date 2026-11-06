@@ -7,6 +7,7 @@ import type { LoginResult } from '../api/auth.ts'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { loginTarget, rememberedTarget } from '../auth/loginTarget.ts'
 import { Logo } from '../components/Logo.tsx'
+import { PoweredBy } from '../components/PoweredBy.tsx'
 import { RemoteLoginChoices } from './VerbundLoginPages.tsx'
 import { t } from '../i18n/index.ts'
 
@@ -193,6 +194,7 @@ export function LoginPage() {
         )}
       </div>
       <LanguageSwitch />
+      <PoweredBy />
     </main>
   )
 }

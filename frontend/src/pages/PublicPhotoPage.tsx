@@ -72,7 +72,7 @@ export function PublicPhotoPage() {
     <main className="login-page">
       <div className="card public-photo">
         <div className="login-logo">
-          <Logo name={info?.organization ?? 'HUBIplan'} logoUrl={info?.logo_url ?? null} />
+          <Logo name={info?.organization} logoUrl={info?.logo_url ?? null} />
         </div>
         {state === 'loading' && <p className="muted">{t('Lädt …')}</p>}
         {state === 'invalid' && (

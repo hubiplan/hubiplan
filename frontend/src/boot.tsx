@@ -8,8 +8,11 @@ import { OrgProvider } from './org/OrgContext.tsx'
 import './theme/theme.css'
 import './index.css'
 import { watchTableSemantics } from './components/tableSemantics.ts'
+import { loadPlatform } from './theme/platform.ts'
 
 watchTableSemantics()
+// Name, Farben und Logo der Instanz (White Label); die Oberfläche wartet nicht darauf
+void loadPlatform()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
