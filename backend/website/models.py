@@ -487,6 +487,10 @@ class PublicationConsent(models.Model):
         JUBILEES = "jubilees", gettext_lazy("Jubiläen")
         RESULTS = "results", gettext_lazy("Wettbewerbsergebnisse")
         RESULTS_MINOR = "minor_res", gettext_lazy("Wettbewerbsergebnisse unter 18")
+        # Gesamtaudit 05.11. F-01: Mitgliederlisten nur mit Einwilligung; „In Gedenken“
+        # nur mit Freigabe des Vorstands je Person (oder Einwilligung zu Lebzeiten)
+        MEMBER_LIST = "list", gettext_lazy("Mitgliederliste")
+        MEMORIAL = "memorial", gettext_lazy("In Gedenken")
 
     class Source(models.TextChoices):
         BOARD = "board", gettext_lazy("Vorstand")

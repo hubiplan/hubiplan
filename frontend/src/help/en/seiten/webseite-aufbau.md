@@ -10,7 +10,7 @@ stichworte: [menu, section, order, chronicle, member list, memorial, heading, se
 
 Here you decide which sections the website has, such as events, sub-units, chronicle or contact, what they are called in the menu and in which order they appear.
 
-Members: The heading “Members” has one list per member type, for example “Active” and “Passive”. You switch each list on separately and give it a name with the pencil. The lists show today’s members by surname, with the year they joined and, if you like, their main instrument (settings under “People”). Anyone who objected to publishing their name is left out. “In memoriam” shows members whose reason for leaving is “death”, with the year of death; a text page with the address `in-gedenken` appears above it as an introduction.
+Members: The heading “Members” has one list per member type, for example “Active” and “Passive”. You switch each list on separately and give it a name with the pencil. The lists show today’s members by surname, with the year they joined and, if you like, their main instrument (settings under “People”). Only members who consented appear: in the member record under “Publication on the website”, item “Member list”. Anyone who objected to publishing their name is still left out. “In memoriam” shows members whose reason for leaving is “death”, with the year of death, but only if the board has approved each of them in their member record under “In memoriam”; a text page with the address `in-gedenken` appears above it as an introduction.
 
 Custom headings: “Add heading” creates a menu item without its own page, for example “Band”. Drag sections onto it and they become its sub-items. Without sub-items the heading does not appear. If you leave the name empty, it is removed when saved.
 
