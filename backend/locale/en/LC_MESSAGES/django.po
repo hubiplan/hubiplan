@@ -7978,3 +7978,36 @@ msgstr "The agenda can no longer be changed."
 
 msgid "Jeder Punkt braucht einen Titel."
 msgstr "Every item needs a title."
+
+msgid "Einladung: {title} am {date}"
+msgstr "Invitation: {title} on {date}"
+
+msgid "hiermit laden wir zur **{title}** ein."
+msgstr "we hereby invite you to the **{title}**."
+
+msgid "**Wann:** {date}, {time} Uhr"
+msgstr "**When:** {date}, {time}"
+
+msgid "**Wo:** {place}"
+msgstr "**Where:** {place}"
+
+msgid "**Tagesordnung**"
+msgstr "**Agenda**"
+
+msgid "Mit freundlichen Grüßen"
+msgstr "Kind regards"
+
+msgid "Die Leitung"
+msgstr "The leadership"
+
+msgid "Der Vorstand"
+msgstr "The board"
+
+msgid "Für die Einladung ist zusätzlich das Recht nötig, Rundschreiben zu versenden."
+msgstr "The invitation also requires the right to send circulars."
+
+msgid "Zu dieser Versammlung wurde schon eingeladen."
+msgstr "Invitations for this meeting have already been sent."
+
+msgid "Bitte zuerst die Tagesordnung anlegen."
+msgstr "Please create the agenda first."

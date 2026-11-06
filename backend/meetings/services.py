@@ -127,3 +127,93 @@ def create(scope, user, *, kind, title, starts_at, ends_at, location, address, a
         for index, (name, type_, description) in enumerate(items, start=1)
     )
     return meeting
+
+
+# --- Einladung (Schritt V2) ---------------------------------------------------------------
+
+
+def invitation_filters(meeting) -> tuple[str, dict]:
+    """Empfänger der Einladung als Auswahl eines Rundschreibens (Zielgruppe, Filter)."""
+    from circulars.models import Circular
+    from organizations.models import DepartmentRole
+
+    kind = meeting.kind
+    if meeting.organization.type == "federation":
+        return Circular.Audience.BOARDS, {}
+    if kind.base == MeetingKind.Base.GENERAL:
+        filters = {}
+        if kind.voter_types:
+            filters["member_types"] = list(kind.voter_types)
+        if kind.voter_min_age:
+            filters["age_min"] = kind.voter_min_age
+        return Circular.Audience.MEMBERS, filters
+    if meeting.department_id is not None:
+        roles = DepartmentRole.objects.filter(department_id=meeting.department_id)
+        return Circular.Audience.MEMBERS, {"roles": sorted(roles.values_list("pk", flat=True))}
+    return Circular.Audience.MEMBERS, {"board": True}
+
+
+def invitation_text(meeting) -> tuple[str, str]:
+    """Betreff und Text der Einladung mit Tagesordnung (im Rundschreiben noch änderbar)."""
+    from core.i18n import date_text
+
+    event = meeting.event
+    start = timezone.localtime(event.starts_at)
+    subject = _("Einladung: {title} am {date}").format(title=event.title, date=date_text(start))
+    place = ", ".join(p for p in (event.location, event.address) if p)
+    lines = [
+        "{Anrede},",
+        "",
+        _("hiermit laden wir zur **{title}** ein.").format(title=event.title),
+        "",
+        _("**Wann:** {date}, {time} Uhr").format(date=date_text(start), time=f"{start:%H:%M}"),
+    ]
+    if place:
+        lines.append(_("**Wo:** {place}").format(place=place))
+    lines += ["", _("**Tagesordnung**"), ""]
+    for index, item in enumerate(meeting.agenda.all(), start=1):
+        entry = f"{index}. {item.title}"
+        if item.description:
+            entry += " – " + " ".join(item.description.split())
+        lines.append(entry)
+    lines += ["", _("Mit freundlichen Grüßen")]
+    lines.append(_("Die Leitung") if meeting.department_id else _("Der Vorstand"))
+    return subject[:200], "\n".join(lines)
+
+
+@transaction.atomic
+def prepare_invitation(meeting, user):
+    """Rundschreiben-Entwurf mit Einladung anlegen (oder den vorhandenen Entwurf liefern)."""
+    from circulars.models import Circular
+
+    if meeting.circular_id and meeting.circular.status == Circular.Status.DRAFT:
+        return meeting.circular
+    audience, filters = invitation_filters(meeting)
+    subject, body = invitation_text(meeting)
+    circular = Circular.objects.create(
+        organization=meeting.organization,
+        department_id=meeting.department_id,
+        kind=Circular.Kind.NOTICE,
+        audience=audience,
+        subject=subject,
+        body=body,
+        filters=filters,
+        created_by=user,
+    )
+    meeting.circular = circular
+    meeting.version += 1
+    meeting.save(update_fields=["circular", "version", "updated_at"])
+    return circular
+
+
+def circular_sent(circular) -> None:
+    """Nach dem Versand gilt die Versammlung als eingeladen."""
+    from circulars.models import Circular
+
+    if circular.status == Circular.Status.DRAFT:
+        return
+    for meeting in Meeting.objects.filter(circular=circular, status=Meeting.Status.DRAFT):
+        meeting.status = Meeting.Status.INVITED
+        meeting.invited_at = circular.sent_at or timezone.now()
+        meeting.version += 1
+        meeting.save(update_fields=["status", "invited_at", "version", "updated_at"])

@@ -37,6 +37,10 @@ const meeting = {
   invite_by: '2099-01-01',
   version: 3,
   can_edit: true,
+  can_invite: true,
+  invited_at: null,
+  circular: null,
+  circular_status: '',
   chair: '',
   minute_taker: '',
   note: '',
@@ -59,6 +63,10 @@ function show(permissions: string[], path = '/versammlungen') {
     'GET /api/orgs/7/meetings/': () => ({ status: 200, body: [meeting] }),
     'GET /api/orgs/7/meetings/kinds/': () => ({ status: 200, body: [kind] }),
     'GET /api/orgs/7/meetings/5/': () => ({ status: 200, body: meeting }),
+    'POST /api/orgs/7/meetings/5/invitation/': () => ({
+      status: 200,
+      body: { ...meeting, version: 4, circular: 77, circular_status: 'draft' },
+    }),
     'PUT /api/orgs/7/meetings/5/agenda/': () => ({
       status: 200,
       body: { ...meeting, version: 4 },
@@ -102,6 +110,14 @@ describe('Versammlungen', () => {
       'Kassenbericht',
       'Begrüßung',
     ])
+  })
+
+  it('bereitet die Einladung als Rundschreiben vor', async () => {
+    const api = show(['meetings.view', 'meetings.edit'], '/versammlungen?versammlung=5')
+    fireEvent.click(await screen.findByRole('button', { name: 'Einladung vorbereiten' }))
+    await waitFor(() =>
+      expect(api.some((c) => c.key === 'POST /api/orgs/7/meetings/5/invitation/')).toBe(true),
+    )
   })
 
   it('ohne Recht kein Zugang', async () => {

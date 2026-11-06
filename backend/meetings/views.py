@@ -2,7 +2,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from rest_framework import serializers
-from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -26,10 +26,15 @@ class Base(APIView):
     def meeting(self, pk, *, lock=False):
         qs = Meeting.objects.filter(
             organization=self.scope.org, department_id=self.scope.department_id
-        ).select_related("event", "kind")
+        ).select_related("event", "kind", "circular")
         if lock:
             qs = qs.select_for_update(of=("self",))
         return get_object_or_404(qs, pk=pk)
+
+
+def can_write_circulars(scope) -> bool:
+    codes = {"dept.circulars.send"} if scope.department_id else {"circulars.send", "circulars.edit"}
+    return bool(codes & scope.permissions)
 
 
 def conflict():
@@ -82,8 +87,12 @@ def meeting_data(meeting, scope, *, full=False):
         "event": event.pk,
         "status": meeting.status,
         "invite_by": services.invite_by(meeting),
+        "invited_at": meeting.invited_at,
+        "circular": meeting.circular_id,
+        "circular_status": meeting.circular.status if meeting.circular_id else "",
         "version": meeting.version,
         "can_edit": scope.can_edit,
+        "can_invite": scope.can_edit and can_write_circulars(scope),
     }
     if full:
         data.update(
@@ -208,7 +217,7 @@ class ListView(Base):
             Meeting.objects.filter(
                 organization=self.scope.org, department_id=self.scope.department_id
             )
-            .select_related("event", "kind")
+            .select_related("event", "kind", "circular")
             .order_by("-event__starts_at", "-pk")
         )
         return Response([meeting_data(m, self.scope) for m in qs])
@@ -354,4 +363,30 @@ class AgendaView(Base):
         meeting.agenda.exclude(pk__in=keep).delete()
         meeting.version += 1
         meeting.save(update_fields=["version", "updated_at"])
+        return Response(meeting_data(meeting, self.scope, full=True))
+
+
+class InvitationView(Base):
+    """Einladung als Entwurf eines Rundschreibens vorbereiten (Schritt V2)."""
+
+    @transaction.atomic
+    def post(self, request, pk, **kwargs):
+        access.require_edit(self.scope)
+        if not can_write_circulars(self.scope):
+            raise PermissionDenied(
+                _("Für die Einladung ist zusätzlich das Recht nötig, Rundschreiben zu versenden.")
+            )
+        meeting = self.meeting(pk, lock=True)
+        if meeting.status != Meeting.Status.DRAFT:
+            raise ValidationError({"detail": _("Zu dieser Versammlung wurde schon eingeladen.")})
+        if not meeting.agenda.exists():
+            raise ValidationError({"detail": _("Bitte zuerst die Tagesordnung anlegen.")})
+        circular = services.prepare_invitation(meeting, request.user)
+        record(
+            self.scope.org,
+            request.user,
+            "update",
+            meeting,
+            {"Einladung": [None, circular.subject]},
+        )
         return Response(meeting_data(meeting, self.scope, full=True))

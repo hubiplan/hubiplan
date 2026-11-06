@@ -8,4 +8,5 @@ urlpatterns = [
     path("kinds/<int:pk>/", views.KindDetailView.as_view()),
     path("<int:pk>/", views.DetailView.as_view()),
     path("<int:pk>/agenda/", views.AgendaView.as_view()),
+    path("<int:pk>/invitation/", views.InvitationView.as_view()),
 ]

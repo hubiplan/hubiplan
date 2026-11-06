@@ -34,4 +34,6 @@ Vorstandssitzung. Du kannst sie umbenennen, weitere hinzufügen oder abschalten.
 du die Einladungsfrist, die Form der Einladung, die Beschlussfähigkeit und fest, wer später das
 Protokoll sieht.
 
-Einladung, Anwesenheit und Protokoll folgen in den nächsten Ausbaustufen.
+Einladung: **Einladung vorbereiten** legt ein Rundschreiben mit Tagesordnung als Entwurf an. Empfänger sind bei Mitgliederversammlungen die Stimmberechtigten der Art (Mitgliedsarten und Mindestalter), bei Vorstandssitzungen der Vorstand, bei Sitzungen der Leitung einer Untereinheit deren Rolleninhaber. Mit **Rundschreiben öffnen** prüfst du Empfänger und Text und verschickst die Einladung. Danach gilt die Versammlung als eingeladen; ging sie nach dem letzten Tag der Frist hinaus, weist HUBIplan darauf hin. Dafür brauchst du zusätzlich das Recht, Rundschreiben zu versenden. Ändert sich die Tagesordnung, nachdem der Entwurf angelegt ist, passe den Text im Rundschreiben an.
+
+Anwesenheit und Protokoll folgen in den nächsten Ausbaustufen.

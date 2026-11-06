@@ -273,3 +273,62 @@ def test_zugversammlung(orgs, api):
         content_type=JSON,
     )
     assert bad.status_code == 400
+
+
+# --- V2: Einladung ---------------------------------------------------------------------
+
+
+def test_einladung_als_rundschreiben(setup):
+    from circulars.models import Circular
+    from members.models import MemberType
+
+    s = setup
+    aktiv = MemberType.objects.create(organization=s["org"], name="aktiv")
+    kind = kind_named(s["chef"], s["url"], "Jahreshauptversammlung")
+    ok(
+        s["chef"].patch(
+            f"{s['url']}kinds/{kind['id']}/",
+            {"voter_types": [aktiv.pk], "voter_min_age": 16},
+            content_type=JSON,
+        )
+    )
+    meeting = new_meeting(s, location="Schützenhaus")
+    url = f"{s['url']}{meeting['id']}/invitation/"
+    # Ohne Recht für Rundschreiben geht es nicht
+    assert s["chef"].post(url).status_code == 403
+    from access.models import Role
+
+    Role.objects.filter(organization=s["org"], name="Vorsitz").update(
+        permissions=["meetings.edit", "circulars.edit"]
+    )
+    data = ok(s["chef"].post(url))
+    circular = Circular.objects.get(pk=data["circular"])
+    assert data["circular_status"] == "draft" and data["status"] == "draft"
+    assert circular.kind == "notice" and circular.audience == "members"
+    assert circular.filters == {"member_types": [aktiv.pk], "age_min": 16}
+    assert "Jahreshauptversammlung" in circular.subject
+    assert "1. Begrüßung und Feststellung der Beschlussfähigkeit" in circular.body
+    assert "Schützenhaus" in circular.body and "{Anrede}" in circular.body
+    # Noch einmal: derselbe Entwurf
+    assert ok(s["chef"].post(url))["circular"] == circular.pk
+    assert Circular.objects.filter(organization=s["org"]).count() == 1
+    # Versand macht die Versammlung „eingeladen“
+    circular.status = Circular.Status.SENT
+    circular.sent_at = timezone.now()
+    circular.save()
+    detail = ok(s["chef"].get(f"{s['url']}{meeting['id']}/"))
+    assert detail["status"] == "invited" and detail["invited_at"]
+    assert s["chef"].post(url).status_code == 400
+
+
+def test_einladung_vorstandssitzung_an_vorstand(setup):
+    from access.models import Role
+    from circulars.models import Circular
+
+    s = setup
+    Role.objects.filter(organization=s["org"], name="Vorsitz").update(
+        permissions=["meetings.edit", "circulars.edit"]
+    )
+    meeting = new_meeting(s, "Vorstandssitzung")
+    data = ok(s["chef"].post(f"{s['url']}{meeting['id']}/invitation/"))
+    assert Circular.objects.get(pk=data["circular"]).filters == {"board": True}

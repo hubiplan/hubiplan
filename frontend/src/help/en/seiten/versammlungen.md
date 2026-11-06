@@ -31,4 +31,6 @@ Types and notice periods: HUBIplan starts with the usual types, such as the annu
 meeting and the board meeting. You can rename them, add more or switch them off. For each type
 you set the notice period, how invitations are sent, the quorum and who will see the minutes.
 
-Invitations, attendance and minutes follow in the next stages.
+Invitation: **Prepare invitation** creates a draft circular with the agenda. For general meetings it goes to the members entitled to vote under the type (member types and minimum age), for board meetings to the board, and for leadership meetings of a unit to its role holders. Use **Open circular** to check the recipients and text and to send the invitation. After that the meeting counts as invited; if it went out after the last day of the notice period, HUBIplan points this out. You also need the right to send circulars. If the agenda changes after the draft has been created, adjust the text in the circular.
+
+Attendance and minutes follow in the next stages.

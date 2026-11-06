@@ -6568,5 +6568,12 @@
   "Brief an alle": "Letter to everyone",
   "Beschlussfähig ab (Prozent der Stimmberechtigten, leer: immer)": "Quorum (percent of members entitled to vote, empty: always)",
   "Vertretung mit Vollmacht erlaubt": "Proxy voting allowed",
-  "Für neue Versammlungen wählbar": "Available for new meetings"
+  "Für neue Versammlungen wählbar": "Available for new meetings",
+  "Eingeladen am {day}.": "Invited on {day}.",
+  "Das war nach dem letzten Tag der Einladungsfrist.": "That was after the last day of the notice period.",
+  "Der Entwurf der Einladung liegt bei den Rundschreiben. Dort prüfst du Empfänger und Text und verschickst sie.": "The draft invitation is waiting under Circulars. Check the recipients and text there and send it.",
+  "Die Einladung entsteht als Rundschreiben mit Tagesordnung an die Stimmberechtigten. Du prüfst es dort und verschickst es selbst.": "The invitation is created as a circular with the agenda to the members entitled to vote. You check it there and send it yourself.",
+  "Rundschreiben öffnen": "Open circular",
+  "Einladung vorbereiten": "Prepare invitation",
+  "Für die Einladung ist zusätzlich das Recht nötig, Rundschreiben zu versenden.": "The invitation also requires the right to send circulars."
 }

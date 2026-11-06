@@ -30,7 +30,7 @@ außerordentliche Mitgliederversammlung, Vorstandssitzung; Untereinheit: Versamm
 der Leitung). Eine neue Versammlung übernimmt die Tagesordnung der letzten Versammlung
 derselben Art oder bekommt eine übliche Tagesordnung.
 
-## Abläufe (Stand V1)
+## Abläufe (Stand V2)
 
 - Anlegen erzeugt den Termin. Mitgliederversammlungen sind für Mitglieder sichtbar,
   Vorstandssitzungen nur für den Vorstand.
@@ -41,6 +41,13 @@ derselben Art oder bekommt eine übliche Tagesordnung.
 - Absagen markiert den Termin als abgesagt. Löschen ist nur in Vorbereitung oder nach einer
   Absage möglich und löscht den Termin mit. Im Kalender lässt sich der Termin einer
   Versammlung nicht löschen.
+- Einladung (V2): `POST …/invitation/` legt ein Rundschreiben (Art „Vereinsmitteilung“, nicht
+  abbestellbar) als Entwurf an, mit Betreff, Text und Tagesordnung. Empfänger: bei
+  Mitgliederversammlungen Mitgliedsarten und Mindestalter der Art, bei Vorstandssitzungen
+  `board`, bei Sitzungen der Leitung einer Untereinheit deren Rollen; im Dachverband die
+  Vorstände der Vereine. Nötig sind `meetings.edit` und das Recht, Rundschreiben zu versenden.
+  Geprüft und verschickt wird im Rundschreiben. Sobald es nicht mehr Entwurf ist, setzt ein
+  Signal die Versammlung auf „eingeladen“ (`invited_at` = Versandzeit).
 - Export und Import nehmen Arten, Versammlungen und Tagesordnungen mit (auch im Export einer
   Untereinheit).
 
@@ -51,4 +58,5 @@ derselben Art oder bekommt eine übliche Tagesordnung.
 | `GET/POST /api/orgs/<id>/meetings/` | Liste, Anlegen (`kind`, `starts_at`, `ends_at`, `title`, `location`, `agenda_from_last`) |
 | `GET/PATCH/DELETE …/meetings/<pk>/` | Einzelne Versammlung; `status` nur `cancelled` oder zurück zu `draft` |
 | `PUT …/meetings/<pk>/agenda/` | Tagesordnung speichern |
+| `POST …/meetings/<pk>/invitation/` | Einladung als Rundschreiben-Entwurf |
 | `GET/POST …/meetings/kinds/`, `PATCH/DELETE …/kinds/<pk>/` | Arten |

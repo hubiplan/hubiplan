@@ -44,6 +44,10 @@ export interface Meeting {
   invite_by: string
   version: number
   can_edit: boolean
+  can_invite: boolean
+  invited_at: string | null
+  circular: number | null
+  circular_status: '' | 'draft' | 'sending' | 'sent'
   chair?: string
   minute_taker?: string
   note?: string
@@ -59,6 +63,8 @@ export const meetingApi = {
   remove: (base: string, id: number) => api.del(`${base}${id}/`),
   saveAgenda: (base: string, meeting: Meeting, items: AgendaItem[]) =>
     api.put<Meeting>(`${base}${meeting.id}/agenda/`, { version: meeting.version, items }),
+  prepareInvitation: (base: string, meeting: Meeting) =>
+    api.post<Meeting>(`${base}${meeting.id}/invitation/`),
   kinds: (base: string) => api.get<MeetingKind[]>(`${base}kinds/`),
   createKind: (base: string, data: object) => api.post<MeetingKind>(`${base}kinds/`, data),
   updateKind: (base: string, id: number, data: object) =>

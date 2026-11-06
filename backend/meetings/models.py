@@ -99,6 +99,15 @@ class Meeting(models.Model):
     chair = EncryptedCharField(_("Leitung"), max_length=200, blank=True)
     minute_taker = EncryptedCharField(_("Protokollführung"), max_length=200, blank=True)
     note = EncryptedTextField(_("Notiz"), blank=True)
+    # Einladung als Rundschreiben (Schritt V2); eingeladen, sobald es versendet ist
+    circular = models.ForeignKey(
+        "circulars.Circular",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="meetings",
+    )
+    invited_at = models.DateTimeField(null=True, blank=True)
     version = models.PositiveIntegerField(default=1)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"

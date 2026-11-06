@@ -1,7 +1,7 @@
 // Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritt V1): Übersicht,
 // Anlegen mit Termin, Tagesordnung und Arten mit Voreinstellungen.
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { meetingApi } from '../../api/meetings.ts'
 import type {
   AgendaItem,
@@ -403,6 +403,7 @@ function MeetingDetail({
         </p>
       )}
       {error && <p role="alert">{error}</p>}
+      <InvitationCard base={base} meeting={meeting} onChanged={loaded.reload} />
       <DetailsForm
         key={`d${meeting.version}`}
         base={base}
@@ -992,5 +993,82 @@ function KindForm({
         </button>
       </div>
     </form>
+  )
+}
+
+function InvitationCard({
+  base,
+  meeting,
+  onChanged,
+}: {
+  base: string
+  meeting: Meeting
+  onChanged: () => Promise<void>
+}) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  if (meeting.status === 'cancelled') return null
+  const invitedLate =
+    !!meeting.invited_at &&
+    new Date(meeting.invited_at).toLocaleDateString('sv-SE', { timeZone: ZONE }) > meeting.invite_by
+  return (
+    <section className="card stack">
+      <h2>{t('Einladung')}</h2>
+      {meeting.invited_at ? (
+        <p className={invitedLate ? 'alert alert-error' : undefined}>
+          {t('Eingeladen am {day}.', {
+            day: new Date(meeting.invited_at).toLocaleDateString(locale(), { timeZone: ZONE }),
+          })}
+          {invitedLate && ' ' + t('Das war nach dem letzten Tag der Einladungsfrist.')}
+        </p>
+      ) : meeting.circular && meeting.circular_status === 'draft' ? (
+        <p>
+          {t(
+            'Der Entwurf der Einladung liegt bei den Rundschreiben. Dort prüfst du Empfänger und Text und verschickst sie.',
+          )}
+        </p>
+      ) : (
+        <p className="muted">
+          {t(
+            'Die Einladung entsteht als Rundschreiben mit Tagesordnung an die Stimmberechtigten. Du prüfst es dort und verschickst es selbst.',
+          )}
+        </p>
+      )}
+      {error && <p role="alert">{error}</p>}
+      <div className="button-row">
+        {meeting.circular ? (
+          <Link className="button" to={`/rundschreiben/${meeting.circular}`}>
+            {t('Rundschreiben öffnen')}
+          </Link>
+        ) : (
+          meeting.status === 'draft' &&
+          meeting.can_invite && (
+            <button
+              className="button"
+              disabled={busy}
+              onClick={async () => {
+                setBusy(true)
+                setError('')
+                try {
+                  await meetingApi.prepareInvitation(base, meeting)
+                  await onChanged()
+                } catch (err) {
+                  setError(errorMessage(err))
+                } finally {
+                  setBusy(false)
+                }
+              }}
+            >
+              {t('Einladung vorbereiten')}
+            </button>
+          )
+        )}
+      </div>
+      {meeting.status === 'draft' && meeting.can_edit && !meeting.can_invite && (
+        <p className="muted small">
+          {t('Für die Einladung ist zusätzlich das Recht nötig, Rundschreiben zu versenden.')}
+        </p>
+      )}
+    </section>
   )
 }
