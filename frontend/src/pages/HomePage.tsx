@@ -27,8 +27,8 @@ import { PortalTasks } from './portal/PortalPage.tsx'
 import { MemberHomeTop } from '../components/home/MemberHome.tsx'
 import { t } from '../i18n/index.ts'
 
-/** Rechte, mit denen es offene Aufgaben geben kann (Entscheidungen) */
-const TASK_PERMS = [PERM.membersEdit, PERM.photosManage, PERM.eventsManage]
+/** Rechte, mit denen es etwas zu erledigen geben kann (Entscheidungen, überfällige Rechnungen) */
+const TASK_PERMS = [PERM.membersEdit, PERM.photosManage, PERM.eventsManage, PERM.billingView]
 
 function showsOpenTasks(org: OrgSummary): boolean {
   if (org.permissions.includes('todos.view')) return true
