@@ -48,6 +48,7 @@ from .models import (
     RemoteState,
     RemoteTransfer,
 )
+from .versions import withheld_organizations
 
 
 def _raise(exc: DjangoValidationError):
@@ -90,6 +91,8 @@ def coupling_data(c: Coupling, with_messages: bool = False, perms: set[str] | No
         "last_sync_at": c.last_sync_at,
         "last_contact_at": c.last_contact_at,
         "last_error": c.last_error,
+        # Gegenstelle zu alt für Organisationsmitglieder: so viele gehen nicht mit (J6)
+        "organizations_withheld": withheld_organizations(c),
         "reception_budget": {
             "bytes": c.received_bytes,
             "messages": c.received_count,
@@ -215,13 +218,18 @@ def register_data(c: Coupling, names: bool = True) -> dict | None:
         unclear.append(
             {
                 "id": rm.pk,
-                "last_name": row.get("last_name", ""),
+                "kind": row.get("kind", "person"),
+                "last_name": " – ".join(
+                    x for x in (row.get("last_name", ""), row.get("name_suffix")) if x
+                ),
                 "first_name": row.get("first_name", ""),
                 "birth_date": row.get("birth_date"),
                 "candidates": [
                     {
                         "id": p.pk,
-                        "name": f"{p.first_name} {p.last_name}",
+                        "name": p.display_name
+                        if p.is_organization
+                        else f"{p.first_name} {p.last_name}",
                         "birth_date": p.birth_date,
                         "member_number": getattr(
                             getattr(p, "federation", None), "member_number", None
@@ -248,7 +256,7 @@ def register_data(c: Coupling, names: bool = True) -> dict | None:
             "name": str(rm.membership.person),
             "current": {
                 f: getattr(rm.membership.person, f)
-                for f in ("last_name", "first_name", "birth_date")
+                for f in ("last_name", "first_name", "birth_date", "name_suffix")
             },
             "proposed": rm.data[register.CORRECTION],
         }

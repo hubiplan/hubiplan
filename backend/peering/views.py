@@ -10,8 +10,8 @@ from rest_framework.views import APIView
 from core.ratelimit import client_ip, too_many
 
 from . import identity
+from .versions import API_VERSIONS
 
-API_VERSIONS = [1]
 SOFTWARE = "HUBIplan"
 
 

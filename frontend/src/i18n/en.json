@@ -6924,5 +6924,6 @@
   "Logo nach links drehen": "Rotate logo left",
   "Logo nach rechts drehen": "Rotate logo right",
   "Logo löschen?": "Delete logo?",
-  "Logo speichern": "Save logo"
+  "Logo speichern": "Save logo",
+  "Gegenstelle zu alt für Organisationsmitglieder: {n} Organisationen gehen nicht mit, bis die andere Instanz aktualisiert ist.": "Other instance too old for organisation members: {n} organisations are not sent until the other instance is updated."
 }
