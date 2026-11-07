@@ -205,6 +205,18 @@ export const modules: AppModule[] = [
       ),
   },
   {
+    id: 'chronik',
+    group: 'verein',
+    label: t('Chronik'),
+    path: '/chronik',
+    icon: icon('M4 5h11a3 3 0 0 1 3 3v12H7a3 3 0 0 1-3-3zM18 8h2v12M8 9h6M8 13h6'),
+    visible: (org) =>
+      !!org &&
+      (org.type === 'club' || org.type === 'federation') &&
+      org.modules.includes('chronicle') &&
+      org.permissions.includes(PERM.chronicleView),
+  },
+  {
     id: 'versammlungen',
     group: 'verein',
     label: t('Versammlungen'),

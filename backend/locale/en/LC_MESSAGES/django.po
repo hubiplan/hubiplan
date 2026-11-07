@@ -8636,3 +8636,15 @@ msgstr "Social media"
 
 msgid "Beiträge aus Instagram und Facebook übernehmen und auf der Webseite zeigen"
 msgstr "Import posts from Instagram and Facebook and show them on the website"
+
+msgid "Chronik"
+msgstr "Chronicle"
+
+msgid "Zeitleiste der Vereinsgeschichte mit Kapiteln, Bildern und Excel-Import"
+msgstr "Timeline of the club's history with chapters, pictures and Excel import"
+
+msgid "Chronik lesen"
+msgstr "Read chronicle"
+
+msgid "Chronik pflegen: Zeitleiste, Einleitung und Bilder"
+msgstr "Maintain chronicle: timeline, introduction and pictures"

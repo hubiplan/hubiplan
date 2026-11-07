@@ -404,6 +404,17 @@ export interface TimelineEntry {
 
 export type ImagePosition = 'auto' | 'left' | 'right' | 'below'
 
+/** Chronik (Modul „Chronik“): Textseite „geschichte“ mit Zeitleiste, auch ohne Webseite */
+export interface ChronicleState {
+  text: WebsiteText | null
+  can_edit: boolean
+  website: boolean
+}
+
+export const chronicleApi = {
+  get: (org: number) => api.get<ChronicleState>(`/api/orgs/${org}/chronicle/`),
+}
+
 export const contentApi = {
   texts: (org: number) =>
     api.get<{

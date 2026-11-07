@@ -14,7 +14,14 @@ from rest_framework.exceptions import ValidationError
 
 from core.filecheck import JPEG_FORMATS, heic_message, is_heic
 
-from .content_models import GalleryAlbum, GalleryItem, WebsiteImage, WebsiteRevision, WebsiteText
+from .content_models import (
+    TIMELINE_SLUG,
+    GalleryAlbum,
+    GalleryItem,
+    WebsiteImage,
+    WebsiteRevision,
+    WebsiteText,
+)
 
 MAX_BYTES = 15 * 1024 * 1024
 MAX_PIXELS = 60_000_000
@@ -584,6 +591,17 @@ def restore(text: WebsiteText, revision: WebsiteRevision, user) -> None:
     text.timeline_newest_first = revision.timeline_newest_first
     text.updated_by = user
     text.save()
+
+
+def chronicle(website) -> WebsiteText:
+    """Textseite der Chronik (Adresse „geschichte“), bei Bedarf angelegt."""
+    text, _ = WebsiteText.objects.get_or_create(
+        website=website,
+        kind=WebsiteText.Kind.PAGE,
+        slug=TIMELINE_SLUG,
+        defaults={"organization": website.organization, "title": "Chronik"},
+    )
+    return text
 
 
 def greeting(website) -> WebsiteText:

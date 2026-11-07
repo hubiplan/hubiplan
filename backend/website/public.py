@@ -1068,7 +1068,7 @@ class SiteView:
             "text": content.public_body(t.published_body, self.site),
             "image": self.shown_image(t),
             "show_captions": t.published_show_captions,
-            "timeline": self.timeline(t) if t.slug == TIMELINE_SLUG else [],
+            "timeline": self.timeline(t) if t.slug == TIMELINE_SLUG and self.chronicle_on else [],
             # Reihenfolge auf der Webseite; „timeline“ bleibt aufsteigend sortiert, damit
             # die Webseite Kapitel und ihre Ereignisse zusammenhalten kann
             "timeline_newest_first": t.published_timeline_newest_first
@@ -1076,6 +1076,11 @@ class SiteView:
             else False,
             "updated_at": t.published_at,
         }
+
+    @cached_property
+    def chronicle_on(self) -> bool:
+        """Zeitleiste nur mit dem Modul „Chronik“ (der Text der Seite bleibt)."""
+        return module_on(self.site.organization, "chronicle")
 
     def timeline(self, t: WebsiteText) -> list[dict]:
         """Zeitleiste der Chronik nach Jahren; ``until`` = Zeitraum (z. B. 1939–1948),

@@ -13,6 +13,7 @@ from . import (
 )
 
 org_patterns = [
+    path("chronicle/", content_views.ChronicleView.as_view(), name="chronicle"),
     path("website/", views.WebsiteView.as_view(), name="website"),
     path(
         "website/privacy/generate/",

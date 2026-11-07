@@ -81,6 +81,8 @@ EVENTS_EDIT = "events.edit"
 DOCS_EDIT = "docs.edit"
 CIRCULARS_VIEW = "circulars.view"
 CIRCULARS_EDIT = "circulars.edit"
+CHRONICLE_VIEW = "chronicle.view"
+CHRONICLE_EDIT = "chronicle.edit"
 WEBCONTENT_VIEW = "webcontent.view"
 WEBCONTENT_EDIT = "webcontent.edit"
 WEBSITE_VIEW = "website.view"
@@ -219,6 +221,13 @@ AREAS: tuple[Area, ...] = (
         org_types=ALL_TYPES,
         dept_levels=_BOTH,
         module="todos",
+    ),
+    Area(
+        "chronicle",
+        gettext_noop("Chronik"),
+        gettext_noop("Chronik lesen"),
+        gettext_noop("Chronik pflegen: Zeitleiste, Einleitung und Bilder"),
+        module="chronicle",
     ),
     Area(
         "material",
@@ -467,8 +476,8 @@ LEGACY_TO_NEW: dict[str, tuple[str, ...]] = {
     DOCS_VIEW: ("docs.view",),
     DOCS_MANAGE: (DOCS_EDIT,),
     CIRCULARS_SEND: (CIRCULARS_EDIT,),
-    WEBSITE_CONTENT: (WEBCONTENT_EDIT,),
-    WEBSITE_MANAGE: (WEBCONTENT_EDIT, WEBSITE_EDIT),
+    WEBSITE_CONTENT: (WEBCONTENT_EDIT, CHRONICLE_EDIT),
+    WEBSITE_MANAGE: (WEBCONTENT_EDIT, WEBSITE_EDIT, CHRONICLE_EDIT),
     COMPETITIONS_MANAGE: (COMPETITIONS_EDIT, RESULTS_EDIT),
     COMPETITIONS_RESULTS: (COMPETITIONS_VIEW, RESULTS_EDIT),
     ENTRIES_SUBMIT: (ENTRIES_EDIT,),

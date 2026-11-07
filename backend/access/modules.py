@@ -113,6 +113,13 @@ MODULES: tuple[Module, ...] = (
         requires=("events",),
     ),
     Module(
+        "chronicle",
+        gettext_noop("Chronik"),
+        "life",
+        gettext_noop("Zeitleiste der Vereinsgeschichte mit Kapiteln, Bildern und Excel-Import"),
+        org_types=("federation", "club"),
+    ),
+    Module(
         "todos",
         gettext_noop("Aufgaben"),
         "life",
@@ -226,8 +233,8 @@ DEFAULT_IDS: tuple[str, ...] = tuple(m.id for m in MODULES if m.default)
 
 # Stand des Verzeichnisses für Exportdateien: 1 = bis M1, 2 = mit Aufgaben, Dokumenten,
 # Rundschreiben, Ausweisen, Ausschreibungen, Belegung, Ehrungen & Jubiläen, Würden,
-# Mitgliederbereich und Social Media als eigene Module
-MODULES_SCHEMA = 2
+# Mitgliederbereich und Social Media als eigene Module; 3 = mit Chronik
+MODULES_SCHEMA = 3
 
 
 def upgrade_modules(
@@ -238,6 +245,7 @@ def upgrade_modules(
     has_cards: bool = False,
     has_honors: bool = False,
     has_social: bool = False,
+    has_chronicle: bool = False,
 ):
     """Module aus einem älteren Stand so ergänzen, dass nichts verschwindet."""
     modules = set(ids or [])
@@ -255,6 +263,8 @@ def upgrade_modules(
             modules.add("honors")
     if schema < 2 and has_social and "website" in modules:
         modules.add("social")
+    if schema < 3 and has_chronicle and org_type in ("federation", "club"):
+        modules.add("chronicle")
     return modules
 
 

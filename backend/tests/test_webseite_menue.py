@@ -20,7 +20,7 @@ pytestmark = pytest.mark.django_db(transaction=True)
 @pytest.fixture
 def site(orgs):
     org = orgs["a"]
-    org.enabled_modules = [*org.enabled_modules, "website"]
+    org.enabled_modules = [*org.enabled_modules, "website", "chronicle"]
     org.save()
     return Website.objects.create(
         organization=org,

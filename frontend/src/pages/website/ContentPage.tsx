@@ -276,18 +276,21 @@ function NewText({
   )
 }
 
-function TextPanel({
+export function TextPanel({
   id,
   units,
   linkTargets,
   onChanged,
   onDeleted,
+  chronicle = false,
 }: {
   id: number
   units: Unit[]
   linkTargets: LinkTarget[]
   onChanged: () => void
   onDeleted: () => void
+  /** Menüpunkt „Chronik“: ohne Adresse, Menü und Löschen (gehören zur Webseite) */
+  chronicle?: boolean
 }) {
   const org = useActiveOrg()
   const { data, error, reload, setData } = useLoad(() => contentApi.text(org.id, id), [org.id, id])
@@ -299,6 +302,7 @@ function TextPanel({
       text={data}
       units={units}
       linkTargets={linkTargets}
+      chronicle={chronicle}
       onSaved={(tm) => {
         setData(tm)
         onChanged()
@@ -312,12 +316,14 @@ function TextForm({
   text,
   units,
   linkTargets,
+  chronicle,
   onSaved,
   onDeleted,
 }: {
   text: WebsiteText
   units: Unit[]
   linkTargets: LinkTarget[]
+  chronicle: boolean
   onSaved: (tm: WebsiteText) => void
   onDeleted: () => void
 }) {
@@ -410,7 +416,7 @@ function TextForm({
         error={errors.title}
         onChange={(e) => set('title', e.target.value)}
       />
-      {text.kind === 'page' && (
+      {text.kind === 'page' && !chronicle && (
         <div className="grid-2">
           <Field
             label={t('Adresse')}
@@ -507,7 +513,7 @@ function TextForm({
             {t('Veröffentlichung zurücknehmen')}
           </button>
         )}
-        {text.kind !== 'greeting' && (
+        {text.kind !== 'greeting' && !chronicle && (
           <button type="button" className="button button-danger" onClick={() => void remove()}>
             {t('Löschen')}
           </button>
