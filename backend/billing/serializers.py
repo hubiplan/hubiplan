@@ -407,6 +407,7 @@ class InvoiceInputSerializer(serializers.Serializer):
 class MandateSerializer(serializers.ModelSerializer):
     status_label = serializers.CharField(source="get_status_display", read_only=True)
     source_label = serializers.CharField(source="get_source_display", read_only=True)
+    scheme_label = serializers.SerializerMethodField()
     payer_name = serializers.SerializerMethodField()
     iban_masked = serializers.SerializerMethodField()
     expired = serializers.SerializerMethodField()
@@ -416,6 +417,8 @@ class MandateSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "reference",
+            "scheme",
+            "scheme_label",
             "membership",
             "club",
             "payer_name",
@@ -435,10 +438,13 @@ class MandateSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    def get_scheme_label(self, obj) -> str:
+        return gettext("Firmenlastschrift") if obj.scheme == "B2B" else gettext("Basislastschrift")
+
     def get_payer_name(self, obj) -> str:
         if obj.membership_id:
             p = obj.membership.person
-            return f"{p.last_name}, {p.first_name}"
+            return p.display_name if p.is_organization else f"{p.last_name}, {p.first_name}"
         return obj.club.display_name if obj.club_id else ""
 
     def get_iban_masked(self, obj) -> str:
@@ -459,6 +465,7 @@ class MandateInputSerializer(serializers.Serializer):
     iban = serializers.CharField(max_length=42)
     bic = serializers.CharField(max_length=14, required=False, allow_blank=True, default="")
     signed_on = serializers.DateField()
+    scheme = serializers.ChoiceField(choices=["CORE", "B2B"], default="CORE")
 
 
 class DebitItemSerializer(serializers.ModelSerializer):

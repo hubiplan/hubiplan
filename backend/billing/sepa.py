@@ -1,4 +1,7 @@
-"""SEPA-Basislastschrift: Mandate, Lastschriftläufe und die Datei pain.008 für die Bank."""
+"""SEPA-Lastschrift: Mandate, Lastschriftläufe und die Datei pain.008 für die Bank.
+
+Basislastschrift (CORE) für alle; Firmenlastschrift (B2B) nur für Zahler, die keine
+Verbraucher sind: Organisationsmitglieder und Vereine eines Dachverbands (J8b)."""
 
 from __future__ import annotations
 
@@ -121,8 +124,31 @@ SEPA_COUNTRIES = tuple(
 )
 
 
-def create_mandate(org, *, membership=None, club=None, signed_on, source, user, **data) -> Mandate:
+B2B = "B2B"
+CORE = "CORE"
+
+
+def b2b_allowed(membership=None, club=None) -> bool:
+    """Firmenlastschrift nur für Zahler, die keine Verbraucher sind."""
+    if club is not None:
+        return True
+    return membership is not None and membership.person.is_organization
+
+
+def create_mandate(
+    org, *, membership=None, club=None, signed_on, source, user, scheme=CORE, **data
+) -> Mandate:
     clean = validate_mandate_data(data.get("holder", ""), data.get("iban", ""), data.get("bic", ""))
+    if scheme not in (CORE, B2B):
+        raise ValidationError({"scheme": gettext("Unbekanntes Lastschriftverfahren.")})
+    if scheme == B2B and not b2b_allowed(membership, club):
+        raise ValidationError(
+            {
+                "scheme": gettext(
+                    "Firmenlastschrift gibt es nur für Organisationen, nicht für Personen."
+                )
+            }
+        )
     # Ein Zahler hat höchstens ein gültiges Mandat: ein neues ersetzt das alte
     payer = Q(membership=membership) if membership is not None else Q(club=club)
     Mandate.objects.filter(payer, organization=org, status=Mandate.Status.ACTIVE).update(
@@ -133,6 +159,7 @@ def create_mandate(org, *, membership=None, club=None, signed_on, source, user, 
         membership=membership,
         club=club,
         reference=next_reference(org, membership, club),
+        scheme=scheme,
         signed_on=signed_on,
         source=source,
         created_by=user,
@@ -148,7 +175,19 @@ def revoke(mandate: Mandate, on: datetime.date | None = None) -> None:
     mandate.save(update_fields=["status", "revoked_on"])
 
 
-def mandate_text(org, creditor_id: str, reference: str) -> str:
+def mandate_text(org, creditor_id: str, reference: str, scheme: str = CORE) -> str:
+    if scheme == B2B:
+        return (
+            f"Ich ermächtige {org.name}, Zahlungen von meinem Konto mittels Lastschrift "
+            f"einzuziehen. Zugleich weise ich mein Kreditinstitut an, die von {org.name} auf "
+            f"mein Konto gezogenen Lastschriften einzulösen. Hinweis: Dieses Lastschriftmandat "
+            f"dient nur dem Einzug von Lastschriften, die auf Konten von Unternehmen gezogen "
+            f"sind. Ich bin nicht berechtigt, nach der erfolgten Einlösung eine Erstattung des "
+            f"belasteten Betrages zu verlangen. Ich bin berechtigt, mein Kreditinstitut bis zum "
+            f"Fälligkeitstag anzuweisen, Lastschriften nicht einzulösen. "
+            f"Gläubiger-Identifikationsnummer: {creditor_id or '(noch nicht hinterlegt)'}"
+            f" · Mandatsreferenz: {reference}"
+        )
     return (
         f"Ich ermächtige {org.name}, Zahlungen von meinem Konto mittels Lastschrift "
         f"einzuziehen. Zugleich weise ich mein Kreditinstitut an, die von {org.name} auf "
@@ -402,7 +441,8 @@ def _amount(value: Decimal) -> str:
 
 
 def pain008(run: DebitRun) -> bytes:
-    """SEPA-XML (pain.008.001.08, Basislastschrift CORE) für den Upload ins Online-Banking."""
+    """SEPA-XML (pain.008.001.08) für den Upload ins Online-Banking; je Verfahren (CORE,
+    B2B) und Sequenz ein eigener Block, denn die Bank verarbeitet sie getrennt."""
     org = run.organization
     cfg = settings_for(org)
     items = list(run.items.select_related("invoice", "mandate").order_by("sequence", "pk"))
@@ -416,19 +456,26 @@ def pain008(run: DebitRun) -> bytes:
     _sub(head, "CtrlSum", _amount(sum((i.amount for i in items), ZERO)))
     _sub(_sub(head, "InitgPty"), "Nm", sepa_text(org.name, 70))
 
-    for seq in (DebitItem.Sequence.FIRST, DebitItem.Sequence.RECURRING):
-        group = [i for i in items if i.sequence == seq]
+    blocks = [
+        (scheme, seq)
+        for scheme in (CORE, B2B)
+        for seq in (DebitItem.Sequence.FIRST, DebitItem.Sequence.RECURRING)
+    ]
+    for scheme, seq in blocks:
+        group = [i for i in items if i.sequence == seq and i.mandate.scheme == scheme]
         if not group:
             continue
         info = _sub(root, "PmtInf")
-        _sub(info, "PmtInfId", sepa_text(f"{run.message_id}-{seq}", 35))
+        # Alte Läufe (nur CORE) behalten ihre bisherige Kennung
+        block_id = f"{run.message_id}-{seq}" if scheme == CORE else f"{run.message_id}-B2B-{seq}"
+        _sub(info, "PmtInfId", sepa_text(block_id, 35))
         _sub(info, "PmtMtd", "DD")
         _sub(info, "BtchBookg", "true")
         _sub(info, "NbOfTxs", str(len(group)))
         _sub(info, "CtrlSum", _amount(sum((i.amount for i in group), ZERO)))
         tp = _sub(info, "PmtTpInf")
         _sub(_sub(tp, "SvcLvl"), "Cd", "SEPA")
-        _sub(_sub(tp, "LclInstrm"), "Cd", "CORE")
+        _sub(_sub(tp, "LclInstrm"), "Cd", scheme)
         _sub(tp, "SeqTp", seq)
         _sub(info, "ReqdColltnDt", run.collection_date.isoformat())
         _sub(_sub(info, "Cdtr"), "Nm", sepa_text(org.name, 70))
