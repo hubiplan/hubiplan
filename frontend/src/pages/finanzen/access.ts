@@ -20,7 +20,7 @@ export interface FinanceAccess {
   received: boolean
   /** Name des Dachverbands mit Präposition, z. B. „Vom BSV“ */
   receivedLabel: string
-  /** Zuwendungsbestätigungen: nur eingetragene Vereine mit Kasse */
+  /** Zuwendungsbestätigungen: Modul „donations“ und Kasse */
   donations: boolean
   /** Zählprotokoll und Kassenbericht für Feste (zuschaltbar) */
   cashCounts: boolean
@@ -56,8 +56,8 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
     received: org.type === 'club' && !!org.parent_name && (finance || billing),
     receivedLabel:
       (org.department_terms ?? DEFAULT_TERMS).dv_Vom ?? t('Von der übergeordneten Einheit'),
-    // für jede Einheit mit Kasse; ausgestellt wird erst mit Schalter und gültigem Bescheid
-    donations: finance,
+    // Modul „Zuwendungsbestätigungen“; ausgestellt wird erst mit Schalter und gültigem Bescheid
+    donations: finance && org.modules.includes('donations'),
     cashCounts: finance && !!org.cash_counts_enabled,
     reserves: finance && !!org.reserves_enabled,
   }

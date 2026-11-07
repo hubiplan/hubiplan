@@ -2,7 +2,6 @@
 key: page.settings_accounts
 titel: Settings › Accounts
 bereich: einstellungen
-modul: roles
 rechte: [roles.view, logins.view]
 routen: [/einstellungen/konten]
 stichworte: [account, sign-in, invitation, sign-in link, two-factor, access, user]

@@ -22,7 +22,7 @@ def _private(settings, tmp_path):
 @pytest.fixture
 def club(orgs):
     club = orgs["a"]
-    club.enabled_modules = ["finance", "members"]
+    club.enabled_modules = ["finance", "members", "tax", "donations"]
     club.save()
     return club
 

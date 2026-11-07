@@ -383,6 +383,10 @@ def seed_finance(orgs: dict[str, Organization], today: datetime.date | None = No
     if not club.tax_areas_enabled and not Booking.objects.filter(organization=club).exists():
         club.tax_areas_enabled = True
         club.save(update_fields=["tax_areas_enabled"])
+    # Demo zeigt steuerliche Bereiche und Zuwendungsbestätigungen
+    if club.tax_areas_enabled and not {"tax", "donations"} <= set(club.enabled_modules or []):
+        club.enabled_modules = sorted({*(club.enabled_modules or []), "tax", "donations"})
+        club.save(update_fields=["enabled_modules"])
     rnd = random.Random(1855)  # noqa: S311 – nur Testdaten
     _seed_org(club, CLUB_ACCOUNTS, CLUB_CATEGORIES, _club_plan(rnd), today, "Kreissparkasse")
     _seed_org(

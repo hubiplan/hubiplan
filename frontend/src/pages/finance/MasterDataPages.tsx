@@ -138,26 +138,30 @@ export function AccountsPage() {
               'Zählprotokoll: Bargeld nach Scheinen und Münzen zählen und mit dem Kassenbuch vergleichen. Kassenbericht: Tageseinnahme einer offenen Kasse, etwa beim Getränkeverkauf am Fest, aus Anfangs- und Endbestand ermitteln und buchen.',
             )}
           </p>
-          <Checkbox
-            label={t('Rücklagen führen')}
-            checked={!!org.reserves_enabled}
-            onChange={(on) =>
-              void (async () => {
-                setSwitchError(null)
-                try {
-                  await financeApi.updateSettings(org.id, { reserves_enabled: on })
-                  await refresh()
-                } catch (err) {
-                  setSwitchError(errorMessage(err))
+          {org.modules.includes('tax') && (
+            <>
+              <Checkbox
+                label={t('Rücklagen führen')}
+                checked={!!org.reserves_enabled}
+                onChange={(on) =>
+                  void (async () => {
+                    setSwitchError(null)
+                    try {
+                      await financeApi.updateSettings(org.id, { reserves_enabled: on })
+                      await refresh()
+                    } catch (err) {
+                      setSwitchError(errorMessage(err))
+                    }
+                  })()
                 }
-              })()
-            }
-          />
-          <p className="muted small">
-            {t(
-              'Rücklagen nach § 62 AO binden einen Teil der Mittel für einen Zweck, etwa das nächste Schützenfest oder ein neues Zelt. Es wird kein Geld bewegt.',
-            )}
-          </p>
+              />
+              <p className="muted small">
+                {t(
+                  'Rücklagen nach § 62 AO binden einen Teil der Mittel für einen Zweck, etwa das nächste Schützenfest oder ein neues Zelt. Es wird kein Geld bewegt.',
+                )}
+              </p>
+            </>
+          )}
           {switchError && <Alert kind="error">{switchError}</Alert>}
           {settings.data && (
             <DatevSettings
@@ -437,7 +441,7 @@ export function CategoriesPage() {
         )}
         {areas.length > 0 && t(' Jede Kategorie gehört zu einem steuerlichen Bereich.')}
       </p>
-      {canEdit && (
+      {canEdit && org.modules.includes('tax') && (
         <>
           <Checkbox
             label={t(

@@ -102,8 +102,15 @@ def test_nicht_fuer_die_plattform(orgs):
     from finance import donations
     from organizations.models import Organization
 
-    assert donations.available(orgs["a"]) is True
+    club = orgs["a"]
+    club.enabled_modules = ["finance", "members", "donations"]
+    club.save()
+    assert donations.available(club) is True
     assert donations.available(Organization.platform()) is False
+    # Ohne Modul „Zuwendungsbestätigungen“ gibt es den Bereich nicht
+    club.enabled_modules = ["finance", "members"]
+    club.save()
+    assert donations.available(club) is False
 
 
 def test_ohne_bescheid_nichts_ausstellen(ev, c):

@@ -1024,6 +1024,10 @@ class Loader:
                     isinstance(row, dict) and row.get("slug") == "geschichte"
                     for row in tables.get("website.websitetext") or []
                 ),
+                has_tax=bool(org.tax_areas_enabled or org.reserves_enabled),
+                has_donations=bool(
+                    tables.get("finance.donationsettings") or tables.get("finance.donation")
+                ),
             )
         )
         if not self.by_platform:

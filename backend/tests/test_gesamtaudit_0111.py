@@ -90,7 +90,7 @@ def test_rueckgaengig_macht_barkasse_nicht_negativ(orgs, api, board_a, settings,
 
     settings.PRIVATE_ROOT = tmp_path / "private"
     club = orgs["a"]
-    club.enabled_modules = ["finance", "members"]
+    club.enabled_modules = ["finance", "members", "tax", "donations"]
     club.save()
     base = f"/api/orgs/{club.pk}/finance"
     c = api(board_a)

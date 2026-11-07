@@ -199,6 +199,20 @@ MODULES: tuple[Module, ...] = (
         default=True,
     ),
     Module(
+        "tax",
+        gettext_noop("Steuern & Gemeinnützigkeit"),
+        "admin",
+        gettext_noop("Steuerliche Bereiche in der Kasse, Auswertung nach Bereichen und Rücklagen"),
+        requires=("finance",),
+    ),
+    Module(
+        "donations",
+        gettext_noop("Zuwendungsbestätigungen"),
+        "admin",
+        gettext_noop("Zuwendungen erfassen und Bestätigungen nach amtlichem Muster ausstellen"),
+        requires=("finance",),
+    ),
+    Module(
         "material",
         gettext_noop("Material"),
         "admin",
@@ -233,8 +247,9 @@ DEFAULT_IDS: tuple[str, ...] = tuple(m.id for m in MODULES if m.default)
 
 # Stand des Verzeichnisses für Exportdateien: 1 = bis M1, 2 = mit Aufgaben, Dokumenten,
 # Rundschreiben, Ausweisen, Ausschreibungen, Belegung, Ehrungen & Jubiläen, Würden,
-# Mitgliederbereich und Social Media als eigene Module; 3 = mit Chronik
-MODULES_SCHEMA = 3
+# Mitgliederbereich und Social Media als eigene Module; 3 = mit Chronik; 4 = mit Steuern &
+# Gemeinnützigkeit und Zuwendungsbestätigungen
+MODULES_SCHEMA = 4
 
 
 def upgrade_modules(
@@ -246,6 +261,8 @@ def upgrade_modules(
     has_honors: bool = False,
     has_social: bool = False,
     has_chronicle: bool = False,
+    has_tax: bool = False,
+    has_donations: bool = False,
 ):
     """Module aus einem älteren Stand so ergänzen, dass nichts verschwindet."""
     modules = set(ids or [])
@@ -265,6 +282,10 @@ def upgrade_modules(
         modules.add("social")
     if schema < 3 and has_chronicle and org_type in ("federation", "club"):
         modules.add("chronicle")
+    if schema < 4 and has_tax and "finance" in modules:
+        modules.add("tax")
+    if schema < 4 and has_donations and "finance" in modules:
+        modules.add("donations")
     return modules
 
 

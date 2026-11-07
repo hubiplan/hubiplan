@@ -19,6 +19,11 @@ PY_SINGLE = re.compile(r"""["']([a-z_]+)["']\s+(?:not\s+)?in\s+\(?[\w.]*enabled_
 PY_SET = re.compile(r"""\{([^{}]*)\}\s*<=\s*set\(\s*[\w.]*enabled_modules""")
 # MODULE = "x" in Modulen, die sich darüber freischalten
 PY_CONST = re.compile(r"""^MODULE\s*=\s*["']([a-z_]+)["']""", re.M)
+# module_on(org, "x"), gate("x", …), needs_module("x", …)
+PY_MODULE_ON = re.compile(r"""module_on\(\s*[\w.()]+,\s*["']([a-z_]+)["']""")
+PY_GATE = re.compile(r"""\b(?:gate|gate_names|needs_module)\(\s*["']([a-z_]+)["']""")
+# Hilfe: „modul: x“ im Kopf (außer „platform“, das ist kein Modul)
+HELP_MODULE = re.compile(r"^modul:\s*([a-z_]+)\s*$", re.M)
 # org.modules.includes('x')
 TS_INCLUDES = re.compile(r"""modules\.includes\(\s*['"]([a-z_]+)['"]\s*\)""")
 
@@ -41,7 +46,8 @@ def _used_modules() -> dict[str, set[str]]:
 
     for path in _files(BACKEND, (".py",)):
         text = path.read_text(encoding="utf-8")
-        for name in PY_SINGLE.findall(text) + PY_CONST.findall(text):
+        names = PY_SINGLE.findall(text) + PY_CONST.findall(text)
+        for name in names + PY_MODULE_ON.findall(text) + PY_GATE.findall(text):
             add(name, path)
         for group in PY_SET.findall(text):
             for name in re.findall(r"""["']([a-z_]+)["']""", group):
@@ -50,6 +56,10 @@ def _used_modules() -> dict[str, set[str]]:
         for path in _files(FRONTEND, (".ts", ".tsx")):
             for name in TS_INCLUDES.findall(path.read_text(encoding="utf-8")):
                 add(name, path)
+        for path in (FRONTEND / "help").rglob("*.md"):
+            for name in HELP_MODULE.findall(path.read_text(encoding="utf-8")):
+                if name != "platform":
+                    add(name, path)
     return found
 
 

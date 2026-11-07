@@ -30,7 +30,7 @@ function renderApp(path: string) {
 }
 
 const kassierer = testOrg({
-  modules: ['members', 'finance'],
+  modules: ['members', 'finance', 'tax'],
   permissions: ['finance.view', 'finance.edit'],
 })
 const settings = {

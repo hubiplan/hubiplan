@@ -343,7 +343,7 @@ def _overview(org, year: int) -> dict:
     categories = sorted(per_category.values(), key=lambda c: c["name"].lower())
 
     areas = []
-    if org.tax_areas_enabled:
+    if org.tax_areas_on:
         totals: dict[str, dict] = defaultdict(lambda: {"income": ZERO, "expense": ZERO})
         for c in categories:
             totals[c["tax_area"]]["income"] += c["income"]
@@ -367,7 +367,7 @@ def _overview(org, year: int) -> dict:
         "start_date": start,
         "end_date": last,
         "years": [{"year": y, "label": org.fiscal_label(y)} for y in years(org)],
-        "tax_areas_enabled": org.tax_areas_enabled,
+        "tax_areas_enabled": org.tax_areas_on,
         "accounts": accounts,
         "categories": categories,
         "tax_areas": areas,

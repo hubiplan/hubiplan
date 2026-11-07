@@ -671,6 +671,20 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         return DatePrecision.DAY
 
     @property
+    def tax_areas_on(self) -> bool:
+        """Steuerliche Bereiche in der Kasse: Schalter und Modul „Steuern & Gemeinnützigkeit“."""
+        from access.modules import module_on
+
+        return bool(self.tax_areas_enabled) and module_on(self, "tax")
+
+    @property
+    def reserves_on(self) -> bool:
+        """Rücklagen nach § 62 AO: Schalter und Modul „Steuern & Gemeinnützigkeit“."""
+        from access.modules import module_on
+
+        return bool(self.reserves_enabled) and module_on(self, "tax")
+
+    @property
     def keeps_members(self) -> bool:
         """Führt diese Einheit selbst Mitgliedschaften?"""
         if self.type == self.Type.CLUB:

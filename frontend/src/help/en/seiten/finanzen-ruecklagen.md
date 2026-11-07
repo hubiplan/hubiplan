@@ -2,7 +2,7 @@
 key: page.finance_reserves
 titel: Finance › Reserves
 bereich: finanzen
-modul: finance
+modul: tax
 rechte: [finance.view]
 routen: [/finanzen/ruecklagen]
 stichworte: [reserve, non-profit status, use of funds]
