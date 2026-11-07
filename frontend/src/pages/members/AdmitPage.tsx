@@ -50,6 +50,7 @@ export function AdmitPage() {
     register: '',
     vat_id: '',
     website: '',
+    size: '',
     first_name: '',
     birth_date: '',
     gender: '' as Gender,
@@ -460,6 +461,15 @@ export function AdmitPage() {
                   value={v.website}
                   error={e.website}
                   onChange={(ev) => form.set('website', ev.target.value)}
+                />
+                <Field
+                  label={t('Größe')}
+                  hint={t('Für die Staffel nach Größe, zum Beispiel Mitarbeiter oder Einwohner')}
+                  type="number"
+                  min={0}
+                  value={v.size}
+                  error={e.size}
+                  onChange={(ev) => form.set('size', ev.target.value)}
                 />
               </div>
             </div>

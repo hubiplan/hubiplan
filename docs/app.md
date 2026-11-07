@@ -204,8 +204,9 @@ entfernen nein), sonst brechen ältere Apps.
   `rotate/`, `consent/`), `card/`, Unterobjekte `members/<id>/periods|departments|
   department-roles|honorary-titles/`. Organisationsmitglieder: Liste mit `typ=person|organisation`
   und je Zeile `kind`, `name_suffix`; die Akte nennt `kind`, `organization` (Zusatz, Rechtsform,
-  Register, USt-IdNr., Webseite), `contact_persons`, `contact_for` und `billing_address`. Die App
-  zeigt sie nur an; Organisationen aufnehmen und Ansprechpartner pflegen geht im Browser.
+  Register, USt-IdNr., Webseite, Größe), `contact_persons`, `contact_for` und `billing_address`.
+  Die App nimmt Organisationen mit `kind=organization` auf (Dublettenprüfung über
+  `members/duplicates/?typ=organisation&name=…`); Ansprechpartner pflegen geht im Browser.
 - Auswahllisten nur lesen: `member-types/`, `fields/`, `departments/`, `honorary-titles/`.
 - Freigaben: `change-requests/`, `change-requests/<id>/decide/`; offene Aufgaben enthalten
   dafür `ref` und `membership`.

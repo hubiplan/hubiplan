@@ -236,6 +236,7 @@ function MasterData({
     register: o?.register ?? '',
     vat_id: o?.vat_id ?? '',
     website: o?.website ?? '',
+    size: o?.size != null ? String(o.size) : '',
     club_number: member.club_number,
     email: c?.email ?? '',
     phone: c?.phone ?? '',
@@ -310,12 +311,23 @@ function MasterData({
                 onChange={(ev) => form.set('vat_id', ev.target.value)}
               />
             </div>
-            <Field
-              label={t('Webseite')}
-              value={v.website}
-              error={e.website}
-              onChange={(ev) => form.set('website', ev.target.value)}
-            />
+            <div className="grid-2">
+              <Field
+                label={t('Webseite')}
+                value={v.website}
+                error={e.website}
+                onChange={(ev) => form.set('website', ev.target.value)}
+              />
+              <Field
+                label={t('Größe')}
+                hint={t('Für die Staffel nach Größe, zum Beispiel Mitarbeiter oder Einwohner')}
+                type="number"
+                min={0}
+                value={v.size}
+                error={e.size}
+                onChange={(ev) => form.set('size', ev.target.value)}
+              />
+            </div>
           </>
         ) : (
           <div className="grid-4">

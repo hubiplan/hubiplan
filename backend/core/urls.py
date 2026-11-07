@@ -108,6 +108,9 @@ org_router.register(
     basename="finance-donation-statement",
 )
 org_router.register("billing/age-rates", billing_views.AgeRateViewSet, basename="billing-age-rate")
+org_router.register(
+    "billing/size-rates", billing_views.SizeRateViewSet, basename="billing-size-rate"
+)
 org_router.register("billing/runs", billing_views.FeeRunViewSet, basename="billing-run")
 org_router.register("billing/invoices", billing_views.InvoiceViewSet, basename="billing-invoice")
 org_router.register("music/musicians", music_views.MusicianViewSet, basename="music-musician")

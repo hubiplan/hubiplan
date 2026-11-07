@@ -6991,5 +6991,18 @@
   "Verfahren": "Scheme",
   "nur mit Mandat auf dem Firmenformular; die Bank des Zahlers muss es kennen": "only with a mandate on the business form; the payer's bank must know it",
   "Basislastschrift": "Core direct debit",
-  "Firmenlastschrift (B2B)": "Business direct debit (B2B)"
+  "Firmenlastschrift (B2B)": "Business direct debit (B2B)",
+  "Größenstufe angelegt.": "Size band created.",
+  "Staffel nach Größe": "Fees by size",
+  "Für Organisationsmitglieder: Beitrag nach Größe, zum Beispiel Zahl der Mitarbeiter oder Einwohner. Die Größe steht in der Mitgliederakte. Organisationen ohne Größe zahlen den Beitrag ihrer Mitgliedsart.": "For organisation members: fee by size, for example number of employees or inhabitants. The size is recorded in the member file. Organisations without a size pay the fee of their membership type.",
+  "Keine Größenstufen.": "No size bands.",
+  "Größe": "Size",
+  "{min} bis {max}": "{min} to {max}",
+  "bis {max}": "up to {max}",
+  "ab {min}": "from {min}",
+  "Neue Größenstufe": "New size band",
+  "z. B. bis 50 Mitarbeiter": "e.g. up to 50 employees",
+  "ab Größe": "from size",
+  "bis Größe (einschließlich)": "up to size (inclusive)",
+  "Für die Staffel nach Größe, zum Beispiel Mitarbeiter oder Einwohner": "For fees by size, for example employees or inhabitants"
 }

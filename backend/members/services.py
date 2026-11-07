@@ -374,6 +374,7 @@ def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Memb
             birth_date=None if organization else data["birth_date"],
             gender="" if organization else data.get("gender", ""),
             **{f: data.get(f, "") for f in ORGANIZATION_FIELDS if organization},
+            size=data.get("size") if organization else None,
         )
 
     check_active_rule(person, club, member_type, entry_date)

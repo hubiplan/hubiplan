@@ -8,7 +8,7 @@ routen: [/mitglieder/:id]
 stichworte: [Akte, Stammdaten, Zeiträume, Austritt, Ehrungen]
 ---
 
-Bei einer Organisation als Mitglied (Firma, Verein, Behörde …) stehen in den Stammdaten statt Vorname, Geburtsdatum und Geschlecht der Namenszusatz, die Rechtsform, das Register, die USt-IdNr. und die Webseite. In der Mitgliederliste filterst du mit **nur Organisationen** bzw. **nur Personen**.
+Bei einer Organisation als Mitglied (Firma, Verein, Behörde …) stehen in den Stammdaten statt Vorname, Geburtsdatum und Geschlecht der Namenszusatz, die Rechtsform, das Register, die USt-IdNr., die Webseite und die Größe (z. B. Mitarbeiter oder Einwohner) für die Staffel nach Größe. In der Mitgliederliste filterst du mit **nur Organisationen** bzw. **nur Personen**.
 
 Im Abschnitt **Ansprechpartner** trägst du ein, wer für die Organisation spricht. Wähle **Mitglied auswählen**, wenn die Person selbst Mitglied ist; Name und Kontakt kommen dann aus ihrer Akte. Sonst gibst du Name, Funktion, E-Mail-Adresse und Telefon ein. Genau einer ist **Hauptansprechpartner**. Die Kennzeichen **erhält Rundschreiben**, **erhält Rechnungen**, **vertritt in Versammlungen** legen fest, wer wofür zuständig ist. Einen eigenen Zugang zum Mitgliederbereich richtest du je Ansprechpartner im Reiter **Rollen und Konto** ein; wer ihn hat, ist mit **Mitgliederzugang** gekennzeichnet. Ist der Ansprechpartner selbst Mitglied, wählt er nach der Anmeldung, ob er für sich oder für die Organisation unterwegs ist. Statt eines Fotos hat eine Organisation ein **Logo**; es braucht keine Einwilligung und erscheint auch auf dem Ausweis. Entfernst du einen Ansprechpartner, werden seine Kontaktdaten sofort gelöscht.
 
