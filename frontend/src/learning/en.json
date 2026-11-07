@@ -473,5 +473,11 @@
   "Wettbewerb → Auswertung → Wettbewerb und Abschluss": "Competition → Results → Competition and completion",
   "Wettbewerb → Einrichten → Pfänder & Ablauf": "Competition → Setup → Prizes and procedure",
   "Wettbewerb → Einrichten → Ausgabe & Freigabe": "Competition → Setup → Output and sharing",
-  "Wettbewerb → Einrichten → Weitere Aktionen": "Competition → Setup → Further actions"
+  "Wettbewerb → Einrichten → Weitere Aktionen": "Competition → Setup → Further actions",
+  "Untereinheit steuerlich selbständig?": "Sub-unit separate for tax purposes?",
+  "Abteilungen, Züge oder Gruppen mit eigener Kasse sind steuerlich fast immer Teil des Vereins. Ihre Einnahmen zählen dort zusammen, auch für die Freigrenze des wirtschaftlichen Geschäftsbetriebs; ein Verein darf sich dafür nicht in Abteilungen aufteilen (§ 64 Abs. 4 AO). Schalte den Schalter nur ein, wenn die Einheit ein eigener Verein mit eigener Steuernummer und eigenem Bescheid ist.": "Departments, platoons or groups with their own cash book are almost always part of the club for tax purposes. Their income is added up there, including for the tax-free limit of the commercial operation; a club may not split itself into departments to stay below it (§ 64 (4) AO). Only switch this on if the unit is a club of its own with its own tax number and its own exemption notice.",
+  "Einstellungen → Untereinheiten → Eigener Arbeitsbereich": "Settings → Sub-units → Own workspace",
+  "Kleinunternehmer": "Small business (VAT exemption)",
+  "Wer im Vorjahr höchstens 25.000 € und im laufenden Jahr höchstens 100.000 € Umsatz hat, muss keine Umsatzsteuer berechnen und abführen, darf dann aber auch keine Vorsteuer abziehen (§ 19 UStG, Grenzen seit 2025). Mitgliedsbeiträge und Spenden zählen nicht mit, Einnahmen aus Zweckbetrieb und wirtschaftlichem Geschäftsbetrieb schon.": "Anyone with at most €25,000 turnover in the previous year and at most €100,000 in the current year does not charge or pay VAT, but cannot deduct input tax either (§ 19 UStG, limits since 2025). Membership fees and donations do not count; income from purpose-related and commercial operations does.",
+  "Beispiel: 18.000 € aus Festbetrieb und Werbung im Vorjahr: Der Verein bleibt Kleinunternehmer.": "Example: €18,000 from festival sales and advertising in the previous year: the club remains a small business."
 }

@@ -593,6 +593,7 @@ function DepartmentCard({
     own_website: !!dep.own_website,
     unit_hidden_modules: dep.unit_hidden_modules ?? [],
     fee_exempt: !!dep.fee_exempt,
+    tax_independent: !!dep.tax_independent,
     parent_unit: dep.parent_unit ? String(dep.parent_unit) : '',
   })
   const blocked = subtreeIds(units, dep.id)
@@ -817,6 +818,23 @@ function DepartmentCard({
                   { e_beim: tm.e_beim },
                 )}
               </p>
+              {form.values.own_workspace && (
+                <>
+                  <Checkbox
+                    label={t('{name} ist steuerlich selbständig (eigener Bescheid)', {
+                      name: dep.name,
+                    })}
+                    checked={form.values.tax_independent}
+                    onChange={(on) => form.set('tax_independent', on)}
+                  />
+                  <p className="muted small">
+                    {t(
+                      'Meist aus: Dann zählen Einnahmen und Umsätze der Kasse in der steuerlichen Auswertung {e_beim} mit (Freigrenze, Kleinunternehmergrenze). Nur einschalten, wenn das Finanzamt die Einheit als eigenen Verein führt.',
+                      { e_beim: tm.e_beim },
+                    )}
+                  </p>
+                </>
+              )}
             </>
           )}
           {form.values.own_workspace && (

@@ -295,6 +295,8 @@ export interface Department {
   unit_hidden_modules?: string[]
   /** Mitglieder (auch der Einheiten darunter) zahlen keinen Vereinsbeitrag */
   fee_exempt?: boolean
+  /** steuerlich selbständig: zählt nicht in der steuerlichen Auswertung der Einheit darüber */
+  tax_independent?: boolean
   /** liegt auf einer anderen Instanz (Verbund, nur Anzeige) */
   is_remote?: boolean
 }

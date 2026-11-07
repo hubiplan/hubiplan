@@ -800,6 +800,33 @@ class OverviewView(FinanceMixin, APIView):
         return Response(services.overview(self.org, year))
 
 
+class TaxReportView(FinanceMixin, APIView):
+    """Steuerliche Auswertung (Freigrenze, Bereiche, Kleinunternehmer); ?als=pdf|xlsx."""
+
+    def get(self, request, org_id: int):
+        from . import tax, tax_report
+
+        if not module_on(self.org, "tax"):
+            return Response({"detail": gettext("Nicht gefunden.")}, status=404)
+        year = request.query_params.get("jahr", "")
+        year = int(year) if year.isdigit() else self.org.fiscal_year_of(timezone.localdate())
+        data = tax.report(self.org, year)
+        fmt = request.query_params.get("als")
+        if fmt in ("pdf", "xlsx"):
+            content = (
+                tax_report.render_pdf(self.org, data)
+                if fmt == "pdf"
+                else tax_report.render_xlsx(self.org, data)
+            )
+            return _file_response(
+                content,
+                f"Steuerliche-Auswertung-{data['label']}",
+                fmt,
+                request.query_params.get("download") == "1",
+            )
+        return Response(services._money(data))
+
+
 class FinanceSettingsView(FinanceMixin, APIView):
     """Einstellungen der Kasse. PATCH {tax_areas_enabled}: Verein bzw. Dachverband
     entscheidet selbst, ob Kategorien steuerlichen Bereichen zugeordnet werden."""
