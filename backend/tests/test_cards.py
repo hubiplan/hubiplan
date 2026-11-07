@@ -31,6 +31,7 @@ def club(orgs):
     club = orgs["a"]
     club.member_portal_enabled = True
     club.department_access_enabled = True
+    club.enabled_modules = sorted({*club.enabled_modules, "cards"})
     club.save()
     return club
 
@@ -231,6 +232,9 @@ class TestPdf:
 
     def test_dachverband(self, orgs, club, erika, api):
         fed = orgs["federation"]
+        for org in (fed, orgs["b"]):
+            org.enabled_modules = sorted({*org.enabled_modules, "cards"})
+            org.save()
         make_member(orgs["b"], "Berta", "Bund")
         user = make_user("bund@example.org")
         give_role(user, fed)

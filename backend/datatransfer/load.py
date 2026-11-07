@@ -37,6 +37,7 @@ from access.catalog import (
     normalize,
 )
 from access.models import Role, RoleAssignment
+from access.modules import upgrade_modules
 from accounts.models import User
 from core.filecheck import clean_logo
 from core.tenancy import rls_bypass
@@ -1010,10 +1011,25 @@ class Loader:
             org.name = self.options["name"].strip()
         org.is_active = True if top else bool(data.get("is_active", True))
         modules = [m for m in data.get("enabled_modules") or [] if m in SWITCHABLE_MODULES]
+        tables = {k.lower(): v for k, v in (data.get("tables") or {}).items() if v}
+        modules = sorted(
+            upgrade_modules(
+                modules,
+                self.doc.get("modules_schema", 1),
+                org_type=org.type,
+                has_cards="cards.membercard" in tables,
+                has_honors="honors.dignity" in tables,
+                has_social="website.socialfeed" in tables,
+            )
+        )
         if not self.by_platform:
             # Diese Schalter stellt nur die Plattform ein
             modules = list(DEFAULT_MODULES)
             org.tax_areas_enabled = False
+        # Der Mitgliederbereich folgt dem mitgelieferten Schalter des Vereins
+        modules = sorted(set(modules) - {"portal"})
+        if org.type == Organization.Type.CLUB and org.member_portal_enabled:
+            modules = sorted({*modules, "portal"})
         org.enabled_modules = modules
         if org.type != Organization.Type.FEDERATION or not self.by_platform:
             org.federation_member_access = Organization.MemberAccess.NONE

@@ -5,7 +5,7 @@ bereich: einstellungen
 modul: platform
 rechte: [platform.manage]
 routen: [/plattform]
-stichworte: [module, feature, enable, website, competitions]
+stichworte: [module, feature, enable, website, competitions, titles, honours, member area]
 ---
 
 The platform administration enables modules. Anyone in the club who misses a feature contacts them.
@@ -14,6 +14,8 @@ The platform administration enables modules. Anyone in the club who misses a fea
 2. In the **Modules** section, tick what the unit should use, such as website, competitions or entries. The modules are listed by group, each with a short note on what it contains. If a module needs another one (music, meetings and volunteer duties need events), that one is ticked as well; if you untick it, the dependent modules go too.
 3. Save. The change applies immediately to everyone in the unit.
 
-A switched-off module disappears from the menu; its data is kept.
+A switched-off module disappears from the menu; its data is kept. Public parts go offline, such as card verification, the public document folder or the social media posts on the website.
+
+Smaller features are modules of their own too, so a small club only sees what it needs: tasks, documents, circulars, membership cards, member area, honours & anniversaries, titles, calls, bookings and social media. The member area matches the switch under Members › Setup › Member area & photos; both stay in step.
 
 ![Starting point: Enable a module for a unit](bild:modul-einschalten)

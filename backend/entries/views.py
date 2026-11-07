@@ -81,7 +81,8 @@ class _Mixin(OrgScopedMixin):
             self._init_unit_side(request)
             return
         super().initial(request, *args, **kwargs)
-        if MODULE not in (self.org.enabled_modules or []):
+        # Meldungen abgeben (entries) oder Ausschreibungen verwalten (calls)
+        if not {MODULE, "calls"} & set(self.org.enabled_modules or []):
             raise NotFound(gettext("Das Modul Meldungen ist nicht freigeschaltet."))
         if request.method in ("GET", "HEAD", "OPTIONS"):
             # Nur lesen (Bereiche Meldungen/Ausschreibungen, Stufe lesen): beim Lesen gelten
@@ -105,7 +106,8 @@ class _Mixin(OrgScopedMixin):
         ctx = department_contexts(request.user).get(int(self._dept_id))
         if ctx is None:
             raise NotFound()
-        if MODULE not in (ctx.club.enabled_modules or []):
+        # Untereinheiten melden auf Ausschreibungen ihres Vereins
+        if not {MODULE, "calls"} & set(ctx.club.enabled_modules or []):
             raise NotFound(gettext("Das Modul Meldungen ist nicht freigeschaltet."))
         reading = request.method in ("GET", "HEAD", "OPTIONS")
         if DEPT_ENTRIES_SUBMIT not in ctx.permissions and not (

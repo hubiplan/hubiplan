@@ -16,6 +16,7 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext
 
+from access.modules import module_on
 from changes.models import RETENTION_DAYS
 from core.tenancy import rls_bypass
 from organizations.models import Department, Organization
@@ -258,6 +259,9 @@ def public_folder(key: str) -> tuple[Folder, list[Document]]:
         )
         # Deaktivierte Untereinheit: Link gesperrt wie bei der Organisation (Audit B-V05)
         if folder is None or (folder.department is not None and not folder.department.is_active):
+            return None, []
+        # Modul Dokumente abgeschaltet: Freigabelinks gehen offline
+        if not module_on(folder.organization, "docs"):
             return None, []
         docs = [d for d in documents_in([folder.pk]) if d.versions.all()]
     return folder, docs

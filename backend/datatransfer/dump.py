@@ -34,6 +34,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from access.models import Role, RoleAssignment
+from access.modules import MODULES_SCHEMA
 from core.tenancy import rls_bypass
 from customfields.models import FieldDefinition, FieldValue
 from members.models import (
@@ -612,6 +613,8 @@ def _header(kind: str, source, with_files: bool) -> dict:
         "format": FORMAT,
         "version": VERSION,
         "permissions_schema": 2,
+        # Stand des Modulverzeichnisses (access/modules.py); fehlt bei älteren Dateien
+        "modules_schema": MODULES_SCHEMA,
         "kind": kind,
         "exported_at": timezone.now().isoformat(),
         "source": {"type": getattr(source, "type", "department"), "name": source.name},

@@ -32,6 +32,7 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
 
+from access.modules import module_on
 from accounts.mfa import decrypt, encrypt
 
 from .social_models import SocialFeed, SocialPost, SocialPostImage
@@ -872,7 +873,11 @@ def _sync_feed(feed: SocialFeed) -> int:
 
 def sync_all() -> int:
     total = 0
-    for feed in SocialFeed.objects.filter(is_active=True).exclude(access_token=""):
+    feeds = SocialFeed.objects.filter(is_active=True).exclude(access_token="")
+    for feed in feeds.select_related("website__organization__organization"):
+        # Modul aus: nichts mehr abrufen, Zugang und Beiträge bleiben erhalten
+        if not module_on(feed.website.organization, "social"):
+            continue
         try:
             total += sync_feed(feed)
         except Exception:  # noqa: BLE001 – ein Kanal darf die anderen nicht aufhalten

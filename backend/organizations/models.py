@@ -510,6 +510,7 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         return self.name
 
     def save(self, *args, **kwargs):
+        self._sync_portal(kwargs)
         loaded = getattr(self, "_loaded_active", None)
         active_changed = not self._state.adding and loaded is not None and loaded != self.is_active
         if active_changed and self.is_active:
@@ -519,10 +520,38 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
                 kwargs["update_fields"] = {*fields, "inactive_by_parent"}
         self._save_with_labels(*args, **kwargs)
         self._loaded_active = self.is_active
+        self._loaded_portal = (self.member_portal_enabled, "portal" in (self.enabled_modules or []))
         if active_changed and self.type in (self.Type.FEDERATION, self.Type.CLUB, self.Type.UNIT):
             from .activity import cascade_active
 
             cascade_active(self)
+
+    def _sync_portal(self, kwargs) -> None:
+        """Modul „Mitgliederbereich“ und Schalter ``member_portal_enabled`` gleich halten.
+
+        Der Schalter bleibt eine Fassung lang für ältere Stände erhalten. Wer zuletzt
+        geändert wurde, gilt; bei neuen Einheiten reicht eines von beiden.
+        """
+        if self.type != self.Type.CLUB:
+            return
+        modules = set(self.enabled_modules or [])
+        on = "portal" in modules
+        loaded = getattr(self, "_loaded_portal", None)
+        if loaded is None:
+            wanted = on or self.member_portal_enabled
+        elif self.member_portal_enabled != loaded[0]:
+            wanted = self.member_portal_enabled
+        elif on != loaded[1]:
+            wanted = on
+        else:
+            wanted = self.member_portal_enabled
+        if wanted == on and wanted == self.member_portal_enabled:
+            return
+        self.member_portal_enabled = wanted
+        self.enabled_modules = sorted(modules | {"portal"} if wanted else modules - {"portal"})
+        fields = kwargs.get("update_fields")
+        if fields is not None:
+            kwargs["update_fields"] = {*fields, "member_portal_enabled", "enabled_modules"}
 
     def _save_with_labels(self, *args, **kwargs):
         if self._state.adding and self.type in DEFAULT_CHILD_LABELS:
@@ -554,6 +583,11 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     def from_db(cls, db, field_names, values):
         instance = super().from_db(db, field_names, values)
         instance._loaded_active = instance.__dict__.get("is_active")
+        if "member_portal_enabled" in instance.__dict__ and "enabled_modules" in instance.__dict__:
+            instance._loaded_portal = (
+                instance.member_portal_enabled,
+                "portal" in (instance.enabled_modules or []),
+            )
         return instance
 
     def clean(self) -> None:

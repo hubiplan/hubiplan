@@ -8591,3 +8591,48 @@ msgstr "Rooms and facilities"
 
 msgid "Vereinsheim, Schießstand, Plätze und ihre Bereiche"
 msgstr "Clubhouse, shooting range, grounds and their areas"
+
+msgid "Ausweise mit QR-Code, Prüfseite und Wallet"
+msgstr "Cards with QR code, verification page and wallet"
+
+msgid "Eigene und geteilte Aufgaben mit Frist und Erinnerung"
+msgstr "Personal and shared tasks with due date and reminder"
+
+msgid "Ausschreibungen an Untereinheiten, Meldungen bestätigen"
+msgstr "Calls for entries to sub-units, confirm entries"
+
+msgid "E-Mails, Serienbriefe und Briefe an Mitglieder"
+msgstr "Emails, mail merges and letters to members"
+
+msgid "Dokumentenablage mit Ordnern, Freigaben und Papierkorb"
+msgstr "Document storage with folders, sharing and recycle bin"
+
+msgid "Buchungskalender und Anfragen für Material, Räume und Anlagen"
+msgstr "Booking calendar and requests for equipment, rooms and facilities"
+
+msgid "Nicht gefunden."
+msgstr "Not found."
+
+msgid "Mitgliederbereich"
+msgstr "Member area"
+
+msgid "Mitglieder melden sich an und sehen ihre Daten, Termine und Rechnungen"
+msgstr "Members sign in and see their data, events and invoices"
+
+msgid "Ehrungen & Jubiläen"
+msgstr "Honours & anniversaries"
+
+msgid "Ehrungen am Mitglied, Jubiläen und Mitgliedsdauer"
+msgstr "Honours for members, anniversaries and length of membership"
+
+msgid "Würden"
+msgstr "Titles"
+
+msgid "Würden wie König oder Prinz, Regentschaften und Königsliste"
+msgstr "Titles such as king or prince, reigns and list of kings"
+
+msgid "Social Media"
+msgstr "Social media"
+
+msgid "Beiträge aus Instagram und Facebook übernehmen und auf der Webseite zeigen"
+msgstr "Import posts from Instagram and Facebook and show them on the website"

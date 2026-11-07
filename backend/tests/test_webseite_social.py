@@ -124,7 +124,7 @@ def meta(monkeypatch):
 @pytest.fixture
 def setup(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "website"]
+    org.enabled_modules = ["members", "website", "social"]
     org.save()
     site = Website.objects.create(organization=org, public_key="schluessel-a", state="public")
     WebsiteDomain.objects.create(organization=org, website=site, hostname="www.verein-a.example")

@@ -34,7 +34,8 @@ def make_org(name: str, type_: str = "club", parent: Organization | None = None,
         "street": "Hauptstraße 1",
         "postal_code": "12345",
         "city": "Musterstadt",
-        "enabled_modules": list(DEFAULT_MODULES),
+        # Wie ein bestehender Verein: Würden an, Mitgliederbereich erst mit dem Schalter
+        "enabled_modules": [m for m in DEFAULT_MODULES if m != "portal"] + ["honors"],
     }
     defaults.update(extra)
     return Organization.objects.create(

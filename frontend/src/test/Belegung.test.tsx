@@ -73,7 +73,7 @@ function show(
     }),
     'GET /api/me/organizations/': () => ({
       status: 200,
-      body: [testOrg({ modules: ['infrastructure'], permissions })],
+      body: [testOrg({ modules: ['infrastructure', 'bookings'], permissions })],
     }),
     'GET /api/orgs/7/bookings/items/': () => ({
       status: 200,

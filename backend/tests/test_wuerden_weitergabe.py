@@ -38,7 +38,7 @@ def buergerkoenig(orgs):
 @pytest.fixture
 def site(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "website"]
+    org.enabled_modules = ["members", "website", "honors"]
     org.save()
     return Website.objects.create(organization=org, public_key="schluessel-x", state="public")
 
@@ -163,7 +163,7 @@ class TestWebseite:
 
     def test_zugseite_zeigt_weitergegebene_vereinswuerde(self, orgs):
         org = orgs["a"]
-        org.enabled_modules = ["members", "website"]
+        org.enabled_modules = ["members", "website", "honors"]
         org.save()
         zug = Department.objects.create(organization=org, parent=org, name="Jägerzug")
         zug.enabled_modules = ["website"]

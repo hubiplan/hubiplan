@@ -30,9 +30,13 @@ const ALL: NavItem[] = [
 /** Wer nur Inhalte pflegt, sieht nur „Texte“, „Bilder“, „Galerie“, „Dokumente“ und „Social Media“. */
 export function websiteSections(org: OrgSummary | null): NavItem[] {
   if (!org) return []
-  if (org.permissions.includes(PERM.websiteManage)) return ALL
+  // Social Media ist ein eigenes Modul
+  const all = org.modules.includes('social')
+    ? ALL
+    : ALL.filter((s) => s.to !== '/webseite/beitraege')
+  if (org.permissions.includes(PERM.websiteManage)) return all
   if (org.permissions.includes(PERM.websiteContent)) {
-    return ALL.filter((s) =>
+    return all.filter((s) =>
       [
         '/webseite/inhalte',
         '/webseite/bilder',

@@ -24,6 +24,8 @@ def items(site):
     from materials.models import MaterialItem
 
     modules = set(site.area.enabled_modules or [])
+    if "bookings" not in modules:
+        return MaterialItem.objects.none()
     kinds = [kind for kind, module in AREAS.items() if module in modules]
     qs = MaterialItem.objects.filter(
         organization=site.area,

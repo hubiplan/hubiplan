@@ -26,6 +26,7 @@ export interface DeptSummary {
   infrastructure_enabled?: boolean
   meetings_enabled?: boolean
   helpers_enabled?: boolean
+  bookings_enabled?: boolean
   imprint_key?: string
 }
 
@@ -47,6 +48,11 @@ export interface PortalEntry {
   bookings_enabled?: boolean
   helpers_enabled?: boolean
   meetings_enabled?: boolean
+  /** Module Aufgaben, Dokumente, Rundschreiben, Ausweise (fehlt bei älteren Servern: an) */
+  todos_enabled?: boolean
+  docs_enabled?: boolean
+  circulars_enabled?: boolean
+  cards_enabled?: boolean
   terms?: DeptTerms
   imprint_key?: string
 }

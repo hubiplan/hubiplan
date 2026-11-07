@@ -18,6 +18,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from access.models import Role, RoleAssignment
+from access.modules import module_on
 from members.models import (
     DepartmentRoleHolder,
     ExitReason,
@@ -931,6 +932,8 @@ class SiteView:
     def social_feeds(self) -> list:
         from .social_models import SocialFeed
 
+        if not module_on(self.site.organization, "social"):
+            return []
         return [
             f
             for f in SocialFeed.objects.filter(website=self.site)

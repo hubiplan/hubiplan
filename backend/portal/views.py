@@ -405,6 +405,7 @@ def department_summary(ctx: services.DepartmentContext) -> dict:
         "infrastructure_enabled": "infrastructure" in (club.enabled_modules or []),
         "meetings_enabled": "meetings" in (club.enabled_modules or []),
         "helpers_enabled": "helpers" in (club.enabled_modules or []),
+        "bookings_enabled": "bookings" in (club.enabled_modules or []),
         "imprint_key": ensure_imprint(ctx.department).public_key,
     }
 
@@ -802,6 +803,10 @@ def portal_summary(access: PortalAccess) -> dict:
             "bookings_enabled": _bookings_enabled(club),
             "helpers_enabled": "helpers" in (club.enabled_modules or []),
             "meetings_enabled": "meetings" in (club.enabled_modules or []),
+            "todos_enabled": "todos" in (club.enabled_modules or []),
+            "docs_enabled": "docs" in (club.enabled_modules or []),
+            "circulars_enabled": "circulars" in (club.enabled_modules or []),
+            "cards_enabled": "cards" in (club.enabled_modules or []),
             "terms": department_terms(club),
             "imprint_key": ensure_imprint(club).public_key,
         }

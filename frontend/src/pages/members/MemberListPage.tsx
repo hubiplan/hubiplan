@@ -141,7 +141,11 @@ export function MemberListPage() {
   const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   // Mehrere Ebenen (z. B. Korps und Züge): Spalte und Filter nennen alle Bezeichnungen.
   const unitTerms = levelTerms(departments.data ?? [], terms)
-  const titles = useLoad(() => memberApi.honoraryTitles(org.id, true), [org.id])
+  const awardsOn = org.modules.includes('awards')
+  const titles = useLoad(
+    () => (awardsOn ? memberApi.honoraryTitles(org.id, true) : Promise.resolve([])),
+    [org.id, awardsOn],
+  )
   const [defaultPageSize] = useState(() =>
     window.matchMedia?.('(max-width: 640px)').matches ? 10 : 50,
   )

@@ -161,7 +161,7 @@ describe('Chronik', () => {
         [`GET ${base}dignities/`]: () => ({ status: 200, body: [] }),
       },
       '/mitglieder/wuerdentraeger/wuerden',
-      { type: 'federation', direct_members: true, modules: ['members'] },
+      { type: 'federation', direct_members: true, modules: ['members', 'awards', 'honors'] },
     )
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Neue Würde' }))
