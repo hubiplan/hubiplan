@@ -16,6 +16,6 @@ The platform administration enables modules. Anyone in the club who misses a fea
 
 A switched-off module disappears from the menu; its data is kept. Public parts go offline, such as card verification, the public document folder or the social media posts on the website.
 
-Smaller features are modules of their own too, so a small club only sees what it needs: tasks, documents, circulars, membership cards, member area, honours & anniversaries, titles, chronicle, calls, bookings, social media, tax & charitable status (tax areas and reserves), donation receipts and the sheet music archive, which a choir can use without music. The member area matches the switch under Members › Setup › Member area & photos; both stay in step.
+Smaller features are modules of their own too, so a small club only sees what it needs: tasks, documents, circulars, membership cards, member area, honours & anniversaries, titles, chronicle, calls, bookings, social media, tax & charitable status (tax areas and reserves), donation receipts the sheet music archive, which a choir can use without music, and shooting sports (targets, photo evaluation, bird shooting) as part of competitions. The member area matches the switch under Members › Setup › Member area & photos; both stay in step.
 
 ![Starting point: Enable a module for a unit](bild:modul-einschalten)

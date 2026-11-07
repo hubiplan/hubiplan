@@ -19,7 +19,7 @@ D = Decimal
 @pytest.fixture
 def verein(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "competitions"]
+    org.enabled_modules = ["members", "competitions", "shooting"]
     org.save()
     return org
 

@@ -30,6 +30,7 @@ from access.catalog import (
     COMPETITIONS_VIEW,
     RESULTS_VIEW,
 )
+from access.modules import module_on
 from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, OrgScopedMixin
 from members.models import Membership
@@ -144,6 +145,15 @@ class CompetitionSerializer(serializers.ModelSerializer):
                     )
         form = attrs.get("form", getattr(self.instance, "form", Competition.Form.RANKING))
         own = attrs.get("own", getattr(self.instance, "own", True))
+        org = self.context.get("org")
+        if (
+            self.instance is None
+            and form == Competition.Form.BIRD
+            and not module_on(org, "shooting")
+        ):
+            raise serializers.ValidationError(
+                {"form": gettext("Ein Vogelschießen gibt es nur mit dem Modul „Schießsport“.")}
+            )
         if form == Competition.Form.BIRD and not own:
             raise serializers.ValidationError(
                 {"own": gettext("Ein Vogelschießen lässt sich nur als eigener Wettbewerb anlegen.")}
@@ -236,6 +246,13 @@ class ScoringSerializer(serializers.ModelSerializer):
         value = (value or "").strip()
         if value and value != targets.CUSTOM and value not in targets.BY_KEY:
             raise serializers.ValidationError(gettext("Unbekannte Scheibe."))
+        # Neue Scheiben nur mit dem Modul „Schießsport“; gespeicherte bleiben erhalten
+        current = getattr(self.instance, "target", "") if self.instance is not None else ""
+        comp = self.context.get("competition")
+        if value and value != current and comp and not module_on(comp.organization, "shooting"):
+            raise serializers.ValidationError(
+                gettext("Schießscheiben gibt es nur mit dem Modul „Schießsport“.")
+            )
         return value
 
     def validate_custom_target(self, value):
@@ -462,10 +479,14 @@ class CompetitionViewSet(_Mixin, AuditMixin, viewsets.ModelViewSet):
 
     @transaction.atomic
     def perform_create(self, serializer):
+        template = self.request.data.get("template")
+        if template == "vogel" and not module_on(self.org, "shooting"):
+            raise ValidationError(
+                {"form": gettext("Ein Vogelschießen gibt es nur mit dem Modul „Schießsport“.")}
+            )
         super().perform_create(serializer)
         comp = serializer.instance
         self._calendar(comp)
-        template = self.request.data.get("template")
         if template == "schiessen":
             # Vorlage „Schießen mit Einzel- und Zugwertung“ (Leitszenario des Pilotvereins)
             single = Scoring.objects.create(

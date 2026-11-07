@@ -56,8 +56,8 @@ def gate(module: str, patterns):
     return result
 
 
-def gate_names(module: str, patterns, prefix: str):
-    """Nur die Pfade, deren Name mit ``prefix`` beginnt, an ein Modul binden."""
+def gate_names(module: str, patterns, prefix: str | tuple[str, ...]):
+    """Nur die Pfade, deren Name mit ``prefix`` (oder einem davon) beginnt, an ein Modul binden."""
     result = []
     for p in patterns:
         if isinstance(p, URLPattern) and (p.name or "").startswith(prefix):

@@ -82,7 +82,7 @@ function renderApp(
 ) {
   const org = testOrg({
     permissions: ['competitions.results'],
-    modules: ['competitions'],
+    modules: ['competitions', 'shooting'],
   })
   const calls = fakeApi({
     [SESSION]: loggedIn,

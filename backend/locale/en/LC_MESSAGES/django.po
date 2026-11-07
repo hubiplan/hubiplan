@@ -8675,3 +8675,15 @@ msgstr "Maintain sheet music library: pieces, arrangements, parts and files"
 
 msgid "Auftritte, Musiker, Proben, Notenausgabe und Besetzung"
 msgstr "Performances, musicians, rehearsals, music handout and line-up"
+
+msgid "Schießsport"
+msgstr "Shooting sports"
+
+msgid "Schießscheiben mit Trefferbild und Fotoauswertung, Vogelschießen"
+msgstr "Targets with hit pattern and photo evaluation, bird shooting"
+
+msgid "Schießscheiben gibt es nur mit dem Modul „Schießsport“."
+msgstr "Targets are only available with the “Shooting sports” module."
+
+msgid "Ein Vogelschießen gibt es nur mit dem Modul „Schießsport“."
+msgstr "Bird shooting is only available with the “Shooting sports” module."
