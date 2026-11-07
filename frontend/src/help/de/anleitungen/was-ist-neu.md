@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Neu: Vorlagen für Kategorien. Unter Finanzen › Einrichtung › Kategorien legt **Vorlage übernehmen** übliche Kategorien eines Schützen-, Sport- oder Musikvereins mit steuerlichem Bereich an, ohne bestehende zu ändern.
 - Neu: Höchstbetrag der freien Rücklage. Unter Finanzen › Rücklagen rechnet HUBIplan je Geschäftsjahr aus, wie viel der freien Rücklage zugeführt werden darf, mit Nachholung aus den zwei Vorjahren, und warnt bei Überschreitung. Dazu kommt die Abschreibung als Anhaltspunkt für die Wiederbeschaffungsrücklage.
 - Neu: Vermögensübersicht. Unter Finanzen › Abschluss & Berichte › Vermögen stehen zum Jahresende Kontenstände, offene Forderungen, Anlagevermögen und offene Verbindlichkeiten, dazu die in Rücklagen gebundenen Mittel. Die Übersicht steht auch im Kassenbericht.
 - Neu: Künstlersozialabgabe. Ausgaben an Kapellen, DJs oder Grafiker lassen sich im Kassenbuch oder über die Kategorie als Künstlerhonorar kennzeichnen. Unter Finanzen › Abschluss & Berichte › Künstlersozialabgabe stehen die Summe je Empfänger, die Abgabe und die Frist für die Meldung, auch als Excel.

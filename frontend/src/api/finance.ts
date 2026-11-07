@@ -644,6 +644,10 @@ export const financeApi = {
   deleteAccount: (org: number, id: number) => api.del(`${base(org)}/accounts/${id}/`),
 
   categories: (org: number) => api.get<Category[]>(`${base(org)}/categories/`),
+  categoryTemplates: (org: number) =>
+    api.get<CategoryTemplate[]>(`${base(org)}/categories/templates/`),
+  applyCategoryTemplate: (org: number, template: string) =>
+    api.post<{ created: string[] }>(`${base(org)}/categories/templates/`, { template }),
   createCategory: (org: number, data: Partial<Category>) =>
     api.post<Category>(`${base(org)}/categories/`, data),
   updateCategory: (org: number, id: number, data: Partial<Category>) =>
@@ -1007,6 +1011,22 @@ export interface Reserve {
   is_active: boolean
   balance: string
   movements: ReserveMovement[]
+}
+
+/** Vorlage für Kategorien eines Schützen-, Sport- oder Musikvereins */
+export interface CategoryTemplate {
+  key: string
+  label: string
+  categories: {
+    name: string
+    kind: string
+    kind_label: string
+    tax_area: string
+    tax_area_label: string
+    donations: boolean
+    artist_fees: boolean
+    exists: boolean
+  }[]
 }
 
 export interface ReserveOverview {

@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: category templates. Under Finance › Setup › Categories, **Use a template** creates the usual categories of a shooting, sports or music club with their tax areas, without changing existing ones.
 - New: maximum for the free reserve. Finance › Reserves works out per financial year how much may be added to the free reserve, including amounts carried over from the two previous years, and warns if it is exceeded. Depreciation is shown as a guide for the replacement reserve.
 - New: statement of net assets. Finance › Closing & reports › Net assets shows account balances, open receivables, fixed assets and open liabilities at the year end, plus the funds set aside in reserves. The overview is also part of the treasurer's report.
 - New: artists' social security levy. Expenses for bands, DJs or graphic designers can be marked as artist fees in the cash book or via the category. Finance › Closing & reports › Artists' social security levy shows the total per recipient, the levy and the reporting deadline, also as Excel.

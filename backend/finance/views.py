@@ -12,6 +12,7 @@ from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -261,6 +262,26 @@ class CategoryViewSet(FinanceMixin, AuditMixin, viewsets.ModelViewSet):
                 {"archiviert": [not archived, archived]},
             )
         return Response(self.get_serializer(category).data)
+
+    @extend_schema(request=dict, responses=dict)
+    @action(detail=False, methods=["get", "post"])
+    def templates(self, request, org_id: int):
+        """Vorlagen für Kategorien (Konzept S8): ansehen und fehlende Kategorien anlegen."""
+        from . import category_templates
+
+        if request.method == "GET":
+            return Response(category_templates.listing(self.org))
+        key = str(request.data.get("template") or "")
+        if key not in category_templates.TEMPLATES:
+            raise serializers.ValidationError({"template": gettext("Bitte eine Vorlage wählen.")})
+        with transaction.atomic():
+            created = category_templates.apply(self.org, key)
+            for category in created:
+                record(self.org, request.user, "create", category, {"Name": [None, category.name]})
+        return Response(
+            {"created": [c.name for c in created]},
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
 
 
 class BookingPagination(PageNumberPagination):

@@ -9050,3 +9050,102 @@ msgstr "A fee paid to artists is always an expense."
 
 msgid "Die Künstlersozialabgabe gehört zum Modul Steuern & Gemeinnützigkeit."
 msgstr "The artists' social security levy belongs to the Tax & charitable status module."
+
+msgid "Mitgliedsbeiträge"
+msgstr "Membership fees"
+
+msgid "Aufnahmegebühren"
+msgstr "Admission fees"
+
+msgid "Spenden"
+msgstr "Donations"
+
+msgid "Zuschüsse"
+msgstr "Grants"
+
+msgid "Zinsen"
+msgstr "Interest"
+
+msgid "Sponsoring (nur Nennung)"
+msgstr "Sponsorship (name mention only)"
+
+msgid "Werbeeinnahmen (Bande, Anzeigen)"
+msgstr "Advertising income (boards, ads)"
+
+msgid "Vereinsfest Speisen und Getränke"
+msgstr "Club party food and drinks"
+
+msgid "Verbandsbeiträge"
+msgstr "Association fees"
+
+msgid "Versicherungen"
+msgstr "Insurance"
+
+msgid "Bankgebühren"
+msgstr "Bank charges"
+
+msgid "Bürobedarf und Porto"
+msgstr "Office supplies and postage"
+
+msgid "Ehrungen und Geschenke"
+msgstr "Honours and gifts"
+
+msgid "Schützenfest Festzelt"
+msgstr "Shooting festival marquee"
+
+msgid "Schützenfest Eintritt"
+msgstr "Shooting festival admission"
+
+msgid "Musik und Spielmannszüge"
+msgstr "Music and marching bands"
+
+msgid "Schießsport Munition und Scheiben"
+msgstr "Shooting sport ammunition and targets"
+
+msgid "Orden und Königssilber"
+msgstr "Medals and king's silver"
+
+msgid "Uniformen und Fahnen"
+msgstr "Uniforms and flags"
+
+msgid "Sportveranstaltungen Eintritt"
+msgstr "Sports events admission"
+
+msgid "Übungsleiter"
+msgstr "Coaches"
+
+msgid "Startgelder und Meldegebühren"
+msgstr "Entry and registration fees"
+
+msgid "Sportgeräte und Trikots"
+msgstr "Sports equipment and jerseys"
+
+msgid "Hallen- und Platzmiete"
+msgstr "Hall and pitch rent"
+
+msgid "Vereinsheim Bewirtung"
+msgstr "Clubhouse catering"
+
+msgid "Musikverein"
+msgstr "Music club"
+
+msgid "Konzerte Eintritt"
+msgstr "Concert admission"
+
+msgid "Auftritte gegen Entgelt"
+msgstr "Paid performances"
+
+msgid "Dirigent und Ausbilder"
+msgstr "Conductor and instructors"
+
+msgid "Noten und Instrumente"
+msgstr "Sheet music and instruments"
+
+msgid "Probenraum"
+msgstr "Rehearsal room"
+
+msgid "Trachten und Uniformen"
+msgstr "Traditional costumes and uniforms"
+
+msgid "Bitte eine Vorlage wählen."
+msgstr "Please choose a template."
