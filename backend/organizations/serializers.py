@@ -10,9 +10,15 @@ from django.utils.translation import gettext
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from access.catalog import DEPARTMENT_CODES, MEMBERS_VIEW, ROLES_VIEW, SWITCHABLE_MODULES
+from access.catalog import (
+    DEFAULT_MODULES,
+    DEPARTMENT_CODES,
+    MEMBERS_VIEW,
+    ROLES_VIEW,
+    SWITCHABLE_MODULES,
+)
 from access.models import Role, RoleAssignment
-from access.modules import with_requirements
+from access.modules import apply_release, released_of, with_requirements
 from core.api_base import ModelCleanMixin
 
 from . import theme
@@ -814,6 +820,10 @@ class PlatformOrganizationSerializer(
     can_switch_members = serializers.SerializerMethodField()
     # Entscheidet die Organisation selbst in der Kasse, nicht die Plattform
     tax_areas_enabled = serializers.BooleanField(read_only=True)
+    # Freigabe der Plattform (Obergrenze). Ältere Aufrufe schicken ``enabled_modules``; das
+    # gilt dann als Freigabe. Eingeschaltet wird, was neu freigegeben ist; die Einheit kann es
+    # unter Einstellungen › Module wieder ausschalten.
+    released_modules = serializers.ListField(child=serializers.CharField(), required=False)
 
     class Meta:
         model = Organization
@@ -845,6 +855,7 @@ class PlatformOrganizationSerializer(
             "federation_member_access",
             "federation_show_former_memberships",
             "enabled_modules",
+            "released_modules",
             "tax_areas_enabled",
             "is_active",
             "is_remote",
@@ -856,6 +867,7 @@ class PlatformOrganizationSerializer(
         data = super().to_representation(instance)
         if not (instance.parent and instance.parent.type == Organization.Type.FEDERATION):
             data["federation"] = None
+        data["released_modules"] = sorted(released_of(instance))
         return data
 
     def get_federation_name(self, obj) -> str | None:
@@ -877,6 +889,28 @@ class PlatformOrganizationSerializer(
             )
         # Voraussetzungen mitnehmen (z. B. Musik braucht Termine)
         return sorted(with_requirements(value))
+
+    validate_released_modules = validate_enabled_modules
+
+    def _pop_release(self, validated_data):
+        release = validated_data.pop("released_modules", None)
+        enabled = validated_data.pop("enabled_modules", None)
+        return release if release is not None else enabled
+
+    def create(self, validated_data):
+        release = self._pop_release(validated_data)
+        org = super().create(validated_data)
+        apply_release(org, release if release is not None else list(DEFAULT_MODULES))
+        org.save(update_fields=["released_modules", "enabled_modules"])
+        return org
+
+    def update(self, instance, validated_data):
+        release = self._pop_release(validated_data)
+        org = super().update(instance, validated_data)
+        if release is not None:
+            apply_release(org, release)
+            org.save(update_fields=["released_modules", "enabled_modules"])
+        return org
 
     def validate(self, attrs):
         from .kinds import type_for_new

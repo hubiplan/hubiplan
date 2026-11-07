@@ -8687,3 +8687,12 @@ msgstr "Targets are only available with the “Shooting sports” module."
 
 msgid "Ein Vogelschießen gibt es nur mit dem Modul „Schießsport“."
 msgstr "Bird shooting is only available with the “Shooting sports” module."
+
+msgid "Nicht freigegeben: {x}"
+msgstr "Not released: {x}"
+
+msgid "Dafür muss die Plattform auch freigeben: {x}"
+msgstr "For this the platform also has to release: {x}"
+
+msgid "Bitte eine Liste von Modulen angeben."
+msgstr "Please give a list of modules."

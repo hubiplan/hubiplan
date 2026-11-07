@@ -375,3 +375,66 @@ def directory() -> list[dict]:
         if modules:
             groups.append({"id": group.id, "label": gettext(group.label), "modules": modules})
     return groups
+
+
+# --- Freigabe (Plattform) und Einschalten (Einheit) ---
+
+
+def released_of(org) -> set[str]:
+    """Von der Plattform freigegebene Module; ältere Stände ohne Freigabe: die eingeschalteten."""
+    released = getattr(org, "released_modules", None) or org.enabled_modules or []
+    return {m for m in released if m in MODULE_BY_ID}
+
+
+def apply_release(org, released) -> None:
+    """Freigabe der Plattform setzen. Neu freigegebene Module werden eingeschaltet (wie bisher),
+    nicht mehr freigegebene ausgeschaltet; Daten bleiben erhalten. Speichert nicht."""
+    old = released_of(org)
+    new = with_requirements(released)
+    enabled = (set(org.enabled_modules or []) & new) | (new - old)
+    org.released_modules = sorted(new)
+    org.enabled_modules = sorted(without_dependents(enabled))
+
+
+class ModuleChoiceError(ValueError):
+    pass
+
+
+def apply_enabled(org, wanted) -> tuple[set[str], set[str]]:
+    """Einheit schaltet Module ein oder aus, nur innerhalb der Freigabe. Voraussetzungen werden
+    mitgenommen, abhängige Module mit ausgeschaltet. Gibt (zusätzlich ein, zusätzlich aus)
+    gegenüber dem Wunsch zurück. Speichert nicht."""
+    wanted = set(wanted or [])
+    unknown = wanted - set(MODULE_BY_ID)
+    if unknown:
+        raise ModuleChoiceError(
+            gettext("Unbekannte Module: {x}").format(x=", ".join(sorted(unknown)))
+        )
+    released = released_of(org)
+    blocked = wanted - released
+    if blocked:
+        raise ModuleChoiceError(
+            gettext("Nicht freigegeben: {x}").format(
+                x=", ".join(gettext(MODULE_BY_ID[m].label) for m in sorted(blocked))
+            )
+        )
+    before = set(org.enabled_modules or [])
+    switched_off = before - wanted
+    # Voraussetzungen mitnehmen, außer sie wurden gerade ausgeschaltet
+    result = wanted
+    for _ in range(len(MODULES)):
+        extra = with_requirements(result) - result - switched_off
+        if not extra:
+            break
+        missing = extra - released
+        if missing:
+            raise ModuleChoiceError(
+                gettext("Dafür muss die Plattform auch freigeben: {x}").format(
+                    x=", ".join(gettext(MODULE_BY_ID[m].label) for m in sorted(missing))
+                )
+            )
+        result |= extra
+    result = without_dependents(result)
+    org.released_modules = sorted(released)
+    org.enabled_modules = sorted(result)
+    return result - wanted, wanted - result

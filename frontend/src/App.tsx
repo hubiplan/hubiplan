@@ -32,6 +32,7 @@ const ImprintSettingsPage = lazyPage(
   () => import('./pages/settings/ImprintSettingsPage.tsx'),
   'ImprintSettingsPage',
 )
+const ModulesPage = lazyPage(() => import('./pages/settings/ModulesPage.tsx'), 'ModulesPage')
 const PrivacySettingsPage = lazyPage(
   () => import('./pages/settings/PrivacySettingsPage.tsx'),
   'PrivacySettingsPage',
@@ -385,6 +386,14 @@ export default function App() {
               element={
                 <RequireOrg>
                   <OrganizationDocumentsPage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="module"
+              element={
+                <RequireOrg>
+                  <ModulesPage />
                 </RequireOrg>
               }
             />

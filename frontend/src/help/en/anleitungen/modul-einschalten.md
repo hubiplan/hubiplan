@@ -8,10 +8,10 @@ routen: [/plattform]
 stichworte: [module, feature, enable, website, competitions, titles, honours, member area]
 ---
 
-The platform administration enables modules. Anyone in the club who misses a feature contacts them.
+The platform administration releases modules. The club switches released modules off and on again itself under [Settings › Modules](/einstellungen/module). Anyone who misses a feature that is not released contacts the platform administration.
 
 1. Open [Platform](/plattform) and choose the unit.
-2. In the **Modules** section, tick what the unit should use, such as website, competitions or entries. The modules are listed by group, each with a short note on what it contains. If a module needs another one (music, meetings and volunteer duties need events, music also the sheet music archive), that one is ticked as well; if you untick it, the dependent modules go too.
+2. In the **Released modules** section, tick what the unit may use, such as website, competitions or entries. The modules are listed by group, each with a short note on what it contains. If a module needs another one (music, meetings and volunteer duties need events, music also the sheet music archive), that one is ticked as well; if you untick it, the dependent modules go too.
 3. Save. The change applies immediately to everyone in the unit.
 
 A switched-off module disappears from the menu; its data is kept. Public parts go offline, such as card verification, the public document folder or the social media posts on the website.

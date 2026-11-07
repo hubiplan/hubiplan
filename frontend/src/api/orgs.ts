@@ -471,7 +471,10 @@ export interface PlatformOrg {
   website: string
   federation_member_access: 'none' | 'read' | 'write'
   federation_show_former_memberships: boolean
+  /** eingeschaltet (entscheidet die Einheit innerhalb der Freigabe) */
   enabled_modules: string[]
+  /** von der Plattform freigegeben */
+  released_modules?: string[]
   tax_areas_enabled: boolean
   is_active: boolean
   club_count: number
@@ -733,6 +736,7 @@ export const PERM = {
   // Bereiche mit Stufen (konzepte/berechtigungen.md): Leserechte, die es früher nicht gab
   photosView: 'photos.view',
   settingsView: 'settings.view',
+  settingsEdit: 'settings.edit',
   themeView: 'theme.view',
   rolesView: 'roles.view',
   rolesEdit: 'roles.edit',

@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
-from access import accounts_view, office_views
+from access import accounts_view, module_views, office_views
 from access import views as access_views
 from access.module_gate import gate, gate_names, needs_module
 from accounts import help_done, language, learning, self_service
@@ -242,6 +242,7 @@ org_patterns = [
     path("", org_views.OrganizationDetailView.as_view(), name="org-detail"),
     path("member-settings/", org_views.MemberSettingsView.as_view(), name="org-member-settings"),
     path("theme/", org_views.ThemeView.as_view(), name="org-theme"),
+    path("modules/", module_views.OrgModulesView.as_view(), name="org-modules"),
     path("help/", help_views.OrgHelpView.as_view(), name="org-help"),
     path("help/notes/<str:key>/", help_views.OrgHelpNoteView.as_view(), name="org-help-note"),
     path("imprint/", imprint_views.OrgImprintView.as_view(), name="org-imprint"),

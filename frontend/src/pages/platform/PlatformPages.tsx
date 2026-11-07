@@ -120,9 +120,9 @@ export function PlatformOrgsPage() {
           </div>
         )}
         <div className="muted">
-          {o.enabled_modules.length
+          {(o.released_modules ?? o.enabled_modules).length
             ? t('Module: {x}', {
-                x: o.enabled_modules
+                x: (o.released_modules ?? o.enabled_modules)
                   .map((m) => moduleList.find((x) => x.id === m)?.label ?? m)
                   .join(', '),
               })
@@ -194,7 +194,7 @@ function PlatformOrgForm({
     label_genitive: org?.label_genitive ?? suggestedLabels(initialKeeps).genitive,
     federation_member_access: org?.federation_member_access ?? 'none',
     federation_show_former_memberships: org?.federation_show_former_memberships ?? false,
-    enabled_modules: org?.enabled_modules ?? ['finance', 'members'],
+    released_modules: org?.released_modules ?? org?.enabled_modules ?? ['finance', 'members'],
     is_active: org?.is_active ?? true,
   })
   const v = form.values
@@ -464,7 +464,12 @@ function PlatformOrgForm({
           </>
         )}
 
-        <h3>{t('Module')}</h3>
+        <h3>{t('Freigegebene Module')}</h3>
+        <p className="muted small">
+          {t(
+            'Neu freigegebene Module werden eingeschaltet. Die Einheit kann freigegebene Module unter Einstellungen › Module selbst aus- und wieder einschalten.',
+          )}
+        </p>
         {directory.error && <LoadError message={directory.error} onRetry={directory.reload} />}
         {(directory.data ?? []).map((group) => (
           <fieldset key={group.id} className="stack">
@@ -480,14 +485,14 @@ function PlatformOrgForm({
                       ? t('{text} (braucht {needs})', { text: m.description, needs })
                       : m.description
                   }
-                  checked={v.enabled_modules.includes(m.id)}
+                  checked={v.released_modules.includes(m.id)}
                   onChange={(on) =>
                     form.set(
-                      'enabled_modules',
+                      'released_modules',
                       on
-                        ? withRequirements([...v.enabled_modules, m.id], allModules)
+                        ? withRequirements([...v.released_modules, m.id], allModules)
                         : withoutDependents(
-                            v.enabled_modules.filter((x) => x !== m.id),
+                            v.released_modules.filter((x) => x !== m.id),
                             allModules,
                           ),
                     )

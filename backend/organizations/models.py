@@ -412,7 +412,12 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         help_text="Bei Untereinheiten leer: wie die übergeordnete Einheit.",
     )
 
-    enabled_modules = models.JSONField("freigeschaltete Module", default=list, blank=True)
+    enabled_modules = models.JSONField("eingeschaltete Module", default=list, blank=True)
+    # Von der Plattform freigegeben (Obergrenze für enabled_modules; konzepte/module-neustruktur.md
+    # 5.3). Leer heißt für eine Fassung: wie enabled_modules (ältere Stände).
+    released_modules = models.JSONField(
+        "freigegebene Module", default=list, db_default=[], blank=True
+    )
     shooting_facilities = models.JSONField(
         "verfügbare Schießinfrastruktur", default=None, null=True, blank=True
     )
