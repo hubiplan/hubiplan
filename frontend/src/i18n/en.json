@@ -7175,5 +7175,10 @@
   "Die Zuführungen zur freien Rücklage liegen {x} über dem Höchstbetrag. Bitte den Betrag verringern oder als Projektrücklage mit konkretem Vorhaben bilden.": "Additions to the free reserve are {x} above the maximum. Please reduce the amount or set it aside as a project reserve for a specific plan.",
   "Wiederbeschaffung: Die Abschreibung laut Anlagenverzeichnis beträgt {afa} in {y}. Das ist ein Anhaltspunkt für die jährliche Zuführung zu einer Wiederbeschaffungsrücklage; zugeführt wurden {added}.": "Replacement: depreciation according to the asset register is {afa} in {y}. This is a guide for the yearly addition to a replacement reserve; {added} has been added.",
   "Die Einnahmen liegen bei {x} oder mehr. Das Finanzamt erwartet dann in der Regel eine Mittelverwendungsrechnung, die zeigt, dass die Mittel binnen zwei Jahren für die Satzungszwecke verwendet wurden.": "Income is {x} or more. The tax office then usually expects a statement on the use of funds showing that the funds were used for the statutory purposes within two years.",
-  "Ein Anhaltspunkt aus den Buchungen dieser Einheit und ihren steuerlichen Bereichen, keine Steuerberatung.": "A guide based on this unit's entries and their tax areas, not tax advice."
+  "Ein Anhaltspunkt aus den Buchungen dieser Einheit und ihren steuerlichen Bereichen, keine Steuerberatung.": "A guide based on this unit's entries and their tax areas, not tax advice.",
+  "Vorlage übernehmen": "Use a template",
+  "{n} Kategorien angelegt.": "{n} categories created.",
+  "Übliche Kategorien mit steuerlichem Bereich, damit ihr nicht bei null anfangt. Es werden nur fehlende Kategorien angelegt; bestehende bleiben, wie sie sind. Bereiche und DATEV-Konten bitte mit der Steuerberatung abstimmen. Sponsoring: Wird der Sponsor nur genannt, gehört das Geld zur Vermögensverwaltung; aktive Werbung wie Bande oder Anzeige ist wirtschaftlicher Geschäftsbetrieb.": "Common categories with a tax area, so you don't start from scratch. Only missing categories are created; existing ones stay as they are. Please agree areas and DATEV accounts with your tax adviser. Sponsorship: if the sponsor is only named, the money belongs to asset management; active advertising such as boards or ads is a commercial operation.",
+  "schon vorhanden": "already there",
+  "{n} Kategorien anlegen": "Create {n} categories"
 }
