@@ -230,6 +230,47 @@ export function TaxPage() {
         </table>
       </div>
 
+      {data.depreciation && (
+        <div className="card card-wide" data-testid="tax-depreciation">
+          <h2>{t('Abschreibung')}</h2>
+          <p className="muted small">
+            {t(
+              'Für das Ergebnis zählt bei Anlagen nicht die Ausgabe der Anschaffung, sondern die Abschreibung über die Nutzungsdauer. Das Kassenbuch bleibt unverändert.',
+            )}
+          </p>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{t('Bereich')}</th>
+                <th className="num">{t('Anschaffungen')}</th>
+                <th className="num">{t('Abschreibung')}</th>
+                <th className="num">{t('Restwert Abgang')}</th>
+                <th className="num">{t('Korrektur')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.depreciation.areas.map((a) => (
+                <tr key={a.area}>
+                  <td>{a.label}</td>
+                  <td className="num">{euro(a.purchases)}</td>
+                  <td className="num">{euro(a.depreciation)}</td>
+                  <td className="num">{euro(a.residual)}</td>
+                  <td className="num">{euro(a.adjustment)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {data.business_result_after !== null && (
+            <p>
+              {t('Ergebnis wirtschaftlicher Geschäftsbetrieb nach Abschreibung: {x}', {
+                x: euro(data.business_result_after),
+              })}
+            </p>
+          )}
+          <Link to="/finanzen/abschluss/anlagen">{t('Zum Anlagenverzeichnis')}</Link>
+        </div>
+      )}
+
       {data.warnings.map((w) => (
         <Alert key={w.kind} kind={w.kind === 'loss' ? 'error' : 'info'}>
           {w.text}

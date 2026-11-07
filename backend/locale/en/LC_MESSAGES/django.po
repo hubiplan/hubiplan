@@ -8900,3 +8900,45 @@ msgstr "Board members receive an allowance although it is not recorded that the 
 
 msgid "Über dem Freibetrag ist die Vergütung steuer- und meist sozialversicherungspflichtig (z. B. als Minijob). Bitte mit der Steuerberatung bzw. Lohnabrechnung klären."
 msgstr "Above the tax-free amount the allowance is subject to tax and usually social security (e.g. as a mini-job). Please clarify with your tax adviser or payroll."
+
+msgid "keine Abschreibung (nur Verzeichnis)"
+msgstr "no depreciation (register only)"
+
+msgid "geringwertig, sofort abschreiben (bis 800 € netto)"
+msgstr "low-value, write off at once (up to €800 net)"
+
+msgid "Sammelposten über 5 Jahre (250 bis 1.000 € netto)"
+msgstr "pool over 5 years (€250 to €1,000 net)"
+
+msgid "linear über die Nutzungsdauer"
+msgstr "straight-line over the useful life"
+
+msgid "im Bestand"
+msgstr "in stock"
+
+msgid "verkauft"
+msgstr "sold"
+
+msgid "verschrottet bzw. verloren"
+msgstr "scrapped or lost"
+
+msgid "verschenkt"
+msgstr "given away"
+
+msgid "Sofort abschreiben lässt sich nur bis 800 € netto (§ 6 Abs. 2 EStG)."
+msgstr "Immediate write-off is only possible up to €800 net (§ 6 (2) EStG)."
+
+msgid "Ein Sammelposten gilt für 250,01 bis 1.000 € netto (§ 6 Abs. 2a EStG)."
+msgstr "A pool applies to €250.01 to €1,000 net (§ 6 (2a) EStG)."
+
+msgid "Bitte eine Nutzungsdauer von 1 bis 50 Jahren angeben."
+msgstr "Please enter a useful life of 1 to 50 years."
+
+msgid "Bitte das Datum des Abgangs angeben."
+msgstr "Please enter the date of disposal."
+
+msgid "Der Abgang liegt vor der Anschaffung."
+msgstr "The disposal is before the acquisition."
+
+msgid "Unbekannte Buchung."
+msgstr "Unknown booking."

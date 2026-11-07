@@ -1058,6 +1058,24 @@ function BookingForm({
                 {t('Aufteilen')}
               </button>
             )}
+            {booking &&
+              hasTax &&
+              kind === 'expense' &&
+              !booking.cancels &&
+              !booking.cancelled_by &&
+              Number(booking.amount) >= 250 && (
+                <Link
+                  className="button button-ghost"
+                  to={`/finanzen/abschluss/anlagen?${new URLSearchParams({
+                    buchung: String(booking.id),
+                    betrag: booking.amount,
+                    datum: booking.date,
+                    name: booking.text,
+                  }).toString()}`}
+                >
+                  {t('Als Anlage erfassen')}
+                </Link>
+              )}
             {booking && !booking.cancels && !booking.cancelled_by && (
               <button
                 type="button"

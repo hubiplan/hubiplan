@@ -19,7 +19,14 @@ from documents import views as doc_views
 from entries import urls as entry_urls
 from events import views as event_views
 from exchange import views as exchange_views
-from finance import bank_views, cash_count_views, donation_views, quittung_views, reserve_views
+from finance import (
+    asset_views,
+    bank_views,
+    cash_count_views,
+    donation_views,
+    quittung_views,
+    reserve_views,
+)
 from finance import views as finance_views
 from helpers import portal as helper_portal
 from honors import urls as honors_urls
@@ -102,6 +109,7 @@ org_router.register(
     "finance/cash-counts", cash_count_views.CashCountViewSet, basename="finance-cash-count"
 )
 org_router.register("finance/reserves", reserve_views.ReserveViewSet, basename="finance-reserve")
+org_router.register("finance/assets", asset_views.FixedAssetViewSet, basename="finance-asset")
 org_router.register(
     "finance/donation-statements",
     donation_views.DonationStatementViewSet,

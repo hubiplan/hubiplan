@@ -29,6 +29,7 @@ import { FinanceDevelopment } from './DevelopmentPage.tsx'
 import { EvaluationPage, FinanceOverview } from './OverviewPages.tsx'
 import { TaxPage } from './TaxPage.tsx'
 import { AllowancesPage } from './AllowancesPage.tsx'
+import { AssetsPage } from './AssetsPage.tsx'
 import { t } from '../../i18n/index.ts'
 
 function Section({
@@ -262,6 +263,7 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
           ? [
               { to: '/finanzen/abschluss/steuern', label: t('Steuern') },
               { to: '/finanzen/abschluss/pauschalen', label: t('Pauschalen') },
+              { to: '/finanzen/abschluss/anlagen', label: t('Anlagen') },
             ]
           : []),
         { to: '/finanzen/abschluss/jahresabschluss', label: t('Jahresabschluss') },
@@ -271,6 +273,7 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
         <Route index element={<EvaluationPage />} />
         {a.tax && <Route path="steuern" element={<TaxPage />} />}
         {a.tax && <Route path="pauschalen" element={<AllowancesPage canEdit={a.financeEdit} />} />}
+        {a.tax && <Route path="anlagen" element={<AssetsPage canEdit={a.financeEdit} />} />}
         <Route path="jahresabschluss" element={<ClosingsPage />} />
         <Route path="*" element={<Navigate to="/finanzen/abschluss" replace />} />
       </Routes>
