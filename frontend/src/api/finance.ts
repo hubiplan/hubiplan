@@ -125,6 +125,8 @@ export interface Booking {
   cancel_reason: string
   cancelled_by: { id: number; number: string; reason: string; date: string } | null
   /** Splitbuchung: erster Teil (Belege, Kontoumsatz) und weitere Teile */
+  /** Aufwandsvergütung an eine Person (Übungsleiterfreibetrag bzw. Ehrenamtspauschale) */
+  allowance?: AllowanceKind | ''
   split?: {
     lead: { id: number; number: string }
     parts: { id: number; number: string; amount: string }[]
@@ -175,6 +177,39 @@ export interface TaxArea {
   result: string
 }
 
+export type AllowanceKind = 'trainer' | 'volunteer'
+
+/** Aufwandsvergütungen je Person und Kalenderjahr */
+export interface AllowanceReport {
+  year: number
+  limits: Record<AllowanceKind, string>
+  board_pay_allowed: boolean
+  people: {
+    key: string
+    name: string
+    membership: number | null
+    board: boolean
+    board_warning: boolean
+    kinds: {
+      kind: AllowanceKind
+      label: string
+      total: string
+      limit: string
+      percent: number
+      status: TaxStatus
+    }[]
+    bookings: {
+      id: number
+      display_number: string
+      date: string
+      amount: string
+      allowance: AllowanceKind
+      text: string
+    }[]
+  }[]
+  warnings: { kind: string; text: string }[]
+}
+
 /** Steuerliche Auswertung eines Geschäftsjahres (Freigrenze, Bereiche, Kleinunternehmer) */
 export interface TaxReport {
   year: number
@@ -220,6 +255,8 @@ export interface FinanceSettings {
   cash_counts_enabled?: boolean
   /** Rücklagen nach § 62 AO (zuschaltbar) */
   reserves_enabled?: boolean
+  /** Satzung erlaubt Vergütung des Vorstands (§ 27 Abs. 3 BGB) */
+  board_pay_allowed?: boolean
   /** DATEV-Export für die Steuerberatung (zuschaltbar) */
   datev_enabled?: boolean
   datev_consultant?: string
@@ -415,6 +452,10 @@ export const financeApi = {
   /** ZIP für eine Prüfung (Finanzamt, Kassenprüfer): alle Finanzdaten mit Belegen und index.xml */
   exportUrl: (org: number, year: number) => `${base(org)}/export/?jahr=${year}`,
   overview: (org: number, year: number) => api.get<Overview>(`${base(org)}/overview/?jahr=${year}`),
+  allowances: (org: number, year: number) =>
+    api.get<AllowanceReport>(`${base(org)}/allowances/?jahr=${year}`),
+  allowanceDeclarationUrl: (org: number, year: number, person: string) =>
+    `${base(org)}/allowances/?jahr=${year}&als=pdf&person=${encodeURIComponent(person)}`,
   taxReport: (org: number, year: number) => api.get<TaxReport>(`${base(org)}/tax/?jahr=${year}`),
   taxReportUrl: (org: number, year: number, fmt: 'pdf' | 'xlsx') =>
     `${base(org)}/tax/?jahr=${year}&als=${fmt}`,

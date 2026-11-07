@@ -494,8 +494,9 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         changed = {k for k, v in serializer.validated_data.items() if v != getattr(instance, k)}
         if changed:
             self._donation_editable(instance)
-        if changed <= {"project"}:
-            # Nur die Veranstaltung: ändert keine Beträge, auch in abgeschlossenen Jahren
+        if changed <= {"project", "allowance"}:
+            # Nur Veranstaltung bzw. Aufwandsvergütung: ändert keine Beträge, auch in
+            # abgeschlossenen Jahren
             super().perform_update(serializer)
             return
         self._open(year=instance.year)
@@ -890,6 +891,32 @@ class TaxReportView(FinanceMixin, APIView):
         return Response(services._money(data))
 
 
+class AllowanceView(FinanceMixin, APIView):
+    """Aufwandsvergütungen je Person und Kalenderjahr; ?als=pdf&person=<key> liefert die
+    Erklärung des Empfängers zum Unterschreiben."""
+
+    def get(self, request, org_id: int):
+        from . import allowance_report, allowances
+
+        if not module_on(self.org, "tax"):
+            return Response({"detail": gettext("Nicht gefunden.")}, status=404)
+        year = request.query_params.get("jahr", "")
+        year = int(year) if year.isdigit() and 1990 <= int(year) <= 2100 else None
+        year = year or timezone.localdate().year
+        data = allowances.report(self.org, year)
+        if request.query_params.get("als") == "pdf":
+            person = allowances.person(data, request.query_params.get("person", ""))
+            if person is None:
+                return Response({"detail": gettext("Nicht gefunden.")}, status=404)
+            return _file_response(
+                allowance_report.render_declaration(self.org, data, person),
+                f"Erklaerung-Aufwandsverguetung-{year}",
+                "pdf",
+                request.query_params.get("download") == "1",
+            )
+        return Response(services._money(data))
+
+
 class FinanceSettingsView(FinanceMixin, APIView):
     """Einstellungen der Kasse. PATCH {tax_areas_enabled}: Verein bzw. Dachverband
     entscheidet selbst, ob Kategorien steuerlichen Bereichen zugeordnet werden."""
@@ -910,6 +937,10 @@ class FinanceSettingsView(FinanceMixin, APIView):
             raise NotFound(gettext("Nicht gefunden."))
         if "reserves_enabled" in request.data:
             return self._switch(request, "reserves_enabled", "Rücklagen führen")
+        if "board_pay_allowed" in request.data:
+            return self._switch(
+                request, "board_pay_allowed", "Satzung erlaubt Vergütung des Vorstands"
+            )
         value = request.data.get("tax_areas_enabled")
         if not isinstance(value, bool):
             raise serializers.ValidationError(
@@ -1045,6 +1076,7 @@ class FinanceSettingsView(FinanceMixin, APIView):
             "tax_areas_enabled": self.org.tax_areas_on,
             "cash_counts_enabled": self.org.cash_counts_enabled,
             "reserves_enabled": self.org.reserves_on,
+            "board_pay_allowed": self.org.board_pay_allowed,
             "datev_enabled": self.org.datev_enabled,
             "datev_consultant": self.org.datev_consultant,
             "datev_client": self.org.datev_client,

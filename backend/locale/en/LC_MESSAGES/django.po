@@ -8879,3 +8879,24 @@ msgstr "The booking is part of a split booking. Date, type and account (and the 
 
 msgid "Bitte den Umsatz dem ersten Teil der Splitbuchung zuordnen."
 msgstr "Please assign the bank transaction to the first part of the split booking."
+
+msgid "Übungsleiterfreibetrag (§ 3 Nr. 26 EStG)"
+msgstr "Trainer allowance (§ 3 no. 26 EStG)"
+
+msgid "Ehrenamtspauschale (§ 3 Nr. 26a EStG)"
+msgstr "Volunteer allowance (§ 3 no. 26a EStG)"
+
+msgid "Eine Aufwandsvergütung ist immer eine Ausgabe."
+msgstr "An expense allowance is always an expense."
+
+msgid "Bitte das Mitglied oder den Empfänger angeben, damit die Vergütung der richtigen Person zugerechnet wird."
+msgstr "Please enter the member or the recipient so that the allowance is attributed to the right person."
+
+msgid "Aufwandsvergütungen gehören zum Modul Steuern & Gemeinnützigkeit."
+msgstr "Expense allowances belong to the Tax & charitable status module."
+
+msgid "Vorstandsmitglieder erhalten eine Vergütung, obwohl nicht eingetragen ist, dass die Satzung das erlaubt. Ohne Satzungsregelung ist der Vorstand unentgeltlich tätig (§ 27 Abs. 3 BGB), und die Gemeinnützigkeit kann gefährdet sein."
+msgstr "Board members receive an allowance although it is not recorded that the statutes allow this. Without a provision in the statutes the board works unpaid (§ 27 (3) BGB), and the charitable status may be at risk."
+
+msgid "Über dem Freibetrag ist die Vergütung steuer- und meist sozialversicherungspflichtig (z. B. als Minijob). Bitte mit der Steuerberatung bzw. Lohnabrechnung klären."
+msgstr "Above the tax-free amount the allowance is subject to tax and usually social security (e.g. as a mini-job). Please clarify with your tax adviser or payroll."

@@ -122,6 +122,11 @@ class Booking(models.Model):
         EXPENSE = "expense", gettext_lazy("Ausgabe")
         TRANSFER = "transfer", gettext_lazy("Umbuchung")
 
+    class Allowance(models.TextChoices):
+        NONE = "", gettext_lazy("keine")
+        TRAINER = "trainer", gettext_lazy("Übungsleiterfreibetrag (§ 3 Nr. 26 EStG)")
+        VOLUNTEER = "volunteer", gettext_lazy("Ehrenamtspauschale (§ 3 Nr. 26a EStG)")
+
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"
     )
@@ -211,6 +216,15 @@ class Booking(models.Model):
         related_name="split_parts",
         verbose_name="Teil der Buchung",
     )
+    # Aufwandsvergütung an eine Person (Ausgabe): zählt gegen deren Freibetrag im Kalenderjahr
+    allowance = models.CharField(
+        "Aufwandsvergütung",
+        max_length=10,
+        choices=Allowance.choices,
+        blank=True,
+        default="",
+        db_default="",
+    )
 
     class Meta:
         verbose_name = "Buchung"
@@ -266,6 +280,13 @@ class Booking(models.Model):
                 errors["category"] = gettext("Bitte eine Kategorie wählen.")
             elif not self.category.allows(self.kind):
                 errors["category"] = gettext("Die Kategorie passt nicht zu dieser Art der Buchung.")
+        if self.allowance and self.kind != self.Kind.EXPENSE:
+            errors["allowance"] = gettext("Eine Aufwandsvergütung ist immer eine Ausgabe.")
+        elif self.allowance and not self.membership_id and not self.counterparty:
+            errors["allowance"] = gettext(
+                "Bitte das Mitglied oder den Empfänger angeben, damit die Vergütung der "
+                "richtigen Person zugerechnet wird."
+            )
         if self.date and self.account_id and self.date < self.account.opening_date:
             errors["date"] = gettext(
                 "Das Datum liegt vor dem Stichtag des Anfangsbestands von „{x0}“ ({x1})."
