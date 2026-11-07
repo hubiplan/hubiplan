@@ -1426,7 +1426,12 @@ class Loader:
         src = self.doc.get("club") if isinstance(self.doc.get("club"), dict) else {}
         org = Organization(type=Organization.Type.CLUB, parent=self.target)
         for field in dump.DEPT_FIELDS:
-            if field in data and field not in ("sort_order", "is_active", "date_precision"):
+            if field in data and field not in (
+                "sort_order",
+                "is_active",
+                "date_precision",
+                "unit_hidden_modules",
+            ):
                 setattr(org, field, org._meta.get_field(field).to_python(data[field]))
         for field, value in unit_address(self.doc, self.options).items():
             if value:

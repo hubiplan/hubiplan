@@ -289,6 +289,8 @@ export interface Department {
   self_managed?: boolean
   /** eigene Webseite (nur mit eigenem Arbeitsbereich) */
   own_website?: boolean
+  /** Module des Vereins, die für diese Untereinheit ausgeblendet sind (leer: alle) */
+  unit_hidden_modules?: string[]
   /** Mitglieder (auch der Einheiten darunter) zahlen keinen Vereinsbeitrag */
   fee_exempt?: boolean
   /** liegt auf einer anderen Instanz (Verbund, nur Anzeige) */
