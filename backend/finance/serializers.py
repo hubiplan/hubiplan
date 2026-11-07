@@ -257,6 +257,7 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "cancel_reason",
             "cancelled_by",
             "split",
+            "allowance",
         ]
         read_only_fields = ["year", "cancel_reason"]
         extra_kwargs = {"number": {"required": False, "min_value": 1}}
@@ -326,6 +327,19 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
         if kind == Booking.Kind.TRANSFER:
             attrs["project"] = None  # Umbuchungen gehören zu keiner Veranstaltung
             attrs["counterparty"] = ""
+        if attrs.get("allowance") and (
+            not self.instance or attrs["allowance"] != self.instance.allowance
+        ):
+            from access.modules import module_on
+
+            if not module_on(org, "tax"):
+                raise serializers.ValidationError(
+                    {
+                        "allowance": gettext(
+                            "Aufwandsvergütungen gehören zum Modul Steuern & Gemeinnützigkeit."
+                        )
+                    }
+                )
         if (
             self.instance
             and "date" in attrs

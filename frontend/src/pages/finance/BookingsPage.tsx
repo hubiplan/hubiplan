@@ -587,6 +587,7 @@ function BookingForm({
   onClose: () => void
 }) {
   const tm = useTerms()
+  const hasTax = useActiveOrg().modules.includes('tax')
   const activeAccounts = accounts.filter((a) => a.is_active || a.id === booking?.account)
   const usable = categories.filter(
     (c) => (c.is_active || c.id === booking?.category) && (c.kind === 'both' || c.kind === kind),
@@ -603,6 +604,7 @@ function BookingForm({
     counterparty: booking?.counterparty ?? '',
     department: String(booking?.department ?? ''),
     project: String(booking?.project ?? ''),
+    allowance: (booking?.allowance ?? '') as string,
   })
   const usableProjects = projects.filter((p) => p.status !== 'done' || p.id === booking?.project)
   const [member, setMember] = useState<MemberRow | null>(
@@ -658,6 +660,7 @@ function BookingForm({
       membership: x.membership,
       department: x.department ? Number(x.department) : null,
       project: kind !== 'transfer' && x.project ? Number(x.project) : null,
+      allowance: kind === 'expense' ? x.allowance : '',
     }
   }
 
@@ -934,6 +937,18 @@ function BookingForm({
               error={errors.reference}
               onChange={(e) => set('reference', e.target.value)}
             />
+            {kind === 'expense' && (hasTax || !!booking?.allowance) && (
+              <SelectField
+                label={t('Aufwandsvergütung an eine Person')}
+                value={v.allowance}
+                error={errors.allowance}
+                onChange={(e) => set('allowance', e.target.value)}
+              >
+                <option value="">{t('keine')}</option>
+                <option value="trainer">{t('Übungsleiterfreibetrag (§ 3 Nr. 26 EStG)')}</option>
+                <option value="volunteer">{t('Ehrenamtspauschale (§ 3 Nr. 26a EStG)')}</option>
+              </SelectField>
+            )}
           </div>
           {kind !== 'transfer' && usableProjects.length > 0 && !locked && (
             <div className="grid-2">

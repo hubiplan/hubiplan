@@ -467,6 +467,10 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     # Untereinheiten: steuerlich selbständig (eigener Bescheid). Sonst zählen ihre Zahlen
     # beim Verein mit (Freigrenze § 64 Abs. 3 und 4 AO, Kleinunternehmergrenze).
     tax_independent = models.BooleanField("steuerlich selbständig", default=False, db_default=False)
+    # Pauschalen an Vorstandsmitglieder nur, wenn die Satzung es erlaubt (§ 27 Abs. 3 BGB)
+    board_pay_allowed = models.BooleanField(
+        "Satzung erlaubt Vergütung des Vorstands", default=False, db_default=False
+    )
     # Untereinheiten: Rolleninhaber bekommen eigene Zugänge mit Rechten. Aus: die
     # Einheit darüber verwaltet sie, ihre Rollen sind reine Ämter.
     self_managed = models.BooleanField(
