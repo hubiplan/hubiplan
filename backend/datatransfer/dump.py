@@ -56,7 +56,11 @@ from organizations.tree import UnitTree
 from .tables import dump_tables
 
 FORMAT = "hubiplan-export"
-VERSION = 1
+# Höchste lesbare Fassung. 2: Organisationsmitglieder (Typ, Rechtsform, Ansprechpartner,
+# Rechnungsanschrift). Dateien ohne Organisationen bleiben Fassung 1, damit ältere
+# Installationen sie weiter lesen.
+VERSION = 2
+VERSION_ORGANIZATIONS = 2
 
 # Impressum: gepflegte Felder (der öffentliche Schlüssel wird neu vergeben)
 IMPRINT_FIELDS = [
@@ -711,6 +715,10 @@ def export_department(
 
 
 def _finish(doc: dict, dumper: Dumper, name: str) -> tuple[bytes, str, dict]:
+    if any(p.get("kind") == "organization" for p in doc.get("persons", [])):
+        doc["version"] = VERSION_ORGANIZATIONS
+    else:
+        doc["version"] = 1
     stamp = timezone.localtime().strftime("%Y-%m-%d")
     base = f"{slugify(name)[:60] or 'export'}-{stamp}"
     counts = dict(dumper.counts)

@@ -18,6 +18,7 @@ import re
 from dataclasses import dataclass, field
 
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext
@@ -32,14 +33,17 @@ from members import services
 from members.gender import parse_gender
 from members.models import (
     ContactDetails,
+    ContactPerson,
     DepartmentMembership,
     ExitReason,
     FederationMember,
+    LegalForm,
     Membership,
     MembershipPeriod,
     MemberType,
     MemberTypeAssignment,
     Person,
+    PersonKind,
     overlaps,
 )
 from organizations.models import Department, Organization
@@ -48,6 +52,7 @@ from organizations.terms import fill
 HISTORY = range(2, 6)  # Eintritt 2 … Eintritt 5
 
 BASE_TARGETS = {
+    "kind": "Typ (Person/Organisation)",
     "last_name": "Name",
     "first_name": "Vorname",
     "birth_date": "Geburtsdatum",
@@ -68,6 +73,21 @@ BASE_TARGETS = {
     "board_role": "Vorstandsrolle",
     "board_role_from": "Vorstandsrolle von",
     "board_role_until": "Vorstandsrolle bis",
+    # Organisationsmitglieder (J6): ein Ansprechpartner je Zeile
+    "name_suffix": "Namenszusatz",
+    "legal_form": "Rechtsform",
+    "contact_last_name": "Ansprechpartner Name",
+    "contact_first_name": "Ansprechpartner Vorname",
+    "contact_function": "Ansprechpartner Funktion",
+    "contact_email": "Ansprechpartner E-Mail",
+    "contact_phone": "Ansprechpartner Telefon",
+}
+CONTACT_TARGETS = {
+    "contact_last_name": "last_name",
+    "contact_first_name": "first_name",
+    "contact_function": "function",
+    "contact_email": "email",
+    "contact_phone": "phone",
 }
 for n in HISTORY:
     BASE_TARGETS[f"entry_date_{n}"] = f"Eintritt {n}"
@@ -79,6 +99,14 @@ for n in HISTORY:
 VALUE_MAPPED = {"member_type", "exit_reason", "departments", "board_role"}
 
 SYNONYMS = {
+    "kind": ["typ", "mitgliedstyp", "art des mitglieds"],
+    "name_suffix": ["zusatz", "namenszusatz", "niederlassung"],
+    "legal_form": ["rechtsform"],
+    "contact_last_name": ["ansprechpartner", "ansprechpartner nachname", "kontaktperson"],
+    "contact_first_name": ["ansprechpartner vorname"],
+    "contact_function": ["ansprechpartner funktion"],
+    "contact_email": ["ansprechpartner email", "ansprechpartner mail"],
+    "contact_phone": ["ansprechpartner telefon", "ansprechpartner tel"],
     "last_name": ["name", "nachname", "familienname"],
     "first_name": ["vorname"],
     "birth_date": ["geburtsdatum", "geboren", "geb", "gebdatum", "geburtstag"],
@@ -206,6 +234,55 @@ def distinct_values(job, target: str) -> list[str]:
     return sorted(values)
 
 
+ORGANIZATION_WORDS = {
+    "organisation",
+    "organization",
+    "org",
+    "firma",
+    "unternehmen",
+    "juristische person",
+    "o",
+}
+PERSON_WORDS = {"person", "natürliche person", "mensch", "p", ""}
+# Typische Endungen von Organisationsnamen: nur Hinweis, nie stilles Raten (J6)
+ORGANIZATION_ENDINGS = re.compile(
+    r"\b(gmbh|ug|ag|e\. ?v\.?|ev|eg|e\. ?g\.|kg|ohg|gbr|stiftung|mbh)$",
+    re.IGNORECASE,
+)
+
+
+def parse_kind(raw) -> str:
+    text = str(raw or "").strip().lower()
+    if text in ORGANIZATION_WORDS:
+        return PersonKind.ORGANIZATION
+    if text in PERSON_WORDS:
+        return PersonKind.PERSON
+    raise ValueError(
+        gettext("Typ „{raw}“ ist unbekannt (erlaubt: Person oder Organisation).").format(raw=raw)
+    )
+
+
+def parse_legal_form(raw) -> tuple[str, str]:
+    """(Rechtsform, Freitext) aus einem Dateiwert; Unbekanntes wird „Sonstige“."""
+    text = str(raw or "").strip()
+    if not text:
+        return "", ""
+    key = normalize(text)
+    for value, label in LegalForm.choices:
+        if key in (normalize(value), normalize(label)):
+            return value, ""
+    short = {
+        "ev": LegalForm.EV,
+        "eg": LegalForm.EG,
+        "ug": LegalForm.UG,
+        "gmbhcokg": LegalForm.KG,
+    }
+    compact = key.replace(" ", "")
+    if compact in short:
+        return short[compact], ""
+    return LegalForm.OTHER, text[:100]
+
+
 @dataclass
 class PeriodData:
     entry: datetime.date
@@ -226,6 +303,7 @@ class PersonGroup:
     duplicate: Person | None = None
     duplicate_info: str = ""
     sources: dict = field(default_factory=dict)  # Feld -> Zeile, aus der der Wert stammt
+    contacts: list[dict] = field(default_factory=list)  # Ansprechpartner (Organisationen)
 
 
 class Lookups:
@@ -319,14 +397,24 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
         errors = []
         last = str(_value(row, mapping, "last_name") or "").strip()
         first = str(_value(row, mapping, "first_name") or "").strip()
+        suffix = str(_value(row, mapping, "name_suffix") or "").strip()
+        try:
+            kind = parse_kind(_value(row, mapping, "kind"))
+        except ValueError as exc:
+            kind, errors = PersonKind.PERSON, [str(exc)]
         try:
             birth = parse_date(_value(row, mapping, "birth_date"))
         except ValueError as exc:
-            birth, errors = None, [f"Geburtsdatum: {exc}"]
+            birth = None
+            errors.append(gettext("Geburtsdatum: {exc}").format(exc=exc))
         # Fachfrage 11 (Audit 31.10.): eine Mitgliedsnummer ordnet sicherer zu als Name und
         # Geburtstag; ohne sie gelten gleicher Name und Geburtstag als dieselbe Person
         number = str(_value(row, mapping, "club_number") or "").strip()
-        name_key = (last.lower(), first.lower(), birth) if last and first and birth else None
+        if kind == PersonKind.ORGANIZATION:
+            # Organisationen: gleicher Name und Zusatz gelten als dieselbe
+            name_key = ("org", last.lower(), suffix.lower()) if last else None
+        else:
+            name_key = (last.lower(), first.lower(), birth) if last and first and birth else None
         if number:
             key = ("nr", number.lower())
             if name_key and name_key in groups and key not in groups:
@@ -345,8 +433,19 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
         g.rows.append(index)
         g.errors.extend(f"Zeile {index}: {e}" for e in errors)
         if not g.data:
-            g.data = {"last_name": last, "first_name": first, "birth_date": birth}
+            g.data = {"last_name": last, "first_name": first, "birth_date": birth, "kind": kind}
+            if suffix:
+                g.data["name_suffix"] = suffix
+            raw_form = _value(row, mapping, "legal_form")
+            if raw_form not in (None, ""):
+                g.data["legal_form"], g.data["legal_form_other"] = parse_legal_form(raw_form)
         else:
+            if kind != g.data.get("kind"):
+                g.errors.append(
+                    gettext("Zeile {index}: Typ widerspricht Zeile {first_row}.").format(
+                        index=index, first_row=g.rows[0]
+                    )
+                )
             base = (("last_name", last), ("first_name", first), ("birth_date", birth))
             for target, value in base:
                 _conflict(g, target, value, index)
@@ -386,7 +485,37 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
             g.errors.append(gettext("Zeile {index}: {exc}").format(index=index, exc=exc))
         _read_role(g, row, mapping, lookups, index)
         _read_fields(g, row, mapping, lookups, index)
+        _read_contact(g, row, mapping, index)
     return [groups[k] for k in order]
+
+
+def _read_contact(g, row, mapping, index):
+    values = {
+        key: str(_value(row, mapping, target) or "").strip()
+        for target, key in CONTACT_TARGETS.items()
+    }
+    if not any(values.values()):
+        return
+    if not values["last_name"]:
+        g.errors.append(
+            gettext("Zeile {index}: Name des Ansprechpartners fehlt.").format(index=index)
+        )
+        return
+    if values["email"]:
+        try:
+            validate_email(values["email"])
+        except DjangoValidationError:
+            g.errors.append(
+                gettext("Zeile {index}: E-Mail des Ansprechpartners ist ungültig.").format(
+                    index=index
+                )
+            )
+            return
+    same = (values["last_name"].lower(), values["first_name"].lower())
+    if any((c["last_name"].lower(), c["first_name"].lower()) == same for c in g.contacts):
+        return  # derselbe Ansprechpartner in mehreren Zeilen
+    values["row"] = index
+    g.contacts.append(values)
 
 
 CONFLICT_LABELS = {
@@ -523,9 +652,31 @@ def _plain(raw, field_type):
 
 def check_group(g: PersonGroup, org: Organization, link_duplicates: bool) -> None:
     d = g.data
-    for target in ("last_name", "first_name", "birth_date"):
+    organization = d.get("kind") == PersonKind.ORGANIZATION
+    required = ("last_name",) if organization else ("last_name", "first_name", "birth_date")
+    for target in required:
         if not d.get(target):
             g.errors.append(gettext("{x0} fehlt.").format(x0=BASE_TARGETS[target]))
+    if organization:
+        if d.get("first_name") or d.get("birth_date"):
+            g.errors.append(gettext("Eine Organisation hat keinen Vornamen und kein Geburtsdatum."))
+    else:
+        if g.contacts:
+            g.errors.append(gettext("Ansprechpartner gibt es nur bei Organisationen."))
+        if d.get("name_suffix") or d.get("legal_form"):
+            g.errors.append(gettext("Namenszusatz und Rechtsform gibt es nur bei Organisationen."))
+        if (
+            not d.get("first_name")
+            and not d.get("birth_date")
+            and ORGANIZATION_ENDINGS.search(d.get("last_name", "").strip())
+        ):
+            # Kein Raten: der Vorstand ergänzt die Spalte „Typ“ (J6)
+            g.errors.append(
+                gettext(
+                    "„{name}“ sieht nach einer Organisation aus. Bitte in der Spalte „Typ“ "
+                    "„Organisation“ eintragen."
+                ).format(name=d.get("last_name"))
+            )
     if not g.periods:
         g.errors.append(gettext("Kein Eintrittsdatum."))
     periods = sorted(g.periods, key=lambda p: p.entry)
@@ -550,6 +701,16 @@ def check_group(g: PersonGroup, org: Organization, link_duplicates: bool) -> Non
         g.errors.append(gettext("Mehr als ein offener Zeitraum."))
     if current and not all(d.get(k) for k in ("street", "postal_code", "city")):
         g.errors.append(gettext("Für aktuelle Mitglieder ist die Anschrift Pflicht."))
+    if organization and not g.errors:
+        name = d["last_name"].lower()
+        suffix = d.get("name_suffix", "").lower()
+        for m in Membership.objects.filter(
+            organization=org, person__kind=PersonKind.ORGANIZATION
+        ).select_related("person"):
+            if m.person.last_name.lower() == name and m.person.name_suffix.lower() == suffix:
+                g.errors.append(fill("Die Organisation ist bereits Mitglied {e_dieses}.", org))
+                break
+        return
     if g.errors or not d.get("birth_date"):
         return
     found = services.find_duplicates(org, d["last_name"], d["first_name"], d["birth_date"])
@@ -608,9 +769,14 @@ def preview_of(groups: list[PersonGroup]) -> tuple[list[dict], dict]:
         preview.append(
             {
                 "rows": g.rows,
-                "name": f"{g.data.get('last_name', '')}, {g.data.get('first_name', '')}".strip(
-                    ", "
+                "name": (
+                    " – ".join(p for p in (g.data.get("last_name"), g.data.get("name_suffix")) if p)
+                    if g.data.get("kind") == PersonKind.ORGANIZATION
+                    else f"{g.data.get('last_name', '')}, {g.data.get('first_name', '')}".strip(
+                        ", "
+                    )
                 ),
+                "kind": g.data.get("kind", PersonKind.PERSON),
                 "birth_date": g.data["birth_date"].isoformat()
                 if g.data.get("birth_date")
                 else None,
@@ -650,18 +816,34 @@ def run(job, user) -> dict:
         d = g.data
         person = g.duplicate
         if person is None:
+            organization = d.get("kind") == PersonKind.ORGANIZATION
             person = Person.objects.create(
                 scope=scope,
+                kind=d.get("kind", PersonKind.PERSON),
                 last_name=d["last_name"],
-                first_name=d["first_name"],
-                birth_date=d["birth_date"],
+                first_name="" if organization else d["first_name"],
+                birth_date=None if organization else d["birth_date"],
                 gender=d.get("gender", ""),
+                name_suffix=d.get("name_suffix", "") if organization else "",
+                legal_form=d.get("legal_form", "") if organization else "",
+                legal_form_other=d.get("legal_form_other", "") if organization else "",
             )
             created["persons"].append(person.pk)
         membership = Membership.objects.create(
             organization=org, scope=scope, person=person, club_number=d.get("club_number", "")
         )
         created["memberships"].append(membership.pk)
+        for i, c in enumerate(g.contacts):
+            ContactPerson.objects.create(
+                organization=org,
+                membership=membership,
+                last_name=c["last_name"],
+                first_name=c["first_name"],
+                function=c["function"][:100],
+                email=c["email"],
+                phone=c["phone"][:50],
+                is_primary=i == 0,
+            )
         reported = False
         for p in sorted(g.periods, key=lambda x: x.entry):
             MembershipPeriod.objects.create(
