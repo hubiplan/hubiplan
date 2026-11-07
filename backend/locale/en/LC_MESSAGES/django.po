@@ -8696,3 +8696,36 @@ msgstr "For this the platform also has to release: {x}"
 
 msgid "Bitte eine Liste von Modulen angeben."
 msgstr "Please give a list of modules."
+
+msgid "Hochgeladene Mitgliederfotos erst nach Freigabe anzeigen"
+msgstr "Show uploaded member photos only after approval"
+
+msgid "Geänderte Kontaktdaten erst nach Bestätigung übernehmen"
+msgstr "Apply changed contact details only after confirmation"
+
+msgid "Ausweis in Apple Wallet und Google Wallet"
+msgstr "Card in Apple Wallet and Google Wallet"
+
+msgid "Zählprotokoll und Kassenbericht für Feste"
+msgstr "Cash count and cash report for festivals"
+
+msgid "DATEV-Export"
+msgstr "DATEV export"
+
+msgid "Steuerliche Bereiche in der Kasse"
+msgstr "Tax areas in the cash book"
+
+msgid "Rücklagen führen"
+msgstr "Keep reserves"
+
+msgid "SEPA-Lastschrift"
+msgstr "SEPA direct debit"
+
+msgid "Bitte die Zusatzfunktionen mit ja oder nein angeben."
+msgstr "Please give the add-on features as yes or no."
+
+msgid "Unbekannte Zusatzfunktion: {x}"
+msgstr "Unknown add-on feature: {x}"
+
+msgid "Dafür muss das Modul eingeschaltet sein: {x}"
+msgstr "The module must be switched on for this: {x}"

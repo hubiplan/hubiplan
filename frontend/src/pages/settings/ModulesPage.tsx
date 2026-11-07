@@ -1,5 +1,6 @@
 // Einstellungen › Module: freigegebene Module ein- und ausschalten (konzepte/module-neustruktur.md, M3)
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { moduleApi } from '../../api/modules.ts'
 import type { OrgModule, OrgModules } from '../../api/modules.ts'
 import { PERM } from '../../api/orgs.ts'
@@ -8,6 +9,16 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert, Checkbox, LoadError } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+
+// Einrichtung der Module, soweit es eine eigene Seite gibt
+const SETUP: Record<string, string> = {
+  members: '/mitglieder/einrichtung',
+  events: '/termine/einrichtung',
+  competitions: '/wettbewerbe/einrichtung',
+  finance: '/finanzen/einrichtung/konten',
+  tax: '/finanzen/einrichtung/kategorien',
+  billing: '/finanzen/einrichtung/beitraege',
+}
 
 export function ModulesPage() {
   const org = useActiveOrg()
@@ -61,6 +72,20 @@ export function ModulesPage() {
     }
   }
 
+  async function switchExtra(id: string, on: boolean) {
+    setMessage(null)
+    setBusy(true)
+    try {
+      load.setData(await moduleApi.setExtras(org.id, { [id]: on }))
+      setMessage({ kind: 'success', text: t('Gespeichert.') })
+      await refresh()
+    } catch (err) {
+      setMessage({ kind: 'error', text: errorMessage(err) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="card card-wide stack">
       <h2>{t('Module')}</h2>
@@ -84,15 +109,35 @@ export function ModulesPage() {
               ...(m.released ? [] : [t('von der Plattform nicht freigegeben')]),
             ].join(' · ')
             return (
-              <Checkbox
-                key={m.id}
-                label={m.label}
-                hint={hint}
-                checked={m.enabled}
-                disabled={!canEdit || (!m.released && !m.enabled)}
-                busy={busy}
-                onChange={(on) => void toggle(m, on)}
-              />
+              <div key={m.id} className="stack">
+                <Checkbox
+                  label={m.label}
+                  hint={hint}
+                  checked={m.enabled}
+                  disabled={!canEdit || (!m.released && !m.enabled)}
+                  busy={busy}
+                  onChange={(on) => void toggle(m, on)}
+                />
+                {m.enabled && (m.extras.length > 0 || SETUP[m.id]) && (
+                  <div className="stack module-extras">
+                    {m.extras.map((x) => (
+                      <Checkbox
+                        key={x.id}
+                        label={x.label}
+                        checked={x.on}
+                        disabled={!canEdit}
+                        busy={busy}
+                        onChange={(on) => void switchExtra(x.id, on)}
+                      />
+                    ))}
+                    {SETUP[m.id] && (
+                      <Link className="small" to={SETUP[m.id]}>
+                        {t('Einrichtung von „{x}“', { x: m.label })}
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
             )
           })}
         </fieldset>
