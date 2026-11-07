@@ -2,7 +2,7 @@
 key: page.documents
 titel: Documents
 bereich: einstellungen
-modul: documents
+modul: docs
 routen: [/dokumente]
 stichworte: [file, storage, folder, statutes, minutes]
 ---

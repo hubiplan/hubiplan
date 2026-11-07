@@ -8648,3 +8648,15 @@ msgstr "Read chronicle"
 
 msgid "Chronik pflegen: Zeitleiste, Einleitung und Bilder"
 msgstr "Maintain chronicle: timeline, introduction and pictures"
+
+msgid "Steuern & Gemeinnützigkeit"
+msgstr "Tax & charitable status"
+
+msgid "Steuerliche Bereiche in der Kasse, Auswertung nach Bereichen und Rücklagen"
+msgstr "Tax areas in the cash book, evaluation by area and reserves"
+
+msgid "Zuwendungsbestätigungen"
+msgstr "Donation receipts"
+
+msgid "Zuwendungen erfassen und Bestätigungen nach amtlichem Muster ausstellen"
+msgstr "Record donations and issue receipts in the official format"

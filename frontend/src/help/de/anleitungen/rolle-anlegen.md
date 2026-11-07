@@ -2,7 +2,6 @@
 key: guide.role_create
 titel: Rolle anlegen und Person einladen
 bereich: einstellungen
-modul: roles
 rechte: [roles.edit]
 routen: [/einstellungen/rollen]
 stichworte: [Rolle, Rechte, einladen, Zugang, Kassierer]

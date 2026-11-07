@@ -103,7 +103,7 @@ class ReserveViewSet(FinanceMixin, AuditMixin, viewsets.ModelViewSet):
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
-        if not self.org.reserves_enabled:
+        if not self.org.reserves_on:
             raise NotFound(gettext("Rücklagen sind für diese Einheit nicht eingeschaltet."))
 
     def get_queryset(self):

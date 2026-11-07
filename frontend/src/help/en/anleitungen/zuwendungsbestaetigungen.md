@@ -2,7 +2,7 @@
 key: guide.donation_receipts
 titel: Issue donation receipts
 bereich: finanzen
-modul: finance
+modul: donations
 rechte: [finance.edit]
 routen: [/finanzen/zuwendungen]
 stichworte: [donation receipt, donation, tax office, annual statement]

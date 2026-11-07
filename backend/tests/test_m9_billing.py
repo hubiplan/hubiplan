@@ -29,7 +29,17 @@ def _private(settings, tmp_path):
 @pytest.fixture
 def club(orgs):
     club = orgs["a"]
-    club.enabled_modules = ["finance", "members", "billing", "circulars", "docs", "todos", "awards"]
+    club.enabled_modules = [
+        "finance",
+        "members",
+        "billing",
+        "circulars",
+        "docs",
+        "todos",
+        "awards",
+        "tax",
+        "donations",
+    ]
     club.member_portal_enabled = True
     club.department_access_enabled = True
     club.contact_email = "kasse@verein-a.example.org"

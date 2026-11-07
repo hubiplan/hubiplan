@@ -152,7 +152,7 @@ class CategorySerializer(serializers.ModelSerializer):
         return _datev_number(value)
 
     def validate_tax_area(self, value):
-        if value and not self.context["org"].tax_areas_enabled:
+        if value and not self.context["org"].tax_areas_on:
             return ""
         return value
 

@@ -2,7 +2,7 @@
 key: guide.document_upload
 titel: Dokument ablegen und freigeben
 bereich: einstellungen
-modul: documents
+modul: docs
 rechte: [docs.manage]
 routen: [/dokumente]
 stichworte: [Datei, hochladen, Ordner, Protokoll, freigeben]

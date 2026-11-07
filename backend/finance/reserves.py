@@ -24,7 +24,7 @@ NEEDS_PURPOSE = {Reserve.Kind.PURPOSE, Reserve.Kind.REPLACEMENT}
 
 
 def check_enabled(org) -> None:
-    if not org.reserves_enabled:
+    if not org.reserves_on:
         raise ValidationError(gettext("Rücklagen sind für diese Einheit nicht eingeschaltet."))
 
 

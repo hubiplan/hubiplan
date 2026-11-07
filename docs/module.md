@@ -20,7 +20,12 @@ abschaltbar sind und welche eine neue Einheit bekommt.
   Schnittstelle unverändert); ohne Webseite legt `GET /api/orgs/<id>/chronicle/` eine
   ausgeschaltete Webseite als Ablage an. Inhalte-Ansichten mit `chronicle_ok` lassen
   Chronik-Rechte nur an diese Seite und die Bilder.
-- `tests/test_modulnamen.py` prüft, dass jede im Code abgefragte Kennung im Verzeichnis steht.
+- **Steuern & Gemeinnützigkeit:** Die Schalter „steuerliche Bereiche“ und „Rücklagen führen“
+  bleiben gespeichert, wirken aber nur mit dem Modul (`Organization.tax_areas_on`,
+  `reserves_on`). **Zuwendungsbestätigungen:** `finance.donations.available` fragt das Modul ab.
+  Beide gelten für eine Untereinheit mit eigener Kasse, wenn ihr Verein sie eingeschaltet hat.
+- `tests/test_modulnamen.py` prüft, dass jede im Code und in der Hilfe (`modul:`) abgefragte
+  Kennung im Verzeichnis steht.
 - Exportdateien tragen `modules_schema`; ältere Dateien ergänzt `upgrade_modules`, damit nichts
   verschwindet.
 
@@ -49,5 +54,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | | Material | `material` | aus | – |
 | | Räume und Anlagen | `infrastructure` | aus | – |
 | | Belegung | `bookings` | aus | Material oder Räume |
+| | Steuern & Gemeinnützigkeit | `tax` | aus | Kasse |
+| | Zuwendungsbestätigungen | `donations` | aus | Kasse |
 
 Konzept und weitere Schritte: Projektunterlage „Module neu ordnen“.

@@ -504,9 +504,13 @@ def _summary_modules(org: Organization) -> list[str]:
     if org.type == Organization.Type.PLATFORM:
         return []
     modules = list(org.enabled_modules or [])
-    # Eigene Webseite einer Untereinheit: Social Media kommt vom Verein
-    if org.type == Organization.Type.UNIT and "website" in modules and module_on(org, "social"):
-        modules.append("social")
+    if org.type == Organization.Type.UNIT:
+        # Eigene Webseite einer Untereinheit: Social Media kommt vom Verein
+        if "website" in modules and module_on(org, "social"):
+            modules.append("social")
+        # Eigene Kasse einer Untereinheit: Steuern und Zuwendungen kommen vom Verein
+        if "finance" in modules:
+            modules += [m for m in ("tax", "donations") if m not in modules and module_on(org, m)]
     return modules
 
 
@@ -539,7 +543,7 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
         # Kasse: Zählprotokoll und Kassenbericht für Feste (Schalter unter Konten)
         "cash_counts_enabled": bool(org.cash_counts_enabled) and org.type != "platform",
         # Kasse: Rücklagen nach § 62 AO (Schalter unter Konten)
-        "reserves_enabled": bool(org.reserves_enabled) and org.type != "platform",
+        "reserves_enabled": org.reserves_on and org.type != "platform",
         "direct_members": org.type == Organization.Type.FEDERATION and org.direct_members,
         "imprint_key": imprint.public_key,
         # Schalter „Eingetragener Verein“ (Impressum, Briefbogen)

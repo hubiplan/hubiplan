@@ -81,7 +81,7 @@ def _evaluation(project: Project) -> dict:
     expense = sum((c["expense"] for c in categories), ZERO)
 
     areas = []
-    if org.tax_areas_enabled:
+    if org.tax_areas_on:
         sums: dict[str, dict] = defaultdict(lambda: {"income": ZERO, "expense": ZERO})
         for c in categories:
             sums[c["tax_area"]]["income"] += c["income"]
@@ -114,7 +114,7 @@ def _evaluation(project: Project) -> dict:
         "department_name": project.department.display_name if project.department_id else None,
         "series": project.series_id,
         "series_name": project.series.name if project.series_id else None,
-        "tax_areas_enabled": org.tax_areas_enabled,
+        "tax_areas_enabled": org.tax_areas_on,
         "categories": categories,
         "tax_areas": areas,
         "totals": {"income": income, "expense": expense, "result": income - expense},
