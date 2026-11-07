@@ -83,6 +83,9 @@ CIRCULARS_VIEW = "circulars.view"
 CIRCULARS_EDIT = "circulars.edit"
 CHRONICLE_VIEW = "chronicle.view"
 CHRONICLE_EDIT = "chronicle.edit"
+SCORES_VIEW = "scores.view"
+SCORES_EDIT = "scores.edit"
+MUSIC_VIEW = "music.view"
 WEBCONTENT_VIEW = "webcontent.view"
 WEBCONTENT_EDIT = "webcontent.edit"
 WEBSITE_VIEW = "website.view"
@@ -285,6 +288,13 @@ AREAS: tuple[Area, ...] = (
         gettext_noop("Musiker und Auftritte lesen"),
         gettext_noop("Musiker und Auftritte bearbeiten"),
         module="music",
+    ),
+    Area(
+        "scores",
+        gettext_noop("Notenarchiv"),
+        gettext_noop("Notenbestand lesen"),
+        gettext_noop("Notenbestand pflegen: Stücke, Arrangements, Stimmen und Notendateien"),
+        module="scores",
     ),
     Area(
         "events",

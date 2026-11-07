@@ -8660,3 +8660,18 @@ msgstr "Donation receipts"
 
 msgid "Zuwendungen erfassen und Bestätigungen nach amtlichem Muster ausstellen"
 msgstr "Record donations and issue receipts in the official format"
+
+msgid "Notenarchiv"
+msgstr "Sheet music archive"
+
+msgid "Notenbestand mit Stücken, Arrangements, Stimmen und Notendateien"
+msgstr "Sheet music library with pieces, arrangements, parts and files"
+
+msgid "Notenbestand lesen"
+msgstr "Read sheet music library"
+
+msgid "Notenbestand pflegen: Stücke, Arrangements, Stimmen und Notendateien"
+msgstr "Maintain sheet music library: pieces, arrangements, parts and files"
+
+msgid "Auftritte, Musiker, Proben, Notenausgabe und Besetzung"
+msgstr "Performances, musicians, rehearsals, music handout and line-up"

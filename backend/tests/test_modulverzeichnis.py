@@ -32,10 +32,11 @@ def test_voraussetzungen_bekannt_und_gruppen_vorhanden():
 
 
 def test_voraussetzungen_einschalten_und_abhaengige_ausschalten():
-    assert with_requirements(["music"]) == {"music", "events"}
+    assert with_requirements(["music"]) == {"music", "events", "scores"}
     assert with_requirements(["meetings", "unbekannt"]) == {"meetings", "events"}
     assert without_dependents(["music", "meetings", "finance"]) == {"finance"}
-    assert without_dependents(["music", "events"]) == {"music", "events"}
+    assert without_dependents(["music", "events", "scores"]) == {"music", "events", "scores"}
+    assert without_dependents(["music", "events"]) == {"events"}
 
 
 @pytest.mark.django_db
@@ -47,7 +48,7 @@ def test_api_liefert_gruppen(api):
     ids = [m["id"] for g in data for m in g["modules"]]
     assert sorted(ids) == sorted(MODULE_BY_ID)
     music = next(m for g in data for m in g["modules"] if m["id"] == "music")
-    assert music["requires"] == ["events"] and music["label"] == "Musik"
+    assert music["requires"] == ["events", "scores"] and music["label"] == "Musik"
 
 
 def test_aeltere_exportdateien_verlieren_nichts():

@@ -130,8 +130,15 @@ MODULES: tuple[Module, ...] = (
         "music",
         gettext_noop("Musik"),
         "music",
-        gettext_noop("Auftritte, Musiker, Proben, Notenbestand und Besetzung"),
-        requires=("events",),
+        gettext_noop("Auftritte, Musiker, Proben, Notenausgabe und Besetzung"),
+        requires=("events", "scores"),
+        org_types=("federation", "club"),
+    ),
+    Module(
+        "scores",
+        gettext_noop("Notenarchiv"),
+        "music",
+        gettext_noop("Notenbestand mit Stücken, Arrangements, Stimmen und Notendateien"),
         org_types=("federation", "club"),
     ),
     Module(
@@ -248,8 +255,8 @@ DEFAULT_IDS: tuple[str, ...] = tuple(m.id for m in MODULES if m.default)
 # Stand des Verzeichnisses für Exportdateien: 1 = bis M1, 2 = mit Aufgaben, Dokumenten,
 # Rundschreiben, Ausweisen, Ausschreibungen, Belegung, Ehrungen & Jubiläen, Würden,
 # Mitgliederbereich und Social Media als eigene Module; 3 = mit Chronik; 4 = mit Steuern &
-# Gemeinnützigkeit und Zuwendungsbestätigungen
-MODULES_SCHEMA = 4
+# Gemeinnützigkeit und Zuwendungsbestätigungen; 5 = mit Notenarchiv
+MODULES_SCHEMA = 5
 
 
 def upgrade_modules(
@@ -286,6 +293,8 @@ def upgrade_modules(
         modules.add("tax")
     if schema < 4 and has_donations and "finance" in modules:
         modules.add("donations")
+    if schema < 5 and "music" in modules:
+        modules.add("scores")
     return modules
 
 

@@ -137,10 +137,14 @@ def test_malformed_and_overlong_files(c, music, raw):
 def test_read_only_and_module_limits(c, api, club, music):
     url = music[0] + "/catalogue-import/"
     user = make_user("notenkatalog@example.org")
-    give_role(user, club, permissions=["music.view"], name="Notenkatalog lesen")
+    give_role(user, club, permissions=["scores.view"], name="Notenkatalog lesen")
     assert api(user).get(url).status_code == 200
     assert upload(api(user), url, csv_file()).status_code == 403
+    # Ohne Musik bleibt der Import (Modul „Notenarchiv“), ohne Notenarchiv nicht
     club.enabled_modules.remove("music")
+    club.save()
+    assert c.get(url).status_code == 200
+    club.enabled_modules.remove("scores")
     club.save()
     assert c.get(url).status_code == 404
 
