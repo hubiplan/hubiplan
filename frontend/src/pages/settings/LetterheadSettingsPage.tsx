@@ -310,7 +310,7 @@ function NeutralCard({
   unitLabel: string
 }) {
   const { active, can } = useOrg()
-  const withDocs = !!active?.modules.includes('documents') && can(PERM.docsManage)
+  const withDocs = !!active && can(PERM.docsManage)
   const folders = useLoad(
     () =>
       withDocs
