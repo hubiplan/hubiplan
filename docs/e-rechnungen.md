@@ -91,6 +91,29 @@ Offizielle Quellen:
 - [Prüfkonfiguration XRechnung](https://github.com/itplr-kosit/validator-configuration-xrechnung)
 - [FeRD: ZUGFeRD](https://www.ferd-net.de/standards/zugferd)
 
+## Beitragsrechnungen an Mitglieder mit Leitweg-ID
+
+Öffentliche Auftraggeber, die Mitglied sind (Stadt, Kreis, Behörde), nehmen Rechnungen oft
+nur als XRechnung an. Unter Finanzen › Einrichtung › Rechnung & Zahlung schaltet der Verein
+„Rechnungen an Mitglieder mit Leitweg-ID als E-Rechnung (XRechnung)“ ein. Dann bekommt jede
+Rechnung an ein Mitglied, dessen Rechnungsanschrift eine Leitweg-ID trägt, beim Festschreiben
+die fachlichen Daten (`billing/member_einvoice.py`) und läuft danach durch denselben Weg wie
+Leistungsrechnungen: XML erzeugen, mit KoSIT prüfen, Original und lesbare Fassung ablegen,
+XML an die Rechnungsmail hängen.
+
+- Käufer: Name und Anschrift aus der Rechnungsanschrift (sonst Anschrift des Mitglieds),
+  `BuyerReference` und elektronische Adresse = Leitweg-ID (Schema 0204), Bestellnummer als
+  `OrderReference`.
+- Verkäufer: Name und Anschrift aus Impressum bzw. Einheit; Ansprechpartner, Telefon, E-Mail
+  aus den Beitragseinstellungen, sonst aus dem Kontakt der Einheit; Kennung aus den
+  Beitragseinstellungen, sonst Registergericht und -nummer aus dem Impressum.
+- Posten ohne Steuersatz sind nicht steuerbar (Kategorie O, „Echter Mitgliedsbeitrag, nicht
+  steuerbar“); stehen steuerpflichtige Posten daneben, werden sie als steuerfrei (E) mit
+  demselben Grund geführt. Gutschriften erscheinen mit Menge −1.
+- Fehlt etwas oder schlägt die Prüfung fehl, bleibt die Rechnung ein Entwurf; im Beitragslauf
+  bricht das Festschreiben dann mit der Meldung ab. Im Arbeitsbereich einer Untereinheit gibt
+  es keine E-Rechnung.
+
 ## Anzahlungs- und Schlussrechnungen
 
 Unter **Rechnungsart** die Anzahlungsrechnung wählen, prüfen und festschreiben.

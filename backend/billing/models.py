@@ -217,6 +217,29 @@ class BillingSettings(models.Model):
     prenotification_days = models.PositiveSmallIntegerField(
         "Vorabankündigung (Tage vor dem Einzug)", default=14
     )
+    # E-Rechnung (XRechnung) für Beitragsrechnungen an Mitglieder mit Leitweg-ID (J8a)
+    einvoice_members = models.BooleanField(
+        "Rechnungen an Mitglieder mit Leitweg-ID als E-Rechnung (XRechnung)",
+        default=False,
+        db_default=False,
+    )
+    einvoice_contact = models.CharField(
+        "Ansprechpartner für Rechnungsfragen", max_length=100, blank=True, default="", db_default=""
+    )
+    einvoice_phone = models.CharField(
+        "Telefon für Rechnungsfragen", max_length=50, blank=True, default="", db_default=""
+    )
+    einvoice_email = models.EmailField(
+        "E-Mail für Rechnungsfragen", blank=True, default="", db_default=""
+    )
+    einvoice_identifier = models.CharField(
+        "Kennung des Rechnungsstellers",
+        max_length=100,
+        blank=True,
+        default="",
+        db_default="",
+        help_text="z. B. Vereinsregisternummer; leer: aus dem Impressum",
+    )
 
     class Meta:
         verbose_name = "Beitragseinstellungen"

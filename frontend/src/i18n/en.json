@@ -6947,5 +6947,14 @@
   "Schlägt Module und die Bezeichnung der Untereinheiten vor. Danach ist alles frei änderbar.": "Suggests modules and the name for sub-units. Everything can be changed freely afterwards.",
   "– ohne Vorlage –": "– no template –",
   "Darf den Einheiten darunter Module freigeben": "May release modules to the units below",
-  "Dann ändert sie die Freigabe für diese Einheiten selbst, ohne die Plattform-Verwaltung.": "It then changes the release for these units itself, without the platform administration."
+  "Dann ändert sie die Freigabe für diese Einheiten selbst, ohne die Plattform-Verwaltung.": "It then changes the release for these units itself, without the platform administration.",
+  "E-Rechnung für Behörden": "E-invoices for public authorities",
+  "Rechnungen an Mitglieder mit Leitweg-ID als E-Rechnung (XRechnung)": "Issue invoices to members with a Leitweg-ID as e-invoices (XRechnung)",
+  "Ansprechpartner für Rechnungsfragen": "Contact for invoice questions",
+  "leer: Kontakt des Vereins": "empty: the club's contact",
+  "Telefon für Rechnungsfragen": "Phone for invoice questions",
+  "E-Mail für Rechnungsfragen": "Email for invoice questions",
+  "Kennung des Rechnungsstellers": "Seller identifier",
+  "z. B. Vereinsregisternummer; leer: aus dem Impressum": "e.g. register number; empty: taken from the legal notice",
+  "Die Leitweg-ID steht in der Rechnungsanschrift des Mitglieds. Beim Festschreiben entsteht dann eine geprüfte XRechnung; die Rechnungsmail trägt sie als Anhang.": "The Leitweg-ID is part of the member's billing address. Finalising then creates a validated XRechnung, which the invoice email carries as an attachment."
 }

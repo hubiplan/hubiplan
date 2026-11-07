@@ -8768,3 +8768,30 @@ msgstr "Voices"
 
 msgid "Module gibt hier die Plattform-Verwaltung frei."
 msgstr "Modules are released here by the platform administration."
+
+msgid "Anschrift des Vereins"
+msgstr "address of the club"
+
+msgid "E-Mail für Rechnungsfragen"
+msgstr "email for invoice questions"
+
+msgid "Ansprechpartner für Rechnungsfragen"
+msgstr "contact for invoice questions"
+
+msgid "Telefon für Rechnungsfragen"
+msgstr "phone for invoice questions"
+
+msgid "Kennung des Rechnungsstellers"
+msgstr "seller identifier"
+
+msgid "Für die E-Rechnung fehlen in den Beitragseinstellungen: {fields}."
+msgstr "The e-invoice needs the following in the fee settings: {fields}."
+
+msgid "Für die E-Rechnung an {name} fehlt die vollständige Anschrift."
+msgstr "The e-invoice to {name} is missing a complete address."
+
+msgid "Für die E-Rechnung fehlt ein Konto mit IBAN in den Beitragseinstellungen."
+msgstr "The e-invoice needs an account with an IBAN in the fee settings."
+
+msgid "Für steuerpflichtige Posten braucht die E-Rechnung Steuernummer oder USt-IdNr."
+msgstr "For taxable items the e-invoice needs a tax number or VAT ID."

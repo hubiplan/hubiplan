@@ -31,6 +31,12 @@ export interface BillingSettings {
   sepa_enabled: boolean
   creditor_id: string
   prenotification_days: number
+  /** E-Rechnung (XRechnung) für Rechnungen an Mitglieder mit Leitweg-ID (J8a) */
+  einvoice_members: boolean
+  einvoice_contact: string
+  einvoice_phone: string
+  einvoice_email: string
+  einvoice_identifier: string
   rhythms: { value: Rhythm; label: string }[]
   accounts: { id: number; name: string; kind: string; has_iban: boolean }[]
   categories: { id: number; name: string }[]
