@@ -6940,5 +6940,6 @@
   "Mit ausgeschaltet: {x}.": "Also switched off: {x}.",
   "Schaltet ein, was ihr nutzt; ausgeschaltete Module verschwinden aus dem Menü, ihre Daten bleiben erhalten. Welche Module zur Wahl stehen, gibt die Plattform-Verwaltung frei.": "Switch on what you use; switched-off modules disappear from the menu and their data is kept. The platform administration releases which modules are available.",
   "braucht {x}": "needs {x}",
-  "von der Plattform nicht freigegeben": "not released by the platform"
+  "von der Plattform nicht freigegeben": "not released by the platform",
+  "Einrichtung von „{x}“": "Set up “{x}”"
 }

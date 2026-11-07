@@ -22,6 +22,7 @@ function mod(id: string, label: string, extra: Record<string, unknown> = {}) {
     released: true,
     enabled: false,
     needed_by: [],
+    extras: [],
     ...extra,
   }
 }
@@ -80,4 +81,43 @@ it('schaltet ein Modul mit seinen Voraussetzungen ein, nicht freigegebene sind g
   await waitFor(() => expect(screen.getByRole('checkbox', { name: /^Musik/ })).toBeChecked())
   const saves = calls.filter((c) => c.key === `PATCH ${M}`)
   expect(saves.map((c) => JSON.parse(String(c.init?.body)).dry_run)).toEqual([true, false])
+})
+
+it('schaltet Zusatzfunktionen eingeschalteter Module', async () => {
+  const kasse = (on: boolean) => [
+    {
+      id: 'admin',
+      label: 'Verwaltung',
+      modules: [
+        mod('finance', 'Kasse', {
+          enabled: true,
+          extras: [{ id: 'cash_counts', label: 'Zählprotokoll', on }],
+        }),
+      ],
+    },
+  ]
+  const calls = fakeApi({
+    [SESSION]: loggedIn,
+    'GET /api/me/organizations/': () => ({
+      status: 200,
+      body: [testOrg({ permissions: ['settings.view', 'settings.edit'] })],
+    }),
+    [`GET ${M}`]: () => ({ status: 200, body: { groups: kasse(false) } }),
+    [`PATCH ${M}`]: () => ({ status: 200, body: { groups: kasse(true) } }),
+  })
+  render(
+    <MemoryRouter initialEntries={['/einstellungen/module']}>
+      <AuthProvider>
+        <OrgProvider>
+          <App />
+        </OrgProvider>
+      </AuthProvider>
+    </MemoryRouter>,
+  )
+  const user = userEvent.setup()
+  expect(await screen.findByRole('link', { name: /Einrichtung von „Kasse“/ })).toBeInTheDocument()
+  await user.click(screen.getByRole('checkbox', { name: /Zählprotokoll/ }))
+  await waitFor(() => expect(screen.getByRole('checkbox', { name: /Zählprotokoll/ })).toBeChecked())
+  const saves = calls.filter((c) => c.key === `PATCH ${M}`)
+  expect(JSON.parse(String(saves[0].init?.body))).toEqual({ extras: { cash_counts: true } })
 })

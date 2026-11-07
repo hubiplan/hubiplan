@@ -10,6 +10,10 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 - Die Einheit schaltet unter Einstellungen › Module (`/api/orgs/<id>/modules/`, Recht
   `settings.*`, `apply_enabled`) innerhalb der Freigabe ein und aus; `dry_run` zeigt vorher,
   was mit ein- oder ausgeschaltet wird.
+- **Zusatzfunktionen** (`EXTRAS`: Schalter eines Moduls ohne eigene Seiten, etwa Zählprotokoll,
+  DATEV, Rücklagen, SEPA, Wallet) stehen in derselben Antwort unter `extras` und werden mit
+  `PATCH {extras: {id: bool}}` geschaltet, nur bei eingeschaltetem Modul. Es sind dieselben
+  Felder wie in den Einrichtungsseiten der Module.
 - **Eingeschaltet** steht in `Organization.enabled_modules`. Abfragen im Code nutzen die
   Kennung aus dem Verzeichnis, für Untereinheiten `module_on(org, id)` (sie erben die Module
   ihres Vereins; Kasse, Rechnungen und Webseite führen sie selbst).

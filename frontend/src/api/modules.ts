@@ -27,6 +27,8 @@ export interface OrgModule {
   released: boolean
   enabled: boolean
   needed_by: string[]
+  /** Zusatzfunktionen, die die Einheit selbst schaltet */
+  extras: { id: string; label: string; on: boolean }[]
 }
 
 export interface OrgModules {
@@ -39,6 +41,8 @@ export const moduleApi = {
   ofOrg: (org: number) => api.get<OrgModules>(`/api/orgs/${org}/modules/`),
   setOrg: (org: number, enabled: string[], dryRun = false) =>
     api.patch<OrgModules>(`/api/orgs/${org}/modules/`, { enabled, dry_run: dryRun }),
+  setExtras: (org: number, extras: Record<string, boolean>) =>
+    api.patch<OrgModules>(`/api/orgs/${org}/modules/`, { extras }),
 }
 
 /** Alle Module der Gruppen in einer Liste */

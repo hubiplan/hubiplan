@@ -16,7 +16,18 @@ from audit.log import record
 from core.api_base import OrgScopedMixin
 
 from .catalog import SETTINGS_EDIT, SETTINGS_VIEW
-from .modules import GROUPS, MODULES, ModuleChoiceError, apply_enabled, released_of
+from .modules import (
+    EXTRA_BY_ID,
+    EXTRAS,
+    GROUPS,
+    MODULES,
+    ModuleChoiceError,
+    apply_enabled,
+    extra_available,
+    extra_on,
+    released_of,
+    set_extra,
+)
 
 
 def module_states(org) -> list[dict]:
@@ -44,6 +55,12 @@ def module_states(org) -> list[dict]:
                         for d in MODULES
                         if d.id in enabled and (m.id in d.requires or m.id in d.requires_any)
                     ),
+                    # Zusatzfunktionen, die die Einheit selbst schaltet (M4)
+                    "extras": [
+                        {"id": e.id, "label": gettext(e.label), "on": extra_on(org, e)}
+                        for e in EXTRAS
+                        if e.module == m.id and extra_available(e)
+                    ],
                 }
             )
         if modules:
@@ -52,7 +69,8 @@ def module_states(org) -> list[dict]:
 
 
 class OrgModulesView(OrgScopedMixin, APIView):
-    """GET: Module der Einheit. PATCH {enabled: [...], dry_run}: ein- und ausschalten."""
+    """GET: Module der Einheit. PATCH {enabled: [...], dry_run}: ein- und ausschalten;
+    PATCH {extras: {id: bool}}: Zusatzfunktionen eingeschalteter Module schalten."""
 
     read_permission = SETTINGS_VIEW
     write_permission = SETTINGS_EDIT
@@ -63,6 +81,8 @@ class OrgModulesView(OrgScopedMixin, APIView):
 
     @transaction.atomic
     def patch(self, request, org_id: int):
+        if "extras" in request.data and "enabled" not in request.data:
+            return self._extras(request)
         wanted = request.data.get("enabled")
         if not isinstance(wanted, list) or not all(isinstance(m, str) for m in wanted):
             raise serializers.ValidationError(
@@ -89,3 +109,36 @@ class OrgModulesView(OrgScopedMixin, APIView):
             )
             org.save(update_fields=["enabled_modules", "released_modules"])
         return Response({"changes": changes, "groups": module_states(org)})
+
+    def _extras(self, request):
+        extras = request.data.get("extras")
+        if not isinstance(extras, dict) or not all(isinstance(v, bool) for v in extras.values()):
+            raise serializers.ValidationError(
+                {"extras": gettext("Bitte die Zusatzfunktionen mit ja oder nein angeben.")}
+            )
+        org = self.org
+        enabled = set(org.enabled_modules or [])
+        changes = {}
+        for key, on in extras.items():
+            extra = EXTRA_BY_ID.get(key)
+            if extra is None or not extra_available(extra):
+                raise serializers.ValidationError(
+                    {"extras": gettext("Unbekannte Zusatzfunktion: {x}").format(x=key)}
+                )
+            if extra.module not in enabled:
+                raise serializers.ValidationError(
+                    {
+                        "extras": gettext("Dafür muss das Modul eingeschaltet sein: {x}").format(
+                            x=key
+                        )
+                    }
+                )
+            if extra.store == "billing" and org.type == "unit":
+                raise serializers.ValidationError(
+                    {"extras": gettext("Lastschrift gibt es hier nicht.")}
+                )
+            if set_extra(org, extra, on):
+                changes[extra.label] = ["nein" if on else "ja", "ja" if on else "nein"]
+        if changes:
+            record(org, request.user, "update", org, changes)
+        return Response({"groups": module_states(org)})

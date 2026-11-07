@@ -260,6 +260,96 @@ MODULE_IDS: tuple[str, ...] = tuple(m.id for m in MODULES)
 DEFAULT_IDS: tuple[str, ...] = tuple(m.id for m in MODULES if m.default)
 
 
+@dataclass(frozen=True)
+class Extra:
+    """Zusatzfunktion eines Moduls: ein Schalter der Einheit, keine eigenen Seiten.
+
+    ``field`` ist das Feld an der Organisation bzw. (``store="billing"``) an den
+    Beitragseinstellungen. Die Einrichtungsseiten der Module schalten dasselbe Feld."""
+
+    id: str
+    label: str
+    module: str
+    field: str
+    store: str = "org"
+    # Nur wenn der Betreiber die Anbindung eingerichtet hat (siehe extra_available)
+    needs_service: str = ""
+
+
+EXTRAS: tuple[Extra, ...] = (
+    Extra(
+        "photo_approval",
+        gettext_noop("Hochgeladene Mitgliederfotos erst nach Freigabe anzeigen"),
+        "members",
+        "photo_approval_required",
+    ),
+    Extra(
+        "contact_approval",
+        gettext_noop("Geänderte Kontaktdaten erst nach Bestätigung übernehmen"),
+        "portal",
+        "contact_changes_need_approval",
+    ),
+    Extra(
+        "wallet",
+        gettext_noop("Ausweis in Apple Wallet und Google Wallet"),
+        "cards",
+        "card_wallet_enabled",
+        needs_service="wallet",
+    ),
+    Extra(
+        "cash_counts",
+        gettext_noop("Zählprotokoll und Kassenbericht für Feste"),
+        "finance",
+        "cash_counts_enabled",
+    ),
+    Extra("datev", gettext_noop("DATEV-Export"), "finance", "datev_enabled"),
+    Extra(
+        "tax_areas",
+        gettext_noop("Steuerliche Bereiche in der Kasse"),
+        "tax",
+        "tax_areas_enabled",
+    ),
+    Extra("reserves", gettext_noop("Rücklagen führen"), "tax", "reserves_enabled"),
+    Extra("sepa", gettext_noop("SEPA-Lastschrift"), "billing", "sepa_enabled", store="billing"),
+)
+EXTRA_BY_ID: dict[str, Extra] = {e.id: e for e in EXTRAS}
+
+
+def extra_available(extra: Extra) -> bool:
+    """Gibt es die Zusatzfunktion auf dieser Instanz (Anbindung eingerichtet)?"""
+    if extra.needs_service == "wallet":
+        from cards import apple, wallet
+
+        return wallet.enabled() or apple.enabled()
+    return True
+
+
+def _extra_target(org, extra: Extra):
+    if extra.store == "billing":
+        from billing.services import settings_for
+
+        return settings_for(org)
+    return org
+
+
+def extra_on(org, extra: Extra) -> bool:
+    if extra.store == "billing":
+        from billing.models import BillingSettings
+
+        return BillingSettings.objects.filter(organization=org, **{extra.field: True}).exists()
+    return bool(getattr(org, extra.field))
+
+
+def set_extra(org, extra: Extra, on: bool) -> bool:
+    """Schalter setzen und speichern; True, wenn sich etwas geändert hat."""
+    target = _extra_target(org, extra)
+    if bool(getattr(target, extra.field)) == on:
+        return False
+    setattr(target, extra.field, on)
+    target.save(update_fields=[extra.field])
+    return True
+
+
 # Stand des Verzeichnisses für Exportdateien: 1 = bis M1, 2 = mit Aufgaben, Dokumenten,
 # Rundschreiben, Ausweisen, Ausschreibungen, Belegung, Ehrungen & Jubiläen, Würden,
 # Mitgliederbereich und Social Media als eigene Module; 3 = mit Chronik; 4 = mit Steuern &
