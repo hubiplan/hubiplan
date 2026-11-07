@@ -37,6 +37,7 @@ from access.catalog import (
     catalog_for,
     effective,
 )
+from access.modules import MODULE_IDS, module_on
 from accounts.models import User
 from audit.log import diff, record, snapshot
 from core.api_base import has_needed
@@ -406,6 +407,8 @@ def department_summary(ctx: services.DepartmentContext) -> dict:
         "meetings_enabled": "meetings" in (club.enabled_modules or []),
         "helpers_enabled": "helpers" in (club.enabled_modules or []),
         "bookings_enabled": "bookings" in (club.enabled_modules or []),
+        # Für diese Untereinheit wirksame Module (Teilmenge des Vereins, eigene Kasse usw.)
+        "modules": [m for m in MODULE_IDS if module_on(ctx.department, m)],
         "imprint_key": ensure_imprint(ctx.department).public_key,
     }
 
@@ -807,6 +810,9 @@ def portal_summary(access: PortalAccess) -> dict:
             "docs_enabled": "docs" in (club.enabled_modules or []),
             "circulars_enabled": "circulars" in (club.enabled_modules or []),
             "cards_enabled": "cards" in (club.enabled_modules or []),
+            # Alle eingeschalteten Module (Modulverzeichnis); die Schalter oben bleiben für
+            # ältere App-Stände
+            "modules": sorted(club.enabled_modules or []),
             "terms": department_terms(club),
             "imprint_key": ensure_imprint(club).public_key,
         }

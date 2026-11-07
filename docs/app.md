@@ -24,6 +24,11 @@ Nur `/api/app/v1/…`, den Mitgliederbereich `/api/portal/<Zugang>/…` und `/ap
 Auf allen anderen Pfaden antwortet HUBIplan mit `401`. Ein `401` mit
 `code = device_not_authenticated` heißt: Gerät neu verbinden.
 
+Jeder Zugang zum Mitgliederbereich (in `/api/me/contexts/` und `/api/app/v1/me/`) und jede
+Untereinheit nennt in `modules` die eingeschalteten Module (für Untereinheiten die dort
+wirksamen). Die einzelnen Schalter (`events_enabled`, `helpers_enabled` …) bleiben für ältere
+App-Stände; die App nutzt die Liste, wenn sie da ist.
+
 Der Schlüssel verfällt
 - beim Abmelden des Geräts (`DELETE /api/app/v1/devices/<id>/`, auch im Browser),
 - nach 180 Tagen ohne Nutzung,
