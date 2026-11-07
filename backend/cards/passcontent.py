@@ -118,7 +118,9 @@ def build(card) -> PassContent:
         club.department_label_plural_en,
     )
     return PassContent(
-        name=f"{person.first_name} {person.last_name}".strip(),
+        name=person.display_name
+        if person.is_organization
+        else f"{person.first_name} {person.last_name}".strip(),
         club=club.name,
         url=card.url,
         member_type=assignment.member_type.name if assignment else "",

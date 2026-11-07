@@ -6,6 +6,7 @@ import pytest
 
 from access.catalog import (
     AREAS,
+    NEW_TO_LEGACY,
     SWITCHABLE_MODULES,
     catalog_for,
     effective_for,
@@ -28,7 +29,11 @@ def enable(org, modules):
     org.save(update_fields=["enabled_modules"])
 
 
-@pytest.mark.parametrize("module", SWITCHABLE_MODULES)
+# Module ohne eigenen Rechtebereich (z. B. Würden) bindet access/module_gate.py
+WITH_AREAS = [m for m in SWITCHABLE_MODULES if any(a.module == m for a in AREAS)]
+
+
+@pytest.mark.parametrize("module", WITH_AREAS)
 def test_each_module_hides_all_areas_and_restores_rights(orgs, module):
     org = orgs["a"]
     user = make_user("module@example.org")
@@ -41,7 +46,15 @@ def test_each_module_hides_all_areas_and_restores_rights(orgs, module):
     enabled = permissions_in(user, org)
     enable(org, [m for m in SWITCHABLE_MODULES if m != module])
     assert not areas & {a["id"] for a in catalog_for("club", org)}
-    assert not {c for c in permissions_in(user, org) if c.rpartition(".")[0] in areas}
+    # Frühere Codes eines anderen Bereichs bleiben (entries.manage gehört zu calls.edit)
+    others = {
+        old
+        for new, olds in NEW_TO_LEGACY.items()
+        if new.rpartition(".")[0] not in areas
+        for old in olds
+    }
+    left = {c for c in permissions_in(user, org) if c.rpartition(".")[0] in areas}
+    assert not left - others
     role.refresh_from_db()
     assert role.permissions == stored
     enable(org, list(SWITCHABLE_MODULES))

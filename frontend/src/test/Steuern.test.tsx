@@ -93,7 +93,7 @@ function renderApp(path: string) {
 describe('Steuerliche Auswertung', () => {
   it('zeigt Ampel, enthaltene Kassen, Kleinunternehmer und Erklärungshinweis', async () => {
     const org = testOrg({
-      modules: ['members', 'finance'],
+      modules: ['members', 'finance', 'tax'],
       permissions: ['finance.view'],
       parent_name: null,
     })
@@ -119,7 +119,7 @@ describe('Steuerliche Auswertung', () => {
 
   it('erklärt, wie man die Auswertung einschaltet', async () => {
     const org = testOrg({
-      modules: ['members', 'finance'],
+      modules: ['members', 'finance', 'tax'],
       permissions: ['finance.view'],
       parent_name: null,
     })

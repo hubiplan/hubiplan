@@ -2,7 +2,6 @@
 key: page.settings_roles
 titel: Settings › Roles and permissions
 bereich: einstellungen
-modul: roles
 rechte: [roles.view]
 routen: [/einstellungen/rollen]
 stichworte: [role, right, user, invite, access]

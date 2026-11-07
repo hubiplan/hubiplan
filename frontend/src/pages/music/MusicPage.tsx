@@ -95,7 +95,12 @@ function MusicRoute() {
   if (area === 'auszahlungen') return <PayoutRunsPage key={org.id} />
   if (area === 'uebersicht') return <PerformanceOverview key={org.id} />
   if (area === 'ausstattung') return <EquipmentPage key={org.id} />
-  if (area === 'noten') return <ScoresPage key={org.id} />
+  if (area === 'noten')
+    return org.modules.includes('scores') && org.permissions.includes('scores.view') ? (
+      <ScoresPage key={org.id} />
+    ) : (
+      <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+    )
   if (area === 'proben') return <PracticePage key={org.id} />
   if (area === 'vorlagen') return <EnsembleTemplatesPage key={org.id} />
   if (area === 'verfuegbarkeit') return <AvailabilityPage key={org.id} />
@@ -602,5 +607,17 @@ function Editor({
         </button>
       </div>
     </form>
+  )
+}
+
+/** Menüpunkt „Noten“ (Modul Notenarchiv ohne Musik), Adresse /noten */
+export function ScoresOnlyPage() {
+  const org = useActiveOrg()
+  if (!org.modules.includes('scores') || !org.permissions.includes('scores.view'))
+    return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
+  return (
+    <MusicLayout>
+      <ScoresPage key={org.id} />
+    </MusicLayout>
   )
 }

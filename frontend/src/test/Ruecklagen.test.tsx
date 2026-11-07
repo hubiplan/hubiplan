@@ -12,7 +12,7 @@ const SESSION = 'GET /_allauth/browser/v1/auth/session'
 const loggedIn = () => ({ status: 200, body: { status: 200, data: { user: testUser } } })
 const F = '/api/orgs/7/finance'
 const kassierer = testOrg({
-  modules: ['members', 'finance'],
+  modules: ['members', 'finance', 'tax'],
   permissions: ['finance.view', 'finance.edit'],
   reserves_enabled: true,
 })

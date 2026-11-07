@@ -17,6 +17,7 @@ from core.i18n import datetime_text
 
 from . import crypto, identity, packets, transport
 from .models import Coupling, CouplingCode, Message, Peer
+from .versions import API_VERSIONS
 
 log = logging.getLogger(__name__)
 
@@ -356,7 +357,7 @@ def request_coupling(unit, text: str, chosen: dict, user) -> Coupling:
                 "secret": parsed["secret"],
                 "child": {"uuid": str(unit.uuid), "name": unit.name},
                 "packets": levels,
-                "versions": [1],
+                "versions": API_VERSIONS,
             },
         )
     except transport.RemoteRefused as exc:
@@ -833,6 +834,7 @@ def reconcile(coupling: Coupling) -> list[str]:
         log.info("Abgleich %s: %s", coupling.pk, exc)
         return []
     theirs = answer.get("received") or {}
+    _remember_versions(coupling.peer, answer.get("versions"))
     pending = set(
         Message.objects.filter(coupling=coupling, state=Message.State.QUEUED).values_list(
             "kind", flat=True
@@ -852,6 +854,16 @@ def reconcile(coupling: Coupling) -> list[str]:
             locked.save(update_fields=["sent_hashes"])
         sync(Coupling.objects.get(pk=coupling.pk))
     return stale
+
+
+def _remember_versions(peer: Peer, versions) -> None:
+    """Fassungen der Gegenstelle nach ihrem Update übernehmen; ältere melden keine."""
+    if not isinstance(versions, list):
+        return
+    clean = sorted({v for v in versions if isinstance(v, int) and 0 < v < 100})
+    if clean and clean != sorted(peer.versions or []):
+        peer.versions = clean
+        peer.save(update_fields=["versions"])
 
 
 def reconcile_all() -> None:
@@ -1300,7 +1312,12 @@ def _notify_more(coupling_id: int) -> None:
 
 def status_for(peer: Peer, payload: dict) -> dict:
     coupling = find_coupling(peer, payload)
-    return {"state": coupling.state, "received": coupling.received_hashes or {}}
+    return {
+        "state": coupling.state,
+        "received": coupling.received_hashes or {},
+        # Fassungen dieser Seite: die Gegenstelle merkt sich Aktualisierungen (J6)
+        "versions": API_VERSIONS,
+    }
 
 
 # --- Hinweise und Protokoll ---

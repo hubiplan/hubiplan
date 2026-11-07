@@ -15,10 +15,13 @@ export function AccessPanel({
   contactEmail,
   canManage,
   disabledHint,
+  title,
   onSend,
   onRemove,
 }: {
   access: AccessInfo | null
+  /** Überschrift statt „Konto und Mitgliederbereich“ (z. B. je Ansprechpartner) */
+  title?: string
   hasEmail: boolean
   /** Aktuelle Kontakt-Adresse: weicht sie vom Zugang ab, gibt es „übertragen“ */
   contactEmail?: string
@@ -71,7 +74,7 @@ export function AccessPanel({
 
   return (
     <div className="card card-wide">
-      <h2>{t('Konto und Mitgliederbereich')}</h2>
+      <h2>{title ?? t('Konto und Mitgliederbereich')}</h2>
       {access ? (
         <p>
           {t('Mitgliederbereich freigeschaltet für')} <strong>{access.email}</strong> {t('seit')}{' '}
@@ -175,17 +178,22 @@ export function MemberAccessSection({
   hasEmail,
   contactEmail,
   canManage,
+  contactId,
+  title,
 }: {
   orgId: number
   memberId: number
   hasEmail: boolean
   contactEmail?: string
   canManage: boolean
+  /** Ansprechpartner eines Organisationsmitglieds: Zugang für ihn */
+  contactId?: number
+  title?: string
 }) {
   const tm = useTerms()
   const { data, error, setData } = useLoad(
-    () => portalApi.memberAccess(orgId, memberId),
-    [orgId, memberId],
+    () => portalApi.memberAccess(orgId, memberId, contactId),
+    [orgId, memberId, contactId],
   )
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return null
@@ -196,6 +204,7 @@ export function MemberAccessSection({
       hasEmail={hasEmail}
       contactEmail={contactEmail}
       canManage={canManage}
+      title={title}
       disabledHint={
         enabled || data.access ? undefined : (
           <>
@@ -209,12 +218,12 @@ export function MemberAccessSection({
         )
       }
       onSend={async (transfer) => {
-        const r = await portalApi.sendMemberAccess(orgId, memberId, transfer)
+        const r = await portalApi.sendMemberAccess(orgId, memberId, transfer, contactId)
         setData({ ...data, access: r.access })
         return r
       }}
       onRemove={async () => {
-        await portalApi.removeMemberAccess(orgId, memberId)
+        await portalApi.removeMemberAccess(orgId, memberId, contactId)
         setData({ ...data, access: null })
       }}
     />

@@ -134,7 +134,7 @@ def synchronize(pk):
     perms = permissions_in(pref.user, pref.organization) if pref.user.is_active else set()
     enabled = (
         pref.enabled
-        and {"music", "todos"} <= set(pref.organization.enabled_modules)
+        and "music" in (pref.organization.enabled_modules or [])
         and {"music.view", "todos.view", "todos.edit"} <= perms
     )
     with language_of(pref.organization):
@@ -213,7 +213,7 @@ class CustodyReminderView(OrgScopedMixin, APIView):
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
-        if not {"music", "todos"} <= set(self.org.enabled_modules):
+        if "music" not in (self.org.enabled_modules or []):
             raise NotFound()
         if not {"music.view", "todos.view"} <= self.org_permissions:
             raise PermissionDenied()

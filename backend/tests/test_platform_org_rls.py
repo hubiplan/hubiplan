@@ -5,6 +5,7 @@ from django.db import connection
 
 from access.catalog import PLATFORM_MANAGE, SWITCHABLE_MODULES
 from access.models import Role, RoleAssignment
+from access.modules import with_requirements
 from audit.models import AuditEntry
 from core.tenancy import get_rls
 from organizations.models import Organization
@@ -56,7 +57,7 @@ def test_platform_module_cycle_with_contact_role(orgs, platform_admin, api, org_
                 content_type=JSON,
             )
             assert response.status_code == 200, response.content
-            assert response.json()["enabled_modules"] == sorted(modules)
+            assert response.json()["enabled_modules"] == sorted(with_requirements(modules))
             # Keine Daten einer Einheit nach dem Request sichtbar lassen.
             assert not get_rls().bypass
             assert get_rls().org_id is None
@@ -64,7 +65,7 @@ def test_platform_module_cycle_with_contact_role(orgs, platform_admin, api, org_
         org.refresh_from_db()
         other.refresh_from_db()
         role.refresh_from_db()
-        assert org.enabled_modules == sorted(modules)
+        assert org.enabled_modules == sorted(with_requirements(modules))
         assert org.contact_role_id == role.pk
         assert org.contact_source == Organization.ContactSource.ROLE
         assert role.permissions == ["members.view"]

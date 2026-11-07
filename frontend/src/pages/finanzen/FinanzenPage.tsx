@@ -257,13 +257,13 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
       readOnly={!a.financeEdit}
       tabs={[
         { to: '/finanzen/abschluss', label: t('Auswertung') },
-        { to: '/finanzen/abschluss/steuern', label: t('Steuern') },
+        ...(a.tax ? [{ to: '/finanzen/abschluss/steuern', label: t('Steuern') }] : []),
         { to: '/finanzen/abschluss/jahresabschluss', label: t('Jahresabschluss') },
       ]}
     >
       <Routes>
         <Route index element={<EvaluationPage />} />
-        <Route path="steuern" element={<TaxPage />} />
+        {a.tax && <Route path="steuern" element={<TaxPage />} />}
         <Route path="jahresabschluss" element={<ClosingsPage />} />
         <Route path="*" element={<Navigate to="/finanzen/abschluss" replace />} />
       </Routes>

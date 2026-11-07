@@ -15,3 +15,5 @@ and with its logo, in German or English depending on the phone's language. Googl
 receives these details, but no photo. Apple passes do not update automatically; download them again
 after changes. Scan the QR code to check current validity online. If the club creates
 a new QR code, add the new pass to your wallet.
+
+If you are the contact person of an organisation, the card shows the organisation with its logo instead of a photo, and the check page lists it as an organisation member. The card does not show who presents it.

@@ -27,6 +27,7 @@ from organizations.terms import department_terms, rename_word
 from . import preview
 from .catalog import AUDIT_VIEW, ROLES_MANAGE, ROLES_PREVIEW, catalog_for, effective
 from .models import Role, RoleAssignment
+from .modules import module_on
 from .permissions import (
     inherited_permissions,
     organizations_for,
@@ -467,6 +468,22 @@ def _catalog_org(request: Request) -> Organization | None:
     return None
 
 
+@api_view(["GET"])
+def module_directory(request: Request) -> Response:
+    """Modulverzeichnis: Gruppen mit Modulen, Beschreibung und Voraussetzungen."""
+    from .modules import directory
+
+    return Response(directory())
+
+
+@api_view(["GET"])
+def module_templates(request: Request) -> Response:
+    """Vorlagen beim Anlegen einer Einheit: Module und Bezeichnungen (M6)."""
+    from .modules import templates
+
+    return Response(templates())
+
+
 @extend_schema(
     parameters=[
         OpenApiParameter("org_type", str, required=False),
@@ -491,6 +508,20 @@ def ensure_imprint(org: Organization):
     return ensure(org)
 
 
+def _summary_modules(org: Organization) -> list[str]:
+    if org.type == Organization.Type.PLATFORM:
+        return []
+    modules = list(org.enabled_modules or [])
+    if org.type == Organization.Type.UNIT:
+        # Eigene Webseite einer Untereinheit: Social Media kommt vom Verein
+        if "website" in modules and module_on(org, "social"):
+            modules.append("social")
+        # Eigene Kasse einer Untereinheit: Steuern und Zuwendungen kommen vom Verein
+        if "finance" in modules:
+            modules += [m for m in ("tax", "donations") if m not in modules and module_on(org, m)]
+    return modules
+
+
 def organization_summary(org: Organization, perms: set[str]) -> dict:
     imprint = ensure_imprint(org)
     return {
@@ -507,7 +538,7 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
             org.parent.display_name if org.parent and org.parent.type != "platform" else None
         ),
         "permissions": sorted(perms),
-        "modules": list(org.enabled_modules) if org.type != Organization.Type.PLATFORM else [],
+        "modules": _summary_modules(org),
         "department_label": org.department_label,
         "department_label_plural": org.department_label_plural,
         "department_terms": department_terms(org),
@@ -519,8 +550,10 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
         "sepa_enabled": _sepa_enabled(org),
         # Kasse: Zählprotokoll und Kassenbericht für Feste (Schalter unter Konten)
         "cash_counts_enabled": bool(org.cash_counts_enabled) and org.type != "platform",
+        # Dachverband darf seinen Vereinen Module freigeben (M6)
+        "modules_pass_down": bool(org.modules_pass_down) and org.type == "federation",
         # Kasse: Rücklagen nach § 62 AO (Schalter unter Konten)
-        "reserves_enabled": bool(org.reserves_enabled) and org.type != "platform",
+        "reserves_enabled": org.reserves_on and org.type != "platform",
         "direct_members": org.type == Organization.Type.FEDERATION and org.direct_members,
         "imprint_key": imprint.public_key,
         # Schalter „Eingetragener Verein“ (Impressum, Briefbogen)

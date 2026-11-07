@@ -63,7 +63,11 @@ function FederationList({ prefix }: { prefix: string }) {
     () => api.get<{ id: number; name: string }[]>(`${base(org.id)}/clubs/`),
     [org.id],
   )
-  const titles = useLoad(() => memberApi.honoraryTitles(org.id), [org.id])
+  const awardsOn = org.modules.includes('awards')
+  const titles = useLoad(
+    () => (awardsOn ? memberApi.honoraryTitles(org.id) : Promise.resolve([])),
+    [org.id, awardsOn],
+  )
   const [params, setParams] = useState<Record<string, string>>({
     status: 'aktiv',
     sortierung: 'name',
@@ -325,16 +329,18 @@ function FederationDetail({ prefix }: { prefix: string }) {
         ) : (
           <FederationMasterData orgId={org.id} member={data} onSaved={setData} />
         )}
-        <HonoraryAwards
-          orgId={org.id}
-          memberId={data.id}
-          awards={data.honorary_titles?.federation ?? []}
-          otherAwards={data.honorary_titles?.own}
-          otherLabel={`Verliehen ${tm.vom} (${data.club})`}
-          canEdit={org.permissions.includes(PERM.membersEdit)}
-          federation
-          onChanged={reload}
-        />
+        {org.modules.includes('awards') && (
+          <HonoraryAwards
+            orgId={org.id}
+            memberId={data.id}
+            awards={data.honorary_titles?.federation ?? []}
+            otherAwards={data.honorary_titles?.own}
+            otherLabel={`Verliehen ${tm.vom} (${data.club})`}
+            canEdit={org.permissions.includes(PERM.membersEdit)}
+            federation
+            onChanged={reload}
+          />
+        )}
         {org.permissions.includes(PERM.cardsView) && data.status === 'active' && (
           <div className="card card-wide">
             <h2>{t('Mitgliedsausweis')}</h2>

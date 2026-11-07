@@ -28,6 +28,42 @@ from organizations.terms import fill
 from organizations.theme import effective_theme
 
 STATUS = {"active": "Mitglied", "former": "ehemalig"}
+KIND_LABEL = {"person": "Person", "organization": "Organisation"}
+
+
+def _primary(row: dict, key: str) -> str:
+    contacts = row.get("contact_persons") or []
+    return contacts[0][key] if contacts else ""
+
+
+def contact_rows(org: Organization, memberships: list[int]) -> dict[int, list[dict]]:
+    """Ansprechpartner je Mitgliedschaft, Hauptansprechpartner zuerst."""
+    from members import services
+    from members.models import ContactPerson
+
+    result: dict[int, list[dict]] = {}
+    contacts = ContactPerson.objects.filter(membership_id__in=memberships).select_related("person")
+    for c in sorted(contacts, key=lambda c: (not c.is_primary, c.pk)):
+        # Verknüpfte Ansprechpartner: Kontakt aus ihrer eigenen Akte
+        own = services.contact_for(c.person, org) if c.person_id else None
+        email = (own.email if own else "") if c.person_id else c.email
+        phone = (own.phone if own else "") if c.person_id else c.phone
+        result.setdefault(c.membership_id, []).append(
+            {
+                "name": c.display_name,
+                "function": c.function,
+                "email": email,
+                "phone": phone,
+                "is_primary": c.is_primary,
+                "receives_mail": c.receives_mail,
+                "receives_invoices": c.receives_invoices,
+                "represents": c.represents,
+                "member_access": c.member_access,
+            }
+        )
+    return result
+
+
 KIND = {"club": "Verein", "federation": "Dachverband"}
 
 
@@ -68,8 +104,11 @@ class PhotoRef:
 def member_columns(org: Organization) -> list[Column]:
     cols = [
         Column("photo", "Foto", lambda r: PhotoRef(r.get("photo_path"))),
+        Column("kind", "Typ", lambda r: KIND_LABEL.get(r.get("kind"), "Person")),
         Column("last_name", "Name", lambda r: r["last_name"]),
         Column("first_name", "Vorname", lambda r: r["first_name"]),
+        Column("name_suffix", "Namenszusatz", lambda r: r.get("name_suffix", "")),
+        Column("legal_form", "Rechtsform", lambda r: r.get("legal_form", "")),
         Column("birth_date", "Geburtsdatum", lambda r: _date(r["birth_date"])),
         Column("gender", "Geschlecht", lambda r: r.get("gender", "")),
         Column("member_type", "Mitgliedsart", lambda r: r["member_type"] or ""),
@@ -85,6 +124,11 @@ def member_columns(org: Organization) -> list[Column]:
         Column("street", "Straße", lambda r: r["street"]),
         Column("postal_code", "PLZ", lambda r: r["postal_code"]),
         Column("city", "Ort", lambda r: r["city"]),
+        # Organisationsmitglieder: Hauptansprechpartner; alle stehen auf dem zweiten Blatt
+        Column("contact_name", "Ansprechpartner", lambda r: _primary(r, "name")),
+        Column("contact_function", "Ansprechpartner Funktion", lambda r: _primary(r, "function")),
+        Column("contact_email", "Ansprechpartner E-Mail", lambda r: _primary(r, "email")),
+        Column("contact_phone", "Ansprechpartner Telefon", lambda r: _primary(r, "phone")),
     ]
     for definition in definitions_for(org):
         if definition.is_archived:
@@ -233,7 +277,19 @@ def member_data(org: Organization, filters: dict) -> list[dict]:
         from competitions.awards import title_summary
 
         titles = title_summary(org, list(person_ids.keys()))
+    org_ids = [r["id"] for r in rows if r.get("kind") == "organization"]
+    contacts = contact_rows(org, org_ids) if org_ids else {}
+    legal = (
+        {
+            m.pk: m.person.legal_form_label
+            for m in qs.filter(pk__in=org_ids).select_related("person")
+        }
+        if org_ids
+        else {}
+    )
     for row in rows:
+        row["contact_persons"] = contacts.get(row["id"], [])
+        row["legal_form"] = legal.get(row["id"], "")
         row["fields"] = values.get(person_ids[row["id"]], {})
         row["reigns"] = reigns.get(person_ids[row["id"]], {})
         row["titles"] = titles.get(row["id"], "")
@@ -280,7 +336,52 @@ def build(job) -> tuple[bytes, str, int]:
     if job.file_format == "pdf":
         content = render_pdf(org, title, table, job.orientation)
         return content, f"{base}.pdf", len(rows)
-    return render_xlsx(org, title, table), f"{base}.xlsx", len(rows)
+    extra = contacts_sheet(rows) if job.kind not in ("federation_members", "jubilees") else None
+    return render_xlsx(org, title, table, extra), f"{base}.xlsx", len(rows)
+
+
+def contacts_sheet(rows: list[dict]) -> tuple[str, list[list]] | None:
+    """Zweites Blatt „Ansprechpartner“, wenn die Liste Organisationsmitglieder enthält."""
+    lines = [
+        [
+            "Mitglied",
+            "Mitgliedsnummer",
+            "Ansprechpartner",
+            "Funktion",
+            "E-Mail",
+            "Telefon",
+            "Hauptansprechpartner",
+            "erhält Rundschreiben",
+            "erhält Rechnungen",
+            "vertritt in Versammlungen",
+            "Mitgliederzugang",
+        ]
+    ]
+    yes = {True: "ja", False: "nein"}
+    for r in rows:
+        name = " – ".join(p for p in (r["last_name"], r.get("name_suffix")) if p)
+        for c in r.get("contact_persons") or []:
+            lines.append(
+                [
+                    name,
+                    r["club_number"],
+                    c["name"],
+                    c["function"],
+                    c["email"],
+                    c["phone"],
+                    *(
+                        yes[c[k]]
+                        for k in (
+                            "is_primary",
+                            "receives_mail",
+                            "receives_invoices",
+                            "represents",
+                            "member_access",
+                        )
+                    ),
+                ]
+            )
+    return ("Ansprechpartner", lines) if len(lines) > 1 else None
 
 
 FORMULA_START = ("=", "+", "-", "@", "\t", "\r")
@@ -295,9 +396,20 @@ def safe_cell(value):
     return value
 
 
-def render_xlsx(org: Organization, title: str, table: list[list]) -> bytes:
+def render_xlsx(
+    org: Organization, title: str, table: list[list], extra: tuple[str, list[list]] | None = None
+) -> bytes:
     wb = Workbook()
-    ws = wb.active
+    _fill_sheet(wb.active, title, table)
+    if extra:
+        _fill_sheet(wb.create_sheet(), *extra)
+    wb.properties.creator = f"HUBIplan – {org.name}"
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+def _fill_sheet(ws, title: str, table: list[list]) -> None:
     ws.title = title[:31]
     header = table[0]
     ws.append([safe_cell(h) for h in header])
@@ -313,10 +425,6 @@ def render_xlsx(org: Organization, title: str, table: list[list]) -> bytes:
         ws.column_dimensions[get_column_letter(i)].width = min(width, 50)
     ws.freeze_panes = "A2"
     ws.auto_filter.ref = ws.dimensions
-    wb.properties.creator = f"HUBIplan – {org.name}"
-    buf = io.BytesIO()
-    wb.save(buf)
-    return buf.getvalue()
 
 
 def _logo_path(org: Organization) -> str | None:

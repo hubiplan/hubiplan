@@ -106,8 +106,11 @@ QUEENS = ["Maria", "Anna", "Gertrud", "Elisabeth", "Hildegard", "Margarete", "He
 
 def seed_website(orgs) -> None:
     club = orgs["club"]
-    if "website" not in (club.enabled_modules or []):
-        club.enabled_modules = [*(club.enabled_modules or []), "website"]
+    # Demoverein mit Webseite, Würden (Königsliste) und Chronik
+    if not {"website", "honors", "chronicle"} <= set(club.enabled_modules or []):
+        club.enabled_modules = sorted(
+            {*(club.enabled_modules or []), "website", "honors", "chronicle"}
+        )
         club.save(update_fields=["enabled_modules"])
     website = Website.objects.filter(organization=club).first()
     if website is None:

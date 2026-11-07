@@ -2,7 +2,7 @@
 key: page.finance_reserves
 titel: Finanzen › Rücklagen
 bereich: finanzen
-modul: finance
+modul: tax
 rechte: [finance.view]
 routen: [/finanzen/ruecklagen]
 stichworte: [Rücklage, Gemeinnützigkeit, Mittelverwendung]

@@ -39,10 +39,11 @@ STATUTE_YEARS = 3
 
 
 def available(org) -> bool:
-    """Der Bereich steht jeder Einheit außer der Plattform offen."""
+    """Mit dem Modul „Zuwendungsbestätigungen“ für jede Einheit außer der Plattform."""
+    from access.modules import module_on
     from organizations.models import Organization
 
-    return org.type != Organization.Type.PLATFORM
+    return org.type != Organization.Type.PLATFORM and module_on(org, "donations")
 
 
 def is_enabled(org) -> bool:
@@ -193,7 +194,7 @@ def ensure_editable(donation: Donation) -> None:
 def donor_from_membership(org, membership) -> tuple[str, str]:
     from billing.services import member_recipient
 
-    data = member_recipient(org, membership)
+    data = member_recipient(org, membership, for_invoice=False)
     return data["recipient_name"], data["recipient_address"]
 
 

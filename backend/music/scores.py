@@ -15,6 +15,8 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from access.catalog import MUSIC_VIEW, SCORES_EDIT, SCORES_VIEW
+from access.modules import module_on
 from audit.log import record
 from core.api_base import OrgScopedMixin
 from documents import services as documents
@@ -129,15 +131,28 @@ class MusicScoreDocumentSerializer(ScopedSerializer):
         return attrs
 
 
-class PieceViewSet(MusicViewSet):
+class ScoresViewSet(MusicViewSet):
+    """Notenbestand (Modul „Notenarchiv“). Lesen dürfen auch Musik-Rollen: Programme und
+    Proben wählen Arrangements und Stimmen aus dem Bestand."""
+
+    read_permission = (SCORES_VIEW, MUSIC_VIEW)
+    write_permission = SCORES_EDIT
+
+    def initial(self, request, *args, **kwargs):
+        OrgScopedMixin.initial(self, request, *args, **kwargs)
+        if not module_on(self.org, "scores"):
+            raise NotFound()
+
+
+class PieceViewSet(ScoresViewSet):
     serializer_class = MusicPieceSerializer
 
 
-class ArrangementViewSet(MusicViewSet):
+class ArrangementViewSet(ScoresViewSet):
     serializer_class = MusicArrangementSerializer
 
 
-class ScorePartViewSet(MusicViewSet):
+class ScorePartViewSet(ScoresViewSet):
     serializer_class = MusicScorePartSerializer
     http_method_names = [*MusicViewSet.http_method_names, "delete"]
 
@@ -150,7 +165,7 @@ class ScorePartViewSet(MusicViewSet):
         super().perform_update(serializer)
 
 
-class ScoreDocumentViewSet(MusicViewSet):
+class ScoreDocumentViewSet(ScoresViewSet):
     serializer_class = MusicScoreDocumentSerializer
     http_method_names = [*MusicViewSet.http_method_names, "delete"]
 

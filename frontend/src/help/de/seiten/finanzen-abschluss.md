@@ -12,7 +12,7 @@ Hier erstellt ihr den Kassenbericht für die Versammlung und schließt ein Gesch
 
 Nach Ablauf der Aufbewahrungsfrist (Belege 8 Jahre, Bücher 10 Jahre nach Ende des Kalenderjahres) lassen sich Belege löschen und Bücher anonymisieren. Die Fristen sind gesetzlich und lassen sich nicht verkürzen. Läuft noch eine Prüfung oder ein Rechtsstreit, setzt ihr beim Geschäftsjahr mit **Löschsperre setzen** eine Sperre mit Grund. Solange sie gilt, wird nichts gelöscht. Setzen und Aufheben dürfen Vorstände mit Rollenverwaltung; beides steht im Protokoll.
 
-Der Reiter **Steuern** zeigt die steuerliche Auswertung eines Geschäftsjahres. Dafür müssen die Kategorien steuerlichen Bereichen zugeordnet sein (Einrichtung › Kategorien). Ihr seht:
+Der Reiter **Steuern** zeigt die steuerliche Auswertung eines Geschäftsjahres. Er gehört zum Modul Steuern & Gemeinnützigkeit. Außerdem müssen die Kategorien steuerlichen Bereichen zugeordnet sein (Einrichtung › Kategorien). Ihr seht:
 
 - **Freigrenze**: die Einnahmen des wirtschaftlichen Geschäftsbetriebs einschließlich Umsatzsteuer im Vergleich zur Freigrenze (seit 2026 50.000 €, vorher 45.000 €), dazu die beiden Vorjahre. Ab 80 % gibt es einen Hinweis, darüber eine Warnung.
 - **Nach steuerlichem Bereich**: Einnahmen, Ausgaben und Ergebnis je Bereich. Stornos sind mit der stornierten Buchung verrechnet. Bei einem Verlust im wirtschaftlichen Geschäftsbetrieb erscheint ein Hinweis.

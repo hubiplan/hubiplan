@@ -1178,12 +1178,67 @@ function InvitationCard({
   )
 }
 
-const ATTENDANCE: AttendanceStatus[] = ['present', 'excused', 'represented']
+const ATTENDANCE: AttendanceStatus[] = ['present', 'delegate', 'excused', 'represented']
 
 function attendanceLabel(status: AttendanceStatus) {
   if (status === 'present') return t('Anwesend')
   if (status === 'excused') return t('Entschuldigt')
+  if (status === 'delegate') return t('Durch Vertreter')
   return t('Vertreten')
+}
+
+/** Vertreter eines Organisationsmitglieds wählen: Ansprechpartner oder freier Name (J4). */
+function DelegatePicker({
+  row,
+  busy,
+  onPick,
+}: {
+  row: AttendanceRow
+  busy: boolean
+  onPick: (data: { delegate?: number; delegate_name?: string }) => void
+}) {
+  const [name, setName] = useState('')
+  const delegates = row.delegates ?? []
+  return (
+    <div className="stack">
+      {delegates.length > 0 && (
+        <label className="field">
+          <span>{t('Vertreter')}</span>
+          <select
+            value=""
+            disabled={busy}
+            onChange={(e) => {
+              if (e.target.value) onPick({ delegate: Number(e.target.value) })
+            }}
+          >
+            <option value="">{t('Bitte wählen')}</option>
+            {delegates.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.function ? `${d.name} (${d.function})` : d.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <form
+        className="button-row"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (name.trim()) onPick({ delegate_name: name.trim() })
+        }}
+      >
+        <label className="field">
+          <span>
+            {delegates.length > 0 ? t('Oder anderer Vertreter') : t('Name des Vertreters')}
+          </span>
+          <input value={name} maxLength={200} onChange={(e) => setName(e.target.value)} />
+        </label>
+        <button className="button" type="submit" disabled={busy || !name.trim()}>
+          {t('Eintragen')}
+        </button>
+      </form>
+    </div>
+  )
 }
 
 function AttendanceCard({
@@ -1200,6 +1255,7 @@ function AttendanceCard({
   const [query, setQuery] = useState('')
   const [guest, setGuest] = useState('')
   const [proxyFor, setProxyFor] = useState<number | null>(null)
+  const [delegateFor, setDelegateFor] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const data = list ?? loaded.data
@@ -1291,6 +1347,16 @@ function AttendanceCard({
                 <td>
                   {row.name}
                   {!row.voter && <span className="badge">{t('Gast')}</span>}
+                  {row.status === 'delegate' && row.delegate_name && (
+                    <div className="muted small">
+                      {t('anwesend durch {name}', { name: row.delegate_name })}
+                    </div>
+                  )}
+                  {(row.also_represents ?? []).length > 0 && (
+                    <div className="muted small">
+                      {t('vertritt zusätzlich: {x}', { x: (row.also_represents ?? []).join(', ') })}
+                    </div>
+                  )}
                   {row.status === 'represented' && row.represented_by && (
                     <div className="muted small">
                       {t('vertreten durch {name}', { name: names.get(row.represented_by) ?? '' })}
@@ -1301,8 +1367,12 @@ function AttendanceCard({
                   {data.editable ? (
                     <div className="attendance-cell">
                       <div className="segmented" role="group" aria-label={row.name}>
-                        {ATTENDANCE.filter(
-                          (s) => s !== 'represented' || (data.proxies_allowed && row.voter),
+                        {ATTENDANCE.filter((s) =>
+                          // Organisationen: „Durch Vertreter“ statt Anwesend und Vollmacht
+                          row.kind === 'organization'
+                            ? s !== 'present' && s !== 'represented'
+                            : s !== 'delegate' &&
+                              (s !== 'represented' || (data.proxies_allowed && row.voter)),
                         ).map((s) => (
                           <button
                             key={s}
@@ -1311,9 +1381,15 @@ function AttendanceCard({
                             aria-pressed={row.status === s}
                             disabled={busy}
                             onClick={() => {
-                              if (s === 'represented') setProxyFor(row.membership)
-                              else {
+                              if (s === 'represented') {
+                                setDelegateFor(null)
+                                setProxyFor(row.membership)
+                              } else if (s === 'delegate') {
                                 setProxyFor(null)
+                                setDelegateFor(row.membership)
+                              } else {
+                                setProxyFor(null)
+                                setDelegateFor(null)
                                 void mark(row, s)
                               }
                             }}
@@ -1337,6 +1413,22 @@ function AttendanceCard({
                           </button>
                         )}
                       </div>
+                      {delegateFor !== null && delegateFor === row.membership && (
+                        <DelegatePicker
+                          row={row}
+                          busy={busy}
+                          onPick={async (choice) => {
+                            const done = await send(() =>
+                              meetingApi.markAttendance(base, meeting.id, {
+                                membership: row.membership,
+                                status: 'delegate',
+                                ...choice,
+                              }),
+                            )
+                            if (done) setDelegateFor(null)
+                          }}
+                        />
+                      )}
                       {proxyFor !== null && proxyFor === row.membership && (
                         <label className="field">
                           <span>{t('Vertreten durch')}</span>

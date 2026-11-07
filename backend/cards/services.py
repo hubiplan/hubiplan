@@ -16,6 +16,7 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
+from access.modules import module_on
 from core.tenancy import rls_bypass
 from members.models import DepartmentMembership, Membership, MembershipPeriod
 from members.photo_models import MemberPhoto
@@ -91,6 +92,9 @@ def find_valid(token: str) -> MemberCard | None:
     # Deaktivierte Organisation: Ausweis gilt nicht mehr, keine Daten zeigen (Audit B-V05)
     if card is None or card.membership.purged_at or not card.organization.is_active:
         return None
+    # Modul Ausweise abgeschaltet: Prüfseite zeigt nichts mehr (module-neustruktur, M2a)
+    if not module_on(card.organization, "cards"):
+        return None
     return card
 
 
@@ -119,9 +123,12 @@ def public_data(card: MemberCard) -> dict:
     theme = effective_theme(club.ancestors())
     federation = club.parent if club.parent and club.parent.type == "federation" else None
     person = membership.person
+    organization = person.is_organization
     return {
-        "first_name": person.first_name,
-        "last_name": person.last_name,
+        "kind": "organization" if organization else "person",
+        # Organisationen: ganzer Name einschließlich Zusatz, kein Vorname
+        "first_name": "" if organization else person.first_name,
+        "last_name": person.display_name if organization else person.last_name,
         "status": status,
         "status_label": label,
         "member_type": member_type.member_type.name if member_type else None,
@@ -236,6 +243,10 @@ def _draw_card(c, x: float, y: float, entry: dict) -> None:
             photo, content_x, body_top - ph_h, ph_w, ph_h, preserveAspectRatio=True, anchor="n"
         )
         content_x += ph_w + 3 * mm
+    elif entry.get("organization"):
+        # Organisation ohne Logo: Gebäude-Symbol
+        _draw_building(c, content_x, body_top, 21 * mm, 28 * mm)
+        content_x += 21 * mm + 3 * mm
     # QR-Code rechts
     qr_size = 27 * mm
     qr_x = x + CARD_W - qr_size - 2 * mm
@@ -272,6 +283,30 @@ def _draw_card(c, x: float, y: float, entry: dict) -> None:
         line_y -= 4 * mm
 
 
+def _draw_building(c, x: float, top: float, w: float, h: float) -> None:
+    """Schlichtes Gebäude-Symbol als Platzhalter für ein fehlendes Logo."""
+    c.saveState()
+    c.setFillColor(colors.HexColor("#eeeeee"))
+    c.rect(x, top - h, w, h, stroke=0, fill=1)
+    c.setFillColor(colors.HexColor("#999999"))
+    bw, bh = w * 0.5, h * 0.5
+    bx, by = x + (w - bw) / 2, top - h + h * 0.2
+    c.rect(bx, by, bw, bh, stroke=0, fill=1)
+    c.setFillColor(colors.HexColor("#eeeeee"))
+    win = bw / 7
+    for row in range(3):
+        for col in range(3):
+            c.rect(
+                bx + win * (1 + 2 * col),
+                by + bh - win * (2 + 2 * row) - win / 2,
+                win,
+                win,
+                stroke=0,
+                fill=1,
+            )
+    c.restoreState()
+
+
 def card_entries(cards: list[MemberCard]) -> list[dict]:
     """Daten für den Druck; muss im passenden RLS-Kontext laufen."""
     ids = [card.membership_id for card in cards]
@@ -295,11 +330,14 @@ def card_entries(cards: list[MemberCard]) -> list[dict]:
         theme = themes[club.pk]
         depts = departments.get(m.pk, [])
         photo = photos.get(m.pk)
+        organization = m.person.is_organization
         entries.append(
             {
                 "club": club.name,
-                "first_name": m.person.first_name,
-                "last_name": m.person.last_name,
+                "organization": organization,
+                # Organisationen: Hinweis statt Vorname, darunter der ganze Name
+                "first_name": "Organisationsmitglied" if organization else m.person.first_name,
+                "last_name": m.person.display_name if organization else m.person.last_name,
                 "url": card.url,
                 "primary": theme["primary"],
                 "on_primary": theme["on_primary"],

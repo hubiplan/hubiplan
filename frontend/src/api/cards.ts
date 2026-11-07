@@ -15,6 +15,8 @@ export interface CardInfo {
 
 export interface PublicCard {
   imprint_key?: string
+  /** „organization“ bei Organisationsmitgliedern */
+  kind?: 'person' | 'organization'
   first_name: string
   last_name: string
   status: 'active' | 'future' | 'inactive'

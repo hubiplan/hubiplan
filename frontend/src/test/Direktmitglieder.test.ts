@@ -7,7 +7,7 @@ const fed = (extra: Record<string, unknown> = {}) =>
   testOrg({
     type: 'federation',
     permissions: ['members.view', 'members.edit'],
-    modules: ['members'],
+    modules: ['members', 'awards', 'honors'],
     federation_member_access: 'none',
     ...extra,
   }) as unknown as OrgSummary

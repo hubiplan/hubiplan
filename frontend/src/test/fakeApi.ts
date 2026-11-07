@@ -147,7 +147,7 @@ export function testOrg(overrides: Record<string, unknown> = {}) {
     type: 'club',
     type_label: 'Verein',
     parent_name: 'Testbund',
-    modules: ['members'],
+    modules: ['members', 'awards', 'honors'],
     department_label: 'Abteilung',
     department_label_plural: 'Abteilungen',
     theme: {

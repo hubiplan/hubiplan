@@ -43,7 +43,7 @@ class DonationMixin(FinanceMixin):
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
         if not svc.available(self.org):
-            raise NotFound(gettext("Zuwendungsbestätigungen gibt es nicht für die Plattform."))
+            raise NotFound(gettext("Nicht gefunden."))
 
 
 def _year(request, default: int | None = None) -> int:

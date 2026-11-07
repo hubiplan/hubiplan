@@ -2,7 +2,6 @@
 key: guide.role_preview
 titel: Prüfen, was eine Rolle sieht (Ansicht als Rolle)
 bereich: einstellungen
-modul: roles
 rechte: [roles.preview]
 routen: [/einstellungen/rollen]
 stichworte: [Ansicht als Rolle, Vorschau, Rechte prüfen]

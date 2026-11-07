@@ -37,6 +37,7 @@ from access.catalog import (
     normalize,
 )
 from access.models import Role, RoleAssignment
+from access.modules import upgrade_modules
 from accounts.models import User
 from core.filecheck import clean_logo
 from core.tenancy import rls_bypass
@@ -1010,11 +1011,40 @@ class Loader:
             org.name = self.options["name"].strip()
         org.is_active = True if top else bool(data.get("is_active", True))
         modules = [m for m in data.get("enabled_modules") or [] if m in SWITCHABLE_MODULES]
+        tables = {k.lower(): v for k, v in (data.get("tables") or {}).items() if v}
+        modules = sorted(
+            upgrade_modules(
+                modules,
+                self.doc.get("modules_schema", 1),
+                org_type=org.type,
+                has_cards="cards.membercard" in tables,
+                has_honors="honors.dignity" in tables,
+                has_social="website.socialfeed" in tables,
+                has_chronicle=any(
+                    isinstance(row, dict) and row.get("slug") == "geschichte"
+                    for row in tables.get("website.websitetext") or []
+                ),
+                has_tax=bool(org.tax_areas_enabled or org.reserves_enabled),
+                has_donations=bool(
+                    tables.get("finance.donationsettings") or tables.get("finance.donation")
+                ),
+            )
+        )
         if not self.by_platform:
             # Diese Schalter stellt nur die Plattform ein
             modules = list(DEFAULT_MODULES)
             org.tax_areas_enabled = False
+        # Der Mitgliederbereich folgt dem mitgelieferten Schalter des Vereins
+        modules = sorted(set(modules) - {"portal"})
+        if org.type == Organization.Type.CLUB and org.member_portal_enabled:
+            modules = sorted({*modules, "portal"})
         org.enabled_modules = modules
+        # Freigabe bleibt auf der Instanz: freigegeben ist, was eingeschaltet ist, dazu der
+        # Mitgliederbereich (den schaltet der Verein selbst)
+        released = set(modules)
+        if org.type == Organization.Type.CLUB and "members" in released:
+            released.add("portal")
+        org.released_modules = sorted(released)
         if org.type != Organization.Type.FEDERATION or not self.by_platform:
             org.federation_member_access = Organization.MemberAccess.NONE
             org.federation_show_former_memberships = False
@@ -1396,7 +1426,12 @@ class Loader:
         src = self.doc.get("club") if isinstance(self.doc.get("club"), dict) else {}
         org = Organization(type=Organization.Type.CLUB, parent=self.target)
         for field in dump.DEPT_FIELDS:
-            if field in data and field not in ("sort_order", "is_active", "date_precision"):
+            if field in data and field not in (
+                "sort_order",
+                "is_active",
+                "date_precision",
+                "unit_hidden_modules",
+            ):
                 setattr(org, field, org._meta.get_field(field).to_python(data[field]))
         for field, value in unit_address(self.doc, self.options).items():
             if value:

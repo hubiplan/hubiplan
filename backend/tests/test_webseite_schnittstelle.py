@@ -29,7 +29,7 @@ def private_root(settings, tmp_path):
 @pytest.fixture
 def setup(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "events", "website"]
+    org.enabled_modules = ["members", "events", "website", "honors", "chronicle"]
     org.contact_email = "info@verein-a.example.org"
     org.save()
     site = Website.objects.create(organization=org, public_key="schluessel-a", state="public")

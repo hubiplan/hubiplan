@@ -428,6 +428,13 @@ class Invoice(models.Model):
     recipient_name = EncryptedCharField("Empfänger", max_length=200, strict=True)
     recipient_address = EncryptedTextField("Anschrift", blank=True)
     recipient_email = EncryptedEmailField("E-Mail", blank=True)
+    # Angaben des Rechnungsempfängers, die auf die Rechnung gedruckt werden (J3)
+    order_reference = models.CharField(
+        "Bestellnummer", max_length=100, blank=True, default="", db_default=""
+    )
+    leitweg_id = models.CharField(
+        "Leitweg-ID", max_length=50, blank=True, default="", db_default=""
+    )
     date = models.DateField("Rechnungsdatum")
     due_date = models.DateField("fällig am")
     subject = models.CharField("Betreff", max_length=200, default="Rechnung")

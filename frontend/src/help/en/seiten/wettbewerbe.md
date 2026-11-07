@@ -32,7 +32,7 @@ Stand mode stores private data for the verified account or complete stand creden
 
 ### Setup
 
-**Set up** separates **Basic data**, **Shooting conditions**, **Rankings** and **Output & sharing**. A target is selected by its image once per shooting round. Individual and centre-distance rankings can share the same recorded hits; unit rankings derive from an individual ranking. Facilities configured under [Competitions › Setup](/wettbewerbe/einrichtung) filter the target catalogue without removing existing selections.
+**Set up** separates **Basic data**, **Shooting conditions**, **Rankings** and **Output & sharing**. A target is selected by its image once per shooting round. Individual and centre-distance rankings can share the same recorded hits; unit rankings derive from an individual ranking. Facilities configured under [Competitions › Setup](/wettbewerbe/einrichtung) filter the target catalogue without removing existing selections. Targets with hit pattern, photo evaluation and bird shooting belong to the “Shooting sports” module; without it you enter results as values.
 
 Changes to conditions or calculations require confirmation when results exist. Calculated results are recalculated, while manual totals remain and must be reviewed. After conditions change, stand mode requires the current setup and discards old offline entries. Finalising and reopening are available under **Evaluation** → **Competition and finalisation**.
 

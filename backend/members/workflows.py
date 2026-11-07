@@ -23,6 +23,7 @@ from organizations.terms import fill
 
 from . import services
 from .models import (
+    BillingAddress,
     ContactDetails,
     ContactPerson,
     DepartmentMembership,
@@ -416,6 +417,7 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     # Ansprechpartner der Organisation und Einträge der Person als Ansprechpartner (J2)
     ContactPerson.objects.filter(membership=membership).delete()
     ContactPerson.objects.filter(organization=club, person=person).delete()
+    BillingAddress.objects.filter(membership=membership).delete()
     from .photos import remove_all
 
     remove_all(membership)
@@ -483,8 +485,8 @@ def _purge_related(membership: Membership, person, club) -> None:
         status=ChangeRequest.Status.REJECTED, decided_at=timezone.now()
     )
     # Zugang sperren: Mitgliederzugang und offene Anmeldelinks dieses Vereins
-    access = PortalAccess.objects.filter(membership=membership).first()
-    if access is not None:
+    # (bei Organisationen die Zugänge aller Ansprechpartner)
+    for access in PortalAccess.objects.filter(membership=membership):
         LoginLink.objects.filter(
             user_id=access.user_id, organization=club, used_at__isnull=True
         ).update(used_at=timezone.now())

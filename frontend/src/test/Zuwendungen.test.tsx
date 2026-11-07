@@ -15,7 +15,10 @@ const loggedIn = () => ({ status: 200, body: { status: 200, data: { user: testUs
 const F = '/api/orgs/7/finance'
 const YEAR = new Date().getFullYear()
 
-const base = { modules: ['members', 'finance'], permissions: ['finance.view', 'finance.edit'] }
+const base = {
+  modules: ['members', 'finance', 'donations'],
+  permissions: ['finance.view', 'finance.edit'],
+}
 
 const SETTINGS = {
   purposes: 'des Brauchtums',
@@ -67,7 +70,7 @@ function renderApp(path: string) {
 }
 
 describe('Zuwendungsbestätigungen', () => {
-  it('erscheinen für jede Einheit mit Kasse, auch ohne Registereintrag', () => {
+  it('erscheinen mit Modul und Kasse, auch ohne Registereintrag', () => {
     const plain = financeSections(
       financeAccess(testOrg({ ...base, registered: false }) as unknown as OrgSummary),
     )
@@ -76,6 +79,10 @@ describe('Zuwendungsbestätigungen', () => {
       financeAccess(testOrg({ ...base, modules: ['members'] }) as unknown as OrgSummary),
     )
     expect(noFinance.map((s) => s.label)).not.toContain('Zuwendungsbestätigungen')
+    const noModule = financeSections(
+      financeAccess(testOrg({ ...base, modules: ['members', 'finance'] }) as unknown as OrgSummary),
+    )
+    expect(noModule.map((s) => s.label)).not.toContain('Zuwendungsbestätigungen')
   })
 
   it('zwei Zuwendungen ankreuzen ergibt eine Sammelbestätigung', async () => {

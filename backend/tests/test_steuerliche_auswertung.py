@@ -20,7 +20,7 @@ JSON = "application/json"
 @pytest.fixture
 def club(orgs):
     club = orgs["a"]
-    club.enabled_modules = ["finance", "members", "billing"]
+    club.enabled_modules = ["finance", "members", "billing", "tax"]
     club.tax_areas_enabled = True
     club.save()
     return club

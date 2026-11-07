@@ -20,6 +20,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from access.catalog import FINANCE_EDIT, FINANCE_VIEW, ROLES_MANAGE
+from access.modules import module_on
 from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.files import delete_on_commit
@@ -805,6 +806,8 @@ class TaxReportView(FinanceMixin, APIView):
     def get(self, request, org_id: int):
         from . import tax, tax_report
 
+        if not module_on(self.org, "tax"):
+            return Response({"detail": gettext("Nicht gefunden.")}, status=404)
         year = request.query_params.get("jahr", "")
         year = int(year) if year.isdigit() else self.org.fiscal_year_of(timezone.localdate())
         data = tax.report(self.org, year)
@@ -839,6 +842,9 @@ class FinanceSettingsView(FinanceMixin, APIView):
             return self._datev(request)
         if "cash_counts_enabled" in request.data:
             return self._switch(request, "cash_counts_enabled", "Zählprotokoll und Kassenbericht")
+        # Rücklagen und steuerliche Bereiche gehören zum Modul „Steuern & Gemeinnützigkeit“
+        if not module_on(self.org, "tax"):
+            raise NotFound(gettext("Nicht gefunden."))
         if "reserves_enabled" in request.data:
             return self._switch(request, "reserves_enabled", "Rücklagen führen")
         value = request.data.get("tax_areas_enabled")
@@ -973,9 +979,9 @@ class FinanceSettingsView(FinanceMixin, APIView):
             "locked_until": self.org.finance_locked_until,
             # Automatisch festgeschrieben: alles bis Ende des vorletzten Monats
             "auto_locked_until": auto,
-            "tax_areas_enabled": self.org.tax_areas_enabled,
+            "tax_areas_enabled": self.org.tax_areas_on,
             "cash_counts_enabled": self.org.cash_counts_enabled,
-            "reserves_enabled": self.org.reserves_enabled,
+            "reserves_enabled": self.org.reserves_on,
             "datev_enabled": self.org.datev_enabled,
             "datev_consultant": self.org.datev_consultant,
             "datev_client": self.org.datev_client,
@@ -1007,13 +1013,13 @@ def closing_checks(org, year: int, start, last) -> dict:
                 "booking_id"
             )
         ).count(),
-        "tax_areas_enabled": org.tax_areas_enabled,
+        "tax_areas_enabled": org.tax_areas_on,
         "categories_without_area": (
             bookings.filter(category__isnull=False, category__tax_area="")
             .values("category")
             .distinct()
             .count()
-            if org.tax_areas_enabled
+            if org.tax_areas_on
             else 0
         ),
     }

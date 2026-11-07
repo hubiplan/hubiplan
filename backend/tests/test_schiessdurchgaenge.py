@@ -12,7 +12,7 @@ from .test_wettbewerbe import _starter, url
 @pytest.fixture
 def shooting_org(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "competitions"]
+    org.enabled_modules = ["members", "competitions", "shooting"]
     org.save()
     return org
 

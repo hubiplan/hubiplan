@@ -24,6 +24,11 @@ Nur `/api/app/v1/…`, den Mitgliederbereich `/api/portal/<Zugang>/…` und `/ap
 Auf allen anderen Pfaden antwortet HUBIplan mit `401`. Ein `401` mit
 `code = device_not_authenticated` heißt: Gerät neu verbinden.
 
+Jeder Zugang zum Mitgliederbereich (in `/api/me/contexts/` und `/api/app/v1/me/`) und jede
+Untereinheit nennt in `modules` die eingeschalteten Module (für Untereinheiten die dort
+wirksamen). Die einzelnen Schalter (`events_enabled`, `helpers_enabled` …) bleiben für ältere
+App-Stände; die App nutzt die Liste, wenn sie da ist.
+
 Der Schlüssel verfällt
 - beim Abmelden des Geräts (`DELETE /api/app/v1/devices/<id>/`, auch im Browser),
 - nach 180 Tagen ohne Nutzung,
@@ -71,19 +76,19 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 | Methode und Pfad | Zweck |
 |---|---|
 | `GET /api/app/v1/instance/` | Selbstauskunft ohne Anmeldung: `version` (Programmversion, nur zur Anzeige, siehe [releases.md](releases.md)), `api_version`, `min_app_version`, `url`, `push` |
-| `GET /api/app/v1/me/` | Konto, dieses Gerät, Zugänge (`portal`, je mit `theme`: Farben und Wappen der Einheit) |
+| `GET /api/app/v1/me/` | Konto, dieses Gerät, Zugänge (`portal`, je mit `theme`: Farben und Wappen der Einheit; `member_kind` `person`/`organization` und `member_name`: bei Ansprechpartnern einer Organisation steht deren Name dort, `first_name`/`last_name` sind die des Ansprechpartners) |
 | `GET /api/app/v1/devices/` | eigene Geräte (`current` = dieses Gerät) |
 | `GET /api/portal/<Zugang>/events/?from=&to=` | Termine (wie Mitgliederbereich) |
 | `PUT/DELETE /api/portal/<Zugang>/events/<id>/response/` | Zu-/Absage |
 | `GET /api/portal/<Zugang>/circulars/` | Rundschreiben |
 | `GET /api/portal/<Zugang>/results/` | Meine Ergebnisse: Starts mit Platz und Wert, Titel und Auszeichnungen (Wettbewerbe; leer ohne Modul, `competitions_enabled` im Zugang) |
-| `GET /api/portal/<Zugang>/` | eigenes Profil |
+| `GET /api/portal/<Zugang>/` | eigenes Profil (`kind`, `display_name`; Organisationen ohne Vorname, Geburtsdatum und Geschlecht) |
 | `GET /api/app/v1/send/` | Einheiten, an deren Mitglieder dieses Konto Kurzmitteilungen senden darf (`circulars.send` im Verein, `dept.circulars.send` im Zug) |
 | `POST /api/app/v1/send/<org|dept>/<id>/` | Kurzmitteilung an alle Mitglieder der Einheit: `subject`, `body`, `confirm` (false: nur Empfängerzahl, true: senden) |
 | `PUT /api/app/v1/devices/current/key/` | Geräteschlüsselpaar nachmelden (H7) |
 | `POST /api/app/v1/devices/current/renew/` | Geräteschlüssel erneuern (H7) |
 | `PUT/DELETE /api/app/v1/devices/current/push/` | Push-Endpunkt dieses Geräts melden bzw. abmelden (`kind`, `endpoint`, `p256dh`, `auth`) |
-| `GET /api/portal/<Zugang>/card/` | eigener Mitgliedsausweis: `state`, `url` (Inhalt des QR-Codes), bei gültigem Ausweis `display` (Name, Status, Mitgliedsart, Einheit, Untereinheiten, Mitgliedsnummer, `photo_url`, Farben); die App speichert ihn und zeigt ihn auch ohne Netz |
+| `GET /api/portal/<Zugang>/card/` | eigener Mitgliedsausweis: `state`, `url` (Inhalt des QR-Codes), bei gültigem Ausweis `display` (Name, Status, Mitgliedsart, Einheit, Untereinheiten, Mitgliedsnummer, `photo_url`, Farben; `kind`: bei Organisationen leerer Vorname, ganzer Name in `last_name`, `photo_url` ist das Logo); die App speichert ihn und zeigt ihn auch ohne Netz |
 | `GET /api/portal/<Zugang>/photo/` | eigenes Foto: Stand (`approved`, `pending`, Einwilligung) |
 | `POST /api/portal/<Zugang>/photo/` | Foto hochladen (multipart `file`, `consent=true`); wartet immer auf Freigabe durch den Vorstand |
 | `DELETE /api/portal/<Zugang>/photo/` | Einwilligung widerrufen, alle Fotos löschen |
@@ -197,7 +202,10 @@ entfernen nein), sonst brechen ältere Apps.
   `Idempotency-Key`), `members/<id>/` (GET/PATCH),
   `history/`, `change-type/`, `exit/`, `reentry/`, `fields/`, `photo/` (+ `approve/`,
   `rotate/`, `consent/`), `card/`, Unterobjekte `members/<id>/periods|departments|
-  department-roles|honorary-titles/`.
+  department-roles|honorary-titles/`. Organisationsmitglieder: Liste mit `typ=person|organisation`
+  und je Zeile `kind`, `name_suffix`; die Akte nennt `kind`, `organization` (Zusatz, Rechtsform,
+  Register, USt-IdNr., Webseite), `contact_persons`, `contact_for` und `billing_address`. Die App
+  zeigt sie nur an; Organisationen aufnehmen und Ansprechpartner pflegen geht im Browser.
 - Auswahllisten nur lesen: `member-types/`, `fields/`, `departments/`, `honorary-titles/`.
 - Freigaben: `change-requests/`, `change-requests/<id>/decide/`; offene Aufgaben enthalten
   dafür `ref` und `membership`.

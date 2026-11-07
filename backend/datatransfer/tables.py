@@ -73,6 +73,7 @@ MODULE_MODELS = (
     "members.HonoraryTitleAward",
     # Ansprechpartner von Organisationsmitgliedern (J2)
     "members.ContactPerson",
+    "members.BillingAddress",
     "honors.Dignity",
     "honors.Reign",
     "honors.Companion",

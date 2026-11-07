@@ -2,6 +2,13 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { displayName, platformApi } from '../../api/orgs.ts'
+import {
+  flatModules,
+  moduleApi,
+  requirementText,
+  withoutDependents,
+  withRequirements,
+} from '../../api/modules.ts'
 import type { PlatformOrg, PlatformSettings } from '../../api/orgs.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField, Tabs } from '../../components/ui.tsx'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
@@ -44,20 +51,6 @@ const ACCESS_LABELS = {
     return t('lesen und ändern')
   },
 }
-const MODULES = [
-  { id: 'music', label: t('Musik') },
-  { id: 'members', label: t('Mitglieder') },
-  { id: 'finance', label: t('Kasse') },
-  { id: 'billing', label: t('Beiträge/Rechnungen') },
-  { id: 'events', label: t('Termine') },
-  { id: 'website', label: t('Webseite') },
-  { id: 'competitions', label: t('Wettbewerbe') },
-  { id: 'material', label: t('Material') },
-  { id: 'infrastructure', label: t('Infrastruktur') },
-  { id: 'entries', label: t('Meldungen') },
-  { id: 'meetings', label: t('Versammlungen') },
-  { id: 'helpers', label: t('Helferdienste') },
-]
 
 export function PlatformLayout() {
   const location = useLocation()
@@ -84,6 +77,8 @@ export function PlatformLayout() {
 
 export function PlatformOrgsPage() {
   const { data, error, reload } = useLoad(() => platformApi.orgs(), [])
+  const directory = useLoad(() => moduleApi.directory(), [])
+  const moduleList = flatModules(directory.data)
   const [editing, setEditing] = useState<PlatformOrg | 'new' | null>(null)
 
   if (error) return <Alert kind="error">{error}</Alert>
@@ -125,10 +120,10 @@ export function PlatformOrgsPage() {
           </div>
         )}
         <div className="muted">
-          {o.enabled_modules.length
+          {(o.released_modules ?? o.enabled_modules).length
             ? t('Module: {x}', {
-                x: o.enabled_modules
-                  .map((m) => MODULES.find((x) => x.id === m)?.label ?? m)
+                x: (o.released_modules ?? o.enabled_modules)
+                  .map((m) => moduleList.find((x) => x.id === m)?.label ?? m)
                   .join(', '),
               })
             : t('keine Module')}
@@ -199,11 +194,40 @@ function PlatformOrgForm({
     label_genitive: org?.label_genitive ?? suggestedLabels(initialKeeps).genitive,
     federation_member_access: org?.federation_member_access ?? 'none',
     federation_show_former_memberships: org?.federation_show_former_memberships ?? false,
-    enabled_modules: org?.enabled_modules ?? ['finance', 'members'],
+    released_modules: org?.released_modules ?? org?.enabled_modules ?? ['finance', 'members'],
+    modules_pass_down: org?.modules_pass_down ?? false,
     is_active: org?.is_active ?? true,
   })
+  // Vorlage beim Anlegen: schlägt Module und die Bezeichnung der Untereinheiten vor
+  const templates = useLoad(() => (org ? Promise.resolve([]) : moduleApi.templates()), [org])
+  const [template, setTemplate] = useState('')
+  const [unitLabels, setUnitLabels] = useState<Partial<PlatformOrg>>({})
+  function applyTemplate(id: string) {
+    setTemplate(id)
+    const tpl = (templates.data ?? []).find((x) => x.id === id)
+    if (!tpl) {
+      setUnitLabels({})
+      return
+    }
+    form.set('released_modules', tpl.modules)
+    if (tpl.org_type === 'federation' && v.keeps_members && v.federation === null) setKeeps(false)
+    if (tpl.org_type === 'club' && !v.keeps_members) setKeeps(true)
+    setUnitLabels(
+      tpl.units
+        ? {
+            department_label: tpl.units.label,
+            department_label_plural: tpl.units.plural,
+            department_label_gender: tpl.units.gender,
+            department_label_en: tpl.units.label_en,
+            department_label_plural_en: tpl.units.plural_en,
+          }
+        : {},
+    )
+  }
   const v = form.values
   const e = form.errors
+  const directory = useLoad(() => moduleApi.directory(), [])
+  const allModules = flatModules(directory.data)
   const [board, setBoard] = useState('')
   const [erasing, setErasing] = useState(false)
   const [confirmation, setConfirmation] = useState('')
@@ -251,6 +275,7 @@ function PlatformOrgForm({
     const { keeps_members, ...rest } = v
     const payload = {
       ...rest,
+      ...(org ? {} : unitLabels),
       // Nur senden, was sich ändern lässt
       ...(switchable && (!org || keeps_members !== initialKeeps) ? { keeps_members } : {}),
       founding_year: v.founding_year ? Number(v.founding_year) : null,
@@ -298,6 +323,23 @@ function PlatformOrgForm({
             ? t('{Sg} bearbeiten', { Sg: tm.Sg, sg: tm.sg })
             : t('{Sg} anlegen', { Sg: tm.Sg, sg: tm.sg })}
         </h2>
+        {!org && (templates.data ?? []).length > 0 && (
+          <SelectField
+            label={t('Vorlage')}
+            hint={t(
+              'Schlägt Module und die Bezeichnung der Untereinheiten vor. Danach ist alles frei änderbar.',
+            )}
+            value={template}
+            onChange={(ev) => applyTemplate(ev.target.value)}
+          >
+            <option value="">{t('– ohne Vorlage –')}</option>
+            {(templates.data ?? []).map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.label}
+              </option>
+            ))}
+          </SelectField>
+        )}
         {(!org || org.keeps_members) && (
           <SelectField
             label={t('Übergeordnete Einheit')}
@@ -464,22 +506,54 @@ function PlatformOrgForm({
               checked={v.federation_show_former_memberships}
               onChange={(val) => form.set('federation_show_former_memberships', val)}
             />
+            <Checkbox
+              label={t('Darf den Einheiten darunter Module freigeben')}
+              hint={t(
+                'Dann ändert sie die Freigabe für diese Einheiten selbst, ohne die Plattform-Verwaltung.',
+              )}
+              checked={v.modules_pass_down}
+              onChange={(val) => form.set('modules_pass_down', val)}
+            />
           </>
         )}
 
-        <h3>{t('Module')}</h3>
-        {MODULES.map((m) => (
-          <Checkbox
-            key={m.id}
-            label={m.label}
-            checked={v.enabled_modules.includes(m.id)}
-            onChange={(on) =>
-              form.set(
-                'enabled_modules',
-                on ? [...v.enabled_modules, m.id] : v.enabled_modules.filter((x) => x !== m.id),
+        <h3>{t('Freigegebene Module')}</h3>
+        <p className="muted small">
+          {t(
+            'Neu freigegebene Module werden eingeschaltet. Die Einheit kann freigegebene Module unter Einstellungen › Module selbst aus- und wieder einschalten.',
+          )}
+        </p>
+        {directory.error && <LoadError message={directory.error} onRetry={directory.reload} />}
+        {(directory.data ?? []).map((group) => (
+          <fieldset key={group.id} className="stack">
+            <legend>{group.label}</legend>
+            {group.modules.map((m) => {
+              const needs = requirementText(m, allModules)
+              return (
+                <Checkbox
+                  key={m.id}
+                  label={m.label}
+                  hint={
+                    needs
+                      ? t('{text} (braucht {needs})', { text: m.description, needs })
+                      : m.description
+                  }
+                  checked={v.released_modules.includes(m.id)}
+                  onChange={(on) =>
+                    form.set(
+                      'released_modules',
+                      on
+                        ? withRequirements([...v.released_modules, m.id], allModules)
+                        : withoutDependents(
+                            v.released_modules.filter((x) => x !== m.id),
+                            allModules,
+                          ),
+                    )
+                  }
+                />
               )
-            }
-          />
+            })}
+          </fieldset>
         ))}
         {org && (
           <Checkbox

@@ -588,6 +588,126 @@ describe('Mitgliedsakte', () => {
     })
   })
 
+  it('Organisation: Mitgliederbereich je Ansprechpartner', async () => {
+    const contact = {
+      id: 5,
+      linked_member: null,
+      display_name: 'Max Muster',
+      last_name: 'Muster',
+      first_name: 'Max',
+      gender: '',
+      function: '',
+      email: 'max@musterbau.example',
+      phone: '',
+      contact_email: 'max@musterbau.example',
+      contact_phone: '',
+      is_primary: true,
+      receives_mail: true,
+      receives_invoices: true,
+      represents: true,
+      member_access: false,
+      since: null,
+    }
+    const firma = {
+      ...detail,
+      kind: 'organization',
+      last_name: 'Musterbau GmbH',
+      first_name: '',
+      birth_date: null,
+      organization: {
+        name_suffix: '',
+        legal_form: 'gmbh',
+        legal_form_label: 'GmbH',
+        legal_form_other: '',
+        register: '',
+        vat_id: '',
+        website: '',
+      },
+      contact_persons: [contact],
+    }
+    const access = `${base}/members/11/access/?ansprechpartner=5`
+    const withLogins = testOrg({
+      permissions: ['members.view', 'members.edit', 'logins.view', 'logins.edit'],
+    })
+    const calls = fakeApi({
+      ...common(),
+      'GET /api/me/organizations/': () => ({ status: 200, body: [withLogins] }),
+      [`GET ${base}/members/11/`]: () => ({ status: 200, body: firma }),
+      [`GET ${access}`]: () => ({
+        status: 200,
+        body: { access: null, portal_enabled: true, department_access_enabled: false },
+      }),
+      [`POST ${access}`]: () => ({
+        status: 200,
+        body: {
+          access: {
+            email: 'max@musterbau.example',
+            created_at: '2026-11-06T20:00:00Z',
+            last_login: null,
+            login: 'link',
+          },
+          sent: 'link',
+        },
+      }),
+    })
+    renderAt('/mitglieder/11')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('link', { name: 'Rollen und Konto' }))
+    expect(
+      await screen.findByRole('heading', { name: 'Mitgliederbereich für Max Muster' }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Freischalten und Anmeldelink senden' }))
+    expect(await screen.findByText('Anmeldelink per E-Mail gesendet.')).toBeInTheDocument()
+    expect(calls.some((c) => c.key === `POST ${access}`)).toBe(true)
+    expect(calls.some((c) => c.key === `GET ${base}/members/11/access/`)).toBe(false)
+  })
+
+  it('Rechnungsanschrift festlegen', async () => {
+    const billingOrg = testOrg({
+      permissions: ['members.view', 'members.edit'],
+      modules: ['members', 'billing'],
+    })
+    const address = {
+      name: 'Musterbau Holding AG',
+      attention: 'Buchhaltung',
+      street: 'Postfach 10 20 30',
+      postal_code: '54321',
+      city: 'Beispielstadt',
+      country: '',
+      email: 'rechnung@musterbau.example',
+      order_reference: '',
+      leitweg_id: '991-12345-67',
+    }
+    const calls = fakeApi({
+      ...common(),
+      'GET /api/me/organizations/': () => ({ status: 200, body: [billingOrg] }),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: { ...detail, billing_address: null },
+      }),
+      [`PUT ${base}/members/11/billing-address/`]: () => ({
+        status: 200,
+        body: { ...detail, billing_address: address },
+      }),
+    })
+    renderAt('/mitglieder/11')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Rechnungsanschrift festlegen' }))
+    const section = screen.getByRole('region', { name: 'Rechnungsanschrift' })
+    await user.type(within(section).getByLabelText(/^Straße oder Postfach/), address.street)
+    await user.type(within(section).getByLabelText(/^PLZ/), address.postal_code)
+    await user.type(within(section).getByLabelText(/^Ort/), address.city)
+    await user.type(within(section).getByLabelText(/^Leitweg-ID/), address.leitweg_id)
+    await user.click(within(section).getByRole('button', { name: 'Speichern' }))
+    expect(await screen.findByText(/Leitweg-ID: 991-12345-67/)).toBeInTheDocument()
+    const put = calls.find((c) => c.key === `PUT ${base}/members/11/billing-address/`)
+    expect(JSON.parse(String(put?.init?.body))).toMatchObject({
+      street: 'Postfach 10 20 30',
+      city: 'Beispielstadt',
+      leitweg_id: '991-12345-67',
+    })
+  })
+
   it('nennt den Namen des Dachverbands nur einmal', async () => {
     fakeApi({
       ...common(),

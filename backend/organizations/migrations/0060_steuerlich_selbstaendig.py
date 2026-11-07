@@ -2,7 +2,7 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [("organizations", "0051_adressen_je_einheit")]
+    dependencies = [("organizations", "0059_module_weitergabe")]
     operations = [
         migrations.AddField(
             model_name="organization",

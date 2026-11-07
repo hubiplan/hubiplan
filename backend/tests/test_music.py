@@ -64,7 +64,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture
 def music(club):
-    club.enabled_modules += ["music", "events"]
+    club.enabled_modules += ["music", "events", "scores"]
     club.save()
     with tenant_context(club.pk):
         event = Event.objects.create(

@@ -53,8 +53,8 @@ it('zeigt die Musik-Unterpunkte mit echten Pfaden in der Seitenleiste', async ()
   const { musicSections } = await import('../pages/music/access.ts')
   const items = musicSections({
     id: 7,
-    modules: ['music'],
-    permissions: ['music.view'],
+    modules: ['music', 'scores'],
+    permissions: ['music.view', 'scores.view'],
   } as unknown as Parameters<typeof musicSections>[0])
   expect(items.map((i) => i.to)).toEqual([
     '/musik/uebersicht',

@@ -37,6 +37,7 @@ from access.catalog import (
     catalog_for,
     effective,
 )
+from access.modules import MODULE_IDS, module_on
 from accounts.models import User
 from audit.log import diff, record, snapshot
 from core.api_base import has_needed
@@ -62,6 +63,7 @@ from members.views import (
 )
 from organizations.imprint import ensure as ensure_imprint
 from organizations.models import DepartmentRole
+from organizations.platform_public import instance_name
 from organizations.serializers import clean_department_permissions
 from organizations.terms import department_terms, fill
 from organizations.theme import effective_theme
@@ -85,9 +87,32 @@ class MemberAccessView(_ClubMixin, APIView):
             Membership.objects.select_related("person"), organization=self.org, pk=self.kwargs["pk"]
         )
 
+    def get_contact(self, membership):
+        """Ansprechpartner (``?ansprechpartner=<id>``): Zugang für ihn statt für das Mitglied
+        (Organisationsmitglieder, J5)."""
+        from members.models import ContactPerson
+
+        raw = self.request.query_params.get("ansprechpartner") or self.request.data.get("contact")
+        if not raw:
+            return None
+        try:
+            pk = int(raw)
+        except (TypeError, ValueError):
+            raise serializers.ValidationError({"contact": "?"}) from None
+        return get_object_or_404(
+            ContactPerson.objects.select_related("person"), membership=membership, pk=pk
+        )
+
+    def current(self, membership, contact):
+        return (
+            PortalAccess.objects.filter(membership=membership, contact_person=contact)
+            .select_related("user")
+            .first()
+        )
+
     def get(self, request, org_id: int, pk: int):
         membership = self.get_membership()
-        access = PortalAccess.objects.filter(membership=membership).select_related("user").first()
+        access = self.current(membership, self.get_contact(membership))
         return Response(
             {
                 "access": services.access_info(access),
@@ -107,10 +132,13 @@ class MemberAccessView(_ClubMixin, APIView):
                     self.org,
                 )
             )
-        before = PortalAccess.objects.filter(membership=membership).select_related("user").first()
+        contact = self.get_contact(membership)
+        before = self.current(membership, contact)
         old_email = before.user.email if before else None
         transfer = bool(request.data.get("transfer"))
-        access = services.ensure_access(self.org, membership, request.user, transfer=transfer)
+        access = services.ensure_access(
+            self.org, membership, request.user, transfer=transfer, contact=contact
+        )
         kind = services.send_access_mail(self.org, access, request.user)
         if old_email and old_email != access.user.email:
             record(
@@ -139,7 +167,11 @@ class MemberAccessView(_ClubMixin, APIView):
 
     def delete(self, request, org_id: int, pk: int):
         membership = self.get_membership()
-        access = PortalAccess.objects.filter(membership=membership).select_related("user").first()
+        contact = self.get_contact(membership)
+        access = self.current(membership, contact)
+        if contact is not None and contact.member_access:
+            contact.member_access = False
+            contact.save(update_fields=["member_access", "updated_at"])
         if access is not None:
             email = access.user.email
             access.delete()
@@ -240,7 +272,11 @@ def _sync_login_email(cr: ChangeRequest) -> None:
     new = (cr.data or {}).get("email")
     if not new:
         return
-    access = PortalAccess.objects.filter(membership=cr.membership).select_related("user").first()
+    access = (
+        PortalAccess.objects.filter(membership=cr.membership, contact_person__isnull=True)
+        .select_related("user")
+        .first()
+    )
     # Nur für das Konto, das die Meldung geschickt hat (Zugang inzwischen neu vergeben?)
     if access is None or access.user_id != cr.user_id:
         return
@@ -370,6 +406,9 @@ def department_summary(ctx: services.DepartmentContext) -> dict:
         "infrastructure_enabled": "infrastructure" in (club.enabled_modules or []),
         "meetings_enabled": "meetings" in (club.enabled_modules or []),
         "helpers_enabled": "helpers" in (club.enabled_modules or []),
+        "bookings_enabled": "bookings" in (club.enabled_modules or []),
+        # Für diese Untereinheit wirksame Module (Teilmenge des Vereins, eigene Kasse usw.)
+        "modules": [m for m in MODULE_IDS if module_on(ctx.department, m)],
         "imprint_key": ensure_imprint(ctx.department).public_key,
     }
 
@@ -404,6 +443,8 @@ def dept_member_detail(org, membership: Membership, with_access: bool) -> dict:
     first = membership.periods.order_by("entry_date").first()
     data = {
         "id": membership.pk,
+        "kind": person.kind,
+        "display_name": person.display_name,
         "last_name": person.last_name,
         "first_name": person.first_name,
         "birth_date": person.birth_date,
@@ -417,7 +458,11 @@ def dept_member_detail(org, membership: Membership, with_access: bool) -> dict:
         ),
     }
     if with_access:
-        access = PortalAccess.objects.filter(membership=membership).select_related("user").first()
+        access = (
+            PortalAccess.objects.filter(membership=membership, contact_person__isnull=True)
+            .select_related("user")
+            .first()
+        )
         data["access"] = services.access_info(access)
     return data
 
@@ -449,7 +494,11 @@ class DepartmentMemberAccessView(DepartmentScopedMixin, APIView):
     @transaction.atomic
     def post(self, request, dept_id: int, pk: int):
         membership = self.get_member(pk)
-        before = PortalAccess.objects.filter(membership=membership).select_related("user").first()
+        before = (
+            PortalAccess.objects.filter(membership=membership, contact_person__isnull=True)
+            .select_related("user")
+            .first()
+        )
         old_email = before.user.email if before else None
         transfer = bool(request.data.get("transfer"))
         access = services.ensure_access(self.org, membership, request.user, transfer=transfer)
@@ -462,7 +511,7 @@ class DepartmentMemberAccessView(DepartmentScopedMixin, APIView):
 
     def delete(self, request, dept_id: int, pk: int):
         membership = self.get_member(pk)
-        PortalAccess.objects.filter(membership=membership).delete()
+        PortalAccess.objects.filter(membership=membership, contact_person__isnull=True).delete()
         record(
             self.org,
             request.user,
@@ -736,13 +785,19 @@ def portal_summary(access: PortalAccess) -> dict:
     club = access.organization
     with tenant_context(club.pk, access.user_id):
         person = access.membership.person
+        first_name, last_name = person.first_name, person.last_name
+        if access.contact_person_id is not None:
+            # Ansprechpartner: eigener Name, die Mitgliedschaft gehört der Organisation (J5)
+            first_name, last_name = services.contact_names(access.contact_person)
         return {
             "id": access.pk,
             "club_id": club.pk,
             "club_name": club.name,
             "club_display_name": club.display_name,
-            "first_name": person.first_name,
-            "last_name": person.last_name,
+            "first_name": first_name,
+            "last_name": last_name,
+            "member_kind": person.kind,
+            "member_name": person.display_name,
             "date_precision": club.date_precision,
             "theme": effective_theme(club.ancestors()),
             "events_enabled": "events" in (club.enabled_modules or []),
@@ -751,6 +806,13 @@ def portal_summary(access: PortalAccess) -> dict:
             "bookings_enabled": _bookings_enabled(club),
             "helpers_enabled": "helpers" in (club.enabled_modules or []),
             "meetings_enabled": "meetings" in (club.enabled_modules or []),
+            "todos_enabled": "todos" in (club.enabled_modules or []),
+            "docs_enabled": "docs" in (club.enabled_modules or []),
+            "circulars_enabled": "circulars" in (club.enabled_modules or []),
+            "cards_enabled": "cards" in (club.enabled_modules or []),
+            # Alle eingeschalteten Module (Modulverzeichnis); die Schalter oben bleiben für
+            # ältere App-Stände
+            "modules": sorted(club.enabled_modules or []),
             "terms": department_terms(club),
             "imprint_key": ensure_imprint(club).public_key,
         }
@@ -832,6 +894,10 @@ class PortalChangeRequestView(APIView):
         message = values.pop("message", "")
         with tenant_context(club.pk, request.user.pk):
             membership = Membership.objects.select_related("person").get(pk=access.membership_id)
+            if membership.person.is_organization:
+                # Organisationen haben keinen Vornamen, kein Geburtsdatum, kein Geschlecht
+                for key in ("first_name", "birth_date", "gender"):
+                    values.pop(key, None)
             previous_values = current_values(club, membership)
             changed = {
                 k: (v.isoformat() if hasattr(v, "isoformat") else v)
@@ -926,7 +992,9 @@ class LoginLinkRequestView(APIView):
                 from outbox import mail
 
                 with language_of(user):
-                    subject = gettext("Ihr Anmeldelink für HUBIplan")
+                    subject = gettext("Ihr Anmeldelink für {instanz}").format(
+                        instanz=instance_name()
+                    )
                     body = (
                         gettext("Guten Tag,")
                         + "\n\n"

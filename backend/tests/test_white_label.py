@@ -448,3 +448,19 @@ def test_ohne_schalter_bleibt_django_pruefung(settings):
     club = make_org("Schützenverein Musterstadt")
     _adresse(club)
     assert Client(HTTP_HOST=VEREIN_HOST).get("/api/public/platform/").status_code == 400
+
+
+# --- Instanzname auch in Mails an Mitglieder ---
+
+
+def test_mails_an_mitglieder_mit_instanzname(mailoutbox):
+    from accounts.self_service import request_email_change
+
+    _musterkreis()
+    user = make_user("anna@example.org")
+    request_email_change(user, "anna.neu@example.org")
+    assert mailoutbox
+    assert any(
+        "bei Vereinsportal Musterkreis künftig mit anna.neu@example.org" in m.body
+        for m in mailoutbox
+    )

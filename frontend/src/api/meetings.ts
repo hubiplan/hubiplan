@@ -114,7 +114,7 @@ export interface Confirmation {
   at: string
 }
 
-export type AttendanceStatus = 'present' | 'excused' | 'represented'
+export type AttendanceStatus = 'present' | 'excused' | 'represented' | 'delegate'
 
 export interface AttendanceRow {
   id: number | null
@@ -123,6 +123,14 @@ export interface AttendanceRow {
   voter: boolean
   status: '' | AttendanceStatus
   represented_by: number | null
+  /** 'organization' bei Organisationsmitgliedern */
+  kind?: string
+  /** Vertreter eines Organisationsmitglieds, wie eingetragen */
+  delegate_name?: string
+  /** Ansprechpartner mit „vertritt in Versammlungen“ */
+  delegates?: { id: number; name: string; function: string; membership: number | null }[]
+  /** Organisationen, die dieses Mitglied zusätzlich vertritt */
+  also_represents?: string[]
 }
 
 export interface AttendanceList {

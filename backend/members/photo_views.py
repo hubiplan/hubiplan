@@ -96,6 +96,8 @@ class MemberPhotoView(_PhotoView):
         if upload is None:
             raise serializers.ValidationError({"file": gettext("Bitte ein Bild wählen.")})
         consent = str(request.data.get("consent", "")).lower() in ("1", "true", "ja", "on")
+        # Bei Organisationen ist das Bild ein Logo: keine Einwilligung einer Person nötig
+        consent = consent or membership.person.is_organization
         if not membership.photo_consent_at:
             if not consent:
                 raise serializers.ValidationError(

@@ -10,6 +10,8 @@ Verein bzw. Abteilung (aktuelle Mitglieder):
 - ``roles``         Inhaber dieser Abteilungsrollen
 - ``board``         nur Mitglieder mit einer Vorstandsrolle des Vereins
 - ``age_min``/``age_max``  Alter heute
+- ``organizations_any_age``  Organisationsmitglieder (ohne Alter) bleiben trotz Altersfilter
+  (Einladung zur Versammlung, J4)
 - ``jubilee_year``  Jubilare dieses Jahres (Verein oder Dachverband)
 - ``honorary_titles``  Inhaber dieser Ehrungen (des Vereins oder des Dachverbands)
 
@@ -82,6 +84,11 @@ class Candidate:
     values: dict[str, str] = field(default_factory=dict)
     # für Platzhalter, nur bei Bedarf geladen
     membership: Membership | None = None
+    # Organisationsmitglied: Name der Organisation; ohne Ansprechpartner keine Person
+    organization_name: str = ""
+    without_person: bool = False
+    # weiterer Ansprechpartner derselben Organisation (kein eigener App-Zugang)
+    extra_contact: bool = False
 
     @property
     def channel(self) -> str | None:
@@ -228,12 +235,16 @@ def club_filtered(club: Organization, qs, filters: dict):
         # Geburtsdatum verschlüsselt: Alter in Python prüfen
         oldest = years_ago(on, age_max + 1) if age_max is not None else None
         youngest = years_ago(on, age_min) if age_min is not None else None
+        any_age = bool(filters.get("organizations_any_age"))
         keep = [
             pk
-            for pk, birth in qs.values_list("pk", "person__birth_date")
-            if birth is not None
-            and (youngest is None or birth <= youngest)
-            and (oldest is None or birth > oldest)
+            for pk, birth, kind in qs.values_list("pk", "person__birth_date", "person__kind")
+            if (any_age and kind == "organization")
+            or (
+                birth is not None
+                and (youngest is None or birth <= youngest)
+                and (oldest is None or birth > oldest)
+            )
         ]
         qs = qs.filter(pk__in=keep)
     year = as_int(filters.get("jubilee_year"))
@@ -247,11 +258,86 @@ def club_filtered(club: Organization, qs, filters: dict):
     return qs, jubilees
 
 
+def _organization_candidates(m, row: dict, club) -> list[Candidate]:
+    """Organisationsmitglied: eine Mail je Ansprechpartner mit „erhält Rundschreiben“;
+    ohne solche Adressen ein Empfänger für die Organisation (Mail an ihre Adresse oder
+    Brief mit „z. Hd.“ des Hauptansprechpartners). Konzept juristische Personen, J3."""
+    from members.models import ContactPerson
+    from members.services import contact_for
+
+    person = m.person
+    name = person.display_name
+    contacts = list(
+        ContactPerson.objects.filter(membership=m)
+        .select_related("person")
+        .order_by("-is_primary", "pk")
+    )
+
+    def details(c: ContactPerson) -> tuple[str, str, str, str]:
+        if c.person_id is not None:
+            linked = contact_for(c.person, club)
+            email = linked.email if linked else ""
+            return c.person.first_name, c.person.last_name, c.person.gender, email
+        return c.first_name, c.last_name, c.gender, c.email
+
+    result = []
+    for c in contacts:
+        if not c.receives_mail:
+            continue
+        first, last, gender, email = details(c)
+        if not email.strip():
+            continue
+        result.append(
+            Candidate(
+                key=f"m{m.pk}" if not result else f"m{m.pk}-{c.pk}",
+                club=club,
+                first_name=first,
+                last_name=last,
+                gender=gender,
+                email=email.strip(),
+                membership_id=m.pk,
+                departments=row.get("departments", []),
+                membership=m,
+                organization_name=name,
+                extra_contact=bool(result),
+            )
+        )
+    if result:
+        return result
+    primary = next((c for c in contacts if c.is_primary), contacts[0] if contacts else None)
+    first, last, gender = ("", "", "")
+    if primary is not None:
+        first, last, gender, _ = details(primary)
+    lines = [name]
+    if primary is not None:
+        lines.append(f"z. Hd. {first} {last}".strip())
+    address = address_of("", "", row)
+    return [
+        Candidate(
+            key=f"m{m.pk}",
+            club=club,
+            first_name=first,
+            last_name=last or name,
+            gender=gender,
+            email=(row.get("email") or "").strip(),
+            address="\n".join([*lines, address]) if address else "\n".join(lines),
+            membership_id=m.pk,
+            departments=row.get("departments", []),
+            membership=m,
+            organization_name=name,
+            without_person=primary is None,
+        )
+    ]
+
+
 def _member_candidates(memberships, rows: dict[int, dict], club_of) -> list[Candidate]:
     result = []
     for m in memberships:
         row = rows.get(m.pk, {})
         person = m.person
+        if person.is_organization:
+            result.extend(_organization_candidates(m, row, club_of(m)))
+            continue
         result.append(
             Candidate(
                 key=f"m{m.pk}",
@@ -542,13 +628,17 @@ def select(circular: Circular) -> Selection:
 
         accesses = app_accesses({c.membership_id for c in candidates if c.membership_id})
         for c in candidates:
-            c.app_access = accesses.get(c.membership_id) if c.membership_id else None
+            c.app_access = (
+                accesses.get(c.membership_id) if c.membership_id and not c.extra_contact else None
+            )
             c.also_mail = circular.also_mail
     return Selection(candidates, jubilees)
 
 
 def formal_salutation(c: Candidate) -> str:
     """„Sehr geehrter Herr Muster“; ohne Angabe „Guten Tag Max Muster“."""
+    if c.without_person:
+        return "Sehr geehrte Damen und Herren"
     if c.gender == Gender.MALE:
         return f"Sehr geehrter Herr {c.last_name}"
     if c.gender == Gender.FEMALE:
@@ -558,6 +648,8 @@ def formal_salutation(c: Candidate) -> str:
 
 def informal_salutation(c: Candidate) -> str:
     """„Lieber Max“ / „Liebe Maria“; ohne Angabe „Hallo Max“."""
+    if c.without_person:
+        return "Hallo zusammen"
     name = c.first_name or c.last_name
     if c.gender == Gender.MALE:
         return f"Lieber {name}"
@@ -588,6 +680,7 @@ def fill_values(circular: Circular, selection: Selection, used: set[str]) -> Non
             "Anrede Du": informal_salutation(c),
             "Abteilung": dept_name or ", ".join(c.departments),
             "Verein": c.club.name,
+            "Organisation": c.organization_name,
             "Mitgliedsjahre": str(years[c.membership_id]) if c.membership_id in years else "",
             "Jubiläumsjahre": (
                 str(selection.jubilees[c.membership_id])

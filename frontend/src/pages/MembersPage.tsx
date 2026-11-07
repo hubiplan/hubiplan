@@ -111,13 +111,20 @@ function ClubMembers() {
       <Route
         path="jubilaeen"
         element={
-          <MembersSection title={t('Jubiläen')}>
-            <JubileesPage />
-          </MembersSection>
+          org.modules.includes('awards') ? (
+            <MembersSection title={t('Jubiläen')}>
+              <JubileesPage />
+            </MembersSection>
+          ) : (
+            list
+          )
         }
       />
       <Route path="entwicklung" element={<MembersDevelopmentPage />} />
-      <Route path="wuerdentraeger/*" element={<ChroniclePage />} />
+      <Route
+        path="wuerdentraeger/*"
+        element={org.modules.includes('honors') ? <ChroniclePage /> : list}
+      />
       <Route path="aemter/*" element={<OfficesPage />} />
       <Route path="chronik" element={<Moved to="/mitglieder/wuerdentraeger" />} />
       <Route path="chronik/wuerden" element={<Moved to="/mitglieder/wuerdentraeger/wuerden" />} />
@@ -144,6 +151,7 @@ function SetupArea() {
   const tabs = setupTabs(org)
   const club = org.type === 'club'
   const types = club || ownMembers(org)
+  const awards = org.modules.includes('awards')
   const page = (title: string, body: ReactNode) => (
     <MembersSection title={title} tabs={tabs}>
       {body}
@@ -155,14 +163,16 @@ function SetupArea() {
       {types && (
         <Route path="mitgliedsarten" element={page(t('Einrichtung'), <MemberTypesPage />)} />
       )}
-      <Route path="ehrungen" element={page(t('Einrichtung'), <HonoraryTitlesPage />)} />
+      {awards && <Route path="ehrungen" element={page(t('Einrichtung'), <HonoraryTitlesPage />)} />}
       {/* frühere Adresse (Lesezeichen) */}
       <Route
         path="ehrentitel"
         element={<Navigate to="/mitglieder/einrichtung/ehrungen" replace />}
       />
       <Route path="zusatzfelder" element={page(t('Einrichtung'), <FieldsPage />)} />
-      <Route path="jubilaeen" element={page(t('Einrichtung'), <MemberDurationSettings />)} />
+      {awards && (
+        <Route path="jubilaeen" element={page(t('Einrichtung'), <MemberDurationSettings />)} />
+      )}
       {club && (
         <Route
           path="mitgliederbereich"

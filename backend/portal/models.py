@@ -30,8 +30,18 @@ class PortalAccess(models.Model):
         on_delete=models.CASCADE,
         related_name="+",
     )
-    membership = models.OneToOneField(
-        "members.Membership", on_delete=models.CASCADE, related_name="portal_access"
+    # Je Mitgliedschaft ein eigener Zugang; bei Organisationsmitgliedern zusätzlich einer
+    # je Ansprechpartner mit Mitgliederzugang (Konzept juristische Personen, J5)
+    membership = models.ForeignKey(
+        "members.Membership", on_delete=models.CASCADE, related_name="portal_accesses"
+    )
+    contact_person = models.ForeignKey(
+        "members.ContactPerson",
+        verbose_name="Ansprechpartner",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="portal_accesses",
     )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="portal_accesses"
@@ -44,6 +54,18 @@ class PortalAccess(models.Model):
     class Meta:
         verbose_name = "Zugang"
         verbose_name_plural = "Zugänge"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["membership"],
+                condition=models.Q(contact_person__isnull=True),
+                name="zugang_einmal_je_mitgliedschaft",
+            ),
+            models.UniqueConstraint(
+                fields=["contact_person"],
+                condition=models.Q(contact_person__isnull=False),
+                name="zugang_einmal_je_ansprechpartner",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"Zugang {self.user} → Mitgliedschaft {self.membership_id}"

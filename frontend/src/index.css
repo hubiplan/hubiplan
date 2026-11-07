@@ -4863,3 +4863,8 @@ label:has(> .file-input:focus-visible) {
   padding-bottom: 0.35rem;
   border-bottom: 1px solid var(--color-border);
 }
+
+/* Einstellungen › Module: Zusatzfunktionen unter dem Modul */
+.module-extras {
+  padding-left: 2.15rem;
+}

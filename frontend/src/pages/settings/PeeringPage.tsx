@@ -878,6 +878,14 @@ function CouplingCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
           )}
         </Alert>
       )}
+      {(coupling.organizations_withheld ?? 0) > 0 && (
+        <Alert kind="info">
+          {t(
+            'Gegenstelle zu alt für Organisationsmitglieder: {n} Organisationen gehen nicht mit, bis die andere Instanz aktualisiert ist.',
+            { n: coupling.organizations_withheld ?? 0 },
+          )}
+        </Alert>
+      )}
       {coupling.state === 'pending' && (
         <Alert kind="info">
           {coupling.remote.name}{' '}
@@ -1540,9 +1548,7 @@ function RegisterCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
       {reg.unclear.map((u) => (
         <div key={u.id} className="card">
           <p>
-            <strong>
-              {u.first_name} {u.last_name}
-            </strong>
+            <strong>{[u.first_name, u.last_name].filter(Boolean).join(' ')}</strong>
             {u.birth_date && t(', geboren {x}', { x: formatDate(u.birth_date) })}
             {t(': Ist das dieselbe Person?')}
           </p>
@@ -1550,7 +1556,7 @@ function RegisterCard({ coupling, onChange }: { coupling: Coupling; onChange: ()
             {u.candidates.map((p) => (
               <li key={p.id}>
                 {p.name}
-                {t(', geboren')} {formatDate(p.birth_date)}
+                {p.birth_date && t(', geboren {x}', { x: formatDate(p.birth_date) })}
                 {p.member_number &&
                   t(' · Verbandsnr. {member_number}', { member_number: p.member_number })}
                 {p.units.length > 0 && t(' · {x}', { x: p.units.join(', ') })}{' '}

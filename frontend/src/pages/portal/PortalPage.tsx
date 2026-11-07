@@ -43,6 +43,16 @@ const FIELDS = [
   'country',
 ] as const
 type FieldKey = (typeof FIELDS)[number]
+/** Organisationen haben keinen Vornamen, kein Geburtsdatum und kein Geschlecht. */
+const ORG_FIELDS = FIELDS.filter((f) => !['first_name', 'birth_date', 'gender'].includes(f))
+
+function fieldsFor(d: PortalDetail): readonly FieldKey[] {
+  return d.kind === 'organization' ? ORG_FIELDS : FIELDS
+}
+
+function fieldLabel(key: FieldKey, organization: boolean): string {
+  return organization && key === 'last_name' ? t('Name der Organisation') : FIELD_LABELS[key]
+}
 
 /** Zweck der eigenen Angaben für Browser und Hilfsmittel (WCAG 1.3.5). */
 const AUTOCOMPLETE: Record<FieldKey, string> = {
@@ -255,15 +265,15 @@ function PortalData({ entry }: { entry: PortalEntry }) {
   if (!data) return <p className="muted">{t('Lädt …')}</p>
 
   const values = currentValues(data)
+  const fields = fieldsFor(data)
+  const organization = data.kind === 'organization'
   const pending = data.change_requests.find((c) => c.status === 'pending')
 
   return (
     <PortalSection title={t('Meine Daten')}>
       <div className="card card-wide">
         <div className="card-head">
-          <h2>
-            {data.first_name} {data.last_name}
-          </h2>
+          <h2>{organization ? data.display_name : `${data.first_name} ${data.last_name}`}</h2>
           {!editing && (
             <button
               type="button"
@@ -291,6 +301,8 @@ function PortalData({ entry }: { entry: PortalEntry }) {
           <ChangeForm
             accessId={entry.id}
             initial={values}
+            fields={fields}
+            organization={organization}
             needsApproval={data.contact_changes_need_approval}
             hasPending={!!pending}
             onDone={async (text) => {
@@ -302,9 +314,9 @@ function PortalData({ entry }: { entry: PortalEntry }) {
           />
         ) : (
           <dl className="facts">
-            {FIELDS.map((key) => (
+            {fields.map((key) => (
               <div key={key}>
-                <dt>{FIELD_LABELS[key]}</dt>
+                <dt>{fieldLabel(key, organization)}</dt>
                 <dd>{key === 'birth_date' ? formatDate(values[key]) : values[key] || '–'}</dd>
               </div>
             ))}
@@ -375,6 +387,8 @@ const DIRECT: FieldKey[] = ['email', 'phone', 'street', 'postal_code', 'city', '
 function ChangeForm({
   accessId,
   initial,
+  fields,
+  organization,
   needsApproval,
   hasPending,
   onDone,
@@ -382,6 +396,8 @@ function ChangeForm({
 }: {
   accessId: number
   initial: Record<FieldKey, string>
+  fields: readonly FieldKey[]
+  organization: boolean
   needsApproval: boolean
   hasPending: boolean
   onDone: (text: string) => void
@@ -397,7 +413,7 @@ function ChangeForm({
   async function send(e: FormEvent) {
     e.preventDefault()
     const changed: Record<string, string> = {}
-    for (const key of FIELDS) if (v[key] !== initial[key]) changed[key] = v[key]
+    for (const key of fields) if (v[key] !== initial[key]) changed[key] = v[key]
     if (Object.keys(changed).length === 0) {
       form.setMessage({ kind: 'error', text: t('Du hast nichts geändert.') })
       return
@@ -441,7 +457,7 @@ function ChangeForm({
         </Alert>
       )}
       <div className="grid-3">
-        {FIELDS.map((key) =>
+        {fields.map((key) =>
           key === 'gender' ? (
             <SelectField
               key={key}
@@ -462,7 +478,7 @@ function ChangeForm({
           ) : (
             <Field
               key={key}
-              label={FIELD_LABELS[key]}
+              label={fieldLabel(key, organization)}
               type={
                 key === 'birth_date'
                   ? 'date'

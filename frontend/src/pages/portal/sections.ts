@@ -18,17 +18,31 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
   if (!entry) return []
   return [
     { to: '/mein-bereich', label: t('Übersicht'), account: t('Übersicht') },
-    {
-      to: '/mein-bereich/aufgaben',
-      label: t('Aufgaben'),
-      tile: { title: t('Aufgaben'), text: t('Freigegebene Aufgaben ansehen und übernehmen') },
-    },
-    {
-      to: '/mein-bereich/ausweis',
-      label: t('Ausweis'),
-      tile: { title: t('Ausweis zeigen'), text: t('QR-Code vorzeigen oder als PDF speichern') },
-      account: t('Mein Ausweis'),
-    },
+    ...(entry.todos_enabled !== false
+      ? [
+          {
+            to: '/mein-bereich/aufgaben',
+            label: t('Aufgaben'),
+            tile: {
+              title: t('Aufgaben'),
+              text: t('Freigegebene Aufgaben ansehen und übernehmen'),
+            },
+          },
+        ]
+      : []),
+    ...(entry.cards_enabled !== false
+      ? [
+          {
+            to: '/mein-bereich/ausweis',
+            label: t('Ausweis'),
+            tile: {
+              title: t('Ausweis zeigen'),
+              text: t('QR-Code vorzeigen oder als PDF speichern'),
+            },
+            account: t('Mein Ausweis'),
+          },
+        ]
+      : []),
     // Termine haben einen eigenen Menüpunkt, hier nur Kachel und Kontomenü
     ...(entry.events_enabled
       ? [
@@ -102,11 +116,15 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
       tile: { title: t('Rechnungen'), text: t('Beiträge, offene Beträge und Lastschrift') },
       account: t('Meine Rechnungen'),
     },
-    {
-      to: '/mein-bereich/rundschreiben',
-      label: t('Mitteilungen'),
-      tile: { title: t('Mitteilungen'), text: t('Mitteilungen des Vereins lesen') },
-    },
+    ...(entry.circulars_enabled !== false
+      ? [
+          {
+            to: '/mein-bereich/rundschreiben',
+            label: t('Mitteilungen'),
+            tile: { title: t('Mitteilungen'), text: t('Mitteilungen des Vereins lesen') },
+          },
+        ]
+      : []),
     {
       to: '/mein-bereich/daten',
       label: t('Meine Daten'),

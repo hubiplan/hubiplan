@@ -382,7 +382,7 @@ class TestExport:
 @pytest.fixture
 def site(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "website"]
+    org.enabled_modules = ["members", "website", "honors"]
     org.save()
     return Website.objects.create(organization=org, public_key="schluessel-w", state="public")
 

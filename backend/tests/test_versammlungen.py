@@ -305,7 +305,11 @@ def test_einladung_als_rundschreiben(setup):
     circular = Circular.objects.get(pk=data["circular"])
     assert data["circular_status"] == "draft" and data["status"] == "draft"
     assert circular.kind == "notice" and circular.audience == "members"
-    assert circular.filters == {"member_types": [aktiv.pk], "age_min": 16}
+    assert circular.filters == {
+        "member_types": [aktiv.pk],
+        "age_min": 16,
+        "organizations_any_age": True,
+    }
     assert "Jahreshauptversammlung" in circular.subject
     assert "1. Begrüßung und Feststellung der Beschlussfähigkeit" in circular.body
     assert "Schützenhaus" in circular.body and "{Anrede}" in circular.body
@@ -517,9 +521,6 @@ def test_protokoll_freigeben_pdf_und_ablage(setup):
     from meetings.models import MinutesVersion
 
     s = setup
-    org = s["org"]
-    org.enabled_modules = sorted({*org.enabled_modules, "documents"})
-    org.save()
     meeting = new_meeting(s)
     url = f"{s['url']}{meeting['id']}/"
     meeting = ok(s["chef"].patch(url, {"status": "held"}, content_type=JSON))
@@ -677,10 +678,8 @@ def test_beschlussbuch(setup, api):
     # Excel
     resp = s["reader"].get(book + "export/")
     assert resp.status_code == 200 and resp.content[:2] == b"PK"
-    # Als Aufgabe: braucht das Modul Aufgaben und das Recht dazu
+    # Als Aufgabe: braucht das Recht dazu
     assert s["chef"].post(f"{detail}todo/", {}, content_type=JSON).status_code == 403
-    org.enabled_modules = sorted({*org.enabled_modules, "todos"})
-    org.save()
     planner = make_user("schrift@example.org")
     give_role(
         planner, org, permissions=["meetings.edit", "todos.view", "todos.edit"], name="Schrift"

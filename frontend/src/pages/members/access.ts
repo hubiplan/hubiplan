@@ -48,8 +48,7 @@ export function memberSections(org: OrgSummary | null): NavItem[] {
       ...(federationAccess(org)
         ? [{ to: '/mitglieder/verbund/entwicklung', label: t('Entwicklung aller') }]
         : []),
-      { to: '/mitglieder/jubilaeen', label: t('Jubiläen') },
-      { to: '/mitglieder/wuerdentraeger', label: t('Würdenträger') },
+      ...extras(org),
       { to: '/mitglieder/aemter', label: t('Ämter') },
       { to: '/mitglieder/einrichtung', label: t('Einrichtung') },
     ]
@@ -57,12 +56,23 @@ export function memberSections(org: OrgSummary | null): NavItem[] {
   return [
     { to: '/mitglieder', label: t('Mitgliederliste') },
     { to: '/mitglieder/entwicklung', label: t('Entwicklung') },
-    { to: '/mitglieder/jubilaeen', label: t('Jubiläen') },
-    { to: '/mitglieder/wuerdentraeger', label: t('Würdenträger') },
+    ...extras(org),
     { to: '/mitglieder/aemter', label: t('Ämter') },
     { to: '/mitglieder/anfragen', label: t('Änderungen und Wechsel') },
     ...(canEdit ? [{ to: '/mitglieder/import', label: t('Import') }] : []),
     { to: '/mitglieder/einrichtung', label: t('Einrichtung') },
+  ]
+}
+
+/** Jubiläen (Modul „Ehrungen & Jubiläen“) und Würdenträger (Modul „Würden“) */
+function extras(org: OrgSummary): NavItem[] {
+  return [
+    ...(org.modules.includes('awards')
+      ? [{ to: '/mitglieder/jubilaeen', label: t('Jubiläen') }]
+      : []),
+    ...(org.modules.includes('honors')
+      ? [{ to: '/mitglieder/wuerdentraeger', label: t('Würdenträger') }]
+      : []),
   ]
 }
 
@@ -75,13 +85,14 @@ export function requestTabs(): NavItem[] {
 
 export function setupTabs(org: OrgSummary): NavItem[] {
   const club = org.type === 'club'
+  const awards = org.modules.includes('awards')
   return [
     ...(club || ownMembers(org)
       ? [{ to: '/mitglieder/einrichtung/mitgliedsarten', label: t('Mitgliedsarten') }]
       : []),
-    { to: '/mitglieder/einrichtung/ehrungen', label: t('Ehrungen') },
+    ...(awards ? [{ to: '/mitglieder/einrichtung/ehrungen', label: t('Ehrungen') }] : []),
     { to: '/mitglieder/einrichtung/zusatzfelder', label: t('Zusatzfelder') },
-    { to: '/mitglieder/einrichtung/jubilaeen', label: t('Jubiläen & Dauer') },
+    ...(awards ? [{ to: '/mitglieder/einrichtung/jubilaeen', label: t('Jubiläen & Dauer') }] : []),
     ...(club
       ? [{ to: '/mitglieder/einrichtung/mitgliederbereich', label: t('Mitgliederbereich & Fotos') }]
       : []),

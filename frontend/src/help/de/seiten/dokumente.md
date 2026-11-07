@@ -2,7 +2,7 @@
 key: page.documents
 titel: Dokumente
 bereich: einstellungen
-modul: documents
+modul: docs
 routen: [/dokumente]
 stichworte: [Datei, Ablage, Ordner, Satzung, Protokoll]
 ---

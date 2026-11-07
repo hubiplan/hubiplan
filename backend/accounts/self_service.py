@@ -228,12 +228,12 @@ def request_email_change(
         if org_name:
             reason = gettext(
                 "{org} hat Ihre neue E-Mail-Adresse {new} übernommen. Möchten Sie sich bei "
-                "HUBIplan künftig auch damit anmelden (bisher {old})?"
-            ).format(org=org_name, new=new, old=user.email)
+                "{instanz} künftig auch damit anmelden (bisher {old})?"
+            ).format(org=org_name, new=new, old=user.email, instanz=instance_name())
         else:
             reason = gettext(
-                "Sie möchten sich bei HUBIplan künftig mit {new} anmelden (bisher {old})."
-            ).format(new=new, old=user.email)
+                "Sie möchten sich bei {instanz} künftig mit {new} anmelden (bisher {old})."
+            ).format(new=new, old=user.email, instanz=instance_name())
         confirm_subject = gettext("Bitte bestätigen Sie Ihre neue E-Mail-Adresse")
         confirm_body = (
             gettext("Guten Tag,")

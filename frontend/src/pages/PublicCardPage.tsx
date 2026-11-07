@@ -87,8 +87,11 @@ export function PublicCardPage() {
             <div className="public-card-body">
               {card.photo_url && <img src={card.photo_url} alt="" className="public-card-photo" />}
               <div>
+                {card.kind === 'organization' && (
+                  <p className="muted small">{t('Organisationsmitglied')}</p>
+                )}
                 <h1 className="public-card-name">
-                  {card.first_name} {card.last_name}
+                  {[card.first_name, card.last_name].filter(Boolean).join(' ')}
                 </h1>
                 <p
                   className={`public-card-status ${valid ? 'is-valid' : 'is-invalid'}`}

@@ -25,6 +25,7 @@ from .models import Coupling, RemoteMember, RemoteState
 
 LIMIT = 20000
 NOTE = "nicht mehr gemeldet (Verbund)"
+IDENTITY = ("last_name", "first_name", "birth_date")
 
 
 def _date(value):
@@ -47,6 +48,9 @@ def build_rows(coupling: Coupling) -> list[dict]:
             "uid", "number"
         )
     )
+    from .versions import supports_organizations
+
+    with_organizations = supports_organizations(coupling.peer)
     rows = []
     with tenant_context(club.pk):
         memberships = (
@@ -70,15 +74,20 @@ def build_rows(coupling: Coupling) -> list[dict]:
                 continue
             uid = f"m{m.pk}"
             person = m.person
-            if person.is_organization:
-                # Organisationsmitglieder gehen erst mit Schritt J6 an Gegenstellen
+            if person.is_organization and not with_organizations:
+                # Gegenstelle zu alt für Organisationsmitglieder (Fassung 2, J6)
                 continue
             rows.append(
                 {
                     "uid": uid,
+                    **(
+                        {"kind": "organization", "name_suffix": person.name_suffix}
+                        if person.is_organization
+                        else {}
+                    ),
                     "last_name": person.last_name,
                     "first_name": person.first_name,
-                    "birth_date": person.birth_date.isoformat(),
+                    "birth_date": person.birth_date.isoformat() if person.birth_date else None,
                     "number": numbers.get(uid),
                     "purged": bool(m.purged_at),
                     "periods": [
@@ -142,7 +151,11 @@ def _clean_row(row) -> dict | None:
     uid = str(row.get("uid") or "")[:40]
     last = str(row.get("last_name") or "").strip()[:100]
     first = str(row.get("first_name") or "").strip()[:100]
-    if not (uid and birth and last):
+    organization = row.get("kind") == "organization"
+    if organization:
+        # Organisationen: nur Name und Zusatz, kein Vorname, kein Geburtsdatum (J6)
+        first, birth = "", None
+    if not (uid and last and (birth or organization)):
         return None
     periods = []
     for p in (row.get("periods") or [])[:50]:
@@ -171,6 +184,8 @@ def _clean_row(row) -> dict | None:
         number = None
     return {
         "uid": uid,
+        "kind": "organization" if organization else "person",
+        "name_suffix": str(row.get("name_suffix") or "").strip()[:100] if organization else "",
         "last_name": last,
         "first_name": first,
         "birth_date": birth,
@@ -183,7 +198,7 @@ def _clean_row(row) -> dict | None:
 
 def _json_row(row: dict) -> dict:
     out = dict(row)
-    out["birth_date"] = row["birth_date"].isoformat()
+    out["birth_date"] = row["birth_date"].isoformat() if row["birth_date"] else None
     out["periods"] = [
         {**p, "entry": p["entry"].isoformat(), "exit": p["exit"] and p["exit"].isoformat()}
         for p in row["periods"]
@@ -286,14 +301,46 @@ def _candidates(federation, row):
 
     from members.services import persons_matching
 
+    if row.get("kind") == "organization":
+        return _organizations_matching(federation, row)
     found = persons_matching(
         federation.pk, row["last_name"], row["first_name"], row["birth_date"], limit=5
     )
     return [p.pk for p in found]
 
 
+def _organizations_matching(scope, row) -> list[int]:
+    """Organisationen im Verbandsbereich mit gleichem Namen und Zusatz."""
+    from members.models import Person, PersonKind
+    from members.personmarks import candidates
+
+    name = row["last_name"].strip().casefold()
+    suffix = (row.get("name_suffix") or "").strip().casefold()
+    found = candidates(scope.pk, row["last_name"], "", None, strict=True, organization=True)
+    return [
+        p.pk
+        for p in Person.objects.filter(
+            pk__in=found.values("pk"), kind=PersonKind.ORGANIZATION
+        ).order_by("pk")
+        if p.last_name.strip().casefold() == name and p.name_suffix.strip().casefold() == suffix
+    ][:5]
+
+
+def _new_person(scope, row):
+    from members.models import Person, PersonKind
+
+    organization = row["kind"] == "organization"
+    return Person.objects.create(
+        scope=scope,
+        kind=PersonKind.ORGANIZATION if organization else PersonKind.PERSON,
+        last_name=row["last_name"],
+        first_name=row["first_name"],
+        birth_date=row["birth_date"],
+        name_suffix=row["name_suffix"],
+    )
+
+
 def _import(coupling, federation, row, rm=None, person=None):
-    from members.models import Person
 
     found = None
     if person is None:
@@ -315,12 +362,7 @@ def _import(coupling, federation, row, rm=None, person=None):
             rm.data = {"row": _json_row(row), "candidates": candidates}
             rm.save()
             return rm
-        person = Person.objects.create(
-            scope=federation,
-            last_name=row["last_name"],
-            first_name=row["first_name"],
-            birth_date=row["birth_date"],
-        )
+        person = _new_person(federation, row)
     membership = _membership(coupling.remote_unit, federation, person)
     rm = rm or RemoteMember(coupling=coupling, uid=row["uid"])
     rm.membership = membership
@@ -356,10 +398,13 @@ def _update(rm: RemoteMember, row: dict) -> None:
     person = membership.person
     # Berichtigung (Art. 16/19): Name und Geburtsdatum kommen vom Verein. Ist die Person
     # auch in einem anderen Verein, gibt der Dachverband die Änderung frei (GA-S02).
-    changed = [f for f in ("last_name", "first_name", "birth_date") if getattr(person, f) != row[f]]
+    fields = ("last_name", "name_suffix") if person.is_organization else IDENTITY
+    changed = [f for f in fields if getattr(person, f) != row[f]]
     data = dict(rm.data or {})
     if changed and _shared(person, placeholder):
-        data[CORRECTION] = {f: row[f].isoformat() if f == "birth_date" else row[f] for f in changed}
+        data[CORRECTION] = {
+            f: row[f].isoformat() if f == "birth_date" and row[f] else row[f] for f in changed
+        }
     else:
         data.pop(CORRECTION, None)
         if changed:
@@ -496,7 +541,7 @@ def decide_correction(rm: RemoteMember, apply: bool) -> RemoteMember:
         person = rm.membership.person
         fields = []
         for f, value in proposal.items():
-            if f not in ("last_name", "first_name", "birth_date"):
+            if f not in (*IDENTITY, "name_suffix"):
                 continue
             setattr(person, f, datetime.date.fromisoformat(value) if f == "birth_date" else value)
             fields.append(f)
@@ -527,12 +572,7 @@ def resolve(rm: RemoteMember, person_id: int | None) -> RemoteMember:
             raise ValidationError(gettext("Diese Person steht nicht zur Auswahl."))
         person = Person.objects.get(pk=person_id, scope=federation)
     else:
-        person = Person.objects.create(
-            scope=federation,
-            last_name=row["last_name"],
-            first_name=row["first_name"],
-            birth_date=row["birth_date"],
-        )
+        person = _new_person(federation, row)
     with suppress():
         _import(coupling, federation, row, rm, person=person)
     send_numbers(coupling)
@@ -572,7 +612,9 @@ def ask_active_elsewhere(club, person, on, membership=None) -> str | None:
     if skip_remote_check.get():
         return None  # Aufnahme nach bestätigtem Wechsel
     if person.is_organization:
-        return None  # Organisationsmitglieder meldet der Verbund noch nicht (Schritt J6)
+        # Organisationen haben kein Geburtsdatum für die Suche beim Dachverband; einen
+        # Widerspruch sieht der Dachverband beim nächsten Stand (J6)
+        return None
     coupling = parent_coupling(club)
     if coupling is None:
         return None

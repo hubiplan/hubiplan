@@ -2,6 +2,13 @@
 import type { OrgSummary } from '../../api/orgs.ts'
 import { t } from '../../i18n/index.ts'
 
+/** Notenarchiv als eigener Menüpunkt „Noten“: nur, wenn es den Menüpunkt Musik nicht gibt. */
+export function scoresOwnEntry(org: OrgSummary | null) {
+  if (!org || (org.type !== 'club' && org.type !== 'federation')) return false
+  const music = org.modules.includes('music') && org.permissions.includes('music.view')
+  return !music && org.modules.includes('scores') && org.permissions.includes('scores.view')
+}
+
 export function musicSections(org: OrgSummary | null) {
   if (!org) return []
   const has = (module: string, ...perms: string[]) =>
@@ -17,7 +24,9 @@ export function musicSections(org: OrgSummary | null) {
     { to: '/musik/verfuegbarkeit', label: t('Verfügbarkeiten'), section: performances },
     { to: '/musik/musiker', label: t('Musiker'), section: musicians },
     { to: '/musik/proben', label: t('Proben und Notenausgabe'), section: musicians },
-    { to: '/musik/noten', label: t('Notenbestand'), section: scores },
+    ...(has('scores', 'scores.view')
+      ? [{ to: '/musik/noten', label: t('Notenbestand'), section: scores }]
+      : []),
     ...(has('todos', 'todos.view')
       ? [{ to: '/musik/erinnerungen', label: t('Erinnerungen'), section: scores }]
       : []),

@@ -34,6 +34,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 
 from access.models import Role, RoleAssignment
+from access.modules import MODULES_SCHEMA
 from core.tenancy import rls_bypass
 from customfields.models import FieldDefinition, FieldValue
 from members.models import (
@@ -56,7 +57,11 @@ from organizations.tree import UnitTree
 from .tables import dump_tables
 
 FORMAT = "hubiplan-export"
-VERSION = 1
+# Höchste lesbare Fassung. 2: Organisationsmitglieder (Typ, Rechtsform, Ansprechpartner,
+# Rechnungsanschrift). Dateien ohne Organisationen bleiben Fassung 1, damit ältere
+# Installationen sie weiter lesen.
+VERSION = 2
+VERSION_ORGANIZATIONS = 2
 
 # Impressum: gepflegte Felder (der öffentliche Schlüssel wird neu vergeben)
 IMPRINT_FIELDS = [
@@ -218,6 +223,8 @@ DEPT_FIELDS = (
     "own_workspace",
     "self_managed",
     "fee_exempt",
+    # Vom Verein für die Untereinheit ausgeblendete Module (M5)
+    "unit_hidden_modules",
     # Finanzeinstellungen und Festschreibung (Gesamtaudit 01.11., GA-F08)
     "finance_locked_until",
     "cash_counts_enabled",
@@ -610,6 +617,8 @@ def _header(kind: str, source, with_files: bool) -> dict:
         "format": FORMAT,
         "version": VERSION,
         "permissions_schema": 2,
+        # Stand des Modulverzeichnisses (access/modules.py); fehlt bei älteren Dateien
+        "modules_schema": MODULES_SCHEMA,
         "kind": kind,
         "exported_at": timezone.now().isoformat(),
         "source": {"type": getattr(source, "type", "department"), "name": source.name},
@@ -713,6 +722,10 @@ def export_department(
 
 
 def _finish(doc: dict, dumper: Dumper, name: str) -> tuple[bytes, str, dict]:
+    if any(p.get("kind") == "organization" for p in doc.get("persons", [])):
+        doc["version"] = VERSION_ORGANIZATIONS
+    else:
+        doc["version"] = 1
     stamp = timezone.localtime().strftime("%Y-%m-%d")
     base = f"{slugify(name)[:60] or 'export'}-{stamp}"
     counts = dict(dumper.counts)

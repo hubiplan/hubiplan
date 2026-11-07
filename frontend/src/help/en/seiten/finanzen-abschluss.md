@@ -12,7 +12,7 @@ Here you produce the cash report for the general meeting and close a financial y
 
 Once the retention period has ended (receipts 8 years, books 10 years after the end of the calendar year), receipts can be deleted and books anonymised. The periods are set by law and cannot be shortened. If an audit or a legal dispute is still ongoing, use **Set deletion hold** on the financial year and give a reason. While it applies, nothing is deleted. Board members who can manage roles may set and lift it; both are recorded in the log.
 
-The **Taxes** tab shows the tax report for a financial year. It needs categories assigned to tax areas (Setup › Categories). You see:
+The **Taxes** tab shows the tax report for a financial year. It belongs to the Tax & charitable status module. It also needs categories assigned to tax areas (Setup › Categories). You see:
 
 - **Tax-free limit**: income from commercial operations including VAT compared with the tax-free limit (€50,000 since 2026, €45,000 before), plus the two previous years. From 80 % you get a note, above the limit a warning.
 - **By tax area**: income, expenses and result per area. Cancellations are offset against the cancelled booking. A loss in the commercial operations shows a note.

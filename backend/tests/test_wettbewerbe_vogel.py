@@ -325,7 +325,7 @@ class TestStandzugang:
         club.enabled_modules = ["members"]
         club.save()
         assert APIClient().get(f"/api/public/stand/{token}/").status_code == 404
-        club.enabled_modules = ["members", "competitions"]
+        club.enabled_modules = ["members", "competitions", "shooting"]
         club.save()
         helfer = make_user("schiessmeister@example.org")
         give_role(helfer, club, ["competitions.results"], name="Schießmeister")

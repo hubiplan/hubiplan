@@ -19,6 +19,7 @@ from members.models import DepartmentRoleHolder, Membership, today
 from members.services import contact_for
 from organizations.addresses import base_url
 from organizations.models import Department, Organization
+from organizations.platform_public import instance_name
 from organizations.tree import UnitTree
 from outbox import mail
 
@@ -175,45 +176,95 @@ TRANSFER_NEEDED = (
 )
 
 
+def contact_email(club: Organization, contact) -> str:
+    """E-Mail-Adresse eines Ansprechpartners (verknüpft: aus seiner Akte)."""
+    if contact.person_id is not None:
+        linked = contact_for(contact.person, club)
+        email = linked.email if linked else ""
+    else:
+        email = contact.email
+    if not email:
+        raise ValidationError(
+            gettext("Für diesen Ansprechpartner ist keine E-Mail-Adresse hinterlegt.")
+        )
+    return email.lower()
+
+
+def contact_names(contact) -> tuple[str, str]:
+    if contact.person_id is not None:
+        return contact.person.first_name, contact.person.last_name
+    return contact.first_name, contact.last_name
+
+
 def ensure_access(
-    club: Organization, membership: Membership, created_by, transfer: bool = False
+    club: Organization,
+    membership: Membership,
+    created_by,
+    transfer: bool = False,
+    contact=None,
 ) -> PortalAccess:
     """Legt den Zugang an.
 
     Gibt es schon einen Zugang mit einer anderen Adresse, wird er nur mit ``transfer``
     auf die neue Adresse übertragen (FQ-15): die alte Adresse bekommt eine Mitteilung.
+    Bei Organisationsmitgliedern bekommt jeder Ansprechpartner (``contact``) einen eigenen
+    Zugang; die Organisation selbst hat keinen (J5).
     """
-    email = member_email(club, membership)
-    access = PortalAccess.objects.filter(membership=membership).select_related("user").first()
+    if contact is None and membership.person.is_organization:
+        raise ValidationError(
+            gettext("Bei Organisationen bekommt jeder Ansprechpartner einen eigenen Zugang.")
+        )
+    if contact is not None:
+        email = contact_email(club, contact)
+        first_name, last_name = contact_names(contact)
+    else:
+        email = member_email(club, membership)
+        first_name, last_name = membership.person.first_name, membership.person.last_name
+    access = (
+        PortalAccess.objects.filter(membership=membership, contact_person=contact)
+        .select_related("user")
+        .first()
+    )
     if access is not None and access.user.email.lower() != email and not transfer:
         raise TransferNeeded(TRANSFER_NEEDED.format(old=access.user.email))
     user = User.objects.filter(email=email).first()
     if user is None:
         user = User.objects.create_user(email=email, password=None)
-        user.first_name = membership.person.first_name
-        user.last_name = membership.person.last_name
+        user.first_name = first_name
+        user.last_name = last_name
         user.save(update_fields=["first_name", "last_name"])
     if access is None:
         access = PortalAccess.objects.create(
-            organization=club, membership=membership, user=user, created_by=created_by
+            organization=club,
+            membership=membership,
+            contact_person=contact,
+            user=user,
+            created_by=created_by,
         )
     elif access.user_id != user.pk:
         old_user = access.user
         access.user = user
         access.save(update_fields=["user"])
-        _notify_transfer(club, membership, old_user, email)
+        _notify_transfer(club, membership, old_user, email, first_name)
+    if contact is not None and not contact.member_access:
+        contact.member_access = True
+        contact.save(update_fields=["member_access", "updated_at"])
     return access
 
 
-def _notify_transfer(club: Organization, membership: Membership, old_user, new: str) -> None:
+def _notify_transfer(
+    club: Organization, membership: Membership, old_user, new: str, first_name: str = ""
+) -> None:
     """Mitteilung an die bisherige Adresse: ohne Link und ohne die neue Adresse ganz."""
     old = old_user.email
     local, _, domain = new.partition("@")
     hint = f"{local[:1]}…@{domain}"
     with language_of(old_user):
-        subject = gettext("Ihr Zugang zu HUBIplan – {org} wurde übertragen").format(org=club.name)
+        subject = gettext("Ihr Zugang zu {instanz} – {org} wurde übertragen").format(
+            instanz=instance_name(), org=club.name
+        )
         body = (
-            gettext("Hallo {name},").format(name=membership.person.first_name)
+            gettext("Hallo {name},").format(name=first_name or membership.person.first_name)
             + "\n\n"
             + gettext(
                 "{org} hat Ihren Zugang zum Mitgliederbereich auf eine neue E-Mail-Adresse "
@@ -254,7 +305,10 @@ def send_access_mail(club: Organization, access: PortalAccess, created_by) -> st
     Gibt die Art zurück: "link" oder "password" (Anmeldung mit dem bestehenden Konto).
     """
     user = access.user
-    first_name = access.membership.person.first_name
+    if access.contact_person_id is not None:
+        first_name = contact_names(access.contact_person)[0] or access.contact_person.display_name
+    else:
+        first_name = access.membership.person.first_name
     link = link_login_allowed(user)
     url = create_login_link(user, club, created_by) if link else ""
     with language_of(user):
@@ -262,10 +316,22 @@ def send_access_mail(club: Organization, access: PortalAccess, created_by) -> st
         if link:
             body = (
                 greeting
-                + gettext(
-                    "{org} lädt Sie in den Mitgliederbereich von HUBIplan ein. Dort sehen Sie "
-                    "Ihre Daten und können Änderungen melden."
-                ).format(org=club.name)
+                + (
+                    gettext(
+                        "{org} lädt Sie als Ansprechpartner von {member} in den "
+                        "Mitgliederbereich von {instanz} ein. Dort sehen Sie die Daten der "
+                        "Mitgliedschaft und können Änderungen melden."
+                    ).format(
+                        org=club.name,
+                        member=access.membership.person.display_name,
+                        instanz=instance_name(),
+                    )
+                    if access.contact_person_id is not None
+                    else gettext(
+                        "{org} lädt Sie in den Mitgliederbereich von {instanz} ein. Dort sehen "
+                        "Sie Ihre Daten und können Änderungen melden."
+                    ).format(org=club.name, instanz=instance_name())
+                )
                 + "\n\n"
                 + gettext(
                     "Mit diesem persönlichen Link melden Sie sich ohne Passwort an "
@@ -284,8 +350,8 @@ def send_access_mail(club: Organization, access: PortalAccess, created_by) -> st
             body = (
                 greeting
                 + gettext(
-                    "{org} hat Ihnen den Mitgliederbereich von HUBIplan freigeschaltet."
-                ).format(org=club.name)
+                    "{org} hat Ihnen den Mitgliederbereich von {instanz} freigeschaltet."
+                ).format(org=club.name, instanz=instance_name())
                 + "\n\n"
                 + gettext(
                     "Melden Sie sich wie gewohnt mit Ihrem bestehenden Konto ({email}) an: {url}"
@@ -296,7 +362,9 @@ def send_access_mail(club: Organization, access: PortalAccess, created_by) -> st
                 )
                 + "\n"
             )
-        subject = gettext("Ihr Zugang zu HUBIplan – {org}").format(org=club.name)
+        subject = gettext("Ihr Zugang zu {instanz} – {org}").format(
+            instanz=instance_name(), org=club.name
+        )
     mail.send(
         user.email,
         subject,

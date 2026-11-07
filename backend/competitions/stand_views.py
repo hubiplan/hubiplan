@@ -20,6 +20,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from access.modules import module_on
 from audit.log import current_via, record
 from core.tenancy import rls_bypass, unit_context
 
@@ -322,6 +323,10 @@ class StandPhotoView(_StandPublic):
 
     def post(self, request, token: str):
         access = self.resolve(token)
+        with rls_bypass():
+            shooting = module_on(access.organization, "shooting")
+        if not shooting:
+            raise Http404
         photo_rate(f"s{access.pk}")
         with unit_context(access.organization_id):
             comp = Competition.objects.get(pk=access.competition_id)

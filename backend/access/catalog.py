@@ -17,6 +17,8 @@ from dataclasses import dataclass
 
 from django.utils.translation import gettext, gettext_noop
 
+from .modules import DEFAULT_IDS, MODULE_IDS, module_on
+
 VIEW = "view"
 EDIT = "edit"
 
@@ -79,6 +81,11 @@ EVENTS_EDIT = "events.edit"
 DOCS_EDIT = "docs.edit"
 CIRCULARS_VIEW = "circulars.view"
 CIRCULARS_EDIT = "circulars.edit"
+CHRONICLE_VIEW = "chronicle.view"
+CHRONICLE_EDIT = "chronicle.edit"
+SCORES_VIEW = "scores.view"
+SCORES_EDIT = "scores.edit"
+MUSIC_VIEW = "music.view"
 WEBCONTENT_VIEW = "webcontent.view"
 WEBCONTENT_EDIT = "webcontent.edit"
 WEBSITE_VIEW = "website.view"
@@ -171,7 +178,7 @@ AREAS: tuple[Area, ...] = (
         gettext_noop("Ausweise sehen und prüfen"),
         gettext_noop("Ausweise (QR-Code) erstellen und sperren"),
         dept_levels=_BOTH,
-        module="members",
+        module="cards",
         dept_label=gettext_noop("Mitgliedsausweise {gen}"),
     ),
     Area(
@@ -216,6 +223,14 @@ AREAS: tuple[Area, ...] = (
         gettext_noop("Aufgaben mit anderen teilen"),
         org_types=ALL_TYPES,
         dept_levels=_BOTH,
+        module="todos",
+    ),
+    Area(
+        "chronicle",
+        gettext_noop("Chronik"),
+        gettext_noop("Chronik lesen"),
+        gettext_noop("Chronik pflegen: Zeitleiste, Einleitung und Bilder"),
+        module="chronicle",
     ),
     Area(
         "material",
@@ -239,8 +254,7 @@ AREAS: tuple[Area, ...] = (
         gettext_noop("Buchungskalender sehen und buchen"),
         gettext_noop("Buchungen für andere eintragen und freigeben"),
         dept_levels=_BOTH,
-        # eines der beiden Module genügt
-        module="material|infrastructure",
+        module="bookings",
     ),
     Area(
         "audit",
@@ -276,6 +290,13 @@ AREAS: tuple[Area, ...] = (
         module="music",
     ),
     Area(
+        "scores",
+        gettext_noop("Notenarchiv"),
+        gettext_noop("Notenbestand lesen"),
+        gettext_noop("Notenbestand pflegen: Stücke, Arrangements, Stimmen und Notendateien"),
+        module="scores",
+    ),
+    Area(
         "events",
         gettext_noop("Termine"),
         gettext_noop("Kalender, Rückmeldungen und Anhänge sehen"),
@@ -309,6 +330,7 @@ AREAS: tuple[Area, ...] = (
         gettext_noop("Dokumentenablage verwalten: Ordner, Dokumente, Freigaben"),
         dept_levels=_BOTH,
         dept_label=gettext_noop("Dokumente {gen}"),
+        module="docs",
     ),
     Area(
         "circulars",
@@ -317,6 +339,7 @@ AREAS: tuple[Area, ...] = (
         gettext_noop("Rundschreiben verfassen und versenden (E-Mails und Serienbriefe)"),
         dept_levels=_BOTH,
         dept_label=gettext_noop("Rundschreiben {gen}"),
+        module="circulars",
     ),
     Area(
         "webcontent",
@@ -362,7 +385,7 @@ AREAS: tuple[Area, ...] = (
         gettext_noop("Ausschreibungen"),
         gettext_noop("Ausschreibungen an die Untereinheiten sehen"),
         gettext_noop("Ausschreibungen verwalten, Meldungen bestätigen"),
-        module="entries",
+        module="calls",
     ),
     Area(
         "peering",
@@ -413,36 +436,12 @@ EXTRAS: tuple[Extra, ...] = (
 
 AREA_BY_ID: dict[str, Area] = {a.id: a for a in AREAS}
 
-# Abschaltbare Module (Organization.enabled_modules); ihre Bereiche fehlen, wenn aus
-SWITCHABLE_MODULES: tuple[str, ...] = (
-    "music",
-    "material",
-    "infrastructure",
-    "members",
-    "finance",
-    "billing",
-    "events",
-    "website",
-    "competitions",
-    "entries",
-    "meetings",
-    "helpers",
-)
-# Module, die eine neue Einheit nicht automatisch bekommt (die Plattform schaltet
-# sie gezielt frei, z. B. die Webseite nur für Einheiten, die eine haben sollen)
-OPT_IN_MODULES: frozenset[str] = frozenset(
-    {
-        "website",
-        "competitions",
-        "entries",
-        "material",
-        "infrastructure",
-        "music",
-        "meetings",
-        "helpers",
-    }
-)
-DEFAULT_MODULES: tuple[str, ...] = tuple(m for m in SWITCHABLE_MODULES if m not in OPT_IN_MODULES)
+# Abschaltbare Module (Organization.enabled_modules); ihre Bereiche fehlen, wenn aus.
+# Einzige Quelle ist das Modulverzeichnis (access/modules.py).
+SWITCHABLE_MODULES: tuple[str, ...] = MODULE_IDS
+# Module, die eine neue Einheit nicht automatisch bekommt
+OPT_IN_MODULES: frozenset[str] = frozenset(m for m in MODULE_IDS if m not in DEFAULT_IDS)
+DEFAULT_MODULES: tuple[str, ...] = DEFAULT_IDS
 
 
 def _area_codes(area: Area, levels: tuple[str, ...]) -> list[str]:
@@ -487,8 +486,8 @@ LEGACY_TO_NEW: dict[str, tuple[str, ...]] = {
     DOCS_VIEW: ("docs.view",),
     DOCS_MANAGE: (DOCS_EDIT,),
     CIRCULARS_SEND: (CIRCULARS_EDIT,),
-    WEBSITE_CONTENT: (WEBCONTENT_EDIT,),
-    WEBSITE_MANAGE: (WEBCONTENT_EDIT, WEBSITE_EDIT),
+    WEBSITE_CONTENT: (WEBCONTENT_EDIT, CHRONICLE_EDIT),
+    WEBSITE_MANAGE: (WEBCONTENT_EDIT, WEBSITE_EDIT, CHRONICLE_EDIT),
     COMPETITIONS_MANAGE: (COMPETITIONS_EDIT, RESULTS_EDIT),
     COMPETITIONS_RESULTS: (COMPETITIONS_VIEW, RESULTS_EDIT),
     ENTRIES_SUBMIT: (ENTRIES_EDIT,),
@@ -624,15 +623,9 @@ def level_of(codes, area: str) -> str | None:
 
 def module_available(area: Area, org) -> bool:
     """Freigabe der Einheit; Untereinheiten bleiben an ihren Verein gebunden."""
-    if not area.module or org is None:
+    if not area.module or org is None or org.type == "platform":
         return True
-    modules = set(area.module.split("|"))
-    if not modules & set(org.enabled_modules or []):
-        return False
-    if org.type == "unit":
-        owner = org.organization
-        return owner is not None and bool(modules & set(owner.enabled_modules or []))
-    return True
+    return any(module_on(org, m) for m in area.module.split("|"))
 
 
 def enabled_codes_for(org, *, dept: bool = False) -> set[str]:

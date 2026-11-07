@@ -311,13 +311,13 @@ def report(org: Organization, year: int, today: datetime.date | None = None) -> 
         "start_date": start,
         "end_date": last,
         "period": period,
-        "enabled": org.tax_areas_enabled,
+        "enabled": org.tax_areas_on,
         "root": {"id": root.pk, "name": root.name, "is_self": is_root},
         "units": [
             {
                 "id": unit.pk,
                 "name": unit.name,
-                "tax_areas_enabled": unit.tax_areas_enabled,
+                "tax_areas_enabled": unit.tax_areas_on,
                 "business_income": _get(totals, TaxArea.BUSINESS, "income"),
                 "turnover": _turnover(totals),
             }

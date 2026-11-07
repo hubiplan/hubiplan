@@ -496,16 +496,16 @@ msgstr "This email address already belongs to another account."
 #, python-brace-format
 msgid ""
 "{org} hat Ihre neue E-Mail-Adresse {new} übernommen. Möchten Sie sich bei "
-"HUBIplan künftig auch damit anmelden (bisher {old})?"
+"{instanz} künftig auch damit anmelden (bisher {old})?"
 msgstr ""
 "{org} has taken over your new email address {new}. Would you like to sign in "
-"to HUBIplan with it from now on (previously {old})?"
+"to {instanz} with it from now on (previously {old})?"
 
 #, python-brace-format
 msgid ""
-"Sie möchten sich bei HUBIplan künftig mit {new} anmelden (bisher {old})."
+"Sie möchten sich bei {instanz} künftig mit {new} anmelden (bisher {old})."
 msgstr ""
-"You would like to sign in to HUBIplan with {new} from now on (previously "
+"You would like to sign in to {instanz} with {new} from now on (previously "
 "{old})."
 
 msgid "Bitte bestätigen Sie Ihre neue E-Mail-Adresse"
@@ -4531,8 +4531,8 @@ msgid "übernommen"
 msgstr "taken over"
 
 #, python-brace-format
-msgid "Ihr Zugang zu HUBIplan – {org} wurde übertragen"
-msgstr "Your HUBIplan access – {org} has been transferred"
+msgid "Ihr Zugang zu {instanz} – {org} wurde übertragen"
+msgstr "Your {instanz} access – {org} has been transferred"
 
 #, python-brace-format
 msgid "Hallo {name},"
@@ -4550,10 +4550,10 @@ msgstr ""
 
 #, python-brace-format
 msgid ""
-"{org} lädt Sie in den Mitgliederbereich von HUBIplan ein. Dort sehen Sie "
+"{org} lädt Sie in den Mitgliederbereich von {instanz} ein. Dort sehen Sie "
 "Ihre Daten und können Änderungen melden."
 msgstr ""
-"{org} invites you to the HUBIplan member area. There you can see your "
+"{org} invites you to the {instanz} member area. There you can see your "
 "details and report changes."
 
 #, python-brace-format
@@ -4572,8 +4572,8 @@ msgstr ""
 "use a password, choose “Forgot password” there."
 
 #, python-brace-format
-msgid "{org} hat Ihnen den Mitgliederbereich von HUBIplan freigeschaltet."
-msgstr "{org} has activated the HUBIplan member area for you."
+msgid "{org} hat Ihnen den Mitgliederbereich von {instanz} freigeschaltet."
+msgstr "{org} has activated the {instanz} member area for you."
 
 #, python-brace-format
 msgid ""
@@ -4585,8 +4585,8 @@ msgid ""
 msgstr "If you do not know your password, choose “Forgot password” there."
 
 #, python-brace-format
-msgid "Ihr Zugang zu HUBIplan – {org}"
-msgstr "Your HUBIplan access – {org}"
+msgid "Ihr Zugang zu {instanz} – {org}"
+msgstr "Your {instanz} access – {org}"
 
 msgid "Bitte ein aktuelles Mitglied auswählen."
 msgstr "Please choose a current member."
@@ -4617,8 +4617,9 @@ msgstr "You cannot remove role administration from yourself."
 msgid "Es wurde nichts geändert."
 msgstr "Nothing was changed."
 
-msgid "Ihr Anmeldelink für HUBIplan"
-msgstr "Your sign-in link for HUBIplan"
+#, python-brace-format
+msgid "Ihr Anmeldelink für {instanz}"
+msgstr "Your sign-in link for {instanz}"
 
 #, python-brace-format
 msgid ""
@@ -8492,3 +8493,296 @@ msgstr "This person is already a contact person here."
 
 msgid "Ansprechpartner gibt es nur bei Organisationsmitgliedern."
 msgstr "Only organisation members have contact persons."
+
+msgid ""
+"Für eine eigene Rechnungsanschrift bitte Straße (oder Postfach) und Ort "
+"angeben."
+msgstr "For a separate billing address, please enter street (or PO box) and town."
+
+msgid "Durch Vertreter anwesend: {x}."
+msgstr "Present through representative: {x}."
+
+msgid "durch Vertreter"
+msgstr "by representative"
+
+msgid "Vertreter"
+msgstr "Representative"
+
+msgid "„Durch Vertreter“ gibt es nur bei Organisationsmitgliedern."
+msgstr "“By representative” is only available for organisation members."
+
+msgid "Unbekannter Ansprechpartner."
+msgstr "Unknown contact person."
+
+msgid "Bitte den Vertreter angeben."
+msgstr "Please enter the representative."
+
+msgid "Für diesen Ansprechpartner ist keine E-Mail-Adresse hinterlegt."
+msgstr "No email address is stored for this contact person."
+
+msgid "Bei Organisationen bekommt jeder Ansprechpartner einen eigenen Zugang."
+msgstr "For organisations, each contact person gets their own access."
+
+msgid ""
+"{org} lädt Sie als Ansprechpartner von {member} in den Mitgliederbereich von "
+"{instanz} ein. Dort sehen Sie die Daten der Mitgliedschaft und können "
+"Änderungen melden."
+msgstr ""
+"{org} invites you, as contact person of {member}, to the member area of "
+"{instanz}. There you can see the membership data and report changes."
+
+msgid "Typ „{raw}“ ist unbekannt (erlaubt: Person oder Organisation)."
+msgstr "Type “{raw}” is unknown (allowed: Person or Organisation)."
+
+msgid "Zeile {index}: Typ widerspricht Zeile {first_row}."
+msgstr "Row {index}: type contradicts row {first_row}."
+
+msgid "Zeile {index}: Name des Ansprechpartners fehlt."
+msgstr "Row {index}: contact person's name is missing."
+
+msgid "Zeile {index}: E-Mail des Ansprechpartners ist ungültig."
+msgstr "Row {index}: contact person's email is invalid."
+
+msgid "Eine Organisation hat keinen Vornamen und kein Geburtsdatum."
+msgstr "An organisation has no first name and no date of birth."
+
+msgid "Ansprechpartner gibt es nur bei Organisationen."
+msgstr "Only organisations have contact persons."
+
+msgid "Namenszusatz und Rechtsform gibt es nur bei Organisationen."
+msgstr "Only organisations have a name suffix and legal form."
+
+msgid ""
+"„{name}“ sieht nach einer Organisation aus. Bitte in der Spalte „Typ“ "
+"„Organisation“ eintragen."
+msgstr ""
+"“{name}” looks like an organisation. Please enter “Organisation” in the "
+"“Typ” column."
+
+msgid "Geburtsdatum: {exc}"
+msgstr "Date of birth: {exc}"
+
+msgid "Vereinsleben"
+msgstr "Club life"
+
+msgid "Kommunikation"
+msgstr "Communication"
+
+msgid "Verwaltung"
+msgstr "Administration"
+
+msgid "Mitgliederliste, Akten, Ämter, Änderungen und Wechsel, Import"
+msgstr "Member list, records, offices, changes and transfers, import"
+
+msgid "Kalender mit Zu- und Absagen, Kalender-Abo und fremden Kalendern"
+msgstr "Calendar with RSVPs, calendar subscription and external calendars"
+
+msgid "Tagesordnung, Einladung, Protokoll und Beschlussbuch"
+msgstr "Agenda, invitation, minutes and resolution book"
+
+msgid "Dienstpläne mit Schichten und Einteilung"
+msgstr "Duty rosters with shifts and assignments"
+
+msgid "Auftritte, Musiker, Proben, Notenbestand und Besetzung"
+msgstr "Performances, musicians, rehearsals, score library and line-ups"
+
+msgid "Wettbewerbe mit Wertungen, Ranglisten, Wanderpokalen und Urkunden"
+msgstr "Competitions with scoring, rankings, challenge trophies and certificates"
+
+msgid "Meldungen an Veranstalter und Ausschreibungen an Untereinheiten"
+msgstr "Entries to organisers and calls for entries to sub-units"
+
+msgid "Inhalte und Einrichtung der Vereinswebseite"
+msgstr "Content and setup of the club website"
+
+msgid "Kassenbuch, Konten, Belege, Abschluss"
+msgstr "Cash book, accounts, receipts, year-end closing"
+
+msgid "Beitragsläufe, Rechnungen, Mahnungen, Lastschrift"
+msgstr "Fee runs, invoices, reminders, direct debit"
+
+msgid "Materialbestand, Standorte und Ausleihe"
+msgstr "Equipment inventory, locations and lending"
+
+msgid "Räume und Anlagen"
+msgstr "Rooms and facilities"
+
+msgid "Vereinsheim, Schießstand, Plätze und ihre Bereiche"
+msgstr "Clubhouse, shooting range, grounds and their areas"
+
+msgid "Ausweise mit QR-Code, Prüfseite und Wallet"
+msgstr "Cards with QR code, verification page and wallet"
+
+msgid "Eigene und geteilte Aufgaben mit Frist und Erinnerung"
+msgstr "Personal and shared tasks with due date and reminder"
+
+msgid "Ausschreibungen an Untereinheiten, Meldungen bestätigen"
+msgstr "Calls for entries to sub-units, confirm entries"
+
+msgid "E-Mails, Serienbriefe und Briefe an Mitglieder"
+msgstr "Emails, mail merges and letters to members"
+
+msgid "Dokumentenablage mit Ordnern, Freigaben und Papierkorb"
+msgstr "Document storage with folders, sharing and recycle bin"
+
+msgid "Buchungskalender und Anfragen für Material, Räume und Anlagen"
+msgstr "Booking calendar and requests for equipment, rooms and facilities"
+
+msgid "Nicht gefunden."
+msgstr "Not found."
+
+msgid "Mitgliederbereich"
+msgstr "Member area"
+
+msgid "Mitglieder melden sich an und sehen ihre Daten, Termine und Rechnungen"
+msgstr "Members sign in and see their data, events and invoices"
+
+msgid "Ehrungen & Jubiläen"
+msgstr "Honours & anniversaries"
+
+msgid "Ehrungen am Mitglied, Jubiläen und Mitgliedsdauer"
+msgstr "Honours for members, anniversaries and length of membership"
+
+msgid "Würden"
+msgstr "Titles"
+
+msgid "Würden wie König oder Prinz, Regentschaften und Königsliste"
+msgstr "Titles such as king or prince, reigns and list of kings"
+
+msgid "Social Media"
+msgstr "Social media"
+
+msgid "Beiträge aus Instagram und Facebook übernehmen und auf der Webseite zeigen"
+msgstr "Import posts from Instagram and Facebook and show them on the website"
+
+msgid "Chronik"
+msgstr "Chronicle"
+
+msgid "Zeitleiste der Vereinsgeschichte mit Kapiteln, Bildern und Excel-Import"
+msgstr "Timeline of the club's history with chapters, pictures and Excel import"
+
+msgid "Chronik lesen"
+msgstr "Read chronicle"
+
+msgid "Chronik pflegen: Zeitleiste, Einleitung und Bilder"
+msgstr "Maintain chronicle: timeline, introduction and pictures"
+
+msgid "Steuern & Gemeinnützigkeit"
+msgstr "Tax & charitable status"
+
+msgid "Steuerliche Bereiche in der Kasse, Auswertung nach Bereichen und Rücklagen"
+msgstr "Tax areas in the cash book, evaluation by area and reserves"
+
+msgid "Zuwendungsbestätigungen"
+msgstr "Donation receipts"
+
+msgid "Zuwendungen erfassen und Bestätigungen nach amtlichem Muster ausstellen"
+msgstr "Record donations and issue receipts in the official format"
+
+msgid "Notenarchiv"
+msgstr "Sheet music archive"
+
+msgid "Notenbestand mit Stücken, Arrangements, Stimmen und Notendateien"
+msgstr "Sheet music library with pieces, arrangements, parts and files"
+
+msgid "Notenbestand lesen"
+msgstr "Read sheet music library"
+
+msgid "Notenbestand pflegen: Stücke, Arrangements, Stimmen und Notendateien"
+msgstr "Maintain sheet music library: pieces, arrangements, parts and files"
+
+msgid "Auftritte, Musiker, Proben, Notenausgabe und Besetzung"
+msgstr "Performances, musicians, rehearsals, music handout and line-up"
+
+msgid "Schießsport"
+msgstr "Shooting sports"
+
+msgid "Schießscheiben mit Trefferbild und Fotoauswertung, Vogelschießen"
+msgstr "Targets with hit pattern and photo evaluation, bird shooting"
+
+msgid "Schießscheiben gibt es nur mit dem Modul „Schießsport“."
+msgstr "Targets are only available with the “Shooting sports” module."
+
+msgid "Ein Vogelschießen gibt es nur mit dem Modul „Schießsport“."
+msgstr "Bird shooting is only available with the “Shooting sports” module."
+
+msgid "Nicht freigegeben: {x}"
+msgstr "Not released: {x}"
+
+msgid "Dafür muss die Plattform auch freigeben: {x}"
+msgstr "For this the platform also has to release: {x}"
+
+msgid "Bitte eine Liste von Modulen angeben."
+msgstr "Please give a list of modules."
+
+msgid "Hochgeladene Mitgliederfotos erst nach Freigabe anzeigen"
+msgstr "Show uploaded member photos only after approval"
+
+msgid "Geänderte Kontaktdaten erst nach Bestätigung übernehmen"
+msgstr "Apply changed contact details only after confirmation"
+
+msgid "Ausweis in Apple Wallet und Google Wallet"
+msgstr "Card in Apple Wallet and Google Wallet"
+
+msgid "Zählprotokoll und Kassenbericht für Feste"
+msgstr "Cash count and cash report for festivals"
+
+msgid "DATEV-Export"
+msgstr "DATEV export"
+
+msgid "Steuerliche Bereiche in der Kasse"
+msgstr "Tax areas in the cash book"
+
+msgid "Rücklagen führen"
+msgstr "Keep reserves"
+
+msgid "SEPA-Lastschrift"
+msgstr "SEPA direct debit"
+
+msgid "Bitte die Zusatzfunktionen mit ja oder nein angeben."
+msgstr "Please give the add-on features as yes or no."
+
+msgid "Unbekannte Zusatzfunktion: {x}"
+msgstr "Unknown add-on feature: {x}"
+
+msgid "Dafür muss das Modul eingeschaltet sein: {x}"
+msgstr "The module must be switched on for this: {x}"
+
+msgid "Allgemeiner Verein"
+msgstr "General club"
+
+msgid "Schützenverein"
+msgstr "Marksmen's club"
+
+msgid "Musikverein / Kapelle"
+msgstr "Music society / band"
+
+msgid "Chor"
+msgstr "Choir"
+
+msgid "Sportverein"
+msgstr "Sports club"
+
+msgid "Förderverein"
+msgstr "Support association"
+
+msgid "Abteilungen"
+msgstr "Departments"
+
+msgid "Zug"
+msgstr "Company"
+
+msgid "Züge"
+msgstr "Companies"
+
+msgid "Register"
+msgstr "Section"
+
+msgid "Stimme"
+msgstr "Voice"
+
+msgid "Stimmen"
+msgstr "Voices"
+
+msgid "Module gibt hier die Plattform-Verwaltung frei."
+msgstr "Modules are released here by the platform administration."

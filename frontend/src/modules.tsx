@@ -9,7 +9,7 @@ import { memberSections, membersVisible } from './pages/members/access.ts'
 import { websiteSections } from './pages/website/sections.ts'
 import { circularsVisible } from './pages/circulars/access.ts'
 import { portalNav } from './pages/portal/sections.ts'
-import { musicSections } from './pages/music/access.ts'
+import { musicSections, scoresOwnEntry } from './pages/music/access.ts'
 import { hasUnitsPage } from './pages/settings/units.ts'
 import { t } from './i18n/index.ts'
 
@@ -49,7 +49,10 @@ function stockAccess(org: OrgSummary | null, ws: Workspace) {
     : !!ws.dept?.infrastructure_enabled
   const material = materialOn && perms.includes('material.view')
   const facility = facilityOn && perms.includes('infrastructure.view')
-  const bookingsAllowed = org ? org.type === 'club' || org.type === 'federation' : !!ws.dept
+  // Belegung ist ein eigenes Modul (module-neustruktur, M2a)
+  const bookingsOn = org ? org.modules.includes('bookings') : ws.dept?.bookings_enabled !== false
+  const bookingsAllowed =
+    bookingsOn && (org ? org.type === 'club' || org.type === 'federation' : !!ws.dept)
   const bookings =
     bookingsAllowed &&
     ((materialOn && (perms.includes('material.view') || perms.includes('bookings.view'))) ||
@@ -159,6 +162,14 @@ export const modules: AppModule[] = [
     children: musicSections,
   },
   {
+    id: 'noten',
+    group: 'verein',
+    label: t('Noten'),
+    path: '/noten',
+    icon: icon('M9 18V5l11-2v13M9 8l11-2M9 18a3 3 0 1 1-3-3M20 16a3 3 0 1 1-3-3'),
+    visible: (org) => scoresOwnEntry(org),
+  },
+  {
     id: 'wettbewerbe',
     group: 'verein',
     label: t('Wettbewerbe'),
@@ -196,10 +207,22 @@ export const modules: AppModule[] = [
     visible: (org) =>
       !!org &&
       (org.type === 'club' || org.type === 'federation') &&
-      org.modules.includes('entries') &&
+      (org.modules.includes('entries') || org.modules.includes('calls')) &&
       [PERM.entriesView, PERM.callsView, PERM.entriesSubmit, PERM.entriesManage].some((p) =>
         org.permissions.includes(p),
       ),
+  },
+  {
+    id: 'chronik',
+    group: 'verein',
+    label: t('Chronik'),
+    path: '/chronik',
+    icon: icon('M4 5h11a3 3 0 0 1 3 3v12H7a3 3 0 0 1-3-3zM18 8h2v12M8 9h6M8 13h6'),
+    visible: (org) =>
+      !!org &&
+      (org.type === 'club' || org.type === 'federation') &&
+      org.modules.includes('chronicle') &&
+      org.permissions.includes(PERM.chronicleView),
   },
   {
     id: 'versammlungen',
@@ -257,7 +280,10 @@ export const modules: AppModule[] = [
       org
         ? (org.type === 'club' || org.type === 'federation') &&
           org.permissions.includes(PERM.docsView)
-        : !!(ws.dept?.permissions.includes(PERM.docsView) || ws.portal),
+        : !!(
+            ws.dept?.permissions.includes(PERM.docsView) ||
+            (ws.portal && ws.portal.docs_enabled !== false)
+          ),
   },
   {
     id: 'webseite',

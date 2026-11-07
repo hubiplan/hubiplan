@@ -14,6 +14,7 @@ from organizations.terms import fill
 
 from . import services
 from .models import (
+    BillingAddress,
     ContactPerson,
     DepartmentMembership,
     DepartmentRoleHolder,
@@ -484,9 +485,12 @@ class ContactPersonSerializer(serializers.ModelSerializer):
     display_name = serializers.SerializerMethodField()
     contact_email = serializers.SerializerMethodField()
     contact_phone = serializers.SerializerMethodField()
+    access_email = serializers.SerializerMethodField()
 
     class Meta:
         model = ContactPerson
+        # Mitgliederzugang richtet „Zugang einrichten“ ein (J5), nicht das Kennzeichen
+        read_only_fields = ["member_access"]
         fields = [
             "id",
             "member",
@@ -500,6 +504,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
             "phone",
             "contact_email",
             "contact_phone",
+            "access_email",
             "is_primary",
             "receives_mail",
             "receives_invoices",
@@ -527,6 +532,13 @@ class ContactPersonSerializer(serializers.ModelSerializer):
 
     def get_display_name(self, obj) -> str:
         return obj.display_name
+
+    def get_access_email(self, obj) -> str:
+        """Anmelde-E-Mail des Mitgliederzugangs (leer ohne Zugang)."""
+        from portal.models import PortalAccess
+
+        access = PortalAccess.objects.filter(contact_person=obj).select_related("user").first()
+        return access.user.email if access else ""
 
     def get_contact_email(self, obj) -> str:
         contact = self._contact(obj)
@@ -573,6 +585,39 @@ class ContactPersonSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"member": gettext("Diese Person ist hier schon Ansprechpartner.")}
                 )
+        return attrs
+
+
+class BillingAddressSerializer(serializers.ModelSerializer):
+    """Abweichende Rechnungsanschrift und Rechnungsangaben (J3)."""
+
+    class Meta:
+        model = BillingAddress
+        fields = [
+            "name",
+            "attention",
+            "street",
+            "postal_code",
+            "city",
+            "country",
+            "email",
+            "order_reference",
+            "leitweg_id",
+        ]
+
+    def validate(self, attrs):
+        street = attrs.get("street", getattr(self.instance, "street", "")).strip()
+        city = attrs.get("city", getattr(self.instance, "city", "")).strip()
+        postal_code = attrs.get("postal_code", getattr(self.instance, "postal_code", "")).strip()
+        if (street or city or postal_code) and not (street and city):
+            raise serializers.ValidationError(
+                {
+                    "street" if not street else "city": gettext(
+                        "Für eine eigene Rechnungsanschrift bitte Straße (oder Postfach) und "
+                        "Ort angeben."
+                    )
+                }
+            )
         return attrs
 
 
@@ -676,6 +721,9 @@ def member_detail(membership: Membership, org) -> dict:
             .select_related("membership__person")
             .order_by("pk")
         ],
+        "billing_address": BillingAddressSerializer(membership.billing_address).data
+        if hasattr(membership, "billing_address")
+        else None,
         "club_number": membership.club_number,
         "pays_fee_self": membership.pays_fee_self,
         "info_opt_out_at": membership.info_opt_out_at,

@@ -214,13 +214,13 @@ def plan(org, raw):
 
 
 class CatalogueImportView(OrgScopedMixin, APIView):
-    read_permission = "music.view"
-    write_permission = "music.edit"
+    read_permission = "scores.view"
+    write_permission = "scores.edit"
     allowed_org_types = ("club", "federation")
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
-        if "music" not in self.org.enabled_modules:
+        if "scores" not in self.org.enabled_modules:
             raise NotFound()
 
     def get(self, request, org_id):

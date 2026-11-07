@@ -134,13 +134,19 @@ def test_migration_laesst_reine_aemter_ohne_rechte():
     assert migration.new_codes([], dept=True, org_type="club") == []
 
 
+# Rechte, die erst spätere Migrationen aus den neuen Codes ableiten (Chronik: 0053_chronik
+# gibt sie Rollen mit webcontent.*); die eingefrorene Tabelle kennt sie nicht.
+SPAETER_ERGAENZT = {"chronicle.edit", "chronicle.view"}
+
+
 def test_migration_stimmt_mit_dem_katalog_ueberein():
     """Die eingefrorene Tabelle der Migration und der Katalog übersetzen gleich."""
     for old in ALT_VEREIN:
         frozen = set(migration.new_codes([old], dept=False, org_type="club"))
         frozen -= set(migration.BASE_READ["club"])
-        assert frozen <= set(from_legacy([old])) | set(migration.BASE_READ["club"]), old
-        assert set(from_legacy([old])) <= frozen | set(migration.BASE_READ["club"]), old
+        catalog = set(from_legacy([old])) - SPAETER_ERGAENZT
+        assert frozen <= catalog | set(migration.BASE_READ["club"]), old
+        assert catalog <= frozen | set(migration.BASE_READ["club"]), old
 
 
 def test_migration_schreibt_kategorien_der_pruefstellen_mit():
