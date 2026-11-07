@@ -858,6 +858,11 @@ class PlatformOrganizationSerializer(
             "label_genitive",
             "label_en",
             "label_plural_en",
+            "department_label",
+            "department_label_plural",
+            "department_label_gender",
+            "department_label_en",
+            "department_label_plural_en",
             "founding_year",
             "street",
             "postal_code",
@@ -870,6 +875,7 @@ class PlatformOrganizationSerializer(
             "federation_show_former_memberships",
             "enabled_modules",
             "released_modules",
+            "modules_pass_down",
             "tax_areas_enabled",
             "is_active",
             "is_remote",
@@ -1079,6 +1085,8 @@ class FederationClubSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
     display_name = serializers.CharField(read_only=True)
     logo_url = serializers.SerializerMethodField()
+    # Freigabe an den Verein; schreiben nur mit Weitergabe (M6)
+    released_modules = serializers.ListField(child=serializers.CharField(), required=False)
     # Baum darunter, nur zum Ansehen: Namen der Untereinheiten (keine Mitgliedsdaten)
     units = serializers.SerializerMethodField()
 
@@ -1102,9 +1110,37 @@ class FederationClubSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "is_active",
             "is_remote",
             "logo_url",
+            "released_modules",
         ]
         read_only_fields = ["department_label_plural", "is_remote"]
         extra_kwargs = {"founding_year": {"min_value": 800, "max_value": 2100}}
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["released_modules"] = sorted(released_of(instance))
+        return data
+
+    def validate_released_modules(self, value):
+        """Nur mit Weitergabe durch die Plattform (``modules_pass_down`` am Dachverband)."""
+        federation = self.context["view"].org
+        if not federation.modules_pass_down:
+            raise serializers.ValidationError(
+                gettext("Module gibt hier die Plattform-Verwaltung frei.")
+            )
+        unknown = sorted(set(value) - set(SWITCHABLE_MODULES))
+        if unknown:
+            raise serializers.ValidationError(
+                gettext("Unbekannte Module: {x}").format(x=", ".join(unknown))
+            )
+        return sorted(with_requirements(value))
+
+    def update(self, instance, validated_data):
+        release = validated_data.pop("released_modules", None)
+        club = super().update(instance, validated_data)
+        if release is not None:
+            apply_release(club, release)
+            club.save(update_fields=["released_modules", "enabled_modules"])
+        return club
 
     def get_logo_url(self, obj) -> str | None:
         return logo_url(obj)

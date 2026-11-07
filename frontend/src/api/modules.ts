@@ -36,8 +36,24 @@ export interface OrgModules {
   changes?: { on: string[]; off: string[] }
 }
 
+/** Vorlage beim Anlegen einer Einheit (wird nicht gespeichert) */
+export interface ModuleTemplate {
+  id: string
+  label: string
+  org_type: 'club' | 'federation'
+  modules: string[]
+  units: {
+    label: string
+    plural: string
+    gender: string
+    label_en: string
+    plural_en: string
+  } | null
+}
+
 export const moduleApi = {
   directory: () => api.get<ModuleGroup[]>('/api/modules/'),
+  templates: () => api.get<ModuleTemplate[]>('/api/modules/templates/'),
   ofOrg: (org: number) => api.get<OrgModules>(`/api/orgs/${org}/modules/`),
   setOrg: (org: number, enabled: string[], dryRun = false) =>
     api.patch<OrgModules>(`/api/orgs/${org}/modules/`, { enabled, dry_run: dryRun }),

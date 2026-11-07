@@ -21,6 +21,12 @@ abschaltbar sind und welche eine neue Einheit bekommt.
   eigenen aufbauen (Steuern, Zuwendungen, Social Media), je Einheit aus
   (`Organization.unit_hidden_modules`, leer = alle). `module_on` beachtet das auch für die
   Einheiten darunter (`unit_hidden`).
+- **Weitergabe:** Mit `modules_pass_down` (Schalter der Plattform) gibt ein Dachverband seinen
+  Vereinen unter Untereinheiten selbst Module frei (`released_modules` am Vereins-Endpunkt
+  `/api/orgs/<id>/clubs/<club>/`, `apply_release`).
+- **Vorlagen** (`TEMPLATES`, `GET /api/modules/templates/`): schlagen beim Anlegen unter
+  Plattform › Einheiten Module und die Bezeichnung der Untereinheiten vor; gespeichert wird
+  nur das Ergebnis.
 - **Rechte** eines abgeschalteten Moduls wirken nicht (`Area.module`), bleiben aber an der
   Rolle gespeichert.
 - **Pfade ohne eigenes Rollenrecht** (Mitgliederbereich, Ehrungen, Würden, Social Media) bindet

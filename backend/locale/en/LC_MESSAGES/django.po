@@ -8729,3 +8729,42 @@ msgstr "Unknown add-on feature: {x}"
 
 msgid "Dafür muss das Modul eingeschaltet sein: {x}"
 msgstr "The module must be switched on for this: {x}"
+
+msgid "Allgemeiner Verein"
+msgstr "General club"
+
+msgid "Schützenverein"
+msgstr "Marksmen's club"
+
+msgid "Musikverein / Kapelle"
+msgstr "Music society / band"
+
+msgid "Chor"
+msgstr "Choir"
+
+msgid "Sportverein"
+msgstr "Sports club"
+
+msgid "Förderverein"
+msgstr "Support association"
+
+msgid "Abteilungen"
+msgstr "Departments"
+
+msgid "Zug"
+msgstr "Company"
+
+msgid "Züge"
+msgstr "Companies"
+
+msgid "Register"
+msgstr "Section"
+
+msgid "Stimme"
+msgstr "Voice"
+
+msgid "Stimmen"
+msgstr "Voices"
+
+msgid "Module gibt hier die Plattform-Verwaltung frei."
+msgstr "Modules are released here by the platform administration."

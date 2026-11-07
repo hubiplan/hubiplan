@@ -67,6 +67,8 @@ export interface OrgSummary {
   sepa_enabled?: boolean
   /** Zählprotokoll und Kassenbericht für Feste eingeschaltet (Finanzen › Konten) */
   cash_counts_enabled?: boolean
+  /** Dachverband darf seinen Vereinen Module freigeben */
+  modules_pass_down?: boolean
   /** Rücklagen nach § 62 AO eingeschaltet (Finanzen › Konten) */
   reserves_enabled?: boolean
   /** Oberste Einheit führt auch selbst Mitglieder */
@@ -477,6 +479,14 @@ export interface PlatformOrg {
   enabled_modules: string[]
   /** von der Plattform freigegeben */
   released_modules?: string[]
+  /** Dachverband darf seinen Vereinen Module freigeben */
+  modules_pass_down?: boolean
+  /** Bezeichnung der Untereinheiten (beim Anlegen aus der Vorlage) */
+  department_label?: string
+  department_label_plural?: string
+  department_label_gender?: string
+  department_label_en?: string
+  department_label_plural_en?: string
   tax_areas_enabled: boolean
   is_active: boolean
   club_count: number
@@ -503,6 +513,8 @@ export interface FederationClub {
   website: string
   is_active: boolean
   logo_url: string | null
+  /** Freigabe an den Verein (ändern nur mit Weitergabe) */
+  released_modules?: string[]
 }
 
 export interface PlatformSettings {

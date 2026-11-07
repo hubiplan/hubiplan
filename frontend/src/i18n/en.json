@@ -6943,5 +6943,9 @@
   "von der Plattform nicht freigegeben": "not released by the platform",
   "Einrichtung von „{x}“": "Set up “{x}”",
   "Module für diese Einheit": "Modules for this unit",
-  "Was {name} im Arbeitsbereich zusätzlich vom Verein nutzt. Ausgeblendete Module erscheinen dort nicht; die Daten bleiben erhalten.": "What {name} also uses from the club in its workspace. Hidden modules do not appear there; the data is kept."
+  "Was {name} im Arbeitsbereich zusätzlich vom Verein nutzt. Ausgeblendete Module erscheinen dort nicht; die Daten bleiben erhalten.": "What {name} also uses from the club in its workspace. Hidden modules do not appear there; the data is kept.",
+  "Schlägt Module und die Bezeichnung der Untereinheiten vor. Danach ist alles frei änderbar.": "Suggests modules and the name for sub-units. Everything can be changed freely afterwards.",
+  "– ohne Vorlage –": "– no template –",
+  "Darf den Einheiten darunter Module freigeben": "May release modules to the units below",
+  "Dann ändert sie die Freigabe für diese Einheiten selbst, ohne die Plattform-Verwaltung.": "It then changes the release for these units itself, without the platform administration."
 }

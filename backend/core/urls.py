@@ -985,6 +985,7 @@ urlpatterns = [
     ),
     path("me/organizations/", access_views.my_organizations, name="my-organizations"),
     path("permissions/", access_views.permission_catalog, name="permission-catalog"),
+    path("modules/templates/", access_views.module_templates, name="module-templates"),
     path("modules/", access_views.module_directory, name="module-directory"),
     path("me/contexts/", portal_views.MyContextsView.as_view(), name="my-contexts"),
     path("orgs/<int:org_id>/", include(org_patterns)),
