@@ -1020,6 +1020,10 @@ class Loader:
                 has_cards="cards.membercard" in tables,
                 has_honors="honors.dignity" in tables,
                 has_social="website.socialfeed" in tables,
+                has_chronicle=any(
+                    isinstance(row, dict) and row.get("slug") == "geschichte"
+                    for row in tables.get("website.websitetext") or []
+                ),
             )
         )
         if not self.by_platform:

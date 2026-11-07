@@ -6926,5 +6926,10 @@
   "Logo löschen?": "Delete logo?",
   "Logo speichern": "Save logo",
   "Gegenstelle zu alt für Organisationsmitglieder: {n} Organisationen gehen nicht mit, bis die andere Instanz aktualisiert ist.": "Other instance too old for organisation members: {n} organisations are not sent until the other instance is updated.",
-  "{text} (braucht {needs})": "{text} (needs {needs})"
+  "{text} (braucht {needs})": "{text} (needs {needs})",
+  "Veröffentlicht erscheint die Chronik auf der Webseite.": "Once published, the chronicle appears on the website.",
+  "Die Chronik ist Vereinswissen, etwa für Festschrift und Jubiläum. Mit dem Modul „Webseite“ erscheint die veröffentlichte Fassung auch dort.": "The chronicle is club knowledge, for example for an anniversary book. With the “Website” module, the published version also appears there.",
+  "Noch keine Chronik angelegt.": "No chronicle created yet.",
+  "Die Zeitleiste ist noch leer.": "The timeline is still empty.",
+  "Chronik": "Chronicle"
 }

@@ -81,6 +81,7 @@ DEFAULT_BLOCKS = {key: key not in DEFAULT_OFF_BLOCKS for key in BLOCKS}
 BLOCK_MODULES = {
     "bookings": "bookings",
     "honors": "honors",
+    "history": "chronicle",
     "posts": "social",
 }
 # Menüpunkte unter „Würdenträger“, die sich einzeln ausschalten lassen (Ralf 2026-10-31):

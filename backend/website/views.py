@@ -18,12 +18,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from access.catalog import (
+    CHRONICLE_EDIT,
+    CHRONICLE_VIEW,
     MEMBERS_EDIT,
     WEBCONTENT_VIEW,
     WEBSITE_CONTENT,
     WEBSITE_MANAGE,
     WEBSITE_VIEW,
 )
+from access.modules import module_on
 from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin, OrgScopedMixin
 from core.tenancy import rls_bypass
@@ -285,9 +288,19 @@ class _WebsiteMixin(OrgScopedMixin):
     )
     read_permission = None
     write_permission = WEBSITE_MANAGE
+    # Auch für die Pflege der Chronik (Modul „Chronik“, ohne Rechte an der Webseite)
+    chronicle_ok = False
+    via_chronicle = False
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
+        if self.chronicle_ok and self._chronicle_only():
+            self.via_chronicle = True
+            if request.method not in ("GET", "HEAD", "OPTIONS") and (
+                CHRONICLE_EDIT not in self.org_permissions
+            ):
+                raise NotFound()
+            return
         if not ({WEBCONTENT_VIEW, WEBSITE_VIEW} & self.org_permissions):
             raise NotFound()
         if request.method not in ("GET", "HEAD", "OPTIONS") and not services.module_enabled(
@@ -297,8 +310,22 @@ class _WebsiteMixin(OrgScopedMixin):
                 gettext("Das Modul „Webseite“ ist für diese Einheit nicht freigeschaltet.")
             )
 
+    def _chronicle_only(self) -> bool:
+        """Chronik pflegen, ohne Inhalte der Webseite bearbeiten zu dürfen."""
+        if CHRONICLE_VIEW not in self.org_permissions or not module_on(self.org, "chronicle"):
+            return False
+        return not (
+            {WEBSITE_CONTENT, WEBSITE_MANAGE} & self.org_permissions
+            and services.module_enabled(self.org)
+        )
+
     def website(self) -> Website:
         website = services.website_of(self.org)
+        if website is None and self.via_chronicle:
+            # Chronik ohne Webseite: Ablage für Text und Bilder, öffentlich aus
+            website = Website.objects.create(
+                organization=self.org, public_key=Website.new_key(), state=Website.State.OFF
+            )
         if website is None:
             raise NotFound(gettext("Für diese Einheit ist keine Webseite eingerichtet."))
         return website

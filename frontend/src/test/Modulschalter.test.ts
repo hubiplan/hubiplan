@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { OrgSummary } from '../api/orgs.ts'
 import { memberSections, setupTabs } from '../pages/members/access.ts'
+import { modules } from '../modules.tsx'
 import { websiteSections } from '../pages/website/sections.ts'
 import { testOrg } from './fakeApi.ts'
 
@@ -32,5 +33,13 @@ describe('Module Ehrungen & Jubiläen, Würden und Social Media', () => {
     expect(without).not.toContain('/webseite/beitraege')
     const withSocial = websiteSections(club(['website', 'social'], perms)).map((s) => s.to)
     expect(withSocial).toContain('/webseite/beitraege')
+  })
+
+  it('Chronik ist ein eigener Menüpunkt, nur mit Modul und Leserecht', () => {
+    const chronik = modules.find((m) => m.id === 'chronik')!
+    const ws = { dept: null, portal: null }
+    expect(chronik.visible(club(['chronicle'], ['chronicle.view']), ws)).toBe(true)
+    expect(chronik.visible(club([], ['chronicle.view']), ws)).toBe(false)
+    expect(chronik.visible(club(['chronicle'], ['members.view']), ws)).toBe(false)
   })
 })

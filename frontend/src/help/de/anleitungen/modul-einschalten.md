@@ -16,6 +16,6 @@ Module schaltet die Plattform-Verwaltung frei. Wer im Verein eine Funktion vermi
 
 Ein ausgeschaltetes Modul verschwindet aus dem Menü; seine Daten bleiben erhalten. Öffentliche Teile gehen offline, etwa die Ausweisprüfung, der öffentliche Dokumentenordner oder die Social-Media-Beiträge auf der Webseite.
 
-Auch kleinere Funktionen sind eigene Module, damit ein kleiner Verein nur sieht, was er braucht: Aufgaben, Dokumente, Rundschreiben, Mitgliedsausweise, Mitgliederbereich, Ehrungen & Jubiläen, Würden, Ausschreibungen, Belegung und Social Media. Der Mitgliederbereich entspricht dem Schalter unter Mitglieder › Einrichtung › Mitgliederbereich & Fotos; beide bleiben gleich.
+Auch kleinere Funktionen sind eigene Module, damit ein kleiner Verein nur sieht, was er braucht: Aufgaben, Dokumente, Rundschreiben, Mitgliedsausweise, Mitgliederbereich, Ehrungen & Jubiläen, Würden, Chronik, Ausschreibungen, Belegung und Social Media. Der Mitgliederbereich entspricht dem Schalter unter Mitglieder › Einrichtung › Mitgliederbereich & Fotos; beide bleiben gleich.
 
 ![Ausgangspunkt: Modul für eine Einheit freischalten](bild:modul-einschalten)

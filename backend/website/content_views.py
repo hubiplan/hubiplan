@@ -12,7 +12,8 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import WEBSITE_CONTENT, WEBSITE_MANAGE
+from access.catalog import CHRONICLE_EDIT, WEBSITE_CONTENT, WEBSITE_MANAGE
+from access.modules import module_on
 from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin
 from core.reorder import reorder_response
@@ -29,6 +30,8 @@ class _ContentMixin(_WebsiteMixin):
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
+        if self.via_chronicle:
+            return
         if request.method not in ("GET", "HEAD", "OPTIONS") and not (
             {WEBSITE_CONTENT, WEBSITE_MANAGE} & self.org_permissions
         ):
@@ -95,7 +98,7 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
                 "show_captions": t.show_captions,
                 "timeline": list(t.timeline or []),
                 "timeline_newest_first": t.timeline_newest_first,
-                "has_timeline": is_chronicle(t),
+                "has_timeline": is_chronicle(t) and module_on(t.website.organization, "chronicle"),
                 "published_title": t.published_title,
                 "published_body": t.published_body,
                 "revisions": [
@@ -115,6 +118,10 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
 
 
 MAX_GALLERY = 10  # Ralf: bis zu 10 Fotos je Einheit
+
+
+# Felder der Textseite, die nur die Webseite betreffen (nicht über die Chronik änderbar)
+CHRONICLE_LOCKED = frozenset({"slug", "show_in_menu", "menu_position", "kind", "department"})
 
 
 def is_chronicle(t: WebsiteText) -> bool:
@@ -272,12 +279,17 @@ class PageOrderView(_ContentMixin, APIView):
 
 
 class _TextMixin(_ContentMixin):
+    chronicle_ok = True
+
     def text(self) -> WebsiteText:
-        return get_object_or_404(
+        text = get_object_or_404(
             WebsiteText.objects.select_related("department", "image"),
             website=self.website(),
             pk=self.kwargs["pk"],
         )
+        if self.via_chronicle and not is_chronicle(text):
+            raise NotFound()
+        return text
 
 
 class TextDetailView(_TextMixin, APIView):
@@ -290,9 +302,11 @@ class TextDetailView(_TextMixin, APIView):
     def put(self, request, org_id: int, pk: int):
         text = self.text()
         before = snapshot(text)
-        ser = TextSerializer(
-            text, data=request.data, partial=True, context={"website": text.website}
-        )
+        data = request.data
+        if self.via_chronicle:
+            # Adresse und Menü gehören zur Webseite
+            data = {k: v for k, v in data.items() if k not in CHRONICLE_LOCKED}
+        ser = TextSerializer(text, data=data, partial=True, context={"website": text.website})
         ser.is_valid(raise_exception=True)
         ser.save(updated_by=request.user)
         changes = diff(before, snapshot(text))
@@ -304,6 +318,8 @@ class TextDetailView(_TextMixin, APIView):
     @transaction.atomic
     def delete(self, request, org_id: int, pk: int):
         text = self.text()
+        if self.via_chronicle:
+            raise NotFound()
         if text.kind == WebsiteText.Kind.GREETING:
             raise ValidationError(gettext("Die Begrüßung lässt sich nicht löschen, nur leeren."))
         record(self.org, request.user, "delete", text, {"Text": [str(text), None]})
@@ -405,6 +421,8 @@ def _with_department(qs):
 class ImageListView(_ContentMixin, APIView):
     """GET: Bilder · POST: Bild hochladen (verkleinert, ohne Metadaten)."""
 
+    chronicle_ok = True
+
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get(self, request, org_id: int):
@@ -440,6 +458,7 @@ class ImageListView(_ContentMixin, APIView):
 
 class _ImageMixin(_ContentMixin):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+    chronicle_ok = True
 
     def image(self) -> WebsiteImage:
         return get_object_or_404(
@@ -482,6 +501,9 @@ class ImageDetailView(_ImageMixin, APIView):
     @transaction.atomic
     def delete(self, request, org_id: int, pk: int):
         image = self.image()
+        if self.via_chronicle:
+            # Bilder können auf der Webseite benutzt sein; löschen nur mit Rechten dort
+            raise NotFound()
         places = content.image_in_use(image)
         older = content.image_in_revisions(image)
         confirmed = request.query_params.get("trotzdem") == "1" or (
@@ -544,6 +566,8 @@ class ImageReplaceView(_ImageMixin, APIView):
 class ImageCopyView(_ImageMixin, APIView):
     """POST: zweites Bild aus demselben Original mit eigenem Ausschnitt."""
 
+    chronicle_ok = False
+
     @transaction.atomic
     def post(self, request, org_id: int, pk: int):
         image = self.image()
@@ -559,6 +583,8 @@ class ImageCopyView(_ImageMixin, APIView):
 class ImageFileView(_ContentMixin, APIView):
     """GET: Bilddatei für die Verwaltung."""
 
+    chronicle_ok = True
+
     def get(self, request, org_id: int, pk: int):
         image = get_object_or_404(WebsiteImage, website=self.website(), pk=pk)
         size = request.query_params.get("size")
@@ -570,3 +596,40 @@ class ImageFileView(_ContentMixin, APIView):
         response["Cache-Control"] = "private, max-age=3600"
         response["X-Content-Type-Options"] = "nosniff"
         return response
+
+
+class ChronicleView(_ContentMixin, APIView):
+    """GET: die Chronik (Textseite „geschichte“ mit Zeitleiste), bei Bedarf angelegt.
+
+    Eigener Menüpunkt „Chronik“ (Modul „Chronik“); gespeichert wird wie bisher als Textseite
+    der Webseite, damit Entwurf, Fassungen, Bilder und die öffentliche Schnittstelle bleiben.
+    """
+
+    chronicle_ok = True
+
+    def get(self, request, org_id: int):
+        if not module_on(self.org, "chronicle"):
+            raise NotFound()
+        can_edit = CHRONICLE_EDIT in self.org_permissions or bool(
+            {WEBSITE_CONTENT, WEBSITE_MANAGE} & self.org_permissions
+        )
+        website = services.website_of(self.org)
+        if website is None and can_edit:
+            website = self.website() if self.via_chronicle else None
+        text = (
+            WebsiteText.objects.filter(
+                website=website, kind=WebsiteText.Kind.PAGE, slug=TIMELINE_SLUG
+            ).first()
+            if website
+            else None
+        )
+        if text is None and website is not None and can_edit:
+            text = content.chronicle(website)
+            record(self.org, request.user, "create", text, diff({}, snapshot(text)))
+        return Response(
+            {
+                "text": text_data(self.org.pk, text, full=True) if text else None,
+                "can_edit": can_edit,
+                "website": services.module_enabled(self.org),
+            }
+        )

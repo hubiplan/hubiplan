@@ -15,6 +15,11 @@ abschaltbar sind und welche eine neue Einheit bekommt.
   `Organization.save` gleich (der Schalter bleibt eine Fassung lang für ältere Stände).
 - **Voraussetzungen** (`requires`, `requires_any`) nimmt das Backend beim Speichern mit
   (`with_requirements`).
+- **Chronik:** eigener Menüpunkt „Chronik“ (`/chronik`, Recht `chronicle.*`). Gespeichert wird
+  wie bisher als Textseite „geschichte“ der Webseite (Entwurf, Fassungen, Bilder, öffentliche
+  Schnittstelle unverändert); ohne Webseite legt `GET /api/orgs/<id>/chronicle/` eine
+  ausgeschaltete Webseite als Ablage an. Inhalte-Ansichten mit `chronicle_ok` lassen
+  Chronik-Rechte nur an diese Seite und die Bilder.
 - `tests/test_modulnamen.py` prüft, dass jede im Code abgefragte Kennung im Verzeichnis steht.
 - Exportdateien tragen `modules_schema`; ältere Dateien ergänzt `upgrade_modules`, damit nichts
   verschwindet.
@@ -28,6 +33,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | | Würden | `honors` | aus | – |
 | Vereinsleben | Termine | `events` | an | – |
 | | Aufgaben | `todos` | an | – |
+| | Chronik | `chronicle` | aus | – |
 | | Versammlungen | `meetings` | aus | Termine |
 | | Helferdienste | `helpers` | aus | Termine |
 | Musik | Musik | `music` | aus | Termine |
