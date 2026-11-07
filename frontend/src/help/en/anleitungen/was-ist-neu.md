@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: artists' social security levy. Expenses for bands, DJs or graphic designers can be marked as artist fees in the cash book or via the category. Finance › Closing & reports › Artists' social security levy shows the total per recipient, the levy and the reporting deadline, also as Excel.
 - New: cash audit. Under Finance › Closing & reports › Cash audit the treasury creates an audit assignment per financial year. The auditors tick off samples with their documents and the account balances at year end, rate checkpoints, record findings and recommend discharge. The audit report is produced as a PDF.
 - New: fixed asset register. Finance › Closing & reports › Fixed assets lists tents, trailers and other club property with depreciation and book value. Depreciation only counts in the tax report; the cash book stays unchanged.
 - New: allowances for volunteers. In the cash book an expense can be marked as trainer allowance or volunteer allowance. Finance › Closing & reports › Allowances shows the totals per person and calendar year, warns above the tax-free amount and offers a declaration to sign as PDF for each person.

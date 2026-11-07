@@ -459,6 +459,7 @@ org_patterns = [
     path("finance/statistics/", finance_views.StatisticsView.as_view(), name="finance-statistics"),
     path("finance/tax/", finance_views.TaxReportView.as_view(), name="finance-tax"),
     path("finance/allowances/", finance_views.AllowanceView.as_view(), name="finance-allowances"),
+    path("finance/artist-fees/", finance_views.ArtistFeeView.as_view(), name="finance-artist-fees"),
     path("finance/settings/", finance_views.FinanceSettingsView.as_view(), name="finance-settings"),
     path(
         "finance/donation-settings/",

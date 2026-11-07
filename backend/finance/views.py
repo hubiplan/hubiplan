@@ -494,9 +494,9 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         changed = {k for k, v in serializer.validated_data.items() if v != getattr(instance, k)}
         if changed:
             self._donation_editable(instance)
-        if changed <= {"project", "allowance"}:
-            # Nur Veranstaltung bzw. Aufwandsvergütung: ändert keine Beträge, auch in
-            # abgeschlossenen Jahren
+        if changed <= {"project", "allowance", "artist_fee"}:
+            # Nur Veranstaltung, Aufwandsvergütung bzw. Künstlerhonorar: ändert keine
+            # Beträge, auch in abgeschlossenen Jahren
             super().perform_update(serializer)
             return
         self._open(year=instance.year)
@@ -913,6 +913,52 @@ class AllowanceView(FinanceMixin, APIView):
                 f"Erklaerung-Aufwandsverguetung-{year}",
                 "pdf",
                 request.query_params.get("download") == "1",
+            )
+        return Response(services._money(data))
+
+
+class ArtistFeeView(FinanceMixin, APIView):
+    """Honorare an selbständige Künstler je Kalenderjahr als Vorlage für die Meldung an die
+    Künstlersozialkasse (Konzept vereinskasse-steuern, S4); ?als=xlsx als Tabelle."""
+
+    def get(self, request, org_id: int):
+        from . import artist_fees
+
+        if not module_on(self.org, "tax"):
+            return Response({"detail": gettext("Nicht gefunden.")}, status=404)
+        year = request.query_params.get("jahr", "")
+        year = int(year) if year.isdigit() and 1990 <= int(year) <= 2100 else None
+        year = year or timezone.localdate().year
+        data = artist_fees.report(self.org, year)
+        if request.query_params.get("als") == "xlsx":
+            from .project_report import _xlsx
+
+            head = ["Datum", "Buchung", "Empfänger", "Kategorie", "Text", "Betrag"]
+            rows = [
+                [
+                    f"{b['date']:%d.%m.%Y}",
+                    b["display_number"],
+                    b["name"],
+                    b["category"],
+                    b["text"],
+                    b["amount"],
+                ]
+                for b in data["bookings"]
+            ]
+            rows.append(["", "", "", "", "Summe", data["total"]])
+            rows.append(["", "", "", "", f"Abgabe {data['rate']} %", data["levy"]])
+            people = [["Empfänger", "Buchungen", "Summe"]] + [
+                [p["name"], p["count"], p["total"]] for p in data["recipients"]
+            ]
+            return _file_response(
+                _xlsx(
+                    self.org,
+                    [(f"Honorare {year}", [head, *rows]), ("Je Empfänger", people)],
+                    money_from=5,
+                ),
+                f"Kuenstlersozialabgabe-{year}",
+                "xlsx",
+                True,
             )
         return Response(services._money(data))
 

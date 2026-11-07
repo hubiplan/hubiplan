@@ -46,6 +46,8 @@ export interface Category {
   tax_area_label: string
   /** Spenden: Einnahmen lassen sich als Zuwendung übernehmen */
   donations: boolean
+  /** Künstlersozialabgabe: Ausgaben sind Honorare an selbständige Künstler */
+  artist_fees?: boolean
   is_active: boolean
   booking_count: number
 }
@@ -127,6 +129,8 @@ export interface Booking {
   /** Splitbuchung: erster Teil (Belege, Kontoumsatz) und weitere Teile */
   /** Aufwandsvergütung an eine Person (Übungsleiterfreibetrag bzw. Ehrenamtspauschale) */
   allowance?: AllowanceKind | ''
+  /** Honorar an selbständige Künstler (Künstlersozialabgabe) */
+  artist_fee?: boolean
   split?: {
     lead: { id: number; number: string }
     parts: { id: number; number: string; amount: string }[]
@@ -544,6 +548,27 @@ export interface CashAudit extends CashAuditSummary {
   can_manage: boolean
 }
 
+/** Honorare an selbständige Künstler je Kalenderjahr (Künstlersozialabgabe) */
+export interface ArtistFeeReport {
+  year: number
+  rate: string
+  threshold: string
+  total: string
+  levy: string
+  over_threshold: boolean
+  due: string
+  recipients: { name: string; total: string; count: number }[]
+  bookings: {
+    id: number
+    display_number: string
+    date: string
+    amount: string
+    text: string
+    name: string
+    category: string
+  }[]
+}
+
 const base = (org: number) => `/api/orgs/${org}/finance`
 
 export const financeApi = {
@@ -570,6 +595,10 @@ export const financeApi = {
   /** ZIP für eine Prüfung (Finanzamt, Kassenprüfer): alle Finanzdaten mit Belegen und index.xml */
   exportUrl: (org: number, year: number) => `${base(org)}/export/?jahr=${year}`,
   overview: (org: number, year: number) => api.get<Overview>(`${base(org)}/overview/?jahr=${year}`),
+  artistFees: (org: number, year: number) =>
+    api.get<ArtistFeeReport>(`${base(org)}/artist-fees/?jahr=${year}`),
+  artistFeesXlsxUrl: (org: number, year: number) =>
+    `${base(org)}/artist-fees/?jahr=${year}&als=xlsx`,
   allowances: (org: number, year: number) =>
     api.get<AllowanceReport>(`${base(org)}/allowances/?jahr=${year}`),
   allowanceDeclarationUrl: (org: number, year: number, person: string) =>

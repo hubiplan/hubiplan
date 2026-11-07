@@ -7136,5 +7136,19 @@
   "{n} Punkte offen": "{n} items open",
   "bis {d}": "until {d}",
   "Namen der Kassenprüfer": "Names of the auditors",
-  "Prüfer": "Auditors"
+  "Prüfer": "Auditors",
+  "Honorar an Künstler (Künstlersozialabgabe)": "Fee paid to artists (artists' social security levy)",
+  "Künstlerhonorare": "Artist fees",
+  "{name}: Honorare an Künstler (Künstlersozialabgabe)": "{name}: fees paid to artists (artists' social security levy)",
+  "Ausgaben zählen für die Meldung an die Künstlersozialkasse": "Expenses count towards the report to the Künstlersozialkasse",
+  "Künstlersozialabgabe": "Artists' social security levy",
+  "Gezählt werden Ausgaben, die im Kassenbuch als Honorar an Künstler gekennzeichnet sind oder deren Kategorie so markiert ist (Einrichtung › Kategorien), etwa für Kapelle, Tambourcorps, DJ oder Grafiker. Gemeldet werden die Honorare ohne gesondert ausgewiesene Umsatzsteuer.": "Counted are expenses marked in the cash book as a fee paid to artists, or whose category is marked that way (Setup › Categories), e.g. for a band, drum corps, DJ or graphic designer. Fees are reported without separately shown VAT.",
+  "Honorare {y}": "Fees {y}",
+  "Abgabe ({p} %)": "Levy ({p} %)",
+  "Meldung an die Künstlersozialkasse bis {d}.": "Report to the Künstlersozialkasse by {d}.",
+  "Die Summe liegt über {x}. Ist der Verein bei der Künstlersozialkasse noch nicht erfasst, bitte die Abgabepflicht prüfen.": "The total is above {x}. If the club is not yet registered with the Künstlersozialkasse, please check whether the levy applies.",
+  "Bei Veranstaltungen und Eigenwerbung bleibt eine Summe bis {x} im Jahr abgabefrei.": "For events and own advertising, a total of up to {x} per year is exempt from the levy.",
+  "Je Empfänger": "Per recipient",
+  "Noch keine Künstlerhonorare in {y}. Im Kassenbuch bei einer Ausgabe „Honorar an Künstler“ anhaken oder die Kategorie markieren.": "No artist fees in {y} yet. In the cash book, tick “Fee paid to artists” on an expense or mark the category.",
+  "ohne Empfänger": "no recipient"
 }

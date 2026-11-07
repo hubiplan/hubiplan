@@ -9044,3 +9044,9 @@ msgstr "being audited"
 
 msgid "noch offen"
 msgstr "still open"
+
+msgid "Ein Künstlerhonorar ist immer eine Ausgabe."
+msgstr "A fee paid to artists is always an expense."
+
+msgid "Die Künstlersozialabgabe gehört zum Modul Steuern & Gemeinnützigkeit."
+msgstr "The artists' social security levy belongs to the Tax & charitable status module."
