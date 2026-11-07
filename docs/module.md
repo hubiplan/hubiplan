@@ -26,6 +26,9 @@ abschaltbar sind und welche eine neue Einheit bekommt.
   Beide gelten für eine Untereinheit mit eigener Kasse, wenn ihr Verein sie eingeschaltet hat.
 - **Notenarchiv:** Notenbestand und Katalogimport (`music/scores.py`, Recht `scores.*`). Lesen
   dürfen auch Musik-Rollen (Programme, Proben). Ohne Musik eigener Menüpunkt „Noten“ (`/noten`).
+- **Schießsport:** Scheibenkatalog, Treffer, Fotoauswertung und Vogelschießen
+  (`competitions/urls.py`, `SHOOTING`); neue Scheiben und Vogelschießen nur mit Modul,
+  gespeicherte Scheiben bleiben.
 - `tests/test_modulnamen.py` prüft, dass jede im Code und in der Hilfe (`modul:`) abgefragte
   Kennung im Verzeichnis steht.
 - Exportdateien tragen `modules_schema`; ältere Dateien ergänzt `upgrade_modules`, damit nichts
@@ -46,6 +49,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | Musik | Musik | `music` | aus | Termine, Notenarchiv |
 | | Notenarchiv | `scores` | aus | – |
 | Wettbewerbe | Wettbewerbe | `competitions` | aus | – |
+| | Schießsport | `shooting` | aus | Wettbewerbe |
 | | Meldungen | `entries` | aus | – |
 | | Ausschreibungen | `calls` | aus | – |
 | Kommunikation | Rundschreiben | `circulars` | an | – |

@@ -95,7 +95,7 @@ def url(org, rest=""):
 @pytest.fixture
 def club(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "competitions"]
+    org.enabled_modules = ["members", "competitions", "shooting"]
     org.save()
     return org
 

@@ -158,6 +158,7 @@ function NewCompetition({
   onClose: () => void
   onCreated: (id: number) => void
 }) {
+  const shooting = useActiveOrg().modules.includes('shooting')
   const form = useForm({
     title: '',
     date: todayIso(),
@@ -214,7 +215,7 @@ function NewCompetition({
           >
             <option value="schiessen">{t('Schießen mit Einzel- und Zugwertung')}</option>
             <option value="einfach">{t('nur Einzelwertung')}</option>
-            <option value="vogel">{t('Vogelschießen mit Pfändern')}</option>
+            {shooting && <option value="vogel">{t('Vogelschießen mit Pfändern')}</option>}
             <option value="fremd">{t('Fremder Wettbewerb (eigene Plätze eintragen)')}</option>
             <option value="">{t('leer (Wertungen selbst anlegen)')}</option>
           </SelectField>
@@ -924,9 +925,11 @@ function ScoringCard({
   const singles = comp.scorings.filter((s) => s.kind === 'einzel')
   const foreign = !comp.own
   const single = !unit && !foreign
+  // Scheiben gibt es nur mit dem Modul „Schießsport“
+  const shooting = useActiveOrg().modules.includes('shooting')
   const catalog = useLoad(
-    () => (single ? competitionsApi.targets(org) : Promise.resolve(null)),
-    [org, single],
+    () => (single && shooting ? competitionsApi.targets(org) : Promise.resolve(null)),
+    [org, single, shooting],
   )
   const fromHits = single && v.method !== 'frei'
   const program = comp.programs?.find((p) => p.id === v.program)

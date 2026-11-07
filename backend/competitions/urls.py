@@ -3,6 +3,8 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
+from access.module_gate import gate_names
+
 from . import (
     award_views,
     bird_views,
@@ -162,6 +164,19 @@ org_patterns = [
     ),
     *router.urls,
 ]
+
+# Modul „Schießsport“: Scheiben, Trefferbild, Fotoauswertung und Vogelschießen
+SHOOTING = (
+    "competition-targets",
+    "competition-photo",  # auch photo-samples
+    "competition-hits",
+    "competition-bird",
+    "competition-prize",  # auch prizes
+    "competition-shots",
+    "competition-undo",
+    "competition-draw",  # auch draw-all
+)
+org_patterns = gate_names("shooting", org_patterns, SHOOTING)
 
 # Standzugang ohne Anmeldung (Schlüssel im Link)
 S = "public/stand/<str:token>/"

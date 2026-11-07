@@ -149,6 +149,14 @@ MODULES: tuple[Module, ...] = (
         org_types=("federation", "club"),
     ),
     Module(
+        "shooting",
+        gettext_noop("Schießsport"),
+        "competitions",
+        gettext_noop("Schießscheiben mit Trefferbild und Fotoauswertung, Vogelschießen"),
+        requires=("competitions",),
+        org_types=("federation", "club"),
+    ),
+    Module(
         "entries",
         gettext_noop("Meldungen"),
         "competitions",
@@ -255,8 +263,8 @@ DEFAULT_IDS: tuple[str, ...] = tuple(m.id for m in MODULES if m.default)
 # Stand des Verzeichnisses für Exportdateien: 1 = bis M1, 2 = mit Aufgaben, Dokumenten,
 # Rundschreiben, Ausweisen, Ausschreibungen, Belegung, Ehrungen & Jubiläen, Würden,
 # Mitgliederbereich und Social Media als eigene Module; 3 = mit Chronik; 4 = mit Steuern &
-# Gemeinnützigkeit und Zuwendungsbestätigungen; 5 = mit Notenarchiv
-MODULES_SCHEMA = 5
+# Gemeinnützigkeit und Zuwendungsbestätigungen; 5 = mit Notenarchiv; 6 = mit Schießsport
+MODULES_SCHEMA = 6
 
 
 def upgrade_modules(
@@ -295,6 +303,8 @@ def upgrade_modules(
         modules.add("donations")
     if schema < 5 and "music" in modules:
         modules.add("scores")
+    if schema < 6 and "competitions" in modules:
+        modules.add("shooting")
     return modules
 
 

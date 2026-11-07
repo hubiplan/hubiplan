@@ -152,7 +152,7 @@ def test_eigene_rechte_und_modul(setup, api):
 
 def test_schiessinfrastruktur_aus_der_infrastruktur(setup):
     org, user, client, facilities, materials = setup
-    org.enabled_modules = sorted(set(org.enabled_modules) | {"competitions"})
+    org.enabled_modules = sorted(set(org.enabled_modules) | {"competitions", "shooting"})
     org.shooting_facilities = "infrastructure"
     org.save()
     facility(

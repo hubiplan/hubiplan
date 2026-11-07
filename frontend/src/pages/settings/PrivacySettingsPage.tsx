@@ -258,7 +258,7 @@ export function PrivacySettingsPage() {
   const members = org.type !== 'unit'
   const website = org.modules.includes('website') && can(PERM.websiteManage)
   // Spiegelausschnitte aus der Fotoerkennung: Einwilligung des Vereins
-  const photos = org.modules.includes('competitions') && can(PERM.competitionsManage)
+  const photos = org.modules.includes('shooting') && can(PERM.competitionsManage)
   return (
     <>
       <p className="muted small">
