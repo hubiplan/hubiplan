@@ -3,6 +3,7 @@ from rest_framework.routers import SimpleRouter
 
 from access import accounts_view, office_views
 from access import views as access_views
+from access.module_gate import gate, gate_names, needs_module
 from accounts import help_done, language, learning, self_service
 from billing import einvoice_views
 from billing import portal_views as billing_portal_views
@@ -322,8 +323,16 @@ org_patterns = [
     ),
     path("members/<int:pk>/reentry/", workflow_views.ReentryView.as_view(), name="member-reentry"),
     path("members/<int:pk>/fields/", field_views.MemberFieldsView.as_view(), name="member-fields"),
-    path("jubilees/", jubilee_views.JubileeView.as_view(), name="jubilees"),
-    path("unit-jubilees/", jubilee_views.UnitJubileeView.as_view(), name="unit-jubilees"),
+    path(
+        "jubilees/",
+        needs_module("awards", jubilee_views.JubileeView.as_view()),
+        name="jubilees",
+    ),
+    path(
+        "unit-jubilees/",
+        needs_module("awards", jubilee_views.UnitJubileeView.as_view()),
+        name="unit-jubilees",
+    ),
     path("birthdays/", jubilee_views.BirthdayView.as_view(), name="birthdays"),
     path(
         "members/statistics/",
@@ -392,8 +401,14 @@ org_patterns = [
         photo_views.PhotoLinkRevokeView.as_view(),
         name="photo-link-revoke",
     ),
-    path("members/<int:member_pk>/", include(member_router.urls)),
-    path("federation/members/<int:member_pk>/", include(federation_member_router.urls)),
+    path(
+        "members/<int:member_pk>/",
+        include(gate_names("awards", member_router.urls, "member-honorary-title")),
+    ),
+    path(
+        "federation/members/<int:member_pk>/",
+        include(gate("awards", federation_member_router.urls)),
+    ),
     path("transfers/", workflow_views.TransferListView.as_view(), name="transfer-list"),
     path(
         "transfers/<int:pk>/decide/",
@@ -615,8 +630,8 @@ org_patterns = [
     ),
     path("events/<int:pk>/ics/", event_views.OrgEventIcsView.as_view(), name="event-ics"),
     *circular_urls.org_patterns,
-    *website_urls.org_patterns,
-    *honors_urls.org_patterns,
+    *gate_names("social", website_urls.org_patterns, "website-social"),
+    *gate("honors", honors_urls.org_patterns),
     *competition_urls.org_patterns,
     *entry_urls.org_patterns,
     path("offices/", office_views.OfficesView.as_view(), name="offices"),
@@ -627,7 +642,7 @@ org_patterns = [
         name="offices-import-preview",
     ),
     path("offices/import/", office_views.ImportView.as_view(), name="offices-import"),
-    *org_router.urls,
+    *gate_names("awards", org_router.urls, "honorary-title"),
 ]
 
 dept_patterns = [
@@ -834,15 +849,21 @@ urlpatterns = [
         "portal/<int:access_id>/bookings/<int:pk>/cancel/",
         booking_portal.CancelView.as_view(),
     ),
-    path("portal/<int:access_id>/todos/", todo_portal.PortalTaskListView.as_view()),
+    path(
+        "portal/<int:access_id>/todos/",
+        needs_module("todos", todo_portal.PortalTaskListView.as_view()),
+    ),
     path(
         "portal/<int:access_id>/todos/<int:pk>/remote-files/<int:att_id>/",
-        todo_portal.PortalRemoteFileView.as_view(),
+        needs_module("todos", todo_portal.PortalRemoteFileView.as_view()),
     ),
-    path("portal/<int:access_id>/todos/<int:pk>/", todo_portal.PortalTaskDetailView.as_view()),
+    path(
+        "portal/<int:access_id>/todos/<int:pk>/",
+        needs_module("todos", todo_portal.PortalTaskDetailView.as_view()),
+    ),
     path(
         "portal/<int:access_id>/todos/<int:pk>/attachments/<int:att_id>/",
-        todo_portal.PortalTaskFileView.as_view(),
+        needs_module("todos", todo_portal.PortalTaskFileView.as_view()),
     ),
     path("me/todos/export/", todo_views.PersonalExportView.as_view()),
     path("health/", views.health, name="health"),
@@ -860,7 +881,7 @@ urlpatterns = [
     ),
     *circular_urls.public_patterns,
     *website_urls.public_patterns,
-    path("portal/<int:access_id>/", include(circular_urls.portal_patterns)),
+    path("portal/<int:access_id>/", include(gate("circulars", circular_urls.portal_patterns))),
     path(
         "public/photo/<str:token>/",
         photo_views.PublicPhotoUploadView.as_view(),
@@ -992,12 +1013,12 @@ urlpatterns = [
     ),
     path(
         "portal/<int:access_id>/documents/",
-        doc_views.PortalOverviewView.as_view(),
+        needs_module("docs", doc_views.PortalOverviewView.as_view()),
         name="portal-documents",
     ),
     path(
         "portal/<int:access_id>/documents/versions/<int:pk>/",
-        doc_views.PortalVersionView.as_view(),
+        needs_module("docs", doc_views.PortalVersionView.as_view()),
         name="portal-document-version",
     ),
     path(
@@ -1045,10 +1066,14 @@ urlpatterns = [
         event_views.PortalEventIcsView.as_view(),
         name="portal-event-ics",
     ),
-    path("portal/<int:access_id>/card/", card_views.PortalCardView.as_view(), name="portal-card"),
+    path(
+        "portal/<int:access_id>/card/",
+        needs_module("cards", card_views.PortalCardView.as_view()),
+        name="portal-card",
+    ),
     path(
         "portal/<int:access_id>/card/wallet/<str:provider>/",
-        card_views.PortalCardWalletView.as_view(),
+        needs_module("cards", card_views.PortalCardWalletView.as_view()),
         name="portal-card-wallet",
     ),
     path(
@@ -1061,7 +1086,7 @@ urlpatterns = [
     ),
     path(
         "portal/<int:access_id>/card/pdf/",
-        card_views.PortalCardPdfView.as_view(),
+        needs_module("cards", card_views.PortalCardPdfView.as_view()),
         name="portal-card-pdf",
     ),
     path("platform/outbox/", outbox_views.PlatformOutboxView.as_view(), name="platform-outbox"),

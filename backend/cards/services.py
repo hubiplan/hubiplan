@@ -16,6 +16,7 @@ from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
+from access.modules import module_on
 from core.tenancy import rls_bypass
 from members.models import DepartmentMembership, Membership, MembershipPeriod
 from members.photo_models import MemberPhoto
@@ -90,6 +91,9 @@ def find_valid(token: str) -> MemberCard | None:
         )
     # Deaktivierte Organisation: Ausweis gilt nicht mehr, keine Daten zeigen (Audit B-V05)
     if card is None or card.membership.purged_at or not card.organization.is_active:
+        return None
+    # Modul Ausweise abgeschaltet: Prüfseite zeigt nichts mehr (module-neustruktur, M2a)
+    if not module_on(card.organization, "cards"):
         return None
     return card
 

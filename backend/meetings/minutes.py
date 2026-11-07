@@ -21,6 +21,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table
 
+from access.modules import module_on
 from core.i18n import date_text, language_of_org
 from finance.report import _styles
 from organizations.theme import effective_theme
@@ -217,6 +218,8 @@ def file_document(meeting: Meeting, content: bytes, user):
     from documents.models import Document, DocumentVersion, Folder
 
     org = meeting.organization
+    if not module_on(org, "docs"):
+        return None
     try:
         docs.check_budget(org, len(content))
     except DjangoValidationError:

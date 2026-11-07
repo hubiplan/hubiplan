@@ -930,6 +930,11 @@ function MaterialDetail({
     () => materialApi.get(base, Number(id), trash),
     [base, id, trash],
   )
+  const { active: activeOrg, activeDept: activeUnit } = useOrg()
+  // Belegung ist ein eigenes Modul (module-neustruktur, M2a)
+  const bookingsOn = activeOrg
+    ? activeOrg.modules.includes('bookings')
+    : activeUnit?.bookings_enabled !== false
   const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
@@ -1028,7 +1033,7 @@ function MaterialDetail({
       {stock.kind === 'facility' && !trash && (
         <FacilityParts stock={stock} item={data} editable={editable} />
       )}
-      {!trash && (
+      {!trash && bookingsOn && (
         <BookingRulesCard itemBase={base} item={data} editable={editable} onSaved={reload} />
       )}
       {!trash && (

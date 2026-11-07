@@ -59,6 +59,39 @@ MODULES: tuple[Module, ...] = (
         org_types=("federation", "club"),
     ),
     Module(
+        "cards",
+        gettext_noop("Mitgliedsausweise"),
+        "members",
+        gettext_noop("Ausweise mit QR-Code, Prüfseite und Wallet"),
+        requires=("members",),
+        org_types=("federation", "club"),
+    ),
+    Module(
+        "portal",
+        gettext_noop("Mitgliederbereich"),
+        "members",
+        gettext_noop("Mitglieder melden sich an und sehen ihre Daten, Termine und Rechnungen"),
+        default=True,
+        requires=("members",),
+        org_types=("club",),
+    ),
+    Module(
+        "awards",
+        gettext_noop("Ehrungen & Jubiläen"),
+        "members",
+        gettext_noop("Ehrungen am Mitglied, Jubiläen und Mitgliedsdauer"),
+        default=True,
+        requires=("members",),
+        org_types=("federation", "club"),
+    ),
+    Module(
+        "honors",
+        gettext_noop("Würden"),
+        "members",
+        gettext_noop("Würden wie König oder Prinz, Regentschaften und Königsliste"),
+        org_types=("federation", "club"),
+    ),
+    Module(
         "events",
         gettext_noop("Termine"),
         "life",
@@ -80,6 +113,13 @@ MODULES: tuple[Module, ...] = (
         requires=("events",),
     ),
     Module(
+        "todos",
+        gettext_noop("Aufgaben"),
+        "life",
+        gettext_noop("Eigene und geteilte Aufgaben mit Frist und Erinnerung"),
+        default=True,
+    ),
+    Module(
         "music",
         gettext_noop("Musik"),
         "music",
@@ -98,8 +138,38 @@ MODULES: tuple[Module, ...] = (
         "entries",
         gettext_noop("Meldungen"),
         "competitions",
-        gettext_noop("Meldungen an Veranstalter und Ausschreibungen an Untereinheiten"),
+        gettext_noop("Meldungen an Veranstalter zusammenstellen und abgeben"),
         org_types=("federation", "club"),
+    ),
+    Module(
+        "calls",
+        gettext_noop("Ausschreibungen"),
+        "competitions",
+        gettext_noop("Ausschreibungen an Untereinheiten, Meldungen bestätigen"),
+        org_types=("federation", "club"),
+    ),
+    Module(
+        "circulars",
+        gettext_noop("Rundschreiben"),
+        "communication",
+        gettext_noop("E-Mails, Serienbriefe und Briefe an Mitglieder"),
+        default=True,
+        org_types=("federation", "club"),
+    ),
+    Module(
+        "docs",
+        gettext_noop("Dokumente"),
+        "communication",
+        gettext_noop("Dokumentenablage mit Ordnern, Freigaben und Papierkorb"),
+        default=True,
+        org_types=("federation", "club"),
+    ),
+    Module(
+        "social",
+        gettext_noop("Social Media"),
+        "communication",
+        gettext_noop("Beiträge aus Instagram und Facebook übernehmen und auf der Webseite zeigen"),
+        requires=("website",),
     ),
     Module(
         "website",
@@ -135,11 +205,70 @@ MODULES: tuple[Module, ...] = (
         gettext_noop("Vereinsheim, Schießstand, Plätze und ihre Bereiche"),
         org_types=("federation", "club"),
     ),
+    Module(
+        "bookings",
+        gettext_noop("Belegung"),
+        "admin",
+        gettext_noop("Buchungskalender und Anfragen für Material, Räume und Anlagen"),
+        requires_any=("material", "infrastructure"),
+        org_types=("federation", "club"),
+    ),
 )
+
+# Module, die eine Untereinheit selbst führt (eigener Arbeitsbereich); alle übrigen gelten
+# für eine Untereinheit, wenn ihr Verein sie eingeschaltet hat.
+UNIT_OWN_MODULES = frozenset({"finance", "billing", "website"})
 
 MODULE_BY_ID: dict[str, Module] = {m.id: m for m in MODULES}
 MODULE_IDS: tuple[str, ...] = tuple(m.id for m in MODULES)
 DEFAULT_IDS: tuple[str, ...] = tuple(m.id for m in MODULES if m.default)
+
+
+# Stand des Verzeichnisses für Exportdateien: 1 = bis M1, 2 = mit Aufgaben, Dokumenten,
+# Rundschreiben, Ausweisen, Ausschreibungen, Belegung, Ehrungen & Jubiläen, Würden,
+# Mitgliederbereich und Social Media als eigene Module
+MODULES_SCHEMA = 2
+
+
+def upgrade_modules(
+    ids,
+    schema: int,
+    *,
+    org_type: str = "club",
+    has_cards: bool = False,
+    has_honors: bool = False,
+    has_social: bool = False,
+):
+    """Module aus einem älteren Stand so ergänzen, dass nichts verschwindet."""
+    modules = set(ids or [])
+    if schema < 2 and org_type in ("federation", "club"):
+        modules |= {"todos", "docs", "circulars"}
+        if "members" in modules:
+            modules.add("awards")
+        if "entries" in modules:
+            modules.add("calls")
+        if modules & {"material", "infrastructure"}:
+            modules.add("bookings")
+        if has_cards and "members" in modules:
+            modules.add("cards")
+        if has_honors:
+            modules.add("honors")
+    if schema < 2 and has_social and "website" in modules:
+        modules.add("social")
+    return modules
+
+
+def module_on(org, module_id: str) -> bool:
+    """Ist das Modul für diese Einheit eingeschaltet? Untereinheiten erben vom Verein."""
+    if org is None:
+        return False
+    if getattr(org, "type", None) == "unit":
+        owner = org.organization
+        if owner is None or module_id not in (owner.enabled_modules or []):
+            return False
+        if module_id not in UNIT_OWN_MODULES:
+            return True
+    return module_id in (org.enabled_modules or [])
 
 
 def with_requirements(ids) -> set[str]:

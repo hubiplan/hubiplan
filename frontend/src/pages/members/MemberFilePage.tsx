@@ -473,15 +473,17 @@ function MembershipTab({
     <div className="stack">
       {canEdit && <MembershipActions org={org} member={member} onChanged={setData} />}
       {/* Ehrungen gehören zur Mitgliedschaft, sie können den Beitrag ändern (Rollen-Vorschlag F-3) */}
-      <HonoraryAwards
-        orgId={org.id}
-        memberId={member.id}
-        awards={member.honorary_titles?.own ?? []}
-        otherAwards={member.honorary_titles?.federation}
-        otherLabel={`Verliehen ${orgTerms(org).dv_vom}`}
-        canEdit={canEdit}
-        onChanged={reload}
-      />
+      {org.modules.includes('awards') && (
+        <HonoraryAwards
+          orgId={org.id}
+          memberId={member.id}
+          awards={member.honorary_titles?.own ?? []}
+          otherAwards={member.honorary_titles?.federation}
+          otherLabel={`Verliehen ${orgTerms(org).dv_vom}`}
+          canEdit={canEdit}
+          onChanged={reload}
+        />
+      )}
 
       <Section title={t('Mitgliedsdauer')}>
         <DurationLine label={tm.e_im} info={member.duration.club} />

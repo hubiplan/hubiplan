@@ -380,7 +380,7 @@ class TestDokumentenablage:
     def test_neutrale_vorlage_ablegen(self, api, club, board_a):
         from documents.models import Document, Folder
 
-        club.enabled_modules = ["members"]
+        club.enabled_modules = ["members", "docs"]
         club.save()
         with tenant_context(club.pk):
             folder = Folder.objects.create(

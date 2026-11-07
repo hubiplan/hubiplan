@@ -27,6 +27,7 @@ from organizations.terms import department_terms, rename_word
 from . import preview
 from .catalog import AUDIT_VIEW, ROLES_MANAGE, ROLES_PREVIEW, catalog_for, effective
 from .models import Role, RoleAssignment
+from .modules import module_on
 from .permissions import (
     inherited_permissions,
     organizations_for,
@@ -499,6 +500,16 @@ def ensure_imprint(org: Organization):
     return ensure(org)
 
 
+def _summary_modules(org: Organization) -> list[str]:
+    if org.type == Organization.Type.PLATFORM:
+        return []
+    modules = list(org.enabled_modules or [])
+    # Eigene Webseite einer Untereinheit: Social Media kommt vom Verein
+    if org.type == Organization.Type.UNIT and "website" in modules and module_on(org, "social"):
+        modules.append("social")
+    return modules
+
+
 def organization_summary(org: Organization, perms: set[str]) -> dict:
     imprint = ensure_imprint(org)
     return {
@@ -515,7 +526,7 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
             org.parent.display_name if org.parent and org.parent.type != "platform" else None
         ),
         "permissions": sorted(perms),
-        "modules": list(org.enabled_modules) if org.type != Organization.Type.PLATFORM else [],
+        "modules": _summary_modules(org),
         "department_label": org.department_label,
         "department_label_plural": org.department_label_plural,
         "department_terms": department_terms(org),

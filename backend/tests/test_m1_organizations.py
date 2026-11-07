@@ -48,7 +48,7 @@ class TestMeineOrganisationen:
         assert [o["name"] for o in data] == ["Testbund", "Verein A"]
         verein = data[1]
         assert ROLES_MANAGE in verein["permissions"]
-        assert verein["modules"] == list(DEFAULT_MODULES)
+        assert verein["modules"] == orgs["a"].enabled_modules
         assert verein["theme"]["primary"].startswith("#")
         # Einstellungen bearbeiten (neu) samt Lesen und dem früheren Code
         assert data[0]["permissions"] == [ORG_EDIT, "settings.edit", "settings.view"]
@@ -337,7 +337,8 @@ class TestPlattform:
         assert resp.status_code == 201, resp.json()
         new = Organization.objects.get(name="Neuer Verein")
         assert new.parent == orgs["federation"]
-        assert set(new.enabled_modules) == {"members", "finance", "billing", "events"}
+        assert set(new.enabled_modules) == set(DEFAULT_MODULES)
+        assert new.member_portal_enabled  # Modul „Mitgliederbereich“ ist Vorgabe
         assert Role.objects.filter(organization=new, name="Vorstand").exists()
 
         resp = c.post(

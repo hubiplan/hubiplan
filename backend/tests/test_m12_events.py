@@ -34,7 +34,8 @@ def private_root(settings, tmp_path):
 @pytest.fixture
 def cal(orgs):
     for org in orgs.values():
-        org.enabled_modules = ["members", "events"]
+        # Wie nach der Modul-Migration: Rundschreiben, Dokumente, Aufgaben bleiben an
+        org.enabled_modules = ["members", "events", "circulars", "docs", "todos", "awards"]
         org.member_portal_enabled = True
         org.department_access_enabled = True
         org.save()

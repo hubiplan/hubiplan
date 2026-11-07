@@ -170,6 +170,12 @@ class TestFreigaben:
 
 
 class TestAusweis:
+    @pytest.fixture(autouse=True)
+    def _ausweise_an(self, cal):
+        for org in (cal["a"], cal["b"]):
+            org.enabled_modules = sorted({*org.enabled_modules, "cards"})
+            org.save()
+
     def test_pruefen(self, admin_token, base, anna, cal):
         with tenant_context(cal["a"].pk):
             card = MemberCard.objects.create(organization=cal["a"], membership=anna)

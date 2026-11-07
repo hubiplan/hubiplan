@@ -42,6 +42,8 @@ def portal_items(org):
     from materials.models import MaterialItem
 
     modules = set(org.enabled_modules or [])
+    if "bookings" not in modules:
+        return MaterialItem.objects.none()
     kinds = [kind for kind, module in AREAS.items() if module in modules]
     return MaterialItem.objects.filter(
         organization=org,

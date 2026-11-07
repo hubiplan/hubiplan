@@ -27,7 +27,7 @@ def public(path):
 @pytest.fixture
 def setup(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "website", "infrastructure"]
+    org.enabled_modules = ["members", "website", "infrastructure", "bookings"]
     org.save()
     site = Website.objects.create(organization=org, public_key=KEY, state="public")
     house = MaterialItem.objects.create(

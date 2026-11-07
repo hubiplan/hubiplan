@@ -49,7 +49,10 @@ function stockAccess(org: OrgSummary | null, ws: Workspace) {
     : !!ws.dept?.infrastructure_enabled
   const material = materialOn && perms.includes('material.view')
   const facility = facilityOn && perms.includes('infrastructure.view')
-  const bookingsAllowed = org ? org.type === 'club' || org.type === 'federation' : !!ws.dept
+  // Belegung ist ein eigenes Modul (module-neustruktur, M2a)
+  const bookingsOn = org ? org.modules.includes('bookings') : ws.dept?.bookings_enabled !== false
+  const bookingsAllowed =
+    bookingsOn && (org ? org.type === 'club' || org.type === 'federation' : !!ws.dept)
   const bookings =
     bookingsAllowed &&
     ((materialOn && (perms.includes('material.view') || perms.includes('bookings.view'))) ||
@@ -196,7 +199,7 @@ export const modules: AppModule[] = [
     visible: (org) =>
       !!org &&
       (org.type === 'club' || org.type === 'federation') &&
-      org.modules.includes('entries') &&
+      (org.modules.includes('entries') || org.modules.includes('calls')) &&
       [PERM.entriesView, PERM.callsView, PERM.entriesSubmit, PERM.entriesManage].some((p) =>
         org.permissions.includes(p),
       ),
@@ -257,7 +260,10 @@ export const modules: AppModule[] = [
       org
         ? (org.type === 'club' || org.type === 'federation') &&
           org.permissions.includes(PERM.docsView)
-        : !!(ws.dept?.permissions.includes(PERM.docsView) || ws.portal),
+        : !!(
+            ws.dept?.permissions.includes(PERM.docsView) ||
+            (ws.portal && ws.portal.docs_enabled !== false)
+          ),
   },
   {
     id: 'webseite',

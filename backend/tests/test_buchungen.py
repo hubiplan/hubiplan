@@ -26,7 +26,7 @@ def at(days, hour):
 def setup(orgs, api):
     org = orgs["a"]
     org.enabled_modules = sorted(
-        set(org.enabled_modules) | {"material", "infrastructure", "events"}
+        set(org.enabled_modules) | {"material", "infrastructure", "events", "bookings"}
     )
     org.save()
     admin = make_user("verwalter@example.org")

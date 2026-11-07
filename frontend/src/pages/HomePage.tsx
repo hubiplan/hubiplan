@@ -136,7 +136,7 @@ export function HomePage() {
         active.modules.includes('members') &&
         active.permissions.includes('members.view') ? (
           <>
-            <JubileeTile />
+            {active.modules.includes('awards') && <JubileeTile />}
             <BirthdayTile />
           </>
         ) : (

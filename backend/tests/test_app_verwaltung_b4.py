@@ -45,7 +45,7 @@ def unlocked(api, user) -> str:
 @pytest.fixture
 def kasse(cal, api):
     club = cal["a"]
-    club.enabled_modules = ["members", "events", "finance"]
+    club.enabled_modules = ["members", "events", "finance", "portal"]
     club.save()
     _, user, _ = member_with_access(club, "Karl")
     give_role(user, club, ["finance.view", "finance.edit"], name="Kassierer")

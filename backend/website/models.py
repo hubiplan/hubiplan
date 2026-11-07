@@ -18,6 +18,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
+from access.modules import MODULE_BY_ID, module_on
+
 from .designs import DEFAULT_DESIGN, DESIGNS
 
 # Bausteine, die sich auf der Webseite einzeln ein- und ausschalten lassen.
@@ -75,6 +77,12 @@ DEFAULT_OFF_BLOCKS = {
     "bookings",
 }
 DEFAULT_BLOCKS = {key: key not in DEFAULT_OFF_BLOCKS for key in BLOCKS}
+# Bausteine, die ein Modul brauchen (access/modules.py)
+BLOCK_MODULES = {
+    "bookings": "bookings",
+    "honors": "honors",
+    "posts": "social",
+}
 # Menüpunkte unter „Würdenträger“, die sich einzeln ausschalten lassen (Ralf 2026-10-31):
 # ``dignity:<Nummer>`` je Würde und ``honorary`` für die Ehrungen. Ohne Eintrag: an.
 # Dazu ``membertype:<Nummer>`` je Mitgliedsart unter „Mitglieder“ (Ralf 05.11.); ohne
@@ -310,6 +318,10 @@ class Website(models.Model):
         return self.design if self.design in self.design_choices() else DEFAULT_DESIGN
 
     def block_on(self, key: str) -> bool:
+        # Baustein eines abgeschalteten Moduls erscheint nicht (module-neustruktur)
+        module = BLOCK_MODULES.get(key)
+        if module in MODULE_BY_ID and not module_on(self.organization, module):
+            return False
         if is_extra_block(key):
             default = not key.startswith(DEFAULT_OFF_PREFIXES)
         else:

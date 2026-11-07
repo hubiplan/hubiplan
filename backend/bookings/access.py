@@ -30,7 +30,9 @@ def scope_for(user, org_id=None, dept_id=None):
     else:
         org = get_object_or_404(Organization, pk=org_id, type__in=["club", "federation"])
         scope = Scope(org, None, permissions_in(user, org))
-    if not MODULES & set(scope.org.enabled_modules or []):
+    if "bookings" not in (scope.org.enabled_modules or []) or not MODULES & set(
+        scope.org.enabled_modules or []
+    ):
         raise NotFound()
     if not kinds(scope):
         raise PermissionDenied()

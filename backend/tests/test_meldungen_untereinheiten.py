@@ -22,7 +22,7 @@ JSON = "application/json"
 @pytest.fixture
 def club(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "competitions", "entries"]
+    org.enabled_modules = ["members", "competitions", "entries", "calls"]
     org.department_access_enabled = True
     org.member_portal_enabled = True
     org.save()
