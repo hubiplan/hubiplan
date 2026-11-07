@@ -38,6 +38,7 @@ export function FeeRulesPage() {
         <FeesCard orgId={org.id} canEdit={s.can_edit} />
       )}
       <AgeRatesCard orgId={org.id} canEdit={s.can_edit} federation={federation} />
+      {!federation && <SizeRatesCard orgId={org.id} canEdit={s.can_edit} />}
     </div>
   )
 }
@@ -324,6 +325,153 @@ function AgeRatesCard({
               value={v.value}
               error={form.errors.amount ?? form.errors.discount_percent}
               onChange={(e) => form.set('value', e.target.value)}
+            />
+          </div>
+          {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}
+          <button type="submit" className="button button-primary" disabled={form.busy}>
+            {t('Anlegen')}
+          </button>
+        </form>
+      )}
+    </div>
+  )
+}
+
+/** Staffel nach Größe: Beitrag für Organisationsmitglieder nach Mitarbeitern, Einwohnern … */
+function SizeRatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
+  const { data, error, reload } = useLoad(() => billingApi.sizeRates(orgId), [orgId])
+  const types = useLoad(() => billingApi.fees(orgId), [orgId])
+  const [message, setMessage] = useState<string | null>(null)
+  const form = useForm({ name: '', member_type: '', min_size: '', max_size: '', amount: '' })
+  const v = form.values
+
+  async function add(e: FormEvent) {
+    e.preventDefault()
+    const ok = await form.submit(
+      () =>
+        billingApi.createSizeRate(orgId, {
+          name: v.name,
+          member_type: v.member_type ? Number(v.member_type) : null,
+          min_size: v.min_size ? Number(v.min_size) : null,
+          max_size: v.max_size ? Number(v.max_size) : null,
+          amount: parseAmount(v.amount),
+        }),
+      t('Größenstufe angelegt.'),
+    )
+    if (ok) {
+      form.setValues({ ...v, name: '', min_size: '', max_size: '', amount: '' })
+      await reload()
+    }
+  }
+
+  async function remove(id: number) {
+    setMessage(null)
+    try {
+      await billingApi.deleteSizeRate(orgId, id)
+      await reload()
+    } catch (err) {
+      setMessage(errorMessage(err))
+    }
+  }
+
+  if (error) return <Alert kind="error">{error}</Alert>
+  if (!data) return null
+  return (
+    <div className="card card-wide">
+      <h2>{t('Staffel nach Größe')}</h2>
+      <p className="muted small">
+        {t(
+          'Für Organisationsmitglieder: Beitrag nach Größe, zum Beispiel Zahl der Mitarbeiter oder Einwohner. Die Größe steht in der Mitgliederakte. Organisationen ohne Größe zahlen den Beitrag ihrer Mitgliedsart.',
+        )}
+      </p>
+      {data.length === 0 ? (
+        <p className="muted">{t('Keine Größenstufen.')}</p>
+      ) : (
+        <table className="table">
+          <thead>
+            <tr>
+              <th>{t('Stufe')}</th>
+              <th>{t('Größe')}</th>
+              <th>{t('gilt für')}</th>
+              <th>{t('Beitrag')}</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((a) => (
+              <tr key={a.id}>
+                <td>
+                  <strong>{a.name}</strong>
+                </td>
+                <td>
+                  {a.min_size !== null && a.max_size !== null
+                    ? t('{min} bis {max}', { min: a.min_size, max: a.max_size })
+                    : a.max_size !== null
+                      ? t('bis {max}', { max: a.max_size })
+                      : t('ab {min}', { min: a.min_size })}
+                </td>
+                <td>{a.member_type_name ?? t('alle Mitgliedsarten')}</td>
+                <td>{t('{x} im Jahr', { x: euro(a.amount) })}</td>
+                <td className="actions">
+                  {canEdit && (
+                    <button type="button" className="link-button" onClick={() => void remove(a.id)}>
+                      {t('Löschen')}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {message && <Alert kind="error">{message}</Alert>}
+      {canEdit && (
+        <form className="subcard" onSubmit={add}>
+          <h3>{t('Neue Größenstufe')}</h3>
+          <div className="grid-3">
+            <Field
+              label={t('Bezeichnung')}
+              required
+              placeholder={t('z. B. bis 50 Mitarbeiter')}
+              value={v.name}
+              error={form.errors.name}
+              onChange={(e) => form.set('name', e.target.value)}
+            />
+            <Field
+              label={t('ab Größe')}
+              type="number"
+              min={0}
+              value={v.min_size}
+              error={form.errors.min_size}
+              onChange={(e) => form.set('min_size', e.target.value)}
+            />
+            <Field
+              label={t('bis Größe (einschließlich)')}
+              type="number"
+              min={0}
+              value={v.max_size}
+              error={form.errors.max_size}
+              onChange={(e) => form.set('max_size', e.target.value)}
+            />
+            <SelectField
+              label={t('gilt für')}
+              value={v.member_type}
+              onChange={(e) => form.set('member_type', e.target.value)}
+            >
+              <option value="">{t('alle Mitgliedsarten')}</option>
+              {(types.data ?? []).map((t) => (
+                <option key={t.member_type} value={t.member_type}>
+                  {t.name}
+                </option>
+              ))}
+            </SelectField>
+            <Field
+              label={t('Jahresbeitrag (€)')}
+              inputMode="decimal"
+              required
+              value={v.amount}
+              error={form.errors.amount}
+              onChange={(e) => form.set('amount', e.target.value)}
             />
           </div>
           {form.message && <Alert kind={form.message.kind}>{form.message.text}</Alert>}

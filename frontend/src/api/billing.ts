@@ -73,6 +73,17 @@ export interface AgeRate {
   discount_percent: string | null
 }
 
+/** Staffel nach Größe für Organisationsmitglieder (Mitarbeiter, Einwohner …) */
+export interface SizeRate {
+  id: number
+  name: string
+  member_type: number | null
+  member_type_name: string | null
+  min_size: number | null
+  max_size: number | null
+  amount: string
+}
+
 export interface RunSummary {
   counts: Record<InvoiceStatus, number>
   totals: Record<InvoiceStatus, string>
@@ -276,6 +287,10 @@ export const billingApi = {
   createAgeRate: (org: number, data: Partial<AgeRate>) =>
     api.post<AgeRate>(`${base(org)}/age-rates/`, data),
   deleteAgeRate: (org: number, id: number) => api.del(`${base(org)}/age-rates/${id}/`),
+  sizeRates: (org: number) => api.get<SizeRate[]>(`${base(org)}/size-rates/`),
+  createSizeRate: (org: number, data: Partial<SizeRate>) =>
+    api.post<SizeRate>(`${base(org)}/size-rates/`, data),
+  deleteSizeRate: (org: number, id: number) => api.del(`${base(org)}/size-rates/${id}/`),
 
   runs: (org: number) => api.get<FeeRun[]>(`${base(org)}/runs/`),
   run: (org: number, id: number) => api.get<FeeRun>(`${base(org)}/runs/${id}/`),

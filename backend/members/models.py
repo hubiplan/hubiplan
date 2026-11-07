@@ -145,6 +145,8 @@ class Person(models.Model):
     )
     vat_id = models.CharField("USt-IdNr.", max_length=20, blank=True, default="", db_default="")
     website = models.CharField("Webseite", max_length=200, blank=True, default="", db_default="")
+    # Größe einer Organisation (Mitarbeiter, Einwohner …) für die Beitragsstaffel (J8c)
+    size = models.PositiveIntegerField("Größe", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     last_birth_mark = models.CharField(

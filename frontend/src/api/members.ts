@@ -191,6 +191,8 @@ export interface OrganizationInfo {
   register: string
   vat_id: string
   website: string
+  /** Größe für die Staffel nach Größe (Mitarbeiter, Einwohner …) */
+  size: number | null
 }
 
 /** Anzeigename: „Name, Vorname“ bzw. Name der Organisation */

@@ -90,6 +90,15 @@ class ContactSerializer(serializers.Serializer):
     country = serializers.CharField(required=False, max_length=100, default="Deutschland")
 
 
+class OptionalIntegerField(serializers.IntegerField):
+    """Ganzzahl, bei der ein leeres Eingabefeld „keine Angabe“ bedeutet."""
+
+    def validate_empty_values(self, data):
+        if isinstance(data, str) and data.strip() == "" and self.allow_null:
+            return (True, None)
+        return super().validate_empty_values(data)
+
+
 class OrganizationFieldsMixin(serializers.Serializer):
     """Angaben, die es nur bei Organisationsmitgliedern gibt."""
 
@@ -101,6 +110,13 @@ class OrganizationFieldsMixin(serializers.Serializer):
     register = serializers.CharField(max_length=100, required=False, allow_blank=True)
     vat_id = serializers.CharField(max_length=20, required=False, allow_blank=True)
     website = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    size = OptionalIntegerField(
+        required=False,
+        allow_null=True,
+        min_value=0,
+        max_value=100_000_000,
+        help_text="Größe für die Beitragsstaffel (Mitarbeiter, Einwohner …)",
+    )
 
 
 def organization_data(person: Person) -> dict | None:
@@ -115,6 +131,7 @@ def organization_data(person: Person) -> dict | None:
         "register": person.register,
         "vat_id": person.vat_id,
         "website": person.website,
+        "size": person.size,
     }
 
 
@@ -161,7 +178,7 @@ class AdmitSerializer(OrganizationFieldsMixin, ContactSerializer):
             for name in ("first_name", "birth_date", "gender"):
                 attrs.pop(name, None)
         else:
-            for name in services.ORGANIZATION_FIELDS:
+            for name in (*services.ORGANIZATION_FIELDS, "size"):
                 attrs.pop(name, None)
         check_plausible(attrs, "entry_date", "birth_date")
         required = ("last_name",) if organization else ("last_name", "first_name", "birth_date")

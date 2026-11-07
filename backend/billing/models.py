@@ -335,6 +335,59 @@ class AgeRate(models.Model):
         return not (self.max_age is not None and age > self.max_age)
 
 
+class SizeRate(models.Model):
+    """Staffel nach Größe für Organisationsmitglieder (Mitarbeiter, Einwohner …, J8c).
+
+    Eigener Jahresbeitrag ab einer Größe. Ohne Mitgliedsart gilt die Stufe für alle
+    Mitgliedsarten; eine Stufe mit Mitgliedsart geht vor. Organisationen ohne Größe
+    zahlen den Beitrag der Mitgliedsart.
+    """
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    name = models.CharField("Bezeichnung", max_length=100)
+    member_type = models.ForeignKey(
+        "members.MemberType",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="nur für Mitgliedsart",
+    )
+    min_size = models.PositiveIntegerField("ab Größe", null=True, blank=True)
+    max_size = models.PositiveIntegerField("bis Größe (einschließlich)", null=True, blank=True)
+    amount = models.DecimalField("Jahresbeitrag", max_digits=10, decimal_places=2)
+
+    class Meta:
+        verbose_name = "Größenstufe"
+        verbose_name_plural = "Größenstufen"
+        ordering = ["min_size", "max_size", "name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+    def clean(self):
+        errors = {}
+        if self.min_size is None and self.max_size is None:
+            errors["max_size"] = gettext("Bitte eine Mindest- oder Höchstgröße angeben.")
+        if (
+            self.min_size is not None
+            and self.max_size is not None
+            and self.min_size > self.max_size
+        ):
+            errors["max_size"] = gettext("Die Höchstgröße liegt unter der Mindestgröße.")
+        if self.amount is not None and self.amount < 0:
+            errors["amount"] = gettext("Der Beitrag darf nicht negativ sein.")
+        if errors:
+            raise ValidationError(errors)
+
+    def matches(self, size: int) -> bool:
+        if self.min_size is not None and size < self.min_size:
+            return False
+        return not (self.max_size is not None and size > self.max_size)
+
+
 class FeeRun(models.Model):
     """Beitragslauf für einen Abrechnungszeitraum eines Geschäftsjahres."""
 

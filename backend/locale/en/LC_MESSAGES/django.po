@@ -8825,3 +8825,12 @@ msgstr "business direct debit"
 
 msgid "Basislastschrift"
 msgstr "core direct debit"
+
+msgid "Bitte eine Mindest- oder Höchstgröße angeben."
+msgstr "Please enter a minimum or maximum size."
+
+msgid "Die Höchstgröße liegt unter der Mindestgröße."
+msgstr "The maximum size is below the minimum size."
+
+msgid "Die Größen überschneiden sich mit „{name}“."
+msgstr "The sizes overlap with “{name}”."

@@ -85,6 +85,15 @@ MAX_FILE_BYTES = 25 * 1024 * 1024  # eine Datei im Archiv (größte Uploadgrenze
 MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024  # alle Dateien zusammen, entpackt
 
 
+def _size(value):
+    """Größe einer Organisation aus der Datei; Unbrauchbares wird leer (J8c)."""
+    try:
+        size = int(value)
+    except (TypeError, ValueError):
+        return None
+    return size if 0 <= size <= 100_000_000 else None
+
+
 def clean_email(value) -> str:
     """E-Mail-Adresse aus der Datei übernehmen, ungültige weglassen."""
     from django.core.exceptions import ValidationError as DjangoValidationError
@@ -910,6 +919,7 @@ class Loader:
                         f: str(p.get(f) or "")[: Person._meta.get_field(f).max_length]
                         for f in ORGANIZATION_FIELDS
                     },
+                    size=_size(p.get("size")),
                 )
                 if person.legal_form not in LegalForm.values:
                     person.legal_form = ""

@@ -514,6 +514,7 @@ class MemberDetailView(_ClubMixin, APIView):
                     "birth_date",
                     "gender",
                     *services.ORGANIZATION_FIELDS,
+                    "size",
                     *services.CONTACT_FIELDS,
                 }
             )
@@ -536,7 +537,7 @@ def update_member(org: Organization, membership: Membership, values: dict, user)
     person = membership.person
     if person.is_organization:
         # Organisationen haben weder Vorname noch Geburtsdatum noch Geschlecht
-        fields = ("last_name", *services.ORGANIZATION_FIELDS)
+        fields = ("last_name", *services.ORGANIZATION_FIELDS, "size")
         if "last_name" in values and not values["last_name"].strip():
             raise serializers.ValidationError({"last_name": gettext("Pflichtfeld.")})
     else:

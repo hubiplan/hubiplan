@@ -8,7 +8,7 @@ routen: [/mitglieder/:id]
 stichworte: [record, master data, periods, leaving, honours]
 ---
 
-For an organisation as a member (company, association, public body …), the master data show the name addition, legal form, register, VAT ID and website instead of first name, date of birth and gender. In the member list, filter with **organisations only** or **persons only**.
+For an organisation as a member (company, association, public body …), the master data show the name addition, legal form, register, VAT ID, website and size (e.g. employees or inhabitants) for fees by size instead of first name, date of birth and gender. In the member list, filter with **organisations only** or **persons only**.
 
 In the **Contact persons** section you record who speaks for the organisation. Choose **Select member** if the person is a member themselves; name and contact details then come from their file. Otherwise enter name, function, email address and phone. Exactly one is the **Primary contact**. The settings **receives circulars**, **receives invoices**, **represents at meetings** define who is responsible for what. You set up a separate member area login for each contact person on the **Roles and account** tab; contacts who have one are marked **Member access**. If the contact person is a member themselves, they choose after signing in whether they act for themselves or for the organisation. Instead of a photo, an organisation has a **Logo**; it needs no consent and also appears on the membership card. When you remove a contact person, their contact details are deleted immediately.
 
