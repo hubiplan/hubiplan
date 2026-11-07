@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Neu: Künstlersozialabgabe. Ausgaben an Kapellen, DJs oder Grafiker lassen sich im Kassenbuch oder über die Kategorie als Künstlerhonorar kennzeichnen. Unter Finanzen › Abschluss & Berichte › Künstlersozialabgabe stehen die Summe je Empfänger, die Abgabe und die Frist für die Meldung, auch als Excel.
 - Neu: Kassenprüfung. Unter Finanzen › Abschluss & Berichte › Kassenprüfung legt die Kasse einen Prüfauftrag je Geschäftsjahr an. Die Kassenprüfer haken Stichproben mit Beleg und die Kontenstände zum Jahresende ab, bewerten Prüfpunkte, halten Feststellungen fest und empfehlen die Entlastung. Daraus entsteht der Prüfbericht als PDF.
 - Neu: Anlagenverzeichnis. Unter Finanzen › Abschluss & Berichte › Anlagen stehen Zelte, Anhänger und anderes Vereinsvermögen mit Abschreibung und Buchwert. Die Abschreibung zählt nur in der steuerlichen Auswertung, das Kassenbuch bleibt unverändert.
 - Neu: Pauschalen für Ehrenamtliche. Im Kassenbuch lässt sich eine Ausgabe als Übungsleiterfreibetrag oder Ehrenamtspauschale kennzeichnen. Unter Finanzen › Abschluss & Berichte › Pauschalen stehen die Summen je Person und Kalenderjahr mit Warnung über dem Freibetrag, dazu je Person eine Erklärung zum Unterschreiben als PDF.

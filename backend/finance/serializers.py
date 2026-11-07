@@ -128,6 +128,7 @@ class CategorySerializer(serializers.ModelSerializer):
             "kind_label",
             "tax_area",
             "donations",
+            "artist_fees",
             "datev_account",
             "tax_area_label",
             "is_active",
@@ -258,6 +259,7 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "cancelled_by",
             "split",
             "allowance",
+            "artist_fee",
         ]
         read_only_fields = ["year", "cancel_reason"]
         extra_kwargs = {"number": {"required": False, "min_value": 1}}
@@ -327,6 +329,17 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
         if kind == Booking.Kind.TRANSFER:
             attrs["project"] = None  # Umbuchungen gehören zu keiner Veranstaltung
             attrs["counterparty"] = ""
+        if attrs.get("artist_fee") and (not self.instance or not self.instance.artist_fee):
+            from access.modules import module_on
+
+            if not module_on(org, "tax"):
+                raise serializers.ValidationError(
+                    {
+                        "artist_fee": gettext(
+                            "Die Künstlersozialabgabe gehört zum Modul Steuern & Gemeinnützigkeit."
+                        )
+                    }
+                )
         if attrs.get("allowance") and (
             not self.instance or attrs["allowance"] != self.instance.allowance
         ):

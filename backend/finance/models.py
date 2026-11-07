@@ -96,6 +96,11 @@ class Category(models.Model):
     is_active = models.BooleanField("aktiv", default=True)
     # Einnahmen dieser Kategorie lassen sich als Zuwendung (Spende) übernehmen
     donations = models.BooleanField("Spenden (Zuwendungsbestätigung möglich)", default=False)
+    # Künstlersozialabgabe (Konzept vereinskasse-steuern, S4): Ausgaben dieser Kategorie sind
+    # Honorare an selbständige Künstler und Publizisten
+    artist_fees = models.BooleanField(
+        "Honorare an Künstler (Künstlersozialabgabe)", default=False, db_default=False
+    )
     # DATEV-Export: Sachkonto (Gegenkonto der Buchungen dieser Kategorie)
     datev_account = models.CharField("DATEV-Konto", max_length=9, blank=True)
 
@@ -225,6 +230,11 @@ class Booking(models.Model):
         default="",
         db_default="",
     )
+    # Honorar an selbständige Künstler (Künstlersozialabgabe, S4); zählt auch ohne das
+    # Kennzeichen, wenn die Kategorie so markiert ist
+    artist_fee = models.BooleanField(
+        "Honorar an Künstler (Künstlersozialabgabe)", default=False, db_default=False
+    )
 
     class Meta:
         verbose_name = "Buchung"
@@ -280,6 +290,8 @@ class Booking(models.Model):
                 errors["category"] = gettext("Bitte eine Kategorie wählen.")
             elif not self.category.allows(self.kind):
                 errors["category"] = gettext("Die Kategorie passt nicht zu dieser Art der Buchung.")
+        if self.artist_fee and self.kind != self.Kind.EXPENSE:
+            errors["artist_fee"] = gettext("Ein Künstlerhonorar ist immer eine Ausgabe.")
         if self.allowance and self.kind != self.Kind.EXPENSE:
             errors["allowance"] = gettext("Eine Aufwandsvergütung ist immer eine Ausgabe.")
         elif self.allowance and not self.membership_id and not self.counterparty:

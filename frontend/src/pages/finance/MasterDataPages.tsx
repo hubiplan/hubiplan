@@ -374,6 +374,7 @@ export function CategoriesPage() {
   if (!data || !settings.data) return <p className="muted">{t('Lädt …')}</p>
   const areas = settings.data.tax_areas_enabled ? settings.data.tax_areas : []
   const datevOn = !!settings.data.datev_enabled
+  const artistsOn = org.modules.includes('tax')
   const current = data.filter((c) => c.is_active)
   const archived = data.filter((c) => !c.is_active)
 
@@ -515,6 +516,7 @@ export function CategoriesPage() {
               <th>{t('gilt für')}</th>
               {areas.length > 0 && <th>{t('steuerlicher Bereich')}</th>}
               {org.donations_enabled && <th>{t('Spenden')}</th>}
+              {artistsOn && <th>{t('Künstlerhonorare')}</th>}
               {datevOn && <th>{t('DATEV-Konto')}</th>}
               <th className="num">{t('Buchungen')}</th>
               <th />
@@ -603,6 +605,28 @@ export function CategoriesPage() {
                           void run(() =>
                             financeApi.updateCategory(org.id, c.id, {
                               donations: e.target.checked,
+                            }),
+                          )
+                        }
+                      />
+                    )}
+                  </td>
+                )}
+                {artistsOn && (
+                  <td>
+                    {c.kind !== 'income' && (
+                      <input
+                        type="checkbox"
+                        aria-label={t('{name}: Honorare an Künstler (Künstlersozialabgabe)', {
+                          name: c.name,
+                        })}
+                        title={t('Ausgaben zählen für die Meldung an die Künstlersozialkasse')}
+                        checked={!!c.artist_fees}
+                        disabled={!canEdit}
+                        onChange={(e) =>
+                          void run(() =>
+                            financeApi.updateCategory(org.id, c.id, {
+                              artist_fees: e.target.checked,
                             }),
                           )
                         }

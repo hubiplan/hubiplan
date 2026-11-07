@@ -26,7 +26,7 @@ import {
   useLoad,
   useQueryLoad,
 } from '../../components/forms.ts'
-import { Alert, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { SplitEditor } from './SplitEditor.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
@@ -605,6 +605,7 @@ function BookingForm({
     department: String(booking?.department ?? ''),
     project: String(booking?.project ?? ''),
     allowance: (booking?.allowance ?? '') as string,
+    artist_fee: !!booking?.artist_fee,
   })
   const usableProjects = projects.filter((p) => p.status !== 'done' || p.id === booking?.project)
   const [member, setMember] = useState<MemberRow | null>(
@@ -661,6 +662,7 @@ function BookingForm({
       department: x.department ? Number(x.department) : null,
       project: kind !== 'transfer' && x.project ? Number(x.project) : null,
       allowance: kind === 'expense' ? x.allowance : '',
+      artist_fee: kind === 'expense' && x.artist_fee,
     }
   }
 
@@ -948,6 +950,13 @@ function BookingForm({
                 <option value="trainer">{t('Übungsleiterfreibetrag (§ 3 Nr. 26 EStG)')}</option>
                 <option value="volunteer">{t('Ehrenamtspauschale (§ 3 Nr. 26a EStG)')}</option>
               </SelectField>
+            )}
+            {kind === 'expense' && (hasTax || !!booking?.artist_fee) && (
+              <Checkbox
+                label={t('Honorar an Künstler (Künstlersozialabgabe)')}
+                checked={v.artist_fee}
+                onChange={(value) => set('artist_fee', value)}
+              />
             )}
           </div>
           {kind !== 'transfer' && usableProjects.length > 0 && !locked && (
