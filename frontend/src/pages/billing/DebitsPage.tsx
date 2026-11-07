@@ -486,7 +486,10 @@ function MandatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
               {data.results.map((m) => (
                 <tr key={m.id} className={m.status === 'active' ? undefined : 'muted'}>
                   <td>{m.payer_name}</td>
-                  <td className="small">{m.reference}</td>
+                  <td className="small">
+                    {m.reference}
+                    {m.scheme === 'B2B' && <div className="muted">{m.scheme_label}</div>}
+                  </td>
                   <td>
                     {m.holder}
                     <div className="muted small">{m.iban_masked}</div>
@@ -544,6 +547,9 @@ function MandateForm({
   const [iban, setIban] = useState('')
   const [bic, setBic] = useState('')
   const [signedOn, setSignedOn] = useState(todayIso)
+  const [scheme, setScheme] = useState<'CORE' | 'B2B'>('CORE')
+  // Firmenlastschrift nur für Zahler, die keine Verbraucher sind (J8b)
+  const b2bAllowed = federation || member?.kind === 'organization'
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -562,6 +568,7 @@ function MandateForm({
           iban,
           bic,
           signed_on: signedOn,
+          scheme: b2bAllowed ? scheme : 'CORE',
         }),
       )
     } catch (err) {
@@ -597,12 +604,15 @@ function MandateForm({
             value={member}
             onChange={(m) => {
               setMember(m)
+              if (m?.kind !== 'organization') setScheme('CORE')
               if (m && !holder)
                 setHolder(
-                  t('{first_name} {last_name}', {
-                    first_name: m.first_name,
-                    last_name: m.last_name,
-                  }),
+                  m.kind === 'organization'
+                    ? m.last_name
+                    : t('{first_name} {last_name}', {
+                        first_name: m.first_name,
+                        last_name: m.last_name,
+                      }),
                 )
             }}
             label={t('Mitglied')}
@@ -636,6 +646,22 @@ function MandateForm({
           error={errors.signed_on}
           onChange={(e) => setSignedOn(e.target.value)}
         />
+        {b2bAllowed && (
+          <SelectField
+            label={t('Verfahren')}
+            value={scheme}
+            error={errors.scheme}
+            hint={
+              scheme === 'B2B'
+                ? t('nur mit Mandat auf dem Firmenformular; die Bank des Zahlers muss es kennen')
+                : undefined
+            }
+            onChange={(e) => setScheme(e.target.value as 'CORE' | 'B2B')}
+          >
+            <option value="CORE">{t('Basislastschrift')}</option>
+            <option value="B2B">{t('Firmenlastschrift (B2B)')}</option>
+          </SelectField>
+        )}
       </div>
       <p className="muted small">
         {t(

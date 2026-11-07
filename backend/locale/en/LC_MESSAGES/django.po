@@ -8813,3 +8813,15 @@ msgstr "The e-invoice needs an account with an IBAN in the fee settings."
 
 msgid "Für steuerpflichtige Posten braucht die E-Rechnung Steuernummer oder USt-IdNr."
 msgstr "For taxable items the e-invoice needs a tax number or VAT ID."
+
+msgid "Unbekanntes Lastschriftverfahren."
+msgstr "Unknown direct debit scheme."
+
+msgid "Firmenlastschrift gibt es nur für Organisationen, nicht für Personen."
+msgstr "Business direct debit is only available for organisations, not for persons."
+
+msgid "Firmenlastschrift"
+msgstr "business direct debit"
+
+msgid "Basislastschrift"
+msgstr "core direct debit"

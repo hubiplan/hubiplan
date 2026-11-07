@@ -773,6 +773,14 @@ class Mandate(models.Model):
         verbose_name="Verein (Dachverband zieht ein)",
     )
     reference = models.CharField("Mandatsreferenz", max_length=35)
+    # Basislastschrift oder Firmenlastschrift (nur Organisationen und Vereine, J8b)
+    scheme = models.CharField(
+        "Verfahren",
+        max_length=4,
+        choices=[("CORE", "Basislastschrift"), ("B2B", "Firmenlastschrift")],
+        default="CORE",
+        db_default="CORE",
+    )
     # Verschlüsselt (core/encfields.py)
     holder = EncryptedCharField("Kontoinhaber", max_length=70)
     iban = EncryptedCharField("IBAN", max_length=34)
