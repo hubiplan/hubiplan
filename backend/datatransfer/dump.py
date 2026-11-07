@@ -593,7 +593,7 @@ class Dumper:
                     # Organisationsmitglieder (Firma, Verein, Behörde …); ältere Dateien
                     # ohne diese Angaben enthalten nur Personen
                     **(
-                        {"kind": p.kind, **values(p, ORGANIZATION_FIELDS)}
+                        {"kind": p.kind, **values(p, ORGANIZATION_FIELDS), "size": p.size}
                         if p.is_organization
                         else {}
                     ),

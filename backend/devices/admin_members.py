@@ -96,7 +96,7 @@ class MemberPreviewView(_MemberMixin, APIView):
             birth is None and not membership.person.is_organization
         ):
             return None
-        return yearly_fee(self.org, member_type, birth, on.year)[0]
+        return yearly_fee(self.org, member_type, birth, on.year, size=membership.person.size)[0]
 
     def _change_type(self, membership, v):
         from members.services import federation_of

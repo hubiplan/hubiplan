@@ -38,6 +38,7 @@ MODULE_MODELS = (
     "billing.BillingSettings",
     "billing.FeeRate",
     "billing.AgeRate",
+    "billing.SizeRate",
     "billing.FeeRun",
     "billing.BusinessPartner",
     "billing.Invoice",

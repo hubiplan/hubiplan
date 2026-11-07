@@ -8814,6 +8814,27 @@ msgstr "The e-invoice needs an account with an IBAN in the fee settings."
 msgid "Für steuerpflichtige Posten braucht die E-Rechnung Steuernummer oder USt-IdNr."
 msgstr "For taxable items the e-invoice needs a tax number or VAT ID."
 
+msgid "Unbekanntes Lastschriftverfahren."
+msgstr "Unknown direct debit scheme."
+
+msgid "Firmenlastschrift gibt es nur für Organisationen, nicht für Personen."
+msgstr "Business direct debit is only available for organisations, not for persons."
+
+msgid "Firmenlastschrift"
+msgstr "business direct debit"
+
+msgid "Basislastschrift"
+msgstr "core direct debit"
+
+msgid "Bitte eine Mindest- oder Höchstgröße angeben."
+msgstr "Please enter a minimum or maximum size."
+
+msgid "Die Höchstgröße liegt unter der Mindestgröße."
+msgstr "The maximum size is below the minimum size."
+
+msgid "Die Größen überschneiden sich mit „{name}“."
+msgstr "The sizes overlap with “{name}”."
+
 msgid "Umbuchungen lassen sich nicht aufteilen."
 msgstr "Transfers cannot be split."
 

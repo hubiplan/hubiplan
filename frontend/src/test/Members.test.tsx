@@ -552,6 +552,7 @@ describe('Mitgliedsakte', () => {
         register: '',
         vat_id: '',
         website: '',
+        size: null,
       },
       contact_persons: [],
     }
@@ -622,6 +623,7 @@ describe('Mitgliedsakte', () => {
         register: '',
         vat_id: '',
         website: '',
+        size: null,
       },
       contact_persons: [contact],
     }

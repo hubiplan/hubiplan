@@ -19,6 +19,7 @@ from .models import (
     InvoiceLine,
     Mandate,
     Payment,
+    SizeRate,
 )
 
 
@@ -169,6 +170,47 @@ class AgeRateSerializer(ModelCleanMixin, serializers.ModelSerializer):
             if changed:
                 raise serializers.ValidationError(gettext("Diese Art wird nicht mehr verwendet."))
         return value
+
+
+class SizeRateSerializer(ModelCleanMixin, serializers.ModelSerializer):
+    """Staffel nach Größe für Organisationsmitglieder (J8c)."""
+
+    member_type = serializers.PrimaryKeyRelatedField(
+        queryset=MemberType.objects.all(), allow_null=True, required=False
+    )
+    member_type_name = serializers.CharField(
+        source="member_type.name", read_only=True, default=None
+    )
+
+    class Meta:
+        model = SizeRate
+        fields = ["id", "name", "member_type", "member_type_name", "min_size", "max_size", "amount"]
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        get = lambda key: attrs.get(key, getattr(self.instance, key, None))  # noqa: E731
+        low, high = get("min_size"), get("max_size")
+        low = 0 if low is None else low
+        high = 10**12 if high is None else high
+        others = SizeRate.objects.filter(
+            organization=self.context["org"], member_type=get("member_type")
+        )
+        if self.instance is not None:
+            others = others.exclude(pk=self.instance.pk)
+        for other in others:
+            o_low = 0 if other.min_size is None else other.min_size
+            o_high = 10**12 if other.max_size is None else other.max_size
+            if low <= o_high and o_low <= high:
+                raise serializers.ValidationError(
+                    {
+                        "min_size": gettext("Die Größen überschneiden sich mit „{name}“.").format(
+                            name=other.name
+                        )
+                    }
+                )
+        return attrs
+
+    validate_member_type = AgeRateSerializer.validate_member_type
 
 
 class FeeRunSerializer(serializers.ModelSerializer):
@@ -407,6 +449,7 @@ class InvoiceInputSerializer(serializers.Serializer):
 class MandateSerializer(serializers.ModelSerializer):
     status_label = serializers.CharField(source="get_status_display", read_only=True)
     source_label = serializers.CharField(source="get_source_display", read_only=True)
+    scheme_label = serializers.SerializerMethodField()
     payer_name = serializers.SerializerMethodField()
     iban_masked = serializers.SerializerMethodField()
     expired = serializers.SerializerMethodField()
@@ -416,6 +459,8 @@ class MandateSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "reference",
+            "scheme",
+            "scheme_label",
             "membership",
             "club",
             "payer_name",
@@ -435,10 +480,13 @@ class MandateSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    def get_scheme_label(self, obj) -> str:
+        return gettext("Firmenlastschrift") if obj.scheme == "B2B" else gettext("Basislastschrift")
+
     def get_payer_name(self, obj) -> str:
         if obj.membership_id:
             p = obj.membership.person
-            return f"{p.last_name}, {p.first_name}"
+            return p.display_name if p.is_organization else f"{p.last_name}, {p.first_name}"
         return obj.club.display_name if obj.club_id else ""
 
     def get_iban_masked(self, obj) -> str:
@@ -459,6 +507,7 @@ class MandateInputSerializer(serializers.Serializer):
     iban = serializers.CharField(max_length=42)
     bic = serializers.CharField(max_length=14, required=False, allow_blank=True, default="")
     signed_on = serializers.DateField()
+    scheme = serializers.ChoiceField(choices=["CORE", "B2B"], default="CORE")
 
 
 class DebitItemSerializer(serializers.ModelSerializer):

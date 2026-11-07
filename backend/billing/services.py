@@ -42,6 +42,7 @@ from .models import (
     Mandate,
     Payment,
     Rhythm,
+    SizeRate,
 )
 
 CENT = Decimal("0.01")
@@ -124,9 +125,11 @@ _MISSING = object()
 
 
 def yearly_fee(
-    org, member_type, birth_date, year: int, *, cache: dict | None = None
+    org, member_type, birth_date, year: int, *, cache: dict | None = None, size=None
 ) -> tuple[Decimal, str]:
-    """Jahresbeitrag und Bezeichnung der greifenden Altersstufe (oder "").
+    """Jahresbeitrag und Bezeichnung der greifenden Alters- oder Größenstufe (oder "").
+
+    ``size``: Größe eines Organisationsmitglieds für die Staffel nach Größe (J8c).
 
     ``cache``: für viele Mitglieder nacheinander (Beitragslauf) – Beitragssätze und
     Altersstufen werden dann nur einmal gelesen."""
@@ -137,7 +140,18 @@ def yearly_fee(
         rate = rates[member_type.pk] = FeeRate.objects.filter(member_type=member_type).first()
     base = rate.amount if rate else None
     if birth_date is None:
-        # Organisationsmitglieder: keine Altersstufe, nur der Betrag der Mitgliedsart
+        # Organisationsmitglieder: keine Altersstufe; mit Größe die passende Größenstufe
+        if size is not None:
+            if "sizes" not in cache:
+                cache["sizes"] = list(SizeRate.objects.filter(organization=org))
+            sizes = [
+                s
+                for s in cache["sizes"]
+                if s.member_type_id in (None, member_type.pk) and s.matches(size)
+            ]
+            sizes.sort(key=lambda s: (s.member_type_id is None, -(s.min_size or 0)))
+            if sizes:
+                return sizes[0].amount, sizes[0].name
         return (base if base is not None else ZERO), ""
     age = age_on(birth_date, org.fiscal_start(year))
     if "stages" not in cache:
@@ -318,7 +332,9 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
             plan.skipped.append({"membership": m.pk, "name": name, "reason": "keine Mitgliedsart"})
             continue
         member_type = assignment.member_type
-        yearly, stage = yearly_fee(org, member_type, m.person.birth_date, p.year, cache=fee_cache)
+        yearly, stage = yearly_fee(
+            org, member_type, m.person.birth_date, p.year, cache=fee_cache, size=m.person.size
+        )
         details = [member_type.name]
         if stage:
             details.append(stage)

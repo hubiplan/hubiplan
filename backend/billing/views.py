@@ -7,7 +7,7 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, F, Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -49,6 +49,7 @@ from .models import (
     Mandate,
     Payment,
     Rhythm,
+    SizeRate,
 )
 from .serializers import (
     AgeRateSerializer,
@@ -64,6 +65,7 @@ from .serializers import (
     PaymentCreateSerializer,
     PaymentSerializer,
     RunCreateSerializer,
+    SizeRateSerializer,
 )
 
 
@@ -300,6 +302,19 @@ class AgeRateViewSet(BillingMixin, viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         record(self.org, self.request.user, "delete", instance, diff(snapshot(instance), {}))
         instance.delete()
+
+
+class SizeRateViewSet(AgeRateViewSet):
+    """Staffel nach Größe für Organisationsmitglieder (J8c)."""
+
+    serializer_class = SizeRateSerializer
+
+    def get_queryset(self):
+        return (
+            SizeRate.objects.filter(organization=self.org)
+            .select_related("member_type")
+            .order_by(F("min_size").asc(nulls_first=True), "max_size", "name")
+        )
 
 
 # --- Versand ---
@@ -1475,15 +1490,22 @@ class MandateViewSet(SepaMixin, viewsets.ReadOnlyModelViewSet):
                 holder=data["holder"],
                 iban=data["iban"],
                 bic=data.get("bic", ""),
+                scheme=data["scheme"],
             )
         except DjangoValidationError as exc:
             raise _as_drf(exc) from exc
+        kind = " Firmenlastschrift" if mandate.scheme == sepa.B2B else ""
         record(
             self.org,
             request.user,
             "create",
             mandate,
-            {"SEPA-Mandat": [None, f"{mandate.reference} ({sepa.masked_iban(mandate.iban)})"]},
+            {
+                "SEPA-Mandat": [
+                    None,
+                    f"{mandate.reference}{kind} ({sepa.masked_iban(mandate.iban)})",
+                ]
+            },
         )
         return Response(MandateSerializer(mandate).data, status=status.HTTP_201_CREATED)
 
