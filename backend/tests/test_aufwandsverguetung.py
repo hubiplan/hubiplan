@@ -40,7 +40,10 @@ def fin(club):
 def kasse(club):
     with tenant_context(club.pk):
         account = Account.objects.create(
-            organization=club, name="Kasse", kind="cash", opening_date=datetime.date(2020, 1, 1)
+            organization=club,
+            name="Girokonto",
+            kind="bank",
+            opening_date=datetime.date(2020, 1, 1),
         )
         cat = Category.objects.create(organization=club, name="Aufwandsentschädigungen")
     return account, cat
@@ -51,7 +54,7 @@ def trainerin(club):
     return make_member(club, "Erika", "Musterfrau")
 
 
-def zahlen(c, fin, kasse, amount, allowance="trainer", membership=None, counterparty=""):
+def zahlen(c, fin, kasse, amount, allowance="trainer", membership=None, counterparty="", ok=True):
     account, cat = kasse
     resp = c.post(
         f"{fin}/bookings/",
@@ -68,6 +71,8 @@ def zahlen(c, fin, kasse, amount, allowance="trainer", membership=None, counterp
         },
         content_type=JSON,
     )
+    if ok:
+        assert resp.status_code == 201, resp.content
     return resp
 
 
@@ -115,7 +120,7 @@ def test_storno_zaehlt_nicht(c, fin, kasse, trainerin):
 
 
 def test_nur_ausgaben_mit_person(c, fin, kasse, club):
-    resp = zahlen(c, fin, kasse, "50.00")
+    resp = zahlen(c, fin, kasse, "50.00", ok=False)
     assert resp.status_code == 400
     assert "allowance" in resp.json()
     account, cat = kasse
@@ -140,7 +145,7 @@ def test_nur_ausgaben_mit_person(c, fin, kasse, club):
 def test_ohne_modul_nicht_moeglich(c, fin, kasse, club):
     club.enabled_modules = ["finance", "members"]
     club.save()
-    resp = zahlen(c, fin, kasse, "50.00", counterparty="Max Platzwart")
+    resp = zahlen(c, fin, kasse, "50.00", counterparty="Max Platzwart", ok=False)
     assert resp.status_code == 400
     assert c.get(f"{fin}/allowances/").status_code == 404
 
