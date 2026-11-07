@@ -24,6 +24,8 @@ abschaltbar sind und welche eine neue Einheit bekommt.
   bleiben gespeichert, wirken aber nur mit dem Modul (`Organization.tax_areas_on`,
   `reserves_on`). **Zuwendungsbestätigungen:** `finance.donations.available` fragt das Modul ab.
   Beide gelten für eine Untereinheit mit eigener Kasse, wenn ihr Verein sie eingeschaltet hat.
+- **Notenarchiv:** Notenbestand und Katalogimport (`music/scores.py`, Recht `scores.*`). Lesen
+  dürfen auch Musik-Rollen (Programme, Proben). Ohne Musik eigener Menüpunkt „Noten“ (`/noten`).
 - `tests/test_modulnamen.py` prüft, dass jede im Code und in der Hilfe (`modul:`) abgefragte
   Kennung im Verzeichnis steht.
 - Exportdateien tragen `modules_schema`; ältere Dateien ergänzt `upgrade_modules`, damit nichts
@@ -41,7 +43,8 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | | Chronik | `chronicle` | aus | – |
 | | Versammlungen | `meetings` | aus | Termine |
 | | Helferdienste | `helpers` | aus | Termine |
-| Musik | Musik | `music` | aus | Termine |
+| Musik | Musik | `music` | aus | Termine, Notenarchiv |
+| | Notenarchiv | `scores` | aus | – |
 | Wettbewerbe | Wettbewerbe | `competitions` | aus | – |
 | | Meldungen | `entries` | aus | – |
 | | Ausschreibungen | `calls` | aus | – |

@@ -3,6 +3,7 @@ import type { OrgSummary } from '../api/orgs.ts'
 import { memberSections, setupTabs } from '../pages/members/access.ts'
 import { modules } from '../modules.tsx'
 import { websiteSections } from '../pages/website/sections.ts'
+import { musicSections } from '../pages/music/access.ts'
 import { testOrg } from './fakeApi.ts'
 
 const club = (modules: string[], permissions = ['members.view', 'members.edit']) =>
@@ -41,5 +42,18 @@ describe('Module Ehrungen & Jubiläen, Würden und Social Media', () => {
     expect(chronik.visible(club(['chronicle'], ['chronicle.view']), ws)).toBe(true)
     expect(chronik.visible(club([], ['chronicle.view']), ws)).toBe(false)
     expect(chronik.visible(club(['chronicle'], ['members.view']), ws)).toBe(false)
+  })
+
+  it('Notenarchiv: unter Musik, ohne Musik als eigener Menüpunkt „Noten“', () => {
+    const noten = modules.find((m) => m.id === 'noten')!
+    const ws = { dept: null, portal: null }
+    const choir = club(['scores'], ['scores.view'])
+    expect(noten.visible(choir, ws)).toBe(true)
+    const band = club(['music', 'events', 'scores'], ['music.view', 'scores.view'])
+    expect(noten.visible(band, ws)).toBe(false)
+    expect(musicSections(band).map((s) => s.to)).toContain('/musik/noten')
+    const musicOnly = club(['music', 'events', 'scores'], ['music.view'])
+    expect(musicSections(musicOnly).map((s) => s.to)).not.toContain('/musik/noten')
+    expect(noten.visible(club([], ['scores.view']), ws)).toBe(false)
   })
 })

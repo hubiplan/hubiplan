@@ -42,7 +42,7 @@ export function ScoresPage() {
   if (load.error) return <Alert kind="error">{load.error}</Alert>
   if (!load.data) return <p>{t('Lädt …')}</p>
   const d = load.data,
-    canEdit = org.permissions.includes('music.edit'),
+    canEdit = org.permissions.includes('scores.edit'),
     opts = (rows: Row[], key: string): [string, string][] =>
       rows.map((r) => [String(r.id), String(r[key])])
   const arrangementName = (id: unknown) => {

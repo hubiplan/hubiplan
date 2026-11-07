@@ -741,6 +741,8 @@ export const PERM = {
   webcontentView: 'webcontent.view',
   chronicleView: 'chronicle.view',
   chronicleEdit: 'chronicle.edit',
+  scoresView: 'scores.view',
+  scoresEdit: 'scores.edit',
   websiteView: 'website.view',
   competitionsView: 'competitions.view',
   resultsView: 'results.view',
