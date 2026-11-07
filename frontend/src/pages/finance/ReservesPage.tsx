@@ -3,7 +3,7 @@
 // Geschäftsjahr und sind nach dessen Abschluss gesperrt.
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { euro, parseAmount, RESERVE_KINDS, reserveApi } from '../../api/finance.ts'
+import { euro, financeApi, parseAmount, RESERVE_KINDS, reserveApi } from '../../api/finance.ts'
 import type { Reserve, ReserveKind } from '../../api/finance.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
@@ -22,6 +22,7 @@ export function ReservesPage({ canEdit }: { canEdit: boolean }) {
   const { data, error, reload } = useLoad(() => reserveApi.list(org.id), [org.id])
   const [creating, setCreating] = useState(false)
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+  const [version, setVersion] = useState(0)
 
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <p className="muted">{t('Lädt …')}</p>
@@ -94,12 +95,117 @@ export function ReservesPage({ canEdit }: { canEdit: boolean }) {
             canEdit={canEdit}
             onChanged={async (text) => {
               setNotice(text ? { kind: 'success', text } : null)
+              setVersion((v) => v + 1)
               await reload()
             }}
             onError={(text) => setNotice({ kind: 'error', text })}
           />
         ))
       )}
+      <ReserveLimitsCard version={version} />
+    </div>
+  )
+}
+
+// Höchstbetrag der freien Rücklage je Geschäftsjahr (mit Nachholung aus zwei Vorjahren),
+// Abschreibung als Anhaltspunkt für die Wiederbeschaffungsrücklage und Hinweis auf die
+// Mittelverwendungsrechnung (Konzept vereinskasse-steuern, S5)
+function ReserveLimitsCard({ version }: { version: number }) {
+  const org = useActiveOrg()
+  const settings = useLoad(() => financeApi.settings(org.id), [org.id])
+  const [year, setYear] = useState<number | null>(null)
+  const current = year ?? settings.data?.current_year ?? null
+  const limits = useLoad(
+    () => (current === null ? Promise.resolve(null) : reserveApi.limits(org.id, current)),
+    [org.id, current, version],
+  )
+  if (settings.error || limits.error) {
+    return <Alert kind="error">{settings.error ?? limits.error}</Alert>
+  }
+  if (!settings.data || !limits.data) return null
+  const d = limits.data
+  const f = d.free
+  const over = Number(f.over) > 0
+
+  return (
+    <div className="subcard" data-testid="reserve-limits">
+      <div className="card-head">
+        <h3>{t('Höchstbetrag der freien Rücklage')}</h3>
+        <label className="push-right">
+          {t('Geschäftsjahr')}{' '}
+          <select value={d.year} onChange={(e) => setYear(Number(e.target.value))}>
+            {settings.data.years.map((y) => (
+              <option key={y.year} value={y.year}>
+                {y.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <table className="table">
+        <tbody>
+          <tr>
+            <td>{t('Überschuss Vermögensverwaltung, davon ein Drittel')}</td>
+            <td className="num">{euro(f.assets_surplus)}</td>
+          </tr>
+          <tr>
+            <td>
+              {t('Übrige zeitnah zu verwendende Mittel, davon 10 %')}
+              <div className="muted small">
+                {t(
+                  'Einnahmen des ideellen Bereichs und Überschüsse aus Zweckbetrieben und wirtschaftlichem Geschäftsbetrieb',
+                )}
+              </div>
+            </td>
+            <td className="num">{euro(f.other_funds)}</td>
+          </tr>
+          <tr>
+            <td>{t('Höchstbetrag {y}', { y: d.label })}</td>
+            <td className="num">{euro(f.limit)}</td>
+          </tr>
+          <tr>
+            <td>{t('nachholbar aus den zwei Vorjahren')}</td>
+            <td className="num">{euro(f.carry)}</td>
+          </tr>
+          <tr>
+            <th>{t('zulässig in {y}', { y: d.label })}</th>
+            <th className="num">{euro(f.available)}</th>
+          </tr>
+          <tr>
+            <td>{t('der freien Rücklage zugeführt')}</td>
+            <td className="num">{euro(f.added)}</td>
+          </tr>
+        </tbody>
+      </table>
+      {over && (
+        <Alert kind="error">
+          {t(
+            'Die Zuführungen zur freien Rücklage liegen {x} über dem Höchstbetrag. Bitte den Betrag verringern oder als Projektrücklage mit konkretem Vorhaben bilden.',
+            { x: euro(f.over) },
+          )}
+        </Alert>
+      )}
+      {d.replacement && (
+        <p className="small">
+          {t(
+            'Wiederbeschaffung: Die Abschreibung laut Anlagenverzeichnis beträgt {afa} in {y}. Das ist ein Anhaltspunkt für die jährliche Zuführung zu einer Wiederbeschaffungsrücklage; zugeführt wurden {added}.',
+            { afa: euro(d.replacement.depreciation), y: d.label, added: euro(d.replacement.added) },
+          )}
+        </p>
+      )}
+      {d.use_of_funds && (
+        <Alert kind="info">
+          {t(
+            'Die Einnahmen liegen bei {x} oder mehr. Das Finanzamt erwartet dann in der Regel eine Mittelverwendungsrechnung, die zeigt, dass die Mittel binnen zwei Jahren für die Satzungszwecke verwendet wurden.',
+            { x: euro(d.use_of_funds_from) },
+          )}
+        </Alert>
+      )}
+      <p className="muted small">
+        {t(
+          'Ein Anhaltspunkt aus den Buchungen dieser Einheit und ihren steuerlichen Bereichen, keine Steuerberatung.',
+        )}
+      </p>
     </div>
   )
 }

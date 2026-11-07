@@ -7163,5 +7163,17 @@
   "Offene Verbindlichkeiten": "Open liabilities",
   "{n} Eingangsrechnungen, am Stichtag nicht bezahlt": "{n} incoming invoices unpaid on the reporting date",
   "Offene Eingangsrechnungen": "Open incoming invoices",
-  "fällig am": "due on"
+  "fällig am": "due on",
+  "Höchstbetrag der freien Rücklage": "Maximum for the free reserve",
+  "Überschuss Vermögensverwaltung, davon ein Drittel": "Surplus from asset management, one third of it",
+  "Übrige zeitnah zu verwendende Mittel, davon 10 %": "Other funds to be used promptly, 10 % of them",
+  "Einnahmen des ideellen Bereichs und Überschüsse aus Zweckbetrieben und wirtschaftlichem Geschäftsbetrieb": "Income of the non-profit area and surpluses from purpose-related and commercial operations",
+  "Höchstbetrag {y}": "Maximum {y}",
+  "nachholbar aus den zwei Vorjahren": "carried over from the two previous years",
+  "zulässig in {y}": "allowed in {y}",
+  "der freien Rücklage zugeführt": "added to the free reserve",
+  "Die Zuführungen zur freien Rücklage liegen {x} über dem Höchstbetrag. Bitte den Betrag verringern oder als Projektrücklage mit konkretem Vorhaben bilden.": "Additions to the free reserve are {x} above the maximum. Please reduce the amount or set it aside as a project reserve for a specific plan.",
+  "Wiederbeschaffung: Die Abschreibung laut Anlagenverzeichnis beträgt {afa} in {y}. Das ist ein Anhaltspunkt für die jährliche Zuführung zu einer Wiederbeschaffungsrücklage; zugeführt wurden {added}.": "Replacement: depreciation according to the asset register is {afa} in {y}. This is a guide for the yearly addition to a replacement reserve; {added} has been added.",
+  "Die Einnahmen liegen bei {x} oder mehr. Das Finanzamt erwartet dann in der Regel eine Mittelverwendungsrechnung, die zeigt, dass die Mittel binnen zwei Jahren für die Satzungszwecke verwendet wurden.": "Income is {x} or more. The tax office then usually expects a statement on the use of funds showing that the funds were used for the statutory purposes within two years.",
+  "Ein Anhaltspunkt aus den Buchungen dieser Einheit und ihren steuerlichen Bereichen, keine Steuerberatung.": "A guide based on this unit's entries and their tax areas, not tax advice."
 }

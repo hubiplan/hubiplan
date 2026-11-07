@@ -147,6 +147,21 @@ class ReserveViewSet(FinanceMixin, AuditMixin, viewsets.ModelViewSet):
             )
         super().perform_destroy(instance)
 
+    @extend_schema(responses=dict)
+    @action(detail=False, methods=["get"])
+    def limits(self, request, org_id: int):
+        """Höchstbetrag der freien Rücklage und Vorschlag Wiederbeschaffung (Konzept S5)."""
+        from django.utils import timezone
+
+        from . import reserve_limits, services
+
+        raw = request.query_params.get("jahr", "")
+        if raw.isdigit() and 1990 <= int(raw) <= 2100:
+            year = int(raw)
+        else:
+            year = self.org.fiscal_year_of(timezone.localdate())
+        return Response(services._money(reserve_limits.report(self.org, year)))
+
     @extend_schema(request=dict, responses=ReserveMovementSerializer)
     @action(detail=True, methods=["post"])
     def movements(self, request, org_id: int, pk: int):
