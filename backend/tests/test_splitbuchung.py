@@ -19,7 +19,7 @@ JSON = "application/json"
 @pytest.fixture
 def club(orgs):
     club = orgs["a"]
-    club.enabled_modules = ["finance", "members"]
+    club.enabled_modules = ["finance", "members", "tax"]
     club.tax_areas_enabled = True
     club.save()
     return club
@@ -183,7 +183,9 @@ def test_teile_haengen_zusammen(c, fin, kasse):
     ).json()
     part = rows[1]["id"]
     # Datum und Konto gelten für alle Teile
-    resp = c.patch(f"{fin}/bookings/{part}/", {"date": "2020-06-01"}, content_type=JSON)
+    today = timezone.localdate()
+    other_day = today.replace(day=2 if today.day == 1 else 1)  # gleiches Geschäftsjahr
+    resp = c.patch(f"{fin}/bookings/{part}/", {"date": other_day.isoformat()}, content_type=JSON)
     assert resp.status_code == 400
     assert "Splitbuchung" in str(resp.json())
     # Kategorie eines Teils bleibt änderbar
