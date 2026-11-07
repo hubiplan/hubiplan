@@ -418,6 +418,11 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     released_modules = models.JSONField(
         "freigegebene Module", default=list, db_default=[], blank=True
     )
+    # Untereinheiten: Module des Vereins, die der Verein für diese Einheit ausblendet (M5).
+    # Leer heißt: alle Module des Vereins.
+    unit_hidden_modules = models.JSONField(
+        "für diese Untereinheit ausgeblendete Module", default=list, db_default=[], blank=True
+    )
     shooting_facilities = models.JSONField(
         "verfügbare Schießinfrastruktur", default=None, null=True, blank=True
     )

@@ -407,8 +407,20 @@ def module_on(org, module_id: str) -> bool:
         if owner is None or module_id not in (owner.enabled_modules or []):
             return False
         if module_id not in UNIT_OWN_MODULES:
-            return True
+            return module_id not in unit_hidden(org)
     return module_id in (org.enabled_modules or [])
+
+
+def unit_hidden(unit) -> set[str]:
+    """Module, die der Verein für diese Untereinheit oder eine darüber ausgeblendet hat."""
+    hidden = set(unit.unit_hidden_modules or [])
+    parent = unit
+    while parent.parent_id and parent.parent_id != parent.organization_id:
+        parent = parent.parent
+        if parent is None or parent.type != "unit":
+            break
+        hidden |= set(parent.unit_hidden_modules or [])
+    return hidden
 
 
 def with_requirements(ids) -> set[str]:

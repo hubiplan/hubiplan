@@ -579,6 +579,7 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "self_managed",
             "fee_exempt",
             "is_remote",
+            "unit_hidden_modules",
         ]
         read_only_fields = [
             "label",
@@ -712,6 +713,19 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
         if wanted != has:
             modules = (modules | {WEBSITE_MODULE}) if wanted else (modules - {WEBSITE_MODULE})
             attrs["enabled_modules"] = sorted(modules)
+
+    def validate_unit_hidden_modules(self, value):
+        """Nur Module, die die Untereinheit vom Verein erbt (nicht Kasse, Rechnungen, Webseite)."""
+        from access.modules import MODULE_IDS, UNIT_OWN_MODULES
+
+        if not isinstance(value, list) or not all(isinstance(m, str) for m in value):
+            raise serializers.ValidationError(gettext("Bitte eine Liste von Modulen angeben."))
+        wrong = [m for m in value if m not in MODULE_IDS or m in UNIT_OWN_MODULES]
+        if wrong:
+            raise serializers.ValidationError(
+                gettext("Unbekannte Module: {x}").format(x=", ".join(wrong))
+            )
+        return sorted(set(value))
 
     def get_logo_url(self, obj) -> str | None:
         return logo_url(obj)

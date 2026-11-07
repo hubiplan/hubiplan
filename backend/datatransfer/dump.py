@@ -223,6 +223,8 @@ DEPT_FIELDS = (
     "own_workspace",
     "self_managed",
     "fee_exempt",
+    # Vom Verein für die Untereinheit ausgeblendete Module (M5)
+    "unit_hidden_modules",
     # Finanzeinstellungen und Festschreibung (Gesamtaudit 01.11., GA-F08)
     "finance_locked_until",
     "cash_counts_enabled",

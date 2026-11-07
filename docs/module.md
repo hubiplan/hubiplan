@@ -17,6 +17,10 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 - **Eingeschaltet** steht in `Organization.enabled_modules`. Abfragen im Code nutzen die
   Kennung aus dem Verzeichnis, für Untereinheiten `module_on(org, id)` (sie erben die Module
   ihres Vereins; Kasse, Rechnungen und Webseite führen sie selbst).
+- **Untereinheiten** mit eigenem Arbeitsbereich: Der Verein blendet Module, die dort auf den
+  eigenen aufbauen (Steuern, Zuwendungen, Social Media), je Einheit aus
+  (`Organization.unit_hidden_modules`, leer = alle). `module_on` beachtet das auch für die
+  Einheiten darunter (`unit_hidden`).
 - **Rechte** eines abgeschalteten Moduls wirken nicht (`Area.module`), bleiben aber an der
   Rolle gespeichert.
 - **Pfade ohne eigenes Rollenrecht** (Mitgliederbereich, Ehrungen, Würden, Social Media) bindet

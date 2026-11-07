@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { orgApi, PERM } from '../../api/orgs.ts'
+import { flatModules, moduleApi } from '../../api/modules.ts'
 import type { CatalogModule, Department, DepartmentChoice, DepartmentRole } from '../../api/orgs.ts'
 import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
 import {
@@ -590,6 +591,7 @@ function DepartmentCard({
     own_workspace: !!dep.own_workspace,
     self_managed: !!dep.self_managed,
     own_website: !!dep.own_website,
+    unit_hidden_modules: dep.unit_hidden_modules ?? [],
     fee_exempt: !!dep.fee_exempt,
     parent_unit: dep.parent_unit ? String(dep.parent_unit) : '',
   })
@@ -817,6 +819,14 @@ function DepartmentCard({
               </p>
             </>
           )}
+          {form.values.own_workspace && (
+            <UnitModules
+              name={dep.name}
+              own={['finance', 'billing', ...(form.values.own_website ? ['website'] : [])]}
+              hidden={form.values.unit_hidden_modules}
+              onChange={(hidden) => form.set('unit_hidden_modules', hidden)}
+            />
+          )}
           {hasWebsite && (form.values.own_workspace || form.values.own_website) && (
             <>
               <Checkbox
@@ -932,6 +942,57 @@ function DepartmentCard({
 }
 
 /** Rollen der Untereinheit besetzen: ohne Konto, ohne E-Mail (gleiche Ansicht wie Ämter, R3). */
+// Module, die eine Untereinheit selbst führt (access/modules.py, UNIT_OWN_MODULES)
+const UNIT_OWN_MODULES = ['finance', 'billing', 'website']
+
+/** Module des Vereins, die im Arbeitsbereich auf den eigenen aufbauen (Steuern, Social Media …);
+ * der Verein wählt, welche davon die Einheit sieht. */
+function UnitModules({
+  name,
+  own,
+  hidden,
+  onChange,
+}: {
+  name: string
+  own: string[]
+  hidden: string[]
+  onChange: (hidden: string[]) => void
+}) {
+  const clubModules = useActiveOrg().modules
+  const directory = useLoad(() => moduleApi.directory(), [])
+  const all = flatModules(directory.data)
+  const offered = all.filter(
+    (m) =>
+      clubModules.includes(m.id) &&
+      !UNIT_OWN_MODULES.includes(m.id) &&
+      m.requires.some((r) => own.includes(r)),
+  )
+  if (!offered.length) return null
+  const visible = offered.map((m) => m.id).filter((id) => !hidden.includes(id))
+  function set(id: string, on: boolean) {
+    onChange(on ? hidden.filter((x) => x !== id) : [...hidden, id].sort())
+  }
+  return (
+    <>
+      <h3>{t('Module für diese Einheit')}</h3>
+      <p className="muted small">
+        {t(
+          'Was {name} im Arbeitsbereich zusätzlich vom Verein nutzt. Ausgeblendete Module erscheinen dort nicht; die Daten bleiben erhalten.',
+          { name },
+        )}
+      </p>
+      {offered.map((m) => (
+        <Checkbox
+          key={m.id}
+          label={m.label}
+          checked={visible.includes(m.id)}
+          onChange={(on) => set(m.id, on)}
+        />
+      ))}
+    </>
+  )
+}
+
 function UnitHolders({
   orgId,
   dep,
