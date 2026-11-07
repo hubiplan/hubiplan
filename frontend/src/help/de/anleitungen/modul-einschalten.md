@@ -5,8 +5,7 @@ bereich: einstellungen
 modul: platform
 rechte: [platform.manage]
 routen: [/plattform]
-stichworte:
-  [Modul, Funktion, freischalten, Webseite, Wettbewerbe, Würden, Ehrungen, Mitgliederbereich]
+stichworte: [Modul, Funktion, freischalten, Webseite, Würden, Ehrungen, Mitgliederbereich]
 ---
 
 Module schaltet die Plattform-Verwaltung frei. Wer im Verein eine Funktion vermisst, wendet sich an sie.
