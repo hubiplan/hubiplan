@@ -17,6 +17,8 @@ from dataclasses import dataclass
 
 from django.utils.translation import gettext, gettext_noop
 
+from .modules import DEFAULT_IDS, MODULE_IDS
+
 VIEW = "view"
 EDIT = "edit"
 
@@ -413,36 +415,12 @@ EXTRAS: tuple[Extra, ...] = (
 
 AREA_BY_ID: dict[str, Area] = {a.id: a for a in AREAS}
 
-# Abschaltbare Module (Organization.enabled_modules); ihre Bereiche fehlen, wenn aus
-SWITCHABLE_MODULES: tuple[str, ...] = (
-    "music",
-    "material",
-    "infrastructure",
-    "members",
-    "finance",
-    "billing",
-    "events",
-    "website",
-    "competitions",
-    "entries",
-    "meetings",
-    "helpers",
-)
-# Module, die eine neue Einheit nicht automatisch bekommt (die Plattform schaltet
-# sie gezielt frei, z. B. die Webseite nur für Einheiten, die eine haben sollen)
-OPT_IN_MODULES: frozenset[str] = frozenset(
-    {
-        "website",
-        "competitions",
-        "entries",
-        "material",
-        "infrastructure",
-        "music",
-        "meetings",
-        "helpers",
-    }
-)
-DEFAULT_MODULES: tuple[str, ...] = tuple(m for m in SWITCHABLE_MODULES if m not in OPT_IN_MODULES)
+# Abschaltbare Module (Organization.enabled_modules); ihre Bereiche fehlen, wenn aus.
+# Einzige Quelle ist das Modulverzeichnis (access/modules.py).
+SWITCHABLE_MODULES: tuple[str, ...] = MODULE_IDS
+# Module, die eine neue Einheit nicht automatisch bekommt
+OPT_IN_MODULES: frozenset[str] = frozenset(m for m in MODULE_IDS if m not in DEFAULT_IDS)
+DEFAULT_MODULES: tuple[str, ...] = DEFAULT_IDS
 
 
 def _area_codes(area: Area, levels: tuple[str, ...]) -> list[str]:

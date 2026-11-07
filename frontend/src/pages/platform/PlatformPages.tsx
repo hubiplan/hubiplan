@@ -2,6 +2,13 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { displayName, platformApi } from '../../api/orgs.ts'
+import {
+  flatModules,
+  moduleApi,
+  requirementText,
+  withoutDependents,
+  withRequirements,
+} from '../../api/modules.ts'
 import type { PlatformOrg, PlatformSettings } from '../../api/orgs.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField, Tabs } from '../../components/ui.tsx'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
@@ -44,20 +51,6 @@ const ACCESS_LABELS = {
     return t('lesen und ändern')
   },
 }
-const MODULES = [
-  { id: 'music', label: t('Musik') },
-  { id: 'members', label: t('Mitglieder') },
-  { id: 'finance', label: t('Kasse') },
-  { id: 'billing', label: t('Beiträge/Rechnungen') },
-  { id: 'events', label: t('Termine') },
-  { id: 'website', label: t('Webseite') },
-  { id: 'competitions', label: t('Wettbewerbe') },
-  { id: 'material', label: t('Material') },
-  { id: 'infrastructure', label: t('Infrastruktur') },
-  { id: 'entries', label: t('Meldungen') },
-  { id: 'meetings', label: t('Versammlungen') },
-  { id: 'helpers', label: t('Helferdienste') },
-]
 
 export function PlatformLayout() {
   const location = useLocation()
@@ -84,6 +77,8 @@ export function PlatformLayout() {
 
 export function PlatformOrgsPage() {
   const { data, error, reload } = useLoad(() => platformApi.orgs(), [])
+  const directory = useLoad(() => moduleApi.directory(), [])
+  const moduleList = flatModules(directory.data)
   const [editing, setEditing] = useState<PlatformOrg | 'new' | null>(null)
 
   if (error) return <Alert kind="error">{error}</Alert>
@@ -128,7 +123,7 @@ export function PlatformOrgsPage() {
           {o.enabled_modules.length
             ? t('Module: {x}', {
                 x: o.enabled_modules
-                  .map((m) => MODULES.find((x) => x.id === m)?.label ?? m)
+                  .map((m) => moduleList.find((x) => x.id === m)?.label ?? m)
                   .join(', '),
               })
             : t('keine Module')}
@@ -204,6 +199,8 @@ function PlatformOrgForm({
   })
   const v = form.values
   const e = form.errors
+  const directory = useLoad(() => moduleApi.directory(), [])
+  const allModules = flatModules(directory.data)
   const [board, setBoard] = useState('')
   const [erasing, setErasing] = useState(false)
   const [confirmation, setConfirmation] = useState('')
@@ -468,18 +465,37 @@ function PlatformOrgForm({
         )}
 
         <h3>{t('Module')}</h3>
-        {MODULES.map((m) => (
-          <Checkbox
-            key={m.id}
-            label={m.label}
-            checked={v.enabled_modules.includes(m.id)}
-            onChange={(on) =>
-              form.set(
-                'enabled_modules',
-                on ? [...v.enabled_modules, m.id] : v.enabled_modules.filter((x) => x !== m.id),
+        {directory.error && <LoadError message={directory.error} onRetry={directory.reload} />}
+        {(directory.data ?? []).map((group) => (
+          <fieldset key={group.id} className="stack">
+            <legend>{group.label}</legend>
+            {group.modules.map((m) => {
+              const needs = requirementText(m, allModules)
+              return (
+                <Checkbox
+                  key={m.id}
+                  label={m.label}
+                  hint={
+                    needs
+                      ? t('{text} (braucht {needs})', { text: m.description, needs })
+                      : m.description
+                  }
+                  checked={v.enabled_modules.includes(m.id)}
+                  onChange={(on) =>
+                    form.set(
+                      'enabled_modules',
+                      on
+                        ? withRequirements([...v.enabled_modules, m.id], allModules)
+                        : withoutDependents(
+                            v.enabled_modules.filter((x) => x !== m.id),
+                            allModules,
+                          ),
+                    )
+                  }
+                />
               )
-            }
-          />
+            })}
+          </fieldset>
         ))}
         {org && (
           <Checkbox
