@@ -1475,15 +1475,22 @@ class MandateViewSet(SepaMixin, viewsets.ReadOnlyModelViewSet):
                 holder=data["holder"],
                 iban=data["iban"],
                 bic=data.get("bic", ""),
+                scheme=data["scheme"],
             )
         except DjangoValidationError as exc:
             raise _as_drf(exc) from exc
+        kind = " Firmenlastschrift" if mandate.scheme == sepa.B2B else ""
         record(
             self.org,
             request.user,
             "create",
             mandate,
-            {"SEPA-Mandat": [None, f"{mandate.reference} ({sepa.masked_iban(mandate.iban)})"]},
+            {
+                "SEPA-Mandat": [
+                    None,
+                    f"{mandate.reference}{kind} ({sepa.masked_iban(mandate.iban)})",
+                ]
+            },
         )
         return Response(MandateSerializer(mandate).data, status=status.HTTP_201_CREATED)
 

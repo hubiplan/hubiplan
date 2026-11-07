@@ -354,6 +354,9 @@ export interface CollectiveLine {
 export interface Mandate {
   id: number
   reference: string
+  /** CORE = Basislastschrift, B2B = Firmenlastschrift (nur Organisationen, J8b) */
+  scheme: 'CORE' | 'B2B'
+  scheme_label: string
   membership: number | null
   club: number | null
   payer_name: string
@@ -435,6 +438,7 @@ export const sepaApi = {
       iban: string
       bic: string
       signed_on: string
+      scheme?: 'CORE' | 'B2B'
     },
   ) => api.post<Mandate>(`${base(org)}/mandates/`, data),
   revokeMandate: (org: number, id: number) =>

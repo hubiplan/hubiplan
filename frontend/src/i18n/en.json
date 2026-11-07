@@ -6956,5 +6956,9 @@
   "E-Mail für Rechnungsfragen": "Email for invoice questions",
   "Kennung des Rechnungsstellers": "Seller identifier",
   "z. B. Vereinsregisternummer; leer: aus dem Impressum": "e.g. register number; empty: taken from the legal notice",
-  "Die Leitweg-ID steht in der Rechnungsanschrift des Mitglieds. Beim Festschreiben entsteht dann eine geprüfte XRechnung; die Rechnungsmail trägt sie als Anhang.": "The Leitweg-ID is part of the member's billing address. Finalising then creates a validated XRechnung, which the invoice email carries as an attachment."
+  "Die Leitweg-ID steht in der Rechnungsanschrift des Mitglieds. Beim Festschreiben entsteht dann eine geprüfte XRechnung; die Rechnungsmail trägt sie als Anhang.": "The Leitweg-ID is part of the member's billing address. Finalising then creates a validated XRechnung, which the invoice email carries as an attachment.",
+  "Verfahren": "Scheme",
+  "nur mit Mandat auf dem Firmenformular; die Bank des Zahlers muss es kennen": "only with a mandate on the business form; the payer's bank must know it",
+  "Basislastschrift": "Core direct debit",
+  "Firmenlastschrift (B2B)": "Business direct debit (B2B)"
 }
