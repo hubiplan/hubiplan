@@ -7004,5 +7004,20 @@
   "z. B. bis 50 Mitarbeiter": "e.g. up to 50 employees",
   "ab Größe": "from size",
   "bis Größe (einschließlich)": "up to size (inclusive)",
-  "Für die Staffel nach Größe, zum Beispiel Mitarbeiter oder Einwohner": "For fees by size, for example employees or inhabitants"
+  "Für die Staffel nach Größe, zum Beispiel Mitarbeiter oder Einwohner": "For fees by size, for example employees or inhabitants",
+  "aufgeteilt, weitere Teile: {numbers}": "split, further parts: {numbers}",
+  "Teil von {number}": "Part of {number}",
+  "Splitbuchung: Weitere Teile sind {numbers}. Belege und Kontoumsatz gehören zu dieser Buchung.": "Split booking: further parts are {numbers}. Receipts and the bank transaction belong to this booking.",
+  "Teil der Splitbuchung {number}. Belege und Kontoumsatz stehen dort; Datum, Art und Konto gelten für alle Teile.": "Part of split booking {number}. Receipts and the bank transaction are there; date, type and account apply to all parts.",
+  "Aufteilen": "Split",
+  "Buchung aufteilen": "Split booking",
+  "Ein Zahlungsvorgang, mehrere Kategorien: Jeder Teil wird eine eigene Buchung. Datum, Konto und Empfänger bzw. Zahler bleiben gleich; Belege und Kontoumsatz bleiben beim ersten Teil.": "One payment, several categories: each part becomes a booking of its own. Date, account and payee or payer stay the same; receipts and the bank transaction stay with the first part.",
+  "Buchungstext (optional)": "Description (optional)",
+  "Kategorie von Teil {n}": "Category of part {n}",
+  "Betrag von Teil {n}": "Amount of part {n}",
+  "Veranstaltung von Teil {n}": "Event of part {n}",
+  "Buchungstext von Teil {n}": "Description of part {n}",
+  "Die Teile ergeben genau den Betrag der Buchung.": "The parts add up exactly to the booking amount.",
+  "Noch zu verteilen: {x}": "Still to allocate: {x}",
+  "Teil hinzufügen": "Add part"
 }

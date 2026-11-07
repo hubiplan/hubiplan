@@ -8834,3 +8834,48 @@ msgstr "The maximum size is below the minimum size."
 
 msgid "Die Größen überschneiden sich mit „{name}“."
 msgstr "The sizes overlap with “{name}”."
+
+msgid "Umbuchungen lassen sich nicht aufteilen."
+msgstr "Transfers cannot be split."
+
+msgid "Die Buchung ist schon aufgeteilt."
+msgstr "The booking is already split."
+
+msgid "Die Buchung gehört zu einem Storno."
+msgstr "The booking belongs to a cancellation."
+
+msgid "Die Buchung gehört zu einem Zahlungseingang einer Rechnung."
+msgstr "The booking belongs to a payment of an invoice."
+
+msgid "Die Buchung gehört zu einer unterschriebenen Quittung."
+msgstr "The booking belongs to a signed receipt."
+
+msgid "Zur Buchung gibt es eine Zuwendung. Bitte zuerst die Zuwendung lösen."
+msgstr "There is a donation for this booking. Please detach the donation first."
+
+msgid "Jeder Teil braucht einen Betrag größer als 0."
+msgstr "Every part needs an amount greater than 0."
+
+msgid "Bitte für jeden Teil eine Kategorie wählen."
+msgstr "Please choose a category for every part."
+
+msgid "Bitte zwei bis {n} Teile angeben."
+msgstr "Please enter two to {n} parts."
+
+msgid "Die Teile ergeben {x} €, die Buchung hat {y} €. Zusammen müssen sie genau den Betrag der Buchung ergeben."
+msgstr "The parts add up to €{x}, the booking is €{y}. Together they must add up exactly to the booking amount."
+
+msgid "Die Kategorie „{name}“ passt nicht zu dieser Art der Buchung."
+msgstr "The category “{name}” does not match this type of booking."
+
+msgid "Die Buchung ist aufgeteilt. Bitte zuerst die übrigen Teile löschen oder stornieren."
+msgstr "The booking is split. Please delete or cancel the other parts first."
+
+msgid "Bitte die Teile angeben."
+msgstr "Please enter the parts."
+
+msgid "Die Buchung ist Teil einer Splitbuchung. Datum, Art und Konto (bei zugeordnetem Kontoumsatz auch der Betrag) gelten für alle Teile; bitte stornieren und neu buchen."
+msgstr "The booking is part of a split booking. Date, type and account (and the amount if a bank transaction is assigned) apply to all parts; please cancel and book again."
+
+msgid "Bitte den Umsatz dem ersten Teil der Splitbuchung zuordnen."
+msgstr "Please assign the bank transaction to the first part of the split booking."

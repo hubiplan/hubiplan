@@ -47,6 +47,7 @@ from .serializers import (
     ProjectSerializer,
     ProjectSeriesSerializer,
     ReceiptSerializer,
+    SplitPartSerializer,
 )
 
 MAX_RECEIPT_BYTES = 15 * 1024 * 1024
@@ -289,9 +290,10 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             "project",
             "cancels__organization",
             "cancellation__organization",
+            "split_of__organization",
         )
         if self.action != "list":
-            return qs.prefetch_related("receipts")
+            return qs.prefetch_related("receipts", "split_parts__organization")
         p = self.request.query_params
         year = p.get("jahr")
         if year and year.isdigit():
@@ -318,14 +320,18 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             qs = qs.filter(pk__in=name_ids(qs, partner, fields=("counterparty",), exact=True))
         if p.get("ohne_beleg") in ("1", "true"):
             # Ausgeblendete Belege zählen nicht
-            qs = qs.exclude(
-                pk__in=Receipt.objects.filter(organization=self.org, hidden_at__isnull=True).values(
-                    "booking_id"
-                )
+            visible = Receipt.objects.filter(organization=self.org, hidden_at__isnull=True)
+            # Teile einer Splitbuchung haben den Beleg beim ersten Teil
+            qs = qs.exclude(pk__in=visible.values("booking_id")).exclude(
+                split_of__in=visible.values("booking_id")
             )
         if term := p.get("suche", "").strip():
             qs = qs.filter(services.search_filter(qs, term))
-        return qs.prefetch_related("receipts").order_by("-date", "-number").distinct()
+        return (
+            qs.prefetch_related("receipts", "split_parts__organization")
+            .order_by("-date", "-number")
+            .distinct()
+        )
 
     @transaction.atomic
     def perform_create(self, serializer):
@@ -429,6 +435,41 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         fresh = self.get_queryset().get(pk=booking.pk)
         return Response(self.get_serializer(fresh).data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def split(self, request, org_id: int, pk: int):
+        """Splitbuchung: {parts: [{category, amount, project?, text?}, …]}."""
+        booking = self.get_object()
+        self._lock_and_refresh(booking)
+        raw = request.data.get("parts")
+        if not isinstance(raw, list):
+            raise serializers.ValidationError({"parts": gettext("Bitte die Teile angeben.")})
+        ser = SplitPartSerializer(data=raw, many=True, context=self.get_serializer_context())
+        ser.is_valid(raise_exception=True)
+        before = {"Betrag": str(booking.amount), "Kategorie": booking.category_label}
+        try:
+            result = services.split_booking(booking, ser.validated_data, request.user)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(" ".join(exc.messages)) from exc
+        lead = result[0]
+        record(
+            self.org,
+            request.user,
+            "update",
+            lead,
+            {
+                "Splitbuchung": [
+                    f"{before['Betrag']} € {before['Kategorie'] or ''}".strip(),
+                    "aufgeteilt in "
+                    + ", ".join(f"{b.display_number} ({b.amount} €)" for b in result),
+                ]
+            },
+        )
+        for part in result[1:]:
+            record(self.org, request.user, "create", part, diff({}, snapshot(part)))
+        fresh = self.get_queryset().filter(pk__in=[b.pk for b in result]).order_by("number")
+        return Response(self.get_serializer(fresh, many=True).data, status=status.HTTP_201_CREATED)
+
     def _open(self, **kwargs):
         try:
             services.ensure_open(self.org, **kwargs)
@@ -490,6 +531,21 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
                         "bitte über die Zahlung unter Beiträge → Rechnungen ändern."
                     )
                 )
+        lead = instance.split_of if instance.split_of_id else instance
+        if instance.split_of_id or instance.split_parts.exists():
+            # Splitbuchung: ein Zahlungsvorgang, Datum, Art und Konto gelten für alle Teile
+            data = serializer.validated_data
+            locked = ["kind", "account", "date"]
+            if lead.bank_lines.exists():
+                locked.append("amount")
+            if any(k in data and data[k] != getattr(instance, k) for k in locked):
+                raise serializers.ValidationError(
+                    gettext(
+                        "Die Buchung ist Teil einer Splitbuchung. Datum, Art und Konto (bei "
+                        "zugeordnetem Kontoumsatz auch der Betrag) gelten für alle Teile; bitte "
+                        "stornieren und neu buchen."
+                    )
+                )
         if instance.bank_lines.exists():
             # Audit 31.10. FIN31-R03: zugeordneter Kontoumsatz muss zur Buchung passen
             data = serializer.validated_data
@@ -521,6 +577,13 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             raise serializers.ValidationError(self.protected_message)
         if instance.receipts.exists():
             raise serializers.ValidationError(gettext("Buchungen mit Belegen bitte stornieren."))
+        if instance.split_parts.exists():
+            raise serializers.ValidationError(
+                gettext(
+                    "Die Buchung ist aufgeteilt. Bitte zuerst die übrigen Teile löschen oder "
+                    "stornieren."
+                )
+            )
         # GoBD: Löschen nur am Tag der Erfassung vor der Festschreibung, sonst Storno
         if not services.deletable(instance):
             raise serializers.ValidationError(
@@ -1012,7 +1075,13 @@ def closing_checks(org, year: int, start, last) -> dict:
             pk__in=Receipt.objects.filter(organization=org, hidden_at__isnull=True).values(
                 "booking_id"
             )
-        ).count(),
+        )
+        .exclude(
+            split_of__in=Receipt.objects.filter(organization=org, hidden_at__isnull=True).values(
+                "booking_id"
+            )
+        )
+        .count(),
         "tax_areas_enabled": org.tax_areas_on,
         "categories_without_area": (
             bookings.filter(category__isnull=False, category__tax_area="")
