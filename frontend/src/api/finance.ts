@@ -152,6 +152,56 @@ export interface Overview {
   booking_count: number
 }
 
+export type TaxStatus = 'ok' | 'warn' | 'over'
+
+export interface TaxArea {
+  area: string
+  label: string
+  income: string
+  expense: string
+  result: string
+}
+
+/** Steuerliche Auswertung eines Geschäftsjahres (Freigrenze, Bereiche, Kleinunternehmer) */
+export interface TaxReport {
+  year: number
+  label: string
+  start_date: string
+  end_date: string
+  /** Veranlagungszeitraum (Kalenderjahr, in dem das Geschäftsjahr endet) */
+  period: number
+  enabled: boolean
+  /** Einheit, bei der steuerlich zusammengerechnet wird */
+  root: { id: number; name: string; is_self: boolean }
+  units: {
+    id: number
+    name: string
+    tax_areas_enabled: boolean
+    business_income: string
+    turnover: string
+  }[]
+  own_areas: TaxArea[]
+  areas: TaxArea[]
+  free_limit: { limit: string; income: string; status: TaxStatus; percent: number }
+  business_result: string
+  history: { year: number; label: string; income: string; result: string }[]
+  small_business: {
+    previous: string
+    previous_limit: string
+    current: string
+    current_limit: string
+    status: TaxStatus
+  } | null
+  warnings: { kind: string; text: string }[]
+  declaration: {
+    known: boolean
+    text: string
+    due?: boolean
+    next_from?: number
+    next_to?: number
+  } | null
+}
+
 export interface FinanceSettings {
   tax_areas_enabled: boolean
   cash_counts_enabled?: boolean
@@ -352,6 +402,9 @@ export const financeApi = {
   /** ZIP für eine Prüfung (Finanzamt, Kassenprüfer): alle Finanzdaten mit Belegen und index.xml */
   exportUrl: (org: number, year: number) => `${base(org)}/export/?jahr=${year}`,
   overview: (org: number, year: number) => api.get<Overview>(`${base(org)}/overview/?jahr=${year}`),
+  taxReport: (org: number, year: number) => api.get<TaxReport>(`${base(org)}/tax/?jahr=${year}`),
+  taxReportUrl: (org: number, year: number, fmt: 'pdf' | 'xlsx') =>
+    `${base(org)}/tax/?jahr=${year}&als=${fmt}`,
 
   accounts: (org: number) => api.get<Account[]>(`${base(org)}/accounts/`),
   createAccount: (org: number, data: Partial<Account>) =>

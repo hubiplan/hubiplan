@@ -444,6 +444,7 @@ org_patterns = [
     path("cards/pdf/", card_views.OrgCardsPdfView.as_view(), name="cards-pdf"),
     path("finance/overview/", finance_views.OverviewView.as_view(), name="finance-overview"),
     path("finance/statistics/", finance_views.StatisticsView.as_view(), name="finance-statistics"),
+    path("finance/tax/", finance_views.TaxReportView.as_view(), name="finance-tax"),
     path("finance/settings/", finance_views.FinanceSettingsView.as_view(), name="finance-settings"),
     path(
         "finance/donation-settings/",

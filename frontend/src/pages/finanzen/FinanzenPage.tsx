@@ -27,6 +27,7 @@ import { financeAccess, invoiceTabs, settingsTabs } from './access.ts'
 import type { FinanceAccess, NavItem } from './access.ts'
 import { FinanceDevelopment } from './DevelopmentPage.tsx'
 import { EvaluationPage, FinanceOverview } from './OverviewPages.tsx'
+import { TaxPage } from './TaxPage.tsx'
 import { t } from '../../i18n/index.ts'
 
 function Section({
@@ -256,11 +257,13 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
       readOnly={!a.financeEdit}
       tabs={[
         { to: '/finanzen/abschluss', label: t('Auswertung') },
+        ...(a.tax ? [{ to: '/finanzen/abschluss/steuern', label: t('Steuern') }] : []),
         { to: '/finanzen/abschluss/jahresabschluss', label: t('Jahresabschluss') },
       ]}
     >
       <Routes>
         <Route index element={<EvaluationPage />} />
+        {a.tax && <Route path="steuern" element={<TaxPage />} />}
         <Route path="jahresabschluss" element={<ClosingsPage />} />
         <Route path="*" element={<Navigate to="/finanzen/abschluss" replace />} />
       </Routes>

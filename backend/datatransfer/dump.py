@@ -234,6 +234,8 @@ DEPT_FIELDS = (
     "datev_client",
     "datev_account_length",
     "datev_chart",
+    # Steuerliche Auswertung: Untereinheit mit eigenem Bescheid
+    "tax_independent",
 )
 MEMBERSHIP_PREFETCH = (
     "periods",

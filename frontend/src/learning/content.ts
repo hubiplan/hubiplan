@@ -295,6 +295,16 @@ const DECISIONS_DATA = {
     phase: 'setup',
     feature: 'finance',
   },
+  unit_tax_independent: {
+    title: d('Untereinheit steuerlich selbständig?'),
+    text: d(
+      'Abteilungen, Züge oder Gruppen mit eigener Kasse sind steuerlich fast immer Teil des Vereins. Ihre Einnahmen zählen dort zusammen, auch für die Freigrenze des wirtschaftlichen Geschäftsbetriebs; ein Verein darf sich dafür nicht in Abteilungen aufteilen (§ 64 Abs. 4 AO). Schalte den Schalter nur ein, wenn die Einheit ein eigener Verein mit eigener Steuernummer und eigenem Bescheid ist.',
+    ),
+    sources: ['ao'],
+    place: d('Einstellungen → Untereinheiten → Eigener Arbeitsbereich'),
+    phase: 'setup',
+    feature: 'finance',
+  },
   opening_balance: {
     title: d('Anfangsbestand mit Stichtag?'),
     text: d(
@@ -1279,6 +1289,18 @@ const TERMS_DATA = {
     sources: ['ustg', 'ustae'],
     section: 'tax',
     feature: 'billing',
+  },
+  small_business: {
+    name: d('Kleinunternehmer'),
+    meaning: d(
+      'Wer im Vorjahr höchstens 25.000 € und im laufenden Jahr höchstens 100.000 € Umsatz hat, muss keine Umsatzsteuer berechnen und abführen, darf dann aber auch keine Vorsteuer abziehen (§ 19 UStG, Grenzen seit 2025). Mitgliedsbeiträge und Spenden zählen nicht mit, Einnahmen aus Zweckbetrieb und wirtschaftlichem Geschäftsbetrieb schon.',
+    ),
+    example: d(
+      'Beispiel: 18.000 € aus Festbetrieb und Werbung im Vorjahr: Der Verein bleibt Kleinunternehmer.',
+    ),
+    sources: ['ustg'],
+    section: 'tax',
+    feature: 'finance',
   },
   vat_id: {
     symbol: 'USt-IdNr.',

@@ -246,6 +246,8 @@ def circular_tasks(user, org: Organization, perms: set[str]) -> list[dict]:
         status=Circular.Status.DRAFT,
         created_by=user,
         updated_at__lt=old,
+        # Muster der Verteiler sind keine echten Entwürfe, sie werden nie versendet
+        list_pattern__isnull=True,
     ).order_by("updated_at")[:LIMIT]
     return [
         {

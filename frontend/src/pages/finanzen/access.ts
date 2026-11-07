@@ -26,6 +26,8 @@ export interface FinanceAccess {
   cashCounts: boolean
   /** Rücklagen nach § 62 AO (zuschaltbar) */
   reserves: boolean
+  /** Steuerliche Auswertung: Modul „Steuern & Gemeinnützigkeit“ und Kasse */
+  tax: boolean
 }
 
 export function financeAccess(org: OrgSummary | null): FinanceAccess {
@@ -41,6 +43,7 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
     donations: false,
     cashCounts: false,
     reserves: false,
+    tax: false,
   }
   if (!org || org.type === 'platform') return none
   const has = (p: string) => org.permissions.includes(p)
@@ -60,6 +63,7 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
     donations: finance && org.modules.includes('donations'),
     cashCounts: finance && !!org.cash_counts_enabled,
     reserves: finance && !!org.reserves_enabled,
+    tax: finance && org.modules.includes('tax'),
   }
 }
 
