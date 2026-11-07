@@ -157,6 +157,8 @@ def render(org, year: int) -> bytes:
             )
         story.append(_table(rows, [80 * mm, 30 * mm, 30 * mm, 32 * mm], primary, total_row=False))
 
+    story += _net_assets(org, year, st, primary)
+
     signatures = Table(
         [
             ["", "", ""],
@@ -209,3 +211,55 @@ def render(org, year: int) -> bytes:
         author=org.name,
     ).build(story, onFirstPage=footer, onLaterPages=footer)
     return buf.getvalue()
+
+
+def _net_assets(org, year: int, st, primary) -> list:
+    """Vermögensübersicht zum Jahresende (S7), nur wenn es mehr gibt als die Kontenstände."""
+    from . import net_assets
+
+    data = net_assets.report(org, year)
+    if not (
+        data["receivables"]["count"]
+        or data["liabilities"]["count"]
+        or data["fixed_assets"]
+        or data["reserves"]
+    ):
+        return []
+    r, rb = st["right"], st["right_bold"]
+
+    def row(label: str, value, bold: bool = False):
+        text = f"<b>{escape(label)}</b>" if bold else escape(label)
+        return [Paragraph(text, st["normal"]), Paragraph(_euro(value), rb if bold else r)]
+
+    rows = [[Paragraph("<b>Posten</b>", st["normal"]), Paragraph("<b>Betrag</b>", r)]]
+    rows.append(row("Kontenstände", data["cash"]))
+    if data["receivables"]["count"]:
+        rows.append(
+            row(
+                f"Offene Forderungen ({data['receivables']['count']} Rechnungen)",
+                data["receivables"]["total"],
+            )
+        )
+    if data["fixed_assets"]:
+        rows.append(row("Anlagevermögen (Buchwert)", data["fixed_assets"]["total"]))
+    if data["liabilities"]["count"]:
+        rows.append(
+            row(
+                f"Offene Verbindlichkeiten ({data['liabilities']['count']})",
+                -data["liabilities"]["total"],
+            )
+        )
+    rows.append(row("Vermögen", data["net"], bold=True))
+    out = [
+        Paragraph(f"<b>Vermögen am {data['end_date']:%d.%m.%Y}</b>", st["h2"]),
+        _table(rows, [130 * mm, 42 * mm], primary),
+    ]
+    if data["reserves"]:
+        out.append(
+            Paragraph(
+                f"Davon in Rücklagen gebunden: {_euro(data['reserves']['total'])}, "
+                f"frei verfügbar: {_euro(data['free'])}.",
+                st["small"],
+            )
+        )
+    return out

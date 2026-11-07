@@ -7150,5 +7150,18 @@
   "Bei Veranstaltungen und Eigenwerbung bleibt eine Summe bis {x} im Jahr abgabefrei.": "For events and own advertising, a total of up to {x} per year is exempt from the levy.",
   "Je Empfänger": "Per recipient",
   "Noch keine Künstlerhonorare in {y}. Im Kassenbuch bei einer Ausgabe „Honorar an Künstler“ anhaken oder die Kategorie markieren.": "No artist fees in {y} yet. In the cash book, tick “Fee paid to artists” on an expense or mark the category.",
-  "ohne Empfänger": "no recipient"
+  "ohne Empfänger": "no recipient",
+  "Vermögen": "Net assets",
+  "Vermögensübersicht": "Statement of net assets",
+  "Stand am {d}": "As of {d}",
+  "Was der Verein am Ende des Geschäftsjahres besitzt und schuldet. Was erst danach bezahlt wurde, zählt hier noch als offen. Die Übersicht steht auch im Kassenbericht.": "What the club owns and owes at the end of the financial year. Anything paid only afterwards still counts as open here. The statement is also part of the cash report.",
+  "Kontenstände": "Account balances",
+  "Offene Forderungen": "Open receivables",
+  "{n} Rechnungen, am Stichtag nicht bezahlt": "{n} invoices unpaid on the reporting date",
+  "Anlagevermögen (Buchwert)": "Fixed assets (book value)",
+  "{n} Anlagen laut Anlagenverzeichnis": "{n} assets according to the fixed asset register",
+  "Offene Verbindlichkeiten": "Open liabilities",
+  "{n} Eingangsrechnungen, am Stichtag nicht bezahlt": "{n} incoming invoices unpaid on the reporting date",
+  "Offene Eingangsrechnungen": "Open incoming invoices",
+  "fällig am": "due on"
 }
