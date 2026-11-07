@@ -6988,7 +6988,6 @@
   "Kennung des Rechnungsstellers": "Seller identifier",
   "z. B. Vereinsregisternummer; leer: aus dem Impressum": "e.g. register number; empty: taken from the legal notice",
   "Die Leitweg-ID steht in der Rechnungsanschrift des Mitglieds. Beim Festschreiben entsteht dann eine geprüfte XRechnung; die Rechnungsmail trägt sie als Anhang.": "The Leitweg-ID is part of the member's billing address. Finalising then creates a validated XRechnung, which the invoice email carries as an attachment.",
-  "Die Leitweg-ID steht in der Rechnungsanschrift des Mitglieds. Beim Festschreiben entsteht dann eine geprüfte XRechnung; die Rechnungsmail trägt sie als Anhang.": "The Leitweg-ID is part of the member's billing address. Finalising then creates a validated XRechnung, which the invoice email carries as an attachment.",
   "aufgeteilt, weitere Teile: {numbers}": "split, further parts: {numbers}",
   "Teil von {number}": "Part of {number}",
   "Splitbuchung: Weitere Teile sind {numbers}. Belege und Kontoumsatz gehören zu dieser Buchung.": "Split booking: further parts are {numbers}. Receipts and the bank transaction belong to this booking.",
