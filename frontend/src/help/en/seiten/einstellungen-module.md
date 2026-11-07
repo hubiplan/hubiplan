@@ -11,6 +11,6 @@ Here you switch on yourselves what your club uses. A switched-off module disappe
 
 You can choose from the modules the platform administration has released; others are marked “not released by the platform”. If a module needs another one, that one is switched on as well; if you switch off a requirement, the dependent modules go too. Before every change a confirmation shows what changes.
 
-Below a switched-on module you find its add-on features, such as the cash count in the cash book, SEPA direct debit for fees and invoices, or reserves for tax & non-profit status. They are the same switches as in the module’s setup, which the link below them opens.
+Below a switched-on module you find its add-on features, such as the cash count in the cash book, SEPA direct debit for fees and invoices, or reserves for tax & charitable status. They are the same switches as in the module’s setup, which the link below them opens.
 
 Anyone with the right to edit settings may change this.

@@ -350,6 +350,120 @@ def set_extra(org, extra: Extra, on: bool) -> bool:
     return True
 
 
+@dataclass(frozen=True)
+class Template:
+    """Vorlage beim Anlegen einer Einheit (M6): schlägt Module und Bezeichnungen vor.
+
+    Gespeichert wird nur das Ergebnis, nicht die Vorlage."""
+
+    id: str
+    label: str
+    org_type: str
+    add: tuple[str, ...] = ()
+    remove: tuple[str, ...] = ()
+    # Bezeichnung der Untereinheiten: Einzahl, Mehrzahl, Genus (leer: unverändert)
+    units: tuple[str, str, str] | None = None
+
+
+TEMPLATES: tuple[Template, ...] = (
+    Template(
+        "general",
+        gettext_noop("Allgemeiner Verein"),
+        "club",
+        units=(gettext_noop("Abteilung"), gettext_noop("Abteilungen"), "f"),
+    ),
+    Template(
+        "shooting",
+        gettext_noop("Schützenverein"),
+        "club",
+        add=(
+            "honors",
+            "chronicle",
+            "cards",
+            "competitions",
+            "shooting",
+            "material",
+            "infrastructure",
+            "bookings",
+            "tax",
+        ),
+        units=(gettext_noop("Zug"), gettext_noop("Züge"), "m"),
+    ),
+    Template(
+        "music",
+        gettext_noop("Musikverein / Kapelle"),
+        "club",
+        add=("music", "scores", "chronicle", "material", "tax"),
+        units=(gettext_noop("Register"), gettext_noop("Register"), "n"),
+    ),
+    Template(
+        "choir",
+        gettext_noop("Chor"),
+        "club",
+        add=("scores", "chronicle"),
+        units=(gettext_noop("Stimme"), gettext_noop("Stimmen"), "f"),
+    ),
+    Template(
+        "sports",
+        gettext_noop("Sportverein"),
+        "club",
+        add=("competitions", "helpers", "cards", "infrastructure", "bookings", "tax"),
+        units=(gettext_noop("Abteilung"), gettext_noop("Abteilungen"), "f"),
+    ),
+    Template(
+        "support",
+        gettext_noop("Förderverein"),
+        "club",
+        add=("donations",),
+        remove=("events", "awards"),
+    ),
+    Template(
+        "federation",
+        gettext_noop("Dachverband"),
+        "federation",
+        add=("calls", "circulars"),
+    ),
+)
+
+
+def template_modules(template: Template) -> list[str]:
+    """Module einer Vorlage: Vorgabe plus Zusätze, ohne Gestrichenes, mit Voraussetzungen."""
+    wanted = (set(DEFAULT_IDS) | set(template.add)) - set(template.remove)
+    ids = without_dependents(with_requirements(wanted))
+    return sorted(m for m in ids if template.org_type in MODULE_BY_ID[m].org_types)
+
+
+def _template_units(tpl: Template) -> dict | None:
+    """Bezeichnung der Untereinheiten: deutsch wie gespeichert, dazu englisch."""
+    if not tpl.units:
+        return None
+    from django.utils import translation
+
+    label, plural, gender = tpl.units
+    with translation.override("en"):
+        label_en, plural_en = gettext(label), gettext(plural)
+    return {
+        "label": label,
+        "plural": plural,
+        "gender": gender,
+        "label_en": label_en,
+        "plural_en": plural_en,
+    }
+
+
+def templates() -> list[dict]:
+    return [
+        {
+            "id": tpl.id,
+            "label": gettext(tpl.label),
+            "org_type": tpl.org_type,
+            "modules": template_modules(tpl),
+            "units": _template_units(tpl),
+        }
+        for tpl in TEMPLATES
+    ]
+
+
 # Stand des Verzeichnisses für Exportdateien: 1 = bis M1, 2 = mit Aufgaben, Dokumenten,
 # Rundschreiben, Ausweisen, Ausschreibungen, Belegung, Ehrungen & Jubiläen, Würden,
 # Mitgliederbereich und Social Media als eigene Module; 3 = mit Chronik; 4 = mit Steuern &

@@ -2,6 +2,7 @@
 // ihrem Baum (nur Namen), Stammdaten pflegen, deaktivieren, neu anlegen oder importieren.
 import { useEffect, useRef, useState } from 'react'
 import { orgApi } from '../../api/orgs.ts'
+import { flatModules, moduleApi, withoutDependents, withRequirements } from '../../api/modules.ts'
 import type { FederationClub } from '../../api/orgs.ts'
 import { ClubCreateForm, ImportSection } from '../../components/DataTransfer.tsx'
 import { DataTable } from '../../components/DataTable.tsx'
@@ -221,7 +222,9 @@ function ClubEditCard({
     contact_phone: club.contact_phone,
     website: club.website,
     is_active: club.is_active,
+    released_modules: club.released_modules ?? [],
   })
+  const passDown = !!useActiveOrg().modules_pass_down
   const auto = useAutoSave(
     form,
     (changes) => {
@@ -317,6 +320,12 @@ function ClubEditCard({
         checked={v.is_active}
         onChange={(on) => form.set('is_active', on)}
       />
+      {passDown && (
+        <ClubRelease
+          released={v.released_modules}
+          onChange={(ids) => form.set('released_modules', ids)}
+        />
+      )}
       <p className="muted small">
         {t('Weitere Einstellungen (Rollen, Erscheinungsbild, Module) pflegt {nom} selbst.', {
           nom: tm.nom,
@@ -328,5 +337,54 @@ function ClubEditCard({
         </button>
       </div>
     </form>
+  )
+}
+
+// Weitergabe (M6): Der Dachverband gibt seinen Vereinen Module frei; einschalten tut der Verein
+function ClubRelease({
+  released,
+  onChange,
+}: {
+  released: string[]
+  onChange: (ids: string[]) => void
+}) {
+  const directory = useLoad(() => moduleApi.directory(), [])
+  const all = flatModules(directory.data)
+  return (
+    <>
+      <h3>{t('Freigegebene Module')}</h3>
+      <p className="muted small">
+        {t(
+          'Neu freigegebene Module werden eingeschaltet. Die Einheit kann freigegebene Module unter Einstellungen › Module selbst aus- und wieder einschalten.',
+        )}
+      </p>
+      {(directory.data ?? []).map((group) => {
+        const modules = group.modules.filter((m) => m.org_types.includes('club'))
+        if (!modules.length) return null
+        return (
+          <fieldset key={group.id} className="stack">
+            <legend>{group.label}</legend>
+            {modules.map((m) => (
+              <Checkbox
+                key={m.id}
+                label={m.label}
+                hint={m.description}
+                checked={released.includes(m.id)}
+                onChange={(on) =>
+                  onChange(
+                    on
+                      ? withRequirements([...released, m.id], all)
+                      : withoutDependents(
+                          released.filter((x) => x !== m.id),
+                          all,
+                        ),
+                  )
+                }
+              />
+            ))}
+          </fieldset>
+        )
+      })}
+    </>
   )
 }

@@ -476,6 +476,14 @@ def module_directory(request: Request) -> Response:
     return Response(directory())
 
 
+@api_view(["GET"])
+def module_templates(request: Request) -> Response:
+    """Vorlagen beim Anlegen einer Einheit: Module und Bezeichnungen (M6)."""
+    from .modules import templates
+
+    return Response(templates())
+
+
 @extend_schema(
     parameters=[
         OpenApiParameter("org_type", str, required=False),
@@ -542,6 +550,8 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
         "sepa_enabled": _sepa_enabled(org),
         # Kasse: Zählprotokoll und Kassenbericht für Feste (Schalter unter Konten)
         "cash_counts_enabled": bool(org.cash_counts_enabled) and org.type != "platform",
+        # Dachverband darf seinen Vereinen Module freigeben (M6)
+        "modules_pass_down": bool(org.modules_pass_down) and org.type == "federation",
         # Kasse: Rücklagen nach § 62 AO (Schalter unter Konten)
         "reserves_enabled": org.reserves_on and org.type != "platform",
         "direct_members": org.type == Organization.Type.FEDERATION and org.direct_members,

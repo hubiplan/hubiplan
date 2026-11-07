@@ -5,7 +5,7 @@ bereich: einstellungen
 modul: platform
 rechte: [platform.manage]
 routen: [/plattform]
-stichworte: [module, feature, enable, website, competitions, titles, honours, member area]
+stichworte: [module, enable, website, competitions, titles, member area, template, pass down]
 ---
 
 The platform administration releases modules. The club switches released modules off and on again itself under [Settings › Modules](/einstellungen/module). Anyone who misses a feature that is not released contacts the platform administration.
@@ -16,6 +16,8 @@ The platform administration releases modules. The club switches released modules
 
 A switched-off module disappears from the menu; its data is kept. Public parts go offline, such as card verification, the public document folder or the social media posts on the website.
 
-Smaller features are modules of their own too, so a small club only sees what it needs: tasks, documents, circulars, membership cards, member area, honours & anniversaries, titles, chronicle, calls, bookings, social media, tax & charitable status (tax areas and reserves), donation receipts the sheet music archive, which a choir can use without music, and shooting sports (targets, photo evaluation, bird shooting) as part of competitions. The member area matches the switch under Members › Setup › Member area & photos; both stay in step.
+Smaller features are modules of their own too, so a small club only sees what it needs: tasks, documents, circulars, membership cards, member area, honours & anniversaries, titles, chronicle, calls, bookings, social media, tax & charitable status (tax areas and reserves), donation receipts, the sheet music archive, which a choir can use without music, and shooting sports (targets, photo evaluation, bird shooting) as part of competitions. The member area matches the switch under Members › Setup › Member area & photos; both stay in step.
+
+When you create a unit, a template (such as marksmen's club, music society / band, choir, sports club, support association, federation) suggests suitable modules and the name for sub-units; everything can be changed freely afterwards. For a federation, the platform administration can allow it to release modules to its clubs itself; it then finds the tick boxes when editing the club under [Sub-units](/untereinheiten).
 
 ![Starting point: Enable a module for a unit](bild:modul-einschalten)

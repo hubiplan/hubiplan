@@ -195,8 +195,35 @@ function PlatformOrgForm({
     federation_member_access: org?.federation_member_access ?? 'none',
     federation_show_former_memberships: org?.federation_show_former_memberships ?? false,
     released_modules: org?.released_modules ?? org?.enabled_modules ?? ['finance', 'members'],
+    modules_pass_down: org?.modules_pass_down ?? false,
     is_active: org?.is_active ?? true,
   })
+  // Vorlage beim Anlegen: schlägt Module und die Bezeichnung der Untereinheiten vor
+  const templates = useLoad(() => (org ? Promise.resolve([]) : moduleApi.templates()), [org])
+  const [template, setTemplate] = useState('')
+  const [unitLabels, setUnitLabels] = useState<Partial<PlatformOrg>>({})
+  function applyTemplate(id: string) {
+    setTemplate(id)
+    const tpl = (templates.data ?? []).find((x) => x.id === id)
+    if (!tpl) {
+      setUnitLabels({})
+      return
+    }
+    form.set('released_modules', tpl.modules)
+    if (tpl.org_type === 'federation' && v.keeps_members && v.federation === null) setKeeps(false)
+    if (tpl.org_type === 'club' && !v.keeps_members) setKeeps(true)
+    setUnitLabels(
+      tpl.units
+        ? {
+            department_label: tpl.units.label,
+            department_label_plural: tpl.units.plural,
+            department_label_gender: tpl.units.gender,
+            department_label_en: tpl.units.label_en,
+            department_label_plural_en: tpl.units.plural_en,
+          }
+        : {},
+    )
+  }
   const v = form.values
   const e = form.errors
   const directory = useLoad(() => moduleApi.directory(), [])
@@ -248,6 +275,7 @@ function PlatformOrgForm({
     const { keeps_members, ...rest } = v
     const payload = {
       ...rest,
+      ...(org ? {} : unitLabels),
       // Nur senden, was sich ändern lässt
       ...(switchable && (!org || keeps_members !== initialKeeps) ? { keeps_members } : {}),
       founding_year: v.founding_year ? Number(v.founding_year) : null,
@@ -295,6 +323,23 @@ function PlatformOrgForm({
             ? t('{Sg} bearbeiten', { Sg: tm.Sg, sg: tm.sg })
             : t('{Sg} anlegen', { Sg: tm.Sg, sg: tm.sg })}
         </h2>
+        {!org && (templates.data ?? []).length > 0 && (
+          <SelectField
+            label={t('Vorlage')}
+            hint={t(
+              'Schlägt Module und die Bezeichnung der Untereinheiten vor. Danach ist alles frei änderbar.',
+            )}
+            value={template}
+            onChange={(ev) => applyTemplate(ev.target.value)}
+          >
+            <option value="">{t('– ohne Vorlage –')}</option>
+            {(templates.data ?? []).map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.label}
+              </option>
+            ))}
+          </SelectField>
+        )}
         {(!org || org.keeps_members) && (
           <SelectField
             label={t('Übergeordnete Einheit')}
@@ -460,6 +505,14 @@ function PlatformOrgForm({
               )}
               checked={v.federation_show_former_memberships}
               onChange={(val) => form.set('federation_show_former_memberships', val)}
+            />
+            <Checkbox
+              label={t('Darf den Einheiten darunter Module freigeben')}
+              hint={t(
+                'Dann ändert sie die Freigabe für diese Einheiten selbst, ohne die Plattform-Verwaltung.',
+              )}
+              checked={v.modules_pass_down}
+              onChange={(val) => form.set('modules_pass_down', val)}
             />
           </>
         )}

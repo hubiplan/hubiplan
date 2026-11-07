@@ -418,6 +418,10 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     released_modules = models.JSONField(
         "freigegebene Module", default=list, db_default=[], blank=True
     )
+    # Dachverband: darf seinen Vereinen selbst Module freigeben (M6, Schalter der Plattform)
+    modules_pass_down = models.BooleanField(
+        "darf Module an seine Vereine weitergeben", default=False, db_default=False
+    )
     # Untereinheiten: Module des Vereins, die der Verein für diese Einheit ausblendet (M5).
     # Leer heißt: alle Module des Vereins.
     unit_hidden_modules = models.JSONField(
