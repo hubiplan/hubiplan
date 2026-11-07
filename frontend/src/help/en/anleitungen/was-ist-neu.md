@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: cash audit. Under Finance › Closing & reports › Cash audit the treasury creates an audit assignment per financial year. The auditors tick off samples with their documents and the account balances at year end, rate checkpoints, record findings and recommend discharge. The audit report is produced as a PDF.
 - New: fixed asset register. Finance › Closing & reports › Fixed assets lists tents, trailers and other club property with depreciation and book value. Depreciation only counts in the tax report; the cash book stays unchanged.
 - New: allowances for volunteers. In the cash book an expense can be marked as trainer allowance or volunteer allowance. Finance › Closing & reports › Allowances shows the totals per person and calendar year, warns above the tax-free amount and offers a declaration to sign as PDF for each person.
 - New: split bookings. In the cash book, **Split** divides a booking across several categories or tax areas, for example the caterer's settlement. Each part becomes a booking of its own; receipts and the bank transaction stay with the first part.

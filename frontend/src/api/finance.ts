@@ -474,6 +474,76 @@ export interface Closings {
   can_reopen: boolean
 }
 
+export type AuditResult = '' | 'ok' | 'issue' | 'na'
+export type AuditRecommendation = '' | 'discharge' | 'notes' | 'refuse'
+
+export interface CashAuditSummary {
+  id: number
+  year: number
+  label: string
+  status: 'open' | 'done'
+  status_label: string
+  auditors: string
+  due_on: string | null
+  recommendation: AuditRecommendation
+  recommendation_label: string
+  open_points: number
+  closed_at: string | null
+}
+
+export interface CashAuditSample {
+  id: number
+  booking: number
+  number: string
+  date: string
+  kind: string
+  kind_label: string
+  amount: string
+  text: string
+  counterparty: string
+  category: string
+  account: string
+  receipts: { id: number; name: string }[]
+  result: '' | 'ok' | 'issue'
+  note: string
+  checked_by: string
+  checked_at: string | null
+}
+
+export interface CashAuditAccount {
+  id: number
+  account: number
+  name: string
+  kind: string
+  book_balance: string
+  statement_balance: string | null
+  difference: string | null
+  note: string
+  checked_by: string
+  checked_at: string | null
+}
+
+export interface CashAudit extends CashAuditSummary {
+  sample_size: number
+  findings: string
+  meeting: number | null
+  meeting_title: string | null
+  checks: { key: string; label: string; result: AuditResult; note: string }[]
+  samples: CashAuditSample[]
+  accounts: CashAuditAccount[]
+  facts: {
+    bookings: number
+    without_receipt: number
+    gaps: string[]
+    gap_count: number
+    closed: boolean
+    cash_counts: number
+  }
+  access: { name: string; until: string | null }[]
+  can_audit: boolean
+  can_manage: boolean
+}
+
 const base = (org: number) => `/api/orgs/${org}/finance`
 
 export const financeApi = {
@@ -556,6 +626,24 @@ export const financeApi = {
   updateAsset: (org: number, id: number, data: Record<string, unknown>) =>
     api.patch<FixedAsset>(`${base(org)}/assets/${id}/`, data),
   deleteAsset: (org: number, id: number) => api.del(`${base(org)}/assets/${id}/`),
+  audits: (org: number) => api.get<CashAuditSummary[]>(`${base(org)}/audits/`),
+  audit: (org: number, id: number) => api.get<CashAudit>(`${base(org)}/audits/${id}/`),
+  createAudit: (org: number, data: Record<string, unknown>) =>
+    api.post<CashAudit>(`${base(org)}/audits/`, data),
+  updateAudit: (org: number, id: number, data: Record<string, unknown>) =>
+    api.patch<CashAudit>(`${base(org)}/audits/${id}/`, data),
+  deleteAudit: (org: number, id: number) => api.del(`${base(org)}/audits/${id}/`),
+  auditCheck: (org: number, id: number, data: Record<string, unknown>) =>
+    api.post<CashAudit>(`${base(org)}/audits/${id}/check/`, data),
+  auditDraw: (org: number, id: number, count: number) =>
+    api.post<CashAudit>(`${base(org)}/audits/${id}/draw/`, { count }),
+  closeAudit: (org: number, id: number) =>
+    api.post<CashAudit>(`${base(org)}/audits/${id}/close/`, {}),
+  reopenAudit: (org: number, id: number, reason: string) =>
+    api.post<CashAudit>(`${base(org)}/audits/${id}/reopen/`, { reason }),
+  auditPdfUrl: (org: number, id: number) => `${base(org)}/audits/${id}/pdf/`,
+  auditMeetings: (org: number) =>
+    api.get<{ id: number; title: string; date: string }[]>(`${base(org)}/audits/meetings/`),
   splitBooking: (org: number, id: number, parts: SplitPart[]) =>
     api.post<Booking[]>(`${base(org)}/bookings/${id}/split/`, { parts }),
   stornoBooking: (org: number, id: number, reason: string) =>

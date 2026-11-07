@@ -22,6 +22,7 @@ from exchange import views as exchange_views
 from finance import (
     asset_views,
     bank_views,
+    cash_audit_views,
     cash_count_views,
     donation_views,
     quittung_views,
@@ -110,6 +111,7 @@ org_router.register(
 )
 org_router.register("finance/reserves", reserve_views.ReserveViewSet, basename="finance-reserve")
 org_router.register("finance/assets", asset_views.FixedAssetViewSet, basename="finance-asset")
+org_router.register("finance/audits", cash_audit_views.CashAuditViewSet, basename="finance-audit")
 org_router.register(
     "finance/donation-statements",
     donation_views.DonationStatementViewSet,
