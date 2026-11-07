@@ -217,8 +217,6 @@ def file_document(meeting: Meeting, content: bytes, user):
     from documents.models import Document, DocumentVersion, Folder
 
     org = meeting.organization
-    if "documents" not in (org.enabled_modules or []):
-        return None
     try:
         docs.check_budget(org, len(content))
     except DjangoValidationError:

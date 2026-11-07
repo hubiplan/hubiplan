@@ -11,7 +11,7 @@ import { MusicHeader } from './MusicLayout.tsx'
 type Preference = { enabled: boolean; days_ahead: number; scores: boolean; equipment: boolean }
 export function CustodyRemindersPage() {
   const org = useActiveOrg()
-  return org.modules.includes('todos') && org.permissions.includes('todos.view') ? (
+  return org.permissions.includes('todos.view') ? (
     <ReminderSettings />
   ) : (
     <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>

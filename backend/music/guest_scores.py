@@ -54,10 +54,7 @@ def context(access):
 
 
 def choices(view, access):
-    if (
-        not {"docs.view", "docs.edit", "docs.manage"} <= view.org_permissions
-        or "docs" not in view.org.enabled_modules
-    ):
+    if not {"docs.view", "docs.edit", "docs.manage"} <= view.org_permissions:
         return []
     org, arrangements, voices, enabled = context(access)
     if not enabled:
@@ -100,7 +97,7 @@ def save(view, access, requested):
 
 def available(access):
     org, arrangements, voices, enabled = context(access)
-    if not enabled or "docs" not in org.enabled_modules:
+    if not enabled:
         return []
     allowed = {row.pk: row for row in candidates(org, arrangements, voices)}
     output = []

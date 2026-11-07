@@ -26,8 +26,6 @@ pytestmark = pytest.mark.django_db
 
 
 def enable(c, club):
-    club.enabled_modules = list(set([*club.enabled_modules, "todos"]))
-    club.save()
     response = c.post(
         f"/api/orgs/{club.pk}/music/custody-reminders/",
         {"enabled": True, "days_ahead": 7, "scores": True, "equipment": True},
@@ -110,8 +108,6 @@ def test_equipment_return_and_maintenance_follow_actual_source(c, club, equipmen
 
 
 def test_preferences_cannot_target_other_users(api, club, music):
-    club.enabled_modules = list(set([*club.enabled_modules, "todos"]))
-    club.save()
     user = make_user("reminder-reader@example.org")
     give_role(user, club, ["music.view", "todos.view"], name="Musikerinnerungen lesen")
     client = api(user)

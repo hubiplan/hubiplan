@@ -77,8 +77,6 @@ def test_occurrence_response_rotation_and_email_revocation(c, club, rehearsal_gu
 
 def test_explicit_score_grant_disappears_after_decline_or_program_change(c, club, rehearsal_guest):
     invite, event, part = rehearsal_guest
-    club.enabled_modules = list(set([*club.enabled_modules, "docs"]))
-    club.save()
     with tenant_context(club.pk):
         folder = Folder.objects.create(organization=club, name="Noten", public_key=Folder.new_key())
         document = Document.objects.create(organization=club, folder=folder, title="Tubastimme")

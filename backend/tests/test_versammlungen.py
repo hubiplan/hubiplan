@@ -521,9 +521,6 @@ def test_protokoll_freigeben_pdf_und_ablage(setup):
     from meetings.models import MinutesVersion
 
     s = setup
-    org = s["org"]
-    org.enabled_modules = sorted({*org.enabled_modules, "documents"})
-    org.save()
     meeting = new_meeting(s)
     url = f"{s['url']}{meeting['id']}/"
     meeting = ok(s["chef"].patch(url, {"status": "held"}, content_type=JSON))
@@ -681,10 +678,8 @@ def test_beschlussbuch(setup, api):
     # Excel
     resp = s["reader"].get(book + "export/")
     assert resp.status_code == 200 and resp.content[:2] == b"PK"
-    # Als Aufgabe: braucht das Modul Aufgaben und das Recht dazu
+    # Als Aufgabe: braucht das Recht dazu
     assert s["chef"].post(f"{detail}todo/", {}, content_type=JSON).status_code == 403
-    org.enabled_modules = sorted({*org.enabled_modules, "todos"})
-    org.save()
     planner = make_user("schrift@example.org")
     give_role(
         planner, org, permissions=["meetings.edit", "todos.view", "todos.edit"], name="Schrift"

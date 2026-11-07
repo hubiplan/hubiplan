@@ -210,7 +210,7 @@ class BookDetailView(Base):
 
 
 def todo_allowed(user, scope) -> bool:
-    return "todos" in (scope.org.enabled_modules or []) and "todos.edit" in scope.permissions
+    return "todos.edit" in scope.permissions
 
 
 class TodoInput(serializers.Serializer):
