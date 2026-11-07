@@ -569,6 +569,33 @@ export interface ArtistFeeReport {
   }[]
 }
 
+/** Vermögensübersicht zum Ende eines Geschäftsjahres */
+export interface NetAssets {
+  year: number
+  label: string
+  start_date: string
+  end_date: string
+  accounts: { id: number; name: string; kind: string; balance: string }[]
+  cash: string
+  receivables: { total: string; count: number }
+  fixed_assets: { total: string; count: number } | null
+  liabilities: {
+    total: string
+    count: number
+    items: {
+      seller: string
+      number: string
+      date: string
+      due_date: string | null
+      amount: string
+    }[]
+  }
+  assets_total: string
+  net: string
+  reserves: { total: string; items: { name: string; balance: string }[] } | null
+  free: string
+}
+
 const base = (org: number) => `/api/orgs/${org}/finance`
 
 export const financeApi = {
@@ -595,6 +622,8 @@ export const financeApi = {
   /** ZIP für eine Prüfung (Finanzamt, Kassenprüfer): alle Finanzdaten mit Belegen und index.xml */
   exportUrl: (org: number, year: number) => `${base(org)}/export/?jahr=${year}`,
   overview: (org: number, year: number) => api.get<Overview>(`${base(org)}/overview/?jahr=${year}`),
+  netAssets: (org: number, year: number) =>
+    api.get<NetAssets>(`${base(org)}/net-assets/?jahr=${year}`),
   artistFees: (org: number, year: number) =>
     api.get<ArtistFeeReport>(`${base(org)}/artist-fees/?jahr=${year}`),
   artistFeesXlsxUrl: (org: number, year: number) =>

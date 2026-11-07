@@ -963,6 +963,21 @@ class ArtistFeeView(FinanceMixin, APIView):
         return Response(services._money(data))
 
 
+class NetAssetsView(FinanceMixin, APIView):
+    """Vermögensübersicht zum Ende eines Geschäftsjahres (Konzept vereinskasse-steuern, S7):
+    Kontenstände, offene Forderungen und Verbindlichkeiten, Anlagevermögen, Rücklagen."""
+
+    def get(self, request, org_id: int):
+        from . import net_assets
+
+        raw = request.query_params.get("jahr", "")
+        if raw.isdigit() and 1990 <= int(raw) <= 2100:
+            year = int(raw)
+        else:
+            year = self.org.fiscal_year_of(timezone.localdate())
+        return Response(services._money(net_assets.report(self.org, year)))
+
+
 class FinanceSettingsView(FinanceMixin, APIView):
     """Einstellungen der Kasse. PATCH {tax_areas_enabled}: Verein bzw. Dachverband
     entscheidet selbst, ob Kategorien steuerlichen Bereichen zugeordnet werden."""

@@ -29,6 +29,7 @@ import { FinanceDevelopment } from './DevelopmentPage.tsx'
 import { EvaluationPage, FinanceOverview } from './OverviewPages.tsx'
 import { TaxPage } from './TaxPage.tsx'
 import { AuditPage } from './AuditPage.tsx'
+import { NetAssetsPage } from './NetAssetsPage.tsx'
 import { ArtistFeesPage } from './ArtistFeesPage.tsx'
 import { AllowancesPage } from './AllowancesPage.tsx'
 import { AssetsPage } from './AssetsPage.tsx'
@@ -272,6 +273,7 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
               },
             ]
           : []),
+        { to: '/finanzen/abschluss/vermoegen', label: t('Vermögen') },
         { to: '/finanzen/abschluss/jahresabschluss', label: t('Jahresabschluss') },
         { to: '/finanzen/abschluss/kassenpruefung', label: t('Kassenprüfung') },
       ]}
@@ -282,6 +284,7 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
         {a.tax && <Route path="pauschalen" element={<AllowancesPage canEdit={a.financeEdit} />} />}
         {a.tax && <Route path="anlagen" element={<AssetsPage canEdit={a.financeEdit} />} />}
         {a.tax && <Route path="kuenstlersozialabgabe" element={<ArtistFeesPage />} />}
+        <Route path="vermoegen" element={<NetAssetsPage />} />
         <Route path="jahresabschluss" element={<ClosingsPage />} />
         <Route path="kassenpruefung" element={<AuditPage canEdit={a.financeEdit} />} />
         <Route path="*" element={<Navigate to="/finanzen/abschluss" replace />} />
