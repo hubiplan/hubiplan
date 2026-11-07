@@ -109,4 +109,55 @@ describe('Rücklagen', () => {
       purpose: 'Festzelt',
     })
   })
+
+  it('zeigt den Höchstbetrag der freien Rücklage und warnt bei Überschreitung', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [kassierer] }),
+      [`GET ${F}/reserves/`]: () => ({
+        status: 200,
+        body: { reserves: [], total: '0.00', funds: '5000.00', free: '5000.00' },
+      }),
+      [`GET ${F}/settings/`]: () => ({
+        status: 200,
+        body: {
+          current_year: 2025,
+          years: [{ year: 2025, label: '2025' }],
+          tax_areas: [],
+          tax_areas_enabled: true,
+        },
+      }),
+      [`GET ${F}/reserves/limits/?jahr=2025`]: () => ({
+        status: 200,
+        body: {
+          year: 2025,
+          label: '2025',
+          free: {
+            assets_surplus: '600.00',
+            ideal_income: '4000.00',
+            purpose_surplus: '0.00',
+            business_surplus: '1000.00',
+            other_funds: '5000.00',
+            limit: '700.00',
+            income: '7600.00',
+            carry: '400.00',
+            available: '1100.00',
+            added: '1150.00',
+            over: '50.00',
+          },
+          replacement: { depreciation: '1200.00', added: '0.00' },
+          use_of_funds: false,
+          use_of_funds_from: '100000.00',
+        },
+      }),
+    })
+    renderApp('/finanzen/ruecklagen')
+    const card = await screen.findByTestId('reserve-limits')
+    expect(within(card).getByText('zulässig in 2025')).toBeInTheDocument()
+    expect(within(card).getByText(/1\.100,00/)).toBeInTheDocument()
+    expect(within(card).getByText(/liegen 50,00 .* über dem Höchstbetrag/)).toBeInTheDocument()
+    expect(
+      within(card).getByText(/Abschreibung laut Anlagenverzeichnis beträgt 1\.200,00/),
+    ).toBeInTheDocument()
+  })
 })

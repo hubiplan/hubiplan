@@ -1016,8 +1016,32 @@ export interface ReserveOverview {
   free: string
 }
 
+/** Höchstbetrag der freien Rücklage und Vorschlag Wiederbeschaffung (§ 62 AO) */
+export interface ReserveLimits {
+  year: number
+  label: string
+  free: {
+    assets_surplus: string
+    ideal_income: string
+    purpose_surplus: string
+    business_surplus: string
+    other_funds: string
+    limit: string
+    income: string
+    carry: string
+    available: string
+    added: string
+    over: string
+  }
+  replacement: { depreciation: string; added: string } | null
+  use_of_funds: boolean
+  use_of_funds_from: string
+}
+
 export const reserveApi = {
   list: (org: number) => api.get<ReserveOverview>(`${base(org)}/reserves/`),
+  limits: (org: number, year: number) =>
+    api.get<ReserveLimits>(`${base(org)}/reserves/limits/?jahr=${year}`),
   create: (org: number, data: Pick<Reserve, 'name' | 'kind' | 'purpose'>) =>
     api.post<Reserve>(`${base(org)}/reserves/`, data),
   update: (
