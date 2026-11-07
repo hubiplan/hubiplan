@@ -17,8 +17,28 @@ export interface ModuleGroup {
   modules: ModuleInfo[]
 }
 
+/** Modul einer Einheit unter Einstellungen › Module */
+export interface OrgModule {
+  id: string
+  label: string
+  description: string
+  requires: string[]
+  requires_any: string[]
+  released: boolean
+  enabled: boolean
+  needed_by: string[]
+}
+
+export interface OrgModules {
+  groups: { id: string; label: string; modules: OrgModule[] }[]
+  changes?: { on: string[]; off: string[] }
+}
+
 export const moduleApi = {
   directory: () => api.get<ModuleGroup[]>('/api/modules/'),
+  ofOrg: (org: number) => api.get<OrgModules>(`/api/orgs/${org}/modules/`),
+  setOrg: (org: number, enabled: string[], dryRun = false) =>
+    api.patch<OrgModules>(`/api/orgs/${org}/modules/`, { enabled, dry_run: dryRun }),
 }
 
 /** Alle Module der Gruppen in einer Liste */

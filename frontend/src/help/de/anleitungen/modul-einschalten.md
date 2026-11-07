@@ -8,10 +8,10 @@ routen: [/plattform]
 stichworte: [Modul, Funktion, freischalten, Webseite, Würden, Ehrungen, Mitgliederbereich]
 ---
 
-Module schaltet die Plattform-Verwaltung frei. Wer im Verein eine Funktion vermisst, wendet sich an sie.
+Module gibt die Plattform-Verwaltung frei. Der Verein schaltet freigegebene Module unter [Einstellungen › Module](/einstellungen/module) selbst aus und wieder ein. Wer eine Funktion vermisst, die nicht freigegeben ist, wendet sich an die Plattform-Verwaltung.
 
 1. Öffne [Plattform](/plattform) und wähle die Einheit.
-2. Hake im Abschnitt **Module** an, was die Einheit nutzen soll, etwa Webseite, Wettbewerbe oder Meldungen. Die Module stehen nach Gruppen geordnet; hinter jedem steht kurz, was es enthält. Braucht ein Modul ein anderes (Musik, Versammlungen und Helferdienste brauchen Termine, Musik auch das Notenarchiv), wird dieses mit angehakt; nimmst du es weg, gehen die abhängigen Module mit.
+2. Hake im Abschnitt **Freigegebene Module** an, was die Einheit nutzen darf, etwa Webseite, Wettbewerbe oder Meldungen. Die Module stehen nach Gruppen geordnet; hinter jedem steht kurz, was es enthält. Braucht ein Modul ein anderes (Musik, Versammlungen und Helferdienste brauchen Termine, Musik auch das Notenarchiv), wird dieses mit angehakt; nimmst du es weg, gehen die abhängigen Module mit.
 3. Speichere. Die Änderung gilt sofort für alle in der Einheit.
 
 Ein ausgeschaltetes Modul verschwindet aus dem Menü; seine Daten bleiben erhalten. Öffentliche Teile gehen offline, etwa die Ausweisprüfung, der öffentliche Dokumentenordner oder die Social-Media-Beiträge auf der Webseite.

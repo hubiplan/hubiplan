@@ -40,6 +40,10 @@ export function SettingsLayout() {
                 },
               ]),
         ]),
+    // Module ein- und ausschalten (innerhalb der Freigabe der Plattform)
+    ...((active.type === 'federation' || active.type === 'club') && can(PERM.settingsView)
+      ? [{ to: '/einstellungen/module', label: t('Module'), section: general }]
+      : []),
     ...(unit
       ? []
       : [

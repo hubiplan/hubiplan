@@ -1039,6 +1039,12 @@ class Loader:
         if org.type == Organization.Type.CLUB and org.member_portal_enabled:
             modules = sorted({*modules, "portal"})
         org.enabled_modules = modules
+        # Freigabe bleibt auf der Instanz: freigegeben ist, was eingeschaltet ist, dazu der
+        # Mitgliederbereich (den schaltet der Verein selbst)
+        released = set(modules)
+        if org.type == Organization.Type.CLUB and "members" in released:
+            released.add("portal")
+        org.released_modules = sorted(released)
         if org.type != Organization.Type.FEDERATION or not self.by_platform:
             org.federation_member_access = Organization.MemberAccess.NONE
             org.federation_show_former_memberships = False

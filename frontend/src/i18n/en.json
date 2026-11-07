@@ -6931,5 +6931,14 @@
   "Die Chronik ist Vereinswissen, etwa für Festschrift und Jubiläum. Mit dem Modul „Webseite“ erscheint die veröffentlichte Fassung auch dort.": "The chronicle is club knowledge, for example for an anniversary book. With the “Website” module, the published version also appears there.",
   "Noch keine Chronik angelegt.": "No chronicle created yet.",
   "Die Zeitleiste ist noch leer.": "The timeline is still empty.",
-  "Chronik": "Chronicle"
+  "Chronik": "Chronicle",
+  "Freigegebene Module": "Released modules",
+  "Neu freigegebene Module werden eingeschaltet. Die Einheit kann freigegebene Module unter Einstellungen › Module selbst aus- und wieder einschalten.": "Newly released modules are switched on. The unit can switch released modules off and on again itself under Settings › Modules.",
+  "„{x}“ wird eingeschaltet.": "“{x}” will be switched on.",
+  "„{x}“ wird ausgeschaltet. Die Daten bleiben erhalten, öffentliche Teile gehen offline.": "“{x}” will be switched off. The data is kept; public parts go offline.",
+  "Mit eingeschaltet: {x}.": "Also switched on: {x}.",
+  "Mit ausgeschaltet: {x}.": "Also switched off: {x}.",
+  "Schaltet ein, was ihr nutzt; ausgeschaltete Module verschwinden aus dem Menü, ihre Daten bleiben erhalten. Welche Module zur Wahl stehen, gibt die Plattform-Verwaltung frei.": "Switch on what you use; switched-off modules disappear from the menu and their data is kept. The platform administration releases which modules are available.",
+  "braucht {x}": "needs {x}",
+  "von der Plattform nicht freigegeben": "not released by the platform"
 }

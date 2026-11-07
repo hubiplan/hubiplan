@@ -4,6 +4,12 @@ Einzige Quelle: `backend/access/modules.py` (Modulverzeichnis). Die Oberfläche 
 `GET /api/modules/`; der Rechtekatalog (`access/catalog.py`) leitet daraus ab, welche Module
 abschaltbar sind und welche eine neue Einheit bekommt.
 
+- **Freigegeben** (Plattform, Obergrenze) steht in `Organization.released_modules`, gepflegt unter
+  Plattform › Einheiten (`apply_release`: neu Freigegebenes wird eingeschaltet, Entzogenes
+  aus). Leer heißt für eine Fassung: wie eingeschaltet (`released_of`).
+- Die Einheit schaltet unter Einstellungen › Module (`/api/orgs/<id>/modules/`, Recht
+  `settings.*`, `apply_enabled`) innerhalb der Freigabe ein und aus; `dry_run` zeigt vorher,
+  was mit ein- oder ausgeschaltet wird.
 - **Eingeschaltet** steht in `Organization.enabled_modules`. Abfragen im Code nutzen die
   Kennung aus dem Verzeichnis, für Untereinheiten `module_on(org, id)` (sie erben die Module
   ihres Vereins; Kasse, Rechnungen und Webseite führen sie selbst).
