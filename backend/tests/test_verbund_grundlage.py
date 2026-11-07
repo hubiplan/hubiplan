@@ -115,7 +115,7 @@ class TestIdentitaet:
         assert data["enc_public_key"] == ident.enc_public_key
         assert data["fingerprint"] == ident.fingerprint
         assert data["base_url"] == "https://verband.example"
-        assert data["versions"] == [1]
+        assert data["versions"] == [1, 2]
         # Kein privater Schlüssel, keine Einheiten
         text = json.dumps(data)
         assert "private" not in text

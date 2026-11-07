@@ -51,6 +51,8 @@ export interface Coupling {
   last_contact_at: string | null
   last_error: string
   error_since: string | null
+  /** Organisationsmitglieder, die die Gegenstelle (zu alte Fassung) nicht bekommt */
+  organizations_withheld?: number
   queued: number
   reception_budget?: { bytes: number; messages: number; initialized: boolean }
   received: Received
@@ -143,13 +145,14 @@ export interface RegisterInfo {
   counts: Record<'active' | 'unclear' | 'withdrawn', number>
   unclear: {
     id: number
+    kind?: 'person' | 'organization'
     last_name: string
     first_name: string
     birth_date: string | null
     candidates: {
       id: number
       name: string
-      birth_date: string
+      birth_date: string | null
       member_number: number | null
       units: string[]
     }[]

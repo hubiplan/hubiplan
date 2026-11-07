@@ -48,8 +48,11 @@ def build(coupling: Coupling, level) -> dict:
     from members import services
     from members.models import Membership
 
+    from .versions import supports_organizations
+
     unit = coupling.local_unit
     today = timezone.localdate()
+    with_organizations = supports_organizations(coupling.peer)
     rows = []
     with tenant_context(unit.pk):
         memberships = (
@@ -63,8 +66,8 @@ def build(coupling: Coupling, level) -> dict:
             if not current and not m.origin_ref:
                 continue  # Frühere eigene Mitglieder gehen den Verein nichts an
             person = m.person
-            if person.is_organization:
-                # Organisationsmitglieder gehen erst mit Schritt J6 an Gegenstellen
+            if person.is_organization and not with_organizations:
+                # Gegenstelle zu alt für Organisationsmitglieder (Fassung 2, J6)
                 continue
             contact = services.contact_for(person, unit)
             assignment = m.current_type(today) if current else None
@@ -74,9 +77,14 @@ def build(coupling: Coupling, level) -> dict:
                     "uid": f"m{m.pk}",
                     "origin": m.origin_ref,
                     "current": current,
+                    **(
+                        {"kind": "organization", "name_suffix": person.name_suffix}
+                        if person.is_organization
+                        else {}
+                    ),
                     "last_name": person.last_name,
                     "first_name": person.first_name,
-                    "birth_date": person.birth_date.isoformat(),
+                    "birth_date": person.birth_date.isoformat() if person.birth_date else None,
                     "gender": person.gender,
                     "type": assignment.member_type.name if assignment else "",
                     "entry": entries[-1].isoformat() if entries else None,
@@ -110,7 +118,12 @@ def _clean(row) -> dict | None:
     last = str(row.get("last_name") or "").strip()[:100]
     first = str(row.get("first_name") or "").strip()[:100]
     birth = _date(row.get("birth_date"))
-    if not uid.startswith("m") or not uid[1:].isdigit() or not last or not first or not birth:
+    organization = row.get("kind") == "organization"
+    if organization:
+        first, birth = "", None  # Organisationen: kein Vorname, kein Geburtsdatum (J6)
+    elif not first or not birth:
+        return None
+    if not uid.startswith("m") or not uid[1:].isdigit() or not last:
         return None
     origin = str(row.get("origin") or "")
     contact = row.get("contact") if isinstance(row.get("contact"), dict) else {}
@@ -118,6 +131,8 @@ def _clean(row) -> dict | None:
         "uid": uid,
         "origin": int(origin) if origin.isdigit() else None,
         "current": bool(row.get("current")),
+        "kind": "organization" if organization else "person",
+        "name_suffix": str(row.get("name_suffix") or "").strip()[:100] if organization else "",
         "last_name": last,
         "first_name": first,
         "birth_date": birth,
@@ -229,7 +244,8 @@ def _update(club, membership, row) -> None:
     person = membership.person
     before = snapshot(person)
     genders = {"", *(c for c, _ in person._meta.get_field("gender").choices)}
-    for field in PERSON_FIELDS:
+    fields = ("last_name", "name_suffix") if person.is_organization else PERSON_FIELDS
+    for field in fields:
         value = row[field]
         if field == "gender" and value not in genders:
             continue  # unbekannte Werte nicht übernehmen
@@ -279,6 +295,10 @@ def _release(coupling, membership, rm, why: str) -> None:
 def _candidates(club, row) -> list[int]:
     from members import services
 
+    if row["kind"] == "organization":
+        from .register import _organizations_matching
+
+        return _organizations_matching(services.scope_for(club), row)
     found = services.persons_matching(
         services.scope_for(club).pk,
         row["last_name"],
@@ -321,6 +341,8 @@ def _new(coupling, club, row, person=None) -> None:
         "member_type": member_type,
         "entry_date": row["entry"] or timezone.localdate(),
         "person": person,
+        "kind": row["kind"],
+        "name_suffix": row["name_suffix"],
         "last_name": row["last_name"],
         "first_name": row["first_name"],
         "birth_date": row["birth_date"],
@@ -398,12 +420,9 @@ def resolve(rm: RemoteMember, person_id: int | None) -> RemoteMember:
             person = Person.objects.get(pk=person_id, scope=services.scope_for(club))
         else:
             # „Andere Person“: trotz gleichem Namen eine neue Person anlegen
-            person = Person.objects.create(
-                scope=services.scope_for(club),
-                last_name=row["last_name"],
-                first_name=row["first_name"],
-                birth_date=row["birth_date"],
-            )
+            from .register import _new_person
+
+            person = _new_person(services.scope_for(club), row)
         _new(coupling, club, row, person=person)
     rm.refresh_from_db()
     return rm
