@@ -467,6 +467,14 @@ def _catalog_org(request: Request) -> Organization | None:
     return None
 
 
+@api_view(["GET"])
+def module_directory(request: Request) -> Response:
+    """Modulverzeichnis: Gruppen mit Modulen, Beschreibung und Voraussetzungen."""
+    from .modules import directory
+
+    return Response(directory())
+
+
 @extend_schema(
     parameters=[
         OpenApiParameter("org_type", str, required=False),

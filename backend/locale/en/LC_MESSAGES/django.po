@@ -8543,3 +8543,51 @@ msgstr ""
 
 msgid "Geburtsdatum: {exc}"
 msgstr "Date of birth: {exc}"
+
+msgid "Vereinsleben"
+msgstr "Club life"
+
+msgid "Kommunikation"
+msgstr "Communication"
+
+msgid "Verwaltung"
+msgstr "Administration"
+
+msgid "Mitgliederliste, Akten, Ämter, Änderungen und Wechsel, Import"
+msgstr "Member list, records, offices, changes and transfers, import"
+
+msgid "Kalender mit Zu- und Absagen, Kalender-Abo und fremden Kalendern"
+msgstr "Calendar with RSVPs, calendar subscription and external calendars"
+
+msgid "Tagesordnung, Einladung, Protokoll und Beschlussbuch"
+msgstr "Agenda, invitation, minutes and resolution book"
+
+msgid "Dienstpläne mit Schichten und Einteilung"
+msgstr "Duty rosters with shifts and assignments"
+
+msgid "Auftritte, Musiker, Proben, Notenbestand und Besetzung"
+msgstr "Performances, musicians, rehearsals, score library and line-ups"
+
+msgid "Wettbewerbe mit Wertungen, Ranglisten, Wanderpokalen und Urkunden"
+msgstr "Competitions with scoring, rankings, challenge trophies and certificates"
+
+msgid "Meldungen an Veranstalter und Ausschreibungen an Untereinheiten"
+msgstr "Entries to organisers and calls for entries to sub-units"
+
+msgid "Inhalte und Einrichtung der Vereinswebseite"
+msgstr "Content and setup of the club website"
+
+msgid "Kassenbuch, Konten, Belege, Abschluss"
+msgstr "Cash book, accounts, receipts, year-end closing"
+
+msgid "Beitragsläufe, Rechnungen, Mahnungen, Lastschrift"
+msgstr "Fee runs, invoices, reminders, direct debit"
+
+msgid "Materialbestand, Standorte und Ausleihe"
+msgstr "Equipment inventory, locations and lending"
+
+msgid "Räume und Anlagen"
+msgstr "Rooms and facilities"
+
+msgid "Vereinsheim, Schießstand, Plätze und ihre Bereiche"
+msgstr "Clubhouse, shooting range, grounds and their areas"

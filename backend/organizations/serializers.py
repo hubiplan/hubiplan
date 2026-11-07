@@ -12,6 +12,7 @@ from rest_framework import serializers
 
 from access.catalog import DEPARTMENT_CODES, MEMBERS_VIEW, ROLES_VIEW, SWITCHABLE_MODULES
 from access.models import Role, RoleAssignment
+from access.modules import with_requirements
 from core.api_base import ModelCleanMixin
 
 from . import theme
@@ -874,7 +875,8 @@ class PlatformOrganizationSerializer(
             raise serializers.ValidationError(
                 gettext("Unbekannte Module: {x}").format(x=", ".join(unknown))
             )
-        return sorted(set(value))
+        # Voraussetzungen mitnehmen (z. B. Musik braucht Termine)
+        return sorted(with_requirements(value))
 
     def validate(self, attrs):
         from .kinds import type_for_new
