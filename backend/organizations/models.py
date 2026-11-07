@@ -464,6 +464,9 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         default=False,
         help_text="Eigene Kasse und eigene Rollen mit Zugängen.",
     )
+    # Untereinheiten: steuerlich selbständig (eigener Bescheid). Sonst zählen ihre Zahlen
+    # beim Verein mit (Freigrenze § 64 Abs. 3 und 4 AO, Kleinunternehmergrenze).
+    tax_independent = models.BooleanField("steuerlich selbständig", default=False, db_default=False)
     # Untereinheiten: Rolleninhaber bekommen eigene Zugänge mit Rechten. Aus: die
     # Einheit darüber verwaltet sie, ihre Rollen sind reine Ämter.
     self_managed = models.BooleanField(
@@ -848,6 +851,7 @@ class Department(Organization):
             "logo",
             "own_workspace",
             "self_managed",
+            "tax_independent",
             "parent",
         }
     )
