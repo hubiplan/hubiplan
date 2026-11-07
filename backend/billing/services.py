@@ -746,6 +746,12 @@ def finalize(invoice: Invoice) -> None:
     invoice.number = next_invoice_number(org.pk, invoice.year)
     invoice.status = Invoice.Status.OPEN
     invoice.save()
+    from . import member_einvoice
+
+    cfg = settings_for(org)
+    if member_einvoice.applies(invoice, cfg):
+        # Beitragsrechnung an eine Behörde mit Leitweg-ID: als XRechnung (J8a)
+        member_einvoice.prepare(invoice, cfg)
     if invoice.electronic_data:
         from .einvoice_services import archive
 

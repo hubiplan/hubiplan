@@ -50,6 +50,11 @@ class BillingSettingsSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "sepa_enabled",
             "creditor_id",
             "prenotification_days",
+            "einvoice_members",
+            "einvoice_contact",
+            "einvoice_phone",
+            "einvoice_email",
+            "einvoice_identifier",
         ]
 
     def validate_creditor_id(self, value):
