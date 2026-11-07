@@ -8512,3 +8512,34 @@ msgid ""
 msgstr ""
 "{org} invites you, as contact person of {member}, to the member area of "
 "{instanz}. There you can see the membership data and report changes."
+
+msgid "Typ „{raw}“ ist unbekannt (erlaubt: Person oder Organisation)."
+msgstr "Type “{raw}” is unknown (allowed: Person or Organisation)."
+
+msgid "Zeile {index}: Typ widerspricht Zeile {first_row}."
+msgstr "Row {index}: type contradicts row {first_row}."
+
+msgid "Zeile {index}: Name des Ansprechpartners fehlt."
+msgstr "Row {index}: contact person's name is missing."
+
+msgid "Zeile {index}: E-Mail des Ansprechpartners ist ungültig."
+msgstr "Row {index}: contact person's email is invalid."
+
+msgid "Eine Organisation hat keinen Vornamen und kein Geburtsdatum."
+msgstr "An organisation has no first name and no date of birth."
+
+msgid "Ansprechpartner gibt es nur bei Organisationen."
+msgstr "Only organisations have contact persons."
+
+msgid "Namenszusatz und Rechtsform gibt es nur bei Organisationen."
+msgstr "Only organisations have a name suffix and legal form."
+
+msgid ""
+"„{name}“ sieht nach einer Organisation aus. Bitte in der Spalte „Typ“ "
+"„Organisation“ eintragen."
+msgstr ""
+"“{name}” looks like an organisation. Please enter “Organisation” in the "
+"“Typ” column."
+
+msgid "Geburtsdatum: {exc}"
+msgstr "Date of birth: {exc}"
