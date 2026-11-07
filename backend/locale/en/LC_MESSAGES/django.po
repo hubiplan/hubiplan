@@ -8942,3 +8942,105 @@ msgstr "The disposal is before the acquisition."
 
 msgid "Unbekannte Buchung."
 msgstr "Unknown booking."
+
+msgid "Aufwandsvergütungen innerhalb der Freibeträge"
+msgstr "Allowances within the tax-free amounts"
+
+msgid "Ausgaben im Rahmen der Satzungszwecke"
+msgstr "Expenses within the statutory purposes"
+
+msgid "Barkasse gezählt, Bestand stimmt mit dem Kassenbuch überein"
+msgstr "Cash box counted, balance matches the cash book"
+
+msgid "Belege vollständig und geordnet"
+msgstr "Documents complete and in order"
+
+msgid "Bitte 1 bis 200 Stichproben angeben."
+msgstr "Please enter 1 to 200 samples."
+
+msgid "Bitte 1 bis 50 angeben."
+msgstr "Please enter 1 to 50."
+
+msgid "Bitte Stichprobe oder Konto angeben."
+msgstr "Please specify a sample or an account."
+
+msgid "Bitte die Rückfrage kurz beschreiben."
+msgstr "Please describe the query briefly."
+
+msgid "Bitte ein Geschäftsjahr wählen."
+msgstr "Please choose a financial year."
+
+msgid "Bitte eine Empfehlung zur Entlastung wählen."
+msgstr "Please choose a recommendation on discharge."
+
+msgid "Bitte höchstens 300 Zeichen."
+msgstr "Please use at most 300 characters."
+
+msgid "Bitte höchstens 5000 Zeichen."
+msgstr "Please use at most 5000 characters."
+
+msgid "Buchungen lückenlos nummeriert"
+msgstr "Entries numbered without gaps"
+
+msgid "Den Prüfauftrag legt die Kasse an."
+msgstr "The audit assignment is created by the treasury."
+
+msgid "Die Kassenprüfung ist abgeschlossen. Erst wieder öffnen."
+msgstr "The cash audit is completed. Reopen it first."
+
+msgid "Die Prüfer haben schon geprüft. Die Kassenprüfung bleibt erhalten."
+msgstr "The auditors have already checked items. The cash audit is kept."
+
+msgid "Entlastung empfohlen"
+msgstr "Discharge recommended"
+
+msgid "Entlastung mit Anmerkungen empfohlen"
+msgstr "Discharge recommended with remarks"
+
+msgid "Entlastung nicht empfohlen"
+msgstr "Discharge not recommended"
+
+msgid "Es gibt keine weiteren Buchungen für die Stichprobe."
+msgstr "There are no further entries for the sample."
+
+msgid "Für dieses Geschäftsjahr gibt es schon eine Kassenprüfung."
+msgstr "There is already a cash audit for this financial year."
+
+msgid "Kontenstände stimmen mit den Kontoauszügen überein"
+msgstr "Account balances match the bank statements"
+
+msgid "Noch {n} Punkte offen (Stichproben, Konten oder Prüfpunkte)."
+msgstr "{n} items still open (samples, accounts or checkpoints)."
+
+msgid "Prüfen dürfen nur Kassenprüfer: Kasse lesen, aber nicht führen."
+msgstr "Only cash auditors may check: read the treasury, but not keep it."
+
+msgid "Rücklagen nachvollziehbar gebildet und verwendet"
+msgstr "Reserves formed and used traceably"
+
+msgid "Unbekannte Empfehlung."
+msgstr "Unknown recommendation."
+
+msgid "Unbekannte Stichprobe."
+msgstr "Unknown sample."
+
+msgid "Unbekannte Versammlung."
+msgstr "Unknown meeting."
+
+msgid "Unbekanntes Ergebnis."
+msgstr "Unknown result."
+
+msgid "Ungültige Prüfpunkte."
+msgstr "Invalid checkpoints."
+
+msgid "Zuwendungsbestätigungen passen zu den Spenden"
+msgstr "Donation receipts match the donations"
+
+msgid "in Ordnung"
+msgstr "in order"
+
+msgid "in Prüfung"
+msgstr "being audited"
+
+msgid "noch offen"
+msgstr "still open"

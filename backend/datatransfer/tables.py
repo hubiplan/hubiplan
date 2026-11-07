@@ -163,6 +163,10 @@ MODULE_MODELS = (
     "meetings.Attendance",
     "meetings.MinutesVersion",
     "meetings.Motion",
+    # Kassenprüfung nach den Versammlungen (Verknüpfung zum Bericht der Kassenprüfer)
+    "finance.CashAudit",
+    "finance.CashAuditSample",
+    "finance.CashAuditAccount",
     # Helferdienste nach den Terminen (ein Plan kann an einem Termin hängen)
     "helpers.HelperPlan",
     "helpers.Duty",

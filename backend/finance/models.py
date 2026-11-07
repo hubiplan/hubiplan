@@ -1227,3 +1227,126 @@ class FixedAsset(models.Model):
             errors["booking"] = gettext("Unbekannte Buchung.")
         if errors:
             raise ValidationError(errors)
+
+
+class CashAudit(models.Model):
+    """Kassenprüfung eines Geschäftsjahres (Konzept vereinskasse-steuern, S6).
+
+    Die Kasse legt den Prüfauftrag an; die Kassenprüfer (Rolle mit Kasse lesen, ohne Kasse
+    führen) haken Stichproben und Kontenstände ab, halten Feststellungen fest und geben eine
+    Empfehlung zur Entlastung. Daraus entsteht der Prüfbericht als PDF."""
+
+    class Status(models.TextChoices):
+        OPEN = "open", gettext_lazy("in Prüfung")
+        DONE = "done", gettext_lazy("abgeschlossen")
+
+    class Recommendation(models.TextChoices):
+        NONE = "", gettext_lazy("noch offen")
+        DISCHARGE = "discharge", gettext_lazy("Entlastung empfohlen")
+        NOTES = "notes", gettext_lazy("Entlastung mit Anmerkungen empfohlen")
+        REFUSE = "refuse", gettext_lazy("Entlastung nicht empfohlen")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    year = models.PositiveSmallIntegerField("Geschäftsjahr")
+    auditors = models.CharField("Kassenprüfer", max_length=300, blank=True)
+    due_on = models.DateField("zu prüfen bis", null=True, blank=True)
+    sample_size = models.PositiveSmallIntegerField("Stichproben", default=20)
+    # Prüfpunkte: {key: {"ok": true|false|null, "note": "…"}} (Schlüssel in finance/cash_audit.py)
+    checks = models.JSONField("Prüfpunkte", default=dict, blank=True)
+    findings = models.TextField("Feststellungen", max_length=5000, blank=True)
+    recommendation = models.CharField(
+        "Empfehlung", max_length=10, choices=Recommendation.choices, blank=True, default=""
+    )
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
+    meeting = models.ForeignKey(
+        "meetings.Meeting",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Versammlung",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    closed_at = models.DateTimeField("abgeschlossen am", null=True, blank=True)
+    closed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    class Meta:
+        verbose_name = "Kassenprüfung"
+        verbose_name_plural = "Kassenprüfungen"
+        ordering = ["-year"]
+        constraints = [
+            models.UniqueConstraint(fields=["organization", "year"], name="kassenpruefung_je_jahr")
+        ]
+
+    def __str__(self) -> str:
+        return f"Kassenprüfung {self.year}"
+
+    def clean(self):
+        if self.sample_size is not None and not 1 <= self.sample_size <= 200:
+            raise ValidationError({"sample_size": gettext("Bitte 1 bis 200 Stichproben angeben.")})
+
+
+class CashAuditSample(models.Model):
+    """Stichprobe einer Kassenprüfung: eine Buchung, die die Prüfer mit dem Beleg vergleichen."""
+
+    class Result(models.TextChoices):
+        OPEN = "", gettext_lazy("offen")
+        OK = "ok", gettext_lazy("in Ordnung")
+        ISSUE = "issue", gettext_lazy("Rückfrage")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    audit = models.ForeignKey(CashAudit, on_delete=models.CASCADE, related_name="samples")
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="+")
+    result = models.CharField(max_length=10, choices=Result.choices, blank=True, default="")
+    note = models.CharField("Anmerkung", max_length=300, blank=True)
+    checked_by_name = models.CharField(max_length=200, blank=True)
+    checked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["booking__date", "booking__number", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["audit", "booking"], name="stichprobe_einmal")
+        ]
+
+    def __str__(self) -> str:
+        return f"Stichprobe {self.booking_id}"
+
+
+class CashAuditAccount(models.Model):
+    """Kontenabgleich einer Kassenprüfung: Bestand laut Kassenbuch gegen Kontoauszug bzw.
+    Zählung am Ende des Geschäftsjahres."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    audit = models.ForeignKey(CashAudit, on_delete=models.CASCADE, related_name="accounts")
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="+")
+    statement_balance = models.DecimalField(
+        "Stand laut Kontoauszug bzw. Zählung",
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+    note = models.CharField("Anmerkung", max_length=300, blank=True)
+    checked_by_name = models.CharField(max_length=200, blank=True)
+    checked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["account__position", "account__name", "pk"]
+        constraints = [
+            models.UniqueConstraint(fields=["audit", "account"], name="kontenabgleich_einmal")
+        ]
+
+    def __str__(self) -> str:
+        return f"Kontenabgleich {self.account_id}"

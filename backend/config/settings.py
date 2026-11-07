@@ -248,6 +248,7 @@ SPECTACULAR_SETTINGS = {
         "ScorePaperFormatEnum": ["concert", "march"],
         "OrganizationTypeEnum": "organizations.models.Organization.Type",
         "InvoiceStatusEnum": "billing.models.Invoice.Status",
+        "CashAuditStatusEnum": "finance.models.CashAudit.Status",
         "GenderEnum": [("f", "die (weiblich)"), ("m", "der (männlich)"), ("n", "das (sächlich)")],
     },
 }
