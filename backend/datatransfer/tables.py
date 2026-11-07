@@ -122,6 +122,8 @@ MODULE_MODELS = (
     "materials.MaterialTodoLink",
     "materials.MaterialDocumentLink",
     "materials.MaterialPhoto",
+    # Anlagenverzeichnis nach Buchungen und Inventar (Verweise auf beide)
+    "finance.FixedAsset",
     # Wettbewerbe nach den Terminen (Verweis auf den Termin)
     "competitions.Series",
     "competitions.Trophy",

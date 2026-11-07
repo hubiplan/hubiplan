@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Neu: Anlagenverzeichnis. Unter Finanzen › Abschluss & Berichte › Anlagen stehen Zelte, Anhänger und anderes Vereinsvermögen mit Abschreibung und Buchwert. Die Abschreibung zählt nur in der steuerlichen Auswertung, das Kassenbuch bleibt unverändert.
 - Neu: Pauschalen für Ehrenamtliche. Im Kassenbuch lässt sich eine Ausgabe als Übungsleiterfreibetrag oder Ehrenamtspauschale kennzeichnen. Unter Finanzen › Abschluss & Berichte › Pauschalen stehen die Summen je Person und Kalenderjahr mit Warnung über dem Freibetrag, dazu je Person eine Erklärung zum Unterschreiben als PDF.
 - Neu: Splitbuchung. Im Kassenbuch lässt sich eine Buchung mit **Aufteilen** auf mehrere Kategorien bzw. steuerliche Bereiche verteilen, etwa die Abrechnung des Festwirts. Jeder Teil wird eine eigene Buchung; Belege und Kontoumsatz bleiben beim ersten Teil.
 - Neu: Steuerliche Auswertung. Unter Finanzen › Abschluss & Berichte › Steuern zeigt eine Ampel die Einnahmen des wirtschaftlichen Geschäftsbetriebs im Vergleich zur Freigrenze (seit 2026 50.000 €), dazu Ergebnis je steuerlichem Bereich mit verrechneten Stornos, einen Hinweis bei Verlusten, die Kleinunternehmergrenze und wann die nächste Steuererklärung fällig ist; als PDF und Excel. Untereinheiten mit eigener Kasse zählen beim Verein mit, außer sie sind als „steuerlich selbständig“ markiert. Die Finanzübersicht weist darauf hin, wenn dort etwas zu beachten ist.

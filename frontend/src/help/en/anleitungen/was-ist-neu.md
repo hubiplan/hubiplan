@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: fixed asset register. Finance › Closing & reports › Fixed assets lists tents, trailers and other club property with depreciation and book value. Depreciation only counts in the tax report; the cash book stays unchanged.
 - New: allowances for volunteers. In the cash book an expense can be marked as trainer allowance or volunteer allowance. Finance › Closing & reports › Allowances shows the totals per person and calendar year, warns above the tax-free amount and offers a declaration to sign as PDF for each person.
 - New: split bookings. In the cash book, **Split** divides a booking across several categories or tax areas, for example the caterer's settlement. Each part becomes a booking of its own; receipts and the bank transaction stay with the first part.
 - New: tax report. Under Finance › Closing & reports › Taxes a traffic light compares income from commercial operations with the tax-free limit (€50,000 since 2026), with results per tax area (cancellations offset), a note on losses, the small-business limit and when the next tax return is due; as PDF and Excel. Sub-units with their own cash book count towards the club unless marked "separate for tax purposes". The finance overview points out when something needs attention there.

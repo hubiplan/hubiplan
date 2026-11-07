@@ -179,6 +179,41 @@ export interface TaxArea {
 
 export type AllowanceKind = 'trainer' | 'volunteer'
 
+export type AssetMethod = 'none' | 'gwg' | 'pool' | 'linear'
+
+/** Anlage im Anlagenverzeichnis, mit Werten des gewählten Geschäftsjahres */
+export interface FixedAsset {
+  id: number
+  name: string
+  acquired_on: string
+  cost: string
+  net_cost: string | null
+  tax_area: string
+  tax_area_label: string
+  method: AssetMethod
+  method_label: string
+  useful_life: number
+  booking: number | null
+  booking_number: string | null
+  material_item: number | null
+  material_name: string | null
+  disposal: '' | 'sold' | 'scrapped' | 'given'
+  disposal_label: string
+  disposed_on: string | null
+  note: string
+  values: { depreciation: string; residual: string; book_start: string; book_end: string } | null
+}
+
+export interface AssetRegister {
+  year: number
+  label: string
+  start_date: string
+  end_date: string
+  assets: FixedAsset[]
+  totals: { depreciation: string; residual: string; book_end: string }
+  suggest_from: string
+}
+
 /** Aufwandsvergütungen je Person und Kalenderjahr */
 export interface AllowanceReport {
   year: number
@@ -232,6 +267,19 @@ export interface TaxReport {
   areas: TaxArea[]
   free_limit: { limit: string; income: string; status: TaxStatus; percent: number }
   business_result: string
+  /** Korrektur durch Abschreibung (nur mit Anlagen, die abgeschrieben werden) */
+  depreciation: {
+    areas: {
+      area: string
+      label: string
+      purchases: string
+      depreciation: string
+      residual: string
+      adjustment: string
+    }[]
+    business_adjustment: string
+  } | null
+  business_result_after: string | null
   history: { year: number; label: string; income: string; result: string }[]
   small_business: {
     previous: string
@@ -498,6 +546,16 @@ export const financeApi = {
   updateBooking: (org: number, id: number, data: Record<string, unknown>) =>
     api.patch<Booking>(`${base(org)}/bookings/${id}/`, data),
   deleteBooking: (org: number, id: number) => api.del(`${base(org)}/bookings/${id}/`),
+  assets: (org: number, year: number) =>
+    api.get<AssetRegister>(`${base(org)}/assets/?jahr=${year}`),
+  assetsXlsxUrl: (org: number, year: number) => `${base(org)}/assets/?jahr=${year}&als=xlsx`,
+  assetMaterials: (org: number) =>
+    api.get<{ id: number; name: string }[]>(`${base(org)}/assets/materials/`),
+  createAsset: (org: number, data: Record<string, unknown>) =>
+    api.post<FixedAsset>(`${base(org)}/assets/`, data),
+  updateAsset: (org: number, id: number, data: Record<string, unknown>) =>
+    api.patch<FixedAsset>(`${base(org)}/assets/${id}/`, data),
+  deleteAsset: (org: number, id: number) => api.del(`${base(org)}/assets/${id}/`),
   splitBooking: (org: number, id: number, parts: SplitPart[]) =>
     api.post<Booking[]>(`${base(org)}/bookings/${id}/split/`, { parts }),
   stornoBooking: (org: number, id: number, reason: string) =>

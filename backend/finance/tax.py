@@ -244,6 +244,14 @@ def report(org: Organization, year: int, today: datetime.date | None = None) -> 
     business_income = _get(combined, TaxArea.BUSINESS, "income")
     business_result = business_income - _get(combined, TaxArea.BUSINESS, "expense")
     limit = free_limit(period)
+    # Anlagen der eigenen Kasse: Anschaffung zurückrechnen, AfA abziehen (nur hier, nie im
+    # Kassenbuch)
+    from .assets import tax_adjustment
+
+    depreciation = tax_adjustment(org, start, last)
+    business_after = business_result + (
+        depreciation["business_adjustment"] if depreciation else ZERO
+    )
 
     # Ergebnis des wirtschaftlichen Geschäftsbetriebs in den beiden Vorjahren
     history = []
@@ -260,7 +268,7 @@ def report(org: Organization, year: int, today: datetime.date | None = None) -> 
             }
         )
     warnings = []
-    if business_result < 0:
+    if business_after < 0:
         earlier_gains = sum((max(h["result"], ZERO) for h in history), ZERO)
         warnings.append(
             {
@@ -271,7 +279,7 @@ def report(org: Organization, year: int, today: datetime.date | None = None) -> 
                     "Mitteln des ideellen Bereichs ausgeglichen werden (§ 55 Abs. 1 Nr. 1 "
                     "AO). Zulässig ist ein Ausgleich aus Gewinnen dieses Bereichs in den "
                     "sechs Vorjahren; in den beiden Vorjahren waren es {y} €."
-                ).format(x=_euro(-business_result), y=_euro(earlier_gains)),
+                ).format(x=_euro(-business_after), y=_euro(earlier_gains)),
             }
         )
     unassigned = _get(combined, "", "income") + _get(combined, "", "expense")
@@ -332,6 +340,9 @@ def report(org: Organization, year: int, today: datetime.date | None = None) -> 
             "percent": int(business_income * 100 / limit) if limit else 0,
         },
         "business_result": business_result,
+        # Nach Abschreibung (None ohne abzuschreibende Anlagen)
+        "depreciation": depreciation,
+        "business_result_after": business_after if depreciation else None,
         "history": history,
         "small_business": small,
         "warnings": warnings,
