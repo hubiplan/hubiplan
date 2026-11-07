@@ -123,7 +123,7 @@ def test_ueberfaellige_rechnungen_als_ein_eintrag(api, orgs, board_a, erika):
 def test_belegung_kontaktformular_und_alte_entwuerfe(api, orgs, board_a):
     """Menüprüfung M-13: auch Belegungsanfragen, zurückgehaltene Nachrichten, alte Entwürfe."""
     from bookings.models import Booking
-    from circulars.models import Circular
+    from circulars.models import Circular, MailingList
     from materials.models import MaterialItem
     from website.contact_models import HeldMessage
     from website.models import Website
@@ -172,7 +172,14 @@ def test_belegung_kontaktformular_und_alte_entwuerfe(api, orgs, board_a):
         )
         old = Circular.objects.create(organization=a, subject="Einladung", created_by=board_a)
         fresh = Circular.objects.create(organization=a, subject="Neu", created_by=board_a)
-        Circular.objects.filter(pk=old.pk).update(
+        # Muster eines Verteilers ist auch ein Entwurf, gehört aber nicht zu „Zu erledigen“
+        pattern = Circular.objects.create(
+            organization=a, subject="Verteiler Alle Mitglieder", created_by=board_a
+        )
+        MailingList.objects.create(
+            organization=a, name="Alle Mitglieder", local_part="alle-a", pattern=pattern
+        )
+        Circular.objects.filter(pk__in=[old.pk, pattern.pk]).update(
             updated_at=timezone.now() - datetime.timedelta(days=10)
         )
 
