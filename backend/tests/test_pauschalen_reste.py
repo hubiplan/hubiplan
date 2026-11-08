@@ -85,12 +85,17 @@ def test_musikerauszahlung_zaehlt_beim_musiker(c, club, settlement):
     assert [p["name"] for p in data["people"]] == ["Alex Beispiel"]
     assert data["people"][0]["kinds"][0]["total"] == "50.00"
     assert data["warnings"] == []
-    # Vergütungsart von Hand entfernt: Hinweis auf die Musikerabrechnung
-    with tenant_context(club.pk):
-        Booking.objects.filter(pk=booking).update(allowance="")
+    # Vergütungsart im Kassenbuch entfernt: Hinweis auf die Musikerabrechnung
+    bookings = f"/api/orgs/{club.pk}/finance/bookings/{booking}/"
+    resp = c.patch(bookings, {"allowance": ""}, content_type=JSON)
+    assert resp.status_code == 200, resp.content
     data = report(c, club)
     assert data["people"] == []
     assert [w["kind"] for w in data["warnings"]] == ["music"]
+    # … und wieder gesetzt, auch ohne Empfänger: die Person steht in der Musikerakte
+    resp = c.patch(bookings, {"allowance": "trainer"}, content_type=JSON)
+    assert resp.status_code == 200, resp.content
+    assert report(c, club)["warnings"] == []
 
 
 def test_ohne_steuermodul_bleibt_die_buchung_unveraendert(c, club, settlement):
