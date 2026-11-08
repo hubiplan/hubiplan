@@ -175,6 +175,7 @@ export function FinanzenPage() {
               tabs={[
                 { to: '/finanzen/zuwendungen', label: t('Zuwendungen') },
                 { to: '/finanzen/zuwendungen/bestaetigungen', label: t('Bestätigungen') },
+                { to: '/finanzen/zuwendungen/zweckbindungen', label: t('Zweckbindungen') },
               ]}
             >
               <DonationsArea canEdit={a.financeEdit} />

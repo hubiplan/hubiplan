@@ -131,6 +131,9 @@ export interface Booking {
   allowance?: AllowanceKind | ''
   /** Honorar an selbständige Künstler (Künstlersozialabgabe) */
   artist_fee?: boolean
+  /** Ausgabe für eine zweckgebundene Spende */
+  earmark?: number | null
+  earmark_name?: string | null
   split?: {
     lead: { id: number; number: string }
     parts: { id: number; number: string; amount: string }[]

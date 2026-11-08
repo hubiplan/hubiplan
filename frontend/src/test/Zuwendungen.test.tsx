@@ -140,4 +140,54 @@ describe('Zuwendungsbestätigungen', () => {
       .click(within(card).getByRole('button', { name: 'Text für die Webseite' }))
     expect(await within(card).findByDisplayValue(/Zuwendungen bis 300 €/)).toBeInTheDocument()
   })
+
+  it('zeigt zweckgebundene Spenden mit Rest und legt einen Zweck an', async () => {
+    let created = false
+    const earmark = (id: number, name: string, extra: Record<string, unknown> = {}) => ({
+      id,
+      name,
+      note: '',
+      is_active: true,
+      received: '800.00',
+      used: '200.00',
+      rest: '600.00',
+      first_donation: '2022-03-01',
+      last_donation: '2022-03-01',
+      overdue: true,
+      ...extra,
+    })
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg(base)] }),
+      [`GET ${F}/earmarks/`]: () => ({
+        status: 200,
+        body: [
+          earmark(1, 'Neue Fahne'),
+          ...(created
+            ? [
+                earmark(2, 'Jugendzeltlager', {
+                  received: '0.00',
+                  used: '0.00',
+                  rest: '0.00',
+                  overdue: false,
+                }),
+              ]
+            : []),
+        ],
+      }),
+      [`POST ${F}/earmarks/`]: () => {
+        created = true
+        return { status: 201, body: { id: 2, name: 'Jugendzeltlager', note: '', is_active: true } }
+      },
+    })
+    renderApp('/finanzen/zuwendungen/zweckbindungen')
+    const card = await screen.findByTestId('earmarks')
+    expect(within(card).getByText('Neue Fahne')).toBeInTheDocument()
+    expect(within(card).getByText(/600,00/)).toBeInTheDocument()
+    expect(within(card).getByText('zeitnah verwenden')).toBeInTheDocument()
+    const user = userEvent.setup()
+    await user.type(within(card).getByLabelText('Zweck'), 'Jugendzeltlager')
+    await user.click(within(card).getByRole('button', { name: 'Anlegen' }))
+    expect(await within(card).findByText('Jugendzeltlager')).toBeInTheDocument()
+  })
 })

@@ -9149,3 +9149,15 @@ msgstr "Traditional costumes and uniforms"
 
 msgid "Bitte eine Vorlage wählen."
 msgstr "Please choose a template."
+
+msgid "Eine Zweckbindung gibt es nur für Ausgaben."
+msgstr "Only expenses can be earmarked."
+
+msgid "Diese Zweckbindung ist archiviert."
+msgstr "This earmark is archived."
+
+msgid "Diesen Zweck gibt es schon."
+msgstr "This purpose already exists."
+
+msgid "Der Zweck ist schon Spenden oder Ausgaben zugeordnet; bitte archivieren."
+msgstr "The purpose already has donations or expenses; please archive it instead."

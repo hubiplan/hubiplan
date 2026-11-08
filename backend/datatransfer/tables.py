@@ -29,6 +29,8 @@ MODULE_MODELS = (
     "finance.Category",
     "finance.ProjectSeries",
     "finance.Project",
+    # Zweckbindungen vor Buchungen und Zuwendungen (beide verweisen darauf)
+    "finance.Earmark",
     "finance.Booking",
     "finance.Receipt",
     "finance.YearClosing",
