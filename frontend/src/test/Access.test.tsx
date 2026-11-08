@@ -269,7 +269,7 @@ describe('Abteilungsbereich', () => {
     })
     renderApp('/abteilung')
     expect(await screen.findByRole('link', { name: 'Muster, Erika' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Rollen und Rechte' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Ämter' })).not.toBeInTheDocument()
   })
   it('zeigt Rollen nur lesend, wenn die Rolle sie nur lesen darf', async () => {
     const calls = fakeApi({

@@ -2045,8 +2045,8 @@ msgstr "Query"
 msgid "Meldung"
 msgstr "Entry"
 
-msgid "Änderungsmeldung"
-msgstr "Change of entry"
+msgid "Datenänderung"
+msgstr "Data change"
 
 msgid "Rückzug"
 msgstr "Withdrawal"

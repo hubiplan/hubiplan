@@ -33,7 +33,7 @@ describe('Offene Aufgaben auf der Startseite', () => {
           items: [
             {
               kind: 'change_request',
-              kind_label: 'Änderungsmeldung',
+              kind_label: 'Datenänderung',
               title: 'Erika Muster',
               detail: 'möchte eigene Daten ändern',
               created_at: '2026-10-24T10:00:00Z',
@@ -48,7 +48,7 @@ describe('Offene Aufgaben auf der Startseite', () => {
     expect(await screen.findByRole('heading', { name: /Zu erledigen/ })).toBeInTheDocument()
     const link = await screen.findByRole('link', { name: 'Erika Muster' })
     expect(link).toHaveAttribute('href', '/mitglieder/anfragen/aenderungen')
-    expect(screen.getByText('Änderungsmeldung')).toBeInTheDocument()
+    expect(screen.getByText('Datenänderung')).toBeInTheDocument()
   })
 
   it('erscheint nicht ohne Entscheidungsrecht', async () => {

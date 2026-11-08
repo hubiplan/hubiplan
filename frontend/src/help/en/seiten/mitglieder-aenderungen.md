@@ -1,6 +1,6 @@
 ---
 key: page.members_changes
-titel: Members › Change notices
+titel: Members › Data changes
 bereich: mitglieder
 modul: members
 rechte: [members.view]

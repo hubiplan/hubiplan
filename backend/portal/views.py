@@ -3,7 +3,7 @@
 Drei Bereiche:
 
 - ``/api/orgs/<id>/…``: der Vereinsvorstand richtet Zugänge ein und bearbeitet
-  Änderungsmeldungen.
+  Datenänderungen.
 - ``/api/depts/<id>/…``: Abteilungsrollen arbeiten mit den Mitgliedern ihrer
   Abteilung. Die Datenbank arbeitet dabei im Kontext des Vereins (RLS); die
   Anwendung begrenzt zusätzlich auf die Abteilung.
@@ -72,7 +72,7 @@ from organizations.tree import UnitTree, subtree_ids
 from . import services
 from .models import ChangeRequest, LoginLink, PortalAccess, hash_token
 
-# --- Vereinsseite: Zugänge und Änderungsmeldungen ---
+# --- Vereinsseite: Zugänge und Datenänderungen ---
 
 
 class MemberAccessView(_ClubMixin, APIView):

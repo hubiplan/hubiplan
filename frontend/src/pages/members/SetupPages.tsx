@@ -157,7 +157,7 @@ export function MemberDurationSettings() {
   )
 }
 
-/** Mitgliederbereich (Anmeldung der Mitglieder), Änderungsmeldungen und Fotos. */
+/** Mitgliederbereich (Anmeldung der Mitglieder), Datenänderungen und Fotos. */
 export function MemberPortalSettings() {
   const tm = useTerms()
   return (

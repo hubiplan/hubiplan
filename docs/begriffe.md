@@ -35,11 +35,11 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Kasse und Buchungen | **Finanzen › Kassenbuch** | Finances › Cash book | „Kasse“ als Bereichsname |
 | Rechnungen an Mitglieder | **Finanzen › Rechnungen** | Finances › Invoices | „Beiträge“ als Menüpunkt |
 | Wechsel zwischen Untereinheiten | **Wechselanfragen** | Change requests | „Anfragen“ allein in Überschriften |
-| Von Mitgliedern gemeldete Änderungen | **Änderungsmeldungen** | Change notices | – |
+| Von Mitgliedern gemeldete Änderungen ihrer Daten | **Datenänderungen** | Data changes | „Änderungsmeldung“ („Meldungen“ sind Wettbewerbsmeldungen) |
 | Material, Infrastruktur und Belegung zusammen (Seitenleiste) | **Material & Räume** mit **Material**, **Räume und Anlagen**, **Belegung** | Equipment & rooms with Equipment, Rooms and facilities, Bookings | drei eigene Hauptpunkte |
 | Wettbewerbstitel und ihre Träger (Wettbewerbe) | **Titel und Sieger** | Titles and winners | „Titel und Würden“ als Menüpunkt |
 | König, Prinz und andere Würden (Mitglieder) | **Würdenträger** | Title holders | Würden an zwei Stellen pflegen |
-| Wechselanfragen und Änderungsmeldungen zusammen | **Mitglieder › Änderungen und Wechsel** | Members › Changes and transfers | „Anfragen“ als Menüpunkt |
+| Wechselanfragen und Datenänderungen zusammen | **Mitglieder › Änderungen und Wechsel** | Members › Changes and transfers | „Anfragen“ als Menüpunkt |
 | Blättern in Listen | **Vorherige Seite / Nächste Seite** | Previous page / Next page | „Zurück / Weiter“ |
 | Aufgabe für Mitglieder | **Aufgabe** | Task | „To-do“ |
 | Funktion in einer Einheit (Kassierer, Zugführer), mit oder ohne Rechte | **Rolle** | Role | „Funktion“ in der Oberfläche |

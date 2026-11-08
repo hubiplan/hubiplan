@@ -112,7 +112,11 @@ export function SettingsLayout() {
  * gilt für die ganze Einheit, die Einstellungen eines Bereichs stehen dort unter „Einrichtung“.
  */
 export function ModuleSetupLinks() {
-  const { active } = useOrg()
+  const { active, can } = useOrg()
+  // Wo es die Seite „Module“ gibt, stehen die Einrichtungen dort je Modul; hier nur der Weg
+  // dorthin, damit es keine zweite Liste gibt (Menüprüfung 2, N-06)
+  const modulesPage =
+    !!active && (active.type === 'federation' || active.type === 'club') && can(PERM.settingsView)
   const links = modules
     .filter((m) => m.visible(active, { dept: null, portal: null }))
     .flatMap((m) =>
@@ -121,6 +125,18 @@ export function ModuleSetupLinks() {
         .map((c) => ({ to: c.to, label: `${m.labelFor?.(active) ?? m.label} › ${c.label}` })),
     )
   if (links.length === 0) return null
+  if (modulesPage)
+    return (
+      <div className="card card-wide">
+        <h2>{t('Einrichtung der Bereiche')}</h2>
+        <p className="muted small">
+          {t('Was nur einen Bereich betrifft, stellst du dort unter „Einrichtung“ ein.')}{' '}
+          <Link to="/einstellungen/module">
+            {t('Alle Bereiche mit ihrer Einrichtung unter Module')}
+          </Link>
+        </p>
+      </div>
+    )
   return (
     <div className="card card-wide">
       <h2>{t('Einrichtung der Bereiche')}</h2>

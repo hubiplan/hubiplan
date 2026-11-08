@@ -1,4 +1,4 @@
-"""Startseite: offene Aufgaben (Änderungsmeldungen, Wechsel, Fotos, Rückmeldungen)."""
+"""Startseite: offene Aufgaben (Datenänderungen, Wechsel, Fotos, Rückmeldungen)."""
 
 import datetime
 

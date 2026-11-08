@@ -61,7 +61,7 @@ export function DepartmentArea() {
         ]
       : []),
     ...(can(DEPT_PERM.rolesView) || can(DEPT_PERM.rolesManage)
-      ? [{ to: '/abteilung/rollen', label: t('Rollen und Rechte') }]
+      ? [{ to: '/abteilung/rollen', label: t('Ämter') }]
       : []),
     ...(can(DEPT_PERM.entriesSubmit)
       ? [{ to: '/abteilung/meldungen', label: t('Meldungen') }]
@@ -496,6 +496,14 @@ function DeptRolesPage({ dept, canEdit }: { dept: DeptSummary; canEdit: boolean 
 
   return (
     <div className="stack">
+      {/* Wer welches Amt hat, steht zuerst: das wird am häufigsten gebraucht (Menüprüfung 2, N-07) */}
+      <HoldersCard
+        dept={dept}
+        roles={roles.data.roles}
+        holders={holders.data}
+        onRun={run}
+        canEdit={canEdit}
+      />
       <div className="card card-wide">
         <h2>{t('Rollen und Rechte')}</h2>
         <p className="muted small">
@@ -598,13 +606,6 @@ function DeptRolesPage({ dept, canEdit }: { dept: DeptSummary; canEdit: boolean 
         )}
         {error && <Alert kind="error">{error}</Alert>}
       </div>
-      <HoldersCard
-        dept={dept}
-        roles={roles.data.roles}
-        holders={holders.data}
-        onRun={run}
-        canEdit={canEdit}
-      />
     </div>
   )
 }
@@ -639,7 +640,7 @@ function HoldersCard({
 
   return (
     <div className="card card-wide">
-      <h2>{t('Wer hat welche Rolle?')}</h2>
+      <h2>{t('Amtsinhaber')}</h2>
       <UnitRolesTable
         label={t('Heutige Inhaber')}
         roles={rows}

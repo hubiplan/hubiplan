@@ -79,7 +79,7 @@ function extras(org: OrgSummary): NavItem[] {
 export function requestTabs(): NavItem[] {
   return [
     { to: '/mitglieder/anfragen', label: t('Wechselanfragen') },
-    { to: '/mitglieder/anfragen/aenderungen', label: t('Änderungsmeldungen') },
+    { to: '/mitglieder/anfragen/aenderungen', label: t('Datenänderungen') },
   ]
 }
 

@@ -19,7 +19,7 @@ export type LeaveEntry = {
   /** Auf den gespeicherten Stand zurücksetzen */
   discard?: () => void
   /**
-   * Formular ohne Autospeichern (Neuaufnahme, Änderungsmeldung, Zuordnung …): Eingaben
+   * Formular ohne Autospeichern (Neuaufnahme, Datenänderung, Zuordnung …): Eingaben
    * werden erst mit dem Knopf gespeichert. Beim Verlassen wird gefragt, ob verworfen
    * werden soll (UX-Audit 31.10. W01).
    */
