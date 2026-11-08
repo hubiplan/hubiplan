@@ -3,16 +3,7 @@ key: page.finance_groups
 titel: Finanzen › Gruppenseiten
 rechte: [finance.view, billing.view]
 routen: [/finanzen/buchen, /finanzen/abrechnen, /finanzen/zahlungen, /finanzen/abschliessen]
-stichworte:
-  [
-    Gruppe,
-    Beiträge & Rechnungen,
-    Zahlungen,
-    Buchen,
-    Auswerten & abschließen,
-    Einrichten,
-    Zu erledigen,
-  ]
+stichworte: [Gruppe, Gruppenseite, Zahlungen, Buchen, Einrichten, Zu erledigen]
 ---
 
 Ein Klick auf den Namen einer Gruppe in der Seitenleiste von Finanzen (z. B. **Buchen**) öffnet ihre Gruppenseite. Sie zeigt jeden Eintrag der Gruppe mit einer kurzen Beschreibung und darunter in Rot, was dort gerade zu erledigen ist, etwa Buchungen ohne Beleg oder fällige Mahnungen. Ein Klick auf die Karte öffnet den Eintrag.
