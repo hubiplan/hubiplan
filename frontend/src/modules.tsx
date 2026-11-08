@@ -12,6 +12,7 @@ import { portalNav } from './pages/portal/sections.ts'
 import { departmentSections } from './pages/department/sections.ts'
 import { musicSections, scoresOwnEntry } from './pages/music/access.ts'
 import { hasUnitsPage } from './pages/settings/units.ts'
+import { settingsItems } from './pages/settings/items.ts'
 import { t } from './i18n/index.ts'
 
 export interface Workspace {
@@ -361,7 +362,11 @@ export const modules: AppModule[] = [
     icon: icon(
       'M4 7h8M16 7h4M4 17h4M12 17h8M14 5a2 2 0 1 1 0 4 2 2 0 0 1 0-4M10 15a2 2 0 1 1 0 4 2 2 0 0 1 0-4',
     ),
-    visible: (org) => !!org && (org.type !== 'unit' || org.permissions.includes(PERM.rolesManage)),
+    // Ohne einen lesbaren Unterpunkt kein Menüpunkt (UX-Audit 08.11., W-01)
+    visible: (org) =>
+      !!org &&
+      (org.type !== 'unit' || org.permissions.includes(PERM.rolesManage)) &&
+      settingsItems(org).length > 0,
   },
   {
     id: 'plattform',

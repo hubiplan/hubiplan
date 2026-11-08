@@ -131,7 +131,11 @@ export function HomePage() {
         )}
         {showsOpenTasks(active) && <OpenTasksTile org={active} />}
         {(active.type === 'club' || active.type === 'federation') &&
-          active.modules.includes('events') && <UpcomingTile base={calendarBase.org(active.id)} />}
+          active.modules.includes('events') &&
+          // Ohne Recht auf den Kalender keine Kachel und keine abgelehnte Anfrage (W-01)
+          active.permissions.includes(PERM.eventsView) && (
+            <UpcomingTile base={calendarBase.org(active.id)} />
+          )}
         {active.type === 'club' &&
         active.modules.includes('members') &&
         active.permissions.includes('members.view') ? (

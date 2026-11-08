@@ -283,7 +283,19 @@ export function Layout() {
       mod.id === 'abteilung' && activeDept
         ? activeDept.label
         : (mod.labelFor?.(active, ws) ?? mod.label)
-    return sub ? t('{label} · {modLabel}', { label: sub.label, modLabel }) : modLabel
+    // Dritte Ebene: angemeldeter Unterpunkt der Seite, tiefer als der Menüpunkt (UX-Audit
+    // 08.11., W-02), z. B. „Mahnungen · Rechnungen · Finanzen“
+    const base = sub?.to ?? mod.path
+    const deep = Object.values(subNav)
+      .flat()
+      .filter((c) => c.to.length > base.length && matches(c.to))
+      .sort((a, b) => b.to.length - a.to.length)[0]
+    const parts = [deep?.label, sub?.label, modLabel].filter(
+      (p, i, all): p is string => !!p && p !== all[i - 1],
+    )
+    return parts.reduce((title, label) =>
+      t('{label} · {modLabel}', { label: title, modLabel: label }),
+    )
   })()
   const titleOverride = useTitleOverride()
   useEffect(() => {

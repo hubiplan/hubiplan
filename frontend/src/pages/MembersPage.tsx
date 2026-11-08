@@ -4,7 +4,7 @@
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { PERM } from '../api/orgs.ts'
-import { Tabs } from '../components/ui.tsx'
+import { Tabs, useSubHeading } from '../components/ui.tsx'
 import { useActiveOrg } from '../org/OrgContext.tsx'
 import { FieldsPage } from './settings/FieldsPage.tsx'
 import { MemberTypesPage } from './settings/MemberTypesPage.tsx'
@@ -37,12 +37,18 @@ export function MembersSection({
   actions?: ReactNode
   children: ReactNode
 }) {
+  // Dritte Ebene (z. B. Einrichtung › Zusatzfelder): H1 wie der Unterpunkt (UX-Audit 08.11., W-02)
+  const sub = useSubHeading(title, tabs)
   return (
     <section>
       <div className="page-head">
         <div>
-          <p className="muted small eyebrow">{t('Mitglieder')}</p>
-          <h1>{title}</h1>
+          <p className="muted small eyebrow">
+            {sub
+              ? t('{parent} › {label}', { parent: t('Mitglieder'), label: title })
+              : t('Mitglieder')}
+          </p>
+          <h1>{sub ?? title}</h1>
         </div>
         {actions}
       </div>

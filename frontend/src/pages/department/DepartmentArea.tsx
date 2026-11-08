@@ -32,15 +32,23 @@ import { alertDialog, confirmRoleRemoval } from '../../components/dialog.ts'
 import { confirmEndHolder, UnitRoleDialog, UnitRolesTable } from '../../components/UnitRoles.tsx'
 import type { UnitRole } from '../../components/UnitRoles.tsx'
 import { t } from '../../i18n/index.ts'
+import { useSubHeading } from '../../components/ui.tsx'
+import { departmentSections } from './sections.ts'
 import { PermissionMatrix, PermissionSummary } from '../../components/RoleEditor.tsx'
 
 export function DepartmentArea() {
   const dept = useActiveDept()
   const can = (p: string) => dept.permissions.includes(p)
+  // Den Seitentitel setzt der App-Rahmen aus denselben Unterpunkten
+  const sub = useSubHeading(dept.name, departmentSections(dept))
   return (
     <section>
+      {/* Unterpunkte mit eigener H1 und eigenem Titel, Name der Einheit darüber (UX-Audit 08.11., W-02) */}
       <div className="page-head">
-        <h1>{dept.name}</h1>
+        <div>
+          {sub && <p className="muted small eyebrow">{dept.name}</p>}
+          <h1>{sub ?? dept.name}</h1>
+        </div>
         <p className="muted">
           {dept.label} · {dept.club_name}
         </p>

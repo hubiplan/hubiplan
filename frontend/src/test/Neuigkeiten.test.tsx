@@ -65,7 +65,8 @@ describe('Neuigkeiten', () => {
       '/lizenzen/CHANGELOG.md': CHANGELOG,
       '/lizenzen/version.txt': '2026.11.1\n',
     })
-    expect(await screen.findByRole('heading', { level: 1, name: 'Hilfe' })).toBeVisible()
+    // Unterseite mit eigener H1 (UX-Audit 08.11., W-02)
+    expect(await screen.findByRole('heading', { level: 1, name: 'Neuigkeiten' })).toBeVisible()
     expect(screen.getByRole('link', { name: 'Neuigkeiten' })).toHaveAttribute(
       'aria-current',
       'page',

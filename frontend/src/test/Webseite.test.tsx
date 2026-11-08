@@ -67,9 +67,10 @@ const data = (site: unknown, moduleEnabled = true) => ({
 function renderApp(
   routes: Record<string, () => { status: number; body?: unknown }>,
   path = '/webseite',
+  extra: string[] = [],
 ) {
   const org = testOrg({
-    permissions: ['members.view', 'roles.manage', 'website.manage'],
+    permissions: ['members.view', 'roles.manage', 'website.manage', ...extra],
     modules: ['members', 'website'],
   })
   const calls = fakeApi({
@@ -323,6 +324,8 @@ describe('Webseite', () => {
         'GET /api/orgs/7/imprint/': () => ({ status: 404, body: { detail: 'Nicht gefunden.' } }),
       },
       '/webseite/datenschutz',
+      // Den Punkt unter Einstellungen gibt es nur mit Leserecht auf die Einstellungen (W-01)
+      ['settings.view'],
     )
     expect(
       await screen.findByRole('heading', { name: 'Datenschutzhinweise der Webseite' }),

@@ -20,6 +20,7 @@ const VARS = [
   '--color-accent',
   '--color-on-accent',
   '--sidebar-bg',
+  '--sidebar-muted',
   '--sidebar-focus',
   '--button-brand-primary',
   '--button-brand-primary-hover',
@@ -59,9 +60,41 @@ export function linkColor(primary: string): string {
   return '#000000'
 }
 
-/** Seitenleiste aus der Primärfarbe (stark abgedunkelt). */
+/** Schrift der Seitenleiste (--sidebar-text in theme.css). */
+export const SIDEBAR_TEXT = '#d7e4df'
+
+/** Farbe a mit Deckkraft alpha über b (wie color-mix mit transparent über b). */
+export function blend(a: string, b: string, alpha: number): string {
+  const x = parseInt(a.slice(1), 16)
+  const y = parseInt(b.slice(1), 16)
+  const ch = (shift: number) =>
+    Math.round(((x >> shift) & 255) * alpha + ((y >> shift) & 255) * (1 - alpha))
+  return `#${[16, 8, 0].map((sh) => ch(sh).toString(16).padStart(2, '0')).join('')}`
+}
+
+/**
+ * Seitenleiste aus der Primärfarbe (stark abgedunkelt). Bei hellen Vereinsfarben so weit
+ * dunkler, dass die Schrift auch auf dem markierten Punkt 4,5 : 1 erreicht (UX-Audit 08.11., W-15).
+ */
 export function sidebarColor(primary: string): string {
-  return darken(primary, 0.55)
+  for (let amount = 0.55; amount < 1; amount += 0.025) {
+    const bg = darken(primary, amount)
+    // Markierter Punkt: 12 % Weiß darüber (--sidebar-active-bg)
+    if (contrastRatio(SIDEBAR_TEXT, blend('#ffffff', bg, 0.12)) >= 4.5) return bg
+  }
+  return '#000000'
+}
+
+/**
+ * Gedämpfte Schrift der Seitenleiste (Gruppen- und Zwischenüberschriften): 70 % Deckkraft,
+ * bei hellen Vereinsfarben so viel kräftiger wie nötig für 4,5 : 1 (WCAG 1.4.3, W-15).
+ */
+export function sidebarMuted(sidebar: string): string {
+  for (let alpha = 0.7; alpha < 1; alpha += 0.05) {
+    const c = blend(SIDEBAR_TEXT, sidebar, alpha)
+    if (contrastRatio(c, sidebar) >= 4.5) return c
+  }
+  return SIDEBAR_TEXT
 }
 
 /**
@@ -106,6 +139,7 @@ export function themeVars(theme: ThemeColors): Record<(typeof VARS)[number], str
     '--color-accent': theme.accent,
     '--color-on-accent': theme.on_accent,
     '--sidebar-bg': sidebar,
+    '--sidebar-muted': sidebarMuted(sidebar),
     // Fokusrahmen in der Seitenleiste: Weiß oder Schwarz, je nachdem was dort absticht
     '--sidebar-focus': readableOn(sidebar),
   }

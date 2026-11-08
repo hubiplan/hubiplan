@@ -10,7 +10,15 @@ import {
   withRequirements,
 } from '../../api/modules.ts'
 import type { PlatformOrg, PlatformSettings } from '../../api/orgs.ts'
-import { Alert, Checkbox, Field, LoadError, SelectField, Tabs } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  LoadError,
+  SectionTitle,
+  SelectField,
+  Tabs,
+} from '../../components/ui.tsx'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { peeringApi } from '../../api/peering.ts'
@@ -52,6 +60,15 @@ const ACCESS_LABELS = {
   },
 }
 
+const PLATFORM_TABS = [
+  { to: '/plattform/organisationen', label: t('Einheiten') },
+  { to: '/plattform/einstellungen', label: t('Einstellungen') },
+  { to: '/plattform/impressum', label: t('Impressum') },
+  { to: '/plattform/postfach', label: t('Postfach') },
+  { to: '/plattform/datenuebernahme', label: t('Datenübernahme') },
+  { to: '/plattform/version', label: t('Version') },
+]
+
 export function PlatformLayout() {
   const location = useLocation()
   if (location.pathname.replace(/\/$/, '') === '/plattform') {
@@ -59,17 +76,9 @@ export function PlatformLayout() {
   }
   return (
     <section>
-      <h1>{t('Plattform')}</h1>
-      <Tabs
-        items={[
-          { to: '/plattform/organisationen', label: t('Einheiten') },
-          { to: '/plattform/einstellungen', label: t('Einstellungen') },
-          { to: '/plattform/impressum', label: t('Impressum') },
-          { to: '/plattform/postfach', label: t('Postfach') },
-          { to: '/plattform/datenuebernahme', label: t('Datenübernahme') },
-          { to: '/plattform/version', label: t('Version') },
-        ]}
-      />
+      {/* Jede Unterseite mit eigener H1 und eigenem Titel (UX-Audit 08.11., W-02) */}
+      <SectionTitle title={t('Plattform')} items={PLATFORM_TABS} always />
+      <Tabs items={PLATFORM_TABS} />
       <Outlet />
     </section>
   )

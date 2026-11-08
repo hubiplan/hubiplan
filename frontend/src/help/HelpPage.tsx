@@ -3,7 +3,7 @@
 // Einzelne Anleitung unter /hilfe/<name>, Seitenhilfe unter /hilfe/seite/<name>.
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Field } from '../components/ui.tsx'
 import { usePageTitle } from '../components/pageTitle.ts'
 import { t } from '../i18n/index.ts'
@@ -72,6 +72,7 @@ export function memberOnly(entries: HelpEntry[]): boolean {
 const entryLink = (e: HelpEntry) => <Link to={`/hilfe/${e.slug}`}>{e.title}</Link>
 
 export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
+  const { pathname } = useLocation()
   const { entries, failed, retry } = useEntries()
   const org = useOptionalOrg()?.active ?? null
   const learning = useLearning()
@@ -114,6 +115,10 @@ export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
   const blocked = useBlocked(
     (e) => searching && matchesQuery(query, e.title, e.body, e.keywords.join(' ')),
   ).sort(byTitle)
+  const sub =
+    pathname.replace(/\/$/, '') === '/hilfe'
+      ? null
+      : (TABS.find((x) => x.tab === tab)?.label() ?? null)
   const where = (e: HelpEntry) => {
     const place = placeOf(e)
     const item = place ? itemLabel(place.item, org) : ''
@@ -122,7 +127,15 @@ export function HelpPage({ tab = 'anleitungen' }: { tab?: HelpTab }) {
 
   return (
     <section className="help-page">
-      <h1>{t('Hilfe')}</h1>
+      {/* Unterseiten mit eigener H1, „Hilfe“ darüber (UX-Audit 08.11., W-02) */}
+      {sub ? (
+        <div>
+          <p className="muted small eyebrow">{t('Hilfe')}</p>
+          <h1>{sub}</h1>
+        </div>
+      ) : (
+        <h1>{t('Hilfe')}</h1>
+      )}
       <p className="muted">
         {t(
           'Anleitungen Schritt für Schritt, Erklärungen zu jeder Seite und das Glossar. Auf jeder Seite öffnet „Hilfe zu dieser Seite“ oben (oder die Taste ?) die passende Hilfe.',

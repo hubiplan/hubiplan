@@ -175,7 +175,8 @@
 }
 
 /* --- „?“ an Begriffen --- */
-.term {
+/* Nur letztes Wort und „?“ bleiben zusammen, sonst bricht der Begriff um (UX-Audit 08.11., W-18) */
+.term-tail {
   white-space: nowrap;
 }
 
@@ -186,10 +187,11 @@
   /* sichtbar 16 px, klickbar 24 px (WCAG 2.5.8) */
   width: 24px;
   height: 24px;
-  margin: -4px -2px -4px 0;
+  margin: -4px -2px -4px 0.25rem;
   padding: 4px;
   vertical-align: middle;
-  background: var(--color-button-bg);
+  background: transparent;
+  border-radius: 50%;
   border: none;
   cursor: pointer;
   color: var(--color-text-muted);
@@ -209,8 +211,10 @@
 }
 
 .term-q:hover,
+.term-q:focus-visible,
 .term-q[aria-expanded='true'] {
   color: var(--color-link);
+  background: var(--color-button-bg);
 }
 
 .term-box {

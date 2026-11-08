@@ -10,6 +10,6 @@ Here you maintain the unit's name, short name, founding year, address and contac
 
 At the bottom you set the contacts for questions about HUBIplan. They appear in the help under “Who helps us?”, also for sub-units without their own contacts. Like everything else on this page, HUBIplan saves them automatically as soon as a name is entered.
 
-At the very bottom, “Setup of the areas” leads to the settings that only affect one area, such as Members › Setup or Finances › Setup. In a club they are listed under Settings › Modules, below each module’s switch. In the sidebar, settings are grouped into General, Legal, Roles and connections, and Data.
+At the very bottom, “Setup of the areas” leads to the settings that only affect one area, such as Members › Setup or Finances › Setup. In a club they are listed under Settings › Modules, below each module’s switch. In the sidebar, settings are grouped into General, Legal, Roles and connections, and Data. Only items your role can read appear there; without any such item, “Settings” is not shown at all.
 
 At platform level the first field is called “Name of this instance”. If you run HUBIplan yourself, give your installation its own name here, for example “Vereinsportal Musterkreis”. It then appears on the sign-in page, in the browser tab and in the emails HUBIplan sends (invitations, passwords, sender name). Below that, the sign-in page shows a small “powered by HUBIplan” linking to the licence and the source code.
