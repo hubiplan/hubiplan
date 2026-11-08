@@ -30,7 +30,7 @@ def private_root(settings, tmp_path):
 @pytest.fixture
 def club(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "website", "music"]
+    org.enabled_modules = ["members", "events", "website", "music", "scores"]
     org.save()
     return org
 

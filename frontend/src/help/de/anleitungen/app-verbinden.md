@@ -10,6 +10,8 @@ stichworte: [App, Handy, koppeln, Android, QR-Code]
 2. Öffne im Browser [Mein Konto › App & andere Instanzen](/mein-konto/app) und klicke auf **App verbinden**.
 3. Scanne den angezeigten QR-Code mit der App.
 
+Siehst du dort statt des Knopfs nur einen Hinweis, hat dein Konto noch keinen Zugang zum Mitgliederbereich: Es muss mit deiner Mitgliedschaft verknüpft sein, und dein Verein muss den Mitgliederbereich eingeschaltet haben.
+
 Das Gerät erscheint danach in der Liste. Verlierst du das Handy, meldest du es dort mit **Abmelden** ab.
 
 Wenn du dein Passwort nicht mehr kennst, trage in der Android-App zuerst die gültige Adresse deines Vereins ein und tippe auf **Passwort vergessen? Im Browser zurücksetzen**. Die App öffnet die Passwortwiederherstellung dieser Instanz; danach kehrst du zur App zurück und meldest dich mit dem neuen Passwort an. E-Mail und Passwort werden nicht im Link übergeben. Ohne verfügbaren Browser zeigt die App eine kopierbare Zieladresse.

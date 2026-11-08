@@ -77,10 +77,15 @@ DEFAULT_OFF_BLOCKS = {
     "bookings",
 }
 DEFAULT_BLOCKS = {key: key not in DEFAULT_OFF_BLOCKS for key in BLOCKS}
-# Bausteine, die ein Modul brauchen (access/modules.py)
+# Bausteine, die ein Modul brauchen (access/modules.py); bei abgeschaltetem Modul
+# erscheinen sie weder auf der Webseite noch in den Einstellungen
 BLOCK_MODULES = {
+    "events": "events",
     "bookings": "bookings",
     "honors": "honors",
+    "honorary": "awards",
+    "results": "competitions",
+    "repertoire": "scores",
     "history": "chronicle",
     "posts": "social",
 }
@@ -93,6 +98,27 @@ DEFAULT_OFF_PREFIXES = ("membertype:",)
 # Frei benannte Überschriften im Menü (Ralf 05.11.): ``heading:<Nummer>``, Name in
 # ``block_names``; ohne Namen gibt es die Überschrift nicht.
 HEADING_KEY = re.compile(r"^heading:[1-9][0-9]{0,2}$")
+
+
+def block_module(key: str) -> str | None:
+    """Modul, das ein Baustein braucht (Würden ``dignity:<Nummer>``: Würden)."""
+    if isinstance(key, str) and key.startswith("dignity:"):
+        return "honors"
+    return BLOCK_MODULES.get(key)
+
+
+def _off(org, modules: dict[str, str]) -> set[str]:
+    return {k for k, m in modules.items() if m in MODULE_BY_ID and not module_on(org, m)}
+
+
+def blocks_without_module(org) -> set[str]:
+    """Bausteine, deren Modul für diese Einheit abgeschaltet ist."""
+    return _off(org, BLOCK_MODULES)
+
+
+def home_without_module(org) -> set[str]:
+    """Bausteine der Startseite, deren Modul für diese Einheit abgeschaltet ist."""
+    return _off(org, HOME_MODULES)
 
 
 def is_extra_block(key) -> bool:
@@ -143,6 +169,14 @@ HOME_HINTS = {
     "results": "die neuesten Wettbewerbe mit den Siegern, live mit Zwischenstand",
     "instagram": "neueste Beiträge, sobald ein Kanal verbunden ist",
     "facebook": "neueste Beiträge, sobald ein Kanal verbunden ist",
+}
+# Bausteine der Startseite, die ein Modul brauchen
+HOME_MODULES = {
+    "events": "events",
+    "honors": "honors",
+    "results": "competitions",
+    "instagram": "social",
+    "facebook": "social",
 }
 # Welcher Bereich der Webseite eingeschaltet sein muss, damit der Baustein erscheint
 HOME_NEEDS_BLOCK = {"events": "events", "honors": "honors", "units": "units", "results": "results"}
@@ -320,7 +354,7 @@ class Website(models.Model):
 
     def block_on(self, key: str) -> bool:
         # Baustein eines abgeschalteten Moduls erscheint nicht (module-neustruktur)
-        module = BLOCK_MODULES.get(key)
+        module = block_module(key)
         if module in MODULE_BY_ID and not module_on(self.organization, module):
             return False
         if is_extra_block(key):

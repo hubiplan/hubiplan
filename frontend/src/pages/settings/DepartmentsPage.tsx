@@ -556,6 +556,8 @@ function DepartmentCard({
   const editing = editable
   const hasWebsite = useActiveOrg().modules.includes('website')
   const hasBilling = useActiveOrg().modules.includes('billing')
+  // Steuerliche Auswertung gibt es nur mit Modul Steuern
+  const hasTax = useActiveOrg().modules.includes('tax')
   async function toggleActive(on: boolean) {
     const count = below(dep.id, units).filter((u) => u.is_active).length
     if (!on && count) {
@@ -818,7 +820,7 @@ function DepartmentCard({
                   { e_beim: tm.e_beim },
                 )}
               </p>
-              {form.values.own_workspace && (
+              {form.values.own_workspace && hasTax && (
                 <>
                   <Checkbox
                     label={t('{name} ist steuerlich selbständig (eigener Bescheid)', {

@@ -199,7 +199,9 @@ export function MemberListPage() {
     setParams((p) => ({ ...p, sortierung: p.sortierung === key ? `-${key}` : key, page: 1 }))
   }
 
-  const visible = COLUMNS.filter((c) => columns.includes(c.key))
+  // Spalte „Ehrungen“ nur mit Modul Ehrungen & Jubiläen
+  const choosable = COLUMNS.filter((c) => c.key !== 'honorary_titles' || awardsOn)
+  const visible = choosable.filter((c) => columns.includes(c.key))
   const pages = data ? Math.max(1, Math.ceil(data.count / pageSize)) : 1
   const pagination = pages > 1 && (
     <div className="pager">
@@ -410,7 +412,7 @@ export function MemberListPage() {
           </button>
           {showColumns && (
             <div className="column-picker" id="member-column-options">
-              {COLUMNS.map((c) => (
+              {choosable.map((c) => (
                 <label key={c.key} className="checkbox">
                   <input
                     type="checkbox"

@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from access.models import Role
+from access.modules import module_on
 from core.tenancy import rls_bypass
 from organizations import imprint as imprint_service
 from organizations.imprint_generator import (
@@ -124,7 +125,7 @@ def facts(website: Website) -> dict:
         **({"members": "consent"} if website.block_on("members") else {}),
         **({"memorial": True} if website.block_on("memorial") else {}),
         **({"address": True} if website.show_address and website.block_on("board") else {}),
-        **({"instrument": True} if website.show_instrument else {}),
+        **({"instrument": True} if website.show_instrument and module_on(org, "music") else {}),
     }
 
 
