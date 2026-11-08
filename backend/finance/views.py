@@ -28,7 +28,7 @@ from core.files import delete_on_commit
 from members.personsearch import name_ids
 from organizations.models import Organization
 
-from . import retention, services, statistics
+from . import retention, services, statistics, tax
 from .models import (
     Account,
     BankLine,
@@ -1017,6 +1017,25 @@ class UseOfFundsView(FinanceMixin, APIView):
         return Response(services._money(use_of_funds.report(self.org, year)))
 
 
+class VatView(FinanceMixin, APIView):
+    """Umsatzsteuer-Voranmeldung als Vorlage (Konzept vereinskasse-steuern, S2), nur mit
+    Modul Steuern. ?jahr=JJJJ&zeitraum=N (Monat bzw. Quartal) &art=month|quarter|year."""
+
+    @extend_schema(responses=dict)
+    def get(self, request, org_id: int):
+        from . import vat
+
+        if not module_on(self.org, "tax"):
+            raise NotFound()
+        raw = request.query_params.get("jahr", "")
+        year = int(raw) if raw.isdigit() and 1990 <= int(raw) <= 2100 else None
+        year = year or timezone.localdate().year
+        index = request.query_params.get("zeitraum", "")
+        index = int(index) if index.isdigit() else None
+        period = request.query_params.get("art") or None
+        return Response(services._money(vat.report(self.org, year, index, period)))
+
+
 class FinanceSettingsView(FinanceMixin, APIView):
     """Einstellungen der Kasse. PATCH {tax_areas_enabled}: Verein bzw. Dachverband
     entscheidet selbst, ob Kategorien steuerlichen Bereichen zugeordnet werden."""
@@ -1041,6 +1060,12 @@ class FinanceSettingsView(FinanceMixin, APIView):
             return self._switch(
                 request, "board_pay_allowed", "Satzung erlaubt Vergütung des Vorstands"
             )
+        if "vat_flat_rate" in request.data:
+            return self._switch(request, "vat_flat_rate", "Vorsteuer pauschal nach § 23a UStG")
+        if "vat_period" in request.data:
+            return self._vat_period(request)
+        if "vat_registered" in request.data:
+            return self._vat_registered(request)
         value = request.data.get("tax_areas_enabled")
         if not isinstance(value, bool):
             raise serializers.ValidationError(
@@ -1077,6 +1102,54 @@ class FinanceSettingsView(FinanceMixin, APIView):
             )
             setattr(self.org, field, value)
             self.org.save(update_fields=[field])
+        return Response(self.data())
+
+    def _vat_period(self, request):
+        from . import vat
+
+        value = request.data.get("vat_period")
+        if value not in vat.PERIODS:
+            raise serializers.ValidationError(
+                {"vat_period": gettext("Bitte monatlich, vierteljährlich oder jährlich wählen.")}
+            )
+        if value != self.org.vat_period:
+            record(
+                self.org,
+                request.user,
+                "update",
+                self.org,
+                {"Voranmeldungszeitraum": [self.org.vat_period, value]},
+            )
+            self.org.vat_period = value
+            self.org.save(update_fields=["vat_period"])
+        return Response(self.data())
+
+    def _vat_registered(self, request):
+        """Umsatzsteuerpflichtig (kein Kleinunternehmer); dieselbe Angabe wie „Umsatzsteuer
+        auf Rechnungen ausweisen“ in den Rechnungseinstellungen."""
+        from billing.models import BillingSettings
+
+        value = request.data.get("vat_registered")
+        if not isinstance(value, bool):
+            raise serializers.ValidationError(
+                {"vat_registered": gettext("Bitte ja oder nein angeben.")}
+            )
+        cfg, _ = BillingSettings.objects.get_or_create(organization=self.org)
+        if cfg.vat_enabled != value:
+            record(
+                self.org,
+                request.user,
+                "update",
+                self.org,
+                {
+                    "umsatzsteuerpflichtig": [
+                        "ja" if not value else "nein",
+                        "ja" if value else "nein",
+                    ]
+                },
+            )
+            cfg.vat_enabled = value
+            cfg.save(update_fields=["vat_enabled"])
         return Response(self.data())
 
     def _datev(self, request):
@@ -1177,6 +1250,9 @@ class FinanceSettingsView(FinanceMixin, APIView):
             "cash_counts_enabled": self.org.cash_counts_enabled,
             "reserves_enabled": self.org.reserves_on,
             "board_pay_allowed": self.org.board_pay_allowed,
+            "vat_registered": tax._vat_registered(self.org),
+            "vat_period": self.org.vat_period,
+            "vat_flat_rate": self.org.vat_flat_rate,
             "datev_enabled": self.org.datev_enabled,
             "datev_consultant": self.org.datev_consultant,
             "datev_client": self.org.datev_client,

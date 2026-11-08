@@ -33,6 +33,7 @@ import { NetAssetsPage } from './NetAssetsPage.tsx'
 import { UseOfFundsPage } from './UseOfFundsPage.tsx'
 import { ArtistFeesPage } from './ArtistFeesPage.tsx'
 import { AllowancesPage } from './AllowancesPage.tsx'
+import { VatPage } from './VatPage.tsx'
 import { AssetsPage } from './AssetsPage.tsx'
 import { t } from '../../i18n/index.ts'
 
@@ -267,6 +268,7 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
         ...(a.tax
           ? [
               { to: '/finanzen/abschluss/steuern', label: t('Steuern') },
+              { to: '/finanzen/abschluss/umsatzsteuer', label: t('Umsatzsteuer') },
               { to: '/finanzen/abschluss/pauschalen', label: t('Pauschalen') },
               { to: '/finanzen/abschluss/anlagen', label: t('Anlagen') },
               {
@@ -284,6 +286,7 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
       <Routes>
         <Route index element={<EvaluationPage />} />
         {a.tax && <Route path="steuern" element={<TaxPage />} />}
+        {a.tax && <Route path="umsatzsteuer" element={<VatPage canEdit={a.financeEdit} />} />}
         {a.tax && <Route path="pauschalen" element={<AllowancesPage canEdit={a.financeEdit} />} />}
         {a.tax && <Route path="anlagen" element={<AssetsPage canEdit={a.financeEdit} />} />}
         {a.tax && <Route path="kuenstlersozialabgabe" element={<ArtistFeesPage />} />}

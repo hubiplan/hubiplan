@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Neu: Umsatzsteuer in der Kasse. Steuersatz je Buchung (Vorgabe aus der Kategorie), Vorsteuer auch anteilig und unter Finanzen › Abschluss & Berichte › Umsatzsteuer eine Vorlage für die Voranmeldung, wahlweise mit Vorsteuerpauschale nach § 23a UStG.
 - Neu: Pauschalen zählen jetzt auch den Verzicht als Aufwandsspende, Auszahlungen aus der Musikerabrechnung und die Kassen der Untereinheiten mit (Finanzen › Abschluss & Berichte › Pauschalen).
 - Neu: Mittelverwendungsrechnung. Unter Finanzen › Abschluss & Berichte › Mittelverwendung zeigt eine vereinfachte Rechnung, welche Mittel bis wann zu verwenden sind, und warnt bei abgelaufener Frist.
 - Neu: Zweckgebundene Spenden. Unter Zuwendungsbestätigungen › **Zweckbindungen** lassen sich Spenden und die Ausgaben im Kassenbuch einem Zweck zuordnen; die Übersicht zeigt den Rest und erinnert an die zeitnahe Verwendung.

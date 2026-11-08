@@ -471,6 +471,17 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     board_pay_allowed = models.BooleanField(
         "Satzung erlaubt Vergütung des Vorstands", default=False, db_default=False
     )
+    # Umsatzsteuer in der Kasse (Konzept vereinskasse-steuern, S2)
+    vat_period = models.CharField(
+        "Voranmeldungszeitraum",
+        max_length=8,
+        choices=[("month", "monatlich"), ("quarter", "vierteljährlich"), ("year", "jährlich")],
+        default="quarter",
+        db_default="quarter",
+    )
+    vat_flat_rate = models.BooleanField(
+        "Vorsteuer pauschal nach § 23a UStG", default=False, db_default=False
+    )
     # Untereinheiten: Rolleninhaber bekommen eigene Zugänge mit Rechten. Aus: die
     # Einheit darüber verwaltet sie, ihre Rollen sind reine Ämter.
     self_managed = models.BooleanField(

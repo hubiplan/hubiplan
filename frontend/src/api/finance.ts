@@ -48,9 +48,15 @@ export interface Category {
   donations: boolean
   /** Künstlersozialabgabe: Ausgaben sind Honorare an selbständige Künstler */
   artist_fees?: boolean
+  /** Umsatzsteuer-Vorgabe für neue Buchungen */
+  vat_rate?: VatRate
   is_active: boolean
   booking_count: number
 }
+
+/** Umsatzsteuer einer Buchung: leer = nicht steuerbar */
+export type VatRate = '' | 'exempt' | '7' | '19'
+export type VatPeriod = 'month' | 'quarter' | 'year'
 
 export interface Receipt {
   id: number
@@ -134,6 +140,9 @@ export interface Booking {
   /** Ausgabe für eine zweckgebundene Spende */
   earmark?: number | null
   earmark_name?: string | null
+  /** Umsatzsteuer im Betrag und abziehbarer Anteil der Vorsteuer (%) */
+  vat_rate?: VatRate
+  input_tax_share?: number
   split?: {
     lead: { id: number; number: string }
     parts: { id: number; number: string; amount: string }[]
@@ -320,6 +329,10 @@ export interface FinanceSettings {
   reserves_enabled?: boolean
   /** Satzung erlaubt Vergütung des Vorstands (§ 27 Abs. 3 BGB) */
   board_pay_allowed?: boolean
+  /** Umsatzsteuerpflichtig (kein Kleinunternehmer), Voranmeldungszeitraum, § 23a UStG */
+  vat_registered?: boolean
+  vat_period?: VatPeriod
+  vat_flat_rate?: boolean
   /** DATEV-Export für die Steuerberatung (zuschaltbar) */
   datev_enabled?: boolean
   datev_consultant?: string
@@ -336,6 +349,34 @@ export interface FinanceSettings {
   // Kasse festgeschrieben bis (von Hand) bzw. automatisch bis Ende des vorletzten Monats
   locked_until: string | null
   auto_locked_until: string
+}
+
+/** Umsatzsteuer-Voranmeldung als Vorlage (Kennzahlen) */
+export interface VatReport {
+  year: number
+  period: VatPeriod
+  index: number
+  label: string
+  start: string
+  end: string
+  periods: { index: number; label: string }[]
+  registered: boolean
+  flat_rate: boolean
+  flat_rate_used: boolean
+  flat_rate_allowed: boolean
+  previous_taxable: string
+  actual_input_tax: string
+  flat_input_tax: string
+  lines: {
+    code: string
+    label: string
+    base: string | null
+    base_euros: number | null
+    tax: string | null
+  }[]
+  units: string[]
+  counted_at: string
+  warnings: { kind: string; text: string }[]
 }
 
 export interface BookingFilter {
@@ -665,6 +706,8 @@ export const financeApi = {
   overview: (org: number, year: number) => api.get<Overview>(`${base(org)}/overview/?jahr=${year}`),
   netAssets: (org: number, year: number) =>
     api.get<NetAssets>(`${base(org)}/net-assets/?jahr=${year}`),
+  vat: (org: number, year: number, period: VatPeriod, index: number) =>
+    api.get<VatReport>(`${base(org)}/vat/?jahr=${year}&art=${period}&zeitraum=${index}`),
   useOfFunds: (org: number, year: number) =>
     api.get<UseOfFunds>(`${base(org)}/use-of-funds/?jahr=${year}`),
   artistFees: (org: number, year: number) =>
