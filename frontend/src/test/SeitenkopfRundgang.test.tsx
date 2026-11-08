@@ -72,7 +72,6 @@ const ABWEICHUNGEN: Record<string, string> = {
   '/webseite/gestaltung': '',
   '/webseite/kontakt': '',
   '/webseite/domain': '',
-  '/material': 'Material',
   '/material/musik': '',
   '/einstellungen': 'Organisation',
   '/plattform': 'Einheiten',

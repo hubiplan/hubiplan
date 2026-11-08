@@ -3,7 +3,7 @@
 // Menüstruktur (navTrail.ts), damit Überschrift und Menüpunkt gleich heißen.
 import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { ReactNode } from 'react'
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useNavTrail, trailTitle } from './navTrail.ts'
 import type { TrailItem } from './navTrail.ts'
@@ -45,6 +45,7 @@ export function PageHeader({
   extra,
   status,
   children,
+  onBack,
 }: {
   /** Nur für Seiten ohne eigenen Menüpunkt, z. B. eine Mitgliedsakte („Max Mustermann“) */
   title?: string
@@ -60,6 +61,8 @@ export function PageHeader({
   status?: ReactNode
   /** Zusatzzeile unter der Überschrift, z. B. Status, Nummer, Ämter einer Mitgliedsakte */
   children?: ReactNode
+  /** Detailansicht in einer Liste: der Weg zur Elternseite schließt sie (statt neu zu laden) */
+  onBack?: () => void
 }) {
   const { trail, unit } = useNavTrail()
   const slot = useContext(PageSlotContext)
@@ -69,6 +72,11 @@ export function PageHeader({
   usePageTitle(title ? trailTitle(trail, title) : null)
   const more = actions.filter((a): a is PageAction => !!a)
   const parent = crumbs.at(-1)
+  const back = (e: ReactMouseEvent) => {
+    if (!onBack) return
+    e.preventDefault()
+    onBack()
+  }
 
   return (
     <header className="page-header">
@@ -77,7 +85,9 @@ export function PageHeader({
           <ol>
             {crumbs.map((c) => (
               <li key={c.to}>
-                <Link to={c.to}>{c.label}</Link>
+                <Link to={c.to} onClick={c === parent ? back : undefined}>
+                  {c.label}
+                </Link>
               </li>
             ))}
             <li>
@@ -88,6 +98,7 @@ export function PageHeader({
             <Link
               to={parent.to}
               className="page-header-back"
+              onClick={back}
               aria-label={t('Zurück zu {label}', { label: parent.label })}
             >
               <span aria-hidden="true">‹ </span>
