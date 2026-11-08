@@ -1080,12 +1080,29 @@ Lauf mehr arbeitet, dann `rm -r /opt/hubiplan.sperre` (Produktionsserver mit `su
 Vor dem Tausch laufen die Migrationen als eigener Schritt (Ausgabe mit `-v 2`, höchstens
 `MIGRATE_TIMEOUT` Sekunden, Standard 3600, änderbar in der `.env`). Dafür halten Backend,
 Worker, Beat und Backup der bisherigen Fassung an, damit keine laufende Abfrage eine
-Tabellensperre hält (am 31.10.2026 hing so `ALTER TABLE` auf dem Echtserver); Datenbank und
-Redis laufen weiter. Stehen keine Migrationen an (`migrate --check`), entfällt das Anhalten. Hinter nginx hält auch Caddy an, und nginx zeigt solange die Seite
-„HUBIplan wird gerade aktualisiert“, die sich alle 5 Sekunden neu lädt
-(`deploy/hestia/app-8110.stpl`). Mit eigenem HTTPS wartet Caddy bis zu 30 Sekunden auf das
-Backend und zeigt danach dieselbe Seite. Die Oberfläche wiederholt Anfragen bei 502/503/504
-von selbst. Schlagen die Migrationen fehl, startet die bisherige Fassung wieder. Wird ein Dienst nicht
+Tabellensperre hält (am 31.10.2026 hing so `ALTER TABLE` auf dem Echtserver); Datenbank,
+Redis und Caddy laufen weiter. Jede Migration wartet höchstens `MIGRATE_LOCK_TIMEOUT`
+(Standard `30s`) auf eine Sperre; dann wird der Migrationsschritt bis zu dreimal wiederholt.
+Weil Caddy weiterläuft, bleiben Oberfläche und Bilder (auch die der Vereinswebseite)
+erreichbar. API-Aufrufe wartet Caddy bis zu 30 Sekunden ab und zeigt danach die Seite
+„HUBIplan wird gerade aktualisiert“, die sich alle 5 Sekunden neu lädt. Die Oberfläche
+wiederholt Anfragen bei 502/503/504 von selbst. Die Vereinswebseite zeigt in dieser Zeit
+ihren letzten guten Stand (hubiplan-website, `STALE_IF_ERROR_SECONDS`).
+
+Stehen keine Migrationen an (`migrate --check`), entfällt das Anhalten. Das neue Backend
+startet dann neben dem bisherigen; erst wenn es „healthy“ ist, wird das alte sanft gestoppt
+(laufende Anfragen werden fertig). Caddy und die Webseite erreichen beide unter `backend`,
+es gibt also keine Lücke. Die Container heißen danach abwechselnd `hubiplan-backend-1` und
+`hubiplan-backend-2`; Befehle deshalb mit `docker compose exec backend …`. Nur beim Tausch des
+Caddy-Containers selbst fehlt die Seite für 1–3 Sekunden; hinter nginx zeigt nginx dann
+„Wird gerade aktualisiert“ (`deploy/hestia/app-8110.stpl`).
+
+Ab Docker Engine 25 prüft Docker das Backend beim Start jede Sekunde
+(`docker-compose.schnellstart.yml`), sodass Caddy, Worker und Beat ohne Wartezeit folgen.
+Migrationen, Datenbankrolle und Löschliste laufen beim Start in einem Prozess
+(`manage.py startvorbereitung`).
+
+Schlagen die Migrationen fehl, startet die bisherige Fassung wieder. Wird ein Dienst nicht
 „healthy“, geht es automatisch zur vorigen Fassung zurück (Ordner und Images
 `…:vorher`); die fehlerhafte bleibt zur Ansicht in `/opt/hubiplan.fehler`.
 

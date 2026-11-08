@@ -118,6 +118,12 @@ if grep -q '^HUBIPLAN_SELBSTUPDATE=1' .env; then
     chown 1000:1000 "$AKTUALISIERUNG_DIR"
     chmod 750 "$AKTUALISIERUNG_DIR"
 fi
+# Schnellere Gesundheitsprüfung beim Start (healthcheck.start_interval braucht Docker
+# Engine 25, API 1.44; ältere lehnen die Angabe ab)
+API=$(docker version --format '{{.Server.APIVersion}}' 2> /dev/null || echo 0)
+if [ "${API%%.*}" -gt 1 ] 2> /dev/null || { [ "${API%%.*}" = 1 ] && [ "${API#*.}" -ge 44 ] 2> /dev/null; }; then
+    DATEIEN="$DATEIEN -f docker-compose.schnellstart.yml"
+fi
 COMPOSE="docker compose -p $PROJEKT $DATEIEN"
 . ./deploy/daten-rueckweg.sh
 
@@ -219,18 +225,23 @@ fi
 # 1b. Migrationen als eigener Schritt, bevor die neue Fassung startet. Vorher halten
 #     Backend, Worker, Beat und Backup der bisherigen Fassung an: Laufende Abfragen (z. B. der
 #     minütliche Mailabruf im Worker) halten sonst Tabellensperren, und ALTER TABLE wartet
-#     endlos (Produktionsserver 31.10.2026). Hinter nginx hält auch Caddy an, damit nginx die Seite
-#     „Wird gerade aktualisiert“ zeigt (deploy/hestia/app-8110.stpl); mit eigenem HTTPS
-#     wartet Caddy auf das Backend. Datenbank und Redis laufen weiter.
+#     endlos (Produktionsserver 31.10.2026). Caddy (web) läuft weiter: Oberfläche und Bilder
+#     (auch die der Vereinswebseite) bleiben erreichbar, API-Aufrufe bekommen die Seite
+#     „Wird gerade aktualisiert“, die die Oberfläche von selbst wiederholt
+#     (konzepte/ausfallzeiten-ausrollen.md). Datenbank und Redis laufen weiter.
 #     Stehen keine Migrationen an, entfällt das Anhalten.
 #     Schlägt das Migrieren fehl, startet die bisherige Fassung wieder (Migrationen sind
 #     so geschrieben, dass sie mit schon angewendeten weiterläuft, siehe docs/betrieb.md).
+#     Jede Migration wartet höchstens MIGRATE_LOCK_TIMEOUT auf eine Sperre und wird dann
+#     (bis zu dreimal) neu versucht, statt bis zum Gesamt-Timeout zu hängen.
 MIGRATE_TIMEOUT=$(grep '^MIGRATE_TIMEOUT=' .env | cut -d= -f2 || true)
 MIGRATE_TIMEOUT=${MIGRATE_TIMEOUT:-3600}
+MIGRATE_LOCK_TIMEOUT=$(grep '^MIGRATE_LOCK_TIMEOUT=' .env | cut -d= -f2 || true)
+MIGRATE_LOCK_TIMEOUT=${MIGRATE_LOCK_TIMEOUT:-30s}
+case "$MIGRATE_LOCK_TIMEOUT" in
+    *[!0-9a-z]*|'') echo "Abbruch: MIGRATE_LOCK_TIMEOUT ungültig." >&2; exit 1 ;;
+esac
 ANHALTEN="backend worker beat backup"
-if grep -q '^HUBIPLAN_HINTER_PROXY=1' .env; then
-    ANHALTEN="web $ANHALTEN"
-fi
 # Laufen Datenbank und Redis schon, nicht anfassen (--no-deps)
 OHNE_ABH=""
 if [ -n "$($COMPOSE ps -q --status running postgres)" ] \
@@ -270,16 +281,28 @@ if [ -n "$ANGEHALTEN" ]; then
         exit 1
     fi
 fi
-echo "Migrationen (höchstens $MIGRATE_TIMEOUT s) …"
-# shellcheck disable=SC2086
-if ! timeout "$MIGRATE_TIMEOUT" $COMPOSE run -T --rm $OHNE_ABH --name "$PROJEKT-migration" \
-    -e MIGRATE_VERBOSITY=2 backend true; then
+echo "Migrationen (höchstens $MIGRATE_TIMEOUT s, Sperren höchstens $MIGRATE_LOCK_TIMEOUT) …"
+migrieren() {
+    # shellcheck disable=SC2086
+    timeout "$MIGRATE_TIMEOUT" $COMPOSE run -T --rm $OHNE_ABH --name "$PROJEKT-migration" \
+        -e MIGRATE_VERBOSITY=2 -e "MIGRATE_PGOPTIONS=-c lock_timeout=$MIGRATE_LOCK_TIMEOUT" \
+        backend true < /dev/null
+}
+VERSUCH=1
+until migrieren; do
+    rc=$?
     docker rm -f "$PROJEKT-migration" > /dev/null 2>&1 || true
-    echo "FEHLER: Migrationen fehlgeschlagen. Die bisherige Fassung läuft weiter." >&2
-    images_zurueck
-    wieder_starten
-    exit 1
-fi
+    # Gesamt-Timeout (124) nicht wiederholen
+    if [ "$VERSUCH" -ge 3 ] || [ "$rc" = 124 ]; then
+        echo "FEHLER: Migrationen fehlgeschlagen. Die bisherige Fassung läuft weiter." >&2
+        images_zurueck
+        wieder_starten
+        exit 1
+    fi
+    VERSUCH=$((VERSUCH + 1))
+    echo "Migrationen: neuer Versuch ($VERSUCH von 3) in 5 s …" >&2
+    sleep 5
+done
 
 # 2. Ordner tauschen (bei einem Ausrollen in denselben Ordner entfällt das)
 if [ "$NEU" != "$ZIEL" ]; then
@@ -289,6 +312,44 @@ if [ "$NEU" != "$ZIEL" ]; then
     fi
     mv "$NEU" "$ZIEL"
     cd "$ZIEL"
+fi
+
+# 2b. Ohne Migrationen läuft das bisherige Backend noch: Neues Backend daneben starten, auf
+#     „healthy“ warten und erst dann das alte sanft stoppen (laufende Anfragen werden fertig).
+#     Caddy und die Vereinswebseite finden beide unter „backend“ (Docker-DNS), es gibt also
+#     keine Lücke. Klappt das nicht, bleibt das alte Backend, und starten() unten ersetzt es
+#     wie bisher (mit Rückweg bei Fehler). Container heißen danach abwechselnd …-backend-1
+#     und …-backend-2; Befehle daher immer mit „docker compose exec backend“.
+ueberlappend_tauschen() {
+    [ -z "$ANGEHALTEN" ] || return 0
+    alt=$($COMPOSE ps -q --status running backend)
+    [ "$(echo "$alt" | wc -w)" = 1 ] || return 0
+    echo "Starte das neue Backend neben dem bisherigen …"
+    $COMPOSE up -d --no-deps --no-recreate --scale backend=2 backend < /dev/null || return 1
+    neu=$($COMPOSE ps -q backend | grep -v "^$alt" | head -n1)
+    [ -n "$neu" ] || return 1
+    i=0
+    while [ "$i" -lt 300 ]; do
+        zustand=$(docker inspect -f '{{.State.Health.Status}}' "$neu" 2> /dev/null || echo weg)
+        case "$zustand" in
+            healthy) break ;;
+            unhealthy|weg) i=300; break ;;
+        esac
+        i=$((i + 1))
+        sleep 1
+    done
+    if [ "$zustand" != healthy ]; then
+        echo "Neues Backend wird nicht gesund ($zustand); weiter wie bisher." >&2
+        docker logs --tail 40 "$neu" >&2 2>&1 || true
+        docker rm -f "$neu" > /dev/null 2>&1 || true
+        return 1
+    fi
+    echo "Neues Backend gesund, stoppe das bisherige …"
+    docker stop -t 35 "$alt" > /dev/null || true
+    docker rm "$alt" > /dev/null || true
+}
+if ! ueberlappend_tauschen; then
+    echo "Überlappender Tausch nicht möglich, Backend wird neu gestartet." >&2
 fi
 
 # 3. Starten; bei Fehler zurück zur vorigen Fassung
