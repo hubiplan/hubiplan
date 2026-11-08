@@ -825,6 +825,15 @@ class Donation(models.Model):
     kind = models.CharField("Art", max_length=10, choices=Kind.choices, default=Kind.MONEY)
     amount = models.DecimalField("Betrag bzw. Wert", max_digits=12, decimal_places=2)
     waiver = models.BooleanField("Verzicht auf Erstattung von Aufwendungen", default=False)
+    # Verzicht auf eine Pauschale (S3): zählt wie eine Auszahlung gegen den Freibetrag
+    allowance = models.CharField(
+        "Verzicht auf Aufwandsvergütung",
+        max_length=10,
+        choices=Booking.Allowance.choices,
+        blank=True,
+        default="",
+        db_default="",
+    )
     membership = models.ForeignKey(
         "members.Membership",
         verbose_name="Mitglied",

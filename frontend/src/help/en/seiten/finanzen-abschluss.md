@@ -26,6 +26,12 @@ The **Allowances** tab (also part of the Tax & charitable status module) adds up
 
 The tax-free amounts apply across all payers together. Under **PDF** there is a declaration per person to sign, confirming they do not use the amount elsewhere. Once signed, it belongs with the receipts. If a board member receives an allowance, HUBIplan warns as long as **Our statutes allow the board to be paid** is not ticked (§ 27 (3) BGB).
 
+Besides cash book expenses, the following also count:
+
+- waiving the allowance as an expense donation: tick **Waiver of reimbursement of expenses** on the donation and choose the type under **Waiver of an allowance**. The amount uses up the tax-free allowance just like a payment,
+- payments from the musician settlement: when an expense is assigned to an approved musician remuneration, HUBIplan sets the trainer allowance (artistic activity) and counts it for the musician,
+- payments by sub-units with their own cash book that belong to the club for tax purposes. The same person then appears only once, with all payments in the expandable list below the name. The sub-unit itself only sees its own payments and a note where it is counted.
+
 The **Fixed assets** tab is the fixed asset register: items from €250 net that are used for several years, such as tents, refrigerated trailers or furniture. With **Add fixed asset** you enter the date of acquisition, cost, tax area and type of depreciation: straight-line over the useful life (by month), at once as a low-value asset (up to €800 net), as a pool over five years (€250 to €1,000 net) or none. The register shows depreciation and book value for the selected financial year, also as Excel. Record a sale or scrapping as a disposal.
 
 Depreciation only appears here and on the **Taxes** tab, never in the cash book. There it replaces the purchase expense in the result, so that an expensive purchase in commercial operations does not show up as a loss.

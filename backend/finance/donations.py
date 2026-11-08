@@ -155,6 +155,11 @@ def check_donation(org, donation: Donation, cfg: DonationSettings | None = None)
             errors["goods_origin"] = gettext("Bitte angeben, woher die Sache stammt.")
         if donation.waiver:
             errors["waiver"] = gettext("Der Verzicht auf Aufwendungsersatz ist eine Geldzuwendung.")
+    if donation.allowance and not donation.waiver:
+        errors["allowance"] = gettext(
+            "Eine Pauschale lässt sich nur durch Verzicht spenden. Bitte „Verzicht auf "
+            "Erstattung“ ankreuzen."
+        )
     if donation.date and donation.date > timezone.localdate():
         errors["date"] = gettext("Das Datum liegt in der Zukunft.")
     if errors:

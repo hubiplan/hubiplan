@@ -226,6 +226,10 @@ export interface AllowanceReport {
   year: number
   limits: Record<AllowanceKind, string>
   board_pay_allowed: boolean
+  /** Untereinheiten, deren Zahlungen hier mitzählen */
+  units: string[]
+  /** Einheit, bei der diese Untereinheit mitzählt (leer, wenn hier zusammengerechnet wird) */
+  counted_at: string
   people: {
     key: string
     name: string
@@ -247,6 +251,10 @@ export interface AllowanceReport {
       amount: string
       allowance: AllowanceKind
       text: string
+      /** Kassenbuch oder Verzicht als Aufwandsspende */
+      source: 'booking' | 'waiver'
+      /** Untereinheit, aus deren Kasse gezahlt wurde */
+      unit: string
     }[]
   }[]
   warnings: { kind: string; text: string }[]

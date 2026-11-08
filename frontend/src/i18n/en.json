@@ -7265,5 +7265,12 @@
   "Alle Mittel sind verwendet.": "All funds have been used.",
   "zugeflossen in": "received in",
   "zu verwenden bis Ende": "to be used by the end of",
-  "Frist abgelaufen": "deadline passed"
+  "Frist abgelaufen": "deadline passed",
+  "Verzicht auf eine Pauschale": "Waiver of an allowance",
+  "Der Betrag zählt dann wie eine Auszahlung gegen den Freibetrag der Person (Abschluss & Berichte › Pauschalen).": "The amount then counts against the person's tax-free allowance just like a payment (Closing & reports › Allowances).",
+  "keine Pauschale (z. B. Fahrtkosten)": "no allowance (e.g. travel costs)",
+  "Ein Verzicht auf die Pauschale als Aufwandsspende zählt ebenso, Auszahlungen aus der Musikerabrechnung zählen beim Musiker.": "Waiving the allowance as an expense donation counts as well; payments from the musician settlement count for the musician.",
+  "Mitgezählt werden die Kassen von: {units}": "Also counted are the cash books of: {units}",
+  "{n} Zahlungen": "{n} payments",
+  "Diese Kasse zählt steuerlich bei {x} mit. Dort stehen die Summen je Person über alle Kassen.": "For tax purposes this cash book is counted at {x}. The totals per person across all cash books are shown there."
 }
