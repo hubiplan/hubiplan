@@ -2,6 +2,10 @@
 # HTTPS übernimmt und nur an 127.0.0.1:WEB_PORT weiterleitet. Caddy spricht
 # hier nur HTTP und ist von außen nicht erreichbar.
 {
+	# Beim Beenden (Ausrollen) höchstens 3 s auf laufende Anfragen warten. Ohne Frist wartet
+	# Caddy auf jede offene Anfrage, bis Docker nach 10 s abbricht; beim Messen auf dem
+	# Testserver (08.11.2026) hing eine Anfrage beim Caddy-Tausch so 19,6 s.
+	grace_period 3s
 	auto_https off
 }
 
