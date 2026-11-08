@@ -263,6 +263,10 @@ def cancel(receipt: CashReceipt, user, reason: str) -> CashReceipt:
                 "und die Quittung nicht noch einmal stornieren."
             )
         )
+    # Bestätigte Zuwendung sperrt das Storno; eine unbestätigte verschwindet mit der
+    # Einnahme (Datenaudit 08.11. DA-03)
+    Booking.objects.select_for_update().filter(pk=original.pk).first()
+    services.remove_booking_donation(original.pk)
     today = timezone.localdate()
     services.ensure_open(org, date=today)
     # Abgeschlossenes Ursprungsjahr: Gegenbeleg im laufenden Jahr, das alte Jahr bleibt

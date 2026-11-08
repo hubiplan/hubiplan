@@ -153,6 +153,9 @@ export const honorsApi = {
   updateReign: (org: number, id: number, data: ReignInput) =>
     api.put<Reign>(`${base(org)}reigns/${id}/`, data),
   deleteReign: (org: number, id: number) => api.del(`${base(org)}reigns/${id}/`),
+  /** Frühere Text-Einträge gleichen Namens mit einem Mitglied verknüpfen (ohne confirm: zählen) */
+  linkReignName: (org: number, data: { name: string; person: number; confirm?: boolean }) =>
+    api.post<{ linked: number; found: number }>(`${base(org)}reigns/link-name/`, data),
   uploadPhoto: (org: number, id: number, file: File) => {
     const form = new FormData()
     form.append('file', file)

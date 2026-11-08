@@ -250,7 +250,9 @@ class TestVeranstaltung:
         wb = load_workbook(io.BytesIO(xlsx.content))
         assert wb.sheetnames == ["Nach Kategorie", "Buchungen"]
         rows = list(wb["Buchungen"].values)
-        assert rows[1][3] == "'=SUMME(A1)"  # keine Formel aus Daten
+        # keine Formel aus Daten: Textzelle ohne sichtbares Apostroph (Datenaudit 08.11. DA-05)
+        assert rows[1][3] == "=SUMME(A1)"
+        assert wb["Buchungen"].cell(row=2, column=4).data_type == "s"
         assert rows[1][7] == 100.0
         series_pdf = c.get(f"{fin}/series/{fest['series']}/report/")
         assert series_pdf.content.startswith(b"%PDF")

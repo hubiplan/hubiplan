@@ -236,7 +236,7 @@ def open_invoice(club, c, base):
 
 
 class TestMahnungen:
-    def test_stufen_vorschlag_und_mahnung(self, c, base, open_invoice):
+    def test_stufen_vorschlag_und_mahnung(self, c, base, open_invoice, club):
         for level, name, days, fee in [
             (1, "Zahlungserinnerung", 14, "0"),
             (2, "1. Mahnung", 28, "5.00"),
@@ -268,6 +268,12 @@ class TestMahnungen:
         assert mail.outbox[-1].subject.startswith("Zahlungserinnerung: Rechnung R")
         assert mail.outbox[-1].attachments[0][0].startswith("Mahnung-1-")
 
+        # Stufe 2 erst nach Ablauf der Frist aus der Erinnerung (Datenaudit 08.11. FD-04)
+        assert c.get(f"{base}/dunnings/").json()["proposals"] == []
+        with tenant_context(club.pk):
+            Dunning.objects.filter(invoice_id=open_invoice, level=1).update(
+                due_date=timezone.localdate() - datetime.timedelta(days=1)
+            )
         # Stufe 2 ist nach 28 Tagen ebenfalls fällig, jetzt mit Gebühr
         [proposal] = c.get(f"{base}/dunnings/").json()["proposals"]
         assert proposal["next_level"] == 2

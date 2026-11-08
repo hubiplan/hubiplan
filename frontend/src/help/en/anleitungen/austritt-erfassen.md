@@ -15,4 +15,6 @@ stichworte: [leaving, resignation, left, end]
 
 The record is kept and appears under “former members”. Open invoices stay open; after the retention period HUBIplan reduces the data to the minimum.
 
+Wrong date recorded? In the record, each entry under **Periods** has **Correct entry/exit**. Member type, sub-units and offices that started or ended on the old date move along. If you clear the exit date, the exit is cancelled: the membership and these periods run open again, and the exit reason is cleared.
+
 ![Starting point: Record a member leaving](bild:austritt-erfassen)

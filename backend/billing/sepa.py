@@ -246,10 +246,32 @@ def proposals(org, on: datetime.date | None = None) -> list[tuple[Invoice, Manda
     return result
 
 
+def target2_holiday(day: datetime.date) -> bool:
+    """TARGET2-Feiertag: 1.1., Karfreitag, Ostermontag, 1.5., 25. und 26.12.
+
+    An diesen Tagen werden keine Lastschriften ausgeführt (Datenaudit 08.11. DR-13, FD-10)."""
+    from dateutil.easter import easter
+
+    if (day.month, day.day) in ((1, 1), (5, 1), (12, 25), (12, 26)):
+        return True
+    sunday = easter(day.year)
+    return day in (sunday - datetime.timedelta(days=2), sunday + datetime.timedelta(days=1))
+
+
+def bank_day(day: datetime.date) -> bool:
+    return day.weekday() < 5 and not target2_holiday(day)
+
+
+def next_bank_day(day: datetime.date) -> datetime.date:
+    while not bank_day(day):
+        day += datetime.timedelta(days=1)
+    return day
+
+
 def earliest_collection(org, today: datetime.date | None = None) -> datetime.date:
     today = today or timezone.localdate()
     days = max(settings_for(org).prenotification_days, 2)
-    return today + datetime.timedelta(days=days)
+    return next_bank_day(today + datetime.timedelta(days=days))
 
 
 # --- Lastschriftlauf ---
@@ -276,8 +298,11 @@ def create_run(org, invoice_ids: list[int], collection_date: datetime.date, user
         errors["collection_date"] = gettext(
             "Frühestens am {earliest}: Die Zahler müssen {x1} Tage vorher benachrichtigt werden."
         ).format(earliest=date_text(earliest), x1=cfg.prenotification_days)
-    if collection_date.weekday() >= 5:
-        errors["collection_date"] = gettext("Der Einzug muss auf einen Bankarbeitstag fallen.")
+    if not bank_day(collection_date):
+        errors["collection_date"] = gettext(
+            "Der Einzug muss auf einen Bankarbeitstag fallen (nicht am Wochenende oder an "
+            "einem TARGET2-Feiertag). Nächster Bankarbeitstag: {day}."
+        ).format(day=date_text(next_bank_day(collection_date)))
     if errors:
         raise ValidationError(errors)
     # Gewählte Rechnungen sperren (in fester Reihenfolge) und danach erst prüfen: Eine

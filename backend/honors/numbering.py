@@ -54,10 +54,16 @@ def split_name(person, name: str) -> tuple[str, str]:
     return " ".join(parts[:-tail]), " ".join(parts[-tail:])
 
 
+def first_key(first: str) -> str:
+    """Vorname für die Zählung: ohne Groß-/Kleinschreibung, Bindestrich wie Leerzeichen
+    („Hans-Peter“ = „Hans Peter“, aber ≠ „Hans“; Datenaudit 08.11. DR-07, FD-06)."""
+    return " ".join(first.replace("-", " ").casefold().split())
+
+
 def holder_key(reign) -> str:
     if reign.person_id:
         return f"p{reign.person_id}"
-    return "n" + " ".join(reign.name.lower().split())
+    return "n" + first_key(reign.name)
 
 
 def ordinals(reigns, per_reign: bool = False) -> dict[int, int]:
@@ -81,7 +87,7 @@ def ordinals(reigns, per_reign: bool = False) -> dict[int, int]:
     for reign in ordered:
         key = holder_key(reign)
         if key not in number_of:
-            first = split_name(reign.person, reign.name)[0].lower()
+            first = first_key(split_name(reign.person, reign.name)[0])
             if key in manual:
                 number_of[key] = manual[key]
                 counter[first] = max(counter.get(first, 0), manual[key])
@@ -96,7 +102,7 @@ def _per_reign(ordered) -> dict[int, int]:
     counter: dict[str, int] = {}
     result: dict[int, int] = {}
     for reign in ordered:
-        first = split_name(reign.person, reign.name)[0].lower()
+        first = first_key(split_name(reign.person, reign.name)[0])
         if reign.ordinal:
             counter[first] = max(counter.get(first, 0), reign.ordinal)
             result[reign.pk] = reign.ordinal

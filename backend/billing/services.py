@@ -11,7 +11,7 @@ from decimal import ROUND_DOWN, ROUND_HALF_UP, Decimal
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.db import connection, transaction
-from django.db.models import Prefetch, Q, Sum
+from django.db.models import Max, Prefetch, Q, Sum
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
 
@@ -228,6 +228,8 @@ class RunPlan:
     department_items: dict[int, list[FeeItem]] = field(default_factory=dict)
     departments: dict[int, object] = field(default_factory=dict)
     skipped: list[dict] = field(default_factory=list)
+    # Mitglieder in mehreren Untereinheiten (Rechnung an die mit dem frühesten Beginn)
+    multi_units: int = 0
 
 
 def fee_exempt_units(org) -> dict[int, str]:
@@ -366,7 +368,9 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
             continue
         dept = None
         if not m.pays_fee_self:
-            link = next(
+            # Mehrere Untereinheiten: die mit dem frühesten Beginn, bei Gleichstand die in
+            # der Sortierung zuerst stehende (Datenaudit 08.11. DR-05, FD-05)
+            links = sorted(
                 (
                     d
                     for d in m.department_memberships.all()
@@ -374,9 +378,16 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
                     and d.department.is_active
                     and (d.valid_until is None or d.valid_until >= ref)
                 ),
-                None,
+                key=lambda d: (
+                    d.valid_from,
+                    d.department.sort_order,
+                    d.department.name.lower(),
+                    d.department_id,
+                ),
             )
-            dept = link.department if link else None
+            if len({d.department_id for d in links}) > 1:
+                plan.multi_units += 1
+            dept = links[0].department if links else None
         contact = contact_for(m.person, org, shared)
         reachable = bool(contact and contact.email) or bool(
             contact and contact.street and contact.postal_code and contact.city
@@ -448,6 +459,7 @@ def preview_checks(org, plan: RunPlan) -> dict:
         "open_change_requests": ChangeRequest.objects.filter(
             organization=org, status=ChangeRequest.Status.PENDING
         ).count(),
+        "multi_units": plan.multi_units,
     }
 
 
@@ -1438,14 +1450,20 @@ def dunning_proposals(org, on: datetime.date | None = None) -> list[tuple[Invoic
         # Rechnungen in einem laufenden Lastschrifteinzug werden nicht gemahnt
         .exclude(debits__run__status="created")
         .select_related("organization", "department", "club", "membership__person")
+        # Frist der letzten Mahnung (Datenaudit 08.11. DR-03, FD-04)
+        .annotate(last_dunning_due=Max("dunnings__due_date"))
         .order_by("due_date", "number")
     )
     for invoice in invoices:
         level = next_level(invoice, levels)
         if level is None or invoice.outstanding <= 0:
             continue
-        if invoice.due_date + datetime.timedelta(days=level.days) <= on:
-            result.append((invoice, level))
+        if invoice.due_date + datetime.timedelta(days=level.days) > on:
+            continue
+        # Nächste Stufe erst nach Ablauf der Frist aus der letzten Mahnung
+        if invoice.last_dunning_due is not None and invoice.last_dunning_due >= on:
+            continue
+        result.append((invoice, level))
     return result
 
 

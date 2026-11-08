@@ -329,6 +329,7 @@ def test_pruefliste_vor_den_jahresbestaetigungen(ready, c):
         "goods_without_documents": 0,
         "goods_open": 0,
         "fees_skipped": 0,
+        "booking_mismatch": 0,
     }
     done = donate(c, ready)
     assert (
@@ -352,6 +353,7 @@ def test_pruefliste_vor_den_jahresbestaetigungen(ready, c):
         "goods_without_documents": 1,
         "goods_open": 1,
         "fees_skipped": 0,
+        "booking_mismatch": 0,
     }
 
 

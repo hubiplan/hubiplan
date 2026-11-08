@@ -11,6 +11,7 @@ from xml.sax.saxutils import escape
 from django.utils import timezone
 from django.utils.functional import Promise
 from openpyxl import Workbook
+from openpyxl.cell import Cell
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 from reportlab.lib import colors
@@ -384,15 +385,18 @@ def contacts_sheet(rows: list[dict]) -> tuple[str, list[list]] | None:
     return ("Ansprechpartner", lines) if len(lines) > 1 else None
 
 
-FORMULA_START = ("=", "+", "-", "@", "\t", "\r")
-
-
 def safe_cell(value):
-    """Verhindert, dass Excel Text aus den Daten als Formel ausführt."""
+    """Verhindert, dass Excel Text aus den Daten als Formel ausführt (nur für openpyxl).
+
+    In einer xlsx-Datei ist nur „=“ eine Formel; solche Werte werden als Textzelle
+    geschrieben. „+“, „-“ und „@“ (Telefonnummern, Handles) bleiben ohne sichtbares
+    Apostroph (Datenaudit 08.11. DA-05)."""
     if isinstance(value, (PhotoRef, Promise)):
         return str(value)
-    if isinstance(value, str) and value.startswith(FORMULA_START):
-        return "'" + value
+    if isinstance(value, str) and value.startswith("="):
+        cell = Cell(None, value=value)
+        cell.data_type = "s"
+        return cell
     return value
 
 

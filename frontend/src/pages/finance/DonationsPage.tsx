@@ -501,6 +501,8 @@ function DonationForm({
   const usableEarmarks = (earmarks.data ?? []).filter(
     (x) => x.is_active || x.id === initial?.earmark,
   )
+  // Betrag und Datum folgen der Buchung (Datenaudit 08.11. DA-03)
+  const fromBooking = !!initial?.booking
   const [amountText, setAmountText] = useState(initial ? initial.amount.replace('.', ',') : '')
   const [member, setMember] = useState<MemberRow | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -564,6 +566,13 @@ function DonationForm({
           value={v.date ?? ''}
           onChange={(e) => set('date', e.target.value)}
           error={errors.date}
+          hint={
+            fromBooking
+              ? t('Betrag und Datum folgen der Buchung {booking_number}.', {
+                  booking_number: initial?.booking_number ?? '',
+                })
+              : undefined
+          }
           required
         />
         <Field

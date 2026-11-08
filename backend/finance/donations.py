@@ -32,6 +32,7 @@ from django.utils.translation import gettext
 
 from core.i18n import date_text
 
+from . import services
 from .models import Booking, Donation, DonationSettings, DonationStatement
 
 EXEMPTION_YEARS = 5
@@ -294,6 +295,12 @@ def issue(org, donations: list[Donation], user, *, signer_name: str = "") -> Don
         raise ValidationError(
             gettext("{reason}. Bitte zuerst in der Zuwendung ergänzen.").format(reason=reason)
         )
+    # Zuwendung und Buchung müssen übereinstimmen (Datenaudit 08.11. DA-03)
+    for d in donations:
+        if problem := services.booking_donation_problem(d):
+            raise ValidationError(
+                gettext("{problem} Bitte Zuwendung und Buchung abgleichen.").format(problem=problem)
+            )
     if len({d.date.year for d in donations}) > 1:
         raise ValidationError(
             gettext("Eine Sammelbestätigung umfasst nur Zuwendungen eines Jahres.")
@@ -366,6 +373,9 @@ def year_checks(org, year: int) -> dict:
         "goods_without_documents": goods.filter(goods_documents=False).count(),
         "goods_open": goods.count(),
         "fees_skipped": 0 if cfg.fees_allowed else open_.filter(kind=Donation.Kind.FEE).count(),
+        "booking_mismatch": sum(
+            1 for d in open_.filter(booking__isnull=False) if services.booking_donation_problem(d)
+        ),
     }
 
 
