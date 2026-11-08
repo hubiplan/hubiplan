@@ -162,22 +162,24 @@ export function AppDevicesCard() {
       ) : devices.length === 0 ? (
         <p className="muted">{t('Noch kein Gerät verbunden.')}</p>
       ) : (
-        <ul className="plain-list">
+        <ul className="item-list">
           {devices.map((d) => (
-            <li key={d.id}>
-              <strong>{d.name}</strong>{' '}
-              <span className="muted small">
-                {t('zuletzt aktiv')} {formatDate(d.last_seen_at)}
-              </span>{' '}
-              <button type="button" className="button button-ghost" onClick={() => void remove(d)}>
-                {t('Abmelden')}
-              </button>
-              {d.admin_until && (
-                <>
-                  <br />
+            <li key={d.id} className="item-row">
+              <div className="item-row-info">
+                <span>
+                  <strong>{d.name}</strong>{' '}
+                  <span className="muted small">
+                    {t('zuletzt aktiv')} {formatDate(d.last_seen_at)}
+                  </span>
+                </span>
+                {d.admin_until && (
                   <span className="small">
                     {t('Verwaltung freigeschaltet bis')} {formatDate(d.admin_until)}
-                  </span>{' '}
+                  </span>
+                )}
+              </div>
+              <div className="button-row">
+                {d.admin_until && (
                   <button
                     type="button"
                     className="button button-ghost"
@@ -185,8 +187,15 @@ export function AppDevicesCard() {
                   >
                     {t('Verwaltung sperren')}
                   </button>
-                </>
-              )}
+                )}
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => void remove(d)}
+                >
+                  {t('Abmelden')}
+                </button>
+              </div>
             </li>
           ))}
         </ul>

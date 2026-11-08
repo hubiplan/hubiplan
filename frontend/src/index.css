@@ -392,6 +392,59 @@ button.tab.active {
   margin-top: 0;
   margin-bottom: 0;
 }
+/* Ein Knopf mitten in einer Textzeile (Listeneintrag, Absatz) hält Abstand zum Text davor
+   und zu Knöpfen in der Zeile darüber oder darunter; sonst kleben sie bei einem Umbruch
+   aneinander (Ralf 08.11.2026, Geräteliste). In Zeilen mit gap (Klassenname mit „row“,
+   Leisten, Aktionszeilen) sorgt weiter gap allein für den Abstand. */
+:where(li, p, dd) > :where(.button) {
+  margin-block: var(--space-1);
+  vertical-align: middle;
+}
+:where(li, p, dd) > :where(.button:not(:first-child)) {
+  margin-inline-start: var(--space-2);
+}
+:where(
+    [class*='row'],
+    [class*='toolbar'],
+    [class*='-actions'],
+    [class*='-head'],
+    [class*='-tools'],
+    [class*='-filters'],
+    .stack,
+    .stack-sm,
+    .filters
+  )
+  > :where(.button) {
+  margin-block: 0;
+  margin-inline-start: 0;
+}
+
+/* Listeneintrag mit Aktionen: Angaben links, Knöpfe als Zeile rechts daneben (beim
+   schmalen Bildschirm darunter), alles mit gleichem Abstand */
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+}
+.item-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) 0;
+}
+.item-row + .item-row {
+  border-top: 1px solid var(--color-border);
+}
+.item-row-info {
+  flex: 1 1 16rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
 /* Ein Feld mit Beschriftung in einer Leiste: kein Rand nach unten, sonst sitzt es höher
    als die Knöpfe daneben (Dokumente, Musik) */
 :where([class*='toolbar'], .filters, .list-search) > .field {

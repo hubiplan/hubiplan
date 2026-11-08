@@ -63,16 +63,18 @@ export function RemoteLoginCard() {
         <Alert kind="success">{t('Verknüpft.')}</Alert>
       )}
       {data.links.length > 0 && (
-        <ul className="plain-list">
+        <ul className="item-list">
           {data.links.map((l) => (
-            <li key={l.id}>
-              {t('Anmelden mit {x} ({email})', { x: host(l.base_url), email: l.email })}
-              {l.last_used_at && (
-                <span className="muted small">
-                  {' '}
-                  {t('· zuletzt')} {formatDateTime(l.last_used_at)}
-                </span>
-              )}{' '}
+            <li key={l.id} className="item-row">
+              <span>
+                {t('Anmelden mit {x} ({email})', { x: host(l.base_url), email: l.email })}
+                {l.last_used_at && (
+                  <span className="muted small">
+                    {' '}
+                    {t('· zuletzt')} {formatDateTime(l.last_used_at)}
+                  </span>
+                )}
+              </span>
               <button
                 type="button"
                 className="button button-ghost"
@@ -105,12 +107,12 @@ export function RemoteLoginCard() {
         <>
           <h3>{t('Deine Zugänge auf anderen Instanzen')}</h3>
           <p className="muted small">{t('Sie stehen auch in der Einheitenauswahl oben.')}</p>
-          <ul className="plain-list">
+          <ul className="item-list">
             {data.accounts.map((a) => (
-              <li key={a.id}>
+              <li key={a.id} className="item-row">
                 <a href={a.url}>
                   {host(a.base_url)} {t('öffnen')}
-                </a>{' '}
+                </a>
                 <button
                   type="button"
                   className="button button-ghost"
