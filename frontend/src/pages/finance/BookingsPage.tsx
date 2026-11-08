@@ -28,6 +28,7 @@ import {
   useQueryLoad,
 } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { PageActions } from '../../components/PageHeader.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { SplitEditor } from './SplitEditor.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
@@ -198,34 +199,51 @@ export function BookingsPage() {
     )
   }
 
+  async function renumber() {
+    const label = settings.data!.years.find((y) => String(y.year) === year)?.label
+    if (
+      await confirmDialog({
+        title: t('Buchungen neu nummerieren?'),
+        message: t('Alle Buchungen im Geschäftsjahr {x} werden nach Datum neu durchnummeriert.', {
+          x: label ?? year,
+        }),
+        confirmLabel: t('Neu nummerieren'),
+        danger: false,
+      })
+    ) {
+      financeApi
+        .renumber(org.id, Number(year))
+        .then((r) => {
+          setNotice(t('{changed} Buchungsnummern geändert.', { changed: r.changed }))
+          refresh()
+        })
+        .catch((err) => setError(errorMessage(err)))
+    }
+  }
+
   return (
     <div className="stack">
       {baseError}
-      {canEdit && editing === null && (
-        <div className="button-row">
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() => setEditing('income')}
-          >
-            {t('Einnahme')}
-          </button>
-          <button
-            type="button"
-            className="button button-primary"
-            onClick={() => setEditing('expense')}
-          >
-            {t('Ausgabe')}
-          </button>
-          <button
-            type="button"
-            className="button button-ghost"
-            onClick={() => setEditing('transfer')}
-          >
-            {t('Umbuchung')}
-          </button>
-        </div>
-      )}
+      {/* Seitenkopf (S-05, W-14): ein Knopf „Neue Buchung“ mit Auswahl, Sammelaktion im Menü */}
+      <PageActions
+        primary={
+          canEdit && editing === null
+            ? {
+                label: t('Neue Buchung'),
+                items: [
+                  { label: t('Einnahme'), onClick: () => setEditing('income') },
+                  { label: t('Ausgabe'), onClick: () => setEditing('expense') },
+                  { label: t('Umbuchung'), onClick: () => setEditing('transfer') },
+                ],
+              }
+            : null
+        }
+        actions={[
+          canEdit &&
+            !!year &&
+            year !== 'alle' && { label: t('Neu nummerieren'), onClick: () => void renumber() },
+        ]}
+      />
       {openedId !== null && editing === null && missing && (
         <Alert kind="error">
           {t('Die Buchung lässt sich nicht öffnen:')} {missing}
@@ -355,36 +373,6 @@ export function BookingsPage() {
               </option>
             ))}
           </select>
-        )}
-        {canEdit && year && year !== 'alle' && (
-          <button
-            type="button"
-            className="button button-ghost"
-            onClick={async () => {
-              const label = settings.data!.years.find((y) => String(y.year) === year)?.label
-              if (
-                await confirmDialog({
-                  title: t('Buchungen neu nummerieren?'),
-                  message: t(
-                    'Alle Buchungen im Geschäftsjahr {x} werden nach Datum neu durchnummeriert.',
-                    { x: label ?? year },
-                  ),
-                  confirmLabel: t('Neu nummerieren'),
-                  danger: false,
-                })
-              ) {
-                financeApi
-                  .renumber(org.id, Number(year))
-                  .then((r) => {
-                    setNotice(t('{changed} Buchungsnummern geändert.', { changed: r.changed }))
-                    refresh()
-                  })
-                  .catch((err) => setError(errorMessage(err)))
-              }
-            }}
-          >
-            {t('Neu nummerieren')}
-          </button>
         )}
         <label className="checkbox">
           <input
