@@ -23,7 +23,7 @@ export function PortalResults({ accessId }: { accessId: number }) {
         <summary>{t('Alle Starts und Auszeichnungen')}</summary>
         {data.grants.length > 0 && (
           <>
-            <h2>{t('Titel und Würden')}</h2>
+            <h2>{t('Titel und Sieger')}</h2>
             <ul className="plain-list">
               {data.grants.map((g) => (
                 <li key={g.id}>

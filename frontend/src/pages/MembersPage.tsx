@@ -101,7 +101,7 @@ function ClubMembers() {
       <Route
         path="anfragen/aenderungen"
         element={
-          <MembersSection title={t('Änderungsmeldungen')} tabs={requestTabs()}>
+          <MembersSection title={t('Datenänderungen')} tabs={requestTabs()}>
             <ChangeRequestsPage />
           </MembersSection>
         }

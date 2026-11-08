@@ -111,7 +111,7 @@ describe('Mitglieder: Unterpunkte', () => {
     )
     expect(await screen.findByRole('heading', { name: 'Wechselanfragen' })).toBeInTheDocument()
     const nav = within(screen.getByRole('navigation', { name: 'Module' }))
-    expect(await nav.findByRole('link', { name: 'Änderungsmeldungen' })).toBeInTheDocument()
+    expect(await nav.findByRole('link', { name: 'Datenänderungen' })).toBeInTheDocument()
   })
 
   it('führt Mitgliedsarten und Zusatzfelder nicht mehr in den Einstellungen', async () => {

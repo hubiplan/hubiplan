@@ -720,7 +720,7 @@ def suggest(rm: RemoteMember, values: dict, message: str, user) -> None:
 
 
 def receive_suggestion(coupling: Coupling, data: dict) -> int:
-    """Unten: Vorschlag als Änderungsmeldung anlegen; der Verein übernimmt oder lehnt ab."""
+    """Unten: Vorschlag als Datenänderung anlegen; der Verein übernimmt oder lehnt ab."""
     from members.models import Membership
     from portal.models import ChangeRequest
 

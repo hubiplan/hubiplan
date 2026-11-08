@@ -29,7 +29,7 @@ function MemberHistory({ org, membership }: { org: number; membership: number })
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   return (
     <div>
-      <h2>{t('Titel und Würden')}</h2>
+      <h2>{t('Titel und Sieger')}</h2>
       {data.grants.length === 0 ? (
         <p className="muted">{t('Noch keine Titel.')}</p>
       ) : (

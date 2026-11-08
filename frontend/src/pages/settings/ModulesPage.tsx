@@ -18,6 +18,8 @@ const SETUP: Record<string, string> = {
   finance: '/finanzen/einrichtung/konten',
   tax: '/finanzen/einrichtung/kategorien',
   billing: '/finanzen/einrichtung/beitraege',
+  donations: '/finanzen/einrichtung/zuwendungen',
+  music: '/musik/vorlagen',
 }
 
 export function ModulesPage() {

@@ -209,7 +209,7 @@ def request_email_change(
 ) -> None:
     """Neue Anmelde-E-Mail anfordern: Sie gilt erst, wenn der Link an die neue
     Adresse bestätigt ist; die alte Adresse erfährt davon. ``org_name``: Die Einheit hat
-    die Adresse aus einer Änderungsmeldung übernommen (Mitgliederbereich).
+    die Adresse aus einer Datenänderung übernommen (Mitgliederbereich).
     ``confirm_old``: Auch die bisherige Adresse muss den Wechsel per Link bestätigen."""
     user.email_changes.filter(used_at__isnull=True).delete()
     token = secrets.token_urlsafe(32)

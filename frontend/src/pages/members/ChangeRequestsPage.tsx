@@ -1,4 +1,4 @@
-// Änderungsmeldungen von Mitgliedern prüfen und übernehmen.
+// Datenänderungen von Mitgliedern prüfen und übernehmen.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PERM } from '../../api/orgs.ts'
@@ -36,7 +36,7 @@ export function ChangeRequestsPage() {
       </div>
       {error && (
         <LoadError
-          message={t('Die Änderungsmeldungen konnten nicht geladen werden ({error}).', { error })}
+          message={t('Die Datenänderungen konnten nicht geladen werden ({error}).', { error })}
           onRetry={() => void reload()}
         />
       )}

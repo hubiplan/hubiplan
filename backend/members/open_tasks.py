@@ -53,7 +53,7 @@ def member_tasks(org: Organization, perms: set[str]) -> list[dict]:
             items.append(
                 {
                     "kind": "change_request",
-                    "kind_label": gettext("Änderungsmeldung"),
+                    "kind_label": gettext("Datenänderung"),
                     "title": _person(cr.membership),
                     "detail": gettext("möchte eigene Daten ändern"),
                     "created_at": cr.created_at,

@@ -63,7 +63,7 @@ OBJECT_TYPES = {
     "receipt": gettext_noop("Beleg"),
     "reserve": gettext_noop("Rücklage"),
     "reservemovement": gettext_noop("Rücklagenbewegung"),
-    "changerequest": gettext_noop("Änderungsmeldung"),
+    "changerequest": gettext_noop("Datenänderung"),
     "transferjob": gettext_noop("Datenübernahme"),
     "event": gettext_noop("Termin"),
     "eventcategory": gettext_noop("Terminkategorie"),

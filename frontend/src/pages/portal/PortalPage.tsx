@@ -244,7 +244,7 @@ function PortalOverview({ entry }: { entry: PortalEntry }) {
       <OwnMusic accessId={entry.id} />
       {pending && (
         <Alert kind="info">
-          {t('Deine Änderungsmeldung vom {x} wird noch geprüft.', {
+          {t('Deine Datenänderung vom {x} wird noch geprüft.', {
             x: formatDateTime(pending.created_at),
           })}{' '}
           <Link to="/mein-bereich/daten">{t('Ansehen')}</Link>
@@ -325,7 +325,7 @@ function PortalData({ entry }: { entry: PortalEntry }) {
         {notice && !editing && <Alert kind="success">{notice}</Alert>}
         {pending && !editing && (
           <Alert kind="info">
-            {t('Deine Änderungsmeldung vom {x} wartet auf {e_akk}.', {
+            {t('Deine Datenänderung vom {x} wartet auf {e_akk}.', {
               x: formatDateTime(pending.created_at),
               e_akk: tm.e_akk,
             })}
@@ -335,7 +335,7 @@ function PortalData({ entry }: { entry: PortalEntry }) {
 
       {data.change_requests.length > 0 && (
         <div className="card card-wide">
-          <h2>{t('Meine Änderungsmeldungen')}</h2>
+          <h2>{t('Meine Datenänderungen')}</h2>
           <ul className="audit-list">
             {data.change_requests.map((c) => (
               <ChangeRequestItem key={c.id} request={c} />

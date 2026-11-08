@@ -5,7 +5,7 @@ bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/anfragen]
-stichworte: [requests, change notice, transfer, transfer request, approval]
+stichworte: [requests, data change, change notice, transfer, transfer request, approval]
 ---
 
 Transfer requests arise when a member is to move from one unit to another. The releasing side agrees or declines; only then is the transfer saved.

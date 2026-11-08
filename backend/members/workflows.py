@@ -465,7 +465,7 @@ def _reduce_identity(person) -> None:
 
 
 def _purge_related(membership: Membership, person, club) -> None:
-    """Zusatzfelder, Änderungsmeldungen und Zugang dieser Mitgliedschaft (Gesamtaudit A-S03).
+    """Zusatzfelder, Datenänderungen und Zugang dieser Mitgliedschaft (Gesamtaudit A-S03).
 
     Rechnungen und Buchungen bleiben wegen der Aufbewahrungspflicht unverändert."""
     from customfields.models import FieldValue
