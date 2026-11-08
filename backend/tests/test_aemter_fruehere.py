@@ -276,3 +276,35 @@ class TestWebseite:
         )
         assert resp.status_code == 200 and resp.json()["name_public"] is True
         assert SiteView(site).chairs()[0]["holders"][0]["name"] == "Wilhelm Vorzeit"
+
+    def test_menue_pruefung_wie_liste_ohne_alle_mitglieder(self, orgs, chair):
+        """Menü und Grunddaten fragen nur, ob es Ämter gibt: gleiches Ergebnis wie die Liste,
+        aber ohne die Mitgliedschaften aller Mitglieder zu laden (Vorschau-Tempo 08.11.)."""
+        from website.models import PublicationConsent, Website
+
+        site = Website.objects.create(organization=orgs["a"])
+        assert SiteView(site).has_chairs() is False
+        make_member(orgs["a"], "Erna", "Unbeteiligt")
+        otto = make_member(orgs["a"], "Otto", "Muster")
+        RoleAssignment.all_objects.create(
+            organization=orgs["a"],
+            role=chair,
+            person=otto.person,
+            name="Otto Muster",
+            valid_from=datetime.date(1980, 1, 1),
+            valid_until=datetime.date(1990, 1, 1),
+        )
+        view = SiteView(site)
+        assert view.has_chairs() is True
+        assert "memberships" not in view.__dict__
+        assert bool(SiteView(site).chairs()) is True
+        # Widerspruch gegen den Namen: dann gibt es nichts unter „Ämter“
+        PublicationConsent.objects.create(
+            organization=orgs["a"],
+            membership=otto,
+            category=PublicationConsent.Category.NAME,
+            since=datetime.date(2024, 1, 1),
+            source="paper",
+        )
+        assert SiteView(site).has_chairs() is False
+        assert SiteView(site).chairs() == []
