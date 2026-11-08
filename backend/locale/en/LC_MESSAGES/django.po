@@ -9170,3 +9170,95 @@ msgstr "{n} payments from the musician settlement totalling €{x} have no allow
 
 msgid "Eine Pauschale lässt sich nur durch Verzicht spenden. Bitte „Verzicht auf Erstattung“ ankreuzen."
 msgstr "An allowance can only be donated by waiving it. Please tick “Waiver of reimbursement”."
+
+msgid "Einladung zu „{title}“ versenden"
+msgstr "Send the invitation to “{title}”"
+
+msgid "Einladungsfrist bis {date}"
+msgstr "invitation deadline {date}"
+
+msgid "aufnehmen oder ablehnen"
+msgstr "add to the agenda or decline"
+
+msgid "Protokoll zu „{title}“ fertigstellen"
+msgstr "Finish the minutes of “{title}”"
+
+msgid "am {date}, noch nicht freigegeben"
+msgstr "on {date}, not yet approved"
+
+msgid "erste offene Schicht am {date}"
+msgstr "first open shift on {date}"
+
+msgid "Rückfrage zu „{title}“"
+msgstr "Query about “{title}”"
+
+msgid "Meldung zu „{title}“ abgeben"
+msgstr "Submit the entry for “{title}”"
+
+msgid "Meldeschluss am {date}"
+msgstr "entry deadline {date}"
+
+msgid "prüfen und festschreiben"
+msgstr "review and finalise"
+
+msgid "Mahnungen"
+msgstr "Reminders"
+
+msgid "Mahnstufe erreicht"
+msgstr "reminder level reached"
+
+msgid "Lastschriften"
+msgstr "Direct debits"
+
+msgid "Lastschriftlauf anlegen"
+msgstr "create a direct debit run"
+
+msgid "Lastschrift zum {date} noch nicht als bezahlt gebucht"
+msgstr "Direct debit of {date} not yet booked as paid"
+
+msgid "über {amount} €"
+msgstr "for €{amount}"
+
+msgid "älteste vom {date}"
+msgstr "oldest from {date}"
+
+msgid "Konten"
+msgstr "Accounts"
+
+msgid "Anmeldelink erneut senden"
+msgstr "resend the sign-in link"
+
+msgid "{n} Antrag zu „{title}“ eingegangen"
+msgid_plural "{n} Anträge zu „{title}“ eingegangen"
+msgstr[0] "{n} motion received for “{title}”"
+msgstr[1] "{n} motions received for “{title}”"
+
+msgid "{title}: {n} Platz offen"
+msgid_plural "{title}: {n} Plätze offen"
+msgstr[0] "{title}: {n} place open"
+msgstr[1] "{title}: {n} places open"
+
+msgid "{n} Entwurf noch nicht festgeschrieben"
+msgid_plural "{n} Entwürfe noch nicht festgeschrieben"
+msgstr[0] "{n} draft not yet finalised"
+msgstr[1] "{n} drafts not yet finalised"
+
+msgid "{n} Rechnung ist zu mahnen"
+msgid_plural "{n} Rechnungen sind zu mahnen"
+msgstr[0] "{n} invoice needs a reminder"
+msgstr[1] "{n} invoices need a reminder"
+
+msgid "{n} Rechnung kann per Lastschrift eingezogen werden"
+msgid_plural "{n} Rechnungen können per Lastschrift eingezogen werden"
+msgstr[0] "{n} invoice can be collected by direct debit"
+msgstr[1] "{n} invoices can be collected by direct debit"
+
+msgid "{n} eingegangene Rechnung zu prüfen"
+msgid_plural "{n} eingegangene Rechnungen zu prüfen"
+msgstr[0] "{n} received invoice to review"
+msgstr[1] "{n} received invoices to review"
+
+msgid "Einladung von {n} Konto abgelaufen"
+msgid_plural "Einladungen von {n} Konten abgelaufen"
+msgstr[0] "Invitation of {n} account expired"
+msgstr[1] "Invitations of {n} accounts expired"

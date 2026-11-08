@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { billingApi } from '../../api/billing.ts'
 import { euro, financeApi } from '../../api/finance.ts'
-import { PERM } from '../../api/orgs.ts'
+import { orgApi, PERM } from '../../api/orgs.ts'
 import type { Overview } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
 import { Alert, LoadError } from '../../components/ui.tsx'
@@ -11,7 +11,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import type { FinanceAccess } from './access.ts'
 import { HowTo, Term } from '../../learning/Aids.tsx'
 import type { TermKey } from '../../learning/content.ts'
-import { t, tn, tc } from '../../i18n/index.ts'
+import { t, tc } from '../../i18n/index.ts'
 import { TaxSignal } from './TaxPage.tsx'
 
 /** Steuerliche Bereiche und ihre Begriffe im Glossar */
@@ -142,40 +142,6 @@ function BillingSummary({ feeRuns }: { feeRuns: boolean }) {
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return <p className="muted">{t('Lädt …')}</p>
 
-  const todo: { to: string; text: string }[] = []
-  if (data.drafts.count > 0)
-    todo.push({
-      to: '/finanzen/rechnungen?status=draft',
-      text: tn(
-        '{n} Entwurf über {x2} noch nicht festgeschrieben',
-        '{n} Entwürfe über {x2} noch nicht festgeschrieben',
-        data.drafts.count,
-        { x2: euro(data.drafts.amount) },
-      ),
-    })
-  if (data.dunnings_due > 0)
-    todo.push({
-      to: '/finanzen/rechnungen/mahnungen',
-      text: tn('{n} Rechnung ist zu mahnen', '{n} Rechnungen sind zu mahnen', data.dunnings_due),
-    })
-  if (data.sepa_enabled && data.debits_ready > 0)
-    todo.push({
-      to: '/finanzen/lastschrift',
-      text: tn(
-        '{n} Rechnung kann per Lastschrift eingezogen werden',
-        '{n} Rechnungen können per Lastschrift eingezogen werden',
-        data.debits_ready,
-      ),
-    })
-  for (const d of data.debits_pending)
-    todo.push({
-      to: '/finanzen/lastschrift',
-      text: t('Lastschrift zum {x} über {x2} noch nicht als bezahlt gebucht', {
-        x: formatDate(d.collection_date),
-        x2: euro(d.total),
-      }),
-    })
-
   return (
     <>
       <div className="tiles tiles-figures">
@@ -217,21 +183,34 @@ function BillingSummary({ feeRuns }: { feeRuns: boolean }) {
           </div>
         )}
       </div>
-      <div className="card card-wide">
-        <h2>{t('Zu erledigen')}</h2>
-        {todo.length === 0 ? (
-          <p className="muted">{t('Gerade ist nichts offen.')}</p>
-        ) : (
-          <ul className="todo-list">
-            {todo.map((tm) => (
-              <li key={tm.text}>
-                <Link to={tm.to}>{tm.text}</Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <FinanceTodo orgId={org.id} />
     </>
+  )
+}
+
+/** „Zu erledigen“ der Finanzen: dieselben Einträge wie auf der Startseite, nur dieser
+ * Bereich (Menüprüfung 2, N-03) */
+function FinanceTodo({ orgId }: { orgId: number }) {
+  const { data, error, reload } = useLoad(() => orgApi.openTasks(orgId), [orgId])
+  const items = (data?.items ?? []).filter((tm) => tm.area === 'finance')
+  return (
+    <div className="card card-wide">
+      <h2>{t('Zu erledigen')}</h2>
+      {error && (
+        <LoadError message={t('Was zu erledigen ist, ließ sich nicht laden.')} onRetry={reload} />
+      )}
+      {data && items.length === 0 && <p className="muted">{t('Gerade ist nichts offen.')}</p>}
+      {items.length > 0 && (
+        <ul className="todo-list">
+          {items.map((tm, i) => (
+            <li key={`${tm.kind}-${tm.ref ?? i}`}>
+              <Link to={tm.link}>{tm.title}</Link>
+              {tm.detail && <span className="muted small"> · {tm.detail}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 

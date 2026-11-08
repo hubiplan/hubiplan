@@ -17,9 +17,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from access.catalog import (
+    BILLING_EDIT,
     BILLING_VIEW,
     CIRCULARS_SEND,
     EVENTS_MANAGE,
+    FINANCE_EDIT,
     MEMBERS_EDIT,
     PHOTOS_MANAGE,
     WEBSITE_MANAGE,
@@ -137,31 +139,167 @@ def event_tasks(org: Organization, perms: set[str]) -> list[dict]:
 
 
 def billing_tasks(org: Organization, perms: set[str]) -> list[dict]:
-    """Überfällige Rechnungen als ein Eintrag „Zu erledigen“ (UX-Audit 10.6)."""
-    from billing.models import Invoice
+    """Rechnungen und Lastschriften unter „Zu erledigen“ (UX-Audit 10.6, Menüprüfung 2 N-03).
+
+    Dieselben Einträge zeigt die Finanzen-Übersicht (``area`` = ``finance``)."""
+    from billing import sepa, services
+    from billing.models import DebitRun, Invoice
 
     if BILLING_VIEW not in perms or "billing" not in (org.enabled_modules or []):
         return []
+    today = timezone.localdate()
+    short = lambda day: date_format(day, "SHORT_DATE_FORMAT", use_l10n=True)  # noqa: E731
+    items: list[dict] = []
     overdue = Invoice.objects.filter(
-        organization=org, status=Invoice.Status.OPEN, due_date__lt=timezone.localdate()
+        organization=org, status=Invoice.Status.OPEN, due_date__lt=today
     )
     n = overdue.count()
+    if n:
+        first = overdue.order_by("due_date").values_list("due_date", flat=True).first()
+        items.append(
+            {
+                "kind": "invoices_overdue",
+                "area": "finance",
+                "kind_label": gettext("Rechnungen"),
+                "title": ngettext("{n} Rechnung überfällig", "{n} Rechnungen überfällig", n).format(
+                    n=n
+                ),
+                "detail": gettext("älteste fällig seit {date}").format(date=short(first)),
+                "created_at": first,
+                "link": "/finanzen/rechnungen?status=open&ueberfaellig=1",
+                "highlight": True,
+            }
+        )
+    if BILLING_EDIT not in perms:
+        return items
+    drafts = Invoice.objects.filter(organization=org, status=Invoice.Status.DRAFT)
+    n = drafts.count()
+    if n:
+        items.append(
+            {
+                "kind": "invoices_draft",
+                "area": "finance",
+                "kind_label": gettext("Rechnungen"),
+                "title": ngettext(
+                    "{n} Entwurf noch nicht festgeschrieben",
+                    "{n} Entwürfe noch nicht festgeschrieben",
+                    n,
+                ).format(n=n),
+                "detail": gettext("prüfen und festschreiben"),
+                "created_at": None,
+                "link": "/finanzen/rechnungen?status=draft",
+            }
+        )
+    n = len(services.dunning_proposals(org, today))
+    if n:
+        items.append(
+            {
+                "kind": "dunnings_due",
+                "area": "finance",
+                "kind_label": gettext("Mahnungen"),
+                "title": ngettext(
+                    "{n} Rechnung ist zu mahnen", "{n} Rechnungen sind zu mahnen", n
+                ).format(n=n),
+                "detail": gettext("Mahnstufe erreicht"),
+                "created_at": today,
+                "link": "/finanzen/rechnungen/mahnungen",
+            }
+        )
+    sepa_on = services.settings_for(org).sepa_enabled and org.type != Organization.Type.UNIT
+    if sepa_on:
+        n = len(sepa.proposals(org, today))
+        if n:
+            items.append(
+                {
+                    "kind": "debits_ready",
+                    "area": "finance",
+                    "kind_label": gettext("Lastschriften"),
+                    "title": ngettext(
+                        "{n} Rechnung kann per Lastschrift eingezogen werden",
+                        "{n} Rechnungen können per Lastschrift eingezogen werden",
+                        n,
+                    ).format(n=n),
+                    "detail": gettext("Lastschriftlauf anlegen"),
+                    "created_at": today,
+                    "link": "/finanzen/lastschrift",
+                }
+            )
+        for run in DebitRun.objects.filter(
+            organization=org, status=DebitRun.Status.CREATED
+        ).order_by("collection_date"):
+            items.append(
+                {
+                    "kind": "debit_pending",
+                    "area": "finance",
+                    "kind_label": gettext("Lastschriften"),
+                    "title": gettext(
+                        "Lastschrift zum {date} noch nicht als bezahlt gebucht"
+                    ).format(date=short(run.collection_date)),
+                    "detail": gettext("über {amount} €").format(amount=f"{run.total:.2f}"),
+                    "created_at": run.collection_date,
+                    "link": "/finanzen/lastschrift",
+                    "ref": run.pk,
+                }
+            )
+    return items
+
+
+def incoming_tasks(org: Organization, perms: set[str]) -> list[dict]:
+    """Eingegangene Rechnungen, die noch geprüft werden müssen (Menüprüfung 2, N-03)."""
+    from billing.models import IncomingInvoice
+
+    if FINANCE_EDIT not in perms or "finance" not in (org.enabled_modules or []):
+        return []
+    pending = IncomingInvoice.objects.filter(organization=org, status="review")
+    n = pending.count()
     if not n:
         return []
-    first = overdue.order_by("due_date").values_list("due_date", flat=True).first()
+    first = pending.order_by("created_at").values_list("created_at", flat=True).first()
     return [
         {
-            "kind": "invoices_overdue",
-            "kind_label": gettext("Rechnungen"),
-            "title": ngettext("{n} Rechnung überfällig", "{n} Rechnungen überfällig", n).format(
-                n=n
-            ),
-            "detail": gettext("älteste fällig seit {date}").format(
-                date=date_format(first, "SHORT_DATE_FORMAT", use_l10n=True)
+            "kind": "incoming_review",
+            "area": "finance",
+            "kind_label": gettext("Rechnungseingang"),
+            "title": ngettext(
+                "{n} eingegangene Rechnung zu prüfen", "{n} eingegangene Rechnungen zu prüfen", n
+            ).format(n=n),
+            "detail": gettext("älteste vom {date}").format(
+                date=date_format(
+                    timezone.localtime(first).date(), "SHORT_DATE_FORMAT", use_l10n=True
+                )
             ),
             "created_at": first,
-            "link": "/finanzen/rechnungen?status=open&ueberfaellig=1",
-            "highlight": True,
+            "link": "/finanzen/rechnungen/eingang",
+        }
+    ]
+
+
+def account_tasks(org: Organization, perms: set[str]) -> list[dict]:
+    """Konten, deren Einladung abgelaufen ist (Menüprüfung 2, N-03)."""
+    from access.accounts_view import account_data, collect
+    from access.catalog import ROLES_MANAGE
+
+    if ROLES_MANAGE not in perms:
+        return []
+    expired = [
+        a
+        for a in (account_data(r) for r in collect(org, perms).values())
+        if a["invitation_expired"]
+    ]
+    if not expired:
+        return []
+    n = len(expired)
+    return [
+        {
+            "kind": "accounts_expired",
+            "area": "accounts",
+            "kind_label": gettext("Konten"),
+            "title": ngettext(
+                "Einladung von {n} Konto abgelaufen", "Einladungen von {n} Konten abgelaufen", n
+            ).format(n=n),
+            "detail": gettext("Anmeldelink erneut senden"),
+            "created_at": None,
+            "link": "/einstellungen/konten?filter=expired",
         }
     ]
 
@@ -273,16 +411,36 @@ class OpenTasksView(OrgScopedMixin, APIView):
 
     def get(self, request, org_id: int):
         org, perms = self.org, self.org_permissions
-        items: list[dict] = []
-        if org.keeps_members and "members" in (org.enabled_modules or []):
-            items += member_tasks(org, perms)
-        items += event_tasks(org, perms)
-        items += billing_tasks(org, perms)
-        items += booking_tasks(org, perms)
-        items += website_tasks(org, perms)
-        items += circular_tasks(request.user, org, perms)
+        from entries.open_tasks import entry_tasks
+        from helpers.open_tasks import helper_tasks
+        from meetings.open_tasks import meeting_tasks
         from todos.open_tasks import todo_tasks
 
-        items += todo_tasks(request.user, org, perms)
+        # Bereich je Quelle: Die Finanzen-Übersicht zeigt nur „finance“ (Menüprüfung 2, N-03)
+        sources = [
+            (
+                "members",
+                lambda: (
+                    member_tasks(org, perms)
+                    if org.keeps_members and "members" in (org.enabled_modules or [])
+                    else []
+                ),
+            ),
+            ("events", lambda: event_tasks(org, perms)),
+            ("finance", lambda: billing_tasks(org, perms) + incoming_tasks(org, perms)),
+            ("bookings", lambda: booking_tasks(org, perms)),
+            ("website", lambda: website_tasks(org, perms)),
+            ("circulars", lambda: circular_tasks(request.user, org, perms)),
+            ("accounts", lambda: account_tasks(org, perms)),
+            ("meetings", lambda: meeting_tasks(org, perms)),
+            ("helpers", lambda: helper_tasks(org, perms)),
+            ("entries", lambda: entry_tasks(org, perms)),
+            ("todos", lambda: todo_tasks(request.user, org, perms)),
+        ]
+        items: list[dict] = []
+        for area, load in sources:
+            for item in load():
+                item.setdefault("area", area)
+                items.append(item)
         items.sort(key=lambda item: not item.get("highlight", False))
         return Response({"items": items})
