@@ -24,7 +24,7 @@ if [ -d /app/upload-tmp ]; then
     find /app/upload-tmp -type f -mmin +1440 -delete 2> /dev/null || true
 fi
 # Der Zugang des Tabelleneigentümers gelangt nicht in den laufenden Prozess
-unset MIGRATE_DATABASE_URL APP_DB_PASSWORD
+unset MIGRATE_DATABASE_URL APP_DB_PASSWORD BACKUP_DB_PASSWORD
 
 # Statische Dateien (Admin, API-Doku) für den Betrieb mit gunicorn einsammeln.
 if [ "${COLLECT_STATIC:-0}" = "1" ]; then

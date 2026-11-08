@@ -21,8 +21,12 @@ falls in der Anwendung ein Filter fehlt.
 
 Backend, Worker und Beat **melden sich direkt als `hubiplan_app` an** (Passwort
 `APP_DB_PASSWORD`). Den Zugang des Datenbank-Superusers (`POSTGRES_PASSWORD`) nutzen nur
-die Migrationen beim Start des Backends und das Backup; das Startskript entfernt ihn,
-bevor gunicorn startet. Selbst Schadcode in der Anwendung kann die Rolle deshalb nicht
+die Migrationen beim Start des Backends; das Startskript entfernt ihn, bevor gunicorn startet.
+Das Backup meldet sich als **`hubiplan_backup`** an (Passwort `BACKUP_DB_PASSWORD`, Name in
+`BACKUP_DB_USER`): Die Rolle darf über `pg_read_all_data` alles lesen und RLS umgehen (sonst
+bricht `pg_dump` ab), aber nichts schreiben und keine Rollen oder Datenbanken anlegen. Das
+Backend legt sie beim Start an. Fehlen beide Einträge in einer älteren `.env`, sichert der
+Dienst wie früher als Superuser; `deploy/server-setup.sh` ergänzt sie beim nächsten Ausrollen. Selbst Schadcode in der Anwendung kann die Rolle deshalb nicht
 verlassen: kein `RESET ROLE` zum Superuser, keine Shell-Befehle über die Datenbank, kein
 Abschalten von RLS. Nach einer Rücksicherung setzt der nächste Start Rechte und Passwort
 der Rolle neu.
@@ -88,7 +92,8 @@ tuning requires measuring the then-current plan with representative data and con
 
 Alle Geheimnisse stehen nur in `/opt/hubiplan/.env` auf dem Server (Rechte 600), nie im
 Repository. Beim ersten Ausrollen erzeugt `deploy/server-setup.sh` zufällige Werte für
-`DJANGO_SECRET_KEY`, `POSTGRES_PASSWORD`, `APP_DB_PASSWORD`, `REDIS_PASSWORD`, `BACKUP_PASSPHRASE`, `BACKUP_HMAC_KEY`
+`DJANGO_SECRET_KEY`, `POSTGRES_PASSWORD`, `APP_DB_PASSWORD`, `BACKUP_DB_PASSWORD`, `REDIS_PASSWORD`,
+`BACKUP_PASSPHRASE`, `BACKUP_HMAC_KEY`
 (Prüfsummen der Backups) und `MFA_ENCRYPTION_KEY` (verschlüsselt die 2FA-Geheimnisse in
 der Datenbank). Fehlende Einträge ergänzt es bei jedem Ausrollen, vorhandene bleiben.
 

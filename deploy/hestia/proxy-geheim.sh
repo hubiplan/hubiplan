@@ -66,5 +66,10 @@ cd "$APP" && sh deploy/server-setup.sh > /dev/null && echo "Docker-Verbund läuf
 echo "--- 3) Prüfung"
 sleep 3
 PORT=$(sed -n 's/^WEB_PORT=//p' "$ENV" | tail -1)
-curl -fsS -o /dev/null "http://127.0.0.1:${PORT:-8110}/api/health/" && echo "Caddy antwortet" || echo "WARNUNG: Caddy antwortet nicht"
+# Ohne Vereinsadresse im Host-Kopf antwortet Django mit 400; das zählt als Antwort.
+CODE=$(curl -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:${PORT:-8110}/api/health/" || true)
+case "$CODE" in
+    200|400) echo "Caddy antwortet ($CODE)" ;;
+    *) echo "WARNUNG: Caddy antwortet nicht wie erwartet (${CODE:-keine Antwort})" ;;
+esac
 echo "### Ende $(TZ=Europe/Berlin date '+%d.%m.%Y %H:%M')"

@@ -192,6 +192,8 @@ services:
       # Nur für Migrationen beim Start; das Startskript entfernt beides vor gunicorn
       MIGRATE_DATABASE_URL: postgres://hubiplan:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD fehlt in .env}@postgres:5432/hubiplan
       APP_DB_PASSWORD: ${APP_DB_PASSWORD}
+      # Legt die Leserolle hubiplan_backup für den Backup-Dienst an (GA8-06)
+      BACKUP_DB_PASSWORD: ${BACKUP_DB_PASSWORD:-}
     healthcheck:
       test:
         - CMD
@@ -247,9 +249,11 @@ services:
     pids_limit: 256
     environment:
       PGHOST: postgres
-      PGUSER: hubiplan
+      # Leserolle ohne Schreib- und Superuser-Rechte (GA8-06). server-setup.sh setzt beide
+      # Werte; ältere .env ohne sie sichern bis dahin wie bisher als Tabelleneigentümer.
+      PGUSER: ${BACKUP_DB_USER:-hubiplan}
       PGDATABASE: hubiplan
-      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGPASSWORD: ${BACKUP_DB_PASSWORD:-${POSTGRES_PASSWORD}}
       # Öffentlicher age-Schlüssel: Der Server kann Backups verschlüsseln, aber nicht
       # lesen. Den privaten Schlüssel hat nur der Betreiber (siehe docs/betrieb.md).
       BACKUP_PUBLIC_KEY: ${BACKUP_PUBLIC_KEY:-}
