@@ -153,6 +153,11 @@ def test_advance_scope_amount_and_document_kind_are_checked(c, base, setup, payl
         )
         assert response.status_code == 400, response.content
     with tenant_context(club.pk):
+        # Festgeschriebene Rechnungen schützt ein Datenbank-Trigger (billing 0024); die
+        # fremde Abschlagsrechnung hier nur über die Freigabe zum Löschen der Einheit
+        from finance import gobd
+
+        gobd.release_unit(club.pk)
         Invoice.objects.filter(pk=source["id"]).update(organization=orgs["b"])
     response = c.post(
         f"{base}/electronic/", data, content_type=JSON, HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4())
