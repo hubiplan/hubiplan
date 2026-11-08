@@ -1,8 +1,9 @@
 // Helferdienste und Schichtpläne (konzepte/helferdienste.md, Schritte H1–H3): Dienstpläne,
 // Dienste, Schichten mit Schnelleingabe, Einteilung durch die Verwaltung, Druck und Export,
 // Kontingente für Untereinheiten, Kopie, Aufruf per Rundschreiben und geleistete Dienste (H4).
-import { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { berlin } from '../../components/calendar/time.ts'
 import type { FormEvent } from 'react'
 import { ApiError, saveBlob } from '../../api/client.ts'
 import { helperApi } from '../../api/helpers.ts'
@@ -72,7 +73,19 @@ export function HelpersPage() {
 function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit: boolean }) {
   const detail = useDetailParam('plan')
   const list = useLoad(() => helperApi.list(base), [base])
-  const [creating, setCreating] = useState(false)
+  // Aus dem Termin-Dialog: ?neu=1&termin=<id> öffnet „Neuer Dienstplan“ mit diesem Termin
+  const [params, setParams] = useSearchParams()
+  const [preset] = useState(() =>
+    canEdit && params.get('neu') === '1' ? Number(params.get('termin')) || null : null,
+  )
+  const [creating, setCreating] = useState(canEdit && params.get('neu') === '1')
+  useEffect(() => {
+    if (!params.get('neu')) return
+    const next = new URLSearchParams(params)
+    next.delete('neu')
+    next.delete('termin')
+    setParams(next, { replace: true })
+  }, [params, setParams])
   if (detail.value) {
     return (
       <PlanDetail
@@ -104,6 +117,7 @@ function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit:
       {creating && (
         <NewPlan
           base={base}
+          event={preset}
           onDone={async (created) => {
             setCreating(false)
             if (created) {
@@ -187,13 +201,15 @@ function EventSelect({
 
 function NewPlan({
   base,
+  event: initialEvent = null,
   onDone,
 }: {
   base: string
+  event?: number | null
   onDone: (created: HelperPlan | null) => Promise<void>
 }) {
   const [title, setTitle] = useState('')
-  const [event, setEvent] = useState<number | null>(null)
+  const [event, setEvent] = useState<number | null>(initialEvent)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   return (
@@ -289,8 +305,18 @@ function PlanDetail({
         </button>
       </div>
       <p>
-        {plan.event_title &&
-          `${plan.event_title}${plan.event_starts_at ? ` · ${dayText(plan.event_starts_at)}` : ''} · `}
+        {plan.event && plan.event_title && (
+          <>
+            <Link
+              to={`/termine?termin=${plan.event}${plan.event_starts_at ? `&datum=${berlin(plan.event_starts_at).date}` : ''}`}
+              title={t('Termin im Kalender')}
+            >
+              {plan.event_title}
+              {plan.event_starts_at ? ` · ${dayText(plan.event_starts_at)}` : ''}
+            </Link>
+            {' · '}
+          </>
+        )}
         {t('{open} von {needed} Plätzen offen', { open: plan.open, needed: plan.needed })}
       </p>
       {error && <p role="alert">{error}</p>}

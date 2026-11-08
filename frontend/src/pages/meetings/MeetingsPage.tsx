@@ -2,6 +2,7 @@
 // Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit, Protokoll, Arten, Beschlussbuch.
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
+import { berlin } from '../../components/calendar/time.ts'
 import { meetingApi } from '../../api/meetings.ts'
 import type {
   AgendaItem,
@@ -442,6 +443,10 @@ function MeetingDetail({
       <p>
         {meeting.kind_name} · {when(meeting)}
         {meeting.location && ` · ${meeting.location}`}
+        {' · '}
+        <Link to={`/termine?termin=${meeting.event}&datum=${berlin(meeting.starts_at).date}`}>
+          {t('Termin im Kalender')}
+        </Link>
       </p>
       {meeting.status === 'draft' && (
         <p className={late ? 'alert alert-error' : 'muted'} role={late ? 'alert' : undefined}>

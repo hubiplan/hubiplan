@@ -134,6 +134,8 @@ class Viewer:
     membership_id: int | None = None
     # Finanzen der Organisation: "" (kein Zugriff), "view" oder "edit"
     finance: str = ""
+    # Rechte des Betrachters in der Organisation (für Querverweise am Termin)
+    perms: frozenset = frozenset()
 
     def visible_q(self) -> Q:
         # Kopien eines seit 14 Tagen nicht abrufbaren fremden Kalenders zeigt niemand (FQ22)
@@ -257,7 +259,15 @@ def org_viewer(user, org: Organization, perms: set[str]) -> Viewer:
     finance = ""
     if "finance" in (org.enabled_modules or []):
         finance = "edit" if FINANCE_EDIT in perms else "view" if FINANCE_VIEW in perms else ""
-    return Viewer(org, None, manage, manage or is_board(user, org), kind="org", finance=finance)
+    return Viewer(
+        org,
+        None,
+        manage,
+        manage or is_board(user, org),
+        kind="org",
+        finance=finance,
+        perms=frozenset(perms),
+    )
 
 
 def department_viewer(ctx) -> Viewer:

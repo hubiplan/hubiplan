@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Menü: Die neue Gruppe „Planen“ in der Seitenleiste fasst Termine, Versammlungen, Helferdienste und Aufgaben zusammen. Im Termin zeigt der Block „Zu diesem Termin“ Versammlung, Dienstpläne, Belegungen, Aufgaben und Auftritt; Versammlung und Dienstplan führen zurück zum Termin.
 - Startseite: „Zu erledigen“ sammelt jetzt aus allen Bereichen: fällige Einladungen, eingegangene Anträge und offene Protokolle von Versammlungen, offene Plätze in Helferdiensten, Rückfragen und nahe Meldeschlüsse bei Meldungen, eingegangene Rechnungen, Rechnungsentwürfe, Mahnungen, Lastschriften und abgelaufene Einladungen von Konten. Finanzen › Übersicht zeigt dieselben Einträge für die Finanzen.
 - Begriffe: Was Mitglieder an ihren eigenen Daten ändern, heißt jetzt „Datenänderung“; „Meldungen“ sind nur noch Wettbewerbsmeldungen. Im Arbeitsbereich einer Untereinheit heißt der Reiter „Ämter“ und zeigt zuerst die Amtsinhaber.
 - Neu: Umsatzsteuer in der Kasse. Steuersatz je Buchung (Vorgabe aus der Kategorie), Vorsteuer auch anteilig und unter Finanzen › Abschluss & Berichte › Umsatzsteuer eine Vorlage für die Voranmeldung, wahlweise mit Vorsteuerpauschale nach § 23a UStG.

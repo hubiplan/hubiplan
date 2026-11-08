@@ -223,6 +223,8 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
         project = event.project
         data["project"] = {"id": project.pk, "name": project.name} if project else None
         data["can_link_project"] = can_edit and viewer.finance == "edit"
+    if viewer.kind == "org" and viewer.owns(event):
+        data.update(related_data(event, viewer))
     if can_edit:
         data["remind_days"] = event.remind_days
         data["reminded_at"] = event.reminded_at
@@ -230,6 +232,40 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
             event.created_by.get_full_name() or event.created_by.email if event.created_by else ""
         )
         data["created_at"] = event.created_at
+    return data
+
+
+def related_data(event: Event, viewer: services.Viewer) -> dict:
+    """Was am Termin hängt: Versammlung, Dienstpläne, Belegungen (je nach Modul und Recht)."""
+    modules = set(viewer.org.enabled_modules or [])
+    perms = viewer.perms
+    data: dict = {}
+    if "meetings" in modules and "meetings.view" in perms:
+        from meetings.models import Meeting
+
+        meeting = Meeting.objects.filter(event=event).first()
+        data["meeting"] = (
+            {"id": meeting.pk, "status_label": meeting.get_status_display()} if meeting else None
+        )
+    if "helpers" in modules and "helpers.view" in perms:
+        from helpers.models import HelperPlan
+
+        plans = HelperPlan.objects.filter(
+            organization=viewer.org, department__isnull=True, event=event
+        ).order_by("pk")
+        data["helper_plans"] = [
+            {"id": p.pk, "title": p.title, "status_label": p.get_status_display()} for p in plans
+        ]
+        data["can_create_helper_plan"] = "helpers.edit" in perms
+    if "bookings" in modules and perms & {"bookings.view", "bookings.edit"}:
+        rows = (
+            event.bookings.filter(status__in=["requested", "confirmed"])
+            .select_related("item")
+            .order_by("starts_at", "pk")
+        )
+        data["bookings"] = [
+            {"id": b.pk, "item": b.item.title, "status_label": b.get_status_display()} for b in rows
+        ]
     return data
 
 

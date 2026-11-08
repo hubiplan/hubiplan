@@ -43,6 +43,90 @@ function MusicLink({ eventId }: { eventId: number }) {
   ) : null
 }
 
+/** Was am Termin hängt: Versammlung, Dienstpläne, Belegungen (Menüprüfung 2, N-02). */
+function RelatedLinks({ event, originalStart }: { event: EventDetail; originalStart: string }) {
+  const plans = event.helper_plans
+  const bookings = event.bookings
+  if (event.meeting === undefined && plans === undefined && bookings === undefined) return null
+  const book = new URLSearchParams({
+    buchen: '1',
+    termin: String(event.id),
+    titel: event.title,
+    vorkommen: originalStart,
+  })
+  return (
+    <>
+      {event.meeting && (
+        <p>
+          <Link to={`/versammlungen?versammlung=${event.meeting.id}`}>{t('Zur Versammlung')}</Link>{' '}
+          <span className="muted small">{event.meeting.status_label}</span>
+        </p>
+      )}
+      {plans && (plans.length > 0 || event.can_create_helper_plan) && (
+        <div className="stack-sm">
+          {plans.map((p) => (
+            <p key={p.id}>
+              <Link to={`/helferdienste?plan=${p.id}`}>
+                {t('Dienstplan: {title}', { title: p.title })}
+              </Link>{' '}
+              <span className="muted small">{p.status_label}</span>
+            </p>
+          ))}
+          {event.can_create_helper_plan && plans.length === 0 && (
+            <p>
+              <Link to={`/helferdienste?neu=1&termin=${event.id}`}>
+                {t('Dienstplan für diesen Termin anlegen')}
+              </Link>
+            </p>
+          )}
+        </div>
+      )}
+      {bookings && (
+        <div className="stack-sm">
+          {bookings.map((b) => (
+            <p key={b.id}>
+              {t('Belegt: {item}', { item: b.item })}{' '}
+              <span className="muted small">{b.status_label}</span>
+            </p>
+          ))}
+          <p>
+            <Link to={`/belegung?${book}`}>{t('Raum oder Gerät für diesen Termin buchen')}</Link>
+          </p>
+        </div>
+      )}
+    </>
+  )
+}
+
+function RelatedSection({
+  base,
+  event,
+  originalStart,
+}: {
+  base: string
+  event: EventDetail
+  originalStart: string
+}) {
+  const context = useOptionalOrg()
+  const org = context?.active
+  const permissions = org?.permissions ?? context?.activeDept?.permissions ?? []
+  const any =
+    event.meeting !== undefined ||
+    event.helper_plans !== undefined ||
+    event.bookings !== undefined ||
+    (/^\/api\/(orgs|depts)\//.test(base) && permissions.includes('todos.view')) ||
+    (!!org?.modules.includes('music') && permissions.includes('music.view'))
+  if (!any) return null
+  return (
+    <section className="stack-sm">
+      <strong>{t('Zu diesem Termin')}</strong>
+      <RelatedLinks event={event} originalStart={originalStart} />
+      <EventTaskLink base={base} eventId={event.id} />
+      <MusicLink eventId={event.id} />
+    </section>
+  )
+}
+
 /** Neuen Termin anlegen (Dialog). */
 export function NewEventDialog({
   base,
@@ -366,8 +450,7 @@ export function EventDialog({
               .
             </p>
           )}
-          <EventTaskLink base={base} eventId={data.id} />
-          <MusicLink eventId={data.id} />
+          <RelatedSection base={base} event={data} originalStart={occurrence.original_start} />
           <MaterialReferences
             kind="event"
             id={data.id}

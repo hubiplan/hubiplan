@@ -244,6 +244,62 @@ describe('Kalender', () => {
     expect(JSON.parse(String(post.init?.body))).toEqual({ create: true })
   })
 
+  it('zeigt, was am Termin hängt: Versammlung, Dienstplan, Belegung', async () => {
+    const detail = {
+      ...occurrence(),
+      id: 1,
+      description: '',
+      visibility_label: 'Mitglieder',
+      repeat: 'none',
+      repeat_label: 'einmalig',
+      repeat_interval: 1,
+      repeat_until: null,
+      cancel_note: '',
+      attachments: [],
+      exceptions: [],
+      rsvp: {
+        enabled: false,
+        deadline: null,
+        capacity: null,
+        guests_allowed: false,
+        max_guests: 10,
+      },
+      meeting: { id: 5, status_label: 'in Vorbereitung' },
+      helper_plans: [{ id: 8, title: 'Saaldienst', status_label: 'Entwurf' }],
+      can_create_helper_plan: true,
+      bookings: [{ id: 2, item: 'Schützenhaus', status_label: 'bestätigt' }],
+    }
+    fakeApi({
+      [monthKey()]: () => listResponse([occurrence()]),
+      [`GET ${base}events/1/`]: () => ({ status: 200, body: detail }),
+    })
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByText('Jahreshauptversammlung'))
+    const dialog = await screen.findByRole('dialog')
+    expect(await within(dialog).findByText('Zu diesem Termin')).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: 'Zur Versammlung' })).toHaveAttribute(
+      'href',
+      '/versammlungen?versammlung=5',
+    )
+    expect(within(dialog).getByRole('link', { name: 'Dienstplan: Saaldienst' })).toHaveAttribute(
+      'href',
+      '/helferdienste?plan=8',
+    )
+    expect(within(dialog).getByText('Belegt: Schützenhaus')).toBeInTheDocument()
+    expect(
+      within(dialog).getByRole('link', { name: 'Raum oder Gerät für diesen Termin buchen' }),
+    ).toHaveAttribute('href', expect.stringContaining('/belegung?buchen=1&termin=1'))
+  })
+
   it('legt einen Termin an', async () => {
     const user = userEvent.setup()
     const calls = fakeApi({

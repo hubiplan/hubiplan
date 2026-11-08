@@ -15,6 +15,8 @@ New meeting: Choose **New meeting**, then the type, start, end and place. HUBIpl
 event in the calendar for it. All members see general meetings in the calendar; only the board
 sees board meetings. If **Copy the agenda of the last meeting of this type** is ticked, HUBIplan
 copies its items; for the first meeting of a type it suggests a typical agenda.
+**Event in the calendar** in the meeting leads to its event; there the block “For this event”
+shows duty rosters and bookings for the meeting.
 
 Agenda: Each agenda item has a title, a type (report, resolution, election or other) and an
 explanation. Use the arrows to change the order; the numbers follow from it. **Save agenda**

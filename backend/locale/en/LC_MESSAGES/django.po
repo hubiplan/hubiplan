@@ -2048,6 +2048,9 @@ msgstr "Entry"
 msgid "Datenänderung"
 msgstr "Data change"
 
+msgid "Änderungsmeldung"
+msgstr "Change of entry"
+
 msgid "Rückzug"
 msgstr "Withdrawal"
 
