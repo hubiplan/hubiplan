@@ -27,7 +27,7 @@ Freigegebene Vergütungen können durch mehrere vollständige Kassenbuchungen te
 
 Die Plattform schaltet das Modul Musik je Verein frei. Rollen benötigen Musik-Lese- oder Bearbeitungsrecht. Für Auftritte wird zusätzlich Kalenderleserecht benötigt.
 
-Unter **Musiker** ein Mitglied oder einen Gast erfassen. Die Mitgliedsakte verlinkt zum Musikerprofil. Unter **Instrumentale Fähigkeiten** Instrument und Register/Stimme eintragen; das Hauptinstrument markieren. Gäste können mit Kontaktangaben verwaltet und später deaktiviert werden.
+Unter **Musiker** ein Mitglied oder einen Gast erfassen. Die Mitgliedsakte zeigt im Reiter **Musik** ein Kurzprofil mit den Instrumenten und führt mit **Im Musikbereich öffnen** hierher. Unter **Instrumentale Fähigkeiten** Instrument und Register/Stimme eintragen; das Hauptinstrument markieren. Gäste können mit Kontaktangaben verwaltet und später deaktiviert werden.
 
 Einen eigenen Einzeltermin im Kalender anlegen. Unter **Auftritte** diesen Termin wählen und Auftraggeber, Treffzeit/-punkt, Aufbau, Uniform, Spielform und Hinweise ergänzen. Spielzeit und Ort bleiben im Kalender. Serien benötigen einzelne Auftrittstermine. Aufgaben werden über **Aufgaben zum Auftritt** im bestehenden Aufgabenbereich gepflegt.
 

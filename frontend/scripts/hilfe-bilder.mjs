@@ -176,6 +176,18 @@ for (const language of ['de', 'en']) {
           await page.locator('header.topbar .account-menu > button').click()
           await page.locator('#konto-menue').waitFor()
         }
+        if (b.name === 'mitgliedsakte') {
+          // Erste Akte aus der Liste der erfundenen Demodaten (Kopf, „Auf einen Blick“, Reiter)
+          const href = await page
+            .locator('main a[href^="/mitglieder/"]')
+            .evaluateAll((links) =>
+              links.map((a) => a.getAttribute('href')).find((h) => /^\/mitglieder\/\d+$/.test(h)),
+            )
+          if (!href) throw new Error('Keine Mitgliedsakte in der Liste gefunden')
+          await page.goto(`${base}${href}`)
+          await page.waitForLoadState('networkidle')
+          await page.locator('main h1').waitFor()
+        }
         if (b.name === 'mitglieder-aufnehmen-details') {
           await page.getByLabel('Name', { exact: true }).fill('Muster')
           await page

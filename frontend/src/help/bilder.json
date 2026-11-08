@@ -62,6 +62,12 @@
       "ausschnitt": ""
     },
     {
+      "name": "mitgliedsakte",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/mitglieder",
+      "ausschnitt": ""
+    },
+    {
       "name": "austritt-erfassen",
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/mitglieder",

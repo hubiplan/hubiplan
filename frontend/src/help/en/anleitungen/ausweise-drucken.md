@@ -9,8 +9,8 @@ stichworte: [card, QR code, print, block, lost]
 ---
 
 1. For everyone at once: in the [member list](/mitglieder), click **Cards (PDF)**. It prints the cards of the members currently filtered.
-2. For one person: open the record and click **Card as PDF** in the membership card section.
-3. If a card is lost, click **Block** there. The old QR code is then no longer valid.
+2. For one person: open the record and choose **Print membership card** under **More actions** at the top. Everything else is on the **Photo & website** tab in the membership card section.
+3. If a card is lost, click **Block** in the membership card section there. The old QR code is then no longer valid.
 4. With **Create new QR code** the person gets a new card.
 
 Anyone who may only view cards can see and print them. Blocking, creating a new QR code and creating cards for members without one requires permission to edit cards.
