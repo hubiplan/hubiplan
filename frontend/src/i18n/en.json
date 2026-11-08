@@ -7421,5 +7421,7 @@
   "Noch nie angemeldet": "Never signed in",
   "Kein Zugang zum Mitgliederbereich": "No member area access",
   "Teil ausgegeben": "item issued",
-  "Teile ausgegeben": "items issued"
+  "Teile ausgegeben": "items issued",
+  "Pfad": "Breadcrumb",
+  "Zurück zu {label}": "Back to {label}"
 }
