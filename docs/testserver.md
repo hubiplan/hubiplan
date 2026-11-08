@@ -28,7 +28,7 @@ Die Geheimnisse (`DJANGO_SECRET_KEY`, `POSTGRES_PASSWORD`) stehen nur in
 Feste Regeln:
 
 - **Tests laufen nie auf dem Testserver.** Erst lokal testen, dann ausrollen.
-- **Höchstens zwei Testläufe gleichzeitig, jeder höchstens 8 Kerne**, projektübergreifend
+- **Höchstens drei Testläufe gleichzeitig, jeder höchstens 8 Kerne**, projektübergreifend
   (siehe „Testplätze“ unten). Tests nur über
   `scripts/test.sh` starten.
 
@@ -82,17 +82,17 @@ Server und startet alles neu. Datenbank und `.env` bleiben erhalten.
 
 ## Testplätze
 
-Lokal laufen höchstens zwei Testläufe gleichzeitig, jeder mit höchstens 8 Kernen,
+Lokal laufen höchstens drei Testläufe gleichzeitig, jeder mit höchstens 8 Kernen,
 für alle Projekte zusammen. Das regelt `scripts/testplatz.sh`:
 
 ```bash
 testplatz [--kerne N] <befehl …>   # wartet auf einen freien Platz, dann läuft der Befehl
 ```
 
-- Zwei Plätze (`~/.testplaetze/platz-1.lock`, `platz-2.lock` in WSL). Wer keinen freien
+- Drei Plätze (`~/.testplaetze/platz-1.lock` bis `platz-3.lock` in WSL). Wer keinen freien
   Platz findet, wartet. Bricht ein Lauf ab, gibt das System den Platz von selbst frei.
 - Der Befehl ist an die Kerne seines Platzes gebunden (WSL: `taskset`; Windows:
-  Prozessor-Affinität, Platz 1 = Kerne 0–7, Platz 2 = Kerne 8–15) und bekommt
+  Prozessor-Affinität, Platz 1 = Kerne 0–7, Platz 2 = Kerne 8–15, Platz 3 = Kerne 16–23) und bekommt
   `TEST_KERNE` (Anzahl), `TESTPLATZ_CPUS` (für `docker run --cpuset-cpus`) und
   `TESTPLATZ` (Nummer). Docker-Container erben die Bindung nicht, deshalb setzen die
   Testskripte `--cpuset-cpus` selbst.
