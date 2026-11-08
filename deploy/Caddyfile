@@ -2,8 +2,12 @@
 # ausgeliefertes React-Frontend und Weiterleitung der API ans Django-Backend.
 # Hinter einem vorgeschalteten Webserver gilt stattdessen Caddyfile.proxy.
 
-# Zertifikate für weitere Adressen (W7c, siehe unten) nur nach Rückfrage beim Backend
 {
+	# Beim Beenden (Ausrollen) höchstens 3 s auf laufende Anfragen warten. Ohne Frist wartet
+	# Caddy auf jede offene Anfrage, bis Docker nach 10 s abbricht; beim Messen auf dem
+	# Testserver (08.11.2026) hing eine Anfrage beim Caddy-Tausch so 19,6 s.
+	grace_period 3s
+	# Zertifikate für weitere Adressen (W7c, siehe unten) nur nach Rückfrage beim Backend
 	on_demand_tls {
 		ask http://backend:8000/api/intern/tls/
 	}
