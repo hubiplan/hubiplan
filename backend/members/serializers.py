@@ -307,6 +307,18 @@ class PeriodSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         validated_data.pop("member_type", None)
+        # Daten und Grund nur über „Ein-/Austritt korrigieren“, damit Art, Untereinheiten
+        # und Ämter mitziehen (Datenaudit 08.11. DA-01)
+        for key in ("entry_date", "exit_date", "exit_reason"):
+            if key in validated_data and validated_data[key] != getattr(instance, key):
+                raise serializers.ValidationError(
+                    {
+                        key: gettext(
+                            "Ein- und Austritt bitte über „Ein-/Austritt korrigieren“ ändern; "
+                            "dabei ziehen Art, Untereinheiten und Ämter mit."
+                        )
+                    }
+                )
         return super().update(instance, validated_data)
 
     def validate(self, attrs):

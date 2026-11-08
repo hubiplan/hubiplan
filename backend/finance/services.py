@@ -489,6 +489,59 @@ def editable_booking_donation(booking_id: int, *, lock: bool = True) -> Donation
     return donation
 
 
+def sync_booking_donation(booking: Booking) -> Donation | None:
+    """Unbestätigte Zuwendung folgt Betrag und Datum ihrer Buchung (Datenaudit 08.11. DA-03).
+
+    Nur innerhalb einer Transaktion nach ``editable_booking_donation`` aufrufen; die
+    Änderung landet über die Änderungsverfolgung im selben Änderungspaket wie die Buchung
+    (auch für Rückgängig)."""
+    donation = editable_booking_donation(booking.pk)
+    if donation is None:
+        return None
+    changed = []
+    if donation.amount != booking.amount:
+        donation.amount = booking.amount
+        changed.append("amount")
+    if donation.date != booking.date:
+        donation.date = booking.date
+        changed.append("date")
+    if changed:
+        donation.save(update_fields=[*changed, "updated_at"])
+    return donation
+
+
+def remove_booking_donation(booking_id: int) -> Donation | None:
+    """Unbestätigte Zuwendung einer Buchung entfernen, die gelöscht oder storniert wird.
+
+    Eine bestätigte Zuwendung sperrt (``editable_booking_donation``)."""
+    donation = editable_booking_donation(booking_id)
+    if donation is not None:
+        donation.delete()
+    return donation
+
+
+def booking_donation_problem(donation: Donation) -> str:
+    """Warum Zuwendung und Buchung nicht zusammenpassen (leer = passt oder keine Buchung)."""
+    if not donation.booking_id:
+        return ""
+    booking = Booking.objects.filter(pk=donation.booking_id).first()
+    if booking is None:
+        return gettext("Die Buchung zur Zuwendung fehlt.")
+    if booking.cancels_id or Booking.objects.filter(cancels=booking).exists():
+        return gettext("Die Buchung {number} zur Zuwendung ist storniert.").format(
+            number=booking.display_number
+        )
+    if booking.kind != Booking.Kind.INCOME:
+        return gettext("Die Buchung {number} zur Zuwendung ist keine Einnahme.").format(
+            number=booking.display_number
+        )
+    if booking.amount != donation.amount or booking.date != donation.date:
+        return gettext(
+            "Betrag oder Datum der Zuwendung weichen von der Buchung {number} ab."
+        ).format(number=booking.display_number)
+    return ""
+
+
 def cancel_booking(booking: Booking, user, reason: str, *, check_links: bool = True) -> Booking:
     """Storno: Gegenbuchung im offenen Geschäftsjahr mit heutigem Datum; die Buchung bleibt.
 
@@ -525,9 +578,7 @@ def cancel_booking(booking: Booking, user, reason: str, *, check_links: bool = T
                     "entfernen; das storniert die Buchung."
                 )
             )
-    donation = editable_booking_donation(booking.pk)
-    if donation is not None:
-        donation.delete()
+    remove_booking_donation(booking.pk)
     org = booking.organization
     today = timezone.localdate()
     ensure_open(org, date=today)

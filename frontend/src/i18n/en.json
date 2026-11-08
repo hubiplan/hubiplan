@@ -7346,5 +7346,16 @@
   "Stornorechnung erneut senden": "Send cancellation invoice again",
   "Stornorechnung per E-Mail senden": "Send cancellation invoice by email",
   "Verrechnen": "Offset",
-  "Als neuen Entwurf anlegen": "Create as new draft"
+  "Als neuen Entwurf anlegen": "Create as new draft",
+  "Betrag und Datum folgen der Buchung {booking_number}.": "Amount and date follow booking {booking_number}.",
+  "{n} offene Zuwendung passt nicht zu ihrer Buchung (storniert, keine Einnahme oder anderer Betrag bzw. anderes Datum).": {
+    "one": "{n} open donation does not match its booking (cancelled, not income, or a different amount or date).",
+    "other": "{n} open donations do not match their bookings (cancelled, not income, or a different amount or date)."
+  },
+  "Zuwendung öffnen und Betrag und Datum wie in der Buchung eintragen oder die Zuwendung löschen.": "Open the donation and enter the amount and date as in the booking, or delete the donation.",
+  "Ein-/Austritt korrigieren": "Correct entry/exit",
+  "Austritt aufheben?": "Cancel the exit?",
+  "Austritt aufheben": "Cancel exit",
+  "Die Mitgliedschaft läuft dann wieder offen. Mitgliedsart, {department_label_plural} und Ämter, die mit dem Austritt endeten, laufen ebenfalls weiter.": "The membership then runs open again. Member type, {department_label_plural} and offices that ended with the exit continue as well.",
+  "Mitgliedsart, {department_label_plural} und Ämter, die am alten Datum begannen bzw. endeten, ziehen mit. Austrittsdatum leeren hebt den Austritt auf.": "Member type, {department_label_plural} and offices that started or ended on the old date move along. Clearing the exit date cancels the exit."
 }

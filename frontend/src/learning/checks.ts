@@ -350,6 +350,8 @@ export interface DonationInput {
   goods_without_documents: number
   goods_open: number
   fees_skipped: number
+  /** offene Zuwendungen, deren Buchung storniert ist oder abweicht */
+  booking_mismatch?: number
 }
 
 export function donationChecks(c: DonationInput): CheckItem[] {
@@ -380,6 +382,19 @@ export function donationChecks(c: DonationInput): CheckItem[] {
             ),
       fix: t('Die Bestätigung nennt Name und Anschrift des Zuwendenden: Anschrift nachtragen.'),
       why: 'donation_liability',
+    })
+  if ((c.booking_mismatch ?? 0) > 0)
+    items.push({
+      key: 'booking',
+      ok: false,
+      text: tn(
+        '{n} offene Zuwendung passt nicht zu ihrer Buchung (storniert, keine Einnahme oder anderer Betrag bzw. anderes Datum).',
+        '{n} offene Zuwendungen passen nicht zu ihren Buchungen (storniert, keine Einnahme oder anderer Betrag bzw. anderes Datum).',
+        c.booking_mismatch ?? 0,
+      ),
+      fix: t(
+        'Zuwendung öffnen und Betrag und Datum wie in der Buchung eintragen oder die Zuwendung löschen.',
+      ),
     })
   if (c.goods_open > 0)
     items.push({

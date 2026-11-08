@@ -713,6 +713,9 @@ class FeeRunViewSet(BillingMixin, viewsets.ReadOnlyModelViewSet):
     @transaction.atomic
     def destroy(self, request, org_id: int, pk: int):
         run = self.get_object()
+        # Unter Laufsperre: Ein gleichzeitiges Festschreiben endet vor der Prüfung, sonst
+        # löschte CASCADE festgeschriebene Rechnungen (Datenaudit 08.11. DR-01)
+        services.lock_run(run)
         if run.invoices.exclude(status=Invoice.Status.DRAFT).exists():
             raise serializers.ValidationError(
                 gettext(

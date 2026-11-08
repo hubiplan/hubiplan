@@ -564,6 +564,12 @@ export const memberApi = {
     id: number,
     data: { exit_date: string; exit_reason: string; note?: string },
   ) => api.post<MemberDetail>(`${base(org)}/members/${id}/exit/`, data),
+  /** Ein-/Austritt berichtigen; Art, Untereinheiten und Ämter ziehen mit (Datenaudit 08.11.) */
+  correctPeriod: (
+    org: number,
+    id: number,
+    data: { period: number; entry_date: string; exit_date: string | null; exit_reason: string },
+  ) => api.post<MemberDetail>(`${base(org)}/members/${id}/correct-period/`, data),
   reentry: (org: number, id: number, data: Record<string, unknown>) =>
     api.post<MemberDetail>(`${base(org)}/members/${id}/reentry/`, data),
   /** Auskunft für dieses Mitglied als ZIP (Art. 15 DSGVO). */

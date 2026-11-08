@@ -9346,3 +9346,39 @@ msgstr "A draft can be edited directly."
 
 msgid "Die Prüfsumme der Stornorechnung stimmt nicht."
 msgstr "The cancellation invoice checksum does not match."
+
+msgid "Die Buchung zur Zuwendung fehlt."
+msgstr "The booking for this donation is missing."
+
+msgid "Die Buchung {number} zur Zuwendung ist storniert."
+msgstr "Booking {number} for this donation has been cancelled."
+
+msgid "Die Buchung {number} zur Zuwendung ist keine Einnahme."
+msgstr "Booking {number} for this donation is not income."
+
+msgid "Betrag oder Datum der Zuwendung weichen von der Buchung {number} ab."
+msgstr "The donation's amount or date differs from booking {number}."
+
+msgid "{problem} Bitte Zuwendung und Buchung abgleichen."
+msgstr "{problem} Please align the donation with its booking."
+
+msgid "Betrag und Datum kommen aus der Buchung. Bitte die Buchung ändern; die Zuwendung zieht mit."
+msgstr "Amount and date come from the booking. Please change the booking; the donation follows."
+
+msgid "Die Mitgliedsart"
+msgstr "The member type"
+
+msgid "Die Untereinheit"
+msgstr "The sub-unit"
+
+msgid "Das Amt"
+msgstr "The office"
+
+msgid "Zeitraum nicht gefunden."
+msgstr "Period not found."
+
+msgid "{what} liegt mit dem neuen Datum außerhalb der Mitgliedschaft ({start} bis {end}). Bitte zuerst dort berichtigen."
+msgstr "{what} would lie outside the membership with the new date ({start} to {end}). Please correct it there first."
+
+msgid "Ein- und Austritt bitte über „Ein-/Austritt korrigieren“ ändern; dabei ziehen Art, Untereinheiten und Ämter mit."
+msgstr "Please change entry and exit via “Correct entry/exit”; member type, sub-units and offices then move along."
