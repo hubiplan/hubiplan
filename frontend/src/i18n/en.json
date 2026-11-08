@@ -7458,5 +7458,9 @@
   "Ausweis drucken": "Print membership card",
   "Anrufen": "Call",
   "Nr. {x}": "No. {x}",
-  "Auskunft und Löschen (Datenschutz)": "Access report and deletion (privacy)"
+  "Auskunft und Löschen (Datenschutz)": "Access report and deletion (privacy)",
+  "{n} Jahr": {
+    "one": "{n} year",
+    "other": "{n} years"
+  }
 }

@@ -4,7 +4,7 @@ import { materialApi } from '../../api/materials.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
 import { formatDateTime, formatMemberDate, jubileeWhen, useLoad } from '../../components/forms.ts'
 import { formatEuro } from '../../i18n/format.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 
 /**
  * „Auf einen Blick“ (Konzept S-03, A3): bis zu vier Kacheln, nur mit Inhalt und nur, wenn
@@ -36,7 +36,7 @@ export function AtAGlance({
           <h3>{t('Mitglied seit')}</h3>
           <p className="amount-big">{formatMemberDate(first, org.date_precision)}</p>
           <p className="small muted">
-            {club.years} {club.years === 1 ? t('Jahr') : t('Jahre')}
+            {tn('{n} Jahr', '{n} Jahre', club.years)}
             {club.next &&
               t(' · nächstes Jubiläum: {years} Jahre {x}', {
                 years: club.next.years,
