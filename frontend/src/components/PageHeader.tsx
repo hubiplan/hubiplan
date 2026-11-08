@@ -38,6 +38,7 @@ export function PageHeader({
   actions = [],
   extra,
   status,
+  children,
 }: {
   /** Nur für Seiten ohne eigenen Menüpunkt, z. B. eine Mitgliedsakte („Max Mustermann“) */
   title?: string
@@ -51,6 +52,8 @@ export function PageHeader({
   extra?: ReactNode
   /** Kurzer Zustand hinter der Überschrift, z. B. „nur lesen“ */
   status?: ReactNode
+  /** Zusatzzeile unter der Überschrift, z. B. Status, Nummer, Ämter einer Mitgliedsakte */
+  children?: ReactNode
 }) {
   const { trail, unit } = useNavTrail()
   const current = title ?? trail.at(-1)?.label ?? ''
@@ -101,6 +104,7 @@ export function PageHeader({
         )}
       </div>
       {subtitle && <p className="page-header-subtitle muted">{subtitle}</p>}
+      {children && <div className="page-header-more">{children}</div>}
     </header>
   )
 }
