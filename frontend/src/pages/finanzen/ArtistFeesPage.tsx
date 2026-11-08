@@ -5,6 +5,7 @@ import { euro, financeApi } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { Term, Why } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
 
 export function ArtistFeesPage() {
@@ -20,7 +21,10 @@ export function ArtistFeesPage() {
 
   return (
     <div className="stack">
-      <h2 className="section-heading">{t('Künstlersozialabgabe')}</h2>
+      <h2 className="section-heading">
+        <Term k="artist_levy">{t('Künstlersozialabgabe')}</Term>
+      </h2>
+      <Why k="artist_fee_mark" />
       <div className="card card-wide filters">
         <label>
           {t('Kalenderjahr')}{' '}

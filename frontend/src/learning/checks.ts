@@ -2,7 +2,7 @@
 // den harten Fehlerprüfungen des Servers. Die Punkte blockieren nie.
 // Eine Zeile erscheint nur, wenn sie für diesen Lauf überhaupt eine Rolle spielt.
 import type { DecisionKey } from './content.ts'
-import { t, tn } from '../i18n/index.ts'
+import { locale, t, tn } from '../i18n/index.ts'
 
 export interface CheckItem {
   key: string
@@ -499,6 +499,163 @@ export function competitionFinishChecks(input: CompetitionFinishInput): CheckIte
           ? t('Die Ergebnisse stehen schon während des Schießens auf der Webseite.')
           : t('Nach dem Abschluss erscheinen die Ergebnisse auf der Webseite.'),
     why: 'comp_website',
+  })
+  return items
+}
+
+// --- vor der Einladung zu einer Versammlung ---
+
+export interface MeetingInviteInput {
+  /** letzter Tag, an dem die Einladung hinausgehen muss (JJJJ-MM-TT) */
+  inviteBy: string
+  /** heute (JJJJ-MM-TT, Berlin); ohne Angabe das aktuelle Datum */
+  today?: string
+  agenda: { title: string; description: string; type: string }[]
+}
+
+/** Gegenstände von Beschlüssen müssen in der Einladung bezeichnet sein
+ *  (§ 32 Abs. 1 Satz 2 BGB); Frist und Form stehen in der Satzung (§ 58 Nr. 4 BGB). */
+export function meetingInviteChecks(c: MeetingInviteInput): CheckItem[] {
+  const today = c.today ?? new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Berlin' })
+  const day = new Date(`${c.inviteBy}T12:00:00`).toLocaleDateString(locale())
+  const items: CheckItem[] = [
+    {
+      key: 'deadline',
+      ok: today <= c.inviteBy,
+      text:
+        today <= c.inviteBy
+          ? t('Die Einladung kann noch rechtzeitig hinausgehen (spätestens am {day}).', { day })
+          : t('Die Einladungsfrist ist abgelaufen (letzter Tag war der {day}).', { day }),
+      fix: t('Die Versammlung verschieben, sonst sind ihre Beschlüsse angreifbar.'),
+      why: 'meeting_invite',
+    },
+    {
+      key: 'agenda',
+      ok: c.agenda.length > 0,
+      text:
+        c.agenda.length > 0
+          ? tn(
+              'Die Tagesordnung hat {n} Punkt.',
+              'Die Tagesordnung hat {n} Punkte.',
+              c.agenda.length,
+            )
+          : t('Die Tagesordnung ist noch leer.'),
+      fix: t('Alle Punkte eintragen, über die beschlossen oder gewählt werden soll.'),
+    },
+  ]
+  const votes = c.agenda.filter((a) => a.type === 'resolution' || a.type === 'election')
+  const bare = votes.filter((a) => !a.description.trim()).length
+  if (votes.length > 0)
+    items.push({
+      key: 'subjects',
+      ok: bare === 0,
+      text:
+        bare === 0
+          ? t('Jeder Beschluss- und Wahlpunkt sagt, worüber abgestimmt wird.')
+          : tn(
+              '{n} Beschluss- oder Wahlpunkt ohne Erläuterung.',
+              '{n} Beschluss- oder Wahlpunkte ohne Erläuterung.',
+              bare,
+            ),
+      fix: t('Mitglieder sollen vorher wissen, worüber abgestimmt wird: Erläuterung ergänzen.'),
+      why: 'meeting_invite',
+    })
+  if (c.agenda.some((a) => /satzung/i.test(a.title)))
+    items.push({
+      key: 'statute',
+      ok: true,
+      text: t('Bei einer Satzungsänderung den neuen Wortlaut mit der Einladung verschicken.'),
+      info: true,
+    })
+  return items
+}
+
+// --- vor dem Abschluss der Kassenprüfung ---
+
+export interface AuditCloseInput {
+  auditors: string
+  recommendation: string
+  findings: string
+  checks: { result: string }[]
+  samples: { result: string }[]
+  accounts: { statement_balance: string | null; difference: string | null; note: string }[]
+}
+
+export function auditCloseChecks(c: AuditCloseInput): CheckItem[] {
+  const items: CheckItem[] = []
+  const openChecks = c.checks.filter((x) => !x.result).length
+  items.push({
+    key: 'checks',
+    ok: openChecks === 0,
+    text:
+      openChecks === 0
+        ? t('Alle Prüfpunkte sind bewertet.')
+        : tn(
+            '{n} Prüfpunkt ist noch nicht bewertet.',
+            '{n} Prüfpunkte sind noch nicht bewertet.',
+            openChecks,
+          ),
+  })
+  if (c.accounts.length > 0) {
+    const missing = c.accounts.filter((a) => a.statement_balance === null).length
+    const unexplained = c.accounts.filter(
+      (a) => a.difference !== null && Number(a.difference) !== 0 && !a.note.trim(),
+    ).length
+    items.push({
+      key: 'accounts',
+      ok: missing === 0 && unexplained === 0,
+      text:
+        missing > 0
+          ? tn(
+              '{n} Konto ohne Stand laut Kontoauszug oder Zählung.',
+              '{n} Konten ohne Stand laut Kontoauszug oder Zählung.',
+              missing,
+            )
+          : unexplained > 0
+            ? tn('{n} Differenz ohne Anmerkung.', '{n} Differenzen ohne Anmerkung.', unexplained)
+            : t('Alle Konten sind abgeglichen.'),
+      why: 'audit_reconcile',
+    })
+  }
+  if (c.samples.length > 0) {
+    const openSamples = c.samples.filter((x) => !x.result).length
+    items.push({
+      key: 'samples',
+      ok: openSamples === 0,
+      text:
+        openSamples === 0
+          ? t('Alle Stichproben sind geprüft.')
+          : tn(
+              '{n} Stichprobe ist noch nicht geprüft.',
+              '{n} Stichproben sind noch nicht geprüft.',
+              openSamples,
+            ),
+      why: 'audit_samples',
+    })
+  }
+  const issues = [...c.checks, ...c.samples].some((x) => x.result === 'issue')
+  if (issues)
+    items.push({
+      key: 'findings',
+      ok: !!c.findings.trim(),
+      text: c.findings.trim()
+        ? t('Die Beanstandungen sind unter „Feststellungen“ beschrieben.')
+        : t('Es gibt Beanstandungen, aber noch keine Feststellungen.'),
+    })
+  items.push({
+    key: 'auditors',
+    ok: !!c.auditors.trim(),
+    text: c.auditors.trim()
+      ? t('Die Namen der Prüfer stehen im Prüfauftrag.')
+      : t('Im Prüfauftrag fehlen die Namen der Prüfer.'),
+  })
+  items.push({
+    key: 'recommendation',
+    ok: !!c.recommendation,
+    text: c.recommendation
+      ? t('Die Empfehlung zur Entlastung ist gewählt.')
+      : t('Die Empfehlung zur Entlastung fehlt noch.'),
+    why: 'audit_recommendation',
   })
   return items
 }

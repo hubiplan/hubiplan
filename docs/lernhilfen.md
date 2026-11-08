@@ -13,11 +13,12 @@ angemeldete Bearbeitende, nicht im Mitgliederbereich und nicht auf öffentlichen
 | **Warum?** (Grundlage) | an Entscheidungen mit Basiswissen, z. B. Belege, Kassenprüfung | nur mit eingeschalteten Lernhilfen |
 | **?** an Begriffen | an Fachwörtern in Überschriften, Tabellenköpfen und Texten | nur mit eingeschalteten Lernhilfen; einfache Begriffe nur beim ersten Vorkommen pro Seite |
 | **Wie gerechnet?** / **So funktioniert es:** | an berechneten Werten und Abläufen | immer |
-| **Prüfliste** | vor dem Beitragslauf, dem Lastschriftlauf, dem Jahresabschluss, den Jahresbestätigungen für Zuwendungen und dem endgültigen Abschluss eines Wettbewerbs | immer; blockiert nie |
+| **Prüfliste** | vor dem Beitragslauf, dem Lastschriftlauf, dem Jahresabschluss, den Jahresbestätigungen für Zuwendungen, dem endgültigen Abschluss eines Wettbewerbs, der Einladung zu einer Versammlung und dem Abschluss der Kassenprüfung | immer; blockiert nie |
 | **Glossar** | `/glossar`, verlinkt aus „Mein Konto“, aus jeder „?“-Box und aus der Hilfe (`/hilfe`, [hilfe.md](hilfe.md)) | immer |
 
 Hilfen zu Funktionen, die eine Einheit nicht freigeschaltet hat (Beiträge, Finanzen,
-Termine, Webseite, Wettbewerbe), erscheinen weder an der Stelle noch im Glossar.
+Steuern & Gemeinnützigkeit, Termine, Versammlungen, Helferdienste, Material, Belegung,
+Webseite, Wettbewerbe), erscheinen weder an der Stelle noch im Glossar.
 
 ## Schalter und Ausblenden
 
@@ -75,7 +76,7 @@ import { Checklist } from '../../learning/Checklist.tsx'
 
 Die Prüfpunkte und ihre Schwellen stehen in `frontend/src/learning/checks.ts`; die
 Zahlen dafür liefern die Vorschau des Beitragslaufs (`checks`), die Lastschrift-Vorschläge
-(`creditor_valid`, `expiring_soon`, `has_email`) und die Abschlussübersicht (`checks`).
+(`creditor_valid`, `expiring_soon`, `has_email`) und die Abschlussübersicht (`checks`). Die Prüflisten vor der Einladung und vor dem Abschluss der Kassenprüfung rechnen nur mit den Daten, die die Seite ohnehin lädt (Frist und Tagesordnung bzw. Prüfpunkte, Stichproben und Kontenabgleich).
 
 ## Bedienung und Barrierefreiheit
 

@@ -6471,7 +6471,6 @@
   "Meine Anfragen und Buchungen": "My requests and bookings",
   "Schützenhaus, Stand oder Material anfragen": "Request the clubhouse, range or equipment",
   "Mitglieder dürfen im Mitgliederbereich anfragen": "Members may send requests from the members' area",
-  "Zwei-Faktor-Anmeldung nötig ab {date}.": "Two-factor sign-in required from {date}.",
   "Inhalt und Anhänge sieht nur der Verein. Er kann sie unter Einstellungen › Postausgang für die Plattform-Betreuung freigeben.": "Only the club sees the content and attachments. It can share them with platform support under Settings › Outbox.",
   "Plattform-Betreuung darf Text und Anhänge sehen": "Platform support may see text and attachments",
   "Sonst sieht sie nur Empfänger, Betreff und Status, etwa zur Fehlersuche.": "Otherwise it only sees recipients, subject and status, for example when troubleshooting.",
@@ -6863,7 +6862,6 @@
   "eingereicht": "submitted",
   "Ins Amt übernehmen": "Take into office",
   "Wahl {number} ins Amt übernehmen": "Take election {number} into office",
-  "eingereicht": "submitted",
   "GmbH": "GmbH (limited company)",
   "UG (haftungsbeschränkt)": "UG (limited liability)",
   "AG": "AG (stock corporation)",
@@ -7181,6 +7179,61 @@
   "Übliche Kategorien mit steuerlichem Bereich, damit ihr nicht bei null anfangt. Es werden nur fehlende Kategorien angelegt; bestehende bleiben, wie sie sind. Bereiche und DATEV-Konten bitte mit der Steuerberatung abstimmen. Sponsoring: Wird der Sponsor nur genannt, gehört das Geld zur Vermögensverwaltung; aktive Werbung wie Bande oder Anzeige ist wirtschaftlicher Geschäftsbetrieb.": "Common categories with a tax area, so you don't start from scratch. Only missing categories are created; existing ones stay as they are. Please agree areas and DATEV accounts with your tax adviser. Sponsorship: if the sponsor is only named, the money belongs to asset management; active advertising such as boards or ads is a commercial operation.",
   "schon vorhanden": "already there",
   "{n} Kategorien anlegen": "Create {n} categories",
+  "Die Einladung kann noch rechtzeitig hinausgehen (spätestens am {day}).": "The invitation can still go out in time (by {day} at the latest).",
+  "Die Einladungsfrist ist abgelaufen (letzter Tag war der {day}).": "The notice period has passed (the last day was {day}).",
+  "Die Versammlung verschieben, sonst sind ihre Beschlüsse angreifbar.": "Postpone the meeting, otherwise its resolutions are open to challenge.",
+  "Die Tagesordnung hat {n} Punkt.": {
+    "one": "The agenda has {n} item.",
+    "other": "The agenda has {n} items."
+  },
+  "Die Tagesordnung ist noch leer.": "The agenda is still empty.",
+  "Alle Punkte eintragen, über die beschlossen oder gewählt werden soll.": "Enter every item that is to be decided or voted on.",
+  "Jeder Beschluss- und Wahlpunkt sagt, worüber abgestimmt wird.": "Every resolution and election item says what will be voted on.",
+  "{n} Beschluss- oder Wahlpunkt ohne Erläuterung.": {
+    "one": "{n} resolution or election item without an explanation.",
+    "other": "{n} resolution or election items without an explanation."
+  },
+  "Mitglieder sollen vorher wissen, worüber abgestimmt wird: Erläuterung ergänzen.": "Members should know beforehand what they will vote on: add an explanation.",
+  "Bei einer Satzungsänderung den neuen Wortlaut mit der Einladung verschicken.": "For a change to the constitution, send the new wording with the invitation.",
+  "Alle Prüfpunkte sind bewertet.": "All checks have been assessed.",
+  "{n} Prüfpunkt ist noch nicht bewertet.": {
+    "one": "{n} check has not been assessed yet.",
+    "other": "{n} checks have not been assessed yet."
+  },
+  "{n} Konto ohne Stand laut Kontoauszug oder Zählung.": {
+    "one": "{n} account without a balance from the statement or count.",
+    "other": "{n} accounts without a balance from the statement or count."
+  },
+  "{n} Differenz ohne Anmerkung.": {
+    "one": "{n} difference without a note.",
+    "other": "{n} differences without a note."
+  },
+  "Alle Konten sind abgeglichen.": "All accounts are reconciled.",
+  "Alle Stichproben sind geprüft.": "All samples have been checked.",
+  "{n} Stichprobe ist noch nicht geprüft.": {
+    "one": "{n} sample has not been checked yet.",
+    "other": "{n} samples have not been checked yet."
+  },
+  "Die Beanstandungen sind unter „Feststellungen“ beschrieben.": "The objections are described under “Findings”.",
+  "Es gibt Beanstandungen, aber noch keine Feststellungen.": "There are objections but no findings yet.",
+  "Die Namen der Prüfer stehen im Prüfauftrag.": "The auditors’ names are in the audit assignment.",
+  "Im Prüfauftrag fehlen die Namen der Prüfer.": "The auditors’ names are missing from the audit assignment.",
+  "Die Empfehlung zur Entlastung ist gewählt.": "The recommendation on discharge has been chosen.",
+  "Die Empfehlung zur Entlastung fehlt noch.": "The recommendation on discharge is still missing.",
+  "Übungsleiterfreibetrag": "Trainer allowance",
+  "Ehrenamtspauschale": "Volunteer allowance",
+  "Buchwert": "Book value",
+  "am Jahresende": "at year end",
+  "Die Empfehlung richtet sich an die Versammlung, die über die": "The recommendation is addressed to the meeting, which votes on the",
+  "Entlastung": "discharge",
+  "des Vorstands abstimmt.": "of the board.",
+  "Vor dem Abschluss der Prüfung": "Before closing the audit",
+  "Vor der Einladung": "Before the invitation",
+  "Es gilt meist die": "Usually a",
+  "einfache Mehrheit": "simple majority",
+  "; für eine": " applies; a",
+  "Satzungsänderung": "change to the constitution",
+  "braucht es drei Viertel, wenn die Satzung nichts anderes sagt.": "needs three quarters unless the constitution says otherwise.",
   "Spenden bis 300 €": "Donations up to 300 €",
   "Bei Zuwendungen bis 300 € genügt dem Finanzamt der Kontoauszug zusammen mit einem Beleg des Vereins über die Steuerbegünstigung. Den Beleg könnt ihr auf der Webseite veröffentlichen, auslegen oder mitschicken; eine Zuwendungsbestätigung ist dafür nicht nötig.": "For donations up to 300 €, the tax office accepts the bank statement together with a note from the club on its tax-privileged status. You can publish this note on your website, display it or send it along; no donation receipt is needed.",
   "Beleg als PDF": "Note as PDF",

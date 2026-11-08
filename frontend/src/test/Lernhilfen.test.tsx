@@ -15,7 +15,9 @@ import {
   easterSunday,
   feeRunChecks,
   isBankBusinessDay,
+  meetingInviteChecks,
   MIN_DUE_DAYS,
+  auditCloseChecks,
   donationChecks,
 } from '../learning/checks.ts'
 import {
@@ -473,6 +475,11 @@ describe('Glossar', () => {
       'events',
       'website',
       'competitions',
+      'tax',
+      'meetings',
+      'helpers',
+      'material',
+      'bookings',
     ])
     await waitFor(() => expect(document.getElementById(termAnchor('mandate'))).not.toBeNull())
     for (const k of Object.keys(TERMS))
@@ -615,6 +622,77 @@ describe('Prüflisten', () => {
     expect(items[1].text).toBe('1 offene Zuwendung ohne Anschrift.')
     expect(items[2].why).toBe('donation_goods')
     expect(items.filter((c) => c.info).map((c) => c.key)).toEqual(['goods_single', 'fees'])
+  })
+
+  it('12: Prüfliste vor der Einladung zur Versammlung', () => {
+    const item = (title: string, type: string, description = '') => ({ title, type, description })
+    // Frist bis einschließlich zum letzten Tag
+    const onTime = meetingInviteChecks({ inviteBy: '2027-02-28', today: '2027-02-28', agenda: [] })
+    expect(onTime.map((c) => [c.key, c.ok])).toEqual([
+      ['deadline', true],
+      ['agenda', false],
+    ])
+    const items = meetingInviteChecks({
+      inviteBy: '2027-02-28',
+      today: '2027-03-01',
+      agenda: [
+        item('Bericht des Vorstands', 'report'),
+        item('Änderung der Satzung § 5', 'resolution'),
+        item('Wahl des Kassierers', 'election', 'Amtszeit 2 Jahre'),
+      ],
+    })
+    expect(items.map((c) => [c.key, c.ok])).toEqual([
+      ['deadline', false],
+      ['agenda', true],
+      ['subjects', false],
+      ['statute', true],
+    ])
+    expect(items[0].why).toBe('meeting_invite')
+    expect(items[2].text).toBe('1 Beschluss- oder Wahlpunkt ohne Erläuterung.')
+    expect(items[3].info).toBe(true)
+  })
+
+  it('12: Prüfliste vor dem Abschluss der Kassenprüfung', () => {
+    const done = {
+      auditors: 'Erika Muster, Max Beispiel',
+      recommendation: 'discharge',
+      findings: '',
+      checks: [{ result: 'ok' }, { result: 'na' }],
+      samples: [{ result: 'ok' }],
+      accounts: [{ statement_balance: '812.40', difference: '0.00', note: '' }],
+    }
+    expect(auditCloseChecks(done).every((c) => c.ok)).toBe(true)
+    expect(auditCloseChecks(done).map((c) => c.key)).toEqual([
+      'checks',
+      'accounts',
+      'samples',
+      'auditors',
+      'recommendation',
+    ])
+    const items = auditCloseChecks({
+      ...done,
+      auditors: ' ',
+      recommendation: '',
+      checks: [{ result: 'issue' }, { result: '' }],
+      samples: [{ result: '' }, { result: '' }],
+      accounts: [{ statement_balance: '800.00', difference: '-12.40', note: '' }],
+    })
+    expect(items.map((c) => [c.key, c.ok])).toEqual([
+      ['checks', false],
+      ['accounts', false],
+      ['samples', false],
+      ['findings', false],
+      ['auditors', false],
+      ['recommendation', false],
+    ])
+    expect(items[1].text).toBe('1 Differenz ohne Anmerkung.')
+    expect(items[2].text).toBe('2 Stichproben sind noch nicht geprüft.')
+    // eine erklärte Differenz ist in Ordnung
+    const explained = auditCloseChecks({
+      ...done,
+      accounts: [{ statement_balance: '800.00', difference: '-12.40', note: 'Gebühr Dezember' }],
+    })
+    expect(explained.find((c) => c.key === 'accounts')!.ok).toBe(true)
   })
 
   it('12: Bankarbeitstage ohne Wochenende und TARGET-Feiertage', () => {

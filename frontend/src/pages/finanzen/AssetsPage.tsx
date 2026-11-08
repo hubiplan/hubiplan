@@ -9,6 +9,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { Alert, Field, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 
 function methodOptions(): { value: AssetMethod; label: string }[] {
@@ -274,6 +275,7 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
   return (
     <div className="stack">
       <h2 className="section-heading">{t('Anlagenverzeichnis')}</h2>
+      <Why k="asset_method" />
       <div className="card card-wide filters">
         <label>
           {t('Geschäftsjahr')}{' '}
@@ -327,9 +329,13 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
                 <th>{t('Bezeichnung')}</th>
                 <th>{t('Anschaffung')}</th>
                 <th className="num">{t('Anschaffungskosten')}</th>
-                <th>{t('Abschreibung')}</th>
+                <th>
+                  <Term k="depreciation">{t('Abschreibung')}</Term>
+                </th>
                 <th className="num">{t('AfA {y}', { y: data.label })}</th>
-                <th className="num">{t('Buchwert am Jahresende')}</th>
+                <th className="num">
+                  <Term k="book_value">{t('Buchwert')}</Term> {t('am Jahresende')}
+                </th>
                 <th />
               </tr>
             </thead>

@@ -488,7 +488,11 @@ function MandatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
                   <td>{m.payer_name}</td>
                   <td className="small">
                     {m.reference}
-                    {m.scheme === 'B2B' && <div className="muted">{m.scheme_label}</div>}
+                    {m.scheme === 'B2B' && (
+                      <div className="muted">
+                        <Term k="b2b_debit">{m.scheme_label}</Term>
+                      </div>
+                    )}
                   </td>
                   <td>
                     {m.holder}
@@ -663,6 +667,7 @@ function MandateForm({
           </SelectField>
         )}
       </div>
+      {b2bAllowed && <Why k="b2b_scheme" />}
       <p className="muted small">
         {t(
           'Das unterschriebene Formular bitte aufbewahren. Ein neues Mandat ersetzt ein älteres des gleichen Zahlers.',
