@@ -66,10 +66,10 @@ export function SubNavList({
                 )
               }}
             >
+              <span>{b.label}</span>
               <span className="sidebar-group-caret" aria-hidden="true">
                 ▸
               </span>
-              <span>{b.label}</span>
             </button>
             <ul className="sidebar-sub sidebar-group-items" id={listId} hidden={!open}>
               {renderItems(b.nodes, 1)}

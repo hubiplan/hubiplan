@@ -4943,7 +4943,7 @@ label:has(> .file-input:focus-visible) {
   gap: 0.4rem;
   width: 100%;
   margin: 0;
-  padding: 0.35rem 0.8rem 0.35rem 0.4rem;
+  padding: 0.35rem 0.8rem;
   border: 0;
   border-radius: var(--radius);
   background: none;
@@ -4962,6 +4962,7 @@ label:has(> .file-input:focus-visible) {
 
 .sidebar-group-caret {
   display: inline-block;
+  margin-left: auto;
   width: 0.8rem;
   font-size: 0.75rem;
   transition: transform 0.15s;
@@ -4969,6 +4970,10 @@ label:has(> .file-input:focus-visible) {
 
 .sidebar-group-toggle[aria-expanded='true'] .sidebar-group-caret {
   transform: rotate(90deg);
+}
+
+.sidebar-nav-group.current > .sidebar-group-toggle {
+  background: color-mix(in srgb, var(--sidebar-active-bg) 55%, transparent);
 }
 
 .sidebar-sub .sidebar-group-items {
