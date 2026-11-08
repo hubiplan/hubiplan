@@ -11,6 +11,6 @@ stichworte: [calendar, subscription, iCal, phone, Outlook]
 2. In the calendar subscription section, click **Create personal link** and then **Copy link**.
 3. Add the link in your calendar as “subscribe to calendar” (internet calendar), for example on your phone, in Outlook or Thunderbird.
 
-The link is personal. Don't share it; with “Create new link” you invalidate the old one.
+The link is personal. Don't share it; with “Create new link” you invalidate the old one. HUBIplan shows the link only right after it is created and does not store it in readable form. If you need it again later, create a new link and add it to your calendar again.
 
 ![Starting point: See events in your own calendar (subscription)](bild:kalender-abonnieren)

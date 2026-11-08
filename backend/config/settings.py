@@ -470,8 +470,9 @@ FILE_UPLOAD_TEMP_DIR = os.environ.get("FILE_UPLOAD_TEMP_DIR") or None
 CLAMD_SOCKET = os.environ.get("CLAMD_SOCKET", "")
 CLAMD_MAX_BYTES = int(os.environ.get("CLAMD_MAX_BYTES", str(25 * 1024 * 1024 - 64 * 1024)))
 CLAMD_TIMEOUT = int(os.environ.get("CLAMD_TIMEOUT", "60"))
-# Rundschreiben-Anhänge und öffentliche Dokumente nur geprüft weitergeben (FQ16)
-VIRUS_SCAN_REQUIRED = os.environ.get("VIRUS_SCAN_REQUIRED", "") == "1"
+# Rundschreiben-Anhänge und öffentliche Dokumente nur geprüft weitergeben (FQ16). Pflicht,
+# sobald clamd eingerichtet ist (Gesamtaudit 08.11., F-02); abschalten nur mit "0".
+VIRUS_SCAN_REQUIRED = os.environ.get("VIRUS_SCAN_REQUIRED", "1" if CLAMD_SOCKET else "") == "1"
 FILE_UPLOAD_HANDLERS = [
     "core.virenscan.ClamavUploadHandler",
     "django.core.files.uploadhandler.MemoryFileUploadHandler",

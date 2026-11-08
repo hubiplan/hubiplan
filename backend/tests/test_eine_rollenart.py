@@ -247,4 +247,6 @@ def _pruefen(club, unit, membership, circular, cs, gone_cs):
     with connection.cursor() as cursor:
         tables = set(connection.introspection.table_names(cursor))
     known = {m._meta.db_table for m in live.get_models(include_auto_created=True)}
-    assert tables - known <= {"django_migrations"}, tables - known
+    # Freigaben und Testdatum des Kassenschutzes nur in SQL (finance/0032), ohne Rechte der App
+    allowed = {"django_migrations", "finance_gobd_freigabe", "finance_gobd_testdatum"}
+    assert tables - known <= allowed, tables - known

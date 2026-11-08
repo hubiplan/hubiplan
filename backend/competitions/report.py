@@ -131,7 +131,8 @@ def pdf(comp: Competition) -> bytes:
                 Paragraph(
                     "Stechen offen: "
                     + "; ".join(
-                        f"Platz {t['place']}: {', '.join(t['names'])}" for t in block["open"]
+                        f"Platz {t['place']}: {escape(', '.join(t['names']))}"
+                        for t in block["open"]
                     ),
                     st["small"],
                 )
