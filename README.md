@@ -16,13 +16,14 @@ einzeln ein- und ausschalten.
 > receipts) and the developer documentation are in German. Issues, questions and security
 > reports in English are welcome.
 
-Zu HUBIplan gehören drei Repositories:
+Zu HUBIplan gehören vier Repositories:
 
 | Repository | Inhalt |
 | --- | --- |
 | **hubiplan** (dieses) | die Vereinsverwaltung: Backend, Oberfläche, Betrieb |
 | [hubiplan-website](https://github.com/hubiplan/hubiplan-website) | öffentliche Vereinswebseiten aus den Daten von HUBIplan |
 | [hubiplan-android](https://github.com/hubiplan/hubiplan-android) | Android-App für Mitglieder, Vorstand und Kasse |
+| [hubiplan-website-product](https://github.com/hubiplan/hubiplan-website-product) | Produktwebseite, die HUBIplan vorstellt (statische Seiten) |
 
 ## Inhalt
 
@@ -40,49 +41,61 @@ Zu HUBIplan gehören drei Repositories:
 
 ## Funktionen
 
+Die Funktionen sind in **Module** gegliedert. Die Plattform gibt sie je Verein frei, der Verein
+schaltet sie unter Einstellungen › Module ein und aus und kann sie für einzelne Untereinheiten
+ausblenden; ein Dachverband kann Module an seine Vereine weitergeben
+([docs/module.md](docs/module.md)). Vorlagen beim Anlegen schlagen passende Module vor, etwa für
+Schützenverein, Musikverein oder Sportverein.
+
 **Mitglieder**
 - Mitgliedschaften mit Zeiträumen und selbst definierten Mitgliedsarten (z. B. „an
   Dachverband melden“, „aktiv“, „zählt für die Mitgliedsdauer“)
 - Aufnahme mit Dublettenprüfung im Dachverband, Austritt, Wiedereintritt, Wechsel der
   Untereinheit oder des Vereins, Löschfrist
+- **Organisationen als Mitglieder** (Firmen, Vereine, Behörden): Rechtsform, Ansprechpartner
+  mit eigenem Zugang, Rechnungsanschrift, Beitrag nach Größe, Firmenlastschrift (SEPA B2B)
 - Zusatzfelder (auch Jahreszeiträume), Mitgliederfotos mit Einwilligung
 - Ehrungen, Mitgliedsdauer, Jubiläen und Geburtstage, Mitgliederentwicklung
-- Würden (z. B. Königinnen und Könige) mit Chronik und Excel-Import, Ämter mit Chronik
+- Würden (z. B. Königinnen und Könige) mit Chronik und Excel-Import, Ämter mit Chronik,
+  Vereinschronik als Zeitleiste
 - Änderungsmeldungen der Mitglieder, die der Vorstand freigibt
-- Mitgliedsausweis mit QR-Code
-- Optionaler Export nach Google Wallet und Apple Wallet (`.pkpass`, [Einrichtung](docs/wallet.md))
+- Mitgliedsausweis mit QR-Code, optional für Google Wallet und Apple Wallet
+  (`.pkpass`, [Einrichtung](docs/wallet.md))
 - Import aus Excel, Export als Excel und PDF, Datenübernahme als JSON
 - Autospeichern, Rückgängig, Papierkorb und Änderungsprotokoll
 
 **Zugänge und Rechte**
 - Anmeldung mit E-Mail und Passwort, Zwei-Faktor-Anmeldung (TOTP), Einladungen statt
-  Startpasswörtern
-- Rollen mit frei wählbaren Rechten je Einheit; eine Person kann mehrere Rollen haben
+  Startpasswörtern; Pflicht-2FA für weitreichende Rechte (z. B. Rollenverwaltung, Kasse,
+  alle Mitglieder lesen)
+- Rollen mit einer Stufe je Bereich („kein Zugriff“, „lesen“, „bearbeiten“) und Zusatzrechten,
+  je Einheit; eine Person kann mehrere Rollen haben ([docs/berechtigungen.md](docs/berechtigungen.md))
 - „Ansicht als Rolle“: HUBIplan nur lesend so ansehen, wie eine Rolle es sieht, nie mit mehr
   als den eigenen Rechten ([docs/ansicht-als-rolle.md](docs/ansicht-als-rolle.md))
 - Anmeldung an der Nextcloud des Vereins mit dem HUBIplan-Konto (OpenID Connect,
   [docs/nextcloud.md](docs/nextcloud.md))
-- Mitgliederbereich („Mein Bereich“), Bereich für Untereinheiten, Zugänge für Kassierer
-  und Kassenprüfer
+- „Mein Bereich“ für Mitglieder, Arbeitsbereich für Untereinheiten, Zugänge für Kassierer
+  und Kassenprüfer; „Zu erledigen“ sammelt offene Punkte aus allen Bereichen
 
-**Beiträge und Finanzen**
-- Beitragssätze je Mitgliedsart und Altersstufe, Beitragslauf mit Rechnungen an Mitglieder
-  und Sammelrechnungen an Untereinheiten, Verbandsbeitrag des Dachverbands
-- Rechnungen als PDF mit QR-Code, Versand per E-Mail, Mahnstufen
-- SEPA-Lastschrift mit Mandaten, Lastschriftdatei (pain.008) und Vorabankündigung
-- Kasse mit Konten, Kategorien, Belegen, Projekten und eigenem Geschäftsjahr;
-  Kontoauszüge (CAMT.053) werden eingelesen und offenen Posten zugeordnet
-- Digitale Quittungen mit Unterschrift auf dem Display, ZIP-Export für die Prüfung nach
-  GoBD ([Verfahrensdokumentation](docs/verfahrensdokumentation-kasse.md))
-- Zuwendungsbestätigungen nach amtlichem Muster, Kassenbericht, Jahresabschluss mit Sperre
-
-**Termine**
+**Vereinsleben**
 - Kalender für Dachverband, Verein und Untereinheiten mit Serienterminen, Anhängen und
-  Sichtbarkeit je Termin
-- Zu- und Absagen mit Anmeldeschluss, Höchstzahl und Begleitpersonen, Teilnehmerlisten
-- Einladung, Änderung und Erinnerung per E-Mail, Jahresprogramm als PDF, Kalender-Abo (iCal)
+  Sichtbarkeit je Termin; fremde Kalender (Vereinsplaner, iCal) übernehmen
+  ([docs/fremde-kalender.md](docs/fremde-kalender.md))
+- Zu- und Absagen mit Anmeldeschluss, Höchstzahl und Begleitpersonen, Teilnehmerlisten;
+  Einladung, Änderung und Erinnerung per E-Mail, Jahresprogramm als PDF, Kalender-Abo (iCal)
+- Aufgaben mit Fristen, Serien, Anhängen und Freigaben über Ebenen
+  ([docs/aufgaben.md](docs/aufgaben.md))
+- Versammlungen und Sitzungen: Einladung mit Tagesordnung, Anträge, Anwesenheit, Protokoll,
+  Beschlussbuch und Wahlen, die direkt ins Amt übernommen werden
+  ([docs/versammlungen.md](docs/versammlungen.md))
+- Helferdienste: Schichtpläne mit Selbsteintragung, Kontingenten für Untereinheiten und
+  Nachweis geleisteter Dienste ([docs/helferdienste.md](docs/helferdienste.md))
+- Material, Räume und Anlagen mit Standort, Zustand und Verlauf; Belegung mit Anfragen aus
+  dem Mitgliederbereich, Wochenansicht und Kalender-Abo ([docs/material.md](docs/material.md))
+- Musik: Auftritte mit Besetzung, Verfügbarkeiten und Abrechnung, Proben, Programme und ein
+  Notenarchiv mit Katalogimport ([docs/musik.md](docs/musik.md))
 
-**Wettbewerbe und Meldungen** (Module, je Einheit freizuschalten)
+**Wettbewerbe und Meldungen**
 - Schießen und andere Wettbewerbe mit Einzel- und Zugwertung, Stechen, Vogelschießen mit
   Pfändern, Auszeichnungen, Wanderpokale und Reihen über mehrere Jahre
 - Erfassen auch ohne Netz, Standmodus für Tablet und Handy mit eigenem Standzugang,
@@ -94,6 +107,32 @@ Zu HUBIplan gehören drei Repositories:
   die eigenen Untereinheiten ([docs/wettbewerbe.md](docs/wettbewerbe.md),
   [docs/meldungen.md](docs/meldungen.md))
 
+**Beiträge und Rechnungen**
+- Beitragssätze je Mitgliedsart und Altersstufe, Beitragslauf mit Rechnungen an Mitglieder
+  und Sammelrechnungen an Untereinheiten, Verbandsbeitrag des Dachverbands
+- Rechnungen als PDF mit QR-Code, Versand per E-Mail, Mahnstufen
+- SEPA-Lastschrift mit Mandaten, Lastschriftdatei (pain.008) und Vorabankündigung
+- Leistungsrechnungen an Geschäftspartner, E-Rechnungen (XRechnung, ZUGFeRD) erstellen und
+  empfangen, Beitragsrechnungen als XRechnung an Mitglieder mit Leitweg-ID
+  ([docs/e-rechnungen.md](docs/e-rechnungen.md))
+
+**Kasse, Steuern und Gemeinnützigkeit**
+- Kasse mit Konten, Kategorien (mit Vorlagen), Splitbuchungen, Belegen, Projekten und eigenem
+  Geschäftsjahr; Kontoauszüge (CAMT.053) werden eingelesen und offenen Posten zugeordnet
+  ([docs/kontoauszug.md](docs/kontoauszug.md))
+- Digitale Quittungen mit Unterschrift auf dem Display, Zählprotokoll, DATEV-Export,
+  ZIP-Export für die Prüfung nach GoBD
+  ([Verfahrensdokumentation](docs/verfahrensdokumentation-kasse.md))
+- Kassenprüfung als Ablauf: Prüfauftrag, Stichproben, Kontenabgleich, Prüfbericht
+- Kassenbericht, Jahresabschluss mit Sperre, Vermögensübersicht, Anlagenverzeichnis mit
+  Abschreibung
+- Steuerliche Auswertung nach den vier Bereichen eines gemeinnützigen Vereins mit
+  Freigrenzen-Ampel, Umsatzsteuer und Kleinunternehmerregelung; Rücklagen mit Höchstbetrag,
+  zweckgebundene Spenden und Mittelverwendungsrechnung
+- Übungsleiterfreibetrag und Ehrenamtspauschale, Künstlersozialabgabe als Meldevorlage
+- Zuwendungsbestätigungen nach amtlichem Muster und vereinfachter Zuwendungsnachweis
+  ([docs/zuwendungen.md](docs/zuwendungen.md))
+
 **Kommunikation und Dokumente**
 - Rundschreiben als E-Mail, Serienbrief, Mitteilung im Mitgliederbereich oder Push in die App
 - Mailverteiler, Postausgang mit Versand über SMTP
@@ -102,8 +141,9 @@ Zu HUBIplan gehören drei Repositories:
 - Impressum und Datenschutzhinweise je Einheit
 
 **Webseite und App**
-- Inhalte der Vereinswebseite (Startseite aus Bausteinen, Texte, Bilder, Chronik, eigene
-  Beiträge von Instagram und Facebook) mit Entwurf, Vorschau und Veröffentlichen
+- Inhalte der Vereinswebseite (Startseite aus Bausteinen, Texte, Bilder und Alben, Chronik,
+  Belegung, eigene Beiträge von Instagram und Facebook) mit Entwurf, Vorschau und
+  Veröffentlichen; Gestaltung über Designpakete ([docs/designpakete.md](docs/designpakete.md))
 - öffentliche, versionierte Schnittstelle für
   [hubiplan-website](https://github.com/hubiplan/hubiplan-website)
 - Schnittstelle für die [Android-App](https://github.com/hubiplan/hubiplan-android):
@@ -113,8 +153,9 @@ Zu HUBIplan gehören drei Repositories:
 - vertrauliche Felder (Kontaktdaten, Geburtsdatum, Bankverbindungen, SEPA-Mandate,
   Zusatzfelder), private Dateien, Änderungsprotokoll und Postausgang liegen verschlüsselt
   mit einem Schlüssel je Verein ([docs/betrieb.md](docs/betrieb.md#verschlüsselung-der-daten))
-- Mandantentrennung zusätzlich in der Datenbank (Row-Level Security), Einwilligungen für
-  Fotos und Veröffentlichung, Löschfristen
+- Mandantentrennung zusätzlich in der Datenbank (Row-Level Security), Kasse und Protokoll
+  dort schreibgeschützt; Einwilligungen für Fotos und Veröffentlichung, Löschfristen
+  ([docs/aufbewahrung.md](docs/aufbewahrung.md))
 
 **Sprache, Hilfe und Lernhilfen**
 - Oberfläche, Hinweis-Mails und Push auf Deutsch oder Englisch, je Benutzer wählbar, sobald
@@ -141,6 +182,11 @@ Alle Einheiten sind vom selben Typ; Schalter legen fest, was eine Einheit kann (
 Mitglieder, Kasse, Rechnungen, Zugänge, Webseite). Jede Einheit hat eigene Rollen und ein
 eigenes Erscheinungsbild (Farben, Logo oder Wappen). Die Trennung der Mandanten sichert neben
 der Anwendung auch PostgreSQL Row-Level Security ab.
+
+**Eigener Auftritt der Instanz:** Name, Farben, Logo und Symbol der Instanz sind einstellbar
+und erscheinen auch in den Mails. Eine Einheit kann zusätzlich eigene Adressen bekommen, unter
+denen Anmeldeseite und Mail-Links ihr Erscheinungsbild tragen
+([docs/betrieb.md](docs/betrieb.md#weitere-adressen-je-einheit)).
 
 **Verbund (optional):** Ein Verein kann auf einer anderen HUBIplan-Instanz laufen als sein
 Dachverband. Die Instanzen koppeln sich mit einem Einmalcode und tauschen nur freigegebene
@@ -270,6 +316,12 @@ DEPLOY_HOST=root@hubiplan.example.org SITE_HOST=hubiplan.example.org deploy/depl
   ([docs/echtbetrieb.md](docs/echtbetrieb.md), Beispiel mit HestiaCP).
 - Mit Anmeldung als normaler Benutzer und `sudo`: `DEPLOY_SUDO=1`.
 
+Releases heißen `JJJJ.MM.N`, sind signiert und stehen mit ihren Änderungen in
+[CHANGELOG.md](CHANGELOG.md) ([docs/releases.md](docs/releases.md)). Wer möchte, spielt neue
+Releases aus der Oberfläche heraus ein; ein Aktualisierer auf dem Server prüft vorher die
+Signatur ([Selbstupdate](docs/betrieb.md#selbstupdate), standardmäßig aus). Jedes Ausrollen
+behält einen Rückweg zur vorigen Fassung (`deploy/zurueck.sh`).
+
 Im Betrieb laufen die Dienste `web` (Caddy), `backend` (gunicorn), `worker` und `beat`
 (Celery), `backup` (tägliches, mit age verschlüsseltes Backup mit Rücksicherungstest),
 `postgres` und `redis`. Die Container laufen schreibgeschützt und ohne Zusatzrechte; die
@@ -289,9 +341,9 @@ backend/
   core/            Health-Check, CSRF, /api/me/, Row-Level Security, Verschlüsselung, Dateiprüfung
   accounts/        Benutzerkonten (E-Mail als Login)
   organizations/   Plattform und Einheiten, Impressum, Demodaten (seed_testdata)
-  access/          Rollen und Rechte
+  access/          Rollen und Rechte, Modulverzeichnis
   oidc/            Anmeldedienst (OpenID Connect) für die Nextcloud
-  members/         Mitglieder, Mitgliedschaften, Mitgliedsarten, Jubiläen
+  members/         Mitglieder (Personen und Organisationen), Mitgliedschaften, Mitgliedsarten, Jubiläen
   customfields/    Zusatzfelder
   honors/          Würden und Chronik
   cards/           Mitgliedsausweise mit QR-Code
@@ -300,8 +352,8 @@ backend/
   changes/         Rückgängig und Papierkorb
   audit/           Änderungsprotokoll
   portal/          Mitgliederbereich, Bereich für Untereinheiten, Anmeldelinks
-  billing/         Beiträge, Beitragsläufe, Rechnungen, SEPA
-  finance/         Kasse, Projekte, Quittungen, Jahresabschluss, GoBD-Export
+  billing/         Beiträge, Beitragsläufe, Rechnungen, E-Rechnungen, SEPA
+  finance/         Kasse, Quittungen, Kassenprüfung, Steuern, Rücklagen, Anlagen, Zuwendungen, GoBD-Export
   events/          Termine, Zu- und Absagen, Kalender-Abos
   competitions/    Wettbewerbe, Standmodus, Scheiben und Fotoerkennung, Urkunden
   entries/         Meldungen und Ausschreibungen
@@ -314,6 +366,12 @@ backend/
   peering/         Verbund mit anderen Instanzen
   devices/         App-Geräte, Push, Schnittstelle /api/app/v1/
   pushgateway/     eigenständiges Push-Gateway für die Play-Fassung der App
+  todos/           Aufgaben
+  meetings/        Versammlungen, Protokolle, Beschlussbuch
+  helpers/         Helferdienste und Schichtpläne
+  materials/       Material, Räume und Anlagen
+  bookings/        Belegung und Anfragen
+  music/           Musik: Auftritte, Besetzung, Proben, Notenarchiv
   tests/           pytest
 frontend/
   src/api/         Aufrufe ans Backend
@@ -324,8 +382,8 @@ frontend/
   src/i18n/        englische Texte der Oberfläche
   src/theme/       Farben und Logo als CSS-Variablen
   lizenzen/        erzeugt die Lizenzliste der Browser-Bibliotheken
-deploy/            Caddy, Ausrollen, Servereinrichtung, Backup, HestiaCP-Vorlagen
-scripts/           test.sh (vollständiger Test), testplatz.sh (Testplätze), hilfe-bilder.sh (Bilder der Hilfe)
+deploy/            Caddy, Ausrollen und Rückweg, Servereinrichtung, Backup, Aktualisierer, HestiaCP-Vorlagen
+scripts/           test.sh (vollständiger Test), testplatz.sh (Testplätze), hilfe-bilder.sh (Bilder der Hilfe), release.sh
 docs/              Betrieb und Beschreibungen einzelner Bereiche
 ```
 
@@ -334,6 +392,9 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | Datei | Inhalt |
 | --- | --- |
 | [docs/konzept.md](docs/konzept.md) | Konzept in Kurzfassung: Ebenen, Rollen, Mitgliedschaften |
+| [docs/begriffe.md](docs/begriffe.md) | Begriffe in Oberfläche, App und Hilfe |
+| [docs/module.md](docs/module.md) | Module: Freigabe, Einschalten, Vorlagen |
+| [docs/berechtigungen.md](docs/berechtigungen.md) | Rollen: Bereiche mit drei Stufen, Zusatzrechte |
 | [docs/betrieb.md](docs/betrieb.md) | Dienste, Geheimnisse, Backups, Mail, Updates, Notfall |
 | [docs/echtbetrieb.md](docs/echtbetrieb.md) | Betrieb hinter einem vorhandenen Webserver (HestiaCP) |
 | [docs/testserver.md](docs/testserver.md) | Testserver, Testplätze, Demodaten |
@@ -345,11 +406,18 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/nextcloud.md](docs/nextcloud.md) | Anmeldung an der Nextcloud mit dem HUBIplan-Konto |
 | [docs/app.md](docs/app.md) | Schnittstelle für die App, Push |
 | [docs/kontoauszug.md](docs/kontoauszug.md) | Kontoauszüge (CAMT.053) einlesen |
+| [docs/e-rechnungen.md](docs/e-rechnungen.md) | Geschäftspartner, Leistungsrechnungen, E-Rechnungen |
 | [docs/verfahrensdokumentation-kasse.md](docs/verfahrensdokumentation-kasse.md) | Verfahrensdokumentation Kasse und Quittungen (GoBD) |
 | [docs/aufbewahrung.md](docs/aufbewahrung.md) | Aufbewahrung und Löschung je Datenart (Rechtsgrundlage, Fristbeginn) |
 | [docs/zuwendungen.md](docs/zuwendungen.md) | Zuwendungsbestätigungen |
 | [docs/rueckgaengig.md](docs/rueckgaengig.md) | Autospeichern, Rückgängig, Papierkorb |
 | [docs/rundschreiben.md](docs/rundschreiben.md) | Rundschreiben |
+| [docs/aufgaben.md](docs/aufgaben.md) | Aufgaben |
+| [docs/fremde-kalender.md](docs/fremde-kalender.md) | Fremde Kalender (Vereinsplaner, iCal) |
+| [docs/versammlungen.md](docs/versammlungen.md) | Versammlungen, Protokolle, Beschlussbuch |
+| [docs/helferdienste.md](docs/helferdienste.md) | Helferdienste und Schichtpläne |
+| [docs/material.md](docs/material.md), [docs/konzept-materialverwaltung.md](docs/konzept-materialverwaltung.md) | Material, Räume, Anlagen und Belegung |
+| [docs/musik.md](docs/musik.md) | Musik: Auftritte, Besetzung, Proben, Notenarchiv |
 | [docs/briefvorlage.md](docs/briefvorlage.md) | Briefbogen und Briefvorlage |
 | [docs/dokumente.md](docs/dokumente.md) | Dokumentenablage und Satzung |
 | [docs/wettbewerbe.md](docs/wettbewerbe.md) | Wettbewerbe, Standmodus, Scheiben und Fotoerkennung |
@@ -357,9 +425,13 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/ehrungen.md](docs/ehrungen.md), [docs/wuerden.md](docs/wuerden.md), [docs/aemter.md](docs/aemter.md) | Ehrungen, Würden, Ämter |
 | [docs/impressum.md](docs/impressum.md) | Impressum und Datenschutzhinweise |
 | [docs/social-media-beitraege.md](docs/social-media-beitraege.md) | Social-Media-Beiträge auf der Webseite |
+| [docs/designpakete.md](docs/designpakete.md) | Designpakete der Vereinswebseite |
+| [docs/wallet.md](docs/wallet.md) | Mitgliedsausweis in Google Wallet und Apple Wallet |
+| [docs/recovery-widerruf.md](docs/recovery-widerruf.md) | Passwort- und 2FA-Wechsel, Wiederherstellung |
 | [docs/hilfe.md](docs/hilfe.md) | Hilfe: Anleitungen, Seitenhilfen, Bildschirmfotos |
 | [docs/lernhilfen.md](docs/lernhilfen.md) | Lernhilfen, Glossar, Prüflisten |
 | [docs/uebersetzung.md](docs/uebersetzung.md), [docs/glossar-en.md](docs/glossar-en.md) | Deutsch und Englisch, Begriffe |
+| [docs/ui-rueckmeldungen.md](docs/ui-rueckmeldungen.md) | Rückmeldungen nach Aktionen in der Oberfläche |
 | [docs/lizenzen.md](docs/lizenzen.md) | Lizenzen der Abhängigkeiten, Pflichten bei der Weitergabe |
 
 ## Mitwirken

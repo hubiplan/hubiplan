@@ -31,23 +31,31 @@ Hilfreich sind:
 
 HUBIplan wird fortlaufend aus `main` entwickelt und in Releases (`JJJJ.MM.N`, siehe
 [docs/releases.md](docs/releases.md)) veröffentlicht; es gibt keine Release-Zweige.
-Korrekturen gibt es für das neueste Release und den aktuellen Stand von `main`. Wer HUBIplan selbst betreibt, sollte regelmäßig
-aktualisieren ([docs/betrieb.md](docs/betrieb.md#updates)).
+Korrekturen gibt es für das neueste Release und den aktuellen Stand von `main`. Wer HUBIplan
+selbst betreibt, sollte regelmäßig aktualisieren ([docs/betrieb.md](docs/betrieb.md#updates)),
+z. B. per [Selbstupdate](docs/betrieb.md#selbstupdate).
 
 ## Umfang
 
 Gemeint ist der Code in diesem Repository: Backend, Oberfläche, Schnittstellen für Webseite
-und App, Push-Gateway, Verbund, Anmeldedienst für die Nextcloud sowie die Skripte und
-Vorlagen für Ausrollen und Backup. Besonders interessant sind:
+und App, Push-Gateway, Verbund, Anmeldedienst für die Nextcloud, Aktualisierer für das
+Selbstupdate sowie die Skripte und Vorlagen für Ausrollen und Backup. Besonders interessant sind:
 
 - Zugriff auf Daten fremder Vereine oder Einheiten (Mandantentrennung, Row-Level Security),
 - Rechte, die eine Rolle nicht haben dürfte, oder Umgehung der Zwei-Faktor-Anmeldung,
+- Zugriff auf Funktionen eines Moduls, das für die Einheit nicht freigegeben oder
+  ausgeschaltet ist,
+- Zugänge von Ansprechpartnern einer Organisation, die mehr sehen als ihre Organisation,
 - Änderungen während „Ansicht als Rolle“ oder mehr Rechte, als man selbst hat,
 - Daten in der öffentlichen Schnittstelle, die nicht freigegeben sind,
 - Schwächen im Verbund zwischen Instanzen oder bei Geräteschlüsseln der App,
 - Schwächen der Anmeldung per OpenID Connect (z. B. Weiterleitungen, Token für fremde
   Konten oder Nextclouds),
 - Zugriff über einen Standzugang der Wettbewerbe auf mehr als den eigenen Wettbewerb,
+- nachträgliche Änderungen an festgeschriebenen Kassenbuchungen, Jahresabschlüssen,
+  freigegebenen Protokollen oder dem Änderungsprotokoll,
+- Zertifikate oder Anmeldeseiten für Adressen, die keiner Einheit zugeordnet sind,
+- ein Selbstupdate mit einem Stand, der nicht signiert ist oder älter als der laufende,
 - verschlüsselt abgelegte Felder oder Dateien, die im Klartext (z. B. in Logs, Exporten oder
   Backups) oder mit dem Schlüssel eines anderen Vereins lesbar sind.
 
@@ -72,7 +80,7 @@ Schritte zu erwarten.
 Please do **not** open a public issue. Report vulnerabilities privately via
 [GitHub private vulnerability reporting](https://github.com/hubiplan/hubiplan/security/advisories/new).
 We usually acknowledge reports within 7 days and ask you to keep details private until a fix
-is available, for at most 90 days. Fixes are made on `main`; there are no release branches.
+is available, for at most 90 days. Fixes go into `main` and the latest release (`YYYY.MM.N`); there are no release branches.
 Test only against your own installation with made-up data (`docker compose up` plus
 `seed_testdata`), never against other people's instances or real member data. Good-faith
 research that follows these rules will not face legal action from us.
