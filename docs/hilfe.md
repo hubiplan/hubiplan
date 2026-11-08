@@ -79,7 +79,7 @@ scripts/hilfe-bilder.sh              # alle Bilder
 scripts/hilfe-bilder.sh konto-sprache # nur einzelne
 ```
 
-Das Skript läuft nur lokal (WSL auf Ralfs PC), belegt einen Testplatz, startet in Wegwerf-Containern
+Das Skript läuft nur lokal (Linux/WSL mit Docker), belegt einen Testplatz, startet in Wegwerf-Containern
 Datenbank, Backend mit den erfundenen Demodaten (`seed_testdata`, Englisch freigeschaltet) und die
 Oberfläche aus dem Arbeitsstand und fotografiert mit Playwright jede Stelle auf Deutsch und Englisch.
 Ergebnis: `frontend/public/hilfe-bilder/<sprache>/<name>.png`. Bilder ansehen, dann einchecken. Ändert

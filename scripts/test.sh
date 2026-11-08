@@ -14,9 +14,9 @@
 # Die Frontend-Prüfungen ohne Tests (Typen, Lint, Format) laufen gleichzeitig mit dem
 # Backend (TEST_PARALLEL=0: alles nacheinander).
 #
-# Regeln: Tests laufen nie auf dem Testserver. Höchstens drei Testläufe gleichzeitig
-# (alle Projekte), jeder höchstens 6 Kerne: das Skript holt sich einen Platz über
-# scripts/testplatz.sh und bindet alle Container an dessen Kerne.
+# Regeln: Tests laufen nie auf dem Testserver. Das Skript holt sich einen Testplatz über
+# scripts/testplatz.sh (Plätze und Kerne lokal eingestellt) und bindet alle Container
+# an dessen Kerne.
 set -euo pipefail
 
 # Release-Commit (docs/releases.md): Ändert ein Commit gegenüber seinem schon getesteten
@@ -110,7 +110,7 @@ REF="$COMMIT"
 SHA=$(git rev-parse --short "$COMMIT")
 TREE=$(git rev-parse "$COMMIT^{tree}")
 
-# Kerne vom Testplatz (höchstens 8); alle Container laufen nur auf dessen Kernen
+# Kerne vom Testplatz; alle Container laufen nur auf dessen Kernen
 WORKERS="$TEST_KERNE"
 CPUS="--cpuset-cpus=$TESTPLATZ_CPUS"
 PYTEST_ARGS="${*:--q}"

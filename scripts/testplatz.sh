@@ -3,28 +3,36 @@
 #
 #   testplatz [--kerne N] [--] Befehl [Argumente …]
 #
-# Regel: höchstens drei Testläufe gleichzeitig, jeder höchstens 6 Kerne, egal aus
-# welchem Projekt. testplatz wartet auf einen freien Platz, bindet den Befehl an
-# dessen Kerne und gibt ihm die Umgebungsvariablen
-#   TESTPLATZ=1|2|3      belegter Platz
+# testplatz wartet auf einen freien Platz, bindet den Befehl an dessen Kerne und gibt
+# ihm die Umgebungsvariablen
+#   TESTPLATZ=1…n        belegter Platz
 #   TEST_KERNE=N         so viele Kerne darf der Lauf nutzen (Worker, -n, --cpus …)
 #   TESTPLATZ_CPUS=a-b   die Kerne des Platzes (für docker run --cpuset-cpus)
 #
-# In WSL (Debian) hält es die Sperre selbst. Unter Windows (Git Bash) holt es den Platz
-# über WSL und lässt den Befehl unter Windows laufen, mit Prozessor-Affinität auf 6 Kerne.
+# Ohne Einstellung gibt es einen Platz mit allen Kernen. Wie viele Plätze und Kerne ein
+# Rechner hat, steht lokal in ~/.config/testplatz (nicht im Repo), z. B.
+#   PLAETZE=2
+#   KERNE=4
+# oder in den Umgebungsvariablen TESTPLATZ_PLAETZE und TESTPLATZ_KERNE.
 # Ist TESTPLATZ schon gesetzt, läuft der Befehl direkt (verschachtelte Aufrufe).
 #
-# Sperren: ~/.testplaetze/platz-1.lock bis platz-3.lock (in WSL). Ältere Skripte mit
-# der exklusiven Sperre ~/.hubiplan-tests.lock belegen alle Plätze: testplatz hält diese
-# Datei geteilt.
+# Unter Linux/WSL hält es die Sperren selbst (~/.testplaetze/platz-N.lock). Unter Windows
+# (Git Bash) holt es den Platz über WSL und lässt den Befehl unter Windows laufen, mit
+# Prozessor-Affinität auf die Kerne des Platzes. Ältere Skripte mit der exklusiven Sperre
+# ~/.hubiplan-tests.lock belegen alle Plätze: testplatz hält diese Datei geteilt.
 #
 # Installation (einmal, und nach Änderungen):
-#   WSL:      install -m 755 scripts/testplatz.sh ~/.local/bin/testplatz
-#   Git Bash: install -m 755 scripts/testplatz.sh ~/bin/testplatz
+#   Linux/WSL: install -m 755 scripts/testplatz.sh ~/.local/bin/testplatz
+#   Git Bash:  install -m 755 scripts/testplatz.sh ~/bin/testplatz
 set -euo pipefail
 
-MAX_KERNE=6
-PLAETZE=3
+PLAETZE=1
+KERNE=
+EINSTELLUNG="${TESTPLATZ_EINSTELLUNG:-${XDG_CONFIG_HOME:-$HOME/.config}/testplatz}"
+# shellcheck disable=SC1090
+[ -r "$EINSTELLUNG" ] && . "$EINSTELLUNG"
+PLAETZE="${TESTPLATZ_PLAETZE:-$PLAETZE}"
+MAX_KERNE="${TESTPLATZ_KERNE:-${KERNE:-$(nproc --all)}}"
 WSL_DISTRO="${TESTPLATZ_DISTRO:-Debian}"
 
 KERNE=$MAX_KERNE
@@ -38,7 +46,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 if [ $# -eq 0 ] && [ -z "$WIN_DIR" ]; then
-    sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
+    sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'
     exit 2
 fi
 [ "$KERNE" -gt "$MAX_KERNE" ] && KERNE=$MAX_KERNE
@@ -53,7 +61,7 @@ fi
 
 # --- Windows (Git Bash): Platz über WSL holen, Befehl unter Windows ausführen ---
 if [ "$(uname -o 2> /dev/null)" = "Msys" ]; then
-    TMPD="${TESTPLATZ_TMP:-/e/temp/testplatz}"
+    TMPD="${TESTPLATZ_TMP:-${TMPDIR:-/tmp}/testplatz}"
     mkdir -p "$TMPD"
     SKRIPT="$TMPD/lauf-$$.sh"
     {
@@ -97,11 +105,12 @@ while :; do
     sleep 3
 done
 
-# Kerne des Platzes: nebeneinander ab Kern 0 (Platz 1: 0–5, Platz 2: 6–11, Platz 3: 12–17).
+# Kerne des Platzes: nebeneinander ab Kern 0 (bei 6 Kernen: Platz 1 0–5, Platz 2 6–11 …).
 # Reichen die Kerne nicht, rückt der Platz ans Ende und teilt sich Kerne mit dem vorigen.
 N=$(nproc --all)
+[ "$MAX_KERNE" -gt "$N" ] && MAX_KERNE=$N
 [ "$KERNE" -gt "$N" ] && KERNE=$N
-start=$(( (PLATZ - 1) * KERNE ))
+start=$(( (PLATZ - 1) * MAX_KERNE ))
 [ $((start + KERNE)) -gt "$N" ] && start=$((N - KERNE))
 CPUS="$start-$((start + KERNE - 1))"
 export TESTPLATZ=$PLATZ TEST_KERNE=$KERNE TESTPLATZ_CPUS=$CPUS
@@ -112,7 +121,7 @@ export HUBIPLAN_TEST_LOCK="$DIR/innen-$PLATZ.lock"
 echo "testplatz: Platz $PLATZ, $KERNE Kerne ($CPUS)" >&2
 
 if [ -n "$WIN_DIR" ]; then
-    # Windows-Kerne: Platz 1 ab Kern 0, Platz 2 ab Kern 6, Platz 3 ab Kern 12
+    # Windows-Kerne: ebenfalls nebeneinander ab Kern 0
     start=$(( (PLATZ - 1) * MAX_KERNE ))
     export TESTPLATZ_MASKE=$(( ((1 << KERNE) - 1) << start ))
     export WSLENV="TESTPLATZ:TEST_KERNE:TESTPLATZ_CPUS:TESTPLATZ_MASKE${WSLENV:+:$WSLENV}"
