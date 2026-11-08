@@ -141,6 +141,9 @@ MAX_TEXT = 1000
 MAX_DIGITS = 15
 
 
+AMBIGUOUS_THOUSANDS = re.compile(r"[+-]?\d{1,3}(\.\d{3})+")
+
+
 def clean_scalar(field_type: str, value, choices: list | None = None, any_choice: bool = False):
     """Wert prüfen und in JSON-taugliche Form bringen. Leer = None.
 
@@ -161,6 +164,12 @@ def clean_scalar(field_type: str, value, choices: list | None = None, any_choice
     if field_type == "number":
         if isinstance(value, bool):
             raise ValidationError(gettext("Bitte eine Zahl angeben."))
+        # „1.000“ ist im Deutschen tausend, im Englischen eins: mehrdeutig, also ablehnen
+        # (Datenaudit 08.11. DA-06, FD-08)
+        if isinstance(value, str) and AMBIGUOUS_THOUSANDS.fullmatch(value.strip()):
+            raise ValidationError(
+                gettext("Bitte ohne Tausenderpunkt oder mit Komma angeben (z. B. 1000 oder 1,5).")
+            )
         try:
             number = Decimal(str(value).strip().replace(",", "."))
         except InvalidOperation as exc:

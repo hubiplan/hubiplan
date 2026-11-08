@@ -299,9 +299,7 @@ def issue(org, donations: list[Donation], user, *, signer_name: str = "") -> Don
     for d in donations:
         if problem := services.booking_donation_problem(d):
             raise ValidationError(
-                gettext("{problem} Bitte Zuwendung und Buchung abgleichen.").format(
-                    problem=problem
-                )
+                gettext("{problem} Bitte Zuwendung und Buchung abgleichen.").format(problem=problem)
             )
     if len({d.date.year for d in donations}) > 1:
         raise ValidationError(
@@ -376,9 +374,7 @@ def year_checks(org, year: int) -> dict:
         "goods_open": goods.count(),
         "fees_skipped": 0 if cfg.fees_allowed else open_.filter(kind=Donation.Kind.FEE).count(),
         "booking_mismatch": sum(
-            1
-            for d in open_.filter(booking__isnull=False)
-            if services.booking_donation_problem(d)
+            1 for d in open_.filter(booking__isnull=False) if services.booking_donation_problem(d)
         ),
     }
 

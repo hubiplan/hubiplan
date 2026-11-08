@@ -10,7 +10,8 @@ from pathlib import Path
 
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
+from django.db.models.functions import Coalesce, ExtractYear
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext
@@ -367,14 +368,27 @@ class ReignViewSet(_HonorsMixin, AuditMixin, viewsets.ModelViewSet):
             pid = int(params["person"])
             qs = qs.filter(Q(person_id=pid) | Q(companions__person_id=pid)).distinct()
         if params.get("jahr", "").isdigit():
-            qs = qs.filter(year=int(params["jahr"]))
+            # Auch Regentschaften mit Zeitraum statt Jahr (Datenaudit 08.11. DR-06)
+            year = int(params["jahr"])
+            qs = qs.filter(
+                Q(year=year)
+                | Q(year__lt=year, end_year__gte=year)
+                | Q(
+                    year__isnull=True,
+                    valid_from__year__lte=year,
+                )
+                & (Q(valid_until__isnull=True) | Q(valid_until__year__gte=year))
+            )
         if params.get("suche"):
             text = params["suche"].strip()
             qs = qs.filter(
                 Q(pk__in=name_ids(qs, text, fields=("name", "companions__name")))
                 | Q(note__icontains=text)
             ).distinct()
-        return qs
+        # Nach Jahr bzw. Beginn, leere Jahre nicht zuerst (Datenaudit 08.11. DR-06)
+        return qs.annotate(sort_year=Coalesce("year", ExtractYear("valid_from"))).order_by(
+            F("sort_year").desc(nulls_last=True), F("valid_from").desc(nulls_last=True), "-pk"
+        )
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()

@@ -346,9 +346,7 @@ class TestEinAustrittKorrigieren:
         )
         assert resp.status_code == 200, resp.json()
         with tenant_context(a["org"].pk):
-            starts = list(
-                self._membership(a).type_assignments.values_list("valid_from", flat=True)
-            )
+            starts = list(self._membership(a).type_assignments.values_list("valid_from", flat=True))
             assert starts == [datetime.date(2014, 1, 1)]
 
     def test_patch_nur_fuer_bemerkung(self, ausgetreten):
@@ -451,3 +449,92 @@ class TestMahnabstand:
             assert dunning_proposals(club, last.due_date) == []
             [(found, level)] = dunning_proposals(club, last.due_date + datetime.timedelta(days=1))
             assert found.pk == invoice.pk and level.level == 2
+
+
+# --- Schritt 6: Import, Export, Eingaben ---
+
+
+class TestImportExport:
+    def test_ungueltiges_datum_im_zusatzfeld_ist_zeilenfehler(self, orgs):
+        from types import SimpleNamespace
+
+        from customfields.models import FieldDefinition
+        from exchange import importer
+
+        org = orgs["a"]
+        with tenant_context(org.pk):
+            d = FieldDefinition.objects.create(
+                organization=org, label="Ehrennadel am", key="ehrennadel", field_type="date"
+            )
+        g = importer.PersonGroup(rows=[2])
+        lookups = SimpleNamespace(definitions={d.pk: d})
+        importer._read_fields(g, ["31.02.2020"], {"0": f"field:{d.pk}"}, lookups, 2)
+        assert len(g.errors) == 1 and "Zeile 2" in g.errors[0]
+
+    def test_widerspruechliche_zusatzfelder(self, orgs):
+        from types import SimpleNamespace
+
+        from customfields.models import FieldDefinition
+        from exchange import importer
+
+        org = orgs["a"]
+        with tenant_context(org.pk):
+            d = FieldDefinition.objects.create(
+                organization=org, label="Schuhgröße", key="schuh", field_type="text"
+            )
+        g = importer.PersonGroup(rows=[2, 3])
+        lookups = SimpleNamespace(definitions={d.pk: d})
+        importer._read_fields(g, ["42"], {"0": f"field:{d.pk}"}, lookups, 2)
+        importer._read_fields(g, ["42"], {"0": f"field:{d.pk}"}, lookups, 3)
+        assert g.errors == []
+        importer._read_fields(g, ["44"], {"0": f"field:{d.pk}"}, lookups, 4)
+        assert len(g.errors) == 1 and "Zeile 4" in g.errors[0]
+
+    def test_excel_ohne_sichtbares_apostroph(self, orgs):
+        import io
+
+        from openpyxl import load_workbook
+
+        from exchange.export import render_xlsx
+
+        content = render_xlsx(
+            orgs["a"],
+            "Liste",
+            [["Telefon", "Bemerkung", "Text"], ["+49 2131 123456", "-", "=1+1"]],
+        )
+        ws = load_workbook(io.BytesIO(content)).active
+        assert ws["A2"].value == "+49 2131 123456"
+        assert ws["B2"].value == "-"
+        assert ws["C2"].value == "=1+1" and ws["C2"].data_type == "s"
+
+    def test_import_entfernt_apostroph_alter_exporte(self):
+        from exchange.reading import _cell
+
+        assert _cell("'+49 2131 123456") == "+49 2131 123456"
+        assert _cell("'-") == "-"
+        assert _cell("O'Neill") == "O'Neill"
+
+    def test_tausenderpunkt_wird_abgelehnt(self):
+        from django.core.exceptions import ValidationError
+
+        from customfields.models import clean_scalar
+
+        for text in ("1.000", "2.500", "1.000.000"):
+            with pytest.raises(ValidationError):
+                clean_scalar("number", text)
+        assert clean_scalar("number", "1000") == 1000
+        assert clean_scalar("number", "1,5") == 1.5
+        assert clean_scalar("number", "1.5") == 1.5
+        assert clean_scalar("number", "1234.567") == 1234.567
+
+    @pytest.mark.parametrize(
+        "country,code,expected",
+        [("", "1067", "01067"), ("Deutschland", "1067", "01067"), ("Österreich", "1010", "1010")],
+    )
+    def test_plz_mit_fuehrender_null(self, country, code, expected):
+        from exchange import importer
+
+        g = importer.PersonGroup(rows=[2], data={"postal_code": code, "country": country})
+        importer._pad_postal_code(g, 2)
+        assert g.data["postal_code"] == expected
+        assert bool(g.notes) is (expected != code)
