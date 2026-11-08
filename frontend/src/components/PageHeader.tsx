@@ -311,7 +311,7 @@ export function Segmented<T extends string>({
         <button
           key={o.value}
           type="button"
-          className="segmented-item"
+          className="button button-ghost"
           aria-pressed={o.value === value}
           onClick={() => onChange(o.value)}
         >
