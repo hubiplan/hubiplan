@@ -38,7 +38,7 @@ def buergerkoenig(orgs):
 @pytest.fixture
 def site(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "website", "honors"]
+    org.enabled_modules = ["members", "website", "honors", "awards"]
     org.save()
     return Website.objects.create(organization=org, public_key="schluessel-x", state="public")
 

@@ -186,6 +186,9 @@ class SiteView:
         from music.models import Skill
 
         result: dict[int, str] = {}
+        # Ohne Musikmodul kein Instrument, auch wenn der Schalter noch an ist
+        if not module_on(self.site.organization, "music"):
+            return result
         rows = (
             Skill.objects.filter(
                 organization=self.area, primary=True, musician__membership__isnull=False
@@ -284,7 +287,8 @@ class SiteView:
     def _repertoire(self) -> list[dict]:
         from music.models import Piece
 
-        if "music" not in (self.area.enabled_modules or []):
+        # Stücke kommen aus dem Notenarchiv (Modul scores, das auch ohne Musik geht)
+        if not module_on(self.site.organization, "scores"):
             return []
         rows = Piece.objects.filter(organization=self.area, on_website=True)
         items = [{"title": p.title, "composer": p.composer} for p in rows]

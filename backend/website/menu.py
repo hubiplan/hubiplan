@@ -18,7 +18,7 @@ direkt im Menü.
 
 from __future__ import annotations
 
-from .models import BLOCK_HINTS, BLOCKS, Website, is_renamable
+from .models import BLOCK_HINTS, BLOCKS, Website, blocks_without_module, is_renamable
 
 # Bausteine, die kein Menüpunkt sind
 NOT_IN_MENU = {"social", "search"}
@@ -51,6 +51,7 @@ def items(website: Website, *, public_site=None, names: dict | None = None) -> d
     site = public_site or SiteView(website)
     result: dict[str, dict] = {}
     heading_of = {child: key for key, (_l, children) in HEADINGS.items() for child in children}
+    off = blocks_without_module(org)
     if names is not None:
         website = Website(pk=website.pk, organization=org, block_names=names, blocks=website.blocks)
 
@@ -92,24 +93,25 @@ def items(website: Website, *, public_site=None, names: dict | None = None) -> d
                     visible=p.published_at is not None and p.show_in_menu,
                     public_label=p.published_title or p.slug,
                 )
-        if key == "results" and "competitions" not in (org.enabled_modules or []):
-            continue
-        if key == "bookings" and not {"material", "infrastructure"} & set(
-            org.enabled_modules or []
-        ):
+        # Bausteine abgeschalteter Module fehlen; „Würdenträger“ bleibt für die Ehrungen
+        if key in off and key != "honors":
             continue
         label = BLOCKS[key]
         if key == "units":
             label = org.department_label_plural or label
         if key == "honors":
+            honors_on = "honors" not in off
+            honorary = [] if "honorary" in off else site.honorary()
+            if not honors_on and not honorary:
+                continue
             add(
                 "honors",
                 "Würdenträger",
                 hint="Überschrift mit den Würden und Ehrungen",
-                toggle="honors",
+                toggle="honors" if honors_on else None,
                 heading=True,
             )
-            for qs, _view, _owner, origins in site.dignity_sources():
+            for qs, _view, _owner, origins in site.dignity_sources() if honors_on else ():
                 for d in site._with_reigns(qs, origins):
                     add(
                         f"dignity:{d.pk}",
@@ -120,7 +122,6 @@ def items(website: Website, *, public_site=None, names: dict | None = None) -> d
                         id=site.token("dignity", d.pk),
                         visible=website.block_on("honors") and website.block_on(f"dignity:{d.pk}"),
                     )
-            honorary = site.honorary()
             if honorary:
                 add(
                     "honorary",
