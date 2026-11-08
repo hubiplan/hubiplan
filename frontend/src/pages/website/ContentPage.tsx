@@ -68,7 +68,6 @@ export function ContentPage() {
   return (
     <>
       <div className="card card-wide">
-        <h2>{t('Texte')}</h2>
         <p className="muted small">
           {t(
             'Texte gestaltest du mit den Knöpfen über dem Text: Überschriften, fett, kursiv, Listen, Links und Bilder. Wer lieber Markdown schreibt, schaltet mit „Markdown“ um. Besucher sehen erst, was du veröffentlichst. Bilder lädst und bearbeitest du unter',
@@ -79,7 +78,7 @@ export function ContentPage() {
           const items = data.texts.filter((tm) => tm.kind === g.kind)
           return (
             <div key={g.kind}>
-              <h3>{g.title}</h3>
+              <h2>{g.title}</h2>
               {items.length === 0 && <p className="muted">{t('Noch keine.')}</p>}
               {g.kind === 'page' && items.length > 0 && (
                 <p className="muted small">
