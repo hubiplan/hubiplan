@@ -40,6 +40,7 @@ import { t } from '../../i18n/index.ts'
 import { CompetitionsTab } from '../competitions/MemberTab.tsx'
 import { FeesTab } from './FeesTab.tsx'
 import { MusicTab } from './MusicTab.tsx'
+import { AtAGlance } from './AtAGlance.tsx'
 
 type Tab =
   | 'stammdaten'
@@ -111,6 +112,7 @@ export function MemberFilePage() {
           </p>
         </div>
       </div>
+      <AtAGlance org={org} member={data} tabs={tabs.map((tmx) => tmx.id)} />
       <nav className="tabs member-tabs" aria-label={t('Bereiche der Mitgliedsakte')}>
         {tabs.map((tmx) => (
           <Link
