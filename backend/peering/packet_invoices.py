@@ -313,6 +313,8 @@ def report_paid(remote: RemoteInvoice, *, date, account=None, category=None, use
         )
         booking.full_clean(exclude=["organization", "created_by"])
         booking.save()
+        # Barkasse nie unter null, wie bei jeder anderen Ausgabe (Datenaudit 08.11. DA-02)
+        finance_services.ensure_cash_ok([account], date)
         if remote.file:
             remote.file.open("rb")
             try:

@@ -31,6 +31,11 @@ verlassen: kein `RESET ROLE` zum Superuser, keine Shell-Befehle über die Datenb
 Abschalten von RLS. Nach einer Rücksicherung setzt der nächste Start Rechte und Passwort
 der Rolle neu.
 
+Das Backup sichert erst die Datenbank (`pg_dump`), danach die Dateien. Zwischen beiden liegen
+einige Minuten: Wer genau dann etwas hochlädt oder löscht, hat nach einer Rücksicherung einen
+Verweis ohne Datei bzw. eine Datei ohne Verweis. Der Rücksicherungstest listet solche Fälle;
+deshalb läuft das Backup nachts.
+
 **Abschottung der Container** (`docker-compose.server.yml`):
 
 - Backend, Worker und Beat laufen mit **schreibgeschütztem Dateisystem**: Schadcode kann

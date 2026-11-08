@@ -304,6 +304,7 @@ class PersonGroup:
     duplicate_info: str = ""
     sources: dict = field(default_factory=dict)  # Feld -> Zeile, aus der der Wert stammt
     contacts: list[dict] = field(default_factory=list)  # Ansprechpartner (Organisationen)
+    notes: list[str] = field(default_factory=list)  # Hinweise für die Vorschau
 
 
 class Lookups:
@@ -378,6 +379,25 @@ class Lookups:
         if role is None:
             raise ValueError(gettext("Unbekannte Vorstandsrolle: {raw}").format(raw=raw))
         return role
+
+
+GERMANY = {"", "deutschland", "de", "deu", "germany"}
+
+
+def _pad_postal_code(g, index) -> None:
+    """Als Zahl gespeicherte PLZ verlieren in Excel die führende 0 (Datenaudit 08.11. FD-09).
+
+    Bei Land „Deutschland“ (oder leer) wird eine vierstellige PLZ auf fünf Stellen
+    aufgefüllt; die Vorschau zeigt das an."""
+    code = g.data.get("postal_code") or ""
+    country = (g.data.get("country") or "").strip().lower()
+    if len(code) == 4 and code.isdigit() and country in GERMANY:
+        g.data["postal_code"] = "0" + code
+        g.notes.append(
+            gettext("Zeile {index}: PLZ „{old}“ zu „{new}“ ergänzt.").format(
+                index=index, old=code, new="0" + code
+            )
+        )
 
 
 def _value(row, mapping, target):
@@ -459,6 +479,7 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
                 g.sources[target] = index
             else:
                 _conflict(g, target, value, index)
+        _pad_postal_code(g, index)
         raw_gender = _value(row, mapping, "gender")
         if raw_gender not in (None, "") and not g.data.get("gender"):
             gender = parse_gender(raw_gender)
@@ -578,8 +599,22 @@ def _read_periods(g, row, mapping, lookups, index):
         except ValueError as exc:
             g.errors.append(gettext("Zeile {index}: {exc}").format(index=index, exc=exc))
             continue
-        if any(p.entry == entry for p in g.periods):
-            continue  # gleicher Zeitraum in mehreren Zeilen
+        same = next((p for p in g.periods if p.entry == entry), None)
+        if same is not None:
+            # Gleicher Zeitraum in mehreren Zeilen; abweichende Angaben sind ein Widerspruch
+            # (Datenaudit 08.11. DR-08)
+            pairs = (
+                (same.exit, exit_),
+                (same.reason, reason),
+                (getattr(same.member_type, "pk", None), getattr(member_type, "pk", None)),
+            )
+            if any(a not in (None, "") and b not in (None, "") and a != b for a, b in pairs):
+                g.errors.append(
+                    gettext(
+                        "Zeile {index}: Zeitraum ab {entry} widerspricht einer früheren Zeile."
+                    ).format(index=index, entry=entry.strftime("%d.%m.%Y"))
+                )
+            continue
         g.periods.append(PeriodData(entry, exit_, reason, member_type))
 
 
@@ -613,23 +648,40 @@ def _read_fields(g, row, mapping, lookups, index):
             continue
         try:
             if len(parts) == 2:
+                value = clean_scalar(
+                    definition.field_type,
+                    _plain(raw, definition.field_type),
+                    definition.choices,
+                )
                 if definition.pk not in g.fields:
-                    g.fields[definition.pk] = clean_scalar(
-                        definition.field_type,
-                        _plain(raw, definition.field_type),
-                        definition.choices,
+                    g.fields[definition.pk] = value
+                elif g.fields[definition.pk] != value:
+                    # Widersprüchliche Werte nicht still übergehen (Datenaudit 08.11. DR-08)
+                    g.errors.append(
+                        gettext(
+                            "Zeile {index}: {x1}: „{value}“ widerspricht „{known}“ aus einer "
+                            "früheren Zeile."
+                        ).format(
+                            index=index,
+                            x1=definition.label,
+                            value=value,
+                            known=g.fields[definition.pk],
+                        )
                     )
             else:
                 sub = next(s for s in definition.subfields if s["key"] == parts[2])
                 repeat_rows.setdefault(definition.pk, {})[sub["key"]] = clean_scalar(
                     sub["type"], _plain(raw, sub["type"]), sub.get("choices")
                 )
-        except (DjangoValidationError, StopIteration) as exc:
-            message = (
-                " ".join(exc.messages)
-                if isinstance(exc, DjangoValidationError)
-                else "Unbekanntes Feld"
-            )
+        except (DjangoValidationError, StopIteration, ValueError) as exc:
+            # Ungültiges Datum (ValueError) als Zeilenfehler, nicht als Abbruch der ganzen
+            # Prüfung (Datenaudit 08.11. DA-04)
+            if isinstance(exc, DjangoValidationError):
+                message = " ".join(exc.messages)
+            elif isinstance(exc, ValueError):
+                message = str(exc)
+            else:
+                message = "Unbekanntes Feld"
             g.errors.append(
                 gettext("Zeile {index}: {x1}: {message}").format(
                     index=index, x1=definition.label, message=message
@@ -782,7 +834,7 @@ def preview_of(groups: list[PersonGroup]) -> tuple[list[dict], dict]:
                 else None,
                 "periods": len(g.periods),
                 "status": status,
-                "messages": g.errors or ([g.duplicate_info] if g.duplicate else []),
+                "messages": g.errors or ([g.duplicate_info] if g.duplicate else []) + g.notes,
             }
         )
     return preview, counts

@@ -31,6 +31,15 @@ class ExitSerializer(serializers.Serializer):
     note = serializers.CharField(required=False, allow_blank=True, max_length=200)
 
 
+class CorrectPeriodSerializer(serializers.Serializer):
+    period = serializers.IntegerField()
+    entry_date = serializers.DateField()
+    exit_date = serializers.DateField(allow_null=True, required=False)
+    exit_reason = serializers.ChoiceField(
+        choices=ExitReason.choices, required=False, allow_blank=True
+    )
+
+
 class ReentrySerializer(serializers.Serializer):
     entry_date = serializers.DateField()
     member_type = serializers.IntegerField()
@@ -106,6 +115,43 @@ class ExitView(_WorkflowView):
             },
             person=membership.person,
         )
+        return Response(member_detail(membership, self.org))
+
+
+class CorrectPeriodView(_WorkflowView):
+    """Ein- oder Austrittsdatum berichtigen bzw. Austritt aufheben (Datenaudit 08.11. DA-01).
+
+    Art, Untereinheiten und Ämter, die am alten Datum begannen bzw. endeten, ziehen mit."""
+
+    @transaction.atomic
+    def post(self, request, org_id: int, pk: int):
+        membership = self.get_membership()
+        data = CorrectPeriodSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        before = membership.periods.filter(pk=v["period"]).first()
+        if before is None:
+            raise serializers.ValidationError({"period": gettext("Zeitraum nicht gefunden.")})
+        old = (before.entry_date, before.exit_date, before.get_exit_reason_display())
+        period = workflows.correct_period(
+            membership,
+            before.pk,
+            entry_date=v["entry_date"],
+            exit_date=v.get("exit_date"),
+            exit_reason=v.get("exit_reason", ""),
+        )
+        changes = {}
+        if old[0] != period.entry_date:
+            changes["Eintritt"] = [old[0].isoformat(), period.entry_date.isoformat()]
+        if old[1] != period.exit_date:
+            changes["Austritt"] = [
+                old[1].isoformat() if old[1] else None,
+                period.exit_date.isoformat() if period.exit_date else None,
+            ]
+        if old[2] != period.get_exit_reason_display():
+            changes["Austrittsgrund"] = [old[2] or None, period.get_exit_reason_display() or None]
+        if changes:
+            record(self.org, request.user, "update", membership, changes, person=membership.person)
         return Response(member_detail(membership, self.org))
 
 

@@ -10,7 +10,8 @@ from pathlib import Path
 
 from django.core.files.base import ContentFile
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
+from django.db.models.functions import Coalesce, ExtractYear
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext
@@ -367,14 +368,27 @@ class ReignViewSet(_HonorsMixin, AuditMixin, viewsets.ModelViewSet):
             pid = int(params["person"])
             qs = qs.filter(Q(person_id=pid) | Q(companions__person_id=pid)).distinct()
         if params.get("jahr", "").isdigit():
-            qs = qs.filter(year=int(params["jahr"]))
+            # Auch Regentschaften mit Zeitraum statt Jahr (Datenaudit 08.11. DR-06)
+            year = int(params["jahr"])
+            qs = qs.filter(
+                Q(year=year)
+                | Q(year__lt=year, end_year__gte=year)
+                | Q(
+                    year__isnull=True,
+                    valid_from__year__lte=year,
+                )
+                & (Q(valid_until__isnull=True) | Q(valid_until__year__gte=year))
+            )
         if params.get("suche"):
             text = params["suche"].strip()
             qs = qs.filter(
                 Q(pk__in=name_ids(qs, text, fields=("name", "companions__name")))
                 | Q(note__icontains=text)
             ).distinct()
-        return qs
+        # Nach Jahr bzw. Beginn, leere Jahre nicht zuerst (Datenaudit 08.11. DR-06)
+        return qs.annotate(order_year=Coalesce("year", ExtractYear("valid_from"))).order_by(
+            F("order_year").desc(nulls_last=True), F("valid_from").desc(nulls_last=True), "-pk"
+        )
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
@@ -386,6 +400,41 @@ class ReignViewSet(_HonorsMixin, AuditMixin, viewsets.ModelViewSet):
 
     def get_create_kwargs(self) -> dict:
         return {"organization": self.org}
+
+    @action(detail=False, methods=["post"], url_path="link-name")
+    @transaction.atomic
+    def link_name(self, request, org_id: int):
+        """Frühere Text-Einträge mit gleichem Namen mit einem Mitglied verknüpfen
+        (Datenaudit 08.11. DR-07, FD-06). POST {name, person} → {linked}.
+
+        Ohne ``confirm`` nur zählen (für die Rückfrage)."""
+        name = str(request.data.get("name", "")).strip()
+        person_id = request.data.get("person")
+        if not name or not str(person_id).isdigit():
+            raise ValidationError(gettext("Bitte Name und Mitglied angeben."))
+        if int(person_id) not in member_person_ids(self.org):
+            raise ValidationError({"person": gettext("Unbekanntes Mitglied.")})
+        key = numbering.first_key(name)
+        matches = [
+            r
+            for r in Reign.objects.select_for_update().filter(
+                organization=self.org, person__isnull=True
+            )
+            if numbering.first_key(r.name) == key
+        ]
+        if not request.data.get("confirm"):
+            return Response({"linked": 0, "found": len(matches)})
+        from members.models import Person
+
+        person = Person.objects.get(pk=int(person_id))
+        full = f"{person.first_name} {person.last_name}".strip()
+        for reign in matches:
+            before = snapshot(reign)
+            reign.person = person
+            reign.name = full
+            reign.save()
+            record(self.org, request.user, "update", reign, diff(before, snapshot(reign)))
+        return Response({"linked": len(matches), "found": len(matches)})
 
     @transaction.atomic
     def perform_destroy(self, instance):

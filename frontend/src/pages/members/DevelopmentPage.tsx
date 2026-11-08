@@ -274,7 +274,7 @@ function AgeSummaries({ items }: { items: [string, AgeSummary | undefined][] }) 
           <dt>
             {t('Durchschnittsalter am')} {day}
           </dt>
-          <dd>
+          <dd title={t('Alter in vollendeten Lebensjahren am Stichtag')}>
             {oneDecimal(mean)} {t('Jahre')}
             {sd !== null && (
               <>
@@ -284,6 +284,10 @@ function AgeSummaries({ items }: { items: [string, AgeSummary | undefined][] }) 
               </>
             )}
             , {count.toLocaleString(locale())} {count === 1 ? t('Person') : t('Personen')}
+            <br />
+            <span className="muted small">
+              {t('Alter in vollendeten Lebensjahren am Stichtag')}
+            </span>
           </dd>
         </div>
       ))}

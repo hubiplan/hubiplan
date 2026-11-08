@@ -15,4 +15,6 @@ stichworte: [reminder, dunning, overdue, unpaid]
 
 You set deadlines and texts under Setup › Reminder levels.
 
+HUBIplan suggests the next dunning level at the earliest once the payment deadline from the last reminder has passed. The days of the dunning levels still count from the invoice's due date.
+
 ![Starting point: Send payment reminders](bild:mahnen)

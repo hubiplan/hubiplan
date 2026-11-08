@@ -326,6 +326,11 @@ org_patterns = [
     ),
     path("members/<int:pk>/exit/", workflow_views.ExitView.as_view(), name="member-exit"),
     path(
+        "members/<int:pk>/correct-period/",
+        workflow_views.CorrectPeriodView.as_view(),
+        name="member-correct-period",
+    ),
+    path(
         "members/<int:pk>/auskunft/",
         member_views.MemberDisclosureView.as_view(),
         name="member-disclosure",

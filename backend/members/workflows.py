@@ -17,6 +17,7 @@ from rest_framework.exceptions import ValidationError
 
 from audit.models import AuditEntry
 from core.encfields import update_encrypted
+from core.i18n import date_text
 from core.tenancy import rls_bypass, tenant_context
 from organizations.models import Organization, PlatformSettings
 from organizations.terms import fill
@@ -34,6 +35,7 @@ from .models import (
     MemberType,
     MemberTypeAssignment,
     TransferRequest,
+    overlaps,
     today,
 )
 
@@ -73,6 +75,17 @@ def change_type(membership: Membership, new_type: MemberType, on: datetime.date)
     if current and current.valid_from >= on:
         raise ValidationError(
             {"valid_from": gettext("Der Stichtag muss nach dem Beginn der jetzigen Art liegen.")}
+        )
+    later = membership.type_assignments.filter(valid_from__gt=on).order_by("valid_from").first()
+    if later is not None:
+        # Sonst überschnitten sich die neue und die spätere Art (Datenaudit 08.11. DR-04)
+        raise ValidationError(
+            {
+                "valid_from": gettext(
+                    "Ab {day} ist schon die Art „{name}“ eingetragen. Bitte zuerst diese "
+                    "spätere Art ändern oder entfernen."
+                ).format(day=date_text(later.valid_from), name=later.member_type.name)
+            }
         )
     services.check_active_rule(membership.person, membership.organization, new_type, on, membership)
     if current:
@@ -122,6 +135,115 @@ def exit_membership(
             else:
                 item.valid_until = exit_date
                 item.save()
+
+
+# --- Ein-/Austritt korrigieren (Datenaudit 08.11. DA-01, FD-01) ---
+
+
+def _item_label(item) -> str:
+    if isinstance(item, MemberTypeAssignment):
+        return gettext("Die Mitgliedsart")
+    if isinstance(item, DepartmentMembership):
+        return gettext("Die Untereinheit")
+    return gettext("Das Amt")
+
+
+def _period_items(membership: Membership):
+    return (
+        membership.type_assignments.all(),
+        membership.department_memberships.all(),
+        membership.department_roles.all(),
+    )
+
+
+@transaction.atomic
+def correct_period(
+    membership: Membership,
+    period_id: int,
+    *,
+    entry_date: datetime.date,
+    exit_date: datetime.date | None,
+    exit_reason: str = "",
+) -> MembershipPeriod:
+    """Eintritts- oder Austrittsdatum eines Zeitraums berichtigen.
+
+    Art, Untereinheiten und Ämter, die am alten Eintritt begannen bzw. am alten Austritt
+    endeten, ziehen mit. Ohne Austrittsdatum ist der Austritt aufgehoben: Diese Zeiten laufen
+    wieder offen, der Austrittsgrund wird geleert."""
+    lock(membership)
+    period = membership.periods.select_for_update().filter(pk=period_id).first()
+    if period is None:
+        raise ValidationError(gettext("Zeitraum nicht gefunden."))
+    if exit_date is None:
+        exit_reason = ""
+    elif exit_reason not in ExitReason.values:
+        raise ValidationError({"exit_reason": gettext("Bitte einen Grund angeben.")})
+    if exit_date is not None and exit_date < entry_date:
+        raise ValidationError({"exit_date": gettext("Der Austritt liegt vor dem Eintritt.")})
+    birth = membership.person.birth_date
+    if birth is not None and entry_date < birth:
+        raise ValidationError({"entry_date": gettext("Der Eintritt liegt vor der Geburt.")})
+    for other in membership.periods.exclude(pk=period.pk):
+        if overlaps(entry_date, exit_date, other.entry_date, other.exit_date):
+            raise ValidationError(
+                gettext("Der Zeitraum überschneidet sich mit einem anderen Zeitraum.")
+            )
+    old_entry, old_exit = period.entry_date, period.exit_date
+    inside = []
+    for qs in _period_items(membership):
+        for item in qs:
+            ends = item.valid_until
+            if item.valid_from >= old_entry and (old_exit is None or item.valid_from <= old_exit):
+                inside.append(item)
+            elif ends is not None and ends >= old_entry and (old_exit is None or ends <= old_exit):
+                inside.append(item)
+    for item in inside:
+        start = entry_date if item.valid_from == old_entry else item.valid_from
+        end = item.valid_until
+        if old_exit is not None and end == old_exit:
+            end = exit_date
+        elif old_exit is None and end is None:
+            end = exit_date
+        if end is not None and start > end:
+            raise ValidationError(
+                gettext(
+                    "{what} liegt mit dem neuen Datum außerhalb der Mitgliedschaft "
+                    "({start} bis {end}). Bitte zuerst dort berichtigen."
+                ).format(
+                    what=_item_label(item),
+                    start=date_text(item.valid_from),
+                    end=date_text(item.valid_until) if item.valid_until else gettext("offen"),
+                )
+            )
+        item._corrected = (start, end)
+    if exit_date is None and old_exit is not None:
+        # Austritt aufheben: aktive Art wieder offen, nur eine aktive Mitgliedschaft
+        current = next(
+            (
+                i
+                for i in inside
+                if isinstance(i, MemberTypeAssignment) and i.valid_until == old_exit
+            ),
+            None,
+        )
+        if current is not None:
+            services.check_active_rule(
+                membership.person,
+                membership.organization,
+                current.member_type,
+                old_exit + ONE_DAY,
+                membership,
+            )
+    for item in inside:
+        start, end = item._corrected
+        if (start, end) != (item.valid_from, item.valid_until):
+            item.valid_from, item.valid_until = start, end
+            item.save()
+    period.entry_date = entry_date
+    period.exit_date = exit_date
+    period.exit_reason = exit_reason
+    period.save()
+    return period
 
 
 # --- Wiedereintritt ---

@@ -127,7 +127,13 @@ export interface RunPreview {
   departments?: { id: number; name: string; members: number; total: string }[]
   skipped?: { membership: number; name: string; reason: string }[]
   /** Zahlen für die Prüfliste */
-  checks?: { unreachable: number; with_mandate: number; open_change_requests: number }
+  checks?: {
+    unreachable: number
+    with_mandate: number
+    open_change_requests: number
+    /** Mitglieder in mehreren Untereinheiten (Datenaudit 08.11. FD-05) */
+    multi_units?: number
+  }
   // Dachverband
   clubs?: { id: number; name: string; members: number; total: string }[]
   clubs_total?: string
