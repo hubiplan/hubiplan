@@ -30,6 +30,7 @@ import { EvaluationPage, FinanceOverview } from './OverviewPages.tsx'
 import { TaxPage } from './TaxPage.tsx'
 import { AuditPage } from './AuditPage.tsx'
 import { NetAssetsPage } from './NetAssetsPage.tsx'
+import { UseOfFundsPage } from './UseOfFundsPage.tsx'
 import { ArtistFeesPage } from './ArtistFeesPage.tsx'
 import { AllowancesPage } from './AllowancesPage.tsx'
 import { AssetsPage } from './AssetsPage.tsx'
@@ -272,6 +273,7 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
                 to: '/finanzen/abschluss/kuenstlersozialabgabe',
                 label: t('Künstlersozialabgabe'),
               },
+              { to: '/finanzen/abschluss/mittelverwendung', label: t('Mittelverwendung') },
             ]
           : []),
         { to: '/finanzen/abschluss/vermoegen', label: t('Vermögen') },
@@ -285,6 +287,7 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
         {a.tax && <Route path="pauschalen" element={<AllowancesPage canEdit={a.financeEdit} />} />}
         {a.tax && <Route path="anlagen" element={<AssetsPage canEdit={a.financeEdit} />} />}
         {a.tax && <Route path="kuenstlersozialabgabe" element={<ArtistFeesPage />} />}
+        {a.tax && <Route path="mittelverwendung" element={<UseOfFundsPage />} />}
         <Route path="vermoegen" element={<NetAssetsPage />} />
         <Route path="jahresabschluss" element={<ClosingsPage />} />
         <Route path="kassenpruefung" element={<AuditPage canEdit={a.financeEdit} />} />

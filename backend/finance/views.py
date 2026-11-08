@@ -1000,6 +1000,23 @@ class NetAssetsView(FinanceMixin, APIView):
         return Response(services._money(net_assets.report(self.org, year)))
 
 
+class UseOfFundsView(FinanceMixin, APIView):
+    """Mittelverwendungsrechnung (Konzept vereinskasse-steuern, S5), nur mit Modul Steuern."""
+
+    @extend_schema(responses=dict)
+    def get(self, request, org_id: int):
+        from . import use_of_funds
+
+        if not module_on(self.org, "tax"):
+            raise NotFound()
+        raw = request.query_params.get("jahr", "")
+        if raw.isdigit() and 1990 <= int(raw) <= 2100:
+            year = int(raw)
+        else:
+            year = self.org.fiscal_year_of(timezone.localdate())
+        return Response(services._money(use_of_funds.report(self.org, year)))
+
+
 class FinanceSettingsView(FinanceMixin, APIView):
     """Einstellungen der Kasse. PATCH {tax_areas_enabled}: Verein bzw. Dachverband
     entscheidet selbst, ob Kategorien steuerlichen Bereichen zugeordnet werden."""

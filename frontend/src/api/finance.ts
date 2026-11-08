@@ -573,6 +573,36 @@ export interface ArtistFeeReport {
 }
 
 /** Vermögensübersicht zum Ende eines Geschäftsjahres */
+/** Mittelverwendungsrechnung: ein Geschäftsjahr */
+export interface UseOfFundsYear {
+  year: number
+  label: string
+  carry_in: string
+  inflow: string
+  used: string
+  reserve_add: string
+  reserve_release: string
+  uncovered: string
+  carry_out: string
+}
+
+export interface UseOfFunds {
+  year: number
+  label: string
+  current: UseOfFundsYear
+  years: UseOfFundsYear[]
+  by_origin: {
+    year: number
+    label: string
+    amount: string
+    deadline: string
+    overdue: boolean
+    due_now: boolean
+  }[]
+  overdue: string
+  due_now: string
+}
+
 export interface NetAssets {
   year: number
   label: string
@@ -627,6 +657,8 @@ export const financeApi = {
   overview: (org: number, year: number) => api.get<Overview>(`${base(org)}/overview/?jahr=${year}`),
   netAssets: (org: number, year: number) =>
     api.get<NetAssets>(`${base(org)}/net-assets/?jahr=${year}`),
+  useOfFunds: (org: number, year: number) =>
+    api.get<UseOfFunds>(`${base(org)}/use-of-funds/?jahr=${year}`),
   artistFees: (org: number, year: number) =>
     api.get<ArtistFeeReport>(`${base(org)}/artist-fees/?jahr=${year}`),
   artistFeesXlsxUrl: (org: number, year: number) =>
