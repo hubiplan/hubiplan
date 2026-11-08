@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent, ReactNode } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { GENDERS, LEGAL_FORMS, memberApi, todayIso } from '../../api/members.ts'
 import type { DepartmentMembership, DurationInfo, Gender, MemberDetail } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
@@ -39,23 +39,29 @@ import { Term } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { CompetitionsTab } from '../competitions/MemberTab.tsx'
 import { FeesTab } from './FeesTab.tsx'
+import { MusicTab } from './MusicTab.tsx'
 
 type Tab =
   | 'stammdaten'
   | 'mitgliedschaft'
   | 'beitraege'
-  | 'zusatzfelder'
   | 'rollen'
   | 'wettbewerbe'
+  | 'musik'
+  | 'foto'
+  | 'zusatzfelder'
   | 'verlauf'
 
+/** Reiter in Arbeitsreihenfolge (Konzept Mitgliedsakte S-03) */
 const TABS: { id: Tab; label: string }[] = [
   { id: 'stammdaten', label: t('Stammdaten') },
   { id: 'mitgliedschaft', label: t('Mitgliedschaft') },
   { id: 'beitraege', label: t('Beiträge') },
-  { id: 'zusatzfelder', label: t('Zusatzfelder') },
   { id: 'rollen', label: t('Rollen und Konto') },
   { id: 'wettbewerbe', label: t('Wettbewerbe') },
+  { id: 'musik', label: t('Musik') },
+  { id: 'foto', label: t('Foto & Webseite') },
+  { id: 'zusatzfelder', label: t('Zusatzfelder') },
   { id: 'verlauf', label: t('Verlauf') },
 ]
 
@@ -65,14 +71,18 @@ export function MemberFilePage() {
   const { data, error, setData, reload } = useLoad(() => memberApi.detail(org.id, id), [org.id, id])
   // Bereich steht in der Adresse: Zurück, Neuladen und Links öffnen ihn wieder (NMF-07)
   const [params] = useSearchParams()
-  // Reiter „Wettbewerbe“ und „Beiträge“ nur mit freigeschaltetem Modul (Menüprüfung 2, N-08)
+  const navigate = useNavigate()
+  // Reiter nur mit freigeschaltetem Modul (Menüprüfung 2, N-08); Musik zusätzlich mit Leserecht
   const tabs = TABS.filter(
     (tmx) =>
       (tmx.id !== 'wettbewerbe' || org.modules.includes('competitions')) &&
-      (tmx.id !== 'beitraege' || org.modules.includes('billing')),
+      (tmx.id !== 'beitraege' || org.modules.includes('billing')) &&
+      (tmx.id !== 'musik' ||
+        (org.modules.includes('music') && org.permissions.includes('music.view'))),
   )
   const tab: Tab = tabs.find((tmx) => tmx.id === params.get('bereich'))?.id ?? 'stammdaten'
   const canEdit = org.permissions.includes(PERM.membersEdit)
+  const tabLink = (to: Tab) => (to === 'stammdaten' ? '.' : `?bereich=${to}`)
 
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
   if (!data) return <p className="muted">{t('Lädt …')}</p>
@@ -101,16 +111,11 @@ export function MemberFilePage() {
           </p>
         </div>
       </div>
-      <nav className="tabs" aria-label={t('Bereiche der Mitgliedsakte')}>
-        {org.modules.includes('music') && org.permissions.includes('music.view') && (
-          <Link className="tab" to={`/musik/musiker?mitglied=${id}`}>
-            {t('Musikerprofil')}
-          </Link>
-        )}
+      <nav className="tabs member-tabs" aria-label={t('Bereiche der Mitgliedsakte')}>
         {tabs.map((tmx) => (
           <Link
             key={tmx.id}
-            to={tmx.id === 'stammdaten' ? '.' : `?bereich=${tmx.id}`}
+            to={tabLink(tmx.id)}
             className={`tab${tab === tmx.id ? ' active' : ''}`}
             aria-current={tab === tmx.id ? 'page' : undefined}
           >
@@ -118,28 +123,19 @@ export function MemberFilePage() {
           </Link>
         ))}
       </nav>
+      {/* Handy: alle Bereiche als Auswahlliste statt seitlich wischbarer Reiter */}
+      <label className="member-tabs-select">
+        <span>{t('Bereich')}</span>
+        <select value={tab} onChange={(ev) => void navigate(tabLink(ev.target.value as Tab))}>
+          {tabs.map((tmx) => (
+            <option key={tmx.id} value={tmx.id}>
+              {tmx.label}
+            </option>
+          ))}
+        </select>
+      </label>
       {tab === 'stammdaten' && (
         <div className="stack">
-          <MaterialReferences
-            kind="member"
-            id={data.id}
-            sourceBase={`/api/orgs/${org.id}/`}
-            level={2}
-          />
-          <PhotoSection
-            key={`foto-${data.id}`}
-            orgId={org.id}
-            memberId={data.id}
-            initial={{
-              photo: data.photo,
-              photo_consent_at: data.photo_consent_at,
-              photo_consent_source: data.photo_consent_source,
-            }}
-            canManage={org.permissions.includes(PERM.photosManage)}
-            hasEmail={!!data.contact?.email}
-            organization={data.kind === 'organization'}
-            onChange={() => void reload()}
-          />
           <MasterData
             key={data.id}
             org={org}
@@ -176,6 +172,39 @@ export function MemberFilePage() {
               intro={`Stammdaten und Kontakt pflegt ${data.managed_by.name} auf einer eigenen HUBIplan-Instanz (Verbund). Mitgliedschaft, Mitgliedsart und Beitrag bleiben hier. Hier lässt sich eine Korrektur vorschlagen.`}
             />
           )}
+        </div>
+      )}
+      {tab === 'mitgliedschaft' && (
+        <MembershipTab
+          org={org}
+          member={data}
+          canEdit={canEdit}
+          reload={reload}
+          setData={setData}
+        />
+      )}
+      {tab === 'beitraege' && (
+        <FeesTab org={org} member={data} canEdit={canEdit} onSaved={setData} />
+      )}
+      {tab === 'rollen' && <RolesTab org={org} member={data} canEdit={canEdit} reload={reload} />}
+      {tab === 'wettbewerbe' && <CompetitionsTab org={org.id} membership={data.id} />}
+      {tab === 'musik' && <MusicTab orgId={org.id} memberId={data.id} />}
+      {tab === 'foto' && (
+        <div className="stack">
+          <PhotoSection
+            key={`foto-${data.id}`}
+            orgId={org.id}
+            memberId={data.id}
+            initial={{
+              photo: data.photo,
+              photo_consent_at: data.photo_consent_at,
+              photo_consent_source: data.photo_consent_source,
+            }}
+            canManage={org.permissions.includes(PERM.photosManage)}
+            hasEmail={!!data.contact?.email}
+            organization={data.kind === 'organization'}
+            onChange={() => void reload()}
+          />
           {org.modules.includes('website') && (
             <PublicationSection
               key={`veroeffentlichung-${data.id}`}
@@ -194,21 +223,7 @@ export function MemberFilePage() {
           )}
         </div>
       )}
-      {tab === 'mitgliedschaft' && (
-        <MembershipTab
-          org={org}
-          member={data}
-          canEdit={canEdit}
-          reload={reload}
-          setData={setData}
-        />
-      )}
-      {tab === 'beitraege' && (
-        <FeesTab org={org} member={data} canEdit={canEdit} onSaved={setData} />
-      )}
       {tab === 'zusatzfelder' && <FieldsTab orgId={org.id} memberId={data.id} canEdit={canEdit} />}
-      {tab === 'rollen' && <RolesTab org={org} member={data} canEdit={canEdit} reload={reload} />}
-      {tab === 'wettbewerbe' && <CompetitionsTab org={org.id} membership={data.id} />}
       {tab === 'verlauf' && <HistoryTab orgId={org.id} memberId={data.id} />}
     </section>
   )
@@ -260,7 +275,12 @@ function MasterData({
   )
 
   return (
-    <form className="card card-wide" onSubmit={(ev) => ev.preventDefault()}>
+    <form
+      className="card card-wide"
+      aria-labelledby="stammdaten-titel"
+      onSubmit={(ev) => ev.preventDefault()}
+    >
+      <h2 id="stammdaten-titel">{t('Stammdaten')}</h2>
       {canEdit && <SaveStatus auto={auto} />}
       <fieldset disabled={!canEdit}>
         {organization ? (
@@ -721,6 +741,14 @@ function MembershipTab({
           />
         )}
       </Section>
+      <MaterialReferences
+        kind="member"
+        id={member.id}
+        sourceBase={`/api/orgs/${org.id}/`}
+        level={2}
+        title={t('Ausgegebenes Material')}
+        wide
+      />
       {/* Eigene Region, unabhängig von Untereinheiten (UX-Audit 31.10. W08) */}
       <Section title={t('Kommunikation & Zustellung')}>
         <Checkbox
