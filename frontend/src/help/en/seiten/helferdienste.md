@@ -13,6 +13,8 @@ bar, cash desk, setup or teardown. The overview shows each duty roster with its 
 
 New duty roster: Choose **New duty roster**, enter a title and link the roster to an event if
 needed.
+From an event in the calendar, **Create duty roster for this event** leads straight here with
+the event already selected. In the roster, the event name leads back to the calendar.
 
 Duties and shifts: Use **Add duty** to create a duty with its place and, if needed, a minimum
 age (such as serving alcohol from 18). Below it you create the shifts: day, times and people per

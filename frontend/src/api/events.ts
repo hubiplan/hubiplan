@@ -153,6 +153,11 @@ export interface EventDetail {
   /** Veranstaltungsfinanzen (nur mit Kassenrecht): zugeordnete Veranstaltung */
   project?: { id: number; name: string } | null
   can_link_project?: boolean
+  // Was am Termin hängt (nur mit Modul und Leserecht geliefert)
+  meeting?: { id: number; status_label: string } | null
+  helper_plans?: { id: number; title: string; status_label: string }[]
+  can_create_helper_plan?: boolean
+  bookings?: { id: number; item: string; status_label: string }[]
   remind_days?: number | null
   reminded_at?: string | null
   /** Weitergabe nach oben/unten: Angabe am Termin, null = Voreinstellung (nur Bearbeiter) */

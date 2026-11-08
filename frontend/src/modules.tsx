@@ -20,7 +20,7 @@ export interface Workspace {
 
 export interface AppModule {
   id: string
-  group: 'alltag' | 'verein' | 'organisation' | 'verwaltung'
+  group: 'alltag' | 'planen' | 'verein' | 'organisation' | 'verwaltung'
   label: string
   /** Bezeichnung je Einheit, z. B. „Züge“ statt „Untereinheiten“ */
   labelFor?: (org: OrgSummary | null, ws?: Workspace) => string
@@ -79,6 +79,7 @@ const icon = (d: string) => (
 /** Benannte Gruppen der Seitenleiste (UX-Audit S-02, Gestalt: gemeinsame Region) */
 export const GROUP_LABELS: Record<AppModule['group'], string> = {
   alltag: t('Alltag'),
+  planen: t('Planen'),
   verein: t('Verein'),
   organisation: t('Kommunikation'),
   verwaltung: t('Verwaltung'),
@@ -103,18 +104,10 @@ export const modules: AppModule[] = [
     visible: (_org, ws) => !!ws.portal,
     children: (_org, ws) => portalNav(ws?.portal ?? null),
   },
-  {
-    id: 'aufgaben',
-    group: 'alltag',
-    label: t('Aufgaben'),
-    path: '/aufgaben',
-    icon: icon('M4 5h16v15H4zM8 12l3 3 5-7'),
-    visible: (org, ws) =>
-      !!(org?.permissions.includes('todos.view') || ws.dept?.permissions.includes('todos.view')),
-  },
+  // Planen: Termine und was daran hängt (Menüprüfung 2, N-01)
   {
     id: 'termine',
-    group: 'alltag',
+    group: 'planen',
     label: t('Termine'),
     path: '/termine',
     icon: icon('M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4M8 14h2M14 14h2M8 17h2'),
@@ -127,6 +120,43 @@ export const modules: AppModule[] = [
             (ws.dept?.events_enabled && ws.dept.permissions.includes(PERM.eventsView)) ||
             ws.portal?.events_enabled
           ),
+  },
+  {
+    id: 'versammlungen',
+    group: 'planen',
+    label: t('Versammlungen'),
+    path: '/versammlungen',
+    icon: icon('M4 20h16M6 20v-6h12v6M9 14V9.5M15 14V9.5M12 4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5'),
+    visible: (org, ws) =>
+      org
+        ? (org.type === 'club' || org.type === 'federation') &&
+          org.modules.includes('meetings') &&
+          org.permissions.includes(PERM.meetingsView)
+        : !!(ws.dept?.meetings_enabled && ws.dept.permissions.includes(PERM.meetingsView)),
+  },
+  {
+    id: 'helferdienste',
+    group: 'planen',
+    label: t('Helferdienste'),
+    path: '/helferdienste',
+    icon: icon(
+      'M8 7a3 3 0 1 0 0-.01M16 7a3 3 0 1 0 0-.01M3 20v-2a5 5 0 0 1 10 0v2M11 20v-2a5 5 0 0 1 10 0v2',
+    ),
+    visible: (org, ws) =>
+      org
+        ? (org.type === 'club' || org.type === 'federation') &&
+          org.modules.includes('helpers') &&
+          org.permissions.includes(PERM.helpersView)
+        : !!(ws.dept?.helpers_enabled && ws.dept.permissions.includes(PERM.helpersView)),
+  },
+  {
+    id: 'aufgaben',
+    group: 'planen',
+    label: t('Aufgaben'),
+    path: '/aufgaben',
+    icon: icon('M4 5h16v15H4zM8 12l3 3 5-7'),
+    visible: (org, ws) =>
+      !!(org?.permissions.includes('todos.view') || ws.dept?.permissions.includes('todos.view')),
   },
   {
     id: 'mitglieder',
@@ -224,34 +254,6 @@ export const modules: AppModule[] = [
       (org.type === 'club' || org.type === 'federation') &&
       org.modules.includes('chronicle') &&
       org.permissions.includes(PERM.chronicleView),
-  },
-  {
-    id: 'versammlungen',
-    group: 'verein',
-    label: t('Versammlungen'),
-    path: '/versammlungen',
-    icon: icon('M4 20h16M6 20v-6h12v6M9 14V9.5M15 14V9.5M12 4a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5'),
-    visible: (org, ws) =>
-      org
-        ? (org.type === 'club' || org.type === 'federation') &&
-          org.modules.includes('meetings') &&
-          org.permissions.includes(PERM.meetingsView)
-        : !!(ws.dept?.meetings_enabled && ws.dept.permissions.includes(PERM.meetingsView)),
-  },
-  {
-    id: 'helferdienste',
-    group: 'verein',
-    label: t('Helferdienste'),
-    path: '/helferdienste',
-    icon: icon(
-      'M8 7a3 3 0 1 0 0-.01M16 7a3 3 0 1 0 0-.01M3 20v-2a5 5 0 0 1 10 0v2M11 20v-2a5 5 0 0 1 10 0v2',
-    ),
-    visible: (org, ws) =>
-      org
-        ? (org.type === 'club' || org.type === 'federation') &&
-          org.modules.includes('helpers') &&
-          org.permissions.includes(PERM.helpersView)
-        : !!(ws.dept?.helpers_enabled && ws.dept.permissions.includes(PERM.helpersView)),
   },
   {
     id: 'abteilung',

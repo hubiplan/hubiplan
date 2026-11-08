@@ -7277,5 +7277,12 @@
   "Kopiere den Link jetzt. Aus Sicherheitsgründen zeigen wir ihn nur dieses eine Mal an.": "Copy the link now. For security reasons it is shown only this once.",
   "Dein Kalender-Abo ist eingerichtet. Den Link zeigen wir aus Sicherheitsgründen nur direkt nach dem Erstellen. Brauchst du ihn wieder, erstelle einen neuen Link.": "Your calendar subscription is set up. For security reasons the link is shown only right after it is created. If you need it again, create a new link.",
   "Die Virenprüfung ist eingerichtet, aber für die Weitergabe abgeschaltet (VIRUS_SCAN_REQUIRED=0). Rundschreiben-Anhänge und öffentliche Dokumente können ungeprüft hinausgehen.": "Virus scanning is set up but switched off for sharing (VIRUS_SCAN_REQUIRED=0). Circular attachments and public documents may go out unscanned.",
-  "Auf diesem Server ist keine Virenprüfung eingerichtet. Rundschreiben-Anhänge und öffentliche Dokumente gehen ungeprüft an viele Empfänger. Einrichtung: docs/betrieb.md, Abschnitt Virenprüfung.": "No virus scanning is set up on this server. Circular attachments and public documents go out unscanned to many recipients. Setup: docs/betrieb.md, section Virus scanning."
+  "Auf diesem Server ist keine Virenprüfung eingerichtet. Rundschreiben-Anhänge und öffentliche Dokumente gehen ungeprüft an viele Empfänger. Einrichtung: docs/betrieb.md, Abschnitt Virenprüfung.": "No virus scanning is set up on this server. Circular attachments and public documents go out unscanned to many recipients. Setup: docs/betrieb.md, section Virus scanning.",
+  "Planen": "Planning",
+  "Zu diesem Termin": "For this event",
+  "Zur Versammlung": "Go to meeting",
+  "Dienstplan: {title}": "Duty roster: {title}",
+  "Dienstplan für diesen Termin anlegen": "Create duty roster for this event",
+  "Belegt: {item}": "Booked: {item}",
+  "Raum oder Gerät für diesen Termin buchen": "Book a room or equipment for this event"
 }

@@ -14,6 +14,8 @@ Plätzen.
 
 Neuer Dienstplan: Wähle **Neuer Dienstplan**, gib einen Titel ein und hänge den Plan bei Bedarf
 an einen Termin.
+Aus dem Termin im Kalender führt **Dienstplan für diesen Termin anlegen** direkt hierher, der
+Termin ist dann schon ausgewählt. Im Dienstplan führt der Name des Termins zurück in den Kalender.
 
 Dienste und Schichten: Mit **Dienst hinzufügen** legst du einen Dienst mit Ort und, falls nötig,
 Mindestalter an (etwa Ausschank ab 18). Darunter legst du die Schichten an: Tag, Zeiten und

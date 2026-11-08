@@ -75,7 +75,7 @@ export function EventTaskLink({ base, eventId }: { base: string; eventId: number
   const context = useOptionalOrg()
   const active = context?.active
   const activeDept = context?.activeDept
-  const match = base.match(/^\/api\/(orgs|depts)\/(\d+)\/events\/?$/)
+  const match = base.match(/^\/api\/(orgs|depts)\/(\d+)\/(?:events\/?)?$/)
   if (!match) return null
   const permissions = active?.permissions ?? activeDept?.permissions ?? []
   if (!permissions.includes('todos.view')) return null

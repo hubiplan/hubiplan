@@ -16,6 +16,8 @@ Neue Versammlung: Wähle **Neue Versammlung**, dann Art, Beginn, Ende und Ort. H
 dazu einen Termin im Kalender an. Mitgliederversammlungen sehen alle Mitglieder im Kalender,
 Vorstandssitzungen nur der Vorstand. Ist **Tagesordnung der letzten Versammlung dieser Art übernehmen** angekreuzt, übernimmt HUBIplan deren Punkte; bei der ersten Versammlung einer Art
 schlägt es eine übliche Tagesordnung vor.
+**Termin im Kalender** in der Versammlung führt zum zugehörigen Termin; dort zeigt der Block
+„Zu diesem Termin“ Dienstpläne und Belegungen für die Versammlung.
 
 Tagesordnung: Jeder Tagesordnungspunkt (TOP) hat einen Titel, eine Art (Bericht, Beschluss,
 Wahl oder Sonstiges) und eine Erläuterung. Mit den Pfeilen änderst du die Reihenfolge, die
