@@ -25,6 +25,9 @@ import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { locale, t } from '../../i18n/index.ts'
 import { PERM } from '../../api/orgs.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
+import { HowTo, Term, Why } from '../../learning/Aids.tsx'
+import { Checklist } from '../../learning/Checklist.tsx'
+import { meetingInviteChecks } from '../../learning/checks.ts'
 import { MotionsCard } from './MotionsCard.tsx'
 import { ResolutionBook } from './ResolutionBook.tsx'
 import './meetings.css'
@@ -860,6 +863,12 @@ function KindsCard({
   return (
     <section className="card">
       <h2>{t('Arten und Fristen')}</h2>
+      <div className="aid-row">
+        <Why k="meeting_invite" />
+        <Why k="meeting_quorum" />
+        <Why k="meeting_proxies" />
+        <Why k="meeting_motions" />
+      </div>
       <p className="muted small">
         {t(
           'Die Art legt die Voreinstellungen fest, zum Beispiel die Einladungsfrist aus der Satzung. HUBIplan warnt, wenn eine Einladung zu spät hinausgeht.',
@@ -1169,6 +1178,15 @@ function InvitationCard({
           )
         )}
       </div>
+      {meeting.status === 'draft' && !meeting.invited_at && (
+        <Checklist
+          title={t('Vor der Einladung')}
+          items={meetingInviteChecks({
+            inviteBy: meeting.invite_by,
+            agenda: meeting.agenda ?? [],
+          })}
+        />
+      )}
       {meeting.status === 'draft' && meeting.can_edit && !meeting.can_invite && (
         <p className="muted small">
           {t('Für die Einladung ist zusätzlich das Recht nötig, Rundschreiben zu versenden.')}
@@ -1605,6 +1623,12 @@ function MinutesEditor({
           'Halte je Tagesordnungspunkt fest, was besprochen wurde, und trage Beschlüsse und Wahlen mit dem Ergebnis ein.',
         )}
       </p>
+      <p className="muted small">
+        {t('Es gilt meist die')} <Term k="simple_majority">{t('einfache Mehrheit')}</Term>
+        {t('; für eine')} <Term k="statute_amendment">{t('Satzungsänderung')}</Term>{' '}
+        {t('braucht es drei Viertel, wenn die Satzung nichts anderes sagt.')}
+      </p>
+      <HowTo k="calc_vote_result" />
       <ol className="agenda-edit">
         {items.map((item, index) => (
           <li key={item.id} className="agenda-row">
@@ -1823,6 +1847,7 @@ function ReleaseCard({
   return (
     <section className="card stack">
       <h2>{t('Freigabe des Protokolls')}</h2>
+      <Why k="meeting_minutes" />
       {done ? (
         <p>
           {t('Freigegeben am {day}. Das Protokoll lässt sich nicht mehr ändern.', {

@@ -5,6 +5,7 @@ import type { TaxStatus } from '../../api/finance.ts'
 import { useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 
 function statusText(status: TaxStatus): string {
@@ -36,6 +37,11 @@ export function AllowancesPage({ canEdit }: { canEdit: boolean }) {
   return (
     <div className="stack">
       <h2 className="section-heading">{t('Aufwandsvergütungen')}</h2>
+      <p className="muted small">
+        <Term k="trainer_allowance">{t('Übungsleiterfreibetrag')}</Term>
+        {' · '}
+        <Term k="volunteer_allowance">{t('Ehrenamtspauschale')}</Term>
+      </p>
       <div className="card card-wide filters">
         <label>
           {t('Kalenderjahr')}{' '}
@@ -135,6 +141,7 @@ export function AllowancesPage({ canEdit }: { canEdit: boolean }) {
           />{' '}
           {t('Unsere Satzung erlaubt eine Vergütung des Vorstands')}
         </label>
+        <Why k="board_pay" />
         <p className="muted small">
           {t(
             'Ohne Regelung in der Satzung ist der Vorstand unentgeltlich tätig (§ 27 Abs. 3 BGB). Dann warnt HUBIplan, wenn ein Vorstandsmitglied eine Pauschale erhält.',

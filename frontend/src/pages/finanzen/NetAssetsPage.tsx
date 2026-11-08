@@ -5,6 +5,7 @@ import { euro, financeApi } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { Term } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 
 export function NetAssetsPage() {
@@ -23,7 +24,9 @@ export function NetAssetsPage() {
 
   return (
     <div className="stack">
-      <h2 className="section-heading">{t('Vermögensübersicht')}</h2>
+      <h2 className="section-heading">
+        <Term k="net_assets">{t('Vermögensübersicht')}</Term>
+      </h2>
       <div className="card card-wide filters">
         <label>
           {t('Geschäftsjahr')}{' '}

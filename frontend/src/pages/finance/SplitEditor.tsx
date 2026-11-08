@@ -5,6 +5,7 @@ import { euro, financeApi, parseAmount } from '../../api/finance.ts'
 import type { Booking, Category, Project } from '../../api/finance.ts'
 import { errorMessage } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
+import { Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 
 interface Row {
@@ -78,6 +79,7 @@ export function SplitEditor({
   return (
     <form className="subcard" onSubmit={submit} aria-label={t('Buchung aufteilen')}>
       <h3>{t('Buchung aufteilen')}</h3>
+      <Why k="split_booking" />
       <p className="muted small">
         {t(
           'Ein Zahlungsvorgang, mehrere Kategorien: Jeder Teil wird eine eigene Buchung. Datum, Konto und Empfänger bzw. Zahler bleiben gleich; Belege und Kontoumsatz bleiben beim ersten Teil.',

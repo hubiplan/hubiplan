@@ -15,6 +15,7 @@ import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { emptyParty, PartyFields } from './PartnersPage.tsx'
 import { InvoiceDocumentsPanel } from './InvoiceDocumentsPanel.tsx'
@@ -441,6 +442,12 @@ export function CommercialForm({
       }}
     >
       <h2>{t('Leistungsrechnung')}</h2>
+      <Why k="einv_service_period" />
+      <p className="muted small">
+        <Term k="advance_invoice">{t('Anzahlungsrechnung')}</Term>
+        {' · '}
+        <Term k="leitweg_id">{t('Leitweg-ID')}</Term>
+      </p>
       {error && <Alert kind="error">{error}</Alert>}
       {partners.error && <Alert kind="error">{partners.error}</Alert>}
       <fieldset disabled={busy} className="stack">

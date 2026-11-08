@@ -119,6 +119,18 @@ const SOURCES_DATA = {
     full: 'Deutscher Schützenbund e. V.: Sportordnung (Regelwerk für das sportliche Schießen), in der jeweils geltenden Fassung.',
     url: 'https://www.dsb.de/fileadmin/dsb/sportordnung/',
   },
+  ksvg: {
+    full: 'Gesetz über die Sozialversicherung der selbständigen Künstler und Publizisten (Künstlersozialversicherungsgesetz, KSVG) vom 27. Juli 1981 (BGBl. I S. 705), in der jeweils geltenden Fassung.',
+    url: 'https://www.gesetze-im-internet.de/ksvg/',
+  },
+  erechv: {
+    full: 'Verordnung über die elektronische Rechnungsstellung im öffentlichen Auftragswesen des Bundes (E-Rechnungsverordnung, ERechV) vom 13. Oktober 2017 (BGBl. I S. 3555), in der jeweils geltenden Fassung.',
+    url: 'https://www.gesetze-im-internet.de/erechv/',
+  },
+  epcB2b: {
+    full: 'European Payments Council: SEPA Direct Debit Business to Business Scheme Rulebook (EPC222-07), in der jeweils geltenden Fassung.',
+    url: 'https://www.europeanpaymentscouncil.eu/what-we-do/sepa-direct-debit',
+  },
 } satisfies Record<string, Source>
 
 export type SourceKey = keyof typeof SOURCES_DATA
@@ -134,11 +146,24 @@ export const PHASES = {
   donations: { de: 'Spenden bestätigen' },
   website: { de: 'Webseite und Verbund' },
   competitions: { de: 'Wettbewerbe' },
+  meetings: { de: 'Versammlungen' },
+  organizing: { de: 'Helfer, Belegung und Ausleihe' },
 } satisfies Record<string, Text>
 export type PhaseKey = keyof typeof PHASES
 
 /** Freischaltung: Modul der Organisation, ohne das eine Hilfe nicht erscheint. */
-export type Feature = 'billing' | 'finance' | 'events' | 'platform' | 'website' | 'competitions'
+export type Feature =
+  | 'billing'
+  | 'finance'
+  | 'events'
+  | 'platform'
+  | 'website'
+  | 'competitions'
+  | 'tax'
+  | 'meetings'
+  | 'helpers'
+  | 'material'
+  | 'bookings'
 
 export interface Decision {
   title: Text
@@ -871,6 +896,179 @@ const DECISIONS_DATA = {
     phase: 'competitions',
     feature: 'competitions',
   },
+  meeting_invite: {
+    title: d('Welche Frist und Form für die Einladung?'),
+    text: d(
+      'Form und Frist der Einladung regelt die Satzung (§ 58 Nr. 4 BGB); trag hier genau diese Werte ein. Jeder Gegenstand, über den beschlossen werden soll, muss schon in der Einladung stehen, sonst ist der Beschluss ungültig (§ 32 Abs. 1 Satz 2 BGB). Eine zu spät verschickte Einladung macht alle Beschlüsse der Versammlung angreifbar.',
+    ),
+    sources: ['bgb'],
+    place: d('Versammlungen → Arten und Fristen'),
+    phase: 'meetings',
+    basic: true,
+    feature: 'meetings',
+  },
+  meeting_quorum: {
+    title: d('Mindestzahl für die Beschlussfähigkeit?'),
+    text: d(
+      'Das Gesetz verlangt keine Mindestzahl: Eine ordnungsgemäß einberufene Versammlung ist beschlussfähig, egal wie viele kommen (§ 32 BGB). Eine Mindestzahl schützt vor Beschlüssen kleiner Gruppen, kann die Versammlung aber lahmlegen, wenn zu wenige erscheinen. Trag nur dann einen Wert ein, wenn eure Satzung ihn vorschreibt (§ 40 BGB).',
+    ),
+    sources: ['bgb'],
+    place: d('Versammlungen → Arten und Fristen'),
+    phase: 'meetings',
+    feature: 'meetings',
+  },
+  meeting_proxies: {
+    title: d('Vertretung mit Vollmacht zulassen?'),
+    text: d(
+      'Das Stimmrecht ist nach dem Gesetz persönlich und kann keinem anderen überlassen werden (§ 38 Satz 2 BGB). Die Satzung darf Vollmachten erlauben (§ 40 BGB); das hilft Mitgliedern, die nicht kommen können, birgt aber das Risiko, dass wenige viele Stimmen sammeln. Schalte es nur ein, wenn eure Satzung Vollmachten vorsieht.',
+    ),
+    sources: ['bgb'],
+    place: d('Versammlungen → Arten und Fristen'),
+    phase: 'meetings',
+    feature: 'meetings',
+  },
+  meeting_motions: {
+    title: d('Anträge von Mitgliedern vor der Versammlung?'),
+    text: d(
+      'Über einen Antrag kann die Versammlung nur sicher beschließen, wenn er mit der Einladung angekündigt war (§ 32 Abs. 1 Satz 2 BGB). Eine Antragsfrist gibt dem Vorstand Zeit, eingegangene Anträge noch bekannt zu machen, schließt aber spontane Anträge aus. Übernimm die Frist aus der Satzung; steht dort nichts, entscheidet der Vorstand.',
+    ),
+    sources: ['bgb'],
+    place: d('Versammlungen → Arten und Fristen'),
+    phase: 'meetings',
+    feature: 'meetings',
+  },
+  meeting_minutes: {
+    title: d('Wer gibt das Protokoll frei?'),
+    text: d(
+      'Wie Beschlüsse beurkundet werden und wer das Protokoll unterschreibt, regelt die Satzung (§ 58 Nr. 4 BGB), meist Versammlungsleitung und Protokollführung. Das Registergericht verlangt bei Vorstandswahl und Satzungsänderung eine Abschrift (§§ 67, 71 BGB). Nach der Freigabe lässt sich das Protokoll nicht mehr ändern; prüft es deshalb vorher gemeinsam.',
+    ),
+    sources: ['bgb'],
+    place: d('Versammlung → Freigabe des Protokolls'),
+    phase: 'meetings',
+    basic: true,
+    feature: 'meetings',
+  },
+  board_pay: {
+    title: d('Vorstand mit Pauschale vergüten?'),
+    text: d(
+      'Ohne Regel in der Satzung arbeitet der Vorstand unentgeltlich und bekommt nur seine Auslagen ersetzt (§ 27 Abs. 3 BGB). Eine Vergütung ohne Grundlage in der Satzung kann die Gemeinnützigkeit gefährden, weil Mittel satzungswidrig fließen (§ 55 Abs. 1 Nr. 1 AO). Kreuze das nur an, wenn eure Satzung eine Vergütung des Vorstands ausdrücklich erlaubt.',
+    ),
+    sources: ['bgb', 'ao'],
+    place: d('Finanzen → Abschluss & Berichte → Pauschalen'),
+    phase: 'closing',
+    feature: 'tax',
+  },
+  artist_fee_mark: {
+    title: d('Welche Ausgaben als Künstlerhonorar kennzeichnen?'),
+    text: d(
+      'Abgabepflichtig sind Honorare an selbständige Künstler und Publizisten, etwa Kapelle, DJ, Fotograf oder Grafiker, auch wenn sie selbst nicht in der Künstlersozialkasse sind (§ 25 KSVG). Nicht dazu gehören Zahlungen an eine GmbH, gesondert ausgewiesene Umsatzsteuer und steuerfreie Reisekosten (§ 25 Abs. 2 KSVG). Ob der Verein überhaupt abgabepflichtig ist, hängt davon ab, wie oft er Künstler beauftragt (§ 24 KSVG).',
+    ),
+    sources: ['ksvg'],
+    place: d('Finanzen → Abschluss & Berichte → Künstlersozialabgabe'),
+    phase: 'closing',
+    feature: 'tax',
+  },
+  asset_method: {
+    title: d('Sofort abschreiben, Sammelposten oder über die Nutzungsdauer?'),
+    text: d(
+      'Bis 800 € netto darf ein Gegenstand im Jahr der Anschaffung voll abgeschrieben werden (§ 6 Abs. 2 EStG), von 250 bis 1.000 € wahlweise als Sammelposten über 5 Jahre (§ 6 Abs. 2a EStG). Teurere Anlagen verteilen sich linear über die Nutzungsdauer laut AfA-Tabelle (§ 7 Abs. 1 EStG). Steuerlich zählt das nur im wirtschaftlichen Geschäftsbetrieb, und die Wahl für den Sammelposten gilt dann für alle Anschaffungen des Jahres.',
+    ),
+    sources: ['estg'],
+    place: d('Finanzen → Anlagenverzeichnis → Anlage bearbeiten'),
+    phase: 'closing',
+    feature: 'tax',
+  },
+  split_booking: {
+    title: d('Wann eine Buchung aufteilen?'),
+    text: d(
+      'Ein Zahlungsvorgang kann mehrere Kategorien betreffen, etwa die Kasse eines Festes mit Eintritt und Getränkeverkauf. Für die Freigrenze von 50.000 € zählen nur die Einnahmen des wirtschaftlichen Geschäftsbetriebs (§ 64 Abs. 3 AO), deshalb gehört jeder Teil in seine Kategorie und damit in seinen steuerlichen Bereich. Teile auf, wenn die Kategorien verschieden sind; sonst genügt eine Buchung.',
+    ),
+    sources: ['ao'],
+    place: d('Kassenbuch → Buchung aufteilen'),
+    phase: 'closing',
+    feature: 'finance',
+  },
+  project_series: {
+    title: d('Veranstaltungen und Reihen anlegen?'),
+    text: d(
+      'Ordnest du Buchungen einer Veranstaltung zu, siehst du ihr Ergebnis und kannst es in einer Reihe über die Jahre vergleichen. Das zeigt, welches Fest sich trägt, und liefert Zahlen für die Freigrenze im wirtschaftlichen Geschäftsbetrieb (§ 64 Abs. 3 AO). Der Aufwand lohnt sich bei Festen mit vielen Buchungen; für kleine Termine reicht die Kategorie.',
+    ),
+    sources: ['ao'],
+    place: d('Finanzen → Veranstaltungen'),
+    phase: 'closing',
+    feature: 'finance',
+  },
+  audit_samples: {
+    title: d('Warum Stichproben und welche?'),
+    text: d(
+      'Kassenprüfer müssen nicht jeden Beleg sehen, aber nachvollziehen können, dass jede Buchung belegt und richtig ist (GoBD, Nachprüfbarkeit). Die größten Ausgaben tragen das größte Risiko; zufällig gezogene Buchungen verhindern, dass nur ausgesuchte Belege geprüft werden. Bei Auffälligkeiten zieht weitere Stichproben, bis das Bild klar ist.',
+    ),
+    sources: ['gobd'],
+    place: d('Finanzen → Kassenprüfung → Stichproben'),
+    phase: 'closing',
+    feature: 'finance',
+  },
+  audit_reconcile: {
+    title: d('Warum der Kontenabgleich?'),
+    text: d(
+      'Nur wenn der Bestand laut Kassenbuch mit Kontoauszug und gezählter Barkasse übereinstimmt, ist die Buchführung vollständig und richtig (GoBD). Eine Differenz heißt: Es fehlt eine Buchung oder ein Betrag ist falsch erfasst. Klärt jede Differenz und schreibt die Ursache in die Anmerkung.',
+    ),
+    sources: ['gobd'],
+    place: d('Finanzen → Kassenprüfung → Kontenabgleich'),
+    phase: 'closing',
+    basic: true,
+    feature: 'finance',
+  },
+  audit_recommendation: {
+    title: d('Welche Empfehlung zur Entlastung?'),
+    text: d(
+      '„Entlastung empfohlen“ passt, wenn die Prüfung nichts Wesentliches ergab, „mit Anmerkungen“ bei Mängeln, die das Ergebnis nicht in Frage stellen. „Nicht empfohlen“ ist richtig bei ungeklärten Differenzen oder fehlenden Belegen; die Versammlung entscheidet trotzdem selbst. Die Prüfer berichten nur, Grundlage ist die Rechenschaftspflicht des Vorstands (§ 27 Abs. 3, § 666 BGB).',
+    ),
+    sources: ['bgb'],
+    place: d('Finanzen → Kassenprüfung → Prüfpunkte und Ergebnis'),
+    phase: 'closing',
+    feature: 'finance',
+  },
+  b2b_scheme: {
+    title: d('Basislastschrift oder Firmenlastschrift?'),
+    text: d(
+      'Die Firmenlastschrift (B2B) gibt es nur für Zahler, die keine Verbraucher sind, etwa Firmen oder Vereine als Mitglied. Der Zahler kann eine autorisierte Belastung nicht zurückgeben, muss das Mandat aber vorher seiner Bank melden, sonst wird der Einzug abgewiesen (EPC B2B Rulebook). Nimm B2B für Organisationen mit eigener Buchhaltung, sonst die Basislastschrift mit 8 Wochen Widerspruchsfrist.',
+    ),
+    sources: ['epcB2b', 'epcSdd'],
+    place: d('Lastschrift → Mandat erfassen'),
+    phase: 'billing',
+    feature: 'billing',
+  },
+  einv_service_period: {
+    title: d('Warum Leistungsbeginn und -ende?'),
+    text: d(
+      'Jede Rechnung muss angeben, wann geliefert oder geleistet wurde (§ 14 Abs. 4 Satz 1 Nr. 6 UStG). Bei längeren Leistungen wie einer Saisonmiete gibt der Zeitraum genau das an, bei einem einzelnen Tag sind Beginn und Ende gleich. Fehlt die Angabe, kann der Empfänger keine Vorsteuer abziehen.',
+    ),
+    sources: ['ustg'],
+    place: d('Rechnungen → Leistungsrechnung'),
+    phase: 'billing',
+    feature: 'billing',
+  },
+  incoming_approval: {
+    title: d('Warum eine Eingangsrechnung fachlich freigeben?'),
+    text: d(
+      'Wer bestellt oder die Leistung erhalten hat, bestätigt, dass sie wie berechnet erbracht wurde; erst dann zahlt die Kasse. So prüfen zwei Personen, was sonst eine allein entscheidet, und Fehler oder doppelte Rechnungen fallen früher auf (GoBD, internes Kontrollsystem). In kleinen Vereinen, in denen eine Person alles macht, kann die Freigabe der Vorsitz übernehmen.',
+    ),
+    sources: ['gobd'],
+    place: d('Rechnungen → Eingang'),
+    phase: 'closing',
+    feature: 'finance',
+  },
+  helpers_names: {
+    title: d('Sollen Eingetragene die anderen Namen sehen?'),
+    text: d(
+      'Wer sieht, mit wem er Dienst hat, kann sich absprechen oder Fahrgemeinschaften bilden. Zugleich gibt der Verein damit Namen an andere Mitglieder weiter; das soll sich auf das Nötige beschränken (Art. 5 Abs. 1 lit. c DSGVO). Schalte es ein, wenn Absprachen in der Schicht wichtig sind, sonst lass es aus.',
+    ),
+    sources: ['dsgvo'],
+    place: d('Helferdienste → Dienst bearbeiten'),
+    phase: 'organizing',
+    feature: 'helpers',
+  },
 } satisfies Record<string, Decision>
 
 export type DecisionKey = keyof typeof DECISIONS_DATA
@@ -888,6 +1086,8 @@ export const SECTIONS = {
   donations: { de: 'Spenden' },
   web: { de: 'Webseite' },
   competitions: { de: 'Wettbewerbe' },
+  meetings: { de: 'Versammlungen' },
+  organizing: { de: 'Helfer, Belegung und Ausleihe' },
 } satisfies Record<string, Text>
 export type SectionKey = keyof typeof SECTIONS
 
@@ -1818,6 +2018,164 @@ const TERMS_DATA = {
     section: 'competitions',
     feature: 'competitions',
   },
+  simple_majority: {
+    name: d('Einfache Mehrheit'),
+    meaning: d(
+      'Ein Antrag ist angenommen, wenn er mehr Ja- als Nein-Stimmen hat; Enthaltungen zählen nicht mit (§ 32 Abs. 1 Satz 3 BGB). Die Satzung kann anderes bestimmen.',
+    ),
+    example: d(
+      'Beispiel: 23 Ja, 20 Nein, 9 Enthaltungen: Der Antrag ist angenommen, obwohl nur 23 der 52 Anwesenden zugestimmt haben.',
+    ),
+    sources: ['bgb'],
+    section: 'meetings',
+    feature: 'meetings',
+  },
+  statute_amendment: {
+    name: d('Satzungsänderung'),
+    meaning: d(
+      'Braucht drei Viertel der abgegebenen Stimmen, eine Änderung des Vereinszwecks die Zustimmung aller Mitglieder, wenn die Satzung nichts anderes sagt (§§ 33, 40 BGB). Beim eingetragenen Verein wird sie erst mit dem Eintrag ins Vereinsregister wirksam (§ 71 BGB).',
+    ),
+    example: d(
+      'Beispiel: 40 Ja, 12 Nein, 5 Enthaltungen: 40 von 52 abgegebenen Stimmen sind 77 %, mehr als drei Viertel, also angenommen.',
+    ),
+    sources: ['bgb'],
+    section: 'meetings',
+    feature: 'meetings',
+  },
+  discharge: {
+    name: d('Entlastung'),
+    meaning: d(
+      'Mit der Entlastung billigt die Mitgliederversammlung die Amtsführung des Vorstands für einen Zeitraum und verzichtet auf Ersatzansprüche, die sie kannte oder bei sorgfältiger Prüfung kennen konnte. Grundlage ist die Rechenschaft des Vorstands (§ 27 Abs. 3, § 666 BGB).',
+    ),
+    example: d(
+      'Beispiel: Die Versammlung am 14. März 2027 entlastet den Vorstand für 2026 mit 48 Ja und 0 Nein; die 4 Vorstandsmitglieder stimmen nicht mit.',
+    ),
+    sources: ['bgb'],
+    section: 'cash',
+    feature: 'finance',
+  },
+  trainer_allowance: {
+    name: d('Übungsleiterfreibetrag'),
+    meaning: d(
+      'Steuerfrei bis 3.300 € im Jahr (ab 2026) für nebenberufliches Ausbilden, Betreuen oder künstlerisches Wirken, etwa als Trainer oder Dirigent, im gemeinnützigen Bereich (§ 3 Nr. 26 EStG). Der Betrag gilt je Person über alle Auftraggeber zusammen.',
+    ),
+    example: d(
+      'Beispiel: Die Jugendtrainerin bekommt 12 × 250 € = 3.000 € im Jahr; das liegt unter 3.300 € und bleibt steuerfrei.',
+    ),
+    sources: ['estg'],
+    section: 'tax',
+    feature: 'tax',
+  },
+  volunteer_allowance: {
+    name: d('Ehrenamtspauschale'),
+    meaning: d(
+      'Steuerfrei bis 960 € im Jahr (ab 2026) für nebenberufliche Tätigkeit im gemeinnützigen Bereich, etwa als Kassierer oder Platzwart (§ 3 Nr. 26a EStG). Für dieselbe Tätigkeit gibt es sie nicht zusätzlich zum Übungsleiterfreibetrag.',
+    ),
+    example: d(
+      'Beispiel: Der Platzwart erhält 80 € im Monat, also 960 € im Jahr; mehr wäre steuerpflichtig.',
+    ),
+    sources: ['estg'],
+    section: 'tax',
+    feature: 'tax',
+  },
+  artist_levy: {
+    name: d('Künstlersozialabgabe'),
+    meaning: d(
+      'Abgabe an die Künstlersozialkasse auf Honorare an selbständige Künstler und Publizisten (§§ 24, 25 KSVG). Die Summe eines Jahres meldet der Verein bis 31. März des Folgejahres (§ 27 KSVG).',
+    ),
+    example: d(
+      'Beispiel: 2.400 € für die Kapelle beim Schützenfest; bei einem Abgabesatz von 5 % wären das 120,00 €.',
+    ),
+    sources: ['ksvg'],
+    section: 'tax',
+    feature: 'tax',
+  },
+  depreciation: {
+    symbol: 'AfA',
+    name: d('Abschreibung'),
+    meaning: d(
+      'Verteilung der Anschaffungskosten eines Gegenstands auf die Jahre seiner Nutzung (§ 7 Abs. 1 EStG). Steuerlich zählt sie nur im wirtschaftlichen Geschäftsbetrieb.',
+    ),
+    example: d(
+      'Beispiel: Ein Festzelt für 6.000 € mit 10 Jahren Nutzungsdauer: 600 € Abschreibung je Jahr.',
+    ),
+    sources: ['estg'],
+    section: 'cash',
+    feature: 'tax',
+  },
+  book_value: {
+    name: d('Buchwert'),
+    meaning: d(
+      'Anschaffungskosten abzüglich aller bisherigen Abschreibungen (§ 7 Abs. 1 EStG). Er sagt, mit welchem Wert ein Gegenstand noch im Verzeichnis steht, nicht, was er beim Verkauf brächte.',
+    ),
+    example: d(
+      'Beispiel: Festzelt für 6.000 €, nach 3 Jahren mit je 600 € Abschreibung: Buchwert 4.200 €.',
+    ),
+    sources: ['estg'],
+    section: 'cash',
+    feature: 'tax',
+  },
+  net_assets: {
+    name: d('Vermögensübersicht'),
+    meaning: d(
+      'Aufstellung von Konten, Anlagen, Forderungen und Schulden zum Jahresende. Sie gehört zur Rechenschaft des Vorstands gegenüber der Mitgliederversammlung (§ 27 Abs. 3, § 666 BGB).',
+    ),
+    example: d(
+      'Beispiel: 8.000 € Konten + 4.200 € Anlagen + 300 € offene Beiträge − 1.190 € offene Rechnungen = 11.310 €.',
+    ),
+    sources: ['bgb'],
+    section: 'cash',
+    feature: 'finance',
+  },
+  leitweg_id: {
+    name: d('Leitweg-ID'),
+    meaning: d(
+      'Kennung, mit der eine E-Rechnung an eine Behörde die richtige Stelle erreicht; Rechnungen an Bundesbehörden müssen sie enthalten (§ 5 Abs. 1 ERechV). Die Behörde nennt sie mit der Bestellung oder dem Zuschussbescheid.',
+    ),
+    example: d(
+      'Beispiel: Die Stadt nennt für die Hallenmiete die Leitweg-ID 05162000-0001-12; sie gehört ins Feld „Käuferreferenz“.',
+    ),
+    sources: ['erechv'],
+    section: 'invoices',
+    feature: 'billing',
+  },
+  advance_invoice: {
+    name: d('Anzahlungsrechnung'),
+    meaning: d(
+      'Rechnung über einen Teil des Entgelts vor der Leistung; die Umsatzsteuer entsteht schon mit der Zahlung (§ 13 Abs. 1 Nr. 1 Buchstabe a Satz 4 UStG). Die Schlussrechnung zieht die Anzahlungen mit ihrer Steuer ab (§ 14 Abs. 5 UStG).',
+    ),
+    example: d(
+      'Beispiel: Für das Zeltfest zahlt die Brauerei 1.190 € an; die Schlussrechnung über 4.760 € zieht sie ab, offen bleiben 3.570 €.',
+    ),
+    sources: ['ustg'],
+    section: 'invoices',
+    feature: 'billing',
+  },
+  b2b_debit: {
+    symbol: 'B2B',
+    name: d('Firmenlastschrift'),
+    meaning: d(
+      'SEPA-Lastschrift nur für Zahler, die keine Verbraucher sind, ohne Rückgaberecht nach der Belastung (EPC B2B Rulebook). Der Zahler muss das Mandat vorher seiner Bank bestätigen.',
+    ),
+    example: d(
+      'Beispiel: Die Sparkasse als Fördermitglied zahlt 250 € Jahresbeitrag per B2B; ohne Bestätigung bei ihrer Bank wird der Einzug abgewiesen.',
+    ),
+    sources: ['epcB2b'],
+    section: 'sepa',
+    feature: 'billing',
+  },
+  loan: {
+    name: d('Ausleihe'),
+    meaning: d(
+      'Unentgeltliche Überlassung zum Gebrauch, rechtlich eine Leihe (§ 598 BGB). Wer leiht, gibt die Sache rechtzeitig zurück und haftet für Schäden, aber nicht für normale Abnutzung (§§ 602, 604 BGB).',
+    ),
+    example: d(
+      'Beispiel: Der Jägerzug leiht 20 Biertischgarnituren vom 3. bis 5. Juli; 2 kommen mit gebrochenem Bein zurück, das wird bei der Rückgabe vermerkt.',
+    ),
+    sources: ['bgb'],
+    section: 'organizing',
+    feature: 'material',
+  },
 } satisfies Record<string, TermEntry>
 
 export type TermKey = keyof typeof TERMS_DATA
@@ -2146,6 +2504,48 @@ const HOWTOS_DATA = {
     ),
     sources: [],
     feature: 'competitions',
+  },
+  calc_vote_result: {
+    kind: 'calc',
+    title: d('Angenommen oder abgelehnt?'),
+    text: d(
+      'Gezählt werden nur Ja und Nein; angenommen ist ein Antrag mit mehr Ja als Nein, bei Gleichstand ist er abgelehnt (§ 32 Abs. 1 Satz 3 BGB). Verlangt die Satzung oder das Gesetz eine größere Mehrheit, etwa drei Viertel bei einer Satzungsänderung (§ 33 BGB), teilst du Ja durch Ja plus Nein. HUBIplan übernimmt das Ergebnis, das du einträgst, und rechnet nicht selbst.',
+    ),
+    example: {
+      head: ['Stimmen', 'einfache Mehrheit', 'drei Viertel'],
+      rows: [
+        ['Ja 30, Nein 10, Enthaltung 12', 'angenommen', '30 / 40 = 75 %: angenommen'],
+        ['Ja 20, Nein 20, Enthaltung 3', 'abgelehnt (Gleichstand)', '20 / 40 = 50 %: abgelehnt'],
+      ],
+    },
+    sources: ['bgb'],
+    feature: 'meetings',
+  },
+  calc_size_fee: {
+    kind: 'how',
+    title: d('Welche Größenstufe gilt?'),
+    text: d(
+      'HUBIplan nimmt die Größe aus der Mitgliederakte der Organisation und sucht die Stufen, deren Bereich sie einschließt; die Grenzen zählen mit. Eine Stufe für genau diese Mitgliedsart geht einer Stufe für alle vor, bei mehreren die mit der höchsten Mindestgröße. Ohne Größe oder ohne passende Stufe gilt der Beitrag der Mitgliedsart.',
+    ),
+    example: {
+      head: ['Größe', 'Stufen', 'Beitrag'],
+      rows: [
+        ['45 Mitarbeiter', '1–49: 120 €, ab 50: 250 €', '120 €'],
+        ['50 Mitarbeiter', '1–49: 120 €, ab 50: 250 €', '250 €'],
+        ['ohne Angabe', '–', 'Beitrag der Mitgliedsart'],
+      ],
+    },
+    sources: [],
+    feature: 'billing',
+  },
+  how_booking_requests: {
+    kind: 'how',
+    title: d('Wann gilt eine Buchung sofort?'),
+    text: d(
+      'Braucht ein Objekt keine Freigabe, gilt jede Buchung sofort; wer Freigaberecht hat, bucht ohnehin direkt. Sonst bleibt die Buchung eine Anfrage, bis jemand mit Freigaberecht sie annimmt oder ablehnt, und die buchende Person bekommt dann eine E-Mail. Ändert jemand ohne Freigaberecht eine angenommene Buchung, wird sie wieder zur Anfrage.',
+    ),
+    sources: [],
+    feature: 'bookings',
   },
 } satisfies Record<string, HowEntry>
 

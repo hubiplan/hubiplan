@@ -16,6 +16,9 @@ import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { Alert, Field, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { Term, Why } from '../../learning/Aids.tsx'
+import { Checklist } from '../../learning/Checklist.tsx'
+import { auditCloseChecks } from '../../learning/checks.ts'
 import { t } from '../../i18n/index.ts'
 
 function resultOptions(): { value: AuditResult; label: string }[] {
@@ -377,6 +380,11 @@ function ChecksCard({
   return (
     <form className="card card-wide" onSubmit={(e) => void save(e)}>
       <h3>{t('Prüfpunkte und Ergebnis')}</h3>
+      <p className="muted small">
+        {t('Die Empfehlung richtet sich an die Versammlung, die über die')}{' '}
+        <Term k="discharge">{t('Entlastung')}</Term> {t('des Vorstands abstimmt.')}
+      </p>
+      <Why k="audit_recommendation" />
       <fieldset disabled={!canAudit || form.busy}>
         <table className="table">
           <tbody>
@@ -591,6 +599,7 @@ function AuditDetail({ id, onBack }: { id: number; onBack: () => void }) {
       </div>
       <div className="card card-wide">
         <h3>{t('Kontenabgleich zum Jahresende')}</h3>
+        <Why k="audit_reconcile" />
         <p className="muted small">
           {t('Bestand laut Kassenbuch gegen Kontoauszug bzw. Zählung der Barkasse.')}
         </p>
@@ -620,6 +629,7 @@ function AuditDetail({ id, onBack }: { id: number; onBack: () => void }) {
       <div className="card card-wide">
         <div className="filters">
           <h3>{t('Stichproben ({n})', { n: audit.samples.length })}</h3>
+          <Why k="audit_samples" />
           {open && (audit.can_audit || audit.can_manage) && (
             <button
               type="button"
@@ -656,6 +666,11 @@ function AuditDetail({ id, onBack }: { id: number; onBack: () => void }) {
           </table>
         )}
       </div>
+      {canAudit && (
+        <div className="card card-wide">
+          <Checklist title={t('Vor dem Abschluss der Prüfung')} items={auditCloseChecks(audit)} />
+        </div>
+      )}
       <ChecksCard
         key={`${audit.id}-${audit.status}-${audit.recommendation}`}
         audit={audit}
