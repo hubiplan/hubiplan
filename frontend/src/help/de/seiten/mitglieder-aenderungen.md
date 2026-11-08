@@ -1,7 +1,6 @@
 ---
 key: page.members_changes
 titel: Mitglieder › Datenänderungen
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/anfragen/aenderungen]

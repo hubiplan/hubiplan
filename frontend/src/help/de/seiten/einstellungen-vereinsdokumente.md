@@ -1,7 +1,6 @@
 ---
 key: page.settings_documents
 titel: Einstellungen › Vereinsdokumente
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/vereinsdokumente]
 stichworte: [Satzung, Beitragsordnung, Gründungsurkunde, Fassung, PDF]

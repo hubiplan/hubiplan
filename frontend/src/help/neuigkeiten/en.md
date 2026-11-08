@@ -1,17 +1,10 @@
----
-key: guide.whats_new
-titel: What's new in HUBIplan?
-bereich: start
-routen: [/hilfe]
-stichworte: [news, changes, version]
----
-
-The latest changes are at the top. This is an overview by month; all changes in each version (release) are under [News](/hilfe/neuigkeiten).
+Overview by month, latest changes at the top. All changes in each version (release) are listed below.
 
 After an update to a new release, HUBIplan shows everyone who manages something a one-time notice “HUBIplan has been updated to version …” with the link “What's new”. “Hide” removes it; it appears only once per browser.
 
 November 2026:
 
+- Help reorganised: the help has four tabs, **Guides**, **Pages**, **Terms** (the former glossary) and **News**, and follows the order of the sidebar. First steps come in packages per task (e.g. treasury or managing members), and members without management rights see their own short start page. The help for a page lists the terms used on it.
 - New: cancellation invoice. Cancelling creates a separate document with a number (e.g. R2026-0012-S), date and reason that can be sent by email. Paid invoices can be cancelled too; the credit is refunded or offset against an open invoice. **Cancel and create again** opens a copy as a draft right away.
 - Member file: new tab “Fees” with invoices, outstanding amounts, SEPA mandates and the billing address.
 - Work area of a sub-unit: the sub-items are now in the sidebar instead of tabs above the content.

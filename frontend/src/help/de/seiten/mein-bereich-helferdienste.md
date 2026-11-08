@@ -1,7 +1,6 @@
 ---
 key: page.portal_helpers
 titel: Mein Bereich › Helferdienste
-bereich: mein-bereich
 routen: [/mein-bereich/helferdienste]
 stichworte: [Helfer, Dienst, Schicht, Dienstplan, eintragen, absagen, Kalender]
 ---

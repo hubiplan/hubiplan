@@ -1,10 +1,10 @@
 ---
 key: guide.fee_rates
 titel: Set the fee rates
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/beitraege]
+reihe: 10
 stichworte: [fee, annual fee, fee rate, membership type]
 ---
 

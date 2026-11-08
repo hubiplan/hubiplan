@@ -1,7 +1,6 @@
 ---
 key: page.events
 titel: Events
-bereich: termine
 modul: events
 routen: [/termine]
 stichworte: [calendar, event, accept, decline, subscription]

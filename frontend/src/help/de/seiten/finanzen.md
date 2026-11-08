@@ -1,7 +1,6 @@
 ---
 key: page.finance
 titel: Finanzen › Übersicht
-bereich: finanzen
 rechte: [finance.view, billing.view]
 routen: [/finanzen]
 stichworte: [Kasse, Kontostand, Übersicht, offene Posten]

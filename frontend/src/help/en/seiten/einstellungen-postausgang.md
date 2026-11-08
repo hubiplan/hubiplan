@@ -1,7 +1,6 @@
 ---
 key: page.settings_outbox
 titel: Settings › Outbox
-bereich: einstellungen
 rechte: [audit.view]
 routen: [/einstellungen/postausgang]
 stichworte: [email, sending, delivered, error]

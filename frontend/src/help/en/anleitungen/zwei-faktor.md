@@ -1,8 +1,8 @@
 ---
 key: guide.two_factor
 titel: Set up two-factor authentication
-bereich: konto
 routen: [/mein-konto/anmeldung]
+reihe: 20
 stichworte: [2FA, authenticator, phone, code, TOTP, security]
 ---
 

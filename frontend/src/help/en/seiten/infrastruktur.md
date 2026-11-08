@@ -1,7 +1,6 @@
 ---
 key: page.infrastructure
 titel: Manage rooms and facilities
-bereich: start
 modul: infrastructure
 rechte: [infrastructure.view]
 routen: [/infrastruktur]

@@ -1,7 +1,6 @@
 ---
 key: page.settings_letterhead
 titel: Einstellungen › Briefbogen
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/briefbogen]
 stichworte: [Briefbogen, Briefkopf, Fußzeile, Schrift]

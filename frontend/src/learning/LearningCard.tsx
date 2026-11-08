@@ -41,7 +41,7 @@ export function LearningCard() {
         {t(
           'Zeigt ein „?“ an Fachbegriffen und Grundlagen-Erklärungen „Warum?“ an Entscheidungen. Abwägungen bei echten Wahlmöglichkeiten erscheinen immer. Alle Begriffe stehen im',
         )}{' '}
-        <Link to="/glossar">{t('Glossar')}</Link>.
+        <Link to="/hilfe/begriffe">{t('Glossar')}</Link>.
       </p>
       {hiddenCount > 0 && (
         <div className="learning-hidden">

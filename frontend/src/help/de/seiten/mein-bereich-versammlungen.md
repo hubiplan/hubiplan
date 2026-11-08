@@ -1,7 +1,6 @@
 ---
 key: page.portal_meetings
 titel: Mein Bereich › Versammlungen
-bereich: mein-bereich
 routen: [/mein-bereich/versammlungen]
 stichworte: [Versammlung, Jahreshauptversammlung, Einladung, Tagesordnung, Protokoll]
 ---

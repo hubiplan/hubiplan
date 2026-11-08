@@ -1,10 +1,10 @@
 ---
 key: guide.year_closing
 titel: Close the financial year
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/abschluss]
+reihe: 160
 stichworte: [year-end closing, cash report, audit, close]
 ---
 

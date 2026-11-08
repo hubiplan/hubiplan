@@ -1,7 +1,6 @@
 ---
 key: page.infrastructure
 titel: Räume und Anlagen verwalten
-bereich: start
 modul: infrastructure
 rechte: [infrastructure.view]
 routen: [/infrastruktur]

@@ -1,7 +1,6 @@
 ---
 key: page.finance_cash_count
 titel: Finanzen › Kassenzählung
-bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/kassenzaehlung]

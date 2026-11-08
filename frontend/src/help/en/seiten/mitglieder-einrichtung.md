@@ -1,7 +1,6 @@
 ---
 key: page.members_setup
 titel: Members › Setup
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/einrichtung]

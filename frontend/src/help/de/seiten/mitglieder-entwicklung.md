@@ -1,7 +1,6 @@
 ---
 key: page.members_development
 titel: Mitglieder › Entwicklung
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/entwicklung]

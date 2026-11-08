@@ -1,7 +1,6 @@
 ---
 key: page.finance_closing
 titel: Finance › Evaluate and close the year
-bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen:

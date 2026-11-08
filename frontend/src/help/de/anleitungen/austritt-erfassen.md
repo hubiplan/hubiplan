@@ -1,10 +1,10 @@
 ---
 key: guide.member_exit
 titel: Austritt eines Mitglieds erfassen
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/:id, /mitglieder]
+reihe: 80
 stichworte: [Austritt, Kündigung, ausgetreten, Ende]
 ---
 

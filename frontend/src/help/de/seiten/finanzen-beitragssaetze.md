@@ -1,7 +1,6 @@
 ---
 key: page.finance_rates
 titel: Finanzen › Einrichtung › Beitragssätze
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/beitraege]

@@ -1,10 +1,10 @@
 ---
 key: guide.fee_rates
 titel: Beitragssätze festlegen
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/beitraege]
+reihe: 10
 stichworte: [Beitrag, Jahresbeitrag, Beitragssatz, Mitgliedsart]
 ---
 

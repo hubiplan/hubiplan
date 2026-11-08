@@ -5,7 +5,11 @@
 //
 //   key: guide.password          eindeutiger Schlüssel (guide.… oder page.…)
 //   titel: Passwort ändern
-//   bereich: konto               Gruppe auf der Hilfe-Seite (AREAS)
+//
+// Wo ein Eintrag in der Hilfe steht (Gruppe und Menüpunkt), folgt aus der Route und der
+// Seitenleiste (help/menu.ts), nicht aus einem eigenen Feld (konzepte/hilfe-neustruktur.md).
+//   reihe: 10                    optional: Reihenfolge im Menüpunkt (Ablauf), sonst nach Titel
+//   menue: /mein-konto           optional: Menüpunkt, wenn nicht die erste Route gilt
 //   modul: members               nur, wenn das Modul freigeschaltet ist (leer: immer)
 //   rechte: [members.edit]       eines davon nötig (leer: alle Angemeldeten)
 //   routen: [/mein-konto/anmeldung]
@@ -25,7 +29,10 @@ export interface HelpEntry {
   /** Adresse unter /hilfe/, z. B. „passwort-aendern“ oder „seite/mein-konto“ */
   slug: string
   title: string
-  area: string
+  /** Reihenfolge innerhalb des Menüpunkts (kleiner zuerst); ohne Angabe nach Titel */
+  order?: number
+  /** Menüpunkt, falls nicht die erste Route (z. B. /mein-konto) */
+  menu?: string
   module?: string
   rights: string[]
   routes: string[]
@@ -33,24 +40,8 @@ export interface HelpEntry {
   body: string
 }
 
-/** Bereiche der Hilfe-Seite in dieser Reihenfolge; die Namen stehen in HelpPage (areaLabel). */
-export const AREAS = [
-  'start',
-  'konto',
-  'mitglieder',
-  'beitraege',
-  'finanzen',
-  'termine',
-  'rundschreiben',
-  'meldungen',
-  'wettbewerbe',
-  'webseite',
-  'einstellungen',
-  'mein-bereich',
-] as const
-export type Area = (typeof AREAS)[number]
-
 const LIST_FIELDS = new Set(['rechte', 'routen', 'stichworte'])
+const KNOWN_FIELDS = new Set(['key', 'titel', 'modul', 'reihe', 'menue', ...LIST_FIELDS])
 
 /** Kopf und Text einer Hilfedatei lesen. Wirft bei Formfehlern (Test prüft alle Dateien). */
 export function parseHelpFile(file: string, raw: string): HelpEntry {
@@ -63,6 +54,7 @@ export function parseHelpFile(file: string, raw: string): HelpEntry {
     const kv = /^([a-z]+):\s*(.*)$/.exec(line)
     if (!kv) throw new Error(`${file}: Zeile „${line}“ unverständlich`)
     const [, name, value] = kv
+    if (!KNOWN_FIELDS.has(name)) throw new Error(`${file}: Feld „${name}“ unbekannt`)
     if (LIST_FIELDS.has(name)) {
       const list = /^\[(.*)\]$/.exec(value.trim())
       if (!list) throw new Error(`${file}: ${name} braucht [a, b]`)
@@ -78,6 +70,8 @@ export function parseHelpFile(file: string, raw: string): HelpEntry {
   const kind: HelpKind = key.startsWith('page.') ? 'page' : 'guide'
   if (!/^(guide|page)\.[a-z0-9_]+$/.test(key)) throw new Error(`${file}: key „${key}“ ungültig`)
   if (!str('titel')) throw new Error(`${file}: titel fehlt`)
+  if (str('reihe') && !/^\d+$/.test(str('reihe')))
+    throw new Error(`${file}: reihe braucht eine Zahl`)
   return {
     key,
     kind,
@@ -87,7 +81,8 @@ export function parseHelpFile(file: string, raw: string): HelpEntry {
       .replace(/^seiten\//, 'seite/')
       .replace(/\.md$/, ''),
     title: str('titel'),
-    area: str('bereich'),
+    order: str('reihe') ? Number(str('reihe')) : undefined,
+    menu: str('menue') || undefined,
     module: str('modul') || undefined,
     rights: list('rechte'),
     routes: list('routen'),

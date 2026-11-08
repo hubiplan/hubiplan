@@ -1,10 +1,10 @@
 ---
 key: guide.cash_receipt
 titel: Quittung für eine Barzahlung ausstellen
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/quittungen]
+reihe: 140
 stichworte: [Quittung, bar, Unterschrift, Beleg]
 ---
 

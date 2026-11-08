@@ -1,7 +1,6 @@
 ---
 key: page.portal_invoices
 titel: Mein Bereich › Rechnungen
-bereich: mein-bereich
 routen: [/mein-bereich/rechnungen]
 stichworte: [Rechnung, Beitrag, bezahlt, offen]
 ---

@@ -1,7 +1,6 @@
 ---
 key: page.finance_invoices
 titel: Finance › Invoices
-bereich: beitraege
 modul: billing
 rechte: [billing.view]
 routen: [/finanzen/rechnungen]

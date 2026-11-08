@@ -1,7 +1,6 @@
 ---
 key: page.helpers
 titel: Helferdienste und Schichtpläne
-bereich: termine
 modul: helpers
 rechte: [helpers.view, helpers.edit]
 routen: [/helferdienste]

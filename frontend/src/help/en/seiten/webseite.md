@@ -1,7 +1,6 @@
 ---
 key: page.website
 titel: Website › Overview
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite]

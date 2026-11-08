@@ -1,7 +1,6 @@
 ---
 key: page.finance_rates
 titel: Finance › Setup › Fee rates
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/beitraege]

@@ -1,7 +1,6 @@
 ---
 key: page.website_domain
 titel: Webseite › Internetadresse
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/domain]

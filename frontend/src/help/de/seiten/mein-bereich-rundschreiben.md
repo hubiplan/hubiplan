@@ -1,7 +1,6 @@
 ---
 key: page.portal_circulars
 titel: Mein Bereich › Mitteilungen
-bereich: mein-bereich
 routen: [/mein-bereich/rundschreiben]
 stichworte: [Mitteilungen, Rundschreiben, Abmelden, E-Mail]
 ---

@@ -1,7 +1,6 @@
 ---
 key: page.members_dignitaries
 titel: Members › Dignitaries
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/wuerdentraeger]

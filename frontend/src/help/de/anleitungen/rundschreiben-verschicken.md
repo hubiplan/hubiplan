@@ -1,7 +1,6 @@
 ---
 key: guide.circular_send
 titel: Rundschreiben verschicken
-bereich: rundschreiben
 modul: circulars
 rechte: [circulars.send]
 routen: [/rundschreiben]

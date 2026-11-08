@@ -1,10 +1,10 @@
 ---
 key: guide.member_change_review
 titel: Review a data change from a member
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/anfragen/aenderungen]
+reihe: 30
 stichworte: [change, new address, member area]
 ---
 

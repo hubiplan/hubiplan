@@ -1,7 +1,6 @@
 ---
 key: page.account_letter
 titel: Mein Konto › Briefvorlage & Unterschrift
-bereich: konto
 routen: [/mein-konto/briefvorlage, /briefvorlage]
 stichworte: [Brief, Word, Vorlage, Unterschrift, Briefkopf]
 ---

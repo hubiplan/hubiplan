@@ -1,10 +1,10 @@
 ---
 key: guide.invoice_single
 titel: Einzelne Rechnung schreiben
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen]
+reihe: 30
 stichworte: [Rechnung, Uniform, Posten, einzeln]
 ---
 

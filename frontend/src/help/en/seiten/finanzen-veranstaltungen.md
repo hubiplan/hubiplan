@@ -1,7 +1,6 @@
 ---
 key: page.finance_events
 titel: Finance › Events
-bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/veranstaltungen]

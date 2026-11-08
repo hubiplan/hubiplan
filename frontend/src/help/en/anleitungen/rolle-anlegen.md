@@ -1,9 +1,9 @@
 ---
 key: guide.role_create
 titel: Create a role and invite a person
-bereich: einstellungen
 rechte: [roles.edit]
 routen: [/einstellungen/rollen]
+reihe: 10
 stichworte: [role, rights, invite, access, treasurer]
 ---
 

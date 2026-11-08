@@ -1,7 +1,6 @@
 ---
 key: page.platform
 titel: Plattform
-bereich: einstellungen
 modul: platform
 rechte: [platform.manage]
 routen: [/plattform]

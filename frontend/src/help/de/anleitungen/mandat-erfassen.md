@@ -1,10 +1,10 @@
 ---
 key: guide.debit_mandate
 titel: SEPA-Mandat erfassen
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/lastschrift]
+reihe: 20
 stichworte: [Mandat, SEPA, Einzugsermächtigung, IBAN]
 ---
 

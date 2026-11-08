@@ -1,10 +1,10 @@
 ---
 key: guide.debit_run
 titel: Lastschrift erstellen und bei der Bank einreichen
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/lastschrift]
+reihe: 50
 stichworte: [SEPA, Lastschrift, Einzug, Bank, XML]
 ---
 

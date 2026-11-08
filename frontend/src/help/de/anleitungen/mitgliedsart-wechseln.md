@@ -1,10 +1,10 @@
 ---
 key: guide.member_type_change
 titel: Mitgliedsart wechseln (z. B. von aktiv zu passiv)
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/:id]
+reihe: 40
 stichworte: [Mitgliedsart, aktiv, passiv, Wechsel]
 ---
 

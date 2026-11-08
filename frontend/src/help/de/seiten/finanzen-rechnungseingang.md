@@ -1,7 +1,6 @@
 ---
 key: page.finance_incoming
 titel: Finanzen › Rechnungseingang
-bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/rechnungen/eingang]

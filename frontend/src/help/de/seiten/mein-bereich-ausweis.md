@@ -1,7 +1,6 @@
 ---
 key: page.portal_card
 titel: Mein Bereich › Ausweis
-bereich: mein-bereich
 routen: [/mein-bereich/ausweis]
 stichworte: [Ausweis, QR-Code, Mitgliedsausweis]
 ---

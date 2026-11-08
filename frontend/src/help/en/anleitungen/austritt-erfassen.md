@@ -1,10 +1,10 @@
 ---
 key: guide.member_exit
 titel: Record a member leaving
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/:id, /mitglieder]
+reihe: 80
 stichworte: [leaving, resignation, left, end]
 ---
 
