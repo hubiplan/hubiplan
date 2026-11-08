@@ -20,6 +20,7 @@ import { HonoraryAwards } from './HonoraryAwards.tsx'
 import { memberApi } from '../../api/members.ts'
 import { useTerms } from '../../org/terms.ts'
 import { Term } from '../../learning/Aids.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { t } from '../../i18n/index.ts'
 
 type FedRow = MemberRow & { club: string; club_id: number }
@@ -35,7 +36,7 @@ export function FederationMembersPage({ prefix = '/mitglieder' }: { prefix?: str
   if (!org.federation_member_access || org.federation_member_access === 'none') {
     return (
       <section>
-        <h1>{t('Mitglieder')}</h1>
+        <PageHeader />
         <div className="card empty-state">
           <p>
             {t(
@@ -51,7 +52,7 @@ export function FederationMembersPage({ prefix = '/mitglieder' }: { prefix?: str
     <Routes>
       <Route index element={<FederationList prefix={prefix} />} />
       <Route path="entwicklung" element={<MembersDevelopmentPage view="all" />} />
-      <Route path=":id" element={<FederationDetail prefix={prefix} />} />
+      <Route path=":id" element={<FederationDetail />} />
     </Routes>
   )
 }
@@ -108,38 +109,29 @@ function FederationList({ prefix }: { prefix: string }) {
 
   return (
     <section>
-      <div className="page-head">
-        <h1>
-          {t('Mitglieder')} {tm.e_im}
-        </h1>
-        {org.permissions.includes(PERM.cardsView) && (
-          <a
-            className="button button-ghost push-right"
-            href={cardApi.orgPdfUrl(org.id, {
+      <PageHeader
+        name={`${t('Mitglieder')} ${tm.e_im}`}
+        actions={[
+          org.permissions.includes(PERM.exportRun) && {
+            label: t('Export'),
+            onClick: () => setShowExport((s) => !s),
+          },
+          org.permissions.includes(PERM.cardsView) && {
+            label: t('Ausweise (PDF)'),
+            hint: t(
+              'Ausweise mit QR-Code für alle aktuellen Mitglieder der Auswahl (10 je A4-Seite)',
+            ),
+            href: cardApi.orgPdfUrl(org.id, {
               suche: params.suche,
               verein: params.verein,
               gemeldet: params.gemeldet,
               aktiv: params.aktiv,
               ehrentitel: params.ehrentitel,
               sortierung: params.sortierung,
-            })}
-            title={t(
-              'Ausweise mit QR-Code für alle aktuellen Mitglieder der Auswahl (10 je A4-Seite)',
-            )}
-          >
-            {t('Ausweise (PDF)')}
-          </a>
-        )}
-        {org.permissions.includes(PERM.exportRun) && (
-          <button
-            type="button"
-            className="button button-ghost"
-            onClick={() => setShowExport((s) => !s)}
-          >
-            {t('Export')}
-          </button>
-        )}
-      </div>
+            }),
+          },
+        ]}
+      />
       <p className="muted small">
         {t('Zugriff:')}{' '}
         {org.federation_member_access === 'write' ? t('lesen und ändern') : t('nur lesen')}{' '}
@@ -293,7 +285,7 @@ function FederationList({ prefix }: { prefix: string }) {
   )
 }
 
-function FederationDetail({ prefix }: { prefix: string }) {
+function FederationDetail() {
   const tm = useTerms()
   const org = useActiveOrg()
   const id = Number(useParams().id)
@@ -305,14 +297,7 @@ function FederationDetail({ prefix }: { prefix: string }) {
   if (!data) return <p className="muted">{t('Lädt …')}</p>
   return (
     <section>
-      <p>
-        <Link to={prefix}>
-          {t('← Mitglieder')} {tm.e_im}
-        </Link>
-      </p>
-      <h1>
-        {data.first_name} {data.last_name}
-      </h1>
+      <PageHeader title={`${data.first_name} ${data.last_name}`} />
       <p className="muted">
         {data.club} · {data.status === 'active' ? t('Mitglied') : t('ehemaliges Mitglied')}
         {data.current_type &&

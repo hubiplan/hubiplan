@@ -957,7 +957,8 @@ describe('Dachverband', () => {
     })
     renderAt('/mitglieder')
     expect(await screen.findByText('Muster, Erika')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Mitglieder im Dachverband' })).toBeInTheDocument()
+    // h1 = Menüpunkt (Seitenkopf S-05)
+    expect(screen.getByRole('heading', { level: 1, name: 'Mitglieder' })).toBeInTheDocument()
     expect(screen.getByText(/nur lesen/)).toBeInTheDocument()
   })
 
