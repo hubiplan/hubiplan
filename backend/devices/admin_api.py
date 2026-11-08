@@ -27,6 +27,9 @@ from access.catalog import (
     BILLING_VIEW,
     CARDS_EDIT,
     CARDS_MANAGE,
+    COMPETITIONS_EDIT,
+    COMPETITIONS_MANAGE,
+    COMPETITIONS_RESULTS,
     DEPT_EVENTS_MANAGE,
     DEPT_MEMBERS_EDIT,
     DEPT_MEMBERS_VIEW,
@@ -39,6 +42,7 @@ from access.catalog import (
     MEMBERS_VIEW,
     PHOTOS_EDIT,
     PHOTOS_MANAGE,
+    RESULTS_EDIT,
 )
 from access.permissions import organizations_for
 from audit.log import current_via
@@ -71,6 +75,12 @@ ADMIN_PERMISSIONS = (
     FINANCE_EDIT,
     BILLING_VIEW,
     BILLING_EDIT,
+    # Wettbewerbe: Standmodus in der App (konzepte/schiessen-android.md); nur wer Ergebnisse
+    # erfassen darf, „lesen“ allein macht keine Verwaltung
+    COMPETITIONS_MANAGE,
+    COMPETITIONS_RESULTS,
+    COMPETITIONS_EDIT,
+    RESULTS_EDIT,
 )
 # Untereinheiten (Rollen nur dort, z. B. Zugführung): Pfad /api/app/v1/admin/d/<Untereinheit>/
 DEPT_ADMIN_PERMISSIONS = (
@@ -102,6 +112,8 @@ def admin_units(user) -> list[dict]:
                     "permissions": own,
                     # Rechte als Bereiche mit Stufen (neue Codes gelten)
                     "stufen": True,
+                    # Eingeschaltete Module (neu, z. B. Bereich „Wettbewerbe“ nur mit Modul)
+                    "modules": sorted(org.enabled_modules or []),
                 }
             )
     return sorted(units, key=lambda u: u["name"].lower())

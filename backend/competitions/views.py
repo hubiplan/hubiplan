@@ -570,6 +570,10 @@ class CompetitionViewSet(_Mixin, AuditMixin, viewsets.ModelViewSet):
             for p in comp.prizes.all()
         ]
         data["can_manage"] = self.can_manage
+        # Standzugang anlegen: auch mit „Ergebnisse erfassen“ (stand_views.StandAccessListView)
+        data["can_stand_access"] = bool(
+            {COMPETITIONS_MANAGE, COMPETITIONS_RESULTS} & self.org_permissions
+        )
         from .program_views import ProgramSerializer
 
         data["programs"] = ProgramSerializer(comp.programs.all(), many=True).data

@@ -300,19 +300,21 @@ function CompetitionArea() {
                     {t('Standmodus (Vollbild, Handy, offline)')}
                   </a>
                 )}
-                {data.own && data.can_manage && data.status !== 'endgueltig' && (
-                  <button
-                    type="button"
-                    className="button button-ghost"
-                    aria-expanded={showAccess}
-                    onClick={() => setShowAccess((v) => !v)}
-                  >
-                    {t('Anderes Gerät per QR-Code')}
-                  </button>
-                )}
+                {data.own &&
+                  (data.can_stand_access ?? data.can_manage) &&
+                  data.status !== 'endgueltig' && (
+                    <button
+                      type="button"
+                      className="button button-ghost"
+                      aria-expanded={showAccess}
+                      onClick={() => setShowAccess((v) => !v)}
+                    >
+                      {t('Anderes Gerät per QR-Code')}
+                    </button>
+                  )}
                 <PrintMenu org={org.id} comp={data} />
               </div>
-              {showAccess && data.own && data.can_manage && (
+              {showAccess && data.own && (data.can_stand_access ?? data.can_manage) && (
                 <StandAccessCard org={org.id} comp={data} />
               )}
               {!data.own ? (

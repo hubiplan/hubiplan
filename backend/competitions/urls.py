@@ -11,6 +11,7 @@ from . import (
     certificate_views,
     event_views,
     foreign_views,
+    portal_rankings,
     stand_views,
     statistics_views,
     target_views,
@@ -211,5 +212,15 @@ portal_patterns = [
         "portal/<int:access_id>/results/",
         award_views.PortalResultsView.as_view(),
         name="portal-results",
+    ),
+    path(
+        "portal/<int:access_id>/rankings/",
+        portal_rankings.PortalRankingsView.as_view(),
+        name="portal-rankings",
+    ),
+    path(
+        "portal/<int:access_id>/rankings/<str:token>/",
+        portal_rankings.PortalRankingView.as_view(),
+        name="portal-ranking",
     ),
 ]
