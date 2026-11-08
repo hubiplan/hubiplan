@@ -1,7 +1,6 @@
 ---
 key: page.members_types
 titel: Members › Setup › Membership types
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/einrichtung/mitgliedsarten]

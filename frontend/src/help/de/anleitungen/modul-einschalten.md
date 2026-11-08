@@ -1,7 +1,6 @@
 ---
 key: guide.module_toggle
 titel: Modul für eine Einheit freischalten
-bereich: einstellungen
 modul: platform
 rechte: [platform.manage]
 routen: [/plattform]

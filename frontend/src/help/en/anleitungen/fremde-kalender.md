@@ -1,10 +1,10 @@
 ---
 key: guide.event_external
 titel: Show events from an external calendar
-bereich: termine
 modul: events
 rechte: [events.manage]
 routen: [/termine/einrichtung/fremde]
+reihe: 30
 stichworte: [Vereinsplaner, iCal, federation, external events, subscription, token]
 ---
 

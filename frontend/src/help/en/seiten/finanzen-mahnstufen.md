@@ -1,7 +1,6 @@
 ---
 key: page.finance_dunning_levels
 titel: Finance › Setup › Reminder levels
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/mahnstufen]

@@ -1,7 +1,6 @@
 ---
 key: page.finance_setup
 titel: Finance › Setup
-bereich: finanzen
 rechte: [finance.edit, billing.edit]
 routen: [/finanzen/einrichtung]
 stichworte: [setup, accounts, categories, fee rates]

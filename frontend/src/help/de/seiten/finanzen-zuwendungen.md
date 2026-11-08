@@ -1,7 +1,6 @@
 ---
 key: page.finance_donations
 titel: Finanzen › Zuwendungsbestätigungen
-bereich: finanzen
 modul: donations
 rechte: [finance.view]
 routen: [/finanzen/zuwendungen]

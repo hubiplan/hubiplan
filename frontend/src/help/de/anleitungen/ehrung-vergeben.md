@@ -1,10 +1,10 @@
 ---
 key: guide.member_honour
 titel: Ehrung vergeben
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/:id, /mitglieder/jubilaeen]
+reihe: 50
 stichworte: [Ehrung, Orden, Jubilar, verleihen]
 ---
 

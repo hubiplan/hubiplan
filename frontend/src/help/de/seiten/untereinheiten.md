@@ -1,7 +1,6 @@
 ---
 key: page.units
 titel: Untereinheiten
-bereich: mitglieder
 routen: [/untereinheiten]
 stichworte: [Zug, Abteilung, Untereinheit, Leitung, Verwalter]
 ---

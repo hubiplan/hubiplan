@@ -1,7 +1,6 @@
 ---
 key: page.competitions_certificates
 titel: Wettbewerbe › Urkundenvorlagen
-bereich: wettbewerbe
 modul: competitions
 rechte: [competitions.manage, competitions.results]
 routen: [/wettbewerbe/urkunden]

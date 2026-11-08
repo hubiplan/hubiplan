@@ -1,17 +1,10 @@
----
-key: guide.whats_new
-titel: Was ist neu in HUBIplan?
-bereich: start
-routen: [/hilfe]
-stichworte: [Neuigkeiten, Änderungen, Version]
----
-
-Die neuesten Änderungen stehen oben. Hier steht ein Überblick nach Monaten; alle Änderungen je Version (Release) stehen unter [Neuigkeiten](/hilfe/neuigkeiten).
+Überblick nach Monaten, die neuesten Änderungen oben. Alle Änderungen je Version (Release) stehen darunter.
 
 Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten, einmal den Hinweis „HUBIplan wurde auf Version … aktualisiert“ mit dem Link „Das ist neu“. Mit „Ausblenden“ verschwindet er; er erscheint je Browser nur einmal.
 
 November 2026:
 
+- Hilfe neu gegliedert: Die Hilfe hat vier Reiter, **Anleitungen**, **Seiten**, **Begriffe** (das bisherige Glossar) und **Neuigkeiten**, und ist geordnet wie die Seitenleiste. Die ersten Schritte stehen als Pakete je Aufgabe (z. B. Kasse oder Mitglieder verwalten), Mitglieder ohne Verwaltungsrechte sehen eine eigene, kurze Startseite. Die Hilfe zu einer Seite nennt die Begriffe der Seite.
 - Neu: Stornorechnung. Ein Storno erzeugt einen eigenen Beleg mit Nummer (z. B. R2026-0012-S), Datum und Grund, der sich per E-Mail verschicken lässt. Auch bezahlte Rechnungen lassen sich stornieren; das Guthaben wird erstattet oder mit einer offenen Rechnung verrechnet. **Stornieren und neu anlegen** öffnet gleich eine Kopie als Entwurf.
 - Mitgliederakte: Neuer Reiter „Beiträge“ mit Rechnungen, offenen Beträgen, SEPA-Mandaten und der Rechnungsanschrift.
 - Arbeitsbereich einer Untereinheit: Die Unterpunkte stehen jetzt in der Seitenleiste statt als Reiter über dem Inhalt.

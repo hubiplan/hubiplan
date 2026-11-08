@@ -1,10 +1,10 @@
 ---
 key: guide.event_create
 titel: Termin anlegen und Mitglieder einladen
-bereich: termine
 modul: events
 rechte: [events.manage]
 routen: [/termine]
+reihe: 10
 stichworte: [Termin, Einladung, Serie, Zusage]
 ---
 

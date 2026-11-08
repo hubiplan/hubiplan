@@ -1,10 +1,10 @@
 ---
 key: guide.dunning
 titel: Send payment reminders
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen/mahnungen]
+reihe: 60
 stichworte: [reminder, dunning, overdue, unpaid]
 ---
 

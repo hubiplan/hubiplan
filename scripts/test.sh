@@ -14,8 +14,8 @@
 # Die Frontend-Prüfungen ohne Tests (Typen, Lint, Format) laufen gleichzeitig mit dem
 # Backend (TEST_PARALLEL=0: alles nacheinander).
 #
-# Regeln: Tests laufen nie auf dem Testserver. Höchstens zwei Testläufe gleichzeitig
-# (alle Projekte), jeder höchstens 8 Kerne: das Skript holt sich einen Platz über
+# Regeln: Tests laufen nie auf dem Testserver. Höchstens drei Testläufe gleichzeitig
+# (alle Projekte), jeder höchstens 6 Kerne: das Skript holt sich einen Platz über
 # scripts/testplatz.sh und bindet alle Container an dessen Kerne.
 set -euo pipefail
 

@@ -5,7 +5,7 @@
 - **Nie Tests auf dem Testserver ausführen**, auch keine Test-Container. Tests laufen lokal
   unter Linux/WSL mit Docker und `scripts/test.sh`. Danach darf ausgerollt werden;
   `deploy/deploy.sh` akzeptiert nur lokal getestete Stände.
-- **Höchstens zwei Testläufe gleichzeitig, jeder höchstens 8 Kerne**, projektübergreifend.
+- **Höchstens drei Testläufe gleichzeitig, jeder höchstens 6 Kerne**, projektübergreifend.
   Tests nur über `scripts/test.sh` starten. Es holt über `scripts/testplatz.sh` einen Platz;
   andere Projekte verwenden `testplatz <befehl>` (siehe [docs/testserver.md](docs/testserver.md)).
 - Keine Passwörter, Schlüssel oder Geheimnisse ins Repo, in PRs oder in Chats.

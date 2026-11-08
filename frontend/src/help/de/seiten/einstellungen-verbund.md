@@ -1,7 +1,6 @@
 ---
 key: page.settings_peering
 titel: Einstellungen › Verbund
-bereich: einstellungen
 rechte: [peering.manage]
 routen: [/einstellungen/verbund]
 stichworte: [Verbund, Instanz, Partner, Austausch]

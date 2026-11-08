@@ -1,7 +1,6 @@
 ---
 key: page.website_design
 titel: Website › Design
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/gestaltung]

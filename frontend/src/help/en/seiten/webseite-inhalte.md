@@ -1,7 +1,6 @@
 ---
 key: page.website_texts
 titel: Website › Texts
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/inhalte]

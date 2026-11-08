@@ -1,7 +1,6 @@
 ---
 key: page.music
 titel: Music
-bereich: termine
 modul: music
 rechte: [music.view]
 routen: [/musik]

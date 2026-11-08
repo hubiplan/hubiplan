@@ -1,7 +1,6 @@
 ---
 key: page.members_fields
 titel: Members › Setup › Custom fields
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/einrichtung/zusatzfelder]

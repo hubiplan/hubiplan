@@ -1,7 +1,6 @@
 ---
 key: page.website_contact
 titel: Website › Contact form
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/kontakt]

@@ -1,7 +1,6 @@
 ---
 key: page.finance_fee_runs
 titel: Finanzen › Beitragsläufe
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen/beitragslaeufe]

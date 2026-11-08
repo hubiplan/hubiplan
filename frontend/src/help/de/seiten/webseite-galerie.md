@@ -1,7 +1,6 @@
 ---
 key: page.website_gallery
 titel: Webseite › Galerie
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/galerie]

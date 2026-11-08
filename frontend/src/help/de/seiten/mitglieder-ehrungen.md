@@ -1,7 +1,6 @@
 ---
 key: page.members_honours_setup
 titel: Mitglieder › Einrichtung › Ehrungen
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/einrichtung/ehrungen]

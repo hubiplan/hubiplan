@@ -1,7 +1,6 @@
 ---
 key: page.units
 titel: Sub-units
-bereich: mitglieder
 routen: [/untereinheiten]
 stichworte: [platoon, department, sub-unit, manager]
 ---

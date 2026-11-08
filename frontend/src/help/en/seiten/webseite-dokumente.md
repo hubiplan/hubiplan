@@ -1,7 +1,6 @@
 ---
 key: page.website_documents
 titel: Website › Documents
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/dokumente]

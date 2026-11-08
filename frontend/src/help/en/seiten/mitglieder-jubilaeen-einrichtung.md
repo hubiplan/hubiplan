@@ -1,7 +1,6 @@
 ---
 key: page.members_anniv_setup
 titel: Members › Setup › Anniversaries & duration
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/einrichtung/jubilaeen]

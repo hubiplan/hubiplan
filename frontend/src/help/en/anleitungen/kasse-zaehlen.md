@@ -1,10 +1,10 @@
 ---
 key: guide.cash_count
 titel: Count the cash (also after a festival)
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/kassenzaehlung]
+reihe: 130
 stichworte: [cash count, cash, festival, cash report]
 ---
 

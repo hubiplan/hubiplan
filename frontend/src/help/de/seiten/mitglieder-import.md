@@ -1,7 +1,6 @@
 ---
 key: page.members_import
 titel: Mitglieder › Import
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/import]

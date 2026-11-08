@@ -1,7 +1,6 @@
 ---
 key: page.meetings
 titel: Meetings
-bereich: termine
 modul: meetings
 rechte: [meetings.view, meetings.edit]
 routen: [/versammlungen]

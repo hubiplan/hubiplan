@@ -1,7 +1,6 @@
 ---
 key: page.members
 titel: Mitglieder
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder]

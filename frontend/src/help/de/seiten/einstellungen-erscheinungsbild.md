@@ -1,7 +1,6 @@
 ---
 key: page.settings_theme
 titel: Einstellungen › Erscheinungsbild
-bereich: einstellungen
 rechte: [theme.edit]
 routen: [/einstellungen/erscheinungsbild]
 stichworte: [Farbe, Logo, Wappen, Aussehen]

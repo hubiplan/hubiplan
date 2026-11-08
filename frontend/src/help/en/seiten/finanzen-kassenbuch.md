@@ -1,7 +1,6 @@
 ---
 key: page.finance_cashbook
 titel: Finance › Cash book
-bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/kassenbuch]

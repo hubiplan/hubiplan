@@ -1,7 +1,6 @@
 ---
 key: page.portal_bookings
 titel: Mein Bereich › Belegung
-bereich: mein-bereich
 routen: [/mein-bereich/belegung]
 stichworte: [Buchung, Anfrage, Schützenhaus, Saal, Stand, Material, ausleihen]
 ---

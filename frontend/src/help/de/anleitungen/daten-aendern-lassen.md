@@ -1,7 +1,6 @@
 ---
 key: guide.portal_change
 titel: Eigene Daten ändern lassen (neue Adresse, neues Konto)
-bereich: mein-bereich
 routen: [/mein-bereich/daten, /mein-bereich]
 stichworte: [Adresse, Umzug, IBAN, ändern, Telefon]
 ---

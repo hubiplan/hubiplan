@@ -1,10 +1,10 @@
 ---
 key: guide.member_cards
 titel: Print or block membership cards
-bereich: mitglieder
 modul: members
 rechte: [cards.view, cards.manage]
 routen: [/mitglieder]
+reihe: 60
 stichworte: [card, QR code, print, block, lost]
 ---
 

@@ -1,7 +1,6 @@
 ---
 key: page.settings_letterhead
 titel: Settings › Letterhead
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/briefbogen]
 stichworte: [letterhead, header, footer, font]

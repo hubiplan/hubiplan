@@ -1,7 +1,6 @@
 ---
 key: guide.competition_create
 titel: Wettbewerb anlegen und auswerten
-bereich: wettbewerbe
 modul: competitions
 rechte: [competitions.manage]
 routen: [/wettbewerbe]

@@ -1,7 +1,6 @@
 ---
 key: page.finance_donations
 titel: Finance › Donation receipts
-bereich: finanzen
 modul: donations
 rechte: [finance.view]
 routen: [/finanzen/zuwendungen]

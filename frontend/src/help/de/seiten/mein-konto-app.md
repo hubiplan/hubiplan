@@ -1,7 +1,6 @@
 ---
 key: page.account_app
 titel: Mein Konto › App & andere Instanzen
-bereich: konto
 routen: [/mein-konto/app]
 stichworte: [App, Handy, Gerät, koppeln, Instanz]
 ---

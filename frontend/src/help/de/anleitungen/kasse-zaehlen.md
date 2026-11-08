@@ -1,10 +1,10 @@
 ---
 key: guide.cash_count
 titel: Kasse zählen (auch nach einem Fest)
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/kassenzaehlung]
+reihe: 130
 stichworte: [Kassenzählung, Bargeld, Fest, Kassenbericht]
 ---
 

@@ -1,9 +1,9 @@
 ---
 key: guide.role_preview
 titel: Check what a role sees (view as role)
-bereich: einstellungen
 rechte: [roles.preview]
 routen: [/einstellungen/rollen]
+reihe: 20
 stichworte: [view as role, preview, check rights]
 ---
 

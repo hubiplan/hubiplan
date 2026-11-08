@@ -1,7 +1,6 @@
 ---
 key: page.portal_helpers
 titel: My area › Volunteer duties
-bereich: mein-bereich
 routen: [/mein-bereich/helferdienste]
 stichworte: [Helper, Duty, Shift, Roster, sign up, cancel, Calendar]
 ---

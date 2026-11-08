@@ -1,10 +1,10 @@
 ---
 key: guide.bank_statement
 titel: Import and match a bank statement
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/kontoauszuege]
+reihe: 110
 stichworte: [bank statement, CAMT, bank, transactions, matching]
 ---
 

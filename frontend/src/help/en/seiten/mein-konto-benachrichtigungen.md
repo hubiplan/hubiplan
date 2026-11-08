@@ -1,7 +1,6 @@
 ---
 key: page.account_notifications
 titel: My account › Notifications
-bereich: konto
 routen: [/mein-konto/benachrichtigungen]
 stichworte: [Tasks, Reminders, Email, Push]
 ---

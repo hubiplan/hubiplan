@@ -1,7 +1,6 @@
 ---
 key: page.members_anniversaries
 titel: Mitglieder › Jubiläen
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/jubilaeen]

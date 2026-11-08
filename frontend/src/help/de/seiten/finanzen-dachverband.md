@@ -1,7 +1,6 @@
 ---
 key: page.finance_received
 titel: Finanzen › Erhaltene Rechnungen
-bereich: finanzen
 routen: [/finanzen/rechnungen/dachverband]
 stichworte: [Dachverband, Rechnung, Abgabe, Verbandsbeitrag]
 ---

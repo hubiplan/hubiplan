@@ -1,7 +1,6 @@
 ---
 key: page.finance_setup
 titel: Finanzen › Einrichtung
-bereich: finanzen
 rechte: [finance.edit, billing.edit]
 routen: [/finanzen/einrichtung]
 stichworte: [Einrichtung, Konten, Kategorien, Beitragssätze]

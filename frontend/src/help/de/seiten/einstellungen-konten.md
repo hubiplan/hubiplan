@@ -1,7 +1,6 @@
 ---
 key: page.settings_accounts
 titel: Einstellungen › Konten
-bereich: einstellungen
 rechte: [roles.view, logins.view]
 routen: [/einstellungen/konten]
 stichworte: [Konto, Anmeldung, Einladung, Anmeldelink, Zwei-Faktor, Zugang, Benutzer]

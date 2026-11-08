@@ -1,10 +1,10 @@
 ---
 key: guide.event_create
 titel: Create an event and invite members
-bereich: termine
 modul: events
 rechte: [events.manage]
 routen: [/termine]
+reihe: 10
 stichworte: [event, invitation, series, RSVP]
 ---
 

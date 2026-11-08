@@ -1,10 +1,10 @@
 ---
 key: guide.debit_run
 titel: Create a direct debit and submit it to the bank
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/lastschrift]
+reihe: 50
 stichworte: [SEPA, direct debit, collection, bank, XML]
 ---
 

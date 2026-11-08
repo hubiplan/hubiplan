@@ -508,7 +508,12 @@ export function Term({ k, children, note }: { k: TermKey; children: ReactNode; n
         <span className="term-meaning">{tr(entry.meaning)}</span>
         {extra && <span className="term-note">{extra}</span>}
         <span className="term-example">{tr(entry.example)}</span>
-        <a className="term-link" href={`/glossar#${termAnchor(k)}`} target="_blank" rel="noopener">
+        <a
+          className="term-link"
+          href={`/hilfe/begriffe#${termAnchor(k)}`}
+          target="_blank"
+          rel="noopener"
+        >
           {t('im Glossar ↗')}
         </a>
       </span>

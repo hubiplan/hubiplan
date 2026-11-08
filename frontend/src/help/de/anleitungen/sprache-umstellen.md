@@ -1,8 +1,8 @@
 ---
 key: guide.language
 titel: Sprache umstellen (Deutsch oder Englisch)
-bereich: konto
 routen: [/mein-konto]
+reihe: 30
 stichworte: [Englisch, English, Language, Sprache]
 ---
 

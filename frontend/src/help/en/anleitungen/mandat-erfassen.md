@@ -1,10 +1,10 @@
 ---
 key: guide.debit_mandate
 titel: Record a SEPA mandate
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/lastschrift]
+reihe: 20
 stichworte: [mandate, SEPA, direct debit authorisation, IBAN]
 ---
 

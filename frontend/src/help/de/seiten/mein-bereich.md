@@ -1,7 +1,6 @@
 ---
 key: page.portal
 titel: Mein Bereich › Übersicht
-bereich: mein-bereich
 routen: [/mein-bereich]
 stichworte: [Mitglied, meine Daten, Übersicht]
 ---

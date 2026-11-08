@@ -1,10 +1,10 @@
 ---
 key: guide.bank_statement
 titel: Kontoauszug einlesen und zuordnen
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/kontoauszuege]
+reihe: 110
 stichworte: [Kontoauszug, CAMT, Bank, Umsätze, Zuordnung]
 ---
 

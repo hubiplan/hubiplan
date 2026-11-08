@@ -1,7 +1,6 @@
 ---
 key: page.account_letter
 titel: My account › Letter template & signature
-bereich: konto
 routen: [/mein-konto/briefvorlage, /briefvorlage]
 stichworte: [letter, Word, template, signature, letterhead]
 ---

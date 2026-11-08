@@ -292,8 +292,8 @@ BACKUP_TEST=1 scripts/test.sh <commit>   # zusätzlich Backup und Rücksicherung
 Das Skript prüft nur den eingecheckten Stand (`git archive`) in Wegwerf-Containern und
 vermerkt einen grünen Stand als getestet; nur solche Stände rollt `deploy/deploy.sh` aus.
 Damit sich mehrere Testläufe auf einem Rechner nicht gegenseitig ausbremsen, holt es sich
-über [`scripts/testplatz.sh`](scripts/testplatz.sh) einen von zwei Testplätzen mit je
-höchstens 8 Kernen. Tests laufen nie auf einem Server. GitHub Actions gibt es nur zum
+über [`scripts/testplatz.sh`](scripts/testplatz.sh) einen von drei Testplätzen mit je
+höchstens 6 Kernen. Tests laufen nie auf einem Server. GitHub Actions gibt es nur zum
 Starten von Hand.
 
 ## Selbst betreiben

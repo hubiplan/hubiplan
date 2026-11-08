@@ -1,7 +1,6 @@
 ---
 key: page.settings_imprint
 titel: Settings › Legal notice
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/impressum]
 stichworte: [legal notice, imprint, responsible person]
