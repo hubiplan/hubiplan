@@ -83,7 +83,9 @@ class TestStandzugangInDerApp:
         detail = c.get(f"{base}{comp_id}/").json()
         assert detail["can_manage"] is False and detail["can_stand_access"] is True
         # Nur lesen: anlegen oder ändern geht in der App nicht
-        assert c.post(base, {"title": "Neu"}, content_type=JSON).status_code == 405
+        # Rechte prüft DRF vor der Methode: ohne „Wettbewerbe verwalten“ 403, sonst 405
+        assert c.post(base, {"title": "Neu"}, content_type=JSON).status_code in (403, 405)
+        assert not Competition.objects.filter(title="Neu").exists()
         resp = c.post(f"{base}{comp_id}/stand-access/", {"label": "Handy"}, content_type=JSON)
         assert resp.status_code == 201, resp.json()
         token, access_id = resp.json()["token"], resp.json()["id"]
