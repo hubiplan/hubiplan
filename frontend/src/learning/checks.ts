@@ -43,7 +43,13 @@ export interface FeeRunInput {
   /** Konto für Überweisungen mit IBAN */
   accountWithIban: boolean
   sepaEnabled: boolean
-  checks?: { unreachable: number; with_mandate: number; open_change_requests: number }
+  checks?: {
+    unreachable: number
+    with_mandate: number
+    open_change_requests: number
+    /** Mitglieder in mehreren Untereinheiten (Datenaudit 08.11. FD-05) */
+    multi_units?: number
+  }
 }
 
 export function feeRunChecks(input: FeeRunInput): CheckItem[] {
@@ -101,6 +107,17 @@ export function feeRunChecks(input: FeeRunInput): CheckItem[] {
       fix: t('Kontaktdaten in der Mitgliedsakte ergänzen, sonst kommt die Rechnung nicht an.'),
       to: '/mitglieder',
     })
+    if ((c.multi_units ?? 0) > 0)
+      items.push({
+        key: 'multi_units',
+        ok: true,
+        info: true,
+        text: tn(
+          '{n} Mitglied gehört zu mehreren Untereinheiten; die Rechnung geht an die mit dem frühesten Beginn.',
+          '{n} Mitglieder gehören zu mehreren Untereinheiten; die Rechnung geht jeweils an die mit dem frühesten Beginn.',
+          c.multi_units ?? 0,
+        ),
+      })
     if (c.open_change_requests > 0)
       items.push({
         key: 'change_requests',

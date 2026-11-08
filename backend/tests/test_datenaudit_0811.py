@@ -358,3 +358,96 @@ class TestEinAustrittKorrigieren:
         assert resp.status_code == 400
         resp = a["cl"].patch(url, {"note": "Erfundene Bemerkung"}, content_type=JSON)
         assert resp.status_code == 200, resp.json()
+
+
+# --- Schritt 5: Beiträge, Mahnungen, Lastschrift ---
+
+
+class TestEhrungVerteuertNie:
+    def _title(self, **kw):
+        from members.models import HonoraryTitle
+
+        return HonoraryTitle(name="Ehrenmitglied", **kw)
+
+    def test_fester_ehrenbeitrag_ueber_normalem_gilt_nicht(self):
+        from members.honorary import adjusted_fee
+
+        title = self._title(fee_mode="amount", fee_amount=Decimal("20.00"))
+        assert adjusted_fee([title], Decimal("12.00")) is None
+        assert adjusted_fee([title], Decimal("30.00")) == (Decimal("20.00"), "Ehrenmitglied")
+
+    def test_frei_und_rabatt_unveraendert(self):
+        from members.honorary import adjusted_fee
+
+        free = self._title(fee_mode="free")
+        assert adjusted_fee([free], Decimal("12.00")) == (Decimal("0.00"), "Ehrenmitglied")
+        half = self._title(fee_mode="discount", fee_discount_percent=Decimal("50"))
+        assert adjusted_fee([half], Decimal("12.00")) == (Decimal("6.00"), "Ehrenmitglied")
+
+
+class TestSepaFeiertage:
+    @pytest.mark.parametrize(
+        "day",
+        [
+            datetime.date(2027, 1, 1),
+            datetime.date(2027, 3, 26),  # Karfreitag
+            datetime.date(2027, 3, 29),  # Ostermontag
+            datetime.date(2027, 5, 1),
+            datetime.date(2026, 12, 25),
+            datetime.date(2026, 12, 26),
+        ],
+    )
+    def test_target2_feiertage(self, day):
+        from billing.sepa import bank_day, target2_holiday
+
+        assert target2_holiday(day) and not bank_day(day)
+
+    def test_naechster_bankarbeitstag(self):
+        from billing.sepa import next_bank_day
+
+        # Karfreitag 2027 → Dienstag nach Ostermontag
+        assert next_bank_day(datetime.date(2027, 3, 26)) == datetime.date(2027, 3, 30)
+        assert next_bank_day(datetime.date(2026, 12, 24)) == datetime.date(2026, 12, 24)
+        assert next_bank_day(datetime.date(2026, 12, 25)) == datetime.date(2026, 12, 28)
+
+
+class TestMahnabstand:
+    def test_naechste_stufe_erst_nach_frist(self, club):
+        from billing.models import Dunning, DunningLevel, Invoice
+        from billing.services import dunning_proposals
+
+        from .factories import make_member
+
+        today = timezone.localdate()
+        with tenant_context(club.pk):
+            member = make_member(club, "Erika", "Muster", "erika@example.org")
+            for level, days in ((1, 0), (2, 1)):
+                DunningLevel.objects.create(
+                    organization=club, level=level, name=f"Stufe {level}", days=days
+                )
+            invoice = Invoice.objects.create(
+                organization=club,
+                recipient_kind="member",
+                membership=member,
+                recipient_name="Erika Muster",
+                date=today - datetime.timedelta(days=40),
+                due_date=today - datetime.timedelta(days=30),
+                status="open",
+                year=today.year,
+                number=1,
+                total=Decimal("60.00"),
+                dunning_level=1,
+            )
+            last = Dunning.objects.create(
+                organization=club,
+                invoice=invoice,
+                level=1,
+                name="Stufe 1",
+                date=today - datetime.timedelta(days=5),
+                due_date=today + datetime.timedelta(days=9),
+            )
+            assert dunning_proposals(club, today) == []
+            # Am Fristtag noch nicht, am Tag danach schon
+            assert dunning_proposals(club, last.due_date) == []
+            [(found, level)] = dunning_proposals(club, last.due_date + datetime.timedelta(days=1))
+            assert found.pk == invoice.pk and level.level == 2

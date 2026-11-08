@@ -7357,5 +7357,9 @@
   "Austritt aufheben?": "Cancel the exit?",
   "Austritt aufheben": "Cancel exit",
   "Die Mitgliedschaft läuft dann wieder offen. Mitgliedsart, {department_label_plural} und Ämter, die mit dem Austritt endeten, laufen ebenfalls weiter.": "The membership then runs open again. Member type, {department_label_plural} and offices that ended with the exit continue as well.",
-  "Mitgliedsart, {department_label_plural} und Ämter, die am alten Datum begannen bzw. endeten, ziehen mit. Austrittsdatum leeren hebt den Austritt auf.": "Member type, {department_label_plural} and offices that started or ended on the old date move along. Clearing the exit date cancels the exit."
+  "Mitgliedsart, {department_label_plural} und Ämter, die am alten Datum begannen bzw. endeten, ziehen mit. Austrittsdatum leeren hebt den Austritt auf.": "Member type, {department_label_plural} and offices that started or ended on the old date move along. Clearing the exit date cancels the exit.",
+  "{n} Mitglied gehört zu mehreren Untereinheiten; die Rechnung geht an die mit dem frühesten Beginn.": {
+    "one": "{n} member belongs to several sub-units; the invoice goes to the one with the earliest start.",
+    "other": "{n} members belong to several sub-units; each invoice goes to the one with the earliest start."
+  }
 }
