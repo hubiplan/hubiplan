@@ -7423,5 +7423,10 @@
   "Teil ausgegeben": "item issued",
   "Teile ausgegeben": "items issued",
   "Pfad": "Breadcrumb",
-  "Zurück zu {label}": "Back to {label}"
+  "Zurück zu {label}": "Back to {label}",
+  "Foto anfordern": "Request photo",
+  "Ausweis drucken": "Print membership card",
+  "Anrufen": "Call",
+  "Nr. {x}": "No. {x}",
+  "Auskunft und Löschen (Datenschutz)": "Access report and deletion (privacy)"
 }

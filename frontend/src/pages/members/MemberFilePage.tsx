@@ -41,6 +41,7 @@ import { CompetitionsTab } from '../competitions/MemberTab.tsx'
 import { FeesTab } from './FeesTab.tsx'
 import { MusicTab } from './MusicTab.tsx'
 import { AtAGlance } from './AtAGlance.tsx'
+import { MemberHeader } from './MemberHeader.tsx'
 
 type Tab =
   | 'stammdaten'
@@ -90,28 +91,7 @@ export function MemberFilePage() {
 
   return (
     <section>
-      <p>
-        <Link to="/mitglieder">{t('← Mitglieder')}</Link>
-      </p>
-      <div className="page-head">
-        {data.photo.approved && (
-          <img src={data.photo.approved.thumbnail_url} alt="" className="member-avatar-lg" />
-        )}
-        <div>
-          <h1>
-            {data.kind === 'organization'
-              ? [data.last_name, data.organization?.name_suffix].filter(Boolean).join(' – ')
-              : `${data.first_name} ${data.last_name}`}
-          </h1>
-          <p className="muted">
-            {data.kind === 'organization' && `${t('Organisation')} · `}
-            {data.status === 'active' ? t('Mitglied') : t('ehemaliges Mitglied')}
-            {data.current_type &&
-              t(' · {member_type_name}', { member_type_name: data.current_type.member_type_name })}
-            {currentTitles(data).length > 0 && t(' · {x}', { x: currentTitles(data).join(', ') })}
-          </p>
-        </div>
-      </div>
+      <MemberHeader org={org} member={data} canEdit={canEdit} tabs={tabs.map((tmx) => tmx.id)} />
       <AtAGlance org={org} member={data} tabs={tabs.map((tmx) => tmx.id)} />
       <nav className="tabs member-tabs" aria-label={t('Bereiche der Mitgliedsakte')}>
         {tabs.map((tmx) => (
@@ -462,19 +442,6 @@ function MasterData({
       </p>
     </form>
   )
-}
-
-/** Aktuelle Ehrungen (eigene und des Dachverbands) für die Kopfzeile */
-function currentTitles(m: MemberDetail): string[] {
-  const today = todayIso()
-  const all = [...(m.honorary_titles?.own ?? []), ...(m.honorary_titles?.federation ?? [])]
-  return [
-    ...new Set(
-      all
-        .filter((a) => a.valid_from <= today && (!a.valid_until || a.valid_until >= today))
-        .map((a) => a.title_name),
-    ),
-  ]
 }
 
 function MembershipTab({
