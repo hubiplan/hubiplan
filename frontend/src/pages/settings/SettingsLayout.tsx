@@ -3,95 +3,18 @@ import { modules } from '../../modules.tsx'
 import { PERM } from '../../api/orgs.ts'
 import { Tabs, SectionTitle } from '../../components/ui.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
-import { federationAccess } from '../members/access.ts'
+import { settingsItems } from './items.ts'
 import { t } from '../../i18n/index.ts'
 
 export function SettingsLayout() {
-  const { active, can } = useOrg()
+  const { active } = useOrg()
   const location = useLocation()
 
   // Persönliche Einstellungen stehen unter „Mein Konto“ (/mein-konto),
   // hier nur die Einstellungen der gewählten Organisation.
   if (!active) return <Navigate to="/" replace />
 
-  // Arbeitsbereich einer Untereinheit: Stammdaten pflegt die Einheit darüber
-  const unit = active.type === 'unit'
-  // Zwischenüberschriften in der Seitenleiste (Menüprüfung M-11)
-  const general = t('Allgemein')
-  const legal = t('Recht')
-  const access = t('Rollen und Anbindungen')
-  const records = t('Daten')
-  const items = [
-    ...(unit
-      ? []
-      : [{ to: '/einstellungen/organisation', label: t('Organisation'), section: general }]),
-    ...(unit || active.type === 'platform'
-      ? []
-      : [
-          { to: '/einstellungen/bezeichnungen', label: t('Bezeichnungen'), section: general },
-          // Vereinsdokumente stehen unter Dokumente; hier nur ohne Zugriff auf die Ablage
-          ...(active.permissions.includes(PERM.docsView)
-            ? []
-            : [
-                {
-                  to: '/einstellungen/vereinsdokumente',
-                  label: t('Vereinsdokumente'),
-                  section: general,
-                },
-              ]),
-        ]),
-    // Module ein- und ausschalten (innerhalb der Freigabe der Plattform)
-    ...((active.type === 'federation' || active.type === 'club') && can(PERM.settingsView)
-      ? [{ to: '/einstellungen/module', label: t('Module'), section: general }]
-      : []),
-    ...(unit
-      ? []
-      : [
-          { to: '/einstellungen/erscheinungsbild', label: t('Erscheinungsbild'), section: general },
-        ]),
-    ...(unit || active.type === 'platform'
-      ? []
-      : [{ to: '/einstellungen/briefbogen', label: t('Briefbogen'), section: general }]),
-    // Dachverband ohne Mitgliederzugriff: kein Menüpunkt Mitglieder, die
-    // Einrichtung (Zusatzfelder, Jubiläen) bleibt aber erreichbar.
-    ...(active.type === 'federation' && !federationAccess(active) && can(PERM.membersView)
-      ? [{ to: '/mitglieder/einrichtung', label: t('Mitglieder-Einrichtung'), section: general }]
-      : []),
-    ...(unit || active.type === 'platform'
-      ? []
-      : [
-          { to: '/einstellungen/impressum', label: t('Impressum'), section: legal },
-          { to: '/einstellungen/datenschutz', label: t('Datenschutz'), section: legal },
-        ]),
-    // Untereinheit mit eigener Webseite: nur deren Datenschutzhinweise
-    ...(unit && active.modules.includes('website') && can(PERM.websiteManage)
-      ? [{ to: '/einstellungen/datenschutz', label: t('Datenschutz'), section: legal }]
-      : []),
-    // Untereinheiten stehen als eigener Punkt im Hauptmenü (modules.tsx)
-    ...(can(PERM.rolesView) || can(PERM.rolesManage)
-      ? [{ to: '/einstellungen/rollen', label: t('Rollen und Rechte'), section: access }]
-      : []),
-    // Konten (Rollen-Vorschlag R4): alle Anmeldungen der Einheit
-    ...(active.type !== 'platform' && !unit && (can(PERM.rolesView) || can(PERM.loginsView))
-      ? [{ to: '/einstellungen/konten', label: t('Konten'), section: access }]
-      : []),
-    ...((active.type === 'federation' || active.type === 'club') && can(PERM.peeringManage)
-      ? [{ to: '/einstellungen/verbund', label: t('Verbund'), section: access }]
-      : []),
-    ...((active.type === 'federation' || active.type === 'club') && can(PERM.rolesManage)
-      ? [{ to: '/einstellungen/nextcloud', label: t('Nextcloud'), section: access }]
-      : []),
-    ...(active.type !== 'platform' &&
-    (can(PERM.dataExport) || (active.type === 'club' && can(PERM.orgEdit)))
-      ? [{ to: '/einstellungen/datenuebernahme', label: t('Datenübernahme'), section: records }]
-      : []),
-    ...(can(PERM.auditView)
-      ? [
-          { to: '/einstellungen/protokoll', label: t('Protokoll'), section: records },
-          { to: '/einstellungen/postausgang', label: t('Postausgang'), section: records },
-        ]
-      : []),
-  ]
+  const items = settingsItems(active)
 
   if (location.pathname.replace(/\/$/, '') === '/einstellungen') {
     if (items.length === 0) return <Navigate to="/" replace />

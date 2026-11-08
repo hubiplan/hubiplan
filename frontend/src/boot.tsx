@@ -8,9 +8,14 @@ import { OrgProvider } from './org/OrgContext.tsx'
 import './theme/theme.css'
 import './index.css'
 import { watchTableSemantics } from './components/tableSemantics.ts'
+import { watchFormValidation } from './components/formValidation.ts'
 import { loadPlatform } from './theme/platform.ts'
+import { t } from './i18n/index.ts'
 
 watchTableSemantics()
+// Fehler am Feld statt Browserblase (UX-Audit 08.11., W-08)
+watchFormValidation()
+document.documentElement.style.setProperty('--pflicht-text', JSON.stringify(` (${t('Pflicht')})`))
 // Name, Farben und Logo der Instanz (White Label); die Oberfläche wartet nicht darauf
 void loadPlatform()
 

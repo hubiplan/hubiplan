@@ -3,7 +3,7 @@
 // Unterpunkts führen Reiter weiter.
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { Tabs } from '../../components/ui.tsx'
+import { Tabs, useSubHeading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { DebitsPage, MandatesPage } from '../billing/DebitsPage.tsx'
 import { DunningsPage } from '../billing/DunningsPage.tsx'
@@ -49,13 +49,22 @@ function Section({
   tabs?: NavItem[]
   children: ReactNode
 }) {
+  // Dritte Ebene (z. B. Rechnungen › Mahnungen): H1 wie der gewählte Unterpunkt, der Weg
+  // steht darüber (UX-Audit 08.11., W-02)
+  const sub = useSubHeading(title, tabs)
   return (
     <section>
       <div className="page-head">
         <div>
           {/* Auf der Übersicht heißt die H1 wie der Bereich (UX-Audit 05.11. W-04) */}
-          {title !== t('Übersicht') && <p className="muted small eyebrow">{t('Finanzen')}</p>}
-          <h1>{title === t('Übersicht') ? t('Finanzen') : title}</h1>
+          {title !== t('Übersicht') && (
+            <p className="muted small eyebrow">
+              {sub
+                ? t('{parent} › {label}', { parent: t('Finanzen'), label: title })
+                : t('Finanzen')}
+            </p>
+          )}
+          <h1>{sub ?? (title === t('Übersicht') ? t('Finanzen') : title)}</h1>
         </div>
         {readOnly && <span className="muted small push-right">{t('nur lesen')}</span>}
       </div>

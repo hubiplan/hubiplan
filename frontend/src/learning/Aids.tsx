@@ -397,6 +397,14 @@ export function HowTo({ k }: { k: HowKey }) {
   )
 }
 
+/** Teilt Text vor dem letzten Wort; anderer Inhalt bleibt vorn, das „?“ hängt mit Wortverbinder an. */
+export function splitLastWord(children: ReactNode): [ReactNode, ReactNode] {
+  if (typeof children !== 'string') return [children, '\u2060']
+  const cut = children.trimEnd().lastIndexOf(' ')
+  if (cut < 0) return [null, children]
+  return [children.slice(0, cut + 1), children.slice(cut + 1)]
+}
+
 /** Fachbegriff mit „?“: kleine Box mit Bedeutung, Beispiel und Glossarlink. */
 export function Term({ k, children, note }: { k: TermKey; children: ReactNode; note?: string }) {
   const learning = useLearning()
@@ -461,6 +469,9 @@ export function Term({ k, children, note }: { k: TermKey; children: ReactNode; n
   }, [open, learning])
 
   if (!shown || !learning) return <>{children}</>
+  // Nur das letzte Wort bleibt mit dem „?“ zusammen, der Rest bricht um wie Fließtext
+  // (UX-Audit 08.11., W-18: Umfließen bei 320 px)
+  const [head, tail] = splitLastWord(children)
   const name = tr(entry.name)
   const extra = note ?? tooltip
 
@@ -483,18 +494,21 @@ export function Term({ k, children, note }: { k: TermKey; children: ReactNode; n
           learning.setOpenId(null)
       }}
     >
-      {children}
-      <button
-        ref={buttonRef}
-        type="button"
-        className="term-q"
-        aria-label={t('{name}: Was heißt das?', { name })}
-        aria-expanded={open}
-        aria-controls={boxId}
-        onClick={() => learning.setOpenId(open ? null : id)}
-      >
-        <span aria-hidden="true">?</span>
-      </button>
+      {head}
+      <span className="term-tail">
+        {tail}
+        <button
+          ref={buttonRef}
+          type="button"
+          className="term-q"
+          aria-label={t('{name}: Was heißt das?', { name })}
+          aria-expanded={open}
+          aria-controls={boxId}
+          onClick={() => learning.setOpenId(open ? null : id)}
+        >
+          <span aria-hidden="true">?</span>
+        </button>
+      </span>
       <span
         id={boxId}
         ref={boxRef}

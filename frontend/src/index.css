@@ -1113,6 +1113,15 @@ fieldset {
   color: var(--color-error);
 }
 
+/* Pflichtfelder vorher kennzeichnen (UX-Audit 08.11., W-08, WCAG 3.3.2). Den Text setzt
+   boot.tsx in der Sprache der Oberfläche; die Pflicht selbst sagt aria-required an. */
+.field:has(> :is(input, select, textarea):required) > :is(.field-label, span:first-child)::after,
+label:has(> :is(input, select, textarea):required) > span:first-child::after {
+  content: var(--pflicht-text, ' (Pflicht)');
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
 .checkbox {
   display: flex;
   align-items: flex-start;
@@ -1311,6 +1320,18 @@ fieldset {
     content: attr(data-label) ': ';
     font-weight: 600;
     color: var(--color-text-muted);
+  }
+
+  /* Die Tabelle selbst wird zum Block, damit breite Auswahllisten in Zellen sie nicht über
+     den Rand schieben (UX-Audit 08.11., W-18, Finanzen › Einrichtung › Kategorien) */
+  .table:not(.table-keep),
+  .table:not(.table-keep) > tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .table:not(.table-keep) td :is(select, input:not([type='checkbox'], [type='radio'])) {
+    max-width: 100%;
   }
 
   .table:not(.table-keep) tr {
@@ -4923,7 +4944,7 @@ label:has(> .file-input:focus-visible) {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--sidebar-text) 70%, transparent);
+  color: var(--sidebar-muted, color-mix(in srgb, var(--sidebar-text) 70%, transparent));
 }
 
 /* Startseite Mitglied: erste Reihe mit nächstem Termin und Ausweis (UX-Audit 10.5) */
