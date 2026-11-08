@@ -3,10 +3,10 @@
 #
 #   testplatz [--kerne N] [--] Befehl [Argumente …]
 #
-# Regel: höchstens zwei Testläufe gleichzeitig, jeder höchstens 8 Kerne, egal aus
+# Regel: höchstens drei Testläufe gleichzeitig, jeder höchstens 8 Kerne, egal aus
 # welchem Projekt. testplatz wartet auf einen freien Platz, bindet den Befehl an
 # dessen Kerne und gibt ihm die Umgebungsvariablen
-#   TESTPLATZ=1|2        belegter Platz
+#   TESTPLATZ=1|2|3      belegter Platz
 #   TEST_KERNE=N         so viele Kerne darf der Lauf nutzen (Worker, -n, --cpus …)
 #   TESTPLATZ_CPUS=a-b   die Kerne des Platzes (für docker run --cpuset-cpus)
 #
@@ -14,8 +14,8 @@
 # über WSL und lässt den Befehl unter Windows laufen, mit Prozessor-Affinität auf 8 Kerne.
 # Ist TESTPLATZ schon gesetzt, läuft der Befehl direkt (verschachtelte Aufrufe).
 #
-# Sperren: ~/.testplaetze/platz-1.lock und platz-2.lock (in WSL). Ältere Skripte mit
-# der exklusiven Sperre ~/.hubiplan-tests.lock belegen beide Plätze: testplatz hält diese
+# Sperren: ~/.testplaetze/platz-1.lock bis platz-3.lock (in WSL). Ältere Skripte mit
+# der exklusiven Sperre ~/.hubiplan-tests.lock belegen alle Plätze: testplatz hält diese
 # Datei geteilt.
 #
 # Installation (einmal, und nach Änderungen):
@@ -24,7 +24,7 @@
 set -euo pipefail
 
 MAX_KERNE=8
-PLAETZE=2
+PLAETZE=3
 WSL_DISTRO="${TESTPLATZ_DISTRO:-Debian}"
 
 KERNE=$MAX_KERNE
@@ -91,20 +91,19 @@ while :; do
         exec {fd}>&-
     done
     if [ "$gewartet" = 0 ]; then
-        echo "testplatz: beide Plätze belegt, warte …" >&2
+        echo "testplatz: alle $PLAETZE Plätze belegt, warte …" >&2
         gewartet=1
     fi
     sleep 3
 done
 
-# Kerne des Platzes: Platz 1 von vorn, Platz 2 von hinten (bei 16+ Kernen ohne Überlappung)
+# Kerne des Platzes: nebeneinander ab Kern 0 (Platz 1: 0–7, Platz 2: 8–15, Platz 3: 16–23).
+# Reichen die Kerne nicht, rückt der Platz ans Ende und teilt sich Kerne mit dem vorigen.
 N=$(nproc --all)
 [ "$KERNE" -gt "$N" ] && KERNE=$N
-if [ "$PLATZ" = 1 ]; then
-    CPUS="0-$((KERNE - 1))"
-else
-    CPUS="$((N - KERNE))-$((N - 1))"
-fi
+start=$(( (PLATZ - 1) * KERNE ))
+[ $((start + KERNE)) -gt "$N" ] && start=$((N - KERNE))
+CPUS="$start-$((start + KERNE - 1))"
 export TESTPLATZ=$PLATZ TEST_KERNE=$KERNE TESTPLATZ_CPUS=$CPUS
 # Ein älteres Testskript im Platz würde ~/.hubiplan-tests.lock exklusiv sperren wollen,
 # das testplatz selbst geteilt hält, und auf sich selbst warten. Es bekommt deshalb
@@ -113,7 +112,7 @@ export HUBIPLAN_TEST_LOCK="$DIR/innen-$PLATZ.lock"
 echo "testplatz: Platz $PLATZ, $KERNE Kerne ($CPUS)" >&2
 
 if [ -n "$WIN_DIR" ]; then
-    # Windows-Kerne: Platz 1 ab Kern 0, Platz 2 ab Kern 8 (der PC hat 24)
+    # Windows-Kerne: Platz 1 ab Kern 0, Platz 2 ab Kern 8, Platz 3 ab Kern 16 (der PC hat 24)
     start=$(( (PLATZ - 1) * MAX_KERNE ))
     export TESTPLATZ_MASKE=$(( ((1 << KERNE) - 1) << start ))
     export WSLENV="TESTPLATZ:TEST_KERNE:TESTPLATZ_CPUS:TESTPLATZ_MASKE${WSLENV:+:$WSLENV}"

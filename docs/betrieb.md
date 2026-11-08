@@ -1026,7 +1026,7 @@ Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen.
 - Dependabot meldet wöchentlich Updates; Django bleibt auf der LTS-Version.
 - Kritische Sicherheitslücken innerhalb weniger Tage einspielen, sonst monatlich.
 - Vor dem Ausrollen lokal testen: `BACKUP_TEST=1 scripts/test.sh` (in WSL).
-  Tests laufen nie auf dem Server; höchstens zwei Testläufe
+  Tests laufen nie auf dem Server; höchstens drei Testläufe
   gleichzeitig, jeder höchstens 8 Kerne (`scripts/testplatz.sh`).
 - Wer HUBIplan selbst betreibt, rollt am besten Releases aus (`deploy/deploy.sh v2026.11.0`
   oder mit Rückschritt-Prüfung `deploy/release-ausrollen.sh <ziel> v2026.11.0`)
