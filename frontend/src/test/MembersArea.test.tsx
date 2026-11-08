@@ -109,7 +109,10 @@ describe('Mitglieder: Unterpunkte', () => {
     await waitFor(() =>
       expect(screen.getByTestId('where')).toHaveTextContent(/^\/mitglieder\/anfragen$/),
     )
-    expect(await screen.findByRole('heading', { name: 'Wechselanfragen' })).toBeInTheDocument()
+    // h1 = Menüpunkt (Seitenkopf S-05)
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Änderungen und Wechsel' }),
+    ).toBeInTheDocument()
     const nav = within(screen.getByRole('navigation', { name: 'Module' }))
     expect(await nav.findByRole('link', { name: 'Datenänderungen' })).toBeInTheDocument()
   })
