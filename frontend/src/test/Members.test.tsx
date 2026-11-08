@@ -495,6 +495,31 @@ describe('Mitgliedsakte', () => {
     expect(JSON.parse(String(post?.init?.body))).toMatchObject({ first_name: 'Erica' })
   })
 
+  it('zeigt Stammdaten zuerst und Foto im eigenen Bereich (S-03)', async () => {
+    fakeApi({
+      ...common(),
+      [`GET ${base}/members/11/`]: () => ({ status: 200, body: detail }),
+      [`GET ${base}/members/11/photo-links/`]: () => ({ status: 200, body: [] }),
+    })
+    renderAt('/mitglieder/11')
+    const user = userEvent.setup()
+    expect(await screen.findByRole('heading', { level: 2, name: 'Stammdaten' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Foto' })).not.toBeInTheDocument()
+    const nav = screen.getByRole('navigation', { name: 'Bereiche der Mitgliedsakte' })
+    const names = within(nav)
+      .getAllByRole('link')
+      .map((a) => a.textContent)
+    expect(names[0]).toBe('Stammdaten')
+    expect(names).toContain('Foto & Webseite')
+    // Ohne Musikmodul kein Reiter „Musik“ und kein Link in den Musikbereich
+    expect(names).not.toContain('Musik')
+    expect(names.indexOf('Foto & Webseite')).toBeLessThan(names.indexOf('Verlauf'))
+    // Handy: Auswahlliste mit denselben Bereichen
+    await user.selectOptions(screen.getByLabelText('Bereich'), 'foto')
+    expect(await screen.findByRole('heading', { name: 'Foto' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Stammdaten' })).not.toBeInTheDocument()
+  })
+
   it('erfasst einen Austritt', async () => {
     const calls = fakeApi({
       ...common(),

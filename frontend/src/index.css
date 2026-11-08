@@ -1204,6 +1204,24 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   border-bottom-color: var(--color-focus);
 }
 
+/* Mitgliedsakte: auf dem Handy Bereiche als Auswahlliste statt wischbarer Reiter (S-03) */
+.member-tabs-select {
+  display: none;
+}
+
+@media (max-width: 40rem) {
+  .member-tabs {
+    display: none;
+  }
+
+  .member-tabs-select {
+    display: grid;
+    gap: var(--space-1);
+    margin: var(--space-2) 0 var(--space-4);
+    font-weight: 600;
+  }
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;

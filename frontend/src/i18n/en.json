@@ -7401,5 +7401,12 @@
   "Bitte prüfe das Format dieser Eingabe.": "Please check the format of this entry.",
   "Dieser Wert passt nicht, bitte prüfe ihn.": "This value does not fit, please check it.",
   "Bitte prüfe diese Eingabe.": "Please check this entry.",
-  "{parent} › {label}": "{parent} › {label}"
+  "{parent} › {label}": "{parent} › {label}",
+  "Foto & Webseite": "Photo & website",
+  "Ausgegebenes Material": "Issued equipment",
+  "Im Musikbereich öffnen": "Open in music area",
+  "Noch kein Musikerprofil angelegt.": "No musician profile yet.",
+  "Noch keine Instrumente eingetragen.": "No instruments entered yet.",
+  " (Hauptinstrument)": " (main instrument)",
+  "Nicht aktiv": "Inactive"
 }
