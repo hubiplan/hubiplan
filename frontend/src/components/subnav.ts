@@ -8,7 +8,7 @@ export interface SubNavItem {
   to: string
   label: string
   /** Arbeitsgruppe in der Seitenleiste, z. B. „Buchen“ bei Finanzen (Konzept S-01) */
-  group?: { key: string; label: string }
+  group?: { key: string; label: string; to?: string }
 }
 
 export interface SubNavApi {
@@ -33,7 +33,7 @@ export function useSubNav(items: SubNavItem[]): boolean {
 export interface NavNode {
   to: string
   label: string
-  group?: { key: string; label: string }
+  group?: { key: string; label: string; to?: string }
   /** NavLink nur bei genau diesem Pfad aktiv */
   end: boolean
   children: NavNode[]
