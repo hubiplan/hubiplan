@@ -26,6 +26,12 @@ Der Reiter **Pauschalen** (ebenfalls Modul Steuern & Gemeinnützigkeit) zählt �
 
 Die Freibeträge gelten über alle Auftraggeber zusammen. Unter **PDF** gibt es je Person eine Erklärung zum Unterschreiben, dass sie den Freibetrag nicht anderweitig nutzt. Unterschrieben gehört sie zu den Belegen. Erhält ein Vorstandsmitglied eine Pauschale, warnt HUBIplan, solange **Unsere Satzung erlaubt eine Vergütung des Vorstands** nicht angehakt ist (§ 27 Abs. 3 BGB).
 
+Außer den Ausgaben im Kassenbuch zählen auch:
+
+- ein Verzicht auf die Pauschale als Aufwandsspende: bei der Zuwendung **Verzicht auf Erstattung von Aufwendungen** ankreuzen und unter **Verzicht auf eine Pauschale** die Art wählen. Der Betrag verbraucht den Freibetrag wie eine Auszahlung,
+- Auszahlungen aus der Musikerabrechnung: Wird eine Ausgabe einer freigegebenen Musikervergütung zugeordnet, setzt HUBIplan den Übungsleiterfreibetrag (künstlerische Tätigkeit) und zählt sie beim Musiker,
+- Zahlungen der Untereinheiten mit eigener Kasse, die steuerlich zum Verein gehören. Dieselbe Person erscheint dann nur einmal, mit allen Zahlungen in der aufklappbaren Liste unter dem Namen. Die Untereinheit selbst sieht nur ihre eigenen Zahlungen und einen Hinweis, wo sie mitzählt.
+
 Der Reiter **Anlagen** ist das Anlagenverzeichnis: Gegenstände ab 250 € netto, die mehrere Jahre genutzt werden, etwa Zelte, Kühlanhänger oder Möbel. Mit **Anlage hinzufügen** tragt ihr Anschaffungsdatum, Kosten, steuerlichen Bereich und die Art der Abschreibung ein: linear über die Nutzungsdauer (monatsgenau), sofort als geringwertiges Wirtschaftsgut (bis 800 € netto), als Sammelposten über fünf Jahre (250 bis 1.000 € netto) oder gar nicht. Das Verzeichnis zeigt für das gewählte Geschäftsjahr die Abschreibung und den Buchwert, auch als Excel. Verkauf oder Verschrottung tragt ihr als Abgang ein.
 
 Die Abschreibung erscheint nur hier und im Reiter **Steuern**, nie im Kassenbuch. Dort ersetzt sie für das Ergebnis die Ausgabe der Anschaffung, damit ein teurer Kauf im wirtschaftlichen Geschäftsbetrieb nicht als Verlust erscheint.

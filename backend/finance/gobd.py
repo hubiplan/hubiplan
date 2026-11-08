@@ -1,4 +1,4 @@
-"""Ausnahmen vom Datenbankschutz festgeschriebener Buchungen (Migrationen finance/0024, 0031).
+"""Ausnahmen vom Datenbankschutz festgeschriebener Buchungen (Migrationen finance/0024, 0032).
 
 Die Freigabe prüft die Datenbank selbst (Funktionen mit Eigentümerrechten) und gilt nur für
 die laufende Transaktion. Die Rolle der Anwendung kann sie nicht anders erzeugen.

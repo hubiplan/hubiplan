@@ -65,7 +65,7 @@ def pytest_runtest_teardown(item, nextitem):
 
 @pytest.fixture(autouse=True)
 def _gobd_testdatum(monkeypatch):
-    """Die Datenbank prüft die Aufbewahrungsfrist selbst (finance/0031). Tests setzen das
+    """Die Datenbank prüft die Aufbewahrungsfrist selbst (finance/0032). Tests setzen das
     heutige Datum über ``finance.retention._today``; vor jeder Freigabe wird es übernommen."""
     from django.db import connection
 

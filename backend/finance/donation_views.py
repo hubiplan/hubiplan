@@ -209,6 +209,7 @@ class DonationSerializer(serializers.ModelSerializer):
             "kind_label",
             "amount",
             "waiver",
+            "allowance",
             "membership",
             "donor_name",
             "donor_address",

@@ -1,0 +1,9 @@
+# Zusatz zu docker-compose.server.yml (deploy/server-setup.sh nimmt ihn ab Docker Engine 25):
+# In der Startphase prüft Docker das Backend jede Sekunde statt alle 10 s. Caddy, Worker
+# und Beat warten auf „healthy“ und starten so bis zu 10 s früher
+# (konzepte/ausfallzeiten-ausrollen.md).
+services:
+  backend:
+    healthcheck:
+      start_period: 90s
+      start_interval: 1s

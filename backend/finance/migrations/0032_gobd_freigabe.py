@@ -219,6 +219,6 @@ def backwards(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-    dependencies = [("finance", "0030_zweckbindung")]
+    dependencies = [("finance", "0031_verzicht_pauschale")]
 
     operations = [migrations.RunPython(forwards, backwards)]

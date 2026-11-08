@@ -259,7 +259,7 @@ def _purge_documents(org, year, start, end) -> dict[str, int]:
     for r in receipts:
         _delete_file(r.file)
         n += 1
-    # Aufbewahrungsfrist abgelaufen: Freigabe prüft die Datenbank (finance/0031)
+    # Aufbewahrungsfrist abgelaufen: Freigabe prüft die Datenbank (finance/0032)
     from . import gobd
 
     gobd.release_documents(org.pk, year, start, end)

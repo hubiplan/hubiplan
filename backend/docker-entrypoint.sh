@@ -7,12 +7,11 @@ if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then
     # Server steht dessen Zugang nur in MIGRATE_DATABASE_URL; die laufende
     # Anwendung meldet sich danach als hubiplan_app an (DATABASE_URL).
     OWNER_URL="${MIGRATE_DATABASE_URL:-${DATABASE_URL:-}}"
-    DATABASE_URL="$OWNER_URL" DATABASE_APP_ROLE= python manage.py migrate --noinput -v "${MIGRATE_VERBOSITY:-1}"
-    DATABASE_URL="$OWNER_URL" DATABASE_APP_ROLE= python manage.py ensure_app_role
-    # Erledigte Löschungen erneut anwenden (nach dem Einspielen eines älteren Backups)
-    if [ -n "${LOESCHLISTE_PATH:-}" ]; then
-        DATABASE_URL="$OWNER_URL" DATABASE_APP_ROLE= python manage.py loeschliste_anwenden
-    fi
+    # Ein Prozess für Migrationen, Rolle und Löschliste (spart Startzeit beim Ausrollen).
+    # MIGRATE_PGOPTIONS (z. B. „-c lock_timeout=15s“) setzt deploy/server-setup.sh nur für
+    # den eigenen Migrationsschritt: Eine Migration wartet dann nicht endlos auf eine Sperre.
+    DATABASE_URL="$OWNER_URL" DATABASE_APP_ROLE= PGOPTIONS="${MIGRATE_PGOPTIONS:-${PGOPTIONS:-}}" \
+        python manage.py startvorbereitung -v "${MIGRATE_VERBOSITY:-1}"
     unset OWNER_URL
 fi
 # Schlüsseldateien älterer Fassungen (0600) für die Gruppe lesbar machen, damit das

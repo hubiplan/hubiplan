@@ -9161,3 +9161,12 @@ msgstr "This purpose already exists."
 
 msgid "Der Zweck ist schon Spenden oder Ausgaben zugeordnet; bitte archivieren."
 msgstr "The purpose already has donations or expenses; please archive it instead."
+
+msgid "Verzicht (Aufwandsspende)"
+msgstr "Waiver (expense donation)"
+
+msgid "{n} Auszahlungen aus der Musikerabrechnung über {x} € haben keine Vergütungsart. Musiker können den Übungsleiterfreibetrag nutzen (künstlerische Tätigkeit, § 3 Nr. 26 EStG); bitte die Buchungen im Kassenbuch prüfen."
+msgstr "{n} payments from the musician settlement totalling €{x} have no allowance type. Musicians can use the trainer allowance (artistic activity, Section 3 No. 26 EStG); please check the bookings in the cash book."
+
+msgid "Eine Pauschale lässt sich nur durch Verzicht spenden. Bitte „Verzicht auf Erstattung“ ankreuzen."
+msgstr "An allowance can only be donated by waiving it. Please tick “Waiver of reimbursement”."

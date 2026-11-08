@@ -30,6 +30,8 @@ export interface Donation {
   kind_label: string
   amount: string
   waiver: boolean
+  /** Verzicht auf eine Pauschale: zählt gegen den Freibetrag der Person */
+  allowance?: '' | 'trainer' | 'volunteer'
   membership: number | null
   donor_name: string
   donor_address: string
