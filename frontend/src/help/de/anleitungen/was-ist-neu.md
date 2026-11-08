@@ -14,6 +14,7 @@ November 2026:
 
 - Startseite: „Zu erledigen“ sammelt jetzt aus allen Bereichen: fällige Einladungen, eingegangene Anträge und offene Protokolle von Versammlungen, offene Plätze in Helferdiensten, Rückfragen und nahe Meldeschlüsse bei Meldungen, eingegangene Rechnungen, Rechnungsentwürfe, Mahnungen, Lastschriften und abgelaufene Einladungen von Konten. Finanzen › Übersicht zeigt dieselben Einträge für die Finanzen.
 - Begriffe: Was Mitglieder an ihren eigenen Daten ändern, heißt jetzt „Datenänderung“; „Meldungen“ sind nur noch Wettbewerbsmeldungen. Im Arbeitsbereich einer Untereinheit heißt der Reiter „Ämter“ und zeigt zuerst die Amtsinhaber.
+- Neu: Umsatzsteuer in der Kasse. Steuersatz je Buchung (Vorgabe aus der Kategorie), Vorsteuer auch anteilig und unter Finanzen › Abschluss & Berichte › Umsatzsteuer eine Vorlage für die Voranmeldung, wahlweise mit Vorsteuerpauschale nach § 23a UStG.
 - Neu: Pauschalen zählen jetzt auch den Verzicht als Aufwandsspende, Auszahlungen aus der Musikerabrechnung und die Kassen der Untereinheiten mit (Finanzen › Abschluss & Berichte › Pauschalen).
 - Neu: Mittelverwendungsrechnung. Unter Finanzen › Abschluss & Berichte › Mittelverwendung zeigt eine vereinfachte Rechnung, welche Mittel bis wann zu verwenden sind, und warnt bei abgelaufener Frist.
 - Neu: Zweckgebundene Spenden. Unter Zuwendungsbestätigungen › **Zweckbindungen** lassen sich Spenden und die Ausgaben im Kassenbuch einem Zweck zuordnen; die Übersicht zeigt den Rest und erinnert an die zeitnahe Verwendung.

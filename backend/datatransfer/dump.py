@@ -237,6 +237,8 @@ DEPT_FIELDS = (
     # Steuerliche Auswertung: Untereinheit mit eigenem Bescheid
     "tax_independent",
     "board_pay_allowed",
+    "vat_period",
+    "vat_flat_rate",
 )
 MEMBERSHIP_PREFETCH = (
     "periods",
