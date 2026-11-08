@@ -35,6 +35,7 @@ import { ArtistFeesPage } from './ArtistFeesPage.tsx'
 import { AllowancesPage } from './AllowancesPage.tsx'
 import { VatPage } from './VatPage.tsx'
 import { AssetsPage } from './AssetsPage.tsx'
+import { PayoutRunsPage } from '../music/PayoutRunsPage.tsx'
 import { t } from '../../i18n/index.ts'
 
 function Section({
@@ -206,6 +207,33 @@ export function FinanzenPage() {
           )
         }
       />
+      <Route path="auswertung/*" element={a.finance ? <EvaluationArea /> : home} />
+      <Route path="steuern/*" element={a.tax ? <TaxArea access={a} /> : home} />
+      <Route
+        path="anlagen"
+        element={
+          a.tax ? (
+            <Section title={t('Anlagen')} readOnly={!a.financeEdit}>
+              <AssetsPage canEdit={a.financeEdit} />
+            </Section>
+          ) : (
+            home
+          )
+        }
+      />
+      <Route
+        path="pauschalen"
+        element={
+          a.tax ? (
+            <Section title={t('Pauschalen')} readOnly={!a.financeEdit}>
+              <AllowancesPage canEdit={a.financeEdit} />
+            </Section>
+          ) : (
+            home
+          )
+        }
+      />
+      <Route path="sammelauszahlungen" element={a.payouts ? <PayoutRunsPage /> : home} />
       <Route path="abschluss/*" element={a.finance ? <ClosingArea access={a} /> : home} />
       <Route path="einrichtung/*" element={<SettingsArea access={a} />} />
       {/* Frühere Adresse der Einrichtung leitet weiter (Menüprüfung M-01) */}
@@ -258,42 +286,79 @@ function DebitsArea({ access: a }: { access: FinanceAccess }) {
   )
 }
 
-function ClosingArea({ access: a }: { access: FinanceAccess }) {
+/** Frühere Adressen unter „Abschluss & Berichte“ leiten weiter (Menüprüfung 2, N-04). */
+function Moved({ to }: { to: string }) {
+  const { search } = useLocation()
+  return <Navigate to={`${to}${search}`} replace />
+}
+
+function EvaluationArea() {
   return (
     <Section
-      title={t('Abschluss & Berichte')}
-      readOnly={!a.financeEdit}
+      title={t('Auswertung')}
       tabs={[
-        { to: '/finanzen/abschluss', label: t('Auswertung') },
-        ...(a.tax
-          ? [
-              { to: '/finanzen/abschluss/steuern', label: t('Steuern') },
-              { to: '/finanzen/abschluss/umsatzsteuer', label: t('Umsatzsteuer') },
-              { to: '/finanzen/abschluss/pauschalen', label: t('Pauschalen') },
-              { to: '/finanzen/abschluss/anlagen', label: t('Anlagen') },
-              {
-                to: '/finanzen/abschluss/kuenstlersozialabgabe',
-                label: t('Künstlersozialabgabe'),
-              },
-              { to: '/finanzen/abschluss/mittelverwendung', label: t('Mittelverwendung') },
-            ]
-          : []),
-        { to: '/finanzen/abschluss/vermoegen', label: t('Vermögen') },
-        { to: '/finanzen/abschluss/jahresabschluss', label: t('Jahresabschluss') },
-        { to: '/finanzen/abschluss/kassenpruefung', label: t('Kassenprüfung') },
+        { to: '/finanzen/auswertung', label: t('Auswertung') },
+        { to: '/finanzen/auswertung/vermoegen', label: t('Vermögen') },
       ]}
     >
       <Routes>
         <Route index element={<EvaluationPage />} />
-        {a.tax && <Route path="steuern" element={<TaxPage />} />}
-        {a.tax && <Route path="umsatzsteuer" element={<VatPage canEdit={a.financeEdit} />} />}
-        {a.tax && <Route path="pauschalen" element={<AllowancesPage canEdit={a.financeEdit} />} />}
-        {a.tax && <Route path="anlagen" element={<AssetsPage canEdit={a.financeEdit} />} />}
-        {a.tax && <Route path="kuenstlersozialabgabe" element={<ArtistFeesPage />} />}
-        {a.tax && <Route path="mittelverwendung" element={<UseOfFundsPage />} />}
         <Route path="vermoegen" element={<NetAssetsPage />} />
-        <Route path="jahresabschluss" element={<ClosingsPage />} />
+        <Route path="*" element={<Navigate to="/finanzen/auswertung" replace />} />
+      </Routes>
+    </Section>
+  )
+}
+
+function TaxArea({ access: a }: { access: FinanceAccess }) {
+  return (
+    <Section
+      title={t('Steuern')}
+      tabs={[
+        { to: '/finanzen/steuern', label: t('Steuern') },
+        { to: '/finanzen/steuern/umsatzsteuer', label: t('Umsatzsteuer') },
+        { to: '/finanzen/steuern/kuenstlersozialabgabe', label: t('Künstlersozialabgabe') },
+        { to: '/finanzen/steuern/mittelverwendung', label: t('Mittelverwendung') },
+      ]}
+    >
+      <Routes>
+        <Route index element={<TaxPage />} />
+        <Route path="umsatzsteuer" element={<VatPage canEdit={a.financeEdit} />} />
+        <Route path="kuenstlersozialabgabe" element={<ArtistFeesPage />} />
+        <Route path="mittelverwendung" element={<UseOfFundsPage />} />
+        <Route path="*" element={<Navigate to="/finanzen/steuern" replace />} />
+      </Routes>
+    </Section>
+  )
+}
+
+function ClosingArea({ access: a }: { access: FinanceAccess }) {
+  return (
+    <Section
+      title={t('Jahresabschluss')}
+      readOnly={!a.financeEdit}
+      tabs={[
+        { to: '/finanzen/abschluss', label: t('Jahresabschluss') },
+        { to: '/finanzen/abschluss/kassenpruefung', label: t('Kassenprüfung') },
+      ]}
+    >
+      <Routes>
+        <Route index element={<ClosingsPage />} />
         <Route path="kassenpruefung" element={<AuditPage canEdit={a.financeEdit} />} />
+        <Route path="jahresabschluss" element={<Moved to="/finanzen/abschluss" />} />
+        <Route path="vermoegen" element={<Moved to="/finanzen/auswertung/vermoegen" />} />
+        <Route path="steuern" element={<Moved to="/finanzen/steuern" />} />
+        <Route path="umsatzsteuer" element={<Moved to="/finanzen/steuern/umsatzsteuer" />} />
+        <Route
+          path="kuenstlersozialabgabe"
+          element={<Moved to="/finanzen/steuern/kuenstlersozialabgabe" />}
+        />
+        <Route
+          path="mittelverwendung"
+          element={<Moved to="/finanzen/steuern/mittelverwendung" />}
+        />
+        <Route path="anlagen" element={<Moved to="/finanzen/anlagen" />} />
+        <Route path="pauschalen" element={<Moved to="/finanzen/pauschalen" />} />
         <Route path="*" element={<Navigate to="/finanzen/abschluss" replace />} />
       </Routes>
     </Section>

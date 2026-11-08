@@ -781,6 +781,16 @@ def _bookings_enabled(club) -> bool:
     return portal_items(club).exists()
 
 
+def _is_musician(club, membership_id) -> bool:
+    if "music" not in (club.enabled_modules or []):
+        return False
+    from music.models import Musician
+
+    return Musician.objects.filter(
+        organization=club, membership_id=membership_id, active=True
+    ).exists()
+
+
 def portal_summary(access: PortalAccess) -> dict:
     club = access.organization
     with tenant_context(club.pk, access.user_id):
@@ -810,6 +820,8 @@ def portal_summary(access: PortalAccess) -> dict:
             "docs_enabled": "docs" in (club.enabled_modules or []),
             "circulars_enabled": "circulars" in (club.enabled_modules or []),
             "cards_enabled": "cards" in (club.enabled_modules or []),
+            # Musiker sehen in Mein Bereich den Punkt „Musik“ (Menüprüfung 2, N-09)
+            "musician": _is_musician(club, access.membership_id),
             # Alle eingeschalteten Module (Modulverzeichnis); die Schalter oben bleiben für
             # ältere App-Stände
             "modules": sorted(club.enabled_modules or []),

@@ -1,4 +1,4 @@
-// Finanzen › Abschluss & Berichte › Steuern: Freigrenze, Bereiche, Kleinunternehmer.
+// Finanzen › Steuern: Freigrenze, Bereiche, Kleinunternehmer.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { euro, financeApi } from '../../api/finance.ts'
@@ -67,7 +67,7 @@ export function TaxSignal({ orgId, year }: { orgId: number; year: number }) {
   return (
     <Alert kind={data.free_limit.status === 'over' ? 'error' : 'info'}>
       {t('In der steuerlichen Auswertung gibt es Hinweise.')}{' '}
-      <Link to="/finanzen/abschluss/steuern">{t('Ansehen')}</Link>
+      <Link to="/finanzen/steuern">{t('Ansehen')}</Link>
     </Alert>
   )
 }
@@ -267,7 +267,7 @@ export function TaxPage() {
               })}
             </p>
           )}
-          <Link to="/finanzen/abschluss/anlagen">{t('Zum Anlagenverzeichnis')}</Link>
+          <Link to="/finanzen/anlagen">{t('Zum Anlagenverzeichnis')}</Link>
         </div>
       )}
 

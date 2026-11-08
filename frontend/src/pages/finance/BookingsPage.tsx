@@ -1155,7 +1155,7 @@ function BookingForm({
               Number(booking.amount) >= 250 && (
                 <Link
                   className="button button-ghost"
-                  to={`/finanzen/abschluss/anlagen?${new URLSearchParams({
+                  to={`/finanzen/anlagen?${new URLSearchParams({
                     buchung: String(booking.id),
                     betrag: booking.amount,
                     datum: booking.date,

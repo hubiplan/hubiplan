@@ -49,3 +49,5 @@ Im Aufgaben-Dialog unter **Mit anderer Installation teilen** wählst du eine bes
 Nach der Übernahme gelten die örtlichen Aufgabenfreigaben. Ein anderer Vorstand erhält dadurch keinen automatischen Zugriff. Die Quelle bestimmt, ob die Gegenseite erledigen darf. Die Verteilart lässt sich nach der ersten Freigabe nicht wechseln. Folgeausgaben werden nur mit **Auch folgende Ausgaben freigeben** übertragen. Bei eigenen Kopien erhält jede Zieleinheit dann ihre eigene Ausgabenfolge; bei gemeinsamen Aufgaben entstehen die Folgeausgaben an der Quelle.
 
 Die Aufgabenliste zeigt Titel, Frist und Aktionen in Tabellenzeilen. Der Titel ist ein Link; auch ein Klick auf die freie Zeilenfläche öffnet die Aufgabe. Das Häkchen ändert nur den Erledigungsstand. Am rechten Rand verschiebt das Papierkorb-Symbol die Aufgabe in den Papierkorb; dort stellt das Zurück-Symbol sie wieder her. Auf schmalen Bildschirmen steht die Frist unter dem Titel.
+
+Ist das Modul Musik eingeschaltet, führt **Persönliche Musikerinnerungen** oben rechts zu deinen Erinnerungen an Notenrückgaben sowie Rückgaben und Wartungen der Ausstattung. Sie erscheinen als private Aufgaben.

@@ -1,4 +1,4 @@
-// Finanzen › Abschluss & Berichte › Künstlersozialabgabe: Honorare an selbständige Künstler
+// Finanzen › Steuern › Künstlersozialabgabe: Honorare an selbständige Künstler
 // je Kalenderjahr als Vorlage für die Meldung an die Künstlersozialkasse.
 import { useState } from 'react'
 import { euro, financeApi } from '../../api/finance.ts'

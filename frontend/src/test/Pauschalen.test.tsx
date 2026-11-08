@@ -75,7 +75,7 @@ describe('Aufwandsvergütungen', () => {
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
       [`GET ${F}/allowances/?jahr=${YEAR}`]: () => ({ status: 200, body: report }),
     })
-    renderApp('/finanzen/abschluss/pauschalen')
+    renderApp('/finanzen/pauschalen')
     expect(await screen.findByText('Erika Musterfrau')).toBeInTheDocument()
     expect(screen.getByText(/93 %, nahe am Freibetrag/)).toBeInTheDocument()
     expect(screen.getByTestId('allowance-units')).toHaveTextContent('Spielmannszug')

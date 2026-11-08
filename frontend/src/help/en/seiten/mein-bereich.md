@@ -12,7 +12,9 @@ As the contact person of an organisation you see the organisation's data here an
 
 You can reach your card, events and invoices from any other view too: under **My account** at the top right, the **My area** section lists **My ID card**, **My events** and **My invoices**. If you are a member of several clubs, each club is listed by name. The unit picker at the top only shows the areas you help run.
 
-When the music module is enabled, your performances, rehearsals, sheet music and absences also appear here. Individual events are separated; meeting details, uniform and response status are labelled. **Accept** and **Decline** mark your current response. Known availability conflicts are also shown in text.
+Under **Competitions** you find your entries (“What am I entered for?”) and your results on one page.
+
+When the music module is enabled, here and, as a musician, under the item **Music** you also find your performances, rehearsals, sheet music and absences also appear here. Individual events are separated; meeting details, uniform and response status are labelled. **Accept** and **Decline** mark your current response. Known availability conflicts are also shown in text.
 
 Under **Messages**, read received circulars with paragraphs, emphasis, lists and links. Attachments are listed by filename with the open circular. A link from the Android app returns to this exact circular and membership access after browser sign-in if needed. **To the overview** closes it; browser Back also works. Retry is available if loading fails.
 

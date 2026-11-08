@@ -7,7 +7,7 @@ import { PortalMeetings } from './PortalMeetings.tsx'
 import { OwnMusic } from '../music/OwnMusic.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { Link, Route, Routes, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
 import { FIELD_LABELS, portalApi } from '../../api/portal.ts'
 import type { ChangeRequest, PortalDetail, PortalEntry } from '../../api/portal.ts'
 import {
@@ -176,18 +176,32 @@ export function PortalPage() {
         }
       />
       <Route
-        path="gemeldet"
+        path="wettbewerbe"
         element={
-          <PortalSection title={t('Wofür bin ich gemeldet?')}>
-            <PortalEntries key={activePortal.id} accessId={activePortal.id} />
+          <PortalSection title={t('Wettbewerbe')}>
+            {activePortal.entries_enabled && (
+              <>
+                <h2>{t('Wofür bin ich gemeldet?')}</h2>
+                <PortalEntries key={activePortal.id} accessId={activePortal.id} />
+              </>
+            )}
+            {activePortal.competitions_enabled && (
+              <>
+                <h2>{t('Meine Ergebnisse')}</h2>
+                <PortalResults key={`r${activePortal.id}`} accessId={activePortal.id} />
+              </>
+            )}
           </PortalSection>
         }
       />
+      {/* Frühere Adressen (Menüprüfung 2, N-09) */}
+      <Route path="gemeldet" element={<Navigate to="/mein-bereich/wettbewerbe" replace />} />
+      <Route path="ergebnisse" element={<Navigate to="/mein-bereich/wettbewerbe" replace />} />
       <Route
-        path="ergebnisse"
+        path="musik"
         element={
-          <PortalSection title={t('Meine Ergebnisse')}>
-            <PortalResults key={activePortal.id} accessId={activePortal.id} />
+          <PortalSection title={t('Musik')}>
+            <OwnMusic key={activePortal.id} accessId={activePortal.id} />
           </PortalSection>
         }
       />

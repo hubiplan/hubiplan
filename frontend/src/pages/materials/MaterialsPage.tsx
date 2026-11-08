@@ -1,3 +1,4 @@
+import { EquipmentPage } from '../music/EquipmentPage.tsx'
 import { useEffect, useState } from 'react'
 import { Link, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
@@ -80,6 +81,10 @@ export function MaterialsPage({ kind = 'material' }: { kind?: StockKind }) {
             )
           }
         />
+        {kind === 'material' && active && (
+          // Instrumente und Uniformen: Musikausstattung als Ansicht des Materials (N-05)
+          <Route path="musik" element={<EquipmentPage />} />
+        )}
         <Route
           path=":id"
           element={<MaterialDetail stock={stock} base={base} editable={editable} />}
@@ -975,7 +980,7 @@ function MaterialDetail({
         <h1>{data.title}</h1>
         {data.music_equipment && (
           <p>
-            <Link to="/musik/ausstattung">{t('Musikausstattung öffnen')}</Link>
+            <Link to="/material/musik">{t('Musikausstattung öffnen')}</Link>
             {data.music_equipment.loaned ? ` · ${t('Über den Musikbereich ausgegeben')}` : ''}
           </p>
         )}

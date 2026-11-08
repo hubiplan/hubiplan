@@ -103,7 +103,7 @@ describe('Steuerliche Auswertung', () => {
       [`GET ${F}/settings/`]: () => ({ status: 200, body: settings }),
       [`GET ${F}/tax/?jahr=2026`]: () => ({ status: 200, body: report }),
     })
-    renderApp('/finanzen/abschluss/steuern')
+    renderApp('/finanzen/steuern')
     const meter = await screen.findByRole('meter', { name: 'Anteil an der Freigrenze' })
     expect(meter).toHaveAttribute('value', '42000')
     expect(screen.getByTestId('tax-free-limit')).toHaveTextContent('84 %')

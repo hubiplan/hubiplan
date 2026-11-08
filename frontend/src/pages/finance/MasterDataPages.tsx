@@ -913,7 +913,7 @@ function DatevSettings({
           </div>
           <p className="muted small">
             {t(
-              'Die Angaben bekommt ihr von eurer Steuerberatung. Tragt bei jedem Konto das DATEV-Finanzkonto (z. B. 1200 Bank, 1000 Kasse) und unter Kategorien das Sachkonto ein. Den Buchungsstapel gibt es dann unter Abschluss & Berichte › Jahresabschluss.',
+              'Die Angaben bekommt ihr von eurer Steuerberatung. Tragt bei jedem Konto das DATEV-Finanzkonto (z. B. 1200 Bank, 1000 Kasse) und unter Kategorien das Sachkonto ein. Den Buchungsstapel gibt es dann unter Finanzen › Jahresabschluss.',
             )}
           </p>
           <Why k="datev_accounts" />

@@ -57,7 +57,8 @@ export function parseHelpFile(file: string, raw: string): HelpEntry {
   const m = /^---\n([\s\S]*?)\n---\n?([\s\S]*)$/.exec(raw.replace(/\r\n/g, '\n'))
   if (!m) throw new Error(`${file}: Kopf fehlt`)
   const meta: Record<string, string | string[]> = {}
-  for (const line of m[1].split('\n')) {
+  // Eingerückte Zeilen gehören zur Zeile davor (Prettier bricht lange Listen um)
+  for (const line of m[1].replace(/\n[ \t]+/g, ' ').split('\n')) {
     if (!line.trim() || line.trim().startsWith('#')) continue
     const kv = /^([a-z]+):\s*(.*)$/.exec(line)
     if (!kv) throw new Error(`${file}: Zeile „${line}“ unverständlich`)

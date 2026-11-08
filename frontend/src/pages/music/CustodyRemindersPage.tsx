@@ -1,14 +1,22 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { Alert, Field } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
-import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { MusicHeader } from './MusicLayout.tsx'
 
 type Preference = { enabled: boolean; days_ahead: number; scores: boolean; equipment: boolean }
+/** Aufgaben › Erinnerungen für Noten und Ausstattung (Menüprüfung 2, N-05) */
+export function MusicRemindersRoute() {
+  const active = useOrg().active
+  if (!active?.modules.includes('music') || !active.permissions.includes('music.view'))
+    return <Navigate to="/aufgaben" replace />
+  return <CustodyRemindersPage key={active.id} />
+}
+
 export function CustodyRemindersPage() {
   const org = useActiveOrg()
   return org.permissions.includes('todos.view') ? (

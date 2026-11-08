@@ -1,4 +1,4 @@
-// Finanzen › Abschluss & Berichte › Vermögen: Vermögensübersicht zum Ende eines
+// Finanzen › Auswertung › Vermögen: Vermögensübersicht zum Ende eines
 // Geschäftsjahres (Kontenstände, Forderungen, Anlagen, Verbindlichkeiten, Rücklagen).
 import { useState } from 'react'
 import { euro, financeApi } from '../../api/finance.ts'

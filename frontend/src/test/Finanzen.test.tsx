@@ -105,7 +105,9 @@ describe('Finanzen', () => {
       'Rechnungen',
       'Lastschriften',
       'Kassenbuch',
-      'Abschluss & Berichte',
+      'Auswertung',
+      'Entwicklung',
+      'Jahresabschluss',
       'Einrichtung',
     ])
       expect(nav.getByRole('link', { name })).toBeInTheDocument()

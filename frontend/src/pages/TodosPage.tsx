@@ -139,6 +139,11 @@ function TodoWorkspace({ base }: { base: string }) {
     <section className="todo-workspace stack">
       <div className="page-heading todo-page-heading">
         <h1>{t('Aufgaben')}</h1>
+        {active?.modules.includes('music') && active.permissions.includes('music.view') && (
+          <Link className="push-right" to="/aufgaben/erinnerungen">
+            {t('Persönliche Musikerinnerungen')}
+          </Link>
+        )}
         <button
           className="button button-primary"
           onClick={() => {

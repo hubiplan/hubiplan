@@ -256,7 +256,7 @@ function CashSummary({ canEdit }: { canEdit: boolean }) {
             booking_count: data.booking_count,
           })}
         </span>
-        <Link className="button button-ghost push-right" to="/finanzen/abschluss">
+        <Link className="button button-ghost push-right" to="/finanzen/auswertung">
           {t('Auswertung & Kassenbericht')}
         </Link>
       </div>
@@ -316,7 +316,7 @@ function CashSummary({ canEdit }: { canEdit: boolean }) {
   )
 }
 
-/** Abschluss & Berichte › Auswertung: Konten, Kategorien, steuerliche Bereiche, Kassenbericht. */
+/** Finanzen › Auswertung: Konten, Kategorien, steuerliche Bereiche, Kassenbericht. */
 export function EvaluationPage() {
   const { org, data, error, setYear } = useFinanceYear()
   if (error) return <Alert kind="error">{error}</Alert>

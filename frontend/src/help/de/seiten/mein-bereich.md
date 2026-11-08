@@ -12,7 +12,9 @@ Als Ansprechpartner einer Organisation siehst du hier die Daten der Organisation
 
 Ausweis, Termine und Rechnungen erreichst du auch aus jeder anderen Ansicht: oben rechts unter **Mein Konto** steht der Abschnitt **Mein Bereich** mit **Mein Ausweis**, **Meine Termine** und **Meine Rechnungen**. Bist du in mehreren Vereinen Mitglied, steht dort jeder Verein mit seinem Namen. Die Auswahl der Einheit oben zeigt dagegen nur die Bereiche, in denen du mitarbeitest.
 
-Bei freigeschaltetem Musikmodul findest du hier auch deine Auftritte, Proben, Noten und Abwesenheiten. Die einzelnen Termine sind voneinander getrennt; Treffpunkt, Uniform und Rückmeldestatus sind beschriftet. **Zusagen** und **Absagen** markieren deine aktuelle Rückmeldung. Bekannte Verfügbarkeitskonflikte werden zusätzlich als Text angezeigt.
+Unter **Wettbewerbe** stehen deine Meldungen („Wofür bin ich gemeldet?“) und deine Ergebnisse auf einer Seite.
+
+Bei freigeschaltetem Musikmodul findest du hier und als Musikerin oder Musiker unter dem Punkt **Musik** auch deine Auftritte, Proben, Noten und Abwesenheiten. Die einzelnen Termine sind voneinander getrennt; Treffpunkt, Uniform und Rückmeldestatus sind beschriftet. **Zusagen** und **Absagen** markieren deine aktuelle Rückmeldung. Bekannte Verfügbarkeitskonflikte werden zusätzlich als Text angezeigt.
 
 Unter **Mitteilungen** liest du empfangene Rundschreiben mit Absätzen, Hervorhebungen, Listen und Links. Anhänge stehen mit ihrem Dateinamen beim geöffneten Schreiben. Ein Link aus der Android-App führt nach einer nötigen Browseranmeldung direkt zu diesem Schreiben und dem zugehörigen Mitgliederzugang. **Zur Übersicht** schließt das Schreiben; auch die Zurücknavigation des Browsers funktioniert. Bei Ladefehlern kannst du es erneut laden.
 

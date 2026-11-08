@@ -7,15 +7,21 @@ const entry = (extra: Partial<PortalEntry> = {}) =>
 
 describe('Mein Bereich aus einer Liste (Menüprüfung M-07)', () => {
   it('nimmt freigeschaltete Punkte in die Seitenleiste auf', () => {
-    const labels = portalNav(entry({ bookings_enabled: true, competitions_enabled: true })).map(
-      (s) => s.label,
-    )
+    const labels = portalNav(
+      entry({
+        bookings_enabled: true,
+        entries_enabled: true,
+        competitions_enabled: true,
+        musician: true,
+      }),
+    ).map((s) => s.label)
     expect(labels).toEqual([
       'Übersicht',
       'Aufgaben',
       'Ausweis',
       'Belegung',
-      'Ergebnisse',
+      'Wettbewerbe',
+      'Musik',
       'Rechnungen',
       'Mitteilungen',
       'Meine Daten',

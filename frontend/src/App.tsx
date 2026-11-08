@@ -42,6 +42,10 @@ const PlatformImprintPage = lazyPage(
   'PlatformImprintPage',
 )
 const TodosPage = lazyPage(() => import('./pages/TodosPage.tsx'), 'TodosPage')
+const MusicRemindersRoute = lazyPage(
+  () => import('./pages/music/CustodyRemindersPage.tsx'),
+  'MusicRemindersRoute',
+)
 const HomePage = lazyPage(() => import('./pages/HomePage.tsx'), 'HomePage')
 const DepartmentArea = lazyPage(
   () => import('./pages/department/DepartmentArea.tsx'),
@@ -182,7 +186,7 @@ const LEGACY_KASSE: Record<string, string> = {
   buchungen: '/finanzen/kassenbuch',
   konten: '/finanzen/einrichtung/konten',
   kategorien: '/finanzen/einrichtung/kategorien',
-  abschluss: '/finanzen/abschluss/jahresabschluss',
+  abschluss: '/finanzen/abschluss',
 }
 
 const LEGACY_BEITRAEGE: Record<string, string> = {
@@ -293,6 +297,7 @@ export default function App() {
           />
           <Route path="rundschreiben/*" element={<CircularsPage />} />
           <Route path="aufgaben" element={<TodosPage />} />
+          <Route path="aufgaben/erinnerungen" element={<MusicRemindersRoute />} />
           <Route path="material/*" element={<MaterialsPage />} />
           <Route path="infrastruktur/*" element={<MaterialsPage kind="facility" />} />
           <Route path="belegung" element={<BookingsPage />} />

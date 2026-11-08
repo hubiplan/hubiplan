@@ -53,6 +53,8 @@ export interface PortalEntry {
   docs_enabled?: boolean
   circulars_enabled?: boolean
   cards_enabled?: boolean
+  /** Aktive Musikerin oder aktiver Musiker (Mein Bereich › Musik) */
+  musician?: boolean
   terms?: DeptTerms
   imprint_key?: string
 }

@@ -234,6 +234,8 @@ export interface InvoiceFilter {
   gemahnt?: boolean
   verein?: string
   veranstaltung?: string
+  /** Rechnungen eines Mitglieds (Mitgliederakte › Beiträge) */
+  mitglied?: number
   page?: number
 }
 
@@ -439,7 +441,10 @@ export interface DebitProposals {
 }
 
 export const sepaApi = {
-  mandates: (org: number, f: { suche?: string; status?: string; page?: number } = {}) => {
+  mandates: (
+    org: number,
+    f: { suche?: string; status?: string; mitglied?: number; page?: number } = {},
+  ) => {
     const q = new URLSearchParams()
     for (const [k, v] of Object.entries(f)) if (v) q.set(k, String(v))
     return api.get<Page<Mandate>>(`${base(org)}/mandates/?${q}`)

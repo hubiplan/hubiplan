@@ -1,4 +1,4 @@
-// Finanzen › Abschluss & Berichte › Umsatzsteuer: Vorlage für die Voranmeldung (Kennzahlen).
+// Finanzen › Steuern › Umsatzsteuer: Vorlage für die Voranmeldung (Kennzahlen).
 import { useState } from 'react'
 import { euro, financeApi } from '../../api/finance.ts'
 import type { FinanceSettings, VatPeriod } from '../../api/finance.ts'
