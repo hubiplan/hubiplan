@@ -338,6 +338,10 @@ export const modules: AppModule[] = [
       const s = stockAccess(org, ws ?? NO_WS)
       const items = [
         ...(s.material ? [{ to: '/material', label: t('Material') }] : []),
+        // Musikausstattung als Ansicht des Materials (Menüprüfung 2, N-05)
+        ...(s.material && org?.modules.includes('music') && org.permissions.includes('music.view')
+          ? [{ to: '/material/musik', label: t('Instrumente und Uniformen') }]
+          : []),
         ...(s.facility ? [{ to: '/infrastruktur', label: t('Räume und Anlagen') }] : []),
         ...(s.bookings ? [{ to: '/belegung', label: t('Belegung') }] : []),
       ]

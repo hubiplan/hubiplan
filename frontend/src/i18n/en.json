@@ -7284,5 +7284,6 @@
   "Dienstplan: {title}": "Duty roster: {title}",
   "Dienstplan für diesen Termin anlegen": "Create duty roster for this event",
   "Belegt: {item}": "Booked: {item}",
-  "Raum oder Gerät für diesen Termin buchen": "Book a room or equipment for this event"
+  "Raum oder Gerät für diesen Termin buchen": "Book a room or equipment for this event",
+  "Auswerten": "Evaluate"
 }

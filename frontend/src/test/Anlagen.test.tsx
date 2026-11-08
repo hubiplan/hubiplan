@@ -87,7 +87,7 @@ function api() {
 describe('Anlagenverzeichnis', () => {
   it('zeigt Anlagen mit Abschreibung und Buchwert des Jahres', async () => {
     api()
-    renderApp('/finanzen/abschluss/anlagen')
+    renderApp('/finanzen/anlagen')
     expect(await screen.findByRole('button', { name: 'Festzelt' })).toBeInTheDocument()
     expect(screen.getByText('2025-0012')).toBeInTheDocument()
     expect(screen.getAllByText(/9\.900,00/).length).toBeGreaterThan(0)

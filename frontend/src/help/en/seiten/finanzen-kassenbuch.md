@@ -20,6 +20,6 @@ If loading accounts or categories fails, **Reload** retries locally. Booking det
 
 **Split** (split booking): If one payment belongs to several categories or tax areas, for example the caterer's settlement with drinks, admission and advertising, open the booking and choose **Split**. Each part gets a category, an amount and optionally an event and a description. Together the parts must add up exactly to the amount. Each part becomes a booking of its own with its own number. Date, account and payee or payer apply to all parts; receipts and the bank transaction stay with the first part. Splitting works as long as the booking is not locked and does not belong to a cancellation, a signed receipt, an invoice payment or a donation.
 
-**Expense allowance to a person**: if the club pays a trainer or volunteer an allowance, choose trainer allowance or volunteer allowance on the expense and enter the member or recipient. The totals per person are under Closing & reports › Allowances. The field is available with the Tax & charitable status module.
+**Expense allowance to a person**: if the club pays a trainer or volunteer an allowance, choose trainer allowance or volunteer allowance on the expense and enter the member or recipient. The totals per person are under Finance › Allowances. The field is available with the Tax & charitable status module.
 
-**Record as fixed asset**: for an expense from €250, this button takes the amount, date and text into the fixed asset register (Closing & reports › Fixed assets) and links the asset to the booking.
+**Record as fixed asset**: for an expense from €250, this button takes the amount, date and text into the fixed asset register (Finance › Fixed assets) and links the asset to the booking.

@@ -509,7 +509,7 @@ describe('Kasse', () => {
       [`GET ${F}/closings/`]: () => ({ status: 200, body: years(false) }),
       [`POST ${F}/closings/`]: () => ({ status: 201, body: years(true) }),
     })
-    renderApp('/finanzen/abschluss/jahresabschluss')
+    renderApp('/finanzen/abschluss')
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Abschließen' }))
     const dialog = await screen.findByRole('alertdialog', {

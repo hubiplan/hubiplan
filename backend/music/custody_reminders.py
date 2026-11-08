@@ -57,12 +57,12 @@ def task_link(todo, scope):
             equipment__item__department=None,
             equipment__item__deleted_at=None,
         ).exists()
-        return f"/musik/ausstattung?ausleihe={link.source}" if exists else ""
+        return f"/material/musik?ausleihe={link.source}" if exists else ""
     if link.kind == "maintenance":
         exists = Equipment.objects.filter(
             organization=scope.org, pk=link.source, item__department=None, item__deleted_at=None
         ).exists()
-        return f"/musik/ausstattung?wartung={link.source}" if exists else ""
+        return f"/material/musik?wartung={link.source}" if exists else ""
     return ""
 
 
@@ -94,7 +94,7 @@ def sources(pref, permissions):
                 row.pk,
                 row.due_date,
                 gettext("Ausstattungsrückgabe prüfen"),
-                f"/musik/ausstattung?ausleihe={row.pk}",
+                f"/material/musik?ausleihe={row.pk}",
             )
         for row in Equipment.objects.filter(
             organization=pref.organization,
@@ -107,7 +107,7 @@ def sources(pref, permissions):
                 row.pk,
                 row.maintenance_due,
                 gettext("Wartung der Ausstattung prüfen"),
-                f"/musik/ausstattung?wartung={row.pk}",
+                f"/material/musik?wartung={row.pk}",
             )
 
 

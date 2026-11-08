@@ -49,3 +49,5 @@ In the task dialog, **Share with another installation** selects a confirmed conn
 After adoption, local task permissions apply. Another board member does not automatically gain access. The source controls whether the receiving side may complete a task. The distribution mode cannot be changed after the first grant. Future occurrences require **Also share future occurrences**. Separate copies then have independent local sequences; jointly completed tasks create successors at the source.
 
 The task list uses table rows for title, deadline and actions. The title is a link; clicking the free area of a row also opens the task. The checkbox only changes completion. The trash icon on the right moves a task to trash; the restore icon returns it from trash. On narrow screens, the deadline appears below the title.
+
+If the music module is switched on, **Personal music reminders** at the top right leads to your reminders for sheet music returns and equipment returns and maintenance. They appear as private tasks.

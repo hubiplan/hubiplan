@@ -10,7 +10,7 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Musik und Auftritte
 
-Die Unterpunkte von Musik stehen in der Seitenleiste, gegliedert nach Auftritte (Übersicht, Auftritte, Verfügbarkeiten), Musiker (Musiker, Proben und Notenausgabe), Noten (Notenbestand, Erinnerungen), Ausstattung und Abrechnung (Instrumente und Uniformen, Sammelauszahlungen) und Einrichtung (Besetzungsvorlagen). Jeder Punkt hat eine eigene Adresse, etwa `/musik/noten`.
+Die Unterpunkte von Musik stehen in der Seitenleiste, gegliedert nach Auftritte (Übersicht, Auftritte, Verfügbarkeiten), Musiker (Musiker, Proben und Notenausgabe), Noten (Notenbestand) und Einrichtung (Besetzungsvorlagen). Jeder Punkt hat eine eigene Adresse, etwa `/musik/noten`. Instrumente und Uniformen stehen unter Material & Räume, Sammelauszahlungen unter Finanzen (Buchen) und die persönlichen Erinnerungen unter Aufgaben.
 
 Unter **Auftrittsübersicht** siehst du Besetzung, ausstehende Rückmeldungen, bekannte
 Konflikte, Notenbedarf und berechtigte Abrechnungshinweise gemeinsam. Wähle bei Bedarf
@@ -102,7 +102,7 @@ Die Vorbereitungsliste vergleicht benötigte Instrumente/Stimmen mit Sollbesetzu
 
 ## Instrumente und Uniformen
 
-Wenn zusätzlich das Materialmodul und Materialleserecht freigeschaltet sind, erscheint **Instrumente und Uniformen**. Zum Ändern werden Musik- und Materialbearbeitungsrecht benötigt. **Material als Musikausstattung verbinden** wählt einen vorhandenen Gegenstand aus der Materialverwaltung; dort werden neue Gegenstände, Fotos, Dokumente und Aufgaben gepflegt. Inventarnummer und Zustand bleiben dieselben. Unter **Ausstattungsdaten bearbeiten** Art, Instrument, Größe/Ausführung und nächsten Wartungstermin ergänzen.
+Wenn zusätzlich das Materialmodul und Materialleserecht freigeschaltet sind, erscheint unter Material & Räume der Punkt **Instrumente und Uniformen**. Zum Ändern werden Musik- und Materialbearbeitungsrecht benötigt. **Material als Musikausstattung verbinden** wählt einen vorhandenen Gegenstand aus der Materialverwaltung; dort werden neue Gegenstände, Fotos, Dokumente und Aufgaben gepflegt. Inventarnummer und Zustand bleiben dieselben. Unter **Ausstattungsdaten bearbeiten** Art, Instrument, Größe/Ausführung und nächsten Wartungstermin ergänzen.
 
 **Ausstattung ausgeben** ordnet einem aktiven Musiker einen Gegenstand mit Rückgabefrist und Übergabevermerk zu. Für die Ausgabe an Mitglieder ist zusätzlich Mitgliederleserecht erforderlich. Der Materialstandort wird zum Mitglied geändert. Bei Gästen wird der Standort als zu klären mit Hinweis auf die Musikausgabe geführt; die Gastzuordnung steht im Musikbereich. Bereits ausgegebene, defekte oder ausgesonderte Gegenstände können nicht erneut ausgegeben werden. Überfällige Rückgaben sind markiert.
 
@@ -128,7 +128,7 @@ Nach dem Löschen geschlossener Ausgaben gilt für den Materialpapierkorb die vo
 
 ## Sammelauszahlungen
 
-Unter **Sammelauszahlungen** wählt die Kasse freigegebene Restvergütungen,
+Unter **Sammelauszahlungen** (Finanzen, Buchen) wählt die Kasse freigegebene Restvergütungen,
 Bankkonto und Ausführungstag. Für jeden Empfänger werden Kontoinhaber, IBAN und
 gegebenenfalls BIC geprüft. **Zahlungslauf zur Prüfung speichern** reserviert die
 Vergütungen und hält Beträge und Empfängerdaten unveränderlich fest.
@@ -180,7 +180,7 @@ Musik- und Kassenbearbeitungsrecht. Für PDFs wird der bestehende Briefbogen ver
 
 ## Persönliche Rückgabe- und Wartungserinnerungen
 
-Unter **Erinnerungen** kannst du für dich private Aufgaben zu Notenrückgaben sowie
+Unter Aufgaben › **Persönliche Musikerinnerungen** kannst du für dich private Aufgaben zu Notenrückgaben sowie
 Rückgaben und Wartungen der Ausstattung aktivieren. Die Vorschau umfasst null bis
 30 Tage und bereits überfällige Vorgänge. Aufgaben werden beim Speichern und danach
 stündlich abgeglichen. Für Ausstattung brauchst du weiterhin Materialleserecht;

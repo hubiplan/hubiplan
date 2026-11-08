@@ -10,7 +10,7 @@ stichworte: [Musik, Instrument, Auftritt, Besetzung]
 
 # Music and performances
 
-The music sub-items are in the sidebar, grouped as Performances (Overview, Performances, Availability), Musicians (Musicians, Rehearsals and sheet music checkout), Sheet music (Sheet music library, Reminders), Equipment and payments (Instruments and uniforms, Batch payouts) and Setup (Instrumentation templates). Each item has its own address, e.g. `/musik/noten`.
+The music sub-items are in the sidebar, grouped as Performances (Overview, Performances, Availability), Musicians (Musicians, Rehearsals and sheet music checkout), Sheet music (Sheet music library) and Setup (Instrumentation templates). Each item has its own address, e.g. `/musik/noten`. Instruments and uniforms are under Equipment & rooms, batch payouts under Finance (Book) and the personal reminders under Tasks.
 
 **Performance overview** combines staffing, pending responses, known conflicts,
 sheet music requirements and permitted settlement issues. Select a period and choose
@@ -102,7 +102,7 @@ Download programme and part lists as CSV. Use **Sheet music preparation tasks** 
 
 ## Instruments and uniforms
 
-When the inventory module and inventory viewing permission are also enabled, **Instruments and uniforms** appears. Editing requires both music and inventory editing permissions. **Link inventory item as music equipment** selects an existing inventory item; create items and maintain photos, documents and tasks in inventory management. Inventory number and condition remain shared. Use **Edit equipment details** for type, instrument, size/specification and the next maintenance date.
+When the inventory module and inventory viewing permission are also enabled, the item **Instruments and uniforms** appears under Equipment & rooms. Editing requires both music and inventory editing permissions. **Link inventory item as music equipment** selects an existing inventory item; create items and maintain photos, documents and tasks in inventory management. Inventory number and condition remain shared. Use **Edit equipment details** for type, instrument, size/specification and the next maintenance date.
 
 **Issue equipment** assigns an item to an active musician with a return deadline and handover note. Issuing equipment to members also requires member viewing permission. The inventory location changes to that member. For guests, the location is marked for review with a reference to the music issue; the guest assignment appears in Music. Items already issued, defective or retired cannot be issued again. Overdue returns are marked.
 
@@ -128,7 +128,7 @@ After an inventory item with closed issues is deleted, the existing 30-day trash
 
 ## Batch payouts
 
-In **Batch payouts**, select approved outstanding remuneration, a bank account
+In **Batch payouts** (Finance, Book), select approved outstanding remuneration, a bank account
 and an execution date. Check each holder, IBAN and optional BIC. Saving a run for
 review reserves claims and freezes amounts and recipient details.
 Download the SEPA file (pain.001.001.09, EUR), check it and approve it at your bank.
@@ -169,7 +169,7 @@ PDFs use the existing letterhead.
 
 ## Personal return and maintenance reminders
 
-In **Reminders**, enable private tasks for your own sheet music returns and equipment
+In Tasks › **Personal music reminders**, enable private tasks for your own sheet music returns and equipment
 returns and maintenance. Choose zero to 30 days ahead; overdue records are included.
 Tasks are reconciled on save and hourly. Equipment still requires inventory read access;
 department equipment is excluded. Enabling requires task read and edit permission.

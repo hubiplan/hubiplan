@@ -52,7 +52,7 @@ describe('Künstlersozialabgabe', () => {
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
       [`GET ${F}/artist-fees/?jahr=2026`]: () => ({ status: 200, body: report }),
     })
-    renderApp('/finanzen/abschluss/kuenstlersozialabgabe')
+    renderApp('/finanzen/steuern/kuenstlersozialabgabe')
     expect(await screen.findByText('Blaskapelle Musterdorf')).toBeInTheDocument()
     expect(screen.getByText('Abgabe (4,9 %)')).toBeInTheDocument()
     expect(screen.getByText(/49,00/)).toBeInTheDocument()

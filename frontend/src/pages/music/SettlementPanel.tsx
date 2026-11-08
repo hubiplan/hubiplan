@@ -195,7 +195,7 @@ export function SettlementPanel({
         </Link>
       ))}
       <h2>{t('Musikervergütungen')}</h2>
-      <Link to="/musik/auszahlungen">{t('Sammelauszahlungen')}</Link>
+      <Link to="/finanzen/sammelauszahlungen">{t('Sammelauszahlungen')}</Link>
       {canEdit && (
         <FeeBatchPanel
           url={url}

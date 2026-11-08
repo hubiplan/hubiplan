@@ -28,6 +28,8 @@ export interface FinanceAccess {
   reserves: boolean
   /** Steuerliche Auswertung: Modul „Steuern & Gemeinnützigkeit“ und Kasse */
   tax: boolean
+  /** Sammelauszahlungen aus der Musikerabrechnung (Modul Musik, Termine lesen) */
+  payouts: boolean
 }
 
 export function financeAccess(org: OrgSummary | null): FinanceAccess {
@@ -44,6 +46,7 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
     cashCounts: false,
     reserves: false,
     tax: false,
+    payouts: false,
   }
   if (!org || org.type === 'platform') return none
   const has = (p: string) => org.permissions.includes(p)
@@ -64,6 +67,7 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
     cashCounts: finance && !!org.cash_counts_enabled,
     reserves: finance && !!org.reserves_enabled,
     tax: finance && org.modules.includes('tax'),
+    payouts: finance && org.modules.includes('music') && has(PERM.eventsView),
   }
 }
 
@@ -76,15 +80,16 @@ export interface NavItem {
 /** Unterpunkte von Finanzen (Seitenleiste). */
 export function financeSections(a: FinanceAccess): NavItem[] {
   if (!a.finance && !a.billing) return []
-  // Gegliedert nach den Arbeitsschritten der Übersicht (UX-Audit S-02); Einrichtung zuletzt
+  // Gegliedert nach dem Jahreslauf: abrechnen, Zahlungen, buchen, auswerten, abschließen
+  // (UX-Audit S-02, Menüprüfung 2 N-04); Einrichtung zuletzt
   const bill = t('Beiträge abrechnen')
   const pay = t('Zahlungen verarbeiten')
   const book = t('Buchen')
+  const evaluate = t('Auswerten')
   const close = t('Jahr abschließen')
   const setup = t('Einrichten')
   return [
     { to: '/finanzen', label: t('Übersicht') },
-    ...(a.finance ? [{ to: '/finanzen/entwicklung', label: t('Entwicklung') }] : []),
     ...(a.billing || a.received || a.finance
       ? [{ to: '/finanzen/rechnungen', label: t('Rechnungen'), section: bill }]
       : []),
@@ -102,11 +107,23 @@ export function financeSections(a: FinanceAccess): NavItem[] {
     ...(a.finance
       ? [{ to: '/finanzen/veranstaltungen', label: t('Veranstaltungen'), section: book }]
       : []),
+    ...(a.tax ? [{ to: '/finanzen/anlagen', label: t('Anlagen'), section: book }] : []),
+    ...(a.tax ? [{ to: '/finanzen/pauschalen', label: t('Pauschalen'), section: book }] : []),
+    ...(a.payouts
+      ? [{ to: '/finanzen/sammelauszahlungen', label: t('Sammelauszahlungen'), section: book }]
+      : []),
+    ...(a.finance
+      ? [
+          { to: '/finanzen/auswertung', label: t('Auswertung'), section: evaluate },
+          { to: '/finanzen/entwicklung', label: t('Entwicklung'), section: evaluate },
+        ]
+      : []),
+    ...(a.tax ? [{ to: '/finanzen/steuern', label: t('Steuern'), section: evaluate }] : []),
     ...(a.donations
       ? [{ to: '/finanzen/zuwendungen', label: t('Zuwendungsbestätigungen'), section: close }]
       : []),
     ...(a.finance
-      ? [{ to: '/finanzen/abschluss', label: t('Abschluss & Berichte'), section: close }]
+      ? [{ to: '/finanzen/abschluss', label: t('Jahresabschluss'), section: close }]
       : []),
     // Geschäftspartner gelten für Ein- und Ausgang, deshalb bei „Einrichten“ (Menüprüfung M-10)
     { to: '/finanzen/geschaeftspartner', label: t('Geschäftspartner'), section: setup },

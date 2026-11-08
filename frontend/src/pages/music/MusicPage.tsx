@@ -1,7 +1,5 @@
 import { useState } from 'react'
-import { CustodyRemindersPage } from './CustodyRemindersPage.tsx'
 import { EngagementPage } from './EngagementPage.tsx'
-import { PayoutRunsPage } from './PayoutRunsPage.tsx'
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
@@ -17,7 +15,6 @@ import { PracticePage } from './PracticePage.tsx'
 import { EnsembleTemplatesPage } from './EnsembleTemplatesPage.tsx'
 import { StaffingPage } from './StaffingPage.tsx'
 import { AvailabilityPage } from './AvailabilityPage.tsx'
-import { EquipmentPage } from './EquipmentPage.tsx'
 import { PerformanceOverview } from './PerformanceOverview.tsx'
 import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
@@ -67,6 +64,12 @@ const OLD_AREAS: Record<string, string> = {
   ausstattung: 'ausstattung',
 }
 
+const MOVED: Record<string, string> = {
+  erinnerungen: '/aufgaben/erinnerungen',
+  ausstattung: '/material/musik',
+  auszahlungen: '/finanzen/sammelauszahlungen',
+}
+
 /** Bereich aus der Adresse /musik/<bereich> */
 export function musicArea(pathname: string): string {
   return pathname.replace(/^\/musik\/?/, '').split('/')[0] ?? ''
@@ -84,7 +87,12 @@ function MusicRoute() {
     return <Navigate to={`/musik/${OLD_AREAS[old]}${query ? `?${query}` : ''}`} replace />
   }
   const area = musicArea(pathname)
-  if (area === 'erinnerungen') return <CustodyRemindersPage key={org.id} />
+  // Umgezogen (Menüprüfung 2, N-05); Abfragen wie ?ausleihe= bleiben erhalten
+  const moved = MOVED[area]
+  if (moved) {
+    const query = params.toString()
+    return <Navigate to={`${moved}${query ? `?${query}` : ''}`} replace />
+  }
   if (/^\d+$/.test(params.get('vereinbarung') || ''))
     return (
       <EngagementPage
@@ -92,9 +100,7 @@ function MusicRoute() {
         performance={Number(params.get('vereinbarung'))}
       />
     )
-  if (area === 'auszahlungen') return <PayoutRunsPage key={org.id} />
   if (area === 'uebersicht') return <PerformanceOverview key={org.id} />
-  if (area === 'ausstattung') return <EquipmentPage key={org.id} />
   if (area === 'noten')
     return org.modules.includes('scores') && org.permissions.includes('scores.view') ? (
       <ScoresPage key={org.id} />
