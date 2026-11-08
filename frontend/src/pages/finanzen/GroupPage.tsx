@@ -8,6 +8,7 @@ import { useLoad } from '../../components/forms.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { financeGroupList } from './access.ts'
 import type { FinanceAccess } from './access.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { t } from '../../i18n/index.ts'
 
 interface Action {
@@ -69,25 +70,11 @@ export function FinanceGroupPage({
   const actions = groupActions(group.key, a)
   return (
     <section>
-      <div className="page-head">
-        <div>
-          <p className="muted small eyebrow">{t('Finanzen')}</p>
-          <h1>{group.label}</h1>
-        </div>
-        {actions.length > 0 && (
-          <div className="button-row push-right">
-            {actions.map((act, i) => (
-              <Link
-                key={act.to}
-                to={act.to}
-                className={`button ${i === 0 ? 'button-primary' : 'button-ghost'}`}
-              >
-                {act.label}
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* h1 = Gruppe, Pfad „Finanzen › Gruppe“ aus dem Menü (S-05) */}
+      <PageHeader
+        primary={actions[0] ? { label: actions[0].label, to: actions[0].to } : null}
+        actions={actions.slice(1).map((act) => ({ label: act.label, to: act.to }))}
+      />
       {group.text && <p className="muted">{group.text}</p>}
       <ul className="group-cards">
         {group.items.map((item) => {

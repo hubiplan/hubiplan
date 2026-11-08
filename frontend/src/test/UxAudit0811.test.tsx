@@ -81,7 +81,13 @@ describe('W-02: eigene Überschrift und eigener Seitentitel', () => {
     renderApp('/finanzen/rechnungen/mahnungen', org)
     expect(await screen.findByRole('heading', { level: 1, name: 'Mahnungen' })).toBeVisible()
     // Seit S-01 ist Mahnungen ein Eintrag der Gruppe „Beiträge & Rechnungen“
-    expect(screen.getByText('Finanzen › Beiträge & Rechnungen')).toBeVisible()
+    // Pfad im Seitenkopf (S-05)
+    const trail = screen.getByRole('navigation', { name: 'Pfad' })
+    expect(within(trail).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
+      'Finanzen',
+      'Beiträge & Rechnungen',
+      'Mahnungen',
+    ])
     await waitFor(() =>
       expect(document.title).toMatch(/^Mahnungen · Beiträge & Rechnungen · Finanzen · /),
     )
