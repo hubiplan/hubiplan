@@ -14,7 +14,7 @@ With the HUBIplan app for Android you score a shooting directly on your phone. Y
 2. Tap “Open stand mode” for the competition. The app creates a stand access valid until the end of the competition day.
 3. Record as in the browser: search for shooters, enter points, tap hits on the target or have a photo evaluated. The app asks once for the camera.
 4. Without signal the app keeps the entries for up to twelve hours and sends them as soon as there is a connection again. Before leaving it asks if anything is still waiting.
-5. For another device tap “QR code for another device” and scan it there with the app (under “Administration” › “Scan stand QR”) or with the camera.
+5. For another device tap “QR code for another device” and scan it there with the app (under “Administration” › “Competitions” › “Scan stand QR”) or with the camera.
 6. After the shooting end the stand access with “End stand access”.
 
 Members see the rankings in the app under “Card” › “Rankings”, as far as the club also shows them on its website.
