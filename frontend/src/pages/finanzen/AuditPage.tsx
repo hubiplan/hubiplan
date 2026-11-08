@@ -1,4 +1,4 @@
-// Finanzen › Abschluss & Berichte › Kassenprüfung: Prüfauftrag je Geschäftsjahr,
+// Finanzen › Jahresabschluss › Kassenprüfung: Prüfauftrag je Geschäftsjahr,
 // Stichproben, Kontenabgleich, Prüfpunkte und Prüfbericht (Konzept vereinskasse-steuern, S6).
 // Die Kasse legt den Auftrag an; abhaken dürfen nur Kassenprüfer (Kasse lesen, nicht führen).
 import { useState } from 'react'

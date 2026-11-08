@@ -33,6 +33,7 @@ import { NetAssetsPage } from './NetAssetsPage.tsx'
 import { UseOfFundsPage } from './UseOfFundsPage.tsx'
 import { ArtistFeesPage } from './ArtistFeesPage.tsx'
 import { AllowancesPage } from './AllowancesPage.tsx'
+import { VatPage } from './VatPage.tsx'
 import { AssetsPage } from './AssetsPage.tsx'
 import { PayoutRunsPage } from '../music/PayoutRunsPage.tsx'
 import { t } from '../../i18n/index.ts'
@@ -207,7 +208,7 @@ export function FinanzenPage() {
         }
       />
       <Route path="auswertung/*" element={a.finance ? <EvaluationArea /> : home} />
-      <Route path="steuern/*" element={a.tax ? <TaxArea /> : home} />
+      <Route path="steuern/*" element={a.tax ? <TaxArea access={a} /> : home} />
       <Route
         path="anlagen"
         element={
@@ -309,18 +310,20 @@ function EvaluationArea() {
   )
 }
 
-function TaxArea() {
+function TaxArea({ access: a }: { access: FinanceAccess }) {
   return (
     <Section
       title={t('Steuern')}
       tabs={[
         { to: '/finanzen/steuern', label: t('Steuern') },
+        { to: '/finanzen/steuern/umsatzsteuer', label: t('Umsatzsteuer') },
         { to: '/finanzen/steuern/kuenstlersozialabgabe', label: t('Künstlersozialabgabe') },
         { to: '/finanzen/steuern/mittelverwendung', label: t('Mittelverwendung') },
       ]}
     >
       <Routes>
         <Route index element={<TaxPage />} />
+        <Route path="umsatzsteuer" element={<VatPage canEdit={a.financeEdit} />} />
         <Route path="kuenstlersozialabgabe" element={<ArtistFeesPage />} />
         <Route path="mittelverwendung" element={<UseOfFundsPage />} />
         <Route path="*" element={<Navigate to="/finanzen/steuern" replace />} />
@@ -345,6 +348,7 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
         <Route path="jahresabschluss" element={<Moved to="/finanzen/abschluss" />} />
         <Route path="vermoegen" element={<Moved to="/finanzen/auswertung/vermoegen" />} />
         <Route path="steuern" element={<Moved to="/finanzen/steuern" />} />
+        <Route path="umsatzsteuer" element={<Moved to="/finanzen/steuern/umsatzsteuer" />} />
         <Route
           path="kuenstlersozialabgabe"
           element={<Moved to="/finanzen/steuern/kuenstlersozialabgabe" />}

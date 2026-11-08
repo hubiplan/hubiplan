@@ -381,6 +381,8 @@ export function CategoriesPage() {
   const areas = settings.data.tax_areas_enabled ? settings.data.tax_areas : []
   const datevOn = !!settings.data.datev_enabled
   const artistsOn = org.modules.includes('tax')
+  // Umsatzsteuer-Vorgabe je Kategorie (S2): mit Modul Steuern bei Steuerpflicht
+  const vatOn = artistsOn && (!!settings.data.vat_registered || data.some((c) => !!c.vat_rate))
   const current = data.filter((c) => c.is_active)
   const archived = data.filter((c) => !c.is_active)
 
@@ -524,6 +526,7 @@ export function CategoriesPage() {
               {areas.length > 0 && <th>{t('steuerlicher Bereich')}</th>}
               {org.donations_enabled && <th>{t('Spenden')}</th>}
               {artistsOn && <th>{t('Künstlerhonorare')}</th>}
+              {vatOn && <th>{t('Umsatzsteuer')}</th>}
               {datevOn && <th>{t('DATEV-Konto')}</th>}
               <th className="num">{t('Buchungen')}</th>
               <th />
@@ -616,6 +619,35 @@ export function CategoriesPage() {
                           )
                         }
                       />
+                    )}
+                  </td>
+                )}
+                {vatOn && (
+                  <td>
+                    {canEdit ? (
+                      <select
+                        aria-label={t('{name}: Umsatzsteuer', { name: c.name })}
+                        value={c.vat_rate ?? ''}
+                        onChange={(e) =>
+                          void run(() =>
+                            financeApi.updateCategory(org.id, c.id, {
+                              vat_rate: e.target.value as Category['vat_rate'],
+                            }),
+                          )
+                        }
+                      >
+                        <option value="">{t('keine (nicht steuerbar)')}</option>
+                        <option value="19">{t('19 %')}</option>
+                        <option value="7">{t('7 %')}</option>
+                        <option value="exempt">{t('steuerfrei')}</option>
+                      </select>
+                    ) : (
+                      ((
+                        { '19': t('19 %'), '7': t('7 %'), exempt: t('steuerfrei') } as Record<
+                          string,
+                          string
+                        >
+                      )[c.vat_rate ?? ''] ?? '–')
                     )}
                   </td>
                 )}
@@ -881,7 +913,7 @@ function DatevSettings({
           </div>
           <p className="muted small">
             {t(
-              'Die Angaben bekommt ihr von eurer Steuerberatung. Tragt bei jedem Konto das DATEV-Finanzkonto (z. B. 1200 Bank, 1000 Kasse) und unter Kategorien das Sachkonto ein. Den Buchungsstapel gibt es dann unter Abschluss & Berichte › Jahresabschluss.',
+              'Die Angaben bekommt ihr von eurer Steuerberatung. Tragt bei jedem Konto das DATEV-Finanzkonto (z. B. 1200 Bank, 1000 Kasse) und unter Kategorien das Sachkonto ein. Den Buchungsstapel gibt es dann unter Finanzen › Jahresabschluss.',
             )}
           </p>
           <Why k="datev_accounts" />

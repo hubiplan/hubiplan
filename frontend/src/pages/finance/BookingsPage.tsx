@@ -242,6 +242,7 @@ export function BookingsPage() {
           categories={categories.data}
           departments={departments.data ?? []}
           projects={projects.data ?? []}
+          vatRegistered={!!settings.data?.vat_registered}
           canEdit={canEdit}
           onSaved={(b, again) => {
             refresh()
@@ -567,6 +568,7 @@ function BookingForm({
   isClub,
   booking,
   kind,
+  vatRegistered,
   accounts,
   categories,
   departments,
@@ -583,6 +585,8 @@ function BookingForm({
   categories: Category[]
   departments: DepartmentChoice[]
   projects: Project[]
+  /** Verein ist umsatzsteuerpflichtig: Steuersatz je Buchung anbieten */
+  vatRegistered?: boolean
   canEdit: boolean
   onSaved: (b: Booking, again: boolean) => void
   onClose: () => void
@@ -608,6 +612,8 @@ function BookingForm({
     allowance: (booking?.allowance ?? '') as string,
     artist_fee: !!booking?.artist_fee,
     earmark: String(booking?.earmark ?? ''),
+    vat_rate: (booking?.vat_rate ?? '') as string,
+    input_tax_share: String(booking?.input_tax_share ?? 100),
   })
   // Zweckgebundene Spenden (Konzept vereinskasse-steuern, S5): nur mit Zuwendungen
   const hasDonations = useActiveOrg().modules.includes('donations')
@@ -657,6 +663,19 @@ function BookingForm({
   }
   const { values: v, errors, set } = form
   const readOnly = !canEdit
+  // Umsatzsteuer (Konzept vereinskasse-steuern, S2): mit Modul Steuern bei Steuerpflicht oder
+  // wenn schon ein Satz gewählt ist
+  const showVat =
+    hasTax &&
+    kind !== 'transfer' &&
+    (vatRegistered ||
+      !!booking?.vat_rate ||
+      !!categories.find((c) => String(c.id) === v.category)?.vat_rate)
+  function pickCategory(value: string) {
+    set('category', value)
+    // Neue Buchung: Vorgabe der Kategorie für die Umsatzsteuer übernehmen
+    if (!booking) set('vat_rate', categories.find((c) => String(c.id) === value)?.vat_rate ?? '')
+  }
   // Festgeschrieben oder Teil eines Stornos: nur noch die Veranstaltung ist änderbar
   const locked = !!booking && (booking.fixed || !!booking.cancels || !!booking.cancelled_by)
 
@@ -678,6 +697,12 @@ function BookingForm({
       allowance: kind === 'expense' ? x.allowance : '',
       artist_fee: kind === 'expense' && x.artist_fee,
       earmark: kind === 'expense' && x.earmark ? Number(x.earmark) : null,
+      ...(kind !== 'transfer' && showVat
+        ? {
+            vat_rate: x.vat_rate,
+            input_tax_share: Math.min(100, Math.max(0, Number(x.input_tax_share) || 0)),
+          }
+        : {}),
     }
   }
 
@@ -931,7 +956,7 @@ function BookingForm({
                 label={t('Kategorie')}
                 value={v.category}
                 error={errors.category}
-                onChange={(e) => set('category', e.target.value)}
+                onChange={(e) => pickCategory(e.target.value)}
               >
                 <option value="">{t('bitte wählen')}</option>
                 {usable.map((c) => (
@@ -954,6 +979,31 @@ function BookingForm({
               error={errors.reference}
               onChange={(e) => set('reference', e.target.value)}
             />
+            {showVat && (
+              <SelectField
+                label={t('Umsatzsteuer im Betrag')}
+                value={v.vat_rate}
+                error={errors.vat_rate}
+                onChange={(e) => set('vat_rate', e.target.value)}
+              >
+                <option value="">{t('keine (nicht steuerbar)')}</option>
+                <option value="19">{t('19 %')}</option>
+                <option value="7">{t('7 %')}</option>
+                <option value="exempt">{t('steuerfrei')}</option>
+              </SelectField>
+            )}
+            {showVat && kind === 'expense' && (v.vat_rate === '19' || v.vat_rate === '7') && (
+              <Field
+                label={t('Vorsteuer abziehbar (%)')}
+                hint={t('Bei gemischt genutzten Ausgaben den unternehmerischen Anteil.')}
+                type="number"
+                min={0}
+                max={100}
+                value={v.input_tax_share}
+                error={errors.input_tax_share}
+                onChange={(e) => set('input_tax_share', e.target.value)}
+              />
+            )}
             {kind === 'expense' && (hasTax || !!booking?.allowance) && (
               <SelectField
                 label={t('Aufwandsvergütung an eine Person')}

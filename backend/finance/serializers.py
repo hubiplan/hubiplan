@@ -130,6 +130,7 @@ class CategorySerializer(serializers.ModelSerializer):
             "donations",
             "artist_fees",
             "datev_account",
+            "vat_rate",
             "tax_area_label",
             "is_active",
             "booking_count",
@@ -264,6 +265,8 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "artist_fee",
             "earmark",
             "earmark_name",
+            "vat_rate",
+            "input_tax_share",
         ]
         read_only_fields = ["year", "cancel_reason"]
         extra_kwargs = {"number": {"required": False, "min_value": 1}}
@@ -366,6 +369,12 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
                         )
                     }
                 )
+        # Umsatzsteuer: ohne Angabe gilt bei neuen Buchungen die Vorgabe der Kategorie
+        if self.instance is None and "vat_rate" not in self.initial_data:
+            category = attrs.get("category")
+            attrs["vat_rate"] = category.vat_rate if category else ""
+        if kind == Booking.Kind.TRANSFER:
+            attrs["vat_rate"] = ""
         if (
             self.instance
             and "date" in attrs

@@ -1,4 +1,4 @@
-// Finanzen › Abschluss & Berichte › Pauschalen: Übungsleiterfreibetrag und Ehrenamtspauschale.
+// Finanzen › Buchen › Pauschalen: Übungsleiterfreibetrag und Ehrenamtspauschale.
 import { useState } from 'react'
 import { euro, financeApi } from '../../api/finance.ts'
 import type { TaxStatus } from '../../api/finance.ts'

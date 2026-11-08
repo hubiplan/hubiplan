@@ -1,4 +1,4 @@
-// Finanzen › Abschluss & Berichte › Mittelverwendung: vereinfachte Mittelverwendungsrechnung
+// Finanzen › Steuern › Mittelverwendung: vereinfachte Mittelverwendungsrechnung
 // (zeitnahe Mittelverwendung, § 55 Abs. 1 Nr. 5 AO; Konzept vereinskasse-steuern, S5).
 import { useState } from 'react'
 import { euro, financeApi } from '../../api/finance.ts'

@@ -316,7 +316,7 @@ function CashSummary({ canEdit }: { canEdit: boolean }) {
   )
 }
 
-/** Abschluss & Berichte › Auswertung: Konten, Kategorien, steuerliche Bereiche, Kassenbericht. */
+/** Finanzen › Auswertung: Konten, Kategorien, steuerliche Bereiche, Kassenbericht. */
 export function EvaluationPage() {
   const { org, data, error, setYear } = useFinanceYear()
   if (error) return <Alert kind="error">{error}</Alert>

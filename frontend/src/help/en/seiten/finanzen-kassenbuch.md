@@ -22,4 +22,6 @@ If loading accounts or categories fails, **Reload** retries locally. Booking det
 
 **Expense allowance to a person**: if the club pays a trainer or volunteer an allowance, choose trainer allowance or volunteer allowance on the expense and enter the member or recipient. The totals per person are under Finance › Allowances. The field is available with the Tax & charitable status module.
 
+**VAT included in the amount**: if the club is liable for VAT, choose the tax rate for income and expenses (19 %, 7 %, tax-exempt or none). The amount stays gross; HUBIplan calculates net amount and tax. New bookings take the default of the category (Setup › Categories, column **VAT**). For expenses with mixed use, enter the business share under **Deductible input VAT (%)**. The totals are under Finance › Taxes › VAT.
+
 **Record as fixed asset**: for an expense from €250, this button takes the amount, date and text into the fixed asset register (Finance › Fixed assets) and links the asset to the booking.

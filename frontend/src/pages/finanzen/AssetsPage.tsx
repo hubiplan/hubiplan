@@ -1,4 +1,4 @@
-// Finanzen › Abschluss & Berichte › Anlagen: Anlagenverzeichnis mit Abschreibung (AfA).
+// Finanzen › Buchen › Anlagen: Anlagenverzeichnis mit Abschreibung (AfA).
 // Die AfA erscheint nur hier und in der steuerlichen Auswertung, nie im Kassenbuch.
 import { useState } from 'react'
 import type { FormEvent } from 'react'

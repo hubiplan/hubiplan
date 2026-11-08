@@ -666,7 +666,7 @@ function DonationForm({
         <SelectField
           label={t('Verzicht auf eine Pauschale')}
           hint={t(
-            'Der Betrag zählt dann wie eine Auszahlung gegen den Freibetrag der Person (Abschluss & Berichte › Pauschalen).',
+            'Der Betrag zählt dann wie eine Auszahlung gegen den Freibetrag der Person (Finanzen › Pauschalen).',
           )}
           value={v.allowance ?? ''}
           onChange={(e) => set('allowance', e.target.value as DonationInput['allowance'])}

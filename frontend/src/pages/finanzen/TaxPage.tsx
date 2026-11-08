@@ -1,4 +1,4 @@
-// Finanzen › Abschluss & Berichte › Steuern: Freigrenze, Bereiche, Kleinunternehmer.
+// Finanzen › Steuern: Freigrenze, Bereiche, Kleinunternehmer.
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { euro, financeApi } from '../../api/finance.ts'
