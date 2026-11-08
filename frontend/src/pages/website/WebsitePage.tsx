@@ -3,7 +3,7 @@
 // der Webseite stehen unter Einstellungen › Datenschutz (WebsitePrivacy.tsx).
 // Die Seite selbst zeigt das Projekt „hubiplan-website“.
 import { useState } from 'react'
-import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { SubpageUnavailable } from '../NoticePages.tsx'
 import { heldApi, websiteApi } from '../../api/website.ts'
 import type {
@@ -36,7 +36,7 @@ import { GalleryPage } from './GalleryPage.tsx'
 import { DocumentsPage } from './DocumentsPage.tsx'
 import { SocialPage } from './SocialPage.tsx'
 import { MenuTree } from './MenuTree.tsx'
-import { sectionTitle } from './sections.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
 
 const STATE_TEXT: Record<string, string> = {
@@ -47,13 +47,25 @@ const STATE_TEXT: Record<string, string> = {
 
 export function WebsitePage() {
   const org = useActiveOrg()
-  const location = useLocation()
   const { data, error, reload, setData } = useLoad(() => websiteApi.get(org.id), [org.id])
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
-  if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  // Der Kopf steht auch beim Laden und bei Fehlern (Seitenkopf S-05)
+  if (error)
+    return (
+      <section>
+        <PageHeader />
+        <LoadError message={error} onRetry={() => void reload()} />
+      </section>
+    )
+  if (!data)
+    return (
+      <section>
+        <PageHeader />
+        <p className="muted">{t('Lädt …')}</p>
+      </section>
+    )
 
   async function setup() {
     setBusy(true)
@@ -69,19 +81,7 @@ export function WebsitePage() {
 
   return (
     <section>
-      <div className="page-head">
-        <div>
-          {/* Auf der Übersicht heißt die H1 wie der Bereich (UX-Audit 05.11. W-04) */}
-          {data.website && sectionTitle(location.pathname) !== t('Übersicht') && (
-            <p className="muted small eyebrow">{t('Webseite')}</p>
-          )}
-          <h1>
-            {data.website && sectionTitle(location.pathname) !== t('Übersicht')
-              ? sectionTitle(location.pathname)
-              : t('Webseite')}
-          </h1>
-        </div>
-      </div>
+      <PageHeader />
       {!data.module_enabled && (
         <Alert kind="info">
           {t(
