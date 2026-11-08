@@ -38,7 +38,11 @@ def _backup_role():
                 raise
 
 
-def test_backup_rolle_liest_alles_und_schreibt_nichts(orgs, members):
+def test_backup_rolle_liest_alles_und_schreibt_nichts(orgs):
+    from .factories import make_member
+
+    make_member(orgs["a"], "Erika", "Muster")
+    make_member(orgs["b"], "Max", "Muster")
     _backup_role()
     with connection.cursor() as cur:
         cur.execute(
