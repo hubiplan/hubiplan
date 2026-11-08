@@ -24,8 +24,9 @@ addresses cannot be changed. Download the XML, validation report and readable vi
 Technical validation does not replace checking the service or tax treatment.
 
 **Payments and delivery** opens the existing invoice view. Sending includes the XML
-and readable view. Cancelling an open, unpaid invoice creates a separate structured
-cancellation document. Download and deliver that document to the recipient yourself.
+and readable view. A cancellation also creates a separate structured cancellation
+document with the reason and a reference to the invoice number and date.
+**Send cancellation invoice by email** attaches the XML and PDF.
 
 Use **Invoice type** to choose an invoice, advance invoice or final invoice. A final
 invoice includes the entire service and credits payments already received against

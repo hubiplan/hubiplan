@@ -20,3 +20,9 @@ Final invoices show credited advances and the remaining outstanding amount. A cr
 advance invoice is marked “Settled”. Its receipts remain in the cashbook. Cancel the
 associated final invoice before removing those payments. A final invoice fully covered
 by advances can also be cancelled if it has no additional payments.
+
+Cancelling: in the invoice, choose **Cancel invoice** and give a reason. HUBIplan then creates a separate cancellation invoice, for example R2026-0012-S. It has its own date and reason, refers to the number and date of the invoice and lists all items with negative amounts. The issued invoice stays unchanged. **View cancellation invoice** opens the document and **Send cancellation invoice by email** sends it to the recipient. Members also find it in the member area.
+
+Paid invoices can be cancelled too. The payments then remain on the invoice as a credit. **Refund** reverses the payments in the cash book with today's date; then transfer the amount back. **Offset** moves the payments to an open invoice to the same recipient.
+
+**Cancel and create again** cancels the invoice and opens a copy as a new draft, so you correct a wrong invoice in one step. Invoices from a fee run are recalculated in the fee run instead.

@@ -58,6 +58,11 @@ def archived_pdf(invoice: Invoice) -> bytes:
         from .einvoice_xml import generate
 
         return render(parse_xml(generate(invoice)), invoice.organization.display_name)
+    if invoice.status == Invoice.Status.CANCELLED and invoice.issued_pdf:
+        # Storniert: die Rechnung bleibt, wie sie ausgegeben wurde; das Storno steht auf der
+        # eigenen Stornorechnung (archived_cancellation)
+        with invoice.issued_pdf.open("rb") as fh:
+            return fh.read()
     if invoice.status not in ARCHIVED or invoice.number is None:
         return pdf.render([invoice])
     if invoice.issued_pdf:
@@ -81,6 +86,17 @@ def archived_pdf(invoice: Invoice) -> bytes:
     invoice.issued_pdf = locked.issued_pdf
     invoice.issued_pdf_sha256 = locked.issued_pdf_sha256
     return content
+
+
+def archived_cancellation(invoice: Invoice) -> bytes | None:
+    """Die abgelegte Stornorechnung; None bei Stornos aus der Zeit vor der Stornorechnung."""
+    if not invoice.cancellation_pdf:
+        return None
+    with invoice.cancellation_pdf.open("rb") as fh:
+        data = fh.read()
+    if hashlib.sha256(data).hexdigest() != invoice.cancellation_pdf_sha256:
+        raise ValidationError(gettext("Die Prüfsumme der Stornorechnung stimmt nicht."))
+    return data
 
 
 def archive_missing(limit: int = 200) -> int:

@@ -532,6 +532,17 @@ class Invoice(models.Model):
     )
     issued_pdf_sha256 = models.CharField(max_length=64, blank=True)
     cancelled_at = models.DateTimeField("storniert am", null=True, blank=True)
+    # Stornorechnung (konzepte/bankanbindung-stornorechnung.md, Teil A): eigener Beleg mit
+    # Nummer „<Rechnungsnummer>-S“, Datum und Grund, einmal abgelegt
+    cancel_reason = models.CharField(
+        "Grund des Stornos", max_length=300, blank=True, default="", db_default=""
+    )
+    cancellation_date = models.DateField("Datum der Stornorechnung", null=True, blank=True)
+    cancellation_pdf = PrivateFileField(
+        "Stornorechnung", storage=private_storage, upload_to=invoice_pdf_path, blank=True
+    )
+    cancellation_pdf_sha256 = models.CharField(max_length=64, blank=True, default="", db_default="")
+    cancellation_sent_at = models.DateTimeField("Stornorechnung verschickt", null=True, blank=True)
     dunning_level = models.PositiveSmallIntegerField("Mahnstufe", default=0)
     dunned_at = models.DateField("zuletzt gemahnt am", null=True, blank=True)
     created_by = models.ForeignKey(
@@ -569,6 +580,11 @@ class Invoice(models.Model):
         if self.number is None:
             return "Entwurf"
         return f"R{self.organization.fiscal_label(self.year)}-{self.number:04d}"
+
+    @property
+    def cancellation_number(self) -> str:
+        """Nummer der Stornorechnung (Fachfrage F-1: Rechnungsnummer plus „-S“)."""
+        return f"{self.display_number}-S" if self.number is not None else ""
 
     @property
     def outstanding(self) -> Decimal:

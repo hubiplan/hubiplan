@@ -77,10 +77,20 @@ def test_partial_advance_final_and_cancel_preserve_single_receipt(c, base, setup
     payment = source["payments"][0]["id"]
     assert c.delete(f"{base}/payments/{payment}/").status_code == 400
     assert (
-        c.post(f"{base}/invoices/{source['id']}/cancel/", {}, content_type=JSON).status_code == 400
+        c.post(
+            f"{base}/invoices/{source['id']}/cancel/",
+            {"reason": "Testgrund Storno"},
+            content_type=JSON,
+        ).status_code
+        == 400
     )
     assert (
-        c.post(f"{base}/invoices/{final['id']}/cancel/", {}, content_type=JSON).status_code == 200
+        c.post(
+            f"{base}/invoices/{final['id']}/cancel/",
+            {"reason": "Testgrund Storno"},
+            content_type=JSON,
+        ).status_code
+        == 200
     )
     with tenant_context(club.pk):
         restored = Invoice.objects.get(pk=source["id"])
@@ -96,7 +106,12 @@ def test_full_prepayment_is_paid_and_cancellable(c, base, setup, payload):
     )
     assert final["status"] == "paid" and final["paid"] == "0.00" and final["outstanding"] == "0.00"
     assert (
-        c.post(f"{base}/invoices/{final['id']}/cancel/", {}, content_type=JSON).status_code == 200
+        c.post(
+            f"{base}/invoices/{final['id']}/cancel/",
+            {"reason": "Testgrund Storno"},
+            content_type=JSON,
+        ).status_code
+        == 200
     )
 
 
@@ -172,7 +187,12 @@ def test_real_hybrid_original_and_cancellation_are_validated_and_immutable(c, ba
     original = c.get(f"{path}/xml/").content
     for cancellation in [False, True]:
         if cancellation:
-            assert c.post(f"{path}/cancel/", {}, content_type=JSON).status_code == 200
+            assert (
+                c.post(
+                    f"{path}/cancel/", {"reason": "Testgrund Storno"}, content_type=JSON
+                ).status_code
+                == 200
+            )
         suffix = "?cancellation=1" if cancellation else ""
         result = c.post(f"{path}/hybrid/{suffix}", {}, content_type=JSON)
         assert result.status_code == 200, result.content

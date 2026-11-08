@@ -17,7 +17,7 @@ from portal.views import DepartmentScopedMixin, _portal_access
 from .models import Invoice, InvoiceLine
 from .serializers import InvoiceDetailSerializer, InvoiceListSerializer
 from .units import portal_issuers
-from .views import invoice_pdf_response
+from .views import cancellation_pdf_response, invoice_pdf_response
 
 VISIBLE = (Invoice.Status.OPEN, Invoice.Status.PAID, Invoice.Status.CANCELLED)
 
@@ -95,6 +95,10 @@ class PortalInvoicePdfView(APIView):
             with tenant_context(issuer.pk, request.user.pk):
                 invoice = _own(issuer, access).filter(pk=pk).first()
                 if invoice is not None:
+                    if request.query_params.get("storno") == "1":
+                        return cancellation_pdf_response(
+                            invoice, request.query_params.get("download") == "1"
+                        )
                     return invoice_pdf_response(
                         invoice, request.query_params.get("download") == "1"
                     )

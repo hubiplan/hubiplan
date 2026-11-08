@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: cancellation invoice. Cancelling creates a separate document with a number (e.g. R2026-0012-S), date and reason that can be sent by email. Paid invoices can be cancelled too; the credit is refunded or offset against an open invoice. **Cancel and create again** opens a copy as a draft right away.
 - Member file: new tab “Fees” with invoices, outstanding amounts, SEPA mandates and the billing address.
 - Work area of a sub-unit: the sub-items are now in the sidebar instead of tabs above the content.
 - My area: entries and results are together under “Competitions”. Musicians have their own item “Music” with performances, rehearsals and availability.

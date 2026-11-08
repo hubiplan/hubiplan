@@ -219,7 +219,14 @@ class TestLastschrift:
         resp = pay(c, base, invoice, setup, amount="10.00", date=today)
         assert resp.status_code == 400
         assert "Lastschriftlauf" in str(resp.json())
-        assert c.post(f"{base}/invoices/{invoice.pk}/cancel/").status_code == 400
+        assert (
+            c.post(
+                f"{base}/invoices/{invoice.pk}/cancel/",
+                {"reason": "Testgrund Storno"},
+                content_type=JSON,
+            ).status_code
+            == 400
+        )
         booked = c.post(f"{base}/debits/{sepa_setup['run']['id']}/book/")
         assert booked.status_code == 200, booked.json()
         # Gebucht wird genau der Betrag aus der Bankdatei

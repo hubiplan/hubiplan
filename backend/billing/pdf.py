@@ -356,6 +356,137 @@ def filename(invoice: Invoice) -> str:
     return f"Rechnung-{invoice.display_number.replace('/', '-')}.pdf"
 
 
+def cancellation_story(invoice: Invoice) -> list:
+    """Stornorechnung: hebt die Rechnung vollständig auf (§ 14 UStG, Bezug auf Nummer und
+    Datum der Rechnung, alle Posten mit negativem Betrag, Grund; konzepte/
+    bankanbindung-stornorechnung.md, A1)."""
+    org = invoice.organization
+    cfg = settings_for(org)
+    data = _letter(org)
+    st = text_styles(data)
+    primary = colors.HexColor(data.primary)
+    date = invoice.cancellation_date or timezone.localdate()
+    meta = [
+        ("Stornorechnung", invoice.cancellation_number),
+        ("Datum", f"{date:%d.%m.%Y}"),
+        ("zu Rechnung", invoice.display_number),
+        ("vom", f"{invoice.date:%d.%m.%Y}"),
+    ]
+    membership = visible_membership(invoice)
+    if membership is not None and membership.club_number:
+        meta.append(("Mitgliedsnr.", membership.club_number))
+    if invoice.order_reference:
+        meta.append(("Bestellnr.", invoice.order_reference))
+    if invoice.leitweg_id:
+        meta.append(("Leitweg-ID", invoice.leitweg_id))
+    meta += _contact_rows(data)
+    if cfg.tax_number:
+        meta.append(("Steuernummer", cfg.tax_number))
+    recipient = (invoice.recipient_name + "\n" + invoice.recipient_address).splitlines()
+    story: list = LetterDocument.start(data, recipient, meta, True)
+    story.append(Paragraph("Stornorechnung", st["title"]))
+    story.append(Spacer(1, 5 * mm))
+    story.append(Paragraph(f"<b>Storno: {escape(invoice.subject)}</b>", st["normal"]))
+    story.append(Spacer(1, 3 * mm))
+    story.append(Paragraph("Guten Tag,", st["normal"]))
+    story.append(
+        Paragraph(
+            f"hiermit stornieren wir die Rechnung {escape(invoice.display_number)} vom "
+            f"{invoice.date:%d.%m.%Y} vollständig. Sie ist damit aufgehoben.",
+            st["normal"],
+        )
+    )
+    if invoice.cancel_reason:
+        story.append(Spacer(1, 2 * mm))
+        story.append(Paragraph(f"Grund: {escape(invoice.cancel_reason)}", st["normal"]))
+    story.append(Spacer(1, 4 * mm))
+
+    collective = invoice.recipient_kind == Invoice.Recipient.DEPARTMENT
+    head = ["Nr.", "Mitglied" if collective else "Posten", "", "Betrag"]
+    rows = [[Paragraph(f"<b>{h}</b>", st["small"]) for h in head]]
+    lines = list(invoice.lines.all())
+    for n, line in enumerate(lines, start=1):
+        rows.append(
+            [
+                Paragraph(str(n), st["small"]),
+                Paragraph(escape(line.text), st["normal"]),
+                Paragraph(escape(line.detail), st["small"]),
+                Paragraph(euro(-line.amount), st["right"]),
+            ]
+        )
+    rows.append(
+        [
+            "",
+            Paragraph("<b>Gesamtbetrag</b>", st["normal"]),
+            "",
+            Paragraph(f"<b>{euro(-invoice.total)}</b>", st["right"]),
+        ]
+    )
+    table = Table(rows, colWidths=[10 * mm, 70 * mm, None, 30 * mm], repeatRows=1)
+    table.setStyle(
+        TableStyle(
+            [
+                ("LINEBELOW", (0, 0), (-1, 0), 0.8, primary),
+                ("LINEABOVE", (0, -1), (-1, -1), 0.8, primary),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -2), [colors.white, colors.HexColor("#f4f5f4")]),
+            ]
+        )
+    )
+    story.append(table)
+    story.append(Spacer(1, 4 * mm))
+    vat = vat_breakdown(invoice)
+    for row in vat:
+        story.append(
+            Paragraph(
+                f"Im Betrag von {euro(-row['gross'])} sind {_rate(row['rate'])} Umsatzsteuer "
+                f"enthalten: {euro(-row['vat'])} (netto {euro(-row['net'])}).",
+                st["small"],
+            )
+        )
+    if not vat:
+        story.append(Paragraph("Der Betrag enthält keine Umsatzsteuer.", st["small"]))
+    elif any(not line.vat_rate for line in lines):
+        story.append(Paragraph("Die übrigen Posten enthalten keine Umsatzsteuer.", st["small"]))
+    if invoice.prepaid:
+        story.append(Spacer(1, 3 * mm))
+        story.append(
+            Paragraph(
+                f"Angerechnete Anzahlungen von {euro(invoice.prepaid)} leben wieder auf.",
+                st["normal"],
+            )
+        )
+    story.append(Spacer(1, 3 * mm))
+    if invoice.paid:
+        text = (
+            f"Sie haben auf die Rechnung bereits {euro(invoice.paid)} gezahlt. Diesen Betrag "
+            f"erstatten wir Ihnen oder verrechnen ihn mit einer anderen Rechnung."
+        )
+    else:
+        text = "Sie brauchen nichts zu bezahlen."
+    story.append(Paragraph(text, st["normal"]))
+    if cfg.footer_text:
+        story.append(Spacer(1, 6 * mm))
+        story.append(Paragraph(_lines(cfg.footer_text), st["normal"]))
+    return story
+
+
+def render_cancellation(invoice: Invoice) -> bytes:
+    buf = io.BytesIO()
+    story = cancellation_story(invoice)
+    LetterDocument(
+        buf,
+        [_letter(invoice.organization)],
+        title=invoice.cancellation_number,
+        author=invoice.organization.name,
+    ).build(story)
+    return buf.getvalue()
+
+
+def cancellation_filename(invoice: Invoice) -> str:
+    return f"Stornorechnung-{invoice.cancellation_number.replace('/', '-')}.pdf"
+
+
 def dunning_filename(dunning: Dunning) -> str:
     number = dunning.invoice.display_number.replace("/", "-")
     return f"Mahnung-{dunning.level}-{number}.pdf"

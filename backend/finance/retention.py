@@ -274,6 +274,13 @@ def _purge_documents(org, year, start, end) -> dict[str, int]:
         i.issued_pdf = ""
         i.save(update_fields=["issued_pdf"])
         n += 1
+    for i in Invoice.objects.filter(organization=org, date__gte=start, date__lte=end).exclude(
+        cancellation_pdf=""
+    ):
+        _delete_file(i.cancellation_pdf)
+        i.cancellation_pdf = ""
+        i.save(update_fields=["cancellation_pdf"])
+        n += 1
     counts["Rechnungs-PDFs"] = n
     from billing.einvoice_retention import purge_files
 

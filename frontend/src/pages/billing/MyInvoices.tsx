@@ -106,6 +106,17 @@ export function PortalInvoices({ accessId, empty }: { accessId: number; empty?: 
                     {inv.issuer_name && t('{issuer_name} · ', { issuer_name: inv.issuer_name })}
                     {inv.subject} {t('· fällig')} {formatDate(inv.due_date)}
                   </div>
+                  {inv.has_cancellation_pdf && (
+                    <div className="small">
+                      <a
+                        href={portalBillingApi.cancellationPdfUrl(accessId, inv.id)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {t('Stornorechnung')}
+                      </a>
+                    </div>
+                  )}
                 </td>
                 <td>
                   <StatusBadge row={inv} />

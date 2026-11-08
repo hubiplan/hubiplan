@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Neu: Stornorechnung. Ein Storno erzeugt einen eigenen Beleg mit Nummer (z. B. R2026-0012-S), Datum und Grund, der sich per E-Mail verschicken lässt. Auch bezahlte Rechnungen lassen sich stornieren; das Guthaben wird erstattet oder mit einer offenen Rechnung verrechnet. **Stornieren und neu anlegen** öffnet gleich eine Kopie als Entwurf.
 - Mitgliederakte: Neuer Reiter „Beiträge“ mit Rechnungen, offenen Beträgen, SEPA-Mandaten und der Rechnungsanschrift.
 - Arbeitsbereich einer Untereinheit: Die Unterpunkte stehen jetzt in der Seitenleiste statt als Reiter über dem Inhalt.
 - Mein Bereich: Meldungen und Ergebnisse stehen zusammen unter „Wettbewerbe“. Musikerinnen und Musiker haben einen eigenen Punkt „Musik“ mit Auftritten, Proben und Verfügbarkeit.

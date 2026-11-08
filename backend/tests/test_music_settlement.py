@@ -224,7 +224,14 @@ def test_performance_invoice_is_single_and_bound_to_agreement(c, club, settlemen
 
     assert post(c, f"/api/orgs/{club.pk}/billing/electronic/{invoice}/finalize/").status_code == 200
     assert post(c, url, action="agreement", fee="5", travel="0", extras="0").status_code == 400
-    assert post(c, f"/api/orgs/{club.pk}/billing/electronic/{invoice}/cancel/").status_code == 200
+    assert (
+        post(
+            c,
+            f"/api/orgs/{club.pk}/billing/electronic/{invoice}/cancel/",
+            reason="Testgrund Storno",
+        ).status_code
+        == 200
+    )
     replaced = post(c, url, action="replace_invoice")
     assert replaced.status_code == 200, replaced.content
     assert replaced.json()["previous_invoices"] == [invoice]

@@ -317,7 +317,14 @@ class TestZahlung:
         assert invoice.paid == Decimal("40.00")
 
     def test_stornieren(self, c, base, invoice, setup):
-        assert c.post(f"{base}/invoices/{invoice.pk}/cancel/").json()["status"] == "cancelled"
+        assert (
+            c.post(
+                f"{base}/invoices/{invoice.pk}/cancel/",
+                {"reason": "Testgrund Storno"},
+                content_type=JSON,
+            ).json()["status"]
+            == "cancelled"
+        )
         resp = c.post(
             f"{base}/invoices/{invoice.pk}/payments/",
             {"date": "2025-02-10", "method": "cash", "account": setup["cash"]},

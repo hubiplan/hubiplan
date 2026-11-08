@@ -156,23 +156,28 @@ def archive_cancellation(invoice):
     original = _root(read_artifact(invoice))
     ns = einvoice_xml.NS
     original.tag = "{urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2}CreditNote"
-    original.find(f"{{{ns['cbc']}}}ID").text = f"{invoice.display_number}-S"
+    original.find(f"{{{ns['cbc']}}}ID").text = invoice.cancellation_number
     from django.utils import timezone
 
-    original.find(f"{{{ns['cbc']}}}IssueDate").text = timezone.localdate().isoformat()
+    original.find(f"{{{ns['cbc']}}}IssueDate").text = (
+        invoice.cancellation_date or timezone.localdate()
+    ).isoformat()
     due = original.find(f"{{{ns['cbc']}}}DueDate")
     if due is not None:
         original.remove(due)
     kind = original.find(f"{{{ns['cbc']}}}InvoiceTypeCode")
     kind.tag, kind.text = f"{{{ns['cbc']}}}CreditNoteTypeCode", "381"
     note = original.find(f"{{{ns['cbc']}}}Note")
-    note.text = f"Storno zu {invoice.display_number}\n{note.text or ''}"
+    reason = f"Grund: {invoice.cancel_reason}\n" if invoice.cancel_reason else ""
+    note.text = f"Storno zu {invoice.display_number}\n{reason}{note.text or ''}"
     for line in original.findall(f"{{{ns['cac']}}}InvoiceLine"):
         line.tag = f"{{{ns['cac']}}}CreditNoteLine"
         line.find(f"{{{ns['cbc']}}}InvoicedQuantity").tag = f"{{{ns['cbc']}}}CreditedQuantity"
     reference = ET.Element(f"{{{ns['cac']}}}BillingReference")
     document = einvoice_xml.element(reference, "cac:InvoiceDocumentReference")
     einvoice_xml.element(document, "cbc:ID", invoice.display_number)
+    # BT-26: Datum der stornierten Rechnung
+    einvoice_xml.element(document, "cbc:IssueDate", invoice.date.isoformat())
     index = list(original).index(original.find(f"{{{ns['cac']}}}AccountingSupplierParty"))
     original.insert(index, reference)
     xml = ET.tostring(original, encoding="utf-8", xml_declaration=True)
