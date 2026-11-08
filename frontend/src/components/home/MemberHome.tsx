@@ -16,13 +16,15 @@ export function MemberHomeTop({ entry }: { entry: PortalEntry }) {
     <>
       <div className="tiles home-first">
         {entry.events_enabled && <NextEventCard access={entry.id} />}
-        <div className="card tile home-card-action">
-          <h2>{t('Mitgliedsausweis')}</h2>
-          <p className="muted small">{t('QR-Code vorzeigen oder als PDF speichern')}</p>
-          <Link to="/mein-bereich/ausweis" className="button button-primary button-large">
-            {t('Ausweis zeigen')}
-          </Link>
-        </div>
+        {entry.cards_enabled !== false && (
+          <div className="card tile home-card-action">
+            <h2>{t('Mitgliedsausweis')}</h2>
+            <p className="muted small">{t('QR-Code vorzeigen oder als PDF speichern')}</p>
+            <Link to="/mein-bereich/ausweis" className="button button-primary button-large">
+              {t('Ausweis zeigen')}
+            </Link>
+          </div>
+        )}
       </div>
       <OpenInvoiceNotice access={entry.id} />
     </>

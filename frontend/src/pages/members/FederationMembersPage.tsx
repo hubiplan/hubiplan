@@ -240,7 +240,7 @@ function FederationList({ prefix }: { prefix: string }) {
                   <Term k="member_type">{t('Mitgliedsart')}</Term>
                 </th>
                 <th className="col-optional">{t('Eintritt')}</th>
-                <th className="col-optional">{t('Ehrungen')}</th>
+                {awardsOn && <th className="col-optional">{t('Ehrungen')}</th>}
               </tr>
             </thead>
             <tbody>
@@ -257,7 +257,9 @@ function FederationList({ prefix }: { prefix: string }) {
                   <td className="col-optional">
                     {formatMemberDate(r.entry_date, org.date_precision)}
                   </td>
-                  <td className="col-optional">{(r.honorary_titles ?? []).join(', ') || '–'}</td>
+                  {awardsOn && (
+                    <td className="col-optional">{(r.honorary_titles ?? []).join(', ') || '–'}</td>
+                  )}
                 </tr>
               ))}
             </tbody>

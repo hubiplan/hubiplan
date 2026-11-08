@@ -410,12 +410,14 @@ function WebsiteAdmin({
             checked={v.show_vacant}
             onChange={(on) => set('show_vacant', on)}
           />
-          <Checkbox
-            label={t('Hauptinstrument unter dem Namen zeigen')}
-            hint={t('aus Musik › Musiker; bei Vorstand und Mitgliederlisten')}
-            checked={v.show_instrument ?? false}
-            onChange={(on) => set('show_instrument', on)}
-          />
+          {org.modules.includes('music') && (
+            <Checkbox
+              label={t('Hauptinstrument unter dem Namen zeigen')}
+              hint={t('aus Musik › Musiker; bei Vorstand und Mitgliederlisten')}
+              checked={v.show_instrument ?? false}
+              onChange={(on) => set('show_instrument', on)}
+            />
+          )}
           <Checkbox
             label={t('Anschrift beim Vorstand zeigen')}
             hint={t('nur bei Personen mit Einwilligung „Anschrift“')}
@@ -463,33 +465,35 @@ function WebsiteAdmin({
           {errors.unit_ids && <Alert kind="error">{errors.unit_ids}</Alert>}
         </>,
       )}
-      {settings(
-        t('Termine'),
-        <>
-          <Checkbox
-            label={t('Öffentliche Termine der Untereinheiten im Kalender der Webseite')}
-            checked={v.include_unit_events}
-            onChange={(on) => set('include_unit_events', on)}
-          />
-          <Checkbox
-            label={t('Öffentliche Termine der übergeordneten Einheiten im Kalender der Webseite')}
-            hint={t('z. B. Dachverband; nur Termine, die nach unten freigegeben sind')}
-            checked={v.include_parent_events}
-            onChange={(on) => set('include_parent_events', on)}
-          />
-        </>,
-      )}
-      {settings(
-        t('Würdenträger'),
-        <>
-          <Checkbox
-            label={t('Weitergegebene Würden der übergeordneten Einheiten zeigen')}
-            hint={t('z. B. Könige des Dachverbands; nur die Träger, die aus eurer Einheit kamen')}
-            checked={v.include_parent_honors}
-            onChange={(on) => set('include_parent_honors', on)}
-          />
-        </>,
-      )}
+      {org.modules.includes('events') &&
+        settings(
+          t('Termine'),
+          <>
+            <Checkbox
+              label={t('Öffentliche Termine der Untereinheiten im Kalender der Webseite')}
+              checked={v.include_unit_events}
+              onChange={(on) => set('include_unit_events', on)}
+            />
+            <Checkbox
+              label={t('Öffentliche Termine der übergeordneten Einheiten im Kalender der Webseite')}
+              hint={t('z. B. Dachverband; nur Termine, die nach unten freigegeben sind')}
+              checked={v.include_parent_events}
+              onChange={(on) => set('include_parent_events', on)}
+            />
+          </>,
+        )}
+      {org.modules.includes('honors') &&
+        settings(
+          t('Würdenträger'),
+          <>
+            <Checkbox
+              label={t('Weitergegebene Würden der übergeordneten Einheiten zeigen')}
+              hint={t('z. B. Könige des Dachverbands; nur die Träger, die aus eurer Einheit kamen')}
+              checked={v.include_parent_honors}
+              onChange={(on) => set('include_parent_honors', on)}
+            />
+          </>,
+        )}
     </>
   )
 

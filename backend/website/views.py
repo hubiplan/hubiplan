@@ -50,6 +50,8 @@ from .models import (
     Website,
     WebsiteDomain,
     WebsiteImage,
+    blocks_without_module,
+    home_without_module,
     is_extra_block,
     is_heading_key,
     is_renamable,
@@ -335,8 +337,9 @@ class WebsiteView(_WebsiteMixin, APIView):
     """GET: Stand · POST: Webseite einrichten · PUT: Einstellungen · DELETE: entfernen."""
 
     def payload(self, website: Website | None) -> dict:
-        # „Ergebnisse“ nur, wenn das Modul Wettbewerbe freigeschaltet ist
-        hide = set() if "competitions" in (self.org.enabled_modules or []) else {"results"}
+        # Bausteine abgeschalteter Module (z. B. „Ergebnisse“ ohne Wettbewerbe) fehlen
+        hide = blocks_without_module(self.org)
+        hide_home = home_without_module(self.org)
         data = {
             "module_enabled": services.module_enabled(self.org),
             "can_manage": WEBSITE_MANAGE in self.org_permissions,
@@ -349,7 +352,7 @@ class WebsiteView(_WebsiteMixin, APIView):
             },
             "block_hints": BLOCK_HINTS,
             "home_labels": {
-                **{k: v for k, v in HOME_SECTIONS.items() if k not in hide},
+                **{k: v for k, v in HOME_SECTIONS.items() if k not in hide_home},
                 "units": self.org.department_label_plural or HOME_SECTIONS["units"],
             },
             "home_hints": HOME_HINTS,
