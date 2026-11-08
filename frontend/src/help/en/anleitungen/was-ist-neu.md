@@ -12,6 +12,9 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Member file: new tab “Fees” with invoices, outstanding amounts, SEPA mandates and the billing address.
+- Work area of a sub-unit: the sub-items are now in the sidebar instead of tabs above the content.
+- My area: entries and results are together under “Competitions”. Musicians have their own item “Music” with performances, rehearsals and availability.
 - Menu: Finance follows the course of the year. “Book” now also contains fixed assets, allowances and batch payouts, “Evaluate” contains evaluation (with net assets), development and taxes (with artists’ social security levy and use of funds), “Close the year” contains donation receipts and year-end closing (with cash audit). Instruments and uniforms are under Equipment & rooms, the personal music reminders under Tasks. Old addresses redirect.
 - Menu: the new sidebar group “Planning” brings together events, meetings, volunteer duties and tasks. In an event, the block “For this event” shows the meeting, duty rosters, bookings, tasks and performance; meeting and duty roster link back to the event.
 - Home page: “To do” now collects from all areas: due meeting invitations, received motions and open minutes, open helper places, queries and close entry deadlines, received invoices, invoice drafts, reminders, direct debits and expired account invitations. Finance › Overview shows the same entries for finance.

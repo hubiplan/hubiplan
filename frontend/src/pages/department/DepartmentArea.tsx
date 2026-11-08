@@ -20,15 +20,7 @@ import {
   useForm,
   useLoad,
 } from '../../components/forms.ts'
-import {
-  Alert,
-  Checkbox,
-  Field,
-  SaveStatus,
-  Tabs,
-  LoadError,
-  Freshness,
-} from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, LoadError, Freshness } from '../../components/ui.tsx'
 import { Term } from '../../learning/Aids.tsx'
 import { useActiveDept } from '../../org/OrgContext.tsx'
 import { DeptInvoices } from '../billing/MyInvoices.tsx'
@@ -45,29 +37,6 @@ import { PermissionMatrix, PermissionSummary } from '../../components/RoleEditor
 export function DepartmentArea() {
   const dept = useActiveDept()
   const can = (p: string) => dept.permissions.includes(p)
-  const tabs = [
-    ...(can(DEPT_PERM.membersView) || !can(DEPT_PERM.invoicesView)
-      ? [{ to: '/abteilung', label: t('Mitglieder') }]
-      : []),
-    ...(can(DEPT_PERM.membersView)
-      ? [{ to: '/abteilung/entwicklung', label: t('Entwicklung') }]
-      : []),
-    ...(can(DEPT_PERM.invoicesView)
-      ? [
-          {
-            to: can(DEPT_PERM.membersView) ? '/abteilung/rechnungen' : '/abteilung',
-            label: t('Rechnungen'),
-          },
-        ]
-      : []),
-    ...(can(DEPT_PERM.rolesView) || can(DEPT_PERM.rolesManage)
-      ? [{ to: '/abteilung/rollen', label: t('Ämter') }]
-      : []),
-    ...(can(DEPT_PERM.entriesSubmit)
-      ? [{ to: '/abteilung/meldungen', label: t('Meldungen') }]
-      : []),
-    ...(can(DEPT_PERM.export) ? [{ to: '/abteilung/export', label: t('Export') }] : []),
-  ]
   return (
     <section>
       <div className="page-head">
@@ -76,7 +45,6 @@ export function DepartmentArea() {
           {dept.label} · {dept.club_name}
         </p>
       </div>
-      {tabs.length > 1 && <Tabs items={tabs} />}
       <Routes>
         <Route
           index

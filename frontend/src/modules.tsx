@@ -9,6 +9,7 @@ import { memberSections, membersVisible } from './pages/members/access.ts'
 import { websiteSections } from './pages/website/sections.ts'
 import { circularsVisible } from './pages/circulars/access.ts'
 import { portalNav } from './pages/portal/sections.ts'
+import { departmentSections } from './pages/department/sections.ts'
 import { musicSections, scoresOwnEntry } from './pages/music/access.ts'
 import { hasUnitsPage } from './pages/settings/units.ts'
 import { t } from './i18n/index.ts'
@@ -264,6 +265,10 @@ export const modules: AppModule[] = [
       'M12 6.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5M5 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M19 9a2 2 0 1 1 0 4 2 2 0 0 1 0-4M7 20c0-2.8 2.2-5 5-5s5 2.2 5 5M2 19c0-2 1.3-3.5 3-3.8M22 19c0-2-1.3-3.5-3-3.8',
     ),
     visible: (_org, ws) => !!ws.dept,
+    children: (_org, ws) => {
+      const items = departmentSections(ws?.dept ?? null)
+      return items.length > 1 ? items : []
+    },
   },
   {
     id: 'rundschreiben',

@@ -12,6 +12,9 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Mitgliederakte: Neuer Reiter „Beiträge“ mit Rechnungen, offenen Beträgen, SEPA-Mandaten und der Rechnungsanschrift.
+- Arbeitsbereich einer Untereinheit: Die Unterpunkte stehen jetzt in der Seitenleiste statt als Reiter über dem Inhalt.
+- Mein Bereich: Meldungen und Ergebnisse stehen zusammen unter „Wettbewerbe“. Musikerinnen und Musiker haben einen eigenen Punkt „Musik“ mit Auftritten, Proben und Verfügbarkeit.
 - Menü: Finanzen folgt dem Jahreslauf. Unter „Buchen“ stehen jetzt auch Anlagen, Pauschalen und Sammelauszahlungen, unter „Auswerten“ Auswertung (mit Vermögen), Entwicklung und Steuern (mit Künstlersozialabgabe und Mittelverwendung), unter „Jahr abschließen“ Zuwendungsbestätigungen und Jahresabschluss (mit Kassenprüfung). Instrumente und Uniformen stehen unter Material & Räume, die persönlichen Musikerinnerungen unter Aufgaben. Alte Adressen leiten weiter.
 - Menü: Die neue Gruppe „Planen“ in der Seitenleiste fasst Termine, Versammlungen, Helferdienste und Aufgaben zusammen. Im Termin zeigt der Block „Zu diesem Termin“ Versammlung, Dienstpläne, Belegungen, Aufgaben und Auftritt; Versammlung und Dienstplan führen zurück zum Termin.
 - Startseite: „Zu erledigen“ sammelt jetzt aus allen Bereichen: fällige Einladungen, eingegangene Anträge und offene Protokolle von Versammlungen, offene Plätze in Helferdiensten, Rückfragen und nahe Meldeschlüsse bei Meldungen, eingegangene Rechnungen, Rechnungsentwürfe, Mahnungen, Lastschriften und abgelaufene Einladungen von Konten. Finanzen › Übersicht zeigt dieselben Einträge für die Finanzen.

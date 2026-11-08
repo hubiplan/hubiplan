@@ -86,27 +86,25 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           },
         ]
       : []),
-    ...(entry.entries_enabled
+    // Meldungen und Ergebnisse auf einer Seite (Menüprüfung 2, N-09)
+    ...(entry.entries_enabled || entry.competitions_enabled
       ? [
           {
-            to: '/mein-bereich/gemeldet',
-            label: t('Meldungen'),
+            to: '/mein-bereich/wettbewerbe',
+            label: t('Wettbewerbe'),
             tile: {
-              title: t('Meine Meldungen'),
-              text: t('Wettbewerbe, für die der Verein dich gemeldet hat'),
+              title: t('Meine Wettbewerbe'),
+              text: t('Meldungen, Plätze, Werte und Titel'),
             },
           },
         ]
       : []),
-    ...(entry.competitions_enabled
+    ...(entry.musician
       ? [
           {
-            to: '/mein-bereich/ergebnisse',
-            label: t('Ergebnisse'),
-            tile: {
-              title: t('Meine Ergebnisse'),
-              text: t('Plätze, Werte und Titel aus Wettbewerben'),
-            },
+            to: '/mein-bereich/musik',
+            label: t('Musik'),
+            tile: { title: t('Meine Musik'), text: t('Auftritte, Proben und Verfügbarkeit') },
           },
         ]
       : []),

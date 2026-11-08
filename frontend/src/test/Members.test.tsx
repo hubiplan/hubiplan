@@ -692,7 +692,7 @@ describe('Mitgliedsakte', () => {
         body: { ...detail, billing_address: address },
       }),
     })
-    renderAt('/mitglieder/11')
+    renderAt('/mitglieder/11?bereich=beitraege')
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Rechnungsanschrift festlegen' }))
     const section = screen.getByRole('region', { name: 'Rechnungsanschrift' })
@@ -708,6 +708,48 @@ describe('Mitgliedsakte', () => {
       city: 'Beispielstadt',
       leitweg_id: '991-12345-67',
     })
+  })
+
+  it('Beiträge: Rechnungen und offene Beträge des Mitglieds', async () => {
+    const billingOrg = testOrg({
+      permissions: ['members.view', 'billing.view'],
+      modules: ['members', 'billing'],
+    })
+    fakeApi({
+      ...common(),
+      'GET /api/me/organizations/': () => ({ status: 200, body: [billingOrg] }),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: { ...detail, billing_address: null },
+      }),
+      [`GET ${base}/billing/invoices/?mitglied=11`]: () => ({
+        status: 200,
+        body: {
+          count: 1,
+          next: null,
+          previous: null,
+          results: [
+            {
+              id: 5,
+              number: 'R-2026-7',
+              date: '2026-01-15',
+              subject: 'Jahresbeitrag 2026',
+              total: '60.00',
+              outstanding: '60.00',
+              status: 'open',
+              status_label: 'offen',
+              overdue: true,
+            },
+          ],
+        },
+      }),
+    })
+    renderAt('/mitglieder/11?bereich=beitraege')
+    expect(await screen.findByRole('link', { name: 'R-2026-7' })).toHaveAttribute(
+      'href',
+      '/finanzen/rechnungen?rechnung=5',
+    )
+    expect(screen.getByText(/Offen: 60,00/)).toBeInTheDocument()
   })
 
   it('nennt den Namen des Dachverbands nur einmal', async () => {

@@ -12,8 +12,7 @@ stichworte: [shooting, bird shooting, ranking, shoot-off, result]
 
 Open **Competitions** › **Statistics** for participation, achievements and performance across
 all members. Select a member for their personal statistics. The same view is available in
-the member file under **Competitions**. The member area shows only your own data under
-**My results**.
+the member file under **Competitions**. Your own entries and results are under My area › Competitions.
 
 Filter by year, competition type and scoring conditions. Average rings, rings per counted
 shot and best results refer to the same recorded conditions. Different conditions have

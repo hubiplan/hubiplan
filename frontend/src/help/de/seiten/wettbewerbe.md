@@ -12,8 +12,8 @@ stichworte: [Schießen, Vogelschießen, Rangliste, Stechen, Ergebnis]
 
 Unter **Wettbewerbe** › **Statistik** siehst du Teilnahmen, Erfolge und Leistungsentwicklung
 aller Mitglieder. Wähle ein Mitglied für dessen persönliche Auswertung. Dieselbe Statistik
-findest du in der Mitgliedsakte unter **Wettbewerbe**, eigene Ergebnisse im Mitgliederbereich
-unter **Meine Ergebnisse**.
+findest du in der Mitgliedsakte unter **Wettbewerbe**, eigene Meldungen und Ergebnisse unter
+Mein Bereich › Wettbewerbe.
 
 Mit Jahr, Wettbewerbsart und Wertungsbedingungen grenzt du die Auswertung ein. Der
 Ringdurchschnitt, Ringe pro gewertetem Schuss und die Bestleistung beziehen sich auf

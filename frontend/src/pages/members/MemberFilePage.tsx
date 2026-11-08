@@ -26,7 +26,6 @@ import { SuggestCorrection } from './FederationMembersPage.tsx'
 import { FieldsTab } from './FieldsTab.tsx'
 import { PhotoSection } from './PhotoSection.tsx'
 import { ContactPersons } from './ContactPersons.tsx'
-import { BillingAddressSection } from './BillingAddressSection.tsx'
 import { PublicationSection } from './PublicationSection.tsx'
 import { HonoraryAwards } from './HonoraryAwards.tsx'
 import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
@@ -39,12 +38,21 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Term } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { CompetitionsTab } from '../competitions/MemberTab.tsx'
+import { FeesTab } from './FeesTab.tsx'
 
-type Tab = 'stammdaten' | 'mitgliedschaft' | 'zusatzfelder' | 'rollen' | 'wettbewerbe' | 'verlauf'
+type Tab =
+  | 'stammdaten'
+  | 'mitgliedschaft'
+  | 'beitraege'
+  | 'zusatzfelder'
+  | 'rollen'
+  | 'wettbewerbe'
+  | 'verlauf'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'stammdaten', label: t('Stammdaten') },
   { id: 'mitgliedschaft', label: t('Mitgliedschaft') },
+  { id: 'beitraege', label: t('Beiträge') },
   { id: 'zusatzfelder', label: t('Zusatzfelder') },
   { id: 'rollen', label: t('Rollen und Konto') },
   { id: 'wettbewerbe', label: t('Wettbewerbe') },
@@ -57,9 +65,11 @@ export function MemberFilePage() {
   const { data, error, setData, reload } = useLoad(() => memberApi.detail(org.id, id), [org.id, id])
   // Bereich steht in der Adresse: Zurück, Neuladen und Links öffnen ihn wieder (NMF-07)
   const [params] = useSearchParams()
-  // Reiter „Wettbewerbe“ nur mit freigeschaltetem Modul
+  // Reiter „Wettbewerbe“ und „Beiträge“ nur mit freigeschaltetem Modul (Menüprüfung 2, N-08)
   const tabs = TABS.filter(
-    (tmx) => tmx.id !== 'wettbewerbe' || org.modules.includes('competitions'),
+    (tmx) =>
+      (tmx.id !== 'wettbewerbe' || org.modules.includes('competitions')) &&
+      (tmx.id !== 'beitraege' || org.modules.includes('billing')),
   )
   const tab: Tab = tabs.find((tmx) => tmx.id === params.get('bereich'))?.id ?? 'stammdaten'
   const canEdit = org.permissions.includes(PERM.membersEdit)
@@ -147,15 +157,6 @@ export function MemberFilePage() {
               onChange={() => void reload()}
             />
           )}
-          {org.modules.includes('billing') && (
-            <BillingAddressSection
-              key={`rechnung-${data.id}`}
-              orgId={org.id}
-              member={data}
-              canEdit={canEdit && !data.managed_by}
-              onSaved={setData}
-            />
-          )}
           {(data.contact_for ?? []).length > 0 && (
             <p className="muted">
               {t('Ansprechpartner für:')}{' '}
@@ -201,6 +202,9 @@ export function MemberFilePage() {
           reload={reload}
           setData={setData}
         />
+      )}
+      {tab === 'beitraege' && (
+        <FeesTab org={org} member={data} canEdit={canEdit} onSaved={setData} />
       )}
       {tab === 'zusatzfelder' && <FieldsTab orgId={org.id} memberId={data.id} canEdit={canEdit} />}
       {tab === 'rollen' && <RolesTab org={org} member={data} canEdit={canEdit} reload={reload} />}
