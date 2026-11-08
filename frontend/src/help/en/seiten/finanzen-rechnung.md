@@ -1,6 +1,6 @@
 ---
 key: page.finance_invoice_settings
-titel: Finance › Setup › Invoice & payment
+titel: Finance › Set up › Invoice & payment
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/rechnung]

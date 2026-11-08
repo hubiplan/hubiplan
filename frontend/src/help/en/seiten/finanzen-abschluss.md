@@ -1,6 +1,6 @@
 ---
 key: page.finance_closing
-titel: Finance › Evaluate and close the year
+titel: Finance › Evaluate & close
 modul: finance
 rechte: [finance.view]
 routen:
@@ -14,13 +14,13 @@ routen:
 stichworte: [year-end closing, cash report, audit, DATEV, retention period, deletion hold, taxes]
 ---
 
-In the Finance sidebar, “Book” also contains **Fixed assets** and **Allowances**, “Evaluate” contains **Evaluation** (with net assets), **Development** and **Taxes** (with artists’ social security levy and use of funds), and “Close the year” contains **Donation receipts** and **Year-end closing** (with cash audit).
+In the Finance sidebar, “Book” also contains **Fixed assets** and **Allowances**, and “Evaluate & close” contains **Evaluation** (with net assets), **Development**, **Taxes** (with VAT, artists’ social security levy and use of funds), **Donation receipts** and **Year-end closing** (with cash audit).
 
 Under year-end closing you produce the cash report for the general meeting and close a financial year. After closing, the bookings can no longer be changed. There are also exports, for example for DATEV or the cash audit.
 
 Once the retention period has ended (receipts 8 years, books 10 years after the end of the calendar year), receipts can be deleted and books anonymised. The periods are set by law and cannot be shortened. If an audit or a legal dispute is still ongoing, use **Set deletion hold** on the financial year and give a reason. While it applies, nothing is deleted. Board members who can manage roles may set and lift it; both are recorded in the log.
 
-The **Taxes** item shows the tax report for a financial year. It belongs to the Tax & charitable status module. It also needs categories assigned to tax areas (Setup › Categories). You see:
+The **Taxes** item shows the tax report for a financial year. It belongs to the Tax & charitable status module. It also needs categories assigned to tax areas (Set up › Categories). You see:
 
 - **Tax-free limit**: income from commercial operations including VAT compared with the tax-free limit (€50,000 since 2026, €45,000 before), plus the two previous years. From 80 % you get a note, above the limit a warning.
 - **By tax area**: income, expenses and result per area. Cancellations are offset against the cancelled booking. A loss in the commercial operations shows a note.
@@ -52,6 +52,6 @@ Only the auditors can tick items off, not the treasury itself. They compare each
 
 The **Net assets** tab in the evaluation shows what the club owns and owes at the end of a financial year: account balances, open invoices to members and business partners, fixed assets at book value from the asset register (Tax & charitable status module) and open incoming invoices. Anything paid only after the year end counts as open on the reporting date. If reserves are switched on, it also shows how much is set aside and how much is freely available. The overview is also part of the treasurer's report for the general meeting.
 
-The **Artists' social security levy** tab under taxes (Tax & charitable status module) adds up the fees paid to self-employed artists and writers per calendar year, e.g. for a band, drum corps, DJ or graphic designer. It counts expenses ticked **Fee paid to artists (artists' social security levy)** in the cash book and all expenses of a category marked as **Artist fees** under Setup › Categories; cancellations do not count. The page shows the total per recipient, the levy at that year's rate (2026: 4.9 %) and the deadline for reporting to the Künstlersozialkasse (31 March of the following year), also as Excel.
+The **Artists' social security levy** tab under taxes (Tax & charitable status module) adds up the fees paid to self-employed artists and writers per calendar year, e.g. for a band, drum corps, DJ or graphic designer. It counts expenses ticked **Fee paid to artists (artists' social security levy)** in the cash book and all expenses of a category marked as **Artist fees** under Set up › Categories; cancellations do not count. The page shows the total per recipient, the levy at that year's rate (2026: 4.9 %) and the deadline for reporting to the Künstlersozialkasse (31 March of the following year), also as Excel.
 
 The **Use of funds** tab under taxes (Tax & charitable status module) is a simplified statement on the use of funds. Non-profit funds must be used for the statutory purposes or placed in permitted reserves by the end of the second financial year after they were received. The page shows per year the amount carried over, the funds received (income of the non-profit area and surpluses of the other areas), their use (expenses of the non-profit area, losses of purpose-related operations), additions to and releases from reserves, and what is still to be used by year of origin. The oldest funds are used first. If a deadline has passed, a notice appears. From 100,000 € income per year the tax office usually expects such a statement.

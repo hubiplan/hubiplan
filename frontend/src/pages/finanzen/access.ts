@@ -71,100 +71,90 @@ export function financeAccess(org: OrgSummary | null): FinanceAccess {
   }
 }
 
+/** Arbeitsgruppe in der Seitenleiste (Konzept S-01): aufklappbar, eine offen. */
+export interface NavGroup {
+  key: string
+  label: string
+}
+
 export interface NavItem {
   to: string
   label: string
-  section?: string
+  group?: NavGroup
 }
 
-/** Unterpunkte von Finanzen (Seitenleiste). */
+/**
+ * Arbeitsgruppen von Finanzen nach dem Jahreslauf (Konzept S-01, UX-Audit 08.11. W-03).
+ * Reihenfolge = Reihenfolge in der Seitenleiste.
+ */
+export function financeGroups(): Record<
+  'billing' | 'payments' | 'booking' | 'closing' | 'setup',
+  NavGroup
+> {
+  return {
+    billing: { key: 'abrechnen', label: t('Beiträge & Rechnungen') },
+    payments: { key: 'zahlungen', label: t('Zahlungen') },
+    booking: { key: 'buchen', label: t('Buchen') },
+    closing: { key: 'abschliessen', label: t('Auswerten & abschließen') },
+    setup: { key: 'einrichten', label: t('Einrichten') },
+  }
+}
+
+/**
+ * Unterpunkte von Finanzen (Seitenleiste), je mit ihrer Arbeitsgruppe. Es gibt keine
+ * dritte Ebene mehr für Rechnungen und Einrichtung: deren frühere Reiter sind Einträge
+ * ihrer Gruppe, die Adressen bleiben gleich.
+ */
 export function financeSections(a: FinanceAccess): NavItem[] {
   if (!a.finance && !a.billing) return []
-  // Gegliedert nach dem Jahreslauf: abrechnen, Zahlungen, buchen, auswerten, abschließen
-  // (UX-Audit S-02, Menüprüfung 2 N-04); Einrichtung zuletzt
-  const bill = t('Beiträge abrechnen')
-  const pay = t('Zahlungen verarbeiten')
-  const book = t('Buchen')
-  const evaluate = t('Auswerten')
-  const close = t('Jahr abschließen')
-  const setup = t('Einrichten')
+  const g = financeGroups()
+  const items = (group: NavGroup, list: (NavItem | false)[]): NavItem[] =>
+    list.filter((i): i is NavItem => !!i).map((i) => ({ ...i, group }))
   return [
     { to: '/finanzen', label: t('Übersicht') },
-    ...(a.billing || a.received || a.finance
-      ? [{ to: '/finanzen/rechnungen', label: t('Rechnungen'), section: bill }]
-      : []),
-
-    ...(a.sepa ? [{ to: '/finanzen/lastschrift', label: t('Lastschriften'), section: pay }] : []),
-    ...(a.finance
-      ? [{ to: '/finanzen/kontoauszuege', label: t('Kontoauszüge'), section: pay }]
-      : []),
-    ...(a.finance ? [{ to: '/finanzen/kassenbuch', label: t('Kassenbuch'), section: book }] : []),
-    ...(a.finance ? [{ to: '/finanzen/quittungen', label: t('Quittungen'), section: book }] : []),
-    ...(a.cashCounts
-      ? [{ to: '/finanzen/kassenzaehlung', label: t('Kassenzählung'), section: book }]
-      : []),
-    ...(a.reserves ? [{ to: '/finanzen/ruecklagen', label: t('Rücklagen'), section: book }] : []),
-    ...(a.finance
-      ? [{ to: '/finanzen/veranstaltungen', label: t('Veranstaltungen'), section: book }]
-      : []),
-    ...(a.tax ? [{ to: '/finanzen/anlagen', label: t('Anlagen'), section: book }] : []),
-    ...(a.tax ? [{ to: '/finanzen/pauschalen', label: t('Pauschalen'), section: book }] : []),
-    ...(a.payouts
-      ? [{ to: '/finanzen/sammelauszahlungen', label: t('Sammelauszahlungen'), section: book }]
-      : []),
-    ...(a.finance
-      ? [
-          { to: '/finanzen/auswertung', label: t('Auswertung'), section: evaluate },
-          { to: '/finanzen/entwicklung', label: t('Entwicklung'), section: evaluate },
-        ]
-      : []),
-    ...(a.tax ? [{ to: '/finanzen/steuern', label: t('Steuern'), section: evaluate }] : []),
-    ...(a.donations
-      ? [{ to: '/finanzen/zuwendungen', label: t('Zuwendungsbestätigungen'), section: close }]
-      : []),
-    ...(a.finance
-      ? [{ to: '/finanzen/abschluss', label: t('Jahresabschluss'), section: close }]
-      : []),
-    // Geschäftspartner gelten für Ein- und Ausgang, deshalb bei „Einrichten“ (Menüprüfung M-10)
-    { to: '/finanzen/geschaeftspartner', label: t('Geschäftspartner'), section: setup },
-    { to: '/finanzen/einrichtung', label: t('Einrichtung'), section: setup },
+    ...items(g.billing, [
+      a.billing && { to: '/finanzen/rechnungen', label: t('Rechnungen') },
+      a.billing && { to: '/finanzen/rechnungen/leistungen', label: t('Leistungsrechnungen') },
+      a.feeRuns && { to: '/finanzen/rechnungen/beitragslaeufe', label: t('Beitragsläufe') },
+      a.billing && { to: '/finanzen/rechnungen/mahnungen', label: t('Mahnungen') },
+      a.received && { to: '/finanzen/rechnungen/dachverband', label: a.receivedLabel },
+      a.finance && { to: '/finanzen/rechnungen/eingang', label: t('Rechnungseingang') },
+    ]),
+    ...items(g.payments, [
+      a.sepa && { to: '/finanzen/lastschrift', label: t('Lastschriften') },
+      a.finance && { to: '/finanzen/kontoauszuege', label: t('Kontoauszüge') },
+      a.payouts && { to: '/finanzen/sammelauszahlungen', label: t('Sammelauszahlungen') },
+    ]),
+    ...items(g.booking, [
+      a.finance && { to: '/finanzen/kassenbuch', label: t('Kassenbuch') },
+      a.finance && { to: '/finanzen/quittungen', label: t('Quittungen') },
+      a.cashCounts && { to: '/finanzen/kassenzaehlung', label: t('Kassenzählung') },
+      a.reserves && { to: '/finanzen/ruecklagen', label: t('Rücklagen') },
+      a.finance && { to: '/finanzen/veranstaltungen', label: t('Veranstaltungen') },
+      a.tax && { to: '/finanzen/anlagen', label: t('Anlagen') },
+      a.tax && { to: '/finanzen/pauschalen', label: t('Pauschalen') },
+    ]),
+    ...items(g.closing, [
+      a.finance && { to: '/finanzen/auswertung', label: t('Auswertung') },
+      a.finance && { to: '/finanzen/entwicklung', label: t('Entwicklung') },
+      a.tax && { to: '/finanzen/steuern', label: t('Steuern') },
+      a.donations && { to: '/finanzen/zuwendungen', label: t('Zuwendungsbestätigungen') },
+      a.finance && { to: '/finanzen/abschluss', label: t('Jahresabschluss') },
+    ]),
+    ...items(g.setup, [
+      a.feeRuns && { to: '/finanzen/einrichtung/beitraege', label: t('Beitragssätze') },
+      a.billing && { to: '/finanzen/einrichtung/mahnstufen', label: t('Mahnstufen') },
+      a.billing && { to: '/finanzen/einrichtung/rechnung', label: t('Rechnung & Zahlung') },
+      a.finance && { to: '/finanzen/einrichtung/konten', label: t('Konten') },
+      a.finance && { to: '/finanzen/einrichtung/kategorien', label: t('Kategorien') },
+      a.donations && { to: '/finanzen/einrichtung/zuwendungen', label: t('Zuwendungen') },
+      // Geschäftspartner gelten für Ein- und Ausgang, deshalb bei „Einrichten“ (Menüprüfung M-10)
+      { to: '/finanzen/geschaeftspartner', label: t('Geschäftspartner') },
+    ]),
   ]
 }
 
-export function invoiceTabs(a: FinanceAccess): NavItem[] {
-  return [
-    ...(a.billing
-      ? [
-          { to: '/finanzen/rechnungen', label: t('Rechnungen') },
-          { to: '/finanzen/rechnungen/leistungen', label: t('Leistungsrechnungen') },
-          ...(a.feeRuns
-            ? [{ to: '/finanzen/rechnungen/beitragslaeufe', label: t('Beitragsläufe') }]
-            : []),
-          { to: '/finanzen/rechnungen/mahnungen', label: t('Mahnungen') },
-        ]
-      : []),
-    ...(a.received ? [{ to: '/finanzen/rechnungen/dachverband', label: a.receivedLabel }] : []),
-    ...(a.finance ? [{ to: '/finanzen/rechnungen/eingang', label: t('Rechnungseingang') }] : []),
-  ]
-}
-
-export function settingsTabs(a: FinanceAccess): NavItem[] {
-  return [
-    ...(a.billing
-      ? [
-          ...(a.feeRuns
-            ? [{ to: '/finanzen/einrichtung/beitraege', label: t('Beitragssätze') }]
-            : []),
-          { to: '/finanzen/einrichtung/mahnstufen', label: t('Mahnstufen') },
-          { to: '/finanzen/einrichtung/rechnung', label: t('Rechnung & Zahlung') },
-        ]
-      : []),
-    ...(a.finance
-      ? [
-          { to: '/finanzen/einrichtung/konten', label: t('Konten') },
-          { to: '/finanzen/einrichtung/kategorien', label: t('Kategorien') },
-        ]
-      : []),
-    ...(a.donations ? [{ to: '/finanzen/einrichtung/zuwendungen', label: t('Zuwendungen') }] : []),
-  ]
+/** Einträge unter einem Pfad, z. B. alle Seiten unter /finanzen/rechnungen. */
+export function sectionsUnder(a: FinanceAccess, path: string): NavItem[] {
+  return financeSections(a).filter((i) => i.to === path || i.to.startsWith(`${path}/`))
 }

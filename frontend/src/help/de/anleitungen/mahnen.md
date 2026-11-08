@@ -13,7 +13,7 @@ stichworte: [Mahnung, Erinnerung, überfällig, nicht bezahlt]
 3. Prüfe die Liste. Wer schon bar bezahlt hat, bekommt vorher seine Zahlung gebucht.
 4. Erstelle die Mahnungen mit oder ohne Versand per E-Mail.
 
-Fristen und Texte legst du unter Einrichtung › Mahnstufen fest.
+Fristen und Texte legst du unter Einrichten › Mahnstufen fest.
 
 Die nächste Mahnstufe schlägt HUBIplan frühestens vor, wenn die Zahlungsfrist aus der letzten Mahnung abgelaufen ist. Die Tage der Mahnstufen zählen weiter ab der Fälligkeit der Rechnung.
 

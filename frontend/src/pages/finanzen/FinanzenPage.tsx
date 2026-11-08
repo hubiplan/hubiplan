@@ -23,7 +23,7 @@ import { ClosingsPage } from '../finance/ClosingsPage.tsx'
 import { DonationSettingsForm, DonationsArea } from '../finance/DonationsPage.tsx'
 import { ProjectsArea } from '../finance/ProjectsPage.tsx'
 import { AccountsPage, CategoriesPage } from '../finance/MasterDataPages.tsx'
-import { financeAccess, invoiceTabs, settingsTabs } from './access.ts'
+import { financeAccess, sectionsUnder } from './access.ts'
 import type { FinanceAccess, NavItem } from './access.ts'
 import { FinanceDevelopment } from './DevelopmentPage.tsx'
 import { EvaluationPage, FinanceOverview } from './OverviewPages.tsx'
@@ -252,10 +252,25 @@ export function FinanzenPage() {
   )
 }
 
-function InvoicesArea({ access: a }: { access: FinanceAccess }) {
-  const tabs = invoiceTabs(a)
+/** Eintrag der Seitenleiste zur aktuellen Seite: liefert die Überschrift (keine Reiter mehr). */
+function useCurrent(items: NavItem[], fallback: string): string {
+  const { pathname } = useLocation()
+  const path = pathname.replace(/(.)\/$/, '$1')
   return (
-    <Section title={t('Rechnungen')} readOnly={a.billing && !a.billingEdit} tabs={tabs}>
+    items
+      .filter((i) => path === i.to || path.startsWith(`${i.to}/`))
+      .sort((x, y) => y.to.length - x.to.length)[0]?.label ?? fallback
+  )
+}
+
+// Rechnungen und Einrichtung: die früheren Reiter sind Einträge der Arbeitsgruppen in der
+// Seitenleiste (Konzept S-01); jede Seite trägt ihren eigenen Namen als Überschrift
+function InvoicesArea({ access: a }: { access: FinanceAccess }) {
+  const tabs = sectionsUnder(a, '/finanzen/rechnungen')
+  const title = useCurrent(tabs, t('Rechnungen'))
+  if (tabs.length === 0) return home
+  return (
+    <Section title={title} readOnly={a.billing && !a.billingEdit}>
       <Routes>
         <Route
           index
@@ -375,11 +390,13 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
 }
 
 function SettingsArea({ access: a }: { access: FinanceAccess }) {
-  const tabs = settingsTabs(a)
+  const tabs = sectionsUnder(a, '/finanzen/einrichtung')
+  const title = useCurrent(tabs, t('Einrichtung'))
+  if (tabs.length === 0) return <Navigate to="/finanzen/geschaeftspartner" replace />
   const first = <Navigate to={tabs[0].to} replace />
   const readOnly = !a.billingEdit && !a.financeEdit
   return (
-    <Section title={t('Einrichtung')} readOnly={readOnly} tabs={tabs}>
+    <Section title={title} readOnly={readOnly}>
       <Routes>
         <Route index element={first} />
         {a.feeRuns && <Route path="beitraege" element={<FeeRulesPage />} />}
