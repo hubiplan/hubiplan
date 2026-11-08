@@ -16,4 +16,6 @@ Vorher: Die Gläubiger-ID steht unter Einrichtung › Rechnung & Zahlung, und di
 4. Lade die erzeugte Datei herunter und reiche sie im Online-Banking ein.
 5. Hat die Bank eingezogen, klicke auf **Als eingezogen buchen** und dann auf **Zahlungen buchen**. Die Rechnungen gelten dann als bezahlt.
 
+Das Einzugsdatum muss ein Bankarbeitstag sein: kein Wochenende und keiner der TARGET2-Feiertage (1. Januar, Karfreitag, Ostermontag, 1. Mai, 25. und 26. Dezember). HUBIplan nennt sonst den nächsten Bankarbeitstag.
+
 ![Ausgangspunkt: Lastschrift erstellen und bei der Bank einreichen](bild:lastschrift)

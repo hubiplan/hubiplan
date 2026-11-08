@@ -15,4 +15,6 @@ stichworte: [Austritt, Kündigung, ausgetreten, Ende]
 
 Die Akte bleibt erhalten und erscheint unter „ehemalige Mitglieder“. Offene Rechnungen bleiben offen; nach Ablauf der Löschfrist reduziert HUBIplan die Daten auf das Nötigste.
 
+**Datum falsch erfasst?** In der Akte steht unter **Zeiträume** an jedem Zeitraum **Ein-/Austritt korrigieren**. Mitgliedsart, Untereinheiten und Ämter, die am alten Datum begannen bzw. endeten, ziehen mit. Leerst du das Austrittsdatum, ist der Austritt aufgehoben: Die Mitgliedschaft und diese Zeiten laufen wieder offen, der Austrittsgrund wird geleert.
+
 ![Ausgangspunkt: Austritt eines Mitglieds erfassen](bild:austritt-erfassen)

@@ -566,3 +566,28 @@ class TestOrdnungszahlVorname:
             reign(3, "Hans Probe", 2003),
         ]
         assert numbering.ordinals(reigns) == {1: 1, 2: 2, 3: 1}
+
+
+class TestArtwechselMitSpaetererArt:
+    def test_spaetere_art_sperrt(self, orgs):
+        from members.models import MemberTypeAssignment
+        from members.workflows import change_type
+
+        from .factories import make_member
+        from .test_m2_members import make_types
+
+        org = orgs["a"]
+        with tenant_context(org.pk):
+            types = make_types(org)
+            membership = make_member(org, "Erika", "Muster", "erika@example.org")
+            MemberTypeAssignment.objects.filter(membership=membership).delete()
+            MemberTypeAssignment.objects.create(
+                organization=org,
+                membership=membership,
+                member_type=types["passiv"],
+                valid_from=timezone.localdate() + datetime.timedelta(days=30),
+            )
+            from rest_framework.exceptions import ValidationError
+
+            with pytest.raises(ValidationError, match="spätere Art"):
+                change_type(membership, types["aktiv"], timezone.localdate())

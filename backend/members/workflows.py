@@ -76,6 +76,17 @@ def change_type(membership: Membership, new_type: MemberType, on: datetime.date)
         raise ValidationError(
             {"valid_from": gettext("Der Stichtag muss nach dem Beginn der jetzigen Art liegen.")}
         )
+    later = membership.type_assignments.filter(valid_from__gt=on).order_by("valid_from").first()
+    if later is not None:
+        # Sonst überschnitten sich die neue und die spätere Art (Datenaudit 08.11. DR-04)
+        raise ValidationError(
+            {
+                "valid_from": gettext(
+                    "Ab {day} ist schon die Art „{name}“ eingetragen. Bitte zuerst diese "
+                    "spätere Art ändern oder entfernen."
+                ).format(day=date_text(later.valid_from), name=later.member_type.name)
+            }
+        )
     services.check_active_rule(membership.person, membership.organization, new_type, on, membership)
     if current:
         current.valid_until = on - ONE_DAY

@@ -9400,3 +9400,6 @@ msgstr "Please enter without a thousands separator or with a decimal comma (e.g.
 
 msgid "Der Einzug muss auf einen Bankarbeitstag fallen (nicht am Wochenende oder an einem TARGET2-Feiertag). Nächster Bankarbeitstag: {day}."
 msgstr "The collection must fall on a bank business day (not a weekend or TARGET2 holiday). Next bank business day: {day}."
+
+msgid "Ab {day} ist schon die Art „{name}“ eingetragen. Bitte zuerst diese spätere Art ändern oder entfernen."
+msgstr "From {day} the type “{name}” is already recorded. Please change or remove this later type first."
