@@ -192,7 +192,7 @@ function CommercialDetail({
     )
   return (
     <div className="card stack">
-      <div className="page-head">
+      <div className="card-head">
         <h2>
           {invoice.number} · {invoice.recipient_name}
         </h2>

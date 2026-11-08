@@ -46,31 +46,10 @@ const org = testOrg({
 }) as unknown as OrgSummary
 
 /** Menüpunkt → heutige h1, solange die Seite noch nicht umgestellt ist */
-// Leer: Die Seite zeigt ohne Daten (noch) keine h1. „/einstellungen“ und „/plattform“ leiten
-// auf ihren ersten Unterpunkt weiter.
+// „/einstellungen“ und „/plattform“ leiten auf ihren ersten Unterpunkt weiter;
+// „/mitglieder/einrichtung“ zeigt gleich den ersten Unterpunkt.
 const ABWEICHUNGEN: Record<string, string> = {
   '/mitglieder/einrichtung': 'Mitgliedsarten',
-  '/musik': '',
-  '/musik/uebersicht': 'Auftrittsübersicht',
-  '/musik/verfuegbarkeit': '',
-  '/musik/musiker': '',
-  '/musik/proben': '',
-  '/musik/noten': '',
-  '/musik/vorlagen': '',
-  '/wettbewerbe/statistik': 'Wettbewerbsstatistik',
-  '/wettbewerbe/einrichtung': '',
-  '/chronik': '',
-  '/webseite': '',
-  '/webseite/inhalte': '',
-  '/webseite/bilder': '',
-  '/webseite/galerie': '',
-  '/webseite/dokumente': '',
-  '/webseite/beitraege': '',
-  '/webseite/aufbau': '',
-  '/webseite/gestaltung': '',
-  '/webseite/kontakt': '',
-  '/webseite/domain': '',
-  '/material/musik': '',
   '/einstellungen': 'Organisation',
   '/plattform': 'Einheiten',
 }

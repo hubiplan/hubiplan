@@ -229,7 +229,9 @@ for (const language of ['de', 'en']) {
             : b.name === 'dokument-hochladen'
               ? ['Schützenverein Beispieldorf']
               : []
-        const visibleText = await target.innerText()
+        // Der Name der Einheit steht seit dem einheitlichen Seitenkopf (S-05) in der Kopfleiste,
+        // nicht mehr im Inhalt: deshalb die ganze Seite prüfen
+        const visibleText = await page.locator('body').innerText()
         for (const name of requiredNames) {
           if (!visibleText.includes(name)) throw new Error('Erfundene Organisationsanzeige fehlt')
         }

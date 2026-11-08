@@ -6,8 +6,8 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 ## Regeln
 
 - **Menüpunkt = Überschrift.** Ein Unterpunkt in der Seitenleiste heißt genauso wie die
-  Überschrift der Seite. Die Überschrift nennt die Unterseite, darüber steht klein der Bereich
-  (`SectionTitle` in `frontend/src/components/ui.tsx`); der Browser-Tab heißt
+  Überschrift der Seite. Die Überschrift nennt die Unterseite, darüber steht der Pfad aus dem
+  Menü (`PageHeader` in `frontend/src/components/PageHeader.tsx`); der Browser-Tab heißt
   „Unterseite · Bereich“.
 - **Menüpfade in Texten** schreiben wir als „Bereich › Punkt“ mit den Wörtern aus dem Menü.
   `frontend/src/test/Hilfe.test.tsx` prüft das für die Hilfe.

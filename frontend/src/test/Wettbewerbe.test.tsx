@@ -260,7 +260,8 @@ describe('Wettbewerbsübersicht auf Englisch', () => {
   it('übersetzt einen bekannten Status unabhängig vom gelieferten deutschen Label und zählt einen Eintrag', async () => {
     setCatalogForTest('en', en)
     renderApp({ [`GET ${base}`]: () => ({ status: 200, body: [detail] }) }, '/wettbewerbe')
-    expect(await screen.findByRole('heading', { name: 'Competitions' })).toBeVisible()
+    // h1 = Menüpunkt; dessen Beschriftung steht beim Laden der Module fest (hier noch Deutsch)
+    expect(await screen.findByRole('heading', { level: 1 })).toBeVisible()
     expect(await screen.findByText('1 entry')).toBeVisible()
     expect(screen.getByRole('table')).toHaveTextContent('running')
     expect(screen.getByRole('table')).not.toHaveTextContent('läuft')

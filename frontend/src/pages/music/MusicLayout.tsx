@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { t } from '../../i18n/index.ts'
 import './music.css'
 
@@ -8,6 +8,11 @@ export function MusicLayout({ children }: { children: ReactNode }) {
   return <div className="music-workspace stack">{children}</div>
 }
 
+/**
+ * Kopf einer Musikseite: einheitlicher Seitenkopf (S-05). Auf Seiten mit eigenem Menüpunkt
+ * heißt die h1 wie der Menüpunkt (X-01); Unterseiten eines Auftritts (context) und Seiten
+ * ohne Menüpunkt tragen ihren eigenen Titel.
+ */
 export function MusicHeader({
   title,
   description,
@@ -18,17 +23,11 @@ export function MusicHeader({
   context?: string
 }) {
   return (
-    <header className="music-page-header">
-      {context && (
-        <p className="music-breadcrumb">
-          <Link to="/musik">{t('Auftritte')}</Link>
-          <span aria-hidden="true"> / </span>
-          {context}
-        </p>
-      )}
-      <h1>{title}</h1>
-      {description && <p className="muted">{description}</p>}
-    </header>
+    <PageHeader
+      title={context ? title : undefined}
+      name={title}
+      subtitle={context ?? description}
+    />
   )
 }
 

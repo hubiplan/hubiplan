@@ -273,7 +273,7 @@ function ExternalCard({
 
   return (
     <section className="card card-wide stack-sm" aria-label={cal.name}>
-      <div className="page-head">
+      <div className="card-head">
         <h3>
           {cal.name} <span className="badge">{cal.kind_label}</span>
         </h3>

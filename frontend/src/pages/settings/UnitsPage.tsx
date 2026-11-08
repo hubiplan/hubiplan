@@ -9,6 +9,7 @@ import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { ClubsPage } from './ClubsPage.tsx'
 import { DepartmentsPage } from './DepartmentsPage.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { t } from '../../i18n/index.ts'
 
 export function UnitsPage() {
@@ -25,8 +26,7 @@ export function UnitsArea() {
   const tm = useTerms()
   return (
     <section>
-      <h1>{org.department_terms?.Pl || org.department_label_plural || tm.Pl}</h1>
-      <p className="muted">{org.name}</p>
+      <PageHeader name={org.department_terms?.Pl || org.department_label_plural || tm.Pl} />
       <UnitsPage />
     </section>
   )

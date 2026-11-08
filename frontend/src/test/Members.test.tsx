@@ -909,6 +909,8 @@ describe('Export', () => {
     renderAt('/mitglieder')
     const user = userEvent.setup()
     await screen.findByText('Muster, Erika')
+    // Export steht im Seitenkopf unter „Weitere Aktionen“ (S-05)
+    await user.click(screen.getByRole('button', { name: 'Weitere Aktionen' }))
     await user.click(screen.getByRole('button', { name: 'Export' }))
     await user.click(await screen.findByRole('checkbox', { name: 'E-Mail' }))
     await user.click(screen.getByRole('button', { name: 'Export erstellen' }))
@@ -955,7 +957,8 @@ describe('Dachverband', () => {
     })
     renderAt('/mitglieder')
     expect(await screen.findByText('Muster, Erika')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Mitglieder im Dachverband' })).toBeInTheDocument()
+    // h1 = Menüpunkt (Seitenkopf S-05)
+    expect(screen.getByRole('heading', { level: 1, name: 'Mitglieder' })).toBeInTheDocument()
     expect(screen.getByText(/nur lesen/)).toBeInTheDocument()
   })
 

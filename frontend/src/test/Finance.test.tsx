@@ -168,6 +168,8 @@ describe('Kasse', () => {
     renderApp('/finanzen/kassenbuch')
     expect(await screen.findByRole('button', { name: '2025/26-0001' })).toBeInTheDocument()
     const user = userEvent.setup()
+    // Seitenkopf (S-05): „Neue Buchung“ mit Auswahl
+    await user.click(screen.getByRole('button', { name: 'Neue Buchung' }))
     await user.click(screen.getByRole('button', { name: 'Einnahme' }))
     const form = screen.getByRole('heading', { name: 'Neue Einnahme' }).closest('form')!
     const f = within(form)
@@ -217,6 +219,8 @@ describe('Kasse', () => {
     renderApp('/finanzen/kassenbuch')
     expect(await screen.findByRole('button', { name: '2025/26-0001' })).toBeInTheDocument()
     const user = userEvent.setup()
+    // Seitenkopf (S-05): „Neue Buchung“ mit Auswahl
+    await user.click(screen.getByRole('button', { name: 'Neue Buchung' }))
     await user.click(screen.getByRole('button', { name: 'Ausgabe' }))
     const form = screen.getByRole('heading', { name: 'Neue Ausgabe' }).closest('form')!
     const f = within(form)
@@ -284,6 +288,8 @@ describe('Kasse', () => {
     renderApp('/finanzen/kassenbuch')
     expect(await screen.findByRole('button', { name: '2025/26-0001' })).toBeInTheDocument()
     const user = userEvent.setup()
+    // Seitenkopf (S-05): „Neue Buchung“ mit Auswahl
+    await user.click(screen.getByRole('button', { name: 'Neue Buchung' }))
     await user.click(screen.getByRole('button', { name: 'Ausgabe' }))
     const form = screen.getByRole('heading', { name: 'Neue Ausgabe' }).closest('form')!
     const f = within(form)
@@ -401,7 +407,7 @@ describe('Kasse', () => {
     renderApp('/finanzen/kassenbuch')
     expect(await screen.findByRole('button', { name: '2025/26-0001' })).toBeInTheDocument()
     expect(screen.getByText('nur lesen')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Einnahme' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Neue Buchung' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Neu nummerieren' })).not.toBeInTheDocument()
   })
 

@@ -1,8 +1,7 @@
 // Kleine, wiederverwendbare Bausteine für Formulare und Seiten.
 import { useId } from 'react'
 import type { ChangeEvent, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
-import { usePageTitle } from './pageTitle.ts'
+import { NavLink } from 'react-router-dom'
 import { useSubNav } from './subnav.ts'
 import type { AutoSave, SaveState } from './forms.ts'
 import { t } from '../i18n/index.ts'
@@ -188,54 +187,6 @@ export function currentItem<T extends { to: string }>(items: T[], pathname: stri
     items
       .filter((i) => path === i.to || path.startsWith(`${i.to}/`))
       .sort((a, b) => b.to.length - a.to.length)[0] ?? null
-  )
-}
-
-/**
- * Name des gewählten Unterpunkts unterhalb einer Seite mit eigenem Titel, wenn er anders heißt
- * als die Seite (dritte Ebene, UX-Audit 08.11. W-02); sonst null. Den Seitentitel im Browser
- * setzt der App-Rahmen aus denselben Unterpunkten.
- */
-export function useSubHeading(title: string, items?: { to: string; label: string }[]) {
-  const { pathname } = useLocation()
-  if (!items || items.length < 2) return null
-  const current = currentItem(items, pathname)
-  if (!current || current.label === title) return null
-  // Der erste Punkt mit dem Pfad der Seite selbst (z. B. die Liste unter „Zuwendungen“) ist
-  // die Seite: dort bleibt ihr Name die H1
-  const own = items.slice(1).every((i) => i.to.startsWith(`${items[0].to}/`))
-  return own && current === items[0] ? null : current.label
-}
-
-/**
- * Überschrift eines Bereichs mit Unterpunkten: Auf einem Unterpunkt heißt die H1 wie der
- * Unterpunkt, der Bereich steht als Überzeile darüber, und der Tab-Titel nennt beides
- * (WCAG 2.4.2/2.4.6, UX-Audit 05.11. W-04). Auf dem ersten Punkt (Übersicht) bleibt der
- * Bereichsname die H1, außer `always` ist gesetzt.
- */
-export function SectionTitle({
-  title,
-  items,
-  subtitle,
-  always = false,
-}: {
-  title: string
-  items: { to: string; label: string }[]
-  subtitle?: ReactNode
-  always?: boolean
-}) {
-  const { pathname } = useLocation()
-  const current = currentItem(items, pathname)
-  const sub = current && (always || current !== items[0]) ? current.label : null
-  usePageTitle(sub ? t('{label} · {modLabel}', { label: sub, modLabel: title }) : null)
-  return (
-    <div className="page-head">
-      <div>
-        {sub && <p className="muted small eyebrow">{title}</p>}
-        <h1>{sub ?? title}</h1>
-      </div>
-      {subtitle && <p className="muted">{subtitle}</p>}
-    </div>
   )
 }
 
