@@ -380,6 +380,18 @@ export interface MemberDetail {
     club: DurationInfo
     federation: (DurationInfo & { rule: string }) | null
   }
+  /** „Auf einen Blick“, nur beim Laden der Akte; Teile ohne Recht sind null (S-03 A3) */
+  summary?: MemberSummary
+}
+
+export interface MemberSummary {
+  invoices: { open: number; open_amount: string; overdue: number } | null
+  account: {
+    has_access: boolean
+    last_login: string | null
+    mfa: boolean
+    app: boolean
+  } | null
 }
 
 export interface DurationInfo {

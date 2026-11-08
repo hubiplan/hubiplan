@@ -520,6 +520,52 @@ describe('Mitgliedsakte', () => {
     expect(screen.queryByRole('heading', { name: 'Stammdaten' })).not.toBeInTheDocument()
   })
 
+  it('Auf einen Blick: Kacheln nur mit Inhalt und Recht (S-03 A3)', async () => {
+    const glanceOrg = testOrg({
+      permissions: ['members.view', 'billing.view', 'logins.view'],
+      modules: ['members', 'billing'],
+    })
+    fakeApi({
+      ...common(),
+      'GET /api/me/organizations/': () => ({ status: 200, body: [glanceOrg] }),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: {
+          ...detail,
+          summary: {
+            invoices: { open: 1, open_amount: '25.00', overdue: 1 },
+            account: { has_access: true, last_login: null, mfa: true, app: false },
+          },
+        },
+      }),
+    })
+    renderAt('/mitglieder/11')
+    const glance = await screen.findByRole('region', { name: 'Auf einen Blick' })
+    expect(within(glance).getByRole('heading', { name: 'Mitglied seit' })).toBeInTheDocument()
+    const fees = within(glance).getByRole('link', { name: /^Beiträge/ })
+    expect(fees).toHaveAttribute('href', '/mitglieder/11?bereich=beitraege')
+    expect(fees).toHaveTextContent('1 Rechnung offen · davon 1 überfällig')
+    const account = within(glance).getByRole('link', { name: /^Konto/ })
+    expect(account).toHaveTextContent('Zwei-Faktor an')
+    expect(account).toHaveTextContent('Noch nie angemeldet')
+    // Ohne Materialmodul keine Materialkachel
+    expect(within(glance).queryByRole('heading', { name: 'Material' })).not.toBeInTheDocument()
+  })
+
+  it('Auf einen Blick: ohne Zusammenfassung keine Beitrags- und Kontokachel', async () => {
+    fakeApi({
+      ...common(),
+      [`GET ${base}/members/11/`]: () => ({
+        status: 200,
+        body: { ...detail, summary: { invoices: null, account: null } },
+      }),
+    })
+    renderAt('/mitglieder/11')
+    const glance = await screen.findByRole('region', { name: 'Auf einen Blick' })
+    expect(within(glance).queryByRole('link', { name: /^Beiträge/ })).not.toBeInTheDocument()
+    expect(within(glance).queryByRole('link', { name: /^Konto/ })).not.toBeInTheDocument()
+  })
+
   it('erfasst einen Austritt', async () => {
     const calls = fakeApi({
       ...common(),

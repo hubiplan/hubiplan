@@ -1195,6 +1195,32 @@ fieldset {
   border-bottom-color: var(--color-focus);
 }
 
+/* Mitgliedsakte „Auf einen Blick“: Kacheln führen in ihren Reiter (S-03 A3) */
+.member-glance {
+  max-width: none;
+  margin: var(--space-3) 0 var(--space-2);
+}
+
+.tile-link {
+  color: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+}
+
+.tile-link:hover,
+.tile-link:focus-visible {
+  border-color: var(--color-focus);
+}
+
+.tile-link h3 {
+  margin: 0 0 var(--space-1);
+  font-size: 1rem;
+}
+
+.tile-alert {
+  border-left: 4px solid var(--color-error);
+}
+
 /* Mitgliedsakte: auf dem Handy Bereiche als Auswahlliste statt wischbarer Reiter (S-03) */
 .member-tabs-select {
   display: none;

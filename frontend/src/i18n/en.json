@@ -7391,5 +7391,18 @@
   "Noch kein Musikerprofil angelegt.": "No musician profile yet.",
   "Noch keine Instrumente eingetragen.": "No instruments entered yet.",
   " (Hauptinstrument)": " (main instrument)",
-  "Nicht aktiv": "Inactive"
+  "Nicht aktiv": "Inactive",
+  "Auf einen Blick": "At a glance",
+  "Mitglied seit": "Member since",
+  "Keine offenen Rechnungen": "No open invoices",
+  "1 Rechnung offen": "1 invoice open",
+  "{n} Rechnungen offen": "{n} invoices open",
+  " · davon {n} überfällig": " · {n} of them overdue",
+  "App verbunden": "App connected",
+  "Zwei-Faktor an": "Two-factor on",
+  "Zuletzt angemeldet: {x}": "Last signed in: {x}",
+  "Noch nie angemeldet": "Never signed in",
+  "Kein Zugang zum Mitgliederbereich": "No member area access",
+  "Teil ausgegeben": "item issued",
+  "Teile ausgegeben": "items issued"
 }

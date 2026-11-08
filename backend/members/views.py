@@ -67,6 +67,7 @@ from .serializers import (
     check_birth_before_entries,
     member_detail,
 )
+from .summary import member_summary
 
 
 class _ClubMixin(OrgScopedMixin):
@@ -493,7 +494,11 @@ class MemberDetailView(_ClubMixin, APIView):
         )
 
     def get(self, request, org_id: int, pk: int):
-        return Response(member_detail(self.get_membership(), self.org))
+        membership = self.get_membership()
+        data = member_detail(membership, self.org)
+        # Nur beim Aufruf der Akte, nicht bei jedem Speichern (S-03 A3)
+        data["summary"] = member_summary(membership, self.org, self.org_permissions)
+        return Response(data)
 
     @transaction.atomic
     def patch(self, request, org_id: int, pk: int):
