@@ -18,9 +18,13 @@ const MAX_HOEHE = 900
 let failed = 0
 for (const language of ['de', 'en']) {
   // Eigener Browser je Sprache: Datumsfelder zeigen das Format der Sprache nur im vollen
-  // Chromium (neuer Headless-Modus) mit --lang, nicht in der Headless-Shell
+  // Chromium (neuer Headless-Modus) mit --lang und LANGUAGE, nicht in der Headless-Shell
   const locale = language === 'en' ? 'en-GB' : 'de-DE'
-  const browser = await chromium.launch({ channel: 'chromium', args: [`--lang=${locale}`] })
+  const browser = await chromium.launch({
+    channel: 'chromium',
+    args: [`--lang=${locale}`],
+    env: { ...process.env, LANGUAGE: locale.replace('-', '_') },
+  })
   mkdirSync(join(out, language), { recursive: true })
   const byUser = Map.groupBy(images, (b) => b.zugang)
   for (const [user, list] of byUser) {
