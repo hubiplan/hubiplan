@@ -41,18 +41,31 @@ export const FIRST_STEP_PACKAGES: readonly { id: string; label: () => string; ke
       'guide.booking',
       'guide.cash_count',
       'guide.cash_receipt',
+      'guide.einvoice_receive',
       'guide.year_closing',
+      'guide.cash_audit',
     ],
   },
   {
     id: 'termine',
     label: () => t('Termine und Versammlungen'),
-    keys: ['guide.event_create', 'guide.event_subscribe'],
+    keys: [
+      'guide.event_create',
+      'guide.meeting_invite',
+      'guide.meeting_minutes',
+      'guide.helpers_plan',
+      'guide.todo_create',
+    ],
   },
   {
     id: 'kommunikation',
     label: () => t('Rundschreiben, Dokumente und Webseite'),
-    keys: ['guide.circular_send', 'guide.document_upload'],
+    keys: [
+      'guide.circular_send',
+      'guide.document_upload',
+      'guide.website_text',
+      'guide.website_images',
+    ],
   },
   {
     id: 'einstellungen',
@@ -67,6 +80,10 @@ export const FIRST_STEPS = [...new Set(FIRST_STEP_PACKAGES.flatMap((p) => p.keys
 /** Fragen auf der Hilfe-Startseite für Mitglieder ohne Verwaltungsrechte (3.3) */
 export const MEMBER_TOPICS = [
   'guide.portal_change',
+  'guide.portal_card',
+  'guide.portal_invoices',
+  'guide.portal_helpers',
+  'guide.portal_meetings',
   'guide.app_pair',
   'guide.password',
   'guide.two_factor',

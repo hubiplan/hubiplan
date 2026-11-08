@@ -253,6 +253,114 @@
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/finanzen/einrichtung/beitraege",
       "ausschnitt": ".size-rates"
+    },
+    {
+      "name": "versammlung-einladen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/versammlungen",
+      "ausschnitt": ""
+    },
+    {
+      "name": "anwesenheit-erfassen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/versammlungen",
+      "ausschnitt": ""
+    },
+    {
+      "name": "protokoll-freigeben",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/versammlungen",
+      "ausschnitt": ""
+    },
+    {
+      "name": "dienstplan-anlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/helferdienste",
+      "ausschnitt": ""
+    },
+    {
+      "name": "aufgabe-anlegen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/aufgaben",
+      "ausschnitt": ""
+    },
+    {
+      "name": "auftritt-planen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/musik",
+      "ausschnitt": ""
+    },
+    {
+      "name": "noten-aufnehmen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/noten",
+      "ausschnitt": ""
+    },
+    {
+      "name": "chronik-ergaenzen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/chronik",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-text-aendern",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/inhalte",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-bilder-hochladen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/bilder",
+      "ausschnitt": ""
+    },
+    {
+      "name": "webseite-aufbau-aendern",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/webseite/aufbau",
+      "ausschnitt": ""
+    },
+    {
+      "name": "raum-buchen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/belegung",
+      "ausschnitt": ""
+    },
+    {
+      "name": "kassenpruefung-vorbereiten",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/finanzen/abschluss",
+      "ausschnitt": ""
+    },
+    {
+      "name": "eingangsrechnung-pruefen",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/finanzen/rechnungen/eingang",
+      "ausschnitt": ""
+    },
+    {
+      "name": "ausweis-zeigen",
+      "zugang": "mitglied@hubertus-grimlinghausen.test",
+      "seite": "/mein-bereich/ausweis",
+      "ausschnitt": ""
+    },
+    {
+      "name": "rechnungen-ansehen",
+      "zugang": "mitglied@hubertus-grimlinghausen.test",
+      "seite": "/mein-bereich/rechnungen",
+      "ausschnitt": ""
+    },
+    {
+      "name": "helferdienst-eintragen",
+      "zugang": "mitglied@hubertus-grimlinghausen.test",
+      "seite": "/mein-bereich/helferdienste",
+      "ausschnitt": ""
+    },
+    {
+      "name": "antrag-stellen",
+      "zugang": "mitglied@hubertus-grimlinghausen.test",
+      "seite": "/mein-bereich/versammlungen",
+      "ausschnitt": ""
     }
   ]
 }

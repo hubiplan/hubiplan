@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New guides: invite to a meeting, record attendance, approve minutes, plan volunteer shifts, create a task, plan a performance, add sheet music, add to the chronicle, website texts, pictures and structure, book a room or equipment, prepare the financial audit, check an incoming invoice and, for members, card, invoices, volunteer shifts and motions.
 - Help reorganised: the help has four tabs, **Guides**, **Pages**, **Terms** (the former glossary) and **News**, and follows the order of the sidebar. First steps come in packages per task (e.g. treasury or managing members), and members without management rights see their own short start page. The help for a page lists the terms used on it.
 - New: cancellation invoice. Cancelling creates a separate document with a number (e.g. R2026-0012-S), date and reason that can be sent by email. Paid invoices can be cancelled too; the credit is refunded or offset against an open invoice. **Cancel and create again** opens a copy as a draft right away.
 - Member file: new tab “Fees” with invoices, outstanding amounts, SEPA mandates and the billing address.

@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Neue Anleitungen: Versammlung einladen, Anwesenheit erfassen, Protokoll freigeben, Helferdienste planen, Aufgabe anlegen, Auftritt planen, Noten aufnehmen, Chronik ergänzen, Texte, Bilder und Aufbau der Webseite, Raum oder Material buchen, Kassenprüfung vorbereiten, Eingangsrechnung prüfen und für Mitglieder Ausweis, Rechnungen, Helferdienste und Anträge.
 - Hilfe neu gegliedert: Die Hilfe hat vier Reiter, **Anleitungen**, **Seiten**, **Begriffe** (das bisherige Glossar) und **Neuigkeiten**, und ist geordnet wie die Seitenleiste. Die ersten Schritte stehen als Pakete je Aufgabe (z. B. Kasse oder Mitglieder verwalten), Mitglieder ohne Verwaltungsrechte sehen eine eigene, kurze Startseite. Die Hilfe zu einer Seite nennt die Begriffe der Seite.
 - Neu: Stornorechnung. Ein Storno erzeugt einen eigenen Beleg mit Nummer (z. B. R2026-0012-S), Datum und Grund, der sich per E-Mail verschicken lässt. Auch bezahlte Rechnungen lassen sich stornieren; das Guthaben wird erstattet oder mit einer offenen Rechnung verrechnet. **Stornieren und neu anlegen** öffnet gleich eine Kopie als Entwurf.
 - Mitgliederakte: Neuer Reiter „Beiträge“ mit Rechnungen, offenen Beträgen, SEPA-Mandaten und der Rechnungsanschrift.
