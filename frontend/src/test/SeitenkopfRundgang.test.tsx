@@ -46,12 +46,10 @@ const org = testOrg({
 }) as unknown as OrgSummary
 
 /** Menüpunkt → heutige h1, solange die Seite noch nicht umgestellt ist */
-// Leer: Die Seite zeigt ohne Daten (noch) keine h1. „/einstellungen“ und „/plattform“ leiten
-// auf ihren ersten Unterpunkt weiter.
+// „/einstellungen“ und „/plattform“ leiten auf ihren ersten Unterpunkt weiter;
+// „/mitglieder/einrichtung“ zeigt gleich den ersten Unterpunkt.
 const ABWEICHUNGEN: Record<string, string> = {
   '/mitglieder/einrichtung': 'Mitgliedsarten',
-  '/wettbewerbe/einrichtung': '',
-  '/chronik': '',
   '/einstellungen': 'Organisation',
   '/plattform': 'Einheiten',
 }

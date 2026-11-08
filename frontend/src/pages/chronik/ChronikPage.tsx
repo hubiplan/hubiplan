@@ -10,9 +10,20 @@ import { Alert, LoadError } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { TextPanel } from '../website/ContentPage.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { periodLabel, sortTimeline } from '../website/timeline.ts'
 
+/** Chronik mit einheitlichem Seitenkopf (S-05; h1 fehlte bisher, UX-Audit W-04). */
 export function ChronikPage() {
+  return (
+    <section>
+      <PageHeader />
+      <ChronikBody />
+    </section>
+  )
+}
+
+function ChronikBody() {
   const org = useActiveOrg()
   const allowed = org.modules.includes('chronicle') && org.permissions.includes(PERM.chronicleView)
   const { data, error, reload } = useLoad(

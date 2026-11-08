@@ -14,6 +14,7 @@ import { Why } from '../../learning/Aids.tsx'
 import { HelpContactsCard } from '../../help/HelpExtras.tsx'
 import { t } from '../../i18n/index.ts'
 import { loadPlatform } from '../../theme/platform.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { ShootingFacilitiesCard } from './ShootingFacilitiesCard.tsx'
 
 /** Lädt die Angaben der Einheit; die drei Seiten unter „Organisation“ teilen sich das. */
@@ -100,17 +101,15 @@ export function OrganizationDocumentsPage() {
 /** Wettbewerbe › Einrichtung: eigene Schießstände (vorher unter Organisation). */
 export function ShootingSetupPage() {
   const { data, error, setData } = useOrgDetail()
-  if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
   return (
     <>
-      <div className="page-head">
-        <div>
-          <p className="muted small eyebrow">{t('Wettbewerbe')}</p>
-          <h1>{t('Einrichtung')}</h1>
-        </div>
-      </div>
-      <ShootingFacilitiesCard key={`shooting-${data.id}`} detail={data} onSaved={setData} />
+      {/* Kopf auch beim Laden (Seitenkopf S-05) */}
+      <PageHeader />
+      {error && <Alert kind="error">{error}</Alert>}
+      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+      {data && (
+        <ShootingFacilitiesCard key={`shooting-${data.id}`} detail={data} onSaved={setData} />
+      )}
     </>
   )
 }

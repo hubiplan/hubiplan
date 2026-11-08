@@ -10,15 +10,7 @@ import {
   withRequirements,
 } from '../../api/modules.ts'
 import type { PlatformOrg, PlatformSettings } from '../../api/orgs.ts'
-import {
-  Alert,
-  Checkbox,
-  Field,
-  LoadError,
-  SectionTitle,
-  SelectField,
-  Tabs,
-} from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SelectField, Tabs } from '../../components/ui.tsx'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { peeringApi } from '../../api/peering.ts'
@@ -30,6 +22,7 @@ import { LabelFields } from '../../components/LabelFields.tsx'
 import { buildTerms } from '../../org/terms.ts'
 import { Why } from '../../learning/Aids.tsx'
 import { t, tn } from '../../i18n/index.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 
 // Vorschlag für die Bezeichnung neuer Einheiten, je nachdem, ob sie eigene Mitglieder
@@ -76,8 +69,8 @@ export function PlatformLayout() {
   }
   return (
     <section>
-      {/* Jede Unterseite mit eigener H1 und eigenem Titel (UX-Audit 08.11., W-02) */}
-      <SectionTitle title={t('Plattform')} items={PLATFORM_TABS} always />
+      {/* h1 = gewählte Unterseite, Pfad „Plattform › …“ (W-02, Seitenkopf S-05) */}
+      <PageHeader />
       <Tabs items={PLATFORM_TABS} />
       <Outlet />
     </section>
