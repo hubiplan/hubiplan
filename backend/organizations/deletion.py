@@ -94,8 +94,8 @@ def erase_organization(org, actor):
                 for instance in instances:
                     delete_on_commit(*(getattr(instance, f.name) for f in fields))
             name, pk = org.name, org.pk
-            with gobd.erasure():
-                collector.delete()
+            gobd.release_unit(org.pk)
+            collector.delete()
         except (models.ProtectedError, models.RestrictedError) as exc:
             raise serializers.ValidationError(
                 gettext("Andere Einheiten verweisen auf diese Daten. Löschen nicht möglich.")

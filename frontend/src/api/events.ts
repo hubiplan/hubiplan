@@ -42,6 +42,12 @@ export interface Occurrence {
   my_response?: ResponseStatus | null
 }
 
+/** Persönliches Kalender-Abo: den Link gibt es nur direkt nach dem Erstellen. */
+export interface FeedInfo {
+  active: boolean
+  ics_url: string | null
+}
+
 export type ResponseStatus = 'yes' | 'no'
 
 export interface MyResponse {
@@ -359,8 +365,7 @@ export const eventApi = {
     api.del(`${base}events/${id}/responses/${membershipId}/`),
   exportUrl: (base: CalendarBase, id: number, type: 'xlsx' | 'pdf') =>
     `${base}events/${id}/responses/export/?type=${type}`,
-  feed: (base: CalendarBase) => api.get<{ ics_url: string | null }>(`${base}events/feed/`),
-  renewFeed: (base: CalendarBase) => api.put<{ ics_url: string | null }>(`${base}events/feed/`, {}),
-  removeFeed: (base: CalendarBase) =>
-    api.delWith<{ ics_url: string | null }>(`${base}events/feed/`, {}),
+  feed: (base: CalendarBase) => api.get<FeedInfo>(`${base}events/feed/`),
+  renewFeed: (base: CalendarBase) => api.put<FeedInfo>(`${base}events/feed/`, {}),
+  removeFeed: (base: CalendarBase) => api.delWith<FeedInfo>(`${base}events/feed/`, {}),
 }

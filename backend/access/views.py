@@ -719,12 +719,10 @@ class RolePreviewView(generics.GenericAPIView):
 
     @transaction.atomic
     def delete(self, request, org_id: int):
+        # Fremde Einheit: 404 wie bei GET und POST (Gesamtaudit 08.11. GA8-05)
+        org, perms = self._org(org_id)
         previous = preview.current()
         if previous:
             self._log(previous.org_id, previous.role_id, "begonnen", "beendet")
         preview.stop(request)
-        org = Organization.objects.filter(pk=org_id).first()
-        perms = own_permissions_in(request.user, org) if org else set()
-        if not perms:
-            return Response({"available": False, "roles": [], "active": None})
         return Response(self._state(org, perms))

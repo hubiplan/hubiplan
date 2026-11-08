@@ -26,6 +26,8 @@ Once a day HUBIplan asks GitHub whether a newer release is available. If so, you
 
 Platform › Version shows which version is running and whether a newer release is available. If the operator has turned on self-update (`HUBIPLAN_SELBSTUPDATE=1`, see `docs/betrieb.md`), you can install the new release there with “Update to …”. This needs two-factor sign-in, and you enter your password again.
 
+If no virus scanning is set up on the server, or it is switched off for sharing, a notice appears there: circular attachments and public documents then go out unscanned. With virus scanning (ClamAV) set up, HUBIplan shares such files only after scanning them.
+
 HUBIplan only leaves an order. A service on the server first backs up the database, checks the release signature and that it is newer than the running version, and then installs it. HUBIplan is unavailable for a few minutes meanwhile; the page checks back on its own and then shows the result. If anything fails, the previous version keeps running. Every order is recorded in the change log, and the operator receives a security email.
 
 ## Addresses per unit

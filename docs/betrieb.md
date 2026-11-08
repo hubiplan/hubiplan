@@ -940,7 +940,9 @@ stoppt den Versand bzw. den Abruf und schickt eine Alarm-Mail. Mit Virenprüfung
 anderes. Mit `VIRUS_SCAN_REQUIRED=0` in der `.env` geht Ungeprüftes wie früher durch
 und steht nur im Log.
 
-Ohne `CLAMD_SOCKET_DIR` (Testserver, Entwicklung) gibt es keine Prüfung.
+Ohne `CLAMD_SOCKET_DIR` (Testserver, Entwicklung) gibt es keine Prüfung. Plattform › Version
+zeigt dann einen Hinweis. Wer `CLAMD_SOCKET` ohne die Compose-Ergänzung setzt, bekommt
+`VIRUS_SCAN_REQUIRED=1` ebenfalls als Standard (Gesamtaudit 08.11., F-02).
 
 ## Alarm-Mails und Notfall
 

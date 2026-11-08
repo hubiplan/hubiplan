@@ -1,0 +1,12 @@
+# Besucheradresse hinter dem vorgeschalteten Webserver (nur Caddyfile.proxy).
+#
+# Den lokalen Port erreicht auf einem geteilten Server jeder Prozess. X-Real-IP gilt deshalb
+# nur, wenn die Anfrage den geheimen Kopfwert X-Hubiplan-Proxy trägt, den nur nginx setzt
+# (deploy/hestia/proxy-geheim.sh, Gesamtaudit 08.11. GA8-03). Sonst zählt die Adresse der
+# Verbindung. Ohne HUBIPLAN_PROXY_GEHEIM bleibt es wie bisher (X-Real-IP gilt immer).
+@hubiplan_vom_proxy expression `"{$HUBIPLAN_PROXY_GEHEIM}" == "" || {http.request.header.X-Hubiplan-Proxy} == "{$HUBIPLAN_PROXY_GEHEIM}"`
+route {
+	vars hubiplan_client_ip {http.request.remote.host}
+	vars @hubiplan_vom_proxy hubiplan_client_ip {http.request.header.X-Real-IP}
+	request_header -X-Hubiplan-Proxy
+}

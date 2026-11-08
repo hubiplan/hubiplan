@@ -6,5 +6,9 @@
 services:
   web:
     command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.proxy", "--adapter", "caddyfile"]
+    environment:
+      # Nur Anfragen mit diesem Kopfwert (setzt nginx) dürfen X-Real-IP vorgeben
+      # (deploy/hestia/proxy-geheim.sh). Leer: wie bisher.
+      HUBIPLAN_PROXY_GEHEIM: ${HUBIPLAN_PROXY_GEHEIM:-}
     ports: !override
       - "127.0.0.1:${WEB_PORT:-8110}:80"

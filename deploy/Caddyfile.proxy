@@ -8,13 +8,15 @@
 # Der vorgeschaltete Webserver setzt X-Real-IP auf die Adresse des Aufrufers
 # (siehe deploy/hestia/). Daraus wird genau ein X-Forwarded-For-Eintrag, wie
 # ihn das Backend erwartet (core.ratelimit.client_ip). Was der Aufrufer selbst
-# als X-Forwarded-For mitschickt, wird dabei verworfen.
+# als X-Forwarded-For mitschickt, wird dabei verworfen. Ob X-Real-IP gilt,
+# entscheidet caddy/proxy-ip.caddy (geheimer Kopfwert von nginx).
 (upstream) {
-	header_up X-Forwarded-For {http.request.header.X-Real-IP}
+	header_up X-Forwarded-For {http.vars.hubiplan_client_ip}
 	header_up X-Forwarded-Proto https
 }
 
 :80 {
+	import caddy/proxy-ip.caddy
 	import caddy/site.caddy
 }
 

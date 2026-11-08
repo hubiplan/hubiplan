@@ -211,7 +211,7 @@ def _delete_file(field) -> None:
     delete_on_commit(field)
 
 
-def _purge_documents(org, start, end) -> dict[str, int]:
+def _purge_documents(org, year, start, end) -> dict[str, int]:
     from billing.models import DebitRun, Dunning, Invoice
 
     from .models import (
@@ -259,11 +259,11 @@ def _purge_documents(org, start, end) -> dict[str, int]:
     for r in receipts:
         _delete_file(r.file)
         n += 1
-    # Aufbewahrungsfrist abgelaufen: Ausnahme vom Datenbankschutz (finance/0024)
+    # Aufbewahrungsfrist abgelaufen: Freigabe prüft die Datenbank (finance/0031)
     from . import gobd
 
-    with gobd.erasure():
-        receipts.delete()
+    gobd.release_documents(org.pk, year, start, end)
+    receipts.delete()
     counts["Belege"] = n
 
     n = 0
@@ -539,7 +539,7 @@ def purge(org, year: int, user) -> dict:
     counts: dict[str, int] = {}
     now = timezone.now()
     if info["documents_due"]:
-        counts.update(_purge_documents(org, start, end))
+        counts.update(_purge_documents(org, year, start, end))
         closing.documents_purged_at = now
     if info["records_due"]:
         counts.update(_anonymize_records(org, start, end))

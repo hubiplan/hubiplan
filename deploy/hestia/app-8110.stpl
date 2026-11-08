@@ -34,6 +34,9 @@ server {
 		proxy_set_header X-Real-IP $remote_addr;
 		proxy_set_header X-Forwarded-For $remote_addr;
 		proxy_set_header X-Forwarded-Proto https;
+		# Geheimer Kopfwert: nur damit übernimmt Caddy X-Real-IP (deploy/hestia/proxy-geheim.sh).
+		# Fehlt die Datei, bleibt die Vorlage gültig.
+		include /etc/nginx/hubiplan/proxy-geheim*.inc;
 		proxy_read_timeout 300s;
 		proxy_send_timeout 300s;
 		proxy_request_buffering off;

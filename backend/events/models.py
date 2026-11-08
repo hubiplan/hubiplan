@@ -17,6 +17,7 @@ Serientermine werden als Regel gespeichert; die einzelnen Termine rechnet
 
 from __future__ import annotations
 
+import hashlib
 import secrets
 
 from django.conf import settings
@@ -333,6 +334,10 @@ class CalendarPublication(models.Model):
     def new_key() -> str:
         return secrets.token_urlsafe(24)
 
+    @staticmethod
+    def hash_key(key: str) -> str:
+        return hashlib.sha256(key.encode()).hexdigest()
+
 
 class EventResponse(models.Model):
     """Zu- oder Absage eines Mitglieds zu einem Termin."""
@@ -396,7 +401,10 @@ class PersonalCalendar(models.Model):
     access = models.OneToOneField(
         "portal.PortalAccess", on_delete=models.CASCADE, related_name="calendar_feed"
     )
-    key = models.CharField(max_length=40, unique=True)
+    # Bis 2026.11: Schlüssel im Klartext. Seitdem nur noch der Hash (Gesamtaudit 08.11., F-04);
+    # die Spalte bleibt eine Fassung lang leer stehen.
+    key = models.CharField(max_length=40, unique=True, null=True, blank=True)
+    key_hash = models.CharField(max_length=64, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
