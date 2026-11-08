@@ -10,6 +10,8 @@ export function MaterialReferences({
   originalStart,
   sourceBase,
   level = 3,
+  title,
+  wide = false,
 }: {
   kind: 'member' | 'event' | 'todo' | 'document'
   id: number
@@ -17,6 +19,9 @@ export function MaterialReferences({
   sourceBase?: string
   /** Überschriftenebene passend zur Seite (Mitgliedsakte: 2) */
   level?: 2 | 3
+  /** Eigene Überschrift, z. B. „Ausgegebenes Material“ in der Mitgliedsakte */
+  title?: string
+  wide?: boolean
 }) {
   const { active, activeDept } = useOrg()
   const permissions = active?.permissions ?? activeDept?.permissions ?? []
@@ -36,16 +41,30 @@ export function MaterialReferences({
       base={`${prefix}materials/`}
       query={query.toString()}
       level={level}
+      title={title ?? t('Zugeordnetes Material')}
+      wide={wide}
     />
   )
 }
 
-function References({ base, query, level }: { base: string; query: string; level: 2 | 3 }) {
+function References({
+  base,
+  query,
+  level,
+  title,
+  wide,
+}: {
+  base: string
+  query: string
+  level: 2 | 3
+  title: string
+  wide: boolean
+}) {
   const Heading = level === 2 ? 'h2' : 'h3'
   const { data, error } = useLoad(() => materialApi.list(base, query), [base, query])
   return (
-    <section className="card">
-      <Heading>{t('Zugeordnetes Material')}</Heading>
+    <section className={wide ? 'card card-wide' : 'card'}>
+      <Heading>{title}</Heading>
       {error && <p role="alert">{error}</p>}
       {data?.items.map((item) => (
         <p key={item.id}>
