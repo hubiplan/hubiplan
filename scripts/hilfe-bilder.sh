@@ -77,7 +77,9 @@ for kind, name, city in [
         street='Musterweg 1', contact_email='kontakt@example.org',
     )
 for o in Organization.objects.filter(type='club'):
-    o.enabled_modules = sorted(set(o.enabled_modules or []) | {'competitions', 'entries', 'website', 'material'})
+    o.enabled_modules = sorted(set(o.enabled_modules or []) | {
+        'competitions', 'entries', 'website', 'material', 'infrastructure', 'bookings',
+        'meetings', 'helpers', 'music', 'scores', 'cards', 'chronicle'})
     o.cash_counts_enabled = True
     # Englische Bezeichnung der Untereinheiten (sonst zeigt die englische Oberfläche „Züge“)
     if o.department_label == 'Zug' and not o.department_label_en:
