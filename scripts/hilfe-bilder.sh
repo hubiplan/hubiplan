@@ -10,7 +10,7 @@
 # ansehen und einchecken.
 #
 # Läuft nur lokal (nie auf einem Server) und belegt dafür einen Testplatz
-# (höchstens drei gleichzeitig, je höchstens 6 Kerne; scripts/testplatz.sh).
+# (scripts/testplatz.sh).
 set -euo pipefail
 
 if [ -z "${TESTPLATZ:-}" ]; then
