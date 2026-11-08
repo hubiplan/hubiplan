@@ -808,11 +808,14 @@ def split_booking(booking: Booking, parts: list[dict], user) -> list[Booking]:
 
     first, rest = parts[0], parts[1:]
     booking.amount = first["amount"]
+    if booking.category_id != first["category"].pk:
+        # Andere Kategorie: deren Vorgabe für die Umsatzsteuer gilt
+        booking.vat_rate = first["category"].vat_rate
     booking.category = first["category"]
     booking.project = first.get("project")
     if (first.get("text") or "").strip():
         booking.text = first["text"].strip()[:200]
-    booking.save(update_fields=["amount", "category", "project", "text", "updated_at"])
+    booking.save(update_fields=["amount", "category", "project", "text", "vat_rate", "updated_at"])
     created = []
     for part in rest:
         created.append(
@@ -831,6 +834,8 @@ def split_booking(booking: Booking, parts: list[dict], user) -> list[Booking]:
                 counterparty=booking.counterparty,
                 membership=booking.membership,
                 department=booking.department,
+                vat_rate=part["category"].vat_rate,
+                input_tax_share=booking.input_tax_share,
                 split_of=booking,
                 created_by=user,
             )
