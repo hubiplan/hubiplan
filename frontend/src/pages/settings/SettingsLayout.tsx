@@ -1,7 +1,8 @@
 import { Link, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { modules } from '../../modules.tsx'
 import { PERM } from '../../api/orgs.ts'
-import { Tabs, SectionTitle } from '../../components/ui.tsx'
+import { Tabs } from '../../components/ui.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { settingsItems } from './items.ts'
 import { t } from '../../i18n/index.ts'
@@ -23,7 +24,8 @@ export function SettingsLayout() {
 
   return (
     <section>
-      <SectionTitle title={t('Einstellungen')} items={items} subtitle={active.name} always />
+      {/* h1 = gewählter Punkt, Pfad „Einstellungen › …“; Einheit nur bei mehreren (S-05) */}
+      <PageHeader />
       <Tabs items={items} />
       <Outlet />
     </section>
