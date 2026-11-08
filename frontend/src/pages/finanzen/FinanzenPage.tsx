@@ -23,7 +23,7 @@ import { ClosingsPage } from '../finance/ClosingsPage.tsx'
 import { DonationSettingsForm, DonationsArea } from '../finance/DonationsPage.tsx'
 import { ProjectsArea } from '../finance/ProjectsPage.tsx'
 import { AccountsPage, CategoriesPage } from '../finance/MasterDataPages.tsx'
-import { financeAccess, sectionsUnder } from './access.ts'
+import { financeAccess, financeSections, sectionsUnder } from './access.ts'
 import type { FinanceAccess, NavItem } from './access.ts'
 import { FinanceDevelopment } from './DevelopmentPage.tsx'
 import { EvaluationPage, FinanceOverview } from './OverviewPages.tsx'
@@ -49,9 +49,15 @@ function Section({
   tabs?: NavItem[]
   children: ReactNode
 }) {
-  // Dritte Ebene (z. B. Rechnungen › Mahnungen): H1 wie der gewählte Unterpunkt, der Weg
-  // steht darüber (UX-Audit 08.11., W-02)
+  // Dritte Ebene (z. B. Steuern › Umsatzsteuer): H1 wie der gewählte Unterpunkt, der Weg
+  // steht darüber (UX-Audit 08.11., W-02); dazu die Arbeitsgruppe des Eintrags (S-01)
   const sub = useSubHeading(title, tabs)
+  const org = useActiveOrg()
+  const { pathname } = useLocation()
+  const group = financeSections(financeAccess(org))
+    .filter((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))
+    .sort((x, y) => y.to.length - x.to.length)[0]?.group?.label
+  const trail = [t('Finanzen'), group, sub ? title : null].filter((p): p is string => !!p)
   return (
     <section>
       <div className="page-head">
@@ -59,9 +65,7 @@ function Section({
           {/* Auf der Übersicht heißt die H1 wie der Bereich (UX-Audit 05.11. W-04) */}
           {title !== t('Übersicht') && (
             <p className="muted small eyebrow">
-              {sub
-                ? t('{parent} › {label}', { parent: t('Finanzen'), label: title })
-                : t('Finanzen')}
+              {trail.reduce((parent, label) => t('{parent} › {label}', { parent, label }))}
             </p>
           )}
           <h1>{sub ?? (title === t('Übersicht') ? t('Finanzen') : title)}</h1>
