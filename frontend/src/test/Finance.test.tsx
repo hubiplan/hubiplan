@@ -144,9 +144,10 @@ describe('Kasse', () => {
     expect(screen.getAllByText(/160,00/).length).toBeGreaterThan(0)
     // Arbeitsschritte in sichtbarer Reihenfolge
     const steps = screen.getByRole('navigation', { name: 'Arbeitsschritte' })
+    // Arbeitsschritte = Arbeitsgruppen mit ihrer Gruppenseite (Konzept S-01)
     expect(within(steps).getByRole('link', { name: /Buchen/ })).toHaveAttribute(
       'href',
-      '/finanzen/kassenbuch',
+      '/finanzen/buchen',
     )
   })
 

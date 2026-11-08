@@ -28,6 +28,7 @@ import type { FinanceAccess, NavItem } from './access.ts'
 import { FinanceDevelopment } from './DevelopmentPage.tsx'
 import { EvaluationPage, FinanceOverview } from './OverviewPages.tsx'
 import { TaxPage } from './TaxPage.tsx'
+import { FinanceGroupPage } from './GroupPage.tsx'
 import { AuditPage } from './AuditPage.tsx'
 import { NetAssetsPage } from './NetAssetsPage.tsx'
 import { UseOfFundsPage } from './UseOfFundsPage.tsx'
@@ -94,6 +95,10 @@ export function FinanzenPage() {
           </Section>
         }
       />
+      {/* Gruppenseiten (Konzept S-01, F2); „Einrichten“ ist /finanzen/einrichtung */}
+      {['abrechnen', 'zahlungen', 'buchen', 'abschliessen'].map((key) => (
+        <Route key={key} path={key} element={<FinanceGroupPage groupKey={key} access={a} />} />
+      ))}
       <Route
         path="entwicklung"
         element={
@@ -396,13 +401,15 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
 function SettingsArea({ access: a }: { access: FinanceAccess }) {
   const tabs = sectionsUnder(a, '/finanzen/einrichtung')
   const title = useCurrent(tabs, t('Einrichtung'))
-  if (tabs.length === 0) return <Navigate to="/finanzen/geschaeftspartner" replace />
-  const first = <Navigate to={tabs[0].to} replace />
+  const first = <Navigate to="/finanzen/einrichtung" replace />
   const readOnly = !a.billingEdit && !a.financeEdit
+  const { pathname } = useLocation()
+  // Ohne Unterpfad: Gruppenseite „Einrichten“ (Konzept S-01, F2)
+  if (/^\/finanzen\/einrichtung\/?$/.test(pathname))
+    return <FinanceGroupPage groupKey="einrichten" access={a} />
   return (
     <Section title={title} readOnly={readOnly}>
       <Routes>
-        <Route index element={first} />
         {a.feeRuns && <Route path="beitraege" element={<FeeRulesPage />} />}
         {a.billing && <Route path="mahnstufen" element={<DunningLevelsPage />} />}
         {a.billing && <Route path="rechnung" element={<BillingSettingsPage />} />}

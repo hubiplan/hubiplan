@@ -7,6 +7,7 @@ import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { activeGroup, groupNodes } from './subnav.ts'
 import type { NavNode } from './subnav.ts'
+import { t } from '../i18n/index.ts'
 
 export function SubNavList({
   nodes,
@@ -53,24 +54,50 @@ export function SubNavList({
         const listId = `${baseId}-${b.key}`
         return (
           <li key={`g:${b.key}`} className={`sidebar-nav-group${own ? ' current' : ''}`}>
-            <button
-              type="button"
-              className="sidebar-group-toggle"
-              aria-expanded={open}
-              aria-controls={listId}
-              onClick={() => {
+            {(() => {
+              const toggle = () =>
                 setState(
                   own
                     ? { path: pathname, peek, ownClosed: !ownClosed }
                     : { path: pathname, peek: peek === b.key ? null : b.key, ownClosed },
                 )
-              }}
-            >
-              <span>{b.label}</span>
-              <span className="sidebar-group-caret" aria-hidden="true">
-                ▸
-              </span>
-            </button>
+              const caret = (
+                <span className="sidebar-group-caret" aria-hidden="true">
+                  ▸
+                </span>
+              )
+              // Mit Gruppenseite: Name führt dorthin, ▸ klappt auf (Konzept S-01, F2)
+              if (b.to)
+                return (
+                  <div className="sidebar-group-row">
+                    <NavLink to={b.to} end className="sidebar-group-link" onClick={onChoose}>
+                      {b.label}
+                    </NavLink>
+                    <button
+                      type="button"
+                      className="sidebar-group-toggle sidebar-group-caret-only"
+                      aria-expanded={open}
+                      aria-controls={listId}
+                      aria-label={t('Einträge von {label}', { label: b.label })}
+                      onClick={toggle}
+                    >
+                      {caret}
+                    </button>
+                  </div>
+                )
+              return (
+                <button
+                  type="button"
+                  className="sidebar-group-toggle"
+                  aria-expanded={open}
+                  aria-controls={listId}
+                  onClick={toggle}
+                >
+                  <span>{b.label}</span>
+                  {caret}
+                </button>
+              )
+            })()}
             <ul className="sidebar-sub sidebar-group-items" id={listId} hidden={!open}>
               {renderItems(b.nodes, 1)}
             </ul>

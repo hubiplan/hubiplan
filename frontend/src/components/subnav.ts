@@ -93,7 +93,8 @@ export function buildNavTree(
 }
 
 export type NavBlock =
-  { kind: 'item'; node: NavNode } | { kind: 'group'; key: string; label: string; nodes: NavNode[] }
+  | { kind: 'item'; node: NavNode }
+  | { kind: 'group'; key: string; label: string; to?: string; nodes: NavNode[] }
 
 /** Folgen gleicher Gruppe zusammenfassen; Reihenfolge bleibt. */
 export function groupNodes(nodes: NavNode[]): NavBlock[] {
@@ -103,7 +104,7 @@ export function groupNodes(nodes: NavNode[]): NavBlock[] {
     if (node.group && last?.kind === 'group' && last.key === node.group.key) {
       last.nodes.push(node)
     } else if (node.group) {
-      blocks.push({ kind: 'group', key: node.group.key, label: node.group.label, nodes: [node] })
+      blocks.push({ kind: 'group', ...node.group, nodes: [node] })
     } else {
       blocks.push({ kind: 'item', node })
     }
@@ -116,6 +117,9 @@ export function groupNodes(nodes: NavNode[]): NavBlock[] {
 /** Gruppe, in der die aktuelle Seite liegt (tiefster passender Punkt). */
 export function activeGroup(nodes: NavNode[], pathname: string): string | null {
   const path = pathname.replace(/(.)\/$/, '$1')
+  // Die Gruppenseite selbst gehört zu ihrer Gruppe
+  const page = nodes.find((n) => n.group?.to === path)
+  if (page?.group) return page.group.key
   const hit = nodes.filter((n) => covers(n.to, path)).sort((a, b) => b.to.length - a.to.length)[0]
   return hit?.group?.key ?? null
 }

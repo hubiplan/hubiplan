@@ -19,7 +19,7 @@ import { MEMBER_TOPICS, useBlocked } from './extras.ts'
 import { useHelp } from './HelpContext.tsx'
 import { BlockedGuide, ForYou, GuideNotes, HelpContacts, RightsHint } from './HelpExtras.tsx'
 import { HelpMarkdown } from './HelpMarkdown.tsx'
-import { byMenu, groupLabel, itemLabel, partOf, placeOf } from './menu.ts'
+import { byMenu, groupLabel, itemLabel, partOf, partRank, placeOf } from './menu.ts'
 const byTitle = (a: HelpEntry, b: HelpEntry) => a.title.localeCompare(b.title)
 
 export type HelpTab = 'anleitungen' | 'seiten' | 'begriffe' | 'neuigkeiten'
@@ -271,9 +271,11 @@ function EntryList({ items }: { items: HelpEntry[] }) {
   )
 }
 
-/** Anleitungen eines Menüpunkts; bei Finanzen geteilt in Beiträge und Kasse (wie im Menü). */
+/** Anleitungen eines Menüpunkts; bei Finanzen geteilt nach den Gruppen der Seitenleiste. */
 function GuideItems({ items, item }: { items: HelpEntry[]; item: string }) {
-  const parts = [...new Set(items.map((e) => partOf(e, item)))]
+  const parts = [...new Set(items.map((e) => partOf(e, item)))].sort(
+    (a, b) => partRank(a) - partRank(b),
+  )
   if (parts.length < 2) return <EntryList items={items} />
   return (
     <>
