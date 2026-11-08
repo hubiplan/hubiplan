@@ -1,7 +1,6 @@
 ---
 key: page.website_social
 titel: Website › Social media
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/beitraege]

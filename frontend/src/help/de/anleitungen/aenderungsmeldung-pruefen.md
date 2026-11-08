@@ -1,10 +1,10 @@
 ---
 key: guide.member_change_review
 titel: Datenänderung eines Mitglieds prüfen
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/anfragen/aenderungen]
+reihe: 30
 stichworte: [Änderung, neue Adresse, Mitgliederbereich]
 ---
 

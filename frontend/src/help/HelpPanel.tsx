@@ -3,12 +3,38 @@
 import { useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { t } from '../i18n/index.ts'
+import { TERMS, termAnchor, tr } from '../learning/content.ts'
+import type { TermKey } from '../learning/content.ts'
+import { useLearning } from '../learning/LearningContext.tsx'
+import { useOptionalOrg } from '../org/OrgContext.tsx'
 import { guidesFor, pageHelpFor, routeMatches } from './content.ts'
+import type { HelpEntry } from './content.ts'
 import { useHelp } from './HelpContext.tsx'
 import type { HelpState } from './HelpContext.tsx'
 import { BlockedGuide, GuideNotes, HelpContacts, ShowMe } from './HelpExtras.tsx'
 import { HelpMarkdown } from './HelpMarkdown.tsx'
+import { itemLabel, placeOf } from './menu.ts'
 import './help.css'
+
+/** Höchstens so viele Begriffe zeigt die Leiste zu einer Seite. */
+const MAX_TERMS = 6
+
+/** Begriffe aus dem Glossar, die im Text der Seitenhilfe vorkommen (ganzes Wort). */
+// oxlint-disable-next-line react/only-export-components
+export function termsIn(
+  entry: Pick<HelpEntry, 'body'>,
+  has: (feature: (typeof TERMS)[TermKey]['feature']) => boolean,
+): TermKey[] {
+  const text = entry.body.toLocaleLowerCase()
+  return (Object.keys(TERMS) as TermKey[])
+    .filter((k) => has(TERMS[k].feature))
+    .filter((k) => {
+      const name = tr(TERMS[k].name).toLocaleLowerCase()
+      const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      return name.length > 2 && new RegExp(`(^|[^\\p{L}])${escaped}($|[^\\p{L}])`, 'u').test(text)
+    })
+    .slice(0, MAX_TERMS)
+}
 
 export function HelpButton() {
   const help = useHelp()
@@ -38,8 +64,12 @@ export function HelpPanel() {
   return help?.panelOpen ? <OpenHelpPanel help={help} /> : null
 }
 
+const ALL = () => true
+
 function OpenHelpPanel({ help }: { help: HelpState }) {
   const { pathname } = useLocation()
+  const hasFeature = useLearning()?.hasFeature ?? ALL
+  const org = useOptionalOrg()?.active ?? null
   // Gewählte Anleitung gilt nur auf der Seite, auf der sie gewählt wurde
   const chosen = help.panelGuide
   const setChosen = help.openGuide
@@ -78,6 +108,8 @@ function OpenHelpPanel({ help }: { help: HelpState }) {
       help.missing(e).length > 0 &&
       e.routes.some((r) => routeMatches(r, pathname)),
   )
+  const terms = page ? termsIn(page, hasFeature) : []
+  const place = page ? placeOf(page) : null
   const guideKey = chosen?.path === pathname ? chosen.key : null
   const guide = guideKey ? all.find((e) => e.key === guideKey) : undefined
 
@@ -145,10 +177,32 @@ function OpenHelpPanel({ help }: { help: HelpState }) {
               </ul>
             </section>
           )}
+          {terms.length > 0 && (
+            <section>
+              <h3>{t('Begriffe auf dieser Seite')}</h3>
+              <ul className="help-list">
+                {terms.map((k) => (
+                  <li key={k}>
+                    <Link to={`/hilfe/begriffe#${termAnchor(k)}`} onClick={close}>
+                      {tr(TERMS[k].name)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </>
       )}
       {help.entries && !guide && <HelpContacts compact />}
       <p className="help-panel-foot">
+        {place && (
+          <>
+            <Link to={`/hilfe/seiten#hilfe-${place.item}`} onClick={close}>
+              {t('Mehr zu {x}', { x: itemLabel(place.item, org) })}
+            </Link>
+            {' · '}
+          </>
+        )}
         <Link to="/hilfe" onClick={close}>
           {t('Alle Hilfe und Glossar')}
         </Link>

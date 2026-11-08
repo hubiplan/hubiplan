@@ -1,7 +1,6 @@
 ---
 key: page.settings_terms
 titel: Einstellungen › Bezeichnungen
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/bezeichnungen]
 stichworte: [Bezeichnung, Zug, Korps, Sparte, Untereinheit, Artikel, Englisch]

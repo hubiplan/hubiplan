@@ -1,7 +1,6 @@
 ---
 key: page.members_requests
 titel: Mitglieder › Änderungen und Wechsel
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/anfragen]

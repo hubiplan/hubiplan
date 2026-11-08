@@ -1,7 +1,6 @@
 ---
 key: page.aufgaben
 titel: Tasks
-bereich: start
 rechte: [todos.view]
 routen: [/aufgaben]
 stichworte: [Todo, Tasks]

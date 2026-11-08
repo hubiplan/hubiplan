@@ -1,7 +1,6 @@
 ---
 key: guide.document_upload
 titel: Store and share a document
-bereich: einstellungen
 modul: docs
 rechte: [docs.manage]
 routen: [/dokumente]

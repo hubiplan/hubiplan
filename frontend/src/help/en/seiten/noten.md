@@ -1,7 +1,6 @@
 ---
 key: page.scores
 titel: Sheet music
-bereich: termine
 modul: scores
 rechte: [scores.view]
 routen: [/noten]

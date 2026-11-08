@@ -1,7 +1,6 @@
 ---
 key: page.settings_imprint
 titel: Einstellungen › Impressum
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/impressum]
 stichworte: [Impressum, Anbieterkennzeichnung, verantwortlich]

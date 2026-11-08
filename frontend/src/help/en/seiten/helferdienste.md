@@ -1,7 +1,6 @@
 ---
 key: page.helpers
 titel: Volunteer duties and shift rosters
-bereich: termine
 modul: helpers
 rechte: [helpers.view, helpers.edit]
 routen: [/helferdienste]

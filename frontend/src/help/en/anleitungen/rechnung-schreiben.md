@@ -1,10 +1,10 @@
 ---
 key: guide.invoice_single
 titel: Write a single invoice
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen]
+reihe: 30
 stichworte: [invoice, uniform, item, single]
 ---
 

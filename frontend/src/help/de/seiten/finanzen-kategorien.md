@@ -1,7 +1,6 @@
 ---
 key: page.finance_categories
 titel: Finanzen › Einrichtung › Kategorien
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/einrichtung/kategorien]

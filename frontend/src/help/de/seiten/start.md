@@ -1,7 +1,6 @@
 ---
 key: page.start
 titel: Startseite
-bereich: start
 routen: [/]
 stichworte: [Übersicht, Aufgaben, Kacheln]
 ---

@@ -1,5 +1,6 @@
 // Glossar der Begriffe und Entscheidungen. Für alle angemeldeten Bearbeitenden;
-// Einträge zu nicht freigeschalteten Funktionen fehlen.
+// Einträge zu nicht freigeschalteten Funktionen fehlen. Steht als Reiter „Begriffe“ in der
+// Hilfe (/hilfe/begriffe, konzepte/hilfe-neustruktur.md); dort übernimmt die Suche der Hilfe.
 import { useEffect, useMemo, useState } from 'react'
 import {
   DECISIONS,
@@ -32,7 +33,7 @@ function matches(query: string, ...texts: (string | undefined)[]): boolean {
 
 const ALL = () => true
 
-export function GlossaryPage() {
+export function GlossaryPage({ embedded = false }: { embedded?: boolean }) {
   const learning = useLearning()
   const [query, setQuery] = useState('')
   const has = learning?.hasFeature ?? ALL
@@ -96,18 +97,20 @@ export function GlossaryPage() {
 
   return (
     <section className="glossary">
-      <h1>{t('Glossar')}</h1>
+      {!embedded && <h1>{t('Glossar')}</h1>}
       <p className="muted">
         {t('Begriffe und Entscheidungen der Vereinsverwaltung, kurz erklärt und mit Quellen.')}
       </p>
-      <div className="glossary-search">
-        <Field
-          label={t('Glossar durchsuchen')}
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </div>
+      {!embedded && (
+        <div className="glossary-search">
+          <Field
+            label={t('Glossar durchsuchen')}
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      )}
       {nothing && <p role="status">{t('Nichts gefunden.')}</p>}
       {sections.map((s) => (
         <section key={s.key} className="glossary-section">

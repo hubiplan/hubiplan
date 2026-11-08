@@ -1,10 +1,10 @@
 ---
 key: guide.member_honour
 titel: Award an honour
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/:id, /mitglieder/jubilaeen]
+reihe: 50
 stichworte: [honour, decoration, jubilarian, award]
 ---
 

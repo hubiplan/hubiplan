@@ -1,10 +1,10 @@
 ---
 key: guide.fee_run
 titel: Beitragslauf durchführen
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen/beitragslaeufe]
+reihe: 40
 stichworte: [Beitragslauf, Jahresbeitrag, Rechnungen, abrechnen]
 ---
 

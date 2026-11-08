@@ -1,10 +1,10 @@
 ---
 key: guide.dunning
 titel: Zahlungserinnerungen und Mahnungen verschicken
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen/mahnungen]
+reihe: 60
 stichworte: [Mahnung, Erinnerung, überfällig, nicht bezahlt]
 ---
 

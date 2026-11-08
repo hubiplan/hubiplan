@@ -1,10 +1,10 @@
 ---
 key: guide.event_external
 titel: Termine eines fremden Kalenders zeigen
-bereich: termine
 modul: events
 rechte: [events.manage]
 routen: [/termine/einrichtung/fremde]
+reihe: 30
 stichworte: [Vereinsplaner, iCal, Dachverband, fremde Termine, Abo, Token]
 ---
 

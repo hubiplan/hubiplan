@@ -1,7 +1,6 @@
 ---
 key: page.portal_bookings
 titel: My area › Bookings
-bereich: mein-bereich
 routen: [/mein-bereich/belegung]
 stichworte: [Booking, Request, Clubhouse, Hall, Range, Equipment, borrow]
 ---

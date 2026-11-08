@@ -1,7 +1,6 @@
 ---
 key: page.competitions_trophies
 titel: Competitions › Challenge trophies
-bereich: wettbewerbe
 modul: competitions
 rechte: [competitions.manage, competitions.results]
 routen: [/wettbewerbe/pokale]

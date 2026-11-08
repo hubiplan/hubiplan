@@ -1,8 +1,8 @@
 ---
 key: guide.password
 titel: Passwort ändern
-bereich: konto
 routen: [/mein-konto/anmeldung]
+reihe: 10
 stichworte: [Kennwort, vergessen, neu]
 ---
 

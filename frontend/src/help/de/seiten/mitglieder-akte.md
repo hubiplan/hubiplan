@@ -1,7 +1,6 @@
 ---
 key: page.member_file
 titel: Mitglieder › Mitgliedsakte
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/:id]

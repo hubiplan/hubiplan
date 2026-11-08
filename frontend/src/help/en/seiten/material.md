@@ -1,7 +1,6 @@
 ---
 key: page.material
 titel: Manage equipment
-bereich: start
 modul: material
 rechte: [material.view]
 routen: [/material]

@@ -233,7 +233,7 @@ describe('Schalter', () => {
       </MemoryRouter>,
     )
     expect(await screen.findByText('2 Erklärungen „Warum?“ ausgeblendet.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Glossar' })).toHaveAttribute('href', '/glossar')
+    expect(screen.getByRole('link', { name: 'Glossar' })).toHaveAttribute('href', '/hilfe/begriffe')
     await userEvent.click(
       screen.getByRole('button', { name: 'Ausgeblendete Erklärungen wieder zeigen' }),
     )
@@ -353,7 +353,7 @@ describe('Bausteine', () => {
     expect(box).toHaveTextContent('Nur Mitgliedsarten mit Beitrag')
     expect(within(box).getByRole('link', { name: 'im Glossar ↗' })).toHaveAttribute(
       'href',
-      `/glossar#${termAnchor('member_type')}`,
+      `/hilfe/begriffe#${termAnchor('member_type')}`,
     )
   })
 

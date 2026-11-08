@@ -1,7 +1,6 @@
 ---
 key: page.portal_meetings
 titel: My area › Meetings
-bereich: mein-bereich
 routen: [/mein-bereich/versammlungen]
 stichworte: [Meeting, General meeting, Invitation, Agenda, Minutes]
 ---

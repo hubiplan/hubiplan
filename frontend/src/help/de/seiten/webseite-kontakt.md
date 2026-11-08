@@ -1,7 +1,6 @@
 ---
 key: page.website_contact
 titel: Webseite › Kontaktformular
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/kontakt]

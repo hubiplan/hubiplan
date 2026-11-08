@@ -1,7 +1,6 @@
 ---
 key: page.finance_debits
 titel: Finance › Direct debits
-bereich: beitraege
 modul: billing
 rechte: [billing.view]
 routen: [/finanzen/lastschrift]

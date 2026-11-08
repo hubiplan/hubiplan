@@ -106,10 +106,11 @@ const PlatformVersionPage = lazyPage(
   () => import('./pages/platform/PlatformVersionPage.tsx'),
   'PlatformVersionPage',
 )
-const GlossaryPage = lazyPage(() => import('./learning/GlossaryPage.tsx'), 'GlossaryPage')
-const HelpPage = lazyPage(() => import('./help/HelpPage.tsx'), 'HelpPage')
+const HelpPage = lazyPage<{ tab?: 'anleitungen' | 'seiten' | 'begriffe' | 'neuigkeiten' }>(
+  () => import('./help/HelpPage.tsx'),
+  'HelpPage',
+)
 const HelpEntryPage = lazyPage(() => import('./help/HelpPage.tsx'), 'HelpEntryPage')
-const NewsPage = lazyPage(() => import('./news/NewsPage.tsx'), 'NewsPage')
 const AccountPage = lazyPage(() => import('./pages/settings/AccountPage.tsx'), 'AccountPage')
 const AccountNotificationsPage = lazyPage(
   () => import('./pages/settings/AccountPage.tsx'),
@@ -204,6 +205,12 @@ function LegacyRedirect({ map }: { map: Record<string, string> }) {
   const { search } = useLocation()
   const target = map[rest.replace(/\/$/, '')] ?? '/finanzen'
   return <Navigate to={`${target}${search}`} replace />
+}
+
+/** Weiterleitung, die Anker (#begriff-…) mitnimmt, etwa vom alten /glossar. */
+function KeepHash({ to }: { to: string }) {
+  const { hash } = useLocation()
+  return <Navigate to={`${to}${hash}`} replace />
 }
 
 export default function App() {
@@ -355,9 +362,14 @@ export default function App() {
           <Route path="mein-konto/app" element={<AccountAppPage />} />
           <Route path="mein-konto/briefvorlage" element={<AccountTemplatesPage />} />
           <Route path="briefvorlage" element={<LetterheadPage />} />
-          <Route path="glossar" element={<GlossaryPage />} />
+          {/* Glossar und „Was ist neu“ stehen jetzt als Reiter in der Hilfe; alte Adressen leiten weiter */}
+          <Route path="glossar" element={<KeepHash to="/hilfe/begriffe" />} />
+          <Route path="hilfe/was-ist-neu" element={<Navigate to="/hilfe/neuigkeiten" replace />} />
           <Route path="hilfe" element={<HelpPage />} />
-          <Route path="hilfe/neuigkeiten" element={<NewsPage />} />
+          <Route path="hilfe/anleitungen" element={<HelpPage tab="anleitungen" />} />
+          <Route path="hilfe/seiten" element={<HelpPage tab="seiten" />} />
+          <Route path="hilfe/begriffe" element={<HelpPage tab="begriffe" />} />
+          <Route path="hilfe/neuigkeiten" element={<HelpPage tab="neuigkeiten" />} />
           <Route path="hilfe/*" element={<HelpEntryPage />} />
           <Route
             path="untereinheiten"

@@ -1,7 +1,6 @@
 ---
 key: page.settings_documents
 titel: Settings › Club documents
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/vereinsdokumente]
 stichworte: [constitution, fee regulations, founding deed, version, PDF]

@@ -1,10 +1,10 @@
 ---
 key: guide.member_export
 titel: Export the member list
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder]
+reihe: 70
 stichworte: [export, Excel, list, addresses, columns]
 ---
 

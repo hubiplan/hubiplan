@@ -1,7 +1,6 @@
 ---
 key: page.portal
 titel: My area › Overview
-bereich: mein-bereich
 routen: [/mein-bereich]
 stichworte: [member, my details, overview]
 ---

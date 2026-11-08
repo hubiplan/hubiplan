@@ -1,7 +1,6 @@
 ---
 key: page.settings_org
 titel: Einstellungen › Organisation
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/organisation, /einstellungen]
 stichworte: [Verein, Name, Anschrift, Kontakt, Gründungsjahr, Ansprechpartner]

@@ -1,10 +1,10 @@
 ---
 key: guide.booking
 titel: Einnahme oder Ausgabe buchen
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/kassenbuch]
+reihe: 120
 stichworte: [Buchung, Beleg, Kassenbuch, Einnahme, Ausgabe]
 ---
 

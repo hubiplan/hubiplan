@@ -1,10 +1,10 @@
 ---
 key: guide.booking
 titel: Book income or an expense
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/kassenbuch]
+reihe: 120
 stichworte: [booking, receipt, cash book, income, expense]
 ---
 

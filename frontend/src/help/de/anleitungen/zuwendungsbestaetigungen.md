@@ -1,10 +1,10 @@
 ---
 key: guide.donation_receipts
 titel: Zuwendungsbestätigungen ausstellen
-bereich: finanzen
 modul: donations
 rechte: [finance.edit]
 routen: [/finanzen/zuwendungen]
+reihe: 150
 stichworte: [Spendenquittung, Spende, Finanzamt, Jahresbestätigung]
 ---
 

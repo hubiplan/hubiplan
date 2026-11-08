@@ -1,10 +1,10 @@
 ---
 key: guide.member_admit
 titel: Neues Mitglied aufnehmen
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder]
+reihe: 10
 stichworte: [Aufnahme, Eintritt, neu, Beitritt, anlegen, Organisation, Firma, Fördermitglied]
 ---
 

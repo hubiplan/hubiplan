@@ -1,7 +1,6 @@
 ---
 key: page.website_structure
 titel: Website › Menu and sections
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aufbau]

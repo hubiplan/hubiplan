@@ -1,7 +1,6 @@
 ---
 key: page.settings_modules
 titel: Einstellungen › Module
-bereich: einstellungen
 rechte: [settings.view]
 routen: [/einstellungen/module]
 stichworte: [Modul, Funktion, einschalten, ausschalten, Menü, Freigabe, Zusatzfunktion]

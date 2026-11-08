@@ -1,7 +1,6 @@
 ---
 key: page.settings_data_transfer
 titel: Einstellungen › Datenübernahme
-bereich: einstellungen
 rechte: [data.export, export.run]
 routen: [/einstellungen/datenuebernahme]
 stichworte: [Export, Sicherung, Umzug, JSON]

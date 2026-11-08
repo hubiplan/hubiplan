@@ -1,9 +1,9 @@
 ---
 key: guide.event_subscribe
 titel: See events in your own calendar (subscription)
-bereich: termine
 modul: events
 routen: [/termine]
+reihe: 20
 stichworte: [calendar, subscription, iCal, phone, Outlook]
 ---
 

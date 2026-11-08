@@ -1,10 +1,10 @@
 ---
 key: guide.fee_run
 titel: Carry out a fee run
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen/beitragslaeufe]
+reihe: 40
 stichworte: [fee run, annual fee, invoices, billing]
 ---
 

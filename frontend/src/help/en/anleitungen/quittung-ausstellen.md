@@ -1,10 +1,10 @@
 ---
 key: guide.cash_receipt
 titel: Issue a receipt for a cash payment
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/quittungen]
+reihe: 140
 stichworte: [receipt, cash, signature, voucher]
 ---
 

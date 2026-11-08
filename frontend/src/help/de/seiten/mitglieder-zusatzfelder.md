@@ -1,7 +1,6 @@
 ---
 key: page.members_fields
 titel: Mitglieder › Einrichtung › Zusatzfelder
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/einrichtung/zusatzfelder]

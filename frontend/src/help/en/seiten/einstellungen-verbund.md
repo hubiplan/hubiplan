@@ -1,7 +1,6 @@
 ---
 key: page.settings_peering
 titel: Settings › Network
-bereich: einstellungen
 rechte: [peering.manage]
 routen: [/einstellungen/verbund]
 stichworte: [network, instance, partner, exchange]

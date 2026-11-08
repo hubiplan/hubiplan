@@ -1,7 +1,6 @@
 ---
 key: page.finance_einvoices
 titel: Finanzen › Leistungsrechnungen
-bereich: beitraege
 modul: billing
 rechte: [billing.view]
 routen: [/finanzen/rechnungen/leistungen, /finanzen/geschaeftspartner]

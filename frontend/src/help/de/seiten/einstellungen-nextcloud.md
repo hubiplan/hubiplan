@@ -1,7 +1,6 @@
 ---
 key: page.settings_nextcloud
 titel: Einstellungen › Nextcloud
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/nextcloud]
 stichworte: [Nextcloud, Anmeldung, Dateiablage]

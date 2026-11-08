@@ -1,10 +1,10 @@
 ---
 key: guide.member_import
 titel: Import a member list from Excel
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/import]
+reihe: 20
 stichworte: [import, Excel, CSV, migration, spreadsheet]
 ---
 
