@@ -467,6 +467,11 @@ org_patterns = [
         donation_views.DonationSettingsView.as_view(),
         name="finance-donation-settings",
     ),
+    path(
+        "finance/donation-settings/simplified/",
+        donation_views.SimplifiedProofView.as_view(),
+        name="finance-donation-simplified",
+    ),
     path("finance/closings/", finance_views.YearClosingView.as_view(), name="finance-closings"),
     path(
         "finance/closings/aufbewahrung/",

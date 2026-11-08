@@ -115,4 +115,29 @@ describe('Zuwendungsbestätigungen', () => {
     await waitFor(() => expect(issued).toEqual({ donations: [1, 2], signer_name: 'Erika Kasse' }))
     expect(await screen.findByText(/ZB-\d{4}-0001 für Max Muster ausgestellt/)).toBeInTheDocument()
   })
+
+  it('bietet den vereinfachten Nachweis bis 300 € als PDF und Text', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg(base)] }),
+      [`GET ${F}/donation-settings/`]: () => ({
+        status: 200,
+        body: { enabled: true, ...SETTINGS },
+      }),
+      [`GET ${F}/donation-settings/simplified/`]: () => ({
+        status: 200,
+        body: { text: 'Vereinfachter Zuwendungsnachweis für Zuwendungen bis 300 €\n\nMuster' },
+      }),
+    })
+    renderApp('/finanzen/einrichtung/zuwendungen')
+    const card = await screen.findByTestId('simplified-proof')
+    expect(within(card).getByRole('link', { name: 'Beleg als PDF' })).toHaveAttribute(
+      'href',
+      `${F}/donation-settings/simplified/?als=pdf`,
+    )
+    await userEvent
+      .setup()
+      .click(within(card).getByRole('button', { name: 'Text für die Webseite' }))
+    expect(await within(card).findByDisplayValue(/Zuwendungen bis 300 €/)).toBeInTheDocument()
+  })
 })

@@ -13,3 +13,5 @@ For donations and tax-deductible membership fees you create official donation re
 An issued donation receipt also protects its source cashbook entry: it cannot be edited, deleted or reverted with Undo. To make a correction, cancel the donation receipt first. You can then correct the entry under the usual cashbook rules; the cancelled receipt copy remains available.
 
 Name searches ignore letter case and normalize Unicode spelling variants; “ß” and “ss” are treated as equal. Other selected filters still apply.
+
+For donations up to 300 €, the tax office accepts the bank statement together with a note from the club (simplified donation proof). Once the tax-privileged status details are complete, Finance › Setup › Donations offers this note under **Donations up to 300 €** as a PDF and as text for the website. It names the notice, the purposes, the donation account and whether it also covers membership fees.

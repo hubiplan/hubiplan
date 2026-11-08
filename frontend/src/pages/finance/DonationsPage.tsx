@@ -809,7 +809,50 @@ export function DonationSettingsForm({ canEdit }: { canEdit: boolean }) {
   const load = useLoad(() => donationApi.settings(org.id), [org.id])
   if (load.error) return <LoadError message={load.error} onRetry={() => void load.reload()} />
   if (!load.data) return <p className="muted">{t('Lädt …')}</p>
-  return <SettingsEditor key={org.id} initial={load.data} canEdit={canEdit} />
+  return (
+    <>
+      <SettingsEditor key={org.id} initial={load.data} canEdit={canEdit} />
+      {load.data.problems.length === 0 && <SimplifiedProof />}
+    </>
+  )
+}
+
+// Vereinfachter Zuwendungsnachweis für Zuwendungen bis 300 € (§ 50 Abs. 4 Satz 1 Nr. 2 EStDV):
+// Beleg als PDF zum Auslegen und als Text für die Webseite (Konzept vereinskasse-steuern, S8)
+function SimplifiedProof() {
+  const org = useActiveOrg()
+  const [open, setOpen] = useState(false)
+  const load = useLoad(
+    () => (open ? donationApi.simplified(org.id) : Promise.resolve(null)),
+    [org.id, open],
+  )
+  return (
+    <div className="card card-wide" data-testid="simplified-proof">
+      <h2>{t('Spenden bis 300 €')}</h2>
+      <p className="muted small">
+        {t(
+          'Bei Zuwendungen bis 300 € genügt dem Finanzamt der Kontoauszug zusammen mit einem Beleg des Vereins über die Steuerbegünstigung. Den Beleg könnt ihr auf der Webseite veröffentlichen, auslegen oder mitschicken; eine Zuwendungsbestätigung ist dafür nicht nötig.',
+        )}
+      </p>
+      <div className="button-row">
+        <a className="button button-ghost" href={donationApi.simplifiedPdfUrl(org.id)}>
+          {t('Beleg als PDF')}
+        </a>
+        {!open && (
+          <button type="button" className="button button-ghost" onClick={() => setOpen(true)}>
+            {t('Text für die Webseite')}
+          </button>
+        )}
+      </div>
+      {load.error && <Alert kind="error">{load.error}</Alert>}
+      {load.data && (
+        <label className="field">
+          <span>{t('Text für die Webseite')}</span>
+          <textarea rows={10} readOnly value={load.data.text} />
+        </label>
+      )}
+    </div>
+  )
 }
 
 function SettingsEditor({ initial, canEdit }: { initial: DonationSettings; canEdit: boolean }) {

@@ -108,6 +108,28 @@ class DonationSettingsView(DonationMixin, APIView):
         return Response(self._data(cfg))
 
 
+class SimplifiedProofView(DonationMixin, APIView):
+    """Vereinfachter Zuwendungsnachweis bis 300 € (Konzept S8): Text oder PDF (``?als=pdf``)."""
+
+    @extend_schema(responses=dict)
+    def get(self, request, org_id: int):
+        from . import donation_simple
+
+        cfg = svc.settings_for(self.org)
+        problems = svc.problems(cfg)
+        if problems:
+            raise serializers.ValidationError({"detail": problems})
+        if request.query_params.get("als") == "pdf":
+            response = HttpResponse(
+                donation_simple.render(self.org, cfg), content_type="application/pdf"
+            )
+            response["Content-Disposition"] = (
+                'attachment; filename="vereinfachter-zuwendungsnachweis.pdf"'
+            )
+            return response
+        return Response({"text": donation_simple.text(self.org, cfg)})
+
+
 # --- Zuwendungen ---
 
 
