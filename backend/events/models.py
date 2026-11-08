@@ -334,10 +334,6 @@ class CalendarPublication(models.Model):
     def new_key() -> str:
         return secrets.token_urlsafe(24)
 
-    @staticmethod
-    def hash_key(key: str) -> str:
-        return hashlib.sha256(key.encode()).hexdigest()
-
 
 class EventResponse(models.Model):
     """Zu- oder Absage eines Mitglieds zu einem Termin."""
@@ -417,6 +413,10 @@ class PersonalCalendar(models.Model):
     @staticmethod
     def new_key() -> str:
         return secrets.token_urlsafe(24)
+
+    @staticmethod
+    def hash_key(key: str) -> str:
+        return hashlib.sha256(key.encode()).hexdigest()
 
 
 class ExternalCalendar(models.Model):

@@ -74,11 +74,18 @@ def _gobd_testdatum(monkeypatch):
     original = gobd.release_documents
 
     def release_documents(*args, **kwargs):
+        # Nur der Eigentümer darf das Testdatum setzen: Rolle der Anwendung kurz verlassen
         with connection.cursor() as cur:
+            cur.execute("SELECT current_user, session_user")
+            current, session = cur.fetchone()
+            if current != session:
+                cur.execute("RESET ROLE")
             cur.execute("DELETE FROM finance_gobd_testdatum")
             cur.execute(
                 "INSERT INTO finance_gobd_testdatum (heute) VALUES (%s)", [retention._today()]
             )
+            if current != session:
+                cur.execute(f'SET ROLE "{current}"')
         return original(*args, **kwargs)
 
     monkeypatch.setattr(gobd, "release_documents", release_documents)
