@@ -100,17 +100,39 @@ describe('Finanzen', () => {
     expect(nav.getByRole('link', { name: 'Finanzen' })).toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Kasse' })).not.toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Beiträge' })).not.toBeInTheDocument()
+    // Arbeitsgruppen statt Zwischenzeilen (Konzept S-01); auf der Übersicht ist keine offen
+    expect(nav.getByRole('link', { name: 'Übersicht' })).toBeInTheDocument()
     for (const name of [
-      'Übersicht',
-      'Rechnungen',
-      'Lastschriften',
-      'Kassenbuch',
-      'Auswertung',
-      'Entwicklung',
-      'Jahresabschluss',
-      'Einrichtung',
+      'Beiträge & Rechnungen',
+      'Zahlungen',
+      'Buchen',
+      'Auswerten & abschließen',
+      'Einrichten',
     ])
+      expect(nav.getByRole('button', { name })).toHaveAttribute('aria-expanded', 'false')
+    expect(nav.queryByRole('link', { name: 'Kassenbuch' })).not.toBeInTheDocument()
+    // ▸ öffnet eine Gruppe zum Nachsehen, immer nur eine
+    const user = userEvent.setup()
+    await user.click(nav.getByRole('button', { name: 'Buchen' }))
+    expect(nav.getByRole('button', { name: 'Buchen' })).toHaveAttribute('aria-expanded', 'true')
+    expect(nav.getByRole('link', { name: 'Kassenbuch' })).toBeInTheDocument()
+    await user.click(nav.getByRole('button', { name: 'Zahlungen' }))
+    expect(nav.queryByRole('link', { name: 'Kassenbuch' })).not.toBeInTheDocument()
+    for (const name of ['Lastschriften', 'Kontoauszüge'])
       expect(nav.getByRole('link', { name })).toBeInTheDocument()
+    await user.click(nav.getByRole('button', { name: 'Beiträge & Rechnungen' }))
+    // Frühere Reiter von Rechnungen sind Einträge der Gruppe; Seitenkopf wie der Eintrag
+    await user.click(nav.getByRole('link', { name: 'Mahnungen' }))
+    expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/rechnungen/mahnungen')
+    expect(nav.getByRole('button', { name: 'Beiträge & Rechnungen' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    expect(nav.getByRole('link', { name: 'Mahnungen' })).toHaveAttribute('aria-current', 'page')
+    expect(nav.getByRole('link', { name: 'Rechnungen' })).not.toHaveAttribute('aria-current')
+    expect(nav.getByRole('link', { name: 'Beitragsläufe' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Mahnungen' })).toBeInTheDocument()
+    await user.click(nav.getByRole('link', { name: 'Übersicht' }))
     expect(screen.getByText('180,00 €')).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: '1 Rechnung ist zu mahnen' })).toHaveAttribute(
       'href',
@@ -184,16 +206,23 @@ describe('Finanzen', () => {
     renderApp('/finanzen/einrichtung')
     expect(await screen.findByText('nur lesen')).toBeInTheDocument()
     const nav = subnav()
-    expect(nav.getByRole('link', { name: 'Rechnungen' })).toBeInTheDocument()
-    expect(nav.getByRole('link', { name: 'Kassenbuch' })).toBeInTheDocument()
     await waitFor(() =>
       expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/einrichtung/konten'),
     )
+    // Nur Einträge mit Recht; „Einrichten“ ist offen, weil die Seite darin liegt
+    expect(nav.getByRole('button', { name: 'Einrichten' })).toHaveAttribute('aria-expanded', 'true')
+    for (const name of ['Konten', 'Kategorien', 'Geschäftspartner'])
+      expect(nav.getByRole('link', { name })).toBeInTheDocument()
+    expect(nav.queryByRole('link', { name: 'Mahnstufen' })).not.toBeInTheDocument()
+    expect(nav.getByRole('button', { name: 'Buchen' })).toHaveAttribute('aria-expanded', 'false')
+    // Eine Gruppe mit nur einem Eintrag erscheint als einfacher Eintrag
+    expect(nav.queryByRole('button', { name: 'Beiträge & Rechnungen' })).not.toBeInTheDocument()
+    expect(nav.queryByRole('button', { name: 'Zahlungen' })).not.toBeInTheDocument()
     const user = userEvent.setup()
     await user.click(nav.getByRole('link', { name: 'Übersicht' }))
     expect(await screen.findByText('Noch keine Konten angelegt.')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Erstes Konto anlegen' })).not.toBeInTheDocument()
-    await user.click(nav.getByRole('link', { name: 'Rechnungen' }))
+    await user.click(nav.getByRole('link', { name: 'Rechnungseingang' }))
     expect(await screen.findByText('Noch keine Eingangsrechnungen vorhanden.')).toBeInTheDocument()
     expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/rechnungen/eingang')
     expect(screen.queryByLabelText('E-Rechnung importieren')).not.toBeInTheDocument()

@@ -91,7 +91,10 @@ describe('Hilfedateien', () => {
     // UX-Audit X-01: Hilfe, Web und App nutzen dieselben Begriffe (docs/begriffe.md)
     const labels = new Set(
       [...Object.values(NAV_SOURCES), ...Object.values(PAGE_SOURCES)].flatMap((src) =>
-        [...src.matchAll(/to: '\/[^']*',\s*label: t\('([^']+)'\)/g)].map((m) => m[1]),
+        // Einträge und Arbeitsgruppen (Finanzen, Konzept S-01)
+        [...src.matchAll(/(?:to: '\/[^']*'|key: '[^']*'),\s*label: t\('([^']+)'\)/g)].map(
+          (m) => m[1],
+        ),
       ),
     )
     const areas =

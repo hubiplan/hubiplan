@@ -8,7 +8,7 @@ reihe: 50
 stichworte: [SEPA, Lastschrift, Einzug, Bank, XML]
 ---
 
-Vorher: Die Gläubiger-ID steht unter Einrichtung › Rechnung & Zahlung, und die Mitglieder haben ein SEPA-Mandat.
+Vorher: Die Gläubiger-ID steht unter Einrichten › Rechnung & Zahlung, und die Mitglieder haben ein SEPA-Mandat.
 
 1. Öffne [Finanzen › Lastschriften](/finanzen/lastschrift).
 2. Prüfe die Liste „Vor dem Lastschriftlauf“, etwa auslaufende Mandate.

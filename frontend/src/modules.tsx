@@ -14,6 +14,7 @@ import { musicSections, scoresOwnEntry } from './pages/music/access.ts'
 import { hasUnitsPage } from './pages/settings/units.ts'
 import { settingsItems } from './pages/settings/items.ts'
 import { t } from './i18n/index.ts'
+import type { SubNavItem } from './components/subnav.ts'
 
 export interface Workspace {
   dept: DeptSummary | null
@@ -34,10 +35,7 @@ export interface AppModule {
   icon: ReactNode
   visible: (org: OrgSummary | null, ws: Workspace) => boolean
   /** Unterpunkte, in der Seitenleiste unter dem aktiven Modul */
-  children?: (
-    org: OrgSummary | null,
-    ws?: Workspace,
-  ) => { to: string; label: string; section?: string }[]
+  children?: (org: OrgSummary | null, ws?: Workspace) => SubNavItem[]
 }
 
 const NO_WS: Workspace = { dept: null, portal: null }

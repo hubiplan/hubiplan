@@ -2622,6 +2622,8 @@
   " · Gebühr {x}": " · charge {x}",
   " · nicht per E-Mail verschickt": " · not sent by email",
   "Zahlungen": "Payments",
+  "Beiträge & Rechnungen": "Fees & invoices",
+  "Auswerten & abschließen": "Evaluate & close",
   "Buchung": "Entry",
   "Quittung": "Receipt",
   "Zahlung entfernen?": "Remove payment?",

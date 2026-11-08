@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
 import { SubNavContext, buildNavTree } from './subnav.ts'
-import type { NavNode, SubNavItem } from './subnav.ts'
+import type { SubNavItem } from './subnav.ts'
+import { SubNavList } from './SubNavList.tsx'
 import { formatTitle, useTitleOverride } from './pageTitle.ts'
 import { NavTrailContext, navTrail, trailTitle } from './navTrail.ts'
 import type { TrailItem } from './navTrail.ts'
@@ -311,26 +311,6 @@ export function Layout() {
   }, [titleOverride, pageLabel, brandName, instance.name])
 
   // Lernhilfen nur in der Oberfläche der Bearbeitenden, nie im Mitgliederbereich
-  // Unterpunkte als verschachtelte Liste; tiefere Ebenen nur unter dem aktiven Punkt
-  const renderNav = (nodes: NavNode[], level = 1): ReactNode =>
-    nodes.length > 0 && (
-      <ul className={`sidebar-sub${level > 1 ? ' sidebar-sub-deep' : ''}`}>
-        {nodes.map((c, i) => (
-          <li key={c.to}>
-            {c.section && c.section !== nodes[i - 1]?.section && (
-              <span className="sidebar-sub-section">{c.section}</span>
-            )}
-            <NavLink to={c.to} end={c.end} className="sidebar-sublink" onClick={choseInNav}>
-              {c.label}
-            </NavLink>
-            {c.children.length > 0 &&
-              (pathname === c.to || pathname.startsWith(`${c.to}/`) || level > 1) &&
-              renderNav(c.children, level + 1)}
-          </li>
-        ))}
-      </ul>
-    )
-
   const headerTools = (
     <>
       {undoBase && !previewOrg && <UndoControls base={undoBase} />}
@@ -452,14 +432,19 @@ export function Layout() {
                             : (m.labelFor?.(active, ws) ?? m.label)}
                         </span>
                       </NavLink>
-                      {inModule(m) &&
-                        renderNav(
-                          buildNavTree(
+                      {inModule(m) && (
+                        // Unterpunkte; tiefere Ebenen nur unter dem aktiven Punkt, Finanzen
+                        // in aufklappbaren Arbeitsgruppen (Konzept S-01)
+                        <SubNavList
+                          nodes={buildNavTree(
                             m.path,
                             m.children?.(active, ws) ?? [],
                             Object.values(subNav),
-                          ),
-                        )}
+                          )}
+                          pathname={pathname}
+                          onChoose={choseInNav}
+                        />
+                      )}
                     </li>
                   ))}
                 </ul>

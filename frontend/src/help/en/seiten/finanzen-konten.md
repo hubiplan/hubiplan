@@ -1,6 +1,6 @@
 ---
 key: page.finance_accounts
-titel: Finance › Setup › Accounts
+titel: Finance › Set up › Accounts
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/einrichtung/konten]

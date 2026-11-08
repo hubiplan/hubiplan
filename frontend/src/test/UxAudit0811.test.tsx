@@ -72,7 +72,7 @@ describe('W-01: Menüpunkte ohne Recht', () => {
 })
 
 describe('W-02: eigene Überschrift und eigener Seitentitel', () => {
-  it('Finanzen › Rechnungen › Mahnungen heißt „Mahnungen“', async () => {
+  it('Finanzen › Beiträge & Rechnungen › Mahnungen heißt „Mahnungen“', async () => {
     const org = testOrg({
       permissions: KASSE,
       modules: ['members', 'finance', 'billing'],
@@ -80,8 +80,11 @@ describe('W-02: eigene Überschrift und eigener Seitentitel', () => {
     })
     renderApp('/finanzen/rechnungen/mahnungen', org)
     expect(await screen.findByRole('heading', { level: 1, name: 'Mahnungen' })).toBeVisible()
-    expect(screen.getByText('Finanzen › Rechnungen')).toBeVisible()
-    await waitFor(() => expect(document.title).toMatch(/^Mahnungen · Rechnungen · Finanzen · /))
+    // Seit S-01 ist Mahnungen ein Eintrag der Gruppe „Beiträge & Rechnungen“
+    expect(screen.getByText('Finanzen › Beiträge & Rechnungen')).toBeVisible()
+    await waitFor(() =>
+      expect(document.title).toMatch(/^Mahnungen · Beiträge & Rechnungen · Finanzen · /),
+    )
   })
 
   it('Mitglieder › Einrichtung › Zusatzfelder heißt „Zusatzfelder“', async () => {

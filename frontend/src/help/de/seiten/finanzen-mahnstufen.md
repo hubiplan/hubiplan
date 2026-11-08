@@ -1,6 +1,6 @@
 ---
 key: page.finance_dunning_levels
-titel: Finanzen › Einrichtung › Mahnstufen
+titel: Finanzen › Einrichten › Mahnstufen
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/einrichtung/mahnstufen]

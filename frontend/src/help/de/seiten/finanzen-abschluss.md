@@ -1,6 +1,6 @@
 ---
 key: page.finance_closing
-titel: Finanzen › Auswerten und Jahr abschließen
+titel: Finanzen › Auswerten & abschließen
 modul: finance
 rechte: [finance.view]
 routen:
@@ -14,13 +14,13 @@ routen:
 stichworte: [Jahresabschluss, Kassenbericht, Kassenprüfung, DATEV, Löschsperre, Steuern, Freigrenze]
 ---
 
-In der Seitenleiste von Finanzen stehen unter „Buchen“ auch **Anlagen** und **Pauschalen**, unter „Auswerten“ **Auswertung** (mit Vermögen), **Entwicklung** und **Steuern** (mit Künstlersozialabgabe und Mittelverwendung) und unter „Jahr abschließen“ **Zuwendungsbestätigungen** und **Jahresabschluss** (mit Kassenprüfung).
+In der Seitenleiste von Finanzen stehen unter „Buchen“ auch **Anlagen** und **Pauschalen**, unter „Auswerten & abschließen“ **Auswertung** (mit Vermögen), **Entwicklung**, **Steuern** (mit Umsatzsteuer, Künstlersozialabgabe und Mittelverwendung), **Zuwendungsbestätigungen** und **Jahresabschluss** (mit Kassenprüfung).
 
 Unter Jahresabschluss erstellt ihr den Kassenbericht für die Versammlung und schließt ein Geschäftsjahr ab. Nach dem Abschluss lassen sich die Buchungen nicht mehr ändern. Außerdem gibt es Exporte, etwa für DATEV oder für die Kassenprüfung.
 
 Nach Ablauf der Aufbewahrungsfrist (Belege 8 Jahre, Bücher 10 Jahre nach Ende des Kalenderjahres) lassen sich Belege löschen und Bücher anonymisieren. Die Fristen sind gesetzlich und lassen sich nicht verkürzen. Läuft noch eine Prüfung oder ein Rechtsstreit, setzt ihr beim Geschäftsjahr mit **Löschsperre setzen** eine Sperre mit Grund. Solange sie gilt, wird nichts gelöscht. Setzen und Aufheben dürfen Vorstände mit Rollenverwaltung; beides steht im Protokoll.
 
-Der Punkt **Steuern** zeigt die steuerliche Auswertung eines Geschäftsjahres. Er gehört zum Modul Steuern & Gemeinnützigkeit. Außerdem müssen die Kategorien steuerlichen Bereichen zugeordnet sein (Einrichtung › Kategorien). Ihr seht:
+Der Punkt **Steuern** zeigt die steuerliche Auswertung eines Geschäftsjahres. Er gehört zum Modul Steuern & Gemeinnützigkeit. Außerdem müssen die Kategorien steuerlichen Bereichen zugeordnet sein (Einrichten › Kategorien). Ihr seht:
 
 - **Freigrenze**: die Einnahmen des wirtschaftlichen Geschäftsbetriebs einschließlich Umsatzsteuer im Vergleich zur Freigrenze (seit 2026 50.000 €, vorher 45.000 €), dazu die beiden Vorjahre. Ab 80 % gibt es einen Hinweis, darüber eine Warnung.
 - **Nach steuerlichem Bereich**: Einnahmen, Ausgaben und Ergebnis je Bereich. Stornos sind mit der stornierten Buchung verrechnet. Bei einem Verlust im wirtschaftlichen Geschäftsbetrieb erscheint ein Hinweis.
@@ -52,6 +52,6 @@ Abhaken dürfen nur die Kassenprüfer, nicht die Kasse selbst. Sie vergleichen j
 
 Der Reiter **Vermögen** in der Auswertung zeigt, was der Verein am Ende eines Geschäftsjahres besitzt und schuldet: die Kontenstände, offene Rechnungen an Mitglieder und Geschäftspartner, das Anlagevermögen mit Buchwert laut Anlagenverzeichnis (Modul Steuern & Gemeinnützigkeit) und offene Eingangsrechnungen. Was erst nach dem Jahresende bezahlt wurde, zählt als am Stichtag offen. Sind Rücklagen eingeschaltet, steht darunter, wie viel davon gebunden und wie viel frei verfügbar ist. Die Übersicht steht auch im Kassenbericht für die Mitgliederversammlung.
 
-Der Reiter **Künstlersozialabgabe** unter Steuern (Modul Steuern & Gemeinnützigkeit) zählt je Kalenderjahr die Honorare an selbständige Künstler und Publizisten, etwa für Kapelle, Tambourcorps, DJ oder Grafiker. Gezählt werden Ausgaben mit dem Haken **Honorar an Künstler (Künstlersozialabgabe)** im Kassenbuch und alle Ausgaben einer Kategorie, die unter Einrichtung › Kategorien als **Künstlerhonorare** markiert ist; Stornos zählen nicht. Die Seite zeigt die Summe je Empfänger, die Abgabe zum Satz des Jahres (2026: 4,9 %) und die Frist für die Meldung an die Künstlersozialkasse (31. März des Folgejahres), auch als Excel.
+Der Reiter **Künstlersozialabgabe** unter Steuern (Modul Steuern & Gemeinnützigkeit) zählt je Kalenderjahr die Honorare an selbständige Künstler und Publizisten, etwa für Kapelle, Tambourcorps, DJ oder Grafiker. Gezählt werden Ausgaben mit dem Haken **Honorar an Künstler (Künstlersozialabgabe)** im Kassenbuch und alle Ausgaben einer Kategorie, die unter Einrichten › Kategorien als **Künstlerhonorare** markiert ist; Stornos zählen nicht. Die Seite zeigt die Summe je Empfänger, die Abgabe zum Satz des Jahres (2026: 4,9 %) und die Frist für die Meldung an die Künstlersozialkasse (31. März des Folgejahres), auch als Excel.
 
 Der Reiter **Mittelverwendung** unter Steuern (Modul Steuern & Gemeinnützigkeit) ist eine vereinfachte Mittelverwendungsrechnung. Gemeinnützige Mittel müssen bis zum Ende des zweiten Geschäftsjahres nach dem Zufluss für die Satzungszwecke verwendet oder in zulässige Rücklagen eingestellt sein. Die Seite zeigt je Jahr den Vortrag, die zugeflossenen Mittel (Einnahmen des ideellen Bereichs und Überschüsse der übrigen Bereiche), die Verwendung (Ausgaben des ideellen Bereichs, Verluste der Zweckbetriebe), Zuführungen und Auflösungen von Rücklagen sowie, was nach Herkunftsjahr noch zu verwenden ist. Verwendet werden zuerst die ältesten Mittel. Ist eine Frist abgelaufen, erscheint ein Hinweis. Ab 100.000 € Jahreseinnahmen erwartet das Finanzamt in der Regel einen solchen Nachweis.
