@@ -17,10 +17,17 @@ const images = spec.bilder.filter((b) => !only.size || only.has(b.name))
 const MAX_HOEHE = 900
 let failed = 0
 for (const language of ['de', 'en']) {
-  // Eigener Browser je Sprache: Datumsfelder richten sich nach der Browsersprache (--lang),
-  // nicht nach der Sprache des Kontexts
+  // Eigener Browser je Sprache: Datumsfelder richten sich im kopflosen Chromium nach LANG und
+  // LANGUAGE des Prozesses, nicht nach der Sprache des Kontexts
   const locale = language === 'en' ? 'en-GB' : 'de-DE'
-  const browser = await chromium.launch({ args: [`--lang=${locale}`] })
+  const browser = await chromium.launch({
+    args: [`--lang=${locale}`],
+    env: {
+      ...process.env,
+      LANG: `${locale.replace('-', '_')}.UTF-8`,
+      LANGUAGE: locale.replace('-', '_'),
+    },
+  })
   mkdirSync(join(out, language), { recursive: true })
   const byUser = Map.groupBy(images, (b) => b.zugang)
   for (const [user, list] of byUser) {
