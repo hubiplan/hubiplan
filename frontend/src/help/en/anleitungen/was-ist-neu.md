@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: allowances now also count waivers as expense donations, payments from the musician settlement and the cash books of sub-units (Finance › Closing & reports › Allowances).
 - New: statement on the use of funds. Finance › Closing & reports › Use of funds shows in a simplified calculation which funds must be used by when, and warns if a deadline has passed.
 - New: earmarked donations. In donation receipts › **Earmarks**, donations and cash book expenses can be assigned to a purpose; the overview shows the remainder and reminds you to use the funds promptly.
 - New: donations up to 300 €. Finance › Setup › Donations offers the simplified donation proof as a PDF and as text for the website; together with the bank statement it is enough for the tax office.

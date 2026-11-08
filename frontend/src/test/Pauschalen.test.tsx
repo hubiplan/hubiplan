@@ -15,6 +15,8 @@ const report = {
   year: YEAR,
   limits: { trainer: '3300.00', volunteer: '960.00' },
   board_pay_allowed: false,
+  units: ['Spielmannszug'],
+  counted_at: '',
   people: [
     {
       key: 'm5',
@@ -32,7 +34,18 @@ const report = {
           status: 'warn',
         },
       ],
-      bookings: [],
+      bookings: [
+        {
+          id: 3,
+          source: 'waiver',
+          display_number: 'Verzicht (Aufwandsspende)',
+          date: `${YEAR}-03-01`,
+          amount: '900.00',
+          allowance: 'volunteer',
+          text: '',
+          unit: 'Spielmannszug',
+        },
+      ],
     },
   ],
   warnings: [{ kind: 'board', text: 'Vorstandsmitglieder erhalten eine Vergütung.' }],
@@ -65,6 +78,9 @@ describe('Aufwandsvergütungen', () => {
     renderApp('/finanzen/abschluss/pauschalen')
     expect(await screen.findByText('Erika Musterfrau')).toBeInTheDocument()
     expect(screen.getByText(/93 %, nahe am Freibetrag/)).toBeInTheDocument()
+    expect(screen.getByTestId('allowance-units')).toHaveTextContent('Spielmannszug')
+    expect(screen.getByText('1 Zahlungen')).toBeInTheDocument()
+    expect(screen.getByText(/Verzicht \(Aufwandsspende\) · 900,00/)).toBeInTheDocument()
     expect(screen.getByText('Vorstandsmitglieder erhalten eine Vergütung.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'PDF' })).toHaveAttribute(
       'href',

@@ -305,7 +305,13 @@ class Booking(models.Model):
             errors["earmark"] = gettext("Eine Zweckbindung gibt es nur für Ausgaben.")
         if self.allowance and self.kind != self.Kind.EXPENSE:
             errors["allowance"] = gettext("Eine Aufwandsvergütung ist immer eine Ausgabe.")
-        elif self.allowance and not self.membership_id and not self.counterparty:
+        elif (
+            self.allowance
+            and not self.membership_id
+            and not self.counterparty
+            # Auszahlung aus der Musikerabrechnung: die Person steht in der Musikerakte
+            and not (self.pk and hasattr(self, "performance_expense"))
+        ):
             errors["allowance"] = gettext(
                 "Bitte das Mitglied oder den Empfänger angeben, damit die Vergütung der "
                 "richtigen Person zugerechnet wird."
@@ -825,6 +831,15 @@ class Donation(models.Model):
     kind = models.CharField("Art", max_length=10, choices=Kind.choices, default=Kind.MONEY)
     amount = models.DecimalField("Betrag bzw. Wert", max_digits=12, decimal_places=2)
     waiver = models.BooleanField("Verzicht auf Erstattung von Aufwendungen", default=False)
+    # Verzicht auf eine Pauschale (S3): zählt wie eine Auszahlung gegen den Freibetrag
+    allowance = models.CharField(
+        "Verzicht auf Aufwandsvergütung",
+        max_length=10,
+        choices=Booking.Allowance.choices,
+        blank=True,
+        default="",
+        db_default="",
+    )
     membership = models.ForeignKey(
         "members.Membership",
         verbose_name="Mitglied",

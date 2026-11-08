@@ -486,6 +486,7 @@ function DonationForm({
       date: today(),
       kind: 'money',
       waiver: false,
+      allowance: '',
       membership: null,
       donor_name: '',
       donor_address: '',
@@ -542,7 +543,12 @@ function DonationForm({
           onChange={(e) => {
             const kind = e.target.value as DonationKind
             // Verzicht gibt es nur bei Geld: beim Wechsel zur Sache mit abschalten (N04)
-            setV((old) => ({ ...old, kind, waiver: kind === 'goods' ? false : old.waiver }))
+            setV((old) => ({
+              ...old,
+              kind,
+              waiver: kind === 'goods' ? false : old.waiver,
+              allowance: kind === 'goods' ? '' : old.allowance,
+            }))
           }}
           error={errors.kind}
         >
@@ -642,7 +648,9 @@ function DonationForm({
           label={t('Verzicht auf Erstattung von Aufwendungen')}
           hint={t('z. B. Fahrtkosten, auf deren Erstattung jemand verzichtet')}
           checked={!!v.waiver}
-          onChange={(on) => set('waiver', on)}
+          onChange={(on) =>
+            setV((old) => ({ ...old, waiver: on, allowance: on ? old.allowance : '' }))
+          }
         />
       )}
       {!goods && (
@@ -653,6 +661,20 @@ function DonationForm({
           </p>
           <Why k="donation_waiver" />
         </>
+      )}
+      {!goods && v.waiver && (org.modules.includes('tax') || !!v.allowance) && (
+        <SelectField
+          label={t('Verzicht auf eine Pauschale')}
+          hint={t(
+            'Der Betrag zählt dann wie eine Auszahlung gegen den Freibetrag der Person (Abschluss & Berichte › Pauschalen).',
+          )}
+          value={v.allowance ?? ''}
+          onChange={(e) => set('allowance', e.target.value as DonationInput['allowance'])}
+        >
+          <option value="">{t('keine Pauschale (z. B. Fahrtkosten)')}</option>
+          <option value="trainer">{t('Übungsleiterfreibetrag (§ 3 Nr. 26 EStG)')}</option>
+          <option value="volunteer">{t('Ehrenamtspauschale (§ 3 Nr. 26a EStG)')}</option>
+        </SelectField>
       )}
       {usableEarmarks.length > 0 && (
         <SelectField

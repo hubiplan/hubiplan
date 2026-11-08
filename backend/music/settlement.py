@@ -13,6 +13,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from access.modules import module_on
 from audit.log import record
 from billing.einvoice_views import ElectronicInvoiceViewSet
 from billing.models import Invoice
@@ -489,6 +490,18 @@ class SettlementView(OrgScopedMixin, APIView):
             expense = PerformanceExpense.objects.create(
                 organization=self.org, account=account, claim=claim, booking=booking
             )
+            if claim and not booking.allowance and module_on(self.org, "tax"):
+                # Vergütung an Musiker: künstlerische Tätigkeit, zählt gegen den
+                # Übungsleiterfreibetrag des Musikers (Konzept vereinskasse-steuern, S3)
+                booking.allowance = Booking.Allowance.TRAINER
+                booking.save(update_fields=["allowance"])
+                record(
+                    self.org,
+                    request.user,
+                    "update",
+                    booking,
+                    {"Aufwandsvergütung": ["", str(Booking.Allowance.TRAINER.label)]},
+                )
             if payout_item:
                 payout_item.expense = expense
                 payout_item.save(update_fields=["expense"])

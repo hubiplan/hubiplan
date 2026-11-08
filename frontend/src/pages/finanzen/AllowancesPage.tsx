@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { euro, financeApi } from '../../api/finance.ts'
 import type { TaxStatus } from '../../api/finance.ts'
-import { useLoad } from '../../components/forms.ts'
+import { formatDate, useLoad } from '../../components/forms.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
@@ -64,8 +64,24 @@ export function AllowancesPage({ canEdit }: { canEdit: boolean }) {
       <p className="muted small">
         {t(
           'Gezählt werden Ausgaben, bei denen im Kassenbuch eine Aufwandsvergütung gewählt ist. Die Freibeträge gelten je Person und Kalenderjahr über alle Auftraggeber zusammen. Deshalb unterschreibt der Empfänger eine Erklärung, dass er sie nicht anderweitig nutzt.',
+        )}{' '}
+        {t(
+          'Ein Verzicht auf die Pauschale als Aufwandsspende zählt ebenso, Auszahlungen aus der Musikerabrechnung zählen beim Musiker.',
         )}
       </p>
+      {data.units.length > 0 && (
+        <p className="muted small" data-testid="allowance-units">
+          {t('Mitgezählt werden die Kassen von: {units}', { units: data.units.join(', ') })}
+        </p>
+      )}
+      {data.counted_at && (
+        <Alert kind="info">
+          {t(
+            'Diese Kasse zählt steuerlich bei {x} mit. Dort stehen die Summen je Person über alle Kassen.',
+            { x: data.counted_at },
+          )}
+        </Alert>
+      )}
 
       {data.warnings.map((w) => (
         <Alert key={w.kind} kind="error">
@@ -102,6 +118,17 @@ export function AllowancesPage({ canEdit }: { canEdit: boolean }) {
                         <>
                           {p.name}
                           {p.board && <div className="muted small">{t('Vorstand')}</div>}
+                          <details className="small">
+                            <summary>{t('{n} Zahlungen', { n: p.bookings.length })}</summary>
+                            <ul className="plain-list">
+                              {p.bookings.map((b) => (
+                                <li key={`${b.source}-${b.id}`}>
+                                  {formatDate(b.date)} · {b.display_number} · {euro(b.amount)}
+                                  {b.unit && ` · ${b.unit}`}
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
                         </>
                       )}
                     </td>
