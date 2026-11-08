@@ -386,8 +386,8 @@ class ReignViewSet(_HonorsMixin, AuditMixin, viewsets.ModelViewSet):
                 | Q(note__icontains=text)
             ).distinct()
         # Nach Jahr bzw. Beginn, leere Jahre nicht zuerst (Datenaudit 08.11. DR-06)
-        return qs.annotate(sort_year=Coalesce("year", ExtractYear("valid_from"))).order_by(
-            F("sort_year").desc(nulls_last=True), F("valid_from").desc(nulls_last=True), "-pk"
+        return qs.annotate(order_year=Coalesce("year", ExtractYear("valid_from"))).order_by(
+            F("order_year").desc(nulls_last=True), F("valid_from").desc(nulls_last=True), "-pk"
         )
 
     def get_serializer_context(self):
@@ -400,6 +400,41 @@ class ReignViewSet(_HonorsMixin, AuditMixin, viewsets.ModelViewSet):
 
     def get_create_kwargs(self) -> dict:
         return {"organization": self.org}
+
+    @action(detail=False, methods=["post"], url_path="link-name")
+    @transaction.atomic
+    def link_name(self, request, org_id: int):
+        """Frühere Text-Einträge mit gleichem Namen mit einem Mitglied verknüpfen
+        (Datenaudit 08.11. DR-07, FD-06). POST {name, person} → {linked}.
+
+        Ohne ``confirm`` nur zählen (für die Rückfrage)."""
+        name = str(request.data.get("name", "")).strip()
+        person_id = request.data.get("person")
+        if not name or not str(person_id).isdigit():
+            raise ValidationError(gettext("Bitte Name und Mitglied angeben."))
+        if int(person_id) not in member_person_ids(self.org):
+            raise ValidationError({"person": gettext("Unbekanntes Mitglied.")})
+        key = numbering.first_key(name)
+        matches = [
+            r
+            for r in Reign.objects.select_for_update().filter(
+                organization=self.org, person__isnull=True
+            )
+            if numbering.first_key(r.name) == key
+        ]
+        if not request.data.get("confirm"):
+            return Response({"linked": 0, "found": len(matches)})
+        from members.models import Person
+
+        person = Person.objects.get(pk=int(person_id))
+        full = f"{person.first_name} {person.last_name}".strip()
+        for reign in matches:
+            before = snapshot(reign)
+            reign.person = person
+            reign.name = full
+            reign.save()
+            record(self.org, request.user, "update", reign, diff(before, snapshot(reign)))
+        return Response({"linked": len(matches), "found": len(matches)})
 
     @transaction.atomic
     def perform_destroy(self, instance):

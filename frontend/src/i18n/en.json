@@ -7361,5 +7361,13 @@
   "{n} Mitglied gehört zu mehreren Untereinheiten; die Rechnung geht an die mit dem frühesten Beginn.": {
     "one": "{n} member belongs to several sub-units; the invoice goes to the one with the earliest start.",
     "other": "{n} members belong to several sub-units; each invoice goes to the one with the earliest start."
-  }
+  },
+  "Frühere Einträge mitverknüpfen?": "Link earlier entries as well?",
+  "Es gibt {n} weiteren Eintrag mit dem Namen „{name}“ ohne Mitglied. Soll er ebenfalls mit diesem Mitglied verknüpft werden? Das ist wichtig für die richtige Ordnungszahl.": {
+    "one": "There is {n} more entry named “{name}” without a member. Should it also be linked to this member? This matters for the correct ordinal.",
+    "other": "There are {n} more entries named “{name}” without a member. Should they also be linked to this member? This matters for the correct ordinal."
+  },
+  "Mitverknüpfen": "Link as well",
+  "Nur diesen Eintrag": "Only this entry",
+  "Alter in vollendeten Lebensjahren am Stichtag": "Age in completed years on the reference date"
 }

@@ -538,3 +538,31 @@ class TestImportExport:
         importer._pad_postal_code(g, 2)
         assert g.data["postal_code"] == expected
         assert bool(g.notes) is (expected != code)
+
+
+# --- Schritt 7: Würden ---
+
+
+class TestOrdnungszahlVorname:
+    def test_bindestrich_und_schreibweise(self):
+        from types import SimpleNamespace
+
+        from honors import numbering
+
+        def reign(pk, name, year):
+            return SimpleNamespace(
+                pk=pk,
+                person=None,
+                person_id=None,
+                name=name,
+                ordinal=None,
+                sort_year=year,
+                valid_from=None,
+            )
+
+        reigns = [
+            reign(1, "Hans-Peter Muster", 2001),
+            reign(2, "hans peter Beispiel", 2002),
+            reign(3, "Hans Probe", 2003),
+        ]
+        assert numbering.ordinals(reigns) == {1: 1, 2: 2, 3: 1}

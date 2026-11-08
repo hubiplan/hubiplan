@@ -9382,3 +9382,21 @@ msgstr "{what} would lie outside the membership with the new date ({start} to {e
 
 msgid "Ein- und Austritt bitte über „Ein-/Austritt korrigieren“ ändern; dabei ziehen Art, Untereinheiten und Ämter mit."
 msgstr "Please change entry and exit via “Correct entry/exit”; member type, sub-units and offices then move along."
+
+msgid "Bitte Name und Mitglied angeben."
+msgstr "Please enter a name and a member."
+
+msgid "Zeile {index}: PLZ „{old}“ zu „{new}“ ergänzt."
+msgstr "Row {index}: postcode “{old}” completed to “{new}”."
+
+msgid "Zeile {index}: Zeitraum ab {entry} widerspricht einer früheren Zeile."
+msgstr "Row {index}: the period from {entry} contradicts an earlier row."
+
+msgid "Zeile {index}: {x1}: „{value}“ widerspricht „{known}“ aus einer früheren Zeile."
+msgstr "Row {index}: {x1}: “{value}” contradicts “{known}” from an earlier row."
+
+msgid "Bitte ohne Tausenderpunkt oder mit Komma angeben (z. B. 1000 oder 1,5)."
+msgstr "Please enter without a thousands separator or with a decimal comma (e.g. 1000 or 1,5)."
+
+msgid "Der Einzug muss auf einen Bankarbeitstag fallen (nicht am Wochenende oder an einem TARGET2-Feiertag). Nächster Bankarbeitstag: {day}."
+msgstr "The collection must fall on a bank business day (not a weekend or TARGET2 holiday). Next bank business day: {day}."
