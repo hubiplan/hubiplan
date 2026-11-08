@@ -11,7 +11,8 @@ import { CircularsArea } from '../../components/circulars/CircularsArea.tsx'
 import { MailingListsArea } from '../../components/circulars/MailingListsArea.tsx'
 import { MarkupPreview } from '../../components/circulars/MarkupEditor.tsx'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, Tabs, SectionTitle } from '../../components/ui.tsx'
+import { Alert, Tabs } from '../../components/ui.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { LetterheadPage } from '../LetterheadPage.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
@@ -31,16 +32,13 @@ export function CircularsPage() {
   let base: CircularBase | null = null
   let write = false
   let receive = false
-  let subtitle = ''
   if (active && (active.type === 'club' || active.type === 'federation')) {
     base = circularBase.org(active.id)
     write = canWriteCirculars(active)
     receive = active.type === 'club'
-    subtitle = active.name
   } else if (activeDept && activeDept.permissions.includes(DEPT_PERM.circularsSend)) {
     base = circularBase.dept(activeDept.id)
     write = true
-    subtitle = t('{name} · {club_name}', { name: activeDept.name, club_name: activeDept.club_name })
   }
   if (!base || (!write && !receive)) return <Navigate to="/" replace />
   const orgId = active?.id ?? 0
@@ -52,7 +50,7 @@ export function CircularsPage() {
   ]
   return (
     <section>
-      <SectionTitle title={t('Rundschreiben')} items={tabs} subtitle={subtitle} />
+      <PageHeader />
       {tabs.length > 1 && <Tabs items={tabs} />}
       <Routes>
         {receive && <Route path="empfangen" element={<ReceivedList orgId={orgId} />} />}

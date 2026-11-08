@@ -3,7 +3,8 @@
 // Unterpunkts führen Reiter weiter.
 import type { ReactNode } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
-import { Tabs, useSubHeading } from '../../components/ui.tsx'
+import { Tabs } from '../../components/ui.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { DebitsPage, MandatesPage } from '../billing/DebitsPage.tsx'
 import { DunningsPage } from '../billing/DunningsPage.tsx'
@@ -23,7 +24,7 @@ import { ClosingsPage } from '../finance/ClosingsPage.tsx'
 import { DonationSettingsForm, DonationsArea } from '../finance/DonationsPage.tsx'
 import { ProjectsArea } from '../finance/ProjectsPage.tsx'
 import { AccountsPage, CategoriesPage } from '../finance/MasterDataPages.tsx'
-import { financeAccess, financeSections, sectionsUnder } from './access.ts'
+import { financeAccess, sectionsUnder } from './access.ts'
 import type { FinanceAccess, NavItem } from './access.ts'
 import { FinanceDevelopment } from './DevelopmentPage.tsx'
 import { EvaluationPage, FinanceOverview } from './OverviewPages.tsx'
@@ -39,40 +40,23 @@ import { AssetsPage } from './AssetsPage.tsx'
 import { PayoutRunsPage } from '../music/PayoutRunsPage.tsx'
 import { t } from '../../i18n/index.ts'
 
+/**
+ * Rahmen eines Finanzbereichs: Seitenkopf mit h1 und Pfad aus dem Menü, samt Arbeitsgruppe
+ * („Finanzen › Buchen › Kassenbuch“, S-01/S-05). Aktionen der Unterseiten kommen per
+ * PageActions in den Kopf.
+ */
 function Section({
-  title,
   readOnly,
   tabs,
   children,
 }: {
-  title: string
   readOnly?: boolean
   tabs?: NavItem[]
   children: ReactNode
 }) {
-  // Dritte Ebene (z. B. Steuern › Umsatzsteuer): H1 wie der gewählte Unterpunkt, der Weg
-  // steht darüber (UX-Audit 08.11., W-02); dazu die Arbeitsgruppe des Eintrags (S-01)
-  const sub = useSubHeading(title, tabs)
-  const org = useActiveOrg()
-  const { pathname } = useLocation()
-  const group = financeSections(financeAccess(org))
-    .filter((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))
-    .sort((x, y) => y.to.length - x.to.length)[0]?.group?.label
-  const trail = [t('Finanzen'), group, sub ? title : null].filter((p): p is string => !!p)
   return (
     <section>
-      <div className="page-head">
-        <div>
-          {/* Auf der Übersicht heißt die H1 wie der Bereich (UX-Audit 05.11. W-04) */}
-          {title !== t('Übersicht') && (
-            <p className="muted small eyebrow">
-              {trail.reduce((parent, label) => t('{parent} › {label}', { parent, label }))}
-            </p>
-          )}
-          <h1>{sub ?? (title === t('Übersicht') ? t('Finanzen') : title)}</h1>
-        </div>
-        {readOnly && <span className="muted small push-right">{t('nur lesen')}</span>}
-      </div>
+      <PageHeader status={readOnly ? t('nur lesen') : undefined} />
       {tabs && tabs.length > 1 && <Tabs items={tabs} />}
       {children}
     </section>
@@ -90,7 +74,7 @@ export function FinanzenPage() {
       <Route
         index
         element={
-          <Section title={t('Übersicht')}>
+          <Section>
             <FinanceOverview access={a} />
           </Section>
         }
@@ -103,7 +87,7 @@ export function FinanzenPage() {
         path="entwicklung"
         element={
           a.finance ? (
-            <Section title={t('Entwicklung')}>
+            <Section>
               <FinanceDevelopment canEdit={a.financeEdit} />
             </Section>
           ) : (
@@ -120,7 +104,7 @@ export function FinanzenPage() {
       <Route
         path="geschaeftspartner"
         element={
-          <Section title={t('Geschäftspartner')}>
+          <Section>
             <PartnersPage key={org.id} canEdit={a.billingEdit || a.financeEdit} />
           </Section>
         }
@@ -130,7 +114,7 @@ export function FinanzenPage() {
         path="kassenbuch"
         element={
           a.finance ? (
-            <Section title={t('Kassenbuch')} readOnly={!a.financeEdit}>
+            <Section readOnly={!a.financeEdit}>
               <BookingsPage />
             </Section>
           ) : (
@@ -142,7 +126,7 @@ export function FinanzenPage() {
         path="kontoauszuege"
         element={
           a.finance ? (
-            <Section title={t('Kontoauszüge')} readOnly={!a.financeEdit}>
+            <Section readOnly={!a.financeEdit}>
               <BankStatementsPage canEdit={a.financeEdit} />
             </Section>
           ) : (
@@ -154,7 +138,7 @@ export function FinanzenPage() {
         path="quittungen/*"
         element={
           a.finance ? (
-            <Section title={t('Quittungen')} readOnly={!a.financeEdit}>
+            <Section readOnly={!a.financeEdit}>
               <CashReceiptsArea canEdit={a.financeEdit} />
             </Section>
           ) : (
@@ -166,7 +150,7 @@ export function FinanzenPage() {
         path="kassenzaehlung"
         element={
           a.cashCounts ? (
-            <Section title={t('Kassenzählung')} readOnly={!a.financeEdit}>
+            <Section readOnly={!a.financeEdit}>
               <CashCountsPage canEdit={a.financeEdit} />
             </Section>
           ) : (
@@ -178,7 +162,7 @@ export function FinanzenPage() {
         path="ruecklagen"
         element={
           a.reserves ? (
-            <Section title={t('Rücklagen')} readOnly={!a.financeEdit}>
+            <Section readOnly={!a.financeEdit}>
               <ReservesPage canEdit={a.financeEdit} />
             </Section>
           ) : (
@@ -191,7 +175,6 @@ export function FinanzenPage() {
         element={
           a.donations ? (
             <Section
-              title={t('Zuwendungsbestätigungen')}
               readOnly={!a.financeEdit}
               tabs={[
                 { to: '/finanzen/zuwendungen', label: t('Zuwendungen') },
@@ -211,7 +194,6 @@ export function FinanzenPage() {
         element={
           a.finance ? (
             <Section
-              title={t('Veranstaltungen')}
               readOnly={!a.financeEdit}
               tabs={[
                 { to: '/finanzen/veranstaltungen', label: t('Veranstaltungen') },
@@ -231,7 +213,7 @@ export function FinanzenPage() {
         path="anlagen"
         element={
           a.tax ? (
-            <Section title={t('Anlagen')} readOnly={!a.financeEdit}>
+            <Section readOnly={!a.financeEdit}>
               <AssetsPage canEdit={a.financeEdit} />
             </Section>
           ) : (
@@ -243,7 +225,7 @@ export function FinanzenPage() {
         path="pauschalen"
         element={
           a.tax ? (
-            <Section title={t('Pauschalen')} readOnly={!a.financeEdit}>
+            <Section readOnly={!a.financeEdit}>
               <AllowancesPage canEdit={a.financeEdit} />
             </Section>
           ) : (
@@ -261,25 +243,13 @@ export function FinanzenPage() {
   )
 }
 
-/** Eintrag der Seitenleiste zur aktuellen Seite: liefert die Überschrift (keine Reiter mehr). */
-function useCurrent(items: NavItem[], fallback: string): string {
-  const { pathname } = useLocation()
-  const path = pathname.replace(/(.)\/$/, '$1')
-  return (
-    items
-      .filter((i) => path === i.to || path.startsWith(`${i.to}/`))
-      .sort((x, y) => y.to.length - x.to.length)[0]?.label ?? fallback
-  )
-}
-
 // Rechnungen und Einrichtung: die früheren Reiter sind Einträge der Arbeitsgruppen in der
 // Seitenleiste (Konzept S-01); jede Seite trägt ihren eigenen Namen als Überschrift
 function InvoicesArea({ access: a }: { access: FinanceAccess }) {
   const tabs = sectionsUnder(a, '/finanzen/rechnungen')
-  const title = useCurrent(tabs, t('Rechnungen'))
   if (tabs.length === 0) return home
   return (
-    <Section title={title} readOnly={a.billing && !a.billingEdit}>
+    <Section readOnly={a.billing && !a.billingEdit}>
       <Routes>
         <Route
           index
@@ -303,7 +273,6 @@ function InvoicesArea({ access: a }: { access: FinanceAccess }) {
 function DebitsArea({ access: a }: { access: FinanceAccess }) {
   return (
     <Section
-      title={t('Lastschriften')}
       readOnly={!a.billingEdit}
       tabs={[
         { to: '/finanzen/lastschrift', label: t('Lastschriftläufe') },
@@ -328,7 +297,6 @@ function Moved({ to }: { to: string }) {
 function EvaluationArea() {
   return (
     <Section
-      title={t('Auswertung')}
       tabs={[
         { to: '/finanzen/auswertung', label: t('Auswertung') },
         { to: '/finanzen/auswertung/vermoegen', label: t('Vermögen') },
@@ -346,7 +314,6 @@ function EvaluationArea() {
 function TaxArea({ access: a }: { access: FinanceAccess }) {
   return (
     <Section
-      title={t('Steuern')}
       tabs={[
         { to: '/finanzen/steuern', label: t('Steuern') },
         { to: '/finanzen/steuern/umsatzsteuer', label: t('Umsatzsteuer') },
@@ -368,7 +335,6 @@ function TaxArea({ access: a }: { access: FinanceAccess }) {
 function ClosingArea({ access: a }: { access: FinanceAccess }) {
   return (
     <Section
-      title={t('Jahresabschluss')}
       readOnly={!a.financeEdit}
       tabs={[
         { to: '/finanzen/abschluss', label: t('Jahresabschluss') },
@@ -399,8 +365,6 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
 }
 
 function SettingsArea({ access: a }: { access: FinanceAccess }) {
-  const tabs = sectionsUnder(a, '/finanzen/einrichtung')
-  const title = useCurrent(tabs, t('Einrichtung'))
   const first = <Navigate to="/finanzen/einrichtung" replace />
   const readOnly = !a.billingEdit && !a.financeEdit
   const { pathname } = useLocation()
@@ -408,7 +372,7 @@ function SettingsArea({ access: a }: { access: FinanceAccess }) {
   if (/^\/finanzen\/einrichtung\/?$/.test(pathname))
     return <FinanceGroupPage groupKey="einrichten" access={a} />
   return (
-    <Section title={title} readOnly={readOnly}>
+    <Section readOnly={readOnly}>
       <Routes>
         {a.feeRuns && <Route path="beitraege" element={<FeeRulesPage />} />}
         {a.billing && <Route path="mahnstufen" element={<DunningLevelsPage />} />}

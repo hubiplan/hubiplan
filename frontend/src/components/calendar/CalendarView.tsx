@@ -5,6 +5,7 @@ import { eventApi } from '../../api/events.ts'
 import type { CalendarBase, Occurrence } from '../../api/events.ts'
 import { useLoad } from '../forms.ts'
 import { LoadError } from '../ui.tsx'
+import { PageActions } from '../PageHeader.tsx'
 import { EventDialog, NewEventDialog, VisibilityBadge } from './EventDialog.tsx'
 import { RsvpBadge } from './Rsvp.tsx'
 import {
@@ -200,23 +201,24 @@ export function CalendarView({
               {t('Liste')}
             </button>
           </div>
-          <a
-            className="button button-ghost"
-            href={eventApi.programUrl(base, year)}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t('Jahresprogramm {year} (PDF)', { year })}
-          </a>
-          {data?.can_manage && (
-            <button
-              type="button"
-              className="button button-primary"
-              onClick={() => setCreating(month === monthStart(todayIso) ? todayIso : month)}
-            >
-              {t('Neuer Termin')}
-            </button>
-          )}
+          {/* Hauptaktion und Jahresprogramm stehen im Seitenkopf (S-05, W-19) */}
+          <PageActions
+            primary={
+              data?.can_manage
+                ? {
+                    label: t('Neuer Termin'),
+                    onClick: () => setCreating(month === monthStart(todayIso) ? todayIso : month),
+                  }
+                : null
+            }
+            actions={[
+              {
+                label: t('Jahresprogramm {year} (PDF)', { year }),
+                href: eventApi.programUrl(base, year),
+                newTab: true,
+              },
+            ]}
+          />
         </div>
       </div>
 

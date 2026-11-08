@@ -10,6 +10,7 @@ import { HowTo, Term } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { MaterialPicker } from '../materials/MaterialsPage.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import './bookings.css'
 
 const ZONE = 'Europe/Berlin'
@@ -135,14 +136,11 @@ function Bookings({ base }: { base: string }) {
   const bookable = (items.data?.items ?? []).filter((i) => i.can_book)
   return (
     <div className="bookings">
-      <div className="page-heading">
-        <h1>{t('Belegung')}</h1>
-        {bookable.length > 0 && (
-          <button className="button" onClick={() => setCreating(true)}>
-            {t('Buchen')}
-          </button>
-        )}
-      </div>
+      <PageHeader
+        primary={
+          bookable.length > 0 ? { label: t('Buchen'), onClick: () => setCreating(true) } : null
+        }
+      />
       {items.error && <p role="alert">{items.error}</p>}
       {items.data && items.data.items.length === 0 && (
         <p>

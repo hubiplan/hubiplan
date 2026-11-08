@@ -15,6 +15,7 @@ import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { t, tn, locale } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { BookingRulesCard } from '../bookings/BookingsPage.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import './materials.css'
 
 // Bestand: Material oder Infrastruktur (Schießstand, Schützenhaus, Vereinsheim)
@@ -203,14 +204,17 @@ function MaterialList({
   }
   return (
     <>
-      <div className="page-heading">
-        <h1>{stock.kind === 'facility' ? t('Räume und Anlagen') : t('Material')}</h1>
-        {editable && (
-          <Link className="button" to="neu">
-            {stock.kind === 'facility' ? t('Raum oder Anlage anlegen') : t('Material anlegen')}
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        primary={
+          editable
+            ? {
+                label:
+                  stock.kind === 'facility' ? t('Raum oder Anlage anlegen') : t('Material anlegen'),
+                to: 'neu',
+              }
+            : null
+        }
+      />
       <div className="card material-filters">
         <label>
           {t('Suchen')}
@@ -973,23 +977,19 @@ function MaterialDetail({
     )
   return (
     <>
-      <Link to={stock.root}>
-        {stock.kind === 'facility' ? t('Zu den Räumen und Anlagen') : t('Zur Materialübersicht')}
-      </Link>
-      <div className="page-heading">
-        <h1>{data.title}</h1>
+      <PageHeader
+        title={data.title}
+        primary={
+          editable && !trash ? { label: t('Bearbeiten'), onClick: () => setEditing(true) } : null
+        }
+      >
         {data.music_equipment && (
           <p>
             <Link to="/material/musik">{t('Musikausstattung öffnen')}</Link>
             {data.music_equipment.loaned ? ` · ${t('Über den Musikbereich ausgegeben')}` : ''}
           </p>
         )}
-        {editable && !trash && (
-          <button className="button" onClick={() => setEditing(true)}>
-            {t('Bearbeiten')}
-          </button>
-        )}
-      </div>
+      </PageHeader>
       {failure && <p role="alert">{failure}</p>}
       <section className="card">
         <p className="muted">{data.inventory_number}</p>
