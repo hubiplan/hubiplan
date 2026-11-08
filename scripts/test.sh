@@ -379,15 +379,26 @@ if [ "${BACKUP_TEST:-0}" = "1" ]; then
         -e DATA_ENCRYPTION_KEY_FILE=/run/secrets/datenschluessel \
         -v "$ID-seed-data:/data" -e MEDIA_ROOT=/data/media -e PRIVATE_ROOT=/data/private \
         -v "$WORK/deploy/backup/test_application_restore.py:/tmp/test_application_restore.py:ro" \
+        -e BACKUP_DB_PASSWORD=backup-nur-test \
         --entrypoint sh "$BACKEND_IMG" \
-        -c "python manage.py migrate -v0 && python manage.py seed_testdata --password Test-123456 > /dev/null && python /tmp/test_application_restore.py seed"
+        -c "python manage.py migrate -v0 && python manage.py ensure_app_role > /dev/null && python manage.py seed_testdata --password Test-123456 > /dev/null && python /tmp/test_application_restore.py seed"
     docker volume create "$ID-backups" > /dev/null
     # Der Backup-Dienst läuft als Benutzer postgres (70)
     docker run --rm --user 0 -v "$ID-backups:/backups" --entrypoint chown         "$BACKUP_IMG" 70:70 /backups
+    # Wie auf dem Server mit der Leserolle hubiplan_backup (GA8-06), nicht als Superuser
     docker run --rm --network "$ID" "$CPUS" -v "$ID-backups:/backups" \
-        -e PGHOST="$ID-db" -e PGUSER=test -e PGPASSWORD=test -e PGDATABASE=hubiplan \
+        -e PGHOST="$ID-db" -e PGUSER=hubiplan_backup -e PGPASSWORD=backup-nur-test -e PGDATABASE=hubiplan \
         -e BACKUP_PASSPHRASE=nur-ein-test -e BACKUP_HMAC_KEY=nur-ein-test --entrypoint sh "$BACKUP_IMG" \
         -c "backup.sh > /dev/null && tail -1 /backups/restore-test.log"
+    # Die Leserolle darf nichts ändern
+    docker run --rm --network "$ID" "$CPUS" -e PGHOST="$ID-db" -e PGUSER=hubiplan_backup \
+        -e PGPASSWORD=backup-nur-test -e PGDATABASE=hubiplan --entrypoint sh "$BACKUP_IMG" \
+        -c 'set -e
+            test "$(psql -tAc "SELECT count(*) > 0 FROM members_membership")" = t
+            for sql in "DELETE FROM members_membership" "SET default_transaction_read_only = off; DELETE FROM members_membership" "CREATE TABLE fremd (x int)" "ALTER ROLE hubiplan_backup SUPERUSER"; do
+                if psql -v ON_ERROR_STOP=1 -qc "$sql" > /dev/null 2>&1; then echo "Leserolle durfte: $sql" >&2; exit 1; fi
+            done'
+    echo "Backup: Leserolle sichert vollständig und darf nichts ändern"
     # hmac.sh rechnet ohne Schlüssel in der Befehlszeile, muss aber wie openssl rechnen
     docker run --rm "$CPUS" --tmpfs /tmp --entrypoint sh "$BACKUP_IMG" \
         -c 'set -e

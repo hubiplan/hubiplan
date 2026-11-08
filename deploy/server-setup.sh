@@ -75,6 +75,13 @@ if ! grep -q '^APP_DB_PASSWORD=' .env; then
     echo "Erzeuge Passwort für die Datenbankrolle der Anwendung …"
     echo "APP_DB_PASSWORD=$(openssl rand -base64 32 | tr -d '\n/+=')" >> .env
 fi
+# Leserolle für den Backup-Dienst (Gesamtaudit 08.11., GA8-06). Das Backend legt sie beim
+# Start an, der Backup-Dienst startet erst danach (depends_on).
+if ! grep -q '^BACKUP_DB_PASSWORD=' .env; then
+    echo "Erzeuge Passwort für die Leserolle des Backups …"
+    echo "BACKUP_DB_PASSWORD=$(openssl rand -base64 32 | tr -d '\n/+=')" >> .env
+fi
+grep -q '^BACKUP_DB_USER=' .env || echo "BACKUP_DB_USER=hubiplan_backup" >> .env
 # Öffentlicher Backup-Schlüssel (age1…), mitgegeben von deploy.sh
 if [ -n "${BACKUP_PUBLIC_KEY:-}" ]; then
     case "$BACKUP_PUBLIC_KEY" in
