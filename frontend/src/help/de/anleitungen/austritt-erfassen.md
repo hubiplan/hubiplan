@@ -9,7 +9,7 @@ stichworte: [Austritt, Kündigung, ausgetreten, Ende]
 ---
 
 1. Öffne in der [Mitgliederliste](/mitglieder) die Akte des Mitglieds.
-2. Klicke im Abschnitt **Abläufe** auf **Austritt erfassen**.
+2. Wähle oben unter **Weitere Aktionen** **Austritt erfassen** (oder öffne den Reiter **Mitgliedschaft**) und klicke im Abschnitt **Abläufe** auf **Austritt erfassen**.
 3. Trage das **Austrittsdatum** und den Grund ein.
 4. Klicke auf **Austritt speichern** und bestätige die Rückfrage.
 

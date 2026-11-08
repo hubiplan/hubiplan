@@ -9,7 +9,7 @@ stichworte: [leaving, resignation, left, end]
 ---
 
 1. In the [member list](/mitglieder), open the member's record.
-2. In the **Procedures** section, click **Record leaving**.
+2. Choose **Record leaving** under **More actions** at the top (or open the **Membership** tab) and click **Record leaving** in the **Procedures** section.
 3. Enter the **Leaving date** and the reason.
 4. Click **Save leaving** and confirm.
 
