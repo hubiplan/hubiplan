@@ -51,7 +51,6 @@ const org = testOrg({
 const ABWEICHUNGEN: Record<string, string> = {
   '/mitglieder/einrichtung': 'Mitgliedsarten',
   '/musik': '',
-  '/musik/uebersicht': 'Auftrittsübersicht',
   '/musik/verfuegbarkeit': '',
   '/musik/musiker': '',
   '/musik/proben': '',
