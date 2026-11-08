@@ -36,7 +36,7 @@ import { CardPanel } from '../../components/CardPanel.tsx'
 import { cardApi, cardBase } from '../../api/cards.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Term } from '../../learning/Aids.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 import { CompetitionsTab } from '../competitions/MemberTab.tsx'
 import { FeesTab } from './FeesTab.tsx'
 import { MusicTab } from './MusicTab.tsx'
@@ -834,10 +834,7 @@ function EditDepartmentMembership({
 function DurationLine({ label, info }: { label: string; info: DurationInfo }) {
   return (
     <p>
-      <strong>
-        {info.years} {info.years === 1 ? t('Jahr') : t('Jahre')}
-      </strong>{' '}
-      {label}
+      <strong>{tn('{n} Jahr', '{n} Jahre', info.years)}</strong> {label}
       <span className="muted small">
         {' '}
         (

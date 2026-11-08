@@ -15,9 +15,12 @@ const only = new Set(process.argv.slice(2))
 const images = spec.bilder.filter((b) => !only.size || only.has(b.name))
 
 const MAX_HOEHE = 900
-const browser = await chromium.launch()
 let failed = 0
 for (const language of ['de', 'en']) {
+  // Eigener Browser je Sprache: Datumsfelder richten sich nach der Browsersprache (--lang),
+  // nicht nach der Sprache des Kontexts
+  const locale = language === 'en' ? 'en-GB' : 'de-DE'
+  const browser = await chromium.launch({ args: [`--lang=${locale}`] })
   mkdirSync(join(out, language), { recursive: true })
   const byUser = Map.groupBy(images, (b) => b.zugang)
   for (const [user, list] of byUser) {
@@ -26,7 +29,7 @@ for (const language of ['de', 'en']) {
       deviceScaleFactor: 1,
       colorScheme: 'light',
       reducedMotion: 'reduce',
-      locale: language === 'en' ? 'en-GB' : 'de-DE',
+      locale,
     })
     const page = await context.newPage()
     await page.goto(`${base}/anmelden`)
@@ -274,8 +277,8 @@ for (const language of ['de', 'en']) {
     })
     await context.close()
   }
+  await browser.close()
 }
-await browser.close()
 if (failed) {
   console.error(`${failed} Bild(er) fehlgeschlagen`)
   process.exit(1)
