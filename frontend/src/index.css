@@ -361,7 +361,6 @@ button.tab.active {
     .tiles,
     .login-page,
     .modal-backdrop,
-    .page-head,
     .card-head,
     .filters,
     .calendar-toolbar,
@@ -1011,7 +1010,7 @@ h3 {
 
 .stack > *,
 .tiles > *,
-.page-head > * {
+.card-head > * {
   min-width: 0;
 }
 
@@ -1587,13 +1586,6 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 
 /* --- Meilenstein 2: Mitglieder --- */
 
-.page-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
 .filters {
   display: flex;
   flex-wrap: wrap;
@@ -1787,13 +1779,6 @@ button.tab.active {
   .member-secondary-actions:not(.is-expanded),
   .member-filter-options:not(.is-expanded) {
     display: none;
-  }
-  .member-list-page .page-head {
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .member-list-page .page-head h1 {
-    margin-bottom: 0.5rem;
   }
   .member-list-page .filters {
     padding: 0.75rem;

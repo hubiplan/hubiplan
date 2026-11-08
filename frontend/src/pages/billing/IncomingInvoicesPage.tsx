@@ -161,7 +161,7 @@ function IncomingDetail({
   }
   return (
     <div className="card stack">
-      <div className="page-head">
+      <div className="card-head">
         <h2>{value.data.number || value.name}</h2>
         <button className="button button-ghost" onClick={onClose}>
           {t('Schließen')}

@@ -112,12 +112,6 @@
   max-width: 75ch;
 }
 
-.music-breadcrumb {
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
-  overflow-wrap: anywhere;
-}
-
 .music-workspace .tabs {
   margin: 0;
 }

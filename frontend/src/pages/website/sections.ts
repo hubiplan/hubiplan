@@ -48,9 +48,3 @@ export function websiteSections(org: OrgSummary | null): NavItem[] {
   }
   return []
 }
-
-/** Überschrift zum aktuellen Pfad */
-export function sectionTitle(pathname: string): string {
-  const path = pathname.replace(/\/+$/, '') || '/webseite'
-  return ALL.find((s) => s.to === path)?.label ?? t('Webseite')
-}
