@@ -17,11 +17,16 @@ export interface PageAction {
   to?: string
   /** Datei oder fremde Adresse, z. B. ein PDF */
   href?: string
+  /** href in neuem Tab öffnen (z. B. PDF) */
+  newTab?: boolean
   onClick?: () => void
   icon?: ReactNode
   /** Löschen und Ähnliches: steht im Menü immer zuletzt und rot abgesetzt */
   danger?: boolean
   disabled?: boolean
+  /** Knopf klappt etwas auf (z. B. ein Formular): Zustand und Ziel für Screenreader */
+  expanded?: boolean
+  controls?: string
   /** Kurze Erklärung (title) */
   hint?: string
 }
@@ -185,7 +190,13 @@ function ActionButton({
     )
   if (action.href && !action.disabled)
     return (
-      <a href={action.href} className={className} title={action.hint} onClick={onDone}>
+      <a
+        href={action.href}
+        className={className}
+        title={action.hint}
+        onClick={onDone}
+        {...(action.newTab ? { target: '_blank', rel: 'noreferrer' } : {})}
+      >
         {body}
       </a>
     )
@@ -195,6 +206,8 @@ function ActionButton({
       className={className}
       title={action.hint}
       disabled={action.disabled}
+      aria-expanded={action.expanded}
+      aria-controls={action.controls}
       onClick={() => {
         onDone?.()
         action.onClick?.()
