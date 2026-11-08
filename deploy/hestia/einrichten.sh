@@ -90,6 +90,9 @@ chmod 600 "$ENV"
 echo "--- 5) Dienste mit neuer .env starten"
 cd "$APP" && sh deploy/server-setup.sh >/dev/null && echo "Docker-Verbund läuft"
 
+echo "--- 5b) Geheimer Kopfwert nginx -> Caddy (nur nginx darf X-Real-IP vorgeben)"
+APP="$APP" bash "$APP/deploy/hestia/proxy-geheim.sh" | sed 's/^/    /'
+
 echo "--- 6) Prüfung von außen"
 sleep 3
 curl -sS -o /dev/null -w "http  -> %{http_code} %{redirect_url}\n" "http://$DOMAIN/" || true

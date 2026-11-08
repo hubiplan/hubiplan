@@ -4,6 +4,7 @@ import { eventApi } from '../../api/events.ts'
 import type {
   CalendarBase,
   EventDetail,
+  FeedInfo,
   Occurrence,
   ResponseRow,
   ResponseStatus,
@@ -370,7 +371,7 @@ export function FeedPanel({ base }: { base: CalendarBase }) {
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
 
-  async function run(action: () => Promise<{ ics_url: string | null }>, text: string) {
+  async function run(action: () => Promise<FeedInfo>, text: string) {
     setBusy(true)
     setMessage(null)
     try {
@@ -402,18 +403,33 @@ export function FeedPanel({ base }: { base: CalendarBase }) {
         )}
       </p>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
-      {data.ics_url ? (
+      {data.active ? (
         <>
-          <div className="statute-link">
-            <code>{data.ics_url}</code>
-            <button
-              type="button"
-              className="button button-ghost"
-              onClick={() => copy(data.ics_url!)}
-            >
-              {t('Link kopieren')}
-            </button>
-          </div>
+          {data.ics_url ? (
+            <>
+              <div className="statute-link">
+                <code>{data.ics_url}</code>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => copy(data.ics_url!)}
+                >
+                  {t('Link kopieren')}
+                </button>
+              </div>
+              <p className="muted small">
+                {t(
+                  'Kopiere den Link jetzt. Aus Sicherheitsgründen zeigen wir ihn nur dieses eine Mal an.',
+                )}
+              </p>
+            </>
+          ) : (
+            <p className="muted small">
+              {t(
+                'Dein Kalender-Abo ist eingerichtet. Den Link zeigen wir aus Sicherheitsgründen nur direkt nach dem Erstellen. Brauchst du ihn wieder, erstelle einen neuen Link.',
+              )}
+            </p>
+          )}
           <div className="button-row">
             <button
               type="button"

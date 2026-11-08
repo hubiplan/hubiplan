@@ -1321,11 +1321,13 @@ class _EventIcs(APIView):
         return _ics_response(body, "termin.ics")
 
 
-def feed_data(request, feed: PersonalCalendar | None) -> dict:
-    if feed is None:
-        return {"ics_url": None}
+def feed_data(request, feed: PersonalCalendar | None, key: str = "") -> dict:
+    """Den Link gibt es nur direkt nach dem Erstellen; gespeichert ist nur sein Hash."""
     return {
-        "ics_url": request.build_absolute_uri(reverse("personal-calendar-ics", args=[feed.key]))
+        "active": feed is not None,
+        "ics_url": request.build_absolute_uri(reverse("personal-calendar-ics", args=[key]))
+        if feed is not None and key
+        else None,
     }
 
 
@@ -1338,14 +1340,16 @@ class PortalFeedView(PortalCalendarMixin, APIView):
 
     @transaction.atomic
     def put(self, request, **kwargs):
+        key = PersonalCalendar.new_key()
         feed, created = PersonalCalendar.objects.get_or_create(
             access=self.access,
-            defaults={"organization": self.viewer.org, "key": PersonalCalendar.new_key()},
+            defaults={"organization": self.viewer.org, "key_hash": PersonalCalendar.hash_key(key)},
         )
         if not created:
-            feed.key = PersonalCalendar.new_key()
-            feed.save(update_fields=["key"])
-        return Response(feed_data(request, feed))
+            feed.key = None
+            feed.key_hash = PersonalCalendar.hash_key(key)
+            feed.save(update_fields=["key", "key_hash"])
+        return Response(feed_data(request, feed, key))
 
     @transaction.atomic
     def delete(self, request, **kwargs):
@@ -1367,7 +1371,7 @@ class PersonalCalendarIcsView(APIView):
                 PersonalCalendar.objects.select_related(
                     "access__organization", "access__organization__parent", "access__user"
                 )
-                .filter(key=key)
+                .filter(key_hash=PersonalCalendar.hash_key(key))
                 .first()
             )
             if feed is None:

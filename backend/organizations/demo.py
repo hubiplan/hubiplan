@@ -66,8 +66,8 @@ def _delete_org(org) -> None:
     from members.models import Membership, Person, TransferRequest
 
     # Kasse zuerst: Buchungen schützen ihre Konten und Kategorien vor dem Löschen
-    with gobd.erasure():
-        Booking.objects.filter(organization=org).delete()
+    gobd.release_unit(org.pk)
+    Booking.objects.filter(organization=org).delete()
     Account.objects.filter(organization=org).delete()
     Category.objects.filter(organization=org).delete()
     TransferRequest.objects.filter(Q(from_org=org) | Q(to_org=org) | Q(scope=org)).delete()

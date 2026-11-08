@@ -34,7 +34,7 @@ from access.models import Role, RoleAssignment
 from access.permissions import is_platform_admin
 from accounts.models import User
 from audit.log import diff, record, snapshot
-from core import update_check
+from core import update_check, virenscan
 from core.api_base import AuditMixin, OrgScopedMixin
 from core.ratelimit import too_many
 from core.reorder import reorder_response
@@ -677,6 +677,8 @@ class PlatformUpdateView(APIView):
                 "enabled": settings.UPDATE_CHECK,
                 "update": update_check.available(),
                 "selfupdate": update_check.selbstupdate_status(),
+                # Hinweis für den Betreiber, wenn Weitergegebenes ungeprüft bleibt (F-02)
+                "virus_scan": {"enabled": virenscan.enabled(), "required": virenscan.required()},
             }
         )
 

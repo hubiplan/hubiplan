@@ -48,6 +48,17 @@ export function PlatformVersionPage() {
             : t('Die Suche nach neuen Releases ist auf diesem Server ausgeschaltet.')}
         </p>
       )}
+      {data.virus_scan && !(data.virus_scan.enabled && data.virus_scan.required) && (
+        <Alert kind="error">
+          {data.virus_scan.enabled
+            ? t(
+                'Die Virenprüfung ist eingerichtet, aber für die Weitergabe abgeschaltet (VIRUS_SCAN_REQUIRED=0). Rundschreiben-Anhänge und öffentliche Dokumente können ungeprüft hinausgehen.',
+              )
+            : t(
+                'Auf diesem Server ist keine Virenprüfung eingerichtet. Rundschreiben-Anhänge und öffentliche Dokumente gehen ungeprüft an viele Empfänger. Einrichtung: docs/betrieb.md, Abschnitt Virenprüfung.',
+              )}
+        </Alert>
+      )}
       {self?.result && <LastResult result={self.result} />}
       {self?.enabled ? (
         pending ? (

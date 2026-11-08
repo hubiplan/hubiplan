@@ -16,6 +16,17 @@ nicht selbst Port 80 oder 443. Die konkrete Belegung anderer Dienste gehört nic
 - `HUBIPLAN_HINTER_PROXY=1` aktiviert diese Compose-Ergänzung beim Einrichten.
 - nginx setzt `X-Real-IP`; Caddy reicht die Besucheradresse als einzelnen
   `X-Forwarded-For`-Eintrag weiter.
+- Den lokalen Port erreicht auf einem geteilten Server jeder Prozess. Deshalb schickt nginx
+  zusätzlich einen geheimen Kopfwert `X-Hubiplan-Proxy` mit; nur damit übernimmt Caddy
+  `X-Real-IP` (`HUBIPLAN_PROXY_GEHEIM` in der `.env`, `deploy/caddy/proxy-ip.caddy`).
+  `deploy/hestia/einrichten.sh` richtet das ein. Bestehende Installationen: erst die Vorlagen
+  erneuern (siehe unten), dann einmal
+
+  ```powershell
+  Get-Content -Raw deploy/hestia/proxy-geheim.sh | ssh deploy@server.example.org "sudo bash -s"
+  ```
+
+  Ohne `HUBIPLAN_PROXY_GEHEIM` verhält sich Caddy wie bisher.
 
 ## Erstes Einrichten
 
@@ -71,6 +82,15 @@ Manuelle Compose-Aufrufe auf dieser Installation benötigen beide Compose-Dateie
 ```bash
 sudo docker compose -f docker-compose.server.yml -f docker-compose.proxy.yml ps
 ```
+
+## Eigene Änderungen und Quellcode (AGPL)
+
+Die Seite `/lizenz` verlinkt den Quellcode der laufenden Fassung (AGPL § 13). Wer HUBIplan mit
+eigenen Änderungen betreibt, muss seinen geänderten Quellcode genauso anbieten: den Stand in
+einem öffentlichen Repository veröffentlichen und in der `.env` des Servers
+`HUBIPLAN_SOURCE_URL=https://example.org/eigenes/hubiplan` setzen, dann neu ausrollen. Der Link
+zeigt danach auf dieses Repository und den Commit der laufenden Fassung; der Commit muss dort
+also vorhanden sein. Details: [lizenzen.md](lizenzen.md).
 
 ## Mailversand und Verteiler
 
