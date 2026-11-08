@@ -13,6 +13,7 @@ import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { useDetailParam } from '../../components/detailParam.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
+import { Why } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import './helpers.css'
@@ -1010,6 +1011,7 @@ function PlanSettings({
           />
           {t('Eingetragene sehen, wer noch in ihrer Schicht ist')}
         </label>
+        <Why k="helpers_names" />
         <label className="field">
           <span>{t('Hinweis für die Helfer')}</span>
           <textarea

@@ -26,6 +26,7 @@ import { Alert, Field, LoadError, SaveStatus, SelectField } from '../../componen
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { berlin } from '../../components/calendar/time.ts'
+import { Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 
 const STATUS: { value: ProjectStatus; label: string }[] = [
@@ -88,6 +89,7 @@ function ProjectList() {
   if (list.error) return <Alert kind="error">{list.error}</Alert>
   return (
     <div className="stack">
+      <Why k="project_series" />
       {canEdit && !creating && (
         <div className="button-row">
           <button type="button" className="button button-primary" onClick={() => setCreating(true)}>

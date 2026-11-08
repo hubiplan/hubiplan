@@ -191,7 +191,7 @@ class SiteInfoView(_Public):
             # Menü „Geschichte“: Unterpunkte „Chronik“ und „Ämter“ nur mit Inhalt (Ralf 2026-10-31)
             "has_history_text": site.site.block_on("history")
             and site.page("geschichte") is not None,
-            "has_offices": site.site.block_on("offices") and bool(site.chairs()),
+            "has_offices": site.site.block_on("offices") and site.has_chairs(),
             # Bezeichnung für Menü und Überschrift der Majestäten
             "honors_label": site.honors_label() if site.site.block_on("honors") else None,
             # Menü „Würdenträger“: Unterpunkte je Würde und „Ehrungen“ (Ralf 2026-10-31)

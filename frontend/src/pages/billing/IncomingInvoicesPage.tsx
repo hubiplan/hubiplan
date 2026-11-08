@@ -6,6 +6,7 @@ import { financeApi } from '../../api/finance.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Field, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { ValidationResult } from './EInvoicesPage.tsx'
 
@@ -205,6 +206,7 @@ function IncomingDetail({
               'Vor der Freigabe Empfänger, Leistung, Betrag und Bankverbindung anhand der Vereinbarung prüfen. Technische Gültigkeit bestätigt diese Angaben nicht.',
             )}
           </p>
+          <Why k="incoming_approval" />
           <Field
             label={t('Prüfvermerk')}
             value={note}

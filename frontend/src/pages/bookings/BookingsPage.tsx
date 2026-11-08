@@ -6,6 +6,7 @@ import type { BookableItem, Booking, Occurrence } from '../../api/bookings.ts'
 import type { MaterialChoice } from '../../api/materials.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
+import { HowTo, Term } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { MaterialPicker } from '../materials/MaterialsPage.tsx'
@@ -540,7 +541,9 @@ function Handover({
   const back = booking.returned_at
   return (
     <div className="booking-handover">
-      <h3>{t('Ausleihe')}</h3>
+      <h3>
+        <Term k="loan">{t('Ausleihe')}</Term>
+      </h3>
       {out ? (
         <p>
           {t('Ausgegeben am {date}', { date: stamp(out) })}
@@ -945,6 +948,7 @@ export function BookingRulesCard({
   return (
     <section className="card">
       <h2>{t('Buchungskalender')}</h2>
+      <HowTo k="how_booking_requests" />
       {initial.enabled && (
         <p>
           <Link to={`/belegung?objekt=${item.id}`}>{t('Belegung ansehen und buchen')}</Link>

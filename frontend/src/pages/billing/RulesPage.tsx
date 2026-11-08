@@ -379,6 +379,7 @@ function SizeRatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) 
   return (
     <div className="card card-wide size-rates">
       <h2>{t('Staffel nach Größe')}</h2>
+      <HowTo k="calc_size_fee" />
       <p className="muted small">
         {t(
           'Für Organisationsmitglieder: Beitrag nach Größe, zum Beispiel Zahl der Mitarbeiter oder Einwohner. Die Größe steht in der Mitgliederakte. Organisationen ohne Größe zahlen den Beitrag ihrer Mitgliedsart.',
