@@ -303,13 +303,16 @@ unter Einstellungen › Verbund bei der Kopplung.
 
 ## Standzugang
 
-Für ein geliehenes Gerät ohne Konto erzeugt, wer Wettbewerbe verwaltet, unter „Erfassen“ (Knopf
+Für ein geliehenes Gerät ohne Konto erzeugt, wer Wettbewerbe verwaltet oder Ergebnisse erfasst
+(seit 08.11.2026 auch der Schießmeister, Feld `can_stand_access`), unter „Erfassen“ (Knopf
 „Anderes Gerät per QR-Code“, ebenso oben im Standmodus)
 einen Standzugang (Link und QR-Code, `/stand/zugang/<schlüssel>`). Er öffnet nur diesen
 Wettbewerb im Standmodus, erlaubt nur Erfassen (`/api/public/stand/<schlüssel>/…`: Einrichtung,
 Starter, Mitglieder nur mit Name und Untereinheit, Abgleich), läuft am Ende des
 Wettbewerbstags (oder heute, wenn der schon war) ab und lässt sich beenden. Gespeichert wird
 nur der Hash des Schlüssels; im Änderungsprotokoll steht „Standzugang <Bezeichnung>“.
+Die Android-App legt Standzugänge über ihre Verwaltung an und zeigt den Standmodus eingebettet
+(siehe `docs/app.md`, „Wettbewerbe und Standmodus“).
 
 ## Termin im Kalender
 

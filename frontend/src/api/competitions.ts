@@ -258,6 +258,8 @@ export interface CompetitionDetail extends Competition {
   units: { id: number; name: string }[]
   prizes: PrizeSetup[]
   can_manage: boolean
+  /** Standzugang anlegen: auch mit „Ergebnisse erfassen“ (fehlt bei älteren Servern) */
+  can_stand_access?: boolean
   awards?: Award[]
   grants?: Grant[]
   series_name?: string

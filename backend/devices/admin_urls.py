@@ -11,6 +11,8 @@ from rest_framework.routers import SimpleRouter
 from billing import views as billing_views
 from cards import views as card_views
 from changes import views as change_views
+from competitions import stand_views as competition_stand_views
+from competitions import views as competition_views
 from customfields import views as field_views
 from events import views as event_views
 from finance import quittung_views
@@ -47,6 +49,12 @@ org_router.register(
     "honorary-titles",
     for_app(honorary_views.HonoraryTitleViewSet, True),
     basename="app-admin-honorary-title",
+)
+# Wettbewerbe (konzepte/schiessen-android.md): lesen; erfasst wird im Standmodus
+org_router.register(
+    "competitions",
+    for_app(competition_views.CompetitionViewSet, True),
+    basename="app-admin-competition",
 )
 org_router.register(
     "billing/mandates", admin_members.AppMandateViewSet, basename="app-admin-mandate"
@@ -171,6 +179,18 @@ urlpatterns = [
         "events/<int:pk>/responses/<int:membership_id>/",
         event_views.OrgResponseDetailView,
         "event-response",
+    ),
+    # Wettbewerbe: Standzugang für den Standmodus in der App (Rechte wie im Browser); die
+    # Rangliste zeigt der Standmodus selbst
+    _p(
+        "competitions/<int:competition_id>/stand-access/",
+        competition_stand_views.StandAccessListView,
+        "competition-stand-accesses",
+    ),
+    _p(
+        "competitions/<int:competition_id>/stand-access/<int:pk>/",
+        competition_stand_views.StandAccessView,
+        "competition-stand-access",
     ),
     # B4: Kasse
     _p("finance/overview/", finance_views.OverviewView, "finance-overview"),

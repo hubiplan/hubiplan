@@ -171,7 +171,8 @@ Konzept: `konzepte/android-verwaltung.md` im Projektordner. Wer in einer Einheit
 Verwaltungsrechte hat, sieht in der App den Reiter „Verwaltung“.
 
 - `GET /api/app/v1/admin/` (Geräteschlüssel): Einheiten mit Verwaltungsrechten
-  (`members.*`, `photos.manage`, `cards.manage`, `events.manage`, `finance.*`, `billing.*`),
+  (`members.*`, `photos.manage`, `cards.manage`, `events.manage`, `finance.*`, `billing.*`,
+  `competitions.manage`, `competitions.results`), seit 08.11.2026 mit `modules` je Einheit,
   ob 2FA eingerichtet ist und ob die Verwaltung freigeschaltet ist. Keine Daten.
 - `POST /api/app/v1/admin/unlock/` mit `password` und `code` (TOTP): nur mit eingerichteter
   2FA, höchstens 5 Versuche je Gerät in 15 Minuten. Antwort 201 mit dem
@@ -189,6 +190,30 @@ Verwaltungsrechte hat, sieht in der App den Reiter „Verwaltung“.
 - `GET /api/app/v1/admin/u/<Einheit>/tasks/`: offene Aufgaben wie auf der Startseite.
 - Mein Konto › App & andere Instanzen › App auf dem Telefon zeigt „Verwaltung freigeschaltet bis …“ mit
   „Verwaltung sperren“ (`DELETE /api/app/v1/devices/<id>/admin/`); das Gerät bleibt angemeldet.
+
+### Wettbewerbe und Standmodus
+
+Konzept: `konzepte/schiessen-android.md` im Projektordner. Mit „Ergebnisse erfassen“ oder
+„Wettbewerbe verwalten“ (und Modul `competitions`) zeigt die App den Bereich „Wettbewerbe“.
+
+- `GET competitions/` und `GET competitions/<id>/` (nur lesen, wie im Browser; die Einzelansicht
+  hat `can_stand_access`).
+- `POST competitions/<id>/stand-access/` mit `label`: Standzugang bis Ende des Wettbewerbstags;
+  die Antwort enthält einmalig `token`. `GET` listet, `DELETE stand-access/<id>/` beendet.
+- Die App öffnet `https://<Instanz>/stand/zugang/<token>` in einer eingebetteten Ansicht, die
+  nur Adressen der eigenen Instanz lädt, und gibt ihr die Kamera frei. Der Standmodus meldet über
+  `window.hubiplanStand.pending()` die Zahl noch nicht übertragener Eingaben; die App fragt
+  damit vor dem Verlassen nach. Gearbeitet wird mit dem Standzugang, nicht mit dem
+  Vorstandsschlüssel (der sperrt nach 5 Minuten Pause).
+
+Ranglisten für Mitglieder (Geräteschlüssel, wie im Mitgliederbereich):
+
+- `GET /api/portal/<Zugang>/rankings/`: veröffentlichte Wettbewerbe des Vereins (`id` ist eine
+  Kennung, kein Datenbankschlüssel), `poll_seconds`.
+- `GET /api/portal/<Zugang>/rankings/<id>/`: Rangliste genau wie auf der Webseite
+  (Umfang, Einwilligungen, Namensformat); `?version=1` nur der kleine Stand zum Nachfragen.
+  Gilt auch, wenn die Webseite noch auf der Wartungsseite steht; Baustein „Ergebnisse“ aus oder
+  keine Webseite: leere Liste.
 
 ### Mitglieder und Freigaben (Schritt B2)
 

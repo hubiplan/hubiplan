@@ -61,7 +61,12 @@ def _end_of_day(day: datetime.date) -> datetime.datetime:
 
 class StandAccessListView(_Mixin, APIView):
     """GET: Standzugänge · POST {label?}: neuen Standzugang erzeugen (der Schlüssel erscheint
-    nur einmal). Gültig bis zum Ende des Wettbewerbstags (oder heute, wenn der schon war)."""
+    nur einmal). Gültig bis zum Ende des Wettbewerbstags (oder heute, wenn der schon war).
+
+    Anlegen und beenden darf auch, wer nur Ergebnisse erfasst (Schießmeister, Ralf
+    2026-11-08): Der Standzugang kann selbst nur erfassen."""
+
+    manage_only = False
 
     def get(self, request, org_id: int, competition_id: int):
         comp = self.competition(competition_id)
@@ -92,6 +97,8 @@ class StandAccessListView(_Mixin, APIView):
 
 class StandAccessView(_Mixin, APIView):
     """DELETE: Standzugang beenden."""
+
+    manage_only = False
 
     @transaction.atomic
     def delete(self, request, org_id: int, competition_id: int, pk: int):

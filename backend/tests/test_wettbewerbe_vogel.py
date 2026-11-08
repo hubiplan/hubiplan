@@ -329,8 +329,9 @@ class TestStandzugang:
         club.save()
         helfer = make_user("schiessmeister@example.org")
         give_role(helfer, club, ["competitions.results"], name="Schießmeister")
+        # Schießmeister mit „Ergebnisse erfassen“ darf einen Standzugang anlegen (Ralf 08.11.)
         resp = api(helfer).post(url(club, f"{comp_id}/stand-access/"), {}, "application/json")
-        assert resp.status_code == 403
+        assert resp.status_code == 201, resp.content
         # Gültig bis zum Ende des Wettbewerbstags
         resp = c.post(url(club, f"{comp_id}/stand-access/"), {}, "application/json")
         until = datetime.datetime.fromisoformat(resp.json()["expires_at"])

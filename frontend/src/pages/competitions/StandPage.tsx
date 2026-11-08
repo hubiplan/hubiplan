@@ -22,6 +22,7 @@ import { useAuth } from '../../auth/AuthContext.tsx'
 import {
   isStandNetworkError,
   loadStandCache,
+  pendingStandInputs,
   revokeStandCache,
   saveStandCache,
   standCacheAllowed,
@@ -31,7 +32,25 @@ import {
   subscribeStandCache,
 } from '../../api/standCache.ts'
 
+// Die HUBIplan-App zeigt den Standmodus eingebettet und fragt vor dem Verlassen, ob noch
+// Eingaben auf dem Gerät warten (konzepte/schiessen-android.md).
+declare global {
+  interface Window {
+    hubiplanStand?: { pending: () => number }
+  }
+}
+
+function useAppBridge() {
+  useEffect(() => {
+    window.hubiplanStand = { pending: pendingStandInputs }
+    return () => {
+      delete window.hubiplanStand
+    }
+  }, [])
+}
+
 export function StandPage() {
+  useAppBridge()
   const params = useParams()
   const org = Number(params.org)
   const id = Number(params.id)
@@ -52,6 +71,7 @@ export function StandPage() {
 }
 
 export function StandTokenPage() {
+  useAppBridge()
   const token = useParams().token ?? ''
   const [key, setKey] = useState<{ token: string; key: string } | null>(null)
   const [failed, setFailed] = useState(false)
@@ -130,16 +150,19 @@ function StandShell({ api, exit, org }: { api: StandApi; exit: ReactNode; org?: 
         )}
         {exit && (
           <div className="button-row push-right stand-head-actions">
-            {org && data?.own && data.can_manage && data.status !== 'endgueltig' && (
-              <button
-                type="button"
-                className="button button-ghost"
-                aria-expanded={showAccess}
-                onClick={() => setShowAccess((v) => !v)}
-              >
-                {t('Anderes Gerät per QR-Code')}
-              </button>
-            )}
+            {org &&
+              data?.own &&
+              (data.can_stand_access ?? data.can_manage) &&
+              data.status !== 'endgueltig' && (
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  aria-expanded={showAccess}
+                  onClick={() => setShowAccess((v) => !v)}
+                >
+                  {t('Anderes Gerät per QR-Code')}
+                </button>
+              )}
             {exit}
           </div>
         )}
