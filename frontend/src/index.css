@@ -1204,6 +1204,27 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   border-bottom-color: var(--color-focus);
 }
 
+/* Mitgliedsakte: Kopf mit Foto oder Initialen (S-03 A2) */
+.member-avatar {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.member-avatar-initials {
+  background: var(--color-bg-alt, var(--color-border));
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.member-facts {
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-muted);
+}
+
 /* Mitgliedsakte „Auf einen Blick“: Kacheln führen in ihren Reiter (S-03 A3) */
 .member-glance {
   max-width: none;

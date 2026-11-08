@@ -566,6 +566,30 @@ describe('Mitgliedsakte', () => {
     expect(within(glance).queryByRole('link', { name: /^Konto/ })).not.toBeInTheDocument()
   })
 
+  it('Kopf: Name als Überschrift, E-Mail und weitere Aktionen (S-03 A2)', async () => {
+    fakeApi({
+      ...common(),
+      [`GET ${base}/members/11/`]: () => ({ status: 200, body: detail }),
+    })
+    renderAt('/mitglieder/11')
+    const user = userEvent.setup()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Erika Muster' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Mitglied · aktiv')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'E-Mail' })).toHaveAttribute(
+      'href',
+      'mailto:e@beispiel.test',
+    )
+    // Ohne Telefonnummer kein „Anrufen“
+    expect(screen.queryByRole('link', { name: 'Anrufen' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Weitere Aktionen/ }))
+    expect(screen.getByRole('link', { name: 'Austritt erfassen' })).toHaveAttribute(
+      'href',
+      '/mitglieder/11?bereich=mitgliedschaft',
+    )
+  })
+
   it('erfasst einen Austritt', async () => {
     const calls = fakeApi({
       ...common(),
