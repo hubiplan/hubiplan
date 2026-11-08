@@ -28,7 +28,7 @@ from members.models import Membership
 from members.personsearch import name_ids
 
 from . import donations as svc
-from .models import Donation, DonationSettings, DonationStatement
+from .models import Donation, DonationSettings, DonationStatement, Earmark
 from .serializers import OrgRelatedField
 from .views import BookingPagination, FinanceMixin
 
@@ -130,6 +130,52 @@ class SimplifiedProofView(DonationMixin, APIView):
         return Response({"text": donation_simple.text(self.org, cfg)})
 
 
+# --- Zweckbindungen (Konzept S5) ---
+
+
+class EarmarkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Earmark
+        fields = ["id", "name", "note", "is_active"]
+
+    def validate_name(self, value):
+        value = " ".join(value.split())
+        org = self.context["org"]
+        clash = Earmark.objects.filter(organization=org, name__iexact=value)
+        if self.instance:
+            clash = clash.exclude(pk=self.instance.pk)
+        if clash.exists():
+            raise serializers.ValidationError(gettext("Diesen Zweck gibt es schon."))
+        return value
+
+
+class EarmarkViewSet(DonationMixin, AuditMixin, viewsets.ModelViewSet):
+    """Zweckbindungen für Spenden mit Summen (Spenden, Ausgaben, Rest)."""
+
+    serializer_class = EarmarkSerializer
+    pagination_class = None
+    http_method_names = ["get", "post", "patch", "delete"]
+
+    def get_queryset(self):
+        return Earmark.objects.filter(organization=self.org)
+
+    def get_create_kwargs(self) -> dict:
+        return {"organization": self.org}
+
+    def list(self, request, *args, **kwargs):
+        from . import earmarks
+        from .services import _money
+
+        return Response(_money(earmarks.overview(self.org)))
+
+    def perform_destroy(self, instance):
+        if instance.donations.exists() or instance.bookings.exists():
+            raise serializers.ValidationError(
+                gettext("Der Zweck ist schon Spenden oder Ausgaben zugeordnet; bitte archivieren.")
+            )
+        super().perform_destroy(instance)
+
+
 # --- Zuwendungen ---
 
 
@@ -151,6 +197,8 @@ class DonationSerializer(serializers.ModelSerializer):
         source="booking.display_number", read_only=True, default=None
     )
     donor_address = serializers.CharField(required=False, allow_blank=True, max_length=500)
+    earmark = OrgRelatedField(queryset=Earmark.objects.none(), allow_null=True, required=False)
+    earmark_name = serializers.CharField(source="earmark.name", read_only=True, default=None)
 
     class Meta:
         model = Donation
@@ -168,6 +216,8 @@ class DonationSerializer(serializers.ModelSerializer):
             "goods_origin",
             "goods_documents",
             "note",
+            "earmark",
+            "earmark_name",
             "booking",
             "booking_number",
             "statement",

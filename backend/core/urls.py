@@ -102,6 +102,7 @@ org_router.register(
 org_router.register(
     "finance/donations", donation_views.DonationViewSet, basename="finance-donation"
 )
+org_router.register("finance/earmarks", donation_views.EarmarkViewSet, basename="finance-earmark")
 org_router.register(
     "finance/bank-statements", bank_views.BankStatementViewSet, basename="finance-bank-statement"
 )

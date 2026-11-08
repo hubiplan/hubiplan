@@ -37,6 +37,9 @@ export interface Donation {
   goods_origin: GoodsOrigin
   goods_documents: boolean
   note: string
+  /** Zweckbindung (zweckgebundene Spende) */
+  earmark: number | null
+  earmark_name: string | null
   booking: number | null
   booking_number: string | null
   statement: number | null
@@ -45,8 +48,28 @@ export interface Donation {
 
 export type DonationInput = Omit<
   Donation,
-  'id' | 'kind_label' | 'booking' | 'booking_number' | 'statement' | 'statement_number'
+  | 'id'
+  | 'kind_label'
+  | 'booking'
+  | 'booking_number'
+  | 'statement'
+  | 'statement_number'
+  | 'earmark_name'
 >
+
+/** Zweckbindung für Spenden mit Summen (Konzept vereinskasse-steuern, S5) */
+export interface Earmark {
+  id: number
+  name: string
+  note: string
+  is_active: boolean
+  received: string
+  used: string
+  rest: string
+  first_donation: string | null
+  last_donation: string | null
+  overdue: boolean
+}
 
 export interface DonationStatement {
   id: number
@@ -89,6 +112,15 @@ export interface DonationCheckData {
   goods_without_documents: number
   goods_open: number
   fees_skipped: number
+}
+
+export const earmarkApi = {
+  list: (org: number) => api.get<Earmark[]>(`${base(org)}/earmarks/`),
+  create: (org: number, data: { name: string; note: string }) =>
+    api.post<Earmark>(`${base(org)}/earmarks/`, data),
+  update: (org: number, id: number, data: Partial<Pick<Earmark, 'name' | 'note' | 'is_active'>>) =>
+    api.patch<Earmark>(`${base(org)}/earmarks/${id}/`, data),
+  remove: (org: number, id: number) => api.del(`${base(org)}/earmarks/${id}/`),
 }
 
 export const donationApi = {

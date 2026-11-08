@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useDetailParam } from '../../components/detailParam.ts'
+import { earmarkApi } from '../../api/donations.ts'
 import { euro, financeApi, parseAmount } from '../../api/finance.ts'
 import type {
   Account,
@@ -606,7 +607,20 @@ function BookingForm({
     project: String(booking?.project ?? ''),
     allowance: (booking?.allowance ?? '') as string,
     artist_fee: !!booking?.artist_fee,
+    earmark: String(booking?.earmark ?? ''),
   })
+  // Zweckgebundene Spenden (Konzept vereinskasse-steuern, S5): nur mit Zuwendungen
+  const hasDonations = useActiveOrg().modules.includes('donations')
+  const earmarks = useLoad(
+    () =>
+      hasDonations && kind === 'expense'
+        ? earmarkApi.list(orgId).catch(() => [])
+        : Promise.resolve([]),
+    [orgId, hasDonations, kind],
+  )
+  const usableEarmarks = (earmarks.data ?? []).filter(
+    (x) => x.is_active || x.id === booking?.earmark,
+  )
   const usableProjects = projects.filter((p) => p.status !== 'done' || p.id === booking?.project)
   const [member, setMember] = useState<MemberRow | null>(
     booking?.membership
@@ -663,6 +677,7 @@ function BookingForm({
       project: kind !== 'transfer' && x.project ? Number(x.project) : null,
       allowance: kind === 'expense' ? x.allowance : '',
       artist_fee: kind === 'expense' && x.artist_fee,
+      earmark: kind === 'expense' && x.earmark ? Number(x.earmark) : null,
     }
   }
 
@@ -957,6 +972,21 @@ function BookingForm({
                 checked={v.artist_fee}
                 onChange={(value) => set('artist_fee', value)}
               />
+            )}
+            {kind === 'expense' && usableEarmarks.length > 0 && (
+              <SelectField
+                label={t('Zweckgebundene Spende verwendet für')}
+                value={v.earmark}
+                error={errors.earmark}
+                onChange={(e) => set('earmark', e.target.value)}
+              >
+                <option value="">{t('keine')}</option>
+                {usableEarmarks.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.name}
+                  </option>
+                ))}
+              </SelectField>
             )}
           </div>
           {kind !== 'transfer' && usableProjects.length > 0 && !locked && (

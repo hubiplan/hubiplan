@@ -5,12 +5,13 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { donationApi } from '../../api/donations.ts'
+import { donationApi, earmarkApi } from '../../api/donations.ts'
 import type {
   Donation,
   DonationInput,
   DonationKind,
   DonationSettings,
+  Earmark,
   GoodsOrigin,
 } from '../../api/donations.ts'
 import { ApiError } from '../../api/client.ts'
@@ -94,6 +95,7 @@ export function DonationsArea({ canEdit }: { canEdit: boolean }) {
     <Routes>
       <Route index element={<DonationsList canEdit={canEdit} />} />
       <Route path="bestaetigungen" element={<StatementsList canEdit={canEdit} />} />
+      <Route path="zweckbindungen" element={<EarmarksList canEdit={canEdit} />} />
       {/* Die Einrichtung steht unter Finanzen › Einrichtung › Zuwendungen */}
       <Route
         path="einstellungen"
@@ -491,7 +493,12 @@ function DonationForm({
       goods_origin: '',
       goods_documents: false,
       note: '',
+      earmark: null,
     },
+  )
+  const earmarks = useLoad(() => earmarkApi.list(org.id).catch(() => []), [org.id])
+  const usableEarmarks = (earmarks.data ?? []).filter(
+    (x) => x.is_active || x.id === initial?.earmark,
   )
   const [amountText, setAmountText] = useState(initial ? initial.amount.replace('.', ',') : '')
   const [member, setMember] = useState<MemberRow | null>(null)
@@ -647,6 +654,20 @@ function DonationForm({
           <Why k="donation_waiver" />
         </>
       )}
+      {usableEarmarks.length > 0 && (
+        <SelectField
+          label={t('Zweckgebunden für')}
+          value={v.earmark ? String(v.earmark) : ''}
+          onChange={(e) => set('earmark', e.target.value ? Number(e.target.value) : null)}
+        >
+          <option value="">{t('nicht zweckgebunden')}</option>
+          {usableEarmarks.map((x) => (
+            <option key={x.id} value={x.id}>
+              {x.name}
+            </option>
+          ))}
+        </SelectField>
+      )}
       <Field
         label={t('Notiz (nur intern)')}
         value={v.note ?? ''}
@@ -798,6 +819,134 @@ function StatementsList({ canEdit }: { canEdit: boolean }) {
         onPage={setPage}
         noun={t('Bestätigungen')}
       />
+    </div>
+  )
+}
+
+// --- Zweckbindungen (Konzept vereinskasse-steuern, S5) ---
+
+function EarmarksList({ canEdit }: { canEdit: boolean }) {
+  const org = useActiveOrg()
+  const list = useLoad(() => earmarkApi.list(org.id), [org.id])
+  const [name, setName] = useState('')
+  const [note, setNote] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  async function run(action: () => Promise<unknown>) {
+    setBusy(true)
+    setError(null)
+    try {
+      await action()
+      await list.reload()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function add(e: FormEvent) {
+    e.preventDefault()
+    await run(async () => {
+      await earmarkApi.create(org.id, { name, note })
+      setName('')
+      setNote('')
+    })
+  }
+
+  if (list.error) return <LoadError message={list.error} onRetry={() => void list.reload()} />
+  if (!list.data) return <p className="muted">{t('Lädt …')}</p>
+  const rows: Earmark[] = list.data
+
+  return (
+    <div className="card card-wide" data-testid="earmarks">
+      <h2>{t('Zweckgebundene Spenden')}</h2>
+      <p className="muted small">
+        {t(
+          'Spenden für einen bestimmten Zweck, etwa eine neue Fahne, dürfen nur dafür verwendet werden. Ordnet die Spenden hier einem Zweck zu und im Kassenbuch die Ausgaben dafür; der Rest zeigt, was noch zweckgebunden zu verwenden ist. Gezählt werden Geldzuwendungen.',
+        )}
+      </p>
+      {error && <Alert kind="error">{error}</Alert>}
+      {rows.length === 0 ? (
+        <p className="muted">{t('Noch keine Zweckbindungen.')}</p>
+      ) : (
+        <table className="table">
+          <thead>
+            <tr>
+              <th>{t('Zweck')}</th>
+              <th className="num">{t('Spenden')}</th>
+              <th className="num">{t('verwendet')}</th>
+              <th className="num">{t('Rest')}</th>
+              {canEdit && <th />}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id} className={r.is_active ? undefined : 'muted'}>
+                <td>
+                  {r.name}
+                  {!r.is_active && <span className="muted small"> ({t('archiviert')})</span>}
+                  {r.note && <div className="muted small">{r.note}</div>}
+                  {r.overdue && (
+                    <div className="small">
+                      <span className="badge badge-open">{t('zeitnah verwenden')}</span>{' '}
+                      {t(
+                        'Die erste Spende liegt mehr als zwei Jahre zurück. Gemeinnützige Mittel müssen bis zum Ende des zweiten Folgejahres verwendet sein.',
+                      )}
+                    </div>
+                  )}
+                </td>
+                <td className="num">{euro(r.received)}</td>
+                <td className="num">{euro(r.used)}</td>
+                <td className="num">
+                  <strong>{euro(r.rest)}</strong>
+                </td>
+                {canEdit && (
+                  <td>
+                    <button
+                      type="button"
+                      className="button button-ghost"
+                      disabled={busy}
+                      onClick={() =>
+                        void run(() => earmarkApi.update(org.id, r.id, { is_active: !r.is_active }))
+                      }
+                    >
+                      {r.is_active ? t('Archivieren') : t('Wiederherstellen')}
+                    </button>
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      {canEdit && (
+        <form className="subcard" onSubmit={(e) => void add(e)}>
+          <h3>{t('Neuer Zweck')}</h3>
+          <div className="grid-2">
+            <Field
+              label={t('Zweck')}
+              value={name}
+              maxLength={100}
+              required
+              placeholder={t('z. B. Neue Fahne')}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Field
+              label={t('Beschreibung')}
+              value={note}
+              maxLength={1000}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
+          <div className="button-row">
+            <button type="submit" className="button button-primary" disabled={busy || !name.trim()}>
+              {t('Anlegen')}
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   )
 }

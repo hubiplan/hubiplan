@@ -301,6 +301,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
     def get_queryset(self):
         qs = Booking.objects.filter(organization=self.org).select_related(
             "organization",
+            "earmark",
             "account",
             "to_account",
             "category",
@@ -515,8 +516,8 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         changed = {k for k, v in serializer.validated_data.items() if v != getattr(instance, k)}
         if changed:
             self._donation_editable(instance)
-        if changed <= {"project", "allowance", "artist_fee"}:
-            # Nur Veranstaltung, Aufwandsvergütung bzw. Künstlerhonorar: ändert keine
+        if changed <= {"project", "allowance", "artist_fee", "earmark"}:
+            # Nur Veranstaltung, Aufwandsvergütung, Künstlerhonorar bzw. Zweckbindung: ändert keine
             # Beträge, auch in abgeschlossenen Jahren
             super().perform_update(serializer)
             return
