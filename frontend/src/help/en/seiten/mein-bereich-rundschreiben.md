@@ -1,7 +1,6 @@
 ---
 key: page.portal_circulars
 titel: My area › Messages
-bereich: mein-bereich
 routen: [/mein-bereich/rundschreiben]
 stichworte: [messages, circular, unsubscribe, email]
 ---

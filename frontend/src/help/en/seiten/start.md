@@ -1,7 +1,6 @@
 ---
 key: page.start
 titel: Home page
-bereich: start
 routen: [/]
 stichworte: [overview, tasks, tiles]
 ---

@@ -1,7 +1,6 @@
 ---
 key: page.portal_data
 titel: Mein Bereich › Meine Daten
-bereich: mein-bereich
 routen: [/mein-bereich/daten]
 stichworte: [Adresse, ändern, Bankverbindung, Auskunft]
 ---

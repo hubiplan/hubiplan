@@ -1,7 +1,6 @@
 ---
 key: guide.module_toggle
 titel: Enable a module for a unit
-bereich: einstellungen
 modul: platform
 rechte: [platform.manage]
 routen: [/plattform]

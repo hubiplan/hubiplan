@@ -1,7 +1,6 @@
 ---
 key: page.finance_reserves
 titel: Finanzen › Rücklagen
-bereich: finanzen
 modul: tax
 rechte: [finance.view]
 routen: [/finanzen/ruecklagen]

@@ -1,7 +1,6 @@
 ---
 key: page.finance_dunning
 titel: Finanzen › Mahnungen
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen/mahnungen]

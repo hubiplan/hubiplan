@@ -60,16 +60,28 @@ describe('Neuigkeiten', () => {
     expect(changelogBody('<!doctype html><html></html>')).toBeNull()
   })
 
-  it('Seite zeigt die Änderungen der laufenden Fassung', async () => {
+  it('Reiter der Hilfe: Überblick nach Monaten und Änderungen der laufenden Fassung', async () => {
     renderApp('/hilfe/neuigkeiten', {
       '/lizenzen/CHANGELOG.md': CHANGELOG,
       '/lizenzen/version.txt': '2026.11.1\n',
     })
-    expect(await screen.findByRole('heading', { level: 1, name: 'Neuigkeiten' })).toBeVisible()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Hilfe' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Neuigkeiten' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(await screen.findByRole('heading', { level: 2, name: 'Was ist neu' })).toBeVisible()
+    expect(await screen.findByRole('heading', { level: 3, name: 'November 2026' })).toBeVisible()
+    expect(screen.getByRole('heading', { level: 2, name: 'Änderungen je Version' })).toBeVisible()
     expect(await screen.findByRole('heading', { name: '2026.11.1 (2026-11-20)' })).toBeVisible()
     expect(screen.getByText('Erfundene Neuerung für den Test')).toBeVisible()
     expect(screen.queryByText(/Einleitung/)).toBeNull()
     expect(await screen.findByText(/Laufende Version: 2026\.11\.1\./)).toBeVisible()
+  })
+
+  it('alte Adresse „Was ist neu“ führt zum Reiter Neuigkeiten', async () => {
+    renderApp('/hilfe/was-ist-neu', {})
+    expect(await screen.findByRole('heading', { level: 2, name: 'Was ist neu' })).toBeVisible()
   })
 
   it('ohne Changelog ein Hinweis statt einer leeren Seite', async () => {

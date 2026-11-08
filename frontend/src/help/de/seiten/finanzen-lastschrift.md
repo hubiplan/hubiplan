@@ -1,7 +1,6 @@
 ---
 key: page.finance_debits
 titel: Finanzen › Lastschriften
-bereich: beitraege
 modul: billing
 rechte: [billing.view]
 routen: [/finanzen/lastschrift]

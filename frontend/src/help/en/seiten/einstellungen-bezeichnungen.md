@@ -1,7 +1,6 @@
 ---
 key: page.settings_terms
 titel: Settings › Names and terms
-bereich: einstellungen
 rechte: [org.edit]
 routen: [/einstellungen/bezeichnungen]
 stichworte: [term, platoon, corps, section, sub-unit, article, English]

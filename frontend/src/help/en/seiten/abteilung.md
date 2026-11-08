@@ -1,7 +1,6 @@
 ---
 key: page.department
 titel: Sub-unit area
-bereich: mitglieder
 routen: [/abteilung]
 stichworte: [platoon, department, area, leader]
 ---

@@ -1,7 +1,6 @@
 ---
 key: page.account_app
 titel: My account › App & other instances
-bereich: konto
 routen: [/mein-konto/app]
 stichworte: [app, phone, device, pair, instance]
 ---

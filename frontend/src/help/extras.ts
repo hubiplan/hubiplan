@@ -1,27 +1,77 @@
 // Hilfe: Hilfsfunktionen zu HelpExtras.tsx (erste Schritte, ausgegraute Anleitungen,
 // „Zeig es mir“).
+import { t } from '../i18n/index.ts'
 import type { HelpEntry } from './content.ts'
 import { useHelp } from './HelpContext.tsx'
 
-/** Erste Schritte in dieser Reihenfolge; jede Person sieht nur, was sie nutzen darf. */
-export const FIRST_STEPS = [
+/** Erste Schritte als Pakete je Aufgabenbereich (konzepte/hilfe-neustruktur.md 3.4). Ein Paket
+ *  erscheint, sobald die Person eine seiner Anleitungen sehen darf (Modul und Recht). */
+export const FIRST_STEP_PACKAGES: readonly { id: string; label: () => string; keys: string[] }[] = [
+  {
+    id: 'alle',
+    label: () => t('Für alle'),
+    keys: ['guide.password', 'guide.two_factor', 'guide.language', 'guide.app_pair'],
+  },
+  {
+    id: 'mitglieder',
+    label: () => t('Mitglieder verwalten'),
+    keys: [
+      'guide.member_admit',
+      'guide.member_import',
+      'guide.member_change_review',
+      'guide.member_export',
+    ],
+  },
+  {
+    id: 'beitraege',
+    label: () => t('Beiträge und Rechnungen'),
+    keys: [
+      'guide.fee_rates',
+      'guide.debit_mandate',
+      'guide.fee_run',
+      'guide.debit_run',
+      'guide.dunning',
+    ],
+  },
+  {
+    id: 'kasse',
+    label: () => t('Kasse und Abschluss'),
+    keys: [
+      'guide.bank_statement',
+      'guide.booking',
+      'guide.cash_count',
+      'guide.cash_receipt',
+      'guide.year_closing',
+    ],
+  },
+  {
+    id: 'termine',
+    label: () => t('Termine und Versammlungen'),
+    keys: ['guide.event_create', 'guide.event_subscribe'],
+  },
+  {
+    id: 'kommunikation',
+    label: () => t('Rundschreiben, Dokumente und Webseite'),
+    keys: ['guide.circular_send', 'guide.document_upload'],
+  },
+  {
+    id: 'einstellungen',
+    label: () => t('Vereinseinstellungen'),
+    keys: ['guide.role_create', 'guide.role_preview'],
+  },
+]
+
+/** Alle ersten Schritte (ohne Doppelte), in Paketreihenfolge */
+export const FIRST_STEPS = [...new Set(FIRST_STEP_PACKAGES.flatMap((p) => p.keys))]
+
+/** Fragen auf der Hilfe-Startseite für Mitglieder ohne Verwaltungsrechte (3.3) */
+export const MEMBER_TOPICS = [
+  'guide.portal_change',
+  'guide.app_pair',
   'guide.password',
   'guide.two_factor',
   'guide.language',
-  'guide.app_pair',
-  'guide.portal_change',
-  'guide.member_admit',
-  'guide.member_import',
-  'guide.member_export',
-  'guide.fee_rates',
-  'guide.fee_run',
-  'guide.bank_statement',
-  'guide.booking',
-  'guide.event_create',
-  'guide.circular_send',
-  'guide.role_create',
-  'guide.role_preview',
-] as const
+]
 
 /** Einträge, die die Person sehen könnte, wenn sie das Recht hätte (nur bei passender Suche). */
 export function useBlocked(filter: (e: HelpEntry) => boolean): HelpEntry[] {

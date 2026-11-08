@@ -1,7 +1,6 @@
 ---
 key: page.members_portal_setup
 titel: Mitglieder › Einrichtung › Mitgliederbereich & Fotos
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/einrichtung/mitgliederbereich]

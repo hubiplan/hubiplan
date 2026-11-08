@@ -473,6 +473,7 @@ function MembershipTab({
   const departments = useLoad(() => orgApi.departmentChoices(org.id), [org.id])
   const precision = org.date_precision
   const [editingDepartment, setEditingDepartment] = useState<number | null>(null)
+  const [correcting, setCorrecting] = useState<number | null>(null)
   const terms = orgTerms(org)
 
   async function run(action: () => Promise<unknown>) {
@@ -531,6 +532,15 @@ function MembershipTab({
                 <td>{p.exit_date ? formatMemberDate(p.exit_date, precision) : t('heute')}</td>
                 <td>{p.exit_reason_label || '–'}</td>
                 <td className="actions">
+                  {canEdit && (
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => setCorrecting(correcting === p.id ? null : p.id)}
+                    >
+                      {t('Ein-/Austritt korrigieren')}
+                    </button>
+                  )}{' '}
                   {canEdit && member.periods.length > 1 && (
                     <button
                       type="button"
@@ -554,6 +564,19 @@ function MembershipTab({
             ))}
           </tbody>
         </table>
+        {canEdit && correcting !== null && (
+          <CorrectPeriod
+            key={correcting}
+            org={org}
+            member={member}
+            periodId={correcting}
+            onDone={async () => {
+              setCorrecting(null)
+              await reload()
+            }}
+            onCancel={() => setCorrecting(null)}
+          />
+        )}
         {canEdit && <AddPeriod org={org} member={member} onAdded={reload} />}
       </Section>
 
@@ -841,6 +864,107 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       <h2>{title}</h2>
       {children}
     </div>
+  )
+}
+
+/** Ein- oder Austrittsdatum berichtigen bzw. Austritt aufheben (Datenaudit 08.11. DA-01). */
+function CorrectPeriod({
+  org,
+  member,
+  periodId,
+  onDone,
+  onCancel,
+}: {
+  org: OrgSummary
+  member: MemberDetail
+  periodId: number
+  onDone: () => Promise<void>
+  onCancel: () => void
+}) {
+  const period = member.periods.find((x) => x.id === periodId)
+  const form = useForm({
+    entry_date: period?.entry_date ?? '',
+    exit_date: period?.exit_date ?? '',
+    exit_reason: period?.exit_reason || 'exit',
+  })
+  if (!period) return null
+  async function save(ev: FormEvent) {
+    ev.preventDefault()
+    const exit = form.values.exit_date || null
+    if (
+      period?.exit_date &&
+      !exit &&
+      !(await confirmDialog({
+        title: t('Austritt aufheben?'),
+        message: t(
+          'Die Mitgliedschaft läuft dann wieder offen. Mitgliedsart, {department_label_plural} und Ämter, die mit dem Austritt endeten, laufen ebenfalls weiter.',
+          { department_label_plural: org.department_label_plural },
+        ),
+        confirmLabel: t('Austritt aufheben'),
+        danger: false,
+      }))
+    )
+      return
+    const ok = await form.submit(() =>
+      memberApi.correctPeriod(org.id, member.id, {
+        period: periodId,
+        entry_date: form.values.entry_date,
+        exit_date: exit,
+        exit_reason: exit ? form.values.exit_reason : '',
+      }),
+    )
+    if (ok) await onDone()
+  }
+  return (
+    <form className="subcard" onSubmit={save}>
+      <h3>{t('Ein-/Austritt korrigieren')}</h3>
+      <p className="muted small">
+        {t(
+          'Mitgliedsart, {department_label_plural} und Ämter, die am alten Datum begannen bzw. endeten, ziehen mit. Austrittsdatum leeren hebt den Austritt auf.',
+          { department_label_plural: org.department_label_plural },
+        )}
+      </p>
+      <div className="grid-3">
+        <Field
+          label={t('Eintritt')}
+          type="date"
+          required
+          value={form.values.entry_date}
+          error={form.errors.entry_date}
+          onChange={(e) => form.set('entry_date', e.target.value)}
+        />
+        <Field
+          label={t('Austritt')}
+          type="date"
+          value={form.values.exit_date}
+          error={form.errors.exit_date}
+          onChange={(e) => form.set('exit_date', e.target.value)}
+        />
+        {form.values.exit_date && (
+          <SelectField
+            label={t('Grund')}
+            value={form.values.exit_reason}
+            error={form.errors.exit_reason}
+            onChange={(e) => form.set('exit_reason', e.target.value)}
+          >
+            {member.exit_reasons.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
+            ))}
+          </SelectField>
+        )}
+      </div>
+      {form.message?.kind === 'error' && <Alert kind="error">{form.message.text}</Alert>}
+      <div className="button-row">
+        <button type="submit" className="button button-primary" disabled={form.busy}>
+          {t('Speichern')}
+        </button>
+        <button type="button" className="button button-ghost" onClick={onCancel}>
+          {t('Abbrechen')}
+        </button>
+      </div>
+    </form>
   )
 }
 

@@ -1,7 +1,6 @@
 ---
 key: page.chronicle
 titel: Chronicle
-bereich: mitglieder
 modul: chronicle
 rechte: [chronicle.view, chronicle.edit]
 routen: [/chronik]

@@ -1,7 +1,6 @@
 ---
 key: page.finance_statements
 titel: Finance › Bank statements
-bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/kontoauszuege]

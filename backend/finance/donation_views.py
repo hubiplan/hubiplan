@@ -185,6 +185,7 @@ class DonationChecksSerializer(serializers.Serializer):
     goods_without_documents = serializers.IntegerField()
     goods_open = serializers.IntegerField()
     fees_skipped = serializers.IntegerField()
+    booking_mismatch = serializers.IntegerField()
 
 
 class DonationSerializer(serializers.ModelSerializer):
@@ -244,6 +245,22 @@ class DonationSerializer(serializers.ModelSerializer):
             attrs["donor_name"] = inst.donor_name = name
             if not inst.donor_address.strip():
                 attrs["donor_address"] = inst.donor_address = address
+        if self.instance and self.instance.booking_id:
+            # Betrag und Datum kommen aus der Buchung (Datenaudit 08.11. DA-03)
+            for key in ("amount", "date"):
+                booking = self.instance.booking
+                if key in attrs and attrs[key] not in (
+                    getattr(self.instance, key),
+                    getattr(booking, key),
+                ):
+                    raise serializers.ValidationError(
+                        {
+                            key: gettext(
+                                "Betrag und Datum kommen aus der Buchung. Bitte die Buchung "
+                                "ändern; die Zuwendung zieht mit."
+                            )
+                        }
+                    )
         try:
             svc.check_donation(org, inst)
         except DjangoValidationError as exc:

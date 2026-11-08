@@ -1,7 +1,6 @@
 ---
 key: page.website_images
 titel: Website › Images
-bereich: webseite
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/bilder]

@@ -1,7 +1,6 @@
 ---
 key: page.competitions
 titel: Competitions
-bereich: wettbewerbe
 modul: competitions
 rechte: [competitions.manage, competitions.results]
 routen: [/wettbewerbe, /wettbewerbe/statistik]

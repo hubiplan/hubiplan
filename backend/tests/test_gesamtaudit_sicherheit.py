@@ -304,7 +304,7 @@ def test_bemerkung_bleibt_text_in_teilnehmerliste(orgs):
     workbook = load_workbook(io.BytesIO(content), data_only=False)
     ws = workbook.active
     assert ws["F4"].data_type == "s"
-    assert ws["F4"].value == "'=1+1"
+    assert ws["F4"].value == "=1+1"  # als Text, ohne sichtbares Apostroph (DA-05)
     assert ws["A1"].data_type == "s"
     assert ws["E4"].value == 2  # Zahlen bleiben Zahlen
     workbook.close()

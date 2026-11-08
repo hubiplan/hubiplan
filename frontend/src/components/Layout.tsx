@@ -35,9 +35,17 @@ import { locale, t } from '../i18n/index.ts'
 // Seiten außerhalb der Bereiche in der Seitenleiste
 const OTHER_PAGES: Record<string, string> = {
   '/mein-konto': t('Mein Konto'),
-  '/glossar': t('Glossar'),
   '/hilfe': t('Hilfe'),
-  '/hilfe/neuigkeiten': t('Neuigkeiten'),
+  '/hilfe/anleitungen': t('{label} · {modLabel}', {
+    label: t('Anleitungen'),
+    modLabel: t('Hilfe'),
+  }),
+  '/hilfe/seiten': t('{label} · {modLabel}', { label: t('Seiten'), modLabel: t('Hilfe') }),
+  '/hilfe/begriffe': t('{label} · {modLabel}', { label: t('Begriffe'), modLabel: t('Hilfe') }),
+  '/hilfe/neuigkeiten': t('{label} · {modLabel}', {
+    label: t('Neuigkeiten'),
+    modLabel: t('Hilfe'),
+  }),
   '/briefvorlage': t('Briefvorlage'),
 }
 

@@ -1,7 +1,6 @@
 ---
 key: page.portal_data
 titel: My area › My data
-bereich: mein-bereich
 routen: [/mein-bereich/daten]
 stichworte: [address, change, bank details, information]
 ---

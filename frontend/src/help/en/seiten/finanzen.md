@@ -1,7 +1,6 @@
 ---
 key: page.finance
 titel: Finance › Overview
-bereich: finanzen
 rechte: [finance.view, billing.view]
 routen: [/finanzen]
 stichworte: [cash, balance, overview, open items]

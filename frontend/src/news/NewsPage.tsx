@@ -1,7 +1,9 @@
-// /hilfe/neuigkeiten: Änderungen je Version aus CHANGELOG.md bzw. CHANGELOG.en.md.
+// Hilfe › Neuigkeiten (/hilfe/neuigkeiten): Überblick nach Monaten, darunter die Änderungen je
+// Version aus CHANGELOG.md bzw. CHANGELOG.en.md (konzepte/hilfe-neustruktur.md, HN2).
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { HelpMarkdown } from '../help/HelpMarkdown.tsx'
+import { OPEN_MONTHS, loadNews } from '../help/news.ts'
+import type { MonthlyNews } from '../help/news.ts'
 import { lang, t } from '../i18n/index.ts'
 import { CHANGELOG_FILES, changelogBody, markSeen } from './changelog.ts'
 import { RELEASE_PATTERN, useRunningVersion } from './version.ts'
@@ -24,9 +26,14 @@ async function loadChangelog(): Promise<string | null> {
 export function NewsPage() {
   const version = useRunningVersion()
   const [body, setBody] = useState<string | null | undefined>(undefined)
+  const [news, setNews] = useState<MonthlyNews | null>(null)
   useEffect(() => {
     let alive = true
     loadChangelog().then((b) => alive && setBody(b))
+    loadNews(lang()).then(
+      (n) => alive && setNews(n),
+      () => undefined,
+    )
     return () => {
       alive = false
     }
@@ -36,23 +43,40 @@ export function NewsPage() {
     if (version && RELEASE_PATTERN.test(version)) markSeen(version)
   }, [version])
   return (
-    <section className="help-page news-page">
-      <h1>{t('Neuigkeiten')}</h1>
-      <p className="muted">
-        {version
-          ? t('Laufende Version: {x}. Die neueste Version steht oben.', { x: version })
-          : t('Die neueste Version steht oben.')}{' '}
-        <Link to="/hilfe/was-ist-neu">{t('Überblick nach Monaten')}</Link>
-      </p>
-      {body === undefined && (
-        <p className="muted" role="status">
-          {t('Lädt …')}
+    <div className="news-page">
+      <section aria-labelledby="neu-monate">
+        <h2 id="neu-monate">{t('Was ist neu')}</h2>
+        {news && (
+          <>
+            <HelpMarkdown body={news.intro} />
+            {news.months.map((m, i) => (
+              <details key={m.title} className="news-month" open={i < OPEN_MONTHS}>
+                <summary>
+                  <h3>{m.title}</h3>
+                </summary>
+                <HelpMarkdown body={m.body} />
+              </details>
+            ))}
+          </>
+        )}
+      </section>
+      <section aria-labelledby="neu-versionen">
+        <h2 id="neu-versionen">{t('Änderungen je Version')}</h2>
+        <p className="muted">
+          {version
+            ? t('Laufende Version: {x}. Die neueste Version steht oben.', { x: version })
+            : t('Die neueste Version steht oben.')}
         </p>
-      )}
-      {body === null && (
-        <p role="status">{t('Die Änderungshinweise liegen dieser Fassung nicht bei.')}</p>
-      )}
-      {body && <HelpMarkdown body={body} />}
-    </section>
+        {body === undefined && (
+          <p className="muted" role="status">
+            {t('Lädt …')}
+          </p>
+        )}
+        {body === null && (
+          <p role="status">{t('Die Änderungshinweise liegen dieser Fassung nicht bei.')}</p>
+        )}
+        {body && <HelpMarkdown body={body} />}
+      </section>
+    </div>
   )
 }

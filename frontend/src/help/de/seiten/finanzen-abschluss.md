@@ -1,7 +1,6 @@
 ---
 key: page.finance_closing
 titel: Finanzen › Auswerten und Jahr abschließen
-bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen:

@@ -28,7 +28,12 @@ def _cell(value):
     if isinstance(value, float) and value.is_integer():
         return int(value)
     if isinstance(value, str):
-        return value.strip()
+        value = value.strip()
+        # Älterer HUBIplan-Export schrieb ein Apostroph vor „+“, „-“ und „@“
+        # (Datenaudit 08.11. DA-05)
+        if len(value) > 1 and value[0] == "'" and value[1] in "+-@":
+            value = value[1:]
+        return value
     return value
 
 

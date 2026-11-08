@@ -1,7 +1,6 @@
 ---
 key: page.circulars
 titel: Rundschreiben
-bereich: rundschreiben
 modul: circulars
 routen: [/rundschreiben]
 stichworte: [Rundmail, Brief, Newsletter, Verteiler, Einladung]

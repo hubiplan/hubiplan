@@ -1,7 +1,6 @@
 ---
 key: page.finance_accounts
 titel: Finanzen › Einrichtung › Konten
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/einrichtung/konten]

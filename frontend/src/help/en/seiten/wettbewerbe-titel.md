@@ -1,7 +1,6 @@
 ---
 key: page.competitions_titles
 titel: Competitions › Titles and winners
-bereich: wettbewerbe
 modul: competitions
 rechte: [competitions.manage, competitions.results]
 routen: [/wettbewerbe/titel]

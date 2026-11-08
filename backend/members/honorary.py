@@ -70,7 +70,10 @@ def titles_by_person(person_ids, org: Organization, on=None, full_names=False):
 
 
 def adjusted_fee(titles, normal: Decimal) -> tuple[Decimal, str] | None:
-    """Beitrag nach Ehrungen (günstigste gilt) und Name der Ehrung, sonst None."""
+    """Beitrag nach Ehrungen (günstigste gilt) und Name der Ehrung, sonst None.
+
+    Eine Ehrung verteuert nie: Liegt der Ehrenbeitrag über dem normalen Beitrag, bleibt
+    es beim normalen (Datenaudit 08.11. DA-07, FD-03)."""
     best = None
     for t in titles:
         if t.fee_mode == HonoraryTitle.FeeMode.FREE:
@@ -84,6 +87,8 @@ def adjusted_fee(titles, normal: Decimal) -> tuple[Decimal, str] | None:
             continue
         if best is None or amount < best[0]:
             best = (amount, t.name)
+    if best is not None and best[0] > normal:
+        return None
     return best
 
 

@@ -246,8 +246,10 @@ class TestSicherheit:
         from exchange.export import safe_cell
 
         formula = '=HYPERLINK("http://boese.example")'
-        assert safe_cell(formula) == "'" + formula
-        assert safe_cell("+49 123") == "'+49 123"
+        # Als Textzelle, ohne sichtbares Apostroph (Datenaudit 08.11. DA-05)
+        cell = safe_cell(formula)
+        assert cell.value == formula and cell.data_type == "s"
+        assert safe_cell("+49 123") == "+49 123"
         assert safe_cell("Muster") == "Muster"
         assert safe_cell(42) == 42
 

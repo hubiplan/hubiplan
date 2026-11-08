@@ -1,7 +1,6 @@
 ---
 key: page.finance_dunning
 titel: Finance › Reminders
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen/mahnungen]

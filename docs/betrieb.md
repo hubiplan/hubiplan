@@ -31,6 +31,11 @@ verlassen: kein `RESET ROLE` zum Superuser, keine Shell-Befehle über die Datenb
 Abschalten von RLS. Nach einer Rücksicherung setzt der nächste Start Rechte und Passwort
 der Rolle neu.
 
+Das Backup sichert erst die Datenbank (`pg_dump`), danach die Dateien. Zwischen beiden liegen
+einige Minuten: Wer genau dann etwas hochlädt oder löscht, hat nach einer Rücksicherung einen
+Verweis ohne Datei bzw. eine Datei ohne Verweis. Der Rücksicherungstest listet solche Fälle;
+deshalb läuft das Backup nachts.
+
 **Abschottung der Container** (`docker-compose.server.yml`):
 
 - Backend, Worker und Beat laufen mit **schreibgeschütztem Dateisystem**: Schadcode kann
@@ -1026,8 +1031,8 @@ Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen.
 - Dependabot meldet wöchentlich Updates; Django bleibt auf der LTS-Version.
 - Kritische Sicherheitslücken innerhalb weniger Tage einspielen, sonst monatlich.
 - Vor dem Ausrollen lokal testen: `BACKUP_TEST=1 scripts/test.sh` (in WSL).
-  Tests laufen nie auf dem Server; höchstens zwei Testläufe
-  gleichzeitig, jeder höchstens 8 Kerne (`scripts/testplatz.sh`).
+  Tests laufen nie auf dem Server, sondern lokal über einen Testplatz
+  (`scripts/testplatz.sh`).
 - Wer HUBIplan selbst betreibt, rollt am besten Releases aus (`deploy/deploy.sh v2026.11.0`
   oder mit Rückschritt-Prüfung `deploy/release-ausrollen.sh <ziel> v2026.11.0`)
   und liest vorher in [CHANGELOG.md](../CHANGELOG.md) den Abschnitt „Für Betreiber“.

@@ -1,10 +1,10 @@
 ---
 key: guide.member_cards
 titel: Mitgliedsausweise drucken oder sperren
-bereich: mitglieder
 modul: members
 rechte: [cards.view, cards.manage]
 routen: [/mitglieder]
+reihe: 60
 stichworte: [Ausweis, QR-Code, drucken, sperren, verloren]
 ---
 

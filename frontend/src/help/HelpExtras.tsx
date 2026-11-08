@@ -9,9 +9,8 @@ import { errorMessage, useAutoSave, useForm, useLoad } from '../components/forms
 import { Alert, Field, SaveStatus } from '../components/ui.tsx'
 import { t } from '../i18n/index.ts'
 import { TextArea } from '../pages/settings/TextArea.tsx'
-import { AREAS } from './content.ts'
 import type { HelpEntry } from './content.ts'
-import { FIRST_STEPS, highlight, labelsIn } from './extras.ts'
+import { FIRST_STEP_PACKAGES, highlight, labelsIn } from './extras.ts'
 import { useHelp } from './HelpContext.tsx'
 
 const quote = (s: string) => t('„{x}“', { x: s })
@@ -309,24 +308,22 @@ export function GuideNotes({ entry, editable = false }: { entry: HelpEntry; edit
   )
 }
 
-/** „Für dich“: erste Schritte nach den eigenen Rechten, zum Abhaken. */
-export function ForYou({
-  areaLabel,
-  linkTo,
-}: {
-  areaLabel: (area: string) => string
-  linkTo: (entry: HelpEntry) => ReactNode
-}) {
+/** „Für dich“: erste Schritte als Pakete je Aufgabenbereich, zum Abhaken. Ein Paket erscheint,
+ *  wenn die Person eine seiner Anleitungen sehen darf; erledigte Pakete sind zugeklappt. */
+export function ForYou({ linkTo }: { linkTo: (entry: HelpEntry) => ReactNode }) {
   const help = useHelp()
   if (!help?.entries) return null
   const byKey = new Map(help.entries.filter(help.visible).map((e) => [e.key, e]))
-  const steps = FIRST_STEPS.map((k) => byKey.get(k)).filter((e): e is HelpEntry => !!e)
-  if (!steps.length) return null
-  const groups = AREAS.map((a) => ({ area: a, items: steps.filter((s) => s.area === a) })).filter(
-    (g) => g.items.length > 0,
-  )
+  const packages = FIRST_STEP_PACKAGES.map((p) => ({
+    id: p.id,
+    label: p.label(),
+    items: p.keys.map((k) => byKey.get(k)).filter((e): e is HelpEntry => !!e),
+  })).filter((p) => p.items.length > 0)
+  if (!packages.length) return null
+  const steps = [...new Map(packages.flatMap((p) => p.items).map((e) => [e.key, e])).values()]
   const done = help.done
-  const doneCount = done ? steps.filter((s) => done.has(s.key)).length : 0
+  const isDone = (e: HelpEntry) => !!done?.has(e.key)
+  const doneCount = steps.filter(isDone).length
   const locked = !!help.previewRole
   return (
     <section className="help-area help-for-you" aria-labelledby="hilfe-fuer-dich">
@@ -348,29 +345,40 @@ export function ForYou({
           })}
         </p>
       )}
-      {groups.map((g) => (
-        <div key={g.area} className="help-step-group">
-          <h3>{areaLabel(g.area)}</h3>
-          <ul className="help-steps">
-            {g.items.map((s) => {
-              const checked = !!done?.has(s.key)
-              return (
-                <li key={s.key} className={checked ? 'help-step-done' : undefined}>
-                  <input
-                    type="checkbox"
-                    id={`schritt-${s.slug}`}
-                    checked={checked}
-                    disabled={locked || !done}
-                    aria-label={t('{title} erledigt', { title: s.title })}
-                    onChange={() => help.toggleDone(s.key)}
-                  />{' '}
-                  {linkTo(s)}
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ))}
+      {packages.map((g) => {
+        const complete = !!done && g.items.every(isDone)
+        return (
+          <details key={g.id} className="help-step-group" open={!complete}>
+            <summary>
+              <h3>{g.label}</h3>{' '}
+              <span className="muted small">
+                {t('{done} von {all}', {
+                  done: g.items.filter(isDone).length,
+                  all: g.items.length,
+                })}
+              </span>
+            </summary>
+            <ul className="help-steps">
+              {g.items.map((s) => {
+                const checked = isDone(s)
+                return (
+                  <li key={s.key} className={checked ? 'help-step-done' : undefined}>
+                    <input
+                      type="checkbox"
+                      id={`schritt-${g.id}-${s.slug}`}
+                      checked={checked}
+                      disabled={locked || !done}
+                      aria-label={t('{title} erledigt', { title: s.title })}
+                      onChange={() => help.toggleDone(s.key)}
+                    />{' '}
+                    {linkTo(s)}
+                  </li>
+                )
+              })}
+            </ul>
+          </details>
+        )
+      })}
     </section>
   )
 }

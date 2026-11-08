@@ -1,7 +1,6 @@
 ---
 key: guide.portal_change
 titel: Have your details changed (new address, new account)
-bereich: mein-bereich
 routen: [/mein-bereich/daten, /mein-bereich]
 stichworte: [address, move, IBAN, change, phone]
 ---

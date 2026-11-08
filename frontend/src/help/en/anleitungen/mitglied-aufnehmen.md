@@ -1,10 +1,10 @@
 ---
 key: guide.member_admit
 titel: Admit a new member
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder]
+reihe: 10
 stichworte: [admission, joining, new, join, create, organisation, company, supporting member]
 ---
 

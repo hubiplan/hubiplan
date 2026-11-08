@@ -114,6 +114,7 @@ export interface DonationCheckData {
   goods_without_documents: number
   goods_open: number
   fees_skipped: number
+  booking_mismatch?: number
 }
 
 export const earmarkApi = {

@@ -1,7 +1,6 @@
 ---
 key: page.finance_received
 titel: Finance › Received invoices
-bereich: finanzen
 routen: [/finanzen/rechnungen/dachverband]
 stichworte: [umbrella association, invoice, levy, association fee]
 ---

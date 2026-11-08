@@ -1,9 +1,9 @@
 ---
 key: guide.event_subscribe
 titel: Termine im eigenen Kalender sehen (Abo)
-bereich: termine
 modul: events
 routen: [/termine]
+reihe: 20
 stichworte: [Kalender, Abo, iCal, Handy, Outlook]
 ---
 

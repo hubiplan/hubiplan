@@ -1,7 +1,6 @@
 ---
 key: page.members_federation_dev
 titel: Mitglieder › Entwicklung aller
-bereich: mitglieder
 modul: members
 rechte: [members.view]
 routen: [/mitglieder/verbund/entwicklung]

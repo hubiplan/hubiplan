@@ -1,10 +1,10 @@
 ---
 key: guide.member_type_change
 titel: Change the membership type (e.g. from active to passive)
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/:id]
+reihe: 40
 stichworte: [membership type, active, passive, change]
 ---
 

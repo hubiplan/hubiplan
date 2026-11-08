@@ -43,7 +43,13 @@ export interface FeeRunInput {
   /** Konto für Überweisungen mit IBAN */
   accountWithIban: boolean
   sepaEnabled: boolean
-  checks?: { unreachable: number; with_mandate: number; open_change_requests: number }
+  checks?: {
+    unreachable: number
+    with_mandate: number
+    open_change_requests: number
+    /** Mitglieder in mehreren Untereinheiten (Datenaudit 08.11. FD-05) */
+    multi_units?: number
+  }
 }
 
 export function feeRunChecks(input: FeeRunInput): CheckItem[] {
@@ -101,6 +107,17 @@ export function feeRunChecks(input: FeeRunInput): CheckItem[] {
       fix: t('Kontaktdaten in der Mitgliedsakte ergänzen, sonst kommt die Rechnung nicht an.'),
       to: '/mitglieder',
     })
+    if ((c.multi_units ?? 0) > 0)
+      items.push({
+        key: 'multi_units',
+        ok: true,
+        info: true,
+        text: tn(
+          '{n} Mitglied gehört zu mehreren Untereinheiten; die Rechnung geht an die mit dem frühesten Beginn.',
+          '{n} Mitglieder gehören zu mehreren Untereinheiten; die Rechnung geht jeweils an die mit dem frühesten Beginn.',
+          c.multi_units ?? 0,
+        ),
+      })
     if (c.open_change_requests > 0)
       items.push({
         key: 'change_requests',
@@ -350,6 +367,8 @@ export interface DonationInput {
   goods_without_documents: number
   goods_open: number
   fees_skipped: number
+  /** offene Zuwendungen, deren Buchung storniert ist oder abweicht */
+  booking_mismatch?: number
 }
 
 export function donationChecks(c: DonationInput): CheckItem[] {
@@ -380,6 +399,19 @@ export function donationChecks(c: DonationInput): CheckItem[] {
             ),
       fix: t('Die Bestätigung nennt Name und Anschrift des Zuwendenden: Anschrift nachtragen.'),
       why: 'donation_liability',
+    })
+  if ((c.booking_mismatch ?? 0) > 0)
+    items.push({
+      key: 'booking',
+      ok: false,
+      text: tn(
+        '{n} offene Zuwendung passt nicht zu ihrer Buchung (storniert, keine Einnahme oder anderer Betrag bzw. anderes Datum).',
+        '{n} offene Zuwendungen passen nicht zu ihren Buchungen (storniert, keine Einnahme oder anderer Betrag bzw. anderes Datum).',
+        c.booking_mismatch ?? 0,
+      ),
+      fix: t(
+        'Zuwendung öffnen und Betrag und Datum wie in der Buchung eintragen oder die Zuwendung löschen.',
+      ),
     })
   if (c.goods_open > 0)
     items.push({

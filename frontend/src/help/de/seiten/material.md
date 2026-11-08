@@ -1,7 +1,6 @@
 ---
 key: page.material
 titel: Material verwalten
-bereich: start
 modul: material
 rechte: [material.view]
 routen: [/material]

@@ -1,7 +1,6 @@
 ---
 key: page.account
 titel: My account › Profile
-bereich: konto
 routen: [/mein-konto]
 stichworte: [profile, name, language, learning aids]
 ---

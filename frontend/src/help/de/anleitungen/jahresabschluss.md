@@ -1,10 +1,10 @@
 ---
 key: guide.year_closing
 titel: Geschäftsjahr abschließen
-bereich: finanzen
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/abschluss]
+reihe: 160
 stichworte: [Jahresabschluss, Kassenbericht, Kassenprüfung, abschließen]
 ---
 

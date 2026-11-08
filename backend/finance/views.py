@@ -584,6 +584,8 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         with transaction.atomic():
             super().perform_update(serializer)
             after = serializer.instance
+            # Unbestätigte Zuwendung zieht Betrag und Datum mit (Datenaudit 08.11. DA-03)
+            services.sync_booking_donation(after)
             cash_ok(
                 [before[0], before[1], after.account, after.to_account],
                 min(before[2], after.date),
@@ -633,6 +635,9 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
                     line,
                     {"Kontoumsatz": ["erledigt", "wieder offen (Buchung gelöscht)"]},
                 )
+            # Unbestätigte Zuwendung verschwindet mit der Buchung, statt ohne Buchung
+            # bestätigbar zu bleiben (Datenaudit 08.11. DA-03)
+            services.remove_booking_donation(instance.pk)
             super().perform_destroy(instance)
             cash_ok(accounts, since)
 

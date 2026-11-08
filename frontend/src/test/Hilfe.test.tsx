@@ -9,7 +9,6 @@ import { PERM } from '../api/orgs.ts'
 import { DEPT_PERM } from '../api/portal.ts'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import {
-  AREAS,
   guidesFor,
   imagesIn,
   pageHelpFor,
@@ -18,7 +17,9 @@ import {
   visibleFor,
 } from '../help/content.ts'
 import type { HelpEntry } from '../help/content.ts'
-import { highlight, labelsIn } from '../help/extras.ts'
+import { FIRST_STEPS, MEMBER_TOPICS, highlight, labelsIn } from '../help/extras.ts'
+import { byMenu, placeOf } from '../help/menu.ts'
+import { parseNews } from '../help/news.ts'
 import { HelpContactsCard } from '../help/HelpExtras.tsx'
 import { renderHelp } from '../help/markdown.ts'
 import SPEC from '../help/bilder.json'
@@ -110,18 +111,18 @@ describe('Hilfedateien', () => {
     expect([...ENG.keys()].sort()).toEqual([...DE.keys()].sort())
     for (const [name, de] of DE) {
       const en = ENG.get(name) as HelpEntry
-      const meta = (e: HelpEntry) => [e.key, e.area, e.module, e.rights, e.routes]
+      const meta = (e: HelpEntry) => [e.key, e.module, e.rights, e.routes, e.order, e.menu]
       expect(meta(en), name).toEqual(meta(de))
       expect(en.keywords.length, `${name}: Stichworte`).toBeGreaterThan(0)
       expect(imagesIn(en.body), `${name}: Bilder`).toEqual(imagesIn(de.body))
     }
   })
 
-  it('Schlüssel eindeutig, Bereiche bekannt, Seitenhilfen im Ordner seiten/', () => {
+  it('Schlüssel eindeutig, jeder Eintrag hat einen Menüpunkt, Seitenhilfen im Ordner seiten/', () => {
     const keys = [...DE.values()].map((e) => e.key)
     expect(new Set(keys).size).toBe(keys.length)
     for (const [name, e] of DE) {
-      expect(AREAS as readonly string[], name).toContain(e.area)
+      expect(placeOf(e), `${name}: kein Menüpunkt zur Route`).not.toBeNull()
       expect(name.startsWith('seiten/'), name).toBe(e.kind === 'page')
       expect(e.routes.length, `${name}: routen`).toBeGreaterThan(0)
     }
@@ -274,6 +275,65 @@ const ORG_HELP = {
   can_edit: false,
 }
 
+describe('Gliederung wie das Menü (hilfe-neustruktur HN1–HN3)', () => {
+  const entry = (name: string) => DE.get(name) as HelpEntry
+  const groupOf = (name: string) => placeOf(entry(name))?.group
+
+  it('Einträge stehen in der Gruppe ihres Menüpunkts', () => {
+    expect(groupOf('seiten/versammlungen.md')).toBe('planen')
+    expect(groupOf('seiten/helferdienste.md')).toBe('planen')
+    expect(groupOf('seiten/aufgaben.md')).toBe('planen')
+    expect(groupOf('seiten/musik.md')).toBe('verein')
+    expect(groupOf('seiten/chronik.md')).toBe('verein')
+    expect(groupOf('seiten/dokumente.md')).toBe('organisation')
+    expect(groupOf('seiten/belegung.md')).toBe('verwaltung')
+    expect(groupOf('seiten/finanzen-beitragslaeufe.md')).toBe('verwaltung')
+    expect(groupOf('seiten/mein-bereich.md')).toBe('alltag')
+    expect(groupOf('seiten/mein-konto-briefvorlage.md')).toBe('konto')
+    expect(groupOf('seiten/plattform.md')).toBe('plattform')
+  })
+
+  it('Anleitungen im Ablauf, Hauptseite zuerst, Gruppen in der Reihenfolge der Seitenleiste', () => {
+    const sections = byMenu([...DE.values()])
+    expect(sections.map((s) => s.group)).toEqual([
+      'alltag',
+      'planen',
+      'verein',
+      'organisation',
+      'verwaltung',
+      'konto',
+      'plattform',
+    ])
+    const finance = sections.flatMap((s) => s.items).find((i) => i.item === 'finanzen') as {
+      entries: HelpEntry[]
+    }
+    const guides = finance.entries.filter((e) => e.kind === 'guide').map((e) => e.key)
+    expect(guides.indexOf('guide.fee_rates')).toBeLessThan(guides.indexOf('guide.fee_run'))
+    expect(guides.indexOf('guide.fee_run')).toBeLessThan(guides.indexOf('guide.debit_run'))
+    expect(finance.entries[0].key).toBe('page.finance')
+  })
+
+  it('erste Schritte und Mitgliederfragen nennen vorhandene Anleitungen', () => {
+    const keys = new Set([...DE.values()].map((e) => e.key))
+    for (const k of [...FIRST_STEPS, ...MEMBER_TOPICS]) expect(keys.has(k), k).toBe(true)
+  })
+
+  it('Neuigkeiten: Monate in beiden Sprachen gleich, Links gibt es wirklich', () => {
+    const news = import.meta.glob('../help/neuigkeiten/*.md', {
+      query: '?raw',
+      import: 'default',
+      eager: true,
+    }) as Record<string, string>
+    const de = parseNews(news['../help/neuigkeiten/de.md'])
+    const en = parseNews(news['../help/neuigkeiten/en.md'])
+    expect(de.months.length).toBeGreaterThan(0)
+    expect(en.months.length).toBe(de.months.length)
+    for (const text of Object.values(news))
+      for (const link of text.matchAll(/\]\((\/[^)]*)\)/g))
+        expect(TOP_ROUTES.has(link[1].split('/')[1]), link[1]).toBe(true)
+  })
+})
+
 describe('Oberfläche', () => {
   it('Menüpunkt heißt „Hilfe“; /hilfe zeigt Anleitungen nach Rechten, die Suche auch das Glossar', async () => {
     renderApp('/hilfe')
@@ -291,6 +351,38 @@ describe('Oberfläche', () => {
       await screen.findByRole('link', { name: 'Zwei-Faktor-Anmeldung einrichten' }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Passwort ändern' })).not.toBeInTheDocument()
+  })
+
+  it('Reiter Seiten: alle Seitenhilfen wie die Seitenleiste; altes /glossar führt zu Begriffe', async () => {
+    renderApp('/hilfe/seiten')
+    expect(await screen.findByRole('link', { name: 'Seiten' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(await screen.findByRole('heading', { level: 2, name: 'Verein' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 3, name: 'Mitglieder' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Mein Konto' })).toBeInTheDocument()
+  })
+
+  it('/glossar leitet auf den Reiter Begriffe', async () => {
+    renderApp('/glossar')
+    expect(await screen.findByRole('link', { name: 'Begriffe' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(screen.queryByLabelText('Glossar durchsuchen')).not.toBeInTheDocument()
+  })
+
+  it('nur Mitglied: eigene Startseite mit Fragen statt erster Schritte', async () => {
+    renderApp('/hilfe', testOrg({ modules: [], permissions: [] }))
+    expect(
+      await screen.findByRole('heading', { level: 2, name: 'Hilfe für Mitglieder' }),
+    ).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'Passwort ändern' })[0]).toHaveAttribute(
+      'href',
+      '/hilfe/passwort-aendern',
+    )
+    expect(screen.queryByRole('heading', { name: 'Für dich: erste Schritte' })).toBeNull()
   })
 
   it('mit dem Recht erscheint die Anleitung; Anleitung als eigene Seite mit Bild', async () => {

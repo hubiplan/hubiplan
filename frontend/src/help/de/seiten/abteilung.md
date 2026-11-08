@@ -1,7 +1,6 @@
 ---
 key: page.department
 titel: Bereich einer Untereinheit
-bereich: mitglieder
 routen: [/abteilung]
 stichworte: [Zug, Abteilung, Bereich, Zugführer]
 ---

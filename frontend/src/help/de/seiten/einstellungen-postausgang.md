@@ -1,7 +1,6 @@
 ---
 key: page.settings_outbox
 titel: Einstellungen › Postausgang
-bereich: einstellungen
 rechte: [audit.view]
 routen: [/einstellungen/postausgang]
 stichworte: [Mail, Versand, zugestellt, Fehler]

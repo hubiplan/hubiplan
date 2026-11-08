@@ -28,7 +28,7 @@ import { HowTo } from '../../learning/Aids.tsx'
 import { MembersSection } from '../MembersPage.tsx'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 
 /** Aktuelles Jahr, beim Öffnen eines Formulars ermittelt (nicht beim Laden der Seite). */
 function thisYear() {
@@ -447,6 +447,32 @@ function ReignForm({
     [],
   )
 
+  // Frühere Text-Einträge derselben Person mitverknüpfen? (Datenaudit 08.11. FD-06)
+  async function offerLink(oldName: string, person: number) {
+    try {
+      const { found } = await honorsApi.linkReignName(org.id, { name: oldName, person })
+      const others = found - (reign && reign.person === null ? 1 : 0)
+      if (others <= 0) return
+      if (
+        await confirmDialog({
+          title: t('Frühere Einträge mitverknüpfen?'),
+          message: tn(
+            'Es gibt {n} weiteren Eintrag mit dem Namen „{name}“ ohne Mitglied. Soll er ebenfalls mit diesem Mitglied verknüpft werden? Das ist wichtig für die richtige Ordnungszahl.',
+            'Es gibt {n} weitere Einträge mit dem Namen „{name}“ ohne Mitglied. Sollen sie ebenfalls mit diesem Mitglied verknüpft werden? Das ist wichtig für die richtige Ordnungszahl.',
+            others,
+            { name: oldName },
+          ),
+          confirmLabel: t('Mitverknüpfen'),
+          cancelLabel: t('Nur diesen Eintrag'),
+          danger: false,
+        })
+      )
+        await honorsApi.linkReignName(org.id, { name: oldName, person, confirm: true })
+    } catch {
+      // Die Rückfrage ist eine Hilfe; ohne sie bleibt die Verknüpfung dieses Eintrags
+    }
+  }
+
   function setCompanion(index: number, patch: Partial<Companion>) {
     set(
       'companions',
@@ -560,7 +586,11 @@ function ReignForm({
         label={t('Würdenträger')}
         person={v.person}
         name={v.name}
-        onChange={(person, name) => form.setValues({ ...v, person, name })}
+        onChange={(person, name) => {
+          const oldName = v.name.trim()
+          form.setValues({ ...v, person, name })
+          if (person !== null && v.person === null && oldName) void offerLink(oldName, person)
+        }}
       />
       {errors.name && <Alert kind="error">{errors.name}</Alert>}
       {errors.person && <Alert kind="error">{errors.person}</Alert>}

@@ -1,7 +1,6 @@
 ---
 key: page.account_login
 titel: Mein Konto › Anmeldung & Sicherheit
-bereich: konto
 routen: [/mein-konto/anmeldung]
 stichworte: [Passwort, Kennwort, Zwei-Faktor, 2FA, Authenticator]
 ---

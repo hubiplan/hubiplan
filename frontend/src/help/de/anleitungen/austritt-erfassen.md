@@ -1,10 +1,10 @@
 ---
 key: guide.member_exit
 titel: Austritt eines Mitglieds erfassen
-bereich: mitglieder
 modul: members
 rechte: [members.edit]
 routen: [/mitglieder/:id, /mitglieder]
+reihe: 80
 stichworte: [Austritt, Kündigung, ausgetreten, Ende]
 ---
 
@@ -14,5 +14,7 @@ stichworte: [Austritt, Kündigung, ausgetreten, Ende]
 4. Klicke auf **Austritt speichern** und bestätige die Rückfrage.
 
 Die Akte bleibt erhalten und erscheint unter „ehemalige Mitglieder“. Offene Rechnungen bleiben offen; nach Ablauf der Löschfrist reduziert HUBIplan die Daten auf das Nötigste.
+
+Datum falsch erfasst? In der Akte steht unter **Zeiträume** an jedem Zeitraum **Ein-/Austritt korrigieren**. Mitgliedsart, Untereinheiten und Ämter, die am alten Datum begannen bzw. endeten, ziehen mit. Leerst du das Austrittsdatum, ist der Austritt aufgehoben: Die Mitgliedschaft und diese Zeiten laufen wieder offen, der Austrittsgrund wird geleert.
 
 ![Ausgangspunkt: Austritt eines Mitglieds erfassen](bild:austritt-erfassen)

@@ -1,7 +1,6 @@
 ---
 key: page.settings_audit
 titel: Settings › Log
-bereich: einstellungen
 rechte: [audit.view]
 routen: [/einstellungen/protokoll]
 stichworte: [log, changes, who, traceability]

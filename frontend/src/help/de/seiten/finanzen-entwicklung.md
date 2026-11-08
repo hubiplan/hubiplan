@@ -1,7 +1,6 @@
 ---
 key: page.finance_development
 titel: Finanzen › Entwicklung
-bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/entwicklung]

@@ -1,7 +1,6 @@
 ---
 key: page.competitions_series
 titel: Wettbewerbe › Reihen
-bereich: wettbewerbe
 modul: competitions
 rechte: [competitions.manage, competitions.results]
 routen: [/wettbewerbe/reihen]

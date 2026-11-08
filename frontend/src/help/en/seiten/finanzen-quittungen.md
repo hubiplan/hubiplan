@@ -1,7 +1,6 @@
 ---
 key: page.finance_receipts
 titel: Finance › Receipts
-bereich: finanzen
 modul: finance
 rechte: [finance.view]
 routen: [/finanzen/quittungen]

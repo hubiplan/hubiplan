@@ -1,7 +1,6 @@
 ---
 key: page.settings_theme
 titel: Settings › Appearance
-bereich: einstellungen
 rechte: [theme.edit]
 routen: [/einstellungen/erscheinungsbild]
 stichworte: [colour, logo, coat of arms, look]

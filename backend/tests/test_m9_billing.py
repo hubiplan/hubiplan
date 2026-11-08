@@ -191,7 +191,12 @@ class TestBeitragslauf:
         ]
         assert {s["name"] for s in data["skipped"]} == {"Ehre, Emil"}
         # Prüfliste vor dem Beitragslauf
-        assert data["checks"] == {"unreachable": 1, "with_mandate": 0, "open_change_requests": 0}
+        assert data["checks"] == {
+            "unreachable": 1,
+            "with_mandate": 0,
+            "open_change_requests": 0,
+            "multi_units": 0,
+        }
 
     def test_lauf_erzeugt_entwuerfe(self, c, base, members):
         resp = start_run(c, base)

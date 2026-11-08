@@ -1,8 +1,8 @@
 ---
 key: guide.language
 titel: Change the language (German or English)
-bereich: konto
 routen: [/mein-konto]
+reihe: 30
 stichworte: [English, German, Deutsch, language]
 ---
 

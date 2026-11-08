@@ -1,10 +1,10 @@
 ---
 key: guide.dunning
 titel: Send payment reminders
-bereich: beitraege
 modul: billing
 rechte: [billing.edit]
 routen: [/finanzen/rechnungen/mahnungen]
+reihe: 60
 stichworte: [reminder, dunning, overdue, unpaid]
 ---
 
@@ -14,5 +14,7 @@ stichworte: [reminder, dunning, overdue, unpaid]
 4. Create the reminders with or without sending them by email.
 
 You set deadlines and texts under Setup › Reminder levels.
+
+HUBIplan suggests the next dunning level at the earliest once the payment deadline from the last reminder has passed. The days of the dunning levels still count from the invoice's due date.
 
 ![Starting point: Send payment reminders](bild:mahnen)

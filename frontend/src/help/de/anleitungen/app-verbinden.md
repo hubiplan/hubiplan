@@ -1,8 +1,8 @@
 ---
 key: guide.app_pair
 titel: HUBIplan-App mit dem Konto verbinden
-bereich: konto
 routen: [/mein-konto/app]
+reihe: 40
 stichworte: [App, Handy, koppeln, Android, QR-Code]
 ---
 

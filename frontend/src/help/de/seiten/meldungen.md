@@ -1,7 +1,6 @@
 ---
 key: page.entries
 titel: Meldungen
-bereich: meldungen
 modul: entries
 rechte: [entries.submit, entries.manage]
 routen: [/meldungen]
