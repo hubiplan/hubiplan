@@ -8,7 +8,7 @@ reihe: 50
 stichworte: [SEPA, direct debit, collection, bank, XML]
 ---
 
-Before you start: the creditor ID is set under Setup › Invoice & payment, and the members have a SEPA mandate.
+Before you start: the creditor ID is set under Set up › Invoice & payment, and the members have a SEPA mandate.
 
 1. Open [Finance › Direct debits](/finanzen/lastschrift).
 2. Check the list “Before the direct debit run”, for example expiring mandates.

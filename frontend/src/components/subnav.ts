@@ -7,8 +7,8 @@ import { createContext, useContext, useLayoutEffect, useId } from 'react'
 export interface SubNavItem {
   to: string
   label: string
-  /** Zwischenüberschrift in der Seitenleiste, z. B. Arbeitsschritt bei Finanzen */
-  section?: string
+  /** Arbeitsgruppe in der Seitenleiste, z. B. „Buchen“ bei Finanzen (Konzept S-01) */
+  group?: { key: string; label: string; to?: string }
 }
 
 export interface SubNavApi {
@@ -33,7 +33,7 @@ export function useSubNav(items: SubNavItem[]): boolean {
 export interface NavNode {
   to: string
   label: string
-  section?: string
+  group?: { key: string; label: string; to?: string }
   /** NavLink nur bei genau diesem Pfad aktiv */
   end: boolean
   children: NavNode[]
@@ -52,7 +52,13 @@ export function buildNavTree(
   registered: SubNavItem[][],
 ): NavNode[] {
   const root: NavNode = { to: modulePath, label: '', end: false, children: [] }
-  root.children = fixed.map((c) => ({ ...c, end: c.to === modulePath, children: [] }))
+  // Ein Punkt, unter dessen Pfad weitere Punkte stehen (z. B. Rechnungen und Mahnungen),
+  // ist nur bei genau seinem Pfad aktiv
+  root.children = fixed.map((c) => ({
+    ...c,
+    end: c.to === modulePath || fixed.some((o) => o.to.startsWith(`${c.to}/`)),
+    children: [],
+  }))
   const groups = registered
     .filter((g) => g.length > 0)
     .sort((a, b) => a[0].to.length - b[0].to.length)
@@ -84,4 +90,36 @@ export function buildNavTree(
     }))
   }
   return root.children
+}
+
+export type NavBlock =
+  | { kind: 'item'; node: NavNode }
+  | { kind: 'group'; key: string; label: string; to?: string; nodes: NavNode[] }
+
+/** Folgen gleicher Gruppe zusammenfassen; Reihenfolge bleibt. */
+export function groupNodes(nodes: NavNode[]): NavBlock[] {
+  const blocks: NavBlock[] = []
+  for (const node of nodes) {
+    const last = blocks[blocks.length - 1]
+    if (node.group && last?.kind === 'group' && last.key === node.group.key) {
+      last.nodes.push(node)
+    } else if (node.group) {
+      blocks.push({ kind: 'group', ...node.group, nodes: [node] })
+    } else {
+      blocks.push({ kind: 'item', node })
+    }
+  }
+  return blocks.map((b) =>
+    b.kind === 'group' && b.nodes.length === 1 ? { kind: 'item', node: b.nodes[0] } : b,
+  )
+}
+
+/** Gruppe, in der die aktuelle Seite liegt (tiefster passender Punkt). */
+export function activeGroup(nodes: NavNode[], pathname: string): string | null {
+  const path = pathname.replace(/(.)\/$/, '$1')
+  // Die Gruppenseite selbst gehört zu ihrer Gruppe
+  const page = nodes.find((n) => n.group?.to === path)
+  if (page?.group) return page.group.key
+  const hit = nodes.filter((n) => covers(n.to, path)).sort((a, b) => b.to.length - a.to.length)[0]
+  return hit?.group?.key ?? null
 }

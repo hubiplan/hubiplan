@@ -23,11 +23,12 @@ import { ClosingsPage } from '../finance/ClosingsPage.tsx'
 import { DonationSettingsForm, DonationsArea } from '../finance/DonationsPage.tsx'
 import { ProjectsArea } from '../finance/ProjectsPage.tsx'
 import { AccountsPage, CategoriesPage } from '../finance/MasterDataPages.tsx'
-import { financeAccess, invoiceTabs, settingsTabs } from './access.ts'
+import { financeAccess, financeSections, sectionsUnder } from './access.ts'
 import type { FinanceAccess, NavItem } from './access.ts'
 import { FinanceDevelopment } from './DevelopmentPage.tsx'
 import { EvaluationPage, FinanceOverview } from './OverviewPages.tsx'
 import { TaxPage } from './TaxPage.tsx'
+import { FinanceGroupPage } from './GroupPage.tsx'
 import { AuditPage } from './AuditPage.tsx'
 import { NetAssetsPage } from './NetAssetsPage.tsx'
 import { UseOfFundsPage } from './UseOfFundsPage.tsx'
@@ -49,9 +50,15 @@ function Section({
   tabs?: NavItem[]
   children: ReactNode
 }) {
-  // Dritte Ebene (z. B. Rechnungen › Mahnungen): H1 wie der gewählte Unterpunkt, der Weg
-  // steht darüber (UX-Audit 08.11., W-02)
+  // Dritte Ebene (z. B. Steuern › Umsatzsteuer): H1 wie der gewählte Unterpunkt, der Weg
+  // steht darüber (UX-Audit 08.11., W-02); dazu die Arbeitsgruppe des Eintrags (S-01)
   const sub = useSubHeading(title, tabs)
+  const org = useActiveOrg()
+  const { pathname } = useLocation()
+  const group = financeSections(financeAccess(org))
+    .filter((i) => pathname === i.to || pathname.startsWith(`${i.to}/`))
+    .sort((x, y) => y.to.length - x.to.length)[0]?.group?.label
+  const trail = [t('Finanzen'), group, sub ? title : null].filter((p): p is string => !!p)
   return (
     <section>
       <div className="page-head">
@@ -59,9 +66,7 @@ function Section({
           {/* Auf der Übersicht heißt die H1 wie der Bereich (UX-Audit 05.11. W-04) */}
           {title !== t('Übersicht') && (
             <p className="muted small eyebrow">
-              {sub
-                ? t('{parent} › {label}', { parent: t('Finanzen'), label: title })
-                : t('Finanzen')}
+              {trail.reduce((parent, label) => t('{parent} › {label}', { parent, label }))}
             </p>
           )}
           <h1>{sub ?? (title === t('Übersicht') ? t('Finanzen') : title)}</h1>
@@ -90,6 +95,10 @@ export function FinanzenPage() {
           </Section>
         }
       />
+      {/* Gruppenseiten (Konzept S-01, F2); „Einrichten“ ist /finanzen/einrichtung */}
+      {['abrechnen', 'zahlungen', 'buchen', 'abschliessen'].map((key) => (
+        <Route key={key} path={key} element={<FinanceGroupPage groupKey={key} access={a} />} />
+      ))}
       <Route
         path="entwicklung"
         element={
@@ -252,10 +261,25 @@ export function FinanzenPage() {
   )
 }
 
-function InvoicesArea({ access: a }: { access: FinanceAccess }) {
-  const tabs = invoiceTabs(a)
+/** Eintrag der Seitenleiste zur aktuellen Seite: liefert die Überschrift (keine Reiter mehr). */
+function useCurrent(items: NavItem[], fallback: string): string {
+  const { pathname } = useLocation()
+  const path = pathname.replace(/(.)\/$/, '$1')
   return (
-    <Section title={t('Rechnungen')} readOnly={a.billing && !a.billingEdit} tabs={tabs}>
+    items
+      .filter((i) => path === i.to || path.startsWith(`${i.to}/`))
+      .sort((x, y) => y.to.length - x.to.length)[0]?.label ?? fallback
+  )
+}
+
+// Rechnungen und Einrichtung: die früheren Reiter sind Einträge der Arbeitsgruppen in der
+// Seitenleiste (Konzept S-01); jede Seite trägt ihren eigenen Namen als Überschrift
+function InvoicesArea({ access: a }: { access: FinanceAccess }) {
+  const tabs = sectionsUnder(a, '/finanzen/rechnungen')
+  const title = useCurrent(tabs, t('Rechnungen'))
+  if (tabs.length === 0) return home
+  return (
+    <Section title={title} readOnly={a.billing && !a.billingEdit}>
       <Routes>
         <Route
           index
@@ -375,13 +399,17 @@ function ClosingArea({ access: a }: { access: FinanceAccess }) {
 }
 
 function SettingsArea({ access: a }: { access: FinanceAccess }) {
-  const tabs = settingsTabs(a)
-  const first = <Navigate to={tabs[0].to} replace />
+  const tabs = sectionsUnder(a, '/finanzen/einrichtung')
+  const title = useCurrent(tabs, t('Einrichtung'))
+  const first = <Navigate to="/finanzen/einrichtung" replace />
   const readOnly = !a.billingEdit && !a.financeEdit
+  const { pathname } = useLocation()
+  // Ohne Unterpfad: Gruppenseite „Einrichten“ (Konzept S-01, F2)
+  if (/^\/finanzen\/einrichtung\/?$/.test(pathname))
+    return <FinanceGroupPage groupKey="einrichten" access={a} />
   return (
-    <Section title={t('Einrichtung')} readOnly={readOnly} tabs={tabs}>
+    <Section title={title} readOnly={readOnly}>
       <Routes>
-        <Route index element={first} />
         {a.feeRuns && <Route path="beitraege" element={<FeeRulesPage />} />}
         {a.billing && <Route path="mahnstufen" element={<DunningLevelsPage />} />}
         {a.billing && <Route path="rechnung" element={<BillingSettingsPage />} />}

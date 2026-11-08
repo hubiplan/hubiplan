@@ -8,6 +8,7 @@ import type { Overview } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
 import { Alert, LoadError } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { financeGroupList } from './access.ts'
 import type { FinanceAccess } from './access.ts'
 import { HowTo, Term } from '../../learning/Aids.tsx'
 import type { TermKey } from '../../learning/content.ts'
@@ -65,44 +66,15 @@ function NoAccounts({ canEdit }: { canEdit: boolean }) {
   )
 }
 
-/** Arbeitsschritte im Jahreslauf, mit direktem Weg zur jeweiligen Liste (H-AF-01). */
+/** Arbeitsschritte im Jahreslauf = Arbeitsgruppen der Seitenleiste mit ihrer Gruppenseite
+ * (H-AF-01, Konzept S-01) */
 function financeSteps(a: FinanceAccess): { title: string; text: string; to: string }[] {
-  const steps: { title: string; text: string; to: string }[] = []
-  if (a.billingEdit || a.financeEdit)
-    steps.push({
-      title: t('Einrichten'),
-      text: a.billing ? t('Beitragssätze, Zahlungsangaben, Konten') : t('Konten und Kategorien'),
-      to: '/finanzen/einrichtung',
-    })
-  if (a.billing)
-    steps.push({
-      title: t('Beiträge abrechnen'),
-      text: a.feeRuns
-        ? t('Beitragslauf anlegen, prüfen, festschreiben, versenden')
-        : t('Rechnungen schreiben'),
-      to: a.feeRuns ? '/finanzen/rechnungen/beitragslaeufe' : '/finanzen/rechnungen',
-    })
-  if (a.billing)
-    steps.push({
-      title: t('Zahlungen verarbeiten'),
-      text: a.sepa
-        ? t('Lastschrift einziehen, Eingänge buchen, mahnen')
-        : t('Eingänge buchen, mahnen'),
-      to: a.sepa ? '/finanzen/lastschrift' : '/finanzen/rechnungen?status=open',
-    })
-  if (a.finance)
-    steps.push({
-      title: t('Buchen'),
-      text: t('Einnahmen und Ausgaben mit Beleg erfassen'),
-      to: '/finanzen/kassenbuch',
-    })
-  if (a.finance)
-    steps.push({
-      title: t('Jahr abschließen'),
-      text: t('Kassenbericht und Jahresabschluss'),
-      to: '/finanzen/abschluss',
-    })
-  return steps
+  return financeGroupList(a).map((g) => ({
+    title: g.label,
+    text: g.text ?? '',
+    // Gruppe mit nur einem Eintrag: direkt dorthin, wie in der Seitenleiste
+    to: g.items.length === 1 ? g.items[0].to : (g.to ?? g.items[0].to),
+  }))
 }
 
 function FinanceSteps({ access }: { access: FinanceAccess }) {

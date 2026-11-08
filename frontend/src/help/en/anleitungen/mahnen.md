@@ -13,7 +13,7 @@ stichworte: [reminder, dunning, overdue, unpaid]
 3. Check the list. Anyone who has already paid in cash gets their payment booked first.
 4. Create the reminders with or without sending them by email.
 
-You set deadlines and texts under Setup › Reminder levels.
+You set deadlines and texts under Set up › Reminder levels.
 
 HUBIplan suggests the next dunning level at the earliest once the payment deadline from the last reminder has passed. The days of the dunning levels still count from the invoice's due date.
 

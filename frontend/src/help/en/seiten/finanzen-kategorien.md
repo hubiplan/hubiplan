@@ -1,6 +1,6 @@
 ---
 key: page.finance_categories
-titel: Finance › Setup › Categories
+titel: Finance › Set up › Categories
 modul: finance
 rechte: [finance.edit]
 routen: [/finanzen/einrichtung/kategorien]

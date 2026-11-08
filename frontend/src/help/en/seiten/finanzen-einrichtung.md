@@ -1,9 +1,9 @@
 ---
 key: page.finance_setup
-titel: Finance › Setup
+titel: Finance › Set up
 rechte: [finance.edit, billing.edit]
 routen: [/finanzen/einrichtung]
 stichworte: [setup, accounts, categories, fee rates]
 ---
 
-Under Setup you define the basics of finance: accounts, categories, fee rates, reminder levels, details for invoices and for donation receipts. You usually set this up once at the start of the year.
+In the **Set up** group you define the basics of finance: fee rates, reminder levels, invoice & payment, accounts, categories, details for donation receipts and business partners. Each part is its own entry in the sidebar; the Set up page itself lists all parts with a short description. You usually set this up once at the start of the year.

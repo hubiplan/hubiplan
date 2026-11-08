@@ -46,7 +46,15 @@ export function navTrail(
     const next = nodes
       .filter((n) => n.to !== from && covers(n.to, path))
       .sort((a, b) => b.to.length - a.to.length)[0]
-    if (!next) break
+    if (!next) {
+      // Gruppenseite (Finanzen, S-01 F2): die Gruppe selbst ist das letzte Glied
+      const page = parent === mod.path && nodes.find((n) => n.group?.to === path)?.group
+      if (page) trail.push({ to: page.to ?? path, label: page.label })
+      break
+    }
+    // Arbeitsgruppe als Zwischenglied („Finanzen › Buchen › Kassenbuch“, Konzept S-01)
+    if (parent === mod.path && next.group)
+      trail.push({ to: next.group.to ?? next.to, label: next.group.label })
     trail.push({ to: next.to, label: next.label })
     parent = next.to
     nodes = next.children

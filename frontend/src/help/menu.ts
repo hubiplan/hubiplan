@@ -7,6 +7,8 @@ import { GROUP_LABELS, modules } from '../modules.tsx'
 import type { AppModule } from '../modules.tsx'
 import type { OrgSummary } from '../api/orgs.ts'
 import type { HelpEntry } from './content.ts'
+import { financeGroups, financeSections } from '../pages/finanzen/access.ts'
+import type { FinanceAccess } from '../pages/finanzen/access.ts'
 
 export type HelpGroup = AppModule['group'] | 'konto' | 'plattform'
 
@@ -58,10 +60,43 @@ export function itemLabel(item: string, org: OrgSummary | null): string {
   return m.labelFor?.(org, { dept: null, portal: null }) ?? m.label
 }
 
-/** Teil innerhalb eines Menüpunkts (nur Finanzen: Beiträge oder Kasse, wie im Menü). */
-export function partOf(entry: Pick<HelpEntry, 'module'>, item: string): string | null {
+// Alle Einträge von Finanzen, wie sie mit allen Modulen und Rechten erscheinen
+const FINANCE_ALL: FinanceAccess = {
+  finance: true,
+  financeEdit: true,
+  billing: true,
+  billingEdit: true,
+  feeRuns: true,
+  sepa: true,
+  received: true,
+  receivedLabel: '',
+  donations: true,
+  cashCounts: true,
+  reserves: true,
+  tax: true,
+  payouts: true,
+}
+
+/**
+ * Teil innerhalb eines Menüpunkts: bei Finanzen die Arbeitsgruppe der Seitenleiste
+ * (Konzept S-01), sonst keiner. Ordnet nach der ersten Route des Eintrags.
+ */
+export function partOf(entry: Pick<HelpEntry, 'routes'>, item: string): string | null {
   if (item !== 'finanzen') return null
-  return entry.module === 'billing' ? t('Beiträge und Rechnungen') : t('Kasse und Abschluss')
+  const route = (entry.routes[0] ?? '').split(/[?#]/)[0]
+  const items = financeSections(FINANCE_ALL)
+  const page = items.find((i) => i.group?.to === route)
+  if (page?.group) return page.group.label
+  const hit = items
+    .filter((i) => route === i.to || route.startsWith(`${i.to}/`))
+    .sort((x, y) => y.to.length - x.to.length)[0]
+  return hit?.group?.label ?? null
+}
+
+/** Reihenfolge der Teile wie in der Seitenleiste (Teil ohne Gruppe zuerst). */
+export function partRank(part: string | null): number {
+  if (part === null) return -1
+  return Object.values(financeGroups()).findIndex((g) => g.label === part)
 }
 
 /** Seitenhilfe der Hauptseite des Menüpunkts zuerst, dann nach „reihe“, dann nach Titel. */

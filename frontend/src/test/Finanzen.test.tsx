@@ -100,17 +100,45 @@ describe('Finanzen', () => {
     expect(nav.getByRole('link', { name: 'Finanzen' })).toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Kasse' })).not.toBeInTheDocument()
     expect(nav.queryByRole('link', { name: 'Beiträge' })).not.toBeInTheDocument()
+    // Arbeitsgruppen statt Zwischenzeilen (Konzept S-01); auf der Übersicht ist keine offen
+    expect(nav.getByRole('link', { name: 'Übersicht' })).toBeInTheDocument()
     for (const name of [
-      'Übersicht',
-      'Rechnungen',
-      'Lastschriften',
-      'Kassenbuch',
-      'Auswertung',
-      'Entwicklung',
-      'Jahresabschluss',
-      'Einrichtung',
+      'Beiträge & Rechnungen',
+      'Zahlungen',
+      'Buchen',
+      'Auswerten & abschließen',
+      'Einrichten',
     ])
+      expect(nav.getByRole('button', { name: `Einträge von ${name}` })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      )
+    expect(nav.queryByRole('link', { name: 'Kassenbuch' })).not.toBeInTheDocument()
+    // ▸ öffnet eine Gruppe zum Nachsehen, immer nur eine
+    const user = userEvent.setup()
+    await user.click(nav.getByRole('button', { name: 'Einträge von Buchen' }))
+    expect(nav.getByRole('button', { name: 'Einträge von Buchen' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    expect(nav.getByRole('link', { name: 'Kassenbuch' })).toBeInTheDocument()
+    await user.click(nav.getByRole('button', { name: 'Einträge von Zahlungen' }))
+    expect(nav.queryByRole('link', { name: 'Kassenbuch' })).not.toBeInTheDocument()
+    for (const name of ['Lastschriften', 'Kontoauszüge'])
       expect(nav.getByRole('link', { name })).toBeInTheDocument()
+    await user.click(nav.getByRole('button', { name: 'Einträge von Beiträge & Rechnungen' }))
+    // Frühere Reiter von Rechnungen sind Einträge der Gruppe; Seitenkopf wie der Eintrag
+    await user.click(nav.getByRole('link', { name: 'Mahnungen' }))
+    expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/rechnungen/mahnungen')
+    expect(nav.getByRole('button', { name: 'Einträge von Beiträge & Rechnungen' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    expect(nav.getByRole('link', { name: 'Mahnungen' })).toHaveAttribute('aria-current', 'page')
+    expect(nav.getByRole('link', { name: 'Rechnungen' })).not.toHaveAttribute('aria-current')
+    expect(nav.getByRole('link', { name: 'Beitragsläufe' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Mahnungen' })).toBeInTheDocument()
+    await user.click(nav.getByRole('link', { name: 'Übersicht' }))
     expect(screen.getByText('180,00 €')).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: '1 Rechnung ist zu mahnen' })).toHaveAttribute(
       'href',
@@ -181,23 +209,87 @@ describe('Finanzen', () => {
         },
       }),
     })
+    // /finanzen/einrichtung ist die Gruppenseite „Einrichten“ (Konzept S-01, F2)
     renderApp('/finanzen/einrichtung')
-    expect(await screen.findByText('nur lesen')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Einrichten' })).toBeInTheDocument()
+    expect(screen.getByText('Bankkonten und Barkassen')).toBeInTheDocument()
     const nav = subnav()
-    expect(nav.getByRole('link', { name: 'Rechnungen' })).toBeInTheDocument()
-    expect(nav.getByRole('link', { name: 'Kassenbuch' })).toBeInTheDocument()
-    await waitFor(() =>
-      expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/einrichtung/konten'),
-    )
     const user = userEvent.setup()
+    await user.click(within(screen.getByRole('main')).getByRole('link', { name: /^Konten/ }))
+    expect(await screen.findByText('nur lesen')).toBeInTheDocument()
+    expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/einrichtung/konten')
+    // Nur Einträge mit Recht; „Einrichten“ ist offen, weil die Seite darin liegt
+    expect(nav.getByRole('button', { name: 'Einträge von Einrichten' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    for (const name of ['Konten', 'Kategorien', 'Geschäftspartner'])
+      expect(nav.getByRole('link', { name })).toBeInTheDocument()
+    expect(nav.queryByRole('link', { name: 'Mahnstufen' })).not.toBeInTheDocument()
+    expect(nav.getByRole('button', { name: 'Einträge von Buchen' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
+    // Eine Gruppe mit nur einem Eintrag erscheint als einfacher Eintrag
+    expect(
+      nav.queryByRole('button', { name: 'Einträge von Beiträge & Rechnungen' }),
+    ).not.toBeInTheDocument()
+    expect(nav.queryByRole('button', { name: 'Einträge von Zahlungen' })).not.toBeInTheDocument()
     await user.click(nav.getByRole('link', { name: 'Übersicht' }))
     expect(await screen.findByText('Noch keine Konten angelegt.')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Erstes Konto anlegen' })).not.toBeInTheDocument()
-    await user.click(nav.getByRole('link', { name: 'Rechnungen' }))
+    await user.click(nav.getByRole('link', { name: 'Rechnungseingang' }))
     expect(await screen.findByText('Noch keine Eingangsrechnungen vorhanden.')).toBeInTheDocument()
     expect(screen.getByTestId('where')).toHaveTextContent('/finanzen/rechnungen/eingang')
     expect(screen.queryByLabelText('E-Rechnung importieren')).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Leistungsrechnungen' })).not.toBeInTheDocument()
+  })
+
+  it('zeigt Gruppenseiten mit Beschreibung, Zu erledigen und Hauptaktion', async () => {
+    const org = testOrg({
+      modules: ['members', 'finance'],
+      permissions: ['finance.view', 'finance.edit'],
+      parent_name: null,
+    })
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
+      [`GET /api/orgs/${org.id}/open-tasks/`]: () => ({
+        status: 200,
+        body: {
+          items: [
+            {
+              kind: 'bookings_without_receipt',
+              area: 'finance',
+              kind_label: 'Kassenbuch',
+              title: '3 Buchungen ohne Beleg',
+              detail: '',
+              created_at: null,
+              link: '/finanzen/kassenbuch?ohne_beleg=1',
+            },
+          ],
+        },
+      }),
+    })
+    renderApp('/finanzen/buchen')
+    expect(await screen.findByRole('heading', { level: 1, name: 'Buchen' })).toBeInTheDocument()
+    const main = within(screen.getByRole('main'))
+    const card = await main.findByRole('link', { name: /Kassenbuch/ })
+    expect(card).toHaveAttribute('href', '/finanzen/kassenbuch')
+    expect(await within(card).findByText('3 Buchungen ohne Beleg')).toBeInTheDocument()
+    expect(within(card).getByText('Alle Buchungen des Jahres')).toBeInTheDocument()
+    expect(main.getByRole('link', { name: /Quittungen/ })).not.toHaveTextContent('ohne Beleg')
+    expect(main.getByRole('link', { name: 'Einnahme erfassen' })).toHaveAttribute(
+      'href',
+      '/finanzen/kassenbuch?buchung=neu-einnahme',
+    )
+    // In der Seitenleiste führt der Gruppenname zur Gruppenseite, die Gruppe ist offen
+    const nav = subnav()
+    expect(nav.getByRole('link', { name: 'Buchen' })).toHaveAttribute('aria-current', 'page')
+    expect(nav.getByRole('button', { name: 'Einträge von Buchen' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
   })
 
   it('leitet alte Adressen samt Filter um', async () => {

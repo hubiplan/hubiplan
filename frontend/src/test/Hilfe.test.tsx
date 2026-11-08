@@ -18,7 +18,7 @@ import {
 } from '../help/content.ts'
 import type { HelpEntry } from '../help/content.ts'
 import { FIRST_STEPS, MEMBER_TOPICS, highlight, labelsIn } from '../help/extras.ts'
-import { byMenu, placeOf } from '../help/menu.ts'
+import { byMenu, partOf, placeOf } from '../help/menu.ts'
 import { parseNews } from '../help/news.ts'
 import { HelpContactsCard } from '../help/HelpExtras.tsx'
 import { renderHelp } from '../help/markdown.ts'
@@ -91,7 +91,10 @@ describe('Hilfedateien', () => {
     // UX-Audit X-01: Hilfe, Web und App nutzen dieselben Begriffe (docs/begriffe.md)
     const labels = new Set(
       [...Object.values(NAV_SOURCES), ...Object.values(PAGE_SOURCES)].flatMap((src) =>
-        [...src.matchAll(/to: '\/[^']*',\s*label: t\('([^']+)'\)/g)].map((m) => m[1]),
+        // Einträge und Arbeitsgruppen (Finanzen, Konzept S-01)
+        [...src.matchAll(/(?:to: '\/[^']*'|key: '[^']*'),\s*label: t\('([^']+)'\)/g)].map(
+          (m) => m[1],
+        ),
       ),
     )
     const areas =
@@ -104,6 +107,18 @@ describe('Hilfedateien', () => {
           wrong.push(`${name}: ${m[0]}${rest.slice(0, 30)}`)
       }
     expect(wrong).toEqual([])
+  })
+
+  it('Anleitungen zu Finanzen stehen unter der Gruppe ihrer Seite (Konzept S-01)', () => {
+    const part = (route: string) => partOf({ routes: [route] }, 'finanzen')
+    expect(part('/finanzen/rechnungen/mahnungen')).toBe('Beiträge & Rechnungen')
+    expect(part('/finanzen/lastschrift')).toBe('Zahlungen')
+    expect(part('/finanzen/kassenbuch')).toBe('Buchen')
+    expect(part('/finanzen/steuern/umsatzsteuer')).toBe('Auswerten & abschließen')
+    expect(part('/finanzen/einrichtung/beitraege')).toBe('Einrichten')
+    expect(part('/finanzen/einrichtung')).toBe('Einrichten')
+    expect(part('/finanzen')).toBeNull()
+    expect(partOf({ routes: ['/mitglieder'] }, 'mitglieder')).toBeNull()
   })
 
   it('jede Datei gibt es auf Deutsch und Englisch mit gleichem Kopf', () => {
