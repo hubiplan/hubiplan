@@ -7180,5 +7180,9 @@
   "{n} Kategorien angelegt.": "{n} categories created.",
   "Übliche Kategorien mit steuerlichem Bereich, damit ihr nicht bei null anfangt. Es werden nur fehlende Kategorien angelegt; bestehende bleiben, wie sie sind. Bereiche und DATEV-Konten bitte mit der Steuerberatung abstimmen. Sponsoring: Wird der Sponsor nur genannt, gehört das Geld zur Vermögensverwaltung; aktive Werbung wie Bande oder Anzeige ist wirtschaftlicher Geschäftsbetrieb.": "Common categories with a tax area, so you don't start from scratch. Only missing categories are created; existing ones stay as they are. Please agree areas and DATEV accounts with your tax adviser. Sponsorship: if the sponsor is only named, the money belongs to asset management; active advertising such as boards or ads is a commercial operation.",
   "schon vorhanden": "already there",
-  "{n} Kategorien anlegen": "Create {n} categories"
+  "{n} Kategorien anlegen": "Create {n} categories",
+  "Spenden bis 300 €": "Donations up to 300 €",
+  "Bei Zuwendungen bis 300 € genügt dem Finanzamt der Kontoauszug zusammen mit einem Beleg des Vereins über die Steuerbegünstigung. Den Beleg könnt ihr auf der Webseite veröffentlichen, auslegen oder mitschicken; eine Zuwendungsbestätigung ist dafür nicht nötig.": "For donations up to 300 €, the tax office accepts the bank statement together with a note from the club on its tax-privileged status. You can publish this note on your website, display it or send it along; no donation receipt is needed.",
+  "Beleg als PDF": "Note as PDF",
+  "Text für die Webseite": "Text for the website"
 }

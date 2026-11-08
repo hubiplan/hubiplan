@@ -369,3 +369,21 @@ def test_ohne_name_oder_anschrift_keine_bestaetigung(ready, c):
     assert missing["Unbekannt"] and missing["Bea Beispiel"] and not missing["Carl Komplett"]
     resp = c.post(f"{ready}/donation-statements/year-end/", {"year": year}, content_type=JSON)
     assert [s["donor_name"] for s in resp.json()["items"]] == ["Carl Komplett"]
+
+
+def test_vereinfachter_nachweis_bis_300(ev, c):
+    # Ohne vollständige Angaben zum Bescheid gibt es keinen Beleg
+    assert c.get(f"{ev}/donation-settings/simplified/").status_code == 400
+
+
+def test_vereinfachter_nachweis_text_und_pdf(ready, c):
+    resp = c.get(f"{ready}/donation-settings/simplified/")
+    assert resp.status_code == 200, resp.content
+    text = resp.json()["text"]
+    assert "bis 300 €" in text
+    assert "§ 50 Abs. 4 Satz 1 Nr. 2 EStDV" in text
+    assert "des traditionellen Brauchtums" in text
+    assert "<b>" not in text
+    pdf = c.get(f"{ready}/donation-settings/simplified/", {"als": "pdf"})
+    assert pdf.status_code == 200
+    assert pdf.content.startswith(b"%PDF")

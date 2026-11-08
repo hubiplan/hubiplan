@@ -12,6 +12,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Neu: Spenden bis 300 €. Unter Finanzen › Einrichtung › Zuwendungen gibt es den vereinfachten Zuwendungsnachweis als PDF und als Text für die Webseite; zusammen mit dem Kontoauszug genügt er dem Finanzamt.
 - Neu: Vorlagen für Kategorien. Unter Finanzen › Einrichtung › Kategorien legt **Vorlage übernehmen** übliche Kategorien eines Schützen-, Sport- oder Musikvereins mit steuerlichem Bereich an, ohne bestehende zu ändern.
 - Neu: Höchstbetrag der freien Rücklage. Unter Finanzen › Rücklagen rechnet HUBIplan je Geschäftsjahr aus, wie viel der freien Rücklage zugeführt werden darf, mit Nachholung aus den zwei Vorjahren, und warnt bei Überschreitung. Dazu kommt die Abschreibung als Anhaltspunkt für die Wiederbeschaffungsrücklage.
 - Neu: Vermögensübersicht. Unter Finanzen › Abschluss & Berichte › Vermögen stehen zum Jahresende Kontenstände, offene Forderungen, Anlagevermögen und offene Verbindlichkeiten, dazu die in Rücklagen gebundenen Mittel. Die Übersicht steht auch im Kassenbericht.

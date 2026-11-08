@@ -95,6 +95,10 @@ export const donationApi = {
   settings: (org: number) => api.get<DonationSettings>(`${base(org)}/donation-settings/`),
   saveSettings: (org: number, data: Partial<DonationSettings>) =>
     api.put<DonationSettings>(`${base(org)}/donation-settings/`, data),
+  /** Vereinfachter Zuwendungsnachweis bis 300 € als Text für die Webseite */
+  simplified: (org: number) =>
+    api.get<{ text: string }>(`${base(org)}/donation-settings/simplified/`),
+  simplifiedPdfUrl: (org: number) => `${base(org)}/donation-settings/simplified/?als=pdf`,
   list: (org: number, query: { jahr?: number; offen?: boolean; suche?: string; page?: number }) => {
     const p = new URLSearchParams()
     if (query.jahr) p.set('jahr', String(query.jahr))
