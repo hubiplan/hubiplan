@@ -12,6 +12,8 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: earmarked donations. In donation receipts › **Earmarks**, donations and cash book expenses can be assigned to a purpose; the overview shows the remainder and reminds you to use the funds promptly.
+- New: donations up to 300 €. Finance › Setup › Donations offers the simplified donation proof as a PDF and as text for the website; together with the bank statement it is enough for the tax office.
 - New: category templates. Under Finance › Setup › Categories, **Use a template** creates the usual categories of a shooting, sports or music club with their tax areas, without changing existing ones.
 - New: maximum for the free reserve. Finance › Reserves works out per financial year how much may be added to the free reserve, including amounts carried over from the two previous years, and warns if it is exceeded. Depreciation is shown as a guide for the replacement reserve.
 - New: statement of net assets. Finance › Closing & reports › Net assets shows account balances, open receivables, fixed assets and open liabilities at the year end, plus the funds set aside in reserves. The overview is also part of the treasurer's report.

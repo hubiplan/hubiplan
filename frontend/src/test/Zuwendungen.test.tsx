@@ -115,4 +115,79 @@ describe('Zuwendungsbestätigungen', () => {
     await waitFor(() => expect(issued).toEqual({ donations: [1, 2], signer_name: 'Erika Kasse' }))
     expect(await screen.findByText(/ZB-\d{4}-0001 für Max Muster ausgestellt/)).toBeInTheDocument()
   })
+
+  it('bietet den vereinfachten Nachweis bis 300 € als PDF und Text', async () => {
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg(base)] }),
+      [`GET ${F}/donation-settings/`]: () => ({
+        status: 200,
+        body: { enabled: true, ...SETTINGS },
+      }),
+      [`GET ${F}/donation-settings/simplified/`]: () => ({
+        status: 200,
+        body: { text: 'Vereinfachter Zuwendungsnachweis für Zuwendungen bis 300 €\n\nMuster' },
+      }),
+    })
+    renderApp('/finanzen/einrichtung/zuwendungen')
+    const card = await screen.findByTestId('simplified-proof')
+    expect(within(card).getByRole('link', { name: 'Beleg als PDF' })).toHaveAttribute(
+      'href',
+      `${F}/donation-settings/simplified/?als=pdf`,
+    )
+    await userEvent
+      .setup()
+      .click(within(card).getByRole('button', { name: 'Text für die Webseite' }))
+    expect(await within(card).findByDisplayValue(/Zuwendungen bis 300 €/)).toBeInTheDocument()
+  })
+
+  it('zeigt zweckgebundene Spenden mit Rest und legt einen Zweck an', async () => {
+    let created = false
+    const earmark = (id: number, name: string, extra: Record<string, unknown> = {}) => ({
+      id,
+      name,
+      note: '',
+      is_active: true,
+      received: '800.00',
+      used: '200.00',
+      rest: '600.00',
+      first_donation: '2022-03-01',
+      last_donation: '2022-03-01',
+      overdue: true,
+      ...extra,
+    })
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg(base)] }),
+      [`GET ${F}/earmarks/`]: () => ({
+        status: 200,
+        body: [
+          earmark(1, 'Neue Fahne'),
+          ...(created
+            ? [
+                earmark(2, 'Jugendzeltlager', {
+                  received: '0.00',
+                  used: '0.00',
+                  rest: '0.00',
+                  overdue: false,
+                }),
+              ]
+            : []),
+        ],
+      }),
+      [`POST ${F}/earmarks/`]: () => {
+        created = true
+        return { status: 201, body: { id: 2, name: 'Jugendzeltlager', note: '', is_active: true } }
+      },
+    })
+    renderApp('/finanzen/zuwendungen/zweckbindungen')
+    const card = await screen.findByTestId('earmarks')
+    expect(within(card).getByText('Neue Fahne')).toBeInTheDocument()
+    expect(within(card).getByText(/600,00/)).toBeInTheDocument()
+    expect(within(card).getByText('zeitnah verwenden')).toBeInTheDocument()
+    const user = userEvent.setup()
+    await user.type(within(card).getByLabelText('Zweck'), 'Jugendzeltlager')
+    await user.click(within(card).getByRole('button', { name: 'Anlegen' }))
+    expect(await within(card).findByText('Jugendzeltlager')).toBeInTheDocument()
+  })
 })

@@ -377,7 +377,7 @@ function SizeRatesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) 
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data) return null
   return (
-    <div className="card card-wide">
+    <div className="card card-wide size-rates">
       <h2>{t('Staffel nach Größe')}</h2>
       <HowTo k="calc_size_fee" />
       <p className="muted small">

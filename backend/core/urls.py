@@ -102,6 +102,7 @@ org_router.register(
 org_router.register(
     "finance/donations", donation_views.DonationViewSet, basename="finance-donation"
 )
+org_router.register("finance/earmarks", donation_views.EarmarkViewSet, basename="finance-earmark")
 org_router.register(
     "finance/bank-statements", bank_views.BankStatementViewSet, basename="finance-bank-statement"
 )
@@ -466,6 +467,11 @@ org_patterns = [
         "finance/donation-settings/",
         donation_views.DonationSettingsView.as_view(),
         name="finance-donation-settings",
+    ),
+    path(
+        "finance/donation-settings/simplified/",
+        donation_views.SimplifiedProofView.as_view(),
+        name="finance-donation-simplified",
     ),
     path("finance/closings/", finance_views.YearClosingView.as_view(), name="finance-closings"),
     path(

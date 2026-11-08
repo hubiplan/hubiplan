@@ -190,6 +190,15 @@ class Booking(models.Model):
         related_name="bookings",
         verbose_name="Veranstaltung",
     )
+    # Zweckgebundene Spenden (Konzept vereinskasse-steuern, S5): Ausgabe für diesen Zweck
+    earmark = models.ForeignKey(
+        "Earmark",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="bookings",
+        verbose_name="Zweckbindung",
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
@@ -292,6 +301,8 @@ class Booking(models.Model):
                 errors["category"] = gettext("Die Kategorie passt nicht zu dieser Art der Buchung.")
         if self.artist_fee and self.kind != self.Kind.EXPENSE:
             errors["artist_fee"] = gettext("Ein Künstlerhonorar ist immer eine Ausgabe.")
+        if self.earmark_id and self.kind != self.Kind.EXPENSE:
+            errors["earmark"] = gettext("Eine Zweckbindung gibt es nur für Ausgaben.")
         if self.allowance and self.kind != self.Kind.EXPENSE:
             errors["allowance"] = gettext("Eine Aufwandsvergütung ist immer eine Ausgabe.")
         elif self.allowance and not self.membership_id and not self.counterparty:
@@ -840,6 +851,15 @@ class Donation(models.Model):
         related_name="donation",
     )
     note = models.CharField("Notiz", max_length=300, blank=True)
+    # Zweckgebundene Spende (Konzept vereinskasse-steuern, S5)
+    earmark = models.ForeignKey(
+        "Earmark",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="donations",
+        verbose_name="Zweckbindung",
+    )
     statement = models.ForeignKey(
         DonationStatement,
         on_delete=models.SET_NULL,
@@ -1362,3 +1382,32 @@ class CashAuditAccount(models.Model):
 
     def __str__(self) -> str:
         return f"Kontenabgleich {self.account_id}"
+
+
+class Earmark(models.Model):
+    """Zweckbindung für Spenden (Konzept vereinskasse-steuern, S5).
+
+    Spenden „für die neue Fahne“ dürfen nur für diesen Zweck verwendet werden. Die
+    Zweckbindung sammelt solche Spenden und die Ausgaben dafür; der Rest zeigt, was noch
+    zweckgebunden zu verwenden ist."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    name = models.CharField("Zweck", max_length=100)
+    note = models.TextField("Beschreibung", max_length=1000, blank=True)
+    is_active = models.BooleanField("aktiv", default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Zweckbindung"
+        verbose_name_plural = "Zweckbindungen"
+        ordering = ["-is_active", "name"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "name"], name="zweckbindung_name_eindeutig"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return self.name

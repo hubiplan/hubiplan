@@ -247,6 +247,12 @@
       "zugang": "mitglied@hubertus-grimlinghausen.test",
       "seite": "/mein-bereich/daten",
       "ausschnitt": ""
+    },
+    {
+      "name": "beitragsstaffel-groesse",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/finanzen/einrichtung/beitraege",
+      "ausschnitt": ".size-rates"
     }
   ]
 }

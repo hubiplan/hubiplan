@@ -10,7 +10,7 @@ from core.api_base import ModelCleanMixin
 from members.models import Membership
 from organizations.models import Department
 
-from .models import Account, Booking, Category, Project, ProjectSeries, Receipt
+from .models import Account, Booking, Category, Earmark, Project, ProjectSeries, Receipt
 
 
 class AccountSerializer(ModelCleanMixin, serializers.ModelSerializer):
@@ -205,6 +205,8 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
     )
     project = OrgRelatedField(queryset=Project.objects.none(), allow_null=True, required=False)
     project_name = serializers.CharField(source="project.name", read_only=True, default=None)
+    earmark = OrgRelatedField(queryset=Earmark.objects.none(), allow_null=True, required=False)
+    earmark_name = serializers.CharField(source="earmark.name", read_only=True, default=None)
     account_name = serializers.CharField(source="account.name", read_only=True)
     to_account_name = serializers.CharField(source="to_account.name", read_only=True, default=None)
     category_name = serializers.CharField(source="category_label", read_only=True, default=None)
@@ -260,6 +262,8 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "split",
             "allowance",
             "artist_fee",
+            "earmark",
+            "earmark_name",
         ]
         read_only_fields = ["year", "cancel_reason"]
         extra_kwargs = {"number": {"required": False, "min_value": 1}}
@@ -329,6 +333,15 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
         if kind == Booking.Kind.TRANSFER:
             attrs["project"] = None  # Umbuchungen gehören zu keiner Veranstaltung
             attrs["counterparty"] = ""
+        new_earmark = attrs.get("earmark")
+        if (
+            new_earmark is not None
+            and not new_earmark.is_active
+            and (not self.instance or self.instance.earmark_id != new_earmark.pk)
+        ):
+            raise serializers.ValidationError(
+                {"earmark": gettext("Diese Zweckbindung ist archiviert.")}
+            )
         if attrs.get("artist_fee") and (not self.instance or not self.instance.artist_fee):
             from access.modules import module_on
 
