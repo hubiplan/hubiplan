@@ -83,11 +83,11 @@ describe('W-02: eigene Überschrift und eigener Seitentitel', () => {
     // Seit S-01 ist Mahnungen ein Eintrag der Gruppe „Beiträge & Rechnungen“
     // Pfad im Seitenkopf (S-05)
     const trail = screen.getByRole('navigation', { name: 'Pfad' })
-    expect(within(trail).getAllByRole('listitem').map((li) => li.textContent)).toEqual([
-      'Finanzen',
-      'Beiträge & Rechnungen',
-      'Mahnungen',
-    ])
+    expect(
+      within(trail)
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual(['Finanzen', 'Beiträge & Rechnungen', 'Mahnungen'])
     await waitFor(() =>
       expect(document.title).toMatch(/^Mahnungen · Beiträge & Rechnungen · Finanzen · /),
     )
