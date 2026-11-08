@@ -9170,3 +9170,51 @@ msgstr "{n} payments from the musician settlement totalling €{x} have no allow
 
 msgid "Eine Pauschale lässt sich nur durch Verzicht spenden. Bitte „Verzicht auf Erstattung“ ankreuzen."
 msgstr "An allowance can only be donated by waiving it. Please tick “Waiver of reimbursement”."
+
+msgid "keine (nicht steuerbar)"
+msgstr "none (not taxable)"
+
+msgid "steuerfrei"
+msgstr "tax-exempt"
+
+msgid "7 %"
+msgstr "7 %"
+
+msgid "19 %"
+msgstr "19 %"
+
+msgid "Eine Umbuchung enthält keine Umsatzsteuer."
+msgstr "A transfer does not include VAT."
+
+msgid "Bitte monatlich, vierteljährlich oder jährlich wählen."
+msgstr "Please choose monthly, quarterly or yearly."
+
+msgid "{q}. Quartal {y}"
+msgstr "Q{q} {y}"
+
+msgid "Steuerpflichtige Umsätze zu 19 %"
+msgstr "Taxable turnover at 19 %"
+
+msgid "Steuerpflichtige Umsätze zu 7 %"
+msgstr "Taxable turnover at 7 %"
+
+msgid "Steuerfreie Umsätze ohne Vorsteuerabzug"
+msgstr "Tax-exempt turnover without input VAT deduction"
+
+msgid "Vorsteuer pauschal nach § 23a UStG"
+msgstr "Flat-rate input VAT under § 23a UStG"
+
+msgid "Vorsteuerbeträge aus Rechnungen"
+msgstr "Input VAT from invoices"
+
+msgid "Verbleibende Umsatzsteuer-Vorauszahlung bzw. Überschuss (−)"
+msgstr "Remaining advance VAT payment or refund (−)"
+
+msgid "Der Verein ist als Kleinunternehmer eingetragen (§ 19 UStG). Dann wird keine Umsatzsteuer abgeführt und keine Vorsteuer abgezogen; die Auswertung zeigt nur, was bei Steuerpflicht anfiele."
+msgstr "The club is registered as a small business (§ 19 UStG). No VAT is then paid and no input VAT deducted; the report only shows what would arise if the club were liable for VAT."
+
+msgid "{n} Einnahmen im ideellen Bereich oder ohne Bereich haben einen Steuersatz. Mitgliedsbeiträge und Spenden sind nicht steuerbar; bitte die Buchungen prüfen."
+msgstr "{n} income bookings in the non-profit area or without an area have a tax rate. Membership fees and donations are not taxable; please check the bookings."
+
+msgid "Die Vorsteuerpauschale ist gewählt, aber die steuerpflichtigen Umsätze des Vorjahres lagen über 50.000 €. Gezählt wird deshalb die tatsächliche Vorsteuer (§ 23a Abs. 2 UStG)."
+msgstr "The flat-rate input VAT is selected, but taxable turnover in the previous year exceeded €50,000. The actual input VAT is therefore counted (§ 23a (2) UStG)."

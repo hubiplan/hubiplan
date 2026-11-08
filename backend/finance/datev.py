@@ -9,6 +9,11 @@ Zuschaltbar je Einheit (Finanzamt-Prüfung B6). Jedes Konto bekommt ein DATEV-Fi
 
 Stornos sind normale Gegenbuchungen und gehen genauso hinüber. Belegfeld 1 ist die
 Buchungsnummer, damit sich jede Zeile dem Beleg in HUBIplan zuordnen lässt.
+
+Ist der Verein umsatzsteuerpflichtig, bekommen Buchungen mit Steuersatz den BU-Schlüssel
+(Einnahmen 3 = 19 %, 2 = 7 % Umsatzsteuer; Ausgaben mit voller Vorsteuer außerhalb des
+ideellen Bereichs 9 = 19 %, 8 = 7 % Vorsteuer). Ausgaben mit anteiliger Vorsteuer bleiben
+ohne Schlüssel; den Anteil bucht die Steuerberatung.
 """
 
 from __future__ import annotations
@@ -20,7 +25,25 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext
 
-from .models import Booking
+from .models import Booking, VatRate
+
+OUTPUT_KEYS = {VatRate.STANDARD: "3", VatRate.REDUCED: "2"}
+INPUT_KEYS = {VatRate.STANDARD: "9", VatRate.REDUCED: "8"}
+
+
+def bu_key(booking: Booking, registered: bool) -> str:
+    """BU-Schlüssel für die Umsatzsteuer; leer ohne Steuer oder ohne Steuerpflicht."""
+    from .vat import INPUT_AREAS
+
+    original = booking.cancels if booking.cancels_id else booking
+    if not registered or original.kind == Booking.Kind.TRANSFER:
+        return ""
+    if original.kind == Booking.Kind.INCOME:
+        return OUTPUT_KEYS.get(original.vat_rate, "")
+    if original.input_tax_share == 100 and original.tax_area_value in INPUT_AREAS:
+        return INPUT_KEYS.get(original.vat_rate, "")
+    return ""
+
 
 COLUMNS = [
     "Umsatz (ohne Soll/Haben-Kz)",
@@ -63,9 +86,12 @@ def check_settings(org) -> list[str]:
 
 def rows(org, start: datetime.date, end: datetime.date) -> tuple[list[list[str]], list[str]]:
     """Zeilen des Buchungsstapels und fehlende Kontenzuordnungen."""
+    from .tax import _vat_registered
+
+    registered = _vat_registered(org)
     bookings = (
         Booking.objects.filter(organization=org, date__gte=start, date__lte=end)
-        .select_related("account", "to_account", "category", "organization")
+        .select_related("account", "to_account", "category", "organization", "cancels__category")
         .order_by("date", "year", "number")
     )
     out: list[list[str]] = []
@@ -98,7 +124,7 @@ def rows(org, start: datetime.date, end: datetime.date) -> tuple[list[list[str]]
                 "",
                 konto,
                 gegen,
-                "",
+                bu_key(b, registered),
                 f"{b.date:%d%m}",
                 _q(b.display_number[:36]),
                 _q((b.reference or "")[:12]),

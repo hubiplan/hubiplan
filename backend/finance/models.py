@@ -11,6 +11,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy
@@ -79,6 +80,17 @@ def iban_valid(iban: str) -> bool:
     return int(digits) % 97 == 1
 
 
+class VatRate(models.TextChoices):
+    """Umsatzsteuer einer Buchung bzw. Vorgabe einer Kategorie (Konzept vereinskasse-steuern, S2).
+
+    Der Betrag bleibt brutto; Netto und Steuer werden daraus berechnet."""
+
+    NONE = "", gettext_lazy("keine (nicht steuerbar)")
+    EXEMPT = "exempt", gettext_lazy("steuerfrei")
+    REDUCED = "7", gettext_lazy("7 %")
+    STANDARD = "19", gettext_lazy("19 %")
+
+
 class Category(models.Model):
     class Kind(models.TextChoices):
         INCOME = "income", gettext_lazy("Einnahmen")
@@ -103,6 +115,14 @@ class Category(models.Model):
     )
     # DATEV-Export: Sachkonto (Gegenkonto der Buchungen dieser Kategorie)
     datev_account = models.CharField("DATEV-Konto", max_length=9, blank=True)
+    vat_rate = models.CharField(
+        "Umsatzsteuer (Vorgabe)",
+        max_length=6,
+        choices=VatRate.choices,
+        blank=True,
+        default="",
+        db_default="",
+    )
 
     class Meta:
         verbose_name = "Kategorie"
@@ -239,6 +259,17 @@ class Booking(models.Model):
         default="",
         db_default="",
     )
+    # Umsatzsteuer im Betrag (S2); Vorsteuer nur außerhalb des ideellen Bereichs, bei
+    # gemischt genutzten Ausgaben anteilig
+    vat_rate = models.CharField(
+        "Umsatzsteuer", max_length=6, choices=VatRate.choices, blank=True, default="", db_default=""
+    )
+    input_tax_share = models.PositiveSmallIntegerField(
+        "Vorsteuer abziehbar (%)",
+        default=100,
+        db_default=100,
+        validators=[MaxValueValidator(100)],
+    )
     # Honorar an selbständige Künstler (Künstlersozialabgabe, S4); zählt auch ohne das
     # Kennzeichen, wenn die Kategorie so markiert ist
     artist_fee = models.BooleanField(
@@ -301,6 +332,8 @@ class Booking(models.Model):
                 errors["category"] = gettext("Die Kategorie passt nicht zu dieser Art der Buchung.")
         if self.artist_fee and self.kind != self.Kind.EXPENSE:
             errors["artist_fee"] = gettext("Ein Künstlerhonorar ist immer eine Ausgabe.")
+        if self.vat_rate and self.kind == self.Kind.TRANSFER:
+            errors["vat_rate"] = gettext("Eine Umbuchung enthält keine Umsatzsteuer.")
         if self.earmark_id and self.kind != self.Kind.EXPENSE:
             errors["earmark"] = gettext("Eine Zweckbindung gibt es nur für Ausgaben.")
         if self.allowance and self.kind != self.Kind.EXPENSE:

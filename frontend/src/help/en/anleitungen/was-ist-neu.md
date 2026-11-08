@@ -12,6 +12,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: VAT in the cash book. Tax rate per booking (default from the category), input VAT also proportionally and under Finance › Closing & reports › VAT a template for the advance return, optionally with flat-rate input VAT under § 23a UStG.
 - New: allowances now also count waivers as expense donations, payments from the musician settlement and the cash books of sub-units (Finance › Closing & reports › Allowances).
 - New: statement on the use of funds. Finance › Closing & reports › Use of funds shows in a simplified calculation which funds must be used by when, and warns if a deadline has passed.
 - New: earmarked donations. In donation receipts › **Earmarks**, donations and cash book expenses can be assigned to a purpose; the overview shows the remainder and reminds you to use the funds promptly.
