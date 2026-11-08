@@ -22,7 +22,7 @@ def private_root(settings, tmp_path):
 @pytest.fixture
 def site(orgs):
     org = orgs["a"]
-    org.enabled_modules = ["members", "website"]
+    org.enabled_modules = ["members", "events", "website"]
     org.save()
     return Website.objects.create(organization=org, public_key=Website.new_key())
 
