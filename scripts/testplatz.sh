@@ -3,7 +3,7 @@
 #
 #   testplatz [--kerne N] [--] Befehl [Argumente …]
 #
-# Regel: höchstens drei Testläufe gleichzeitig, jeder höchstens 8 Kerne, egal aus
+# Regel: höchstens drei Testläufe gleichzeitig, jeder höchstens 6 Kerne, egal aus
 # welchem Projekt. testplatz wartet auf einen freien Platz, bindet den Befehl an
 # dessen Kerne und gibt ihm die Umgebungsvariablen
 #   TESTPLATZ=1|2|3      belegter Platz
@@ -11,7 +11,7 @@
 #   TESTPLATZ_CPUS=a-b   die Kerne des Platzes (für docker run --cpuset-cpus)
 #
 # In WSL (Debian) hält es die Sperre selbst. Unter Windows (Git Bash) holt es den Platz
-# über WSL und lässt den Befehl unter Windows laufen, mit Prozessor-Affinität auf 8 Kerne.
+# über WSL und lässt den Befehl unter Windows laufen, mit Prozessor-Affinität auf 6 Kerne.
 # Ist TESTPLATZ schon gesetzt, läuft der Befehl direkt (verschachtelte Aufrufe).
 #
 # Sperren: ~/.testplaetze/platz-1.lock bis platz-3.lock (in WSL). Ältere Skripte mit
@@ -23,7 +23,7 @@
 #   Git Bash: install -m 755 scripts/testplatz.sh ~/bin/testplatz
 set -euo pipefail
 
-MAX_KERNE=8
+MAX_KERNE=6
 PLAETZE=3
 WSL_DISTRO="${TESTPLATZ_DISTRO:-Debian}"
 
@@ -97,7 +97,7 @@ while :; do
     sleep 3
 done
 
-# Kerne des Platzes: nebeneinander ab Kern 0 (Platz 1: 0–7, Platz 2: 8–15, Platz 3: 16–23).
+# Kerne des Platzes: nebeneinander ab Kern 0 (Platz 1: 0–5, Platz 2: 6–11, Platz 3: 12–17).
 # Reichen die Kerne nicht, rückt der Platz ans Ende und teilt sich Kerne mit dem vorigen.
 N=$(nproc --all)
 [ "$KERNE" -gt "$N" ] && KERNE=$N
@@ -112,7 +112,7 @@ export HUBIPLAN_TEST_LOCK="$DIR/innen-$PLATZ.lock"
 echo "testplatz: Platz $PLATZ, $KERNE Kerne ($CPUS)" >&2
 
 if [ -n "$WIN_DIR" ]; then
-    # Windows-Kerne: Platz 1 ab Kern 0, Platz 2 ab Kern 8, Platz 3 ab Kern 16 (der PC hat 24)
+    # Windows-Kerne: Platz 1 ab Kern 0, Platz 2 ab Kern 6, Platz 3 ab Kern 12
     start=$(( (PLATZ - 1) * MAX_KERNE ))
     export TESTPLATZ_MASKE=$(( ((1 << KERNE) - 1) << start ))
     export WSLENV="TESTPLATZ:TEST_KERNE:TESTPLATZ_CPUS:TESTPLATZ_MASKE${WSLENV:+:$WSLENV}"
