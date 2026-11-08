@@ -14,6 +14,11 @@ class CoreConfig(AppConfig):
 
         install()
 
+        # PDF-Absätze: keine Bilder, nur http(s)-/mailto-Verweise, keine Abrufe
+        from .pdfsafe import install as pdf_haerten
+
+        pdf_haerten()
+
         # Alarm-Mails bei neuen Plattformzugängen und Superusern
         from .alarm import connect
 

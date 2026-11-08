@@ -41,6 +41,9 @@ def scope_for(user, org_id=None, dept_id=None) -> Scope:
         if org is None:
             raise NotFound()
         scope = Scope(org, None, set(permissions_in(user, org)))
+    # Fremde Einheit: immer 404, bevor der Modulzustand etwas verrät (Gesamtaudit 08.11. GA8-05)
+    if not scope.permissions:
+        raise NotFound()
     if MODULE not in (scope.org.enabled_modules or []):
         raise NotFound()
     if VIEW not in scope.permissions:

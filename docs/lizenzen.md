@@ -20,9 +20,9 @@ Jede Seite hat in der Fußzeile den Link **„Lizenzen“** (`/lizenz`). Dort st
 laufenden Fassung: `deploy/server-setup.sh` legt beim Ausrollen den Commit aus `.fassung`
 als `/lizenzen/fassung.txt` ins Web-Image, die Seite verlinkt dann
 `…/tree/<commit>`. Ohne diese Datei (Entwicklung) verlinkt sie das Repository. Wer eine
-veränderte Fassung betreibt, setzt beim Bauen das Build-Argument `HUBIPLAN_SOURCE_URL`
-(`deploy/web.Dockerfile`) auf sein eigenes öffentliches Repository; ohne Angabe gilt
-`https://github.com/hubiplan/hubiplan`.
+veränderte Fassung betreibt, setzt `HUBIPLAN_SOURCE_URL` in der `.env` des Servers (wird als
+Build-Argument an `deploy/web.Dockerfile` gereicht) auf sein eigenes öffentliches Repository
+mit genau dem laufenden Stand; ohne Angabe gilt `https://github.com/hubiplan/hubiplan`.
 
 ## Browser-Code (Frontend)
 

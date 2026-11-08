@@ -287,6 +287,9 @@ services:
     build:
       context: .
       dockerfile: deploy/web.Dockerfile
+      args:
+        # Quellcode-Link auf /lizenz (AGPL § 13): bei eigenen Änderungen auf das eigene Repository
+        HUBIPLAN_SOURCE_URL: ${HUBIPLAN_SOURCE_URL:-https://github.com/hubiplan/hubiplan}
     restart: unless-stopped
     <<: *haertung
     cap_add: [NET_BIND_SERVICE]

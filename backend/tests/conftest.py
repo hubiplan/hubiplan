@@ -64,6 +64,34 @@ def pytest_runtest_teardown(item, nextitem):
 
 
 @pytest.fixture(autouse=True)
+def _gobd_testdatum(monkeypatch):
+    """Die Datenbank prüft die Aufbewahrungsfrist selbst (finance/0032). Tests setzen das
+    heutige Datum über ``finance.retention._today``; vor jeder Freigabe wird es übernommen."""
+    from django.db import connection
+
+    from finance import gobd, retention
+
+    original = gobd.release_documents
+
+    def release_documents(*args, **kwargs):
+        # Nur der Eigentümer darf das Testdatum setzen: Rolle der Anwendung kurz verlassen
+        with connection.cursor() as cur:
+            cur.execute("SELECT current_user, session_user")
+            current, session = cur.fetchone()
+            if current != session:
+                cur.execute("RESET ROLE")
+            cur.execute("DELETE FROM finance_gobd_testdatum")
+            cur.execute(
+                "INSERT INTO finance_gobd_testdatum (heute) VALUES (%s)", [retention._today()]
+            )
+            if current != session:
+                cur.execute(f'SET ROLE "{current}"')
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(gobd, "release_documents", release_documents)
+
+
+@pytest.fixture(autouse=True)
 def _clear_cache():
     # allauth merkt sich verwendete TOTP-Codes und Fehlversuche im Cache.
     cache.clear()

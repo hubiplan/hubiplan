@@ -22,7 +22,7 @@ from members.models import DepartmentMembership, Membership, MembershipPeriod
 from members.photo_models import MemberPhoto
 from organizations.theme import effective_theme
 
-from .models import MemberCard, new_token
+from .models import MemberCard, hash_token, new_token
 
 
 def ensure_card(membership: Membership, user=None) -> MemberCard:
@@ -86,7 +86,7 @@ def find_valid(token: str) -> MemberCard | None:
     with rls_bypass():
         card = (
             MemberCard.objects.select_related("membership__person", "organization__parent__parent")
-            .filter(token=token, revoked_at__isnull=True)
+            .filter(token_hash=hash_token(token), revoked_at__isnull=True)
             .first()
         )
     # Deaktivierte Organisation: Ausweis gilt nicht mehr, keine Daten zeigen (Audit B-V05)

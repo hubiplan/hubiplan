@@ -11,6 +11,6 @@ stichworte: [Kalender, Abo, iCal, Handy, Outlook]
 2. Klicke beim Kalender-Abo auf **Persönlichen Link erstellen** und dann auf **Link kopieren**.
 3. Füge den Link in deinem Kalender als „Kalender abonnieren“ (Internetkalender) ein, etwa am Handy, in Outlook oder Thunderbird.
 
-Der Link ist persönlich. Gib ihn nicht weiter; mit „Neuen Link erstellen“ machst du den alten ungültig.
+Der Link ist persönlich. Gib ihn nicht weiter; mit „Neuen Link erstellen“ machst du den alten ungültig. HUBIplan zeigt den Link nur direkt nach dem Erstellen an und speichert ihn nicht lesbar. Brauchst du ihn später noch einmal, erstelle einen neuen Link und trage ihn im Kalender neu ein.
 
 ![Ausgangspunkt: Termine im eigenen Kalender sehen (Abo)](bild:kalender-abonnieren)

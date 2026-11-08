@@ -88,7 +88,8 @@ def test_beleg_einer_festgeschriebenen_buchung_nicht_loeschbar(orgs):
         )
         _lock(org)
         assert _blocked(lambda: Receipt.objects.filter(pk=receipt.pk).delete())
-        with transaction.atomic(), gobd.erasure():
+        with transaction.atomic():
+            gobd.release_unit(org.pk)
             Receipt.objects.filter(pk=receipt.pk).delete()
             Booking.objects.filter(pk=b.pk).delete()
         assert not Booking.objects.filter(pk=b.pk).exists()

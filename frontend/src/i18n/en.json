@@ -7273,5 +7273,9 @@
   "Mitgezählt werden die Kassen von: {units}": "Also counted are the cash books of: {units}",
   "{n} Zahlungen": "{n} payments",
   "Diese Kasse zählt steuerlich bei {x} mit. Dort stehen die Summen je Person über alle Kassen.": "For tax purposes this cash book is counted at {x}. The totals per person across all cash books are shown there.",
-  "Alle Bereiche mit ihrer Einrichtung unter Module": "All areas with their setup under Modules"
+  "Alle Bereiche mit ihrer Einrichtung unter Module": "All areas with their setup under Modules",
+  "Kopiere den Link jetzt. Aus Sicherheitsgründen zeigen wir ihn nur dieses eine Mal an.": "Copy the link now. For security reasons it is shown only this once.",
+  "Dein Kalender-Abo ist eingerichtet. Den Link zeigen wir aus Sicherheitsgründen nur direkt nach dem Erstellen. Brauchst du ihn wieder, erstelle einen neuen Link.": "Your calendar subscription is set up. For security reasons the link is shown only right after it is created. If you need it again, create a new link.",
+  "Die Virenprüfung ist eingerichtet, aber für die Weitergabe abgeschaltet (VIRUS_SCAN_REQUIRED=0). Rundschreiben-Anhänge und öffentliche Dokumente können ungeprüft hinausgehen.": "Virus scanning is set up but switched off for sharing (VIRUS_SCAN_REQUIRED=0). Circular attachments and public documents may go out unscanned.",
+  "Auf diesem Server ist keine Virenprüfung eingerichtet. Rundschreiben-Anhänge und öffentliche Dokumente gehen ungeprüft an viele Empfänger. Einrichtung: docs/betrieb.md, Abschnitt Virenprüfung.": "No virus scanning is set up on this server. Circular attachments and public documents go out unscanned to many recipients. Setup: docs/betrieb.md, section Virus scanning."
 }

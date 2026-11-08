@@ -369,8 +369,12 @@ class TestKalenderAbo:
             visibility="board",
         )
         c = api(user)
-        assert c.get(f"{portal(access)}events/feed/").json() == {"ics_url": None}
+        assert c.get(f"{portal(access)}events/feed/").json() == {"active": False, "ics_url": None}
         url = c.put(f"{portal(access)}events/feed/").json()["ics_url"]
+        # Gespeichert ist nur der Hash; der Link erscheint nur beim Erstellen (Audit 08.11., F-04)
+        assert c.get(f"{portal(access)}events/feed/").json() == {"active": True, "ics_url": None}
+        feed = PersonalCalendar.objects.get()
+        assert feed.key is None and feed.key_hash and url.split("/")[-2] not in feed.key_hash
         body = Client().get(url).content.decode()
         assert "SUMMARY:JHV" in body and "Intern" not in body
         # erneuern: alter Link ungültig
