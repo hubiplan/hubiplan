@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 import { SubNavContext, buildNavTree } from './subnav.ts'
 import type { NavNode, SubNavItem } from './subnav.ts'
 import { formatTitle, useTitleOverride } from './pageTitle.ts'
+import { NavTrailContext, navTrail, trailTitle } from './navTrail.ts'
+import type { TrailItem } from './navTrail.ts'
 import { confirmLeave } from './leaveGuard.ts'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext.tsx'
@@ -265,37 +267,42 @@ export function Layout() {
     instance.logo_url
 
   // Seitentitel im Browser-Tab: Bereich · Arbeitsbereich · HUBIplan (WCAG 2.4.2)
+  // Pfad der Seite aus der Menüstruktur (Seitenkopf S-05, W-02): Modul › Unterpunkt ›
+  // angemeldeter Unterpunkt der Seite. Seitentitel, h1 und Pfadzeile nutzen ihn.
+  const matchesPath = (path: string) => pathname === path || pathname.startsWith(`${path}/`)
+  const currentModule = visible
+    .filter((m) => modulePaths(m).some(matchesPath))
+    .sort((a, b) => b.path.length - a.path.length)[0]
+  const trail = currentModule
+    ? navTrail(
+        pathname,
+        {
+          path: currentModule.path,
+          link: currentModule.linkFor?.(active, ws),
+          label:
+            currentModule.id === 'abteilung' && activeDept
+              ? activeDept.label
+              : (currentModule.labelFor?.(active, ws) ?? currentModule.label),
+        },
+        currentModule.children?.(active, ws) ?? [],
+        Object.values(subNav),
+      )
+    : []
+  const trailKey = JSON.stringify(trail)
+  // Einheit im Seitenkopf nur, wenn die Person mehrere Einheiten wählen kann (W-06)
+  const unitName =
+    contextCount > 1 ? (active ? displayName(active) : (activeDept?.name ?? null)) : null
+  const navTrailValue = useMemo(
+    () => ({ trail: JSON.parse(trailKey) as TrailItem[], unit: unitName }),
+    [trailKey, unitName],
+  )
   const pageLabel = (() => {
-    const matches = (path: string) => pathname === path || pathname.startsWith(`${path}/`)
-    const mod = visible
-      .filter((m) => modulePaths(m).some(matches))
-      .sort((a, b) => b.path.length - a.path.length)[0]
-    if (!mod) {
+    if (!currentModule) {
       const section = accountSectionLabel(pathname)
       if (section && pathname !== ACCOUNT_PATH) return t('{section} · Mein Konto', { section })
       return OTHER_PAGES[pathname] ?? null
     }
-    const sub = mod
-      .children?.(active, ws)
-      .filter((c) => c.to !== mod.path && matches(c.to))
-      .sort((a, b) => b.to.length - a.to.length)[0]
-    const modLabel =
-      mod.id === 'abteilung' && activeDept
-        ? activeDept.label
-        : (mod.labelFor?.(active, ws) ?? mod.label)
-    // Dritte Ebene: angemeldeter Unterpunkt der Seite, tiefer als der Menüpunkt (UX-Audit
-    // 08.11., W-02), z. B. „Mahnungen · Rechnungen · Finanzen“
-    const base = sub?.to ?? mod.path
-    const deep = Object.values(subNav)
-      .flat()
-      .filter((c) => c.to.length > base.length && matches(c.to))
-      .sort((a, b) => b.to.length - a.to.length)[0]
-    const parts = [deep?.label, sub?.label, modLabel].filter(
-      (p, i, all): p is string => !!p && p !== all[i - 1],
-    )
-    return parts.reduce((title, label) =>
-      t('{label} · {modLabel}', { label: title, modLabel: label }),
-    )
+    return trailTitle(trail)
   })()
   const titleOverride = useTitleOverride()
   useEffect(() => {
@@ -373,144 +380,152 @@ export function Layout() {
 
   return (
     <SubNavContext.Provider value={subNavApi}>
-      <LearningProvider off={!active && !activeDept}>
-        <HelpProvider>
-          <div className={`app-shell${navOpen ? ' nav-open' : ''}`}>
-            <a href="#inhalt" className="skip-link">
-              {t('Zum Inhalt springen')}
-            </a>
-            <header className="topbar" inert={navOpen || undefined}>
-              <button
-                type="button"
-                className="nav-toggle"
-                ref={toggleRef}
-                aria-label={navOpen ? t('Navigation schließen') : t('Navigation öffnen')}
-                aria-expanded={navOpen}
-                aria-controls="hauptnavigation"
-                onClick={() => setNavOpen((o) => !o)}
-              >
-                <span />
-                <span />
-                <span />
-              </button>
-              <NavLink to="/" className="topbar-brand">
-                <Logo name={brandName} logoUrl={brandLogo} />
-              </NavLink>
-              <div className="topbar-user">
-                {!narrow && headerTools}
-                {!narrow && <HelpButton />}
-                <AccountMenu
-                  email={user?.email}
-                  onLogout={handleLogout}
-                  extra={
-                    active && <RolePreviewSelect org={active} onChanged={previewChanged} labelled />
-                  }
-                  personal={personal}
-                  onPersonal={(key, to) => void switchOrg(key, to)}
-                />
-              </div>
-            </header>
-
-            <nav className="sidebar" id="hauptnavigation" aria-label={t('Module')} ref={navRef}>
-              <button type="button" className="sidebar-close" onClick={closeNav}>
-                <span aria-hidden="true">×</span> {t('Navigation schließen')}
-              </button>
-              {narrow && <div className="sidebar-tools">{headerTools}</div>}
-              <ul>
-                {visible.map((m, index) => (
-                  <li
-                    key={m.id}
-                    className={
-                      index > 0 && visible[index - 1].group !== m.group
-                        ? 'sidebar-group-start'
-                        : undefined
-                    }
-                  >
-                    {(index === 0 || visible[index - 1].group !== m.group) && (
-                      <span className="sidebar-group-label">{GROUP_LABELS[m.group]}</span>
-                    )}
-                    <NavLink
-                      to={m.linkFor?.(active, ws) ?? m.path}
-                      end={m.path === '/'}
-                      className="sidebar-link"
-                      onClick={choseInNav}
-                    >
-                      {m.icon}
-                      <span>
-                        {m.id === 'abteilung' && activeDept
-                          ? activeDept.label
-                          : (m.labelFor?.(active, ws) ?? m.label)}
-                      </span>
-                    </NavLink>
-                    {inModule(m) &&
-                      renderNav(
-                        buildNavTree(m.path, m.children?.(active, ws) ?? [], Object.values(subNav)),
-                      )}
-                  </li>
-                ))}
-              </ul>
-              {/* Immer am selben Ort erreichbar, unabhängig vom Modul (UI-Audit H-NUI-C) */}
-              <div className="sidebar-help">
-                <NavLink to="/hilfe" className="sidebar-link" onClick={choseInNav}>
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="20"
-                    height="20"
-                    aria-hidden="true"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h.01" />
-                  </svg>
-                  <span>{t('Hilfe')}</span>
+      <NavTrailContext.Provider value={navTrailValue}>
+        <LearningProvider off={!active && !activeDept}>
+          <HelpProvider>
+            <div className={`app-shell${navOpen ? ' nav-open' : ''}`}>
+              <a href="#inhalt" className="skip-link">
+                {t('Zum Inhalt springen')}
+              </a>
+              <header className="topbar" inert={navOpen || undefined}>
+                <button
+                  type="button"
+                  className="nav-toggle"
+                  ref={toggleRef}
+                  aria-label={navOpen ? t('Navigation schließen') : t('Navigation öffnen')}
+                  aria-expanded={navOpen}
+                  aria-controls="hauptnavigation"
+                  onClick={() => setNavOpen((o) => !o)}
+                >
+                  <span />
+                  <span />
+                  <span />
+                </button>
+                <NavLink to="/" className="topbar-brand">
+                  <Logo name={brandName} logoUrl={brandLogo} />
                 </NavLink>
-              </div>
-            </nav>
-            <div className="sidebar-backdrop" aria-hidden="true" onClick={closeNav} />
-
-            <main className="content" id="inhalt" tabIndex={-1} inert={navOpen || undefined}>
-              {previewOrg && <RolePreviewBanner org={previewOrg} onChanged={previewChanged} />}
-              {user?.mfa_required_by && (
-                <MfaNotice
-                  by={user.mfa_required_by}
-                  overdue={!!user.mfa_overdue}
-                  short={pathname !== '/' && !pathname.startsWith('/mein-konto')}
-                />
-              )}
-              {/* Verwalter (Rechte in einer Einheit) sehen nach einem Release-Update „Das ist neu“ */}
-              {orgs.length > 0 && !previewOrg && <UpdateNotice />}
-              {/* Betreiber: neueres Release verfügbar (tägliche Prüfung, abschaltbar) */}
-              {!previewOrg &&
-                orgs.some(
-                  (o) => o.type === 'platform' && o.permissions.includes(PERM.platformManage),
-                ) && <NewReleaseNotice />}
-              {loading ? (
-                <p className="muted" role="status">
-                  {t('Lädt …')}
-                </p>
-              ) : (
-                <PageErrorBoundary resetKey={pathname}>
-                  <Suspense
-                    fallback={
-                      <p className="muted" role="status">
-                        {t('Lädt …')}
-                      </p>
+                <div className="topbar-user">
+                  {!narrow && headerTools}
+                  {!narrow && <HelpButton />}
+                  <AccountMenu
+                    email={user?.email}
+                    onLogout={handleLogout}
+                    extra={
+                      active && (
+                        <RolePreviewSelect org={active} onChanged={previewChanged} labelled />
+                      )
                     }
-                  >
-                    <Outlet key={`${version}-${previewVersion}`} />
-                  </Suspense>
-                </PageErrorBoundary>
-              )}
-              <AppFooter />
-            </main>
-            <HelpPanel />
-          </div>
-        </HelpProvider>
-      </LearningProvider>
+                    personal={personal}
+                    onPersonal={(key, to) => void switchOrg(key, to)}
+                  />
+                </div>
+              </header>
+
+              <nav className="sidebar" id="hauptnavigation" aria-label={t('Module')} ref={navRef}>
+                <button type="button" className="sidebar-close" onClick={closeNav}>
+                  <span aria-hidden="true">×</span> {t('Navigation schließen')}
+                </button>
+                {narrow && <div className="sidebar-tools">{headerTools}</div>}
+                <ul>
+                  {visible.map((m, index) => (
+                    <li
+                      key={m.id}
+                      className={
+                        index > 0 && visible[index - 1].group !== m.group
+                          ? 'sidebar-group-start'
+                          : undefined
+                      }
+                    >
+                      {(index === 0 || visible[index - 1].group !== m.group) && (
+                        <span className="sidebar-group-label">{GROUP_LABELS[m.group]}</span>
+                      )}
+                      <NavLink
+                        to={m.linkFor?.(active, ws) ?? m.path}
+                        end={m.path === '/'}
+                        className="sidebar-link"
+                        onClick={choseInNav}
+                      >
+                        {m.icon}
+                        <span>
+                          {m.id === 'abteilung' && activeDept
+                            ? activeDept.label
+                            : (m.labelFor?.(active, ws) ?? m.label)}
+                        </span>
+                      </NavLink>
+                      {inModule(m) &&
+                        renderNav(
+                          buildNavTree(
+                            m.path,
+                            m.children?.(active, ws) ?? [],
+                            Object.values(subNav),
+                          ),
+                        )}
+                    </li>
+                  ))}
+                </ul>
+                {/* Immer am selben Ort erreichbar, unabhängig vom Modul (UI-Audit H-NUI-C) */}
+                <div className="sidebar-help">
+                  <NavLink to="/hilfe" className="sidebar-link" onClick={choseInNav}>
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="20"
+                      height="20"
+                      aria-hidden="true"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h.01" />
+                    </svg>
+                    <span>{t('Hilfe')}</span>
+                  </NavLink>
+                </div>
+              </nav>
+              <div className="sidebar-backdrop" aria-hidden="true" onClick={closeNav} />
+
+              <main className="content" id="inhalt" tabIndex={-1} inert={navOpen || undefined}>
+                {previewOrg && <RolePreviewBanner org={previewOrg} onChanged={previewChanged} />}
+                {user?.mfa_required_by && (
+                  <MfaNotice
+                    by={user.mfa_required_by}
+                    overdue={!!user.mfa_overdue}
+                    short={pathname !== '/' && !pathname.startsWith('/mein-konto')}
+                  />
+                )}
+                {/* Verwalter (Rechte in einer Einheit) sehen nach einem Release-Update „Das ist neu“ */}
+                {orgs.length > 0 && !previewOrg && <UpdateNotice />}
+                {/* Betreiber: neueres Release verfügbar (tägliche Prüfung, abschaltbar) */}
+                {!previewOrg &&
+                  orgs.some(
+                    (o) => o.type === 'platform' && o.permissions.includes(PERM.platformManage),
+                  ) && <NewReleaseNotice />}
+                {loading ? (
+                  <p className="muted" role="status">
+                    {t('Lädt …')}
+                  </p>
+                ) : (
+                  <PageErrorBoundary resetKey={pathname}>
+                    <Suspense
+                      fallback={
+                        <p className="muted" role="status">
+                          {t('Lädt …')}
+                        </p>
+                      }
+                    >
+                      <Outlet key={`${version}-${previewVersion}`} />
+                    </Suspense>
+                  </PageErrorBoundary>
+                )}
+                <AppFooter />
+              </main>
+              <HelpPanel />
+            </div>
+          </HelpProvider>
+        </LearningProvider>
+      </NavTrailContext.Provider>
     </SubNavContext.Provider>
   )
 }

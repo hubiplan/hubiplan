@@ -4,6 +4,7 @@
 import { createContext, useContext } from 'react'
 import { buildNavTree } from './subnav.ts'
 import type { NavNode, SubNavItem } from './subnav.ts'
+import { t } from '../i18n/index.ts'
 
 export interface TrailItem {
   to: string
@@ -50,11 +51,19 @@ export function navTrail(
     parent = next.to
     nodes = next.children
   }
-  return trail
+  // Dritte Ebene, die der Baum nicht einhängt: tiefster angemeldeter Unterpunkt (W-02)
+  const deep = registered
+    .flat()
+    .filter((c) => c.to.length > parent.length && covers(c.to, path))
+    .sort((a, b) => b.to.length - a.to.length)[0]
+  if (deep) trail.push({ to: deep.to, label: deep.label })
+  // Gleich benannte Glieder hintereinander (Unterpunkt heißt wie der Bereich) nur einmal
+  return trail.filter((item, i) => i === 0 || item.label !== trail[i - 1].label)
 }
 
 /** Seitentitel aus dem Pfad: tiefste Ebene zuerst („Mahnungen · Rechnungen · Finanzen“). */
 export function trailTitle(trail: TrailItem[], title?: string | null): string | null {
   const parts = [...(title ? [title] : []), ...trail.map((i) => i.label).reverse()]
-  return parts.length > 0 ? parts.join(' · ') : null
+  if (parts.length === 0) return null
+  return parts.reduce((all, label) => t('{label} · {modLabel}', { label: all, modLabel: label }))
 }
