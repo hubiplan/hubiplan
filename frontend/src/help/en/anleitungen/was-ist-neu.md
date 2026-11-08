@@ -12,6 +12,8 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Home page: “To do” now collects from all areas: due meeting invitations, received motions and open minutes, open helper places, queries and close entry deadlines, received invoices, invoice drafts, reminders, direct debits and expired account invitations. Finance › Overview shows the same entries for finance.
+- Terms: changes members make to their own details are now called “data changes”; “entries” only means competition entries. In a sub-unit’s work area the tab is called “Offices” and shows the office holders first.
 - New: VAT in the cash book. Tax rate per booking (default from the category), input VAT also proportionally and under Finance › Closing & reports › VAT a template for the advance return, optionally with flat-rate input VAT under § 23a UStG.
 - New: allowances now also count waivers as expense donations, payments from the musician settlement and the cash books of sub-units (Finance › Closing & reports › Allowances).
 - New: statement on the use of funds. Finance › Closing & reports › Use of funds shows in a simplified calculation which funds must be used by when, and warns if a deadline has passed.

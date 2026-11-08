@@ -58,6 +58,41 @@ describe('Finanzen', () => {
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
       [`GET ${B}/overview/`]: () => ({ status: 200, body: overview }),
+      // „Zu erledigen“ kommt aus derselben Quelle wie auf der Startseite (Menüprüfung 2, N-03)
+      [`GET /api/orgs/${org.id}/open-tasks/`]: () => ({
+        status: 200,
+        body: {
+          items: [
+            {
+              kind: 'dunnings_due',
+              area: 'finance',
+              kind_label: 'Mahnungen',
+              title: '1 Rechnung ist zu mahnen',
+              detail: 'Mahnstufe erreicht',
+              created_at: null,
+              link: '/finanzen/rechnungen/mahnungen',
+            },
+            {
+              kind: 'debits_ready',
+              area: 'finance',
+              kind_label: 'Lastschriften',
+              title: '2 Rechnungen können per Lastschrift eingezogen werden',
+              detail: 'Lastschriftlauf anlegen',
+              created_at: null,
+              link: '/finanzen/lastschrift',
+            },
+            {
+              kind: 'meeting_minutes',
+              area: 'meetings',
+              kind_label: 'Versammlung',
+              title: 'Protokoll zu „JHV“ fertigstellen',
+              detail: '',
+              created_at: null,
+              link: '/versammlungen?versammlung=1',
+            },
+          ],
+        },
+      }),
     })
     renderApp('/finanzen')
     expect(await screen.findByRole('heading', { name: 'Offene Rechnungen' })).toBeInTheDocument()
@@ -75,13 +110,14 @@ describe('Finanzen', () => {
     ])
       expect(nav.getByRole('link', { name })).toBeInTheDocument()
     expect(screen.getByText('180,00 €')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: '1 Rechnung ist zu mahnen' })).toHaveAttribute(
+    expect(await screen.findByRole('link', { name: '1 Rechnung ist zu mahnen' })).toHaveAttribute(
       'href',
       '/finanzen/rechnungen/mahnungen',
     )
     expect(
       screen.getByRole('link', { name: /2 Rechnungen können per Lastschrift/ }),
     ).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Protokoll/ })).not.toBeInTheDocument()
   })
 
   it('blendet Lastschriften aus, wenn sie ausgeschaltet sind', async () => {

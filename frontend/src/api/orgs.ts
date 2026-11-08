@@ -692,7 +692,10 @@ export interface SelfUpdate {
 
 /** Vorgang, der eine Entscheidung braucht (Startseite „Offene Aufgaben“) */
 export interface OpenTask {
-  kind: 'change_request' | 'transfer' | 'photo' | 'event' | 'todo' | 'invoices_overdue'
+  /** Art des Eintrags, z. B. change_request, todo, invoices_overdue, meeting_minutes */
+  kind: string
+  /** Bereich der Quelle (members, finance, meetings …); die Finanzen-Übersicht zeigt „finance“ */
+  area?: string
   ref?: number
   version?: number
   can_edit?: boolean
@@ -702,7 +705,7 @@ export interface OpenTask {
   kind_label: string
   title: string
   detail: string
-  created_at: string
+  created_at: string | null
   link: string
 }
 

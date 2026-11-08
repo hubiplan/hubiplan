@@ -1,7 +1,7 @@
 // Einstellungen › Konten: wer sich anmelden kann, mit Filtern und Sammelversand
 // (Rollen-Vorschlag R4, konzepte/rollen-zugaenge.md).
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { accountsApi } from '../../api/accounts.ts'
 import type { Account } from '../../api/accounts.ts'
 import { orgApi, PERM } from '../../api/orgs.ts'
@@ -36,7 +36,12 @@ export function AccountsPage() {
     () => (canRoles ? orgApi.assignments(org.id) : Promise.resolve([])),
     [org.id],
   )
-  const [filter, setFilter] = useState<Filter>('')
+  // ?filter=expired kommt aus „Zu erledigen“ (Menüprüfung 2, N-03)
+  const [params] = useSearchParams()
+  const [filter, setFilter] = useState<Filter>(() => {
+    const wanted = params.get('filter')
+    return FILTERS.find((f) => f.value === wanted)?.value ?? ''
+  })
   const [chosen, setChosen] = useState<Set<number>>(new Set())
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
