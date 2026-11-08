@@ -352,6 +352,13 @@ if ! ueberlappend_tauschen; then
     echo "Überlappender Tausch nicht möglich, Backend wird neu gestartet." >&2
 fi
 
+# 2c. Caddy (web) für sich allein tauschen. Im gemeinsamen „up“ unten erstellte Compose ihn
+#     zwar sofort neu, startete ihn aber erst mit Worker, Beat und Backup zusammen: Auf dem
+#     Testserver war so 13 s lang kein Caddy da (Messung 08.11.2026). Allein sind es 1–3 s.
+#     Schlägt es fehl, versucht starten() es erneut (mit Rückweg).
+echo "Tausche Caddy (web) …"
+$COMPOSE up -d --no-deps web < /dev/null || echo "Caddy-Tausch fehlgeschlagen; weiter mit starten()." >&2
+
 # 3. Starten; bei Fehler zurück zur vorigen Fassung
 if ! starten; then
     echo "FEHLER: Die neue Fassung startet nicht. Zurück zur vorigen Fassung …" >&2
