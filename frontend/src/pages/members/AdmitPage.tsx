@@ -10,6 +10,7 @@ import { useChangesGuard } from '../../components/leaveGuard.ts'
 import { Alert, Field, LoadError, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { t } from '../../i18n/index.ts'
 
 type Step = 'person' | 'details'
@@ -144,10 +145,7 @@ export function AdmitPage() {
 
   return (
     <section>
-      <p>
-        <Link to="/mitglieder">{t('← Mitglieder')}</Link>
-      </p>
-      <h1>{t('Mitglied aufnehmen')}</h1>
+      <PageHeader name={t('Mitglied aufnehmen')} />
 
       {types.error && (
         <Alert kind="error">

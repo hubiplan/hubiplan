@@ -9,6 +9,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { formats, duration } from './scoreHelpers.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { CatalogueImportPanel } from './CatalogueImportPanel.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
@@ -39,8 +40,20 @@ export function ScoresPage() {
     ])
     return { pieces, arrangements, parts, files, documents }
   }, [org.id])
-  if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!load.data) return <p>{t('Lädt …')}</p>
+  if (load.error)
+    return (
+      <>
+        <PageHeader />
+        <Alert kind="error">{load.error}</Alert>
+      </>
+    )
+  if (!load.data)
+    return (
+      <>
+        <PageHeader />
+        <p>{t('Lädt …')}</p>
+      </>
+    )
   const d = load.data,
     canEdit = org.permissions.includes('scores.edit'),
     opts = (rows: Row[], key: string): [string, string][] =>

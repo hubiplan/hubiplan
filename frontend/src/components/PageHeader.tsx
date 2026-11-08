@@ -4,7 +4,7 @@
 import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useNavTrail, trailTitle } from './navTrail.ts'
 import type { TrailItem } from './navTrail.ts'
 import { usePageTitle } from './pageTitle.ts'
@@ -38,7 +38,8 @@ export interface PageActionMenu {
 }
 
 export function PageHeader({
-  title,
+  title: ownTitle,
+  name,
   subtitle,
   primary,
   actions = [],
@@ -49,6 +50,11 @@ export function PageHeader({
 }: {
   /** Nur für Seiten ohne eigenen Menüpunkt, z. B. eine Mitgliedsakte („Max Mustermann“) */
   title?: string
+  /**
+   * Name der Seite, falls sie keinen eigenen Menüpunkt hat (z. B. „Urkundenvorlagen“ unter
+   * Wettbewerbe). Auf einer Seite mit Menüpunkt gilt die Beschriftung des Menüpunkts.
+   */
+  name?: string
   /** Ein Satz, was man hier tut */
   subtitle?: ReactNode
   /** Höchstens eine Hauptaktion; bei zwei gleich wichtigen ein Knopf mit Auswahl */
@@ -66,6 +72,9 @@ export function PageHeader({
 }) {
   const { trail, unit } = useNavTrail()
   const slot = useContext(PageSlotContext)
+  const { pathname } = useLocation()
+  const menuPage = trail.at(-1)?.to === pathname.replace(/(.)\/$/, '$1')
+  const title = ownTitle ?? (name && !menuPage ? name : undefined)
   const current = title ?? trail.at(-1)?.label ?? ''
   // Pfad ab der zweiten Ebene; das letzte Glied ist die Seite selbst
   const crumbs: TrailItem[] = title ? trail : trail.slice(0, -1)

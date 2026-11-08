@@ -55,6 +55,7 @@ import { useDraftGuard } from '../../components/leaveGuard.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { Checklist } from '../../learning/Checklist.tsx'
 import { competitionFinishChecks } from '../../learning/checks.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { locale, t } from '../../i18n/index.ts'
 
 export function CompetitionsPage() {
@@ -82,7 +83,7 @@ function CompetitionList() {
 
   return (
     <section>
-      <h1>{t('Wettbewerbe')}</h1>
+      <PageHeader name={t('Wettbewerbe')} />
       <p className="muted">
         {t(
           'Eigene Schießen mit Einzel- und Zugwertung und Stechen, Vogelschießen mit Pfändern, und fremde Wettbewerbe, bei denen ihr eure Plätze eintragt.',
@@ -266,10 +267,7 @@ function CompetitionArea() {
   const base = `/wettbewerbe/${id}`
   return (
     <section>
-      <p>
-        <Link to="/wettbewerbe">{t('← Alle Wettbewerbe')}</Link>
-      </p>
-      <h1>{data.title}</h1>
+      <PageHeader title={data.title} />
       <p className="muted">
         {new Date(data.date).toLocaleDateString(locale())}
         {data.occasion ? t(' · {occasion}', { occasion: data.occasion }) : ''}

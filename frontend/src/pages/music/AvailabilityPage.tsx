@@ -6,6 +6,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 type Absence = { id: number; musician: number; starts_at: string; ends_at: string }
@@ -38,8 +39,20 @@ export function AvailabilityPage() {
   }, [org.id])
   const [selected, setSelected] = useState<Absence | 'new' | null>(null),
     [error, setError] = useState('')
-  if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!load.data) return <p>{t('Lädt …')}</p>
+  if (load.error)
+    return (
+      <>
+        <PageHeader />
+        <Alert kind="error">{load.error}</Alert>
+      </>
+    )
+  if (!load.data)
+    return (
+      <>
+        <PageHeader />
+        <p>{t('Lädt …')}</p>
+      </>
+    )
   const { items, musicians } = load.data,
     canEdit = org.permissions.includes('music.edit')
   return (

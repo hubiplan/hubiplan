@@ -5,6 +5,7 @@ import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 export type TemplatePosition = { instrument: string; register: string; required: number }
@@ -21,8 +22,20 @@ export function EnsembleTemplatesPage() {
     url = `/api/orgs/${org.id}/music/ensemble-templates/`
   const load = useLoad(() => api.get<EnsembleTemplate[]>(url), [org.id])
   const [selected, setSelected] = useState<EnsembleTemplate | 'new' | null>(null)
-  if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!load.data) return <p>{t('Lädt …')}</p>
+  if (load.error)
+    return (
+      <>
+        <PageHeader />
+        <Alert kind="error">{load.error}</Alert>
+      </>
+    )
+  if (!load.data)
+    return (
+      <>
+        <PageHeader />
+        <p>{t('Lädt …')}</p>
+      </>
+    )
   const canEdit = org.permissions.includes('music.edit')
   return (
     <section className="stack music-page">

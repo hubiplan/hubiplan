@@ -8,6 +8,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 
 /** Platzhalter im Text der Urkunde */
@@ -48,7 +49,7 @@ export function CertificateTemplatesPage() {
 
   return (
     <section>
-      <h1>{t('Urkundenvorlagen')}</h1>
+      <PageHeader name={t('Urkundenvorlagen')} />
       <p className="muted">
         {t(
           'Eine Vorlage legt Text, Hintergrund, Wappen und Unterschriften der Urkunden fest. Gedruckt wird beim Wettbewerb unter „Auswertung“ › Urkunden, für alle Platzierten auf einmal.',

@@ -909,6 +909,8 @@ describe('Export', () => {
     renderAt('/mitglieder')
     const user = userEvent.setup()
     await screen.findByText('Muster, Erika')
+    // Export steht im Seitenkopf unter „Weitere Aktionen“ (S-05)
+    await user.click(screen.getByRole('button', { name: 'Weitere Aktionen' }))
     await user.click(screen.getByRole('button', { name: 'Export' }))
     await user.click(await screen.findByRole('checkbox', { name: 'E-Mail' }))
     await user.click(screen.getByRole('button', { name: 'Export erstellen' }))

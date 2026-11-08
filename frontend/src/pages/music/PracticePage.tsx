@@ -11,6 +11,7 @@ import { t } from '../../i18n/index.ts'
 import { ScoreForm } from './ScoresPage.tsx'
 import { RehearsalProgramEditor } from './RehearsalProgramEditor.tsx'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicHeader, MusicEmptyState, MusicStatus } from './MusicLayout.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
@@ -92,8 +93,20 @@ export function PracticePage() {
   const [guest, setGuest] = useState<{ invitation: number; name: string; original: string } | null>(
     null,
   )
-  if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!load.data) return <p>{t('Lädt …')}</p>
+  if (load.error)
+    return (
+      <>
+        <PageHeader />
+        <Alert kind="error">{load.error}</Alert>
+      </>
+    )
+  if (!load.data)
+    return (
+      <>
+        <PageHeader />
+        <p>{t('Lädt …')}</p>
+      </>
+    )
   const d = load.data,
     canEdit = org.permissions.includes('music.edit'),
     opts = (rows: Row[], field: string): [string, string][] =>

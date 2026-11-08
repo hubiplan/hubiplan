@@ -13,6 +13,7 @@ import { formatDate, useQueryLoad } from '../../components/forms.ts'
 import { LoadError, SelectField } from '../../components/ui.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import './statistics.css'
 
 const number = (n: number | null | undefined, digits = 2) =>
@@ -22,10 +23,10 @@ export function CompetitionStatisticsPage() {
   const org = useActiveOrg()
   return (
     <section className="stack">
-      <div>
-        <h1>{t('Wettbewerbsstatistik')}</h1>
-        <p className="muted">{t('Teilnahmen, Leistungen und Erfolge im Überblick.')}</p>
-      </div>
+      <PageHeader
+        name={t('Wettbewerbsstatistik')}
+        subtitle={t('Teilnahmen, Leistungen und Erfolge im Überblick.')}
+      />
       <CompetitionStatistics org={org.id} />
     </section>
   )

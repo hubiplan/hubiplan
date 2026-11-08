@@ -16,6 +16,7 @@ import { EnsembleTemplatesPage } from './EnsembleTemplatesPage.tsx'
 import { StaffingPage } from './StaffingPage.tsx'
 import { AvailabilityPage } from './AvailabilityPage.tsx'
 import { PerformanceOverview } from './PerformanceOverview.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
@@ -146,8 +147,20 @@ function MusicWorkspace() {
     ])
     return { musicians, skills, performances, positions, assignments, choices }
   }, [org.id])
-  if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!load.data) return <p>{t('Lädt …')}</p>
+  if (load.error)
+    return (
+      <>
+        <PageHeader />
+        <Alert kind="error">{load.error}</Alert>
+      </>
+    )
+  if (!load.data)
+    return (
+      <>
+        <PageHeader />
+        <p>{t('Lädt …')}</p>
+      </>
+    )
   const d = load.data
   const settlement = d.performances.find((p) => String(p.id) === params.get('abrechnung'))
   if (settlement && org.modules.includes('finance') && org.permissions.includes('finance.view'))

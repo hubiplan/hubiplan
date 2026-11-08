@@ -19,6 +19,7 @@ import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
 import { t, tn } from '../../i18n/index.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 
 function places(a: { place_from: number; place_to: number }): string {
@@ -418,7 +419,7 @@ export function SeriesListPage() {
 
   return (
     <section>
-      <h1>{t('Reihen')}</h1>
+      <PageHeader name={t('Reihen')} />
       <p className="muted">
         {t(
           'Eine Reihe verbindet denselben Wettbewerb über die Jahre, z. B. „Vereinsmeisterschaft“: Sieger je Jahr, Titel, Bestenliste und eure Untereinheiten im Vergleich.',
@@ -482,10 +483,7 @@ export function SeriesPage() {
 
   return (
     <section>
-      <p>
-        <Link to="/wettbewerbe/reihen">← {t('Alle Reihen')}</Link>
-      </p>
-      <h1>{data.name}</h1>
+      <PageHeader title={data.name} />
       {data.description && <p>{data.description}</p>}
       {canManage && (
         <Checkbox
@@ -606,7 +604,7 @@ export function TrophiesPage() {
 
   return (
     <section>
-      <h1>{t('Wanderpokale')}</h1>
+      <PageHeader name={t('Wanderpokale')} />
       <p className="muted">
         {t(
           'Ein Wanderpokal wechselt seine Inhaber. Ihr verknüpft ihn beim Wettbewerb unter „Einrichten“ › Auszeichnungen mit einem Platz; frühere Inhaber tragt ihr hier nach.',
@@ -705,7 +703,7 @@ export function TitlesPage() {
   const proposals = (data ?? []).filter((g) => g.dignity_state === 'vorschlag')
   return (
     <section>
-      <h1>{t('Titel und Sieger')}</h1>
+      <PageHeader name={t('Titel und Sieger')} />
       <p className="muted">
         {t('Alles, was in Wettbewerben vergeben wurde, und von Hand nachgetragene frühere Jahre.')}{' '}
         {t('Könige und andere Würden früherer Jahre:')}{' '}

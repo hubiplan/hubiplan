@@ -10,6 +10,7 @@ import { Freshness, LoadError } from '../../components/ui.tsx'
 import { ExportPanel } from '../../components/ExportPanel.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { lang, t } from '../../i18n/index.ts'
 
 interface Column {
@@ -128,7 +129,6 @@ export function MemberListPage() {
   }, [org.id, params])
   const [columns, setColumns] = useState<string[]>(loadColumns)
   const [showFilters, setShowFilters] = useState(false)
-  const [showActions, setShowActions] = useState(false)
   const [showColumns, setShowColumns] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const canExport = org.permissions.includes(PERM.exportRun)
@@ -240,62 +240,27 @@ export function MemberListPage() {
 
   return (
     <section className="member-list-page">
-      <div className="page-head">
-        <h1>{t('Mitglieder')}</h1>
-        <span className="push-right" />
-        {canEdit && (
-          <Link to="/mitglieder/neu" className="button button-primary">
-            {t('Mitglied aufnehmen')}
-          </Link>
-        )}
-      </div>
-
-      {(canExport || org.permissions.includes(PERM.cardsView)) && (
-        <>
-          <button
-            type="button"
-            className="button button-ghost member-mobile-toggle"
-            aria-expanded={showActions}
-            aria-controls="member-secondary-actions"
-            onClick={() => setShowActions((v) => !v)}
-          >
-            {t('Weitere Aktionen')}
-          </button>
-          <div
-            id="member-secondary-actions"
-            className={`member-secondary-actions${showActions ? ' is-expanded' : ''}`}
-          >
-            {canExport && (
-              <button
-                type="button"
-                className="button button-ghost"
-                onClick={() => setShowExport((s) => !s)}
-              >
-                {t('Export')}
-              </button>
-            )}
-            {org.permissions.includes(PERM.cardsView) && (
-              <a
-                className="button button-ghost"
-                href={cardApi.orgPdfUrl(org.id, {
-                  suche: params.suche,
-                  art: params.art,
-                  geschlecht: params.geschlecht,
-                  typ: params.typ,
-                  abteilung: params.abteilung,
-                  ehrentitel: params.ehrentitel,
-                  sortierung: params.sortierung,
-                })}
-                title={t(
-                  'Ausweise mit QR-Code für alle aktuellen Mitglieder der Auswahl (10 je A4-Seite)',
-                )}
-              >
-                {t('Ausweise (PDF)')}
-              </a>
-            )}
-          </div>
-        </>
-      )}
+      <PageHeader
+        primary={canEdit ? { label: t('Mitglied aufnehmen'), to: '/mitglieder/neu' } : null}
+        actions={[
+          canExport && { label: t('Export'), onClick: () => setShowExport((s) => !s) },
+          org.permissions.includes(PERM.cardsView) && {
+            label: t('Ausweise (PDF)'),
+            hint: t(
+              'Ausweise mit QR-Code für alle aktuellen Mitglieder der Auswahl (10 je A4-Seite)',
+            ),
+            href: cardApi.orgPdfUrl(org.id, {
+              suche: params.suche,
+              art: params.art,
+              geschlecht: params.geschlecht,
+              typ: params.typ,
+              abteilung: params.abteilung,
+              ehrentitel: params.ehrentitel,
+              sortierung: params.sortierung,
+            }),
+          },
+        ]}
+      />
 
       <div className="card card-wide filters">
         <input

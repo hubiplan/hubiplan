@@ -6,6 +6,7 @@ import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { Alert } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 type Choice = { id: number; name: string }
@@ -99,8 +100,20 @@ function EquipmentWorkspace() {
       setMessage('')
     }
   }
-  if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!data) return <p>{t('Lädt …')}</p>
+  if (load.error)
+    return (
+      <>
+        <PageHeader />
+        <Alert kind="error">{load.error}</Alert>
+      </>
+    )
+  if (!data)
+    return (
+      <>
+        <PageHeader />
+        <p>{t('Lädt …')}</p>
+      </>
+    )
   return (
     <section className="stack music-page">
       <MusicHeader
