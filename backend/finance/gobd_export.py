@@ -440,6 +440,11 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
             "SHA-256 PDF",
             "Rechnungsart",
             "angerechnete Anzahlungen",
+            "Stornorechnung",
+            "Datum Stornorechnung",
+            "Grund des Stornos",
+            "PDF Stornorechnung",
+            "SHA-256 PDF Stornorechnung",
             num=("Betrag", "bezahlt"),
             date=("Rechnungsdatum", "fällig am"),
         ),
@@ -466,6 +471,13 @@ def _billing_tables(org, start, end, add, add_file) -> list[Table]:
             i.issued_pdf_sha256,
             i.document_kind,
             _money(i.prepaid),
+            i.cancellation_number if i.status == "cancelled" else "",
+            _date(i.cancellation_date) if i.cancellation_date else "",
+            i.cancel_reason,
+            add_file(f"rechnungen/{_safe(i.cancellation_number)}.pdf", i.cancellation_pdf)
+            if i.cancellation_pdf
+            else "",
+            i.cancellation_pdf_sha256,
         )
     lines = Table(
         "rechnungsposten.csv",

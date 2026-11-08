@@ -27,9 +27,9 @@ du herunterladen. Die technische Prüfung ersetzt keine Prüfung der Leistung un
 der steuerlichen Behandlung.
 
 Über **Zahlungen und Versand** öffnest du die bestehende Rechnungsansicht. Beim
-Versand wird das XML zusammen mit der lesbaren Ansicht angehängt. Ein Storno einer
-offenen, unbezahlten Rechnung erzeugt einen eigenen strukturierten Stornobeleg.
-Diesen heruntergeladenen Beleg musst du dem Empfänger selbst übermitteln.
+Versand wird das XML zusammen mit der lesbaren Ansicht angehängt. Ein Storno erzeugt
+zusätzlich einen eigenen strukturierten Stornobeleg mit Grund und Bezug auf Nummer und
+Datum der Rechnung. **Stornorechnung per E-Mail senden** hängt XML und PDF an.
 
 Unter **Rechnungsart** wählst du Rechnung, Anzahlungsrechnung oder Schlussrechnung.
 Bei der Schlussrechnung erfasst du die gesamte Leistung und wählst bereits eingegangene

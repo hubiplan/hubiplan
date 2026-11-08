@@ -311,12 +311,18 @@ class InvoiceListSerializer(serializers.ModelSerializer):
     project_name = serializers.CharField(source="project.name", read_only=True, default=None)
     overdue = serializers.SerializerMethodField()
 
+    has_cancellation_pdf = serializers.SerializerMethodField()
+
+    def get_has_cancellation_pdf(self, obj) -> bool:
+        return bool(obj.cancellation_pdf)
+
     class Meta:
         model = Invoice
         fields = [
             "id",
             "number",
             "status",
+            "has_cancellation_pdf",
             "status_label",
             "recipient_kind",
             "partner",
@@ -384,6 +390,20 @@ class InvoiceDetailSerializer(InvoiceListSerializer):
     payments = PaymentSerializer(many=True, read_only=True)
     dunnings = DunningSerializer(many=True, read_only=True)
     vat = serializers.SerializerMethodField()
+    cancellation_number = serializers.SerializerMethodField()
+    credit = serializers.SerializerMethodField()
+    copyable = serializers.SerializerMethodField()
+
+    def get_cancellation_number(self, obj) -> str:
+        return obj.cancellation_number if obj.status == "cancelled" else ""
+
+    def get_credit(self, obj) -> str:
+        from .services import credit_of
+
+        return f"{credit_of(obj):.2f}"
+
+    def get_copyable(self, obj) -> bool:
+        return obj.run_id is None and obj.document_kind == "invoice"
 
     def get_vat(self, obj) -> list[dict]:
         from .services import vat_breakdown
@@ -402,6 +422,12 @@ class InvoiceDetailSerializer(InvoiceListSerializer):
             "recipient_address",
             "note",
             "cancelled_at",
+            "cancel_reason",
+            "cancellation_date",
+            "cancellation_number",
+            "cancellation_sent_at",
+            "credit",
+            "copyable",
             "lines",
             "payments",
             "dunnings",

@@ -9313,3 +9313,36 @@ msgstr "{n} income bookings in the non-profit area or without an area have a tax
 
 msgid "Die Vorsteuerpauschale ist gewählt, aber die steuerpflichtigen Umsätze des Vorjahres lagen über 50.000 €. Gezählt wird deshalb die tatsächliche Vorsteuer (§ 23a Abs. 2 UStG)."
 msgstr "The flat-rate input VAT is selected, but taxable turnover in the previous year exceeded €50,000. The actual input VAT is therefore counted (§ 23a (2) UStG)."
+
+msgid "Nur offene oder bezahlte Rechnungen lassen sich stornieren."
+msgstr "Only open or paid invoices can be cancelled."
+
+msgid "Nur stornierte Rechnungen haben ein Guthaben."
+msgstr "Only cancelled invoices have a credit."
+
+msgid "Zu dieser Rechnung gibt es kein Guthaben mehr."
+msgstr "There is no credit left on this invoice."
+
+msgid "Zu einer Zahlung gibt es die abgeschlossene Quittung {number}. Bitte die Quittung in der Kasse stornieren; das erstattet auch die Zahlung."
+msgstr "One payment has the completed receipt {number}. Please cancel the receipt in the cash book; that also refunds the payment."
+
+msgid "Verrechnen geht nur mit einer offenen Rechnung desselben Empfängers."
+msgstr "Credit can only be offset against an open invoice to the same recipient."
+
+msgid "Das Guthaben von {credit} ist höher als der offene Betrag von {due}. Bitte eine andere Rechnung wählen oder das Guthaben erstatten."
+msgstr "The credit of {credit} is higher than the outstanding amount of {due}. Please choose another invoice or refund the credit."
+
+msgid "Rechnungen aus einem Beitragslauf werden im Beitragslauf neu berechnet; Anzahlungs- und Schlussrechnungen lassen sich nicht kopieren."
+msgstr "Invoices from a fee run are recalculated in the fee run; advance and final invoices cannot be copied."
+
+msgid "Zu dieser Rechnung gibt es keine Stornorechnung."
+msgstr "There is no cancellation invoice for this invoice."
+
+msgid "Bitte eine Rechnung wählen."
+msgstr "Please choose an invoice."
+
+msgid "Ein Entwurf lässt sich direkt bearbeiten."
+msgstr "A draft can be edited directly."
+
+msgid "Die Prüfsumme der Stornorechnung stimmt nicht."
+msgstr "The cancellation invoice checksum does not match."

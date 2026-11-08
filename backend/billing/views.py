@@ -8,7 +8,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from django.db.models import Count, F, Q, Sum
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
@@ -35,7 +35,7 @@ from organizations.terms import department_terms, fill
 from outbox import mail
 
 from . import pdf, sepa, services, units
-from .archive import archived_dunning, archived_pdf, documents_purged
+from .archive import archived_cancellation, archived_dunning, archived_pdf, documents_purged
 from .models import (
     AgeRate,
     DebitItem,
@@ -359,6 +359,52 @@ def send_invoice(invoice: Invoice) -> bool:
     return sent
 
 
+def send_cancellation(invoice: Invoice) -> bool:
+    """Stornorechnung per E-Mail an den Empfänger (bei E-Rechnungen mit XML)."""
+    content = archived_cancellation(invoice)
+    if content is None or not invoice.recipient_email:
+        return False
+    org = invoice.organization
+    body = (
+        f"Guten Tag,\n\n"
+        f"anbei erhalten Sie die Stornorechnung {invoice.cancellation_number} von {org.name}. "
+        f"Sie hebt die Rechnung {invoice.display_number} vom {invoice.date:%d.%m.%Y} "
+        f"vollständig auf.\n\n"
+    )
+    if invoice.cancel_reason:
+        body += f"Grund: {invoice.cancel_reason}\n\n"
+    body += f"Viele Grüße\n{org.name}\n"
+    attachments = [(pdf.cancellation_filename(invoice), content, "application/pdf")]
+    if invoice.electronic_data:
+        from .einvoice_services import read_artifact
+
+        try:
+            attachments.insert(
+                0,
+                (
+                    f"{invoice.cancellation_number}.xml",
+                    read_artifact(invoice, "cancellation_xml"),
+                    "application/xml",
+                ),
+            )
+        except DjangoValidationError as exc:
+            raise _as_drf(exc) from exc
+    sent = mail.send(
+        invoice.recipient_email,
+        f"Stornorechnung {invoice.cancellation_number} – {org.name}",
+        body,
+        organization=org,
+        kind="rechnung",
+        attachments=attachments,
+        reply_to=[org.contact_email] if org.contact_email else None,
+        fail_silently=True,
+    )
+    if sent:
+        invoice.cancellation_sent_at = timezone.now()
+        invoice.save(update_fields=["cancellation_sent_at", "updated_at"])
+    return sent
+
+
 def combined_pdf(invoices: list[Invoice]) -> bytes:
     """Mehrere Rechnungen in einem PDF, jede in ihrer ausgegebenen Fassung (Audit 02.11.
     BP-F02). Nach Fristablauf gelöschte fehlen; Entwürfe werden frisch erzeugt."""
@@ -392,6 +438,23 @@ def pdf_response(invoices: list[Invoice], name: str, download: bool) -> HttpResp
     response = HttpResponse(combined_pdf(invoices), content_type="application/pdf")
     disposition = "attachment" if download else "inline"
     response["Content-Disposition"] = f'{disposition}; filename="{name}"'
+    response["Cache-Control"] = "private, no-store"
+    return response
+
+
+def cancellation_pdf_response(invoice: Invoice, download: bool) -> HttpResponse:
+    """Die abgelegte Stornorechnung (404, wenn es keine gibt)."""
+    try:
+        content = archived_cancellation(invoice)
+    except DjangoValidationError as exc:
+        raise _as_drf(exc) from exc
+    if content is None:
+        raise Http404
+    response = HttpResponse(content, content_type="application/pdf")
+    disposition = "attachment" if download else "inline"
+    response["Content-Disposition"] = (
+        f'{disposition}; filename="{pdf.cancellation_filename(invoice)}"'
+    )
     response["Cache-Control"] = "private, no-store"
     return response
 
@@ -987,8 +1050,9 @@ class InvoiceViewSet(BillingMixin, viewsets.ModelViewSet):
     @transaction.atomic
     def cancel(self, request, org_id: int, pk: int):
         invoice = self.get_object()
+        reason = request.data.get("reason", "") if isinstance(request.data, dict) else ""
         try:
-            services.cancel(invoice)
+            services.cancel(invoice, str(reason or ""), request.user)
         except DjangoValidationError as exc:
             raise _as_drf(exc) from exc
         record(
@@ -996,9 +1060,135 @@ class InvoiceViewSet(BillingMixin, viewsets.ModelViewSet):
             request.user,
             "update",
             invoice,
-            {"Rechnung": [invoice.display_number, "storniert"]},
+            {
+                "Rechnung": [
+                    invoice.display_number,
+                    f"storniert mit {invoice.cancellation_number}: {invoice.cancel_reason}",
+                ]
+            },
         )
         return self._detail(invoice)
+
+    @extend_schema(responses={(200, "*/*"): OpenApiTypes.BINARY})
+    @action(detail=True, methods=["get"], url_path="cancellation-pdf")
+    def cancellation_pdf(self, request, org_id: int, pk: int):
+        invoice = self.get_object()
+        return cancellation_pdf_response(invoice, request.query_params.get("download") == "1")
+
+    @action(detail=True, methods=["post"], url_path="send-cancellation")
+    @transaction.atomic
+    def send_cancellation(self, request, org_id: int, pk: int):
+        invoice = self.get_object()
+        if invoice.status != Invoice.Status.CANCELLED or not invoice.cancellation_pdf:
+            raise serializers.ValidationError(
+                gettext("Zu dieser Rechnung gibt es keine Stornorechnung.")
+            )
+        if not invoice.recipient_email:
+            raise serializers.ValidationError(
+                gettext("Für den Empfänger ist keine E-Mail-Adresse bekannt.")
+            )
+        if not send_cancellation(invoice):
+            raise serializers.ValidationError(gettext("Die E-Mail konnte nicht verschickt werden."))
+        record(
+            self.org,
+            request.user,
+            "update",
+            invoice,
+            {
+                "Rechnung": [
+                    None,
+                    f"{invoice.cancellation_number} an {invoice.recipient_email} verschickt",
+                ]
+            },
+        )
+        return self._detail(invoice)
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def refund(self, request, org_id: int, pk: int):
+        """Guthaben einer stornierten Rechnung erstatten (Gegenbuchung in der Kasse)."""
+        invoice = self.get_object()
+        credit = services.credit_of(invoice)
+        try:
+            counters = services.refund_credit(invoice, request.user)
+        except DjangoValidationError as exc:
+            raise _as_drf(exc) from exc
+        record(
+            self.org,
+            request.user,
+            "update",
+            invoice,
+            {
+                "Guthaben": [
+                    f"{credit:.2f}",
+                    "erstattet: " + ", ".join(c.display_number for c in counters),
+                ]
+            },
+        )
+        return self._detail(invoice)
+
+    @action(detail=True, methods=["get"], url_path="credit-targets")
+    def credit_targets(self, request, org_id: int, pk: int):
+        invoice = self.get_object()
+        return Response(
+            [
+                {
+                    "id": t.pk,
+                    "number": t.display_number,
+                    "date": t.date,
+                    "subject": t.subject,
+                    "outstanding": f"{t.outstanding:.2f}",
+                }
+                for t in services.credit_targets(invoice)
+            ]
+        )
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def credit(self, request, org_id: int, pk: int):
+        """Guthaben einer stornierten Rechnung mit einer offenen Rechnung verrechnen."""
+        invoice = self.get_object()
+        target_id = request.data.get("target") if isinstance(request.data, dict) else None
+        target = (
+            _invoice_qs(self.org).filter(pk=target_id).first()
+            if str(target_id or "").isdigit()
+            else None
+        )
+        if target is None:
+            raise serializers.ValidationError({"target": gettext("Bitte eine Rechnung wählen.")})
+        credit = services.credit_of(invoice)
+        try:
+            services.apply_credit(invoice, target)
+        except DjangoValidationError as exc:
+            raise _as_drf(exc) from exc
+        record(
+            self.org,
+            request.user,
+            "update",
+            invoice,
+            {"Guthaben": [f"{credit:.2f}", f"verrechnet mit {target.display_number}"]},
+        )
+        return self._detail(invoice)
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def copy(self, request, org_id: int, pk: int):
+        """Rechnung als neuen Entwurf anlegen („Stornieren und neu anlegen“)."""
+        invoice = self.get_object()
+        if invoice.status == Invoice.Status.DRAFT:
+            raise serializers.ValidationError(gettext("Ein Entwurf lässt sich direkt bearbeiten."))
+        try:
+            copy = services.copy_as_draft(invoice, request.user)
+        except DjangoValidationError as exc:
+            raise _as_drf(exc) from exc
+        record(
+            self.org,
+            request.user,
+            "create",
+            copy,
+            {"Rechnung": [None, f"Kopie von {invoice.display_number}"]},
+        )
+        return self._detail(copy)
 
     @action(detail=True, methods=["post"])
     @transaction.atomic

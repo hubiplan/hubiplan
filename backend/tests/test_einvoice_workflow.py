@@ -134,7 +134,7 @@ def test_official_validation_archive_and_cancellation(c, base, payload, club):
         ).status_code
         == 400
     )
-    result = c.post(f"{path}/cancel/", {}, content_type=JSON)
+    result = c.post(f"{path}/cancel/", {"reason": "Testgrund Storno"}, content_type=JSON)
     assert result.status_code == 200, result.content
     cancellation = c.get(f"{path}/xml/?cancellation=1").content
     report, _ = einvoice_validator.validate(cancellation)

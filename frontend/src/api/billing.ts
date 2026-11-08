@@ -213,6 +213,15 @@ export interface InvoiceRow {
   overdue: boolean
   dunning_level: number
   dunned_at: string | null
+  has_cancellation_pdf: boolean
+}
+
+export interface CreditTarget {
+  id: number
+  number: string
+  date: string
+  subject: string
+  outstanding: string
 }
 
 export interface Invoice extends InvoiceRow {
@@ -220,6 +229,15 @@ export interface Invoice extends InvoiceRow {
   recipient_address: string
   note: string
   cancelled_at: string | null
+  /** Stornorechnung (konzepte/bankanbindung-stornorechnung.md) */
+  cancel_reason: string
+  cancellation_date: string | null
+  cancellation_number: string
+  cancellation_sent_at: string | null
+  /** Guthaben einer stornierten Rechnung (Zahlungen, die noch an ihr hängen) */
+  credit: string
+  /** lässt sich als neuer Entwurf kopieren (nicht aus Beitragslauf, keine Anzahlung) */
+  copyable: boolean
   lines: InvoiceLine[]
   payments: Payment[]
   dunnings: Dunning[]
@@ -327,7 +345,18 @@ export const billingApi = {
     api.patch<Invoice>(`${base(org)}/invoices/${id}/`, data, newRequestKey()),
   deleteInvoice: (org: number, id: number) => api.del(`${base(org)}/invoices/${id}/`),
   finalize: (org: number, id: number) => api.post<Invoice>(`${base(org)}/invoices/${id}/finalize/`),
-  cancel: (org: number, id: number) => api.post<Invoice>(`${base(org)}/invoices/${id}/cancel/`),
+  cancel: (org: number, id: number, reason: string) =>
+    api.post<Invoice>(`${base(org)}/invoices/${id}/cancel/`, { reason }),
+  copyInvoice: (org: number, id: number) => api.post<Invoice>(`${base(org)}/invoices/${id}/copy/`),
+  refundCredit: (org: number, id: number) =>
+    api.post<Invoice>(`${base(org)}/invoices/${id}/refund/`),
+  creditTargets: (org: number, id: number) =>
+    api.get<CreditTarget[]>(`${base(org)}/invoices/${id}/credit-targets/`),
+  applyCredit: (org: number, id: number, target: number) =>
+    api.post<Invoice>(`${base(org)}/invoices/${id}/credit/`, { target }),
+  sendCancellation: (org: number, id: number) =>
+    api.post<Invoice>(`${base(org)}/invoices/${id}/send-cancellation/`),
+  cancellationPdfUrl: (org: number, id: number) => `${base(org)}/invoices/${id}/cancellation-pdf/`,
   send: (org: number, id: number) => api.post<Invoice>(`${base(org)}/invoices/${id}/send/`),
   pdfUrl: (org: number, id: number) => `${base(org)}/invoices/${id}/pdf/`,
   addPayment: (
@@ -494,6 +523,8 @@ export const portalBillingApi = {
       `/api/portal/${access}/invoices/`,
     ),
   pdfUrl: (access: number, id: number) => `/api/portal/${access}/invoices/${id}/pdf/`,
+  cancellationPdfUrl: (access: number, id: number) =>
+    `/api/portal/${access}/invoices/${id}/pdf/?storno=1`,
   deptInvoices: (dept: number) => api.get<Invoice[]>(`/api/depts/${dept}/invoices/`),
   deptPdfUrl: (dept: number, id: number) => `/api/depts/${dept}/invoices/${id}/pdf/`,
 }

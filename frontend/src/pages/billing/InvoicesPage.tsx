@@ -21,7 +21,7 @@ import {
 } from '../../components/forms.ts'
 import { Alert, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
-import { confirmDialog } from '../../components/dialog.ts'
+import { alertDialog, choiceDialog, confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { useTerms } from '../../org/terms.ts'
 import { Term } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
@@ -196,6 +196,10 @@ export function InvoicesPage() {
           settings={s}
           onClose={detail.close}
           onChanged={refresh}
+          onOpen={(other) => {
+            detail.replace(String(other))
+            refresh()
+          }}
           onDeleted={() => {
             detail.close()
             refresh()
@@ -299,12 +303,15 @@ function InvoiceDetail({
   settings,
   onClose,
   onChanged,
+  onOpen,
   onDeleted,
 }: {
   id: number
   settings: BillingSettings
   onClose: () => void
   onChanged: () => void
+  /** eine andere Rechnung öffnen (z. B. den neuen Entwurf nach „Stornieren und neu anlegen“) */
+  onOpen: (id: number) => void
   onDeleted: () => void
 }) {
   const org = useActiveOrg()
@@ -335,6 +342,116 @@ function InvoiceDetail({
     } finally {
       setBusy(false)
     }
+  }
+
+  async function cancelInvoice(again: boolean) {
+    if (!inv) return
+    const paid = Number(inv.paid) > 0
+    const reason = await promptDialog({
+      title: t('Rechnung {number} stornieren?', { number: inv.number }),
+      message: [
+        t('Es entsteht eine Stornorechnung {number}-S, die die Rechnung vollständig aufhebt.', {
+          number: inv.number,
+        }),
+        paid
+          ? t('Bereits gezahlt: {x}. Das Guthaben erstattest oder verrechnest du danach.', {
+              x: euro(inv.paid),
+            })
+          : '',
+        again ? t('Danach öffnet sich eine Kopie der Rechnung als neuer Entwurf.') : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
+      label: t('Grund (steht auf der Stornorechnung)'),
+      confirmLabel: again ? t('Stornieren und neu anlegen') : t('Stornieren'),
+      danger: true,
+    })
+    if (reason === null) return
+    if (!again) {
+      void act(() => billingApi.cancel(org.id, inv.id, reason), t('Storniert.'))
+      return
+    }
+    setBusy(true)
+    setNotice(null)
+    try {
+      await billingApi.cancel(org.id, inv.id, reason)
+      const copy = await billingApi.copyInvoice(org.id, inv.id)
+      onOpen(copy.id)
+    } catch (err) {
+      setNotice({ kind: 'error', text: errorMessage(err) })
+      setData(await billingApi.invoice(org.id, id))
+      onChanged()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function copyAsDraft() {
+    if (!inv) return
+    setBusy(true)
+    setNotice(null)
+    try {
+      const copy = await billingApi.copyInvoice(org.id, inv.id)
+      onOpen(copy.id)
+    } catch (err) {
+      setNotice({ kind: 'error', text: errorMessage(err) })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function refund() {
+    if (!inv) return
+    if (
+      await confirmDialog({
+        title: t('Guthaben von {x} erstatten?', { x: euro(inv.credit) }),
+        message: t(
+          'Die Zahlungen werden in der Kasse storniert (Gegenbuchung mit heutigem Datum). Überweise den Betrag danach zurück.',
+        ),
+        confirmLabel: t('Erstatten'),
+      })
+    )
+      void act(() => billingApi.refundCredit(org.id, inv.id), t('Guthaben erstattet.'))
+  }
+
+  async function applyCredit() {
+    if (!inv) return
+    let targets
+    try {
+      targets = await billingApi.creditTargets(org.id, inv.id)
+    } catch (err) {
+      setNotice({ kind: 'error', text: errorMessage(err) })
+      return
+    }
+    if (targets.length === 0) {
+      await alertDialog({
+        title: t('Keine offene Rechnung'),
+        message: t(
+          'Für diesen Empfänger gibt es keine offene Rechnung. Lege zuerst die neue Rechnung an und schreibe sie fest, oder erstatte das Guthaben.',
+        ),
+      })
+      return
+    }
+    const choice = await choiceDialog({
+      title: t('Guthaben von {x} verrechnen mit …', { x: euro(inv.credit) }),
+      choices: [
+        ...targets.map((target) => ({
+          value: String(target.id),
+          label: `${target.number} · ${target.subject}`,
+          hint: t('{date} · offen {x}', {
+            date: formatDate(target.date),
+            x: euro(target.outstanding),
+          }),
+        })),
+        { value: '', label: t('Abbrechen') },
+      ],
+      cancelValue: '',
+    })
+    if (!choice) return
+    void act(
+      () => billingApi.applyCredit(org.id, inv.id, Number(choice)),
+      t('Guthaben verrechnet.'),
+    )
   }
 
   if (editing) {
@@ -456,6 +573,85 @@ function InvoiceDetail({
         </tfoot>
       </table>
       {inv.note && <p style={{ whiteSpace: 'pre-line' }}>{inv.note}</p>}
+
+      {inv.status === 'cancelled' && (
+        <div className="card stack" data-testid="stornorechnung">
+          <h3>
+            {inv.cancellation_number
+              ? t('Stornorechnung {number}', { number: inv.cancellation_number })
+              : t('Storniert')}
+          </h3>
+          <p className="muted small">
+            {inv.cancellation_date
+              ? t('vom {date}', { date: formatDate(inv.cancellation_date) })
+              : inv.cancelled_at && t('am {date}', { date: formatDateTime(inv.cancelled_at) })}
+            {inv.cancellation_sent_at &&
+              t(' · per E-Mail verschickt {date}', {
+                date: formatDateTime(inv.cancellation_sent_at),
+              })}
+          </p>
+          {inv.cancel_reason && <p>{t('Grund: {x}', { x: inv.cancel_reason })}</p>}
+          {Number(inv.credit) > 0 && (
+            <Alert kind="info">
+              {t(
+                'Guthaben {x}: Die Zahlungen hängen noch an der stornierten Rechnung. Erstatte den Betrag oder verrechne ihn mit einer offenen Rechnung.',
+                { x: euro(inv.credit) },
+              )}
+            </Alert>
+          )}
+          <div className="button-row">
+            {inv.has_cancellation_pdf && (
+              <a
+                className="button button-ghost"
+                href={billingApi.cancellationPdfUrl(org.id, inv.id)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {t('Stornorechnung ansehen')}
+              </a>
+            )}
+            {canEdit && inv.has_cancellation_pdf && inv.recipient_email && (
+              <button
+                type="button"
+                className="button button-ghost"
+                disabled={busy}
+                onClick={() =>
+                  void act(
+                    () => billingApi.sendCancellation(org.id, inv.id),
+                    t('An {recipient_email} verschickt.', {
+                      recipient_email: inv.recipient_email,
+                    }),
+                  )
+                }
+              >
+                {inv.cancellation_sent_at
+                  ? t('Stornorechnung erneut senden')
+                  : t('Stornorechnung per E-Mail senden')}
+              </button>
+            )}
+            {canEdit && Number(inv.credit) > 0 && (
+              <>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  disabled={busy}
+                  onClick={() => void applyCredit()}
+                >
+                  {t('Verrechnen')}
+                </button>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  disabled={busy}
+                  onClick={() => void refund()}
+                >
+                  {t('Erstatten')}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {inv.dunnings.length > 0 && (
         <>
@@ -632,27 +828,38 @@ function InvoiceDetail({
             {inv.sent_at ? t('Erneut per E-Mail senden') : t('Per E-Mail senden')}
           </button>
         )}
-        {canEdit &&
-          (inv.status === 'open' ||
-            (inv.document_kind === 'final' && inv.status === 'paid' && Number(inv.prepaid) > 0)) &&
-          inv.payments.length === 0 && (
+        {canEdit && inv.status === 'cancelled' && inv.copyable && (
+          <button
+            type="button"
+            className="button button-ghost"
+            disabled={busy}
+            onClick={() => void copyAsDraft()}
+          >
+            {t('Als neuen Entwurf anlegen')}
+          </button>
+        )}
+        {canEdit && (inv.status === 'open' || inv.status === 'paid') && (
+          <>
+            {inv.copyable && (
+              <button
+                type="button"
+                className="button button-ghost push-right"
+                disabled={busy}
+                onClick={() => void cancelInvoice(true)}
+              >
+                {t('Stornieren und neu anlegen')}
+              </button>
+            )}
             <button
               type="button"
-              className="button button-danger push-right"
+              className={inv.copyable ? 'button button-danger' : 'button button-danger push-right'}
               disabled={busy}
-              onClick={async () => {
-                if (
-                  await confirmDialog({
-                    title: t('Rechnung {number} stornieren?', { number: inv.number }),
-                    confirmLabel: t('Stornieren'),
-                  })
-                )
-                  void act(() => billingApi.cancel(org.id, inv.id), t('Storniert.'))
-              }}
+              onClick={() => void cancelInvoice(false)}
             >
               {t('Stornieren')}
             </button>
-          )}
+          </>
+        )}
       </div>
     </div>
   )

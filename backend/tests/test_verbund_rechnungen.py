@@ -206,7 +206,7 @@ class TestRechnungen:
         invoice = issue(net, world, upper)
         with net.on(VERBAND):
             with tenant_context(world["fed"].pk):
-                billing.cancel(invoice)
+                billing.cancel(invoice, "Testgrund Storno")
         incoming = RemoteInvoice.objects.get(coupling=lower)
         assert incoming.status == RemoteInvoice.Status.CANCELLED
         with net.on(VEREIN):

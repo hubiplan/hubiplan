@@ -31,7 +31,14 @@ def local(y, m, d, h=0):
 class TestBeitraege:
     def test_1_storno_und_neu_berechnen_legt_neuen_entwurf_an(self, c, base, invoice):
         run = invoice.run_id
-        assert c.post(f"{base}/invoices/{invoice.pk}/cancel/").status_code == 200
+        assert (
+            c.post(
+                f"{base}/invoices/{invoice.pk}/cancel/",
+                {"reason": "Testgrund Storno"},
+                content_type="application/json",
+            ).status_code
+            == 200
+        )
         resp = c.post(f"{base}/runs/{run}/rebuild/")
         assert resp.status_code == 200, resp.json()
         drafts = Invoice.objects.filter(membership=invoice.membership, status=Invoice.Status.DRAFT)

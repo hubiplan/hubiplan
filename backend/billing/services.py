@@ -4,14 +4,16 @@ from __future__ import annotations
 
 import calendar
 import datetime
+import hashlib
 from dataclasses import dataclass, field
 from decimal import ROUND_DOWN, ROUND_HALF_UP, Decimal
 
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.db import connection, transaction
 from django.db.models import Prefetch, Q, Sum
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_lazy
 
 from access.catalog import DEPT_INVOICES_VIEW, effective
 from finance import services as finance_services
@@ -790,32 +792,63 @@ def in_open_debit_run(invoice: Invoice) -> bool:
     return DebitItem.objects.filter(invoice=invoice, run__status=DebitRun.Status.CREATED).exists()
 
 
+def _cancel_reason(reason: str) -> str:
+    reason = " ".join((reason or "").split())
+    if len(reason) < 3:
+        raise ValidationError({"reason": gettext("Bitte einen Grund für das Storno angeben.")})
+    return reason[:300]
+
+
 @transaction.atomic
-def cancel(invoice: Invoice) -> None:
+def cancel(invoice: Invoice, reason: str = "", user=None) -> None:
+    """Rechnung stornieren (konzepte/bankanbindung-stornorechnung.md, Teil A).
+
+    Es entsteht eine Stornorechnung mit eigener Nummer, Datum und Grund, die einmal als PDF
+    abgelegt wird. Die ausgegebene Rechnung bleibt unverändert. Zahlungen bleiben stehen; ihr
+    Betrag ist danach ein Guthaben, das erstattet oder verrechnet wird (F-3)."""
+    reason = _cancel_reason(reason)
     lock_invoice(invoice)
     from .advances import ensure_unallocated, release
 
     ensure_unallocated(invoice)
-    fully_prepaid = (
-        invoice.document_kind == "final"
-        and invoice.status == Invoice.Status.PAID
-        and invoice.paid == 0
-    )
-    if invoice.status != Invoice.Status.OPEN and not fully_prepaid:
-        raise ValidationError(gettext("Nur offene Rechnungen lassen sich stornieren."))
+    if invoice.status not in (Invoice.Status.OPEN, Invoice.Status.PAID):
+        raise ValidationError(
+            gettext("Nur offene oder bezahlte Rechnungen lassen sich stornieren.")
+        )
     if in_open_debit_run(invoice):
         raise ValidationError(IN_DEBIT_RUN)
-    if invoice.payments.exists():
-        raise ValidationError(
-            gettext("Zu der Rechnung gibt es Zahlungen. Bitte zuerst die Zahlungen entfernen.")
-        )
+    if not invoice.electronic_data and not invoice.issued_pdf:
+        # Die ausgegebene Fassung ablegen, bevor der Status wechselt
+        from .archive import archived_pdf, documents_purged
+
+        if not documents_purged(invoice):
+            archived_pdf(invoice)
     invoice.status = Invoice.Status.CANCELLED
+    invoice.cancel_reason = reason
+    invoice.cancellation_date = timezone.localdate()
     if invoice.electronic_data:
         from .einvoice_services import archive_cancellation
 
         archive_cancellation(invoice)
     invoice.cancelled_at = timezone.now()
-    invoice.save(update_fields=["status", "cancelled_at", "updated_at"])
+    from . import pdf
+
+    content = pdf.render_cancellation(invoice)
+    invoice.cancellation_pdf_sha256 = hashlib.sha256(content).hexdigest()
+    invoice.cancellation_pdf.save(
+        pdf.cancellation_filename(invoice), ContentFile(content), save=False
+    )
+    invoice.save(
+        update_fields=[
+            "status",
+            "cancelled_at",
+            "cancel_reason",
+            "cancellation_date",
+            "cancellation_pdf",
+            "cancellation_pdf_sha256",
+            "updated_at",
+        ]
+    )
     release(invoice)
     if invoice.club_id is not None and invoice.club.is_remote:
         from peering import packet_invoices
@@ -823,11 +856,186 @@ def cancel(invoice: Invoice) -> None:
         packet_invoices.on_cancel(invoice)
 
 
+def credit_of(invoice: Invoice) -> Decimal:
+    """Guthaben einer stornierten Rechnung: die Zahlungen, die noch an ihr hängen."""
+    return invoice.paid if invoice.status == Invoice.Status.CANCELLED else ZERO
+
+
+def _ensure_credit(invoice: Invoice) -> list[Payment]:
+    if invoice.status != Invoice.Status.CANCELLED:
+        raise ValidationError(gettext("Nur stornierte Rechnungen haben ein Guthaben."))
+    payments = list(invoice.payments.select_for_update().order_by("date", "pk"))
+    if not payments:
+        raise ValidationError(gettext("Zu dieser Rechnung gibt es kein Guthaben mehr."))
+    return payments
+
+
+@transaction.atomic
+def refund_credit(invoice: Invoice, user) -> list:
+    """Guthaben erstatten: jede Zahlung wird in der Kasse storniert (Gegenbuchung mit
+    heutigem Datum). So mindert die Erstattung die Einnahme, auch in der Umsatzsteuer."""
+    lock_invoice(invoice)
+    payments = _ensure_credit(invoice)
+    counters = []
+    for payment in payments:
+        receipt = CashReceipt.objects.filter(payment_id=payment.pk).first()
+        if receipt is not None and receipt.status != CashReceipt.Status.DRAFT:
+            raise ValidationError(
+                gettext(
+                    "Zu einer Zahlung gibt es die abgeschlossene Quittung {number}. Bitte die "
+                    "Quittung in der Kasse stornieren; das erstattet auch die Zahlung."
+                ).format(number=receipt.number)
+            )
+        booking = Booking.objects.select_for_update().get(pk=payment.booking_id)
+        finance_services.editable_booking_donation(booking.pk)
+        payment.delete()
+        counters.append(
+            finance_services.cancel_booking(
+                booking,
+                user,
+                # Buchungstext bleibt deutsch wie die übrigen Kassentexte
+                f"Erstattung nach Stornorechnung {invoice.cancellation_number}",
+                check_links=False,
+            )
+        )
+    _update_paid(invoice)
+    return counters
+
+
+def _same_recipient(a: Invoice, b: Invoice) -> bool:
+    return a.recipient_kind == b.recipient_kind and (
+        a.membership_id,
+        a.department_id,
+        a.club_id,
+        a.partner_id,
+    ) == (b.membership_id, b.department_id, b.club_id, b.partner_id)
+
+
+def credit_targets(invoice: Invoice):
+    """Offene Rechnungen desselben Empfängers, mit denen sich das Guthaben verrechnen lässt."""
+    return (
+        Invoice.objects.filter(
+            organization_id=invoice.organization_id,
+            status=Invoice.Status.OPEN,
+            recipient_kind=invoice.recipient_kind,
+            membership_id=invoice.membership_id,
+            department_id=invoice.department_id,
+            club_id=invoice.club_id,
+            partner_id=invoice.partner_id,
+        )
+        .exclude(pk=invoice.pk)
+        .order_by("date", "pk")
+    )
+
+
+@transaction.atomic
+def apply_credit(invoice: Invoice, target: Invoice) -> None:
+    """Guthaben mit einer offenen Rechnung desselben Empfängers verrechnen: die Zahlungen
+    wandern samt Kassenbuchung an die andere Rechnung. Das Geld ist schon da."""
+    first, second = sorted([invoice, target], key=lambda i: i.pk)
+    lock_invoice(first)
+    lock_invoice(second)
+    invoice.refresh_from_db()
+    target.refresh_from_db()
+    payments = _ensure_credit(invoice)
+    from .advances import ensure_unallocated
+
+    ensure_unallocated(target)
+    if (
+        target.organization_id != invoice.organization_id
+        or target.status != Invoice.Status.OPEN
+        or not _same_recipient(invoice, target)
+    ):
+        raise ValidationError(
+            gettext("Verrechnen geht nur mit einer offenen Rechnung desselben Empfängers.")
+        )
+    if in_open_debit_run(target):
+        raise ValidationError(IN_DEBIT_RUN)
+    total = sum((p.amount for p in payments), ZERO)
+    if total > target.outstanding:
+        raise ValidationError(
+            gettext(
+                "Das Guthaben von {credit} ist höher als der offene Betrag von {due}. Bitte "
+                "eine andere Rechnung wählen oder das Guthaben erstatten."
+            ).format(credit=_euro(total), due=_euro(target.outstanding))
+        )
+    Payment.objects.filter(pk__in=[p.pk for p in payments]).update(invoice=target)
+    _update_paid(invoice)
+    _update_paid(target)
+
+
+def _euro(value: Decimal) -> str:
+    return f"{value:,.2f} €".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+COPY_EXCLUDED = gettext_lazy(
+    "Rechnungen aus einem Beitragslauf werden im Beitragslauf neu berechnet; Anzahlungs- und "
+    "Schlussrechnungen lassen sich nicht kopieren."
+)
+
+
+@transaction.atomic
+def copy_as_draft(invoice: Invoice, user=None) -> Invoice:
+    """„Stornieren und neu anlegen“ (A4): dieselbe Rechnung als neuer Entwurf mit heutigem
+    Datum und gleicher Zahlungsfrist."""
+    if invoice.run_id is not None or invoice.document_kind != "invoice":
+        raise ValidationError(str(COPY_EXCLUDED))
+    today = timezone.localdate()
+    copy = Invoice(
+        organization=invoice.organization,
+        recipient_kind=invoice.recipient_kind,
+        partner=invoice.partner,
+        electronic_data=dict(invoice.electronic_data or {}),
+        payment_category=invoice.payment_category,
+        membership=invoice.membership,
+        department=invoice.department,
+        club=invoice.club,
+        project=invoice.project,
+        recipient_name=invoice.recipient_name,
+        recipient_address=invoice.recipient_address,
+        recipient_email=invoice.recipient_email,
+        order_reference=invoice.order_reference,
+        leitweg_id=invoice.leitweg_id,
+        date=today,
+        due_date=today + (invoice.due_date - invoice.date),
+        subject=invoice.subject,
+        note=invoice.note,
+        total=invoice.total,
+        created_by=user,
+    )
+    copy.save()
+    InvoiceLine.objects.bulk_create(
+        [
+            InvoiceLine(
+                organization=invoice.organization,
+                invoice=copy,
+                position=line.position,
+                text=line.text,
+                detail=line.detail,
+                amount=line.amount,
+                electronic_data=dict(line.electronic_data or {}),
+                membership=line.membership,
+                is_fee=line.is_fee,
+                is_dunning_fee=False,
+                vat_rate=line.vat_rate,
+            )
+            for line in invoice.lines.all()
+            if not line.is_dunning_fee
+        ]
+    )
+    recalc_total(copy)
+    return copy
+
+
 # --- Zahlungen ---
 
 
 def _update_paid(invoice: Invoice) -> None:
     invoice.paid = invoice.payments.aggregate(s=Sum("amount"))["s"] or ZERO
+    if invoice.status == Invoice.Status.CANCELLED:
+        # Guthaben einer stornierten Rechnung: der Status bleibt
+        invoice.save(update_fields=["paid", "updated_at"])
+        return
     invoice.status = (
         Invoice.Status.PAID
         if invoice.paid + invoice.prepaid >= invoice.total
@@ -840,6 +1048,24 @@ def _update_paid(invoice: Invoice) -> None:
         from peering import packet_invoices
 
         packet_invoices.on_paid_changed(invoice)
+
+
+def payment_vat_rate(invoice: Invoice, category) -> str:
+    """Steuersatz der Zahlungsbuchung (Umsatzsteuer in der Kasse): aus den Posten der
+    Rechnung, wenn alle Posten mit Steuer denselben Satz haben, sonst die Vorgabe der
+    Kategorie."""
+    from finance.models import VatRate
+
+    rates = {line.vat_rate for line in invoice.lines.all()}
+    if rates == {None} or rates == {ZERO} or not rates:
+        return category.vat_rate if category is not None else ""
+    if len(rates) == 1:
+        rate = rates.pop()
+        if rate == Decimal("19"):
+            return VatRate.STANDARD
+        if rate == Decimal("7"):
+            return VatRate.REDUCED
+    return category.vat_rate if category is not None else ""
 
 
 @transaction.atomic
@@ -889,6 +1115,7 @@ def add_payment(
         membership=None if org.type == "unit" else invoice.membership,
         department=invoice.department,
         project=invoice.project,
+        vat_rate=payment_vat_rate(invoice, payment_category),
         created_by=user,
     )
     booking.full_clean(exclude=["organization", "created_by"])
