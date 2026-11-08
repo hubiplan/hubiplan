@@ -7197,5 +7197,20 @@
   "Die erste Spende liegt mehr als zwei Jahre zurück. Gemeinnützige Mittel müssen bis zum Ende des zweiten Folgejahres verwendet sein.": "The first donation was more than two years ago. Non-profit funds must be used by the end of the second following year.",
   "Neuer Zweck": "New purpose",
   "z. B. Neue Fahne": "e.g. new flag",
-  "Zweckbindungen": "Earmarks"
+  "Zweckbindungen": "Earmarks",
+  "Mittelverwendung": "Use of funds",
+  "Gemeinnützige Mittel müssen bis zum Ende des zweiten Geschäftsjahres nach dem Zufluss für die Satzungszwecke verwendet oder in zulässige Rücklagen eingestellt sein. Die Rechnung verwendet zuerst die ältesten Mittel. Grundlage sind die steuerlichen Bereiche der Kategorien; ein Anhaltspunkt, keine Steuerberatung.": "Non-profit funds must be used for the statutory purposes or placed in permitted reserves by the end of the second financial year after they were received. The calculation uses the oldest funds first. It is based on the tax areas of the categories; a guide, not tax advice.",
+  "{x} aus früheren Jahren sind nach dieser Rechnung nicht fristgerecht verwendet. Bitte mit der Steuerberatung klären, etwa durch Verwendung oder eine Rücklage.": "According to this calculation, {x} from earlier years were not used in time. Please clarify with your tax adviser, for example by using the funds or setting up a reserve.",
+  "{x} müssen bis zum Ende von {y} verwendet werden.": "{x} must be used by the end of {y}.",
+  "Vortrag aus dem Vorjahr": "Carried over from previous year",
+  "zugeflossene Mittel": "funds received",
+  "aus Rücklagen aufgelöst": "released from reserves",
+  "für die Satzungszwecke verwendet": "used for statutory purposes",
+  "in Rücklagen eingestellt": "placed in reserves",
+  "noch zu verwenden": "still to be used",
+  "Noch zu verwenden nach Herkunft": "Still to be used by year of origin",
+  "Alle Mittel sind verwendet.": "All funds have been used.",
+  "zugeflossen in": "received in",
+  "zu verwenden bis Ende": "to be used by the end of",
+  "Frist abgelaufen": "deadline passed"
 }
