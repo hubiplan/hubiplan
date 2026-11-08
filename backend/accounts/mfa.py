@@ -13,6 +13,7 @@ wird mit dem ersten, entschlüsselt mit jedem.
 from __future__ import annotations
 
 from functools import lru_cache
+from urllib.parse import quote
 
 from allauth.mfa.adapter import DefaultMFAAdapter
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
@@ -86,3 +87,55 @@ class MFAAdapter(DefaultMFAAdapter):
 
     def decrypt(self, encrypted_text: str) -> str:
         return decrypt(encrypted_text)
+
+    def build_totp_url(self, user, secret: str) -> str:
+        url = super().build_totp_url(user, secret)
+        image = totp_image_url(user, getattr(self, "request", None))
+        if image:
+            # Inoffiziell (FreeOTP u. a.); Apps ohne Unterstützung übergehen den Parameter
+            url += "&image=" + quote(image, safe="")
+        return url
+
+
+def totp_image_url(user, request=None) -> str:
+    """Absolute https-Adresse des Vereinslogos für den QR-Code der 2FA-Einrichtung.
+
+    Einige Authenticator-Apps (z. B. FreeOTP) zeigen das Bild aus dem inoffiziellen
+    ``image``-Parameter der otpauth-Adresse als Symbol. Welches Logo: das der Einheit, deren
+    Adresse aufgerufen ist; sonst das des einzigen Vereins (bzw. Dachverbands), in dem das
+    Konto Rollen hat; sonst das der Plattform (White Label). Ohne Logo oder ohne https: leer.
+    """
+    from urllib.parse import urljoin
+
+    from access.permissions import organizations_for
+    from core.tenancy import user_view
+    from organizations.addresses import base_url, request_unit
+    from organizations.models import Organization
+    from organizations.theme import effective_theme
+
+    unit = request_unit(request) if request is not None else None
+    if unit is None:
+        with user_view(user.pk):
+            orgs = [org for org, _ in organizations_for(user)]
+        clubs, federations = set(), set()
+        for org in orgs:
+            for item in org.ancestors():
+                if item.type == Organization.Type.CLUB:
+                    clubs.add(item)
+                    break
+                if item.type == Organization.Type.FEDERATION:
+                    federations.add(item)
+                    break
+        if len(clubs) == 1:
+            unit = clubs.pop()
+        elif not clubs and len(federations) == 1:
+            unit = federations.pop()
+    if unit is not None:
+        chain = unit.ancestors()
+    else:
+        chain = list(Organization.objects.filter(type=Organization.Type.PLATFORM)[:1])
+    logo = effective_theme(chain)["logo_url"] if chain else None
+    if not logo:
+        return ""
+    url = urljoin(base_url(unit).rstrip("/") + "/", logo)
+    return url if url.startswith("https://") else ""

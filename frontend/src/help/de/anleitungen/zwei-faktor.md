@@ -16,3 +16,9 @@ Du brauchst eine Authenticator-App auf dem Handy, z. B. FreeOTP, Aegis oder Goog
    hilft einmal, falls das Handy fehlt.
 
 ![Abschnitt „Zwei-Faktor-Anmeldung“ mit QR-Code](bild:konto-zwei-faktor)
+
+Vereinslogo in der App: Der QR-Code enthält das Logo deines Vereins. Manche Apps wie FreeOTP
+zeigen es als Symbol an. Andere, etwa Google Authenticator, Microsoft Authenticator, 2FAS oder
+Aegis, zeigen stattdessen die Anfangsbuchstaben. In Aegis kannst du beim Eintrag ein eigenes Bild
+wählen, in 2FAS Buchstaben und Farbe ändern. Ein schon eingerichteter Eintrag ändert sich erst, wenn du die
+Zwei-Faktor-Anmeldung neu einrichtest.

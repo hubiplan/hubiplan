@@ -16,3 +16,9 @@ You need an authenticator app on your phone, for example FreeOTP, Aegis or Googl
    works once if you don't have your phone.
 
 ![The “Two-factor authentication” section with the QR code](bild:konto-zwei-faktor)
+
+Club logo in the app: The QR code contains your club's logo. Some apps such as FreeOTP show it
+as the icon. Others, for example Google Authenticator, Microsoft Authenticator, 2FAS or Aegis, show
+the initials instead. In Aegis you can choose your own image for the entry, in 2FAS you can change
+the letters and colour. An entry
+you already set up only changes when you set up two-factor authentication again.
