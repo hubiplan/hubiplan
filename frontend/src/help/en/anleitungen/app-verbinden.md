@@ -10,6 +10,8 @@ stichworte: [app, phone, pair, Android, QR code]
 2. In the browser, open [My account › App & other instances](/mein-konto/app) and click **Connect app**.
 3. Scan the QR code shown with the app.
 
+If you only see a note there instead of the button, your account has no access to the member area yet: it must be linked to your membership, and your club must have switched on the member area.
+
 The device then appears in the list. If you lose your phone, sign it out there with **Sign out**.
 
 If you have forgotten your password, first enter your club’s valid address in the Android app and tap **Forgot password? Reset in browser**. The app opens that instance’s password recovery page; afterwards, return to the app and sign in with the new password. Your email and password are not included in the link. If no browser is available, the app displays a selectable destination address.

@@ -17,11 +17,13 @@ const device = {
 }
 
 describe('App auf dem Telefon (Mein Konto)', () => {
-  it('ohne Mitgliederbereich keine Karte', async () => {
-    const calls = fakeApi({})
-    const { container } = render(<AppDevicesCard />)
-    await new Promise((r) => setTimeout(r, 0))
-    expect(container).toBeEmptyDOMElement()
+  it('ohne Mitgliederbereich: Hinweis statt leerer Seite', async () => {
+    const calls = fakeApi({
+      'GET /api/me/contexts/': () => ({ status: 200, body: { departments: [], portal: [] } }),
+    })
+    render(<AppDevicesCard />)
+    expect(await screen.findByText(/noch keinen Zugang/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'App verbinden' })).toBeNull()
     expect(calls.map((c) => c.key)).not.toContain('GET /api/app/v1/devices/')
   })
 

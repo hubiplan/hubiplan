@@ -67,7 +67,18 @@ export function AppDevicesCard() {
         <LoadError message={access.error} onRetry={() => void access.reload()} />
       </section>
     )
-  if (access.data !== true) return null
+  if (access.data === null) return null
+  if (access.data === false)
+    return (
+      <section className="card">
+        <h2>{t('App auf dem Telefon')}</h2>
+        <p className="muted">
+          {t(
+            'Die App zeigt deinen Mitgliederbereich. Dein Konto hat noch keinen Zugang dazu: Es muss mit deiner Mitgliedschaft verknüpft sein, und dein Verein muss den Mitgliederbereich eingeschaltet haben. Wende dich dafür an deinen Vorstand.',
+          )}
+        </p>
+      </section>
+    )
 
   async function createCode() {
     setError(null)
