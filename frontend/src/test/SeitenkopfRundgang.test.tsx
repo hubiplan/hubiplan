@@ -49,8 +49,6 @@ const org = testOrg({
 // Leer: Die Seite zeigt ohne Daten (noch) keine h1. „/einstellungen“ und „/plattform“ leiten
 // auf ihren ersten Unterpunkt weiter.
 const ABWEICHUNGEN: Record<string, string> = {
-  '/mitglieder/anfragen': 'Wechselanfragen',
-  '/mitglieder/import': 'Mitglieder importieren',
   '/mitglieder/einrichtung': 'Mitgliedsarten',
   '/musik': '',
   '/musik/uebersicht': 'Auftrittsübersicht',
@@ -72,7 +70,6 @@ const ABWEICHUNGEN: Record<string, string> = {
   '/webseite/gestaltung': '',
   '/webseite/kontakt': '',
   '/webseite/domain': '',
-  '/material': 'Material',
   '/material/musik': '',
   '/einstellungen': 'Organisation',
   '/plattform': 'Einheiten',

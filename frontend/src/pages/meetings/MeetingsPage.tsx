@@ -31,6 +31,7 @@ import { Checklist } from '../../learning/Checklist.tsx'
 import { meetingInviteChecks } from '../../learning/checks.ts'
 import { MotionsCard } from './MotionsCard.tsx'
 import { ResolutionBook } from './ResolutionBook.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import './meetings.css'
 
 const ZONE = 'Europe/Berlin'
@@ -155,14 +156,13 @@ function Meetings({
   const past = all.filter((m) => new Date(m.ends_at).getTime() < now)
   return (
     <div className="meetings">
-      <div className="page-heading">
-        <h1>{t('Versammlungen')}</h1>
-        {canEdit && view === 'list' && !creating && (
-          <button className="button" onClick={() => setCreating(true)}>
-            {t('Neue Versammlung')}
-          </button>
-        )}
-      </div>
+      <PageHeader
+        primary={
+          canEdit && view === 'list' && !creating
+            ? { label: t('Neue Versammlung'), onClick: () => setCreating(true) }
+            : null
+        }
+      />
       <nav className="tabs" aria-label={t('Ansichten')}>
         <button
           type="button"
@@ -429,17 +429,15 @@ function MeetingDetail({
   }
   return (
     <div className="meetings">
-      <div className="page-heading">
-        <h1>
-          {meeting.title}
+      <PageHeader
+        title={meeting.title}
+        status={
           <span className={`badge${meeting.status === 'cancelled' ? ' badge-cancelled' : ''}`}>
             {statusLabel(meeting.status)}
           </span>
-        </h1>
-        <button className="button button-ghost" onClick={onClose}>
-          {t('Zurück zur Übersicht')}
-        </button>
-      </div>
+        }
+        onBack={onClose}
+      />
       <p>
         {meeting.kind_name} · {when(meeting)}
         {meeting.location && ` · ${meeting.location}`}

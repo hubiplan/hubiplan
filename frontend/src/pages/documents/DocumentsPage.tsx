@@ -4,21 +4,15 @@ import { DocumentIcon, FolderIcon } from './DocumentIcons.tsx'
 import './documents.css'
 import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent } from 'react'
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import { PERM } from '../../api/orgs.ts'
 import { DEPT_PERM } from '../../api/portal.ts'
 import { docApi, docBase, formatSize } from '../../api/documents.ts'
 import type { DocBase, DocFolder, DocItem, DocOverview, Visibility } from '../../api/documents.ts'
 import { StatutePanel } from '../../components/StatutePanel.tsx'
 import { errorMessage, formatDate, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import {
-  Alert,
-  Checkbox,
-  Field,
-  SaveStatus,
-  SelectField,
-  SectionTitle,
-} from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { PageActions, PageHeader } from '../../components/PageHeader.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
@@ -35,9 +29,8 @@ type Msg = { kind: 'error' | 'success'; text: string } | null
 
 export function DocumentsPage() {
   const { active, activeDept, activePortal } = useOrg()
+  const { pathname } = useLocation()
   let base: DocBase | null = null
-  let title = t('Dokumente')
-  let subtitle = ''
   let manage = false
   let orgId: number | null = null
   let canEditStatute = false
@@ -47,25 +40,16 @@ export function DocumentsPage() {
     active.permissions.includes(PERM.docsView)
   ) {
     base = docBase.org(active.id)
-    subtitle = active.name
     manage = active.permissions.includes(PERM.docsManage)
     orgId = active.id
     canEditStatute = active.permissions.includes(PERM.orgEdit)
   } else if (activeDept) {
     base = docBase.dept(activeDept.id)
-    title = t('Dokumente – {name}', { name: activeDept.name })
-    subtitle = t('{label} · {club_name}', {
-      label: activeDept.label,
-      club_name: activeDept.club_name,
-    })
     manage = activeDept.permissions.includes(DEPT_PERM.docsManage)
   } else if (activePortal) {
     return (
       <section>
-        <div className="page-head">
-          <h1>{t('Dokumente')}</h1>
-          <p className="muted">{activePortal.club_name}</p>
-        </div>
+        <PageHeader />
         <MemberDocuments key={activePortal.id} base={docBase.portal(activePortal.id)} />
       </section>
     )
@@ -78,13 +62,11 @@ export function DocumentsPage() {
       </section>
     )
   }
-  const tabs = [
-    { to: '/dokumente', label: t('Ablage') },
-    ...(manage ? [{ to: '/dokumente/papierkorb', label: t('Papierkorb') }] : []),
-  ]
+  // Papierkorb ist kein Menüpunkt, sondern ein Link in der Ablage: eigener Titel im Kopf
+  const inTrash = manage && /^\/dokumente\/papierkorb\/?$/.test(pathname)
   return (
     <section>
-      <SectionTitle title={title} items={tabs} subtitle={subtitle} />
+      <PageHeader title={inTrash ? t('Papierkorb') : undefined} />
       <DocumentArea
         key={base}
         base={base}
@@ -318,7 +300,8 @@ function Library({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <div className="button-row" role="group" aria-label={t('Ansicht')}>
+        {/* Ansichtswahl als Segmentschalter: Zustand, keine Aktion (W-14) */}
+        <div className="segmented" role="group" aria-label={t('Ansicht')}>
           <button
             type="button"
             className="button button-ghost"
@@ -336,17 +319,18 @@ function Library({
             <span aria-hidden="true">☰</span> {t('Listenansicht')}
           </button>
         </div>
-        {manage && atRoot && !q && (
-          <button
-            type="button"
-            className="button button-primary"
-            aria-expanded={creating}
-            aria-controls="doc-create-folder"
-            onClick={() => setCreating(!creating)}
-          >
-            {t('Neuer Ordner')}
-          </button>
-        )}
+        <PageActions
+          primary={
+            manage && atRoot && !q
+              ? {
+                  label: t('Neuer Ordner'),
+                  expanded: creating,
+                  controls: 'doc-create-folder',
+                  onClick: () => setCreating(!creating),
+                }
+              : null
+          }
+        />
         {data.used_bytes !== undefined && (
           <p className="muted small">
             {t('Belegter Platz:')} {formatSize(data.used_bytes)}

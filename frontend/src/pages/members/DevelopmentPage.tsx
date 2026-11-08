@@ -19,6 +19,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { HowTo } from '../../learning/Aids.tsx'
 import { ownMembers } from './access.ts'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { locale, t } from '../../i18n/index.ts'
 
 /** Mitglieder › Entwicklung: eigene Mitglieder (``own``) oder alle Einheiten darunter
@@ -30,12 +31,7 @@ export function MembersDevelopmentPage({ view = 'own' }: { view?: 'own' | 'all' 
   const federation = view === 'all' || (org.type === 'federation' && !ownMembers(org))
   return (
     <section>
-      <div className="page-head">
-        <div>
-          <p className="muted small eyebrow">{t('Mitglieder')}</p>
-          <h1>{t('Entwicklung')}</h1>
-        </div>
-      </div>
+      <PageHeader />
       <MemberDevelopment
         scope={`org-${org.id}-${federation ? 'all' : 'own'}`}
         load={(q) => (federation ? statsApi.federation(org.id, q) : statsApi.club(org.id, q))}

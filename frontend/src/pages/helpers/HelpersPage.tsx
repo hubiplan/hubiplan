@@ -17,6 +17,7 @@ import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Why } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import './helpers.css'
 
 const ZONE = 'Europe/Berlin'
@@ -106,14 +107,13 @@ function Plans({ base, orgId, canEdit }: { base: string; orgId: number; canEdit:
   const rows = list.data ?? []
   return (
     <div className="helpers">
-      <div className="page-heading">
-        <h1>{t('Helferdienste')}</h1>
-        {canEdit && !creating && (
-          <button className="button" onClick={() => setCreating(true)}>
-            {t('Neuer Dienstplan')}
-          </button>
-        )}
-      </div>
+      <PageHeader
+        primary={
+          canEdit && !creating
+            ? { label: t('Neuer Dienstplan'), onClick: () => setCreating(true) }
+            : null
+        }
+      />
       {creating && (
         <NewPlan
           base={base}
@@ -295,15 +295,11 @@ function PlanDetail({
   const setStatus = (status: PlanStatus) => run(() => helperApi.update(base, plan, { status }))
   return (
     <div className="helpers">
-      <div className="page-heading">
-        <h1>
-          {plan.title}
-          <span className="badge">{statusLabel(plan.status)}</span>
-        </h1>
-        <button className="button button-ghost" onClick={onClose}>
-          {t('Zurück zur Übersicht')}
-        </button>
-      </div>
+      <PageHeader
+        title={plan.title}
+        status={<span className="badge">{statusLabel(plan.status)}</span>}
+        onBack={onClose}
+      />
       <p>
         {plan.event && plan.event_title && (
           <>

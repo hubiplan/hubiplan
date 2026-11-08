@@ -23,6 +23,7 @@ import { TodoSeries } from '../components/TodoSeries.tsx'
 import { TodoLocalNote, TodoProgress } from '../components/TodoDistribution.tsx'
 import { TodoCleanup } from '../components/TodoCleanup.tsx'
 import './todos.css'
+import { PageHeader } from '../components/PageHeader.tsx'
 import { confirmLeave, useGuarded } from '../components/leaveGuard.ts'
 
 export function TodosPage() {
@@ -137,25 +138,25 @@ function TodoWorkspace({ base }: { base: string }) {
   }
   return (
     <section className="todo-workspace stack">
-      <div className="page-heading todo-page-heading">
-        <h1>{t('Aufgaben')}</h1>
-        {active?.modules.includes('music') && active.permissions.includes('music.view') && (
-          <Link className="push-right" to="/aufgaben/erinnerungen">
-            {t('Persönliche Musikerinnerungen')}
-          </Link>
-        )}
-        <button
-          className="button button-primary"
-          onClick={() => {
+      <PageHeader
+        primary={{
+          label: t('Neue Aufgabe'),
+          icon: <span aria-hidden="true">+</span>,
+          onClick: () => {
             void guard(() => {
               setNewTask(true)
               setParams({})
             })
-          }}
-        >
-          <span aria-hidden="true">+</span> {t('Neue Aufgabe')}
-        </button>
-      </div>
+          },
+        }}
+        actions={[
+          active?.modules.includes('music') &&
+            active.permissions.includes('music.view') && {
+              label: t('Persönliche Musikerinnerungen'),
+              to: '/aufgaben/erinnerungen',
+            },
+        ]}
+      />
       <div className="todo-toolbar">
         <div className="button-row" role="group" aria-label={t('Aufgaben')}>
           {(['open', 'done', 'trash'] as const).map((key) => (

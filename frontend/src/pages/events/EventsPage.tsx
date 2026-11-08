@@ -10,7 +10,8 @@ import type { CalendarBase, EventCategory } from '../../api/events.ts'
 import { CalendarView } from '../../components/calendar/CalendarView.tsx'
 import { FeedPanel } from '../../components/calendar/Rsvp.tsx'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SaveStatus, Tabs, SectionTitle } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, Tabs } from '../../components/ui.tsx'
+import { PageHeader } from '../../components/PageHeader.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useTerms } from '../../org/terms.ts'
@@ -21,29 +22,19 @@ import { t } from '../../i18n/index.ts'
 export function EventsPage() {
   const { active, activeDept, activePortal } = useOrg()
   let base: CalendarBase | null = null
-  let title = t('Termine')
-  let subtitle = ''
   let manage = false
   let categories = false
   let isPortal = false
   if (active && (active.type === 'club' || active.type === 'federation')) {
     base = calendarBase.org(active.id)
-    subtitle = active.name
     manage = active.permissions.includes(PERM.eventsManage)
     categories = manage
   } else if (activeDept) {
     base = calendarBase.dept(activeDept.id)
-    title = t('Termine – {name}', { name: activeDept.name })
-    subtitle = t('{label} · {club_name}', {
-      label: activeDept.label,
-      club_name: activeDept.club_name,
-    })
     manage = activeDept.permissions.includes(DEPT_PERM.eventsManage)
   } else if (activePortal) {
     base = calendarBase.portal(activePortal.id)
-    title = t('Meine Termine')
     isPortal = true
-    subtitle = activePortal.club_name
   }
   if (!base) {
     return (
@@ -67,7 +58,7 @@ export function EventsPage() {
   ]
   return (
     <section>
-      <SectionTitle title={title} items={[...tabs, ...setupTabs]} subtitle={subtitle} />
+      <PageHeader />
       {tabs.length > 1 && <Tabs items={tabs} />}
       {setupTabs.length > 1 && <Tabs items={setupTabs} />}
       <Routes>

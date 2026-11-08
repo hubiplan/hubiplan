@@ -386,6 +386,8 @@ describe('Kalender', () => {
     )
     expect(await screen.findByText('Jahreshauptversammlung')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Neuer Termin' })).not.toBeInTheDocument()
+    // Jahresprogramm steht unter „Weitere Aktionen“ (Seitenkopf S-05)
+    await userEvent.click(screen.getByRole('button', { name: 'Weitere Aktionen' }))
     expect(screen.getByRole('link', { name: /Jahresprogramm/ })).toHaveAttribute(
       'href',
       `${base}events/program/?year=${today().slice(0, 4)}`,

@@ -1,8 +1,9 @@
 // Einheitlicher Seitenkopf (UX-Audit 08.11. S-05, Konzept „Seitenkopf“): feste Plätze für
 // Pfad, h1, Einheit, eine Hauptaktion und „Weitere Aktionen“. h1 und Pfad kommen aus der
 // Menüstruktur (navTrail.ts), damit Überschrift und Menüpunkt gleich heißen.
-import { useEffect, useId, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import { createContext, useContext, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useNavTrail, trailTitle } from './navTrail.ts'
 import type { TrailItem } from './navTrail.ts'
@@ -16,11 +17,16 @@ export interface PageAction {
   to?: string
   /** Datei oder fremde Adresse, z. B. ein PDF */
   href?: string
+  /** href in neuem Tab öffnen (z. B. PDF) */
+  newTab?: boolean
   onClick?: () => void
   icon?: ReactNode
   /** Löschen und Ähnliches: steht im Menü immer zuletzt und rot abgesetzt */
   danger?: boolean
   disabled?: boolean
+  /** Knopf klappt etwas auf (z. B. ein Formular): Zustand und Ziel für Screenreader */
+  expanded?: boolean
+  controls?: string
   /** Kurze Erklärung (title) */
   hint?: string
 }
@@ -39,6 +45,7 @@ export function PageHeader({
   extra,
   status,
   children,
+  onBack,
 }: {
   /** Nur für Seiten ohne eigenen Menüpunkt, z. B. eine Mitgliedsakte („Max Mustermann“) */
   title?: string
@@ -54,14 +61,22 @@ export function PageHeader({
   status?: ReactNode
   /** Zusatzzeile unter der Überschrift, z. B. Status, Nummer, Ämter einer Mitgliedsakte */
   children?: ReactNode
+  /** Detailansicht in einer Liste: der Weg zur Elternseite schließt sie (statt neu zu laden) */
+  onBack?: () => void
 }) {
   const { trail, unit } = useNavTrail()
+  const slot = useContext(PageSlotContext)
   const current = title ?? trail.at(-1)?.label ?? ''
   // Pfad ab der zweiten Ebene; das letzte Glied ist die Seite selbst
   const crumbs: TrailItem[] = title ? trail : trail.slice(0, -1)
   usePageTitle(title ? trailTitle(trail, title) : null)
   const more = actions.filter((a): a is PageAction => !!a)
   const parent = crumbs.at(-1)
+  const back = (e: ReactMouseEvent) => {
+    if (!onBack) return
+    e.preventDefault()
+    onBack()
+  }
 
   return (
     <header className="page-header">
@@ -70,7 +85,9 @@ export function PageHeader({
           <ol>
             {crumbs.map((c) => (
               <li key={c.to}>
-                <Link to={c.to}>{c.label}</Link>
+                <Link to={c.to} onClick={c === parent ? back : undefined}>
+                  {c.label}
+                </Link>
               </li>
             ))}
             <li>
@@ -81,6 +98,7 @@ export function PageHeader({
             <Link
               to={parent.to}
               className="page-header-back"
+              onClick={back}
               aria-label={t('Zurück zu {label}', { label: parent.label })}
             >
               <span aria-hidden="true">‹ </span>
@@ -96,17 +114,54 @@ export function PageHeader({
           {unit && <span className="page-header-unit">{unit}</span>}
           {status && <span className="page-header-status muted small">{status}</span>}
         </div>
-        {(primary || more.length > 0) && (
-          <div className="page-header-actions">
-            {more.length > 0 && <ActionMenu actions={more} />}
-            {primary && <PrimaryAction action={primary} />}
-          </div>
-        )}
+        {/* Auch leer vorhanden: Unterseiten setzen ihre Aktionen per PageActions hierher */}
+        <div className="page-header-actions" ref={slot?.setNode}>
+          {more.length > 0 && <ActionMenu actions={more} />}
+          {primary && <PrimaryAction action={primary} />}
+        </div>
       </div>
       {subtitle && <p className="page-header-subtitle muted">{subtitle}</p>}
       {children && <div className="page-header-more">{children}</div>}
     </header>
   )
+}
+
+interface PageSlot {
+  node: HTMLElement | null
+  setNode: (node: HTMLElement | null) => void
+}
+
+const PageSlotContext = createContext<PageSlot | null>(null)
+
+/** Im App-Rahmen: Platz für die Aktionen der Seite im Seitenkopf. */
+export function PageSlotProvider({ children }: { children: ReactNode }) {
+  const [node, setNode] = useState<HTMLElement | null>(null)
+  const value = useMemo(() => ({ node, setNode }), [node])
+  return <PageSlotContext.Provider value={value}>{children}</PageSlotContext.Provider>
+}
+
+/**
+ * Aktionen einer Unterseite, deren Seitenkopf der Rahmen zeichnet (z. B. Finanzen › Rechnungen ›
+ * Mahnungen): erscheinen im Kopf an den festen Plätzen. Ohne Seitenkopf stehen sie an Ort und
+ * Stelle.
+ */
+export function PageActions({
+  primary,
+  actions = [],
+}: {
+  primary?: PageAction | PageActionMenu | null
+  actions?: (PageAction | false | null | undefined)[]
+}) {
+  const slot = useContext(PageSlotContext)
+  const more = actions.filter((a): a is PageAction => !!a)
+  const body = (
+    <>
+      {more.length > 0 && <ActionMenu actions={more} />}
+      {primary && <PrimaryAction action={primary} />}
+    </>
+  )
+  if (slot?.node) return createPortal(body, slot.node)
+  return <div className="page-header-actions page-actions-inline">{body}</div>
 }
 
 function PrimaryAction({ action }: { action: PageAction | PageActionMenu }) {
@@ -146,7 +201,13 @@ function ActionButton({
     )
   if (action.href && !action.disabled)
     return (
-      <a href={action.href} className={className} title={action.hint} onClick={onDone}>
+      <a
+        href={action.href}
+        className={className}
+        title={action.hint}
+        onClick={onDone}
+        {...(action.newTab ? { target: '_blank', rel: 'noreferrer' } : {})}
+      >
         {body}
       </a>
     )
@@ -156,6 +217,8 @@ function ActionButton({
       className={className}
       title={action.hint}
       disabled={action.disabled}
+      aria-expanded={action.expanded}
+      aria-controls={action.controls}
       onClick={() => {
         onDone?.()
         action.onClick?.()
@@ -272,7 +335,7 @@ export function Segmented<T extends string>({
         <button
           key={o.value}
           type="button"
-          className="segmented-item"
+          className="button button-ghost"
           aria-pressed={o.value === value}
           onClick={() => onChange(o.value)}
         >
