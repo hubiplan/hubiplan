@@ -304,7 +304,7 @@ def _available(site, key: str) -> bool:
     if key == "history":
         return site.page(HISTORY_SLUG) is not None
     if key == "offices":
-        return bool(site.chairs())
+        return site.has_chairs()
     if key == "memorial":
         return bool(site.memorial())
     if key == "repertoire":

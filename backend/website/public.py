@@ -85,7 +85,12 @@ class SiteView:
         Auch bereinigte: Deren Widersprüche gelten weiter, denn Chronik und frühere
         Rollen nennen die Person noch (Audit 29.10. W-S02). Eine laufende
         Mitgliedschaft geht einer bereinigten vor."""
+        return self._memberships_of()
+
+    def _memberships_of(self, person_ids: set[int] | None = None) -> dict[int, Membership]:
         rows = Membership.objects.filter(organization=self.area)
+        if person_ids is not None:
+            rows = rows.filter(person_id__in=person_ids)
         result: dict[int, Membership] = {}
         for m in sorted(rows, key=lambda m: m.purged_at is None):
             result[m.person_id] = m
@@ -93,9 +98,13 @@ class SiteView:
 
     @cached_property
     def consents(self) -> dict[int, set[str]]:
-        entries = services.active_entries(m.pk for m in self.memberships.values())
+        return self._consents_of(self.memberships)
+
+    @staticmethod
+    def _consents_of(memberships: dict[int, Membership]) -> dict[int, set[str]]:
+        entries = services.active_entries(m.pk for m in memberships.values())
         # Bereinigte Mitgliedschaft: Widersprüche gelten weiter, Einwilligungen nicht mehr
-        for m in self.memberships.values():
+        for m in memberships.values():
             if m.purged_at and m.pk in entries:
                 entries[m.pk] &= set(PublicationConsent.OBJECTION_CATEGORIES) | {Category.MEMORIAL}
         return entries
@@ -481,10 +490,42 @@ class SiteView:
         """Ämter: Rollen mit „unter Ämter zeigen“ und alle ihre Inhaber, auch frühere."""
         return self._chairs
 
+    def has_chairs(self) -> bool:
+        """Gibt es etwas unter „Ämter“? Für Menü und Grunddaten reicht der erste sichtbare
+        Inhaber; die ganze Liste kostete in jeder Vorschau-Seite spürbar Zeit (08.11.2026)."""
+        if "_chairs" in self.__dict__:
+            return bool(self._chairs)
+        return self._has_chairs
+
     @cached_property
-    def _chairs(self) -> list[dict]:
-        # Einmal je Antwort und alle Zuordnungen in einer Abfrage: Menü und Grunddaten
-        # fragen beide nach; mit echten Daten kostete das 0,45 s je Grunddaten (03.11.2026)
+    def _has_chairs(self) -> bool:
+        # Nur die Mitgliedschaften der Inhaber laden, nicht die aller Mitglieder; die
+        # Bedingungen sind dieselben wie in person() für die Kategorie „Name“
+        holders = [
+            self.holder_person(a)
+            for _role, assignments in self._chair_assignments
+            for a in assignments
+            if not a.needs_name_consent
+        ]
+        if not holders:
+            return False
+        if "memberships" in self.__dict__:
+            memberships, consents = self.memberships, self.consents
+        else:
+            memberships = self._memberships_of({p.pk for p, _ in holders if p is not None})
+            consents = self._consents_of(memberships)
+        from honors.numbering import split_name
+
+        for person, fallback in holders:
+            membership = memberships.get(person.pk) if person else None
+            active = consents.get(membership.pk, set()) if membership else set()
+            if services.allowed(Category.NAME, active) and any(split_name(person, fallback)):
+                return True
+        return False
+
+    @cached_property
+    def _chair_assignments(self) -> list[tuple[Role, list[RoleAssignment]]]:
+        # Alle Zuordnungen in einer Abfrage (03.11.2026: N+1 je Rolle kostete 0,45 s)
         roles = list(self.own_roles().filter(in_chronicle=True))
         by_role: dict[int, list[RoleAssignment]] = {r.pk: [] for r in roles}
         for a in (
@@ -493,10 +534,15 @@ class SiteView:
             .order_by("valid_from", "pk")
         ):
             by_role[a.role_id].append(a)
+        return [(role, by_role[role.pk]) for role in roles]
+
+    @cached_property
+    def _chairs(self) -> list[dict]:
+        # Einmal je Antwort: Seite „Ämter“ und Chronik brauchen die ganze Liste
         result = []
-        for role in roles:
+        for role, assignments in self._chair_assignments:
             entries = []
-            for a in by_role[role.pk]:
+            for a in assignments:
                 if a.needs_name_consent:
                     continue
                 person, fallback = self.holder_person(a)
