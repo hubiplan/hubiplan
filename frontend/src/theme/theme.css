@@ -47,6 +47,10 @@
   --color-error-bg: #fbe9e7;
   --color-success-bg: #e6f3ee;
   --color-success: #1d6b46;
+  /* Hinweisflächen (Info, offen/Warnung) */
+  --color-info-bg: #eef3fb;
+  --color-warning-bg: #fdf1d8;
+  --color-warning: #7a5200;
 
   --sidebar-bg: #17332c;
   --sidebar-text: #d7e4df;
@@ -72,4 +76,32 @@
   --control-padding-x: 0.75rem;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
   --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/*
+ * Dunkelmodus (X-02, Stufe D1, konzepte/dunkelmodus-web.md). colorScheme.ts setzt
+ * data-theme="dark" nur auf den Seiten für Mitglieder (Anmeldung, Start, Termine, Mein Konto,
+ * Mitgliederbereich) und nur, wenn das Konto oder das Gerät dunkel will. Vereinsfarben
+ * rechnet theme.ts dann gegen den dunklen Grund (linkColorDark, buttonColorsDark).
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  /* linkColorDark(Hubi-Grün): 4,5 : 1 auf Grund und Karte */
+  --color-link: #399482;
+  --color-focus: #399482;
+  --color-bg: #111614;
+  --color-surface: #1a201d;
+  --color-text: #dfe5e2;
+  --color-text-muted: #a3ada8;
+  --color-border: #2f3833;
+  --color-card-border: #4b5650;
+  --color-input-border: #7a8580;
+  --color-error: #ffb4ab;
+  --color-error-bg: #3b1714;
+  --color-success-bg: #15302a;
+  --color-success: #8fd6b0;
+  --color-info-bg: #18263a;
+  --color-warning-bg: #3a2c10;
+  --color-warning: #f4cf86;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
 }

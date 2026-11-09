@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Neu: Dunkelmodus für Mitglieder. Anmeldung, Startseite, Termine, Mein Konto und Mein Bereich erscheinen dunkel, wenn das Gerät dunkel eingestellt ist oder du unter Mein Konto › Profil › **Darstellung** „Dunkel“ wählst. Die Verwaltung bleibt hell.
 - Bedienung: Links heben sich auch bei dunklen Vereinsfarben deutlich vom Text ab; HUBIplan wählt dafür einen passenden Ton der Vereinsfarbe. In Überschriften und fettem Text steht hinter einem Link ein „›“. Der Fließtext ist etwas dunkler.
 - Bedienung: Im Monatskalender steht die Kategorie jedes Termins als Name, auf dem Handy als Kürzel, mit einer Legende über dem Monat; Termine sind in ihrer Kategoriefarbe hinterlegt. Karten heben sich deutlicher vom Seitengrund ab. Alle Listen blättern mit denselben Knöpfen „‹ Vorherige“ und „Nächste ›“. Die Rollenliste fasst Bereiche nach Stufe zusammen („Bearbeiten: Kasse, Beiträge“). Auf dem Handy verbindest du die App unter Mein Konto › App & andere Instanzen mit dem Knopf **In der HUBIplan-App öffnen**, ohne QR-Code.
 - Chronik: Den Inhalt der Chronik pflegst du nur noch unter Verein › Chronik. Unter Webseite › Texte stehen bei der Chronik nur Adresse, Menü und Löschen, dazu ein Link zur Chronik.
