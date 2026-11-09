@@ -119,6 +119,32 @@ describe('Wettbewerb und Termin', () => {
     expect(calls.some((c) => c.key === `POST ${base}3/starters/from-event/`)).toBe(true)
   })
 
+  it('bietet bei abweichendem Datum an, das Datum des Termins zu übernehmen', async () => {
+    let linked = false
+    const calls = renderAt('/wettbewerbe/3/einrichten', {
+      [`GET ${base}3/`]: () => ({
+        status: 200,
+        body: linked ? detail : { ...detail, date: '2026-04-04' },
+      }),
+      [`GET ${base}3/stand-access/`]: () => ({ status: 200, body: [] }),
+      [`POST ${base}3/event/`]: () => {
+        linked = true
+        return {
+          status: 200,
+          body: { event: ostern, date: '2027-04-04', location: detail.location, description: '' },
+        }
+      },
+    })
+    const user = userEvent.setup()
+    expect(await screen.findByText(/Der Termin ist am .*2027, der Wettbewerb am .*2026/)).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Datum des Termins übernehmen' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Datum des Termins übernehmen' })).toBeNull(),
+    )
+    const body = JSON.parse(String(calls.find((c) => c.key === `POST ${base}3/event/`)?.init?.body))
+    expect(body).toEqual({ event: 8 })
+  })
+
   it('zeigt den Standzugang direkt beim Erfassen', async () => {
     renderAt('/wettbewerbe/3', {
       [`GET ${base}3/`]: () => ({ status: 200, body: detail }),

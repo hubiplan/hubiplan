@@ -610,7 +610,12 @@ export const competitionsApi = {
       `${base(org)}event-candidates/${search ? `?suche=${encodeURIComponent(search)}` : ''}`,
     ),
   setEvent: (org: number, id: number, data: { event: number | null } | { create: true }) =>
-    api.post<{ event: CompetitionEvent | null; location: string; description: string }>(
+    api.post<{
+      event: CompetitionEvent | null
+      date: string
+      location: string
+      description: string
+    }>(
       `${c(org, id)}event/`,
       data,
     ),

@@ -80,6 +80,44 @@ class TestTermin:
         for pk in (fremd.pk, serie.pk):
             assert c.post(link, {"event": pk}, "application/json").status_code == 400
 
+    def test_datum_folgt_dem_termin(self, kalender, board_a, api):
+        """Ralf 2026-11-09: Verknüpfen übernimmt das Datum, Verschieben zieht mit."""
+        c = api(board_a)
+        termin = _termin(kalender, "Vereinsschießen 2027", day=datetime.date(2027, 9, 24))
+        resp = c.post(
+            url(kalender),
+            {"title": "Vereinsschießen 2027", "date": "2026-09-24", "location": "Schützenhaus"},
+            "application/json",
+        )
+        comp = Competition.objects.get(pk=resp.json()["id"])
+        link = url(kalender, f"{comp.pk}/event/")
+        resp = c.post(link, {"event": termin.pk}, "application/json")
+        assert resp.status_code == 200, resp.content
+        assert resp.json()["date"] == "2027-09-24"
+        comp.refresh_from_db()
+        assert comp.date == datetime.date(2027, 9, 24)
+        assert comp.location == "Schützenhaus"  # gefüllter Ort bleibt
+        # Termin verschieben: der Wettbewerb zieht mit
+        moved = timezone.make_aware(datetime.datetime(2027, 9, 25, 14, 0))
+        resp = c.patch(
+            f"/api/orgs/{kalender.pk}/events/{termin.pk}/",
+            {"starts_at": moved.isoformat(), "ends_at": moved.isoformat()},
+            "application/json",
+        )
+        assert resp.status_code == 200, resp.content
+        comp.refresh_from_db()
+        assert comp.date == datetime.date(2027, 9, 25)
+        # Endgültig abgeschlossen: Datum bleibt
+        Competition.objects.filter(pk=comp.pk).update(status=Competition.Status.FINAL)
+        later = moved + datetime.timedelta(days=7)
+        c.patch(
+            f"/api/orgs/{kalender.pk}/events/{termin.pk}/",
+            {"starts_at": later.isoformat(), "ends_at": later.isoformat()},
+            "application/json",
+        )
+        comp.refresh_from_db()
+        assert comp.date == datetime.date(2027, 9, 25)
+
     def test_termin_aus_wettbewerb_anlegen(self, kalender, board_a, api):
         c = api(board_a)
         resp = c.post(
