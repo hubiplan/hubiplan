@@ -120,7 +120,7 @@
 }
 
 /* Handy: Pfad wird „‹ Elternseite“, Nebenaktionen in „⋯“, Hauptaktion unten fest */
-@media (max-width: 800px) {
+@media (max-width: 50rem) {
   .page-header-trail ol {
     display: none;
   }

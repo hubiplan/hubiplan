@@ -46,7 +46,7 @@
   margin: 0;
   max-width: none;
 }
-@media (max-width: 650px) {
+@media (max-width: 40rem) {
   .material-filters {
     grid-template-columns: 1fr;
   }
@@ -108,7 +108,7 @@
 .material-form .material-picker {
   max-width: none;
 }
-@media (max-width: 650px) {
+@media (max-width: 40rem) {
   .material-basic-grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -128,7 +128,7 @@
   padding-top: 1.25rem;
   border-top: 1px solid var(--color-border);
 }
-@media (max-width: 480px) {
+@media (max-width: 40rem) {
   .material-address-grid {
     grid-template-columns: minmax(0, 1fr);
   }

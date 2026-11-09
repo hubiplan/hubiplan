@@ -28,7 +28,7 @@ const VARS = [
 ] as const
 
 /** Seitenhintergrund (--color-bg in theme.css): Links stehen auf Weiß und auf ihm. */
-export const PAGE_BG = '#f5f6f4'
+export const PAGE_BG = '#eef0ed'
 
 /** Farbe mit Schwarz mischen (0 = unverändert, 1 = schwarz). */
 export function darken(hex: string, amount: number): string {

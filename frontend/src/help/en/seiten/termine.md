@@ -10,6 +10,8 @@ The calendar shows the unit's events. With the right to do so, you create events
 
 Each entry names its unit and, where applicable, its external calendar, so you can distinguish events with the same title before opening them. In the month view, a multi-day event starts with its start time; subsequent days show “Continued”, and the last day shows, for example, “Continued until 01:05”. An end exactly at midnight is shown on the preceding day as 24:00, without an extra entry on the new day. All-day events remain labelled as such. The list and accessible names include the complete date and time range; the list is the default view on small screens.
 
+You can tell an event’s category not only by its colour: every event has a light background and a stripe on the left in its category colour, and the category name appears below the title. On small screens the month view shows a short code instead of the name (e.g. “Mee” for Meeting). The legend above the month explains the colours and codes of all categories in that month. Screen readers announce the category too.
+
 ![Calendar with units and continuation past midnight](bild:kalender-kontext)
 
 In an open event, the block **For this event** shows what belongs to it: the meeting, volunteer duty rosters, booked rooms and equipment, tasks and the music performance. From there you also create a duty roster or a booking for the event. You only see areas whose module is switched on and for which you have the right. Events, meetings, volunteer duties and tasks are grouped together in the sidebar under “Planning”.

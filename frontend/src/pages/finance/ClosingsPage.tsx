@@ -202,9 +202,10 @@ export function ClosingsPage() {
           <p className="muted small">
             {t(
               'Buchungen werden automatisch festgeschrieben, sobald der Folgemonat vorbei ist; danach lassen sie sich nur noch stornieren. Nachträglich erfasste Buchungen bleiben bis zum Ende des Folgemonats ihrer Erfassung änderbar.',
-            )}{' '}
-            <Why k="booking_fixed" />
+            )}
           </p>
+          {/* Aufklapper nicht in <p>: <details> und sein Text sind kein Fließtext (W-20 b) */}
+          <Why k="booking_fixed" />
           <p>
             {t('Festgeschrieben bis')} <strong>{fixedUntil ? formatDate(fixedUntil) : '–'}</strong>
             {settings.data.locked_until && (

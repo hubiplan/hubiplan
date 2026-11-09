@@ -5,6 +5,7 @@ import { LoadError, Loading } from '../../components/ui.tsx'
 import { devicesApi } from '../../api/devices.ts'
 import { HowTo } from '../../learning/Aids.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
+import { AppOpenLink } from '../../components/AppOpenLink.tsx'
 import type { AppDevice, PairingCode } from '../../api/devices.ts'
 import { locale, t } from '../../i18n/index.ts'
 
@@ -137,14 +138,26 @@ export function AppDevicesCard() {
         </p>
       )}
       {pairing ? (
-        <div className="totp-setup">
-          <QRCodeSVG value={pairing.url} size={200} marginSize={2} />
-          <p className="muted">
-            {t(
-              'In der App auf „Mit QR-Code verbinden“ tippen und diesen Code scannen. Er gilt bis  {x} Uhr und nur einmal.',
-              { x: formatDate(pairing.expires_at) },
-            )}
-          </p>
+        <div className="totp-setup app-pair">
+          {/* X-04: Auf dem Telefon steht statt des QR-Codes der Knopf zur App (CSS) */}
+          <div className="app-pair-qr">
+            <QRCodeSVG value={pairing.url} size={200} marginSize={2} />
+            <p className="muted">
+              {t(
+                'In der App auf „Mit QR-Code verbinden“ tippen und diesen Code scannen. Er gilt bis  {x} Uhr und nur einmal.',
+                { x: formatDate(pairing.expires_at) },
+              )}
+            </p>
+          </div>
+          <div className="app-pair-open">
+            <p className="muted">
+              {t(
+                'Ist die App auf diesem Telefon installiert? Dann tippe auf den Knopf. Er gilt bis {x} Uhr und nur einmal.',
+                { x: formatDate(pairing.expires_at) },
+              )}
+            </p>
+            <AppOpenLink pairUrl={pairing.url} />
+          </div>
           <button type="button" className="button button-ghost" onClick={() => setPairing(null)}>
             {t('Schließen')}
           </button>

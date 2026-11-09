@@ -22,6 +22,7 @@ import { useTerms } from '../../org/terms.ts'
 import { Term } from '../../learning/Aids.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { t } from '../../i18n/index.ts'
+import { PageNav } from '../../components/ListControls.tsx'
 
 type FedRow = MemberRow & { club: string; club_id: number }
 type FedDetail = MemberDetail & { club: string; readonly: boolean; remote?: boolean }
@@ -257,29 +258,14 @@ function FederationList({ prefix }: { prefix: string }) {
             </tbody>
           </table>
           {pages > 1 && (
-            <div className="pager">
-              <button
-                type="button"
-                className="button button-ghost"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-                aria-label={t('Vorherige Seite')}
-              >
-                <span aria-hidden="true">‹</span> {t('Vorherige')}
-              </button>
-              <span className="small">
-                {t('Seite {page} von', { page })} {pages}
-              </span>
-              <button
-                type="button"
-                className="button button-ghost"
-                disabled={page >= pages}
-                onClick={() => setPage((p) => p + 1)}
-                aria-label={t('Nächste Seite')}
-              >
-                {t('Nächste')} <span aria-hidden="true">›</span>
-              </button>
-            </div>
+            <PageNav
+              prevDisabled={page <= 1}
+              nextDisabled={page >= pages}
+              onPrev={() => setPage((p) => p - 1)}
+              onNext={() => setPage((p) => p + 1)}
+            >
+              {t('Seite {page} von', { page })} {pages}
+            </PageNav>
           )}
         </div>
       )}

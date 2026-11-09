@@ -163,7 +163,7 @@
 .doc-search-result {
   margin-bottom: 1rem;
 }
-@media (max-width: 600px) {
+@media (max-width: 40rem) {
   .doc-explorer .doc-list > li > .button-row {
     flex-basis: 100%;
   }

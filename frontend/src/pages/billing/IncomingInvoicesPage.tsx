@@ -9,6 +9,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { ValidationResult } from './EInvoicesPage.tsx'
+import { PageNav } from '../../components/ListControls.tsx'
 
 export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
@@ -98,24 +99,12 @@ export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
         </table>
         {load.data?.count === 0 && <p>{t('Noch keine Eingangsrechnungen vorhanden.')}</p>}
       </div>
-      <div className="actions">
-        <button
-          className="button button-ghost"
-          disabled={page <= 1}
-          onClick={() => setPage(page - 1)}
-          aria-label={t('Vorherige Seite')}
-        >
-          <span aria-hidden="true">‹</span> {t('Vorherige')}
-        </button>
-        <button
-          className="button button-ghost"
-          disabled={!load.data?.next}
-          onClick={() => setPage(page + 1)}
-          aria-label={t('Nächste Seite')}
-        >
-          {t('Nächste')} <span aria-hidden="true">›</span>
-        </button>
-      </div>
+      <PageNav
+        prevDisabled={page <= 1}
+        nextDisabled={!load.data?.next}
+        onPrev={() => setPage(page - 1)}
+        onNext={() => setPage(page + 1)}
+      />
     </div>
   )
 }

@@ -12,6 +12,8 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { lang, t } from '../../i18n/index.ts'
+import { atMost, BP_NARROW } from '../../theme/breakpoints.ts'
+import { PageNav } from '../../components/ListControls.tsx'
 
 interface Column {
   key: string
@@ -146,9 +148,7 @@ export function MemberListPage() {
     () => (awardsOn ? memberApi.honoraryTitles(org.id, true) : Promise.resolve([])),
     [org.id, awardsOn],
   )
-  const [defaultPageSize] = useState(() =>
-    window.matchMedia?.('(max-width: 640px)').matches ? 10 : 50,
-  )
+  const [defaultPageSize] = useState(() => (atMost(BP_NARROW) ? 10 : 50))
   const pageSize = [10, 20, 50].includes(params.page_size ?? 0)
     ? params.page_size!
     : defaultPageSize
@@ -204,29 +204,14 @@ export function MemberListPage() {
   const visible = choosable.filter((c) => columns.includes(c.key))
   const pages = data ? Math.max(1, Math.ceil(data.count / pageSize)) : 1
   const pagination = pages > 1 && (
-    <div className="pager">
-      <button
-        type="button"
-        className="button button-ghost"
-        disabled={stale || (params.page ?? 1) <= 1}
-        onClick={() => setParams((p) => ({ ...p, page: (p.page ?? 1) - 1 }))}
-        aria-label={t('Vorherige Seite')}
-      >
-        <span aria-hidden="true">‹</span> {t('Vorherige')}
-      </button>
-      <span className="small">
-        {t('Seite {page} von', { page: params.page ?? 1 })} {pages}
-      </span>
-      <button
-        type="button"
-        className="button button-ghost"
-        disabled={stale || (params.page ?? 1) >= pages}
-        onClick={() => setParams((p) => ({ ...p, page: (p.page ?? 1) + 1 }))}
-        aria-label={t('Nächste Seite')}
-      >
-        {t('Nächste')} <span aria-hidden="true">›</span>
-      </button>
-    </div>
+    <PageNav
+      prevDisabled={stale || (params.page ?? 1) <= 1}
+      nextDisabled={stale || (params.page ?? 1) >= pages}
+      onPrev={() => setParams((p) => ({ ...p, page: (p.page ?? 1) - 1 }))}
+      onNext={() => setParams((p) => ({ ...p, page: (p.page ?? 1) + 1 }))}
+    >
+      {t('Seite {page} von', { page: params.page ?? 1 })} {pages}
+    </PageNav>
   )
   // Pfeil nur fürs Auge; Screenreader bekommen die Richtung über aria-sort (WCAG 1.3.1)
   const sortMark = (key: string) =>

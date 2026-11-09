@@ -18,6 +18,7 @@ import { BookingRulesCard } from '../bookings/BookingsPage.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { Loading } from '../../components/ui.tsx'
 import './materials.css'
+import { PageNav } from '../../components/ListControls.tsx'
 
 // Bestand: Material oder Infrastruktur (Schießstand, Schützenhaus, Vereinsheim)
 interface Stock {
@@ -311,27 +312,14 @@ function MaterialList({
         ))}
       </div>
       {data && data.count > 50 && (
-        <div className="button-row">
-          <button
-            className="button button-ghost"
-            disabled={data.page <= 1}
-            onClick={() => filter('page', String(data.page - 1))}
-            aria-label={t('Vorherige Seite')}
-          >
-            <span aria-hidden="true">‹</span> {t('Vorherige')}
-          </button>
-          <span>
-            {data.page} / {Math.ceil(data.count / 50)}
-          </span>
-          <button
-            className="button button-ghost"
-            disabled={data.page * 50 >= data.count}
-            onClick={() => filter('page', String(data.page + 1))}
-            aria-label={t('Nächste Seite')}
-          >
-            {t('Nächste')} <span aria-hidden="true">›</span>
-          </button>
-        </div>
+        <PageNav
+          prevDisabled={data.page <= 1}
+          nextDisabled={data.page * 50 >= data.count}
+          onPrev={() => filter('page', String(data.page - 1))}
+          onNext={() => filter('page', String(data.page + 1))}
+        >
+          {data.page} / {Math.ceil(data.count / 50)}
+        </PageNav>
       )}
     </>
   )

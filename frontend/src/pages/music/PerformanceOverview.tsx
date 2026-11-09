@@ -7,6 +7,7 @@ import { Alert, Field, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { MusicEmptyState, MusicHeader } from './MusicLayout.tsx'
+import { PageNav } from '../../components/ListControls.tsx'
 
 type Issue = {
   code: string
@@ -178,25 +179,14 @@ export function PerformanceOverview() {
         ))}
       </div>
       {load.data && load.data.count > 0 && (
-        <div className="music-toolbar">
-          <button
-            className="button button-ghost"
-            disabled={!load.data.previous}
-            onClick={() => setPage(page - 1)}
-            aria-label={t('Vorherige Seite')}
-          >
-            <span aria-hidden="true">‹</span> {t('Vorherige')}
-          </button>
-          <span>{t('Seite {page} · {count} Auftritte', { page, count: load.data.count })}</span>
-          <button
-            className="button button-ghost"
-            disabled={!load.data.next}
-            onClick={() => setPage(page + 1)}
-            aria-label={t('Nächste Seite')}
-          >
-            {t('Nächste')} <span aria-hidden="true">›</span>
-          </button>
-        </div>
+        <PageNav
+          prevDisabled={!load.data.previous}
+          nextDisabled={!load.data.next}
+          onPrev={() => setPage(page - 1)}
+          onNext={() => setPage(page + 1)}
+        >
+          {t('Seite {page} · {count} Auftritte', { page, count: load.data.count })}
+        </PageNav>
       )}
     </section>
   )

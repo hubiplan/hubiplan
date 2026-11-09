@@ -57,7 +57,7 @@
   margin-bottom: 0.75rem;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .competition-statistics .competition-statistics-figures,
   .competition-statistics .competition-statistics-performance {
     grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -70,6 +70,23 @@ const PLATFORM_TABS = [
   { to: '/plattform/version', label: t('Version') },
 ]
 
+/** Freigeschaltete Module als Kennzeichen mit Zählung, aufklappbar (UX-Audit 08.11., W-20 e). */
+function ModuleChips({ ids, labels }: { ids: string[]; labels: { id: string; label: string }[] }) {
+  if (ids.length === 0) return <div className="muted">{t('keine Module')}</div>
+  return (
+    <details className="module-chips">
+      <summary>{tn('{n} Modul', '{n} Module', ids.length)}</summary>
+      <ul className="chips">
+        {ids.map((m) => (
+          <li key={m} className="chip">
+            {labels.find((x) => x.id === m)?.label ?? m}
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
 export function PlatformLayout() {
   const location = useLocation()
   if (location.pathname.replace(/\/$/, '') === '/plattform') {
@@ -129,15 +146,7 @@ export function PlatformOrgsPage() {
             {t('Mitgliedsdaten darunter:')} {ACCESS_LABELS[o.federation_member_access]}
           </div>
         )}
-        <div className="muted">
-          {(o.released_modules ?? o.enabled_modules).length
-            ? t('Module: {x}', {
-                x: (o.released_modules ?? o.enabled_modules)
-                  .map((m) => moduleList.find((x) => x.id === m)?.label ?? m)
-                  .join(', '),
-              })
-            : t('keine Module')}
-        </div>
+        <ModuleChips ids={o.released_modules ?? o.enabled_modules} labels={moduleList} />
       </td>
       <td className="actions">
         <button type="button" className="link-button" onClick={() => setEditing(o)}>

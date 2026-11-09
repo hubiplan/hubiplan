@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Bedienung: Im Monatskalender steht die Kategorie jedes Termins als Name, auf dem Handy als Kürzel, mit einer Legende über dem Monat; Termine sind in ihrer Kategoriefarbe hinterlegt. Karten heben sich deutlicher vom Seitengrund ab. Alle Listen blättern mit denselben Knöpfen „‹ Vorherige“ und „Nächste ›“. Die Rollenliste fasst Bereiche nach Stufe zusammen („Bearbeiten: Kasse, Beiträge“). Auf dem Handy verbindest du die App unter Mein Konto › App & andere Instanzen mit dem Knopf **In der HUBIplan-App öffnen**, ohne QR-Code.
 - Chronik: Den Inhalt der Chronik pflegst du nur noch unter Verein › Chronik. Unter Webseite › Texte stehen bei der Chronik nur Adresse, Menü und Löschen, dazu ein Link zur Chronik.
 - Termine: Im Kalender der Einheit legt der Vorstand unter **Termin für** auch Termine für Untereinheiten ohne eigene Verwaltung an. Eingeladen sind dann nur deren Mitglieder.
 - Seitenkopf: Seiten haben oben einen einheitlichen Kopf. Ab der zweiten Ebene steht darüber der Pfad (etwa „Einstellungen › Rollen und Rechte“), auf dem Handy ein Link „‹ zurück“ zur Seite darüber. Der Name der Einheit erscheint nur noch, wenn du mehrere Einheiten verwaltest. Den Anfang machen die Einstellungen.
