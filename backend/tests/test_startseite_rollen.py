@@ -243,12 +243,23 @@ def test_schwerpunkt_aus_den_rollen(api, orgs, board_a):
 def test_schnellaktionen_ausblenden(api, board_a):
     c = api(board_a)
     assert c.get("/api/me/home-actions/").json() == {"hidden": []}
-    resp = c.put("/api/me/home-actions/", {"hidden": ["termin", "termin", "*"]}, format="json")
+    resp = c.put(
+        "/api/me/home-actions/",
+        {"hidden": ["termin", "termin", "*"]},
+        content_type="application/json",
+    )
     assert resp.status_code == 200, resp.content
     assert resp.json() == {"hidden": ["*", "termin"]}
     board_a.refresh_from_db()
     assert board_a.home_actions_hidden == ["*", "termin"]
-    assert c.put("/api/me/home-actions/", {"hidden": ["<b>"]}, format="json").status_code == 400
-    assert c.put("/api/me/home-actions/", {"hidden": []}, format="json").json() == {"hidden": []}
+    assert (
+        c.put(
+            "/api/me/home-actions/", {"hidden": ["<b>"]}, content_type="application/json"
+        ).status_code
+        == 400
+    )
+    assert c.put(
+        "/api/me/home-actions/", {"hidden": []}, content_type="application/json"
+    ).json() == {"hidden": []}
     board_a.refresh_from_db()
     assert board_a.home_actions_hidden is None
