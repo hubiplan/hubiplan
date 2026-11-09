@@ -11,7 +11,7 @@ Under Design you choose the look, colours and logo of the website. The colours u
 
 With **Header image** you choose an image from the image library that appears at the top of the website instead of the coat of arms and club name, for example a banner with lettering. It should contain the club name and be wide, about 1200 × 300 pixels. Without a header image the coat of arms and name stay.
 
-In the browser tab and on the phone home screen the website shows the **unit icon**, otherwise its coat of arms (square, with a transparent border). You set both under Settings › Appearance. Without an icon or coat of arms the website shows no icon of its own. Browsers often keep an old icon for a while; reloading the page helps.
+In the browser tab and on the phone home screen the website shows the unit's own icon, otherwise its coat of arms (square, with a transparent border). You set both under Settings › Appearance. Without an icon or coat of arms the website shows no icon of its own. Browsers often keep an old icon for a while; reloading the page helps.
 
 Under **Share design** you save a design as a ZIP file with **Save as package**. The package contains the styling, the layout of header, footer and home page and the colour defaults, but no coat of arms, texts or images.
 

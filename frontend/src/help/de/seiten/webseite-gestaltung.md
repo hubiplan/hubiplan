@@ -11,7 +11,7 @@ Unter Gestaltung wählt ihr Aussehen, Farben und Logo der Webseite. Die Farben k
 
 Mit **Kopfbild** wählt ihr ein Bild aus der Bilderverwaltung, das oben auf der Webseite statt Wappen und Vereinsnamen steht, zum Beispiel ein Banner mit Schriftzug. Es sollte den Vereinsnamen enthalten und breit sein, etwa 1200 × 300 Pixel. Ohne Kopfbild bleibt es bei Wappen und Namen.
 
-Im Browser-Tab und auf dem Startbildschirm des Handys zeigt die Webseite das **Symbol der Einheit**, sonst ihr Wappen (quadratisch, mit durchsichtigem Rand). Beides legt ihr unter Einstellungen › Erscheinungsbild fest. Ohne Symbol und Wappen zeigt die Webseite kein eigenes Symbol. Browser behalten ein altes Symbol oft eine Weile; ein Neuladen der Seite hilft.
+Im Browser-Tab und auf dem Startbildschirm des Handys zeigt die Webseite das eigene Symbol der Einheit, sonst ihr Wappen (quadratisch, mit durchsichtigem Rand). Beides legt ihr unter Einstellungen › Erscheinungsbild fest. Ohne Symbol und Wappen zeigt die Webseite kein eigenes Symbol. Browser behalten ein altes Symbol oft eine Weile; ein Neuladen der Seite hilft.
 
 Unter **Design weitergeben** speichert ihr ein Design mit **Als Paket speichern** als ZIP-Datei. Das Paket enthält die Gestaltung, die Anordnung von Kopf, Fuß und Startseite und die Vorgaben für die Farben, aber kein Wappen, keine Texte und keine Bilder.
 
