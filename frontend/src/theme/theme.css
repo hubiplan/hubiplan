@@ -35,7 +35,8 @@
 
   --color-bg: #eef0ed;
   --color-surface: #ffffff;
-  --color-text: #1d2421;
+  /* Fließtext; Links halten dazu 3 : 1 (linkColor in theme.ts, W-16) */
+  --color-text: #121614;
   --color-text-muted: #5d6763;
   --color-border: #dde1de;
   /* Rand von Karten: mind. 1,5 : 1 gegen Weiß, damit Karten sich vom Grund abheben (W-17) */

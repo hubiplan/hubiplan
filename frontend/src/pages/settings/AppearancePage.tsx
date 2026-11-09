@@ -8,7 +8,7 @@ import { Alert, Checkbox, Field, SaveStatus, LoadError, Loading } from '../../co
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { contrastRatio, readableOn } from '../../theme/contrast.ts'
-import { buttonColors, linkColor, PAGE_BG } from '../../theme/theme.ts'
+import { buttonColors, linkColor, PAGE_BG, TEXT_COLOR } from '../../theme/theme.ts'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
 import { t } from '../../i18n/index.ts'
@@ -488,10 +488,13 @@ function ContrastHints({ primary, accent }: { primary: string; accent: string })
         {t('✓ Links auf Weiß und auf dem Seitenhintergrund:')}{' '}
         {Math.min(contrastRatio(link, '#ffffff'), contrastRatio(link, PAGE_BG)).toFixed(1)}{' '}
         {t(': 1 (mind. 4.5 : 1)')}
+        {t(', zum Fließtext: {x} : 1 (mind. 3 : 1)', {
+          x: contrastRatio(link, TEXT_COLOR).toFixed(1),
+        })}
         {link.toLowerCase() !== primary.toLowerCase() && (
           <>
             {' '}
-            {t('– dafür wird automatisch ein dunklerer Ton verwendet')}{' '}
+            {t('– dafür wird automatisch ein angepasster Ton verwendet')}{' '}
             <span className="color-swatch" style={{ background: link }} aria-hidden="true" /> {link}
           </>
         )}

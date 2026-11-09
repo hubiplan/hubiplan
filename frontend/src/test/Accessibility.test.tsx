@@ -27,8 +27,8 @@ describe('Farben aus dem Vereins-Theme', () => {
   it('dunkelt helle Primärfarben für Links ab, bis 4,5 : 1 erreicht sind', () => {
     const link = linkColor('#909090')
     expect(contrastRatio(link, '#ffffff')).toBeGreaterThanOrEqual(4.5)
-    // schon dunkle Farben bleiben unverändert
-    expect(linkColor('#123e7a')).toBe('#123e7a')
+    // Farben, die Grund und Fließtext (W-16) schon genug abheben, bleiben unverändert
+    expect(linkColor('#0d7661')).toBe('#0d7661')
   })
 
   it('wählt die Hoverfarbe so, dass dunkle Schrift lesbar bleibt', () => {

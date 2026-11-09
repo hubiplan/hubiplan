@@ -66,6 +66,18 @@ a {
   font-weight: 600;
 }
 
+/*
+ * In fetter Umgebung (Überschrift, strong, Tabellenkopf) unterscheidet der Fettdruck nicht.
+ * Dort bekommt ein Link ein nachgestelltes „ ›“ als Merkmal, das nicht an der Farbe hängt
+ * (WCAG 1.4.1; UX-Audit 08.11., W-16). Bildschirmleser lesen es nicht vor (Alternativtext
+ * leer); Browser ohne diese Schreibweise nehmen die erste Zeile.
+ */
+:where(strong, b, h1, h2, h3, h4, h5, h6, th, .b)
+  a:where(:not(.button, nav a, header a, footer a, [role='tab'], :has(img, svg)))::after {
+  content: '\00a0\203a';
+  content: '\00a0\203a' / '';
+}
+
 /* Links ohne Unterstreichung: Tastaturfokus bleibt deutlich sichtbar. */
 a:focus-visible,
 .link-button:focus-visible {
@@ -4626,7 +4638,7 @@ label:has(> .file-input:focus-visible) {
   color-scheme: light;
   --color-bg: #f5f6f4;
   --color-surface: #ffffff;
-  --color-text: #1d2421;
+  --color-text: #121614;
   --color-text-muted: #5d6763;
   --color-border: #dde1de;
   --color-input-border: #858e8a;
