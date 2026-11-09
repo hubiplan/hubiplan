@@ -9445,3 +9445,6 @@ msgstr "The music could not be engraved."
 
 msgid "Datei „{fname}“: Die Notendatei lässt sich nicht lesen."
 msgstr "File “{fname}”: the music file cannot be read."
+
+msgid "Dieses Seitenformat ist nicht möglich."
+msgstr "This page format is not possible."

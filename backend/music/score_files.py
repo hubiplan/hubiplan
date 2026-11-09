@@ -17,7 +17,7 @@ from rest_framework.exceptions import NotFound
 from documents import notation
 from documents.views import file_response
 
-from .notation_render import check_transpose, render
+from .notation_render import check_layout, check_transpose, render
 
 FORMATS = ("", "musicxml", "pdf", "midi")
 
@@ -74,17 +74,28 @@ def _text(link, version, whole: bool) -> tuple[str, str]:
 
 
 def respond(request, link, version, whole: bool = False):
-    """Antwort für ``?format=`` (leer: Original bzw. eigene Stimme) und ``?transpose=``."""
+    """Antwort für ``?format=`` (leer: Original bzw. eigene Stimme), ``?transpose=`` und
+    ``?layout=`` (PDF für einen Bildschirm neu umbrochen, siehe ``check_layout``)."""
     fmt = request.query_params.get("format", "")
     transpose = request.query_params.get("transpose", "")
+    layout = request.query_params.get("layout", "")
     if fmt not in FORMATS:
         raise serializers.ValidationError({"format": "?"})
     try:
         transpose = check_transpose(transpose)
     except ValidationError as exc:
         raise serializers.ValidationError({"transpose": exc.messages}) from exc
+    try:
+        layout = check_layout(layout)
+    except ValidationError as exc:
+        raise serializers.ValidationError({"layout": exc.messages}) from exc
+    if layout and fmt != "pdf":
+        raise serializers.ValidationError({"layout": "?"})
     ctype = version.content_type
-    etag = f'"v{version.pk}{"-" + fmt if fmt else ""}{"-t" + transpose if transpose else ""}"'
+    etag = (
+        f'"v{version.pk}{"-" + fmt if fmt else ""}{"-t" + transpose if transpose else ""}'
+        f'{"-l" + layout if layout else ""}"'
+    )
     if etag in [t.strip() for t in request.headers.get("If-None-Match", "").split(",")]:
         response = HttpResponseNotModified()
         response["ETag"] = etag
@@ -105,7 +116,7 @@ def respond(request, link, version, whole: bool = False):
             piece = link.arrangement.piece
             heading = [piece.title, piece.composer, part_name or link.document.title]
             try:
-                data = render(text, fmt, transpose, heading)
+                data = render(text, fmt, transpose, heading, layout)
             except ValidationError as exc:
                 raise NotFound() from exc
             if fmt == "pdf":

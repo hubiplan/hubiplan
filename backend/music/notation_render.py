@@ -25,6 +25,22 @@ TRANSPOSE = re.compile(
 )
 
 
+# Satz für einen Bildschirm (App): „<Höhe je 1000 Breite>x<Notengröße>“, z. B. „1778x55“
+LAYOUT = re.compile(r"^(\d{3,4})x(\d{2,3})$")
+A4_WIDTH_PT = 595.2756
+
+
+def check_layout(value: str) -> str:
+    """Seitenverhältnis 0,8–3 und Notengröße 25–120 (Verovio-Skala); leer: A4 wie im Browser."""
+    value = (value or "").strip()
+    if not value:
+        return ""
+    match = LAYOUT.match(value)
+    if not match or not (800 <= int(match.group(1)) <= 3000 and 25 <= int(match.group(2)) <= 120):
+        raise ValidationError(gettext("Dieses Seitenformat ist nicht möglich."))
+    return value
+
+
 def check_transpose(value: str) -> str:
     value = (value or "").strip()
     if value and not TRANSPOSE.match(value):
@@ -32,16 +48,16 @@ def check_transpose(value: str) -> str:
     return value
 
 
-def _work(conn, text: str, out: str, transpose: str, heading: list[str]) -> None:
+def _work(conn, text: str, out: str, transpose: str, heading: list[str], layout: str) -> None:
     try:
-        conn.send(("ok", _render(text, out, transpose, heading)))
+        conn.send(("ok", _render(text, out, transpose, heading, layout)))
     except Exception as exc:  # noqa: BLE001 – Ergebnis an den Elternprozess, nie Absturz dort
         conn.send(("error", type(exc).__name__))
     finally:
         conn.close()
 
 
-def _render(text: str, out: str, transpose: str, heading: list[str]) -> bytes:
+def _render(text: str, out: str, transpose: str, heading: list[str], layout: str = "") -> bytes:
     import base64
 
     import verovio
@@ -57,6 +73,19 @@ def _render(text: str, out: str, transpose: str, heading: list[str]) -> bytes:
         "adjustPageHeight": False,
         "breaks": "auto",
     }
+    page_size = None
+    if layout:
+        # Für den Bildschirm neu umbrechen: Seite im Verhältnis des Geräts, schmale Ränder
+        ratio, scale = (int(v) for v in LAYOUT.match(layout).groups())
+        options.update(
+            pageHeight=2100 * ratio // 1000,
+            scale=scale,
+            pageMarginLeft=40,
+            pageMarginRight=40,
+            pageMarginBottom=40,
+            pageMarginTop=300 if heading else 40,
+        )
+        page_size = (A4_WIDTH_PT, A4_WIDTH_PT * ratio / 1000)
     if transpose:
         options["transpose"] = transpose
     tk.setOptions(options)
@@ -73,8 +102,9 @@ def _render(text: str, out: str, transpose: str, heading: list[str]) -> bytes:
     from svglib.svglib import svg2rlg
 
     buf = io.BytesIO()
-    pdf = canvas.Canvas(buf, pagesize=A4)
-    width, height = A4
+    size = page_size or A4
+    pdf = canvas.Canvas(buf, pagesize=size)
+    width, height = size
     for page in range(1, pages + 1):
         drawing = svg2rlg(io.StringIO(tk.renderToSVG(page)))
         if drawing is None:
@@ -94,20 +124,32 @@ def _render(text: str, out: str, transpose: str, heading: list[str]) -> bytes:
     return buf.getvalue()
 
 
-def render(text: str, out: str, transpose: str = "", heading: list[str] | None = None) -> bytes:
-    """``out``: ``pdf`` oder ``midi``. Wirft ValidationError, wenn Setzen nicht gelingt."""
+def render(
+    text: str,
+    out: str,
+    transpose: str = "",
+    heading: list[str] | None = None,
+    layout: str = "",
+) -> bytes:
+    """``out``: ``pdf`` oder ``midi``; ``layout`` siehe :func:`check_layout` (nur PDF).
+
+    Wirft ValidationError, wenn Setzen nicht gelingt.
+    """
     transpose = check_transpose(transpose)
+    layout = check_layout(layout) if out == "pdf" else ""
     heading = [h for h in (heading or []) if h]
     key = (
         "noten:"
-        + hashlib.sha256("\x00".join([out, transpose, *heading, text]).encode()).hexdigest()
+        + hashlib.sha256("\x00".join([out, transpose, layout, *heading, text]).encode()).hexdigest()
     )
     cached = cache.get(key)
     if cached is not None:
         return cached
     ctx = multiprocessing.get_context("spawn")
     parent, child = ctx.Pipe(duplex=False)
-    proc = ctx.Process(target=_work, args=(child, text, out, transpose, heading), daemon=True)
+    proc = ctx.Process(
+        target=_work, args=(child, text, out, transpose, heading, layout), daemon=True
+    )
     proc.start()
     child.close()
     result = None

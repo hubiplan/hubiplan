@@ -118,6 +118,13 @@ def test_musician_gets_only_own_part_pdf_and_midi(api, club, setup, partitur):
     assert pdf["ETag"] == f'"v{version.pk}-pdf"'
     assert client.get(url + "?format=pdf&transpose=-m3").status_code == 200
     assert client.get(url + "?format=pdf&transpose=x").status_code == 400
+    # Für den Bildschirm der App neu umbrochen (Seitenverhältnis x Notengröße)
+    screen = client.get(url + "?format=pdf&layout=1778x60")
+    assert screen.status_code == 200 and screen.content.startswith(b"%PDF-")
+    assert screen["ETag"] == f'"v{version.pk}-pdf-l1778x60"'
+    assert b"1058.4" in screen.content  # Seite im Verhältnis des Geräts statt A4
+    assert client.get(url + "?format=pdf&layout=9999x60").status_code == 400
+    assert client.get(url + "?format=midi&layout=1778x60").status_code == 400
     midi = client.get(url + "?format=midi")
     assert midi.status_code == 200 and midi.content.startswith(b"MThd")
     folders = client.get(f"/api/portal/{setup['access'].pk}/music/folders/").json()
