@@ -71,8 +71,8 @@ function eventColor(o: Occurrence): string {
 function eventName(o: Occurrence, day?: string): string {
   return [
     o.title,
-    o.category?.name ?? '',
     calendarContext(o),
+    o.category?.name ?? '',
     day ? dayTime(o, day) : '',
     formatRange(o.starts_at, o.ends_at, o.all_day),
     o.is_cancelled ? tc('event-status', 'abgesagt') : '',
@@ -93,9 +93,8 @@ function EventLabel({ o, day, short }: { o: Occurrence; day: string; short?: str
       <span className="event-summary">
         <span className="event-time">{dayTime(o, day)}</span>
         <span className="event-title">{o.title}</span>
-        <span className="event-context">
-          {[o.category?.name, calendarContext(o)].filter(Boolean).join(' · ')}
-        </span>
+        <span className="event-context">{calendarContext(o)}</span>
+        {o.category && <span className="event-context">{o.category.name}</span>}
       </span>
     </>
   )

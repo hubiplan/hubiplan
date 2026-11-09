@@ -64,7 +64,9 @@ describe('W-12 Kategorie im Monatskalender', () => {
         </AuthProvider>
       </MemoryRouter>,
     )
-    const item = await screen.findByRole('button', { name: /Jahreshauptversammlung · Versammlung/ })
+    const item = await screen.findByRole('button', {
+      name: /Jahreshauptversammlung · Hubertusverein · Versammlung/,
+    })
     expect(item).toHaveAttribute('title', expect.stringContaining('Versammlung'))
     const legend = screen.getByRole('list', { name: 'Kategorien' })
     expect(within(legend).getByText('Versammlung')).toBeInTheDocument()
