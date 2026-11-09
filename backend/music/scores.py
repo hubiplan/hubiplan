@@ -106,7 +106,7 @@ class MusicScoreDocumentSerializer(ScopedSerializer):
 
     class Meta:
         model = ScoreDocument
-        fields = ["id", "arrangement", "part", "document", "title", "usage_note"]
+        fields = ["id", "arrangement", "part", "document", "title", "usage_note", "position"]
 
     def get_fields(self):
         fields = super().get_fields()

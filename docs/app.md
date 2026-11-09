@@ -94,6 +94,8 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 | `DELETE /api/portal/<Zugang>/photo/` | Einwilligung widerrufen, alle Fotos löschen |
 | `GET /api/portal/<Zugang>/photo/image/?status=&size=thumb` | eigenes Foto als Bild |
 | `POST /api/portal/<Zugang>/change-requests/` | Änderung melden (wie im Browser) |
+| `GET /api/portal/<Zugang>/music/folders/` | Notenmappen des Musikers: feste Mappen (Marschbuch, Repertoire) und Mappen je Auftritt/Probe in Programmreihenfolge mit den Noten der eigenen Stimme (`musician` im Zugang; siehe [musik.md](musik.md)) |
+| `GET /api/portal/<Zugang>/music/files/<id>/` | Notendatei; `ETag` mit Fassungsnummer, `If-None-Match` → 304 |
 
 Bescheid per Push (`{"t":"info","access":…,"title":…,"text":…}`), wenn der Vorstand ein Foto
 freigibt oder ablehnt und wenn er über eine Änderungsmeldung entscheidet.

@@ -7462,5 +7462,32 @@
   "{n} Jahr": {
     "one": "{n} year",
     "other": "{n} years"
-  }
+  },
+  "Marschbuch": "March book",
+  "Repertoire": "Repertoire",
+  "Sonstige Mappe": "Other folder",
+  "alle Musiker": "all musicians",
+  "Feste Notenmappen wie Marschbuch oder Repertoire erscheinen in der App unter „Noten“. Jeder Musiker sieht darin nur die Noten seiner Stimme, soweit die Dokumentenablage sie für Mitglieder freigibt.": "Fixed music folders such as the march book or repertoire appear in the app under “Sheet music”. Each musician only sees the parts for their own voice, as far as the document storage shares them with members.",
+  "Mappe anlegen": "Create folder",
+  "Noch keine Notenmappen vorhanden.": "No music folders yet.",
+  "{n} Stück": {
+    "one": "{n} piece",
+    "other": "{n} pieces"
+  },
+  "Stücke ausblenden": "Hide pieces",
+  "Stücke zeigen": "Show pieces",
+  "Mappe „{name}“ löschen?": "Delete folder “{name}”?",
+  "Die Mappe ist noch leer.": "The folder is still empty.",
+  "Nr. {number}": "No. {number}",
+  "{title} nach oben": "Move {title} up",
+  "{title} nach unten": "Move {title} down",
+  "„{title}“ aus der Mappe entfernen?": "Remove “{title}” from the folder?",
+  "Nummer (optional)": "Number (optional)",
+  "Stück hinzufügen": "Add piece",
+  "Nummer von {title}": "Number of {title}",
+  "Nummer speichern": "Save number",
+  "Reihenfolge in der App": "Order in the app",
+  "Sichtbar für (leer: alle Musiker)": "Visible to (empty: all musicians)",
+  "Reihenfolge bei mehreren Dateien": "Order when there are several files",
+  "Notenmappen": "Music folders"
 }

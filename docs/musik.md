@@ -127,6 +127,16 @@ Die Proben-, Rückmeldungs-, Einzelprogramm- und Notenausgabedaten sind im allge
 
 Nach dem Löschen geschlossener Ausgaben gilt für den Materialpapierkorb die vorhandene Frist von 30 Tagen; anschließend werden die zugehörigen Musikverknüpfungen entfernt. Gegenstände mit offener Ausgabe werden vom endgültigen Bereinigen ausgenommen.
 
+## Notenmappen (Marschbuch, Repertoire) und Noten in der App
+
+Unter **Musik** → **Notenbestand** → **Notenmappen** werden feste Mappen ohne Termin gepflegt (Modelle `ScoreFolder`, `ScoreFolderUnit`, `ScoreFolderItem`): Name, Art (`marchbook`, `repertoire`, `other`), Reihenfolge in der App, Hinweis, aktiv. Jede Mappe enthält Arrangements in fester Reihenfolge mit optionaler Nummer (frei, z. B. „27a“, je Mappe eindeutig ohne Groß-/Kleinschreibung). Ohne Untereinheiten sehen alle aktiven Musiker die Mappe, sonst nur Mitglieder der gewählten Untereinheiten und der Einheiten darunter. Lesen dürfen Notenbestand- und Musikrollen, ändern nur „Notenbestand pflegen“; Modul „Notenarchiv“ (`scores`) muss an sein.
+
+Mappen geben keine zusätzlichen Rechte: Dateien erhält ein Musiker nur zur eigenen Stimme bzw. Fähigkeit und nur aus Ordnern, die die Dokumentenablage für Mitglieder freigibt. Dateien aus Mappen sind über denselben Abruf `music/files/<id>/` erreichbar wie die Noten zu Terminen und erscheinen auch unter **Meine Noten**. Mehrere Dateien je Stück und Stimme ordnet das Feld **Reihenfolge bei mehreren Dateien** (`ScoreDocument.position`).
+
+Für die App liefert `GET /api/portal/<Zugang>/music/folders/` alle Mappen des Musikers: `folders` (feste Mappen mit `items` in Reihenfolge, je Stück `number`, Titel, Komponist, Arrangement, Lizenzhinweis und `scores` der eigenen Stimme) und `events` (eigene Auftritte mit Programm in Reihenfolge, Pausen als eigene Einträge, und eigene Proben mit gültigem Probenprogramm; bis 7 Tage nach dem Termin, Proben im üblichen Fenster). Jede Notendatei trägt `version` (Fassungsnummer), `size`, `content_type` und `url`. Der Dateiabruf sendet `ETag: "v<Fassung>"` und beantwortet `If-None-Match` mit 304, damit die App nur geänderte Fassungen neu lädt. Abgesagte Termine und eigene Absagen liefern keine Dateien.
+
+Die neuen Tabellen sind im allgemeinen Datenexport enthalten und haben RLS. Rückweg: Eine frühere Fassung ignoriert die Tabellen und das Feld `position`; vor einem Rückweg die Mappen exportieren.
+
 ## Ergänzende Arbeitsabläufe
 
 - Sammelauszahlungen: unveränderliche, verschlüsselte Zahlungsläufe reservieren freigegebene

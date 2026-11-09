@@ -57,6 +57,7 @@ from music.payouts import PayoutRunAction, PayoutRuns
 from music.portal import OwnAssignments
 from music.practice_portal import OwnPractice, OwnScoreFile
 from music.rehearsal_guest import GuestRehearsalView, RehearsalGuestAccessView
+from music.score_folders import OwnFolders, ScoreFolderItemViewSet, ScoreFolderViewSet
 from music.settlement import FeeTemplateViewSet, PerformanceInvoiceView, SettlementView
 from oidc import urls as oidc_urls
 from oidc import views as oidc_views
@@ -154,6 +155,10 @@ org_router.register(
 org_router.register("music/parts", music_scores.ScorePartViewSet, basename="music-part")
 org_router.register(
     "music/score-documents", music_scores.ScoreDocumentViewSet, basename="music-score-document"
+)
+org_router.register("music/score-folders", ScoreFolderViewSet, basename="music-score-folder")
+org_router.register(
+    "music/score-folder-items", ScoreFolderItemViewSet, basename="music-score-folder-item"
 )
 org_router.register("billing/partners", einvoice_views.PartnerViewSet, basename="billing-partner")
 org_router.register(
@@ -825,6 +830,7 @@ urlpatterns = [
     path("music/guest-rehearsal/", GuestRehearsalView.as_view()),
     path("portal/<int:access_id>/music/practice/", OwnPractice.as_view()),
     path("portal/<int:access_id>/music/files/<int:pk>/", OwnScoreFile.as_view()),
+    path("portal/<int:access_id>/music/folders/", OwnFolders.as_view()),
     path("portal/<int:access_id>/music/", OwnAssignments.as_view()),
     path("portal/<int:access_id>/music/absences/", OwnAbsences.as_view()),
     path(

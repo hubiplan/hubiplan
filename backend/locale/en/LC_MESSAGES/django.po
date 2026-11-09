@@ -9403,3 +9403,15 @@ msgstr "The collection must fall on a bank business day (not a weekend or TARGET
 
 msgid "Ab {day} ist schon die Art „{name}“ eingetragen. Bitte zuerst diese spätere Art ändern oder entfernen."
 msgstr "From {day} the type “{name}” is already recorded. Please change or remove this later type first."
+
+msgid "Diese Nummer gibt es in der Mappe schon."
+msgstr "This number already exists in the folder."
+
+msgid "Dieses Arrangement steht schon in der Mappe."
+msgstr "This arrangement is already in the folder."
+
+msgid "Bitte alle Stücke der Mappe angeben."
+msgstr "Please list all pieces of the folder."
+
+msgid "Diese Untereinheit gibt es nicht."
+msgstr "This sub-unit does not exist."
