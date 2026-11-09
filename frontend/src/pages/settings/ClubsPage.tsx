@@ -10,7 +10,7 @@ import type { Column } from '../../components/DataTable.tsx'
 import { alertDialog, confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { DeleteIcon, EditIcon, IconButton, RestoreIcon } from '../../components/icons.tsx'
-import { Alert, Checkbox, Field, SaveStatus } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
@@ -135,7 +135,7 @@ export function ClubsPage() {
         <h2>{tm.Pl}</h2>
         {error && <Alert kind="error">{error}</Alert>}
         {!data ? (
-          !error && <p className="muted">{t('Lädt …')}</p>
+          !error && <Loading />
         ) : (
           <DataTable
             label={tm.Pl}

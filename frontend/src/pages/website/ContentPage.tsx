@@ -19,7 +19,15 @@ import {
   useForm,
   useLoad,
 } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  LoadError,
+  SaveStatus,
+  SelectField,
+  Loading,
+} from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
 import { ImageChoice, ImagePicker } from './images.tsx'
@@ -57,7 +65,7 @@ export function ContentPage() {
   }
 
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   const groups: { title: string; kind: string }[] = [
     { title: t('Startseite'), kind: 'greeting' },
@@ -294,7 +302,7 @@ export function TextPanel({
   const org = useActiveOrg()
   const { data, error, reload, setData } = useLoad(() => contentApi.text(org.id, id), [org.id, id])
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <TextForm
       key={`${data.id}-${data.updated_at}-${data.revisions.length}`}

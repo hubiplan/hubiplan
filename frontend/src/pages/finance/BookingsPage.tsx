@@ -27,7 +27,15 @@ import {
   useLoad,
   useQueryLoad,
 } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  LoadError,
+  SaveStatus,
+  SelectField,
+  Loading,
+} from '../../components/ui.tsx'
 import { PageActions } from '../../components/PageHeader.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { SplitEditor } from './SplitEditor.tsx'
@@ -177,8 +185,7 @@ export function BookingsPage() {
     />
   ) : null
   if (baseError && (!settings.data || !accounts.data || !categories.data)) return baseError
-  if (!settings.data || !accounts.data || !categories.data)
-    return <p className="muted">{t('Lädt …')}</p>
+  if (!settings.data || !accounts.data || !categories.data) return <Loading />
 
   const refresh = () => {
     setError(null)
@@ -391,7 +398,7 @@ export function BookingsPage() {
         {!data ? (
           !queryError && (
             <p className="muted" role="status">
-              {t('Lädt …')}
+              {t('Wird geladen …')}
             </p>
           )
         ) : data.results.length === 0 ? (
@@ -437,8 +444,9 @@ export function BookingsPage() {
                   onClick={() =>
                     setFilter('seite', filter.page! > 2 ? String(filter.page! - 1) : '')
                   }
+                  aria-label={t('Vorherige Seite')}
                 >
-                  {t('Zurück')}
+                  <span aria-hidden="true">‹</span> {t('Vorherige')}
                 </button>
                 <span className="muted small">
                   {t('Seite {page} von', { page: filter.page })} {pages}
@@ -448,8 +456,9 @@ export function BookingsPage() {
                   className="button button-ghost"
                   disabled={filter.page! >= pages}
                   onClick={() => setFilter('seite', String(filter.page! + 1))}
+                  aria-label={t('Nächste Seite')}
                 >
-                  {t('Weiter')}
+                  {t('Nächste')} <span aria-hidden="true">›</span>
                 </button>
               </div>
             )}

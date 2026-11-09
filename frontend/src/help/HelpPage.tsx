@@ -54,7 +54,7 @@ function LoadState({ failed, retry }: { failed: boolean; retry: () => void }) {
     </p>
   ) : (
     <p className="muted" role="status">
-      {t('Lädt …')}
+      {t('Wird geladen …')}
     </p>
   )
 }

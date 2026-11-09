@@ -17,7 +17,7 @@ import {
   useForm,
   useLoad,
 } from '../../components/forms.ts'
-import { Alert, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
 import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
 import { GENDERS } from '../../api/members.ts'
 import { OwnCardPanel } from '../../components/CardPanel.tsx'
@@ -224,7 +224,16 @@ function PortalSection({ title, children }: { title: string; children: ReactNode
 }
 
 /** Aufgaben im Mitgliederbereich als Kacheln (Startseite und Übersicht). */
-export function PortalTasks({ entry, skip = [] }: { entry: PortalEntry; skip?: string[] }) {
+export function PortalTasks({
+  entry,
+  skip = [],
+  limit,
+}: {
+  entry: PortalEntry
+  skip?: string[]
+  /** höchstens so viele Kacheln (Startseite, W-07) */
+  limit?: number
+}) {
   const tasks = portalSections(entry).flatMap((s) =>
     s.tile ? [{ to: s.to, title: s.tile.title, text: s.tile.text }] : [],
   )
@@ -232,6 +241,7 @@ export function PortalTasks({ entry, skip = [] }: { entry: PortalEntry; skip?: s
     <ul className="task-tiles">
       {tasks
         .filter((tmx) => !skip.includes(tmx.to))
+        .slice(0, limit)
         .map((tmx) => (
           <li key={tmx.to}>
             <Link to={tmx.to} className="task-tile">
@@ -276,7 +286,7 @@ function PortalData({ entry }: { entry: PortalEntry }) {
   const [editing, setEditing] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   const values = currentValues(data)
   const fields = fieldsFor(data)

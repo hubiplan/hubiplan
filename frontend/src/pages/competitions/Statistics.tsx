@@ -140,7 +140,7 @@ export function CompetitionStatistics({
       {error && <LoadError message={error} onRetry={() => void reload()} />}
       {!data && !error && (
         <p className="muted" role="status">
-          {t('Lädt …')}
+          {t('Wird geladen …')}
         </p>
       )}
       {data && (

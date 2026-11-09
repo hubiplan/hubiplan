@@ -11,7 +11,7 @@ import { websiteApi } from '../../api/website.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { PrivacyPublish } from '../../components/PrivacyPublish.tsx'
-import { Alert, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, LoadError, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { PhotoSamplesCard } from '../competitions/PhotoSamples.tsx'
 import { PrivacyCard } from '../website/WebsitePrivacy.tsx'
@@ -211,7 +211,7 @@ function MemberSection() {
         </div>
       )}
       {state.error && <Alert kind="error">{state.error}</Alert>}
-      {!state.data && !state.error && <p className="muted">{t('Lädt …')}</p>}
+      {!state.data && !state.error && <Loading />}
       {state.data && state.data.organization.id === (unitId ?? org.id) && (
         <MemberPrivacyEditor
           key={state.data.organization.id}
@@ -234,7 +234,7 @@ function WebsiteSection() {
   const org = useActiveOrg()
   const { data, error, reload, setData } = useLoad(() => websiteApi.get(org.id), [org.id])
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   if (!data.website) {
     return (
       <div className="card card-wide">

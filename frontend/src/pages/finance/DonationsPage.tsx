@@ -20,7 +20,7 @@ import type { MemberRow } from '../../api/members.ts'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
-import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { RangePager } from '../../components/ListControls.tsx'
 import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
@@ -275,7 +275,7 @@ function DonationsList({ canEdit }: { canEdit: boolean }) {
       {settings.error && (
         <LoadError
           message={t(
-            'Die Angaben zur Steuerbegünstigung konnten nicht geladen werden ({error}). Ausstellen ist erst danach möglich.',
+            'Die Angaben zur Steuerbegünstigung konnten nicht geladen werden. {error} Ausstellen ist erst danach möglich.',
             { error: settings.error },
           )}
           onRetry={() => void settings.reload()}
@@ -384,7 +384,7 @@ function DonationsList({ canEdit }: { canEdit: boolean }) {
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       {list.error && <LoadError message={list.error} onRetry={() => void list.reload()} />}
       {!list.data ? (
-        !list.error && <p className="muted">{t('Lädt …')}</p>
+        !list.error && <Loading />
       ) : rows.length === 0 ? (
         <p className="muted">{t('Keine Zuwendungen {year}.', { year })}</p>
       ) : (
@@ -791,7 +791,7 @@ function StatementsList({ canEdit }: { canEdit: boolean }) {
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       {list.error && <LoadError message={list.error} onRetry={() => void list.reload()} />}
       {!list.data ? (
-        !list.error && <p className="muted">{t('Lädt …')}</p>
+        !list.error && <Loading />
       ) : rows.length === 0 ? (
         <p className="muted">{t('Keine Bestätigungen {year}.', { year })}</p>
       ) : (
@@ -887,7 +887,7 @@ function EarmarksList({ canEdit }: { canEdit: boolean }) {
   }
 
   if (list.error) return <LoadError message={list.error} onRetry={() => void list.reload()} />
-  if (!list.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!list.data) return <Loading />
   const rows: Earmark[] = list.data
 
   return (
@@ -988,7 +988,7 @@ export function DonationSettingsForm({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
   const load = useLoad(() => donationApi.settings(org.id), [org.id])
   if (load.error) return <LoadError message={load.error} onRetry={() => void load.reload()} />
-  if (!load.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!load.data) return <Loading />
   return (
     <>
       <SettingsEditor key={org.id} initial={load.data} canEdit={canEdit} />

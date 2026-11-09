@@ -12,7 +12,7 @@ import type {
 } from '../../api/finance.ts'
 import { PERM } from '../../api/orgs.ts'
 import { errorMessage, formatDate, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
@@ -36,7 +36,7 @@ export function AccountsPage() {
   const [editing, setEditing] = useState<Account | 'new' | null>(null)
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   return (
     <div className="card card-wide">
@@ -377,7 +377,7 @@ export function CategoriesPage() {
   const form = useForm({ name: '', kind: 'both', tax_area: '' })
 
   if (error ?? settings.error) return <Alert kind="error">{error ?? settings.error}</Alert>
-  if (!data || !settings.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data || !settings.data) return <Loading />
   const areas = settings.data.tax_areas_enabled ? settings.data.tax_areas : []
   const datevOn = !!settings.data.datev_enabled
   const artistsOn = org.modules.includes('tax')
@@ -947,7 +947,7 @@ function CategoryTemplates({ onApplied }: { onApplied: () => Promise<unknown> })
     )
   }
   if (templates.error) return <Alert kind="error">{templates.error}</Alert>
-  if (!templates.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!templates.data) return <Loading />
   const list: CategoryTemplate[] = templates.data
   const chosen = list.find((x) => x.key === key) ?? list[0]
   const missing = chosen ? chosen.categories.filter((c) => !c.exists) : []

@@ -5,7 +5,7 @@ import { portalHelperApi } from '../../api/helpers.ts'
 import type { PortalShift } from '../../api/helpers.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
-import { LoadError } from '../../components/ui.tsx'
+import { LoadError, Loading } from '../../components/ui.tsx'
 import { locale, t } from '../../i18n/index.ts'
 
 const ZONE = 'Europe/Berlin'
@@ -27,7 +27,7 @@ export function PortalHelpers({ accessId }: { accessId: number }) {
   const [busy, setBusy] = useState(false)
   const [failure, setFailure] = useState<string | null>(null)
   if (error) return <LoadError message={error} onRetry={reload} />
-  if (!data) return <p role="status">{t('Wird geladen…')}</p>
+  if (!data) return <Loading />
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true)
     setFailure(null)

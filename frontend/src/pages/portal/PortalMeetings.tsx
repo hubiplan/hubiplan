@@ -6,7 +6,7 @@ import { portalMeetingApi } from '../../api/meetings.ts'
 import type { PortalMeetings as Data } from '../../api/meetings.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
-import { LoadError } from '../../components/ui.tsx'
+import { LoadError, Loading } from '../../components/ui.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { motionStatusLabel } from '../meetings/MotionsCard.tsx'
 
@@ -33,7 +33,7 @@ export function PortalMeetings({ accessId }: { accessId: number }) {
   const { data, error, reload } = useLoad(() => portalMeetingApi.list(accessId), [accessId])
   const [failure, setFailure] = useState<string | null>(null)
   if (error) return <LoadError message={error} onRetry={reload} />
-  if (!data) return <p role="status">{t('Wird geladen…')}</p>
+  if (!data) return <Loading />
   const download = async (id: number, date: string) => {
     setFailure(null)
     try {

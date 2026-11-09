@@ -1,5 +1,6 @@
 // Startseite für Mitglieder (UX-Audit S-02/10.5): oben das Häufigste – nächster Termin mit
 // Zu-/Absage und „Ausweis zeigen“; eine offene Rechnung nur, wenn es eine gibt.
+// W-07 (UX-Audit 08.11.): eine Karte „Nächste Termine“, der nächste Termin hervorgehoben.
 import { Link } from 'react-router-dom'
 import { calendarBase, eventApi } from '../../api/events.ts'
 import { portalBillingApi } from '../../api/billing.ts'
@@ -39,9 +40,10 @@ function NextEventCard({ access }: { access: number }) {
     [base, from],
   )
   const next = data?.items.find((o) => !o.is_cancelled) ?? null
+  const later = (data?.items ?? []).filter((o) => o !== next).slice(0, 3)
   return (
     <div className="card tile">
-      <h2>{t('Nächster Termin')}</h2>
+      <h2>{t('Nächste Termine')}</h2>
       {error && <p className="muted small">{t('Termine konnten nicht geladen werden.')}</p>}
       {data && !next && <p className="muted">{t('In den nächsten Wochen keine Termine.')}</p>}
       {next && (
@@ -70,6 +72,28 @@ function NextEventCard({ access }: { access: number }) {
               {tc('home', 'Alle Termine')}
             </Link>
           </div>
+          {later.length > 0 && (
+            <ul className="plain-list upcoming-list">
+              {later.map((o) => (
+                <li key={o.key} className={o.is_cancelled ? 'event-cancelled' : undefined}>
+                  <span className="muted small">
+                    {formatDay(berlin(o.starts_at).date)}
+                    {!o.all_day && t(', {time} Uhr', { time: berlin(o.starts_at).time })}
+                  </span>
+                  <div>
+                    <span className="event-title">{o.title}</span>
+                    {o.is_cancelled && (
+                      <span className="badge badge-cancelled">
+                        {' '}
+                        {tc('event-status', 'abgesagt')}
+                      </span>
+                    )}{' '}
+                    <RsvpBadge o={o} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </>
       )}
     </div>

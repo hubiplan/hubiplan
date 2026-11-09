@@ -69,7 +69,7 @@ export function NewsPage() {
         </p>
         {body === undefined && (
           <p className="muted" role="status">
-            {t('Lädt …')}
+            {t('Wird geladen …')}
           </p>
         )}
         {body === null && (

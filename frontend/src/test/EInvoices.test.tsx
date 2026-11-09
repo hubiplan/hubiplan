@@ -82,7 +82,7 @@ describe('E-Rechnungseingang', () => {
     })
     show(false)
     await screen.findByRole('button', { name: 'RE-1' })
-    await userEvent.click(screen.getByRole('button', { name: 'Weiter' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Nächste Seite' }))
     expect(await screen.findByRole('button', { name: 'RE-2' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'RE-1' })).not.toBeInTheDocument()
   })

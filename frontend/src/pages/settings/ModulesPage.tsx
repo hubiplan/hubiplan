@@ -6,7 +6,7 @@ import type { OrgModule, OrgModules } from '../../api/modules.ts'
 import { PERM } from '../../api/orgs.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert, Checkbox, LoadError } from '../../components/ui.tsx'
+import { Alert, Checkbox, LoadError, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 
@@ -33,7 +33,7 @@ export function ModulesPage() {
   if (org.type !== 'club' && org.type !== 'federation')
     return <Alert kind="error">{t('Dafür fehlt dir die Berechtigung.')}</Alert>
   if (load.error) return <LoadError message={load.error} onRetry={load.reload} />
-  if (!load.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!load.data) return <Loading />
   const all = load.data.groups.flatMap((g) => g.modules)
   const name = (id: string) => all.find((m) => m.id === id)?.label ?? id
   const enabled = all.filter((m) => m.enabled).map((m) => m.id)

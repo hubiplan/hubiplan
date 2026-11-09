@@ -4,7 +4,7 @@ import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, EmptyState, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -158,7 +158,7 @@ function MusicWorkspace() {
     return (
       <>
         <PageHeader />
-        <p>{t('Lädt …')}</p>
+        <Loading />
       </>
     )
   const d = load.data
@@ -271,6 +271,42 @@ function MusicWorkspace() {
     ),
     assignments: t('Einteilungen und Rückmeldungen für die Auftritte verwalten.'),
   }
+  // W-11/X-01: Suche, Anlegen und Leerzustand mit dem Wort der Ansicht statt „Einträge“
+  const wording: Record<string, { search: string; add: string; empty: string; next: string }> = {
+    musicians: {
+      search: t('Musiker durchsuchen'),
+      add: t('Neuer Musiker'),
+      empty: t('Noch keine Musiker.'),
+      next: t('Lege Mitglieder oder Gastmusiker an, um sie für Auftritte einzuplanen.'),
+    },
+    skills: {
+      search: t('Fähigkeiten durchsuchen'),
+      add: t('Neue Fähigkeit'),
+      empty: t('Noch keine Fähigkeiten.'),
+      next: t(
+        'Hinterlege Instrumente und Stimmen der Musiker, damit passende Musiker eingeplant werden können.',
+      ),
+    },
+    performances: {
+      search: t('Auftritte durchsuchen'),
+      add: t('Neuer Auftritt'),
+      empty: t('Noch keine Auftritte.'),
+      next: t('Lege einen Auftritt zu einem Termin an, um Besetzung und Programm zu planen.'),
+    },
+    positions: {
+      search: t('Sollbesetzung durchsuchen'),
+      add: t('Neue Position'),
+      empty: t('Noch keine Sollbesetzung.'),
+      next: t('Lege für einen Auftritt fest, welche Instrumente und Stimmen gebraucht werden.'),
+    },
+    assignments: {
+      search: t('Einteilungen durchsuchen'),
+      add: t('Neue Einteilung'),
+      empty: t('Noch keine Einteilungen.'),
+      next: t('Teile Musiker für einen Auftritt ein und sammle ihre Rückmeldungen.'),
+    },
+  }
+  const words = wording[kind]
   const selected = params.get('id')
   const rows =
     d[
@@ -334,7 +370,7 @@ function MusicWorkspace() {
       {error && <Alert kind="error">{error}</Alert>}
       <div className="music-toolbar">
         <label>
-          {t('Einträge suchen')}
+          {words.search}
           <input
             type="search"
             value={search}
@@ -343,7 +379,7 @@ function MusicWorkspace() {
         </label>
         {canEdit && !selected && (
           <button className="button button-primary" onClick={() => choose(kind, 'neu')}>
-            {t('Anlegen')}
+            {words.add}
           </button>
         )}
       </div>
@@ -368,13 +404,23 @@ function MusicWorkspace() {
         />
       )}
       <div className="stack">
-        {!visibleRows.length && (
-          <MusicEmptyState>
-            {search.trim()
-              ? t('Keine passenden Einträge gefunden.')
-              : t('Noch keine Einträge vorhanden.')}
-          </MusicEmptyState>
-        )}
+        {!visibleRows.length &&
+          (search.trim() ? (
+            <MusicEmptyState>{t('Keine passenden Einträge gefunden.')}</MusicEmptyState>
+          ) : (
+            <EmptyState
+              title={words.empty}
+              action={
+                canEdit && !selected ? (
+                  <button className="button" onClick={() => choose(kind, 'neu')}>
+                    {words.add}
+                  </button>
+                ) : undefined
+              }
+            >
+              {words.next}
+            </EmptyState>
+          ))}
         {visibleRows.map((r) => (
           <article className="card stack music-record" key={r.id}>
             <strong>

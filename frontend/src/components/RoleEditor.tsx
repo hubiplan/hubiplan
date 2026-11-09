@@ -216,7 +216,7 @@ export function RoleTable({
   editLabel?: string
   /** Text für Rollen ohne Rechte */
   noPermissions?: string
-  /** aus: Spalte „Berechtigungen“ weglassen (Rollen sind reine Ämter) */
+  /** aus: Spalte „Rechte“ weglassen (Rollen sind reine Ämter) */
   showPermissions?: boolean
 }) {
   const sort = useSortable({
@@ -239,7 +239,7 @@ export function RoleTable({
               </th>
             )}
             <th>{t('Rolle')}</th>
-            {showPermissions && <th>{t('Berechtigungen')}</th>}
+            {showPermissions && <th>{t('Rechte')}</th>}
             <th className={roles.some((r) => typeof r.holders !== 'number') ? '' : 'num'}>
               {holderLabel}
             </th>

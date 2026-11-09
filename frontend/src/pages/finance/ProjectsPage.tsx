@@ -22,7 +22,7 @@ import {
   useForm,
   useLoad,
 } from '../../components/forms.ts'
-import { Alert, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, LoadError, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { berlin } from '../../components/calendar/time.ts'
@@ -128,7 +128,7 @@ function ProjectList() {
       </div>
       <div className="card card-wide">
         {!list.data ? (
-          <p className="muted">{t('Lädt …')}</p>
+          <Loading />
         ) : list.data.length === 0 ? (
           <div className="empty-state">
             <p>{t('Noch keine Veranstaltung.')}</p>
@@ -385,7 +385,7 @@ function ProjectDetail() {
   const [error, setError] = useState<string | null>(null)
 
   if (ev.error) return <Alert kind="error">{ev.error}</Alert>
-  if (!ev.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!ev.data) return <Loading />
   const d = ev.data
   const reload = () => {
     void ev.reload()
@@ -762,7 +762,7 @@ function AssignBookings({ project, onDone }: { project: ProjectEvaluation; onDon
         </Alert>
       )}
       {!candidates.data ? (
-        !candidates.error && <p className="muted">{t('Lädt …')}</p>
+        !candidates.error && <Loading />
       ) : rows.length === 0 ? (
         <p className="muted small">{t('Keine passenden Buchungen in diesem Zeitraum.')}</p>
       ) : (
@@ -930,7 +930,7 @@ function EventsCard({
           {candidates.error ? (
             <LoadError message={candidates.error} onRetry={() => void candidates.reload()} />
           ) : !candidates.data ? (
-            <p className="muted">{t('Lädt …')}</p>
+            <Loading />
           ) : free.length === 0 ? (
             <p className="muted small">
               {t('Keine passenden Termine. Neue Termine legst du hier an:')}{' '}
@@ -1031,7 +1031,7 @@ function SeriesPage() {
   }
 
   if (list.error) return <Alert kind="error">{list.error}</Alert>
-  if (!list.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!list.data) return <Loading />
   const sel = list.data.find((s) => s.id === current) ?? null
   const c = comparison.data
   return (
@@ -1099,7 +1099,7 @@ function SeriesPage() {
           </p>
         </div>
       ) : !c ? (
-        <p className="muted">{t('Lädt …')}</p>
+        <Loading />
       ) : c.projects.length === 0 ? (
         <div className="card empty-state">
           <p>{t('Zu dieser Reihe gehört noch keine Veranstaltung.')}</p>

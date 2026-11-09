@@ -3,7 +3,7 @@ import { api } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmDiscard, confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 type Item = { arrangement: number; focus: string; title?: string }
@@ -26,7 +26,7 @@ export function RehearsalProgramEditor(props: Props) {
     [props.url, props.originalStart],
   )
   if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!load.data) return <p>{t('Lädt …')}</p>
+  if (!load.data) return <Loading />
   return <ProgramForm {...props} initial={load.data} />
 }
 

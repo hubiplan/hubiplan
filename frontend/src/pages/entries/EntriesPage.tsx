@@ -36,6 +36,7 @@ import {
   SaveStatus,
   SelectField,
   Tabs,
+  Loading,
 } from '../../components/ui.tsx'
 import { PERM } from '../../api/orgs.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
@@ -269,8 +270,7 @@ function CallArea() {
         }}
       />
     )
-  if (!call.data || !options.data || (entry.loading && entry.data === null))
-    return <p className="muted">{t('Wird geladen …')}</p>
+  if (!call.data || !options.data || (entry.loading && entry.data === null)) return <Loading />
   const c = call.data
   const base = `/meldungen/${id}`
   return (

@@ -94,7 +94,7 @@ export function EventProjectPanel({
       {choosing && (
         <div className="button-row">
           {!projects.data ? (
-            <span className="muted small">{t('Lädt …')}</span>
+            <span className="muted small">{t('Wird geladen …')}</span>
           ) : projects.data.length === 0 ? (
             <span className="muted small">{t('Es gibt noch keine Veranstaltung.')}</span>
           ) : (
