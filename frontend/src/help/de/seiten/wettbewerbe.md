@@ -22,7 +22,9 @@ Durchschnitt. Die Gesamtsicht zeigt zusätzlich den gleich gewichteten Durchschn
 persönlichen Mitgliederdurchschnitte.
 
 Nur endgültige Ergebnisse zählen. Fehlende Werte zählen nicht als null. Eine Person zählt
-je Wettbewerb einmal; Siege und Podestplätze zählen je Einzelwertung. Mannschaftserfolge
+je Wettbewerb einmal. Gäste, Starts außer Konkurrenz und fehlende Starter zählen nicht als
+Teilnahme; bei **Teilnahmen** steht, wie viele davon nicht gezählt wurden. Deshalb kann die
+Starterzahl in der Wettbewerbsliste größer sein. Siege und Podestplätze zählen je Einzelwertung. Mannschaftserfolge
 werden nicht als persönliche Siege gezählt. Diagrammwerte lassen sich als Tabelle öffnen.
 Unter **Alle Starts und Auszeichnungen** findest du auch laufende Wettbewerbe.
 

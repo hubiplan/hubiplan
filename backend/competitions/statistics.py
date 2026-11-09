@@ -134,10 +134,35 @@ def _load(org, person_id=None):
             and (person_id is None or st.membership.person_id == person_id)
         )
 
+    def not_counted(st):
+        """Warum ein Start nicht zählt (für den Hinweis neben den Teilnahmen)."""
+        if (
+            st.membership_id is None
+            or st.membership.organization_id != org.pk
+            or st.membership.purged_at is not None
+        ):
+            return "guests"
+        if st.out_of_competition:
+            return "out_of_competition"
+        if st.presence == "fehlt":
+            return "absent"
+        return None
+
     starts = []
     members = {}
+    skipped = []
     for st in starters:
         if not eligible(st):
+            reason = not_counted(st) if person_id is None else None
+            if reason:
+                skipped.append(
+                    {
+                        "reason": reason,
+                        "competition": st.competition_id,
+                        "date": st.competition.date.isoformat(),
+                        "form": st.competition.form,
+                    }
+                )
             continue
         pid = st.membership.person_id
         members[pid] = {"membership": st.membership_id, "name": st.name}
@@ -202,7 +227,7 @@ def _load(org, person_id=None):
                     "unit_label": sc.unit_label,
                 }
             )
-    return starts, results, groups, members
+    return starts, results, groups, members, skipped
 
 
 def _performance(rows, group):
@@ -227,7 +252,7 @@ def _performance(rows, group):
 
 
 def competition_statistics(org, *, person_id=None, year=None, form="", group_id=""):
-    starts, results, groups, members = _load(org, person_id)
+    starts, results, groups, members, skipped = _load(org, person_id)
     if form:
         starts = [s for s in starts if s["form"] == form]
         results = [r for r in results if r["form"] == form]
@@ -240,6 +265,11 @@ def competition_statistics(org, *, person_id=None, year=None, form="", group_id=
         results = [r for r in results if r["group"] == group_id]
         keys = {(r["person"], r["competition"]) for r in results}
         starts = [s for s in starts if (s["person"], s["competition"]) in keys]
+    # Nicht gezählte Starts nur aus den Wettbewerben, die auch die Auswertung enthält.
+    shown = {s["competition"] for s in starts} | {r["competition"] for r in results}
+    skipped = [s for s in skipped if s["competition"] in shown]
+    if year is not None:
+        skipped = [s for s in skipped if int(s["date"][:4]) == year]
     all_results = list(
         {(r["person"], r["competition"], r["scoring_id"]): r for r in results}.values()
     )
@@ -357,6 +387,10 @@ def competition_statistics(org, *, person_id=None, year=None, form="", group_id=
             "podiums": sum(m["podiums"] for m in by_member),
             "prizes": sum(m["prizes"] for m in by_member),
             "awards": len(award_rows),
+            "not_counted": {
+                k: sum(s["reason"] == k for s in skipped)
+                for k in ("guests", "out_of_competition", "absent")
+            },
         },
         "performance": performance,
         "group_summary": per_group,

@@ -73,6 +73,8 @@ export interface CompetitionStatisticsData {
     podiums: number
     prizes: number
     awards: number
+    /** Starts derselben Wettbewerbe, die nicht zählen (nur in der Gesamtsicht) */
+    not_counted?: { guests: number; out_of_competition: number; absent: number }
   }
   performance: Performance | null
   group_summary: (StatisticsGroup & Performance)[]
