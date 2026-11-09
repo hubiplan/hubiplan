@@ -10,6 +10,7 @@ import type { OrgSummary } from '../api/orgs.ts'
 import { roleActions } from '../components/home/roleActions.ts'
 import { addDays, today } from '../components/calendar/time.ts'
 import { settingsItems } from '../pages/settings/items.ts'
+import { todayIso } from '../api/members.ts'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
 import { occurrence } from './eventFixtures.ts'
 
@@ -35,6 +36,7 @@ describe('Schnellaktionen je Rolle', () => {
     const both = testOrg({
       permissions: [...KASSE, 'members.view', 'members.edit', 'events.manage'],
       modules: ['members', 'finance', 'billing', 'events'],
+      home_focus: ['finance'],
     }) as unknown as OrgSummary
     expect(roleActions(both).map((a) => a.label)).toEqual([
       'Buchung erfassen',
@@ -52,13 +54,24 @@ describe('Schnellaktionen je Rolle', () => {
       '/versammlungen?neu=1',
       '/versammlungen',
     ])
+    // Vorsitz mit Vollrechten, aber ohne Kassenamt: keine Aktionen der Kasse
+    const chair = testOrg({
+      permissions: [...KASSE, 'members.view', 'members.edit', 'events.manage'],
+      modules: ['members', 'finance', 'billing', 'events'],
+      home_focus: [],
+    }) as unknown as OrgSummary
+    expect(roleActions(chair).map((a) => a.key)).toEqual(['termin', 'aufnahme'])
     // Nur lesen: keine Schnellaktion
     const reader = testOrg({ permissions: ['members.view'] }) as unknown as OrgSummary
     expect(roleActions(reader)).toEqual([])
   })
 
   it('Startseite der Kasse: Schnellaktionen und Kennzahlen', async () => {
-    const org = testOrg({ permissions: KASSE, modules: ['finance', 'billing'] })
+    const org = testOrg({
+      permissions: KASSE,
+      modules: ['finance', 'billing'],
+      home_focus: ['finance'],
+    })
     fakeApi({
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
@@ -98,6 +111,44 @@ describe('Schnellaktionen je Rolle', () => {
   })
 })
 
+describe('Schnellaktionen ausblenden', () => {
+  it('blendet eine Aktion aus und rückt die nächste nach', async () => {
+    let hidden: string[] = []
+    const org = testOrg({
+      permissions: ['members.view', 'members.edit', 'events.manage'],
+      modules: ['members', 'events'],
+    })
+    const calls = fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
+      'GET /api/me/home-actions/': () => ({ status: 200, body: { hidden } }),
+      'PUT /api/me/home-actions/': (init) => {
+        hidden = JSON.parse(String(init?.body)).hidden
+        return { status: 200, body: { hidden } }
+      },
+    })
+    renderAt('/')
+    const user = userEvent.setup()
+    const heading = await screen.findByRole('heading', { name: 'Schnellaktionen' })
+    const card = within(heading.closest('.card') as HTMLElement)
+    expect(card.getByRole('link', { name: 'Neuer Termin' })).toHaveClass('button-primary')
+    await user.click(card.getByRole('button', { name: 'Anpassen' }))
+    await user.click(card.getByRole('checkbox', { name: 'Neuer Termin' }))
+    await waitFor(() => expect(hidden).toEqual(['termin']))
+    await user.click(card.getByRole('button', { name: 'Fertig' }))
+    expect(card.queryByRole('link', { name: 'Neuer Termin' })).not.toBeInTheDocument()
+    expect(card.getByRole('link', { name: 'Mitglied aufnehmen' })).toHaveClass('button-primary')
+
+    await user.click(card.getByRole('button', { name: 'Anpassen' }))
+    await user.click(card.getByRole('button', { name: 'Schnellaktionen ganz ausblenden' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'Schnellaktionen' })).not.toBeInTheDocument(),
+    )
+    expect(calls.filter((c) => c.key === 'PUT /api/me/home-actions/')).toHaveLength(2)
+    expect(hidden).toEqual(['termin', '*'])
+  })
+})
+
 describe('Hinweise in einer Karte', () => {
   it('sammelt Impressum und Geburtstage', async () => {
     const org = testOrg({ permissions: ['members.view', 'org.edit'] })
@@ -105,7 +156,8 @@ describe('Hinweise in einer Karte', () => {
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
       'GET /api/orgs/7/imprint/': () => ({ status: 200, body: { missing: ['Telefon'] } }),
-      [`GET /api/orgs/7/birthdays/?von=${today()}&bis=${addDays(today(), 30)}`]: () => ({
+      // Wie die Startseite mit todayIso (Ortszeit): kurz nach Mitternacht weicht today() (Berlin) ab
+      [`GET /api/orgs/7/birthdays/?von=${todayIso()}&bis=${addDays(todayIso(), 30)}`]: () => ({
         status: 200,
         body: {
           von: '',
@@ -115,7 +167,7 @@ describe('Hinweise in einer Karte', () => {
               member_id: 3,
               first_name: 'Erika',
               last_name: 'Muster',
-              date: today(),
+              date: todayIso(),
               age: 50,
             },
           ],

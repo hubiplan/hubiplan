@@ -29,6 +29,7 @@ from .catalog import AUDIT_VIEW, ROLES_MANAGE, ROLES_PREVIEW, catalog_for, effec
 from .models import Role, RoleAssignment
 from .modules import module_on
 from .permissions import (
+    home_focus,
     inherited_permissions,
     organizations_for,
     own_permissions_in,
@@ -612,6 +613,11 @@ def my_organizations(request: Request) -> Response:
             with tenant_context(org.pk):
                 active = Role.objects.filter(pk=current.role_id).values("id", "name").first()
         summary["role_preview"] = {"available": ROLES_PREVIEW in own, "active": active}
+        summary["home_focus"] = home_focus(
+            request.user,
+            org,
+            preview.role_permissions(org, current.role_id) if active else None,
+        )
         result.append(summary)
     return Response(result)
 

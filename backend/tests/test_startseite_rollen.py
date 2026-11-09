@@ -90,11 +90,21 @@ def test_kennzahlen_der_kasse_nur_mit_finanzrecht(api, orgs, board_a):
     assert data["bank"]["value"] == "8904.17"
     assert "Girokonto" in data["bank"]["detail"]
     assert data["open_fees"]["value"] == "0.00"
-    # Reihenfolge: Kasse vor Vorstand
-    keys = [
-        f["key"] for f in api(board_a).get(f"/api/orgs/{org.pk}/home-figures/").json()["figures"]
-    ]
-    assert keys.index("cash") < keys.index("members_active")
+
+    # Reihenfolge: Vorstand mit Vollrechten sieht seine Zahlen zuerst, die Kasse ihre
+    def keys(user):
+        rows = api(user).get(f"/api/orgs/{org.pk}/home-figures/").json()["figures"]
+        return [f["key"] for f in rows]
+
+    assert keys(board_a).index("members_active") < keys(board_a).index("cash")
+    kasse = make_user("kassierer@example.org")
+    give_role(
+        kasse,
+        org,
+        permissions=["members.view", "finance.view", "finance.edit", "billing.view"],
+        name="Kassierer",
+    )
+    assert keys(kasse).index("cash") < keys(kasse).index("members_active")
 
     leser = make_user("mitgliederwart@example.org")
     give_role(leser, org, permissions=["members.view"], name="Mitgliederwart")
@@ -211,3 +221,45 @@ def test_kasse_buchungen_ohne_beleg_und_fehlender_auszug(api, orgs, board_a):
     give_role(pruefer, org, permissions=["finance.view"], name="Kassenprüfer")
     assert tasks(api(pruefer), org, "bookings_without_receipt") == []
     assert tasks(api(pruefer), org, "statement_missing") == []
+
+
+def test_schwerpunkt_aus_den_rollen(api, orgs, board_a):
+    """Kassenrechte allein machen niemanden zur Kasse: Vollrechte (Rollen vergeben) zählen nicht."""
+    org = orgs["a"]
+
+    def focus(user):
+        rows = api(user).get("/api/me/organizations/").json()
+        return next(o for o in rows if o["id"] == org.pk)["home_focus"]
+
+    assert focus(board_a) == []
+    kasse = make_user("kassierer@example.org")
+    give_role(kasse, org, permissions=["finance.view", "finance.edit"], name="Kassierer")
+    assert focus(kasse) == ["finance"]
+    # Vorsitz und Kasse zugleich: die Kassenrolle zählt
+    give_role(board_a, org, permissions=["finance.edit", "billing.edit"], name="Kassierer")
+    assert focus(board_a) == ["finance"]
+
+
+def test_schnellaktionen_ausblenden(api, board_a):
+    c = api(board_a)
+    assert c.get("/api/me/home-actions/").json() == {"hidden": []}
+    resp = c.put(
+        "/api/me/home-actions/",
+        {"hidden": ["termin", "termin", "*"]},
+        content_type="application/json",
+    )
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == {"hidden": ["*", "termin"]}
+    board_a.refresh_from_db()
+    assert board_a.home_actions_hidden == ["*", "termin"]
+    assert (
+        c.put(
+            "/api/me/home-actions/", {"hidden": ["<b>"]}, content_type="application/json"
+        ).status_code
+        == 400
+    )
+    assert c.put(
+        "/api/me/home-actions/", {"hidden": []}, content_type="application/json"
+    ).json() == {"hidden": []}
+    board_a.refresh_from_db()
+    assert board_a.home_actions_hidden is None

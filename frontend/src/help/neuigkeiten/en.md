@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Home page: under **Quick actions** › **Customise** you hide single actions or the whole block; turn them back on under My account › Profile › Home. Only people with a treasurer role see the treasurer's actions, not a chair who simply has all rights. Key figures, upcoming events and notices sit in an even grid.
 - Home page: every role sees the same order: **To do**, **Quick actions** for your role (such as **Record a booking** for the treasurer), up to three key figures, **Upcoming events** and a **Notices** card for the legal notice, letter template, anniversaries and birthdays. Members accept or decline the next event right at the top. **To do** now also lists bookings without a receipt, a missing bank statement for the previous month and missing required setup items.
 - Settings: the new **Setup (overview)** lists all setup pages of the modules with the status of each item, a search and the progress of the required items.
 - New: dark mode for members. Sign-in, the start page, events, My account and My area appear dark when your device is set to dark or you choose “Dark” under My account › Profile › **Appearance**. Administration stays light.

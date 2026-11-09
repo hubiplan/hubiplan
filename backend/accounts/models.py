@@ -70,6 +70,9 @@ class User(AbstractUser):
         default="auto",
         db_default="auto",
     )
+    # Startseite (S-04): ausgeblendete Schnellaktionen, Schlüssel wie im Frontend; "*" blendet
+    # den ganzen Block aus. Reine Anzeigepräferenz, null = alle zeigen.
+    home_actions_hidden = models.JSONField("ausgeblendete Schnellaktionen", null=True, blank=True)
     # Gesetzt, solange das Konto noch das ausgegebene Startpasswort hat: Es muss bei der
     # ersten Anmeldung ersetzt werden und wird nach Ablauf unbrauchbar (AT-S04)
     initial_password_expires = models.DateTimeField(

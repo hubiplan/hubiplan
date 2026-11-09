@@ -8,7 +8,7 @@ import { OpenTasksTile } from '../components/OpenTasksTile.tsx'
 import { PERM } from '../api/orgs.ts'
 import type { OrgSummary } from '../api/orgs.ts'
 import { DeptFigures, NoticesCard, OrgFigures, QuickActions } from '../components/home/RoleHome.tsx'
-import { deptActions, roleActions } from '../components/home/roleActions.ts'
+import { deptActions, roleActionCandidates } from '../components/home/roleActions.ts'
 import { PortalTasks } from './portal/PortalPage.tsx'
 import { MemberHomeTop } from '../components/home/MemberHome.tsx'
 import { t } from '../i18n/index.ts'
@@ -47,12 +47,12 @@ export function HomePage() {
         <h1 className="sr-only">{activeDept.name}</h1>
         {/* Gleiche Reihenfolge wie im Verein (S-04): Zu erledigen, Schnellaktionen, Kennzahl,
             Termine, Hinweise */}
-        <div className="tiles">
+        <div className="tiles home-grid">
           {activeDept.permissions.includes('todos.view') && (
             <DepartmentTodosTile department={activeDept.id} />
           )}
           <QuickActions
-            actions={deptActions(activeDept)}
+            candidates={deptActions(activeDept)}
             label={t('Schnellaktionen: {label}', { label: activeDept.label })}
           />
           <DeptFigures dept={activeDept} />
@@ -119,7 +119,7 @@ export function HomePage() {
   // Name und Dachverband stehen schon im Kopf; die Überschrift ist nur für Screenreader.
   // Feste Reihenfolge für alle Rollen (S-04): Zu erledigen › Schnellaktionen › Kennzahlen ›
   // Nächste Termine › Hinweise. Was die Person nicht darf, fehlt einfach.
-  const actions = roleActions(active)
+  const actions = roleActionCandidates(active)
   const clubLike = active.type === 'club' || active.type === 'federation'
   const upcoming =
     clubLike &&
@@ -133,12 +133,12 @@ export function HomePage() {
   return (
     <section>
       <h1 className="sr-only">{active.name}</h1>
-      <div className="tiles">
+      <div className="tiles home-grid">
         {activeDept?.permissions.includes('todos.view') && (
           <DepartmentTodosTile department={activeDept.id} />
         )}
         {showsOpenTasks(active) && <OpenTasksTile org={active} />}
-        <QuickActions actions={actions} />
+        <QuickActions candidates={actions} />
         {clubLike && <OrgFigures org={active} />}
         {upcoming && <UpcomingTile base={calendarBase.org(active.id)} />}
         <NoticesCard org={active} />

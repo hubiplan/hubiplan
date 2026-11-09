@@ -1,5 +1,6 @@
-// Schnellaktionen je Rolle (Konzept S-04). Die Rolle ergibt sich aus den Rechten; mehrere
-// Rollen teilen sich höchstens vier Aktionen, Kasse vor Vorstand vor Schriftführung.
+// Schnellaktionen je Rolle (Konzept S-04). Mehrere Rollen teilen sich höchstens vier Aktionen,
+// Kasse vor Vorstand vor Schriftführung. Die Aktionen der Kasse sieht nur, wer ein Kassenamt hat
+// (home_focus vom Server), nicht schon jeder mit Kassenrechten wie der Vorsitz.
 import { PERM } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
 import { DEPT_PERM } from '../../api/portal.ts'
@@ -18,13 +19,25 @@ export const MAX_ACTIONS = 4
 /** Höchstens so viele Kennzahlen (S-04) */
 export const MAX_FIGURES = 3
 
-/** Schnellaktionen der Rollen in der Einheit, nach Vorrang: Kasse, Vorstand, Schriftführung. */
-export function roleActions(org: OrgSummary): QuickAction[] {
+/** Schnellaktionen der Rollen in der Einheit (höchstens vier), ohne die ausgeblendeten. */
+export function roleActions(org: OrgSummary, hidden: string[] = []): QuickAction[] {
+  return visibleActions(roleActionCandidates(org), hidden)
+}
+
+/** Erste vier nicht ausgeblendete Aktionen; „*“ blendet alle aus. */
+export function visibleActions(candidates: QuickAction[], hidden: string[]): QuickAction[] {
+  if (hidden.includes('*')) return []
+  return candidates.filter((a) => !hidden.includes(a.key)).slice(0, MAX_ACTIONS)
+}
+
+/** Alle möglichen Schnellaktionen nach Vorrang: Kasse, Vorstand, Schriftführung. */
+export function roleActionCandidates(org: OrgSummary): QuickAction[] {
   if (org.type !== 'club' && org.type !== 'federation') return []
   const can = (perm: string) => org.permissions.includes(perm)
   const on = (module: string) => org.modules.includes(module)
-  const finance = on('finance') && can(PERM.financeEdit)
-  const billing = on('billing') && can(PERM.billingEdit)
+  const treasurer = org.home_focus ? org.home_focus.includes('finance') : true
+  const finance = treasurer && on('finance') && can(PERM.financeEdit)
+  const billing = treasurer && on('billing') && can(PERM.billingEdit)
   const actions: (QuickAction | false)[] = [
     // Kasse
     finance && {
@@ -78,16 +91,16 @@ export function roleActions(org: OrgSummary): QuickAction[] {
         label: t('Protokoll schreiben'),
       },
   ]
-  return actions.filter((a): a is QuickAction => !!a).slice(0, MAX_ACTIONS)
+  return actions.filter((a): a is QuickAction => !!a)
 }
 
 /** Schnellaktionen im Arbeitsbereich einer Untereinheit (Zugführung). */
 export function deptActions(dept: DeptSummary): QuickAction[] {
   return [
     ...(dept.events_enabled && dept.permissions.includes(DEPT_PERM.eventsManage)
-      ? [{ key: 'termin', to: '/termine?neu=1', label: t('Termin der Einheit') }]
+      ? [{ key: 'einheit-termin', to: '/termine?neu=1', label: t('Termin der Einheit') }]
       : []),
-    { key: 'mitglieder', to: '/abteilung', label: t('Mitglieder ansehen') },
-    { key: 'brief', to: '/briefvorlage', label: t('Briefvorlage') },
+    { key: 'einheit-mitglieder', to: '/abteilung', label: t('Mitglieder ansehen') },
+    { key: 'einheit-brief', to: '/briefvorlage', label: t('Briefvorlage') },
   ]
 }

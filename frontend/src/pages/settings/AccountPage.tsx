@@ -8,6 +8,7 @@ import { LoginSections, NameSection } from './ProfileCards.tsx'
 import { LearningCard } from '../../learning/LearningCard.tsx'
 import { LanguageCard } from '../../i18n/LanguageControls.tsx'
 import { AppearanceCard } from './AppearanceCard.tsx'
+import { HomeActionsCard } from './HomeActionsCard.tsx'
 import { AppDevicesCard } from './AppDevicesCard.tsx'
 import { RemoteLoginCard } from './RemoteLoginCard.tsx'
 import { SignatureCard } from './SignatureCard.tsx'
@@ -28,6 +29,7 @@ export function AccountPage() {
         <NameSection />
         <LanguageCard />
         <AppearanceCard />
+        <HomeActionsCard />
         <LearningCard />
         <PersonalTodos />
       </div>

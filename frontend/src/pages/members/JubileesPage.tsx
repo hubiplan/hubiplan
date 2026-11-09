@@ -231,7 +231,7 @@ export function JubileeList({
       {rows.length > 0 && (
         <ul className="plain-list" aria-label={t('Jubiläen')}>
           {groupByPerson(rows)
-            .slice(0, 5)
+            .slice(0, 3)
             .map((p) => (
               <li key={p.member_id} className="tile-entry">
                 <Link to={`/mitglieder/${p.member_id}`} className="tile-entry-title">
