@@ -28,7 +28,7 @@ Here you set up your own shooting competitions with individual and team scoring,
 
 Stand mode stores private data for the verified account or complete stand credential, for at most twelve hours and never beyond the credential's expiry. Without reception, the same stand remains available in the same browser tab. An explicit server access denial ends offline access. Signing out or switching accounts removes this browser's stand cache. Send outstanding entries before signing out; signing out asks before discarding them. Revoked or expired access also removes unsent entries. The old cache without account binding is removed on first opening this version; a notice appears if it contained unsent entries. Browser storage does not replace a backup.
 
-In the live camera, the dashed circle shows where the outermost ring of the target should be; if the target has a black aiming area, a solid circle also shows where the black should be. This works the same in the browser and in the app.
+In the live camera, the dashed circle shows where the outermost ring of the target should be; if the target has a black aiming area, a solid circle also shows where the black should be. On the card with five target faces (four corners and centre), the camera looks for all five and draws the circles around the ones it finds; it takes the picture once all five are straight, steady and fully in view. It does not need fixed card dimensions for this. This works the same in the browser and in the app.
 
 ### Setup
 
