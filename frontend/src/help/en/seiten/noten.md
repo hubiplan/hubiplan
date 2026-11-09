@@ -25,12 +25,12 @@ If a piece has several files for one voice (for example page 1 and 2 as images),
 
 ## Music files: PDF, images, MusicXML and MIDI
 
-Upload sheet music in the document storage. Besides PDF, JPEG and PNG, HUBIplan understands **MusicXML** (`.musicxml`, `.mxl`, `.xml`) and the open formats **MEI** and **ABC**. MuseScore, Capella, Sibelius and Finale export MusicXML (usually under “Export” or “Save as”).
+Upload sheet music in the document storage. Besides PDF, JPEG and PNG, HUBIplan understands MusicXML (`.musicxml`, `.mxl`, `.xml`) and the open formats MEI and ABC. MuseScore, Capella, Sibelius and Finale export MusicXML (usually under “Export” or “Save as”).
 
-- From a MusicXML score, each musician only gets their own part. HUBIplan picks the part by the instrument and register of the link. If that is not unambiguous, enter the part’s name as it appears in the file under **Sheet music documents** in **Part in the MusicXML score**.
+- From a MusicXML score, each musician only gets their own part. HUBIplan picks the part by the instrument and register of the link. If that is not unambiguous, enter the part’s name as it appears in the file under **Sheet music documents** in **Part in the MusicXML score (empty: by instrument)**.
 - In the browser, MusicXML music opens as a PDF. In the app it is engraved to fit the screen and can be transposed.
-- Link **MIDI files** (`.mid`) as listening examples. For MusicXML music, HUBIplan creates the listening example itself.
+- Link MIDI files (`.mid`) as listening examples. For MusicXML music, HUBIplan creates the listening example itself.
 
 ## Leading in the app
 
-The conductor, bandleader or drum major can send the next piece to all musicians in the app; the devices then jump to each musician’s own part. Anyone allowed to edit music can do this, as well as anyone entered under **Leading in the app**: for a music folder (under **Show pieces**), for a performance under **Staffing**, or for a rehearsal.
+The conductor, bandleader or drum major can send the next piece to all musicians in the app; the devices then jump to each musician’s own part. Anyone allowed to edit music can do this, as well as anyone entered under **Leading in the app**: for a music folder (under **Show pieces**), for a performance under **Plan instrumentation**, or for a rehearsal.

@@ -25,12 +25,12 @@ Hat ein Stück für eine Stimme mehrere Dateien (zum Beispiel Seite 1 und 2 als 
 
 ## Notendateien: PDF, Bilder, MusicXML und MIDI
 
-Noten lädst du in der Dokumentenablage hoch. Neben PDF, JPEG und PNG versteht HUBIplan **MusicXML** (`.musicxml`, `.mxl`, `.xml`), dazu die offenen Formate **MEI** und **ABC**. MuseScore, Capella, Sibelius und Finale exportieren MusicXML (meist unter „Exportieren“ oder „Speichern unter“).
+Noten lädst du in der Dokumentenablage hoch. Neben PDF, JPEG und PNG versteht HUBIplan MusicXML (`.musicxml`, `.mxl`, `.xml`), dazu die offenen Formate MEI und ABC. MuseScore, Capella, Sibelius und Finale exportieren MusicXML (meist unter „Exportieren“ oder „Speichern unter“).
 
-- Aus einer MusicXML-Partitur bekommt jeder Musiker nur seine Stimme. Die Stimme sucht HUBIplan nach Instrument und Register der Zuordnung. Passt das nicht eindeutig, trägst du unter **Notenunterlagen** bei **Stimme in der MusicXML-Partitur** den Namen der Stimme ein, wie er in der Datei steht.
+- Aus einer MusicXML-Partitur bekommt jeder Musiker nur seine Stimme. Die Stimme sucht HUBIplan nach Instrument und Register der Zuordnung. Passt das nicht eindeutig, trägst du unter **Notenunterlagen** bei **Stimme in der MusicXML-Partitur (leer: nach Instrument)** den Namen der Stimme ein, wie er in der Datei steht.
 - Im Browser öffnen sich MusicXML-Noten als PDF. In der App werden sie passend zum Bildschirm gesetzt und lassen sich transponieren.
-- **MIDI-Dateien** (`.mid`) ordnest du als Hörbeispiel zu. Zu MusicXML-Noten erzeugt HUBIplan das Hörbeispiel selbst.
+- MIDI-Dateien (`.mid`) ordnest du als Hörbeispiel zu. Zu MusicXML-Noten erzeugt HUBIplan das Hörbeispiel selbst.
 
 ## Leitung in der App
 
-Dirigent, Stabführer oder Tambourmajor können in der App allen Musikern das nächste Stück vorgeben; die Geräte springen dann in die eigene Stimme. Das darf, wer Musik bearbeiten darf, und wer als **Leitung in der App** eingetragen ist: bei einer Notenmappe (unter **Stücke zeigen**), bei einem Auftritt unter **Besetzung** oder bei einer Probe.
+Dirigent, Stabführer oder Tambourmajor können in der App allen Musikern das nächste Stück vorgeben; die Geräte springen dann in die eigene Stimme. Das darf, wer Musik bearbeiten darf, und wer als **Leitung in der App** eingetragen ist: bei einer Notenmappe (unter **Stücke zeigen**), bei einem Auftritt unter **Besetzung planen** oder bei einer Probe.
