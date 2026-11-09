@@ -95,7 +95,8 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 | `GET /api/portal/<Zugang>/photo/image/?status=&size=thumb` | eigenes Foto als Bild |
 | `POST /api/portal/<Zugang>/change-requests/` | Änderung melden (wie im Browser) |
 | `GET /api/portal/<Zugang>/music/folders/` | Notenmappen des Musikers: feste Mappen (Marschbuch, Repertoire) und Mappen je Auftritt/Probe in Programmreihenfolge mit den Noten der eigenen Stimme (`musician` im Zugang; siehe [musik.md](musik.md)) |
-| `GET /api/portal/<Zugang>/music/files/<id>/` | Notendatei; `ETag` mit Fassungsnummer, `If-None-Match` → 304 |
+| `GET /api/portal/<Zugang>/music/files/<id>/?format=&transpose=` | Notendatei (eigene Stimme aus Partituren); `format` leer, `musicxml`, `pdf` oder `midi`; `ETag` mit Fassungsnummer, `If-None-Match` → 304 |
+| `GET/POST /api/portal/<Zugang>/music/live/<Ziel>/` | Live-Vorgabe der Leitung (Stück an alle Geräte); die App fragt bei offenem Notenpult alle `poll_seconds` nach |
 
 Bescheid per Push (`{"t":"info","access":…,"title":…,"text":…}`), wenn der Vorstand ein Foto
 freigibt oder ablehnt und wenn er über eine Änderungsmeldung entscheidet.

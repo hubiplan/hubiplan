@@ -77,6 +77,10 @@ export function fakeApi(routes: Record<string, Handler>) {
         ? () => ({ status: 200, body: { items: [], documents: [] } })
         : undefined) ??
       (selectionKey === key ? undefined : routes[selectionKey]) ??
+      // Leitung für die Live-Vorgabe in der App: ohne eigene Angabe keine
+      (/^GET \/api\/orgs\/\d+\/music\/leaders\/\?/.test(key)
+        ? () => ({ status: 200, body: [] })
+        : undefined) ??
       DEFAULTS[key] ??
       // Jubiläen von Einheiten und Geburtstage: ohne eigene Angabe leer
       (/^GET \/api\/orgs\/\d+\/(unit-jubilees|birthdays)\//.test(key)

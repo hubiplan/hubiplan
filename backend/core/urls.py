@@ -53,6 +53,7 @@ from music.custody_reminders import CustodyReminderView
 from music.engagements import EngagementView
 from music.equipment import EquipmentView
 from music.guest import GuestAccessView, GuestPerformanceView
+from music.live import MusicLeaderViewSet, OwnLive
 from music.payouts import PayoutRunAction, PayoutRuns
 from music.portal import OwnAssignments
 from music.practice_portal import OwnPractice, OwnScoreFile
@@ -157,6 +158,7 @@ org_router.register(
     "music/score-documents", music_scores.ScoreDocumentViewSet, basename="music-score-document"
 )
 org_router.register("music/score-folders", ScoreFolderViewSet, basename="music-score-folder")
+org_router.register("music/leaders", MusicLeaderViewSet, basename="music-leader")
 org_router.register(
     "music/score-folder-items", ScoreFolderItemViewSet, basename="music-score-folder-item"
 )
@@ -831,6 +833,7 @@ urlpatterns = [
     path("portal/<int:access_id>/music/practice/", OwnPractice.as_view()),
     path("portal/<int:access_id>/music/files/<int:pk>/", OwnScoreFile.as_view()),
     path("portal/<int:access_id>/music/folders/", OwnFolders.as_view()),
+    path("portal/<int:access_id>/music/live/<str:target>/", OwnLive.as_view()),
     path("portal/<int:access_id>/music/", OwnAssignments.as_view()),
     path("portal/<int:access_id>/music/absences/", OwnAbsences.as_view()),
     path(

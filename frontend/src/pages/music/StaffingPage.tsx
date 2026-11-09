@@ -10,6 +10,7 @@ import type { EnsembleTemplate } from './EnsembleTemplatesPage.tsx'
 import { AvailabilityHint } from './AvailabilityPage.tsx'
 import { MusicHeader, MusicEmptyState, MusicStatus } from './MusicLayout.tsx'
 import { GuestAccessPanel } from './GuestAccessPanel.tsx'
+import { LeadersPanel } from './LeadersPanel.tsx'
 
 type Position = {
   id: number
@@ -309,6 +310,9 @@ export function StaffingPage({ performance }: { performance: number }) {
             </button>
           </>
         )}
+      </article>
+      <article className="card stack music-record">
+        <LeadersPanel base={base} target={{ performance }} canEdit={canEdit} />
       </article>
       <article className="card stack music-record">
         <h2>{t('Bestehende Einteilungen')}</h2>

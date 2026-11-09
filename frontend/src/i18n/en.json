@@ -7490,5 +7490,9 @@
   "Sichtbar für (leer: alle Musiker)": "Visible to (empty: all musicians)",
   "Reihenfolge bei mehreren Dateien": "Order when there are several files",
   "Notenmappen": "Music folders",
-  "Stimme in der MusicXML-Partitur (leer: nach Instrument)": "Part in the MusicXML score (empty: by instrument)"
+  "Stimme in der MusicXML-Partitur (leer: nach Instrument)": "Part in the MusicXML score (empty: by instrument)",
+  "Leitung in der App": "Leading in the app",
+  "Die Leitung (z. B. Dirigent oder Stabführer) kann in der App allen Geräten das nächste Stück vorgeben. Wer Musik bearbeiten darf, kann das immer.": "The leader (e.g. conductor or drum major) can send the next piece to all devices in the app. Anyone allowed to edit music can always do so.",
+  "Noch keine Leitung eingetragen.": "No leader entered yet.",
+  "Als Leitung eintragen": "Add as leader"
 }

@@ -588,6 +588,44 @@ class ScoreFolderUnit(models.Model):
         return f"Notenmappeneinheit {self.pk}"
 
 
+class MusicLeader(models.Model):
+    """Darf in der App allen Geräten das nächste Stück vorgeben (Dirigent, Stabführer …).
+
+    Gilt für genau eine Notenmappe, einen Auftritt oder eine Probe (Serie)."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    musician = models.ForeignKey(Musician, on_delete=models.CASCADE, related_name="leads")
+    folder = models.ForeignKey(
+        ScoreFolder, on_delete=models.CASCADE, null=True, blank=True, related_name="leaders"
+    )
+    performance = models.ForeignKey(
+        Performance, on_delete=models.CASCADE, null=True, blank=True, related_name="leaders"
+    )
+    rehearsal = models.ForeignKey(
+        "Rehearsal", on_delete=models.CASCADE, null=True, blank=True, related_name="leaders"
+    )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(folder__isnull=False, performance=None, rehearsal=None)
+                    | models.Q(folder=None, performance__isnull=False, rehearsal=None)
+                    | models.Q(folder=None, performance=None, rehearsal__isnull=False)
+                ),
+                name="musikleitung_ein_ziel",
+            ),
+            models.UniqueConstraint(
+                fields=["musician", "folder", "performance", "rehearsal"],
+                nulls_distinct=False,
+                name="musikleitung_einmal",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Musikleitung {self.pk}"
+
+
 class ScoreFolderItem(models.Model):
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     folder = models.ForeignKey(ScoreFolder, on_delete=models.CASCADE, related_name="items")

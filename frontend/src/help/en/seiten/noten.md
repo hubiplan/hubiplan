@@ -30,3 +30,7 @@ Upload sheet music in the document storage. Besides PDF, JPEG and PNG, HUBIplan 
 - From a MusicXML score, each musician only gets their own part. HUBIplan picks the part by the instrument and register of the link. If that is not unambiguous, enter the part’s name as it appears in the file under **Sheet music documents** in **Part in the MusicXML score**.
 - In the browser, MusicXML music opens as a PDF. In the app it is engraved to fit the screen and can be transposed.
 - Link **MIDI files** (`.mid`) as listening examples. For MusicXML music, HUBIplan creates the listening example itself.
+
+## Leading in the app
+
+The conductor, bandleader or drum major can send the next piece to all musicians in the app; the devices then jump to each musician’s own part. Anyone allowed to edit music can do this, as well as anyone entered under **Leading in the app**: for a music folder (under **Show pieces**), for a performance under **Staffing**, or for a rehearsal.

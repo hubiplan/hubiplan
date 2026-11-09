@@ -182,7 +182,12 @@ export function ScoresPage() {
       )}
       {error && <Alert kind="error">{error}</Alert>}
       {tab === 'folders' && (
-        <ScoreFoldersPanel base={base} arrangements={arrOpts} canEdit={canEdit} />
+        <ScoreFoldersPanel
+          base={base}
+          arrangements={arrOpts}
+          canEdit={canEdit}
+          live={org.modules.includes('music')}
+        />
       )}
       {tab !== 'folders' && (
         <>

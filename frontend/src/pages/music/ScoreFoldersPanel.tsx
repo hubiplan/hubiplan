@@ -6,6 +6,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Alert } from '../../components/ui.tsx'
 import { t, tn } from '../../i18n/index.ts'
 import { MusicEmptyState } from './MusicLayout.tsx'
+import { LeadersPanel } from './LeadersPanel.tsx'
 
 type Item = {
   id: number
@@ -39,10 +40,13 @@ export function ScoreFoldersPanel({
   base,
   arrangements,
   canEdit,
+  live = false,
 }: {
   base: string
   arrangements: [string, string][]
   canEdit: boolean
+  /** Modul Musik an: Leitung für die Live-Vorgabe pflegen */
+  live?: boolean
 }) {
   const [editing, setEditing] = useState<Folder | 'new' | null>(null),
     [open, setOpen] = useState<number | null>(null),
@@ -151,6 +155,9 @@ export function ScoreFoldersPanel({
               </>
             )}
           </div>
+          {open === f.id && live && (
+            <LeadersPanel base={base} target={{ folder: f.id }} canEdit={canEdit} />
+          )}
           {open === f.id && (
             <FolderItems
               base={base}

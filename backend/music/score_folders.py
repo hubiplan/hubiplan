@@ -242,7 +242,13 @@ def _pause(kind, note=""):
     }
 
 
-def folder_data(access, musician):
+def folder_data(access, musician, user=None):
+    from access.permissions import permissions_in
+
+    from .live import leading
+
+    lead_all = user is not None and "music.edit" in permissions_in(user, access.organization)
+    leads = leading(user, access, musician) if user is not None else set()
     practice = practice_rows(musician)
     scores = list(accessible_scores(access, musician, practice))
     rows = _score_rows(access, scores)
@@ -251,6 +257,8 @@ def folder_data(access, musician):
         folders.append(
             {
                 "id": folder.pk,
+                "key": f"folder-{folder.pk}",
+                "can_lead": lead_all or f"folder-{folder.pk}" in leads,
                 "kind": folder.kind,
                 "name": folder.name,
                 "note": folder.note,
@@ -290,6 +298,8 @@ def folder_data(access, musician):
             events.append(
                 {
                     "key": f"performance-{a.performance_id}",
+                    "live_key": f"performance-{a.performance_id}",
+                    "can_lead": lead_all or f"performance-{a.performance_id}" in leads,
                     "type": "performance",
                     "title": event.title,
                     "starts_at": event.starts_at,
@@ -310,6 +320,8 @@ def folder_data(access, musician):
             events.append(
                 {
                     "key": f"rehearsal-{r['id']}-{r['original_start'].isoformat()}",
+                    "live_key": f"rehearsal-{r['rehearsal']}",
+                    "can_lead": lead_all or f"rehearsal-{r['rehearsal']}" in leads,
                     "type": "rehearsal",
                     "title": r["title"],
                     "starts_at": r["starts_at"],
@@ -343,4 +355,4 @@ class OwnFolders(APIView):
             musician = own_musician(access)
             if not musician:
                 return Response({"folders": [], "events": []})
-            return Response(folder_data(access, musician))
+            return Response(folder_data(access, musician, request.user))

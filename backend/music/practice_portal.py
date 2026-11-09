@@ -65,6 +65,7 @@ def practice_rows(musician, include_availability=False):
             rows.append(
                 {
                     "id": invite.pk,
+                    "rehearsal": rehearsal.pk,
                     "title": rehearsal.event.title,
                     "original_start": o.original_start,
                     "starts_at": o.starts_at,
