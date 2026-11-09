@@ -11,7 +11,7 @@ import type {
   Visibility,
 } from '../../api/events.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SelectField, Loading } from '../../components/ui.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { formatDay } from '../../i18n/format.ts'
 import { useTerms } from '../../org/terms.ts'
@@ -27,7 +27,7 @@ export function ExternalCalendarsPanel({ base }: { base: CalendarBase }) {
   const [message, setMessage] = useState<Message>(null)
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const [calendars, categories] = data
   return (
     <div className="stack">

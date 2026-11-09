@@ -6,7 +6,7 @@ import type { CommercialInput, CommercialInvoice } from '../../api/einvoices.ts'
 import { euro } from '../../api/finance.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
@@ -87,7 +87,7 @@ export function SettlementPanel({
   }
   if (load.error) return <Alert kind="error">{load.error}</Alert>
   const d = load.data
-  if (!d) return <p>{t('Lädt …')}</p>
+  if (!d) return <Loading />
   const invoiceStatuses: Record<string, string> = {
     draft: t('Entwurf'),
     open: t('Offen'),
@@ -366,16 +366,18 @@ function PaymentLink({ onSave }: { onSave: (booking: number) => Promise<unknown>
           className="button button-ghost"
           disabled={page === 1}
           onClick={() => setPage(page - 1)}
+          aria-label={t('Vorherige Seite')}
         >
-          {t('Zurück')}
+          <span aria-hidden="true">‹</span> {t('Vorherige')}
         </button>
         <button
           type="button"
           className="button button-ghost"
           disabled={!load.data?.next}
           onClick={() => setPage(page + 1)}
+          aria-label={t('Nächste Seite')}
         >
-          {t('Weiter')}
+          {t('Nächste')} <span aria-hidden="true">›</span>
         </button>
         <button className="button button-primary" disabled={busy || !booking}>
           {t('Auszahlung zuordnen')}

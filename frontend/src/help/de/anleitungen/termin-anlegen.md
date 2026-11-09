@@ -9,11 +9,11 @@ stichworte: [Termin, Einladung, Serie, Zusage]
 ---
 
 1. Öffne [Termine](/termine) und klicke auf **Neuer Termin** (oder auf einen Tag im Kalender).
-2. Trage Titel, Datum, Uhrzeit und Ort ein; für regelmäßige Treffen wählst du eine Wiederholung.
+2. Trage Titel, Datum, Uhrzeit und Ort ein; für regelmäßige Treffen wählst du eine Wiederholung. Der Dialog fragt in dieser Reihenfolge: Titel, Wann, Wo, Kategorie und wer den Termin sieht. Kopf und die Leiste mit **Termin anlegen** bleiben beim Blättern stehen.
 3. Wähle, wer eingeladen wird und ob Zu- und Absagen gesammelt werden.
 4. Klicke auf **Termin anlegen**.
 
-Ist die Endzeit noch offen, aktiviere **Endzeit auf der Webseite ausblenden**.
+Ist die Endzeit noch offen, aktiviere unter **Weitere Einstellungen** die Option **Endzeit auf der Webseite ausblenden**.
 Auf der Webseite erscheint dann nur die Beginnzeit; im internen Kalender bleibt die eingetragene Endzeit erhalten.
 Bei einer Serie gilt die Einstellung für alle Wiederholungen.
 

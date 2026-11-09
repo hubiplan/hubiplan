@@ -177,6 +177,7 @@ public_patterns = [
     path("public/site/v1/resolve/", public_views.ResolveView.as_view(), name="site-resolve"),
     path(SITE, public_views.SiteInfoView.as_view(), name="site-info"),
     path(f"{SITE}preview/", public_views.PreviewView.as_view(), name="site-preview"),
+    path(f"{SITE}icon-<str:name>.png", public_views.SiteIconView.as_view(), name="site-icon"),
     path(
         f"{SITE}design/<slug:package>/",
         public_views.DesignPackageView.as_view(),

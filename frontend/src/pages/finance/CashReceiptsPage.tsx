@@ -18,7 +18,7 @@ import { errorMessage, formatDate, formatDateTime, useLoad } from '../../compone
 import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { SignatureFullscreen, SignatureImage } from '../../components/SignaturePad.tsx'
-import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { ApiError } from '../../api/client.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
@@ -58,7 +58,7 @@ function CashReceiptList({ canEdit }: { canEdit: boolean }) {
         )}
       </p>
       {error && <LoadError message={error} onRetry={() => void reload()} />}
-      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+      {!data && !error && <Loading />}
       {data && data.results.length === 0 && <p className="muted">{t('Noch keine Quittungen.')}</p>}
       {data && data.results.length > 0 && (
         <div className="table-scroll">
@@ -187,7 +187,7 @@ function CashReceiptForm({
 
   if (choices.error)
     return <LoadError message={choices.error} onRetry={() => void choices.reload()} />
-  if (!choices.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!choices.data) return <Loading />
   if (cash.length === 0)
     return (
       <Alert kind="info">
@@ -373,7 +373,7 @@ function CashReceiptDetail({ canEdit }: { canEdit: boolean }) {
   }, [r, org.id, canEdit, setData])
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!r) return <p className="muted">{t('Lädt …')}</p>
+  if (!r) return <Loading />
   if (editing)
     return (
       <CashReceiptForm

@@ -32,6 +32,7 @@ import { meetingInviteChecks } from '../../learning/checks.ts'
 import { MotionsCard } from './MotionsCard.tsx'
 import { ResolutionBook } from './ResolutionBook.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
+import { Loading } from '../../components/ui.tsx'
 import './meetings.css'
 
 const ZONE = 'Europe/Berlin'
@@ -416,7 +417,7 @@ function MeetingDetail({
   const [today] = useState(() => new Date().toLocaleDateString('sv-SE', { timeZone: ZONE }))
   const meeting = loaded.data
   if (loaded.error) return <p role="alert">{loaded.error}</p>
-  if (!meeting) return <p>{t('Wird geladen …')}</p>
+  if (!meeting) return <Loading />
   const editable = meeting.can_edit && meeting.status !== 'cancelled'
   const late = meeting.status === 'draft' && meeting.invite_by < today
   const run = async (action: () => Promise<unknown>) => {
@@ -1281,7 +1282,7 @@ function AttendanceCard({
   const [error, setError] = useState('')
   const data = list ?? loaded.data
   if (loaded.error) return <p role="alert">{loaded.error}</p>
-  if (!data) return <p>{t('Wird geladen …')}</p>
+  if (!data) return <Loading />
   const send = async (action: () => Promise<AttendanceList | unknown>, reload = false) => {
     setBusy(true)
     setError('')

@@ -6,7 +6,7 @@ import { billingApi } from '../../api/billing.ts'
 import type { BillingSettings, FeeRateRow, Rhythm } from '../../api/billing.ts'
 import { euro, parseAmount } from '../../api/finance.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
@@ -22,7 +22,7 @@ function useBillingSettings() {
 export function FeeRulesPage() {
   const { org, settings } = useBillingSettings()
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
-  if (!settings.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!settings.data) return <Loading />
   const s = settings.data
   const federation = s.org_type === 'federation'
   return (
@@ -46,7 +46,7 @@ export function FeeRulesPage() {
 export function DunningLevelsPage() {
   const { org, settings } = useBillingSettings()
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
-  if (!settings.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!settings.data) return <Loading />
   return <DunningLevelsCard orgId={org.id} canEdit={settings.data.can_edit} />
 }
 
@@ -55,7 +55,7 @@ export function BillingSettingsPage() {
   const { org, settings } = useBillingSettings()
   const { refresh } = useOrg()
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
-  if (!settings.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!settings.data) return <Loading />
   const s = settings.data
   return (
     <SettingsCard
@@ -74,7 +74,7 @@ export function BillingSettingsPage() {
 function FeesCard({ orgId, canEdit }: { orgId: number; canEdit: boolean }) {
   const { data, error, setData } = useLoad(() => billingApi.fees(orgId), [orgId])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return <FeesForm orgId={orgId} rows={data} canEdit={canEdit} onSaved={setData} />
 }
 

@@ -16,7 +16,7 @@ import type {
 } from '../../api/circulars.ts'
 import { confirmDialog } from '../dialog.ts'
 import { errorMessage, formatDateTime, useAutoSave, useForm, useLoad } from '../forms.ts'
-import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField, Loading } from '../ui.tsx'
 import { DeliveryField } from './DeliveryField.tsx'
 import { RecipientPanel } from './RecipientPanel.tsx'
 import { t } from '../../i18n/index.ts'
@@ -102,7 +102,7 @@ function ListOverview({ base, root }: { base: CircularBase; root: string }) {
   }
 
   if (data.error) return <LoadError message={data.error} onRetry={data.reload} />
-  if (!data.data) return <p className="muted">{t('Wird geladen …')}</p>
+  if (!data.data) return <Loading />
   const items = data.data.items
   return (
     <div className="stack">
@@ -222,8 +222,7 @@ function ListPage({
   )
   const error = ml.error ?? options.error ?? pattern.error
   if (error) return <LoadError message={error} onRetry={ml.reload} />
-  if (!ml.data || !options.data || !pattern.data || !all.data)
-    return <p className="muted">{t('Wird geladen …')}</p>
+  if (!ml.data || !options.data || !pattern.data || !all.data) return <Loading />
   return (
     <div className="stack">
       <p>

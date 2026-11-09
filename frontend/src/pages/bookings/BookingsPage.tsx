@@ -11,6 +11,7 @@ import { locale, t } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { MaterialPicker } from '../materials/MaterialsPage.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
+import { Loading } from '../../components/ui.tsx'
 import './bookings.css'
 
 const ZONE = 'Europe/Berlin'
@@ -373,7 +374,7 @@ function BookingDetail({
         </button>
       </section>
     )
-  if (!data) return <p role="status">{t('Wird geladen…')}</p>
+  if (!data) return <Loading />
   if (editing)
     return (
       <BookingForm

@@ -13,7 +13,7 @@ import {
 } from '../../api/competitions.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
-import { Alert, LoadError } from '../../components/ui.tsx'
+import { Alert, LoadError, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 export function ForeignPanel({ org, comp }: { org: number; comp: CompetitionDetail }) {
@@ -58,8 +58,7 @@ export function ForeignPanel({ org, comp }: { org: number; comp: CompetitionDeta
   }, [query, members.data, starters.data])
 
   if (starters.error) return <LoadError message={starters.error} onRetry={reload} />
-  if (!starters.data || !teams.data || !standings.data)
-    return <p className="muted">{t('Wird geladen …')}</p>
+  if (!starters.data || !teams.data || !standings.data) return <Loading />
   const blocks = standings.data.scorings
 
   return (

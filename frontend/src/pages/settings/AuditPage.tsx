@@ -5,7 +5,7 @@ import type { ListQuery } from '../../api/client.ts'
 import { AuditUndo } from '../../components/AuditUndo.tsx'
 import { ListSearch, Pager } from '../../components/ListControls.tsx'
 import { firstOfSet } from '../../components/undo.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term } from '../../learning/Aids.tsx'
@@ -51,7 +51,7 @@ export function AuditPage() {
       <AuditChain orgId={org.id} />
       <ListSearch query={query} onChange={setQuery} placeholder={t('Objekt, Person oder Art')} />
       {error && <Alert kind="error">{error}</Alert>}
-      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+      {!data && !error && <Loading />}
       {data &&
         (entries.length === 0 ? (
           <p className="muted">

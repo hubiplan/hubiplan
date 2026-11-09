@@ -7,7 +7,15 @@ import type { Department } from '../../api/orgs.ts'
 import { useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { MemberPrivacyEditor } from './PrivacySettingsPage.tsx'
 import { TextArea } from './TextArea.tsx'
-import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  LoadError,
+  SaveStatus,
+  SelectField,
+  Loading,
+} from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
@@ -370,7 +378,7 @@ export function ImprintSettingsPage() {
         </div>
       )}
       {state.error && <Alert kind="error">{state.error}</Alert>}
-      {!state.data && !state.error && <p className="muted">{t('Lädt …')}</p>}
+      {!state.data && !state.error && <Loading />}
       {state.data && state.data.organization.id === (unitId ?? org.id) && (
         <ImprintEditor
           key={state.data.organization.id}
@@ -391,7 +399,7 @@ export function ImprintSettingsPage() {
 export function PlatformImprintPage() {
   const { data, error } = useLoad(() => imprintApi.platform(), [])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <>
       <ImprintEditor state={data} editable save={(changes) => imprintApi.updatePlatform(changes)} />

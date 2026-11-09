@@ -21,7 +21,15 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { DeleteIcon, EditIcon, IconButton } from '../../components/icons.tsx'
-import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  LoadError,
+  SaveStatus,
+  SelectField,
+  Loading,
+} from '../../components/ui.tsx'
 import { SortableList, SortHint } from '../../components/Sortable.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo } from '../../learning/Aids.tsx'
@@ -68,7 +76,7 @@ function ReignsPanel() {
 
   if (dignities.error || reigns.error)
     return <Alert kind="error">{dignities.error ?? reigns.error}</Alert>
-  if (!dignities.data || !reigns.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!dignities.data || !reigns.data) return <Loading />
   const usable = dignities.data.filter((d) => !d.is_archived)
 
   async function remove(r: Reign) {
@@ -735,7 +743,7 @@ function DignitiesPanel() {
   const [sorting, setSorting] = useState(false)
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   // Je Einheit eine Liste: erst die eigenen Würden, dann die der Untereinheiten
   const groups = [...new Set(data.map((d) => d.unit))].map((unit) => ({

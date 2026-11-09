@@ -7,7 +7,7 @@ import type { MemberDetail } from '../../api/members.ts'
 import { PERM } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
-import { LoadError } from '../../components/ui.tsx'
+import { LoadError, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { BillingAddressSection } from './BillingAddressSection.tsx'
 
@@ -50,7 +50,7 @@ function MemberInvoices({ orgId, memberId }: { orgId: number; memberId: number }
     <section className="card stack">
       <h2>{t('Rechnungen')}</h2>
       {!data ? (
-        <p className="muted">{t('Lädt …')}</p>
+        <Loading />
       ) : rows.length === 0 ? (
         <p className="muted">{t('Für dieses Mitglied gibt es keine Rechnungen.')}</p>
       ) : (

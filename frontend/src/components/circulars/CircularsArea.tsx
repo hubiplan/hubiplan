@@ -15,7 +15,7 @@ import type {
 } from '../../api/circulars.ts'
 import { alertDialog, confirmDialog, promptDialog } from '../dialog.ts'
 import { errorMessage, formatDateTime, useAutoSave, useForm, useLoad } from '../forms.ts'
-import { Alert, Field, SaveStatus, SelectField, LoadError } from '../ui.tsx'
+import { Alert, Field, SaveStatus, SelectField, LoadError, Loading } from '../ui.tsx'
 import { MarkupEditor, MarkupPreview } from './MarkupEditor.tsx'
 import { DeliveryField } from './DeliveryField.tsx'
 import { RecipientPanel } from './RecipientPanel.tsx'
@@ -190,13 +190,13 @@ function CircularPage({ base, root }: { base: CircularBase; root: string }) {
   if (options.error)
     return (
       <LoadError
-        message={t('Die Empfängerauswahl konnte nicht geladen werden ({error}).', {
+        message={t('Die Empfängerauswahl konnte nicht geladen werden. {error}', {
           error: options.error,
         })}
         onRetry={options.reload}
       />
     )
-  if (!circular.data || !options.data) return <p className="muted">{t('Wird geladen …')}</p>
+  if (!circular.data || !options.data) return <Loading />
   const back = (
     <p>
       <Link to={root}>{t('← Alle Rundschreiben')}</Link>

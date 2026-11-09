@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmDiscard, useDraftGuard } from '../../components/leaveGuard.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import type { EnsembleTemplate } from './EnsembleTemplatesPage.tsx'
@@ -62,7 +62,7 @@ export function StaffingPage({ performance }: { performance: number }) {
     [assignKey, setAssignKey] = useState(newRequestKey)
   useDraftGuard(Object.keys(selected).length > 0)
   if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!load.data) return <p>{t('Lädt …')}</p>
+  if (!load.data) return <Loading />
   const { plan, templates } = load.data,
     canEdit = org.permissions.includes('music.edit'),
     chosenTemplate = templates.find((v) => String(v.id) === template && v.active)

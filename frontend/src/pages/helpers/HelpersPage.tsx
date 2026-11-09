@@ -18,6 +18,7 @@ import { Why } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
+import { Loading } from '../../components/ui.tsx'
 import './helpers.css'
 
 const ZONE = 'Europe/Berlin'
@@ -278,7 +279,7 @@ function PlanDetail({
   const [busy, setBusy] = useState(false)
   const plan = loaded.data
   if (loaded.error) return <p role="alert">{loaded.error}</p>
-  if (!plan) return <p>{t('Wird geladen …')}</p>
+  if (!plan) return <Loading />
   const editable = plan.can_edit && plan.status !== 'closed'
   const run = async (action: () => Promise<unknown>) => {
     setBusy(true)

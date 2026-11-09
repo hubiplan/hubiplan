@@ -4,7 +4,7 @@ import { todayIso } from '../../api/members.ts'
 import type { FormEvent } from 'react'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import type { Assignment, Role } from '../../api/orgs.ts'
-import { Alert, Checkbox, Field, SelectField, LoadError } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SelectField, LoadError, Loading } from '../../components/ui.tsx'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
@@ -37,7 +37,7 @@ export function RolesPage() {
         onRetry={() => void Promise.all([roles.reload(), catalog.reload()])}
       />
     )
-  if (!roles.data || !catalog.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!roles.data || !catalog.data) return <Loading />
 
   const catalogData = catalog.data
   const reloadAll = async () => {
@@ -61,7 +61,7 @@ export function RolesPage() {
         </div>
         <p className="muted small">
           {t(
-            'Eine Rolle bündelt Berechtigungen, zum Beispiel „Kassierer“. Name und Rechte legt ihr selbst fest.',
+            'Eine Rolle bündelt Rechte, zum Beispiel „Kassierer“. Name und Rechte legt ihr selbst fest.',
           )}
         </p>
         {editing !== null && (

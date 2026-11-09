@@ -5,7 +5,7 @@ import type { FormEvent } from 'react'
 import { statuteApi } from '../api/statutes.ts'
 import type { StatuteKind } from '../api/statutes.ts'
 import { errorMessage, useLoad } from './forms.ts'
-import { Alert, Checkbox, Field } from './ui.tsx'
+import { Alert, Checkbox, Field, Loading } from './ui.tsx'
 import { confirmDialog } from './dialog.ts'
 import { t } from '../i18n/index.ts'
 
@@ -109,7 +109,7 @@ export function StatutePanel({
   }
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const pub = data.publication
 
   async function copyLink(url: string) {

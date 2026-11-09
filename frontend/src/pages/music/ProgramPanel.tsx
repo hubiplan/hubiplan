@@ -4,7 +4,7 @@ import { api } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
@@ -72,7 +72,7 @@ export function ProgramPanel({ performance }: { performance: number }) {
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false)
   if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!load.data) return <p>{t('Lädt …')}</p>
+  if (!load.data) return <Loading />
   const { program: p, arrangements, event } = load.data,
     canEdit = org.permissions.includes('music.edit')
   async function act(data: Record<string, unknown>) {

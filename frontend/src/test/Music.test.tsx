@@ -34,8 +34,11 @@ it('zählt bestätigte Musiker und offene Besetzungsplätze auch mit Absagen ric
   await screen.findByText('Musterkonzert')
   await userEvent.click(screen.getByRole('button', { name: 'Sollbesetzung' }))
   expect(await screen.findByText(/Zugesagt.*1.*Fehlend.*2/)).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Anlegen' })).not.toBeInTheDocument()
-  await userEvent.type(screen.getByRole('searchbox', { name: 'Einträge suchen' }), 'Posaune')
+  expect(screen.queryByRole('button', { name: 'Neue Position' })).not.toBeInTheDocument()
+  await userEvent.type(
+    screen.getByRole('searchbox', { name: 'Sollbesetzung durchsuchen' }),
+    'Posaune',
+  )
   expect(screen.getByText('Keine passenden Einträge gefunden.')).toBeInTheDocument()
   // Musiker hat eine eigene Adresse; der Punkt steht in der Seitenleiste (Menüprüfung M-08)
   cleanup()
@@ -46,7 +49,7 @@ it('zählt bestätigte Musiker und offene Besetzungsplätze auch mit Absagen ric
   )
   expect(await screen.findByText('Alex Beispiel')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Instrumentale Fähigkeiten' })).toBeInTheDocument()
-  expect(screen.getByRole('searchbox', { name: 'Einträge suchen' })).toHaveValue('')
+  expect(screen.getByRole('searchbox', { name: 'Musiker durchsuchen' })).toHaveValue('')
 })
 
 it('zeigt die Musik-Unterpunkte mit echten Pfaden in der Seitenleiste', async () => {

@@ -3,21 +3,26 @@
 // (aim.ts); sind einige Bilder hintereinander gut und ruhig, nimmt die Kamera das schärfste
 // davon in voller Auflösung. Von Hand auslösen geht immer.
 import { useEffect, useRef, useState } from 'react'
-import { analyze, judge, toGray, type Aim, type Frame } from './aim.ts'
+import { analyze, judge, judgeCard, toGray, type Aim, type Frame, type Placed } from './aim.ts'
 import { cameraError } from './cameraError.ts'
 import { t } from '../../i18n/index.ts'
 
 const PROBE_W = 160
 const STEADY = 6 // so viele gute Bilder hintereinander, bevor ausgelöst wird
+/** Hilfskreis für den äußersten Ring, im Verhältnis zur Seite des quadratischen Bilds (0–100) */
+const GUIDE_R = 42
 
 export function LiveCamera({
   blackShare,
+  spots = 1,
   onCapture,
   onClose,
   onFail,
 }: {
   /** Spiegel / äußerster Ring (Durchmesser), aus den Maßen der Scheibe */
   blackShare: number
+  /** Spiegel je Karte; bei fünf (vier Ecken und Mitte) sucht die Kamera alle fünf */
+  spots?: number
   onCapture: (photo: Blob) => void
   onClose: () => void
   /** Kamera lässt sich nicht öffnen: Grund als verständlicher Satz */
@@ -31,6 +36,9 @@ export function LiveCamera({
     },
   })
   const [steady, setSteady] = useState(0)
+  // Karte mit mehreren Spiegeln: erkannte Spiegel, um sie einzuzeichnen
+  const [found, setFound] = useState<Placed[]>([])
+  const card = spots > 1
   const done = useRef(false)
   // neueste Rückmeldung, ohne die Kamera bei jedem Neuzeichnen neu zu starten
   const capture = useRef(onCapture)
@@ -85,7 +93,14 @@ export function LiveCamera({
       if (c && ctx) {
         const { data } = ctx.getImageData(0, 0, c.width, c.height)
         const frame = analyze(toGray(data, c.width, c.height), c.width, c.height)
-        const verdict = judge(frame, blackShare, prev)
+        let verdict: Aim
+        if (card) {
+          const v = judgeCard(frame, blackShare, prev)
+          setFound(v.found)
+          verdict = v
+        } else {
+          verdict = judge(frame, blackShare, prev)
+        }
         prev = frame
         if (verdict.ok) {
           good++
@@ -131,7 +146,7 @@ export function LiveCamera({
       window.clearTimeout(timer)
       stream?.getTracks().forEach((tm) => tm.stop())
     }
-  }, [blackShare])
+  }, [blackShare, card])
 
   function manual() {
     const v = video.current
@@ -150,7 +165,28 @@ export function LiveCamera({
       <div className={`live-frame${aim.ok ? ' live-ok' : ''}`}>
         <video ref={video} playsInline muted aria-hidden="true" />
         <svg className="live-guide" viewBox="0 0 100 100" aria-hidden="true">
-          <circle cx="50" cy="50" r="42" />
+          {card ? (
+            // Kartenmaße sind nicht genormt: Kreise um die erkannten Spiegel statt fester Hilfslinien
+            found.map((p, i) => (
+              <g key={i}>
+                <circle cx={50 + p.x * 100} cy={50 + p.y * 100} r={(p.size / blackShare) * 50} />
+                <circle
+                  className="live-guide-black"
+                  cx={50 + p.x * 100}
+                  cy={50 + p.y * 100}
+                  r={p.size * 50}
+                />
+              </g>
+            ))
+          ) : (
+            <>
+              <circle cx="50" cy="50" r={GUIDE_R} />
+              {/* Linie um das Schwarze, damit man den Spiegel daran ausrichten kann (Ralf 09.11.) */}
+              {blackShare > 0 && blackShare < 1 ? (
+                <circle className="live-guide-black" cx="50" cy="50" r={GUIDE_R * blackShare} />
+              ) : null}
+            </>
+          )}
         </svg>
       </div>
       <p className="live-hint" role="status" aria-live="polite">

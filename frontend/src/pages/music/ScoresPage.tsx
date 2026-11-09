@@ -4,7 +4,7 @@ import { api } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
@@ -52,7 +52,7 @@ export function ScoresPage() {
     return (
       <>
         <PageHeader />
-        <p>{t('Lädt …')}</p>
+        <Loading />
       </>
     )
   const d = load.data,

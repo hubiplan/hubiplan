@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { fieldApi } from '../../api/fields.ts'
 import type { FieldType, FieldValue, MemberField, Scalar, Subfield } from '../../api/fields.ts'
 import { useAutoSave, useLoad } from '../../components/forms.ts'
-import { Alert, SaveStatus } from '../../components/ui.tsx'
+import { Alert, SaveStatus, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 /** Reiter „Zusatzfelder“ der Mitgliedsakte. */
@@ -22,7 +22,7 @@ export function FieldsTab({
     [orgId, memberId],
   )
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data || data.memberId !== memberId) return <p className="muted">{t('Lädt …')}</p>
+  if (!data || data.memberId !== memberId) return <Loading />
   if (data.fields.length === 0) {
     return (
       <div className="card card-wide empty-state">

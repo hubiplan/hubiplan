@@ -11,7 +11,7 @@ import type { Column } from '../../components/DataTable.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { DeleteIcon, EditIcon, IconButton, RestoreIcon } from '../../components/icons.tsx'
-import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { ownMembers } from './access.ts'
@@ -41,7 +41,7 @@ export function HonoraryTitlesPage() {
   const federation = org.type === 'federation'
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   async function run(action: () => Promise<unknown>, success: string) {
     setMessage(null)

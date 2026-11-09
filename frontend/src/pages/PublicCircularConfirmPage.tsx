@@ -6,7 +6,7 @@ import { ApiError } from '../api/client.ts'
 import { MarkupPreview } from '../components/circulars/MarkupEditor.tsx'
 import { errorMessage } from '../components/forms.ts'
 import { Logo } from '../components/Logo.tsx'
-import { Alert } from '../components/ui.tsx'
+import { Alert, Loading } from '../components/ui.tsx'
 import { t } from '../i18n/index.ts'
 
 /** Bestätigungslink aus der Mail an den Absender eines Verteilers (ohne Anmeldung).
@@ -75,7 +75,7 @@ export function PublicCircularConfirmPage() {
             </div>
           </>
         )}
-        {!info && !invalid && !unavailable && <p className="muted">{t('Lädt …')}</p>}
+        {!info && !invalid && !unavailable && <Loading />}
         {info && (
           <>
             <p>
