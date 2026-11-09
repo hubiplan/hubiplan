@@ -209,7 +209,7 @@ Die Oberfläche spricht ausschließlich über die REST-API mit dem Backend.
 | Frontend (`frontend/`) | React 19, TypeScript, Vite, Node.js 24 |
 | Datenbank | PostgreSQL 18 mit Row-Level Security |
 | Hintergrund-Jobs | Celery mit Redis 8 |
-| Dateien | openpyxl (Excel), reportlab und pypdfium2 (PDF), Pillow (Bilder) |
+| Dateien | openpyxl (Excel), reportlab und pypdfium2 (PDF), Pillow (Bilder), Verovio (Notensatz) |
 | Scheibenauswertung | OpenCV (ohne Oberfläche) und NumPy |
 | Betrieb | Docker Compose, Caddy (HTTPS), gunicorn |
 

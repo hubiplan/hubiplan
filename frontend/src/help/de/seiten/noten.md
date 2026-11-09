@@ -22,3 +22,11 @@ Unter **Notenmappen** legst du feste Mappen an, etwa ein **Marschbuch** oder das
 Musiker finden die Mappen in der App „HUBIplan“ unter **Noten** und können dort nach Titel, Komponist oder Nummer suchen. Jeder sieht nur die Noten seiner eigenen Stimme und nur Dateien, die die Dokumentenablage für Mitglieder freigibt. Ohne Auswahl unter **Sichtbar für** sehen alle Musiker die Mappe, sonst nur Mitglieder der gewählten Untereinheiten.
 
 Hat ein Stück für eine Stimme mehrere Dateien (zum Beispiel Seite 1 und 2 als Bild), bestimmt unter **Notenunterlagen** das Feld **Reihenfolge bei mehreren Dateien**, in welcher Folge sie angezeigt werden.
+
+## Notendateien: PDF, Bilder, MusicXML und MIDI
+
+Noten lädst du in der Dokumentenablage hoch. Neben PDF, JPEG und PNG versteht HUBIplan **MusicXML** (`.musicxml`, `.mxl`, `.xml`), dazu die offenen Formate **MEI** und **ABC**. MuseScore, Capella, Sibelius und Finale exportieren MusicXML (meist unter „Exportieren“ oder „Speichern unter“).
+
+- Aus einer MusicXML-Partitur bekommt jeder Musiker nur seine Stimme. Die Stimme sucht HUBIplan nach Instrument und Register der Zuordnung. Passt das nicht eindeutig, trägst du unter **Notenunterlagen** bei **Stimme in der MusicXML-Partitur** den Namen der Stimme ein, wie er in der Datei steht.
+- Im Browser öffnen sich MusicXML-Noten als PDF. In der App werden sie passend zum Bildschirm gesetzt und lassen sich transponieren.
+- **MIDI-Dateien** (`.mid`) ordnest du als Hörbeispiel zu. Zu MusicXML-Noten erzeugt HUBIplan das Hörbeispiel selbst.

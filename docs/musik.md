@@ -135,6 +135,12 @@ Mappen geben keine zusätzlichen Rechte: Dateien erhält ein Musiker nur zur eig
 
 Für die App liefert `GET /api/portal/<Zugang>/music/folders/` alle Mappen des Musikers: `folders` (feste Mappen mit `items` in Reihenfolge, je Stück `number`, Titel, Komponist, Arrangement, Lizenzhinweis und `scores` der eigenen Stimme) und `events` (eigene Auftritte mit Programm in Reihenfolge, Pausen als eigene Einträge, und eigene Proben mit gültigem Probenprogramm; bis 7 Tage nach dem Termin, Proben im üblichen Fenster). Jede Notendatei trägt `version` (Fassungsnummer), `size`, `content_type` und `url`. Der Dateiabruf sendet `ETag: "v<Fassung>"` und beantwortet `If-None-Match` mit 304, damit die App nur geänderte Fassungen neu lädt. Abgesagte Termine und eigene Absagen liefern keine Dateien.
 
+### Notendateien: MusicXML, MEI, ABC und MIDI
+
+Die Dokumentenablage nimmt zusätzlich MusicXML (`.musicxml`, `.xml`, gepackt `.mxl`), MEI, ABC und MIDI an (`documents/notation.py`, nur dort, nicht bei Aufgabenanhängen). Geprüft wird der Inhalt: XML mit defusedxml (DOCTYPE erlaubt, Entitäten und Nachladen verboten), Wurzel `score-partwise`/`score-timewise` bzw. `mei`, MXL mit Grenzen beim Entpacken (200 Einträge, 30 MB), ABC mit `X:`-Kopf, MIDI mit `MThd`.
+
+Notensatz mit Verovio (`music/notation_render.py`, LGPL-3.0) in einem eigenen Prozess mit 60 s Zeitgrenze und höchstens 200 Seiten; Ergebnisse eine Woche im Cache. `music/files/<id>/` (Mitglieder, Gäste) und `score-documents/<id>/download/` (Verwaltung) verstehen `?format=` (leer: Original bzw. eigene Stimme als MusicXML, `pdf`, `midi`) und `?transpose=` (Intervall wie `M2`, `-m3` oder Halbtöne `-3`). Aus einer Partitur mit mehreren Stimmen liefert der Mitgliederabruf nur die eigene Stimme: `ScoreDocument.notation_part` (ID oder Name) oder sonst nach Instrument und Register der Zuordnung geraten; ohne eindeutige Stimme gibt es 404 statt der Partitur. Zuordnungen ohne Stimme oder als Partitur liefern die ganze Datei. `score-documents/notation/?document=<id>` zeigt Titel, Komponist und Stimmen. Im Mitgliederbereich verlinkt „Meine Noten“ Notensatz als PDF. In `music/folders/` tragen Noten `notation` (`musicxml`, `mei`, `abc`, `midi` oder leer) und `formats`.
+
 Die neuen Tabellen sind im allgemeinen Datenexport enthalten und haben RLS. Rückweg: Eine frühere Fassung ignoriert die Tabellen und das Feld `position`; vor einem Rückweg die Mappen exportieren.
 
 ## Ergänzende Arbeitsabläufe

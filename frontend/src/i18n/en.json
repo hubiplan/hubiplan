@@ -7489,5 +7489,6 @@
   "Reihenfolge in der App": "Order in the app",
   "Sichtbar für (leer: alle Musiker)": "Visible to (empty: all musicians)",
   "Reihenfolge bei mehreren Dateien": "Order when there are several files",
-  "Notenmappen": "Music folders"
+  "Notenmappen": "Music folders",
+  "Stimme in der MusicXML-Partitur (leer: nach Instrument)": "Part in the MusicXML score (empty: by instrument)"
 }

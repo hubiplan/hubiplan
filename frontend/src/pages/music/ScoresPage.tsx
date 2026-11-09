@@ -114,6 +114,11 @@ export function ScoresPage() {
       { key: 'document', label: t('Dokument'), options: opts(d.documents, 'title') },
       { key: 'usage_note', label: t('Nutzungshinweise'), type: 'textarea', optional: true },
       { key: 'position', label: t('Reihenfolge bei mehreren Dateien'), type: 'number' },
+      {
+        key: 'notation_part',
+        label: t('Stimme in der MusicXML-Partitur (leer: nach Instrument)'),
+        optional: true,
+      },
     ],
   }
   const rows = tab === 'folders' ? [] : d[tab as 'pieces' | 'arrangements' | 'parts' | 'files'],

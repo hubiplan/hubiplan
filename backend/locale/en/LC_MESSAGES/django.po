@@ -9415,3 +9415,33 @@ msgstr "Please list all pieces of the folder."
 
 msgid "Diese Untereinheit gibt es nicht."
 msgstr "This sub-unit does not exist."
+
+msgid "Die Notendatei lässt sich nicht lesen."
+msgstr "The music file cannot be read."
+
+msgid "Die Notendatei ist entpackt zu groß."
+msgstr "The music file is too large when unpacked."
+
+msgid "Das ist keine ABC-Notendatei."
+msgstr "This is not an ABC music file."
+
+msgid "Das ist keine MusicXML-Datei."
+msgstr "This is not a MusicXML file."
+
+msgid "Das ist keine MEI-Datei."
+msgstr "This is not an MEI file."
+
+msgid "Diese Stimme gibt es in der Notendatei nicht."
+msgstr "This part does not exist in the music file."
+
+msgid "Diese Stimme gibt es in der Notendatei nicht. Vorhanden: {parts}"
+msgstr "This part does not exist in the music file. Available: {parts}"
+
+msgid "Diese Transposition ist nicht möglich."
+msgstr "This transposition is not possible."
+
+msgid "Die Noten ließen sich nicht setzen."
+msgstr "The music could not be engraved."
+
+msgid "Datei „{fname}“: Die Notendatei lässt sich nicht lesen."
+msgstr "File “{fname}”: the music file cannot be read."

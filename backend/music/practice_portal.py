@@ -2,7 +2,6 @@
 
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponseNotModified
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import serializers
@@ -13,12 +12,12 @@ from rest_framework.views import APIView
 from core.tenancy import tenant_context
 from documents import services as documents
 from documents.models import Document
-from documents.views import file_response
 from events import recurrence
 from members.models import DepartmentMembership
 from organizations.tree import with_ancestors
 from portal.views import _portal_access
 
+from . import score_files
 from .availability import Availability, interval
 from .models import (
     Musician,
@@ -166,6 +165,14 @@ def accessible_scores(access, musician, rehearsals=None):
     return candidates.filter(pk__in=ids).order_by("arrangement_id", "position", "pk")
 
 
+def _web_format(link):
+    """Im Browser Notensatz als PDF öffnen statt als Notendatei herunterladen."""
+    version = link.document.versions.order_by("-uploaded_at", "-pk").first()
+    if version and "pdf" in score_files.formats_of(version.content_type):
+        return "?format=pdf"
+    return ""
+
+
 def score_data(access, musician, rehearsals=None):
     return [
         {
@@ -174,7 +181,7 @@ def score_data(access, musician, rehearsals=None):
             "title": s.document.title,
             "piece": s.arrangement.piece.title,
             "usage_note": s.usage_note,
-            "url": f"/api/portal/{access.pk}/music/files/{s.pk}/",
+            "url": f"/api/portal/{access.pk}/music/files/{s.pk}/{_web_format(s)}",
         }
         for s in accessible_scores(access, musician, rehearsals)
     ]
@@ -236,15 +243,5 @@ class OwnScoreFile(APIView):
             version = link.document.versions.order_by("-uploaded_at", "-pk").first()
             if not version:
                 raise NotFound()
-            return versioned_file(request, version)
-
-
-def versioned_file(request, version):
-    """Datei mit Fassungskennung; die App lädt nur neu, wenn sich die Fassung geändert hat."""
-    etag = f'"v{version.pk}"'
-    if etag in [t.strip() for t in request.headers.get("If-None-Match", "").split(",")]:
-        response = HttpResponseNotModified()
-    else:
-        response = file_response(request, version)
-    response["ETag"] = etag
-    return response
+            # Fassungskennung (ETag), eigene Stimme aus Partituren, PDF/MIDI aus Notensatz
+            return score_files.respond(request, link, version)

@@ -539,6 +539,8 @@ class ScoreDocument(models.Model):
     usage_note = models.CharField(max_length=2000, blank=True)
     # Reihenfolge mehrerer Dateien je Stück und Stimme (z. B. Seite 1 und 2 als Bild)
     position = models.PositiveSmallIntegerField(default=0, db_default=0)
+    # Stimme in einer MusicXML-Partitur (ID oder Name); leer: nach Instrument raten
+    notation_part = models.CharField(max_length=100, blank=True, default="", db_default="")
 
     def __str__(self):
         return f"Notenunterlage {self.pk}"

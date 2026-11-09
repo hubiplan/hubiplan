@@ -24,6 +24,7 @@ from portal.views import _portal_access
 
 from .models import Arrangement, ScoreFolder, ScoreFolderItem, ScoreFolderUnit
 from .practice_portal import accessible_scores, own_musician, practice_rows, visible_folders
+from .score_files import formats_of, kind_of
 from .scores import ScoresViewSet
 from .views import ScopedSerializer
 
@@ -202,6 +203,8 @@ def _score_rows(access, scores):
                 "filename": version.name,
                 "size": version.size,
                 "content_type": version.content_type,
+                "notation": kind_of(version.content_type),
+                "formats": formats_of(version.content_type),
                 "uploaded_at": version.uploaded_at,
                 "url": f"/api/portal/{access.pk}/music/files/{s.pk}/",
             }

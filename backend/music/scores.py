@@ -21,7 +21,7 @@ from audit.log import record
 from core.api_base import OrgScopedMixin
 from documents import services as documents
 from documents.models import Document
-from documents.views import file_response
+from documents.notation import find_part
 
 from .models import Arrangement, Performance, Piece, ProgramEntry, ScoreDocument, ScorePart
 from .views import MusicViewSet, PerformanceViewSet, ScopedSerializer
@@ -106,7 +106,16 @@ class MusicScoreDocumentSerializer(ScopedSerializer):
 
     class Meta:
         model = ScoreDocument
-        fields = ["id", "arrangement", "part", "document", "title", "usage_note", "position"]
+        fields = [
+            "id",
+            "arrangement",
+            "part",
+            "document",
+            "title",
+            "usage_note",
+            "position",
+            "notation_part",
+        ]
 
     def get_fields(self):
         fields = super().get_fields()
@@ -124,9 +133,21 @@ class MusicScoreDocumentSerializer(ScopedSerializer):
             raise serializers.ValidationError(
                 gettext("Die Stimme gehört zu einem anderen Arrangement.")
             )
-        if attrs.get("document", getattr(self.instance, "document", None)) is None:
+        document = attrs.get("document", getattr(self.instance, "document", None))
+        if document is None:
             raise serializers.ValidationError(
                 gettext("Bitte eine zugängliche Notenunterlage wählen.")
+            )
+        wanted = attrs.get("notation_part", getattr(self.instance, "notation_part", "")).strip()
+        attrs["notation_part"] = wanted
+        info = notation_info(document)
+        if wanted and info is not None and not find_part(info["parts"], wanted):
+            raise serializers.ValidationError(
+                {
+                    "notation_part": gettext(
+                        "Diese Stimme gibt es in der Notendatei nicht. Vorhanden: {parts}"
+                    ).format(parts=", ".join(p["name"] or p["id"] for p in info["parts"]))
+                }
             )
         return attrs
 
@@ -176,13 +197,40 @@ class ScoreDocumentViewSet(ScoresViewSet):
     def documents(self, request, org_id):
         return Response(list(visible_documents(self).order_by("title", "pk").values("id", "title")))
 
+    @action(detail=False, methods=["get"])
+    def notation(self, request, org_id):
+        """Titel, Komponist und Stimmen einer MusicXML-Datei (Vorschlag beim Zuordnen)."""
+        pk = serializers.IntegerField(min_value=1).run_validation(
+            request.query_params.get("document")
+        )
+        document = get_object_or_404(visible_documents(self), pk=pk)
+        return Response(notation_info(document) or {"title": "", "composer": "", "parts": []})
+
     @action(detail=True, methods=["get"])
     def download(self, request, org_id, pk):
         link = self.get_object()
         version = link.document.versions.order_by("-uploaded_at", "-pk").first()
         if not version:
             raise NotFound()
-        return file_response(request, version)
+        from .score_files import respond
+
+        return respond(request, link, version, whole=True)
+
+
+def notation_info(document):
+    """Titel, Komponist und Stimmen der neuesten Fassung, wenn sie MusicXML ist."""
+    from django.core.exceptions import ValidationError as DjangoValidationError
+
+    from documents import notation
+
+    version = document.versions.order_by("-uploaded_at", "-pk").first()
+    if version is None or version.content_type not in (notation.MUSICXML, notation.MXL):
+        return None
+    try:
+        with version.file.open("rb") as fh:
+            return notation.musicxml_info(notation.text_of(fh.read(), version.content_type))
+    except DjangoValidationError:
+        return None
 
 
 def voice(instrument, register):

@@ -23,7 +23,7 @@ import { t, tn } from '../../i18n/index.ts'
 
 const MAX_BYTES = 20 * 1024 * 1024
 const ACCEPT =
-  '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.jpg,.jpeg,.png,.txt,.csv,application/pdf,image/jpeg,image/png'
+  '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.odt,.ods,.jpg,.jpeg,.png,.txt,.csv,.musicxml,.mxl,.xml,.mei,.abc,.mid,.midi,application/pdf,image/jpeg,image/png'
 
 type Msg = { kind: 'error' | 'success'; text: string } | null
 
