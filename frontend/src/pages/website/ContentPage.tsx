@@ -29,6 +29,7 @@ import {
   Loading,
 } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { PERM } from '../../api/orgs.ts'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
 import { ImageChoice, ImagePicker } from './images.tsx'
 import { TimelineEditor } from './TimelineEditor.tsx'
@@ -403,6 +404,51 @@ function TextForm({
       onChange={(on) => set('show_captions', on)}
     />
   )
+
+  // Chronik mit Modul „Chronik“: Inhalt nur unter Verein › Chronik pflegen (Ralf 09.11.),
+  // hier bleibt nur, was zur Webseite gehört (Adresse, Menü, Löschen).
+  if (text.has_timeline && !chronicle) {
+    return (
+      <form
+        className="subcard"
+        onSubmit={(e) => e.preventDefault()}
+        aria-label={t('Text bearbeiten')}
+      >
+        <SaveStatus auto={auto} />
+        <p className="muted small">
+          {current.is_published
+            ? t('Veröffentlicht am {x}.', { x: formatDateTime(current.published_at!) })
+            : t('Noch nicht veröffentlicht.')}{' '}
+          {current.is_published && current.has_changes && t('Der Entwurf hat Änderungen.')}
+        </p>
+        <Alert kind="info">
+          {t('Einleitung und Zeitleiste der Chronik pflegst du unter Verein › Chronik.')}{' '}
+          {org.permissions.includes(PERM.chronicleView) && (
+            <Link to="/chronik">{t('Zur Chronik')}</Link>
+          )}
+        </Alert>
+        <div className="grid-2">
+          <Field
+            label={t('Adresse')}
+            value={v.slug}
+            error={errors.slug}
+            onChange={(e) => set('slug', e.target.value)}
+          />
+          <Checkbox
+            label={t('im Menü zeigen')}
+            checked={v.show_in_menu}
+            onChange={(on) => set('show_in_menu', on)}
+          />
+        </div>
+        {message && <Alert kind="error">{message}</Alert>}
+        <div className="button-row">
+          <button type="button" className="button button-danger" onClick={() => void remove()}>
+            {t('Löschen')}
+          </button>
+        </div>
+      </form>
+    )
+  }
 
   return (
     <form

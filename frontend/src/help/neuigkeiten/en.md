@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Chronicle: you now maintain the introduction and timeline only under Club › Chronicle. Under Website › Texts the chronicle only shows its address, menu setting and delete, plus a link to the chronicle.
 - Events: in the unit's calendar, the board can choose **Event for** to create events for sub-units that do not manage themselves. Only their members are invited then.
 - Page header: pages share one header at the top. From the second level on, the path is shown above the heading (e.g. “Settings › Roles and permissions”), on phones a “‹ back” link to the page above. The unit's name only appears if you manage more than one unit. Settings come first.
 - Finance: every group in the sidebar has its own page. Clicking the group name shows all entries with a short description, what is to do there, and the main action, e.g. **Record income** for Book. ▸ expands the group without changing the page.

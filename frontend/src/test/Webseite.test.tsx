@@ -68,10 +68,11 @@ function renderApp(
   routes: Record<string, () => { status: number; body?: unknown }>,
   path = '/webseite',
   extra: string[] = [],
+  modules: string[] = [],
 ) {
   const org = testOrg({
     permissions: ['members.view', 'roles.manage', 'website.manage', ...extra],
-    modules: ['members', 'website'],
+    modules: ['members', 'website', ...modules],
   })
   const calls = fakeApi({
     [SESSION]: loggedIn,
@@ -794,6 +795,31 @@ describe('Inhalte der Webseite', () => {
     )
   })
 
+  it('zeigt unter Webseite › Texte bei der Chronik nur Adresse und Menü', async () => {
+    const chronik = text({ title: 'Chronik', slug: 'geschichte', has_timeline: true })
+    renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}texts/`]: () => ({ status: 200, body: { texts: [chronik], units: [] } }),
+        [`GET ${base}texts/5/`]: () => ({ status: 200, body: chronik }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/inhalte',
+      ['chronicle.view', 'chronicle.edit'],
+      ['chronicle'],
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Chronik' }))
+    expect(
+      await screen.findByText(/Einleitung und Zeitleiste der Chronik pflegst du unter/),
+    ).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Zur Chronik' })).toHaveAttribute('href', '/chronik')
+    expect(screen.getByLabelText('Adresse')).toHaveValue('geschichte')
+    expect(screen.queryByRole('textbox', { name: 'Einleitung (optional)' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Ereignis hinzufügen' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Veröffentlichen' })).toBeNull()
+  })
+
   it('baut die Zeitleiste der Chronik mit Ereignissen und Kapiteln', async () => {
     const chronik = text({
       title: 'Chronik',
@@ -813,15 +839,19 @@ describe('Inhalte der Webseite', () => {
     const calls = renderApp(
       {
         [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
-        [`GET ${base}texts/`]: () => ({ status: 200, body: { texts: [chronik], units: [] } }),
+        [`GET /api/orgs/7/chronicle/`]: () => ({
+          status: 200,
+          body: { text: chronik, can_edit: true, website: true },
+        }),
         [`GET ${base}texts/5/`]: () => ({ status: 200, body: chronik }),
         [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
         [`PUT ${base}texts/5/`]: () => ({ status: 200, body: chronik }),
       },
-      '/webseite/inhalte',
+      '/chronik',
+      ['chronicle.view', 'chronicle.edit'],
+      ['chronicle'],
     )
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Chronik' }))
     expect(await screen.findByRole('textbox', { name: 'Einleitung (optional)' })).toBeVisible()
     // Ereignis als Zeitraum; ohne Überschrift wird nichts übernommen
     await user.click(screen.getByRole('button', { name: 'Ereignis hinzufügen' }))
@@ -885,7 +915,10 @@ describe('Inhalte der Webseite', () => {
     const calls = renderApp(
       {
         [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
-        [`GET ${base}texts/`]: () => ({ status: 200, body: { texts: [chronik], units: [] } }),
+        [`GET /api/orgs/7/chronicle/`]: () => ({
+          status: 200,
+          body: { text: chronik, can_edit: true, website: true },
+        }),
         [`GET ${base}texts/5/`]: () => ({ status: 200, body: chronik }),
         [`GET ${base}images/`]: () => ({
           status: 200,
@@ -893,10 +926,11 @@ describe('Inhalte der Webseite', () => {
         }),
         [`PUT ${base}texts/5/`]: () => ({ status: 200, body: chronik }),
       },
-      '/webseite/inhalte',
+      '/chronik',
+      ['chronicle.view', 'chronicle.edit'],
+      ['chronicle'],
     )
     const user = userEvent.setup()
-    await user.click(await screen.findByRole('button', { name: 'Chronik' }))
     await user.click(
       await screen.findByRole('button', { name: '2020–2022 Verschobenes Jubiläum bearbeiten' }),
     )
