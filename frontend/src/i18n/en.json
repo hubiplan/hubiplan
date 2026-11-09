@@ -7491,5 +7491,9 @@
   "Einteilungen durchsuchen": "Search assignments",
   "Neue Einteilung": "New assignment",
   "Noch keine Einteilungen.": "No assignments yet.",
-  "Teile Musiker für einen Auftritt ein und sammle ihre Rückmeldungen.": "Assign musicians to a performance and collect their responses."
+  "Teile Musiker für einen Auftritt ein und sammle ihre Rückmeldungen.": "Assign musicians to a performance and collect their responses.",
+  "{n} von 5 Spiegeln gefunden – die ganze Karte ins Bild.": "{n} of 5 target faces found – the whole card in the picture.",
+  "Karte nicht erkannt – vier Spiegel in den Ecken und einer in der Mitte.": "Card not recognised – four target faces in the corners and one in the centre.",
+  "Karte in die Mitte des Bildes.": "Card in the centre of the picture.",
+  "Etwas weiter weg – die ganze Karte ins Bild.": "A bit further away – the whole card in the picture."
 }

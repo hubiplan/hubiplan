@@ -13,6 +13,7 @@ export function PhotoButton({
   onResult,
   disabled,
   blackShare,
+  spots,
   autoLive,
 }: {
   detect: (photo: Blob) => Promise<PhotoResult>
@@ -20,6 +21,8 @@ export function PhotoButton({
   disabled?: boolean
   /** Spiegel / äußerster Ring; mit Wert gibt es die Live-Kamera (Schritt 5) */
   blackShare?: number | null
+  /** Spiegel je Karte (Live-Kamera sucht dann alle) */
+  spots?: number
   /** Live-Kamera gleich öffnen, wenn es eine gibt (Ralf 01.11.: Schütze wählen → Live-Kamera) */
   autoLive?: boolean
 }) {
@@ -80,6 +83,7 @@ export function PhotoButton({
       {live && blackShare ? (
         <LiveCamera
           blackShare={blackShare}
+          spots={spots}
           onCapture={(photo) => {
             setLive(false)
             void onFile(photo)
