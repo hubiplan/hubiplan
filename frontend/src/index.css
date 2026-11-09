@@ -5378,3 +5378,9 @@ label:has(> .file-input:focus-visible) {
 :root[data-theme='dark'] :is(.card-qr, .signature-pad, .signature-image) {
   color-scheme: light;
 }
+.home-actions-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin-bottom: 0.75rem;
+}

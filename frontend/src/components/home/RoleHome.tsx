@@ -1,6 +1,7 @@
 // Startseite als Arbeitsplatz je Rolle (Konzept S-04): feste Reihenfolge Zu erledigen ›
 // Schnellaktionen › Kennzahlen › Nächste Termine › Hinweise. Die Rolle ergibt sich aus den
 // Rechten; mehrere Rollen teilen sich höchstens vier Schnellaktionen, Kasse vor Vorstand.
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { orgApi, PERM } from '../../api/orgs.ts'
@@ -13,24 +14,90 @@ import { letterheadApi, optionKey } from '../../api/letterhead.ts'
 import { fieldApi } from '../../api/fields.ts'
 import { BirthdayList, JubileeList } from '../../pages/members/JubileesPage.tsx'
 import type { QuickAction } from './roleActions.ts'
-import { MAX_FIGURES } from './roleActions.ts'
+import { MAX_ACTIONS, MAX_FIGURES, visibleActions } from './roleActions.ts'
+import { homeActionsApi } from '../../api/homeActions.ts'
+import { Alert, Checkbox } from '../ui.tsx'
 import { todayIso } from '../../api/members.ts'
 import { formatDay } from '../calendar/time.ts'
-import { useLoad } from '../forms.ts'
+import { errorMessage, useLoad } from '../forms.ts'
 import { t } from '../../i18n/index.ts'
 
-export function QuickActions({ actions, label }: { actions: QuickAction[]; label?: string }) {
-  if (actions.length === 0) return null
+/**
+ * Schnellaktionen (S-04): höchstens vier Knöpfe. Unter „Anpassen“ blendet jede Person einzelne
+ * Aktionen oder den ganzen Block aus; wieder einschalten geht auch unter Mein Konto › Profil.
+ */
+export function QuickActions({ candidates, label }: { candidates: QuickAction[]; label?: string }) {
+  const { data, error: loadError, setData } = useLoad(() => homeActionsApi.get(), [])
+  const [editing, setEditing] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  if (candidates.length === 0 || (!data && !loadError)) return null
+  const hidden = data?.hidden ?? []
+  const actions = visibleActions(candidates, hidden)
+  if (hidden.includes('*')) return null
+
+  async function save(next: string[]) {
+    setBusy(true)
+    setError(null)
+    try {
+      setData(await homeActionsApi.update(next))
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+  const toggle = (key: string, shown: boolean) =>
+    void save(shown ? hidden.filter((k) => k !== key) : [...hidden, key])
+
   return (
     <div className="card tile tile-wide home-actions">
-      <h2>{label ?? t('Schnellaktionen')}</h2>
-      <div className="button-row">
-        {actions.map((a, i) => (
-          <Link key={a.key} to={a.to} className={i === 0 ? 'button button-primary' : 'button'}>
-            {a.label}
-          </Link>
-        ))}
+      <div className="card-head">
+        <h2>{label ?? t('Schnellaktionen')}</h2>
+        <button type="button" className="link-button" onClick={() => setEditing(!editing)}>
+          {editing ? t('Fertig') : t('Anpassen')}
+        </button>
       </div>
+      {editing ? (
+        <>
+          <p className="muted small">
+            {t('Gezeigt werden höchstens {n} der angehakten Aktionen.', { n: MAX_ACTIONS })}
+          </p>
+          <div className="home-actions-choice">
+            {candidates.map((a) => (
+              <Checkbox
+                key={a.key}
+                label={a.label}
+                checked={!hidden.includes(a.key)}
+                busy={busy}
+                onChange={(v) => toggle(a.key, v)}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            className="button"
+            disabled={busy}
+            onClick={() => void save([...hidden, '*'])}
+          >
+            {t('Schnellaktionen ganz ausblenden')}
+          </button>
+          <p className="muted small">
+            {t('Wieder einschalten kannst du sie unter Mein Konto › Profil › Startseite.')}
+          </p>
+        </>
+      ) : actions.length === 0 ? (
+        <p className="muted">{t('Alle Schnellaktionen sind ausgeblendet.')}</p>
+      ) : (
+        <div className="button-row">
+          {actions.map((a, i) => (
+            <Link key={a.key} to={a.to} className={i === 0 ? 'button button-primary' : 'button'}>
+              {a.label}
+            </Link>
+          ))}
+        </div>
+      )}
+      {error && <Alert kind="error">{error}</Alert>}
     </div>
   )
 }

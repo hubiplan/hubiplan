@@ -238,3 +238,17 @@ def test_schwerpunkt_aus_den_rollen(api, orgs, board_a):
     # Vorsitz und Kasse zugleich: die Kassenrolle zählt
     give_role(board_a, org, permissions=["finance.edit", "billing.edit"], name="Kassierer")
     assert focus(board_a) == ["finance"]
+
+
+def test_schnellaktionen_ausblenden(api, board_a):
+    c = api(board_a)
+    assert c.get("/api/me/home-actions/").json() == {"hidden": []}
+    resp = c.put("/api/me/home-actions/", {"hidden": ["termin", "termin", "*"]}, format="json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json() == {"hidden": ["*", "termin"]}
+    board_a.refresh_from_db()
+    assert board_a.home_actions_hidden == ["*", "termin"]
+    assert c.put("/api/me/home-actions/", {"hidden": ["<b>"]}, format="json").status_code == 400
+    assert c.put("/api/me/home-actions/", {"hidden": []}, format="json").json() == {"hidden": []}
+    board_a.refresh_from_db()
+    assert board_a.home_actions_hidden is None

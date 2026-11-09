@@ -4,7 +4,7 @@ from rest_framework.routers import SimpleRouter
 from access import accounts_view, module_views, office_views
 from access import views as access_views
 from access.module_gate import gate, gate_names, needs_module
-from accounts import appearance, help_done, language, learning, self_service
+from accounts import appearance, help_done, home_actions, language, learning, self_service
 from billing import einvoice_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
@@ -1025,6 +1025,7 @@ urlpatterns = [
     ),
     path("me/learning/", learning.LearningView.as_view(), name="my-learning"),
     path("me/appearance/", appearance.AppearanceView.as_view(), name="my-appearance"),
+    path("me/home-actions/", home_actions.HomeActionsView.as_view(), name="my-home-actions"),
     path("me/help/", help_done.HelpDoneView.as_view(), name="my-help"),
     path("me/help/<str:key>/", help_done.HelpDoneKeyView.as_view(), name="my-help-step"),
     path("me/learning/<slug:key>/hide/", learning.LearningHideView.as_view(), name="learning-hide"),

@@ -110,6 +110,44 @@ describe('Schnellaktionen je Rolle', () => {
   })
 })
 
+describe('Schnellaktionen ausblenden', () => {
+  it('blendet eine Aktion aus und rückt die nächste nach', async () => {
+    let hidden: string[] = []
+    const org = testOrg({
+      permissions: ['members.view', 'members.edit', 'events.manage'],
+      modules: ['members', 'events'],
+    })
+    const calls = fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
+      'GET /api/me/home-actions/': () => ({ status: 200, body: { hidden } }),
+      'PUT /api/me/home-actions/': (init) => {
+        hidden = JSON.parse(String(init?.body)).hidden
+        return { status: 200, body: { hidden } }
+      },
+    })
+    renderAt('/')
+    const user = userEvent.setup()
+    const heading = await screen.findByRole('heading', { name: 'Schnellaktionen' })
+    const card = within(heading.closest('.card') as HTMLElement)
+    expect(card.getByRole('link', { name: 'Neuer Termin' })).toHaveClass('button-primary')
+    await user.click(card.getByRole('button', { name: 'Anpassen' }))
+    await user.click(card.getByRole('checkbox', { name: 'Neuer Termin' }))
+    await waitFor(() => expect(hidden).toEqual(['termin']))
+    await user.click(card.getByRole('button', { name: 'Fertig' }))
+    expect(card.queryByRole('link', { name: 'Neuer Termin' })).not.toBeInTheDocument()
+    expect(card.getByRole('link', { name: 'Mitglied aufnehmen' })).toHaveClass('button-primary')
+
+    await user.click(card.getByRole('button', { name: 'Anpassen' }))
+    await user.click(card.getByRole('button', { name: 'Schnellaktionen ganz ausblenden' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { name: 'Schnellaktionen' })).not.toBeInTheDocument(),
+    )
+    expect(calls.filter((c) => c.key === 'PUT /api/me/home-actions/')).toHaveLength(2)
+    expect(hidden).toEqual(['termin', '*'])
+  })
+})
+
 describe('Hinweise in einer Karte', () => {
   it('sammelt Impressum und Geburtstage', async () => {
     const org = testOrg({ permissions: ['members.view', 'org.edit'] })
