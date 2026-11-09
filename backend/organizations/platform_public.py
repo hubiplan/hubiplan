@@ -143,11 +143,14 @@ def _read(field) -> bytes | None:
         return None
 
 
-def _icon_file(unit: Organization | None = None) -> tuple[str, bytes] | None:
+def _icon_file(
+    unit: Organization | None = None, *, instance: bool = True
+) -> tuple[str, bytes] | None:
     """Quadratisches Symbol (512 px) als (Schlüssel, PNG).
 
     Mit Einheit (W7): eigenes Symbol einer Ebene bis unter die Plattform, sonst ihr Wappen
-    quadratisch gemacht, sonst das Symbol der Instanz.
+    quadratisch gemacht, sonst das Symbol der Instanz. instance=False: ohne das Symbol der
+    Instanz (Vereinswebseite: lieber kein Favicon als das des Betreibers).
     """
     if unit is not None:
         chain = [o for o in unit.ancestors() if o.type != Organization.Type.PLATFORM]
@@ -164,11 +167,18 @@ def _icon_file(unit: Organization | None = None) -> tuple[str, bytes] | None:
                         return f"wappen:{org.logo.name}", brand_icon.square(data)
                     except Exception:  # noqa: BLE001 – kaputtes Wappen: Symbol der Instanz
                         break
+    if not instance:
+        return None
     row = PlatformSettings.objects.filter(pk=1).first()
     if not row or not row.brand_icon:
         return None
     data = _read(row.brand_icon)
     return (row.brand_icon.name, data) if data else None
+
+
+def unit_icon(unit: Organization) -> tuple[str, bytes] | None:
+    """Symbol einer Einheit ohne Rückgriff auf die Instanz (Favicon der Vereinswebseite)."""
+    return _icon_file(unit, instance=False)
 
 
 class PublicPlatformIconView(APIView):

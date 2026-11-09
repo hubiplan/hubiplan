@@ -4770,6 +4770,12 @@ label:has(> .file-input:focus-visible) {
   stroke-dasharray: 6 4;
   vector-effect: non-scaling-stroke;
 }
+.live-guide .live-guide-black {
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-dasharray: none;
+  /* dunkler Saum, damit die Linie auf dem Schwarzen und auf hellem Papier sichtbar bleibt */
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.9));
+}
 .live-hint {
   font-size: 1.25rem;
   font-weight: 600;
