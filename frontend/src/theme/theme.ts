@@ -166,10 +166,15 @@ export function linkColorDark(primary: string): string {
 /** Aktionsknöpfe im Dunkelmodus: heben sich vom dunklen Grund ab, Schrift bleibt lesbar. */
 export function buttonColorsDark(primary: string, onPrimary: string) {
   const background = contrastRatio(primary, DARK_BG) >= 1.35 ? primary : linkColorDark(primary)
+  // Bei mittleren Grautönen reicht dunkelgraue Schrift nicht ganz; dann Schwarz
   const foreground =
-    contrastRatio(background, onPrimary) >= 4.5 ? onPrimary : readableOn(background)
-  const candidate = hoverColor(background, foreground)
-  const hover = contrastRatio(candidate, DARK_BG) >= 1.35 ? candidate : lighten(background, 0.15)
+    [onPrimary, '#ffffff', '#000000'].find((c) => contrastRatio(background, c) >= 4.5) ?? '#000000'
+  const readable = (c: string) =>
+    contrastRatio(c, DARK_BG) >= 1.35 && contrastRatio(c, foreground) >= 4.5
+  const hover =
+    [hoverColor(background, foreground), lighten(background, 0.15), darken(background, 0.15)].find(
+      readable,
+    ) ?? background
   return { background, foreground, hover }
 }
 
