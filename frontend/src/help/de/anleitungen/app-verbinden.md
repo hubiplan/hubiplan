@@ -6,21 +6,21 @@ reihe: 40
 stichworte: [App, Handy, koppeln, Android, QR-Code, In der App öffnen, Passwortmanager]
 ---
 
-Die App fragt beim ersten Start: **Wie möchtest du dich verbinden?** Beide Wege sind gleichwertig.
+Die App fragt beim ersten Start: „Wie möchtest du dich verbinden?“ Beide Wege sind gleichwertig.
 
-**Mit QR-Code von einem anderen Bildschirm** (z. B. am Computer):
+Mit QR-Code von einem anderen Bildschirm (z. B. am Computer):
 
 1. Installiere die HUBIplan-App auf dem Handy.
 2. Öffne im Browser [Mein Konto › App & andere Instanzen](/mein-konto/app) und klicke auf **App verbinden**.
-3. Tippe in der App auf **QR-Code von einem anderen Bildschirm scannen** und scanne den angezeigten Code.
+3. Tippe in der App auf „QR-Code von einem anderen Bildschirm scannen“ und scanne den angezeigten Code.
 
-**Nur mit dem Handy:**
+Nur mit dem Handy:
 
 1. Installiere die HUBIplan-App und öffne HUBIplan im Browser des Handys unter [Mein Konto › App & andere Instanzen](/mein-konto/app).
-2. Tippe auf **App verbinden** und dann auf **In der HUBIplan-App öffnen**. Passiert beim Tippen nichts, ist die App noch nicht installiert.
-3. Die App zeigt die Adresse deines Vereins. Stimmt sie, tippe auf **Ja, verbinden**.
+2. Tippe auf **App verbinden** und dann auf „In der HUBIplan-App öffnen“. Passiert beim Tippen nichts, ist die App noch nicht installiert.
+3. Die App zeigt die Adresse deines Vereins. Stimmt sie, tippe auf „Ja, verbinden“.
 
-**Mit E-Mail und Passwort:** Tippe in der App auf **Mit E-Mail und Passwort anmelden** und gib die Adresse deines Vereins, deine E-Mail und dein Passwort ein. Passwortmanager (z. B. von Google oder Bitwarden) bieten das Ausfüllen an und können die Anmeldung speichern.
+Mit E-Mail und Passwort: Tippe in der App auf „Mit E-Mail und Passwort anmelden“ und gib die Adresse deines Vereins, deine E-Mail und dein Passwort ein. Passwortmanager (z. B. von Google oder Bitwarden) bieten das Ausfüllen an und können die Anmeldung speichern.
 
 Siehst du unter „Mein Konto › App & andere Instanzen“ statt des Knopfs **App verbinden** nur einen Hinweis, hat dein Konto noch keinen Zugang zum Mitgliederbereich: Es muss mit deiner Mitgliedschaft verknüpft sein, und dein Verein muss den Mitgliederbereich eingeschaltet haben.
 
@@ -38,6 +38,6 @@ Listen wie Termine, Mitteilungen, Aufgaben und die Bereiche der Verwaltung läds
 
 In der Android-App fragen geänderte Verwaltungsformulare und Kurzmitteilungen vor dem Verwerfen nach. System-Zurück, sichtbares Zurück sowie Reiter- und Einheitenwechsel verwenden dieselbe Entscheidung. Buchungstext, Betrag, Konto, Kategorie und ein bereits ausgewähltes Belegfoto werden bei einer Android-Zustandswiederherstellung wiederhergestellt; eine laufende Quittungsunterschrift wird an die neue Feldgröße angepasst. Nach einem Serverfehler stehen Hinweise an den betroffenen Feldern. Fehlgeschlagene Buchungs- und Untereinheitenakten lassen sich direkt erneut laden. Private Aufgabenentwürfe bleiben entsprechend der Datenschutzregel nur im Arbeitsspeicher.
 
-In der Terminliste steht deine Rückmeldung mit Symbol und Klartext: **Zugesagt**, **Nicht dabei** oder **Noch offen**. Im Dunkelmodus zeigt die App helle Vereinsfarben in der Kopfleiste gedämpft, damit sie abends nicht blenden.
+In der Terminliste steht deine Rückmeldung mit Symbol und Klartext: „Zugesagt“, „Nicht dabei“ oder „Noch offen“. Im Dunkelmodus zeigt die App helle Vereinsfarben in der Kopfleiste gedämpft, damit sie abends nicht blenden.
 
 Auswahllisten der Android-App melden ihren geöffneten oder geschlossenen Zustand in der gewählten Sprache. In der Mitteilungsliste ist die aktuelle Auswahl auch für Bedienungshilfen markiert. Erfolgsnachrichten für Profiländerungen und Mitteilungen werden als höfliche Statusmeldungen bereitgestellt.
