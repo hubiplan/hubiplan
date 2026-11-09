@@ -9,7 +9,7 @@ import { socialApi } from '../../api/website.ts'
 import type { SocialFeed, SocialKind, SocialPost } from '../../api/website.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { SocialLinksPanel } from '../../components/SocialLinksPanel.tsx'
 import { PERM } from '../../api/orgs.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
@@ -28,7 +28,7 @@ export function SocialPage() {
   const [adding, setAdding] = useState(false)
 
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   const back = params.get('verbunden') ? 'ok' : params.get('fehler')
   return (
@@ -508,7 +508,7 @@ function PostList({ feed, onChanged }: { feed: number; onChanged: () => void }) 
   const { data, error, reload } = useLoad(() => socialApi.posts(org.id, feed), [org.id, feed])
   const [saveError, setSaveError] = useState<string | null>(null)
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   async function setState(post: SocialPost, state: SocialPost['state']) {
     setSaveError(null)
     try {

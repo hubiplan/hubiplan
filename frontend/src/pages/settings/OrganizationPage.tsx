@@ -2,7 +2,7 @@ import { FiscalYearFields } from '../../components/FiscalYearFields.tsx'
 import { ModuleSetupLinks } from './SettingsLayout.tsx'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import type { OrgDetail, Role } from '../../api/orgs.ts'
-import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { Link, Navigate } from 'react-router-dom'
 import { SocialLinksPanel } from '../../components/SocialLinksPanel.tsx'
@@ -33,7 +33,7 @@ function useOrgDetail() {
 export function OrganizationPage() {
   const { org, data, error, setData, roles } = useOrgDetail()
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <>
       <OrganizationForm
@@ -65,7 +65,7 @@ export function OrganizationPage() {
 export function OrganizationTermsPage() {
   const { data, error, setData, roles } = useOrgDetail()
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <OrganizationForm
       key={data.id}
@@ -106,7 +106,7 @@ export function ShootingSetupPage() {
       {/* Kopf auch beim Laden (Seitenkopf S-05) */}
       <PageHeader />
       {error && <Alert kind="error">{error}</Alert>}
-      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+      {!data && !error && <Loading />}
       {data && (
         <ShootingFacilitiesCard key={`shooting-${data.id}`} detail={data} onSaved={setData} />
       )}

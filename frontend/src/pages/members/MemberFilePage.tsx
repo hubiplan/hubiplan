@@ -18,7 +18,15 @@ import {
   useLoad,
 } from '../../components/forms.ts'
 import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
-import { Alert, Checkbox, Field, SaveStatus, SelectField, LoadError } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  SaveStatus,
+  SelectField,
+  LoadError,
+  Loading,
+} from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { orgTerms, useTerms } from '../../org/terms.ts'
 import { MembershipActions } from './MembershipActions.tsx'
@@ -87,7 +95,7 @@ export function MemberFilePage() {
   const tabLink = (to: Tab) => (to === 'stammdaten' ? '.' : `?bereich=${to}`)
 
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   return (
     <section>
@@ -1318,7 +1326,7 @@ function HistoryTab({ orgId, memberId }: { orgId: number; memberId: number }) {
   const { data, error } = useLoad(() => memberApi.history(orgId, memberId), [orgId, memberId])
   const first = firstOfSet(data ?? [])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <Section title={t('Verlauf')}>
       {data.length === 0 ? (

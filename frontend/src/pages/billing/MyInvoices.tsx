@@ -5,7 +5,7 @@ import { portalBillingApi } from '../../api/billing.ts'
 import { ApiError } from '../../api/client.ts'
 import { euro } from '../../api/finance.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, Loading } from '../../components/ui.tsx'
 import { StatusBadge } from './InvoicesPage.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useTerms } from '../../org/terms.ts'
@@ -14,7 +14,7 @@ import { t } from '../../i18n/index.ts'
 export function DeptInvoices({ deptId }: { deptId: number }) {
   const { data, error } = useLoad(() => portalBillingApi.deptInvoices(deptId), [deptId])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   if (data.length === 0)
     return (
       <div className="card empty-state">

@@ -50,7 +50,7 @@ describe('Zusatzfelder beim Wechsel der Person (DS01)', () => {
     rerender(<FieldsTab orgId={7} memberId={2} canEdit />)
     // Solange B lädt, stehen keine Werte von A im Formular
     expect(screen.queryByDisplayValue('Wert von A')).not.toBeInTheDocument()
-    expect(screen.getByText('Lädt …')).toBeInTheDocument()
+    expect(screen.getByText('Wird geladen …')).toBeInTheDocument()
     await act(async () => {
       releaseB(new Response(JSON.stringify([{ definition, value: 'Wert von B' }]), { status: 200 }))
     })

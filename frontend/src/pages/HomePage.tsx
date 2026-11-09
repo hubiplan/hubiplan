@@ -85,13 +85,14 @@ export function HomePage() {
         </h1>
         <MemberHomeTop entry={activePortal} />
         <h2 className="section-heading">{t('Mein Bereich')}</h2>
-        <PortalTasks entry={activePortal} skip={['/mein-bereich/ausweis', '/termine']} />
-        {activePortal.events_enabled && (
+        {/* W-07: nur die wichtigsten Kacheln, der Rest steht in „Mein Bereich“ */}
+        <PortalTasks entry={activePortal} skip={['/mein-bereich/ausweis', '/termine']} limit={3} />
+        <p>
+          <Link to="/mein-bereich">{t('Alles in Mein Bereich')}</Link>
+        </p>
+        {activeDept?.permissions.includes('todos.view') && (
           <div className="tiles">
-            {activeDept?.permissions.includes('todos.view') && (
-              <DepartmentTodosTile department={activeDept.id} />
-            )}
-            <UpcomingTile base={calendarBase.portal(activePortal.id)} />
+            <DepartmentTodosTile department={activeDept.id} />
           </div>
         )}
       </section>

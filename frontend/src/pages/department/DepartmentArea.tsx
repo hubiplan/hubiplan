@@ -20,7 +20,15 @@ import {
   useForm,
   useLoad,
 } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SaveStatus, LoadError, Freshness } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  SaveStatus,
+  LoadError,
+  Freshness,
+  Loading,
+} from '../../components/ui.tsx'
 import { Term } from '../../learning/Aids.tsx'
 import { useActiveDept } from '../../org/OrgContext.tsx'
 import { DeptInvoices } from '../billing/MyInvoices.tsx'
@@ -188,7 +196,7 @@ function DeptMemberList({ dept }: { dept: DeptSummary }) {
         />
       )}
       {!data ? (
-        !error && <p className="muted">{t('Lädt …')}</p>
+        !error && <Loading />
       ) : data.results.length === 0 ? (
         <p className={`muted${stale ? ' is-stale' : ''}`}>{t('Keine Mitglieder gefunden.')}</p>
       ) : (
@@ -231,8 +239,9 @@ function DeptMemberList({ dept }: { dept: DeptSummary }) {
                 className="button button-ghost"
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
+                aria-label={t('Vorherige Seite')}
               >
-                {t('Zurück')}
+                <span aria-hidden="true">‹</span> {t('Vorherige')}
               </button>
               <span className="muted small">
                 {t('Seite {page} von', { page })} {pages}
@@ -242,8 +251,9 @@ function DeptMemberList({ dept }: { dept: DeptSummary }) {
                 className="button button-ghost"
                 disabled={page >= pages}
                 onClick={() => setPage(page + 1)}
+                aria-label={t('Nächste Seite')}
               >
-                {t('Weiter')}
+                {t('Nächste')} <span aria-hidden="true">›</span>
               </button>
             </div>
           )}
@@ -273,7 +283,7 @@ function DeptMemberPage({ dept }: { dept: DeptSummary }) {
   const id = Number(useParams().id)
   const { data, error, setData } = useLoad(() => portalApi.deptMember(dept.id, id), [dept.id, id])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const canEdit = dept.permissions.includes(DEPT_PERM.membersEdit)
   const canAccess =
     dept.permissions.includes(DEPT_PERM.loginsView) ||
@@ -435,7 +445,7 @@ function DeptRolesPage({ dept, canEdit }: { dept: DeptSummary; canEdit: boolean 
 
   const loadError = roles.error ?? holders.error
   if (loadError) return <Alert kind="error">{loadError}</Alert>
-  if (!roles.data || !holders.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!roles.data || !holders.data) return <Loading />
   const catalog = roles.data.catalog
   // Katalog mit Bereichen und Stufen; ältere Server liefern noch einzelne Rechte
   const staged = catalog.some((m) => m.kind === 'area')

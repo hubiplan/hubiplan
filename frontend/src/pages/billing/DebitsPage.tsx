@@ -11,7 +11,7 @@ import type { MemberRow } from '../../api/members.ts'
 import { PERM } from '../../api/orgs.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useTerms } from '../../org/terms.ts'
@@ -43,7 +43,7 @@ export function DebitsPage() {
 
   if (proposals.error ?? runs.error)
     return <LoadError message={(proposals.error ?? runs.error)!} onRetry={() => void reload()} />
-  if (!proposals.data || !runs.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!proposals.data || !runs.data) return <Loading />
   const p = proposals.data
   const ready = !!p.creditor_id && p.account_has_iban
 

@@ -3,7 +3,7 @@ Mitgliedsakte (alles erfunden)."""
 
 import pytest
 
-from competitions.models import AwardGrant, Competition
+from competitions.models import AwardGrant, Competition, Scoring
 from honors.models import Dignity, Reign
 
 from .test_wettbewerbe import _punkte, _starter, club, schuetzen, url, zuege  # noqa: F401
@@ -120,6 +120,10 @@ class TestAuszeichnungen:
         # Mitgliedsakte
         akte = c.get(url(club, f"member/{schuetzen['Max'].pk}/")).json()
         assert akte["starts"][0]["results"][0]["place"] == 1
+        # Wert mit Einheit (App „Meine Ergebnisse“, UX-Audit 08.11. A-18)
+        erg = akte["starts"][0]["results"][0]
+        einheit = Scoring.objects.get(competition_id=comp_id, name=erg["scoring"]).unit_label
+        assert erg["value_text"] and einheit and erg["unit_label"] == einheit
         assert {g["full_title"] for g in akte["grants"]} == {"Vereinsmeister 2027", "Medaille"}
 
         # Folgejahr aus der Kopie: Reihe und Auszeichnungen kommen mit; Zug 1 gewinnt erneut

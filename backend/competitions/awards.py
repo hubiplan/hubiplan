@@ -344,6 +344,8 @@ def member_history(org, membership_ids: list[int]) -> dict:
         results = []
         if comp.status != Competition.Status.PREPARATION:
             data = services.standings(comp)
+            # Einheit zum Wert („27 Ringe“): keine unbeschriftete Zahl (App, UX-Audit A-18)
+            unit_labels = dict(comp.scorings.values_list("pk", "unit_label"))
             for s in data.get("scorings", []):
                 for r in s["rows"]:
                     if r.get("starter") == st.pk:
@@ -352,6 +354,9 @@ def member_history(org, membership_ids: list[int]) -> dict:
                                 "scoring": s["name"],
                                 "place": r.get("place"),
                                 "value_text": r.get("value_text", ""),
+                                "unit_label": unit_labels.get(s.get("scoring"), "")
+                                if r.get("value_text")
+                                else "",
                                 "field": len([x for x in s["rows"] if x.get("place")])
                                 or s.get("field_size"),
                             }
@@ -359,7 +364,13 @@ def member_history(org, membership_ids: list[int]) -> dict:
             if comp.form == Competition.Form.BIRD:
                 for p in comp.prizes.filter(winner=st):
                     results.append(
-                        {"scoring": p.name, "place": None, "value_text": "", "field": None}
+                        {
+                            "scoring": p.name,
+                            "place": None,
+                            "value_text": "",
+                            "unit_label": "",
+                            "field": None,
+                        }
                     )
         starts.append(
             {

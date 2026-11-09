@@ -5,7 +5,7 @@ import type { PublicLinkInfo } from '../api/photos.ts'
 import { formatDate } from '../components/forms.ts'
 import { Logo } from '../components/Logo.tsx'
 import { PhotoEditor } from '../components/PhotoEditor.tsx'
-import { Alert } from '../components/ui.tsx'
+import { Alert, Loading } from '../components/ui.tsx'
 import { usePublicImprint } from '../components/publicImprint.ts'
 import { applyTheme } from '../theme/theme.ts'
 import { t } from '../i18n/index.ts'
@@ -74,7 +74,7 @@ export function PublicPhotoPage() {
         <div className="login-logo">
           <Logo name={info?.organization} logoUrl={info?.logo_url ?? null} />
         </div>
-        {state === 'loading' && <p className="muted">{t('Lädt …')}</p>}
+        {state === 'loading' && <Loading />}
         {state === 'invalid' && (
           <Alert kind="error">
             {error ?? t('Dieser Link ist nicht (mehr) gültig. Bitte wende dich an den Vorstand.')}

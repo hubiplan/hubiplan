@@ -3,7 +3,7 @@ import { useState } from 'react'
 import type { ListQuery, Paged } from '../api/client.ts'
 import type { OutgoingMail } from '../api/portal.ts'
 import { ListSearch, Pager } from './ListControls.tsx'
-import { Alert } from './ui.tsx'
+import { Alert, Loading } from './ui.tsx'
 import { useLoad } from './forms.ts'
 
 const STATUS = [
@@ -46,7 +46,7 @@ export function OutboxBrowser({
         </label>
       </ListSearch>
       {error && <Alert kind="error">{error}</Alert>}
-      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+      {!data && !error && <Loading />}
       {data &&
         (data.results.length === 0 && searching ? (
           <p className="muted">{t('Keine passenden Mails.')}</p>

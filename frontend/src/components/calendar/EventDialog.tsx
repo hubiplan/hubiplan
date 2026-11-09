@@ -13,7 +13,7 @@ import type {
   Occurrence,
 } from '../../api/events.ts'
 import { errorMessage, useLoad } from '../forms.ts'
-import { Alert, Field } from '../ui.tsx'
+import { Alert, Field, Loading } from '../ui.tsx'
 import { EventForm } from './EventForm.tsx'
 import { MyResponsePanel, ResponsesPanel } from './Rsvp.tsx'
 import { EventProjectPanel } from './EventProject.tsx'
@@ -362,7 +362,7 @@ export function EventDialog({
       beforeClose={() => (editing ? (guard.current?.() ?? true) : true)}
     >
       {error && <Alert kind="error">{error}</Alert>}
-      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+      {!data && !error && <Loading />}
       {data && editing && (
         <EventForm
           guardRef={guard}

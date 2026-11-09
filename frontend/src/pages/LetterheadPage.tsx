@@ -12,7 +12,7 @@ import type {
 } from '../api/letterhead.ts'
 import { errorMessage, useLoad } from '../components/forms.ts'
 import { useImageCrop } from '../components/ImageCrop.tsx'
-import { Alert, Checkbox, Field, SelectField } from '../components/ui.tsx'
+import { Alert, Checkbox, Field, SelectField, Loading } from '../components/ui.tsx'
 import { LetterPreview } from './settings/LetterheadSettingsPage.tsx'
 import { t } from '../i18n/index.ts'
 
@@ -128,7 +128,7 @@ export function LetterheadPage({ embedded = false }: { embedded?: boolean }) {
   const [params] = useSearchParams()
   const { data, error, reload } = useLoad(() => letterheadApi.mine(), [])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <section>
       {embedded ? (

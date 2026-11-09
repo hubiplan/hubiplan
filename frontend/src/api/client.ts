@@ -1,4 +1,5 @@
 // Kleiner fetch-Wrapper: Session-Cookie mitsenden, CSRF-Token setzen, JSON lesen.
+import { t } from '../i18n/index.ts'
 
 export interface ApiResult<T = unknown> {
   status: number
@@ -82,6 +83,17 @@ export async function request<T = unknown>(
  */
 export const retry = { delays: [1000, 2000, 3000, 4000, 5000, 5000] }
 
+/**
+ * Ändernde Anfragen warten zusammen höchstens so lange auf den Server, damit
+ * „Wird gespeichert …“ nicht länger als etwa 10 Sekunden stehen bleibt (UX-Audit 08.11. W-10).
+ */
+export const WRITE_RETRY_BUDGET = 9000
+
+/** Meldet der Browser, dass gar kein Netz da ist? Dann hilft Warten nicht. */
+function offline(): boolean {
+  return typeof navigator !== 'undefined' && navigator.onLine === false
+}
+
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /** Fehlerseite eines vorgeschalteten Webservers: Server gerade nicht erreichbar. */
@@ -97,18 +109,27 @@ function unreachable(res: Response): boolean {
  * nach kurzer Pause erneut gesendet.
  */
 export async function send(url: string, init: RequestInit, retriable = false): Promise<Response> {
+  const writing = !!init.method && init.method !== 'GET'
+  let waited = 0
   for (let attempt = 0; ; attempt++) {
-    const last = !retriable || attempt >= retry.delays.length
+    const delay = retry.delays[attempt]
+    const last =
+      !retriable ||
+      attempt >= retry.delays.length ||
+      (writing && waited + delay > WRITE_RETRY_BUDGET)
     let res: Response
     try {
       res = await fetch(url, init)
     } catch {
-      if (last) throw new ApiError(0, {})
-      await wait(retry.delays[attempt])
+      // Ohne Netz sofort melden statt eine halbe Minute zu warten (W-10)
+      if (last || offline()) throw new ApiError(0, {})
+      await wait(delay)
+      waited += delay
       continue
     }
     if (last || !unreachable(res)) return res
-    await wait(retry.delays[attempt])
+    await wait(delay)
+    waited += delay
   }
 }
 
@@ -202,15 +223,20 @@ function parseErrors(status: number, body: unknown) {
 /** Meldung, wenn die Antwort selbst keine lesbare Meldung enthält. */
 export function statusMessage(status: number): string {
   if (status === 0)
-    return 'Keine Verbindung zum Server. Bitte die Internetverbindung prüfen und es gleich noch einmal versuchen.'
-  if (status === 403) return 'Dafür fehlt dir die Berechtigung.'
-  if (status === 404) return 'Nicht gefunden.'
-  if (status === 413) return 'Die Datei ist zu groß.'
-  if (status === 429) return 'Zu viele Versuche. Bitte einen Moment warten.'
+    return t(
+      'Keine Verbindung zum Server. Bitte die Internetverbindung prüfen und es gleich noch einmal versuchen.',
+    )
+  if (status === 403) return t('Dafür fehlt dir die Berechtigung.')
+  if (status === 404) return t('Nicht gefunden.')
+  if (status === 413) return t('Die Datei ist zu groß.')
+  if (status === 429) return t('Zu viele Versuche. Bitte einen Moment warten.')
   if (status === 502 || status === 503 || status === 504)
-    return 'Der Server ist gerade nicht erreichbar, vielleicht wird er neu gestartet. Bitte in einer Minute noch einmal versuchen.'
-  if (status >= 500) return 'Serverfehler. Bitte später erneut versuchen.'
-  return 'Das hat nicht geklappt.'
+    return t(
+      'Der Server ist gerade nicht erreichbar, vielleicht wird er neu gestartet. Bitte in einer Minute noch einmal versuchen.',
+    )
+  // W-10: verständlich statt „Serverfehler“
+  if (status >= 500) return t('Der Server antwortet gerade nicht. Bitte später erneut versuchen.')
+  return t('Das hat nicht geklappt.')
 }
 
 async function call<T>(method: Method, url: string, data?: unknown, key?: string): Promise<T> {

@@ -11,7 +11,7 @@ import { docApi, docBase, formatSize } from '../../api/documents.ts'
 import type { DocBase, DocFolder, DocItem, DocOverview, Visibility } from '../../api/documents.ts'
 import { StatutePanel } from '../../components/StatutePanel.tsx'
 import { errorMessage, formatDate, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { PageActions, PageHeader } from '../../components/PageHeader.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
@@ -104,7 +104,7 @@ function DocumentArea({
               </p>
             )}
             {error && <Alert kind="error">{error}</Alert>}
-            {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+            {!data && !error && <Loading />}
             {data && (
               <Library
                 base={base}
@@ -987,7 +987,7 @@ function TrashPanel({ base }: { base: DocBase }) {
   }
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <div>
       <p className="small">
@@ -1053,7 +1053,7 @@ function TrashPanel({ base }: { base: DocBase }) {
 function MemberDocuments({ base }: { base: DocBase }) {
   const { data, error, reload } = useLoad(() => docApi.overview(base), [base])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   if (!data.folders.some((folder) => folder.documents.length > 0))
     return <p className="muted">{t('Für dich sind keine Dokumente freigegeben.')}</p>
   return (

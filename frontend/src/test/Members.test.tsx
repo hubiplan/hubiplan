@@ -100,7 +100,7 @@ describe('Mitgliederliste', () => {
       'false',
     )
     // Zwei erreichbare Seitennavigationen, oberhalb und unterhalb der Ergebnisse.
-    await user.click(screen.getAllByRole('button', { name: 'Weiter' })[0])
+    await user.click(screen.getAllByRole('button', { name: 'Nächste Seite' })[0])
     await screen.findByText('Muster, Erika')
     expect(list).toHaveBeenLastCalledWith(
       7,

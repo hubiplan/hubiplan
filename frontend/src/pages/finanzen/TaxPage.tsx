@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { euro, financeApi } from '../../api/finance.ts'
 import type { TaxArea, TaxReport, TaxStatus } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import type { TermKey } from '../../learning/content.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
@@ -119,7 +119,7 @@ export function TaxPage() {
   )
   const error = settings.error ?? report.error
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!settings.data || !report.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!settings.data || !report.data) return <Loading />
   const data = report.data
   if (!data.enabled)
     return (

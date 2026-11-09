@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { historyApi } from '../../api/competitionHistory.ts'
 import { useLoad } from '../../components/forms.ts'
-import { LoadError } from '../../components/ui.tsx'
+import { LoadError, Loading } from '../../components/ui.tsx'
 import { locale, t } from '../../i18n/index.ts'
 import { CompetitionStatistics } from './Statistics.tsx'
 
@@ -26,7 +26,7 @@ function MemberHistory({ org, membership }: { org: number; membership: number })
     [org, membership],
   )
   if (error) return <LoadError message={error} onRetry={reload} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <div>
       <h2>{t('Titel und Sieger')}</h2>
