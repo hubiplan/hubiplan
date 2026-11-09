@@ -9448,3 +9448,6 @@ msgstr "File “{fname}”: the music file cannot be read."
 
 msgid "Dieses Seitenformat ist nicht möglich."
 msgstr "This page format is not possible."
+
+msgid "Für diese Untereinheit kannst du hier keine Termine anlegen."
+msgstr "You cannot create events for this sub-unit here."

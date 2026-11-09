@@ -336,6 +336,67 @@ describe('Kalender', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
+  it('legt einen Termin für eine Untereinheit an', async () => {
+    const user = userEvent.setup()
+    const calls = fakeApi({
+      [monthKey()]: () => ({
+        ...listResponse([]),
+        body: {
+          ...listResponse([]).body,
+          units: [
+            { id: 21, name: 'Korps', path: 'Korps', depth: 0 },
+            { id: 22, name: '1. Zug', path: 'Korps › 1. Zug', depth: 1 },
+          ],
+        },
+      }),
+      [`POST ${base}events/`]: () => ({ status: 201, body: { id: 9 } }),
+    })
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+    await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Neuer Termin' })
+    await user.type(within(dialog).getByLabelText('Titel'), 'Zugabend')
+    const unit = within(dialog).getByLabelText('Termin für')
+    expect(unit).toHaveValue('')
+    await user.selectOptions(unit, '22')
+    await user.click(within(dialog).getByRole('button', { name: 'Termin anlegen' }))
+    const post = calls.find((c) => c.key === `POST ${base}events/`)
+    const body = JSON.parse(String(post?.init?.body))
+    expect(body.department_id).toBe(22)
+    expect(body.title).toBe('Zugabend')
+  })
+
+  it('ohne Untereinheiten keine Auswahl „Termin für“', async () => {
+    const user = userEvent.setup()
+    const calls = fakeApi({
+      [monthKey()]: () => listResponse([]),
+      [`POST ${base}events/`]: () => ({ status: 201, body: { id: 9 } }),
+    })
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+    await user.click(await screen.findByRole('button', { name: 'Neuer Termin' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Neuer Termin' })
+    expect(within(dialog).queryByLabelText('Termin für')).not.toBeInTheDocument()
+    await user.type(within(dialog).getByLabelText('Titel'), 'Fest')
+    await user.click(within(dialog).getByRole('button', { name: 'Termin anlegen' }))
+    const post = calls.find((c) => c.key === `POST ${base}events/`)
+    expect(JSON.parse(String(post?.init?.body))).not.toHaveProperty('department_id')
+  })
+
   it('verwirft einen angefangenen Termin nicht per Esc und hält den Fokus im Dialog', async () => {
     const user = userEvent.setup()
     fakeApi({ [monthKey()]: () => listResponse([]) })

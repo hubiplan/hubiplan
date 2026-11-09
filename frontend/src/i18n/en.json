@@ -7540,5 +7540,8 @@
   "{n} von 5 Spiegeln gefunden – die ganze Karte ins Bild.": "{n} of 5 target faces found – the whole card in the picture.",
   "Karte nicht erkannt – vier Spiegel in den Ecken und einer in der Mitte.": "Card not recognised – four target faces in the corners and one in the centre.",
   "Karte in die Mitte des Bildes.": "Card in the centre of the picture.",
-  "Etwas weiter weg – die ganze Karte ins Bild.": "A bit further away – the whole card in the picture."
+  "Etwas weiter weg – die ganze Karte ins Bild.": "A bit further away – the whole card in the picture.",
+  "Termin für": "Event for",
+  "die eigene Einheit": "this unit itself",
+  "Bei einer Untereinheit sind nur ihre Mitglieder eingeladen.": "For a sub-unit, only its members are invited."
 }
