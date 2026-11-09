@@ -47,7 +47,7 @@ export function HomePage() {
         <h1 className="sr-only">{activeDept.name}</h1>
         {/* Gleiche Reihenfolge wie im Verein (S-04): Zu erledigen, Schnellaktionen, Kennzahl,
             Termine, Hinweise */}
-        <div className="tiles">
+        <div className="tiles home-grid">
           {activeDept.permissions.includes('todos.view') && (
             <DepartmentTodosTile department={activeDept.id} />
           )}
@@ -133,7 +133,7 @@ export function HomePage() {
   return (
     <section>
       <h1 className="sr-only">{active.name}</h1>
-      <div className="tiles">
+      <div className="tiles home-grid">
         {activeDept?.permissions.includes('todos.view') && (
           <DepartmentTodosTile department={activeDept.id} />
         )}

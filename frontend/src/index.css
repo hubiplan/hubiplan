@@ -5280,6 +5280,16 @@ label:has(> .file-input:focus-visible) {
 .home-actions .button-row {
   flex-wrap: wrap;
 }
+/* Startseite (S-04): ein ruhiges Raster. Breite Karten über die ganze Zeile, darunter
+   Termine und Hinweise je zur Hälfte; Karten füllen ihre Spalte statt bei 40rem aufzuhören. */
+.home-grid {
+  max-width: 80rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+}
+.home-grid > .card,
+.home-figures .home-figure {
+  max-width: none;
+}
 .home-figures .tiles-figures {
   max-width: none;
 }
