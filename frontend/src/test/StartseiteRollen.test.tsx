@@ -35,6 +35,7 @@ describe('Schnellaktionen je Rolle', () => {
     const both = testOrg({
       permissions: [...KASSE, 'members.view', 'members.edit', 'events.manage'],
       modules: ['members', 'finance', 'billing', 'events'],
+      home_focus: ['finance'],
     }) as unknown as OrgSummary
     expect(roleActions(both).map((a) => a.label)).toEqual([
       'Buchung erfassen',
@@ -52,13 +53,24 @@ describe('Schnellaktionen je Rolle', () => {
       '/versammlungen?neu=1',
       '/versammlungen',
     ])
+    // Vorsitz mit Vollrechten, aber ohne Kassenamt: keine Aktionen der Kasse
+    const chair = testOrg({
+      permissions: [...KASSE, 'members.view', 'members.edit', 'events.manage'],
+      modules: ['members', 'finance', 'billing', 'events'],
+      home_focus: [],
+    }) as unknown as OrgSummary
+    expect(roleActions(chair).map((a) => a.key)).toEqual(['termin', 'aufnahme'])
     // Nur lesen: keine Schnellaktion
     const reader = testOrg({ permissions: ['members.view'] }) as unknown as OrgSummary
     expect(roleActions(reader)).toEqual([])
   })
 
   it('Startseite der Kasse: Schnellaktionen und Kennzahlen', async () => {
-    const org = testOrg({ permissions: KASSE, modules: ['finance', 'billing'] })
+    const org = testOrg({
+      permissions: KASSE,
+      modules: ['finance', 'billing'],
+      home_focus: ['finance'],
+    })
     fakeApi({
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),

@@ -65,6 +65,32 @@ def _assigned(user, org: Organization) -> set[str]:
     return effective(perms)
 
 
+def role_focus(codes) -> set[str]:
+    """Schwerpunkt einer Rolle für die Startseite (S-04): ``finance`` (Kasse), ``minutes``
+    (Schriftführung). Eine Rolle, die Rollen vergeben darf (Vorsitz, Vollrechte), hat keinen
+    Schwerpunkt: Kassenrechte allein machen niemanden zur Kasse."""
+    perms = effective(codes or [])
+    if ROLES_EDIT in perms or ROLES_MANAGE in perms:
+        return set()
+    out: set[str] = set()
+    if FINANCE_EDIT in perms or BILLING_EDIT in perms:
+        out.add("finance")
+    if "meetings.edit" in perms:
+        out.add("minutes")
+    return out
+
+
+def home_focus(user, org: Organization, preview_codes=None) -> list[str]:
+    """Schwerpunkte aus den einzelnen Rollen der Person (bei Ansicht als Rolle aus dieser)."""
+    if preview_codes is not None:
+        return sorted(role_focus(preview_codes))
+    out: set[str] = set()
+    assignments = RoleAssignment.objects.active().filter(user=user, organization=org)
+    for assignment in assignments.select_related("role"):
+        out |= role_focus(assignment.role.permissions)
+    return sorted(out)
+
+
 def _workspace_open(unit: Organization) -> bool:
     """Arbeitsbereich einer Untereinheit: eingeschaltet und die Einheit darüber aktiv."""
     return bool(unit.own_workspace and unit.organization and unit.organization.is_active)

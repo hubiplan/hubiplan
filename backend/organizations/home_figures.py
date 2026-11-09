@@ -196,12 +196,14 @@ def meeting_figures(org: Organization, perms: set[str]) -> list[dict]:
     return out
 
 
-def home_figures(org: Organization, perms: set[str]) -> list[dict]:
-    """Kennzahlen nach Vorrang der Rollen: Kasse vor Vorstand vor Schriftführung."""
+def home_figures(org: Organization, perms: set[str], finance_first: bool = True) -> list[dict]:
+    """Kennzahlen nach Vorrang der Rollen: Kasse vor Vorstand vor Schriftführung. Wer kein
+    Kassenamt hat (``finance_first`` falsch), sieht die Zahlen des Vorstands zuerst."""
     if org.type not in (Organization.Type.CLUB, Organization.Type.FEDERATION):
         return []
-    key = "home-figures:{}:{}:{}:{}".format(
+    key = "home-figures:{}:{}:{}:{}:{}".format(
         org.pk,
+        int(finance_first),
         get_language() or "",
         timezone.localdate().isoformat(),
         hashlib.sha256(",".join(sorted(perms)).encode()).hexdigest()[:16],
@@ -209,7 +211,9 @@ def home_figures(org: Organization, perms: set[str]) -> list[dict]:
     cached = cache.get(key)
     if cached is not None:
         return cached
-    figures = finance_figures(org, perms) + member_figures(org, perms) + meeting_figures(org, perms)
+    finance = finance_figures(org, perms)
+    rest = member_figures(org, perms) + meeting_figures(org, perms)
+    figures = finance + rest if finance_first else rest + finance
     cache.set(key, figures, CACHE_SECONDS)
     return figures
 
@@ -219,7 +223,19 @@ class HomeFiguresView(OrgScopedMixin, APIView):
     """Kennzahlen der Startseite, nach den Rechten des Benutzers."""
 
     def get(self, request, org_id: int):
-        return Response({"figures": home_figures(self.org, self.org_permissions)})
+        from access import preview
+        from access.permissions import home_focus
+
+        current = preview.current()
+        codes = (
+            preview.role_permissions(self.org, current.role_id)
+            if current and current.org_id == self.org.pk
+            else None
+        )
+        focus = home_focus(request.user, self.org, codes)
+        return Response(
+            {"figures": home_figures(self.org, self.org_permissions, "finance" in focus)}
+        )
 
 
 @extend_schema(responses=dict)

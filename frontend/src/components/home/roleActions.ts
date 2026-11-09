@@ -1,5 +1,6 @@
-// Schnellaktionen je Rolle (Konzept S-04). Die Rolle ergibt sich aus den Rechten; mehrere
-// Rollen teilen sich höchstens vier Aktionen, Kasse vor Vorstand vor Schriftführung.
+// Schnellaktionen je Rolle (Konzept S-04). Mehrere Rollen teilen sich höchstens vier Aktionen,
+// Kasse vor Vorstand vor Schriftführung. Die Aktionen der Kasse sieht nur, wer ein Kassenamt hat
+// (home_focus vom Server), nicht schon jeder mit Kassenrechten wie der Vorsitz.
 import { PERM } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
 import { DEPT_PERM } from '../../api/portal.ts'
@@ -23,8 +24,9 @@ export function roleActions(org: OrgSummary): QuickAction[] {
   if (org.type !== 'club' && org.type !== 'federation') return []
   const can = (perm: string) => org.permissions.includes(perm)
   const on = (module: string) => org.modules.includes(module)
-  const finance = on('finance') && can(PERM.financeEdit)
-  const billing = on('billing') && can(PERM.billingEdit)
+  const treasurer = org.home_focus ? org.home_focus.includes('finance') : true
+  const finance = treasurer && on('finance') && can(PERM.financeEdit)
+  const billing = treasurer && on('billing') && can(PERM.billingEdit)
   const actions: (QuickAction | false)[] = [
     // Kasse
     finance && {

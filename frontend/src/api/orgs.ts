@@ -81,6 +81,8 @@ export interface OrgSummary {
   donations_enabled?: boolean
   /** Ansicht als Rolle: wählbar (eigenes Recht) und gerade gewählte Rolle */
   role_preview?: { available: boolean; active: RolePreviewRole | null }
+  /** Schwerpunkte aus den eigenen Rollen (Startseite): finance = Kassenamt, minutes = Schriftführung */
+  home_focus?: string[]
 }
 
 export interface RolePreviewRole {
