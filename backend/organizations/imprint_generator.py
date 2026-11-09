@@ -342,9 +342,10 @@ def platform_privacy() -> str:
             "Server (§ 25 Abs. 2 TDDDG).",
             "Für die Bedienung merkt sich Ihr Browser einige Angaben im eigenen Speicher "
             "(Local und Session Storage): die gewählte Einheit, die Spalten, Suche und Seite der "
-            "Mitgliederlisten, die Kalenderansicht, die Seite, zu der Sie nach der Anmeldung "
-            "zurückkehren, ob Sie den Hinweis auf Neuigkeiten nach einem Update schon gesehen "
-            "haben, und den Verlauf zum Rückgängigmachen. Diese Angaben bleiben auf Ihrem "
+            "Mitgliederlisten, die Kalenderansicht, die Darstellung (hell oder dunkel), die "
+            "Seite, zu der Sie nach der Anmeldung zurückkehren, ob Sie den Hinweis auf "
+            "Neuigkeiten nach einem Update schon gesehen haben, und den Verlauf zum "
+            "Rückgängigmachen. Diese Angaben bleiben auf Ihrem "
             "Gerät, werden nicht an uns übertragen und dienen nur dazu, die von Ihnen genutzten "
             "Funktionen bereitzustellen (§ 25 Abs. 2 Nr. 2 TDDDG). Der Verlauf zum "
             "Rückgängigmachen wird beim Abmelden und beim Schließen des Tabs gelöscht; die "
@@ -355,10 +356,11 @@ def platform_privacy() -> str:
             "Für ein Konto verarbeiten wir E-Mail-Adresse, Name, das Passwort nur als "
             "Prüfwert und, falls eingerichtet, die Zwei-Faktor-Anmeldung "
             "(Art. 6 Abs. 1 lit. b DSGVO). Konten legt die jeweilige Einheit an.",
-            "Zum Konto gehören außerdem Ihre Anzeigeeinstellung für die Lernhilfen und die "
-            "Liste der Erklärungen, die Sie ausgeblendet haben. Sie dienen nur der Anzeige, "
+            "Zum Konto gehören außerdem Ihre Anzeigeeinstellung für die Lernhilfen, die "
+            "gewählte Darstellung (wie das Gerät, hell oder dunkel) und die Liste der "
+            "Erklärungen, die Sie ausgeblendet haben. Sie dienen nur der Anzeige, "
             "werden nicht ausgewertet und mit dem Konto gelöscht. Unter „Mein Konto“ können "
-            "Sie beides jederzeit ändern (Art. 6 Abs. 1 lit. b DSGVO).",
+            "Sie das jederzeit ändern (Art. 6 Abs. 1 lit. b DSGVO).",
         ),
         _section(
             "6. E-Mails",

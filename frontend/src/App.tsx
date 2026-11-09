@@ -27,6 +27,7 @@ import { NextcloudLoginPage } from './pages/NextcloudLoginPage.tsx'
 import { lazyPage } from './lazyPages.ts'
 import { NoLearningAids } from './learning/LearningContext.tsx'
 import { LeaveGuard } from './components/leaveGuard.ts'
+import { ColorSchemeSync } from './components/ColorSchemeSync.tsx'
 
 const ImprintSettingsPage = lazyPage(
   () => import('./pages/settings/ImprintSettingsPage.tsx'),
@@ -217,6 +218,7 @@ export default function App() {
   return (
     <>
       <LeaveGuard />
+      <ColorSchemeSync />
       <Routes>
         <Route element={<PublicShell />}>
           <Route path="/musik-gast" element={<GuestMusicPage />} />

@@ -1,6 +1,12 @@
 {
   "Einleitung und Zeitleiste der Chronik pflegst du unter Verein › Chronik.": "You maintain the introduction and timeline of the chronicle under Club › Chronicle.",
   "Zur Chronik": "To the chronicle",
+  "Darstellung": "Appearance",
+  "Hell oder dunkel": "Light or dark",
+  "Wie Gerät": "Same as device",
+  "Hell": "Light",
+  "Dunkel": "Dark",
+  "Dunkel zeigt HUBIplan die Anmeldung, die Startseite, Termine, Mein Konto und Mein Bereich. Die Verwaltung bleibt hell. Gilt auf allen Geräten, an denen du angemeldet bist.": "In dark mode, HUBIplan shows sign-in, the start page, events, My account and My area in dark colours. Administration stays light. Applies on all devices where you are signed in.",
   "Bitte Adresse und Einheit angeben.": "Please enter an address and a unit.",
   "Adresse „{x}“ entfernen?": "Remove address “{x}”?",
   "Adressen je Einheit": "Addresses per unit",

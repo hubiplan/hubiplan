@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- New: dark mode for members. Sign-in, the start page, events, My account and My area appear dark when your device is set to dark or you choose “Dark” under My account › Profile › **Appearance**. Administration stays light.
 - App: the “Card” tab is now called “Me”. Your card is at the top, below it, as in My area, “My data”, “Invoices” with your direct debit mandate, “Meetings” with agenda, motions and minutes, “My results”, “Volunteer duties” and “Documents”. Long-press the app icon to open “Show ID card”.
 - Usability: links stand out clearly from the text even with dark club colours; HUBIplan picks a suitable shade of the club colour for them. In headings and bold text, a link has a “›” after it. Body text is slightly darker.
 - Usability: the month calendar shows each event’s category as a name, on phones as a short code, with a legend above the month; events have a background in their category colour. Cards stand out more clearly from the page background. All lists page with the same “‹ Previous” and “Next ›” buttons. The role list groups areas by level (“Edit: Cash book, Dues”). On a phone, connect the app under My account › App & other instances with the button **Open in the HUBIplan app**, no QR code needed.
