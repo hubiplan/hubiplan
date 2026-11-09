@@ -117,6 +117,14 @@ class Names:
         s = self.starters.get(pk)
         return s.club if s and s.is_guest else ""
 
+    def unit_slug(self, unit_id) -> str:
+        """Kennung der Seite der Untereinheit, falls die Webseite sie zeigt (sonst leer)."""
+        return self.site.unit_slugs.get(unit_id, "") if unit_id else ""
+
+    def unit_slug_of_starter(self, pk) -> str:
+        s = self.starters.get(pk)
+        return self.unit_slug(s.unit_id) if s else ""
+
 
 def _state(comp) -> dict:
     from competitions.models import Competition
@@ -154,6 +162,10 @@ def _row(names: Names, r: dict, kind: str, depth: str) -> dict:
     }
     if kind in ("einheit", "mannschaft"):
         out["name"] = r.get("name", "")
+        if kind == "einheit":
+            slug = names.unit_slug(r.get("unit"))
+            if slug:
+                out["unit_slug"] = slug
         if kind == "mannschaft" and depth == "alle":
             out["members"] = r.get("members", [])
         if r.get("reason"):
@@ -164,6 +176,10 @@ def _row(names: Names, r: dict, kind: str, depth: str) -> dict:
     club = names.club(r.get("starter"))
     if club:
         out["club"] = club
+    elif out["unit"]:
+        slug = names.unit_slug_of_starter(r.get("starter"))
+        if slug:
+            out["unit_slug"] = slug
     if r.get("out_of_competition"):
         out["out_of_competition"] = True
     if r.get("note"):
@@ -209,6 +225,8 @@ def detail(site, comp) -> dict:
             if p.fallen:
                 if p.winner_id:
                     entry["unit"] = p.winner.unit.name if p.winner.unit_id else ""
+                    if names.unit_slug(p.winner.unit_id):
+                        entry["unit_slug"] = names.unit_slug(p.winner.unit_id)
                     if depth != Competition.WebsiteDepth.UNITS:
                         entry["winner"] = names.of(p.winner.membership, p.winner.name)
                 elif depth != Competition.WebsiteDepth.UNITS:
@@ -229,9 +247,10 @@ def detail(site, comp) -> dict:
                 continue
             else:
                 who = names.of(g.membership, g.name)
-            titles.append(
-                {"title": g.full_title or (g.trophy.name if g.trophy_id else ""), "name": who}
-            )
+            title = {"title": g.full_title or (g.trophy.name if g.trophy_id else ""), "name": who}
+            if g.unit_id and names.unit_slug(g.unit_id):
+                title["unit_slug"] = names.unit_slug(g.unit_id)
+            titles.append(title)
     return {
         **summary(site, comp),
         "description": comp.description,

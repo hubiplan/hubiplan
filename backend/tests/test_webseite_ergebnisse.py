@@ -397,3 +397,30 @@ class TestMeineErgebnisse:
         # fremder Zugang: 404
         other = make_user("erika@example.org")
         assert api(other).get(f"/api/portal/{access.pk}/results/").status_code == 404
+
+
+class TestZugseitenLinks:
+    """Ralf 2026-11-09: Zugwertung und Zug in Klammern verlinken die Zugseite, falls die
+    Webseite sie zeigt."""
+
+    def _detail(self, setup):
+        comp = setup["comp"]
+        comp.status = "endgueltig"
+        comp.save()
+        token = get("results/").json()["competitions"][0]["id"]
+        return get(f"results/{token}/").json()
+
+    def test_kennung_der_zugseite(self, setup):
+        data = self._detail(setup)
+        slug = next(u["slug"] for u in get("units/").json()["units"] if u["name"] == "Zug 1")
+        einzel, zug = data["scorings"]
+        assert einzel["rows"][0]["unit_slug"] == slug
+        assert "unit_slug" not in einzel["rows"][3]  # Gast ohne Zug
+        assert zug["rows"][0]["unit_slug"] == slug
+
+    def test_ohne_zugseite_keine_kennung(self, setup):
+        site = setup["site"]
+        site.units_mode = Website.Units.NONE
+        site.save()
+        data = self._detail(setup)
+        assert all("unit_slug" not in r for s in data["scorings"] for r in s["rows"])
