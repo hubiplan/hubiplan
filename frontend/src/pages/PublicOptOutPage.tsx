@@ -5,7 +5,7 @@ import type { PublicOptOut } from '../api/circulars.ts'
 import { ApiError } from '../api/client.ts'
 import { errorMessage } from '../components/forms.ts'
 import { Logo } from '../components/Logo.tsx'
-import { Alert } from '../components/ui.tsx'
+import { Alert, Loading } from '../components/ui.tsx'
 import { usePublicImprint } from '../components/publicImprint.ts'
 import { t } from '../i18n/index.ts'
 
@@ -75,7 +75,7 @@ export function PublicOptOutPage() {
             </div>
           </>
         )}
-        {!info && !invalid && !unavailable && <p className="muted">{t('Lädt …')}</p>}
+        {!info && !invalid && !unavailable && <Loading />}
         {info && (
           <>
             <p>

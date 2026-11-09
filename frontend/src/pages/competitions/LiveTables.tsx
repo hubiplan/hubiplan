@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import type { StandApi, StandingBlock } from '../../api/competitions.ts'
 import { useVersion } from './standStore.ts'
 import { errorMessage } from '../../components/forms.ts'
-import { LoadError } from '../../components/ui.tsx'
+import { LoadError, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 export function LiveTables({ api }: { api: StandApi }) {
@@ -48,7 +48,7 @@ export function LiveTables({ api }: { api: StandApi }) {
             }}
           />
         ) : (
-          <p role="status">{t('Lädt …')}</p>
+          <Loading />
         )}
       </aside>
     )

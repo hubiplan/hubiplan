@@ -1,4 +1,5 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { OfflineBanner } from './OfflineBanner.tsx'
 import { SubNavContext, buildNavTree } from './subnav.ts'
 import type { SubNavItem } from './subnav.ts'
 import { SubNavList } from './SubNavList.tsx'
@@ -475,12 +476,9 @@ export function Layout() {
 
                 <main className="content" id="inhalt" tabIndex={-1} inert={navOpen || undefined}>
                   {previewOrg && <RolePreviewBanner org={previewOrg} onChanged={previewChanged} />}
+                  <OfflineBanner />
                   {user?.mfa_required_by && (
-                    <MfaNotice
-                      by={user.mfa_required_by}
-                      overdue={!!user.mfa_overdue}
-                      short={pathname !== '/' && !pathname.startsWith('/mein-konto')}
-                    />
+                    <MfaNotice by={user.mfa_required_by} overdue={!!user.mfa_overdue} />
                   )}
                   {/* Verwalter (Rechte in einer Einheit) sehen nach einem Release-Update „Das ist neu“ */}
                   {orgs.length > 0 && !previewOrg && <UpdateNotice />}
@@ -491,14 +489,14 @@ export function Layout() {
                     ) && <NewReleaseNotice />}
                   {loading ? (
                     <p className="muted" role="status">
-                      {t('Lädt …')}
+                      {t('Wird geladen …')}
                     </p>
                   ) : (
                     <PageErrorBoundary resetKey={pathname}>
                       <Suspense
                         fallback={
                           <p className="muted" role="status">
-                            {t('Lädt …')}
+                            {t('Wird geladen …')}
                           </p>
                         }
                       >
@@ -518,28 +516,33 @@ export function Layout() {
   )
 }
 
-/** Pflicht-2FA für heikle Rechte (Gesamtaudit 31.10.b, Frage 1). */
-function MfaNotice({ by, overdue, short }: { by: string; overdue: boolean; short: boolean }) {
+/**
+ * Pflicht-2FA für heikle Rechte (Gesamtaudit 31.10.b, Frage 1). W-07 (UX-Audit 08.11.): ein
+ * Hinweismuster auf allen Seiten, gleiche Kurzfassung, die Begründung hinter „Mehr erfahren“.
+ */
+function MfaNotice({ by, overdue }: { by: string; overdue: boolean }) {
   const date = new Date(by).toLocaleDateString(locale())
-  // W-05: Außer auf der Startseite und in „Mein Konto“ nur eine kurze Zeile, solange die Frist läuft
-  if (short && !overdue)
-    return (
-      <p className="mfa-hint small" role="status">
-        {t('Zwei-Faktor-Anmeldung nötig ab {date}.', { date })}{' '}
+  return (
+    <div className={`alert ${overdue ? 'alert-error' : 'alert-info'} mfa-hint`} role="status">
+      <p>
+        {overdue
+          ? t('Zwei-Faktor-Anmeldung fehlt: Einige Rechte ruhen.')
+          : t('Zwei-Faktor-Anmeldung nötig ab {date}.', { date })}{' '}
         <NavLink to="/mein-konto/anmeldung">{t('Jetzt einrichten')}</NavLink>
       </p>
-    )
-  return (
-    <div className={overdue ? 'alert alert-error' : 'alert alert-info'} role="status">
-      {overdue
-        ? t(
-            'Mitgliederdaten, Protokoll, Rollenverwaltung, vollständige Exporte und das Buchen in der Kasse ruhen, bis du die Zwei-Faktor-Anmeldung einrichtest. ',
-          )
-        : t(
-            'Für deine Rechte (Mitglieder, Protokoll, Rollen, Exporte oder Kasse) brauchst du ab dem {date} die Zwei-Faktor-Anmeldung. ',
-            { date },
-          )}
-      <NavLink to="/mein-konto/anmeldung">{t('Jetzt einrichten')}</NavLink>
+      <details>
+        <summary>{t('Mehr erfahren')}</summary>
+        <p className="small">
+          {overdue
+            ? t(
+                'Mitgliederdaten, Protokoll, Rollenverwaltung, vollständige Exporte und das Buchen in der Kasse ruhen, bis du die Zwei-Faktor-Anmeldung einrichtest. ',
+              )
+            : t(
+                'Für deine Rechte (Mitglieder, Protokoll, Rollen, Exporte oder Kasse) brauchst du ab dem {date} die Zwei-Faktor-Anmeldung. ',
+                { date },
+              )}
+        </p>
+      </details>
     </div>
   )
 }

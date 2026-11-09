@@ -5,7 +5,7 @@ import { api, newRequestKey } from '../../api/client.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { confirmLeave } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { ScoreForm } from './ScoresPage.tsx'
@@ -104,7 +104,7 @@ export function PracticePage() {
     return (
       <>
         <PageHeader />
-        <p>{t('Lädt …')}</p>
+        <Loading />
       </>
     )
   const d = load.data,

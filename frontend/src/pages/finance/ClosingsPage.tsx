@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { financeApi } from '../../api/finance.ts'
 import type { Retention } from '../../api/finance.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert, LoadError } from '../../components/ui.tsx'
+import { Alert, LoadError, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
@@ -25,7 +25,7 @@ export function ClosingsPage() {
   const [busy, setBusy] = useState(false)
 
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   // Prüfliste für das älteste Jahr, das jetzt abgeschlossen werden kann
   const next = [...data.years]
     .sort((a, b) => a.year - b.year)

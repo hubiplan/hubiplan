@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { portalBookingApi } from '../../api/bookings.ts'
 import type { PortalOwnBooking } from '../../api/bookings.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
-import { LoadError } from '../../components/ui.tsx'
+import { LoadError, Loading } from '../../components/ui.tsx'
 import { locale, t } from '../../i18n/index.ts'
 
 const ZONE = 'Europe/Berlin'
@@ -56,7 +56,7 @@ export function PortalBookings({ accessId }: { accessId: number }) {
   const [failure, setFailure] = useState<string | null>(null)
   const [sent, setSent] = useState(false)
   if (error) return <LoadError message={error} onRetry={reload} />
-  if (!data) return <p role="status">{t('Wird geladen…')}</p>
+  if (!data) return <Loading />
   if (data.items.length === 0)
     return <p className="muted">{t('Zurzeit lassen sich hier keine Objekte anfragen.')}</p>
   const item = form.item || data.items[0].id

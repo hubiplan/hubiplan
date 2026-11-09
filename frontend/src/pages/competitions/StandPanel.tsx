@@ -541,6 +541,7 @@ export function StandPanel({
                         disabled={!online}
                         autoLive={padHits.length === 0}
                         blackShare={blackShare(target)}
+                        spots={target.spots}
                         detect={(photo) => api.photo(scoring.id, photo)}
                         onResult={(sug) => {
                           setPadHits(sug.hits)
@@ -615,6 +616,7 @@ export function StandPanel({
                     {target?.photo && scoring.method !== 'frei' && online && (
                       <PhotoButton
                         blackShare={blackShare(target)}
+                        spots={target.spots}
                         detect={(photo) => api.photo(scoring.id, photo)}
                         onResult={(sug) => {
                           setPadHits(sug.hits)
@@ -820,9 +822,12 @@ function hitLabel(h: Hit, scoring: Scoring) {
   )
 }
 
-/** Spiegel / äußerster Ring für die Live-Kamera; nur bei Karten mit einem Spiegel. */
+/**
+ * Spiegel / äußerster Ring für die Live-Kamera; bei Karten mit einem Spiegel und bei der
+ * Fünf-Spiegel-Karte (vier Ecken und Mitte, Ralf 09.11.).
+ */
 function blackShare(tm: TargetInfo): number | null {
-  return tm.black_diameter && tm.rings[0] && tm.spots === 1
+  return tm.black_diameter && tm.rings[0] && (tm.spots === 1 || tm.spots === 5)
     ? tm.black_diameter / tm.rings[0].diameter
     : null
 }

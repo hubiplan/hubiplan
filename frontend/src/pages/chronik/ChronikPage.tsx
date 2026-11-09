@@ -6,7 +6,7 @@ import { chronicleApi } from '../../api/website.ts'
 import type { TimelineEntry } from '../../api/website.ts'
 import { PERM } from '../../api/orgs.ts'
 import { useLoad } from '../../components/forms.ts'
-import { Alert, LoadError } from '../../components/ui.tsx'
+import { Alert, LoadError, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { TextPanel } from '../website/ContentPage.tsx'
@@ -32,7 +32,7 @@ function ChronikBody() {
   )
   if (!allowed) return <p>{t('Dafür fehlt dir die Berechtigung.')}</p>
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const hint = data.website ? (
     <p className="muted small">
       {t('Veröffentlicht erscheint die Chronik auf der Webseite.')}{' '}

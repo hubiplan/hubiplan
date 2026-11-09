@@ -5,14 +5,14 @@ import { accountApi } from '../../api/account.ts'
 import type { AccountData } from '../../api/account.ts'
 import { useAuth } from '../../auth/AuthContext.tsx'
 import { useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Field, SaveStatus } from '../../components/ui.tsx'
+import { Alert, Field, SaveStatus, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 /** Mein Konto › Profil: Name */
 export function NameSection() {
   const { data, error, setData } = useLoad(() => accountApi.get(), [])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return <NameCard data={data} onSaved={setData} />
 }
 
@@ -20,7 +20,7 @@ export function NameSection() {
 export function LoginSections() {
   const { data, error, setData } = useLoad(() => accountApi.get(), [])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <>
       <EmailCard data={data} onSaved={setData} />

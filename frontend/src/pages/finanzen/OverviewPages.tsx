@@ -6,7 +6,7 @@ import { euro, financeApi } from '../../api/finance.ts'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import type { Overview } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, LoadError } from '../../components/ui.tsx'
+import { Alert, LoadError, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { financeGroupList } from './access.ts'
 import type { FinanceAccess } from './access.ts'
@@ -112,7 +112,7 @@ function BillingSummary({ feeRuns }: { feeRuns: boolean }) {
   const org = useActiveOrg()
   const { data, error } = useLoad(() => billingApi.overview(org.id), [org.id])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   return (
     <>
@@ -192,7 +192,7 @@ function ReceivedSummary() {
   if (error)
     return (
       <LoadError
-        message={t('Rechnungen vom Dachverband konnten nicht geladen werden ({error}).', { error })}
+        message={t('Rechnungen vom Dachverband konnten nicht geladen werden. {error}', { error })}
         onRetry={reload}
       />
     )
@@ -213,7 +213,7 @@ function ReceivedSummary() {
 function CashSummary({ canEdit }: { canEdit: boolean }) {
   const { org, data, error, setYear } = useFinanceYear()
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   if (data.accounts.length === 0) return <NoAccounts canEdit={canEdit} />
   const tm = data.totals
   return (
@@ -292,7 +292,7 @@ function CashSummary({ canEdit }: { canEdit: boolean }) {
 export function EvaluationPage() {
   const { org, data, error, setYear } = useFinanceYear()
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   if (data.accounts.length === 0)
     return <NoAccounts canEdit={org.permissions.includes(PERM.financeEdit)} />
   const tm = data.totals

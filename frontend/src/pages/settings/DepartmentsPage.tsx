@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import { flatModules, moduleApi } from '../../api/modules.ts'
 import type { CatalogModule, Department, DepartmentChoice, DepartmentRole } from '../../api/orgs.ts'
-import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import {
   DATE_PRECISION_OPTIONS,
   DATE_PRECISION_WORD,
@@ -55,7 +55,7 @@ function DepartmentRolesPage() {
   const [selected, setSelected] = useState('')
   if (!can(PERM.rolesView)) return null
   if (error || catalog.error) return <Alert kind="error">{error || catalog.error}</Alert>
-  if (!data || !catalog.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data || !catalog.data) return <Loading />
   const dep = data.find((d) => String(d.id) === selected) ?? data[0]
   return (
     <div className="card card-wide">
@@ -202,7 +202,7 @@ function DepartmentSettingsPage() {
       </Alert>
     )
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   const current = data.find((d) => d.id === selected) ?? null
 

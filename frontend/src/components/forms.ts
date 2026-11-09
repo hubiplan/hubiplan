@@ -255,6 +255,16 @@ export function useAutoSave<T extends object>(
     timer.current = setTimeout(() => void flush(), delay)
   }, [form.values, enabled, delay, changes, flush])
 
+  // Wieder online: Offenes und zuletzt Gescheitertes gleich nachholen (W-10)
+  useEffect(() => {
+    if (!enabled) return
+    const retryNow = () => {
+      if (Object.keys(changes()).length > 0) void flush()
+    }
+    window.addEventListener('online', retryNow)
+    return () => window.removeEventListener('online', retryNow)
+  }, [enabled, changes, flush])
+
   // Beim Verlassen: Offenes sofort speichern und vor dem Schließen warnen,
   // auch wenn das letzte Speichern fehlgeschlagen ist
   useEffect(() => {

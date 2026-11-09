@@ -17,7 +17,7 @@ import { PERM } from '../../api/orgs.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { SortableList, SortHint } from '../../components/Sortable.tsx'
-import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { ImageEditDialog, ImagePicker, ImageTiles, UploadButton } from './images.tsx'
 import { droppedImages, imageLabel, useImageUpload } from './imageTools.ts'
@@ -37,7 +37,7 @@ export function GalleryPage() {
   }
 
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Wird geladen …')}</p>
+  if (!data) return <Loading />
   if (open) {
     return (
       <AlbumEditor
@@ -237,7 +237,7 @@ function AlbumEditor({
 
   if (album.error) return <LoadError message={album.error} onRetry={() => void album.reload()} />
   const data = album.data
-  if (!data) return <p className="muted">{t('Wird geladen …')}</p>
+  if (!data) return <Loading />
   const form: AlbumDraft = draft ?? {
     title: data.title,
     slug: data.slug,

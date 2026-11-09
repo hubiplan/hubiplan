@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 type Musician = { id: number; membership: number | null; active: boolean }
@@ -29,7 +29,7 @@ export function MusicTab({ orgId, memberId }: { orgId: number; memberId: number 
     <section className="card card-wide" aria-labelledby="musik-titel">
       <h2 id="musik-titel">{t('Musikerprofil')}</h2>
       {error && <Alert kind="error">{error}</Alert>}
-      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+      {!data && !error && <Loading />}
       {data && !data.musician && <p className="muted">{t('Noch kein Musikerprofil angelegt.')}</p>}
       {data?.musician && (
         <>

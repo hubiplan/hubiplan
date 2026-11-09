@@ -235,7 +235,7 @@ function ImportWizard({
           {targets.error && (
             <LoadError
               message={t(
-                'Die Felder von HUBIplan konnten nicht geladen werden ({error}). Deine Zuordnung bleibt erhalten.',
+                'Die Felder von HUBIplan konnten nicht geladen werden. {error} Deine Zuordnung bleibt erhalten.',
                 { error: targets.error },
               )}
               onRetry={() => void targets.reload()}
@@ -243,7 +243,7 @@ function ImportWizard({
           )}
           {templates.error && (
             <LoadError
-              message={t('Die gespeicherten Vorlagen konnten nicht geladen werden ({error}).', {
+              message={t('Die gespeicherten Vorlagen konnten nicht geladen werden. {error}', {
                 error: templates.error,
               })}
               onRetry={() => void templates.reload()}

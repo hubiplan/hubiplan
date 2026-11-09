@@ -80,7 +80,7 @@ export function MemberDevelopment({
       {error && <LoadError message={error} onRetry={() => void reload()} />}
       {!loaded && !error && (
         <p className="muted" role="status">
-          {t('Lädt …')}
+          {t('Wird geladen …')}
         </p>
       )}
       {loaded && <MemberCharts data={loaded} />}

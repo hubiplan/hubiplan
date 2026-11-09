@@ -10,7 +10,7 @@ import type { MemberRow } from '../../api/members.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
-import { Alert, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { RangePager } from '../../components/ListControls.tsx'
 import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
 import { billingApi } from '../../api/billing.ts'
@@ -52,7 +52,7 @@ export function BankStatementsPage({ canEdit }: { canEdit: boolean }) {
         <LoadError message={statements.error} onRetry={() => void statements.reload()} />
       )}
       {!statements.data ? (
-        !statements.error && <p className="muted">{t('Lädt …')}</p>
+        !statements.error && <Loading />
       ) : list.length === 0 ? (
         <p className="muted">{t('Noch keine Kontoauszüge eingelesen.')}</p>
       ) : (
@@ -407,7 +407,7 @@ function LinesCard({
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
       {lines.error && <LoadError message={lines.error} onRetry={() => void lines.reload()} />}
       {!lines.data ? (
-        !lines.error && <p className="muted">{t('Lädt …')}</p>
+        !lines.error && <Loading />
       ) : rows.length === 0 ? (
         <p className="muted">
           {status === 'open' ? t('Alles erledigt.') : t('Keine Umsätze in dieser Ansicht.')}
@@ -708,7 +708,7 @@ function InvoiceAssignForm({
         </button>
       </form>
       {found.error && <LoadError message={found.error} onRetry={() => void found.reload()} />}
-      {!found.data && !found.error && <p className="muted small">{t('Lädt …')}</p>}
+      {!found.data && !found.error && <Loading small />}
       {found.data && rows.length === 0 && (
         <p className="muted small">{t('Keine offene Rechnung gefunden.')}</p>
       )}

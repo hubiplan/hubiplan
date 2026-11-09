@@ -224,7 +224,7 @@ export function CalendarView({
 
       {error && (
         <LoadError
-          message={t('Die Termine konnten nicht geladen werden ({error}).', { error })}
+          message={t('Die Termine konnten nicht geladen werden. {error}', { error })}
           onRetry={() => void reload()}
         />
       )}

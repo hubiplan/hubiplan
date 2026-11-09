@@ -7,7 +7,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { ListInput } from '../../components/ListField.tsx'
 import { parseTextList } from '../../components/lists.ts'
-import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
@@ -28,7 +28,7 @@ export function FieldsPage() {
   const [busy, setBusy] = useState(false)
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const current = data.filter((f) => !f.is_archived)
   const archived = data.filter((f) => f.is_archived)
 

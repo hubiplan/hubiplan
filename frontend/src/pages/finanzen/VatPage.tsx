@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { euro, financeApi } from '../../api/finance.ts'
 import type { FinanceSettings, VatPeriod } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 
@@ -27,7 +27,7 @@ export function VatPage({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
   const settings = useLoad(() => financeApi.settings(org.id), [org.id])
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
-  if (!settings.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!settings.data) return <Loading />
   return <VatReportView canEdit={canEdit} s={settings.data} reloadSettings={settings.reload} />
 }
 
@@ -69,7 +69,7 @@ function VatReportView({
   }
 
   if (report.error) return <Alert kind="error">{report.error}</Alert>
-  if (!report.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!report.data) return <Loading />
   const data = report.data
   const editable = canEdit && s.can_edit
 

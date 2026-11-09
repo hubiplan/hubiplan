@@ -103,15 +103,17 @@ export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
           className="button button-ghost"
           disabled={page <= 1}
           onClick={() => setPage(page - 1)}
+          aria-label={t('Vorherige Seite')}
         >
-          {t('Zurück')}
+          <span aria-hidden="true">‹</span> {t('Vorherige')}
         </button>
         <button
           className="button button-ghost"
           disabled={!load.data?.next}
           onClick={() => setPage(page + 1)}
+          aria-label={t('Nächste Seite')}
         >
-          {t('Weiter')}
+          {t('Nächste')} <span aria-hidden="true">›</span>
         </button>
       </div>
     </div>

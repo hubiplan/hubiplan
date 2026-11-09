@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { websiteApi } from '../../api/website.ts'
 import type { ConsentCategory } from '../../api/website.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, LoadError } from '../../components/ui.tsx'
+import { Alert, LoadError, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 export function PublicationSection({
@@ -52,7 +52,7 @@ export function PublicationSection({
         )}
       </p>
       {error && <LoadError message={error} onRetry={() => void reload()} />}
-      {!data && !error && <p className="muted">{t('Lädt …')}</p>}
+      {!data && !error && <Loading />}
       {data && (
         <>
           {canEdit && (

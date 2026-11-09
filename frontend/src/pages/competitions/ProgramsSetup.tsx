@@ -7,7 +7,7 @@ import {
 } from '../../api/competitions.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { TargetSettings } from './TargetSettings.tsx'
 import { t } from '../../i18n/index.ts'
 import { useDraftGuard } from '../../components/leaveGuard.ts'
@@ -24,7 +24,7 @@ export function ProgramsSetup({
   const catalog = useLoad(() => competitionsApi.targets(org), [org])
   const action = useForm({})
   if (catalog.error) return <LoadError message={catalog.error} onRetry={catalog.reload} />
-  if (!catalog.data) return <p>{t('Wird geladen …')}</p>
+  if (!catalog.data) return <Loading />
   const editable = comp.can_manage && comp.status !== 'endgueltig'
   return (
     <div className="stack">

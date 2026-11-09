@@ -3,7 +3,7 @@ import { memberApi } from '../../api/members.ts'
 import type { Transfer } from '../../api/members.ts'
 import { PERM } from '../../api/orgs.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
@@ -15,7 +15,7 @@ export function TransfersPage() {
   const terms = useTerms()
   const { data, error, reload } = useLoad(() => memberApi.transfers(org.id), [org.id])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const incoming = data.filter((tm) => tm.direction === 'incoming')
   const outgoing = data.filter((tm) => tm.direction === 'outgoing')
 

@@ -7,7 +7,7 @@ import type { Account } from '../../api/accounts.ts'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import { UsersCard } from './RolesPage.tsx'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { t, tn } from '../../i18n/index.ts'
 
@@ -49,7 +49,7 @@ export function AccountsPage() {
   const canOpen = can(PERM.membersView)
 
   if (accounts.error) return <LoadError message={accounts.error} onRetry={accounts.reload} />
-  if (!accounts.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!accounts.data) return <Loading />
   const test = FILTERS.find((f) => f.value === filter)!.test
   const rows = accounts.data.filter(test)
   const picked = rows.filter((a) => chosen.has(a.id))
