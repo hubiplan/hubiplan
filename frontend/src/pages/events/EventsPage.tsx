@@ -18,6 +18,7 @@ import { useTerms } from '../../org/terms.ts'
 import { Why } from '../../learning/Aids.tsx'
 import { ExternalCalendarsPanel } from './ExternalCalendarsPanel.tsx'
 import { t } from '../../i18n/index.ts'
+import { eventSetupTabs } from './setup.ts'
 
 export function EventsPage() {
   const { active, activeDept, activePortal } = useOrg()
@@ -45,12 +46,7 @@ export function EventsPage() {
     )
   }
   // Einstellungen des Kalenders unter „Einrichtung“, zuletzt (Menüprüfung M-01)
-  const setupTabs = [
-    ...(categories ? [{ to: '/termine/einrichtung/kategorien', label: t('Kategorien') }] : []),
-    ...(categories ? [{ to: '/termine/einrichtung/fremde', label: t('Fremde Kalender') }] : []),
-    ...(manage ? [{ to: '/termine/einrichtung/weitergabe', label: t('Weitergabe') }] : []),
-    ...(manage ? [{ to: '/termine/einrichtung/link', label: t('Öffentlicher Link') }] : []),
-  ]
+  const setupTabs = eventSetupTabs(manage, categories)
   const tabs = [
     { to: '/termine', label: t('Kalender') },
     ...(isPortal ? [{ to: '/termine/abo', label: t('Kalender-Abo') }] : []),

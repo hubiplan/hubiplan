@@ -1,11 +1,13 @@
 // Startseite für Mitglieder (UX-Audit S-02/10.5): oben das Häufigste – nächster Termin mit
 // Zu-/Absage und „Ausweis zeigen“; eine offene Rechnung nur, wenn es eine gibt.
 // W-07 (UX-Audit 08.11.): eine Karte „Nächste Termine“, der nächste Termin hervorgehoben.
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { calendarBase, eventApi } from '../../api/events.ts'
+import type { ResponseStatus } from '../../api/events.ts'
 import { portalBillingApi } from '../../api/billing.ts'
 import type { PortalEntry } from '../../api/portal.ts'
-import { useLoad } from '../forms.ts'
+import { errorMessage, useLoad } from '../forms.ts'
 import { Alert } from '../ui.tsx'
 import { RsvpBadge } from '../calendar/Rsvp.tsx'
 import { addDays, berlin, formatDay, today } from '../calendar/time.ts'
@@ -13,20 +15,15 @@ import { euro } from '../../api/finance.ts'
 import { t, tc } from '../../i18n/index.ts'
 
 export function MemberHomeTop({ entry }: { entry: PortalEntry }) {
+  // S-04: der nächste Termin mit Zu-/Absage ganz oben, auch am Handy (W-19); der Ausweis
+  // steht als erste Kachel darunter
   return (
     <>
-      <div className="tiles home-first">
-        {entry.events_enabled && <NextEventCard access={entry.id} />}
-        {entry.cards_enabled !== false && (
-          <div className="card tile home-card-action">
-            <h2>{t('Mitgliedsausweis')}</h2>
-            <p className="muted small">{t('QR-Code vorzeigen oder als PDF speichern')}</p>
-            <Link to="/mein-bereich/ausweis" className="button button-primary button-large">
-              {t('Ausweis zeigen')}
-            </Link>
-          </div>
-        )}
-      </div>
+      {entry.events_enabled && (
+        <div className="tiles home-first">
+          <NextEventCard access={entry.id} />
+        </div>
+      )}
       <OpenInvoiceNotice access={entry.id} />
     </>
   )
@@ -35,14 +32,32 @@ export function MemberHomeTop({ entry }: { entry: PortalEntry }) {
 function NextEventCard({ access }: { access: number }) {
   const base = calendarBase.portal(access)
   const from = today()
-  const { data, error } = useLoad(
+  const { data, error, reload } = useLoad(
     () => eventApi.upcoming(base, from, addDays(from, 90)),
     [base, from],
   )
   const next = data?.items.find((o) => !o.is_cancelled) ?? null
+  const [busy, setBusy] = useState(false)
+  const [rsvpError, setRsvpError] = useState<string | null>(null)
+  // S-04: Zu- und Absage gleich hier, ohne den Termin zu öffnen (nicht bei Serien: dort
+  // gilt die Rückmeldung je Termin, das klärt der Termin selbst)
+  const quick = !!next && next.rsvp_enabled && !next.is_series && !next.my_response
+  async function respond(status: ResponseStatus) {
+    if (!next) return
+    setBusy(true)
+    setRsvpError(null)
+    try {
+      await eventApi.respond(base, next.event_id, { status, guests: 0, note: '' })
+      await reload()
+    } catch (err) {
+      setRsvpError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
   const later = (data?.items ?? []).filter((o) => o !== next).slice(0, 3)
   return (
-    <div className="card tile">
+    <div className="card tile tile-wide">
       <h2>{t('Nächste Termine')}</h2>
       {error && <p className="muted small">{t('Termine konnten nicht geladen werden.')}</p>}
       {data && !next && <p className="muted">{t('In den nächsten Wochen keine Termine.')}</p>}
@@ -57,16 +72,37 @@ function NextEventCard({ access }: { access: number }) {
               {next.location && ` · ${next.location}`}
             </span>
           </p>
+          {rsvpError && <Alert kind="error">{rsvpError}</Alert>}
+          {quick && (
+            <div className="button-row home-rsvp">
+              <button
+                type="button"
+                className="button button-primary button-large"
+                disabled={busy}
+                onClick={() => void respond('yes')}
+              >
+                {t('Zusage')}
+              </button>
+              <button
+                type="button"
+                className="button button-large"
+                disabled={busy}
+                onClick={() => void respond('no')}
+              >
+                {t('Absage')}
+              </button>
+            </div>
+          )}
           <div className="button-row">
             <Link
-              className="button"
+              className={quick ? 'button button-ghost' : 'button'}
               to={`/termine?termin=${next.event_id}&datum=${berlin(next.original_start).date}`}
             >
-              {next.rsvp_enabled
-                ? next.my_response
-                  ? t('Rückmeldung ändern')
-                  : t('Zu- oder absagen')
-                : t('Termin öffnen')}
+              {next.rsvp_enabled && next.my_response
+                ? t('Rückmeldung ändern')
+                : next.rsvp_enabled && !quick
+                  ? t('Zu- oder absagen')
+                  : t('Termin öffnen')}
             </Link>
             <Link to="/termine" className="button button-ghost">
               {tc('home', 'Alle Termine')}

@@ -9451,3 +9451,55 @@ msgstr "This page format is not possible."
 
 msgid "Für diese Untereinheit kannst du hier keine Termine anlegen."
 msgstr "You cannot create events for this sub-unit here."
+
+msgid "Einrichtung"
+msgstr "Setup"
+
+msgid "{n} Einrichtungspunkt fehlt noch"
+msgid_plural "{n} Einrichtungspunkte fehlen noch"
+msgstr[0] "{n} setup item is still missing"
+msgstr[1] "{n} setup items are still missing"
+
+msgid "Übersicht der Einrichtung öffnen"
+msgstr "Open the setup overview"
+
+msgid "Kassenbuch"
+msgstr "Cash book"
+
+msgid "{n} Buchung ohne Beleg"
+msgid_plural "{n} Buchungen ohne Beleg"
+msgstr[0] "{n} booking without receipt"
+msgstr[1] "{n} bookings without receipt"
+
+msgid "Kontoauszüge"
+msgstr "Bank statements"
+
+msgid "Kontoauszug {month} einlesen"
+msgstr "Import bank statement for {month}"
+
+msgid "{account}: eingelesen bis {date}"
+msgstr "{account}: imported up to {date}"
+
+msgid "Barkasse heute"
+msgstr "Cash box today"
+
+msgid "Stand {date}"
+msgstr "As of {date}"
+
+msgid "Konto laut letztem Auszug"
+msgstr "Account per last statement"
+
+msgid "Offene Beiträge"
+msgstr "Outstanding fees"
+
+msgid "Mitglieder heute"
+msgstr "Members today"
+
+msgid "Datenänderungen offen"
+msgstr "Open data changes"
+
+msgid "Nächste Versammlung"
+msgstr "Next meeting"
+
+msgid "Einladen bis"
+msgstr "Invite by"

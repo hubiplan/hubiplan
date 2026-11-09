@@ -4,6 +4,8 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Home page: every role sees the same order: **To do**, **Quick actions** for your role (such as **Record a booking** for the treasurer), up to three key figures, **Upcoming events** and a **Notices** card for the legal notice, letter template, anniversaries and birthdays. Members accept or decline the next event right at the top. **To do** now also lists bookings without a receipt, a missing bank statement for the previous month and missing required setup items.
+- Settings: the new **Setup (overview)** lists all setup pages of the modules with the status of each item, a search and the progress of the required items.
 - Usability: links stand out clearly from the text even with dark club colours; HUBIplan picks a suitable shade of the club colour for them. In headings and bold text, a link has a “›” after it. Body text is slightly darker.
 - Usability: the month calendar shows each event’s category as a name, on phones as a short code, with a legend above the month; events have a background in their category colour. Cards stand out more clearly from the page background. All lists page with the same “‹ Previous” and “Next ›” buttons. The role list groups areas by level (“Edit: Cash book, Dues”). On a phone, connect the app under My account › App & other instances with the button **Open in the HUBIplan app**, no QR code needed.
 - Chronicle: you now maintain the introduction and timeline only under Club › Chronicle. Under Website › Texts the chronicle only shows its address, menu setting and delete, plus a link to the chronicle.

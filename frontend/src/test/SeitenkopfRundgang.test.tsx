@@ -50,7 +50,7 @@ const org = testOrg({
 // „/mitglieder/einrichtung“ zeigt gleich den ersten Unterpunkt.
 const ABWEICHUNGEN: Record<string, string> = {
   '/mitglieder/einrichtung': 'Mitgliedsarten',
-  '/einstellungen': 'Organisation',
+  '/einstellungen': 'Einrichtung (Übersicht)',
   '/plattform': 'Einheiten',
 }
 

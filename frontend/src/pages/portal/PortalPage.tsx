@@ -228,15 +228,24 @@ export function PortalTasks({
   entry,
   skip = [],
   limit,
+  prefer = [],
 }: {
   entry: PortalEntry
   skip?: string[]
   /** höchstens so viele Kacheln (Startseite, W-07) */
   limit?: number
+  /** diese Kacheln zuerst (Startseite S-04: das Wichtigste vorn) */
+  prefer?: string[]
 }) {
-  const tasks = portalSections(entry).flatMap((s) =>
-    s.tile ? [{ to: s.to, title: s.tile.title, text: s.tile.text }] : [],
-  )
+  const rank = (to: string) => {
+    const i = prefer.indexOf(to)
+    return i < 0 ? prefer.length : i
+  }
+  const tasks = portalSections(entry)
+    .flatMap((s) => (s.tile ? [{ to: s.to, title: s.tile.title, text: s.tile.text }] : []))
+    .map((tile, i) => ({ tile, i }))
+    .sort((a, b) => rank(a.tile.to) - rank(b.tile.to) || a.i - b.i)
+    .map(({ tile }) => tile)
   return (
     <ul className="task-tiles">
       {tasks

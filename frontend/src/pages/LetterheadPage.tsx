@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { saveBlob } from '../api/client.ts'
-import { letterFileName, letterheadApi } from '../api/letterhead.ts'
+import { letterFileName, letterheadApi, optionKey } from '../api/letterhead.ts'
 import type {
   ContactKey,
   FileFormat,
@@ -17,10 +17,6 @@ import { LetterPreview } from './settings/LetterheadSettingsPage.tsx'
 import { t } from '../i18n/index.ts'
 
 const PRIVATE: ContactKey[] = ['own_email', 'own_phone', 'own_address']
-
-function optionKey(ctx: string, unit: number) {
-  return `${ctx}|${unit}`
-}
 
 /** Hinweise „Vorlage veraltet“ und „neue Funktion“, z. B. auf der Startseite. */
 export function LetterheadNotices({

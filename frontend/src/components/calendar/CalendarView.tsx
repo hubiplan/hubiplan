@@ -1,5 +1,5 @@
 // Kalender in Monats- und Listenansicht, für Vorstand, Abteilung und Mitglieder.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { eventApi } from '../../api/events.ts'
@@ -158,7 +158,16 @@ export function CalendarView({
       setParams(next, { replace: true })
     }
   }
-  const [creating, setCreating] = useState<string | null>(null)
+  // Schnellaktion „Neuer Termin“ der Startseite (S-04): ?neu=1 öffnet das Formular für heute
+  const [creating, setCreating] = useState<string | null>(() =>
+    params.get('neu') === '1' ? today() : null,
+  )
+  useEffect(() => {
+    if (params.get('neu') !== '1') return
+    const next = new URLSearchParams(params)
+    next.delete('neu')
+    setParams(next, { replace: true })
+  }, [params, setParams])
   const grid = monthGrid(month)
   const from = view === 'month' ? grid[0] : month
   const to = view === 'month' ? grid[grid.length - 1] : addDays(addMonths(month, 12), -1)
@@ -399,7 +408,7 @@ export function CalendarView({
           onChanged={() => void reload()}
         />
       )}
-      {creating && data && (
+      {creating && data?.can_manage && (
         <NewEventDialog
           base={base}
           date={creating}

@@ -33,6 +33,10 @@ const ImprintSettingsPage = lazyPage(
   'ImprintSettingsPage',
 )
 const ModulesPage = lazyPage(() => import('./pages/settings/ModulesPage.tsx'), 'ModulesPage')
+const SetupOverviewPage = lazyPage(
+  () => import('./pages/settings/SetupOverviewPage.tsx'),
+  'SetupOverviewPage',
+)
 const PrivacySettingsPage = lazyPage(
   () => import('./pages/settings/PrivacySettingsPage.tsx'),
   'PrivacySettingsPage',
@@ -382,6 +386,14 @@ export default function App() {
           {/* alte Adresse von „Mein Konto“ */}
           <Route path="einstellungen/konto" element={<Navigate to="/mein-konto" replace />} />
           <Route path="einstellungen" element={<SettingsLayout />}>
+            <Route
+              path="einrichtung"
+              element={
+                <RequireOrg>
+                  <SetupOverviewPage />
+                </RequireOrg>
+              }
+            />
             <Route
               path="organisation"
               element={

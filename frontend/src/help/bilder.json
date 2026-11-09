@@ -367,6 +367,24 @@
       "zugang": "mitglied@hubertus-grimlinghausen.test",
       "seite": "/mein-bereich/versammlungen",
       "ausschnitt": ""
+    },
+    {
+      "name": "startseite-vorstand",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/",
+      "ausschnitt": ".tiles"
+    },
+    {
+      "name": "startseite-mitglied",
+      "zugang": "mitglied@hubertus-grimlinghausen.test",
+      "seite": "/",
+      "ausschnitt": ""
+    },
+    {
+      "name": "einrichtung-uebersicht",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/einstellungen/einrichtung",
+      "ausschnitt": ".setup-overview"
     }
   ]
 }

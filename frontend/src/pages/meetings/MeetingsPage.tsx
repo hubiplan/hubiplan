@@ -1,6 +1,6 @@
 // Versammlungen und Sitzungen (konzepte/versammlungen.md, Schritte V1–V5): Übersicht,
 // Anlegen mit Termin, Tagesordnung, Einladung, Anwesenheit, Protokoll, Arten, Beschlussbuch.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { berlin } from '../../components/calendar/time.ts'
 import { meetingApi } from '../../api/meetings.ts'
@@ -128,7 +128,14 @@ function Meetings({
   const detail = useDetailParam('versammlung')
   const list = useLoad(() => meetingApi.list(base), [base])
   const kinds = useLoad(() => meetingApi.kinds(base), [base])
-  const [creating, setCreating] = useState(false)
+  // Schnellaktion „Versammlung anlegen“ der Startseite (S-04): ?neu=1 öffnet das Formular
+  const [creating, setCreating] = useState(() => canEdit && params.get('neu') === '1')
+  useEffect(() => {
+    if (params.get('neu') !== '1') return
+    const next = new URLSearchParams(params)
+    next.delete('neu')
+    setParams(next, { replace: true })
+  }, [params, setParams])
   const [now] = useState(() => Date.now())
   const show = (next: 'list' | 'kinds' | 'book') => {
     const p = new URLSearchParams(params)

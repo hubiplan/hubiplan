@@ -2,7 +2,7 @@
 key: page.settings_org
 titel: Settings › Organisation
 rechte: [org.edit]
-routen: [/einstellungen/organisation, /einstellungen]
+routen: [/einstellungen/organisation]
 stichworte: [club, name, address, contact, founding year, contacts]
 ---
 
