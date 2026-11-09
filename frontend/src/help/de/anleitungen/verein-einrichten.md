@@ -4,7 +4,7 @@ titel: Verein einrichten
 rechte: [settings.view]
 routen: [/einstellungen/einrichtung]
 reihe: 5
-stichworte: [Ersteinrichtung, neuer Verein, einrichten, Pflichtangaben, Mitgliedsarten, Beitragssätze, Mahnstufen, Impressum]
+stichworte: [Ersteinrichtung, neuer Verein, einrichten, Pflichtangaben, Mitgliedsarten]
 ---
 
 1. Öffne [Einstellungen › Einrichtung (Übersicht)](/einstellungen/einrichtung).

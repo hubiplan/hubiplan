@@ -3,7 +3,7 @@ key: page.settings_setup
 titel: Einstellungen › Einrichtung (Übersicht)
 rechte: [settings.view]
 routen: [/einstellungen/einrichtung, /einstellungen]
-stichworte: [Einrichtung, Ersteinrichtung, einrichten, Fortschritt, Pflichtangaben, Übersicht, Mahnstufen, Mitgliedsarten]
+stichworte: [Ersteinrichtung, einrichten, Fortschritt, Pflichtangaben, Mahnstufen]
 ---
 
 Die Übersicht zeigt alle Einrichtungsseiten der eingeschalteten Module an einem Ort, gruppiert nach Bereich: Verein, Mitglieder, Termine, Finanzen und, wenn eingeschaltet, Wettbewerbe und Musik. Die Seiten selbst bleiben in ihrem Bereich; jede Zeile führt dorthin.

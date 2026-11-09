@@ -4,7 +4,7 @@ titel: Set up the club
 rechte: [settings.view]
 routen: [/einstellungen/einrichtung]
 reihe: 5
-stichworte: [initial setup, new club, set up, required details, membership types, fee rates, reminder levels, legal notice]
+stichworte: [initial setup, new club, set up, required details, membership types]
 ---
 
 1. Open [Settings › Setup (overview)](/einstellungen/einrichtung).

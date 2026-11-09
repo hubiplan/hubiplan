@@ -3,7 +3,7 @@ key: page.settings_setup
 titel: Settings › Setup (overview)
 rechte: [settings.view]
 routen: [/einstellungen/einrichtung, /einstellungen]
-stichworte: [setup, initial setup, set up, progress, required details, overview, reminder levels, membership types]
+stichworte: [initial setup, set up, progress, required details, reminder levels]
 ---
 
 The overview shows all setup pages of the enabled modules in one place, grouped by area: club, members, events, finance and, if enabled, competitions and music. The pages themselves stay in their area; each row leads there.
