@@ -34,6 +34,8 @@ LIMIT = 20
 EVENT_DAYS = 14
 # Rundschreiben-Entwürfe, die so lange liegen, erscheinen unter „Zu erledigen“
 DRAFT_DAYS = 7
+# Der Kontoauszug des Vormonats erscheint ab diesem Tag des Monats unter „Zu erledigen“
+STATEMENT_GRACE_DAYS = 5
 
 
 def _person(membership) -> str:
@@ -274,6 +276,84 @@ def incoming_tasks(org: Organization, perms: set[str]) -> list[dict]:
     ]
 
 
+def bookkeeping_tasks(org: Organization, perms: set[str]) -> list[dict]:
+    """Kassenführung (S-04, H3): Buchungen ohne Beleg im laufenden Geschäftsjahr und Bankkonten,
+    deren Kontoauszug für den Vormonat fehlt. Nur mit dem Recht, die Kasse zu führen."""
+    from django.db.models import Exists, Max, OuterRef, Subquery
+
+    from finance.models import Account, BankStatement, Booking, Receipt
+
+    if FINANCE_EDIT not in perms or "finance" not in (org.enabled_modules or []):
+        return []
+    today = timezone.localdate()
+    short = lambda day: date_format(day, "SHORT_DATE_FORMAT", use_l10n=True)  # noqa: E731
+    items: list[dict] = []
+    year = org.fiscal_year_of(today)
+    visible = Receipt.objects.filter(booking=OuterRef("pk"), hidden_at__isnull=True)
+    # Wie die Prüfliste der Kassenprüfung: ohne Stornos, Umbuchungen und Teile einer Splitbuchung
+    without = (
+        Booking.objects.filter(
+            organization=org,
+            year=year,
+            cancels__isnull=True,
+            cancellation__isnull=True,
+            split_of__isnull=True,
+        )
+        .exclude(kind=Booking.Kind.TRANSFER)
+        .annotate(has=Exists(visible))
+        .filter(has=False)
+    )
+    n = without.count()
+    if n:
+        first = without.order_by("date").values_list("date", flat=True).first()
+        items.append(
+            {
+                "kind": "bookings_without_receipt",
+                "area": "finance",
+                "kind_label": gettext("Kassenbuch"),
+                "title": ngettext("{n} Buchung ohne Beleg", "{n} Buchungen ohne Beleg", n).format(
+                    n=n
+                ),
+                "detail": gettext("älteste vom {date}").format(date=short(first)),
+                "created_at": first,
+                "link": "/finanzen/kassenbuch?ohne_beleg=1",
+            }
+        )
+    # Kontoauszug des Vormonats: nur für Bankkonten, deren Auszüge hier eingelesen werden
+    month_start = today.replace(day=1)
+    last_month_end = month_start - datetime.timedelta(days=1)
+    if today.day >= STATEMENT_GRACE_DAYS:
+        latest = (
+            BankStatement.objects.filter(account=OuterRef("pk"), date_to__isnull=False)
+            .values("account")
+            .annotate(last=Max("date_to"))
+            .values("last")
+        )
+        accounts = (
+            Account.objects.filter(organization=org, is_active=True, kind=Account.Kind.BANK)
+            .annotate(last=Subquery(latest[:1]))
+            .filter(last__isnull=False, last__lt=last_month_end)
+            .order_by("position", "name")
+        )
+        month = date_format(last_month_end, "F Y", use_l10n=True)
+        for account in accounts:
+            items.append(
+                {
+                    "kind": "statement_missing",
+                    "area": "finance",
+                    "kind_label": gettext("Kontoauszüge"),
+                    "title": gettext("Kontoauszug {month} einlesen").format(month=month),
+                    "detail": gettext("{account}: eingelesen bis {date}").format(
+                        account=account.name, date=short(account.last)
+                    ),
+                    "created_at": account.last,
+                    "link": "/finanzen/kontoauszuege",
+                    "ref": account.pk,
+                }
+            )
+    return items
+
+
 def account_tasks(org: Organization, perms: set[str]) -> list[dict]:
     """Konten, deren Einladung abgelaufen ist (Menüprüfung 2, N-03)."""
     from access.accounts_view import account_data, collect
@@ -414,6 +494,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
         from entries.open_tasks import entry_tasks
         from helpers.open_tasks import helper_tasks
         from meetings.open_tasks import meeting_tasks
+        from organizations.setup_status import setup_tasks
         from todos.open_tasks import todo_tasks
 
         # Bereich je Quelle: Die Finanzen-Übersicht zeigt nur „finance“ (Menüprüfung 2, N-03)
@@ -427,7 +508,14 @@ class OpenTasksView(OrgScopedMixin, APIView):
                 ),
             ),
             ("events", lambda: event_tasks(org, perms)),
-            ("finance", lambda: billing_tasks(org, perms) + incoming_tasks(org, perms)),
+            (
+                "finance",
+                lambda: (
+                    billing_tasks(org, perms)
+                    + incoming_tasks(org, perms)
+                    + bookkeeping_tasks(org, perms)
+                ),
+            ),
             ("bookings", lambda: booking_tasks(org, perms)),
             ("website", lambda: website_tasks(org, perms)),
             ("circulars", lambda: circular_tasks(request.user, org, perms)),
@@ -436,6 +524,8 @@ class OpenTasksView(OrgScopedMixin, APIView):
             ("helpers", lambda: helper_tasks(org, perms)),
             ("entries", lambda: entry_tasks(org, perms)),
             ("todos", lambda: todo_tasks(request.user, org, perms)),
+            # Unvollständige Pflichtpunkte der Einrichtung (S-02 + S-04)
+            ("setup", lambda: setup_tasks(org, perms)),
         ]
         items: list[dict] = []
         for area, load in sources:

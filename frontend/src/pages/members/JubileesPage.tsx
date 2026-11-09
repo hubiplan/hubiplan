@@ -202,22 +202,16 @@ export function JubileesPage() {
   )
 }
 
-/** Kachel für die Startseite: Jubiläen der nächsten 90 Tage. */
-export function JubileeTile() {
-  const org = useActiveOrg()
-  const today = todayIso()
-  const { data } = useLoad(
-    () => fieldApi.jubilees(org.id, today, plusDays(today, 90)),
-    [org.id, today],
-  )
-  const units = useLoad(
-    () => fieldApi.unitJubilees(org.id, today, plusDays(today, 90)),
-    [org.id, today],
-  )
-  const unitRows: UnitJubileeRow[] = units.data?.results ?? []
+/** Startseite (Hinweise): anstehende Jubiläen von Personen und Einheiten, je Person eine Zeile. */
+export function JubileeList({
+  rows,
+  unitRows,
+}: {
+  rows: JubileeRow[]
+  unitRows: UnitJubileeRow[]
+}) {
   return (
-    <div className="card tile">
-      <h2>{t('Anstehende Jubiläen')}</h2>
+    <>
       {unitRows.length > 0 && (
         <ul className="plain-list" aria-label={unitJubileeHeading(unitRows).title}>
           {unitRows.slice(0, 3).map((r) => (
@@ -234,13 +228,9 @@ export function JubileeTile() {
           ))}
         </ul>
       )}
-      {!data ? (
-        <Loading />
-      ) : data.results.length === 0 ? (
-        <p className="muted">{t('In den nächsten 90 Tagen keine.')}</p>
-      ) : (
-        <ul className="plain-list">
-          {groupByPerson(data.results)
+      {rows.length > 0 && (
+        <ul className="plain-list" aria-label={t('Jubiläen')}>
+          {groupByPerson(rows)
             .slice(0, 5)
             .map((p) => (
               <li key={p.member_id} className="tile-entry">
@@ -264,10 +254,7 @@ export function JubileeTile() {
             ))}
         </ul>
       )}
-      <Link to="/mitglieder/jubilaeen" className="small">
-        {t('Alle Jubiläen')}
-      </Link>
-    </div>
+    </>
   )
 }
 
@@ -283,49 +270,31 @@ function birthdayLabel(iso: string, today: string): string {
   return t('{x}, {x2}.{x3}.', { x: WEEKDAYS[d.getDay()], x2: d.getDate(), x3: d.getMonth() + 1 })
 }
 
-/** Kachel auf der Startseite: Geburtstage der nächsten 30 Tage */
-export function BirthdayTile() {
-  const org = useActiveOrg()
-  const today = todayIso()
-  const { data, error } = useLoad(
-    () => fieldApi.birthdays(org.id, today, plusDays(today, BIRTHDAY_DAYS)),
-    [org.id, today],
-  )
-  const rows: BirthdayRow[] = data?.results ?? []
+/** Startseite (Hinweise): Geburtstage der nächsten 30 Tage, weitere aufklappbar. */
+export function BirthdayList({ rows, today }: { rows: BirthdayRow[]; today: string }) {
   const [showAll, setShowAll] = useState(false)
   const shown = showAll ? rows : rows.slice(0, BIRTHDAY_PREVIEW)
   return (
-    <div className="card tile">
-      <h2>{t('Anstehende Geburtstage')}</h2>
-      {error ? (
-        <p className="muted">{t('Geburtstage lassen sich gerade nicht laden.')}</p>
-      ) : !data ? (
-        <Loading />
-      ) : rows.length === 0 ? (
-        <p className="muted">
-          {t('In den nächsten {BIRTHDAY_DAYS} Tagen keine.', { BIRTHDAY_DAYS })}
-        </p>
-      ) : (
-        <ul className="plain-list" aria-label={t('Geburtstage')}>
-          {shown.map((r) => (
-            <li
-              key={`${r.member_id}-${r.date}`}
-              className={r.date === today ? 'tile-entry tile-entry-today' : 'tile-entry'}
-            >
-              <Link to={`/mitglieder/${r.member_id}`} className="tile-entry-title">
-                {nameWithUnits(r)}
-              </Link>
-              <span className="tile-entry-meta muted small">
-                <span>{birthdayLabel(r.date, today)}</span>
-                <span aria-hidden="true">·</span>
-                <span>
-                  {r.age} {t('Jahre')}
-                </span>
+    <>
+      <ul className="plain-list" aria-label={t('Geburtstage')}>
+        {shown.map((r) => (
+          <li
+            key={`${r.member_id}-${r.date}`}
+            className={r.date === today ? 'tile-entry tile-entry-today' : 'tile-entry'}
+          >
+            <Link to={`/mitglieder/${r.member_id}`} className="tile-entry-title">
+              {nameWithUnits(r)}
+            </Link>
+            <span className="tile-entry-meta muted small">
+              <span>{birthdayLabel(r.date, today)}</span>
+              <span aria-hidden="true">·</span>
+              <span>
+                {r.age} {t('Jahre')}
               </span>
-            </li>
-          ))}
-        </ul>
-      )}
+            </span>
+          </li>
+        ))}
+      </ul>
       {rows.length > BIRTHDAY_PREVIEW && (
         <p className="muted small">
           {showAll ? (
@@ -343,6 +312,6 @@ export function BirthdayTile() {
           )}
         </p>
       )}
-    </div>
+    </>
   )
 }

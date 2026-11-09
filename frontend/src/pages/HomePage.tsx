@@ -3,26 +3,12 @@ import { useAuth } from '../auth/AuthContext.tsx'
 import { useOrg } from '../org/OrgContext.tsx'
 import { calendarBase } from '../api/events.ts'
 import { UpcomingTile } from '../components/calendar/UpcomingTile.tsx'
-import { BirthdayTile, JubileeTile } from './members/JubileesPage.tsx'
 import { DepartmentTodosTile } from '../components/DepartmentTodosTile.tsx'
 import { OpenTasksTile } from '../components/OpenTasksTile.tsx'
-import { imprintApi } from '../api/imprint.ts'
 import { PERM } from '../api/orgs.ts'
 import type { OrgSummary } from '../api/orgs.ts'
-import { useLoad } from '../components/forms.ts'
-import { ImprintMissing } from './settings/ImprintSettingsPage.tsx'
-import { HomeLetterheadNotices } from './LetterheadPage.tsx'
-
-/** Vorstand: Hinweis, wenn im Impressum Pflichtangaben fehlen. */
-function ImprintHint({ org }: { org: OrgSummary }) {
-  const show =
-    (org.type === 'club' || org.type === 'federation') && org.permissions.includes(PERM.orgEdit)
-  const { data } = useLoad(
-    () => (show ? imprintApi.get(org.id) : Promise.resolve(null)),
-    [org.id, show],
-  )
-  return data ? <ImprintMissing missing={data.missing} /> : null
-}
+import { DeptFigures, NoticesCard, OrgFigures, QuickActions } from '../components/home/RoleHome.tsx'
+import { deptActions, roleActions } from '../components/home/roleActions.ts'
 import { PortalTasks } from './portal/PortalPage.tsx'
 import { MemberHomeTop } from '../components/home/MemberHome.tsx'
 import { t } from '../i18n/index.ts'
@@ -39,6 +25,10 @@ const TASK_PERMS = [
   PERM.infrastructureEdit,
   PERM.websiteManage,
   PERM.circularsSend,
+  // Kassenführung, Versammlungen und Einrichtung (S-04 H3, S-02)
+  PERM.financeEdit,
+  PERM.meetingsEdit,
+  PERM.settingsView,
 ]
 
 function showsOpenTasks(org: OrgSummary): boolean {
@@ -55,23 +45,19 @@ export function HomePage() {
     return (
       <section>
         <h1 className="sr-only">{activeDept.name}</h1>
-        <HomeLetterheadNotices />
+        {/* Gleiche Reihenfolge wie im Verein (S-04): Zu erledigen, Schnellaktionen, Kennzahl,
+            Termine, Hinweise */}
         <div className="tiles">
-          {activeDept?.permissions.includes('todos.view') && (
+          {activeDept.permissions.includes('todos.view') && (
             <DepartmentTodosTile department={activeDept.id} />
           )}
-          <div className="card tile">
-            <h2>{activeDept.label}</h2>
-            <p>
-              <Link to="/abteilung">
-                {t('Mitglieder der {label} ansehen', { label: activeDept.label })}
-              </Link>
-            </p>
-            <p>
-              <Link to="/briefvorlage">{t('Briefvorlage erstellen')}</Link>
-            </p>
-          </div>
+          <QuickActions
+            actions={deptActions(activeDept)}
+            label={t('Schnellaktionen: {label}', { label: activeDept.label })}
+          />
+          <DeptFigures dept={activeDept} />
           {activeDept.events_enabled && <UpcomingTile base={calendarBase.dept(activeDept.id)} />}
+          <NoticesCard org={null} />
         </div>
       </section>
     )
@@ -86,7 +72,17 @@ export function HomePage() {
         <MemberHomeTop entry={activePortal} />
         <h2 className="section-heading">{t('Mein Bereich')}</h2>
         {/* W-07: nur die wichtigsten Kacheln, der Rest steht in „Mein Bereich“ */}
-        <PortalTasks entry={activePortal} skip={['/mein-bereich/ausweis', '/termine']} limit={3} />
+        {/* S-04: höchstens vier Kacheln, der Ausweis zuerst; Termine stehen schon oben */}
+        <PortalTasks
+          entry={activePortal}
+          skip={['/termine']}
+          prefer={[
+            '/mein-bereich/ausweis',
+            '/mein-bereich/helferdienste',
+            '/mein-bereich/rechnungen',
+          ]}
+          limit={4}
+        />
         <p>
           <Link to="/mein-bereich">{t('Alles in Mein Bereich')}</Link>
         </p>
@@ -121,36 +117,36 @@ export function HomePage() {
   }
 
   // Name und Dachverband stehen schon im Kopf; die Überschrift ist nur für Screenreader.
+  // Feste Reihenfolge für alle Rollen (S-04): Zu erledigen › Schnellaktionen › Kennzahlen ›
+  // Nächste Termine › Hinweise. Was die Person nicht darf, fehlt einfach.
+  const actions = roleActions(active)
+  const clubLike = active.type === 'club' || active.type === 'federation'
+  const upcoming =
+    clubLike &&
+    active.modules.includes('events') &&
+    // Ohne Recht auf den Kalender keine Kachel und keine abgelehnte Anfrage (W-01)
+    active.permissions.includes(PERM.eventsView)
+  const people =
+    active.type === 'club' &&
+    active.modules.includes('members') &&
+    active.permissions.includes(PERM.membersView)
   return (
     <section>
       <h1 className="sr-only">{active.name}</h1>
-      <ImprintHint org={active} />
-      <HomeLetterheadNotices />
       <div className="tiles">
         {activeDept?.permissions.includes('todos.view') && (
           <DepartmentTodosTile department={activeDept.id} />
         )}
         {showsOpenTasks(active) && <OpenTasksTile org={active} />}
-        {(active.type === 'club' || active.type === 'federation') &&
-          active.modules.includes('events') &&
-          // Ohne Recht auf den Kalender keine Kachel und keine abgelehnte Anfrage (W-01)
-          active.permissions.includes(PERM.eventsView) && (
-            <UpcomingTile base={calendarBase.org(active.id)} />
-          )}
-        {active.type === 'club' &&
-        active.modules.includes('members') &&
-        active.permissions.includes('members.view') ? (
-          <>
-            {active.modules.includes('awards') && <JubileeTile />}
-            <BirthdayTile />
-          </>
-        ) : (
-          !active.modules.includes('events') && (
-            <div className="card tile">
-              <h2>{t('Übersicht')}</h2>
-              <p className="muted">{t('Hier erscheinen Kacheln der Module.')}</p>
-            </div>
-          )
+        <QuickActions actions={actions} />
+        {clubLike && <OrgFigures org={active} />}
+        {upcoming && <UpcomingTile base={calendarBase.org(active.id)} />}
+        <NoticesCard org={active} />
+        {!upcoming && !people && actions.length === 0 && (
+          <div className="card tile">
+            <h2>{t('Übersicht')}</h2>
+            <p className="muted">{t('Hier erscheinen Kacheln der Module.')}</p>
+          </div>
         )}
       </div>
     </section>

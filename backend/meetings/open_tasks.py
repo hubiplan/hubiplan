@@ -14,8 +14,8 @@ from django.utils.translation import gettext, ngettext
 from .access import EDIT, MODULE
 from .models import Meeting, Motion
 
-# Einladungen erscheinen so viele Tage vor Ablauf der Einladungsfrist
-INVITE_AHEAD_DAYS = 7
+# Einladungen erscheinen so viele Tage vor Ablauf der Einladungsfrist (S-04: zwei Wochen)
+INVITE_AHEAD_DAYS = 14
 
 
 def _short(day: datetime.date) -> str:

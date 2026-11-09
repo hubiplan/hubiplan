@@ -70,7 +70,7 @@ export const FIRST_STEP_PACKAGES: readonly { id: string; label: () => string; ke
   {
     id: 'einstellungen',
     label: () => t('Vereinseinstellungen'),
-    keys: ['guide.role_create', 'guide.role_preview'],
+    keys: ['guide.club_setup', 'guide.role_create', 'guide.role_preview'],
   },
 ]
 

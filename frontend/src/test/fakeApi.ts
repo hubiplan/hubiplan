@@ -109,20 +109,25 @@ export function fakeApi(routes: Record<string, Handler>) {
               : // Offene Aufgaben: ohne eigene Angabe keine
                 /^GET \/api\/orgs\/\d+\/open-tasks\/$/.test(key)
                 ? () => ({ status: 200, body: { items: [] } })
-                : // Beitragsordnung, Gründungsurkunde (optional): ohne eigene Angabe keine
-                  /^GET \/api\/orgs\/\d+\/statutes\/\?(department=\d+&)?kind=(fee_rules|founding_deed)$/.test(
-                      key,
-                    )
-                  ? () => ({
-                      status: 200,
-                      body: {
-                        kind: key.endsWith('founding_deed') ? 'founding_deed' : 'fee_rules',
-                        versions: [],
-                        publication: { is_public: false, pdf_url: null, info_url: null },
-                        can_manage: false,
-                      },
-                    })
-                  : undefined)
+                : // Kennzahlen der Startseite und Stand der Einrichtung: ohne eigene Angabe keine
+                  /^GET \/api\/(orgs|depts)\/\d+\/home-figures\/$/.test(key)
+                  ? () => ({ status: 200, body: { figures: [] } })
+                  : /^GET \/api\/orgs\/\d+\/setup-status\/$/.test(key)
+                    ? () => ({ status: 200, body: { items: {} } })
+                    : // Beitragsordnung, Gründungsurkunde (optional): ohne eigene Angabe keine
+                      /^GET \/api\/orgs\/\d+\/statutes\/\?(department=\d+&)?kind=(fee_rules|founding_deed)$/.test(
+                          key,
+                        )
+                      ? () => ({
+                          status: 200,
+                          body: {
+                            kind: key.endsWith('founding_deed') ? 'founding_deed' : 'fee_rules',
+                            versions: [],
+                            publication: { is_public: false, pdf_url: null, info_url: null },
+                            can_manage: false,
+                          },
+                        })
+                      : undefined)
     if (!handler) throw new Error(`Unerwarteter Aufruf: ${key}`)
     const { status, body, headers } = handler(init)
     // 204 darf keinen Inhalt haben

@@ -4,6 +4,8 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Startseite: Für alle Rollen gilt dieselbe Reihenfolge: **Zu erledigen**, **Schnellaktionen** deiner Rolle (z. B. **Buchung erfassen** für die Kasse), bis zu drei Kennzahlen, **Nächste Termine** und eine Karte **Hinweise** für Impressum, Briefvorlage, Jubiläen und Geburtstage. Mitglieder sagen beim nächsten Termin ganz oben direkt zu oder ab. Unter **Zu erledigen** stehen jetzt auch Buchungen ohne Beleg, ein fehlender Kontoauszug des Vormonats und fehlende Pflichtpunkte der Einrichtung.
+- Einstellungen: Neu ist **Einrichtung (Übersicht)** mit allen Einrichtungsseiten der Module, dem Stand je Punkt, einer Suche und dem Fortschritt der Pflichtpunkte.
 - Neu: Dunkelmodus für Mitglieder. Anmeldung, Startseite, Termine, Mein Konto und Mein Bereich erscheinen dunkel, wenn das Gerät dunkel eingestellt ist oder du unter Mein Konto › Profil › **Darstellung** „Dunkel“ wählst. Die Verwaltung bleibt hell.
 - App: Der Reiter „Ausweis“ heißt jetzt „Ich“. Oben steht der Ausweis, darunter wie in Mein Bereich „Meine Daten“, „Rechnungen“ mit Lastschriftmandat, „Versammlungen“ mit Tagesordnung, Anträgen und Protokollen, „Meine Ergebnisse“, „Helferdienste“ und „Dokumente“. Lange auf das App-Symbol drücken öffnet „Ausweis zeigen“.
 - Bedienung: Links heben sich auch bei dunklen Vereinsfarben deutlich vom Text ab; HUBIplan wählt dafür einen passenden Ton der Vereinsfarbe. In Überschriften und fettem Text steht hinter einem Link ein „›“. Der Fließtext ist etwas dunkler.

@@ -632,6 +632,11 @@ export const orgApi = {
   deleteAssignment: (id: number, a: number) => api.del(`${org(id)}/assignments/${a}/`),
 
   openTasks: (id: number) => api.get<{ items: OpenTask[] }>(`${org(id)}/open-tasks/`),
+  homeFigures: (id: number) => api.get<{ figures: HomeFigure[] }>(`${org(id)}/home-figures/`),
+  deptHomeFigures: (dept: number) =>
+    api.get<{ figures: HomeFigure[] }>(`/api/depts/${dept}/home-figures/`),
+  setupStatus: (id: number) =>
+    api.get<{ items: Record<string, SetupStatus> }>(`${org(id)}/setup-status/`),
   audit: (id: number, query: ListQuery = {}) =>
     api.get<Paged<AuditEntry>>(`${org(id)}/audit/${listParams(query)}`),
   auditChain: (id: number) => api.get<{ check: AuditChainCheck | null }>(`${org(id)}/audit/kette/`),
@@ -691,6 +696,28 @@ export interface SelfUpdate {
 }
 
 /** Vorgang, der eine Entscheidung braucht (Startseite „Offene Aufgaben“) */
+/** Kennzahl der Startseite je Rolle (S-04, H2) */
+export interface HomeFigure {
+  key: string
+  kind: 'money' | 'count' | 'date'
+  label: string
+  /** Betrag als Dezimalzahl („412.30“), Anzahl oder Datum (JJJJ-MM-TT) */
+  value: string | number
+  detail: string
+  link: string
+}
+
+/** Stand eines Einrichtungspunkts (S-02, E2), nach Pfad der Seite */
+export interface SetupStatus {
+  /** zählt für den Fortschritt */
+  required: boolean
+  done: boolean
+  /** angelegte Einträge, wo es etwas zu zählen gibt */
+  count?: number
+  /** fehlende Angaben */
+  missing?: string[]
+}
+
 export interface OpenTask {
   /** Art des Eintrags, z. B. change_request, todo, invoices_overdue, meeting_minutes */
   kind: string

@@ -129,6 +129,11 @@ export const letterheadApi = {
 }
 
 /** Dateiname wie vom Server (für den Download aus dem Browser). */
+/** Schlüssel einer Auswahl „Zusammenhang|Einheit“, z. B. für ?fuer= der Briefvorlage */
+export function optionKey(ctx: string, unit: number) {
+  return `${ctx}|${unit}`
+}
+
 export function letterFileName(unitName: string, format: FileFormat): string {
   const base = `Briefvorlage ${unitName}`
     .replace(/[^\p{L}\p{N}\- ]+/gu, '')

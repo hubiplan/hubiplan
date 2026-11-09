@@ -70,7 +70,8 @@ def test_sammelt_offene_vorgaenge(api, orgs, board_a, erika):
         entry_date=datetime.date(2026, 1, 1),
     )
 
-    items = api(board_a).get(url(a)).json()["items"]
+    # Die fehlende Einrichtung des Testvereins (S-02) hat eigene Tests
+    items = [i for i in api(board_a).get(url(a)).json()["items"] if i["area"] != "setup"]
     kinds = sorted(i["kind"] for i in items)
     assert kinds == ["change_request", "event", "photo", "transfer"]
     event_item = next(i for i in items if i["kind"] == "event")
@@ -183,7 +184,8 @@ def test_belegung_kontaktformular_und_alte_entwuerfe(api, orgs, board_a):
             updated_at=timezone.now() - datetime.timedelta(days=10)
         )
 
-    items = api(board_a).get(url(a)).json()["items"]
+    # Die fehlende Einrichtung des Testvereins (S-02) hat eigene Tests
+    items = [i for i in api(board_a).get(url(a)).json()["items"] if i["area"] != "setup"]
     kinds = sorted(i["kind"] for i in items)
     assert kinds == ["booking", "circular_draft", "contact_held"]
     booking = next(i for i in items if i["kind"] == "booking")

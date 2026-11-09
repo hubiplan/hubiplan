@@ -4,6 +4,8 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Home page: every role sees the same order: **To do**, **Quick actions** for your role (such as **Record a booking** for the treasurer), up to three key figures, **Upcoming events** and a **Notices** card for the legal notice, letter template, anniversaries and birthdays. Members accept or decline the next event right at the top. **To do** now also lists bookings without a receipt, a missing bank statement for the previous month and missing required setup items.
+- Settings: the new **Setup (overview)** lists all setup pages of the modules with the status of each item, a search and the progress of the required items.
 - New: dark mode for members. Sign-in, the start page, events, My account and My area appear dark when your device is set to dark or you choose “Dark” under My account › Profile › **Appearance**. Administration stays light.
 - App: the “Card” tab is now called “Me”. Your card is at the top, below it, as in My area, “My data”, “Invoices” with your direct debit mandate, “Meetings” with agenda, motions and minutes, “My results”, “Volunteer duties” and “Documents”. Long-press the app icon to open “Show ID card”.
 - Usability: links stand out clearly from the text even with dark club colours; HUBIplan picks a suitable shade of the club colour for them. In headings and bold text, a link has a “›” after it. Body text is slightly darker.
