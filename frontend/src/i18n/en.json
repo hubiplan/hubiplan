@@ -7558,14 +7558,7 @@
   "Bei einer Untereinheit sind nur ihre Mitglieder eingeladen.": "For a sub-unit, only its members are invited.",
   "Schnellaktionen": "Quick actions",
   "Im Impressum fehlen noch Angaben: {x}.": "Some details are still missing from the legal notice: {x}.",
-  "Deine Briefvorlage für {name} ist veraltet.": "Your letter template for {name} is out of date.",
-  "1 Jubiläum in den nächsten {n} Tagen": "1 anniversary in the next {n} days",
-  "{count} Jubiläen in den nächsten {n} Tagen": "{count} anniversaries in the next {n} days",
   "Hinweise": "Notices",
-  "Geburtstag in den nächsten {n} Tagen:": "Birthday in the next {n} days:",
-  "{count} Geburtstage in den nächsten {n} Tagen:": "{count} birthdays in the next {n} days:",
-  "weniger": "less",
-  "alle {n} zeigen": "show all {n}",
   "Buchung erfassen": "Record a booking",
   "Mahnlauf vorbereiten": "Prepare reminders",
   "Rundschreiben schreiben": "Write a circular",
@@ -7588,5 +7581,7 @@
   "Kein Einrichtungspunkt passt zur Suche.": "No setup item matches the search.",
   "Einrichtung (Übersicht)": "Setup (overview)",
   "Dachverband": "Federation",
-  "Schießstände": "Shooting ranges"
+  "Schießstände": "Shooting ranges",
+  "Jubiläen in den nächsten {n} Tagen:": "Anniversaries in the next {n} days:",
+  "Geburtstage in den nächsten {n} Tagen:": "Birthdays in the next {n} days:"
 }

@@ -5296,7 +5296,7 @@ label:has(> .file-input:focus-visible) {
 .home-figure-label {
   font-weight: 600;
 }
-.home-notice-list li + li {
+.home-notice-list > li + li {
   margin-top: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--color-border);

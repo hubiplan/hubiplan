@@ -19,7 +19,7 @@ The **To do** tile comes first and collects tasks, approvals, requests, overdue 
 
 Below are up to three key figures, only with the matching permission: for the treasurer the cash box balance, the account balance per last bank statement and outstanding fees; for the board the number of members and of open data changes; for the secretary the next meeting and the date by which invitations must go out. A click opens the matching page. In **Upcoming events**, **New event** opens the event dialog when you have permission to create events, and **Calendar** opens the overview.
 
-The **Notices** card collects what is not urgent: missing details in the legal notice, letter template notices (with **Later**), anniversaries and birthdays in the next 30 days. Without a notice there is no card.
+The **Notices** card collects what is not urgent: missing details in the legal notice, letter template notices (with **Later**), anniversaries in the next 90 and birthdays in the next 30 days, each linked to the member record. Without a notice there is no card.
 
 ![Board home page with To do, quick actions, key figures and notices](bild:startseite-vorstand)
 

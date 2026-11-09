@@ -19,7 +19,7 @@ Die Kachel **Zu erledigen** steht vorn und sammelt Aufgaben, Freigaben, Anfragen
 
 Darunter stehen bis zu drei Kennzahlen, nur mit dem passenden Recht: für die Kasse der Bestand der Barkasse, der Kontostand laut letztem Kontoauszug und die offenen Beiträge, für den Vorstand die Zahl der Mitglieder und der offenen Datenänderungen, für die Schriftführung die nächste Versammlung und bis wann eingeladen werden muss. Ein Klick führt zur passenden Seite. In **Nächste Termine** öffnet **Neuer Termin** mit Anlegerecht direkt den Termindialog, **Zum Kalender** führt zur Übersicht.
 
-Die Karte **Hinweise** sammelt, was nicht eilt: fehlende Angaben im Impressum, Hinweise zur Briefvorlage (mit **Später**), Jubiläen und Geburtstage der nächsten 30 Tage. Ohne Hinweis gibt es keine Karte.
+Die Karte **Hinweise** sammelt, was nicht eilt: fehlende Angaben im Impressum, Hinweise zur Briefvorlage (mit **Später**), Jubiläen der nächsten 90 und Geburtstage der nächsten 30 Tage, jeweils mit Link zur Mitgliedsakte. Ohne Hinweis gibt es keine Karte.
 
 ![Startseite des Vorstands mit Zu erledigen, Schnellaktionen, Kennzahlen und Hinweisen](bild:startseite-vorstand)
 

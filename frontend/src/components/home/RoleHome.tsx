@@ -1,7 +1,6 @@
 // Startseite als Arbeitsplatz je Rolle (Konzept S-04): feste Reihenfolge Zu erledigen ›
 // Schnellaktionen › Kennzahlen › Nächste Termine › Hinweise. Die Rolle ergibt sich aus den
 // Rechten; mehrere Rollen teilen sich höchstens vier Schnellaktionen, Kasse vor Vorstand.
-import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { orgApi, PERM } from '../../api/orgs.ts'
@@ -12,12 +11,12 @@ import { euro } from '../../api/finance.ts'
 import { imprintApi } from '../../api/imprint.ts'
 import { letterheadApi, optionKey } from '../../api/letterhead.ts'
 import { fieldApi } from '../../api/fields.ts'
-import type { BirthdayRow } from '../../api/fields.ts'
+import { BirthdayList, JubileeList } from '../../pages/members/JubileesPage.tsx'
 import type { QuickAction } from './roleActions.ts'
 import { MAX_FIGURES } from './roleActions.ts'
 import { todayIso } from '../../api/members.ts'
-import { useLoad } from '../forms.ts'
 import { formatDay } from '../calendar/time.ts'
+import { useLoad } from '../forms.ts'
 import { t } from '../../i18n/index.ts'
 
 export function QuickActions({ actions, label }: { actions: QuickAction[]; label?: string }) {
@@ -85,6 +84,7 @@ interface Notice {
 }
 
 const NOTICE_DAYS = 30
+const JUBILEE_DAYS = 90
 
 function plusDays(iso: string, days: number): string {
   const d = new Date(`${iso}T12:00:00`)
@@ -111,12 +111,20 @@ export function NoticesCard({ org }: { org: OrgSummary | null }) {
     [org?.id, imprintShown],
   )
   const letters = useLoad(() => letterheadApi.mine(), [])
+  const awards = people && !!org && org.modules.includes('awards')
   const jubilees = useLoad(
     () =>
-      people && org && org.modules.includes('awards')
-        ? fieldApi.jubilees(org.id, today, until)
+      awards && org
+        ? fieldApi.jubilees(org.id, today, plusDays(today, JUBILEE_DAYS))
         : Promise.resolve(null),
-    [org?.id, people, today],
+    [org?.id, awards, today],
+  )
+  const unitJubilees = useLoad(
+    () =>
+      awards && org
+        ? fieldApi.unitJubilees(org.id, today, plusDays(today, JUBILEE_DAYS))
+        : Promise.resolve(null),
+    [org?.id, awards, today],
   )
   const birthdays = useLoad(
     () => (people && org ? fieldApi.birthdays(org.id, today, until) : Promise.resolve(null)),
@@ -137,7 +145,7 @@ export function NoticesCard({ org }: { org: OrgSummary | null }) {
       key: `letter-${n.kind}-${n.context}-${n.unit.id}`,
       text:
         n.kind === 'outdated'
-          ? t('Deine Briefvorlage für {name} ist veraltet.', { name: n.unit.name })
+          ? `${t('Deine Briefvorlage für {name} ist veraltet:', { name: n.unit.name })} ${n.changes.join(', ')} ${t('geändert.')}`
           : t(
               'Für deine Funktion „{function}“ in {name} kannst du dir eine Briefvorlage erstellen.',
               {
@@ -150,26 +158,31 @@ export function NoticesCard({ org }: { org: OrgSummary | null }) {
       onLater: () => void letterheadApi.dismiss(n.unit.id, n.context).then(letters.reload),
     })
   }
-  const jubileeCount = new Set((jubilees.data?.results ?? []).map((r) => r.member_id)).size
-  if (jubileeCount > 0) {
+  const jubileeRows = jubilees.data?.results ?? []
+  const unitRows = unitJubilees.data?.results ?? []
+  if (jubileeRows.length + unitRows.length > 0) {
     notices.push({
       key: 'jubilees',
-      text:
-        jubileeCount === 1
-          ? t('1 Jubiläum in den nächsten {n} Tagen', { n: NOTICE_DAYS })
-          : t('{count} Jubiläen in den nächsten {n} Tagen', {
-              count: jubileeCount,
-              n: NOTICE_DAYS,
-            }),
+      text: (
+        <>
+          {t('Jubiläen in den nächsten {n} Tagen:', { n: JUBILEE_DAYS })}
+          <JubileeList rows={jubileeRows} unitRows={unitRows} />
+        </>
+      ),
       to: '/mitglieder/jubilaeen',
-      link: t('ansehen'),
+      link: t('Alle Jubiläen'),
     })
   }
   const birthdayRows = birthdays.data?.results ?? []
   if (birthdayRows.length > 0) {
     notices.push({
       key: 'birthdays',
-      text: <BirthdayNotice rows={birthdayRows} today={today} />,
+      text: (
+        <>
+          {t('Geburtstage in den nächsten {n} Tagen:', { n: NOTICE_DAYS })}
+          <BirthdayList rows={birthdayRows} today={today} />
+        </>
+      ),
     })
   }
   if (notices.length === 0) return null
@@ -181,7 +194,7 @@ export function NoticesCard({ org }: { org: OrgSummary | null }) {
       <ul className="plain-list home-notice-list">
         {notices.map((n) => (
           <li key={n.key}>
-            <span>{n.text}</span>
+            {n.text}
             {n.to && (
               <>
                 {' '}
@@ -200,42 +213,5 @@ export function NoticesCard({ org }: { org: OrgSummary | null }) {
         ))}
       </ul>
     </div>
-  )
-}
-
-const BIRTHDAY_PREVIEW = 3
-
-/** Geburtstage als Hinweis: Namen mit Link zur Akte, weitere aufklappbar. */
-function BirthdayNotice({ rows, today }: { rows: BirthdayRow[]; today: string }) {
-  const [all, setAll] = useState(false)
-  const shown = all ? rows : rows.slice(0, BIRTHDAY_PREVIEW)
-  return (
-    <>
-      {rows.length === 1
-        ? t('Geburtstag in den nächsten {n} Tagen:', { n: NOTICE_DAYS })
-        : t('{count} Geburtstage in den nächsten {n} Tagen:', {
-            count: rows.length,
-            n: NOTICE_DAYS,
-          })}{' '}
-      {shown.map((r, i) => (
-        <span key={`${r.member_id}-${r.date}`}>
-          {i > 0 && ', '}
-          <Link to={`/mitglieder/${r.member_id}`}>
-            {r.first_name} {r.last_name}
-          </Link>{' '}
-          <span className="muted small">
-            ({r.date === today ? t('heute') : formatDay(r.date)}, {r.age})
-          </span>
-        </span>
-      ))}
-      {rows.length > BIRTHDAY_PREVIEW && (
-        <>
-          {' '}
-          <button type="button" className="link-button" onClick={() => setAll(!all)}>
-            {all ? t('weniger') : t('alle {n} zeigen', { n: rows.length })}
-          </button>
-        </>
-      )}
-    </>
   )
 }

@@ -65,18 +65,6 @@ export function LetterheadNotices({
   )
 }
 
-/** Startseite: Hinweise zur Briefvorlage (nur wenn es welche gibt). */
-export function HomeLetterheadNotices() {
-  const { data, reload } = useLoad(() => letterheadApi.mine(), [])
-  if (!data) return null
-  return (
-    <LetterheadNotices
-      notices={data.notices}
-      onDismiss={(n) => void letterheadApi.dismiss(n.unit.id, n.context).then(reload)}
-    />
-  )
-}
-
 function initialRequest(data: MyLetterheads, key: string | null): LetterRequest | null {
   const options = data.contexts.flatMap((c) => c.units.map((u) => ({ c, u })))
   const picked =
