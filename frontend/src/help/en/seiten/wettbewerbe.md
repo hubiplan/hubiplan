@@ -20,7 +20,9 @@ number of valid results. The overall view also shows the equally weighted averag
 personal member averages.
 
 Only final results count. Missing values are not zero. Each person counts once per
-competition; wins and podium finishes count per individual standing. Team achievements
+competition. Guests, non-competing entries and absent starters do not count as
+participations; **Participations** shows how many were not counted. This is why the number
+of starters in the competition list can be higher. Wins and podium finishes count per individual standing. Team achievements
 are not counted as personal wins. Chart values are also available as a table. Expand
 **All starts and awards** to see ongoing competitions as well.
 

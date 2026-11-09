@@ -11,7 +11,7 @@ import { ChartCard, TimeChart } from '../../components/charts/Charts.tsx'
 import { PRIMARY } from '../../components/charts/chartData.ts'
 import { formatDate, useQueryLoad } from '../../components/forms.ts'
 import { LoadError, SelectField } from '../../components/ui.tsx'
-import { locale, t } from '../../i18n/index.ts'
+import { locale, t, tn } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import './statistics.css'
@@ -156,6 +156,18 @@ export function CompetitionStatistics({
   )
 }
 
+/** Warum die Teilnahmen kleiner sein können als die Starterzahl in der Wettbewerbsliste. */
+function notCounted(n?: { guests: number; out_of_competition: number; absent: number }) {
+  if (!n) return ''
+  const parts = [
+    n.guests && tn('{n} Gast', '{n} Gäste', n.guests),
+    n.out_of_competition &&
+      tn('{n} außer Konkurrenz', '{n} außer Konkurrenz', n.out_of_competition),
+    n.absent && tn('{n} fehlend', '{n} fehlend', n.absent),
+  ].filter(Boolean)
+  return parts.length ? t('nicht gezählt: {list}', { list: parts.join(', ') }) : ''
+}
+
 function Figure({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="card tile">
@@ -243,7 +255,12 @@ function StatisticsContent({
         <Figure
           label={t('Teilnahmen')}
           value={number(s.starts, 0)}
-          note={t('{n} Wettbewerbe', { n: s.competitions })}
+          note={[
+            tn('{n} Wettbewerb', '{n} Wettbewerbe', s.competitions),
+            notCounted(s.not_counted),
+          ]
+            .filter(Boolean)
+            .join(' · ')}
         />
         <Figure
           label={personal ? t('Siege') : t('Teilnehmende Mitglieder')}

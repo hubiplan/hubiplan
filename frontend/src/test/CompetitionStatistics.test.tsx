@@ -20,7 +20,16 @@ const sample: CompetitionStatisticsData = {
   years: [2026, 2025],
   groups: [group],
   selected_group: group,
-  summary: { competitions: 3, members: 2, starts: 6, wins: 2, podiums: 5, prizes: 0, awards: 0 },
+  summary: {
+    competitions: 3,
+    members: 2,
+    starts: 6,
+    wins: 2,
+    podiums: 5,
+    prizes: 0,
+    awards: 0,
+    not_counted: { guests: 1, out_of_competition: 0, absent: 0 },
+  },
   performance: {
     count: 5,
     average: 23.8,
@@ -102,6 +111,9 @@ describe('Wettbewerbsstatistik', () => {
       screen.getByRole('heading', { name: 'Ringe pro gewertetem Schuss' }).closest('.tile'),
     ).toHaveTextContent('7,93')
     expect(screen.getAllByText('Werte als Tabelle')).toHaveLength(2)
+    expect(
+      screen.getByRole('heading', { name: 'Teilnahmen' }).closest('.tile'),
+    ).toHaveTextContent('3 Wettbewerbe · nicht gezählt: 1 Gast')
   })
 
   it('öffnet ein Mitglied und erhält Zeitraum, Wertung und den Bereich der Mitgliedsakte', async () => {

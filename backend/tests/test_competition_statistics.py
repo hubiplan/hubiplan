@@ -54,6 +54,9 @@ def test_averages_weighting_missing_results_and_guest_field(club, people):  # no
     data = competition_statistics(club)
     assert data["summary"]["starts"] == 6
     assert data["summary"]["members"] == 2
+    # Der Gast steht in der Starterliste, zählt aber nicht als Teilnahme.
+    assert data["summary"]["not_counted"] == {"guests": 1, "out_of_competition": 0, "absent": 0}
+    assert competition_statistics(club, year=2026)["summary"]["not_counted"]["guests"] == 0
     assert data["performance"]["count"] == 5
     assert data["performance"]["average"] == pytest.approx(23.8)
     assert data["performance"]["member_average"] == pytest.approx(23)
@@ -80,6 +83,7 @@ def test_real_zero_counts_but_provisional_and_out_of_competition_do_not(club, pe
     starters[0].save()
     data = competition_statistics(club)
     assert data["summary"]["starts"] == 2
+    assert data["summary"]["not_counted"]["out_of_competition"] == 1
     assert data["performance"]["count"] == 1
     assert data["performance"]["average"] == 0
     assert data["performance"]["best"] == 0
