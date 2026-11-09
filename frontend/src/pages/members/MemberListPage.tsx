@@ -6,7 +6,7 @@ import type { ListParams, MemberRow, Page } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import { errorMessage, formatDate, formatMemberDate, useLoad } from '../../components/forms.ts'
 import type { DatePrecision } from '../../components/forms.ts'
-import { Freshness, LoadError } from '../../components/ui.tsx'
+import { Freshness, LoadError, Loading } from '../../components/ui.tsx'
 import { ExportPanel } from '../../components/ExportPanel.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
@@ -210,8 +210,9 @@ export function MemberListPage() {
         className="button button-ghost"
         disabled={stale || (params.page ?? 1) <= 1}
         onClick={() => setParams((p) => ({ ...p, page: (p.page ?? 1) - 1 }))}
+        aria-label={t('Vorherige Seite')}
       >
-        {t('Zurück')}
+        <span aria-hidden="true">‹</span> {t('Vorherige')}
       </button>
       <span className="small">
         {t('Seite {page} von', { page: params.page ?? 1 })} {pages}
@@ -221,8 +222,9 @@ export function MemberListPage() {
         className="button button-ghost"
         disabled={stale || (params.page ?? 1) >= pages}
         onClick={() => setParams((p) => ({ ...p, page: (p.page ?? 1) + 1 }))}
+        aria-label={t('Nächste Seite')}
       >
-        {t('Weiter')}
+        {t('Nächste')} <span aria-hidden="true">›</span>
       </button>
     </div>
   )
@@ -409,7 +411,7 @@ export function MemberListPage() {
         />
       )}
       {!data ? (
-        !error && <p className="muted">{t('Lädt …')}</p>
+        !error && <Loading />
       ) : (
         <div className={`card card-wide${stale ? ' is-stale' : ''}`}>
           <div className="member-results-toolbar">

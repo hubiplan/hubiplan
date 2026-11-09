@@ -77,7 +77,7 @@ export function PortalCirculars({ accessId }: { accessId: number }) {
           {detail.loading && <p role="status">{t('Mitteilung wird geladen …')}</p>}
           {detail.error && (
             <LoadError
-              message={t('Die Mitteilung konnte nicht geladen werden ({error}).', {
+              message={t('Die Mitteilung konnte nicht geladen werden. {error}', {
                 error: detail.error,
               })}
               onRetry={() => void detail.reload()}

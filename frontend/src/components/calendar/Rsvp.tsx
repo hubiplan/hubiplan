@@ -10,7 +10,7 @@ import type {
   ResponseStatus,
 } from '../../api/events.ts'
 import { errorMessage, useLoad } from '../forms.ts'
-import { Alert, Field } from '../ui.tsx'
+import { Alert, Field, Loading } from '../ui.tsx'
 import { berlin, formatDay } from './time.ts'
 import { confirmDialog } from '../dialog.ts'
 import { useTerms } from '../../org/terms.ts'
@@ -237,7 +237,7 @@ export function ResponsesPanel({ base, event }: { base: CalendarBase; event: Eve
   }, [data, filter])
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const s = data.summary
   return (
     <div className="stack-sm responses">
@@ -394,7 +394,7 @@ export function FeedPanel({ base }: { base: CalendarBase }) {
   }
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <div className="card card-wide stack">
       <p className="muted small">

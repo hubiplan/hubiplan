@@ -4,7 +4,7 @@ import { memberApi } from '../../api/members.ts'
 import type { MemberType, TypeUsage } from '../../api/members.ts'
 import { PERM } from '../../api/orgs.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SaveStatus } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { fillTerms, useTerms } from '../../org/terms.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
@@ -34,7 +34,7 @@ export function MemberTypesPage() {
   })
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   async function run(action: () => Promise<unknown>, success: string) {
     setBusy(true)

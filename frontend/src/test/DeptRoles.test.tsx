@@ -254,7 +254,7 @@ describe('Abteilungsrollen entfernen', () => {
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Herolde bearbeiten' }))
     expect(await screen.findByRole('checkbox', { name: /verwaltet sich selbst/ })).not.toBeChecked()
-    expect(screen.queryByRole('columnheader', { name: 'Berechtigungen' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: 'Rechte' })).not.toBeInTheDocument()
     expect(screen.queryByTestId('unit-manager')).not.toBeInTheDocument()
     expect(screen.queryByText('Eigener Arbeitsbereich')).not.toBeInTheDocument()
     expect(screen.getByTestId('unit-holders')).toBeInTheDocument()

@@ -4,7 +4,7 @@ import type { ChangeEvent } from 'react'
 import { api } from '../../api/client.ts'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import type { ExtraColor, ThemeSettings } from '../../api/orgs.ts'
-import { Alert, Checkbox, Field, SaveStatus, LoadError } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, LoadError, Loading } from '../../components/ui.tsx'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { contrastRatio, readableOn } from '../../theme/contrast.ts'
@@ -18,7 +18,7 @@ export function AppearancePage() {
   const org = useActiveOrg()
   const { data, error, setData, reload } = useLoad(() => orgApi.theme(org.id), [org.id])
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <ThemeForm
       key={org.id}

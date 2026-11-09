@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 import { helpApi } from '../api/help.ts'
 import type { HelpContact, OrgHelp } from '../api/help.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../components/forms.ts'
-import { Alert, Field, SaveStatus } from '../components/ui.tsx'
+import { Alert, Field, SaveStatus, Loading } from '../components/ui.tsx'
 import { t } from '../i18n/index.ts'
 import { TextArea } from '../pages/settings/TextArea.tsx'
 import type { HelpEntry } from './content.ts'
@@ -114,7 +114,7 @@ export function HelpContactsCard({ orgId, editable }: { orgId: number; editable:
         <>
           <ContactsIntro />
           {error && <Alert kind="error">{error}</Alert>}
-          {!error && <p className="muted">{t('Lädt …')}</p>}
+          {!error && <Loading />}
         </>
       )}
     </section>

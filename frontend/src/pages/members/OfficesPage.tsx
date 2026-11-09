@@ -16,7 +16,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { useChangesGuard } from '../../components/leaveGuard.ts'
 import { DeleteIcon, EditIcon, IconButton } from '../../components/icons.tsx'
-import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { MembersSection } from '../MembersPage.tsx'
 import { CandidateSelect, PersonField } from './ChroniclePage.tsx'
@@ -76,7 +76,7 @@ function HoldersPanel() {
   const unit = Number(params.get('einheit')) || null
 
   if (offices.error) return <Alert kind="error">{offices.error}</Alert>
-  if (!offices.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!offices.data) return <Loading />
   const units = [
     ...new Map(offices.data.flatMap((o) => (o.unit !== null ? [[o.unit, o.unit_name ?? '']] : []))),
   ] as [number, string][]
@@ -507,7 +507,7 @@ function StatsPanel() {
   const [boardOnly, setBoardOnly] = useState(false)
 
   if (offices.error) return <Alert kind="error">{offices.error}</Alert>
-  if (!offices.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!offices.data) return <Loading />
   // Nur Ämter der eigenen Ebene, keine der Untereinheiten (Ralf 2026-10-31)
   const used = offices.data.filter((o) => o.unit === null && o.holders.length > 0)
   const people = tally(

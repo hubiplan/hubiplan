@@ -6,7 +6,7 @@ import { ApiError } from '../api/client.ts'
 import { imprintApi, imprintPath, privacyPath } from '../api/imprint.ts'
 import type { ImprintDetails, PublicImprint } from '../api/imprint.ts'
 import { Logo } from '../components/Logo.tsx'
-import { Alert } from '../components/ui.tsx'
+import { Alert, Loading } from '../components/ui.tsx'
 import { usePublicImprint } from '../components/publicImprint.ts'
 import { t } from '../i18n/index.ts'
 import {
@@ -208,7 +208,7 @@ function Section({
     <section className="imprint-section">
       <h2>{title}</h2>
       {state.error && <Alert kind="error">{state.error}</Alert>}
-      {!state.data && !state.error && <p className="muted">{t('Lädt …')}</p>}
+      {!state.data && !state.error && <Loading />}
       {state.data && children(state.data)}
     </section>
   )

@@ -10,7 +10,7 @@ import type { CalendarBase, EventCategory } from '../../api/events.ts'
 import { CalendarView } from '../../components/calendar/CalendarView.tsx'
 import { FeedPanel } from '../../components/calendar/Rsvp.tsx'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, SaveStatus, Tabs } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SaveStatus, Tabs, Loading } from '../../components/ui.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -124,7 +124,7 @@ function CategoriesPanel({ base }: { base: CalendarBase }) {
   }
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <div className="card card-wide stack">
       <p className="muted small">
@@ -240,7 +240,7 @@ export function SharingPanel({ base }: { base: CalendarBase }) {
   }
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const nothing = !data.up_possible && !data.down_possible && data.units.length === 0
   return (
     <div className="card card-wide stack">
@@ -365,7 +365,7 @@ function PublicationPanel({ base }: { base: CalendarBase }) {
   }
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <div className="card card-wide stack">
       <p className="muted small">

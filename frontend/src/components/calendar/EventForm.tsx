@@ -285,70 +285,6 @@ export function EventForm({
         error={errors.title}
         onChange={(e) => set('title', e.target.value)}
       />
-      <div className="grid-2">
-        <SelectField
-          label={t('Kategorie')}
-          value={v.category}
-          error={errors.category}
-          onChange={(e) => set('category', e.target.value)}
-        >
-          <option value="">{t('ohne Kategorie')}</option>
-          {choosable.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField
-          label={t('Wer sieht den Termin?')}
-          value={v.visibility}
-          error={errors.visibility}
-          hint={
-            v.visibility === 'public'
-              ? t('Auch ohne Anmeldung, z. B. auf der Webseite.')
-              : v.visibility === 'board'
-                ? t('Nur Vorstandsrollen dieser Ebene.')
-                : t('Alle Mitglieder dieser Ebene.')
-          }
-          onChange={(e) => set('visibility', e.target.value as Visibility)}
-        >
-          {(Object.keys(VISIBILITY_LABELS) as Visibility[]).map((k) => (
-            <option key={k} value={k}>
-              {VISIBILITY_LABELS[k]}
-            </option>
-          ))}
-        </SelectField>
-      </div>
-      <Why k="event_visibility" />
-      {v.visibility !== 'board' && (
-        <div className="grid-2">
-          {(['up', 'down'] as const).map((dir) => {
-            const key = dir === 'up' ? 'share_up' : 'share_down'
-            const preset = event?.share_defaults?.[dir]
-            return (
-              <SelectField
-                key={dir}
-                label={dir === 'up' ? t('Nach oben weitergeben') : t('Nach unten weitergeben')}
-                value={v[key]}
-                hint={
-                  dir === 'up'
-                    ? t('Erscheint im Kalender der übergeordneten Einheit.')
-                    : t('Erscheint bei den Untereinheiten und ihren Mitgliedern.')
-                }
-                onChange={(e) => set(key, e.target.value as Share)}
-              >
-                <option value="">
-                  {preset === undefined
-                    ? t('wie voreingestellt')
-                    : t('wie voreingestellt ({x})', { x: preset ? t('ja') : t('nein') })}
-                </option>
-                <option value="yes">{t('ja')}</option>
-                <option value="no">{t('nein')}</option>
-              </SelectField>
-            )
-          })}
-        </div>
-      )}
       <Checkbox label={t('ganztägig')} checked={v.all_day} onChange={(x) => set('all_day', x)} />
       <div className="grid-2">
         <Field
@@ -390,20 +326,6 @@ export function EventForm({
           />
         )}
       </div>
-      {!v.all_day && (
-        <div className="stack-sm">
-          <Checkbox
-            label={t('Endzeit auf der Webseite ausblenden')}
-            checked={v.hide_end_time}
-            onChange={(x) => set('hide_end_time', x)}
-          />
-          <p className="muted small">
-            {t(
-              'Auf der Webseite erscheint nur die Beginnzeit. Im internen Kalender bleibt die Endzeit erhalten.',
-            )}
-          </p>
-        </div>
-      )}
       <div className="grid-2">
         <Field
           label={t('Ort')}
@@ -421,6 +343,41 @@ export function EventForm({
           onChange={(e) => set('address', e.target.value)}
         />
       </div>
+      <div className="grid-2">
+        <SelectField
+          label={t('Kategorie')}
+          value={v.category}
+          error={errors.category}
+          onChange={(e) => set('category', e.target.value)}
+        >
+          <option value="">{t('ohne Kategorie')}</option>
+          {choosable.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </SelectField>
+        <SelectField
+          label={t('Wer sieht den Termin?')}
+          value={v.visibility}
+          error={errors.visibility}
+          hint={
+            v.visibility === 'public'
+              ? t('Auch ohne Anmeldung, z. B. auf der Webseite.')
+              : v.visibility === 'board'
+                ? t('Nur Vorstandsrollen dieser Ebene.')
+                : t('Alle Mitglieder dieser Ebene.')
+          }
+          onChange={(e) => set('visibility', e.target.value as Visibility)}
+        >
+          {(Object.keys(VISIBILITY_LABELS) as Visibility[]).map((k) => (
+            <option key={k} value={k}>
+              {VISIBILITY_LABELS[k]}
+            </option>
+          ))}
+        </SelectField>
+      </div>
+      <Why k="event_visibility" />
       <label className="field">
         <span>{t('Beschreibung')}</span>
         <textarea
@@ -473,6 +430,58 @@ export function EventForm({
           </>
         )}
       </div>
+      {/* W-09: Seltenes zuletzt und eingeklappt; offen, sobald etwas davon gesetzt ist */}
+      {(v.visibility !== 'board' || !v.all_day) && (
+        <details
+          className="subcard stack-sm event-more"
+          open={!!(v.share_up || v.share_down || v.hide_end_time) || undefined}
+        >
+          <summary>{t('Weitere Einstellungen')}</summary>
+          {v.visibility !== 'board' && (
+            <div className="grid-2">
+              {(['up', 'down'] as const).map((dir) => {
+                const key = dir === 'up' ? 'share_up' : 'share_down'
+                const preset = event?.share_defaults?.[dir]
+                return (
+                  <SelectField
+                    key={dir}
+                    label={dir === 'up' ? t('Nach oben weitergeben') : t('Nach unten weitergeben')}
+                    value={v[key]}
+                    hint={
+                      dir === 'up'
+                        ? t('Erscheint im Kalender der übergeordneten Einheit.')
+                        : t('Erscheint bei den Untereinheiten und ihren Mitgliedern.')
+                    }
+                    onChange={(e) => set(key, e.target.value as Share)}
+                  >
+                    <option value="">
+                      {preset === undefined
+                        ? t('wie voreingestellt')
+                        : t('wie voreingestellt ({x})', { x: preset ? t('ja') : t('nein') })}
+                    </option>
+                    <option value="yes">{t('ja')}</option>
+                    <option value="no">{t('nein')}</option>
+                  </SelectField>
+                )
+              })}
+            </div>
+          )}
+          {!v.all_day && (
+            <div className="stack-sm">
+              <Checkbox
+                label={t('Endzeit auf der Webseite ausblenden')}
+                checked={v.hide_end_time}
+                onChange={(x) => set('hide_end_time', x)}
+              />
+              <p className="muted small">
+                {t(
+                  'Auf der Webseite erscheint nur die Beginnzeit. Im internen Kalender bleibt die Endzeit erhalten.',
+                )}
+              </p>
+            </div>
+          )}
+        </details>
+      )}
       {rsvpAllowed && v.repeat === 'none' && v.visibility !== 'board' && (
         <fieldset className="subcard stack-sm">
           <legend>{t('Zu- und Absagen')}</legend>
@@ -589,7 +598,7 @@ export function EventForm({
           )}
         </>
       )}
-      <div className="button-row">
+      <div className="button-row event-form-actions">
         <button
           type="submit"
           className={event ? 'button button-ghost' : 'button button-primary'}

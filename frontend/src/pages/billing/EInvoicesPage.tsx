@@ -13,7 +13,7 @@ import { euro, financeApi } from '../../api/finance.ts'
 import { todayIso } from '../../api/members.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
-import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
@@ -133,16 +133,18 @@ export function EInvoicesPage({ canEdit }: { canEdit: boolean }) {
           className="button button-ghost"
           disabled={page === 1}
           onClick={() => setPage(page - 1)}
+          aria-label={t('Vorherige Seite')}
         >
-          {t('Zurück')}
+          <span aria-hidden="true">‹</span> {t('Vorherige')}
         </button>
         <span>{page}</span>
         <button
           className="button button-ghost"
           disabled={!list.data?.next}
           onClick={() => setPage(page + 1)}
+          aria-label={t('Nächste Seite')}
         >
-          {t('Weiter')}
+          {t('Nächste')} <span aria-hidden="true">›</span>
         </button>
       </div>
     </div>
@@ -178,7 +180,7 @@ function CommercialDetail({
   }
   if (load.error) return <Alert kind="error">{load.error}</Alert>
   const invoice = load.data
-  if (!invoice) return <p>{t('Lädt …')}</p>
+  if (!invoice) return <Loading />
   if (editing)
     return (
       <CommercialForm

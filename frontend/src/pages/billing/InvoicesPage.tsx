@@ -19,7 +19,7 @@ import {
   useLoad,
   useQueryLoad,
 } from '../../components/forms.ts'
-import { Alert, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, LoadError, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { alertDialog, choiceDialog, confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { useTerms } from '../../org/terms.ts'
@@ -86,7 +86,7 @@ export function InvoicesPage() {
   }
 
   if (settings.error) return <Alert kind="error">{settings.error}</Alert>
-  if (!settings.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!settings.data) return <Loading />
   const s = settings.data
   const refresh = () => setVersion((v) => v + 1)
 
@@ -210,7 +210,7 @@ export function InvoicesPage() {
       {error && <LoadError message={error} onRetry={() => void reload()} />}
       {!data && !error && (
         <p className="muted" role="status">
-          {t('Lädt …')}
+          {t('Wird geladen …')}
         </p>
       )}
       {data && (
@@ -274,8 +274,9 @@ export function InvoicesPage() {
                 onClick={() =>
                   setParams({ ...Object.fromEntries(params), seite: String(page - 1) })
                 }
+                aria-label={t('Vorherige Seite')}
               >
-                {t('Zurück')}
+                <span aria-hidden="true">‹</span> {t('Vorherige')}
               </button>
               <span className="muted small">
                 {t('Seite {page} · {count} Rechnungen', { page, count: data.count })}
@@ -287,8 +288,9 @@ export function InvoicesPage() {
                 onClick={() =>
                   setParams({ ...Object.fromEntries(params), seite: String(page + 1) })
                 }
+                aria-label={t('Nächste Seite')}
               >
-                {t('Weiter')}
+                {t('Nächste')} <span aria-hidden="true">›</span>
               </button>
             </div>
           )}
@@ -322,7 +324,7 @@ function InvoiceDetail({
   const canEdit = settings.can_edit
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!inv) return <p className="muted">{t('Lädt …')}</p>
+  if (!inv) return <Loading />
 
   async function act(action: () => Promise<unknown>, text: string, deleted = false) {
     setBusy(true)

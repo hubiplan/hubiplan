@@ -4,7 +4,7 @@ import { fieldApi } from '../../api/fields.ts'
 import type { BirthdayRow, JubileeRow, UnitJubileeRow } from '../../api/fields.ts'
 import { todayIso } from '../../api/members.ts'
 import { formatMemberDate, useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { ExportPanel } from '../../components/ExportPanel.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo } from '../../learning/Aids.tsx'
@@ -153,7 +153,7 @@ export function JubileesPage() {
       )}
       {error && <Alert kind="error">{error}</Alert>}
       {!data ? (
-        <p className="muted">{t('Lädt …')}</p>
+        <Loading />
       ) : (
         <div className="card card-wide">
           <HowTo k="calc_jubilee" />
@@ -235,7 +235,7 @@ export function JubileeTile() {
         </ul>
       )}
       {!data ? (
-        <p className="muted">{t('Lädt …')}</p>
+        <Loading />
       ) : data.results.length === 0 ? (
         <p className="muted">{t('In den nächsten 90 Tagen keine.')}</p>
       ) : (
@@ -300,7 +300,7 @@ export function BirthdayTile() {
       {error ? (
         <p className="muted">{t('Geburtstage lassen sich gerade nicht laden.')}</p>
       ) : !data ? (
-        <p className="muted">{t('Lädt …')}</p>
+        <Loading />
       ) : rows.length === 0 ? (
         <p className="muted">
           {t('In den nächsten {BIRTHDAY_DAYS} Tagen keine.', { BIRTHDAY_DAYS })}

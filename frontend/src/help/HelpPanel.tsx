@@ -53,7 +53,8 @@ export function HelpButton() {
       <span aria-hidden="true" className="help-button-mark">
         ?
       </span>
-      <span className="help-button-label">{t('Hilfe')}</span>
+      {/* W-07: sichtbar wie der Name, damit „Hilfe“ nur die Hilfe-Seite in der Seitenleiste meint */}
+      <span className="help-button-label">{t('Hilfe zu dieser Seite')}</span>
     </button>
   )
 }
@@ -133,7 +134,7 @@ function OpenHelpPanel({ help }: { help: HelpState }) {
       )}
       {!help.entries && !help.failed && (
         <p className="muted" role="status">
-          {t('Lädt …')}
+          {t('Wird geladen …')}
         </p>
       )}
       {help.entries && guide && (

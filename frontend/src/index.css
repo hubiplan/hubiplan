@@ -223,6 +223,14 @@ code {
 .empty-state {
   color: var(--color-text-muted);
 }
+.empty-state-title {
+  margin: 0;
+  color: var(--color-text);
+  font-weight: 600;
+}
+.empty-state.stack-sm > p {
+  margin: 0;
+}
 
 .field {
   display: block;
@@ -2558,6 +2566,42 @@ button.tab.active {
 .modal-head > button {
   flex: 0 0 auto;
 }
+/* W-09 (UX-Audit 08.11.): Termin-Dialog mit festem Kopf und fester Fußleiste, Inhalt scrollt innen */
+.modal:has(.event-form) {
+  box-sizing: border-box;
+  max-height: calc(100dvh - 6rem);
+  overflow-y: auto;
+  padding-block: 0;
+}
+.modal:has(.event-form) > .modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin-block-end: 0;
+  padding-block: 1.5rem 0.75rem;
+  background: var(--color-surface);
+}
+.event-form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin: 0;
+  padding-block: 0.75rem 1.5rem;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+}
+.event-more > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+@media (max-width: 40rem) {
+  .modal-backdrop:has(.event-form) {
+    padding: 1rem;
+  }
+  .modal:has(.event-form) {
+    max-height: calc(100dvh - 2rem);
+  }
+}
 .event-facts {
   display: grid;
   grid-template-columns: 7rem 1fr;
@@ -4726,6 +4770,12 @@ label:has(> .file-input:focus-visible) {
   stroke-dasharray: 6 4;
   vector-effect: non-scaling-stroke;
 }
+.live-guide .live-guide-black {
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-dasharray: none;
+  /* dunkler Saum, damit die Linie auf dem Schwarzen und auf hellem Papier sichtbar bleibt */
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.9));
+}
 .live-hint {
   font-size: 1.25rem;
   font-weight: 600;
@@ -4900,9 +4950,20 @@ label:has(> .file-input:focus-visible) {
   box-shadow: none;
 }
 
+.offline-banner {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin: 0 0 var(--space-3);
+}
 .mfa-hint {
-  margin: 0 0 0.75rem;
-  color: var(--color-text-muted);
+  margin: 0 0 var(--space-3);
+}
+.mfa-hint p {
+  margin: 0;
+}
+.mfa-hint details {
+  margin-top: var(--space-1);
 }
 
 .account-menu-icon {

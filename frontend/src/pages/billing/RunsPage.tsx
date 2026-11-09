@@ -8,7 +8,7 @@ import { ApiError } from '../../api/client.ts'
 import type { BillingSettings, FeeRun, RunPreview } from '../../api/billing.ts'
 import { euro } from '../../api/finance.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, Field, SelectField, LoadError } from '../../components/ui.tsx'
+import { Alert, Field, SelectField, LoadError, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { useTerms } from '../../org/terms.ts'
@@ -31,7 +31,7 @@ export function RunsPage() {
         onRetry={() => void Promise.all([settings.reload(), runs.reload()])}
       />
     )
-  if (!settings.data || !runs.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!settings.data || !runs.data) return <Loading />
   const s = settings.data
 
   return (

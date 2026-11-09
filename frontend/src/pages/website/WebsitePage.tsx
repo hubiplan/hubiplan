@@ -22,7 +22,15 @@ import {
   useForm,
   useLoad,
 } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  LoadError,
+  SaveStatus,
+  SelectField,
+  Loading,
+} from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import type { TermKey } from '../../learning/content.ts'
@@ -63,7 +71,7 @@ export function WebsitePage() {
     return (
       <section>
         <PageHeader />
-        <p className="muted">{t('Lädt …')}</p>
+        <Loading />
       </section>
     )
 

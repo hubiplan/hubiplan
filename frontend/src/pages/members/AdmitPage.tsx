@@ -150,7 +150,7 @@ export function AdmitPage() {
       {types.error && (
         <Alert kind="error">
           {t(
-            'Die Mitgliedsarten konnten nicht geladen werden ({error}). Deine Eingaben bleiben erhalten.',
+            'Die Mitgliedsarten konnten nicht geladen werden. {error} Deine Eingaben bleiben erhalten.',
             { error: types.error },
           )}{' '}
           <button type="button" className="link-button" onClick={() => void types.reload()}>

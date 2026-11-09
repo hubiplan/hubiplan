@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { euro, financeApi } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
@@ -16,7 +16,7 @@ export function ArtistFeesPage() {
   const [year, setYear] = useState(now.getMonth() < 3 ? thisYear - 1 : thisYear)
   const report = useLoad(() => financeApi.artistFees(org.id, year), [org.id, year])
   if (report.error) return <Alert kind="error">{report.error}</Alert>
-  if (!report.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!report.data) return <Loading />
   const data = report.data
 
   return (

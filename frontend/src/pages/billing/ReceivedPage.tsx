@@ -2,7 +2,7 @@
 import { billingApi } from '../../api/billing.ts'
 import { euro } from '../../api/finance.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { StatusBadge } from './InvoicesPage.tsx'
@@ -13,7 +13,7 @@ export function ReceivedPage() {
   const terms = useTerms()
   const { data, error } = useLoad(() => billingApi.received(org.id), [org.id])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   if (!data.federation)
     return (
       <div className="card empty-state">

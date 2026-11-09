@@ -14,7 +14,7 @@ import type {
 } from '../../api/finance.ts'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
-import { Alert, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { Checklist } from '../../learning/Checklist.tsx'
@@ -458,7 +458,7 @@ function AuditDetail({ id, onBack }: { id: number; onBack: () => void }) {
   const audit = fresh?.id === id ? fresh : loaded.data
 
   if (loaded.error) return <Alert kind="error">{loaded.error}</Alert>
-  if (!audit) return <p className="muted">{t('Lädt …')}</p>
+  if (!audit) return <Loading />
   const open = audit.status === 'open'
   const canAudit = audit.can_audit && open
   const manage = audit.can_manage && open
@@ -697,7 +697,7 @@ export function AuditPage({ canEdit }: { canEdit: boolean }) {
   if (selected) return <AuditDetail id={selected} onBack={() => select(null)} />
   const loadError = settings.error ?? audits.error
   if (loadError) return <Alert kind="error">{loadError}</Alert>
-  if (!settings.data || !audits.data) return <p className="muted">{t('Lädt …')}</p>
+  if (!settings.data || !audits.data) return <Loading />
 
   return (
     <div className="stack">
