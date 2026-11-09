@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Usability: the month calendar shows each event’s category as a name, on phones as a short code, with a legend above the month; events have a background in their category colour. Cards stand out more clearly from the page background. All lists page with the same “‹ Previous” and “Next ›” buttons. The role list groups areas by level (“Edit: Cash book, Dues”). On a phone, connect the app under My account › App & other instances with the button **Open in the HUBIplan app**, no QR code needed.
 - Page header: pages share one header at the top. From the second level on, the path is shown above the heading (e.g. “Settings › Roles and permissions”), on phones a “‹ back” link to the page above. The unit's name only appears if you manage more than one unit. Settings come first.
 - Finance: every group in the sidebar has its own page. Clicking the group name shows all entries with a short description, what is to do there, and the main action, e.g. **Record income** for Book. ▸ expands the group without changing the page.
 - Menu: Finance is organised in expandable groups: **Fees & invoices**, **Payments**, **Book**, **Evaluate & close** and **Set up**. Only the group of the current page is open, ▸ opens another one. The former tabs under Invoices and Setup (e.g. Reminders, Accounts) are entries of their own, batch payouts are under Payments. The addresses stay the same.

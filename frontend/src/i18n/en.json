@@ -461,7 +461,6 @@
   "Dieser Link ist ungültig oder abgelaufen.": "This link is invalid or has expired.",
   "Dieser Link ist ungültig.": "This link is invalid.",
   "Dieser Mitgliedsausweis ist nicht (mehr) gültig. Bitte wenden Sie sich an den Vorstand.": "This membership card is no longer valid. Please contact the board.",
-  "Dieser QR-Code verbindet die HUBIplan-App mit deinem Konto. Bitte öffne die App auf deinem Telefon, tippe auf „Mit QR-Code verbinden“ und scanne den Code dort.": "This QR code connects the HUBIplan app to your account. Please open the app on your phone, tap “Connect with QR code” and scan the code there.",
   "Dieser Text enthält Gestaltung, die der Editor nicht anzeigen kann (z. B. eine Tabelle). Du bearbeitest ihn deshalb als Markdown; dabei geht nichts verloren.": "This text contains formatting the editor cannot display (e.g. a table). You are therefore editing it as Markdown; nothing is lost.",
   "Dieses Jahr": "This year",
   "Direkt versenden": "Send directly",
@@ -7495,5 +7494,15 @@
   "{n} von 5 Spiegeln gefunden – die ganze Karte ins Bild.": "{n} of 5 target faces found – the whole card in the picture.",
   "Karte nicht erkannt – vier Spiegel in den Ecken und einer in der Mitte.": "Card not recognised – four target faces in the corners and one in the centre.",
   "Karte in die Mitte des Bildes.": "Card in the centre of the picture.",
-  "Etwas weiter weg – die ganze Karte ins Bild.": "A bit further away – the whole card in the picture."
+  "Etwas weiter weg – die ganze Karte ins Bild.": "A bit further away – the whole card in the picture.",
+  "In der HUBIplan-App öffnen": "Open in the HUBIplan app",
+  "Passiert beim Tippen nichts, ist die App noch nicht installiert:": "If nothing happens when you tap, the app is not installed yet:",
+  "HUBIplan bei Google Play": "HUBIplan on Google Play",
+  "Bereiche mit Stufe „{stufe}“": "Areas with level “{stufe}”",
+  "Dieser QR-Code verbindet die HUBIplan-App mit deinem Konto. Ist die App auf diesem Telefon installiert, tippe auf den Knopf. Sonst öffne die App, tippe auf „Mit QR-Code verbinden“ und scanne den Code dort.": "This QR code connects the HUBIplan app to your account. If the app is installed on this phone, tap the button. Otherwise open the app, tap “Connect with QR code” and scan the code there.",
+  "{n} Modul": {
+    "one": "{n} module",
+    "other": "{n} modules"
+  },
+  "Ist die App auf diesem Telefon installiert? Dann tippe auf den Knopf. Er gilt bis {x} Uhr und nur einmal.": "Is the app installed on this phone? Then tap the button. It is valid until {x} and only once."
 }

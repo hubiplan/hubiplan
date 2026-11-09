@@ -4,6 +4,7 @@ import { displayName } from '../api/orgs.ts'
 import { useOrg } from '../org/OrgContext.tsx'
 import { usePageTitle } from '../components/pageTitle.ts'
 import { t } from '../i18n/index.ts'
+import { AppOpenLink } from '../components/AppOpenLink.tsx'
 
 export function NoAccessPage({ reason }: { reason: 'right' | 'workspace' }) {
   usePageTitle(t('Kein Zugriff'))
@@ -83,9 +84,11 @@ export function AppPairNoticePage() {
       <h1>{t('App verbinden')}</h1>
       <p>
         {t(
-          'Dieser QR-Code verbindet die HUBIplan-App mit deinem Konto. Bitte öffne die App auf deinem Telefon, tippe auf „Mit QR-Code verbinden“ und scanne den Code dort.',
+          'Dieser QR-Code verbindet die HUBIplan-App mit deinem Konto. Ist die App auf diesem Telefon installiert, tippe auf den Knopf. Sonst öffne die App, tippe auf „Mit QR-Code verbinden“ und scanne den Code dort.',
         )}
       </p>
+      {/* X-04: derselbe Einmalcode wie im QR-Code (aus dem Fragment, nie an den Server) */}
+      <AppOpenLink pairUrl={window.location.href} />
       <p className="muted">
         {t(
           'Der Code gilt nur kurz und nur einmal. Falls er abgelaufen ist, erzeugst du unter „Mein Konto“ einen neuen.',

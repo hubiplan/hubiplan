@@ -24,22 +24,24 @@
   --color-primary: #0e7c66;
   --color-primary-hover: #0b6352;
   /* Text in Primärfarbe (Links): wird bei hellen Vereinsfarben abgedunkelt */
-  --color-link: #0e7c66;
+  --color-link: #0d7661;
   /* Fokusrahmen und Zustandsrahmen: wie Links mind. 4,5 : 1, auch bei hellen Vereinsfarben */
-  --color-focus: #0e7c66;
+  --color-focus: #0d7661;
   --color-on-primary: #ffffff;
   --button-brand-primary: var(--color-primary);
   --button-brand-primary-hover: var(--color-primary-hover);
   --button-brand-on-primary: var(--color-on-primary);
   --color-accent: #f2b33d;
 
-  --color-bg: #f5f6f4;
+  --color-bg: #eef0ed;
   --color-surface: #ffffff;
   --color-text: #1d2421;
   --color-text-muted: #5d6763;
   --color-border: #dde1de;
+  /* Rand von Karten: mind. 1,5 : 1 gegen Weiß, damit Karten sich vom Grund abheben (W-17) */
+  --color-card-border: #bcc3bf;
   /* Rahmen von Eingabefeldern: mind. 3:1 gegen Weiß (WCAG 1.4.11) */
-  --color-input-border: #858e8a;
+  --color-input-border: #828b87;
   --color-error: #b3261e;
   --color-error-bg: #fbe9e7;
   --color-success-bg: #e6f3ee;

@@ -12,6 +12,7 @@ import { t } from '../../i18n/index.ts'
 import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { CommercialForm } from '../billing/EInvoicesPage.tsx'
 import { FeeBatchPanel } from './FeeBatchPanel.tsx'
+import { PageNav } from '../../components/ListControls.tsx'
 
 type Claim = {
   id: number
@@ -361,24 +362,12 @@ function PaymentLink({ onSave }: { onSave: (booking: number) => Promise<unknown>
         </select>
       </label>
       <div className="actions">
-        <button
-          type="button"
-          className="button button-ghost"
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-          aria-label={t('Vorherige Seite')}
-        >
-          <span aria-hidden="true">‹</span> {t('Vorherige')}
-        </button>
-        <button
-          type="button"
-          className="button button-ghost"
-          disabled={!load.data?.next}
-          onClick={() => setPage(page + 1)}
-          aria-label={t('Nächste Seite')}
-        >
-          {t('Nächste')} <span aria-hidden="true">›</span>
-        </button>
+        <PageNav
+          prevDisabled={page === 1}
+          nextDisabled={!load.data?.next}
+          onPrev={() => setPage(page - 1)}
+          onNext={() => setPage(page + 1)}
+        />
         <button className="button button-primary" disabled={busy || !booking}>
           {t('Auszahlung zuordnen')}
         </button>

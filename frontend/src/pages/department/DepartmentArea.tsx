@@ -42,6 +42,7 @@ import type { UnitRole } from '../../components/UnitRoles.tsx'
 import { t } from '../../i18n/index.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { PermissionMatrix, PermissionSummary } from '../../components/RoleEditor.tsx'
+import { PageNav } from '../../components/ListControls.tsx'
 
 export function DepartmentArea() {
   const dept = useActiveDept()
@@ -233,29 +234,14 @@ function DeptMemberList({ dept }: { dept: DeptSummary }) {
             </tbody>
           </table>
           {pages > 1 && (
-            <div className="button-row">
-              <button
-                type="button"
-                className="button button-ghost"
-                disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
-                aria-label={t('Vorherige Seite')}
-              >
-                <span aria-hidden="true">‹</span> {t('Vorherige')}
-              </button>
-              <span className="muted small">
-                {t('Seite {page} von', { page })} {pages}
-              </span>
-              <button
-                type="button"
-                className="button button-ghost"
-                disabled={page >= pages}
-                onClick={() => setPage(page + 1)}
-                aria-label={t('Nächste Seite')}
-              >
-                {t('Nächste')} <span aria-hidden="true">›</span>
-              </button>
-            </div>
+            <PageNav
+              prevDisabled={page <= 1}
+              nextDisabled={page >= pages}
+              onPrev={() => setPage(page - 1)}
+              onNext={() => setPage(page + 1)}
+            >
+              {t('Seite {page} von', { page })} {pages}
+            </PageNav>
           )}
         </div>
       )}

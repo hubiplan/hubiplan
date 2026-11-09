@@ -1,8 +1,9 @@
 // Kalender in Monats- und Listenansicht, für Vorstand, Abteilung und Mitglieder.
 import { useState } from 'react'
+import type { CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { eventApi } from '../../api/events.ts'
-import type { CalendarBase, Occurrence } from '../../api/events.ts'
+import type { CalendarBase, EventCategory, Occurrence } from '../../api/events.ts'
 import { useLoad } from '../forms.ts'
 import { LoadError } from '../ui.tsx'
 import { PageActions } from '../PageHeader.tsx'
@@ -22,6 +23,8 @@ import {
   daysOf,
 } from './time.ts'
 import { t, tc } from '../../i18n/index.ts'
+import { atMost, BP_MEDIUM } from '../../theme/breakpoints.ts'
+import { categoryShorts } from './categories.ts'
 
 type View = 'month' | 'list'
 
@@ -36,9 +39,7 @@ function initialView(): View {
   } catch {
     // ohne Speicher: Standard
   }
-  return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 700px)').matches
-    ? 'list'
-    : 'month'
+  return atMost(BP_MEDIUM) ? 'list' : 'month'
 }
 
 function itemClass(o: Occurrence): string {
@@ -61,9 +62,16 @@ function dayTime(o: Occurrence, day: string): string {
   return t('Fortsetzung')
 }
 
+const NO_CATEGORY_COLOR = '#7a847f'
+
+function eventColor(o: Occurrence): string {
+  return o.category?.color ?? NO_CATEGORY_COLOR
+}
+
 function eventName(o: Occurrence, day?: string): string {
   return [
     o.title,
+    o.category?.name ?? '',
     calendarContext(o),
     day ? dayTime(o, day) : '',
     formatRange(o.starts_at, o.ends_at, o.all_day),
@@ -73,16 +81,47 @@ function eventName(o: Occurrence, day?: string): string {
     .join(' · ')
 }
 
-function EventLabel({ o, day }: { o: Occurrence; day: string }) {
+function EventLabel({ o, day, short }: { o: Occurrence; day: string; short?: string }) {
   return (
     <>
-      <span className="event-dot" style={{ background: o.category?.color ?? '#7a847f' }} />
+      <span className="event-dot" style={{ background: eventColor(o) }} />
+      {short && (
+        <span className="event-short" aria-hidden="true">
+          {short}
+        </span>
+      )}
       <span className="event-summary">
         <span className="event-time">{dayTime(o, day)}</span>
         <span className="event-title">{o.title}</span>
-        <span className="event-context">{calendarContext(o)}</span>
+        <span className="event-context">
+          {[o.category?.name, calendarContext(o)].filter(Boolean).join(' · ')}
+        </span>
       </span>
     </>
+  )
+}
+
+/** Legende über der Monatsansicht: Farbe, Kürzel und Name jeder sichtbaren Kategorie. */
+function CategoryLegend({
+  categories,
+  shorts,
+}: {
+  categories: EventCategory[]
+  shorts: Map<string, string>
+}) {
+  if (categories.length === 0) return null
+  return (
+    <ul className="calendar-legend" aria-label={t('Kategorien')}>
+      {categories.map((c) => (
+        <li key={c.id}>
+          <span className="event-dot" style={{ background: c.color }} />
+          <span className="event-short" aria-hidden="true">
+            {shorts.get(c.name)}
+          </span>
+          <span>{c.name}</span>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -148,6 +187,16 @@ export function CalendarView({
     }
   }
   const todayIso = today()
+  // Kategorien, die im angezeigten Monat vorkommen (für Kürzel und Legende)
+  const monthCategories = [
+    ...new Map(
+      (view === 'month' ? (data?.items ?? []) : [])
+        .map((o) => o.category)
+        .filter((c): c is EventCategory => c !== null)
+        .map((c) => [c.id, c] as const),
+    ).values(),
+  ]
+  const shorts = categoryShorts(monthCategories.map((c) => c.name))
 
   return (
     <div className="calendar stack">
@@ -235,6 +284,7 @@ export function CalendarView({
         </p>
       )}
 
+      {data && view === 'month' && <CategoryLegend categories={monthCategories} shorts={shorts} />}
       {data && view === 'month' && (
         <div className="calendar-grid" role="group" aria-label={t('Monatsansicht')}>
           {WEEKDAYS.map((w) => (
@@ -272,11 +322,16 @@ export function CalendarView({
                     type="button"
                     key={`${o.key}-${day}`}
                     className={itemClass(o)}
+                    style={{ '--event-color': eventColor(o) } as CSSProperties}
                     title={eventName(o, day)}
                     aria-label={eventName(o, day)}
                     onClick={() => setSelected(o)}
                   >
-                    <EventLabel o={o} day={day} />
+                    <EventLabel
+                      o={o}
+                      day={day}
+                      short={o.category ? shorts.get(o.category.name) : undefined}
+                    />
                   </button>
                 ))}
               </div>
@@ -302,10 +357,7 @@ export function CalendarView({
                         {formatRange(o.starts_at, o.ends_at, o.all_day)}
                       </span>
                       <span className="calendar-list-main">
-                        <span
-                          className="event-dot"
-                          style={{ background: o.category?.color ?? '#7a847f' }}
-                        />{' '}
+                        <span className="event-dot" style={{ background: eventColor(o) }} />{' '}
                         <strong className="event-title">{o.title}</strong>{' '}
                         <VisibilityBadge visibility={o.visibility} />
                         {o.is_cancelled && (

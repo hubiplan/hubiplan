@@ -213,7 +213,7 @@ code {
 
 .card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-card-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1.5rem;
@@ -577,6 +577,25 @@ button.tab.active {
   margin-bottom: 1rem;
 }
 
+/* X-04: App verbinden. Breit der QR-Code, schmal (Telefon) der Knopf zur App */
+.app-pair-qr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+.app-pair-open {
+  display: none;
+}
+@media (max-width: 40rem) {
+  .app-pair-qr {
+    display: none;
+  }
+  .app-pair-open {
+    display: block;
+  }
+}
+
 .recovery-codes ul {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
@@ -628,7 +647,7 @@ button.tab.active {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-@media (max-width: 800px) {
+@media (max-width: 50rem) {
   /* W-05: Auf Handy und Tablet bleibt der Kopf eine Zeile (Menü, Name, Mein Konto).
      Rückgängig, Ansicht als Rolle und Einheitenwahl stehen oben im Menü. */
   .topbar {
@@ -934,7 +953,7 @@ button.tab.active {
 }
 
 /* Handy/Tablet: Navigation als ausklappbare Leiste */
-@media (max-width: 800px) {
+@media (max-width: 50rem) {
   .app-shell {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -1080,13 +1099,13 @@ fieldset {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-@media (max-width: 900px) {
+@media (max-width: 64rem) {
   .grid-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .grid-2,
   .grid-3,
   .grid-4 {
@@ -1338,7 +1357,7 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 
 /* Vergleichstabellen (z. B. Werte eines Diagramms) bleiben auch auf dem Handy Tabellen
    mit sichtbaren Spaltenköpfen und scrollen seitlich (UX-Audit 31.10. C03) */
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .table:not(.table-keep) thead {
     display: none;
   }
@@ -1586,7 +1605,7 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
 }
 
-@media (max-width: 800px) {
+@media (max-width: 50rem) {
   .org-switch select {
     max-width: 10rem;
   }
@@ -1780,7 +1799,7 @@ button.tab.active {
 }
 
 /* Handy: in der Mitgliederliste nur Name und Mitgliedsart */
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .member-mobile-toggle {
     display: inline-flex;
   }
@@ -2216,7 +2235,7 @@ button.tab.active {
 .line-row-vat {
   grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(6rem, 1fr) minmax(8rem, 1fr) auto;
 }
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .line-row {
     grid-template-columns: 1fr;
   }
@@ -2484,8 +2503,51 @@ button.tab.active {
 .event-item:focus-visible {
   background: var(--color-button-hover);
 }
+/* W-17: Termin mit Kategoriefarbe als zarte Fläche und linkem Streifen, damit er sich
+   auch im Graustufenbild vom Tag abhebt */
+.calendar-day .event-item {
+  --event-color: #7a847f;
+  background: color-mix(in srgb, var(--event-color) 14%, var(--color-surface));
+  border-left: 3px solid var(--event-color);
+  border-radius: 0 4px 4px 0;
+}
+.calendar-day .event-item:hover,
+.calendar-day .event-item:focus-visible {
+  background: color-mix(in srgb, var(--event-color) 26%, var(--color-surface));
+}
 .calendar-day .event-allday {
-  background: var(--color-success-bg);
+  background: color-mix(in srgb, var(--event-color) 22%, var(--color-surface));
+}
+.calendar-day .event-cancelled {
+  border-left-style: dashed;
+}
+/* W-12: Kürzel der Kategorie (auf dem Handy statt der Textzeilen) und Legende */
+.event-short {
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.calendar-day .event-short {
+  display: none;
+}
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.85rem;
+}
+.calendar-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.calendar-legend .event-short {
+  padding: 0 0.2rem;
+  border: 1px solid var(--color-input-border);
+  border-radius: 3px;
 }
 .event-item .event-title {
   overflow: hidden;
@@ -2639,7 +2701,7 @@ button.tab.active {
   padding: 0.3rem 0;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 50rem) {
   .calendar-day {
     min-height: 4rem;
   }
@@ -2649,6 +2711,9 @@ button.tab.active {
   .calendar-day .event-item {
     width: auto;
     display: inline-flex;
+  }
+  .calendar-day .event-short {
+    display: inline;
   }
   /* Abgesagt bleibt auch als Punkt erkennbar: hohler Kreis */
   .calendar-day .event-cancelled .event-dot {
@@ -2901,7 +2966,7 @@ form.card > .save-status:first-child {
   object-fit: contain;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 40rem) {
   .data-table .col-optional {
     display: none;
   }
@@ -3273,7 +3338,7 @@ label:has(> .file-input:focus-visible) {
   gap: 0.2rem;
   font-size: 0.9rem;
 }
-@media (min-width: 641px) {
+@media not all and (max-width: 40rem) {
   .data-table-sort {
     display: none;
   }
@@ -3308,6 +3373,11 @@ label:has(> .file-input:focus-visible) {
 .pager {
   align-items: center;
   margin-top: 0.75rem;
+}
+/* Blätter-Baustein in einer Zeile mit weiteren Bedienelementen (W-20 a) */
+.pager .pager,
+.actions > .pager {
+  margin-top: 0;
 }
 
 /* Aufgaben-Kacheln im Mitgliederbereich */
@@ -3788,6 +3858,20 @@ label:has(> .file-input:focus-visible) {
 .role-areas .chip.partial {
   border-style: dashed;
 }
+.role-level {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0 0 0.3rem;
+}
+.role-level .role-areas {
+  margin: 0;
+}
+.role-level-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
 .role-details summary {
   cursor: pointer;
   color: var(--color-text-muted);
@@ -3894,7 +3978,7 @@ label:has(> .file-input:focus-visible) {
   height: 100%;
   object-fit: cover;
 }
-@media (max-width: 560px) {
+@media (max-width: 40rem) {
   .document-row {
     grid-template-columns: 1fr;
   }
@@ -3965,7 +4049,7 @@ label:has(> .file-input:focus-visible) {
   grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
   gap: 0.75rem;
 }
-@media (max-width: 30rem) {
+@media (max-width: 40rem) {
   .image-tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -4061,7 +4145,7 @@ label:has(> .file-input:focus-visible) {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem 1.5rem;
 }
-@media (max-width: 48rem) {
+@media (max-width: 50rem) {
   .image-edit {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -4969,7 +5053,7 @@ label:has(> .file-input:focus-visible) {
 .account-menu-icon {
   display: none;
 }
-@media (max-width: 800px) {
+@media (max-width: 50rem) {
   .account-menu-icon {
     display: block;
   }

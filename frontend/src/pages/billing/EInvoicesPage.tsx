@@ -19,6 +19,7 @@ import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
 import { emptyParty, PartyFields } from './PartnersPage.tsx'
 import { InvoiceDocumentsPanel } from './InvoiceDocumentsPanel.tsx'
+import { PageNav } from '../../components/ListControls.tsx'
 
 const blankLine = (): CommercialLine => ({
   text: '',
@@ -128,25 +129,14 @@ export function EInvoicesPage({ canEdit }: { canEdit: boolean }) {
         </table>
         {list.data?.count === 0 && <p>{t('Noch keine Leistungsrechnungen vorhanden.')}</p>}
       </div>
-      <div className="actions">
-        <button
-          className="button button-ghost"
-          disabled={page === 1}
-          onClick={() => setPage(page - 1)}
-          aria-label={t('Vorherige Seite')}
-        >
-          <span aria-hidden="true">‹</span> {t('Vorherige')}
-        </button>
-        <span>{page}</span>
-        <button
-          className="button button-ghost"
-          disabled={!list.data?.next}
-          onClick={() => setPage(page + 1)}
-          aria-label={t('Nächste Seite')}
-        >
-          {t('Nächste')} <span aria-hidden="true">›</span>
-        </button>
-      </div>
+      <PageNav
+        prevDisabled={page === 1}
+        nextDisabled={!list.data?.next}
+        onPrev={() => setPage(page - 1)}
+        onNext={() => setPage(page + 1)}
+      >
+        {page}
+      </PageNav>
     </div>
   )
 }

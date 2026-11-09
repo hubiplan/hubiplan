@@ -25,6 +25,7 @@ import { alertDialog, choiceDialog, confirmDialog, promptDialog } from '../../co
 import { useTerms } from '../../org/terms.ts'
 import { Term } from '../../learning/Aids.tsx'
 import { locale, t } from '../../i18n/index.ts'
+import { PageNav } from '../../components/ListControls.tsx'
 
 export function StatusBadge({
   row,
@@ -266,33 +267,14 @@ export function InvoicesPage() {
             </div>
           )}
           {(data.next || data.previous) && (
-            <div className="button-row">
-              <button
-                type="button"
-                className="button button-ghost"
-                disabled={!data.previous}
-                onClick={() =>
-                  setParams({ ...Object.fromEntries(params), seite: String(page - 1) })
-                }
-                aria-label={t('Vorherige Seite')}
-              >
-                <span aria-hidden="true">‹</span> {t('Vorherige')}
-              </button>
-              <span className="muted small">
-                {t('Seite {page} · {count} Rechnungen', { page, count: data.count })}
-              </span>
-              <button
-                type="button"
-                className="button button-ghost"
-                disabled={!data.next}
-                onClick={() =>
-                  setParams({ ...Object.fromEntries(params), seite: String(page + 1) })
-                }
-                aria-label={t('Nächste Seite')}
-              >
-                {t('Nächste')} <span aria-hidden="true">›</span>
-              </button>
-            </div>
+            <PageNav
+              prevDisabled={!data.previous}
+              nextDisabled={!data.next}
+              onPrev={() => setParams({ ...Object.fromEntries(params), seite: String(page - 1) })}
+              onNext={() => setParams({ ...Object.fromEntries(params), seite: String(page + 1) })}
+            >
+              {t('Seite {page} · {count} Rechnungen', { page, count: data.count })}
+            </PageNav>
           )}
         </div>
       )}

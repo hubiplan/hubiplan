@@ -9,6 +9,8 @@ stichworte: [Plattform, Verein anlegen, Dachverband, Module freischalten, Selbst
 
 Die Plattform-Verwaltung legt Vereine und Dachverbände auf dieser HUBIplan-Instanz an und schaltet Module frei. Beim Anlegen bekommt eine Person die Rolle „Vorstand“ mit allen Rechten und verwaltet danach selbst Rollen und Benutzer.
 
+In der Liste der Einheiten steht je Einheit die Zahl der freigeschalteten Module („12 Module“); ein Klick darauf zeigt sie einzeln.
+
 Unter Einstellungen legst du die Löschfrist nach dem Austritt fest. Eine kürzere Frist gilt erst 30 Tage nach der Änderung. Bis dahin wird weiter nach der längeren gelöscht, damit ein Tippfehler nicht sofort Daten ehemaliger Mitglieder löscht.
 
 ## Einheiten deaktivieren oder löschen

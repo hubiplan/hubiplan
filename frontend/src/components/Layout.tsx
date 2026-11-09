@@ -35,6 +35,7 @@ import { UpdateNotice } from '../news/UpdateNotice.tsx'
 import { NewReleaseNotice } from '../news/NewReleaseNotice.tsx'
 import { PERM, rolePreviewApi } from '../api/orgs.ts'
 import { locale, t } from '../i18n/index.ts'
+import { atMost, BP_MEDIUM } from '../theme/breakpoints.ts'
 
 // Seiten außerhalb der Bereiche in der Seitenleiste
 const OTHER_PAGES: Record<string, string> = {
@@ -166,12 +167,10 @@ export function Layout() {
   }, [])
 
   // Handy/Tablet (W-05): Rückgängig, Rollenansicht und Einheitenwahl stehen im Menü statt im Kopf
-  const [narrow, setNarrow] = useState(
-    () => window.matchMedia?.('(max-width: 800px)').matches ?? false,
-  )
+  const [narrow, setNarrow] = useState(() => atMost(BP_MEDIUM))
   // Breiter als der Handy-Umbruch: Navigation steht fest, also zuklappen
   useEffect(() => {
-    const wide = window.matchMedia?.('(min-width: 801px)')
+    const wide = window.matchMedia?.(`not all and (max-width: ${BP_MEDIUM})`)
     if (!wide) return
     const onChange = () => {
       setNarrow(!wide.matches)

@@ -44,6 +44,7 @@ import { ApiError } from '../../api/client.ts'
 import { useTerms } from '../../org/terms.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
+import { PageNav } from '../../components/ListControls.tsx'
 
 /** Wer das Geld bekommt (Ausgabe) bzw. zahlt (Einnahme). */
 function partnerLabel(kind: BookingKind): string {
@@ -436,31 +437,14 @@ export function BookingsPage() {
               </table>
             </div>
             {pages > 1 && (
-              <div className="button-row">
-                <button
-                  type="button"
-                  className="button button-ghost"
-                  disabled={filter.page! <= 1}
-                  onClick={() =>
-                    setFilter('seite', filter.page! > 2 ? String(filter.page! - 1) : '')
-                  }
-                  aria-label={t('Vorherige Seite')}
-                >
-                  <span aria-hidden="true">‹</span> {t('Vorherige')}
-                </button>
-                <span className="muted small">
-                  {t('Seite {page} von', { page: filter.page })} {pages}
-                </span>
-                <button
-                  type="button"
-                  className="button button-ghost"
-                  disabled={filter.page! >= pages}
-                  onClick={() => setFilter('seite', String(filter.page! + 1))}
-                  aria-label={t('Nächste Seite')}
-                >
-                  {t('Nächste')} <span aria-hidden="true">›</span>
-                </button>
-              </div>
+              <PageNav
+                prevDisabled={filter.page! <= 1}
+                nextDisabled={filter.page! >= pages}
+                onPrev={() => setFilter('seite', filter.page! > 2 ? String(filter.page! - 1) : '')}
+                onNext={() => setFilter('seite', String(filter.page! + 1))}
+              >
+                {t('Seite {page} von', { page: filter.page })} {pages}
+              </PageNav>
             )}
           </>
         )}

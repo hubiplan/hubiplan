@@ -162,24 +162,46 @@ export function PermissionSummary({
     key: i,
   }))
   if (areas.length === 0) return <span>{t('keine')}</span>
+  // Bereiche mit Stufe nach Stufe gruppiert („Bearbeiten: Mitglieder, Termine“), statt
+  // vieler einzelner „Bereich: Stufe“-Kennzeichen (UX-Audit 08.11., W-20 d)
+  const levels = new Map<string, typeof areas>()
+  for (const a of areas) {
+    if (!a.stufe) continue
+    const list = levels.get(a.stufe)
+    if (list) list.push(a)
+    else levels.set(a.stufe, [a])
+  }
+  const others = areas.filter((a) => !a.stufe)
   return (
     <>
-      <ul className="chips role-areas" aria-label={t('Bereiche')}>
-        {areas.map((a) => (
-          <li
-            key={a.label}
-            className={a.full ? 'chip' : 'chip partial'}
-            title={a.permissions.join(', ')}
+      {[...levels.entries()].map(([stufe, list]) => (
+        <div key={stufe} className="role-level">
+          <span className="role-level-name">{stufe.charAt(0).toUpperCase() + stufe.slice(1)}:</span>
+          <ul
+            className="chips role-areas"
+            aria-label={t('Bereiche mit Stufe „{stufe}“', { stufe })}
           >
-            {a.label}
-            {a.stufe ? (
-              <span className={a.full ? undefined : 'muted'}>: {a.stufe}</span>
-            ) : (
-              !a.full && <span className="muted"> {t('(teilweise)')}</span>
-            )}
-          </li>
-        ))}
-      </ul>
+            {list.map((a) => (
+              <li key={a.label} className="chip">
+                {a.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      {others.length > 0 && (
+        <ul className="chips role-areas" aria-label={t('Bereiche')}>
+          {others.map((a) => (
+            <li
+              key={a.label}
+              className={a.full ? 'chip' : 'chip partial'}
+              title={a.permissions.join(', ')}
+            >
+              {a.full ? a.label : `${a.label} ${t('(teilweise)')}`}
+            </li>
+          ))}
+        </ul>
+      )}
       <details className="role-details">
         <summary>{t('Einzelne Rechte')}</summary>
         <ul>

@@ -18,6 +18,7 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { t, tn } from '../i18n/index.ts'
+import { PageNav } from './ListControls.tsx'
 
 export type CellValue = string | number | boolean | null | undefined
 
@@ -344,16 +345,12 @@ export function DataTable<T>({
               ))}
             </select>
           </label>
-          <button
-            type="button"
-            className="button button-ghost"
-            aria-label={t('Vorherige Seite')}
-            disabled={current <= 1}
-            onClick={() => setPage(current - 1)}
+          <PageNav
+            prevDisabled={current <= 1}
+            nextDisabled={current >= pages}
+            onPrev={() => setPage(current - 1)}
+            onNext={() => setPage(current + 1)}
           >
-            <span aria-hidden="true">‹</span> {t('Vorherige')}
-          </button>
-          <span className="small">
             {visible.length === 0 ? 0 : start + 1}
             {t('–{x} von  {n} · Seite {current} von', {
               x: Math.min(start + pageSize, visible.length),
@@ -361,16 +358,7 @@ export function DataTable<T>({
               current,
             })}{' '}
             {pages}
-          </span>
-          <button
-            type="button"
-            className="button button-ghost"
-            aria-label={t('Nächste Seite')}
-            disabled={current >= pages}
-            onClick={() => setPage(current + 1)}
-          >
-            {t('Nächste')} <span aria-hidden="true">›</span>
-          </button>
+          </PageNav>
         </div>
       ) : null}
     </div>

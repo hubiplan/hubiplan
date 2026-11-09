@@ -10,6 +10,8 @@ Der Kalender zeigt die Termine der Einheit. Mit dem Recht dazu legst du Termine 
 
 An jedem Eintrag steht die zugehörige Einheit und gegebenenfalls der fremde Kalender. So unterscheidest du gleichnamige Termine vor dem Öffnen. Im Monat beginnt ein mehrtägiger Termin mit seiner Startzeit; an weiteren Tagen steht „Fortsetzung“, am letzten Tag beispielsweise „Fortsetzung bis 01:05“. Ein Ende genau um Mitternacht erscheint am Vortag als 24:00, ohne zusätzlichen Eintrag am neuen Tag. Ganztägige Termine bleiben als solche bezeichnet. Die Liste und die zugänglichen Namen enthalten den vollständigen Zeitraum; auf kleinen Bildschirmen ist die Liste die voreingestellte Ansicht.
 
+Die Kategorie eines Termins erkennst du nicht nur an der Farbe: Jeder Termin ist in der Farbe seiner Kategorie hinterlegt und trägt links einen Farbstreifen, darunter steht der Name der Kategorie. Auf kleinen Bildschirmen zeigt die Monatsansicht statt des Namens ein Kürzel (z. B. „Ver“ für Versammlung). Die Legende über dem Monat erklärt Farben und Kürzel aller Kategorien, die im Monat vorkommen. Bildschirmleser lesen die Kategorie mit vor.
+
 ![Kalender mit Einheiten und Fortsetzung über Mitternacht](bild:kalender-kontext)
 
 Im geöffneten Termin zeigt der Block **Zu diesem Termin**, was daran hängt: die Versammlung, Dienstpläne der Helferdienste, belegte Räume und Geräte, Aufgaben und den Auftritt der Musik. Von dort legst du auch einen Dienstplan oder eine Belegung für den Termin an. Du siehst nur, wofür das Modul eingeschaltet ist und du das Recht hast. Termine, Versammlungen, Helferdienste und Aufgaben stehen in der Seitenleiste gemeinsam in der Gruppe „Planen“.
