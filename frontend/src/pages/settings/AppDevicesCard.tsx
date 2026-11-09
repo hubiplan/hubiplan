@@ -1,7 +1,7 @@
 import { QRCodeSVG } from 'qrcode.react'
 import { useEffect, useState } from 'react'
 import { useLoad, useQueryLoad } from '../../components/forms.ts'
-import { LoadError } from '../../components/ui.tsx'
+import { LoadError, Loading } from '../../components/ui.tsx'
 import { devicesApi } from '../../api/devices.ts'
 import { HowTo } from '../../learning/Aids.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -158,7 +158,7 @@ export function AppDevicesCard() {
       {list.error ? (
         <LoadError message={list.error} onRetry={() => void load()} />
       ) : list.loading && !list.data ? (
-        <p role="status">{t('Lädt …')}</p>
+        <Loading />
       ) : devices.length === 0 ? (
         <p className="muted">{t('Noch kein Gerät verbunden.')}</p>
       ) : (

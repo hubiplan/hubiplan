@@ -12,7 +12,7 @@ import {
   type StandApi,
 } from '../../api/competitions.ts'
 import { useLoad } from '../../components/forms.ts'
-import { LoadError } from '../../components/ui.tsx'
+import { LoadError, Loading } from '../../components/ui.tsx'
 import { StandAccessCard } from './BirdSetup.tsx'
 import { BirdStand } from './BirdStand.tsx'
 import { LiveTables } from './LiveTables.tsx'
@@ -98,7 +98,7 @@ export function StandTokenPage() {
         {t('Der sichere Stand-Speicher ist in diesem Browser nicht verfügbar.')}
       </p>
     )
-  return api ? <StandShell key={api.key} api={api} exit={null} /> : <p>{t('Lädt …')}</p>
+  return api ? <StandShell key={api.key} api={api} exit={null} /> : <Loading />
 }
 
 function StandShell({ api, exit, org }: { api: StandApi; exit: ReactNode; org?: number }) {

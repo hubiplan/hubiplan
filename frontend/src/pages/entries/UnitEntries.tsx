@@ -14,7 +14,7 @@ import {
 } from '../../api/entries.ts'
 import { DataTable } from '../../components/DataTable.tsx'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert, LoadError } from '../../components/ui.tsx'
+import { Alert, LoadError, Loading } from '../../components/ui.tsx'
 import { EntryPanel } from './EntriesPage.tsx'
 import { t, tn } from '../../i18n/index.ts'
 
@@ -24,7 +24,7 @@ export function UnitsPanel({ org, call }: { org: number; call: CallDetail }) {
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
   if (rows.error) return <LoadError message={rows.error} onRetry={rows.reload} />
-  if (!rows.data) return <p className="muted">{t('Wird geladen …')}</p>
+  if (!rows.data) return <Loading />
   const open = rows.data.filter((r) => r.status !== 'abgegeben' && r.status !== 'bestaetigt')
 
   async function remind() {
@@ -141,7 +141,7 @@ export function UnitEntryPage({
   const rows = useLoad(() => entriesApi.units(org, call.id), [org, call.id])
   const name = rows.data?.find((r) => r.unit === unit)?.name ?? ''
   if (entry.error) return <LoadError message={entry.error} onRetry={entry.reload} />
-  if (entry.loading && entry.data === null) return <p className="muted">{t('Wird geladen …')}</p>
+  if (entry.loading && entry.data === null) return <Loading />
   return (
     <>
       <p>
@@ -190,7 +190,7 @@ function DeptCallList({ deptId }: { deptId: number }) {
   const scope = deptScope(deptId)
   const { data, error, reload } = useLoad(() => entriesApi.list(scope), [scope])
   if (error) return <LoadError message={error} onRetry={reload} />
-  if (!data) return <p className="muted">{t('Wird geladen …')}</p>
+  if (!data) return <Loading />
   return (
     <>
       <p className="muted">
@@ -239,8 +239,7 @@ function DeptCall({ deptId }: { deptId: number }) {
   const options = useLoad(() => entriesApi.options(scope), [scope])
   const error = call.error || entry.error || options.error
   if (error) return <LoadError message={error} onRetry={() => void call.reload()} />
-  if (!call.data || !options.data || (entry.loading && entry.data === null))
-    return <p className="muted">{t('Wird geladen …')}</p>
+  if (!call.data || !options.data || (entry.loading && entry.data === null)) return <Loading />
   const c = call.data
   return (
     <>

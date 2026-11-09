@@ -9,7 +9,15 @@ import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import type { Department } from '../../api/orgs.ts'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { flushAllForms } from '../../components/leaveGuard.ts'
-import { Alert, Checkbox, Field, LoadError, SaveStatus, SelectField } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  LoadError,
+  SaveStatus,
+  SelectField,
+  Loading,
+} from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 
@@ -482,7 +490,7 @@ export function LetterheadSettingsPage() {
         </div>
       )}
       {state.error && <Alert kind="error">{state.error}</Alert>}
-      {!state.data && !state.error && <p className="muted">{t('Lädt …')}</p>}
+      {!state.data && !state.error && <Loading />}
       {state.data && state.data.organization.id === (unitId ?? org.id) && (
         <>
           <LetterheadEditor

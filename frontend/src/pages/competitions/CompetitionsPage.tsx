@@ -29,6 +29,7 @@ import {
   SaveStatus,
   SelectField,
   Tabs,
+  Loading,
 } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { BirdStand } from './BirdStand.tsx'
@@ -263,7 +264,7 @@ function CompetitionArea() {
   const standApi = useMemo(() => orgStandApi(org.id, id), [org.id, id])
   const [showAccess, setShowAccess] = useState(false)
   if (error) return <LoadError message={error} onRetry={reload} />
-  if (!data) return <p className="muted">{t('Wird geladen …')}</p>
+  if (!data) return <Loading />
   const base = `/wettbewerbe/${id}`
   return (
     <section>

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { billingApi } from '../../api/billing.ts'
 import { euro } from '../../api/finance.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, LoadError } from '../../components/ui.tsx'
+import { Alert, Checkbox, LoadError, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { PERM } from '../../api/orgs.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
@@ -21,7 +21,7 @@ export function DunningsPage() {
   const [failure, setFailure] = useState<string | null>(null)
 
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const chosen = data.proposals.filter((p) => !skip.has(p.id)).map((p) => p.id)
 
   async function run() {
@@ -66,7 +66,9 @@ export function DunningsPage() {
           <p>{t('Noch keine Mahnstufen.')}</p>
           <p className="muted small">
             {t('Lege sie unter')}{' '}
-            <Link to="/finanzen/einrichtung/mahnstufen">{t('Einrichtung › Mahnstufen')}</Link>{' '}
+            <Link to="/finanzen/einrichtung/mahnstufen">
+              {t('Finanzen › Einrichtung › Mahnstufen')}
+            </Link>{' '}
             {t('an, zum Beispiel eine Zahlungserinnerung 14 Tage nach Fälligkeit.')}
           </p>
         </div>

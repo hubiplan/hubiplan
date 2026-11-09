@@ -13,7 +13,7 @@ import {
   useForm,
   useLoad,
 } from '../../components/forms.ts'
-import { Alert, Field, SaveStatus } from '../../components/ui.tsx'
+import { Alert, Field, SaveStatus, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { MembersDevelopmentPage } from './DevelopmentPage.tsx'
 import { HonoraryAwards } from './HonoraryAwards.tsx'
@@ -214,7 +214,7 @@ function FederationList({ prefix }: { prefix: string }) {
       )}
       {error && <Alert kind="error">{error}</Alert>}
       {!data ? (
-        <p className="muted">{t('Lädt …')}</p>
+        <Loading />
       ) : (
         <div className="card card-wide">
           <p className="muted small">
@@ -263,8 +263,9 @@ function FederationList({ prefix }: { prefix: string }) {
                 className="button button-ghost"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => p - 1)}
+                aria-label={t('Vorherige Seite')}
               >
-                {t('Zurück')}
+                <span aria-hidden="true">‹</span> {t('Vorherige')}
               </button>
               <span className="small">
                 {t('Seite {page} von', { page })} {pages}
@@ -274,8 +275,9 @@ function FederationList({ prefix }: { prefix: string }) {
                 className="button button-ghost"
                 disabled={page >= pages}
                 onClick={() => setPage((p) => p + 1)}
+                aria-label={t('Nächste Seite')}
               >
-                {t('Weiter')}
+                {t('Nächste')} <span aria-hidden="true">›</span>
               </button>
             </div>
           )}
@@ -294,7 +296,7 @@ function FederationDetail() {
     [org.id, id],
   )
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <section>
       <PageHeader title={`${data.first_name} ${data.last_name}`} />

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { platformApi } from '../../api/orgs.ts'
 import type { SelfUpdate } from '../../api/orgs.ts'
-import { Alert, Field } from '../../components/ui.tsx'
+import { Alert, Field, Loading } from '../../components/ui.tsx'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { useRunningVersion } from '../../news/version.ts'
 import { t } from '../../i18n/index.ts'
@@ -25,7 +25,7 @@ export function PlatformVersionPage() {
   }, [pending, reload])
 
   if (error && !data) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   const update = data.update
   const self = data.selfupdate
   return (

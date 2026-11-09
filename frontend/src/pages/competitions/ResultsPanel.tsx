@@ -10,7 +10,7 @@ import {
   type Stats,
 } from '../../api/competitions.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
-import { Alert, LoadError } from '../../components/ui.tsx'
+import { Alert, LoadError, Loading } from '../../components/ui.tsx'
 import { ShootoffBlock } from './Shootoffs.tsx'
 import { HowTo, Term } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
@@ -35,7 +35,7 @@ export function ResultsPanel({
 
   if (standings.error) return <LoadError message={standings.error} onRetry={reload} />
   const data = standings.data
-  if (!data) return <p className="muted">{t('Wird geladen …')}</p>
+  if (!data) return <Loading />
   const exp = (q: string) => competitionsApi.exportUrl(org, comp.id, q)
 
   return (

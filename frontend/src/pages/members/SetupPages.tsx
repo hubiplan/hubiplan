@@ -8,7 +8,7 @@ import { ListInput } from '../../components/ListField.tsx'
 import { parseNumberList } from '../../components/lists.ts'
 import { DATE_PRECISION_OPTIONS, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import type { DatePrecision } from '../../components/forms.ts'
-import { Alert, Checkbox, SaveStatus, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { t } from '../../i18n/index.ts'
@@ -41,7 +41,7 @@ function OrgSettingsCard({
   const org = useActiveOrg()
   const { data, error, setData } = useLoad(() => orgApi.memberSettings(org.id), [org.id])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <SettingsForm key={data.id} detail={data} fields={fields} title={title} onSaved={setData}>
       {children}

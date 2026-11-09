@@ -12,7 +12,7 @@ import { RemoteLoginCard } from './RemoteLoginCard.tsx'
 import { SignatureCard } from './SignatureCard.tsx'
 import { t } from '../../i18n/index.ts'
 import { TodoPreferences } from '../../components/TodoPreferences.tsx'
-import { StatusMessage } from '../../components/ui.tsx'
+import { StatusMessage, Loading } from '../../components/ui.tsx'
 import { PersonalTodos } from '../../components/PersonalTodos.tsx'
 
 // Mein Konto: persönliche Einstellungen, unabhängig von der gewählten Organisation.
@@ -210,7 +210,7 @@ function TwoFactorCard() {
         </p>
       )}
 
-      {totp === null && !loadFailed && <p className="muted">{t('Lädt …')}</p>}
+      {totp === null && !loadFailed && <Loading />}
       {totp === null && loadFailed && (
         <div className="alert alert-error" role="alert">
           {t('Der Stand der Zwei-Faktor-Anmeldung konnte nicht geladen werden.')}{' '}

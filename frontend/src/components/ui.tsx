@@ -228,7 +228,7 @@ export function SaveStatus(
   )
 }
 
-/** Ladefehler mit „Erneut laden“; der Bereich bleibt stehen, statt endlos „Lädt …“ zu zeigen. */
+/** Ladefehler mit „Erneut laden“; der Bereich bleibt stehen, statt endlos „Wird geladen …“ zu zeigen. */
 /**
  * Zustand einer Liste beim Nachladen mit vorhandenen Daten (UI-Audit 29.10. NMF-05):
  * „wird aktualisiert“, oder nach einem Fehler der Hinweis, dass noch die alten
@@ -247,7 +247,7 @@ export function Freshness({
     return (
       <LoadError
         message={t(
-          'Aktualisierung fehlgeschlagen ({error}). Angezeigt werden noch die vorherigen Ergebnisse.',
+          'Aktualisierung fehlgeschlagen. {error} Angezeigt werden noch die vorherigen Ergebnisse.',
           { error },
         )}
         onRetry={onRetry}
@@ -273,6 +273,43 @@ export function LoadError({ message, onRetry }: { message: string; onRetry?: () 
           </button>
         </>
       )}
+    </div>
+  )
+}
+
+/**
+ * Ladezustand mit einer Formulierung für die ganze App (UX-Audit 08.11. W-11, X-01).
+ * `small` für Ladezeilen in Kacheln und Listen.
+ */
+export function Loading({ small = false }: { small?: boolean }) {
+  return (
+    <p className={small ? 'muted small loading' : 'muted loading'} aria-live="polite">
+      {t('Wird geladen …')}
+    </p>
+  )
+}
+
+/**
+ * Leere Liste (W-11): ein Satz, was hier entsteht oder warum nichts da ist, und
+ * möglichst eine Handlung (Knopf oder Link) als nächster Schritt.
+ */
+export function EmptyState({
+  title,
+  children,
+  action,
+}: {
+  /** z. B. „Noch keine Auftritte.“ */
+  title: string
+  /** Erklärung, was hier entsteht */
+  children?: ReactNode
+  /** nächster Schritt */
+  action?: ReactNode
+}) {
+  return (
+    <div className="card empty-state stack-sm">
+      <p className="empty-state-title">{title}</p>
+      {children && <p className="muted small">{children}</p>}
+      {action && <div className="button-row">{action}</div>}
     </div>
   )
 }

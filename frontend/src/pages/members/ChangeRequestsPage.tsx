@@ -36,14 +36,14 @@ export function ChangeRequestsPage() {
       </div>
       {error && (
         <LoadError
-          message={t('Die Datenänderungen konnten nicht geladen werden ({error}).', { error })}
+          message={t('Die Datenänderungen konnten nicht geladen werden. {error}', { error })}
           onRetry={() => void reload()}
         />
       )}
       {!data ? (
         !error && (
           <p className="muted" role="status">
-            {t('Lädt …')}
+            {t('Wird geladen …')}
           </p>
         )
       ) : data.length === 0 ? (

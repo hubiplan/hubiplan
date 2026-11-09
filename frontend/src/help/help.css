@@ -8,6 +8,17 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+/* Schmale Fenster: nur das Zeichen, der Name steht in aria-label */
+@media (max-width: 640px) {
+  .help-button-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 .help-button-mark {
   display: inline-grid;
   place-items: center;

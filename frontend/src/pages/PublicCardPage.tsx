@@ -4,7 +4,7 @@ import { cardApi } from '../api/cards.ts'
 import type { PublicCard } from '../api/cards.ts'
 import { formatDateTime } from '../components/forms.ts'
 import { Logo } from '../components/Logo.tsx'
-import { Alert } from '../components/ui.tsx'
+import { Alert, Loading } from '../components/ui.tsx'
 import { usePublicImprint } from '../components/publicImprint.ts'
 import { applyTheme } from '../theme/theme.ts'
 import { t } from '../i18n/index.ts'
@@ -56,7 +56,7 @@ export function PublicCardPage() {
         <div className="login-logo">
           <Logo name={card?.club} logoUrl={card?.logo_url ?? null} />
         </div>
-        {state === 'loading' && <p className="muted">{t('Lädt …')}</p>}
+        {state === 'loading' && <Loading />}
         {state === 'busy' && (
           <Alert kind="error">{t('Zu viele Aufrufe. Bitte später erneut versuchen.')}</Alert>
         )}

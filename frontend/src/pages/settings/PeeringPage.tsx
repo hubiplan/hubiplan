@@ -18,7 +18,7 @@ import type {
 } from '../../api/peering.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
@@ -80,7 +80,7 @@ export function PeeringPage() {
   const org = useActiveOrg()
   const { data, error, reload } = useLoad(() => peeringApi.overview(org.id), [org.id])
   if (error) return <LoadError message={error} onRetry={() => void reload()} />
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   if (!data.enabled) {
     return (
       <div className="card card-wide">

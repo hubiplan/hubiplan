@@ -6,7 +6,7 @@ import type { FormEvent } from 'react'
 import { cashCountApi, DENOMINATIONS, euro, financeApi, parseAmount } from '../../api/finance.ts'
 import type { CashCount, CashCountInput } from '../../api/finance.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
-import { Alert, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
@@ -32,7 +32,7 @@ export function CashCountsPage({ canEdit }: { canEdit: boolean }) {
   const [notice, setNotice] = useState<string | null>(null)
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   return (
     <div className="card card-wide">

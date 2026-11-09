@@ -8,7 +8,7 @@ const PASSWORD_PAGE = '/mein-konto/anmeldung'
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
   const location = useLocation()
-  if (loading) return <div className="page-loading">{t('Lädt …')}</div>
+  if (loading) return <div className="page-loading">{t('Wird geladen …')}</div>
   if (!user) {
     // Aufgerufene Seite merken: nach der Anmeldung geht es dorthin zurück.
     const from = location.pathname + location.search + location.hash

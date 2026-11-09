@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../../api/client.ts'
 import { todayIso } from '../../api/members.ts'
 import { formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert, Field } from '../../components/ui.tsx'
+import { Alert, Field, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { MusicEmptyState, MusicHeader } from './MusicLayout.tsx'
@@ -131,7 +131,7 @@ export function PerformanceOverview() {
         )}
       </p>
       {load.error && <Alert kind="error">{load.error}</Alert>}
-      {!load.data && !load.error && <p>{t('Lädt …')}</p>}
+      {!load.data && !load.error && <Loading />}
       {load.data?.count === 0 && (
         <MusicEmptyState>{t('Keine sichtbaren Auftritte im gewählten Zeitraum.')}</MusicEmptyState>
       )}
@@ -183,16 +183,18 @@ export function PerformanceOverview() {
             className="button button-ghost"
             disabled={!load.data.previous}
             onClick={() => setPage(page - 1)}
+            aria-label={t('Vorherige Seite')}
           >
-            {t('Zurück')}
+            <span aria-hidden="true">‹</span> {t('Vorherige')}
           </button>
           <span>{t('Seite {page} · {count} Auftritte', { page, count: load.data.count })}</span>
           <button
             className="button button-ghost"
             disabled={!load.data.next}
             onClick={() => setPage(page + 1)}
+            aria-label={t('Nächste Seite')}
           >
-            {t('Weiter')}
+            {t('Nächste')} <span aria-hidden="true">›</span>
           </button>
         </div>
       )}

@@ -17,7 +17,7 @@ import { PERM } from '../../api/orgs.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
-import { Alert, Checkbox, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { t, tn } from '../../i18n/index.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
@@ -467,7 +467,7 @@ export function SeriesPage() {
   const { data, error, reload } = useLoad(() => historyApi.series.archive(org.id, id), [org.id, id])
   const [series, setSeries] = useState<Series | null>(null)
   if (error) return <LoadError message={error} onRetry={reload} />
-  if (!data) return <p className="muted">{t('Wird geladen …')}</p>
+  if (!data) return <Loading />
   const s = series ?? {
     id: data.id,
     name: data.name,

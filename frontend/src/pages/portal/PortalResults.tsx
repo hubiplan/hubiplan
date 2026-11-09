@@ -2,14 +2,14 @@
 // und Wert, Titel und Würden über alle Jahre.
 import { historyApi } from '../../api/competitionHistory.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { CompetitionStatistics } from '../competitions/Statistics.tsx'
 
 export function PortalResults({ accessId }: { accessId: number }) {
   const { data, error } = useLoad(() => historyApi.mine(accessId), [accessId])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   if (data.starts.length === 0 && data.grants.length === 0)
     return (
       <p className="muted">

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { cardApi } from '../api/cards.ts'
 import type { CardAction, CardInfo } from '../api/cards.ts'
 import { errorMessage, formatDateTime, useLoad } from './forms.ts'
-import { Alert } from './ui.tsx'
+import { Alert, Loading } from './ui.tsx'
 import { confirmDialog } from './dialog.ts'
 import type { ConfirmOptions } from './dialog.ts'
 import { useTerms } from '../org/terms.ts'
@@ -44,7 +44,7 @@ export function CardPanel({
       <h2>{t('Mitgliedsausweis')}</h2>
       {error && <Alert kind="error">{error}</Alert>}
       {!data ? (
-        !error && <p className="muted">{t('Lädt …')}</p>
+        !error && <Loading />
       ) : data.state === 'none' && !canEdit ? (
         <p className="muted">{t('Für dieses Mitglied gibt es noch keinen Ausweis.')}</p>
       ) : data.state === 'none' ? (
@@ -262,7 +262,7 @@ function GoogleWalletButton({ accessId }: { accessId: number }) {
         disabled={busy}
         onClick={() => void add()}
       >
-        {busy ? t('Lädt …') : t('Zu Google Wallet hinzufügen')}
+        {busy ? t('Wird geladen …') : t('Zu Google Wallet hinzufügen')}
       </button>
       {error && <Alert kind="error">{error}</Alert>}
     </div>

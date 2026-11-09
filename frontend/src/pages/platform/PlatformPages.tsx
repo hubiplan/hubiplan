@@ -10,7 +10,15 @@ import {
   withRequirements,
 } from '../../api/modules.ts'
 import type { PlatformOrg, PlatformSettings } from '../../api/orgs.ts'
-import { Alert, Checkbox, Field, LoadError, SelectField, Tabs } from '../../components/ui.tsx'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  LoadError,
+  SelectField,
+  Tabs,
+  Loading,
+} from '../../components/ui.tsx'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { peeringApi } from '../../api/peering.ts'
@@ -84,7 +92,7 @@ export function PlatformOrgsPage() {
   const [editing, setEditing] = useState<PlatformOrg | 'new' | null>(null)
 
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
 
   const federations = data.filter((o) => o.type === 'federation')
   const clubsOf = (fed: number | null) =>
@@ -654,7 +662,7 @@ function PlatformOrgForm({
 export function PlatformSettingsPage() {
   const { data, error, setData } = useLoad(() => platformApi.settings(), [])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   return (
     <div className="stack">
       <SettingsForm settings={data} onSaved={setData} />

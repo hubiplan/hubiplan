@@ -1,7 +1,7 @@
 // Mitgliederbereich: wofür das Mitglied gemeldet ist (Meldungen Schritt 2).
 import { entriesApi, type MyEntry } from '../../api/entries.ts'
 import { formatDate, useLoad } from '../../components/forms.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
 function today(): string {
@@ -13,7 +13,7 @@ function today(): string {
 export function PortalEntries({ accessId }: { accessId: number }) {
   const { data, error } = useLoad(() => entriesApi.mine(accessId), [accessId])
   if (error) return <Alert kind="error">{error}</Alert>
-  if (!data) return <p className="muted">{t('Lädt …')}</p>
+  if (!data) return <Loading />
   if (data.length === 0)
     return (
       <p className="muted">
