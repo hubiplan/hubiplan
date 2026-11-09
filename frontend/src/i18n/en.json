@@ -31,11 +31,23 @@
   "Gewählte Bedingungen": "Selected conditions",
   "Nur endgültige Ergebnisse · ohne Gäste und Starts außer Konkurrenz.": "Final results only · Excluding guests and non-competing entries.",
   "Teilnahmen": "Participations",
-  "{n} Wettbewerbe": "{n} competitions",
   "Siege": "Wins",
   "Teilnehmende Mitglieder": "Participating members",
   "Nur Einzelwertungen": "Individual standings only",
   "Jede Person einmal": "Each person counted once",
+  "nicht gezählt: {list}": "not counted: {list}",
+  "{n} Gast": {
+    "one": "{n} guest",
+    "other": "{n} guests"
+  },
+  "{n} außer Konkurrenz": {
+    "one": "{n} non-competing",
+    "other": "{n} non-competing"
+  },
+  "{n} fehlend": {
+    "one": "{n} absent",
+    "other": "{n} absent"
+  },
   "Podestplätze": "Podium finishes",
   "Platz 1 bis 3 · Einzelwertungen": "Places 1 to 3 · Individual standings",
   "Errungene Pfänder": "Bird prizes won",
