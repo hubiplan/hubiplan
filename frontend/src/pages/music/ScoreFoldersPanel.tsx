@@ -3,7 +3,7 @@ import { api } from '../../api/client.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { confirmDialog } from '../../components/dialog.ts'
-import { Alert } from '../../components/ui.tsx'
+import { Alert, Loading } from '../../components/ui.tsx'
 import { t, tn } from '../../i18n/index.ts'
 import { MusicEmptyState } from './MusicLayout.tsx'
 import { LeadersPanel } from './LeadersPanel.tsx'
@@ -59,7 +59,7 @@ export function ScoreFoldersPanel({
     return { folders, units }
   }, [base])
   if (load.error) return <Alert kind="error">{load.error}</Alert>
-  if (!load.data) return <p>{t('Lädt …')}</p>
+  if (!load.data) return <Loading />
   const { folders, units } = load.data
   const unitNames = (ids: number[]) =>
     ids.length
