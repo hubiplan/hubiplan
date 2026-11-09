@@ -17,6 +17,10 @@ If the end time is not yet known, enable **Hide end time on the website** under 
 The website then shows only the start time; the entered end time is kept in the internal calendar.
 For a recurring event, the setting applies to all occurrences.
 
+If the event is only for a sub-unit that does not manage its own events (for example a platoon without its own access), choose it under **Event for**.
+Then only its members are invited, and you keep managing the event in the unit's calendar.
+Sub-units that manage themselves create their own events.
+
 Invitees receive an email and accept or decline there or in the member area.
 
 ![Starting point: Create an event and invite members](bild:termin-anlegen)

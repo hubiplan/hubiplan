@@ -33,6 +33,7 @@ from core.tenancy import rls_bypass, scope_of, set_rls
 from members.models import DepartmentMembership, Membership, today
 from organizations.models import Organization
 from organizations.terms import fill
+from organizations.tree import UnitTree
 from portal.views import DepartmentScopedMixin, _portal_access
 
 from . import external, ical, notify, participants, pdf, recurrence, rsvp, services
@@ -293,6 +294,34 @@ class _CalendarMixin:
         if not self.viewer.can_manage:
             raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
 
+    def chosen_unit(self, payload, current):
+        """Für welche Einheit der Termin gilt.
+
+        Im Vereinskalender kann der Vorstand eine Untereinheit ohne eigene
+        Verwaltung wählen (``department_id``; leer = die Einheit selbst).
+        Sonst bleibt es bei ``current``.
+        """
+        if "department_id" not in payload or self.viewer.kind != "org":
+            return current
+        raw = payload.get("department_id")
+        if raw in (None, ""):
+            return None
+        try:
+            unit_id = int(raw)
+        except (TypeError, ValueError):
+            unit_id = None
+        if unit_id is None or unit_id not in self.viewer.board_units:
+            raise serializers.ValidationError(
+                {
+                    "department_id": gettext(
+                        "Für diese Untereinheit kannst du hier keine Termine anlegen."
+                    )
+                }
+            )
+        from organizations.models import Department
+
+        return Department.objects.get(pk=unit_id, organization=self.viewer.org)
+
     def visible_event(self, pk: int) -> Event:
         event = (
             self.viewer.events().prefetch_related("attachments", "exceptions").filter(pk=pk).first()
@@ -515,20 +544,33 @@ class _EventList(APIView):
                     {**category_data(c), "is_active": c.is_active}
                     for c in EventCategory.objects.filter(organization=self.viewer.org)
                 ],
+                # Vereinskalender: Untereinheiten, für die der Vorstand Termine anlegt
+                "units": self.unit_choices(),
             }
         )
+
+    def unit_choices(self) -> list[dict]:
+        if not self.viewer.board_units:
+            return []
+        tree = UnitTree.of(self.viewer.org.pk)
+        return [
+            {"id": pk, "name": tree.nodes[pk].name, "path": tree.path(pk), "depth": tree.depth(pk)}
+            for pk in self.viewer.board_units
+            if pk in tree.nodes
+        ]
 
     @transaction.atomic
     def post(self, request, **kwargs):
         self.require_manage()
+        department = self.chosen_unit(request.data, self.viewer.department)
         data = EventWriteSerializer(
             data=request.data,
-            context={"org": self.viewer.org, "department": self.viewer.department},
+            context={"org": self.viewer.org, "department": department},
         )
         data.is_valid(raise_exception=True)
         event = data.save(
             organization=self.viewer.org,
-            department=self.viewer.department,
+            department=department,
             created_by=request.user,
         )
         self.audit("create", event, diff({}, snapshot(event)))
@@ -549,18 +591,24 @@ class _EventDetail(APIView):
         before = snapshot(event)
         tracked = {f: getattr(event, f) for f in TRACKED}
         was_cancelled, old_start = event.is_cancelled, event.starts_at
+        department = self.chosen_unit(request.data, event.department)
         data = EventWriteSerializer(
             event,
             data=request.data,
             partial=True,
-            context={"org": self.viewer.org, "department": self.viewer.department},
+            context={"org": self.viewer.org, "department": department},
         )
         data.is_valid(raise_exception=True)
-        event = data.save()
+        event = data.save(department=department)
         moved = any(getattr(event, f) != v for f, v in tracked.items())
         if moved:
             event.changed_at = timezone.now()
             event.save(update_fields=["changed_at"])
+        if event.starts_at != old_start and not event.is_series:
+            # Verknüpfte Wettbewerbe bekommen das neue Datum (Ralf 2026-11-09)
+            from competitions.event_views import follow_event
+
+            follow_event(request.user, event)
         if event.starts_at != old_start and event.reminded_at:
             # Neuer Zeitpunkt: Erinnerung noch einmal
             event.reminded_at = None

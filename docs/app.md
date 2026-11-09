@@ -81,7 +81,7 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 | `GET /api/portal/<Zugang>/events/?from=&to=` | Termine (wie Mitgliederbereich) |
 | `PUT/DELETE /api/portal/<Zugang>/events/<id>/response/` | Zu-/Absage |
 | `GET /api/portal/<Zugang>/circulars/` | Rundschreiben |
-| `GET /api/portal/<Zugang>/results/` | Meine Ergebnisse: Starts mit Platz und Wert, Titel und Auszeichnungen (Wettbewerbe; leer ohne Modul, `competitions_enabled` im Zugang) |
+| `GET /api/portal/<Zugang>/results/` | Meine Ergebnisse: Starts mit Platz, Wert und Einheit des Werts (`unit_label`, z. B. „Ringe“), Titel und Auszeichnungen (Wettbewerbe; leer ohne Modul, `competitions_enabled` im Zugang) |
 | `GET /api/portal/<Zugang>/` | eigenes Profil (`kind`, `display_name`; Organisationen ohne Vorname, Geburtsdatum und Geschlecht) |
 | `GET /api/app/v1/send/` | Einheiten, an deren Mitglieder dieses Konto Kurzmitteilungen senden darf (`circulars.send` im Verein, `dept.circulars.send` im Zug) |
 | `POST /api/app/v1/send/<org|dept>/<id>/` | Kurzmitteilung an alle Mitglieder der Einheit: `subject`, `body`, `confirm` (false: nur Empfängerzahl, true: senden) |
@@ -94,6 +94,9 @@ wirkt, hält die App zwei Schlüsselpaare im Android-Keystore (P-256, nicht expo
 | `DELETE /api/portal/<Zugang>/photo/` | Einwilligung widerrufen, alle Fotos löschen |
 | `GET /api/portal/<Zugang>/photo/image/?status=&size=thumb` | eigenes Foto als Bild |
 | `POST /api/portal/<Zugang>/change-requests/` | Änderung melden (wie im Browser) |
+| `GET /api/portal/<Zugang>/music/folders/` | Notenmappen des Musikers: feste Mappen (Marschbuch, Repertoire) und Mappen je Auftritt/Probe in Programmreihenfolge mit den Noten der eigenen Stimme (`musician` im Zugang; siehe [musik.md](musik.md)) |
+| `GET /api/portal/<Zugang>/music/files/<id>/?format=&transpose=&layout=` | Notendatei (eigene Stimme aus Partituren); `format` leer, `musicxml`, `pdf` oder `midi`; `layout=<Höhe je 1000 Breite>x<Notengröße>` (z. B. `1778x60`, 800–3000 und 25–120) setzt das PDF für den Bildschirm der App neu um; `ETag` mit Fassungsnummer, `If-None-Match` → 304 |
+| `GET/POST /api/portal/<Zugang>/music/live/<Ziel>/` | Live-Vorgabe der Leitung (Stück an alle Geräte); die App fragt bei offenem Notenpult alle `poll_seconds` nach |
 
 Bescheid per Push (`{"t":"info","access":…,"title":…,"text":…}`), wenn der Vorstand ein Foto
 freigibt oder ablehnt und wenn er über eine Änderungsmeldung entscheidet.

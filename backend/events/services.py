@@ -23,7 +23,7 @@ from access.catalog import (
 )
 from access.models import RoleAssignment
 from organizations.models import Department, Organization
-from organizations.tree import UnitTree, with_ancestors
+from organizations.tree import Node, UnitTree, with_ancestors
 
 from .models import CalendarPublication, Event, EventCategory
 
@@ -117,6 +117,28 @@ def has_own_calendar_admin(unit: Department) -> bool:
     ).exists()
 
 
+def board_units(club: Organization) -> list[Node]:
+    """Untereinheiten, deren Termine der Vorstand der Einheit selbst pflegt.
+
+    Das sind die aktiven Untereinheiten ohne Selbstverwaltung, über denen auch
+    keine selbstverwaltete Untereinheit steht (sonst pflegt die ihre Termine).
+    In Baumreihenfolge.
+    """
+    if club.type != Organization.Type.CLUB:
+        return []
+    tree = UnitTree.of(club.pk)
+    if not tree.nodes:
+        return []
+    managed_self = set(
+        Department.objects.filter(organization=club, self_managed=True).values_list("pk", flat=True)
+    )
+    return [
+        tree.nodes[pk]
+        for pk in tree.ordered()
+        if tree.nodes[pk].is_active and not managed_self.intersection(tree.ancestors(pk))
+    ]
+
+
 @dataclass
 class Viewer:
     """Sicht auf Kalender. ``org`` = Organisation, in deren RLS-Kontext gelesen wird."""
@@ -136,6 +158,9 @@ class Viewer:
     finance: str = ""
     # Rechte des Betrachters in der Organisation (für Querverweise am Termin)
     perms: frozenset = frozenset()
+    # Vereinskalender: Untereinheiten ohne eigene Verwaltung, deren Termine der
+    # Vorstand hier anlegt und pflegt
+    board_units: tuple[int, ...] = ()
 
     def visible_q(self) -> Q:
         # Kopien eines seit 14 Tagen nicht abrufbaren fremden Kalenders zeigt niemand (FQ22)
@@ -186,6 +211,8 @@ class Viewer:
             )
         else:
             own = Q(organization=org, department__isnull=True)
+            if self.board_units:
+                own |= Q(organization=org, department_id__in=self.board_units)
             if not self.sees_board:
                 own &= Q(visibility__in=SHARED)
             q = own
@@ -224,7 +251,7 @@ class Viewer:
         if event.organization_id != self.org.pk:
             return False
         if self.department is None:
-            return event.department_id is None
+            return event.department_id is None or event.department_id in self.board_units
         return event.department_id == self.department.pk
 
     def can_edit(self, event: Event) -> bool:
@@ -267,6 +294,7 @@ def org_viewer(user, org: Organization, perms: set[str]) -> Viewer:
         kind="org",
         finance=finance,
         perms=frozenset(perms),
+        board_units=tuple(n.id for n in board_units(org)) if manage else (),
     )
 
 

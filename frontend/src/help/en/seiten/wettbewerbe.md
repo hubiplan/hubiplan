@@ -20,7 +20,9 @@ number of valid results. The overall view also shows the equally weighted averag
 personal member averages.
 
 Only final results count. Missing values are not zero. Each person counts once per
-competition; wins and podium finishes count per individual standing. Team achievements
+competition. Guests, non-competing entries and absent starters do not count as
+participations; **Participations** shows how many were not counted. This is why the number
+of starters in the competition list can be higher. Wins and podium finishes count per individual standing. Team achievements
 are not counted as personal wins. Chart values are also available as a table. Expand
 **All starts and awards** to see ongoing competitions as well.
 
@@ -28,11 +30,13 @@ Here you set up your own shooting competitions with individual and team scoring,
 
 Stand mode stores private data for the verified account or complete stand credential, for at most twelve hours and never beyond the credential's expiry. Without reception, the same stand remains available in the same browser tab. An explicit server access denial ends offline access. Signing out or switching accounts removes this browser's stand cache. Send outstanding entries before signing out; signing out asks before discarding them. Revoked or expired access also removes unsent entries. The old cache without account binding is removed on first opening this version; a notice appears if it contained unsent entries. Browser storage does not replace a backup.
 
-In the live camera, the dashed circle shows where the outermost ring of the target should be; if the target has a black aiming area, a solid circle also shows where the black should be. This works the same in the browser and in the app.
+In the live camera, the dashed circle shows where the outermost ring of the target should be; if the target has a black aiming area, a solid circle also shows where the black should be. On the card with five target faces (four corners and centre), the camera looks for all five and draws the circles around the ones it finds; it takes the picture once all five are straight, steady and fully in view. It does not need fixed card dimensions for this. This works the same in the browser and in the app.
 
 ### Setup
 
 **Set up** separates **Basic data**, **Shooting conditions**, **Rankings** and **Output & sharing**. A target is selected by its image once per shooting round. Individual and centre-distance rankings can share the same recorded hits; unit rankings derive from an individual ranking. Facilities configured under [Competitions › Setup](/wettbewerbe/einrichtung) filter the target catalogue without removing existing selections. Targets with hit pattern, photo evaluation and bird shooting belong to the “Shooting sports” module; without it you enter results as values.
+
+Under **Basic data** › **Event in the calendar** you link the competition to an event. The competition then takes the event's date, and empty place and description fields as well. If the event is moved later, the competition moves with it; competitions that are already final keep their date. If the dates still differ, a notice offers **Use the event's date**.
 
 Changes to conditions or calculations require confirmation when results exist. Calculated results are recalculated, while manual totals remain and must be reviewed. After conditions change, stand mode requires the current setup and discards old offline entries. Finalising and reopening are available under **Evaluation** → **Competition and finalisation**.
 

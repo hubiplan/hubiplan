@@ -127,6 +127,26 @@ Die Proben-, Rückmeldungs-, Einzelprogramm- und Notenausgabedaten sind im allge
 
 Nach dem Löschen geschlossener Ausgaben gilt für den Materialpapierkorb die vorhandene Frist von 30 Tagen; anschließend werden die zugehörigen Musikverknüpfungen entfernt. Gegenstände mit offener Ausgabe werden vom endgültigen Bereinigen ausgenommen.
 
+## Notenmappen (Marschbuch, Repertoire) und Noten in der App
+
+Unter **Musik** → **Notenbestand** → **Notenmappen** werden feste Mappen ohne Termin gepflegt (Modelle `ScoreFolder`, `ScoreFolderUnit`, `ScoreFolderItem`): Name, Art (`marchbook`, `repertoire`, `other`), Reihenfolge in der App, Hinweis, aktiv. Jede Mappe enthält Arrangements in fester Reihenfolge mit optionaler Nummer (frei, z. B. „27a“, je Mappe eindeutig ohne Groß-/Kleinschreibung). Ohne Untereinheiten sehen alle aktiven Musiker die Mappe, sonst nur Mitglieder der gewählten Untereinheiten und der Einheiten darunter. Lesen dürfen Notenbestand- und Musikrollen, ändern nur „Notenbestand pflegen“; Modul „Notenarchiv“ (`scores`) muss an sein.
+
+Mappen geben keine zusätzlichen Rechte: Dateien erhält ein Musiker nur zur eigenen Stimme bzw. Fähigkeit und nur aus Ordnern, die die Dokumentenablage für Mitglieder freigibt. Dateien aus Mappen sind über denselben Abruf `music/files/<id>/` erreichbar wie die Noten zu Terminen und erscheinen auch unter **Meine Noten**. Mehrere Dateien je Stück und Stimme ordnet das Feld **Reihenfolge bei mehreren Dateien** (`ScoreDocument.position`).
+
+Für die App liefert `GET /api/portal/<Zugang>/music/folders/` alle Mappen des Musikers: `folders` (feste Mappen mit `items` in Reihenfolge, je Stück `number`, Titel, Komponist, Arrangement, Lizenzhinweis und `scores` der eigenen Stimme) und `events` (eigene Auftritte mit Programm in Reihenfolge, Pausen als eigene Einträge, und eigene Proben mit gültigem Probenprogramm; bis 7 Tage nach dem Termin, Proben im üblichen Fenster). Jede Notendatei trägt `version` (Fassungsnummer), `size`, `content_type` und `url`. Der Dateiabruf sendet `ETag: "v<Fassung>"` und beantwortet `If-None-Match` mit 304, damit die App nur geänderte Fassungen neu lädt. Abgesagte Termine und eigene Absagen liefern keine Dateien.
+
+### Notendateien: MusicXML, MEI, ABC und MIDI
+
+Die Dokumentenablage nimmt zusätzlich MusicXML (`.musicxml`, `.xml`, gepackt `.mxl`), MEI, ABC und MIDI an (`documents/notation.py`, nur dort, nicht bei Aufgabenanhängen). Geprüft wird der Inhalt: XML mit defusedxml (DOCTYPE erlaubt, Entitäten und Nachladen verboten), Wurzel `score-partwise`/`score-timewise` bzw. `mei`, MXL mit Grenzen beim Entpacken (200 Einträge, 30 MB), ABC mit `X:`-Kopf, MIDI mit `MThd`.
+
+Notensatz mit Verovio (`music/notation_render.py`, LGPL-3.0) in einem eigenen Prozess mit 60 s Zeitgrenze und höchstens 200 Seiten; Ergebnisse eine Woche im Cache. `music/files/<id>/` (Mitglieder, Gäste) und `score-documents/<id>/download/` (Verwaltung) verstehen `?format=` (leer: Original bzw. eigene Stimme als MusicXML, `pdf`, `midi`) und `?transpose=` (Intervall wie `M2`, `-m3` oder Halbtöne `-3`), bei `pdf` zusätzlich `?layout=1778x60` (Seitenverhältnis Höhe je 1000 Breite und Notengröße): Die App lässt so die Noten passend zu Bildschirm und gewählter Notengröße neu umbrechen, statt Verovio selbst mitzubringen. Aus einer Partitur mit mehreren Stimmen liefert der Mitgliederabruf nur die eigene Stimme: `ScoreDocument.notation_part` (ID oder Name) oder sonst nach Instrument und Register der Zuordnung geraten; ohne eindeutige Stimme gibt es 404 statt der Partitur. Zuordnungen ohne Stimme oder als Partitur liefern die ganze Datei. `score-documents/notation/?document=<id>` zeigt Titel, Komponist und Stimmen. Im Mitgliederbereich verlinkt „Meine Noten“ Notensatz als PDF. In `music/folders/` tragen Noten `notation` (`musicxml`, `mei`, `abc`, `midi` oder leer) und `formats`.
+
+### Live-Vorgabe durch die Leitung
+
+Dirigent, Stabführer oder Tambourmajor können in der App allen Geräten das nächste Stück vorgeben. Leiten darf, wer im Verein Musik bearbeiten darf, und wer als **Leitung in der App** für eine Mappe, einen Auftritt (Besetzung) oder eine Probe (Serie) eingetragen ist (`MusicLeader`, `music/leaders/`, Pflege mit Musik- oder Notenbestandsrecht). `GET /api/portal/<Zugang>/music/live/<Ziel>/` (Ziel `folder-<id>`, `performance-<id>`, `rehearsal-<id>`) liefert die letzte Vorgabe (`cue`: `seq`, `arrangement`, `number`, `title`, `sender`, `sent_at`), `can_send` und `poll_seconds`; `POST` mit `arrangement` und optional `number` sendet (frühestens 1 s nach der letzten Vorgabe). Abfragen dürfen nur Musiker, die das Ziel sehen. Die Vorgabe liegt nur im Cache bis Tagesende (höchstens 12 Stunden) und nicht in der Datenbank. In `music/folders/` tragen Mappen `key`, Termine `live_key`, beide `can_lead`.
+
+Die neuen Tabellen sind im allgemeinen Datenexport enthalten und haben RLS. Rückweg: Eine frühere Fassung ignoriert die Tabellen und das Feld `position`; vor einem Rückweg die Mappen exportieren.
+
 ## Ergänzende Arbeitsabläufe
 
 - Sammelauszahlungen: unveränderliche, verschlüsselte Zahlungsläufe reservieren freigegebene

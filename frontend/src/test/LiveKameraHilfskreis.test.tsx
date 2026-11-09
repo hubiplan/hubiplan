@@ -25,3 +25,18 @@ describe('Live-Kamera: Hilfskreise', () => {
     expect(circles(1)).toHaveLength(1)
   })
 })
+
+describe('Live-Kamera: Karte mit fünf Spiegeln', () => {
+  it('zeichnet keine festen Hilfskreise, sondern erst die erkannten Spiegel', () => {
+    const { container } = render(
+      <LiveCamera
+        blackShare={29 / 38}
+        spots={5}
+        onCapture={vi.fn()}
+        onClose={vi.fn()}
+        onFail={vi.fn()}
+      />,
+    )
+    expect(container.querySelectorAll('.live-guide circle')).toHaveLength(0)
+  })
+})

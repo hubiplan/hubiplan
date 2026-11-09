@@ -64,12 +64,20 @@ def find_event(view: _Mixin, raw) -> Event:
     return event
 
 
+def event_date(event: Event) -> datetime.date:
+    return timezone.localtime(event.starts_at).date()
+
+
 def link(view: _Mixin, comp: Competition, event: Event | None, *, fill: bool = False) -> None:
-    """Termin zuordnen (``None`` löst). ``fill``: leere Angaben aus dem Termin übernehmen."""
+    """Termin zuordnen (``None`` löst). ``fill``: Datum des Termins und leere Angaben
+    übernehmen (Ralf 2026-11-09: der Wettbewerb bekommt das Datum des Termins)."""
     before = snapshot(comp)
     comp.event = event
     fields = ["event"]
     if event is not None and fill:
+        if comp.date != event_date(event):
+            comp.date = event_date(event)
+            fields.append("date")
         if not comp.location and event.location:
             comp.location = event.location[:200]
             fields.append("location")
@@ -80,6 +88,24 @@ def link(view: _Mixin, comp: Competition, event: Event | None, *, fill: bool = F
     changes = diff(before, snapshot(comp))
     if changes:
         record(view.org, view.request.user, "update", comp, changes)
+
+
+def follow_event(user, event: Event) -> int:
+    """Termin verschoben: verknüpfte Wettbewerbe ziehen mit, außer abgeschlossene
+    (deren Datum ist das tatsächliche). Gibt die Zahl der angepassten zurück."""
+    day = event_date(event)
+    moved = 0
+    for comp in (
+        Competition.objects.filter(organization_id=event.organization_id, event=event)
+        .exclude(date=day)
+        .exclude(status=Competition.Status.FINAL)
+    ):
+        before = snapshot(comp)
+        comp.date = day
+        comp.save(update_fields=["date", "updated_at"])
+        record(comp.organization, user, "update", comp, diff(before, snapshot(comp)))
+        moved += 1
+    return moved
 
 
 def create_event(view: _Mixin, comp: Competition) -> Event:
@@ -147,7 +173,7 @@ def _midnight(day: datetime.date) -> datetime.datetime:
 
 
 class EventLinkView(_Mixin, APIView):
-    """POST {"event": id} zuordnen (leere Angaben übernehmen), {"event": null} lösen,
+    """POST {"event": id} zuordnen (Datum und leere Angaben übernehmen), {"event": null} lösen,
     {"create": true} neuen Termin aus dem Wettbewerb anlegen."""
 
     @transaction.atomic
@@ -165,6 +191,7 @@ class EventLinkView(_Mixin, APIView):
         return Response(
             {
                 "event": event_info(comp.event),
+                "date": comp.date.isoformat(),
                 "location": comp.location,
                 "description": comp.description,
             }

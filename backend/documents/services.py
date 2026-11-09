@@ -58,16 +58,23 @@ INLINE_TYPES = {"application/pdf", "image/jpeg", "image/png"}
 ALLOWED_HINT = "PDF, Word, Excel, PowerPoint, OpenDocument, JPEG, PNG, Text oder CSV"
 
 
-def check_upload(upload) -> str:
-    """Prüft Größe und Dateiart, gibt die Dateiart zurück."""
+def check_upload(upload, notation: bool = False) -> str:
+    """Prüft Größe und Dateiart, gibt die Dateiart zurück.
+
+    ``notation``: auch Notendateien (MusicXML, MEI, ABC, MIDI), nur in der Dokumentenablage."""
+    from . import notation as notes
+
     if upload is None:
         raise ValidationError({"file": gettext("Bitte eine Datei wählen.")})
     if upload.size > MAX_DOCUMENT_BYTES:
         raise ValidationError({"file": gettext("Die Datei ist größer als 20 MB.")})
     ext = clean_name(upload.name).rsplit(".", 1)[-1].lower() if "." in upload.name else ""
+    if notation and ext in notes.NOTATION_TYPES:
+        return notes.check_upload(upload, ext)
     if ext not in ALLOWED_TYPES:
+        hint = f"{ALLOWED_HINT}, {notes.NOTATION_HINT}" if notation else ALLOWED_HINT
         raise ValidationError(
-            {"file": gettext("Erlaubt sind {ALLOWED_HINT}.").format(ALLOWED_HINT=ALLOWED_HINT)}
+            {"file": gettext("Erlaubt sind {ALLOWED_HINT}.").format(ALLOWED_HINT=hint)}
         )
     ctype, magic = ALLOWED_TYPES[ext]
     head = upload.read(8)

@@ -101,6 +101,16 @@ export interface EventList {
   can_manage: boolean
   rsvp_allowed?: boolean
   categories: EventCategory[]
+  /** Vereinskalender: Untereinheiten ohne eigene Verwaltung, für die der Vorstand Termine anlegt */
+  units?: EventUnit[]
+}
+
+export interface EventUnit {
+  id: number
+  name: string
+  /** Pfad im Baum, z. B. „Korps › 1. Zug“ */
+  path: string
+  depth: number
 }
 
 export interface Attachment {
@@ -167,6 +177,8 @@ export interface EventDetail {
 }
 
 export interface EventInput {
+  /** Vereinskalender: Untereinheit, für die der Termin gilt (null = die Einheit selbst) */
+  department_id?: number | null
   title: string
   description: string
   location: string

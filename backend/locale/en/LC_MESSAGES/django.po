@@ -9403,3 +9403,51 @@ msgstr "The collection must fall on a bank business day (not a weekend or TARGET
 
 msgid "Ab {day} ist schon die Art „{name}“ eingetragen. Bitte zuerst diese spätere Art ändern oder entfernen."
 msgstr "From {day} the type “{name}” is already recorded. Please change or remove this later type first."
+
+msgid "Diese Nummer gibt es in der Mappe schon."
+msgstr "This number already exists in the folder."
+
+msgid "Dieses Arrangement steht schon in der Mappe."
+msgstr "This arrangement is already in the folder."
+
+msgid "Bitte alle Stücke der Mappe angeben."
+msgstr "Please list all pieces of the folder."
+
+msgid "Diese Untereinheit gibt es nicht."
+msgstr "This sub-unit does not exist."
+
+msgid "Die Notendatei lässt sich nicht lesen."
+msgstr "The music file cannot be read."
+
+msgid "Die Notendatei ist entpackt zu groß."
+msgstr "The music file is too large when unpacked."
+
+msgid "Das ist keine ABC-Notendatei."
+msgstr "This is not an ABC music file."
+
+msgid "Das ist keine MusicXML-Datei."
+msgstr "This is not a MusicXML file."
+
+msgid "Das ist keine MEI-Datei."
+msgstr "This is not an MEI file."
+
+msgid "Diese Stimme gibt es in der Notendatei nicht."
+msgstr "This part does not exist in the music file."
+
+msgid "Diese Stimme gibt es in der Notendatei nicht. Vorhanden: {parts}"
+msgstr "This part does not exist in the music file. Available: {parts}"
+
+msgid "Diese Transposition ist nicht möglich."
+msgstr "This transposition is not possible."
+
+msgid "Die Noten ließen sich nicht setzen."
+msgstr "The music could not be engraved."
+
+msgid "Datei „{fname}“: Die Notendatei lässt sich nicht lesen."
+msgstr "File “{fname}”: the music file cannot be read."
+
+msgid "Dieses Seitenformat ist nicht möglich."
+msgstr "This page format is not possible."
+
+msgid "Für diese Untereinheit kannst du hier keine Termine anlegen."
+msgstr "You cannot create events for this sub-unit here."

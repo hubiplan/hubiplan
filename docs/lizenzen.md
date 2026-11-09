@@ -71,6 +71,8 @@ Installationspakete an Dritte gehen (siehe unten).
 | python-dateutil | Apache-2.0 oder BSD-3-Clause | |
 | reportlab | BSD | Bringt Schriftdateien mit eigenen Lizenzen mit (Adobe-/Monotype-Typ-1, Vera, DarkGarden); die PDFs von HUBIplan verwenden nur die PDF-Standardschriften (Helvetica, Times) und betten keine Schriftdatei ein |
 | Pillow | MIT-CMU | Enthält native Bibliotheken (FreeType, libjpeg, libtiff u. a.) mit eigenen Lizenzen |
+| verovio | LGPL-3.0-only | Notensatz für MusicXML/MEI/ABC (PDF, MIDI); dynamisch geladene native Bibliothek, austauschbar per `pip`; bringt Notenschriften (Leipzig, Bravura u. a.) unter der SIL Open Font License mit, die nur als Pfade in SVG/PDF landen |
+| svglib | LGPL-3.0-or-later | wandelt das SVG von Verovio in reportlab-Zeichnungen; nutzt lxml (BSD-3-Clause), cssselect2 und tinycss2 (BSD-3-Clause) |
 | pypdfium2 | Apache-2.0 oder BSD-3-Clause | Bringt PDFium (BSD-3-Clause, Teile Apache-2.0) als native Bibliothek mit; dient nur dem Vorschaubild der Satzung auf der Webseite |
 | psycopg, psycopg-binary | LGPL-3.0 | Enthält libpq (PostgreSQL-Lizenz) und OpenSSL (Apache-2.0) |
 | PostgreSQL 18 | PostgreSQL License | |
@@ -102,7 +104,7 @@ Verein, der selbst betreibt), muss vorher am konkreten Image prüfen:
 
 1. Stückliste (SBOM) aller Python-, nativen und Betriebssystem-Pakete mit Versionen.
 2. Lizenztexte und NOTICE-Dateien aller enthaltenen Pakete beilegen.
-3. psycopg (LGPL-3.0): Lizenztexte GPL und LGPL beilegen, Quellcode der Bibliothek
+3. psycopg, verovio und svglib (LGPL-3.0): Lizenztexte GPL und LGPL beilegen, Quellcode der Bibliothek
    anbieten, Austausch der Bibliothek ermöglichen.
 4. Pillow: Hinweise der nativen Bibliotheken (FreeType, IJG, libtiff) beilegen.
 5. Nicht benutzte Schriftdateien von reportlab entfernen oder ihre Lizenz belegen.

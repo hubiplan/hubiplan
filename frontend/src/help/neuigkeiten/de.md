@@ -5,6 +5,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 November 2026:
 
 - Chronik: Den Inhalt der Chronik pflegst du nur noch unter Verein › Chronik. Unter Webseite › Texte stehen bei der Chronik nur Adresse, Menü und Löschen, dazu ein Link zur Chronik.
+- Termine: Im Kalender der Einheit legt der Vorstand unter **Termin für** auch Termine für Untereinheiten ohne eigene Verwaltung an. Eingeladen sind dann nur deren Mitglieder.
 - Seitenkopf: Seiten haben oben einen einheitlichen Kopf. Ab der zweiten Ebene steht darüber der Pfad (etwa „Einstellungen › Rollen und Rechte“), auf dem Handy ein Link „‹ zurück“ zur Seite darüber. Der Name der Einheit erscheint nur noch, wenn du mehrere Einheiten verwaltest. Den Anfang machen die Einstellungen.
 - Finanzen: Jede Gruppe der Seitenleiste hat eine eigene Seite. Ein Klick auf den Gruppennamen zeigt alle Einträge mit kurzer Beschreibung, was dort zu erledigen ist, und die Hauptaktion, z. B. **Einnahme erfassen** bei Buchen. ▸ klappt die Gruppe auf, ohne die Seite zu wechseln.
 - Menü: Finanzen ist in aufklappbare Gruppen gegliedert: **Beiträge & Rechnungen**, **Zahlungen**, **Buchen**, **Auswerten & abschließen** und **Einrichten**. Offen ist nur die Gruppe der aktuellen Seite, ▸ öffnet eine andere. Die früheren Reiter unter Rechnungen und Einrichtung (z. B. Mahnungen, Konten) sind eigene Einträge, Sammelauszahlungen stehen unter Zahlungen. Die Adressen bleiben gleich.

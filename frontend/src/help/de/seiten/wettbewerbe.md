@@ -22,7 +22,9 @@ Durchschnitt. Die Gesamtsicht zeigt zusätzlich den gleich gewichteten Durchschn
 persönlichen Mitgliederdurchschnitte.
 
 Nur endgültige Ergebnisse zählen. Fehlende Werte zählen nicht als null. Eine Person zählt
-je Wettbewerb einmal; Siege und Podestplätze zählen je Einzelwertung. Mannschaftserfolge
+je Wettbewerb einmal. Gäste, Starts außer Konkurrenz und fehlende Starter zählen nicht als
+Teilnahme; bei **Teilnahmen** steht, wie viele davon nicht gezählt wurden. Deshalb kann die
+Starterzahl in der Wettbewerbsliste größer sein. Siege und Podestplätze zählen je Einzelwertung. Mannschaftserfolge
 werden nicht als persönliche Siege gezählt. Diagrammwerte lassen sich als Tabelle öffnen.
 Unter **Alle Starts und Auszeichnungen** findest du auch laufende Wettbewerbe.
 
@@ -30,11 +32,13 @@ Hier richtet ihr eigene Schießen mit Einzel- und Zugwertung ein, erfasst Ergebn
 
 Der Standmodus speichert private Daten nur für das bestätigte Konto beziehungsweise den vollständigen Standzugang, höchstens zwölf Stunden und niemals über das Ablaufdatum des Zugangs hinaus. Ohne Empfang lässt sich derselbe Stand im selben Browser-Tab weiterverwenden. Eine ausdrückliche Zugriffsablehnung durch den Server beendet diesen Offlinezugang. Beim Abmelden und Kontowechsel wird der Stand-Speicher dieses Browsers entfernt. Noch nicht übertragene Eingaben vor dem Abmelden zuerst abgleichen; die Abmeldung fragt vor dem Verwerfen nach. Bei einem Rechteentzug oder abgelaufenen Zugang werden auch unübertragene Eingaben entfernt. Der alte, nicht kontogebundene Speicher wird beim ersten Start dieser Version entfernt; bei offenen Eingaben erscheint ein Hinweis. Browser-Speicher ersetzt keine Datensicherung.
 
-In der Live-Kamera zeigt der gestrichelte Kreis, wo der äußerste Ring der Scheibe liegen soll; hat die Scheibe einen schwarzen Spiegel, zeigt ein durchgezogener Kreis zusätzlich, wo das Schwarze liegen soll. Das gilt im Browser und in der App gleich.
+In der Live-Kamera zeigt der gestrichelte Kreis, wo der äußerste Ring der Scheibe liegen soll; hat die Scheibe einen schwarzen Spiegel, zeigt ein durchgezogener Kreis zusätzlich, wo das Schwarze liegen soll. Bei der Karte mit fünf Spiegeln (vier Ecken und Mitte) sucht die Kamera alle fünf Spiegel und zeichnet die Kreise um die gefundenen; sie löst aus, sobald alle fünf gerade, ruhig und ganz im Bild sind. Feste Kartenmaße braucht sie dafür nicht. Das gilt im Browser und in der App gleich.
 
 ### Einrichtung
 
 Unter **Einrichten** sind **Grunddaten**, **Schießbedingungen**, **Wertungen** und **Ausgabe & Freigabe** getrennt. Die Scheibe wird mit Bild einmal pro Schießdurchgang gewählt. Einzel- und Teilerwertungen können dieselben Treffer verwenden; eine Zugwertung berechnet sich aus einer Einzelwertung. Die Schießinfrastruktur unter [Wettbewerbe › Einrichtung](/wettbewerbe/einrichtung) filtert die angebotenen Scheiben, ohne vorhandene Auswahlen zu entfernen. Scheiben mit Trefferbild, die Fotoauswertung und das Vogelschießen gehören zum Modul „Schießsport“; ohne dieses Modul tragt ihr Ergebnisse als Werte ein.
+
+Unter **Grunddaten** › **Termin im Kalender** verknüpfst du den Wettbewerb mit einem Termin. Der Wettbewerb übernimmt dann das Datum des Termins, leere Angaben zu Ort und Beschreibung ebenfalls. Wird der Termin später verschoben, zieht der Wettbewerb mit; endgültig abgeschlossene Wettbewerbe behalten ihr Datum. Weicht das Datum doch einmal ab, erscheint ein Hinweis mit **Datum des Termins übernehmen**.
 
 Bei vorhandenen Ergebnissen müssen Änderungen an Bedingungen oder Berechnung bestätigt werden. Berechnete Ergebnisse werden neu ermittelt, manuelle Summen bleiben erhalten und sind zu prüfen. Nach geänderten Bedingungen verlangt der Standmodus die aktuelle Einrichtung; alte Offline-Eingaben werden verworfen. Abschließen und Wiederöffnen stehen unter **Auswertung** → **Wettbewerb und Abschluss**.
 
