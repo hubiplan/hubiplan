@@ -152,7 +152,8 @@ class ScoreFolderViewSet(ScoresViewSet):
             if items[pk].position != position:
                 items[pk].position = position
                 items[pk].save(update_fields=["position"])
-        return Response(self.get_serializer(folder).data)
+        # Neu lesen: die vorab geladenen Einträge hätten noch die alte Reihenfolge
+        return Response(self.get_serializer(self.get_queryset().get(pk=folder.pk)).data)
 
 
 class ScoreFolderItemViewSet(ScoresViewSet):

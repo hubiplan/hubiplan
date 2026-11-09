@@ -175,5 +175,5 @@ def test_midi_is_audio_only(api, club, setup):
         )
     client = api(setup["user"])
     url = f"/api/portal/{setup['access'].pk}/music/files/{link.pk}/"
-    assert client.get(url).content.startswith(b"MThd")
+    assert b"".join(client.get(url).streaming_content).startswith(b"MThd")
     assert client.get(url + "?format=pdf").status_code == 404

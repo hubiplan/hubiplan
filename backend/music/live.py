@@ -157,7 +157,7 @@ class MusicLeaderSerializer(ScopedSerializer):
         model = MusicLeader
         fields = ["id", "musician", "folder", "performance", "rehearsal", "name"]
 
-    def get_name(self, row):
+    def get_name(self, row) -> str:
         return display(row.musician)
 
     def validate(self, attrs):

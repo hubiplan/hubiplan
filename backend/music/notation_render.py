@@ -9,12 +9,15 @@ from __future__ import annotations
 
 import hashlib
 import io
+import logging
 import multiprocessing
 import re
 
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext
+
+log = logging.getLogger(__name__)
 
 TIMEOUT = 60
 CACHE_SECONDS = 7 * 24 * 3600
@@ -51,8 +54,10 @@ def check_transpose(value: str) -> str:
 def _work(conn, text: str, out: str, transpose: str, heading: list[str], layout: str) -> None:
     try:
         conn.send(("ok", _render(text, out, transpose, heading, layout)))
-    except Exception as exc:  # noqa: BLE001 – Ergebnis an den Elternprozess, nie Absturz dort
-        conn.send(("error", type(exc).__name__))
+    except Exception:  # noqa: BLE001 – Ergebnis an den Elternprozess, nie Absturz dort
+        import traceback
+
+        conn.send(("error", traceback.format_exc(limit=8)[-2000:]))
     finally:
         conn.close()
 
@@ -164,6 +169,12 @@ def render(
         proc.join()
     parent.close()
     if not result or result[0] != "ok":
+        log.warning(
+            "Noten setzen (%s) fehlgeschlagen: %s, Exitcode %s",
+            out,
+            result[1] if result else "keine Antwort",
+            proc.exitcode,
+        )
         raise ValidationError(gettext("Die Noten ließen sich nicht setzen."))
     cache.set(key, result[1], CACHE_SECONDS)
     return result[1]
