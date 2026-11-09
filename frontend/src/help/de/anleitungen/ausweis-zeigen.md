@@ -11,6 +11,8 @@ stichworte: [Ausweis, Mitgliedsausweis, QR-Code, Wallet]
 3. Hat dein Verein Wallet eingeschaltet, füge den Ausweis zu Google Wallet hinzu oder lade den Pass für Apple Wallet herunter.
 4. Lade den Pass nach Änderungen oder einem neuen QR-Code erneut.
 
+In der HUBIplan-App steht der Ausweis oben im Reiter „Ich“, auch ohne Netz. Drückst du lange auf das App-Symbol, öffnet „Ausweis zeigen“ ihn direkt groß.
+
 Hast du dein Handy verloren, kann der Verein den Ausweis sperren und neu erzeugen.
 
 ![Ausgangspunkt: Mitgliedsausweis zeigen](bild:ausweis-zeigen)

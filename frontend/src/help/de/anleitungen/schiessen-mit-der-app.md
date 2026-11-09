@@ -17,4 +17,4 @@ Mit der HUBIplan-App für Android wertest du ein Schießen direkt auf dem Handy 
 5. Für ein weiteres Gerät tippst du auf „QR-Code für weiteres Gerät“ und scannst ihn dort mit der App (unter „Verwaltung“ › „Wettbewerbe“ › „Stand-QR scannen“) oder mit der Kamera.
 6. Nach dem Schießen beendest du den Standzugang mit „Standzugang beenden“.
 
-Die Ranglisten sehen Mitglieder in der App unter „Ausweis“ › „Ranglisten“, so weit der Verein sie auch auf der Webseite zeigt.
+Die Ranglisten sehen Mitglieder in der App unter „Ich“ › „Meine Ergebnisse“ › „Ranglisten“, so weit der Verein sie auch auf der Webseite zeigt.
