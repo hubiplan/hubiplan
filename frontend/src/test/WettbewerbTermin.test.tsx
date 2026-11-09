@@ -136,7 +136,9 @@ describe('Wettbewerb und Termin', () => {
       },
     })
     const user = userEvent.setup()
-    expect(await screen.findByText(/Der Termin ist am .*2027, der Wettbewerb am .*2026/)).toBeVisible()
+    expect(
+      await screen.findByText(/Der Termin ist am .*2027, der Wettbewerb am .*2026/),
+    ).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Datum des Termins übernehmen' }))
     await waitFor(() =>
       expect(screen.queryByRole('button', { name: 'Datum des Termins übernehmen' })).toBeNull(),

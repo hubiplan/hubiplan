@@ -615,10 +615,7 @@ export const competitionsApi = {
       date: string
       location: string
       description: string
-    }>(
-      `${c(org, id)}event/`,
-      data,
-    ),
+    }>(`${c(org, id)}event/`, data),
   startersFromEvent: (org: number, id: number) =>
     api.post<{ added: number; already: number }>(`${c(org, id)}starters/from-event/`, {}),
   update: (org: number, id: number, data: Partial<Competition>) =>
