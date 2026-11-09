@@ -207,7 +207,8 @@ export function EventForm({
   const lastSaved = useRef<EventDetail | null>(null)
   const auto = useAutoSave(
     form,
-    (_changes, values) => eventApi.update(base, event!.id, { ...toInput(values, withUnit), notify: false }),
+    (_changes, values) =>
+      eventApi.update(base, event!.id, { ...toInput(values, withUnit), notify: false }),
     {
       enabled: !!event,
       onSaved: (saved) => {
@@ -300,9 +301,7 @@ export function EventForm({
           label={t('Termin für')}
           value={v.unit}
           error={errors.department_id}
-          hint={t(
-            'Bei einer Untereinheit sind nur ihre Mitglieder eingeladen.',
-          )}
+          hint={t('Bei einer Untereinheit sind nur ihre Mitglieder eingeladen.')}
           onChange={(e) => set('unit', e.target.value)}
         >
           <option value="">{t('die eigene Einheit')}</option>
