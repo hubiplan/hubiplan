@@ -54,7 +54,11 @@ export function QuickActions({ candidates, label }: { candidates: QuickAction[];
     <div className="card tile tile-wide home-actions">
       <div className="card-head">
         <h2>{label ?? t('Schnellaktionen')}</h2>
-        <button type="button" className="link-button" onClick={() => setEditing(!editing)}>
+        <button
+          type="button"
+          className="link-button push-right"
+          onClick={() => setEditing(!editing)}
+        >
           {editing ? t('Fertig') : t('Anpassen')}
         </button>
       </div>
