@@ -42,6 +42,7 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Wechselanfragen und Datenänderungen zusammen | **Mitglieder › Änderungen und Wechsel** | Members › Changes and transfers | „Anfragen“ als Menüpunkt |
 | Blättern in Listen | **Vorherige Seite / Nächste Seite** | Previous page / Next page | „Zurück / Weiter“ |
 | Aufgabe für Mitglieder | **Aufgabe** | Task | „To-do“ |
+| Aufgaben anlegen und verteilen (App-Bereich Verwaltung) | **Aufgaben verteilen** | Assign tasks | „Aufgaben“ allein (so heißt der Reiter mit den eigenen) |
 | Funktion in einer Einheit (Kassierer, Zugführer), mit oder ohne Rechte | **Rolle** | Role | „Funktion“ in der Oberfläche |
 | Was eine Rolle darf; Seite in den Einstellungen | **Rechte**, **Einstellungen › Rollen und Rechte** | Permissions, Settings › Roles and permissions | „Rechte für Zugänge“, „Rollen & Benutzer“ |
 | Person hat eine Rolle von … bis … | **Amtszeit**; Handlungen **besetzen** und **beenden** | Term of office; assign, end | „Zuordnung“, „zuordnen“, „vergeben“ |
@@ -52,6 +53,26 @@ für dieselbe Sache. Die englischen Entsprechungen stehen in [glossar-en.md](glo
 | Rechnungen im App-Bereich Verwaltung | **Rechnungen** | Invoices | „Beiträge“ |
 | Buchungen im App-Bereich Verwaltung | **Kassenbuch** | Cash book | „Kasse“ |
 | Geburtstage und Jubiläen der nächsten Wochen | **Jubiläen und Geburtstage** | Anniversaries and birthdays | „Anlässe“ |
+
+## Symbole in der App
+
+Die Android-App zeigt für dieselbe Sache immer dasselbe Symbol (Material-Symbole; was das
+Kernpaket nicht hat, steht in `hubiplan-android` unter `ui/Symbole.kt`).
+
+| Sache | Symbol | Nicht verwenden |
+|---|---|---|
+| Termine | Kalender | – |
+| Aufgaben (eigene und „Aufgaben verteilen“) | Haken im Kreis | – |
+| Mitteilungen | Briefumschlag | – |
+| Ausweis | Ausweiskarte | – |
+| Verwaltung | Schild | Schraubenschlüssel |
+| Zu erledigen | Eingangsfach | Glocke (sieht nach Benachrichtigungen aus) |
+| Kassenbuch | Buch | Einkaufswagen |
+| Rechnungen | Beleg | Liste |
+| Mitglieder | Person | – |
+| Jubiläen und Geburtstage | Stern | – |
+| Wettbewerbe | Ortsmarke | – |
+| Offline | durchgestrichene Wolke | Fehlerrot |
 
 ## Pflege
 
