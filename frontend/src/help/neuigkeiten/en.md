@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Usability: links stand out clearly from the text even with dark club colours; HUBIplan picks a suitable shade of the club colour for them. In headings and bold text, a link has a “›” after it. Body text is slightly darker.
 - Usability: the month calendar shows each event’s category as a name, on phones as a short code, with a legend above the month; events have a background in their category colour. Cards stand out more clearly from the page background. All lists page with the same “‹ Previous” and “Next ›” buttons. The role list groups areas by level (“Edit: Cash book, Dues”). On a phone, connect the app under My account › App & other instances with the button **Open in the HUBIplan app**, no QR code needed.
 - Chronicle: you now maintain the introduction and timeline only under Club › Chronicle. Under Website › Texts the chronicle only shows its address, menu setting and delete, plus a link to the chronicle.
 - Events: in the unit's calendar, the board can choose **Event for** to create events for sub-units that do not manage themselves. Only their members are invited then.

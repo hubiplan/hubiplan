@@ -47,17 +47,34 @@ export function lighten(hex: string, amount: number): string {
   return `#${[16, 8, 0].map((s) => ch(s).toString(16).padStart(2, '0')).join('')}`
 }
 
+/** Fließtext (--color-text in theme.css). */
+export const TEXT_COLOR = '#121614'
+
+/** Erreicht ein Link-Ton beide Ziele: 4,5 : 1 zum Grund und 3 : 1 zum Fließtext? */
+function linkContrastOk(c: string): boolean {
+  return (
+    Math.min(contrastRatio(c, '#ffffff'), contrastRatio(c, PAGE_BG)) >= 4.5 &&
+    contrastRatio(c, TEXT_COLOR) >= 3
+  )
+}
+
 /**
- * Linkfarbe aus der Primärfarbe: so wenig wie nötig abgedunkelt, bis normaler
- * Text auf Weiß und auf dem Seitenhintergrund 4,5 : 1 erreicht (WCAG 1.4.3,
- * UI-Audit NUI-04). Die Markenfarbe selbst bleibt.
+ * Linkfarbe aus der Primärfarbe: ein Ton der Vereinsfarbe, so wenig wie nötig abgedunkelt
+ * oder aufgehellt, bis normaler Text auf Weiß und auf dem Seitenhintergrund 4,5 : 1 erreicht
+ * (WCAG 1.4.3, UI-Audit NUI-04) und der Link sich zugleich mit 3 : 1 vom Fließtext abhebt
+ * (WCAG 1.4.1, Technik G183; UX-Audit 08.11., W-16). Links werden nie unterstrichen; so
+ * bleiben sie auch bei dunklen Vereinsfarben an der Farbe erkennbar. Die Markenfarbe
+ * selbst bleibt.
  */
 export function linkColor(primary: string): string {
-  for (let step = 0; step <= 20; step++) {
-    const c = darken(primary, step * 0.05)
-    if (Math.min(contrastRatio(c, '#ffffff'), contrastRatio(c, PAGE_BG)) >= 4.5) return c
+  if (linkContrastOk(primary)) return primary
+  for (let step = 1; step <= 100; step++) {
+    for (const c of [darken(primary, step / 100), lighten(primary, step / 100)]) {
+      if (linkContrastOk(c)) return c
+    }
   }
-  return '#000000'
+  // Kommt bei den heutigen Grundfarben nicht vor: neutrales Grau, das beide Ziele erfüllt
+  return '#646464'
 }
 
 /** Schrift der Seitenleiste (--sidebar-text in theme.css). */

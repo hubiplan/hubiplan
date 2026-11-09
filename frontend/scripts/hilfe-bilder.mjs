@@ -4,6 +4,7 @@
 //   BASE_URL=http://web:5173 DEMO_PASSWORD=… OUT=/out node scripts/hilfe-bilder.mjs [name …]
 import { mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright'
 
 const base = process.env.BASE_URL ?? 'http://localhost:5173'
@@ -15,6 +16,25 @@ const only = new Set(process.argv.slice(2))
 const images = spec.bilder.filter((b) => !only.size || only.has(b.name))
 
 const MAX_HOEHE = 900
+// axe aus den Abhängigkeiten der Oberfläche (frontend/node_modules)
+const AXE = readFileSync(
+  fileURLToPath(new URL('../node_modules/axe-core/axe.min.js', import.meta.url)),
+  'utf8',
+)
+
+/** axe-Regel link-in-text-block auf der Seite; Ergebnis: betroffene Linktexte. */
+async function linkInTextBlock(page) {
+  if (!(await page.evaluate(() => 'axe' in window))) await page.evaluate(AXE)
+  return page.evaluate(async () => {
+    const result = await window.axe.run(document, { runOnly: ['link-in-text-block'] })
+    return result.violations.flatMap((v) =>
+      v.nodes.map((n) => {
+        const text = document.querySelector(n.target[0])?.textContent?.trim()
+        return `„${text ?? n.target[0]}“`
+      }),
+    )
+  })
+}
 let failed = 0
 for (const language of ['de', 'en']) {
   // Eigener Browser je Sprache: Datumsfelder zeigen das Format der Sprache nur im vollen
@@ -267,6 +287,13 @@ for (const language of ['de', 'en']) {
           caret: 'hide',
         })
         console.log(`${language}/${b.name}.png`)
+        // W-16 (B4): Links ohne Unterstreichung müssen sich vom Text abheben. Die Regel
+        // braucht echte Darstellung, deshalb prüft sie dieser Rundgang statt Vitest.
+        const links = await linkInTextBlock(page)
+        if (links.length) {
+          failed++
+          console.error(`FEHLER ${language}/${b.name}: link-in-text-block ${links.join(', ')}`)
+        }
       } catch (err) {
         failed++
         console.error(`FEHLER ${language}/${b.name}: ${err.message.split('\n')[0]}`)
