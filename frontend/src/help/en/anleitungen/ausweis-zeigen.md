@@ -11,6 +11,8 @@ stichworte: [card, membership card, QR code, wallet]
 3. If your club has switched on wallet, add the card to Google Wallet or download the pass for Apple Wallet.
 4. Download the pass again after changes or a new QR code.
 
+In the HUBIplan app, your card is at the top of the “Me” tab, also offline. Long-press the app icon and “Show ID card” opens it large straight away.
+
 If you have lost your phone, the club can block the card and create a new one.
 
 ![Starting point: Show your membership card](bild:ausweis-zeigen)

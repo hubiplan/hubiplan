@@ -138,9 +138,54 @@ export function buttonColors(primary: string, onPrimary: string) {
   return { background, foreground, hover }
 }
 
+/** Hell oder dunkel (Dunkelmodus D1, konzepte/dunkelmodus-web.md, X-02). */
+export type Scheme = 'light' | 'dark'
+
+/** Seitengrund und Kartenfläche im Dunkelmodus (--color-bg/--color-surface in theme.css). */
+export const DARK_BG = '#111614'
+export const DARK_SURFACE = '#1a201d'
+
+/**
+ * Linkfarbe im Dunkelmodus: ein Ton der Vereinsfarbe, so wenig wie nötig aufgehellt (oder
+ * abgedunkelt), bis Text auf Grund und Karte 4,5 : 1 erreicht. 3 : 1 zum hellen Fließtext
+ * ist auf dunklem Grund zusammen damit nicht erreichbar; Links bleiben dort wie im Hellen
+ * am Fettdruck und in fetter Umgebung am „ ›“ erkennbar (W-16).
+ */
+export function linkColorDark(primary: string): string {
+  const ok = (c: string) =>
+    Math.min(contrastRatio(c, DARK_BG), contrastRatio(c, DARK_SURFACE)) >= 4.5
+  if (ok(primary)) return primary
+  for (let step = 1; step <= 100; step++) {
+    for (const c of [lighten(primary, step / 100), darken(primary, step / 100)]) {
+      if (ok(c)) return c
+    }
+  }
+  return '#ffffff'
+}
+
+/** Aktionsknöpfe im Dunkelmodus: heben sich vom dunklen Grund ab, Schrift bleibt lesbar. */
+export function buttonColorsDark(primary: string, onPrimary: string) {
+  const background = contrastRatio(primary, DARK_BG) >= 1.35 ? primary : linkColorDark(primary)
+  // Bei mittleren Grautönen reicht dunkelgraue Schrift nicht ganz; dann Schwarz
+  const foreground =
+    [onPrimary, '#ffffff', '#000000'].find((c) => contrastRatio(background, c) >= 4.5) ?? '#000000'
+  const readable = (c: string) =>
+    contrastRatio(c, DARK_BG) >= 1.35 && contrastRatio(c, foreground) >= 4.5
+  const hover =
+    [hoverColor(background, foreground), lighten(background, 0.15), darken(background, 0.15)].find(
+      readable,
+    ) ?? background
+  return { background, foreground, hover }
+}
+
 /** CSS-Variablen, die ein Erscheinungsbild setzt (Namen wie in theme.css). */
-export function themeVars(theme: ThemeColors): Record<(typeof VARS)[number], string> {
-  const button = buttonColors(theme.primary, theme.on_primary)
+export function themeVars(
+  theme: ThemeColors,
+  scheme: Scheme = 'light',
+): Record<(typeof VARS)[number], string> {
+  const dark = scheme === 'dark'
+  const button = (dark ? buttonColorsDark : buttonColors)(theme.primary, theme.on_primary)
+  const link = (dark ? linkColorDark : linkColor)(theme.primary)
   const sidebar = sidebarColor(theme.primary)
   return {
     '--color-primary': theme.primary,
@@ -148,10 +193,10 @@ export function themeVars(theme: ThemeColors): Record<(typeof VARS)[number], str
     '--button-brand-primary-hover': button.hover,
     '--button-brand-on-primary': button.foreground,
     '--color-primary-hover': hoverColor(theme.primary, theme.on_primary),
-    '--color-link': linkColor(theme.primary),
+    '--color-link': link,
     // Fokusrahmen, Feldfokus und Häkchen: dieselbe abgedunkelte Farbe, damit sie auch bei
     // hellen Vereinsfarben (Gold, Gelb, Hellblau) deutlich zu sehen sind (WCAG 1.4.11)
-    '--color-focus': linkColor(theme.primary),
+    '--color-focus': link,
     '--color-on-primary': theme.on_primary,
     '--color-accent': theme.accent,
     '--color-on-accent': theme.on_accent,
@@ -170,11 +215,27 @@ export function applyTheme(
   theme: ThemeColors | null,
   root: HTMLElement = document.documentElement,
 ) {
+  lastTheme = { theme, root }
   if (!theme) {
     for (const v of VARS) root.style.removeProperty(v)
     return
   }
-  for (const [name, value] of Object.entries(themeVars(theme))) root.style.setProperty(name, value)
+  for (const [name, value] of Object.entries(themeVars(theme, scheme)))
+    root.style.setProperty(name, value)
+}
+
+let scheme: Scheme = 'light'
+let lastTheme: { theme: ThemeColors | null; root: HTMLElement } | null = null
+
+/**
+ * Hell oder dunkel für die Vereinsfarben. Die Farben einer Einheit stehen direkt am
+ * Element und gewinnen damit gegen theme.css; deshalb rechnet applyTheme sie für die
+ * gewählte Darstellung und wird bei einem Wechsel neu angewandt.
+ */
+export function setThemeScheme(next: Scheme) {
+  if (next === scheme) return
+  scheme = next
+  if (lastTheme) applyTheme(lastTheme.theme, lastTheme.root)
 }
 
 const PLATFORM_STYLE_ID = 'plattform-farben'
@@ -196,8 +257,10 @@ export function applyPlatformTheme(theme: ThemeColors | null, doc: Document = do
   }
   // Immer ans Ende, damit die Regel nach theme.css kommt
   doc.head.appendChild(el)
-  const vars = Object.entries(themeVars(theme))
-    .map(([name, value]) => `${name}: ${value};`)
-    .join(' ')
-  el.textContent = `:root { ${vars} }`
+  const css = (mode: Scheme) =>
+    Object.entries(themeVars(theme, mode))
+      .map(([name, value]) => `${name}: ${value};`)
+      .join(' ')
+  // Dunkel mit eigener Regel, damit sie die dunklen Standardwerte aus theme.css ersetzt
+  el.textContent = `:root { ${css('light')} } :root[data-theme='dark'] { ${css('dark')} }`
 }

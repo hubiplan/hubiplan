@@ -17,4 +17,4 @@ With the HUBIplan app for Android you score a shooting directly on your phone. Y
 5. For another device tap “QR code for another device” and scan it there with the app (under “Administration” › “Competitions” › “Scan stand QR”) or with the camera.
 6. After the shooting end the stand access with “End stand access”.
 
-Members see the rankings in the app under “Card” › “Rankings”, as far as the club also shows them on its website.
+Members see the rankings in the app under “Me” › “My results” › “Rankings”, as far as the club also shows them on its website.

@@ -61,6 +61,15 @@ class User(AbstractUser):
     language = models.CharField(
         "Sprache", max_length=5, choices=settings.LANGUAGES, default="de", db_default="de"
     )
+    # Darstellung der Web-App (konzepte/dunkelmodus-web.md, X-02): wie das Gerät, hell oder
+    # dunkel. Im Konto gespeichert, damit sie auf allen Geräten gilt. Reine Anzeigepräferenz.
+    color_scheme = models.CharField(
+        "Darstellung",
+        max_length=5,
+        choices=[("auto", "Wie Gerät"), ("light", "Hell"), ("dark", "Dunkel")],
+        default="auto",
+        db_default="auto",
+    )
     # Gesetzt, solange das Konto noch das ausgegebene Startpasswort hat: Es muss bei der
     # ersten Anmeldung ersetzt werden und wird nach Ablauf unbrauchbar (AT-S04)
     initial_password_expires = models.DateTimeField(

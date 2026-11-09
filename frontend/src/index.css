@@ -1188,7 +1188,7 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 }
 
 .alert-info {
-  background: #eef3fb;
+  background: var(--color-info-bg);
 }
 
 /* Steuerliche Auswertung: Ampel zur Freigrenze */
@@ -1548,7 +1548,7 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 }
 
 .contrast-list .ok {
-  color: #1e6b3a;
+  color: var(--color-success);
 }
 
 .contrast-list .bad {
@@ -2744,8 +2744,8 @@ button.tab.active {
   color: var(--color-success);
 }
 .badge-open {
-  background: #fdf1d8;
-  color: #7a5200;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 fieldset.subcard legend {
   font-weight: 600;
@@ -5346,4 +5346,18 @@ label:has(> .file-input:focus-visible) {
 }
 .setup-status-muted {
   color: var(--color-text-muted);
+}
+/* Dunkelmodus (X-02, D1): feste Farben auf den Mitgliederseiten, die nicht über Tokens laufen */
+:root[data-theme='dark'] .badge-board {
+  background: #2c2140;
+  color: #d9c6f2;
+}
+:root[data-theme='dark'] .role-preview-banner {
+  border-color: #d89a3a;
+  background: #33230c;
+  color: #f6deb4;
+}
+/* Logos und QR-Codes behalten ihren hellen Untergrund */
+:root[data-theme='dark'] :is(.card-qr, .signature-pad, .signature-image) {
+  color-scheme: light;
 }
