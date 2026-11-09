@@ -561,6 +561,11 @@ class _EventDetail(APIView):
         if moved:
             event.changed_at = timezone.now()
             event.save(update_fields=["changed_at"])
+        if event.starts_at != old_start and not event.is_series:
+            # Verknüpfte Wettbewerbe bekommen das neue Datum (Ralf 2026-11-09)
+            from competitions.event_views import follow_event
+
+            follow_event(request.user, event)
         if event.starts_at != old_start and event.reminded_at:
             # Neuer Zeitpunkt: Erinnerung noch einmal
             event.reminded_at = None

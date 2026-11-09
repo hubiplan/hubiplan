@@ -1,6 +1,7 @@
 // Wettbewerb und Termin im Kalender (Ralf 2026-11-01): beim Anlegen einen Termin wählen
 // (Angaben übernehmen) oder einen neuen anlegen; unter „Einrichten“ die Verknüpfung ändern
-// und die Zusagen als Starter übernehmen.
+// und die Zusagen als Starter übernehmen. Der Wettbewerb übernimmt das Datum des Termins und
+// zieht mit, wenn der Termin verschoben wird (Ralf 2026-11-09).
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -42,7 +43,9 @@ export function EventPicker({
     <SelectField
       label={t('Termin im Kalender')}
       value={value}
-      hint={t('Ein bestehender Termin bringt Titel, Datum, Ort und Beschreibung mit.')}
+      hint={t(
+        'Ein bestehender Termin bringt Titel, Datum, Ort und Beschreibung mit. Wird der Termin verschoben, zieht der Wettbewerb mit.',
+      )}
       onChange={(e) => {
         const v = e.target.value
         onChange(v, events.find((x) => String(x.id) === v) ?? null)
@@ -68,7 +71,7 @@ export function EventCard({
 }: {
   org: number
   comp: CompetitionDetail
-  onChanged: (res: { location: string; description: string }) => void
+  onChanged: (res: { date: string; location: string; description: string }) => void
 }) {
   const [choosing, setChoosing] = useState(false)
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
@@ -78,7 +81,9 @@ export function EventCard({
   const canManage = comp.can_manage
   const closed = comp.status === 'endgueltig'
 
-  async function run(action: () => Promise<{ location: string; description: string }>) {
+  async function run(
+    action: () => Promise<{ date: string; location: string; description: string }>,
+  ) {
     setBusy(true)
     try {
       const res = await action()
@@ -101,7 +106,7 @@ export function EventCard({
           ? t('Alle Zusagen stehen schon in der Starterliste.')
           : t('{added} Starter aus den Zusagen übernommen.', { added: res.added })
       setMessage({ kind: 'success', text })
-      onChanged({ location: comp.location, description: comp.description })
+      onChanged({ date: comp.date, location: comp.location, description: comp.description })
     } catch (err) {
       setMessage({ kind: 'error', text: errorMessage(err) })
     } finally {
@@ -124,6 +129,21 @@ export function EventCard({
                 x: formatDate(event.date),
                 x2: formatDate(comp.date),
               })}
+              {canManage && !closed && (
+                <>
+                  {' '}
+                  <button
+                    type="button"
+                    className="button button-ghost"
+                    disabled={busy}
+                    onClick={() =>
+                      void run(() => competitionsApi.setEvent(org, comp.id, { event: event.id }))
+                    }
+                  >
+                    {t('Datum des Termins übernehmen')}
+                  </button>
+                </>
+              )}
             </Alert>
           )}
           {event.rsvp_enabled && (

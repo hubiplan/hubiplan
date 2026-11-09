@@ -666,7 +666,8 @@ function Setup({
           org={org}
           comp={comp}
           onChanged={(res) => {
-            // Ort und Beschreibung kommen aus dem Termin, wenn sie leer waren
+            // Datum kommt aus dem Termin, Ort und Beschreibung, wenn sie leer waren
+            if (res.date !== v.date) set('date', res.date)
             if (res.location !== v.location) set('location', res.location)
             if (res.description !== v.description) set('description', res.description)
             reload()
