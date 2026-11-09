@@ -226,6 +226,9 @@ REST_FRAMEWORK = {
     # die eigene Lizenzhinweise verlangen (Lizenzaudit 31.10.2026, L06). Die Dateien
     # sammelt backend/Dockerfile deshalb auch nicht ein.
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    # ?format= gehört den Ansichten (Notendateien: pdf, midi, musicxml); DRF würde es sonst
+    # als Wahl der Ausgabe lesen und ohne passenden Renderer mit 404 antworten.
+    "URL_FORMAT_OVERRIDE": None,
     "DEFAULT_SCHEMA_CLASS": "core.schema.AutoSchema",
 }
 SPECTACULAR_SETTINGS = {

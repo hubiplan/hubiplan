@@ -6,7 +6,6 @@ from rest_framework.exceptions import PermissionDenied
 
 from access.permissions import permissions_in
 from documents.models import DocumentVersion
-from documents.views import file_response
 
 from .models import ScoreDocument
 from .scores import visible_documents, voice
@@ -138,10 +137,12 @@ def descriptions(access):
 
 
 def download(request, access, score_id):
-    rows = {row.pk: version for row, version in available(access)}
-    version = rows.get(score_id)
-    if version is None:
-        from rest_framework.exceptions import NotFound
+    from rest_framework.exceptions import NotFound
 
+    from .score_files import respond
+
+    rows = {row.pk: (row, version) for row, version in available(access)}
+    if score_id not in rows:
         raise NotFound()
-    return file_response(request, version)
+    link, version = rows[score_id]
+    return respond(request, link, version)

@@ -537,9 +537,118 @@ class ScoreDocument(models.Model):
     part = models.ForeignKey(ScorePart, on_delete=models.SET_NULL, null=True, blank=True)
     document = models.ForeignKey("documents.Document", on_delete=models.SET_NULL, null=True)
     usage_note = models.CharField(max_length=2000, blank=True)
+    # Reihenfolge mehrerer Dateien je Stück und Stimme (z. B. Seite 1 und 2 als Bild)
+    position = models.PositiveSmallIntegerField(default=0, db_default=0)
+    # Stimme in einer MusicXML-Partitur (ID oder Name); leer: nach Instrument raten
+    notation_part = models.CharField(max_length=100, blank=True, default="", db_default="")
 
     def __str__(self):
         return f"Notenunterlage {self.pk}"
+
+
+class ScoreFolder(models.Model):
+    """Feste Notenmappe ohne Termin, z. B. Marschbuch oder Repertoire."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    name = models.CharField(max_length=150)
+    kind = models.CharField(
+        max_length=12,
+        choices=[("marchbook", "marchbook"), ("repertoire", "repertoire"), ("other", "other")],
+        default="other",
+    )
+    position = models.PositiveSmallIntegerField(default=0)
+    note = models.CharField(max_length=1000, blank=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["position", "name", "pk"]
+
+    def __str__(self):
+        return self.name
+
+
+class ScoreFolderUnit(models.Model):
+    """Ohne Einträge sehen alle aktiven Musiker die Mappe; sonst nur Mitglieder dieser
+    Untereinheiten (und der Einheiten darunter)."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    folder = models.ForeignKey(ScoreFolder, on_delete=models.CASCADE, related_name="units")
+    department = models.ForeignKey(
+        "organizations.Department", on_delete=models.CASCADE, related_name="+"
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["folder", "department"], name="notenmappe_einheit_einmal"
+            )
+        ]
+
+    def __str__(self):
+        return f"Notenmappeneinheit {self.pk}"
+
+
+class MusicLeader(models.Model):
+    """Darf in der App allen Geräten das nächste Stück vorgeben (Dirigent, Stabführer …).
+
+    Gilt für genau eine Notenmappe, einen Auftritt oder eine Probe (Serie)."""
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    musician = models.ForeignKey(Musician, on_delete=models.CASCADE, related_name="leads")
+    folder = models.ForeignKey(
+        ScoreFolder, on_delete=models.CASCADE, null=True, blank=True, related_name="leaders"
+    )
+    performance = models.ForeignKey(
+        Performance, on_delete=models.CASCADE, null=True, blank=True, related_name="leaders"
+    )
+    rehearsal = models.ForeignKey(
+        "Rehearsal", on_delete=models.CASCADE, null=True, blank=True, related_name="leaders"
+    )
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    models.Q(folder__isnull=False, performance=None, rehearsal=None)
+                    | models.Q(folder=None, performance__isnull=False, rehearsal=None)
+                    | models.Q(folder=None, performance=None, rehearsal__isnull=False)
+                ),
+                name="musikleitung_ein_ziel",
+            ),
+            models.UniqueConstraint(
+                fields=["musician", "folder", "performance", "rehearsal"],
+                nulls_distinct=False,
+                name="musikleitung_einmal",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Musikleitung {self.pk}"
+
+
+class ScoreFolderItem(models.Model):
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    folder = models.ForeignKey(ScoreFolder, on_delete=models.CASCADE, related_name="items")
+    arrangement = models.ForeignKey(Arrangement, on_delete=models.PROTECT, related_name="+")
+    position = models.PositiveIntegerField(default=1)
+    # Nummer im Marschbuch, frei („27“, „27a“); je Mappe eindeutig
+    number = models.CharField(max_length=20, blank=True)
+
+    class Meta:
+        ordering = ["position", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["folder", "arrangement"], name="notenmappe_stueck_einmal"
+            ),
+            models.UniqueConstraint(
+                fields=["folder", "number"],
+                condition=~models.Q(number=""),
+                name="notenmappe_nummer_einmal",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Notenmappenstück {self.pk}"
 
 
 class ProgramEntry(models.Model):

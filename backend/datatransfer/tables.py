@@ -107,9 +107,13 @@ MODULE_MODELS = (
     "music.Arrangement",
     "music.ScorePart",
     "music.ScoreDocument",
+    "music.ScoreFolder",
+    "music.ScoreFolderUnit",
+    "music.ScoreFolderItem",
     "music.ProgramEntry",
     "music.Rehearsal",
     "music.RehearsalItem",
+    "music.MusicLeader",
     "music.RehearsalProgram",
     "music.RehearsalProgramItem",
     "music.RehearsalInvitation",
@@ -501,10 +505,29 @@ def check_file(name: str, obj, content: bytes, path: str, field_name: str = "") 
         return
 
     if name in {"documents.documentversion", "todos.todoattachment"}:
+        from documents import notation
         from documents.services import ALLOWED_TYPES
 
         fname = getattr(obj, "name", "") or path
         ext = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
+        if name == "documents.documentversion" and ext in notation.NOTATION_TYPES:
+            ctype, magic = notation.NOTATION_TYPES[ext]
+            if magic and not content.startswith(magic):
+                raise ValidationError(
+                    gettext("Datei „{fname}“: Inhalt und Dateiendung passen nicht.").format(
+                        fname=fname
+                    )
+                )
+            try:
+                notation.check(content, ctype)
+            except ValidationError as exc:
+                raise ValidationError(
+                    gettext("Datei „{fname}“: Die Notendatei lässt sich nicht lesen.").format(
+                        fname=fname
+                    )
+                ) from exc
+            obj.content_type = ctype
+            return
         if ext not in ALLOWED_TYPES:
             raise ValidationError(
                 gettext("Datei „{fname}“: Diese Dateiart ist nicht erlaubt.").format(fname=fname)

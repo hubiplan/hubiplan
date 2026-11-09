@@ -23,3 +23,7 @@ factur-x==7.9
 # Schießscheiben-Fotoerkennung (ohne Oberflächenbibliotheken)
 opencv-python-headless==5.0.0.93
 numpy==2.5.4
+# Notensatz für MusicXML/MEI/ABC (PDF, MIDI); läuft in eigenem Prozess (music/notation_render.py)
+verovio==6.4.1
+# SVG aus Verovio in reportlab-PDF; lxml/cssselect2/tinycss2 kommen als Abhängigkeiten mit
+svglib==2.4.0

@@ -359,7 +359,7 @@ class _FolderDetail(APIView):
 
 def _save_version(viewer, document: Document, upload, user) -> DocumentVersion:
     try:
-        ctype = services.check_upload(upload)
+        ctype = services.check_upload(upload, notation=True)
         services.check_budget(viewer.org, upload.size)
     except DjangoValidationError as exc:
         raise serializers.ValidationError(exc.message_dict) from exc
