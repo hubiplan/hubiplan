@@ -67,6 +67,7 @@ export function UpcomingTile({ base }: { base: CalendarBase }) {
           base={base}
           date={today()}
           categories={data.categories}
+          units={data.units}
           rsvpAllowed={data.rsvp_allowed}
           onClose={() => setCreating(null)}
           onSaved={() => {

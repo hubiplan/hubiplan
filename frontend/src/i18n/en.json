@@ -7462,5 +7462,8 @@
   "{n} Jahr": {
     "one": "{n} year",
     "other": "{n} years"
-  }
+  },
+  "Termin für": "Event for",
+  "die eigene Einheit": "this unit itself",
+  "Bei einer Untereinheit sind nur ihre Mitglieder eingeladen.": "For a sub-unit, only its members are invited."
 }

@@ -5,7 +5,13 @@ import { useOptionalOrg } from '../../org/OrgContext.tsx'
 import { MaterialReferences } from '../MaterialReferences.tsx'
 import { useRef, useState } from 'react'
 import { eventApi } from '../../api/events.ts'
-import type { CalendarBase, EventCategory, EventDetail, Occurrence } from '../../api/events.ts'
+import type {
+  CalendarBase,
+  EventCategory,
+  EventDetail,
+  EventUnit,
+  Occurrence,
+} from '../../api/events.ts'
 import { errorMessage, useLoad } from '../forms.ts'
 import { Alert, Field } from '../ui.tsx'
 import { EventForm } from './EventForm.tsx'
@@ -132,6 +138,7 @@ export function NewEventDialog({
   base,
   date,
   categories,
+  units,
   rsvpAllowed,
   onClose,
   onSaved,
@@ -139,6 +146,7 @@ export function NewEventDialog({
   base: CalendarBase
   date: string
   categories: EventCategory[]
+  units?: EventUnit[]
   rsvpAllowed?: boolean
   onClose: () => void
   onSaved: () => void
@@ -156,6 +164,7 @@ export function NewEventDialog({
         event={null}
         date={date}
         categories={categories}
+        units={units}
         rsvpAllowed={rsvpAllowed}
         onCancel={onClose}
         onSaved={onSaved}
@@ -300,6 +309,7 @@ export function EventDialog({
   base,
   occurrence,
   categories,
+  units,
   rsvpAllowed,
   onClose,
   onChanged,
@@ -307,6 +317,7 @@ export function EventDialog({
   base: CalendarBase
   occurrence: Occurrence
   categories: EventCategory[]
+  units?: EventUnit[]
   rsvpAllowed?: boolean
   onClose: () => void
   onChanged: () => void
@@ -359,6 +370,7 @@ export function EventDialog({
           event={data}
           date={berlin(data.starts_at).date}
           categories={categories}
+          units={units}
           rsvpAllowed={rsvpAllowed}
           onCancel={() => setEditing(false)}
           onSaved={(saved) => {

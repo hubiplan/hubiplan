@@ -9403,3 +9403,6 @@ msgstr "The collection must fall on a bank business day (not a weekend or TARGET
 
 msgid "Ab {day} ist schon die Art „{name}“ eingetragen. Bitte zuerst diese spätere Art ändern oder entfernen."
 msgstr "From {day} the type “{name}” is already recorded. Please change or remove this later type first."
+
+msgid "Für diese Untereinheit kannst du hier keine Termine anlegen."
+msgstr "You cannot create events for this sub-unit here."

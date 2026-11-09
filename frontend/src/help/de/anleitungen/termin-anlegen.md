@@ -17,6 +17,10 @@ Ist die Endzeit noch offen, aktiviere **Endzeit auf der Webseite ausblenden**.
 Auf der Webseite erscheint dann nur die Beginnzeit; im internen Kalender bleibt die eingetragene Endzeit erhalten.
 Bei einer Serie gilt die Einstellung für alle Wiederholungen.
 
+Gilt der Termin nur für eine Untereinheit, die keine eigene Verwaltung für ihre Termine hat (etwa einen Zug ohne eigenen Zugang), wähle sie unter **Termin für**.
+Dann sind nur ihre Mitglieder eingeladen, und du pflegst den Termin weiter im Kalender der Einheit.
+Untereinheiten mit eigener Verwaltung legen ihre Termine selbst an.
+
 Eingeladene bekommen eine E-Mail und sagen dort oder im Mitgliederbereich zu oder ab.
 
 ![Ausgangspunkt: Termin anlegen und Mitglieder einladen](bild:termin-anlegen)
