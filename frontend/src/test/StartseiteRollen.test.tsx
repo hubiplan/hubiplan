@@ -10,6 +10,7 @@ import type { OrgSummary } from '../api/orgs.ts'
 import { roleActions } from '../components/home/roleActions.ts'
 import { addDays, today } from '../components/calendar/time.ts'
 import { settingsItems } from '../pages/settings/items.ts'
+import { todayIso } from '../api/members.ts'
 import { fakeApi, testOrg, testUser } from './fakeApi.ts'
 import { occurrence } from './eventFixtures.ts'
 
@@ -155,7 +156,8 @@ describe('Hinweise in einer Karte', () => {
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
       'GET /api/orgs/7/imprint/': () => ({ status: 200, body: { missing: ['Telefon'] } }),
-      [`GET /api/orgs/7/birthdays/?von=${today()}&bis=${addDays(today(), 30)}`]: () => ({
+      // Wie die Startseite mit todayIso (Ortszeit): kurz nach Mitternacht weicht today() (Berlin) ab
+      [`GET /api/orgs/7/birthdays/?von=${todayIso()}&bis=${addDays(todayIso(), 30)}`]: () => ({
         status: 200,
         body: {
           von: '',
@@ -165,7 +167,7 @@ describe('Hinweise in einer Karte', () => {
               member_id: 3,
               first_name: 'Erika',
               last_name: 'Muster',
-              date: today(),
+              date: todayIso(),
               age: 50,
             },
           ],

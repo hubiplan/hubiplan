@@ -5288,7 +5288,7 @@ label:has(> .file-input:focus-visible) {
   /* Jede Karte so hoch wie ihr Inhalt: kurze Terminliste ohne Leerfläche neben langen Hinweisen */
   align-items: start;
 }
-@media (max-width: 60rem) {
+@media (max-width: 64rem) {
   .home-grid {
     grid-template-columns: minmax(0, 1fr);
   }
