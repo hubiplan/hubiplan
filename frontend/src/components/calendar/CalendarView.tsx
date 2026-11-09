@@ -393,6 +393,7 @@ export function CalendarView({
           base={base}
           occurrence={selected}
           categories={data.categories}
+          units={data.units}
           rsvpAllowed={data.rsvp_allowed}
           onClose={() => setSelected(null)}
           onChanged={() => void reload()}
@@ -403,6 +404,7 @@ export function CalendarView({
           base={base}
           date={creating}
           categories={data.categories}
+          units={data.units}
           rsvpAllowed={data.rsvp_allowed}
           onClose={() => setCreating(null)}
           onSaved={() => {

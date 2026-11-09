@@ -13,7 +13,8 @@ above it.
 
 The chronicle is a module of its own and useful even without a website, for example for an
 anniversary book. If the **Website** module is switched on, the published version appears there
-under “Chronicle”.
+under “Chronicle”. It is maintained only here; under Website › Texts the chronicle only shows
+its address and menu setting.
 
 HUBIplan saves changes as a draft. **Publish** makes the draft the valid version; earlier
 versions can be brought back into the draft below. You can take over many entries at once from

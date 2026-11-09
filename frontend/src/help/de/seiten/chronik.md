@@ -13,7 +13,8 @@ kurze Einleitung.
 
 Die Chronik ist ein eigenes Modul und auch ohne Webseite nützlich, etwa für Festschrift und
 Jubiläum. Ist das Modul **Webseite** eingeschaltet, erscheint die veröffentlichte Fassung dort
-unter „Chronik“.
+unter „Chronik“. Gepflegt wird sie nur hier; unter Webseite › Texte stehen bei der Chronik nur
+Adresse und Menü.
 
 Änderungen speichert HUBIplan als Entwurf. **Veröffentlichen** macht den Entwurf zur gültigen
 Fassung; frühere Fassungen lassen sich unten wieder in den Entwurf holen. Viele Einträge auf

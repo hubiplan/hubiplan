@@ -22,7 +22,9 @@ Durchschnitt. Die Gesamtsicht zeigt zusätzlich den gleich gewichteten Durchschn
 persönlichen Mitgliederdurchschnitte.
 
 Nur endgültige Ergebnisse zählen. Fehlende Werte zählen nicht als null. Eine Person zählt
-je Wettbewerb einmal; Siege und Podestplätze zählen je Einzelwertung. Mannschaftserfolge
+je Wettbewerb einmal. Gäste, Starts außer Konkurrenz und fehlende Starter zählen nicht als
+Teilnahme; bei **Teilnahmen** steht, wie viele davon nicht gezählt wurden. Deshalb kann die
+Starterzahl in der Wettbewerbsliste größer sein. Siege und Podestplätze zählen je Einzelwertung. Mannschaftserfolge
 werden nicht als persönliche Siege gezählt. Diagrammwerte lassen sich als Tabelle öffnen.
 Unter **Alle Starts und Auszeichnungen** findest du auch laufende Wettbewerbe.
 
@@ -35,6 +37,8 @@ In der Live-Kamera zeigt der gestrichelte Kreis, wo der äußerste Ring der Sche
 ### Einrichtung
 
 Unter **Einrichten** sind **Grunddaten**, **Schießbedingungen**, **Wertungen** und **Ausgabe & Freigabe** getrennt. Die Scheibe wird mit Bild einmal pro Schießdurchgang gewählt. Einzel- und Teilerwertungen können dieselben Treffer verwenden; eine Zugwertung berechnet sich aus einer Einzelwertung. Die Schießinfrastruktur unter [Wettbewerbe › Einrichtung](/wettbewerbe/einrichtung) filtert die angebotenen Scheiben, ohne vorhandene Auswahlen zu entfernen. Scheiben mit Trefferbild, die Fotoauswertung und das Vogelschießen gehören zum Modul „Schießsport“; ohne dieses Modul tragt ihr Ergebnisse als Werte ein.
+
+Unter **Grunddaten** › **Termin im Kalender** verknüpfst du den Wettbewerb mit einem Termin. Der Wettbewerb übernimmt dann das Datum des Termins, leere Angaben zu Ort und Beschreibung ebenfalls. Wird der Termin später verschoben, zieht der Wettbewerb mit; endgültig abgeschlossene Wettbewerbe behalten ihr Datum. Weicht das Datum doch einmal ab, erscheint ein Hinweis mit **Datum des Termins übernehmen**.
 
 Bei vorhandenen Ergebnissen müssen Änderungen an Bedingungen oder Berechnung bestätigt werden. Berechnete Ergebnisse werden neu ermittelt, manuelle Summen bleiben erhalten und sind zu prüfen. Nach geänderten Bedingungen verlangt der Standmodus die aktuelle Einrichtung; alte Offline-Eingaben werden verworfen. Abschließen und Wiederöffnen stehen unter **Auswertung** → **Wettbewerb und Abschluss**.
 

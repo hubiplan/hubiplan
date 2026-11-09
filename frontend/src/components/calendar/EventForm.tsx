@@ -8,6 +8,7 @@ import type {
   EventCategory,
   EventDetail,
   EventInput,
+  EventUnit,
   Repeat,
   Visibility,
 } from '../../api/events.ts'
@@ -23,6 +24,8 @@ export type CloseGuard = () => Promise<boolean>
 
 interface Values {
   title: string
+  /** Untereinheit, für die der Termin gilt; '' = die Einheit selbst */
+  unit: string
   description: string
   location: string
   address: string
@@ -60,6 +63,7 @@ function initial(event: EventDetail | null, date: string): Values {
   if (!event) {
     return {
       title: '',
+      unit: '',
       description: '',
       location: '',
       address: '',
@@ -93,6 +97,7 @@ function initial(event: EventDetail | null, date: string): Values {
   const e = berlin(event.ends_at)
   return {
     title: event.title,
+    unit: event.department_id ? String(event.department_id) : '',
     description: event.description,
     location: event.location,
     address: event.address,
@@ -122,8 +127,9 @@ function initial(event: EventDetail | null, date: string): Values {
   }
 }
 
-function toInput(v: Values): EventInput {
+function toInput(v: Values, withUnit = false): EventInput {
   return {
+    ...(withUnit ? { department_id: v.unit ? Number(v.unit) : null } : {}),
     title: v.title,
     description: v.description,
     location: v.location,
@@ -165,6 +171,7 @@ export function EventForm({
   event,
   date,
   categories,
+  units = [],
   rsvpAllowed = false,
   onSaved,
   onCancel,
@@ -174,6 +181,8 @@ export function EventForm({
   event: EventDetail | null
   date: string
   categories: EventCategory[]
+  /** Vereinskalender: Untereinheiten ohne eigene Verwaltung, für die der Vorstand Termine anlegt */
+  units?: EventUnit[]
   /** Zu- und Absagen und E-Mails gibt es bei Terminen eines Vereins oder Zugs */
   rsvpAllowed?: boolean
   onSaved: (event: EventDetail) => void
@@ -186,6 +195,7 @@ export function EventForm({
   const { values: v, set, errors } = form
   const [touchedEnd, setTouchedEnd] = useState(!!event)
   const choosable = categories.filter((c) => c.is_active !== false || String(c.id) === v.category)
+  const withUnit = units.length > 0
 
   function setStartDate(value: string) {
     set('start_date', value)
@@ -197,7 +207,8 @@ export function EventForm({
   const lastSaved = useRef<EventDetail | null>(null)
   const auto = useAutoSave(
     form,
-    (_changes, values) => eventApi.update(base, event!.id, { ...toInput(values), notify: false }),
+    (_changes, values) =>
+      eventApi.update(base, event!.id, { ...toInput(values, withUnit), notify: false }),
     {
       enabled: !!event,
       onSaved: (saved) => {
@@ -265,7 +276,7 @@ export function EventForm({
       return
     }
     const saved = await form.submit(
-      () => eventApi.create(base, toInput(v)),
+      () => eventApi.create(base, toInput(v, withUnit)),
       t('Der Termin wurde angelegt.'),
     )
     if (saved) onSaved(saved as EventDetail)
@@ -285,6 +296,22 @@ export function EventForm({
         error={errors.title}
         onChange={(e) => set('title', e.target.value)}
       />
+      {withUnit && (
+        <SelectField
+          label={t('Termin für')}
+          value={v.unit}
+          error={errors.department_id}
+          hint={t('Bei einer Untereinheit sind nur ihre Mitglieder eingeladen.')}
+          onChange={(e) => set('unit', e.target.value)}
+        >
+          <option value="">{t('die eigene Einheit')}</option>
+          {units.map((u) => (
+            <option key={u.id} value={u.id}>
+              {u.path}
+            </option>
+          ))}
+        </SelectField>
+      )}
       <Checkbox label={t('ganztägig')} checked={v.all_day} onChange={(x) => set('all_day', x)} />
       <div className="grid-2">
         <Field

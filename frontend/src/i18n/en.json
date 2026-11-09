@@ -1,4 +1,6 @@
 {
+  "Einleitung und Zeitleiste der Chronik pflegst du unter Verein › Chronik.": "You maintain the introduction and timeline of the chronicle under Club › Chronicle.",
+  "Zur Chronik": "To the chronicle",
   "Bitte Adresse und Einheit angeben.": "Please enter an address and a unit.",
   "Adresse „{x}“ entfernen?": "Remove address “{x}”?",
   "Adressen je Einheit": "Addresses per unit",
@@ -31,11 +33,23 @@
   "Gewählte Bedingungen": "Selected conditions",
   "Nur endgültige Ergebnisse · ohne Gäste und Starts außer Konkurrenz.": "Final results only · Excluding guests and non-competing entries.",
   "Teilnahmen": "Participations",
-  "{n} Wettbewerbe": "{n} competitions",
   "Siege": "Wins",
   "Teilnehmende Mitglieder": "Participating members",
   "Nur Einzelwertungen": "Individual standings only",
   "Jede Person einmal": "Each person counted once",
+  "nicht gezählt: {list}": "not counted: {list}",
+  "{n} Gast": {
+    "one": "{n} guest",
+    "other": "{n} guests"
+  },
+  "{n} außer Konkurrenz": {
+    "one": "{n} non-competing",
+    "other": "{n} non-competing"
+  },
+  "{n} fehlend": {
+    "one": "{n} absent",
+    "other": "{n} absent"
+  },
   "Podestplätze": "Podium finishes",
   "Platz 1 bis 3 · Einzelwertungen": "Places 1 to 3 · Individual standings",
   "Errungene Pfänder": "Bird prizes won",
@@ -4223,6 +4237,7 @@
   "der Lochrand ihn berührt": "the edge of the hole touches it",
   "der Punkt ganz weggeschossen ist": "the dot is shot away completely",
   "Der Termin ist am {x}, der Wettbewerb am {x2}.": "The event is on {x}, the competition on {x2}.",
+  "Datum des Termins übernehmen": "Use the event's date",
   "Der Wettbewerb ist endgültig, Eingaben sind gesperrt.": "The competition is final; entries are locked.",
   "Der Wettbewerb ist mit keinem Termin verknüpft.": "The competition is not linked to any event.",
   "Der Wettbewerb wurde zurückgesetzt, die Eingaben dieses Geräts von vorher sind verworfen.": "The competition was reset; the earlier entries of this device have been discarded.",
@@ -4249,7 +4264,7 @@
   "Eigene Scheibe": "Own target",
   "Eigene Schießen mit Einzel- und Zugwertung und Stechen, Vogelschießen mit Pfändern, und fremde Wettbewerbe, bei denen ihr eure Plätze eintragt.": "Your own shoots with individual and unit rankings and shoot-offs, bird shoots with pieces, and other clubs’ competitions where you enter your places.",
   "Eigene Schützen": "Own shooters",
-  "Ein bestehender Termin bringt Titel, Datum, Ort und Beschreibung mit.": "An existing event brings its title, date, place and description.",
+  "Ein bestehender Termin bringt Titel, Datum, Ort und Beschreibung mit. Wird der Termin verschoben, zieht der Wettbewerb mit.": "An existing event brings its title, date, place and description. If the event is moved, the competition moves with it.",
   "ein Spiegel je Karte": "one target face per card",
   "Eine neue Webseite startet im Wartungsmodus: Besucher sehen nur einen Hinweis, du selbst kannst sie in der Vorschau ansehen.": "A new website starts in maintenance mode: visitors only see a notice; you can view it yourself in the preview.",
   "einem zufälligen Bild": "a random image",
@@ -7447,6 +7462,38 @@
     "one": "{n} year",
     "other": "{n} years"
   },
+  "Marschbuch": "March book",
+  "Repertoire": "Repertoire",
+  "Sonstige Mappe": "Other folder",
+  "alle Musiker": "all musicians",
+  "Feste Notenmappen wie Marschbuch oder Repertoire erscheinen in der App unter „Noten“. Jeder Musiker sieht darin nur die Noten seiner Stimme, soweit die Dokumentenablage sie für Mitglieder freigibt.": "Fixed music folders such as the march book or repertoire appear in the app under “Sheet music”. Each musician only sees the parts for their own voice, as far as the document storage shares them with members.",
+  "Mappe anlegen": "Create folder",
+  "Noch keine Notenmappen vorhanden.": "No music folders yet.",
+  "{n} Stück": {
+    "one": "{n} piece",
+    "other": "{n} pieces"
+  },
+  "Stücke ausblenden": "Hide pieces",
+  "Stücke zeigen": "Show pieces",
+  "Mappe „{name}“ löschen?": "Delete folder “{name}”?",
+  "Die Mappe ist noch leer.": "The folder is still empty.",
+  "Nr. {number}": "No. {number}",
+  "{title} nach oben": "Move {title} up",
+  "{title} nach unten": "Move {title} down",
+  "„{title}“ aus der Mappe entfernen?": "Remove “{title}” from the folder?",
+  "Nummer (optional)": "Number (optional)",
+  "Stück hinzufügen": "Add piece",
+  "Nummer von {title}": "Number of {title}",
+  "Nummer speichern": "Save number",
+  "Reihenfolge in der App": "Order in the app",
+  "Sichtbar für (leer: alle Musiker)": "Visible to (empty: all musicians)",
+  "Reihenfolge bei mehreren Dateien": "Order when there are several files",
+  "Notenmappen": "Music folders",
+  "Stimme in der MusicXML-Partitur (leer: nach Instrument)": "Part in the MusicXML score (empty: by instrument)",
+  "Leitung in der App": "Leading in the app",
+  "Die Leitung (z. B. Dirigent oder Stabführer) kann in der App allen Geräten das nächste Stück vorgeben. Wer Musik bearbeiten darf, kann das immer.": "The leader (e.g. conductor or drum major) can send the next piece to all devices in the app. Anyone allowed to edit music can always do so.",
+  "Noch keine Leitung eingetragen.": "No leader entered yet.",
+  "Als Leitung eintragen": "Add as leader",
   "Aktualisierung fehlgeschlagen. {error} Angezeigt werden noch die vorherigen Ergebnisse.": "Update failed. {error} The previous results are still shown.",
   "Die Termine konnten nicht geladen werden. {error}": "The events could not be loaded. {error}",
   "Die Empfängerauswahl konnte nicht geladen werden. {error}": "The recipient selection could not be loaded. {error}",
@@ -7504,5 +7551,8 @@
     "one": "{n} module",
     "other": "{n} modules"
   },
-  "Ist die App auf diesem Telefon installiert? Dann tippe auf den Knopf. Er gilt bis {x} Uhr und nur einmal.": "Is the app installed on this phone? Then tap the button. It is valid until {x} and only once."
+  "Ist die App auf diesem Telefon installiert? Dann tippe auf den Knopf. Er gilt bis {x} Uhr und nur einmal.": "Is the app installed on this phone? Then tap the button. It is valid until {x} and only once.",
+  "Termin für": "Event for",
+  "die eigene Einheit": "this unit itself",
+  "Bei einer Untereinheit sind nur ihre Mitglieder eingeladen.": "For a sub-unit, only its members are invited."
 }

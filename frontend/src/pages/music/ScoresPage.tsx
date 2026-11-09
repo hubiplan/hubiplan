@@ -11,6 +11,7 @@ import { MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 import { formats, duration } from './scoreHelpers.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { CatalogueImportPanel } from './CatalogueImportPanel.tsx'
+import { ScoreFoldersPanel } from './ScoreFoldersPanel.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
 type Field = {
@@ -112,14 +113,21 @@ export function ScoresPage() {
       },
       { key: 'document', label: t('Dokument'), options: opts(d.documents, 'title') },
       { key: 'usage_note', label: t('Nutzungshinweise'), type: 'textarea', optional: true },
+      { key: 'position', label: t('Reihenfolge bei mehreren Dateien'), type: 'number' },
+      {
+        key: 'notation_part',
+        label: t('Stimme in der MusicXML-Partitur (leer: nach Instrument)'),
+        optional: true,
+      },
     ],
   }
-  const rows = d[tab as 'pieces' | 'arrangements' | 'parts' | 'files'],
+  const rows = tab === 'folders' ? [] : d[tab as 'pieces' | 'arrangements' | 'parts' | 'files'],
     names = {
       pieces: t('Stücke'),
       arrangements: t('Arrangements'),
       parts: t('Stimmenbestand'),
       files: t('Notenunterlagen'),
+      folders: t('Notenmappen'),
     }
   const visibleRows = rows.filter((r) =>
     [
@@ -173,110 +181,127 @@ export function ScoresPage() {
         </details>
       )}
       {error && <Alert kind="error">{error}</Alert>}
-      <div className="music-toolbar">
-        <label>
-          {t('Noten suchen')}
-          <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
-        </label>
-        {canEdit && (
-          <button
-            className="button button-primary"
-            onClick={async () => {
-              if (await confirmLeave()) setSelected('new')
-            }}
-          >
-            {t('Anlegen')}
-          </button>
-        )}
-      </div>
-      {canEdit && selected && (
-        <ScoreForm
-          key={`${tab}-${selected === 'new' ? 'new' : selected.id}`}
-          fields={fields[tab]}
-          initial={selected === 'new' ? undefined : selected}
-          onClose={() => setSelected(null)}
-          onSave={async (values) => {
-            const endpoint = tab === 'files' ? 'score-documents' : tab
-            const target = base + endpoint + '/'
-            if (selected === 'new') await api.post(target, values)
-            else await api.patch(`${target}${selected.id}/`, values)
-            setSelected(null)
-            await load.reload()
-          }}
+      {tab === 'folders' && (
+        <ScoreFoldersPanel
+          base={base}
+          arrangements={arrOpts}
+          canEdit={canEdit}
+          live={org.modules.includes('music')}
         />
       )}
-      {!visibleRows.length && (
-        <MusicEmptyState>
-          {search.trim()
-            ? t('Keine passenden Einträge gefunden.')
-            : t('Noch keine Einträge vorhanden.')}
-        </MusicEmptyState>
-      )}
-      {visibleRows.map((r) => (
-        <article key={r.id} className="card stack music-record">
-          <strong>{String(r.title || r.name || r.instrument)}</strong>
-          {tab === 'pieces' && (
-            <p>
-              {r.composer}
-              {r.on_website ? ` · ${t('im Repertoire auf der Webseite')}` : ''}
-            </p>
-          )}
-          {tab === 'arrangements' && (
-            <>
-              <p>
-                {d.pieces.find((p) => p.id === r.piece)?.title} · {r.arranger} · {r.publisher} ·{' '}
-                {duration(Number(r.duration_seconds))} · {r.difficulty} · {r.ensemble}
-              </p>
-              <p>{r.license_note}</p>
-              <p>{r.active ? t('Aktiv') : t('Archiviert')}</p>
-            </>
-          )}
-          {tab === 'parts' && (
-            <p>
-              {arrangementName(r.arrangement)} · {r.register} ·{' '}
-              {r.kind === 'score' ? t('Partitur') : t('Einzelstimme')} ·{' '}
-              {formats().find((f) => f[0] === r.paper_format)?.[1]} · {t('Vorhandene Exemplare')}:{' '}
-              {r.copies} · {t('Benötigte Musiker')}: {r.required_players} · {r.location}
-            </p>
-          )}
-          {tab === 'files' && (
-            <>
-              <p>
-                {arrangementName(r.arrangement)} · {r.usage_note}
-              </p>
-              <a href={`${base}score-documents/${r.id}/download/`}>{t('Notenunterlage öffnen')}</a>
-            </>
-          )}
-          {canEdit && (
-            <div className="actions">
+      {tab !== 'folders' && (
+        <>
+          <div className="music-toolbar">
+            <label>
+              {t('Noten suchen')}
+              <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </label>
+            {canEdit && (
               <button
-                className="button button-ghost"
+                className="button button-primary"
                 onClick={async () => {
-                  if (await confirmLeave()) setSelected(r)
+                  if (await confirmLeave()) setSelected('new')
                 }}
               >
-                {t('Bearbeiten')}
+                {t('Anlegen')}
               </button>
-              {['parts', 'files'].includes(tab) && (
-                <button
-                  className="button button-ghost"
-                  onClick={async () => {
-                    if (!(await confirmDialog(t('Eintrag entfernen?')))) return
-                    try {
-                      await api.del(`${base}${tab === 'files' ? 'score-documents' : tab}/${r.id}/`)
-                      await load.reload()
-                    } catch (e) {
-                      setError(errorMessage(e))
-                    }
-                  }}
-                >
-                  {t('Entfernen')}
-                </button>
-              )}
-            </div>
+            )}
+          </div>
+          {canEdit && selected && (
+            <ScoreForm
+              key={`${tab}-${selected === 'new' ? 'new' : selected.id}`}
+              fields={fields[tab]}
+              initial={selected === 'new' ? undefined : selected}
+              onClose={() => setSelected(null)}
+              onSave={async (values) => {
+                const endpoint = tab === 'files' ? 'score-documents' : tab
+                const target = base + endpoint + '/'
+                if (selected === 'new') await api.post(target, values)
+                else await api.patch(`${target}${selected.id}/`, values)
+                setSelected(null)
+                await load.reload()
+              }}
+            />
           )}
-        </article>
-      ))}
+          {!visibleRows.length && (
+            <MusicEmptyState>
+              {search.trim()
+                ? t('Keine passenden Einträge gefunden.')
+                : t('Noch keine Einträge vorhanden.')}
+            </MusicEmptyState>
+          )}
+          {visibleRows.map((r) => (
+            <article key={r.id} className="card stack music-record">
+              <strong>{String(r.title || r.name || r.instrument)}</strong>
+              {tab === 'pieces' && (
+                <p>
+                  {r.composer}
+                  {r.on_website ? ` · ${t('im Repertoire auf der Webseite')}` : ''}
+                </p>
+              )}
+              {tab === 'arrangements' && (
+                <>
+                  <p>
+                    {d.pieces.find((p) => p.id === r.piece)?.title} · {r.arranger} · {r.publisher} ·{' '}
+                    {duration(Number(r.duration_seconds))} · {r.difficulty} · {r.ensemble}
+                  </p>
+                  <p>{r.license_note}</p>
+                  <p>{r.active ? t('Aktiv') : t('Archiviert')}</p>
+                </>
+              )}
+              {tab === 'parts' && (
+                <p>
+                  {arrangementName(r.arrangement)} · {r.register} ·{' '}
+                  {r.kind === 'score' ? t('Partitur') : t('Einzelstimme')} ·{' '}
+                  {formats().find((f) => f[0] === r.paper_format)?.[1]} ·{' '}
+                  {t('Vorhandene Exemplare')}: {r.copies} · {t('Benötigte Musiker')}:{' '}
+                  {r.required_players} · {r.location}
+                </p>
+              )}
+              {tab === 'files' && (
+                <>
+                  <p>
+                    {arrangementName(r.arrangement)} · {r.usage_note}
+                  </p>
+                  <a href={`${base}score-documents/${r.id}/download/`}>
+                    {t('Notenunterlage öffnen')}
+                  </a>
+                </>
+              )}
+              {canEdit && (
+                <div className="actions">
+                  <button
+                    className="button button-ghost"
+                    onClick={async () => {
+                      if (await confirmLeave()) setSelected(r)
+                    }}
+                  >
+                    {t('Bearbeiten')}
+                  </button>
+                  {['parts', 'files'].includes(tab) && (
+                    <button
+                      className="button button-ghost"
+                      onClick={async () => {
+                        if (!(await confirmDialog(t('Eintrag entfernen?')))) return
+                        try {
+                          await api.del(
+                            `${base}${tab === 'files' ? 'score-documents' : tab}/${r.id}/`,
+                          )
+                          await load.reload()
+                        } catch (e) {
+                          setError(errorMessage(e))
+                        }
+                      }}
+                    >
+                      {t('Entfernen')}
+                    </button>
+                  )}
+                </div>
+              )}
+            </article>
+          ))}
+        </>
+      )}
     </section>
   )
 }
