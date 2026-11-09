@@ -9,6 +9,8 @@ import { t } from '../../i18n/index.ts'
 
 const PROBE_W = 160
 const STEADY = 6 // so viele gute Bilder hintereinander, bevor ausgelöst wird
+/** Hilfskreis für den äußersten Ring, im Verhältnis zur Seite des quadratischen Bilds (0–100) */
+const GUIDE_R = 42
 
 export function LiveCamera({
   blackShare,
@@ -150,7 +152,11 @@ export function LiveCamera({
       <div className={`live-frame${aim.ok ? ' live-ok' : ''}`}>
         <video ref={video} playsInline muted aria-hidden="true" />
         <svg className="live-guide" viewBox="0 0 100 100" aria-hidden="true">
-          <circle cx="50" cy="50" r="42" />
+          <circle cx="50" cy="50" r={GUIDE_R} />
+          {/* Linie um das Schwarze, damit man den Spiegel daran ausrichten kann (Ralf 09.11.) */}
+          {blackShare > 0 && blackShare < 1 ? (
+            <circle className="live-guide-black" cx="50" cy="50" r={GUIDE_R * blackShare} />
+          ) : null}
         </svg>
       </div>
       <p className="live-hint" role="status" aria-live="polite">
