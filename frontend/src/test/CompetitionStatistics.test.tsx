@@ -111,9 +111,9 @@ describe('Wettbewerbsstatistik', () => {
       screen.getByRole('heading', { name: 'Ringe pro gewertetem Schuss' }).closest('.tile'),
     ).toHaveTextContent('7,93')
     expect(screen.getAllByText('Werte als Tabelle')).toHaveLength(2)
-    expect(
-      screen.getByRole('heading', { name: 'Teilnahmen' }).closest('.tile'),
-    ).toHaveTextContent('3 Wettbewerbe · nicht gezählt: 1 Gast')
+    expect(screen.getByRole('heading', { name: 'Teilnahmen' }).closest('.tile')).toHaveTextContent(
+      '3 Wettbewerbe · nicht gezählt: 1 Gast',
+    )
   })
 
   it('öffnet ein Mitglied und erhält Zeitraum, Wertung und den Bereich der Mitgliedsakte', async () => {

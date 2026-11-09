@@ -83,11 +83,24 @@ def test_real_zero_counts_but_provisional_and_out_of_competition_do_not(club, pe
     starters[0].save()
     data = competition_statistics(club)
     assert data["summary"]["starts"] == 2
-    assert data["summary"]["not_counted"]["out_of_competition"] == 1
+    # Ohne gezählten Start erscheint der Wettbewerb nicht, also auch kein Hinweis darauf.
+    assert data["summary"]["not_counted"]["out_of_competition"] == 0
     assert data["performance"]["count"] == 1
     assert data["performance"]["average"] == 0
     assert data["performance"]["best"] == 0
     assert data["performance"]["change"] is None
+
+
+def test_not_counted_names_out_of_competition_and_absent_starters(club, people):  # noqa: F811
+    _, _, starters = add_competition(club, people, [30, 25, 20])
+    starters[1].out_of_competition = True
+    starters[1].save()
+    starters[2].presence = "fehlt"
+    starters[2].membership = make_member(club, "Clara", "Schmitz")
+    starters[2].save()
+    data = competition_statistics(club)
+    assert data["summary"]["starts"] == 1
+    assert data["summary"]["not_counted"] == {"guests": 0, "out_of_competition": 1, "absent": 1}
 
 
 def test_manually_entered_ring_totals_also_provide_ring_averages(club, people):  # noqa: F811

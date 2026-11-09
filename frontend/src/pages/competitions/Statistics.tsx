@@ -255,10 +255,7 @@ function StatisticsContent({
         <Figure
           label={t('Teilnahmen')}
           value={number(s.starts, 0)}
-          note={[
-            tn('{n} Wettbewerb', '{n} Wettbewerbe', s.competitions),
-            notCounted(s.not_counted),
-          ]
+          note={[tn('{n} Wettbewerb', '{n} Wettbewerbe', s.competitions), notCounted(s.not_counted)]
             .filter(Boolean)
             .join(' · ')}
         />
