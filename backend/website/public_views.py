@@ -21,6 +21,8 @@ from core.features import site_features
 from core.ratelimit import client_ip, too_many
 from core.tenancy import rls_bypass
 from core.version import running_version
+from organizations import brand_icon
+from organizations.platform_public import unit_icon
 
 from . import contact, designs, gallery, menu, results, services
 from .models import BLOCKS, Website, WebsiteDomain
@@ -144,6 +146,8 @@ class SiteInfoView(_Public):
             "name": org.name,
             "short_name": org.short_name,
             "logo_url": site.abs(theme["logo_url"]) if theme["logo_url"] else None,
+            # Favicon und Handy-Symbol: eigenes Symbol oder Wappen unter icon-<Größe>.png
+            "icon": unit_icon(org) is not None,
             "theme": {k: theme[k] for k in ("primary", "on_primary", "accent", "on_accent")},
             # Standarddesign und Farben je Rolle; alle Designs, damit die Vorschau
             # ein anderes zeigen kann, ohne es zu übernehmen
@@ -253,6 +257,27 @@ class SiteInfoView(_Public):
             if pub
             else None
         )
+
+
+class SiteIconView(_Public):
+    """Favicon und Handy-Symbol der Webseite: eigenes Symbol der Einheit oder ihr Wappen,
+    quadratisch in fester Größe (wie White Label W2/W7). Auch während der Wartung, weil
+    der Kopf der Wartungsseite das Wappen ebenfalls zeigt."""
+
+    maintenance_ok = True
+
+    def get(self, request, key: str, name: str):
+        site = self.load(request, key)
+        size = int(name) if name.isdigit() else 0
+        if size not in brand_icon.SIZES:
+            raise Http404
+        found = unit_icon(site.org)
+        if found is None:
+            raise Http404
+        response = HttpResponse(
+            brand_icon.render(found[0], found[1], size), content_type="image/png"
+        )
+        return self.decorate(response, site)
 
 
 class DesignPackageView(_Public):
