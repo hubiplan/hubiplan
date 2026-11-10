@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Website: Under Design › **Area display**, the website shows the board as cards or a compact list, events as a list or monthly calendar, sub-units as large or small tiles or a list, and the gallery as tiles or masonry. Under Website › Texts, **Introduction for an area** adds a text at the top of these areas.
 - Website: **Text pages** can be built from sections like the home page. Under Website › Texts, **Add section** inserts, for example, banners, buttons, tiles or a quote above or below the text. The existing text stays the first section; without changes the page looks as before.
 - Home page: **Customise home page** lets you put the home page together yourself. Grab blocks anywhere and drag them into place, hide or show them with **Show** and stretch them across the row with **Full width**; the layout is kept per account and unit. **Anniversaries** and **Birthdays** are two separate cards again. Quick actions are now also ordered by dragging.
 - Website: the home page is now a **builder**. Under Design › **Home**, **Add section** inserts your own sections, as often as you like: **Text**, **Text with image**, **Banner**, **Button bar**, **Tiles**, **Featured event** with a countdown, **Album preview**, **Quote** and **Contact persons**. Each section gets a background and width, and in the “Newspaper” design a column. Everything goes into the draft first and appears straight away in the preview.

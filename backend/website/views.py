@@ -38,7 +38,7 @@ from members.views import _ClubMixin
 from organizations.models import Organization
 from organizations.theme import effective_theme
 
-from . import designs, home, menu, privacy, services, style
+from . import designs, home, menu, privacy, services, style, variants
 from .models import (
     BLOCK_HINTS,
     BLOCK_NAME_MAX,
@@ -92,6 +92,7 @@ SETTINGS_FIELDS = [
     "design",
     "color_roles",
     "style",
+    "layouts",
     "name_format",
     "show_vacant",
     "show_instrument",
@@ -284,6 +285,12 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         except ValueError as exc:
             raise serializers.ValidationError(str(exc)) from exc
 
+    def validate_layouts(self, value):
+        try:
+            return variants.validate(value)
+        except ValueError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
     def validate_color_roles(self, value):
         if not isinstance(value, dict):
             raise serializers.ValidationError(gettext("Farbzuordnung bitte je Design angeben."))
@@ -292,6 +299,7 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["home_sections"] = normalize_home_sections(instance.home_sections)
+        data["layouts"] = variants.normalize(instance.layouts)
         data["menu"] = menu.normalize(instance.menu, menu.items(instance))
         data["color_roles"] = designs.normalize_color_roles(
             instance.color_roles, designs.package_roles(instance.packages())
@@ -315,6 +323,7 @@ def live_design(website: Website) -> dict:
         "style": style.public(website.style),
         "header_image": header_image_id(website),
         "home_sections": normalize_home_sections(website.home_sections),
+        "layouts": variants.normalize(website.layouts),
     }
 
 
@@ -545,6 +554,8 @@ class WebsiteView(_WebsiteMixin, APIView):
             ),
             # Stilregler: Stufen je Regler und Sperren je Design (Namen in der Oberfläche)
             "style_catalog": style.catalog(),
+            # Darstellung der festen Bereiche (G5)
+            "layout_catalog": variants.catalog(),
             # Designpakete einspielen und freigeben: nur Plattformverwalter
             "can_import_designs": can_import_designs(self.request.user),
             "units": [

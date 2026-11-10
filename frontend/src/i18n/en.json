@@ -7893,5 +7893,13 @@
   "Ausschnitt für das Logo im Dunkelmodus": "Crop for the dark mode logo",
   "Abschnitte der Seite": "Page sections",
   "Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa ein Banner, Knöpfe oder Kacheln. Sie erscheinen mit „Veröffentlichen“.": "You can add more sections above and below the text, such as a banner, buttons or tiles. They appear once you click “Publish”.",
-  "„{x}“ verschwindet von der Seite, sobald du sie veröffentlichst.": "“{x}” disappears from the page once you publish it."
+  "„{x}“ verschwindet von der Seite, sobald du sie veröffentlichst.": "“{x}” disappears from the page once you publish it.",
+  "Eine Einleitung über einem Bereich schreibst du unter": "You write an introduction above an area under",
+  "Webseite › Texte": "Website › Texts",
+  "Der Bereich ist zurzeit ausgeschaltet.": "This area is currently switched off.",
+  "Einleitungen der Bereiche": "Area introductions",
+  "Eine Einleitung steht oben über Vorstand, Terminen, Untereinheiten oder Galerie. Wie diese Bereiche aussehen, wählst du unter": "An introduction appears at the top of the board, events, sub-units or gallery. You choose how these areas look under",
+  "Einleitung für einen Bereich": "Introduction for an area",
+  "Erscheint oben im Bereich „{x}“, über dem Inhalt aus HUBIplan.": "Appears at the top of the “{x}” area, above the content from HUBIplan.",
+  "Darstellung der Bereiche": "Area display"
 }

@@ -24,7 +24,7 @@ from core.version import running_version
 from organizations import brand_icon
 from organizations.platform_public import unit_icon
 
-from . import contact, designs, gallery, home, menu, results, services, style
+from . import contact, designs, gallery, home, menu, results, services, style, variants
 from .models import BLOCKS, Website, WebsiteDomain
 from .public import SiteView
 
@@ -165,6 +165,9 @@ class SiteInfoView(_Public):
             "design_catalog": designs.export_catalog(),
             # Stilregler (Feinabstimmung): nur verstellte; ältere Webseiten übergehen sie
             "style": style.public(site.site.style),
+            # Darstellung der festen Bereiche (G5) und ihre Einleitungstexte
+            "layouts": variants.public(site.site.layouts),
+            "intros": site.intros(),
             # Freigegebene Designpakete (Ralf 2026-11-02); Inhalt über design/<schlüssel>/
             "design_packages": {
                 p.key: {"label": p.label_for(lang), "hash": p.content_hash} for p in packages

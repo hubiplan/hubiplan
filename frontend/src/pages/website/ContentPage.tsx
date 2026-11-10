@@ -49,7 +49,7 @@ export function ContentPage() {
   const org = useActiveOrg()
   const { data, error, reload } = useLoad(() => contentApi.texts(org.id), [org.id])
   const [open, setOpen] = useState<number | null>(null)
-  const [adding, setAdding] = useState<'page' | 'unit' | null>(null)
+  const [adding, setAdding] = useState<'page' | 'unit' | 'intro' | null>(null)
   // ?einheit=<id> (Link aus der Untereinheit): deren Text öffnen oder anlegen
   const [params] = useSearchParams()
   const wantedUnit = Number(params.get('einheit')) || null
@@ -74,7 +74,11 @@ export function ContentPage() {
     { title: t('Startseite'), kind: 'greeting' },
     { title: t('Textseiten'), kind: 'page' },
     { title: t('Texte der Untereinheiten'), kind: 'unit' },
+    ...(data.intro_areas ? [{ title: t('Einleitungen der Bereiche'), kind: 'intro' }] : []),
   ]
+  const freeAreas = (data.intro_areas ?? []).filter(
+    (a) => !data.texts.some((tm) => tm.kind === 'intro' && tm.slug === a.area),
+  )
 
   return (
     <>
@@ -90,6 +94,14 @@ export function ContentPage() {
           return (
             <div key={g.kind}>
               <h2>{g.title}</h2>
+              {g.kind === 'intro' && (
+                <p className="muted small">
+                  {t(
+                    'Eine Einleitung steht oben über Vorstand, Terminen, Untereinheiten oder Galerie. Wie diese Bereiche aussehen, wählst du unter',
+                  )}{' '}
+                  <Link to="/webseite/gestaltung">{t('Webseite › Gestaltung')}</Link>.
+                </p>
+              )}
               {items.length === 0 && <p className="muted">{t('Noch keine.')}</p>}
               {g.kind === 'page' && items.length > 0 && (
                 <p className="muted small">
@@ -108,7 +120,11 @@ export function ContentPage() {
                       aria-expanded={open === tm.id}
                       onClick={() => setOpen(open === tm.id ? null : tm.id)}
                     >
-                      {tm.kind === 'unit' ? tm.department_name : tm.title || tm.kind_label}
+                      {tm.kind === 'unit'
+                        ? tm.department_name
+                        : tm.kind === 'intro'
+                          ? tm.area_label || tm.slug
+                          : tm.title || tm.kind_label}
                     </button>
                     {tm.kind === 'page' && <span className="muted small"> /{tm.slug}</span>}
                     <span className="muted small"> · {status(tm)}</span>
@@ -135,6 +151,7 @@ export function ContentPage() {
           <NewText
             kind={adding}
             initialUnit={wantedUnit}
+            areas={freeAreas}
             units={data.units.filter(
               (u) => !data.texts.some((tm) => tm.kind === 'unit' && tm.department === u.id),
             )}
@@ -156,6 +173,15 @@ export function ContentPage() {
                 onClick={() => setAdding('unit')}
               >
                 {t('Text für eine Untereinheit')}
+              </button>
+            )}
+            {freeAreas.length > 0 && (
+              <button
+                type="button"
+                className="button button-ghost"
+                onClick={() => setAdding('intro')}
+              >
+                {t('Einleitung für einen Bereich')}
               </button>
             )}
           </div>
@@ -185,11 +211,14 @@ function TextList({
 function NewText({
   kind,
   units,
+  areas,
   initialUnit,
   onDone,
 }: {
-  kind: 'page' | 'unit'
+  kind: 'page' | 'unit' | 'intro'
   units: { id: number; name: string }[]
+  /** Bereiche ohne Einleitung (G5) */
+  areas: { area: string; label: string }[]
   /** vorgewählte Untereinheit, falls sie zur Wahl steht */
   initialUnit?: number | null
   onDone: (id: number | null) => void
@@ -199,6 +228,7 @@ function NewText({
     title: '',
     slug: '',
     department: units.find((u) => u.id === initialUnit)?.id ?? units[0]?.id ?? 0,
+    area: areas[0]?.area ?? '',
   })
   const { values: v, set, errors } = form
 
@@ -208,11 +238,13 @@ function NewText({
         org.id,
         kind === 'page'
           ? { kind, title: v.title, slug: v.slug }
-          : {
-              kind,
-              department: v.department,
-              title: units.find((u) => u.id === v.department)?.name ?? '',
-            },
+          : kind === 'intro'
+            ? { kind, slug: v.area }
+            : {
+                kind,
+                department: v.department,
+                title: units.find((u) => u.id === v.department)?.name ?? '',
+              },
       ),
     )) as WebsiteText | undefined
     if (created) onDone(created.id)
@@ -226,8 +258,27 @@ function NewText({
         void save()
       }}
     >
-      <h3>{kind === 'page' ? t('Neue Textseite') : t('Text für eine Untereinheit')}</h3>
-      {kind === 'page' ? (
+      <h3>
+        {kind === 'page'
+          ? t('Neue Textseite')
+          : kind === 'intro'
+            ? t('Einleitung für einen Bereich')
+            : t('Text für eine Untereinheit')}
+      </h3>
+      {kind === 'intro' ? (
+        <SelectField
+          label={t('Bereich')}
+          value={v.area}
+          error={errors.slug}
+          onChange={(e) => set('area', e.target.value)}
+        >
+          {areas.map((a) => (
+            <option key={a.area} value={a.area}>
+              {a.label}
+            </option>
+          ))}
+        </SelectField>
+      ) : kind === 'page' ? (
         <div className="grid-2">
           <Field
             label={t('Titel')}
@@ -406,7 +457,7 @@ function TextForm({
     <Checkbox
       label={t('Bildunterschriften auf der Webseite zeigen')}
       hint={
-        text.kind === 'page'
+        text.kind === 'page' || text.kind === 'intro'
           ? t('Gilt für das Bild oben auf der Seite.')
           : t('Gilt für das einzelne Bild und für das Bilderkarussell.')
       }
@@ -473,12 +524,20 @@ function TextForm({
           : t('Noch nicht veröffentlicht.')}{' '}
         {current.is_published && current.has_changes && t('Der Entwurf hat Änderungen.')}
       </p>
-      <Field
-        label={t('Titel')}
-        value={v.title}
-        error={errors.title}
-        onChange={(e) => set('title', e.target.value)}
-      />
+      {text.kind === 'intro' ? (
+        <p className="muted small">
+          {t('Erscheint oben im Bereich „{x}“, über dem Inhalt aus HUBIplan.', {
+            x: text.area_label || text.slug,
+          })}
+        </p>
+      ) : (
+        <Field
+          label={t('Titel')}
+          value={v.title}
+          error={errors.title}
+          onChange={(e) => set('title', e.target.value)}
+        />
+      )}
       {text.kind === 'page' && !chronicle && (
         <div className="grid-2">
           <Field
@@ -529,7 +588,7 @@ function TextForm({
         onChange={(id) => set('image', id)}
         onImagesChanged={reloadImages}
       />
-      {text.kind === 'page' && captionsBox}
+      {(text.kind === 'page' || text.kind === 'intro') && captionsBox}
       {text.kind === 'page' && !text.has_timeline && text.sections && sectionOptions && (
         <section className="field" aria-labelledby={`abschnitte-${text.id}`}>
           <h3 id={`abschnitte-${text.id}`}>{t('Abschnitte der Seite')}</h3>
@@ -561,7 +620,7 @@ function TextForm({
           onImagesChanged={reloadImages}
         />
       )}
-      {text.kind !== 'page' && (
+      {(text.kind === 'greeting' || text.kind === 'unit') && (
         <GalleryPicker
           images={images.data ?? []}
           value={v.gallery}
@@ -576,7 +635,7 @@ function TextForm({
           onImagesChanged={reloadImages}
         />
       )}
-      {text.kind !== 'page' && captionsBox}
+      {(text.kind === 'greeting' || text.kind === 'unit') && captionsBox}
       {message && <Alert kind="error">{message}</Alert>}
       <div className="button-row">
         <button

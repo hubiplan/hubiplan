@@ -42,6 +42,7 @@ import { HeaderImage } from './HeaderImage.tsx'
 import { StyleTuning } from './StyleTuning.tsx'
 import { DesignVersions, DraftBar, PreviewFrame } from './DesignPreview.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
+import { AreaLayouts } from './AreaLayouts.tsx'
 import { HomeBuilder } from './HomeBuilder.tsx'
 import { t } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
@@ -201,6 +202,7 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'design',
   'color_roles',
   'style',
+  'layouts',
   'header_image',
   'name_format',
   'show_vacant',
@@ -399,6 +401,17 @@ function WebsiteAdmin({
                 blocks={v.blocks}
                 design={v.design ?? 'classic'}
                 onChange={(next) => set('home_sections', next)}
+              />,
+            )}
+          {data.layout_catalog &&
+            settings(
+              t('Darstellung der Bereiche'),
+              <AreaLayouts
+                catalog={data.layout_catalog}
+                labels={data.block_labels}
+                blocks={v.blocks}
+                value={v.layouts ?? {}}
+                onChange={(next) => set('layouts', next)}
               />,
             )}
           <SiteLanguage

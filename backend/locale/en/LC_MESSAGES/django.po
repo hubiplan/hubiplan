@@ -9674,3 +9674,54 @@ msgstr "Image and text from the field above"
 
 msgid "Abschnitte gibt es nur auf Textseiten."
 msgstr "Sections are only available on text pages."
+
+msgid "Galerie"
+msgstr "Gallery"
+
+msgid "Untereinheiten"
+msgstr "Sub-units"
+
+msgid "Karten mit Foto"
+msgstr "Cards with photo"
+
+msgid "Kompakte Liste"
+msgstr "Compact list"
+
+msgid "Liste nach Monaten"
+msgstr "List by month"
+
+msgid "Monatskalender"
+msgstr "Monthly calendar"
+
+msgid "Große Kacheln mit Wappen"
+msgstr "Large tiles with coat of arms"
+
+msgid "Kleine Kacheln"
+msgstr "Small tiles"
+
+msgid "Liste"
+msgstr "List"
+
+msgid "Kacheln"
+msgstr "Tiles"
+
+msgid "Mauerwerk"
+msgstr "Masonry"
+
+msgid "Darstellung bitte je Bereich angeben."
+msgstr "Please give the display for each area."
+
+msgid "Unbekannter Bereich: {x0}"
+msgstr "Unknown area: {x0}"
+
+msgid "Unbekannte Darstellung: {x0}"
+msgstr "Unknown display: {x0}"
+
+msgid "Einleitung eines Bereichs"
+msgstr "Introduction of an area"
+
+msgid "Unbekannter Bereich."
+msgstr "Unknown area."
+
+msgid "Für diesen Bereich gibt es schon eine Einleitung."
+msgstr "This area already has an introduction."

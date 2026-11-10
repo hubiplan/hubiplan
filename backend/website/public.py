@@ -1174,6 +1174,22 @@ class SiteView:
             "sections": self.page_sections(t),
         }
 
+    def intros(self) -> dict[str, dict]:
+        """Einleitungen der festen Bereiche (G5): Bereich → Text und Bild, nur veröffentlichte."""
+        from .variants import INTRO_AREAS
+
+        result = {}
+        for t in (
+            self.published_texts()
+            .filter(kind=WebsiteText.Kind.INTRO, slug__in=INTRO_AREAS)
+            .select_related("published_image")
+        ):
+            text = content.public_body(t.published_body, self.site)
+            image = self.shown_image(t)
+            if text or image:
+                result[t.slug] = {"title": t.published_title, "text": text, "image": image}
+        return result
+
     def page_sections(self, t: WebsiteText) -> list[dict]:
         from .home import PAGE_BUILTINS, normalize_page, resolve
         from .public_views import event_entry

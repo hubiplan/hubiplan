@@ -71,6 +71,17 @@ def image_data(org_id: int, image: WebsiteImage | None, used: bool | None = None
     return data
 
 
+def area_label(website, slug: str) -> str:
+    """Name eines festen Bereichs wie im Menü (eigener Name, sonst Standard)."""
+    from .models import BLOCKS
+
+    if slug == "units":
+        fallback = website.organization.department_label_plural or BLOCKS["units"]
+    else:
+        fallback = gettext(BLOCKS.get(slug, slug))
+    return website.block_name(slug) or fallback
+
+
 def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
     data = {
         "id": t.pk,
@@ -79,6 +90,8 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
         "department": t.department_id,
         "department_name": t.department.name if t.department_id else None,
         "slug": t.slug,
+        # Einleitung (G5): Name des Bereichs, wie im Menü
+        "area_label": area_label(t.website, t.slug) if t.kind == WebsiteText.Kind.INTRO else None,
         "menu_position": t.menu_position,
         "show_in_menu": t.show_in_menu,
         "title": t.title,
@@ -221,7 +234,13 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
             )
         if kind != WebsiteText.Kind.UNIT:
             attrs["department"] = None
-        if kind == WebsiteText.Kind.PAGE and attrs.get("gallery"):
+        if kind == WebsiteText.Kind.INTRO:
+            # Einleitung eines festen Bereichs (G5): Adresse = Bereich, je Bereich einmal
+            from .variants import INTRO_AREAS
+
+            if attrs.get("slug", self.instance.slug if self.instance else "") not in INTRO_AREAS:
+                raise serializers.ValidationError({"slug": gettext("Unbekannter Bereich.")})
+        if kind in (WebsiteText.Kind.PAGE, WebsiteText.Kind.INTRO) and attrs.get("gallery"):
             raise serializers.ValidationError(
                 {
                     "gallery": gettext(
@@ -244,13 +263,17 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
         if self.instance is not None:
             clash = clash.exclude(pk=self.instance.pk)
         if (
-            kind == WebsiteText.Kind.PAGE
+            kind in (WebsiteText.Kind.PAGE, WebsiteText.Kind.INTRO)
             and clash.filter(
                 slug=attrs.get("slug", self.instance.slug if self.instance else "")
             ).exists()
         ):
             raise serializers.ValidationError(
-                {"slug": gettext("Diese Adresse ist schon vergeben.")}
+                {
+                    "slug": gettext("Für diesen Bereich gibt es schon eine Einleitung.")
+                    if kind == WebsiteText.Kind.INTRO
+                    else gettext("Diese Adresse ist schon vergeben.")
+                }
             )
         if kind == WebsiteText.Kind.UNIT and clash.filter(department=department).exists():
             raise serializers.ValidationError(
@@ -275,7 +298,13 @@ class TextListView(_ContentMixin, APIView):
             "link_targets": content.link_targets(website),
         }
         if can_edit:
+            from .variants import INTRO_AREAS
+
             data["section_options"] = page_section_options(self.org, website)
+            # Bereiche mit Einleitungstext (G5)
+            data["intro_areas"] = [
+                {"area": a, "label": area_label(website, a)} for a in INTRO_AREAS
+            ]
         return Response(data)
 
     @transaction.atomic

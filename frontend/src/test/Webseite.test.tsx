@@ -238,6 +238,43 @@ describe('Webseite', () => {
     )
   })
 
+  it('wählt die Darstellung eines Bereichs im Entwurf (G5)', async () => {
+    const withLayouts = {
+      ...data(website('public', { draft: {}, layouts: {} })),
+      layout_catalog: [
+        {
+          area: 'events',
+          variants: [
+            { key: 'list', label: 'Liste nach Monaten' },
+            { key: 'calendar', label: 'Monatskalender' },
+          ],
+        },
+      ],
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: withLayouts }),
+        [`PUT ${base}`]: () => ({ status: 200, body: withLayouts }),
+      },
+      '/webseite/gestaltung',
+    )
+    const user = userEvent.setup()
+    const group = await screen.findByRole('group', { name: 'Termine und Kalender-Abo' })
+    expect(within(group).getByRole('button', { name: 'Liste nach Monaten' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await user.click(within(group).getByRole('button', { name: 'Monatskalender' }))
+    await waitFor(
+      () => {
+        const put = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+        const body = JSON.parse(String(put?.init?.body ?? '{}'))
+        expect(body.draft?.layouts).toEqual({ events: 'calendar' })
+      },
+      { timeout: 3000 },
+    )
+  })
+
   it('legt einen Link nach außen an und hebt ihn als Knopf hervor', async () => {
     const items = [
       {
@@ -753,6 +790,38 @@ describe('Inhalte der Webseite', () => {
       },
       { timeout: 3000 },
     )
+  })
+
+  it('legt eine Einleitung für einen Bereich an (G5)', async () => {
+    const intro = text({ id: 8, kind: 'intro', slug: 'board', title: '', area_label: 'Vorstand' })
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}texts/`]: () => ({
+          status: 200,
+          body: {
+            texts: [],
+            units: [],
+            intro_areas: [
+              { area: 'board', label: 'Vorstand' },
+              { area: 'gallery', label: 'Galerie' },
+            ],
+          },
+        }),
+        [`POST ${base}texts/`]: () => ({ status: 201, body: intro }),
+        [`GET ${base}texts/8/`]: () => ({ status: 200, body: intro }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/inhalte',
+    )
+    const user = userEvent.setup()
+    expect(await screen.findByRole('heading', { name: 'Einleitungen der Bereiche' })).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Einleitung für einen Bereich' }))
+    await user.click(screen.getByRole('button', { name: 'Anlegen' }))
+    await waitFor(() => {
+      const post = calls.find((c) => c.key === `POST ${base}texts/`)
+      expect(JSON.parse(String(post?.init?.body ?? '{}'))).toEqual({ kind: 'intro', slug: 'board' })
+    })
   })
 
   const img = (id: number, alt: string, over: Record<string, unknown> = {}) => ({

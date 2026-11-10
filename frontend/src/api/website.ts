@@ -27,6 +27,8 @@ export interface WebsiteSettings {
   header_image?: number | null
   /** Stilregler (Feinabstimmung): nur verstellte; fehlt = wie das Design */
   style?: StyleValues
+  /** Darstellung der festen Bereiche (G5): nur abweichende Varianten; fehlt = Standard */
+  layouts?: Record<string, string>
   name_format: 'full' | 'initial'
   show_vacant: boolean
   /** Hauptinstrument aus dem Musikmodul unter dem Namen (fehlt bei älteren Ständen) */
@@ -54,6 +56,12 @@ export type ColorRoles = Record<string, Record<string, number | string>>
 export type StyleValues = Record<string, string | boolean>
 
 /** Stufen je Regler ("switch" = Schalter) und vom Design gesperrte Regler oder Stufen */
+/** Bereich mit seinen Darstellungen (G5); die erste ist der Standard */
+export interface LayoutArea {
+  area: string
+  variants: { key: string; label: string }[]
+}
+
 export interface StyleCatalog {
   options: Record<string, string[] | 'switch'>
   locks: Record<string, Record<string, string[] | null>>
@@ -255,6 +263,7 @@ export const DRAFT_FIELDS = [
   'style',
   'header_image',
   'home_sections',
+  'layouts',
 ] as const
 export type DraftField = (typeof DRAFT_FIELDS)[number]
 export type DesignDraft = Partial<Pick<WebsiteSettings, DraftField>>
@@ -315,6 +324,8 @@ export interface WebsiteData {
   can_import_designs?: boolean
   /** Stilregler der Feinabstimmung (fehlt bei älteren Ständen) */
   style_catalog?: StyleCatalog
+  /** Darstellung der festen Bereiche (G5, fehlt bei älteren Ständen) */
+  layout_catalog?: LayoutArea[]
   website: Website | null
 }
 
@@ -387,7 +398,8 @@ export const websiteApi = {
     ),
 }
 
-export type TextKind = 'greeting' | 'page' | 'unit'
+/** intro = Einleitung eines festen Bereichs (G5), Adresse = Bereich */
+export type TextKind = 'greeting' | 'page' | 'unit' | 'intro'
 
 /** Seite der eigenen Webseite, verlinkt als seite:<ziel> */
 export interface LinkTarget {
@@ -468,6 +480,8 @@ export interface WebsiteTextSummary {
   department: number | null
   department_name: string | null
   slug: string
+  /** Einleitung (G5): Name des Bereichs */
+  area_label?: string | null
   menu_position: number
   show_in_menu: boolean
   title: string
@@ -554,6 +568,8 @@ export const contentApi = {
       link_targets?: LinkTarget[]
       /** Auswahl für die Abschnitte der Textseiten (fehlt bei älteren Ständen) */
       section_options?: PageSectionOptions
+      /** Bereiche, über denen eine Einleitung stehen kann (G5) */
+      intro_areas?: { area: string; label: string }[]
     }>(`${base(org)}texts/`),
   text: (org: number, id: number) => api.get<WebsiteText>(`${base(org)}texts/${id}/`),
   create: (org: number, data: TextDraft) => api.post<WebsiteText>(`${base(org)}texts/`, data),
