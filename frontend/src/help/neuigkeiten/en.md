@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Home page: **Customise home page** lets you put the home page together yourself. Grab blocks anywhere and drag them into place, hide or show them with **Show** and stretch them across the row with **Full width**; the layout is kept per account and unit. **Anniversaries** and **Birthdays** are two separate cards again. Quick actions are now also ordered by dragging.
 - Website: changes to design, colours, fine-tuning, header image and home page are now a **draft** first. Under Design, a preview next to them shows the real website as **Phone**, **Tablet** or **Desktop**; nothing goes live until you choose **Publish**. You can restore the last five published versions under **Earlier versions**.
 - Website: under Design › **Fine-tuning** you adjust the design with fixed levels, without CSS: font, width, background, spacing, corners, cards, images, buttons, date field, header (white, coloured or header image; coat of arms left, centre, right or off), menu, title image and footer. Settings you leave alone show what the design provides.
 - Website: the menu can contain **external links**, for example to your federation; they open a new window. One main item can be highlighted as a coloured **button**, such as “Become a member”. You now arrange the home page sections by dragging, like the menu, instead of with arrows.

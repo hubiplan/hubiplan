@@ -7,7 +7,15 @@ import { DepartmentTodosTile } from '../components/DepartmentTodosTile.tsx'
 import { OpenTasksTile } from '../components/OpenTasksTile.tsx'
 import { PERM } from '../api/orgs.ts'
 import type { OrgSummary } from '../api/orgs.ts'
-import { AnniversariesCard, NoticesCard, QuickActions } from '../components/home/RoleHome.tsx'
+import {
+  BirthdaysCard,
+  JubileesCard,
+  NoticesCard,
+  QuickActions,
+} from '../components/home/RoleHome.tsx'
+import { HomeBoard } from '../components/home/HomeBoard.tsx'
+import { BLOCK, hasBirthdays, hasJubilees } from '../components/home/homeLayout.ts'
+import type { HomeBlock } from '../components/home/homeLayout.ts'
 import {
   actionCatalog,
   actionScope,
@@ -51,21 +59,48 @@ export function HomePage() {
     return (
       <section>
         <h1 className="sr-only">{activeDept.name}</h1>
-        {/* Gleiche Reihenfolge wie im Verein (S-04): Zu erledigen, Schnellaktionen, Termine,
-            Hinweise */}
-        <div className="tiles home-grid">
-          {activeDept.permissions.includes('todos.view') && (
-            <DepartmentTodosTile department={activeDept.id} />
-          )}
-          <QuickActions
-            candidates={deptActions(activeDept)}
-            catalog={deptCatalog(activeDept)}
-            scope={actionScope.dept(activeDept)}
-            label={t('Schnellaktionen: {label}', { label: activeDept.label })}
-          />
-          {activeDept.events_enabled && <UpcomingTile base={calendarBase.dept(activeDept.id)} />}
-          <NoticesCard org={null} />
-        </div>
+        {/* Standard wie im Verein (S-04): Zu erledigen, Schnellaktionen, Termine, Hinweise;
+            jede Person ordnet selbst */}
+        <HomeBoard
+          scope={actionScope.dept(activeDept)}
+          name={activeDept.name}
+          blocks={(prefs) => {
+            const list: HomeBlock[] = []
+            if (activeDept.permissions.includes('todos.view'))
+              list.push({
+                key: BLOCK.deptTodos,
+                label: t('Offene Aufgaben'),
+                render: () => <DepartmentTodosTile department={activeDept.id} />,
+              })
+            if (deptCatalog(activeDept).length > 0)
+              list.push({
+                key: BLOCK.actions,
+                label: t('Schnellaktionen'),
+                wide: true,
+                render: () => (
+                  <QuickActions
+                    candidates={deptActions(activeDept)}
+                    catalog={deptCatalog(activeDept)}
+                    scope={actionScope.dept(activeDept)}
+                    label={t('Schnellaktionen: {label}', { label: activeDept.label })}
+                    prefs={prefs}
+                  />
+                ),
+              })
+            if (activeDept.events_enabled)
+              list.push({
+                key: BLOCK.upcoming,
+                label: t('Nächste Termine'),
+                render: () => <UpcomingTile base={calendarBase.dept(activeDept.id)} />,
+              })
+            list.push({
+              key: BLOCK.notices,
+              label: t('Hinweise'),
+              render: () => <NoticesCard org={null} />,
+            })
+            return list
+          }}
+        />
       </section>
     )
   }
@@ -124,42 +159,90 @@ export function HomePage() {
   }
 
   // Name und Dachverband stehen schon im Kopf; die Überschrift ist nur für Screenreader.
-  // Feste Reihenfolge für alle Rollen (S-04): Zu erledigen › Schnellaktionen ›
-  // Nächste Termine › Hinweise. Was die Person nicht darf, fehlt einfach.
-  const actions = roleActionCandidates(active)
-  const clubLike = active.type === 'club' || active.type === 'federation'
+  // Standardreihenfolge für alle Rollen (S-04): Zu erledigen › Schnellaktionen › Nächste
+  // Termine › Jubiläen › Geburtstage › Hinweise. Was die Person nicht darf, fehlt einfach;
+  // den Rest stellt sie sich unter „Startseite anpassen“ selbst zusammen.
+  const org = active
+  const clubLike = org.type === 'club' || org.type === 'federation'
   const upcoming =
     clubLike &&
-    active.modules.includes('events') &&
+    org.modules.includes('events') &&
     // Ohne Recht auf den Kalender keine Kachel und keine abgelehnte Anfrage (W-01)
-    active.permissions.includes(PERM.eventsView)
+    org.permissions.includes(PERM.eventsView)
   const people =
-    active.type === 'club' &&
-    active.modules.includes('members') &&
-    active.permissions.includes(PERM.membersView)
+    org.type === 'club' &&
+    org.modules.includes('members') &&
+    org.permissions.includes(PERM.membersView)
+  const catalog = actionCatalog(org)
+  const dept = activeDept
   return (
     <section>
-      <h1 className="sr-only">{active.name}</h1>
-      <div className="tiles home-grid">
-        {activeDept?.permissions.includes('todos.view') && (
-          <DepartmentTodosTile department={activeDept.id} />
-        )}
-        {showsOpenTasks(active) && <OpenTasksTile org={active} />}
-        <QuickActions
-          candidates={actions}
-          catalog={actionCatalog(active)}
-          scope={actionScope.org(active)}
-        />
-        {upcoming && <UpcomingTile base={calendarBase.org(active.id)} />}
-        <AnniversariesCard org={active} />
-        <NoticesCard org={active} />
-        {!upcoming && !people && actionCatalog(active).length === 0 && (
+      <h1 className="sr-only">{org.name}</h1>
+      <HomeBoard
+        scope={actionScope.org(org)}
+        name={org.name}
+        blocks={(prefs) => {
+          const list: HomeBlock[] = []
+          if (dept?.permissions.includes('todos.view'))
+            list.push({
+              key: BLOCK.deptTodos,
+              label: t('Offene Aufgaben: {name}', { name: dept.name }),
+              render: () => <DepartmentTodosTile department={dept.id} />,
+            })
+          if (showsOpenTasks(org))
+            list.push({
+              key: BLOCK.tasks,
+              label: t('Zu erledigen'),
+              wide: true,
+              render: () => <OpenTasksTile org={org} />,
+            })
+          if (catalog.length > 0)
+            list.push({
+              key: BLOCK.actions,
+              label: t('Schnellaktionen'),
+              wide: true,
+              render: () => (
+                <QuickActions
+                  candidates={roleActionCandidates(org)}
+                  catalog={catalog}
+                  scope={actionScope.org(org)}
+                  prefs={prefs}
+                />
+              ),
+            })
+          if (upcoming)
+            list.push({
+              key: BLOCK.upcoming,
+              label: t('Nächste Termine'),
+              render: () => <UpcomingTile base={calendarBase.org(org.id)} />,
+            })
+          if (hasJubilees(org))
+            list.push({
+              key: BLOCK.jubilees,
+              label: t('Jubiläen'),
+              render: () => <JubileesCard org={org} />,
+            })
+          if (hasBirthdays(org))
+            list.push({
+              key: BLOCK.birthdays,
+              label: t('Geburtstage'),
+              render: () => <BirthdaysCard org={org} />,
+            })
+          list.push({
+            key: BLOCK.notices,
+            label: t('Hinweise'),
+            render: () => <NoticesCard org={org} />,
+          })
+          return list
+        }}
+      >
+        {!upcoming && !people && catalog.length === 0 && (
           <div className="card tile">
             <h2>{t('Übersicht')}</h2>
             <p className="muted">{t('Hier erscheinen Kacheln der Module.')}</p>
           </div>
         )}
-      </div>
+      </HomeBoard>
     </section>
   )
 }

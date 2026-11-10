@@ -16,6 +16,8 @@ export interface SortableOptions<T> {
   onReorder: (ids: number[]) => Promise<unknown>
   /** aus: keine Griffe (z. B. nur lesen) */
   enabled?: boolean
+  /** an: die ganze Zeile lässt sich ziehen, nicht nur der Griff */
+  dragRow?: boolean
 }
 
 function move(order: number[], pk: number, to: number): number[] {
@@ -32,6 +34,7 @@ export function useSortable<T>({
   label,
   onReorder,
   enabled = true,
+  dragRow = false,
 }: SortableOptions<T>) {
   const base = items.map(id)
   const baseKey = base.join(',')
@@ -81,7 +84,7 @@ export function useSortable<T>({
     }
   }
 
-  function onPointerDown(e: PointerEvent<HTMLButtonElement>, pk: number) {
+  function onPointerDown(e: PointerEvent<HTMLElement>, pk: number) {
     if (e.button !== 0) return
     e.preventDefault()
     e.currentTarget.setPointerCapture?.(e.pointerId)
@@ -89,7 +92,7 @@ export function useSortable<T>({
     setDragId(pk)
   }
 
-  function onPointerMove(e: PointerEvent<HTMLButtonElement>) {
+  function onPointerMove(e: PointerEvent<HTMLElement>) {
     const d = drag.current
     if (!d) return
     // Stelle: hinter allen anderen Zeilen, deren Mitte über dem Zeiger liegt
@@ -146,7 +149,23 @@ export function useSortable<T>({
         if (el) rows.current.set(pk, el)
         else rows.current.delete(pk)
       },
-      className: dragId === pk ? 'sortable-dragging' : undefined,
+      className:
+        [dragId === pk && 'sortable-dragging', dragRow && active && 'sortable-row-drag']
+          .filter(Boolean)
+          .join(' ') || undefined,
+      ...(dragRow && active
+        ? {
+            onPointerDown: (e: PointerEvent<HTMLElement>) => {
+              // Bedienelemente in der Zeile behalten ihren Klick
+              const target = e.target as HTMLElement
+              if (target.closest('input, select, textarea, a, label, button')) return
+              onPointerDown(e, pk)
+            },
+            onPointerMove,
+            onPointerUp,
+            onPointerCancel,
+          }
+        : {}),
     }
   }
 

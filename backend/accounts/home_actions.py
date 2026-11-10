@@ -1,9 +1,11 @@
-"""Schnellaktionen der Startseite wählen und ausblenden (Konzept S-04, Mein Konto).
+"""Startseite zusammenstellen: Schnellaktionen und Blöcke (Konzept S-04, Mein Konto).
 
 Am Konto stehen nur Schlüssel: ``hidden`` blendet Aktionen des Vorschlags aus (``*`` den ganzen
 Block), ``chosen`` hält je Arbeitsbereich (``o<id>`` Einheit, ``d<id>`` Untereinheit) die eigene
-Auswahl in ihrer Reihenfolge. Welche Aktionen es gibt und welche Rechte sie brauchen, steht im
-Frontend (components/home/roleActions.ts); fremde Schlüssel zeigt es einfach nicht.
+Auswahl in ihrer Reihenfolge. ``layout`` hält je Arbeitsbereich die Anordnung der Blöcke
+(``order``, ausgeblendete ``hidden``, über die ganze Breite ``wide``). Welche Aktionen und Blöcke
+es gibt und welche Rechte sie brauchen, steht im Frontend (components/home/roleActions.ts,
+components/home/homeLayout.ts); fremde Schlüssel zeigt es einfach nicht.
 Während einer Ansicht als Rolle sperrt access/preview.py das Speichern.
 """
 
@@ -23,6 +25,9 @@ MAX_HIDDEN = 50
 MAX_SCOPES = 30
 # Gezeigt werden höchstens sechs (Frontend MAX_ACTIONS), gespeichert etwas Luft
 MAX_CHOSEN = 12
+# Die Startseite hat weniger als zehn Blöcke; etwas Luft für spätere
+MAX_BLOCKS = 20
+LAYOUT_PARTS = ("order", "hidden", "wide")
 
 
 def hidden_keys(user) -> list[str]:
@@ -30,12 +35,25 @@ def hidden_keys(user) -> list[str]:
     return sorted({k for k in keys if isinstance(k, str) and ACTION_KEY.match(k)})
 
 
-def _clean_list(keys) -> list[str]:
+def _clean_list(keys, limit: int = MAX_CHOSEN) -> list[str]:
     seen: list[str] = []
     for k in keys if isinstance(keys, list) else []:
         if isinstance(k, str) and CHOICE_KEY.match(k) and k not in seen:
             seen.append(k)
-    return seen[:MAX_CHOSEN]
+    return seen[:limit]
+
+
+def _clean_blocks(keys) -> list[str]:
+    return _clean_list(keys, MAX_BLOCKS)
+
+
+def layout_of(user) -> dict[str, dict[str, list[str]]]:
+    data = user.home_layout if isinstance(user.home_layout, dict) else {}
+    return {
+        scope: {part: _clean_blocks(value.get(part)) for part in LAYOUT_PARTS}
+        for scope, value in sorted(data.items())
+        if isinstance(scope, str) and SCOPE_KEY.match(scope) and isinstance(value, dict)
+    }
 
 
 def chosen_keys(user) -> dict[str, list[str]]:
@@ -45,6 +63,24 @@ def chosen_keys(user) -> dict[str, list[str]]:
         for scope, keys in sorted(data.items())
         if isinstance(scope, str) and SCOPE_KEY.match(scope)
     }
+
+
+def _block_list():
+    return serializers.ListField(
+        child=serializers.RegexField(CHOICE_KEY), max_length=MAX_BLOCKS, default=list
+    )
+
+
+class HomeLayoutSerializer(serializers.Serializer):
+    order = _block_list()
+    hidden = _block_list()
+    wide = _block_list()
+
+
+def _check_scopes(value):
+    if any(not SCOPE_KEY.match(k) for k in value):
+        raise serializers.ValidationError(gettext("Unbekannter Arbeitsbereich."))
+    return value
 
 
 class HomeActionsSerializer(serializers.Serializer):
@@ -61,11 +97,17 @@ class HomeActionsSerializer(serializers.Serializer):
         required=False,
         help_text="Je Arbeitsbereich die eigene Auswahl in Reihenfolge; null = wieder Vorschlag",
     )
+    layout = serializers.DictField(
+        child=HomeLayoutSerializer(allow_null=True),
+        required=False,
+        help_text="Je Arbeitsbereich die Anordnung der Blöcke; null = wieder Standard",
+    )
 
     def validate_chosen(self, value):
-        if any(not SCOPE_KEY.match(k) for k in value):
-            raise serializers.ValidationError(gettext("Unbekannter Arbeitsbereich."))
-        return value
+        return _check_scopes(value)
+
+    def validate_layout(self, value):
+        return _check_scopes(value)
 
 
 class HomeActionsWriteSerializer(HomeActionsSerializer):
@@ -79,14 +121,15 @@ class HomeActionsWriteSerializer(HomeActionsSerializer):
 
 
 def _payload(user) -> dict:
-    return {"hidden": hidden_keys(user), "chosen": chosen_keys(user)}
+    return {"hidden": hidden_keys(user), "chosen": chosen_keys(user), "layout": layout_of(user)}
 
 
 class HomeActionsView(APIView):
-    """GET: Auswahl und ausgeblendete Schnellaktionen · PUT: Teile ersetzen.
+    """GET: Schnellaktionen und Anordnung der Startseite · PUT: Teile ersetzen.
 
-    ``hidden`` ersetzt die Liste ganz; in ``chosen`` ersetzt jeder genannte Bereich seine
-    Auswahl, ``null`` stellt dort wieder den Vorschlag her, nicht genannte Bereiche bleiben.
+    ``hidden`` ersetzt die Liste ganz; in ``chosen`` und ``layout`` ersetzt jeder genannte
+    Bereich seinen Stand, ``null`` stellt dort wieder Vorschlag bzw. Standard her, nicht
+    genannte Bereiche bleiben.
     """
 
     @extend_schema(responses=HomeActionsSerializer)
@@ -113,6 +156,17 @@ class HomeActionsView(APIView):
                 raise serializers.ValidationError({"chosen": gettext("Zu viele Arbeitsbereiche.")})
             user.home_actions = chosen or None
             fields.append("home_actions")
+        if "layout" in data.validated_data:
+            layout = layout_of(user)
+            for scope, value in data.validated_data["layout"].items():
+                if value is None:
+                    layout.pop(scope, None)
+                else:
+                    layout[scope] = {part: _clean_blocks(value.get(part)) for part in LAYOUT_PARTS}
+            if len(layout) > MAX_SCOPES:
+                raise serializers.ValidationError({"layout": gettext("Zu viele Arbeitsbereiche.")})
+            user.home_layout = layout or None
+            fields.append("home_layout")
         if fields:
             user.save(update_fields=fields)
         return Response(_payload(user))

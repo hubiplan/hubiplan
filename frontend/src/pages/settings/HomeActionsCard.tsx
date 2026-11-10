@@ -1,4 +1,5 @@
-// Mein Konto › Profil › Startseite: Schnellaktionen wieder zeigen oder den Vorschlag herstellen (S-04).
+// Mein Konto › Profil › Startseite: Schnellaktionen wieder zeigen, den Vorschlag oder die
+// Standardanordnung der Blöcke herstellen (S-04).
 import { useState } from 'react'
 import { homeActionsApi } from '../../api/homeActions.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
@@ -36,6 +37,7 @@ function HomeActionsChoice() {
 
   const single = hidden.filter((k) => k !== '*').length
   const own = Object.keys(data.chosen ?? {})
+  const arranged = Object.keys(data.layout ?? {})
   return (
     <div className="card card-wide">
       <h2>{t('Startseite')}</h2>
@@ -47,7 +49,7 @@ function HomeActionsChoice() {
           void save({ hidden: v ? hidden.filter((k) => k !== '*') : [...hidden, '*'] })
         }
         hint={t(
-          'Welche Aktionen in welcher Reihenfolge erscheinen, wählst du auf der Startseite unter „Anpassen“.',
+          'Welche Aktionen in welcher Reihenfolge erscheinen, wählst du auf der Startseite unter „Anpassen“, die Blöcke unter „Startseite anpassen“.',
         )}
       />
       {single > 0 && (
@@ -75,6 +77,25 @@ function HomeActionsChoice() {
             }
           >
             {t('Überall den Vorschlag zeigen')}
+          </button>
+        </p>
+      )}
+      {arranged.length > 0 && (
+        <p className="muted small">
+          {tn(
+            'Eigene Anordnung der Startseite in einem Bereich.',
+            'Eigene Anordnung der Startseite in {n} Bereichen.',
+            arranged.length,
+          )}{' '}
+          <button
+            type="button"
+            className="link-button"
+            disabled={busy}
+            onClick={() =>
+              void save({ layout: Object.fromEntries(arranged.map((scope) => [scope, null])) })
+            }
+          >
+            {t('Überall die Standardanordnung zeigen')}
           </button>
         </p>
       )}

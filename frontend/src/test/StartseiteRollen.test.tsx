@@ -1,5 +1,5 @@
 // Startseite je Rolle (S-04) und Einrichtung bündeln (S-02). Nur erfundene Daten.
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -8,6 +8,7 @@ import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import type { OrgSummary } from '../api/orgs.ts'
 import { actionCatalog, roleActions, shownActions } from '../components/home/roleActions.ts'
+import { layoutOf, placeBlocks } from '../components/home/homeLayout.ts'
 import { addDays, today } from '../components/calendar/time.ts'
 import { settingsItems } from '../pages/settings/items.ts'
 import { todayIso } from '../api/members.ts'
@@ -134,7 +135,11 @@ describe('Schnellaktionen wählen', () => {
     await user.click(card.getByRole('button', { name: 'Anpassen' }))
     await user.click(card.getByRole('checkbox', { name: 'Buchung erfassen' }))
     await waitFor(() => expect(state.chosen).toEqual({ o7: ['termin', 'aufnahme', 'buchung'] }))
-    await user.click(await card.findByRole('button', { name: 'Buchung erfassen nach oben' }))
+    // Ganze Zeile ziehbar; mit der Tastatur über den Griff
+    const grip = await card.findByRole('button', { name: 'Buchung erfassen verschieben' })
+    expect(grip.closest('li')).toHaveClass('sortable-row-drag')
+    grip.focus()
+    await user.keyboard('{ArrowUp}')
     await waitFor(() => expect(state.chosen.o7).toEqual(['termin', 'buchung', 'aufnahme']))
     await user.click(card.getByRole('checkbox', { name: 'Neuer Termin' }))
     await waitFor(() => expect(state.chosen.o7).toEqual(['buchung', 'aufnahme']))
@@ -368,5 +373,200 @@ describe('Einstellungen › Einrichtung', () => {
     await user.type(screen.getByRole('searchbox', { name: 'Einrichtung suchen' }), 'mahn')
     expect(screen.getByRole('link', { name: /Mahnstufen/ })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /Mitgliedsarten/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('Startseite selbst zusammenstellen', () => {
+  const blocks = ['a', 'b', 'c', 'd'].map((key) => ({
+    key,
+    label: key.toUpperCase(),
+    wide: key === 'a',
+    render: () => null,
+  }))
+
+  it('ordnet nach eigener Anordnung, neue Blöcke an ihrer Standardstelle', () => {
+    expect(placeBlocks(blocks).map((b) => [b.key, b.shown, b.wide])).toEqual([
+      ['a', true, true],
+      ['b', true, false],
+      ['c', true, false],
+      ['d', true, false],
+    ])
+    // „b“ kam erst nach dem Speichern dazu, „x“ gibt es nicht mehr
+    const placed = placeBlocks(blocks, { order: ['c', 'x', 'a', 'd'], hidden: ['d'], wide: ['c'] })
+    expect(placed.map((b) => b.key)).toEqual(['c', 'a', 'b', 'd'])
+    expect(placed.map((b) => b.wide)).toEqual([true, false, false, false])
+    expect(layoutOf(placed)).toEqual({ order: ['c', 'a', 'b', 'd'], hidden: ['d'], wide: ['c'] })
+  })
+
+  it('blendet Blöcke aus, stellt die Breite um, verschiebt und stellt den Standard her', async () => {
+    type Layout = { order: string[]; hidden: string[]; wide: string[] }
+    let state: {
+      hidden: string[]
+      chosen: Record<string, string[]>
+      layout: Record<string, Layout>
+    } = { hidden: ['*'], chosen: {}, layout: {} }
+    const org = testOrg({
+      permissions: ['members.view', 'members.edit', 'events.view', 'events.manage'],
+      modules: ['members', 'events'],
+      home_focus: [],
+    })
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
+      'GET /api/me/home-actions/': () => ({ status: 200, body: state }),
+      'PUT /api/me/home-actions/': (init) => {
+        const body = JSON.parse(String(init?.body))
+        const layout = { ...state.layout }
+        for (const [scope, value] of Object.entries(body.layout ?? {})) {
+          if (value === null) delete layout[scope]
+          else layout[scope] = value as Layout
+        }
+        state = { ...state, hidden: body.hidden ?? state.hidden, layout }
+        return { status: 200, body: state }
+      },
+    })
+    renderAt('/')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Startseite anpassen' }))
+    const grid = document.querySelector('.home-grid') as HTMLElement
+    const names = () =>
+      [...grid.querySelectorAll('.home-block-name')].map((el) => el.textContent ?? '')
+    expect(names()).toEqual([
+      'Zu erledigen',
+      'Schnellaktionen',
+      'Nächste Termine',
+      'Geburtstage',
+      'Hinweise',
+    ])
+    // Schnellaktionen waren überall ausgeblendet: Zeigen hebt das auf
+    const actions = screen.getByRole('checkbox', { name: 'Schnellaktionen zeigen' })
+    expect(actions).not.toBeChecked()
+    await user.click(actions)
+    await waitFor(() => expect(state.hidden).toEqual([]))
+    await user.click(screen.getByRole('checkbox', { name: 'Hinweise zeigen' }))
+    await waitFor(() => expect(state.layout.o7?.hidden).toEqual(['hinweise']))
+    await user.click(
+      screen.getByRole('checkbox', { name: 'Nächste Termine über die ganze Breite' }),
+    )
+    await waitFor(() => expect(state.layout.o7?.wide).toContain('termine'))
+    // Überall am Block ziehbar; mit der Tastatur über den Griff
+    const grip = screen.getByRole('button', { name: 'Nächste Termine verschieben' })
+    grip.focus()
+    await user.keyboard('{ArrowUp}')
+    await waitFor(() =>
+      expect(state.layout.o7?.order.slice(0, 3)).toEqual([
+        'zu-erledigen',
+        'termine',
+        'schnellaktionen',
+      ]),
+    )
+    expect(names().slice(0, 3)).toEqual(['Zu erledigen', 'Nächste Termine', 'Schnellaktionen'])
+    await user.click(screen.getByRole('button', { name: 'Fertig' }))
+    expect(screen.queryByRole('heading', { name: /Hinweise/ })).not.toBeInTheDocument()
+    const termine = await screen.findByRole('heading', { name: 'Nächste Termine' })
+    expect(termine.closest('.home-block')).toHaveClass('home-block-wide')
+
+    await user.click(screen.getByRole('button', { name: 'Startseite anpassen' }))
+    await user.click(screen.getByRole('button', { name: 'Standard wiederherstellen' }))
+    await waitFor(() => expect(state.layout).toEqual({}))
+    expect(names().slice(0, 3)).toEqual(['Zu erledigen', 'Schnellaktionen', 'Nächste Termine'])
+  })
+
+  it('zieht einen Block mit der Maus an eine andere Stelle', async () => {
+    let state: { hidden: string[]; layout: Record<string, { order: string[] }> } = {
+      hidden: [],
+      layout: {},
+    }
+    const org = testOrg({
+      permissions: ['members.view', 'events.view'],
+      modules: ['members', 'events'],
+      home_focus: [],
+    })
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
+      'GET /api/me/home-actions/': () => ({ status: 200, body: state }),
+      'PUT /api/me/home-actions/': (init) => {
+        state = { ...state, layout: JSON.parse(String(init?.body)).layout }
+        return { status: 200, body: state }
+      },
+    })
+    renderAt('/')
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Startseite anpassen' }))
+    const blocks = [...document.querySelectorAll<HTMLElement>('.home-block')]
+    const names = blocks.map((b) => b.querySelector('.home-block-name')?.textContent)
+    expect(names).toEqual(['Nächste Termine', 'Geburtstage', 'Hinweise'])
+    // jsdom kennt kein Layout: Kästen untereinander vorgeben
+    blocks.forEach((b, i) => {
+      b.getBoundingClientRect = () =>
+        ({ left: 0, right: 100, top: i * 100, bottom: i * 100 + 90 }) as DOMRect
+    })
+    const last = blocks[2]
+    // Anfassen mitten im Block, nicht am Griff
+    const content = last.querySelector('.home-block-content') as HTMLElement
+    fireEvent.pointerDown(content, { button: 0, pointerId: 1, clientX: 50, clientY: 250 })
+    fireEvent.pointerMove(last, { pointerId: 1, clientX: 50, clientY: 40 })
+    fireEvent.pointerUp(last, { pointerId: 1 })
+    await waitFor(() =>
+      expect(state.layout.o7.order).toEqual(['hinweise', 'termine', 'geburtstage']),
+    )
+  })
+})
+
+describe('Jubiläen und Geburtstage getrennt', () => {
+  it('zeigt zwei eigene Karten', async () => {
+    vi.setSystemTime(new Date('2026-03-10T10:00:00'))
+    const day = todayIso()
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ modules: ['members', 'awards'], permissions: ['members.view'] })],
+      }),
+      'GET /api/orgs/7/jubilees/?von=2026-01-01&bis=2026-12-31': () => ({
+        status: 200,
+        body: {
+          von: '',
+          bis: '',
+          results: [
+            {
+              member_id: 3,
+              first_name: 'Erika',
+              last_name: 'Muster',
+              birth_date: null,
+              member_number: null,
+              kind: 'club',
+              organization: 'TV Beispielhausen',
+              organization_short: 'TVB',
+              years: 40,
+              date: '2026-01-01',
+              precision: 'year',
+            },
+          ],
+        },
+      }),
+      'GET /api/orgs/7/unit-jubilees/?von=2026-01-01&bis=2026-12-31': () => ({
+        status: 200,
+        body: { von: '', bis: '', results: [] },
+      }),
+      [`GET /api/orgs/7/birthdays/?von=${day}&bis=${addDays(day, 30)}`]: () => ({
+        status: 200,
+        body: {
+          von: '',
+          bis: '',
+          results: [{ member_id: 5, first_name: 'Max', last_name: 'Beispiel', date: day, age: 30 }],
+        },
+      }),
+    })
+    renderAt('/')
+    const jub = await screen.findByRole('heading', { name: 'Jubiläen', level: 2 })
+    const bday = await screen.findByRole('heading', { name: 'Geburtstage', level: 2 })
+    expect(jub.closest('.card')).not.toBe(bday.closest('.card'))
+    expect(within(jub.closest('.card') as HTMLElement).queryByText('Max Beispiel')).toBeNull()
+    expect(
+      within(bday.closest('.card') as HTMLElement).getByText('Max Beispiel'),
+    ).toBeInTheDocument()
+    vi.useRealTimers()
   })
 })

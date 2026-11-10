@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Startseite: **Startseite anpassen** stellt die Startseite selbst zusammen. Blöcke an beliebiger Stelle anfassen und an ihren Platz ziehen, mit **Zeigen** aus- und einblenden und mit **Ganze Breite** über die ganze Zeile stellen; die Anordnung gilt je Konto und Einheit. **Jubiläen** und **Geburtstage** sind wieder zwei eigene Karten. Auch die Schnellaktionen ordnest du jetzt per Ziehen.
 - Webseite: Änderungen an Design, Farben, Feinabstimmung, Kopfbild und Startseite sind jetzt zuerst ein **Entwurf**. Unter Gestaltung zeigt daneben eine Vorschau die echte Webseite als **Handy**, **Tablet** oder **Bildschirm**; öffentlich wird alles erst mit **Veröffentlichen**. Die letzten fünf veröffentlichten Fassungen lassen sich unter **Frühere Fassungen** zurückholen.
 - Webseite: Unter Gestaltung › **Feinabstimmung** passt du das Design mit festen Stufen an, ohne CSS: Schrift, Breite, Hintergrund, Abstände, Ecken, Karten, Bilder, Knöpfe, Datumsfeld, Kopf (weiß, farbig oder Kopfbild; Wappen links, mittig, rechts oder aus), Menü, Titelbild und Fuß. Nicht verstellte Regler zeigen, was das Design vorsieht.
 - Webseite: Im Menü gibt es **Links nach außen**, etwa zum Dachverband; sie öffnen ein neues Fenster. Ein Hauptpunkt lässt sich als farbiger **Knopf** hervorheben, z. B. „Mitglied werden“. Die Bausteine der Startseite ordnest du jetzt wie das Menü per Ziehen statt mit Pfeilen.
