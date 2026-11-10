@@ -99,7 +99,7 @@ class BusinessPartner(models.Model):
     payment_terms_days = models.PositiveSmallIntegerField(null=True, blank=True)
     # Künstler/Publizist nach KSVG: Ausgaben zählen für die Künstlersozialabgabe
     artist = models.BooleanField(default=False, db_default=False)
-    notes = EncryptedTextField(max_length=5000, blank=True, default="", db_default="", strict=True)
+    notes = EncryptedTextField(max_length=5000, blank=True, default="", db_default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

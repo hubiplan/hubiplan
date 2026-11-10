@@ -103,9 +103,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="businesspartner",
             name="notes",
-            field=models.TextField(
-                blank=True, db_default="", default="", max_length=5000, strict=True
-            ),
+            field=models.TextField(blank=True, db_default="", default="", max_length=5000),
         ),
         migrations.AddField(
             model_name="businesspartner",
