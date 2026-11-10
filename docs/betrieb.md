@@ -1026,6 +1026,15 @@ Alle Datenarten mit Rechtsgrundlage und Frist: [aufbewahrung.md](aufbewahrung.md
 Mandate, Zuwendungen, versandte Mails, Zugang und Geräte der App, Termin-Rückmeldungen,
 Verbund-Meldungen und das Protokoll, ohne Daten anderer Personen.
 
+**Entfernen wirkt nach höchstens 15 Minuten** (Fachfrage 10 zum Gesamtaudit 10.11.): Die
+öffentliche Schnittstelle und das Kalender-Abo (ICS) erlauben Zwischenspeichern höchstens
+5 Minuten (`max-age=300`). Die Vereinswebseite hält Antworten `CACHE_SECONDS` (120 s) und liefert
+danach höchstens weitere 10 Minuten den alten Stand, während sie neu lädt; zusammen bleibt
+das unter 15 Minuten. Gelöschte Bilder unter `/media/` sind sofort weg. Nur wenn HUBIplan
+gar nicht erreichbar ist, zeigt die Webseite länger den letzten guten Stand
+(`STALE_IF_ERROR_SECONDS`). Kopien, die Kalender oder Dritte schon abgerufen haben, kann
+HUBIplan nicht löschen; das steht im erzeugten Datenschutzhinweis.
+
 ## Updates
 
 - Dependabot meldet wöchentlich Updates; Django bleibt auf der LTS-Version.
