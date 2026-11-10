@@ -11,7 +11,6 @@ import { DunningsPage } from '../billing/DunningsPage.tsx'
 import { InvoicesPage } from '../billing/InvoicesPage.tsx'
 import { EInvoicesPage } from '../billing/EInvoicesPage.tsx'
 import { IncomingInvoicesPage } from '../billing/IncomingInvoicesPage.tsx'
-import { PartnersPage } from '../billing/PartnersPage.tsx'
 import { ReceivedPage } from '../billing/ReceivedPage.tsx'
 import { BillingSettingsPage, DunningLevelsPage, FeeRulesPage } from '../billing/RulesPage.tsx'
 import { RunsPage } from '../billing/RunsPage.tsx'
@@ -101,14 +100,7 @@ export function FinanzenPage() {
           a.billing || a.received || a.finance ? <InvoicesArea key={org.id} access={a} /> : home
         }
       />
-      <Route
-        path="geschaeftspartner"
-        element={
-          <Section>
-            <PartnersPage key={org.id} canEdit={a.billingEdit || a.financeEdit} />
-          </Section>
-        }
-      />
+      <Route path="geschaeftspartner" element={<Navigate to="/geschaeftspartner" replace />} />
       <Route path="lastschrift/*" element={a.sepa ? <DebitsArea access={a} /> : home} />
       <Route
         path="kassenbuch"

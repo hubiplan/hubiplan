@@ -7,7 +7,7 @@ routen: [/finanzen/rechnungen/leistungen, /finanzen/geschaeftspartner]
 stichworte: [E-invoice, XRechnung, business partner, customer invoice, EN16931]
 ---
 
-Create a customer under **Finances** → **Business partners** first. Membership is not
+Create a customer under **Business partners** first. Membership is not
 required. Under **Invoices** → **Customer invoices**, enter the income category, service
 period, addresses, buyer reference and payment IBAN. Enter net prices in EUR.
 

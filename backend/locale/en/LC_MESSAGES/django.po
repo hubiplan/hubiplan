@@ -9755,3 +9755,108 @@ msgstr "At most twelve partners."
 
 msgid "Höchstens sechs Zahlen."
 msgstr "At most six numbers."
+
+msgid "Geschäftspartner und Ansprechpartner sehen"
+msgstr "See business partners and contact persons"
+
+msgid "Geschäftspartner anlegen, ändern und zusammenführen"
+msgstr "Create, change and merge business partners"
+
+msgid "Firma"
+msgstr "Company"
+
+msgid "Behörde/Amt"
+msgstr "Authority/office"
+
+msgid "Verein/Verband"
+msgstr "Association/federation"
+
+msgid "Privatperson"
+msgstr "Private person"
+
+msgid "Lieferant"
+msgstr "Supplier"
+
+msgid "Dienstleister"
+msgstr "Service provider"
+
+msgid "Kunde/Auftraggeber"
+msgstr "Customer/client"
+
+msgid "Sponsor"
+msgstr "Sponsor"
+
+msgid "Spender"
+msgstr "Donor"
+
+msgid "Vermieter/Veranstaltungsort"
+msgstr "Landlord/venue"
+
+msgid "Künstler/Musiker"
+msgstr "Artist/musician"
+
+msgid "Behörde"
+msgstr "Authority"
+
+msgid "Versicherung"
+msgstr "Insurance"
+
+msgid "Bank"
+msgstr "Bank"
+
+msgid "Ansprechpartner"
+msgstr "Contact person"
+
+msgid "Diese Einheit gehört nicht hierher."
+msgstr "This unit does not belong here."
+
+msgid "Unbekannte Mitgliedschaft."
+msgstr "Unknown membership."
+
+msgid "Dieser Geschäftspartner wird noch verwendet (z. B. in Rechnungen oder Buchungen). Bitte stattdessen auf „Inaktiv“ setzen."
+msgstr "This business partner is still in use (e.g. in invoices or bookings). Please set it to “Inactive” instead."
+
+msgid "Dieser Geschäftspartner wird noch verwendet."
+msgstr "This business partner is still in use."
+
+msgid "Bitte zwei verschiedene Einträge."
+msgstr "Please choose two different entries."
+
+msgid "Rollen"
+msgstr "Roles"
+
+msgid "Straße"
+msgstr "Street"
+
+msgid "PLZ"
+msgstr "Postcode"
+
+msgid "Land"
+msgstr "Country"
+
+msgid "USt-IdNr."
+msgstr "VAT ID"
+
+msgid "Aktiv"
+msgstr "Active"
+
+msgid "IBAN"
+msgstr "IBAN"
+
+msgid "BIC"
+msgstr "BIC"
+
+msgid "Kontoinhaber"
+msgstr "Account holder"
+
+msgid "Bitte eine Excel-Datei wählen."
+msgstr "Please choose an Excel file."
+
+msgid "Die Datei ist keine lesbare Excel-Datei."
+msgstr "The file is not a readable Excel file."
+
+msgid "Die erste Zeile braucht eine Spalte „Name“."
+msgstr "The first row needs a column “Name”."
+
+msgid "Zeile {index}: {error}"
+msgstr "Row {index}: {error}"

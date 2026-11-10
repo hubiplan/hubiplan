@@ -32,21 +32,119 @@ ZERO = Decimal("0.00")
 
 
 class BusinessPartner(models.Model):
+    """Geschäftspartner: Firmen, Behörden, Vereine und Personen außerhalb der Mitgliederliste.
+
+    Konzept konzepte/geschaeftspartner.md (P1). ``details`` folgt dem Schema der
+    E-Rechnung (Anschrift, E-Mail, Steuerangaben); für eine Rechnung wird es dort
+    vollständig geprüft. ``is_customer``/``is_supplier`` folgen aus ``roles``.
+    """
+
+    class Kind(models.TextChoices):
+        COMPANY = "company", gettext_lazy("Firma")
+        AUTHORITY = "authority", gettext_lazy("Behörde/Amt")
+        ASSOCIATION = "association", gettext_lazy("Verein/Verband")
+        PERSON = "person", gettext_lazy("Privatperson")
+        OTHER = "other", gettext_lazy("Sonstiges")
+
+    class Role(models.TextChoices):
+        SUPPLIER = "supplier", gettext_lazy("Lieferant")
+        SERVICE = "service", gettext_lazy("Dienstleister")
+        CUSTOMER = "customer", gettext_lazy("Kunde/Auftraggeber")
+        SPONSOR = "sponsor", gettext_lazy("Sponsor")
+        DONOR = "donor", gettext_lazy("Spender")
+        VENUE = "venue", gettext_lazy("Vermieter/Veranstaltungsort")
+        ARTIST = "artist", gettext_lazy("Künstler/Musiker")
+        AUTHORITY = "authority", gettext_lazy("Behörde")
+        PRESS = "press", gettext_lazy("Presse")
+        INSURANCE = "insurance", gettext_lazy("Versicherung")
+        BANK = "bank", gettext_lazy("Bank")
+
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     name = EncryptedCharField(max_length=200, strict=True)
+    kind = models.CharField(
+        max_length=12, choices=Kind.choices, default=Kind.COMPANY, db_default=Kind.COMPANY
+    )
+    roles = models.JSONField(default=list, db_default=[], blank=True)
+    # Eigene Partnernummer, z. B. „GP-0012“ (GP-12)
+    number = models.CharField(max_length=20, blank=True, default="", db_default="")
+    # Zuständige Einheit im Datenbereich (Verein oder Untereinheit ohne eigenen Bereich)
+    unit = models.ForeignKey(
+        "organizations.Organization",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    # Ist der Geschäftspartner auch Mitglied, wird verwiesen statt kopiert (GP-4)
+    membership = models.ForeignKey(
+        "members.Membership",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="business_partners",
+    )
     is_customer = models.BooleanField(default=True)
     is_supplier = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     # Ein Schema für Kunden, Lieferanten und die eingefrorenen Rechnungsanschriften.
     details = EncryptedJSONField(default=dict, strict=True)
+    # Nur mit Kassen- oder Beitragsrecht sichtbar (GP-3)
+    bank = EncryptedJSONField(default=dict, db_default={}, blank=True, strict=True)
+    our_customer_number = EncryptedCharField(
+        max_length=60, blank=True, default="", db_default="", strict=True
+    )
+    default_category = models.ForeignKey(
+        "finance.Category", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    payment_terms_days = models.PositiveSmallIntegerField(null=True, blank=True)
+    # Künstler/Publizist nach KSVG: Ausgaben zählen für die Künstlersozialabgabe
+    artist = models.BooleanField(default=False, db_default=False)
+    notes = EncryptedTextField(max_length=5000, blank=True, default="", db_default="", strict=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["pk"]
+        verbose_name = gettext_lazy("Geschäftspartner")
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        roles = set(self.roles or [])
+        if roles:
+            self.is_customer = self.Role.CUSTOMER in roles
+            self.is_supplier = bool(roles & {self.Role.SUPPLIER, self.Role.SERVICE})
+        if self.Role.ARTIST in roles:
+            self.artist = True
+        super().save(*args, **kwargs)
+
+
+class PartnerContact(models.Model):
+    """Ansprechpartner bei einem Geschäftspartner (P1), wie ``members.ContactPerson``."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    partner = models.ForeignKey(BusinessPartner, on_delete=models.CASCADE, related_name="contacts")
+    last_name = EncryptedCharField("Name", max_length=100, strict=True)
+    first_name = EncryptedCharField("Vorname", max_length=100, blank=True, strict=True)
+    function = EncryptedCharField("Funktion", max_length=100, blank=True, strict=True)
+    email = EncryptedEmailField("E-Mail-Adresse", blank=True, strict=True)
+    phone = EncryptedCharField("Telefon", max_length=50, blank=True, strict=True)
+    is_primary = models.BooleanField("Hauptansprechpartner", default=False)
+    receives_invoices = models.BooleanField("erhält Rechnungen", default=False)
+    receives_mail = models.BooleanField("erhält Post", default=True)
+    notes = EncryptedCharField("Notiz", max_length=500, blank=True, strict=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-is_primary", "pk"]
+        verbose_name = gettext_lazy("Ansprechpartner")
+
+    def __str__(self):
+        return " ".join(p for p in (self.first_name, self.last_name) if p)
 
 
 def electronic_file_path(instance, filename):

@@ -289,7 +289,7 @@ export function financeSections(a: FinanceAccess): NavItem[] {
       },
       // Geschäftspartner gelten für Ein- und Ausgang, deshalb bei „Einrichten“ (Menüprüfung M-10)
       {
-        to: '/finanzen/geschaeftspartner',
+        to: '/geschaeftspartner',
         label: t('Geschäftspartner'),
         text: t('Firmen und Personen außerhalb des Vereins'),
       },

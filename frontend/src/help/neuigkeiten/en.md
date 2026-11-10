@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- **Business partners** have their own menu item under Club: suppliers, service providers, sponsors, authorities and others with type, roles, number, several contact persons, notes and (for the treasury) bank account. Duplicate entries can be merged, and the list can be exported to and imported from Excel.
 - Website: nine more kinds of your own sections for the home page and text pages: **Frequently asked questions** to expand, **Partners and sponsors** with logo and link, **Directions** to a saved place with “Plan route”, **Events of one category** (e.g. only training), **Document to download**, **Video as a link** without embedding, **Excerpt from the chronicle**, **Facts at a glance** and **Divider**.
 - Home page: while customising, the corner at the bottom right of each block changes its width and height, and the width can also be chosen as ¼, ⅓, ½, ⅔, ¾ or full. The finer grid closes gaps: a block moves up below a shorter one next to it.
 - Website: under Overview › **Notice bar** a notice with a period appears at the top of every page and disappears by itself afterwards. Text pages can get a **Cover image** above the heading. Under Design › **Design as a file** you save and load design, colours, fine-tuning and display, for example for another unit.

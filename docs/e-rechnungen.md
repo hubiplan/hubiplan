@@ -5,9 +5,11 @@ den Eingang strukturierter Rechnungen. Ein Musikmodul ist dafür nicht erforderl
 
 ## Bedienung
 
-- **Finanzen → Geschäftspartner**: Kunden und Lieferanten mit strukturierten Anschriften
-  anlegen. Ein Geschäftspartner braucht keine Mitgliedschaft. Nicht mehr benötigte
-  Kontakte deaktivieren; ausgestellte Rechnungen behalten ihre eigenen Anschriften.
+- **Geschäftspartner** (eigener Menüpunkt, siehe [geschaeftspartner.md](geschaeftspartner.md)):
+  Kunden und Lieferanten mit strukturierten Anschriften anlegen. Ein Geschäftspartner braucht
+  keine Mitgliedschaft. Nicht mehr benötigte Kontakte deaktivieren; ausgestellte Rechnungen
+  behalten ihre eigenen Anschriften. Für eine Rechnung müssen Anschrift und E-Mail vollständig
+  sein; das prüft erst der Rechnungsentwurf.
 - **Rechnungen → Leistungsrechnungen**: Kunde, Einnahmekategorie, Leistungszeitraum,
   Rechnungssteller, Käuferreferenz, IBAN und Positionen erfassen. Preise sind netto,
   Zu-/Abschläge absolute Nettobeträge je Position. Der Steuersatz wird ausdrücklich
@@ -76,8 +78,8 @@ Tabellen dürfen nicht vor Ablauf der Aufbewahrung gelöscht werden.
 
 ## Rechte, Archiv und Datenschutz
 
-Geschäftspartner: bestehende Lese-/Schreibrechte für Rechnungen oder Kasse, jeweils
-mit aktiviertem Modul. Ausgang: `billing.view/edit`. Eingang: `finance.view/edit`.
+Geschäftspartner: `partners.view/edit` oder Lese-/Schreibrechte für Rechnungen oder Kasse
+(siehe [geschaeftspartner.md](geschaeftspartner.md)). Ausgang: `billing.view/edit`. Eingang: `finance.view/edit`.
 Alle neuen Tabellen verwenden organisationsbezogene RLS-Regeln. Kontakte,
 Rechnungsinhalte, Prüfergebnisse und private Dateien werden verschlüsselt gespeichert.
 

@@ -6,6 +6,7 @@ from access import views as access_views
 from access.module_gate import gate, gate_names, needs_module
 from accounts import appearance, help_done, home_actions, language, learning, self_service, step_up
 from billing import einvoice_views
+from billing import partners as partner_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
 from bookings import portal as booking_portal
@@ -168,7 +169,7 @@ org_router.register("music/leaders", MusicLeaderViewSet, basename="music-leader"
 org_router.register(
     "music/score-folder-items", ScoreFolderItemViewSet, basename="music-score-folder-item"
 )
-org_router.register("billing/partners", einvoice_views.PartnerViewSet, basename="billing-partner")
+org_router.register("billing/partners", partner_views.PartnerViewSet, basename="billing-partner")
 org_router.register(
     "billing/electronic", einvoice_views.ElectronicInvoiceViewSet, basename="billing-electronic"
 )
@@ -198,6 +199,11 @@ org_router.register("imports", exchange_views.ImportJobViewSet, basename="import
 org_router.register("nextcloud", oidc_views.ClientViewSet, basename="oidc-client")
 org_router.register(
     "import-templates", exchange_views.ImportTemplateViewSet, basename="import-template"
+)
+
+partner_router = SimpleRouter()
+partner_router.register(
+    "contacts", partner_views.PartnerContactViewSet, basename="billing-partner-contact"
 )
 
 member_router = SimpleRouter()
@@ -441,6 +447,7 @@ org_patterns = [
         photo_views.PhotoLinkRevokeView.as_view(),
         name="photo-link-revoke",
     ),
+    path("billing/partners/<int:partner_pk>/", include(partner_router.urls)),
     path(
         "members/<int:member_pk>/",
         include(gate_names("awards", member_router.urls, "member-honorary-title")),

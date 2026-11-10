@@ -107,6 +107,9 @@ LOGINS_VIEW = "logins.view"
 LOGINS_EDIT = "logins.edit"
 EXPORT_LISTS = "export.lists"
 EXPORT_FULL = "export.full"
+# Geschäftspartner (konzepte/geschaeftspartner.md, P1): ohne eigenes Modul
+PARTNERS_VIEW = "partners.view"
+PARTNERS_EDIT = "partners.edit"
 
 ALL_TYPES = ("platform", "federation", "club", "unit")
 MEMBER_TYPES = ("federation", "club")
@@ -261,6 +264,13 @@ AREAS: tuple[Area, ...] = (
         gettext_noop("Änderungsprotokoll"),
         gettext_noop("Änderungsprotokoll und Postausgang einsehen"),
         org_types=("platform", "federation", "club"),
+    ),
+    Area(
+        "partners",
+        gettext_noop("Geschäftspartner"),
+        gettext_noop("Geschäftspartner und Ansprechpartner sehen"),
+        gettext_noop("Geschäftspartner anlegen, ändern und zusammenführen"),
+        org_types=("federation", "club", "unit"),
     ),
     Area(
         "finance",
