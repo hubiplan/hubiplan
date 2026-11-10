@@ -6,6 +6,10 @@ rechte: [website.manage, website.content]
 routen: [/webseite/gestaltung]
 stichworte:
   [
+    Entwurf,
+    Vorschau,
+    Veröffentlichen,
+    Fassungen,
     Design,
     Farben,
     Logo,
@@ -26,7 +30,11 @@ stichworte:
 
 Unter Gestaltung wählt ihr Aussehen, Farben und Logo der Webseite. Die Farben kommen meist aus dem Erscheinungsbild der Einheit und lassen sich hier anpassen.
 
-Unter **Feinabstimmung** passt ihr das gewählte Design an, ohne etwas zu programmieren. Die Regler stehen in sechs aufklappbaren Gruppen: Schrift, Seite, Karten/Bilder/Knöpfe, Kopf und Menü, Startseite und Fuß. Jeder Regler hat zwei oder drei feste Stufen, zum Beispiel Ecken „eckig“, „leicht“ oder „rund“, Ja/Nein-Fragen sind Schalter. Ist kein Feld gewählt, zeigt die Webseite, was das Design vorsieht. Ein zweiter Klick auf das gewählte Feld stellt den Regler zurück, **Zurücksetzen** stellt alle zurück. Was ein Design selbst festlegt (etwa die Lage des Wappens in der Seitenleiste), ist ausgegraut. Wappen und Vereinsname lassen sich nicht beide ausblenden. Die Schriften liegen auf der Webseite selbst (freie Lizenzen), es wird nichts von fremden Servern geladen. Prüft das Ergebnis in der Vorschau.
+Änderungen an Design, Farben, **Feinabstimmung**, Kopfbild und Startseite (Bereich **Aufbau**) sind zuerst ein Entwurf: Besucher sehen weiter den bisherigen Stand. Oben steht dann „Nicht veröffentlichte Änderungen“. **Veröffentlichen** macht den Entwurf öffentlich, **Verwerfen** nimmt alle Änderungen zurück. Auf einem breiten Bildschirm zeigt rechts eine Vorschau die echte Webseite mit dem Entwurf; sie lädt nach jeder Änderung neu. Oben wählt ihr **Handy**, **Tablet** oder **Bildschirm**, **Neu laden** verbindet die Vorschau neu, **In neuem Fenster** öffnet sie groß. Auf schmalen Bildschirmen öffnet der Knopf **Vorschau** die Webseite in einem neuen Fenster. Den Entwurf sehen auch alle, denen ihr einen Vorschau-Link gegeben habt.
+
+Unter **Frühere Fassungen** stehen die letzten fünf veröffentlichten Gestaltungen. **Zurückholen** legt eine davon als Entwurf an; öffentlich wird sie erst mit **Veröffentlichen**.
+
+Unter **Feinabstimmung** passt ihr das gewählte Design an, ohne etwas zu programmieren. Die Regler stehen in sechs aufklappbaren Gruppen: Schrift, Seite, Karten/Bilder/Knöpfe, Kopf und Menü, Startseite und Fuß. Jeder Regler hat zwei oder drei feste Stufen, zum Beispiel Ecken „eckig“, „leicht“ oder „rund“, Ja/Nein-Fragen sind Schalter. Ist kein Feld gewählt, zeigt die Webseite, was das Design vorsieht. Ein zweiter Klick auf das gewählte Feld stellt den Regler zurück, **Zurücksetzen** stellt alle zurück. Was ein Design selbst festlegt (etwa die Lage des Wappens in der Seitenleiste), ist ausgegraut. Wappen und Vereinsname lassen sich nicht beide ausblenden. Die Schriften liegen auf der Webseite selbst (freie Lizenzen), es wird nichts von fremden Servern geladen.
 
 Bei **Kopf und Menü** › **Hintergrund** › **Kopfbild** wählt ihr ein Bild aus der Bilderverwaltung, das oben auf der Webseite statt Wappen und Vereinsnamen steht, zum Beispiel ein Banner mit Schriftzug. Es sollte den Vereinsnamen enthalten und breit sein, etwa 1200 × 300 Pixel. Ohne Kopfbild, oder mit Hintergrund „weiß“ oder „farbig“, bleibt es bei Wappen und Namen.
 

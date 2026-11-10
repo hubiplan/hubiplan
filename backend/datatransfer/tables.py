@@ -660,6 +660,8 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
         # Hervorgehobener Menüpunkt (z. B. eine Textseite) zeigt auf die neue Nummer
         if getattr(obj, "menu_button", ""):
             obj.menu_button = remap(obj.menu_button) or ""
+        # Entwurf der Gestaltung verweist auf Bildnummern des alten Servers: nicht übernehmen
+        obj.draft = {}
     elif name in ("website.websitetext", "website.websiterevision"):
         for old, new in renamed.items():
             for field in ("body", "published_body"):

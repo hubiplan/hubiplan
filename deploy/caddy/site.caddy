@@ -45,7 +45,9 @@ handle_path /webseite/* {
 }
 
 handle {
-	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-src 'self' blob:; object-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+	# frame-src https:: Vorschau der Vereinswebseite im Rahmen (Webseite › Gestaltung); die
+	# Webseite erlaubt das Einbetten nur HUBIplan und nur in der Vorschau (frame-ancestors)
+	header Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'; frame-src 'self' blob: https:; object-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 	root * /srv
 	try_files {path} /index.html
 	file_server

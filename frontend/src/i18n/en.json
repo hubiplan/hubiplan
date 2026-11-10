@@ -7788,5 +7788,19 @@
   "an": "on",
   "Alles wie das Design.": "Everything as in the design.",
   "{n} Regler verstellt.": "{n} settings changed.",
-  "Feinabstimmung": "Fine-tuning"
+  "Feinabstimmung": "Fine-tuning",
+  "Die Gestaltung bleibt, wie sie veröffentlicht ist.": "The design stays as it is published.",
+  "Nicht veröffentlichte Änderungen. Besucher sehen noch den bisherigen Stand.": "Unpublished changes. Visitors still see the previous version.",
+  "Alles veröffentlicht.": "Everything is published.",
+  "Fassung zurückholen?": "Restore this version?",
+  "Der jetzige Entwurf wird dabei ersetzt.": "This replaces the current draft.",
+  "Zurückholen": "Restore",
+  "Die letzten fünf veröffentlichten Fassungen. Zurückholen legt eine Fassung als Entwurf an; öffentlich wird sie erst mit „Veröffentlichen“.": "The last five published versions. Restoring turns a version into a draft; it only goes live with “Publish”.",
+  "jetzt öffentlich": "live now",
+  "Handy": "Phone",
+  "Tablet": "Tablet",
+  "Bildschirm": "Desktop",
+  "Bildschirmgröße": "Screen size",
+  "In neuem Fenster": "In a new window",
+  "Vorschau der Webseite": "Website preview"
 }

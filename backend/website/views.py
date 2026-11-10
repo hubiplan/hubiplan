@@ -42,12 +42,15 @@ from .models import (
     BLOCK_HINTS,
     BLOCK_NAME_MAX,
     BLOCKS,
+    DESIGN_VERSIONS,
+    DRAFT_FIELDS,
     HOME_HINTS,
     HOME_NEEDS_BLOCK,
     HOME_SECTIONS,
     HOSTNAME_RE,
     LINK_URL_MAX,
     PREVIEW_LINK_MAX_DAYS,
+    DesignVersion,
     PreviewLink,
     PublicationConsent,
     Website,
@@ -302,7 +305,56 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         )
         data["design"] = instance.effective_design()
         data["header_image"] = header_image_id(instance)
+        data["draft"] = clean_draft(instance, instance.draft)
         return data
+
+
+# --- Entwurf der Gestaltung (Konzept webseite-baukasten G2) ---
+
+
+def live_design(website: Website) -> dict:
+    """Veröffentlichte Werte der Gestaltung, so wie die Oberfläche sie bekommt."""
+    return {
+        "design": website.effective_design(),
+        "color_roles": designs.normalize_color_roles(
+            website.color_roles, designs.package_roles(website.packages())
+        ),
+        "style": style.public(website.style),
+        "header_image": header_image_id(website),
+        "home_sections": normalize_home_sections(website.home_sections),
+    }
+
+
+def clean_draft(website: Website, draft) -> dict:
+    """Nur Felder, die vom veröffentlichten Stand abweichen und noch gültig sind."""
+    if not isinstance(draft, dict) or not draft:
+        return {}
+    ser = WebsiteSerializer(
+        website, data={k: draft[k] for k in DRAFT_FIELDS if k in draft}, partial=True
+    )
+    if not ser.is_valid():
+        # Was nicht mehr passt (z. B. gelöschtes Bild, entzogenes Paket), fällt weg
+        valid = {}
+        for key in DRAFT_FIELDS:
+            if key in draft and key not in ser.errors:
+                one = WebsiteSerializer(website, data={key: draft[key]}, partial=True)
+                if one.is_valid():
+                    valid[key] = one.validated_data[key]
+        values = valid
+    else:
+        values = dict(ser.validated_data)
+    live = live_design(website)
+    return {k: values[k] for k in DRAFT_FIELDS if k in values and values[k] != live[k]}
+
+
+def version_data(version: DesignVersion) -> dict:
+    return {
+        "id": version.pk,
+        "published_at": version.published_at,
+        "published_by": (version.published_by.get_full_name() or version.published_by.email)
+        if version.published_by
+        else "",
+    }
 
 
 def header_image_id(website: Website) -> int | None:
@@ -468,6 +520,12 @@ class WebsiteView(_WebsiteMixin, APIView):
                     for key, item in menu.items(website).items()
                 ],
                 "domains": [domain_data(d) for d in website.domains.all()],
+                "design_versions": [
+                    version_data(v)
+                    for v in website.design_versions.select_related("published_by")[
+                        :DESIGN_VERSIONS
+                    ]
+                ],
                 "preview_links": [
                     link_data(link)
                     for link in website.preview_links.select_related("created_by")
@@ -493,7 +551,20 @@ class WebsiteView(_WebsiteMixin, APIView):
         before = snapshot(website)
         old_state = website.state
         old_header = header_image_id(website)
-        ser = WebsiteSerializer(website, data=request.data, partial=True, context={"org": self.org})
+        data = request.data
+        if isinstance(data, dict) and "draft" in data:
+            # Gestaltung als Entwurf: nur in der Vorschau sichtbar (G2)
+            data = {k: v for k, v in data.items() if k != "draft"}
+            given = request.data["draft"]
+            if not isinstance(given, dict) or set(given) - set(DRAFT_FIELDS):
+                raise ValidationError({"draft": [gettext("Unbekannte Angaben im Entwurf.")]})
+            check = WebsiteSerializer(website, data=given, partial=True, context={"org": self.org})
+            check.is_valid(raise_exception=True)
+            website.draft = clean_draft(
+                website, {**clean_draft(website, website.draft), **check.validated_data}
+            )
+            website.save(update_fields=["draft", "updated_at"])
+        ser = WebsiteSerializer(website, data=data, partial=True, context={"org": self.org})
         ser.is_valid(raise_exception=True)
         ser.save()
         if website.state == Website.State.PUBLIC:
@@ -519,6 +590,86 @@ class WebsiteView(_WebsiteMixin, APIView):
         record(self.org, request.user, "delete", website, {"Webseite": ["eingerichtet", None]})
         website.delete()
         return Response(self.payload(None))
+
+
+def _apply_design(website: Website, values: dict) -> None:
+    for key in DRAFT_FIELDS:
+        if key in values and key != "header_image":
+            setattr(website, key, values[key])
+    if "header_image" in values:
+        set_header_image(website, values["header_image"])
+
+
+class DesignPublishView(WebsiteView):
+    """POST: Entwurf der Gestaltung veröffentlichen; die Fassung kommt in den Verlauf."""
+
+    http_method_names = ["post", "options"]
+
+    @transaction.atomic
+    def post(self, request, org_id: int):
+        website = self.website()
+        draft = clean_draft(website, website.draft)
+        if not draft:
+            raise ValidationError(
+                {"draft": [gettext("Es gibt keine Änderungen zum Veröffentlichen.")]}
+            )
+        before = live_design(website)
+        if not website.design_versions.exists():
+            # Erste Veröffentlichung: der bisherige Stand bleibt zum Zurückholen
+            DesignVersion.objects.create(
+                organization=website.organization,
+                website=website,
+                data=before,
+                published_at=website.updated_at or timezone.now(),
+            )
+        _apply_design(website, draft)
+        website.draft = {}
+        website.save()
+        after = live_design(website)
+        DesignVersion.objects.create(
+            organization=website.organization,
+            website=website,
+            data=after,
+            published_by=request.user,
+        )
+        old = list(website.design_versions.values_list("pk", flat=True)[DESIGN_VERSIONS:])
+        if old:
+            DesignVersion.objects.filter(pk__in=old).delete()
+        record(
+            self.org,
+            request.user,
+            "update",
+            website,
+            {f"Gestaltung: {k}": [before[k], after[k]] for k in draft},
+        )
+        return Response(self.payload(website))
+
+
+class DesignDiscardView(WebsiteView):
+    """POST: Entwurf der Gestaltung verwerfen."""
+
+    http_method_names = ["post", "options"]
+
+    @transaction.atomic
+    def post(self, request, org_id: int):
+        website = self.website()
+        website.draft = {}
+        website.save(update_fields=["draft", "updated_at"])
+        return Response(self.payload(website))
+
+
+class DesignRestoreView(WebsiteView):
+    """POST: frühere Fassung als Entwurf zurückholen; öffentlich erst nach „Veröffentlichen“."""
+
+    http_method_names = ["post", "options"]
+
+    @transaction.atomic
+    def post(self, request, org_id: int, pk: int):
+        website = self.website()
+        version = get_object_or_404(DesignVersion, website=website, pk=pk)
+        website.draft = clean_draft(website, version.data)
+        website.save(update_fields=["draft", "updated_at"])
+        return Response(self.payload(website))
 
 
 class PrivacyGenerateView(WebsiteView):

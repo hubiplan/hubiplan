@@ -213,6 +213,11 @@ def normalize_home_sections(value) -> list:
     return result
 
 
+# Was der Entwurf der Gestaltung umfasst (Design, Farbrollen, Stilregler, Kopfbild, Startseite)
+DRAFT_FIELDS = ("design", "color_roles", "style", "header_image", "home_sections")
+DESIGN_VERSIONS = 5  # wie bei den Texten: die letzten 5 veröffentlichten Fassungen
+
+
 def default_blocks() -> dict:
     return dict(DEFAULT_BLOCKS)
 
@@ -267,6 +272,9 @@ class Website(models.Model):
     home_sections = models.JSONField(
         "Bausteine der Startseite", default=default_home_sections, blank=True
     )
+    # Entwurf der Gestaltung (Konzept webseite-baukasten G2): nur geänderte Felder aus
+    # DRAFT_FIELDS; sichtbar nur in der Vorschau, bis jemand „Veröffentlichen“ wählt
+    draft = models.JSONField("Entwurf der Gestaltung", default=dict, blank=True)
     # Standarddesign der Webseite und eigene Farbzuordnung je Design (Ralf 2026-10-31).
     # Auch der Schlüssel eines freigegebenen Designpakets (DesignPackage, Ralf 2026-11-02);
     # geprüft wird im Code (design_choices), nicht über feste choices.
@@ -343,6 +351,9 @@ class Website(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Der Entwurf ändert sich bei jedem Klick; protokolliert wird das Veröffentlichen
+    derived_fields = ("draft",)
+
     class Meta:
         verbose_name = "Webseite"
         verbose_name_plural = "Webseiten"
@@ -361,6 +372,15 @@ class Website(models.Model):
         return [
             p for p in self.design_packages.all() if not p.templates and p.sketch_like in DESIGNS
         ]
+
+    def apply_draft(self) -> None:
+        """Entwurf nur im Speicher über die Werte legen (Vorschau); nie danach speichern."""
+        draft = self.draft if isinstance(self.draft, dict) else {}
+        for key in DRAFT_FIELDS:
+            if key in draft and key != "header_image":
+                setattr(self, key, draft[key])
+        if "header_image" in draft:
+            self.draft_header_image = draft["header_image"]
 
     def design_choices(self) -> set[str]:
         return set(DESIGNS) | {p.key for p in self.packages()}
@@ -541,6 +561,28 @@ class PreviewLink(models.Model):
             created_by=user,
         )
         return link, token
+
+
+class DesignVersion(models.Model):
+    """Veröffentlichte Gestaltung (Werte aus DRAFT_FIELDS), die letzten fünf bleiben."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name="design_versions")
+    data = models.JSONField(default=dict)
+    published_at = models.DateTimeField(default=timezone.now)
+    published_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+
+    class Meta:
+        verbose_name = "Fassung der Gestaltung"
+        verbose_name_plural = "Fassungen der Gestaltung"
+        ordering = ["-published_at", "-pk"]
+
+    def __str__(self) -> str:
+        return f"Gestaltung vom {timezone.localtime(self.published_at):%d.%m.%Y %H:%M}"
 
 
 class PublicationConsent(models.Model):
