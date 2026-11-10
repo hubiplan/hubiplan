@@ -83,6 +83,7 @@ export function PartnersPage() {
   return (
     <div className="stack">
       <PageHeader
+        title={t('Geschäftspartner')}
         subtitle={t(
           'Lieferanten, Dienstleister, Sponsoren, Behörden und alle anderen außerhalb der Mitgliederliste.',
         )}

@@ -99,6 +99,10 @@ describe('Geschäftspartner', () => {
 
   it('verlangt ein Leserecht', async () => {
     show(['events.view'])
-    expect(await screen.findByText('Dafür fehlt dir die Berechtigung.')).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        'Für diese Seite fehlt dir im aktuellen Arbeitsbereich das nötige Recht.',
+      ),
+    ).toBeInTheDocument()
   })
 })
