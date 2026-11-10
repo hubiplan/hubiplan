@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Webseite: Die Startseite ist ein **Baukasten**. Unter Gestaltung › **Startseite** fügt **Abschnitt hinzufügen** eigene Abschnitte ein, auch mehrfach: **Text**, **Text mit Bild**, **Banner**, **Knopfleiste**, **Kacheln**, **Hervorgehobener Termin** mit Countdown, **Album-Auszug**, **Zitat** und **Ansprechpartner**. Jeder Abschnitt bekommt Hintergrund und Breite, im Design „Zeitung“ auch die Spalte. Alles geht zuerst in den Entwurf und erscheint gleich in der Vorschau.
 - Webseite: Änderungen an Design, Farben, Feinabstimmung, Kopfbild und Startseite sind jetzt zuerst ein **Entwurf**. Unter Gestaltung zeigt daneben eine Vorschau die echte Webseite als **Handy**, **Tablet** oder **Bildschirm**; öffentlich wird alles erst mit **Veröffentlichen**. Die letzten fünf veröffentlichten Fassungen lassen sich unter **Frühere Fassungen** zurückholen.
 - Webseite: Unter Gestaltung › **Feinabstimmung** passt du das Design mit festen Stufen an, ohne CSS: Schrift, Breite, Hintergrund, Abstände, Ecken, Karten, Bilder, Knöpfe, Datumsfeld, Kopf (weiß, farbig oder Kopfbild; Wappen links, mittig, rechts oder aus), Menü, Titelbild und Fuß. Nicht verstellte Regler zeigen, was das Design vorsieht.
 - Webseite: Im Menü gibt es **Links nach außen**, etwa zum Dachverband; sie öffnen ein neues Fenster. Ein Hauptpunkt lässt sich als farbiger **Knopf** hervorheben, z. B. „Mitglied werden“. Die Bausteine der Startseite ordnest du jetzt wie das Menü per Ziehen statt mit Pfeilen.

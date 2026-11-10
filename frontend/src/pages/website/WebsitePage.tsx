@@ -8,7 +8,6 @@ import { SubpageUnavailable } from '../NoticePages.tsx'
 import { DRAFT_FIELDS, hasDraft, heldApi, websiteApi } from '../../api/website.ts'
 import type {
   DesignDraft,
-  HomeSection,
   MenuItem,
   MenuNode,
   PreviewLink,
@@ -43,13 +42,12 @@ import { HeaderImage } from './HeaderImage.tsx'
 import { StyleTuning } from './StyleTuning.tsx'
 import { DesignVersions, DraftBar, PreviewFrame } from './DesignPreview.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
+import { HomeBuilder } from './HomeBuilder.tsx'
 import { t } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
 import { DocumentsPage } from './DocumentsPage.tsx'
 import { SocialPage } from './SocialPage.tsx'
 import { LINK, MenuTree } from './MenuTree.tsx'
-import { useSortable } from '../../components/useSortable.tsx'
-import { SortHint } from '../../components/Sortable.tsx'
 import { normalizeMenu } from './menuTree.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
@@ -390,6 +388,19 @@ function WebsiteAdmin({
                 />,
               )
             : settings(t('Kopfbild'), headerImage)}
+          {data.home_labels &&
+            v.home_sections &&
+            settings(
+              t('Startseite'),
+              <HomeBuilder
+                data={data}
+                website={website}
+                value={v.home_sections}
+                blocks={v.blocks}
+                design={v.design ?? 'classic'}
+                onChange={(next) => set('home_sections', next)}
+              />,
+            )}
           <SiteLanguage
             value={v.language ?? 'de'}
             error={errors.language}
@@ -502,17 +513,15 @@ function WebsiteAdmin({
         </>,
       )}
       {hasDraft(website) && draftBar}
-      {data.home_labels &&
-        v.home_sections &&
-        settings(
-          t('Startseite'),
-          <HomeSections
-            data={data}
-            value={v.home_sections}
-            blocks={v.blocks}
-            onChange={(next) => set('home_sections', next)}
-          />,
-        )}
+      {data.home_labels && v.home_sections && (
+        <div className="card card-wide">
+          <h2>{t('Startseite')}</h2>
+          <p className="muted small">
+            {t('Die Abschnitte der Startseite stellst du jetzt mit Vorschau zusammen unter')}{' '}
+            <Link to="../gestaltung">{t('Webseite › Gestaltung')}</Link>.
+          </p>
+        </div>
+      )}
       {settings(
         t('Personen'),
         <>
@@ -784,72 +793,6 @@ function MenuButtonField({
 }
 
 /** Bausteine der Startseite: ein/aus und Reihenfolge per Ziehen (Ralf 10.11., wie das Menü). */
-function HomeSections({
-  data,
-  value,
-  blocks,
-  onChange,
-}: {
-  data: WebsiteData
-  value: HomeSection[]
-  blocks: Record<string, boolean>
-  onChange: (next: HomeSection[]) => void
-}) {
-  const labels = data.home_labels ?? {}
-  // Bausteine ohne Bezeichnung gibt es hier nicht (z. B. Ergebnisse ohne Modul)
-  const shown = value.filter((s) => labels[s.key])
-  // Feste Nummer je Schlüssel für das Ziehen (unabhängig von der Reihenfolge)
-  const ids = new Map(
-    [...value.map((s) => s.key)].sort().map((key, i) => [key, i + 1] as [string, number]),
-  )
-  const keyOf = new Map([...ids].map(([key, id]) => [id, key]))
-  const sortable = useSortable({
-    items: shown,
-    id: (s) => ids.get(s.key)!,
-    label: (s) => labels[s.key],
-    onReorder: async (order) => {
-      const byKey = new Map(value.map((s) => [s.key, s]))
-      const moved = order.map((id) => byKey.get(keyOf.get(id)!)!)
-      // Ausgeblendete Bausteine (ohne Bezeichnung) bleiben hinten
-      onChange([...moved, ...value.filter((s) => !labels[s.key])])
-    },
-  })
-  return (
-    <>
-      <SortHint />
-      <ul className="sortable-list home-sections" aria-label={t('Bausteine der Startseite')}>
-        {sortable.ordered.map((s) => {
-          const label = labels[s.key]
-          const needs = data.home_needs_block?.[s.key]
-          const blockOff = needs ? blocks[needs] === false : false
-          const hint = blockOff
-            ? t('Erscheint nicht: Der Bereich „{x}“ ist oben ausgeschaltet.', {
-                x: data.block_labels[needs!] ?? needs,
-              })
-            : data.home_hints?.[s.key]
-          const { ref, className } = sortable.rowProps(s)
-          return (
-            <li key={s.key} ref={ref} className={className}>
-              {sortable.handle(s)}
-              <div className="sortable-label">
-                <Checkbox
-                  label={label}
-                  hint={hint}
-                  checked={s.on}
-                  onChange={(on) =>
-                    onChange(value.map((x) => (x.key === s.key ? { ...x, on } : x)))
-                  }
-                />
-              </div>
-            </li>
-          )
-        })}
-      </ul>
-      {sortable.status}
-    </>
-  )
-}
-
 function DomainsCard({
   data,
   website,

@@ -9635,3 +9635,33 @@ msgstr "Unknown entries in the draft."
 
 msgid "Es gibt keine Änderungen zum Veröffentlichen."
 msgstr "There are no changes to publish."
+
+msgid "{x0}: bitte als Text angeben."
+msgstr "{x0}: please enter text."
+
+msgid "{x0}: höchstens {x1} Zeichen."
+msgstr "{x0}: at most {x1} characters."
+
+msgid "Zeile"
+msgstr "Line"
+
+msgid "Beschriftung"
+msgstr "Label"
+
+msgid "Zitat"
+msgstr "Quote"
+
+msgid "Höchstens drei Knöpfe."
+msgstr "At most three buttons."
+
+msgid "Höchstens sechs Kacheln."
+msgstr "At most six tiles."
+
+msgid "Höchstens vier Ansprechpartner."
+msgstr "At most four contact persons."
+
+msgid "Unbekannte Abschnittsart."
+msgstr "Unknown section type."
+
+msgid "Höchstens {x0} eigene Abschnitte."
+msgstr "At most {x0} custom sections."

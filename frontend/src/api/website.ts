@@ -137,9 +137,63 @@ export interface MenuItem {
   url?: string | null
 }
 
+/** Eigene Abschnitte der Startseite (G3): mehrfach einsetzbar */
+export type HomeKind =
+  'text' | 'text_image' | 'banner' | 'buttons' | 'tiles' | 'event' | 'album' | 'quote' | 'contacts'
+
+/** Ziel eines Knopfs oder einer Kachel: Menüpunkt, Termin oder Link nach außen */
+export type HomeTarget = { page: string } | { event: number } | { url: string } | null
+
+export interface HomeButton {
+  label: string
+  target: HomeTarget
+}
+
+export interface HomeTile {
+  title: string
+  text: string
+  image: number | null
+  target: HomeTarget
+}
+
+/** Inhalt eines eigenen Abschnitts; welche Felder zählen, hängt von der Art ab */
+export interface HomeSectionData {
+  title?: string
+  text?: string
+  image?: number | null
+  side?: 'left' | 'right'
+  size?: 'small' | 'half'
+  line?: string
+  height?: 'low' | 'high'
+  buttons?: HomeButton[]
+  align?: 'left' | 'center' | 'right'
+  tiles?: HomeTile[]
+  columns?: 2 | 3
+  event?: number | null
+  album?: number | null
+  count?: number
+  name?: string
+  roles?: number[]
+}
+
 export interface HomeSection {
   key: string
   on: boolean
+  /** Hintergrund: keiner, hell oder Palettenfarbe p0 … p9 (G3; fehlt bei älteren Ständen) */
+  bg?: string
+  width?: 'content' | 'text' | 'full'
+  /** Spalte im Design „Zeitung“ */
+  column?: 'main' | 'side'
+  /** Nur eigene Abschnitte (Schlüssel c:…) */
+  kind?: HomeKind
+  data?: HomeSectionData
+}
+
+/** Auswahl für eigene Abschnitte: Rollen auf der Webseite, Alben, kommende Termine */
+export interface HomeChoices {
+  roles: { id: number; name: string }[]
+  albums: { id: number; title: string }[]
+  events: { id: number; title: string; starts_at: string }[]
 }
 
 export interface WebsiteDomain {
@@ -227,6 +281,11 @@ export interface WebsiteData {
   home_labels?: Record<string, string>
   home_hints?: Record<string, string>
   home_needs_block?: Record<string, string>
+  /** Eigene Abschnitte (G3): Arten mit Hinweis und nötigem Bereich */
+  home_kinds?: Record<HomeKind, string>
+  home_kind_hints?: Record<HomeKind, string>
+  home_kind_needs_block?: Partial<Record<HomeKind, string>>
+  home_choices?: HomeChoices
   units: { id: number; name: string }[]
   /** Standarddesigns zur Auswahl (fehlt bei älteren Ständen) */
   designs?: DesignInfo[]

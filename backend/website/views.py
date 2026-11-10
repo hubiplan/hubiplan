@@ -3,6 +3,7 @@ und Einwilligungen zur Veröffentlichung in der Mitgliederakte."""
 
 from __future__ import annotations
 
+import datetime
 import re
 from urllib.parse import quote
 
@@ -37,11 +38,12 @@ from members.views import _ClubMixin
 from organizations.models import Organization
 from organizations.theme import effective_theme
 
-from . import designs, menu, privacy, services, style
+from . import designs, home, menu, privacy, services, style
 from .models import (
     BLOCK_HINTS,
     BLOCK_NAME_MAX,
     BLOCKS,
+    DEFAULT_HOME_OFF,
     DESIGN_VERSIONS,
     DRAFT_FIELDS,
     HOME_HINTS,
@@ -171,19 +173,10 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         return result
 
     def validate_home_sections(self, value):
-        if not isinstance(value, list) or not all(
-            isinstance(v, dict) and isinstance(v.get("key"), str) and isinstance(v.get("on"), bool)
-            for v in value
-        ):
-            raise serializers.ValidationError(
-                gettext("Bausteine der Startseite bitte als Liste angeben.")
-            )
-        unknown = {v["key"] for v in value} - set(HOME_SECTIONS)
-        if unknown:
-            raise serializers.ValidationError(
-                gettext("Unbekannter Baustein: {x0}").format(x0=sorted(unknown)[0])
-            )
-        return normalize_home_sections(value)
+        try:
+            return home.validate(value, self.instance, HOME_SECTIONS, DEFAULT_HOME_OFF)
+        except home.Invalid as exc:
+            raise serializers.ValidationError(str(exc)) from exc
 
     def validate_block_names(self, value):
         # Eigene Namen der Bausteine: nur bekannte Schlüssel, leer = Standardname
@@ -458,6 +451,39 @@ class _WebsiteMixin(OrgScopedMixin):
         return website
 
 
+def home_choices(website: Website) -> dict:
+    """Auswahl für die eigenen Abschnitte der Startseite: Rollen auf der Webseite, Alben
+    der Galerie und kommende öffentliche Termine (je einmal, nach Datum)."""
+    from events.models import Event
+    from events.recurrence import occurrences
+
+    from .content_models import GalleryAlbum
+    from .public import SiteView
+
+    site = SiteView(website)
+    now = timezone.now()
+    found = occurrences(
+        Event.objects.filter(
+            organization=site.area, visibility=Event.Visibility.PUBLIC, source_stale=False
+        ),
+        now,
+        now + datetime.timedelta(days=home.EVENT_DAYS_AHEAD),
+    )
+    events, seen = [], set()
+    for o in sorted(found, key=lambda o: o.starts_at):
+        if o.event.pk not in seen and len(events) < 100:
+            seen.add(o.event.pk)
+            events.append({"id": o.event.pk, "title": o.event.title, "starts_at": o.starts_at})
+    return {
+        "roles": [{"id": r.pk, "name": r.name} for r in site.own_roles().filter(on_website=True)],
+        "albums": [
+            {"id": a.pk, "title": a.title}
+            for a in GalleryAlbum.objects.filter(website=website).order_by("title", "pk")
+        ],
+        "events": events,
+    }
+
+
 class WebsiteView(_WebsiteMixin, APIView):
     """GET: Stand · POST: Webseite einrichten · PUT: Einstellungen · DELETE: entfernen."""
 
@@ -482,6 +508,10 @@ class WebsiteView(_WebsiteMixin, APIView):
             },
             "home_hints": HOME_HINTS,
             "home_needs_block": HOME_NEEDS_BLOCK,
+            # Eigene Abschnitte der Startseite (G3): Arten mit Hinweis
+            "home_kinds": home.KINDS,
+            "home_kind_hints": home.KIND_HINTS,
+            "home_kind_needs_block": home.KIND_NEEDS_BLOCK,
             "designs": designs.catalog(
                 website.packages() if website else (), (get_language() or "de")[:2]
             ),
@@ -498,6 +528,7 @@ class WebsiteView(_WebsiteMixin, APIView):
         if website is not None:
             palette = effective_theme(self.org.ancestors())["palette"]
             data["palette"] = palette
+            data["home_choices"] = home_choices(website)
             packages = website.packages()
             extra = designs.package_roles(packages)
             data["website"] = {
