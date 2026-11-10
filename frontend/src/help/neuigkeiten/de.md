@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Webseite: Im Menü gibt es **Links nach außen**, etwa zum Dachverband; sie öffnen ein neues Fenster. Ein Hauptpunkt lässt sich als farbiger **Knopf** hervorheben, z. B. „Mitglied werden“. Die Bausteine der Startseite ordnest du jetzt wie das Menü per Ziehen statt mit Pfeilen.
 - Neu: **Anfahrt** am Termin mit Hinweisen und Links **Route in OpenStreetMap** und **Route in Google Maps** in Termin, Mails und Rückmeldeseite. Ein genauer Punkt lässt sich aus einem Kartenlink übernehmen; gespeicherte Orte bringen Anfahrt und Punkt mit.
 - Neu: Rückmeldung per Link in der Mail. Einladung, Erinnerung und Rundschreiben zum Termin enthalten je Mitglied einen Link zu einer Seite ohne Anmeldung mit Termin, Anhängen und der Auswahl Zusage, Absage oder „Vielleicht“. Neu am Termin: **Antwort „Vielleicht“ erlauben** und eine eigene Frage zur Bemerkung. Die Einladungsmail schickt die Anhänge des Termins mit.
 - Neu: Rundschreiben zu einem Termin. Im Termin unter **Zu diesem Termin** legt **Rundschreiben dazu schreiben** einen Entwurf an die Eingeladenen an, mit Zeit, Ort, Anmeldeschluss und den PDF-Anhängen des Termins. Auf Wunsch geht es nur an die, die noch nicht geantwortet, zugesagt oder abgesagt haben.

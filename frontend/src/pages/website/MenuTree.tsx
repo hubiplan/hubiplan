@@ -2,6 +2,7 @@
 // anderen gezogen wird sein Unterpunkt, nach links herausgezogen wieder Hauptpunkt.
 // Pfeiltasten am Griff: ↑ ↓ verschieben, → einrücken, ← ausrücken.
 // Bausteine lassen sich umbenennen (Ralf 01.11.): Stift, leer = Standardname.
+// Links nach außen (Ralf 10.11.): beim Stift zusätzlich die Adresse.
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent, PointerEvent } from 'react'
 import type { MenuItem, MenuNode } from '../../api/website.ts'
@@ -14,15 +15,20 @@ import { t } from '../../i18n/index.ts'
 
 /** Wie weit nach rechts (px) ein Punkt gezogen werden muss, um Unterpunkt zu werden */
 const INDENT = 28
+/** Link nach außen: ``link:<Nummer>`` */
+export const LINK = /^link:[1-9][0-9]{0,2}$/
 
 export function MenuTree({
   items,
   value,
   blocks,
   names = {},
+  links = {},
+  button = '',
   onChange,
   onToggle,
   onRename,
+  onLinkUrl,
   disabled = false,
 }: {
   items: MenuItem[]
@@ -30,9 +36,14 @@ export function MenuTree({
   blocks: Record<string, boolean>
   /** Eigene Namen der Bausteine (Schlüssel → Name) */
   names?: Record<string, string>
+  /** Adressen der Links nach außen (Schlüssel → Adresse) */
+  links?: Record<string, string>
+  /** Hauptpunkt, der als Knopf hervorgehoben ist */
+  button?: string
   onChange: (next: Tree) => void
   onToggle: (block: string, on: boolean) => void
   onRename?: (key: string, name: string) => void
+  onLinkUrl?: (key: string, url: string) => void
   disabled?: boolean
 }) {
   const byKey = new Map(items.map((it) => [it.key, it]))
@@ -204,9 +215,15 @@ export function MenuTree({
     if (!item) return null
     const name = nameOf(item)
     const renamed = Boolean(item.renamable && names[item.key]?.trim())
-    const hint = renamed
-      ? [t('Standard: {x}', { x: standard(item) }), item.hint].filter(Boolean).join(' · ')
-      : item.hint
+    const isLink = LINK.test(node.key)
+    const url = isLink ? (links[node.key] ?? item.url ?? '') : ''
+    const hint = [
+      renamed && !isLink ? t('Standard: {x}', { x: standard(item) }) : '',
+      isLink ? t('Link nach außen · {url}', { url: url || t('Adresse fehlt noch') }) : item.hint,
+      button === node.key && depth === 0 ? t('als Knopf hervorgehoben') : '',
+    ]
+      .filter(Boolean)
+      .join(' · ')
     const content = item.toggle ? (
       <Checkbox
         label={name}
@@ -222,23 +239,48 @@ export function MenuTree({
       </span>
     )
     const canRename = Boolean(item.renamable && onRename && !disabled)
+    const closeOnKey = (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter' || e.key === 'Escape') {
+        e.preventDefault()
+        setEditing(null)
+      }
+    }
     const rename = canRename && editing === node.key && (
-      <input
-        className="menu-tree-name"
-        autoFocus
-        maxLength={60}
-        value={names[item.key] ?? ''}
-        placeholder={standard(item)}
-        aria-label={t('Eigener Name für {x} (leer: Standardname)', { x: standard(item) })}
-        onChange={(e) => onRename!(item.key, e.target.value)}
-        onBlur={() => setEditing(null)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === 'Escape') {
-            e.preventDefault()
-            setEditing(null)
-          }
+      <div
+        className="menu-tree-edit"
+        onBlur={(e) => {
+          // Fokus wechselt vom Namen zur Adresse: weiter bearbeiten
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setEditing(null)
         }}
-      />
+      >
+        <input
+          className="menu-tree-name"
+          autoFocus
+          maxLength={60}
+          value={names[item.key] ?? ''}
+          placeholder={isLink ? t('Name im Menü') : standard(item)}
+          aria-label={
+            isLink
+              ? t('Name des Links im Menü (leer: Link entfernen)')
+              : t('Eigener Name für {x} (leer: Standardname)', { x: standard(item) })
+          }
+          onChange={(e) => onRename!(item.key, e.target.value)}
+          onKeyDown={closeOnKey}
+        />
+        {isLink && onLinkUrl && (
+          <input
+            className="menu-tree-name"
+            type="url"
+            inputMode="url"
+            maxLength={300}
+            value={url}
+            placeholder="https://www.example.org/"
+            aria-label={t('Adresse des Links (mit https://)')}
+            onChange={(e) => onLinkUrl(item.key, e.target.value)}
+            onKeyDown={closeOnKey}
+          />
+        )}
+      </div>
     )
     return (
       <li

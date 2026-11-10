@@ -4,7 +4,7 @@ titel: Website › Menu and sections
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aufbau]
-stichworte: [menu, section, order, chronicle, member list, memorial, heading, search, instrument]
+stichworte: [menu, section, order, chronicle, member list, memorial, heading, search, instrument, link, button, home page]
 ---
 
 Here you decide which sections the website has, such as events, sub-units, chronicle or contact, what they are called in the menu and in which order they appear.
@@ -12,6 +12,12 @@ Here you decide which sections the website has, such as events, sub-units, chron
 Members: The heading “Members” has one list per member type, for example “Active” and “Passive”. You switch each list on separately and give it a name with the pencil. The lists show today’s members by surname, with the year they joined and, if you like, their main instrument (settings under “People”). Only members who consented appear: in the member record on the “Photo & website” tab under “Publication on the website”, item “Member list”. Anyone who objected to publishing their name is still left out. “In memoriam” shows members whose reason for leaving is “death”, with the year of death, but only if the board has approved each of them in their member record under “In memoriam”; a text page with the address `in-gedenken` appears above it as an introduction.
 
 Custom headings: “Add heading” creates a menu item without its own page, for example “Band”. Drag sections onto it and they become its sub-items. Without sub-items the heading does not appear. If you leave the name empty, it is removed when saved.
+
+External links: “Add external link” creates a menu item that leads to another website, for example your federation. Use the pencil to enter the name and the address (with https://). The link opens in a new window and can be moved or made a sub-item like any other item. If you leave the name empty, it is removed when saved.
+
+Button: Under “Highlight a menu item as a button” you choose one main item that appears in the menu as a coloured button, such as “Contact” or a link “Become a member”. There is at most one button; headings and items with sub-items are not possible.
+
+Home page: Under “Home page” you switch the home page sections on and off and drag them by the handle into the order you want, from top to bottom.
 
 Repertoire and press: “Repertoire” shows the pieces from the sheet music library that are ticked “In the repertoire on the website”. “Press” shows the press clippings from Website › Documents.
 

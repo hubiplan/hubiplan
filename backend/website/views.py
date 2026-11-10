@@ -7,6 +7,8 @@ import re
 from urllib.parse import quote
 
 from django.conf import settings
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import URLValidator
 from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -44,6 +46,7 @@ from .models import (
     HOME_NEEDS_BLOCK,
     HOME_SECTIONS,
     HOSTNAME_RE,
+    LINK_URL_MAX,
     PREVIEW_LINK_MAX_DAYS,
     PreviewLink,
     PublicationConsent,
@@ -54,12 +57,23 @@ from .models import (
     home_without_module,
     is_extra_block,
     is_heading_key,
+    is_link_key,
     is_renamable,
     normalize_home_sections,
 )
 
 MAX_HEADINGS = 20
-MENU_ITEM_FIELDS = ("label", "default_label", "renamable", "hint", "toggle", "heading", "parent")
+MAX_LINKS = 10
+MENU_ITEM_FIELDS = (
+    "label",
+    "default_label",
+    "renamable",
+    "hint",
+    "toggle",
+    "heading",
+    "parent",
+    "url",
+)
 
 SETTINGS_FIELDS = [
     "state",
@@ -67,6 +81,8 @@ SETTINGS_FIELDS = [
     "blocks",
     "menu",
     "block_names",
+    "menu_links",
+    "menu_button",
     "home_sections",
     "design",
     "color_roles",
@@ -190,19 +206,69 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             )
         return result
 
-    def validate_menu(self, value):
-        if self.instance is None:
-            return []
-        # Neue freie Überschriften kommen mit ihren Namen in derselben Änderung
-        names = self.initial_data.get("block_names") if hasattr(self, "initial_data") else None
+    def validate_menu_links(self, value):
+        # Links nach außen (Ralf 10.11.): nur http(s), höchstens MAX_LINKS
+        if not isinstance(value, dict):
+            raise serializers.ValidationError(_("Bitte die Links als Liste angeben."))
+        check = URLValidator(schemes=["http", "https"])
+        result = {}
+        for key, url in value.items():
+            if not is_link_key(key):
+                raise serializers.ValidationError(_("Unbekannter Link: {key}").format(key=key))
+            url = (url or "").strip() if isinstance(url, str) or url is None else None
+            if url is None:
+                raise serializers.ValidationError(_("Bitte die Adresse als Text angeben."))
+            if not url:
+                continue
+            if len(url) > LINK_URL_MAX:
+                raise serializers.ValidationError(
+                    _("Eine Adresse darf höchstens {n} Zeichen lang sein.").format(n=LINK_URL_MAX)
+                )
+            try:
+                check(url)
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError(
+                    _("Bitte eine vollständige Adresse mit https:// angeben: {url}").format(url=url)
+                ) from exc
+            result[key] = url
+        if len(result) > MAX_LINKS:
+            raise serializers.ValidationError(_("Höchstens {n} Links im Menü.").format(n=MAX_LINKS))
+        return result
+
+    def _pending_menu(self) -> tuple[dict | None, dict | None]:
+        """Namen und Adressen aus derselben Änderung (neue Überschriften und Links)."""
+        data = self.initial_data if hasattr(self, "initial_data") else {}
+        names, links = data.get("block_names"), data.get("menu_links")
         try:
             names = self.validate_block_names(names) if names is not None else None
         except serializers.ValidationError:
             names = None
         try:
-            return menu.validate(value, menu.items(self.instance, names=names))
+            links = self.validate_menu_links(links) if links is not None else None
+        except serializers.ValidationError:
+            links = None
+        return names, links
+
+    def validate_menu(self, value):
+        if self.instance is None:
+            return []
+        names, links = self._pending_menu()
+        try:
+            return menu.validate(value, menu.items(self.instance, names=names, links=links))
         except ValueError as exc:
             raise serializers.ValidationError(str(exc)) from exc
+
+    def validate_menu_button(self, value):
+        value = (value or "").strip()
+        if not value or self.instance is None:
+            return ""
+        names, links = self._pending_menu()
+        item = menu.items(self.instance, names=names, links=links).get(value)
+        if item is None or item["heading"]:
+            raise serializers.ValidationError(
+                _("Diesen Menüpunkt kann man nicht als Knopf hervorheben.")
+            )
+        return value
 
     def _package_roles(self) -> dict:
         return designs.package_roles(self.instance.packages()) if self.instance else {}
@@ -389,7 +455,7 @@ class WebsiteView(_WebsiteMixin, APIView):
                 "checks": privacy.checks(website),
                 # Mögliche Menüpunkte (Bausteine, Textseiten, Würden) in Standardreihenfolge
                 "menu_items": [
-                    {"key": key, **{f: item[f] for f in MENU_ITEM_FIELDS}}
+                    {"key": key, **{f: item.get(f) for f in MENU_ITEM_FIELDS}}
                     for key, item in menu.items(website).items()
                 ],
                 "domains": [domain_data(d) for d in website.domains.all()],

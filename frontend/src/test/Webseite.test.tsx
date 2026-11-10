@@ -176,7 +176,9 @@ describe('Webseite', () => {
     expect(
       await screen.findByText(/Bereich „Termine und Kalender-Abo“ ist oben ausgeschaltet/),
     ).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Willkommenstext nach oben' }))
+    // Reihenfolge per Ziehen (Ralf 10.11.): Griff mit der Tastatur verschieben
+    screen.getByRole('button', { name: 'Willkommenstext verschieben' }).focus()
+    await user.keyboard('{ArrowUp}')
     await waitFor(() => expect(calls.some((c) => c.key === `PUT ${base}`)).toBe(true), {
       timeout: 3000,
     })
@@ -184,6 +186,66 @@ describe('Webseite', () => {
     expect(
       JSON.parse(String(put?.init?.body)).home_sections.map((s: { key: string }) => s.key),
     ).toEqual(['greeting', 'carousel', 'events', 'instagram'])
+    expect(screen.queryByRole('button', { name: 'Willkommenstext nach oben' })).toBeNull()
+  })
+
+  it('legt einen Link nach außen an und hebt ihn als Knopf hervor', async () => {
+    const items = [
+      {
+        key: 'contact',
+        label: 'Kontakt',
+        default_label: 'Kontakt',
+        renamable: true,
+        hint: '',
+        toggle: 'contact',
+        heading: false,
+        parent: null,
+      },
+    ]
+    const body = {
+      ...data(
+        website('maintenance', {
+          menu: [{ key: 'contact', children: [] }],
+          menu_items: items,
+          block_names: {},
+          menu_links: {},
+          menu_button: '',
+        }),
+      ),
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body }),
+        [`PUT ${base}`]: () => ({ status: 200, body }),
+      },
+      '/webseite/aufbau',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Link nach außen hinzufügen' }))
+    await user.click(screen.getByRole('button', { name: 'Neuer Link umbenennen' }))
+    const name = screen.getByRole('textbox', {
+      name: 'Name des Links im Menü (leer: Link entfernen)',
+    })
+    await user.clear(name)
+    await user.type(name, 'Dachverband')
+    await user.type(
+      screen.getByRole('textbox', { name: 'Adresse des Links (mit https://)' }),
+      'https://www.example.org/',
+    )
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Menüpunkt als Knopf hervorheben' }),
+      'link:1',
+    )
+    await waitFor(
+      () => {
+        const last = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+        const sent = JSON.parse(String(last?.init?.body ?? '{}'))
+        expect(sent.block_names).toEqual({ 'link:1': 'Dachverband' })
+        expect(sent.menu_links).toEqual({ 'link:1': 'https://www.example.org/' })
+        expect(sent.menu_button).toBe('link:1')
+      },
+      { timeout: 4000 },
+    )
   })
 
   it('zeigt eingespielte Designs und lädt Pakete nur für Plattformverwalter', async () => {

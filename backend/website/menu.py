@@ -11,7 +11,9 @@ Textseiten, ``dignity:<id>`` und ``honorary`` für die Unterpunkte von „Würde
 (einzeln ausschaltbar über ``blocks`` mit demselben Schlüssel) und ``group:history``
 für die Überschrift „Geschichte“, ``members`` mit ``membertype:<id>`` je Mitgliedsart
 und ``memorial`` (Ralf 05.11.) sowie ``heading:<n>`` für frei benannte Überschriften
-(Name in ``Website.block_names``). Überschriften (``heading``)
+(Name in ``Website.block_names``) und ``link:<n>`` für Links nach außen (Name in
+``block_names``, Adresse in ``Website.menu_links``, Ralf 10.11.). Ein Hauptpunkt kann als
+Knopf hervorgehoben sein (``Website.menu_button``). Überschriften (``heading``)
 haben keine eigene Seite; ohne Unterpunkte entfallen sie, mit nur einem steht dieser
 direkt im Menü.
 """
@@ -34,7 +36,13 @@ def _block_keys() -> list[str]:
     return [k for k in BLOCKS if k not in NOT_IN_MENU]
 
 
-def items(website: Website, *, public_site=None, names: dict | None = None) -> dict[str, dict]:
+def items(
+    website: Website,
+    *,
+    public_site=None,
+    names: dict | None = None,
+    links: dict | None = None,
+) -> dict[str, dict]:
     """Alle möglichen Menüpunkte in Standardreihenfolge.
 
     Je Punkt: ``label`` (eigener Name oder Standard), ``default_label``,
@@ -42,7 +50,8 @@ def items(website: Website, *, public_site=None, names: dict | None = None) -> d
     None), ``heading`` (Überschrift ohne eigene Seite), ``parent`` (Standard-
     Oberpunkt oder None). Mit ``public_site`` (SiteView) kommen öffentliche Angaben
     dazu (``visible``, ``slug``, ``id``). ``names``: eigene Namen, die noch nicht
-    gespeichert sind (Prüfung einer Änderung mit neuen Überschriften)."""
+    gespeichert sind (Prüfung einer Änderung mit neuen Überschriften), ``links`` ebenso
+    für die Adressen neuer Links. Links tragen zusätzlich ``url``."""
 
     from .content_models import WebsiteText
     from .public import SiteView
@@ -52,8 +61,14 @@ def items(website: Website, *, public_site=None, names: dict | None = None) -> d
     result: dict[str, dict] = {}
     heading_of = {child: key for key, (_l, children) in HEADINGS.items() for child in children}
     off = blocks_without_module(org)
-    if names is not None:
-        website = Website(pk=website.pk, organization=org, block_names=names, blocks=website.blocks)
+    if names is not None or links is not None:
+        website = Website(
+            pk=website.pk,
+            organization=org,
+            block_names=website.block_names if names is None else names,
+            menu_links=website.menu_links if links is None else links,
+            blocks=website.blocks,
+        )
 
     def add(key, label, *, hint="", toggle=None, heading=False, parent=None, **extra):
         renamable = is_renamable(key)
@@ -155,6 +170,9 @@ def items(website: Website, *, public_site=None, names: dict | None = None) -> d
     # Freie Überschriften (Ralf 05.11.): ohne festen Platz, neue stehen am Ende
     for key, name in website.headings().items():
         add(key, name, hint="eigene Überschrift ohne eigene Seite", heading=True)
+    # Links nach außen (Ralf 10.11.): neue stehen am Ende
+    for key, (name, url) in website.links().items():
+        add(key, name, hint=f"Link nach außen · {url}", url=url)
     return result
 
 
@@ -255,6 +273,8 @@ def public_nav(site) -> list[dict]:
             out["slug"] = item["slug"]
         if key.startswith(("dignity:", "membertype:")):
             out["id"] = item["id"]
+        if key.startswith("link:"):
+            out["url"] = item["url"]
         if key == "honors" and not item["heading"]:
             out["label"] = site.honors_label()
         if item["heading"]:
@@ -277,6 +297,9 @@ def public_nav(site) -> list[dict]:
                 continue
         if children:
             top["children"] = children
+        # Knopf nur für einen einfachen Hauptpunkt (keine Überschrift, kein Aufklappmenü)
+        if node["key"] == website.menu_button and not top.get("heading") and not children:
+            top["button"] = True
         result.append(top)
     return result
 
