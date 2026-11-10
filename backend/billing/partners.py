@@ -342,6 +342,8 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
             )
             record(self.org, request.user, "delete", other, diff(snapshot(other), {}))
             other.delete()
+        # neu laden: die vorab geladenen Ansprechpartner kennen die übernommenen noch nicht
+        keep = self.get_queryset().get(pk=keep.pk)
         return Response({**self.get_serializer(keep).data, "moved": moved})
 
     @action(detail=False, methods=["get"])
