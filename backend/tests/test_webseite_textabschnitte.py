@@ -161,5 +161,12 @@ def test_auswahl_fuer_abschnitte(orgs, editor, api, site):
     options = data["section_options"]
     assert "banner" in options["home_kinds"]
     assert options["home_labels"] == {"body": "Text der Seite"}
-    assert set(options["home_choices"]) == {"roles", "albums", "events"}
+    assert set(options["home_choices"]) == {
+        "roles",
+        "albums",
+        "events",
+        "places",
+        "categories",
+        "documents",
+    }
     assert isinstance(options["blocks"], dict) and "menu_items" in options
