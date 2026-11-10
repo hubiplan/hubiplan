@@ -7620,5 +7620,15 @@
   "Noch keine Orte gespeichert.": "No places saved yet.",
   "Neuer Ort": "New place",
   "Ort speichern": "Save place",
-  "Orte von {name}": "Places of {name}"
+  "Orte von {name}": "Places of {name}",
+  "Wird auf Viren geprüft": "Being scanned for viruses",
+  "Gesperrt: Schadsoftware gefunden": "Locked: malware found",
+  "{n} eingegangene Datei wartet auf die Virenprüfung und ist bis dahin gesperrt.": {
+    "one": "{n} received file is waiting for the virus scan and is locked until then.",
+    "other": "{n} received files are waiting for the virus scan and are locked until then."
+  },
+  "In {n} eingegangenen Datei wurde Schadsoftware gefunden. Sie bleibt gesperrt.": {
+    "one": "Malware was found in {n} received file. It stays locked.",
+    "other": "Malware was found in {n} received files. They stay locked."
+  }
 }

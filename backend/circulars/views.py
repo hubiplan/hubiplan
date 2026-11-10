@@ -699,6 +699,9 @@ def _safe_name(name: str) -> str:
 
 
 class _AttachmentList(APIView):
+    # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
+    virus_quarantine = True
+
     parser_classes = [MultiPartParser, FormParser]
 
     @transaction.atomic
@@ -758,6 +761,9 @@ class _Attachment(APIView):
 
 
 def _file_response(att: CircularAttachment, request) -> FileResponse:
+    from core.virenscan import ensure_released
+
+    ensure_released(att.file)
     response = FileResponse(
         att.file.open("rb"),
         content_type="application/pdf",

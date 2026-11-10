@@ -12,6 +12,14 @@ def ping() -> str:
     return "pong"
 
 
+@shared_task
+def recheck_quarantine() -> dict:
+    """Dateien in Quarantäne nachprüfen, sobald der Virenscanner wieder antwortet."""
+    from .virenscan import recheck_quarantine as recheck
+
+    return recheck()
+
+
 def enqueue(task, job, *, failed_status: str, message: str = "") -> bool:
     """Hintergrund-Job an Celery übergeben. Ist der Dienst nicht erreichbar, bleibt der
     Auftrag nicht unbemerkt „läuft“ stehen: Status zurück und Hinweis zum Neustart."""
