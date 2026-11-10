@@ -533,6 +533,8 @@ class WebsiteView(_WebsiteMixin, APIView):
             "can_manage": WEBSITE_MANAGE in self.org_permissions,
             "can_edit_content": WEBSITE_CONTENT in self.org_permissions
             or WEBSITE_MANAGE in self.org_permissions,
+            # F7: Inhalte der Abschnitte bearbeiten auch ohne Verwaltungsrecht
+            "can_edit_home_content": bool({WEBSITE_CONTENT, WEBSITE_MANAGE} & self.org_permissions),
             "preview_only": services.preview_only(),
             "block_labels": {
                 **{k: v for k, v in BLOCKS.items() if k not in hide},
@@ -580,6 +582,8 @@ class WebsiteView(_WebsiteMixin, APIView):
                     key: designs.resolve(key, palette, website.color_roles, extra)
                     for key in [*designs.DESIGNS, *extra]
                 },
+                # F7: Entwurf ändert nur Inhalte der Abschnitte (dann auch mit „Inhalte bearbeiten“)
+                "draft_content_only": content_only_draft(website),
                 "privacy_generated_at": website.privacy_generated_at,
                 "privacy_published_text": website.privacy_published_text,
                 "privacy_published_at": website.privacy_published_at,
@@ -670,6 +674,42 @@ def _apply_design(website: Website, values: dict) -> None:
         set_header_image(website, values["header_image"])
 
 
+def publish_draft(website: Website, user, org) -> None:
+    """Entwurf der Gestaltung veröffentlichen; die Fassung kommt in den Verlauf."""
+    draft = clean_draft(website, website.draft)
+    if not draft:
+        raise ValidationError({"draft": [gettext("Es gibt keine Änderungen zum Veröffentlichen.")]})
+    before = live_design(website)
+    if not website.design_versions.exists():
+        # Erste Veröffentlichung: der bisherige Stand bleibt zum Zurückholen
+        DesignVersion.objects.create(
+            organization=website.organization,
+            website=website,
+            data=before,
+            published_at=website.updated_at or timezone.now(),
+        )
+    _apply_design(website, draft)
+    website.draft = {}
+    website.save()
+    after = live_design(website)
+    DesignVersion.objects.create(
+        organization=website.organization, website=website, data=after, published_by=user
+    )
+    old = list(website.design_versions.values_list("pk", flat=True)[DESIGN_VERSIONS:])
+    if old:
+        DesignVersion.objects.filter(pk__in=old).delete()
+    record(org, user, "update", website, {f"Gestaltung: {k}": [before[k], after[k]] for k in draft})
+
+
+def content_only_draft(website: Website) -> bool:
+    """Enthält der Entwurf nur Inhalte vorhandener Abschnitte der Startseite (F7)?"""
+    draft = clean_draft(website, website.draft)
+    if set(draft) != {"home_sections"}:
+        return False
+    live = normalize_home_sections(website.home_sections)
+    return home.skeleton(draft["home_sections"]) == home.skeleton(live)
+
+
 class DesignPublishView(WebsiteView):
     """POST: Entwurf der Gestaltung veröffentlichen; die Fassung kommt in den Verlauf."""
 
@@ -678,40 +718,73 @@ class DesignPublishView(WebsiteView):
     @transaction.atomic
     def post(self, request, org_id: int):
         website = self.website()
+        publish_draft(website, request.user, self.org)
+        return Response(self.payload(website))
+
+
+class HomeContentView(WebsiteView):
+    """PUT: Inhalte vorhandener Abschnitte der Startseite in den Entwurf (F7, Ralf 10.11.2026).
+
+    Auch mit dem Recht „Inhalte bearbeiten“. Aufbau, Reihenfolge und Aussehen der Abschnitte
+    bleiben der Webseitenverwaltung vorbehalten."""
+
+    http_method_names = ["put", "options"]
+    write_permission = (WEBSITE_CONTENT, WEBSITE_MANAGE)
+
+    @transaction.atomic
+    def put(self, request, org_id: int):
+        website = self.website()
+        given = request.data.get("home_sections") if isinstance(request.data, dict) else None
         draft = clean_draft(website, website.draft)
-        if not draft:
+        current = draft.get("home_sections", normalize_home_sections(website.home_sections))
+        try:
+            value = home.validate(given, website, HOME_SECTIONS, DEFAULT_HOME_OFF)
+        except home.Invalid as exc:
+            raise ValidationError({"home_sections": [str(exc)]}) from exc
+        if home.skeleton(value) != home.skeleton(current):
             raise ValidationError(
-                {"draft": [gettext("Es gibt keine Änderungen zum Veröffentlichen.")]}
+                {
+                    "home_sections": [
+                        gettext(
+                            "Mit dem Recht „Inhalte bearbeiten“ änderst du nur den Inhalt "
+                            "vorhandener Abschnitte."
+                        )
+                    ]
+                }
             )
-        before = live_design(website)
-        if not website.design_versions.exists():
-            # Erste Veröffentlichung: der bisherige Stand bleibt zum Zurückholen
-            DesignVersion.objects.create(
-                organization=website.organization,
-                website=website,
-                data=before,
-                published_at=website.updated_at or timezone.now(),
-            )
-        _apply_design(website, draft)
-        website.draft = {}
-        website.save()
-        after = live_design(website)
-        DesignVersion.objects.create(
-            organization=website.organization,
-            website=website,
-            data=after,
-            published_by=request.user,
-        )
-        old = list(website.design_versions.values_list("pk", flat=True)[DESIGN_VERSIONS:])
-        if old:
-            DesignVersion.objects.filter(pk__in=old).delete()
+        website.draft = clean_draft(website, {**draft, "home_sections": value})
+        website.save(update_fields=["draft", "updated_at"])
         record(
             self.org,
             request.user,
             "update",
             website,
-            {f"Gestaltung: {k}": [before[k], after[k]] for k in draft},
+            {"Entwurf: Inhalte der Startseite": [current, value]},
         )
+        return Response(self.payload(website))
+
+
+class HomeContentPublishView(WebsiteView):
+    """POST: Entwurf veröffentlichen, wenn er nur Inhalte der Abschnitte ändert (F7)."""
+
+    http_method_names = ["post", "options"]
+    write_permission = (WEBSITE_CONTENT, WEBSITE_MANAGE)
+
+    @transaction.atomic
+    def post(self, request, org_id: int):
+        website = self.website()
+        if not content_only_draft(website):
+            raise ValidationError(
+                {
+                    "draft": [
+                        gettext(
+                            "Der Entwurf ändert auch die Gestaltung. Veröffentlichen kann ihn "
+                            "nur, wer die Webseite verwaltet."
+                        )
+                    ]
+                }
+            )
+        publish_draft(website, request.user, self.org)
         return Response(self.payload(website))
 
 

@@ -254,6 +254,8 @@ export interface Website extends WebsiteSettings, WebsitePrivacy {
   draft?: DesignDraft
   /** Frühere veröffentlichte Gestaltungen, neueste zuerst */
   design_versions?: DesignVersion[]
+  /** F7: Entwurf ändert nur Inhalte der Abschnitte (dann auch mit „Inhalte bearbeiten“) */
+  draft_content_only?: boolean
 }
 
 /** Was der Entwurf umfasst (Konzept webseite-baukasten G2) */
@@ -302,6 +304,8 @@ export interface WebsiteData {
   module_enabled: boolean
   can_manage: boolean
   can_edit_content: boolean
+  /** F7: Inhalte der Startseiten-Abschnitte bearbeiten (fehlt bei älteren Ständen) */
+  can_edit_home_content?: boolean
   preview_only: boolean
   block_labels: Record<string, string>
   /** Kurze Erklärung je Baustein (fehlt bei älteren Ständen) */
@@ -348,6 +352,10 @@ export const websiteApi = {
   save: (org: number, data: Partial<WebsiteSettings & WebsitePrivacy> & { draft?: DesignDraft }) =>
     api.put<WebsiteData>(base(org), data),
   publishDesign: (org: number) => api.post<WebsiteData>(`${base(org)}design/publish/`),
+  /** F7: nur Inhalte vorhandener Abschnitte der Startseite, auch mit „Inhalte bearbeiten“ */
+  saveHomeContent: (org: number, home_sections: HomeSection[]) =>
+    api.put<WebsiteData>(`${base(org)}home-content/`, { home_sections }),
+  publishHomeContent: (org: number) => api.post<WebsiteData>(`${base(org)}home-content/publish/`),
   discardDesign: (org: number) => api.post<WebsiteData>(`${base(org)}design/discard/`),
   restoreDesign: (org: number, id: number) =>
     api.post<WebsiteData>(`${base(org)}design/versions/${id}/restore/`),

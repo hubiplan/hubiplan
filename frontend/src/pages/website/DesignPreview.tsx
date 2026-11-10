@@ -27,8 +27,23 @@ export function DraftBar({
   const org = useActiveOrg()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  if (!canManage || website.draft === undefined) return null
+  // F7: Wer nur Inhalte bearbeitet, veröffentlicht Entwürfe, die nur Inhalte ändern
+  const contentOnly = !canManage && !!website.draft_content_only
+  if (website.draft === undefined) return null
   const open = hasDraft(website)
+  if (!canManage && !contentOnly) {
+    // Entwurf mit Gestaltungsänderungen: veröffentlichen kann nur die Webseitenverwaltung
+    if (!open) return null
+    return (
+      <div className="draft-bar draft-bar-open" role="status">
+        <span>
+          {t(
+            'Der Entwurf ändert auch die Gestaltung. Veröffentlichen kann ihn nur, wer die Webseite verwaltet.',
+          )}
+        </span>
+      </div>
+    )
+  }
 
   async function run(action: () => Promise<WebsiteData>) {
     setBusy(true)
@@ -85,18 +100,26 @@ export function DraftBar({
             type="button"
             className="button"
             disabled={busy}
-            onClick={() => void run(() => websiteApi.publishDesign(org.id))}
+            onClick={() =>
+              void run(() =>
+                contentOnly
+                  ? websiteApi.publishHomeContent(org.id)
+                  : websiteApi.publishDesign(org.id),
+              )
+            }
           >
             {t('Veröffentlichen')}
           </button>
-          <button
-            type="button"
-            className="button button-ghost"
-            disabled={busy}
-            onClick={() => void discard()}
-          >
-            {t('Verwerfen')}
-          </button>
+          {canManage && (
+            <button
+              type="button"
+              className="button button-ghost"
+              disabled={busy}
+              onClick={() => void discard()}
+            >
+              {t('Verwerfen')}
+            </button>
+          )}
         </span>
       )}
       {error && <Alert kind="error">{error}</Alert>}

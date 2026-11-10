@@ -7,6 +7,7 @@ import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { SubpageUnavailable } from '../NoticePages.tsx'
 import { DRAFT_FIELDS, hasDraft, heldApi, websiteApi } from '../../api/website.ts'
 import type {
+  HomeSection,
   DesignDraft,
   MenuItem,
   MenuNode,
@@ -239,6 +240,48 @@ function splitDraft(website: Website, changes: Partial<WebsiteSettings>) {
   return rest
 }
 
+/** F7: Inhalte der Startseiten-Abschnitte mit dem Recht „Inhalte bearbeiten“ (in den Entwurf) */
+function HomeContentCard({
+  data,
+  website,
+  design,
+  onReset,
+}: {
+  data: WebsiteData
+  website: Website
+  design: string
+  onReset: (data: WebsiteData) => void
+}) {
+  const org = useActiveOrg()
+  const [error, setError] = useState<string | null>(null)
+  const value = website.draft?.home_sections ?? website.home_sections
+
+  async function save(next: HomeSection[]) {
+    setError(null)
+    try {
+      onReset(await websiteApi.saveHomeContent(org.id, next))
+    } catch (err) {
+      setError(errorMessage(err))
+    }
+  }
+
+  return (
+    <section className="card card-wide" aria-labelledby="startseite-inhalte">
+      <h2 id="startseite-inhalte">{t('Startseite')}</h2>
+      <HomeBuilder
+        data={data}
+        website={website}
+        value={value}
+        blocks={website.blocks}
+        design={design}
+        contentOnly
+        onChange={(next) => void save(next)}
+      />
+      {error && <Alert kind="error">{error}</Alert>}
+    </section>
+  )
+}
+
 function WebsiteAdmin({
   data,
   website,
@@ -430,6 +473,30 @@ function WebsiteAdmin({
                 onReset={onReset}
               />,
             )}
+        </div>
+        {website.draft !== undefined && (
+          <aside className="design-split-preview" aria-label={t('Vorschau')}>
+            <PreviewFrame website={website} />
+          </aside>
+        )}
+      </div>
+    </div>
+  )
+
+  // F7: Inhalte der Startseiten-Abschnitte für alle mit „Inhalte bearbeiten“
+  const homeContent = (
+    <div className="design-split">
+      <div className="design-split-grid">
+        <div className="design-split-settings">
+          {draftBar}
+          {data.home_labels && (
+            <HomeContentCard
+              data={data}
+              website={website}
+              design={v.design ?? 'classic'}
+              onReset={onReset}
+            />
+          )}
         </div>
         {website.draft !== undefined && (
           <aside className="design-split-preview" aria-label={t('Vorschau')}>
@@ -741,6 +808,16 @@ function WebsiteAdmin({
           element={
             data.can_edit_content ? (
               <SocialPage />
+            ) : (
+              <Alert kind="info">{t('Dafür fehlt dir das Recht „Inhalte bearbeiten“.')}</Alert>
+            )
+          }
+        />
+        <Route
+          path="startseite"
+          element={
+            data.can_edit_home_content ? (
+              homeContent
             ) : (
               <Alert kind="info">{t('Dafür fehlt dir das Recht „Inhalte bearbeiten“.')}</Alert>
             )

@@ -148,6 +148,7 @@ export function HomeBuilder({
   blocks,
   design,
   page = false,
+  contentOnly = false,
   onChange,
 }: {
   data: SectionOptions
@@ -157,6 +158,8 @@ export function HomeBuilder({
   design: string
   /** Abschnitte einer Textseite (G4) statt der Startseite */
   page?: boolean
+  /** F7: nur Inhalte vorhandener Abschnitte bearbeiten (Recht „Inhalte bearbeiten“) */
+  contentOnly?: boolean
   onChange: (next: HomeSection[]) => void
 }) {
   const labels = data.home_labels ?? {}
@@ -217,6 +220,58 @@ export function HomeBuilder({
   }
 
   const current = value.find((s) => s.key === editing) ?? null
+
+  if (contentOnly) {
+    const custom = value.filter((s) => s.kind)
+    return (
+      <>
+        <p className="muted small">
+          {t(
+            'Du kannst die Inhalte der eigenen Abschnitte ändern. Welche Abschnitte es gibt, in welcher Reihenfolge und wie sie aussehen, legt die Webseitenverwaltung fest.',
+          )}
+        </p>
+        {custom.length === 0 ? (
+          <p className="muted">{t('Noch keine eigenen Abschnitte.')}</p>
+        ) : (
+          <ul className="plain-list home-sections" aria-label={t('Abschnitte der Startseite')}>
+            {custom.map((s) => (
+              <li key={s.key} className="home-content-row">
+                <span>
+                  <strong>{label(s)}</strong>
+                  {!s.on && <span className="muted small"> · {t('ausgeblendet')}</span>}
+                  <br />
+                  <span className="muted small">{summary(s) || kindHint(s.kind!)}</span>
+                </span>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  aria-label={t('{x} bearbeiten', { x: label(s) })}
+                  onClick={() => setEditing(s.key)}
+                >
+                  <span aria-hidden="true">✎</span> {t('Bearbeiten')}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {current && (
+          <SectionDialog
+            data={data}
+            website={website}
+            section={current}
+            title={current.kind ? kindLabel(current.kind) : (labels[current.key] ?? current.key)}
+            design={design}
+            contentOnly
+            onSave={(next) => {
+              update(current.key, next)
+              setEditing(null)
+            }}
+            onClose={() => setEditing(null)}
+          />
+        )}
+      </>
+    )
+  }
 
   return (
     <>
@@ -350,6 +405,7 @@ function SectionDialog({
   section,
   title,
   design,
+  contentOnly = false,
   onSave,
   onClose,
 }: {
@@ -358,6 +414,7 @@ function SectionDialog({
   section: HomeSection
   title: string
   design: string
+  contentOnly?: boolean
   onSave: (next: HomeSection) => void
   onClose: () => void
 }) {
@@ -394,45 +451,49 @@ function SectionDialog({
             imageField={imageField}
           />
         )}
-        <h3>{t('Aussehen')}</h3>
-        <div className="field">
-          <span className="field-label" id="abschnitt-hg">
-            {t('Hintergrund')}
-          </span>
-          <div className="home-bg-choices" role="radiogroup" aria-labelledby="abschnitt-hg">
-            {[
-              ['none', t('Keiner'), undefined] as const,
-              ['light', t('Hell'), undefined] as const,
-              ...palette.map((c, i) => [paletteKey(i), c.name || c.color, c] as const),
-            ].map(([key, text, color]) => (
-              <label key={key} className="home-bg-choice">
-                <input
-                  type="radio"
-                  name="abschnitt-hg"
-                  checked={(s.bg ?? 'none') === key}
-                  onChange={() => setS({ ...s, bg: key })}
-                />
-                <span
-                  className={`home-bg-swatch home-bg-${key === 'none' || key === 'light' ? key : 'color'}`}
-                  style={color ? { background: color.color, color: color.on_color } : undefined}
-                  aria-hidden="true"
-                ></span>
-                <span>{text}</span>
-              </label>
-            ))}
+        {!contentOnly && <h3>{t('Aussehen')}</h3>}
+        {!contentOnly && (
+          <div className="field">
+            <span className="field-label" id="abschnitt-hg">
+              {t('Hintergrund')}
+            </span>
+            <div className="home-bg-choices" role="radiogroup" aria-labelledby="abschnitt-hg">
+              {[
+                ['none', t('Keiner'), undefined] as const,
+                ['light', t('Hell'), undefined] as const,
+                ...palette.map((c, i) => [paletteKey(i), c.name || c.color, c] as const),
+              ].map(([key, text, color]) => (
+                <label key={key} className="home-bg-choice">
+                  <input
+                    type="radio"
+                    name="abschnitt-hg"
+                    checked={(s.bg ?? 'none') === key}
+                    onChange={() => setS({ ...s, bg: key })}
+                  />
+                  <span
+                    className={`home-bg-swatch home-bg-${key === 'none' || key === 'light' ? key : 'color'}`}
+                    style={color ? { background: color.color, color: color.on_color } : undefined}
+                    aria-hidden="true"
+                  ></span>
+                  <span>{text}</span>
+                </label>
+              ))}
+            </div>
           </div>
-        </div>
-        <Segments
-          label={t('Breite des Abschnitts')}
-          value={s.width ?? 'content'}
-          options={[
-            ['text', t('Textbreite')],
-            ['content', t('Inhaltsbreite')],
-            ['full', t('Volle Breite')],
-          ]}
-          onChange={(width) => setS({ ...s, width })}
-        />
-        {design === 'newspaper' && (
+        )}
+        {!contentOnly && (
+          <Segments
+            label={t('Breite des Abschnitts')}
+            value={s.width ?? 'content'}
+            options={[
+              ['text', t('Textbreite')],
+              ['content', t('Inhaltsbreite')],
+              ['full', t('Volle Breite')],
+            ]}
+            onChange={(width) => setS({ ...s, width })}
+          />
+        )}
+        {!contentOnly && design === 'newspaper' && (
           <Segments
             label={t('Spalte')}
             value={s.column ?? 'main'}
