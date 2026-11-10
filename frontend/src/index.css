@@ -5278,31 +5278,55 @@ label:has(> .file-input:focus-visible) {
 .home-actions .button-row {
   flex-wrap: wrap;
 }
-/* Startseite (S-04): ein ruhiges Raster. Breite Karten über die ganze Zeile, darunter
-   Termine und Hinweise je zur Hälfte; Karten füllen ihre Spalte statt bei 40rem aufzuhören. */
+/* Startseite (S-04, HomeBoard): Raster aus 12 Spalten und feinen Zeilen (0,5 rem). Jeder Block
+   belegt so viele Zeilen, wie sein Inhalt oder seine eingestellte Höhe braucht, und rutscht in
+   die nächste freie Lücke; die Reihenfolge bleibt. Auf schmalen Bildschirmen untereinander. */
 .home-grid {
   max-width: 80rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  /* Jede Karte so hoch wie ihr Inhalt: kurze Terminliste ohne Leerfläche neben langen Hinweisen */
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
-@media (max-width: 64rem) {
+@media not all and (max-width: 64rem) {
   .home-grid {
-    grid-template-columns: minmax(0, 1fr);
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-auto-rows: 0.5rem;
+    column-gap: var(--space-4);
+    row-gap: 0;
+    align-items: start;
+  }
+  .home-grid > .home-block {
+    grid-column: span var(--home-cols, 6);
+    grid-row: span var(--home-span, 1);
+  }
+  .home-grid > .card {
+    grid-column: 1 / -1;
+  }
+  /* Eingestellte Höhe gilt für den Inhalt (ohne Leiste beim Anpassen); er rollt in der Karte */
+  .home-block-fixed .home-block-content {
+    height: calc(var(--home-rows) * 0.5rem);
+  }
+  .home-block-fixed .home-block-content > .card {
+    height: 100%;
+    overflow: auto;
+  }
+  .home-grid-editing .home-block-fixed .home-block-content {
+    overflow: hidden;
   }
 }
 .home-grid > .card,
 .home-block-content > .card {
   max-width: none;
 }
-/* Startseite selbst zusammenstellen (HomeBoard): jeder Block in einer Rasterzelle */
 .home-block {
   min-width: 0;
 }
-.home-block-wide {
-  grid-column: 1 / -1;
+.home-block-inner {
+  position: relative;
 }
-.home-grid:not(.home-grid-editing) > .home-block:has(> .home-block-content:empty) {
+.home-grid:not(.home-grid-editing)
+  > .home-block:has(> .home-block-inner > .home-block-content:empty) {
   display: none;
 }
 .home-board-head {
@@ -5316,14 +5340,13 @@ label:has(> .file-input:focus-visible) {
 .home-board-head > p {
   margin: 0;
 }
-/* Beim Anpassen: Blöcke überall anfassen und ziehen; Inhalt nur als gekürzte Vorschau */
-.home-grid-editing > .home-block {
+/* Beim Anpassen: Blöcke überall anfassen und ziehen, an der Ecke Größe ändern */
+.home-grid-editing .home-block-inner {
   border: 2px dashed var(--color-border);
   border-radius: var(--radius);
   padding: var(--space-2);
   background: var(--color-bg);
   cursor: grab;
-  touch-action: none;
   user-select: none;
 }
 /* Am Finger rollt die Seite über dem Inhalt weiter; gezogen wird an der Leiste des Blocks */
@@ -5333,16 +5356,7 @@ label:has(> .file-input:focus-visible) {
 .home-grid-editing .home-block-bar {
   touch-action: none;
 }
-@media (max-width: 64rem) {
-  /* Eine Spalte: die Breite spielt keine Rolle, die Vorschau bleibt kurz */
-  .home-block-wide-option {
-    display: none;
-  }
-  .home-grid-editing .home-block-content {
-    max-height: 8rem;
-  }
-}
-.home-grid-editing > .home-block-dragging {
+.home-grid-editing > .home-block-dragging > .home-block-inner {
   cursor: grabbing;
   border-color: var(--color-focus);
   box-shadow: var(--shadow);
@@ -5360,11 +5374,16 @@ label:has(> .file-input:focus-visible) {
 .home-block-bar .checkbox {
   margin: 0;
 }
+.home-block-width {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.home-block-width select {
+  width: auto;
+}
 .home-grid-editing .home-block-content {
-  max-height: 14rem;
-  overflow: hidden;
   pointer-events: none;
-  mask-image: linear-gradient(to bottom, currentColor 70%, transparent);
 }
 .home-grid-editing .home-block-content:empty::after {
   content: attr(data-empty);
@@ -5376,6 +5395,40 @@ label:has(> .file-input:focus-visible) {
 .home-block-off .home-block-content,
 .home-block-off .home-block-name {
   opacity: 0.45;
+}
+.home-block-resize {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+.home-block-resize:hover,
+.home-block-resize:focus-visible {
+  color: var(--color-text);
+}
+@media (max-width: 64rem) {
+  /* Eine Spalte: Breite und Höhe spielen keine Rolle, die Vorschau bleibt kurz */
+  .home-block-width,
+  .home-block-height,
+  .home-block-resize {
+    display: none;
+  }
+  .home-grid-editing .home-block-content {
+    max-height: 8rem;
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, currentColor 70%, transparent);
+  }
 }
 .home-notices h3 {
   margin: 0 0 0.25rem;

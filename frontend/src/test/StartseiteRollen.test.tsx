@@ -394,12 +394,40 @@ describe('Startseite selbst zusammenstellen', () => {
     // „b“ kam erst nach dem Speichern dazu, „x“ gibt es nicht mehr
     const placed = placeBlocks(blocks, { order: ['c', 'x', 'a', 'd'], hidden: ['d'], wide: ['c'] })
     expect(placed.map((b) => b.key)).toEqual(['c', 'a', 'b', 'd'])
-    expect(placed.map((b) => b.wide)).toEqual([true, false, false, false])
-    expect(layoutOf(placed)).toEqual({ order: ['c', 'a', 'b', 'd'], hidden: ['d'], wide: ['c'] })
+    expect(placed.map((b) => b.cols)).toEqual([12, 6, 6, 6])
+    expect(layoutOf(placed)).toEqual({
+      order: ['c', 'a', 'b', 'd'],
+      hidden: ['d'],
+      wide: ['c'],
+      sizes: {
+        c: { w: 12, h: null },
+        a: { w: 6, h: null },
+        b: { w: 6, h: null },
+        d: { w: 6, h: null },
+      },
+    })
+    // Größen gehen vor „wide“ und bleiben im Raster
+    const sized = placeBlocks(blocks, {
+      order: ['a', 'b'],
+      hidden: [],
+      wide: ['a'],
+      sizes: { a: { w: 4, h: 30 }, b: { w: 20, h: 1 } },
+    })
+    expect(sized.map((b) => [b.key, b.cols, b.rows])).toEqual([
+      ['a', 4, 30],
+      ['b', 12, 6],
+      ['c', 6, null],
+      ['d', 6, null],
+    ])
   })
 
   it('blendet Blöcke aus, stellt die Breite um, verschiebt und stellt den Standard her', async () => {
-    type Layout = { order: string[]; hidden: string[]; wide: string[] }
+    type Layout = {
+      order: string[]
+      hidden: string[]
+      wide: string[]
+      sizes: Record<string, { w: number; h: number | null }>
+    }
     let state: {
       hidden: string[]
       chosen: Record<string, string[]>
@@ -445,10 +473,24 @@ describe('Startseite selbst zusammenstellen', () => {
     await waitFor(() => expect(state.hidden).toEqual([]))
     await user.click(screen.getByRole('checkbox', { name: 'Hinweise zeigen' }))
     await waitFor(() => expect(state.layout.o7?.hidden).toEqual(['hinweise']))
-    await user.click(
-      screen.getByRole('checkbox', { name: 'Nächste Termine über die ganze Breite' }),
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Nächste Termine: Breite' }),
+      '12',
     )
     await waitFor(() => expect(state.layout.o7?.wide).toContain('termine'))
+    expect(state.layout.o7?.sizes.termine).toEqual({ w: 12, h: null })
+    // Feste Höhe, dann an der Ecke mit den Pfeiltasten kleiner und schmaler
+    await user.click(screen.getByRole('checkbox', { name: 'Hinweise: Höhe nach Inhalt' }))
+    await waitFor(() => expect(state.layout.o7?.sizes.hinweise?.h).toBe(20))
+    const corner = screen.getByRole('button', { name: 'Hinweise: Größe ändern' })
+    corner.focus()
+    await user.keyboard('{ArrowUp}')
+    await waitFor(() => expect(state.layout.o7?.sizes.hinweise).toEqual({ w: 6, h: 16 }))
+    expect(corner).toHaveFocus()
+    await user.keyboard('{ArrowLeft}')
+    await waitFor(() => expect(state.layout.o7?.sizes.hinweise).toEqual({ w: 5, h: 16 }))
+    await user.click(screen.getByRole('checkbox', { name: 'Hinweise: Höhe nach Inhalt' }))
+    await waitFor(() => expect(state.layout.o7?.sizes.hinweise).toEqual({ w: 5, h: null }))
     // Überall am Block ziehbar; mit der Tastatur über den Griff
     const grip = screen.getByRole('button', { name: 'Nächste Termine verschieben' })
     grip.focus()
@@ -464,7 +506,7 @@ describe('Startseite selbst zusammenstellen', () => {
     await user.click(screen.getByRole('button', { name: 'Fertig' }))
     expect(screen.queryByRole('heading', { name: /Hinweise/ })).not.toBeInTheDocument()
     const termine = await screen.findByRole('heading', { name: 'Nächste Termine' })
-    expect(termine.closest('.home-block')).toHaveClass('home-block-wide')
+    expect(termine.closest('.home-block')).toHaveAttribute('data-cols', '12')
 
     await user.click(screen.getByRole('button', { name: 'Startseite anpassen' }))
     await user.click(screen.getByRole('button', { name: 'Standard wiederherstellen' }))

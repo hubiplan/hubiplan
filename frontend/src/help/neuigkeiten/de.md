@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Startseite: Beim Anpassen ändert die Ecke unten rechts jedes Blocks Breite und Höhe, die Breite auch als ¼, ⅓, ½, ⅔, ¾ oder ganz. Das feinere Raster schließt Lücken: Ein Block rutscht unter einen kürzeren daneben.
 - Webseite: Wer nur „Inhalte bearbeiten“ darf, ändert unter Webseite › **Startseite** den Inhalt der vorhandenen Abschnitte und veröffentlicht ihn. Abschnitte hinzufügen, verschieben und gestalten bleibt bei der Webseitenverwaltung.
 - Webseite: Unter Gestaltung › **Darstellung der Bereiche** zeigt die Webseite den Vorstand als Karten oder kompakte Liste, die Termine als Liste oder Monatskalender, die Untereinheiten als große oder kleine Kacheln oder Liste und die Galerie als Kacheln oder Mauerwerk. Unter Webseite › Texte kommt mit **Einleitung für einen Bereich** ein Text oben über diese Bereiche.
 - Webseite: **Textseiten** lassen sich wie die Startseite aus Abschnitten bauen. Unter Webseite › Texte fügt **Abschnitt hinzufügen** über oder unter dem Text etwa Banner, Knöpfe, Kacheln oder ein Zitat ein. Der bisherige Text bleibt der erste Abschnitt, ohne Änderung sieht die Seite aus wie bisher.

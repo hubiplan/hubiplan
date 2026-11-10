@@ -9607,6 +9607,9 @@ msgstr "This conductor is already registered."
 msgid "Unbekannter Arbeitsbereich."
 msgstr "Unknown workspace."
 
+msgid "Unbekannter Block."
+msgstr "Unknown block."
+
 msgid "Zu viele Arbeitsbereiche."
 msgstr "Too many workspaces."
 msgid "Bitte zur Sicherheit einen aktuellen Code aus der Authenticator-App eingeben."
