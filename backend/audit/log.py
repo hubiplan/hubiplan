@@ -27,6 +27,7 @@ IGNORED_FIELDS = {"created_at", "updated_at", "id", "organization", "uuid"}
 OBJECT_TYPES = {
     "businesspartner": gettext_noop("Geschäftspartner"),
     "incominginvoice": gettext_noop("Rechnungseingang"),
+    "incomingmailbox": gettext_noop("Rechnungspostfach"),
     "invoiceartifact": gettext_noop("E-Rechnungsoriginal"),
     "invoicehybridartifact": gettext_noop("ZUGFeRD-Original"),
     "invoicedelivery": gettext_noop("E-Rechnungsversand"),

@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Finanzen › Rechnungseingang: **Rechnungspostfach**. Jede Einheit bekommt eine eigene Adresse für E-Rechnungen, z. B. `rechnung+k7m2q9ab@example.org`. HUBIplan holt Mails an diese Adresse jede Minute ab und übernimmt XML- und ZUGFeRD/Factur-X-Anhänge in den Rechnungseingang. Absender, die zu keinem Geschäftspartner passen, sind als **Absender unbekannt** gekennzeichnet; Mails ohne E-Rechnung erscheinen als Hinweis. Die Server-Verwaltung richtet das Postfach ein.
 - Webseite: Neun weitere Arten eigener Abschnitte für Startseite und Textseiten: **Häufige Fragen** zum Aufklappen, **Partner und Sponsoren** mit Logo und Link, **Anfahrt** zu einem gespeicherten Ort mit „Route planen“, **Termine einer Art** (z. B. nur Training), **Dokument zum Herunterladen**, **Video als Link** ohne Einbettung, **Auszug aus der Chronik**, **Zahlen auf einen Blick** und **Trenner**.
 - Startseite: Beim Anpassen ändert die Ecke unten rechts jedes Blocks Breite und Höhe, die Breite auch als ¼, ⅓, ½, ⅔, ¾ oder ganz. Das feinere Raster schließt Lücken: Ein Block rutscht unter einen kürzeren daneben.
 - Webseite: Unter Übersicht › **Hinweisleiste** steht ein Hinweis mit Zeitraum oben auf allen Seiten und verschwindet danach von selbst. Textseiten bekommen auf Wunsch ein **Titelbild** über der Überschrift. Unter Gestaltung › **Gestaltung als Datei** speichert und lädt ihr Design, Farben, Feinabstimmung und Darstellung, etwa für eine andere Einheit.

@@ -363,6 +363,8 @@ SECRET_FIELDS = {
         "distributed",
         "central_attachment_ids",
     },
+    # Herkunft aus dem Rechnungspostfach (#374) bleibt auf der alten Instanz
+    "billing.incominginvoice": {"mail"},
     # Freigaben gelten nur für die lokale Kopplung, nie für importierte Nummern.
     "competitions.starter": {"result_coupling"},
     "events.externalcalendar": {

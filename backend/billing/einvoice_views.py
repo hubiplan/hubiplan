@@ -24,9 +24,22 @@ from finance.models import Booking, Category, Project, Receipt
 from finance.services import lock_bank_sources
 from finance.views import FinanceMixin
 
-from . import einvoice_services, einvoice_validator, einvoice_xml, incoming_check
+from . import (
+    einvoice_services,
+    einvoice_validator,
+    einvoice_xml,
+    incoming_check,
+    incoming_import,
+    incoming_mail,
+)
 from .einvoice_schema import CommercialInvoiceSerializer, PartySerializer
-from .models import BusinessPartner, IncomingInvoice, IncomingValidation, Invoice
+from .models import (
+    BusinessPartner,
+    IncomingInvoice,
+    IncomingMail,
+    IncomingValidation,
+    Invoice,
+)
 from .serializers import InvoiceDetailSerializer
 from .views import BillingMixin, InvoicePagination, InvoiceViewSet, _as_drf
 
@@ -261,8 +274,25 @@ class ElectronicInvoiceViewSet(InvoiceViewSet):
         return file_response(data, "application/xml", "validation.xml")
 
 
+class IncomingMailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncomingMail
+        fields = [
+            "id",
+            "sender",
+            "subject",
+            "sender_known",
+            "status",
+            "skipped",
+            "received_at",
+            "dismissed_at",
+        ]
+        read_only_fields = fields
+
+
 class IncomingSerializer(serializers.ModelSerializer):
     has_report = serializers.SerializerMethodField()
+    mail = IncomingMailSerializer(read_only=True, allow_null=True)
 
     def get_has_report(self, obj) -> bool:
         return bool(obj.report_xml)
@@ -283,6 +313,7 @@ class IncomingSerializer(serializers.ModelSerializer):
             "booking",
             "created_at",
             "has_report",
+            "mail",
         ]
         read_only_fields = fields
 
@@ -292,59 +323,48 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = InvoicePagination
 
     def get_queryset(self):
-        return IncomingInvoice.objects.filter(organization=self.org)
+        return IncomingInvoice.objects.filter(organization=self.org).select_related("mail")
+
+    @action(detail=False, methods=["get", "post"])
+    def mailbox(self, request, org_id):
+        """Plus-Adresse des Vereins im Rechnungspostfach; POST vergibt eine neue (#374)."""
+        if not incoming_mail.configured():
+            return Response({"enabled": False, "address": ""})
+        if request.method == "POST":
+            incoming_mail.mailbox_of(self.org, renew=True)
+            record(
+                self.org,
+                request.user,
+                "update",
+                incoming_mail.mailbox_of(self.org),
+                {"Rechnungspostfach": [None, gettext("Neue Adresse vergeben")]},
+            )
+        return Response({"enabled": True, "address": incoming_mail.address_for(self.org)})
+
+    @action(detail=False, methods=["get"])
+    def mails(self, request, org_id):
+        """Offene Hinweise des Rechnungspostfachs: Mails ohne übernommene E-Rechnung."""
+        rows = IncomingMail.objects.filter(organization=self.org, dismissed_at__isnull=True)
+        return Response(IncomingMailSerializer(rows[:100], many=True).data)
+
+    @action(detail=False, methods=["post"], url_path=r"mails/(?P<mail_id>[0-9]+)/dismiss")
+    def dismiss_mail(self, request, org_id, mail_id):
+        mail = get_object_or_404(IncomingMail, organization=self.org, pk=mail_id)
+        if mail.dismissed_at is None:
+            mail.dismissed_at = timezone.now()
+            mail.save(update_fields=["dismissed_at"])
+        return Response(IncomingMailSerializer(mail).data)
 
     @transaction.atomic
     def create(self, request, org_id):
         upload = request.FILES.get("file")
-        if not upload or upload.size > 15 * 1024 * 1024:
+        if not upload or upload.size > incoming_import.MAX_BYTES:
             raise serializers.ValidationError(
                 gettext("Bitte eine XML- oder PDF-Datei mit höchstens 15 MB wählen.")
             )
-        raw = upload.read()
-        digest = hashlib.sha256(raw).hexdigest()
-        # Gleichzeitige Wiederholungen serialisieren, ohne externe Daten als Sperrschlüssel.
-        lock_bank_sources(self.org)
-        existing = self.get_queryset().filter(sha256=digest).first()
-        if existing:
-            return Response(self.get_serializer(existing).data)
-        content_type = "application/pdf" if raw.startswith(b"%PDF") else "application/xml"
-        data, xml = {}, b""
-        report, report_xml = einvoice_validator.failed(
-            gettext("Keine unterstützte E-Rechnung erkannt.")
-        )
-        try:
-            xml = einvoice.xml_from_pdf(raw) if content_type == "application/pdf" else raw
-            if xml:
-                data = einvoice.as_json(einvoice.parse_xml(xml))
-                # KoSIT-Prüfung im Hintergrund (billing/incoming_check.py)
-                report, report_xml = incoming_check.pending_report(), b""
-        except (einvoice.EInvoiceError, ValueError, RuntimeError) as exc:
-            report, report_xml = einvoice_validator.failed(str(exc))
-        pending = report["status"] == "pending"
-        item = IncomingInvoice.objects.create(
-            organization=self.org,
-            name=upload.name.rsplit("/", 1)[-1].rsplit("\\", 1)[-1][:200],
-            sha256=digest,
-            content_type=content_type,
-            data=data,
-            report=report,
-            validation="pending" if pending else "done",
-            created_by=request.user,
-        )
-        item.original.save(
-            "original.pdf" if content_type == "application/pdf" else "original.xml",
-            ContentFile(raw),
-            save=False,
-        )
-        if xml:
-            item.xml.save("invoice.xml", ContentFile(xml), save=False)
-        if report_xml:
-            item.report_xml.save("validation.xml", ContentFile(report_xml), save=False)
-        item.save()
-        record(self.org, request.user, "create", item, {"Rechnungseingang": [None, item.name]})
-        if pending:
-            incoming_check.schedule(self.org.pk)
+        item, created = incoming_import.store(self.org, upload.read(), upload.name, request.user)
+        if not created:
+            return Response(self.get_serializer(item).data)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])

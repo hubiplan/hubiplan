@@ -73,6 +73,22 @@ export interface ValidationReport {
   validator: string
   messages: { level: string; code?: string; text: string }[]
 }
+/** Mail aus dem Rechnungspostfach (#374). */
+export interface IncomingMail {
+  id: number
+  sender: string
+  subject: string
+  /** Absender passt zur E-Mail-Adresse eines Geschäftspartners. */
+  sender_known: boolean
+  status: 'imported' | 'no_invoice' | 'spam' | 'virus' | 'error'
+  skipped: { name: string; reason: string }[]
+  received_at: string
+  dismissed_at: string | null
+}
+export interface IncomingMailbox {
+  enabled: boolean
+  address: string
+}
 export interface IncomingInvoice {
   id: number
   name: string
@@ -97,6 +113,8 @@ export interface IncomingInvoice {
   review_note: string
   booking: number | null
   created_at: string
+  /** Aus dem Rechnungspostfach; null beim Hochladen. */
+  mail?: IncomingMail | null
 }
 const base = (org: number) => `/api/orgs/${org}`
 export interface DeliveryState {
@@ -163,6 +181,12 @@ export const einvoiceApi = {
     api.post<IncomingInvoice>(`${base(org)}/finance/incoming/${id}/link/`, { booking }),
   revalidate: (org: number, id: number) =>
     api.post<IncomingInvoice>(`${base(org)}/finance/incoming/${id}/revalidate/`, {}),
+  mailbox: (org: number) => api.get<IncomingMailbox>(`${base(org)}/finance/incoming/mailbox/`),
+  renewMailbox: (org: number) =>
+    api.post<IncomingMailbox>(`${base(org)}/finance/incoming/mailbox/`, {}),
+  mails: (org: number) => api.get<IncomingMail[]>(`${base(org)}/finance/incoming/mails/`),
+  dismissMail: (org: number, id: number) =>
+    api.post<IncomingMail>(`${base(org)}/finance/incoming/mails/${id}/dismiss/`, {}),
   download: (org: number, id: number, part = 'original') =>
     `${base(org)}/finance/incoming/${id}/download/?part=${part}`,
 }
