@@ -208,22 +208,37 @@ def member_queryset(org: Organization):
     )
 
 
+def _email_word(word: str) -> bool:
+    """Nur ganze Adressen (``name@example.org``) oder Domains ab dem @ (``@example.org``)
+    suchen die E-Mail-Adressen durch (Fachfrage 8 zum Gesamtaudit 10.11.)."""
+    local, at, domain = word.partition("@")
+    return bool(at and domain and "@" not in domain)
+
+
 def _persons_by_email(qs, words: list[str]) -> dict[str, set[int]]:
-    """Entschlüsselt die sichtbaren Adressen einmal für alle Suchwörter."""
+    """Entschlüsselt die sichtbaren Adressen einmal für alle Adress-Suchwörter.
+
+    Ohne Wort mit @ wird keine Adresse entschlüsselt: Teilwörter wie „müller“ suchen
+    nur in Namen und Nummern (Gesamtaudit 10.11. P01)."""
     matches = {word: set() for word in words}
+    wanted = [word for word in words if _email_word(word)]
+    if not wanted:
+        return matches
     contacts = ContactDetails.objects.filter(person_id__in=qs.values("person_id")).values_list(
         "person_id", "email"
     )
     for pid, email in contacts.iterator():
         if email:
-            email = email.lower()
-            for word in words:
-                if word in email:
+            email = email.strip().lower()
+            for word in wanted:
+                if email.endswith(word) if word.startswith("@") else email == word:
                     matches[word].add(pid)
     return matches
 
 
-def filter_members(qs, params, org: Organization):
+def filter_members(qs, params, org: Organization, *, lazy: bool = False):
+    """Filter und Sortierung der Mitgliederliste. ``lazy=True`` für Listen mit
+    Seitenschnitt: liefert ``OrderedRows`` statt eines QuerySets."""
     status_filter = params.get("status", "aktiv")
     if status_filter == "aktiv":
         qs = qs.filter(is_current=True)
@@ -319,9 +334,9 @@ def filter_members(qs, params, org: Organization):
             getattr(F(f), "desc" if desc else "asc")(nulls_last=True)
             for f in ("sort_key", "sort_name")
         ] + ["person__last_name", "person__first_name"]
-        return ordered(qs, *ordering, "pk")
+        return ordered(qs, *ordering, "pk", lazy=lazy)
     if key == "geburtsdatum":
-        return _by_birth(qs, desc)
+        return _by_birth(qs, desc, lazy=lazy)
     ordering = {
         "name": ("person__last_name", "person__first_name"),
         "-name": ("-person__last_name", "-person__first_name"),
@@ -330,13 +345,13 @@ def filter_members(qs, params, org: Organization):
         "nummer": ("club_number",),
         "-nummer": ("-club_number",),
     }.get(sort, ("person__last_name", "person__first_name"))
-    return ordered(qs, *ordering, "pk")
+    return ordered(qs, *ordering, "pk", lazy=lazy)
 
 
-def _by_birth(qs, desc: bool):
+def _by_birth(qs, desc: bool, *, lazy: bool = False):
     """Unbekannte Daten stehen wie bisher in beiden Richtungen am Ende."""
     term = F("person__birth_date")
-    return ordered(qs, term.desc(nulls_last=True) if desc else term.asc(nulls_last=True))
+    return ordered(qs, term.desc(nulls_last=True) if desc else term.asc(nulls_last=True), lazy=lazy)
 
 
 def member_rows(memberships, org: Organization, full_names: bool = False) -> list[dict]:
@@ -429,7 +444,7 @@ class MemberListView(_ClubMixin, generics.GenericAPIView):
         ]
     )
     def get(self, request, org_id: int):
-        qs = filter_members(member_queryset(self.org), request.query_params, self.org)
+        qs = filter_members(member_queryset(self.org), request.query_params, self.org, lazy=True)
         page = self.paginate_queryset(qs)
         return self.get_paginated_response(member_rows(page, self.org))
 
