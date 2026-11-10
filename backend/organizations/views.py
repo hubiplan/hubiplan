@@ -32,6 +32,7 @@ from access.catalog import (
 )
 from access.models import Role, RoleAssignment
 from access.permissions import is_platform_admin
+from accounts import step_up
 from accounts.models import User
 from audit.log import diff, record, snapshot
 from core import update_check, virenscan
@@ -512,6 +513,7 @@ class PlatformOrganizationViewSet(
     @action(detail=True, methods=["post"], url_path="erase")
     def erase(self, request, pk=None):
         org = self.get_object()
+        step_up.require(request)
         if request.data.get("confirmation") != org.name:
             raise serializers.ValidationError(
                 {
@@ -621,6 +623,7 @@ class PlatformBoardView(APIView):
 
     @transaction.atomic
     def post(self, request, pk: int):
+        step_up.require(request)
         org = get_object_or_404(
             Organization.objects.exclude(type=Organization.Type.PLATFORM), pk=pk
         )

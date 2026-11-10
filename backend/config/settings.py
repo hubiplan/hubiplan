@@ -181,6 +181,10 @@ MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
 MFA_TOTP_ISSUER = os.environ.get("MFA_TOTP_ISSUER", "HUBIplan")
 # 2FA-Geheimnisse verschlüsselt speichern (accounts/mfa.py); Schlüssel nur in der .env
 MFA_ADAPTER = "accounts.mfa.MFAAdapter"
+# Gesamtaudit 10.11., Frage 1: Plattform-Verwaltung ohne Frist nur mit 2FA; heikle Aktionen
+# verlangen einen frischen Code (accounts/step_up.py). Tests schalten beides gezielt ein.
+MFA_PLATFORM_GRACE = False
+MFA_STEP_UP = True
 # Ein leerer Wert (z. B. aus docker-compose ${MFA_ENCRYPTION_KEYS:-}) gilt als nicht gesetzt
 MFA_ENCRYPTION_KEYS = env_list("MFA_ENCRYPTION_KEYS") or env_list("MFA_ENCRYPTION_KEY")
 if not MFA_ENCRYPTION_KEYS:

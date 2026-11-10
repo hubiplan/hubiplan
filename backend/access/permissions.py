@@ -133,6 +133,19 @@ def is_platform_admin(user) -> bool:
         return PLATFORM_MANAGE in permissions_in(user, Organization.platform())
 
 
+def platform_rights_waiting(user) -> bool:
+    """Hätte das Konto Rechte der Plattform-Verwaltung, die ohne zweiten Faktor ruhen?"""
+    if not getattr(user, "pk", None):
+        return False
+    if user.is_superuser:
+        return True
+    from core.tenancy import user_view
+
+    platform = Organization.platform()
+    with user_view(user.pk):
+        return bool(_assigned(user, platform) & effective(enabled_codes_for(platform)))
+
+
 def organizations_for(user) -> list[tuple[Organization, set[str]]]:
     """Alle Organisationen, in denen der Benutzer gerade eine Rolle hat."""
     if not user.is_authenticated:

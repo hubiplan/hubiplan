@@ -7620,5 +7620,11 @@
   "Noch keine Orte gespeichert.": "No places saved yet.",
   "Neuer Ort": "New place",
   "Ort speichern": "Save place",
-  "Orte von {name}": "Places of {name}"
+  "Orte von {name}": "Places of {name}",
+  "Die Plattform-Verwaltung ruht, bis du die Zwei-Faktor-Anmeldung einrichtest.": "Platform administration is paused until you set up two-factor sign-in.",
+  "Diese Aktion ist besonders geschützt. Bitte gib zur Bestätigung den aktuellen Code aus deiner Authenticator-App ein (oder einen Wiederherstellungscode).": "This action is specially protected. Please confirm it with the current code from your authenticator app (or a recovery code).",
+  "Diese Aktion ist besonders geschützt. Bitte bestätige sie mit deinem Passwort. Mit eingerichteter Zwei-Faktor-Anmeldung fragen wir stattdessen nach einem Code.": "This action is specially protected. Please confirm it with your password. Once two-factor sign-in is set up, we ask for a code instead.",
+  "Aktion bestätigen": "Confirm action",
+  "Der Code stimmt nicht.": "The code is not correct.",
+  "Das Passwort stimmt nicht.": "The password is not correct."
 }

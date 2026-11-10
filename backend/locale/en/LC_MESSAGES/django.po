@@ -9521,3 +9521,9 @@ msgstr "A place with this name already exists."
 
 msgid "Bitte Breite und Länge zusammen angeben."
 msgstr "Please enter latitude and longitude together."
+
+msgid "Bitte zur Sicherheit einen aktuellen Code aus der Authenticator-App eingeben."
+msgstr "For your security, please enter a current code from your authenticator app."
+
+msgid "Bitte zur Sicherheit dein Passwort eingeben."
+msgstr "For your security, please enter your password."

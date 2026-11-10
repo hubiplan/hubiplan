@@ -22,3 +22,16 @@ as the icon. Others, for example Google Authenticator, Microsoft Authenticator, 
 the initials instead. In Aegis you can choose your own image for the entry, in 2FAS you can change
 the letters and colour. An entry
 you already set up only changes when you set up two-factor authentication again.
+
+## Confirming sensitive actions
+
+For some actions HUBIplan asks again for a **current code** from the app if your last code is
+older than 10 minutes: full exports and spin-offs, assigning roles or extending their rights,
+resetting another person's two-factor authentication, creating the QR code for the HUBIplan app
+and permanent deletion (club, former member, name in the chronicle). A recovery code works too.
+If you have not set up two-factor authentication yet, you confirm with your password during the
+transition period.
+
+**Platform administration** has no transition period: without two-factor authentication its
+rights are paused until you set it up here. Board and treasurer have 14 days; the deadline is
+shown at the top of every page.

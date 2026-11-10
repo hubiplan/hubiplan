@@ -23,6 +23,7 @@ from access.catalog import (
     PEERING_VIEW,
 )
 from access.permissions import permissions_in
+from accounts import step_up
 from core.api_base import OrgScopedMixin
 from events.models import Event
 from organizations.views import IsPlatformAdmin
@@ -771,6 +772,7 @@ class SpinOffsView(_Peering):
         from organizations.models import Organization
 
         self.require(DATA_EXPORT, "Ausgliedern braucht das Recht für den vollständigen Export.")
+        step_up.require(request)
         if self.org.type != Organization.Type.CLUB:
             raise ValidationError(
                 {"detail": gettext("Nur Einheiten mit eigenem Datenbereich gliedern aus.")}
