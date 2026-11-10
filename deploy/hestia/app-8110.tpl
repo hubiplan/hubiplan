@@ -4,10 +4,11 @@
 # Leitet nur auf HTTPS um; Let's-Encrypt-Prüfung läuft über nginx.conf_*. #
 #                                                                         #
 # Aufgebaut nach den Standardvorlagen von HestiaCP 1.9.4                  #
-# (nginx-Vorlagen für Weiterleitungen, github.com/hestiacp/hestiacp),     #
-# GPL-3.0; geändert für HUBIplan seit 2026-10. Diese Datei steht daher    #
-# unter der GPL-3.0; Volltext in LICENSE-GPL-3.0.txt daneben,             #
-# Einordnung in docs/lizenzen.md.                                         #
+# (nginx-Vorlagen, github.com/hestiacp/hestiacp, Commit aae8b2b),         #
+# GPL-3.0; von Ralf Philipsen geändert für HUBIplan ab Oktober 2026,      #
+# letzte Änderung 2026-11-08 (bei jeder Änderung anpassen, GPL § 5a).     #
+# Diese Datei steht daher unter der GPL-3.0; Volltext in                  #
+# LICENSE-GPL-3.0.txt daneben, Einordnung in docs/lizenzen.md.            #
 #=========================================================================#
 
 server {
