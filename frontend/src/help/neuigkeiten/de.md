@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Webseite: Wer nur „Inhalte bearbeiten“ darf, ändert unter Webseite › **Startseite** den Inhalt der vorhandenen Abschnitte und veröffentlicht ihn. Abschnitte hinzufügen, verschieben und gestalten bleibt bei der Webseitenverwaltung.
 - Webseite: Unter Gestaltung › **Darstellung der Bereiche** zeigt die Webseite den Vorstand als Karten oder kompakte Liste, die Termine als Liste oder Monatskalender, die Untereinheiten als große oder kleine Kacheln oder Liste und die Galerie als Kacheln oder Mauerwerk. Unter Webseite › Texte kommt mit **Einleitung für einen Bereich** ein Text oben über diese Bereiche.
 - Webseite: **Textseiten** lassen sich wie die Startseite aus Abschnitten bauen. Unter Webseite › Texte fügt **Abschnitt hinzufügen** über oder unter dem Text etwa Banner, Knöpfe, Kacheln oder ein Zitat ein. Der bisherige Text bleibt der erste Abschnitt, ohne Änderung sieht die Seite aus wie bisher.
 - Startseite: **Startseite anpassen** stellt die Startseite selbst zusammen. Blöcke an beliebiger Stelle anfassen und an ihren Platz ziehen, mit **Zeigen** aus- und einblenden und mit **Ganze Breite** über die ganze Zeile stellen; die Anordnung gilt je Konto und Einheit. **Jubiläen** und **Geburtstage** sind wieder zwei eigene Karten. Auch die Schnellaktionen ordnest du jetzt per Ziehen.

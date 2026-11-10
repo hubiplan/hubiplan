@@ -7901,5 +7901,9 @@
   "Eine Einleitung steht oben über Vorstand, Terminen, Untereinheiten oder Galerie. Wie diese Bereiche aussehen, wählst du unter": "An introduction appears at the top of the board, events, sub-units or gallery. You choose how these areas look under",
   "Einleitung für einen Bereich": "Introduction for an area",
   "Erscheint oben im Bereich „{x}“, über dem Inhalt aus HUBIplan.": "Appears at the top of the “{x}” area, above the content from HUBIplan.",
-  "Darstellung der Bereiche": "Area display"
+  "Darstellung der Bereiche": "Area display",
+  "Du kannst die Inhalte der eigenen Abschnitte ändern. Welche Abschnitte es gibt, in welcher Reihenfolge und wie sie aussehen, legt die Webseitenverwaltung fest.": "You can change the content of the custom sections. Which sections exist, their order and how they look is set by the website managers.",
+  "Noch keine eigenen Abschnitte.": "No custom sections yet.",
+  "ausgeblendet": "hidden",
+  "Der Entwurf ändert auch die Gestaltung. Veröffentlichen kann ihn nur, wer die Webseite verwaltet.": "The draft also changes the design. Only website managers can publish it."
 }

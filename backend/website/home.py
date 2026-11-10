@@ -341,8 +341,19 @@ def resolve(site, sections: list[dict], builtin_keys, event_entry) -> list[dict]
 
 # --- Textseiten (G4) ---
 
+
 # Der bisherige Inhalt einer Textseite (Bild oben und Text) ist ein fester Abschnitt; ohne
 # eigene Abschnitte sieht die Seite aus wie vorher.
+def skeleton(sections) -> list[tuple]:
+    """Aufbau der Abschnitte ohne Inhalt: Reihenfolge, Art, an/aus, Aussehen (F7).
+    Wer nur Inhalte bearbeiten darf, darf daran nichts ändern."""
+    return [
+        (s.get("key"), s.get("kind"), s.get("on"), s.get("bg"), s.get("width"), s.get("column"))
+        for s in sections
+        if isinstance(s, dict)
+    ]
+
+
 PAGE_BUILTINS = ("body",)
 
 

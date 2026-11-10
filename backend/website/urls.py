@@ -56,6 +56,12 @@ org_patterns = [
     path(
         "website/design/publish/", views.DesignPublishView.as_view(), name="website-design-publish"
     ),
+    path("website/home-content/", views.HomeContentView.as_view(), name="website-home-content"),
+    path(
+        "website/home-content/publish/",
+        views.HomeContentPublishView.as_view(),
+        name="website-home-content-publish",
+    ),
     path(
         "website/design/discard/", views.DesignDiscardView.as_view(), name="website-design-discard"
     ),

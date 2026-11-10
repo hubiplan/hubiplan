@@ -275,6 +275,69 @@ describe('Webseite', () => {
     )
   })
 
+  it('ändert mit „Inhalte bearbeiten“ nur den Inhalt eines Abschnitts (F7)', async () => {
+    const home = [
+      { key: 'greeting', on: true },
+      { key: 'text-1', kind: 'text', on: true, width: 'full', data: { title: 'Über uns' } },
+    ]
+    const site = (extra: Record<string, unknown>) => ({
+      ...data(website('public', { home_sections: home, draft: {}, ...extra })),
+      can_manage: false,
+      can_edit_home_content: true,
+      home_labels: { greeting: 'Willkommenstext' },
+      home_kinds: { text: 'Text' },
+      home_choices: { roles: [], albums: [], events: [] },
+    })
+    const edited = [home[0], { ...home[1], data: { title: 'Wer wir sind' } }]
+    const org = testOrg({
+      permissions: ['members.view', 'website.content'],
+      modules: ['members', 'website'],
+    })
+    const calls = fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
+      [`GET ${base}`]: () => ({ status: 200, body: site({}) }),
+      [`PUT ${base}home-content/`]: () => ({
+        status: 200,
+        body: site({ draft: { home_sections: edited }, draft_content_only: true }),
+      }),
+      [`POST ${base}home-content/publish/`]: () => ({ status: 200, body: site({}) }),
+    })
+    render(
+      <MemoryRouter initialEntries={['/webseite/startseite']}>
+        <AuthProvider>
+          <OrgProvider>
+            <App />
+          </OrgProvider>
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+    const user = userEvent.setup()
+    // Kein Hinzufügen, kein Verschieben, nur Bearbeiten
+    await user.click(await screen.findByRole('button', { name: 'Text bearbeiten' }))
+    expect(screen.queryByRole('button', { name: 'Abschnitt hinzufügen' })).toBeNull()
+    const editor = await screen.findByRole('dialog', { name: 'Text' })
+    expect(within(editor).queryByRole('button', { name: 'Volle Breite' })).toBeNull()
+    const title = within(editor).getByLabelText('Überschrift (optional)')
+    await user.clear(title)
+    await user.type(title, 'Wer wir sind')
+    await user.click(within(editor).getByRole('button', { name: 'Übernehmen' }))
+    await waitFor(() => {
+      const put = calls.filter((c) => c.key === `PUT ${base}home-content/`).at(-1)
+      const body = JSON.parse(String(put?.init?.body ?? '{}'))
+      expect(body.home_sections[1]).toMatchObject({
+        key: 'text-1',
+        width: 'full',
+        data: { title: 'Wer wir sind' },
+      })
+    })
+    expect(screen.queryByRole('button', { name: 'Verwerfen' })).toBeNull()
+    await user.click(await screen.findByRole('button', { name: 'Veröffentlichen' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === `POST ${base}home-content/publish/`)).toBe(true),
+    )
+  })
+
   it('legt einen Link nach außen an und hebt ihn als Knopf hervor', async () => {
     const items = [
       {

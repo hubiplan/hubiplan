@@ -16,6 +16,7 @@ const operation = t('Betrieb')
 
 const ALL: NavItem[] = [
   { to: '/webseite', label: t('Übersicht') },
+  { to: '/webseite/startseite', label: t('Startseite'), section: content },
   { to: '/webseite/inhalte', label: t('Texte'), section: content },
   { to: '/webseite/bilder', label: t('Bilder'), section: content },
   { to: '/webseite/galerie', label: t('Galerie'), section: content },
@@ -27,17 +28,20 @@ const ALL: NavItem[] = [
   { to: '/webseite/domain', label: t('Internetadresse'), section: operation },
 ]
 
-/** Wer nur Inhalte pflegt, sieht nur „Texte“, „Bilder“, „Galerie“, „Dokumente“ und „Social Media“. */
+/** Wer nur Inhalte pflegt, sieht nur „Startseite“ (Inhalte der Abschnitte), „Texte“, „Bilder“, „Galerie“, „Dokumente“ und „Social Media“. */
 export function websiteSections(org: OrgSummary | null): NavItem[] {
   if (!org) return []
   // Social Media ist ein eigenes Modul
   const all = org.modules.includes('social')
     ? ALL
     : ALL.filter((s) => s.to !== '/webseite/beitraege')
-  if (org.permissions.includes(PERM.websiteManage)) return all
+  // Verwalter stellen die Startseite unter „Gestaltung“ zusammen
+  if (org.permissions.includes(PERM.websiteManage))
+    return all.filter((s) => s.to !== '/webseite/startseite')
   if (org.permissions.includes(PERM.websiteContent)) {
     return all.filter((s) =>
       [
+        '/webseite/startseite',
         '/webseite/inhalte',
         '/webseite/bilder',
         '/webseite/galerie',

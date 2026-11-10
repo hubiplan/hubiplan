@@ -9725,3 +9725,9 @@ msgstr "Unknown area."
 
 msgid "Für diesen Bereich gibt es schon eine Einleitung."
 msgstr "This area already has an introduction."
+
+msgid "Mit dem Recht „Inhalte bearbeiten“ änderst du nur den Inhalt vorhandener Abschnitte."
+msgstr "With the “Edit content” right you can only change the content of existing sections."
+
+msgid "Der Entwurf ändert auch die Gestaltung. Veröffentlichen kann ihn nur, wer die Webseite verwaltet."
+msgstr "The draft also changes the design. Only website managers can publish it."
