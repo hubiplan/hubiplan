@@ -163,9 +163,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-    # Audit 29.10. G08: naheliegende Wörter und geleakte Passwörter (ohne externen Dienst)
+    # Audit 29.10. G08: naheliegende Wörter (ohne externen Dienst). Häufige Passwörter aus
+    # Datenlecks prüft CommonPasswordValidator oben (Lizenzaudit 10.11., L05).
     {"NAME": "accounts.validators.ContextWordValidator"},
-    {"NAME": "accounts.validators.LeakedPasswordValidator"},
 ]
 
 # --- allauth: Anmeldung per E-Mail/Passwort, optionale 2FA per TOTP ---
@@ -181,6 +181,10 @@ MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
 MFA_TOTP_ISSUER = os.environ.get("MFA_TOTP_ISSUER", "HUBIplan")
 # 2FA-Geheimnisse verschlüsselt speichern (accounts/mfa.py); Schlüssel nur in der .env
 MFA_ADAPTER = "accounts.mfa.MFAAdapter"
+# Gesamtaudit 10.11., Frage 1: Plattform-Verwaltung ohne Frist nur mit 2FA; heikle Aktionen
+# verlangen einen frischen Code (accounts/step_up.py). Tests schalten beides gezielt ein.
+MFA_PLATFORM_GRACE = False
+MFA_STEP_UP = True
 # Ein leerer Wert (z. B. aus docker-compose ${MFA_ENCRYPTION_KEYS:-}) gilt als nicht gesetzt
 MFA_ENCRYPTION_KEYS = env_list("MFA_ENCRYPTION_KEYS") or env_list("MFA_ENCRYPTION_KEY")
 if not MFA_ENCRYPTION_KEYS:
@@ -288,6 +292,8 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 3600.0,
     },
     "materials-purge": {"task": "materials.tasks.purge_deleted", "schedule": 86400.0},
+    # Eingehende Dateien in Quarantäne nachprüfen (Gesamtaudit 10.11., Fachfrage 2)
+    "virenscan-quarantaene": {"task": "core.tasks.recheck_quarantine", "schedule": 600.0},
     "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": 86400.0},
     "helferdienste-erinnerungen": {"task": "helpers.tasks.send_reminders", "schedule": 3600.0},
     "todos-reminders": {"task": "todos.tasks.send_due_reminders", "schedule": 300.0},
@@ -321,6 +327,12 @@ CELERY_BEAT_SCHEDULE = {
     # Rundschreiben, deren Versandauftrag verloren ging, weiterversenden
     "rundschreiben-wiederanlauf": {"task": "circulars.tasks.resume_stalled", "schedule": 15 * 60},
     "rechnungen-ablegen": {"task": "billing.tasks.archive_invoices", "schedule": 15 * 60},
+    # Eingehende E-Rechnungen: liegengebliebene Prüfungen nachholen, Abgelehnte löschen
+    "erechnungen-pruefen": {"task": "billing.tasks.check_incoming_all", "schedule": 60},
+    "erechnungen-abgelehnte-loeschen": {
+        "task": "billing.tasks.purge_rejected_incoming",
+        "schedule": 24 * 60 * 60,  # täglich
+    },
     "postausgang-aufraeumen": {
         "task": "outbox.tasks.purge_sent_mails",
         "schedule": 24 * 60 * 60,  # täglich
@@ -513,6 +525,14 @@ OIDC_KEY_FILE = os.environ.get("OIDC_KEY_FILE", "")
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
 EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")
+# Zeitlimit der KoSIT-Prüfung in Sekunden: in Anfragen (Ausgangsrechnung festschreiben) und im
+# Hintergrundjob für eingehende Rechnungen (billing/incoming_check.py)
+EINVOICE_VALIDATOR_TIMEOUT = int(os.environ.get("EINVOICE_VALIDATOR_TIMEOUT", "45"))
+EINVOICE_VALIDATOR_BACKGROUND_TIMEOUT = int(
+    os.environ.get("EINVOICE_VALIDATOR_BACKGROUND_TIMEOUT", "180")
+)
+# Abgelehnte und nicht lesbare Eingangsrechnungen ohne Buchung nach so vielen Tagen löschen
+EINVOICE_REJECTED_RETENTION_DAYS = int(os.environ.get("EINVOICE_REJECTED_RETENTION_DAYS", "90"))
 # Server-only tenant mapping; credential VALUES stay in their named environment variables.
 try:
     EINVOICE_GATEWAYS = json.loads(os.environ.get("EINVOICE_GATEWAYS") or "{}")

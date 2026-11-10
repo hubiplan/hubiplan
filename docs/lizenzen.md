@@ -85,8 +85,8 @@ Installationspakete an Dritte gehen (siehe unten).
 | Ghostscript (Debian) | AGPL-3.0 | Unveränderter separater Prozess für PDF/A-3. Enthaltene Schrift- und ICC-Profildateien behalten ihre jeweiligen Hinweise. Bei Weitergabe des Images vollständige Lizenz-/Quellcodepflichten beachten. |
 | veraPDF 1.30.3 | MPL-2.0 oder GPL-3.0-or-later | Unveränderter offizieller CLI-Validator, Installer mit SHA-256 geprüft; Lizenztexte bleiben in der Installation. Enthaltene Java-Abhängigkeiten haben eigene Hinweise. |
 | Hestia-Vorlagen `deploy/hestia/app-8110.*` | GPL-3.0 | Aufgebaut nach den Standardvorlagen von HestiaCP 1.9.4 (Commit `aae8b2b`), als solche gekennzeichnet mit Änderungsvermerk und Datum der letzten Änderung (GPL § 5a, bei jeder Änderung anpassen); GPL-Volltext in `deploy/hestia/LICENSE-GPL-3.0.txt`. Die Vorlagen bleiben GPL-3.0; GPL-3.0 und AGPL-3.0 dürfen kombiniert werden (jeweils § 13) |
-| Passwortliste `backend/accounts/data/geleakte-passwoerter.txt.gz` | MIT (SecLists) | Umgewandelte Fassung der NCSC-Liste aus SecLists (Commit `1a7bb91`); MIT-Text in `LICENSE-SecLists.txt` daneben, Herkunft und Umwandlung in der README dort. Rechte an der ursprünglichen NCSC-Sammlung offen, siehe unten |
-| SEPA-Schema `backend/music/schemas/pain.001.001.09_GBIC_5.xsd` | nicht belegt | Datenformat der Deutschen Kreditwirtschaft (GBIC 5, SIZ, Stand 01.04.2025) zur Prüfung der Auszahlungsdatei; eine Erlaubnis zur Weitergabe genau dieser Datei liegt nicht vor, siehe unten |
+| Häufige Passwörter | BSD-3-Clause (Django) | Djangos `CommonPasswordValidator` mit der Liste aus Django. Die frühere NCSC-Liste (über SecLists) ist seit 10.11.2026 entfernt, weil die Rechte an der ursprünglichen Sammlung nicht belegt waren (Audit 10.11., L05) |
+| SEPA-Schema `backend/music/schemas/pain.001.001.09.xsd` | ISO 20022 Nutzungsbedingungen | Unverändertes ISO-20022-Originalschema zur Prüfung der Auszahlungsdatei. Die strengeren Regeln der Deutschen Kreditwirtschaft (GBIC 5) prüft `music.payouts.dk_rules` im eigenen Code; die DK-Schemadatei ist seit 10.11.2026 entfernt, weil eine Erlaubnis zur Weitergabe fehlte (Audit 10.11., L04) |
 
 Das Server-Image enthält nur die Laufzeit-Abhängigkeiten (`requirements.txt`). Test-Werkzeuge
 (`requirements-dev.txt`: pytest, ruff) baut nur `scripts/test.sh` mit
@@ -123,16 +123,15 @@ Diese Fragen aus dem Lizenzaudit lassen sich nicht im Code lösen:
   ein anderer als der Rechteinhaber eine Instanz betreibt (z. B. ein Verein selbst), Images
   weitergegeben werden oder die App verteilt wird. Dann je ausgelieferter Fassung die passende
   Quelle mit Bauskripten, ohne Geheimnisse und Vereinsdaten (Audit 31.10., L03).
-- **Passwortliste:** Nutzungsgrundlage der ursprünglichen NCSC-Sammlung (mögliche
-  Datenbankrechte) ist nicht belegt (Audit 31.10., L04; Audit 10.11., L05).
-- **SEPA-Schema (GBIC 5):** Die XSD der Deutschen Kreditwirtschaft liegt im öffentlichen Repo,
-  ohne belegte Erlaubnis zur Weitergabe (Audit 10.11., L04).
+- **Passwortliste und SEPA-Schema:** Seit 10.11.2026 ersetzt (siehe Tabelle). Ältere
+  Fassungen in der Git-Geschichte enthalten die NCSC-Liste und die DK-Schemadatei noch.
 - **Beiträge aus Instagram/Facebook:** HUBIplan kopiert Texte und Bilder auf die Webseite
   (Bilder neu gespeichert, ohne eingebettete Angaben). Die Verbindung gibt keine Rechte an
   fremden Bildern oder Musik; der Hinweis steht in der Einrichtung (Audit 31.10., L10).
 - **Inhalte der Vereine:** Fotos, Logos, Wappen und Texte laden die Vereine selbst hoch.
   Die Upload-Felder weisen darauf hin, dass die Erlaubnis der Urheber nötig ist.
-- **Marken:** Keine Recherche zu „HUBIplan“ oder dem H-Logo (Audit 10.11., L14).
+- **Marken:** Keine Recherche zu „HUBIplan“ oder dem H-Logo (Audit 10.11., L14). Vor
+  weiterer Werbung recherchiert der Herausgeber bei DPMA und EUIPO (Entscheidung 10.11.2026).
 - **Android-App:** eigenes Repository `hubiplan-android` mit eigener Lizenzseite in der App
   und Beschreibung in dessen `docs/lizenzen.md`. Die Variante `play` enthält Google-Bausteine
   unter proprietären SDK-Bedingungen und bleibt unveröffentlicht (Audit 31.10., L02).

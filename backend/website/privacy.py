@@ -229,7 +229,10 @@ def website_privacy(website: Website) -> str:
                 f"{nr()} Termine und Kalender-Abo",
                 "Unsere öffentlichen Termine können Sie als Kalender abonnieren. Ihr Kalender ruft "
                 "die Kalenderdatei dann regelmäßig bei uns ab; dabei fallen nur die oben "
-                "genannten Zugriffsdaten an. Eine Anmeldung ist nicht nötig.",
+                "genannten Zugriffsdaten an. Eine Anmeldung ist nicht nötig. Entfernte oder "
+                "geänderte Termine und Bilder verschwinden bei uns spätestens nach 15 Minuten; "
+                "Kopien, die Ihr Kalender oder Dritte schon abgerufen haben, können wir nicht "
+                "löschen.",
             )
         )
     people = []

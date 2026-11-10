@@ -146,11 +146,18 @@ def platform_admin(db):
     return user
 
 
+QUARANTAENE_LEER = {"pending": 0, "infected": 0}
+
+
 @pytest.mark.parametrize(
     ("socket", "required", "erwartet"),
     [
-        ("", False, {"enabled": False, "required": False}),
-        ("/run/clamd.ctl", True, {"enabled": True, "required": True}),
+        ("", False, {"enabled": False, "required": False, "quarantine": QUARANTAENE_LEER}),
+        (
+            "/run/clamd.ctl",
+            True,
+            {"enabled": True, "required": True, "quarantine": QUARANTAENE_LEER},
+        ),
     ],
 )
 def test_plattform_sieht_stand_der_virenpruefung(

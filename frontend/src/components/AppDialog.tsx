@@ -21,6 +21,10 @@ export type PromptOptions = {
   confirmLabel?: string
   cancelLabel?: string
   danger?: boolean
+  /** Passwort verdeckt; Code mit Zifferntastatur und Vorschlag aus dem Passwortmanager */
+  inputType?: 'text' | 'password'
+  inputMode?: 'numeric' | 'text'
+  autoComplete?: string
 }
 
 export type AlertOptions = {
@@ -149,7 +153,14 @@ export function AppDialog({
           {spec.kind === 'prompt' && (
             <label className="field">
               <span>{spec.options.label}</span>
-              <input autoFocus value={value} onChange={(e) => setValue(e.target.value)} />
+              <input
+                autoFocus
+                type={spec.options.inputType ?? 'text'}
+                inputMode={spec.options.inputMode}
+                autoComplete={spec.options.autoComplete}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+              />
             </label>
           )}
           {spec.kind === 'choice' ? (

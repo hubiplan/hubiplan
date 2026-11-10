@@ -1,54 +1,72 @@
 // Startseite als Arbeitsplatz je Rolle (Konzept S-04): feste Reihenfolge Zu erledigen ›
-// Schnellaktionen › Kennzahlen › Nächste Termine › Hinweise. Die Rolle ergibt sich aus den
-// Rechten; mehrere Rollen teilen sich höchstens vier Schnellaktionen, Kasse vor Vorstand.
+// Schnellaktionen › Nächste Termine › Hinweise. Die Rolle ergibt sich aus den Rechten; ohne
+// eigene Auswahl teilen sich mehrere Rollen vier Schnellaktionen, Kasse vor Vorstand.
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { orgApi, PERM } from '../../api/orgs.ts'
-import type { HomeFigure, OrgSummary } from '../../api/orgs.ts'
-import { DEPT_PERM } from '../../api/portal.ts'
-import type { DeptSummary } from '../../api/portal.ts'
-import { euro } from '../../api/finance.ts'
+import { PERM } from '../../api/orgs.ts'
+import type { OrgSummary } from '../../api/orgs.ts'
 import { imprintApi } from '../../api/imprint.ts'
 import { letterheadApi, optionKey } from '../../api/letterhead.ts'
 import { fieldApi } from '../../api/fields.ts'
 import { BirthdayList, JubileeList } from '../../pages/members/JubileesPage.tsx'
-import type { QuickAction } from './roleActions.ts'
-import { MAX_ACTIONS, MAX_FIGURES, visibleActions } from './roleActions.ts'
+import type { CatalogAction, QuickAction } from './roleActions.ts'
+import { MAX_ACTIONS, shownActions } from './roleActions.ts'
 import { homeActionsApi } from '../../api/homeActions.ts'
 import { Alert, Checkbox } from '../ui.tsx'
 import { todayIso } from '../../api/members.ts'
-import { formatDay } from '../calendar/time.ts'
 import { errorMessage, useLoad } from '../forms.ts'
 import { t } from '../../i18n/index.ts'
 
 /**
- * Schnellaktionen (S-04): höchstens vier Knöpfe. Unter „Anpassen“ blendet jede Person einzelne
- * Aktionen oder den ganzen Block aus; wieder einschalten geht auch unter Mein Konto › Profil.
+ * Schnellaktionen (S-04): ohne eigene Auswahl der Vorschlag der Rollen (höchstens vier). Unter
+ * „Anpassen“ wählt jede Person bis zu sechs Aktionen aus allem, was ihre Rechte erlauben, und
+ * legt die Reihenfolge fest; den ganzen Block blendet sie dort aus und unter Mein Konto › Profil
+ * wieder ein. Die Auswahl gilt je Arbeitsbereich.
  */
-export function QuickActions({ candidates, label }: { candidates: QuickAction[]; label?: string }) {
+export function QuickActions({
+  candidates,
+  catalog,
+  scope,
+  label,
+}: {
+  candidates: QuickAction[]
+  catalog: CatalogAction[]
+  scope: string
+  label?: string
+}) {
   const { data, error: loadError, setData } = useLoad(() => homeActionsApi.get(), [])
   const [editing, setEditing] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  if (candidates.length === 0 || (!data && !loadError)) return null
+  if (catalog.length === 0 || (!data && !loadError)) return null
   const hidden = data?.hidden ?? []
-  const actions = visibleActions(candidates, hidden)
+  const chosen = data?.chosen?.[scope]
   if (hidden.includes('*')) return null
+  const actions = shownActions(candidates, catalog, hidden, chosen)
+  const keys = actions.map((a) => a.key)
 
-  async function save(next: string[]) {
+  async function save(body: Parameters<typeof homeActionsApi.update>[0]) {
     setBusy(true)
     setError(null)
     try {
-      setData(await homeActionsApi.update(next))
+      setData(await homeActionsApi.update(body))
     } catch (err) {
       setError(errorMessage(err))
     } finally {
       setBusy(false)
     }
   }
-  const toggle = (key: string, shown: boolean) =>
-    void save(shown ? hidden.filter((k) => k !== key) : [...hidden, key])
+  const choose = (next: string[]) => void save({ chosen: { [scope]: next } })
+  const toggle = (key: string, on: boolean) =>
+    choose(on ? [...keys, key] : keys.filter((k) => k !== key))
+  const move = (i: number, by: number) => {
+    const next = [...keys]
+    ;[next[i], next[i + by]] = [next[i + by], next[i]]
+    choose(next)
+  }
+  const full = keys.length >= MAX_ACTIONS
+  const groups = [...new Set(catalog.map((a) => a.group))]
 
   return (
     <div className="card tile tile-wide home-actions">
@@ -65,33 +83,92 @@ export function QuickActions({ candidates, label }: { candidates: QuickAction[];
       {editing ? (
         <>
           <p className="muted small">
-            {t('Gezeigt werden höchstens {n} der angehakten Aktionen.', { n: MAX_ACTIONS })}
+            {t('Wähle bis zu {n} Aktionen und lege ihre Reihenfolge fest.', { n: MAX_ACTIONS })}
           </p>
-          <div className="home-actions-choice">
-            {candidates.map((a) => (
-              <Checkbox
-                key={a.key}
-                label={a.label}
-                checked={!hidden.includes(a.key)}
-                busy={busy}
-                onChange={(v) => toggle(a.key, v)}
-              />
-            ))}
+          {actions.length > 0 && (
+            <ol className="plain-list home-actions-order" aria-label={t('Reihenfolge')}>
+              {actions.map((a, i) => (
+                <li key={a.key} className="role-row">
+                  <span>
+                    {i + 1}. {a.label}
+                  </span>
+                  <span className="push-right">
+                    <button
+                      type="button"
+                      className="link-button"
+                      disabled={busy || i === 0}
+                      aria-label={t('{label} nach oben', { label: a.label })}
+                      onClick={() => move(i, -1)}
+                    >
+                      ↑
+                    </button>{' '}
+                    <button
+                      type="button"
+                      className="link-button"
+                      disabled={busy || i === actions.length - 1}
+                      aria-label={t('{label} nach unten', { label: a.label })}
+                      onClick={() => move(i, 1)}
+                    >
+                      ↓
+                    </button>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+          {groups.map((group) => (
+            <fieldset key={group} className="home-actions-group">
+              <legend>{group}</legend>
+              <div className="home-actions-choice">
+                {catalog
+                  .filter((a) => a.group === group)
+                  .map((a) => {
+                    const on = keys.includes(a.key)
+                    return (
+                      <Checkbox
+                        key={a.key}
+                        label={a.label}
+                        checked={on}
+                        disabled={!on && full}
+                        busy={busy}
+                        onChange={(v) => toggle(a.key, v)}
+                      />
+                    )
+                  })}
+              </div>
+            </fieldset>
+          ))}
+          {full && (
+            <p className="muted small">{t('Für eine weitere Aktion nimm zuerst eine heraus.')}</p>
+          )}
+          <div className="button-row">
+            {chosen && (
+              <button
+                type="button"
+                className="button"
+                disabled={busy}
+                onClick={() =>
+                  void save({ hidden: hidden.filter((k) => k === '*'), chosen: { [scope]: null } })
+                }
+              >
+                {t('Vorschlag wiederherstellen')}
+              </button>
+            )}
+            <button
+              type="button"
+              className="button"
+              disabled={busy}
+              onClick={() => void save({ hidden: [...hidden, '*'] })}
+            >
+              {t('Schnellaktionen ganz ausblenden')}
+            </button>
           </div>
-          <button
-            type="button"
-            className="button"
-            disabled={busy}
-            onClick={() => void save([...hidden, '*'])}
-          >
-            {t('Schnellaktionen ganz ausblenden')}
-          </button>
           <p className="muted small">
             {t('Wieder einschalten kannst du sie unter Mein Konto › Profil › Startseite.')}
           </p>
         </>
       ) : actions.length === 0 ? (
-        <p className="muted">{t('Alle Schnellaktionen sind ausgeblendet.')}</p>
+        <p className="muted">{t('Keine Schnellaktion gewählt.')}</p>
       ) : (
         <div className="button-row">
           {actions.map((a, i) => (
@@ -104,46 +181,6 @@ export function QuickActions({ candidates, label }: { candidates: QuickAction[];
       {error && <Alert kind="error">{error}</Alert>}
     </div>
   )
-}
-
-function figureValue(f: HomeFigure): string {
-  if (f.kind === 'money') return euro(f.value)
-  if (f.kind === 'date') return formatDay(String(f.value))
-  return String(f.value)
-}
-
-export function FigureTiles({ figures }: { figures: HomeFigure[] }) {
-  const shown = figures.slice(0, MAX_FIGURES)
-  if (shown.length === 0) return null
-  return (
-    <div className="tile-wide home-figures" role="group" aria-label={t('Kennzahlen')}>
-      <div className="tiles tiles-figures">
-        {shown.map((f) => (
-          <Link key={f.key} to={f.link} className="card tile home-figure">
-            <span className="home-figure-label">{f.label}</span>
-            <span className="amount-big">{figureValue(f)}</span>
-            {f.detail && <span className="muted small">{f.detail}</span>}
-          </Link>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/** Kennzahlen der Einheit (Verein, Dachverband) */
-export function OrgFigures({ org }: { org: OrgSummary }) {
-  const { data } = useLoad(() => orgApi.homeFigures(org.id), [org.id])
-  return <FigureTiles figures={data?.figures ?? []} />
-}
-
-/** Kennzahl im Arbeitsbereich einer Untereinheit */
-export function DeptFigures({ dept }: { dept: DeptSummary }) {
-  const allowed = dept.permissions.includes(DEPT_PERM.membersView)
-  const { data } = useLoad(
-    () => (allowed ? orgApi.deptHomeFigures(dept.id) : Promise.resolve({ figures: [] })),
-    [dept.id, allowed],
-  )
-  return <FigureTiles figures={data?.figures ?? []} />
 }
 
 interface Notice {

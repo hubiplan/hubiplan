@@ -4,7 +4,7 @@ from rest_framework.routers import SimpleRouter
 from access import accounts_view, module_views, office_views
 from access import views as access_views
 from access.module_gate import gate, gate_names, needs_module
-from accounts import appearance, help_done, home_actions, language, learning, self_service
+from accounts import appearance, help_done, home_actions, language, learning, self_service, step_up
 from billing import einvoice_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
@@ -65,7 +65,6 @@ from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import (
     help_views,
-    home_figures,
     imprint_views,
     setup_status,
     social_views,
@@ -460,7 +459,6 @@ org_patterns = [
     path("accounts/resend/", accounts_view.AccountsResendView.as_view(), name="accounts-resend"),
     path("change-requests/", portal_views.ChangeRequestListView.as_view(), name="change-requests"),
     path("open-tasks/", open_tasks.OpenTasksView.as_view(), name="open-tasks"),
-    path("home-figures/", home_figures.HomeFiguresView.as_view(), name="home-figures"),
     path("setup-status/", setup_status.SetupStatusView.as_view(), name="setup-status"),
     path(
         "change-requests/<int:pk>/decide/",
@@ -721,7 +719,6 @@ dept_patterns = [
     ),
     path("", portal_views.DepartmentInfoView.as_view(), name="dept-info"),
     path("members/", portal_views.DepartmentMemberListView.as_view(), name="dept-members"),
-    path("home-figures/", home_figures.DeptHomeFiguresView.as_view(), name="dept-home-figures"),
     path(
         "statistics/",
         statistics_views.DepartmentStatisticsView.as_view(),
@@ -1017,6 +1014,7 @@ urlpatterns = [
         name="my-letterhead-dismiss",
     ),
     path("me/password/", self_service.PasswordView.as_view(), name="my-password"),
+    path("me/confirm/", step_up.StepUpView.as_view(), name="my-step-up"),
     path("me/email/", self_service.EmailChangeView.as_view(), name="my-email"),
     path("me/language/", language.MyLanguageView.as_view(), name="my-language"),
     path("public/languages/", language.PublicLanguagesView.as_view(), name="public-languages"),

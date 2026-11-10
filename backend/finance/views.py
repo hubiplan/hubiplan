@@ -675,6 +675,9 @@ def _date_param(value):
 class ReceiptUploadView(FinanceMixin, APIView):
     """POST: Beleg (Foto oder PDF) an eine Buchung hängen."""
 
+    # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
+    virus_quarantine = True
+
     @transaction.atomic
     def post(self, request, org_id: int, pk: int):
         booking = get_object_or_404(Booking, organization=self.org, pk=pk)
@@ -820,6 +823,9 @@ class ReceiptView(FinanceMixin, APIView):
             response["Content-Disposition"] = 'inline; filename="e-rechnung-ansicht.pdf"'
             response["Cache-Control"] = "private, no-store"
             return response
+        from core.virenscan import ensure_released
+
+        ensure_released(receipt.file)
         response = FileResponse(
             receipt.file.open("rb"),
             content_type=receipt.content_type,
