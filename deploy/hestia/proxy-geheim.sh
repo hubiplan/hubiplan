@@ -61,7 +61,7 @@ if [ -n "${NEU_GESETZT:-}" ]; then
     chmod 600 "$ENV"
 fi
 unset GEHEIM ALT
-cd "$APP" && sh deploy/server-setup.sh > /dev/null && echo "Docker-Verbund läuft"
+cd "$APP" && sh deploy/server-setup.sh </dev/null >/dev/null && echo "Docker-Verbund läuft"
 
 echo "--- 3) Prüfung"
 sleep 3
