@@ -5,6 +5,14 @@ import { t } from '../i18n/index.ts'
 export type Visibility = 'public' | 'members' | 'board'
 export type Repeat = 'none' | 'weekly' | 'monthly' | 'yearly'
 
+export interface EventCircular {
+  id: number
+  subject: string
+  status: 'draft' | 'sending' | 'sent'
+  status_label: string
+  sent_at: string | null
+}
+
 export interface EventCategory {
   id: number
   name: string
@@ -48,13 +56,14 @@ export interface FeedInfo {
   ics_url: string | null
 }
 
-export type ResponseStatus = 'yes' | 'no'
+export type ResponseStatus = 'yes' | 'no' | 'maybe'
+export type ResponseSource = 'member' | 'board' | 'link'
 
 export interface MyResponse {
   status: ResponseStatus
   guests: number
   note: string
-  source: 'member' | 'board'
+  source: ResponseSource
   updated_at: string
 }
 
@@ -64,13 +73,16 @@ export interface RsvpInfo {
   capacity: number | null
   guests_allowed: boolean
   max_guests: number
+  maybe_allowed?: boolean
+  note_allowed?: boolean
+  note_question?: string
   free?: number
   mine?: MyResponse | null
   can_respond?: boolean
   reason?: string
   can_view_list?: boolean
   can_enter?: boolean
-  summary?: { yes: number; no: number; guests: number; persons: number }
+  summary?: { yes: number; no: number; maybe?: number; guests: number; persons: number }
 }
 
 export interface ResponseRow {
@@ -81,14 +93,21 @@ export interface ResponseRow {
   status: ResponseStatus | null
   guests: number
   note: string
-  source: 'member' | 'board' | null
+  source: ResponseSource | null
   updated_at: string | null
 }
 
 export interface ResponseList {
   event_id: number
   scope: 'all' | 'department'
-  summary: { yes: number; no: number; guests: number; persons: number; open: number }
+  summary: {
+    yes: number
+    no: number
+    maybe?: number
+    guests: number
+    persons: number
+    open: number
+  }
   capacity: number | null
   items: ResponseRow[]
   open: { membership_id: number; name: string; departments: string }[]
@@ -135,6 +154,10 @@ export interface EventDetail {
   description: string
   location: string
   address: string
+  directions?: string
+  latitude?: number | null
+  longitude?: number | null
+  map_links?: MapLinks
   category: EventCategory | null
   all_day: boolean
   hide_end_time?: boolean
@@ -167,6 +190,9 @@ export interface EventDetail {
   meeting?: { id: number; status_label: string } | null
   helper_plans?: { id: number; title: string; status_label: string }[]
   can_create_helper_plan?: boolean
+  /** Rundschreiben zu diesem Termin (nur Bearbeitende, mit Modul Rundschreiben) */
+  circulars?: EventCircular[]
+  can_circular?: boolean
   bookings?: { id: number; item: string; status_label: string }[]
   remind_days?: number | null
   reminded_at?: string | null
@@ -176,6 +202,12 @@ export interface EventDetail {
   share_defaults?: { up: boolean; down: boolean }
 }
 
+/** Routenlinks zum Ort (nur Links, keine eingebettete Karte) */
+export interface MapLinks {
+  osm?: string
+  google?: string
+}
+
 export interface EventInput {
   /** Vereinskalender: Untereinheit, für die der Termin gilt (null = die Einheit selbst) */
   department_id?: number | null
@@ -183,6 +215,9 @@ export interface EventInput {
   description: string
   location: string
   address: string
+  directions: string
+  latitude: number | null
+  longitude: number | null
   category: number | null
   all_day: boolean
   hide_end_time?: boolean
@@ -198,6 +233,9 @@ export interface EventInput {
   rsvp_deadline: string | null
   rsvp_capacity: number | null
   rsvp_guests: boolean
+  rsvp_maybe: boolean
+  rsvp_note: boolean
+  rsvp_note_question: string
   remind_days: number | null
   /** Weitergabe nach oben/unten; null = wie bei der Einheit voreingestellt */
   share_up?: boolean | null

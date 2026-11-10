@@ -305,6 +305,7 @@ def department_viewer(ctx) -> Viewer:
         DEPT_EVENTS_MANAGE in ctx.permissions,
         True,
         kind="department",
+        perms=frozenset(ctx.permissions),
     )
 
 

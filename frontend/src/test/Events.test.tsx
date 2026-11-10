@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import { CalendarView } from '../components/calendar/CalendarView.tsx'
@@ -298,6 +298,68 @@ describe('Kalender', () => {
     expect(
       within(dialog).getByRole('link', { name: 'Raum oder Gerät für diesen Termin buchen' }),
     ).toHaveAttribute('href', expect.stringContaining('/belegung?buchen=1&termin=1'))
+  })
+
+  it('schreibt ein Rundschreiben an die Eingeladenen', async () => {
+    const detail = {
+      ...occurrence(),
+      id: 1,
+      description: '',
+      visibility_label: 'Mitglieder',
+      repeat: 'none',
+      repeat_label: 'einmalig',
+      repeat_interval: 1,
+      repeat_until: null,
+      cancel_note: '',
+      attachments: [],
+      exceptions: [],
+      rsvp: {
+        enabled: true,
+        deadline: null,
+        capacity: null,
+        guests_allowed: false,
+        max_guests: 10,
+      },
+      can_circular: true,
+      circulars: [
+        {
+          id: 4,
+          subject: 'Vorab-Info',
+          status: 'sent',
+          status_label: 'abgearbeitet',
+          sent_at: null,
+        },
+      ],
+    }
+    const calls = fakeApi({
+      [monthKey()]: () => listResponse([occurrence()]),
+      [`GET ${base}events/1/`]: () => ({ status: 200, body: detail }),
+      [`POST ${base}circulars/from-event/1/`]: () => ({
+        status: 201,
+        body: { id: 12, skipped_attachments: [] },
+      }),
+    })
+    render(
+      <MemoryRouter>
+        <AuthProvider>
+          <OrgProvider>
+            <CalendarView base={base} />
+          </OrgProvider>
+        </AuthProvider>
+      </MemoryRouter>,
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByText('Jahreshauptversammlung'))
+    const dialog = await screen.findByRole('dialog')
+    expect(
+      await within(dialog).findByRole('link', { name: 'Rundschreiben: Vorab-Info' }),
+    ).toHaveAttribute('href', '/rundschreiben/4')
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Weiteres Rundschreiben dazu schreiben' }),
+    )
+    await vi.waitFor(() =>
+      expect(calls.some((c) => c.key === `POST ${base}circulars/from-event/1/`)).toBe(true),
+    )
   })
 
   it('legt einen Termin an', async () => {

@@ -113,6 +113,10 @@ freigibt oder ablehnt und wenn er über eine Änderungsmeldung entscheidet.
   Dienst mit 404/410, fällt das Gerät auf Abruf zurück, bis die App den Endpunkt neu meldet.
 - Nutzlast (JSON, höchstens 3000 Bytes, sonst nur `{"v":1,"t":"sync"}`):
   `{"v":1,"t":"circular","access":<Zugang>,"id":<Rundschreiben>,"kind":…,"title":…,"text":…,"from":…}`.
+  Rundschreiben zu einem Termin tragen zusätzlich `"event":<Termin>`, bei offener Rückmeldung
+  `"rsvp":true` und, wenn erlaubt, `"maybe":true`.
+  Einladung und Erinnerung zu einem Termin: `{"v":1,"t":"event","access":…,"id":<Termin>,"kind":"invite"|"remind","title":…,"text":…,"from":…,"rsvp":true,"maybe":true}`
+  (ältere App-Versionen gleichen bei unbekanntem `t` nur ab).
   Hinweise an das Mitglied (Foto freigegeben, Änderung übernommen): `{"t":"info","access":…,"title":…,"text":…}`.
 
 ## Google-Push über das Push-Gateway (Schritt A6)

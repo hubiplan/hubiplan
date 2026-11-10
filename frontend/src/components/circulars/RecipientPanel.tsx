@@ -6,11 +6,13 @@ import type {
   Candidate,
   CircularAudience,
   CircularBase,
+  CircularEvent,
   CircularFilters,
   CircularOptions,
   Recipients,
   SelectKey,
   SearchHit,
+  EventResponseFilter,
 } from '../../api/circulars.ts'
 import { errorMessage } from '../forms.ts'
 import { Alert, Checkbox } from '../ui.tsx'
@@ -92,6 +94,48 @@ function CheckList({
   )
 }
 
+/** Termin-Rundschreiben: an die Eingeladenen, wahlweise nur mit bestimmter Rückmeldung. */
+function EventRecipients({
+  event,
+  filters,
+  onFilters,
+}: {
+  event: CircularEvent
+  filters: CircularFilters
+  onFilters: (patch: Partial<CircularFilters>) => void
+}) {
+  const labels: [EventResponseFilter, string][] = [
+    ['open', t('noch keine Rückmeldung')],
+    ['yes', t('zugesagt')],
+    ['no', t('abgesagt')],
+  ]
+  const chosen = filters.event_responses ?? []
+  const toggle = (value: EventResponseFilter, on: boolean) =>
+    onFilters({
+      event_responses: on ? [...chosen, value] : chosen.filter((v) => v !== value),
+    })
+  return (
+    <fieldset className="stack-sm">
+      <legend>{t('An die Eingeladenen von „{title}“', { title: event.title })}</legend>
+      {event.rsvp_enabled && (
+        <>
+          <p className="muted small">
+            {t('Ohne Häkchen an alle Eingeladenen, sonst nur an die mit dieser Rückmeldung:')}
+          </p>
+          {labels.map(([value, label]) => (
+            <Checkbox
+              key={value}
+              label={label}
+              checked={chosen.includes(value)}
+              onChange={(on) => toggle(value, on)}
+            />
+          ))}
+        </>
+      )}
+    </fieldset>
+  )
+}
+
 export function RecipientPanel({
   base,
   circularId,
@@ -101,6 +145,7 @@ export function RecipientPanel({
   onFilters,
   version,
   fixed = false,
+  event = null,
 }: {
   base: CircularBase
   circularId: number
@@ -111,6 +156,8 @@ export function RecipientPanel({
   version: number
   /** Empfänger kommen aus einem Verteiler: nur anzeigen, keine Filter */
   fixed?: boolean
+  /** Rundschreiben zu einem Termin: an dessen Eingeladene */
+  event?: CircularEvent | null
 }) {
   const tm = useTerms()
   const [data, setData] = useState<Recipients | null>(null)
@@ -186,6 +233,7 @@ export function RecipientPanel({
         </p>
       ) : (
         <>
+          {event && <EventRecipients event={event} filters={filters} onFilters={onFilters} />}
           {audience === 'roles' ? (
             <>
               <p className="muted small">

@@ -95,7 +95,8 @@ def rows(event: Event, department_id: int | None = None) -> tuple[list[Row], lis
             responses.get(m.pk),
         )
         (answered if row.response else open_).append(row)
-    answered.sort(key=lambda r: (r.response.status != EventResponse.Status.YES, r.name))
+    order = {EventResponse.Status.YES: 0, EventResponse.Status.MAYBE: 1}
+    answered.sort(key=lambda r: (order.get(r.response.status, 2), r.name))
     return answered, open_
 
 
@@ -107,6 +108,8 @@ def totals(answered: list[Row]) -> rsvp.Summary:
         if r.status == EventResponse.Status.YES:
             result.yes += 1
             result.guests += r.guests
+        elif r.status == EventResponse.Status.MAYBE:
+            result.maybe += 1
         else:
             result.no += 1
     return result
@@ -152,6 +155,8 @@ def xlsx(event: Event, answered: list[Row], open_: list[Row]) -> bytes:
     s = totals(answered)
     ws.append([])
     ws.append([f"Zusagen: {s.yes}, Begleitpersonen: {s.guests}, Personen: {s.persons}"])
+    if s.maybe:
+        ws.append([f"Vielleicht: {s.maybe}"])
     ws.append([f"Absagen: {s.no}, offen: {len(open_)}"])
     for i, width in enumerate([30, 16, 22, 14, 16, 40], start=1):
         ws.column_dimensions[get_column_letter(i)].width = width
@@ -196,7 +201,8 @@ def pdf(event: Event, theme_chain, answered: list[Row], open_: list[Row]) -> byt
         Paragraph(escape(f"{owner} · {notify.when(event)}"), normal),
         Paragraph(
             f"Zusagen {s.yes} · Begleitpersonen {s.guests} · Personen {s.persons} · "
-            f"Absagen {s.no} · offen {len(open_)}",
+            + (f"Vielleicht {s.maybe} · " if s.maybe else "")
+            + f"Absagen {s.no} · offen {len(open_)}",
             normal,
         ),
         Spacer(1, 5 * mm),
@@ -236,9 +242,12 @@ def pdf(event: Event, theme_chain, answered: list[Row], open_: list[Row]) -> byt
     yes = [r for r in answered if r.response.status == EventResponse.Status.YES]
     no = [r for r in answered if r.response.status == EventResponse.Status.NO]
     table(f"Zusagen ({len(yes)})", yes, True)
+    maybe = [r for r in answered if r.response.status == EventResponse.Status.MAYBE]
+    if maybe:
+        table(f"Vielleicht ({len(maybe)})", maybe, False)
     table(f"Absagen ({len(no)})", no, False)
     table(f"Noch keine Rückmeldung ({len(open_)})", open_, False)
-    if not (yes or no or open_):
+    if not (yes or no or maybe or open_):
         story.append(Paragraph("Noch keine Rückmeldungen.", normal))
     doc.build(story, onFirstPage=footer, onLaterPages=footer)
     return buf.getvalue()
