@@ -3589,26 +3589,7 @@ label:has(> .file-input:focus-visible) {
   gap: 0.25rem;
 }
 
-/* Bausteine der Startseite (Webseite › Aufbau) */
-.home-sections {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 0.25rem;
-}
-.home-sections li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  border-bottom: 1px solid var(--color-border);
-  padding: 0.25rem 0;
-}
-.home-sections li > :first-child {
-  flex: 1;
-}
-
+/* Bausteine der Startseite (Webseite › Aufbau): Liste zum Ziehen wie .sortable-list */
 /* Webseite › Aufbau › Design (konzepte/webseiten-designs.md) */
 .design-grid {
   display: grid;

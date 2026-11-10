@@ -657,6 +657,9 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
             obj.block_names = {
                 remap(k): v for k, v in obj.block_names.items() if remap(k) is not None
             }
+        # Hervorgehobener Menüpunkt (z. B. eine Textseite) zeigt auf die neue Nummer
+        if getattr(obj, "menu_button", ""):
+            obj.menu_button = remap(obj.menu_button) or ""
     elif name in ("website.websitetext", "website.websiterevision"):
         for old, new in renamed.items():
             for field in ("body", "published_body"):

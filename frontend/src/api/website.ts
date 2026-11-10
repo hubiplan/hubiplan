@@ -13,6 +13,10 @@ export interface WebsiteSettings {
   menu?: MenuNode[]
   /** Eigene Namen der Bausteine für Menü und Überschrift; fehlt = Standardname */
   block_names?: Record<string, string>
+  /** Adressen der Links nach außen im Menü: ``link:<Nummer>`` → https://… (Name in block_names) */
+  menu_links?: Record<string, string>
+  /** Hauptpunkt des Menüs, der als Knopf hervorgehoben ist; leer = keiner */
+  menu_button?: string
   /** Bausteine der Startseite in ihrer Reihenfolge */
   home_sections: HomeSection[]
   /** Standarddesign der Webseite (classic, festive, sidebar, stage, newspaper) */
@@ -118,6 +122,8 @@ export interface MenuItem {
   heading: boolean
   /** Standard-Oberpunkt */
   parent: string | null
+  /** Adresse eines Links nach außen */
+  url?: string | null
 }
 
 export interface HomeSection {

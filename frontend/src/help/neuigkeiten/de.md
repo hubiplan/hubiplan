@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Webseite: Im Menü gibt es **Links nach außen**, etwa zum Dachverband; sie öffnen ein neues Fenster. Ein Hauptpunkt lässt sich als farbiger **Knopf** hervorheben, z. B. „Mitglied werden“. Die Bausteine der Startseite ordnest du jetzt wie das Menü per Ziehen statt mit Pfeilen.
 - Startseite: **Schnellaktionen** frei wählen. Unter **Anpassen** stehen alle Aktionen, die deine Rechte erlauben, nach Bereichen, etwa **Aufgabe anlegen**, **Helferdienst anlegen**, **Einnahme erfassen**, **Chronik ergänzen** oder **Dokument ablegen**. Bis zu sechs wählst du aus und legst mit ↑ und ↓ die Reihenfolge fest, je Einheit getrennt. Ohne eigene Auswahl bleibt der Vorschlag deiner Rolle.
 - Startseite: Die Reihe mit Kennzahlen (z. B. Mitglieder heute, Datenänderungen offen, Offene Beiträge, Barkasse) entfällt. Die Zahlen stehen weiter auf den jeweiligen Seiten.
 - Neu: **Anfahrt** am Termin mit Hinweisen und Links **Route in OpenStreetMap** und **Route in Google Maps** in Termin, Mails und Rückmeldeseite. Ein genauer Punkt lässt sich aus einem Kartenlink übernehmen; gespeicherte Orte bringen Anfahrt und Punkt mit.

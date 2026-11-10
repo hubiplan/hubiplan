@@ -13,6 +13,9 @@ stichworte: [website, menu, section, order]
 3. Give each section the name it should have in the menu.
 4. Drag the sections into the order you want.
 5. Create a menu heading with “Add heading” and drag sections onto it so they become its sub-items.
+6. Create a link to another website with “Add external link” and enter its name and address with the pencil.
+7. If you like, choose an item under “Highlight a menu item as a button” to show it as a button.
+8. Under “Home page”, drag the home page sections into the order you want.
 
 Member lists only show members who have given their consent in their member record.
 
