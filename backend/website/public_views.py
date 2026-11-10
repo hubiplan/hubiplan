@@ -24,7 +24,7 @@ from core.version import running_version
 from organizations import brand_icon
 from organizations.platform_public import unit_icon
 
-from . import contact, designs, gallery, menu, results, services, style
+from . import contact, designs, gallery, home, menu, results, services, style
 from .models import BLOCKS, Website, WebsiteDomain
 from .public import SiteView
 
@@ -185,6 +185,7 @@ class SiteInfoView(_Public):
         from organizations.serializers import effective_contact
 
         contact_data = effective_contact(org)
+        home_keys = [k for k in site.site.home() if k != "results" or results.enabled(site)]
         data = {
             **base,
             "founding_year": org.founding_year,
@@ -206,7 +207,10 @@ class SiteInfoView(_Public):
             # Menü „Würdenträger“: Unterpunkte je Würde und „Ehrungen“ (Ralf 2026-10-31)
             "honors_menu": site.honors_menu(),
             # Bausteine der Startseite (eingeschaltet, in Reihenfolge)
-            "home": [k for k in site.site.home() if k != "results" or results.enabled(site)],
+            "home": home_keys,
+            # Abschnitte der Startseite mit Gestaltung und Inhalt (G3); ältere Webseiten
+            # nehmen weiter „home“
+            "home_layout": home.public(site, home_keys, event_entry),
             # Kopfbild statt Wappen und Name (Ralf 05.11.); ältere Webseiten übergehen es
             "header_image": site.header_image(),
             # Wettbewerbsergebnisse (Schritt 5 der Wettbewerbe): Übersicht und Startseite
@@ -769,6 +773,28 @@ def _events(site: SiteView, unit_slug: str | None):
     )
 
 
+def event_entry(site: SiteView, o) -> dict:
+    """Ein Einzeltermin wie unter ``events/`` (auch für den hervorgehobenen Termin, G3)."""
+    return {
+        "id": o.key,
+        "title": o.event.title,
+        "starts_at": o.starts_at,
+        "ends_at": o.ends_at,
+        "all_day": o.event.all_day,
+        "hide_end_time": o.event.hide_end_time,
+        "location": o.event.location,
+        "address": o.event.address,
+        "description": o.event.description,
+        "category": o.event.category.name if o.event.category_id else None,
+        "color": o.event.category.color if o.event.category_id else None,
+        "unit": site.unit_slugs.get(o.event.department_id),
+        # Termin einer Einheit darüber: deren Name, sonst leer
+        "owner": _foreign_owner(site, o.event),
+        "is_cancelled": o.is_cancelled,
+        "note": o.note,
+    }
+
+
 class EventsView(_Public):
     def get(self, request, key: str):
         site = self.load(request, key)
@@ -776,32 +802,11 @@ class EventsView(_Public):
             raise Http404
         slug = request.query_params.get("einheit")
         items = _events(site, slug)
-        unit_slugs = site.unit_slugs
         ics = site.url("events.ics") + (f"?einheit={slug}" if slug else "")
         return self.respond(
             {
                 "ics_url": ics,
-                "events": [
-                    {
-                        "id": o.key,
-                        "title": o.event.title,
-                        "starts_at": o.starts_at,
-                        "ends_at": o.ends_at,
-                        "all_day": o.event.all_day,
-                        "hide_end_time": o.event.hide_end_time,
-                        "location": o.event.location,
-                        "address": o.event.address,
-                        "description": o.event.description,
-                        "category": o.event.category.name if o.event.category_id else None,
-                        "color": o.event.category.color if o.event.category_id else None,
-                        "unit": unit_slugs.get(o.event.department_id),
-                        # Termin einer Einheit darüber: deren Name, sonst leer
-                        "owner": _foreign_owner(site, o.event),
-                        "is_cancelled": o.is_cancelled,
-                        "note": o.note,
-                    }
-                    for o in items
-                ],
+                "events": [event_entry(site, o) for o in items],
             },
             site,
         )

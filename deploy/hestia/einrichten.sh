@@ -6,6 +6,9 @@
 # Aufruf vom lokalen Arbeitsrechner (PowerShell), läuft als root auf dem Server:
 #   Get-Content -Raw deploy\hestia\einrichten.sh | ssh deploy@server.example.org "sudo env HUSER=hosting-user DOMAIN=verein.example.org MAILDOMAIN=example.org ALARM_MAIL=adresse@example.org bash -s"
 #
+# Liegt die DNS-Zone nicht in Hestia, sondern beim DNS-Anbieter: DNS=extern setzen. Den
+# A-Eintrag dann dort anlegen; das Skript zeigt die IP an.
+#
 # Wiederholbar: Was schon da ist, bleibt. Hestia lädt nginx dabei nur neu (reload),
 # andere Websites laufen weiter. Gibt keine Passwörter aus.
 set -euo pipefail
@@ -15,6 +18,7 @@ HUSER=${HUSER:?HUSER fehlt, z. B. HUSER=hosting-user}
 DOMAIN=${DOMAIN:?DOMAIN fehlt, z. B. DOMAIN=verein.example.org}
 MAILDOMAIN=${MAILDOMAIN:?MAILDOMAIN fehlt, z. B. MAILDOMAIN=example.org}
 MAILKONTO=${MAILKONTO:-verein}
+DNS=${DNS:-hestia}
 VORLAGE=app-8110
 APP=/opt/hubiplan
 TPL=/usr/local/hestia/data/templates/web/nginx
@@ -36,7 +40,9 @@ fi
 # Hestia legt den A-Eintrag für eine Subdomain nicht immer mit an (28.10.2026)
 SUB=${DOMAIN%%.$MAILDOMAIN}
 IP=$(v-list-web-domain "$HUSER" "$DOMAIN" json | sed -n 's/.*"IP": *"\([0-9.]*\)".*/\1/p' | head -1)
-if v-list-dns-records "$HUSER" "$MAILDOMAIN" plain | awk -F'\t' -v s="$SUB" '$2==s && $3=="A" {f=1} END {exit !f}'; then
+if [ "$DNS" = extern ]; then
+    echo "DNS beim Anbieter: A-Eintrag $DOMAIN -> ${IP:-(IP der Web-Domain)} dort anlegen"
+elif v-list-dns-records "$HUSER" "$MAILDOMAIN" plain | awk -F'\t' -v s="$SUB" '$2==s && $3=="A" {f=1} END {exit !f}'; then
     echo "DNS-A-Eintrag $SUB gibt es schon"
 else
     [ -n "$IP" ] || { echo "Abbruch: IP der Web-Domain nicht gefunden."; exit 1; }

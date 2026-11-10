@@ -40,6 +40,13 @@ def logo_path(instance, filename: str) -> str:
     return f"logos/{prefix}/{instance.pk or 'neu'}-{stamp}.{ext}"
 
 
+def logo_dark_path(instance, filename: str) -> str:
+    """Wie ``logo_path``, mit „dunkel“ im Namen, damit beide Logos nie gleich heißen."""
+    path = logo_path(instance, filename)
+    folder, name = path.rsplit("/", 1)
+    return f"{folder}/{name.split('-', 1)[0]}-dunkel-{name.split('-', 1)[1]}"
+
+
 def brand_icon_path(instance, filename: str) -> str:
     stamp = timezone.now().strftime("%Y%m%d%H%M%S")
     return f"marke/symbol-{stamp}.png"
@@ -121,6 +128,15 @@ class ThemeFields(models.Model):
     extra_colors = models.JSONField("weitere Farben", default=list, blank=True)
     logo = models.ImageField(
         "Logo/Wappen", upload_to=logo_path, blank=True, validators=[validate_logo]
+    )
+    # Zweites Logo für den Dunkelmodus (Ralf 10.11.2026). Leer: das helle Logo gilt auch dunkel
+    logo_dark = models.ImageField(
+        "Logo/Wappen für den Dunkelmodus",
+        upload_to=logo_dark_path,
+        blank=True,
+        # Rückweg: der Stand davor legt Einheiten ohne diese Spalte an
+        db_default="",
+        validators=[validate_logo],
     )
     # Quadratisches Symbol für Browser-Tab und Handy, wenn die Einheit eine eigene Adresse
     # hat (White Label W7). Leer: Wappen quadratisch, sonst Symbol der Instanz
@@ -884,6 +900,7 @@ class Department(Organization):
             "accent_color_name",
             "extra_colors",
             "logo",
+            "logo_dark",
             "own_workspace",
             "self_managed",
             "tax_independent",

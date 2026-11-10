@@ -172,3 +172,157 @@ Get-Content -Raw deploy/hestia/haerten.sh | ssh deploy@server.example.org "sudo 
 
 Nach einer SSH-Änderung die Anmeldung sofort in einer zweiten Sitzung prüfen.
 2FA für Panel-Konten im Hestia-Panel aktivieren.
+
+## Zweiter Server mit eigener Mail
+
+So entsteht ein eigener Server, auf dem neben HUBIplan auch die ganze Mail einer Domain liegt:
+Postfächer, Webmail, der Mailversand von HUBIplan, die Verteiler und der E-Rechnungseingang.
+Hestia bringt Exim, Dovecot, Roundcube, SpamAssassin und ClamAV mit; Postfächer, Weiterleitungen
+und DKIM werden im Hestia-Panel verwaltet. HUBIplan läuft wie oben hinter nginx. Alle Namen sind
+Beispiele: Postfächer unter `example.org`, HUBIplan unter `verein.example.org`, Verteiler auf
+`verein.example.org`, Mailserver `mail.example.org`, Webmail `webmail.example.org`.
+
+Der Server hat keine Vertrauensstellung zu anderen Servern: eigener SSH-Schlüssel, eigener
+age-Schlüssel, eigener Zugang zum Sicherungsort. Als Größe genügen für eine Domain etwa 4 vCPU,
+8 GB RAM (plus 4 GB Swap) und 200 GB; HUBIplan braucht 3–4 GB, ClamAV gut 1 GB, Hestia mit
+SpamAssassin etwa 2 GB.
+
+### Ablauf
+
+1. **Grundsystem:** frisches Debian in einer Fassung, die der Hestia-Installer unterstützt
+   (vor der Bestellung prüfen), IPv4 und IPv6, kein vorinstalliertes Panel. System
+   aktualisieren, unprivilegierten Admin-Benutzer mit `sudo` und SSH-Schlüssel anlegen,
+   automatische Sicherheitsupdates (`unattended-upgrades`) mit nächtlichem Neustartfenster, Swap.
+2. **Hestia installieren**, ohne Apache, FTP und DNS-Server (die Zone bleibt beim DNS-Anbieter),
+   mit ClamAV und SpamAssassin, Rechnername gleich dem Mailserver:
+
+   ```bash
+   sudo bash hst-install.sh --hostname mail.example.org --email adresse@example.org \
+     --apache no --vsftpd no --proftpd no --named no --clamav yes --spamassassin yes
+   ```
+
+   Die übrigen Werte auf der Voreinstellung lassen und vor dem Lauf mit `bash hst-install.sh -h`
+   abgleichen. Danach einen Hestia-Benutzer (`HUSER`) für die Domains anlegen.
+3. **Härten** wie unter [Server härten](#server-härten), dazu die Punkte unten.
+4. **DNS** wie unten anlegen, zunächst ohne MX. PTR setzen lassen.
+5. **Mail-Domain** `example.org` im Panel anlegen (Spam- und Virenprüfung an, DKIM an,
+   Webmail Roundcube), Let's Encrypt für die Mail-Domain einschalten (deckt `mail.` und
+   `webmail.` ab), Postfächer mit Quote (z. B. 2–5 GB) und starken Einzelpasswörtern anlegen.
+6. **Proben:** Mail an große Anbieter senden und in den Kopfzeilen SPF, DKIM und DMARC `pass`
+   prüfen, Empfang von außen, Mailprogramm am Handy, Webmail. Die IP vorher auf Sperrlisten
+   prüfen und klären, dass Port 25 ausgehend offen ist.
+7. **MX umstellen.** Bisherige Postfächer der Domain auf dem neuen Server anlegen (bei Bedarf
+   Inhalte mit `imapsync` übernehmen).
+8. **HUBIplan** wie unter [Erstes Einrichten](#erstes-einrichten) ausrollen und einrichten. Weil
+   die Zone nicht in Hestia liegt, `DNS=extern` mitgeben, und das Versandpostfach heißt hier
+   meist `noreply`:
+
+   ```powershell
+   Get-Content -Raw deploy/hestia/einrichten.sh | ssh deploy@server.example.org "sudo env HUSER=hosting-user DOMAIN=verein.example.org MAILDOMAIN=example.org MAILKONTO=noreply DNS=extern ALARM_MAIL=adresse@example.org bash -s"
+   ```
+
+   Die Mail-Domain `example.org` muss dafür schon existieren. HUBIplan versendet dann über
+   `mail.example.org`, wie auf einem Server mit fremder Mail.
+9. **Verteiler** einrichten (Catch-all nur auf `verein.example.org`, damit Tippfehler an
+   `example.org` nicht im Sammelpostfach landen):
+
+   ```powershell
+   Get-Content -Raw deploy/hestia/verteiler.sh | ssh deploy@server.example.org "sudo env HUSER=hosting-user DOMAIN=verein.example.org ZONE=example.org DNS=extern bash -s"
+   ```
+
+   Für den E-Rechnungseingang ein eigenes Postfach anlegen und seine IMAP-Daten in der `.env`
+   eintragen (siehe [betrieb.md](betrieb.md)).
+10. **Virenprüfung:** Der clamd von Hestia läuft schon. In der `.env`
+    `CLAMD_SOCKET_DIR=/run/clamav` setzen; `docker-compose.clamav.yml` schaltet dann
+    `VIRUS_SCAN_REQUIRED=1` ein (siehe [betrieb.md](betrieb.md)).
+11. **Sicherung** wie unten einrichten und eine Wiederherstellung proben, bevor echte Daten
+    kommen.
+
+`MAIL_AUTHSERV_ID` bleibt hier leer: Exim schreibt keinen eigenen `Authentication-Results`-Kopf,
+eine gesetzte Kennung würde also einem mitgeschickten fremden Kopf vertrauen. Verteiler-Mails
+gehen deshalb immer mit Bestätigungslink hinaus (siehe [rundschreiben.md](rundschreiben.md)).
+
+### DNS
+
+Beim DNS-Anbieter, vorher die TTL auf 300 s senken und nach dem Umzug wieder erhöhen:
+
+| Name | Typ | Inhalt |
+|---|---|---|
+| `verein.example.org`, `webmail.example.org`, `mail.example.org` | A / AAAA | IP des Servers |
+| `example.org`, `verein.example.org` | MX | `10 mail.example.org` |
+| `example.org`, `verein.example.org` | TXT | `v=spf1 mx -all` |
+| `<selektor>._domainkey.example.org` | TXT | DKIM-Schlüssel aus dem Hestia-Panel (Mail-Domain › DNS) |
+| `_dmarc.example.org` | TXT | zuerst `v=DMARC1; p=quarantine; rua=mailto:…`, nach 2–4 Wochen ohne Auffälligkeiten `p=reject` |
+| `autoconfig.example.org`, `autodiscover.example.org` | CNAME | `mail.example.org` |
+| `_imaps._tcp.example.org`, `_submissions._tcp.example.org` | SRV | `mail.example.org`, Port 993 bzw. 465 |
+
+Die PTR-Einträge (Rückwärtsauflösung) von IPv4 und IPv6 zeigen auf `mail.example.org` und
+passen damit zum A-Eintrag und zum HELO von Exim. Ohne passenden PTR landen Mails bei vielen
+Anbietern im Spam. Optional MTA-STS und TLS-Berichte (`mta-sts.`, `_mta-sts`, `_smtp._tls`).
+
+Zieht die Domain von einem anderen Hestia-Server um, dort nach dem Umschalten die Web- und
+die Mail-Domain löschen. Sonst stellt der alte Server Mails seiner eigenen Nutzer an diese
+Domain weiter lokal zu.
+
+### Härtung mit Mail
+
+Zusätzlich zu `deploy/hestia/haerten.sh` (alle Punkte, also auch `api` und `panel`):
+
+- Offen nur 22, 80, 443, 25, 465, 587 und 993. POP3 (110, 995) und IMAP ohne TLS (143), FTP,
+  Datenbank und Redis bleiben zu (Hestia-Firewall; davor die Firewall des Anbieters, falls
+  vorhanden). Das Panel (8083) nur über SSH-Tunnel.
+- Docker umgeht die Hestia-Firewall. HUBIplan hinter Hestia veröffentlicht nur
+  `127.0.0.1:${WEB_PORT}`; keine weiteren Ports veröffentlichen.
+- fail2ban (bringt Hestia mit) für SSH, Exim, Dovecot und Roundcube prüfen.
+- 2FA für das Panel, für das Konto beim Server- und DNS-Anbieter, beim Sicherungsanbieter und
+  in Roundcube (Plugin `twofactor_gauthenticator`). Mailprogramme nutzen starke
+  Einzelpasswörter je Postfach.
+- In der `.env` von HUBIplan `SECURITY_ALERT_EMAIL`, `HUBIPLAN_SOURCE_URL` und
+  `MAIL_RATE_PER_HOUR` passend setzen; `HUBIPLAN_PROXY_GEHEIM` legt `einrichten.sh` an.
+
+### Sicherung mit Mail
+
+Die Mail ist so wichtig wie die Vereinsdaten und gehört an denselben zweiten Ort.
+`deploy/hestia/hubiplan-restic-backup.sh` sichert sie mit, wenn beim Einrichten der
+Hestia-Benutzer genannt wird:
+
+```powershell
+Get-Content -Raw deploy/hestia/hubiplan-restic-backup.sh | ssh deploy@server.example.org "sudo tee /usr/local/sbin/hubiplan-restic-backup.sh >/dev/null && sudo chmod 700 /usr/local/sbin/hubiplan-restic-backup.sh && sudo env HUSER=hosting-user /usr/local/sbin/hubiplan-restic-backup.sh einrichten"
+```
+
+Das Skript trägt dann in `/root/.config/restic/hubiplan.mail` die Postfächer
+(`/home/<HUSER>/mail`), die Mail-Einstellungen mit Kennwörtern und DKIM-Schlüsseln
+(`/home/<HUSER>/conf/mail`) und die Panel-Einträge (`/usr/local/hestia/data/users/<HUSER>`) ein
+und sichert sie täglich als eigene Snapshots mit dem Tag `mail`. Die HUBIplan-Sicherungen
+bleiben unter dem Tag `hubiplan`, Aufbewahrung und Rücksicherung wie oben. Am Monatsersten holt
+es zusätzlich einige ältere Mails zurück und vergleicht sie mit dem Original. Bestehende
+Einrichtungen können `einrichten` auf diese Weise noch einmal aufrufen; Passwort und
+Repository bleiben.
+
+Die Mail liegt am Sicherungsort nur mit dem restic-Passwort verschlüsselt (die
+HUBIplan-Sicherungen zusätzlich mit age). Das restic-Passwort deshalb wie den age-Schlüssel
+außerhalb des Servers verwahren, im Passwortmanager und offline.
+
+- **Zweiter Ort:** ein eigener SFTP-Zugang nur für diesen Server (z. B. Unterkonto einer
+  Storage Box). Keine Sicherung nur beim Anbieter des Servers selbst.
+- **Dritte Kopie, unveränderbar:** Ein übernommener Server kann mit seinem Zugang auch die
+  restic-Kopie löschen. Dagegen hilft ein Ort, auf den der Server nicht löschend zugreift,
+  zum Beispiel vom Anbieter des Speichers verwaltete Snapshots, die der Unterzugang nicht
+  ändern kann, oder ein Speicher mit Object Lock. Das richtet das Skript nicht ein; Ziel und
+  Aufbewahrung gehören in die privaten Wiederherstellungsunterlagen.
+- **Wiederherstellung eines Postfachs** (als root, damit Eigentümer und Rechte erhalten
+  bleiben; Repository wie in der eigenen Einrichtung):
+
+  ```bash
+  sudo env RESTIC_REPOSITORY=sftp:storagebox:restic-hubiplan RESTIC_PASSWORD_FILE=/root/.config/restic/hubiplan.pass \
+    restic restore latest --tag mail --include /home/hosting-user/mail/example.org/vorstand --target /var/tmp/mail-zurueck
+  sudo cp -a /var/tmp/mail-zurueck/home/hosting-user/mail/example.org/vorstand/. /home/hosting-user/mail/example.org/vorstand/
+  sudo rm -rf /var/tmp/mail-zurueck
+  ```
+
+  Vorhandene Mails bleiben dabei, zurückgeholte kommen dazu.
+
+  Für einen neuen Server zuerst Hestia, den Benutzer und die Mail-Domain anlegen, dann
+  Postfächer und `conf/mail` zurückholen; `/usr/local/hestia/data/users/<HUSER>` dient als
+  Nachschlag für Postfächer, Quoten und Weiterleitungen.
+- Vor dem Start einmal vollständig zurückholen und prüfen, danach regelmäßig.

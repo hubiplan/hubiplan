@@ -490,6 +490,27 @@ class SiteView:
                 rows.append((frozenset(keys), item))
         return self._grouped(rows)
 
+    def role_cards(self, ids: list[int]) -> list[dict]:
+        """Abschnitt „Ansprechpartner“ der Startseite (G3): gewählte Rollen in dieser
+        Reihenfolge, nur „auf der Webseite“ und mit Einwilligung wie beim Vorstand."""
+        roles = {r.pk: r for r in self.own_roles().filter(on_website=True, pk__in=ids)}
+        result = []
+        for pk in ids:
+            role = roles.get(pk)
+            if role is None:
+                continue
+            holders = []
+            for a in self.role_assignments.get(role.pk, []):
+                person, fallback = self.holder_person(a)
+                entry = self.person(person, fallback, details=True)
+                if entry:
+                    holders.append(entry)
+            item = self._role_entry("role", role, holders, role.contact_email)
+            if item:
+                item["id"] = self.recipient_id(item["id"])
+                result.append(item)
+        return result
+
     def chairs(self) -> list[dict]:
         """Ämter: Rollen mit „unter Ämter zeigen“ und alle ihre Inhaber, auch frühere."""
         return self._chairs
@@ -1080,12 +1101,22 @@ class SiteView:
         if image.pk == self.header_image_pk:
             # Kopfbild der Webseite (Ralf 05.11.), in der Vorschau auch das des Entwurfs
             return image
+        if image.pk in self.home_image_ids:
+            # Bilder eingeschalteter Abschnitte der Startseite (G3), in der Vorschau des Entwurfs
+            return image
         # Galerie (Ralf 05.11.): Bilder und Titelbilder sichtbarer Alben
         from . import gallery
 
         if image.pk in gallery.visible_image_ids(self.site):
             return image
         return None
+
+    @cached_property
+    def home_image_ids(self) -> set[int]:
+        from .home import image_ids
+        from .models import normalize_home_sections
+
+        return image_ids(normalize_home_sections(self.site.home_sections))
 
     @cached_property
     def header_image_pk(self) -> int | None:

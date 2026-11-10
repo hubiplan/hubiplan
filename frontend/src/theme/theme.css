@@ -105,3 +105,19 @@
   --color-warning: #f4cf86;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3);
 }
+
+/*
+ * Logo für den Dunkelmodus (Ralf 10.11.2026): ThemedLogo stellt helles und dunkles Logo
+ * nebeneinander, hier wird je nach Darstellung eins ausgeblendet.
+ */
+:root:not([data-theme='dark']) .logo-for-dark,
+:root[data-theme='dark'] .logo-for-light {
+  display: none;
+}
+/* Vorschau des dunklen Logos in den Einstellungen (die selbst hell bleiben): Karomuster in
+   den Tönen des dunklen Seitengrunds und der dunklen Karte */
+.logo-preview-dark {
+  padding: 0.25rem;
+  border-radius: var(--radius);
+  background: repeating-conic-gradient(#111614 0% 25%, #1a201d 0% 50%) 50% / 16px 16px;
+}

@@ -301,11 +301,17 @@ org_patterns = [
         name="org-letterhead-publish",
     ),
     path("logo/", org_views.OrganizationLogoView.as_view(), name="org-logo"),
+    path("logo-dark/", org_views.OrganizationLogoDarkView.as_view(), name="org-logo-dark"),
     path("icon/", org_views.OrganizationIconView.as_view(), name="org-icon"),
     path(
         "departments/<int:pk>/logo/",
         org_views.DepartmentLogoView.as_view(),
         name="department-logo",
+    ),
+    path(
+        "departments/<int:pk>/logo-dark/",
+        org_views.DepartmentLogoDarkView.as_view(),
+        name="department-logo-dark",
     ),
     path(
         "departments/<int:pk>/homepage-image/",

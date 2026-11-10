@@ -19,6 +19,8 @@ KONTO=${KONTO:-eingang}
 MAILSERVER=${MAILSERVER:-mail.$ZONE}
 # Stundengrenze des Versandpostfachs (Hestia: 100 je Postfach)
 RATE=${RATE:-100}
+# DNS=extern: Zone liegt beim DNS-Anbieter, den MX-Eintrag dort anlegen
+DNS=${DNS:-hestia}
 APP=/opt/hubiplan
 ENV="$APP/.env"
 
@@ -35,7 +37,9 @@ fi
 
 echo "--- 2) MX-Eintrag $DOMAIN -> $MAILSERVER"
 SUB=${DOMAIN%%.$ZONE}
-if v-list-dns-records "$HUSER" "$ZONE" plain | awk -F'\t' -v s="$SUB" '$2==s && $3=="MX" {f=1} END {exit !f}'; then
+if [ "$DNS" = extern ]; then
+    echo "DNS beim Anbieter: MX $DOMAIN -> $MAILSERVER (Priorität 10) dort anlegen"
+elif v-list-dns-records "$HUSER" "$ZONE" plain | awk -F'\t' -v s="$SUB" '$2==s && $3=="MX" {f=1} END {exit !f}'; then
     echo "gibt es schon"
 else
     v-add-dns-record "$HUSER" "$ZONE" "$SUB" MX "$MAILSERVER." 10 '' yes

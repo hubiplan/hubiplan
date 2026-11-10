@@ -42,6 +42,8 @@ class PublicPlatformSerializer(serializers.Serializer):
     name = serializers.CharField()
     short_name = serializers.CharField(allow_blank=True)
     logo_url = serializers.CharField(allow_null=True)
+    # Logo für den Dunkelmodus; ohne eigenes dasselbe wie logo_url
+    logo_dark_url = serializers.CharField(allow_null=True)
     theme = PlatformThemeSerializer(allow_null=True)
     # True: eigenes Symbol unter /api/public/platform/icon-<Größe>.png und eigenes Manifest
     icon = serializers.BooleanField()
@@ -60,16 +62,19 @@ def platform_data() -> dict:
             "name": PRODUCT_NAME,
             "short_name": "",
             "logo_url": None,
+            "logo_dark_url": None,
             "theme": None,
             "icon": icon,
             "unit": None,
         }
     own_colors = bool(platform.primary_color or platform.accent_color)
-    effective = theme.effective_theme([platform]) if own_colors else None
+    logos = theme.effective_theme([platform])
+    effective = logos if own_colors else None
     return {
         "name": platform.name or PRODUCT_NAME,
         "short_name": platform.short_name or "",
-        "logo_url": platform.logo.url if platform.logo else None,
+        "logo_url": logos["logo_url"],
+        "logo_dark_url": logos["logo_dark_url"],
         "theme": (
             {k: effective[k] for k in ("primary", "on_primary", "accent", "on_accent")}
             if effective
@@ -93,6 +98,7 @@ def unit_data(unit: Organization) -> dict:
         "name": unit.name,
         "short_name": unit.short_name or "",
         "logo_url": effective["logo_url"],
+        "logo_dark_url": effective["logo_dark_url"],
         "theme": _colors(effective) if own_colors else None,
         "icon": _icon_file(unit) is not None,
         "unit": unit.pk,

@@ -71,6 +71,7 @@ THEME_FIELDS = {
     "accent_color_name",
     "extra_colors",
     "logo",
+    "logo_dark",
 }
 
 

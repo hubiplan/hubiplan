@@ -261,11 +261,14 @@ export function Layout() {
   // Ohne Einheit: Name und Logo der Instanz (White Label, Vorgabe „HUBIplan“)
   const instance = usePlatform()
   const brandName = active?.name ?? activeDept?.name ?? activePortal?.club_name ?? instance.name
-  const brandLogo =
-    active?.theme.logo_url ??
-    activeDept?.theme.logo_url ??
-    activePortal?.theme.logo_url ??
-    instance.logo_url
+  // Helles und dunkles Logo kommen immer von derselben Stelle
+  const brandTheme = [active?.theme, activeDept?.theme, activePortal?.theme].find(
+    (tm) => tm?.logo_url != null || tm?.logo_dark_url != null,
+  )
+  const brandLogo = brandTheme ? brandTheme.logo_url : instance.logo_url
+  const brandLogoDark = brandTheme
+    ? (brandTheme.logo_dark_url ?? null)
+    : (instance.logo_dark_url ?? null)
 
   // Seitentitel im Browser-Tab: Bereich · Arbeitsbereich · HUBIplan (WCAG 2.4.2)
   // Pfad der Seite aus der Menüstruktur (Seitenkopf S-05, W-02): Modul › Unterpunkt ›
@@ -384,7 +387,7 @@ export function Layout() {
                     <span />
                   </button>
                   <NavLink to="/" className="topbar-brand">
-                    <Logo name={brandName} logoUrl={brandLogo} />
+                    <Logo name={brandName} logoUrl={brandLogo} logoDarkUrl={brandLogoDark} />
                   </NavLink>
                   <div className="topbar-user">
                     {!narrow && headerTools}

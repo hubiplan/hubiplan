@@ -216,11 +216,13 @@ class TestExport:
 
         club = club_c["club"]
         club.logo.save("wappen.png", ContentFile(b"\x89PNG-test"), save=True)
+        club.logo_dark.save("wappen-dunkel.png", ContentFile(b"\x89PNG-dunkel"), save=True)
         content, job = export(api(board_c), f"/api/orgs/{club.pk}", with_files=True)
         assert job["file_name"].endswith(".zip")
         with zipfile.ZipFile(io.BytesIO(content)) as archive:
             doc = json.loads(archive.read("export.json"))
             assert archive.read(doc["organization"]["logo"]) == b"\x89PNG-test"
+            assert archive.read(doc["organization"]["logo_dark"]) == b"\x89PNG-dunkel"
 
 
 class TestImportDachverband:
