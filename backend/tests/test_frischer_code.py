@@ -69,6 +69,7 @@ def test_vorstand_behaelt_frist(api, orgs, board_a):
     # Vereinsrechte gehen in der Frist weiter, die Frist ist sichtbar
     resp = api(board_a).get(f"/api/orgs/{orgs['a'].pk}/members/")
     assert resp.status_code == 200
+    board_a.refresh_from_db()
     info = status(board_a)
     assert info["mfa_required_by"] and info["mfa_overdue"] is False
     assert "mfa_platform" not in info
