@@ -20,6 +20,8 @@ export interface DocVersion {
   uploaded_by: string
   url: string
   inline: boolean
+  /** Virenprüfung: 'pending' wartet (gesperrt), 'infected' Fund (gesperrt), sonst frei */
+  scan?: '' | 'pending' | 'infected'
 }
 
 export interface DocItem {

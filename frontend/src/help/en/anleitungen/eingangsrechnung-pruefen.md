@@ -9,7 +9,8 @@ stichworte: [e-invoice, XRechnung, ZUGFeRD, incoming invoice, approval]
 ---
 
 1. Open [Incoming invoices](/finanzen/rechnungen/eingang).
-2. Import the XML invoice or the ZUGFeRD PDF.
+2. Import the XML invoice or the ZUGFeRD PDF. Wait until the technical validation result
+   replaces **Checking** (usually less than a minute).
 3. Open the **Readable view** and check recipient, service, amount and bank details.
 4. Enter a review note.
 5. Choose **Approve business review** or **Decline**.

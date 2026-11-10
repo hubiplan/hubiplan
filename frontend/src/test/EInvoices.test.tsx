@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -70,6 +70,54 @@ describe('E-Rechnungseingang', () => {
     expect(screen.getByRole('link', { name: 'Prüfbericht herunterladen' })).toBeInTheDocument()
     expect(screen.queryByLabelText('E-Rechnung importieren')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Fachlich freigeben' })).not.toBeInTheDocument()
+  })
+
+  it('zeigt „Wird geprüft“ und fragt nach, bis die Prüfung fertig ist', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      const pending: IncomingInvoice = {
+        ...item,
+        validation: 'pending',
+        report: { status: 'pending', validator: 'KoSIT', messages: [] },
+      }
+      let calls = 0
+      fakeApi({
+        [incoming + '1']: () => {
+          calls += 1
+          return {
+            status: 200,
+            body: page([
+              calls < 2
+                ? pending
+                : {
+                    ...item,
+                    validation: 'done',
+                    report: { status: 'valid', validator: 'KoSIT', messages: [] },
+                  },
+            ]),
+          }
+        },
+      })
+      show()
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      expect(await screen.findByText('Wird geprüft')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'RE-1' }))
+      expect(screen.queryByRole('button', { name: 'Erneut prüfen' })).not.toBeInTheDocument()
+      await user.type(screen.getByLabelText('Prüfvermerk'), 'Leistung geprüft')
+      expect(screen.getByRole('button', { name: 'Fachlich freigeben' })).toBeDisabled()
+      await act(async () => {
+        vi.advanceTimersByTime(4500)
+      })
+      expect(
+        await screen.findByText(
+          'Technische Prüfung erfolgreich. Die fachliche Prüfung bleibt erforderlich.',
+        ),
+      ).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Fachlich freigeben' })).toBeEnabled()
+      expect(screen.queryByText('Wird geprüft')).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('blättert durch den vollständigen Rechnungseingang', async () => {

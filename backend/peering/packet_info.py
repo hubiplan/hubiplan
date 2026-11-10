@@ -95,7 +95,10 @@ def build_statute(coupling, level):
         .order_by("-valid_from", "-pk")
         .first()
     )
-    if current is None:
+    from core.virenscan import scan_state
+
+    if current is None or scan_state(current.file):
+        # Noch nicht auf Viren geprüft (Quarantäne): erst nach der Prüfung weitergeben
         return {"statute": None}
     return {
         "statute": {

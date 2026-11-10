@@ -42,6 +42,9 @@ from .admin_api import AppAdminAccess
 class AppBookingView(AppAdminAccess, finance_views.FinanceMixin, APIView):
     """POST (multipart): Buchung mit Beleg (``file``), Felder wie ``finance/bookings/``."""
 
+    # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
+    virus_quarantine = True
+
     parser_classes = [MultiPartParser, FormParser]
 
     @extend_schema(responses=dict)

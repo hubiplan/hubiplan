@@ -11,7 +11,7 @@ from django.test import Client
 from django.utils import timezone
 from PIL import Image
 
-from accounts.validators import ContextWordValidator, LeakedPasswordValidator
+from accounts.validators import ContextWordValidator
 from events.models import CalendarPublication
 from honors.importer import _plain
 from statutes.models import StatutePublication
@@ -57,7 +57,14 @@ class TestPasswortregeln:
         v.validate("Hubertus-Gartenzaun-Laterne", user)
 
     def test_geleakte_liste(self):
-        v = LeakedPasswordValidator()
+        # Lizenzaudit 10.11., L05: Djangos eigene Liste statt der NCSC-Liste
+        from django.conf import settings
+        from django.contrib.auth.password_validation import CommonPasswordValidator
+
+        names = [v["NAME"] for v in settings.AUTH_PASSWORD_VALIDATORS]
+        assert "django.contrib.auth.password_validation.CommonPasswordValidator" in names
+        assert not any("Leaked" in n for n in names)
+        v = CommonPasswordValidator()
         assert len(v.passwords) > 10_000
         with pytest.raises(ValidationError):
             v.validate("password123", None)
