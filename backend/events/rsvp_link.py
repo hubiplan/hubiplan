@@ -24,6 +24,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from audit.log import record
+from core import virenscan
 from core.ratelimit import client_ip, too_many
 from core.tenancy import rls_bypass
 from members.models import Membership
@@ -256,6 +257,8 @@ class PublicRsvpAttachmentView(_LinkBase):
         event, _ = self.resolve(request, token)
         with rls_bypass():
             att = get_object_or_404(EventAttachment, event=event, pk=att_id)
+            # Noch nicht geprüft oder Fund: gesperrt (Gesamtaudit 10.11., Fachfrage 2)
+            virenscan.ensure_released(att.file)
             try:
                 handle = att.file.open("rb")
             except FileNotFoundError as exc:

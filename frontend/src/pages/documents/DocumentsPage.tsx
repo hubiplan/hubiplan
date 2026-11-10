@@ -884,7 +884,13 @@ function DocumentRow({ doc, folder, ...ctx }: FolderCtx & { doc: DocItem; folder
         )}
       </div>
       <div className="button-row">
-        {current && (
+        {current?.scan === 'pending' && (
+          <span className="badge">{t('Wird auf Viren geprüft')}</span>
+        )}
+        {current?.scan === 'infected' && (
+          <span className="badge">{t('Gesperrt: Schadsoftware gefunden')}</span>
+        )}
+        {current && !current.scan && (
           <a
             className="button button-ghost"
             href={current.inline ? current.url : `${current.url}?download=1`}

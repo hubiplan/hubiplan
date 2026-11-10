@@ -616,6 +616,11 @@ def copy_event_attachments(event, circular: Circular) -> list[str]:
         att = CircularAttachment(circular=circular, name=src.name[:200], size=len(content))
         att.file.save(_safe_name(src.name), ContentFile(content), save=False)
         att.save()
+        from core import virenscan
+
+        if virenscan.scan_state(src.file):
+            # Original noch gesperrt: die Kopie auch (Gesamtaudit 10.11., Fachfrage 2)
+            virenscan.hold(att.file.name, circular.organization_id, src.name)
         total += src.size
         count += 1
     return skipped
@@ -836,6 +841,9 @@ def _safe_name(name: str) -> str:
 
 
 class _AttachmentList(APIView):
+    # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
+    virus_quarantine = True
+
     parser_classes = [MultiPartParser, FormParser]
 
     @transaction.atomic
@@ -895,6 +903,9 @@ class _Attachment(APIView):
 
 
 def _file_response(att: CircularAttachment, request) -> FileResponse:
+    from core.virenscan import ensure_released
+
+    ensure_released(att.file)
     response = FileResponse(
         att.file.open("rb"),
         content_type="application/pdf",

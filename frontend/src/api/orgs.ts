@@ -684,7 +684,11 @@ export interface PlatformUpdate {
   enabled: boolean
   update: { version: string; url: string; running: string } | null
   selfupdate?: SelfUpdate
-  virus_scan?: { enabled: boolean; required: boolean }
+  virus_scan?: {
+    enabled: boolean
+    required: boolean
+    quarantine?: { pending: number; infected: number }
+  }
 }
 
 /** Stand des Selbstupdates (konzepte/selbstupdate.md); result kommt vom Aktualisierer. */

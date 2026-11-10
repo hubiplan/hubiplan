@@ -9504,6 +9504,32 @@ msgstr "A place with this name already exists."
 msgid "Bitte Breite und Länge zusammen angeben."
 msgstr "Please enter latitude and longitude together."
 
+msgid ""
+"Die Datei wartet noch auf die Virenprüfung und ist bis dahin gesperrt. Bitte "
+"später noch einmal versuchen."
+msgstr ""
+"The file is still waiting for the virus scan and is locked until then. Please "
+"try again later."
+
+msgid ""
+"In der Datei wurde Schadsoftware gefunden. Sie ist gesperrt und kann nicht "
+"heruntergeladen werden."
+msgstr ""
+"Malware was found in the file. It is locked and cannot be downloaded."
+
+msgid ""
+"Die Datei „{name}“ ist zu groß für die Virenprüfung (höchstens {mb} MB)."
+msgstr "The file “{name}” is too large for the virus scan (at most {mb} MB)."
+
+msgid "zu groß für die Virenprüfung"
+msgstr "too large for the virus scan"
+
+msgid "wartet auf Prüfung"
+msgstr "waiting for scan"
+
+msgid "Schadsoftware gefunden"
+msgstr "malware found"
+
 msgid "Bei diesem Termin bitte zu- oder absagen."
 msgstr "For this event, please accept or decline."
 
