@@ -1,7 +1,7 @@
 // Webseite der Einheit: Einrichtung, Zustand, Domains, Vorschau, Einwilligungen.
 import { api, requestBlob } from './client.ts'
 import type { CropArea } from '../components/ImageCrop.tsx'
-import type { PaletteColor } from './orgs.ts'
+import type { Gradient, PaletteColor } from './orgs.ts'
 
 export type WebsiteState = 'off' | 'maintenance' | 'public'
 
@@ -74,13 +74,29 @@ export interface StyleCatalog {
   locks: Record<string, Record<string, string[] | null>>
 }
 /** Farben je Rolle eines Designs */
-export type RoleColors = Record<string, { color: string; on_color: string }>
+export type RoleColors = Record<
+  string,
+  {
+    color: string
+    on_color: string
+    /** Verlauf statt Vollfarbe (Kopf, Fuß, Bänder, Zierlinien) */
+    gradient?: { from: string; to: string; direction: string }
+  }
+>
 
 export interface DesignInfo {
   key: string
   label: string
   hint: string
-  roles: { key: string; label: string; default: number | string }[]
+  roles: {
+    key: string
+    label: string
+    default: number | string | null
+    /** Rolle kann einen Verlauf nehmen */
+    gradient?: boolean
+    /** Rolle in jedem Design (Text, Flächen, Hintergrund); Vorgabe ist das Design */
+    common?: boolean
+  }[]
   /** Eingespieltes Designpaket statt Standarddesign (fehlt bei älteren Ständen) */
   package?: boolean
   /** Skizze wie dieses Standarddesign */
@@ -341,6 +357,7 @@ export type SectionOptions = Pick<
   | 'home_kind_needs_block'
   | 'home_choices'
   | 'palette'
+  | 'gradients'
   | 'units'
 >
 export interface SectionSite {
@@ -373,6 +390,8 @@ export interface WebsiteData {
   designs?: DesignInfo[]
   /** Farben der Einheit: Haupt-, Zweit- und weitere Farben */
   palette?: PaletteColor[]
+  /** Verläufe der Einheit (Einstellungen › Erscheinungsbild) */
+  gradients?: Gradient[]
   /** Darf Designpakete einspielen und freigeben (Plattformverwalter) */
   can_import_designs?: boolean
   /** Stilregler der Feinabstimmung (fehlt bei älteren Ständen) */

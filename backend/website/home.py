@@ -76,6 +76,8 @@ CUSTOM_KEY = re.compile(r"^c:[a-z0-9]{1,24}$")
 MAX_CUSTOM = 30
 BACKGROUNDS = ("none", "light")  # dazu ``p0`` … ``p9``: Farbe aus der Palette
 PALETTE_BG = re.compile(r"^p[0-9]$")
+# Verlauf aus Einstellungen › Erscheinungsbild als Hintergrund (Ralf 10.11.2026)
+GRADIENT_BG = re.compile(r"^g[01]$")
 WIDTHS = ("content", "text", "full")
 COLUMNS = ("main", "side")
 # Zeitung: diese Bausteine standen bisher fest in der rechten Spalte
@@ -113,7 +115,10 @@ def _layout(item: dict, key_or_kind: str) -> dict:
     width = item.get("width")
     column = item.get("column")
     return {
-        "bg": bg if bg in BACKGROUNDS or (isinstance(bg, str) and PALETTE_BG.match(bg)) else "none",
+        "bg": bg
+        if bg in BACKGROUNDS
+        or (isinstance(bg, str) and (PALETTE_BG.match(bg) or GRADIENT_BG.match(bg)))
+        else "none",
         "width": width if width in WIDTHS else "content",
         "column": column
         if column in COLUMNS
