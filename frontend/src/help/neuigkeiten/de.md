@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- KI-Assistenten: Unter der Adresse `/api/mcp/` eurer HUBIplan-Instanz kann ein KI-Assistent wie Claude oder ChatGPT die HUBIplan-Hilfe durchsuchen und Begriffe erklären (Model Context Protocol). Er sieht dabei keine Vereinsdaten und ändert nichts.
 - **Geschäftspartner** haben einen eigenen Menüpunkt unter Verein: Lieferanten, Dienstleister, Sponsoren, Behörden und andere mit Art, Rollen, Nummer, mehreren Ansprechpartnern, Notizen und (für die Kasse) Bankverbindung. Doppelte Einträge lassen sich zusammenführen, die Liste als Excel ex- und importieren.
 - Webseite: Neun weitere Arten eigener Abschnitte für Startseite und Textseiten: **Häufige Fragen** zum Aufklappen, **Partner und Sponsoren** mit Logo und Link, **Anfahrt** zu einem gespeicherten Ort mit „Route planen“, **Termine einer Art** (z. B. nur Training), **Dokument zum Herunterladen**, **Video als Link** ohne Einbettung, **Auszug aus der Chronik**, **Zahlen auf einen Blick** und **Trenner**.
 - Startseite: Beim Anpassen ändert die Ecke unten rechts jedes Blocks Breite und Höhe, die Breite auch als ¼, ⅓, ½, ⅔, ¾ oder ganz. Das feinere Raster schließt Lücken: Ein Block rutscht unter einen kürzeren daneben.

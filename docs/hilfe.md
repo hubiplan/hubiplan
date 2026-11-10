@@ -66,6 +66,10 @@ Regeln (geprüft von `src/test/Hilfe.test.tsx`):
 - Höchstens zehn Schritte je Anleitung, jeder ein Satz.
 - Platzhalter der Einheit wie `{pl}` (z. B. „Züge“) werden eingesetzt (`org/terms.ts`).
 - Wer eine Seite oder einen Ablauf ändert, passt die Hilfe im selben PR an.
+- Danach im Ordner `frontend` `node scripts/mcp-hilfe.mjs` ausführen und
+  `backend/mcpserver/hilfe.json` mit einchecken: Die KI-Schnittstelle liest die Hilfe aus dieser
+  Kopie ([mcp.md](mcp.md)); `src/test/McpHilfe.test.ts` meldet, wenn sie veraltet ist. Dasselbe
+  gilt nach Änderungen an den Begriffen der Lernhilfen (`src/learning/content.ts`, `en.json`).
 
 ## Bildschirmfotos
 
