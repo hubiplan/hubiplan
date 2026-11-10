@@ -167,14 +167,14 @@ def test_schwerpunkt_aus_den_rollen(api, orgs, board_a):
 
 def test_schnellaktionen_ausblenden(api, board_a):
     c = api(board_a)
-    assert c.get("/api/me/home-actions/").json() == {"hidden": [], "chosen": {}}
+    assert c.get("/api/me/home-actions/").json() == {"hidden": [], "chosen": {}, "layout": {}}
     resp = c.put(
         "/api/me/home-actions/",
         {"hidden": ["termin", "termin", "*"]},
         content_type="application/json",
     )
     assert resp.status_code == 200, resp.content
-    assert resp.json() == {"hidden": ["*", "termin"], "chosen": {}}
+    assert resp.json() == {"hidden": ["*", "termin"], "chosen": {}, "layout": {}}
     board_a.refresh_from_db()
     assert board_a.home_actions_hidden == ["*", "termin"]
     assert (
@@ -185,7 +185,7 @@ def test_schnellaktionen_ausblenden(api, board_a):
     )
     assert c.put(
         "/api/me/home-actions/", {"hidden": []}, content_type="application/json"
-    ).json() == {"hidden": [], "chosen": {}}
+    ).json() == {"hidden": [], "chosen": {}, "layout": {}}
     board_a.refresh_from_db()
     assert board_a.home_actions_hidden is None
 
@@ -202,10 +202,15 @@ def test_schnellaktionen_waehlen(api, board_a):
     assert resp.json() == {
         "hidden": [],
         "chosen": {"d3": ["einheit-brief"], "o12": ["aufgabe", "termin"]},
+        "layout": {},
     }
     # Nur genannte Bereiche ändern sich, null stellt den Vorschlag wieder her
     assert put({"chosen": {"d3": None, "o12": []}}).json()["chosen"] == {"o12": []}
-    assert put({"hidden": ["*"]}).json() == {"hidden": ["*"], "chosen": {"o12": []}}
+    assert put({"hidden": ["*"]}).json() == {
+        "hidden": ["*"],
+        "chosen": {"o12": []},
+        "layout": {},
+    }
     board_a.refresh_from_db()
     assert board_a.home_actions == {"o12": []}
     assert put({"chosen": {"x1": ["termin"]}}).status_code == 400
@@ -214,3 +219,38 @@ def test_schnellaktionen_waehlen(api, board_a):
     assert put({"chosen": {"o12": None}}).json()["chosen"] == {}
     board_a.refresh_from_db()
     assert board_a.home_actions is None
+
+
+def test_startseite_anordnen(api, board_a):
+    c = api(board_a)
+
+    def put(body):
+        return c.put("/api/me/home-actions/", body, content_type="application/json")
+
+    resp = put(
+        {
+            "layout": {
+                "o12": {"order": ["termine", "schnellaktionen", "termine"], "wide": ["termine"]},
+                "d3": {"hidden": ["hinweise"]},
+            }
+        }
+    )
+    assert resp.status_code == 200, resp.content
+    # Doppelte fallen weg, fehlende Teile sind leer; Schnellaktionen bleiben unberührt
+    assert resp.json() == {
+        "hidden": [],
+        "chosen": {},
+        "layout": {
+            "d3": {"order": [], "hidden": ["hinweise"], "wide": []},
+            "o12": {"order": ["termine", "schnellaktionen"], "hidden": [], "wide": ["termine"]},
+        },
+    }
+    # Auswahl der Schnellaktionen ändert die Anordnung nicht, null stellt den Standard her
+    assert put({"chosen": {"o12": ["termin"]}}).json()["layout"]["o12"]["wide"] == ["termine"]
+    assert list(put({"layout": {"d3": None}}).json()["layout"]) == ["o12"]
+    assert put({"layout": {"x1": {}}}).status_code == 400
+    assert put({"layout": {"o1": {"order": ["<b>"]}}}).status_code == 400
+    assert put({"layout": {"o1": {"order": ["a"] * 21}}}).status_code == 400
+    assert put({"layout": {"o12": None}}).json()["layout"] == {}
+    board_a.refresh_from_db()
+    assert board_a.home_layout is None

@@ -28,9 +28,9 @@ export function SortableList<T>({
     <>
       <ul className="sortable-list" aria-label={ariaLabel}>
         {s.ordered.map((item) => {
-          const { ref, className } = s.rowProps(item)
+          const { ref, ...row } = s.rowProps(item)
           return (
-            <li key={options.id(item)} ref={ref} className={className}>
+            <li key={options.id(item)} ref={ref} {...row}>
               {s.handle(item)}
               <div className="sortable-label">{render ? render(item) : options.label(item)}</div>
             </li>
