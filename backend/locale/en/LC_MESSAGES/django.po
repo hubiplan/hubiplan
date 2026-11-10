@@ -9755,3 +9755,6 @@ msgstr "At most twelve partners."
 
 msgid "Höchstens sechs Zahlen."
 msgstr "At most six numbers."
+
+msgid "Startseite"
+msgstr "Home"
