@@ -77,6 +77,10 @@ class User(AbstractUser):
     # "d5" Untereinheit), z. B. {"o12": ["termin", "aufgabe"]}. Fehlt ein Bereich, gilt der
     # Vorschlag aus den Rollen. Reine Anzeigepräferenz.
     home_actions = models.JSONField("Auswahl der Schnellaktionen", null=True, blank=True)
+    # Eigene Anordnung der Startseiten-Blöcke je Arbeitsbereich, z. B. {"o12": {"order":
+    # ["termine", "schnellaktionen"], "hidden": ["hinweise"], "wide": ["termine"]}}. Fehlt ein
+    # Bereich, gilt die Standardanordnung. Reine Anzeigepräferenz.
+    home_layout = models.JSONField("Anordnung der Startseite", null=True, blank=True)
     # Gesetzt, solange das Konto noch das ausgegebene Startpasswort hat: Es muss bei der
     # ersten Anmeldung ersetzt werden und wird nach Ablauf unbrauchbar (AT-S04)
     initial_password_expires = models.DateTimeField(

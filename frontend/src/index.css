@@ -5291,8 +5291,91 @@ label:has(> .file-input:focus-visible) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-.home-grid > .card {
+.home-grid > .card,
+.home-block-content > .card {
   max-width: none;
+}
+/* Startseite selbst zusammenstellen (HomeBoard): jeder Block in einer Rasterzelle */
+.home-block {
+  min-width: 0;
+}
+.home-block-wide {
+  grid-column: 1 / -1;
+}
+.home-grid:not(.home-grid-editing) > .home-block:has(> .home-block-content:empty) {
+  display: none;
+}
+.home-board-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  max-width: 80rem;
+  margin-bottom: var(--space-4);
+}
+.home-board-head > p {
+  margin: 0;
+}
+/* Beim Anpassen: Blöcke überall anfassen und ziehen; Inhalt nur als gekürzte Vorschau */
+.home-grid-editing > .home-block {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: var(--space-2);
+  background: var(--color-bg);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+/* Am Finger rollt die Seite über dem Inhalt weiter; gezogen wird an der Leiste des Blocks */
+.home-grid-editing > .home-block:not(.home-block-dragging) {
+  touch-action: pan-y;
+}
+.home-grid-editing .home-block-bar {
+  touch-action: none;
+}
+@media (max-width: 64rem) {
+  /* Eine Spalte: die Breite spielt keine Rolle, die Vorschau bleibt kurz */
+  .home-block-wide-option {
+    display: none;
+  }
+  .home-grid-editing .home-block-content {
+    max-height: 8rem;
+  }
+}
+.home-grid-editing > .home-block-dragging {
+  cursor: grabbing;
+  border-color: var(--color-focus);
+  box-shadow: var(--shadow);
+}
+.home-block-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-2);
+}
+.home-block-name {
+  margin-right: auto;
+}
+.home-block-bar .checkbox {
+  margin: 0;
+}
+.home-grid-editing .home-block-content {
+  max-height: 14rem;
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, currentColor 70%, transparent);
+}
+.home-grid-editing .home-block-content:empty::after {
+  content: attr(data-empty);
+  display: block;
+  padding: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+.home-block-off .home-block-content,
+.home-block-off .home-block-name {
+  opacity: 0.45;
 }
 .home-notices h3 {
   margin: 0 0 0.25rem;
@@ -5608,6 +5691,16 @@ label:has(> .file-input:focus-visible) {
   border: 0;
   flex: none;
   transform-origin: top center;
+}
+
+/* Ganze Zeile ziehen (useSortable dragRow) */
+.sortable-row-drag {
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.sortable-row-drag.sortable-dragging {
+  cursor: grabbing;
 }
 
 /* Webseite › Gestaltung › Startseite: Abschnitts-Baukasten (G3) */
