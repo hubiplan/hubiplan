@@ -18,4 +18,6 @@ Namenslisten verwenden eine feste alphabetische Reihenfolge: Umlaute stehen bei 
 
 Ein Rundschreiben zu einem Termin legst du im Termin unter **Zu diesem Termin** an. Es geht an die Eingeladenen des Termins, auf Wunsch nur an die mit einer bestimmten Rückmeldung.
 
+Gehört der Verein zu einem Dachverband, zeigt der Reiter **Empfangen** dessen Rundschreiben an die Vorstände. Ohne Dachverband gibt es diesen Reiter nicht.
+
 Empfangene Schreiben und ihre Anhänge findest du auch im Mitgliederbereich unter **Rundschreiben**. Die Android-App nennt diesen gemeinsamen Eingang „Mitteilungen“. Die Einstellung für Informations-E-Mails bestätigt Änderungen und behält beim Speichern den Tastaturfokus. Weitere Änderungen sind währenddessen gesperrt; offizielle Mitteilungen bleiben davon unberührt.

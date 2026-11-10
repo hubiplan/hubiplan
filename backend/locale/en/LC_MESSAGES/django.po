@@ -1454,6 +1454,9 @@ msgstr "Scale cannot be determined"
 msgid "Für diese Art von Organisation nicht verfügbar."
 msgstr "Not available for this type of organisation."
 
+msgid "Dieser Verein gehört zu keinem Dachverband."
+msgstr "This club does not belong to an umbrella association."
+
 msgid ""
 "Die verschlüsselten Daten sind gerade nicht verfügbar. Bitte in einigen "
 "Minuten erneut versuchen."

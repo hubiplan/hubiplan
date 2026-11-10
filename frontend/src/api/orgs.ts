@@ -55,6 +55,8 @@ export interface OrgSummary {
   label_plural?: string
   parent_name: string | null
   parent_display_name?: string | null
+  /** Verein gehört zu einem Dachverband (dann gibt es Rundschreiben › Empfangen) */
+  has_federation?: boolean
   permissions: string[]
   modules: string[]
   department_label: string

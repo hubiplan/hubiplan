@@ -507,5 +507,13 @@ class TestEmpfangen:
         # Verein C gehört nicht zum Verband
         board_c = make_user("vorstand-c2@example.org")
         give_role(board_c, cal["c"])
-        assert api(board_c).get(f"{base(cal['c'])}received/").json() == []
+        # Verein C gehört zu keinem Dachverband: kein Empfangen
+        assert api(board_c).get(f"{base(cal['c'])}received/").status_code == 404
         assert api(board_c).get(f"{base(cal['c'])}received/{data['id']}/").status_code == 404
+
+    def test_empfangen_nur_mit_dachverband(self, cal, board_a, board_c, api):
+        mine = {o["id"]: o for o in api(board_a).get("/api/me/organizations/").json()}
+        assert mine[cal["a"].pk]["has_federation"] is True
+        mine = {o["id"]: o for o in api(board_c).get("/api/me/organizations/").json()}
+        assert mine[cal["c"].pk]["has_federation"] is False
+        assert api(board_a).get(f"{base(cal['a'])}received/").status_code == 200
