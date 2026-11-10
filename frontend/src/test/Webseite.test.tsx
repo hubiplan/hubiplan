@@ -248,6 +248,53 @@ describe('Webseite', () => {
     )
   })
 
+  it('stellt Stilregler ein, sperrt Vorgaben des Designs und stellt zurück', async () => {
+    const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
+    const body = {
+      ...data(website('maintenance', { design: 'sidebar', color_roles: {}, style: {} })),
+      designs: [{ key: 'sidebar', label: 'Seitenleiste', hint: 'erfunden', roles, package: false }],
+      style_catalog: {
+        options: {
+          font: ['system', 'modern', 'festive'],
+          logo_pos: ['left', 'center', 'right'],
+          logo: 'switch',
+          name: 'switch',
+        },
+        locks: { sidebar: { logo_pos: null } },
+      },
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body }),
+        [`PUT ${base}`]: () => ({ status: 200, body }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/gestaltung',
+    )
+    const user = userEvent.setup()
+    const lastStyle = () => {
+      const last = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+      return JSON.parse(String(last?.init?.body ?? '{}')).style
+    }
+    const modern = await screen.findByRole('button', { name: 'Modern' })
+    expect(modern).toHaveAttribute('aria-pressed', 'false')
+    await user.click(modern)
+    expect(modern).toHaveAttribute('aria-pressed', 'true')
+    await waitFor(() => expect(lastStyle()).toEqual({ font: 'modern' }), { timeout: 4000 })
+    // Seitenleiste legt die Lage des Wappens selbst fest
+    await user.click(screen.getByText('Kopf und Menü'))
+    expect(screen.getByRole('button', { name: 'mittig' })).toBeDisabled()
+    // Wappen aus, dann Name aus: das Wappen geht wieder an (nie beide aus)
+    await user.click(screen.getByRole('switch', { name: 'Wappen zeigen' }))
+    await user.click(screen.getByRole('switch', { name: 'Vereinsnamen zeigen' }))
+    await waitFor(() => expect(lastStyle()).toEqual({ font: 'modern', logo: true, name: false }), {
+      timeout: 4000,
+    })
+    // Zweiter Klick stellt zurück
+    await user.click(modern)
+    expect(modern).toHaveAttribute('aria-pressed', 'false')
+  })
+
   it('zeigt eingespielte Designs und lädt Pakete nur für Plattformverwalter', async () => {
     const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
     const designs = [

@@ -39,6 +39,7 @@ import { ContentPage } from './ContentPage.tsx'
 import { ImagesPage } from './images.tsx'
 import { DesignChooser } from './DesignChooser.tsx'
 import { HeaderImage } from './HeaderImage.tsx'
+import { StyleTuning } from './StyleTuning.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
 import { t } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
@@ -193,6 +194,7 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'home_sections',
   'design',
   'color_roles',
+  'style',
   'header_image',
   'name_format',
   'show_vacant',
@@ -309,6 +311,14 @@ function WebsiteAdmin({
     </>
   )
 
+  const headerImage = (
+    <HeaderImage
+      value={v.header_image ?? null}
+      units={data.units}
+      onChange={(id) => set('header_image', id)}
+    />
+  )
+
   const design = (
     <>
       {data.designs ? (
@@ -326,14 +336,23 @@ function WebsiteAdmin({
       ) : (
         <Alert kind="info">{t('Auf diesem Server gibt es keine Designs zur Auswahl.')}</Alert>
       )}
-      {settings(
-        t('Kopfbild'),
-        <HeaderImage
-          value={v.header_image ?? null}
-          units={data.units}
-          onChange={(id) => set('header_image', id)}
-        />,
-      )}
+      {data.style_catalog
+        ? settings(
+            t('Feinabstimmung'),
+            <StyleTuning
+              catalog={data.style_catalog}
+              design={v.design ?? 'classic'}
+              designLabel={
+                data.designs?.find((d) => d.key === (v.design ?? 'classic'))?.label ??
+                v.design ??
+                ''
+              }
+              value={v.style ?? {}}
+              onChange={(next) => set('style', next)}
+              headerImage={headerImage}
+            />,
+          )
+        : settings(t('Kopfbild'), headerImage)}
       <SiteLanguage
         value={v.language ?? 'de'}
         error={errors.language}

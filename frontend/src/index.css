@@ -5411,3 +5411,89 @@ label:has(> .file-input:focus-visible) {
   gap: 0.25rem;
   margin-top: 0.25rem;
 }
+
+/* Webseite › Gestaltung › Feinabstimmung (Stilregler): Leisten mit 2 oder 3 gleich breiten Feldern */
+.style-group {
+  border-top: 1px solid var(--color-border);
+  padding: 0.3rem 0 0.5rem;
+}
+.style-group > summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.45rem 0;
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+}
+.style-changed {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.style-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 15rem) auto;
+  gap: 0.3rem 1rem;
+  align-items: center;
+  padding: 0.3rem 0;
+}
+.style-label {
+  font-weight: 600;
+  display: grid;
+}
+.style-label small {
+  font-weight: 400;
+}
+.style-segments {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  width: 18rem;
+  max-width: 100%;
+}
+.style-segments.style-n2 {
+  width: 12rem;
+}
+.style-segments button {
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.3rem;
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.style-segments button:first-child {
+  border-left: 0;
+}
+.style-segments button[aria-pressed='true'] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 600;
+}
+.style-segments button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.style-segments button:focus-visible {
+  outline-offset: -3px;
+}
+.style-switch {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.style-extra {
+  grid-column: 1 / -1;
+}
+@media (max-width: 40rem) {
+  .style-row {
+    grid-template-columns: 1fr;
+  }
+}
