@@ -5399,3 +5399,29 @@ label:has(> .file-input:focus-visible) {
 .place-field .place-save {
   align-self: flex-start;
 }
+
+/* Rückmeldeseite hinter dem Link aus der Mail */
+.rsvp-public-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+.rsvp-public-facts dt {
+  font-weight: 600;
+}
+
+.rsvp-public-facts dd {
+  margin: 0;
+}
+
+.rsvp-public-text {
+  white-space: pre-wrap;
+}
+
+.route-links {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}

@@ -90,6 +90,24 @@ class Event(models.Model):
     description = models.TextField("Beschreibung", blank=True, max_length=5000)
     location = models.CharField("Ort", max_length=200, blank=True)
     address = models.CharField("Anschrift", max_length=300, blank=True)
+    # Anfahrt (T5): Hinweise und auf Wunsch genauer Punkt, wenn die Anschrift nicht reicht
+    directions = models.TextField("Anfahrt und Hinweise", max_length=1000, blank=True)
+    latitude = models.DecimalField(
+        "Breite",
+        max_digits=8,
+        decimal_places=5,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
+    )
+    longitude = models.DecimalField(
+        "Länge",
+        max_digits=8,
+        decimal_places=5,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+    )
     category = models.ForeignKey(
         EventCategory,
         verbose_name="Kategorie",
@@ -149,6 +167,11 @@ class Event(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(100000)],
     )
     rsvp_guests = models.BooleanField("Begleitpersonen erlaubt", default=False)
+    # Antwort „Vielleicht“ (zählt nicht gegen die Höchstzahl)
+    rsvp_maybe = models.BooleanField("Antwort „Vielleicht“ erlaubt", default=False)
+    # Bemerkung der Mitglieder (wie bisher an), auf Wunsch mit eigener Frage („Essenswunsch?“)
+    rsvp_note = models.BooleanField("Bemerkung erlaubt", default=True)
+    rsvp_note_question = models.CharField("Frage zur Bemerkung", max_length=200, blank=True)
     # Erinnerung per E-Mail: so viele Tage vor Beginn
     remind_days = models.PositiveSmallIntegerField(
         "Erinnerung Tage vorher",
@@ -341,10 +364,12 @@ class EventResponse(models.Model):
     class Status(models.TextChoices):
         YES = "yes", gettext_lazy("Zusage")
         NO = "no", gettext_lazy("Absage")
+        MAYBE = "maybe", gettext_lazy("Vielleicht")
 
     class Source(models.TextChoices):
         MEMBER = "member", gettext_lazy("Mitglied")
         BOARD = "board", gettext_lazy("Vorstand")
+        LINK = "link", gettext_lazy("Mail-Link")
 
     # Verein des Termins (Mandantentrennung)
     organization = models.ForeignKey(

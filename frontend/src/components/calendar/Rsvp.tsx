@@ -23,6 +23,9 @@ const STATUS_LABEL: Record<ResponseStatus, string> = {
   get no() {
     return t('Absage')
   },
+  get maybe() {
+    return t('Vielleicht')
+  },
 }
 
 function deadlineText(iso: string): string {
@@ -35,6 +38,7 @@ export function RsvpBadge({ o }: { o: Occurrence }) {
   if (!o.rsvp_enabled || o.is_cancelled) return null
   if (o.my_response === 'yes') return <span className="badge badge-yes">{t('zugesagt')}</span>
   if (o.my_response === 'no') return <span className="badge">{t('abgesagt')}</span>
+  if (o.my_response === 'maybe') return <span className="badge">{t('vielleicht')}</span>
   if (o.my_response === null)
     return <span className="badge badge-open">{t('Rückmeldung offen')}</span>
   return null
@@ -82,15 +86,20 @@ export function MyResponsePanel({
     }
   }
 
+  const noteAllowed = info.note_allowed ?? true
   const send = (status: ResponseStatus) =>
     run(
       () =>
         eventApi.respond(base, event.id, {
           status,
           guests: status === 'yes' && info.guests_allowed ? Number(guests) || 0 : 0,
-          note,
+          note: noteAllowed ? note : '',
         }),
-      status === 'yes' ? t('Deine Zusage ist gespeichert.') : t('Deine Absage ist gespeichert.'),
+      status === 'yes'
+        ? t('Deine Zusage ist gespeichert.')
+        : status === 'maybe'
+          ? t('Deine Antwort „Vielleicht“ ist gespeichert.')
+          : t('Deine Absage ist gespeichert.'),
     )
 
   return (
@@ -108,6 +117,10 @@ export function MyResponsePanel({
           {mine.source === 'board' && (
             <span className="muted small">{t(' (vom Vorstand eingetragen)')}</span>
           )}
+          {mine.source === 'link' && (
+            <span className="muted small">{t(' (über den Link in der Mail)')}</span>
+          )}
+          {mine.note && <span className="muted small"> · {mine.note}</span>}
         </p>
       ) : (
         <p className="muted">{t('Du hast dich noch nicht zurückgemeldet.')}</p>
@@ -127,6 +140,11 @@ export function MyResponsePanel({
       {error && <Alert kind="error">{error}</Alert>}
       {info.can_respond ? (
         <>
+          {mine && (
+            <p className="muted small">
+              {t('Du kannst deine Rückmeldung bis zum Anmeldeschluss jederzeit ändern.')}
+            </p>
+          )}
           <div className="grid-2">
             {info.guests_allowed && (
               <Field
@@ -138,12 +156,14 @@ export function MyResponsePanel({
                 onChange={(e) => setGuests(e.target.value)}
               />
             )}
-            <Field
-              label={t('Bemerkung (optional)')}
-              value={note}
-              maxLength={200}
-              onChange={(e) => setNote(e.target.value)}
-            />
+            {noteAllowed && (
+              <Field
+                label={info.note_question || t('Bemerkung (optional)')}
+                value={note}
+                maxLength={200}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            )}
           </div>
           <div className="button-row">
             <button
@@ -163,6 +183,16 @@ export function MyResponsePanel({
             >
               {tc('action', 'Absagen')}
             </button>
+            {info.maybe_allowed && (
+              <button
+                type="button"
+                className="button button-ghost"
+                disabled={busy}
+                onClick={() => void send('maybe')}
+              >
+                {t('Vielleicht')}
+              </button>
+            )}
             {mine && (
               <button
                 type="button"
@@ -272,6 +302,7 @@ export function ResponsesPanel({ base, event }: { base: CalendarBase; event: Eve
             persons: s.persons,
           })}
         {data.capacity ? t(' (höchstens {capacity})', { capacity: data.capacity }) : ''}{' '}
+        {s.maybe ? t('· {n} vielleicht ', { n: s.maybe }) : ''}
         {t('· {no} Absagen · {open} noch offen', { no: s.no, open: s.open })}
       </p>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
@@ -297,6 +328,9 @@ export function ResponsesPanel({ base, event }: { base: CalendarBase; event: Eve
                     {r.guests > 0 && t(' + {guests}', { guests: r.guests })}
                     {r.source === 'board' && (
                       <span className="muted small">{t(' (Vorstand)')}</span>
+                    )}
+                    {r.source === 'link' && (
+                      <span className="muted small">{t(' (Mail-Link)')}</span>
                     )}
                   </td>
                   <td>{r.note}</td>
@@ -349,6 +383,16 @@ export function ResponsesPanel({ base, event }: { base: CalendarBase; event: Eve
                     >
                       {t('Absage')}
                     </button>
+                    {event.rsvp.maybe_allowed && (
+                      <button
+                        type="button"
+                        className="link-button"
+                        aria-label={t('„Vielleicht“ für {name} eintragen', { name: r.name })}
+                        onClick={() => void enter(r.membership_id, 'maybe')}
+                      >
+                        {t('Vielleicht')}
+                      </button>
+                    )}
                   </span>
                 )}
               </li>

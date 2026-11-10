@@ -9545,3 +9545,17 @@ msgstr "Please enter the full name of the unit."
 
 msgid "Bitte angeben, wer die Aufbewahrungsfristen bestätigt hat (z. B. Kassenprüfer oder Steuerberater)."
 msgstr "Please state who confirmed the retention periods (e.g. auditor or tax advisor)."
+msgid "Bei diesem Termin bitte zu- oder absagen."
+msgstr "For this event, please accept or decline."
+
+msgid "Vielleicht"
+msgstr "Maybe"
+
+msgid "Mail-Link"
+msgstr "Email link"
+
+msgid "Der Termin ist abgesagt."
+msgstr "The event has been cancelled."
+
+msgid "Der Anmeldeschluss ist vorbei."
+msgstr "The registration deadline has passed."

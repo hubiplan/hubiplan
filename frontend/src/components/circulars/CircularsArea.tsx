@@ -425,7 +425,9 @@ function DraftEditor({
               </option>
             ))}
           </SelectField>
-          {byList ? (
+          {initial.event ? (
+            <p>{t('An: Eingeladene von „{title}“', { title: initial.event.title })}</p>
+          ) : byList ? (
             <SelectField
               label={t('An')}
               value={v.mailing_list ?? ''}
@@ -581,6 +583,7 @@ function DraftEditor({
           onFilters={setFilters}
           version={version}
           fixed={!!chosenList}
+          event={initial.event}
         />
       )}
 
