@@ -9743,3 +9743,93 @@ msgstr "This target does not exist."
 
 msgid "Das Ende liegt vor dem Anfang."
 msgstr "The end is before the start."
+
+msgid "Sprache der Antwort: de (Deutsch) oder en (Englisch)."
+msgstr "Language of the answer: de (German) or en (English)."
+
+msgid "Keine passende Anleitung gefunden. Andere Wörter versuchen oder hilfe_uebersicht aufrufen."
+msgstr "No matching guide found. Try other words or call hilfe_uebersicht."
+
+msgid "Den ganzen Text liefert hilfe_lesen mit dem Namen."
+msgstr "hilfe_lesen returns the full text for a name."
+
+msgid "Anleitung"
+msgstr "Guide"
+
+msgid "Seitenhilfe"
+msgstr "Page help"
+
+msgid "Links wie (/mitglieder) sind Seiten in HUBIplan, relativ zur Adresse der Instanz. Was jemand davon sieht, hängt von Rechten und Modulen ab."
+msgstr "Links like (/mitglieder) are pages in HUBIplan, relative to the address of the instance. What someone sees there depends on rights and modules."
+
+msgid "Diesen Begriff kennt das Glossar nicht. hilfe_suchen versuchen."
+msgstr "The glossary does not know this term. Try hilfe_suchen."
+
+msgid "Sprache muss de oder en sein."
+msgstr "Language must be de or en."
+
+msgid "„anzahl“ muss eine ganze Zahl sein."
+msgstr "“anzahl” must be a whole number."
+
+msgid "Diese Anleitung gibt es nicht. Erst mit hilfe_suchen suchen."
+msgstr "This guide does not exist. Search with hilfe_suchen first."
+
+msgid "„art“ muss anleitungen oder seiten sein."
+msgstr "“art” must be anleitungen or seiten."
+
+msgid "Hilfe durchsuchen"
+msgstr "Search the help"
+
+msgid "Sucht in der Hilfe von HUBIplan (Vereinsverwaltung) nach Anleitungen und Seitenhilfen, z. B. „Mitglied aufnehmen“ oder „Rundschreiben senden“. Liefert Titel, Name, Adresse und eine kurze Beschreibung. Enthält keine Vereinsdaten."
+msgstr "Searches the help of HUBIplan (club management) for guides and page help, e.g. “admit a member” or “send a circular”. Returns title, name, address and a short description. Contains no club data. Use sprache=en for English answers."
+
+msgid "Anleitung lesen"
+msgstr "Read a guide"
+
+msgid "Liefert den ganzen Text einer Anleitung oder Seitenhilfe von HUBIplan als Markdown. Den Namen liefern hilfe_suchen oder hilfe_uebersicht."
+msgstr "Returns the full text of a HUBIplan guide or page help as Markdown. hilfe_suchen or hilfe_uebersicht return the name."
+
+msgid "Alle Anleitungen"
+msgstr "All guides"
+
+msgid "Listet alle Anleitungen (art=anleitungen) oder alle Seitenhilfen (art=seiten) der HUBIplan-Hilfe mit Namen."
+msgstr "Lists all guides (art=anleitungen) or all page help (art=seiten) of the HUBIplan help with their names."
+
+msgid "Begriff erklären"
+msgstr "Explain a term"
+
+msgid "Erklärt einen Begriff aus der Vereinsverwaltung oder eine Entscheidung in HUBIplan aus dem Glossar, z. B. „Mitgliedsart“, „SEPA-Mandat“ oder „Kassenprüfung“."
+msgstr "Explains a club management term or a decision in HUBIplan from the glossary, e.g. “membership type”, “SEPA mandate” or “cash audit”."
+
+#, python-format
+msgid "„%(name)s“ muss ein Text sein."
+msgstr "“%(name)s” must be text."
+
+#, python-format
+msgid "„%(name)s“ fehlt."
+msgstr "“%(name)s” is missing."
+
+#, python-format
+msgid "„%(name)s“ ist zu lang (höchstens 200 Zeichen)."
+msgstr "“%(name)s” is too long (at most 200 characters)."
+
+msgid "Wonach gesucht wird, in Stichworten."
+msgstr "What to search for, as keywords."
+
+msgid "Höchstzahl der Treffer."
+msgstr "Maximum number of results."
+
+msgid "Name der Anleitung, z. B. passwort-aendern oder seite/mein-konto."
+msgstr "Name of the guide, e.g. passwort-aendern or seite/mein-konto."
+
+msgid "Anleitungen oder Seitenhilfen."
+msgstr "Guides or page help."
+
+msgid "Der Begriff."
+msgstr "The term."
+
+msgid "Hilfe zu HUBIplan, einer freien Vereinsverwaltung: Anleitungen, Seitenhilfen und Begriffe. Erst mit hilfe_suchen suchen, dann mit hilfe_lesen den ganzen Text holen und die Adresse der Anleitung nennen. Die Werkzeuge sehen keine Vereinsdaten und ändern nichts."
+msgstr "Help for HUBIplan, a free club management software: guides, page help and terms. Search with hilfe_suchen first, then fetch the full text with hilfe_lesen and give the address of the guide. Pass sprache=en for English. The tools see no club data and change nothing."
+
+msgid "HUBIplan-Hilfe"
+msgstr "HUBIplan help"

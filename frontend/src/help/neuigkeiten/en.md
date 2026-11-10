@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- AI assistants: At the address `/api/mcp/` of your HUBIplan instance, an AI assistant such as Claude or ChatGPT can search the HUBIplan help and explain terms (Model Context Protocol). It sees no club data and changes nothing.
 - Home page: while customising, the corner at the bottom right of each block changes its width and height, and the width can also be chosen as ¼, ⅓, ½, ⅔, ¾ or full. The finer grid closes gaps: a block moves up below a shorter one next to it.
 - Website: under Overview › **Notice bar** a notice with a period appears at the top of every page and disappears by itself afterwards. Text pages can get a **Cover image** above the heading. Under Design › **Design as a file** you save and load design, colours, fine-tuning and display, for example for another unit.
 - Website: people who may only “Edit content” change the content of the existing sections under Website › **Home** and publish it. Adding, moving and styling sections stays with the website managers.
