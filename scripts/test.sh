@@ -76,16 +76,24 @@ LAUFEND="$(dirname "$STATE")/laufend"
 # getestet (er enthält den eigenen Merge), ist nichts mehr zu tun.
 if [ "${1:-}" = "--main" ] && [ -z "${TESTPLATZ:-}" ]; then
     [ "$#" -eq 1 ] || { echo "Abbruch: --main nimmt keine weiteren Argumente." >&2; exit 2; }
-    MAIN_REF="${TEST_MAIN_REF:-origin/main}"
     main_holen() {
-        local r url
-        # Holt ein Remote aus einem lokalen Klon (WSL-Klon vom Windows-Klon), erst dort von GitHub holen
-        for r in $(git remote); do
-            url=$(git remote get-url "$r")
-            if [ -d "$url" ]; then git -C "$url" fetch --quiet origin 2> /dev/null || true; fi
-        done
-        git fetch --all --quiet || echo "Warnung: git fetch ist fehlgeschlagen." >&2
-        git rev-parse --verify --quiet "$MAIN_REF^{commit}" || { echo "Abbruch: $MAIN_REF fehlt." >&2; exit 2; }
+        local url ref
+        url=$(git remote get-url origin 2> /dev/null || true)
+        if [ -n "${TEST_MAIN_REF:-}" ]; then
+            git fetch --all --quiet || echo "Warnung: git fetch ist fehlgeschlagen." >&2
+            ref=$TEST_MAIN_REF
+        elif [ -d "$url" ]; then
+            # origin ist ein lokaler Klon (WSL-Klon vom Windows-Klon): dort von GitHub holen und
+            # dessen origin/main nehmen, nicht seinen lokalen, womöglich veralteten main
+            git -C "$url" fetch --quiet origin || echo "Warnung: git fetch in $url ist fehlgeschlagen." >&2
+            git fetch --quiet origin "+refs/remotes/origin/main:refs/test-main/main" \
+                || { echo "Abbruch: origin/main fehlt in $url." >&2; exit 2; }
+            ref=refs/test-main/main
+        else
+            git fetch --quiet origin || echo "Warnung: git fetch ist fehlgeschlagen." >&2
+            ref=origin/main
+        fi
+        git rev-parse --verify --quiet "$ref^{commit}" || { echo "Abbruch: $ref fehlt." >&2; exit 2; }
     }
     getestet() { grep -q "^$(git rev-parse "$1^{tree}") " "$STATE" 2> /dev/null; }
     m=$(main_holen) || exit 2
@@ -434,7 +442,7 @@ if [ "$RUN_BACKEND" = 1 ]; then
     IGNORE=()
     # TEST_VORLAUF_BASIS: andere Basis als main (z. B. zum Ausprobieren)
     basis=""
-    for r in ${TEST_VORLAUF_BASIS:-} origin/main main; do
+    for r in ${TEST_VORLAUF_BASIS:-} refs/test-main/main origin/main main; do
         basis=$(git merge-base "$COMMIT" "$r" 2> /dev/null) && break
         basis=""
     done
