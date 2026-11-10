@@ -77,7 +77,8 @@ class User(AbstractUser):
     # "d5" Untereinheit), z. B. {"o12": ["termin", "aufgabe"]}. Fehlt ein Bereich, gilt der
     # Vorschlag aus den Rollen. Reine Anzeigepräferenz.
     home_actions = models.JSONField("Auswahl der Schnellaktionen", null=True, blank=True)
-    # Eigene Anordnung der Startseiten-Blöcke je Arbeitsbereich, z. B. {"o12": {"order":
+    # Eigene Anordnung der Startseiten-Blöcke je Arbeitsbereich (dazu "sizes": je Block Breite
+    # w in Spalten von 12, Höhe h in Rasterzeilen oder null), z. B. {"o12": {"order":
     # ["termine", "schnellaktionen"], "hidden": ["hinweise"], "wide": ["termine"]}}. Fehlt ein
     # Bereich, gilt die Standardanordnung. Reine Anzeigepräferenz.
     home_layout = models.JSONField("Anordnung der Startseite", null=True, blank=True)

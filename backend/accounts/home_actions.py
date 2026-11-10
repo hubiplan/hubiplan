@@ -3,9 +3,10 @@
 Am Konto stehen nur Schlüssel: ``hidden`` blendet Aktionen des Vorschlags aus (``*`` den ganzen
 Block), ``chosen`` hält je Arbeitsbereich (``o<id>`` Einheit, ``d<id>`` Untereinheit) die eigene
 Auswahl in ihrer Reihenfolge. ``layout`` hält je Arbeitsbereich die Anordnung der Blöcke
-(``order``, ausgeblendete ``hidden``, über die ganze Breite ``wide``). Welche Aktionen und Blöcke
-es gibt und welche Rechte sie brauchen, steht im Frontend (components/home/roleActions.ts,
-components/home/homeLayout.ts); fremde Schlüssel zeigt es einfach nicht.
+(``order``, ausgeblendete ``hidden``, über die ganze Breite ``wide``, Größe ``sizes``).
+Welche Aktionen und Blöcke es gibt und welche Rechte sie brauchen, steht im Frontend
+(components/home/roleActions.ts, components/home/homeLayout.ts); fremde Schlüssel zeigt es
+einfach nicht.
 Während einer Ansicht als Rolle sperrt access/preview.py das Speichern.
 """
 
@@ -28,6 +29,11 @@ MAX_CHOSEN = 12
 # Die Startseite hat weniger als zehn Blöcke; etwas Luft für spätere
 MAX_BLOCKS = 20
 LAYOUT_PARTS = ("order", "hidden", "wide")
+# Raster der Startseite: 12 Spalten, Höhe in Rasterzeilen (je 0,5 rem); None = nach Inhalt
+GRID_COLUMNS = 12
+MIN_COLUMNS = 3
+MIN_ROWS = 6
+MAX_ROWS = 300
 
 
 def hidden_keys(user) -> list[str]:
@@ -47,10 +53,35 @@ def _clean_blocks(keys) -> list[str]:
     return _clean_list(keys, MAX_BLOCKS)
 
 
-def layout_of(user) -> dict[str, dict[str, list[str]]]:
+def _clean_sizes(value) -> dict[str, dict]:
+    sizes: dict[str, dict] = {}
+    for key, size in (value if isinstance(value, dict) else {}).items():
+        if len(sizes) >= MAX_BLOCKS:
+            break
+        if not (isinstance(key, str) and CHOICE_KEY.match(key) and isinstance(size, dict)):
+            continue
+        w, h = size.get("w"), size.get("h")
+        if not isinstance(w, int) or isinstance(w, bool):
+            continue
+        w = max(MIN_COLUMNS, min(GRID_COLUMNS, w))
+        if isinstance(h, int) and not isinstance(h, bool):
+            h = max(MIN_ROWS, min(MAX_ROWS, h))
+        else:
+            h = None
+        sizes[key] = {"w": w, "h": h}
+    return sizes
+
+
+def _clean_layout(value: dict) -> dict:
+    layout = {part: _clean_blocks(value.get(part)) for part in LAYOUT_PARTS}
+    layout["sizes"] = _clean_sizes(value.get("sizes"))
+    return layout
+
+
+def layout_of(user) -> dict[str, dict]:
     data = user.home_layout if isinstance(user.home_layout, dict) else {}
     return {
-        scope: {part: _clean_blocks(value.get(part)) for part in LAYOUT_PARTS}
+        scope: _clean_layout(value)
         for scope, value in sorted(data.items())
         if isinstance(scope, str) and SCOPE_KEY.match(scope) and isinstance(value, dict)
     }
@@ -71,10 +102,28 @@ def _block_list():
     )
 
 
+class BlockSizeSerializer(serializers.Serializer):
+    w = serializers.IntegerField(min_value=MIN_COLUMNS, max_value=GRID_COLUMNS)
+    h = serializers.IntegerField(
+        min_value=MIN_ROWS, max_value=MAX_ROWS, allow_null=True, required=False, default=None
+    )
+
+
 class HomeLayoutSerializer(serializers.Serializer):
     order = _block_list()
     hidden = _block_list()
+    # Ältere Fassungen kennen nur „wide“ (ganze Breite); neuere schreiben beides
     wide = _block_list()
+    sizes = serializers.DictField(
+        child=BlockSizeSerializer(),
+        default=dict,
+        help_text="Je Block Breite w (Spalten von 12), Höhe h (Rasterzeilen, null = nach Inhalt)",
+    )
+
+    def validate_sizes(self, value):
+        if len(value) > MAX_BLOCKS or any(not CHOICE_KEY.match(k) for k in value):
+            raise serializers.ValidationError(gettext("Unbekannter Block."))
+        return value
 
 
 def _check_scopes(value):
@@ -162,7 +211,7 @@ class HomeActionsView(APIView):
                 if value is None:
                     layout.pop(scope, None)
                 else:
-                    layout[scope] = {part: _clean_blocks(value.get(part)) for part in LAYOUT_PARTS}
+                    layout[scope] = _clean_layout(value)
             if len(layout) > MAX_SCOPES:
                 raise serializers.ValidationError({"layout": gettext("Zu viele Arbeitsbereiche.")})
             user.home_layout = layout or None

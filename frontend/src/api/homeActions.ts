@@ -2,11 +2,19 @@
 // je Arbeitsbereich („o12“, „d5“) die eigene Auswahl in Reihenfolge und die Anordnung der Blöcke.
 import { api } from './client.ts'
 
+/** Größe eines Blocks: Breite in Spalten (von 12), Höhe in Rasterzeilen, null = nach Inhalt */
+export interface BlockSize {
+  w: number
+  h: number | null
+}
+
 /** Anordnung der Blöcke in einem Arbeitsbereich */
 export interface HomeLayout {
   order: string[]
   hidden: string[]
+  /** Blöcke über die ganze Breite (für ältere Fassungen, die „sizes“ nicht kennen) */
   wide: string[]
+  sizes?: Record<string, BlockSize>
 }
 
 export interface HomeActionsData {

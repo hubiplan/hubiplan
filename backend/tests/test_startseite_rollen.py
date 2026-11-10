@@ -241,8 +241,13 @@ def test_startseite_anordnen(api, board_a):
         "hidden": [],
         "chosen": {},
         "layout": {
-            "d3": {"order": [], "hidden": ["hinweise"], "wide": []},
-            "o12": {"order": ["termine", "schnellaktionen"], "hidden": [], "wide": ["termine"]},
+            "d3": {"order": [], "hidden": ["hinweise"], "wide": [], "sizes": {}},
+            "o12": {
+                "order": ["termine", "schnellaktionen"],
+                "hidden": [],
+                "wide": ["termine"],
+                "sizes": {},
+            },
         },
     }
     # Auswahl der Schnellaktionen ändert die Anordnung nicht, null stellt den Standard her
@@ -254,3 +259,28 @@ def test_startseite_anordnen(api, board_a):
     assert put({"layout": {"o12": None}}).json()["layout"] == {}
     board_a.refresh_from_db()
     assert board_a.home_layout is None
+
+
+def test_startseite_groessen(api, board_a):
+    c = api(board_a)
+
+    def put(body):
+        return c.put("/api/me/home-actions/", body, content_type="application/json")
+
+    resp = put({"layout": {"o12": {"sizes": {"termine": {"w": 4, "h": 30}, "hinweise": {"w": 6}}}}})
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["layout"]["o12"]["sizes"] == {
+        "termine": {"w": 4, "h": 30},
+        "hinweise": {"w": 6, "h": None},
+    }
+    # Außerhalb des Rasters, fremde Schlüssel
+    assert put({"layout": {"o12": {"sizes": {"termine": {"w": 13}}}}}).status_code == 400
+    assert put({"layout": {"o12": {"sizes": {"termine": {"w": 2}}}}}).status_code == 400
+    assert put({"layout": {"o12": {"sizes": {"termine": {"w": 6, "h": 2}}}}}).status_code == 400
+    assert put({"layout": {"o12": {"sizes": {"<b>": {"w": 6}}}}}).status_code == 400
+    # Gespeicherte Altlasten werden beim Lesen bereinigt
+    board_a.home_layout = {"o12": {"sizes": {"termine": {"w": 40, "h": "x"}, "x": 3}}}
+    board_a.save(update_fields=["home_layout"])
+    assert c.get("/api/me/home-actions/").json()["layout"]["o12"]["sizes"] == {
+        "termine": {"w": 12, "h": None}
+    }
