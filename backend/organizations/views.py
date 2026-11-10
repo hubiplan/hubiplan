@@ -532,8 +532,38 @@ class PlatformOrganizationViewSet(
             .order_by("type", "name")
         )
 
+    @action(detail=True, methods=["get"], url_path="erase-state")
+    def erase_state(self, request, pk=None):
+        """Zweistufiges Löschen (Gesamtaudit 10.11., F02): Vormerkung, Fristen, Hindernisse."""
+        from .deletion import erase_state
+
+        return Response(erase_state(self.get_object()))
+
+    @action(detail=True, methods=["post"], url_path="erase-request")
+    def erase_request(self, request, pk=None):
+        """Stufe 1: stilllegen und Löschung vormerken (Daten bleiben)."""
+        from .deletion import request_erase
+
+        org = self.get_object()
+        if request.data.get("confirmation") != org.name:
+            raise serializers.ValidationError(
+                {"detail": gettext("Bitte den vollständigen Namen der Einheit eingeben.")}
+            )
+        request_erase(org, request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"], url_path="erase-withdraw")
+    def erase_withdraw(self, request, pk=None):
+        from .deletion import withdraw_erase
+
+        withdraw_erase(self.get_object(), request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(detail=True, methods=["post"], url_path="erase")
     def erase(self, request, pk=None):
+        """Stufe 2: endgültig löschen; zweite Bestätigung mit frischem Code (step_up)."""
+        from .deletion import erase_organization, erase_state
+
         org = self.get_object()
         step_up.require(request)
         if request.data.get("confirmation") != org.name:
@@ -544,9 +574,20 @@ class PlatformOrganizationViewSet(
                     )
                 }
             )
-        from .deletion import erase_organization
-
-        erase_organization(org, request.user)
+        state = erase_state(org)
+        if not state["can_erase"]:
+            raise serializers.ValidationError({"detail": " ".join(state["blockers"])})
+        confirmed_by = str(request.data.get("confirmed_by") or "").strip()[:200]
+        if state["has_finance"] and not confirmed_by:
+            raise serializers.ValidationError(
+                {
+                    "confirmed_by": gettext(
+                        "Bitte angeben, wer die Aufbewahrungsfristen bestätigt hat "
+                        "(z. B. Kassenprüfer oder Steuerberater)."
+                    )
+                }
+            )
+        erase_organization(org, request.user, confirmed_by=confirmed_by)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @transaction.atomic

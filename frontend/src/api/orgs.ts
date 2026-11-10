@@ -493,6 +493,8 @@ export interface PlatformOrg {
   department_label_plural_en?: string
   tax_areas_enabled: boolean
   is_active: boolean
+  /** Stillgelegt und zum Löschen vorgemerkt (zweistufiges Löschen) */
+  erase_requested_at?: string | null
   club_count: number
   logo_url: string | null
 }
@@ -654,9 +656,27 @@ export interface AuditChainCheck {
   problems: string[]
 }
 
+/** Zweistufiges Löschen einer Einheit (Gesamtaudit 10.11., F02). */
+export interface EraseState {
+  requested_at: string | null
+  requested_by: string
+  wait_days: number
+  wait_until: string | null
+  retention_until: string | null
+  holds: { unit: string; year: string }[]
+  has_finance: boolean
+  possible_from: string | null
+  blockers: string[]
+  can_erase: boolean
+}
+
 export const platformApi = {
-  erase: (id: number, confirmation: string) =>
-    api.post<void>(`/api/platform/orgs/${id}/erase/`, { confirmation }),
+  eraseState: (id: number) => api.get<EraseState>(`/api/platform/orgs/${id}/erase-state/`),
+  eraseRequest: (id: number, confirmation: string) =>
+    api.post<void>(`/api/platform/orgs/${id}/erase-request/`, { confirmation }),
+  eraseWithdraw: (id: number) => api.post<void>(`/api/platform/orgs/${id}/erase-withdraw/`, {}),
+  erase: (id: number, data: { confirmation: string; confirmed_by: string }) =>
+    api.post<void>(`/api/platform/orgs/${id}/erase/`, data),
   orgs: () => api.get<PlatformOrg[]>('/api/platform/orgs/'),
   create: (data: Partial<PlatformOrg>) => api.post<PlatformOrg>('/api/platform/orgs/', data),
   update: (id: number, data: Partial<PlatformOrg>) =>

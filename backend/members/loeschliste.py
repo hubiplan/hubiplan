@@ -43,10 +43,15 @@ def note_readmitted(membership) -> None:
     _append(membership, {"r": True})
 
 
+def note_unit(org_id: int, created_at) -> None:
+    """Einheit endgültig gelöscht (Gesamtaudit 10.11., F02): ``e`` statt ``m``."""
+    _write(
+        {"e": org_id, "c": created_at.isoformat(), "at": timezone.now().isoformat()},
+        f"Einheit {org_id}",
+    )
+
+
 def _append(membership, extra: dict) -> None:
-    target = path()
-    if target is None:
-        return
     entry = {
         "m": membership.pk,
         "o": membership.organization_id,
@@ -55,6 +60,13 @@ def _append(membership, extra: dict) -> None:
         **extra,
         "at": timezone.now().isoformat(),
     }
+    _write(entry, f"Mitgliedschaft {membership.pk}")
+
+
+def _write(entry: dict, what: str) -> None:
+    target = path()
+    if target is None:
+        return
 
     def write():
         try:
@@ -70,13 +82,13 @@ def _append(membership, extra: dict) -> None:
 
             send_alert(
                 "Löschliste nicht beschreibbar",
-                [f"Der Eintrag zur Mitgliedschaft {membership.pk} fehlt in {target}."],
+                [f"Der Eintrag zu {what} fehlt in {target}."],
             )
 
     transaction.on_commit(write)
 
 
-def entries() -> list[dict]:
+def _lines() -> list[dict]:
     target = path()
     if target is None or not target.exists():
         return []
@@ -86,14 +98,38 @@ def entries() -> list[dict]:
             item = json.loads(line)
         except ValueError:
             continue
-        if isinstance(item, dict) and isinstance(item.get("m"), int):
+        if isinstance(item, dict):
             result.append(item)
     return result
+
+
+def entries() -> list[dict]:
+    return [item for item in _lines() if isinstance(item.get("m"), int)]
+
+
+def unit_entries() -> list[dict]:
+    """Gelöschte Einheiten in der Reihenfolge der Löschung (Untereinheiten zuerst)."""
+    return [item for item in _lines() if isinstance(item.get("e"), int)]
 
 
 def apply() -> int:
     """Liste erneut anwenden; Rückgabe: Anzahl erneut gelöschter Mitgliedschaften."""
     from core.tenancy import rls_bypass
+    from organizations.deletion import reapply
+
+    # Zuerst ganze Einheiten (Gesamtaudit 10.11., F02); ihre Mitgliedschaften gehen mit
+    units = reapply(unit_entries())
+    if units:
+        logger.warning("Löschliste: %s Einheiten erneut gelöscht", units)
+        from core.alarm import send_alert
+
+        send_alert(
+            "Löschliste nach dem Einspielen angewendet",
+            [
+                f"{units} gelöschte Einheiten waren in der Datenbank wieder vorhanden und "
+                "wurden erneut gelöscht (vermutlich wurde ein älteres Backup eingespielt)."
+            ],
+        )
 
     from .models import Membership
     from .workflows import erase_history, purge_membership

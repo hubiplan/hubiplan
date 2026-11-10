@@ -27,9 +27,9 @@ def cascade_active(org) -> int:
             is_active=False, inactive_by_parent=True
         )
     flagged = set(
-        Organization.objects.filter(pk__in=below, inactive_by_parent=True).values_list(
-            "pk", flat=True
-        )
+        Organization.objects.filter(
+            pk__in=below, inactive_by_parent=True, erase_requested_at__isnull=True
+        ).values_list("pk", flat=True)
     )
     active = {pk for pk in below if tree.nodes[pk].is_active}
     revive: list[int] = []
