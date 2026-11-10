@@ -28,6 +28,7 @@ def test_ohne_eigene_angaben_wie_bisher():
         "name": "HUBIplan",
         "short_name": "",
         "logo_url": None,
+        "logo_dark_url": None,
         "theme": None,
         "icon": False,
         "unit": None,

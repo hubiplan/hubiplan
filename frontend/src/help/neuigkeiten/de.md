@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Erscheinungsbild: Für Plattform, Einheiten und Untereinheiten lässt sich ein zweites **Logo / Wappen für den Dunkelmodus** hochladen. Es erscheint in der dunklen Darstellung der Web-Oberfläche; ohne eigenes gilt das normale Logo.
 - Webseite: Unter Gestaltung › **Feinabstimmung** passt du das Design mit festen Stufen an, ohne CSS: Schrift, Breite, Hintergrund, Abstände, Ecken, Karten, Bilder, Knöpfe, Datumsfeld, Kopf (weiß, farbig oder Kopfbild; Wappen links, mittig, rechts oder aus), Menü, Titelbild und Fuß. Nicht verstellte Regler zeigen, was das Design vorsieht.
 - Webseite: Im Menü gibt es **Links nach außen**, etwa zum Dachverband; sie öffnen ein neues Fenster. Ein Hauptpunkt lässt sich als farbiger **Knopf** hervorheben, z. B. „Mitglied werden“. Die Bausteine der Startseite ordnest du jetzt wie das Menü per Ziehen statt mit Pfeilen.
 - Startseite: **Schnellaktionen** frei wählen. Unter **Anpassen** stehen alle Aktionen, die deine Rechte erlauben, nach Bereichen, etwa **Aufgabe anlegen**, **Helferdienst anlegen**, **Einnahme erfassen**, **Chronik ergänzen** oder **Dokument ablegen**. Bis zu sechs wählst du aus und legst mit ↑ und ↓ die Reihenfolge fest, je Einheit getrennt. Ohne eigene Auswahl bleibt der Vorschlag deiner Rolle.

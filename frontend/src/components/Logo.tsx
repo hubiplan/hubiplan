@@ -19,17 +19,60 @@ export function LogoMark({ className = 'logo-img' }: { className?: string }) {
 }
 
 /**
+ * Logo bzw. Wappen, im Dunkelmodus das Logo für den Dunkelmodus (Ralf 10.11.2026). Beide
+ * Bilder stehen im Dokument, das Stylesheet zeigt je nach `data-theme` eins davon; so wechselt
+ * das Bild ohne Neuladen mit der Darstellung. Ohne eigenes dunkles Logo nur das helle.
+ */
+export function ThemedLogo({
+  light,
+  dark = null,
+  className = 'logo-img logo-upload',
+  alt = '',
+}: {
+  /** null: im hellen Modus das H-Zeichen */
+  light: string | null
+  dark?: string | null
+  className?: string
+  alt?: string
+}) {
+  const only = !dark || dark === light
+  const lightClass = only ? className : `${className} logo-for-light`
+  const lightEl = light ? (
+    <img src={light} alt={alt} className={lightClass} />
+  ) : (
+    <LogoMark className={only ? 'logo-img' : 'logo-img logo-for-light'} />
+  )
+  if (only || !dark) return lightEl
+  return (
+    <>
+      {lightEl}
+      <img src={dark} alt={alt} className={`${className} logo-for-dark`} />
+    </>
+  )
+}
+
+/**
  * Logo mit Namen. Ohne Namen: Name und Logo der Instanz (White Label, Vorgabe „HUBIplan“
  * mit dem H-Zeichen). Mit Namen einer Einheit: deren Logo, sonst das H-Zeichen in den
- * Farben, die gerade gelten.
+ * Farben, die gerade gelten. `logoDarkUrl` gilt im Dunkelmodus.
  */
-export function Logo({ name, logoUrl = null }: { name?: string; logoUrl?: string | null }) {
+export function Logo({
+  name,
+  logoUrl = null,
+  logoDarkUrl = null,
+}: {
+  name?: string
+  logoUrl?: string | null
+  logoDarkUrl?: string | null
+}) {
   const instance = usePlatform()
   const shown = name || instance.name
-  const logo = name ? logoUrl : (logoUrl ?? instance.logo_url)
+  const own = Boolean(name) || logoUrl != null || logoDarkUrl != null
+  const logo = own ? logoUrl : instance.logo_url
+  const logoDark = own ? logoDarkUrl : (instance.logo_dark_url ?? null)
   return (
     <span className="logo">
-      {logo ? <img src={logo} alt="" className="logo-img logo-upload" /> : <LogoMark />}
+      {logo || logoDark ? <ThemedLogo light={logo} dark={logoDark} /> : <LogoMark />}
       {shown === PRODUCT_NAME ? (
         <span className="logo-name logo-wordmark">
           HUBI<span className="logo-wordmark-light">plan</span>

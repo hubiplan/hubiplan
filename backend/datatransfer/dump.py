@@ -401,6 +401,7 @@ class Dumper:
             "parent_unit": None if dept.parent_id == dept.organization_id else dept.parent_id,
             **values(dept, DEPT_FIELDS),
             "logo": self.packer.add(dept.logo, "logos"),
+            "logo_dark": self.packer.add(dept.logo_dark, "logos"),
             "roles": [
                 {
                     "id": r.pk,
@@ -512,6 +513,7 @@ class Dumper:
             **values(org, ORG_FIELDS),
             "contact_role": org.contact_role_id,
             "logo": self.packer.add(org.logo, "logos"),
+            "logo_dark": self.packer.add(org.logo_dark, "logos"),
             "roles": roles,
             "role_assignments": assignments,
             "fields": self.fields(org),

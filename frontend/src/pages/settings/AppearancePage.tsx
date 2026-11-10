@@ -175,6 +175,32 @@ function ThemeForm({
             {t('Angezeigt wird das Logo von „{logo}“.', { logo: eff.inherited_from.logo })}
           </p>
         )}
+        <h3>{t('Logo / Wappen für den Dunkelmodus')}</h3>
+        <p className="muted small">
+          {t(
+            'Erscheint, wenn jemand die dunkle Darstellung nutzt (Anmeldung, Startseite, Termine, Mein Konto). Ohne eigenes Logo für den Dunkelmodus gilt das normale Logo.',
+          )}
+        </p>
+        {editable ? (
+          <LogoUpload
+            dark
+            uploadUrl={orgApi.logoDarkUrl(orgId)}
+            logoUrl={theme.logo_dark_url ?? null}
+            onChange={async () => {
+              await reload()
+              await refresh()
+              if (isPlatform) await loadPlatform(true)
+            }}
+          />
+        ) : theme.logo_dark_url ? (
+          <img
+            src={theme.logo_dark_url}
+            alt={t('Logo für den Dunkelmodus')}
+            className="logo-preview logo-preview-dark"
+          />
+        ) : (
+          <p className="muted">{t('Kein eigenes Logo für den Dunkelmodus.')}</p>
+        )}
       </div>
       {isPlatform && <PlatformIconCard editable={editable} />}
       {!isPlatform && (theme.addresses?.length ?? 0) > 0 && (
@@ -507,16 +533,23 @@ export function LogoUpload({
   uploadUrl,
   logoUrl,
   onChange,
+  dark = false,
 }: {
   uploadUrl: string
   logoUrl: string | null
   onChange: () => void | Promise<void>
+  /** Logo für den Dunkelmodus: Vorschau auf dunklem Grund */
+  dark?: boolean
 }) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  // Wappen kommen oft mit weißem Hintergrund; der wird standardmäßig entfernt
-  const [removeBackground, setRemoveBackground] = useState(true)
-  const crop = useImageCrop({ title: t('Ausschnitt für Logo/Wappen'), maxSide: 1024 })
+  // Wappen kommen oft mit weißem Hintergrund; der wird standardmäßig entfernt. Dunkle
+  // Fassungen haben eher helle Ränder, die bleiben sollen
+  const [removeBackground, setRemoveBackground] = useState(!dark)
+  const crop = useImageCrop({
+    title: dark ? t('Ausschnitt für das Logo im Dunkelmodus') : t('Ausschnitt für Logo/Wappen'),
+    maxSide: 1024,
+  })
 
   async function upload(e: ChangeEvent<HTMLInputElement>) {
     const chosen = e.target.files?.[0]
@@ -551,7 +584,11 @@ export function LogoUpload({
   return (
     <div className="logo-upload-box">
       {logoUrl && (
-        <img src={logoUrl} alt={t('Logo')} className="logo-preview logo-preview-checker" />
+        <img
+          src={logoUrl}
+          alt={dark ? t('Logo für den Dunkelmodus') : t('Logo')}
+          className={`logo-preview ${dark ? 'logo-preview-dark' : 'logo-preview-checker'}`}
+        />
       )}
       <div className="button-row">
         <label className="button button-ghost">

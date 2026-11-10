@@ -13,6 +13,8 @@ export interface EffectiveTheme {
   accent: string
   on_accent: string
   logo_url: string | null
+  /** Logo für den Dunkelmodus; ohne eigenes dasselbe wie logo_url (ältere Server: fehlt) */
+  logo_dark_url?: string | null
   /** Haupt-, Zweit- und weitere Farben (bis sechs) */
   palette?: PaletteColor[]
   inherited_from: { colors: string | null; logo: string | null }
@@ -198,6 +200,8 @@ export interface ThemeSettings {
   accent_color_name: string
   extra_colors: ExtraColor[]
   logo_url: string | null
+  /** eigenes Logo für den Dunkelmodus (ohne Rückfall) */
+  logo_dark_url?: string | null
   effective: EffectiveTheme
   /** eigene Adressen der Einheit (White Label W7) */
   addresses?: string[]
@@ -268,6 +272,8 @@ export interface Department {
   primary_color: string
   accent_color: string
   logo_url: string | null
+  /** eigenes Logo für den Dunkelmodus (ohne Rückfall) */
+  logo_dark_url?: string | null
   roles: DepartmentRole[]
   effective_theme: EffectiveTheme
   /** heute zugeordnete Mitglieder */
@@ -556,8 +562,10 @@ export const orgApi = {
     return api.post<{ logo_url: string }>(url, form)
   },
   logoUrl: (id: number) => `${org(id)}/logo/`,
+  logoDarkUrl: (id: number) => `${org(id)}/logo-dark/`,
   iconUrl: (id: number) => `${org(id)}/icon/`,
   departmentLogoUrl: (id: number, dep: number) => `${org(id)}/departments/${dep}/logo/`,
+  departmentLogoDarkUrl: (id: number, dep: number) => `${org(id)}/departments/${dep}/logo-dark/`,
   departmentHomepageImageUrl: (id: number, dep: number) =>
     `${org(id)}/departments/${dep}/homepage-image/`,
   uploadHomepageImage: (url: string, file: File) => {

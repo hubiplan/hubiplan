@@ -906,6 +906,16 @@ function DepartmentCard({
             logoUrl={dep.logo_url}
             onChange={onChange}
           />
+          <h4>{t('Wappen / Logo für den Dunkelmodus')}</h4>
+          <p className="muted small">
+            {t('Ohne eigenes Logo für den Dunkelmodus gilt das normale Logo.')}
+          </p>
+          <LogoUpload
+            dark
+            uploadUrl={orgApi.departmentLogoDarkUrl(orgId, dep.id)}
+            logoUrl={dep.logo_dark_url ?? null}
+            onChange={onChange}
+          />
           {hasWebsite && (
             <p className="muted small" data-testid="unit-gallery-hint">
               {t('Fotos fürs Bilderkarussell gehören nicht hierher:')}{' '}

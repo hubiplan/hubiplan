@@ -112,7 +112,7 @@ def _entry(color: str, name: str) -> dict:
 def effective_theme(chain: list) -> dict:
     """Erscheinungsbild aus einer Kette vom Speziellsten zum Allgemeinsten.
 
-    Jedes Glied hat ``primary_color``, ``accent_color`` und ``logo``; das erste
+    Jedes Glied hat ``primary_color``, ``accent_color``, ``logo`` und ``logo_dark``; das erste
     gesetzte gewinnt (Abteilung ← Verein ← Dachverband ← Plattform).
     """
 
@@ -126,6 +126,14 @@ def effective_theme(chain: list) -> dict:
     primary, primary_src = first("primary_color")
     accent, _ = first("accent_color")
     logo, logo_src = first("logo")
+    # Logo für den Dunkelmodus (Ralf 10.11.2026): von der ersten Ebene mit einem der beiden
+    # Logos; hat sie kein dunkles, gilt dort ihr helles. Das helle Logo erbt wie bisher.
+    dark_src = next(
+        (o for o in chain if getattr(o, "logo", None) or getattr(o, "logo_dark", None)), None
+    )
+    logo_dark = None
+    if dark_src is not None:
+        logo_dark = getattr(dark_src, "logo_dark", None) or getattr(dark_src, "logo", None)
     primary = primary or DEFAULT_PRIMARY
     accent = accent or DEFAULT_ACCENT
     # Palette erbt als Ganzes mit der Hauptfarbe (Ralf 2026-10-31): Namen und weitere
@@ -144,6 +152,7 @@ def effective_theme(chain: list) -> dict:
         "accent": accent,
         "on_accent": text_color_on(accent),
         "logo_url": logo.url if logo else None,
+        "logo_dark_url": logo_dark.url if logo_dark else None,
         "palette": palette[: 2 + MAX_EXTRA_COLORS],
         "inherited_from": {
             "colors": getattr(primary_src, "name", None),
