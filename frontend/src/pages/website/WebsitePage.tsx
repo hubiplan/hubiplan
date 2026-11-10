@@ -8,6 +8,7 @@ import { SubpageUnavailable } from '../NoticePages.tsx'
 import { DRAFT_FIELDS, hasDraft, heldApi, websiteApi } from '../../api/website.ts'
 import type {
   HomeSection,
+  HomeTarget,
   DesignDraft,
   MenuItem,
   MenuNode,
@@ -44,7 +45,8 @@ import { StyleTuning } from './StyleTuning.tsx'
 import { DesignVersions, DraftBar, PreviewFrame } from './DesignPreview.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
 import { AreaLayouts } from './AreaLayouts.tsx'
-import { HomeBuilder } from './HomeBuilder.tsx'
+import { DesignFile } from './DesignFile.tsx'
+import { HomeBuilder, TargetField } from './HomeBuilder.tsx'
 import { t } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
 import { DocumentsPage } from './DocumentsPage.tsx'
@@ -219,6 +221,10 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'allow_indexing',
   'language',
   'contact_limit_per_hour',
+  'notice_text',
+  'notice_target',
+  'notice_from',
+  'notice_until',
 ]
 
 function pick(w: Website): WebsiteSettings {
@@ -371,6 +377,53 @@ function WebsiteAdmin({
           </p>
         </>,
       )}
+      {settings(
+        t('Hinweisleiste'),
+        <>
+          <p className="muted small">
+            {t(
+              'Ein kurzer Hinweis oben auf allen Seiten, z. B. „Schützenfest 22.–25.8.: Programm“. Er erscheint nur im Zeitraum und verschwindet danach von selbst.',
+            )}
+          </p>
+          <Field
+            label={t('Text der Hinweisleiste')}
+            value={v.notice_text ?? ''}
+            maxLength={200}
+            error={errors.notice_text}
+            hint={t('leer = keine Hinweisleiste')}
+            onChange={(e) => set('notice_text', e.target.value)}
+          />
+          <TargetField
+            data={data}
+            website={website}
+            value={
+              v.notice_target && Object.keys(v.notice_target).length > 0
+                ? (v.notice_target as HomeTarget)
+                : null
+            }
+            onChange={(target) => set('notice_target', target ?? {})}
+          />
+          {errors.notice_target && <Alert kind="error">{errors.notice_target}</Alert>}
+          <div className="grid-2">
+            <Field
+              label={t('Zeigen ab')}
+              type="date"
+              value={v.notice_from ?? ''}
+              error={errors.notice_from}
+              hint={t('leer = sofort')}
+              onChange={(e) => set('notice_from', e.target.value || null)}
+            />
+            <Field
+              label={t('Zeigen bis')}
+              type="date"
+              value={v.notice_until ?? ''}
+              error={errors.notice_until}
+              hint={t('leer = ohne Ende')}
+              onChange={(e) => set('notice_until', e.target.value || null)}
+            />
+          </div>
+        </>,
+      )}
       <PreviewCard data={data} website={website} onChange={reload} />
       {data.can_manage && (
         <div className="card card-wide">
@@ -463,6 +516,25 @@ function WebsiteAdmin({
             render={(field) => settings(t('Sprache der Webseite'), field)}
             onChange={(lang) => set('language', lang)}
           />
+          {data.can_manage &&
+            settings(
+              t('Gestaltung als Datei'),
+              <DesignFile
+                values={{
+                  design: v.design ?? 'classic',
+                  color_roles: v.color_roles ?? {},
+                  style: v.style ?? {},
+                  layouts: v.layouts ?? {},
+                }}
+                designs={Object.fromEntries((data.designs ?? []).map((d) => [d.key, d.label]))}
+                onLoad={(loaded) => {
+                  if (loaded.design !== undefined) set('design', loaded.design)
+                  if (loaded.color_roles !== undefined) set('color_roles', loaded.color_roles)
+                  if (loaded.style !== undefined) set('style', loaded.style)
+                  if (loaded.layouts !== undefined) set('layouts', loaded.layouts)
+                }}
+              />,
+            )}
           {(website.design_versions?.length ?? 0) > 0 &&
             settings(
               t('Frühere Fassungen'),

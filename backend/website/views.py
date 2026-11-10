@@ -110,12 +110,18 @@ SETTINGS_FIELDS = [
     "privacy_mode",
     "privacy_text",
     "privacy_url",
+    "notice_text",
+    "notice_target",
+    "notice_from",
+    "notice_until",
 ]
 
 
 class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
     # Kopfbild (Ralf 05.11.): Nummer eines Bildes der Bilderverwaltung oder null
     header_image = serializers.IntegerField(required=False, allow_null=True)
+    # Ziel der Hinweisleiste (G6): null oder {} entfernt es
+    notice_target = serializers.JSONField(required=False, allow_null=True)
 
     class Meta:
         model = Website
@@ -255,6 +261,21 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             return menu.validate(value, menu.items(self.instance, names=names, links=links))
         except ValueError as exc:
             raise serializers.ValidationError(str(exc)) from exc
+
+    def validate_notice_text(self, value):
+        return " ".join((value or "").split())
+
+    def validate_notice_target(self, value):
+        # Ziel wie bei Knöpfen der Startseite: Menüpunkt, Termin oder Link nach außen
+        if value in (None, {}) or self.instance is None:
+            return {}
+        try:
+            target = home._target(value, home.references(self.instance))
+        except home.Invalid as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+        if target is None:
+            raise serializers.ValidationError(_("Dieses Ziel gibt es nicht."))
+        return target
 
     def validate_menu_button(self, value):
         value = (value or "").strip()
@@ -506,8 +527,9 @@ def page_section_options(org, website: Website) -> dict:
         "home_labels": {"body": gettext("Text der Seite")},
         "home_hints": {"body": gettext("Bild und Text aus dem Feld oben")},
         "home_needs_block": {},
-        "home_kinds": home.KINDS,
-        "home_kind_hints": home.KIND_HINTS,
+        # Textseiten haben zusätzlich das Titelbild (G6)
+        "home_kinds": home.ALL_KINDS,
+        "home_kind_hints": {**home.KIND_HINTS, **home.PAGE_KIND_HINTS},
         "home_kind_needs_block": home.KIND_NEEDS_BLOCK,
         "home_choices": home_choices(website),
         "palette": effective_theme(org.ancestors())["palette"],

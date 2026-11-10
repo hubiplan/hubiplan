@@ -50,6 +50,8 @@ With **Header and menu** › **Background** › **Header image** you choose an i
 
 In the browser tab and on the phone home screen the website shows the unit's own icon, otherwise its coat of arms (square, with a transparent border). You set both under Settings › Appearance. Without an icon or coat of arms the website shows no icon of its own. Browsers often keep an old icon for a while; reloading the page helps.
 
+Under **Design as a file**, **Save design** saves the design, colour assignment, **Fine-tuning** and **Area display** as a small file. For another unit or on another server, **Load design** loads it into the draft again; it is checked like a change made by hand. If the design does not exist there, the other values still apply. Coat of arms, texts, images and the home page are not included; the colours follow the palette of the unit that loads the file. Unlike a design package the file contains no CSS, so anyone who manages the website may load it.
+
 Under **Share design** you save a design as a ZIP file with **Save as package**. The package contains the styling, the layout of header, footer and home page and the colour defaults, but no coat of arms, texts or images.
 
 Platform administrators can import a package under **Load design from package**. With a new **Short name** and **Name** it becomes an own design, for example a styling variant for your club only. **Check** lets HUBIplan check the package: no JavaScript, no content from other addresses, no imported HTML/Django templates. **Import** releases the design for this website; under **Imported designs** the release can be switched on and off for each website.

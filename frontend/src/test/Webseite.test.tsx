@@ -338,6 +338,89 @@ describe('Webseite', () => {
     )
   })
 
+  it('legt eine Hinweisleiste mit Zeitraum an (G6)', async () => {
+    const site = data(website('public', { notice_text: '', notice_target: {}, menu_items: [] }))
+    const calls = renderApp({
+      [`GET ${base}`]: () => ({ status: 200, body: site }),
+      [`PUT ${base}`]: () => ({ status: 200, body: site }),
+    })
+    const user = userEvent.setup()
+    await user.type(await screen.findByLabelText('Text der Hinweisleiste'), 'Schützenfest')
+    await user.type(screen.getByLabelText('Zeigen bis'), '2099-08-25')
+    await user.selectOptions(screen.getByLabelText('Ziel'), 'url')
+    await waitFor(
+      () => {
+        const bodies = calls
+          .filter((c) => c.key === `PUT ${base}`)
+          .map((c) => JSON.parse(String(c.init?.body ?? '{}')))
+        const merged = Object.assign({}, ...bodies)
+        expect(merged).toMatchObject({
+          notice_text: 'Schützenfest',
+          notice_until: '2099-08-25',
+          notice_target: { url: 'https://' },
+        })
+        // Die Hinweisleiste gehört nicht zum Entwurf der Gestaltung
+        expect(bodies.some((b) => b.draft?.notice_text)).toBe(false)
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  it('speichert die Gestaltung als Datei und lädt sie in den Entwurf (G6)', async () => {
+    const designs = [
+      { key: 'classic', label: 'Klassisch', hint: 'erfunden', roles: [] },
+      { key: 'festive', label: 'Festlich', hint: 'erfunden', roles: [] },
+    ]
+    const site = {
+      ...data(website('public', { draft: {}, style: {}, layouts: {}, color_roles: {} })),
+      designs,
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: site }),
+        [`PUT ${base}`]: () => ({ status: 200, body: site }),
+      },
+      '/webseite/gestaltung',
+    )
+    const user = userEvent.setup()
+    expect(await screen.findByRole('button', { name: 'Gestaltung speichern' })).toBeVisible()
+    const file = new File(
+      [
+        JSON.stringify({
+          format: 'hubiplan-gestaltung',
+          version: 1,
+          design: 'festive',
+          color_roles: { festive: { kopf: 1 } },
+          style: { ecken: 'rund' },
+          layouts: { events: 'calendar' },
+        }),
+      ],
+      'gestaltung-festive.json',
+      { type: 'application/json' },
+    )
+    await user.upload(screen.getByLabelText('Gestaltung laden'), file)
+    expect(await screen.findByText(/Die Gestaltung ist geladen und steht im Entwurf/)).toBeVisible()
+    await waitFor(
+      () => {
+        const put = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+        const body = JSON.parse(String(put?.init?.body ?? '{}'))
+        expect(body.draft).toMatchObject({
+          design: 'festive',
+          color_roles: { festive: { kopf: 1 } },
+          style: { ecken: 'rund' },
+          layouts: { events: 'calendar' },
+        })
+      },
+      { timeout: 3000 },
+    )
+    // Eine fremde Datei lehnt die Seite ab
+    await user.upload(
+      screen.getByLabelText('Gestaltung laden'),
+      new File(['{"a":1}'], 'x.json', { type: 'application/json' }),
+    )
+    expect(await screen.findByText('Die Datei ist keine Gestaltung aus HUBIplan.')).toBeVisible()
+  })
+
   it('legt einen Link nach außen an und hebt ihn als Knopf hervor', async () => {
     const items = [
       {
@@ -853,6 +936,58 @@ describe('Inhalte der Webseite', () => {
       },
       { timeout: 3000 },
     )
+  })
+
+  it('setzt ein Titelbild über die Überschrift einer Textseite (G6)', async () => {
+    const page = text({ slug: 'verein', title: 'Verein', sections: [{ key: 'body', on: true }] })
+    const options = {
+      block_labels: {},
+      blocks: {},
+      home_labels: { body: 'Text der Seite' },
+      home_kinds: { text: 'Text', cover: 'Titelbild' },
+      home_choices: { roles: [], albums: [], events: [] },
+      units: [],
+      menu_items: [],
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}texts/`]: () => ({
+          status: 200,
+          body: { texts: [page], units: [], section_options: options },
+        }),
+        [`GET ${base}texts/5/`]: () => ({ status: 200, body: page }),
+        [`PUT ${base}texts/5/`]: () => ({ status: 200, body: page }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/inhalte',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Verein' }))
+    await user.click(await screen.findByRole('button', { name: 'Abschnitt hinzufügen' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Abschnitt hinzufügen' })
+    await user.click(within(dialog).getByRole('button', { name: /^Titelbild/ }))
+    const editor = await screen.findByRole('dialog', { name: 'Titelbild' })
+    // Steht immer oben in voller Breite: kein Aussehen zu wählen
+    expect(within(editor).queryByText('Hintergrund')).toBeNull()
+    expect(within(editor).getByText(/immer ganz oben über der Überschrift/)).toBeVisible()
+    await user.click(within(editor).getByRole('button', { name: 'Übernehmen' }))
+    await waitFor(
+      () => {
+        const put = calls.filter((c) => c.key === `PUT ${base}texts/5/`).at(-1)
+        const body = JSON.parse(String(put?.init?.body ?? '{}'))
+        expect(body.sections?.map((s: { key: string; kind?: string }) => s.kind ?? s.key)).toEqual([
+          'body',
+          'cover',
+        ])
+      },
+      { timeout: 3000 },
+    )
+    // Ein zweites Titelbild gibt es nicht
+    await user.click(screen.getByRole('button', { name: 'Abschnitt hinzufügen' }))
+    const again = await screen.findByRole('dialog', { name: 'Abschnitt hinzufügen' })
+    expect(within(again).queryByRole('button', { name: /^Titelbild/ })).toBeNull()
+    expect(within(again).getByRole('button', { name: /^Text/ })).toBeVisible()
   })
 
   it('legt eine Einleitung für einen Bereich an (G5)', async () => {
