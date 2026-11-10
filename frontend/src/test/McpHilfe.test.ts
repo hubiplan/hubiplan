@@ -1,7 +1,7 @@
 // KI-Schnittstelle Stufe 0 (docs/mcp.md): Die Kopie der Hilfe im Backend
 // (backend/mcpserver/hilfe.json) muss zur Hilfe und zu den Lernhilfen passen.
 import { existsSync, readFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { buildMcpExport, mcpExportText } from '../help/mcpExport.ts'
 import LEARNING_EN from '../learning/en.json'
@@ -20,7 +20,8 @@ const RAW = {
 }
 // scripts/test.sh hängt das Backend ein. Mit node:fs gelesen, weil Vite Dateien außerhalb
 // des Frontends nicht als ?raw ausliefert.
-const COPY_PATH = fileURLToPath(new URL('../../../backend/mcpserver/hilfe.json', import.meta.url))
+// vitest läuft im Ordner frontend (im Container /app, Backend unter /backend)
+const COPY_PATH = resolve(process.cwd(), '../backend/mcpserver/hilfe.json')
 const COPY = existsSync(COPY_PATH) ? readFileSync(COPY_PATH, 'utf-8') : undefined
 
 const byName = (files: Record<string, string>) =>
