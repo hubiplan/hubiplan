@@ -7,6 +7,12 @@ routen: [/webseite/gestaltung]
 stichworte:
   [
     Entwurf,
+    Startseite,
+    Abschnitte,
+    Kacheln,
+    Zitat,
+    Ansprechpartner,
+    Countdown,
     Vorschau,
     Veröffentlichen,
     Fassungen,
@@ -30,7 +36,9 @@ stichworte:
 
 Unter Gestaltung wählt ihr Aussehen, Farben und Logo der Webseite. Die Farben kommen meist aus dem Erscheinungsbild der Einheit und lassen sich hier anpassen.
 
-Änderungen an Design, Farben, **Feinabstimmung**, Kopfbild und Startseite (Bereich **Aufbau**) sind zuerst ein Entwurf: Besucher sehen weiter den bisherigen Stand. Oben steht dann „Nicht veröffentlichte Änderungen“. **Veröffentlichen** macht den Entwurf öffentlich, **Verwerfen** nimmt alle Änderungen zurück. Auf einem breiten Bildschirm zeigt rechts eine Vorschau die echte Webseite mit dem Entwurf; sie lädt nach jeder Änderung neu. Oben wählt ihr **Handy**, **Tablet** oder **Bildschirm**, **Neu laden** verbindet die Vorschau neu, **In neuem Fenster** öffnet sie groß. Auf schmalen Bildschirmen öffnet der Knopf **Vorschau** die Webseite in einem neuen Fenster. Den Entwurf sehen auch alle, denen ihr einen Vorschau-Link gegeben habt.
+Änderungen an Design, Farben, **Feinabstimmung**, Kopfbild und Startseite sind zuerst ein Entwurf: Besucher sehen weiter den bisherigen Stand. Oben steht dann „Nicht veröffentlichte Änderungen“. **Veröffentlichen** macht den Entwurf öffentlich, **Verwerfen** nimmt alle Änderungen zurück. Auf einem breiten Bildschirm zeigt rechts eine Vorschau die echte Webseite mit dem Entwurf; sie lädt nach jeder Änderung neu. Oben wählt ihr **Handy**, **Tablet** oder **Bildschirm**, **Neu laden** verbindet die Vorschau neu, **In neuem Fenster** öffnet sie groß. Auf schmalen Bildschirmen öffnet der Knopf **Vorschau** die Webseite in einem neuen Fenster. Den Entwurf sehen auch alle, denen ihr einen Vorschau-Link gegeben habt.
+
+Unter **Startseite** stellt ihr die Startseite aus Abschnitten zusammen und seht jede Änderung gleich in der Vorschau. Die bisherigen Bausteine (etwa Willkommenstext, Nächste Termine, Majestäten) gibt es je einmal; ihr schaltet sie ein und aus. Mit **Abschnitt hinzufügen** kommen eigene Abschnitte dazu, die ihr beliebig oft verwenden könnt: **Text**, **Text mit Bild**, **Banner**, **Knopfleiste**, **Kacheln**, **Hervorgehobener Termin** (mit „noch N Tage“, verschwindet nach dem Termin), **Album-Auszug**, **Zitat** und **Ansprechpartner** (nur Rollen, die auf der Webseite stehen, und Personen mit Einwilligung, wie auf der Vorstandsseite). Am Griff zieht ihr die Abschnitte in die gewünschte Reihenfolge. **Bearbeiten** öffnet Inhalt und Aussehen eines Abschnitts, **Übernehmen** speichert ihn in den Entwurf, **Löschen** entfernt einen eigenen Abschnitt. Für jeden Abschnitt wählt ihr den **Hintergrund** (**Keiner**, **Hell** oder eine Farbe der Palette mit passender Schriftfarbe) und die **Breite des Abschnitts** (**Textbreite**, **Inhaltsbreite** oder **Volle Breite**). Im Design „Zeitung“ legt **Spalte** fest, ob ein Abschnitt in der **Hauptspalte** oder der **Seitenspalte** steht. Knöpfe und Kacheln führen zu einer Seite der Webseite, zum Kontakt, zu einem Termin oder als **Link nach außen** in ein neues Fenster.
 
 Unter **Frühere Fassungen** stehen die letzten fünf veröffentlichten Gestaltungen. **Zurückholen** legt eine davon als Entwurf an; öffentlich wird sie erst mit **Veröffentlichen**.
 
