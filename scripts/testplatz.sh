@@ -51,7 +51,10 @@ while [ $# -gt 0 ]; do
     esac
 done
 if [ "$LISTE" = 1 ]; then
-    # Belegte Plätze und Warteschlange anzeigen (nur Linux/WSL)
+    # Belegte Plätze und Warteschlange anzeigen. Unter Windows liegen sie in WSL.
+    if [ "$(uname -o 2> /dev/null)" = "Msys" ]; then
+        exec wsl.exe -d "$WSL_DISTRO" -e bash -lc 'exec testplatz --liste'
+    fi
     DIR="${TESTPLATZ_DIR:-$HOME/.testplaetze}"
     for p in $(seq 1 "$PLAETZE"); do
         if [ -e "$DIR/platz-$p.lock" ] && ! flock -n "$DIR/platz-$p.lock" true 2> /dev/null; then
