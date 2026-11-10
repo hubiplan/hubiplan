@@ -9556,3 +9556,9 @@ msgstr "Please specify exactly one folder, performance or rehearsal."
 
 msgid "Diese Leitung ist schon eingetragen."
 msgstr "This conductor is already registered."
+
+msgid "Unbekannter Arbeitsbereich."
+msgstr "Unknown workspace."
+
+msgid "Zu viele Arbeitsbereiche."
+msgstr "Too many workspaces."

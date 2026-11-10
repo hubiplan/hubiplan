@@ -7,7 +7,7 @@ import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
 import type { OrgSummary } from '../api/orgs.ts'
-import { roleActions } from '../components/home/roleActions.ts'
+import { actionCatalog, roleActions, shownActions } from '../components/home/roleActions.ts'
 import { addDays, today } from '../components/calendar/time.ts'
 import { settingsItems } from '../pages/settings/items.ts'
 import { todayIso } from '../api/members.ts'
@@ -86,41 +86,86 @@ describe('Schnellaktionen je Rolle', () => {
   })
 })
 
-describe('Schnellaktionen ausblenden', () => {
-  it('blendet eine Aktion aus und rückt die nächste nach', async () => {
-    let hidden: string[] = []
+describe('Schnellaktionen wählen', () => {
+  it('Katalog nach Rechten, auch Kasse ohne Kassenamt; nur Lesen ergibt keinen', () => {
+    const chair = testOrg({
+      permissions: [...KASSE, 'members.view', 'members.edit', 'events.manage', 'todos.edit'],
+      modules: ['members', 'finance', 'billing', 'events'],
+      home_focus: [],
+    }) as unknown as OrgSummary
+    const keys = actionCatalog(chair).map((a) => a.key)
+    expect(keys).toEqual(expect.arrayContaining(['buchung', 'rechnung', 'termin', 'aufgabe']))
+    expect(keys).not.toContain('versammlung')
+    expect(keys.at(-1)).toBe('briefvorlage')
+    const reader = testOrg({ permissions: ['members.view'] }) as unknown as OrgSummary
+    expect(actionCatalog(reader)).toEqual([])
+  })
+
+  it('wählt aus dem Katalog, ordnet um und blendet alles aus', async () => {
+    let state: { hidden: string[]; chosen: Record<string, string[]> } = { hidden: [], chosen: {} }
     const org = testOrg({
-      permissions: ['members.view', 'members.edit', 'events.manage'],
-      modules: ['members', 'events'],
+      permissions: [...KASSE, 'members.view', 'members.edit', 'events.manage'],
+      modules: ['members', 'events', 'finance', 'billing'],
+      home_focus: [],
     })
     const calls = fakeApi({
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
-      'GET /api/me/home-actions/': () => ({ status: 200, body: { hidden } }),
+      'GET /api/me/home-actions/': () => ({ status: 200, body: state }),
       'PUT /api/me/home-actions/': (init) => {
-        hidden = JSON.parse(String(init?.body)).hidden
-        return { status: 200, body: { hidden } }
+        const body = JSON.parse(String(init?.body))
+        const chosen = { ...state.chosen }
+        for (const [scope, keys] of Object.entries(body.chosen ?? {})) {
+          if (keys === null) delete chosen[scope]
+          else chosen[scope] = keys as string[]
+        }
+        state = { hidden: body.hidden ?? state.hidden, chosen }
+        return { status: 200, body: state }
       },
     })
     renderAt('/')
     const user = userEvent.setup()
     const heading = await screen.findByRole('heading', { name: 'Schnellaktionen' })
     const card = within(heading.closest('.card') as HTMLElement)
+    // Vorschlag ohne Kassenamt: Vorstand
     expect(card.getByRole('link', { name: 'Neuer Termin' })).toHaveClass('button-primary')
-    await user.click(card.getByRole('button', { name: 'Anpassen' }))
-    await user.click(card.getByRole('checkbox', { name: 'Neuer Termin' }))
-    await waitFor(() => expect(hidden).toEqual(['termin']))
-    await user.click(card.getByRole('button', { name: 'Fertig' }))
-    expect(card.queryByRole('link', { name: 'Neuer Termin' })).not.toBeInTheDocument()
-    expect(card.getByRole('link', { name: 'Mitglied aufnehmen' })).toHaveClass('button-primary')
+    expect(card.queryByRole('link', { name: 'Buchung erfassen' })).not.toBeInTheDocument()
 
     await user.click(card.getByRole('button', { name: 'Anpassen' }))
+    await user.click(card.getByRole('checkbox', { name: 'Buchung erfassen' }))
+    await waitFor(() => expect(state.chosen).toEqual({ o7: ['termin', 'aufnahme', 'buchung'] }))
+    await user.click(await card.findByRole('button', { name: 'Buchung erfassen nach oben' }))
+    await waitFor(() => expect(state.chosen.o7).toEqual(['termin', 'buchung', 'aufnahme']))
+    await user.click(card.getByRole('checkbox', { name: 'Neuer Termin' }))
+    await waitFor(() => expect(state.chosen.o7).toEqual(['buchung', 'aufnahme']))
+    await user.click(card.getByRole('button', { name: 'Fertig' }))
+    expect(card.getByRole('link', { name: 'Buchung erfassen' })).toHaveClass('button-primary')
+    expect(card.queryByRole('link', { name: 'Neuer Termin' })).not.toBeInTheDocument()
+
+    await user.click(card.getByRole('button', { name: 'Anpassen' }))
+    await user.click(card.getByRole('button', { name: 'Vorschlag wiederherstellen' }))
+    await waitFor(() => expect(state.chosen).toEqual({}))
     await user.click(card.getByRole('button', { name: 'Schnellaktionen ganz ausblenden' }))
     await waitFor(() =>
       expect(screen.queryByRole('heading', { name: 'Schnellaktionen' })).not.toBeInTheDocument(),
     )
-    expect(calls.filter((c) => c.key === 'PUT /api/me/home-actions/')).toHaveLength(2)
-    expect(hidden).toEqual(['termin', '*'])
+    expect(calls.filter((c) => c.key === 'PUT /api/me/home-actions/')).toHaveLength(5)
+    expect(state.hidden).toEqual(['*'])
+  })
+
+  it('höchstens sechs', () => {
+    const many = ['a', 'b', 'c', 'd', 'e', 'f', 'g'].map((key) => ({ key, to: '/', label: key }))
+    expect(
+      shownActions(
+        [],
+        many,
+        [],
+        many.map((a) => a.key),
+      ).map((a) => a.key),
+    ).toHaveLength(6)
+    // Schlüssel, die die Rechte nicht mehr erlauben, fallen weg
+    expect(shownActions([], many, [], ['x', 'b']).map((a) => a.key)).toEqual(['b'])
+    expect(shownActions(many, many, ['*'], ['a'])).toEqual([])
   })
 })
 

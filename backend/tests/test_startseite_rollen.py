@@ -167,14 +167,14 @@ def test_schwerpunkt_aus_den_rollen(api, orgs, board_a):
 
 def test_schnellaktionen_ausblenden(api, board_a):
     c = api(board_a)
-    assert c.get("/api/me/home-actions/").json() == {"hidden": []}
+    assert c.get("/api/me/home-actions/").json() == {"hidden": [], "chosen": {}}
     resp = c.put(
         "/api/me/home-actions/",
         {"hidden": ["termin", "termin", "*"]},
         content_type="application/json",
     )
     assert resp.status_code == 200, resp.content
-    assert resp.json() == {"hidden": ["*", "termin"]}
+    assert resp.json() == {"hidden": ["*", "termin"], "chosen": {}}
     board_a.refresh_from_db()
     assert board_a.home_actions_hidden == ["*", "termin"]
     assert (
@@ -185,6 +185,32 @@ def test_schnellaktionen_ausblenden(api, board_a):
     )
     assert c.put(
         "/api/me/home-actions/", {"hidden": []}, content_type="application/json"
-    ).json() == {"hidden": []}
+    ).json() == {"hidden": [], "chosen": {}}
     board_a.refresh_from_db()
     assert board_a.home_actions_hidden is None
+
+
+def test_schnellaktionen_waehlen(api, board_a):
+    c = api(board_a)
+
+    def put(body):
+        return c.put("/api/me/home-actions/", body, content_type="application/json")
+
+    resp = put({"chosen": {"o12": ["aufgabe", "termin", "aufgabe"], "d3": ["einheit-brief"]}})
+    assert resp.status_code == 200, resp.content
+    # Reihenfolge bleibt, doppelte fallen weg; „hidden“ bleibt unberührt
+    assert resp.json() == {
+        "hidden": [],
+        "chosen": {"d3": ["einheit-brief"], "o12": ["aufgabe", "termin"]},
+    }
+    # Nur genannte Bereiche ändern sich, null stellt den Vorschlag wieder her
+    assert put({"chosen": {"d3": None, "o12": []}}).json()["chosen"] == {"o12": []}
+    assert put({"hidden": ["*"]}).json() == {"hidden": ["*"], "chosen": {"o12": []}}
+    board_a.refresh_from_db()
+    assert board_a.home_actions == {"o12": []}
+    assert put({"chosen": {"x1": ["termin"]}}).status_code == 400
+    assert put({"chosen": {"o1": ["<b>"]}}).status_code == 400
+    assert put({"chosen": {"o1": ["a"] * 13}}).status_code == 400
+    assert put({"chosen": {"o12": None}}).json()["chosen"] == {}
+    board_a.refresh_from_db()
+    assert board_a.home_actions is None

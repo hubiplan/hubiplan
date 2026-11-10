@@ -1,16 +1,17 @@
-// Mein Konto › Profil › Startseite: ausgeblendete Schnellaktionen wieder zeigen (S-04).
+// Mein Konto › Profil › Startseite: Schnellaktionen wieder zeigen oder den Vorschlag herstellen (S-04).
 import { useState } from 'react'
 import { homeActionsApi } from '../../api/homeActions.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox } from '../../components/ui.tsx'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 import { useOrg } from '../../org/OrgContext.tsx'
-import { roleActionCandidates } from '../../components/home/roleActions.ts'
+import { actionCatalog } from '../../components/home/roleActions.ts'
+import type { HomeActionsUpdate } from '../../api/homeActions.ts'
 
 /** Nur für Personen, die in einer Einheit Schnellaktionen bekommen können. */
 export function HomeActionsCard() {
   const { orgs } = useOrg()
-  if (!orgs.some((o) => roleActionCandidates(o).length > 0)) return null
+  if (!orgs.some((o) => actionCatalog(o).length > 0)) return null
   return <HomeActionsChoice />
 }
 
@@ -21,7 +22,7 @@ function HomeActionsChoice() {
   if (!data) return null
   const hidden = data.hidden
 
-  async function save(next: string[]) {
+  async function save(next: HomeActionsUpdate) {
     setBusy(true)
     setError(null)
     try {
@@ -34,6 +35,7 @@ function HomeActionsChoice() {
   }
 
   const single = hidden.filter((k) => k !== '*').length
+  const own = Object.keys(data.chosen ?? {})
   return (
     <div className="card card-wide">
       <h2>{t('Startseite')}</h2>
@@ -41,8 +43,12 @@ function HomeActionsChoice() {
         label={t('Schnellaktionen auf der Startseite zeigen')}
         checked={!hidden.includes('*')}
         busy={busy}
-        onChange={(v) => void save(v ? hidden.filter((k) => k !== '*') : [...hidden, '*'])}
-        hint={t('Einzelne Aktionen blendest du auf der Startseite unter „Anpassen“ aus.')}
+        onChange={(v) =>
+          void save({ hidden: v ? hidden.filter((k) => k !== '*') : [...hidden, '*'] })
+        }
+        hint={t(
+          'Welche Aktionen in welcher Reihenfolge erscheinen, wählst du auf der Startseite unter „Anpassen“.',
+        )}
       />
       {single > 0 && (
         <p className="muted small">
@@ -51,9 +57,24 @@ function HomeActionsChoice() {
             type="button"
             className="link-button"
             disabled={busy}
-            onClick={() => void save(hidden.filter((k) => k === '*'))}
+            onClick={() => void save({ hidden: hidden.filter((k) => k === '*') })}
           >
             {t('Alle wieder zeigen')}
+          </button>
+        </p>
+      )}
+      {own.length > 0 && (
+        <p className="muted small">
+          {tn('Eigene Auswahl in einem Bereich.', 'Eigene Auswahl in {n} Bereichen.', own.length)}{' '}
+          <button
+            type="button"
+            className="link-button"
+            disabled={busy}
+            onClick={() =>
+              void save({ chosen: Object.fromEntries(own.map((scope) => [scope, null])) })
+            }
+          >
+            {t('Überall den Vorschlag zeigen')}
           </button>
         </p>
       )}

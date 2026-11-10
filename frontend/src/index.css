@@ -5370,6 +5370,21 @@ label:has(> .file-input:focus-visible) {
   gap: 0.25rem 1.5rem;
   margin-bottom: 0.75rem;
 }
+/* Auswahl aus dem Katalog nach Bereichen, darüber die Reihenfolge der gewählten */
+.home-actions-group {
+  border: 0;
+  margin: 0 0 0.25rem;
+  padding: 0;
+}
+.home-actions-group legend {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  padding: 0;
+}
+.home-actions-order {
+  margin: 0 0 1rem;
+  max-width: 32rem;
+}
 
 /* Ortsfeld mit gespeicherten Orten (components/PlaceField.tsx) */
 .place-field {

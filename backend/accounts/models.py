@@ -73,6 +73,10 @@ class User(AbstractUser):
     # Startseite (S-04): ausgeblendete Schnellaktionen, Schlüssel wie im Frontend; "*" blendet
     # den ganzen Block aus. Reine Anzeigepräferenz, null = alle zeigen.
     home_actions_hidden = models.JSONField("ausgeblendete Schnellaktionen", null=True, blank=True)
+    # Eigene Auswahl und Reihenfolge der Schnellaktionen je Arbeitsbereich ("o12" Einheit,
+    # "d5" Untereinheit), z. B. {"o12": ["termin", "aufgabe"]}. Fehlt ein Bereich, gilt der
+    # Vorschlag aus den Rollen. Reine Anzeigepräferenz.
+    home_actions = models.JSONField("Auswahl der Schnellaktionen", null=True, blank=True)
     # Gesetzt, solange das Konto noch das ausgegebene Startpasswort hat: Es muss bei der
     # ersten Anmeldung ersetzt werden und wird nach Ablauf unbrauchbar (AT-S04)
     initial_password_expires = models.DateTimeField(
