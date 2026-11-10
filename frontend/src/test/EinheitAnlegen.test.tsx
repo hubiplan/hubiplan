@@ -28,6 +28,23 @@ const bund = {
   is_active: true,
 }
 
+function eraseState(extra: Record<string, unknown> = {}) {
+  return {
+    requested_at: null,
+    requested_by: '',
+    wait_days: 30,
+    wait_until: null,
+    retention_until: null,
+    holds: [],
+    has_finance: false,
+    possible_from: null,
+    blockers: [],
+    can_erase: false,
+    needs_code: false,
+    ...extra,
+  }
+}
+
 function renderPage() {
   return render(
     <MemoryRouter>
@@ -41,11 +58,51 @@ function renderPage() {
 }
 
 describe('Einheit anlegen auf der Plattform', () => {
-  it('verlangt zum endgültigen Löschen den vollständigen Namen', async () => {
+  it('legt zuerst still und merkt die Löschung vor', async () => {
+    const calls = fakeApi({
+      'GET /_allauth/browser/v1/auth/session': session,
+      'GET /api/platform/orgs/': () => ({ status: 200, body: [bund] }),
+      'GET /api/platform/orgs/7/erase-state/': () => ({ status: 200, body: eraseState() }),
+      'POST /api/platform/orgs/7/erase-request/': () => ({ status: 204 }),
+    })
+    renderPage()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Bearbeiten' }))
+    await user.click(
+      await screen.findByRole('button', { name: 'Stilllegen und Löschung vormerken' }),
+    )
+    expect(screen.getByRole('button', { name: 'Stilllegen und vormerken' })).toBeDisabled()
+    expect(screen.queryByLabelText('Eigenes Passwort')).toBeNull()
+    await user.type(screen.getByLabelText('Name zur Löschbestätigung'), bund.name)
+    await user.click(screen.getByRole('button', { name: 'Stilllegen und vormerken' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === 'POST /api/platform/orgs/7/erase-request/')).toBe(true),
+    )
+    const post = calls.find((call) => call.key === 'POST /api/platform/orgs/7/erase-request/')
+    expect(JSON.parse(String(post?.init?.body))).toEqual({ confirmation: bund.name })
+  })
+
+  it('zeigt Fristen und löscht erst mit Passwort, Code und Bestätigung der Fristen', async () => {
     let deleted = false
     const calls = fakeApi({
       'GET /_allauth/browser/v1/auth/session': session,
-      'GET /api/platform/orgs/': () => ({ status: 200, body: deleted ? [] : [bund] }),
+      'GET /api/platform/orgs/': () => ({
+        status: 200,
+        body: deleted
+          ? []
+          : [{ ...bund, is_active: false, erase_requested_at: '2026-01-02T10:00:00Z' }],
+      }),
+      'GET /api/platform/orgs/7/erase-state/': () => ({
+        status: 200,
+        body: eraseState({
+          requested_at: '2026-01-02T10:00:00Z',
+          retention_until: '2037-01-01',
+          possible_from: '2037-01-01',
+          has_finance: true,
+          can_erase: true,
+          needs_code: true,
+        }),
+      }),
       'POST /api/platform/orgs/7/erase/': () => {
         deleted = true
         return { status: 204 }
@@ -54,13 +111,24 @@ describe('Einheit anlegen auf der Plattform', () => {
     renderPage()
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: 'Bearbeiten' }))
-    await user.click(screen.getByRole('button', { name: 'Einheit löschen' }))
-    expect(screen.getByRole('button', { name: 'Unwiderruflich löschen' })).toBeDisabled()
+    expect(await screen.findByText(/Aufbewahrungsfristen laufen bis/)).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: /ist aktiv/ })).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: 'Endgültig löschen' }))
+    const submit = screen.getByRole('button', { name: 'Unwiderruflich löschen' })
     await user.type(screen.getByLabelText('Name zur Löschbestätigung'), bund.name)
-    await user.click(screen.getByRole('button', { name: 'Unwiderruflich löschen' }))
+    await user.type(screen.getByLabelText('Eigenes Passwort'), 'geheim')
+    expect(submit).toBeDisabled()
+    await user.type(screen.getByLabelText(/Fristen bestätigt von/), 'Kassenprüfer Muster')
+    await user.type(screen.getByLabelText('Code aus der Authentifizierungs-App'), '123456')
+    await user.click(submit)
     await waitFor(() => expect(screen.queryByText(bund.name)).toBeNull())
     const post = calls.find((call) => call.key === 'POST /api/platform/orgs/7/erase/')
-    expect(JSON.parse(String(post?.init?.body))).toEqual({ confirmation: bund.name })
+    expect(JSON.parse(String(post?.init?.body))).toEqual({
+      confirmation: bund.name,
+      confirmed_by: 'Kassenprüfer Muster',
+      password: 'geheim',
+      code: '123456',
+    })
   })
 
   it('ein Knopf, Schalter statt Art, Bezeichnung folgt dem Schalter', async () => {

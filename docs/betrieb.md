@@ -783,8 +783,8 @@ age -d -i hubiplan-backup.key db_JJJJ-MM-TT_HHMM.sql.gz.age | gunzip \
 
 Danach `docker compose … up -d` wie oben.
 
-**Löschliste:** Jede erledigte Löschung (Löschfrist, Löschen auf Verlangen, Verbund-Widerruf)
-steht zusätzlich im Volume `loeschliste` (nur Kennungen und Zeitpunkte, keine Namen). Beim Start
+**Löschliste:** Jede erledigte Löschung (Löschfrist, Löschen auf Verlangen, Verbund-Widerruf,
+endgültig gelöschte Einheiten) steht zusätzlich im Volume `loeschliste` (nur Kennungen und Zeitpunkte, keine Namen). Beim Start
 des Backends und täglich wird sie erneut angewendet; so sind gelöschte Daten auch nach dem
 Einspielen eines älteren Backups wieder weg (Alarm-Mail, wenn das passiert). Das Volume beim
 Wiederherstellen **nicht** zurücksetzen. Auf einem neuen Server vor dem ersten Start die

@@ -17,7 +17,12 @@ Unter Einstellungen legst du die Löschfrist nach dem Austritt fest. Eine kürze
 
 Unter **Einheiten** → **Bearbeiten** kannst du das Häkchen bei „ist aktiv“ entfernen und speichern. Die Daten bleiben erhalten; du kannst die Einheit später wieder aktivieren.
 
-Für das vollständige Löschen wählst du im Bearbeitungsformular **Einheit löschen**, gibst den vollständigen Namen ein und bestätigst mit **Unwiderruflich löschen**. Mitglieder, Rollen, Finanzdaten und gespeicherte Dateien der Einheit werden entfernt. Benutzerkonten bleiben erhalten. Untergeordnete Einheiten musst du vorher löschen oder umhängen. Verhindern Verweise aus anderen Einheiten das Löschen, erscheint eine Fehlermeldung und die Daten bleiben erhalten. Die Löschung wird im Plattformprotokoll vermerkt. Bereits vorhandene Sicherungen werden dadurch nicht verändert.
+Gelöscht wird in zwei Stufen:
+
+1. **Stilllegen und Löschung vormerken:** Im Bearbeitungsformular gibst du unter „Einheit löschen“ den vollständigen Namen ein. Die Einheit und alle Untereinheiten darunter werden sofort stillgelegt, niemand kommt mehr hinein, die Daten bleiben erhalten. Solange die Vormerkung gilt, lässt sich die Einheit nicht wieder aktivieren; mit **Vormerkung zurücknehmen** hebst du sie auf.
+2. **Endgültig löschen:** frühestens 30 Tage nach der Vormerkung und erst, wenn die gesetzlichen Aufbewahrungsfristen für Bücher und Belege aller Geschäftsjahre abgelaufen sind (§ 147 AO: Belege 8, Bücher 10 Jahre). Das Formular zeigt, bis wann die Fristen laufen. Eine Löschsperre in einem Geschäftsjahr verhindert das Löschen. Zur Bestätigung gibst du den Namen, dein Passwort und, falls eingerichtet, den Code der Zwei-Faktor-Anmeldung ein. Hat die Einheit Finanzdaten, trägst du ein, wer die Fristen bestätigt hat (z. B. Kassenprüfer oder Steuerberater).
+
+Beim endgültigen Löschen werden Mitglieder, Rollen, Finanzdaten und gespeicherte Dateien der Einheit und ihrer Untereinheiten entfernt. Benutzerkonten bleiben erhalten. Zugehörige Vereine eines Dachverbands musst du vorher löschen oder umhängen. Verhindern Verweise aus anderen Einheiten das Löschen, erscheint eine Fehlermeldung und die Daten bleiben erhalten. Die Löschung wird im Plattformprotokoll vermerkt und steht auf der Löschliste: Wird später ein älteres Backup eingespielt, löscht HUBIplan die Einheit erneut.
 
 ## Neue Versionen
 

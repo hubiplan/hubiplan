@@ -509,8 +509,45 @@ class PlatformOrganizationViewSet(
             .order_by("type", "name")
         )
 
+    @action(detail=True, methods=["get"], url_path="erase-state")
+    def erase_state(self, request, pk=None):
+        """Zweistufiges Löschen (Gesamtaudit 10.11., F02): Vormerkung, Fristen, Hindernisse."""
+        from accounts.mfa_policy import has_mfa as uses_mfa
+
+        from .deletion import erase_state
+
+        state = erase_state(self.get_object())
+        state["needs_code"] = uses_mfa(request.user)
+        return Response(state)
+
+    @action(detail=True, methods=["post"], url_path="erase-request")
+    def erase_request(self, request, pk=None):
+        """Stufe 1: stilllegen und Löschung vormerken (Daten bleiben)."""
+        from .deletion import request_erase
+
+        org = self.get_object()
+        if request.data.get("confirmation") != org.name:
+            raise serializers.ValidationError(
+                {"detail": gettext("Bitte den vollständigen Namen der Einheit eingeben.")}
+            )
+        request_erase(org, request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"], url_path="erase-withdraw")
+    def erase_withdraw(self, request, pk=None):
+        from .deletion import withdraw_erase
+
+        withdraw_erase(self.get_object(), request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(detail=True, methods=["post"], url_path="erase")
     def erase(self, request, pk=None):
+        """Stufe 2: endgültig löschen, mit zweiter Bestätigung (Passwort, ggf. Code)."""
+        from accounts.mfa_policy import has_mfa as uses_mfa
+        from peering.sso import check_second_factor
+
+        from .deletion import erase_organization, erase_state
+
         org = self.get_object()
         if request.data.get("confirmation") != org.name:
             raise serializers.ValidationError(
@@ -520,9 +557,25 @@ class PlatformOrganizationViewSet(
                     )
                 }
             )
-        from .deletion import erase_organization
-
-        erase_organization(org, request.user)
+        state = erase_state(org)
+        if not state["can_erase"]:
+            raise serializers.ValidationError({"detail": " ".join(state["blockers"])})
+        confirmed_by = str(request.data.get("confirmed_by") or "").strip()[:200]
+        if state["has_finance"] and not confirmed_by:
+            raise serializers.ValidationError(
+                {
+                    "confirmed_by": gettext(
+                        "Bitte angeben, wer die Aufbewahrungsfristen bestätigt hat "
+                        "(z. B. Kassenprüfer oder Steuerberater)."
+                    )
+                }
+            )
+        user = request.user
+        if not user.check_password(str(request.data.get("password") or "")):
+            raise serializers.ValidationError({"password": gettext("Das Passwort stimmt nicht.")})
+        if uses_mfa(user) and not check_second_factor(user, str(request.data.get("code") or "")):
+            raise serializers.ValidationError({"code": gettext("Der Code stimmt nicht.")})
+        erase_organization(org, user, confirmed_by=confirmed_by)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @transaction.atomic

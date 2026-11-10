@@ -5525,8 +5525,6 @@
     "one": "{n} document",
     "other": "{n} documents"
   },
-  "Einheit vollständig löschen": "Delete unit completely",
-  "Die Einheit und ihre Daten einschließlich Mitgliedern, Rollen, Finanzdaten und Dateien werden unwiderruflich gelöscht. Benutzerkonten bleiben erhalten. Untergeordnete Einheiten müssen vorher gelöscht oder umgehängt werden.": "The unit and its data, including members, roles, financial records and files, will be permanently deleted. User accounts are retained. Subordinate units must be deleted or moved first.",
   "Zur Bestätigung den vollständigen Namen eingeben:": "Enter the full name to confirm:",
   "Name zur Löschbestätigung": "Name to confirm deletion",
   "Unwiderruflich löschen": "Delete permanently",
@@ -7620,5 +7618,23 @@
   "Noch keine Orte gespeichert.": "No places saved yet.",
   "Neuer Ort": "New place",
   "Ort speichern": "Save place",
-  "Orte von {name}": "Places of {name}"
+  "Orte von {name}": "Places of {name}",
+  "Gelöscht wird in zwei Stufen. Zuerst wird die Einheit mit allen Untereinheiten stillgelegt: Niemand kommt mehr hinein, die Daten bleiben erhalten. Endgültig löschen lässt sie sich frühestens {n} Tage später und erst, wenn die Aufbewahrungsfristen für Bücher und Belege abgelaufen sind.": "Deletion happens in two stages. First the unit and all its subunits are deactivated: nobody can access them any more, the data is kept. It can be deleted permanently at the earliest {n} days later and only once the retention periods for books and vouchers have expired.",
+  "Stillgelegt und zum Löschen vorgemerkt seit {date}.": "Deactivated and scheduled for deletion since {date}.",
+  "Vorgemerkt von {name}.": "Scheduled by {name}.",
+  "Aufbewahrungsfristen laufen bis {date}.": "Retention periods run until {date}.",
+  "Keine Finanzdaten, keine Aufbewahrungsfrist.": "No financial data, no retention period.",
+  "Löschsperre: {unit}, Geschäftsjahr {year}": "Deletion hold: {unit}, financial year {year}",
+  "Endgültig löschen frühestens ab {date}.": "Permanent deletion possible from {date}.",
+  "Die Einheit, alle Untereinheiten und ihre Daten einschließlich Mitgliedern, Rollen, Finanzdaten und Dateien werden unwiderruflich gelöscht. Benutzerkonten bleiben erhalten. Auch ein später eingespieltes älteres Backup bringt sie nicht zurück.": "The unit, all subunits and their data including members, roles, financial data and files will be deleted irrevocably. User accounts are kept. Restoring an older backup later will not bring them back either.",
+  "Die Einheit wird sofort stillgelegt. Die Vormerkung lässt sich zurücknehmen.": "The unit is deactivated immediately. The scheduling can be withdrawn.",
+  "Fristen bestätigt von": "Retention periods confirmed by",
+  "Zum Beispiel Kassenprüfer oder Steuerberater, mit Datum.": "For example auditor or tax advisor, with date.",
+  "Eigenes Passwort": "Your password",
+  "Code aus der Authentifizierungs-App": "Code from the authenticator app",
+  "Stilllegen und vormerken": "Deactivate and schedule",
+  "Stilllegen und Löschung vormerken": "Deactivate and schedule deletion",
+  "Vormerkung zurücknehmen": "Withdraw scheduling",
+  "Zum Löschen vorgemerkt. Erst die Vormerkung zurücknehmen.": "Scheduled for deletion. Withdraw the scheduling first.",
+  " · zum Löschen vorgemerkt": " · scheduled for deletion"
 }

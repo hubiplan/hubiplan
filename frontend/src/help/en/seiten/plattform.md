@@ -17,7 +17,12 @@ Under settings you set the deletion period after leaving. A shorter period only 
 
 Under **Units** → **Edit**, clear “is active” and save to deactivate a unit. Its data is retained and the unit can be activated again later.
 
-To delete it completely, choose **Delete unit** in the edit form, enter its full name and confirm with **Delete permanently**. The unit's members, roles, financial records and stored files are removed. User accounts are retained. Delete or move subordinate units first. If references from other units prevent deletion, an error is shown and the data is retained. The deletion is recorded in the platform audit log. Existing backups are unaffected.
+Deletion happens in two stages:
+
+1. **Deactivate and schedule deletion:** in the edit form, enter the full name under “Delete unit”. The unit and all subunits below it are deactivated immediately; nobody can access them any more and the data is retained. While deletion is scheduled the unit cannot be activated again; **Withdraw scheduling** cancels it.
+2. **Delete permanently:** at the earliest 30 days after scheduling and only once the statutory retention periods for books and vouchers of all financial years have expired (§ 147 AO: vouchers 8, books 10 years). The form shows until when the periods run. A deletion hold on a financial year prevents deletion. To confirm, enter the name, your password and, if set up, the two-factor code. If the unit has financial data, state who confirmed the retention periods (e.g. auditor or tax advisor).
+
+Permanent deletion removes the members, roles, financial records and stored files of the unit and its subunits. User accounts are retained. Clubs belonging to a federation must be deleted or moved first. If references from other units prevent deletion, an error is shown and the data is retained. The deletion is recorded in the platform audit log and on the deletion list: if an older backup is restored later, HUBIplan deletes the unit again.
 
 ## New versions
 

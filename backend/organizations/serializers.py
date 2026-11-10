@@ -879,6 +879,7 @@ class PlatformOrganizationSerializer(
             "modules_pass_down",
             "tax_areas_enabled",
             "is_active",
+            "erase_requested_at",
             "is_remote",
             "club_count",
             "logo_url",

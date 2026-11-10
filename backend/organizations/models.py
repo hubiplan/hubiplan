@@ -521,6 +521,20 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     # Platzhalter einer gekoppelten Einheit auf einer anderen Instanz (App peering):
     # ohne Mitglieder, Kasse und Zugänge, nur mit übermittelten Daten
     is_remote = models.BooleanField("auf anderer Instanz", default=False, editable=False)
+    # Löschung vorgemerkt (Gesamtaudit 10.11., F02): stillgelegt, Daten bleiben bis zum
+    # endgültigen Löschen nach den Aufbewahrungsfristen (organizations/deletion.py)
+    erase_requested_at = models.DateTimeField(
+        "Löschung vorgemerkt am", null=True, blank=True, editable=False
+    )
+    erase_requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name="Löschung vorgemerkt von",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -653,6 +667,10 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
             errors["contact_role"] = gettext("Die Rolle muss zu dieser Organisation gehören.")
         if self.contact_source == self.ContactSource.ROLE and not self.contact_role_id:
             errors["contact_role"] = gettext("Bitte eine Rolle wählen.")
+        if self.erase_requested_at and self.is_active:
+            errors["is_active"] = gettext(
+                "Die Löschung ist vorgemerkt. Bitte erst die Vormerkung zurücknehmen."
+            )
         if errors:
             raise ValidationError(errors)
 

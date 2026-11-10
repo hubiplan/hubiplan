@@ -47,6 +47,34 @@ f = berechtigtes Interesse, a = Einwilligung (DSGVO).
 | Entwürfe in der App (nicht gesendet, nach dem Abmelden) | Kasse unterwegs, Art. 6 (1) b, c | Abmelden | nach 90 Tagen Rückfrage mit Export, nach 120 Tagen gelöscht; unlesbare sofort (FQ24) |
 | Backups | Wiederherstellung, Art. 6 (1) f, Art. 32 | Erstellung | nach `BACKUP_KEEP_DAYS` Tagen |
 
+## Einheiten löschen (Gesamtaudit 10.11., F02)
+
+Die Plattform-Verwaltung löscht einen Verein, Dachverband oder eine Untereinheit in zwei
+Stufen (`organizations/deletion.py`):
+
+1. **Stilllegen und Löschung vormerken:** Die Einheit und alle Untereinheiten darunter sind
+   sofort stillgelegt (kein Zugriff), die Daten bleiben. Solange die Vormerkung gilt, lässt
+   sich die Einheit nicht wieder einschalten, auch nicht vom Dachverband. Die Plattform kann
+   die Vormerkung zurücknehmen.
+2. **Endgültig löschen:** frühestens 30 Tage nach der Vormerkung und erst, wenn für jedes
+   Geschäftsjahr mit Finanzdaten der Einheit und ihrer Untereinheiten beide Fristen nach
+   § 147 AO abgelaufen sind (wie oben: Belege 8, Bücher 10 Jahre ab der letzten Eintragung).
+   Eine Löschsperre in einem Geschäftsjahr verhindert das Löschen. Bestätigt wird mit dem
+   Namen der Einheit, dem eigenen Passwort und gegebenenfalls dem Code der
+   Zwei-Faktor-Anmeldung; bei Finanzdaten zusätzlich mit der Angabe, wer die Fristen geprüft
+   hat (Kassenprüfer oder Steuerberater). Die Angabe steht im Plattformprotokoll.
+
+Gelöschte Einheiten stehen auf der Löschliste (Kennung und Anlagezeitpunkt, keine Namen).
+Taucht eine davon nach dem Einspielen eines älteren Backups wieder auf, wird sie beim Start
+und täglich erneut gelöscht; lässt sie sich nicht automatisch löschen, kommt eine Alarm-Mail.
+
+English: Units are deleted in two stages. Stage 1 deactivates the unit and its subunits and
+schedules deletion; data is kept and the unit cannot be reactivated until the scheduling is
+withdrawn. Stage 2 is possible 30 days later at the earliest and only after the § 147 AO
+retention periods of every financial year have expired, without legal holds, confirmed with
+the unit name, password, two-factor code and the person who verified the periods. Deleted
+units go on the deletion list and are deleted again after an older backup is restored.
+
 ## Chronik und Ehrungen (FQ12)
 
 Namen ehemaliger Mitglieder in Würden, Begleitungen, Ehrungen und Wettbewerbsergebnissen
