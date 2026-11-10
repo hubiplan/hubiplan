@@ -27,6 +27,7 @@ from access.catalog import (
     ORG_EDIT,
     SETTINGS_VIEW,
 )
+from accounts import step_up
 from audit.log import diff, record, snapshot
 from audit.models import AuditEntry
 from changes import idempotency
@@ -905,6 +906,7 @@ class MemberHistoryErasureView(_ClubMixin, APIView):
 
     @transaction.atomic
     def post(self, request, org_id: int, pk: int):
+        step_up.require(request)
         from rest_framework.exceptions import ValidationError
 
         from .workflows import erase_history
@@ -946,6 +948,7 @@ class MemberErasureView(_ClubMixin, APIView):
 
     @transaction.atomic
     def post(self, request, org_id: int, pk: int):
+        step_up.require(request)
         from rest_framework.exceptions import ValidationError
 
         from .workflows import purge_due_date, purge_membership

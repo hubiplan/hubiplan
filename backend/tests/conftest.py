@@ -100,6 +100,15 @@ def _clear_cache():
 
 
 @pytest.fixture(autouse=True)
+def _mfa_lockerer(settings):
+    """Die meisten Tests melden sich ohne 2FA an (force_authenticate). Sofortpflicht für die
+    Plattform und frischer Code für heikle Aktionen gelten nur in den Tests, die sie prüfen
+    (tests/test_frischer_code.py)."""
+    settings.MFA_PLATFORM_GRACE = True
+    settings.MFA_STEP_UP = False
+
+
+@pytest.fixture(autouse=True)
 def _media_root(tmp_path, settings):
     settings.MEDIA_ROOT = tmp_path / "media"
     # KoSIT-Prüfung (Java): Unter Testlast dauert der Start manchmal länger als die 45 s

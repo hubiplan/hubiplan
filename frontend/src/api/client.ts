@@ -48,7 +48,38 @@ export function newRequestKey(): string {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`
 }
 
+/**
+ * Heikle Aktionen (Voll-Export, Rollen vergeben, App koppeln, endgültig löschen) verlangen
+ * eine frische Bestätigung: Der Server antwortet dann mit 403 und ``step_up`` (``code``
+ * oder ``password``). Der hier eingetragene Dialog fragt nach; war er erfolgreich, wird
+ * die Anfrage einmal erneut gesendet (accounts/step_up.py).
+ */
+export type StepUpKind = 'code' | 'password'
+let stepUpHandler: ((kind: StepUpKind) => Promise<boolean>) | null = null
+export function setStepUpHandler(handler: ((kind: StepUpKind) => Promise<boolean>) | null) {
+  stepUpHandler = handler
+}
+
+function stepUpKind(status: number, body: unknown): StepUpKind | null {
+  if (status !== 403 || !body || typeof body !== 'object') return null
+  const kind = (body as { step_up?: unknown }).step_up
+  return kind === 'code' || kind === 'password' ? kind : null
+}
+
 export async function request<T = unknown>(
+  method: Method,
+  url: string,
+  data?: unknown,
+  requestKey?: string,
+): Promise<ApiResult<T>> {
+  const result = await requestOnce<T>(method, url, data, requestKey)
+  const kind = stepUpKind(result.status, result.body)
+  if (kind && stepUpHandler && (await stepUpHandler(kind)))
+    return requestOnce<T>(method, url, data, requestKey)
+  return result
+}
+
+async function requestOnce<T>(
   method: Method,
   url: string,
   data?: unknown,

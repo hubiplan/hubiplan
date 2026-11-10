@@ -5,12 +5,17 @@ Mitglieder lesen darf oder Protokoll und Postausgang sieht (Gesamtaudit 05.11. F
 braucht eine eingerichtete Zwei-Faktor-Anmeldung. Ab dem ersten Mal, dass ein Konto solche Rechte
 hat, bleiben ``GRACE_DAYS`` Tage zum Einrichten; danach ruhen genau diese Rechte, bis die
 Zwei-Faktor-Anmeldung eingerichtet ist. Alles andere geht weiter, auch „Mein Konto“.
+
+Für die Plattform-Verwaltung gibt es keine Frist (Gesamtaudit 10.11., Frage 1): Ohne
+zweiten Faktor ruhen ihre Rechte sofort. Heikle Einzelaktionen verlangen zusätzlich eine
+frische Bestätigung (``accounts/step_up.py``).
 """
 
 from __future__ import annotations
 
 import datetime
 
+from django.conf import settings
 from django.utils import timezone
 
 from access import catalog
@@ -62,6 +67,8 @@ def gate(user, perms: set[str], *, platform: bool = False) -> set[str]:
     needed = perms if platform else perms & MFA_PERMISSIONS
     if not needed or not getattr(user, "pk", None) or has_mfa(user):
         return perms
+    if platform and not getattr(settings, "MFA_PLATFORM_GRACE", False):
+        return set()
     now = timezone.now()
     due = user.mfa_required_by
     if due is None:
@@ -86,8 +93,15 @@ def gate(user, perms: set[str], *, platform: bool = False) -> set[str]:
 
 
 def status(user) -> dict:
-    """Für die Oberfläche: Pflicht offen? (nur Konten ohne zweiten Faktor mit Frist)."""
-    due = deadline(user)
-    if due is None or has_mfa(user):
+    """Für die Oberfläche: Pflicht offen? (nur Konten ohne zweiten Faktor)."""
+    if has_mfa(user):
         return {}
-    return {"mfa_required_by": due.isoformat(), "mfa_overdue": timezone.now() > due}
+    result: dict = {}
+    from access.permissions import platform_rights_waiting
+
+    if platform_rights_waiting(user):
+        result["mfa_platform"] = True
+    due = deadline(user)
+    if due is not None:
+        result.update(mfa_required_by=due.isoformat(), mfa_overdue=timezone.now() > due)
+    return result

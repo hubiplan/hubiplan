@@ -9562,3 +9562,8 @@ msgstr "Unknown workspace."
 
 msgid "Zu viele Arbeitsbereiche."
 msgstr "Too many workspaces."
+msgid "Bitte zur Sicherheit einen aktuellen Code aus der Authenticator-App eingeben."
+msgstr "For your security, please enter a current code from your authenticator app."
+
+msgid "Bitte zur Sicherheit dein Passwort eingeben."
+msgstr "For your security, please enter your password."
