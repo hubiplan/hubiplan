@@ -7,7 +7,7 @@ import { DepartmentTodosTile } from '../components/DepartmentTodosTile.tsx'
 import { OpenTasksTile } from '../components/OpenTasksTile.tsx'
 import { PERM } from '../api/orgs.ts'
 import type { OrgSummary } from '../api/orgs.ts'
-import { NoticesCard, QuickActions } from '../components/home/RoleHome.tsx'
+import { AnniversariesCard, NoticesCard, QuickActions } from '../components/home/RoleHome.tsx'
 import {
   actionCatalog,
   actionScope,
@@ -151,6 +151,7 @@ export function HomePage() {
           scope={actionScope.org(active)}
         />
         {upcoming && <UpcomingTile base={calendarBase.org(active.id)} />}
+        <AnniversariesCard org={active} />
         <NoticesCard org={active} />
         {!upcoming && !people && actionCatalog(active).length === 0 && (
           <div className="card tile">

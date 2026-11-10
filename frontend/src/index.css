@@ -5296,6 +5296,13 @@ label:has(> .file-input:focus-visible) {
 .home-grid > .card {
   max-width: none;
 }
+.home-notices h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+.home-jubilee-year + .home-jubilee-year {
+  margin-top: 0.75rem;
+}
 .home-notice-list > li + li {
   margin-top: 0.5rem;
   padding-top: 0.5rem;

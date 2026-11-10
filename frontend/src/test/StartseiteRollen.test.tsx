@@ -2,7 +2,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../App.tsx'
 import { AuthProvider } from '../auth/AuthContext.tsx'
 import { OrgProvider } from '../org/OrgContext.tsx'
@@ -170,7 +170,7 @@ describe('Schnellaktionen wählen', () => {
 })
 
 describe('Hinweise in einer Karte', () => {
-  it('sammelt Impressum und Geburtstage', async () => {
+  it('zählt nur Hinweise; Geburtstage stehen in einer eigenen Karte', async () => {
     const org = testOrg({ permissions: ['members.view', 'org.edit'] })
     fakeApi({
       [SESSION]: loggedIn,
@@ -199,11 +199,92 @@ describe('Hinweise in einer Karte', () => {
     const card = within(heading.closest('.card') as HTMLElement)
     expect(await card.findByText(/Im Impressum fehlen noch Angaben: Telefon/)).toBeInTheDocument()
     expect(card.getByRole('link', { name: 'Impressum ergänzen' })).toBeInTheDocument()
-    expect(await card.findByRole('link', { name: 'Erika Muster' })).toHaveAttribute(
+    expect(heading).toHaveTextContent('1')
+    const birthdays = await screen.findByRole('heading', { name: 'Geburtstage', level: 2 })
+    const bCard = within(birthdays.closest('.card') as HTMLElement)
+    expect(bCard.getByRole('link', { name: 'Erika Muster' })).toHaveAttribute(
       'href',
       '/mitglieder/3',
     )
-    expect(heading).toHaveTextContent('2')
+    expect(birthdays.querySelector('.badge')).toBeNull()
+  })
+})
+
+describe('Jubiläen je Kalenderjahr', () => {
+  afterEach(() => vi.useRealTimers())
+
+  const zug = {
+    id: 4,
+    kind: 'unit',
+    name: 'Die Härtesten',
+    short_name: '',
+    path: 'Die Härtesten',
+    label: 'Zug',
+    label_plural: 'Züge',
+    label_gender: 'm',
+    label_genitive: '',
+    founding_year: 1977,
+    years: 50,
+    year: 2027,
+  }
+  const erika = {
+    member_id: 3,
+    first_name: 'Erika',
+    last_name: 'Muster',
+    birth_date: null,
+    member_number: null,
+    kind: 'club',
+    organization: 'TV Beispielhausen',
+    organization_short: 'TVB',
+    years: 40,
+    date: '2026-01-01',
+    precision: 'year',
+  }
+
+  function routes(von: string, bis: string) {
+    return {
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [testOrg({ modules: ['members', 'awards'], permissions: ['members.view'] })],
+      }),
+      [`GET /api/orgs/7/jubilees/?von=${von}&bis=${bis}`]: () => ({
+        status: 200,
+        body: { von, bis, results: [erika] },
+      }),
+      [`GET /api/orgs/7/unit-jubilees/?von=${von}&bis=${bis}`]: () => ({
+        status: 200,
+        body: { von, bis, results: [zug] },
+      }),
+    }
+  }
+
+  it('zeigt im Herbst das laufende und das nächste Jahr getrennt, ohne Stichtag', async () => {
+    vi.setSystemTime(new Date('2026-11-10T10:00:00'))
+    fakeApi(routes('2026-01-01', '2027-12-31'))
+    renderAt('/')
+    const heading = await screen.findByRole('heading', { name: 'Jubiläen', level: 2 })
+    expect(heading.querySelector('.badge')).toBeNull()
+    const y2026 = await screen.findByRole('heading', { name: 'Jubiläen 2026' })
+    const y2027 = screen.getByRole('heading', { name: 'Jubiläen 2027' })
+    const in2026 = within(y2026.closest('section') as HTMLElement)
+    expect(in2026.getByRole('link', { name: 'Erika Muster' }).closest('li')).toHaveTextContent(
+      /^Erika Muster40 J\.·TVB$/,
+    )
+    expect(in2026.queryByText(/Die Härtesten/)).not.toBeInTheDocument()
+    const in2027 = within(y2027.closest('section') as HTMLElement)
+    expect(in2027.getByText('50 Jahre Die Härtesten').closest('li')).toHaveTextContent(
+      /^50 Jahre Die HärtestenZug$/,
+    )
+    expect(screen.queryByText(/nächsten 90 Tagen/)).not.toBeInTheDocument()
+  })
+
+  it('zeigt bis September nur das laufende Jahr', async () => {
+    vi.setSystemTime(new Date('2026-03-10T10:00:00'))
+    fakeApi(routes('2026-01-01', '2026-12-31'))
+    renderAt('/')
+    expect(await screen.findByRole('heading', { name: 'Jubiläen 2026' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Jubiläen 2027' })).not.toBeInTheDocument()
   })
 })
 

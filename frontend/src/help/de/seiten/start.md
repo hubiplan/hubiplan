@@ -2,10 +2,10 @@
 key: page.start
 titel: Startseite
 routen: [/]
-stichworte: [Übersicht, Aufgaben, Kacheln, Schnellaktionen, Hinweise, Zusage]
+stichworte: [Aufgaben, Schnellaktionen, Hinweise, Jubiläen, Geburtstage, Zusage]
 ---
 
-Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Sie hat für alle Rollen dieselbe Reihenfolge: **Zu erledigen**, **Schnellaktionen**, **Nächste Termine** und **Hinweise**. Was du siehst, hängt von deinen Rechten ab; was du nicht darfst, fehlt einfach. Oben rechts wechselst du die Einheit, wenn du in mehreren mitarbeitest.
+Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Sie hat für alle Rollen dieselbe Reihenfolge: **Zu erledigen**, **Schnellaktionen**, **Nächste Termine**, **Jubiläen und Geburtstage** und **Hinweise**. Was du siehst, hängt von deinen Rechten ab; was du nicht darfst, fehlt einfach. Oben rechts wechselst du die Einheit, wenn du in mehreren mitarbeitest.
 
 Die Navigation links beginnt mit **Startseite**, **Aufgaben** und **Termine**. Darunter folgen die Bereiche des Vereinslebens, die Organisation und zuletzt die Verwaltung. Abstände gliedern die sichtbaren Bereiche; **Hilfe** bleibt unten abgesetzt.
 
@@ -19,9 +19,11 @@ Die Kachel **Zu erledigen** steht vorn und sammelt Aufgaben, Freigaben, Anfragen
 
 In **Nächste Termine** öffnet **Neuer Termin** mit Anlegerecht direkt den Termindialog, **Zum Kalender** führt zur Übersicht.
 
-Die Karte **Hinweise** sammelt, was nicht eilt: fehlende Angaben im Impressum, Hinweise zur Briefvorlage (mit **Später**), Jubiläen der nächsten 90 und Geburtstage der nächsten 30 Tage, jeweils mit Link zur Mitgliedsakte. Ohne Hinweis gibt es keine Karte.
+Die Karte **Jubiläen und Geburtstage** zeigt die Jubiläen des laufenden Jahres, ab Oktober zusätzlich die des nächsten Jahres, jeweils unter eigener Überschrift wie „Jubiläen 2026“. Jubiläen gelten für ein Kalenderjahr; ein Datum steht nur dabei, wenn der Verein tages- oder monatsgenau zählt. Darunter stehen die Geburtstage der nächsten 30 Tage. Namen führen zur Mitgliedsakte, **Alle Jubiläen** zur vollständigen Liste.
 
-![Startseite des Vorstands mit Zu erledigen, Schnellaktionen und Hinweisen](bild:startseite-vorstand)
+Die Karte **Hinweise** sammelt, was nicht eilt: fehlende Angaben im Impressum und Hinweise zur Briefvorlage (mit **Später**). Die Zahl neben der Überschrift ist die Zahl dieser Hinweise. Ohne Hinweis gibt es keine Karte.
+
+![Startseite des Vorstands mit Zu erledigen, Schnellaktionen, Jubiläen und Hinweisen](bild:startseite-vorstand)
 
 Als Mitglied steht der nächste Termin ganz oben, auch am Handy. Ist eine Rückmeldung möglich, sagst du dort direkt mit **Zusage** oder **Absage** zu oder ab; darunter folgen die nächsten Termine. Unter **Mein Bereich** stehen höchstens vier Kacheln, **Ausweis zeigen** zuerst; **Alles in Mein Bereich** führt zu den übrigen.
 

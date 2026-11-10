@@ -191,8 +191,9 @@ interface Notice {
   onLater?: () => void
 }
 
-const NOTICE_DAYS = 30
-const JUBILEE_DAYS = 90
+const BIRTHDAY_DAYS = 30
+/** Ab diesem Monat zeigt die Startseite auch die Jubiläen des nächsten Jahres (Vorbereitung). */
+const NEXT_YEAR_FROM_MONTH = 10
 
 function plusDays(iso: string, days: number): string {
   const d = new Date(`${iso}T12:00:00`)
@@ -200,44 +201,24 @@ function plusDays(iso: string, days: number): string {
   return d.toISOString().slice(0, 10)
 }
 
+/** Jahre, deren Jubiläen die Startseite zeigt: das laufende, ab Oktober auch das nächste. */
+export function jubileeYears(today: string): number[] {
+  const year = Number(today.slice(0, 4))
+  return Number(today.slice(5, 7)) >= NEXT_YEAR_FROM_MONTH ? [year, year + 1] : [year]
+}
+
 /**
- * Eine Karte „Hinweise (n)“ statt gestapelter Bänder (S-04): Impressum, Briefvorlage,
- * Jubiläen und Geburtstage. Ohne Hinweis keine Karte.
+ * Eine Karte „Hinweise (n)“ statt gestapelter Bänder (S-04): fehlende Angaben im Impressum
+ * und Briefvorlage. Jubiläen und Geburtstage haben eine eigene Karte. Ohne Hinweis keine Karte.
  */
 export function NoticesCard({ org }: { org: OrgSummary | null }) {
-  const today = todayIso()
-  const until = plusDays(today, NOTICE_DAYS)
   const club = !!org && (org.type === 'club' || org.type === 'federation')
   const imprintShown = club && !!org && org.permissions.includes(PERM.orgEdit)
-  const people =
-    !!org &&
-    org.type === 'club' &&
-    org.modules.includes('members') &&
-    org.permissions.includes(PERM.membersView)
   const imprint = useLoad(
     () => (imprintShown && org ? imprintApi.get(org.id) : Promise.resolve(null)),
     [org?.id, imprintShown],
   )
   const letters = useLoad(() => letterheadApi.mine(), [])
-  const awards = people && !!org && org.modules.includes('awards')
-  const jubilees = useLoad(
-    () =>
-      awards && org
-        ? fieldApi.jubilees(org.id, today, plusDays(today, JUBILEE_DAYS))
-        : Promise.resolve(null),
-    [org?.id, awards, today],
-  )
-  const unitJubilees = useLoad(
-    () =>
-      awards && org
-        ? fieldApi.unitJubilees(org.id, today, plusDays(today, JUBILEE_DAYS))
-        : Promise.resolve(null),
-    [org?.id, awards, today],
-  )
-  const birthdays = useLoad(
-    () => (people && org ? fieldApi.birthdays(org.id, today, until) : Promise.resolve(null)),
-    [org?.id, people, today],
-  )
   const notices: Notice[] = []
   const missing = imprint.data?.missing ?? []
   if (missing.length > 0) {
@@ -266,33 +247,6 @@ export function NoticesCard({ org }: { org: OrgSummary | null }) {
       onLater: () => void letterheadApi.dismiss(n.unit.id, n.context).then(letters.reload),
     })
   }
-  const jubileeRows = jubilees.data?.results ?? []
-  const unitRows = unitJubilees.data?.results ?? []
-  if (jubileeRows.length + unitRows.length > 0) {
-    notices.push({
-      key: 'jubilees',
-      text: (
-        <>
-          {t('Jubiläen in den nächsten {n} Tagen:', { n: JUBILEE_DAYS })}
-          <JubileeList rows={jubileeRows} unitRows={unitRows} />
-        </>
-      ),
-      to: '/mitglieder/jubilaeen',
-      link: t('Alle Jubiläen'),
-    })
-  }
-  const birthdayRows = birthdays.data?.results ?? []
-  if (birthdayRows.length > 0) {
-    notices.push({
-      key: 'birthdays',
-      text: (
-        <>
-          {t('Geburtstage in den nächsten {n} Tagen:', { n: NOTICE_DAYS })}
-          <BirthdayList rows={birthdayRows} today={today} />
-        </>
-      ),
-    })
-  }
   if (notices.length === 0) return null
   return (
     <div className="card tile home-notices">
@@ -319,6 +273,78 @@ export function NoticesCard({ org }: { org: OrgSummary | null }) {
             )}
           </li>
         ))}
+      </ul>
+    </div>
+  )
+}
+
+/**
+ * Jubiläen (je Kalenderjahr, sie haben keinen Stichtag) und Geburtstage der nächsten 30 Tage.
+ * Ohne Eintrag keine Karte.
+ */
+export function AnniversariesCard({ org }: { org: OrgSummary }) {
+  const today = todayIso()
+  const years = jubileeYears(today)
+  const von = `${years[0]}-01-01`
+  const bis = `${years[years.length - 1]}-12-31`
+  const people =
+    org.type === 'club' &&
+    org.modules.includes('members') &&
+    org.permissions.includes(PERM.membersView)
+  const awards = people && org.modules.includes('awards')
+  const jubilees = useLoad(
+    () => (awards ? fieldApi.jubilees(org.id, von, bis) : Promise.resolve(null)),
+    [org.id, awards, von, bis],
+  )
+  const unitJubilees = useLoad(
+    () => (awards ? fieldApi.unitJubilees(org.id, von, bis) : Promise.resolve(null)),
+    [org.id, awards, von, bis],
+  )
+  const birthdays = useLoad(
+    () =>
+      people
+        ? fieldApi.birthdays(org.id, today, plusDays(today, BIRTHDAY_DAYS))
+        : Promise.resolve(null),
+    [org.id, people, today],
+  )
+  const jubileeRows = jubilees.data?.results ?? []
+  const unitRows = unitJubilees.data?.results ?? []
+  const byYear = years
+    .map((year) => ({
+      year,
+      rows: jubileeRows.filter((r) => Number(r.date.slice(0, 4)) === year),
+      unitRows: unitRows.filter((r) => r.year === year),
+    }))
+    .filter((g) => g.rows.length + g.unitRows.length > 0)
+  const birthdayRows = birthdays.data?.results ?? []
+  if (byYear.length === 0 && birthdayRows.length === 0) return null
+  const title =
+    byYear.length === 0
+      ? t('Geburtstage')
+      : birthdayRows.length === 0
+        ? t('Jubiläen')
+        : t('Jubiläen und Geburtstage')
+  return (
+    <div className="card tile home-notices">
+      <h2>{title}</h2>
+      <ul className="plain-list home-notice-list">
+        {byYear.length > 0 && (
+          <li>
+            {byYear.map((g) => (
+              <section key={g.year} className="home-jubilee-year">
+                <h3>{t('Jubiläen {year}', { year: g.year })}</h3>
+                <JubileeList rows={g.rows} unitRows={g.unitRows} year={g.year} />
+              </section>
+            ))}
+            <Link to="/mitglieder/jubilaeen">{t('Alle Jubiläen')}</Link>
+          </li>
+        )}
+        {birthdayRows.length > 0 && (
+          <li>
+            <h3>{t('Geburtstage in den nächsten {n} Tagen', { n: BIRTHDAY_DAYS })}</h3>
+            <BirthdayList rows={birthdayRows} today={today} />
+          </li>
+        )}
       </ul>
     </div>
   )

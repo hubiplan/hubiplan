@@ -88,8 +88,11 @@ function groupByPerson(rows: JubileeRow[]): PersonJubilees[] {
 
 export function JubileesPage() {
   const org = useActiveOrg()
-  const [von, setVon] = useState(todayIso)
-  const [bis, setBis] = useState(() => plusDays(todayIso(), 365))
+  // Jubiläen haben keinen Stichtag, sie gelten für ein Kalenderjahr: Auswahl nach Jahr
+  const thisYear = Number(todayIso().slice(0, 4))
+  const [year, setYear] = useState(thisYear)
+  const von = `${year}-01-01`
+  const bis = `${year}-12-31`
   const { data, error } = useLoad(() => fieldApi.jubilees(org.id, von, bis), [org.id, von, bis])
   const units = useLoad(() => fieldApi.unitJubilees(org.id, von, bis), [org.id, von, bis])
   const [showExport, setShowExport] = useState(false)
@@ -99,10 +102,14 @@ export function JubileesPage() {
     <>
       <div className="card card-wide filters">
         <label className="inline-label">
-          {t('von')} <input type="date" value={von} onChange={(e) => setVon(e.target.value)} />
-        </label>
-        <label className="inline-label">
-          {t('bis')} <input type="date" value={bis} onChange={(e) => setBis(e.target.value)} />
+          {t('Jahr')}{' '}
+          <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
+            {Array.from({ length: 21 }, (_, i) => thisYear - 10 + i).map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
         </label>
         {org.permissions.includes('export.run') && (
           <button
@@ -202,13 +209,18 @@ export function JubileesPage() {
   )
 }
 
-/** Startseite (Hinweise): anstehende Jubiläen von Personen und Einheiten, je Person eine Zeile. */
+/**
+ * Startseite: Jubiläen eines Jahres von Personen und Einheiten, je Person eine Zeile. Das Jahr
+ * steht schon in der Überschrift; ein Datum erscheint nur bei tages- oder monatsgenauer Zählung.
+ */
 export function JubileeList({
   rows,
   unitRows,
+  year,
 }: {
   rows: JubileeRow[]
   unitRows: UnitJubileeRow[]
+  year: number
 }) {
   return (
     <>
@@ -221,8 +233,12 @@ export function JubileeList({
               </span>
               <span className="tile-entry-meta muted small">
                 <span>{r.label}</span>
-                <span aria-hidden="true">·</span>
-                <span>{r.year}</span>
+                {r.year !== year && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span>{r.year}</span>
+                  </>
+                )}
               </span>
             </li>
           ))}
@@ -246,8 +262,12 @@ export function JubileeList({
                     <span className="tile-entry-org" title={r.organization}>
                       {r.organization_short ?? r.organization}
                     </span>
-                    <span aria-hidden="true">·</span>
-                    <span>{formatMemberDate(r.date, r.precision)}</span>
+                    {r.precision !== 'year' && (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span>{formatMemberDate(r.date, r.precision)}</span>
+                      </>
+                    )}
                   </span>
                 ))}
               </li>
@@ -270,7 +290,7 @@ function birthdayLabel(iso: string, today: string): string {
   return t('{x}, {x2}.{x3}.', { x: WEEKDAYS[d.getDay()], x2: d.getDate(), x3: d.getMonth() + 1 })
 }
 
-/** Startseite (Hinweise): Geburtstage der nächsten 30 Tage, weitere aufklappbar. */
+/** Startseite: Geburtstage der nächsten 30 Tage, weitere aufklappbar. */
 export function BirthdayList({ rows, today }: { rows: BirthdayRow[]; today: string }) {
   const [showAll, setShowAll] = useState(false)
   const shown = showAll ? rows : rows.slice(0, BIRTHDAY_PREVIEW)
