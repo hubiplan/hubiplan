@@ -44,6 +44,47 @@ DEPLOY_HOST=deploy@test.example.org DEPLOY_SUDO=1 deploy/deploy.sh  # erst nach 
 `~/.local/state/hubiplan/tested-trees`. `deploy/deploy.sh` bricht ab, wenn der Stand dort
 fehlt. Ein Merge-Commit mit unverändertem Inhalt gilt als getestet.
 
+### Merge und main (Regel für alle Threads)
+
+Ein Zweig wird **einmal** grün getestet. Ist main danach weitergegangen, wird nicht
+automatisch neu getestet:
+
+```bash
+scripts/nachtest-noetig.sh <getesteter-commit> origin/main
+```
+
+- **Exit 0 („Kein Nachtest nötig“):** direkt mergen, sofern GitHub keinen Konflikt meldet.
+- **Exit 1 („Nachtest nötig“):** main einmischen und `scripts/test.sh` erneut. Das ist der Fall
+  bei derselben geänderten Datei (außer Übersetzungskatalogen, Hilfe und Doku), bei Migrationen
+  derselben App und bei Dateien, von denen ein ganzer Teil abhängt (Abhängigkeiten,
+  `conftest.py`/`factories.py`, `core/rls.py`, `scripts/test.sh`, Docker, Frontend-Konfiguration),
+  wenn die andere Seite in demselben Teil etwas ändert.
+
+Nach dem Merge wird main gebündelt getestet:
+
+```bash
+scripts/test.sh --main      # holt den neuesten main und testet ihn
+```
+
+Es läuft immer nur ein main-Lauf. Wer währenddessen `--main` startet, wartet ohne Testplatz,
+holt main danach neu und ist fertig, wenn dieser neueste main schon getestet ist (er enthält
+den eigenen Merge). Ausgerollt wird der neueste grüne main; `deploy/deploy.sh` nimmt
+weiterhin nur getestete Stände. Ist der main-Lauf rot, prüft der Thread, der ihn gestartet
+hat, ob sein Merge die Ursache ist, und meldet es sonst dem Koordinator.
+
+### Reihenfolge eines Laufs
+
+1. Gleiche Prüfung nur einmal: Prüft gerade ein anderer Lauf dasselbe Backend (gleicher
+   Schlüssel, s. u.), wartet der Lauf ohne Testplatz auf dessen Ergebnis.
+2. Warteschlange für den Testplatz (siehe „Testplätze“).
+3. Frontend-Prüfungen im Hintergrund, Backend-Vorbereitung (Image, ruff, Migrationen,
+   Proxy-/Rückweg-Prüfungen, Testdatenbank).
+4. Vitest allein. Ein grünes Frontend wird sofort vermerkt.
+5. **Vorlauf:** die Testdateien, die der Stand gegenüber main ändert (höchstens 30),
+   ohne Migrationstests. Scheitert einer, endet der Lauf hier.
+6. pytest vollständig; ein grünes Backend wird sofort vermerkt. Scheitert danach etwas,
+   läuft beim nächsten Versuch nur noch der Rest.
+
 ### Nur geänderte Teile
 
 `scripts/test.sh` merkt sich in `~/.local/state/hubiplan/tested-parts` zusätzlich, welche
@@ -91,7 +132,10 @@ testplatz [--kerne N] <befehl …>   # wartet auf einen freien Platz, dann läuf
 - Ohne Einstellung gibt es einen Platz mit allen Kernen. Mehr Plätze oder weniger Kerne
   stellt jeder Rechner lokal in `~/.config/testplatz` ein (nicht im Repo), zum Beispiel
   `PLAETZE=2` und `KERNE=4`, oder über `TESTPLATZ_PLAETZE` und `TESTPLATZ_KERNE`.
-- Sperren liegen in `~/.testplaetze/platz-N.lock`. Wer keinen freien Platz findet, wartet. Bricht ein Lauf ab, gibt das System den Platz von selbst frei.
+- Sperren liegen in `~/.testplaetze/platz-N.lock`. Wer keinen freien Platz findet, stellt
+  sich in die Warteschlange `~/.testplaetze/warteschlange/`: Die Plätze werden in der
+  Reihenfolge der Anfragen vergeben. Bricht ein Lauf ab, gibt das System den Platz und
+  das Ticket von selbst frei. `testplatz --liste` zeigt belegte Plätze und Wartende.
 - Der Befehl ist an die Kerne seines Platzes gebunden (WSL: `taskset`; Windows:
   Prozessor-Affinität; die Plätze liegen nebeneinander ab Kern 0) und bekommt
   `TEST_KERNE` (Anzahl), `TESTPLATZ_CPUS` (für `docker run --cpuset-cpus`) und
