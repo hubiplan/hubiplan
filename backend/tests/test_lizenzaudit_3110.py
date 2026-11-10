@@ -20,12 +20,9 @@ def test_dockerfile_sammelt_drf_dateien_nicht_ein():
     assert "--ignore rest_framework" in dockerfile
 
 
-def test_passwortliste_hat_ihren_lizenztext():
-    """L04: Der MIT-Text von SecLists liegt neben der übernommenen Liste."""
-    data = BACKEND / "accounts" / "data"
-    lizenz = (data / "LICENSE-SecLists.txt").read_text()
-    assert "MIT License" in lizenz
-    assert "Copyright (c) 2018 Daniel Miessler" in lizenz
-    readme = (data / "README.md").read_text()
-    assert "1a7bb9127eca9e6ff2fc0301c597fe6e16a0cb56" in readme
-    assert "LICENSE-SecLists.txt" in readme
+def test_keine_fremde_passwortliste_mehr():
+    """L04 (31.10.) / L05 (10.11.): Die NCSC-Liste aus SecLists ist entfernt, weil die Rechte an
+    der ursprünglichen Sammlung nicht belegt waren; es gilt Djangos eigene Liste."""
+    assert not (BACKEND / "accounts" / "data").exists()
+    names = [v["NAME"] for v in settings.AUTH_PASSWORD_VALIDATORS]
+    assert "django.contrib.auth.password_validation.CommonPasswordValidator" in names

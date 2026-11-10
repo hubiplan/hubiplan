@@ -14,6 +14,8 @@ import type {
 } from '../../api/events.ts'
 import { useAutoSave, useForm } from '../forms.ts'
 import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../ui.tsx'
+import { PlaceField } from '../PlaceField.tsx'
+import { pointFromLink } from '../mapLink.ts'
 import { addDays, berlin, toApi } from './time.ts'
 import { confirmDialog } from '../dialog.ts'
 import { Why } from '../../learning/Aids.tsx'
@@ -29,6 +31,9 @@ interface Values {
   description: string
   location: string
   address: string
+  directions: string
+  latitude: string
+  longitude: string
   category: string
   all_day: boolean
   hide_end_time: boolean
@@ -47,6 +52,9 @@ interface Values {
   rsvp_deadline_time: string
   rsvp_capacity: string
   rsvp_guests: boolean
+  rsvp_maybe: boolean
+  rsvp_note: boolean
+  rsvp_note_question: string
   remind: boolean
   remind_days: string
   notify: boolean
@@ -67,6 +75,9 @@ function initial(event: EventDetail | null, date: string): Values {
       description: '',
       location: '',
       address: '',
+      directions: '',
+      latitude: '',
+      longitude: '',
       category: '',
       all_day: false,
       hide_end_time: false,
@@ -85,6 +96,9 @@ function initial(event: EventDetail | null, date: string): Values {
       rsvp_deadline_time: '23:59',
       rsvp_capacity: '',
       rsvp_guests: false,
+      rsvp_maybe: false,
+      rsvp_note: true,
+      rsvp_note_question: '',
       remind: false,
       remind_days: '2',
       notify: false,
@@ -101,6 +115,9 @@ function initial(event: EventDetail | null, date: string): Values {
     description: event.description,
     location: event.location,
     address: event.address,
+    directions: event.directions ?? '',
+    latitude: event.latitude != null ? String(event.latitude) : '',
+    longitude: event.longitude != null ? String(event.longitude) : '',
     category: event.category ? String(event.category.id) : '',
     all_day: event.all_day,
     hide_end_time: event.hide_end_time ?? false,
@@ -119,6 +136,9 @@ function initial(event: EventDetail | null, date: string): Values {
     rsvp_deadline_time: deadline?.time ?? '23:59',
     rsvp_capacity: event.rsvp.capacity ? String(event.rsvp.capacity) : '',
     rsvp_guests: event.rsvp.guests_allowed,
+    rsvp_maybe: !!event.rsvp.maybe_allowed,
+    rsvp_note: event.rsvp.note_allowed ?? true,
+    rsvp_note_question: event.rsvp.note_question ?? '',
     remind: !!event.remind_days,
     remind_days: event.remind_days ? String(event.remind_days) : '2',
     notify: false,
@@ -134,6 +154,9 @@ function toInput(v: Values, withUnit = false): EventInput {
     description: v.description,
     location: v.location,
     address: v.address,
+    directions: v.directions,
+    latitude: v.latitude.trim() ? Number(v.latitude.replace(',', '.')) : null,
+    longitude: v.longitude.trim() ? Number(v.longitude.replace(',', '.')) : null,
     category: v.category ? Number(v.category) : null,
     all_day: v.all_day,
     hide_end_time: v.hide_end_time,
@@ -152,6 +175,9 @@ function toInput(v: Values, withUnit = false): EventInput {
         : null,
     rsvp_capacity: v.rsvp_enabled && v.rsvp_capacity ? Number(v.rsvp_capacity) : null,
     rsvp_guests: v.rsvp_enabled && v.rsvp_guests,
+    rsvp_maybe: v.rsvp_enabled && v.rsvp_maybe,
+    rsvp_note: v.rsvp_note,
+    rsvp_note_question: v.rsvp_note ? v.rsvp_note_question.trim() : '',
     remind_days: v.repeat === 'none' && v.remind ? Number(v.remind_days) || 1 : null,
     share_up: fromShare(v.share_up),
     share_down: fromShare(v.share_down),
@@ -354,13 +380,22 @@ export function EventForm({
         )}
       </div>
       <div className="grid-2">
-        <Field
+        <PlaceField
           label={t('Ort')}
           value={v.location}
-          maxLength={200}
+          address={v.address}
           placeholder={t('z. B. Vereinsheim')}
           error={errors.location}
-          onChange={(e) => set('location', e.target.value)}
+          onChange={(value) => set('location', value)}
+          onPick={(place) => {
+            // Kopie: spätere Änderungen am Ort ändern diesen Termin nicht
+            if (place.address) set('address', place.address)
+            if (place.directions) set('directions', place.directions)
+            if (place.latitude != null && place.longitude != null) {
+              set('latitude', String(place.latitude))
+              set('longitude', String(place.longitude))
+            }
+          }}
         />
         <Field
           label={t('Anschrift')}
@@ -370,6 +405,7 @@ export function EventForm({
           onChange={(e) => set('address', e.target.value)}
         />
       </div>
+      <Directions v={v} errors={errors} set={set} />
       <div className="grid-2">
         <SelectField
           label={t('Kategorie')}
@@ -551,6 +587,26 @@ export function EventForm({
                 checked={v.rsvp_guests}
                 onChange={(x) => set('rsvp_guests', x)}
               />
+              <Checkbox
+                label={t('Antwort „Vielleicht“ erlauben')}
+                checked={v.rsvp_maybe}
+                onChange={(x) => set('rsvp_maybe', x)}
+              />
+              <Checkbox
+                label={t('Bemerkung erlauben')}
+                checked={v.rsvp_note}
+                onChange={(x) => set('rsvp_note', x)}
+              />
+              {v.rsvp_note && (
+                <Field
+                  label={t('Eigene Frage zur Bemerkung (optional)')}
+                  placeholder={t('z. B. Essenswunsch?')}
+                  maxLength={200}
+                  value={v.rsvp_note_question}
+                  error={errors.rsvp_note_question}
+                  onChange={(e) => set('rsvp_note_question', e.target.value)}
+                />
+              )}
             </>
           )}
         </fieldset>
@@ -648,5 +704,73 @@ export function EventForm({
         )}
       </div>
     </form>
+  )
+}
+
+/** Anfahrt: Hinweise und auf Wunsch ein genauer Punkt (eingeklappt, wenn leer). */
+function Directions({
+  v,
+  errors,
+  set,
+}: {
+  v: Values
+  errors: Partial<Record<string, string>>
+  set: <K extends keyof Values>(key: K, value: Values[K]) => void
+}) {
+  const [link, setLink] = useState('')
+  const [linkError, setLinkError] = useState('')
+  const filled = !!(v.directions || v.latitude || v.longitude)
+  function take(text: string) {
+    setLink(text)
+    if (!text.trim()) return setLinkError('')
+    const point = pointFromLink(text)
+    if (!point) return setLinkError(t('In diesem Link steht kein Punkt.'))
+    setLinkError('')
+    set('latitude', String(point.latitude))
+    set('longitude', String(point.longitude))
+    setLink('')
+  }
+  return (
+    <details className="subcard stack-sm" open={filled}>
+      <summary>{t('Anfahrt')}</summary>
+      <label className="field">
+        <span>{t('Anfahrt und Hinweise (optional)')}</span>
+        <textarea
+          rows={2}
+          value={v.directions}
+          maxLength={1000}
+          placeholder={t('z. B. Parken am Sportplatz, Eingang über den Hof')}
+          onChange={(e) => set('directions', e.target.value)}
+        />
+      </label>
+      <p className="muted small">
+        {t(
+          'Ohne genauen Punkt führen die Kartenlinks zur Anschrift. Einen Punkt brauchst du nur, wenn die Anschrift nicht reicht, etwa für ein Festzelt.',
+        )}
+      </p>
+      <div className="grid-3">
+        <Field
+          label={t('Breite')}
+          inputMode="decimal"
+          value={v.latitude}
+          error={errors.latitude}
+          onChange={(e) => set('latitude', e.target.value)}
+        />
+        <Field
+          label={t('Länge')}
+          inputMode="decimal"
+          value={v.longitude}
+          error={errors.longitude}
+          onChange={(e) => set('longitude', e.target.value)}
+        />
+        <Field
+          label={t('Punkt aus Kartenlink übernehmen')}
+          placeholder={t('Link aus OpenStreetMap oder Google Maps')}
+          value={link}
+          error={linkError}
+          onChange={(e) => take(e.target.value)}
+        />
+      </div>
+    </details>
   )
 }

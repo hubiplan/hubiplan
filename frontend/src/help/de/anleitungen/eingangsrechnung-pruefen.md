@@ -9,7 +9,8 @@ stichworte: [E-Rechnung, XRechnung, ZUGFeRD, Eingangsrechnung, Freigabe]
 ---
 
 1. Öffne den [Rechnungseingang](/finanzen/rechnungen/eingang).
-2. Importiere die XML-Rechnung oder das ZUGFeRD-PDF.
+2. Importiere die XML-Rechnung oder das ZUGFeRD-PDF. Warte, bis statt **Wird geprüft**
+   das Ergebnis der technischen Prüfung erscheint (meist unter einer Minute).
 3. Öffne die **Lesbare Ansicht** und prüfe Empfänger, Leistung, Betrag und Bankverbindung.
 4. Trage einen Prüfvermerk ein.
 5. Wähle **Fachlich freigeben** oder **Ablehnen**.

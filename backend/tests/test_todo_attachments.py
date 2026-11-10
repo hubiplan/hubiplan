@@ -233,8 +233,10 @@ def test_einheitsexport_und_import_uebernehmen_nur_berechtigte_dateien(api, boar
         assert attachment.file.storage.is_encrypted(attachment.file.name)
 
 
-def test_virenpruefung_blockiert_upload(api, board_a, orgs, settings):
+def test_virenpruefung_aus_haelt_anhang_in_quarantaene(api, board_a, orgs, settings):
+    """Gesamtaudit 10.11., Fachfrage 2: Scanner aus → angenommen, aber gesperrt."""
     from core import virenscan
+    from core.models import QuarantinedFile
 
     todo = create(api, board_a, orgs["a"])
     settings.CLAMD_SOCKET = "/test/clamd"
@@ -242,5 +244,8 @@ def test_virenpruefung_blockiert_upload(api, board_a, orgs, settings):
         patch("core.virenscan.Stream", side_effect=virenscan.ScanError("nicht erreichbar")),
         patch("core.virenscan._alert"),
     ):
-        assert add(api, board_a, orgs["a"], todo).status_code == 503
-    assert not TodoAttachment.objects.exists()
+        assert add(api, board_a, orgs["a"], todo).status_code == 201
+    attachment = TodoAttachment.objects.get()
+    assert QuarantinedFile.objects.get().name == attachment.file.name
+    response = api(board_a).get(f"{endpoint(orgs['a'], todo)}{attachment.pk}/")
+    assert response.status_code == 423

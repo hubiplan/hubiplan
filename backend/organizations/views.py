@@ -700,7 +700,12 @@ class PlatformUpdateView(APIView):
                 "update": update_check.available(),
                 "selfupdate": update_check.selbstupdate_status(),
                 # Hinweis für den Betreiber, wenn Weitergegebenes ungeprüft bleibt (F-02)
-                "virus_scan": {"enabled": virenscan.enabled(), "required": virenscan.required()},
+                "virus_scan": {
+                    "enabled": virenscan.enabled(),
+                    "required": virenscan.required(),
+                    # Eingehende Dateien in Quarantäne (Gesamtaudit 10.11., Fachfrage 2)
+                    "quarantine": virenscan.counts(),
+                },
             }
         )
 

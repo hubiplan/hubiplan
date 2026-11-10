@@ -16,11 +16,19 @@ You can tell an event’s category not only by its colour: every event has a lig
 
 In an open event, the block **For this event** shows what belongs to it: the meeting, volunteer duty rosters, booked rooms and equipment, tasks and the music performance. From there you also create a duty roster or a booking for the event. You only see areas whose module is switched on and for which you have the right. Events, meetings, volunteer duties and tasks are grouped together in the sidebar under “Planning”.
 
+**Write a circular about it** creates a draft to those invited. It contains title, time, place, description and the reply deadline, and the event's PDF attachments go along as attachments. In the circular you can pick only those invited with **no reply yet**, **accepted** or **declined**, for example for a reminder. All circulars for the event are then listed in the block. **Reminder to everyone without a reply** creates such a draft right away to everyone who has not replied yet (and, if “Maybe” is allowed, to those as well). You see the replies in the event's participant list.
+
 The event dialog first asks for title, time and place, then category and **Who sees the event?**. Rarely used options are folded under **More settings**: **Pass on upwards**, **Pass on downwards** and **Hide end time on the website**. If one of them is set, the section is open. The header and the save bar stay in place while you scroll in the dialog.
+
+Under **Directions** you enter notes such as parking or the entrance. Without further details the links **Route in OpenStreetMap** and **Route in Google Maps** lead to the address. If the address is not enough (marquee, shooting range in the woods), enter **Latitude** and **Longitude** or paste a link from OpenStreetMap or Google Maps under **Take point from map link**. Directions and route links appear in the event, in the emails, on the reply page and in the calendar subscription; no map is embedded. If you pick a saved place, the event copies its address, directions and point.
 
 When creating or editing an event, enable **Hide end time on the website** to show only the start time publicly. The internal calendar and calendar subscription keep the end time. For recurring events, the setting applies to all occurrences.
 
 After successfully accepting, declining or withdrawing your response, a confirmation is provided as a status message for screen readers. Focus stays at the action when accepting or declining; after withdrawal it moves to **Accept**. An error produces no success confirmation; you can retry your response.
+
+For replies to an event you can switch on **Allow “Maybe” as an answer**. “Maybe” does not count against the maximum number, but the reminder before the event also goes to these members. **Allow a comment** is on by default; with **Own question for the comment (optional)** (e.g. “Meal preference?”) it appears above the field instead of “Comment”. The participant list and the export show “Maybe” and the comments.
+
+Every email about the event (invitation, reminder, circular about the event) contains a personal link “Accept or decline (without login)” for each member. It opens a page with time, place, description and attachments; there the member chooses “I am coming”, “Maybe” or “I am not coming” and saves. Just opening the link saves nothing. The same link lets them change the answer until the deadline, as do the member area and the app. The invitation carries the event's attachments directly as email attachments (up to 5 files, 10 MB each); larger ones are on the page behind the link.
 
 Create a personal calendar-subscription link for your own calendar app. Keep it private. Creating a new link invalidates the previous link. A status confirms when your link is ready.
 

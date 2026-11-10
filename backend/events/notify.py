@@ -16,7 +16,7 @@ from core.tenancy import rls_bypass
 from organizations.addresses import base_url
 from outbox import mail
 
-from . import rsvp
+from . import maps, rsvp, rsvp_link
 from .models import Event, EventResponse
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,15 @@ def when(event: Event) -> str:
     return f"{start:%d.%m.%Y}, {start:%H:%M} Uhr bis {end:%d.%m.%Y}, {end:%H:%M} Uhr"
 
 
-def body(event: Event, kind: str, first_name: str, response: EventResponse | None) -> str:
+def body(
+    event: Event,
+    kind: str,
+    first_name: str,
+    response: EventResponse | None,
+    link: str = "",
+    attached: list[str] | None = None,
+    skipped: list[str] | None = None,
+) -> str:
     owner = event.department.name if event.department_id else event.organization.name
     intro = {
         INVITE: f"{owner} lädt Sie zu folgendem Termin ein:",
@@ -57,6 +65,8 @@ def body(event: Event, kind: str, first_name: str, response: EventResponse | Non
     lines = [f"Hallo {first_name},", "", intro, "", event.title, f"Wann: {when(event)}"]
     if event.location or event.address:
         lines.append(f"Wo: {', '.join(x for x in (event.location, event.address) if x)}")
+    if kind != CANCEL:
+        lines += maps.mail_lines(event)
     if kind == CANCEL and event.cancel_note:
         lines.append(f"Hinweis: {event.cancel_note}")
     if event.description and kind in (INVITE, REMIND):
@@ -70,8 +80,16 @@ def body(event: Event, kind: str, first_name: str, response: EventResponse | Non
             if event.rsvp_deadline:
                 deadline = timezone.localtime(event.rsvp_deadline)
                 lines.append(f"Rückmeldung bitte bis {deadline:%d.%m.%Y, %H:%M} Uhr.")
-            base = base_url(event.organization)
-            lines.append(f"Zu- oder absagen können Sie im Mitgliederbereich: {base}/termine")
+            if link:
+                lines.append(f"Zu- oder absagen (ohne Anmeldung): {link}")
+            else:
+                base = base_url(event.organization)
+                lines.append(f"Zu- oder absagen können Sie im Mitgliederbereich: {base}/termine")
+    if attached:
+        lines += ["", f"Anlagen: {', '.join(attached)}"]
+    if skipped:
+        where = "über den Link oben" if link else "im Mitgliederbereich"
+        lines.append(f"Weitere Anlagen ({', '.join(skipped)}) finden Sie {where}.")
     lines += ["", "Viele Grüße", owner]
     return "\n".join(lines) + "\n"
 
@@ -85,9 +103,10 @@ def recipients(event: Event, kind: str):
     """Mitgliedschaften, die die Mail bekommen."""
     members = rsvp.invited(event).prefetch_related("person__contacts")
     if kind == REMIND and event.rsvp_enabled:
-        # Erinnert werden nur, die zugesagt haben
+        # Erinnert werden nur, die zugesagt haben oder noch unsicher sind
         members = members.filter(
-            event_responses__event=event, event_responses__status=EventResponse.Status.YES
+            event_responses__event=event,
+            event_responses__status__in=[EventResponse.Status.YES, EventResponse.Status.MAYBE],
         )
     elif kind in (CHANGE, CANCEL) and event.rsvp_enabled:
         # Absager brauchen keine Nachricht
@@ -106,6 +125,9 @@ def send(event_id: int, kind: str) -> int:
         if event is None or kind not in KINDS:
             return 0
         responses = {r.membership_id: r for r in event.responses.all()}
+        with_link = rsvp_link.offers_link(event) and kind != CANCEL
+        # Anhänge gehen mit der Einladung mit (wie bei Rundschreiben)
+        stored, skipped = rsvp_link.mail_attachments(event) if kind == INVITE else ([], [])
         sent = 0
         for membership in recipients(event, kind):
             address = rsvp.email_of(membership)
@@ -114,14 +136,60 @@ def send(event_id: int, kind: str) -> int:
             ok = mail.send(
                 address,
                 subject(event, kind),
-                body(event, kind, membership.person.first_name, responses.get(membership.pk)),
+                body(
+                    event,
+                    kind,
+                    membership.person.first_name,
+                    responses.get(membership.pk),
+                    link=rsvp_link.url(event, membership.pk) if with_link else "",
+                    attached=[a["name"] for a in stored],
+                    skipped=skipped,
+                ),
                 organization=event.organization,
                 kind="termin",
+                stored_attachments=stored or None,
                 fail_silently=True,
             )
             sent += int(ok)
+        if kind in (INVITE, REMIND):
+            try:
+                push_app(event, kind, [m.pk for m in recipients(event, kind)])
+            except Exception:  # Push ist Zugabe: Mails sind schon unterwegs
+                logger.exception("Push zum Termin %s gescheitert", event_id)
     logger.info("Termin %s: %s Mails (%s)", event_id, sent, kind)
     return sent
+
+
+def push_app(event: Event, kind: str, membership_ids: list[int]) -> int:
+    """Einladung oder Erinnerung auch als Push an die App (mit Zu- und Absage)."""
+    from devices.push import app_accesses, send_to_user
+    from portal.models import PortalAccess
+
+    accesses = app_accesses(membership_ids)
+    if not accesses:
+        return 0
+    users = dict(PortalAccess.objects.filter(pk__in=accesses.values()).values_list("pk", "user_id"))
+    where = ", ".join(x for x in (event.location, event.address) if x)
+    text = when(event) + (f" · {where}" if where else "")
+    base = {
+        "v": 1,
+        "t": "event",
+        "id": event.pk,
+        "kind": kind,
+        "title": subject(event, kind)[:200],
+        "text": text[:300],
+        "from": event.department.name if event.department_id else event.organization.name,
+    }
+    if rsvp_link.offers_link(event):
+        base["rsvp"] = True
+        if event.rsvp_maybe:
+            base["maybe"] = True
+    pushed = 0
+    for access_id in accesses.values():
+        user_id = users.get(access_id)
+        if user_id:
+            pushed += int(send_to_user(user_id, {**base, "access": access_id}) > 0)
+    return pushed
 
 
 def due_reminders(now: datetime.datetime | None = None) -> list[int]:

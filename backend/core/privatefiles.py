@@ -133,8 +133,14 @@ def org_id_of(instance) -> int | None:
 
 class PrivateFieldFile(FieldFile):
     def save(self, name, content, save=True):
-        with crypto.owner(org_id_of(self.instance)):
+        org_id = org_id_of(self.instance)
+        with crypto.owner(org_id):
             super().save(name, content, save)
+        from . import virenscan
+
+        if virenscan.upload_held(content):
+            # Scanner beim Hochladen nicht erreichbar: gesperrt bis zur Nachprüfung
+            virenscan.hold(self.name, org_id, getattr(content, "name", "") or self.name)
 
 
 class PrivateFileField(models.FileField):

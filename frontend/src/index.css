@@ -5293,25 +5293,8 @@ label:has(> .file-input:focus-visible) {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-.home-grid > .card,
-.home-figures .home-figure {
+.home-grid > .card {
   max-width: none;
-}
-.home-figures .tiles-figures {
-  max-width: none;
-}
-.home-figure {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  color: inherit;
-  text-decoration: none;
-}
-.home-figure .amount-big {
-  margin: 0;
-}
-.home-figure-label {
-  font-weight: 600;
 }
 .home-notice-list > li + li {
   margin-top: 0.5rem;
@@ -5386,4 +5369,42 @@ label:has(> .file-input:focus-visible) {
   flex-wrap: wrap;
   gap: 0.25rem 1.5rem;
   margin-bottom: 0.75rem;
+}
+
+/* Ortsfeld mit gespeicherten Orten (components/PlaceField.tsx) */
+.place-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.place-field .place-save {
+  align-self: flex-start;
+}
+
+/* Rückmeldeseite hinter dem Link aus der Mail */
+.rsvp-public-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+.rsvp-public-facts dt {
+  font-weight: 600;
+}
+
+.rsvp-public-facts dd {
+  margin: 0;
+}
+
+.rsvp-public-text {
+  white-space: pre-wrap;
+}
+
+.route-links {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
 }

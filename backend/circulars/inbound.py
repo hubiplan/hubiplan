@@ -384,11 +384,9 @@ def extract(msg: EmailMessage) -> Extracted:
         if len(result.pdfs) >= MAX_ATTACHMENTS:
             result.skipped.append(f"{name} (höchstens {MAX_ATTACHMENTS} Anhänge)")
             continue
-        try:
-            clean = virenscan.inbound_ok(data, name, "Mail an Verteiler")
-        except virenscan.ScanUnavailable:
-            result.error = "Die Virenprüfung ist gerade nicht erreichbar."
-            return result
+        # Scanner aus: ScanUnavailable geht weiter, die Mail bleibt ungelesen im
+        # Sammelpostfach (Quarantäne) und wird beim nächsten Abruf erneut verarbeitet
+        clean = virenscan.inbound_ok(data, name, "Mail an Verteiler")
         if not clean:
             result.skipped.append(f"{name} (Schadsoftware gefunden)")
             continue
@@ -978,6 +976,11 @@ def fetch_inbound() -> int:
                         process_message(raw)
                     flag = "(\\Deleted)"
                     done += 1
+                except virenscan.ScanUnavailable:
+                    # Anhänge nicht prüfbar: Mail bleibt ungelesen liegen (Quarantäne im
+                    # Postfach), bis der Scanner wieder antwortet. Weitere Mails später.
+                    logger.warning("Verteiler: Virenprüfung aus, Mail %s bleibt liegen", uid)
+                    break
                 except Exception:  # noqa: BLE001
                     # Bleibt (gelesen) im Postfach, damit man sie sich ansehen kann
                     logger.exception("Verteiler: Mail %s nicht verarbeitet", uid)

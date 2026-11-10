@@ -5354,6 +5354,12 @@ msgstr ""
 msgid "Zu prüfen"
 msgstr "To review"
 
+msgid "Wird geprüft"
+msgstr "Checking"
+
+msgid "Geprüft"
+msgstr "Checked"
+
 msgid "Freigegeben"
 msgstr "Approved"
 
@@ -9480,29 +9486,64 @@ msgstr "Import bank statement for {month}"
 msgid "{account}: eingelesen bis {date}"
 msgstr "{account}: imported up to {date}"
 
-msgid "Barkasse heute"
-msgstr "Cash box today"
+msgid "Anfahrt und Hinweise"
+msgstr "Directions and notes"
 
-msgid "Stand {date}"
-msgstr "As of {date}"
+msgid "Breite"
+msgstr "Latitude"
 
-msgid "Konto laut letztem Auszug"
-msgstr "Account per last statement"
+msgid "Länge"
+msgstr "Longitude"
 
-msgid "Offene Beiträge"
-msgstr "Outstanding fees"
+msgid "Orte"
+msgstr "Places"
 
-msgid "Mitglieder heute"
-msgstr "Members today"
+msgid "Einen Ort mit diesem Namen gibt es schon."
+msgstr "A place with this name already exists."
 
-msgid "Datenänderungen offen"
-msgstr "Open data changes"
+msgid "Bitte Breite und Länge zusammen angeben."
+msgstr "Please enter latitude and longitude together."
 
-msgid "Nächste Versammlung"
-msgstr "Next meeting"
+msgid ""
+"Die Datei wartet noch auf die Virenprüfung und ist bis dahin gesperrt. Bitte "
+"später noch einmal versuchen."
+msgstr ""
+"The file is still waiting for the virus scan and is locked until then. Please "
+"try again later."
 
-msgid "Einladen bis"
-msgstr "Invite by"
+msgid ""
+"In der Datei wurde Schadsoftware gefunden. Sie ist gesperrt und kann nicht "
+"heruntergeladen werden."
+msgstr ""
+"Malware was found in the file. It is locked and cannot be downloaded."
+
+msgid ""
+"Die Datei „{name}“ ist zu groß für die Virenprüfung (höchstens {mb} MB)."
+msgstr "The file “{name}” is too large for the virus scan (at most {mb} MB)."
+
+msgid "zu groß für die Virenprüfung"
+msgstr "too large for the virus scan"
+
+msgid "wartet auf Prüfung"
+msgstr "waiting for scan"
+
+msgid "Schadsoftware gefunden"
+msgstr "malware found"
+
+msgid "Bei diesem Termin bitte zu- oder absagen."
+msgstr "For this event, please accept or decline."
+
+msgid "Vielleicht"
+msgstr "Maybe"
+
+msgid "Mail-Link"
+msgstr "Email link"
+
+msgid "Der Termin ist abgesagt."
+msgstr "The event has been cancelled."
+
+msgid "Der Anmeldeschluss ist vorbei."
+msgstr "The registration deadline has passed."
 
 msgid "Dieses Stück gibt es nicht."
 msgstr "This piece does not exist."

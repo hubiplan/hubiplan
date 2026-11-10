@@ -79,6 +79,10 @@ export function fakeApi(routes: Record<string, Handler>) {
         ? () => ({ status: 200, body: { items: [], documents: [] } })
         : undefined) ??
       (selectionKey === key ? undefined : routes[selectionKey]) ??
+      // Gespeicherte Orte: ohne eigene Angabe keine
+      (/^GET \/api\/(orgs|depts)\/\d+\/places\/$/.test(key)
+        ? () => ({ status: 200, body: { places: [], can_edit: false, can_manage: false } })
+        : undefined) ??
       // Leitung für die Live-Vorgabe in der App: ohne eigene Angabe keine
       (/^GET \/api\/orgs\/\d+\/music\/leaders\/\?/.test(key)
         ? () => ({ status: 200, body: [] })
@@ -110,25 +114,23 @@ export function fakeApi(routes: Record<string, Handler>) {
               : // Offene Aufgaben: ohne eigene Angabe keine
                 /^GET \/api\/orgs\/\d+\/open-tasks\/$/.test(key)
                 ? () => ({ status: 200, body: { items: [] } })
-                : // Kennzahlen der Startseite und Stand der Einrichtung: ohne eigene Angabe keine
-                  /^GET \/api\/(orgs|depts)\/\d+\/home-figures\/$/.test(key)
-                  ? () => ({ status: 200, body: { figures: [] } })
-                  : /^GET \/api\/orgs\/\d+\/setup-status\/$/.test(key)
-                    ? () => ({ status: 200, body: { items: {} } })
-                    : // Beitragsordnung, Gründungsurkunde (optional): ohne eigene Angabe keine
-                      /^GET \/api\/orgs\/\d+\/statutes\/\?(department=\d+&)?kind=(fee_rules|founding_deed)$/.test(
-                          key,
-                        )
-                      ? () => ({
-                          status: 200,
-                          body: {
-                            kind: key.endsWith('founding_deed') ? 'founding_deed' : 'fee_rules',
-                            versions: [],
-                            publication: { is_public: false, pdf_url: null, info_url: null },
-                            can_manage: false,
-                          },
-                        })
-                      : undefined)
+                : // Stand der Einrichtung: ohne eigene Angabe keiner
+                  /^GET \/api\/orgs\/\d+\/setup-status\/$/.test(key)
+                  ? () => ({ status: 200, body: { items: {} } })
+                  : // Beitragsordnung, Gründungsurkunde (optional): ohne eigene Angabe keine
+                    /^GET \/api\/orgs\/\d+\/statutes\/\?(department=\d+&)?kind=(fee_rules|founding_deed)$/.test(
+                        key,
+                      )
+                    ? () => ({
+                        status: 200,
+                        body: {
+                          kind: key.endsWith('founding_deed') ? 'founding_deed' : 'fee_rules',
+                          versions: [],
+                          publication: { is_public: false, pdf_url: null, info_url: null },
+                          can_manage: false,
+                        },
+                      })
+                    : undefined)
     if (!handler) throw new Error(`Unerwarteter Aufruf: ${key}`)
     const { status, body, headers } = handler(init)
     // 204 darf keinen Inhalt haben

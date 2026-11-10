@@ -15,6 +15,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from billing import einvoice_validator, einvoice_xml
+from billing.incoming_check import check_org
 from billing.models import (
     BusinessPartner,
     IncomingInvoice,
@@ -195,7 +196,21 @@ def test_import_original_duplicate_invalid_and_approval(c, base, payload, club):
     response = upload(xml)
     assert response.status_code == 201, response.content
     received = response.json()
+    # Die KoSIT-Prüfung läuft im Hintergrund, nicht in der Anfrage.
+    assert received["report"]["status"] == "pending", received
+    assert received["validation"] == "pending"
+    assert (
+        c.post(
+            f"{incoming}{received['id']}/review/",
+            {"status": "approved", "note": "Noch nicht geprüft"},
+            content_type=JSON,
+        ).status_code
+        == 400
+    )
+    assert check_org(club.pk) == 1
+    received = c.get(f"{incoming}{received['id']}/").json()
     assert received["report"]["status"] == "valid", received
+    assert received["validation"] == "done" and received["has_report"]
     assert received["status"] == "review" and received["booking"] is None
     assert upload(xml).json()["id"] == received["id"]
     assert c.get(f"{incoming}{received['id']}/download/").content == xml
@@ -206,7 +221,9 @@ def test_import_original_duplicate_invalid_and_approval(c, base, payload, club):
     )
     assert approved.status_code == 200, approved.content
     broken = upload(b"<Invoice>broken</Invoice>").json()
-    assert broken["report"]["status"] == "invalid"
+    check_org(club.pk)
+    broken = c.get(f"{incoming}{broken['id']}/").json()
+    assert broken["report"]["status"] == "invalid" and broken["validation"] == "done"
     assert (
         c.post(
             f"{incoming}{broken['id']}/review/",
@@ -287,6 +304,9 @@ def test_hybrid_cii_review_posting_history_and_export(c, club, setup, monkeypatc
     assert response.status_code == 201, response.content
     value = response.json()
     assert response.get("X-Change-Undoable", "0") == "0"
+    assert value["report"]["status"] == "pending" and value["data"]["payable"] == "119.00"
+    assert check_org(club.pk) == 1
+    value = c.get(f"{fin}/incoming/{value['id']}/").json()
     assert value["report"]["status"] == "valid", value["report"]
     assert value["data"]["payable"] == "119.00" and value["has_report"]
     path = f"{fin}/incoming/{value['id']}"
@@ -294,7 +314,9 @@ def test_hybrid_cii_review_posting_history_and_export(c, club, setup, monkeypatc
     assert c.get(f"{path}/download/").content == pdf
     original_report = c.get(f"{path}/download/?part=report_xml").content
     response = c.post(f"{path}/revalidate/", {}, content_type=JSON)
-    assert response.status_code == 200 and response.json()["report"]["status"] == "valid"
+    assert response.status_code == 200 and response.json()["report"]["status"] == "pending"
+    assert check_org(club.pk) == 1
+    assert c.get(f"{path}/").json()["report"]["status"] == "valid"
     with tenant_context(club.pk):
         check = IncomingValidation.objects.get(incoming_id=value["id"])
     assert c.get(f"{path}/download/?check={check.pk}").content == original_report

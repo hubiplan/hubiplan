@@ -934,12 +934,25 @@ hängt `docker-compose.clamav.yml` den Ordner schreibgeschützt in Backend und W
 hochgeladene Datei läuft dann während des Hochladens durch clamd:
 
 - Fund: Upload abgelehnt, Alarm-Mail „Schadsoftware beim Hochladen abgelehnt“.
-- clamd nicht erreichbar: Upload abgelehnt (Meldung „später noch einmal“), Alarm-Mail
-  höchstens einmal je Stunde. Nach einem Neustart oder Update des clamd ggf. `backend` und
-  `worker` neu starten, falls der Socket-Ordner neu angelegt wurde.
+- clamd nicht erreichbar, eingehende Dokumente (Dokumentenablage, Anhänge an Rundschreiben,
+  Terminen und Aufgaben, Kassenbelege, Satzung): angenommen, aber in **Quarantäne**
+  (Tabelle `core_quarantinedfile`). Die Datei lässt sich weder herunterladen noch
+  weitergeben (Antwort 423, Dokumentenablage zeigt „Wird auf Viren geprüft“). Der Dienst
+  `beat` prüft gesperrte Dateien alle 10 Minuten nach (`core.tasks.recheck_quarantine`):
+  sauber hebt die Sperre auf, ein Fund sperrt dauerhaft und schickt die Alarm-Mail
+  „Schadsoftware in Quarantäne gefunden“. Plattform › Version zeigt, wie viele Dateien warten
+  oder einen Fund haben (Gesamtaudit 10.11., Fachfrage 2).
+- clamd nicht erreichbar, andere Uploads (Importe, Bilder, E-Rechnungen): abgelehnt (Meldung
+  „später noch einmal“). Alarm-Mail in beiden Fällen höchstens einmal je Stunde. Nach einem
+  Neustart oder Update des clamd ggf. `backend` und `worker` neu starten, falls der
+  Socket-Ordner neu angelegt wurde.
+- Mails an Verteiler mit Anhängen bleiben bei ausgefallenem clamd ungelesen im
+  Sammelpostfach liegen und werden beim nächsten Abruf nach dem Ausfall verarbeitet. Dateien
+  aus dem Verbund werden abgewiesen und später erneut zugestellt.
 - Dateien über `CLAMD_MAX_BYTES` (Standard knapp 25 MB, die Grenze `StreamMaxLength` des
-  clamd) bleiben ungeprüft und stehen im Log. Die Einstellungen des clamd (HestiaCP) bleiben
-  unverändert.
+  clamd): Mit `VIRUS_SCAN_REQUIRED=1` lehnt HUBIplan eingehende Dokumente dieser Größe ab,
+  andere Uploads bleiben ungeprüft und stehen im Log. Die Einstellungen des clamd (HestiaCP)
+  bleiben unverändert.
 
 Vor der Weitergabe prüft HUBIplan noch einmal mit den dann aktuellen Signaturen
 (Fachfrage FQ16, Audit 02.11.): Anhänge eines Rundschreibens beim Versand und Dateien aus
@@ -951,7 +964,9 @@ anderes. Mit `VIRUS_SCAN_REQUIRED=0` in der `.env` geht Ungeprüftes wie früher
 und steht nur im Log.
 
 Ohne `CLAMD_SOCKET_DIR` (Testserver, Entwicklung) gibt es keine Prüfung. Plattform › Version
-zeigt dann einen Hinweis. Wer `CLAMD_SOCKET` ohne die Compose-Ergänzung setzt, bekommt
+zeigt dann einen Hinweis. Steht `VIRUS_SCAN_REQUIRED=1` ohne Scanner in der `.env`, gehen
+eingehende Dokumente in Quarantäne, bis ein Scanner eingerichtet ist, und Mails an Verteiler
+mit Anhängen bleiben im Postfach. Wer `CLAMD_SOCKET` ohne die Compose-Ergänzung setzt, bekommt
 `VIRUS_SCAN_REQUIRED=1` ebenfalls als Standard (Gesamtaudit 08.11., F-02).
 
 ## Alarm-Mails und Notfall
