@@ -1077,8 +1077,9 @@ class SiteView:
             ):
                 if t.kind != WebsiteText.Kind.UNIT or t.department_id in self.unit_slugs:
                     return image
-        if image.header:
-            return image  # Kopfbild der Webseite (Ralf 05.11.)
+        if image.pk == self.header_image_pk:
+            # Kopfbild der Webseite (Ralf 05.11.), in der Vorschau auch das des Entwurfs
+            return image
         # Galerie (Ralf 05.11.): Bilder und Titelbilder sichtbarer Alben
         from . import gallery
 
@@ -1086,9 +1087,21 @@ class SiteView:
             return image
         return None
 
+    @cached_property
+    def header_image_pk(self) -> int | None:
+        # Vorschau mit Entwurf (Website.apply_draft): das Kopfbild des Entwurfs
+        if hasattr(self.site, "draft_header_image"):
+            return self.site.draft_header_image
+        return (
+            WebsiteImage.objects.filter(website=self.site, header=True)
+            .values_list("pk", flat=True)
+            .first()
+        )
+
     def header_image(self) -> dict | None:
         """Kopfbild statt Wappen und Vereinsname (Ralf 05.11.)."""
-        image = WebsiteImage.objects.filter(website=self.site, header=True).first()
+        pk = self.header_image_pk
+        image = WebsiteImage.objects.filter(website=self.site, pk=pk).first() if pk else None
         data = self.image(image)
         if data is not None:
             # Das Bild ersetzt den Vereinsnamen: ohne eigenen Alternativtext steht er dort

@@ -53,6 +53,17 @@ org_patterns = [
         name="website-preview-link",
     ),
     path("website/preview/", views.PreviewOpenView.as_view(), name="website-preview"),
+    path(
+        "website/design/publish/", views.DesignPublishView.as_view(), name="website-design-publish"
+    ),
+    path(
+        "website/design/discard/", views.DesignDiscardView.as_view(), name="website-design-discard"
+    ),
+    path(
+        "website/design/versions/<int:pk>/restore/",
+        views.DesignRestoreView.as_view(),
+        name="website-design-restore",
+    ),
     path("website/held/", views.HeldListView.as_view(), name="website-held"),
     path("website/held/<int:pk>/", views.HeldDetailView.as_view(), name="website-held-message"),
     path("website/texts/", content_views.TextListView.as_view(), name="website-texts"),

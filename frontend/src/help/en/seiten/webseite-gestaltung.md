@@ -6,6 +6,10 @@ rechte: [website.manage, website.content]
 routen: [/webseite/gestaltung]
 stichworte:
   [
+    draft,
+    preview,
+    publish,
+    versions,
     design,
     colours,
     logo,
@@ -26,7 +30,11 @@ stichworte:
 
 Under Design you choose the look, colours and logo of the website. The colours usually come from the unit's appearance and can be adjusted here.
 
-Under **Fine-tuning** you adjust the chosen design without any programming. The settings are in six collapsible groups: font, page, cards/images/buttons, header and menu, home page and footer. Each setting has two or three fixed levels, for example corners “square”, “slight” or “round”; yes/no questions are switches. If no field is chosen, the website shows what the design provides. A second click on the chosen field resets the setting, **Reset** resets all of them. Whatever a design sets itself (such as the position of the coat of arms in the sidebar design) is greyed out. The coat of arms and the club name cannot both be hidden. The fonts are stored on the website itself (free licences); nothing is loaded from other servers. Check the result in the preview.
+Changes to design, colours, **Fine-tuning**, header image and home page (section **Layout**) are a draft first: visitors keep seeing the previous version. At the top you then see “Unpublished changes”. **Publish** makes the draft public, **Discard** undoes all changes. On a wide screen, a preview on the right shows the real website with the draft; it reloads after every change. At the top you choose **Phone**, **Tablet** or **Desktop**, **Reload** reconnects the preview, **In a new window** opens it full size. On narrow screens the **Preview** button opens the website in a new window. Anyone you gave a preview link can see the draft as well.
+
+Under **Earlier versions** you find the last five published designs. **Restore** turns one of them into a draft; it only goes live with **Publish**.
+
+Under **Fine-tuning** you adjust the chosen design without any programming. The settings are in six collapsible groups: font, page, cards/images/buttons, header and menu, home page and footer. Each setting has two or three fixed levels, for example corners “square”, “slight” or “round”; yes/no questions are switches. If no field is chosen, the website shows what the design provides. A second click on the chosen field resets the setting, **Reset** resets all of them. Whatever a design sets itself (such as the position of the coat of arms in the sidebar design) is greyed out. The coat of arms and the club name cannot both be hidden. The fonts are stored on the website itself (free licences); nothing is loaded from other servers.
 
 With **Header and menu** › **Background** › **Header image** you choose an image from the image library that appears at the top of the website instead of the coat of arms and club name, for example a banner with lettering. It should contain the club name and be wide, about 1200 × 300 pixels. Without a header image, or with the background “white” or “coloured”, the coat of arms and name stay.
 

@@ -72,6 +72,9 @@ class _Public(APIView):
             raise Http404
         self.visible = state == Website.State.PUBLIC or self.preview
         self.state = state
+        if self.preview:
+            # Vorschau zeigt den Entwurf der Gestaltung (G2); Besucher sehen ihn nie
+            website.apply_draft()
         if not self.visible and not self.maintenance_ok:
             raise Http404
         return SiteView(website, request.build_absolute_uri("/"))

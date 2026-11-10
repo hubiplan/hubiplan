@@ -188,6 +188,31 @@ export interface Website extends WebsiteSettings, WebsitePrivacy {
   design_colors?: Record<string, RoleColors>
   domains: WebsiteDomain[]
   preview_links: PreviewLink[]
+  /** Entwurf der Gestaltung: nur Abweichungen vom veröffentlichten Stand (fehlt bei älteren Ständen) */
+  draft?: DesignDraft
+  /** Frühere veröffentlichte Gestaltungen, neueste zuerst */
+  design_versions?: DesignVersion[]
+}
+
+/** Was der Entwurf umfasst (Konzept webseite-baukasten G2) */
+export const DRAFT_FIELDS = [
+  'design',
+  'color_roles',
+  'style',
+  'header_image',
+  'home_sections',
+] as const
+export type DraftField = (typeof DRAFT_FIELDS)[number]
+export type DesignDraft = Partial<Pick<WebsiteSettings, DraftField>>
+
+export function hasDraft(website: Website): boolean {
+  return Object.keys(website.draft ?? {}).length > 0
+}
+
+export interface DesignVersion {
+  id: number
+  published_at: string
+  published_by: string
 }
 
 export interface WebsiteData {
@@ -230,8 +255,12 @@ const base = (org: number) => `/api/orgs/${org}/website/`
 export const websiteApi = {
   get: (org: number) => api.get<WebsiteData>(base(org)),
   setup: (org: number) => api.post<WebsiteData>(base(org)),
-  save: (org: number, data: Partial<WebsiteSettings & WebsitePrivacy>) =>
+  save: (org: number, data: Partial<WebsiteSettings & WebsitePrivacy> & { draft?: DesignDraft }) =>
     api.put<WebsiteData>(base(org), data),
+  publishDesign: (org: number) => api.post<WebsiteData>(`${base(org)}design/publish/`),
+  discardDesign: (org: number) => api.post<WebsiteData>(`${base(org)}design/discard/`),
+  restoreDesign: (org: number, id: number) =>
+    api.post<WebsiteData>(`${base(org)}design/versions/${id}/restore/`),
   generatePrivacy: (org: number) => api.post<WebsiteData>(`${base(org)}privacy/generate/`),
   publishPrivacy: (org: number) => api.post<WebsiteData>(`${base(org)}privacy/publish/`),
   remove: (org: number) => api.del(base(org)),
