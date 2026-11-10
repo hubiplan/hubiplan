@@ -60,8 +60,8 @@ Stufen (`organizations/deletion.py`):
    Geschäftsjahr mit Finanzdaten der Einheit und ihrer Untereinheiten beide Fristen nach
    § 147 AO abgelaufen sind (wie oben: Belege 8, Bücher 10 Jahre ab der letzten Eintragung).
    Eine Löschsperre in einem Geschäftsjahr verhindert das Löschen. Bestätigt wird mit dem
-   Namen der Einheit, dem eigenen Passwort und gegebenenfalls dem Code der
-   Zwei-Faktor-Anmeldung; bei Finanzdaten zusätzlich mit der Angabe, wer die Fristen geprüft
+   Namen der Einheit und einem frischen Code der Zwei-Faktor-Anmeldung
+   (`accounts/step_up.py`); bei Finanzdaten zusätzlich mit der Angabe, wer die Fristen geprüft
    hat (Kassenprüfer oder Steuerberater). Die Angabe steht im Plattformprotokoll.
 
 Gelöschte Einheiten stehen auf der Löschliste (Kennung und Anlagezeitpunkt, keine Namen).
@@ -72,7 +72,7 @@ English: Units are deleted in two stages. Stage 1 deactivates the unit and its s
 schedules deletion; data is kept and the unit cannot be reactivated until the scheduling is
 withdrawn. Stage 2 is possible 30 days later at the earliest and only after the § 147 AO
 retention periods of every financial year have expired, without legal holds, confirmed with
-the unit name, password, two-factor code and the person who verified the periods. Deleted
+the unit name, a fresh two-factor code and the person who verified the periods. Deleted
 units go on the deletion list and are deleted again after an older backup is restored.
 
 ## Chronik und Ehrungen (FQ12)

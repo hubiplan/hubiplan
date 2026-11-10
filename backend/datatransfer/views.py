@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from access.catalog import CLUBS_MANAGE, DATA_EXPORT, DEPT_EXPORT, ORG_EDIT
+from accounts import step_up
 from audit.log import diff, record, snapshot
 from core import jobquota
 from core.api_base import OrgScopedMixin
@@ -235,6 +236,7 @@ class OrgExportView(OrgScopedMixin, APIView):
 
     @transaction.atomic
     def post(self, request, org_id: int):
+        step_up.require(request)
         data = ExportRequest(data=request.data)
         data.is_valid(raise_exception=True)
         values = data.validated_data
@@ -440,6 +442,7 @@ class PlatformExportView(APIView):
 
     @transaction.atomic
     def post(self, request):
+        step_up.require(request)
         data = ExportRequest(data=request.data)
         data.is_valid(raise_exception=True)
         subject = get_object_or_404(

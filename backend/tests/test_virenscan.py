@@ -104,14 +104,117 @@ def test_fund_wird_abgelehnt_und_gemeldet(clamd, api, board_fed, setup):
     assert any("Schadsoftware" in m.subject for m in mail.outbox)
 
 
-def test_clamd_aus_lehnt_ab(settings, tmp_path, api, board_fed, setup):
+def _version_url(resp) -> str:
+    return resp.json()["current"]["url"]
+
+
+def test_clamd_aus_quarantaene(settings, tmp_path, api, board_fed, setup):
+    """Gesamtaudit 10.11., Fachfrage 2: Scanner aus → Datei angenommen, aber gesperrt,
+    bis die Nachprüfung sie sauber findet."""
+    from core.models import QuarantinedFile
+
     settings.CLAMD_SOCKET = str(tmp_path / "fehlt.ctl")
+    mail.outbox.clear()
     resp = _upload(api, board_fed, setup, pdf())
-    assert resp.status_code == 503
+    assert resp.status_code == 201, resp.json()
+    assert resp.json()["current"]["scan"] == "pending"
+    held = QuarantinedFile.objects.get()
+    assert held.status == "pending"
+    c = api(board_fed)
+    assert c.get(_version_url(resp)).status_code == 423
+    # Scanner weiter aus: bleibt gesperrt
+    assert virenscan.recheck_quarantine()["waiting"] == 1
+    fake = FakeClamd(tmp_path / "wieder.ctl")
+    try:
+        settings.CLAMD_SOCKET = fake.path
+        assert virenscan.recheck_quarantine()["released"] == 1
+    finally:
+        fake.close()
+    assert fake.scanned == [b"%PDF-1.4 erfundenes Protokoll"]
+    assert not QuarantinedFile.objects.exists()
+    assert c.get(_version_url(resp)).status_code == 200
+
+
+def test_fund_in_quarantaene_bleibt_gesperrt(settings, tmp_path, api, board_fed, setup):
+    from core.models import QuarantinedFile
+
+    settings.SECURITY_ALERTS = True
+    settings.SECURITY_ALERT_EMAIL = "alarm@example.org"
+    settings.CLAMD_SOCKET = str(tmp_path / "fehlt.ctl")
+    resp = _upload(api, board_fed, setup, SimpleUploadedFile("r.pdf", b"%PDF-1.4 " + EICAR))
+    assert resp.status_code == 201, resp.json()
+    fake = FakeClamd(tmp_path / "wieder.ctl")
+    mail.outbox.clear()
+    try:
+        settings.CLAMD_SOCKET = fake.path
+        assert virenscan.recheck_quarantine()["infected"] == 1
+    finally:
+        fake.close()
+    held = QuarantinedFile.objects.get()
+    assert held.status == "infected" and "Eicar" in held.signature
+    assert any("Quarantäne" in m.subject for m in mail.outbox)
+    response = api(board_fed).get(_version_url(resp))
+    assert response.status_code == 423
+    assert "Schadsoftware" in response.json()["detail"]
+
+
+def test_pflicht_ohne_scanner_haelt_zurueck(settings, api, board_fed, setup):
+    from core.models import QuarantinedFile
+
+    settings.CLAMD_SOCKET = ""
+    settings.VIRUS_SCAN_REQUIRED = True
+    resp = _upload(api, board_fed, setup, pdf())
+    assert resp.status_code == 201, resp.json()
+    assert QuarantinedFile.objects.count() == 1
+    assert api(board_fed).get(_version_url(resp)).status_code == 423
+
+
+def test_zu_gross_mit_pflicht_abgelehnt(clamd, settings, api, board_fed, setup):
+    settings.CLAMD_MAX_BYTES = 10
+    settings.VIRUS_SCAN_REQUIRED = True
+    resp = _upload(api, board_fed, setup, pdf())
+    assert resp.status_code == 422
+    assert "zu groß" in resp.json()["detail"]
+
+
+def test_quarantaene_nur_wo_erlaubt():
+    """Andere Uploads (Importe, Bilder) lehnen bei ausgefallenem Scanner weiter ab."""
+    from types import SimpleNamespace
+
+    from documents.views import _FolderDocuments
+
+    class Ohne:
+        pass
+
+    def request(cls):
+        func = SimpleNamespace(cls=cls)
+        return SimpleNamespace(resolver_match=SimpleNamespace(func=func))
+
+    assert virenscan.quarantine_allowed(request(_FolderDocuments))
+    assert not virenscan.quarantine_allowed(request(Ohne))
+    assert not virenscan.quarantine_allowed(SimpleNamespace())
+
+
+def test_weitergabe_hebt_quarantaene_nach_pruefung_auf(clamd, settings):
+    from django.core.cache import cache
+    from django.core.files.base import ContentFile
+
+    from core.models import QuarantinedFile
+
+    cache.clear()
+    QuarantinedFile.objects.create(name="x/a.pdf")
+    file = ContentFile(b"harmlos", name="x/a.pdf")
+    settings.CLAMD_SOCKET = ""
+    with pytest.raises(virenscan.Quarantined):
+        virenscan.release_ok(file, "a.pdf", "Test", key="q:1")
+    settings.CLAMD_SOCKET = clamd.path
+    virenscan.release_ok(file, "a.pdf", "Test", key="q:1")
+    assert not QuarantinedFile.objects.exists()
 
 
 def test_zu_gross_bleibt_ungeprueft(clamd, settings, api, board_fed, setup):
     settings.CLAMD_MAX_BYTES = 10
+    settings.VIRUS_SCAN_REQUIRED = False
     resp = _upload(api, board_fed, setup, pdf())
     assert resp.status_code == 201, resp.json()
     assert clamd.scanned == []
@@ -149,6 +252,43 @@ def test_inbound_ok_mail_anhang(clamd):
     result = extract(msg)
     assert [name for name, _ in result.pdfs] == ["a.pdf"]
     assert any("b.pdf" in s and "Schadsoftware" in s for s in result.skipped)
+
+
+def test_mail_bleibt_bei_scanner_ausfall_liegen(settings, tmp_path):
+    """Fachfrage 2 (10.11.): Anhänge nicht prüfbar → Mail bleibt ungelesen im Postfach."""
+    from email.message import EmailMessage
+    from unittest import mock
+
+    from circulars import inbound
+    from circulars.models import InboundMail
+
+    settings.CLAMD_SOCKET = str(tmp_path / "fehlt.ctl")
+    msg = EmailMessage()
+    msg["Subject"] = "Rundschreiben"
+    msg["From"] = "vorstand@example.org"
+    msg.set_content("Hallo zusammen")
+    msg.add_attachment(b"%PDF-1.4 sauber", maintype="application", subtype="pdf", filename="a.pdf")
+    with pytest.raises(virenscan.ScanUnavailable):
+        inbound.extract(msg)
+
+    settings.INBOUND_IMAP_HOST = "imap.example.org"
+    imap = mock.MagicMock()
+    imap.__enter__.return_value = imap
+    imap.uid.side_effect = lambda cmd, *args: {
+        "search": ("OK", [b"7 8"]),
+        "fetch": ("OK", [(b"7 (BODY[] {1}", msg.as_bytes()), b")"]),
+        "store": ("OK", [b""]),
+    }[cmd]
+    with (
+        mock.patch("circulars.inbound.imaplib.IMAP4_SSL", return_value=imap),
+        mock.patch("circulars.inbound._process", side_effect=virenscan.ScanUnavailable()),
+    ):
+        assert inbound.fetch_inbound() == 0
+    stores = [c for c in imap.uid.call_args_list if c.args[0] == "store"]
+    # Nur Inhaltsabrufe zählen; vorher fragt der Abruf die Größe ab (Gesamtaudit 10.11. S03)
+    fetches = [c for c in imap.uid.call_args_list if c.args[0] == "fetch" and "BODY" in c.args[-1]]
+    assert stores == [] and [c.args[1] for c in fetches] == [b"7"]
+    assert not InboundMail.objects.exists()
 
 
 # --- Fachfrage FQ16: vor der Weitergabe noch einmal prüfen ---

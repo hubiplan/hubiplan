@@ -9,3 +9,28 @@ def archive_invoices() -> int:
     from .archive import archive_missing
 
     return archive_missing()
+
+
+# Java-Prüfung je Eingang bis EINVOICE_VALIDATOR_BACKGROUND_TIMEOUT; je Lauf höchstens 50
+@shared_task(soft_time_limit=3 * 60 * 60, time_limit=3 * 60 * 60 + 60)
+def check_incoming(org_id: int) -> int:
+    """Eingehende E-Rechnungen eines Vereins technisch prüfen (Gesamtaudit 10.11., S05)."""
+    from .incoming_check import check_org
+
+    return check_org(org_id)
+
+
+@shared_task(soft_time_limit=3 * 60 * 60, time_limit=3 * 60 * 60 + 60)
+def check_incoming_all() -> int:
+    """Liegengebliebene Prüfungen nachholen (jede Minute)."""
+    from .incoming_check import check_all
+
+    return check_all()
+
+
+@shared_task
+def purge_rejected_incoming() -> int:
+    """Abgelehnte und nicht lesbare Eingangsrechnungen nach 90 Tagen löschen (täglich)."""
+    from .incoming_check import purge_rejected
+
+    return purge_rejected()

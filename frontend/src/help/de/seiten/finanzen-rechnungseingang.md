@@ -12,6 +12,11 @@ auch bei fehlerhaften Rechnungen. Ein erneuter Import derselben Datei erzeugt ke
 zweiten Eingang. Andere Dateien mit derselben Rechnungsnummer musst du selbst auf
 Dubletten prüfen.
 
+Die technische Prüfung (KoSIT) läuft nach dem Import im Hintergrund. Bis sie fertig ist,
+steht beim Eingang **Wird geprüft**; das dauert meist unter einer Minute, die Seite
+aktualisiert sich selbst. Abgelehnte Eingänge und Dateien, die keine lesbare E-Rechnung
+enthalten, löscht HUBIplan nach 90 Tagen, wenn keine Buchung zugeordnet ist.
+
 Der Prüfbericht bezieht sich auf die XML-Daten. Die PDF/A-Eigenschaften und die
 Übereinstimmung eines fremden PDF-Sichtteils mit dem XML werden nicht bestätigt.
 Nutze die **Lesbare Ansicht** der strukturierten Daten zur Prüfung.

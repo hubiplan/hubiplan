@@ -40,17 +40,22 @@ def test_unicode_und_feste_sortierregel():
 
 def test_suche_erhaelt_oder_mit_email_nummern_und_woertern(orgs):
     anna = make_member(orgs["a"], "Anna", "Müller", email="kontakt@example.org")
-    make_member(orgs["a"], "Bernd", "Anders", email="anna@example.org")
+    bernd = make_member(orgs["a"], "Bernd", "Anders", email="anna@example.org")
     make_member(orgs["b"], "Anna", "Müller")
     with rls_bypass():
         anna.club_number = "ABC-17"
         anna.save(update_fields=["club_number"])
-        for search in ("anna kontakt", "ABC-17", "Mu\u0308ller", "Anna Müller"):
+        for search in ("anna kontakt@example.org", "ABC-17", "Mu\u0308ller", "Anna Müller"):
             found = filter_members(member_queryset(orgs["a"]), {"suche": search}, orgs["a"])
             assert list(found.values_list("pk", flat=True)) == [anna.pk]
-        # Ein Wort darf über E-Mail treffen, auch wenn es im Namen nicht vorkommt.
+        # Ein Wort darf über E-Mail treffen, auch wenn es im Namen nicht vorkommt, aber
+        # nur als ganze Adresse oder ab dem @ (Gesamtaudit 10.11., Fachfrage 8).
         found = filter_members(member_queryset(orgs["a"]), {"suche": "anna"}, orgs["a"])
-        assert found.count() == 2
+        assert list(found.values_list("pk", flat=True)) == [anna.pk]
+        found = filter_members(member_queryset(orgs["a"]), {"suche": "anna@example.org"}, orgs["a"])
+        assert list(found.values_list("pk", flat=True)) == [bernd.pk]
+        found = filter_members(member_queryset(orgs["a"]), {"suche": "@example.org"}, orgs["a"])
+        assert {anna.pk, bernd.pk} <= set(found.values_list("pk", flat=True))
 
 
 def test_varianten_und_limit_erst_nach_suche(orgs):
@@ -284,3 +289,28 @@ def test_leistungsmessung_5000_mitgliedschaften(orgs):
         elapsed = (time.perf_counter() - started) * 1000
         print(f"Sortierung 5000 / zwei tatsächlich verschlüsselte Spalten: {elapsed:.1f} ms")
         # Kein harter Zeitgrenzwert: geteilte Testplätze liefern keine stabile Last.
+
+
+def test_seitenschnitt_vor_der_positionsliste(api, orgs, board_c, monkeypatch):
+    """Gesamtaudit 10.11. P01: gleiche Treffer, Zahl und Reihenfolge; nur die Seite geht
+    mit ihrer Position an Postgres."""
+    from members import personsearch
+
+    for first, last in [("Ida", "Zorn"), ("Ute", "Äcker"), ("Max", "Adler"), ("Eva", "Berg")]:
+        make_member(orgs["c"], first, last)
+    base = f"/api/orgs/{orgs['c'].pk}/members/"
+    full = api(board_c).get(base).json()
+    names = [row["last_name"] for row in full["results"]]
+    assert full["count"] >= 4
+    sizes = []
+    original = personsearch._by_position
+
+    def spy(qs, ids):
+        sizes.append(len(ids))
+        return original(qs, ids)
+
+    monkeypatch.setattr(personsearch, "_by_position", spy)
+    page = api(board_c).get(base + "?page_size=2&page=2").json()
+    assert page["count"] == full["count"]
+    assert [row["last_name"] for row in page["results"]] == names[2:4]
+    assert sizes == [2]

@@ -12,6 +12,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from access.catalog import ROLES_VIEW
+from accounts import step_up
 from accounts.models import User
 from audit.log import diff, record, snapshot, type_label
 from audit.models import AuditEntry
@@ -69,6 +70,10 @@ class RoleViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.ModelVi
 
     @transaction.atomic
     def perform_update(self, serializer):
+        # Neue Rechte für eine Rolle wirken wie eine Rollenvergabe an ihre Inhaber
+        perms = serializer.validated_data.get("permissions")
+        if perms is not None and set(perms) != set(serializer.instance.permissions or []):
+            step_up.require(self.request)
         with _keeps_roles_manage(self.request.user, self.org):
             super().perform_update(serializer)
 
@@ -192,6 +197,7 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
 
     @transaction.atomic
     def perform_create(self, serializer):
+        step_up.require(self.request)
         # „Vorgänger beenden“ darf die eigene Rollenverwaltung nicht beenden
         with _keeps_roles_manage(self.request.user, self.org):
             super().perform_create(serializer)
@@ -200,6 +206,7 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
     def perform_update(self, serializer):
         # Auch Zeitraum oder Rolle der eigenen Zuordnung ändern darf die eigene
         # Rollenverwaltung nicht beenden (wie beim Löschen).
+        step_up.require(self.request)
         with _keeps_roles_manage(self.request.user, self.org):
             super().perform_update(serializer)
 
@@ -289,6 +296,7 @@ class AssignmentViewSet(_OrgContextMixin, OrgScopedMixin, AuditMixin, viewsets.M
                     )
                 }
             )
+        step_up.require(request)
         if not RoleAssignment.objects.active().filter(pk=assignment.pk).exists():
             raise serializers.ValidationError(
                 {"detail": gettext("Die Rolle ist nicht mehr aktiv.")}

@@ -30,7 +30,6 @@ def erase(api, admin, org, confirmation=None, *, prepare=True, **extra):
         mark(api, admin, org)
     data = {
         "confirmation": org.name if confirmation is None else confirmation,
-        "password": "x",
         "confirmed_by": "Kassenprüfer Muster",
         **extra,
     }
@@ -200,12 +199,6 @@ def test_retention_hold_blocks(api, admin, orgs):
     resp = erase(api, admin, org)
     assert resp.status_code == 400
     assert "Löschsperre" in str(resp.content, "utf-8")
-
-
-def test_second_confirmation_needs_password(api, admin, orgs):
-    org = orgs["c"]
-    assert erase(api, admin, org, password="falsch").status_code == 400
-    assert Organization.objects.filter(pk=org.pk).exists()
 
 
 def test_marked_unit_cannot_be_reactivated_until_withdrawn(api, admin, orgs):

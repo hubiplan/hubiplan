@@ -118,3 +118,33 @@ class TestVereinUmhaengen:
         assert "Datenübernahme" in str(resp.json())
         club.refresh_from_db()
         assert club.parent_id != orgs["federation"].pk
+
+
+class TestGleichzeitigUmhaengen:
+    """Gesamtaudit 10.11. V02: gegenläufiges Umhängen darf keinen Kreis erzeugen."""
+
+    def test_zweite_anfrage_prueft_unter_sperre_neu(self, api, club, board_a, monkeypatch):
+        from organizations.serializers import DepartmentSerializer
+
+        a, b = unit(club, "Jägerzug"), unit(club, "Schützenzug")
+        original = DepartmentSerializer.validate
+
+        def validate_then_race(self, attrs):
+            result = original(self, attrs)
+            # Die andere Anfrage hängt B unter A, nachdem diese hier geprüft hat
+            Department.objects.filter(pk=b.pk).update(parent_id=a.pk)
+            return result
+
+        monkeypatch.setattr(DepartmentSerializer, "validate", validate_then_race)
+        resp = move(api(board_a), club, a, b.pk)
+        assert resp.status_code == 400
+        assert "parent_unit" in resp.json()
+        a.refresh_from_db()
+        assert a.parent_id == club.pk
+
+    def test_vorhandener_kreis_endet_ohne_endlosschleife(self, club):
+        a, b = unit(club, "Jägerzug"), unit(club, "Schützenzug")
+        Department.objects.filter(pk=a.pk).update(parent_id=b.pk)
+        Department.objects.filter(pk=b.pk).update(parent_id=a.pk)
+        probe = Department(organization_id=club.pk, parent_id=a.pk)
+        assert probe.parent_error()

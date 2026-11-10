@@ -287,7 +287,9 @@ class TestListe:
     def test_suche_und_filter(self, api, orgs, types, members, board_a):
         c = api(board_a)
         assert [r["last_name"] for r in self.get(c, orgs["a"], suche="bern")["results"]] == ["Berg"]
-        assert self.get(c, orgs["a"], suche="bernd@example")["count"] == 1
+        # E-Mail nur ganz oder ab dem @ (Gesamtaudit 10.11., Fachfrage 8)
+        assert self.get(c, orgs["a"], suche="bernd@example")["count"] == 0
+        assert self.get(c, orgs["a"], suche="BERND@example.org")["count"] == 1
         assert self.get(c, orgs["a"], art=types["a"]["passiv"].pk)["count"] == 1
         assert self.get(c, orgs["a"], abteilung=members.pk)["count"] == 1
         assert self.get(c, orgs["a"], status="ehemalig")["count"] == 0

@@ -424,7 +424,7 @@ class DepartmentMemberListView(DepartmentScopedMixin, APIView):
     def get(self, request, dept_id: int):
         params = request.query_params.copy()
         params["status"] = "alle"  # schon auf aktuelle Mitglieder begrenzt
-        qs = filter_members(self.dept_members(), params, self.org)
+        qs = filter_members(self.dept_members(), params, self.org, lazy=True)
         paginator = MemberPagination()
         page = paginator.paginate_queryset(qs, request, view=self)
         return paginator.get_paginated_response(member_rows(page, self.org))

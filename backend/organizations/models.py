@@ -687,10 +687,12 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
             or parent.organization_id != self.organization_id
         ):
             return "Die übergeordnete Einheit muss zum selben Bereich gehören."
-        depth, node = 1, parent
+        depth, node, seen = 1, parent, set()
         while node is not None and node.type == self.Type.UNIT:
-            if self.pk and node.pk == self.pk:
+            if (self.pk and node.pk == self.pk) or node.pk in seen:
+                # seen: auch ein schon vorhandener Kreis führt nicht zur Endlosschleife
                 return "Eine Einheit kann nicht unter sich selbst oder ihren Untereinheiten hängen."
+            seen.add(node.pk)
             depth += 1
             node = node.parent
         if self.pk:

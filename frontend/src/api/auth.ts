@@ -14,6 +14,8 @@ export interface User {
   // Pflicht-2FA: bis dahin einrichten, danach ruhen Rollenverwaltung, Exporte und Kasse
   mfa_required_by?: string
   mfa_overdue?: boolean
+  // Plattform-Verwaltung: ohne 2FA ruhen ihre Rechte sofort (Gesamtaudit 10.11.)
+  mfa_platform?: boolean
   // Sprache des Kontos (konzepte/englisch.md)
   language?: string
 }

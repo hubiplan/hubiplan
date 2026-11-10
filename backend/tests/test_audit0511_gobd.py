@@ -108,7 +108,7 @@ def test_einheit_loeschen_trotz_festschreibung(api, orgs, django_user_model, mon
     monkeypatch.setattr(deletion, "_today", lambda: datetime.date(2040, 1, 1))
     resp = api(admin).post(
         f"/api/platform/orgs/{org.pk}/erase/",
-        {"confirmation": org.name, "password": "x", "confirmed_by": "Kassenprüfer Muster"},
+        {"confirmation": org.name, "confirmed_by": "Kassenprüfer Muster"},
         content_type="application/json",
     )
     assert resp.status_code == 204, resp.content

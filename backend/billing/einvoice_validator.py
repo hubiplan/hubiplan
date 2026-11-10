@@ -22,7 +22,9 @@ def failed(message, status="invalid"):
     }, b""
 
 
-def validate(xml):
+def validate(xml, timeout=None):
+    """Prüft das XML mit dem KoSIT-Validator. ``timeout`` in Sekunden, sonst
+    ``EINVOICE_VALIDATOR_TIMEOUT``; der Hintergrundjob lässt sich mehr Zeit."""
     try:
         root = _root(xml)
     except EInvoiceError as exc:
@@ -69,7 +71,7 @@ def validate(xml):
                 ],
                 cwd=folder,
                 capture_output=True,
-                timeout=45,
+                timeout=timeout or settings.EINVOICE_VALIDATOR_TIMEOUT,
                 check=False,
             )
             report_file = Path(folder) / "invoice-report.xml"

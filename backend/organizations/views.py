@@ -32,6 +32,7 @@ from access.catalog import (
 )
 from access.models import Role, RoleAssignment
 from access.permissions import is_platform_admin
+from accounts import step_up
 from accounts.models import User
 from audit.log import diff, record, snapshot
 from core import update_check, virenscan
@@ -130,6 +131,24 @@ class OrganizationLogoView(OrgScopedMixin, _LogoMixin, APIView):
         return self.org
 
 
+def _check_move_locked(unit, new_parent: int) -> None:
+    """Umhängen unter einer Sperre je Bereich erneut prüfen.
+
+    Zwei gleichzeitige Anfragen, die A unter B und B unter A hängen, sahen sonst jede
+    für sich einen gültigen Baum und erzeugten zusammen einen Kreis (Gesamtaudit 10.11.
+    V02). Die Sperre gilt bis zum Ende der Transaktion; die zweite Anfrage prüft danach
+    den neuen Stand und wird abgewiesen."""
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT pg_advisory_xact_lock(%s, %s)", [unit.organization_id, 400000])
+    probe = Department(organization_id=unit.organization_id, parent_id=new_parent)
+    probe.pk = unit.pk
+    error = probe.parent_error()
+    if error:
+        raise serializers.ValidationError({"parent_unit": error})
+
+
 class DepartmentViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     serializer_class = DepartmentSerializer
     read_permission = SETTINGS_VIEW
@@ -219,7 +238,11 @@ class DepartmentViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
     def perform_update(self, serializer):
         _not_remote(serializer.instance)
         old_parent = serializer.instance.parent_id
-        super().perform_update(serializer)
+        with transaction.atomic():
+            new_parent = serializer.validated_data.get("parent_id", old_parent)
+            if new_parent != old_parent:
+                _check_move_locked(serializer.instance, new_parent)
+            super().perform_update(serializer)
         unit = serializer.instance
         if unit.parent_id != old_parent:
             # Umgehängt: Bezeichnung nach der Vorgabe der neuen übergeordneten Einheit
@@ -512,13 +535,9 @@ class PlatformOrganizationViewSet(
     @action(detail=True, methods=["get"], url_path="erase-state")
     def erase_state(self, request, pk=None):
         """Zweistufiges Löschen (Gesamtaudit 10.11., F02): Vormerkung, Fristen, Hindernisse."""
-        from accounts.mfa_policy import has_mfa as uses_mfa
-
         from .deletion import erase_state
 
-        state = erase_state(self.get_object())
-        state["needs_code"] = uses_mfa(request.user)
-        return Response(state)
+        return Response(erase_state(self.get_object()))
 
     @action(detail=True, methods=["post"], url_path="erase-request")
     def erase_request(self, request, pk=None):
@@ -542,13 +561,11 @@ class PlatformOrganizationViewSet(
 
     @action(detail=True, methods=["post"], url_path="erase")
     def erase(self, request, pk=None):
-        """Stufe 2: endgültig löschen, mit zweiter Bestätigung (Passwort, ggf. Code)."""
-        from accounts.mfa_policy import has_mfa as uses_mfa
-        from peering.sso import check_second_factor
-
+        """Stufe 2: endgültig löschen; zweite Bestätigung mit frischem Code (step_up)."""
         from .deletion import erase_organization, erase_state
 
         org = self.get_object()
+        step_up.require(request)
         if request.data.get("confirmation") != org.name:
             raise serializers.ValidationError(
                 {
@@ -570,12 +587,7 @@ class PlatformOrganizationViewSet(
                     )
                 }
             )
-        user = request.user
-        if not user.check_password(str(request.data.get("password") or "")):
-            raise serializers.ValidationError({"password": gettext("Das Passwort stimmt nicht.")})
-        if uses_mfa(user) and not check_second_factor(user, str(request.data.get("code") or "")):
-            raise serializers.ValidationError({"code": gettext("Der Code stimmt nicht.")})
-        erase_organization(org, user, confirmed_by=confirmed_by)
+        erase_organization(org, request.user, confirmed_by=confirmed_by)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @transaction.atomic
@@ -674,6 +686,7 @@ class PlatformBoardView(APIView):
 
     @transaction.atomic
     def post(self, request, pk: int):
+        step_up.require(request)
         org = get_object_or_404(
             Organization.objects.exclude(type=Organization.Type.PLATFORM), pk=pk
         )
@@ -731,7 +744,12 @@ class PlatformUpdateView(APIView):
                 "update": update_check.available(),
                 "selfupdate": update_check.selbstupdate_status(),
                 # Hinweis für den Betreiber, wenn Weitergegebenes ungeprüft bleibt (F-02)
-                "virus_scan": {"enabled": virenscan.enabled(), "required": virenscan.required()},
+                "virus_scan": {
+                    "enabled": virenscan.enabled(),
+                    "required": virenscan.required(),
+                    # Eingehende Dateien in Quarantäne (Gesamtaudit 10.11., Fachfrage 2)
+                    "quarantine": virenscan.counts(),
+                },
             }
         )
 

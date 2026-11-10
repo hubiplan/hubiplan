@@ -35,6 +35,8 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils import timezone
 from django.utils.translation import gettext
 
+from accounts.step_up import check_second_factor
+
 from . import crypto, identity
 from .models import Coupling, LoginLink, Peer, RemoteAccount, UsedAssertion
 
@@ -192,25 +194,6 @@ def session_auth(request) -> dict:
         "auth_time": int(max(times)) if times else 0,
         "mfa_time": int(max(mfa_times)) if mfa_times else 0,
     }
-
-
-def check_second_factor(user, code: str) -> bool:
-    """TOTP-Code oder Wiederherstellungscode des Kontos prüfen."""
-    from allauth.mfa.models import Authenticator
-    from allauth.mfa.recovery_codes.internal.auth import RecoveryCodes
-    from allauth.mfa.totp.internal.auth import TOTP
-
-    code = "".join(str(code or "").split())
-    if not code:
-        return False
-    for auth in Authenticator.objects.filter(user=user):
-        if auth.type == Authenticator.Type.TOTP and TOTP(auth).validate_code(code):
-            return True
-        if auth.type == Authenticator.Type.RECOVERY_CODES and RecoveryCodes(auth).validate_code(
-            code
-        ):
-            return True
-    return False
 
 
 def _ensure_fresh(request, user, password: str, code: str) -> None:

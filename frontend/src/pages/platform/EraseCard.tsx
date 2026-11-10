@@ -20,8 +20,6 @@ export function EraseCard({
   const [open, setOpen] = useState(false)
   const [confirmation, setConfirmation] = useState('')
   const [confirmedBy, setConfirmedBy] = useState('')
-  const [password, setPassword] = useState('')
-  const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,8 +27,6 @@ export function EraseCard({
     setOpen(false)
     setConfirmation('')
     setConfirmedBy('')
-    setPassword('')
-    setCode('')
     setError(null)
   }
 
@@ -62,8 +58,6 @@ export function EraseCard({
           platformApi.erase(org.id, {
             confirmation,
             confirmed_by: confirmedBy,
-            password,
-            code,
           }),
         onDone,
       )
@@ -145,22 +139,6 @@ export function EraseCard({
                   onChange={(ev) => setConfirmedBy(ev.target.value)}
                 />
               )}
-              <Field
-                label={t('Eigenes Passwort')}
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(ev) => setPassword(ev.target.value)}
-              />
-              {s.needs_code && (
-                <Field
-                  label={t('Code aus der Authentifizierungs-App')}
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  value={code}
-                  onChange={(ev) => setCode(ev.target.value)}
-                />
-              )}
             </>
           )}
         </>
@@ -176,7 +154,7 @@ export function EraseCard({
                 disabled={
                   busy ||
                   confirmation !== org.name ||
-                  (requested && (!password || (s.has_finance && !confirmedBy.trim())))
+                  (requested && s.has_finance && !confirmedBy.trim())
                 }
               >
                 {requested ? t('Unwiderruflich löschen') : t('Stilllegen und vormerken')}

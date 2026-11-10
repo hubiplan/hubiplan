@@ -40,7 +40,6 @@ function eraseState(extra: Record<string, unknown> = {}) {
     possible_from: null,
     blockers: [],
     can_erase: false,
-    needs_code: false,
     ...extra,
   }
 }
@@ -72,7 +71,6 @@ describe('Einheit anlegen auf der Plattform', () => {
       await screen.findByRole('button', { name: 'Stilllegen und Löschung vormerken' }),
     )
     expect(screen.getByRole('button', { name: 'Stilllegen und vormerken' })).toBeDisabled()
-    expect(screen.queryByLabelText('Eigenes Passwort')).toBeNull()
     await user.type(screen.getByLabelText('Name zur Löschbestätigung'), bund.name)
     await user.click(screen.getByRole('button', { name: 'Stilllegen und vormerken' }))
     await waitFor(() =>
@@ -82,7 +80,7 @@ describe('Einheit anlegen auf der Plattform', () => {
     expect(JSON.parse(String(post?.init?.body))).toEqual({ confirmation: bund.name })
   })
 
-  it('zeigt Fristen und löscht erst mit Passwort, Code und Bestätigung der Fristen', async () => {
+  it('zeigt Fristen und löscht erst mit Bestätigung der Fristen', async () => {
     let deleted = false
     const calls = fakeApi({
       'GET /_allauth/browser/v1/auth/session': session,
@@ -100,7 +98,6 @@ describe('Einheit anlegen auf der Plattform', () => {
           possible_from: '2037-01-01',
           has_finance: true,
           can_erase: true,
-          needs_code: true,
         }),
       }),
       'POST /api/platform/orgs/7/erase/': () => {
@@ -116,18 +113,14 @@ describe('Einheit anlegen auf der Plattform', () => {
     await user.click(screen.getByRole('button', { name: 'Endgültig löschen' }))
     const submit = screen.getByRole('button', { name: 'Unwiderruflich löschen' })
     await user.type(screen.getByLabelText('Name zur Löschbestätigung'), bund.name)
-    await user.type(screen.getByLabelText('Eigenes Passwort'), 'geheim')
     expect(submit).toBeDisabled()
     await user.type(screen.getByLabelText(/Fristen bestätigt von/), 'Kassenprüfer Muster')
-    await user.type(screen.getByLabelText('Code aus der Authentifizierungs-App'), '123456')
     await user.click(submit)
     await waitFor(() => expect(screen.queryByText(bund.name)).toBeNull())
     const post = calls.find((call) => call.key === 'POST /api/platform/orgs/7/erase/')
     expect(JSON.parse(String(post?.init?.body))).toEqual({
       confirmation: bund.name,
       confirmed_by: 'Kassenprüfer Muster',
-      password: 'geheim',
-      code: '123456',
     })
   })
 

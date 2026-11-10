@@ -476,6 +476,7 @@ export function Layout() {
                 <main className="content" id="inhalt" tabIndex={-1} inert={navOpen || undefined}>
                   {previewOrg && <RolePreviewBanner org={previewOrg} onChanged={previewChanged} />}
                   <OfflineBanner />
+                  {user?.mfa_platform && <MfaPlatformNotice />}
                   {user?.mfa_required_by && (
                     <MfaNotice by={user.mfa_required_by} overdue={!!user.mfa_overdue} />
                   )}
@@ -519,6 +520,17 @@ export function Layout() {
  * Pflicht-2FA für heikle Rechte (Gesamtaudit 31.10.b, Frage 1). W-07 (UX-Audit 08.11.): ein
  * Hinweismuster auf allen Seiten, gleiche Kurzfassung, die Begründung hinter „Mehr erfahren“.
  */
+function MfaPlatformNotice() {
+  return (
+    <div className="alert alert-error mfa-hint" role="status">
+      <p>
+        {t('Die Plattform-Verwaltung ruht, bis du die Zwei-Faktor-Anmeldung einrichtest.')}{' '}
+        <NavLink to="/mein-konto/anmeldung">{t('Jetzt einrichten')}</NavLink>
+      </p>
+    </div>
+  )
+}
+
 function MfaNotice({ by, overdue }: { by: string; overdue: boolean }) {
   const date = new Date(by).toLocaleDateString(locale())
   return (

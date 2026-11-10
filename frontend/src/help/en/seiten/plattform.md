@@ -20,7 +20,7 @@ Under **Units** → **Edit**, clear “is active” and save to deactivate a uni
 Deletion happens in two stages:
 
 1. **Deactivate and schedule deletion**: in the edit form, enter the full name under “Delete unit”. The unit and all subunits below it are deactivated immediately; nobody can access them any more and the data is retained. While deletion is scheduled the unit cannot be activated again; **Withdraw scheduling** cancels it.
-2. **Delete permanently**: at the earliest 30 days after scheduling and only once the statutory retention periods for books and vouchers of all financial years have expired (§ 147 AO: vouchers 8, books 10 years). The form shows until when the periods run. A deletion hold on a financial year prevents deletion. To confirm, enter the name, your password and, if set up, the two-factor code. If the unit has financial data, state who confirmed the retention periods (e.g. auditor or tax advisor).
+2. **Delete permanently**: at the earliest 30 days after scheduling and only once the statutory retention periods for books and vouchers of all financial years have expired (§ 147 AO: vouchers 8, books 10 years). The form shows until when the periods run. A deletion hold on a financial year prevents deletion. To confirm, enter the name; HUBIplan also asks for a current two-factor code. If the unit has financial data, state who confirmed the retention periods (e.g. auditor or tax advisor).
 
 Permanent deletion removes the members, roles, financial records and stored files of the unit and its subunits. User accounts are retained. Clubs belonging to a federation must be deleted or moved first. If references from other units prevent deletion, an error is shown and the data is retained. The deletion is recorded in the platform audit log and on the deletion list: if an older backup is restored later, HUBIplan deletes the unit again.
 
@@ -33,6 +33,8 @@ Once a day HUBIplan asks GitHub whether a newer release is available. If so, you
 Platform › Version shows which version is running and whether a newer release is available. If the operator has turned on self-update (`HUBIPLAN_SELBSTUPDATE=1`, see `docs/betrieb.md`), you can install the new release there with “Update to …”. This needs two-factor sign-in, and you enter your password again.
 
 If no virus scanning is set up on the server, or it is switched off for sharing, a notice appears there: circular attachments and public documents then go out unscanned. With virus scanning (ClamAV) set up, HUBIplan shares such files only after scanning them.
+
+If the virus scanner is briefly unreachable, HUBIplan still accepts uploaded documents, attachments and receipts, but locks them until the scanner has checked them (quarantine). Platform › Version shows how many files are waiting and whether malware was found in any of them; such files stay locked for good.
 
 HUBIplan only leaves an order. A service on the server first backs up the database, checks the release signature and that it is newer than the running version, and then installs it. HUBIplan is unavailable for a few minutes meanwhile; the page checks back on its own and then shows the result. If anything fails, the previous version keeps running. Every order is recorded in the change log, and the operator receives a security email.
 

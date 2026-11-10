@@ -12,7 +12,9 @@ Nummer; daneben filterst du nach Status, Mitgliedsart oder Geschlecht. Ein Klick
 öffnet die Akte mit allen Zeiträumen, Ehrungen und Kontaktdaten.
 
 Mehrere Suchwörter müssen jeweils passen; dabei darf ein Wort im Namen und ein anderes
-in der E-Mail-Adresse oder Nummer stehen. Groß-/Kleinschreibung spielt bei Namen keine
+in der E-Mail-Adresse oder Nummer stehen. E-Mail-Adressen findest du über die ganze Adresse
+(`erika@example.org`) oder ab dem @ (`@example.org` für alle mit dieser Domain); Teile davon
+ohne @ suchen nur in Namen und Nummern. Groß-/Kleinschreibung spielt bei Namen keine
 Rolle, `ß` und `ss` werden gleich behandelt. Bei der Namenssortierung stehen Umlaute
 bei ihrem Grundbuchstaben (`ä` bei `a`); gleiche Namen erhalten eine feste Reihenfolge,
 damit das Blättern zwischen Seiten stabil bleibt.
