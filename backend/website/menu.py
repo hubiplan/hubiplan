@@ -172,7 +172,7 @@ def items(
         add(key, name, hint="eigene Überschrift ohne eigene Seite", heading=True)
     # Links nach außen (Ralf 10.11.): neue stehen am Ende
     for key, (name, url) in website.links().items():
-        add(key, name, hint=f"Link nach außen · {url}", url=url)
+        add(key, name, hint=f"Link nach außen · {url}", url=url, visible=True)
     return result
 
 
