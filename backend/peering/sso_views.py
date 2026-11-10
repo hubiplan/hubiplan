@@ -13,6 +13,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.step_up import passkey_here
 from core.ratelimit import client_ip, too_many
 
 from . import sso
@@ -127,7 +128,14 @@ class IssueView(APIView):
             )
         except sso.ReauthRequired as exc:
             return Response(
-                {"detail": str(exc), "reauth": True, "needs_code": exc.needs_code}, status=409
+                {
+                    "detail": str(exc),
+                    "reauth": True,
+                    "needs_code": exc.needs_code,
+                    # Mit Passkey: erst über allauth bestätigen, dann ohne Passwort erneut senden
+                    "passkey": passkey_here(request._request, request.user),
+                },
+                status=409,
             )
         return Response({"url": url})
 

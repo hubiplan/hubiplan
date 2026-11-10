@@ -1,13 +1,48 @@
 // Frische Bestätigung vor heiklen Aktionen (Gesamtaudit 10.11., Frage 1): Code aus der
 // Authenticator-App oder, solange noch keine Zwei-Faktor-Anmeldung eingerichtet ist,
-// das Passwort. Wird in boot.tsx als Dialog für api/client.ts eingetragen.
+// das Passwort. Hat das Konto für diese Adresse einen Passkey, wird zuerst er angeboten.
+// Wird in boot.tsx als Dialog für api/client.ts eingetragen.
+import { passkeyReauth, passkeyReauthOptions } from '../api/auth.ts'
 import { request, setStepUpHandler, type StepUpKind } from '../api/client.ts'
+import { cancelled, getPasskey, passkeysSupported } from '../auth/webauthn.ts'
 import { t } from '../i18n/index.ts'
-import { alertDialog, promptDialog } from './dialog.ts'
+import { alertDialog, choiceDialog, promptDialog } from './dialog.ts'
 
 let pending: Promise<boolean> | null = null
 
-async function ask(kind: StepUpKind): Promise<boolean> {
+/** Mit Passkey bestätigen: true (bestätigt), false (abgebrochen) oder 'code' (lieber Code). */
+async function askPasskey(): Promise<boolean | 'code'> {
+  let hint = ''
+  for (;;) {
+    const choice = await choiceDialog({
+      title: t('Aktion bestätigen'),
+      message:
+        (hint ? `${hint} ` : '') +
+        t('Diese Aktion ist besonders geschützt. Bitte bestätige sie mit deinem Passkey.'),
+      choices: [
+        { value: 'passkey', label: t('Mit Passkey bestätigen'), primary: true },
+        { value: 'code', label: t('Code eingeben') },
+        { value: 'cancel', label: t('Abbrechen') },
+      ],
+      cancelValue: 'cancel',
+    })
+    if (choice === 'cancel') return false
+    if (choice === 'code') return 'code'
+    try {
+      const result = await passkeyReauth(await getPasskey(await passkeyReauthOptions()))
+      if (result.kind === 'ok') return true
+      hint = result.kind === 'error' ? result.message : ''
+    } catch (e) {
+      hint = cancelled(e) ? '' : t('Die Bestätigung mit Passkey hat nicht geklappt.')
+    }
+  }
+}
+
+async function ask(kind: StepUpKind, passkey: boolean): Promise<boolean> {
+  if (passkey && kind === 'code' && passkeysSupported()) {
+    const result = await askPasskey()
+    if (result !== 'code') return result
+  }
   let hint = ''
   for (;;) {
     const intro =
@@ -48,9 +83,9 @@ async function ask(kind: StepUpKind): Promise<boolean> {
 }
 
 /** Mehrere Anfragen gleichzeitig: nur ein Dialog, alle warten auf dieselbe Antwort. */
-export function confirmStepUp(kind: StepUpKind): Promise<boolean> {
+export function confirmStepUp(kind: StepUpKind, passkey = false): Promise<boolean> {
   if (!pending) {
-    pending = ask(kind).finally(() => {
+    pending = ask(kind, passkey).finally(() => {
       pending = null
     })
   }

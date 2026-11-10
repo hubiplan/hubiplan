@@ -8,6 +8,11 @@ ihrem Passwort.
 
 Ist die Bestätigung zu alt, antwortet der Server mit 403 und ``step_up`` (``code`` oder
 ``password``); die Oberfläche fragt dann nach und sendet die Anfrage erneut.
+
+Hat das Konto einen Passkey für die aufgerufene Adresse, steht zusätzlich ``passkey: true``
+in der Antwort. Die Oberfläche bestätigt dann bevorzugt mit dem Passkey über allauth
+(``…/auth/webauthn/reauthenticate``); allauth vermerkt das als ``mfa`` in der Sitzung, und
+damit gilt die Bestätigung hier als frisch. Code und Wiederherstellungscode bleiben möglich.
 """
 
 from __future__ import annotations
@@ -35,13 +40,16 @@ class StepUpRequired(APIException):
     status_code = status.HTTP_403_FORBIDDEN
     default_code = "step_up"
 
-    def __init__(self, needs: str):
-        message = (
-            gettext("Bitte zur Sicherheit einen aktuellen Code aus der Authenticator-App eingeben.")
-            if needs == "code"
-            else gettext("Bitte zur Sicherheit dein Passwort eingeben.")
-        )
-        super().__init__({"detail": message, "step_up": needs})
+    def __init__(self, needs: str, passkey: bool = False):
+        if passkey:
+            message = gettext("Bitte bestätige zur Sicherheit mit deinem Passkey.")
+        elif needs == "code":
+            message = gettext(
+                "Bitte zur Sicherheit einen aktuellen Code aus der Authenticator-App eingeben."
+            )
+        else:
+            message = gettext("Bitte zur Sicherheit dein Passwort eingeben.")
+        super().__init__({"detail": message, "step_up": needs, "passkey": passkey})
 
 
 def _records(request) -> list[dict]:
@@ -76,7 +84,13 @@ def require(request) -> None:
     django_request = getattr(request, "_request", request)
     user = request.user
     if not is_fresh(django_request, user):
-        raise StepUpRequired(needs(user))
+        raise StepUpRequired(needs(user), passkey=passkey_here(django_request, user))
+
+
+def passkey_here(request, user) -> bool:
+    from .passkeys import usable_here
+
+    return usable_here(user, request)
 
 
 def check_second_factor(user, code: str) -> bool:
@@ -114,7 +128,13 @@ class StepUpView(APIView):
 
     def get(self, request):
         user = request.user
-        return Response({"step_up": needs(user), "fresh": is_fresh(request._request, user)})
+        return Response(
+            {
+                "step_up": needs(user),
+                "fresh": is_fresh(request._request, user),
+                "passkey": passkey_here(request._request, user),
+            }
+        )
 
     def post(self, request):
         user = request.user

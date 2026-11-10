@@ -10,6 +10,7 @@ import { LanguageCard } from '../../i18n/LanguageControls.tsx'
 import { AppearanceCard } from './AppearanceCard.tsx'
 import { HomeActionsCard } from './HomeActionsCard.tsx'
 import { AppDevicesCard } from './AppDevicesCard.tsx'
+import { PasskeyCard } from './PasskeyCard.tsx'
 import { RemoteLoginCard } from './RemoteLoginCard.tsx'
 import { SignatureCard } from './SignatureCard.tsx'
 import { t } from '../../i18n/index.ts'
@@ -44,6 +45,7 @@ export function AccountLoginPage() {
       <h1>{t('Anmeldung & Sicherheit')}</h1>
       <div className="stack">
         <LoginSections />
+        <PasskeyCard />
         <TwoFactorCard />
       </div>
     </section>

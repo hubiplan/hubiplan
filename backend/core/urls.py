@@ -4,7 +4,16 @@ from rest_framework.routers import SimpleRouter
 from access import accounts_view, module_views, office_views
 from access import views as access_views
 from access.module_gate import gate, gate_names, needs_module
-from accounts import appearance, help_done, home_actions, language, learning, self_service, step_up
+from accounts import (
+    appearance,
+    help_done,
+    home_actions,
+    language,
+    learning,
+    passkeys,
+    self_service,
+    step_up,
+)
 from billing import einvoice_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
@@ -1021,6 +1030,7 @@ urlpatterns = [
     ),
     path("me/password/", self_service.PasswordView.as_view(), name="my-password"),
     path("me/confirm/", step_up.StepUpView.as_view(), name="my-step-up"),
+    path("me/passkeys/", passkeys.PasskeyListView.as_view(), name="my-passkeys"),
     path("me/email/", self_service.EmailChangeView.as_view(), name="my-email"),
     path("me/language/", language.MyLanguageView.as_view(), name="my-language"),
     path("public/languages/", language.PublicLanguagesView.as_view(), name="public-languages"),

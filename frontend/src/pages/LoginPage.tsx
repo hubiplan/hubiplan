@@ -1,11 +1,12 @@
 import { LanguageSwitch } from '../i18n/LanguageControls.tsx'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import * as api from '../api/auth.ts'
 import type { LoginResult } from '../api/auth.ts'
 import { useAuth } from '../auth/AuthContext.tsx'
 import { loginTarget, rememberedTarget } from '../auth/loginTarget.ts'
+import { autofillSupported, cancelled, getPasskey, passkeysSupported } from '../auth/webauthn.ts'
 import { Logo } from '../components/Logo.tsx'
 import { PoweredBy } from '../components/PoweredBy.tsx'
 import { RemoteLoginChoices } from './VerbundLoginPages.tsx'
@@ -26,10 +27,50 @@ export function LoginPage() {
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Zweiter Faktor auch mit Passkey möglich (allauth nennt dann „webauthn“)
+  const [mfaPasskey, setMfaPasskey] = useState(false)
+  const passkeys = passkeysSupported()
+  // Vorschlag gespeicherter Passkeys im E-Mail-Feld; wird abgebrochen, sobald die Person
+  // selbst „Mit Passkey anmelden“ wählt oder die Seite verlässt
+  const autofill = useRef<AbortController | null>(null)
   // Nach einem Fehler steht der Fokus im Feld, das zu korrigieren ist (UX-Audit 05.11. W-03)
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
   const codeRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (step !== 'password' || user) return
+    let active = true
+    const controller = new AbortController()
+    autofill.current = controller
+    void (async () => {
+      if (!(await autofillSupported()) || !active) return
+      try {
+        const options = await api.passkeyLoginOptions()
+        if (!active) return
+        const credential = await getPasskey(options, {
+          conditional: true,
+          signal: controller.signal,
+        })
+        if (!active) return
+        setBusy(true)
+        handle(await api.passkeyLogin(credential))
+      } catch (e) {
+        // Abbruch oder kein Passkey gewählt: still weiter mit Passwort
+        if (active && !cancelled(e) && !(e instanceof DOMException))
+          setError(t('Die Anmeldung mit Passkey hat nicht geklappt.'))
+      } finally {
+        if (active) setBusy(false)
+      }
+    })()
+    return () => {
+      active = false
+      controller.abort()
+      if (autofill.current === controller) autofill.current = null
+    }
+    // handle hängt nur von stabilen Werten ab; neu starten nur beim Wechsel des Schritts
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, user])
 
   if (user) return <Navigate to={target} replace />
 
@@ -39,6 +80,7 @@ export function LoginPage() {
       rememberedTarget(true)
       navigate(target, { replace: true })
     } else if (result.kind === 'mfa') {
+      setMfaPasskey(result.passkey && passkeys)
       setStep('mfa')
       setError(null)
     } else {
@@ -86,6 +128,25 @@ export function LoginPage() {
     }
   }
 
+  /** Browserabfrage für den Passkey; Abbrechen ist kein Fehler. */
+  async function withPasskey(
+    loadOptions: () => Promise<Record<string, unknown>>,
+    finish: (credential: Record<string, unknown>) => Promise<LoginResult>,
+  ) {
+    if (busy) return
+    autofill.current?.abort()
+    setBusy(true)
+    setError(null)
+    try {
+      const credential = await getPasskey(await loadOptions())
+      handle(await finish(credential))
+    } catch (e) {
+      if (!cancelled(e)) setError(t('Die Anmeldung mit Passkey hat nicht geklappt.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <main className="login-page">
       <div className="card login-card">
@@ -101,7 +162,7 @@ export function LoginPage() {
               <input
                 ref={emailRef}
                 type="email"
-                autoComplete="username"
+                autoComplete={passkeys ? 'username webauthn' : 'username'}
                 required
                 aria-invalid={error && !email.trim() ? true : undefined}
                 aria-describedby={error ? 'anmelden-fehler' : undefined}
@@ -134,6 +195,16 @@ export function LoginPage() {
             >
               {busy ? t('Anmelden …') : t('Anmelden')}
             </button>
+            {passkeys && (
+              <button
+                type="button"
+                className="button button-ghost button-block"
+                aria-disabled={busy || undefined}
+                onClick={() => void withPasskey(api.passkeyLoginOptions, api.passkeyLogin)}
+              >
+                {t('Mit Passkey anmelden')}
+              </button>
+            )}
             <p className="small">
               <Link to="/passwort-vergessen" state={location.state}>
                 {t('Passwort vergessen?')}
@@ -149,17 +220,31 @@ export function LoginPage() {
           <form noValidate onSubmit={(e) => submit(e, () => api.authenticateMfa(code.trim()))}>
             <h1>{t('Bestätigungscode')}</h1>
             <p className="muted">
-              {t(
-                'Gib den 6-stelligen Code aus deiner Authenticator-App ein – oder einen deiner Wiederherstellungscodes.',
-              )}
+              {mfaPasskey
+                ? t(
+                    'Bestätige mit deinem Passkey – oder gib einen Code aus deiner Authenticator-App bzw. einen Wiederherstellungscode ein.',
+                  )
+                : t(
+                    'Gib den 6-stelligen Code aus deiner Authenticator-App ein – oder einen deiner Wiederherstellungscodes.',
+                  )}
             </p>
+            {mfaPasskey && (
+              <button
+                type="button"
+                className="button button-primary button-block"
+                aria-disabled={busy || undefined}
+                onClick={() => void withPasskey(api.passkeyMfaOptions, api.passkeyMfa)}
+              >
+                {t('Mit Passkey bestätigen')}
+              </button>
+            )}
             <label className="field">
               <span>{t('Code')}</span>
               <input
                 ref={codeRef}
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                autoFocus
+                autoFocus={!mfaPasskey}
                 required
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? 'anmelden-fehler' : undefined}

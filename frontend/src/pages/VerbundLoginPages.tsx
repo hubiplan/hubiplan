@@ -1,10 +1,12 @@
 // Anmelden über eine gekoppelte HUBIplan-Instanz (Verbund Schritt 7).
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import * as authApi from '../api/auth.ts'
 import { ApiError } from '../api/client.ts'
 import { leaveTo, ssoApi } from '../api/peering.ts'
 import type { SsoFinished, SsoInstance } from '../api/peering.ts'
 import { useAuth } from '../auth/AuthContext.tsx'
+import { cancelled, getPasskey, passkeysSupported } from '../auth/webauthn.ts'
 import { errorMessage, useLoad } from '../components/forms.ts'
 import { Logo } from '../components/Logo.tsx'
 import { Alert } from '../components/ui.tsx'
@@ -103,27 +105,55 @@ export function VerbundConfirmPage() {
   const [err, setErr] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   // Anmeldung hier zu alt: Passwort (und Code) bestätigen, bevor es weitergeht
-  const [reauth, setReauth] = useState<{ needsCode: boolean } | null>(null)
+  // Mit Passkey für diese Adresse: stattdessen mit dem Passkey bestätigen
+  const [reauth, setReauth] = useState<{ needsCode: boolean; passkey: boolean } | null>(null)
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const auto = useRef(false)
 
-  async function confirm() {
+  async function confirm(confirmed = false) {
     setErr(null)
     setBusy(true)
     try {
-      const extra = reauth ? { password, ...(reauth.needsCode ? { code } : {}) } : undefined
+      const extra =
+        reauth && !confirmed ? { password, ...(reauth.needsCode ? { code } : {}) } : undefined
       leaveTo.go((await ssoApi.issue(rp, state, purpose, extra)).url)
     } catch (e) {
       const body =
-        e instanceof ApiError ? (e.body as { reauth?: boolean; needs_code?: boolean }) : null
+        e instanceof ApiError
+          ? (e.body as { reauth?: boolean; needs_code?: boolean; passkey?: boolean })
+          : null
       if (e instanceof ApiError && e.status === 409 && body?.reauth) {
-        setReauth({ needsCode: Boolean(body.needs_code) })
+        setReauth({
+          needsCode: Boolean(body.needs_code),
+          passkey: body.passkey === true && passkeysSupported(),
+        })
       } else {
         setErr(errorMessage(e))
       }
       setBusy(false)
     }
+  }
+
+  /** Passkey bestätigt die Anmeldung hier frisch; danach ohne Passwort weiter. */
+  async function confirmWithPasskey() {
+    setErr(null)
+    setBusy(true)
+    try {
+      const result = await authApi.passkeyReauth(
+        await getPasskey(await authApi.passkeyReauthOptions()),
+      )
+      if (result.kind !== 'ok') {
+        setErr(result.kind === 'error' ? result.message : null)
+        setBusy(false)
+        return
+      }
+    } catch (e) {
+      if (!cancelled(e)) setErr(t('Die Bestätigung mit Passkey hat nicht geklappt.'))
+      setBusy(false)
+      return
+    }
+    await confirm(true)
   }
 
   // Schon verknüpft (Wechsel aus der Einheitenauswahl): ohne weitere Rückfrage
@@ -162,6 +192,16 @@ export function VerbundConfirmPage() {
             )}{' '}
             <code>{data.fingerprint}</code>
           </p>
+          {reauth?.passkey && (
+            <button
+              type="button"
+              className="button button-primary button-block"
+              disabled={busy}
+              onClick={() => void confirmWithPasskey()}
+            >
+              {t('Mit Passkey bestätigen')}
+            </button>
+          )}
           {reauth && (
             <>
               <Alert kind="info">

@@ -55,15 +55,17 @@ export function newRequestKey(): string {
  * die Anfrage einmal erneut gesendet (accounts/step_up.py).
  */
 export type StepUpKind = 'code' | 'password'
-let stepUpHandler: ((kind: StepUpKind) => Promise<boolean>) | null = null
-export function setStepUpHandler(handler: ((kind: StepUpKind) => Promise<boolean>) | null) {
+/** ``passkey``: Das Konto hat für diese Adresse einen Passkey; damit geht es am schnellsten. */
+type StepUpHandler = (kind: StepUpKind, passkey: boolean) => Promise<boolean>
+let stepUpHandler: StepUpHandler | null = null
+export function setStepUpHandler(handler: StepUpHandler | null) {
   stepUpHandler = handler
 }
 
-function stepUpKind(status: number, body: unknown): StepUpKind | null {
+function stepUpKind(status: number, body: unknown): { kind: StepUpKind; passkey: boolean } | null {
   if (status !== 403 || !body || typeof body !== 'object') return null
-  const kind = (body as { step_up?: unknown }).step_up
-  return kind === 'code' || kind === 'password' ? kind : null
+  const { step_up: kind, passkey } = body as { step_up?: unknown; passkey?: unknown }
+  return kind === 'code' || kind === 'password' ? { kind, passkey: passkey === true } : null
 }
 
 export async function request<T = unknown>(
@@ -73,8 +75,8 @@ export async function request<T = unknown>(
   requestKey?: string,
 ): Promise<ApiResult<T>> {
   const result = await requestOnce<T>(method, url, data, requestKey)
-  const kind = stepUpKind(result.status, result.body)
-  if (kind && stepUpHandler && (await stepUpHandler(kind)))
+  const step = stepUpKind(result.status, result.body)
+  if (step && stepUpHandler && (await stepUpHandler(step.kind, step.passkey)))
     return requestOnce<T>(method, url, data, requestKey)
   return result
 }

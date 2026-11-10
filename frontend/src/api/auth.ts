@@ -23,29 +23,40 @@ export interface User {
 interface Flow {
   id: string
   is_pending?: boolean
+  // Beim zweiten Faktor: womit bestätigt werden kann (totp, recovery_codes, webauthn)
+  types?: string[]
 }
 
 interface AuthBody {
   status: number
-  data?: { user?: User; flows?: Flow[] }
+  data?: {
+    user?: User
+    flows?: Flow[]
+    request_options?: Record<string, unknown>
+    creation_options?: Record<string, unknown>
+  }
   meta?: { is_authenticated?: boolean }
   errors?: { message: string; param?: string }[]
 }
 
 export type LoginResult =
-  { kind: 'ok'; user: User } | { kind: 'mfa' } | { kind: 'error'; message: string }
+  | { kind: 'ok'; user: User }
+  | { kind: 'mfa'; passkey: boolean }
+  | { kind: 'error'; message: string }
 
 function errorMessage(body: AuthBody, fallback: string): string {
   return body.errors?.map((e) => e.message).join(' ') || fallback
 }
 
-function pendingFlow(body: AuthBody): string | undefined {
-  return body.data?.flows?.find((f) => f.is_pending)?.id
+function pendingFlow(body: AuthBody): Flow | undefined {
+  return body.data?.flows?.find((f) => f.is_pending)
 }
 
 function toLoginResult(status: number, body: AuthBody, fallback: string): LoginResult {
   if (status === 200 && body.data?.user) return { kind: 'ok', user: body.data.user }
-  if (status === 401 && pendingFlow(body) === 'mfa_authenticate') return { kind: 'mfa' }
+  const flow = status === 401 ? pendingFlow(body) : undefined
+  if (flow?.id === 'mfa_authenticate')
+    return { kind: 'mfa', passkey: (flow.types ?? []).includes('webauthn') }
   if (status === 429)
     return {
       kind: 'error',
@@ -140,4 +151,124 @@ export async function getRecoveryCodes(): Promise<string[]> {
   // Fehler nicht als „keine Codes“ ausgeben (Gesamtaudit 30.10., WEB-F01)
   if (status !== 200) throw new ApiError(status, body)
   return body.data?.unused_codes ?? []
+}
+
+// --- Passkeys (konzepte/passkey-anmeldung.md) ---
+
+type Options = Record<string, unknown>
+
+async function options(url: string, key: 'request_options' | 'creation_options'): Promise<Options> {
+  const { status, body } = await request<AuthBody>('GET', url)
+  const value = body.data?.[key]
+  if (status !== 200 || !value) throw new ApiError(status, body)
+  return value
+}
+
+/** Optionen für „Mit Passkey anmelden“ (auch für den Vorschlag im E-Mail-Feld). */
+export function passkeyLoginOptions(): Promise<Options> {
+  return options(`${BASE}/auth/webauthn/login`, 'request_options')
+}
+
+export async function passkeyLogin(credential: Options): Promise<LoginResult> {
+  const { status, body } = await request<AuthBody>('POST', `${BASE}/auth/webauthn/login`, {
+    credential,
+  })
+  return toLoginResult(status, body, t('Die Anmeldung mit Passkey hat nicht geklappt.'))
+}
+
+/** Passkey als zweiter Faktor nach dem Passwort. */
+export function passkeyMfaOptions(): Promise<Options> {
+  return options(`${BASE}/auth/webauthn/authenticate`, 'request_options')
+}
+
+export async function passkeyMfa(credential: Options): Promise<LoginResult> {
+  const { status, body } = await request<AuthBody>('POST', `${BASE}/auth/webauthn/authenticate`, {
+    credential,
+  })
+  return toLoginResult(status, body, t('Die Bestätigung mit Passkey hat nicht geklappt.'))
+}
+
+/** Bestätigen mit Passkey (heikle Aktionen, Verbund, Einrichten weiterer Passkeys). */
+export function passkeyReauthOptions(): Promise<Options> {
+  return options(`${BASE}/auth/webauthn/reauthenticate`, 'request_options')
+}
+
+export async function passkeyReauth(credential: Options): Promise<ChangeResult> {
+  const { status, body } = await request<AuthBody>('POST', `${BASE}/auth/webauthn/reauthenticate`, {
+    credential,
+  })
+  if (status === 200) return { kind: 'ok' }
+  return {
+    kind: 'error',
+    message: errorMessage(body, t('Die Bestätigung mit Passkey hat nicht geklappt.')),
+  }
+}
+
+export interface Passkey {
+  id: number
+  name: string
+  host: string
+  here: boolean
+  passwordless: boolean
+  created_at: string
+  last_used_at: string | null
+}
+
+export interface PasskeyList {
+  enabled: boolean
+  host: string
+  passkeys: Passkey[]
+}
+
+export async function listPasskeys(): Promise<PasskeyList> {
+  const { status, body } = await request<PasskeyList>('GET', '/api/me/passkeys/')
+  if (status !== 200) throw new ApiError(status, body)
+  return body
+}
+
+/** Optionen zum Einrichten; ``reauthenticate``, wenn allauth erst eine Bestätigung will. */
+export async function passkeyCreationOptions(): Promise<
+  { kind: 'ok'; options: Options } | { kind: 'reauthenticate' } | { kind: 'error'; message: string }
+> {
+  const { status, body } = await request<AuthBody>(
+    'GET',
+    `${BASE}/account/authenticators/webauthn?passwordless`,
+  )
+  if (status === 200 && body.data?.creation_options)
+    return { kind: 'ok', options: body.data.creation_options }
+  if (status === 401) return { kind: 'reauthenticate' }
+  return { kind: 'error', message: errorMessage(body, t('Das hat nicht geklappt.')) }
+}
+
+export async function addPasskey(
+  name: string,
+  credential: Options,
+): Promise<ChangeResult & { recoveryCodes?: boolean }> {
+  const { status, body } = await request<
+    AuthBody & { meta?: { recovery_codes_generated?: boolean } }
+  >('POST', `${BASE}/account/authenticators/webauthn`, { name, credential })
+  if (status === 200)
+    return { kind: 'ok', recoveryCodes: Boolean(body.meta?.recovery_codes_generated) }
+  if (status === 401) return { kind: 'reauthenticate' }
+  return {
+    kind: 'error',
+    message: errorMessage(body, t('Der Passkey konnte nicht gespeichert werden.')),
+  }
+}
+
+export function renamePasskey(id: number, name: string): Promise<ChangeResult> {
+  return securityChangePut(`${BASE}/account/authenticators/webauthn`, { id, name })
+}
+
+export function deletePasskey(id: number): Promise<ChangeResult> {
+  return securityChange('DELETE', `${BASE}/account/authenticators/webauthn`, {
+    authenticators: [id],
+  })
+}
+
+async function securityChangePut(url: string, data: unknown): Promise<ChangeResult> {
+  const { status, body } = await request<AuthBody>('PUT', url, data)
+  if (status === 200) return { kind: 'ok' }
+  if (status === 401) return { kind: 'reauthenticate' }
+  return { kind: 'error', message: errorMessage(body, t('Das hat nicht geklappt.')) }
 }

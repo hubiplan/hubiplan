@@ -178,6 +178,15 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_PASSWORD_RESET_TOKEN_GENERATOR = "accounts.tokens.InvitationTokenGenerator"
 ACCOUNT_EMAIL_VERIFICATION = "none"  # Bestätigung folgt, sobald E-Mail-Versand steht
 MFA_SUPPORTED_TYPES = ["totp", "recovery_codes"]
+# Passkeys (WebAuthn): als zweiter Faktor und zum Anmelden ohne Passwort, je Adresse
+# (accounts/passkeys.py, konzepte/passkey-anmeldung.md). HUBIPLAN_PASSKEYS=0 schaltet ab.
+PASSKEYS_ENABLED = env_bool("HUBIPLAN_PASSKEYS", True)
+if PASSKEYS_ENABLED:
+    MFA_SUPPORTED_TYPES.append("webauthn")
+MFA_PASSKEY_LOGIN_ENABLED = PASSKEYS_ENABLED
+MFA_PASSKEY_SIGNUP_ENABLED = False  # keine Selbstregistrierung
+# Nur zum Entwickeln über http://: Herkunft nicht prüfen. Im Betrieb immer https.
+MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = DEBUG
 MFA_TOTP_ISSUER = os.environ.get("MFA_TOTP_ISSUER", "HUBIplan")
 # 2FA-Geheimnisse verschlüsselt speichern (accounts/mfa.py); Schlüssel nur in der .env
 MFA_ADAPTER = "accounts.mfa.MFAAdapter"
