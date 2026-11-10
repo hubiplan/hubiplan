@@ -200,17 +200,12 @@ def default_home_sections() -> list:
 
 
 def normalize_home_sections(value) -> list:
-    """Gespeicherte Liste → vollständige Liste in Reihenfolge (neue Bausteine hinten)."""
-    result, seen = [], set()
-    for item in value or []:
-        key = item.get("key") if isinstance(item, dict) else None
-        if key in HOME_SECTIONS and key not in seen:
-            seen.add(key)
-            result.append({"key": key, "on": bool(item.get("on", True))})
-    for key in HOME_SECTIONS:
-        if key not in seen:
-            result.append({"key": key, "on": key not in DEFAULT_HOME_OFF})
-    return result
+    """Gespeicherte Liste → vollständige Liste in Reihenfolge (neue Bausteine hinten).
+
+    Dazu die eigenen Abschnitte (G3) und je Eintrag Hintergrund, Breite und Spalte."""
+    from .home import normalize
+
+    return normalize(value, HOME_SECTIONS, DEFAULT_HOME_OFF)
 
 
 # Was der Entwurf der Gestaltung umfasst (Design, Farbrollen, Stilregler, Kopfbild, Startseite)
@@ -432,6 +427,8 @@ class Website(models.Model):
         """Eingeschaltete Bausteine der Startseite in ihrer Reihenfolge."""
         keys = []
         for s in normalize_home_sections(self.home_sections):
+            if "kind" in s:
+                continue  # eigene Abschnitte (G3) stehen nur in ``home_layout``
             needs = HOME_NEEDS_BLOCK.get(s["key"])
             if s["on"] and (needs is None or self.block_on(needs)):
                 keys.append(s["key"])

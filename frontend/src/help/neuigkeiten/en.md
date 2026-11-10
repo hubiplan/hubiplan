@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Website: the home page is now a **builder**. Under Design › **Home**, **Add section** inserts your own sections, as often as you like: **Text**, **Text with image**, **Banner**, **Button bar**, **Tiles**, **Featured event** with a countdown, **Album preview**, **Quote** and **Contact persons**. Each section gets a background and width, and in the “Newspaper” design a column. Everything goes into the draft first and appears straight away in the preview.
 - Website: changes to design, colours, fine-tuning, header image and home page are now a **draft** first. Under Design, a preview next to them shows the real website as **Phone**, **Tablet** or **Desktop**; nothing goes live until you choose **Publish**. You can restore the last five published versions under **Earlier versions**.
 - Appearance: platform, units and sub-units can upload a second **logo / coat of arms for dark mode**. It appears in the dark appearance of the web interface; without one, the normal logo is used.
 - Website: under Design › **Fine-tuning** you adjust the design with fixed levels, without CSS: font, width, background, spacing, corners, cards, images, buttons, date field, header (white, coloured or header image; coat of arms left, centre, right or off), menu, title image and footer. Settings you leave alone show what the design provides.

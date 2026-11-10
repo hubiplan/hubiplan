@@ -251,6 +251,40 @@ def validate(value, known: dict[str, dict]) -> list[dict]:
     return normalize(value, known)
 
 
+def _visible(site, known: dict, key: str) -> bool:
+    item = known[key]
+    if "visible" in item:
+        return bool(item["visible"])
+    if item["heading"]:
+        return True
+    return _available(site, key)
+
+
+def _entry(site, known: dict, key: str) -> dict:
+    item = known[key]
+    out = {"key": key.split(":", 1)[0], "label": item.get("public_label") or item["label"]}
+    if key.startswith("page:"):
+        out["slug"] = item["slug"]
+    if key.startswith(("dignity:", "membertype:")):
+        out["id"] = item["id"]
+    if key.startswith("link:"):
+        out["url"] = item["url"]
+    if key == "honors" and not item["heading"]:
+        out["label"] = site.honors_label()
+    if item["heading"]:
+        out["heading"] = True
+    return out
+
+
+def public_target(site, key: str, known: dict | None = None) -> dict | None:
+    """Ziel eines Knopfs oder einer Kachel der Startseite (G3): ein Menüpunkt wie in
+    ``public_nav``, aber nur, wenn er öffentlich sichtbar ist (auch ohne Platz im Menü)."""
+    known = known if known is not None else items(site.site, public_site=site)
+    if key not in known or known[key]["heading"] or not _visible(site, known, key):
+        return None
+    return _entry(site, known, key)
+
+
 def public_nav(site) -> list[dict]:
     """Menü für die Webseite: nur sichtbare Punkte, je Punkt ``key``, ``label``,
     bei Textseiten ``slug``, bei Würden ``id``, bei Überschriften ``heading`` und
@@ -259,27 +293,10 @@ def public_nav(site) -> list[dict]:
     known = items(website, public_site=site)
 
     def visible(key: str) -> bool:
-        item = known[key]
-        if "visible" in item:
-            return bool(item["visible"])
-        if item["heading"]:
-            return True
-        return _available(site, key)
+        return _visible(site, known, key)
 
     def entry(key: str) -> dict:
-        item = known[key]
-        out = {"key": key.split(":", 1)[0], "label": item.get("public_label") or item["label"]}
-        if key.startswith("page:"):
-            out["slug"] = item["slug"]
-        if key.startswith(("dignity:", "membertype:")):
-            out["id"] = item["id"]
-        if key.startswith("link:"):
-            out["url"] = item["url"]
-        if key == "honors" and not item["heading"]:
-            out["label"] = site.honors_label()
-        if item["heading"]:
-            out["heading"] = True
-        return out
+        return _entry(site, known, key)
 
     result = []
     for node in normalize(website.menu, known):

@@ -7,6 +7,12 @@ routen: [/webseite/gestaltung]
 stichworte:
   [
     draft,
+    home page,
+    sections,
+    tiles,
+    quote,
+    contact persons,
+    countdown,
     preview,
     publish,
     versions,
@@ -30,7 +36,9 @@ stichworte:
 
 Under Design you choose the look, colours and logo of the website. The colours usually come from the unit's appearance and can be adjusted here.
 
-Changes to design, colours, **Fine-tuning**, header image and home page (section **Layout**) are a draft first: visitors keep seeing the previous version. At the top you then see “Unpublished changes”. **Publish** makes the draft public, **Discard** undoes all changes. On a wide screen, a preview on the right shows the real website with the draft; it reloads after every change. At the top you choose **Phone**, **Tablet** or **Desktop**, **Reload** reconnects the preview, **In a new window** opens it full size. On narrow screens the **Preview** button opens the website in a new window. Anyone you gave a preview link can see the draft as well.
+Changes to design, colours, **Fine-tuning**, header image and home page are a draft first: visitors keep seeing the previous version. At the top you then see “Unpublished changes”. **Publish** makes the draft public, **Discard** undoes all changes. On a wide screen, a preview on the right shows the real website with the draft; it reloads after every change. At the top you choose **Phone**, **Tablet** or **Desktop**, **Reload** reconnects the preview, **In a new window** opens it full size. On narrow screens the **Preview** button opens the website in a new window. Anyone you gave a preview link can see the draft as well.
+
+Under **Home** you build the home page from sections and see every change straight away in the preview. The existing sections (such as welcome text, upcoming events, majesties) exist once each; you switch them on and off. **Add section** adds your own sections, which you can use as often as you like: **Text**, **Text with image**, **Banner**, **Button bar**, **Tiles**, **Featured event** (with “N days to go”, disappears after the event), **Album preview**, **Quote** and **Contact persons** (only roles shown on the website, and people who have given their consent, as on the board page). Drag the sections by the handle into the order you want. **Edit** opens a section's content and appearance, **Apply** saves it to the draft, **Delete** removes one of your own sections. For each section you choose the **Background** (**None**, **Light** or a palette colour with a matching text colour) and the **Section width** (**Text width**, **Content width** or **Full width**). In the “Newspaper” design, **Column** sets whether a section is in the **Main column** or the **Side column**. Buttons and tiles lead to a page of the website, the contact form, an event or, as an **External link**, to a new window.
 
 Under **Earlier versions** you find the last five published designs. **Restore** turns one of them into a draft; it only goes live with **Publish**.
 

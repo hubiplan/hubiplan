@@ -170,7 +170,7 @@ describe('Webseite', () => {
         [`GET ${base}`]: () => ({ status: 200, body: withHome }),
         [`PUT ${base}`]: () => ({ status: 200, body: withHome }),
       },
-      '/webseite/aufbau',
+      '/webseite/gestaltung',
     )
     const user = userEvent.setup()
     expect(
@@ -183,10 +183,59 @@ describe('Webseite', () => {
       timeout: 3000,
     })
     const put = calls.find((c) => c.key === `PUT ${base}`)
-    expect(
-      JSON.parse(String(put?.init?.body)).home_sections.map((s: { key: string }) => s.key),
-    ).toEqual(['greeting', 'carousel', 'events', 'instagram'])
+    const body = JSON.parse(String(put?.init?.body))
+    const sent = body.home_sections ?? body.draft?.home_sections
+    expect(sent.map((s: { key: string }) => s.key)).toEqual([
+      'greeting',
+      'carousel',
+      'events',
+      'instagram',
+    ])
     expect(screen.queryByRole('button', { name: 'Willkommenstext nach oben' })).toBeNull()
+  })
+
+  it('fügt der Startseite einen eigenen Abschnitt hinzu (G3)', async () => {
+    const home = [
+      { key: 'greeting', on: true },
+      { key: 'events', on: true },
+    ]
+    const withHome = {
+      ...data(website('public', { home_sections: home, draft: {} })),
+      home_labels: { greeting: 'Willkommenstext', events: 'Nächste Termine' },
+      home_kinds: { text: 'Text', banner: 'Banner' },
+      home_choices: { roles: [], albums: [], events: [] },
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: withHome }),
+        [`PUT ${base}`]: () => ({ status: 200, body: withHome }),
+      },
+      '/webseite/gestaltung',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Abschnitt hinzufügen' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Abschnitt hinzufügen' })
+    // Nur die Arten, die der Server anbietet
+    expect(within(dialog).queryByRole('button', { name: /Zitat/ })).toBeNull()
+    await user.click(within(dialog).getByRole('button', { name: /^Text\s*Überschrift und Text/ }))
+    const editor = await screen.findByRole('dialog', { name: 'Text' })
+    await user.type(within(editor).getByLabelText('Überschrift (optional)'), 'Über uns')
+    await user.click(within(editor).getByRole('button', { name: 'Volle Breite' }))
+    await user.click(within(editor).getByRole('button', { name: 'Übernehmen' }))
+    await waitFor(
+      () => {
+        const put = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+        const body = JSON.parse(String(put?.init?.body ?? '{}'))
+        const sent = body.draft?.home_sections ?? body.home_sections ?? []
+        expect(sent.at(-1)).toMatchObject({
+          kind: 'text',
+          on: true,
+          width: 'full',
+          data: { title: 'Über uns' },
+        })
+      },
+      { timeout: 3000 },
+    )
   })
 
   it('legt einen Link nach außen an und hebt ihn als Knopf hervor', async () => {

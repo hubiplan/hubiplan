@@ -30,7 +30,7 @@ Links nach außen: „Link nach außen hinzufügen“ legt einen Menüpunkt an, 
 
 Knopf: Unter „Menüpunkt als Knopf hervorheben“ wählt ihr einen Hauptpunkt, der im Menü als farbiger Knopf erscheint, etwa „Kontakt“ oder einen Link „Mitglied werden“. Es gibt höchstens einen Knopf; Überschriften und Punkte mit Unterpunkten gehen nicht.
 
-Startseite: Unter „Startseite“ schaltet ihr die Bausteine der Startseite ein und aus und zieht sie am Griff in die gewünschte Reihenfolge, von oben nach unten.
+Startseite: Die Abschnitte der Startseite stellt ihr unter Webseite › Gestaltung zusammen, mit Vorschau daneben.
 
 Repertoire und Presse: „Repertoire“ zeigt die Stücke aus dem Notenarchiv mit dem Haken „Im Repertoire auf der Webseite“. „Presse“ zeigt den Pressespiegel aus Webseite › Dokumente.
 
