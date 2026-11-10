@@ -3,7 +3,17 @@ key: page.partners
 titel: Business partners
 rechte: [partners.view, finance.view, billing.view]
 routen: [/geschaeftspartner]
-stichworte: [business partner, supplier, service provider, sponsor, authority, contact person, customer, address book]
+stichworte:
+  [
+    business partner,
+    supplier,
+    service provider,
+    sponsor,
+    authority,
+    contact person,
+    customer,
+    address book,
+  ]
 ---
 
 This lists all companies, authorities, associations and people outside the member list that you deal with: suppliers, service providers, sponsors, landlords, public offices or the press.

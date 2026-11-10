@@ -3,7 +3,8 @@ key: page.partners
 titel: Geschäftspartner
 rechte: [partners.view, finance.view, billing.view]
 routen: [/geschaeftspartner]
-stichworte: [Geschäftspartner, Lieferant, Dienstleister, Sponsor, Behörde, Ansprechpartner, Kunde, Adressbuch]
+stichworte:
+  [Geschäftspartner, Lieferant, Dienstleister, Sponsor, Behörde, Ansprechpartner, Kunde, Adressbuch]
 ---
 
 Hier stehen alle Firmen, Behörden, Vereine und Personen außerhalb der Mitgliederliste, mit denen ihr zu tun habt: Lieferanten, Dienstleister, Sponsoren, Vermieter, Ämter oder die Presse.
