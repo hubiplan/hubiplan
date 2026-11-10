@@ -83,6 +83,26 @@ Manuelle Compose-Aufrufe auf dieser Installation benötigen beide Compose-Dateie
 sudo docker compose -f docker-compose.server.yml -f docker-compose.proxy.yml ps
 ```
 
+## Weitere Adressen je Einheit
+
+Ein Verein kann HUBIplan unter einer eigenen Adresse mit seinen Farben und seinem Wappen nutzen
+(Plattform › Einstellungen › „Adressen je Einheit“, siehe [betrieb.md](betrieb.md)). Hinter
+Hestia bekommt jede solche Adresse eine eigene Web-Domain mit der Vorlage `app-8110` und ein
+eigenes Zertifikat, kein Alias der Hauptdomain: So hängt die Verlängerung des Hauptzertifikats
+nicht an der DNS eines anderen Vereins.
+
+```powershell
+Get-Content -Raw deploy/hestia/adresse-hinzufuegen.sh | ssh deploy@server.example.org "sudo env HUSER=hosting-user DOMAIN=mitglieder.sv-musterstadt.example ZONE=sv-musterstadt.example bash -s"
+```
+
+Liegt die Zone in Hestia, legt das Skript den A-Eintrag an; sonst `ZONE=extern` angeben und
+den Eintrag beim DNS-Anbieter setzen. Das Zertifikat holt es erst, wenn ein öffentlicher
+Resolver die Adresse auf den Server auflöst; bis dahin das Skript später noch einmal starten.
+Fehlt `HUBIPLAN_ADRESSEN_AUS_LISTE=1` in der `.env`, trägt es den Schalter ein (mit Sicherung);
+er wirkt ab dem nächsten Ausrollen. Bis dahin und solange die Adresse in HUBIplan nicht
+eingetragen ist, antwortet HUBIplan dort mit „Unbekannte Adresse“ (400). Mails gehen weiter
+von der festen Absenderadresse aus und teilen sich deren Versandlimit.
+
 ## Eigene Änderungen und Quellcode (AGPL)
 
 Die Seite `/lizenz` verlinkt den Quellcode der laufenden Fassung (AGPL § 13). Wer HUBIplan mit

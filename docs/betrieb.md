@@ -868,8 +868,10 @@ Damit der Server sie annimmt:
 3. Mit eigenem HTTPS (`deploy/Caddyfile`) holt Caddy das Zertifikat beim ersten Aufruf. Vorher
    fragt es `http://backend:8000/api/intern/tls/?domain=…`; nur eingetragene Adressen
    bekommen ein Zertifikat. Von außen ist dieser Pfad gesperrt.
-4. Hinter einem vorgeschalteten Webserver (`Caddyfile.proxy`, HestiaCP) die Adresse dort als
-   Alias der HUBIplan-Domain eintragen; Zertifikat und Weiterleitung übernimmt er.
+4. Hinter einem vorgeschalteten Webserver (`Caddyfile.proxy`) die Adresse dort weiterleiten;
+   Zertifikat und Weiterleitung übernimmt er. Bei HestiaCP richtet
+   `deploy/hestia/adresse-hinzufuegen.sh` eine eigene Web-Domain samt Zertifikat und
+   DNS-Eintrag ein (siehe [echtbetrieb.md](echtbetrieb.md)).
 
 Ohne `HUBIPLAN_ADRESSEN_AUS_LISTE=1` bleibt alles wie bisher: nur `DJANGO_ALLOWED_HOSTS`, keine
 weiteren Zertifikate.
