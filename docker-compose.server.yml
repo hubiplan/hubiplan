@@ -33,6 +33,8 @@ x-backend-env: &backend-env
   # Weitere Adressen aus „Adressen je Einheit“ zulassen, mit Zertifikat beim ersten Aufruf
   # (White Label W7c; hinter einem vorgeschalteten Webserver dort als Alias eintragen)
   HUBIPLAN_ADRESSEN_AUS_LISTE: ${HUBIPLAN_ADRESSEN_AUS_LISTE:-0}
+  # Passkeys (WebAuthn) zum Anmelden und als zweiter Faktor; 0 schaltet ab (docs/betrieb.md)
+  HUBIPLAN_PASSKEYS: ${HUBIPLAN_PASSKEYS:-1}
   FRONTEND_URL: https://${SITE_HOST}
   GOOGLE_WALLET_ISSUER_ID: ${GOOGLE_WALLET_ISSUER_ID:-}
   GOOGLE_WALLET_CREDENTIALS_FILE: ${GOOGLE_WALLET_CREDENTIALS_FILE:-}

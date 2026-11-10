@@ -937,6 +937,20 @@ Code, der höchstens 10 Minuten alt ist (auch der Code der Anmeldung zählt). So
 API mit 403 und `step_up` (`code`, ohne eingerichtete 2FA `password`); die Oberfläche fragt
 nach und bestätigt über `POST /api/me/confirm/`, höchstens 10 Versuche je 15 Minuten.
 
+## Passkeys
+
+Passkeys (WebAuthn, `accounts/passkeys.py`) sind eingeschaltet; `HUBIPLAN_PASSKEYS=0` in der
+`.env` schaltet sie ab. Mitglieder richten sie unter Mein Konto › Anmeldung & Sicherheit ein
+und melden sich damit ohne Passwort an oder nutzen sie als zweiten Faktor. Eine Anmeldung mit
+Passkey verlangt die Entsperrung des Geräts und zählt als Zwei-Faktor-Anmeldung (`amr`
+enthält `mfa`; gilt für Pflicht-2FA, frischen Code und Nextcloud „nur mit 2FA“). Hat das Konto
+für die aufgerufene Adresse einen Passkey, steht in der 403-Antwort zusätzlich
+`passkey: true`; die Oberfläche bestätigt dann über `…/auth/webauthn/reauthenticate`.
+
+Ein Passkey gilt nur für die Adresse, unter der er entstand (Relying Party ID = aufgerufener
+Host). Bei mehreren Adressen je Instanz braucht jede Adresse eigene Passkeys. Gespeichert wird
+nur der öffentliche Schlüssel. Anmelden mit Passkey geht nur über https.
+
 ## Virenprüfung
 
 Ist in der `.env` `CLAMD_SOCKET_DIR` gesetzt (Ordner mit dem Socket des clamd auf dem
