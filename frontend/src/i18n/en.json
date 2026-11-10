@@ -4064,6 +4064,8 @@
   "{caption} {alt_text} {x}": "{caption} {alt_text} {x}",
   "{created} neue Beiträge abgerufen.": "{created} new posts fetched.",
   "{hostname} entfernen": "Remove {hostname}",
+  "{label} nach oben": "{label} up",
+  "{label} nach unten": "{label} down",
   "{label} verschieben": "Move {label}",
   "{MIN_INTERVAL} bis {MAX_INTERVAL} Sekunden, Standard 7.": "{MIN_INTERVAL} to {MAX_INTERVAL} seconds, default 7.",
   "{n} Bild": {
