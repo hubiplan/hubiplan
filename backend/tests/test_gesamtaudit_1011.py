@@ -1,6 +1,6 @@
 """Gesamtaudit 10.11.2026: Regressionstests zu einzelnen Befunden (erfundene Daten)."""
 
-from email.message import EmailMessage
+from email import message_from_bytes, policy
 
 import pytest
 
@@ -27,8 +27,9 @@ from finance import camt
 )
 def test_dmarc_nur_echtes_ergebnis(settings, header, passed):
     settings.MAIL_AUTHSERV_ID = "mx.example.org"
-    msg = EmailMessage()
-    msg["Authentication-Results"] = header
+    # Wie aus dem Postfach geparst, damit auch gefaltete Köpfe (\n\t) gehen
+    raw = ("Authentication-Results: " + header).replace("\n", "\r\n") + "\r\n\r\nText\r\n"
+    msg = message_from_bytes(raw.encode(), policy=policy.default)
     assert inbound.dmarc_passed(msg) is passed
 
 
