@@ -9,12 +9,18 @@ export function canWriteCirculars(org: OrgSummary | null): boolean {
   return org.type === 'federation' || org.type === 'club'
 }
 
-/** Menüpunkt „Rundschreiben“ */
+/** Reiter „Empfangen“: nur ein Verein mit Dachverband bekommt dessen Rundschreiben. */
+export function receivesCirculars(org: OrgSummary | null): boolean {
+  // ältere Server ohne Angabe: wie bisher jeder Verein
+  return !!org && org.type === 'club' && org.has_federation !== false
+}
+
+/** Menüpunkt „Rundschreiben“: verfassen oder empfangen */
 export function circularsVisible(org: OrgSummary | null, dept: DeptSummary | null): boolean {
   if (org) {
     return (
-      (org.type === 'club' || org.type === 'federation') &&
-      (org.permissions.includes(PERM.circularsView) || canWriteCirculars(org))
+      canWriteCirculars(org) ||
+      (org.permissions.includes(PERM.circularsView) && receivesCirculars(org))
     )
   }
   return !!dept && dept.permissions.includes(PERM.circularsView)

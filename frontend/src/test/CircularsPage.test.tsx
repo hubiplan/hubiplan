@@ -81,4 +81,47 @@ describe('Menüpunkt Rundschreiben', () => {
     expect(await screen.findByRole('link', { name: 'Verfassen' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Empfangen' })).toBeInTheDocument()
   })
+
+  it('Verein ohne Dachverband: kein Reiter Empfangen, Adresse führt zum Verfassen', async () => {
+    fakeApi({
+      [SESSION]: () => ({ status: 200, body: { status: 200, data: { user: testUser } } }),
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [
+          testOrg({
+            permissions: ['members.view', 'circulars.view', 'circulars.send'],
+            parent_name: null,
+            has_federation: false,
+          }),
+        ],
+      }),
+      'GET /api/orgs/7/circulars/': () => ({ status: 200, body: [] }),
+      'GET /api/orgs/7/circulars/options/': () => ({ status: 200, body: {} }),
+      'GET /api/orgs/7/circulars/templates/': () => ({ status: 200, body: [] }),
+    })
+    renderApp('/rundschreiben/empfangen')
+    expect(await screen.findByRole('link', { name: 'Verfassen' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Empfangen' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Noch keine Rundschreiben empfangen.')).not.toBeInTheDocument()
+  })
+
+  it('Verein ohne Dachverband, nur Leserecht: kein Menüpunkt', async () => {
+    fakeApi({
+      [SESSION]: () => ({ status: 200, body: { status: 200, data: { user: testUser } } }),
+      'GET /api/me/organizations/': () => ({
+        status: 200,
+        body: [
+          testOrg({
+            permissions: ['members.view', 'circulars.view'],
+            parent_name: null,
+            has_federation: false,
+          }),
+        ],
+      }),
+    })
+    renderApp('/')
+    const nav = within(await screen.findByRole('navigation', { name: 'Module' }))
+    expect(await nav.findByRole('link', { name: 'Mitglieder' })).toBeInTheDocument()
+    expect(nav.queryByRole('link', { name: 'Rundschreiben' })).not.toBeInTheDocument()
+  })
 })

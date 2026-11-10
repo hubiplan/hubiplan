@@ -1,6 +1,6 @@
 // Rundschreiben: eigener Bereich für Dachverband, Verein und Abteilung.
 // Reiter „Verfassen“ (eigene Rundschreiben), „Verteiler“ (Rundschreiben aus dem
-// eigenen Mailprogramm) und beim Verein „Empfangen“
+// eigenen Mailprogramm) und beim Verein mit Dachverband „Empfangen“
 // (Rundschreiben des Dachverbands an die Vorstände).
 import { useState } from 'react'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
@@ -16,7 +16,7 @@ import { PageHeader } from '../../components/PageHeader.tsx'
 import { LetterheadPage } from '../LetterheadPage.tsx'
 import { useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
-import { canWriteCirculars } from './access.ts'
+import { canWriteCirculars, receivesCirculars } from './access.ts'
 import { t } from '../../i18n/index.ts'
 
 const ROOT = '/rundschreiben'
@@ -35,7 +35,7 @@ export function CircularsPage() {
   if (active && (active.type === 'club' || active.type === 'federation')) {
     base = circularBase.org(active.id)
     write = canWriteCirculars(active)
-    receive = active.type === 'club'
+    receive = receivesCirculars(active)
   } else if (activeDept && activeDept.permissions.includes(DEPT_PERM.circularsSend)) {
     base = circularBase.dept(activeDept.id)
     write = true
@@ -53,7 +53,11 @@ export function CircularsPage() {
       <PageHeader />
       {tabs.length > 1 && <Tabs items={tabs} />}
       <Routes>
-        {receive && <Route path="empfangen" element={<ReceivedList orgId={orgId} />} />}
+        {receive ? (
+          <Route path="empfangen" element={<ReceivedList orgId={orgId} />} />
+        ) : (
+          <Route path="empfangen" element={<Navigate to={ROOT} replace />} />
+        )}
         {write && (
           <Route
             path="verteiler/*"
