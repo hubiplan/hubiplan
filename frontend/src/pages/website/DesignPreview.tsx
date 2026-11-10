@@ -211,6 +211,7 @@ function stampOf(website: Website): string {
     website.color_roles,
     website.header_image,
     website.home_sections,
+    website.layouts,
   ])
 }
 

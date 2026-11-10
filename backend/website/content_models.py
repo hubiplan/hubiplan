@@ -63,6 +63,8 @@ class WebsiteText(models.Model):
         GREETING = "greeting", gettext_lazy("Begrüßung (Startseite)")
         PAGE = "page", gettext_lazy("Textseite")
         UNIT = "unit", gettext_lazy("Text einer Untereinheit")
+        # Einleitung eines festen Bereichs (G5); Adresse = Bereich (board, events …)
+        INTRO = "intro", gettext_lazy("Einleitung eines Bereichs")
 
     organization = models.ForeignKey(
         "organizations.Organization", on_delete=models.CASCADE, related_name="+"

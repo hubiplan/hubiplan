@@ -209,7 +209,7 @@ def normalize_home_sections(value) -> list:
 
 
 # Was der Entwurf der Gestaltung umfasst (Design, Farbrollen, Stilregler, Kopfbild, Startseite)
-DRAFT_FIELDS = ("design", "color_roles", "style", "header_image", "home_sections")
+DRAFT_FIELDS = ("design", "color_roles", "style", "header_image", "home_sections", "layouts")
 DESIGN_VERSIONS = 5  # wie bei den Texten: die letzten 5 veröffentlichten Fassungen
 
 
@@ -264,6 +264,8 @@ class Website(models.Model):
     menu_button = models.CharField("Menüpunkt als Knopf", max_length=40, blank=True)
     # Stilregler (Gestaltung › Feinabstimmung, website/style.py): nur verstellte; leer = Design
     style = models.JSONField("Stilregler", default=dict, blank=True)
+    # Darstellung der festen Bereiche (G5, website/variants.py): nur abweichende Varianten
+    layouts = models.JSONField("Darstellung der Bereiche", default=dict, blank=True)
     home_sections = models.JSONField(
         "Bausteine der Startseite", default=default_home_sections, blank=True
     )
