@@ -8014,5 +8014,12 @@
   "Zusammenführen": "Merge",
   "erhält Post": "receives mail",
   "{created} neu, {skipped} schon vorhanden.": "{created} new, {skipped} already there.",
-  "„{other}“ in „{name}“ übernehmen und danach löschen?": "Take over “{other}” into “{name}” and then delete it?"
+  "„{other}“ in „{name}“ übernehmen und danach löschen?": "Take over “{other}” into “{name}” and then delete it?",
+  "Geschäftspartner verknüpft": "Business partner linked",
+  "Umsätze in der Kasse": "Turnover in the treasury",
+  "Noch keine Buchungen mit diesem Geschäftspartner.": "No bookings with this business partner yet.",
+  "Buchungen im Kassenbuch zeigen": "Show bookings in the cash book",
+  "Vorschläge aus dem Kassenbuch ({n})": "Suggestions from the cash book ({n})",
+  "Diese Namen stehen mehrfach als Empfänger oder Zahler im Kassenbuch. „Übernehmen“ legt einen Geschäftspartner an und verknüpft die Buchungen mit genau diesem Namen.": "These names appear several times as payee or payer in the cash book. “Apply” creates a business partner and links the bookings with exactly this name.",
+  "„{name}“ übernommen, {n} Buchungen verknüpft.": "“{name}” applied, {n} bookings linked."
 }

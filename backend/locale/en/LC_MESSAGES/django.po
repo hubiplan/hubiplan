@@ -9952,3 +9952,6 @@ msgstr "The first row needs a column “Name”."
 
 msgid "Zeile {index}: {error}"
 msgstr "Row {index}: {error}"
+
+msgid "Einen Geschäftspartner mit diesem Namen gibt es schon."
+msgstr "A business partner with this name already exists."

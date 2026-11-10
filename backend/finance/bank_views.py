@@ -89,6 +89,10 @@ class BankLineSerializer(serializers.ModelSerializer):
     booking_number = serializers.CharField(
         source="booking.display_number", read_only=True, default=None
     )
+    partner_name = serializers.CharField(source="partner.name", read_only=True, default=None)
+    partner_category = serializers.IntegerField(
+        source="partner.default_category_id", read_only=True, default=None
+    )
 
     class Meta:
         model = BankLine
@@ -115,6 +119,9 @@ class BankLineSerializer(serializers.ModelSerializer):
             "suggested",
             "booking",
             "booking_number",
+            "partner",
+            "partner_name",
+            "partner_category",
         ]
         read_only_fields = fields
 
@@ -237,6 +244,7 @@ class BankLineViewSet(FinanceMixin, mixins.ListModelMixin, viewsets.GenericViewS
             "suggested_booking__organization",
             "suggested_membership__person",
             "booking__organization",
+            "partner",
         )
         params = self.request.query_params
         if (st := params.get("auszug", "")).isdigit():

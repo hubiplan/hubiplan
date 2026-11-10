@@ -18,6 +18,7 @@ from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 from access.catalog import (
@@ -252,8 +253,15 @@ def _references():
 
 
 def extra_references():
-    """Weitere Verweise späterer Stufen (Kasse, Eingang, Sponsoring)."""
-    return []
+    """Verweise aus Kasse (P2); spätere Stufen ergänzen hier."""
+    from finance.models import BankLine, Booking, CashReceipt, Donation
+
+    return [
+        (Booking, "partner"),
+        (BankLine, "partner"),
+        (CashReceipt, "partner"),
+        (Donation, "partner"),
+    ]
 
 
 class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
@@ -410,6 +418,135 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
         response["Cache-Control"] = "private, no-store"
         record(self.org, request.user, "view", self.org, {"Export": [None, "Geschäftspartner"]})
         return response
+
+    @action(detail=True, methods=["get"])
+    def turnover(self, request, org_id, pk):
+        """Einnahmen und Ausgaben je Geschäftsjahr mit diesem Partner (P2, nur Kasse)."""
+        if not ("finance" in self.org.enabled_modules and FINANCE_VIEW in self.org_permissions):
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
+        from django.db.models import Count, Sum
+
+        from finance.models import Booking
+
+        partner = self.get_object()
+        rows = (
+            Booking.objects.filter(
+                organization=self.org,
+                partner=partner,
+                cancels__isnull=True,
+                cancellation__isnull=True,
+            )
+            .exclude(kind=Booking.Kind.TRANSFER)
+            .values("year", "kind")
+            .annotate(total=Sum("amount"), count=Count("pk"))
+            .order_by("-year")
+        )
+        years: dict[int, dict] = {}
+        for row in rows:
+            entry = years.setdefault(
+                row["year"], {"year": row["year"], "income": "0.00", "expense": "0.00", "count": 0}
+            )
+            entry[row["kind"]] = str(row["total"])
+            entry["count"] += row["count"]
+        recent = (
+            Booking.objects.filter(organization=self.org, partner=partner)
+            .select_related("organization")
+            .order_by("-date", "-pk")[:10]
+        )
+        return Response(
+            {
+                "years": list(years.values()),
+                "recent": [
+                    {
+                        "id": b.pk,
+                        "number": b.display_number,
+                        "date": b.date,
+                        "kind": b.kind,
+                        "amount": str(b.amount),
+                        "text": b.text,
+                    }
+                    for b in recent
+                ],
+            }
+        )
+
+    @action(detail=False, methods=["get", "post"])
+    def suggestions(self, request, org_id):
+        """Bestand übernehmen (P2, GP-8): häufige Freitexte „Empfänger/Zahler“ ohne Partner.
+
+        GET listet Vorschläge, POST ``{name, kind?, roles?}`` legt den Partner an und verknüpft
+        Buchungen und Bankzeilen mit genau diesem Freitext. Nichts geschieht von selbst."""
+        if not ("finance" in self.org.enabled_modules and FINANCE_VIEW in self.org_permissions):
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
+        from finance.models import BankLine, Booking
+
+        known = {p.name.casefold() for p in BusinessPartner.objects.filter(organization=self.org)}
+        bookings = Booking.objects.filter(organization=self.org, partner__isnull=True).exclude(
+            counterparty=""
+        )
+        if request.method == "GET":
+            names: dict[str, dict] = {}
+            for name, membership in bookings.values_list("counterparty", "membership_id"):
+                key = " ".join(name.split()).casefold()
+                if not key or key in known or membership:
+                    continue
+                entry = names.setdefault(key, {"name": " ".join(name.split()), "count": 0})
+                entry["count"] += 1
+            result = sorted(
+                (e for e in names.values() if e["count"] >= 2),
+                key=lambda e: (-e["count"], e["name"].casefold()),
+            )
+            return Response(result[:100])
+        if FINANCE_EDIT not in self.org_permissions:
+            raise PermissionDenied(gettext("Dafür fehlt dir die Berechtigung."))
+        name = serializers.CharField(max_length=200).run_validation(request.data.get("name"))
+        name = " ".join(name.split())
+        if name.casefold() in known:
+            raise serializers.ValidationError(
+                {"name": gettext("Einen Geschäftspartner mit diesem Namen gibt es schon.")}
+            )
+        kind = serializers.ChoiceField(
+            choices=BusinessPartner.Kind.choices, default=BusinessPartner.Kind.COMPANY
+        ).run_validation(request.data.get("kind", BusinessPartner.Kind.COMPANY))
+        roles = serializers.ListField(
+            child=serializers.ChoiceField(choices=BusinessPartner.Role.choices), default=list
+        ).run_validation(request.data.get("roles", []))
+        with transaction.atomic():
+            partner = BusinessPartner(
+                organization=self.org,
+                name=name,
+                details={"name": name, "country": "DE"},
+                kind=kind,
+                roles=sorted(set(roles)),
+                number=next_number(self.org),
+            )
+            partner.save()
+            record(self.org, request.user, "create", partner, diff({}, snapshot(partner)))
+            needle = name.casefold()
+            ids = [
+                pk
+                for pk, text in bookings.values_list("pk", "counterparty")
+                if " ".join(text.split()).casefold() == needle
+            ]
+            linked = Booking.objects.filter(pk__in=ids).update(partner=partner)
+            lines = [
+                pk
+                for pk, text in BankLine.objects.filter(
+                    organization=self.org, partner__isnull=True
+                ).values_list("pk", "name")
+                if " ".join((text or "").split()).casefold() == needle
+            ]
+            BankLine.objects.filter(pk__in=lines).update(partner=partner)
+            if linked:
+                record(
+                    self.org,
+                    request.user,
+                    "update",
+                    partner,
+                    {"Buchungen verknüpft": [None, linked]},
+                )
+        data = self.get_serializer(partner).data
+        return Response({**data, "linked": linked}, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["post"], url_path="import")
     def import_file(self, request, org_id):

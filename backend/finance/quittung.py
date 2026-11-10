@@ -302,6 +302,7 @@ def cancel(receipt: CashReceipt, user, reason: str) -> CashReceipt:
         cancels=original,
         cancel_reason=reason[:300],
         counterparty=original.counterparty,
+        partner=original.partner,
         membership=original.membership,
         department=original.department,
         project=original.project,

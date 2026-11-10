@@ -89,6 +89,16 @@ export type PartnerInput = Partial<
 >
 export type ContactInput = Partial<Omit<PartnerContact, 'id'>>
 
+export interface Turnover {
+  years: { year: number; income: string; expense: string; count: number }[]
+  recent: { id: number; number: string; date: string; kind: string; amount: string; text: string }[]
+}
+
+export interface Suggestion {
+  name: string
+  count: number
+}
+
 export interface ImportResult {
   created: number
   skipped: number
@@ -113,6 +123,10 @@ export const partnerApi = {
       : api.post<PartnerContact>(`${base(org)}${partner}/contacts/`, value),
   removeContact: (org: number, partner: number, id: number) =>
     api.del(`${base(org)}${partner}/contacts/${id}/`),
+  turnover: (org: number, id: number) => api.get<Turnover>(`${base(org)}${id}/turnover/`),
+  suggestions: (org: number) => api.get<Suggestion[]>(`${base(org)}suggestions/`),
+  adopt: (org: number, name: string, roles: PartnerRole[] = []) =>
+    api.post<BusinessPartner & { linked: number }>(`${base(org)}suggestions/`, { name, roles }),
   exportFile: (org: number) => requestBlob('GET', `${base(org)}export/`),
   importFile: (org: number, file: File, probe: boolean) => {
     const form = new FormData()

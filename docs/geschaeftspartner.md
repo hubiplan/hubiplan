@@ -36,10 +36,24 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
 | --- | --- |
 | `GET`, `POST` | Liste (mit Ansprechpartnern), anlegen |
 | `GET`, `PATCH`, `DELETE <pk>/` | Akte, ändern, löschen (nur ohne Verweise, sonst 400) |
-| `POST <pk>/merge/ {other}` | doppelten Eintrag übernehmen: Rechnungen, Auftritte und Ansprechpartner wandern mit, Rollen und leere Angaben werden ergänzt |
+| `POST <pk>/merge/ {other}` | doppelten Eintrag übernehmen: Rechnungen, Buchungen, Bankzeilen, Quittungen, Zuwendungen, Auftritte und Ansprechpartner wandern mit, Rollen und leere Angaben werden ergänzt |
 | `GET export/` | Excel (Bank nur mit Kassen- oder Beitragsrecht) |
 | `POST import/` (`?probe=1`) | Excel mit Kopfzeile wie der Export, mindestens „Name“; vorhandene Namen werden übersprungen, höchstens 500 Zeilen |
+| `GET <pk>/turnover/` | Einnahmen/Ausgaben je Jahr ohne Stornos und Umbuchungen, letzte 10 Buchungen (Modul Finanzen, `finance.view`) |
+| `GET`, `POST suggestions/ {name, kind?, roles?}` | Bestand übernehmen: Freitexte, die mindestens zweimal ohne Partner im Kassenbuch stehen; POST legt den Partner an und verknüpft Buchungen und Bankzeilen mit genau diesem Namen (`finance.edit`) |
 | `…/<pk>/contacts/` | Ansprechpartner anlegen, ändern, entfernen; nur ein Hauptansprechpartner |
+
+## Kasse (P2)
+
+- `partner` an `Booking`, `CashReceipt`, `BankLine` und `Donation` (`finance/0034`, `SET_NULL`).
+  Der Freitext `counterparty` bleibt; ohne Freitext übernimmt die Buchung den Partnernamen.
+- Storno, Splitteile, Quittungsstorno, Buchung aus Bankzeile und Rechnungszahlung übernehmen den
+  Partner. Die Aufbewahrungsfrist löscht den Verweis mit.
+- `bookings/counterparties/` nennt aktive Partner zuerst (`partner`, `category` =
+  Standardkategorie); `bookings/?geschaeftspartner=<id>` filtert.
+- Der Bankimport ordnet Zeilen über die IBAN zu (`partners_by_iban`, entschlüsselt im Speicher,
+  weil Vereine wenige Partner haben).
+- Künstlersozialabgabe zählt auch Buchungen mit Partnern, die als künstlerisch tätig gelten.
 
 Änderungen stehen im Änderungsprotokoll. Der Datenumzug übernimmt beide Tabellen.
 

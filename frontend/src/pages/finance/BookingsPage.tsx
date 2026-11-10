@@ -623,13 +623,16 @@ function BookingForm({
   // E-Rechnung: gelesene Angaben füllen das Formular, die Datei wird nach dem Buchen Beleg
   const [einvoice, setEinvoice] = useState<{ file: File; info: EInvoiceInfo } | null>(null)
   const [einvoiceError, setEinvoiceError] = useState<string | null>(null)
-  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [suggestions, setSuggestions] = useState<
+    { name: string; partner?: number; category?: number | null }[]
+  >([])
+  const [partner, setPartner] = useState<number | null>(booking?.partner ?? null)
   useEffect(() => {
     if (kind === 'transfer') return
     let alive = true
     financeApi
       .counterparties(orgId, kind)
-      .then((rows) => alive && setSuggestions(rows.map((r) => r.name)))
+      .then((rows) => alive && setSuggestions(rows))
       .catch(() => alive && setSuggestions([]))
     return () => {
       alive = false
@@ -660,7 +663,9 @@ function BookingForm({
   // Festgeschrieben oder Teil eines Stornos: nur noch die Veranstaltung ist änderbar
   const locked = !!booking && (booking.fixed || !!booking.cancels || !!booking.cancelled_by)
 
-  function payloadOf(x: typeof v & { membership: number | null }): Record<string, unknown> {
+  function payloadOf(
+    x: typeof v & { membership: number | null; partner: number | null },
+  ): Record<string, unknown> {
     return {
       date: x.date,
       ...(booking && x.number ? { number: Number(x.number) } : {}),
@@ -672,6 +677,7 @@ function BookingForm({
       text: x.text,
       reference: x.reference,
       counterparty: kind === 'transfer' ? '' : x.counterparty,
+      partner: kind === 'transfer' ? null : x.partner,
       membership: x.membership,
       department: x.department ? Number(x.department) : null,
       project: kind !== 'transfer' && x.project ? Number(x.project) : null,
@@ -689,7 +695,7 @@ function BookingForm({
 
   // Bestehende Buchungen speichern automatisch, neue erst mit „Buchen“
   const auto = useAutoSave(
-    { values: { ...v, membership: member?.id ?? null }, setErrors: form.setErrors },
+    { values: { ...v, membership: member?.id ?? null, partner }, setErrors: form.setErrors },
     (_changes, values) => financeApi.updateBooking(orgId, booking!.id, payloadOf(values)),
     {
       enabled: booking !== null && canEdit,
@@ -705,7 +711,7 @@ function BookingForm({
       return
     }
     const saved = await form.submit(() =>
-      financeApi.createBooking(orgId, payloadOf({ ...v, membership: member?.id ?? null })),
+      financeApi.createBooking(orgId, payloadOf({ ...v, membership: member?.id ?? null, partner })),
     )
     if (!saved) return
     if (einvoice) {
@@ -901,7 +907,15 @@ function BookingForm({
                 }
                 value={v.counterparty}
                 error={errors.counterparty}
-                onChange={(e) => set('counterparty', e.target.value)}
+                hint={partner ? t('Geschäftspartner verknüpft') : undefined}
+                onChange={(e) => {
+                  const name = e.target.value
+                  set('counterparty', name)
+                  // Gewählter Geschäftspartner: verknüpfen und Standardkategorie vorschlagen
+                  const hit = suggestions.find((s) => s.partner && s.name === name)
+                  setPartner(hit?.partner ?? null)
+                  if (hit?.category && !v.category) set('category', String(hit.category))
+                }}
               />
             )}
             <SelectField
@@ -1038,8 +1052,8 @@ function BookingForm({
             </div>
           )}
           <datalist id="booking-partner-suggestions">
-            {suggestions.map((name) => (
-              <option key={name} value={name} />
+            {suggestions.map((s) => (
+              <option key={s.name} value={s.name} />
             ))}
           </datalist>
           {kind !== 'transfer' && isClub && (

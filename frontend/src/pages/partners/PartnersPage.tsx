@@ -1,6 +1,7 @@
 // Geschäftspartner (Konzept geschaeftspartner.md, P1): Lieferanten, Dienstleister, Sponsoren,
 // Behörden und andere außerhalb der Mitgliederliste, mit Ansprechpartnern.
 import { useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { saveBlob } from '../../api/client.ts'
 import { financeApi } from '../../api/finance.ts'
 import { PARTNER_KINDS, PARTNER_ROLES, partnerApi } from '../../api/partners.ts'
@@ -20,7 +21,7 @@ import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { Alert, Checkbox, Field, LoadError, Loading, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
-import { formatDay } from '../../i18n/format.ts'
+import { formatDay, formatEuro } from '../../i18n/format.ts'
 import { TextArea } from '../settings/TextArea.tsx'
 import { kindLabel, partnerAccess, roleLabel } from './access.ts'
 
@@ -118,6 +119,9 @@ export function PartnersPage() {
             if (changed) void load.reload()
           }}
         />
+      )}
+      {org.modules.includes('finance') && org.permissions.includes('finance.edit') && (
+        <SuggestionsCard onAdopted={() => void load.reload()} />
       )}
       {selected && (
         <PartnerForm
@@ -308,6 +312,7 @@ function PartnerForm({
   const org = useActiveOrg()
   const access = partnerAccess(org.permissions)
   const canEdit = access.edit
+  const financeOn = org.modules.includes('finance') && org.permissions.includes('finance.view')
   const [value, setValue] = useState<PartnerInput>(() =>
     partner
       ? {
@@ -568,6 +573,7 @@ function PartnerForm({
         )}
       </div>
       {partner && <Contacts partner={partner} canEdit={canEdit} />}
+      {partner && financeOn && <TurnoverCard partner={partner} />}
       {canEdit && partner && others.length > 0 && (
         <details className="subcard">
           <summary>{t('Doppelten Eintrag zusammenführen')}</summary>
@@ -790,5 +796,102 @@ function Contacts({ partner, canEdit }: { partner: BusinessPartner; canEdit: boo
         </button>
       )}
     </section>
+  )
+}
+
+function TurnoverCard({ partner }: { partner: BusinessPartner }) {
+  const org = useActiveOrg()
+  const data = useLoad(() => partnerApi.turnover(org.id, partner.id), [org.id, partner.id])
+  if (data.error) return <Alert kind="error">{data.error}</Alert>
+  if (!data.data) return null
+  return (
+    <section className="subcard stack">
+      <h4>{t('Umsätze in der Kasse')}</h4>
+      {data.data.years.length === 0 ? (
+        <p className="muted small">{t('Noch keine Buchungen mit diesem Geschäftspartner.')}</p>
+      ) : (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>{t('Geschäftsjahr')}</th>
+                <th>{t('Einnahmen')}</th>
+                <th>{t('Ausgaben')}</th>
+                <th>{t('Buchungen')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.data.years.map((y) => (
+                <tr key={y.year}>
+                  <td>{y.year}</td>
+                  <td>{formatEuro(Number(y.income))}</td>
+                  <td>{formatEuro(Number(y.expense))}</td>
+                  <td>{y.count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {data.data.recent.length > 0 && (
+        <Link to={`/finanzen/kassenbuch?partner=${encodeURIComponent(partner.name)}`}>
+          {t('Buchungen im Kassenbuch zeigen')}
+        </Link>
+      )}
+    </section>
+  )
+}
+
+function SuggestionsCard({ onAdopted }: { onAdopted: () => void }) {
+  const org = useActiveOrg()
+  const list = useLoad(() => partnerApi.suggestions(org.id), [org.id])
+  const [error, setError] = useState('')
+  const [done, setDone] = useState('')
+  if (!list.data?.length) return null
+  return (
+    <details className="card">
+      <summary>{t('Vorschläge aus dem Kassenbuch ({n})', { n: list.data.length })}</summary>
+      <p className="muted small">
+        {t(
+          'Diese Namen stehen mehrfach als Empfänger oder Zahler im Kassenbuch. „Übernehmen“ legt einen Geschäftspartner an und verknüpft die Buchungen mit genau diesem Namen.',
+        )}
+      </p>
+      {done && <Alert kind="success">{done}</Alert>}
+      {error && <Alert kind="error">{error}</Alert>}
+      <ul className="item-list">
+        {list.data.map((s) => (
+          <li key={s.name} className="item-row">
+            <div className="item-row-info">
+              <strong>{s.name}</strong>
+              <div className="muted small">{t('{n}-mal verwendet', { n: s.count })}</div>
+            </div>
+            <div className="button-row">
+              <button
+                type="button"
+                className="button"
+                onClick={async () => {
+                  setError('')
+                  try {
+                    const created = await partnerApi.adopt(org.id, s.name)
+                    setDone(
+                      t('„{name}“ übernommen, {n} Buchungen verknüpft.', {
+                        name: created.name,
+                        n: created.linked,
+                      }),
+                    )
+                    list.setData((list.data ?? []).filter((x) => x.name !== s.name))
+                    onAdopted()
+                  } catch (err) {
+                    setError(errorMessage(err))
+                  }
+                }}
+              >
+                {t('Übernehmen')}
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </details>
   )
 }
