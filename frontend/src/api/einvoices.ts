@@ -69,7 +69,7 @@ export type CommercialInvoice = Omit<Invoice, 'electronic_data' | 'lines'> & {
   lines: { electronic_data: CommercialLine }[]
 }
 export interface ValidationReport {
-  status: 'valid' | 'invalid' | 'unavailable'
+  status: 'valid' | 'invalid' | 'unavailable' | 'pending'
   validator: string
   messages: { level: string; code?: string; text: string }[]
 }
@@ -92,6 +92,8 @@ export interface IncomingInvoice {
   }
   report: ValidationReport
   status: 'review' | 'approved' | 'rejected'
+  /** Technische Prüfung läuft im Hintergrund ('pending') oder ist fertig. */
+  validation?: 'pending' | 'done'
   review_note: string
   booking: number | null
   created_at: string

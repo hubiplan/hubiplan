@@ -5209,7 +5209,6 @@
   "Entwurf speichern": "Save draft",
   "XML- und ZUGFeRD-Rechnungen werden im Original gespeichert. Ein Import erzeugt keine Buchung und keine Zahlung.": "Original XML and ZUGFeRD invoices are retained. Importing does not create a booking or a payment.",
   "E-Rechnung importieren": "Import e-invoice",
-  "Die Datei wird geprüft …": "Validating the file …",
   "Zugeordnet": "Linked",
   "Freigegeben": "Approved",
   "Abgelehnt": "Rejected",
@@ -7664,5 +7663,8 @@
   "Punkt aus Kartenlink übernehmen": "Take point from map link",
   "Link aus OpenStreetMap oder Google Maps": "Link from OpenStreetMap or Google Maps",
   "Route in OpenStreetMap": "Route in OpenStreetMap",
-  "Route in Google Maps": "Route in Google Maps"
+  "Route in Google Maps": "Route in Google Maps",
+  "Die Datei wird hochgeladen …": "Uploading the file …",
+  "Wird geprüft": "Checking",
+  "Wird geprüft: Die technische Prüfung läuft im Hintergrund und dauert meist unter einer Minute.": "Checking: the technical validation runs in the background and usually takes less than a minute."
 }
