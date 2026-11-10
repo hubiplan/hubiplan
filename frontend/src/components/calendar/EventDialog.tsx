@@ -1,4 +1,5 @@
 // Termin ansehen; mit Recht auch bearbeiten, einzelne Serientermine ändern, Anhänge.
+import { RouteLinks } from './RouteLinks.tsx'
 import { EventTaskLink } from '../TodoEventLink.tsx'
 import { Link, useNavigate } from 'react-router-dom'
 import { useOptionalOrg } from '../../org/OrgContext.tsx'
@@ -476,6 +477,7 @@ export function EventDialog({
                 <dd>
                   {data.location}
                   {data.address && <div className="muted small">{data.address}</div>}
+                  <RouteLinks directions={data.directions} links={data.map_links} />
                 </dd>
               </>
             )}

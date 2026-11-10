@@ -154,6 +154,10 @@ export interface EventDetail {
   description: string
   location: string
   address: string
+  directions?: string
+  latitude?: number | null
+  longitude?: number | null
+  map_links?: MapLinks
   category: EventCategory | null
   all_day: boolean
   hide_end_time?: boolean
@@ -198,6 +202,12 @@ export interface EventDetail {
   share_defaults?: { up: boolean; down: boolean }
 }
 
+/** Routenlinks zum Ort (nur Links, keine eingebettete Karte) */
+export interface MapLinks {
+  osm?: string
+  google?: string
+}
+
 export interface EventInput {
   /** Vereinskalender: Untereinheit, für die der Termin gilt (null = die Einheit selbst) */
   department_id?: number | null
@@ -205,6 +215,9 @@ export interface EventInput {
   description: string
   location: string
   address: string
+  directions: string
+  latitude: number | null
+  longitude: number | null
   category: number | null
   all_day: boolean
   hide_end_time?: boolean

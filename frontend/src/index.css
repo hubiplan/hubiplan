@@ -5419,3 +5419,9 @@ label:has(> .file-input:focus-visible) {
 .rsvp-public-text {
   white-space: pre-wrap;
 }
+
+.route-links {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}

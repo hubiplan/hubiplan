@@ -1,5 +1,5 @@
 import { api } from './client.ts'
-import type { ResponseStatus } from './events.ts'
+import type { MapLinks, ResponseStatus } from './events.ts'
 
 /** Rückmeldeseite hinter dem Link aus der Mail (ohne Anmeldung). */
 export interface PublicRsvp {
@@ -15,6 +15,8 @@ export interface PublicRsvp {
     when: string
     location: string
     address: string
+    directions?: string
+    map_links?: MapLinks
     description: string
     is_cancelled: boolean
     cancel_note: string

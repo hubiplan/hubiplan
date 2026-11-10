@@ -4,6 +4,7 @@ import { ApiError } from '../api/client.ts'
 import type { ResponseStatus } from '../api/events.ts'
 import { publicRsvpApi } from '../api/publicRsvp.ts'
 import type { PublicRsvp } from '../api/publicRsvp.ts'
+import { RouteLinks } from '../components/calendar/RouteLinks.tsx'
 import { berlin, formatDay } from '../components/calendar/time.ts'
 import { errorMessage } from '../components/forms.ts'
 import { Logo } from '../components/Logo.tsx'
@@ -130,7 +131,10 @@ export function PublicRsvpPage() {
               {where && (
                 <>
                   <dt>{t('Wo')}</dt>
-                  <dd>{where}</dd>
+                  <dd>
+                    {where}
+                    <RouteLinks directions={ev.directions} links={ev.map_links} />
+                  </dd>
                 </>
               )}
               {r.deadline && (

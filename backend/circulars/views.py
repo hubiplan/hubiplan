@@ -563,6 +563,7 @@ def event_text(event, reminder: bool = False) -> tuple[str, str]:
     """Betreff und Text für ein Rundschreiben zu einem Termin (Vereinssprache).
 
     ``reminder``: Erinnerung an alle, die noch nicht (sicher) geantwortet haben."""
+    from events import maps
     from events.notify import when
 
     start = timezone.localtime(event.starts_at)
@@ -576,6 +577,11 @@ def event_text(event, reminder: bool = False) -> tuple[str, str]:
     lines.append(f"- Wann: {when(event)}")
     if event.location or event.address:
         lines.append(f"- Wo: {', '.join(x for x in (event.location, event.address) if x)}")
+    if event.directions.strip():
+        lines.append(f"- Anfahrt: {event.directions.strip()}")
+    found = maps.for_event(event)
+    if found:
+        lines.append(f"- Route: [OpenStreetMap]({found['osm']}) · [Google Maps]({found['google']})")
     if event.description.strip():
         lines += ["", event.description.strip()[:5000]]
     if event.rsvp_enabled:

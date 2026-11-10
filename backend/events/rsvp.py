@@ -129,7 +129,7 @@ def check_capacity(event: Event, response: EventResponse | None, status: str, gu
         )
 
 
-def check_options(event: Event, status: str, note: str) -> str:
+def check_options(event: Event, status: str, note: str | None) -> str | None:
     """Was das Mitglied selbst antworten darf: „Vielleicht“ und Bemerkung nur, wenn der
     Termin sie erlaubt. Gibt die zu speichernde Bemerkung zurück."""
     if status == EventResponse.Status.MAYBE and not event.rsvp_maybe:
@@ -143,7 +143,7 @@ def save_response(
     *,
     status: str,
     guests: int,
-    note: str,
+    note: str | None,
     source: str,
     user,
     enforce_capacity: bool = True,
@@ -163,7 +163,8 @@ def save_response(
         response = EventResponse(event=event, membership=membership)
     response.status = status
     response.guests = guests
-    response.note = note.strip()
+    if note is not None:
+        response.note = note.strip()
     response.source = source
     response.updated_by = user
     response.save()

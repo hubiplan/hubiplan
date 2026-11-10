@@ -320,7 +320,23 @@ def push_data(recipient: CircularRecipient, circular: Circular, access_id: int) 
         "title": text.fill(circular.subject, recipient.values).replace("\n", " ").strip()[:200],
         "text": body,
         "from": sender_name(circular),
+        **event_push(circular),
     }
+
+
+def event_push(circular: Circular) -> dict:
+    """Rundschreiben zum Termin: Die App öffnet den Termin und bietet Zu- und Absage an."""
+    from events import rsvp_link
+
+    event = circular.event if circular.event_id else None
+    if event is None:
+        return {}
+    data: dict = {"event": event.pk}
+    if rsvp_link.offers_link(event):
+        data["rsvp"] = True
+        if event.rsvp_maybe:
+            data["maybe"] = True
+    return data
 
 
 def deliver_app(recipient: CircularRecipient, circular: Circular) -> bool:

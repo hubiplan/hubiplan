@@ -36,7 +36,7 @@ from organizations.terms import fill
 from organizations.tree import UnitTree
 from portal.views import DepartmentScopedMixin, _portal_access
 
-from . import external, ical, notify, participants, pdf, recurrence, rsvp, services
+from . import external, ical, maps, notify, participants, pdf, recurrence, rsvp, services
 from .models import (
     MAX_ATTACHMENT_BYTES,
     MAX_ATTACHMENTS,
@@ -182,6 +182,10 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
         "description": event.description,
         "location": event.location,
         "address": event.address,
+        "directions": event.directions,
+        "latitude": float(event.latitude) if event.latitude is not None else None,
+        "longitude": float(event.longitude) if event.longitude is not None else None,
+        "map_links": maps.for_event(event),
         "category": category_data(event.category),
         "all_day": event.all_day,
         "hide_end_time": event.hide_end_time,
@@ -1169,7 +1173,8 @@ class _EventHide(APIView):
 class ResponseSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=EventResponse.Status.choices)
     guests = serializers.IntegerField(min_value=0, max_value=MAX_GUESTS, default=0)
-    note = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
+    # Ohne Angabe (z. B. Knopf in der Benachrichtigung) bleibt die bisherige Bemerkung
+    note = serializers.CharField(max_length=200, required=False, allow_blank=True, default=None)
 
 
 class BoardResponseSerializer(ResponseSerializer):

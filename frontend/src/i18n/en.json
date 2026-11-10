@@ -7655,5 +7655,14 @@
   "Kommst du?": "Are you coming?",
   "Ich komme": "I am coming",
   "Ich komme nicht": "I am not coming",
-  "Erinnerung an alle ohne Rückmeldung": "Reminder to everyone without a reply"
+  "Erinnerung an alle ohne Rückmeldung": "Reminder to everyone without a reply",
+  "In diesem Link steht kein Punkt.": "This link contains no point.",
+  "Anfahrt": "Directions",
+  "Anfahrt und Hinweise (optional)": "Directions and notes (optional)",
+  "z. B. Parken am Sportplatz, Eingang über den Hof": "e.g. Park at the sports ground, entrance through the yard",
+  "Ohne genauen Punkt führen die Kartenlinks zur Anschrift. Einen Punkt brauchst du nur, wenn die Anschrift nicht reicht, etwa für ein Festzelt.": "Without an exact point the map links lead to the address. You only need a point if the address is not enough, for example for a marquee.",
+  "Punkt aus Kartenlink übernehmen": "Take point from map link",
+  "Link aus OpenStreetMap oder Google Maps": "Link from OpenStreetMap or Google Maps",
+  "Route in OpenStreetMap": "Route in OpenStreetMap",
+  "Route in Google Maps": "Route in Google Maps"
 }

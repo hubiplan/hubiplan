@@ -90,6 +90,24 @@ class Event(models.Model):
     description = models.TextField("Beschreibung", blank=True, max_length=5000)
     location = models.CharField("Ort", max_length=200, blank=True)
     address = models.CharField("Anschrift", max_length=300, blank=True)
+    # Anfahrt (T5): Hinweise und auf Wunsch genauer Punkt, wenn die Anschrift nicht reicht
+    directions = models.TextField("Anfahrt und Hinweise", max_length=1000, blank=True)
+    latitude = models.DecimalField(
+        "Breite",
+        max_digits=8,
+        decimal_places=5,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(-90), MaxValueValidator(90)],
+    )
+    longitude = models.DecimalField(
+        "Länge",
+        max_digits=8,
+        decimal_places=5,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(-180), MaxValueValidator(180)],
+    )
     category = models.ForeignKey(
         EventCategory,
         verbose_name="Kategorie",

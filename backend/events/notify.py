@@ -16,7 +16,7 @@ from core.tenancy import rls_bypass
 from organizations.addresses import base_url
 from outbox import mail
 
-from . import rsvp, rsvp_link
+from . import maps, rsvp, rsvp_link
 from .models import Event, EventResponse
 
 logger = logging.getLogger(__name__)
@@ -65,6 +65,8 @@ def body(
     lines = [f"Hallo {first_name},", "", intro, "", event.title, f"Wann: {when(event)}"]
     if event.location or event.address:
         lines.append(f"Wo: {', '.join(x for x in (event.location, event.address) if x)}")
+    if kind != CANCEL:
+        lines += maps.mail_lines(event)
     if kind == CANCEL and event.cancel_note:
         lines.append(f"Hinweis: {event.cancel_note}")
     if event.description and kind in (INVITE, REMIND):
@@ -149,8 +151,45 @@ def send(event_id: int, kind: str) -> int:
                 fail_silently=True,
             )
             sent += int(ok)
+        if kind in (INVITE, REMIND):
+            try:
+                push_app(event, kind, [m.pk for m in recipients(event, kind)])
+            except Exception:  # Push ist Zugabe: Mails sind schon unterwegs
+                logger.exception("Push zum Termin %s gescheitert", event_id)
     logger.info("Termin %s: %s Mails (%s)", event_id, sent, kind)
     return sent
+
+
+def push_app(event: Event, kind: str, membership_ids: list[int]) -> int:
+    """Einladung oder Erinnerung auch als Push an die App (mit Zu- und Absage)."""
+    from devices.push import app_accesses, send_to_user
+    from portal.models import PortalAccess
+
+    accesses = app_accesses(membership_ids)
+    if not accesses:
+        return 0
+    users = dict(PortalAccess.objects.filter(pk__in=accesses.values()).values_list("pk", "user_id"))
+    where = ", ".join(x for x in (event.location, event.address) if x)
+    text = when(event) + (f" · {where}" if where else "")
+    base = {
+        "v": 1,
+        "t": "event",
+        "id": event.pk,
+        "kind": kind,
+        "title": subject(event, kind)[:200],
+        "text": text[:300],
+        "from": event.department.name if event.department_id else event.organization.name,
+    }
+    if rsvp_link.offers_link(event):
+        base["rsvp"] = True
+        if event.rsvp_maybe:
+            base["maybe"] = True
+    pushed = 0
+    for access_id in accesses.values():
+        user_id = users.get(access_id)
+        if user_id:
+            pushed += int(send_to_user(user_id, {**base, "access": access_id}) > 0)
+    return pushed
 
 
 def due_reminders(now: datetime.datetime | None = None) -> list[int]:

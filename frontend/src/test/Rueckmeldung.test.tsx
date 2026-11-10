@@ -35,6 +35,8 @@ function page(mine: null | { status: 'yes' | 'no' | 'maybe'; guests: number; not
       when: '13.06.2099, 14:00 bis 18:00 Uhr',
       location: 'Festplatz',
       address: 'Wiesenweg 1',
+      directions: 'Parken am Sportplatz.',
+      map_links: { osm: 'https://www.openstreetmap.org/search?query=Wiesenweg+1' },
       description: 'Mit Grillen.',
       is_cancelled: false,
       cancel_note: '',
@@ -70,7 +72,12 @@ describe('Rückmeldung per Link', () => {
     })
     renderAt('/rueckmeldung/abc')
     expect(await screen.findByRole('heading', { name: 'Sommerfest' })).toBeInTheDocument()
-    expect(screen.getByText('Festplatz, Wiesenweg 1')).toBeInTheDocument()
+    expect(screen.getByText(/Festplatz, Wiesenweg 1/)).toBeInTheDocument()
+    expect(screen.getByText('Parken am Sportplatz.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Route in OpenStreetMap' })).toHaveAttribute(
+      'href',
+      'https://www.openstreetmap.org/search?query=Wiesenweg+1',
+    )
     expect(screen.getByRole('link', { name: 'Plan.pdf' })).toHaveAttribute(
       'href',
       '/api/public/rsvp/abc/attachments/3/',

@@ -20,6 +20,8 @@ Mit **Rundschreiben dazu schreiben** legst du dort einen Entwurf an die Eingelad
 
 Im Termindialog stehen zuerst Titel, Zeit und Ort, danach Kategorie und **Wer sieht den Termin?**. Seltenes liegt eingeklappt unter **Weitere Einstellungen**: **Nach oben weitergeben**, **Nach unten weitergeben** und **Endzeit auf der Webseite ausblenden**. Ist dort etwas gesetzt, ist der Abschnitt aufgeklappt. Kopf und Speichern-Leiste bleiben beim Blättern im Dialog stehen.
 
+Unter **Anfahrt** trägst du Hinweise wie Parken oder Eingang ein. Ohne weitere Angabe führen die Links **Route in OpenStreetMap** und **Route in Google Maps** zur Anschrift. Reicht die Anschrift nicht (Festzelt, Schießstand im Wald), gibst du **Breite** und **Länge** an oder fügst unter **Punkt aus Kartenlink übernehmen** einen Link aus OpenStreetMap oder Google Maps ein. Anfahrt und Routenlinks erscheinen im Termin, in den Mails, auf der Rückmeldeseite und im Kalender-Abo; eine Karte wird nicht eingebettet. Wählst du einen gespeicherten Ort, übernimmt der Termin Anschrift, Anfahrt und Punkt als Kopie.
+
 Beim Anlegen oder Bearbeiten eines Termins kannst du **Endzeit auf der Webseite ausblenden** aktivieren, wenn öffentlich nur die Beginnzeit erscheinen soll. Intern und im Kalender-Abo bleibt die Endzeit erhalten. Bei Serien gilt die Einstellung für alle Wiederholungen.
 
 Nach erfolgreichem Zusagen, Absagen oder Zurücknehmen deiner Rückmeldung erscheint eine Bestätigung, die als Statusmeldung auch für Screenreader bereitsteht. Beim Zu- und Absagen bleibt der Fokus bei der Aktion; nach dem Zurücknehmen wechselt er zu **Zusagen**. Bei einem Fehler erscheint keine Erfolgsbestätigung; du kannst die Rückmeldung erneut senden.

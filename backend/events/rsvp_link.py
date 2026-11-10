@@ -30,7 +30,7 @@ from members.models import Membership
 from organizations.addresses import base_url
 from organizations.imprint import ensure as ensure_imprint
 
-from . import notify, rsvp
+from . import maps, notify, rsvp
 from .models import MAX_GUESTS, Event, EventAttachment, EventResponse
 
 logger = logging.getLogger(__name__)
@@ -181,6 +181,8 @@ class _LinkBase(APIView):
                 "when": notify.when(event),
                 "location": event.location,
                 "address": event.address,
+                "directions": event.directions,
+                "map_links": maps.for_event(event),
                 "description": event.description,
                 "is_cancelled": event.is_cancelled,
                 "cancel_note": event.cancel_note if event.is_cancelled else "",

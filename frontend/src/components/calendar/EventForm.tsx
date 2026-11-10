@@ -15,6 +15,7 @@ import type {
 import { useAutoSave, useForm } from '../forms.ts'
 import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../ui.tsx'
 import { PlaceField } from '../PlaceField.tsx'
+import { pointFromLink } from '../mapLink.ts'
 import { addDays, berlin, toApi } from './time.ts'
 import { confirmDialog } from '../dialog.ts'
 import { Why } from '../../learning/Aids.tsx'
@@ -30,6 +31,9 @@ interface Values {
   description: string
   location: string
   address: string
+  directions: string
+  latitude: string
+  longitude: string
   category: string
   all_day: boolean
   hide_end_time: boolean
@@ -71,6 +75,9 @@ function initial(event: EventDetail | null, date: string): Values {
       description: '',
       location: '',
       address: '',
+      directions: '',
+      latitude: '',
+      longitude: '',
       category: '',
       all_day: false,
       hide_end_time: false,
@@ -108,6 +115,9 @@ function initial(event: EventDetail | null, date: string): Values {
     description: event.description,
     location: event.location,
     address: event.address,
+    directions: event.directions ?? '',
+    latitude: event.latitude != null ? String(event.latitude) : '',
+    longitude: event.longitude != null ? String(event.longitude) : '',
     category: event.category ? String(event.category.id) : '',
     all_day: event.all_day,
     hide_end_time: event.hide_end_time ?? false,
@@ -144,6 +154,9 @@ function toInput(v: Values, withUnit = false): EventInput {
     description: v.description,
     location: v.location,
     address: v.address,
+    directions: v.directions,
+    latitude: v.latitude.trim() ? Number(v.latitude.replace(',', '.')) : null,
+    longitude: v.longitude.trim() ? Number(v.longitude.replace(',', '.')) : null,
     category: v.category ? Number(v.category) : null,
     all_day: v.all_day,
     hide_end_time: v.hide_end_time,
@@ -374,7 +387,15 @@ export function EventForm({
           placeholder={t('z. B. Vereinsheim')}
           error={errors.location}
           onChange={(value) => set('location', value)}
-          onPick={(place) => place.address && set('address', place.address)}
+          onPick={(place) => {
+            // Kopie: spätere Änderungen am Ort ändern diesen Termin nicht
+            if (place.address) set('address', place.address)
+            if (place.directions) set('directions', place.directions)
+            if (place.latitude != null && place.longitude != null) {
+              set('latitude', String(place.latitude))
+              set('longitude', String(place.longitude))
+            }
+          }}
         />
         <Field
           label={t('Anschrift')}
@@ -384,6 +405,7 @@ export function EventForm({
           onChange={(e) => set('address', e.target.value)}
         />
       </div>
+      <Directions v={v} errors={errors} set={set} />
       <div className="grid-2">
         <SelectField
           label={t('Kategorie')}
@@ -682,5 +704,73 @@ export function EventForm({
         )}
       </div>
     </form>
+  )
+}
+
+/** Anfahrt: Hinweise und auf Wunsch ein genauer Punkt (eingeklappt, wenn leer). */
+function Directions({
+  v,
+  errors,
+  set,
+}: {
+  v: Values
+  errors: Partial<Record<string, string>>
+  set: <K extends keyof Values>(key: K, value: Values[K]) => void
+}) {
+  const [link, setLink] = useState('')
+  const [linkError, setLinkError] = useState('')
+  const filled = !!(v.directions || v.latitude || v.longitude)
+  function take(text: string) {
+    setLink(text)
+    if (!text.trim()) return setLinkError('')
+    const point = pointFromLink(text)
+    if (!point) return setLinkError(t('In diesem Link steht kein Punkt.'))
+    setLinkError('')
+    set('latitude', String(point.latitude))
+    set('longitude', String(point.longitude))
+    setLink('')
+  }
+  return (
+    <details className="subcard stack-sm" open={filled}>
+      <summary>{t('Anfahrt')}</summary>
+      <label className="field">
+        <span>{t('Anfahrt und Hinweise (optional)')}</span>
+        <textarea
+          rows={2}
+          value={v.directions}
+          maxLength={1000}
+          placeholder={t('z. B. Parken am Sportplatz, Eingang über den Hof')}
+          onChange={(e) => set('directions', e.target.value)}
+        />
+      </label>
+      <p className="muted small">
+        {t(
+          'Ohne genauen Punkt führen die Kartenlinks zur Anschrift. Einen Punkt brauchst du nur, wenn die Anschrift nicht reicht, etwa für ein Festzelt.',
+        )}
+      </p>
+      <div className="grid-3">
+        <Field
+          label={t('Breite')}
+          inputMode="decimal"
+          value={v.latitude}
+          error={errors.latitude}
+          onChange={(e) => set('latitude', e.target.value)}
+        />
+        <Field
+          label={t('Länge')}
+          inputMode="decimal"
+          value={v.longitude}
+          error={errors.longitude}
+          onChange={(e) => set('longitude', e.target.value)}
+        />
+        <Field
+          label={t('Punkt aus Kartenlink übernehmen')}
+          placeholder={t('Link aus OpenStreetMap oder Google Maps')}
+          value={link}
+          error={linkError}
+          onChange={(e) => take(e.target.value)}
+        />
+      </div>
+    </details>
   )
 }

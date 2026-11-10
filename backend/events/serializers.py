@@ -49,6 +49,9 @@ class EventWriteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "description",
             "location",
             "address",
+            "directions",
+            "latitude",
+            "longitude",
             "category",
             "all_day",
             "hide_end_time",
@@ -124,6 +127,12 @@ class EventWriteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             attrs["rsvp_note_question"] = ""
         elif "rsvp_note_question" in attrs:
             attrs["rsvp_note_question"] = attrs["rsvp_note_question"].strip()
+        lat = attrs.get("latitude", inst.latitude if inst else None)
+        lon = attrs.get("longitude", inst.longitude if inst else None)
+        if (lat is None) != (lon is None):
+            raise serializers.ValidationError(
+                {"latitude": gettext("Bitte Breite und Länge zusammen angeben.")}
+            )
         self.notify = attrs.pop("notify", False)
         return super().validate(attrs)
 

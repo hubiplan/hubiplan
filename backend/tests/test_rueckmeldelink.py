@@ -3,6 +3,7 @@
 # ruff: noqa: F811  (Fixtures aus test_m12_events als Parameter)
 
 import re
+from unittest.mock import patch
 
 import pytest
 from django.core import mail as djmail
@@ -18,6 +19,7 @@ from .test_m12_events import (  # noqa: F401  (Fixtures)
     JSON,
     cal,
     create,
+    member_with_access,
     org_base,
     private_root,
     zug,
@@ -173,3 +175,31 @@ def test_erinnerung_auch_an_vielleicht(setup):
     )
     names = {m.person.first_name for m in notify.recipients(event, notify.REMIND)}
     assert names == {"Anna"}
+
+
+def test_push_bei_einladung_und_rundschreiben(setup):
+    s = setup
+    m, user, access = member_with_access(s["club"], "Erika")
+    with (
+        patch("devices.push.app_accesses", return_value={m.pk: access.pk}),
+        patch("devices.push.send_to_user", return_value=1) as push,
+    ):
+        notify.send(s["ev"]["id"], notify.INVITE)
+    (uid, data), _ = push.call_args
+    assert uid == user.pk
+    assert data["t"] == "event" and data["id"] == s["ev"]["id"] and data["access"] == access.pk
+    assert data["rsvp"] is True and data["maybe"] is True
+    assert data["title"].startswith("Einladung: Sommerfest")
+
+    from circulars.models import Circular
+    from circulars.services import push_data
+
+    circular = Circular.objects.create(
+        organization=s["club"], subject="Info", body="Text", event_id=s["ev"]["id"]
+    )
+
+    class R:
+        values = {}
+
+    data = push_data(R(), circular, access.pk)
+    assert data["event"] == s["ev"]["id"] and data["rsvp"] is True
