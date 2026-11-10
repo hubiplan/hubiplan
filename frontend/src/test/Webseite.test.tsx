@@ -706,6 +706,55 @@ describe('Inhalte der Webseite', () => {
     expect(calls.some((c) => c.key === `POST ${base}texts/5/publish/`)).toBe(true)
   })
 
+  it('fügt einer Textseite ein Zitat unter dem Text hinzu (G4)', async () => {
+    const page = text({ slug: 'verein', title: 'Verein', sections: [{ key: 'body', on: true }] })
+    const options = {
+      block_labels: {},
+      blocks: {},
+      home_labels: { body: 'Text der Seite' },
+      home_kinds: { text: 'Text', quote: 'Zitat' },
+      home_choices: { roles: [], albums: [], events: [] },
+      units: [],
+      menu_items: [],
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}texts/`]: () => ({
+          status: 200,
+          body: { texts: [page], units: [], section_options: options },
+        }),
+        [`GET ${base}texts/5/`]: () => ({ status: 200, body: page }),
+        [`PUT ${base}texts/5/`]: () => ({ status: 200, body: page }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/inhalte',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: 'Verein' }))
+    const list = await screen.findByRole('list', { name: 'Abschnitte der Seite' })
+    expect(within(list).getByText('Text der Seite')).toBeVisible()
+    // Der Text der Seite lässt sich nicht löschen
+    expect(within(list).queryByRole('button', { name: 'Text der Seite löschen' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Abschnitt hinzufügen' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Abschnitt hinzufügen' })
+    await user.click(within(dialog).getByRole('button', { name: /^Zitat/ }))
+    const editor = await screen.findByRole('dialog', { name: 'Zitat' })
+    expect(within(editor).queryByText('Spalte')).toBeNull()
+    await user.click(within(editor).getByRole('button', { name: 'Übernehmen' }))
+    await waitFor(
+      () => {
+        const put = calls.filter((c) => c.key === `PUT ${base}texts/5/`).at(-1)
+        const body = JSON.parse(String(put?.init?.body ?? '{}'))
+        expect(body.sections?.map((s: { key: string; kind?: string }) => s.kind ?? s.key)).toEqual([
+          'body',
+          'quote',
+        ])
+      },
+      { timeout: 3000 },
+    )
+  })
+
   const img = (id: number, alt: string, over: Record<string, unknown> = {}) => ({
     id,
     key: `k${id}`,

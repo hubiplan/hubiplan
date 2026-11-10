@@ -12,8 +12,8 @@ import type {
   HomeSectionData,
   HomeTarget,
   HomeTile,
-  Website,
-  WebsiteData,
+  SectionOptions,
+  SectionSite,
 } from '../../api/website.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { formatDateTime, useLoad } from '../../components/forms.ts'
@@ -147,13 +147,16 @@ export function HomeBuilder({
   value,
   blocks,
   design,
+  page = false,
   onChange,
 }: {
-  data: WebsiteData
-  website: Website
+  data: SectionOptions
+  website: SectionSite
   value: HomeSection[]
   blocks: Record<string, boolean>
   design: string
+  /** Abschnitte einer Textseite (G4) statt der Startseite */
+  page?: boolean
   onChange: (next: HomeSection[]) => void
 }) {
   const labels = data.home_labels ?? {}
@@ -185,9 +188,13 @@ export function HomeBuilder({
   async function remove(s: HomeSection) {
     const ok = await confirmDialog({
       title: t('Abschnitt löschen?'),
-      message: t('„{x}“ verschwindet von der Startseite, sobald der Entwurf veröffentlicht ist.', {
-        x: summary(s) || label(s),
-      }),
+      message: page
+        ? t('„{x}“ verschwindet von der Seite, sobald du sie veröffentlichst.', {
+            x: summary(s) || label(s),
+          })
+        : t('„{x}“ verschwindet von der Startseite, sobald der Entwurf veröffentlicht ist.', {
+            x: summary(s) || label(s),
+          }),
       confirmLabel: t('Löschen'),
     })
     if (ok) onChange(value.filter((x) => x.key !== s.key))
@@ -214,7 +221,10 @@ export function HomeBuilder({
   return (
     <>
       <SortHint website />
-      <ul className="sortable-list home-sections" aria-label={t('Abschnitte der Startseite')}>
+      <ul
+        className="sortable-list home-sections"
+        aria-label={page ? t('Abschnitte der Seite') : t('Abschnitte der Startseite')}
+      >
         {sortable.ordered.map((s) => {
           const needs = s.kind
             ? data.home_kind_needs_block?.[s.kind]
@@ -343,8 +353,8 @@ function SectionDialog({
   onSave,
   onClose,
 }: {
-  data: WebsiteData
-  website: Website
+  data: SectionOptions
+  website: SectionSite
   section: HomeSection
   title: string
   design: string
@@ -453,8 +463,8 @@ function SectionContent({
   setData,
   imageField,
 }: {
-  data: WebsiteData
-  website: Website
+  data: SectionOptions
+  website: SectionSite
   section: HomeSection
   setData: (patch: Partial<HomeSectionData>) => void
   imageField: (
@@ -735,7 +745,7 @@ function ContactsField({
   setData,
   titleField,
 }: {
-  data: WebsiteData
+  data: SectionOptions
   value: HomeSectionData
   setData: (patch: Partial<HomeSectionData>) => void
   titleField: ReactNode
@@ -800,8 +810,8 @@ function TargetField({
   value,
   onChange,
 }: {
-  data: WebsiteData
-  website: Website
+  data: SectionOptions
+  website: SectionSite
   value: HomeTarget
   onChange: (target: HomeTarget) => void
 }) {

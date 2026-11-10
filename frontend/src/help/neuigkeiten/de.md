@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Webseite: **Textseiten** lassen sich wie die Startseite aus Abschnitten bauen. Unter Webseite › Texte fügt **Abschnitt hinzufügen** über oder unter dem Text etwa Banner, Knöpfe, Kacheln oder ein Zitat ein. Der bisherige Text bleibt der erste Abschnitt, ohne Änderung sieht die Seite aus wie bisher.
 - Webseite: Die Startseite ist ein **Baukasten**. Unter Gestaltung › **Startseite** fügt **Abschnitt hinzufügen** eigene Abschnitte ein, auch mehrfach: **Text**, **Text mit Bild**, **Banner**, **Knopfleiste**, **Kacheln**, **Hervorgehobener Termin** mit Countdown, **Album-Auszug**, **Zitat** und **Ansprechpartner**. Jeder Abschnitt bekommt Hintergrund und Breite, im Design „Zeitung“ auch die Spalte. Alles geht zuerst in den Entwurf und erscheint gleich in der Vorschau.
 - Webseite: Änderungen an Design, Farben, Feinabstimmung, Kopfbild und Startseite sind jetzt zuerst ein **Entwurf**. Unter Gestaltung zeigt daneben eine Vorschau die echte Webseite als **Handy**, **Tablet** oder **Bildschirm**; öffentlich wird alles erst mit **Veröffentlichen**. Die letzten fünf veröffentlichten Fassungen lassen sich unter **Frühere Fassungen** zurückholen.
 - Erscheinungsbild: Für Plattform, Einheiten und Untereinheiten lässt sich ein zweites **Logo / Wappen für den Dunkelmodus** hochladen. Es erscheint in der dunklen Darstellung der Web-Oberfläche; ohne eigenes gilt das normale Logo.

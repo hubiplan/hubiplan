@@ -312,16 +312,20 @@ def public(site, home_keys: list[str], event_entry) -> list[dict]:
     die Angaben wie unter ``events/``."""
     from .models import normalize_home_sections
 
-    sections = normalize_home_sections(site.site.home_sections)
-    images = _images(site, image_ids(sections))
+    return resolve(site, normalize_home_sections(site.site.home_sections), home_keys, event_entry)
+
+
+def resolve(site, sections: list[dict], builtin_keys, event_entry) -> list[dict]:
+    """Abschnitte (Startseite oder Textseite) mit aufgelöstem Inhalt für die Webseite."""
     from . import menu
 
+    images = _images(site, image_ids(sections))
     known = None
     result = []
     for s in sections:
         layout = {"key": s["key"], "bg": s["bg"], "width": s["width"], "column": s["column"]}
         if "kind" not in s:
-            if s["key"] in home_keys:
+            if s["key"] in builtin_keys:
                 result.append({**layout, "kind": s["key"]})
             continue
         needs = KIND_NEEDS_BLOCK.get(s["kind"])
@@ -332,6 +336,85 @@ def public(site, home_keys: list[str], event_entry) -> list[dict]:
         content = _content(site, s["kind"], s["data"], images, known, event_entry)
         if content is not None:
             result.append({**layout, "kind": s["kind"], **content})
+    return result
+
+
+# --- Textseiten (G4) ---
+
+# Der bisherige Inhalt einer Textseite (Bild oben und Text) ist ein fester Abschnitt; ohne
+# eigene Abschnitte sieht die Seite aus wie vorher.
+PAGE_BUILTINS = ("body",)
+
+
+def normalize_page(value) -> list[dict]:
+    return normalize(value, PAGE_BUILTINS, set())
+
+
+def validate_page(value, website) -> list[dict]:
+    return validate(value, website, PAGE_BUILTINS, set())
+
+
+def has_custom(sections) -> bool:
+    return any(isinstance(s, dict) and "kind" in s for s in normalize_page(sections))
+
+
+# --- Datenumzug: Nummern im Inhalt auf die des neuen Servers umstellen ---
+
+REF_TABLES = {
+    "image": "website.websiteimage",
+    "album": "website.galleryalbum",
+    "event": "events.event",
+}
+
+
+def remap(value, get) -> list:
+    """Verweise in eigenen Abschnitten umstellen; ``get(tabelle, alt)`` liefert die neue
+    Nummer oder None (dann fällt der Verweis weg, der Abschnitt bleibt)."""
+    if not isinstance(value, list):
+        return value
+
+    def one(table, old):
+        try:
+            return get(table, old) if isinstance(old, int) else None
+        except (TypeError, ValueError):
+            return None
+
+    def target(t):
+        if isinstance(t, dict) and "event" in t:
+            new = one("events.event", t["event"])
+            return {"event": new} if new is not None else None
+        return t
+
+    result = []
+    for item in value:
+        if not isinstance(item, dict) or not isinstance(item.get("data"), dict):
+            result.append(item)
+            continue
+        data = dict(item["data"])
+        for field, table in REF_TABLES.items():
+            if field in data:
+                data[field] = one(table, data[field])
+        if isinstance(data.get("roles"), list):
+            data["roles"] = [
+                r for r in (one("access.role", r) for r in data["roles"]) if r is not None
+            ]
+        for list_field in ("buttons", "tiles"):
+            if isinstance(data.get(list_field), list):
+                data[list_field] = [
+                    {
+                        **x,
+                        **(
+                            {"image": one("website.websiteimage", x.get("image"))}
+                            if "image" in x
+                            else {}
+                        ),
+                        "target": target(x.get("target")),
+                    }
+                    if isinstance(x, dict)
+                    else x
+                    for x in data[list_field]
+                ]
+        result.append({**item, "data": data})
     return result
 
 

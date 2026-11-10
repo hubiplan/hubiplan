@@ -484,6 +484,34 @@ def home_choices(website: Website) -> dict:
     }
 
 
+def page_section_options(org, website: Website) -> dict:
+    """Auswahl für die Abschnitte der Textseiten (G4): dieselben Arten wie auf der Startseite,
+    dazu „body“ (Bild und Text der Seite) als fester Abschnitt."""
+    hide = blocks_without_module(org)
+    return {
+        "block_labels": {
+            **{k: v for k, v in BLOCKS.items() if k not in hide},
+            "units": org.department_label_plural or BLOCKS["units"],
+        },
+        "blocks": {k: website.block_on(k) for k in BLOCKS},
+        "home_labels": {"body": gettext("Text der Seite")},
+        "home_hints": {"body": gettext("Bild und Text aus dem Feld oben")},
+        "home_needs_block": {},
+        "home_kinds": home.KINDS,
+        "home_kind_hints": home.KIND_HINTS,
+        "home_kind_needs_block": home.KIND_NEEDS_BLOCK,
+        "home_choices": home_choices(website),
+        "palette": effective_theme(org.ancestors())["palette"],
+        "units": [
+            {"id": u.pk, "name": u.name} for u in services.in_tree_order(services.units_below(org))
+        ],
+        "menu_items": [
+            {"key": key, **{f: item.get(f) for f in MENU_ITEM_FIELDS}}
+            for key, item in menu.items(website).items()
+        ],
+    }
+
+
 class WebsiteView(_WebsiteMixin, APIView):
     """GET: Stand · POST: Webseite einrichten · PUT: Einstellungen · DELETE: entfernen."""
 

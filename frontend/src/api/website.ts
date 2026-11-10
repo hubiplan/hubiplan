@@ -269,6 +269,26 @@ export interface DesignVersion {
   published_by: string
 }
 
+/** Was der Abschnitts-Baukasten braucht (Startseite: WebsiteData, Textseiten: Texte-Liste) */
+export type SectionOptions = Pick<
+  WebsiteData,
+  | 'block_labels'
+  | 'home_labels'
+  | 'home_hints'
+  | 'home_needs_block'
+  | 'home_kinds'
+  | 'home_kind_hints'
+  | 'home_kind_needs_block'
+  | 'home_choices'
+  | 'palette'
+  | 'units'
+>
+export interface SectionSite {
+  menu_items?: MenuItem[]
+}
+/** Abschnitte der Textseiten (G4): Auswahl und Bereiche der Webseite */
+export type PageSectionOptions = SectionOptions & SectionSite & { blocks: Record<string, boolean> }
+
 export interface WebsiteData {
   module_enabled: boolean
   can_manage: boolean
@@ -473,6 +493,8 @@ export interface WebsiteText extends WebsiteTextSummary {
   timeline: TimelineEntry[]
   has_timeline: boolean
   timeline_newest_first?: boolean
+  /** Abschnitte der Textseite (G4); „body“ ist Bild und Text oben (fehlt bei älteren Ständen) */
+  sections?: HomeSection[]
   published_title: string
   published_body: string
   revisions: { id: number; title: string; published_at: string; published_by: string }[]
@@ -493,6 +515,7 @@ export interface TextDraft {
   show_captions?: boolean
   timeline?: TimelineEntry[]
   timeline_newest_first?: boolean
+  sections?: HomeSection[]
 }
 
 /** Eintrag der Zeitleiste: ein Jahr oder ein Zeitraum (`until`), kurz gehalten.
@@ -529,6 +552,8 @@ export const contentApi = {
       units: { id: number; name: string }[]
       /** Seiten der eigenen Webseite für den Link-Dialog */
       link_targets?: LinkTarget[]
+      /** Auswahl für die Abschnitte der Textseiten (fehlt bei älteren Ständen) */
+      section_options?: PageSectionOptions
     }>(`${base(org)}texts/`),
   text: (org: number, id: number) => api.get<WebsiteText>(`${base(org)}texts/${id}/`),
   create: (org: number, data: TextDraft) => api.post<WebsiteText>(`${base(org)}texts/`, data),

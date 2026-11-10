@@ -4,10 +4,13 @@ titel: Webseite › Texte
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/inhalte]
-stichworte: [Text, Seite, Startseite, Bausteine, Chronik, Zeitleiste, Kapitel]
+stichworte:
+  [Text, Seite, Startseite, Bausteine, Abschnitte, Banner, Kacheln, Chronik, Zeitleiste, Kapitel]
 ---
 
 Hier schreibt ihr die Texte der Webseite und stellt die Bausteine der Startseite zusammen. Änderungen werden gespeichert, sobald du tippst; die letzten Fassungen jedes Texts bleiben erhalten.
+
+Textseiten aus Abschnitten: Unter **Abschnitte der Seite** baust du eine Textseite wie die Startseite aus Abschnitten. Der bisherige Text mit dem Bild oben ist der feste Abschnitt „Text der Seite“; ohne weitere Abschnitte bleibt die Seite wie bisher. Mit **Abschnitt hinzufügen** kommen darüber oder darunter etwa ein **Banner**, eine **Knopfleiste**, **Kacheln** oder ein **Zitat** dazu, am Griff ziehst du sie in die Reihenfolge. **Bearbeiten** öffnet Inhalt, Hintergrund und Breite, **Übernehmen** speichert den Abschnitt in den Entwurf. Sichtbar wird alles mit **Veröffentlichen**; frühere Fassungen bringen auch ihre Abschnitte zurück.
 
 Bildunterschriften: Ob die Webseite unter dem Bild oben und im Bilderkarussell die Bildunterschrift zeigt, legst du je Text mit **Bildunterschriften auf der Webseite zeigen** fest. Ohne Haken (Standard) stehen die Bilder ohne Unterschrift da; die Beschreibung für Screenreader bleibt erhalten.
 

@@ -7880,5 +7880,8 @@
   "Ohne eigenes Logo für den Dunkelmodus gilt das normale Logo.": "Without a separate dark mode logo, the normal logo is used.",
   "Logo für den Dunkelmodus": "Dark mode logo",
   "Kein eigenes Logo für den Dunkelmodus.": "No separate dark mode logo.",
-  "Ausschnitt für das Logo im Dunkelmodus": "Crop for the dark mode logo"
+  "Ausschnitt für das Logo im Dunkelmodus": "Crop for the dark mode logo",
+  "Abschnitte der Seite": "Page sections",
+  "Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa ein Banner, Knöpfe oder Kacheln. Sie erscheinen mit „Veröffentlichen“.": "You can add more sections above and below the text, such as a banner, buttons or tiles. They appear once you click “Publish”.",
+  "„{x}“ verschwindet von der Seite, sobald du sie veröffentlichst.": "“{x}” disappears from the page once you publish it."
 }
