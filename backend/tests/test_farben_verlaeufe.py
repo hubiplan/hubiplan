@@ -157,11 +157,13 @@ def site(orgs):
     org.primary_color = "#05487a"
     org.accent_color = "#032e52"
     org.gradients = [{"name": "Blau", "from": 0, "to": 1, "direction": "right"}]
+    org.enabled_modules = [*org.enabled_modules, "website"]
     org.save()
     site = Website.objects.create(
         organization=org,
         public_key="schluessel-v",
         state=Website.State.PUBLIC,
+        privacy_text="Datenschutz (erfunden)",
         privacy_published_text="Datenschutz (erfunden)",
         color_roles={"classic": {"header": "g0", "surface": 1}},
     )
