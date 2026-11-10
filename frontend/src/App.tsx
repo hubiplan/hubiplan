@@ -135,6 +135,7 @@ const LetterheadSettingsPage = lazyPage(
   () => import('./pages/settings/LetterheadSettingsPage.tsx'),
   'LetterheadSettingsPage',
 )
+const PlacesPage = lazyPage(() => import('./pages/settings/PlacesPage.tsx'), 'PlacesPage')
 const AppearancePage = lazyPage(
   () => import('./pages/settings/AppearancePage.tsx'),
   'AppearancePage',
@@ -449,6 +450,14 @@ export default function App() {
               element={
                 <RequireOrg>
                   <LetterheadSettingsPage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="orte"
+              element={
+                <RequireOrg>
+                  <PlacesPage />
                 </RequireOrg>
               }
             />

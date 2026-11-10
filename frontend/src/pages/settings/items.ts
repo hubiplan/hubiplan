@@ -7,6 +7,18 @@ import { federationAccess } from '../members/access.ts'
 import { t } from '../../i18n/index.ts'
 import { setupGroups } from './setup.ts'
 
+/** Wer Orte speichern darf (wie places/access.py, EDITORS) */
+const PLACE_EDITORS = [
+  PERM.eventsManage,
+  PERM.eventsEdit,
+  PERM.competitionsManage,
+  PERM.competitionsEdit,
+  PERM.helpersEdit,
+  PERM.meetingsEdit,
+  PERM.settingsEdit,
+  PERM.orgEdit,
+]
+
 export interface SettingsItem {
   to: string
   label: string
@@ -106,6 +118,10 @@ export function baseSettingsItems(active: OrgSummary): SettingsItem[] {
             setup: true,
           },
         ]),
+    // Gespeicherte Orte für Termine, Wettbewerbe, Helferdienste und Versammlungen
+    ...(clubLike && (settings || PLACE_EDITORS.some(can))
+      ? [{ to: '/einstellungen/orte', label: t('Orte'), section: general, setup: true }]
+      : []),
     // Dachverband ohne Mitgliederzugriff: kein Menüpunkt Mitglieder, die
     // Einrichtung (Zusatzfelder, Jubiläen) bleibt aber erreichbar.
     ...(active.type === 'federation' && !federationAccess(active) && can(PERM.membersView)

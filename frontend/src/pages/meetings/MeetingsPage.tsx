@@ -34,6 +34,7 @@ import { ResolutionBook } from './ResolutionBook.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { Loading } from '../../components/ui.tsx'
 import './meetings.css'
+import { PlaceField } from '../../components/PlaceField.tsx'
 
 const ZONE = 'Europe/Berlin'
 
@@ -387,10 +388,7 @@ function NewMeeting({
           onChange={(e) => setEnd(e.target.value)}
         />
       </label>
-      <label>
-        {t('Ort')}
-        <input value={location} maxLength={200} onChange={(e) => setLocation(e.target.value)} />
-      </label>
+      <PlaceField label={t('Ort')} value={location} onChange={setLocation} />
       <label className="checkbox">
         <input type="checkbox" checked={fromLast} onChange={(e) => setFromLast(e.target.checked)} />
         {t('Tagesordnung der letzten Versammlung dieser Art übernehmen')}
@@ -675,10 +673,15 @@ function DetailsForm({
             onChange={set('end')}
           />
         </label>
-        <label>
-          {t('Ort')}
-          <input value={form.location} maxLength={200} onChange={set('location')} />
-        </label>
+        <PlaceField
+          label={t('Ort')}
+          value={form.location}
+          address={form.address}
+          onChange={(value) => setForm({ ...form, location: value })}
+          onPick={(place) =>
+            setForm((f) => ({ ...f, location: place.name, address: place.address || f.address }))
+          }
+        />
         <label>
           {t('Anschrift')}
           <input value={form.address} maxLength={300} onChange={set('address')} />

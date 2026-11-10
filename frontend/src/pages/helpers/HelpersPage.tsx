@@ -20,6 +20,7 @@ import { useOrg } from '../../org/OrgContext.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { Loading } from '../../components/ui.tsx'
 import './helpers.css'
+import { PlaceField } from '../../components/PlaceField.tsx'
 
 const ZONE = 'Europe/Berlin'
 
@@ -509,10 +510,7 @@ function NewDuty({
             onChange={(e) => setName(e.target.value)}
           />
         </label>
-        <label className="field">
-          <span>{t('Ort')}</span>
-          <input value={location} maxLength={200} onChange={(e) => setLocation(e.target.value)} />
-        </label>
+        <PlaceField label={t('Ort')} value={location} onChange={setLocation} />
         <label className="field">
           <span>{t('Mindestalter')}</span>
           <input

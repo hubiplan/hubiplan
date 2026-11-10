@@ -9503,3 +9503,21 @@ msgstr "Next meeting"
 
 msgid "Einladen bis"
 msgstr "Invite by"
+
+msgid "Anfahrt und Hinweise"
+msgstr "Directions and notes"
+
+msgid "Breite"
+msgstr "Latitude"
+
+msgid "Länge"
+msgstr "Longitude"
+
+msgid "Orte"
+msgstr "Places"
+
+msgid "Einen Ort mit diesem Namen gibt es schon."
+msgstr "A place with this name already exists."
+
+msgid "Bitte Breite und Länge zusammen angeben."
+msgstr "Please enter latitude and longitude together."
