@@ -98,6 +98,10 @@ DEFAULT_OFF_PREFIXES = ("membertype:",)
 # Frei benannte Überschriften im Menü (Ralf 05.11.): ``heading:<Nummer>``, Name in
 # ``block_names``; ohne Namen gibt es die Überschrift nicht.
 HEADING_KEY = re.compile(r"^heading:[1-9][0-9]{0,2}$")
+# Links nach außen im Menü (Ralf 10.11., Konzept webseite-baukasten G0): ``link:<Nummer>``,
+# Name in ``block_names``, Adresse in ``menu_links``; ohne Name oder Adresse gibt es ihn nicht.
+LINK_KEY = re.compile(r"^link:[1-9][0-9]{0,2}$")
+LINK_URL_MAX = 300
 
 
 def block_module(key: str) -> str | None:
@@ -129,6 +133,10 @@ def is_heading_key(key) -> bool:
     return isinstance(key, str) and bool(HEADING_KEY.match(key))
 
 
+def is_link_key(key) -> bool:
+    return isinstance(key, str) and bool(LINK_KEY.match(key))
+
+
 # Eigene Namen der Bausteine (Ralf 2026-11-01): erscheinen im Menü und als Überschrift
 # auf der Webseite; leer = Standardname. Umbenennbar sind die Bausteine (ohne „social“),
 # die Überschrift „Geschichte“ und die Ehrungen. Würden und Textseiten tragen ihren
@@ -144,7 +152,10 @@ MEMBERTYPE_KEY = re.compile(r"^membertype:[1-9][0-9]{0,9}$")
 def is_renamable(key) -> bool:
     """Feste Bausteine, Listen je Mitgliedsart und freie Überschriften."""
     return isinstance(key, str) and (
-        key in RENAMABLE_BLOCKS or bool(MEMBERTYPE_KEY.match(key)) or is_heading_key(key)
+        key in RENAMABLE_BLOCKS
+        or bool(MEMBERTYPE_KEY.match(key))
+        or is_heading_key(key)
+        or is_link_key(key)
     )
 
 
@@ -247,6 +258,12 @@ class Website(models.Model):
     menu = models.JSONField("Menü", default=list, blank=True)
     # Eigene Namen der Bausteine: Schlüssel → Name (nur gesetzte; RENAMABLE_BLOCKS)
     block_names = models.JSONField("Eigene Namen der Bausteine", default=dict, blank=True)
+    # Adressen der Links nach außen im Menü: ``link:<Nummer>`` → https://…
+    menu_links = models.JSONField("Links im Menü", default=dict, blank=True)
+    # Ein Hauptpunkt des Menüs als Knopf hervorgehoben (z. B. „Mitglied werden“), leer = keiner
+    menu_button = models.CharField("Menüpunkt als Knopf", max_length=40, blank=True)
+    # Stilregler (Gestaltung › Feinabstimmung, website/style.py): nur verstellte; leer = Design
+    style = models.JSONField("Stilregler", default=dict, blank=True)
     home_sections = models.JSONField(
         "Bausteine der Startseite", default=default_home_sections, blank=True
     )
@@ -380,6 +397,16 @@ class Website(models.Model):
         """Freie Überschriften im Menü: Schlüssel → Name, in Reihenfolge der Nummer."""
         found = {k: self.block_name(k) for k in self.block_names or {} if is_heading_key(k)}
         return {k: found[k] for k in sorted(found, key=lambda k: int(k.split(":")[1])) if found[k]}
+
+    def links(self) -> dict[str, tuple[str, str]]:
+        """Links nach außen im Menü: Schlüssel → (Name, Adresse), in Reihenfolge der Nummer."""
+        urls = self.menu_links if isinstance(self.menu_links, dict) else {}
+        found = {}
+        for key in self.block_names or {}:
+            url = urls.get(key)
+            if is_link_key(key) and isinstance(url, str) and url and (name := self.block_name(key)):
+                found[key] = (name, url)
+        return {k: found[k] for k in sorted(found, key=lambda k: int(k.split(":")[1]))}
 
     def home(self) -> list[str]:
         """Eingeschaltete Bausteine der Startseite in ihrer Reihenfolge."""

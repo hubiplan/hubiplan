@@ -9,6 +9,7 @@ import { heldApi, websiteApi } from '../../api/website.ts'
 import type {
   HomeSection,
   MenuItem,
+  MenuNode,
   PreviewLink,
   Website,
   WebsiteData,
@@ -38,12 +39,16 @@ import { ContentPage } from './ContentPage.tsx'
 import { ImagesPage } from './images.tsx'
 import { DesignChooser } from './DesignChooser.tsx'
 import { HeaderImage } from './HeaderImage.tsx'
+import { StyleTuning } from './StyleTuning.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
 import { t } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
 import { DocumentsPage } from './DocumentsPage.tsx'
 import { SocialPage } from './SocialPage.tsx'
-import { MenuTree } from './MenuTree.tsx'
+import { LINK, MenuTree } from './MenuTree.tsx'
+import { useSortable } from '../../components/useSortable.tsx'
+import { SortHint } from '../../components/Sortable.tsx'
+import { normalizeMenu } from './menuTree.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
 
@@ -135,30 +140,47 @@ export function WebsitePage() {
 /** Eigene Überschrift im Menü (Ralf 05.11.): ``heading:<Nummer>``, Name in ``block_names`` */
 const HEADING = /^heading:[1-9][0-9]{0,2}$/
 
-/** Menüpunkte vom Server plus noch nicht gespeicherte eigene Überschriften; gelöschte fallen weg */
-function menuItems(items: MenuItem[], names: Record<string, string>): MenuItem[] {
+/** Eigene Überschrift oder Link nach außen: lebt nur, solange er einen Namen hat */
+const isOwn = (key: string) => HEADING.test(key) || LINK.test(key)
+
+/** Menüpunkte vom Server plus noch nicht gespeicherte eigene Überschriften und Links;
+ * gelöschte fallen weg */
+function menuItems(
+  items: MenuItem[],
+  names: Record<string, string>,
+  links: Record<string, string>,
+): MenuItem[] {
   const known = new Set(items.map((it) => it.key))
   const added: MenuItem[] = Object.keys(names)
-    .filter((key) => HEADING.test(key) && !known.has(key))
+    .filter((key) => isOwn(key) && !known.has(key))
     .map((key) => ({
       key,
       label: names[key],
       default_label: '',
       renamable: true,
-      hint: t('eigene Überschrift ohne eigene Seite; Name leer lassen entfernt sie'),
+      hint: HEADING.test(key)
+        ? t('eigene Überschrift ohne eigene Seite; Name leer lassen entfernt sie')
+        : '',
       toggle: null,
-      heading: true,
+      heading: HEADING.test(key),
       parent: null,
+      url: links[key] ?? '',
     }))
-  return [...items.filter((it) => !HEADING.test(it.key) || it.key in names), ...added]
+  return [...items.filter((it) => !isOwn(it.key) || it.key in names), ...added]
 }
 
-function withNewHeading(names: Record<string, string>): Record<string, string> {
+/** Nächste freie Nummer für ``heading:`` oder ``link:`` */
+function withNew(
+  names: Record<string, string>,
+  pattern: RegExp,
+  prefix: string,
+  label: string,
+): Record<string, string> {
   const used = Object.keys(names)
-    .filter((key) => HEADING.test(key))
+    .filter((key) => pattern.test(key))
     .map((key) => Number(key.split(':')[1]))
   const next = Math.max(0, ...used) + 1
-  return { ...names, [`heading:${next}`]: t('Neue Überschrift') }
+  return { ...names, [`${prefix}:${next}`]: label }
 }
 
 const SETTINGS: (keyof WebsiteSettings)[] = [
@@ -167,9 +189,12 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'blocks',
   'menu',
   'block_names',
+  'menu_links',
+  'menu_button',
   'home_sections',
   'design',
   'color_roles',
+  'style',
   'header_image',
   'name_format',
   'show_vacant',
@@ -286,6 +311,14 @@ function WebsiteAdmin({
     </>
   )
 
+  const headerImage = (
+    <HeaderImage
+      value={v.header_image ?? null}
+      units={data.units}
+      onChange={(id) => set('header_image', id)}
+    />
+  )
+
   const design = (
     <>
       {data.designs ? (
@@ -303,14 +336,23 @@ function WebsiteAdmin({
       ) : (
         <Alert kind="info">{t('Auf diesem Server gibt es keine Designs zur Auswahl.')}</Alert>
       )}
-      {settings(
-        t('Kopfbild'),
-        <HeaderImage
-          value={v.header_image ?? null}
-          units={data.units}
-          onChange={(id) => set('header_image', id)}
-        />,
-      )}
+      {data.style_catalog
+        ? settings(
+            t('Feinabstimmung'),
+            <StyleTuning
+              catalog={data.style_catalog}
+              design={v.design ?? 'classic'}
+              designLabel={
+                data.designs?.find((d) => d.key === (v.design ?? 'classic'))?.label ??
+                v.design ??
+                ''
+              }
+              value={v.style ?? {}}
+              onChange={(next) => set('style', next)}
+              headerImage={headerImage}
+            />,
+          )
+        : settings(t('Kopfbild'), headerImage)}
       <SiteLanguage
         value={v.language ?? 'de'}
         error={errors.language}
@@ -333,19 +375,22 @@ function WebsiteAdmin({
           {website.menu_items && (
             <>
               <MenuTree
-                items={menuItems(website.menu_items, v.block_names ?? {})}
+                items={menuItems(website.menu_items, v.block_names ?? {}, v.menu_links ?? {})}
                 value={v.menu ?? []}
                 blocks={v.blocks}
                 names={v.block_names ?? {}}
+                links={v.menu_links ?? {}}
+                button={v.menu_button ?? ''}
                 disabled={!data.can_manage}
                 onChange={(next) => set('menu', next)}
                 onRename={(key, name) => {
                   const next = { ...(v.block_names ?? {}) }
-                  // Eigene Überschrift: leer lassen entfernt sie beim Speichern
-                  if (name.trim() || HEADING.test(key)) next[key] = name
+                  // Eigene Überschrift oder Link: leer lassen entfernt sie beim Speichern
+                  if (name.trim() || isOwn(key)) next[key] = name
                   else delete next[key]
                   set('block_names', next)
                 }}
+                onLinkUrl={(key, url) => set('menu_links', { ...(v.menu_links ?? {}), [key]: url })}
                 onToggle={(key, on) => set('blocks', { ...v.blocks, [key]: on })}
               />
               {data.can_manage && (
@@ -353,12 +398,39 @@ function WebsiteAdmin({
                   <button
                     type="button"
                     className="button button-ghost"
-                    onClick={() => set('block_names', withNewHeading(v.block_names ?? {}))}
+                    onClick={() =>
+                      set(
+                        'block_names',
+                        withNew(v.block_names ?? {}, HEADING, 'heading', t('Neue Überschrift')),
+                      )
+                    }
                   >
                     {t('Überschrift hinzufügen')}
                   </button>
+                  <button
+                    type="button"
+                    className="button button-ghost"
+                    onClick={() =>
+                      set(
+                        'block_names',
+                        withNew(v.block_names ?? {}, LINK, 'link', t('Neuer Link')),
+                      )
+                    }
+                  >
+                    {t('Link nach außen hinzufügen')}
+                  </button>
                 </div>
               )}
+              {errors.menu_links && <Alert kind="error">{errors.menu_links}</Alert>}
+              <MenuButtonField
+                items={menuItems(website.menu_items, v.block_names ?? {}, v.menu_links ?? {})}
+                menu={v.menu ?? []}
+                names={v.block_names ?? {}}
+                value={v.menu_button ?? ''}
+                error={errors.menu_button}
+                disabled={!data.can_manage}
+                onChange={(key) => set('menu_button', key)}
+              />
             </>
           )}
           {errors.block_names && <Alert kind="error">{errors.block_names}</Alert>}
@@ -609,7 +681,54 @@ function WebsiteAdmin({
   )
 }
 
-/** Bausteine der Startseite: ein/aus und Reihenfolge (↑ ↓). */
+/** Ein Hauptpunkt des Menüs als Knopf (Ralf 10.11.), z. B. „Mitglied werden“ */
+function MenuButtonField({
+  items,
+  menu,
+  names,
+  value,
+  error,
+  disabled,
+  onChange,
+}: {
+  items: MenuItem[]
+  menu: MenuNode[]
+  names: Record<string, string>
+  value: string
+  error?: string
+  disabled: boolean
+  onChange: (key: string) => void
+}) {
+  const byKey = new Map(items.map((it) => [it.key, it]))
+  // Nur einfache Hauptpunkte: keine Überschrift, kein Aufklappmenü
+  const options = normalizeMenu(menu, items)
+    .filter((n) => n.children.length === 0 && byKey.has(n.key) && !byKey.get(n.key)!.heading)
+    .map((n) => {
+      const it = byKey.get(n.key)!
+      return { key: n.key, label: (it.renamable && names[n.key]?.trim()) || it.label }
+    })
+  return (
+    <SelectField
+      label={t('Menüpunkt als Knopf hervorheben')}
+      hint={t(
+        'Ein Hauptpunkt erscheint im Menü als farbiger Knopf, z. B. „Kontakt“ oder ein Link „Mitglied werden“. Punkte mit Unterpunkten und Überschriften gehen nicht.',
+      )}
+      value={options.some((o) => o.key === value) ? value : ''}
+      error={error}
+      disabled={disabled}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      <option value="">{t('keiner')}</option>
+      {options.map((o) => (
+        <option key={o.key} value={o.key}>
+          {o.label}
+        </option>
+      ))}
+    </SelectField>
+  )
+}
+
+/** Bausteine der Startseite: ein/aus und Reihenfolge per Ziehen (Ralf 10.11., wie das Menü). */
 function HomeSections({
   data,
   value,
@@ -622,23 +741,29 @@ function HomeSections({
   onChange: (next: HomeSection[]) => void
 }) {
   const labels = data.home_labels ?? {}
-  const move = (index: number, delta: number) => {
-    const next = [...value]
-    const [item] = next.splice(index, 1)
-    next.splice(index + delta, 0, item)
-    onChange(next)
-  }
+  // Bausteine ohne Bezeichnung gibt es hier nicht (z. B. Ergebnisse ohne Modul)
+  const shown = value.filter((s) => labels[s.key])
+  // Feste Nummer je Schlüssel für das Ziehen (unabhängig von der Reihenfolge)
+  const ids = new Map(
+    [...value.map((s) => s.key)].sort().map((key, i) => [key, i + 1] as [string, number]),
+  )
+  const keyOf = new Map([...ids].map(([key, id]) => [id, key]))
+  const sortable = useSortable({
+    items: shown,
+    id: (s) => ids.get(s.key)!,
+    label: (s) => labels[s.key],
+    onReorder: async (order) => {
+      const byKey = new Map(value.map((s) => [s.key, s]))
+      const moved = order.map((id) => byKey.get(keyOf.get(id)!)!)
+      // Ausgeblendete Bausteine (ohne Bezeichnung) bleiben hinten
+      onChange([...moved, ...value.filter((s) => !labels[s.key])])
+    },
+  })
   return (
     <>
-      <p className="muted small">
-        {t(
-          'Was die Startseite zeigt, von oben nach unten. Die Reihenfolge änderst du mit den Pfeilen.',
-        )}
-      </p>
-      <ol className="home-sections">
-        {value.map((s, index) => {
-          // Bausteine ohne Bezeichnung gibt es hier nicht (z. B. Ergebnisse ohne Modul)
-          if (!labels[s.key]) return null
+      <SortHint />
+      <ul className="sortable-list home-sections" aria-label={t('Bausteine der Startseite')}>
+        {sortable.ordered.map((s) => {
           const label = labels[s.key]
           const needs = data.home_needs_block?.[s.key]
           const blockOff = needs ? blocks[needs] === false : false
@@ -647,38 +772,25 @@ function HomeSections({
                 x: data.block_labels[needs!] ?? needs,
               })
             : data.home_hints?.[s.key]
+          const { ref, className } = sortable.rowProps(s)
           return (
-            <li key={s.key}>
-              <Checkbox
-                label={label}
-                hint={hint}
-                checked={s.on}
-                onChange={(on) => onChange(value.map((x) => (x.key === s.key ? { ...x, on } : x)))}
-              />
-              <span className="button-row">
-                <button
-                  type="button"
-                  className="button button-ghost"
-                  disabled={index === 0}
-                  aria-label={t('{label} nach oben', { label })}
-                  onClick={() => move(index, -1)}
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  className="button button-ghost"
-                  disabled={index === value.length - 1}
-                  aria-label={t('{label} nach unten', { label })}
-                  onClick={() => move(index, 1)}
-                >
-                  ↓
-                </button>
-              </span>
+            <li key={s.key} ref={ref} className={className}>
+              {sortable.handle(s)}
+              <div className="sortable-label">
+                <Checkbox
+                  label={label}
+                  hint={hint}
+                  checked={s.on}
+                  onChange={(on) =>
+                    onChange(value.map((x) => (x.key === s.key ? { ...x, on } : x)))
+                  }
+                />
+              </div>
             </li>
           )
         })}
-      </ol>
+      </ul>
+      {sortable.status}
     </>
   )
 }

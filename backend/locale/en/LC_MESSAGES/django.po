@@ -9568,6 +9568,27 @@ msgstr "The event has been cancelled."
 msgid "Der Anmeldeschluss ist vorbei."
 msgstr "The registration deadline has passed."
 
+msgid "Bitte die Links als Liste angeben."
+msgstr "Please provide the links as a list."
+
+msgid "Unbekannter Link: {key}"
+msgstr "Unknown link: {key}"
+
+msgid "Bitte die Adresse als Text angeben."
+msgstr "Please provide the address as text."
+
+msgid "Eine Adresse darf höchstens {n} Zeichen lang sein."
+msgstr "An address may be at most {n} characters long."
+
+msgid "Bitte eine vollständige Adresse mit https:// angeben: {url}"
+msgstr "Please enter a complete address with https://: {url}"
+
+msgid "Höchstens {n} Links im Menü."
+msgstr "At most {n} links in the menu."
+
+msgid "Diesen Menüpunkt kann man nicht als Knopf hervorheben."
+msgstr "This menu item cannot be highlighted as a button."
+
 msgid "Dieses Stück gibt es nicht."
 msgstr "This piece does not exist."
 
@@ -9590,3 +9611,18 @@ msgstr "For your security, please enter a current code from your authenticator a
 
 msgid "Bitte zur Sicherheit dein Passwort eingeben."
 msgstr "For your security, please enter your password."
+
+msgid "Bitte die Stilregler als Zuordnung angeben."
+msgstr "Please give the style settings as a mapping."
+
+msgid "Unbekannter Stilregler: {key}"
+msgstr "Unknown style setting: {key}"
+
+msgid "Bitte {key} als Schalter angeben."
+msgstr "Please give {key} as a switch."
+
+msgid "Unbekannte Stufe für {key}: {value}"
+msgstr "Unknown level for {key}: {value}"
+
+msgid "Wappen und Vereinsname lassen sich nicht beide ausblenden."
+msgstr "The coat of arms and the club name cannot both be hidden."
