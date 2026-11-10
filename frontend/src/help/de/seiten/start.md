@@ -2,7 +2,7 @@
 key: page.start
 titel: Startseite
 routen: [/]
-stichworte: [Übersicht, Aufgaben, Kacheln, Schnellaktionen, Kennzahlen, Hinweise, Jubiläen, Geburtstage, Zusage]
+stichworte: [Aufgaben, Schnellaktionen, Kennzahlen, Hinweise, Jubiläen, Geburtstage, Zusage]
 ---
 
 Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Sie hat für alle Rollen dieselbe Reihenfolge: **Zu erledigen**, **Schnellaktionen**, Kennzahlen, **Nächste Termine**, **Jubiläen und Geburtstage** und **Hinweise**. Was du siehst, hängt von deinen Rechten ab; was du nicht darfst, fehlt einfach. Oben rechts wechselst du die Einheit, wenn du in mehreren mitarbeitest.

@@ -2,7 +2,7 @@
 key: page.start
 titel: Home page
 routen: [/]
-stichworte: [overview, tasks, tiles, quick actions, key figures, notices, anniversaries, birthdays, accept]
+stichworte: [tasks, quick actions, key figures, notices, anniversaries, birthdays, accept]
 ---
 
 The home page is your workplace in the selected unit. It has the same order for every role: **To do**, **Quick actions**, key figures, **Upcoming events**, **Anniversaries and birthdays** and **Notices**. What you see depends on your rights; anything you may not do is simply left out. At the top right you switch units if you work in more than one.
