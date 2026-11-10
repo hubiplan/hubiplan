@@ -48,6 +48,13 @@ export interface WebsiteSettings {
   /** Sprache der festen Texte auf der Webseite (de, en); Vereinsdaten bleiben, wie sie sind */
   language?: string
   contact_limit_per_hour: number
+  /** Hinweisleiste oben auf allen Seiten (G6); leer = keine */
+  notice_text?: string
+  /** Ziel der Hinweisleiste wie bei Knöpfen; {} = keins */
+  notice_target?: HomeTarget | Record<string, never>
+  /** Zeitraum (JJJJ-MM-TT, Grenzen eingeschlossen); null = offen */
+  notice_from?: string | null
+  notice_until?: string | null
 }
 
 export type ColorRoles = Record<string, Record<string, number | string>>
@@ -147,7 +154,17 @@ export interface MenuItem {
 
 /** Eigene Abschnitte der Startseite (G3): mehrfach einsetzbar */
 export type HomeKind =
-  'text' | 'text_image' | 'banner' | 'buttons' | 'tiles' | 'event' | 'album' | 'quote' | 'contacts'
+  | 'text'
+  | 'text_image'
+  | 'banner'
+  | 'buttons'
+  | 'tiles'
+  | 'event'
+  | 'album'
+  | 'quote'
+  | 'contacts'
+  /** nur auf Textseiten (G6): schmales Bild über der Überschrift */
+  | 'cover'
 
 /** Ziel eines Knopfs oder einer Kachel: Menüpunkt, Termin oder Link nach außen */
 export type HomeTarget = { page: string } | { event: number } | { url: string } | null

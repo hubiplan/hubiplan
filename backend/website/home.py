@@ -41,6 +41,10 @@ KIND_HINTS = {
     "quote": "ein kurzer Text mit Namen",
     "contacts": "ein bis vier Rollen mit Foto, Name und „Nachricht schreiben“",
 }
+# Nur auf Textseiten (G6): Titelbild, ein schmales Bild über der Überschrift, höchstens eins
+PAGE_KINDS = {"cover": "Titelbild"}
+PAGE_KIND_HINTS = {"cover": "ein schmales Bild über der Überschrift der Seite"}
+ALL_KINDS = {**KINDS, **PAGE_KINDS}
 # Welcher Bereich der Webseite eingeschaltet sein muss
 KIND_NEEDS_BLOCK = {"event": "events", "album": "gallery"}
 
@@ -83,7 +87,7 @@ def _layout(item: dict, key_or_kind: str) -> dict:
     }
 
 
-def normalize(value, builtin_keys, default_off) -> list[dict]:
+def normalize(value, builtin_keys, default_off, kinds=KINDS) -> list[dict]:
     """Gespeicherte Liste → vollständige Liste in Reihenfolge (neue Bausteine hinten)."""
     result, seen = [], set()
     for item in value or []:
@@ -93,7 +97,7 @@ def normalize(value, builtin_keys, default_off) -> list[dict]:
         if key in builtin_keys:
             seen.add(key)
             result.append({"key": key, "on": bool(item.get("on", True)), **_layout(item, key)})
-        elif is_custom(key) and item.get("kind") in KINDS:
+        elif is_custom(key) and item.get("kind") in kinds:
             seen.add(key)
             data = item.get("data")
             result.append(
@@ -173,6 +177,8 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
             "line": _text(data.get("line"), TITLE_MAX, gettext("Zeile")),
             "height": _choice(data.get("height"), ("low", "high"), "low"),
         }
+    if kind == "cover":
+        return {"image": _ref(data.get("image"), refs["images"])}
     if kind == "buttons":
         items = data.get("buttons") if isinstance(data.get("buttons"), list) else []
         if len(items) > 3:
@@ -261,7 +267,7 @@ def references(website) -> dict:
     }
 
 
-def validate(value, website, builtin_keys, default_off) -> list[dict]:
+def validate(value, website, builtin_keys, default_off, kinds=KINDS) -> list[dict]:
     """Prüft die Liste aus der Verwaltung; wirft Invalid mit einer lesbaren Meldung."""
     if not isinstance(value, list) or not all(
         isinstance(v, dict) and isinstance(v.get("key"), str) and isinstance(v.get("on"), bool)
@@ -270,14 +276,16 @@ def validate(value, website, builtin_keys, default_off) -> list[dict]:
         raise Invalid(gettext("Bausteine der Startseite bitte als Liste angeben."))
     custom = [v for v in value if v["key"] not in builtin_keys]
     for v in custom:
-        if not is_custom(v["key"]) or v.get("kind") not in KINDS:
+        if not is_custom(v["key"]) or v.get("kind") not in kinds:
             raise Invalid(gettext("Unbekannter Baustein: {x0}").format(x0=v["key"]))
         if v.get("data") is not None and not isinstance(v.get("data"), dict):
             raise Invalid(gettext("Unbekannter Baustein: {x0}").format(x0=v["key"]))
     if len(custom) > MAX_CUSTOM:
         raise Invalid(gettext("Höchstens {x0} eigene Abschnitte.").format(x0=MAX_CUSTOM))
+    if sum(1 for v in custom if v.get("kind") == "cover") > 1:
+        raise Invalid(gettext("Eine Seite hat höchstens ein Titelbild."))
     refs = references(website) if custom and website is not None else None
-    result = normalize(value, builtin_keys, default_off)
+    result = normalize(value, builtin_keys, default_off, kinds)
     for item in result:
         if "kind" in item:
             if refs is None:
@@ -358,11 +366,11 @@ PAGE_BUILTINS = ("body",)
 
 
 def normalize_page(value) -> list[dict]:
-    return normalize(value, PAGE_BUILTINS, set())
+    return normalize(value, PAGE_BUILTINS, set(), ALL_KINDS)
 
 
 def validate_page(value, website) -> list[dict]:
-    return validate(value, website, PAGE_BUILTINS, set())
+    return validate(value, website, PAGE_BUILTINS, set(), ALL_KINDS)
 
 
 def has_custom(sections) -> bool:
@@ -489,6 +497,9 @@ def _content(site, kind, data, images, known, event_entry) -> dict | None:
             "side": data.get("side", "right"),
             "size": data.get("size", "half"),
         }
+    if kind == "cover":
+        image = images.get(data.get("image"))
+        return {"image": image} if image is not None else None
     if kind == "banner":
         image = images.get(data.get("image"))
         if image is None:

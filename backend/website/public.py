@@ -1174,6 +1174,20 @@ class SiteView:
             "sections": self.page_sections(t),
         }
 
+    def notice(self) -> dict | None:
+        """Hinweisleiste (G6) mit Ziel, nur im Zeitraum; sonst None."""
+        if not self.site.notice_active():
+            return None
+        from . import menu
+        from .home import _public_target
+
+        target = self.site.notice_target or None
+        known = menu.items(self.site, public_site=self) if target else None
+        return {
+            "text": self.site.notice_text.strip(),
+            "target": _public_target(self, target, known, None) if target else None,
+        }
+
     def intros(self) -> dict[str, dict]:
         """Einleitungen der festen Bereiche (G5): Bereich → Text und Bild, nur veröffentlichte."""
         from .variants import INTRO_AREAS

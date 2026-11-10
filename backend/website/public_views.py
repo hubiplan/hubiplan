@@ -214,6 +214,8 @@ class SiteInfoView(_Public):
             # Abschnitte der Startseite mit Gestaltung und Inhalt (G3); ältere Webseiten
             # nehmen weiter „home“
             "home_layout": home.public(site, home_keys, event_entry),
+            # Hinweisleiste oben auf allen Seiten (G6), nur im Zeitraum; sonst null
+            "notice": site.notice(),
             # Kopfbild statt Wappen und Name (Ralf 05.11.); ältere Webseiten übergehen es
             "header_image": site.header_image(),
             # Wettbewerbsergebnisse (Schritt 5 der Wettbewerbe): Übersicht und Startseite
