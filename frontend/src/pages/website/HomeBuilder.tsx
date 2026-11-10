@@ -37,6 +37,7 @@ const KINDS: HomeKind[] = [
   'album',
   'quote',
   'contacts',
+  'cover',
 ]
 
 function kindLabel(kind: HomeKind): string {
@@ -50,6 +51,7 @@ function kindLabel(kind: HomeKind): string {
     album: t('Album-Auszug'),
     quote: t('Zitat'),
     contacts: t('Ansprechpartner'),
+    cover: t('Titelbild'),
   }[kind]
 }
 
@@ -64,6 +66,7 @@ function kindHint(kind: HomeKind): string {
     album: t('vier bis acht Bilder aus einem Album der Galerie'),
     quote: t('ein kurzer Text mit Namen'),
     contacts: t('ein bis vier Rollen mit Foto, Name und „Nachricht schreiben“'),
+    cover: t('ein schmales Bild über der Überschrift der Seite'),
   }[kind]
 }
 
@@ -89,6 +92,7 @@ function Sketch({ kind }: { kind: HomeKind }) {
       box(14, 12, 16, 12, 0.5),
       box(50, 12, 16, 12, 0.5),
     ],
+    cover: [box(2, 4, 76, 14), box(8, 24, 36, 5, 0.6), ...lines(8, 33, 64, 2)],
   }
   return (
     <svg viewBox="0 0 80 44" width="80" height="44" aria-hidden="true" fill="currentColor">
@@ -128,6 +132,8 @@ function defaults(kind: HomeKind): HomeSectionData {
       return { text: '', name: '' }
     case 'contacts':
       return { title: '', roles: [] }
+    case 'cover':
+      return { image: null }
   }
 }
 
@@ -163,7 +169,12 @@ export function HomeBuilder({
   onChange: (next: HomeSection[]) => void
 }) {
   const labels = data.home_labels ?? {}
-  const kinds = data.home_kinds ? KINDS.filter((k) => k in data.home_kinds!) : []
+  // Ein Titelbild gibt es je Seite höchstens einmal (G6)
+  const kinds = data.home_kinds
+    ? KINDS.filter(
+        (k) => k in data.home_kinds! && !(k === 'cover' && value.some((s) => s.kind === 'cover')),
+      )
+    : []
   const [editing, setEditing] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
   const label = (s: HomeSection) => (s.kind ? kindLabel(s.kind) : (labels[s.key] ?? s.key))
@@ -439,6 +450,9 @@ function SectionDialog({
     />
   )
 
+  // Das Titelbild steht immer oben in voller Breite: kein Aussehen zu wählen
+  const looks = !contentOnly && s.kind !== 'cover'
+
   return (
     <Modal title={title} onClose={onClose}>
       <div className="home-section-dialog">
@@ -451,8 +465,8 @@ function SectionDialog({
             imageField={imageField}
           />
         )}
-        {!contentOnly && <h3>{t('Aussehen')}</h3>}
-        {!contentOnly && (
+        {looks && <h3>{t('Aussehen')}</h3>}
+        {looks && (
           <div className="field">
             <span className="field-label" id="abschnitt-hg">
               {t('Hintergrund')}
@@ -481,7 +495,7 @@ function SectionDialog({
             </div>
           </div>
         )}
-        {!contentOnly && (
+        {looks && (
           <Segments
             label={t('Breite des Abschnitts')}
             value={s.width ?? 'content'}
@@ -493,7 +507,7 @@ function SectionDialog({
             onChange={(width) => setS({ ...s, width })}
           />
         )}
-        {!contentOnly && design === 'newspaper' && (
+        {looks && design === 'newspaper' && (
           <Segments
             label={t('Spalte')}
             value={s.column ?? 'main'}
@@ -585,6 +599,17 @@ function SectionContent({
             ]}
             onChange={(size) => setData({ size })}
           />
+        </>
+      )
+    case 'cover':
+      return (
+        <>
+          {imageField(t('Bild'), d.image, (image) => setData({ image }))}
+          <p className="muted small">
+            {t(
+              'Das Titelbild steht immer ganz oben über der Überschrift, egal an welcher Stelle der Liste.',
+            )}
+          </p>
         </>
       )
     case 'banner':
@@ -865,7 +890,7 @@ function ContactsField({
 }
 
 /** Ziel eines Knopfs oder einer Kachel: Seite der Webseite, Termin oder Link nach außen */
-function TargetField({
+export function TargetField({
   data,
   website,
   value,

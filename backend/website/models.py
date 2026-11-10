@@ -269,6 +269,16 @@ class Website(models.Model):
     home_sections = models.JSONField(
         "Bausteine der Startseite", default=default_home_sections, blank=True
     )
+    # Hinweisleiste oben auf allen Seiten (G6), z. B. „Schützenfest 22.–25.8.: Programm“;
+    # erscheint nur im Zeitraum und verschwindet danach von selbst. Ziel wie bei Knöpfen
+    notice_text = models.CharField(
+        "Hinweisleiste", max_length=200, blank=True, default="", db_default=""
+    )
+    notice_target = models.JSONField(
+        "Ziel der Hinweisleiste", default=dict, blank=True, db_default={}
+    )
+    notice_from = models.DateField("Hinweisleiste ab", null=True, blank=True)
+    notice_until = models.DateField("Hinweisleiste bis", null=True, blank=True)
     # Entwurf der Gestaltung (Konzept webseite-baukasten G2): nur geänderte Felder aus
     # DRAFT_FIELDS; sichtbar nur in der Vorschau, bis jemand „Veröffentlichen“ wählt
     draft = models.JSONField("Entwurf der Gestaltung", default=dict, blank=True)
@@ -446,6 +456,16 @@ class Website(models.Model):
             raise ValidationError(
                 {"contact_limit_per_hour": gettext("Bitte einen Wert zwischen 1 und 100 angeben.")}
             )
+        if self.notice_from and self.notice_until and self.notice_until < self.notice_from:
+            raise ValidationError({"notice_until": gettext("Das Ende liegt vor dem Anfang.")})
+
+    def notice_active(self, today: datetime.date | None = None) -> bool:
+        """Hinweisleiste (G6) zeigen: Text da und heute im Zeitraum (Grenzen eingeschlossen)."""
+        today = today or timezone.localdate()
+        return bool(self.notice_text.strip()) and (
+            (self.notice_from is None or self.notice_from <= today)
+            and (self.notice_until is None or today <= self.notice_until)
+        )
 
 
 HOSTNAME_RE = r"^(?=.{1,253}$)(?!-)[a-z0-9-]{1,63}(?<!-)(\.(?!-)[a-z0-9-]{1,63}(?<!-))+$"

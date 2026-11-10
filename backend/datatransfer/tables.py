@@ -660,6 +660,17 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
         # Hervorgehobener Menüpunkt (z. B. eine Textseite) zeigt auf die neue Nummer
         if getattr(obj, "menu_button", ""):
             obj.menu_button = remap(obj.menu_button) or ""
+        # Ziel der Hinweisleiste (G6): Menüpunkt oder Termin mit neuer Nummer
+        target = getattr(obj, "notice_target", None)
+        if isinstance(target, dict) and "page" in target:
+            page = remap(target["page"])
+            obj.notice_target = {"page": page} if page else {}
+        elif isinstance(target, dict) and "event" in target:
+            try:
+                new = ids.get("events.event", target["event"])
+            except (TypeError, ValueError):
+                new = None
+            obj.notice_target = {"event": new} if new is not None else {}
         # Entwurf der Gestaltung verweist auf Bildnummern des alten Servers: nicht übernehmen
         obj.draft = {}
         # Abschnitte der Startseite: Bilder kommen erst nach der Webseite, ihre Verweise

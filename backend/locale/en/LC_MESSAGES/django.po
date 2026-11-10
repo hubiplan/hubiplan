@@ -9731,3 +9731,12 @@ msgstr "With the “Edit content” right you can only change the content of exi
 
 msgid "Der Entwurf ändert auch die Gestaltung. Veröffentlichen kann ihn nur, wer die Webseite verwaltet."
 msgstr "The draft also changes the design. Only website managers can publish it."
+
+msgid "Eine Seite hat höchstens ein Titelbild."
+msgstr "A page has at most one title image."
+
+msgid "Dieses Ziel gibt es nicht."
+msgstr "This target does not exist."
+
+msgid "Das Ende liegt vor dem Anfang."
+msgstr "The end is before the start."
