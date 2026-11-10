@@ -15,6 +15,8 @@ export interface PlatformInfo {
   name: string
   short_name: string
   logo_url: string | null
+  /** Logo für den Dunkelmodus; ohne eigenes dasselbe wie logo_url */
+  logo_dark_url?: string | null
   /** null: die Instanz nutzt die Standardfarben */
   theme: ThemeColors | null
   /** true: eigenes Symbol für Browser-Tab und Handy (W2) */

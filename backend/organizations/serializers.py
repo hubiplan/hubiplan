@@ -40,6 +40,11 @@ def logo_url(obj) -> str | None:
     return obj.logo.url if obj.logo else None
 
 
+def logo_dark_url(obj) -> str | None:
+    """Eigenes Logo für den Dunkelmodus (ohne Rückfall auf das helle)."""
+    return obj.logo_dark.url if obj.logo_dark else None
+
+
 def effective_contact(org: Organization) -> dict:
     """Kontaktdaten, wie sie nach außen gelten.
 
@@ -143,6 +148,7 @@ class OrganizationSerializer(KeepsMembersMixin, ModelCleanMixin, serializers.Mod
     parent_name = serializers.CharField(source="parent.name", read_only=True, default=None)
     display_name = serializers.CharField(read_only=True)
     logo_url = serializers.SerializerMethodField()
+    logo_dark_url = serializers.SerializerMethodField()
     contact_effective = serializers.SerializerMethodField()
     contact_role = serializers.PrimaryKeyRelatedField(
         queryset=Role.objects.all(), allow_null=True, required=False
@@ -200,6 +206,7 @@ class OrganizationSerializer(KeepsMembersMixin, ModelCleanMixin, serializers.Mod
             "fiscal_start_day",
             "fiscal_label",
             "logo_url",
+            "logo_dark_url",
             "imprint_key",
             "shooting_facilities",
         ]
@@ -231,6 +238,9 @@ class OrganizationSerializer(KeepsMembersMixin, ModelCleanMixin, serializers.Mod
 
     def get_logo_url(self, obj) -> str | None:
         return logo_url(obj)
+
+    def get_logo_dark_url(self, obj) -> str | None:
+        return logo_dark_url(obj)
 
     def get_contact_effective(self, obj) -> dict:
         return effective_contact(obj)
@@ -358,6 +368,7 @@ class ThemeSerializer(serializers.ModelSerializer):
 
     effective = serializers.SerializerMethodField()
     logo_url = serializers.SerializerMethodField()
+    logo_dark_url = serializers.SerializerMethodField()
     # Eigene Adressen der Einheit und ob sie ein eigenes Symbol hat (White Label W7)
     addresses = serializers.SerializerMethodField()
     has_icon = serializers.SerializerMethodField()
@@ -371,6 +382,7 @@ class ThemeSerializer(serializers.ModelSerializer):
             "accent_color_name",
             "extra_colors",
             "logo_url",
+            "logo_dark_url",
             "effective",
             "addresses",
             "has_icon",
@@ -384,6 +396,9 @@ class ThemeSerializer(serializers.ModelSerializer):
 
     def get_logo_url(self, obj) -> str | None:
         return logo_url(obj)
+
+    def get_logo_dark_url(self, obj) -> str | None:
+        return logo_dark_url(obj)
 
     def get_effective(self, obj) -> dict:
         return theme.effective_theme(obj.ancestors())
@@ -518,6 +533,7 @@ class DepartmentRoleSerializer(serializers.ModelSerializer):
 class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
     display_name = serializers.CharField(read_only=True)
     logo_url = serializers.SerializerMethodField()
+    logo_dark_url = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
     effective_theme = serializers.SerializerMethodField()
     member_count = serializers.SerializerMethodField()
@@ -559,6 +575,7 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "accent_color_name",
             "extra_colors",
             "logo_url",
+            "logo_dark_url",
             "roles",
             "effective_theme",
             "member_count",
@@ -731,6 +748,9 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
     def get_logo_url(self, obj) -> str | None:
         return logo_url(obj)
 
+    def get_logo_dark_url(self, obj) -> str | None:
+        return logo_dark_url(obj)
+
     def get_effective_theme(self, obj) -> dict:
         return theme.effective_theme(obj.ancestors())
 
@@ -829,6 +849,7 @@ class PlatformOrganizationSerializer(
     display_name = serializers.CharField(read_only=True)
     club_count = serializers.SerializerMethodField()
     logo_url = serializers.SerializerMethodField()
+    logo_dark_url = serializers.SerializerMethodField()
     # Die Art ergibt sich aus der Lage und dem Schalter „führt eigene Mitglieder“
     type = serializers.CharField(read_only=True)
     keeps_members = serializers.BooleanField(required=False)
@@ -883,6 +904,7 @@ class PlatformOrganizationSerializer(
             "is_remote",
             "club_count",
             "logo_url",
+            "logo_dark_url",
         ]
 
     def to_representation(self, instance):
@@ -902,6 +924,9 @@ class PlatformOrganizationSerializer(
 
     def get_logo_url(self, obj) -> str | None:
         return logo_url(obj)
+
+    def get_logo_dark_url(self, obj) -> str | None:
+        return logo_dark_url(obj)
 
     def validate_enabled_modules(self, value):
         unknown = sorted(set(value) - set(SWITCHABLE_MODULES))
@@ -1087,6 +1112,7 @@ class FederationClubSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
     display_name = serializers.CharField(read_only=True)
     logo_url = serializers.SerializerMethodField()
+    logo_dark_url = serializers.SerializerMethodField()
     # Freigabe an den Verein; schreiben nur mit Weitergabe (M6)
     released_modules = serializers.ListField(child=serializers.CharField(), required=False)
     # Baum darunter, nur zum Ansehen: Namen der Untereinheiten (keine Mitgliedsdaten)
@@ -1112,6 +1138,7 @@ class FederationClubSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "is_active",
             "is_remote",
             "logo_url",
+            "logo_dark_url",
             "released_modules",
         ]
         read_only_fields = ["department_label_plural", "is_remote"]
@@ -1146,6 +1173,9 @@ class FederationClubSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
     def get_logo_url(self, obj) -> str | None:
         return logo_url(obj)
+
+    def get_logo_dark_url(self, obj) -> str | None:
+        return logo_dark_url(obj)
 
     def get_units(self, obj) -> list[dict]:
         from .tree import UnitTree

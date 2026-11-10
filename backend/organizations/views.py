@@ -99,6 +99,8 @@ class ThemeView(OrgScopedMixin, AuditMixin, generics.RetrieveUpdateAPIView):
 
 class _LogoMixin:
     parser_classes = [MultiPartParser, FormParser]
+    # "logo" oder "logo_dark" (Logo für den Dunkelmodus, Ralf 10.11.2026)
+    logo_field = "logo"
 
     def get_logo_owner(self):
         raise NotImplementedError
@@ -108,18 +110,20 @@ class _LogoMixin:
         serializer = LogoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         before = snapshot(owner)
-        if owner.logo:
-            owner.logo.delete(save=False)
-        owner.logo = serializer.validated_data["logo"]
+        current = getattr(owner, self.logo_field)
+        if current:
+            current.delete(save=False)
+        setattr(owner, self.logo_field, serializer.validated_data["logo"])
         owner.save()
         record(self.org, request.user, "update", owner, diff(before, snapshot(owner)))
-        return Response({"logo_url": owner.logo.url})
+        return Response({f"{self.logo_field}_url": getattr(owner, self.logo_field).url})
 
     def delete(self, request, *args, **kwargs):
         owner = self.get_logo_owner()
-        if owner.logo:
+        current = getattr(owner, self.logo_field)
+        if current:
             before = snapshot(owner)
-            owner.logo.delete(save=True)
+            current.delete(save=True)
             record(self.org, request.user, "update", owner, diff(before, snapshot(owner)))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -129,6 +133,10 @@ class OrganizationLogoView(OrgScopedMixin, _LogoMixin, APIView):
 
     def get_logo_owner(self):
         return self.org
+
+
+class OrganizationLogoDarkView(OrganizationLogoView):
+    logo_field = "logo_dark"
 
 
 def _check_move_locked(unit, new_parent: int) -> None:
@@ -364,6 +372,10 @@ class DepartmentLogoView(OrgScopedMixin, _LogoMixin, APIView):
         unit = get_object_or_404(Department, organization=self.org, pk=self.kwargs["pk"])
         _not_remote(unit)
         return unit
+
+
+class DepartmentLogoDarkView(DepartmentLogoView):
+    logo_field = "logo_dark"
 
 
 class DepartmentHomepageImageView(OrgScopedMixin, APIView):

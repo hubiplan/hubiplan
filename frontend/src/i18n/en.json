@@ -7873,5 +7873,12 @@
   "Seite der Webseite": "Website page",
   "Link nach außen": "External link",
   "Die Abschnitte der Startseite stellst du jetzt mit Vorschau zusammen unter": "You now put together the home page sections with a preview under",
-  "Breite des Abschnitts": "Section width"
+  "Breite des Abschnitts": "Section width",
+  "Logo / Wappen für den Dunkelmodus": "Logo / coat of arms for dark mode",
+  "Wappen / Logo für den Dunkelmodus": "Coat of arms / logo for dark mode",
+  "Erscheint, wenn jemand die dunkle Darstellung nutzt (Anmeldung, Startseite, Termine, Mein Konto). Ohne eigenes Logo für den Dunkelmodus gilt das normale Logo.": "Shown when someone uses the dark appearance (sign-in, home page, events, My account). Without a separate dark mode logo, the normal logo is used.",
+  "Ohne eigenes Logo für den Dunkelmodus gilt das normale Logo.": "Without a separate dark mode logo, the normal logo is used.",
+  "Logo für den Dunkelmodus": "Dark mode logo",
+  "Kein eigenes Logo für den Dunkelmodus.": "No separate dark mode logo.",
+  "Ausschnitt für das Logo im Dunkelmodus": "Crop for the dark mode logo"
 }

@@ -54,9 +54,10 @@ def _delete_files(org) -> int:
             receipt.file.delete(save=False)
             count += 1
     for owner in [org, *Department.objects.filter(organization=org)]:
-        if owner.logo:
-            owner.logo.delete(save=False)
-            count += 1
+        for field in (owner.logo, owner.logo_dark):
+            if field:
+                field.delete(save=False)
+                count += 1
     return count
 
 

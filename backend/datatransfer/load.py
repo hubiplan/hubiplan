@@ -571,6 +571,8 @@ class Checker:
             self.check_membership(m, where)
         if data.get("logo") and not self.files.has(data.get("logo")):
             self.p.warn(f"{where}: Das Logo fehlt in der Datei.")
+        if data.get("logo_dark") and not self.files.has(data.get("logo_dark")):
+            self.p.warn(f"{where}: Das Logo für den Dunkelmodus fehlt in der Datei.")
         for c in data.get("clubs") or []:
             self.check_org(c)
         if data.get("tables"):
@@ -880,6 +882,16 @@ class Loader:
         fieldfile.save(name, ContentFile(content), save=False)
         return True
 
+    def load_logos(self, owner, data: dict) -> None:
+        """Logo und Logo für den Dunkelmodus übernehmen (ältere Dateien kennen nur ``logo``)."""
+        changed = [
+            name
+            for name in ("logo", "logo_dark")
+            if data.get(name) and self.save_logo(getattr(owner, name), data[name])
+        ]
+        if changed:
+            owner.save(update_fields=changed)
+
     def save_logo(self, fieldfile, path: str | None) -> bool:
         """Logo wie beim normalen Hochladen prüfen und als PNG neu schreiben."""
         content = self.files.read(path)
@@ -1066,8 +1078,7 @@ class Loader:
                 gettext("{x0}: {x1}").format(x0=org.name, x1="; ".join(exc.messages))
             ) from exc
         org.save()
-        if data.get("logo") and self.save_logo(org.logo, data["logo"]):
-            org.save(update_fields=["logo"])
+        self.load_logos(org, data)
         self.ids.set("organization", data.get("id"), org.pk)
         return org
 
@@ -1192,8 +1203,7 @@ class Loader:
         dept.short_name = (dept.short_name or "").strip()[:SHORT_NAME_MAX]
         validate_urls(dept)
         dept.save()
-        if d.get("logo") and self.save_logo(dept.logo, d["logo"]):
-            dept.save(update_fields=["logo"])
+        self.load_logos(dept, d)
         load_imprint(dept, d.get("imprint"))
         load_letterhead(dept, d.get("letterhead"))
         self.ids.set("department", d.get("id"), dept.pk)
@@ -1463,8 +1473,7 @@ class Loader:
                 gettext("{x0}: {x1}").format(x0=org.name, x1="; ".join(exc.messages))
             ) from exc
         org.save()
-        if data.get("logo") and self.save_logo(org.logo, data["logo"]):
-            org.save(update_fields=["logo"])
+        self.load_logos(org, data)
         load_imprint(org, data.get("imprint"))
         load_letterhead(org, data.get("letterhead"))
         # Rollen der Untereinheit werden Rollen der Einheit; Rechte nur, soweit es sie gibt.
