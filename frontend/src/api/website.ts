@@ -163,6 +163,15 @@ export type HomeKind =
   | 'album'
   | 'quote'
   | 'contacts'
+  | 'faq'
+  | 'partners'
+  | 'directions'
+  | 'event_list'
+  | 'document'
+  | 'video'
+  | 'chronicle'
+  | 'facts'
+  | 'divider'
   /** nur auf Textseiten (G6): schmales Bild über der Überschrift */
   | 'cover'
 
@@ -187,7 +196,8 @@ export interface HomeSectionData {
   text?: string
   image?: number | null
   side?: 'left' | 'right'
-  size?: 'small' | 'half'
+  /** Text mit Bild: small/half; Trenner: small/large */
+  size?: 'small' | 'half' | 'large'
   line?: string
   height?: 'low' | 'high'
   buttons?: HomeButton[]
@@ -199,6 +209,25 @@ export interface HomeSectionData {
   count?: number
   name?: string
   roles?: number[]
+  /** Häufige Fragen, Partner, Zahlen: Einträge je nach Art */
+  items?: HomeItem[]
+  place?: number | null
+  category?: number | null
+  document?: number | null
+  url?: string
+  label?: string
+  style?: 'line' | 'space'
+}
+
+/** Eintrag einer Liste: Frage/Antwort, Partner (Name, Logo, Link) oder Zahl mit Text */
+export interface HomeItem {
+  question?: string
+  answer?: string
+  name?: string
+  image?: number | null
+  url?: string
+  value?: string
+  label?: string
 }
 
 export interface HomeSection {
@@ -219,6 +248,9 @@ export interface HomeChoices {
   roles: { id: number; name: string }[]
   albums: { id: number; title: string }[]
   events: { id: number; title: string; starts_at: string }[]
+  places?: { id: number; name: string }[]
+  categories?: { id: number; name: string }[]
+  documents?: { id: number; title: string }[]
 }
 
 export interface WebsiteDomain {

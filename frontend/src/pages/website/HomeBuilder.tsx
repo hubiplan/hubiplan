@@ -7,6 +7,7 @@ import type { ReactNode } from 'react'
 import { contentApi } from '../../api/website.ts'
 import type {
   HomeButton,
+  HomeItem,
   HomeKind,
   HomeSection,
   HomeSectionData,
@@ -37,6 +38,15 @@ const KINDS: HomeKind[] = [
   'album',
   'quote',
   'contacts',
+  'faq',
+  'partners',
+  'directions',
+  'event_list',
+  'document',
+  'video',
+  'chronicle',
+  'facts',
+  'divider',
   'cover',
 ]
 
@@ -51,6 +61,15 @@ function kindLabel(kind: HomeKind): string {
     album: t('Album-Auszug'),
     quote: t('Zitat'),
     contacts: t('Ansprechpartner'),
+    faq: t('Häufige Fragen'),
+    partners: t('Partner und Sponsoren'),
+    directions: t('Anfahrt'),
+    event_list: t('Termine einer Art'),
+    document: t('Dokument zum Herunterladen'),
+    video: t('Video als Link'),
+    chronicle: t('Auszug aus der Chronik'),
+    facts: t('Zahlen auf einen Blick'),
+    divider: t('Trenner'),
     cover: t('Titelbild'),
   }[kind]
 }
@@ -66,6 +85,15 @@ function kindHint(kind: HomeKind): string {
     album: t('vier bis acht Bilder aus einem Album der Galerie'),
     quote: t('ein kurzer Text mit Namen'),
     contacts: t('ein bis vier Rollen mit Foto, Name und „Nachricht schreiben“'),
+    faq: t('Fragen mit Antworten zum Aufklappen'),
+    partners: t('Logos mit Link, z. B. Unterstützer und Sponsoren'),
+    directions: t('Anschrift eines Orts mit „Route planen“'),
+    event_list: t('die nächsten Termine einer Kategorie'),
+    document: t('eine Datei aus Webseite › Dokumente als Knopf'),
+    video: t('Vorschaubild mit Link zum Video, ohne Einbettung'),
+    chronicle: t('die neuesten Einträge der Zeitleiste'),
+    facts: t('zwei bis sechs Zahlen mit kurzem Text'),
+    divider: t('Linie oder Abstand zwischen Abschnitten'),
     cover: t('ein schmales Bild über der Überschrift der Seite'),
   }[kind]
 }
@@ -92,6 +120,45 @@ function Sketch({ kind }: { kind: HomeKind }) {
       box(14, 12, 16, 12, 0.5),
       box(50, 12, 16, 12, 0.5),
     ],
+    faq: [
+      box(8, 6, 64, 6, 0.5),
+      box(8, 15, 64, 6, 0.5),
+      box(8, 24, 64, 6, 0.5),
+      box(8, 33, 64, 6, 0.5),
+    ],
+    partners: [box(6, 14, 14, 14), box(24, 14, 14, 14), box(42, 14, 14, 14), box(60, 14, 14, 14)],
+    directions: [
+      box(6, 8, 30, 28),
+      box(42, 10, 30, 5, 0.6),
+      ...lines(42, 20, 30, 2),
+      box(42, 32, 20, 5, 0.5),
+    ],
+    event_list: [
+      box(8, 8, 10, 8, 0.5),
+      box(22, 10, 50, 4, 0.35),
+      box(8, 20, 10, 8, 0.5),
+      box(22, 22, 50, 4, 0.35),
+      box(8, 32, 10, 8, 0.5),
+      box(22, 34, 50, 4, 0.35),
+    ],
+    document: [box(10, 10, 16, 24, 0.4), box(32, 14, 30, 4, 0.5), box(32, 24, 24, 8, 0.6)],
+    video: [box(10, 6, 60, 32), box(34, 16, 12, 12, 0.6)],
+    chronicle: [
+      box(14, 6, 2, 34, 0.5),
+      box(20, 8, 12, 4, 0.6),
+      ...lines(20, 15, 48, 1),
+      box(20, 22, 12, 4, 0.6),
+      ...lines(20, 29, 48, 1),
+    ],
+    facts: [
+      box(8, 12, 16, 10, 0.6),
+      box(32, 12, 16, 10, 0.6),
+      box(56, 12, 16, 10, 0.6),
+      box(8, 26, 16, 3, 0.35),
+      box(32, 26, 16, 3, 0.35),
+      box(56, 26, 16, 3, 0.35),
+    ],
+    divider: [box(8, 21, 64, 2, 0.6)],
     cover: [box(2, 4, 76, 14), box(8, 24, 36, 5, 0.6), ...lines(8, 33, 64, 2)],
   }
   return (
@@ -132,6 +199,24 @@ function defaults(kind: HomeKind): HomeSectionData {
       return { text: '', name: '' }
     case 'contacts':
       return { title: '', roles: [] }
+    case 'faq':
+      return { title: '', items: [{ question: '', answer: '' }] }
+    case 'partners':
+      return { title: '', items: [emptyPartner(), emptyPartner()] }
+    case 'directions':
+      return { title: '', place: null, text: '' }
+    case 'event_list':
+      return { title: '', category: null, count: 4 }
+    case 'document':
+      return { title: '', document: null, label: '' }
+    case 'video':
+      return { title: '', url: 'https://', image: null, text: '' }
+    case 'chronicle':
+      return { title: '', count: 3 }
+    case 'facts':
+      return { title: '', items: [emptyFact(), emptyFact()] }
+    case 'divider':
+      return { style: 'line', size: 'small' }
     case 'cover':
       return { image: null }
   }
@@ -141,10 +226,22 @@ function emptyTile(): HomeTile {
   return { title: '', text: '', image: null, target: null }
 }
 
+const emptyPartner = (): HomeItem => ({ name: '', image: null, url: '' })
+const emptyFact = (): HomeItem => ({ value: '', label: '' })
+
 /** Kurzer Inhalt hinter dem Namen in der Liste, damit sich gleiche Arten unterscheiden */
 function summary(s: HomeSection): string {
   const d = s.data ?? {}
-  return d.title || d.line || d.text?.slice(0, 40) || d.buttons?.[0]?.label || ''
+  return (
+    d.title ||
+    d.line ||
+    d.text?.slice(0, 40) ||
+    d.buttons?.[0]?.label ||
+    d.items?.[0]?.question ||
+    d.items?.[0]?.name ||
+    d.label ||
+    ''
+  )
 }
 
 export function HomeBuilder({
@@ -222,7 +319,9 @@ export function HomeBuilder({
       on: true,
       bg: 'none',
       width: 'content',
-      column: ['event', 'contacts', 'quote'].includes(kind) ? 'side' : 'main',
+      column: ['event', 'contacts', 'quote', 'directions', 'event_list', 'document'].includes(kind)
+        ? 'side'
+        : 'main',
       data: defaults(kind),
     }
     onChange([...value, section])
@@ -820,9 +919,313 @@ function SectionContent({
       )
     case 'contacts':
       return <ContactsField data={data} value={d} setData={setData} titleField={titleField()} />
+    case 'faq':
+      return (
+        <>
+          {titleField()}
+          <ItemList
+            items={d.items ?? []}
+            min={1}
+            max={12}
+            legend={(n) => t('Frage {n}', { n })}
+            addLabel={t('Frage hinzufügen')}
+            removeLabel={t('Frage entfernen')}
+            empty={() => ({ question: '', answer: '' })}
+            onChange={(items) => setData({ items })}
+            render={(item, set) => (
+              <>
+                <Field
+                  label={t('Frage')}
+                  value={item.question ?? ''}
+                  maxLength={150}
+                  onChange={(e) => set({ question: e.target.value })}
+                />
+                <TextEditor
+                  label={t('Antwort')}
+                  value={item.answer ?? ''}
+                  rows={4}
+                  onChange={(answer) => set({ answer })}
+                />
+              </>
+            )}
+          />
+        </>
+      )
+    case 'partners':
+      return (
+        <>
+          {titleField()}
+          <ItemList
+            items={d.items ?? []}
+            min={1}
+            max={12}
+            legend={(n) => t('Partner {n}', { n })}
+            addLabel={t('Partner hinzufügen')}
+            removeLabel={t('Partner entfernen')}
+            empty={emptyPartner}
+            onChange={(items) => setData({ items })}
+            render={(item, set) => (
+              <>
+                <Field
+                  label={t('Name')}
+                  value={item.name ?? ''}
+                  maxLength={120}
+                  onChange={(e) => set({ name: e.target.value })}
+                />
+                {imageField(t('Logo (optional)'), item.image, (image) => set({ image }))}
+                <Field
+                  label={t('Link (optional)')}
+                  type="url"
+                  placeholder="https://"
+                  value={item.url ?? ''}
+                  maxLength={500}
+                  onChange={(e) => set({ url: e.target.value })}
+                />
+              </>
+            )}
+          />
+        </>
+      )
+    case 'directions':
+      return (
+        <>
+          <SelectField
+            label={t('Ort')}
+            value={d.place ?? ''}
+            hint={t('Orte pflegst du unter Einstellungen › Orte.')}
+            onChange={(e) => setData({ place: e.target.value ? Number(e.target.value) : null })}
+          >
+            <option value="">{t('Bitte wählen')}</option>
+            {(choices?.places ?? []).map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </SelectField>
+          {titleField()}
+          <Field
+            label={t('Hinweis zur Anfahrt (optional)')}
+            value={d.text ?? ''}
+            maxLength={1000}
+            onChange={(e) => setData({ text: e.target.value })}
+          />
+        </>
+      )
+    case 'event_list':
+      return (
+        <>
+          <SelectField
+            label={t('Kategorie')}
+            value={d.category ?? ''}
+            hint={t('Nur öffentliche Termine, die noch kommen.')}
+            onChange={(e) => setData({ category: e.target.value ? Number(e.target.value) : null })}
+          >
+            <option value="">{t('Bitte wählen')}</option>
+            {(choices?.categories ?? []).map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </SelectField>
+          {titleField()}
+          <SelectField
+            label={t('Anzahl der Termine')}
+            value={d.count ?? 4}
+            onChange={(e) => setData({ count: Number(e.target.value) })}
+          >
+            {[2, 3, 4, 5, 6, 8, 10].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </SelectField>
+        </>
+      )
+    case 'document':
+      return (
+        <>
+          <SelectField
+            label={t('Dokument')}
+            value={d.document ?? ''}
+            hint={t('Nur veröffentlichte Dokumente aus Webseite › Dokumente.')}
+            onChange={(e) => setData({ document: e.target.value ? Number(e.target.value) : null })}
+          >
+            <option value="">{t('Bitte wählen')}</option>
+            {(choices?.documents ?? []).map((doc) => (
+              <option key={doc.id} value={doc.id}>
+                {doc.title}
+              </option>
+            ))}
+          </SelectField>
+          {titleField()}
+          <Field
+            label={t('Beschriftung des Knopfs (optional)')}
+            value={d.label ?? ''}
+            maxLength={60}
+            onChange={(e) => setData({ label: e.target.value })}
+          />
+        </>
+      )
+    case 'video':
+      return (
+        <>
+          <Field
+            label={t('Adresse des Videos')}
+            type="url"
+            value={d.url ?? ''}
+            maxLength={500}
+            hint={t(
+              'Die Webseite bettet das Video nicht ein. Wer auf das Bild klickt, schaut es beim Anbieter an.',
+            )}
+            onChange={(e) => setData({ url: e.target.value })}
+          />
+          {titleField()}
+          {imageField(t('Vorschaubild (optional)'), d.image, (image) => setData({ image }))}
+          <Field
+            label={t('Kurzer Text (optional)')}
+            value={d.text ?? ''}
+            maxLength={500}
+            onChange={(e) => setData({ text: e.target.value })}
+          />
+        </>
+      )
+    case 'chronicle':
+      return (
+        <>
+          <p className="muted small">
+            {t(
+              'Zeigt die neuesten Einträge der Zeitleiste von Verein › Chronik mit einem Link zur ganzen Chronik.',
+            )}
+          </p>
+          {titleField()}
+          <SelectField
+            label={t('Anzahl der Einträge')}
+            value={d.count ?? 3}
+            onChange={(e) => setData({ count: Number(e.target.value) })}
+          >
+            {[2, 3, 4, 5, 6].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
+          </SelectField>
+        </>
+      )
+    case 'facts':
+      return (
+        <>
+          {titleField()}
+          <ItemList
+            items={d.items ?? []}
+            min={2}
+            max={6}
+            legend={(n) => t('Zahl {n}', { n })}
+            addLabel={t('Zahl hinzufügen')}
+            removeLabel={t('Zahl entfernen')}
+            empty={emptyFact}
+            onChange={(items) => setData({ items })}
+            render={(item, set) => (
+              <>
+                <Field
+                  label={t('Zahl')}
+                  value={item.value ?? ''}
+                  maxLength={20}
+                  hint={t('z. B. 1920 oder 350+')}
+                  onChange={(e) => set({ value: e.target.value })}
+                />
+                <Field
+                  label={t('Text')}
+                  value={item.label ?? ''}
+                  maxLength={60}
+                  onChange={(e) => set({ label: e.target.value })}
+                />
+              </>
+            )}
+          />
+        </>
+      )
+    case 'divider':
+      return (
+        <>
+          <Segments
+            label={t('Art')}
+            value={d.style ?? 'line'}
+            options={[
+              ['line', t('Linie')],
+              ['space', t('Abstand')],
+            ]}
+            onChange={(style) => setData({ style })}
+          />
+          <Segments
+            label={t('Größe')}
+            value={d.size === 'large' ? 'large' : 'small'}
+            options={[
+              ['small', t('klein')],
+              ['large', t('groß')],
+            ]}
+            onChange={(size) => setData({ size })}
+          />
+        </>
+      )
     default:
       return null
   }
+}
+
+/** Liste gleichartiger Einträge (Fragen, Partner, Zahlen) mit Hinzufügen und Entfernen */
+function ItemList({
+  items,
+  min,
+  max,
+  legend,
+  addLabel,
+  removeLabel,
+  empty,
+  onChange,
+  render,
+}: {
+  items: HomeItem[]
+  min: number
+  max: number
+  legend: (n: number) => string
+  addLabel: string
+  removeLabel: string
+  empty: () => HomeItem
+  onChange: (items: HomeItem[]) => void
+  render: (item: HomeItem, set: (patch: Partial<HomeItem>) => void) => ReactNode
+}) {
+  return (
+    <>
+      {items.map((item, i) => (
+        <fieldset key={i} className="home-item">
+          <legend>{legend(i + 1)}</legend>
+          {render(item, (patch) =>
+            onChange(items.map((x, j) => (j === i ? { ...x, ...patch } : x))),
+          )}
+          {items.length > min && (
+            <button
+              type="button"
+              className="button button-ghost"
+              onClick={() => onChange(items.filter((_, j) => j !== i))}
+            >
+              {removeLabel}
+            </button>
+          )}
+        </fieldset>
+      ))}
+      {items.length < max && (
+        <div className="button-row">
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() => onChange([...items, empty()])}
+          >
+            {addLabel}
+          </button>
+        </div>
+      )}
+    </>
+  )
 }
 
 function ContactsField({

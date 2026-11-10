@@ -484,10 +484,11 @@ class _WebsiteMixin(OrgScopedMixin):
 def home_choices(website: Website) -> dict:
     """Auswahl für die eigenen Abschnitte der Startseite: Rollen auf der Webseite, Alben
     der Galerie und kommende öffentliche Termine (je einmal, nach Datum)."""
-    from events.models import Event
+    from events.models import Event, EventCategory
     from events.recurrence import occurrences
+    from places.models import Place
 
-    from .content_models import GalleryAlbum
+    from .content_models import GalleryAlbum, WebsiteDocument
     from .public import SiteView
 
     site = SiteView(website)
@@ -511,6 +512,21 @@ def home_choices(website: Website) -> dict:
             for a in GalleryAlbum.objects.filter(website=website).order_by("title", "pk")
         ],
         "events": events,
+        # Weitere Abschnittsarten: Orte (Anfahrt), Terminkategorien, Dokumente
+        "places": [
+            {"id": p.pk, "name": p.name}
+            for p in Place.objects.filter(organization=site.area, is_active=True).order_by("name")
+        ],
+        "categories": [
+            {"id": c.pk, "name": c.name}
+            for c in EventCategory.objects.filter(organization=site.area, is_active=True).order_by(
+                "name"
+            )
+        ],
+        "documents": [
+            {"id": d.pk, "title": d.title}
+            for d in WebsiteDocument.objects.filter(website=website, published=True)
+        ],
     }
 
 

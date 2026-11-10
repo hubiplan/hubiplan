@@ -9743,3 +9743,15 @@ msgstr "This target does not exist."
 
 msgid "Das Ende liegt vor dem Anfang."
 msgstr "The end is before the start."
+
+msgid "Frage"
+msgstr "Question"
+
+msgid "Höchstens zwölf Fragen."
+msgstr "At most twelve questions."
+
+msgid "Höchstens zwölf Partner."
+msgstr "At most twelve partners."
+
+msgid "Höchstens sechs Zahlen."
+msgstr "At most six numbers."

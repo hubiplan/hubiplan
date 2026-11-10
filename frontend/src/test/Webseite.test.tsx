@@ -238,6 +238,67 @@ describe('Webseite', () => {
     )
   })
 
+  it('legt häufige Fragen und eine Anfahrt an (neue Abschnittsarten)', async () => {
+    const withHome = {
+      ...data(website('public', { home_sections: [{ key: 'greeting', on: true }], draft: {} })),
+      home_labels: { greeting: 'Willkommenstext' },
+      home_kinds: { faq: 'Häufige Fragen', directions: 'Anfahrt', divider: 'Trenner' },
+      home_choices: {
+        roles: [],
+        albums: [],
+        events: [],
+        places: [{ id: 7, name: 'Schützenhalle' }],
+        categories: [],
+        documents: [],
+      },
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: withHome }),
+        [`PUT ${base}`]: () => ({ status: 200, body: withHome }),
+      },
+      '/webseite/gestaltung',
+    )
+    const user = userEvent.setup()
+    const lastSent = () => {
+      const put = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+      const body = JSON.parse(String(put?.init?.body ?? '{}'))
+      return body.draft?.home_sections ?? body.home_sections ?? []
+    }
+    await user.click(await screen.findByRole('button', { name: 'Abschnitt hinzufügen' }))
+    let dialog = await screen.findByRole('dialog', { name: 'Abschnitt hinzufügen' })
+    await user.click(within(dialog).getByRole('button', { name: /^Häufige Fragen/ }))
+    let editor = await screen.findByRole('dialog', { name: 'Häufige Fragen' })
+    await user.type(within(editor).getByLabelText('Frage'), 'Wie werde ich Mitglied?')
+    await user.click(within(editor).getByRole('button', { name: 'Frage hinzufügen' }))
+    expect(within(editor).getAllByLabelText('Frage')).toHaveLength(2)
+    await user.click(within(editor).getAllByRole('button', { name: 'Frage entfernen' })[1])
+    await user.click(within(editor).getByRole('button', { name: 'Übernehmen' }))
+    await waitFor(
+      () =>
+        expect(lastSent().at(-1)).toMatchObject({
+          kind: 'faq',
+          data: { items: [{ question: 'Wie werde ich Mitglied?' }] },
+        }),
+      { timeout: 3000 },
+    )
+    await user.click(screen.getByRole('button', { name: 'Abschnitt hinzufügen' }))
+    dialog = await screen.findByRole('dialog', { name: 'Abschnitt hinzufügen' })
+    await user.click(within(dialog).getByRole('button', { name: /^Anfahrt/ }))
+    editor = await screen.findByRole('dialog', { name: 'Anfahrt' })
+    await user.selectOptions(within(editor).getByLabelText('Ort'), 'Schützenhalle')
+    await user.click(within(editor).getByRole('button', { name: 'Übernehmen' }))
+    await waitFor(
+      () =>
+        expect(lastSent().at(-1)).toMatchObject({
+          kind: 'directions',
+          column: 'side',
+          data: { place: 7 },
+        }),
+      { timeout: 3000 },
+    )
+  })
+
   it('wählt die Darstellung eines Bereichs im Entwurf (G5)', async () => {
     const withLayouts = {
       ...data(website('public', { draft: {}, layouts: {} })),
