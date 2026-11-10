@@ -19,7 +19,7 @@ The **To do** tile comes first and collects tasks, approvals, requests, overdue 
 
 Below are up to three key figures, only with the matching permission: for the treasurer the cash box balance, the account balance per last bank statement and outstanding fees; for the board the number of members and of open data changes; for the secretary the next meeting and the date by which invitations must go out. A click opens the matching page. In **Upcoming events**, **New event** opens the event dialog when you have permission to create events, and **Calendar** opens the overview.
 
-The **Anniversaries and birthdays** card shows the anniversaries of the current year, from October also those of the next year, each under its own heading such as **Anniversaries 2026**. Anniversaries count for a calendar year; a date is only shown if the club counts to the day or month. Below are the birthdays in the next 30 days. Names lead to the member record, **All anniversaries** to the full list.
+The **Anniversaries and birthdays** card shows the anniversaries of the current year, from October also those of the next year, each under its own heading such as “Anniversaries 2026”. Anniversaries count for a calendar year; a date is only shown if the club counts to the day or month. Below are the birthdays in the next 30 days. Names lead to the member record, **All anniversaries** to the full list.
 
 The **Notices** card collects what is not urgent: missing details in the legal notice and letter template notices (with **Later**). The number next to the heading is the number of these notices. Without a notice there is no card.
 
