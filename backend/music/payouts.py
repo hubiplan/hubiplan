@@ -161,46 +161,48 @@ def dk_rules(root) -> list[str]:
     """Regeln aus dem DK-Datenformat (GBIC 5), die über das ISO-Schema hinausgehen:
     SEPA-Zeichensatz und Längen der Texte, nur Euro mit zwei Nachkommastellen, Betrag bis
     999.999.999,99, Service-Level SEPA, Entgelt SLEV, Anzahl und Kontrollsumme stimmig.
-    Gibt die Verstöße zurück (leer: in Ordnung)."""
+    Gibt die Verstöße als technische Angaben fürs Protokoll zurück (leer: in Ordnung); sie
+    erscheinen nie in der Oberfläche, ein Verstoß bricht den Zahlungslauf mit Serverfehler ab,
+    weil HUBIplan die Datei selbst erzeugt."""
 
     def local(elem):
         return etree.QName(elem).localname
 
-    errors = []
+    faults = []
     for elem in root.iter():
         name, text = local(elem), elem.text or ""
         if name in _DK_LENGTH:
             if not text or len(text) > _DK_LENGTH[name] or not _SEPA_TEXT.fullmatch(text):
-                errors.append(f"{name}: Länge oder Zeichensatz")
+                faults.append(f"{name}: Länge oder Zeichensatz")
             if name in ("MsgId", "PmtInfId", "EndToEndId") and (
                 text.startswith("/") or "//" in text
             ):
-                errors.append(f"{name}: Schrägstrich")
+                faults.append(f"{name}: Schrägstrich")
         if name == "InstdAmt":
             if elem.get("Ccy") != "EUR" or not _AMOUNT.fullmatch(text) or Decimal(text) <= 0:
-                errors.append("InstdAmt: nur Euro, 0,01 bis 999.999.999,99")
+                faults.append("InstdAmt: nur Euro, 0,01 bis 999.999.999,99")
     find = root.xpath
     for code, path in (
         ("SEPA", "//*[local-name()='SvcLvl']/*[local-name()='Cd']"),
         ("SLEV", "//*[local-name()='ChrgBr']"),
     ):
         if [e.text for e in find(path)] != [code]:
-            errors.append(f"nur {code} erlaubt")
+            faults.append(f"nur {code} erlaubt")
     amounts = [Decimal(e.text) for e in find("//*[local-name()='InstdAmt']") if e.text]
     for scope in find("//*[local-name()='GrpHdr'] | //*[local-name()='PmtInf']"):
         count = scope.xpath("string(*[local-name()='NbOfTxs'])")
         ctrl = scope.xpath("string(*[local-name()='CtrlSum'])")
         if count != str(len(amounts)) or ctrl != f"{sum(amounts, Decimal(0)):.2f}":
-            errors.append(f"{local(scope)}: Anzahl oder Kontrollsumme")
-    return errors
+            faults.append(f"{local(scope)}: Anzahl oder Kontrollsumme")
+    return faults
 
 
 def validate(root) -> None:
     """ISO-Schema und DK-Regeln; Fehler bricht den Zahlungslauf ab."""
     etree.XMLSchema(etree.parse(str(SCHEMA))).assertValid(root)
-    errors = dk_rules(root)
-    if errors:
-        raise ValueError("pain.001 verletzt DK-Regeln: " + "; ".join(errors))
+    faults = dk_rules(root)
+    if faults:
+        raise ValueError("pain.001 verletzt DK-Regeln: " + "; ".join(faults))
 
 
 class PayoutRuns(NoStore, SettlementView):
