@@ -559,13 +559,20 @@ class _List(APIView):
         return Response(circular_data(circular, self.base_url), status=status.HTTP_201_CREATED)
 
 
-def event_text(event) -> tuple[str, str]:
-    """Betreff und Text für ein Rundschreiben zu einem Termin (Vereinssprache)."""
+def event_text(event, reminder: bool = False) -> tuple[str, str]:
+    """Betreff und Text für ein Rundschreiben zu einem Termin (Vereinssprache).
+
+    ``reminder``: Erinnerung an alle, die noch nicht (sicher) geantwortet haben."""
     from events.notify import when
 
     start = timezone.localtime(event.starts_at)
-    subject = f"{event.title} am {start:%d.%m.%Y}"[:200]
-    lines = ["Hallo {Vorname},", "", f"wir laden dich herzlich ein: **{event.title}**", ""]
+    subject = f"{event.title} am {start:%d.%m.%Y}"
+    intro = f"wir laden dich herzlich ein: **{event.title}**"
+    if reminder:
+        subject = f"Erinnerung: {subject}"
+        intro = f"von dir fehlt uns noch eine Rückmeldung zu **{event.title}**."
+    subject = subject[:200]
+    lines = ["Hallo {Vorname},", "", intro, ""]
     lines.append(f"- Wann: {when(event)}")
     if event.location or event.address:
         lines.append(f"- Wo: {', '.join(x for x in (event.location, event.address) if x)}")
@@ -632,7 +639,12 @@ class _FromEvent(APIView):
             }
         if not own:
             raise NotFound()
-        subject, body = event_text(event)
+        # Erinnerung: nur an die ohne Rückmeldung (und die mit „Vielleicht“)
+        reminder = bool(request.data.get("reminder")) and event.rsvp_enabled
+        filters: dict = {}
+        if reminder:
+            filters["event_responses"] = ["open", "maybe"] if event.rsvp_maybe else ["open"]
+        subject, body = event_text(event, reminder)
         circular = Circular.objects.create(
             organization=self.org,
             department=self.dept,
@@ -640,7 +652,7 @@ class _FromEvent(APIView):
             audience=Circular.Audience.MEMBERS,
             subject=subject,
             body=body,
-            filters={},
+            filters=filters,
             event=event,
             created_by=request.user,
         )

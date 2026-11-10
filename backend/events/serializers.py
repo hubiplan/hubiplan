@@ -64,6 +64,9 @@ class EventWriteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "rsvp_deadline",
             "rsvp_capacity",
             "rsvp_guests",
+            "rsvp_maybe",
+            "rsvp_note",
+            "rsvp_note_question",
             "remind_days",
             "share_up",
             "share_down",
@@ -116,6 +119,11 @@ class EventWriteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             attrs["rsvp_deadline"] = None
             attrs["rsvp_capacity"] = None
             attrs["rsvp_guests"] = False
+            attrs["rsvp_maybe"] = False
+        if not attrs.get("rsvp_note", inst.rsvp_note if inst else False):
+            attrs["rsvp_note_question"] = ""
+        elif "rsvp_note_question" in attrs:
+            attrs["rsvp_note_question"] = attrs["rsvp_note_question"].strip()
         self.notify = attrs.pop("notify", False)
         return super().validate(attrs)
 

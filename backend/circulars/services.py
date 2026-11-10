@@ -131,18 +131,41 @@ def mail_footer(circular: Circular, membership_id: int | None) -> tuple[str, str
     return "\n".join(plain), "<br>".join(html)
 
 
-def render_mail(circular: Circular, values: dict, membership_id: int | None) -> dict:
+def rsvp_block(circular: Circular, membership_id: int | None, test: bool) -> tuple[str, str]:
+    """Persönlicher Rückmeldelink bei einem Rundschreiben zum Termin (Text und HTML)."""
+    from events import rsvp_link
+
+    event = circular.event if circular.event_id else None
+    if event is None or not rsvp_link.offers_link(event) or not (membership_id or test):
+        return "", ""
+    label = "Zu- oder absagen (ohne Anmeldung)"
+    if test:
+        hint = "In der Probemail steht hier der persönliche Link jedes Empfängers."
+        return f"{label}: {hint}", f"<p><strong>{escape(label)}:</strong> {escape(hint)}</p>"
+    link = rsvp_link.url(event, membership_id)
+    return (
+        f"{label}: {link}",
+        f'<p><a href="{escape(link)}" style="font-weight:bold">{escape(label)}</a></p>',
+    )
+
+
+def render_mail(
+    circular: Circular, values: dict, membership_id: int | None, *, test: bool = False
+) -> dict:
     subject = text.fill(circular.subject, values).replace("\n", " ").strip()
     body = text.fill(circular.body, values)
     foot_plain, foot_html = mail_footer(circular, membership_id)
+    rsvp_plain, rsvp_html = rsvp_block(circular, membership_id, test)
     plain = f"{text.to_plain(body)}\n"
+    if rsvp_plain:
+        plain = f"{plain}\n{rsvp_plain}\n"
     foot = ""
     if foot_plain:
         plain = f"{plain}\n{foot_plain}\n"
         foot = f'<p style="margin-top:24px;font-size:12px;color:#666">{foot_html}</p>'
     html = (
         '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5">'
-        f"{text.to_html(body)}{foot}</div>"
+        f"{text.to_html(body)}{rsvp_html}{foot}</div>"
     )
     headers = {}
     if unsubscribable(circular) and membership_id:
@@ -554,7 +577,7 @@ def send_test(circular: Circular, user) -> str:
     rcp.fill_values(circular, selection, used_placeholders(circular))
     first = selection.chosen[0] if selection.chosen else None
     values = first.values if first else {"Vorname": user.first_name, "Nachname": user.last_name}
-    content = render_mail(circular, values, first.membership_id if first else None)
+    content = render_mail(circular, values, first.membership_id if first else None, test=True)
     mail.send(
         user.email,
         f"[Probe] {content['subject']}",

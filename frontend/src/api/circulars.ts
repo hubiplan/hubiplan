@@ -207,8 +207,11 @@ export const circularApi = {
   options: (b: CircularBase) => api.get<CircularOptions>(`${baseUrl(b)}options/`),
   list: (b: CircularBase) => api.get<CircularSummary[]>(baseUrl(b)),
   /** Entwurf an die Eingeladenen eines Termins; ``url`` ist die Rundschreiben-Adresse */
-  fromEvent: (url: string, eventId: number) =>
-    api.post<Circular & { skipped_attachments?: string[] }>(`${url}from-event/${eventId}/`),
+  fromEvent: (url: string, eventId: number, reminder = false) =>
+    api.post<Circular & { skipped_attachments?: string[] }>(
+      `${url}from-event/${eventId}/`,
+      reminder ? { reminder: true } : {},
+    ),
   create: (b: CircularBase, data: CircularChanges & { template?: number; copy_of?: number } = {}) =>
     api.post<Circular>(baseUrl(b), data),
   get: (b: CircularBase, id: number) => api.get<Circular>(`${baseUrl(b)}${id}/`),

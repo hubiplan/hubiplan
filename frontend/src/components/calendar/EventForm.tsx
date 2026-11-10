@@ -48,6 +48,9 @@ interface Values {
   rsvp_deadline_time: string
   rsvp_capacity: string
   rsvp_guests: boolean
+  rsvp_maybe: boolean
+  rsvp_note: boolean
+  rsvp_note_question: string
   remind: boolean
   remind_days: string
   notify: boolean
@@ -86,6 +89,9 @@ function initial(event: EventDetail | null, date: string): Values {
       rsvp_deadline_time: '23:59',
       rsvp_capacity: '',
       rsvp_guests: false,
+      rsvp_maybe: false,
+      rsvp_note: true,
+      rsvp_note_question: '',
       remind: false,
       remind_days: '2',
       notify: false,
@@ -120,6 +126,9 @@ function initial(event: EventDetail | null, date: string): Values {
     rsvp_deadline_time: deadline?.time ?? '23:59',
     rsvp_capacity: event.rsvp.capacity ? String(event.rsvp.capacity) : '',
     rsvp_guests: event.rsvp.guests_allowed,
+    rsvp_maybe: !!event.rsvp.maybe_allowed,
+    rsvp_note: event.rsvp.note_allowed ?? true,
+    rsvp_note_question: event.rsvp.note_question ?? '',
     remind: !!event.remind_days,
     remind_days: event.remind_days ? String(event.remind_days) : '2',
     notify: false,
@@ -153,6 +162,9 @@ function toInput(v: Values, withUnit = false): EventInput {
         : null,
     rsvp_capacity: v.rsvp_enabled && v.rsvp_capacity ? Number(v.rsvp_capacity) : null,
     rsvp_guests: v.rsvp_enabled && v.rsvp_guests,
+    rsvp_maybe: v.rsvp_enabled && v.rsvp_maybe,
+    rsvp_note: v.rsvp_note,
+    rsvp_note_question: v.rsvp_note ? v.rsvp_note_question.trim() : '',
     remind_days: v.repeat === 'none' && v.remind ? Number(v.remind_days) || 1 : null,
     share_up: fromShare(v.share_up),
     share_down: fromShare(v.share_down),
@@ -553,6 +565,26 @@ export function EventForm({
                 checked={v.rsvp_guests}
                 onChange={(x) => set('rsvp_guests', x)}
               />
+              <Checkbox
+                label={t('Antwort „Vielleicht“ erlauben')}
+                checked={v.rsvp_maybe}
+                onChange={(x) => set('rsvp_maybe', x)}
+              />
+              <Checkbox
+                label={t('Bemerkung erlauben')}
+                checked={v.rsvp_note}
+                onChange={(x) => set('rsvp_note', x)}
+              />
+              {v.rsvp_note && (
+                <Field
+                  label={t('Eigene Frage zur Bemerkung (optional)')}
+                  placeholder={t('z. B. Essenswunsch?')}
+                  maxLength={200}
+                  value={v.rsvp_note_question}
+                  error={errors.rsvp_note_question}
+                  onChange={(e) => set('rsvp_note_question', e.target.value)}
+                />
+              )}
             </>
           )}
         </fieldset>

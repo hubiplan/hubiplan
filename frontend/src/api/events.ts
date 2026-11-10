@@ -56,13 +56,14 @@ export interface FeedInfo {
   ics_url: string | null
 }
 
-export type ResponseStatus = 'yes' | 'no'
+export type ResponseStatus = 'yes' | 'no' | 'maybe'
+export type ResponseSource = 'member' | 'board' | 'link'
 
 export interface MyResponse {
   status: ResponseStatus
   guests: number
   note: string
-  source: 'member' | 'board'
+  source: ResponseSource
   updated_at: string
 }
 
@@ -72,13 +73,16 @@ export interface RsvpInfo {
   capacity: number | null
   guests_allowed: boolean
   max_guests: number
+  maybe_allowed?: boolean
+  note_allowed?: boolean
+  note_question?: string
   free?: number
   mine?: MyResponse | null
   can_respond?: boolean
   reason?: string
   can_view_list?: boolean
   can_enter?: boolean
-  summary?: { yes: number; no: number; guests: number; persons: number }
+  summary?: { yes: number; no: number; maybe?: number; guests: number; persons: number }
 }
 
 export interface ResponseRow {
@@ -89,14 +93,21 @@ export interface ResponseRow {
   status: ResponseStatus | null
   guests: number
   note: string
-  source: 'member' | 'board' | null
+  source: ResponseSource | null
   updated_at: string | null
 }
 
 export interface ResponseList {
   event_id: number
   scope: 'all' | 'department'
-  summary: { yes: number; no: number; guests: number; persons: number; open: number }
+  summary: {
+    yes: number
+    no: number
+    maybe?: number
+    guests: number
+    persons: number
+    open: number
+  }
   capacity: number | null
   items: ResponseRow[]
   open: { membership_id: number; name: string; departments: string }[]
@@ -209,6 +220,9 @@ export interface EventInput {
   rsvp_deadline: string | null
   rsvp_capacity: number | null
   rsvp_guests: boolean
+  rsvp_maybe: boolean
+  rsvp_note: boolean
+  rsvp_note_question: string
   remind_days: number | null
   /** Weitergabe nach oben/unten; null = wie bei der Einheit voreingestellt */
   share_up?: boolean | null

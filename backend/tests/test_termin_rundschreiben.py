@@ -140,3 +140,22 @@ def test_untereinheit_schreibt_zu_eigenem_termin(cal, zug, zug2, api, private_ro
     assert circular.department_id == zug.pk and circular.event_id == ev["id"]
     names = {i["first_name"] for i in preview(c, f"{base}circulars/", circular.pk)["items"]}
     assert names == {"Zora", "Anna"}
+
+
+def test_erinnerung_an_alle_ohne_rueckmeldung(setup):
+    s = setup
+    event = Event.objects.get(pk=s["ev"]["id"])
+    EventResponse.objects.create(
+        organization=s["club"], event=event, membership=s["anna"], status="yes", source="member"
+    )
+    url = f"/api/orgs/{s['club'].pk}/circulars/"
+    resp = s["c"].post(f"{url}from-event/{event.pk}/", {"reminder": True}, content_type=JSON)
+    assert resp.status_code == 201, resp.content
+    data = resp.json()
+    assert data["subject"].startswith("Erinnerung: Königsschießen")
+    assert "fehlt uns noch eine Rückmeldung" in data["body"]
+    assert data["filters"] == {"event_responses": ["open"]}
+    assert {i["first_name"] for i in preview(s["c"], url, data["id"])["items"]} == {
+        "Bernd",
+        "Clara",
+    }

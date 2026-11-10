@@ -12,7 +12,7 @@ from dataclasses import dataclass
 
 from django.db.models import Count, Exists, OuterRef, Q, Sum
 from django.utils import timezone
-from django.utils.translation import gettext
+from django.utils.translation import gettext, gettext_noop
 from rest_framework.exceptions import ValidationError
 
 from members.models import DepartmentMembership, Membership, MembershipPeriod, today
@@ -71,6 +71,7 @@ def is_invited(event: Event, membership_id: int) -> bool:
 class Summary:
     yes: int = 0
     no: int = 0
+    maybe: int = 0
     guests: int = 0
 
     @property
@@ -84,6 +85,8 @@ def summary(event: Event, responses=None) -> Summary:
     for row in qs.values("status").annotate(n=Count("pk"), g=Sum("guests")):
         if row["status"] == EventResponse.Status.YES:
             result.yes, result.guests = row["n"], row["g"] or 0
+        elif row["status"] == EventResponse.Status.MAYBE:
+            result.maybe = row["n"]
         else:
             result.no = row["n"]
     return result
@@ -100,9 +103,9 @@ def member_can_respond(event: Event) -> tuple[bool, str]:
     if not event.rsvp_enabled:
         return False, ""
     if event.is_cancelled:
-        return False, "Der Termin ist abgesagt."
+        return False, gettext_noop("Der Termin ist abgesagt.")
     if deadline_passed(event):
-        return False, "Der Anmeldeschluss ist vorbei."
+        return False, gettext_noop("Der Anmeldeschluss ist vorbei.")
     return True, ""
 
 
@@ -124,6 +127,14 @@ def check_capacity(event: Event, response: EventResponse | None, status: str, gu
                 ]
             }
         )
+
+
+def check_options(event: Event, status: str, note: str) -> str:
+    """Was das Mitglied selbst antworten darf: „Vielleicht“ und Bemerkung nur, wenn der
+    Termin sie erlaubt. Gibt die zu speichernde Bemerkung zurück."""
+    if status == EventResponse.Status.MAYBE and not event.rsvp_maybe:
+        raise ValidationError({"status": [gettext("Bei diesem Termin bitte zu- oder absagen.")]})
+    return note if event.rsvp_note else ""
 
 
 def save_response(

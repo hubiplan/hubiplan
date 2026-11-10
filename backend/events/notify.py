@@ -16,7 +16,7 @@ from core.tenancy import rls_bypass
 from organizations.addresses import base_url
 from outbox import mail
 
-from . import rsvp
+from . import rsvp, rsvp_link
 from .models import Event, EventResponse
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,15 @@ def when(event: Event) -> str:
     return f"{start:%d.%m.%Y}, {start:%H:%M} Uhr bis {end:%d.%m.%Y}, {end:%H:%M} Uhr"
 
 
-def body(event: Event, kind: str, first_name: str, response: EventResponse | None) -> str:
+def body(
+    event: Event,
+    kind: str,
+    first_name: str,
+    response: EventResponse | None,
+    link: str = "",
+    attached: list[str] | None = None,
+    skipped: list[str] | None = None,
+) -> str:
     owner = event.department.name if event.department_id else event.organization.name
     intro = {
         INVITE: f"{owner} lädt Sie zu folgendem Termin ein:",
@@ -70,8 +78,16 @@ def body(event: Event, kind: str, first_name: str, response: EventResponse | Non
             if event.rsvp_deadline:
                 deadline = timezone.localtime(event.rsvp_deadline)
                 lines.append(f"Rückmeldung bitte bis {deadline:%d.%m.%Y, %H:%M} Uhr.")
-            base = base_url(event.organization)
-            lines.append(f"Zu- oder absagen können Sie im Mitgliederbereich: {base}/termine")
+            if link:
+                lines.append(f"Zu- oder absagen (ohne Anmeldung): {link}")
+            else:
+                base = base_url(event.organization)
+                lines.append(f"Zu- oder absagen können Sie im Mitgliederbereich: {base}/termine")
+    if attached:
+        lines += ["", f"Anlagen: {', '.join(attached)}"]
+    if skipped:
+        where = "über den Link oben" if link else "im Mitgliederbereich"
+        lines.append(f"Weitere Anlagen ({', '.join(skipped)}) finden Sie {where}.")
     lines += ["", "Viele Grüße", owner]
     return "\n".join(lines) + "\n"
 
@@ -85,9 +101,10 @@ def recipients(event: Event, kind: str):
     """Mitgliedschaften, die die Mail bekommen."""
     members = rsvp.invited(event).prefetch_related("person__contacts")
     if kind == REMIND and event.rsvp_enabled:
-        # Erinnert werden nur, die zugesagt haben
+        # Erinnert werden nur, die zugesagt haben oder noch unsicher sind
         members = members.filter(
-            event_responses__event=event, event_responses__status=EventResponse.Status.YES
+            event_responses__event=event,
+            event_responses__status__in=[EventResponse.Status.YES, EventResponse.Status.MAYBE],
         )
     elif kind in (CHANGE, CANCEL) and event.rsvp_enabled:
         # Absager brauchen keine Nachricht
@@ -106,6 +123,9 @@ def send(event_id: int, kind: str) -> int:
         if event is None or kind not in KINDS:
             return 0
         responses = {r.membership_id: r for r in event.responses.all()}
+        with_link = rsvp_link.offers_link(event) and kind != CANCEL
+        # Anhänge gehen mit der Einladung mit (wie bei Rundschreiben)
+        stored, skipped = rsvp_link.mail_attachments(event) if kind == INVITE else ([], [])
         sent = 0
         for membership in recipients(event, kind):
             address = rsvp.email_of(membership)
@@ -114,9 +134,18 @@ def send(event_id: int, kind: str) -> int:
             ok = mail.send(
                 address,
                 subject(event, kind),
-                body(event, kind, membership.person.first_name, responses.get(membership.pk)),
+                body(
+                    event,
+                    kind,
+                    membership.person.first_name,
+                    responses.get(membership.pk),
+                    link=rsvp_link.url(event, membership.pk) if with_link else "",
+                    attached=[a["name"] for a in stored],
+                    skipped=skipped,
+                ),
                 organization=event.organization,
                 kind="termin",
+                stored_attachments=stored or None,
                 fail_silently=True,
             )
             sent += int(ok)

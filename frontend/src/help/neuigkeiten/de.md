@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Neu: Rückmeldung per Link in der Mail. Einladung, Erinnerung und Rundschreiben zum Termin enthalten je Mitglied einen Link zu einer Seite ohne Anmeldung mit Termin, Anhängen und der Auswahl Zusage, Absage oder „Vielleicht“. Neu am Termin: **Antwort „Vielleicht“ erlauben** und eine eigene Frage zur Bemerkung. Die Einladungsmail schickt die Anhänge des Termins mit.
 - Neu: Rundschreiben zu einem Termin. Im Termin unter **Zu diesem Termin** legt **Rundschreiben dazu schreiben** einen Entwurf an die Eingeladenen an, mit Zeit, Ort, Anmeldeschluss und den PDF-Anhängen des Termins. Auf Wunsch geht es nur an die, die noch nicht geantwortet, zugesagt oder abgesagt haben.
 - Neu: **Orte** unter Einstellungen. Häufige Orte wie Schützenhaus oder Festplatz einmal mit Anschrift und Anfahrt speichern und in Terminen, Wettbewerben, Helferdiensten und Versammlungen im Feld **Ort** auswählen. Neue Orte speichert **Als Ort speichern** direkt aus dem Formular; Vorschläge kommen aus den bisherigen Einträgen. Vereine sehen auch die Orte ihres Dachverbands.
 - Startseite: Unter **Schnellaktionen** › **Anpassen** blendest du einzelne Aktionen oder den ganzen Block aus; wieder einschalten geht unter Mein Konto › Profil › Startseite. Die Aktionen der Kasse sieht nur, wer eine Kassenrolle hat, nicht schon der Vorsitz mit allen Rechten. Kennzahlen, Nächste Termine und Hinweise stehen in einem gleichmäßigen Raster.

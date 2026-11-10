@@ -57,11 +57,11 @@ function CircularLinks({ base, event }: { base: string; event: EventDetail }) {
   const [error, setError] = useState<string | null>(null)
   const rows = event.circulars
   if (rows === undefined || (rows.length === 0 && !event.can_circular)) return null
-  const write = async () => {
+  const write = async (reminder = false) => {
     setBusy(true)
     setError(null)
     try {
-      const created = await circularApi.fromEvent(`${base}circulars/`, event.id)
+      const created = await circularApi.fromEvent(`${base}circulars/`, event.id, reminder)
       if (created.skipped_attachments?.length)
         await alertDialog(
           t('Nicht übernommen (Rundschreiben haben nur PDF-Anhänge bis 10 MB): {names}', {
@@ -96,6 +96,19 @@ function CircularLinks({ base, event }: { base: string; event: EventDetail }) {
               ? t('Weiteres Rundschreiben dazu schreiben')
               : t('Rundschreiben dazu schreiben')}
           </button>
+          {event.rsvp.enabled && (
+            <>
+              {' · '}
+              <button
+                type="button"
+                className="link-button"
+                disabled={busy}
+                onClick={() => void write(true)}
+              >
+                {t('Erinnerung an alle ohne Rückmeldung')}
+              </button>
+            </>
+          )}
         </p>
       )}
       {error && <Alert kind="error">{error}</Alert>}

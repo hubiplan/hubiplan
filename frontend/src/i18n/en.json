@@ -7628,5 +7628,32 @@
   "An: Eingeladene von „{title}“": "To: those invited to “{title}”",
   "noch keine Rückmeldung": "no reply yet",
   "An die Eingeladenen von „{title}“": "To those invited to “{title}”",
-  "Ohne Häkchen an alle Eingeladenen, sonst nur an die mit dieser Rückmeldung:": "Without ticks to everyone invited, otherwise only to those with this reply:"
+  "Ohne Häkchen an alle Eingeladenen, sonst nur an die mit dieser Rückmeldung:": "Without ticks to everyone invited, otherwise only to those with this reply:",
+  "Antwort „Vielleicht“ erlauben": "Allow “Maybe” as an answer",
+  "Bemerkung erlauben": "Allow a comment",
+  "Eigene Frage zur Bemerkung (optional)": "Own question for the comment (optional)",
+  "z. B. Essenswunsch?": "e.g. Meal preference?",
+  "Vielleicht": "Maybe",
+  "vielleicht": "maybe",
+  "Deine Antwort „Vielleicht“ ist gespeichert.": "Your answer “Maybe” has been saved.",
+  " (über den Link in der Mail)": " (via the link in the email)",
+  "Du kannst deine Rückmeldung bis zum Anmeldeschluss jederzeit ändern.": "You can change your reply at any time until the deadline.",
+  "· {n} vielleicht ": "· {n} maybe ",
+  " (Mail-Link)": " (email link)",
+  "„Vielleicht“ für {name} eintragen": "Enter “Maybe” for {name}",
+  "Deine Rückmeldung ist gespeichert. Du kannst sie über denselben Link ändern.": "Your reply has been saved. You can change it using the same link.",
+  "Rückmeldung zum Termin": "Reply to the event",
+  "Dieser Termin ist abgesagt.": "This event has been cancelled.",
+  "Wo": "Where",
+  "Anmeldeschluss": "Registration deadline",
+  "deine Rückmeldung: {x}.": "your reply: {x}.",
+  "du hast dich noch nicht zurückgemeldet.": "you have not replied yet.",
+  " Mit {n} Begleitperson.": {
+    "one": " With {n} guest.",
+    "other": " With {n} guests."
+  },
+  "Kommst du?": "Are you coming?",
+  "Ich komme": "I am coming",
+  "Ich komme nicht": "I am not coming",
+  "Erinnerung an alle ohne Rückmeldung": "Reminder to everyone without a reply"
 }

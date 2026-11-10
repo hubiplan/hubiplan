@@ -149,6 +149,11 @@ class Event(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(100000)],
     )
     rsvp_guests = models.BooleanField("Begleitpersonen erlaubt", default=False)
+    # Antwort „Vielleicht“ (zählt nicht gegen die Höchstzahl)
+    rsvp_maybe = models.BooleanField("Antwort „Vielleicht“ erlaubt", default=False)
+    # Bemerkung der Mitglieder (wie bisher an), auf Wunsch mit eigener Frage („Essenswunsch?“)
+    rsvp_note = models.BooleanField("Bemerkung erlaubt", default=True)
+    rsvp_note_question = models.CharField("Frage zur Bemerkung", max_length=200, blank=True)
     # Erinnerung per E-Mail: so viele Tage vor Beginn
     remind_days = models.PositiveSmallIntegerField(
         "Erinnerung Tage vorher",
@@ -341,10 +346,12 @@ class EventResponse(models.Model):
     class Status(models.TextChoices):
         YES = "yes", gettext_lazy("Zusage")
         NO = "no", gettext_lazy("Absage")
+        MAYBE = "maybe", gettext_lazy("Vielleicht")
 
     class Source(models.TextChoices):
         MEMBER = "member", gettext_lazy("Mitglied")
         BOARD = "board", gettext_lazy("Vorstand")
+        LINK = "link", gettext_lazy("Mail-Link")
 
     # Verein des Termins (Mandantentrennung)
     organization = models.ForeignKey(

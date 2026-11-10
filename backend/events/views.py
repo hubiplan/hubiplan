@@ -122,6 +122,9 @@ def rsvp_data(event: Event, viewer: services.Viewer) -> dict:
         "capacity": event.rsvp_capacity,
         "guests_allowed": event.rsvp_guests,
         "max_guests": MAX_GUESTS,
+        "maybe_allowed": event.rsvp_maybe,
+        "note_allowed": event.rsvp_note,
+        "note_question": event.rsvp_note_question if event.rsvp_note else "",
     }
     if not event.rsvp_enabled and not event.responses.exists():
         return data
@@ -135,13 +138,19 @@ def rsvp_data(event: Event, viewer: services.Viewer) -> dict:
         if allowed and not rsvp.is_invited(event, viewer.membership_id):
             allowed, reason = False, "Zu diesem Termin sind Sie nicht eingeladen."
         data["can_respond"] = allowed
-        data["reason"] = reason
+        data["reason"] = gettext(reason) if reason else ""
     scope = viewer.response_scope(event)
     if scope is not None:
         data["can_view_list"] = True
         data["can_enter"] = event.rsvp_enabled
         if scope == "all":
-            data["summary"] = {"yes": s.yes, "no": s.no, "guests": s.guests, "persons": s.persons}
+            data["summary"] = {
+                "yes": s.yes,
+                "no": s.no,
+                "maybe": s.maybe,
+                "guests": s.guests,
+                "persons": s.persons,
+            }
     return data
 
 
@@ -1208,13 +1217,15 @@ class _Responses(_ResponsesMixin, APIView):
         event, scope = self.scoped_event(pk)
         answered, open_ = self.lists(event, scope)
         yes = [r for r in answered if r.response.status == EventResponse.Status.YES]
+        maybe = [r for r in answered if r.response.status == EventResponse.Status.MAYBE]
         return Response(
             {
                 "event_id": event.pk,
                 "scope": "all" if scope == "all" else "department",
                 "summary": {
                     "yes": len(yes),
-                    "no": len(answered) - len(yes),
+                    "no": len(answered) - len(yes) - len(maybe),
+                    "maybe": len(maybe),
                     "guests": sum(r.response.guests for r in yes),
                     "persons": len(yes) + sum(r.response.guests for r in yes),
                     "open": len(open_),
@@ -1240,6 +1251,8 @@ class _Responses(_ResponsesMixin, APIView):
         data.is_valid(raise_exception=True)
         v = data.validated_data
         membership = self.membership_in_scope(event, scope, v["membership_id"])
+        # Der Vorstand trägt Bemerkungen immer ein, „Vielleicht“ nur, wenn erlaubt
+        rsvp.check_options(event, v["status"], "")
         # Der Vorstand darf nach Anmeldeschluss und über die Höchstzahl hinaus eintragen
         response, before = rsvp.save_response(
             event,
@@ -1341,9 +1354,8 @@ class _MyResponse(APIView):
         event = self.visible_event(pk)
         allowed, reason = rsvp.member_can_respond(event)
         if not allowed:
-            raise serializers.ValidationError(
-                reason or gettext("Für diesen Termin gibt es keine Rückmeldung.")
-            )
+            fallback = gettext("Für diesen Termin gibt es keine Rückmeldung.")
+            raise serializers.ValidationError(gettext(reason) if reason else fallback)
         if not rsvp.is_invited(event, self.viewer.membership_id):
             raise PermissionDenied(gettext("Zu diesem Termin sind Sie nicht eingeladen."))
         return event
@@ -1363,7 +1375,7 @@ class _MyResponse(APIView):
             membership,
             status=v["status"],
             guests=v["guests"],
-            note=v["note"],
+            note=rsvp.check_options(event, v["status"], v["note"]),
             source=EventResponse.Source.MEMBER,
             user=request.user,
         )
