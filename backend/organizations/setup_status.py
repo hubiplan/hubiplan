@@ -60,6 +60,13 @@ def _general(org: Organization, perms: set[str]) -> dict[str, dict]:
         points["/einstellungen/erscheinungsbild"] = _point(
             False, bool(org.primary_color or org.logo)
         )
+    from places.access import EDITORS
+    from places.models import Place
+
+    if SETTINGS_VIEW in perms or EDITORS & perms:
+        points["/einstellungen/orte"] = _counted(
+            False, Place.objects.filter(organization=org, is_active=True).count()
+        )
     return points
 
 

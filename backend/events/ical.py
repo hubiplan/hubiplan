@@ -86,7 +86,12 @@ def calendar(
         place = ", ".join(p for p in (event.location, event.address) if p)
         if place:
             lines.append(f"LOCATION:{_escape(place)}")
+        if event.latitude is not None and event.longitude is not None:
+            lines.append(f"GEO:{float(event.latitude):.5f};{float(event.longitude):.5f}")
         text = event.description
+        if event.directions.strip():
+            hint = f"Anfahrt: {event.directions.strip()}"
+            text = f"{text}\n\n{hint}" if text else hint
         if occ.note:
             text = f"{occ.note}\n\n{text}" if text else occ.note
         if text:

@@ -22,6 +22,7 @@ import { PasswordRequestPage, PasswordResetPage } from './pages/PasswordPages.ts
 import { PublicCardPage } from './pages/PublicCardPage.tsx'
 import { PublicPhotoPage } from './pages/PublicPhotoPage.tsx'
 import { PublicOptOutPage } from './pages/PublicOptOutPage.tsx'
+import { PublicRsvpPage } from './pages/PublicRsvpPage.tsx'
 import { PublicCircularConfirmPage } from './pages/PublicCircularConfirmPage.tsx'
 import { NextcloudLoginPage } from './pages/NextcloudLoginPage.tsx'
 import { lazyPage } from './lazyPages.ts'
@@ -135,6 +136,7 @@ const LetterheadSettingsPage = lazyPage(
   () => import('./pages/settings/LetterheadSettingsPage.tsx'),
   'LetterheadSettingsPage',
 )
+const PlacesPage = lazyPage(() => import('./pages/settings/PlacesPage.tsx'), 'PlacesPage')
 const AppearancePage = lazyPage(
   () => import('./pages/settings/AppearancePage.tsx'),
   'AppearancePage',
@@ -252,6 +254,7 @@ export default function App() {
             }
           />
           <Route path="/rundschreiben/abmelden/:token" element={<PublicOptOutPage />} />
+          <Route path="/rueckmeldung/:token" element={<PublicRsvpPage />} />
           <Route path="/rundschreiben/bestaetigen/:token" element={<PublicCircularConfirmPage />} />
           <Route path="/ausweis/:token" element={<PublicCardPage />} />
           <Route path="/passwort-zuruecksetzen/:key" element={<PasswordResetPage />} />
@@ -449,6 +452,14 @@ export default function App() {
               element={
                 <RequireOrg>
                   <LetterheadSettingsPage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="orte"
+              element={
+                <RequireOrg>
+                  <PlacesPage />
                 </RequireOrg>
               }
             />

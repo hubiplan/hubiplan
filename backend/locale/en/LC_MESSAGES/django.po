@@ -9503,3 +9503,36 @@ msgstr "Next meeting"
 
 msgid "Einladen bis"
 msgstr "Invite by"
+
+msgid "Anfahrt und Hinweise"
+msgstr "Directions and notes"
+
+msgid "Breite"
+msgstr "Latitude"
+
+msgid "Länge"
+msgstr "Longitude"
+
+msgid "Orte"
+msgstr "Places"
+
+msgid "Einen Ort mit diesem Namen gibt es schon."
+msgstr "A place with this name already exists."
+
+msgid "Bitte Breite und Länge zusammen angeben."
+msgstr "Please enter latitude and longitude together."
+
+msgid "Bei diesem Termin bitte zu- oder absagen."
+msgstr "For this event, please accept or decline."
+
+msgid "Vielleicht"
+msgstr "Maybe"
+
+msgid "Mail-Link"
+msgstr "Email link"
+
+msgid "Der Termin ist abgesagt."
+msgstr "The event has been cancelled."
+
+msgid "Der Anmeldeschluss ist vorbei."
+msgstr "The registration deadline has passed."

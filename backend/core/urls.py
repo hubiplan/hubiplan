@@ -17,6 +17,7 @@ from customfields import views as field_views
 from datatransfer import views as transfer_views
 from documents import views as doc_views
 from entries import urls as entry_urls
+from events import rsvp_link
 from events import views as event_views
 from exchange import views as exchange_views
 from finance import (
@@ -250,6 +251,7 @@ org_patterns = [
     path("bookings/", include("bookings.urls")),
     path("meetings/", include("meetings.urls")),
     path("helpers/", include("helpers.urls")),
+    path("places/", include("places.urls")),
     path("todos/<int:pk>/progress/", todo_cross_views.ProgressView.as_view()),
     path("todos/<int:pk>/changes/<uuid:set_id>/undo/", todo_cross_views.TaskUndoView.as_view()),
     path("todos/<int:pk>/attachments/", todo_attachments.AttachmentListView.as_view()),
@@ -699,6 +701,7 @@ dept_patterns = [
     path("bookings/", include("bookings.urls")),
     path("meetings/", include("meetings.urls")),
     path("helpers/", include("helpers.urls")),
+    path("places/", include("places.urls")),
     *entry_urls.dept_patterns,
     path(
         "changes/<uuid:set_id>/undo/",
@@ -941,6 +944,12 @@ urlpatterns = [
     path("", include(peering_urls)),
     path("", include(oidc_urls)),
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
+    path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
+    path(
+        "public/rsvp/<str:token>/attachments/<int:att_id>/",
+        rsvp_link.PublicRsvpAttachmentView.as_view(),
+        name="public-rsvp-attachment",
+    ),
     *competition_urls.public_patterns,
     path(
         "public/card/<str:token>/photo/",
