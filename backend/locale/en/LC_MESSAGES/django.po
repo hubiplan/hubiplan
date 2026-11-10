@@ -9626,3 +9626,9 @@ msgstr "Unknown level for {key}: {value}"
 
 msgid "Wappen und Vereinsname lassen sich nicht beide ausblenden."
 msgstr "The coat of arms and the club name cannot both be hidden."
+
+msgid "Unbekannte Angaben im Entwurf."
+msgstr "Unknown entries in the draft."
+
+msgid "Es gibt keine Änderungen zum Veröffentlichen."
+msgstr "There are no changes to publish."

@@ -295,6 +295,72 @@ describe('Webseite', () => {
     expect(modern).toHaveAttribute('aria-pressed', 'false')
   })
 
+  it('legt Gestaltung als Entwurf an, zeigt die Vorschau und veröffentlicht (G2)', async () => {
+    const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
+    const site = (draft: Record<string, unknown>, versions: unknown[] = []) => ({
+      ...data(
+        website('maintenance', {
+          design: 'classic',
+          color_roles: {},
+          style: {},
+          draft,
+          design_versions: versions,
+        }),
+      ),
+      designs: [{ key: 'classic', label: 'Klassisch', hint: 'erfunden', roles, package: false }],
+      style_catalog: { options: { font: ['system', 'modern', 'festive'] }, locks: {} },
+    })
+    const versions = [
+      { id: 2, published_at: '2026-11-10T13:00:00Z', published_by: 'Erika Muster' },
+      { id: 1, published_at: '2026-11-09T13:00:00Z', published_by: '' },
+    ]
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: site({}) }),
+        [`PUT ${base}`]: () => ({ status: 200, body: site({ style: { font: 'modern' } }) }),
+        [`POST ${base}preview/`]: () => ({
+          status: 200,
+          body: { token: 't', url: 'https://www.beispiel.test/vorschau?schluessel=t' },
+        }),
+        [`POST ${base}design/publish/`]: () => ({ status: 200, body: site({}, versions) }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/gestaltung',
+    )
+    const user = userEvent.setup()
+    expect(await screen.findByText('Alles veröffentlicht.')).toBeInTheDocument()
+    const frame = await screen.findByTitle('Vorschau der Webseite')
+    await waitFor(() =>
+      expect(frame).toHaveAttribute('src', 'https://www.beispiel.test/vorschau?schluessel=t'),
+    )
+    await user.click(screen.getByRole('button', { name: 'Modern' }))
+    await waitFor(
+      () => {
+        const last = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+        const sent = JSON.parse(String(last?.init?.body ?? '{}'))
+        expect(sent).toEqual({ draft: { style: { font: 'modern' } } })
+      },
+      { timeout: 4000 },
+    )
+    expect(
+      await screen.findByText(
+        'Nicht veröffentlichte Änderungen. Besucher sehen noch den bisherigen Stand.',
+      ),
+    ).toBeInTheDocument()
+    // Nach dem Speichern lädt die Vorschau neu, ohne neuen Schlüssel
+    await waitFor(() =>
+      expect(screen.getByTitle('Vorschau der Webseite')).toHaveAttribute(
+        'src',
+        'https://www.beispiel.test/vorschau/design/?neu=1',
+      ),
+    )
+    await user.click(screen.getByRole('button', { name: 'Veröffentlichen' }))
+    expect(await screen.findByText('Alles veröffentlicht.')).toBeInTheDocument()
+    expect(calls.some((c) => c.key === `POST ${base}design/publish/`)).toBe(true)
+    expect(await screen.findByText('Frühere Fassungen')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Zurückholen' })).toHaveLength(1)
+  })
+
   it('zeigt eingespielte Designs und lädt Pakete nur für Plattformverwalter', async () => {
     const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
     const designs = [
