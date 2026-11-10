@@ -4,6 +4,8 @@ The SEPA credit transfer exporter (`music/payouts.py`) validates pain.001.001.09
    (Customer Credit Transfer Initiation V09) from the ISO 20022 message catalogue,
    https://www.iso20022.org, used under the ISO 20022 terms of use and IPR policy
    (https://www.iso20022.org/terms-use, https://www.iso20022.org/intellectual-property-rights).
+   Downloaded 2026-11-10 from https://www.iso20022.org/message/14346/download,
+   SHA-256 de038b373e47b0077b1832ddd81f4b2f1eb25d35721f62da1e38b7f5a09fda24.
 2. Against the stricter rules of the German banking industry (DK, GBIC 5) in code:
    `music.payouts.dk_rules` (SEPA character set and lengths, EUR only with two decimals,
    service level SEPA, charge bearer SLEV, consistent counts and control sums).

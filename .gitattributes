@@ -4,3 +4,4 @@
 *.png binary
 *.jpg binary
 *.ico binary
+backend/music/schemas/*.xsd -text
