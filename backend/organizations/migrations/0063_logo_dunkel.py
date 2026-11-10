@@ -17,6 +17,7 @@ class Migration(migrations.Migration):
             name="logo_dark",
             field=models.ImageField(
                 blank=True,
+                db_default="",
                 upload_to=organizations.models.logo_dark_path,
                 validators=[organizations.models.validate_logo],
                 verbose_name="Logo/Wappen für den Dunkelmodus",

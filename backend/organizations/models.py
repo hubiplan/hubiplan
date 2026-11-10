@@ -134,6 +134,8 @@ class ThemeFields(models.Model):
         "Logo/Wappen für den Dunkelmodus",
         upload_to=logo_dark_path,
         blank=True,
+        # Rückweg: der Stand davor legt Einheiten ohne diese Spalte an
+        db_default="",
         validators=[validate_logo],
     )
     # Quadratisches Symbol für Browser-Tab und Handy, wenn die Einheit eine eigene Adresse
