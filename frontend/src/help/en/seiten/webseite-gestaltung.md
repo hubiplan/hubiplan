@@ -4,7 +4,24 @@ titel: Website › Design
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/gestaltung]
-stichworte: [design, colours, logo, header image, banner, font, fine-tuning, style settings, corners, width, menu, footer, design package, export, import]
+stichworte:
+  [
+    design,
+    colours,
+    logo,
+    header image,
+    banner,
+    font,
+    fine-tuning,
+    style settings,
+    corners,
+    width,
+    menu,
+    footer,
+    design package,
+    export,
+    import,
+  ]
 ---
 
 Under Design you choose the look, colours and logo of the website. The colours usually come from the unit's appearance and can be adjusted here.
