@@ -227,6 +227,7 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
     if viewer.kind == "org" and viewer.owns(event):
         data.update(related_data(event, viewer))
     if can_edit:
+        data.update(circular_links(event, viewer))
         data["remind_days"] = event.remind_days
         data["reminded_at"] = event.reminded_at
         data["created_by"] = (
@@ -234,6 +235,32 @@ def event_data(event: Event, viewer: services.Viewer, base: str) -> dict:
         )
         data["created_at"] = event.created_at
     return data
+
+
+def circular_links(event: Event, viewer: services.Viewer) -> dict:
+    """Rundschreiben zu diesem Termin und ob man eines schreiben darf (Bearbeitende)."""
+    from circulars.views import can_circulate
+
+    if "circulars" not in (viewer.org.enabled_modules or []):
+        return {}
+    codes = {"dept.circulars.send"} if viewer.kind == "department" else {"circulars.send"}
+    allowed = bool(codes & viewer.perms) and viewer.owns(event) and can_circulate(event)
+    rows = event.circulars.filter(organization=viewer.org, department=viewer.department).order_by(
+        "-created_at", "-pk"
+    )
+    return {
+        "can_circular": allowed,
+        "circulars": [
+            {
+                "id": c.pk,
+                "subject": c.subject,
+                "status": c.status,
+                "status_label": c.get_status_display(),
+                "sent_at": c.sent_at,
+            }
+            for c in rows[:20]
+        ],
+    }
 
 
 def related_data(event: Event, viewer: services.Viewer) -> dict:

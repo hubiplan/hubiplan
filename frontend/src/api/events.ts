@@ -5,6 +5,14 @@ import { t } from '../i18n/index.ts'
 export type Visibility = 'public' | 'members' | 'board'
 export type Repeat = 'none' | 'weekly' | 'monthly' | 'yearly'
 
+export interface EventCircular {
+  id: number
+  subject: string
+  status: 'draft' | 'sending' | 'sent'
+  status_label: string
+  sent_at: string | null
+}
+
 export interface EventCategory {
   id: number
   name: string
@@ -167,6 +175,9 @@ export interface EventDetail {
   meeting?: { id: number; status_label: string } | null
   helper_plans?: { id: number; title: string; status_label: string }[]
   can_create_helper_plan?: boolean
+  /** Rundschreiben zu diesem Termin (nur Bearbeitende, mit Modul Rundschreiben) */
+  circulars?: EventCircular[]
+  can_circular?: boolean
   bookings?: { id: number; item: string; status_label: string }[]
   remind_days?: number | null
   reminded_at?: string | null

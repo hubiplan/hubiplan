@@ -18,6 +18,15 @@ export type CircularKind = 'info' | 'notice' | 'short'
 export type Channel = 'app' | 'mail' | 'letter' | 'portal'
 export type CircularAudience = 'members' | 'boards' | 'departments' | 'roles'
 export type CircularStatus = 'draft' | 'sending' | 'sent'
+export type EventResponseFilter = 'open' | 'yes' | 'no' | 'maybe'
+
+/** Termin, zu dem ein Rundschreiben gehört (Empfänger: die Eingeladenen) */
+export interface CircularEvent {
+  id: number
+  title: string
+  starts_at: string
+  rsvp_enabled: boolean
+}
 
 export interface CircularFilters {
   member_types?: number[]
@@ -34,6 +43,8 @@ export interface CircularFilters {
   honorary_titles?: number[]
   include?: string[]
   exclude?: string[]
+  /** Rundschreiben zu einem Termin: nur Eingeladene mit dieser Rückmeldung */
+  event_responses?: EventResponseFilter[]
   /** Listen im Modus „nur ausgewählte“; leer heißt dort niemand statt alle. */
   selected?: (
     | 'member_types'
@@ -60,6 +71,7 @@ export interface CircularSummary {
   updated_at: string
   sent_at: string | null
   sent_by: string
+  event?: CircularEvent | null
 }
 
 export interface CircularAttachment {
@@ -194,6 +206,9 @@ export type CircularChanges = Partial<
 export const circularApi = {
   options: (b: CircularBase) => api.get<CircularOptions>(`${baseUrl(b)}options/`),
   list: (b: CircularBase) => api.get<CircularSummary[]>(baseUrl(b)),
+  /** Entwurf an die Eingeladenen eines Termins; ``url`` ist die Rundschreiben-Adresse */
+  fromEvent: (url: string, eventId: number) =>
+    api.post<Circular & { skipped_attachments?: string[] }>(`${url}from-event/${eventId}/`),
   create: (b: CircularBase, data: CircularChanges & { template?: number; copy_of?: number } = {}) =>
     api.post<Circular>(baseUrl(b), data),
   get: (b: CircularBase, id: number) => api.get<Circular>(`${baseUrl(b)}${id}/`),

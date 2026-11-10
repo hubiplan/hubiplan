@@ -92,6 +92,9 @@ def clean_filters(value) -> dict:
     for key in FILTER_BOOL_KEYS:
         if key in value:
             out[key] = bool(value[key])
+    if "event_responses" in value:
+        items = value["event_responses"] if isinstance(value["event_responses"], list) else []
+        out["event_responses"] = [r for r in rcp.EVENT_RESPONSES if r in items]
     if "selected" in value:
         # Listen im Modus „nur ausgewählte“ (UI-Audit NMF-06)
         items = value["selected"] if isinstance(value["selected"], list) else []
@@ -252,6 +255,16 @@ def summary_data(c: Circular) -> dict:
         "updated_at": c.updated_at,
         "sent_at": c.sent_at,
         "sent_by": user_name(c.sent_by),
+        "event": event_summary(c.event) if c.event_id else None,
+    }
+
+
+def event_summary(event) -> dict:
+    return {
+        "id": event.pk,
+        "title": event.title,
+        "starts_at": event.starts_at,
+        "rsvp_enabled": event.rsvp_enabled,
     }
 
 
@@ -318,7 +331,7 @@ class _CircularMixin:
 
     def circulars(self):
         qs = Circular.objects.filter(organization=self.org).select_related(
-            "department", "created_by", "sent_by"
+            "department", "created_by", "sent_by", "event"
         )
         if self.dept is not None:
             qs = qs.filter(department=self.dept)
@@ -539,8 +552,114 @@ class _List(APIView):
             created_by=request.user,
             reply_to=ser.validated_data.get("reply_to") or "",
         )
+        if copy_id and src.event_id:
+            circular.event = src.event
+            circular.save(update_fields=["event"])
         self.audit("create", circular, {"Betreff": [None, circular.subject]})
         return Response(circular_data(circular, self.base_url), status=status.HTTP_201_CREATED)
+
+
+def event_text(event) -> tuple[str, str]:
+    """Betreff und Text für ein Rundschreiben zu einem Termin (Vereinssprache)."""
+    from events.notify import when
+
+    start = timezone.localtime(event.starts_at)
+    subject = f"{event.title} am {start:%d.%m.%Y}"[:200]
+    lines = ["Hallo {Vorname},", "", f"wir laden dich herzlich ein: **{event.title}**", ""]
+    lines.append(f"- Wann: {when(event)}")
+    if event.location or event.address:
+        lines.append(f"- Wo: {', '.join(x for x in (event.location, event.address) if x)}")
+    if event.description.strip():
+        lines += ["", event.description.strip()[:5000]]
+    if event.rsvp_enabled:
+        lines.append("")
+        if event.rsvp_deadline:
+            deadline = timezone.localtime(event.rsvp_deadline)
+            lines.append(f"Bitte gib bis {deadline:%d.%m.%Y} Bescheid, ob du kommst.")
+        else:
+            lines.append("Bitte gib Bescheid, ob du kommst.")
+    return subject, "\n".join(lines)
+
+
+def copy_event_attachments(event, circular: Circular) -> list[str]:
+    """PDF-Anhänge des Termins übernehmen; gibt die nicht übernommenen Namen zurück."""
+    from django.core.files.base import ContentFile
+
+    skipped: list[str] = []
+    total = 0
+    count = 0
+    for src in event.attachments.all():
+        is_pdf = src.content_type == "application/pdf"
+        fits = (
+            count < MAX_ATTACHMENTS
+            and src.size <= MAX_ATTACHMENT_BYTES
+            and total + src.size <= 2 * MAX_ATTACHMENT_BYTES
+        )
+        if not (is_pdf and fits):
+            skipped.append(src.name)
+            continue
+        with src.file.open("rb") as handle:
+            content = handle.read()
+        att = CircularAttachment(circular=circular, name=src.name[:200], size=len(content))
+        att.file.save(_safe_name(src.name), ContentFile(content), save=False)
+        att.save()
+        total += src.size
+        count += 1
+    return skipped
+
+
+class _FromEvent(APIView):
+    """Entwurf eines Rundschreibens an die Eingeladenen eines Termins anlegen."""
+
+    @transaction.atomic
+    def post(self, request, event_id: int, **kwargs):
+        from events.models import Event
+        from events.services import board_units
+
+        event = (
+            Event.objects.filter(organization=self.org, pk=event_id)
+            .prefetch_related("attachments")
+            .first()
+        )
+        if event is None or not can_circulate(event):
+            raise NotFound()
+        if self.dept is not None:
+            own = event.department_id == self.dept.pk
+        else:
+            # Vereinskalender: eigene Termine und die der Untereinheiten ohne eigene Verwaltung
+            own = event.department_id is None or event.department_id in {
+                u.id for u in board_units(self.org)
+            }
+        if not own:
+            raise NotFound()
+        subject, body = event_text(event)
+        circular = Circular.objects.create(
+            organization=self.org,
+            department=self.dept,
+            kind=Circular.Kind.NOTICE,
+            audience=Circular.Audience.MEMBERS,
+            subject=subject,
+            body=body,
+            filters={},
+            event=event,
+            created_by=request.user,
+        )
+        skipped = copy_event_attachments(event, circular)
+        self.audit("create", circular, {"Betreff": [None, subject], "Termin": [None, event.title]})
+        data = circular_data(self.get_circular(circular.pk), self.base_url)
+        data["skipped_attachments"] = skipped
+        return Response(data, status=status.HTTP_201_CREATED)
+
+
+def can_circulate(event) -> bool:
+    """Ein Rundschreiben an die Eingeladenen gibt es bei Terminen eines Vereins."""
+    from events.models import Event
+
+    return (
+        event.organization.type == Organization.Type.CLUB
+        and event.visibility != Event.Visibility.BOARD
+        and not event.remote_uid
+    )
 
 
 class _Detail(APIView):
@@ -1070,6 +1189,7 @@ def _views(mixin, prefix: str) -> dict:
     bases = {
         "Options": _Options,
         "List": _List,
+        "FromEvent": _FromEvent,
         "Detail": _Detail,
         "Recipients": _Recipients,
         "Search": _Search,

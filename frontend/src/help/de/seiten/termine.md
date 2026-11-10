@@ -16,6 +16,8 @@ Die Kategorie eines Termins erkennst du nicht nur an der Farbe: Jeder Termin ist
 
 Im geöffneten Termin zeigt der Block **Zu diesem Termin**, was daran hängt: die Versammlung, Dienstpläne der Helferdienste, belegte Räume und Geräte, Aufgaben und den Auftritt der Musik. Von dort legst du auch einen Dienstplan oder eine Belegung für den Termin an. Du siehst nur, wofür das Modul eingeschaltet ist und du das Recht hast. Termine, Versammlungen, Helferdienste und Aufgaben stehen in der Seitenleiste gemeinsam in der Gruppe „Planen“.
 
+Mit **Rundschreiben dazu schreiben** legst du dort einen Entwurf an die Eingeladenen an. Er enthält Titel, Zeit, Ort, Beschreibung und Anmeldeschluss, die PDF-Anhänge des Termins gehen als Anhang mit. Im Rundschreiben wählst du auf Wunsch nur die Eingeladenen mit **noch keine Rückmeldung**, **zugesagt** oder **abgesagt**, etwa für eine Erinnerung. Alle Rundschreiben zum Termin stehen danach im Block.
+
 Im Termindialog stehen zuerst Titel, Zeit und Ort, danach Kategorie und **Wer sieht den Termin?**. Seltenes liegt eingeklappt unter **Weitere Einstellungen**: **Nach oben weitergeben**, **Nach unten weitergeben** und **Endzeit auf der Webseite ausblenden**. Ist dort etwas gesetzt, ist der Abschnitt aufgeklappt. Kopf und Speichern-Leiste bleiben beim Blättern im Dialog stehen.
 
 Beim Anlegen oder Bearbeiten eines Termins kannst du **Endzeit auf der Webseite ausblenden** aktivieren, wenn öffentlich nur die Beginnzeit erscheinen soll. Intern und im Kalender-Abo bleibt die Endzeit erhalten. Bei Serien gilt die Einstellung für alle Wiederholungen.

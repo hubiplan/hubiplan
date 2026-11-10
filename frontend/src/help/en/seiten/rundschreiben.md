@@ -16,4 +16,6 @@ A mailing list turns a mail sent to a club address into a circular. Anyone may w
 
 Name lists use a fixed alphabetical order: accented letters are placed with their base letter. Identical names keep their relative order when paging through the list.
 
+You create a circular about an event in the event under **For this event**. It goes to those invited to the event, optionally only to those with a certain reply.
+
 Received circulars and their attachments are also available in the member area under **Circulars**. The Android app calls this shared inbox “Messages”. Changes to information emails are confirmed and keyboard focus is kept while saving. Further changes are blocked during the request; official notices are unaffected.

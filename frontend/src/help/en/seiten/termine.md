@@ -16,6 +16,8 @@ You can tell an event’s category not only by its colour: every event has a lig
 
 In an open event, the block **For this event** shows what belongs to it: the meeting, volunteer duty rosters, booked rooms and equipment, tasks and the music performance. From there you also create a duty roster or a booking for the event. You only see areas whose module is switched on and for which you have the right. Events, meetings, volunteer duties and tasks are grouped together in the sidebar under “Planning”.
 
+**Write a circular about it** creates a draft to those invited. It contains title, time, place, description and the reply deadline, and the event's PDF attachments go along as attachments. In the circular you can pick only those invited with **no reply yet**, **accepted** or **declined**, for example for a reminder. All circulars for the event are then listed in the block.
+
 The event dialog first asks for title, time and place, then category and **Who sees the event?**. Rarely used options are folded under **More settings**: **Pass on upwards**, **Pass on downwards** and **Hide end time on the website**. If one of them is set, the section is open. The header and the save bar stay in place while you scroll in the dialog.
 
 When creating or editing an event, enable **Hide end time on the website** to show only the start time publicly. The internal calendar and calendar subscription keep the end time. For recurring events, the setting applies to all occurrences.

@@ -1,6 +1,6 @@
 // Termin ansehen; mit Recht auch bearbeiten, einzelne Serientermine ändern, Anhänge.
 import { EventTaskLink } from '../TodoEventLink.tsx'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useOptionalOrg } from '../../org/OrgContext.tsx'
 import { MaterialReferences } from '../MaterialReferences.tsx'
 import { useRef, useState } from 'react'
@@ -18,7 +18,8 @@ import { EventForm } from './EventForm.tsx'
 import { MyResponsePanel, ResponsesPanel } from './Rsvp.tsx'
 import { EventProjectPanel } from './EventProject.tsx'
 import { berlin, formatDay, formatRange, toApi } from './time.ts'
-import { confirmDialog, promptDialog } from '../dialog.ts'
+import { alertDialog, confirmDialog, promptDialog } from '../dialog.ts'
+import { circularApi } from '../../api/circulars.ts'
 import { Modal } from '../Modal.tsx'
 import type { CloseGuard } from './EventForm.tsx'
 import { t } from '../../i18n/index.ts'
@@ -47,6 +48,59 @@ function MusicLink({ eventId }: { eventId: number }) {
   return org?.modules.includes('music') && org.permissions.includes('music.view') ? (
     <Link to={`/musik?art=performances&termin=${eventId}`}>{t('Auftritt planen')}</Link>
   ) : null
+}
+
+/** Rundschreiben zum Termin: an die Eingeladenen, mit den PDF-Anhängen des Termins. */
+function CircularLinks({ base, event }: { base: string; event: EventDetail }) {
+  const navigate = useNavigate()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const rows = event.circulars
+  if (rows === undefined || (rows.length === 0 && !event.can_circular)) return null
+  const write = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      const created = await circularApi.fromEvent(`${base}circulars/`, event.id)
+      if (created.skipped_attachments?.length)
+        await alertDialog(
+          t('Nicht übernommen (Rundschreiben haben nur PDF-Anhänge bis 10 MB): {names}', {
+            names: created.skipped_attachments.join(', '),
+          }),
+        )
+      navigate(`/rundschreiben/${created.id}`)
+    } catch (err) {
+      setError(errorMessage(err))
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="stack-sm">
+      {rows.map((c) => (
+        <p key={c.id}>
+          <Link to={`/rundschreiben/${c.id}`}>
+            {t('Rundschreiben: {subject}', { subject: c.subject })}
+          </Link>{' '}
+          <span className="muted small">{c.status_label}</span>
+        </p>
+      ))}
+      {event.can_circular && (
+        <p>
+          <button
+            type="button"
+            className="link-button"
+            disabled={busy}
+            onClick={() => void write()}
+          >
+            {rows.length
+              ? t('Weiteres Rundschreiben dazu schreiben')
+              : t('Rundschreiben dazu schreiben')}
+          </button>
+        </p>
+      )}
+      {error && <Alert kind="error">{error}</Alert>}
+    </div>
+  )
 }
 
 /** Was am Termin hängt: Versammlung, Dienstpläne, Belegungen (Menüprüfung 2, N-02). */
@@ -120,12 +174,14 @@ function RelatedSection({
     event.meeting !== undefined ||
     event.helper_plans !== undefined ||
     event.bookings !== undefined ||
+    event.circulars !== undefined ||
     (/^\/api\/(orgs|depts)\//.test(base) && permissions.includes('todos.view')) ||
     (!!org?.modules.includes('music') && permissions.includes('music.view'))
   if (!any) return null
   return (
     <section className="stack-sm">
       <strong>{t('Zu diesem Termin')}</strong>
+      <CircularLinks base={base} event={event} />
       <RelatedLinks event={event} originalStart={originalStart} />
       <EventTaskLink base={base} eventId={event.id} />
       <MusicLink eventId={event.id} />
