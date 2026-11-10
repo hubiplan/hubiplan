@@ -9503,3 +9503,15 @@ msgstr "Next meeting"
 
 msgid "Einladen bis"
 msgstr "Invite by"
+
+msgid "Dieses Stück gibt es nicht."
+msgstr "This piece does not exist."
+
+msgid "Bitte einen Moment warten."
+msgstr "Please wait a moment."
+
+msgid "Bitte genau eine Mappe, einen Auftritt oder eine Probe angeben."
+msgstr "Please specify exactly one folder, performance or rehearsal."
+
+msgid "Diese Leitung ist schon eingetragen."
+msgstr "This conductor is already registered."
