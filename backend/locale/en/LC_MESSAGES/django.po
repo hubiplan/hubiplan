@@ -9955,3 +9955,75 @@ msgstr "Row {index}: {error}"
 
 msgid "Einen Geschäftspartner mit diesem Namen gibt es schon."
 msgstr "A business partner with this name already exists."
+
+msgid "Aktive Werbung"
+msgstr "Active advertising"
+
+msgid "Bande oder Banner"
+msgstr "Perimeter board or banner"
+
+msgid "Damit helfen Sie uns sehr, unser Vereinsleben zu gestalten. Wir freuen uns auf die weitere Zusammenarbeit."
+msgstr "This helps us a great deal in shaping our club life. We look forward to working with you further."
+
+msgid "Dankesbrief"
+msgstr "Thank-you letter"
+
+msgid "Festschrift oder Programmheft"
+msgstr "Commemorative booklet or programme"
+
+msgid "Guten Tag {name},"
+msgstr "Dear {name},"
+
+msgid "Herzlichen Dank"
+msgstr "Thank you very much"
+
+msgid "Höchstens 365 Tage vorher."
+msgstr "At most 365 days before."
+
+msgid "Ihre Unterstützung"
+msgstr "your support"
+
+msgid "Ihre Unterstützung von {amount}"
+msgstr "your support of {amount}"
+
+msgid "Keine Einnahme"
+msgstr "No income"
+
+msgid "Logo auf der Webseite"
+msgstr "Logo on the website"
+
+msgid "Nennung bei Veranstaltungen"
+msgstr "Mention at events"
+
+msgid "Nur Nennung (ohne Werbung)"
+msgstr "Mention only (no advertising)"
+
+msgid "Rahmenvereinbarung"
+msgstr "Framework agreement"
+
+msgid "Sehr geehrte Damen und Herren,"
+msgstr "Dear Sir or Madam,"
+
+msgid "Sonstige Vereinbarung"
+msgstr "Other agreement"
+
+msgid "Sponsoring"
+msgstr "Sponsorship"
+
+msgid "Trikot oder Kleidung"
+msgstr "Jersey or clothing"
+
+msgid "Vereinbarung"
+msgstr "Agreement"
+
+msgid "Vereinbarung mit {name} verlängern?"
+msgstr "Renew agreement with {name}?"
+
+msgid "und {in_kind}"
+msgstr "and {in_kind}"
+
+msgid "vielen Dank für {support}."
+msgstr "thank you very much for {support}."
+
+msgid "„{title}“ endet am {end}."
+msgstr "“{title}” ends on {end}."

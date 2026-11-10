@@ -77,6 +77,8 @@ export interface BusinessPartner {
   payment_terms_days?: number | null
   artist?: boolean
   notes: string
+  website_consent: boolean
+  website_url: string
   is_customer: boolean
   is_supplier: boolean
   is_active: boolean
@@ -88,6 +90,49 @@ export type PartnerInput = Partial<
   Omit<BusinessPartner, 'id' | 'name' | 'contacts' | 'unit_name' | 'membership_name' | 'updated_at'>
 >
 export type ContactInput = Partial<Omit<PartnerContact, 'id'>>
+
+export const AGREEMENT_KINDS = ['sponsoring', 'framework', 'other'] as const
+export type AgreementKind = (typeof AGREEMENT_KINDS)[number]
+export const AGREEMENT_TAX_KINDS = ['mention', 'advertising', 'none'] as const
+export type AgreementTaxKind = (typeof AGREEMENT_TAX_KINDS)[number]
+export const AGREEMENT_BENEFITS = [
+  'website',
+  'banner',
+  'publication',
+  'clothing',
+  'event',
+  'other',
+] as const
+export type AgreementBenefit = (typeof AGREEMENT_BENEFITS)[number]
+
+export interface PartnerAgreement {
+  id: number
+  kind: AgreementKind
+  title: string
+  start: string
+  end: string | null
+  amount: string | null
+  in_kind: string
+  benefits: AgreementBenefit[]
+  benefits_text: string
+  tax_kind: AgreementTaxKind
+  category: number | null
+  remind_days: number
+  reminder: number | null
+  reminder_due: string | null
+  thanked_at: string | null
+  notes: string
+  updated_at: string
+}
+export type AgreementInput = Partial<
+  Omit<PartnerAgreement, 'id' | 'reminder' | 'reminder_due' | 'thanked_at' | 'updated_at'>
+>
+
+export interface PartnerLogo {
+  id: number
+  name: string
+  url: string
+}
 
 export interface Turnover {
   years: { year: number; income: string; expense: string; count: number }[]
@@ -123,6 +168,17 @@ export const partnerApi = {
       : api.post<PartnerContact>(`${base(org)}${partner}/contacts/`, value),
   removeContact: (org: number, partner: number, id: number) =>
     api.del(`${base(org)}${partner}/contacts/${id}/`),
+  agreements: (org: number, partner: number) =>
+    api.get<PartnerAgreement[]>(`${base(org)}${partner}/agreements/`),
+  saveAgreement: (org: number, partner: number, value: AgreementInput, id?: number) =>
+    id
+      ? api.patch<PartnerAgreement>(`${base(org)}${partner}/agreements/${id}/`, value)
+      : api.post<PartnerAgreement>(`${base(org)}${partner}/agreements/`, value),
+  removeAgreement: (org: number, partner: number, id: number) =>
+    api.del(`${base(org)}${partner}/agreements/${id}/`),
+  thanks: (org: number, partner: number, id: number, text: string) =>
+    requestBlob('POST', `${base(org)}${partner}/agreements/${id}/thanks/`, { text }),
+  websiteLogos: (org: number) => api.get<PartnerLogo[]>(`/api/orgs/${org}/website/partner-logos/`),
   turnover: (org: number, id: number) => api.get<Turnover>(`${base(org)}${id}/turnover/`),
   suggestions: (org: number) => api.get<Suggestion[]>(`${base(org)}suggestions/`),
   adopt: (org: number, name: string, roles: PartnerRole[] = []) =>

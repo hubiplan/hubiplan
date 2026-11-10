@@ -100,6 +100,9 @@ class BusinessPartner(models.Model):
     # Künstler/Publizist nach KSVG: Ausgaben zählen für die Künstlersozialabgabe
     artist = models.BooleanField(default=False, db_default=False)
     notes = EncryptedTextField(max_length=5000, blank=True, default="", db_default="")
+    # Webseite (P4): nur mit Einwilligung als Partner/Sponsor auf der Vereinsseite nennen
+    website_consent = models.BooleanField(default=False, db_default=False)
+    website_url = models.URLField(max_length=300, blank=True, default="", db_default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -145,6 +148,66 @@ class PartnerContact(models.Model):
 
     def __str__(self):
         return " ".join(p for p in (self.first_name, self.last_name) if p)
+
+
+class PartnerAgreement(models.Model):
+    """Sponsoring- oder Rahmenvereinbarung mit einem Geschäftspartner (P4).
+
+    ``tax_kind`` hält fest, wie die Einnahme steuerlich einzuordnen ist: bloße Nennung
+    (ideeller Bereich bzw. Vermögensverwaltung) oder aktive Werbung (wirtschaftlicher
+    Geschäftsbetrieb). Mit Enddatum legt HUBIplan eine Aufgabe zur Verlängerung an."""
+
+    class Kind(models.TextChoices):
+        SPONSORING = "sponsoring", gettext_lazy("Sponsoring")
+        FRAMEWORK = "framework", gettext_lazy("Rahmenvereinbarung")
+        OTHER = "other", gettext_lazy("Sonstige Vereinbarung")
+
+    class TaxKind(models.TextChoices):
+        MENTION = "mention", gettext_lazy("Nur Nennung (ohne Werbung)")
+        ADVERTISING = "advertising", gettext_lazy("Aktive Werbung")
+        NONE = "none", gettext_lazy("Keine Einnahme")
+
+    class Benefit(models.TextChoices):
+        WEBSITE = "website", gettext_lazy("Logo auf der Webseite")
+        BANNER = "banner", gettext_lazy("Bande oder Banner")
+        PUBLICATION = "publication", gettext_lazy("Festschrift oder Programmheft")
+        CLOTHING = "clothing", gettext_lazy("Trikot oder Kleidung")
+        EVENT = "event", gettext_lazy("Nennung bei Veranstaltungen")
+        OTHER = "other", gettext_lazy("Sonstiges")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    partner = models.ForeignKey(
+        BusinessPartner, on_delete=models.CASCADE, related_name="agreements"
+    )
+    kind = models.CharField(max_length=12, choices=Kind.choices, default=Kind.SPONSORING)
+    title = models.CharField(max_length=200)
+    start = models.DateField()
+    end = models.DateField(null=True, blank=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    in_kind = models.CharField(max_length=300, blank=True, default="")
+    benefits = models.JSONField(default=list, blank=True)
+    benefits_text = models.CharField(max_length=500, blank=True, default="")
+    tax_kind = models.CharField(max_length=12, choices=TaxKind.choices, default=TaxKind.MENTION)
+    category = models.ForeignKey(
+        "finance.Category", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    remind_days = models.PositiveSmallIntegerField(default=60)
+    reminder = models.ForeignKey(
+        "todos.Todo", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    thanked_at = models.DateField(null=True, blank=True)
+    notes = EncryptedTextField(max_length=2000, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-start", "pk"]
+        verbose_name = gettext_lazy("Vereinbarung")
+
+    def __str__(self):
+        return self.title
 
 
 def electronic_file_path(instance, filename):

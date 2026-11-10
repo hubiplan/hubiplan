@@ -141,6 +141,8 @@ class PartnerSerializer(serializers.ModelSerializer):
             "payment_terms_days",
             "artist",
             "notes",
+            "website_consent",
+            "website_url",
             "is_customer",
             "is_supplier",
             "is_active",
@@ -253,10 +255,13 @@ def _references():
 
 
 def extra_references():
-    """Verweise aus Kasse (P2); spätere Stufen ergänzen hier."""
+    """Verweise aus Kasse (P2) und Vereinbarungen (P4); spätere Stufen ergänzen hier."""
     from finance.models import BankLine, Booking, CashReceipt, Donation
 
+    from .models import PartnerAgreement
+
     return [
+        (PartnerAgreement, "partner"),
         (Booking, "partner"),
         (BankLine, "partner"),
         (CashReceipt, "partner"),

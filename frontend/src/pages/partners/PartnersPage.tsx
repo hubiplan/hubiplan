@@ -23,6 +23,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { formatDay, formatEuro } from '../../i18n/format.ts'
 import { TextArea } from '../settings/TextArea.tsx'
+import { Agreements } from './Agreements.tsx'
 import { kindLabel, partnerAccess, roleLabel } from './access.ts'
 
 const emptyPartner = (): PartnerInput => ({
@@ -44,6 +45,8 @@ const emptyPartner = (): PartnerInput => ({
   },
   our_customer_number: '',
   notes: '',
+  website_consent: false,
+  website_url: '',
   is_active: true,
 })
 
@@ -321,6 +324,8 @@ function PartnerForm({
           details: { ...emptyPartner().details!, ...partner.details },
           our_customer_number: partner.our_customer_number,
           notes: partner.notes,
+          website_consent: partner.website_consent,
+          website_url: partner.website_url,
           is_active: partner.is_active,
           ...(partner.bank !== undefined
             ? {
@@ -514,6 +519,29 @@ function PartnerForm({
         </fieldset>
       ) : null}
       <fieldset disabled={disabled} className="subcard">
+        <legend>{t('Webseite')}</legend>
+        <Checkbox
+          label={t('Darf auf unserer Webseite als Partner oder Sponsor genannt werden')}
+          checked={!!value.website_consent}
+          disabled={disabled}
+          onChange={(website_consent) => setValue({ ...value, website_consent })}
+        />
+        {value.website_consent && (
+          <Field
+            label={t('Link auf der Webseite')}
+            type="url"
+            hint={t('Leer: die Webseite des Partners')}
+            value={value.website_url ?? ''}
+            onChange={(e) => setValue({ ...value, website_url: e.target.value })}
+          />
+        )}
+        <p className="muted small">
+          {t(
+            'Die Einwilligung bitte schriftlich festhalten. Das Logo wählt ihr im Webseiten-Abschnitt „Partner und Sponsoren“.',
+          )}
+        </p>
+      </fieldset>
+      <fieldset disabled={disabled} className="subcard">
         <legend>{t('Notizen')}</legend>
         <TextArea
           label={t('Notizen')}
@@ -573,13 +601,14 @@ function PartnerForm({
         )}
       </div>
       {partner && <Contacts partner={partner} canEdit={canEdit} />}
+      {partner && <Agreements partner={partner} canEdit={canEdit} />}
       {partner && financeOn && <TurnoverCard partner={partner} />}
       {canEdit && partner && others.length > 0 && (
         <details className="subcard">
           <summary>{t('Doppelten Eintrag zusammenführen')}</summary>
           <p className="muted small">
             {t(
-              'Der gewählte Eintrag wird in diesen übernommen: Rechnungen, Auftritte und Ansprechpartner wandern mit, der andere Eintrag wird gelöscht.',
+              'Der gewählte Eintrag wird in diesen übernommen: Rechnungen, Buchungen, Vereinbarungen, Auftritte und Ansprechpartner wandern mit, der andere Eintrag wird gelöscht.',
             )}
           </p>
           <div className="button-row">

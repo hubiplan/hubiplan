@@ -4,7 +4,18 @@ titel: Geschäftspartner
 rechte: [partners.view, finance.view, billing.view]
 routen: [/geschaeftspartner]
 stichworte:
-  [Geschäftspartner, Lieferant, Dienstleister, Sponsor, Behörde, Ansprechpartner, Kunde, Adressbuch]
+  [
+    Geschäftspartner,
+    Sponsoring,
+    Dankesbrief,
+    Lieferant,
+    Dienstleister,
+    Sponsor,
+    Behörde,
+    Ansprechpartner,
+    Kunde,
+    Adressbuch,
+  ]
 ---
 
 Hier stehen alle Firmen, Behörden, Vereine und Personen außerhalb der Mitgliederliste, mit denen ihr zu tun habt: Lieferanten, Dienstleister, Sponsoren, Vermieter, Ämter oder die Presse.
@@ -15,8 +26,11 @@ Hier stehen alle Firmen, Behörden, Vereine und Personen außerhalb der Mitglied
 - Der Abschnitt **Kasse** (Bankverbindung, **Standardkategorie**, Zahlungsziel, Künstlersozialabgabe) erscheint nur für Kassen- und Beitragsrechte. Wann die Bankverbindung zuletzt geändert wurde und von wem, steht darunter.
 - Die Liste lässt sich durchsuchen und nach Art und Rolle filtern. **Inaktive zeigen** blendet Partner ein, die ihr nicht mehr braucht.
 - **Als Excel exportieren** und **Aus Excel importieren** tauschen die Liste mit einer Tabelle. **Datei prüfen** zeigt vor dem Import, was neu dazukommt. Partner mit schon vorhandenem Namen werden übersprungen.
-- **Doppelten Eintrag zusammenführen** übernimmt einen zweiten Eintrag derselben Firma: Rechnungen, Buchungen, Auftritte und Ansprechpartner wandern mit.
+- **Doppelten Eintrag zusammenführen** übernimmt einen zweiten Eintrag derselben Firma: Rechnungen, Buchungen, Vereinbarungen, Auftritte und Ansprechpartner wandern mit.
 - **Umsätze in der Kasse** zeigt Einnahmen und Ausgaben mit dem Partner je Jahr und die letzten Buchungen. Stornierte Buchungen zählen nicht mit.
 - **Vorschläge aus dem Kassenbuch** listet Namen, die mehrfach als Empfänger oder Zahler im Kassenbuch stehen. **Übernehmen** legt daraus einen Geschäftspartner an und verknüpft die Buchungen mit genau diesem Namen. Das braucht das Recht, das Kassenbuch zu bearbeiten.
+- **Vereinbarung hinzufügen** hält Sponsoring und andere Absprachen fest: Zeitraum, Betrag oder Sachleistung, Gegenleistung (etwa Logo auf der Webseite, Bande, Festschrift) und die steuerliche Einordnung. **Nur Nennung** ohne Werbung gehört in den ideellen Bereich oder die Vermögensverwaltung, **aktive Werbung** in den wirtschaftlichen Geschäftsbetrieb. Mit Enddatum legt HUBIplan eine Aufgabe an, die rechtzeitig an die Verlängerung erinnert (Modul Aufgaben); wie viele Tage vorher, stellt ihr bei der Vereinbarung ein.
+- **Dankesbrief** erstellt einen Brief auf eurem Briefbogen als PDF, an die Anschrift des Partners und den ersten Ansprechpartner, der Post erhält. Den Vorschlag mit Betrag und Sachleistung könnt ihr durch einen eigenen Text ersetzen.
+- Unter **Webseite** haltet ihr fest, ob der Partner auf eurer Webseite als Partner oder Sponsor genannt werden darf. Nur diese Partner übernimmt der Webseiten-Abschnitt „Partner und Sponsoren“ mit **Aus Geschäftspartnern übernehmen**.
 - Löschen geht nur, solange ein Partner nirgends verwendet wird. Sonst entfernt ihr den Haken **Aktiv**.
 - Ist ein Partner auch Mitglied, etwa eine Firma als Fördermitglied, legt ihn bitte nicht doppelt an. Privatpersonen speichert ihr nur, soweit ihr sie für einen Vertrag braucht.

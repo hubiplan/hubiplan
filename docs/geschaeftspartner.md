@@ -36,11 +36,12 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
 | --- | --- |
 | `GET`, `POST` | Liste (mit Ansprechpartnern), anlegen |
 | `GET`, `PATCH`, `DELETE <pk>/` | Akte, ändern, löschen (nur ohne Verweise, sonst 400) |
-| `POST <pk>/merge/ {other}` | doppelten Eintrag übernehmen: Rechnungen, Buchungen, Bankzeilen, Quittungen, Zuwendungen, Auftritte und Ansprechpartner wandern mit, Rollen und leere Angaben werden ergänzt |
+| `POST <pk>/merge/ {other}` | doppelten Eintrag übernehmen: Rechnungen, Buchungen, Bankzeilen, Quittungen, Zuwendungen, Vereinbarungen, Auftritte und Ansprechpartner wandern mit, Rollen und leere Angaben werden ergänzt |
 | `GET export/` | Excel (Bank nur mit Kassen- oder Beitragsrecht) |
 | `POST import/` (`?probe=1`) | Excel mit Kopfzeile wie der Export, mindestens „Name“; vorhandene Namen werden übersprungen, höchstens 500 Zeilen |
 | `GET <pk>/turnover/` | Einnahmen/Ausgaben je Jahr ohne Stornos und Umbuchungen, letzte 10 Buchungen (Modul Finanzen, `finance.view`) |
 | `GET`, `POST suggestions/ {name, kind?, roles?}` | Bestand übernehmen: Freitexte, die mindestens zweimal ohne Partner im Kassenbuch stehen; POST legt den Partner an und verknüpft Buchungen und Bankzeilen mit genau diesem Namen (`finance.edit`) |
+| `…/<pk>/agreements/` | Vereinbarungen (P4) anlegen, ändern, entfernen; `POST …/agreements/<id>/thanks/ {text?}` liefert den Dankesbrief als PDF |
 | `…/<pk>/contacts/` | Ansprechpartner anlegen, ändern, entfernen; nur ein Hauptansprechpartner |
 
 ## Kasse (P2)
@@ -54,6 +55,19 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
 - Der Bankimport ordnet Zeilen über die IBAN zu (`partners_by_iban`, entschlüsselt im Speicher,
   weil Vereine wenige Partner haben).
 - Künstlersozialabgabe zählt auch Buchungen mit Partnern, die als künstlerisch tätig gelten.
+
+## Sponsoring (P4)
+
+- `PartnerAgreement` (`billing/0027`): Art, Zeitraum, Betrag, Sachleistung, Gegenleistungen,
+  steuerliche Einordnung (`mention` = nur Nennung, `advertising` = aktive Werbung,
+  `none`), Kategorie, Erinnerung in Tagen vor Ende.
+- Mit Enddatum und Modul Aufgaben legt `sync_reminder` eine Aufgabe für die anlegende Person an
+  und verschiebt sie mit dem Enddatum; ohne Enddatum wird eine offene Erinnerung gelöscht.
+- Dankesbrief: PDF auf dem Briefbogen (`letterhead`), an die Anschrift und den ersten
+  Ansprechpartner mit „erhält Post“; `thanked_at` merkt das Datum.
+- `website_consent` und `website_url` am Partner. `GET /api/orgs/<id>/website/partner-logos/`
+  liefert Name und Link der Partner mit Einwilligung für den Abschnitt „Partner und Sponsoren“;
+  das Logo bleibt ein Webseitenbild.
 
 Änderungen stehen im Änderungsprotokoll. Der Datenumzug übernimmt beide Tabellen.
 

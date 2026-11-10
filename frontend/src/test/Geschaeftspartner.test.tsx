@@ -35,6 +35,8 @@ const partner = {
   payment_terms_days: null,
   artist: false,
   notes: '',
+  website_consent: false,
+  website_url: '',
   is_customer: false,
   is_supplier: true,
   is_active: true,
@@ -55,6 +57,26 @@ const partner = {
   updated_at: '2026-11-10T20:00:00Z',
 }
 
+const agreement = {
+  id: 2,
+  kind: 'sponsoring',
+  title: 'Hauptsponsor Schützenfest',
+  start: '2026-01-01',
+  end: '2026-12-31',
+  amount: '1500.00',
+  in_kind: '',
+  benefits: ['banner'],
+  benefits_text: '',
+  tax_kind: 'advertising',
+  category: null,
+  remind_days: 60,
+  reminder: 5,
+  reminder_due: '2026-11-01',
+  thanked_at: null,
+  notes: '',
+  updated_at: '2026-11-10T20:00:00Z',
+}
+
 function show(permissions: string[], body: unknown[] = [partner]) {
   fakeApi({
     'GET /_allauth/browser/v1/auth/session': () => ({
@@ -67,6 +89,7 @@ function show(permissions: string[], body: unknown[] = [partner]) {
     }),
     'GET /api/orgs/7/billing/partners/': () => ({ status: 200, body }),
     'GET /api/orgs/7/finance/categories/': () => ({ status: 200, body: [] }),
+    'GET /api/orgs/7/billing/partners/4/agreements/': () => ({ status: 200, body: [agreement] }),
   })
   render(
     <MemoryRouter initialEntries={['/geschaeftspartner']}>
@@ -95,6 +118,18 @@ describe('Geschäftspartner', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Getränke Beispiel GmbH' }))
     expect(await screen.findByText('Ansprechpartner hinzufügen')).toBeInTheDocument()
     expect(screen.queryByLabelText('IBAN')).not.toBeInTheDocument()
+  })
+
+  it('zeigt Vereinbarungen mit Erinnerung und Dankesbrief', async () => {
+    show(['partners.view', 'partners.edit'])
+    fireEvent.click(await screen.findByRole('button', { name: 'Getränke Beispiel GmbH' }))
+    expect(await screen.findByText('Hauptsponsor Schützenfest')).toBeInTheDocument()
+    expect(screen.getByText(/Gegenleistung: Bande oder Banner/)).toBeInTheDocument()
+    expect(screen.getByText(/Erinnerung am/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Dankesbrief' })).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Darf auf unserer Webseite als Partner oder Sponsor genannt werden'),
+    ).toBeInTheDocument()
   })
 
   it('verlangt ein Leserecht', async () => {

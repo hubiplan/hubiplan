@@ -5,6 +5,7 @@ from access import accounts_view, module_views, office_views
 from access import views as access_views
 from access.module_gate import gate, gate_names, needs_module
 from accounts import appearance, help_done, home_actions, language, learning, self_service, step_up
+from billing import agreements as partner_agreements
 from billing import einvoice_views
 from billing import partners as partner_views
 from billing import portal_views as billing_portal_views
@@ -205,6 +206,9 @@ org_router.register(
 partner_router = SimpleRouter()
 partner_router.register(
     "contacts", partner_views.PartnerContactViewSet, basename="billing-partner-contact"
+)
+partner_router.register(
+    "agreements", partner_agreements.AgreementViewSet, basename="billing-partner-agreement"
 )
 
 member_router = SimpleRouter()
