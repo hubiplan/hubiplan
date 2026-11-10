@@ -108,3 +108,36 @@ def test_bank_reconciliation_and_reversal(c, club, approved):
         cancel_booking(Booking.objects.get(pk=booking_id), None, "Musterkorrektur")
     assert not c.get(base).json()["runs"][0]["completed"]
     assert post(c, f"{base}{run}/", action="export").status_code == 400
+
+
+def test_iso_schema_und_dk_regeln(c, club, approved):
+    """Lizenzaudit 10.11., L04: ISO-Originalschema statt der DK-Datei, DK-Regeln im Code."""
+    from pathlib import Path
+
+    from music import payouts
+
+    schemas = Path(payouts.__file__).parent / "schemas"
+    assert payouts.SCHEMA.is_file()
+    assert not (schemas / "pain.001.001.09_GBIC_5.xsd").exists()
+    base, values, *_ = approved
+    run = create(c, base, values).json()["id"]
+    content = post(c, f"{base}{run}/", action="export").content
+    tree = etree.fromstring(content)
+    assert payouts.dk_rules(tree) == []
+
+    def broken(xpath, change):
+        copy = etree.fromstring(content)
+        change(copy.xpath(xpath)[0])
+        return payouts.dk_rules(copy)
+
+    any_ = "//*[local-name()='{}']"
+    assert broken(any_.format("InstdAmt"), lambda e: e.set("Ccy", "USD"))
+    assert broken(any_.format("InstdAmt"), lambda e: setattr(e, "text", "50.001"))
+    assert broken(any_.format("Nm"), lambda e: setattr(e, "text", "x" * 71))
+    assert broken(any_.format("Nm"), lambda e: setattr(e, "text", "Jürgen"))
+    assert broken(any_.format("EndToEndId"), lambda e: setattr(e, "text", "/abc"))
+    assert broken(any_.format("ChrgBr"), lambda e: setattr(e, "text", "SHAR"))
+    assert broken(
+        "//*[local-name()='GrpHdr']/*[local-name()='CtrlSum']",
+        lambda e: setattr(e, "text", "51.00"),
+    )
