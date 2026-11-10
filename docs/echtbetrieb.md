@@ -194,15 +194,36 @@ SpamAssassin etwa 2 GB.
    aktualisieren, unprivilegierten Admin-Benutzer mit `sudo` und SSH-Schlüssel anlegen,
    automatische Sicherheitsupdates (`unattended-upgrades`) mit nächtlichem Neustartfenster, Swap.
 2. **Hestia installieren**, ohne Apache, FTP und DNS-Server (die Zone bleibt beim DNS-Anbieter),
-   mit ClamAV und SpamAssassin, Rechnername gleich dem Mailserver:
+   mit ClamAV und SpamAssassin. Der Rechnername ist ein eigener Name wie `server.example.org`,
+   **nicht** `mail.example.org`: Diesen Namen braucht die Mail-Domain für ihr Zertifikat, sonst
+   scheitert Let's Encrypt. Nach außen meldet sich Exim trotzdem mit dem Namen aus dem PTR
+   (`mail.example.org`). Für den Rechnernamen A- und AAAA-Eintrag beim DNS-Anbieter anlegen.
 
    ```bash
-   sudo bash hst-install.sh --hostname mail.example.org --email adresse@example.org \
+   sudo bash hst-install.sh --hostname server.example.org --email adresse@example.org \
      --apache no --vsftpd no --proftpd no --named no --clamav yes --spamassassin yes
    ```
 
    Die übrigen Werte auf der Voreinstellung lassen und vor dem Lauf mit `bash hst-install.sh -h`
-   abgleichen. Danach einen Hestia-Benutzer (`HUSER`) für die Domains anlegen.
+   abgleichen. Danach einen Hestia-Benutzer (`HUSER`) für die Domains anlegen. Ohne Apache
+   ist nginx selbst der Webserver; `einrichten.sh`, `adresse-hinzufuegen.sh` und
+   `vorlagen-erneuern.sh` erkennen das und legen die Vorlage `app-8110` dann unter
+   `nginx/php-fpm` ab.
+
+   **Eigener DNS-Resolver:** Spamhaus beantwortet keine Anfragen über große öffentliche
+   Resolver (1.1.1.1, 8.8.8.8) und meldet dann „open resolver“; Exim weist daraufhin jede
+   eingehende Mail ab. Deshalb `unbound` installieren und `/etc/resolv.conf` darauf zeigen
+   lassen:
+
+   ```bash
+   sudo apt install -y unbound
+   sudo rm /etc/resolv.conf
+   printf 'nameserver 127.0.0.1\noptions edns0 trust-ad\n' | sudo tee /etc/resolv.conf
+   dig +short 2.0.0.127.zen.spamhaus.org   # Testeintrag: 127.0.0.x
+   ```
+
+   Hestia legt `freshclam` bei der Installation nicht immer als Dienst an:
+   `sudo systemctl enable --now clamav-freshclam`.
 3. **Härten** wie unter [Server härten](#server-härten), dazu die Punkte unten.
 4. **DNS** wie unten anlegen, zunächst ohne MX. PTR setzen lassen.
 5. **Mail-Domain** `example.org` im Panel anlegen (Spam- und Virenprüfung an, DKIM an,
@@ -273,7 +294,11 @@ Zusätzlich zu `deploy/hestia/haerten.sh` (alle Punkte, also auch `api` und `pan
   vorhanden). Das Panel (8083) nur über SSH-Tunnel.
 - Docker umgeht die Hestia-Firewall. HUBIplan hinter Hestia veröffentlicht nur
   `127.0.0.1:${WEB_PORT}`; keine weiteren Ports veröffentlichen.
-- fail2ban (bringt Hestia mit) für SSH, Exim, Dovecot und Roundcube prüfen.
+- fail2ban (bringt Hestia mit) für SSH, Exim, Dovecot und Roundcube prüfen. Die Roundcube-Sperre
+  ist zunächst aus (`[roundcube-auth]` in `/etc/fail2ban/jail.local`). Vor dem Einschalten
+  `/var/log/roundcube/errors.log` mit Besitzer und Gruppe des Ordners anlegen, sonst startet
+  fail2ban gar nicht. Die Hestia-Firewall regelt nur IPv4; für IPv6 eine eigene nftables-Tabelle
+  mit denselben offenen Ports anlegen (ohne `flush ruleset`, das löschte auch die Hestia-Regeln).
 - 2FA für das Panel, für das Konto beim Server- und DNS-Anbieter, beim Sicherungsanbieter und
   in Roundcube (Plugin `twofactor_gauthenticator`). Mailprogramme nutzen starke
   Einzelpasswörter je Postfach.
