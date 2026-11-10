@@ -499,6 +499,69 @@ class TestAbholen:
         imap.uid.assert_any_call("store", b"7", "+FLAGS", "(\\Deleted)")
         imap.expunge.assert_called_once()
 
+    def _imap(self, sizes, bodies):
+        imap = mock.MagicMock()
+        imap.__enter__.return_value = imap
+        fetched = []
+
+        def uid(cmd, *args):
+            if cmd == "search":
+                return ("OK", [b" ".join(sizes)])
+            if cmd == "fetch":
+                number, what = args
+                fetched.append((number, what))
+                if what == "(RFC822.SIZE)":
+                    size = sizes[number]
+                    line = (
+                        b"(UID " + number + b")"
+                        if size is None
+                        else (
+                            number
+                            + b" (UID "
+                            + number
+                            + b" RFC822.SIZE "
+                            + str(size).encode()
+                            + b")"
+                        )
+                    )
+                    return ("OK", [line])
+                return ("OK", [(number + b" (BODY[] {1}", bodies[number]), b")"])
+            return ("OK", [b""])
+
+        imap.uid.side_effect = uid
+        return imap, fetched
+
+    def test_zu_grosse_mail_wird_nicht_geladen(self, cal, board_a, members, api, settings):
+        """Gesamtaudit 10.11. S03: Größe vorab, nur der Kopf einer zu großen Mail."""
+        create_list(api(board_a), base(cal["a"]))
+        settings.INBOUND_IMAP_HOST = "imap.example.org"
+        big = mail_bytes(board_a.email, subject="Riesig")
+        ok = mail_bytes(board_a.email, subject="Passt")
+        sizes = {b"8": inbound.MAX_RAW_BYTES + 1, b"9": len(ok)}
+        imap, fetched = self._imap(sizes, {b"8": big.split(b"\n\n")[0] + b"\n\n", b"9": ok})
+        with mock.patch("circulars.inbound.imaplib.IMAP4_SSL", return_value=imap):
+            assert inbound.fetch_inbound() == 2
+        assert (b"8", f"(BODY.PEEK[HEADER]<0.{inbound.MAX_HEADER_BYTES}>)") in fetched
+        assert not any(n == b"8" and "BODY.PEEK[]" in w for n, w in fetched)
+        assert (b"9", f"(BODY.PEEK[]<0.{inbound.MAX_RAW_BYTES + 1}>)") in fetched
+        big_entry = InboundMail.objects.get(subject="Riesig")
+        assert big_entry.status == InboundMail.Status.REJECTED
+        assert big_entry.reason == "Mail zu groß."
+        assert InboundMail.objects.get(subject="Passt").status == InboundMail.Status.WAITING
+
+    def test_falsche_groessenangabe_bleibt_begrenzt(self, cal, board_a, members, api, settings):
+        create_list(api(board_a), base(cal["a"]))
+        settings.INBOUND_IMAP_HOST = "imap.example.org"
+        monkey = mock.patch.object(inbound, "MAX_RAW_BYTES", 2000)
+        raw = mail_bytes(board_a.email, subject="Lügt", body="x" * 5000)
+        with monkey:
+            # Server nennt keine Größe; der Teilabruf liefert höchstens MAX_RAW_BYTES + 1
+            imap, fetched = self._imap({b"7": None}, {b"7": raw[: inbound.MAX_RAW_BYTES + 1]})
+            with mock.patch("circulars.inbound.imaplib.IMAP4_SSL", return_value=imap):
+                assert inbound.fetch_inbound() == 1
+            assert fetched[-1] == (b"7", "(BODY.PEEK[]<0.2001>)")
+        assert InboundMail.objects.get().reason == "Mail zu groß."
+
     def test_ohne_postfach_nichts(self, settings):
         settings.INBOUND_IMAP_HOST = ""
         assert inbound.fetch_inbound() == 0

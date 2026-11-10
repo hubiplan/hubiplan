@@ -57,10 +57,13 @@ class TestKontakt:
     def test_suche_nach_email_in_der_mitgliederliste(self, api, orgs, board_c):
         make_member(orgs["c"], "Erika", "Muster", email="erika.sonder@example.org")
         make_member(orgs["c"], "Hans", "Anders", email="hans@example.org")
-        r = api(board_c).get(f"/api/orgs/{orgs['c'].pk}/members/?suche=sonder")
+        base = f"/api/orgs/{orgs['c'].pk}/members/?suche="
+        r = api(board_c).get(base + "erika.sonder@example.org")
         assert r.status_code == 200
         names = [row["last_name"] for row in r.json()["results"]]
         assert names == ["Muster"]
+        # Teilwörter durchsuchen die verschlüsselten Adressen nicht (Gesamtaudit 10.11. P01)
+        assert api(board_c).get(base + "sonder").json()["results"] == []
 
 
 @pytest.mark.django_db

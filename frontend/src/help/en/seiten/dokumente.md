@@ -13,3 +13,5 @@ Storage opens in **Tile view** with folder and file type icons. Switch to **List
 **Search (folders, title and note)** searches all your visible own and shared folders, even while a folder is open. Results include matching folder names and documents with matching titles or notes. **Clear search** returns to the previous folder.
 
 Statutes, fee rules and the founding deed are at the top under “Club documents” as fixed folders with their existing versions and sharing settings. A lock marks board folders. Folders shared by other units are read only. Users with management rights can create folders, change visibility and sharing, upload, edit, move, add versions or delete files. The storage display shows usage and, where available, the club's budget.
+
+If virus scanning is set up on the server, HUBIplan scans newly uploaded files. If the scanner is unreachable right now, the document shows “Being scanned for viruses”: it can only be opened after the scan, usually within a few minutes. “Locked: malware found” means the file stays locked for good; upload a clean version instead.

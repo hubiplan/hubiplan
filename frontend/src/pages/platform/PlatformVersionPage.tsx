@@ -8,7 +8,7 @@ import type { SelfUpdate } from '../../api/orgs.ts'
 import { Alert, Field, Loading } from '../../components/ui.tsx'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { useRunningVersion } from '../../news/version.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 
 /** Abstand der Nachfragen, solange ein Auftrag läuft (der Server startet dabei neu). */
 const POLL_MS = 10_000
@@ -57,6 +57,24 @@ export function PlatformVersionPage() {
             : t(
                 'Auf diesem Server ist keine Virenprüfung eingerichtet. Rundschreiben-Anhänge und öffentliche Dokumente gehen ungeprüft an viele Empfänger. Einrichtung: docs/betrieb.md, Abschnitt Virenprüfung.',
               )}
+        </Alert>
+      )}
+      {!!data.virus_scan?.quarantine?.pending && (
+        <Alert kind="info">
+          {tn(
+            '{n} eingegangene Datei wartet auf die Virenprüfung und ist bis dahin gesperrt.',
+            '{n} eingegangene Dateien warten auf die Virenprüfung und sind bis dahin gesperrt.',
+            data.virus_scan.quarantine.pending,
+          )}
+        </Alert>
+      )}
+      {!!data.virus_scan?.quarantine?.infected && (
+        <Alert kind="error">
+          {tn(
+            'In {n} eingegangenen Datei wurde Schadsoftware gefunden. Sie bleibt gesperrt.',
+            'In {n} eingegangenen Dateien wurde Schadsoftware gefunden. Sie bleiben gesperrt.',
+            data.virus_scan.quarantine.infected,
+          )}
         </Alert>
       )}
       {self?.result && <LastResult result={self.result} />}

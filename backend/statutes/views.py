@@ -93,6 +93,9 @@ class _StatuteMixin(OrgScopedMixin):
 class StatuteListView(_StatuteMixin, APIView):
     """GET: Fassungen und Veröffentlichung · POST: neue Fassung hochladen."""
 
+    # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
+    virus_quarantine = True
+
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def payload(self, request, department, kind) -> dict:
@@ -158,6 +161,9 @@ class StatuteDetailView(_StatuteMixin, APIView):
 
     def get(self, request, org_id: int, pk: int):
         version = self.get_version(pk)
+        from core.virenscan import ensure_released
+
+        ensure_released(version.file)
         response = FileResponse(
             version.file.open("rb"),
             content_type="application/pdf",
@@ -236,6 +242,9 @@ def _published(key: str) -> tuple[StatutePublication, list[StatuteVersion]]:
 
 
 def _pdf(version: StatuteVersion) -> FileResponse:
+    from core.virenscan import ensure_released
+
+    ensure_released(version.file)
     response = FileResponse(
         version.file.open("rb"), content_type="application/pdf", filename=version.name
     )

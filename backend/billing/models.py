@@ -101,6 +101,16 @@ class IncomingInvoice(models.Model):
             ("rejected", gettext_lazy("Abgelehnt")),
         ],
     )
+    # Technische Prüfung läuft im Hintergrund (billing/incoming_check.py)
+    validation = models.CharField(
+        max_length=8,
+        default="done",
+        db_default="done",
+        choices=[
+            ("pending", gettext_lazy("Wird geprüft")),
+            ("done", gettext_lazy("Geprüft")),
+        ],
+    )
     review_note = EncryptedCharField(max_length=2000, blank=True, strict=True)
     reviewed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"

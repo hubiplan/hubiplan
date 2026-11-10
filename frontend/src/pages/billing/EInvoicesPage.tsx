@@ -36,6 +36,14 @@ const blankLine = (): CommercialLine => ({
 
 export function ValidationResult({ report }: { report: ValidationReport }) {
   if (!report.status) return null
+  if (report.status === 'pending')
+    return (
+      <Alert kind="info">
+        {t(
+          'Wird geprüft: Die technische Prüfung läuft im Hintergrund und dauert meist unter einer Minute.',
+        )}
+      </Alert>
+    )
   return (
     <div className="stack">
       <Alert kind={report.status === 'valid' ? 'success' : 'error'}>

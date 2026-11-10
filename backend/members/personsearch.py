@@ -8,6 +8,7 @@ Kein Cache und keine zusätzliche Freigabe von Personen außerhalb der Kandidate
 from __future__ import annotations
 
 import unicodedata
+from collections.abc import Sequence
 
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import BigIntegerField, F, Func, IntegerField, Value
@@ -66,12 +67,45 @@ def filter_names(qs, search: str, *, variants=None, max_words=3):
     return qs.filter(pk__in=ids)
 
 
-def ordered(qs, *ordering, limit=None):
+class OrderedRows(Sequence):
+    """Sortierte Zeilen, die erst beim Seitenschnitt geladen werden.
+
+    Zählen und Blättern laufen über die fertige ID-Liste; nur die Zeilen der Seite gehen
+    mit ihrer Position an Postgres. Mit einer Positionsliste aller Treffer wuchs der
+    SQL-Aufwand sonst quadratisch mit der Trefferzahl (Gesamtaudit 10.11. P01)."""
+
+    def __init__(self, qs, ids: list[int]):
+        self.qs, self.ids = qs, ids
+
+    def __len__(self) -> int:
+        return len(self.ids)
+
+    def count(self) -> int:  # Paginator fragt count() vor len()
+        return len(self.ids)
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            return list(_by_position(self.qs, self.ids[index]))
+        return _by_position(self.qs, [self.ids[index]]).get()
+
+
+def _by_position(qs, ids: list[int]):
+    position = Func(
+        Value(ids, output_field=ArrayField(BigIntegerField())),
+        F("pk"),
+        function="array_position",
+        output_field=IntegerField(),
+    )
+    return qs.filter(pk__in=ids).alias(_person_position=position).order_by("_person_position")
+
+
+def ordered(qs, *ordering, limit=None, lazy=False):
     """In Python sortieren; nur die resultierende ID-Reihenfolge geht an Postgres.
 
     Unterstützt Feldpfade und F(...).asc/desc(nulls_last/first=True). Ohne explizite
     NULL-Regel gilt wie in Postgres ASC NULLS LAST / DESC NULLS FIRST. Die Zeilen-ID
     bleibt letzter aufsteigender Tie-Break, auch bei absteigenden Fachspalten.
+    ``lazy=True`` liefert ``OrderedRows`` für Listen mit Seitenschnitt.
     """
     if qs.query.is_sliced:
         raise ValueError("Personensortierung muss vor dem Seitenschnitt erfolgen.")
@@ -106,10 +140,6 @@ def ordered(qs, *ordering, limit=None):
     ids = [row[0] for row in rows]
     if limit is not None:
         ids = ids[:limit]
-    position = Func(
-        Value(ids, output_field=ArrayField(BigIntegerField())),
-        F("pk"),
-        function="array_position",
-        output_field=IntegerField(),
-    )
-    return qs.filter(pk__in=ids).alias(_person_position=position).order_by("_person_position")
+    if lazy:
+        return OrderedRows(qs, ids)
+    return _by_position(qs, ids)

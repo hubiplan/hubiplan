@@ -455,6 +455,17 @@ def fetch(cal: ExternalCalendar) -> list[Item]:
     return fetch_ical(token)
 
 
+def source_of(cal: ExternalCalendar) -> tuple[str, str, str]:
+    """Woher die Termine kommen (Art, Zugang, Geheimnis), entschlüsselt zum Vergleichen."""
+    from accounts.mfa import decrypt
+
+    return (
+        cal.kind,
+        decrypt(cal.token) if cal.token else "",
+        decrypt(cal.secret) if cal.secret else "",
+    )
+
+
 def hidden_keys(cal: ExternalCalendar) -> set[str]:
     return {h.get("key") for h in (cal.hidden or []) if isinstance(h, dict)}
 
@@ -538,6 +549,7 @@ def sync(cal: ExternalCalendar) -> int:
     with unit_context(cal.organization_id):
         if not cal.is_active:
             return 0
+        source = source_of(cal)
         try:
             items = fetch(cal)
         except ExternalError as exc:
@@ -554,6 +566,10 @@ def sync(cal: ExternalCalendar) -> int:
             )
             if current is None:
                 return 0  # Deactivated/deleted while the provider request was running.
+            if source_of(current) != source:
+                # Quelle während des Abrufs gewechselt: alte Ergebnisse nicht unter der neuen
+                # Einstellung übernehmen (Gesamtaudit 10.11. S06); der neue Abruf folgt.
+                return 0
             cal = current
             # Wieder abrufbar: ausgeblendete Kopien gelten wieder (danach gleicht apply ab)
             cal.events.filter(source_stale=True).update(source_stale=False)

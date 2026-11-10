@@ -12,7 +12,9 @@ number; next to it you filter by status, membership type or gender. Clicking a n
 record with all periods, honours and contact details.
 
 Each search word must match, but one may occur in the name and another in the email
-address or number. Names are searched without regard to case, and `ß` and `ss` are
+address or number. Email addresses are found by the full address (`erika@example.org`) or
+from the @ onwards (`@example.org` for everyone with that domain); parts without @ only
+search names and numbers. Names are searched without regard to case, and `ß` and `ss` are
 treated alike. Name sorting places umlauts with their base letter (`ä` with `a`).
 Equal names have a fixed order so that moving between pages remains stable.
 

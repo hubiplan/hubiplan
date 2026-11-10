@@ -111,6 +111,10 @@ def _mfa_lockerer(settings):
 @pytest.fixture(autouse=True)
 def _media_root(tmp_path, settings):
     settings.MEDIA_ROOT = tmp_path / "media"
+    # KoSIT-Prüfung (Java): Unter Testlast dauert der Start manchmal länger als die 45 s
+    # im Betrieb. Das Zeitlimit prüfen eigene Tests, hier soll es nicht zufällig greifen.
+    settings.EINVOICE_VALIDATOR_TIMEOUT = 300
+    settings.EINVOICE_VALIDATOR_BACKGROUND_TIMEOUT = 300
     # VAPID-Schlüssel für Push je Test neu (nicht im Arbeitsverzeichnis)
     settings.PUSH_VAPID_KEY_FILE = str(tmp_path / "vapid.json")
     # Alarm-Mails nur in den Tests, die sie prüfen (sonst zählen sie im Postausgang mit)

@@ -44,6 +44,8 @@ def version_data(v: DocumentVersion, base: str) -> dict:
         "uploaded_by": _user_name(v.uploaded_by),
         "url": f"{base}versions/{v.pk}/",
         "inline": v.content_type in services.INLINE_TYPES,
+        # „pending“: wartet auf die Virenprüfung, „infected“: Fund; beides gesperrt
+        "scan": virenscan.scan_state(v.file),
     }
 
 
@@ -89,6 +91,7 @@ def folder_data(request, folder: Folder, docs: list[Document], base: str, manage
 
 
 def file_response(request, version: DocumentVersion, cache: str = "private") -> FileResponse:
+    virenscan.ensure_released(version.file)
     inline = version.content_type in services.INLINE_TYPES
     response = FileResponse(
         version.file.open("rb"),
@@ -381,6 +384,9 @@ def _save_version(viewer, document: Document, upload, user) -> DocumentVersion:
 class _FolderDocuments(APIView):
     """POST: Dokument mit erster Fassung in einen Ordner hochladen."""
 
+    # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
+    virus_quarantine = True
+
     @transaction.atomic
     def post(self, request, pk: int, **kwargs):
         self.require_manage()
@@ -490,6 +496,9 @@ class _Trash(APIView):
 class _DocumentVersions(APIView):
     """POST: neue Fassung eines Dokuments hochladen."""
 
+    # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
+    virus_quarantine = True
+
     @transaction.atomic
     def post(self, request, pk: int, **kwargs):
         self.require_manage()
@@ -506,6 +515,7 @@ class _Version(APIView):
         version = self.viewer.visible_versions().filter(pk=pk).select_related("document").first()
         if version is None:
             raise NotFound()
+        virenscan.ensure_released(version.file)
         record(
             self.viewer.org,
             request.user,

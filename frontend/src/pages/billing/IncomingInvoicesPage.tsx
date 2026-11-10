@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { einvoiceApi } from '../../api/einvoices.ts'
 import type { IncomingInvoice } from '../../api/einvoices.ts'
@@ -11,6 +11,9 @@ import { t } from '../../i18n/index.ts'
 import { ValidationResult } from './EInvoicesPage.tsx'
 import { PageNav } from '../../components/ListControls.tsx'
 
+/** Abstand der Nachfragen, solange eine Prüfung läuft. */
+const POLL_MS = 4000
+
 export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
   const org = useActiveOrg()
   const [page, setPage] = useState(1)
@@ -22,6 +25,22 @@ export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
     setSelected(item)
     void load.reload()
   }
+  // Ist die Prüfung des geöffneten Eingangs inzwischen fertig, den neuen Stand zeigen
+  const fresh = load.data?.results.find((item) => item.id === selected?.id)
+  const shown =
+    selected && fresh && selected.report.status === 'pending' && fresh.report.status !== 'pending'
+      ? fresh
+      : selected
+  // Die technische Prüfung läuft im Hintergrund: solange etwas wartet, nachfragen
+  const { reload } = load
+  const waiting =
+    shown?.report.status === 'pending' ||
+    !!load.data?.results.some((item) => item.report.status === 'pending')
+  useEffect(() => {
+    if (!waiting) return
+    const timer = window.setInterval(() => void reload(), POLL_MS)
+    return () => window.clearInterval(timer)
+  }, [waiting, reload])
   return (
     <div className="stack">
       <p>
@@ -52,11 +71,11 @@ export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
           }}
         />
       )}
-      {busy && <p role="status">{t('Die Datei wird geprüft …')}</p>}
-      {selected && (
+      {busy && <p role="status">{t('Die Datei wird hochgeladen …')}</p>}
+      {shown && (
         <IncomingDetail
-          key={selected.id}
-          value={selected}
+          key={shown.id}
+          value={shown}
           canEdit={canEdit}
           onChanged={changed}
           onClose={() => setSelected(null)}
@@ -87,11 +106,13 @@ export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
                 <td>
                   {item.booking
                     ? t('Zugeordnet')
-                    : item.status === 'approved'
-                      ? t('Freigegeben')
-                      : item.status === 'rejected'
-                        ? t('Abgelehnt')
-                        : t('Zu prüfen')}
+                    : item.report.status === 'pending'
+                      ? t('Wird geprüft')
+                      : item.status === 'approved'
+                        ? t('Freigegeben')
+                        : item.status === 'rejected'
+                          ? t('Abgelehnt')
+                          : t('Zu prüfen')}
                 </td>
               </tr>
             ))}
@@ -219,7 +240,7 @@ function IncomingDetail({
             >
               {t('Ablehnen')}
             </button>
-            {value.status === 'review' && (
+            {value.status === 'review' && value.report.status !== 'pending' && (
               <button
                 className="button button-ghost"
                 disabled={busy}
