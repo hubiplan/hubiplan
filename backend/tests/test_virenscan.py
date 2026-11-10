@@ -285,8 +285,9 @@ def test_mail_bleibt_bei_scanner_ausfall_liegen(settings, tmp_path):
     ):
         assert inbound.fetch_inbound() == 0
     stores = [c for c in imap.uid.call_args_list if c.args[0] == "store"]
-    fetches = [c for c in imap.uid.call_args_list if c.args[0] == "fetch"]
-    assert stores == [] and len(fetches) == 1
+    # Nur Inhaltsabrufe zählen; vorher fragt der Abruf die Größe ab (Gesamtaudit 10.11. S03)
+    fetches = [c for c in imap.uid.call_args_list if c.args[0] == "fetch" and "BODY" in c.args[-1]]
+    assert stores == [] and [c.args[1] for c in fetches] == [b"7"]
     assert not InboundMail.objects.exists()
 
 
