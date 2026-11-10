@@ -33,6 +33,7 @@ from finance import views as finance_views
 from helpers import portal as helper_portal
 from honors import urls as honors_urls
 from letterhead import views as letterhead_views
+from mcpserver.views import McpView
 from meetings import portal as meeting_portal
 from members import (
     federation_views,
@@ -946,6 +947,8 @@ urlpatterns = [
     ),
     path("", include(peering_urls)),
     path("", include(oidc_urls)),
+    # KI-Schnittstelle (MCP), Stufe 0: nur Hilfe, ohne Anmeldung (docs/mcp.md)
+    path("mcp/", McpView.as_view(), name="mcp"),
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
     path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
     path(
