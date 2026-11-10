@@ -4,16 +4,15 @@
   Organisationen, in denen der Benutzer eine Rolle oder einen Zugang hat. Ein
   Passwort, das nach Abzug dieser Wörter, Ziffern und Satzzeichen kaum noch etwas
   enthält, wird abgelehnt.
-- Geleakte Passwörter: mitgelieferte Liste (accounts/data), Prüfung nur auf dem
-  Server, ohne externen Dienst.
+- Häufige und geleakte Passwörter prüft Djangos eigener CommonPasswordValidator (Liste
+  aus Django, BSD-Lizenz). Die frühere NCSC-Liste ist entfernt, weil die Rechte an der
+  ursprünglichen Sammlung nicht belegt sind (Lizenzaudit 10.11.2026, L05).
 """
 
 from __future__ import annotations
 
 import re
-from pathlib import Path
 
-from django.contrib.auth.password_validation import CommonPasswordValidator
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext
 
@@ -29,7 +28,6 @@ FIXED_WORDS = (
     "kennwort",
 )
 MIN_REST = 6
-LEAKED = Path(__file__).resolve().parent / "data" / "geleakte-passwoerter.txt.gz"
 
 
 def _plain(text: str) -> str:
@@ -87,19 +85,3 @@ class ContextWordValidator:
 
     def get_help_text(self) -> str:
         return "Das Passwort darf nicht nur aus Vereinsname, Ort oder ähnlichen Wörtern bestehen."
-
-
-class LeakedPasswordValidator(CommonPasswordValidator):
-    """Liste häufiger Passwörter aus Datenlecks (NCSC, mitgeliefert)."""
-
-    def __init__(self, password_list_path=LEAKED):
-        super().__init__(password_list_path)
-
-    def validate(self, password: str, user=None) -> None:
-        if password.lower().strip() in self.passwords:
-            raise ValidationError(
-                gettext(
-                    "Dieses Passwort taucht in bekannten Datenlecks auf. Bitte ein anderes wählen."
-                ),
-                code="password_leaked",
-            )

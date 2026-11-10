@@ -162,9 +162,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-    # Audit 29.10. G08: naheliegende Wörter und geleakte Passwörter (ohne externen Dienst)
+    # Audit 29.10. G08: naheliegende Wörter (ohne externen Dienst). Häufige Passwörter aus
+    # Datenlecks prüft CommonPasswordValidator oben (Lizenzaudit 10.11., L05).
     {"NAME": "accounts.validators.ContextWordValidator"},
-    {"NAME": "accounts.validators.LeakedPasswordValidator"},
 ]
 
 # --- allauth: Anmeldung per E-Mail/Passwort, optionale 2FA per TOTP ---

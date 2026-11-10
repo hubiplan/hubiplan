@@ -143,11 +143,64 @@ def xml(run):
         add(add(tx, "Cdtr"), "Nm", sepa_text(item.payee["holder"], 70))
         add(add(add(tx, "CdtrAcct"), "Id"), "IBAN", item.payee["iban"])
         add(add(tx, "RmtInf"), "Ustrd", f"Musikverguetung {item.claim_id} / {reference[:12]}")
-    schema = etree.XMLSchema(
-        etree.parse(str(Path(__file__).parent / "schemas" / "pain.001.001.09_GBIC_5.xsd"))
-    )
-    schema.assertValid(root)
+    validate(root)
     return etree.tostring(root, xml_declaration=True, encoding="UTF-8", pretty_print=True)
+
+
+# Unverändertes ISO-20022-Originalschema (schemas/README.md). Die strengeren Regeln der
+# Deutschen Kreditwirtschaft (GBIC 5) prüft dk_rules selbst; deren Schemadatei liegt nicht
+# mehr im Repo, weil eine Erlaubnis zur Weitergabe fehlt (Lizenzaudit 10.11.2026, L04).
+SCHEMA = Path(__file__).parent / "schemas" / "pain.001.001.09.xsd"
+_SEPA_TEXT = re.compile(r"[A-Za-z0-9/?:().,'+\- ]*")
+_AMOUNT = re.compile(r"(0|[1-9][0-9]{0,8})\.[0-9]{2}")
+# Element → höchste Länge nach DK-Anlage 3 (GBIC 5) für Überweisungen
+_DK_LENGTH = {"MsgId": 35, "PmtInfId": 35, "EndToEndId": 35, "Nm": 70, "Ustrd": 140}
+
+
+def dk_rules(root) -> list[str]:
+    """Regeln aus dem DK-Datenformat (GBIC 5), die über das ISO-Schema hinausgehen:
+    SEPA-Zeichensatz und Längen der Texte, nur Euro mit zwei Nachkommastellen, Betrag bis
+    999.999.999,99, Service-Level SEPA, Entgelt SLEV, Anzahl und Kontrollsumme stimmig.
+    Gibt die Verstöße zurück (leer: in Ordnung)."""
+
+    def local(elem):
+        return etree.QName(elem).localname
+
+    errors = []
+    for elem in root.iter():
+        name, text = local(elem), elem.text or ""
+        if name in _DK_LENGTH:
+            if not text or len(text) > _DK_LENGTH[name] or not _SEPA_TEXT.fullmatch(text):
+                errors.append(f"{name}: Länge oder Zeichensatz")
+            if name in ("MsgId", "PmtInfId", "EndToEndId") and (
+                text.startswith("/") or "//" in text
+            ):
+                errors.append(f"{name}: Schrägstrich")
+        if name == "InstdAmt":
+            if elem.get("Ccy") != "EUR" or not _AMOUNT.fullmatch(text) or Decimal(text) <= 0:
+                errors.append("InstdAmt: nur Euro, 0,01 bis 999.999.999,99")
+    find = root.xpath
+    for code, path in (
+        ("SEPA", "//*[local-name()='SvcLvl']/*[local-name()='Cd']"),
+        ("SLEV", "//*[local-name()='ChrgBr']"),
+    ):
+        if [e.text for e in find(path)] != [code]:
+            errors.append(f"nur {code} erlaubt")
+    amounts = [Decimal(e.text) for e in find("//*[local-name()='InstdAmt']") if e.text]
+    for scope in find("//*[local-name()='GrpHdr'] | //*[local-name()='PmtInf']"):
+        count = scope.xpath("string(*[local-name()='NbOfTxs'])")
+        ctrl = scope.xpath("string(*[local-name()='CtrlSum'])")
+        if count != str(len(amounts)) or ctrl != f"{sum(amounts, Decimal(0)):.2f}":
+            errors.append(f"{local(scope)}: Anzahl oder Kontrollsumme")
+    return errors
+
+
+def validate(root) -> None:
+    """ISO-Schema und DK-Regeln; Fehler bricht den Zahlungslauf ab."""
+    etree.XMLSchema(etree.parse(str(SCHEMA))).assertValid(root)
+    errors = dk_rules(root)
+    if errors:
+        raise ValueError("pain.001 verletzt DK-Regeln: " + "; ".join(errors))
 
 
 class PayoutRuns(NoStore, SettlementView):
