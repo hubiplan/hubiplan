@@ -9833,3 +9833,15 @@ msgstr "Help for HUBIplan, a free club management software: guides, page help an
 
 msgid "HUBIplan-Hilfe"
 msgstr "HUBIplan help"
+
+msgid "Frage"
+msgstr "Question"
+
+msgid "Höchstens zwölf Fragen."
+msgstr "At most twelve questions."
+
+msgid "Höchstens zwölf Partner."
+msgstr "At most twelve partners."
+
+msgid "Höchstens sechs Zahlen."
+msgstr "At most six numbers."

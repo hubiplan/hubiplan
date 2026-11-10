@@ -29,6 +29,16 @@ KINDS = {
     "album": "Album-Auszug",
     "quote": "Zitat",
     "contacts": "Ansprechpartner",
+    # Weitere Arten (Ralf 10.11.2026 „alle 9“)
+    "faq": "Häufige Fragen",
+    "partners": "Partner und Sponsoren",
+    "directions": "Anfahrt",
+    "event_list": "Termine einer Art",
+    "document": "Dokument zum Herunterladen",
+    "video": "Video als Link",
+    "chronicle": "Auszug aus der Chronik",
+    "facts": "Zahlen auf einen Blick",
+    "divider": "Trenner",
 }
 KIND_HINTS = {
     "text": "Überschrift und Text",
@@ -40,13 +50,27 @@ KIND_HINTS = {
     "album": "vier bis acht Bilder aus einem Album der Galerie",
     "quote": "ein kurzer Text mit Namen",
     "contacts": "ein bis vier Rollen mit Foto, Name und „Nachricht schreiben“",
+    "faq": "Fragen mit Antworten zum Aufklappen",
+    "partners": "Logos mit Link, z. B. Unterstützer und Sponsoren",
+    "directions": "Anschrift eines Orts mit „Route planen“",
+    "event_list": "die nächsten Termine einer Kategorie",
+    "document": "eine Datei aus Webseite › Dokumente als Knopf",
+    "video": "Vorschaubild mit Link zum Video, ohne Einbettung",
+    "chronicle": "die neuesten Einträge der Zeitleiste",
+    "facts": "zwei bis sechs Zahlen mit kurzem Text",
+    "divider": "Linie oder Abstand zwischen Abschnitten",
 }
 # Nur auf Textseiten (G6): Titelbild, ein schmales Bild über der Überschrift, höchstens eins
 PAGE_KINDS = {"cover": "Titelbild"}
 PAGE_KIND_HINTS = {"cover": "ein schmales Bild über der Überschrift der Seite"}
 ALL_KINDS = {**KINDS, **PAGE_KINDS}
 # Welcher Bereich der Webseite eingeschaltet sein muss
-KIND_NEEDS_BLOCK = {"event": "events", "album": "gallery"}
+KIND_NEEDS_BLOCK = {
+    "event": "events",
+    "album": "gallery",
+    "event_list": "events",
+    "chronicle": "history",
+}
 
 CUSTOM_KEY = re.compile(r"^c:[a-z0-9]{1,24}$")
 MAX_CUSTOM = 30
@@ -55,7 +79,17 @@ PALETTE_BG = re.compile(r"^p[0-9]$")
 WIDTHS = ("content", "text", "full")
 COLUMNS = ("main", "side")
 # Zeitung: diese Bausteine standen bisher fest in der rechten Spalte
-SIDE_DEFAULT = {"events", "honors", "units", "event", "contacts", "quote"}
+SIDE_DEFAULT = {
+    "events",
+    "honors",
+    "units",
+    "event",
+    "contacts",
+    "quote",
+    "directions",
+    "event_list",
+    "document",
+}
 
 TITLE_MAX = 150
 TEXT_MAX = 10000
@@ -159,6 +193,24 @@ def _target(value, refs: dict) -> dict | None:
     return None
 
 
+def _items(data: dict, limit: int, message: str) -> list[dict]:
+    """Einträge einer Liste (Fragen, Partner, Zahlen); höchstens ``limit``."""
+    items = data.get("items") if isinstance(data.get("items"), list) else []
+    if len(items) > limit:
+        raise Invalid(message)
+    return [i if isinstance(i, dict) else {} for i in items]
+
+
+def _url(value) -> str:
+    """Adresse nach außen (https://…) oder leer."""
+    if not isinstance(value, str) or not value.strip() or value.strip() == "https://":
+        return ""
+    url = value.strip()
+    if len(url) > URL_MAX or not re.match(r"^https?://[^\s/]+\.[^\s]+$", url):
+        raise Invalid(gettext("Bitte eine Adresse mit https:// angeben."))
+    return url
+
+
 def _clean_data(kind: str, data: dict, refs: dict) -> dict:
     title = _text(data.get("title"), TITLE_MAX, gettext("Überschrift"))
     if kind == "text":
@@ -228,6 +280,77 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
             "text": _text(data.get("text"), SHORT_MAX * 2, gettext("Zitat")),
             "name": _text(data.get("name"), TITLE_MAX, gettext("Name")),
         }
+    if kind == "faq":
+        items = _items(data, 12, gettext("Höchstens zwölf Fragen."))
+        return {
+            "title": title,
+            "items": [
+                {
+                    "question": _text(i.get("question"), TITLE_MAX, gettext("Frage")),
+                    "answer": _text(i.get("answer"), TEXT_MAX // 5, gettext("Antwort")),
+                }
+                for i in items
+            ],
+        }
+    if kind == "partners":
+        items = _items(data, 12, gettext("Höchstens zwölf Partner."))
+        return {
+            "title": title,
+            "items": [
+                {
+                    "name": _text(i.get("name"), LABEL_MAX * 2, gettext("Name")),
+                    "image": _ref(i.get("image"), refs["images"]),
+                    "url": _url(i.get("url")),
+                }
+                for i in items
+            ],
+        }
+    if kind == "directions":
+        return {
+            "title": title,
+            "place": _ref(data.get("place"), refs["places"]),
+            "text": _text(data.get("text"), SHORT_MAX * 2, gettext("Text")),
+        }
+    if kind == "event_list":
+        count = data.get("count")
+        return {
+            "title": title,
+            "category": _ref(data.get("category"), refs["categories"]),
+            "count": count if isinstance(count, int) and 2 <= count <= 10 else 4,
+        }
+    if kind == "document":
+        return {
+            "title": title,
+            "document": _ref(data.get("document"), refs["documents"]),
+            "label": _text(data.get("label"), LABEL_MAX, gettext("Beschriftung")),
+        }
+    if kind == "video":
+        return {
+            "title": title,
+            "url": _url(data.get("url")),
+            "image": _ref(data.get("image"), refs["images"]),
+            "text": _text(data.get("text"), SHORT_MAX, gettext("Text")),
+        }
+    if kind == "chronicle":
+        count = data.get("count")
+        return {"title": title, "count": count if isinstance(count, int) and 2 <= count <= 6 else 3}
+    if kind == "facts":
+        items = _items(data, 6, gettext("Höchstens sechs Zahlen."))
+        return {
+            "title": title,
+            "items": [
+                {
+                    "value": _text(i.get("value"), 20, gettext("Zahl")),
+                    "label": _text(i.get("label"), LABEL_MAX, gettext("Text")),
+                }
+                for i in items
+            ],
+        }
+    if kind == "divider":
+        return {
+            "style": _choice(data.get("style"), ("line", "space"), "line"),
+            "size": _choice(data.get("size"), ("small", "large"), "small"),
+        }
     if kind == "contacts":
         items = data.get("roles") if isinstance(data.get("roles"), list) else []
         if len(items) > 4:
@@ -243,14 +366,30 @@ def _clean_data(kind: str, data: dict, refs: dict) -> dict:
 
 def references(website) -> dict:
     """Was ein Abschnitt verwenden darf: Bilder, Alben, Termine, Rollen und Menüpunkte."""
-    from events.models import Event
+    from events.models import Event, EventCategory
+    from places.models import Place
 
     from . import menu
-    from .content_models import GalleryAlbum, WebsiteImage
+    from .content_models import GalleryAlbum, WebsiteDocument, WebsiteImage
     from .public import SiteView
 
     site = SiteView(website)
     return {
+        "places": set(
+            Place.objects.filter(organization=site.area, is_active=True).values_list(
+                "pk", flat=True
+            )
+        ),
+        "categories": set(
+            EventCategory.objects.filter(organization=site.area, is_active=True).values_list(
+                "pk", flat=True
+            )
+        ),
+        "documents": set(
+            WebsiteDocument.objects.filter(website=website, published=True).values_list(
+                "pk", flat=True
+            )
+        ),
         "images": set(WebsiteImage.objects.filter(website=website).values_list("pk", flat=True)),
         "albums": set(GalleryAlbum.objects.filter(website=website).values_list("pk", flat=True)),
         "events": set(
@@ -306,7 +445,7 @@ def image_ids(sections: list[dict]) -> set[int]:
         data = s["data"]
         if isinstance(data.get("image"), int):
             ids.add(data["image"])
-        for tile in data.get("tiles") or []:
+        for tile in [*(data.get("tiles") or []), *(data.get("items") or [])]:
             if isinstance(tile, dict) and isinstance(tile.get("image"), int):
                 ids.add(tile["image"])
     return ids
@@ -383,6 +522,9 @@ REF_TABLES = {
     "image": "website.websiteimage",
     "album": "website.galleryalbum",
     "event": "events.event",
+    "place": "places.place",
+    "category": "events.eventcategory",
+    "document": "website.websitedocument",
 }
 
 
@@ -417,7 +559,7 @@ def remap(value, get) -> list:
             data["roles"] = [
                 r for r in (one("access.role", r) for r in data["roles"]) if r is not None
             ]
-        for list_field in ("buttons", "tiles"):
+        for list_field in ("buttons", "tiles", "items"):
             if isinstance(data.get(list_field), list):
                 data[list_field] = [
                     {
@@ -427,7 +569,7 @@ def remap(value, get) -> list:
                             if "image" in x
                             else {}
                         ),
-                        "target": target(x.get("target")),
+                        **({"target": target(x.get("target"))} if "target" in x else {}),
                     }
                     if isinstance(x, dict)
                     else x
@@ -544,7 +686,133 @@ def _content(site, kind, data, images, known, event_entry) -> dict | None:
     if kind == "contacts":
         roles = site.role_cards(data.get("roles") or [])
         return {"title": title, "roles": roles} if roles else None
+    if kind == "faq":
+        items = [
+            {"question": i["question"], "answer": i.get("answer") or ""}
+            for i in data.get("items") or []
+            if isinstance(i, dict) and i.get("question")
+        ]
+        return {"title": title, "items": items} if items else None
+    if kind == "partners":
+        items = [
+            {"name": i["name"], "image": images.get(i.get("image")), "url": i.get("url") or ""}
+            for i in data.get("items") or []
+            if isinstance(i, dict) and i.get("name")
+        ]
+        return {"title": title, "items": items} if items else None
+    if kind == "directions":
+        return _directions(site, title, data)
+    if kind == "event_list":
+        return _event_list(site, title, data, event_entry)
+    if kind == "document":
+        return _document(site, title, data)
+    if kind == "video":
+        if not data.get("url"):
+            return None
+        return {
+            "title": title,
+            "url": data["url"],
+            "image": images.get(data.get("image")),
+            "text": data.get("text") or "",
+        }
+    if kind == "chronicle":
+        return _chronicle(site, title, data)
+    if kind == "facts":
+        items = [
+            {"value": i["value"], "label": i.get("label") or ""}
+            for i in data.get("items") or []
+            if isinstance(i, dict) and i.get("value")
+        ]
+        return {"title": title, "items": items} if items else None
+    if kind == "divider":
+        return {"style": data.get("style", "line"), "size": data.get("size", "small")}
     return None
+
+
+def _directions(site, title, data) -> dict | None:
+    from events import maps
+    from places.models import Place
+
+    if not data.get("place"):
+        return None
+    place = Place.objects.filter(pk=data["place"], organization=site.area, is_active=True).first()
+    if place is None:
+        return None
+    route = maps.links(place.name, place.address, place.latitude, place.longitude)
+    return {
+        "title": title or place.name,
+        "name": place.name,
+        "address": place.address,
+        "directions": place.directions,
+        "text": data.get("text") or "",
+        "route_url": route.get("osm"),
+    }
+
+
+def _event_list(site, title, data, event_entry) -> dict | None:
+    from events.models import EventCategory
+
+    from .public_views import _events
+
+    if not data.get("category"):
+        return None
+    category = EventCategory.objects.filter(pk=data["category"], organization=site.area).first()
+    if category is None:
+        return None
+    now = timezone.now()
+    found = sorted(
+        (
+            o
+            for o in _events(site, None)
+            if o.event.category_id == category.pk and (o.ends_at or o.starts_at) >= now
+        ),
+        key=lambda o: o.starts_at,
+    )[: data.get("count", 4)]
+    return {
+        "title": title or category.name,
+        "category": category.name,
+        "events": [event_entry(site, o) for o in found],
+    }
+
+
+def _document(site, title, data) -> dict | None:
+    from . import documents
+    from .content_models import WebsiteDocument
+
+    if not data.get("document"):
+        return None
+    doc = WebsiteDocument.objects.filter(pk=data["document"], website=site.site).first()
+    if doc is None or documents.find(site, doc.key) is None:
+        return None
+    return {
+        "title": title,
+        "label": data.get("label") or doc.title,
+        "url": site.url(f"files/{doc.key}/"),
+        "file_type": "pdf" if doc.content_type == "application/pdf" else "image",
+        "size": doc.size,
+    }
+
+
+def _chronicle(site, title, data) -> dict | None:
+    from .content_models import WebsiteText
+
+    if not site.chronicle_on:
+        return None
+    t = site.published_texts().filter(kind=WebsiteText.Kind.PAGE, slug="geschichte").first()
+    if t is None:
+        return None
+    entries = [e for e in site.timeline(t) if e["kind"] != "chapter" and e["title"]]
+    entries.sort(key=lambda e: (e.get("until") or e["year"], e["year"]), reverse=True)
+    entries = entries[: data.get("count", 3)]
+    if not entries:
+        return None
+    return {
+        "title": title,
+        "entries": [
+            {"year": e["year"], "until": e.get("until"), "title": e["title"], "text": e["text"]}
+            for e in entries
+        ],
+    }
 
 
 def _album(site, title, data) -> dict | None:
