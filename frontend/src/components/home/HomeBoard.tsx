@@ -528,8 +528,10 @@ export function HomeBoard({
             </div>
           )
         })}
-        {children}
       </div>
+      {/* Weitere Karten (z. B. „Übersicht“) stehen unter dem Raster: im feinen Raster hätten sie
+          nur eine Zeile (0,5 rem) und lägen über der Fußzeile */}
+      {children && <div className="home-board-extra">{children}</div>}
     </>
   )
 }

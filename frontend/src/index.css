@@ -5331,9 +5331,6 @@ label:has(> .file-input:focus-visible) {
     grid-column: span var(--home-cols, 6);
     grid-row: span var(--home-span, 1);
   }
-  .home-grid > .card {
-    grid-column: 1 / -1;
-  }
   /* Eingestellte Höhe gilt für den Inhalt (ohne Leiste beim Anpassen); er rollt in der Karte */
   .home-block-fixed .home-block-content {
     height: calc(var(--home-rows) * 0.5rem);
@@ -5346,9 +5343,18 @@ label:has(> .file-input:focus-visible) {
     overflow: hidden;
   }
 }
-.home-grid > .card,
+.home-board-extra > .card,
 .home-block-content > .card {
   max-width: none;
+}
+.home-board-extra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 80rem;
+}
+.home-grid + .home-board-extra {
+  margin-top: var(--space-4);
 }
 .home-block {
   min-width: 0;
