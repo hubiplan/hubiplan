@@ -58,6 +58,7 @@ import { Checklist } from '../../learning/Checklist.tsx'
 import { competitionFinishChecks } from '../../learning/checks.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { locale, t } from '../../i18n/index.ts'
+import { PlaceField } from '../../components/PlaceField.tsx'
 
 export function CompetitionsPage() {
   return (
@@ -587,11 +588,11 @@ function Setup({
                   onChange={(e) => set('discipline', e.target.value)}
                 />
               )}
-              <Field
+              <PlaceField
                 label={t('Ort')}
                 value={v.location}
                 error={errors.location}
-                onChange={(e) => set('location', e.target.value)}
+                onChange={(value) => set('location', value)}
               />
               {!comp.own && (
                 <Field

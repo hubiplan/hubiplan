@@ -14,6 +14,7 @@ import type {
 } from '../../api/events.ts'
 import { useAutoSave, useForm } from '../forms.ts'
 import { Alert, Checkbox, Field, SaveStatus, SelectField } from '../ui.tsx'
+import { PlaceField } from '../PlaceField.tsx'
 import { addDays, berlin, toApi } from './time.ts'
 import { confirmDialog } from '../dialog.ts'
 import { Why } from '../../learning/Aids.tsx'
@@ -354,13 +355,14 @@ export function EventForm({
         )}
       </div>
       <div className="grid-2">
-        <Field
+        <PlaceField
           label={t('Ort')}
           value={v.location}
-          maxLength={200}
+          address={v.address}
           placeholder={t('z. B. Vereinsheim')}
           error={errors.location}
-          onChange={(e) => set('location', e.target.value)}
+          onChange={(value) => set('location', value)}
+          onPick={(place) => place.address && set('address', place.address)}
         />
         <Field
           label={t('Anschrift')}
