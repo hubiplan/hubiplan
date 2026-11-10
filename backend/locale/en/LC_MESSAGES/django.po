@@ -9665,3 +9665,12 @@ msgstr "Unknown section type."
 
 msgid "Höchstens {x0} eigene Abschnitte."
 msgstr "At most {x0} custom sections."
+
+msgid "Text der Seite"
+msgstr "Page text"
+
+msgid "Bild und Text aus dem Feld oben"
+msgstr "Image and text from the field above"
+
+msgid "Abschnitte gibt es nur auf Textseiten."
+msgstr "Sections are only available on text pages."

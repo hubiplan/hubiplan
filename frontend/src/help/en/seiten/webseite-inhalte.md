@@ -4,10 +4,12 @@ titel: Website › Texts
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/inhalte]
-stichworte: [text, page, home page, blocks, chronicle, timeline, chapter]
+stichworte: [text, page, home page, blocks, sections, banner, tiles, chronicle, timeline, chapter]
 ---
 
 Here you write the website texts and put together the blocks of the home page. Changes are saved as you type; the latest versions of each text are kept.
+
+Text pages from sections: Under **Page sections** you build a text page from sections, like the home page. The existing text with the image at the top is the fixed section “Page text”; without further sections the page stays as before. **Add section** adds, for example, a **Banner**, a **Button bar**, **Tiles** or a **Quote** above or below it; drag them by the handle into order. **Edit** opens content, background and width, **Apply** saves the section to the draft. Everything becomes visible with **Publish**; earlier versions bring back their sections too.
 
 Image captions: For each text, **Show image captions on the website** decides whether the website shows the caption below the image at the top and in the image carousel. Without the tick (the default) the images appear without a caption; the description for screen readers stays.
 

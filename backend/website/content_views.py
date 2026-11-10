@@ -20,7 +20,8 @@ from core.reorder import reorder_response
 
 from . import content, services, timeline
 from .content_models import TIMELINE_SLUG, WebsiteImage, WebsiteRevision, WebsiteText
-from .views import _WebsiteMixin
+from .home import has_custom, normalize_page
+from .views import _WebsiteMixin, page_section_options
 
 
 class _ContentMixin(_WebsiteMixin):
@@ -98,6 +99,7 @@ def text_data(org_id: int, t: WebsiteText, full: bool = False) -> dict:
                 "show_captions": t.show_captions,
                 "timeline": list(t.timeline or []),
                 "timeline_newest_first": t.timeline_newest_first,
+                "sections": normalize_page(t.sections),
                 "has_timeline": is_chronicle(t) and module_on(t.website.organization, "chronicle"),
                 "published_title": t.published_title,
                 "published_body": t.published_body,
@@ -147,8 +149,18 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "show_captions",
             "timeline",
             "timeline_newest_first",
+            "sections",
         ]
         extra_kwargs = {"kind": {"required": False}}
+
+    def validate_sections(self, value):
+        # Textseite aus Abschnitten (G4): dieselben Arten wie auf der Startseite
+        from .home import Invalid, validate_page
+
+        try:
+            return validate_page(value, self.context["website"])
+        except Invalid as exc:
+            raise serializers.ValidationError(str(exc)) from exc
 
     def extra_clean_attrs(self) -> dict:
         return {"website": self.context["website"]}
@@ -217,6 +229,10 @@ class TextSerializer(ModelCleanMixin, serializers.ModelSerializer):
                     )
                 }
             )
+        if kind != WebsiteText.Kind.PAGE and has_custom(attrs.get("sections")):
+            raise serializers.ValidationError(
+                {"sections": gettext("Abschnitte gibt es nur auf Textseiten.")}
+            )
         slug = attrs.get("slug", self.instance.slug if self.instance else "")
         if attrs.get("timeline") and not (kind == WebsiteText.Kind.PAGE and slug == TIMELINE_SLUG):
             raise serializers.ValidationError(
@@ -248,17 +264,19 @@ class TextListView(_ContentMixin, APIView):
 
     def get(self, request, org_id: int):
         website = self.website()
-        if self.org_permissions & {WEBSITE_CONTENT, WEBSITE_MANAGE}:
+        can_edit = bool(self.org_permissions & {WEBSITE_CONTENT, WEBSITE_MANAGE})
+        if can_edit:
             content.greeting(website)
         texts = WebsiteText.objects.filter(website=website).select_related("department")
         units = services.in_tree_order(services.units_below(self.org))
-        return Response(
-            {
-                "texts": [text_data(self.org.pk, t) for t in texts],
-                "units": [{"id": u.pk, "name": u.name} for u in units],
-                "link_targets": content.link_targets(website),
-            }
-        )
+        data = {
+            "texts": [text_data(self.org.pk, t) for t in texts],
+            "units": [{"id": u.pk, "name": u.name} for u in units],
+            "link_targets": content.link_targets(website),
+        }
+        if can_edit:
+            data["section_options"] = page_section_options(self.org, website)
+        return Response(data)
 
     @transaction.atomic
     def post(self, request, org_id: int):

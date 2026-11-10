@@ -319,7 +319,15 @@ def _uses(image: WebsiteImage, t, *, published: bool) -> list[str]:
         places.append("Bilderkarussell")
     if image.pk in timeline_images(timeline):
         places.append("Zeitleiste")
+    if image.pk in _section_images(t.published_sections if published else t.sections):
+        places.append("Abschnitt")
     return places
+
+
+def _section_images(sections) -> set[int]:
+    from .home import image_ids, normalize_page
+
+    return image_ids(normalize_page(sections)) if sections else set()
 
 
 def image_usage(image: WebsiteImage, texts=None) -> list[dict]:
@@ -363,6 +371,24 @@ def image_usage(image: WebsiteImage, texts=None) -> list[dict]:
                 "places": [gettext("Kopfbild")],
             }
         )
+    # Abschnitte der Startseite (G3), veröffentlicht oder im Entwurf
+    from .home import image_ids
+    from .models import normalize_home_sections
+
+    site = image.website
+    draft = site.draft if isinstance(site.draft, dict) else {}
+    home_ids = image_ids(normalize_home_sections(site.home_sections))
+    if "home_sections" in draft:
+        home_ids |= image_ids(normalize_home_sections(draft["home_sections"]))
+    if image.pk in home_ids:
+        result.append(
+            {
+                "text": None,
+                "header": True,
+                "label": gettext("Gestaltung"),
+                "places": [gettext("Startseite")],
+            }
+        )
     return result
 
 
@@ -381,6 +407,8 @@ def used_image_ids(website) -> set[int]:
         used.update(t.published_gallery or [])
         used.update(timeline_images(t.timeline))
         used.update(timeline_images(t.published_timeline))
+        used.update(_section_images(t.sections))
+        used.update(_section_images(t.published_sections))
         for body in (t.body, t.published_body):
             for key in _IMAGE_KEY.findall(body or ""):
                 if key in keys:
@@ -395,6 +423,14 @@ def used_image_ids(website) -> set[int]:
     used.update(
         WebsiteImage.objects.filter(website=website, header=True).values_list("pk", flat=True)
     )
+    # Abschnitte der Startseite (G3), auch im Entwurf
+    from .home import image_ids
+    from .models import normalize_home_sections
+
+    used.update(image_ids(normalize_home_sections(website.home_sections)))
+    draft = website.draft if isinstance(website.draft, dict) else {}
+    if "home_sections" in draft:
+        used.update(image_ids(normalize_home_sections(draft["home_sections"])))
     return used
 
 
@@ -524,6 +560,7 @@ def publish(text: WebsiteText, user) -> WebsiteRevision:
     text.published_show_captions = text.show_captions
     text.published_timeline = list(text.timeline or [])
     text.published_timeline_newest_first = text.timeline_newest_first
+    text.published_sections = list(text.sections or [])
     text.published_at = now
     text.updated_by = user
     text.save()
@@ -539,6 +576,7 @@ def publish(text: WebsiteText, user) -> WebsiteRevision:
         show_captions=text.show_captions,
         timeline=list(text.timeline or []),
         timeline_newest_first=text.timeline_newest_first,
+        sections=list(text.sections or []),
         published_at=now,
         published_by=user,
     )
@@ -555,6 +593,7 @@ def unpublish(text: WebsiteText, user) -> None:
     text.published_gallery = []
     text.published_timeline = []
     text.published_timeline_newest_first = False
+    text.published_sections = []
     text.published_at = None
     text.updated_by = user
     text.save()
@@ -589,6 +628,16 @@ def restore(text: WebsiteText, revision: WebsiteRevision, user) -> None:
     text.gallery_random = revision.gallery_random
     text.show_captions = revision.show_captions
     text.timeline_newest_first = revision.timeline_newest_first
+    # Abschnitte (G4): Verweise auf Gelöschtes fallen bei der Prüfung weg
+    if text.kind == WebsiteText.Kind.PAGE and revision.sections:
+        from .home import Invalid, validate_page
+
+        try:
+            text.sections = validate_page(revision.sections, text.website)
+        except Invalid:
+            text.sections = []
+    else:
+        text.sections = list(revision.sections or [])
     text.updated_by = user
     text.save()
 

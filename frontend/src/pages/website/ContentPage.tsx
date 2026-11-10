@@ -7,6 +7,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { contentApi } from '../../api/website.ts'
 import type {
   LinkTarget,
+  PageSectionOptions,
   WebsiteImage,
   WebsiteText,
   WebsiteTextSummary,
@@ -32,6 +33,7 @@ import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { PERM } from '../../api/orgs.ts'
 import { TextEditor } from '../../components/texteditor/TextEditor.tsx'
 import { ImageChoice, ImagePicker } from './images.tsx'
+import { HomeBuilder } from './HomeBuilder.tsx'
 import { TimelineEditor } from './TimelineEditor.tsx'
 import { normalizeEntry } from './timeline.ts'
 import { imageLabel } from './imageTools.ts'
@@ -115,6 +117,7 @@ export function ContentPage() {
                         id={tm.id}
                         units={data.units}
                         linkTargets={data.link_targets ?? []}
+                        sectionOptions={data.section_options}
                         onChanged={() => void reload()}
                         onDeleted={() => {
                           setOpen(null)
@@ -291,10 +294,13 @@ export function TextPanel({
   onChanged,
   onDeleted,
   chronicle = false,
+  sectionOptions,
 }: {
   id: number
   units: Unit[]
   linkTargets: LinkTarget[]
+  /** Auswahl für die Abschnitte der Textseiten (G4) */
+  sectionOptions?: PageSectionOptions
   onChanged: () => void
   onDeleted: () => void
   /** Menüpunkt „Chronik“: ohne Adresse, Menü und Löschen (gehören zur Webseite) */
@@ -311,6 +317,7 @@ export function TextPanel({
       units={units}
       linkTargets={linkTargets}
       chronicle={chronicle}
+      sectionOptions={sectionOptions}
       onSaved={(tm) => {
         setData(tm)
         onChanged()
@@ -325,6 +332,7 @@ function TextForm({
   units,
   linkTargets,
   chronicle,
+  sectionOptions,
   onSaved,
   onDeleted,
 }: {
@@ -332,6 +340,7 @@ function TextForm({
   units: Unit[]
   linkTargets: LinkTarget[]
   chronicle: boolean
+  sectionOptions?: PageSectionOptions
   onSaved: (tm: WebsiteText) => void
   onDeleted: () => void
 }) {
@@ -348,6 +357,7 @@ function TextForm({
     show_captions: text.show_captions ?? false,
     timeline: (text.timeline ?? []).map(normalizeEntry),
     timeline_newest_first: text.timeline_newest_first ?? false,
+    sections: text.sections ?? [],
   })
   const { values: v, set, errors } = form
   const [current, setCurrent] = useState(text)
@@ -520,6 +530,25 @@ function TextForm({
         onImagesChanged={reloadImages}
       />
       {text.kind === 'page' && captionsBox}
+      {text.kind === 'page' && !text.has_timeline && text.sections && sectionOptions && (
+        <section className="field" aria-labelledby={`abschnitte-${text.id}`}>
+          <h3 id={`abschnitte-${text.id}`}>{t('Abschnitte der Seite')}</h3>
+          <p className="muted small">
+            {t(
+              'Über und unter dem Text kannst du weitere Abschnitte einfügen, etwa ein Banner, Knöpfe oder Kacheln. Sie erscheinen mit „Veröffentlichen“.',
+            )}
+          </p>
+          <HomeBuilder
+            data={sectionOptions}
+            website={sectionOptions}
+            value={v.sections}
+            blocks={sectionOptions.blocks}
+            design=""
+            page
+            onChange={(next) => set('sections', next)}
+          />
+        </section>
+      )}
       {text.has_timeline && (
         <TimelineEditor
           textId={text.id}

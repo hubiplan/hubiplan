@@ -106,6 +106,8 @@ class WebsiteText(models.Model):
     timeline = models.JSONField("Zeitleiste", default=list, blank=True)
     # Webseite zeigt die neuesten Einträge oben (Ralf 02.11., wahlweise)
     timeline_newest_first = models.BooleanField("neueste Einträge oben", default=False)
+    # Textseite aus Abschnitten (G3/G4): fester Abschnitt „body“ und eigene Abschnitte
+    sections = models.JSONField("Abschnitte", default=list, blank=True)
     # Veröffentlicht
     published_title = models.CharField(max_length=MAX_TITLE, blank=True)
     published_body = models.TextField(blank=True)
@@ -118,6 +120,7 @@ class WebsiteText(models.Model):
     published_show_captions = models.BooleanField(default=False)
     published_timeline = models.JSONField(default=list, blank=True)
     published_timeline_newest_first = models.BooleanField(default=False)
+    published_sections = models.JSONField(default=list, blank=True)
     published_at = models.DateTimeField("veröffentlicht am", null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(
@@ -178,6 +181,7 @@ class WebsiteText(models.Model):
             or self.show_captions != self.published_show_captions
             or (self.timeline or []) != (self.published_timeline or [])
             or self.timeline_newest_first != self.published_timeline_newest_first
+            or (self.sections or []) != (self.published_sections or [])
         )
 
     def clean(self):
@@ -218,6 +222,7 @@ class WebsiteRevision(models.Model):
     show_captions = models.BooleanField(default=False)
     timeline = models.JSONField(default=list, blank=True)
     timeline_newest_first = models.BooleanField(default=False)
+    sections = models.JSONField(default=list, blank=True)
     published_at = models.DateTimeField(default=timezone.now)
     published_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"

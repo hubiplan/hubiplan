@@ -662,7 +662,18 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
             obj.menu_button = remap(obj.menu_button) or ""
         # Entwurf der Gestaltung verweist auf Bildnummern des alten Servers: nicht übernehmen
         obj.draft = {}
+        # Abschnitte der Startseite: Bilder kommen erst nach der Webseite, ihre Verweise
+        # fallen weg (der Abschnitt bleibt und lässt sich neu bestücken)
+        from website.home import remap as remap_sections
+
+        obj.home_sections = remap_sections(obj.home_sections, ids.get)
     elif name in ("website.websitetext", "website.websiterevision"):
+        # Abschnitte (G3/G4) verweisen mit Nummern auf Bilder, Alben, Termine und Rollen
+        from website.home import remap as remap_sections
+
+        for field in ("sections", "published_sections"):
+            if isinstance(getattr(obj, field, None), list):
+                setattr(obj, field, remap_sections(getattr(obj, field), ids.get))
         for old, new in renamed.items():
             for field in ("body", "published_body"):
                 if hasattr(obj, field):

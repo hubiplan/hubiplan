@@ -1095,6 +1095,7 @@ class SiteView:
                 or marker in t.published_body
                 or image.pk in (t.published_gallery or [])
                 or image.pk in content.timeline_images(t.published_timeline)
+                or image.pk in content._section_images(t.published_sections)
             ):
                 if t.kind != WebsiteText.Kind.UNIT or t.department_id in self.unit_slugs:
                     return image
@@ -1169,7 +1170,15 @@ class SiteView:
             if t.slug == TIMELINE_SLUG
             else False,
             "updated_at": t.published_at,
+            # Abschnitte (G4); ohne eigene Abschnitte nur der feste „body“
+            "sections": self.page_sections(t),
         }
+
+    def page_sections(self, t: WebsiteText) -> list[dict]:
+        from .home import PAGE_BUILTINS, normalize_page, resolve
+        from .public_views import event_entry
+
+        return resolve(self, normalize_page(t.published_sections), PAGE_BUILTINS, event_entry)
 
     @cached_property
     def chronicle_on(self) -> bool:
