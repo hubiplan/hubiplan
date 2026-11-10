@@ -7,7 +7,7 @@ import { DepartmentTodosTile } from '../components/DepartmentTodosTile.tsx'
 import { OpenTasksTile } from '../components/OpenTasksTile.tsx'
 import { PERM } from '../api/orgs.ts'
 import type { OrgSummary } from '../api/orgs.ts'
-import { DeptFigures, NoticesCard, OrgFigures, QuickActions } from '../components/home/RoleHome.tsx'
+import { NoticesCard, QuickActions } from '../components/home/RoleHome.tsx'
 import {
   actionCatalog,
   actionScope,
@@ -51,8 +51,8 @@ export function HomePage() {
     return (
       <section>
         <h1 className="sr-only">{activeDept.name}</h1>
-        {/* Gleiche Reihenfolge wie im Verein (S-04): Zu erledigen, Schnellaktionen, Kennzahl,
-            Termine, Hinweise */}
+        {/* Gleiche Reihenfolge wie im Verein (S-04): Zu erledigen, Schnellaktionen, Termine,
+            Hinweise */}
         <div className="tiles home-grid">
           {activeDept.permissions.includes('todos.view') && (
             <DepartmentTodosTile department={activeDept.id} />
@@ -63,7 +63,6 @@ export function HomePage() {
             scope={actionScope.dept(activeDept)}
             label={t('Schnellaktionen: {label}', { label: activeDept.label })}
           />
-          <DeptFigures dept={activeDept} />
           {activeDept.events_enabled && <UpcomingTile base={calendarBase.dept(activeDept.id)} />}
           <NoticesCard org={null} />
         </div>
@@ -125,7 +124,7 @@ export function HomePage() {
   }
 
   // Name und Dachverband stehen schon im Kopf; die Überschrift ist nur für Screenreader.
-  // Feste Reihenfolge für alle Rollen (S-04): Zu erledigen › Schnellaktionen › Kennzahlen ›
+  // Feste Reihenfolge für alle Rollen (S-04): Zu erledigen › Schnellaktionen ›
   // Nächste Termine › Hinweise. Was die Person nicht darf, fehlt einfach.
   const actions = roleActionCandidates(active)
   const clubLike = active.type === 'club' || active.type === 'federation'
@@ -151,7 +150,6 @@ export function HomePage() {
           catalog={actionCatalog(active)}
           scope={actionScope.org(active)}
         />
-        {clubLike && <OrgFigures org={active} />}
         {upcoming && <UpcomingTile base={calendarBase.org(active.id)} />}
         <NoticesCard org={active} />
         {!upcoming && !people && actionCatalog(active).length === 0 && (

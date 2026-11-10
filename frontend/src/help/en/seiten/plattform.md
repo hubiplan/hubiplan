@@ -29,6 +29,8 @@ Platform › Version shows which version is running and whether a newer release 
 
 If no virus scanning is set up on the server, or it is switched off for sharing, a notice appears there: circular attachments and public documents then go out unscanned. With virus scanning (ClamAV) set up, HUBIplan shares such files only after scanning them.
 
+If the virus scanner is briefly unreachable, HUBIplan still accepts uploaded documents, attachments and receipts, but locks them until the scanner has checked them (quarantine). Platform › Version shows how many files are waiting and whether malware was found in any of them; such files stay locked for good.
+
 HUBIplan only leaves an order. A service on the server first backs up the database, checks the release signature and that it is newer than the running version, and then installs it. HUBIplan is unavailable for a few minutes meanwhile; the page checks back on its own and then shows the result. If anything fails, the previous version keeps running. Every order is recorded in the change log, and the operator receives a security email.
 
 ## Addresses per unit

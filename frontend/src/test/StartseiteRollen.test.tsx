@@ -66,7 +66,7 @@ describe('Schnellaktionen je Rolle', () => {
     expect(roleActions(reader)).toEqual([])
   })
 
-  it('Startseite der Kasse: Schnellaktionen und Kennzahlen', async () => {
+  it('Startseite der Kasse: Schnellaktionen ohne Kennzahlen', async () => {
     const org = testOrg({
       permissions: KASSE,
       modules: ['finance', 'billing'],
@@ -75,29 +75,6 @@ describe('Schnellaktionen je Rolle', () => {
     fakeApi({
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
-      'GET /api/orgs/7/home-figures/': () => ({
-        status: 200,
-        body: {
-          figures: [
-            {
-              key: 'cash',
-              kind: 'money',
-              label: 'Barkasse heute',
-              value: '412.30',
-              detail: '',
-              link: '/finanzen/kassenbuch',
-            },
-            {
-              key: 'open_fees',
-              kind: 'money',
-              label: 'Offene Beiträge',
-              value: '1240.00',
-              detail: '',
-              link: '/finanzen/rechnungen?status=open',
-            },
-          ],
-        },
-      }),
     })
     renderAt('/')
     const actions = await screen.findByRole('heading', { name: 'Schnellaktionen' })
@@ -105,9 +82,7 @@ describe('Schnellaktionen je Rolle', () => {
     const first = card.getByRole('link', { name: 'Buchung erfassen' })
     expect(first).toHaveClass('button-primary')
     expect(first).toHaveAttribute('href', '/finanzen/kassenbuch?buchung=neu-ausgabe')
-    const figures = await screen.findByRole('group', { name: 'Kennzahlen' })
-    expect(within(figures).getByText('Barkasse heute')).toBeInTheDocument()
-    expect(within(figures).getByText(/412,30/)).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Kennzahlen' })).not.toBeInTheDocument()
   })
 })
 

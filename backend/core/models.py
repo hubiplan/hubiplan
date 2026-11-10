@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.utils.translation import gettext_lazy
 
 
 class DataKey(models.Model):
@@ -79,3 +80,34 @@ class DataKeyRotation(models.Model):
 
     def __str__(self):
         return f"Schlüsselwechsel {self.pk} ({self.organization_id})"
+
+
+class QuarantinedFile(models.Model):
+    """Gespeicherte Datei, die noch nicht auf Viren geprüft ist oder einen Fund hat.
+
+    Solange es die Zeile gibt, liefert HUBIplan die Datei nicht aus und gibt sie nicht weiter
+    (``core.virenscan.ensure_released``/``release_ok``). Die Nachprüfung im Dienst „beat“
+    löscht die Zeile nach einer sauberen Prüfung. Ohne RLS wie DataKey: enthält nur den
+    Speichernamen, die Nachprüfung läuft über alle Vereine; ``org_id`` nur zur Auskunft.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", gettext_lazy("wartet auf Prüfung")
+        INFECTED = "infected", gettext_lazy("Schadsoftware gefunden")
+
+    name = models.CharField(max_length=500, unique=True)
+    org_id = models.BigIntegerField(null=True, blank=True)
+    label = models.CharField(max_length=200, blank=True, default="")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    signature = models.CharField(max_length=200, blank=True, default="")
+    attempts = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    checked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Datei in Quarantäne"
+        verbose_name_plural = "Dateien in Quarantäne"
+        indexes = [models.Index(fields=["status", "checked_at"], name="core_quarantaene_status")]
+
+    def __str__(self) -> str:
+        return self.label or self.name

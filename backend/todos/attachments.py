@@ -156,6 +156,9 @@ class AttachmentScope(TodoScopeMixin):
 
 
 class AttachmentListView(AttachmentScope, APIView):
+    # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
+    virus_quarantine = True
+
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get(self, request, pk, **kwargs):
@@ -235,6 +238,9 @@ class AttachmentDetailView(AttachmentScope, APIView):
 
             response = file_response(request, version)
         else:
+            from core.virenscan import ensure_released
+
+            ensure_released(attachment.file)
             response = FileResponse(
                 attachment.file.open("rb"),
                 filename=attachment.name,

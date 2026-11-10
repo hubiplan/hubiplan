@@ -7617,6 +7617,16 @@
   "Neuer Ort": "New place",
   "Ort speichern": "Save place",
   "Orte von {name}": "Places of {name}",
+  "Wird auf Viren geprüft": "Being scanned for viruses",
+  "Gesperrt: Schadsoftware gefunden": "Locked: malware found",
+  "{n} eingegangene Datei wartet auf die Virenprüfung und ist bis dahin gesperrt.": {
+    "one": "{n} received file is waiting for the virus scan and is locked until then.",
+    "other": "{n} received files are waiting for the virus scan and are locked until then."
+  },
+  "In {n} eingegangenen Datei wurde Schadsoftware gefunden. Sie bleibt gesperrt.": {
+    "one": "Malware was found in {n} received file. It stays locked.",
+    "other": "Malware was found in {n} received files. They stay locked."
+  },
   "Nicht übernommen (Rundschreiben haben nur PDF-Anhänge bis 10 MB): {names}": "Not copied (circulars only take PDF attachments up to 10 MB): {names}",
   "Rundschreiben: {subject}": "Circular: {subject}",
   "Weiteres Rundschreiben dazu schreiben": "Write another circular about it",

@@ -26,8 +26,6 @@ export interface CatalogAction extends QuickAction {
 export const MAX_ACTIONS = 6
 /** So viele zeigt der Vorschlag aus den Rollen */
 export const SUGGESTED_ACTIONS = 4
-/** Höchstens so viele Kennzahlen (S-04) */
-export const MAX_FIGURES = 3
 
 /** Schnellaktionen der Rollen in der Einheit (höchstens vier), ohne die ausgeblendeten. */
 export function roleActions(org: OrgSummary, hidden: string[] = []): QuickAction[] {

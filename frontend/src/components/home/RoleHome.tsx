@@ -1,24 +1,20 @@
 // Startseite als Arbeitsplatz je Rolle (Konzept S-04): feste Reihenfolge Zu erledigen ›
-// Schnellaktionen › Kennzahlen › Nächste Termine › Hinweise. Die Rolle ergibt sich aus den
-// Rechten; ohne eigene Auswahl teilen sich mehrere Rollen vier Schnellaktionen, Kasse vor Vorstand.
+// Schnellaktionen › Nächste Termine › Hinweise. Die Rolle ergibt sich aus den Rechten; ohne
+// eigene Auswahl teilen sich mehrere Rollen vier Schnellaktionen, Kasse vor Vorstand.
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { orgApi, PERM } from '../../api/orgs.ts'
-import type { HomeFigure, OrgSummary } from '../../api/orgs.ts'
-import { DEPT_PERM } from '../../api/portal.ts'
-import type { DeptSummary } from '../../api/portal.ts'
-import { euro } from '../../api/finance.ts'
+import { PERM } from '../../api/orgs.ts'
+import type { OrgSummary } from '../../api/orgs.ts'
 import { imprintApi } from '../../api/imprint.ts'
 import { letterheadApi, optionKey } from '../../api/letterhead.ts'
 import { fieldApi } from '../../api/fields.ts'
 import { BirthdayList, JubileeList } from '../../pages/members/JubileesPage.tsx'
 import type { CatalogAction, QuickAction } from './roleActions.ts'
-import { MAX_ACTIONS, MAX_FIGURES, shownActions } from './roleActions.ts'
+import { MAX_ACTIONS, shownActions } from './roleActions.ts'
 import { homeActionsApi } from '../../api/homeActions.ts'
 import { Alert, Checkbox } from '../ui.tsx'
 import { todayIso } from '../../api/members.ts'
-import { formatDay } from '../calendar/time.ts'
 import { errorMessage, useLoad } from '../forms.ts'
 import { t } from '../../i18n/index.ts'
 
@@ -185,46 +181,6 @@ export function QuickActions({
       {error && <Alert kind="error">{error}</Alert>}
     </div>
   )
-}
-
-function figureValue(f: HomeFigure): string {
-  if (f.kind === 'money') return euro(f.value)
-  if (f.kind === 'date') return formatDay(String(f.value))
-  return String(f.value)
-}
-
-export function FigureTiles({ figures }: { figures: HomeFigure[] }) {
-  const shown = figures.slice(0, MAX_FIGURES)
-  if (shown.length === 0) return null
-  return (
-    <div className="tile-wide home-figures" role="group" aria-label={t('Kennzahlen')}>
-      <div className="tiles tiles-figures">
-        {shown.map((f) => (
-          <Link key={f.key} to={f.link} className="card tile home-figure">
-            <span className="home-figure-label">{f.label}</span>
-            <span className="amount-big">{figureValue(f)}</span>
-            {f.detail && <span className="muted small">{f.detail}</span>}
-          </Link>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/** Kennzahlen der Einheit (Verein, Dachverband) */
-export function OrgFigures({ org }: { org: OrgSummary }) {
-  const { data } = useLoad(() => orgApi.homeFigures(org.id), [org.id])
-  return <FigureTiles figures={data?.figures ?? []} />
-}
-
-/** Kennzahl im Arbeitsbereich einer Untereinheit */
-export function DeptFigures({ dept }: { dept: DeptSummary }) {
-  const allowed = dept.permissions.includes(DEPT_PERM.membersView)
-  const { data } = useLoad(
-    () => (allowed ? orgApi.deptHomeFigures(dept.id) : Promise.resolve({ figures: [] })),
-    [dept.id, allowed],
-  )
-  return <FigureTiles figures={data?.figures ?? []} />
 }
 
 interface Notice {

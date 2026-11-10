@@ -163,9 +163,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-    # Audit 29.10. G08: naheliegende Wörter und geleakte Passwörter (ohne externen Dienst)
+    # Audit 29.10. G08: naheliegende Wörter (ohne externen Dienst). Häufige Passwörter aus
+    # Datenlecks prüft CommonPasswordValidator oben (Lizenzaudit 10.11., L05).
     {"NAME": "accounts.validators.ContextWordValidator"},
-    {"NAME": "accounts.validators.LeakedPasswordValidator"},
 ]
 
 # --- allauth: Anmeldung per E-Mail/Passwort, optionale 2FA per TOTP ---
@@ -288,6 +288,8 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 3600.0,
     },
     "materials-purge": {"task": "materials.tasks.purge_deleted", "schedule": 86400.0},
+    # Eingehende Dateien in Quarantäne nachprüfen (Gesamtaudit 10.11., Fachfrage 2)
+    "virenscan-quarantaene": {"task": "core.tasks.recheck_quarantine", "schedule": 600.0},
     "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": 86400.0},
     "helferdienste-erinnerungen": {"task": "helpers.tasks.send_reminders", "schedule": 3600.0},
     "todos-reminders": {"task": "todos.tasks.send_due_reminders", "schedule": 300.0},

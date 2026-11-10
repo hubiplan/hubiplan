@@ -776,6 +776,9 @@ def _safe_name(name: str) -> str:
 
 
 class _AttachmentList(APIView):
+    # Eingehende Dateien: bei ausgefallenem Scanner in Quarantäne statt abgelehnt
+    virus_quarantine = True
+
     parser_classes = [MultiPartParser, FormParser]
 
     @transaction.atomic
@@ -814,6 +817,9 @@ class _Attachment(APIView):
     def get(self, request, pk: int, att_id: int, **kwargs):
         event = self.visible_event(pk)
         att = get_object_or_404(EventAttachment, event=event, pk=att_id)
+        from core.virenscan import ensure_released
+
+        ensure_released(att.file)
         response = FileResponse(
             att.file.open("rb"),
             content_type=att.content_type,
@@ -1042,8 +1048,15 @@ class _ExternalMixin:
     def calendar(self, pk: int) -> ExternalCalendar:
         return get_object_or_404(ExternalCalendar, organization=self.viewer.org, pk=pk)
 
-    def after_change(self, cal: ExternalCalendar) -> None:
-        """Bestehende Kopien an Kategorie, Sichtbarkeit und Weitergabe anpassen."""
+    def after_change(self, cal: ExternalCalendar, *, new_source: bool = False) -> None:
+        """Bestehende Kopien an Kategorie, Sichtbarkeit und Weitergabe anpassen.
+
+        Neue Quelle (anderer Link, anderes Token oder andere Art): Die Kopien der alten
+        Quelle gehen zuerst weg. Sonst stünden sie mit der neuen Sichtbarkeit da, bis der
+        neue Abruf klappt, und private Termine könnten öffentlich werden
+        (Gesamtaudit 10.11. S06)."""
+        if new_source:
+            cal.events.all().delete()
         cal.events.update(
             category=cal.category, visibility=cal.visibility, share_down=cal.share_down
         )
@@ -1082,7 +1095,7 @@ class _ExternalCalendarDetail(_ExternalMixin, APIView):
         with transaction.atomic():
             cal = self.calendar(pk)
             before = snapshot(cal)
-            old_token = cal.token
+            old_source = external.source_of(cal)
             data = ExternalCalendarSerializer(
                 cal, data=request.data, partial=True, context={"org": self.viewer.org}
             )
@@ -1090,12 +1103,13 @@ class _ExternalCalendarDetail(_ExternalMixin, APIView):
             cal = data.apply(cal)
             cal.save()
             changes = diff(before, snapshot(cal))
-            if cal.token != old_token:
+            new_source = external.source_of(cal) != old_source
+            if new_source:
                 changes["Zugang"] = ["alt", "neu"]
             if changes:
                 self.audit("update", cal, changes)
-            self.after_change(cal)
-        if cal.is_active and (cal.token != old_token or "is_active" in data.validated_data):
+            self.after_change(cal, new_source=new_source)
+        if cal.is_active and (new_source or "is_active" in data.validated_data):
             external.sync(cal)
             cal.refresh_from_db()
         return Response(external_data(cal))

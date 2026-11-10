@@ -36,10 +36,14 @@ def test_search_decrypts_visible_emails_once_for_all_words():
     with as_app_role(), tenant_context(org.pk), patch.object(encfields, "decrypt_text", decrypt):
         with CaptureQueriesContext(connection) as queries:
             qs = filter_members(
-                member_queryset(org), {"suche": "ERIKA demo.invalid demo.invalid"}, org
+                member_queryset(org), {"suche": "ERIKA @demo.invalid @DEMO.invalid"}, org
             )
             assert list(qs.values_list("pk", flat=True)) == [member.pk]
         assert len(calls) == 2
+        # Ohne @ keine Adresse entschlüsseln (Gesamtaudit 10.11. P01, Fachfrage 8)
+        calls.clear()
+        assert not filter_members(member_queryset(org), {"suche": "demo.invalid"}, org).exists()
+        assert calls == []
         contact_queries = [q for q in queries if 'FROM "members_contactdetails"' in q["sql"]]
         assert len(contact_queries) == 1
         assert not filter_members(member_queryset(org), {"suche": "fremd"}, org).exists()

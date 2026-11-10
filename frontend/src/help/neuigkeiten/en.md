@@ -5,6 +5,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 November 2026:
 
 - Home page: choose your **Quick actions** freely. Under **Customise** you find every action your rights allow, grouped by area, such as **Create task**, **Create helper shift**, **Record income**, **Add to chronicle** or **File a document**. Pick up to six and set their order with ↑ and ↓, separately for each unit. Without a selection of your own, your role's suggestion stays.
+- Home page: the row of key figures (such as members today, open data changes, outstanding fees, cash box) is gone. The numbers are still on their own pages.
 - New: **Directions** on events with notes and the links **Route in OpenStreetMap** and **Route in Google Maps** in the event, emails and reply page. An exact point can be taken from a map link; saved places bring their directions and point.
 - New: replying via a link in the email. Invitations, reminders and circulars about an event contain a personal link to a page without login with the event, its attachments and the choice accept, decline or “Maybe”. New on the event: **Allow “Maybe” as an answer** and an own question for the comment. The invitation email carries the event's attachments.
 - New: circulars about an event. In the event under **For this event**, **Write a circular about it** creates a draft to those invited, with time, place, reply deadline and the event's PDF attachments. Optionally it goes only to those who have not replied yet, accepted or declined.

@@ -60,14 +60,87 @@ teil_schluessel() {
     esac | sha256sum | cut -c1-16
 }
 teil_gruen() { grep -q "^$1 $2 " "$PARTS" 2> /dev/null; }
+teile_schon_gruen() {
+    teil_gruen backend "$(teil_schluessel backend "$1")" && teil_gruen frontend "$(teil_schluessel frontend "$1")"
+}
+schon_gruen_vermerken() {
+    mkdir -p "$(dirname "$STATE")"
+    echo "$(git rev-parse "$1^{tree}") $(git rev-parse --short "$1") $(date -Iseconds) teile-schon-gruen" >> "$STATE"
+    echo "Alles grün: $(git rev-parse --short "$1") hat Backend und Frontend mit einem Inhalt, der schon grün war, und ist als getestet vermerkt."
+    exit 0
+}
+LAUFEND="$(dirname "$STATE")/laufend"
+
+# --main (docs/testserver.md, „Merge und main“): den neuesten main testen, gebündelt. Es läuft
+# immer nur ein main-Lauf; wer danach kommt, holt main neu. Ist der neueste main dann schon
+# getestet (er enthält den eigenen Merge), ist nichts mehr zu tun.
+if [ "${1:-}" = "--main" ] && [ -z "${TESTPLATZ:-}" ]; then
+    [ "$#" -eq 1 ] || { echo "Abbruch: --main nimmt keine weiteren Argumente." >&2; exit 2; }
+    MAIN_REF="${TEST_MAIN_REF:-origin/main}"
+    main_holen() {
+        local r url
+        # Holt ein Remote aus einem lokalen Klon (WSL-Klon vom Windows-Klon), erst dort von GitHub holen
+        for r in $(git remote); do
+            url=$(git remote get-url "$r")
+            if [ -d "$url" ]; then git -C "$url" fetch --quiet origin 2> /dev/null || true; fi
+        done
+        git fetch --all --quiet || echo "Warnung: git fetch ist fehlgeschlagen." >&2
+        git rev-parse --verify --quiet "$MAIN_REF^{commit}" || { echo "Abbruch: $MAIN_REF fehlt." >&2; exit 2; }
+    }
+    getestet() { grep -q "^$(git rev-parse "$1^{tree}") " "$STATE" 2> /dev/null; }
+    m=$(main_holen) || exit 2
+    if ! getestet "$m"; then
+        mkdir -p "$LAUFEND"
+        exec {main_fd}> "$LAUFEND/main.lock"
+        if ! flock -n "$main_fd"; then
+            echo "Ein anderer Lauf testet gerade main, warte auf ihn und hole main danach neu …"
+            flock "$main_fd"
+            m=$(main_holen) || exit 2
+        fi
+    fi
+    if getestet "$m"; then
+        echo "Alles grün: main $(git rev-parse --short "$m") ist schon getestet."
+        exit 0
+    fi
+    echo "Teste den neuesten main: $(git rev-parse --short "$m")"
+    # Die Sperre main.lock bleibt über exec bis zum Ende des Laufs gehalten
+    set -- "$m"
+fi
+
 if [ "$#" -le 1 ] && [ "${TEST_ALLES:-0}" != 1 ] && [ "${BACKUP_TEST:-0}" != 1 ]; then
     c=$(git rev-parse --verify --quiet "${1:-HEAD}^{commit}" 2> /dev/null || true)
-    if [ -n "$c" ] && teil_gruen backend "$(teil_schluessel backend "$c")" \
-        && teil_gruen frontend "$(teil_schluessel frontend "$c")"; then
-        mkdir -p "$(dirname "$STATE")"
-        echo "$(git rev-parse "$c^{tree}") $(git rev-parse --short "$c") $(date -Iseconds) teile-schon-gruen" >> "$STATE"
-        echo "Alles grün: $(git rev-parse --short "$c") hat Backend und Frontend mit einem Inhalt, der schon grün war, und ist als getestet vermerkt."
-        exit 0
+    if [ -n "$c" ] && teile_schon_gruen "$c"; then
+        schon_gruen_vermerken "$c"
+    fi
+    # Kein Doppellauf: Prüft gerade ein anderer Lauf dasselbe Backend, wartet dieser Lauf auf
+    # dessen Ergebnis, ohne einen Testplatz zu belegen. Die Sperre laufend/backend-<Schlüssel>.lock
+    # bleibt über exec bis zum Ende des Laufs gehalten; ein abgebrochener Lauf gibt sie frei.
+    # Das Frontend (~2 min) wartet nur, wenn das Backend nichts zu tun hat.
+    if [ -n "$c" ] && [ -z "${TESTPLATZ:-}" ]; then
+        mkdir -p "$LAUFEND"
+        bk=$(teil_schluessel backend "$c")
+        fk=$(teil_schluessel frontend "$c")
+        if ! teil_gruen backend "$bk"; then
+            exec {teil_b_fd}> "$LAUFEND/backend-$bk.lock"
+            if ! flock -n "$teil_b_fd"; then
+                echo "Ein anderer Lauf prüft gerade dasselbe Backend, warte auf sein Ergebnis …"
+                flock "$teil_b_fd"
+                if teile_schon_gruen "$c"; then schon_gruen_vermerken "$c"; fi
+                teil_gruen backend "$bk" || echo "Der andere Lauf war nicht grün, prüfe selbst."
+            fi
+        fi
+        if ! teil_gruen frontend "$fk"; then
+            exec {teil_f_fd}> "$LAUFEND/frontend-$fk.lock"
+            if ! flock -n "$teil_f_fd"; then
+                if teil_gruen backend "$bk"; then
+                    echo "Ein anderer Lauf prüft gerade dasselbe Frontend, warte auf sein Ergebnis …"
+                    flock "$teil_f_fd"
+                    if teile_schon_gruen "$c"; then schon_gruen_vermerken "$c"; fi
+                else
+                    exec {teil_f_fd}>&-
+                fi
+            fi
+        fi
     fi
 fi
 
@@ -77,6 +150,7 @@ fi
 
 REF="${1:-HEAD}"
 shift || true
+EIGENE_ARGS=$#
 
 # Ergebnis immer eindeutig melden, auch wenn ein Aufrufer den Exit-Code nicht sieht
 RESULT_OK=0
@@ -153,10 +227,10 @@ echo "Teste $SHA ($(git log -1 --format=%s "$COMMIT")) lokal mit $WORKERS Kernen
 git archive --format=tar "$REF" backend frontend deploy/backup | tar -x -C "$WORK"
 start=$(date +%s)
 
-# --- Frontend, Teil 1 (im Hintergrund, während das Backend testet) ---
+# --- Frontend, Teil 1 (im Hintergrund, während das Backend sich vorbereitet) ---
 # Installieren, Typprüfung, Lint und Formatierung hängen nicht an Zeitlimits. Die
-# Vitest-Tests laufen erst danach allein: mit dem Backend zusammen auf denselben
-# Kernen werden ihre Wartezeiten (findBy…) zu knapp.
+# Vitest-Tests laufen danach allein, noch vor pytest: mit dem Backend zusammen auf
+# denselben Kernen werden ihre Wartezeiten (findBy…) zu knapp.
 fe_run() {
     docker run --rm --name "$ID-fe" "$CPUS" -v "$WORK/frontend:/app" -v "$WORK/backend:/backend:ro" \
         -v hubiplan-npm-cache:/root/.npm -w /app node:24-alpine sh -c "$1"
@@ -164,13 +238,44 @@ fe_run() {
 fe_checks() {
     fe_run "npm ci --no-audit --no-fund --loglevel=error > /dev/null \
         && npm run -s typecheck && npm run -s lint > /dev/null && npm run -s format:check > /dev/null \
-        && npm run -s i18n:check"
+        && npm run -s i18n:check" || return $?
     echo "Frontend: Typprüfung, Lint, Format ok"
 }
 if [ "$RUN_FRONTEND" = 1 ] && [ "${TEST_PARALLEL:-1}" = 1 ]; then
     fe_checks > "$WORK/frontend.log" 2>&1 &
     FE_PID=$!
 fi
+
+# Teil sofort als grün vermerken (nur volle Läufe ohne eigene pytest-Argumente)
+teil_vermerken() {
+    [ "$EIGENE_ARGS" -eq 0 ] || return 0
+    mkdir -p "$(dirname "$PARTS")"
+    echo "$1 $2 $SHA $(date -Iseconds)" >> "$PARTS"
+}
+# --- Frontend, Teil 2: auf Teil 1 warten, dann Vitest allein ---
+FE_FEHLER=0
+frontend_teil2() {
+    [ "$RUN_FRONTEND" = 1 ] || return 0
+    local rc=0 fstart
+    fstart=$(date +%s)
+    if [ -n "$FE_PID" ]; then
+        wait "$FE_PID" || rc=$?
+        FE_PID=""
+        cat "$WORK/frontend.log"
+    else
+        fe_checks || rc=$?
+    fi
+    if [ "$rc" = 0 ]; then
+        fe_run "npx vitest run --maxWorkers=$WORKERS --reporter=dot" || rc=$?
+    fi
+    if [ "$rc" != 0 ]; then
+        echo "Frontend: FEHLGESCHLAGEN" >&2
+        FE_FEHLER=$rc
+        return 0
+    fi
+    echo "Frontend: ok ($(($(date +%s) - fstart)) s)"
+    teil_vermerken frontend "$F_KEY"
+}
 
 # --- Backend ---
 MIG_SKIP=0
@@ -319,6 +424,53 @@ if [ "$RUN_BACKEND" = 1 ]; then
         echo "Backend: Migrationstests mit diesem Stand schon grün, werden ausgelassen"
     fi
 
+    # Frontend zuerst fertig (Vitest allein, ~1,5 min), damit ein roter Frontend-Test nach
+    # Minuten statt nach dem ganzen Backend auffällt.
+    frontend_teil2
+
+    # Vorlauf: Testdateien, die der Stand gegenüber main ändert, laufen zuerst (meist 1–2 min).
+    # Scheitert einer, endet der Lauf gleich und gibt den Platz frei.
+    VORLAUF=()
+    IGNORE=()
+    # TEST_VORLAUF_BASIS: andere Basis als main (z. B. zum Ausprobieren)
+    basis=""
+    for r in ${TEST_VORLAUF_BASIS:-} origin/main main; do
+        basis=$(git merge-base "$COMMIT" "$r" 2> /dev/null) && break
+        basis=""
+    done
+    if [ "$EIGENE_ARGS" -eq 0 ] && [ -n "$basis" ] && [ "$basis" != "$COMMIT" ]; then
+        mapfile -t VORLAUF < <(git diff --name-only --diff-filter=AMR "$basis" "$COMMIT" -- 'backend/*test_*.py' \
+            | sed 's#^backend/##')
+        [ "${#VORLAUF[@]}" -le 30 ] || VORLAUF=()
+    fi
+    if [ "${#VORLAUF[@]}" -gt 0 ]; then
+        vstart=$(date +%s)
+        echo "Backend: Vorlauf mit ${#VORLAUF[@]} geänderten Testdatei(en) …"
+        rc=0
+        docker run --rm --network "$ID" "$CPUS" \
+            -e DJANGO_DEBUG=true -e DJANGO_SECRET_KEY=nur-test \
+            -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
+            -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
+            --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
+            -m "not migration" -q "${VORLAUF[@]}" || rc=$?
+        # 5: alle Tests der Dateien sind Migrationstests, sie laufen im Hauptlauf
+        if [ "$rc" != 0 ] && [ "$rc" != 5 ]; then
+            echo "Backend: Vorlauf rot, Abbruch ohne Hauptlauf" >&2
+            exit "$rc"
+        fi
+        echo "Backend: Vorlauf ok ($(($(date +%s) - vstart)) s)"
+        # Frische Kopien für den Hauptlauf
+        for i in $(seq 0 $((WORKERS - 1))); do
+            docker exec "$ID-db" psql -q -U test -d test -c "DROP DATABASE IF EXISTS ${TEST_DB}_gw$i" \
+                -c "CREATE DATABASE ${TEST_DB}_gw$i TEMPLATE $TEST_DB" > /dev/null
+        done
+        # Ohne Migrationstests sind die Dateien damit vollständig geprüft
+        if [ "$MIG_SKIP" = 1 ] && [ "$rc" = 0 ]; then
+            for f in "${VORLAUF[@]}"; do IGNORE+=("--ignore=$f"); done
+        fi
+    fi
+    [ "$FE_FEHLER" = 0 ] || exit "$FE_FEHLER"
+
     # --reuse-db: die Kopien nehmen (migrate prüft nur noch, dass nichts fehlt).
     # --maxschedchunk=2: kleine Pakete, damit die langsamen Tests (zuerst gesammelt, siehe
     # tests/conftest.py) auf verschiedene Worker verteilt werden.
@@ -327,26 +479,14 @@ if [ "$RUN_BACKEND" = 1 ]; then
         -e DATABASE_URL="postgres://test:test@$ID-db:5432/test" \
         -v "$WORK/deploy/backup/dateifelder.txt:/deploy/backup/dateifelder.txt:ro" \
         --entrypoint pytest "$BACKEND_IMG" -n "$WORKERS" --reuse-db --maxschedchunk=2 \
-        "${MIG_MARK[@]}" $PYTEST_ARGS
+        "${MIG_MARK[@]}" "${IGNORE[@]}" $PYTEST_ARGS
     echo "Backend: Tests ok ($(($(date +%s) - start)) s)"
-fi
-
-# --- Frontend, Teil 2 ---
-fstart=$(date +%s)
-if [ "$RUN_FRONTEND" = 0 ]; then
-    :
-elif [ -n "$FE_PID" ]; then
-    rc=0
-    wait "$FE_PID" || rc=$?
-    FE_PID=""
-    cat "$WORK/frontend.log"
-    [ "$rc" -eq 0 ] || exit "$rc"
+    # Gleich vermerken: scheitert danach etwas anderes, läuft das Backend nicht noch einmal
+    teil_vermerken backend "$B_KEY"
+    [ "$MIG_SKIP" = 1 ] || teil_vermerken migration "$MIG_KEY"
 else
-    fe_checks
-fi
-if [ "$RUN_FRONTEND" = 1 ]; then
-    fe_run "npx vitest run --maxWorkers=$WORKERS --reporter=dot"
-    echo "Frontend: ok ($(($(date +%s) - fstart)) s nach dem Backend)"
+    frontend_teil2
+    [ "$FE_FEHLER" = 0 ] || exit "$FE_FEHLER"
 fi
 
 # --- Backup und Rücksicherung (optional) ---
@@ -543,11 +683,6 @@ if [ "$#" -gt 0 ]; then
 fi
 mkdir -p "$(dirname "$STATE")"
 jetzt=$(date -Iseconds)
-if [ "$RUN_BACKEND" = 1 ]; then
-    echo "backend $B_KEY $SHA $jetzt" >> "$PARTS"
-    if [ "$MIG_SKIP" = 0 ]; then echo "migration $MIG_KEY $SHA $jetzt" >> "$PARTS"; fi
-fi
-if [ "$RUN_FRONTEND" = 1 ]; then echo "frontend $F_KEY $SHA $jetzt" >> "$PARTS"; fi
 vermerk=""
 if [ "$RUN_BACKEND" = 0 ] || [ "$RUN_FRONTEND" = 0 ] || [ "$MIG_SKIP" = 1 ]; then vermerk=" teilweise"; fi
 echo "$TREE $SHA $jetzt$vermerk" >> "$STATE"

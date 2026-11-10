@@ -196,6 +196,55 @@ class TestVereinsplaner:
         assert external.sync(source) == 0
         assert not Event.objects.filter(external_source=source).exists()
 
+    def test_neue_quelle_veroeffentlicht_keine_alten_kopien(self, cal, board_a, api, remote):
+        """Gesamtaudit 10.11. S06: Quelle und Sichtbarkeit zugleich wechseln, neuer Abruf
+        scheitert. Die privaten Kopien der alten Quelle dürfen nicht öffentlich werden."""
+        remote.vp_events = [vp_event("u1", "Vorstandssitzung intern")]
+        data = add(api(board_a), cal["a"], visibility="board")
+        assert Event.objects.filter(title="Vorstandssitzung intern").exists()
+        remote.vp_status = 401
+        resp = api(board_a).patch(
+            f"{org_base(cal['a'])}events/external/{data['id']}/",
+            {"token": "tok-neu-erfunden", "visibility": "public"},
+            content_type=JSON,
+        )
+        assert resp.status_code == 200 and resp.json()["last_error"]
+        assert not Event.objects.filter(external_source_id=data["id"]).exists()
+
+    def test_gleiche_quelle_behaelt_kopien(self, cal, board_a, api, remote):
+        remote.vp_events = [vp_event("u1", "Kreisfest")]
+        data = add(api(board_a), cal["a"], visibility="board")
+        calls = len(remote.calls)
+        resp = api(board_a).patch(
+            f"{org_base(cal['a'])}events/external/{data['id']}/",
+            {"token": "tok-erfunden", "visibility": "members"},
+            content_type=JSON,
+        )
+        assert resp.status_code == 200
+        assert Event.objects.get(title="Kreisfest").visibility == "members"
+        assert len(remote.calls) == calls  # gleicher Zugang: kein neuer Abruf nötig
+
+    def test_quellwechsel_waehrend_abruf_uebernimmt_nichts(
+        self, cal, board_a, api, remote, monkeypatch
+    ):
+        from accounts.mfa import encrypt
+
+        data = add(api(board_a), cal["a"], visibility="board")
+        source = ExternalCalendar.objects.get(pk=data["id"])
+        original = external.fetch
+
+        def switch(current):
+            items = original(current)
+            ExternalCalendar.objects.filter(pk=current.pk).update(
+                token=encrypt("tok-anderes"), visibility="public"
+            )
+            return items
+
+        remote.vp_events = [vp_event("u1", "Alter Feed privat")]
+        monkeypatch.setattr(external, "fetch", switch)
+        assert external.sync(source) == 0
+        assert not Event.objects.filter(title="Alter Feed privat").exists()
+
     def test_ausblenden_und_wieder_zeigen(self, cal, board_a, api, remote):
         remote.vp_events = [vp_event("u1", "Kreisfest"), vp_event("u2", "Andere")]
         data = add(api(board_a), cal["a"])

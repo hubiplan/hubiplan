@@ -1,5 +1,5 @@
-"""Startseite je Rolle (S-04) und Einrichtung bündeln (S-02): Kennzahlen, Stand der
-Einrichtung und neue Quellen für „Zu erledigen“, jeweils nur mit passendem Recht."""
+"""Startseite je Rolle (S-04) und Einrichtung bündeln (S-02): Stand der Einrichtung und neue
+Quellen für „Zu erledigen“, jeweils nur mit passendem Recht."""
 
 import datetime
 from decimal import Decimal
@@ -10,11 +10,9 @@ from django.utils import timezone
 
 from core.tenancy import tenant_context
 from finance.models import Account, BankStatement, Booking
-from members.models import DepartmentRoleHolder, MemberType
-from organizations.models import Department, DepartmentRole
-from portal.models import ChangeRequest, PortalAccess
+from members.models import MemberType
 
-from .factories import give_role, make_member, make_user
+from .factories import give_role, make_user
 
 pytestmark = pytest.mark.django_db
 
@@ -24,12 +22,6 @@ def _ohne_zwischenspeicher():
     cache.clear()
     yield
     cache.clear()
-
-
-def figures(client, org):
-    resp = client.get(f"/api/orgs/{org.pk}/home-figures/")
-    assert resp.status_code == 200, resp.content
-    return {f["key"]: f for f in resp.json()["figures"]}
 
 
 def status(client, org):
@@ -77,73 +69,6 @@ def _kasse(org):
             closing_balance=Decimal("8904.17"),
         )
     return bank, cash
-
-
-def test_kennzahlen_der_kasse_nur_mit_finanzrecht(api, orgs, board_a):
-    org = orgs["a"]
-    org.enabled_modules = sorted({*org.enabled_modules, "finance", "billing"})
-    org.save()
-    _kasse(org)
-    data = figures(api(board_a), org)
-    assert data["cash"]["value"] == "112.30"
-    assert data["cash"]["kind"] == "money"
-    assert data["bank"]["value"] == "8904.17"
-    assert "Girokonto" in data["bank"]["detail"]
-    assert data["open_fees"]["value"] == "0.00"
-
-    # Reihenfolge: Vorstand mit Vollrechten sieht seine Zahlen zuerst, die Kasse ihre
-    def keys(user):
-        rows = api(user).get(f"/api/orgs/{org.pk}/home-figures/").json()["figures"]
-        return [f["key"] for f in rows]
-
-    assert keys(board_a).index("members_active") < keys(board_a).index("cash")
-    kasse = make_user("kassierer@example.org")
-    give_role(
-        kasse,
-        org,
-        permissions=["members.view", "finance.view", "finance.edit", "billing.view"],
-        name="Kassierer",
-    )
-    assert keys(kasse).index("cash") < keys(kasse).index("members_active")
-
-    leser = make_user("mitgliederwart@example.org")
-    give_role(leser, org, permissions=["members.view"], name="Mitgliederwart")
-    data = figures(api(leser), org)
-    assert set(data) == {"members_active"}
-
-
-def test_kennzahlen_vorstand(api, orgs, board_a):
-    org = orgs["a"]
-    erika = make_member(org, "Erika", "Muster")
-    make_member(org, "Max", "Beispiel")
-    with tenant_context(org.pk):
-        ChangeRequest.objects.create(organization=org, membership=erika, data={"city": "X"})
-    data = figures(api(board_a), org)
-    assert data["members_active"]["value"] == 2
-    assert data["change_requests"]["value"] == 1
-    assert data["change_requests"]["link"] == "/mitglieder/anfragen/aenderungen"
-
-
-def test_kennzahl_der_untereinheit(api, orgs, board_a):
-    org = orgs["a"]
-    org.member_portal_enabled = True
-    org.department_access_enabled = True
-    org.save()
-    zug = Department.objects.create(self_managed=True, organization=org, name="Jägerzug")
-    role = DepartmentRole.objects.create(
-        organization=org, department=zug, name="Zugführer", permissions=["dept.members.view"]
-    )
-    chef = make_member(org, "Karl", "Zug", "karl@example.org", departments=[zug])
-    make_member(org, "Erika", "Muster", departments=[zug])
-    make_member(org, "Otto", "Ohne")
-    DepartmentRoleHolder.objects.create(
-        organization=org, membership=chef, role=role, valid_from="2020-01-01"
-    )
-    api(board_a).post(f"/api/orgs/{org.pk}/members/{chef.pk}/access/")
-    user = PortalAccess.objects.get(membership=chef).user
-    resp = api(user).get(f"/api/depts/{zug.pk}/home-figures/")
-    assert resp.status_code == 200, resp.content
-    assert resp.json()["figures"][0]["value"] == 2
 
 
 def test_stand_der_einrichtung(api, orgs, board_a):
