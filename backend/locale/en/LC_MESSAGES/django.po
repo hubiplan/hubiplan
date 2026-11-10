@@ -9504,6 +9504,29 @@ msgstr "A place with this name already exists."
 msgid "Bitte Breite und Länge zusammen angeben."
 msgstr "Please enter latitude and longitude together."
 
+msgid "Die Löschung ist vorgemerkt. Bitte erst die Vormerkung zurücknehmen."
+msgstr "Deletion is scheduled. Please withdraw it first."
+
+msgid "Bitte zuerst alle zugehörigen Vereine löschen oder umhängen."
+msgstr "Please delete or move all associated clubs first."
+
+msgid "Die Löschung ist noch nicht vorgemerkt."
+msgstr "Deletion has not been scheduled yet."
+
+msgid "Frühestens {n} Tage nach der Vormerkung."
+msgstr "At the earliest {n} days after scheduling."
+
+msgid "Die Aufbewahrungsfristen laufen noch."
+msgstr "The retention periods have not yet expired."
+
+msgid "Für einzelne Geschäftsjahre gilt eine Löschsperre."
+msgstr "A deletion hold applies to some financial years."
+
+msgid "Bitte den vollständigen Namen der Einheit eingeben."
+msgstr "Please enter the full name of the unit."
+
+msgid "Bitte angeben, wer die Aufbewahrungsfristen bestätigt hat (z. B. Kassenprüfer oder Steuerberater)."
+msgstr "Please state who confirmed the retention periods (e.g. auditor or tax advisor)."
 msgid ""
 "Die Datei wartet noch auf die Virenprüfung und ist bis dahin gesperrt. Bitte "
 "später noch einmal versuchen."

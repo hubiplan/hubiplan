@@ -153,6 +153,16 @@ def test_verein_endgueltig_loeschen_braucht_code(api, admin, orgs):
     secret = mit_2fa(admin)
     c = api(admin)
     org = orgs["c"]
+    # Zweistufig (F02): vorgemerkt, Wartezeit abgelaufen, keine Finanzdaten
+    import datetime
+
+    from django.utils import timezone
+
+    from organizations.models import Organization
+
+    Organization.objects.filter(pk=org.pk).update(
+        is_active=False, erase_requested_at=timezone.now() - datetime.timedelta(days=60)
+    )
     url = f"/api/platform/orgs/{org.pk}/erase/"
     resp = c.post(url, {"confirmation": org.name}, content_type=JSON)
     assert resp.status_code == 403 and resp.json()["step_up"] == "code"
