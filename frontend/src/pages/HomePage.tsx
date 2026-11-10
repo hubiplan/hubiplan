@@ -8,7 +8,13 @@ import { OpenTasksTile } from '../components/OpenTasksTile.tsx'
 import { PERM } from '../api/orgs.ts'
 import type { OrgSummary } from '../api/orgs.ts'
 import { DeptFigures, NoticesCard, OrgFigures, QuickActions } from '../components/home/RoleHome.tsx'
-import { deptActions, roleActionCandidates } from '../components/home/roleActions.ts'
+import {
+  actionCatalog,
+  actionScope,
+  deptActions,
+  deptCatalog,
+  roleActionCandidates,
+} from '../components/home/roleActions.ts'
 import { PortalTasks } from './portal/PortalPage.tsx'
 import { MemberHomeTop } from '../components/home/MemberHome.tsx'
 import { t } from '../i18n/index.ts'
@@ -53,6 +59,8 @@ export function HomePage() {
           )}
           <QuickActions
             candidates={deptActions(activeDept)}
+            catalog={deptCatalog(activeDept)}
+            scope={actionScope.dept(activeDept)}
             label={t('Schnellaktionen: {label}', { label: activeDept.label })}
           />
           <DeptFigures dept={activeDept} />
@@ -138,11 +146,15 @@ export function HomePage() {
           <DepartmentTodosTile department={activeDept.id} />
         )}
         {showsOpenTasks(active) && <OpenTasksTile org={active} />}
-        <QuickActions candidates={actions} />
+        <QuickActions
+          candidates={actions}
+          catalog={actionCatalog(active)}
+          scope={actionScope.org(active)}
+        />
         {clubLike && <OrgFigures org={active} />}
         {upcoming && <UpcomingTile base={calendarBase.org(active.id)} />}
         <NoticesCard org={active} />
-        {!upcoming && !people && actions.length === 0 && (
+        {!upcoming && !people && actionCatalog(active).length === 0 && (
           <div className="card tile">
             <h2>{t('Übersicht')}</h2>
             <p className="muted">{t('Hier erscheinen Kacheln der Module.')}</p>

@@ -9536,3 +9536,9 @@ msgstr "The event has been cancelled."
 
 msgid "Der Anmeldeschluss ist vorbei."
 msgstr "The registration deadline has passed."
+
+msgid "Unbekannter Arbeitsbereich."
+msgstr "Unknown workspace."
+
+msgid "Zu viele Arbeitsbereiche."
+msgstr "Too many workspaces."
