@@ -101,6 +101,9 @@ class TestRegeln:
             "capacity": None,
             "guests_allowed": False,
             "max_guests": 10,
+            "maybe_allowed": False,
+            "note_allowed": True,
+            "note_question": "",
         }
 
 
@@ -183,7 +186,14 @@ class TestTeilnehmerliste:
         respond(api(user), access, data["id"])
         base = f"{org_base(cal['a'])}events/{data['id']}/responses/"
         listing = api(board_a).get(base).json()
-        assert listing["summary"] == {"yes": 1, "no": 0, "guests": 0, "persons": 1, "open": 1}
+        assert listing["summary"] == {
+            "yes": 1,
+            "no": 0,
+            "maybe": 0,
+            "guests": 0,
+            "persons": 1,
+            "open": 1,
+        }
         assert listing["items"][0]["name"] == "Muster, Erika"
         assert listing["items"][0]["departments"] == "Jägerzug"
         assert [o["name"] for o in listing["open"]] == ["Ohnemail, Otto"]
@@ -277,7 +287,7 @@ class TestMails:
         mails = self.mails()
         assert sorted(m.to for m in mails) == [["erika@example.org"], ["hans@example.org"]]
         assert mails[0].subject.startswith("Einladung: Königsschießen am ")
-        assert "Schützenhaus" in mails[0].body and "/termine" in mails[0].body
+        assert "Schützenhaus" in mails[0].body and "/rueckmeldung/" in mails[0].body
         # ohne Haken keine Mail
         with django_capture_on_commit_callbacks(execute=True):
             create(api(board_a), org_base(cal["a"]), title="Still")

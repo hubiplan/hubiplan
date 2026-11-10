@@ -17,6 +17,7 @@ from customfields import views as field_views
 from datatransfer import views as transfer_views
 from documents import views as doc_views
 from entries import urls as entry_urls
+from events import rsvp_link
 from events import views as event_views
 from exchange import views as exchange_views
 from finance import (
@@ -64,7 +65,6 @@ from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import (
     help_views,
-    home_figures,
     imprint_views,
     setup_status,
     social_views,
@@ -459,7 +459,6 @@ org_patterns = [
     path("accounts/resend/", accounts_view.AccountsResendView.as_view(), name="accounts-resend"),
     path("change-requests/", portal_views.ChangeRequestListView.as_view(), name="change-requests"),
     path("open-tasks/", open_tasks.OpenTasksView.as_view(), name="open-tasks"),
-    path("home-figures/", home_figures.HomeFiguresView.as_view(), name="home-figures"),
     path("setup-status/", setup_status.SetupStatusView.as_view(), name="setup-status"),
     path(
         "change-requests/<int:pk>/decide/",
@@ -720,7 +719,6 @@ dept_patterns = [
     ),
     path("", portal_views.DepartmentInfoView.as_view(), name="dept-info"),
     path("members/", portal_views.DepartmentMemberListView.as_view(), name="dept-members"),
-    path("home-figures/", home_figures.DeptHomeFiguresView.as_view(), name="dept-home-figures"),
     path(
         "statistics/",
         statistics_views.DepartmentStatisticsView.as_view(),
@@ -943,6 +941,12 @@ urlpatterns = [
     path("", include(peering_urls)),
     path("", include(oidc_urls)),
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
+    path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
+    path(
+        "public/rsvp/<str:token>/attachments/<int:att_id>/",
+        rsvp_link.PublicRsvpAttachmentView.as_view(),
+        name="public-rsvp-attachment",
+    ),
     *competition_urls.public_patterns,
     path(
         "public/card/<str:token>/photo/",

@@ -5354,6 +5354,12 @@ msgstr ""
 msgid "Zu prüfen"
 msgstr "To review"
 
+msgid "Wird geprüft"
+msgstr "Checking"
+
+msgid "Geprüft"
+msgstr "Checked"
+
 msgid "Freigegeben"
 msgstr "Approved"
 
@@ -9480,30 +9486,6 @@ msgstr "Import bank statement for {month}"
 msgid "{account}: eingelesen bis {date}"
 msgstr "{account}: imported up to {date}"
 
-msgid "Barkasse heute"
-msgstr "Cash box today"
-
-msgid "Stand {date}"
-msgstr "As of {date}"
-
-msgid "Konto laut letztem Auszug"
-msgstr "Account per last statement"
-
-msgid "Offene Beiträge"
-msgstr "Outstanding fees"
-
-msgid "Mitglieder heute"
-msgstr "Members today"
-
-msgid "Datenänderungen offen"
-msgstr "Open data changes"
-
-msgid "Nächste Versammlung"
-msgstr "Next meeting"
-
-msgid "Einladen bis"
-msgstr "Invite by"
-
 msgid "Anfahrt und Hinweise"
 msgstr "Directions and notes"
 
@@ -9547,3 +9529,18 @@ msgstr "waiting for scan"
 
 msgid "Schadsoftware gefunden"
 msgstr "malware found"
+
+msgid "Bei diesem Termin bitte zu- oder absagen."
+msgstr "For this event, please accept or decline."
+
+msgid "Vielleicht"
+msgstr "Maybe"
+
+msgid "Mail-Link"
+msgstr "Email link"
+
+msgid "Der Termin ist abgesagt."
+msgstr "The event has been cancelled."
+
+msgid "Der Anmeldeschluss ist vorbei."
+msgstr "The registration deadline has passed."

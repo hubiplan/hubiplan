@@ -11,6 +11,11 @@ Import XML invoices or ZUGFeRD/Factur-X PDFs. HUBIplan retains the original even
 validation fails. Importing the identical file again does not create another entry.
 Check different files with the same invoice number for duplicates yourself.
 
+Technical validation (KoSIT) runs in the background after the import. Until it finishes,
+the entry shows **Checking**; this usually takes less than a minute and the page refreshes
+by itself. HUBIplan deletes declined entries and files without a readable e-invoice after
+90 days if no booking is linked.
+
 Validation covers the XML data. It does not certify PDF/A properties or consistency
 between an external PDF view and its embedded XML. Use the **Readable view** of the
 structured data for review.
