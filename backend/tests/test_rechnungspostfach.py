@@ -13,10 +13,11 @@ from billing import einvoice_validator, incoming_mail
 from billing.incoming_mail import Result
 from billing.models import BusinessPartner, IncomingInvoice, IncomingMail, IncomingMailbox
 from core import virenscan
-from core.tenancy import rls_bypass, tenant_context
+from core.tenancy import rls_bypass, set_rls, tenant_context
 
 from .test_e_rechnung import simple_pdf, zugferd_pdf
 from .test_m9_billing import JSON, c, club  # noqa: F401
+from .test_rls import as_app_role
 
 pytestmark = pytest.mark.django_db
 
@@ -266,7 +267,11 @@ class TestAbholen:
         assert entry.status == IncomingMail.Status.ERROR and invoices(club) == []
 
 
-def test_kennung_ist_rls_geschuetzt(club, orgs):
+def test_kennung_und_hinweise_sind_rls_geschuetzt(club, orgs):
     address(club)
-    with tenant_context(orgs["b"].pk):
-        assert not IncomingMailbox.objects.exists()
+    incoming_mail.process_message(mail(address(club), [pdf_part(simple_pdf())]))
+    with as_app_role():
+        set_rls(orgs["b"].pk, None, False)
+        assert not IncomingMailbox.objects.exists() and not IncomingMail.objects.exists()
+        set_rls(club.pk, None, False)
+        assert IncomingMailbox.objects.count() == 1 and IncomingMail.objects.count() == 1

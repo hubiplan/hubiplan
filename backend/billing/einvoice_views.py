@@ -371,7 +371,7 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
     @transaction.atomic
     def review(self, request, org_id, pk):
         lock_bank_sources(self.org)
-        item = get_object_or_404(self.get_queryset().select_for_update(), pk=pk)
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
         decision = request.data.get("status")
         note = str(request.data.get("note", "")).strip()
         if decision not in ("approved", "rejected") or not note or len(note) > 2000:
@@ -403,7 +403,7 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
     @transaction.atomic
     def revalidate(self, request, org_id, pk):
         lock_bank_sources(self.org)
-        item = get_object_or_404(self.get_queryset().select_for_update(), pk=pk)
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
         if item.status != "review" or not item.xml:
             raise serializers.ValidationError(
                 gettext("Nur ungeprüfte Eingänge mit XML können erneut geprüft werden.")
@@ -430,7 +430,7 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
         lock_bank_sources(self.org)
         link_input = serializers.IntegerField(min_value=1)
         booking_id = link_input.run_validation(request.data.get("booking"))
-        item = get_object_or_404(self.get_queryset().select_for_update(), pk=pk)
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
         booking = get_object_or_404(
             Booking.objects.select_for_update(),
             organization=self.org,
