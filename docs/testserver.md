@@ -147,7 +147,8 @@ testplatz [--kerne N] <befehl …>   # wartet auf einen freien Platz, dann läuf
   Plätze, bis sie umgestellt sind. Startet man ein solches Skript selbst mit `testplatz`, bekommt es
   über `HUBIPLAN_TEST_LOCK` eine eigene Sperrdatei und belegt nur diesen einen Platz.
 
-Installation (einmal und nach Änderungen an `scripts/testplatz.sh`):
+Installation (einmal und nach Änderungen an `scripts/testplatz.sh`, immer an beiden Stellen,
+weil WSL über den Windows-PATH auch die Git-Bash-Kopie findet):
 
 ```bash
 install -m 755 scripts/testplatz.sh ~/.local/bin/testplatz   # in WSL

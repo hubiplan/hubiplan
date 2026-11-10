@@ -23,7 +23,8 @@
 # Prozessor-Affinität auf die Kerne des Platzes. Ältere Skripte mit der exklusiven Sperre
 # ~/.hubiplan-tests.lock belegen alle Plätze: testplatz hält diese Datei geteilt.
 #
-# Installation (einmal, und nach Änderungen):
+# Installation (einmal, und nach Änderungen; immer beide, denn WSL findet über den
+# Windows-PATH auch die Git-Bash-Kopie):
 #   Linux/WSL: install -m 755 scripts/testplatz.sh ~/.local/bin/testplatz
 #   Git Bash:  install -m 755 scripts/testplatz.sh ~/bin/testplatz
 set -euo pipefail
@@ -54,7 +55,12 @@ if [ "$LISTE" = 1 ]; then
     DIR="${TESTPLATZ_DIR:-$HOME/.testplaetze}"
     for p in $(seq 1 "$PLAETZE"); do
         if [ -e "$DIR/platz-$p.lock" ] && ! flock -n "$DIR/platz-$p.lock" true 2> /dev/null; then
-            echo "Platz $p belegt: $(tr '\n' ' ' < "$DIR/platz-$p.wer" 2> /dev/null)"
+            # .wer nur, wenn sein Prozess noch lebt (ältere Fassungen schreiben keine)
+            wer=""
+            if [ -r "$DIR/platz-$p.wer" ] && kill -0 "$(head -c 20 "$DIR/platz-$p.wer" | cut -d' ' -f1)" 2> /dev/null; then
+                wer=$(tr '\n' ' ' < "$DIR/platz-$p.wer")
+            fi
+            echo "Platz $p belegt${wer:+: $wer}"
         else
             echo "Platz $p frei"
         fi
