@@ -920,11 +920,20 @@ unbrauchbar und meldet App-Geräte und Verbund-Anmeldungen des Kontos ab.
 
 Wer Rollen verwaltet, vollständige Exporte erstellt, in der Kasse bucht oder die Plattform
 verwaltet, braucht die Zwei-Faktor-Anmeldung. Beim ersten Bedarf beginnen 14 Tage Übergang
-(Hinweis oben auf jeder Seite); danach ruhen genau diese Rechte, bis 2FA eingerichtet ist
-(für Plattform-Zugänge alle Plattformrechte). Handy verloren: mit einem
+(Hinweis oben auf jeder Seite); danach ruhen genau diese Rechte, bis 2FA eingerichtet ist.
+Die Plattform-Verwaltung hat keine Übergangsfrist: Ohne 2FA ruhen alle Plattformrechte sofort
+(auch für Superuser); „Mein Konto“ bleibt erreichbar, um 2FA einzurichten. Handy verloren: mit einem
 Wiederherstellungscode anmelden, oder eine zweite Person mit Rollenverwaltung und eigener
 2FA setzt unter Rollen „2FA zurücksetzen“ (Mail an die Person, Alarm-Mail, Geräte werden
 abgemeldet).
+
+Frischer Code (Gesamtaudit 10.11., `accounts/step_up.py`): Vollständige Exporte (Verein,
+Plattform, Ausgliedern), Rollen vergeben oder ihre Rechte erweitern, den ersten Vorstand durch
+die Plattform setzen, 2FA einer anderen Person zurücksetzen, den QR-Code für die App erzeugen
+und endgültiges Löschen (Verein, ehemaliges Mitglied, Name in der Chronik) brauchen einen
+Code, der höchstens 10 Minuten alt ist (auch der Code der Anmeldung zählt). Sonst antwortet die
+API mit 403 und `step_up` (`code`, ohne eingerichtete 2FA `password`); die Oberfläche fragt
+nach und bestätigt über `POST /api/me/confirm/`, höchstens 10 Versuche je 15 Minuten.
 
 ## Virenprüfung
 

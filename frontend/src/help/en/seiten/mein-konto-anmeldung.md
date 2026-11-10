@@ -8,7 +8,8 @@ stichworte: [password, two-factor, 2FA, authenticator]
 This is where you change your password and switch **Two-factor authentication** on or off. With it,
 signing in needs a code from your phone in addition to your password. Anyone who manages roles,
 runs exports, posts in the cash book, may see all members or reads the change log and outbox has
-to set it up.
+to set it up; for platform administration this applies immediately. Before sensitive actions such
+as a full export HUBIplan asks for a code again (guide “Set up two-factor authentication”).
 
 A new address under **Change sign-in email** only takes effect once you have confirmed it with the link sent to the new
 address. If you have no password of your own and only sign in with links, you also have to confirm

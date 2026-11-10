@@ -24,6 +24,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts import step_up
 from accounts.language import MyLanguageView
 from core.features import app_features
 from core.i18n import available, user_language
@@ -162,6 +163,7 @@ class PairingCodeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        step_up.require(request)
         if too_many(f"app:pairing:{request.user.pk}", RATE[0], RATE[1]):
             return Response(
                 {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
