@@ -5,8 +5,9 @@
 import { useState } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { SubpageUnavailable } from '../NoticePages.tsx'
-import { heldApi, websiteApi } from '../../api/website.ts'
+import { DRAFT_FIELDS, hasDraft, heldApi, websiteApi } from '../../api/website.ts'
 import type {
+  DesignDraft,
   HomeSection,
   MenuItem,
   MenuNode,
@@ -40,6 +41,7 @@ import { ImagesPage } from './images.tsx'
 import { DesignChooser } from './DesignChooser.tsx'
 import { HeaderImage } from './HeaderImage.tsx'
 import { StyleTuning } from './StyleTuning.tsx'
+import { DesignVersions, DraftBar, PreviewFrame } from './DesignPreview.tsx'
 import { SiteLanguage } from './SiteLanguage.tsx'
 import { t } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
@@ -61,6 +63,8 @@ const STATE_TEXT: Record<string, string> = {
 export function WebsitePage() {
   const org = useActiveOrg()
   const { data, error, reload, setData } = useLoad(() => websiteApi.get(org.id), [org.id])
+  // Zählt hoch, wenn der Entwurf von außen wechselt: die Eingaben starten dann neu
+  const [generation, setGeneration] = useState(0)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
@@ -126,10 +130,14 @@ export function WebsitePage() {
       )}
       {data.website && (
         <WebsiteAdmin
-          key={data.website.public_key}
+          key={`${data.website.public_key}:${generation}`}
           data={data}
           website={data.website}
           onChange={setData}
+          onReset={(next) => {
+            setData(next)
+            setGeneration((g) => g + 1)
+          }}
           reload={() => void reload()}
         />
       )}
@@ -213,27 +221,49 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
 ]
 
 function pick(w: Website): WebsiteSettings {
-  return Object.fromEntries(SETTINGS.map((k) => [k, w[k]])) as unknown as WebsiteSettings
+  const values = Object.fromEntries(SETTINGS.map((k) => [k, w[k]])) as unknown as WebsiteSettings
+  // Gestaltung: was im Entwurf steht, sonst der veröffentlichte Stand (G2)
+  return { ...values, ...(w.draft ?? {}) }
+}
+
+/** Geänderte Felder der Gestaltung gehen in den Entwurf, alles andere wie bisher */
+function splitDraft(website: Website, changes: Partial<WebsiteSettings>) {
+  if (website.draft === undefined) return changes
+  const rest: Partial<WebsiteSettings> & { draft?: DesignDraft } = {}
+  const draft: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(changes)) {
+    if ((DRAFT_FIELDS as readonly string[]).includes(key)) draft[key] = value
+    else (rest as Record<string, unknown>)[key] = value
+  }
+  if (Object.keys(draft).length > 0) rest.draft = draft as DesignDraft
+  return rest
 }
 
 function WebsiteAdmin({
   data,
   website,
   onChange,
+  onReset,
   reload,
 }: {
   data: WebsiteData
   website: Website
   onChange: (data: WebsiteData) => void
+  /** Neuer Stand von außen (Entwurf veröffentlicht, verworfen, Fassung zurückgeholt) */
+  onReset: (data: WebsiteData) => void
   reload: () => void
 }) {
   const org = useActiveOrg()
   const form = useForm(pick(website))
   const { values: v, set, errors } = form
-  const auto = useAutoSave(form, (changes) => websiteApi.save(org.id, changes), {
-    enabled: data.can_manage,
-    onSaved: (saved) => onChange(saved as WebsiteData),
-  })
+  const auto = useAutoSave(
+    form,
+    (changes) => websiteApi.save(org.id, splitDraft(website, changes)),
+    {
+      enabled: data.can_manage,
+      onSaved: (saved) => onChange(saved as WebsiteData),
+    },
+  )
   const [message, setMessage] = useState<string | null>(null)
 
   async function remove() {
@@ -319,47 +349,71 @@ function WebsiteAdmin({
     />
   )
 
+  const draftBar = (
+    <DraftBar website={website} auto={auto} canManage={data.can_manage} onReset={onReset} />
+  )
+
   const design = (
-    <>
-      {data.designs ? (
-        settings(
-          t('Design'),
-          <DesignChooser
-            data={data}
-            design={v.design ?? 'classic'}
-            colorRoles={v.color_roles ?? {}}
-            onDesign={(key) => set('design', key)}
-            onColorRoles={(next) => set('color_roles', next)}
-            onPackagesChanged={reload}
-          />,
-        )
-      ) : (
-        <Alert kind="info">{t('Auf diesem Server gibt es keine Designs zur Auswahl.')}</Alert>
-      )}
-      {data.style_catalog
-        ? settings(
-            t('Feinabstimmung'),
-            <StyleTuning
-              catalog={data.style_catalog}
-              design={v.design ?? 'classic'}
-              designLabel={
-                data.designs?.find((d) => d.key === (v.design ?? 'classic'))?.label ??
-                v.design ??
-                ''
-              }
-              value={v.style ?? {}}
-              onChange={(next) => set('style', next)}
-              headerImage={headerImage}
-            />,
-          )
-        : settings(t('Kopfbild'), headerImage)}
-      <SiteLanguage
-        value={v.language ?? 'de'}
-        error={errors.language}
-        render={(field) => settings(t('Sprache der Webseite'), field)}
-        onChange={(lang) => set('language', lang)}
-      />
-    </>
+    <div className="design-split">
+      <div className="design-split-grid">
+        <div className="design-split-settings">
+          {draftBar}
+          {data.designs ? (
+            settings(
+              t('Design'),
+              <DesignChooser
+                data={data}
+                design={v.design ?? 'classic'}
+                colorRoles={v.color_roles ?? {}}
+                onDesign={(key) => set('design', key)}
+                onColorRoles={(next) => set('color_roles', next)}
+                onPackagesChanged={reload}
+              />,
+            )
+          ) : (
+            <Alert kind="info">{t('Auf diesem Server gibt es keine Designs zur Auswahl.')}</Alert>
+          )}
+          {data.style_catalog
+            ? settings(
+                t('Feinabstimmung'),
+                <StyleTuning
+                  catalog={data.style_catalog}
+                  design={v.design ?? 'classic'}
+                  designLabel={
+                    data.designs?.find((d) => d.key === (v.design ?? 'classic'))?.label ??
+                    v.design ??
+                    ''
+                  }
+                  value={v.style ?? {}}
+                  onChange={(next) => set('style', next)}
+                  headerImage={headerImage}
+                />,
+              )
+            : settings(t('Kopfbild'), headerImage)}
+          <SiteLanguage
+            value={v.language ?? 'de'}
+            error={errors.language}
+            render={(field) => settings(t('Sprache der Webseite'), field)}
+            onChange={(lang) => set('language', lang)}
+          />
+          {(website.design_versions?.length ?? 0) > 0 &&
+            settings(
+              t('Frühere Fassungen'),
+              <DesignVersions
+                website={website}
+                auto={auto}
+                canManage={data.can_manage}
+                onReset={onReset}
+              />,
+            )}
+        </div>
+        {website.draft !== undefined && (
+          <aside className="design-split-preview" aria-label={t('Vorschau')}>
+            <PreviewFrame website={website} />
+          </aside>
+        )}
+      </div>
+    </div>
   )
 
   const structure = (
@@ -447,6 +501,7 @@ function WebsiteAdmin({
             ))}
         </>,
       )}
+      {hasDraft(website) && draftBar}
       {data.home_labels &&
         v.home_sections &&
         settings(

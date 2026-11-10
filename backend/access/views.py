@@ -546,6 +546,8 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
         "parent_display_name": (
             org.parent.display_name if org.parent and org.parent.type != "platform" else None
         ),
+        # Verein gehört zu einem Dachverband: nur dann gibt es Rundschreiben › Empfangen
+        "has_federation": org.federation is not None,
         "permissions": sorted(perms),
         "modules": _summary_modules(org),
         "department_label": org.department_label,

@@ -1251,6 +1251,12 @@ class ReceivedMixin(OrgScopedMixin):
     write_permission = "-"  # nur lesen
     allowed_org_types = (Organization.Type.CLUB,)
 
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        # Ohne Dachverband gibt es nichts zu empfangen
+        if self.org.federation is None:
+            raise NotFound(gettext("Dieser Verein gehört zu keinem Dachverband."))
+
     def received(self):
         rows = (
             CircularRecipient.objects.filter(

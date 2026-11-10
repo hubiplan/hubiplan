@@ -95,15 +95,20 @@ def test_beleg_einer_festgeschriebenen_buchung_nicht_loeschbar(orgs):
         assert not Booking.objects.filter(pk=b.pk).exists()
 
 
-def test_einheit_loeschen_trotz_festschreibung(api, orgs, django_user_model):
+def test_einheit_loeschen_trotz_festschreibung(api, orgs, django_user_model, monkeypatch):
+    from organizations import deletion
+
     org = orgs["c"]
     with tenant_context(org.pk):
         b = _booking(org)
     _lock(org)
     admin = django_user_model.objects.create_superuser(email="erase@example.org", password="x")
+    # Zweistufig (F02): vormerken, nach Ablauf der Fristen endgültig löschen
+    deletion.request_erase(org, admin)
+    monkeypatch.setattr(deletion, "_today", lambda: datetime.date(2040, 1, 1))
     resp = api(admin).post(
         f"/api/platform/orgs/{org.pk}/erase/",
-        {"confirmation": org.name},
+        {"confirmation": org.name, "confirmed_by": "Kassenprüfer Muster"},
         content_type="application/json",
     )
     assert resp.status_code == 204, resp.content

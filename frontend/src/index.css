@@ -1346,6 +1346,23 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   white-space: nowrap;
 }
 
+/* Knöpfe einer Aktionsspalte stehen nebeneinander, und eine Karte mit Tabelle wird so breit,
+   wie die Tabelle mindestens braucht. Sonst ragte die Tabelle über den Kartenrand, und die
+   Knöpfe brachen untereinander um (Ralf 10.11.2026, Versammlungen › Arten und Fristen).
+   Nur so breit wie der Platz daneben (calc-size), Tabellen mit eigenem Rollbereich bleiben
+   außen vor. Auf dem Handy werden Tabellen ohnehin zu Blöcken (unten). */
+@media not all and (max-width: 40rem) {
+  .table td.actions > .button-row {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+
+  .card:has(.table:not(.table-fixed)):not(:has(.table-scroll, .table-wrap, .booking-scroll)) {
+    min-width: min-content;
+    min-width: calc-size(min-content, min(size, 100%));
+  }
+}
+
 .table .indent {
   padding-left: 1.75rem;
 }
@@ -5496,4 +5513,99 @@ label:has(> .file-input:focus-visible) {
   .style-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* Webseite › Gestaltung (G2): Einstellungen links, Vorschau der echten Webseite rechts */
+.draft-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+.draft-bar-open {
+  border-color: var(--color-primary);
+  color: var(--color-text);
+  font-weight: 600;
+}
+.draft-bar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.draft-bar .alert {
+  flex-basis: 100%;
+}
+.draft-bar-preview {
+  display: none;
+}
+.design-versions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.design-versions li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.design-split-preview {
+  display: none;
+}
+/* Geteilte Ansicht nur, wenn der Inhaltsbereich breit genug ist (Containerabfrage) */
+.design-split {
+  container-type: inline-size;
+}
+@container (min-width: 62rem) {
+  .design-split-grid {
+    display: grid;
+    grid-template-columns: minmax(28rem, 38rem) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+  .design-split-preview {
+    display: block;
+    position: sticky;
+    top: 1rem;
+  }
+}
+@container (max-width: 61.99rem) {
+  .draft-bar-preview {
+    display: inline-flex;
+  }
+}
+.preview-pane {
+  display: grid;
+  gap: 0.6rem;
+}
+.preview-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+.preview-frame {
+  height: calc(100vh - 9rem);
+  min-height: 24rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  display: flex;
+  justify-content: center;
+}
+.preview-frame iframe {
+  border: 0;
+  flex: none;
+  transform-origin: top center;
 }

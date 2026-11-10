@@ -8,7 +8,7 @@ import organizations.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("organizations", "0062_umsatzsteuer"),
+        ("organizations", "0063_loeschung_vormerken"),
     ]
 
     operations = [

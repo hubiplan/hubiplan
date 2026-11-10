@@ -32,6 +32,7 @@ import { Why } from '../../learning/Aids.tsx'
 import { t, tn } from '../../i18n/index.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
+import { EraseCard } from './EraseCard.tsx'
 
 // Vorschlag für die Bezeichnung neuer Einheiten, je nachdem, ob sie eigene Mitglieder
 // führen (wie im Backend). Jede Einheit kann ihre Bezeichnung frei ändern.
@@ -137,6 +138,7 @@ export function PlatformOrgsPage() {
           {o.short_name && t('{name} · ', { name: o.name })}
           {o.type_label} · {o.postal_code} {o.city}
           {!o.is_active && t(' · deaktiviert')}
+          {o.erase_requested_at && t(' · zum Löschen vorgemerkt')}
         </div>
       </td>
       <td className="small">
@@ -248,26 +250,6 @@ function PlatformOrgForm({
   const directory = useLoad(() => moduleApi.directory(), [])
   const allModules = flatModules(directory.data)
   const [board, setBoard] = useState('')
-  const [erasing, setErasing] = useState(false)
-  const [confirmation, setConfirmation] = useState('')
-  const [eraseBusy, setEraseBusy] = useState(false)
-  const [eraseError, setEraseError] = useState<string | null>(null)
-
-  async function erase(ev: FormEvent) {
-    ev.preventDefault()
-    if (!org || confirmation !== org.name || eraseBusy) return
-    setEraseBusy(true)
-    setEraseError(null)
-    try {
-      await platformApi.erase(org.id, confirmation)
-      await refresh()
-      onDone()
-    } catch (error) {
-      setEraseError(errorMessage(error))
-    } finally {
-      setEraseBusy(false)
-    }
-  }
   const [boardResult, setBoardResult] = useState<string | null>(null)
   const tm = buildTerms(v.label, v.label_plural, v.label_gender, v.label_genitive)
   // Unter einer übergeordneten Einheit führen Einheiten immer eigene Mitglieder
@@ -578,6 +560,12 @@ function PlatformOrgForm({
           <Checkbox
             label={t('{Sg} ist aktiv', { Sg: tm.Sg })}
             checked={v.is_active}
+            disabled={!!org.erase_requested_at}
+            hint={
+              org.erase_requested_at
+                ? t('Zum Löschen vorgemerkt. Erst die Vormerkung zurücknehmen.')
+                : undefined
+            }
             onChange={(val) => form.set('is_active', val)}
           />
         )}
@@ -594,52 +582,13 @@ function PlatformOrgForm({
       </form>
 
       {org && (
-        <form className="card card-wide" onSubmit={erase}>
-          <h2>{t('Einheit vollständig löschen')}</h2>
-          <p>
-            {t(
-              'Die Einheit und ihre Daten einschließlich Mitgliedern, Rollen, Finanzdaten und Dateien werden unwiderruflich gelöscht. Benutzerkonten bleiben erhalten. Untergeordnete Einheiten müssen vorher gelöscht oder umgehängt werden.',
-            )}
-          </p>
-          {erasing ? (
-            <>
-              <p>
-                {t('Zur Bestätigung den vollständigen Namen eingeben:')} <strong>{org.name}</strong>
-              </p>
-              <Field
-                label={t('Name zur Löschbestätigung')}
-                value={confirmation}
-                onChange={(ev) => setConfirmation(ev.target.value)}
-              />
-              {eraseError && <Alert kind="error">{eraseError}</Alert>}
-              <div className="button-row">
-                <button
-                  type="submit"
-                  className="button button-danger"
-                  disabled={eraseBusy || confirmation !== org.name}
-                >
-                  {t('Unwiderruflich löschen')}
-                </button>
-                <button
-                  type="button"
-                  className="button"
-                  disabled={eraseBusy}
-                  onClick={() => {
-                    setErasing(false)
-                    setConfirmation('')
-                    setEraseError(null)
-                  }}
-                >
-                  {t('Abbrechen')}
-                </button>
-              </div>
-            </>
-          ) : (
-            <button type="button" className="button button-danger" onClick={() => setErasing(true)}>
-              {t('Einheit löschen')}
-            </button>
-          )}
-        </form>
+        <EraseCard
+          org={org}
+          onDone={async () => {
+            await refresh()
+            onDone()
+          }}
+        />
       )}
 
       {org && (

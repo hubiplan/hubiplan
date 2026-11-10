@@ -1454,6 +1454,9 @@ msgstr "Scale cannot be determined"
 msgid "Für diese Art von Organisation nicht verfügbar."
 msgstr "Not available for this type of organisation."
 
+msgid "Dieser Verein gehört zu keinem Dachverband."
+msgstr "This club does not belong to an umbrella association."
+
 msgid ""
 "Die verschlüsselten Daten sind gerade nicht verfügbar. Bitte in einigen "
 "Minuten erneut versuchen."
@@ -9504,6 +9507,29 @@ msgstr "A place with this name already exists."
 msgid "Bitte Breite und Länge zusammen angeben."
 msgstr "Please enter latitude and longitude together."
 
+msgid "Die Löschung ist vorgemerkt. Bitte erst die Vormerkung zurücknehmen."
+msgstr "Deletion is scheduled. Please withdraw it first."
+
+msgid "Bitte zuerst alle zugehörigen Vereine löschen oder umhängen."
+msgstr "Please delete or move all associated clubs first."
+
+msgid "Die Löschung ist noch nicht vorgemerkt."
+msgstr "Deletion has not been scheduled yet."
+
+msgid "Frühestens {n} Tage nach der Vormerkung."
+msgstr "At the earliest {n} days after scheduling."
+
+msgid "Die Aufbewahrungsfristen laufen noch."
+msgstr "The retention periods have not yet expired."
+
+msgid "Für einzelne Geschäftsjahre gilt eine Löschsperre."
+msgstr "A deletion hold applies to some financial years."
+
+msgid "Bitte den vollständigen Namen der Einheit eingeben."
+msgstr "Please enter the full name of the unit."
+
+msgid "Bitte angeben, wer die Aufbewahrungsfristen bestätigt hat (z. B. Kassenprüfer oder Steuerberater)."
+msgstr "Please state who confirmed the retention periods (e.g. auditor or tax advisor)."
 msgid ""
 "Die Datei wartet noch auf die Virenprüfung und ist bis dahin gesperrt. Bitte "
 "später noch einmal versuchen."
@@ -9603,3 +9629,9 @@ msgstr "Unknown level for {key}: {value}"
 
 msgid "Wappen und Vereinsname lassen sich nicht beide ausblenden."
 msgstr "The coat of arms and the club name cannot both be hidden."
+
+msgid "Unbekannte Angaben im Entwurf."
+msgstr "Unknown entries in the draft."
+
+msgid "Es gibt keine Änderungen zum Veröffentlichen."
+msgstr "There are no changes to publish."
