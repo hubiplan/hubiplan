@@ -14,7 +14,39 @@ set -euo pipefail
 export PATH=/usr/local/hestia/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 HUSER=${HUSER:?HUSER fehlt, z. B. HUSER=hosting-user}
-TPL=/usr/local/hestia/data/templates/web/nginx
+# Hestia ohne Apache (nur nginx, wie bei einem eigenen Mailserver empfohlen): nginx ist dann
+# selbst der Webserver, nicht der vorgeschaltete Proxy. Die Vorlage gehört dann nach
+# nginx/php-fpm, ihre Ports heißen %web_port% statt %proxy_port%, und Hestia setzt sie mit
+# v-change-web-domain-tpl statt v-change-web-domain-proxy-tpl.
+if grep -q "^PROXY_SYSTEM='nginx'" /usr/local/hestia/conf/hestia.conf; then
+    NUR_NGINX=""
+    TPL=/usr/local/hestia/data/templates/web/nginx
+else
+    NUR_NGINX=1
+    TPL=/usr/local/hestia/data/templates/web/nginx/php-fpm
+fi
+# vorlage_einspielen QUELLORDNER VORLAGE: .tpl und .stpl nach $TPL
+vorlage_einspielen() {
+    local endung
+    for endung in tpl stpl; do
+        if [ -n "$NUR_NGINX" ]; then
+            sed -e 's/%proxy_port%/%web_port%/g' -e 's/%proxy_ssl_port%/%web_ssl_port%/g' \
+                "$1/$2.$endung" > "$TPL/$2.$endung"
+            chown root:root "$TPL/$2.$endung"
+            chmod 644 "$TPL/$2.$endung"
+        else
+            install -m 644 -o root -g root "$1/$2.$endung" "$TPL/"
+        fi
+    done
+}
+# vorlage_setzen DOMAIN VORLAGE: Domain neu mit der Vorlage aufbauen (nginx nur reload)
+vorlage_setzen() {
+    if [ -n "$NUR_NGINX" ]; then
+        v-change-web-domain-tpl "$HUSER" "$1" "$2" yes
+    else
+        v-change-web-domain-proxy-tpl "$HUSER" "$1" "$2" '' yes
+    fi
+}
 SICHERUNG=/root/sicherung-nginx-vorlagen/$(date +%Y-%m-%d_%H%M)
 
 echo "### Start $(TZ=Europe/Berlin date '+%d.%m.%Y %H:%M')"
@@ -37,17 +69,20 @@ for vorlage in "${!QUELLE[@]}"; do
     for endung in tpl stpl; do
         [ -f "$TPL/$vorlage.$endung" ] && cp -p "$TPL/$vorlage.$endung" "$SICHERUNG/"
     done
-    install -m 644 -o root -g root "$quelle/$vorlage.tpl" "$quelle/$vorlage.stpl" "$TPL/"
+    vorlage_einspielen "$quelle" "$vorlage"
     echo "$vorlage: eingespielt"
     for domain in $(v-list-web-domains "$HUSER" plain | cut -f1); do
-        proxy=$(v-list-web-domain "$HUSER" "$domain" json | sed -n 's/.*"PROXY": *"\([^"]*\)".*/\1/p' | head -1)
-        [ "$proxy" = "$vorlage" ] && DOMAINS+=("$domain:$vorlage")
+        # Ohne Apache steht die Vorlage im Feld TPL, sonst im Feld PROXY
+        feld=PROXY
+        [ -n "$NUR_NGINX" ] && feld=TPL
+        aktuell=$(v-list-web-domain "$HUSER" "$domain" json | sed -n "s/.*\"$feld\": *\"\([^\"]*\)\".*/\\1/p" | head -1)
+        [ "$aktuell" = "$vorlage" ] && DOMAINS+=("$domain:$vorlage")
     done
 done
 
 neu_aufbauen() {
     for eintrag in "${DOMAINS[@]}"; do
-        v-change-web-domain-proxy-tpl "$HUSER" "${eintrag%%:*}" "${eintrag##*:}" '' yes
+        vorlage_setzen "${eintrag%%:*}" "${eintrag##*:}"
     done
 }
 

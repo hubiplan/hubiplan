@@ -21,7 +21,39 @@ MAILKONTO=${MAILKONTO:-verein}
 DNS=${DNS:-hestia}
 VORLAGE=app-8110
 APP=/opt/hubiplan
-TPL=/usr/local/hestia/data/templates/web/nginx
+# Hestia ohne Apache (nur nginx, wie bei einem eigenen Mailserver empfohlen): nginx ist dann
+# selbst der Webserver, nicht der vorgeschaltete Proxy. Die Vorlage gehört dann nach
+# nginx/php-fpm, ihre Ports heißen %web_port% statt %proxy_port%, und Hestia setzt sie mit
+# v-change-web-domain-tpl statt v-change-web-domain-proxy-tpl.
+if grep -q "^PROXY_SYSTEM='nginx'" /usr/local/hestia/conf/hestia.conf; then
+    NUR_NGINX=""
+    TPL=/usr/local/hestia/data/templates/web/nginx
+else
+    NUR_NGINX=1
+    TPL=/usr/local/hestia/data/templates/web/nginx/php-fpm
+fi
+# vorlage_einspielen QUELLORDNER VORLAGE: .tpl und .stpl nach $TPL
+vorlage_einspielen() {
+    local endung
+    for endung in tpl stpl; do
+        if [ -n "$NUR_NGINX" ]; then
+            sed -e 's/%proxy_port%/%web_port%/g' -e 's/%proxy_ssl_port%/%web_ssl_port%/g' \
+                "$1/$2.$endung" > "$TPL/$2.$endung"
+            chown root:root "$TPL/$2.$endung"
+            chmod 644 "$TPL/$2.$endung"
+        else
+            install -m 644 -o root -g root "$1/$2.$endung" "$TPL/"
+        fi
+    done
+}
+# vorlage_setzen DOMAIN VORLAGE: Domain neu mit der Vorlage aufbauen (nginx nur reload)
+vorlage_setzen() {
+    if [ -n "$NUR_NGINX" ]; then
+        v-change-web-domain-tpl "$HUSER" "$1" "$2" yes
+    else
+        v-change-web-domain-proxy-tpl "$HUSER" "$1" "$2" '' yes
+    fi
+}
 
 echo "### Start $(TZ=Europe/Berlin date '+%d.%m.%Y %H:%M')"
 [ -f "$APP/.env" ] || { echo "Abbruch: $APP/.env fehlt, erst deploy/deploy.sh ausführen."; exit 1; }
@@ -29,7 +61,7 @@ grep -q '^HUBIPLAN_HINTER_PROXY=1' "$APP/.env" || { echo "Abbruch: HUBIPLAN_HINT
 curl -fsS -o /dev/null http://127.0.0.1:8110/ || { echo "Abbruch: HUBIplan antwortet nicht auf 127.0.0.1:8110."; exit 1; }
 
 echo "--- 1) nginx-Vorlage $VORLAGE"
-install -m 644 -o root -g root "$APP/deploy/hestia/$VORLAGE.tpl" "$APP/deploy/hestia/$VORLAGE.stpl" "$TPL/"
+vorlage_einspielen "$APP/deploy/hestia" "$VORLAGE"
 
 echo "--- 2) Web-Domain $DOMAIN (ohne www-Alias) und DNS-A-Eintrag"
 if v-list-web-domain "$HUSER" "$DOMAIN" >/dev/null 2>&1; then
@@ -49,7 +81,7 @@ else
     v-add-dns-record "$HUSER" "$MAILDOMAIN" "$SUB" A "$IP" '' '' yes
     echo "DNS-A-Eintrag $SUB -> $IP angelegt; Let's Encrypt braucht, bis alle Nameserver ihn kennen"
 fi
-v-change-web-domain-proxy-tpl "$HUSER" "$DOMAIN" "$VORLAGE" '' yes
+vorlage_setzen "$DOMAIN" "$VORLAGE"
 
 echo "--- 3) Zertifikat (Let's Encrypt)"
 # OHNE_ZERTIFIKAT=1: überspringen, solange noch nicht alle Nameserver den DNS-Eintrag kennen
