@@ -149,7 +149,9 @@ def _amount(raw: str, *, signed: bool = False) -> Decimal:
         value = Decimal(raw)
     except (InvalidOperation, ValueError):
         raise CamtError(gettext("Ungültiger Betrag „{raw}“.").format(raw=raw)) from None
-    if not value.is_finite() or value != value.quantize(Decimal("0.01")) or abs(value) > MAX_AMOUNT:
+    # Erst die Größe, dann quantize: 1E100 würde dort sonst InvalidOperation werfen und
+    # als interner Fehler enden (Gesamtaudit 10.11. F01)
+    if not value.is_finite() or abs(value) > MAX_AMOUNT or value != value.quantize(Decimal("0.01")):
         raise CamtError(gettext("Ungültiger Betrag „{raw}“.").format(raw=raw))
     if value < 0 and not signed:
         raise CamtError(

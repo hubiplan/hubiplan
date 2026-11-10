@@ -368,6 +368,42 @@ class TestAlarm:
         assert alarms.count("Verbund: ungültige Unterschriften einer Gegenstelle") == 1
         assert peer.base_url == VERBAND
 
+    def test_gefaelschter_absender_verbraucht_kein_partnerkontingent(
+        self, net, world, coupled, alarms
+    ):
+        """Gesamtaudit 10.11. S02: nur geprüfte Anfragen zählen gegen das Partnerkontingent."""
+        from django.core.cache import cache
+
+        from peering import server
+
+        cache.clear()
+        with net.on(VERBAND):
+            ident = identity.identity()
+        envelope = crypto.seal(
+            {"kind": "x"},
+            sender=ident.instance_id,
+            recipient=str(coupled["verein_at_verband"].instance_id),
+            recipient_enc_key=coupled["verein_at_verband"].enc_public_key,
+        )
+        body = json.dumps(envelope).encode()
+        statuses = []
+        for i in range(server.BAD_PER_IP + 5):
+            headers = {
+                transport.H_INSTANCE: ident.instance_id,
+                transport.H_DATE: timezone.now().isoformat(),
+                transport.H_NONCE: f"f{i}",
+                transport.H_SIGNATURE: identity.b64(b"1" * 64),
+                "X-Forwarded-For": "198.51.100.7",  # fremde Adresse (Beispielnetz)
+            }
+            with net.on(VERBAND):
+                status, _, _ = net.send(f"{VEREIN}/api/peering/v1/inbox/", headers, body)
+            statuses.append(status)
+        assert statuses[: server.BAD_PER_IP] == [403] * server.BAD_PER_IP
+        assert set(statuses[server.BAD_PER_IP :]) == {429}  # diese Adresse ist gedrosselt
+        assert cache.get(f"peering:in:sender:{ident.instance_id}") is None
+        # Der echte Dachverband (andere Adresse) kommt weiter durch
+        assert deliver_ok(net, VERBAND, coupled["upper"])
+
     def test_anderer_schluessel_beim_koppeln(self, net, world, coupled, alarms):
         info = {
             "instance_id": str(coupled["verein_at_verband"].instance_id),

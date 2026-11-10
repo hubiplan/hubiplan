@@ -454,6 +454,55 @@ def dmarc_failed(msg: EmailMessage) -> bool:
     return bool(re.search(r"\bdmarc=fail\b", results, re.IGNORECASE))
 
 
+def _without_comments(value: str) -> str:
+    """Kommentare in Klammern (RFC 5322, auch verschachtelt) und Zeichen in Anführung
+    entfernen, damit Text wie ``(dmarc=pass)`` nicht als Ergebnis zählt."""
+    out, depth, quoted, escaped = [], 0, False, False
+    for char in value:
+        if escaped:
+            escaped = False
+            continue
+        if char == "\\" and (depth or quoted):
+            escaped = True
+            continue
+        if quoted:
+            quoted = char != '"'
+            continue
+        if char == '"' and not depth:
+            quoted = True
+            out.append(" ")
+        elif char == "(":
+            depth += 1
+        elif char == ")" and depth:
+            depth -= 1
+            if not depth:
+                out.append(" ")
+        elif not depth:
+            out.append(char)
+    return "".join(out)
+
+
+def _authserv_of(header: str) -> str:
+    """Kennung des prüfenden Servers (vor dem ersten ``;``, ohne Versionsnummer)."""
+    head = _without_comments(header).split(";", 1)[0].split()
+    return head[0].lower() if head else ""
+
+
+def dmarc_results(header: str) -> list[str]:
+    """Die DMARC-Ergebnisse eines ``Authentication-Results``-Kopfs (RFC 8601), klein.
+
+    Gezählt wird nur ein Methodeneintrag ``dmarc=…`` am Anfang eines mit ``;`` getrennten
+    Abschnitts, nicht Text in Kommentaren oder Eigenschaften anderer Methoden
+    (Gesamtaudit 10.11. V01)."""
+    sections = _without_comments(header).split(";")[1:]
+    results = []
+    for section in sections:
+        found = re.match(r"\s*dmarc\s*=\s*([a-z]+)(?:\s|$)", section, re.IGNORECASE)
+        if found:
+            results.append(found.group(1).lower())
+    return results
+
+
 def dmarc_passed(msg: EmailMessage) -> bool:
     """Hat der eigene Mailserver die Herkunft positiv bestätigt (``dmarc=pass``)?
 
@@ -469,10 +518,11 @@ def dmarc_passed(msg: EmailMessage) -> bool:
     if not authserv:
         return False
     headers = [str(v) for v in msg.get_all("Authentication-Results") or []]
-    headers = [h for h in headers if h.split(";", 1)[0].strip().lower() == authserv]
+    headers = [h for h in headers if _authserv_of(h) == authserv]
     if not headers:
         return False
-    return bool(re.search(r"(?:^|[;\s])dmarc=pass\b", headers[0], re.IGNORECASE))
+    # Genau ein DMARC-Ergebnis, und das lautet „pass“; mehrere widersprüchliche gelten nicht
+    return dmarc_results(headers[0]) == ["pass"]
 
 
 def recipient_addresses(msg: EmailMessage) -> list[str]:
@@ -852,6 +902,40 @@ def simulate(ml: MailingList, user, subject: str, body: str) -> InboundMail | No
 
 # --- Abholen per IMAP ---
 
+# Von zu großen Mails nur so viel Kopf laden, wie für den Eintrag im Eingang nötig ist
+MAX_HEADER_BYTES = 64 * 1024
+
+
+def _size_of(info) -> int | None:
+    """``RFC822.SIZE`` aus der IMAP-Antwort; ``None``, wenn der Server keine nennt."""
+    for part in info or []:
+        line = part[0] if isinstance(part, tuple) else part
+        if isinstance(line, bytes):
+            found = re.search(rb"RFC822\.SIZE (\d+)", line)
+            if found:
+                return int(found.group(1))
+    return None
+
+
+def reject_oversized(header: bytes) -> InboundMail | None:
+    """Zu große Mail nur anhand ihres Kopfs als abgewiesen eintragen."""
+    with rls_bypass():
+        msg = BytesParser(policy=policy.default).parsebytes(header, headersonly=True)
+        message_id = str(msg.get("Message-ID", "") or "").strip()[:300]
+        if message_id and InboundMail.objects.filter(message_id=message_id).exists():
+            return None
+        ml, recipient = find_list(recipient_addresses(msg))
+        return _log(
+            message_id=message_id,
+            sender=parseaddr(str(msg.get("From", "") or ""))[1].lower(),
+            recipient=recipient,
+            subject=re.sub(r"\s+", " ", str(msg.get("Subject", "") or "")).strip(),
+            mailing_list=ml,
+            status=InboundMail.Status.REJECTED,
+            reason="Mail zu groß.",
+        )
+
+
 LOCK = "circulars:inbound:fetch"
 
 
@@ -875,12 +959,23 @@ def fetch_inbound() -> int:
             _, found = imap.uid("search", None, "UNSEEN")
             uids = (found[0] or b"").split()[:FETCH_BATCH]
             for uid in uids:
-                _, parts = imap.uid("fetch", uid, "(BODY.PEEK[])")
+                # Erst die Größe, dann höchstens MAX_RAW_BYTES + 1 Byte laden: Eine riesige
+                # Mail belegt so nie den ganzen Speicher des Workers, auch wenn der
+                # Mailserver eine falsche Größe meldet (Gesamtaudit 10.11. S03).
+                _, info = imap.uid("fetch", uid, "(RFC822.SIZE)")
+                size = _size_of(info)
+                if size is not None and size > MAX_RAW_BYTES:
+                    _, parts = imap.uid("fetch", uid, f"(BODY.PEEK[HEADER]<0.{MAX_HEADER_BYTES}>)")
+                else:
+                    _, parts = imap.uid("fetch", uid, f"(BODY.PEEK[]<0.{MAX_RAW_BYTES + 1}>)")
                 raw = next((p[1] for p in parts if isinstance(p, tuple)), None)
                 if raw is None:
                     continue
                 try:
-                    process_message(raw)
+                    if size is not None and size > MAX_RAW_BYTES:
+                        reject_oversized(raw)
+                    else:
+                        process_message(raw)
                     flag = "(\\Deleted)"
                     done += 1
                 except Exception:  # noqa: BLE001

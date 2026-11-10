@@ -31,8 +31,12 @@ log = logging.getLogger(__name__)
 
 MAX_SKEW = datetime.timedelta(minutes=5)
 MAX_REQUEST = transport.MAX_BODY
-# Anfragen je Minute und Absender-Instanz (zusätzlich zur Grenze je IP)
+# Anfragen je Minute und Absender-Instanz (zusätzlich zur Grenze je IP). Gezählt wird erst
+# nach geprüfter Unterschrift: Eine nur behauptete Kennung darf das Kontingent einer
+# Partnerinstanz nicht aufbrauchen (Gesamtaudit 10.11. S02).
 PER_SENDER = 300
+# Abgewiesene Anfragen (falsche Unterschrift, unlesbares Paket, unbekannt) je IP und Minute
+BAD_PER_IP = 60
 
 
 def _plain(status: int, message: str) -> HttpResponse:
@@ -65,8 +69,17 @@ class _Signed(APIView):
     def post(self, request):
         if not services.enabled():
             raise Http404
-        if too_many(f"peering:in:{client_ip(request)}", 600, 60):
+        ip = client_ip(request)
+        if too_many(f"peering:in:{ip}", 600, 60):
             return _plain(429, "Zu viele Anfragen.")
+        bad_key = f"peering:in:bad:{ip}"
+        if (cache.get(bad_key) or 0) >= BAD_PER_IP:
+            return _plain(429, "Zu viele Anfragen.")
+
+        def reject(status: int, message: str) -> HttpResponse:
+            too_many(bad_key, BAD_PER_IP, 60)
+            return _plain(status, message)
+
         # Selbst lesen statt request.body: Djangos allgemeine Grenze (5 MB) würde
         # größere Pakete mit einer HTML-Seite abweisen (Gesamtaudit 05.11. GA-02).
         try:
@@ -88,14 +101,12 @@ class _Signed(APIView):
             return _plain(400, "Unterschrift fehlt.")
         if abs(timezone.now() - when) > MAX_SKEW:
             return _plain(400, "Zeitstempel außerhalb des erlaubten Bereichs.")
-        if too_many(f"peering:in:sender:{sender[:64]}", PER_SENDER, 60):
-            return _plain(429, "Zu viele Anfragen.")
         try:
             envelope = json.loads(body)
         except ValueError:
-            return _plain(400, "Paket lässt sich nicht entschlüsseln.")
+            return reject(400, "Paket lässt sich nicht entschlüsseln.")
         if not isinstance(envelope, dict) or envelope.get("from") != sender:
-            return _plain(400, "Absender passt nicht.")
+            return reject(400, "Absender passt nicht.")
         peer = Peer.objects.filter(instance_id=sender).first() if _is_uuid(sender) else None
         keys = services.keys_of(peer, quarantine_ok=True) if peer else None
         if keys is not None:
@@ -104,25 +115,28 @@ class _Signed(APIView):
                 keys.accepted, "POST", request.path, date, nonce, body, signatures
             ):
                 _bad_signature(peer)
-                return _plain(403, "Unterschrift ungültig.")
+                return reject(403, "Unterschrift ungültig.")
         try:
             payload = crypto.open_sealed(envelope, identity.identity())
         except crypto.CryptoError:
-            return _plain(400, "Paket lässt sich nicht entschlüsseln.")
+            return reject(400, "Paket lässt sich nicht entschlüsseln.")
         if keys is None and self.allow_unknown:
             # Koppeln: Code im Inhalt prüfen, dann erst die fremde Selbstauskunft holen
             try:
                 keys = self.unknown_sender(payload, sender)
             except ValidationError as exc:
-                return _plain(403, " ".join(exc.messages))
+                return reject(403, " ".join(exc.messages))
             except transport.PeerError as exc:
-                return _plain(400, f"Absender nicht prüfbar: {exc}")
+                return reject(400, f"Absender nicht prüfbar: {exc}")
             if not crypto.verify_request_any(
                 keys.accepted, "POST", request.path, date, nonce, body, signatures
             ):
-                return _plain(403, "Unterschrift ungültig.")
+                return reject(403, "Unterschrift ungültig.")
         if keys is None:
-            return _plain(403, "Unbekannte Instanz.")
+            return reject(403, "Unbekannte Instanz.")
+        # Erst jetzt ist die Absenderin geprüft: ihr Kontingent zählen
+        if too_many(f"peering:in:sender:{sender[:64]}", PER_SENDER, 60):
+            return _plain(429, "Zu viele Anfragen.")
         if peer is not None and peer.pending_keys and not self.allow_quarantined:
             # Notfallwechsel wartet: weder alter noch neuer Schlüssel gilt (GA-S02).
             # 423 = später erneut versuchen; die Antwort enthält nur diesen Hinweis.
