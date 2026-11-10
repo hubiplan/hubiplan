@@ -3,11 +3,20 @@ import { Link } from 'react-router-dom'
 import type { ChangeEvent } from 'react'
 import { api } from '../../api/client.ts'
 import { orgApi, PERM } from '../../api/orgs.ts'
-import type { ExtraColor, ThemeSettings } from '../../api/orgs.ts'
-import { Alert, Checkbox, Field, SaveStatus, LoadError, Loading } from '../../components/ui.tsx'
+import { gradientCss } from '../../api/orgs.ts'
+import type { ExtraColor, GradientSetting, ThemeSettings } from '../../api/orgs.ts'
+import {
+  Alert,
+  Checkbox,
+  Field,
+  SaveStatus,
+  SelectField,
+  LoadError,
+  Loading,
+} from '../../components/ui.tsx'
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
-import { contrastRatio, readableOn } from '../../theme/contrast.ts'
+import { contrastRatio, readableOn, readableOnPair } from '../../theme/contrast.ts'
 import { buttonColors, linkColor, PAGE_BG, TEXT_COLOR } from '../../theme/theme.ts'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
@@ -52,6 +61,9 @@ function ThemeForm({
     primary_color_name: theme.primary_color_name ?? '',
     accent_color_name: theme.accent_color_name ?? '',
     extra_colors: theme.extra_colors ?? [],
+    primary_color_use: theme.primary_color_use ?? '',
+    accent_color_use: theme.accent_color_use ?? '',
+    gradients: theme.gradients ?? [],
   })
   const eff = theme.effective
   const primary = form.values.primary_color || eff.primary
@@ -98,11 +110,19 @@ function ThemeForm({
             error={form.errors.primary_color}
             onChange={(v) => form.set('primary_color', v)}
           />
-          <ColorName
-            label={t('Name der Hauptfarbe')}
-            value={form.values.primary_color_name}
-            onChange={(v) => form.set('primary_color_name', v)}
-          />
+          <div className="grid-2">
+            <ColorName
+              label={t('Name der Hauptfarbe')}
+              value={form.values.primary_color_name}
+              onChange={(v) => form.set('primary_color_name', v)}
+            />
+            <ColorUse
+              label={t('Verwendung der Hauptfarbe')}
+              value={form.values.primary_color_use}
+              error={form.errors.primary_color_use}
+              onChange={(v) => form.set('primary_color_use', v)}
+            />
+          </div>
           <ColorInput
             label={t('Zweitfarbe (Akzentfarbe)')}
             hint={t('Hervorhebungen')}
@@ -111,16 +131,35 @@ function ThemeForm({
             error={form.errors.accent_color}
             onChange={(v) => form.set('accent_color', v)}
           />
-          <ColorName
-            label={t('Name der Zweitfarbe')}
-            value={form.values.accent_color_name}
-            onChange={(v) => form.set('accent_color_name', v)}
-          />
+          <div className="grid-2">
+            <ColorName
+              label={t('Name der Zweitfarbe')}
+              value={form.values.accent_color_name}
+              onChange={(v) => form.set('accent_color_name', v)}
+            />
+            <ColorUse
+              label={t('Verwendung der Zweitfarbe')}
+              value={form.values.accent_color_use}
+              error={form.errors.accent_color_use}
+              onChange={(v) => form.set('accent_color_use', v)}
+            />
+          </div>
           <ExtraColors
             colors={form.values.extra_colors}
             error={form.errors.extra_colors}
             ownPrimary={Boolean(form.values.primary_color)}
             onChange={(v) => form.set('extra_colors', v)}
+          />
+          <Gradients
+            gradients={form.values.gradients}
+            palette={[
+              { color: primary, name: form.values.primary_color_name },
+              { color: accent, name: form.values.accent_color_name },
+              ...form.values.extra_colors,
+            ]}
+            error={form.errors.gradients}
+            ownPrimary={Boolean(form.values.primary_color)}
+            onChange={(v) => form.set('gradients', v)}
           />
         </fieldset>
 
@@ -150,6 +189,10 @@ function ThemeForm({
         <p className="muted small">
           {t('Das Design und seine Farbverwendung stellst du hier ein:')}{' '}
           <Link to="/webseite/gestaltung">{t('Webseite › Gestaltung')}</Link>.
+        </p>
+        <p className="muted small">
+          {t('Alle Farben und Verläufe auf einen Blick, zum Weitergeben oder Drucken:')}{' '}
+          <Link to="/einstellungen/erscheinungsbild/farbblatt">{t('Farbblatt ansehen')}</Link>.
         </p>
       </form>
 
@@ -380,7 +423,153 @@ function ColorName({
   )
 }
 
+function ColorUse({
+  label,
+  value,
+  error,
+  onChange,
+}: {
+  label: string
+  value: string
+  error?: string
+  onChange: (v: string) => void
+}) {
+  return (
+    <Field
+      label={label}
+      value={value}
+      maxLength={60}
+      placeholder={t('z. B. Kopf und Schaltflächen')}
+      hint={t('Erscheint im Farbblatt.')}
+      error={error}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  )
+}
+
 const MAX_EXTRA = 4
+const MAX_GRADIENTS = 2
+
+/** Bis zu zwei benannte Verläufe aus der Palette (Webseite: Kopf, Fuß, Bänder, Zierlinien) */
+function Gradients({
+  gradients,
+  palette,
+  error,
+  ownPrimary,
+  onChange,
+}: {
+  gradients: GradientSetting[]
+  palette: { color: string; name: string }[]
+  error?: string
+  ownPrimary: boolean
+  onChange: (v: GradientSetting[]) => void
+}) {
+  const update = (i: number, patch: Partial<GradientSetting>) =>
+    onChange(gradients.map((g, j) => (j === i ? { ...g, ...patch } : g)))
+  const valid = (c?: string) => Boolean(c && /^#[0-9a-f]{6}$/i.test(c))
+  const slotName = (i: number) => {
+    const p = palette[i]
+    const role =
+      i === 0 ? t('Hauptfarbe') : i === 1 ? t('Zweitfarbe') : t('{x}. Farbe', { x: i + 1 })
+    return p?.name ? `${role} (${p.name})` : role
+  }
+  return (
+    <div className={`field${error ? ' field-invalid' : ''}`}>
+      <span>{t('Verläufe')}</span>
+      <small className="muted">
+        {t(
+          'Für Kopf, Fuß, Farbbänder und Zierlinien der Webseite, z. B. von Blau nach Dunkelblau. Welche Stelle einen Verlauf bekommt, stellst du unter Webseite › Gestaltung ein.',
+        )}
+        {!ownPrimary && t(' Verläufe gelten nur zusammen mit einer eigenen Hauptfarbe.')}
+      </small>
+      {gradients.map((g, i) => {
+        const a = palette[g.from]?.color
+        const b = palette[g.to]?.color
+        const ok = valid(a) && valid(b)
+        const on = ok ? readableOnPair(a as string, b as string) : '#000000'
+        const ratio = ok
+          ? Math.min(contrastRatio(a as string, on), contrastRatio(b as string, on))
+          : 0
+        return (
+          <div className="gradient-row" key={i}>
+            <span
+              className="gradient-swatch"
+              aria-hidden="true"
+              style={ok ? { background: gradientCss(a!, b!, g.direction), color: on } : undefined}
+            >
+              {g.name || t('Verlauf {x}', { x: i + 1 })}
+            </span>
+            <Field
+              label={t('Name')}
+              value={g.name}
+              maxLength={30}
+              placeholder={t('z. B. Blauverlauf')}
+              onChange={(e) => update(i, { name: e.target.value })}
+            />
+            <SelectField
+              label={t('von')}
+              value={String(g.from)}
+              onChange={(e) => update(i, { from: Number(e.target.value) })}
+            >
+              {palette.map((_, j) => (
+                <option key={j} value={String(j)}>
+                  {slotName(j)}
+                </option>
+              ))}
+            </SelectField>
+            <SelectField
+              label={t('nach')}
+              value={String(g.to)}
+              onChange={(e) => update(i, { to: Number(e.target.value) })}
+            >
+              {palette.map((_, j) => (
+                <option key={j} value={String(j)}>
+                  {slotName(j)}
+                </option>
+              ))}
+            </SelectField>
+            <SelectField
+              label={t('Richtung')}
+              value={g.direction}
+              onChange={(e) =>
+                update(i, { direction: e.target.value === 'down' ? 'down' : 'right' })
+              }
+            >
+              <option value="right">{t('von links nach rechts')}</option>
+              <option value="down">{t('von oben nach unten')}</option>
+            </SelectField>
+            {ok && (
+              <span className={`small ${ratio >= 4.5 ? 'ok' : 'bad'}`}>
+                {ratio >= 4.5 ? '✓' : '✗'} {t('Text darauf {x} : 1', { x: ratio.toFixed(1) })}
+              </span>
+            )}
+            <button
+              type="button"
+              className="button button-ghost"
+              onClick={() => onChange(gradients.filter((_, j) => j !== i))}
+            >
+              {t('Entfernen')}
+            </button>
+          </div>
+        )
+      })}
+      {gradients.length < MAX_GRADIENTS && palette.length >= 2 && (
+        <div>
+          <button
+            type="button"
+            className="button button-ghost"
+            onClick={() =>
+              onChange([...gradients, { name: '', from: 0, to: 1, direction: 'right' }])
+            }
+          >
+            {t('Verlauf hinzufügen')}
+          </button>
+        </div>
+      )}
+      {error && <small className="field-error">{error}</small>}
+    </div>
+  )
+}
 
 /** Weitere Farben der Einheit (zusammen bis sechs); genutzt von den Webseiten-Designs */
 function ExtraColors({
@@ -432,6 +621,13 @@ function ExtraColors({
               maxLength={30}
               placeholder={t('Name, z. B. Weinrot')}
               onChange={(e) => update(i, { name: e.target.value })}
+            />
+            <input
+              aria-label={t('Verwendung der {x}. Farbe', { x: i + 3 })}
+              value={c.use ?? ''}
+              maxLength={60}
+              placeholder={t('Verwendung, z. B. Fließtext')}
+              onChange={(e) => update(i, { use: e.target.value })}
             />
             {valid && (
               <span className={`small ${ratio >= 4.5 ? 'ok' : 'bad'}`}>

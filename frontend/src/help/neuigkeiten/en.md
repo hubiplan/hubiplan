@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Appearance: every palette colour gets a **use** (e.g. “body text”), plus up to two named **gradients** made from two palette colours. **View colour sheet** shows the colours with hex and RGB values and the gradients, to pass on or print. On the website, the header, footer, colour bands, decorative lines and sections can get a gradient; under Design you can also set colours for **body text**, **secondary text**, **surfaces** and the **page background**, with a notice if text becomes hard to read.
 - AI assistants: At the address `/api/mcp/` of your HUBIplan instance, an AI assistant such as Claude or ChatGPT can search the HUBIplan help and explain terms (Model Context Protocol). It sees no club data and changes nothing.
 - Website: nine more kinds of your own sections for the home page and text pages: **Frequently asked questions** to expand, **Partners and sponsors** with logo and link, **Directions** to a saved place with “Plan route”, **Events of one category** (e.g. only training), **Document to download**, **Video as a link** without embedding, **Excerpt from the chronicle**, **Facts at a glance** and **Divider**.
 - Home page: while customising, the corner at the bottom right of each block changes its width and height, and the width can also be chosen as ¼, ⅓, ½, ⅔, ¾ or full. The finer grid closes gaps: a block moves up below a shorter one next to it.
