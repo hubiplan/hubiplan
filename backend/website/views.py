@@ -37,7 +37,7 @@ from members.views import _ClubMixin
 from organizations.models import Organization
 from organizations.theme import effective_theme
 
-from . import designs, menu, privacy, services
+from . import designs, menu, privacy, services, style
 from .models import (
     BLOCK_HINTS,
     BLOCK_NAME_MAX,
@@ -86,6 +86,7 @@ SETTINGS_FIELDS = [
     "home_sections",
     "design",
     "color_roles",
+    "style",
     "name_format",
     "show_vacant",
     "show_instrument",
@@ -281,6 +282,12 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             )
         return value
 
+    def validate_style(self, value):
+        try:
+            return style.validate(value)
+        except ValueError as exc:
+            raise serializers.ValidationError(str(exc)) from exc
+
     def validate_color_roles(self, value):
         if not isinstance(value, dict):
             raise serializers.ValidationError(gettext("Farbzuordnung bitte je Design angeben."))
@@ -426,6 +433,8 @@ class WebsiteView(_WebsiteMixin, APIView):
             "designs": designs.catalog(
                 website.packages() if website else (), (get_language() or "de")[:2]
             ),
+            # Stilregler: Stufen je Regler und Sperren je Design (Namen in der Oberfläche)
+            "style_catalog": style.catalog(),
             # Designpakete einspielen und freigeben: nur Plattformverwalter
             "can_import_designs": can_import_designs(self.request.user),
             "units": [

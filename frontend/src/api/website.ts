@@ -25,6 +25,8 @@ export interface WebsiteSettings {
   color_roles: ColorRoles
   /** Kopfbild statt Wappen und Vereinsname (Bild der Bilderverwaltung) */
   header_image?: number | null
+  /** Stilregler (Feinabstimmung): nur verstellte; fehlt = wie das Design */
+  style?: StyleValues
   name_format: 'full' | 'initial'
   show_vacant: boolean
   /** Hauptinstrument aus dem Musikmodul unter dem Namen (fehlt bei älteren Ständen) */
@@ -47,6 +49,15 @@ export interface WebsiteSettings {
 }
 
 export type ColorRoles = Record<string, Record<string, number | string>>
+
+/** Stilregler: Stufe (Text) oder Schalter (ja/nein) */
+export type StyleValues = Record<string, string | boolean>
+
+/** Stufen je Regler ("switch" = Schalter) und vom Design gesperrte Regler oder Stufen */
+export interface StyleCatalog {
+  options: Record<string, string[] | 'switch'>
+  locks: Record<string, Record<string, string[] | null>>
+}
 /** Farben je Rolle eines Designs */
 export type RoleColors = Record<string, { color: string; on_color: string }>
 
@@ -198,6 +209,8 @@ export interface WebsiteData {
   palette?: PaletteColor[]
   /** Darf Designpakete einspielen und freigeben (Plattformverwalter) */
   can_import_designs?: boolean
+  /** Stilregler der Feinabstimmung (fehlt bei älteren Ständen) */
+  style_catalog?: StyleCatalog
   website: Website | null
 }
 

@@ -262,6 +262,8 @@ class Website(models.Model):
     menu_links = models.JSONField("Links im Menü", default=dict, blank=True)
     # Ein Hauptpunkt des Menüs als Knopf hervorgehoben (z. B. „Mitglied werden“), leer = keiner
     menu_button = models.CharField("Menüpunkt als Knopf", max_length=40, blank=True)
+    # Stilregler (Gestaltung › Feinabstimmung, website/style.py): nur verstellte; leer = Design
+    style = models.JSONField("Stilregler", default=dict, blank=True)
     home_sections = models.JSONField(
         "Bausteine der Startseite", default=default_home_sections, blank=True
     )
