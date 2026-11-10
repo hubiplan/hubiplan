@@ -31,6 +31,11 @@ def _patterns(v: dict, prefix: str) -> list:
             v["ListProbe"].as_view(),
             name=f"{prefix}circular-list-probe",
         ),
+        path(
+            "circulars/from-event/<int:event_id>/",
+            v["FromEvent"].as_view(),
+            name=f"{prefix}circular-from-event",
+        ),
         path("circulars/<int:pk>/", v["Detail"].as_view(), name=f"{prefix}circular"),
         path(
             "circulars/<int:pk>/recipients/",

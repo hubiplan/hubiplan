@@ -14,6 +14,11 @@ Verein bzw. Abteilung (aktuelle Mitglieder):
   (Einladung zur Versammlung, J4)
 - ``jubilee_year``  Jubilare dieses Jahres (Verein oder Dachverband)
 - ``honorary_titles``  Inhaber dieser Ehrungen (des Vereins oder des Dachverbands)
+- ``event_responses``  nur bei einem Rundschreiben zu einem Termin (``Circular.event``):
+  Eingeladene mit dieser Rückmeldung (``open`` = noch keine, ``yes``, ``no``, ``maybe``)
+
+Rundschreiben zu einem Termin gehen nur an die Eingeladenen des Termins
+(``events.rsvp.invited``); die übrigen Angaben schränken weiter ein.
 
 Verein mit ``audience`` = ``departments``: Inhaber von Abteilungsrollen,
 eingeschränkt mit ``departments`` und ``role_names`` (Rollennamen, z. B. alle
@@ -355,6 +360,29 @@ def _member_candidates(memberships, rows: dict[int, dict], club_of) -> list[Cand
     return result
 
 
+EVENT_RESPONSES = ("open", "yes", "no", "maybe")
+
+
+def event_base(circular: Circular, base, filters: dict):
+    """Nur die Eingeladenen des Termins, auf Wunsch nach ihrer Rückmeldung."""
+    from events.models import EventResponse
+    from events.rsvp import invited
+
+    event = circular.event
+    qs = base.filter(pk__in=invited(event, sort=False).values("pk"))
+    wanted = [r for r in filters.get("event_responses") or [] if r in EVENT_RESPONSES]
+    if wanted:
+        answered = EventResponse.objects.filter(event=event, membership=OuterRef("pk"))
+        q = Q()
+        if "open" in wanted:
+            q |= ~Exists(answered)
+        statuses = [r for r in wanted if r != "open"]
+        if statuses:
+            q |= Exists(answered.filter(status__in=statuses))
+        qs = qs.filter(q)
+    return qs
+
+
 def club_candidates(circular: Circular) -> tuple[list[Candidate], dict[int, int]]:
     from members.views import member_rows
 
@@ -363,6 +391,8 @@ def club_candidates(circular: Circular) -> tuple[list[Candidate], dict[int, int]
     if circular.department_id:
         filters.pop("departments", None)  # im Abteilungsbereich fest die eigene
     base = club_base(club, circular.department)
+    if circular.event_id:
+        base = event_base(circular, base, filters)
     matched, jubilees = club_filtered(club, base, filters)
     include = {k for k in filters.get("include") or [] if isinstance(k, str)}
     include_ids = [int(k[1:]) for k in include if k.startswith("m") and k[1:].isdigit()]

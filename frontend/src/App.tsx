@@ -22,6 +22,7 @@ import { PasswordRequestPage, PasswordResetPage } from './pages/PasswordPages.ts
 import { PublicCardPage } from './pages/PublicCardPage.tsx'
 import { PublicPhotoPage } from './pages/PublicPhotoPage.tsx'
 import { PublicOptOutPage } from './pages/PublicOptOutPage.tsx'
+import { PublicRsvpPage } from './pages/PublicRsvpPage.tsx'
 import { PublicCircularConfirmPage } from './pages/PublicCircularConfirmPage.tsx'
 import { NextcloudLoginPage } from './pages/NextcloudLoginPage.tsx'
 import { lazyPage } from './lazyPages.ts'
@@ -253,6 +254,7 @@ export default function App() {
             }
           />
           <Route path="/rundschreiben/abmelden/:token" element={<PublicOptOutPage />} />
+          <Route path="/rueckmeldung/:token" element={<PublicRsvpPage />} />
           <Route path="/rundschreiben/bestaetigen/:token" element={<PublicCircularConfirmPage />} />
           <Route path="/ausweis/:token" element={<PublicCardPage />} />
           <Route path="/passwort-zuruecksetzen/:key" element={<PasswordResetPage />} />

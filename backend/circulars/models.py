@@ -96,6 +96,15 @@ class Circular(models.Model):
         blank=True,
         related_name="+",
     )
+    # Rundschreiben zu einem Termin: Empfänger sind die Eingeladenen des Termins
+    event = models.ForeignKey(
+        "events.Event",
+        verbose_name="Termin",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="circulars",
+    )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.DRAFT)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
