@@ -65,7 +65,6 @@ from oidc import urls as oidc_urls
 from oidc import views as oidc_views
 from organizations import (
     help_views,
-    home_figures,
     imprint_views,
     setup_status,
     social_views,
@@ -460,7 +459,6 @@ org_patterns = [
     path("accounts/resend/", accounts_view.AccountsResendView.as_view(), name="accounts-resend"),
     path("change-requests/", portal_views.ChangeRequestListView.as_view(), name="change-requests"),
     path("open-tasks/", open_tasks.OpenTasksView.as_view(), name="open-tasks"),
-    path("home-figures/", home_figures.HomeFiguresView.as_view(), name="home-figures"),
     path("setup-status/", setup_status.SetupStatusView.as_view(), name="setup-status"),
     path(
         "change-requests/<int:pk>/decide/",
@@ -721,7 +719,6 @@ dept_patterns = [
     ),
     path("", portal_views.DepartmentInfoView.as_view(), name="dept-info"),
     path("members/", portal_views.DepartmentMemberListView.as_view(), name="dept-members"),
-    path("home-figures/", home_figures.DeptHomeFiguresView.as_view(), name="dept-home-figures"),
     path(
         "statistics/",
         statistics_views.DepartmentStatisticsView.as_view(),

@@ -9480,30 +9480,6 @@ msgstr "Import bank statement for {month}"
 msgid "{account}: eingelesen bis {date}"
 msgstr "{account}: imported up to {date}"
 
-msgid "Barkasse heute"
-msgstr "Cash box today"
-
-msgid "Stand {date}"
-msgstr "As of {date}"
-
-msgid "Konto laut letztem Auszug"
-msgstr "Account per last statement"
-
-msgid "Offene Beiträge"
-msgstr "Outstanding fees"
-
-msgid "Mitglieder heute"
-msgstr "Members today"
-
-msgid "Datenänderungen offen"
-msgstr "Open data changes"
-
-msgid "Nächste Versammlung"
-msgstr "Next meeting"
-
-msgid "Einladen bis"
-msgstr "Invite by"
-
 msgid "Anfahrt und Hinweise"
 msgstr "Directions and notes"
 
