@@ -5354,6 +5354,12 @@ msgstr ""
 msgid "Zu prüfen"
 msgstr "To review"
 
+msgid "Wird geprüft"
+msgstr "Checking"
+
+msgid "Geprüft"
+msgstr "Checked"
+
 msgid "Freigegeben"
 msgstr "Approved"
 
