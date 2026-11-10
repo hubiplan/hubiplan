@@ -321,6 +321,12 @@ CELERY_BEAT_SCHEDULE = {
     # Rundschreiben, deren Versandauftrag verloren ging, weiterversenden
     "rundschreiben-wiederanlauf": {"task": "circulars.tasks.resume_stalled", "schedule": 15 * 60},
     "rechnungen-ablegen": {"task": "billing.tasks.archive_invoices", "schedule": 15 * 60},
+    # Eingehende E-Rechnungen: liegengebliebene Prüfungen nachholen, Abgelehnte löschen
+    "erechnungen-pruefen": {"task": "billing.tasks.check_incoming_all", "schedule": 60},
+    "erechnungen-abgelehnte-loeschen": {
+        "task": "billing.tasks.purge_rejected_incoming",
+        "schedule": 24 * 60 * 60,  # täglich
+    },
     "postausgang-aufraeumen": {
         "task": "outbox.tasks.purge_sent_mails",
         "schedule": 24 * 60 * 60,  # täglich
@@ -513,6 +519,14 @@ OIDC_KEY_FILE = os.environ.get("OIDC_KEY_FILE", "")
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
 EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")
+# Zeitlimit der KoSIT-Prüfung in Sekunden: in Anfragen (Ausgangsrechnung festschreiben) und im
+# Hintergrundjob für eingehende Rechnungen (billing/incoming_check.py)
+EINVOICE_VALIDATOR_TIMEOUT = int(os.environ.get("EINVOICE_VALIDATOR_TIMEOUT", "45"))
+EINVOICE_VALIDATOR_BACKGROUND_TIMEOUT = int(
+    os.environ.get("EINVOICE_VALIDATOR_BACKGROUND_TIMEOUT", "180")
+)
+# Abgelehnte und nicht lesbare Eingangsrechnungen ohne Buchung nach so vielen Tagen löschen
+EINVOICE_REJECTED_RETENTION_DAYS = int(os.environ.get("EINVOICE_REJECTED_RETENTION_DAYS", "90"))
 # Server-only tenant mapping; credential VALUES stay in their named environment variables.
 try:
     EINVOICE_GATEWAYS = json.loads(os.environ.get("EINVOICE_GATEWAYS") or "{}")

@@ -24,7 +24,7 @@ from finance.models import Booking, Category, Project, Receipt
 from finance.services import lock_bank_sources
 from finance.views import FinanceMixin
 
-from . import einvoice_services, einvoice_validator, einvoice_xml
+from . import einvoice_services, einvoice_validator, einvoice_xml, incoming_check
 from .einvoice_schema import CommercialInvoiceSerializer, PartySerializer
 from .models import BusinessPartner, IncomingInvoice, IncomingValidation, Invoice
 from .serializers import InvoiceDetailSerializer
@@ -277,6 +277,7 @@ class IncomingSerializer(serializers.ModelSerializer):
             "data",
             "report",
             "status",
+            "validation",
             "review_note",
             "reviewed_at",
             "booking",
@@ -315,10 +316,12 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
         try:
             xml = einvoice.xml_from_pdf(raw) if content_type == "application/pdf" else raw
             if xml:
-                report, report_xml = einvoice_validator.validate(xml)
                 data = einvoice.as_json(einvoice.parse_xml(xml))
+                # KoSIT-Prüfung im Hintergrund (billing/incoming_check.py)
+                report, report_xml = incoming_check.pending_report(), b""
         except (einvoice.EInvoiceError, ValueError, RuntimeError) as exc:
             report, report_xml = einvoice_validator.failed(str(exc))
+        pending = report["status"] == "pending"
         item = IncomingInvoice.objects.create(
             organization=self.org,
             name=upload.name.rsplit("/", 1)[-1].rsplit("\\", 1)[-1][:200],
@@ -326,6 +329,7 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
             content_type=content_type,
             data=data,
             report=report,
+            validation="pending" if pending else "done",
             created_by=request.user,
         )
         item.original.save(
@@ -339,6 +343,8 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
             item.report_xml.save("validation.xml", ContentFile(report_xml), save=False)
         item.save()
         record(self.org, request.user, "create", item, {"Rechnungseingang": [None, item.name]})
+        if pending:
+            incoming_check.schedule(self.org.pk)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
@@ -382,19 +388,20 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
             raise serializers.ValidationError(
                 gettext("Nur ungeprüfte Eingänge mit XML können erneut geprüft werden.")
             )
-        with item.xml.open("rb") as stream:
-            report, report_xml = einvoice_validator.validate(stream.read())
+        if item.validation == "pending":
+            return Response(self.get_serializer(item).data)
         IncomingValidation.objects.create(
             organization=self.org,
             incoming=item,
             report=item.report,
             report_xml=item.report_xml.name,
         )
-        item.report, item.report_xml = report, ""
-        if report_xml:
-            item.report_xml.save("validation.xml", ContentFile(report_xml), save=False)
+        # Die neue Prüfung läuft im Hintergrund (billing/incoming_check.py).
+        item.report, item.report_xml = incoming_check.pending_report(), ""
+        item.validation = "pending"
         item.save()
-        record(self.org, request.user, "update", item, {"Prüfung": [None, item.report["status"]]})
+        record(self.org, request.user, "update", item, {"Prüfung": [None, "pending"]})
+        incoming_check.schedule(self.org.pk)
         return Response(self.get_serializer(item).data)
 
     @action(detail=True, methods=["post"])
