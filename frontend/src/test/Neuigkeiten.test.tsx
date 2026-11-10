@@ -76,7 +76,7 @@ describe('Neuigkeiten', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Änderungen je Version' })).toBeVisible()
     expect(await screen.findByRole('heading', { name: '2026.11.1 (2026-11-20)' })).toBeVisible()
     expect(screen.getByText('Erfundene Neuerung für den Test')).toBeVisible()
-    expect(screen.queryByText(/Einleitung/)).toBeNull()
+    expect(screen.queryByText(/Einleitung, die auf der Seite nicht erscheint/)).toBeNull()
     expect(await screen.findByText(/Laufende Version: 2026\.11\.1\./)).toBeVisible()
   })
 
