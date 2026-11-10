@@ -4,7 +4,21 @@ titel: Website › Menu and sections
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aufbau]
-stichworte: [menu, section, order, chronicle, member list, memorial, heading, search, instrument, link, button, home page]
+stichworte:
+  [
+    menu,
+    section,
+    order,
+    chronicle,
+    member list,
+    memorial,
+    heading,
+    search,
+    instrument,
+    link,
+    button,
+    home page,
+  ]
 ---
 
 Here you decide which sections the website has, such as events, sub-units, chronicle or contact, what they are called in the menu and in which order they appear.

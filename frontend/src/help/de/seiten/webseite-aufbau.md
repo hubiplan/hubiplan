@@ -4,7 +4,20 @@ titel: Webseite › Menü und Bereiche
 modul: website
 rechte: [website.manage, website.content]
 routen: [/webseite/aufbau]
-stichworte: [Menü, Bereich, Reihenfolge, Mitgliederliste, Gedenken, Überschrift, Suche, Instrument, Link, Knopf, Startseite]
+stichworte:
+  [
+    Menü,
+    Bereich,
+    Reihenfolge,
+    Mitgliederliste,
+    Gedenken,
+    Überschrift,
+    Suche,
+    Instrument,
+    Link,
+    Knopf,
+    Startseite,
+  ]
 ---
 
 Hier legt ihr fest, welche Bereiche die Webseite hat, etwa Termine, {pl}, Chronik oder Kontakt, wie sie im Menü heißen und in welcher Reihenfolge sie erscheinen.
