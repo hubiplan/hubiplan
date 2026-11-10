@@ -1346,6 +1346,23 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
   white-space: nowrap;
 }
 
+/* Knöpfe einer Aktionsspalte stehen nebeneinander, und eine Karte mit Tabelle wird so breit,
+   wie die Tabelle mindestens braucht. Sonst ragte die Tabelle über den Kartenrand, und die
+   Knöpfe brachen untereinander um (Ralf 10.11.2026, Versammlungen › Arten und Fristen).
+   Nur so breit wie der Platz daneben (calc-size), Tabellen mit eigenem Rollbereich bleiben
+   außen vor. Auf dem Handy werden Tabellen ohnehin zu Blöcken (unten). */
+@media not all and (max-width: 40rem) {
+  .table td.actions > .button-row {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+
+  .card:has(.table:not(.table-fixed)):not(:has(.table-scroll, .table-wrap, .booking-scroll)) {
+    min-width: min-content;
+    min-width: calc-size(min-content, min(size, 100%));
+  }
+}
+
 .table .indent {
   padding-left: 1.75rem;
 }
