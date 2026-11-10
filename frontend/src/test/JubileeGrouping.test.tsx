@@ -50,9 +50,9 @@ describe('Jubiläen einer Person zusammengefasst', () => {
     fakeApi({
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg()] }),
-      'GET /api/orgs/7/jubilees/?von=2027-03-01&bis=2027-05-30': () => ({
+      'GET /api/orgs/7/jubilees/?von=2027-01-01&bis=2027-12-31': () => ({
         status: 200,
-        body: { von: '2027-03-01', bis: '2027-05-30', results: ROWS },
+        body: { von: '2027-01-01', bis: '2027-12-31', results: ROWS },
       }),
     })
     renderAt('/')
@@ -71,9 +71,9 @@ describe('Jubiläen einer Person zusammengefasst', () => {
     fakeApi({
       [SESSION]: loggedIn,
       'GET /api/me/organizations/': () => ({ status: 200, body: [testOrg()] }),
-      'GET /api/orgs/7/jubilees/?von=2027-03-01&bis=2028-02-29': () => ({
+      'GET /api/orgs/7/jubilees/?von=2027-01-01&bis=2027-12-31': () => ({
         status: 200,
-        body: { von: '2027-03-01', bis: '2028-02-29', results: ROWS },
+        body: { von: '2027-01-01', bis: '2027-12-31', results: ROWS },
       }),
     })
     renderAt('/mitglieder/jubilaeen')

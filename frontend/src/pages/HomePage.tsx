@@ -7,7 +7,13 @@ import { DepartmentTodosTile } from '../components/DepartmentTodosTile.tsx'
 import { OpenTasksTile } from '../components/OpenTasksTile.tsx'
 import { PERM } from '../api/orgs.ts'
 import type { OrgSummary } from '../api/orgs.ts'
-import { DeptFigures, NoticesCard, OrgFigures, QuickActions } from '../components/home/RoleHome.tsx'
+import {
+  AnniversariesCard,
+  DeptFigures,
+  NoticesCard,
+  OrgFigures,
+  QuickActions,
+} from '../components/home/RoleHome.tsx'
 import { deptActions, roleActionCandidates } from '../components/home/roleActions.ts'
 import { PortalTasks } from './portal/PortalPage.tsx'
 import { MemberHomeTop } from '../components/home/MemberHome.tsx'
@@ -141,6 +147,7 @@ export function HomePage() {
         <QuickActions candidates={actions} />
         {clubLike && <OrgFigures org={active} />}
         {upcoming && <UpcomingTile base={calendarBase.org(active.id)} />}
+        <AnniversariesCard org={active} />
         <NoticesCard org={active} />
         {!upcoming && !people && actions.length === 0 && (
           <div className="card tile">

@@ -2,10 +2,10 @@
 key: page.start
 titel: Startseite
 routen: [/]
-stichworte: [Übersicht, Aufgaben, Kacheln, Schnellaktionen, Kennzahlen, Hinweise, Zusage]
+stichworte: [Übersicht, Aufgaben, Kacheln, Schnellaktionen, Kennzahlen, Hinweise, Jubiläen, Geburtstage, Zusage]
 ---
 
-Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Sie hat für alle Rollen dieselbe Reihenfolge: **Zu erledigen**, **Schnellaktionen**, Kennzahlen, **Nächste Termine** und **Hinweise**. Was du siehst, hängt von deinen Rechten ab; was du nicht darfst, fehlt einfach. Oben rechts wechselst du die Einheit, wenn du in mehreren mitarbeitest.
+Die Startseite ist dein Arbeitsplatz in der gewählten Einheit. Sie hat für alle Rollen dieselbe Reihenfolge: **Zu erledigen**, **Schnellaktionen**, Kennzahlen, **Nächste Termine**, **Jubiläen und Geburtstage** und **Hinweise**. Was du siehst, hängt von deinen Rechten ab; was du nicht darfst, fehlt einfach. Oben rechts wechselst du die Einheit, wenn du in mehreren mitarbeitest.
 
 Die Navigation links beginnt mit **Startseite**, **Aufgaben** und **Termine**. Darunter folgen die Bereiche des Vereinslebens, die Organisation und zuletzt die Verwaltung. Abstände gliedern die sichtbaren Bereiche; **Hilfe** bleibt unten abgesetzt.
 
@@ -19,7 +19,9 @@ Die Kachel **Zu erledigen** steht vorn und sammelt Aufgaben, Freigaben, Anfragen
 
 Darunter stehen bis zu drei Kennzahlen, nur mit dem passenden Recht: für die Kasse der Bestand der Barkasse, der Kontostand laut letztem Kontoauszug und die offenen Beiträge, für den Vorstand die Zahl der Mitglieder und der offenen Datenänderungen, für die Schriftführung die nächste Versammlung und bis wann eingeladen werden muss. Ein Klick führt zur passenden Seite. In **Nächste Termine** öffnet **Neuer Termin** mit Anlegerecht direkt den Termindialog, **Zum Kalender** führt zur Übersicht.
 
-Die Karte **Hinweise** sammelt, was nicht eilt: fehlende Angaben im Impressum, Hinweise zur Briefvorlage (mit **Später**), Jubiläen der nächsten 90 und Geburtstage der nächsten 30 Tage, jeweils mit Link zur Mitgliedsakte. Ohne Hinweis gibt es keine Karte.
+Die Karte **Jubiläen und Geburtstage** zeigt die Jubiläen des laufenden Jahres, ab Oktober zusätzlich die des nächsten Jahres, jeweils unter eigener Überschrift wie **Jubiläen 2026**. Jubiläen gelten für ein Kalenderjahr; ein Datum steht nur dabei, wenn der Verein tages- oder monatsgenau zählt. Darunter stehen die Geburtstage der nächsten 30 Tage. Namen führen zur Mitgliedsakte, **Alle Jubiläen** zur vollständigen Liste.
+
+Die Karte **Hinweise** sammelt, was nicht eilt: fehlende Angaben im Impressum und Hinweise zur Briefvorlage (mit **Später**). Die Zahl neben der Überschrift ist die Zahl dieser Hinweise. Ohne Hinweis gibt es keine Karte.
 
 ![Startseite des Vorstands mit Zu erledigen, Schnellaktionen, Kennzahlen und Hinweisen](bild:startseite-vorstand)
 

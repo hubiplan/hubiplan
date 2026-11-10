@@ -26,7 +26,7 @@ describe('Geburtstage auf der Startseite', () => {
         status: 200,
         body: [testOrg({ modules: ['members'], permissions: ['members.view'] })],
       }),
-      'GET /api/orgs/7/jubilees/?von=2026-10-29&bis=2027-01-27': () => ({
+      'GET /api/orgs/7/jubilees/?von=2026-01-01&bis=2027-12-31': () => ({
         status: 200,
         body: { von: '', bis: '', results: [] },
       }),
@@ -86,7 +86,7 @@ describe('Geburtstage auf der Startseite', () => {
         status: 200,
         body: [testOrg({ modules: ['members'], permissions: ['members.view'] })],
       }),
-      'GET /api/orgs/7/jubilees/?von=2026-10-29&bis=2027-01-27': () => ({
+      'GET /api/orgs/7/jubilees/?von=2026-01-01&bis=2027-12-31': () => ({
         status: 200,
         body: { von: '', bis: '', results: [] },
       }),
