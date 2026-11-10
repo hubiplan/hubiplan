@@ -78,12 +78,19 @@ OEFFENTLICH=""
 if command -v dig >/dev/null 2>&1; then
     OEFFENTLICH=$(dig +short A "$DOMAIN" @1.1.1.1 2>/dev/null | grep -E '^[0-9.]+$' | head -1 || true)
 fi
+# Hestia prüft vor Let's Encrypt mit dem Resolver des Servers. Der kann ein „gibt es nicht“
+# vom ersten Lauf noch zwischengespeichert haben, auch wenn der Eintrag öffentlich schon da ist.
+LOKAL=$(getent ahostsv4 "$DOMAIN" 2>/dev/null | awk '{print $1; exit}' || true)
 if [ -n "${OHNE_ZERTIFIKAT:-}" ]; then
     echo "übersprungen (OHNE_ZERTIFIKAT)"
 elif v-list-web-domain "$HUSER" "$DOMAIN" json | grep -q '"SSL": *"yes"'; then
     echo "SSL ist schon eingerichtet"
 elif command -v dig >/dev/null 2>&1 && [ "$OEFFENTLICH" != "$IP" ]; then
     echo "noch nicht: öffentlich löst $DOMAIN auf '${OEFFENTLICH:-nichts}' auf, erwartet $IP."
+    echo "Später einfach dieses Skript noch einmal starten."
+elif [ "$LOKAL" != "$IP" ]; then
+    echo "noch nicht: öffentlich stimmt der Eintrag, aber der Server selbst löst $DOMAIN noch auf"
+    echo "'${LOKAL:-nichts}' auf (alte Antwort zwischengespeichert, meist bis zu einer Stunde)."
     echo "Später einfach dieses Skript noch einmal starten."
 else
     sleep 5   # DNS-Reload abwarten
