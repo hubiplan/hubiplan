@@ -215,6 +215,22 @@ describe('Hinweise in einer Karte', () => {
   })
 })
 
+describe('Übersicht ohne Module', () => {
+  it('steht unter dem Raster, nicht als halbe Zeile darin', async () => {
+    // Im feinen Raster bekäme die Karte nur eine Zeile und läge über der Fußzeile
+    const org = testOrg({ permissions: [], modules: [], home_focus: [] })
+    fakeApi({
+      [SESSION]: loggedIn,
+      'GET /api/me/organizations/': () => ({ status: 200, body: [org] }),
+    })
+    renderAt('/')
+    const heading = await screen.findByRole('heading', { name: 'Übersicht', level: 2 })
+    const card = heading.closest('.card') as HTMLElement
+    expect(card.closest('.home-grid')).toBeNull()
+    expect(card.parentElement).toHaveClass('home-board-extra')
+  })
+})
+
 describe('Jubiläen je Kalenderjahr', () => {
   afterEach(() => vi.useRealTimers())
 
