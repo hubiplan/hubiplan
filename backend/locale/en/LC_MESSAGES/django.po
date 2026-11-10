@@ -9544,3 +9544,15 @@ msgstr "The event has been cancelled."
 
 msgid "Der Anmeldeschluss ist vorbei."
 msgstr "The registration deadline has passed."
+
+msgid "Dieses Stück gibt es nicht."
+msgstr "This piece does not exist."
+
+msgid "Bitte einen Moment warten."
+msgstr "Please wait a moment."
+
+msgid "Bitte genau eine Mappe, einen Auftritt oder eine Probe angeben."
+msgstr "Please specify exactly one folder, one performance or one rehearsal."
+
+msgid "Diese Leitung ist schon eingetragen."
+msgstr "This leader is already entered."
