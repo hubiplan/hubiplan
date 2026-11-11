@@ -251,8 +251,12 @@ SpamAssassin etwa 2 GB.
    Get-Content -Raw deploy/hestia/verteiler.sh | ssh deploy@server.example.org "sudo env HUSER=hosting-user DOMAIN=verein.example.org ZONE=example.org DNS=extern bash -s"
    ```
 
-   Für den E-Rechnungseingang ein eigenes Postfach anlegen und seine IMAP-Daten in der `.env`
-   eintragen (siehe [betrieb.md](betrieb.md)).
+   Für den E-Rechnungseingang ein eigenes **Rechnungspostfach** anlegen; das Skript schreibt
+   die IMAP-Daten (`EINVOICE_IMAP_*`) in die `.env` (siehe [e-rechnungen.md](e-rechnungen.md)):
+
+   ```powershell
+   Get-Content -Raw deploy/hestia/rechnungspostfach.sh | ssh deploy@server.example.org "sudo env HUSER=hosting-user DOMAIN=example.org bash -s"
+   ```
 10. **Virenprüfung:** Der clamd von Hestia läuft schon. In der `.env`
     `CLAMD_SOCKET_DIR=/run/clamav` setzen; `docker-compose.clamav.yml` schaltet dann
     `VIRUS_SCAN_REQUIRED=1` ein (siehe [betrieb.md](betrieb.md)).

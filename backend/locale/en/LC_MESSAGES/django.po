@@ -9846,6 +9846,24 @@ msgstr "At most twelve partners."
 msgid "Höchstens sechs Zahlen."
 msgstr "At most six numbers."
 
+msgid "Rechnungspostfach"
+msgstr "Invoice mailbox"
+
+msgid "Neue Adresse vergeben"
+msgstr "New address assigned"
+
+msgid "Übernommen"
+msgstr "Imported"
+
+msgid "Keine E-Rechnung im Anhang"
+msgstr "No e-invoice attached"
+
+msgid "Als Spam markiert"
+msgstr "Flagged as spam"
+
+msgid "Nicht verarbeitet"
+msgstr "Not processed"
+
 msgid "Kopf"
 msgstr "Header"
 

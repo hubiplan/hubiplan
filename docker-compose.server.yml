@@ -79,6 +79,15 @@ x-backend-env: &backend-env
   INBOUND_IMAP_PORT: ${INBOUND_IMAP_PORT:-993}
   INBOUND_IMAP_USER: ${INBOUND_IMAP_USER:-}
   INBOUND_IMAP_PASSWORD: ${INBOUND_IMAP_PASSWORD:-}
+  # Rechnungspostfach: E-Rechnungen an rechnung+<kennung>@… in den Rechnungseingang
+  # (deploy/hestia/rechnungspostfach.sh). Ohne Host kein Abruf.
+  EINVOICE_IMAP_HOST: ${EINVOICE_IMAP_HOST:-}
+  EINVOICE_IMAP_PORT: ${EINVOICE_IMAP_PORT:-993}
+  EINVOICE_IMAP_USER: ${EINVOICE_IMAP_USER:-}
+  EINVOICE_IMAP_PASSWORD: ${EINVOICE_IMAP_PASSWORD:-}
+  EINVOICE_IMAP_FOLDER: ${EINVOICE_IMAP_FOLDER:-INBOX}
+  EINVOICE_IMAP_DONE_FOLDER: ${EINVOICE_IMAP_DONE_FOLDER:-INBOX.Verarbeitet}
+  EINVOICE_IMAP_ADDRESS: ${EINVOICE_IMAP_ADDRESS:-}
   # Kennung des eigenen Mailservers in „Authentication-Results“ (z. B. der Hostname, den
   # er dort voranstellt). Ohne sie gehen Mails an Verteiler „direkt versenden“ nie direkt
   # hinaus, sondern immer mit Bestätigungslink.

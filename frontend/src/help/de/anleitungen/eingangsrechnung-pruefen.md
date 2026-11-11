@@ -17,6 +17,8 @@ stichworte: [E-Rechnung, XRechnung, ZUGFeRD, Eingangsrechnung, Freigabe]
 6. Überweise den Betrag wie gewohnt über deine Bank; die Freigabe zahlt nichts aus.
 7. Ordne nach der Zahlung die passende Buchung aus dem Kassenbuch zu.
 
-Ein erneuter Import derselben Datei legt keinen zweiten Eingang an.
+Ein erneuter Import derselben Datei legt keinen zweiten Eingang an. Kommt die Rechnung über
+das **Rechnungspostfach**, entfällt Schritt 2: Sie steht nach etwa einer Minute von selbst im
+Rechnungseingang.
 
 ![Ausgangspunkt: Eingangsrechnung prüfen und freigeben](bild:eingangsrechnung-pruefen)

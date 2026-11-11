@@ -33,6 +33,43 @@ den Eingang strukturierter Rechnungen. Ein Musikmodul ist dafür nicht erforderl
   werden. Das Original wird zusätzlich als Kassenbeleg kopiert. Der Import selbst
   erzeugt weder eine Buchung noch eine Überweisung.
 
+## Rechnungspostfach
+
+Lieferanten schicken E-Rechnungen meist per Mail. Ein Postfach je Server (z. B.
+`rechnung@example.org`) nimmt sie für alle Einheiten an; jede Einheit hat eine Plus-Adresse mit
+zufälliger Kennung (`rechnung+k7m2q9ab@example.org`), die unter Finanzen › Rechnungseingang
+steht. **Neue Adresse vergeben** ersetzt die Kennung; Mails an die alte gehen dann keiner
+Einheit mehr zu. Der Mailserver muss Plus-Adressen in das Postfach zustellen (Exim auf Hestia
+tut das); nach dem Einrichten eine Probemail schicken.
+
+Ablauf (`billing/incoming_mail.py`, Celery-Job `erechnungen-postfach` jede Minute):
+
+- Zuordnung nur über die Plus-Adresse in `Delivered-To`, `X-Original-To`, `Envelope-To`, `To`
+  oder `Cc` mit der Domain des Postfachs. Mails an keine bekannte Kennung bleiben gelesen im
+  Postfach und erscheinen nirgends.
+- Angenommen wird jeder Absender. Passt er zu keiner E-Mail-Adresse eines aktiven
+  Geschäftspartners, zeigt der Eingang **Absender unbekannt**; geprüft wird bei der fachlichen
+  Freigabe, die nichts auszahlt.
+- XML-Anhänge und PDFs mit eingebettetem XML (ZUGFeRD/Factur-X) gehen nach der Virenprüfung
+  denselben Weg wie das Hochladen: Original, Prüfung im Hintergrund, Dublettenschutz über den
+  SHA-256 der Datei. Höchstens 10 Rechnungen und 15 MB je Datei, 25 MB je Mail. Dieselbe Mail
+  (Message-ID) wird nur einmal übernommen.
+- Übernommene Mails wandern in `EINVOICE_IMAP_DONE_FOLDER` (Standard `INBOX.Verarbeitet`, wird
+  bei Bedarf angelegt; leer oder nicht anlegbar: nur gelesen). Mails ohne E-Rechnung, vom
+  Spamfilter markierte Mails (`X-Spam-Flag`) und Mails mit Schadsoftware bleiben gelesen im
+  Posteingang und erscheinen im Rechnungseingang als Hinweis.
+- Ist der Virenscanner nicht erreichbar, bleibt die Mail ungelesen und kommt beim nächsten
+  Abruf wieder dran.
+- Einträge des Postfachs ohne übernommene Rechnung werden nach 90 Tagen gelöscht; die übrigen
+  bleiben, solange es die Rechnung gibt. Gespeichert werden Absender und Betreff verschlüsselt
+  sowie ein Hash der Message-ID, nicht der Mailtext.
+
+Einstellungen (`.env`): `EINVOICE_IMAP_HOST`, `EINVOICE_IMAP_PORT` (993, TLS),
+`EINVOICE_IMAP_USER`, `EINVOICE_IMAP_PASSWORD`, `EINVOICE_IMAP_FOLDER` (`INBOX`),
+`EINVOICE_IMAP_DONE_FOLDER` und `EINVOICE_IMAP_ADDRESS` (angezeigte Grundadresse, Standard
+der Benutzername). Auf Hestia legt `deploy/hestia/rechnungspostfach.sh` Postfach und Einträge an.
+Ohne `EINVOICE_IMAP_HOST` gibt es kein Postfach und keine Adresse in der Oberfläche.
+
 ## Unterstützter Umfang
 
 Ausgabe: XRechnung 3.0 in UBL 2.1, EUR, Rechnungen und vollständige Stornos,

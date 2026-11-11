@@ -17,6 +17,8 @@ stichworte: [e-invoice, XRechnung, ZUGFeRD, incoming invoice, approval]
 6. Transfer the amount through your bank as usual; the approval pays nothing.
 7. After payment, link the matching entry from the cash book.
 
-Importing the same file again does not create a second invoice.
+Importing the same file again does not create a second invoice. If the invoice arrives through
+the invoice mailbox, skip step 2: it appears in incoming invoices by itself after about a
+minute.
 
 ![Starting point: Check and approve an incoming invoice](bild:eingangsrechnung-pruefen)
