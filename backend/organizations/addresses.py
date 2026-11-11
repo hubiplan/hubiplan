@@ -182,6 +182,11 @@ class TlsAskView(APIView):
         from django.conf import settings
         from django.http import HttpResponse, HttpResponseNotFound
 
+        from core.ratelimit import from_proxy
+
+        # Nur Caddy fragt hier (Gesamtaudit 11.11. S-02)
+        if not from_proxy(request):
+            return HttpResponseNotFound()
         domain = normalize_host(request.GET.get("domain", ""))
         if not getattr(settings, "ADDRESSES_FROM_LIST", False) or domain not in listed_hosts():
             return HttpResponseNotFound()

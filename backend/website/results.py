@@ -92,6 +92,8 @@ class Names:
                 "membership__person", "unit"
             )
         }
+        # Einwilligungen der Starter in einem Zug (statt je Name einzeln nachzufragen)
+        site.people.load(s.membership.person_id for s in self.starters.values() if s.membership_id)
 
     def of_starter(self, pk) -> str:
         s = self.starters.get(pk)

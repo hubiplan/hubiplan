@@ -14,6 +14,10 @@ x-backend-env: &backend-env
   PEERING_RECEPTION_PEER_MESSAGES: ${PEERING_RECEPTION_PEER_MESSAGES:-25000}
   PEERING_RECEPTION_PEER_DAILY_MESSAGES: ${PEERING_RECEPTION_PEER_DAILY_MESSAGES:-1000}
   DJANGO_DEBUG: "false"
+  # Nur Caddy (web) darf die Adresse des Aufrufers nennen, nur der Webseiten-Dienst die des
+  # Besuchers; alle anderen zählen mit der Adresse ihrer Verbindung (docs/betrieb.md)
+  HUBIPLAN_PROXY_HOSTS: ${HUBIPLAN_PROXY_HOSTS:-web}
+  HUBIPLAN_WEBSITE_HOSTS: ${HUBIPLAN_WEBSITE_HOSTS:-website}
   # Django-Admin (/admin/) nur bei Bedarf: DJANGO_ADMIN_ENABLED=true in der .env
   DJANGO_ADMIN_ENABLED: ${DJANGO_ADMIN_ENABLED:-false}
   # Swagger-Oberfläche (/api/docs/, lädt Code von einem CDN) nur bei Bedarf
