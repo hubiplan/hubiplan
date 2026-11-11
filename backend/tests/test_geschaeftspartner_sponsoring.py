@@ -109,7 +109,7 @@ def test_webseite_nur_mit_einwilligung(c, base, club):
         website_consent=True,
         website_url="https://baeckerei.example.org",
     )
-    response = c.get(f"/api/orgs/{club.pk}/website/partner-logos/")
+    response = c.get(f"/api/orgs/{club.pk}/billing/partner-logos/")
     assert response.status_code == 200, response.content
     assert [(p["name"], p["url"]) for p in response.json()] == [
         ("Bäckerei Muster", "https://baeckerei.example.org")

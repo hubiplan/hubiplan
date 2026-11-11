@@ -67,7 +67,7 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
   und verschiebt sie mit dem Enddatum; ohne Enddatum wird eine offene Erinnerung gelöscht.
 - Dankesbrief: PDF auf dem Briefbogen (`letterhead`), an die Anschrift und den ersten
   Ansprechpartner mit „erhält Post“; `thanked_at` merkt das Datum.
-- `website_consent` und `website_url` am Partner. `GET /api/orgs/<id>/website/partner-logos/`
+- `website_consent` und `website_url` am Partner. `GET /api/orgs/<id>/billing/partner-logos/`
   liefert Name und Link der Partner mit Einwilligung für den Abschnitt „Partner und Sponsoren“;
   das Logo bleibt ein Webseitenbild.
 

@@ -680,14 +680,3 @@ class ChronicleView(_ContentMixin, APIView):
                 "website": services.module_enabled(self.org),
             }
         )
-
-
-class PartnerLogosView(_ContentMixin, APIView):
-    """GET: Geschäftspartner mit Einwilligung für den Abschnitt „Partner und Sponsoren“.
-
-    Nur Name und Link; das Logo wählt die Redaktion aus den Webseitenbildern."""
-
-    def get(self, request, org_id: int):
-        from billing.agreements import partner_logos
-
-        return Response(partner_logos(self.org))

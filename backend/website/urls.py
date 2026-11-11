@@ -95,11 +95,6 @@ org_patterns = [
         name="website-text-timeline-import",
     ),
     path("website/images/", content_views.ImageListView.as_view(), name="website-images"),
-    path(
-        "website/partner-logos/",
-        content_views.PartnerLogosView.as_view(),
-        name="website-partner-logos",
-    ),
     path("website/images/<int:pk>/", content_views.ImageDetailView.as_view(), name="website-image"),
     path(
         "website/images/<int:pk>/crop/",

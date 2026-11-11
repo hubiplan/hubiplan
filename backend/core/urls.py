@@ -454,6 +454,11 @@ org_patterns = [
     ),
     path("billing/partners/<int:partner_pk>/", include(partner_router.urls)),
     path(
+        "billing/partner-logos/",
+        partner_agreements.PartnerLogosView.as_view(),
+        name="billing-partner-logos",
+    ),
+    path(
         "billing/partners/<int:partner_pk>/documents/",
         partner_files.PartnerDocumentListView.as_view(),
         name="billing-partner-documents",

@@ -19,9 +19,19 @@ from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import serializers, viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from access.catalog import (
+    PARTNERS_EDIT,
+    PARTNERS_VIEW,
+    WEBCONTENT_EDIT,
+    WEBCONTENT_VIEW,
+    WEBSITE_EDIT,
+    WEBSITE_VIEW,
+)
 from audit.log import record
-from core.api_base import AuditMixin
+from core.api_base import AuditMixin, OrgScopedMixin
 
 from .models import BusinessPartner, PartnerAgreement
 from .partners import PartnerAccess
@@ -316,10 +326,30 @@ def thanks_pdf(org, agreement: PartnerAgreement, text: str) -> bytes:
 
 def partner_logos(org) -> list[dict]:
     """Partner mit Einwilligung für den Webseiten-Abschnitt „Partner und Sponsoren“."""
-    rows = BusinessPartner.objects.filter(
-        organization=org, is_active=True, website_consent=True
-    ).order_by("name")
+    rows = sorted(
+        BusinessPartner.objects.filter(organization=org, is_active=True, website_consent=True),
+        key=lambda p: p.name.casefold(),
+    )
     return [
         {"id": p.pk, "name": p.name, "url": p.website_url or (p.details or {}).get("website", "")}
         for p in rows
     ]
+
+
+class PartnerLogosView(OrgScopedMixin, APIView):
+    """GET: Partner mit Einwilligung für den Webseiten-Abschnitt „Partner und Sponsoren“.
+
+    Nur Name und Link, für die Redaktion der Webseite und für alle mit Partnerrechten; das
+    Logo wählt die Redaktion aus den Webseitenbildern."""
+
+    read_permission = (
+        WEBSITE_VIEW,
+        WEBSITE_EDIT,
+        WEBCONTENT_VIEW,
+        WEBCONTENT_EDIT,
+        PARTNERS_VIEW,
+        PARTNERS_EDIT,
+    )
+
+    def get(self, request, org_id: int):
+        return Response(partner_logos(self.org))

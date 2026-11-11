@@ -203,7 +203,7 @@ export const partnerApi = {
     api.del(`${base(org)}${partner}/agreements/${id}/`),
   thanks: (org: number, partner: number, id: number, text: string) =>
     requestBlob('POST', `${base(org)}${partner}/agreements/${id}/thanks/`, { text }),
-  websiteLogos: (org: number) => api.get<PartnerLogo[]>(`/api/orgs/${org}/website/partner-logos/`),
+  websiteLogos: (org: number) => api.get<PartnerLogo[]>(`/api/orgs/${org}/billing/partner-logos/`),
   documents: (org: number, partner: number) =>
     api.get<PartnerDocument[]>(`${base(org)}${partner}/documents/`),
   uploadDocument: (org: number, partner: number, file: File, title: string) => {

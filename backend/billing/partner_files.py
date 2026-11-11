@@ -143,7 +143,7 @@ def group(org, role: str = "", kind: str = "", include_inactive: bool = False):
         rows = rows.filter(is_active=True)
     if kind:
         rows = rows.filter(kind=kind)
-    partners = list(rows.prefetch_related("contacts").order_by("name"))
+    partners = sorted(rows.prefetch_related("contacts"), key=lambda p: p.name.casefold())
     if role:
         partners = [p for p in partners if role in (p.roles or [])]
     return partners
