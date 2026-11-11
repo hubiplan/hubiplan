@@ -16,7 +16,7 @@ Dubletten prüfen.
 die Adresse deiner Einheit, z. B. `rechnung+k7m2q9ab@example.org`. Gib sie deinen Lieferanten.
 HUBIplan holt das Postfach jede Minute ab und übernimmt XML-Anhänge und ZUGFeRD/Factur-X-PDFs
 wie beim Import. Beim Eingang steht dann **Per Mail von** mit dem Absender. Passt der Absender
-zu keinem Geschäftspartner (E-Mail-Adresse unter Finanzen › Geschäftspartner), erscheint
+zu keinem Geschäftspartner (E-Mail-Adresse unter Verein › Geschäftspartner), erscheint
 **Absender unbekannt**; prüfe dann Rechnungssteller und Bankverbindung besonders genau.
 Mails ohne E-Rechnung, etwa mit einer gewöhnlichen PDF-Rechnung, Spam oder Schadsoftware,
 stehen unter **Hinweise aus dem Postfach**, bis du **Erledigt** wählst. **Neue Adresse vergeben**
