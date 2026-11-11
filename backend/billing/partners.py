@@ -764,11 +764,11 @@ class PartnerLookupViewSet(PartnerAccess, viewsets.ReadOnlyModelViewSet):
             BusinessPartner.objects.filter(organization=self.org, is_active=True)
             .select_related("unit", "membership__person")
             .prefetch_related("contacts")
-            .order_by("name", "pk")
         )
 
     def list(self, request, *args, **kwargs):
-        rows = list(self.get_queryset())
+        # Name ist verschlüsselt: sortieren in Python
+        rows = sorted(self.get_queryset(), key=lambda p: (p.name.casefold(), p.pk))
         needle = request.query_params.get("suche", "").strip().casefold()
         if needle:
             rows = [p for p in rows if needle in _haystack(p)]
