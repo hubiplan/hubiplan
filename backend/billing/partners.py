@@ -8,8 +8,6 @@ hat (GP-3).
 
 from __future__ import annotations
 
-import io
-
 from django.db import transaction
 from django.db.models import ProtectedError
 from django.http import HttpResponse
@@ -34,6 +32,7 @@ from audit.log import diff, record, snapshot
 from core.api_base import AuditMixin, OrgScopedMixin
 
 from .models import BusinessPartner, PartnerContact
+from .partner_excel import PartnerImport, export_workbook
 from .sepa import iban_valid
 
 ORG_TYPES = ("club", "federation", "unit")
@@ -111,6 +110,11 @@ def can_edit_money(perms) -> bool:
     return bool(MONEY_EDIT & set(perms))
 
 
+def member_name(membership) -> str:
+    person = membership.person
+    return " ".join(p for p in (person.first_name, person.last_name) if p)
+
+
 class PartnerSerializer(serializers.ModelSerializer):
     details = PartnerDetailsSerializer()
     bank = BankSerializer(required=False)
@@ -122,6 +126,7 @@ class PartnerSerializer(serializers.ModelSerializer):
     contacts = PartnerContactSerializer(many=True, read_only=True)
     unit_name = serializers.SerializerMethodField()
     membership_name = serializers.SerializerMethodField()
+    liaison_name = serializers.SerializerMethodField()
 
     class Meta:
         model = BusinessPartner
@@ -135,6 +140,10 @@ class PartnerSerializer(serializers.ModelSerializer):
             "unit_name",
             "membership",
             "membership_name",
+            "liaison",
+            "liaison_name",
+            "first_contact_on",
+            "first_contact_note",
             "details",
             "bank",
             "our_customer_number",
@@ -167,10 +176,10 @@ class PartnerSerializer(serializers.ModelSerializer):
         return obj.unit.name if obj.unit_id else ""
 
     def get_membership_name(self, obj) -> str:
-        if not obj.membership_id:
-            return ""
-        person = obj.membership.person
-        return " ".join(p for p in (person.first_name, person.last_name) if p)
+        return member_name(obj.membership) if obj.membership_id else ""
+
+    def get_liaison_name(self, obj) -> str:
+        return member_name(obj.liaison) if obj.liaison_id else ""
 
     def validate_roles(self, value):
         return sorted(set(value))
@@ -186,6 +195,8 @@ class PartnerSerializer(serializers.ModelSerializer):
         if membership and membership.organization_id != org.pk:
             raise serializers.ValidationError(gettext("Unbekannte Mitgliedschaft."))
         return membership
+
+    validate_liaison = validate_membership
 
     def validate_default_category(self, category):
         org = self.context["view"].org
@@ -284,7 +295,7 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
     def get_queryset(self):
         return (
             BusinessPartner.objects.filter(organization=self.org)
-            .select_related("unit", "membership__person")
+            .select_related("unit", "membership__person", "liaison__person", "default_category")
             .prefetch_related("contacts")
         )
 
@@ -350,6 +361,11 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
             keep.details = details
             if not keep.bank and other.bank:
                 keep.bank = other.bank
+            for field in ("first_contact_on", "first_contact_note", "liaison", "membership"):
+                if not getattr(keep, field) and getattr(other, field):
+                    setattr(keep, field, getattr(other, field))
+            if other.first_contact_on and keep.first_contact_on:
+                keep.first_contact_on = min(keep.first_contact_on, other.first_contact_on)
             if other.notes:
                 keep.notes = "\n\n".join(p for p in (keep.notes, other.notes) if p)[:5000]
             keep.save()
@@ -368,62 +384,12 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def export(self, request, org_id):
-        from openpyxl import Workbook
-
-        money = can_see_money(self.org_permissions)
-        book = Workbook()
-        sheet = book.active
-        sheet.title = gettext("Geschäftspartner")
-        header = [
-            gettext("Nummer"),
-            gettext("Name"),
-            gettext("Art"),
-            gettext("Rollen"),
-            gettext("Straße"),
-            gettext("PLZ"),
-            gettext("Ort"),
-            gettext("Land"),
-            gettext("E-Mail"),
-            gettext("Telefon"),
-            gettext("Webseite"),
-            gettext("USt-IdNr."),
-            gettext("Steuernummer"),
-            gettext("Ansprechpartner"),
-            gettext("Aktiv"),
-        ]
-        if money:
-            header += [gettext("IBAN"), gettext("BIC"), gettext("Kontoinhaber")]
-        sheet.append(header)
-        roles = dict(BusinessPartner.Role.choices)
-        kinds = dict(BusinessPartner.Kind.choices)
-        for p in self.get_queryset():
-            d = p.details or {}
-            primary = next(iter(p.contacts.all()), None)
-            row = [
-                p.number,
-                p.name,
-                str(kinds.get(p.kind, p.kind)),
-                ", ".join(str(roles.get(r, r)) for r in p.roles or []),
-                d.get("street", ""),
-                d.get("postcode", ""),
-                d.get("city", ""),
-                d.get("country", ""),
-                d.get("email", ""),
-                d.get("phone", ""),
-                d.get("website", ""),
-                d.get("vat_id", ""),
-                d.get("tax_number", ""),
-                str(primary) if primary else "",
-                gettext("Ja") if p.is_active else gettext("Nein"),
-            ]
-            if money:
-                b = p.bank or {}
-                row += [b.get("iban", ""), b.get("bic", ""), b.get("holder", "")]
-            sheet.append(row)
-        out = io.BytesIO()
-        book.save(out)
+        """Excel mit allen Feldern und einem Blatt „Ansprechpartner“ (Bank nur mit Kassenrecht)."""
+        content = export_workbook(
+            self.org, self.get_queryset(), can_see_money(self.org_permissions)
+        )
         response = HttpResponse(
-            out.getvalue(),
+            content,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         response["Content-Disposition"] = 'attachment; filename="geschaeftspartner.xlsx"'
@@ -596,154 +562,49 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="import")
     def import_file(self, request, org_id):
-        """Excel mit Kopfzeile wie beim Export; Zeilen mit bekanntem Namen werden übersprungen.
-
-        ``?probe=1`` zeigt nur, was passieren würde."""
+        """Excel wie beim Export. Bekannte Nummer: Partner aktualisieren (gefüllte Zellen);
+        ohne Nummer und mit bekanntem Namen: überspringen; sonst neu. Blatt „Ansprechpartner“
+        legt Ansprechpartner an oder aktualisiert sie. ``?probe=1`` zeigt nur das Ergebnis."""
         from openpyxl import load_workbook
 
         upload = request.FILES.get("file")
         if not upload or upload.size > 5 * 1024 * 1024:
             raise serializers.ValidationError({"file": gettext("Bitte eine Excel-Datei wählen.")})
         try:
-            sheet = load_workbook(upload, read_only=True, data_only=True).active
-            rows = list(sheet.iter_rows(values_only=True))
+            book = load_workbook(upload, read_only=True, data_only=True)
         except Exception as exc:  # noqa: BLE001 – jede kaputte Datei gleich melden
             raise serializers.ValidationError(
                 {"file": gettext("Die Datei ist keine lesbare Excel-Datei.")}
             ) from exc
-        if not rows:
-            return Response({"created": 0, "skipped": 0, "errors": []})
-        columns = {
-            "nummer": "number",
-            "number": "number",
-            "name": "name",
-            "straße": "street",
-            "strasse": "street",
-            "street": "street",
-            "plz": "postcode",
-            "postcode": "postcode",
-            "ort": "city",
-            "city": "city",
-            "land": "country",
-            "country": "country",
-            "e-mail": "email",
-            "email": "email",
-            "telefon": "phone",
-            "phone": "phone",
-            "webseite": "website",
-            "website": "website",
-            "ust-idnr.": "vat_id",
-            "vat id": "vat_id",
-            "steuernummer": "tax_number",
-            "tax number": "tax_number",
-            "ansprechpartner": "contact",
-            "contact": "contact",
-            "art": "kind",
-            "type": "kind",
-            "rollen": "roles",
-            "roles": "roles",
-        }
-        header = [columns.get(str(h or "").strip().casefold(), "") for h in rows[0]]
-        if "name" not in header:
-            raise serializers.ValidationError(
-                {"file": gettext("Die erste Zeile braucht eine Spalte „Name“.")}
-            )
-        kind_by_label = {str(label).casefold(): v for v, label in BusinessPartner.Kind.choices}
-        kind_by_label.update({v: v for v in BusinessPartner.Kind.values})
-        role_by_label = {str(label).casefold(): v for v, label in BusinessPartner.Role.choices}
-        role_by_label.update({v: v for v in BusinessPartner.Role.values})
-        known = {p.name.casefold() for p in BusinessPartner.objects.filter(organization=self.org)}
         probe = request.query_params.get("probe") == "1"
-        created, skipped, errors = 0, 0, []
+        job = PartnerImport(self, can_edit_money(self.org_permissions))
         with transaction.atomic():
-            number = next_number(self.org)
-            counter = int(number.rpartition("-")[2])
-            for index, raw in enumerate(rows[1:501], start=2):
-                values = {
-                    key: str(value).strip()
-                    for key, value in zip(header, raw, strict=False)
-                    if key and value not in (None, "")
-                }
-                name = values.get("name", "")
-                if not name:
-                    continue
-                if name.casefold() in known:
-                    skipped += 1
-                    continue
-                details = PartnerDetailsSerializer(
-                    data={
-                        k: values[k]
-                        for k in (
-                            "name",
-                            "street",
-                            "postcode",
-                            "city",
-                            "country",
-                            "email",
-                            "phone",
-                            "website",
-                            "vat_id",
-                            "tax_number",
-                            "contact",
-                        )
-                        if k in values
-                    }
-                )
-                if not details.is_valid():
-                    errors.append(
-                        gettext("Zeile {index}: {error}").format(
-                            index=index,
-                            error="; ".join(
-                                f"{k}: {' '.join(map(str, v))}" for k, v in details.errors.items()
-                            ),
-                        )
-                    )
-                    continue
-                roles = sorted(
-                    {
-                        role_by_label[r.strip().casefold()]
-                        for r in values.get("roles", "").split(",")
-                        if r.strip().casefold() in role_by_label
-                    }
-                )
-                known.add(name.casefold())
-                created += 1
-                if probe:
-                    continue
-                partner = BusinessPartner(
-                    organization=self.org,
-                    name=details.validated_data["name"],
-                    details=details.validated_data,
-                    kind=kind_by_label.get(values.get("kind", "").casefold(), "company"),
-                    roles=roles,
-                    number=values.get("number") or f"GP-{counter:04d}",
-                    is_customer=not roles,
-                )
-                if not values.get("number"):
+            counter = int(next_number(self.org).rpartition("-")[2])
+
+            def number():
+                nonlocal counter
+                while f"gp-{counter:04d}" in job.by_number:
                     counter += 1
-                partner.save()
-                contact = details.validated_data.get("contact", "")
-                if contact:
-                    first, _, last = contact.rpartition(" ")
-                    PartnerContact.objects.create(
-                        organization=self.org,
-                        partner=partner,
-                        first_name=first,
-                        last_name=last or contact,
-                        is_primary=True,
-                        receives_invoices=True,
-                    )
+                counter += 1
+                return f"GP-{counter - 1:04d}"
+
+            job.run(book, number)
             if probe:
                 transaction.set_rollback(True)
-            elif created:
+            elif job.created or job.updated:
                 record(
                     self.org,
                     request.user,
-                    "create",
+                    "update",
                     self.org,
-                    {"Import Geschäftspartner": [None, created]},
+                    {
+                        "Import Geschäftspartner": [
+                            None,
+                            f"{job.created} neu, {job.updated} geändert",
+                        ]
+                    },
                 )
-        return Response({"created": created, "skipped": skipped, "errors": errors[:50]})
+        return Response(job.result())
 
 
 class PartnerContactViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):

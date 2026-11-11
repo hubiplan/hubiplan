@@ -11,7 +11,7 @@ from access.catalog import codes_for
 from billing.models import BusinessPartner, Invoice, PartnerContact
 from core.tenancy import tenant_context
 
-from .factories import give_role, make_user
+from .factories import give_role, make_member, make_user
 from .test_rls import as_app_role
 
 pytestmark = pytest.mark.django_db
@@ -186,6 +186,107 @@ def test_excel_export_und_import(c, base):
     names = {p["name"]: p for p in c.get(base).json()}
     assert names["Musterdruck"]["roles"] == ["sponsor", "supplier"]
     assert names["Musterdruck"]["contacts"][0]["last_name"] == "Muster"
+
+
+def _xlsx(book) -> SimpleUploadedFile:
+    out = io.BytesIO()
+    book.save(out)
+    return SimpleUploadedFile("partner.xlsx", out.getvalue())
+
+
+def test_erstkontakt_und_betreut_von(c, base, club, orgs):
+    otto = make_member(club, "Otto", "Muster")
+    stranger = make_member(orgs["b"], "Fremd", "Person")
+    partner = create(
+        c,
+        base,
+        liaison=otto.pk,
+        first_contact_on="2026-03-01",
+        first_contact_note="Schützenfest, Stand am Markt",
+    )
+    assert partner["liaison_name"] == "Otto Muster"
+    assert partner["first_contact_on"] == "2026-03-01"
+    bad = c.patch(f"{base}{partner['id']}/", {"liaison": stranger.pk}, content_type=JSON)
+    assert bad.status_code == 400
+
+
+def test_export_alle_felder_und_import_aktualisiert(c, base, club):
+    otto = make_member(club, "Otto", "Muster")
+    with tenant_context(club.pk):
+        otto.club_number = "117"
+        otto.save()
+    partner = create(
+        c,
+        base,
+        roles=["sponsor"],
+        notes="Seit Jahren treu",
+        liaison=otto.pk,
+        first_contact_on="2026-03-01",
+        bank={"iban": "DE89370400440532013000"},
+    )
+    path = f"{base}{partner['id']}/contacts/"
+    kim = {"last_name": "Beispiel", "first_name": "Kim", "is_primary": True}
+    assert c.post(path, kim, content_type=JSON).status_code == 201
+    book = load_workbook(io.BytesIO(c.get(f"{base}export/").content))
+    main, contacts = book.worksheets
+    head = [cell.value for cell in main[1]]
+    row = {h: cell.value for h, cell in zip(head, main[2], strict=True)}
+    assert row["Notizen"] == "Seit Jahren treu"
+    assert row["Betreut von"] == "Otto Muster" and row["Betreut von (Mitgliedsnummer)"] == "117"
+    assert row["IBAN"] == "DE89370400440532013000"
+    assert row["Erstkontakt am"].date().isoformat() == "2026-03-01"
+    first = [cell.value for cell in contacts[2]]
+    assert first[:4] == ["GP-0001", partner["name"], "Beispiel", "Kim"]
+
+    # Datei ändern: Nummer bleibt, Ort und Erstkontakt neu, Ansprechpartner ergänzen
+    main.cell(2, head.index("Ort") + 1, "Neustadt")
+    main.cell(2, head.index("Erstkontakt") + 1, "Messe")
+    main.cell(2, head.index("Rollen") + 1, "Sponsor, Lieferant")
+    contacts.cell(2, 5, "Marketing")
+    contacts.cell(2, 8, "Nein")
+    contacts.append(["GP-0001", "", "Muster", "Alex", "", "alex@example.org", "", "Ja"])
+    contacts.append(["GP-9999", "", "Niemand"])
+    data = _xlsx(book).read()
+
+    def upload(probe):
+        f = SimpleUploadedFile("partner.xlsx", data)
+        return c.post(f"{base}import/{'?probe=1' if probe else ''}", {"file": f}).json()
+
+    probe = upload(True)
+    assert probe["created"] == 0 and probe["updated"] == 1, probe
+    assert probe["contacts_created"] == 1 and probe["contacts_updated"] == 1
+    assert len(probe["errors"]) == 1 and "GP-9999" in probe["errors"][0]
+    assert c.get(f"{base}{partner['id']}/").json()["details"]["city"] == ""
+    result = upload(False)
+    assert result["updated"] == 1
+    after = c.get(f"{base}{partner['id']}/").json()
+    assert after["details"]["city"] == "Neustadt"
+    assert after["first_contact_note"] == "Messe"
+    assert after["roles"] == ["sponsor", "supplier"]
+    assert after["notes"] == "Seit Jahren treu" and after["liaison"] == otto.pk
+    people = {p["first_name"]: p for p in after["contacts"]}
+    assert people["Kim"]["function"] == "Marketing" and people["Kim"]["is_primary"] is False
+    assert people["Alex"]["is_primary"] is True
+    # Zweiter Lauf ändert nichts mehr
+    again = upload(False)
+    assert again["updated"] == 0 and again["contacts_created"] == 0
+    assert again["contacts_updated"] == 0
+
+
+def test_import_bank_nur_mit_kassenrecht(api, club, base):
+    user = make_user("fest@example.org")
+    give_role(user, club, ["partners.view", "partners.edit"], name="Festausschuss")
+    other = api(user)
+    book = Workbook()
+    book.active.append(["Name", "IBAN", "Betreut von"])
+    book.active.append(["Musterdruck", "DE89370400440532013000", ""])
+    book.active.append(["Zweitdruck", "", "Unbekannt Niemand"])
+    result = other.post(f"{base}import/", {"file": _xlsx(book)}).json()
+    assert result["created"] == 1 and len(result["errors"]) == 1
+    with tenant_context(club.pk):
+        assert BusinessPartner.objects.get(name="Musterdruck").bank == {}
+    exported = load_workbook(io.BytesIO(other.get(f"{base}export/").content)).active
+    assert "IBAN" not in [cell.value for cell in exported[1]]
 
 
 def test_fremder_verein_sieht_nichts(c, base, orgs):

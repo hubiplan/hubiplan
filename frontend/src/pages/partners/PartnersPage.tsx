@@ -14,6 +14,8 @@ import type {
   PartnerKind,
   PartnerRole,
 } from '../../api/partners.ts'
+import type { PickedMember } from '../../api/members.ts'
+import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { PageHeader } from '../../components/PageHeader.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
@@ -46,6 +48,9 @@ const emptyPartner = (): PartnerInput => ({
     identifier: '',
   },
   our_customer_number: '',
+  first_contact_on: null,
+  first_contact_note: '',
+  liaison: null,
   notes: '',
   website_consent: false,
   website_url: '',
@@ -238,7 +243,10 @@ function ImportCard({ onClose }: { onClose: (changed: boolean) => void }) {
     try {
       const result = await partnerApi.importFile(org.id, file, dry)
       if (dry) setProbe(result)
-      else onClose(result.created > 0)
+      else
+        onClose(
+          result.created + result.updated + result.contacts_created + result.contacts_updated > 0,
+        )
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -250,7 +258,7 @@ function ImportCard({ onClose }: { onClose: (changed: boolean) => void }) {
       <h3>{t('Geschäftspartner aus Excel importieren')}</h3>
       <p className="muted small">
         {t(
-          'Erste Zeile: Spaltennamen wie beim Export, mindestens „Name“. Partner mit schon vorhandenem Namen werden übersprungen.',
+          'Am einfachsten exportieren, in Excel ändern und wieder einlesen. Eine bekannte Nummer aktualisiert den Partner, leere Zellen ändern nichts. Zeilen ohne Nummer mit schon vorhandenem Namen werden übersprungen. Das Blatt „Ansprechpartner“ ergänzt und ändert Ansprechpartner.',
         )}
       </p>
       <input
@@ -265,9 +273,14 @@ function ImportCard({ onClose }: { onClose: (changed: boolean) => void }) {
       />
       {probe && (
         <Alert kind={probe.errors.length ? 'error' : 'info'}>
-          {t('{created} neu, {skipped} schon vorhanden.', {
+          {t('{created} neu, {updated} geändert, {skipped} unverändert oder übersprungen.', {
             created: probe.created,
+            updated: probe.updated,
             skipped: probe.skipped,
+          })}{' '}
+          {t('Ansprechpartner: {created} neu, {updated} geändert.', {
+            created: probe.contacts_created,
+            updated: probe.contacts_updated,
           })}
           {probe.errors.length > 0 && (
             <ul>
@@ -293,7 +306,10 @@ function ImportCard({ onClose }: { onClose: (changed: boolean) => void }) {
           <button
             type="button"
             className="button button-primary"
-            disabled={busy || probe.created === 0}
+            disabled={
+              busy ||
+              probe.created + probe.updated + probe.contacts_created + probe.contacts_updated === 0
+            }
             onClick={() => void run(false)}
           >
             {t('Importieren')}
@@ -329,6 +345,9 @@ function PartnerForm({
           roles: partner.roles,
           details: { ...emptyPartner().details!, ...partner.details },
           our_customer_number: partner.our_customer_number,
+          first_contact_on: partner.first_contact_on,
+          first_contact_note: partner.first_contact_note,
+          liaison: partner.liaison,
           notes: partner.notes,
           website_consent: partner.website_consent,
           website_url: partner.website_url,
@@ -347,6 +366,11 @@ function PartnerForm({
   const categories = useLoad(
     () => (access.money ? financeApi.categories(org.id) : Promise.resolve([])),
     [org.id, access.money],
+  )
+  const [liaison, setLiaison] = useState<PickedMember | null>(() =>
+    partner?.liaison
+      ? { id: partner.liaison, first_name: '', last_name: partner.liaison_name }
+      : null,
   )
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -455,6 +479,40 @@ function PartnerForm({
               onChange={(on) => toggleRole(r, on)}
             />
           ))}
+        </div>
+      </fieldset>
+      <fieldset disabled={disabled} className="subcard">
+        <legend>{t('Kontakt zum Verein')}</legend>
+        <div className="form-grid">
+          <Field
+            label={t('Erstkontakt am')}
+            type="date"
+            value={value.first_contact_on ?? ''}
+            onChange={(e) => setValue({ ...value, first_contact_on: e.target.value || null })}
+          />
+          <Field
+            label={t('Erstkontakt')}
+            hint={t('Wie und wo, z. B. Schützenfest 2026')}
+            maxLength={300}
+            value={value.first_contact_note ?? ''}
+            onChange={(e) => setValue({ ...value, first_contact_note: e.target.value })}
+          />
+          {canEdit ? (
+            <MemberPicker
+              orgId={org.id}
+              label={t('Betreut von')}
+              value={liaison}
+              onChange={(m) => {
+                setLiaison(m)
+                setValue({ ...value, liaison: m?.id ?? null })
+              }}
+            />
+          ) : (
+            <div className="field">
+              <span>{t('Betreut von')}</span>
+              <p>{partner?.liaison_name || t('niemand')}</p>
+            </div>
+          )}
         </div>
       </fieldset>
       {value.bank !== undefined || (!partner && access.money) ? (
