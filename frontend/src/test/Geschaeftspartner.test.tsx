@@ -93,6 +93,30 @@ function show(permissions: string[], body: unknown[] = [partner]) {
     'GET /api/orgs/7/billing/partners/': () => ({ status: 200, body }),
     'GET /api/orgs/7/finance/categories/': () => ({ status: 200, body: [] }),
     'GET /api/orgs/7/billing/partners/4/agreements/': () => ({ status: 200, body: [agreement] }),
+    'GET /api/orgs/7/billing/partners/4/fields/': () => ({
+      status: 200,
+      body: [
+        {
+          definition: {
+            id: 1,
+            label: 'Sponsorstufe',
+            key: 'sponsorstufe',
+            field_type: 'choice',
+            choices: ['Gold', 'Silber'],
+            repeatable: false,
+            subfields: [],
+            federation_wide: false,
+            help_text: '',
+            sort_order: 0,
+            is_archived: false,
+            inherited: false,
+            owner_name: 'TV Beispielhausen',
+            in_use: true,
+          },
+          value: 'Gold',
+        },
+      ],
+    }),
     'GET /api/orgs/7/billing/partners/4/documents/': () => ({
       status: 200,
       body: [
@@ -151,6 +175,13 @@ describe('Geschäftspartner', () => {
     expect(
       screen.getByLabelText('Darf auf unserer Webseite als Partner oder Sponsor genannt werden'),
     ).toBeInTheDocument()
+  })
+
+  it('zeigt Zusatzfelder in der Partnerakte', async () => {
+    show(['partners.view', 'partners.edit'])
+    fireEvent.click(await screen.findByRole('button', { name: 'Getränke Beispiel GmbH' }))
+    expect(await screen.findByText('Zusatzfelder')).toBeInTheDocument()
+    expect(screen.getByLabelText('Sponsorstufe')).toHaveValue('Gold')
   })
 
   it('verlangt ein Leserecht', async () => {

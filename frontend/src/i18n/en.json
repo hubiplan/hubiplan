@@ -8176,5 +8176,11 @@
   "Erstkontakt am": "First contact on",
   "Erstkontakt": "First contact",
   "Wie und wo, z. B. Schützenfest 2026": "How and where, e.g. club festival 2026",
-  "Betreut von": "Looked after by"
+  "Betreut von": "Looked after by",
+  "1 Geschäftspartner": "1 business partner",
+  "{n} Geschäftspartnern": "{n} business partners",
+  "Eigene Felder für die Akte der Geschäftspartner, z. B. Sponsorstufe oder Lieferzeit. Wiederholbare Felder haben mehrere Einträge je Partner, z. B. Veranstaltungen mit Anlass und Datum.": "Your own fields for the business partner record, e.g. sponsorship level or delivery time. Repeatable fields have several entries per partner, e.g. events with occasion and date.",
+  ": Das Feld verschwindet aus Partnerakte und Export, die Werte bleiben erhalten und das Feld lässt sich wiederherstellen.": ": the field disappears from the partner record and export, the values are kept and the field can be restored.",
+  "Nicht in Partnerakte und Export sichtbar; die Werte bleiben gespeichert.": "Not visible in the partner record and export; the values remain stored.",
+  "Das Feld ist bei Geschäftspartnern ausgefüllt. Die Werte dieses Unterfelds werden dabei bei allen Geschäftspartnern gelöscht.": "The field is filled in for business partners. The values of this subfield will be deleted for all business partners."
 }
