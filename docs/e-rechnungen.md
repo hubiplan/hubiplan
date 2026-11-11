@@ -41,8 +41,11 @@ Lieferanten schicken E-Rechnungen meist per Mail. Ein Postfach je Server (z. B.
 `rechnung@example.org`) nimmt sie für alle Einheiten an; jede Einheit hat eine Plus-Adresse mit
 zufälliger Kennung (`rechnung+k7m2q9ab@example.org`), die unter Finanzen › Rechnungseingang
 steht. **Neue Adresse vergeben** ersetzt die Kennung; Mails an die alte gehen dann keiner
-Einheit mehr zu. Der Mailserver muss Plus-Adressen in das Postfach zustellen (Exim auf Hestia
-tut das); nach dem Einrichten eine Probemail schicken.
+Einheit mehr zu. Der Mailserver muss Plus-Adressen in das Postfach zustellen. Hat die Domain
+ein Catch-all für den [Verteiler](rundschreiben.md), stellt Exim auf Hestia sie stattdessen in
+das Sammelpostfach zu; der Verteiler erkennt die Plus-Adresse und gibt die Mail an den
+Rechnungseingang weiter (übernommen: gelöscht, sonst gelesen liegen gelassen). Nach dem
+Einrichten eine Probemail schicken.
 
 Ablauf (`billing/incoming_mail.py`, Celery-Job `erechnungen-postfach` jede Minute):
 
