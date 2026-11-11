@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import datetime
+from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import dataclass
 
@@ -24,7 +25,14 @@ from dateutil.relativedelta import relativedelta
 from core.tenancy import rls_bypass
 from organizations.models import Organization
 
-from .models import Membership, overlaps, today
+from .models import (
+    Membership,
+    MembershipPeriod,
+    MemberType,
+    MemberTypeAssignment,
+    overlaps,
+    today,
+)
 
 Range = tuple[datetime.date, datetime.date | None]
 
@@ -46,18 +54,29 @@ def merge(ranges: Iterable[Range]) -> list[Range]:
 
 def counted_ranges(membership: Membership, predicate) -> list[Range]:
     """Teile der Zeiträume, in denen eine Art galt, die ``predicate`` erfüllt."""
+    return merge(
+        _counted(
+            [(p.entry_date, p.exit_date) for p in membership.periods.all()],
+            [
+                (ta.valid_from, ta.valid_until, ta.member_type)
+                for ta in membership.type_assignments.all()
+            ],
+            predicate,
+        )
+    )
+
+
+def _counted(periods, assignments, predicate) -> list[Range]:
+    """Wie ``counted_ranges``, aus einfachen Tupeln und ohne Zusammenfassen."""
     ranges = []
-    periods = list(membership.periods.all())
-    assignments = list(membership.type_assignments.all())
-    for period in periods:
-        for ta in assignments:
-            if not predicate(ta.member_type):
+    for entry, exit_ in periods:
+        for valid_from, valid_until, member_type in assignments:
+            if not predicate(member_type):
                 continue
-            if overlaps(period.entry_date, period.exit_date, ta.valid_from, ta.valid_until):
-                start = max(period.entry_date, ta.valid_from)
-                ends = [d for d in (period.exit_date, ta.valid_until) if d]
-                ranges.append((start, min(ends) if ends else None))
-    return merge(ranges)
+            if overlaps(entry, exit_, valid_from, valid_until):
+                ends = [d for d in (exit_, valid_until) if d]
+                ranges.append((max(entry, valid_from), min(ends) if ends else None))
+    return ranges
 
 
 def days_in(ranges: list[Range], until: datetime.date) -> int:
@@ -156,8 +175,12 @@ class Duration:
         return cls(days=days, years=years, ranges=ranges)
 
 
+def _club_counts(member_type) -> bool:
+    return member_type.counts_for_duration
+
+
 def club_ranges(membership: Membership) -> list[Range]:
-    return counted_ranges(membership, lambda t: t.counts_for_duration)
+    return counted_ranges(membership, _club_counts)
 
 
 def federation_predicate(federation: Organization):
@@ -215,6 +238,43 @@ def next_jubilee(
     return None
 
 
+def _history(memberships) -> tuple[dict[int, list], dict[int, list]]:
+    """Zeiträume und Artzuordnungen je Mitgliedschaft, als einfache Tupel."""
+
+    periods: dict[int, list] = defaultdict(list)
+    for mid, entry, exit_ in MembershipPeriod.objects.filter(
+        membership__in=memberships
+    ).values_list("membership_id", "entry_date", "exit_date"):
+        periods[mid].append((entry, exit_))
+    rows = list(
+        MemberTypeAssignment.objects.filter(membership__in=memberships).values_list(
+            "membership_id", "valid_from", "valid_until", "member_type_id"
+        )
+    )
+    types = MemberType.objects.in_bulk({row[3] for row in rows})
+    assignments: dict[int, list] = defaultdict(list)
+    for mid, valid_from, valid_until, type_id in rows:
+        assignments[mid].append((valid_from, valid_until, types[type_id]))
+    return periods, assignments
+
+
+def _federation_ranges_of(memberships, federation: Organization) -> dict[int, list[Range]]:
+    """Wie ``federation_ranges``, für alle Personen der Mitgliedschaften in wenigen
+    Abfragen statt einer je Mitglied (Systemabfrage)."""
+    predicate = federation_predicate(federation)
+    raw: dict[int, list[Range]] = defaultdict(list)
+    with rls_bypass():
+        everywhere = Membership.objects.filter(
+            scope=federation, person__in=memberships.values("person_id")
+        )
+        periods, assignments = _history(everywhere)
+        for mid, person_id in everywhere.order_by().values_list("pk", "person_id"):
+            raw[person_id].extend(
+                _counted(periods.get(mid, []), assignments.get(mid, []), predicate)
+            )
+    return {person_id: merge(ranges) for person_id, ranges in raw.items()}
+
+
 def jubilees_between(club: Organization, start: datetime.date, end: datetime.date) -> list[dict]:
     """Jubiläen der Mitglieder eines Vereins im Zeitraum [start, end], die am Jubiläum
     selbst Mitglied waren.
@@ -223,41 +283,53 @@ def jubilees_between(club: Organization, start: datetime.date, end: datetime.dat
     Dachverbandsjubiläen nach dessen Stufen und Regel. Monats-/jahresgenau
     zählt ein Jubiläum, wenn sein Monat bzw. Jahr den Zeitraum berührt.
     """
-    result = []
-    memberships = (
-        Membership.objects.filter(organization=club, purged_at__isnull=True)
-        .select_related("person", "person__federation")
-        .prefetch_related("periods", "type_assignments__member_type")
-    )
+    # Zeiträume und Arten aller Mitglieder als einfache Zeilen (ohne Modellobjekte, ohne
+    # Namen); Personen werden erst für die Treffer geladen und entschlüsselt
+    # (Gesamtaudit 11.11., P-03).
+    memberships = Membership.objects.filter(organization=club, purged_at__isnull=True)
+    periods, assignments = _history(memberships)
     federation = club.federation
     fed_levels = federation.jubilee_years if federation else []
-    for membership in memberships:
-        periods = list(membership.periods.all())
+    fed_ranges = _federation_ranges_of(memberships, federation) if fed_levels else {}
+    precision = club.date_precision
+    hits = []
+    for mid, person_id in memberships.order_by().values_list("pk", "person_id"):
+        own = periods.get(mid, [])
 
-        def member_during(a, b, periods=periods):
+        def member_during(a, b, own=own):
             # Fachfrage 10 (Audit 31.10.): wer am Jubiläum selbst Mitglied war, nicht nur
             # wer am Anfang oder Ende des gewählten Zeitraums dabei war
-            return any(
-                p.entry_date <= b and (p.exit_date is None or p.exit_date >= a) for p in periods
-            )
+            return any(p[0] <= b and (p[1] is None or p[1] >= a) for p in own)
 
         if not member_during(start, end):
             continue
-        ranges = club_ranges(membership)
-        precision = club.date_precision
-        for years in club.jubilee_years:
-            d = jubilee_date(ranges, years, precision)
-            if d and d <= end and unit_end(d, precision) >= start:
-                if member_during(d, unit_end(d, precision)):
-                    result.append(_row(membership, "club", club, years, d, precision))
-        if federation and fed_levels:
-            f_ranges = federation_ranges(membership.person, federation)
-            fed_p = federation.date_precision
-            for years in fed_levels:
-                d = jubilee_date(f_ranges, years, fed_p)
-                if d and d <= end and unit_end(d, fed_p) >= start:
-                    if member_during(d, unit_end(d, fed_p)):
-                        result.append(_row(membership, "federation", federation, years, d, fed_p))
+        todo = [
+            ("club", club, merge(_counted(own, assignments.get(mid, []), _club_counts)), precision)
+        ]
+        if fed_levels:
+            todo.append(
+                ("federation", federation, fed_ranges.get(person_id, []), federation.date_precision)
+            )
+        for kind, org, ranges, prec in todo:
+            if not ranges:
+                continue
+            for years in org.jubilee_years:
+                # Früher als Beginn + Jahre kann das Jubiläum nicht liegen
+                if ranges[0][0].year + years > end.year:
+                    continue
+                d = jubilee_date(ranges, years, prec)
+                if d and d <= end and unit_end(d, prec) >= start:
+                    if member_during(d, unit_end(d, prec)):
+                        hits.append((mid, kind, org, years, d, prec))
+    found = {
+        m.pk: m
+        for m in Membership.objects.filter(pk__in={h[0] for h in hits}).select_related(
+            "person", "person__federation"
+        )
+    }
+    result = [
+        _row(found[mid], kind, org, years, d, prec) for mid, kind, org, years, d, prec in hits
+    ]
     from .birthdays import unit_names
 
     units = unit_names({r["member_id"] for r in result}, start)
