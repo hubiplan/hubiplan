@@ -126,7 +126,7 @@ class TestSuchmarken:
 class TestBeitrag:
     def test_ohne_geburtsdatum_grundbeitrag(self, orgs, types):
         org = orgs["a"]
-        FeeRate.objects.create(member_type=types["aktiv"], amount=Decimal("40"))
+        FeeRate.objects.create(organization=org, member_type=types["aktiv"], amount=Decimal("40"))
         AgeRate.objects.create(organization=org, name="Jugend", max_age=17, amount=Decimal("10"))
         assert yearly_fee(org, types["aktiv"], None, 2026) == (Decimal("40"), "")
 
