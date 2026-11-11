@@ -27,7 +27,7 @@ from access.catalog import (
     UNITS_VIEW,
     WEBCONTENT_EDIT,
     WEBSITE_EDIT,
-    codes_for,
+    board_codes,
     effective,
 )
 from access.models import Role, RoleAssignment
@@ -352,7 +352,9 @@ def ensure_workspace_role(unit: Department) -> None:
         if not Role.objects.filter(organization=unit).exists():
             # Webseite nur, wenn sie für die Untereinheit eingeschaltet ist (siehe unten)
             perms = [
-                c for c in codes_for(unit.type) if c.split(".")[0] not in ("webcontent", "website")
+                c
+                for c in board_codes(unit.type)
+                if c.split(".")[0] not in ("webcontent", "website")
             ]
             Role.objects.create(organization=unit, name=DEFAULT_BOARD_ROLE, permissions=perms)
         if "website" in (unit.enabled_modules or []):
@@ -613,7 +615,7 @@ class PlatformOrganizationViewSet(
                 organization=org,
                 name=DEFAULT_BOARD_ROLE,
                 description="Vollzugriff auf die Organisation",
-                permissions=codes_for(org.type),
+                permissions=board_codes(org.type),
             )
         record(org, self.request.user, "create", org, diff({}, snapshot(org)))
 
@@ -713,7 +715,7 @@ class PlatformBoardView(APIView):
             role, _ = Role.objects.get_or_create(
                 organization=org,
                 name=DEFAULT_BOARD_ROLE,
-                defaults={"permissions": codes_for(org.type)},
+                defaults={"permissions": board_codes(org.type)},
             )
             assignment = RoleAssignment.objects.create(organization=org, role=role, user=user)
         record(

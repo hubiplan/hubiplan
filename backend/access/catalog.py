@@ -478,6 +478,16 @@ def codes_for(org_type: str) -> list[str]:
     return codes
 
 
+# Rechte, die eine neue Vorstandsrolle nicht von selbst bekommt; die Rollenverwaltung
+# vergibt sie bewusst (KI-Assistenten, docs/mcp.md)
+NOT_AUTOMATIC: frozenset[str] = frozenset({MCP_CONNECT})
+
+
+def board_codes(org_type: str) -> list[str]:
+    """Rechte der Vorstandsrolle einer neuen Einheit: alle außer ``NOT_AUTOMATIC``."""
+    return [c for c in codes_for(org_type) if c not in NOT_AUTOMATIC]
+
+
 DEPARTMENT_CODES: frozenset[str] = frozenset(
     [c for a in AREAS if a.dept_levels for c in _area_codes(a, a.dept_levels)]
     + [e.code for e in EXTRAS if e.dept]

@@ -2,7 +2,7 @@
 
 import pytest
 
-from access.catalog import MEMBERS_VIEW, UNITS_EDIT, codes_for
+from access.catalog import MEMBERS_VIEW, UNITS_EDIT, board_codes
 from access.models import Role
 from core.tenancy import tenant_context
 from members.models import Membership, Person
@@ -79,7 +79,7 @@ class TestUmschalten:
         assert org.type == "federation"
         assert (org.label, org.department_label) == ("Dachverband", "Verein")
         role = Role.objects.get(organization=org)
-        assert set(role.permissions) >= set(codes_for("federation"))
+        assert set(role.permissions) >= set(board_codes("federation"))
         # und zurück
         resp = api(admin).patch(
             f"/api/platform/orgs/{org.pk}/", {"keeps_members": True}, content_type=JSON

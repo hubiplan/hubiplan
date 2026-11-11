@@ -1,6 +1,7 @@
 """Adressen der KI-Schnittstelle (docs/mcp.md)."""
 
 from django.urls import path, re_path
+from drf_spectacular.utils import extend_schema
 
 from . import oauth_views
 from .views import McpClubView, McpView
@@ -33,16 +34,29 @@ api_patterns = [
     ),
 ]
 
-# Unter der Wurzel der Adresse (RFC 8414, RFC 9728); Caddy leitet sie ans Backend
+# Unter der Wurzel der Adresse (RFC 8414, RFC 9728); Caddy leitet sie ans Backend.
+# Nicht im OpenAPI-Schema: dieselben Antworten stehen dort unter /api/mcp/oauth/.
+
+
+@extend_schema(exclude=True)
+class _RootResource(oauth_views.ResourceMetadataView):
+    pass
+
+
+@extend_schema(exclude=True)
+class _RootServer(oauth_views.ServerMetadataView):
+    pass
+
+
 root_patterns = [
     re_path(
         r"^\.well-known/oauth-protected-resource(?:/api/mcp/verein/?)?$",
-        oauth_views.ResourceMetadataView.as_view(),
+        _RootResource.as_view(),
         name="mcp-resource-wellknown",
     ),
     re_path(
         r"^\.well-known/(?:oauth-authorization-server|openid-configuration)(?:/api/mcp/oauth)?$",
-        oauth_views.ServerMetadataView.as_view(),
+        _RootServer.as_view(),
         name="mcp-oauth-wellknown",
     ),
 ]
