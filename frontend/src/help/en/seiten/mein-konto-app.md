@@ -2,9 +2,11 @@
 key: page.account_app
 titel: My account › App & other instances
 routen: [/mein-konto/app]
-stichworte: [app, phone, device, pair, instance]
+stichworte: [app, phone, device, pair, instance, AI assistant, MCP]
 ---
 
 This is where you connect the HUBIplan app on your phone to your account and see which devices are connected. You disconnect a device you no longer use here. Below, you link accounts on other HUBIplan instances so you can sign in there with this account.
+
+Under “AI assistants” you find the address for connecting an AI assistant such as Claude or ChatGPT, and the list of connected assistants. You end a connection with **Disconnect** (see [Connect AI assistants to HUBIplan](/hilfe/ki-assistent-verbinden)).
 
 If your app access or devices cannot be retrieved, the error offers **Reload**. Only a successfully loaded empty device list means that no device is connected.

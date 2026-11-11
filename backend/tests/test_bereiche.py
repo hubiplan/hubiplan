@@ -239,6 +239,7 @@ def test_katalog_liefert_bereiche_mit_stufen(api, board_a):
         "export.lists",
         "export.full",
         "roles.preview",
+        "mcp.connect",
     }
     dept = api(board_a).get("/api/permissions/?org_type=department").json()
     dept_areas = {m["id"]: m for m in dept if m["kind"] == "area"}
