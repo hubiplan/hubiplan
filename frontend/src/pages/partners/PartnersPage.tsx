@@ -74,8 +74,14 @@ export function PartnersPage() {
       return hay.some((v) => (v ?? '').toLocaleLowerCase().includes(needle))
     })
   }, [load.data, search, kind, role, inactive])
-  if (load.error) return <LoadError message={load.error} onRetry={load.reload} />
-  if (!load.data) return <Loading />
+  // Der Seitenkopf steht auch beim Laden und bei Fehlern (Seitenkopf-Rundgang)
+  if (load.error || !load.data)
+    return (
+      <div className="stack">
+        <PageHeader title={t('Geschäftspartner')} />
+        {load.error ? <LoadError message={load.error} onRetry={load.reload} /> : <Loading />}
+      </div>
+    )
   const open = (value: BusinessPartner | 'new') =>
     void confirmLeave().then((ok) => {
       if (ok) setSelected(value)
