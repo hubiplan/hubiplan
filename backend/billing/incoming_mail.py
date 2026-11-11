@@ -42,7 +42,7 @@ from core import virenscan
 from core.tenancy import rls_bypass, tenant_context
 
 from . import incoming_import
-from .models import BusinessPartner, IncomingMail, IncomingMailbox
+from .models import IncomingMail, IncomingMailbox
 
 logger = logging.getLogger(__name__)
 
@@ -154,14 +154,9 @@ def spam_flagged(msg: EmailMessage) -> bool:
 
 
 def _known_sender(org, sender: str) -> bool:
-    if not sender:
-        return False
-    partners = BusinessPartner.objects.filter(organization=org, is_active=True)
-    for details in partners.values_list("details", flat=True):
-        email = str((details or {}).get("email") or "").strip().lower()
-        if email and email == sender:
-            return True
-    return False
+    from .incoming_partner import known_sender
+
+    return known_sender(org, sender)
 
 
 def _is_xml(name: str, content_type: str, data: bytes) -> bool:

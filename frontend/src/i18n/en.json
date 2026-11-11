@@ -8137,5 +8137,18 @@
   "Serienbrief erstellen": "Create serial letter",
   "Noch keine Dokumente, etwa Verträge, Angebote oder Einwilligungen.": "No documents yet, for example contracts, offers or consents.",
   "Dokument „{name}“ entfernen?": "Remove document “{name}”?",
-  "Bezeichnung (optional)": "Name (optional)"
+  "Bezeichnung (optional)": "Name (optional)",
+  "Neue IBAN": "New IBAN",
+  "Neue Bankverbindung: Die IBAN der Rechnung weicht von der beim Geschäftspartner gespeicherten ab. Bitte beim Rechnungssteller telefonisch bestätigen, bevor du freigibst.": "New bank account: the invoice IBAN differs from the one stored for the business partner. Please confirm it with the issuer by phone before you approve.",
+  "Neue IBAN telefonisch bestätigt": "New IBAN confirmed by phone",
+  "an der USt-IdNr.": "by VAT ID",
+  "an der IBAN": "by IBAN",
+  "am Absender der Mail": "by the email sender",
+  "an der Domain des Absenders": "by the sender's domain",
+  "am Namen": "by name",
+  "Zuordnung zum Geschäftspartner lösen": "Unlink business partner",
+  "Vorschlag: {name} (erkannt {by})": "Suggestion: {name} (recognised {by})",
+  "Kein passender Geschäftspartner gefunden.": "No matching business partner found.",
+  "Vorschlag zuordnen": "Link suggestion",
+  "Als Geschäftspartner anlegen": "Create as business partner"
 }

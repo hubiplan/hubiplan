@@ -183,4 +183,51 @@ describe('E-Rechnungseingang', () => {
       ),
     ).toBeInTheDocument()
   })
+
+  it('schlägt einen Geschäftspartner vor und verlangt bei neuer IBAN eine Bestätigung', async () => {
+    const valid = {
+      ...item,
+      report: { status: 'valid' as const, validator: 'KoSIT', messages: [] },
+      data: { ...item.data, iban: 'DE89370400440532013000' },
+      partner: null,
+      partner_name: '',
+      suggested_partner: { id: 4, name: 'Lieferant Beispiel GmbH', by: 'vat_id' as const },
+      iban_changed: true,
+    }
+    const linked = {
+      ...valid,
+      partner: 4,
+      partner_name: 'Lieferant Beispiel GmbH',
+      suggested_partner: null,
+    }
+    const calls = fakeApi({
+      [incoming + '1']: () => ({ status: 200, body: page([valid]) }),
+      'POST /api/orgs/7/finance/incoming/1/partner/': () => ({ status: 200, body: linked }),
+      'POST /api/orgs/7/finance/incoming/1/review/': () => ({
+        status: 200,
+        body: { ...linked, status: 'approved', iban_changed: false },
+      }),
+    })
+    show()
+    const user = userEvent.setup()
+    expect(await screen.findByText('Neue IBAN')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'RE-1' }))
+    expect(
+      screen.getByText('Vorschlag: Lieferant Beispiel GmbH (erkannt an der USt-IdNr.)'),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Vorschlag zuordnen' }))
+    const assign = calls.find((call) => call.key.endsWith('/incoming/1/partner/'))
+    expect(JSON.parse(String(assign?.init?.body))).toEqual({ partner: 4 })
+    await user.type(screen.getByLabelText('Prüfvermerk'), 'Leistung geprüft')
+    const approve = screen.getByRole('button', { name: 'Fachlich freigeben' })
+    expect(approve).toBeDisabled()
+    await user.click(screen.getByLabelText('Neue IBAN telefonisch bestätigt'))
+    await user.click(approve)
+    const review = calls.find((call) => call.key.endsWith('/incoming/1/review/'))
+    expect(JSON.parse(String(review?.init?.body))).toEqual({
+      status: 'approved',
+      note: 'Leistung geprüft',
+      iban_confirmed: true,
+    })
+  })
 })

@@ -255,12 +255,13 @@ def _references():
 
 
 def extra_references():
-    """Verweise aus Kasse (P2), Vereinbarungen (P4) und Dokumenten (P5)."""
+    """Verweise aus Kasse (P2), Rechnungseingang (P3), Vereinbarungen (P4) und Dokumenten (P5)."""
     from finance.models import BankLine, Booking, CashReceipt, Donation
 
-    from .models import PartnerAgreement, PartnerDocument
+    from .models import IncomingInvoice, PartnerAgreement, PartnerDocument
 
     return [
+        (IncomingInvoice, "partner"),
         (PartnerAgreement, "partner"),
         (PartnerDocument, "partner"),
         (Booking, "partner"),

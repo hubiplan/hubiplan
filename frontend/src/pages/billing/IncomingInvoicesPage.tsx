@@ -5,7 +5,7 @@ import type { IncomingInvoice, IncomingMail } from '../../api/einvoices.ts'
 import { financeApi } from '../../api/finance.ts'
 import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert, Field, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
@@ -102,11 +102,17 @@ export function IncomingInvoicesPage({ canEdit }: { canEdit: boolean }) {
                   </button>
                 </td>
                 <td>
-                  {item.data.seller || '—'}
+                  {item.partner_name || item.data.seller || '—'}
                   {item.mail && !item.mail.sender_known && (
                     <>
                       {' '}
                       <span className="badge">{t('Absender unbekannt')}</span>
+                    </>
+                  )}
+                  {item.iban_changed && !item.booking && (
+                    <>
+                      {' '}
+                      <span className="badge">{t('Neue IBAN')}</span>
                     </>
                   )}
                 </td>
@@ -167,6 +173,7 @@ function IncomingDetail({
     [org.id, search, page, canLink, value.data.credit_note],
   )
   const [note, setNote] = useState(value.review_note)
+  const [ibanConfirmed, setIbanConfirmed] = useState(false)
   const [booking, setBooking] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -217,7 +224,17 @@ function IncomingDetail({
         </dd>
         <dt>{t('IBAN')}</dt>
         <dd>{value.data.iban || '—'}</dd>
+        <dt>{t('Geschäftspartner')}</dt>
+        <dd>{value.partner_name || '—'}</dd>
       </dl>
+      <PartnerChoice value={value} canEdit={canEdit} busy={busy} act={act} />
+      {value.iban_changed && !value.booking && (
+        <Alert kind="error">
+          {t(
+            'Neue Bankverbindung: Die IBAN der Rechnung weicht von der beim Geschäftspartner gespeicherten ab. Bitte beim Rechnungssteller telefonisch bestätigen, bevor du freigibst.',
+          )}
+        </Alert>
+      )}
       <div className="actions">
         <a className="button button-ghost" href={einvoiceApi.download(org.id, value.id)}>
           {t('Original herunterladen')}
@@ -250,11 +267,28 @@ function IncomingDetail({
             disabled={busy}
             onChange={(e) => setNote(e.target.value)}
           />
+          {value.iban_changed && value.status === 'review' && (
+            <Checkbox
+              label={t('Neue IBAN telefonisch bestätigt')}
+              checked={ibanConfirmed}
+              disabled={busy}
+              onChange={setIbanConfirmed}
+            />
+          )}
           <div className="actions">
             <button
               className="button button-primary"
-              disabled={busy || !note.trim() || value.report.status !== 'valid'}
-              onClick={() => void act(() => einvoiceApi.review(org.id, value.id, 'approved', note))}
+              disabled={
+                busy ||
+                !note.trim() ||
+                value.report.status !== 'valid' ||
+                (!!value.iban_changed && !ibanConfirmed)
+              }
+              onClick={() =>
+                void act(() =>
+                  einvoiceApi.review(org.id, value.id, 'approved', note, ibanConfirmed),
+                )
+              }
             >
               {t('Fachlich freigeben')}
             </button>
@@ -354,6 +388,90 @@ function IncomingDetail({
         <Link to={`/finanzen/kassenbuch?buchung=${value.booking}`}>
           {t('Zugeordnete Buchung öffnen')}
         </Link>
+      )}
+    </div>
+  )
+}
+
+/** Woran HUBIplan den vorgeschlagenen Geschäftspartner erkannt hat. */
+function suggestedBy(by: string): string {
+  switch (by) {
+    case 'vat_id':
+      return t('an der USt-IdNr.')
+    case 'iban':
+      return t('an der IBAN')
+    case 'sender':
+      return t('am Absender der Mail')
+    case 'domain':
+      return t('an der Domain des Absenders')
+    default:
+      return t('am Namen')
+  }
+}
+
+/** Geschäftspartner zuordnen: Vorschlag übernehmen, neu anlegen oder lösen (P3). */
+function PartnerChoice({
+  value,
+  canEdit,
+  busy,
+  act,
+}: {
+  value: IncomingInvoice
+  canEdit: boolean
+  busy: boolean
+  act: (action: () => Promise<IncomingInvoice>) => Promise<void>
+}) {
+  const org = useActiveOrg()
+  const suggestion = value.suggested_partner
+  if (value.partner) {
+    if (!canEdit) return null
+    return (
+      <div className="actions">
+        <button
+          className="button button-ghost"
+          disabled={busy}
+          onClick={() => void act(() => einvoiceApi.assignPartner(org.id, value.id, null))}
+        >
+          {t('Zuordnung zum Geschäftspartner lösen')}
+        </button>
+      </div>
+    )
+  }
+  return (
+    <div className="subcard stack">
+      {suggestion ? (
+        <p>
+          {t('Vorschlag: {name} (erkannt {by})', {
+            name: suggestion.name,
+            by: suggestedBy(suggestion.by),
+          })}
+        </p>
+      ) : (
+        <p>{t('Kein passender Geschäftspartner gefunden.')}</p>
+      )}
+      {canEdit && (
+        <div className="actions">
+          {suggestion && (
+            <button
+              className="button button-primary"
+              disabled={busy}
+              onClick={() =>
+                void act(() => einvoiceApi.assignPartner(org.id, value.id, suggestion.id))
+              }
+            >
+              {t('Vorschlag zuordnen')}
+            </button>
+          )}
+          {value.data.seller && (
+            <button
+              className="button button-ghost"
+              disabled={busy}
+              onClick={() => void act(() => einvoiceApi.createPartner(org.id, value.id))}
+            >
+              {t('Als Geschäftspartner anlegen')}
+            </button>
+          )}
+        </div>
       )}
     </div>
   )

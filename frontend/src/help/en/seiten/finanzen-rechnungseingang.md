@@ -21,6 +21,18 @@ an e-invoice, such as an ordinary PDF invoice, spam or malware, are listed under
 until you choose **Done**. **Assign new address** invalidates the previous
 address, for example if it receives spam.
 
+**Business partners**: HUBIplan suggests a business partner for each invoice, recognised by
+VAT ID, IBAN, the email sender (including the contact persons' email addresses) or name.
+**Link suggestion** accepts it; **Create as business partner** creates a new supplier from the
+name, VAT ID, IBAN and sender. **Unlink business partner** removes the link. When you later
+link a cash book entry, it takes over the business partner.
+
+**New IBAN**: If the invoice IBAN differs from the one stored for the business partner,
+HUBIplan shows a clear warning. Call the issuer on a number you already know, not the one on
+the invoice, and tick **New IBAN confirmed by phone** before approving. HUBIplan stores the
+confirmed IBAN with the business partner. This protects you against fake invoices with
+someone else's bank account.
+
 Technical validation (KoSIT) runs in the background after the import. Until it finishes,
 the entry shows **Checking**; this usually takes less than a minute and the page refreshes
 by itself. HUBIplan deletes declined entries and files without a readable e-invoice after

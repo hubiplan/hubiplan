@@ -82,6 +82,20 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
   Ansprechpartner mit „erhält Post“. Der Verteiler nimmt deren E-Mail-Adressen, sonst die des
   Partners; HUBIplan verschickt selbst nichts.
 
+## Rechnungseingang (P3)
+
+- `IncomingInvoice.partner` (SET_NULL) wird nur von Hand gesetzt: `POST …/finance/incoming/<id>/partner/`
+  mit `{partner}` (oder `null`) bzw. `…/create-partner/` legt aus Rechnungssteller, USt-IdNr.,
+  IBAN und Absender einen Lieferanten an.
+- Vorschlag (`suggested_partner`, `billing/incoming_partner.py`): USt-IdNr. → IBAN → Absender
+  der Mail → Domain des Absenders (ohne Freemail-Anbieter) → Name. Der Abgleich läuft im
+  Speicher, weil die Felder verschlüsselt sind.
+- `iban_changed`: IBAN der Rechnung ≠ gespeicherte IBAN (des zugeordneten oder vorgeschlagenen
+  Partners). Die Freigabe verlangt dann `iban_confirmed: true` und speichert die IBAN beim
+  zugeordneten Partner; das Protokoll nennt nur die letzten vier Stellen.
+- Die Zuordnung einer Kassenbuchung setzt `Booking.partner`, wenn er leer ist.
+- Postfach: `sender_known` gilt auch für E-Mail-Adressen von Ansprechpartnern.
+
 Änderungen stehen im Änderungsprotokoll. Der Datenumzug übernimmt beide Tabellen.
 
 Konzept und weitere Stufen (Kasse, Rechnungseingang, Sponsoring, Verträge): Projektordner

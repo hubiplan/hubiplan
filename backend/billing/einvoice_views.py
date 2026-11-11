@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -29,6 +30,7 @@ from . import (
     incoming_check,
     incoming_import,
     incoming_mail,
+    incoming_partner,
 )
 from .einvoice_schema import CommercialInvoiceSerializer
 from .models import (
@@ -245,12 +247,48 @@ class IncomingMailSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+def _tail(iban) -> str:
+    """IBAN fürs Protokoll gekürzt auf die letzten vier Stellen."""
+    value = incoming_partner.norm_iban(iban)
+    return f"… {value[-4:]}" if value else ""
+
+
+class SuggestedPartnerSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    # vat_id, iban, sender, domain oder name
+    by = serializers.CharField()
+
+
 class IncomingSerializer(serializers.ModelSerializer):
     has_report = serializers.SerializerMethodField()
     mail = IncomingMailSerializer(read_only=True, allow_null=True)
+    partner_name = serializers.SerializerMethodField()
+    suggested_partner = serializers.SerializerMethodField()
+    iban_changed = serializers.SerializerMethodField()
 
     def get_has_report(self, obj) -> bool:
         return bool(obj.report_xml)
+
+    def get_partner_name(self, obj) -> str:
+        return obj.partner.name if obj.partner_id else ""
+
+    def _suggestion(self, obj):
+        if obj.partner_id:
+            return None, ""
+        index = self.context.get("partner_index")
+        if index is None:
+            return None, ""
+        return index().suggest(obj.data, obj.mail.sender if obj.mail_id else "")
+
+    @extend_schema_field(SuggestedPartnerSerializer(allow_null=True))
+    def get_suggested_partner(self, obj):
+        partner, by = self._suggestion(obj)
+        return {"id": partner.pk, "name": partner.name, "by": by} if partner else None
+
+    def get_iban_changed(self, obj) -> bool:
+        partner = obj.partner if obj.partner_id else self._suggestion(obj)[0]
+        return incoming_partner.iban_changed(partner, obj.data)
 
     class Meta:
         model = IncomingInvoice
@@ -269,6 +307,10 @@ class IncomingSerializer(serializers.ModelSerializer):
             "created_at",
             "has_report",
             "mail",
+            "partner",
+            "partner_name",
+            "suggested_partner",
+            "iban_changed",
         ]
         read_only_fields = fields
 
@@ -278,7 +320,22 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = InvoicePagination
 
     def get_queryset(self):
-        return IncomingInvoice.objects.filter(organization=self.org).select_related("mail")
+        return IncomingInvoice.objects.filter(organization=self.org).select_related(
+            "mail", "partner"
+        )
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        cache: dict = {}
+
+        def index():
+            # Erst bei Bedarf und nur einmal je Anfrage aufbauen
+            if "index" not in cache:
+                cache["index"] = incoming_partner.PartnerIndex(self.org)
+            return cache["index"]
+
+        ctx["partner_index"] = index
+        return ctx
 
     @action(detail=False, methods=["get", "post"])
     def mailbox(self, request, org_id):
@@ -341,18 +398,118 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
             raise serializers.ValidationError(
                 gettext("Nur erfolgreich geprüfte E-Rechnungen können freigegeben werden.")
             )
-        previous = item.status
+        changes = {"Prüfung": [item.status, decision], "Begründung": [None, note]}
+        if decision == "approved":
+            changes.update(self._confirm_iban(request, item))
         item.status, item.review_note = decision, note
         item.reviewed_by, item.reviewed_at = request.user, timezone.now()
         item.save()
+        record(self.org, request.user, "update", item, changes)
+        return Response(self.get_serializer(item).data)
+
+    def _confirm_iban(self, request, item) -> dict:
+        """Neue Bankverbindung nur mit Bestätigung freigeben (Konzept GP-9); die bestätigte
+        IBAN wird beim zugeordneten Partner gespeichert."""
+        partner = item.partner
+        if partner is None:
+            partner, _by = incoming_partner.PartnerIndex(self.org).suggest(
+                item.data, item.mail.sender if item.mail_id else ""
+            )
+        if not incoming_partner.iban_changed(partner, item.data):
+            return {}
+        if request.data.get("iban_confirmed") is not True:
+            raise serializers.ValidationError(
+                {
+                    "iban_confirmed": gettext(
+                        "Neue Bankverbindung: Bitte beim Rechnungssteller telefonisch "
+                        "bestätigen und das Häkchen setzen."
+                    )
+                }
+            )
+        changes = {"IBAN telefonisch bestätigt": [None, _tail(item.data.get("iban"))]}
+        if item.partner_id:
+            partner = BusinessPartner.objects.select_for_update().get(pk=item.partner_id)
+            before = (partner.bank or {}).get("iban", "")
+            partner.bank = {
+                **(partner.bank or {}),
+                "iban": incoming_partner.norm_iban(item.data.get("iban")),
+                "changed_at": timezone.now().isoformat(),
+                "changed_by": request.user.get_full_name() or request.user.email,
+            }
+            partner.save(update_fields=["bank", "updated_at"])
+            record(
+                self.org,
+                request.user,
+                "update",
+                partner,
+                {"IBAN": [_tail(before), _tail(partner.bank["iban"])]},
+            )
+        return changes
+
+    @action(detail=True, methods=["post"], url_path="partner")
+    @transaction.atomic
+    def assign_partner(self, request, org_id, pk):
+        """``{partner: id | null}``: Geschäftspartner zuordnen oder die Zuordnung lösen."""
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
+        raw = request.data.get("partner")
+        partner = None
+        if raw not in (None, ""):
+            partner_id = serializers.IntegerField(min_value=1).run_validation(raw)
+            partner = get_object_or_404(BusinessPartner, organization=self.org, pk=partner_id)
+        before = item.partner.name if item.partner_id else None
+        item.partner = partner
+        item.save(update_fields=["partner"])
         record(
             self.org,
             request.user,
             "update",
             item,
-            {"Prüfung": [previous, decision], "Begründung": [None, note]},
+            {"Geschäftspartner": [before, partner.name if partner else None]},
         )
         return Response(self.get_serializer(item).data)
+
+    @action(detail=True, methods=["post"], url_path="create-partner")
+    @transaction.atomic
+    def create_partner(self, request, org_id, pk):
+        """Aus den gelesenen Angaben einen Geschäftspartner anlegen und zuordnen."""
+        from .partners import next_number
+
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
+        if item.partner_id:
+            raise serializers.ValidationError(
+                gettext("Der Rechnung ist bereits ein Geschäftspartner zugeordnet.")
+            )
+        name = str(item.data.get("seller") or "").strip()[:200]
+        if not name:
+            raise serializers.ValidationError(
+                gettext("Die Rechnung nennt keinen Rechnungssteller.")
+            )
+        details = {"name": name}
+        if vat := str(item.data.get("seller_vat_id") or "").strip():
+            details["vat_id"] = vat[:40]
+        if item.mail_id and item.mail.sender:
+            details["email"] = item.mail.sender
+        bank = {}
+        if iban := incoming_partner.norm_iban(item.data.get("iban")):
+            bank = {
+                "iban": iban,
+                "changed_at": timezone.now().isoformat(),
+                "changed_by": request.user.get_full_name() or request.user.email,
+            }
+        partner = BusinessPartner.objects.create(
+            organization=self.org,
+            name=name,
+            kind=BusinessPartner.Kind.COMPANY,
+            roles=[BusinessPartner.Role.SUPPLIER],
+            number=next_number(self.org),
+            details=details,
+            bank=bank,
+        )
+        record(self.org, request.user, "create", partner, {"Geschäftspartner": [None, name]})
+        item.partner = partner
+        item.save(update_fields=["partner"])
+        record(self.org, request.user, "update", item, {"Geschäftspartner": [None, name]})
+        return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
     @transaction.atomic
@@ -423,6 +580,10 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
             )
         item.booking = booking
         item.save(update_fields=["booking"])
+        if item.partner_id and not booking.partner_id:
+            # Konzept P3: die Buchung übernimmt den Geschäftspartner
+            booking.partner_id = item.partner_id
+            booking.save(update_fields=["partner"])
         # Eigene unveränderte Kopie: unterschiedliche Fristen dürfen nicht das
         # Original im Rechnungseingang über den Kassenbeleg entfernen.
         receipt = Receipt(

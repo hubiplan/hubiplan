@@ -115,6 +115,17 @@ export interface IncomingInvoice {
   created_at: string
   /** Aus dem Rechnungspostfach; null beim Hochladen. */
   mail?: IncomingMail | null
+  /** Zugeordneter Geschäftspartner (Konzept Geschäftspartner, P3). */
+  partner?: number | null
+  partner_name?: string
+  /** Vorschlag, solange kein Partner zugeordnet ist. */
+  suggested_partner?: {
+    id: number
+    name: string
+    by: 'vat_id' | 'iban' | 'sender' | 'domain' | 'name'
+  } | null
+  /** Die IBAN der Rechnung weicht von der beim Partner gespeicherten ab. */
+  iban_changed?: boolean
 }
 const base = (org: number) => `/api/orgs/${org}`
 export interface DeliveryState {
@@ -175,8 +186,16 @@ export const einvoiceApi = {
     data.append('file', file)
     return api.post<IncomingInvoice>(`${base(org)}/finance/incoming/`, data)
   },
-  review: (org: number, id: number, status: string, note: string) =>
-    api.post<IncomingInvoice>(`${base(org)}/finance/incoming/${id}/review/`, { status, note }),
+  review: (org: number, id: number, status: string, note: string, ibanConfirmed = false) =>
+    api.post<IncomingInvoice>(`${base(org)}/finance/incoming/${id}/review/`, {
+      status,
+      note,
+      ...(ibanConfirmed ? { iban_confirmed: true } : {}),
+    }),
+  assignPartner: (org: number, id: number, partner: number | null) =>
+    api.post<IncomingInvoice>(`${base(org)}/finance/incoming/${id}/partner/`, { partner }),
+  createPartner: (org: number, id: number) =>
+    api.post<IncomingInvoice>(`${base(org)}/finance/incoming/${id}/create-partner/`, {}),
   link: (org: number, id: number, booking: number) =>
     api.post<IncomingInvoice>(`${base(org)}/finance/incoming/${id}/link/`, { booking }),
   revalidate: (org: number, id: number) =>
