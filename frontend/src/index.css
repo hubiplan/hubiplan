@@ -1515,8 +1515,39 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 
 .color-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+}
+
+.color-row input:not([type='color']) {
+  min-width: 8rem;
+}
+
+/* Verläufe (Einstellungen › Erscheinungsbild): Muster, Name, von, nach, Richtung */
+.gradient-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: flex-end;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gradient-row .field {
+  flex: 1 1 9rem;
+  margin: 0;
+}
+
+.gradient-swatch {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 0.75rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  font-weight: 600;
 }
 
 .color-row input[type='color'] {
@@ -5880,4 +5911,52 @@ label:has(> .file-input:focus-visible) {
 .home-bg-light {
   background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
   color: var(--color-text);
+}
+
+/* Farbblatt (Einstellungen › Erscheinungsbild › Farbblatt) */
+.color-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.color-sheet-grid-wide {
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+}
+
+.color-sheet-card {
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.color-sheet-swatch {
+  height: 6rem;
+  border-bottom: 1px solid var(--color-border);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.color-sheet-card figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 1rem;
+}
+
+@media print {
+  .topbar,
+  .sidebar,
+  .tabs,
+  .no-print {
+    display: none !important;
+  }
+}
+
+.color-sheet-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
 }

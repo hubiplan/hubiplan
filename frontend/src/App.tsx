@@ -141,6 +141,10 @@ const AppearancePage = lazyPage(
   () => import('./pages/settings/AppearancePage.tsx'),
   'AppearancePage',
 )
+const ColorSheetPage = lazyPage(
+  () => import('./pages/settings/ColorSheetPage.tsx'),
+  'ColorSheetPage',
+)
 const AuditPage = lazyPage(() => import('./pages/settings/AuditPage.tsx'), 'AuditPage')
 const UnitsArea = lazyPage(() => import('./pages/settings/UnitsPage.tsx'), 'UnitsArea')
 const UnitsRedirect = lazyPage(() => import('./pages/settings/UnitsPage.tsx'), 'UnitsRedirect')
@@ -497,6 +501,14 @@ export default function App() {
               element={
                 <RequireOrg>
                   <AppearancePage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="erscheinungsbild/farbblatt"
+              element={
+                <RequireOrg>
+                  <ColorSheetPage />
                 </RequireOrg>
               }
             />

@@ -7,23 +7,38 @@ HUBIplan bestimmt nur, welche Farbe aus der Palette der Einheit welche Rolle bek
 
 from __future__ import annotations
 
+from django.utils.translation import gettext, gettext_noop
+
 from organizations.theme import DARK_TEXT, LIGHT_TEXT, text_color_on
 
 DEFAULT_DESIGN = "classic"
 
 # Rollen, in denen ein Design Farben einsetzt
 ROLES = {
-    "header": "Kopf",
-    "nav": "Menü (Leiste oder Markierung)",
-    "line": "Zierlinien",
-    "footer": "Fuß",
-    "band": "Farbband",
-    "band2": "zweites Farbband",
-    "date": "Datumsfeld bei Terminen",
+    "header": gettext_noop("Kopf"),
+    "nav": gettext_noop("Menü (Leiste oder Markierung)"),
+    "line": gettext_noop("Zierlinien"),
+    "footer": gettext_noop("Fuß"),
+    "band": gettext_noop("Farbband"),
+    "band2": gettext_noop("zweites Farbband"),
+    "date": gettext_noop("Datumsfeld bei Terminen"),
 }
+
+# Rollen, die jedes Design kennt (Ralf 10.11.2026): ohne Wahl bleibt das Design, wie es ist
+COMMON_ROLES = {
+    "text": gettext_noop("Fließtext"),
+    "muted": gettext_noop("Sekundärtext"),
+    "surface": gettext_noop("Flächen (Karten, Tabellenzeilen)"),
+    "background": gettext_noop("Seitenhintergrund"),
+}
+
+# Rollen, die statt einer Farbe auch einen Verlauf nehmen können (flächig oder Linien)
+GRADIENT_ROLES = ("header", "footer", "band", "band2", "line")
 
 # Feste Werte neben den Palettenplätzen
 NEUTRAL = {"dark": DARK_TEXT, "light": LIGHT_TEXT}
+# Verläufe aus Einstellungen › Erscheinungsbild: „g0“ = erster, „g1“ = zweiter
+GRADIENT_CHOICES = ("g0", "g1")
 
 # Je Design: Name, Beschreibung und Vorgaben je Rolle. Eine Vorgabe ist eine Liste
 # von Palettenplätzen (0 = Hauptfarbe, 1 = Zweitfarbe, 2 … = weitere Farben) oder ein
@@ -101,12 +116,14 @@ def _pick(spec, palette: list[dict]) -> str:
     return palette[0]["color"]
 
 
-def valid_choice(value) -> bool:
-    """Gespeicherte Wahl je Rolle: Palettenplatz 0–5 oder „dark“/„light“."""
+def valid_choice(value, role: str | None = None) -> bool:
+    """Gespeicherte Wahl je Rolle: Palettenplatz 0–5, „dark“/„light“ oder ein Verlauf."""
     if isinstance(value, bool):
         return False
     if isinstance(value, int):
         return 0 <= value <= 5
+    if value in GRADIENT_CHOICES:
+        return role in GRADIENT_ROLES
     return value in NEUTRAL
 
 
@@ -129,29 +146,63 @@ def normalize_color_roles(value, extra: dict | None = None) -> dict:
         if key not in specs or not isinstance(roles, dict):
             continue
         used = specs[key]
-        clean = {r: v for r, v in roles.items() if r in used and valid_choice(v)}
+        clean = {
+            r: v
+            for r, v in roles.items()
+            if (r in used or r in COMMON_ROLES) and valid_choice(v, r)
+        }
         if clean:
             result[key] = clean
     return result
 
 
+def _gradient(choice, gradients: list[dict] | None) -> dict | None:
+    index = GRADIENT_CHOICES.index(choice)
+    return gradients[index] if gradients and index < len(gradients) else None
+
+
 def resolve(
-    design: str, palette: list[dict], color_roles: dict | None = None, extra: dict | None = None
+    design: str,
+    palette: list[dict],
+    color_roles: dict | None = None,
+    extra: dict | None = None,
+    gradients: list[dict] | None = None,
 ) -> dict:
-    """Farben je Rolle für ein Design: {rolle: {color, on_color}}."""
+    """Farben je Rolle für ein Design: {rolle: {color, on_color[, gradient]}}.
+
+    ``gradients`` aus ``effective_theme``; ein Verlauf liefert seine erste Farbe als
+    ``color`` (für ältere Webseiten) und ``gradient`` = {from, to, direction}. Rollen aus
+    COMMON_ROLES erscheinen nur, wenn jemand sie gewählt hat."""
     specs = _role_specs(extra)
     spec = specs.get(design, DESIGNS[DEFAULT_DESIGN]["roles"])
     chosen = normalize_color_roles(color_roles or {}, extra).get(design, {})
     result = {}
-    for role, default in spec.items():
+    roles = {**spec, **{r: None for r in COMMON_ROLES if r in chosen}}
+    for role, default in roles.items():
         choice = chosen.get(role)
+        entry = None
         if isinstance(choice, int):
-            color = _pick([choice], palette) if choice < len(palette) else _pick(default, palette)
+            if choice < len(palette):
+                color = palette[choice]["color"]
+            elif default is not None:
+                color = _pick(default, palette)
+            else:
+                continue
+        elif choice in GRADIENT_CHOICES:
+            g = _gradient(choice, gradients)
+            if g is not None:
+                start, end = g["colors"]
+                entry = {
+                    "color": start,
+                    "on_color": g["on_color"],
+                    "gradient": {"from": start, "to": end, "direction": g["direction"]},
+                }
+            color = _pick(default, palette)
         elif isinstance(choice, str):
             color = NEUTRAL[choice]
         else:
             color = _pick(default, palette)
-        result[role] = {"color": color, "on_color": text_color_on(color)}
+        result[role] = entry or {"color": color, "on_color": text_color_on(color)}
     return result
 
 
@@ -161,15 +212,22 @@ def package_roles(packages) -> dict:
 
 
 def _role_list(roles: dict) -> list[dict]:
-    return [
+    result = [
         {
             "key": role,
-            "label": ROLES[role],
+            "label": gettext(ROLES[role]),
             "default": spec if isinstance(spec, str) else spec[0],
+            "gradient": role in GRADIENT_ROLES,
         }
         for role, spec in roles.items()
         if role in ROLES
     ]
+    # Text, Flächen und Hintergrund: in jedem Design, Vorgabe ist das Design selbst
+    result += [
+        {"key": role, "label": gettext(label), "default": None, "gradient": False, "common": True}
+        for role, label in COMMON_ROLES.items()
+    ]
+    return result
 
 
 # Skizzen in der Oberfläche: je Standarddesign eine, dazu der Aufbau früherer Fassungen für

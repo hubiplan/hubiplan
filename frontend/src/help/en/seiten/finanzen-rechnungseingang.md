@@ -11,14 +11,14 @@ Import XML invoices or ZUGFeRD/Factur-X PDFs. HUBIplan retains the original even
 validation fails. Importing the identical file again does not create another entry.
 Check different files with the same invoice number for duplicates yourself.
 
-**Invoice mailbox:** If an invoice mailbox is set up on the server, the address of your unit
+**Invoice mailbox**: If an invoice mailbox is set up on the server, the address of your unit
 is shown at the top, e.g. `rechnung+k7m2q9ab@example.org`. Give it to your suppliers. HUBIplan
 collects the mailbox every minute and imports XML attachments and ZUGFeRD/Factur-X PDFs just
 like an import. The entry then shows **By email from** with the sender. If the sender does not
-match any business partner (email address under Finances › Business partners), **Unknown
-sender** appears; then check the issuer and bank details with particular care. Emails without
-an e-invoice, such as an ordinary PDF invoice, spam or malware, are listed under **Notices from
-the mailbox** until you choose **Done**. **Assign new address** invalidates the previous
+match any business partner (email address under Finances › Business partners), **Unknown sender**
+appears; then check the issuer and bank details with particular care. Emails without
+an e-invoice, such as an ordinary PDF invoice, spam or malware, are listed under **Notices from the mailbox**
+until you choose **Done**. **Assign new address** invalidates the previous
 address, for example if it receives spam.
 
 Technical validation (KoSIT) runs in the background after the import. Until it finishes,

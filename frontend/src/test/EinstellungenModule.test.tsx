@@ -44,9 +44,25 @@ const groups = (musicOn: boolean) => [
       mod('scores', 'Notenarchiv', { enabled: musicOn }),
     ],
   },
+  {
+    id: 'competitions',
+    label: 'Wettbewerbe',
+    modules: [mod('competitions', 'Wettbewerbe', { released: false })],
+  },
+  {
+    id: 'admin',
+    label: 'Verwaltung',
+    modules: [
+      mod('rooms', 'Raumbuchung', { requires: ['website'] }),
+      mod('lending', 'Ausleihe', { requires_any: ['material', 'infra'] }),
+      mod('material', 'Material', {}),
+      mod('infra', 'Räume', { released: false }),
+      mod('old', 'Altmodul', { released: false, enabled: true }),
+    ],
+  },
 ]
 
-it('schaltet ein Modul mit seinen Voraussetzungen ein, nicht freigegebene sind gesperrt', async () => {
+it('schaltet ein Modul mit seinen Voraussetzungen ein, nicht freigegebene sind unsichtbar', async () => {
   const calls = fakeApi({
     [SESSION]: loggedIn,
     'GET /api/me/organizations/': () => ({
@@ -74,7 +90,16 @@ it('schaltet ein Modul mit seinen Voraussetzungen ein, nicht freigegebene sind g
     </MemoryRouter>,
   )
   const user = userEvent.setup()
-  expect(await screen.findByRole('checkbox', { name: /Webseite/ })).toBeDisabled()
+  expect(await screen.findByRole('checkbox', { name: /^Musik/ })).toBeInTheDocument()
+  // Nicht freigegeben: weder Modul noch leere Gruppe; Voraussetzung nicht freigegeben: unsichtbar
+  expect(screen.queryByRole('checkbox', { name: /Webseite/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('group', { name: 'Wettbewerbe' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('checkbox', { name: /Raumbuchung/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('checkbox', { name: /^Räume/ })).not.toBeInTheDocument()
+  // „braucht“ nennt nur freigegebene Alternativen
+  expect(screen.getByRole('checkbox', { name: /Ausleihe.*braucht Material$/ })).toBeInTheDocument()
+  // Eingeschaltet, aber nicht mehr freigegeben: bleibt zum Ausschalten sichtbar
+  expect(screen.getByRole('checkbox', { name: /Altmodul/ })).toBeEnabled()
   await user.click(screen.getByRole('checkbox', { name: /^Musik/ }))
   expect(await screen.findByText(/Mit eingeschaltet: Notenarchiv/)).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: /OK|Ja|Bestätigen/ }))

@@ -36,6 +36,17 @@ export function ModulesPage() {
   if (!load.data) return <Loading />
   const all = load.data.groups.flatMap((g) => g.modules)
   const name = (id: string) => all.find((m) => m.id === id)?.label ?? id
+  const released = (id: string) => all.some((m) => m.id === id && m.released)
+  // Nicht freigegebene Module (oder solche, deren Voraussetzung nicht freigegeben ist) sieht die
+  // Einheit gar nicht; eingeschaltete bleiben sichtbar, damit sie sich ausschalten lassen.
+  const shown = (m: OrgModule) =>
+    m.enabled ||
+    (m.released &&
+      m.requires.every(released) &&
+      (!m.requires_any.length || m.requires_any.some(released)))
+  const groups = load.data.groups
+    .map((g) => ({ ...g, modules: g.modules.filter(shown) }))
+    .filter((g) => g.modules.length > 0)
   const enabled = all.filter((m) => m.enabled).map((m) => m.id)
 
   async function toggle(m: OrgModule, on: boolean) {
@@ -97,13 +108,20 @@ export function ModulesPage() {
         )}
       </p>
       {message && <Alert kind={message.kind}>{message.text}</Alert>}
-      {load.data.groups.map((group) => (
+      {groups.map((group) => (
         <fieldset key={group.id} className="stack">
           <legend>{group.label}</legend>
           {group.modules.map((m) => {
             const needs = [
               ...m.requires.map(name),
-              ...(m.requires_any.length ? [m.requires_any.map(name).join(' / ')] : []),
+              ...(m.requires_any.length
+                ? [
+                    m.requires_any
+                      .filter((x) => released(x) || !m.requires_any.some(released))
+                      .map(name)
+                      .join(' / '),
+                  ]
+                : []),
             ]
             const hint = [
               m.description,
