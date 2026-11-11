@@ -72,5 +72,5 @@ grep -q '^MAIL_RATE_PER_HOUR=' "$ENV" || echo "MAIL_RATE_PER_HOUR=$RATE" >> "$EN
 chmod 600 "$ENV"
 
 echo "--- 4) Dienste mit neuer .env starten"
-cd "$APP" && sh deploy/server-setup.sh >/dev/null && echo "Docker-Verbund läuft"
+cd "$APP" && sh deploy/server-setup.sh </dev/null >/dev/null && echo "Docker-Verbund läuft"
 echo "### Ende $(TZ=Europe/Berlin date '+%d.%m.%Y %H:%M')"
