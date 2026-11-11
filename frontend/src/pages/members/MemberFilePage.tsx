@@ -370,7 +370,6 @@ function MasterData({
               <Field
                 label={t('Geburtsdatum')}
                 type="date"
-                required
                 value={v.birth_date}
                 error={e.birth_date}
                 onChange={(ev) => form.set('birth_date', ev.target.value)}

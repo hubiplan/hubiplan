@@ -325,6 +325,36 @@ def find_duplicates(
     return found[:10]
 
 
+def name_key(last_name: str, first_name: str) -> tuple[str, str]:
+    from .personsearch import normalize
+
+    return normalize((last_name or "").strip()), normalize((first_name or "").strip())
+
+
+def club_name_index(club: Organization) -> dict[tuple[str, str], list[int]]:
+    """Personen-IDs der (auch früheren) Mitglieder des Vereins nach Name und Vorname."""
+    index: dict[tuple[str, str], list[int]] = {}
+    for pid, last, first in Membership.objects.filter(
+        organization=club, person__kind=PersonKind.PERSON
+    ).values_list("person_id", "person__last_name", "person__first_name"):
+        index.setdefault(name_key(last, first), []).append(pid)
+    return index
+
+
+def club_namesakes(
+    club: Organization, last_name: str, first_name: str, *, index: dict | None = None
+) -> list[Person]:
+    """Personen gleichen Namens, die schon Mitglied dieses Vereins sind oder waren.
+
+    Ohne Geburtsdatum gibt es keine Suche im Verbandsbereich; der Verein sieht so
+    wenigstens seine eigenen Mitglieder gleichen Namens."""
+    key = name_key(last_name, first_name)
+    if not all(key):
+        return []
+    ids = (club_name_index(club) if index is None else index).get(key, [])
+    return list(Person.objects.filter(pk__in=ids).order_by("pk")[:10])
+
+
 def lock_person(person_id: int) -> None:
     """Person sperren (vereinsübergreifend, daher ohne RLS), damit Prüfungen wie
     „nur eine aktive Mitgliedschaft“ nicht von einer gleichzeitigen Aufnahme oder
@@ -371,7 +401,7 @@ def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Memb
             kind=PersonKind.ORGANIZATION if organization else PersonKind.PERSON,
             last_name=data["last_name"].strip(),
             first_name="" if organization else data["first_name"].strip(),
-            birth_date=None if organization else data["birth_date"],
+            birth_date=None if organization else data.get("birth_date"),
             gender="" if organization else data.get("gender", ""),
             **{f: data.get(f, "") for f in ORGANIZATION_FIELDS if organization},
             size=data.get("size") if organization else None,

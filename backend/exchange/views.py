@@ -444,10 +444,8 @@ class ImportValuesView(_JobAction):
 class ImportValidateView(_JobAction):
     def post(self, request, org_id: int, pk: int):
         job = self.job()
-        if not {"last_name", "first_name", "birth_date"} <= set(job.mapping.values()):
-            raise serializers.ValidationError(
-                gettext("Name, Vorname und Geburtsdatum müssen zugeordnet sein.")
-            )
+        if not {"last_name", "first_name"} <= set(job.mapping.values()):
+            raise serializers.ValidationError(gettext("Name und Vorname müssen zugeordnet sein."))
         # Nur aus erlaubten Vorzuständen und atomar (Audit 31.10. X-01): Ein schon
         # importierter Auftrag bleibt importiert und behält „Rückgängig“
         claimed = ImportJob.objects.filter(

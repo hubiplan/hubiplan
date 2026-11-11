@@ -3,7 +3,6 @@
 from decimal import Decimal
 
 import pytest
-from django.db import IntegrityError, transaction
 
 from billing.models import AgeRate, FeeRate
 from billing.services import yearly_fee
@@ -78,14 +77,10 @@ class TestAufnahme:
         assert resp.status_code == 400
         assert not Person.objects.exists()
 
-    def test_person_braucht_weiter_geburtsdatum(self, api, orgs, types, board_a):
-        resp = admit(api(board_a), orgs["a"], types["a"]["aktiv"], birth_date="")
+    def test_person_braucht_weiter_vornamen(self, api, orgs, types, board_a):
+        resp = admit(api(board_a), orgs["a"], types["a"]["aktiv"], first_name="")
         assert resp.status_code == 400
         assert not Person.objects.exists()
-
-    def test_datenbank_verlangt_geburtsdatum_bei_personen(self, orgs):
-        with pytest.raises(IntegrityError), transaction.atomic():
-            Person.objects.create(scope=orgs["federation"], last_name="Muster", first_name="Max")
 
     def test_organisationsangaben_bei_personen_verworfen(self, api, orgs, types, board_a):
         resp = admit(api(board_a), orgs["a"], types["a"]["aktiv"], legal_form="gmbh")

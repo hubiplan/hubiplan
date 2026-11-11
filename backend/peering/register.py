@@ -155,7 +155,7 @@ def _clean_row(row) -> dict | None:
     if organization:
         # Organisationen: nur Name und Zusatz, kein Vorname, kein Geburtsdatum (J6)
         first, birth = "", None
-    if not (uid and last and (birth or organization)):
+    if not (uid and last and (first or organization)):
         return None
     periods = []
     for p in (row.get("periods") or [])[:50]:
@@ -638,7 +638,7 @@ def ask_active_elsewhere(club, person, on, membership=None) -> str | None:
                 "number": number,
                 "last_name": person.last_name,
                 "first_name": person.first_name,
-                "birth_date": person.birth_date.isoformat(),
+                "birth_date": person.birth_date.isoformat() if person.birth_date else None,
                 "on": on.isoformat(),
             },
         )
