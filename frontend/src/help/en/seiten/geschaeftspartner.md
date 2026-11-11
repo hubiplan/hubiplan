@@ -35,5 +35,6 @@ This lists all companies, authorities, associations and people outside the membe
 - For a **Contract** (type of agreement) you enter the **Notice period in days** and whether it renews automatically. The task then reminds you in good time before the last day to give notice, and the list shows “give notice by …”.
 - Under **Documents** you keep contracts, offers, consents or correspondence on the record. The files count towards the storage of the document library and are checked for viruses as there.
 - Under **Website** you record whether the partner may be named on your website as a partner or sponsor. Only these partners are taken over by the website section “Partners and sponsors” with **Take over from business partners**.
+- **Show at the top of the main menu** puts business partners as a separate item at the very top of the menu instead of under Club, for example if you often work with suppliers and sponsors. The switch applies to everyone in this unit; anyone who may edit business partners can change it.
 - You can only delete a partner as long as it is not used anywhere. Otherwise untick **Active**.
 - If a partner is also a member, for example a company as a supporting member, please do not create it twice. Only store private persons as far as you need them for a contract.

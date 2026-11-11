@@ -16,6 +16,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -235,6 +236,10 @@ def next_number(org) -> str:
         if prefix == "GP" and digits.isdigit():
             highest = max(highest, int(digits))
     return f"GP-{highest + 1:04d}"
+
+
+class MenuSerializer(serializers.Serializer):
+    partners_in_menu = serializers.BooleanField()
 
 
 class PartnerAccess(OrgScopedMixin):
@@ -476,6 +481,31 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
                 ],
             }
         )
+
+    @extend_schema(request=MenuSerializer, responses=MenuSerializer)
+    @action(detail=False, methods=["post"])
+    def menu(self, request, org_id):
+        """``{partners_in_menu: bool}``: Geschäftspartner als eigenen Punkt oben im
+        Hauptmenü zeigen statt unter Verein (gilt für alle in der Einheit)."""
+        params = MenuSerializer(data=request.data)
+        params.is_valid(raise_exception=True)
+        value = params.validated_data["partners_in_menu"]
+        if value != self.org.partners_in_menu:
+            record(
+                self.org,
+                request.user,
+                "update",
+                self.org,
+                {
+                    "Geschäftspartner im Hauptmenü": [
+                        "ja" if not value else "nein",
+                        "ja" if value else "nein",
+                    ]
+                },
+            )
+            self.org.partners_in_menu = value
+            self.org.save(update_fields=["partners_in_menu"])
+        return Response({"partners_in_menu": self.org.partners_in_menu})
 
     @action(detail=False, methods=["get", "post"])
     def mailing(self, request, org_id):

@@ -8150,5 +8150,7 @@
   "Vorschlag: {name} (erkannt {by})": "Suggestion: {name} (recognised {by})",
   "Kein passender Geschäftspartner gefunden.": "No matching business partner found.",
   "Vorschlag zuordnen": "Link suggestion",
-  "Als Geschäftspartner anlegen": "Create as business partner"
+  "Als Geschäftspartner anlegen": "Create as business partner",
+  "Oben im Hauptmenü zeigen": "Show at the top of the main menu",
+  "statt unter Verein, für alle in dieser Einheit": "instead of under Club, for everyone in this unit"
 }

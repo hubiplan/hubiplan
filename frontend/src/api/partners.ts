@@ -185,6 +185,8 @@ export const partnerApi = {
       ? api.patch<BusinessPartner>(`${base(org)}${id}/`, value)
       : api.post<BusinessPartner>(base(org), value),
   remove: (org: number, id: number) => api.del(`${base(org)}${id}/`),
+  setMenu: (org: number, on: boolean) =>
+    api.post<{ partners_in_menu: boolean }>(`${base(org)}menu/`, { partners_in_menu: on }),
   merge: (org: number, keep: number, other: number) =>
     api.post<BusinessPartner & { moved: number }>(`${base(org)}${keep}/merge/`, { other }),
   saveContact: (org: number, partner: number, value: ContactInput, id?: number) =>
