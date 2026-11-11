@@ -4,6 +4,7 @@ Nachbardiensten) und P-01 (Seite „Vorstand“ lud den ganzen Verein). Alles er
 import datetime
 
 import pytest
+from django.core.cache import cache
 from django.db import connection
 from django.test import Client, RequestFactory
 from django.test.utils import CaptureQueriesContext
@@ -121,27 +122,54 @@ def abruf(path="", **meta):
     return Client().get(f"/api/public/site/v1/schluessel-ga/{path}", **meta)
 
 
+def am_limit(adresse: str) -> None:
+    """Zähler dieser Adresse steht am Limit: Der nächste Abruf ist einer zu viel."""
+    cache.set(f"website:read:{adresse}", public_views.READ_LIMIT, 60)
+
+
 class TestDrosselungJeBesucher:
-    def test_besucher_zaehlen_einzeln(self, seite, betrieb, monkeypatch):
+    def test_besucher_zaehlen_einzeln(self, seite, betrieb):
         """S-01: Ein Besucher am Limit sperrt die anderen nicht mehr aus."""
-        monkeypatch.setattr(public_views, "READ_LIMIT", 3)
+        am_limit("203.0.113.1")
         laut = {"REMOTE_ADDR": WEBSEITE, "HTTP_X_HUBIPLAN_BESUCHER": "203.0.113.1"}
         leise = {"REMOTE_ADDR": WEBSEITE, "HTTP_X_HUBIPLAN_BESUCHER": "203.0.113.2"}
-        assert [abruf(**laut).status_code for _ in range(4)] == [200, 200, 200, 429]
+        assert abruf(**laut).status_code == 429
+        assert abruf(**leise).status_code == 200
+        # ohne Angabe zählt der Webseiten-Dienst selbst
+        assert abruf(REMOTE_ADDR=WEBSEITE).status_code == 200
+        am_limit(WEBSEITE)
+        assert abruf(REMOTE_ADDR=WEBSEITE).status_code == 429
         assert abruf(**leise).status_code == 200
 
-    def test_nachbar_kann_keine_besucher_erfinden(self, seite, betrieb, monkeypatch):
+    def test_nachbar_kann_keine_besucher_erfinden(self, seite, betrieb):
         """S-02: Wer nicht der Webseiten-Dienst ist, zählt mit der eigenen Adresse."""
-        monkeypatch.setattr(public_views, "READ_LIMIT", 3)
+        am_limit(NACHBAR)
         codes = [
             abruf(
                 REMOTE_ADDR=NACHBAR,
                 HTTP_X_HUBIPLAN_BESUCHER=f"203.0.113.{n}",
                 HTTP_X_FORWARDED_FOR=f"198.51.100.{n}",
             ).status_code
-            for n in range(1, 5)
+            for n in range(1, 4)
         ]
-        assert codes == [200, 200, 200, 429]
+        assert codes == [429, 429, 429]
+
+    def test_gezaehlte_adressen(self, seite, betrieb, monkeypatch):
+        gezaehlt = []
+
+        def too_many(key, limit, window):
+            gezaehlt.append((key, limit, window))
+            return False
+
+        monkeypatch.setattr(public_views, "too_many", too_many)
+        abruf(REMOTE_ADDR=WEBSEITE, HTTP_X_HUBIPLAN_BESUCHER="203.0.113.1")
+        abruf(REMOTE_ADDR=CADDY, HTTP_X_FORWARDED_FOR="198.51.100.7")
+        abruf(REMOTE_ADDR=NACHBAR, HTTP_X_FORWARDED_FOR="198.51.100.7")
+        assert gezaehlt == [
+            ("website:read:203.0.113.1", public_views.READ_LIMIT, 60),
+            ("website:read:198.51.100.7", public_views.READ_LIMIT, 60),
+            (f"website:read:{NACHBAR}", public_views.READ_LIMIT, 60),
+        ]
 
 
 class TestNurVonInnen:
