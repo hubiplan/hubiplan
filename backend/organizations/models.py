@@ -476,6 +476,10 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     cash_counts_enabled = models.BooleanField(
         "Zählprotokoll und Kassenbericht für Feste", default=False
     )
+    # Geschäftspartner als eigener Punkt oben im Hauptmenü statt unter Verein
+    partners_in_menu = models.BooleanField(
+        "Geschäftspartner im Hauptmenü", default=False, db_default=False
+    )
     # Kasse: Rücklagen nach § 62 AO führen (Finanzamt-Prüfung C4)
     reserves_enabled = models.BooleanField("Rücklagen führen", default=False, db_default=False)
     # Kasse: DATEV-Export für die Steuerberatung (Buchungsstapel, zuschaltbar)

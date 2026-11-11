@@ -41,6 +41,14 @@ export interface AppModule {
 
 const NO_WS: Workspace = { dept: null, portal: null }
 
+function partnersVisible(org: OrgSummary | null): boolean {
+  return (
+    !!org &&
+    (org.type === 'club' || org.type === 'federation' || org.type === 'unit') &&
+    partnerAccess(org.permissions).view
+  )
+}
+
 /** Welche Teile von Material & Räume die Person sieht (Organisation oder Abteilung). */
 function stockAccess(org: OrgSummary | null, ws: Workspace) {
   const perms = org ? org.permissions : (ws.dept?.permissions ?? [])
@@ -104,6 +112,15 @@ export const modules: AppModule[] = [
     icon: icon('M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8M4.5 21c.4-4 3.6-6.5 7.5-6.5s7.1 2.5 7.5 6.5'),
     visible: (_org, ws) => !!ws.portal,
     children: (_org, ws) => portalNav(ws?.portal ?? null),
+  },
+  // Geschäftspartner wahlweise oben im Hauptmenü (Schalter auf der Seite Geschäftspartner)
+  {
+    id: 'geschaeftspartner-oben',
+    group: 'alltag',
+    label: t('Geschäftspartner'),
+    path: '/geschaeftspartner',
+    icon: icon('M3 8h18v12H3zM8 8V5h8v3M3 13h18M11 12h2v3h-2z'),
+    visible: (org) => partnersVisible(org) && !!org?.partners_in_menu,
   },
   // Planen: Termine und was daran hängt (Menüprüfung 2, N-01)
   {
@@ -263,10 +280,7 @@ export const modules: AppModule[] = [
     label: t('Geschäftspartner'),
     path: '/geschaeftspartner',
     icon: icon('M3 8h18v12H3zM8 8V5h8v3M3 13h18M11 12h2v3h-2z'),
-    visible: (org) =>
-      !!org &&
-      (org.type === 'club' || org.type === 'federation' || org.type === 'unit') &&
-      partnerAccess(org.permissions).view,
+    visible: (org) => partnersVisible(org) && !org?.partners_in_menu,
   },
   {
     id: 'abteilung',

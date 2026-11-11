@@ -69,6 +69,11 @@ export interface BusinessPartner {
   unit_name: string
   membership: number | null
   membership_name: string
+  /** Mitgliedschaft, die den Kontakt betreut */
+  liaison: number | null
+  liaison_name: string
+  first_contact_on: string | null
+  first_contact_note: string
   details: PartnerDetails
   /** nur mit Kassen- oder Beitragsrecht */
   bank?: PartnerBank
@@ -87,7 +92,10 @@ export interface BusinessPartner {
 }
 
 export type PartnerInput = Partial<
-  Omit<BusinessPartner, 'id' | 'name' | 'contacts' | 'unit_name' | 'membership_name' | 'updated_at'>
+  Omit<
+    BusinessPartner,
+    'id' | 'name' | 'contacts' | 'unit_name' | 'membership_name' | 'liaison_name' | 'updated_at'
+  >
 >
 export type ContactInput = Partial<Omit<PartnerContact, 'id'>>
 
@@ -171,7 +179,10 @@ export interface Suggestion {
 
 export interface ImportResult {
   created: number
+  updated: number
   skipped: number
+  contacts_created: number
+  contacts_updated: number
   errors: string[]
 }
 
@@ -185,6 +196,8 @@ export const partnerApi = {
       ? api.patch<BusinessPartner>(`${base(org)}${id}/`, value)
       : api.post<BusinessPartner>(base(org), value),
   remove: (org: number, id: number) => api.del(`${base(org)}${id}/`),
+  setMenu: (org: number, on: boolean) =>
+    api.post<{ partners_in_menu: boolean }>(`${base(org)}menu/`, { partners_in_menu: on }),
   merge: (org: number, keep: number, other: number) =>
     api.post<BusinessPartner & { moved: number }>(`${base(org)}${keep}/merge/`, { other }),
   saveContact: (org: number, partner: number, value: ContactInput, id?: number) =>
