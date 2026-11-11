@@ -29,7 +29,8 @@ Für einige Aktionen fragt HUBIplan noch einmal nach einem aktuellen Code aus de
 der letzte Code älter als 10 Minuten ist: vollständige Exporte und Ausgliedern, Rollen vergeben
 oder ihre Rechte erweitern, die Zwei-Faktor-Anmeldung einer anderen Person zurücksetzen, den
 QR-Code für die HUBIplan-App erzeugen und endgültiges Löschen (Verein, ehemaliges Mitglied,
-Name in der Chronik). Ein Wiederherstellungscode geht auch. Wer die Zwei-Faktor-Anmeldung noch
+Name in der Chronik). Ein Wiederherstellungscode geht auch, mit eingerichtetem
+Passkey auch der Passkey (siehe „Mit Passkey anmelden“). Wer die Zwei-Faktor-Anmeldung noch
 nicht eingerichtet hat, bestätigt in der Übergangsfrist mit dem Passwort.
 
 Die Plattform-Verwaltung hat keine Übergangsfrist: Ohne Zwei-Faktor-Anmeldung ruhen ihre

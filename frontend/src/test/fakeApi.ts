@@ -47,6 +47,11 @@ const DEFAULTS: Record<string, Handler> = {
   }),
   // Hilfe: ohne eigene Angabe nichts abgehakt
   'GET /api/me/help/': () => ({ status: 200, body: { help_done: [] } }),
+  // Passkeys: ohne eigene Angabe keine eingerichtet
+  'GET /api/me/passkeys/': () => ({
+    status: 200,
+    body: { enabled: true, host: 'verein.example', passkeys: [] },
+  }),
 }
 
 type Handler = (init: RequestInit | undefined) => {

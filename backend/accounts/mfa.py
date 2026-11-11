@@ -96,6 +96,15 @@ class MFAAdapter(DefaultMFAAdapter):
             url += "&image=" + quote(image, safe="")
         return url
 
+    def get_public_key_credential_rp_entity(self) -> dict[str, str]:
+        """Passkeys gelten für die aufgerufene Adresse; Name der Einheit dieser Adresse."""
+        from allauth.core import context
+
+        from .passkeys import current_host, rp_name
+
+        request = context.request
+        return {"id": current_host(request), "name": rp_name(request)}
+
 
 def totp_image_url(user, request=None) -> str:
     """Absolute https-Adresse des Vereinslogos für den QR-Code der 2FA-Einrichtung.

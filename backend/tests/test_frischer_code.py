@@ -89,7 +89,11 @@ def test_export_ohne_2fa_mit_passwort_bestaetigen(api, orgs, board_a):
     resp = export(c, orgs["a"])
     assert resp.status_code == 403
     assert resp.json()["step_up"] == "password"
-    assert c.get("/api/me/confirm/").json() == {"step_up": "password", "fresh": False}
+    assert c.get("/api/me/confirm/").json() == {
+        "step_up": "password",
+        "fresh": False,
+        "passkey": False,
+    }
 
     assert c.post("/api/me/confirm/", {"password": "falsch"}, content_type=JSON).status_code == 403
     assert export(c, orgs["a"]).status_code == 403

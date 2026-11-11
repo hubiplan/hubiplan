@@ -9846,6 +9846,39 @@ msgstr "At most twelve partners."
 msgid "Höchstens sechs Zahlen."
 msgstr "At most six numbers."
 
+msgid "Bitte bestätige zur Sicherheit mit deinem Passkey."
+msgstr "For security, please confirm with your passkey."
+
+msgid ""
+"Hallo {name},\n"
+"\n"
+"{text}\n"
+"\n"
+"Zeit: {when} Uhr\n"
+"\n"
+"Warst du das, ist nichts zu tun. Sonst bitte sofort im Browser unter Mein Konto › Anmeldung & Sicherheit die Passkeys prüfen und dein Passwort ändern: {link}\n"
+msgstr ""
+"Hello {name},\n"
+"\n"
+"{text}\n"
+"\n"
+"Time: {when}\n"
+"\n"
+"If this was you, there is nothing to do. Otherwise please immediately check your passkeys in the browser under My account › Sign-in & security and change your password: {link}\n"
+
+msgid "Neuer Passkey für dein Konto"
+msgstr "New passkey for your account"
+
+msgid ""
+"Für deinen HUBIplan-Zugang wurde der Passkey „{name}“ eingerichtet ({host})."
+msgstr "The passkey “{name}” was set up for your HUBIplan account ({host})."
+
+msgid "Passkey entfernt"
+msgstr "Passkey removed"
+
+msgid "Der Passkey „{name}“ wurde aus deinem HUBIplan-Zugang entfernt."
+msgstr "The passkey “{name}” was removed from your HUBIplan account."
+
 msgid "Rechnungspostfach"
 msgstr "Invoice mailbox"
 
