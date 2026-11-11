@@ -154,6 +154,14 @@ class TestDrosselungJeBesucher:
         ]
         assert codes == [429, 429, 429]
 
+    def test_zaehler_waechst_je_abruf(self, seite, betrieb):
+        kopf = {"REMOTE_ADDR": WEBSEITE, "HTTP_X_HUBIPLAN_BESUCHER": "203.0.113.1"}
+        staende = []
+        for _ in range(3):
+            assert abruf(**kopf).status_code == 200
+            staende.append(cache.get("website:read:203.0.113.1"))
+        assert staende == [1, 2, 3]
+
     def test_gezaehlte_adressen(self, seite, betrieb, monkeypatch):
         gezaehlt = []
 
