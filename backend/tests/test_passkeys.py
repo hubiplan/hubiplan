@@ -10,6 +10,7 @@ import json
 import os
 
 import pytest
+from allauth.account.utils import user_pk_to_url_str
 from allauth.mfa.models import Authenticator
 from allauth.mfa.webauthn.internal.auth import WebAuthn
 from cryptography.hazmat.primitives import hashes
@@ -43,7 +44,8 @@ class SoftKey:
         self.origin = f"https://{rp_id}"
         self.key = ec.generate_private_key(ec.SECP256R1())
         self.cred_id = os.urandom(16)
-        self.user_handle = str(user.pk).encode() if user is not None else b""
+        # Wie allauth die Kennung bildet (Base36 der Nummer, ab 10 nicht mehr gleich der Zahl)
+        self.user_handle = user_pk_to_url_str(user).encode() if user is not None else b""
         self.counter = 0
 
     def _client_data(self, kind: str, challenge: str) -> bytes:
