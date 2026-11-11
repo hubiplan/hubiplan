@@ -118,6 +118,25 @@ def recipient_addresses(msg: EmailMessage) -> list[str]:
     return [a.strip().lower() for _, a in getaddresses(headers) if a]
 
 
+def addressed_here(raw: bytes) -> bool:
+    """Geht die Mail an eine Plus-Adresse des Postfachs, auch mit unbekannter Kennung?
+
+    Hestia (Exim) stellt Plus-Adressen nicht in das Postfach zu, wenn die Domain ein
+    Catch-all für den Verteiler hat: Die Mail landet dann im Sammelpostfach, und der
+    Verteiler gibt sie hierher weiter (circulars/inbound.py).
+    """
+    base = mailbox_address()
+    if "@" not in base:
+        return False
+    base_local, domain = base.split("@", 1)
+    msg = BytesParser(policy=policy.default).parsebytes(raw, headersonly=True)
+    for address in recipient_addresses(msg):
+        local, _, at_domain = address.rpartition("@")
+        if at_domain == domain and local.startswith(f"{base_local}+"):
+            return True
+    return False
+
+
 def find_org_id(addresses: list[str]) -> int | None:
     """Verein zur Plus-Adresse; nur Adressen mit der Domain des Postfachs zählen."""
     base = mailbox_address()

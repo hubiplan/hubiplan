@@ -267,6 +267,33 @@ class TestAbholen:
         assert entry.status == IncomingMail.Status.ERROR and invoices(club) == []
 
 
+class TestUeberVerteiler:
+    """Hestia stellt Plus-Adressen bei Catch-all ins Sammelpostfach des Verteilers zu."""
+
+    def test_sammelpostfach_gibt_rechnungen_weiter(self, club, settings):
+        from circulars import inbound
+        from circulars.models import InboundMail
+
+        settings.INBOUND_IMAP_HOST = "imap.example.org"
+        bodies = {
+            b"3": mail(address(club), [xml_part()]),
+            b"4": mail(
+                "rechnung+unbekannt99@example.org",
+                [xml_part()],
+                message_id="<r5@lieferant.example.com>",
+            ),
+        }
+        imap = TestAbholen._imap(None, bodies)
+        with mock.patch("circulars.inbound.imaplib.IMAP4_SSL", return_value=imap):
+            assert inbound.fetch_inbound() == 2
+        imap.uid.assert_any_call("store", b"3", "+FLAGS", "(\\Deleted)")
+        imap.uid.assert_any_call("store", b"4", "+FLAGS", "(\\Seen)")
+        [item] = invoices(club)
+        assert item.mail.sender == "buchhaltung@lieferant.example.com"
+        with rls_bypass():
+            assert not InboundMail.objects.exists()  # kein abgewiesener Verteiler-Eintrag
+
+
 def test_kennung_und_hinweise_sind_rls_geschuetzt(club, orgs):
     address(club)
     incoming_mail.process_message(mail(address(club), [pdf_part(simple_pdf())]))

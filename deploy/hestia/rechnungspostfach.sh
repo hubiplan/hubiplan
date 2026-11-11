@@ -17,14 +17,25 @@ export PATH=/usr/local/hestia/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/
 HUSER=${HUSER:?HUSER fehlt, z. B. HUSER=hosting-user}
 DOMAIN=${DOMAIN:?DOMAIN fehlt, z. B. DOMAIN=example.org}
 KONTO=${KONTO:-rechnung}
-MAILSERVER=${MAILSERVER:-mail.$DOMAIN}
 APP=/opt/hubiplan
 ENV="$APP/.env"
+# Mailserver: wie beim Verteiler (INBOUND_IMAP_HOST), sonst mail.<Domain>. Bei einer
+# Unterdomain wie verein.example.org heißt er meist mail.example.org: dann MAILSERVER= setzen.
+if [ -z "${MAILSERVER:-}" ] && [ -f "$ENV" ]; then
+    MAILSERVER=$(grep '^INBOUND_IMAP_HOST=' "$ENV" | cut -d= -f2 || true)
+fi
+MAILSERVER=${MAILSERVER:-mail.$DOMAIN}
 
 echo "### Start $(TZ=Europe/Berlin date '+%d.%m.%Y %H:%M')"
 [ -f "$ENV" ] || { echo "Abbruch: $ENV fehlt."; exit 1; }
 v-list-mail-domain "$HUSER" "$DOMAIN" > /dev/null 2>&1 || {
     echo "Abbruch: Mail-Domain $DOMAIN gibt es nicht."
+    exit 1
+}
+
+echo "Mailserver: $MAILSERVER"
+getent hosts "$MAILSERVER" > /dev/null || {
+    echo "Abbruch: $MAILSERVER ist nicht auflösbar, bitte MAILSERVER=… angeben."
     exit 1
 }
 
