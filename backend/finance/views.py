@@ -314,6 +314,8 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             "cancels__organization",
             "cancellation__organization",
             "split_of__organization",
+            # Rückverweis: sonst fragt die Festschreibung je Buchung einzeln nach
+            "performance_expense",
         )
         if self.action != "list":
             return qs.prefetch_related("receipts", "split_parts__organization")
@@ -352,10 +354,11 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             )
         if term := p.get("suche", "").strip():
             qs = qs.filter(services.search_filter(qs, term))
-        return (
-            qs.prefetch_related("receipts", "split_parts__organization")
-            .order_by("-date", "-number")
-            .distinct()
+        # Ohne DISTINCT: kein Filter verbindet mit einer Mehrfachbeziehung, jede Buchung
+        # kommt genau einmal vor. Mit DISTINCT zählte die Seitenzahl über alle Spalten
+        # sämtlicher verbundenen Tabellen (Gesamtaudit 11.11., P-02).
+        return qs.prefetch_related("receipts", "split_parts__organization").order_by(
+            "-date", "-number"
         )
 
     @transaction.atomic
