@@ -164,6 +164,66 @@ class PartnerContact(models.Model):
         return " ".join(p for p in (self.first_name, self.last_name) if p)
 
 
+class PartnerField(models.Model):
+    """Zusatzfeld für Geschäftspartner, aufgebaut wie die Zusatzfelder der Mitglieder."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    label = models.CharField("Bezeichnung", max_length=100)
+    key = models.SlugField("Kennung", max_length=50)
+    field_type = models.CharField("Typ", max_length=10, default="text")
+    choices = models.JSONField("Auswahlwerte", default=list, blank=True)
+    repeatable = models.BooleanField("wiederholbar", default=False)
+    subfields = models.JSONField("Unterfelder", default=list, blank=True)
+    help_text = models.CharField("Hinweis", max_length=200, blank=True)
+    sort_order = models.PositiveSmallIntegerField("Reihenfolge", default=0)
+    is_archived = models.BooleanField("nicht mehr verwendet", default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = gettext_lazy("Zusatzfeld für Geschäftspartner")
+        ordering = ["sort_order", "label"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["organization", "key"], name="partnerfeld_kennung_je_org"
+            )
+        ]
+
+    def __str__(self):
+        return self.label
+
+    def clean(self):
+        from customfields.models import TYPE_KEYS, structure_errors
+
+        errors = structure_errors(self)
+        if not self.repeatable and self.field_type not in TYPE_KEYS:
+            errors["field_type"] = gettext("Unbekannter Feldtyp.")
+        if errors:
+            raise ValidationError(errors)
+
+
+class PartnerFieldValue(models.Model):
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    definition = models.ForeignKey(PartnerField, on_delete=models.CASCADE, related_name="values")
+    partner = models.ForeignKey(
+        BusinessPartner, on_delete=models.CASCADE, related_name="field_values"
+    )
+    value = EncryptedJSONField(null=True, blank=True, strict=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = gettext_lazy("Zusatzfeld-Wert eines Geschäftspartners")
+        constraints = [
+            models.UniqueConstraint(fields=["definition", "partner"], name="partnerfeldwert_einmal")
+        ]
+
+    def __str__(self):
+        return f"{self.definition}: {self.value}"
+
+
 class PartnerAgreement(models.Model):
     """Sponsoring- oder Rahmenvereinbarung mit einem Geschäftspartner (P4).
 

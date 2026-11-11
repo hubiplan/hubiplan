@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { saveBlob } from '../../api/client.ts'
 import { financeApi } from '../../api/finance.ts'
-import { PARTNER_KINDS, PARTNER_ROLES, partnerApi } from '../../api/partners.ts'
+import { PARTNER_KINDS, PARTNER_ROLES, partnerApi, partnerFieldApi } from '../../api/partners.ts'
 import type {
   BusinessPartner,
   ContactInput,
@@ -24,6 +24,8 @@ import { Alert, Checkbox, Field, LoadError, Loading, SelectField } from '../../c
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { formatDay, formatEuro } from '../../i18n/format.ts'
+import { FieldsTab } from '../members/FieldsTab.tsx'
+import { FieldsAdmin } from '../settings/FieldsPage.tsx'
 import { TextArea } from '../settings/TextArea.tsx'
 import { Agreements } from './Agreements.tsx'
 import { MailingCard } from './MailingCard.tsx'
@@ -68,6 +70,7 @@ export function PartnersPage() {
   const [inactive, setInactive] = useState(false)
   const [importing, setImporting] = useState(false)
   const [mailing, setMailing] = useState(false)
+  const [fields, setFields] = useState(false)
   const [error, setError] = useState('')
   const rows = useMemo(() => {
     const needle = search.trim().toLocaleLowerCase()
@@ -121,10 +124,21 @@ export function PartnersPage() {
           },
           access.edit && { label: t('Aus Excel importieren'), onClick: () => setImporting(true) },
           access.edit && { label: t('Serienbrief und Verteiler'), onClick: () => setMailing(true) },
+          { label: t('Zusatzfelder'), onClick: () => setFields((x) => !x) },
         ]}
       />
       {error && <Alert kind="error">{error}</Alert>}
       {mailing && <MailingCard onClose={() => setMailing(false)} />}
+      {fields && (
+        <div className="stack">
+          <FieldsAdmin api={partnerFieldApi} editable={access.edit} partners />
+          <div className="button-row">
+            <button type="button" className="button" onClick={() => setFields(false)}>
+              {t('Schließen')}
+            </button>
+          </div>
+        </div>
+      )}
       {importing && (
         <ImportCard
           onClose={(changed) => {
@@ -665,6 +679,16 @@ function PartnerForm({
         )}
       </div>
       {partner && <Contacts partner={partner} canEdit={canEdit} />}
+      {partner && (
+        <FieldsTab
+          orgId={org.id}
+          memberId={partner.id}
+          canEdit={canEdit}
+          load={partnerFieldApi.values}
+          save={partnerFieldApi.saveValues}
+          nested
+        />
+      )}
       {partner && <Agreements partner={partner} canEdit={canEdit} />}
       {partner && <PartnerDocuments partner={partner} canEdit={canEdit} />}
       {partner && financeOn && <TurnoverCard partner={partner} />}

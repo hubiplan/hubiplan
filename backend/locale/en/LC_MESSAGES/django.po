@@ -10213,3 +10213,9 @@ msgstr "{sheet}, row {index}: {error}"
 
 msgid "„{name}“ ist kein eindeutiges Mitglied; bitte die Mitgliedsnummer angeben."
 msgstr "“{name}” is not a unique member; please give the member number."
+
+msgid "Zusatzfeld für Geschäftspartner"
+msgstr "Additional field for business partners"
+
+msgid "Zusatzfeld-Wert eines Geschäftspartners"
+msgstr "Additional field value of a business partner"

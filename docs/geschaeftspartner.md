@@ -18,6 +18,10 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
   Dienstleister); ohne Rollen bleiben sie, wie sie sind.
 - `billing.PartnerContact`: Ansprechpartner (Name, Vorname, Funktion, E-Mail, Telefon,
   Hauptansprechpartner, erhält Rechnungen, erhält Post, Notiz), verschlüsselt, mit RLS.
+- `billing.PartnerField` / `billing.PartnerFieldValue`: Zusatzfelder je Datenbereich, gleicher
+  Aufbau wie `customfields` (Typen, Auswahl, wiederholbar mit Unterfeldern, archivieren), ohne
+  verbandsweite Felder. Werte verschlüsselt je Partner, beide Tabellen mit RLS. Beim
+  Zusammenführen wandern Werte mit, wo der bleibende Eintrag keinen hat.
 
 ## Rechte
 
@@ -39,7 +43,9 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
 | `GET`, `PATCH`, `DELETE <pk>/` | Akte, ändern, löschen (nur ohne Verweise, sonst 400) |
 | `POST <pk>/merge/ {other}` | doppelten Eintrag übernehmen: Rechnungen, Buchungen, Bankzeilen, Quittungen, Zuwendungen, Vereinbarungen, Auftritte und Ansprechpartner wandern mit, Rollen und leere Angaben werden ergänzt |
 | `GET export/` | Excel mit allen Feldern, zweites Blatt „Ansprechpartner“ (Bank, Zahlungsziel, Standardkategorie, Künstlerkennzeichen nur mit Kassen- oder Beitragsrecht) |
-| `POST import/` (`?probe=1`) | Excel wie der Export (Spalten deutsch oder englisch, `billing/partner_excel.py`): bekannte Nummer aktualisiert (gefüllte Zellen), ohne Nummer mit bekanntem Namen übersprungen, sonst neu; Blatt mit „Partnernummer“ legt Ansprechpartner an oder aktualisiert sie (Name + Vorname). Mitglieder über Mitgliedsnummer oder eindeutigen Namen. Antwort `created`, `updated`, `skipped`, `contacts_created`, `contacts_updated`, `errors`; höchstens 2000 Zeilen je Blatt. `probe` läuft vollständig und rollt zurück |
+| `…/billing/partner-fields/` | Zusatzfelder anlegen, ändern, `usage/`, `archive/`, `restore/`, löschen (mit Werten nur `?mit_werten=1`); Bearbeitungsrecht für Geschäftspartner |
+| `POST import/` (`?probe=1`) | Excel wie der Export (Zusatzfelder ohne Wiederholung als Spalte mit ihrer Bezeichnung) (Spalten deutsch oder englisch, `billing/partner_excel.py`): bekannte Nummer aktualisiert (gefüllte Zellen), ohne Nummer mit bekanntem Namen übersprungen, sonst neu; Blatt mit „Partnernummer“ legt Ansprechpartner an oder aktualisiert sie (Name + Vorname). Mitglieder über Mitgliedsnummer oder eindeutigen Namen. Antwort `created`, `updated`, `skipped`, `contacts_created`, `contacts_updated`, `errors`; höchstens 2000 Zeilen je Blatt. `probe` läuft vollständig und rollt zurück |
+| `GET`, `PUT <pk>/fields/ {values}` | Zusatzfelder eines Partners lesen und speichern (Schlüssel: Feldnummer) |
 | `GET <pk>/turnover/` | Einnahmen/Ausgaben je Jahr ohne Stornos und Umbuchungen, letzte 10 Buchungen (Modul Finanzen, `finance.view`) |
 | `GET`, `POST suggestions/ {name, kind?, roles?}` | Bestand übernehmen: Freitexte, die mindestens zweimal ohne Partner im Kassenbuch stehen; POST legt den Partner an und verknüpft Buchungen und Bankzeilen mit genau diesem Namen (`finance.edit`) |
 | `…/<pk>/agreements/` | Vereinbarungen (P4) anlegen, ändern, entfernen; `POST …/agreements/<id>/thanks/ {text?}` liefert den Dankesbrief als PDF |

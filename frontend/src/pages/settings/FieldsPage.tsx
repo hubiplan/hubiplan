@@ -14,11 +14,31 @@ import { t } from '../../i18n/index.ts'
 
 const typeLabel = (tmx: FieldType) => FIELD_TYPES.find((x) => x.value === tmx)?.label ?? tmx
 
+/** Verwaltung der Zusatzfelder; dieselbe Oberfläche dient Mitgliedern und Geschäftspartnern. */
+export type FieldAdminApi = Pick<
+  typeof fieldApi,
+  'list' | 'create' | 'update' | 'remove' | 'usage' | 'archive' | 'restore'
+>
+
 export function FieldsPage() {
   const org = useActiveOrg()
-  const editable = org.permissions.includes(PERM.orgEdit)
+  return <FieldsAdmin api={fieldApi} editable={org.permissions.includes(PERM.orgEdit)} />
+}
+
+export function FieldsAdmin({
+  api: fieldApi,
+  editable,
+  partners = false,
+}: {
+  api: FieldAdminApi
+  editable: boolean
+  /** Felder für Geschäftspartner statt für die Mitgliedsakte */
+  partners?: boolean
+}) {
+  const org = useActiveOrg()
   const terms = useTerms()
-  const { data, error, reload } = useLoad(() => fieldApi.list(org.id), [org.id])
+  const isFederation = !partners && org.type === 'federation'
+  const { data, error, reload } = useLoad(() => fieldApi.list(org.id), [org.id, fieldApi])
   const [editing, setEditing] = useState<FieldDefinition | 'new' | null>(null)
   const [removing, setRemoving] = useState<{ field: FieldDefinition; usage: FieldUsage } | null>(
     null,
@@ -58,7 +78,14 @@ export function FieldsPage() {
     }
   }
 
-  const persons = (n: number) => (n === 1 ? t('1 Person') : t('{n} Personen', { n }))
+  const persons = (n: number) =>
+    partners
+      ? n === 1
+        ? t('1 Geschäftspartner')
+        : t('{n} Geschäftspartnern', { n })
+      : n === 1
+        ? t('1 Person')
+        : t('{n} Personen', { n })
 
   return (
     <div className="card card-wide">
@@ -75,10 +102,14 @@ export function FieldsPage() {
         )}
       </div>
       <p className="muted small">
-        {t(
-          'Eigene Felder für die Mitgliedsakte. Wiederholbare Felder haben mehrere Einträge je Person, z. B. Auszeichnungen mit Bezeichnung, Datum und verleihender Organisation.',
-        )}
-        {org.type === 'federation' &&
+        {partners
+          ? t(
+              'Eigene Felder für die Akte der Geschäftspartner, z. B. Sponsorstufe oder Lieferzeit. Wiederholbare Felder haben mehrere Einträge je Partner, z. B. Veranstaltungen mit Anlass und Datum.',
+            )
+          : t(
+              'Eigene Felder für die Mitgliedsakte. Wiederholbare Felder haben mehrere Einträge je Person, z. B. Auszeichnungen mit Bezeichnung, Datum und verleihender Organisation.',
+            )}
+        {isFederation &&
           t(' Verbandsweite Felder gelten in allen {pl_dat}.', { pl_dat: terms.pl_dat })}
       </p>
       {editing !== null && (
@@ -86,7 +117,9 @@ export function FieldsPage() {
           // Je Objekt ein eigenes Formular: Werte und Autospeichern wechseln nie das Ziel
           key={editing === 'new' ? 'new' : editing.id}
           orgId={org.id}
-          isFederation={org.type === 'federation'}
+          isFederation={isFederation}
+          api={fieldApi}
+          partners={partners}
           field={editing === 'new' ? null : editing}
           onDone={async () => {
             setEditing(null)
@@ -115,9 +148,13 @@ export function FieldsPage() {
               </p>
               <p className="muted small">
                 <strong>{t('Archivieren')}</strong>
-                {t(
-                  ': Das Feld verschwindet aus Mitgliedsakte und Export, die Werte bleiben erhalten und das Feld lässt sich wiederherstellen.',
-                )}{' '}
+                {partners
+                  ? t(
+                      ': Das Feld verschwindet aus Partnerakte und Export, die Werte bleiben erhalten und das Feld lässt sich wiederherstellen.',
+                    )
+                  : t(
+                      ': Das Feld verschwindet aus Mitgliedsakte und Export, die Werte bleiben erhalten und das Feld lässt sich wiederherstellen.',
+                    )}{' '}
                 <strong>{t('Samt Werten löschen')}</strong>
                 {t(': Feld und alle Werte werden endgültig entfernt.')}
               </p>
@@ -223,7 +260,9 @@ export function FieldsPage() {
         <>
           <h3>{t('Archivierte Zusatzfelder')}</h3>
           <p className="muted small">
-            {t('Nicht in Mitgliedsakte und Export sichtbar; die Werte bleiben gespeichert.')}
+            {partners
+              ? t('Nicht in Partnerakte und Export sichtbar; die Werte bleiben gespeichert.')
+              : t('Nicht in Mitgliedsakte und Export sichtbar; die Werte bleiben gespeichert.')}
           </p>
           <ul className="role-list">
             {archived.map((f) => (
@@ -267,12 +306,16 @@ export function FieldsPage() {
 function FieldForm({
   orgId,
   isFederation,
+  api: fieldApi,
+  partners,
   field,
   onDone,
   onCancel,
 }: {
   orgId: number
   isFederation: boolean
+  api: FieldAdminApi
+  partners: boolean
   field: FieldDefinition | null
   onDone: () => void
   onCancel: () => void
@@ -332,9 +375,12 @@ function FieldForm({
     if (field?.in_use && sub.key && field.subfields.some((s) => s.key === sub.key)) {
       const ok = await confirmDialog({
         title: t('Unterfeld „{label}“ entfernen?', { label: sub.label }),
-        message:
-          t('Das Feld ist bei Personen ausgefüllt. Die Werte dieses Unterfelds werden dabei ') +
-          t('bei allen Personen gelöscht.'),
+        message: partners
+          ? t(
+              'Das Feld ist bei Geschäftspartnern ausgefüllt. Die Werte dieses Unterfelds werden dabei bei allen Geschäftspartnern gelöscht.',
+            )
+          : t('Das Feld ist bei Personen ausgefüllt. Die Werte dieses Unterfelds werden dabei ') +
+            t('bei allen Personen gelöscht.'),
         confirmLabel: t('Samt Werten entfernen'),
         danger: true,
       })

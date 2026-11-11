@@ -6,7 +6,7 @@ from access import views as access_views
 from access.module_gate import gate, gate_names, needs_module
 from accounts import appearance, help_done, home_actions, language, learning, self_service, step_up
 from billing import agreements as partner_agreements
-from billing import einvoice_views, partner_files
+from billing import einvoice_views, partner_fields, partner_files
 from billing import partners as partner_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
@@ -172,6 +172,9 @@ org_router.register(
     "music/score-folder-items", ScoreFolderItemViewSet, basename="music-score-folder-item"
 )
 org_router.register("billing/partners", partner_views.PartnerViewSet, basename="billing-partner")
+org_router.register(
+    "billing/partner-fields", partner_fields.PartnerFieldViewSet, basename="billing-partner-field"
+)
 org_router.register(
     "billing/electronic", einvoice_views.ElectronicInvoiceViewSet, basename="billing-electronic"
 )
@@ -451,6 +454,11 @@ org_patterns = [
         "members/<int:pk>/photo-links/<int:link_id>/revoke/",
         photo_views.PhotoLinkRevokeView.as_view(),
         name="photo-link-revoke",
+    ),
+    path(
+        "billing/partners/<int:pk>/fields/",
+        partner_fields.PartnerFieldsView.as_view(),
+        name="billing-partner-fields",
     ),
     path("billing/partners/<int:partner_pk>/", include(partner_router.urls)),
     path(

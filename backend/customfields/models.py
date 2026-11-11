@@ -86,30 +86,35 @@ class FieldDefinition(models.Model):
             errors["federation_wide"] = gettext(
                 "Nur eine übergeordnete Einheit kann verbandsweite Felder anlegen."
             )
-        if self.repeatable:
-            if not self.subfields:
-                errors["subfields"] = gettext(
-                    "Ein wiederholbares Feld braucht mindestens ein Unterfeld."
-                )
-            keys = set()
-            for sub in self.subfields:
-                if sub.get("type") not in TYPE_KEYS:
-                    errors["subfields"] = gettext("Unbekannter Typ: {x0}").format(
-                        x0=sub.get("type")
-                    )
-                if sub.get("type") == "choice" and not sub.get("choices"):
-                    errors["subfields"] = gettext("„{x0}“ braucht Auswahlwerte.").format(
-                        x0=sub.get("label")
-                    )
-                if sub.get("key") in keys:
-                    errors["subfields"] = gettext(
-                        "Unterfelder brauchen unterschiedliche Bezeichnungen."
-                    )
-                keys.add(sub.get("key"))
-        elif self.field_type == "choice" and not self.choices:
-            errors["choices"] = gettext("Bitte Auswahlwerte angeben.")
+        errors.update(structure_errors(self))
         if errors:
             raise ValidationError(errors)
+
+
+def structure_errors(field) -> dict:
+    """Aufbau eines Zusatzfelds prüfen (auch für Felder der Geschäftspartner)."""
+    errors = {}
+    if field.repeatable:
+        if not field.subfields:
+            errors["subfields"] = gettext(
+                "Ein wiederholbares Feld braucht mindestens ein Unterfeld."
+            )
+        keys = set()
+        for sub in field.subfields:
+            if sub.get("type") not in TYPE_KEYS:
+                errors["subfields"] = gettext("Unbekannter Typ: {x0}").format(x0=sub.get("type"))
+            if sub.get("type") == "choice" and not sub.get("choices"):
+                errors["subfields"] = gettext("„{x0}“ braucht Auswahlwerte.").format(
+                    x0=sub.get("label")
+                )
+            if sub.get("key") in keys:
+                errors["subfields"] = gettext(
+                    "Unterfelder brauchen unterschiedliche Bezeichnungen."
+                )
+            keys.add(sub.get("key"))
+    elif field.field_type == "choice" and not field.choices:
+        errors["choices"] = gettext("Bitte Auswahlwerte angeben.")
+    return errors
 
 
 class FieldValue(models.Model):
