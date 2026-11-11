@@ -2,11 +2,15 @@
 key: page.settings_theme
 titel: Settings › Appearance
 rechte: [theme.edit]
-routen: [/einstellungen/erscheinungsbild]
-stichworte: [colour, logo, coat of arms, look, dark mode]
+routen: [/einstellungen/erscheinungsbild, /einstellungen/erscheinungsbild/farbblatt]
+stichworte: [colour, logo, coat of arms, look, dark mode, gradient, colour sheet, corporate design]
 ---
 
 Here you set the club colours and logo. They appear in HUBIplan, on cards, letters and the website. Sub-units inherit them unless they set their own.
+
+Besides the main and second colour there are up to four further colours under **Further colours**, six in total. Each colour gets a name and, if you like, a use, such as “lead colour”, “body text” or “surfaces, table rows”. This lets you take over the colour sheet of a corporate design. Under **Gradients** you create up to two named gradients from two palette colours, for example a blue gradient from blue to dark blue, from left to right or from top to bottom. The website uses them for the header, footer, colour bands, decorative lines and sections; where exactly is set under Website › Design. Next to each gradient you see how readable text on it is. Further colours and gradients only apply together with an own main colour.
+
+**View colour sheet** shows all colours with name, hex and RGB value and use, plus the gradients, on one page to pass on or to save as PDF with **Print**.
 
 Below the logo you can upload a second **Logo / coat of arms for dark mode**, for example a version with light lettering or a light outline. It appears when someone uses the dark appearance (sign-in, home page, events, My account and My area). The preview shows it on a dark background. Without a separate dark mode logo, the normal logo is used in the dark as well. Cards, letters and PDFs always use the normal logo. Sub-units upload their dark coat of arms under Sub-units, with the sub-unit itself.
 

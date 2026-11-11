@@ -313,6 +313,13 @@ Unter `/api/app/v1/admin/u/<Einheit>/billing/…`, Rechte wie im Browser (`billi
 
 Beitragsläufe, Mahnungen, Storno, Zahlungen entfernen und SEPA bleiben im Browser.
 
+### Geschäftspartner nachschlagen
+
+Unter `/api/app/v1/admin/u/<Einheit>/billing/partners/` (nur lesen): aktive Geschäftspartner mit
+Ansprechpartnern, Felder wie im Browser; `?suche=` findet Name, Nummer, Ort und Ansprechpartner,
+höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` oder
+`billing.view`); Bankdaten nur mit Kassen- oder Beitragsrecht. Gepflegt wird im Browser.
+
 ### Quittung mit Unterschrift
 
 Konzept `konzepte/digitale-quittung.md`, Ablauf und Prüfung in

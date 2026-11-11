@@ -134,4 +134,100 @@ describe('E-Rechnungseingang', () => {
     expect(await screen.findByRole('button', { name: 'RE-2' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'RE-1' })).not.toBeInTheDocument()
   })
+
+  it('zeigt die Adresse des Rechnungspostfachs, Hinweise und unbekannte Absender', async () => {
+    const mail = {
+      id: 5,
+      sender: 'buchhaltung@lieferant.example.com',
+      subject: 'Ihre Rechnung',
+      sender_known: false,
+      status: 'imported' as const,
+      skipped: [],
+      received_at: '2026-11-10T12:00:00Z',
+      dismissed_at: '2026-11-10T12:00:00Z',
+    }
+    const hint = {
+      ...mail,
+      id: 6,
+      status: 'no_invoice' as const,
+      skipped: [{ name: 'brief.pdf', reason: 'plain_pdf' }],
+      dismissed_at: null,
+    }
+    let hints = [hint]
+    const calls = fakeApi({
+      [incoming + '1']: () => ({ status: 200, body: page([{ ...item, mail }]) }),
+      'GET /api/orgs/7/finance/incoming/mailbox/': () => ({
+        status: 200,
+        body: { enabled: true, address: 'rechnung+abc234defg@example.org' },
+      }),
+      'GET /api/orgs/7/finance/incoming/mails/': () => ({ status: 200, body: hints }),
+      'POST /api/orgs/7/finance/incoming/mails/6/dismiss/': () => {
+        hints = []
+        return { status: 200, body: { ...hint, dismissed_at: '2026-11-10T13:00:00Z' } }
+      },
+    })
+    show()
+    const user = userEvent.setup()
+    expect(await screen.findByText('rechnung+abc234defg@example.org')).toBeInTheDocument()
+    expect(await screen.findByText('Keine E-Rechnung im Anhang')).toBeInTheDocument()
+    expect(screen.getByText('brief.pdf (PDF ohne E-Rechnung)')).toBeInTheDocument()
+    expect(screen.getByText('Absender unbekannt')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Erledigt' }))
+    expect(calls.some((call) => call.key.endsWith('/mails/6/dismiss/'))).toBe(true)
+    expect(await screen.findByRole('button', { name: 'RE-1' })).toBeInTheDocument()
+    expect(screen.queryByText('Keine E-Rechnung im Anhang')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'RE-1' }))
+    expect(
+      screen.getByText(
+        'Der Absender der Mail passt zu keinem Geschäftspartner. Prüfe vor der Freigabe besonders Rechnungssteller und Bankverbindung.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('schlägt einen Geschäftspartner vor und verlangt bei neuer IBAN eine Bestätigung', async () => {
+    const valid = {
+      ...item,
+      report: { status: 'valid' as const, validator: 'KoSIT', messages: [] },
+      data: { ...item.data, iban: 'DE89370400440532013000' },
+      partner: null,
+      partner_name: '',
+      suggested_partner: { id: 4, name: 'Lieferant Beispiel GmbH', by: 'vat_id' as const },
+      iban_changed: true,
+    }
+    const linked = {
+      ...valid,
+      partner: 4,
+      partner_name: 'Lieferant Beispiel GmbH',
+      suggested_partner: null,
+    }
+    const calls = fakeApi({
+      [incoming + '1']: () => ({ status: 200, body: page([valid]) }),
+      'POST /api/orgs/7/finance/incoming/1/partner/': () => ({ status: 200, body: linked }),
+      'POST /api/orgs/7/finance/incoming/1/review/': () => ({
+        status: 200,
+        body: { ...linked, status: 'approved', iban_changed: false },
+      }),
+    })
+    show()
+    const user = userEvent.setup()
+    expect(await screen.findByText('Neue IBAN')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'RE-1' }))
+    expect(
+      screen.getByText('Vorschlag: Lieferant Beispiel GmbH (erkannt an der USt-IdNr.)'),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Vorschlag zuordnen' }))
+    const assign = calls.find((call) => call.key.endsWith('/incoming/1/partner/'))
+    expect(JSON.parse(String(assign?.init?.body))).toEqual({ partner: 4 })
+    await user.type(screen.getByLabelText('Prüfvermerk'), 'Leistung geprüft')
+    const approve = screen.getByRole('button', { name: 'Fachlich freigeben' })
+    expect(approve).toBeDisabled()
+    await user.click(screen.getByLabelText('Neue IBAN telefonisch bestätigt'))
+    await user.click(approve)
+    const review = calls.find((call) => call.key.endsWith('/incoming/1/review/'))
+    expect(JSON.parse(String(review?.init?.body))).toEqual({
+      status: 'approved',
+      note: 'Leistung geprüft',
+      iban_confirmed: true,
+    })
+  })
 })

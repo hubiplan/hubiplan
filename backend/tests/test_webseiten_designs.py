@@ -34,7 +34,12 @@ class TestPalette:
         assert resp.status_code == 200, resp.content
         palette = resp.json()["effective"]["palette"]
         assert [p["name"] for p in palette] == ["Grün", "Gold", "Weinrot"]
-        assert palette[2] == {"color": "#8b1e2d", "on_color": "#ffffff", "name": "Weinrot"}
+        assert palette[2] == {
+            "color": "#8b1e2d",
+            "on_color": "#ffffff",
+            "name": "Weinrot",
+            "use": "",
+        }
 
     def test_hoechstens_sechs_farben(self, api, orgs, board_a):
         url = f"/api/orgs/{orgs['a'].pk}/theme/"

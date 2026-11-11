@@ -9744,6 +9744,96 @@ msgstr "This target does not exist."
 msgid "Das Ende liegt vor dem Anfang."
 msgstr "The end is before the start."
 
+msgid "Sprache der Antwort: de (Deutsch) oder en (Englisch)."
+msgstr "Language of the answer: de (German) or en (English)."
+
+msgid "Keine passende Anleitung gefunden. Andere Wörter versuchen oder hilfe_uebersicht aufrufen."
+msgstr "No matching guide found. Try other words or call hilfe_uebersicht."
+
+msgid "Den ganzen Text liefert hilfe_lesen mit dem Namen."
+msgstr "hilfe_lesen returns the full text for a name."
+
+msgid "Anleitung"
+msgstr "Guide"
+
+msgid "Seitenhilfe"
+msgstr "Page help"
+
+msgid "Links wie (/mitglieder) sind Seiten in HUBIplan, relativ zur Adresse der Instanz. Was jemand davon sieht, hängt von Rechten und Modulen ab."
+msgstr "Links like (/mitglieder) are pages in HUBIplan, relative to the address of the instance. What someone sees there depends on rights and modules."
+
+msgid "Diesen Begriff kennt das Glossar nicht. hilfe_suchen versuchen."
+msgstr "The glossary does not know this term. Try hilfe_suchen."
+
+msgid "Sprache muss de oder en sein."
+msgstr "Language must be de or en."
+
+msgid "„anzahl“ muss eine ganze Zahl sein."
+msgstr "“anzahl” must be a whole number."
+
+msgid "Diese Anleitung gibt es nicht. Erst mit hilfe_suchen suchen."
+msgstr "This guide does not exist. Search with hilfe_suchen first."
+
+msgid "„art“ muss anleitungen oder seiten sein."
+msgstr "“art” must be anleitungen or seiten."
+
+msgid "Hilfe durchsuchen"
+msgstr "Search the help"
+
+msgid "Sucht in der Hilfe von HUBIplan (Vereinsverwaltung) nach Anleitungen und Seitenhilfen, z. B. „Mitglied aufnehmen“ oder „Rundschreiben senden“. Liefert Titel, Name, Adresse und eine kurze Beschreibung. Enthält keine Vereinsdaten."
+msgstr "Searches the help of HUBIplan (club management) for guides and page help, e.g. “admit a member” or “send a circular”. Returns title, name, address and a short description. Contains no club data. Use sprache=en for English answers."
+
+msgid "Anleitung lesen"
+msgstr "Read a guide"
+
+msgid "Liefert den ganzen Text einer Anleitung oder Seitenhilfe von HUBIplan als Markdown. Den Namen liefern hilfe_suchen oder hilfe_uebersicht."
+msgstr "Returns the full text of a HUBIplan guide or page help as Markdown. hilfe_suchen or hilfe_uebersicht return the name."
+
+msgid "Alle Anleitungen"
+msgstr "All guides"
+
+msgid "Listet alle Anleitungen (art=anleitungen) oder alle Seitenhilfen (art=seiten) der HUBIplan-Hilfe mit Namen."
+msgstr "Lists all guides (art=anleitungen) or all page help (art=seiten) of the HUBIplan help with their names."
+
+msgid "Begriff erklären"
+msgstr "Explain a term"
+
+msgid "Erklärt einen Begriff aus der Vereinsverwaltung oder eine Entscheidung in HUBIplan aus dem Glossar, z. B. „Mitgliedsart“, „SEPA-Mandat“ oder „Kassenprüfung“."
+msgstr "Explains a club management term or a decision in HUBIplan from the glossary, e.g. “membership type”, “SEPA mandate” or “cash audit”."
+
+#, python-format
+msgid "„%(name)s“ muss ein Text sein."
+msgstr "“%(name)s” must be text."
+
+#, python-format
+msgid "„%(name)s“ fehlt."
+msgstr "“%(name)s” is missing."
+
+#, python-format
+msgid "„%(name)s“ ist zu lang (höchstens 200 Zeichen)."
+msgstr "“%(name)s” is too long (at most 200 characters)."
+
+msgid "Wonach gesucht wird, in Stichworten."
+msgstr "What to search for, as keywords."
+
+msgid "Höchstzahl der Treffer."
+msgstr "Maximum number of results."
+
+msgid "Name der Anleitung, z. B. passwort-aendern oder seite/mein-konto."
+msgstr "Name of the guide, e.g. passwort-aendern or seite/mein-konto."
+
+msgid "Anleitungen oder Seitenhilfen."
+msgstr "Guides or page help."
+
+msgid "Der Begriff."
+msgstr "The term."
+
+msgid "Hilfe zu HUBIplan, einer freien Vereinsverwaltung: Anleitungen, Seitenhilfen und Begriffe. Erst mit hilfe_suchen suchen, dann mit hilfe_lesen den ganzen Text holen und die Adresse der Anleitung nennen. Die Werkzeuge sehen keine Vereinsdaten und ändern nichts."
+msgstr "Help for HUBIplan, a free club management software: guides, page help and terms. Search with hilfe_suchen first, then fetch the full text with hilfe_lesen and give the address of the guide. Pass sprache=en for English. The tools see no club data and change nothing."
+
+msgid "HUBIplan-Hilfe"
+msgstr "HUBIplan help"
+
 msgid "Frage"
 msgstr "Question"
 
@@ -9788,3 +9878,287 @@ msgstr "Passkey removed"
 
 msgid "Der Passkey „{name}“ wurde aus deinem HUBIplan-Zugang entfernt."
 msgstr "The passkey “{name}” was removed from your HUBIplan account."
+
+msgid "Rechnungspostfach"
+msgstr "Invoice mailbox"
+
+msgid "Neue Adresse vergeben"
+msgstr "New address assigned"
+
+msgid "Übernommen"
+msgstr "Imported"
+
+msgid "Keine E-Rechnung im Anhang"
+msgstr "No e-invoice attached"
+
+msgid "Als Spam markiert"
+msgstr "Flagged as spam"
+
+msgid "Nicht verarbeitet"
+msgstr "Not processed"
+
+msgid "Kopf"
+msgstr "Header"
+
+msgid "Menü (Leiste oder Markierung)"
+msgstr "Menu (bar or highlight)"
+
+msgid "Zierlinien"
+msgstr "Decorative lines"
+
+msgid "Fuß"
+msgstr "Footer"
+
+msgid "Farbband"
+msgstr "Colour band"
+
+msgid "zweites Farbband"
+msgstr "Second colour band"
+
+msgid "Datumsfeld bei Terminen"
+msgstr "Date box for events"
+
+msgid "Fließtext"
+msgstr "Body text"
+
+msgid "Sekundärtext"
+msgstr "Secondary text"
+
+msgid "Flächen (Karten, Tabellenzeilen)"
+msgstr "Surfaces (cards, table rows)"
+
+msgid "Seitenhintergrund"
+msgstr "Page background"
+
+msgid "Die Verwendung bitte höchstens {limit} Zeichen."
+msgstr "Please keep the use to at most {limit} characters."
+
+msgid "Verläufe bitte als Liste angeben."
+msgstr "Please give gradients as a list."
+
+msgid "Höchstens {MAX_GRADIENTS} Verläufe."
+msgstr "At most {MAX_GRADIENTS} gradients."
+
+msgid "Ein Verlauf braucht zwei Farben aus der Palette."
+msgstr "A gradient needs two colours from the palette."
+
+msgid "Ein Verlauf braucht zwei verschiedene Farben."
+msgstr "A gradient needs two different colours."
+
+msgid "Diese Richtung gibt es nicht."
+msgstr "This direction does not exist."
+msgid "Startseite"
+msgstr "Home"
+msgid "Geschäftspartner und Ansprechpartner sehen"
+msgstr "See business partners and contact persons"
+
+msgid "Geschäftspartner anlegen, ändern und zusammenführen"
+msgstr "Create, change and merge business partners"
+
+msgid "Firma"
+msgstr "Company"
+
+msgid "Behörde/Amt"
+msgstr "Authority/office"
+
+msgid "Verein/Verband"
+msgstr "Association/federation"
+
+msgid "Privatperson"
+msgstr "Private person"
+
+msgid "Lieferant"
+msgstr "Supplier"
+
+msgid "Dienstleister"
+msgstr "Service provider"
+
+msgid "Kunde/Auftraggeber"
+msgstr "Customer/client"
+
+msgid "Sponsor"
+msgstr "Sponsor"
+
+msgid "Spender"
+msgstr "Donor"
+
+msgid "Vermieter/Veranstaltungsort"
+msgstr "Landlord/venue"
+
+msgid "Künstler/Musiker"
+msgstr "Artist/musician"
+
+msgid "Behörde"
+msgstr "Authority"
+
+msgid "Versicherung"
+msgstr "Insurance"
+
+msgid "Bank"
+msgstr "Bank"
+
+msgid "Ansprechpartner"
+msgstr "Contact person"
+
+msgid "Diese Einheit gehört nicht hierher."
+msgstr "This unit does not belong here."
+
+msgid "Unbekannte Mitgliedschaft."
+msgstr "Unknown membership."
+
+msgid "Dieser Geschäftspartner wird noch verwendet (z. B. in Rechnungen oder Buchungen). Bitte stattdessen auf „Inaktiv“ setzen."
+msgstr "This business partner is still in use (e.g. in invoices or bookings). Please set it to “Inactive” instead."
+
+msgid "Dieser Geschäftspartner wird noch verwendet."
+msgstr "This business partner is still in use."
+
+msgid "Bitte zwei verschiedene Einträge."
+msgstr "Please choose two different entries."
+
+msgid "Rollen"
+msgstr "Roles"
+
+msgid "Straße"
+msgstr "Street"
+
+msgid "PLZ"
+msgstr "Postcode"
+
+msgid "Land"
+msgstr "Country"
+
+msgid "USt-IdNr."
+msgstr "VAT ID"
+
+msgid "Aktiv"
+msgstr "Active"
+
+msgid "IBAN"
+msgstr "IBAN"
+
+msgid "BIC"
+msgstr "BIC"
+
+msgid "Kontoinhaber"
+msgstr "Account holder"
+
+msgid "Bitte eine Excel-Datei wählen."
+msgstr "Please choose an Excel file."
+
+msgid "Die Datei ist keine lesbare Excel-Datei."
+msgstr "The file is not a readable Excel file."
+
+msgid "Die erste Zeile braucht eine Spalte „Name“."
+msgstr "The first row needs a column “Name”."
+
+msgid "Zeile {index}: {error}"
+msgstr "Row {index}: {error}"
+
+msgid "Einen Geschäftspartner mit diesem Namen gibt es schon."
+msgstr "A business partner with this name already exists."
+
+msgid "Aktive Werbung"
+msgstr "Active advertising"
+
+msgid "Bande oder Banner"
+msgstr "Perimeter board or banner"
+
+msgid "Damit helfen Sie uns sehr, unser Vereinsleben zu gestalten. Wir freuen uns auf die weitere Zusammenarbeit."
+msgstr "This helps us a great deal in shaping our club life. We look forward to working with you further."
+
+msgid "Dankesbrief"
+msgstr "Thank-you letter"
+
+msgid "Festschrift oder Programmheft"
+msgstr "Commemorative booklet or programme"
+
+msgid "Guten Tag {name},"
+msgstr "Dear {name},"
+
+msgid "Herzlichen Dank"
+msgstr "Thank you very much"
+
+msgid "Höchstens 365 Tage vorher."
+msgstr "At most 365 days before."
+
+msgid "Ihre Unterstützung"
+msgstr "your support"
+
+msgid "Ihre Unterstützung von {amount}"
+msgstr "your support of {amount}"
+
+msgid "Keine Einnahme"
+msgstr "No income"
+
+msgid "Logo auf der Webseite"
+msgstr "Logo on the website"
+
+msgid "Nennung bei Veranstaltungen"
+msgstr "Mention at events"
+
+msgid "Nur Nennung (ohne Werbung)"
+msgstr "Mention only (no advertising)"
+
+msgid "Rahmenvereinbarung"
+msgstr "Framework agreement"
+
+msgid "Sehr geehrte Damen und Herren,"
+msgstr "Dear Sir or Madam,"
+
+msgid "Sonstige Vereinbarung"
+msgstr "Other agreement"
+
+msgid "Sponsoring"
+msgstr "Sponsorship"
+
+msgid "Trikot oder Kleidung"
+msgstr "Jersey or clothing"
+
+msgid "Vereinbarung"
+msgstr "Agreement"
+
+msgid "Vereinbarung mit {name} verlängern?"
+msgstr "Renew agreement with {name}?"
+
+msgid "und {in_kind}"
+msgstr "and {in_kind}"
+
+msgid "vielen Dank für {support}."
+msgstr "thank you very much for {support}."
+
+msgid "„{title}“ endet am {end}."
+msgstr "“{title}” ends on {end}."
+
+msgid "Dokument zum Geschäftspartner"
+msgstr "Business partner document"
+
+msgid "Höchstens 730 Tage."
+msgstr "At most 730 days."
+
+msgid "Höchstens {n} Briefe auf einmal."
+msgstr "At most {n} letters at once."
+
+msgid "In dieser Gruppe hat kein Geschäftspartner eine Anschrift."
+msgstr "No business partner in this group has an address."
+
+msgid "Vertrag"
+msgstr "Contract"
+
+msgid "Vertrag mit {name}: kündigen oder weiterlaufen lassen?"
+msgstr "Contract with {name}: cancel or let it continue?"
+
+msgid "„{title}“ endet am {end}, kündigen bis {last}."
+msgstr "“{title}” ends on {end}, give notice by {last}."
+
+msgid ""
+"Neue Bankverbindung: Bitte beim Rechnungssteller telefonisch bestätigen und "
+"das Häkchen setzen."
+msgstr ""
+"New bank account: please confirm it with the issuer by phone and tick the "
+"box."
+
+msgid "Der Rechnung ist bereits ein Geschäftspartner zugeordnet."
+msgstr "A business partner is already linked to this invoice."
+
+msgid "Die Rechnung nennt keinen Rechnungssteller."
+msgstr "The invoice does not name an issuer."

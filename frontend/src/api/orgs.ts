@@ -17,6 +17,8 @@ export interface EffectiveTheme {
   logo_dark_url?: string | null
   /** Haupt-, Zweit- und weitere Farben (bis sechs) */
   palette?: PaletteColor[]
+  /** benannte Verläufe aus der Palette (ältere Server: fehlt) */
+  gradients?: Gradient[]
   inherited_from: { colors: string | null; logo: string | null }
 }
 
@@ -24,11 +26,35 @@ export interface PaletteColor {
   color: string
   on_color: string
   name: string
+  /** wofür die Farbe da ist, z. B. „Fließtext“ */
+  use?: string
 }
 
 export interface ExtraColor {
   color: string
   name: string
+  use?: string
+}
+
+/** Gespeicherter Verlauf: zwei Palettenplätze (0 = Hauptfarbe) und Richtung */
+export interface GradientSetting {
+  name: string
+  from: number
+  to: number
+  direction: 'right' | 'down'
+}
+
+/** Verlauf mit Farben, wie er gilt */
+export interface Gradient extends GradientSetting {
+  colors: [string, string]
+  on_color: string
+  /** kleinster Kontrast der Schrift zu beiden Enden */
+  contrast: number
+}
+
+/** CSS für einen Verlauf (links → rechts oder oben → unten) */
+export function gradientCss(from: string, to: string, direction: string): string {
+  return `linear-gradient(${direction === 'down' ? 'to bottom' : 'to right'}, ${from}, ${to})`
 }
 
 /** Kurzname, falls vorhanden, sonst der vollständige Name (für Navigation, Listen, Auswahl). */
@@ -201,6 +227,9 @@ export interface ThemeSettings {
   primary_color_name: string
   accent_color_name: string
   extra_colors: ExtraColor[]
+  primary_color_use?: string
+  accent_color_use?: string
+  gradients?: GradientSetting[]
   logo_url: string | null
   /** eigenes Logo für den Dunkelmodus (ohne Rückfall) */
   logo_dark_url?: string | null
@@ -787,6 +816,8 @@ export const PERM = {
   financeEdit: 'finance.edit',
   billingView: 'billing.view',
   billingEdit: 'billing.edit',
+  partnersView: 'partners.view',
+  partnersEdit: 'partners.edit',
   cardsManage: 'cards.manage',
   cardsView: 'cards.view',
   dataExport: 'data.export',

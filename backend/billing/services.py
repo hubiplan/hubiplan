@@ -1123,6 +1123,7 @@ def add_payment(
         text=f"Zahlung {invoice.display_number} {invoice.recipient_name.splitlines()[0]}"[:200],
         reference=invoice.display_number,
         counterparty=invoice.recipient_name.splitlines()[0][:200] if invoice.recipient_name else "",
+        partner=invoice.partner,
         # Arbeitsbereich einer Untereinheit: Mitglieder liegen im Datenbereich darüber
         membership=None if org.type == "unit" else invoice.membership,
         department=invoice.department,

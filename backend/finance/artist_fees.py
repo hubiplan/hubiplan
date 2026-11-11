@@ -45,7 +45,7 @@ def bookings(org, year: int):
             cancels__isnull=True,
             cancellation__isnull=True,
         )
-        .filter(Q(artist_fee=True) | Q(category__artist_fees=True))
+        .filter(Q(artist_fee=True) | Q(category__artist_fees=True) | Q(partner__artist=True))
         .select_related("organization", "category", "membership__person")
         .order_by("date", "number")
     )

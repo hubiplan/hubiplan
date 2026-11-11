@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     "peering",
     "devices",
     "oidc",
+    "mcpserver",
     "todos",
 ]
 
@@ -338,6 +339,8 @@ CELERY_BEAT_SCHEDULE = {
     "rechnungen-ablegen": {"task": "billing.tasks.archive_invoices", "schedule": 15 * 60},
     # Eingehende E-Rechnungen: liegengebliebene Prüfungen nachholen, Abgelehnte löschen
     "erechnungen-pruefen": {"task": "billing.tasks.check_incoming_all", "schedule": 60},
+    # Rechnungspostfach abholen (ohne IMAP-Zugang: nichts zu tun, #374)
+    "erechnungen-postfach": {"task": "billing.tasks.fetch_incoming_mail", "schedule": 60},
     "erechnungen-abgelehnte-loeschen": {
         "task": "billing.tasks.purge_rejected_incoming",
         "schedule": 24 * 60 * 60,  # täglich
@@ -463,6 +466,19 @@ INBOUND_IMAP_FOLDER = os.environ.get("INBOUND_IMAP_FOLDER", "INBOX")
 # Ohne Sammelpostfach (Testserver): Probe-Eingang aus der Oberfläche erlaubt
 INBOUND_SIMULATION = env_bool("INBOUND_SIMULATION", not INBOUND_IMAP_HOST)
 
+# --- Rechnungspostfach (billing/incoming_mail.py, #374) ---
+# Postfach für eingehende E-Rechnungen (IMAP über TLS); leer: kein Abruf
+EINVOICE_IMAP_HOST = os.environ.get("EINVOICE_IMAP_HOST", "")
+EINVOICE_IMAP_PORT = int(os.environ.get("EINVOICE_IMAP_PORT", "993"))
+EINVOICE_IMAP_USER = os.environ.get("EINVOICE_IMAP_USER", "")
+EINVOICE_IMAP_PASSWORD = os.environ.get("EINVOICE_IMAP_PASSWORD", "")
+EINVOICE_IMAP_FOLDER = os.environ.get("EINVOICE_IMAP_FOLDER", "INBOX")
+# Hierhin wandern übernommene Mails; leer: nur als gelesen markieren
+EINVOICE_IMAP_DONE_FOLDER = os.environ.get("EINVOICE_IMAP_DONE_FOLDER", "INBOX.Verarbeitet")
+# Angezeigte Grundadresse, z. B. rechnung@example.org (leer: EINVOICE_IMAP_USER). Vereine
+# bekommen daraus ihre Plus-Adresse rechnung+<kennung>@example.org.
+EINVOICE_IMAP_ADDRESS = os.environ.get("EINVOICE_IMAP_ADDRESS", "")
+
 # Sprache (konzepte/englisch.md): Deutsch ist Standard und Quellsprache. Englisch wird erst
 # wählbar, wenn es in HUBIPLAN_LANGUAGES steht (bis zur Abnahme nur zum Testen).
 LANGUAGE_CODE = "de"
@@ -531,6 +547,8 @@ PEERING_KEY_FILE = os.environ.get("PEERING_KEY_FILE", "")
 # (Standard: FRONTEND_URL/api/oidc) und Schlüsseldatei (Standard: PRIVATE_ROOT/oidc/signing.pem)
 OIDC_ISSUER = os.environ.get("OIDC_ISSUER", "")
 OIDC_KEY_FILE = os.environ.get("OIDC_KEY_FILE", "")
+# KI-Schnittstelle Stufe 0 (docs/mcp.md): Hilfe ohne Anmeldung unter /api/mcp/, keine Vereinsdaten
+MCP_HILFE_ENABLED = env_bool("HUBIPLAN_MCP_HILFE", True)
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
 EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")

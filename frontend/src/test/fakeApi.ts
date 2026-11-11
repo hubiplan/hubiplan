@@ -84,6 +84,10 @@ export function fakeApi(routes: Record<string, Handler>) {
         ? () => ({ status: 200, body: { items: [], documents: [] } })
         : undefined) ??
       (selectionKey === key ? undefined : routes[selectionKey]) ??
+      // Rechnungspostfach: ohne eigene Angabe nicht eingerichtet
+      (/^GET \/api\/orgs\/\d+\/finance\/incoming\/mailbox\/$/.test(key)
+        ? () => ({ status: 200, body: { enabled: false, address: '' } })
+        : undefined) ??
       // Gespeicherte Orte: ohne eigene Angabe keine
       (/^GET \/api\/(orgs|depts)\/\d+\/places\/$/.test(key)
         ? () => ({ status: 200, body: { places: [], can_edit: false, can_manage: false } })

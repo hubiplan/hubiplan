@@ -320,6 +320,16 @@ def clean_primary(value: str) -> str:
     return value.lower()
 
 
+def _django_errors(check, value):
+    """Prüfung aus theme.py; deren ValidationError als Fehler der Schnittstelle."""
+    from django.core.exceptions import ValidationError as DjangoValidationError
+
+    try:
+        return check(value)
+    except DjangoValidationError as exc:
+        raise serializers.ValidationError(exc.messages) from exc
+
+
 def clean_extra(value) -> list:
     from django.core.exceptions import ValidationError as DjangoValidationError
 
@@ -381,6 +391,9 @@ class ThemeSerializer(serializers.ModelSerializer):
             "primary_color_name",
             "accent_color_name",
             "extra_colors",
+            "primary_color_use",
+            "accent_color_use",
+            "gradients",
             "logo_url",
             "logo_dark_url",
             "effective",
@@ -411,6 +424,15 @@ class ThemeSerializer(serializers.ModelSerializer):
 
     def validate_extra_colors(self, value) -> list:
         return clean_extra(value)
+
+    def validate_primary_color_use(self, value: str) -> str:
+        return _django_errors(theme.clean_color_use, value)
+
+    def validate_accent_color_use(self, value: str) -> str:
+        return _django_errors(theme.clean_color_use, value)
+
+    def validate_gradients(self, value) -> list:
+        return _django_errors(theme.clean_gradients, value)
 
 
 class HomepageImageSerializer(serializers.Serializer):
@@ -574,6 +596,9 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "primary_color_name",
             "accent_color_name",
             "extra_colors",
+            "primary_color_use",
+            "accent_color_use",
+            "gradients",
             "logo_url",
             "logo_dark_url",
             "roles",
@@ -769,6 +794,15 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
     def validate_extra_colors(self, value) -> list:
         return clean_extra(value)
+
+    def validate_primary_color_use(self, value: str) -> str:
+        return _django_errors(theme.clean_color_use, value)
+
+    def validate_accent_color_use(self, value: str) -> str:
+        return _django_errors(theme.clean_color_use, value)
+
+    def validate_gradients(self, value) -> list:
+        return _django_errors(theme.clean_gradients, value)
 
     def validate_short_name(self, value: str) -> str:
         value = value.strip()

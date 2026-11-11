@@ -74,6 +74,7 @@ const MaterialsPage = lazyPage<{ kind?: 'material' | 'facility' }>(
 const BookingsPage = lazyPage(() => import('./pages/bookings/BookingsPage.tsx'), 'BookingsPage')
 const MeetingsPage = lazyPage(() => import('./pages/meetings/MeetingsPage.tsx'), 'MeetingsPage')
 const ChronikPage = lazyPage(() => import('./pages/chronik/ChronikPage.tsx'), 'ChronikPage')
+const PartnersPage = lazyPage(() => import('./pages/partners/PartnersPage.tsx'), 'PartnersPage')
 const ScoresOnlyPage = lazyPage(() => import('./pages/music/MusicPage.tsx'), 'ScoresOnlyPage')
 const HelpersPage = lazyPage(() => import('./pages/helpers/HelpersPage.tsx'), 'HelpersPage')
 const WebsitePage = lazyPage(() => import('./pages/website/WebsitePage.tsx'), 'WebsitePage')
@@ -140,6 +141,10 @@ const PlacesPage = lazyPage(() => import('./pages/settings/PlacesPage.tsx'), 'Pl
 const AppearancePage = lazyPage(
   () => import('./pages/settings/AppearancePage.tsx'),
   'AppearancePage',
+)
+const ColorSheetPage = lazyPage(
+  () => import('./pages/settings/ColorSheetPage.tsx'),
+  'ColorSheetPage',
 )
 const AuditPage = lazyPage(() => import('./pages/settings/AuditPage.tsx'), 'AuditPage')
 const UnitsArea = lazyPage(() => import('./pages/settings/UnitsPage.tsx'), 'UnitsArea')
@@ -319,6 +324,14 @@ export default function App() {
           <Route path="belegung" element={<BookingsPage />} />
           <Route path="versammlungen" element={<MeetingsPage />} />
           <Route path="chronik" element={<ChronikPage />} />
+          <Route
+            path="geschaeftspartner"
+            element={
+              <RequireOrg permission={[PERM.partnersView, PERM.financeView, PERM.billingView]}>
+                <PartnersPage />
+              </RequireOrg>
+            }
+          />
           <Route path="noten" element={<ScoresOnlyPage />} />
           <Route path="helferdienste" element={<HelpersPage />} />
           <Route path="termine/*" element={<EventsPage />} />
@@ -497,6 +510,14 @@ export default function App() {
               element={
                 <RequireOrg>
                   <AppearancePage />
+                </RequireOrg>
+              }
+            />
+            <Route
+              path="erscheinungsbild/farbblatt"
+              element={
+                <RequireOrg>
+                  <ColorSheetPage />
                 </RequireOrg>
               }
             />

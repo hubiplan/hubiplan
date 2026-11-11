@@ -156,8 +156,14 @@ class SiteInfoView(_Public):
             # ein anderes zeigen kann, ohne es zu übernehmen
             "design": site.site.effective_design(),
             "palette": [{k: c[k] for k in ("color", "on_color")} for c in theme["palette"]],
+            # Verläufe für Abschnitte mit Hintergrund „g0“/„g1“ (ältere Webseiten: übergangen)
+            "gradients": [
+                {k: g[k] for k in ("colors", "on_color", "direction")} for g in theme["gradients"]
+            ],
             "designs": {
-                key: designs.resolve(key, theme["palette"], site.site.color_roles, extra)
+                key: designs.resolve(
+                    key, theme["palette"], site.site.color_roles, extra, theme["gradients"]
+                )
                 for key in [*designs.DESIGNS, *extra]
             },
             # Steckbrief der Standarddesigns für den Export als Paket (Webseite

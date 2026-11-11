@@ -60,6 +60,8 @@ class TestArbeitsbereich:
             "finance.edit",
             "billing.view",
             "billing.edit",
+            "partners.view",
+            "partners.edit",
         }
 
     def test_vorstand_darueber_richtet_ein_und_liest(self, api, club, zug, board_a):

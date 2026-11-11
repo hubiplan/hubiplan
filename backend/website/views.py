@@ -534,6 +534,7 @@ def page_section_options(org, website: Website) -> dict:
     """Auswahl für die Abschnitte der Textseiten (G4): dieselben Arten wie auf der Startseite,
     dazu „body“ (Bild und Text der Seite) als fester Abschnitt."""
     hide = blocks_without_module(org)
+    theme = effective_theme(org.ancestors())
     return {
         "block_labels": {
             **{k: v for k, v in BLOCKS.items() if k not in hide},
@@ -548,7 +549,8 @@ def page_section_options(org, website: Website) -> dict:
         "home_kind_hints": {**home.KIND_HINTS, **home.PAGE_KIND_HINTS},
         "home_kind_needs_block": home.KIND_NEEDS_BLOCK,
         "home_choices": home_choices(website),
-        "palette": effective_theme(org.ancestors())["palette"],
+        "palette": theme["palette"],
+        "gradients": theme["gradients"],
         "units": [
             {"id": u.pk, "name": u.name} for u in services.in_tree_order(services.units_below(org))
         ],
@@ -605,8 +607,10 @@ class WebsiteView(_WebsiteMixin, APIView):
             "website": None,
         }
         if website is not None:
-            palette = effective_theme(self.org.ancestors())["palette"]
+            theme = effective_theme(self.org.ancestors())
+            palette = theme["palette"]
             data["palette"] = palette
+            data["gradients"] = theme["gradients"]
             data["home_choices"] = home_choices(website)
             packages = website.packages()
             extra = designs.package_roles(packages)
@@ -617,7 +621,9 @@ class WebsiteView(_WebsiteMixin, APIView):
                 "url": site_url(website),
                 # Farben je Rolle für alle Designs (Skizzen in der Auswahl)
                 "design_colors": {
-                    key: designs.resolve(key, palette, website.color_roles, extra)
+                    key: designs.resolve(
+                        key, palette, website.color_roles, extra, theme["gradients"]
+                    )
                     for key in [*designs.DESIGNS, *extra]
                 },
                 # F7: Entwurf ändert nur Inhalte der Abschnitte (dann auch mit „Inhalte bearbeiten“)

@@ -17,7 +17,7 @@ import { Alert, Checkbox, Field, SelectField, Loading } from '../../components/u
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Term, Why } from '../../learning/Aids.tsx'
 import { t } from '../../i18n/index.ts'
-import { emptyParty, PartyFields } from './PartnersPage.tsx'
+import { emptyParty, PartyFields } from './PartyFields.tsx'
 import { InvoiceDocumentsPanel } from './InvoiceDocumentsPanel.tsx'
 import { PageNav } from '../../components/ListControls.tsx'
 
@@ -521,7 +521,7 @@ export function CommercialForm({
               </option>
             ))}
         </SelectField>
-        <Link to="/finanzen/geschaeftspartner">{t('Geschäftspartner verwalten')}</Link>
+        <Link to="/geschaeftspartner">{t('Geschäftspartner verwalten')}</Link>
         <div className="form-grid">
           <Field
             label={t('Betreff')}

@@ -30,7 +30,20 @@ def check_incoming_all() -> int:
 
 @shared_task
 def purge_rejected_incoming() -> int:
-    """Abgelehnte und nicht lesbare Eingangsrechnungen nach 90 Tagen löschen (täglich)."""
-    from .incoming_check import purge_rejected
+    """Abgelehnte und nicht lesbare Eingangsrechnungen nach 90 Tagen löschen (täglich).
 
-    return purge_rejected()
+    Löscht auch alte Einträge des Rechnungspostfachs (#374)."""
+    from .incoming_check import purge_rejected
+    from .incoming_mail import purge_old
+
+    count = purge_rejected()
+    purge_old()
+    return count
+
+
+@shared_task(soft_time_limit=9 * 60, time_limit=10 * 60)
+def fetch_incoming_mail() -> int:
+    """E-Rechnungen aus dem Rechnungspostfach abholen (jede Minute, #374)."""
+    from .incoming_mail import fetch
+
+    return fetch()

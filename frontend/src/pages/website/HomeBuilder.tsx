@@ -4,6 +4,8 @@
 // Breite, im Design „Zeitung“ auch die Spalte. Alles landet im Entwurf der Gestaltung (G2).
 import { useState } from 'react'
 import type { ReactNode } from 'react'
+import { gradientCss } from '../../api/orgs.ts'
+import { partnerApi } from '../../api/partners.ts'
 import { contentApi } from '../../api/website.ts'
 import type {
   HomeButton,
@@ -170,6 +172,7 @@ function Sketch({ kind }: { kind: HomeKind }) {
 
 /** Hintergrund aus der Palette: p0 … p9 */
 const paletteKey = (i: number) => 'p' + String(i)
+const gradientKey = (i: number) => 'g' + String(i)
 
 function newKey(value: HomeSection[]): string {
   const used = new Set(value.map((s) => s.key))
@@ -532,6 +535,7 @@ function SectionDialog({
   const [s, setS] = useState(section)
   const images = useLoad(() => contentApi.images(org.id), [org.id])
   const palette = data.palette ?? []
+  const gradients = data.gradients ?? []
   const d = s.data ?? {}
   const setData = (patch: Partial<HomeSectionData>) => setS({ ...s, data: { ...d, ...patch } })
   const imageField = (
@@ -574,7 +578,25 @@ function SectionDialog({
               {[
                 ['none', t('Keiner'), undefined] as const,
                 ['light', t('Hell'), undefined] as const,
-                ...palette.map((c, i) => [paletteKey(i), c.name || c.color, c] as const),
+                ...palette.map(
+                  (c, i) =>
+                    [
+                      paletteKey(i),
+                      c.name || c.color,
+                      { background: c.color, color: c.on_color },
+                    ] as const,
+                ),
+                ...gradients.map(
+                  (g, i) =>
+                    [
+                      gradientKey(i),
+                      g.name || t('Verlauf {x}', { x: i + 1 }),
+                      {
+                        background: gradientCss(g.colors[0], g.colors[1], g.direction),
+                        color: g.on_color,
+                      },
+                    ] as const,
+                ),
               ].map(([key, text, color]) => (
                 <label key={key} className="home-bg-choice">
                   <input
@@ -585,7 +607,7 @@ function SectionDialog({
                   />
                   <span
                     className={`home-bg-swatch home-bg-${key === 'none' || key === 'light' ? key : 'color'}`}
-                    style={color ? { background: color.color, color: color.on_color } : undefined}
+                    style={color}
                     aria-hidden="true"
                   ></span>
                   <span>{text}</span>
@@ -984,6 +1006,7 @@ function SectionContent({
               </>
             )}
           />
+          <PartnerImport items={d.items ?? []} onChange={(items) => setData({ items })} />
         </>
       )
     case 'directions':
@@ -1173,6 +1196,53 @@ function SectionContent({
 }
 
 /** Liste gleichartiger Einträge (Fragen, Partner, Zahlen) mit Hinzufügen und Entfernen */
+// Geschäftspartner mit Einwilligung übernehmen (konzepte/geschaeftspartner.md, P4)
+function PartnerImport({
+  items,
+  onChange,
+}: {
+  items: HomeItem[]
+  onChange: (items: HomeItem[]) => void
+}) {
+  const org = useActiveOrg()
+  const [note, setNote] = useState('')
+  return (
+    <div className="stack">
+      <div className="button-row">
+        <button
+          type="button"
+          className="button"
+          onClick={async () => {
+            setNote('')
+            try {
+              const logos = await partnerApi.websiteLogos(org.id)
+              const known = new Set(items.map((i) => (i.name ?? '').trim().toLowerCase()))
+              const kept = items.filter((i) => (i.name ?? '').trim())
+              const added = logos
+                .filter((p) => !known.has(p.name.trim().toLowerCase()))
+                .map((p) => ({ name: p.name, image: null, url: p.url }))
+              const next = [...kept, ...added].slice(0, 12)
+              onChange(next.length ? next : items)
+              setNote(
+                added.length
+                  ? t('{n} Geschäftspartner übernommen. Bitte noch die Logos wählen.', {
+                      n: Math.min(added.length, next.length - kept.length),
+                    })
+                  : t('Keine weiteren Geschäftspartner mit Einwilligung für die Webseite.'),
+              )
+            } catch {
+              setNote(t('Geschäftspartner konnten nicht geladen werden.'))
+            }
+          }}
+        >
+          {t('Aus Geschäftspartnern übernehmen')}
+        </button>
+      </div>
+      {note && <p className="muted small">{note}</p>}
+    </div>
+  )
+}
+
 function ItemList({
   items,
   min,

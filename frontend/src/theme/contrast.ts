@@ -26,3 +26,10 @@ export function readableOn(background: string): string {
     ? LIGHT_TEXT
     : DARK_TEXT
 }
+
+/** Schriftfarbe, die auf beiden Enden eines Verlaufs am besten lesbar ist (wie im Backend). */
+export function readableOnPair(a: string, b: string): string {
+  const light = Math.min(contrastRatio(a, LIGHT_TEXT), contrastRatio(b, LIGHT_TEXT))
+  const dark = Math.min(contrastRatio(a, DARK_TEXT), contrastRatio(b, DARK_TEXT))
+  return light >= dark ? LIGHT_TEXT : DARK_TEXT
+}

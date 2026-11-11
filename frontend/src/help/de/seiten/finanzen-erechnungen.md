@@ -7,7 +7,7 @@ routen: [/finanzen/rechnungen/leistungen, /finanzen/geschaeftspartner]
 stichworte: [E-Rechnung, XRechnung, Geschäftspartner, Leistungsrechnung, EN16931]
 ---
 
-Lege zunächst einen Kunden unter **Finanzen** → **Geschäftspartner** an. Eine Mitgliedschaft
+Lege zunächst einen Kunden unter **Geschäftspartner** an. Eine Mitgliedschaft
 ist nicht erforderlich. Unter **Rechnungen** → **Leistungsrechnungen** erfasst du eine
 Rechnung mit Einnahmekategorie, Leistungszeitraum, Rechnungsanschriften, Käuferreferenz
 und Zahlungs-IBAN. Preise sind netto und werden in EUR eingegeben.

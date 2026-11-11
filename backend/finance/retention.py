@@ -377,7 +377,13 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
         Booking.objects.filter(organization=org, date__gte=start, date__lte=end), "booking"
     )
     counts["Buchungen"] = update_encrypted(
-        bookings, text=ANON, counterparty="", reference="", membership=None, cancel_reason=""
+        bookings,
+        text=ANON,
+        counterparty="",
+        partner=None,
+        reference="",
+        membership=None,
+        cancel_reason="",
     )
     invoices = ids(
         Invoice.objects.filter(organization=org, date__gte=start, date__lte=end), "invoice"

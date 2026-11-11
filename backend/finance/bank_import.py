@@ -170,6 +170,7 @@ def _import_file(org, data, file_name, user, account, created):
             created.append((record.source.storage, stored))
         record.save(update_fields=["source"])
         new = dup = 0
+        partners = partners_by_iban(org)
         for line in st.lines:
             fingerprint = line.fingerprint(st.iban or str(acc.pk))
             # Nur ein schon gespeicherter gleicher Umsatz ist eine Dublette (FIN31-01);
@@ -196,6 +197,8 @@ def _import_file(org, data, file_name, user, account, created):
                 batch_count=line.batch_count,
                 details=line.details,
                 fingerprint=fingerprint,
+                # Bekannte IBAN eines Geschäftspartners (konzepte/geschaeftspartner.md, P2)
+                partner=partners.get((line.iban or "").replace(" ", "").upper()),
             )
             obj.full_clean(exclude=["organization", "statement", "account"])
             obj.save()
@@ -211,6 +214,19 @@ def _import_file(org, data, file_name, user, account, created):
 
 
 # --- Vorschläge ---
+
+
+def partners_by_iban(org) -> dict:
+    """Aktive Geschäftspartner nach IBAN (die Bankangaben sind verschlüsselt, daher im
+    Speicher; ein Verein hat selten mehr als einige hundert Partner)."""
+    from billing.models import BusinessPartner
+
+    result = {}
+    for partner in BusinessPartner.objects.filter(organization=org, is_active=True):
+        iban = ((partner.bank or {}).get("iban") or "").replace(" ", "").upper()
+        if iban:
+            result.setdefault(iban, partner)
+    return result
 
 
 def _clear(line: BankLine) -> None:
@@ -528,6 +544,7 @@ def book(
         text=(text.strip() or line.purpose or line.name or "Kontoumsatz")[:200],
         reference="Kontoauszug",
         counterparty=line.name[:200],
+        partner=line.partner,
         membership=membership,
         project=project,
         created_by=user,

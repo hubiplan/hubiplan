@@ -185,6 +185,15 @@ class Booking(models.Model):
     # Wer das Geld bekommt (Ausgabe) oder zahlt (Einnahme): Geschäft, Dienstleister,
     # Person. Freitext; frühere Namen werden beim Erfassen vorgeschlagen.
     counterparty = EncryptedCharField("Empfänger/Zahler", max_length=200, blank=True, strict=True)
+    # Geschäftspartner (konzepte/geschaeftspartner.md, P2): freiwillig, der Freitext bleibt
+    partner = models.ForeignKey(
+        "billing.BusinessPartner",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Geschäftspartner",
+    )
     membership = models.ForeignKey(
         "members.Membership",
         on_delete=models.SET_NULL,
@@ -607,6 +616,14 @@ class CashReceipt(models.Model):
     direction = models.CharField("Richtung", max_length=3, choices=Direction.choices)
     status = models.CharField("Status", max_length=10, choices=Status.choices, default=Status.DRAFT)
     counterparty_name = EncryptedCharField("Name der Gegenseite", max_length=200, strict=True)
+    partner = models.ForeignKey(
+        "billing.BusinessPartner",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Geschäftspartner",
+    )
     counterparty_address = models.TextField("Anschrift", max_length=500, blank=True)
     membership = models.ForeignKey(
         "members.Membership",
@@ -881,6 +898,14 @@ class Donation(models.Model):
         blank=True,
         related_name="+",
     )
+    partner = models.ForeignKey(
+        "billing.BusinessPartner",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Geschäftspartner",
+    )
     donor_name = EncryptedCharField("Zuwendender", max_length=200, strict=True)
     donor_address = models.TextField("Anschrift", max_length=500, blank=True)
     goods_description = models.TextField(
@@ -1003,6 +1028,14 @@ class BankLine(models.Model):
     credit = models.BooleanField("Gutschrift")
     name = EncryptedCharField("Gegenseite", max_length=200, blank=True, strict=True)
     iban = EncryptedCharField("IBAN der Gegenseite", max_length=34, blank=True)
+    partner = models.ForeignKey(
+        "billing.BusinessPartner",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Geschäftspartner",
+    )
     purpose = models.CharField("Verwendungszweck", max_length=500, blank=True)
     end_to_end = models.CharField("End-to-End-Referenz", max_length=35, blank=True)
     bank_ref = models.CharField("Bankreferenz", max_length=100, blank=True)

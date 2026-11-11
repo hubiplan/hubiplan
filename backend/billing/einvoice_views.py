@@ -10,25 +10,41 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 
-from access.catalog import BILLING_EDIT, BILLING_VIEW, FINANCE_EDIT, FINANCE_VIEW
 from audit.log import record
 from changes import idempotency
-from core.api_base import AuditMixin, OrgScopedMixin
 from finance import einvoice
 from finance.models import Booking, Category, Project, Receipt
 from finance.services import lock_bank_sources
 from finance.views import FinanceMixin
 
-from . import einvoice_services, einvoice_validator, einvoice_xml, incoming_check
-from .einvoice_schema import CommercialInvoiceSerializer, PartySerializer
-from .models import BusinessPartner, IncomingInvoice, IncomingValidation, Invoice
+from . import (
+    einvoice_services,
+    einvoice_validator,
+    einvoice_xml,
+    incoming_check,
+    incoming_import,
+    incoming_mail,
+    incoming_partner,
+)
+from .einvoice_schema import CommercialInvoiceSerializer
+from .models import (
+    BusinessPartner,
+    IncomingInvoice,
+    IncomingMail,
+    IncomingValidation,
+    Invoice,
+)
+
+# Geschäftspartner: billing/partners.py (Konzept P1)
+from .partners import PartnerSerializer, PartnerViewSet  # noqa: F401
 from .serializers import InvoiceDetailSerializer
-from .views import BillingMixin, InvoicePagination, InvoiceViewSet, _as_drf
+from .views import InvoicePagination, InvoiceViewSet, _as_drf
 
 
 def file_response(data, content_type, filename):
@@ -37,52 +53,6 @@ def file_response(data, content_type, filename):
     response["Cache-Control"] = "private, no-store"
     response["X-Content-Type-Options"] = "nosniff"
     return response
-
-
-class PartnerSerializer(serializers.ModelSerializer):
-    details = PartySerializer()
-
-    class Meta:
-        model = BusinessPartner
-        fields = ["id", "name", "details", "is_customer", "is_supplier", "is_active"]
-        read_only_fields = ["id", "name"]
-
-    def validate(self, attrs):
-        if "details" in attrs:
-            previous = self.instance.details if self.instance else {}
-            details = PartySerializer(data={**previous, **attrs["details"]})
-            details.is_valid(raise_exception=True)
-            attrs["details"] = details.validated_data
-            attrs["name"] = attrs["details"]["name"]
-        return attrs
-
-
-class PartnerViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
-    read_permission = (BILLING_VIEW, FINANCE_VIEW)
-    write_permission = (BILLING_EDIT, FINANCE_EDIT)
-    allowed_org_types = BillingMixin.allowed_org_types
-    serializer_class = PartnerSerializer
-    http_method_names = ["get", "post", "patch", "head", "options"]
-    pagination_class = None
-
-    def initial(self, request, *args, **kwargs):
-        super().initial(request, *args, **kwargs)
-        write = request.method not in ("GET", "HEAD", "OPTIONS")
-        allowed = [
-            ("billing", BILLING_EDIT if write else BILLING_VIEW),
-            ("finance", FINANCE_EDIT if write else FINANCE_VIEW),
-        ]
-        if not any(
-            module in self.org.enabled_modules and perm in self.org_permissions
-            for module, perm in allowed
-        ):
-            raise NotFound()
-
-    def get_queryset(self):
-        return BusinessPartner.objects.filter(organization=self.org)
-
-    def get_create_kwargs(self):
-        return {"organization": self.org}
 
 
 class ElectronicInvoiceViewSet(InvoiceViewSet):
@@ -261,11 +231,64 @@ class ElectronicInvoiceViewSet(InvoiceViewSet):
         return file_response(data, "application/xml", "validation.xml")
 
 
+class IncomingMailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncomingMail
+        fields = [
+            "id",
+            "sender",
+            "subject",
+            "sender_known",
+            "status",
+            "skipped",
+            "received_at",
+            "dismissed_at",
+        ]
+        read_only_fields = fields
+
+
+def _tail(iban) -> str:
+    """IBAN fürs Protokoll gekürzt auf die letzten vier Stellen."""
+    value = incoming_partner.norm_iban(iban)
+    return f"… {value[-4:]}" if value else ""
+
+
+class SuggestedPartnerSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    # vat_id, iban, sender, domain oder name
+    by = serializers.CharField()
+
+
 class IncomingSerializer(serializers.ModelSerializer):
     has_report = serializers.SerializerMethodField()
+    mail = IncomingMailSerializer(read_only=True, allow_null=True)
+    partner_name = serializers.SerializerMethodField()
+    suggested_partner = serializers.SerializerMethodField()
+    iban_changed = serializers.SerializerMethodField()
 
     def get_has_report(self, obj) -> bool:
         return bool(obj.report_xml)
+
+    def get_partner_name(self, obj) -> str:
+        return obj.partner.name if obj.partner_id else ""
+
+    def _suggestion(self, obj):
+        if obj.partner_id:
+            return None, ""
+        index = self.context.get("partner_index")
+        if index is None:
+            return None, ""
+        return index().suggest(obj.data, obj.mail.sender if obj.mail_id else "")
+
+    @extend_schema_field(SuggestedPartnerSerializer(allow_null=True))
+    def get_suggested_partner(self, obj):
+        partner, by = self._suggestion(obj)
+        return {"id": partner.pk, "name": partner.name, "by": by} if partner else None
+
+    def get_iban_changed(self, obj) -> bool:
+        partner = obj.partner if obj.partner_id else self._suggestion(obj)[0]
+        return incoming_partner.iban_changed(partner, obj.data)
 
     class Meta:
         model = IncomingInvoice
@@ -283,6 +306,11 @@ class IncomingSerializer(serializers.ModelSerializer):
             "booking",
             "created_at",
             "has_report",
+            "mail",
+            "partner",
+            "partner_name",
+            "suggested_partner",
+            "iban_changed",
         ]
         read_only_fields = fields
 
@@ -292,66 +320,70 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
     pagination_class = InvoicePagination
 
     def get_queryset(self):
-        return IncomingInvoice.objects.filter(organization=self.org)
+        return IncomingInvoice.objects.filter(organization=self.org).select_related(
+            "mail", "partner"
+        )
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        cache: dict = {}
+
+        def index():
+            # Erst bei Bedarf und nur einmal je Anfrage aufbauen
+            if "index" not in cache:
+                cache["index"] = incoming_partner.PartnerIndex(self.org)
+            return cache["index"]
+
+        ctx["partner_index"] = index
+        return ctx
+
+    @action(detail=False, methods=["get", "post"])
+    def mailbox(self, request, org_id):
+        """Plus-Adresse des Vereins im Rechnungspostfach; POST vergibt eine neue (#374)."""
+        if not incoming_mail.configured():
+            return Response({"enabled": False, "address": ""})
+        if request.method == "POST":
+            incoming_mail.mailbox_of(self.org, renew=True)
+            record(
+                self.org,
+                request.user,
+                "update",
+                incoming_mail.mailbox_of(self.org),
+                {"Rechnungspostfach": [None, gettext("Neue Adresse vergeben")]},
+            )
+        return Response({"enabled": True, "address": incoming_mail.address_for(self.org)})
+
+    @action(detail=False, methods=["get"])
+    def mails(self, request, org_id):
+        """Offene Hinweise des Rechnungspostfachs: Mails ohne übernommene E-Rechnung."""
+        rows = IncomingMail.objects.filter(organization=self.org, dismissed_at__isnull=True)
+        return Response(IncomingMailSerializer(rows[:100], many=True).data)
+
+    @action(detail=False, methods=["post"], url_path=r"mails/(?P<mail_id>[0-9]+)/dismiss")
+    def dismiss_mail(self, request, org_id, mail_id):
+        mail = get_object_or_404(IncomingMail, organization=self.org, pk=mail_id)
+        if mail.dismissed_at is None:
+            mail.dismissed_at = timezone.now()
+            mail.save(update_fields=["dismissed_at"])
+        return Response(IncomingMailSerializer(mail).data)
 
     @transaction.atomic
     def create(self, request, org_id):
         upload = request.FILES.get("file")
-        if not upload or upload.size > 15 * 1024 * 1024:
+        if not upload or upload.size > incoming_import.MAX_BYTES:
             raise serializers.ValidationError(
                 gettext("Bitte eine XML- oder PDF-Datei mit höchstens 15 MB wählen.")
             )
-        raw = upload.read()
-        digest = hashlib.sha256(raw).hexdigest()
-        # Gleichzeitige Wiederholungen serialisieren, ohne externe Daten als Sperrschlüssel.
-        lock_bank_sources(self.org)
-        existing = self.get_queryset().filter(sha256=digest).first()
-        if existing:
-            return Response(self.get_serializer(existing).data)
-        content_type = "application/pdf" if raw.startswith(b"%PDF") else "application/xml"
-        data, xml = {}, b""
-        report, report_xml = einvoice_validator.failed(
-            gettext("Keine unterstützte E-Rechnung erkannt.")
-        )
-        try:
-            xml = einvoice.xml_from_pdf(raw) if content_type == "application/pdf" else raw
-            if xml:
-                data = einvoice.as_json(einvoice.parse_xml(xml))
-                # KoSIT-Prüfung im Hintergrund (billing/incoming_check.py)
-                report, report_xml = incoming_check.pending_report(), b""
-        except (einvoice.EInvoiceError, ValueError, RuntimeError) as exc:
-            report, report_xml = einvoice_validator.failed(str(exc))
-        pending = report["status"] == "pending"
-        item = IncomingInvoice.objects.create(
-            organization=self.org,
-            name=upload.name.rsplit("/", 1)[-1].rsplit("\\", 1)[-1][:200],
-            sha256=digest,
-            content_type=content_type,
-            data=data,
-            report=report,
-            validation="pending" if pending else "done",
-            created_by=request.user,
-        )
-        item.original.save(
-            "original.pdf" if content_type == "application/pdf" else "original.xml",
-            ContentFile(raw),
-            save=False,
-        )
-        if xml:
-            item.xml.save("invoice.xml", ContentFile(xml), save=False)
-        if report_xml:
-            item.report_xml.save("validation.xml", ContentFile(report_xml), save=False)
-        item.save()
-        record(self.org, request.user, "create", item, {"Rechnungseingang": [None, item.name]})
-        if pending:
-            incoming_check.schedule(self.org.pk)
+        item, created = incoming_import.store(self.org, upload.read(), upload.name, request.user)
+        if not created:
+            return Response(self.get_serializer(item).data)
         return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
     @transaction.atomic
     def review(self, request, org_id, pk):
         lock_bank_sources(self.org)
-        item = get_object_or_404(self.get_queryset().select_for_update(), pk=pk)
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
         decision = request.data.get("status")
         note = str(request.data.get("note", "")).strip()
         if decision not in ("approved", "rejected") or not note or len(note) > 2000:
@@ -366,24 +398,125 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
             raise serializers.ValidationError(
                 gettext("Nur erfolgreich geprüfte E-Rechnungen können freigegeben werden.")
             )
-        previous = item.status
+        changes = {"Prüfung": [item.status, decision], "Begründung": [None, note]}
+        if decision == "approved":
+            changes.update(self._confirm_iban(request, item))
         item.status, item.review_note = decision, note
         item.reviewed_by, item.reviewed_at = request.user, timezone.now()
         item.save()
+        record(self.org, request.user, "update", item, changes)
+        return Response(self.get_serializer(item).data)
+
+    def _confirm_iban(self, request, item) -> dict:
+        """Neue Bankverbindung nur mit Bestätigung freigeben (Konzept GP-9); die bestätigte
+        IBAN wird beim zugeordneten Partner gespeichert."""
+        partner = item.partner
+        if partner is None:
+            partner, _by = incoming_partner.PartnerIndex(self.org).suggest(
+                item.data, item.mail.sender if item.mail_id else ""
+            )
+        if not incoming_partner.iban_changed(partner, item.data):
+            return {}
+        if request.data.get("iban_confirmed") is not True:
+            raise serializers.ValidationError(
+                {
+                    "iban_confirmed": gettext(
+                        "Neue Bankverbindung: Bitte beim Rechnungssteller telefonisch "
+                        "bestätigen und das Häkchen setzen."
+                    )
+                }
+            )
+        changes = {"IBAN telefonisch bestätigt": [None, _tail(item.data.get("iban"))]}
+        if item.partner_id:
+            partner = BusinessPartner.objects.select_for_update().get(pk=item.partner_id)
+            before = (partner.bank or {}).get("iban", "")
+            partner.bank = {
+                **(partner.bank or {}),
+                "iban": incoming_partner.norm_iban(item.data.get("iban")),
+                "changed_at": timezone.now().isoformat(),
+                "changed_by": request.user.get_full_name() or request.user.email,
+            }
+            partner.save(update_fields=["bank", "updated_at"])
+            item.partner = partner
+            record(
+                self.org,
+                request.user,
+                "update",
+                partner,
+                {"IBAN": [_tail(before), _tail(partner.bank["iban"])]},
+            )
+        return changes
+
+    @action(detail=True, methods=["post"], url_path="partner")
+    @transaction.atomic
+    def assign_partner(self, request, org_id, pk):
+        """``{partner: id | null}``: Geschäftspartner zuordnen oder die Zuordnung lösen."""
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
+        raw = request.data.get("partner")
+        partner = None
+        if raw not in (None, ""):
+            partner_id = serializers.IntegerField(min_value=1).run_validation(raw)
+            partner = get_object_or_404(BusinessPartner, organization=self.org, pk=partner_id)
+        before = item.partner.name if item.partner_id else None
+        item.partner = partner
+        item.save(update_fields=["partner"])
         record(
             self.org,
             request.user,
             "update",
             item,
-            {"Prüfung": [previous, decision], "Begründung": [None, note]},
+            {"Geschäftspartner": [before, partner.name if partner else None]},
         )
         return Response(self.get_serializer(item).data)
+
+    @action(detail=True, methods=["post"], url_path="create-partner")
+    @transaction.atomic
+    def create_partner(self, request, org_id, pk):
+        """Aus den gelesenen Angaben einen Geschäftspartner anlegen und zuordnen."""
+        from .partners import next_number
+
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
+        if item.partner_id:
+            raise serializers.ValidationError(
+                gettext("Der Rechnung ist bereits ein Geschäftspartner zugeordnet.")
+            )
+        name = str(item.data.get("seller") or "").strip()[:200]
+        if not name:
+            raise serializers.ValidationError(
+                gettext("Die Rechnung nennt keinen Rechnungssteller.")
+            )
+        details = {"name": name}
+        if vat := str(item.data.get("seller_vat_id") or "").strip():
+            details["vat_id"] = vat[:40]
+        if item.mail_id and item.mail.sender:
+            details["email"] = item.mail.sender
+        bank = {}
+        if iban := incoming_partner.norm_iban(item.data.get("iban")):
+            bank = {
+                "iban": iban,
+                "changed_at": timezone.now().isoformat(),
+                "changed_by": request.user.get_full_name() or request.user.email,
+            }
+        partner = BusinessPartner.objects.create(
+            organization=self.org,
+            name=name,
+            kind=BusinessPartner.Kind.COMPANY,
+            roles=[BusinessPartner.Role.SUPPLIER],
+            number=next_number(self.org),
+            details=details,
+            bank=bank,
+        )
+        record(self.org, request.user, "create", partner, {"Geschäftspartner": [None, name]})
+        item.partner = partner
+        item.save(update_fields=["partner"])
+        record(self.org, request.user, "update", item, {"Geschäftspartner": [None, name]})
+        return Response(self.get_serializer(item).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"])
     @transaction.atomic
     def revalidate(self, request, org_id, pk):
         lock_bank_sources(self.org)
-        item = get_object_or_404(self.get_queryset().select_for_update(), pk=pk)
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
         if item.status != "review" or not item.xml:
             raise serializers.ValidationError(
                 gettext("Nur ungeprüfte Eingänge mit XML können erneut geprüft werden.")
@@ -410,7 +543,7 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
         lock_bank_sources(self.org)
         link_input = serializers.IntegerField(min_value=1)
         booking_id = link_input.run_validation(request.data.get("booking"))
-        item = get_object_or_404(self.get_queryset().select_for_update(), pk=pk)
+        item = get_object_or_404(self.get_queryset().select_for_update(of=("self",)), pk=pk)
         booking = get_object_or_404(
             Booking.objects.select_for_update(),
             organization=self.org,
@@ -448,6 +581,10 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
             )
         item.booking = booking
         item.save(update_fields=["booking"])
+        if item.partner_id and not booking.partner_id:
+            # Konzept P3: die Buchung übernimmt den Geschäftspartner
+            booking.partner_id = item.partner_id
+            booking.save(update_fields=["partner"])
         # Eigene unveränderte Kopie: unterschiedliche Fristen dürfen nicht das
         # Original im Rechnungseingang über den Kassenbeleg entfernen.
         receipt = Receipt(

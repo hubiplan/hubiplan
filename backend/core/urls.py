@@ -14,7 +14,9 @@ from accounts import (
     self_service,
     step_up,
 )
-from billing import einvoice_views
+from billing import agreements as partner_agreements
+from billing import einvoice_views, partner_files
+from billing import partners as partner_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
 from bookings import portal as booking_portal
@@ -42,6 +44,7 @@ from finance import views as finance_views
 from helpers import portal as helper_portal
 from honors import urls as honors_urls
 from letterhead import views as letterhead_views
+from mcpserver.views import McpView
 from meetings import portal as meeting_portal
 from members import (
     federation_views,
@@ -177,7 +180,7 @@ org_router.register("music/leaders", MusicLeaderViewSet, basename="music-leader"
 org_router.register(
     "music/score-folder-items", ScoreFolderItemViewSet, basename="music-score-folder-item"
 )
-org_router.register("billing/partners", einvoice_views.PartnerViewSet, basename="billing-partner")
+org_router.register("billing/partners", partner_views.PartnerViewSet, basename="billing-partner")
 org_router.register(
     "billing/electronic", einvoice_views.ElectronicInvoiceViewSet, basename="billing-electronic"
 )
@@ -207,6 +210,14 @@ org_router.register("imports", exchange_views.ImportJobViewSet, basename="import
 org_router.register("nextcloud", oidc_views.ClientViewSet, basename="oidc-client")
 org_router.register(
     "import-templates", exchange_views.ImportTemplateViewSet, basename="import-template"
+)
+
+partner_router = SimpleRouter()
+partner_router.register(
+    "contacts", partner_views.PartnerContactViewSet, basename="billing-partner-contact"
+)
+partner_router.register(
+    "agreements", partner_agreements.AgreementViewSet, basename="billing-partner-agreement"
 )
 
 member_router = SimpleRouter()
@@ -449,6 +460,22 @@ org_patterns = [
         "members/<int:pk>/photo-links/<int:link_id>/revoke/",
         photo_views.PhotoLinkRevokeView.as_view(),
         name="photo-link-revoke",
+    ),
+    path("billing/partners/<int:partner_pk>/", include(partner_router.urls)),
+    path(
+        "billing/partner-logos/",
+        partner_agreements.PartnerLogosView.as_view(),
+        name="billing-partner-logos",
+    ),
+    path(
+        "billing/partners/<int:partner_pk>/documents/",
+        partner_files.PartnerDocumentListView.as_view(),
+        name="billing-partner-documents",
+    ),
+    path(
+        "billing/partners/<int:partner_pk>/documents/<int:pk>/",
+        partner_files.PartnerDocumentDetailView.as_view(),
+        name="billing-partner-document",
     ),
     path(
         "members/<int:member_pk>/",
@@ -955,6 +982,8 @@ urlpatterns = [
     ),
     path("", include(peering_urls)),
     path("", include(oidc_urls)),
+    # KI-Schnittstelle (MCP), Stufe 0: nur Hilfe, ohne Anmeldung (docs/mcp.md)
+    path("mcp/", McpView.as_view(), name="mcp"),
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
     path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
     path(
