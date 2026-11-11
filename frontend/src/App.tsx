@@ -24,6 +24,7 @@ import { PublicPhotoPage } from './pages/PublicPhotoPage.tsx'
 import { PublicOptOutPage } from './pages/PublicOptOutPage.tsx'
 import { PublicRsvpPage } from './pages/PublicRsvpPage.tsx'
 import { PublicCircularConfirmPage } from './pages/PublicCircularConfirmPage.tsx'
+import { McpConnectPage } from './pages/McpConnectPage.tsx'
 import { NextcloudLoginPage } from './pages/NextcloudLoginPage.tsx'
 import { lazyPage } from './lazyPages.ts'
 import { NoLearningAids } from './learning/LearningContext.tsx'
@@ -247,6 +248,14 @@ export default function App() {
             element={
               <RequireAuth>
                 <VerbundConfirmPage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/ki/verbinden"
+            element={
+              <RequireAuth>
+                <McpConnectPage />
               </RequireAuth>
             }
           />

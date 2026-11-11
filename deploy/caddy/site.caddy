@@ -7,7 +7,8 @@ encode zstd gzip
 @intern path /api/intern/*
 respond @intern 404
 
-@backend path /api/* /_allauth/* /admin /admin/* /static/*
+# /.well-known/oauth-…: Anmeldung der KI-Assistenten (RFC 8414, RFC 9728; docs/mcp.md)
+@backend path /api/* /_allauth/* /admin /admin/* /static/* /.well-known/oauth-protected-resource /.well-known/oauth-protected-resource/* /.well-known/oauth-authorization-server /.well-known/oauth-authorization-server/* /.well-known/openid-configuration/api/mcp/oauth
 # Nur die Vollübernahme (Datenimport) braucht bis 500 MB (Gesamtaudit 31.10.b, INF-S02);
 # alles andere höchstens 64 MB (Rundschreiben mit Anhängen, Verbundpakete bis 48 MB).
 # So belegt kein anderer Pfad mit Riesenanfragen Speicher und Platte (Gesamtaudit 05.11. GA-09).

@@ -33,6 +33,8 @@ ROLES_MANAGE = "roles.manage"
 # HUBIplan so ansehen, wie eine Rolle der Einheit es sieht (nur lesen, nie mehr als die
 # eigenen Rechte; siehe access/preview.py)
 ROLES_PREVIEW = "roles.preview"
+# KI-Assistenten über die KI-Schnittstelle verbinden (docs/mcp.md, Stufe 1a); nur mit 2FA
+MCP_CONNECT = "mcp.connect"
 THEME_EDIT = "theme.edit"
 EXPORT_RUN = "export.run"
 PLATFORM_MANAGE = "platform.manage"
@@ -441,6 +443,15 @@ EXTRAS: tuple[Extra, ...] = (
         ),
         "roles",
         org_types=ALL_TYPES,
+    ),
+    Extra(
+        MCP_CONNECT,
+        gettext_noop(
+            "KI-Assistenten verbinden: Webseite als Entwurf bearbeiten (nur mit "
+            "Zwei-Faktor-Anmeldung, nie veröffentlichen, nie mehr als die eigenen Rechte)"
+        ),
+        "webcontent",
+        org_types=("federation", "club", "unit"),
     ),
 )
 
