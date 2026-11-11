@@ -301,6 +301,7 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
     def get_queryset(self):
         qs = Booking.objects.filter(organization=self.org).select_related(
             "organization",
+            "partner",
             "earmark",
             "account",
             "to_account",
@@ -340,6 +341,8 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
             qs = qs.filter(date__lte=bis)
         if partner := p.get("partner", "").strip():
             qs = qs.filter(pk__in=name_ids(qs, partner, fields=("counterparty",), exact=True))
+        if (partner_id := p.get("geschaeftspartner", "")).isdigit():
+            qs = qs.filter(partner_id=int(partner_id))
         if p.get("ohne_beleg") in ("1", "true"):
             # Ausgeblendete Belege zählen nicht
             visible = Receipt.objects.filter(organization=self.org, hidden_at__isnull=True)
@@ -395,7 +398,29 @@ class BookingViewSet(FinanceMixin, AuditMixin, _ProtectedDeleteMixin, viewsets.M
         result = sorted(
             names.values(), key=lambda e: (-e["same"], -e["count"], e["name"].casefold())
         )
-        return Response([{"name": e["name"], "count": e["count"]} for e in result[:500]])
+        # Geschäftspartner zuerst (P2), mit Standardkategorie; frühere Freitexte danach
+        from billing.models import BusinessPartner
+
+        partners = []
+        taken = set()
+        for partner in BusinessPartner.objects.filter(organization=self.org, is_active=True):
+            taken.add(partner.name.casefold())
+            used = names.get(partner.name.casefold(), {})
+            partners.append(
+                {
+                    "name": partner.name,
+                    "count": used.get("count", 0),
+                    "partner": partner.pk,
+                    "category": partner.default_category_id,
+                }
+            )
+        partners.sort(key=lambda e: (-e["count"], e["name"].casefold()))
+        rest = [
+            {"name": e["name"], "count": e["count"]}
+            for e in result
+            if e["name"].casefold() not in taken
+        ]
+        return Response((partners + rest)[:500])
 
     @action(detail=False, methods=["post"])
     @transaction.atomic

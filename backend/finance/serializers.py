@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.utils.translation import gettext
 from rest_framework import serializers
 
+from billing.models import BusinessPartner
 from core.api_base import ModelCleanMixin
 from members.models import Membership
 from organizations.models import Department
@@ -206,6 +207,11 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
     )
     project = OrgRelatedField(queryset=Project.objects.none(), allow_null=True, required=False)
     project_name = serializers.CharField(source="project.name", read_only=True, default=None)
+    # Geschäftspartner (konzepte/geschaeftspartner.md, P2)
+    partner = OrgRelatedField(
+        queryset=BusinessPartner.objects.none(), allow_null=True, required=False
+    )
+    partner_name = serializers.CharField(source="partner.name", read_only=True, default=None)
     earmark = OrgRelatedField(queryset=Earmark.objects.none(), allow_null=True, required=False)
     earmark_name = serializers.CharField(source="earmark.name", read_only=True, default=None)
     account_name = serializers.CharField(source="account.name", read_only=True)
@@ -246,6 +252,8 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "text",
             "reference",
             "counterparty",
+            "partner",
+            "partner_name",
             "membership",
             "member_name",
             "department",
@@ -336,6 +344,13 @@ class BookingSerializer(ModelCleanMixin, serializers.ModelSerializer):
         if kind == Booking.Kind.TRANSFER:
             attrs["project"] = None  # Umbuchungen gehören zu keiner Veranstaltung
             attrs["counterparty"] = ""
+            attrs["partner"] = None
+        partner = attrs.get("partner")
+        if partner is not None and not attrs.get(
+            "counterparty", self.instance.counterparty if self.instance else ""
+        ):
+            # Ohne eigenen Freitext steht der Name des Partners an der Buchung
+            attrs["counterparty"] = partner.name[:200]
         new_earmark = attrs.get("earmark")
         if (
             new_earmark is not None

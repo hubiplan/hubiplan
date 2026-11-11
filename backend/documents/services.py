@@ -218,6 +218,7 @@ def budget_bytes(org: Organization) -> int:
 
 def total_bytes(org: Organization) -> int:
     """Belegter Platz des ganzen Vereins (alle Ablagen, Fassungen und Papierkorb)."""
+    from billing.models import PartnerDocument
     from materials.models import MaterialPhoto
     from todos.models import TodoAttachment
 
@@ -233,7 +234,10 @@ def total_bytes(org: Organization) -> int:
             or 0
         )
         material = MaterialPhoto.objects.filter(organization=org).aggregate(s=Sum("size"))["s"] or 0
-    return documents + tasks + material
+        partners = (
+            PartnerDocument.objects.filter(organization=org).aggregate(s=Sum("size"))["s"] or 0
+        )
+    return documents + tasks + material + partners
 
 
 def check_budget(org: Organization, size: int) -> None:

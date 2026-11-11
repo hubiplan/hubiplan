@@ -13,6 +13,7 @@ import { departmentSections } from './pages/department/sections.ts'
 import { musicSections, scoresOwnEntry } from './pages/music/access.ts'
 import { hasUnitsPage } from './pages/settings/units.ts'
 import { settingsItems } from './pages/settings/items.ts'
+import { partnerAccess } from './pages/partners/access.ts'
 import { t } from './i18n/index.ts'
 import type { SubNavItem } from './components/subnav.ts'
 
@@ -254,6 +255,18 @@ export const modules: AppModule[] = [
       (org.type === 'club' || org.type === 'federation') &&
       org.modules.includes('chronicle') &&
       org.permissions.includes(PERM.chronicleView),
+  },
+  // Geschäftspartner (konzepte/geschaeftspartner.md): eigener Menüpunkt, ohne Modul (GP-2)
+  {
+    id: 'geschaeftspartner',
+    group: 'verein',
+    label: t('Geschäftspartner'),
+    path: '/geschaeftspartner',
+    icon: icon('M3 8h18v12H3zM8 8V5h8v3M3 13h18M11 12h2v3h-2z'),
+    visible: (org) =>
+      !!org &&
+      (org.type === 'club' || org.type === 'federation' || org.type === 'unit') &&
+      partnerAccess(org.permissions).view,
   },
   {
     id: 'abteilung',

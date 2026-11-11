@@ -9916,3 +9916,203 @@ msgid "Diese Richtung gibt es nicht."
 msgstr "This direction does not exist."
 msgid "Startseite"
 msgstr "Home"
+msgid "Geschäftspartner und Ansprechpartner sehen"
+msgstr "See business partners and contact persons"
+
+msgid "Geschäftspartner anlegen, ändern und zusammenführen"
+msgstr "Create, change and merge business partners"
+
+msgid "Firma"
+msgstr "Company"
+
+msgid "Behörde/Amt"
+msgstr "Authority/office"
+
+msgid "Verein/Verband"
+msgstr "Association/federation"
+
+msgid "Privatperson"
+msgstr "Private person"
+
+msgid "Lieferant"
+msgstr "Supplier"
+
+msgid "Dienstleister"
+msgstr "Service provider"
+
+msgid "Kunde/Auftraggeber"
+msgstr "Customer/client"
+
+msgid "Sponsor"
+msgstr "Sponsor"
+
+msgid "Spender"
+msgstr "Donor"
+
+msgid "Vermieter/Veranstaltungsort"
+msgstr "Landlord/venue"
+
+msgid "Künstler/Musiker"
+msgstr "Artist/musician"
+
+msgid "Behörde"
+msgstr "Authority"
+
+msgid "Versicherung"
+msgstr "Insurance"
+
+msgid "Bank"
+msgstr "Bank"
+
+msgid "Ansprechpartner"
+msgstr "Contact person"
+
+msgid "Diese Einheit gehört nicht hierher."
+msgstr "This unit does not belong here."
+
+msgid "Unbekannte Mitgliedschaft."
+msgstr "Unknown membership."
+
+msgid "Dieser Geschäftspartner wird noch verwendet (z. B. in Rechnungen oder Buchungen). Bitte stattdessen auf „Inaktiv“ setzen."
+msgstr "This business partner is still in use (e.g. in invoices or bookings). Please set it to “Inactive” instead."
+
+msgid "Dieser Geschäftspartner wird noch verwendet."
+msgstr "This business partner is still in use."
+
+msgid "Bitte zwei verschiedene Einträge."
+msgstr "Please choose two different entries."
+
+msgid "Rollen"
+msgstr "Roles"
+
+msgid "Straße"
+msgstr "Street"
+
+msgid "PLZ"
+msgstr "Postcode"
+
+msgid "Land"
+msgstr "Country"
+
+msgid "USt-IdNr."
+msgstr "VAT ID"
+
+msgid "Aktiv"
+msgstr "Active"
+
+msgid "IBAN"
+msgstr "IBAN"
+
+msgid "BIC"
+msgstr "BIC"
+
+msgid "Kontoinhaber"
+msgstr "Account holder"
+
+msgid "Bitte eine Excel-Datei wählen."
+msgstr "Please choose an Excel file."
+
+msgid "Die Datei ist keine lesbare Excel-Datei."
+msgstr "The file is not a readable Excel file."
+
+msgid "Die erste Zeile braucht eine Spalte „Name“."
+msgstr "The first row needs a column “Name”."
+
+msgid "Zeile {index}: {error}"
+msgstr "Row {index}: {error}"
+
+msgid "Einen Geschäftspartner mit diesem Namen gibt es schon."
+msgstr "A business partner with this name already exists."
+
+msgid "Aktive Werbung"
+msgstr "Active advertising"
+
+msgid "Bande oder Banner"
+msgstr "Perimeter board or banner"
+
+msgid "Damit helfen Sie uns sehr, unser Vereinsleben zu gestalten. Wir freuen uns auf die weitere Zusammenarbeit."
+msgstr "This helps us a great deal in shaping our club life. We look forward to working with you further."
+
+msgid "Dankesbrief"
+msgstr "Thank-you letter"
+
+msgid "Festschrift oder Programmheft"
+msgstr "Commemorative booklet or programme"
+
+msgid "Guten Tag {name},"
+msgstr "Dear {name},"
+
+msgid "Herzlichen Dank"
+msgstr "Thank you very much"
+
+msgid "Höchstens 365 Tage vorher."
+msgstr "At most 365 days before."
+
+msgid "Ihre Unterstützung"
+msgstr "your support"
+
+msgid "Ihre Unterstützung von {amount}"
+msgstr "your support of {amount}"
+
+msgid "Keine Einnahme"
+msgstr "No income"
+
+msgid "Logo auf der Webseite"
+msgstr "Logo on the website"
+
+msgid "Nennung bei Veranstaltungen"
+msgstr "Mention at events"
+
+msgid "Nur Nennung (ohne Werbung)"
+msgstr "Mention only (no advertising)"
+
+msgid "Rahmenvereinbarung"
+msgstr "Framework agreement"
+
+msgid "Sehr geehrte Damen und Herren,"
+msgstr "Dear Sir or Madam,"
+
+msgid "Sonstige Vereinbarung"
+msgstr "Other agreement"
+
+msgid "Sponsoring"
+msgstr "Sponsorship"
+
+msgid "Trikot oder Kleidung"
+msgstr "Jersey or clothing"
+
+msgid "Vereinbarung"
+msgstr "Agreement"
+
+msgid "Vereinbarung mit {name} verlängern?"
+msgstr "Renew agreement with {name}?"
+
+msgid "und {in_kind}"
+msgstr "and {in_kind}"
+
+msgid "vielen Dank für {support}."
+msgstr "thank you very much for {support}."
+
+msgid "„{title}“ endet am {end}."
+msgstr "“{title}” ends on {end}."
+
+msgid "Dokument zum Geschäftspartner"
+msgstr "Business partner document"
+
+msgid "Höchstens 730 Tage."
+msgstr "At most 730 days."
+
+msgid "Höchstens {n} Briefe auf einmal."
+msgstr "At most {n} letters at once."
+
+msgid "In dieser Gruppe hat kein Geschäftspartner eine Anschrift."
+msgstr "No business partner in this group has an address."
+
+msgid "Vertrag"
+msgstr "Contract"
+
+msgid "Vertrag mit {name}: kündigen oder weiterlaufen lassen?"
+msgstr "Contract with {name}: cancel or let it continue?"
+
+msgid "„{title}“ endet am {end}, kündigen bis {last}."
+msgstr "“{title}” ends on {end}, give notice by {last}."

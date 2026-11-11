@@ -287,12 +287,6 @@ export function financeSections(a: FinanceAccess): NavItem[] {
         label: t('Zuwendungen'),
         text: t('Angaben für Zuwendungsbestätigungen'),
       },
-      // Geschäftspartner gelten für Ein- und Ausgang, deshalb bei „Einrichten“ (Menüprüfung M-10)
-      {
-        to: '/finanzen/geschaeftspartner',
-        label: t('Geschäftspartner'),
-        text: t('Firmen und Personen außerhalb des Vereins'),
-      },
     ]),
   ]
 }

@@ -15,10 +15,8 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.response import Response
 
-from access.catalog import BILLING_EDIT, BILLING_VIEW, FINANCE_EDIT, FINANCE_VIEW
 from audit.log import record
 from changes import idempotency
-from core.api_base import AuditMixin, OrgScopedMixin
 from finance import einvoice
 from finance.models import Booking, Category, Project, Receipt
 from finance.services import lock_bank_sources
@@ -32,7 +30,7 @@ from . import (
     incoming_import,
     incoming_mail,
 )
-from .einvoice_schema import CommercialInvoiceSerializer, PartySerializer
+from .einvoice_schema import CommercialInvoiceSerializer
 from .models import (
     BusinessPartner,
     IncomingInvoice,
@@ -40,8 +38,11 @@ from .models import (
     IncomingValidation,
     Invoice,
 )
+
+# Geschäftspartner: billing/partners.py (Konzept P1)
+from .partners import PartnerSerializer, PartnerViewSet  # noqa: F401
 from .serializers import InvoiceDetailSerializer
-from .views import BillingMixin, InvoicePagination, InvoiceViewSet, _as_drf
+from .views import InvoicePagination, InvoiceViewSet, _as_drf
 
 
 def file_response(data, content_type, filename):
@@ -50,52 +51,6 @@ def file_response(data, content_type, filename):
     response["Cache-Control"] = "private, no-store"
     response["X-Content-Type-Options"] = "nosniff"
     return response
-
-
-class PartnerSerializer(serializers.ModelSerializer):
-    details = PartySerializer()
-
-    class Meta:
-        model = BusinessPartner
-        fields = ["id", "name", "details", "is_customer", "is_supplier", "is_active"]
-        read_only_fields = ["id", "name"]
-
-    def validate(self, attrs):
-        if "details" in attrs:
-            previous = self.instance.details if self.instance else {}
-            details = PartySerializer(data={**previous, **attrs["details"]})
-            details.is_valid(raise_exception=True)
-            attrs["details"] = details.validated_data
-            attrs["name"] = attrs["details"]["name"]
-        return attrs
-
-
-class PartnerViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
-    read_permission = (BILLING_VIEW, FINANCE_VIEW)
-    write_permission = (BILLING_EDIT, FINANCE_EDIT)
-    allowed_org_types = BillingMixin.allowed_org_types
-    serializer_class = PartnerSerializer
-    http_method_names = ["get", "post", "patch", "head", "options"]
-    pagination_class = None
-
-    def initial(self, request, *args, **kwargs):
-        super().initial(request, *args, **kwargs)
-        write = request.method not in ("GET", "HEAD", "OPTIONS")
-        allowed = [
-            ("billing", BILLING_EDIT if write else BILLING_VIEW),
-            ("finance", FINANCE_EDIT if write else FINANCE_VIEW),
-        ]
-        if not any(
-            module in self.org.enabled_modules and perm in self.org_permissions
-            for module, perm in allowed
-        ):
-            raise NotFound()
-
-    def get_queryset(self):
-        return BusinessPartner.objects.filter(organization=self.org)
-
-    def get_create_kwargs(self):
-        return {"organization": self.org}
 
 
 class ElectronicInvoiceViewSet(InvoiceViewSet):

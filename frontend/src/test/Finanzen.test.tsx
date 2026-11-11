@@ -223,8 +223,13 @@ describe('Finanzen', () => {
       'aria-expanded',
       'true',
     )
-    for (const name of ['Konten', 'Kategorien', 'Geschäftspartner'])
+    for (const name of ['Konten', 'Kategorien'])
       expect(nav.getByRole('link', { name })).toBeInTheDocument()
+    // Geschäftspartner haben einen eigenen Menüpunkt unter Verein
+    expect(nav.getByRole('link', { name: 'Geschäftspartner' })).toHaveAttribute(
+      'href',
+      '/geschaeftspartner',
+    )
     expect(nav.queryByRole('link', { name: 'Mahnstufen' })).not.toBeInTheDocument()
     expect(nav.getByRole('button', { name: 'Einträge von Buchen' })).toHaveAttribute(
       'aria-expanded',

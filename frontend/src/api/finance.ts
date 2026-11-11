@@ -118,6 +118,9 @@ export interface Booking {
   text: string
   reference: string
   counterparty: string
+  /** Geschäftspartner (P2), freiwillig neben dem Freitext */
+  partner?: number | null
+  partner_name?: string | null
   membership: number | null
   member_name: string | null
   department: number | null
@@ -755,7 +758,7 @@ export const financeApi = {
     return api.get<Page<Booking>>(`${base(org)}/bookings/?${q}`)
   },
   counterparties: (org: number, kind?: string) =>
-    api.get<{ name: string; count: number }[]>(
+    api.get<{ name: string; count: number; partner?: number; category?: number | null }[]>(
       `${base(org)}/bookings/counterparties/${kind ? `?art=${kind}` : ''}`,
     ),
   booking: (org: number, id: number) => api.get<Booking>(`${base(org)}/bookings/${id}/`),
