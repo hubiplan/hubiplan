@@ -10576,3 +10576,13 @@ msgstr "Additional field for business partners"
 
 msgid "Zusatzfeld-Wert eines Geschäftspartners"
 msgstr "Additional field value of a business partner"
+
+msgid "Zu viele gescheiterte Anmeldeversuche. Bitte später erneut versuchen. Auf einem Gerät, mit dem du dich schon einmal angemeldet hast, oder mit einem Passkey geht die Anmeldung weiter."
+msgstr "Too many failed sign-in attempts. Please try again later. On a device you have signed in with before, or with a passkey, you can still sign in."
+
+msgid "Zu viele Fehlversuche bei der Anmeldung"
+msgstr "Too many failed sign-in attempts"
+
+#, python-brace-format
+msgid "Hallo {name},\n\nfür dein Konto wurde mehrmals hintereinander ein falsches Passwort eingegeben. Die Anmeldung mit Passwort ist deshalb für einige Minuten gesperrt, allerdings nur auf fremden Geräten.\n\nAuf Geräten, mit denen du dich schon einmal angemeldet hast, und mit einem Passkey kannst du dich weiter anmelden. Dein Passwort wurde nicht erraten; du musst nichts tun.\n\nWarst du das selbst und hast das Passwort vergessen, kannst du auf der Anmeldeseite ein neues anfordern: {link}\n"
+msgstr "Hello {name},\n\na wrong password was entered for your account several times in a row. Signing in with a password is therefore blocked for a few minutes, but only on unknown devices.\n\nOn devices you have signed in with before, and with a passkey, you can still sign in. Your password was not guessed; you do not need to do anything.\n\nIf this was you and you have forgotten your password, you can request a new one on the sign-in page: {link}\n"
