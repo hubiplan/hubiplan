@@ -10162,3 +10162,87 @@ msgstr "A business partner is already linked to this invoice."
 
 msgid "Die Rechnung nennt keinen Rechnungssteller."
 msgstr "The invoice does not name an issuer."
+
+msgid "Auf der Webseite nennen"
+msgstr "Show on website"
+
+msgid "Betreut von"
+msgstr "Looked after by"
+
+msgid "Betreut von (Mitgliedsnummer)"
+msgstr "Looked after by (member number)"
+
+msgid "Bitte ein Datum wie 31.12.2026."
+msgstr "Please enter a date such as 31.12.2026."
+
+msgid "Bitte „Ja“ oder „Nein“."
+msgstr "Please enter “Yes” or “No”."
+
+msgid "Erstkontakt"
+msgstr "First contact"
+
+msgid "Erstkontakt am"
+msgstr "First contact on"
+
+msgid "Funktion"
+msgstr "Function"
+
+msgid "Hauptansprechpartner"
+msgstr "Main contact"
+
+msgid "Künstlersozialabgabe"
+msgstr "Artists' social security levy"
+
+msgid "Leitweg-ID"
+msgstr "Leitweg ID"
+
+msgid "Link für die Webseite"
+msgstr "Link for the website"
+
+msgid "Mitglied (Mitgliedsnummer)"
+msgstr "Member (member number)"
+
+msgid "Mitgliedsnummer {number} unbekannt."
+msgstr "Member number {number} unknown."
+
+msgid "Notizen"
+msgstr "Notes"
+
+msgid "Nummer {number} unbekannt und kein Name."
+msgstr "Number {number} unknown and no name given."
+
+msgid "Partnernummer"
+msgstr "Partner number"
+
+msgid "Partnernummer „{number}“ unbekannt."
+msgstr "Partner number “{number}” unknown."
+
+msgid "Standardkategorie"
+msgstr "Default category"
+
+msgid "Unbekannte Art „{value}“."
+msgstr "Unknown type “{value}”."
+
+msgid "Unbekannte Kategorie „{name}“."
+msgstr "Unknown category “{name}”."
+
+msgid "Unsere Kundennummer"
+msgstr "Our customer number"
+
+msgid "Vorname"
+msgstr "First name"
+
+msgid "Zahlungsziel (Tage)"
+msgstr "Payment terms (days)"
+
+msgid "erhält Post"
+msgstr "receives mail"
+
+msgid "erhält Rechnungen"
+msgstr "receives invoices"
+
+msgid "{sheet}, Zeile {index}: {error}"
+msgstr "{sheet}, row {index}: {error}"
+
+msgid "„{name}“ ist kein eindeutiges Mitglied; bitte die Mitgliedsnummer angeben."
+msgstr "“{name}” is not a unique member; please give the member number."

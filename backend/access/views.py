@@ -561,6 +561,8 @@ def organization_summary(org: Organization, perms: set[str]) -> dict:
         "sepa_enabled": _sepa_enabled(org),
         # Kasse: Zählprotokoll und Kassenbericht für Feste (Schalter unter Konten)
         "cash_counts_enabled": bool(org.cash_counts_enabled) and org.type != "platform",
+        # Geschäftspartner oben im Hauptmenü (Schalter auf der Seite Geschäftspartner)
+        "partners_in_menu": bool(org.partners_in_menu) and org.type != "platform",
         # Dachverband darf seinen Vereinen Module freigeben (M6)
         "modules_pass_down": bool(org.modules_pass_down) and org.type == "federation",
         # Kasse: Rücklagen nach § 62 AO (Schalter unter Konten)
