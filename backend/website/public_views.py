@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.features import site_features
-from core.ratelimit import client_ip, too_many
+from core.ratelimit import too_many, visitor_ip
 from core.tenancy import rls_bypass
 from core.version import running_version
 from organizations import brand_icon
@@ -41,7 +41,7 @@ class _Public(APIView):
 
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
-        if too_many(f"website:read:{client_ip(request)}", READ_LIMIT, 60):
+        if too_many(f"website:read:{visitor_ip(request)}", READ_LIMIT, 60):
             from rest_framework.exceptions import Throttled
 
             raise Throttled()
@@ -379,7 +379,7 @@ class PreviewView(_Public):
         website = Website.objects.select_related("organization").filter(public_key=key).first()
         if website is None:
             raise Http404
-        if too_many(f"website:preview:{client_ip(request)}", 20, 60 * 60):
+        if too_many(f"website:preview:{visitor_ip(request)}", 20, 60 * 60):
             from rest_framework.exceptions import Throttled
 
             raise Throttled()
@@ -930,7 +930,7 @@ class ContactView(_Public):
         ser = ContactSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         try:
-            contact.submit(site, client_ip(request), ser.validated_data)
+            contact.submit(site, visitor_ip(request), ser.validated_data)
         except contact.Rejected as exc:
             body = {"detail": exc.message, **({"code": exc.code} if exc.code else {})}
             response = self.respond(body, site, status=exc.status)

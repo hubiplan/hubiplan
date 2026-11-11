@@ -54,6 +54,99 @@ def format_name(first: str, last: str, fmt: str) -> str:
     return f"{first} {last}".strip()
 
 
+class _People:
+    """Mitgliedschaften, Einwilligungen und freigegebene Fotos der gezeigten Personen.
+
+    Geladen wird nur, wer gebraucht wird: Die Seite „Vorstand“ zeigt eine Handvoll
+    Personen, früher kamen dafür alle Mitgliedschaften und Einwilligungen des Vereins aus
+    der Datenbank (Gesamtaudit 11.11. P-01: 2,4 s bei 10.000 Mitgliedern). Listen laden
+    ihre Personen vorab in einem Zug (``load``). Wer das nicht tut und viele Personen
+    einzeln nachfragt (lange Chronik), bekommt ab ``ALL_AFTER`` alle auf einmal.
+    """
+
+    ALL_AFTER = 40
+
+    def __init__(self, area):
+        self.area = area
+        self.photos: set[int] = set()
+        self._by_person: dict[int, Membership] = {}
+        self._entries: dict[int, set[str]] = {}
+        self._asked: set[int] = set()
+        self._chosen: set[int] = set()
+        self._others: set[int] = set()
+        self._single = 0
+        self._all = False
+
+    def load(self, person_ids) -> None:
+        """Diese Personen in einem Zug laden (vor einer Liste)."""
+        if self._all:
+            return
+        missing = {pk for pk in person_ids if pk is not None} - self._asked
+        if missing:
+            self._fill(missing)
+
+    def get(self, person_id: int | None, default=None):
+        if person_id is None:
+            return default
+        if not self._all and person_id not in self._asked:
+            self._single += 1
+            self._fill(None if self._single > self.ALL_AFTER else {person_id})
+        return self._by_person.get(person_id, default)
+
+    def active(self, membership_id: int) -> set[str] | None:
+        """Aktive Einträge der Mitgliedschaft; None, wenn sie für ihre Person nicht zählt
+        (fremde Einheit)."""
+        known = membership_id in self._chosen or membership_id in self._others
+        if not self._all and not known:
+            person_id = (
+                Membership.objects.filter(pk=membership_id, organization=self.area)
+                .values_list("person_id", flat=True)
+                .first()
+            )
+            self._others.add(membership_id)
+            if person_id is not None:
+                self.get(person_id)
+        return self._entries.get(membership_id)
+
+    def _fill(self, person_ids: set[int] | None) -> None:
+        rows = Membership.objects.filter(organization=self.area)
+        if person_ids is not None:
+            rows = rows.filter(person_id__in=person_ids)
+        found: dict[int, Membership] = {}
+        for m in sorted(rows, key=lambda m: m.purged_at is None):
+            found[m.person_id] = m
+        entries = services.active_entries(m.pk for m in found.values())
+        # Bereinigte Mitgliedschaft: Widersprüche gelten weiter, Einwilligungen nicht mehr
+        for m in found.values():
+            if m.purged_at and m.pk in entries:
+                entries[m.pk] &= set(PublicationConsent.OBJECTION_CATEGORIES) | {Category.MEMORIAL}
+        self.photos.update(
+            MemberPhoto.objects.filter(
+                membership__in=[m.pk for m in found.values()],
+                status=MemberPhoto.Status.APPROVED,
+                membership__photo_consent_at__isnull=False,
+            ).values_list("membership_id", flat=True)
+        )
+        self._by_person.update(found)
+        self._entries.update(entries)
+        self._chosen.update(m.pk for m in found.values())
+        if person_ids is None:
+            self._all = True
+        else:
+            self._asked |= person_ids
+
+
+class _Consents:
+    """Aktive Einträge je Mitgliedschaft, wie ein Wörterbuch gelesen."""
+
+    def __init__(self, people: _People):
+        self.people = people
+
+    def get(self, membership_id: int, default=None):
+        active = self.people.active(membership_id)
+        return default if active is None else active
+
+
 class SiteView:
     """``org`` ist die Einheit mit der Webseite (Verein, Dachverband oder eine
     Untereinheit mit eigenem Arbeitsbereich), ``area`` die Einheit mit ihrem
@@ -79,45 +172,27 @@ class SiteView:
     # --- Personen ---
 
     @cached_property
-    def memberships(self) -> dict[int, Membership]:
-        """Mitgliedschaften der Einheit je Person (für Einwilligungen).
+    def people(self) -> _People:
+        return _People(self.area)
+
+    @property
+    def memberships(self) -> _People:
+        """Mitgliedschaft der Einheit je Person (``.get(person_id)``), für Einwilligungen.
 
         Auch bereinigte: Deren Widersprüche gelten weiter, denn Chronik und frühere
         Rollen nennen die Person noch (Audit 29.10. W-S02). Eine laufende
         Mitgliedschaft geht einer bereinigten vor."""
-        return self._memberships_of()
+        return self.people
 
-    def _memberships_of(self, person_ids: set[int] | None = None) -> dict[int, Membership]:
-        rows = Membership.objects.filter(organization=self.area)
-        if person_ids is not None:
-            rows = rows.filter(person_id__in=person_ids)
-        result: dict[int, Membership] = {}
-        for m in sorted(rows, key=lambda m: m.purged_at is None):
-            result[m.person_id] = m
-        return result
-
-    @cached_property
-    def consents(self) -> dict[int, set[str]]:
-        return self._consents_of(self.memberships)
-
-    @staticmethod
-    def _consents_of(memberships: dict[int, Membership]) -> dict[int, set[str]]:
-        entries = services.active_entries(m.pk for m in memberships.values())
-        # Bereinigte Mitgliedschaft: Widersprüche gelten weiter, Einwilligungen nicht mehr
-        for m in memberships.values():
-            if m.purged_at and m.pk in entries:
-                entries[m.pk] &= set(PublicationConsent.OBJECTION_CATEGORIES) | {Category.MEMORIAL}
-        return entries
+    @property
+    def consents(self) -> _Consents:
+        """Aktive Einträge je Mitgliedschaft (``.get(membership_id, set())``)."""
+        return _Consents(self.people)
 
     @cached_property
     def photos(self) -> set[int]:
-        return set(
-            MemberPhoto.objects.filter(
-                membership__in=list(self.memberships.values()),
-                status=MemberPhoto.Status.APPROVED,
-                membership__photo_consent_at__isnull=False,
-            ).values_list("membership_id", flat=True)
-        )
+        """Mitgliedschaften mit freigegebenem Foto; wächst mit den geladenen Personen."""
+        return self.people.photos
 
     def allowed(self, membership: Membership | None, category: str) -> bool:
         active = self.consents.get(membership.pk, set()) if membership else set()
@@ -265,7 +340,8 @@ class SiteView:
             .order_by("entry_date")
         ):
             since.setdefault(p.membership_id, p.entry_date)
-        rows = Membership.objects.filter(pk__in=list(since)).select_related("person")
+        rows = list(Membership.objects.filter(pk__in=list(since)).select_related("person"))
+        self.people.load(m.person_id for m in rows)
         result = []
         for m in sorted(rows, key=lambda m: self._sort_key(m.person)):
             # Nur mit Einwilligung (Gesamtaudit 05.11. F-01), Widerspruch beim Namen gilt weiter
@@ -313,6 +389,8 @@ class SiteView:
             .order_by("-entry_date")
             .values_list("membership_id", "entry_date")
         )
+        deaths = list(deaths)
+        self.people.load(p.membership.person_id for p in deaths)
         result, seen = [], set()
         for p in deaths:
             person = p.membership.person
@@ -392,6 +470,11 @@ class SiteView:
         if a.membership_id:
             return a.membership.person, ""
         return a.person, a.user.get_full_name() if a.user_id else a.name
+
+    def _load_holders(self, assignments) -> None:
+        """Personen dieser Zuordnungen in einem Zug laden (statt einzeln in ``person``)."""
+        people = (self.holder_person(a)[0] for a in assignments)
+        self.people.load(p.pk for p in people if p is not None)
 
     @cached_property
     def role_assignments(self) -> dict[int, list[RoleAssignment]]:
@@ -476,6 +559,7 @@ class SiteView:
         return ("p", person.pk) if person else ("n", fallback)
 
     def board(self) -> list[dict]:
+        self._load_holders(a for rows in self.role_assignments.values() for a in rows)
         rows = []
         for role in self.own_roles().filter(on_website=True):
             holders, keys = [], set()
@@ -494,6 +578,7 @@ class SiteView:
         """Abschnitt „Ansprechpartner“ der Startseite (G3): gewählte Rollen in dieser
         Reihenfolge, nur „auf der Webseite“ und mit Einwilligung wie beim Vorstand."""
         roles = {r.pk: r for r in self.own_roles().filter(on_website=True, pk__in=ids)}
+        self._load_holders(a for pk in roles for a in self.role_assignments.get(pk, []))
         result = []
         for pk in ids:
             role = roles.get(pk)
@@ -524,8 +609,7 @@ class SiteView:
 
     @cached_property
     def _has_chairs(self) -> bool:
-        # Nur die Mitgliedschaften der Inhaber laden, nicht die aller Mitglieder; die
-        # Bedingungen sind dieselben wie in person() für die Kategorie „Name“
+        # Die Bedingungen sind dieselben wie in person() für die Kategorie „Name“
         holders = [
             self.holder_person(a)
             for _role, assignments in self._chair_assignments
@@ -534,11 +618,8 @@ class SiteView:
         ]
         if not holders:
             return False
-        if "memberships" in self.__dict__:
-            memberships, consents = self.memberships, self.consents
-        else:
-            memberships = self._memberships_of({p.pk for p, _ in holders if p is not None})
-            consents = self._consents_of(memberships)
+        self.people.load(p.pk for p, _ in holders if p is not None)
+        memberships, consents = self.memberships, self.consents
         from honors.numbering import split_name
 
         for person, fallback in holders:
@@ -564,6 +645,7 @@ class SiteView:
     @cached_property
     def _chairs(self) -> list[dict]:
         # Einmal je Antwort: Seite „Ämter“ und Chronik brauchen die ganze Liste
+        self._load_holders(a for _role, assignments in self._chair_assignments for a in assignments)
         result = []
         for role, assignments in self._chair_assignments:
             entries = []
@@ -600,6 +682,8 @@ class SiteView:
                 .select_related("person")
             )
             # Ohne Datum der Verleihung: auf der Webseite zählt nur, wer die Ehrung trägt
+            awards = list(awards)
+            self.people.load(a.person_id for a in awards)
             for award in awards:
                 entry = self.person(award.person, category=Category.HONORS)
                 if entry:
@@ -711,6 +795,9 @@ class SiteView:
         numbers = ordinals(reigns, per_reign=dignity.count_each_reign) if dignity.numbered else {}
         if origins is not None:
             reigns = [r for r in reigns if r.origin_id in origins]
+        self.people.load(
+            pk for r in reigns for pk in (r.person_id, *(c.person_id for c in r.companions.all()))
+        )
         seen: dict[str, int] = {}
         entries = []
         for reign in reigns:

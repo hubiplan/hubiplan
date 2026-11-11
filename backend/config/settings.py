@@ -432,6 +432,11 @@ CSRF_COOKIE_SAMESITE = "Lax"
 SESSION_COOKIE_SECURE = env_bool("DJANGO_SECURE_COOKIES", not DEBUG)
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# Vertraute Container im Docker-Netz (Gesamtaudit 11.11. S-01, S-02; core/ratelimit.py):
+# Nur von Caddy (Dienst „web“) gilt X-Forwarded-For, nur vom Webseiten-Dienst die Adresse des
+# Besuchers. docker-compose.server.yml setzt beides; leer (Entwicklung, Tests): wie bisher.
+TRUSTED_PROXY_HOSTS = env_list("HUBIPLAN_PROXY_HOSTS")
+WEBSITE_HOSTS = env_list("HUBIPLAN_WEBSITE_HOSTS")
 
 # --- E-Mail ---
 # Jede Mail landet im Postausgang (outbox). Mit EMAIL_HOST wird sie zusätzlich per

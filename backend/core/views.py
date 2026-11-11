@@ -36,8 +36,15 @@ def health(request: Request) -> Response:
     ok = db == "ok" and keys == "ok"
     data = {"status": "ok" if ok else "fehler"}
     # Einzelheiten nur für Prüfungen im Container (Docker, Ausrollen); von außen kommt jede
-    # Anfrage über Caddy und trägt X-Forwarded-For (Gesamtaudit 05.11. GA-15).
-    if not request.META.get("HTTP_X_FORWARDED_FOR"):
+    # Anfrage über Caddy und trägt X-Forwarded-For (Gesamtaudit 05.11. GA-15). Im Betrieb
+    # zählt zusätzlich die Adresse der Verbindung: Nachbardienste auf einem geteilten Server
+    # erreichen das Backend auch ohne Caddy (Gesamtaudit 11.11. S-02).
+    from django.conf import settings
+
+    from .ratelimit import is_local
+
+    inside = is_local(request) if settings.TRUSTED_PROXY_HOSTS else True
+    if inside and not request.META.get("HTTP_X_FORWARDED_FOR"):
         data.update(database=db, keys=keys)
     return Response(data, 200 if ok else 503)
 
