@@ -65,7 +65,9 @@ def site(club):
 
 
 def with_mfa(user, client: HttpClient | None = None) -> HttpClient:
-    Authenticator.objects.create(user=user, type=Authenticator.Type.TOTP, data={})
+    Authenticator.objects.get_or_create(
+        user=user, type=Authenticator.Type.TOTP, defaults={"data": {}}
+    )
     c = client or HttpClient()
     c.force_login(user)
     session = c.session
@@ -308,8 +310,9 @@ def test_rechte_gelten_live(club, site, editor):
     role.save()
     assert rpc(token, "ping").status_code == 200
     # Passwort geändert / überall abgemeldet: Verbindung endet
-    editor.auth_version += 1
-    editor.save()
+    from accounts.models import User
+
+    User.objects.filter(pk=editor.pk).update(auth_version=editor.auth_version + 1)
     assert rpc(token, "ping").status_code == 401
 
 

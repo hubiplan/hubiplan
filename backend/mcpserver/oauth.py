@@ -486,6 +486,7 @@ def _refresh(request) -> dict:
     if not refresh.startswith(REFRESH_PREFIX):
         raise OAuthError("invalid_grant")
     digest = hash_token(refresh)
+    # Widerruf bei Fehlern erst nach dem Block: ein Fehler im Block nähme ihn zurück
     with tracking.suppress(), rls_bypass(), transaction.atomic():
         grant = (
             McpGrant.objects.select_for_update()
@@ -493,29 +494,32 @@ def _refresh(request) -> dict:
             .filter(refresh_hash=digest)
             .first()
         )
+        ended = ""
         if grant is None:
             # Alter Schlüssel noch einmal benutzt: Es gibt eine Kopie, Verbindung beenden
-            old = McpGrant.objects.filter(previous_refresh_hash=digest, revoked_at=None).first()
-            if old is not None:
-                old.revoke("wiederverwendet")
-            raise OAuthError("invalid_grant")
-        if grant.client_id != client.pk or not grant.is_active:
-            raise OAuthError("invalid_grant")
-        user = grant.user
-        if not user.is_active or user.auth_version != grant.auth_version:
-            grant.revoke("konto")
-            raise OAuthError("invalid_grant")
-        access, new_refresh = grant.issue()
-        grant.last_used_at = timezone.now()
-        grant.save(
-            update_fields=[
-                "access_hash",
-                "access_expires_at",
-                "refresh_hash",
-                "previous_refresh_hash",
-                "last_used_at",
-            ]
-        )
+            grant = McpGrant.objects.filter(previous_refresh_hash=digest, revoked_at=None).first()
+            ended = "wiederverwendet" if grant is not None else "unbekannt"
+        elif grant.client_id != client.pk or not grant.is_active:
+            ended = "ungueltig"
+        elif not grant.user.is_active or grant.user.auth_version != grant.auth_version:
+            ended = "konto"
+        else:
+            access, new_refresh = grant.issue()
+            grant.last_used_at = timezone.now()
+            grant.save(
+                update_fields=[
+                    "access_hash",
+                    "access_expires_at",
+                    "refresh_hash",
+                    "previous_refresh_hash",
+                    "last_used_at",
+                ]
+            )
+    if ended:
+        if ended in ("wiederverwendet", "konto"):
+            with tracking.suppress(), rls_bypass():
+                grant.revoke(ended)
+        raise OAuthError("invalid_grant")
     return _answer(grant, access, new_refresh)
 
 
