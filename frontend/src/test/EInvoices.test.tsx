@@ -134,4 +134,53 @@ describe('E-Rechnungseingang', () => {
     expect(await screen.findByRole('button', { name: 'RE-2' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'RE-1' })).not.toBeInTheDocument()
   })
+
+  it('zeigt die Adresse des Rechnungspostfachs, Hinweise und unbekannte Absender', async () => {
+    const mail = {
+      id: 5,
+      sender: 'buchhaltung@lieferant.example.com',
+      subject: 'Ihre Rechnung',
+      sender_known: false,
+      status: 'imported' as const,
+      skipped: [],
+      received_at: '2026-11-10T12:00:00Z',
+      dismissed_at: '2026-11-10T12:00:00Z',
+    }
+    const hint = {
+      ...mail,
+      id: 6,
+      status: 'no_invoice' as const,
+      skipped: [{ name: 'brief.pdf', reason: 'plain_pdf' }],
+      dismissed_at: null,
+    }
+    let hints = [hint]
+    const calls = fakeApi({
+      [incoming + '1']: () => ({ status: 200, body: page([{ ...item, mail }]) }),
+      'GET /api/orgs/7/finance/incoming/mailbox/': () => ({
+        status: 200,
+        body: { enabled: true, address: 'rechnung+abc234defg@example.org' },
+      }),
+      'GET /api/orgs/7/finance/incoming/mails/': () => ({ status: 200, body: hints }),
+      'POST /api/orgs/7/finance/incoming/mails/6/dismiss/': () => {
+        hints = []
+        return { status: 200, body: { ...hint, dismissed_at: '2026-11-10T13:00:00Z' } }
+      },
+    })
+    show()
+    const user = userEvent.setup()
+    expect(await screen.findByText('rechnung+abc234defg@example.org')).toBeInTheDocument()
+    expect(await screen.findByText('Keine E-Rechnung im Anhang')).toBeInTheDocument()
+    expect(screen.getByText('brief.pdf (PDF ohne E-Rechnung)')).toBeInTheDocument()
+    expect(screen.getByText('Absender unbekannt')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Erledigt' }))
+    expect(calls.some((call) => call.key.endsWith('/mails/6/dismiss/'))).toBe(true)
+    expect(await screen.findByRole('button', { name: 'RE-1' })).toBeInTheDocument()
+    expect(screen.queryByText('Keine E-Rechnung im Anhang')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'RE-1' }))
+    expect(
+      screen.getByText(
+        'Der Absender der Mail passt zu keinem Geschäftspartner. Prüfe vor der Freigabe besonders Rechnungssteller und Bankverbindung.',
+      ),
+    ).toBeInTheDocument()
+  })
 })

@@ -279,6 +279,58 @@ class InvoiceArtifact(models.Model):
         return f"E-Rechnung {self.invoice_id}"
 
 
+class IncomingMailbox(models.Model):
+    """Kennung des Vereins in der Plus-Adresse des Rechnungspostfachs (#374).
+
+    Mails an ``rechnung+<tag>@…`` gehören zu diesem Verein. Die Kennung ist zufällig, damit
+    niemand die Adresse eines Vereins erraten kann; ``renew`` macht alte Adressen ungültig.
+    """
+
+    organization = models.OneToOneField(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    tag = models.CharField(max_length=20, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return gettext("Rechnungspostfach")
+
+
+class IncomingMail(models.Model):
+    """Eine Mail aus dem Rechnungspostfach, die einem Verein zugeordnet ist (#374).
+
+    Übernommene Anhänge verweisen als ``IncomingInvoice.mail`` hierher. Mails ohne
+    E-Rechnung erscheinen als Hinweis im Rechnungseingang, bis jemand sie erledigt.
+    """
+
+    class Status(models.TextChoices):
+        IMPORTED = "imported", gettext_lazy("Übernommen")
+        NO_INVOICE = "no_invoice", gettext_lazy("Keine E-Rechnung im Anhang")
+        SPAM = "spam", gettext_lazy("Als Spam markiert")
+        VIRUS = "virus", gettext_lazy("Schadsoftware gefunden")
+        ERROR = "error", gettext_lazy("Nicht verarbeitet")
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    # SHA-256 der Message-ID: Dieselbe Mail wird nur einmal übernommen
+    message_hash = models.CharField(max_length=64, blank=True)
+    sender = EncryptedEmailField(max_length=254, blank=True, strict=True)
+    subject = EncryptedCharField(max_length=300, blank=True, strict=True)
+    # Absender passt zur E-Mail-Adresse eines Geschäftspartners
+    sender_known = models.BooleanField(default=False)
+    status = models.CharField(max_length=12, choices=Status.choices)
+    # Übersprungene Anhänge: [{"name": "brief.pdf", "reason": "plain_pdf"}, …]
+    skipped = EncryptedJSONField(default=list, strict=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    dismissed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-received_at", "-pk"]
+        indexes = [models.Index(fields=["organization", "message_hash"])]
+
+    def __str__(self):
+        return f"Rechnungsmail {self.pk}"
+
+
 class IncomingInvoice(models.Model):
     """Eingang bleibt auch bei fehlgeschlagener Prüfung im Original erhalten."""
 
@@ -326,6 +378,10 @@ class IncomingInvoice(models.Model):
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    # Aus dem Rechnungspostfach (#374); leer beim Hochladen
+    mail = models.ForeignKey(
+        IncomingMail, on_delete=models.SET_NULL, null=True, blank=True, related_name="invoices"
     )
     created_at = models.DateTimeField(auto_now_add=True)
 

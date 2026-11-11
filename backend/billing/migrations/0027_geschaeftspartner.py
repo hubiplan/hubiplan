@@ -41,7 +41,7 @@ def roles_and_numbers(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("billing", "0025_eingang_hintergrundpruefung"),
+        ("billing", "0026_rechnungspostfach"),
         ("finance", "0033_umsatzsteuer"),
         ("members", "0028_organisation_groesse"),
         ("organizations", "0064_logo_dunkel"),

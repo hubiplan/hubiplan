@@ -18,7 +18,7 @@ def rls_off(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("billing", "0026_geschaeftspartner"),
+        ("billing", "0027_geschaeftspartner"),
         ("finance", "0034_geschaeftspartner"),
         ("organizations", "0064_logo_dunkel"),
         ("todos", "0017_verbund_rls"),

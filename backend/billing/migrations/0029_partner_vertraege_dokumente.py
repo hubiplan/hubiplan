@@ -23,7 +23,7 @@ def rls_off(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("billing", "0027_partner_vereinbarungen"),
+        ("billing", "0028_partner_vereinbarungen"),
         ("organizations", "0064_logo_dunkel"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
