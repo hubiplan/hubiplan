@@ -22,6 +22,19 @@ Mails ohne E-Rechnung, etwa mit einer gewöhnlichen PDF-Rechnung, Spam oder Scha
 stehen unter **Hinweise aus dem Postfach**, bis du **Erledigt** wählst. **Neue Adresse vergeben**
 macht die bisherige Adresse ungültig, etwa wenn sie Spam bekommt.
 
+**Geschäftspartner**: HUBIplan schlägt zu jeder Rechnung einen Geschäftspartner vor, erkannt
+an der USt-IdNr., der IBAN, dem Absender der Mail (auch die E-Mail-Adressen der
+Ansprechpartner) oder am Namen. Mit **Vorschlag zuordnen** übernimmst du ihn, mit
+**Als Geschäftspartner anlegen** legst du aus Name, USt-IdNr., IBAN und Absender einen neuen
+Lieferanten an. **Zuordnung zum Geschäftspartner lösen** nimmt die Zuordnung zurück. Ordnest
+du später eine Kassenbuchung zu, übernimmt sie den Geschäftspartner.
+
+**Neue IBAN**: Weicht die IBAN der Rechnung von der beim Geschäftspartner gespeicherten ab,
+warnt HUBIplan deutlich. Ruf den Rechnungssteller unter einer dir bekannten Nummer an, nicht
+unter der aus der Rechnung, und setze vor der Freigabe **Neue IBAN telefonisch bestätigt**.
+Die bestätigte IBAN speichert HUBIplan beim Geschäftspartner. So schützt du dich vor
+gefälschten Rechnungen mit fremder Bankverbindung.
+
 Die technische Prüfung (KoSIT) läuft nach dem Import im Hintergrund. Bis sie fertig ist,
 steht beim Eingang **Wird geprüft**; das dauert meist unter einer Minute, die Seite
 aktualisiert sich selbst. Abgelehnte Eingänge und Dateien, die keine lesbare E-Rechnung

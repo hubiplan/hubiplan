@@ -10116,3 +10116,16 @@ msgstr "Contract with {name}: cancel or let it continue?"
 
 msgid "„{title}“ endet am {end}, kündigen bis {last}."
 msgstr "“{title}” ends on {end}, give notice by {last}."
+
+msgid ""
+"Neue Bankverbindung: Bitte beim Rechnungssteller telefonisch bestätigen und "
+"das Häkchen setzen."
+msgstr ""
+"New bank account: please confirm it with the issuer by phone and tick the "
+"box."
+
+msgid "Der Rechnung ist bereits ein Geschäftspartner zugeordnet."
+msgstr "A business partner is already linked to this invoice."
+
+msgid "Die Rechnung nennt keinen Rechnungssteller."
+msgstr "The invoice does not name an issuer."

@@ -383,6 +383,16 @@ class IncomingInvoice(models.Model):
     mail = models.ForeignKey(
         IncomingMail, on_delete=models.SET_NULL, null=True, blank=True, related_name="invoices"
     )
+    # Geschäftspartner (konzepte/geschaeftspartner.md, P3): von Hand zugeordnet;
+    # HUBIplan schlägt nur vor (billing/incoming_partner.py)
+    partner = models.ForeignKey(
+        BusinessPartner,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Geschäftspartner",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
