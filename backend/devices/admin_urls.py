@@ -8,6 +8,7 @@ abwärtskompatibel (neue Felder ja, umbenennen oder entfernen nein).
 from django.urls import include, path
 from rest_framework.routers import SimpleRouter
 
+from billing import partners as partner_views
 from billing import views as billing_views
 from cards import views as card_views
 from changes import views as change_views
@@ -58,6 +59,12 @@ org_router.register(
 )
 org_router.register(
     "billing/mandates", admin_members.AppMandateViewSet, basename="app-admin-mandate"
+)
+# Geschäftspartner (konzepte/geschaeftspartner.md, P5): Kontaktsuche, nur lesen
+org_router.register(
+    "billing/partners",
+    for_app(partner_views.PartnerLookupViewSet, True),
+    basename="app-admin-partner",
 )
 # B4 Kasse: Konten und Kategorien nur lesen, Buchungen lesen (neu nur mit Beleg, s. u.)
 org_router.register(

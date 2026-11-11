@@ -748,3 +748,35 @@ class PartnerContactViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
         with transaction.atomic():
             super().perform_update(serializer)
             self._one_primary(serializer.instance)
+
+
+class PartnerLookupViewSet(PartnerAccess, viewsets.ReadOnlyModelViewSet):
+    """Kontaktsuche für die App (P5): aktive Partner mit Ansprechpartnern, nur lesen.
+
+    ``?suche=`` findet Name, Nummer, Ort und Ansprechpartner; höchstens 200 Treffer."""
+
+    serializer_class = PartnerSerializer
+    pagination_class = None
+    LIMIT = 200
+
+    def get_queryset(self):
+        return (
+            BusinessPartner.objects.filter(organization=self.org, is_active=True)
+            .select_related("unit", "membership__person")
+            .prefetch_related("contacts")
+            .order_by("name", "pk")
+        )
+
+    def list(self, request, *args, **kwargs):
+        rows = list(self.get_queryset())
+        needle = request.query_params.get("suche", "").strip().casefold()
+        if needle:
+            rows = [p for p in rows if needle in _haystack(p)]
+        return Response(self.get_serializer(rows[: self.LIMIT], many=True).data)
+
+
+def _haystack(partner: BusinessPartner) -> str:
+    details = partner.details or {}
+    parts = [partner.name, partner.number, details.get("city", ""), details.get("email", "")]
+    parts += [f"{c.first_name} {c.last_name} {c.function}" for c in partner.contacts.all()]
+    return " ".join(p for p in parts if p).casefold()
