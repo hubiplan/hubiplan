@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- Erscheinungsbild: Jede Farbe der Palette bekommt eine **Verwendung** (z. B. „Fließtext“), dazu kommen bis zu zwei benannte **Verläufe** aus zwei Palettenfarben. **Farbblatt ansehen** zeigt Farben mit Hex- und RGB-Wert und die Verläufe zum Weitergeben oder Drucken. Auf der Webseite können Kopf, Fuß, Farbbänder, Zierlinien und Abschnitte einen Verlauf bekommen; unter Gestaltung legt ihr außerdem Farben für **Fließtext**, **Sekundärtext**, **Flächen** und **Seitenhintergrund** fest, mit Hinweis bei schlechter Lesbarkeit.
 - KI-Assistenten: Unter der Adresse `/api/mcp/` eurer HUBIplan-Instanz kann ein KI-Assistent wie Claude oder ChatGPT die HUBIplan-Hilfe durchsuchen und Begriffe erklären (Model Context Protocol). Er sieht dabei keine Vereinsdaten und ändert nichts.
 - **Geschäftspartner** haben einen eigenen Menüpunkt unter Verein: Lieferanten, Dienstleister, Sponsoren, Behörden und andere mit Art, Rollen, Nummer, mehreren Ansprechpartnern, Notizen und (für die Kasse) Bankverbindung. Doppelte Einträge lassen sich zusammenführen, die Liste als Excel ex- und importieren.
 - **Geschäftspartner im Kassenbuch**: Bei Empfänger/Zahler stehen Geschäftspartner zuerst und bringen ihre Standardkategorie mit. Kontoauszüge erkennen Partner an der IBAN, die Akte zeigt die Umsätze je Jahr, und häufige Namen aus dem Kassenbuch lassen sich als Geschäftspartner übernehmen.

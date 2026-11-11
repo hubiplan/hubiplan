@@ -9846,6 +9846,56 @@ msgstr "At most twelve partners."
 msgid "Höchstens sechs Zahlen."
 msgstr "At most six numbers."
 
+msgid "Kopf"
+msgstr "Header"
+
+msgid "Menü (Leiste oder Markierung)"
+msgstr "Menu (bar or highlight)"
+
+msgid "Zierlinien"
+msgstr "Decorative lines"
+
+msgid "Fuß"
+msgstr "Footer"
+
+msgid "Farbband"
+msgstr "Colour band"
+
+msgid "zweites Farbband"
+msgstr "Second colour band"
+
+msgid "Datumsfeld bei Terminen"
+msgstr "Date box for events"
+
+msgid "Fließtext"
+msgstr "Body text"
+
+msgid "Sekundärtext"
+msgstr "Secondary text"
+
+msgid "Flächen (Karten, Tabellenzeilen)"
+msgstr "Surfaces (cards, table rows)"
+
+msgid "Seitenhintergrund"
+msgstr "Page background"
+
+msgid "Die Verwendung bitte höchstens {limit} Zeichen."
+msgstr "Please keep the use to at most {limit} characters."
+
+msgid "Verläufe bitte als Liste angeben."
+msgstr "Please give gradients as a list."
+
+msgid "Höchstens {MAX_GRADIENTS} Verläufe."
+msgstr "At most {MAX_GRADIENTS} gradients."
+
+msgid "Ein Verlauf braucht zwei Farben aus der Palette."
+msgstr "A gradient needs two colours from the palette."
+
+msgid "Ein Verlauf braucht zwei verschiedene Farben."
+msgstr "A gradient needs two different colours."
+
+msgid "Diese Richtung gibt es nicht."
+msgstr "This direction does not exist."
 msgid "Startseite"
 msgstr "Home"
 msgid "Geschäftspartner und Ansprechpartner sehen"

@@ -70,6 +70,9 @@ THEME_FIELDS = {
     "primary_color_name",
     "accent_color_name",
     "extra_colors",
+    "primary_color_use",
+    "accent_color_use",
+    "gradients",
     "logo",
     "logo_dark",
 }

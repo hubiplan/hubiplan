@@ -126,6 +126,17 @@ class ThemeFields(models.Model):
     primary_color_name = models.CharField("Name der Hauptfarbe", max_length=30, blank=True)
     accent_color_name = models.CharField("Name der Zweitfarbe", max_length=30, blank=True)
     extra_colors = models.JSONField("weitere Farben", default=list, blank=True)
+    # Wofür Haupt- und Zweitfarbe da sind (Farbblatt, Ralf 10.11.2026); weitere Farben
+    # tragen das in extra_colors[].use
+    primary_color_use = models.CharField(
+        "Verwendung der Hauptfarbe", max_length=60, blank=True, db_default=""
+    )
+    accent_color_use = models.CharField(
+        "Verwendung der Zweitfarbe", max_length=60, blank=True, db_default=""
+    )
+    # Bis zu zwei benannte Verläufe aus Palettenplätzen (Ralf 10.11.2026):
+    # [{name, from, to, direction}]
+    gradients = models.JSONField("Verläufe", default=list, blank=True, db_default=[])
     logo = models.ImageField(
         "Logo/Wappen", upload_to=logo_path, blank=True, validators=[validate_logo]
     )
@@ -899,6 +910,9 @@ class Department(Organization):
             "primary_color_name",
             "accent_color_name",
             "extra_colors",
+            "primary_color_use",
+            "accent_color_use",
+            "gradients",
             "logo",
             "logo_dark",
             "own_workspace",

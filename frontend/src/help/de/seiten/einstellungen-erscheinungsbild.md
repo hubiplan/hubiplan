@@ -2,11 +2,15 @@
 key: page.settings_theme
 titel: Einstellungen › Erscheinungsbild
 rechte: [theme.edit]
-routen: [/einstellungen/erscheinungsbild]
-stichworte: [Farbe, Logo, Wappen, Aussehen, Dunkelmodus]
+routen: [/einstellungen/erscheinungsbild, /einstellungen/erscheinungsbild/farbblatt]
+stichworte: [Farbe, Logo, Wappen, Aussehen, Dunkelmodus, Verlauf, Farbblatt, Corporate Design]
 ---
 
 Hier legt ihr Vereinsfarben und Logo fest. Sie erscheinen in HUBIplan, auf Ausweisen, Briefen und der Webseite. Untereinheiten übernehmen sie, solange sie keine eigenen festlegen.
+
+Zur Hauptfarbe und Zweitfarbe kommen unter **Weitere Farben** bis zu vier weitere, zusammen also sechs. Jede Farbe bekommt einen Namen und auf Wunsch eine Verwendung, etwa „Leitfarbe“, „Fließtext“ oder „Flächen, Tabellenzeilen“. So lässt sich das Farbblatt eines Corporate Designs übernehmen. Unter **Verläufe** legt ihr bis zu zwei benannte Verläufe aus zwei Farben der Palette an, etwa einen Blauverlauf von Blau nach Dunkelblau, von links nach rechts oder von oben nach unten. Die Webseite nutzt sie für Kopf, Fuß, Farbbänder, Zierlinien und Abschnitte; wo genau, stellt ihr unter Webseite › Gestaltung ein. Neben jedem Verlauf steht, wie gut Text darauf lesbar ist. Weitere Farben und Verläufe gelten nur zusammen mit einer eigenen Hauptfarbe.
+
+**Farbblatt ansehen** zeigt alle Farben mit Name, Hex- und RGB-Wert und Verwendung sowie die Verläufe auf einer Seite, zum Weitergeben oder mit **Drucken** als PDF.
 
 Unter dem Logo könnt ihr ein zweites **Logo / Wappen für den Dunkelmodus** hochladen, etwa eine Fassung mit heller Schrift oder hellem Rand. Es erscheint, wenn jemand die dunkle Darstellung nutzt (Anmeldung, Startseite, Termine, Mein Konto und Mein Bereich). Die Vorschau zeigt es auf dunklem Grund. Ohne eigenes Logo für den Dunkelmodus gilt das normale Logo, auch im Dunkeln. Ausweise, Briefe und PDFs nutzen immer das normale Logo. Untereinheiten laden ihr dunkles Wappen unter Untereinheiten bei der jeweiligen Untereinheit hoch.
 

@@ -8,6 +8,7 @@ import { errorMessage } from '../../components/forms.ts'
 import { Alert, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
+import { contrastRatio } from '../../theme/contrast.ts'
 import { DesignTransfer } from './DesignTransfer.tsx'
 
 const NEUTRAL: Record<string, string> = { light: t('Weiß'), dark: t('Dunkel (fast Schwarz)') }
@@ -34,6 +35,7 @@ export function DesignChooser({
   const designs = data.designs ?? []
   const colors = data.website?.design_colors ?? {}
   const palette = data.palette ?? []
+  const gradients = data.gradients ?? []
   const current = designs.find((d) => d.key === design) ?? designs[0]
 
   async function preview(key: string) {
@@ -126,38 +128,128 @@ export function DesignChooser({
             )}
           </p>
           <div className="grid-2">
-            {current.roles.map((r) => {
-              const chosen = colorRoles[design]?.[r.key]
-              const swatch = colors[design]?.[r.key]?.color
-              return (
-                <SelectField
+            {current.roles
+              .filter((r) => !r.common)
+              .map((r) => (
+                <RoleSelect
                   key={r.key}
-                  label={r.label}
-                  value={chosen === undefined ? '' : String(chosen)}
-                  hint={swatch ? t('Jetzt: {swatch}', { swatch }) : undefined}
-                  onChange={(e) => setRole(r.key, e.target.value)}
-                >
-                  <option value="">{t('Vorgabe des Designs')}</option>
-                  {palette.map((_, i) => (
-                    <option key={i} value={String(i)}>
-                      {paletteName(i)}
-                    </option>
-                  ))}
-                  {Object.entries(NEUTRAL).map(([k, label]) => (
-                    <option key={k} value={k}>
-                      {label}
-                    </option>
-                  ))}
-                </SelectField>
-              )
-            })}
+                  role={r}
+                  chosen={colorRoles[design]?.[r.key]}
+                  swatch={colors[design]?.[r.key]}
+                  palette={palette.map((_, i) => paletteName(i))}
+                  gradients={r.gradient ? gradients : []}
+                  onChange={(v) => setRole(r.key, v)}
+                />
+              ))}
           </div>
+          <h4>{t('Text, Flächen und Hintergrund')}</h4>
+          <p className="muted small">
+            {t(
+              'Gilt für die ganze Webseite. „Vorgabe des Designs“ lässt die Farben des Designs, wie sie sind.',
+            )}
+          </p>
+          <div className="grid-2">
+            {current.roles
+              .filter((r) => r.common)
+              .map((r) => (
+                <RoleSelect
+                  key={r.key}
+                  role={r}
+                  chosen={colorRoles[design]?.[r.key]}
+                  swatch={colors[design]?.[r.key]}
+                  palette={palette.map((_, i) => paletteName(i))}
+                  gradients={[]}
+                  onChange={(v) => setRole(r.key, v)}
+                />
+              ))}
+          </div>
+          <ContrastWarnings colors={colors[design]} />
         </details>
       )}
       {data.website && (
         <DesignTransfer data={data} design={design} onChanged={() => onPackagesChanged?.()} />
       )}
     </>
+  )
+}
+
+function RoleSelect({
+  role,
+  chosen,
+  swatch,
+  palette,
+  gradients,
+  onChange,
+}: {
+  role: { key: string; label: string }
+  chosen: number | string | undefined
+  swatch?: RoleColors[string]
+  palette: string[]
+  gradients: { name: string; colors: [string, string] }[]
+  onChange: (value: string) => void
+}) {
+  const now = swatch?.gradient
+    ? t('Jetzt: Verlauf {from} → {to}', { from: swatch.gradient.from, to: swatch.gradient.to })
+    : swatch
+      ? t('Jetzt: {swatch}', { swatch: swatch.color })
+      : undefined
+  return (
+    <SelectField
+      label={role.label}
+      value={chosen === undefined ? '' : String(chosen)}
+      hint={now}
+      onChange={(e) => onChange(e.target.value)}
+    >
+      <option value="">{t('Vorgabe des Designs')}</option>
+      {palette.map((label, i) => (
+        <option key={i} value={String(i)}>
+          {label}
+        </option>
+      ))}
+      {Object.entries(NEUTRAL).map(([k, label]) => (
+        <option key={k} value={k}>
+          {label}
+        </option>
+      ))}
+      {gradients.map((g, i) => (
+        <option key={`g${i}`} value={`g${i}`}>
+          {t('Verlauf: {name}', {
+            name: g.name || t('{from} → {to}', { from: g.colors[0], to: g.colors[1] }),
+          })}
+        </option>
+      ))}
+    </SelectField>
+  )
+}
+
+// Vorgaben der Webseite, wenn Text, Flächen und Hintergrund nicht gewählt sind (seite.css)
+const SITE_TEXT = '#1d2421'
+const SITE_MUTED = '#5a625e'
+const SITE_SURFACE = '#ffffff'
+const SITE_BACKGROUND = '#fbfaf7'
+
+/** Warnt, wenn Fließ- oder Sekundärtext auf Flächen oder Hintergrund schlecht lesbar wird. */
+export function ContrastWarnings({ colors }: { colors?: RoleColors }) {
+  const pick = (role: string, fallback: string) => colors?.[role]?.color ?? fallback
+  const text = pick('text', SITE_TEXT)
+  const muted = pick('muted', SITE_MUTED)
+  const surface = pick('surface', SITE_SURFACE)
+  const background = pick('background', SITE_BACKGROUND)
+  const checks = [
+    { label: t('Fließtext auf Flächen'), a: text, b: surface },
+    { label: t('Fließtext auf dem Hintergrund'), a: text, b: background },
+    { label: t('Sekundärtext auf Flächen'), a: muted, b: surface },
+    { label: t('Sekundärtext auf dem Hintergrund'), a: muted, b: background },
+  ]
+  const bad = checks
+    .map((c) => ({ ...c, ratio: contrastRatio(c.a, c.b) }))
+    .filter((c) => c.ratio < 4.5)
+  if (bad.length === 0) return null
+  return (
+    <Alert kind="info">
+      {t('Schlecht lesbar (mind. 4.5 : 1):')}{' '}
+      {bad.map((c) => t('{label} {x} : 1', { label: c.label, x: c.ratio.toFixed(1) })).join(', ')}
+    </Alert>
   )
 }
 
