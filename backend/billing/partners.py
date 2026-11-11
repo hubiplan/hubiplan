@@ -255,13 +255,14 @@ def _references():
 
 
 def extra_references():
-    """Verweise aus Kasse (P2) und Vereinbarungen (P4); spätere Stufen ergänzen hier."""
+    """Verweise aus Kasse (P2), Vereinbarungen (P4) und Dokumenten (P5)."""
     from finance.models import BankLine, Booking, CashReceipt, Donation
 
-    from .models import PartnerAgreement
+    from .models import PartnerAgreement, PartnerDocument
 
     return [
         (PartnerAgreement, "partner"),
+        (PartnerDocument, "partner"),
         (Booking, "partner"),
         (BankLine, "partner"),
         (CashReceipt, "partner"),
@@ -474,6 +475,15 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
                 ],
             }
         )
+
+    @action(detail=False, methods=["get", "post"])
+    def mailing(self, request, org_id):
+        """Serienbrief und E-Mail-Verteiler an eine Partnergruppe (P5)."""
+        from .partner_files import mailing_get, mailing_post
+
+        if request.method == "GET":
+            return mailing_get(self, request)
+        return mailing_post(self, request)
 
     @action(detail=False, methods=["get", "post"])
     def suggestions(self, request, org_id):

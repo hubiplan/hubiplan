@@ -69,6 +69,9 @@ const agreement = {
   benefits_text: '',
   tax_kind: 'advertising',
   category: null,
+  notice_days: null,
+  auto_renew: false,
+  notice_by: null,
   remind_days: 60,
   reminder: 5,
   reminder_due: '2026-11-01',
@@ -90,6 +93,22 @@ function show(permissions: string[], body: unknown[] = [partner]) {
     'GET /api/orgs/7/billing/partners/': () => ({ status: 200, body }),
     'GET /api/orgs/7/finance/categories/': () => ({ status: 200, body: [] }),
     'GET /api/orgs/7/billing/partners/4/agreements/': () => ({ status: 200, body: [agreement] }),
+    'GET /api/orgs/7/billing/partners/4/documents/': () => ({
+      status: 200,
+      body: [
+        {
+          id: 3,
+          title: 'Wartungsvertrag',
+          name: 'vertrag.pdf',
+          size: 2048,
+          content_type: 'application/pdf',
+          agreement: null,
+          uploaded_at: '2026-11-10T20:00:00Z',
+          uploaded_by: 'Kim Muster',
+          url: '/api/orgs/7/billing/partners/4/documents/3/',
+        },
+      ],
+    }),
   })
   render(
     <MemoryRouter initialEntries={['/geschaeftspartner']}>
@@ -127,6 +146,8 @@ describe('Geschäftspartner', () => {
     expect(screen.getByText(/Gegenleistung: Bande oder Banner/)).toBeInTheDocument()
     expect(screen.getByText(/Erinnerung am/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Dankesbrief' })).toBeInTheDocument()
+    expect(await screen.findByText('Wartungsvertrag')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Dokument hochladen' })).toBeInTheDocument()
     expect(
       screen.getByLabelText('Darf auf unserer Webseite als Partner oder Sponsor genannt werden'),
     ).toBeInTheDocument()

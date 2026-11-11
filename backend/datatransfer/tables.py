@@ -45,6 +45,7 @@ MODULE_MODELS = (
     "billing.BusinessPartner",
     "billing.PartnerContact",
     "billing.PartnerAgreement",
+    "billing.PartnerDocument",
     "billing.Invoice",
     "billing.InvoiceArtifact",
     "billing.InvoiceHybridArtifact",

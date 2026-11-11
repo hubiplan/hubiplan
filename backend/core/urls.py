@@ -6,7 +6,7 @@ from access import views as access_views
 from access.module_gate import gate, gate_names, needs_module
 from accounts import appearance, help_done, home_actions, language, learning, self_service, step_up
 from billing import agreements as partner_agreements
-from billing import einvoice_views
+from billing import einvoice_views, partner_files
 from billing import partners as partner_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
@@ -453,6 +453,16 @@ org_patterns = [
         name="photo-link-revoke",
     ),
     path("billing/partners/<int:partner_pk>/", include(partner_router.urls)),
+    path(
+        "billing/partners/<int:partner_pk>/documents/",
+        partner_files.PartnerDocumentListView.as_view(),
+        name="billing-partner-documents",
+    ),
+    path(
+        "billing/partners/<int:partner_pk>/documents/<int:pk>/",
+        partner_files.PartnerDocumentDetailView.as_view(),
+        name="billing-partner-document",
+    ),
     path(
         "members/<int:member_pk>/",
         include(gate_names("awards", member_router.urls, "member-honorary-title")),

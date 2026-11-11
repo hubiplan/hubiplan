@@ -10027,3 +10027,24 @@ msgstr "thank you very much for {support}."
 
 msgid "„{title}“ endet am {end}."
 msgstr "“{title}” ends on {end}."
+
+msgid "Dokument zum Geschäftspartner"
+msgstr "Business partner document"
+
+msgid "Höchstens 730 Tage."
+msgstr "At most 730 days."
+
+msgid "Höchstens {n} Briefe auf einmal."
+msgstr "At most {n} letters at once."
+
+msgid "In dieser Gruppe hat kein Geschäftspartner eine Anschrift."
+msgstr "No business partner in this group has an address."
+
+msgid "Vertrag"
+msgstr "Contract"
+
+msgid "Vertrag mit {name}: kündigen oder weiterlaufen lassen?"
+msgstr "Contract with {name}: cancel or let it continue?"
+
+msgid "„{title}“ endet am {end}, kündigen bis {last}."
+msgstr "“{title}” ends on {end}, give notice by {last}."

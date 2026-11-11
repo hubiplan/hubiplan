@@ -42,6 +42,8 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
 | `GET <pk>/turnover/` | Einnahmen/Ausgaben je Jahr ohne Stornos und Umbuchungen, letzte 10 Buchungen (Modul Finanzen, `finance.view`) |
 | `GET`, `POST suggestions/ {name, kind?, roles?}` | Bestand übernehmen: Freitexte, die mindestens zweimal ohne Partner im Kassenbuch stehen; POST legt den Partner an und verknüpft Buchungen und Bankzeilen mit genau diesem Namen (`finance.edit`) |
 | `…/<pk>/agreements/` | Vereinbarungen (P4) anlegen, ändern, entfernen; `POST …/agreements/<id>/thanks/ {text?}` liefert den Dankesbrief als PDF |
+| `…/<pk>/documents/` (`<id>/`) | Dokumente (P5): hochladen (`file`, `title?`, `agreement?`), herunterladen, entfernen; zählen zum Speicherbudget, Virenprüfung wie in der Ablage |
+| `GET`, `POST mailing/` | Partnergruppe nach `role`/`kind`: Empfänger mit E-Mail-Adressen; POST `{subject, text}` liefert den Serienbrief als PDF (P5) |
 | `…/<pk>/contacts/` | Ansprechpartner anlegen, ändern, entfernen; nur ein Hauptansprechpartner |
 
 ## Kasse (P2)
@@ -68,6 +70,17 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
 - `website_consent` und `website_url` am Partner. `GET /api/orgs/<id>/website/partner-logos/`
   liefert Name und Link der Partner mit Einwilligung für den Abschnitt „Partner und Sponsoren“;
   das Logo bleibt ein Webseitenbild.
+
+## Verträge, Dokumente, Serienbrief (P5)
+
+- Vereinbarungsart `contract` mit `notice_days` (Kündigungsfrist) und `auto_renew`. Die
+  Erinnerung liegt `remind_days` vor dem letzten Kündigungstag (`notice_by`), ohne Frist vor
+  dem Ende.
+- `PartnerDocument` (`billing/0028`): Datei an der Akte, optional zu einer Vereinbarung;
+  zählt in `documents.services.total_bytes`.
+- Serienbrief: ein Brief je Partner mit Anschrift (höchstens 500), Anrede je erstem
+  Ansprechpartner mit „erhält Post“. Der Verteiler nimmt deren E-Mail-Adressen, sonst die des
+  Partners; HUBIplan verschickt selbst nichts.
 
 Änderungen stehen im Änderungsprotokoll. Der Datenumzug übernimmt beide Tabellen.
 

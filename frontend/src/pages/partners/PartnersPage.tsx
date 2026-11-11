@@ -24,6 +24,8 @@ import { t } from '../../i18n/index.ts'
 import { formatDay, formatEuro } from '../../i18n/format.ts'
 import { TextArea } from '../settings/TextArea.tsx'
 import { Agreements } from './Agreements.tsx'
+import { MailingCard } from './MailingCard.tsx'
+import { PartnerDocuments } from './PartnerDocuments.tsx'
 import { kindLabel, partnerAccess, roleLabel } from './access.ts'
 
 const emptyPartner = (): PartnerInput => ({
@@ -60,6 +62,7 @@ export function PartnersPage() {
   const [role, setRole] = useState('')
   const [inactive, setInactive] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [mailing, setMailing] = useState(false)
   const [error, setError] = useState('')
   const rows = useMemo(() => {
     const needle = search.trim().toLocaleLowerCase()
@@ -112,9 +115,11 @@ export function PartnersPage() {
             },
           },
           access.edit && { label: t('Aus Excel importieren'), onClick: () => setImporting(true) },
+          access.edit && { label: t('Serienbrief und Verteiler'), onClick: () => setMailing(true) },
         ]}
       />
       {error && <Alert kind="error">{error}</Alert>}
+      {mailing && <MailingCard onClose={() => setMailing(false)} />}
       {importing && (
         <ImportCard
           onClose={(changed) => {
@@ -602,6 +607,7 @@ function PartnerForm({
       </div>
       {partner && <Contacts partner={partner} canEdit={canEdit} />}
       {partner && <Agreements partner={partner} canEdit={canEdit} />}
+      {partner && <PartnerDocuments partner={partner} canEdit={canEdit} />}
       {partner && financeOn && <TurnoverCard partner={partner} />}
       {canEdit && partner && others.length > 0 && (
         <details className="subcard">

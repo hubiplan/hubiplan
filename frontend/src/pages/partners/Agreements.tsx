@@ -28,6 +28,7 @@ function agreementKindLabel(kind: AgreementKind): string {
   return {
     sponsoring: t('Sponsoring'),
     framework: t('Rahmenvereinbarung'),
+    contract: t('Vertrag'),
     other: t('Sonstige Vereinbarung'),
   }[kind]
 }
@@ -61,6 +62,8 @@ const emptyAgreement = (): AgreementInput => ({
   benefits: [],
   benefits_text: '',
   tax_kind: 'mention',
+  notice_days: null,
+  auto_renew: false,
   remind_days: 60,
   notes: '',
 })
@@ -154,6 +157,8 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
               )}
               <div className="muted small">
                 {[
+                  a.notice_by ? t('kündigen bis {date}', { date: formatDay(a.notice_by) }) : '',
+                  a.auto_renew ? t('verlängert sich automatisch') : '',
                   a.reminder_due
                     ? t('Erinnerung am {date}', { date: formatDay(a.reminder_due) })
                     : '',
@@ -180,6 +185,8 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
                       benefits_text: a.benefits_text,
                       tax_kind: a.tax_kind,
                       category: a.category,
+                      notice_days: a.notice_days,
+                      auto_renew: a.auto_renew,
                       remind_days: a.remind_days,
                       notes: a.notes,
                     })
@@ -296,7 +303,17 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
               ))}
             </SelectField>
             <Field
-              label={t('Erinnerung (Tage vor Ende)')}
+              label={t('Kündigungsfrist in Tagen')}
+              type="number"
+              min={0}
+              max={730}
+              value={draft.notice_days ?? ''}
+              onChange={(e) =>
+                setDraft({ ...draft, notice_days: e.target.value ? Number(e.target.value) : null })
+              }
+            />
+            <Field
+              label={t('Erinnerung (Tage vor Ende bzw. Kündigungsfrist)')}
               type="number"
               min={0}
               max={365}
@@ -304,6 +321,11 @@ export function Agreements({ partner, canEdit }: { partner: BusinessPartner; can
               onChange={(e) => setDraft({ ...draft, remind_days: Number(e.target.value) || 0 })}
             />
           </div>
+          <Checkbox
+            label={t('Verlängert sich automatisch, wenn niemand kündigt')}
+            checked={!!draft.auto_renew}
+            onChange={(auto_renew) => setDraft({ ...draft, auto_renew })}
+          />
           <fieldset className="subcard">
             <legend>{t('Gegenleistung')}</legend>
             <div className="grid-3">

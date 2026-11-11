@@ -36,6 +36,7 @@ class AgreementSerializer(serializers.ModelSerializer):
         max_length=len(PartnerAgreement.Benefit.choices),
     )
     reminder_due = serializers.SerializerMethodField()
+    notice_by = serializers.SerializerMethodField()
 
     class Meta:
         model = PartnerAgreement
@@ -51,6 +52,9 @@ class AgreementSerializer(serializers.ModelSerializer):
             "benefits_text",
             "tax_kind",
             "category",
+            "notice_days",
+            "auto_renew",
+            "notice_by",
             "remind_days",
             "reminder",
             "reminder_due",
@@ -58,7 +62,18 @@ class AgreementSerializer(serializers.ModelSerializer):
             "notes",
             "updated_at",
         ]
-        read_only_fields = ["id", "reminder", "reminder_due", "thanked_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "reminder",
+            "reminder_due",
+            "notice_by",
+            "thanked_at",
+            "updated_at",
+        ]
+
+    def get_notice_by(self, obj):
+        last = notice_date(obj)
+        return last.isoformat() if last else None
 
     def get_reminder_due(self, obj):
         todo = obj.reminder
@@ -72,6 +87,11 @@ class AgreementSerializer(serializers.ModelSerializer):
     def validate_amount(self, value):
         if value is not None and value < 0:
             raise serializers.ValidationError(gettext("Der Betrag darf nicht negativ sein."))
+        return value
+
+    def validate_notice_days(self, value):
+        if value is not None and value > 730:
+            raise serializers.ValidationError(gettext("Höchstens 730 Tage."))
         return value
 
     def validate_remind_days(self, value):
@@ -93,10 +113,19 @@ class AgreementSerializer(serializers.ModelSerializer):
         return attrs
 
 
-def reminder_date(agreement: PartnerAgreement) -> datetime.date | None:
-    if not agreement.end:
+def notice_date(agreement: PartnerAgreement) -> datetime.date | None:
+    """Letzter Tag für die Kündigung (Ende minus Kündigungsfrist), sonst ``None``."""
+    if not agreement.end or not agreement.notice_days:
         return None
-    return agreement.end - datetime.timedelta(days=agreement.remind_days)
+    return agreement.end - datetime.timedelta(days=agreement.notice_days)
+
+
+def reminder_date(agreement: PartnerAgreement) -> datetime.date | None:
+    """Erinnerung vor der Kündigungsfrist, ohne Frist vor dem Ende."""
+    last = notice_date(agreement) or agreement.end
+    if not last:
+        return None
+    return last - datetime.timedelta(days=agreement.remind_days)
 
 
 def sync_reminder(agreement: PartnerAgreement, user) -> None:
@@ -119,10 +148,18 @@ def sync_reminder(agreement: PartnerAgreement, user) -> None:
             todo.deleted_at = timezone.now()
             todo.save(update_fields=["deleted_at", "updated_at"])
         return
-    title = gettext("Vereinbarung mit {name} verlängern?").format(name=agreement.partner.name)[:200]
-    description = gettext("„{title}“ endet am {end}.").format(
-        title=agreement.title, end=f"{agreement.end:%d.%m.%Y}"
-    )
+    last = notice_date(agreement)
+    if last:
+        title = gettext("Vertrag mit {name}: kündigen oder weiterlaufen lassen?")
+        description = gettext("„{title}“ endet am {end}, kündigen bis {last}.").format(
+            title=agreement.title, end=f"{agreement.end:%d.%m.%Y}", last=f"{last:%d.%m.%Y}"
+        )
+    else:
+        title = gettext("Vereinbarung mit {name} verlängern?")
+        description = gettext("„{title}“ endet am {end}.").format(
+            title=agreement.title, end=f"{agreement.end:%d.%m.%Y}"
+        )
+    title = title.format(name=agreement.partner.name)[:200]
     if todo:
         if todo.due_date != due or todo.title != title:
             todo.due_date = due

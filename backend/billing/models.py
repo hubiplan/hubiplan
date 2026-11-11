@@ -160,6 +160,7 @@ class PartnerAgreement(models.Model):
     class Kind(models.TextChoices):
         SPONSORING = "sponsoring", gettext_lazy("Sponsoring")
         FRAMEWORK = "framework", gettext_lazy("Rahmenvereinbarung")
+        CONTRACT = "contract", gettext_lazy("Vertrag")
         OTHER = "other", gettext_lazy("Sonstige Vereinbarung")
 
     class TaxKind(models.TextChoices):
@@ -193,6 +194,9 @@ class PartnerAgreement(models.Model):
     category = models.ForeignKey(
         "finance.Category", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
+    # Verträge (P5): Kündigungsfrist vor dem Ende, stillschweigende Verlängerung
+    notice_days = models.PositiveSmallIntegerField(null=True, blank=True)
+    auto_renew = models.BooleanField(default=False, db_default=False)
     remind_days = models.PositiveSmallIntegerField(default=60)
     reminder = models.ForeignKey(
         "todos.Todo", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
@@ -208,6 +212,42 @@ class PartnerAgreement(models.Model):
 
     def __str__(self):
         return self.title
+
+
+def partner_document_path(instance, filename):
+    return f"geschaeftspartner/{instance.organization_id}/{uuid.uuid4().hex}/{filename}"
+
+
+class PartnerDocument(models.Model):
+    """Datei an der Partnerakte (P5): Vertrag, Angebot, Einwilligung, Schriftverkehr."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    partner = models.ForeignKey(BusinessPartner, on_delete=models.CASCADE, related_name="documents")
+    agreement = models.ForeignKey(
+        PartnerAgreement,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="documents",
+    )
+    title = EncryptedCharField(max_length=200, blank=True, strict=True)
+    name = models.CharField(max_length=200)
+    content_type = models.CharField(max_length=100)
+    size = models.PositiveIntegerField(default=0)
+    file = PrivateFileField(storage=private_storage, upload_to=partner_document_path)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+"
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-uploaded_at", "pk"]
+        verbose_name = gettext_lazy("Dokument zum Geschäftspartner")
+
+    def __str__(self):
+        return self.title or self.name
 
 
 def electronic_file_path(instance, filename):

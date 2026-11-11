@@ -91,7 +91,7 @@ export type PartnerInput = Partial<
 >
 export type ContactInput = Partial<Omit<PartnerContact, 'id'>>
 
-export const AGREEMENT_KINDS = ['sponsoring', 'framework', 'other'] as const
+export const AGREEMENT_KINDS = ['sponsoring', 'framework', 'contract', 'other'] as const
 export type AgreementKind = (typeof AGREEMENT_KINDS)[number]
 export const AGREEMENT_TAX_KINDS = ['mention', 'advertising', 'none'] as const
 export type AgreementTaxKind = (typeof AGREEMENT_TAX_KINDS)[number]
@@ -117,6 +117,9 @@ export interface PartnerAgreement {
   benefits_text: string
   tax_kind: AgreementTaxKind
   category: number | null
+  notice_days: number | null
+  auto_renew: boolean
+  notice_by: string | null
   remind_days: number
   reminder: number | null
   reminder_due: string | null
@@ -125,13 +128,35 @@ export interface PartnerAgreement {
   updated_at: string
 }
 export type AgreementInput = Partial<
-  Omit<PartnerAgreement, 'id' | 'reminder' | 'reminder_due' | 'thanked_at' | 'updated_at'>
+  Omit<
+    PartnerAgreement,
+    'id' | 'reminder' | 'reminder_due' | 'notice_by' | 'thanked_at' | 'updated_at'
+  >
 >
 
 export interface PartnerLogo {
   id: number
   name: string
   url: string
+}
+
+export interface PartnerDocument {
+  id: number
+  title: string
+  name: string
+  size: number
+  content_type: string
+  agreement: number | null
+  uploaded_at: string
+  uploaded_by: string
+  url: string
+}
+
+export interface MailingRow {
+  id: number
+  name: string
+  emails: string[]
+  has_address: boolean
 }
 
 export interface Turnover {
@@ -179,6 +204,21 @@ export const partnerApi = {
   thanks: (org: number, partner: number, id: number, text: string) =>
     requestBlob('POST', `${base(org)}${partner}/agreements/${id}/thanks/`, { text }),
   websiteLogos: (org: number) => api.get<PartnerLogo[]>(`/api/orgs/${org}/website/partner-logos/`),
+  documents: (org: number, partner: number) =>
+    api.get<PartnerDocument[]>(`${base(org)}${partner}/documents/`),
+  uploadDocument: (org: number, partner: number, file: File, title: string) => {
+    const form = new FormData()
+    form.append('file', file)
+    form.append('title', title)
+    return api.post<PartnerDocument>(`${base(org)}${partner}/documents/`, form)
+  },
+  removeDocument: (org: number, partner: number, id: number) =>
+    api.del(`${base(org)}${partner}/documents/${id}/`),
+  downloadDocument: (url: string) => requestBlob('GET', url),
+  mailing: (org: number, role: string, kind: string) =>
+    api.get<MailingRow[]>(`${base(org)}mailing/?${new URLSearchParams({ role, kind }).toString()}`),
+  letters: (org: number, value: { role: string; kind: string; subject: string; text: string }) =>
+    requestBlob('POST', `${base(org)}mailing/`, value),
   turnover: (org: number, id: number) => api.get<Turnover>(`${base(org)}${id}/turnover/`),
   suggestions: (org: number) => api.get<Suggestion[]>(`${base(org)}suggestions/`),
   adopt: (org: number, name: string, roles: PartnerRole[] = []) =>
