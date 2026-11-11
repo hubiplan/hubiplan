@@ -284,7 +284,8 @@ def test_import_bank_nur_mit_kassenrecht(api, club, base):
     result = other.post(f"{base}import/", {"file": _xlsx(book)}).json()
     assert result["created"] == 1 and len(result["errors"]) == 1
     with tenant_context(club.pk):
-        assert BusinessPartner.objects.get(name="Musterdruck").bank == {}
+        made = [p for p in BusinessPartner.objects.all() if p.name == "Musterdruck"]
+        assert len(made) == 1 and made[0].bank == {}
     exported = load_workbook(io.BytesIO(other.get(f"{base}export/").content)).active
     assert "IBAN" not in [cell.value for cell in exported[1]]
 
