@@ -49,7 +49,9 @@ class StepUpRequired(APIException):
             )
         else:
             message = gettext("Bitte zur Sicherheit dein Passwort eingeben.")
-        super().__init__({"detail": message, "step_up": needs, "passkey": passkey})
+        super().__init__({"detail": message, "step_up": needs})
+        # DRF machte aus jedem Wert in ``detail`` einen Text („True“); der Schalter bleibt bool
+        self.detail["passkey"] = bool(passkey)
 
 
 def _records(request) -> list[dict]:

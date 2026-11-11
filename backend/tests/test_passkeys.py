@@ -208,6 +208,10 @@ def test_heikle_aktion_mit_passkey_bestaetigen(user, api):
     with pytest.raises(step_up.StepUpRequired) as exc:
         step_up.require(request)
     assert exc.value.detail["passkey"] is True
+    # Auch in der Antwort als echtes true (die Oberfläche prüft ``passkey === true``)
+    from rest_framework.views import exception_handler
+
+    assert exception_handler(exc.value, {}).data["passkey"] is True
     assert exc.value.detail["step_up"] == "code"
 
     assert client.get("/api/me/confirm/").json()["fresh"] is False
