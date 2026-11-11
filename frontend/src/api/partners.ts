@@ -1,6 +1,7 @@
 // Geschäftspartner (Konzept geschaeftspartner.md): Firmen, Behörden, Vereine und Personen
 // außerhalb der Mitgliederliste, mit Ansprechpartnern.
 import { api, requestBlob } from './client.ts'
+import type { FieldDefinition, FieldUsage, FieldValue, MemberField } from './fields.ts'
 
 export const PARTNER_KINDS = ['company', 'authority', 'association', 'person', 'other'] as const
 export type PartnerKind = (typeof PARTNER_KINDS)[number]
@@ -187,6 +188,27 @@ export interface ImportResult {
 }
 
 const base = (org: number) => `/api/orgs/${org}/billing/partners/`
+const fieldBase = (org: number) => `/api/orgs/${org}/billing/partner-fields/`
+
+/** Zusatzfelder für Geschäftspartner (gleiche Form wie bei den Mitgliedern). */
+export const partnerFieldApi = {
+  list: (org: number) => api.get<FieldDefinition[]>(fieldBase(org)),
+  create: (org: number, data: Partial<FieldDefinition>) =>
+    api.post<FieldDefinition>(fieldBase(org), data),
+  update: (org: number, id: number, data: Partial<FieldDefinition>, withValues = false) =>
+    api.patch<FieldDefinition>(`${fieldBase(org)}${id}/${withValues ? '?mit_werten=1' : ''}`, data),
+  remove: (org: number, id: number, withValues = false) =>
+    api.del(`${fieldBase(org)}${id}/${withValues ? '?mit_werten=1' : ''}`),
+  usage: (org: number, id: number) => api.get<FieldUsage>(`${fieldBase(org)}${id}/usage/`),
+  archive: (org: number, id: number) =>
+    api.post<FieldDefinition>(`${fieldBase(org)}${id}/archive/`),
+  restore: (org: number, id: number) =>
+    api.post<FieldDefinition>(`${fieldBase(org)}${id}/restore/`),
+  values: (org: number, partner: number) =>
+    api.get<MemberField[]>(`${base(org)}${partner}/fields/`),
+  saveValues: (org: number, partner: number, values: Record<string, FieldValue>) =>
+    api.put<MemberField[]>(`${base(org)}${partner}/fields/`, { values }),
+}
 
 export const partnerApi = {
   list: (org: number) => api.get<BusinessPartner[]>(base(org)),

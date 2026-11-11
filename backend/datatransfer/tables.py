@@ -43,6 +43,8 @@ MODULE_MODELS = (
     "billing.SizeRate",
     "billing.FeeRun",
     "billing.BusinessPartner",
+    "billing.PartnerField",
+    "billing.PartnerFieldValue",
     "billing.PartnerContact",
     "billing.PartnerAgreement",
     "billing.PartnerDocument",
