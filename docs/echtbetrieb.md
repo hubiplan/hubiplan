@@ -27,6 +27,17 @@ nicht selbst Port 80 oder 443. Die konkrete Belegung anderer Dienste gehört nic
   ```
 
   Ohne `HUBIPLAN_PROXY_GEHEIM` verhält sich Caddy wie bisher.
+- Auch die Container selbst erreicht auf einem geteilten Server jeder Prozess im Docker-Netz,
+  an Caddy vorbei. Das Backend glaubt `X-Forwarded-For` deshalb nur, wenn die Verbindung von
+  Caddy kommt, und die Besucheradresse der Vereinswebseite (`X-Hubiplan-Besucher`) nur vom
+  Webseiten-Dienst. Wer sonst anfragt, zählt für alle Drosselungen mit der Adresse seiner
+  Verbindung. Erkannt werden beide an ihrem Namen im Docker-Netz: `HUBIPLAN_PROXY_HOSTS`
+  (Standard `web`) und `HUBIPLAN_WEBSITE_HOSTS` (Standard `website`); `docker-compose.server.yml`
+  setzt beides, in der `.env` ist nichts einzutragen. Einzelheiten von `/api/health/` gibt es
+  nur noch aus dem Backend-Container selbst, die Zertifikatsfrage `/api/intern/tls/` nur für Caddy.
+  Grenzen: Datenbank und Redis bleiben für Prozesse auf dem Server erreichbar und sind durch
+  ihre Passwörter geschützt. Läuft die Vereinswebseite auf einem anderen Server, teilen sich
+  ihre Besucher weiterhin dessen Adresse.
 
 ## Erstes Einrichten
 
