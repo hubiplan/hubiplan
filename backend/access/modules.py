@@ -249,6 +249,16 @@ MODULES: tuple[Module, ...] = (
         requires_any=("material", "infrastructure"),
         org_types=("federation", "club"),
     ),
+    Module(
+        "mcp",
+        gettext_noop("KI-Assistenten"),
+        "admin",
+        gettext_noop(
+            "KI-Assistenten mit HUBIplan verbinden, die Webseite als Entwurf bearbeiten "
+            "(nur mit dem Zusatzrecht und Zwei-Faktor-Anmeldung)"
+        ),
+        requires=("website",),
+    ),
 )
 
 # Module, die eine Untereinheit selbst führt (eigener Arbeitsbereich); alle übrigen gelten

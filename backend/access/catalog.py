@@ -33,6 +33,8 @@ ROLES_MANAGE = "roles.manage"
 # HUBIplan so ansehen, wie eine Rolle der Einheit es sieht (nur lesen, nie mehr als die
 # eigenen Rechte; siehe access/preview.py)
 ROLES_PREVIEW = "roles.preview"
+# KI-Assistenten über die KI-Schnittstelle verbinden (docs/mcp.md, Stufe 1a); nur mit 2FA
+MCP_CONNECT = "mcp.connect"
 THEME_EDIT = "theme.edit"
 EXPORT_RUN = "export.run"
 PLATFORM_MANAGE = "platform.manage"
@@ -442,6 +444,15 @@ EXTRAS: tuple[Extra, ...] = (
         "roles",
         org_types=ALL_TYPES,
     ),
+    Extra(
+        MCP_CONNECT,
+        gettext_noop(
+            "KI-Assistenten verbinden: Webseite als Entwurf bearbeiten (nur mit "
+            "Zwei-Faktor-Anmeldung, nie veröffentlichen, nie mehr als die eigenen Rechte)"
+        ),
+        "webcontent",
+        org_types=("federation", "club", "unit"),
+    ),
 )
 
 AREA_BY_ID: dict[str, Area] = {a.id: a for a in AREAS}
@@ -465,6 +476,16 @@ def codes_for(org_type: str) -> list[str]:
     codes = [c for a in AREAS if org_type in a.org_types for c in _area_codes(a, a.levels)]
     codes += [e.code for e in EXTRAS if org_type in e.org_types]
     return codes
+
+
+# Rechte, die eine neue Vorstandsrolle nicht von selbst bekommt; die Rollenverwaltung
+# vergibt sie bewusst (KI-Assistenten, docs/mcp.md)
+NOT_AUTOMATIC: frozenset[str] = frozenset({MCP_CONNECT})
+
+
+def board_codes(org_type: str) -> list[str]:
+    """Rechte der Vorstandsrolle einer neuen Einheit: alle außer ``NOT_AUTOMATIC``."""
+    return [c for c in codes_for(org_type) if c not in NOT_AUTOMATIC]
 
 
 DEPARTMENT_CODES: frozenset[str] = frozenset(

@@ -941,6 +941,8 @@ def fetch_inbound() -> int:
     """Neue Mails aus dem Sammelpostfach abholen und verarbeiten. Gibt die Anzahl zurück."""
     if not settings.INBOUND_IMAP_HOST:
         return 0
+    from billing import incoming_mail as invoice_mail
+
     if not cache.add(LOCK, 1, timeout=10 * 60):
         return 0  # läuft schon
     done = 0
@@ -969,12 +971,23 @@ def fetch_inbound() -> int:
                 raw = next((p[1] for p in parts if isinstance(p, tuple)), None)
                 if raw is None:
                     continue
+                too_big = size is not None and size > MAX_RAW_BYTES
                 try:
-                    if size is not None and size > MAX_RAW_BYTES:
+                    if invoice_mail.addressed_here(raw[:MAX_HEADER_BYTES]):
+                        # Plus-Adresse des Rechnungspostfachs, die über das Catch-all hier
+                        # gelandet ist: an den Rechnungseingang weitergeben
+                        if too_big or len(raw) > MAX_RAW_BYTES:
+                            result = invoice_mail.reject_oversized(raw[:MAX_HEADER_BYTES])
+                        else:
+                            result = invoice_mail.process_message(raw)
+                        moved = result == invoice_mail.Result.MOVE
+                        flag = "(\\Deleted)" if moved else "(\\Seen)"
+                    elif too_big:
                         reject_oversized(raw)
+                        flag = "(\\Deleted)"
                     else:
                         process_message(raw)
-                    flag = "(\\Deleted)"
+                        flag = "(\\Deleted)"
                     done += 1
                 except virenscan.ScanUnavailable:
                     # Anhänge nicht prüfbar: Mail bleibt ungelesen liegen (Quarantäne im

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from access.catalog import DEFAULT_MODULES, codes_for
+from access.catalog import DEFAULT_MODULES, board_codes
 from access.models import Role, RoleAssignment
 from accounts.models import User
 from core.tenancy import tenant_context
@@ -21,7 +21,7 @@ def add_board(org: Organization, email: str, invitations: list) -> RoleAssignmen
             name=DEFAULT_BOARD_ROLE,
             defaults={
                 "description": "Vollzugriff auf die Organisation",
-                "permissions": codes_for(org.type),
+                "permissions": board_codes(org.type),
             },
         )
         if user is None:
@@ -47,6 +47,6 @@ def create_club(federation: Organization, data: dict) -> Organization:
             organization=club,
             name=DEFAULT_BOARD_ROLE,
             description="Vollzugriff auf die Organisation",
-            permissions=codes_for(club.type),
+            permissions=board_codes(club.type),
         )
     return club

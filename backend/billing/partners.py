@@ -296,7 +296,7 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
         return (
             BusinessPartner.objects.filter(organization=self.org)
             .select_related("unit", "membership__person", "liaison__person", "default_category")
-            .prefetch_related("contacts")
+            .prefetch_related("contacts", "field_values")
         )
 
     def get_create_kwargs(self):
@@ -354,6 +354,9 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
             if keep.pk == other.pk:
                 raise serializers.ValidationError(gettext("Bitte zwei verschiedene Einträge."))
             moved = 0
+            from .partner_fields import merge_values
+
+            merge_values(keep, other)
             for model, field in _references():
                 moved += model.objects.filter(**{field: other}).update(**{field: keep})
             keep.roles = sorted(set(keep.roles or []) | set(other.roles or []))

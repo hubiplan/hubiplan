@@ -26,13 +26,24 @@ class ToolError(Exception):
     """Fehler, den das Werkzeug dem Assistenten als Text zurückgibt (isError)."""
 
 
+@dataclass
+class Context:
+    """Was ein Werkzeug über die Anfrage weiß. ``link``: Adresse einer Hilfeseite."""
+
+    link: Callable[[str], str]
+
+
 @dataclass(frozen=True)
 class Tool:
     name: str
     title: object
     description: object
     schema: dict
-    run: Callable[[dict, Callable[[str], str]], str]
+    run: Callable[[dict, Context], str]
+    # Ändert etwas (nur im Entwurf, docs/mcp.md); sonst nur lesen
+    writes: bool = False
+    # Nötiger Bereich der Zustimmung (None: immer, z. B. die Hilfe)
+    scope: str | None = None
 
     def describe(self) -> dict:
         return {
@@ -41,9 +52,9 @@ class Tool:
             "description": str(self.description),
             "inputSchema": _resolve(self.schema),
             "annotations": {
-                "readOnlyHint": True,
+                "readOnlyHint": not self.writes,
                 "destructiveHint": False,
-                "idempotentHint": True,
+                "idempotentHint": not self.writes,
                 "openWorldHint": False,
             },
         }
@@ -86,7 +97,7 @@ def _count(args: dict, default: int, maximum: int) -> int:
     return max(1, min(value, maximum))
 
 
-def _search(args: dict, link: Callable[[str], str]) -> str:
+def _search(args: dict, ctx: Context) -> str:
     query = _text(args, "frage")
     lang = _lang(args)
     hits = help_index.search_help(query, lang, _count(args, 5, 10))
@@ -98,7 +109,7 @@ def _search(args: dict, link: Callable[[str], str]) -> str:
     lines = []
     for n, entry in enumerate(hits, 1):
         lines.append(f"{n}. {entry.title} ({_('Name')}: {entry.slug})")
-        lines.append(f"   {link(entry.slug)}")
+        lines.append(f"   {ctx.link(entry.slug)}")
         text = help_index.summary(entry)
         if text:
             lines.append(f"   {text}")
@@ -107,18 +118,18 @@ def _search(args: dict, link: Callable[[str], str]) -> str:
     return "\n".join(lines)
 
 
-def _read(args: dict, link: Callable[[str], str]) -> str:
+def _read(args: dict, ctx: Context) -> str:
     entry = help_index.find(_text(args, "name"), _lang(args))
     if entry is None:
         raise ToolError(_("Diese Anleitung gibt es nicht. Erst mit hilfe_suchen suchen."))
     kind = _("Anleitung") if entry.kind == "guide" else _("Seitenhilfe")
-    return f"# {entry.title}\n\n{kind} · {link(entry.slug)}\n\n{entry.body}\n\n" + _(
+    return f"# {entry.title}\n\n{kind} · {ctx.link(entry.slug)}\n\n{entry.body}\n\n" + _(
         "Links wie (/mitglieder) sind Seiten in HUBIplan, relativ zur Adresse der "
         "Instanz. Was jemand davon sieht, hängt von Rechten und Modulen ab."
     )
 
 
-def _overview(args: dict, link: Callable[[str], str]) -> str:
+def _overview(args: dict, ctx: Context) -> str:
     lang = _lang(args)
     kind = args.get("art", "anleitungen")
     if kind not in ("anleitungen", "seiten"):
@@ -128,7 +139,7 @@ def _overview(args: dict, link: Callable[[str], str]) -> str:
     return "\n".join(f"- {e.title} ({e.slug})" for e in entries)
 
 
-def _glossary(args: dict, link: Callable[[str], str]) -> str:
+def _glossary(args: dict, ctx: Context) -> str:
     hits = help_index.search_glossary(_text(args, "begriff"), _lang(args), 3)
     if not hits:
         return _("Diesen Begriff kennt das Glossar nicht. hilfe_suchen versuchen.")
@@ -141,7 +152,7 @@ def _glossary(args: dict, link: Callable[[str], str]) -> str:
         if entry.example:
             lines.append(entry.example)
         blocks.append("\n".join(lines))
-    blocks.append(link("begriffe"))
+    blocks.append(ctx.link("begriffe"))
     return "\n\n".join(blocks)
 
 

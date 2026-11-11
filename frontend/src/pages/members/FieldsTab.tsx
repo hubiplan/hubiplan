@@ -5,24 +5,39 @@ import { useAutoSave, useLoad } from '../../components/forms.ts'
 import { Alert, SaveStatus, Loading } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 
-/** Reiter „Zusatzfelder“ der Mitgliedsakte. */
+type LoadValues = (org: number, id: number) => Promise<MemberField[]>
+type SaveValues = (
+  org: number,
+  id: number,
+  values: Record<string, FieldValue>,
+) => Promise<MemberField[]>
+
+/** Reiter „Zusatzfelder“ der Mitgliedsakte. Mit `load`/`save` und `nested` auch als
+ *  Abschnitt in einer anderen Akte (Geschäftspartner); `memberId` ist dann deren Nummer. */
 export function FieldsTab({
   orgId,
   memberId,
   canEdit,
+  load = fieldApi.memberValues,
+  save = fieldApi.saveMemberValues,
+  nested = false,
 }: {
   orgId: number
   memberId: number
   canEdit: boolean
+  load?: LoadValues
+  save?: SaveValues
+  nested?: boolean
 }) {
   // Die Werte tragen die Person, zu der sie gehören: Nach einem Wechsel zu einer
   // anderen Person dürfen die alten Werte weder angezeigt noch gespeichert werden.
   const { data, error, setData } = useLoad(
-    () => fieldApi.memberValues(orgId, memberId).then((fields) => ({ memberId, fields })),
-    [orgId, memberId],
+    () => load(orgId, memberId).then((fields) => ({ memberId, fields })),
+    [orgId, memberId, load],
   )
   if (error) return <Alert kind="error">{error}</Alert>
   if (!data || data.memberId !== memberId) return <Loading />
+  if (nested && data.fields.length === 0) return null
   if (data.fields.length === 0) {
     return (
       <div className="card card-wide empty-state">
@@ -37,6 +52,8 @@ export function FieldsTab({
       memberId={memberId}
       fields={data.fields}
       canEdit={canEdit}
+      save={save}
+      nested={nested}
       onSaved={(fields) => setData({ memberId, fields })}
     />
   )
@@ -48,12 +65,16 @@ function FieldsForm({
   fields,
   canEdit,
   onSaved,
+  save,
+  nested,
 }: {
   orgId: number
   memberId: number
   fields: MemberField[]
   canEdit: boolean
   onSaved: (f: MemberField[]) => void
+  save: SaveValues
+  nested: boolean
 }) {
   const [values, setValues] = useState<Record<string, FieldValue>>(() =>
     Object.fromEntries(fields.map((f) => [String(f.definition.id), f.value])),
@@ -61,14 +82,14 @@ function FieldsForm({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const auto = useAutoSave(
     { values, setErrors },
-    (changes) => fieldApi.saveMemberValues(orgId, memberId, changes as Record<string, FieldValue>),
+    (changes) => save(orgId, memberId, changes as Record<string, FieldValue>),
     { enabled: canEdit, onSaved: (saved) => onSaved(saved as MemberField[]) },
   )
 
   const set = (id: number, value: FieldValue) => setValues((v) => ({ ...v, [String(id)]: value }))
 
-  return (
-    <form className="card card-wide" onSubmit={(e) => e.preventDefault()}>
+  const body = (
+    <>
       {canEdit && <SaveStatus auto={auto} />}
       <fieldset disabled={!canEdit}>
         {fields.map(({ definition: d }) => {
@@ -101,6 +122,20 @@ function FieldsForm({
           )
         })}
       </fieldset>
+    </>
+  )
+  // In einer anderen Akte liegt schon ein Formular außen herum
+  if (nested) {
+    return (
+      <section className="subcard stack">
+        <h4>{t('Zusatzfelder')}</h4>
+        {body}
+      </section>
+    )
+  }
+  return (
+    <form className="card card-wide" onSubmit={(e) => e.preventDefault()}>
+      {body}
     </form>
   )
 }

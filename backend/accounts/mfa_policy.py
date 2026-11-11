@@ -33,6 +33,8 @@ MFA_PERMISSIONS = frozenset(
         catalog.CLUBS_MANAGE,
         # dieselben Rechte als Bereiche (konzepte/berechtigungen.md)
         catalog.ROLES_EDIT,
+        # KI-Assistenten verbinden (docs/mcp.md)
+        catalog.MCP_CONNECT,
         catalog.EXPORT_FULL,
         catalog.UNITS_EDIT,
         catalog.PLATFORM_EDIT,

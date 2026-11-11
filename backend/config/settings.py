@@ -549,6 +549,9 @@ OIDC_ISSUER = os.environ.get("OIDC_ISSUER", "")
 OIDC_KEY_FILE = os.environ.get("OIDC_KEY_FILE", "")
 # KI-Schnittstelle Stufe 0 (docs/mcp.md): Hilfe ohne Anmeldung unter /api/mcp/, keine Vereinsdaten
 MCP_HILFE_ENABLED = env_bool("HUBIPLAN_MCP_HILFE", True)
+# Stufe 1a/W1: KI-Assistenten mit Anmeldung (/api/mcp/verein/); je Einheit zusätzlich Modul
+# „KI-Assistenten“ und Zusatzrecht nötig. false schaltet es für die ganze Instanz ab.
+MCP_ENABLED = env_bool("HUBIPLAN_MCP", True)
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
 EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")

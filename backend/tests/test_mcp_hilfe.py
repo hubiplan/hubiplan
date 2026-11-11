@@ -161,6 +161,7 @@ def test_drosselung(anon, monkeypatch):
 def test_keine_daten_aus_der_datenbank(django_assert_num_queries):
     # Die Werkzeuge fragen die Datenbank nie ab (Stufe 0: keine Vereinsdaten)
     from mcpserver import protocol
+    from mcpserver.tools import Context
 
     def link(slug):
         return f"https://hp.example/hilfe/{slug}"
@@ -174,4 +175,4 @@ def test_keine_daten_aus_der_datenbank(django_assert_num_queries):
         ):
             msg = {"jsonrpc": "2.0", "id": 1, "method": "tools/call"}
             msg["params"] = {"name": name, "arguments": args}
-            assert protocol.handle(msg, link)["result"]["isError"] is False
+            assert protocol.handle(msg, Context(link=link))["result"]["isError"] is False

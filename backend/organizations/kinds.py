@@ -146,17 +146,19 @@ def _change_type(org: Organization, new_type: str) -> None:
 
 def upgrade_full_roles(org: Organization, old_type: str) -> None:
     """Rollen mit allen Rechten der alten Art bekommen alle Rechte der neuen Art."""
-    from access.catalog import codes_for
+    from access.catalog import NOT_AUTOMATIC, board_codes, codes_for
     from access.models import Role
     from core.tenancy import tenant_context
 
-    old_codes = set(codes_for(old_type))
+    old_codes = set(board_codes(old_type))
     new_codes = codes_for(org.type)
     with tenant_context(org.pk):
         for role in Role.objects.filter(organization=org):
             perms = set(role.permissions)
             if old_codes <= perms:
-                role.permissions = sorted(new_codes)
+                # Bewusst vergebene Rechte (NOT_AUTOMATIC) bleiben, wie sie waren
+                keep = perms & NOT_AUTOMATIC & set(new_codes)
+                role.permissions = sorted(set(board_codes(org.type)) | keep)
             else:
                 role.permissions = sorted(perms & set(new_codes))
             role.save(update_fields=["permissions"])

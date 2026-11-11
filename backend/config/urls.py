@@ -22,6 +22,8 @@ urlpatterns = [
     path("_allauth/", include("allauth.headless.urls")),
     path("api/", include("core.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    # Anmeldung der KI-Assistenten: Beschreibungen unter /.well-known/ (docs/mcp.md)
+    path("", include("mcpserver.urls_root")),
     path("api/docs/", SwaggerView.as_view(url_name="schema"), name="docs"),
 ]
 

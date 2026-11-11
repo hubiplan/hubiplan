@@ -10,6 +10,7 @@ import { LanguageCard } from '../../i18n/LanguageControls.tsx'
 import { AppearanceCard } from './AppearanceCard.tsx'
 import { HomeActionsCard } from './HomeActionsCard.tsx'
 import { AppDevicesCard } from './AppDevicesCard.tsx'
+import { McpConnectionsCard } from './McpConnectionsCard.tsx'
 import { PasskeyCard } from './PasskeyCard.tsx'
 import { RemoteLoginCard } from './RemoteLoginCard.tsx'
 import { SignatureCard } from './SignatureCard.tsx'
@@ -69,6 +70,7 @@ export function AccountAppPage() {
       <div className="stack">
         <AppDevicesCard />
         <RemoteLoginCard />
+        <McpConnectionsCard />
       </div>
     </section>
   )

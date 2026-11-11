@@ -15,7 +15,7 @@ from accounts import (
     step_up,
 )
 from billing import agreements as partner_agreements
-from billing import einvoice_views, partner_files
+from billing import einvoice_views, partner_fields, partner_files
 from billing import partners as partner_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
@@ -44,7 +44,7 @@ from finance import views as finance_views
 from helpers import portal as helper_portal
 from honors import urls as honors_urls
 from letterhead import views as letterhead_views
-from mcpserver.views import McpView
+from mcpserver import urls as mcp_urls
 from meetings import portal as meeting_portal
 from members import (
     federation_views,
@@ -181,6 +181,9 @@ org_router.register(
     "music/score-folder-items", ScoreFolderItemViewSet, basename="music-score-folder-item"
 )
 org_router.register("billing/partners", partner_views.PartnerViewSet, basename="billing-partner")
+org_router.register(
+    "billing/partner-fields", partner_fields.PartnerFieldViewSet, basename="billing-partner-field"
+)
 org_router.register(
     "billing/electronic", einvoice_views.ElectronicInvoiceViewSet, basename="billing-electronic"
 )
@@ -460,6 +463,11 @@ org_patterns = [
         "members/<int:pk>/photo-links/<int:link_id>/revoke/",
         photo_views.PhotoLinkRevokeView.as_view(),
         name="photo-link-revoke",
+    ),
+    path(
+        "billing/partners/<int:pk>/fields/",
+        partner_fields.PartnerFieldsView.as_view(),
+        name="billing-partner-fields",
     ),
     path("billing/partners/<int:partner_pk>/", include(partner_router.urls)),
     path(
@@ -982,8 +990,8 @@ urlpatterns = [
     ),
     path("", include(peering_urls)),
     path("", include(oidc_urls)),
-    # KI-Schnittstelle (MCP), Stufe 0: nur Hilfe, ohne Anmeldung (docs/mcp.md)
-    path("mcp/", McpView.as_view(), name="mcp"),
+    # KI-Schnittstelle (MCP): Hilfe ohne Anmeldung, Verein mit Anmeldung (docs/mcp.md)
+    *mcp_urls.api_patterns,
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
     path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
     path(

@@ -73,7 +73,7 @@ class FieldDefinitionSerializer(ModelCleanMixin, serializers.ModelSerializer):
         if not attrs.get("key") and (self.instance is None or "label" in attrs):
             attrs["key"] = make_key(attrs.get("label") or self.instance.label)
         if attrs.get("key"):
-            qs = FieldDefinition.objects.filter(organization=self.context["org"], key=attrs["key"])
+            qs = self.Meta.model.objects.filter(organization=self.context["org"], key=attrs["key"])
             if self.instance:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():

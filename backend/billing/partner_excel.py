@@ -115,16 +115,30 @@ def contact_label(contact) -> str:
     return " ".join(p for p in (contact.first_name, contact.last_name) if p)
 
 
+def scalar_fields(org) -> list:
+    """Zusatzfelder, die in eine Excel-Spalte passen (ohne wiederholbare)."""
+    from .models import PartnerField
+
+    return list(PartnerField.objects.filter(organization=org, is_archived=False, repeatable=False))
+
+
+class _RowError(Exception):
+    def __init__(self, detail):
+        super().__init__(detail)
+        self.detail = detail
+
+
 def export_workbook(org, partners, money: bool) -> bytes:
     from openpyxl import Workbook
 
     roles = dict(BusinessPartner.Role.choices)
     kinds = dict(BusinessPartner.Kind.choices)
     columns = PARTNER_COLUMNS + (MONEY_COLUMNS if money else [])
+    fields = scalar_fields(org)
     book = Workbook()
     sheet = book.active
     sheet.title = gettext("Geschäftspartner")
-    sheet.append([gettext(de) for _, de, _ in columns])
+    sheet.append([gettext(de) for _, de, _ in columns] + [f.label for f in fields])
     contacts = book.create_sheet(gettext("Ansprechpartner"))
     contacts.append([gettext(de) for _, de, _ in CONTACT_COLUMNS])
     for p in partners:
@@ -156,6 +170,12 @@ def export_workbook(org, partners, money: bool) -> bytes:
             "artist": _yes_no(p.artist),
         }
         row = [values[key] for key, _, _ in columns]
+        extra = {v.definition_id: v.value for v in p.field_values.all()}
+        for field in fields:
+            value = extra.get(field.pk)
+            if field.field_type == "bool" and value is not None:
+                value = _yes_no(value)
+            row.append(value)
         sheet.append(row)
         if values["first_contact_on"]:
             sheet.cell(sheet.max_row, DATE_COLUMN).number_format = "DD.MM.YYYY"
@@ -283,6 +303,7 @@ class PartnerImport:
         self.contacts_created = self.contacts_updated = 0
         self.errors: list[str] = []
         self._members: _Members | None = None
+        self.fields: dict = {}
         self.by_number = {
             p.number.casefold(): p
             for p in BusinessPartner.objects.filter(organization=self.org).exclude(number="")
@@ -406,34 +427,68 @@ class PartnerImport:
             self.error(gettext("Geschäftspartner"), index, serializer.errors)
             return
         user = self.view.request.user
-        with transaction.atomic():
-            if partner is None:
-                partner = serializer.save(organization=self.org, number=number or next_number())
-                record(self.org, user, "create", partner, diff({}, snapshot(partner)))
-                contact = (partner.details or {}).get("contact", "").strip()
-                if contact:
-                    first, _, last = contact.rpartition(" ")
-                    PartnerContact.objects.create(
-                        organization=self.org,
-                        partner=partner,
-                        first_name=first,
-                        last_name=last or contact,
-                        phone=(partner.details or {}).get("phone", ""),
-                        is_primary=True,
-                        receives_invoices=True,
-                    )
-                self.created += 1
-            else:
-                before = snapshot(partner)
-                partner = serializer.save()
-                changes = diff(before, snapshot(partner))
-                if changes:
-                    record(self.org, user, "update", partner, changes)
-                    self.updated += 1
-                else:
-                    self.skipped += 1
+        try:
+            with transaction.atomic():
+                partner = self._save(serializer, partner, number, values, next_number, user)
+        except _RowError as exc:
+            self.error(gettext("Geschäftspartner"), index, exc.detail)
+            return
         self.by_number[partner.number.casefold()] = partner
         self.names.add(partner.name.casefold())
+
+    def _field_values(self, values: dict) -> tuple[dict, dict]:
+        incoming, definitions = {}, {}
+        for key, field in self.fields.items():
+            if key not in values:
+                continue
+            raw = values[key]
+            if field.field_type == "date":
+                try:
+                    raw = _date(raw, field.label)
+                except serializers.ValidationError:
+                    pass  # clean_value meldet den Fehler
+            incoming[str(field.pk)] = raw
+            definitions[str(field.pk)] = field
+        return incoming, definitions
+
+    def _save(self, serializer, partner, number, values, next_number, user):
+        from .partner_fields import save_values
+
+        created = partner is None
+        if created:
+            partner = serializer.save(organization=self.org, number=number or next_number())
+            changes = diff({}, snapshot(partner))
+        else:
+            before = snapshot(partner)
+            partner = serializer.save()
+            changes = diff(before, snapshot(partner))
+        incoming, definitions = self._field_values(values)
+        errors, field_changes = save_values(self.org, partner, incoming, definitions)
+        if errors:
+            labels = {str(f.pk): f.label for f in definitions.values()}
+            raise _RowError({labels.get(k, k): v for k, v in errors.items()})
+        changes.update(field_changes)
+        if created:
+            record(self.org, user, "create", partner, changes)
+            contact = (partner.details or {}).get("contact", "").strip()
+            if contact:
+                first, _, last = contact.rpartition(" ")
+                PartnerContact.objects.create(
+                    organization=self.org,
+                    partner=partner,
+                    first_name=first,
+                    last_name=last or contact,
+                    phone=(partner.details or {}).get("phone", ""),
+                    is_primary=True,
+                    receives_invoices=True,
+                )
+            self.created += 1
+        elif changes:
+            record(self.org, user, "update", partner, changes)
+            self.updated += 1
+        else:
+            self.skipped += 1
+        return partner
 
     # Ansprechpartner
 
@@ -503,6 +558,12 @@ class PartnerImport:
         main = list(sheets[0].iter_rows(values_only=True)) if sheets else []
         if main:
             header = _header(main[0], PARTNER_COLUMNS + MONEY_COLUMNS)
+            fields = {f.label.strip().casefold(): f for f in scalar_fields(self.org)}
+            for position, title in enumerate(main[0]):
+                field = fields.get(str(title or "").strip().casefold())
+                if field is not None and position < len(header) and not header[position]:
+                    header[position] = f"field:{field.pk}"
+                    self.fields[f"field:{field.pk}"] = field
             if "name" not in header and "number" not in header:
                 raise serializers.ValidationError(
                     {"file": gettext("Die erste Zeile braucht eine Spalte „Name“.")}

@@ -4,7 +4,8 @@ Seit November 2026 (Ralf 02.11.): Jede Rolle hat je **Bereich** eine Stufe:
 *kein Zugriff*, *lesen* (`<bereich>.view`) oder *bearbeiten* (`<bereich>.edit`). Bearbeiten
 schließt Lesen ein. Dazu kommen **Zusatzrechte** zum Ankreuzen, die nur mit dem Leserecht
 ihres Bereichs gehen: `export.lists` (Mitgliederlisten), `export.full` (vollständiger
-Datenexport, Auskunft), `roles.preview` (Ansicht als Rolle).
+Datenexport, Auskunft), `roles.preview` (Ansicht als Rolle), `mcp.connect` (KI-Assistenten
+verbinden, mit „Webseite: Inhalte lesen“, nur mit zweitem Faktor; siehe [mcp.md](mcp.md)).
 
 - Katalog: `backend/access/catalog.py` (`AREAS`, `EXTRAS`). Rollen von Untereinheiten
   (Zug-Rollen über die Mitgliedschaft) nutzen dieselben Bereiche, nur eine Auswahl
