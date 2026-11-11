@@ -81,11 +81,11 @@ class AgreementSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def get_notice_by(self, obj):
+    def get_notice_by(self, obj) -> str | None:
         last = notice_date(obj)
         return last.isoformat() if last else None
 
-    def get_reminder_due(self, obj):
+    def get_reminder_due(self, obj) -> str | None:
         todo = obj.reminder
         if not todo or todo.deleted_at or todo.status != "open":
             return None

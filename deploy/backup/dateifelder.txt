@@ -17,6 +17,7 @@ billing_incominginvoice original private
 billing_incominginvoice xml private
 billing_incominginvoice report_xml private
 billing_incomingvalidation report_xml private
+billing_partnerdocument file private
 billing_dunning issued_pdf private
 circulars_circularattachment file private
 competitions_certificatetemplate background private

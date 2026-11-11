@@ -85,7 +85,7 @@ class BankSerializer(serializers.Serializer):
         return value.replace(" ", "").upper()
 
 
-class ContactSerializer(serializers.ModelSerializer):
+class PartnerContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartnerContact
         fields = [
@@ -118,7 +118,7 @@ class PartnerSerializer(serializers.ModelSerializer):
         required=False,
         max_length=len(BusinessPartner.Role.choices),
     )
-    contacts = ContactSerializer(many=True, read_only=True)
+    contacts = PartnerContactSerializer(many=True, read_only=True)
     unit_name = serializers.SerializerMethodField()
     membership_name = serializers.SerializerMethodField()
 
@@ -162,10 +162,10 @@ class PartnerSerializer(serializers.ModelSerializer):
             for field in MONEY_FIELDS:
                 self.fields[field].read_only = True
 
-    def get_unit_name(self, obj):
+    def get_unit_name(self, obj) -> str:
         return obj.unit.name if obj.unit_id else ""
 
-    def get_membership_name(self, obj):
+    def get_membership_name(self, obj) -> str:
         if not obj.membership_id:
             return ""
         person = obj.membership.person
@@ -718,7 +718,7 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
 class PartnerContactViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
     """Ansprechpartner eines Geschäftspartners: ``partners/{partner_pk}/contacts/``."""
 
-    serializer_class = ContactSerializer
+    serializer_class = PartnerContactSerializer
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
     pagination_class = None
 
