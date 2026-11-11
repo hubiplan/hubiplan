@@ -437,6 +437,7 @@ class IncomingInvoiceViewSet(FinanceMixin, viewsets.ReadOnlyModelViewSet):
                 "changed_by": request.user.get_full_name() or request.user.email,
             }
             partner.save(update_fields=["bank", "updated_at"])
+            item.partner = partner
             record(
                 self.org,
                 request.user,

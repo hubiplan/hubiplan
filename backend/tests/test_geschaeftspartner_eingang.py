@@ -47,8 +47,9 @@ def upload(c, club) -> dict:
 
 
 def partner(club, **kwargs) -> BusinessPartner:
-    values = {"name": "Anderer Name", "roles": ["supplier"], "details": {}, "bank": {}}
+    values = {"name": "Anderer Name", "roles": ["supplier"], "bank": {}}
     values.update(kwargs)
+    values["details"] = {"name": values["name"], **values.get("details", {})}
     with tenant_context(club.pk):
         return BusinessPartner.objects.create(organization=club, **values)
 
