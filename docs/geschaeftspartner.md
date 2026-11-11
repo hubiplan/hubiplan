@@ -10,7 +10,8 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
 - `billing.BusinessPartner`: Name, Art (`kind`: company, authority, association, person,
   other), Rollen (`roles`, Liste), Nummer `GP-0001` (fortlaufend je Datenbereich, änderbar),
   zuständige Einheit (`unit`), Verweis auf eine Mitgliedschaft (`membership`, statt doppelt
-  pflegen), Angaben (`details`, verschlüsselt, Schema wie bei der E-Rechnung, nur der Name ist
+  pflegen), Erstkontakt (`first_contact_on`, `first_contact_note`, verschlüsselt), betreuendes
+  Mitglied (`liaison`, Mitgliedschaft), Angaben (`details`, verschlüsselt, Schema wie bei der E-Rechnung, nur der Name ist
   Pflicht), Bankverbindung (`bank`, verschlüsselt, mit Datum und Name der letzten
   IBAN-Änderung), unsere Kundennummer, Standardkategorie, Zahlungsziel, Künstlerkennzeichen
   (KSVG), Notizen. `is_customer`/`is_supplier` folgen aus den Rollen (Kunde; Lieferant oder
@@ -37,8 +38,8 @@ Dachverbände und Untereinheiten mit eigenem Datenbereich.
 | `GET`, `POST` | Liste (mit Ansprechpartnern), anlegen |
 | `GET`, `PATCH`, `DELETE <pk>/` | Akte, ändern, löschen (nur ohne Verweise, sonst 400) |
 | `POST <pk>/merge/ {other}` | doppelten Eintrag übernehmen: Rechnungen, Buchungen, Bankzeilen, Quittungen, Zuwendungen, Vereinbarungen, Auftritte und Ansprechpartner wandern mit, Rollen und leere Angaben werden ergänzt |
-| `GET export/` | Excel (Bank nur mit Kassen- oder Beitragsrecht) |
-| `POST import/` (`?probe=1`) | Excel mit Kopfzeile wie der Export, mindestens „Name“; vorhandene Namen werden übersprungen, höchstens 500 Zeilen |
+| `GET export/` | Excel mit allen Feldern, zweites Blatt „Ansprechpartner“ (Bank, Zahlungsziel, Standardkategorie, Künstlerkennzeichen nur mit Kassen- oder Beitragsrecht) |
+| `POST import/` (`?probe=1`) | Excel wie der Export (Spalten deutsch oder englisch, `billing/partner_excel.py`): bekannte Nummer aktualisiert (gefüllte Zellen), ohne Nummer mit bekanntem Namen übersprungen, sonst neu; Blatt mit „Partnernummer“ legt Ansprechpartner an oder aktualisiert sie (Name + Vorname). Mitglieder über Mitgliedsnummer oder eindeutigen Namen. Antwort `created`, `updated`, `skipped`, `contacts_created`, `contacts_updated`, `errors`; höchstens 2000 Zeilen je Blatt. `probe` läuft vollständig und rollt zurück |
 | `GET <pk>/turnover/` | Einnahmen/Ausgaben je Jahr ohne Stornos und Umbuchungen, letzte 10 Buchungen (Modul Finanzen, `finance.view`) |
 | `GET`, `POST suggestions/ {name, kind?, roles?}` | Bestand übernehmen: Freitexte, die mindestens zweimal ohne Partner im Kassenbuch stehen; POST legt den Partner an und verknüpft Buchungen und Bankzeilen mit genau diesem Namen (`finance.edit`) |
 | `…/<pk>/agreements/` | Vereinbarungen (P4) anlegen, ändern, entfernen; `POST …/agreements/<id>/thanks/ {text?}` liefert den Dankesbrief als PDF |

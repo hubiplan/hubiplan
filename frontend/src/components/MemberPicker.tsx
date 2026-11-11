@@ -66,7 +66,7 @@ export function MemberPicker<T extends PickedMember = MemberRow>({
       <div className="field">
         <span>{label}</span>
         <p>
-          {value.last_name}, {value.first_name}{' '}
+          {[value.last_name, value.first_name].filter(Boolean).join(', ')}{' '}
           <button type="button" className="link-button" onClick={() => onChange(null)}>
             {t('entfernen')}
           </button>

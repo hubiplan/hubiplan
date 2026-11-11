@@ -83,6 +83,20 @@ class BusinessPartner(models.Model):
         blank=True,
         related_name="business_partners",
     )
+    # Wie der Kontakt zustande kam (Wunsch 11.11.): Datum und kurzer Text
+    first_contact_on = models.DateField("Erstkontakt am", null=True, blank=True)
+    first_contact_note = EncryptedCharField(
+        "Erstkontakt", max_length=300, blank=True, default="", db_default="", strict=True
+    )
+    # Mitglied des Vereins, das den Kontakt hält
+    liaison = models.ForeignKey(
+        "members.Membership",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Betreut von",
+    )
     is_customer = models.BooleanField(default=True)
     is_supplier = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
