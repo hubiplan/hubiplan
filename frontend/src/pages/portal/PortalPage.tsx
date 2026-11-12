@@ -4,6 +4,7 @@ import { PortalTodos } from './PortalTodos.tsx'
 import { PortalBookings } from './PortalBookings.tsx'
 import { PortalHelpers } from './PortalHelpers.tsx'
 import { PortalMeetings } from './PortalMeetings.tsx'
+import { PortalCancellation } from './PortalCancellation.tsx'
 import { OwnMusic } from '../music/OwnMusic.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
@@ -381,6 +382,9 @@ function PortalData({ entry }: { entry: PortalEntry }) {
             ))}
           </ul>
         </div>
+      )}
+      {data.cancellation && (
+        <PortalCancellation accessId={entry.id} info={data.cancellation} onChanged={reload} />
       )}
     </PortalSection>
   )

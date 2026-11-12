@@ -11100,3 +11100,99 @@ msgstr "See the club’s obligations and deadlines"
 
 msgid "Pflichten anlegen, ändern und als erledigt vermerken"
 msgstr "Create and change obligations and mark them as done"
+msgid "Kündigung"
+msgstr "Cancellation"
+
+#, python-brace-format
+msgid "kündigt zum {date}"
+msgstr "cancels as of {date}"
+
+msgid "zu jedem Tag"
+msgstr "on any day"
+
+msgid "zum Monatsende"
+msgstr "at the end of a month"
+
+msgid "zum Quartalsende"
+msgstr "at the end of a quarter"
+
+msgid "zum Halbjahresende"
+msgstr "at the end of a half-year"
+
+msgid "zum Ende des Geschäftsjahres"
+msgstr "at the end of the financial year"
+
+#, python-brace-format
+msgid "ohne Frist {end}"
+msgstr "without notice {end}"
+
+#, python-brace-format
+msgid "mit einer Frist von einem Monat {end}"
+msgstr "with one month’s notice {end}"
+
+#, python-brace-format
+msgid "mit einer Frist von {months} Monaten {end}"
+msgstr "with {months} months’ notice {end}"
+
+#, python-brace-format
+msgid "{org} hat Ihre Kündigung der Mitgliedschaft erhalten. Gewünschter Austritt: {date}."
+msgstr "{org} has received your cancellation of membership. Requested leaving date: {date}."
+
+msgid "Der Verein prüft die Kündigung und bestätigt sie Ihnen. Bis dahin können Sie sie im Mitgliederbereich unter „Meine Daten“ zurücknehmen."
+msgstr "The club will check the cancellation and confirm it to you. Until then you can withdraw it in the members’ area under “My data”."
+
+#, python-brace-format
+msgid "Kündigung eingegangen – {org}"
+msgstr "Cancellation received – {org}"
+
+#, python-brace-format
+msgid "Austrittsbestätigung – {org}"
+msgstr "Confirmation of leaving – {org}"
+
+#, python-brace-format
+msgid "{org} bestätigt Ihren Austritt zum {date}. Bis dahin bleiben Sie Mitglied."
+msgstr "{org} confirms that you leave on {date}. You remain a member until then."
+
+#, python-brace-format
+msgid "Kündigung nicht bestätigt – {org}"
+msgstr "Cancellation not confirmed – {org}"
+
+#, python-brace-format
+msgid "{org} hat Ihre Kündigung vom {date} nicht bestätigt. Ihre Mitgliedschaft läuft weiter."
+msgstr "{org} has not confirmed your cancellation of {date}. Your membership continues."
+
+#, python-brace-format
+msgid "Nachricht des Vereins: {text}"
+msgstr "Message from the club: {text}"
+
+#, python-brace-format
+msgid "Frühestens zum {date} ({rule})."
+msgstr "{date} at the earliest ({rule})."
+
+#, python-brace-format
+msgid "Bitte ein Datum bis zum {date} wählen."
+msgstr "Please choose a date up to {date}."
+
+msgid "Kündigen im Mitgliederbereich ist in diesem Verein nicht eingeschaltet."
+msgstr "Cancelling in the members’ area is not switched on for this club."
+
+msgid "Für deine Mitgliedschaft ist schon ein Austritt eingetragen."
+msgstr "A leaving date is already recorded for your membership."
+
+msgid "Deine Kündigung liegt dem Verein schon vor."
+msgstr "The club already has your cancellation."
+
+msgid "Diese Kündigung ist schon bearbeitet."
+msgstr "This cancellation has already been processed."
+
+msgid "Deine Kündigung wurde bestätigt"
+msgstr "Your cancellation was confirmed"
+
+msgid "Deine Kündigung wurde nicht bestätigt"
+msgstr "Your cancellation was not confirmed"
+
+msgid "zurückgenommen"
+msgstr "withdrawn"
+
+msgid "Bitte bestätige, dass du kündigen möchtest."
+msgstr "Please confirm that you want to cancel."
