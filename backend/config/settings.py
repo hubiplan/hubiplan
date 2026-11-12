@@ -196,6 +196,8 @@ MFA_ADAPTER = "accounts.mfa.MFAAdapter"
 # verlangen einen frischen Code (accounts/step_up.py). Tests schalten beides gezielt ein.
 MFA_PLATFORM_GRACE = False
 MFA_STEP_UP = True
+# Rundschreiben, Exporte und Buchen ruhen schon in der Frist ohne 2FA (Gesamtaudit 11.11.)
+MFA_IMMEDIATE = True
 # Ein leerer Wert (z. B. aus docker-compose ${MFA_ENCRYPTION_KEYS:-}) gilt als nicht gesetzt
 MFA_ENCRYPTION_KEYS = env_list("MFA_ENCRYPTION_KEYS") or env_list("MFA_ENCRYPTION_KEY")
 if not MFA_ENCRYPTION_KEYS:

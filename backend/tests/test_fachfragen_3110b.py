@@ -57,7 +57,7 @@ def test_pflicht_2fa_nach_uebergang(orgs, api, board_a):
 
     from django.utils import timezone
 
-    from access.catalog import MEMBERS_VIEW, ROLES_MANAGE
+    from access.catalog import ROLES_MANAGE
     from access.permissions import permissions_in
     from accounts.models import User
 
@@ -65,7 +65,8 @@ def test_pflicht_2fa_nach_uebergang(orgs, api, board_a):
     assert ROLES_MANAGE in perms
     board_a.refresh_from_db()
     due = board_a.mfa_required_by
-    assert due and due - timezone.now() > datetime.timedelta(days=13)
+    # Gesamtaudit 11.11., Fachfrage 1: Frist 3 Tage
+    assert due and datetime.timedelta(days=2) < due - timezone.now() <= datetime.timedelta(days=3)
     session = api(board_a).get("/_allauth/browser/v1/auth/session").json()["data"]["user"]
     assert session["mfa_required_by"] and session["mfa_overdue"] is False
 
@@ -73,20 +74,9 @@ def test_pflicht_2fa_nach_uebergang(orgs, api, board_a):
         mfa_required_by=timezone.now() - datetime.timedelta(minutes=1)
     )
     board_a.refresh_from_db()
-    perms = permissions_in(board_a, orgs["a"])
-    from accounts.mfa_policy import MFA_PERMISSIONS
-
-    # Gesamtaudit 05.11. F-02: auch das Lesen aller Mitglieder ruht, Unkritisches bleibt
-    assert ROLES_MANAGE not in perms and MEMBERS_VIEW not in perms
-    assert perms and not perms & MFA_PERMISSIONS
-    # Rollen lesen geht weiter (nur Bearbeiten braucht den zweiten Faktor)
-    assert api(board_a).get(f"/api/orgs/{orgs['a'].pk}/roles/").status_code == 200
-    created = api(board_a).post(
-        f"/api/orgs/{orgs['a'].pk}/roles/",
-        {"name": "Neu", "permissions": []},
-        content_type="application/json",
-    )
-    assert created.status_code == 403
+    # Gesamtaudit 11.11., Fachfrage 1: nach der Frist ruhen alle Rechte, die Einheit verschwindet
+    assert permissions_in(board_a, orgs["a"]) == set()
+    assert api(board_a).get(f"/api/orgs/{orgs['a'].pk}/roles/").status_code == 404
     session = api(board_a).get("/_allauth/browser/v1/auth/session").json()["data"]["user"]
     assert session["mfa_overdue"] is True
 
