@@ -6,7 +6,7 @@ import pytest
 from django.db import connection
 
 from core.encfields import EncryptedJSONField
-from core.tenancy import rls_bypass, tenant_context
+from core.tenancy import rls_bypass, unit_context
 from peering.models import Coupling, Message, RemoteMember
 
 from .factories import make_org
@@ -38,10 +38,11 @@ def test_gemeldete_mitglieder_nur_fuer_die_eigene_einheit(net, world):
         stranger = make_org("Fremder Verein Muster")
         with rls_bypass():
             RemoteMember.objects.create(coupling=lower, uid="m999", data={"hinweis": "Probe"})
-        with tenant_context(world["club"].pk):
+        # unit_context: streng im Bereich der Einheit, ohne geerbte Umgehung (wie ein Eingang)
+        with unit_context(world["club"].pk):
             row = RemoteMember.objects.get(uid="m999")
             assert row.data == {"hinweis": "Probe"}
-        with tenant_context(stranger.pk):
+        with unit_context(stranger.pk):
             assert not RemoteMember.objects.filter(uid="m999").exists()
             # Schreiben für eine fremde Kopplung scheitert ebenfalls
             with pytest.raises(Exception), connection.cursor() as cur:  # noqa: B017
