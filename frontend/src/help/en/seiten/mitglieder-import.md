@@ -7,7 +7,7 @@ routen: [/mitglieder/import]
 stichworte: [import, Excel, CSV, spreadsheet, migration]
 ---
 
-With the import you take over an existing member list from a spreadsheet (Excel or CSV). HUBIplan first shows how it reads each column and which people already exist. Nothing is saved until you confirm.
+With the import you take over an existing member list from a spreadsheet (Excel or CSV). HUBIplan first shows how it reads each column and which people already exist. Nothing is saved until you confirm. Rows without a membership number are given the next free numbers in turn when importing, counting the numbers in the file as well.
 
 The import recognises organisations as members (company, association, authority …) by the column “Typ” with the value “Organisation”. For them there are the columns “Namenszusatz” (name suffix), “Rechtsform” (legal form) and “Ansprechpartner Name”, “Ansprechpartner Vorname”, “Ansprechpartner Funktion”, “Ansprechpartner E-Mail” and “Ansprechpartner Telefon” (contact person). Further contact persons go in further rows with the same membership number; the first becomes the primary contact. First name and date of birth stay empty for organisations. If a name without a type looks like an organisation (e.g. “… GmbH” or “… e. V.”), the check reports it instead of guessing.
 

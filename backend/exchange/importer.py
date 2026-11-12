@@ -970,6 +970,9 @@ def run(job, user) -> dict:
     }
     errors = []
     audit = []
+    # Zeilen ohne Mitgliedsnummer bekommen die nächste freie, auch über die Nummern der Datei
+    in_file = [g.data.get("club_number", "") for g in groups if not g.errors]
+    next_number = None
     for g in groups:
         if g.errors:
             errors.append(g)
@@ -990,8 +993,14 @@ def run(job, user) -> dict:
                 legal_form_other=d.get("legal_form_other", "") if organization else "",
             )
             created["persons"].append(person.pk)
+        club_number = (d.get("club_number") or "").strip()
+        if not club_number:
+            if next_number is None:
+                next_number = services.next_club_number(org, in_file)
+            club_number = next_number
+            next_number = str(int(next_number) + 1).zfill(len(next_number))
         membership = Membership.objects.create(
-            organization=org, scope=scope, person=person, club_number=d.get("club_number", "")
+            organization=org, scope=scope, person=person, club_number=club_number
         )
         created["memberships"].append(membership.pk)
         for i, c in enumerate(g.contacts):

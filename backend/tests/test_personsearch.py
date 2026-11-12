@@ -107,6 +107,8 @@ def test_gemischte_sortierung_nulls_und_geburtsdatum(orgs):
             old.pk,
         ]
         qs = qs.annotate(marker=F("club_number"))
+        # „old“ ohne Nummer (die Aufnahme vergibt sonst automatisch eine)
+        Membership.objects.filter(pk=old.pk).update(club_number="")
         Membership.objects.filter(pk=young.pk).update(club_number="1")
         assert list(ordered(qs, "-marker", "person__last_name").values_list("pk", flat=True)) == [
             young.pk,
