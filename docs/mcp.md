@@ -12,6 +12,10 @@ verbundenen Einheit lesen und als Entwurf bearbeiten, `/api/mcp/verein/`), siehe
 MCP-Server bzw. Connector mit dieser Adresse eintragen, ohne Anmeldung. Caddy leitet `/api/*`
 schon ans Backend weiter; eine eigene Regel ist nicht nötig.
 
+Beide Adressen (`/api/mcp/` und `/api/mcp/verein/`) antworten auch ohne Schrägstrich am Ende
+direkt, ohne Weiterleitung. claude.ai prüft eine Connector-Adresse ohne Schrägstrich und bricht
+bei 301 mit „Nicht gefunden“ ab.
+
 Der Betreiber schaltet die Schnittstelle mit `HUBIPLAN_MCP_HILFE=false` ab (dann 404).
 Standard: an, weil nur die ohnehin öffentliche Hilfe (Quelltext unter AGPL) herausgeht.
 

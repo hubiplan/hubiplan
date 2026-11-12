@@ -165,6 +165,14 @@ def call(token, name, **args):
 # --- Beschreibungen ---
 
 
+def test_adresse_ohne_schraegstrich_antwortet_ohne_weiterleitung(db):
+    # claude.ai prüft die Connector-Adresse ohne Schrägstrich und bricht bei 301 ab
+    body = json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
+    resp = HttpClient().post("/api/mcp/verein", body, content_type=JSON)
+    assert resp.status_code == 401
+    assert resp["WWW-Authenticate"].startswith("Bearer resource_metadata=")
+
+
 def test_ohne_schluessel_401_mit_hinweis_auf_anmeldung(db):
     resp = rpc(None, "initialize")
     assert resp.status_code == 401
