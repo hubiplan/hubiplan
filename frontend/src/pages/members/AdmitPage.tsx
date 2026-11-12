@@ -379,6 +379,7 @@ export function AdmitPage() {
               <Field
                 label={t('Mitgliedsnummer {e_im} (optional)', { e_im: terms.e_im })}
                 value={v.club_number}
+                hint={t('Leer lassen, dann vergibt HUBIplan die nächste freie Nummer.')}
                 error={e.club_number}
                 onChange={(ev) => form.set('club_number', ev.target.value)}
               />
