@@ -114,10 +114,12 @@ class TitleField(serializers.CharField):
         kwargs.setdefault("allow_blank", True)
         super().__init__(**kwargs)
 
-    def to_internal_value(self, data):
+    def run_validation(self, data=serializers.empty):
         from .title import parse_title
 
-        return parse_title(super().to_internal_value(data))
+        # erst die Länge prüfen (zu lange Titel ablehnen, nicht still kürzen)
+        value = super().run_validation(data)
+        return parse_title(value) if isinstance(value, str) else value
 
 
 class OptionalIntegerField(serializers.IntegerField):
