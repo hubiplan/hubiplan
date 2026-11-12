@@ -22,7 +22,7 @@ it('zählt bestätigte Musiker und offene Besetzungsplätze auch mit Absagen ric
           { id: 1, performance: 1, position: 2, musician: 1, status: 'accepted' },
           { id: 2, performance: 1, position: 2, musician: 2, status: 'declined' },
         ],
-        'musicians/choices': { events: [], members: [], partners: [] },
+        'musicians/choices': { events: [], partners: [] },
       }).map(([key, body]) => [`${base}${key}/`, () => ({ status: 200, body })]),
     ),
   )
