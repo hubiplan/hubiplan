@@ -4,6 +4,7 @@
 // braucht dann einen Abstand: eine Klasse, die in einer CSS-Datei `gap` bekommt (z. B.
 // .button-row, .actions, .stack), oder ein Textelement (li, p, dd, td, th), in dem index.css
 // Knöpfen zentral Rand gibt. Bewusst verbundene Segmentknöpfe stehen in VERBUNDEN.
+// Parser: rolldown kommt mit Vite 8 und liest TSX ohne weitere Abhängigkeit.
 import { parseAst } from 'rolldown/parseAst'
 import { describe, expect, it } from 'vitest'
 
