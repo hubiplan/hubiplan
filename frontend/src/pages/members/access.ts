@@ -81,6 +81,7 @@ export function requestTabs(): NavItem[] {
   return [
     { to: '/mitglieder/anfragen', label: t('Wechselanfragen') },
     { to: '/mitglieder/anfragen/aenderungen', label: t('Datenänderungen') },
+    { to: '/mitglieder/anfragen/kuendigungen', label: t('Kündigungen') },
   ]
 }
 

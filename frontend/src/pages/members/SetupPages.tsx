@@ -3,7 +3,7 @@
 // Organisationsformular automatisch, aber nur mit den Feldern dieser Seite.
 import type { ReactNode } from 'react'
 import { orgApi, PERM } from '../../api/orgs.ts'
-import type { MemberSettings } from '../../api/orgs.ts'
+import type { CancellationEnd, MemberSettings } from '../../api/orgs.ts'
 import { ListInput } from '../../components/ListField.tsx'
 import { parseNumberList } from '../../components/lists.ts'
 import { DATE_PRECISION_OPTIONS, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
@@ -11,7 +11,7 @@ import type { DatePrecision } from '../../components/forms.ts'
 import { Alert, Checkbox, SaveStatus, SelectField, Loading } from '../../components/ui.tsx'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
-import { t } from '../../i18n/index.ts'
+import { t, tn } from '../../i18n/index.ts'
 
 type Form = ReturnType<typeof useForm<MemberSettings>>
 
@@ -24,6 +24,9 @@ const DURATION_FIELDS: (keyof MemberSettings)[] = [
 const PORTAL_FIELDS: (keyof MemberSettings)[] = [
   'member_portal_enabled',
   'contact_changes_need_approval',
+  'member_cancellation_enabled',
+  'cancellation_notice_months',
+  'cancellation_period_end',
   'photo_approval_required',
   'card_wallet_enabled',
 ]
@@ -157,7 +160,19 @@ export function MemberDurationSettings() {
   )
 }
 
-/** Mitgliederbereich (Anmeldung der Mitglieder), Datenänderungen und Fotos. */
+const NOTICE_MONTHS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 24]
+
+function cancellationEnds(): { value: CancellationEnd; label: string }[] {
+  return [
+    { value: 'any', label: t('zu jedem Tag') },
+    { value: 'month', label: t('zum Monatsende') },
+    { value: 'quarter', label: t('zum Quartalsende') },
+    { value: 'half_year', label: t('zum Halbjahresende') },
+    { value: 'year', label: t('zum Ende des Geschäftsjahres') },
+  ]
+}
+
+/** Mitgliederbereich (Anmeldung der Mitglieder), Datenänderungen, Kündigung und Fotos. */
 export function MemberPortalSettings() {
   const tm = useTerms()
   return (
@@ -180,6 +195,44 @@ export function MemberPortalSettings() {
             checked={v.contact_changes_need_approval}
             onChange={(val) => set('contact_changes_need_approval', val)}
           />
+          <h3>{t('Kündigung durch das Mitglied')}</h3>
+          <Checkbox
+            label={t(
+              'Mitglieder können ihre Mitgliedschaft im Mitgliederbereich kündigen; {e_nom} bestätigt den Austritt',
+              { e_nom: tm.e_nom },
+            )}
+            checked={v.member_cancellation_enabled}
+            onChange={(val) => set('member_cancellation_enabled', val)}
+          />
+          {v.member_cancellation_enabled && (
+            <div className="grid-2">
+              <SelectField
+                label={t('Kündigungsfrist')}
+                value={String(v.cancellation_notice_months)}
+                onChange={(e) => set('cancellation_notice_months', Number(e.target.value))}
+              >
+                {NOTICE_MONTHS.map((n) => (
+                  <option key={n} value={n}>
+                    {n === 0 ? t('keine Kündigungsfrist') : tn('{n} Monat', '{n} Monate', n)}
+                  </option>
+                ))}
+              </SelectField>
+              <SelectField
+                label={t('Austritt wirksam')}
+                value={v.cancellation_period_end}
+                hint={t(
+                  'Wie in der Satzung. Quartal, Halbjahr und Jahr zählen ab Beginn des Geschäftsjahres.',
+                )}
+                onChange={(e) => set('cancellation_period_end', e.target.value as CancellationEnd)}
+              >
+                {cancellationEnds().map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
+          )}
           <h3>{t('Mitgliederfotos')}</h3>
           <Checkbox
             label={t(

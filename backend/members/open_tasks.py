@@ -27,6 +27,7 @@ from access.catalog import (
     WEBSITE_MANAGE,
 )
 from core.api_base import OrgScopedMixin
+from core.i18n import date_text
 from organizations.models import Organization
 
 LIMIT = 20
@@ -44,7 +45,7 @@ def _person(membership) -> str:
 
 
 def member_tasks(org: Organization, perms: set[str]) -> list[dict]:
-    from portal.models import ChangeRequest
+    from portal.models import CancellationRequest, ChangeRequest
 
     from .models import TransferRequest
     from .photo_models import MemberPhoto
@@ -64,6 +65,21 @@ def member_tasks(org: Organization, perms: set[str]) -> list[dict]:
                     "link": "/mitglieder/anfragen/aenderungen",
                     "ref": cr.pk,
                     "membership": cr.membership_id,
+                }
+            )
+        for c in CancellationRequest.objects.filter(
+            organization=org, status=CancellationRequest.Status.PENDING
+        ).select_related("membership__person")[:LIMIT]:
+            items.append(
+                {
+                    "kind": "cancellation",
+                    "kind_label": gettext("Kündigung"),
+                    "title": _person(c.membership),
+                    "detail": gettext("kündigt zum {date}").format(date=date_text(c.exit_date)),
+                    "created_at": c.created_at,
+                    "link": "/mitglieder/anfragen/kuendigungen",
+                    "ref": c.pk,
+                    "membership": c.membership_id,
                 }
             )
         for tr in TransferRequest.objects.filter(
