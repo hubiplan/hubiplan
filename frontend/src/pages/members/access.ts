@@ -56,6 +56,7 @@ export function memberSections(org: OrgSummary | null): NavItem[] {
   return [
     { to: '/mitglieder', label: t('Mitgliederliste') },
     { to: '/mitglieder/antraege', label: t('Mitgliedsanträge') },
+    { to: '/mitglieder/haushalte', label: t('Haushalte und Firmen') },
     { to: '/mitglieder/entwicklung', label: t('Entwicklung') },
     ...extras(org),
     { to: '/mitglieder/aemter', label: t('Ämter') },

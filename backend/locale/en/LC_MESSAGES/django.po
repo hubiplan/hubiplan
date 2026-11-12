@@ -10968,3 +10968,69 @@ msgstr "Only board members with role management can confirm."
 #, python-brace-format
 msgid "{reason} (beantragt von {by}, bestätigt von {confirmed})"
 msgstr "{reason} (requested by {by}, confirmed by {confirmed})"
+
+msgid "Das Mitglied gehört schon zu diesem Haushalt."
+msgstr "The member already belongs to this household."
+
+msgid "Das Mitglied gehört zu einem anderen Verein."
+msgstr "The member belongs to another club."
+
+msgid "Das Mitglied ist zu diesem Datum kein Mitglied."
+msgstr "The person is not a member on this date."
+
+msgid "Der Haushalt"
+msgstr "The household"
+
+msgid "Die Art lässt sich nur ändern, solange niemand zugeordnet ist."
+msgstr "The type can only be changed while nobody is assigned."
+
+msgid "Erwachsener"
+msgstr "Adult"
+
+#, python-brace-format
+msgid "Familie {name}"
+msgstr "{name} family"
+
+msgid "Familie/Haushalt"
+msgstr "Family/household"
+
+msgid "Kind"
+msgstr "Child"
+
+msgid "Unbekannte Rolle im Haushalt."
+msgstr "Unknown role in the household."
+
+msgid "ohne Angabe"
+msgstr "not specified"
+
+msgid ""
+"Organisationsmitglieder gehören keinem Haushalt an; ihre Ansprechpartner "
+"stehen in der Akte."
+msgstr ""
+"Organization members do not belong to a household; their contact persons are "
+"listed in the member file."
+
+msgid ""
+"Das Mitglied gehörte zu diesem Datum noch zu einem anderen Haushalt. Bitte "
+"ein späteres Datum wählen."
+msgstr ""
+"On this date the member still belonged to another household. Please choose a "
+"later date."
+
+#, python-brace-format
+msgid ""
+"Das Mitglied gehört schon zu „{name}“. Dort zuerst beenden oder „wechseln“ "
+"wählen."
+msgstr ""
+"The member already belongs to “{name}”. End it there first or choose “move”."
+
+msgid "Der Wechsel muss nach dem Beginn im bisherigen Haushalt liegen."
+msgstr "The move must be after the start in the previous household."
+
+msgid ""
+"Der Haushalt hat noch Mitglieder. Bitte zuerst deren Zugehörigkeit beenden."
+msgstr ""
+"The household still has members. Please end their membership in it first."
+
+msgid "Das Mitglied gehört inzwischen zu einem anderen Haushalt."
+msgstr "The member now belongs to another household."

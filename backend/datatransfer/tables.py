@@ -82,6 +82,9 @@ MODULE_MODELS = (
     # Ansprechpartner von Organisationsmitgliedern (J2)
     "members.ContactPerson",
     "members.BillingAddress",
+    # Haushalte und Firmen (H1)
+    "members.Household",
+    "members.HouseholdMember",
     "honors.Dignity",
     "honors.Reign",
     "honors.Companion",

@@ -15,6 +15,7 @@ import { AdmitPage } from './members/AdmitPage.tsx'
 import { ApplicationsPage } from './members/ApplicationsPage.tsx'
 import { ApplicationSettings } from './members/ApplicationSettings.tsx'
 import { HonoraryTitlesPage } from './members/HonoraryTitlesPage.tsx'
+import { HouseholdsPage } from './members/HouseholdsPage.tsx'
 import { MemberFilePage } from './members/MemberFilePage.tsx'
 import { MemberListPage } from './members/MemberListPage.tsx'
 import { MemberPortalSettings, MemberDurationSettings } from './members/SetupPages.tsx'
@@ -87,6 +88,16 @@ function ClubMembers() {
       <Route index element={<MemberListPage />} />
       <Route path="neu" element={canEdit ? <AdmitPage /> : list} />
       {org.type === 'club' && <Route path="antraege/*" element={<ApplicationsPage />} />}
+      {org.type === 'club' && (
+        <Route
+          path="haushalte"
+          element={
+            <MembersSection title={t('Haushalte und Firmen')}>
+              <HouseholdsPage />
+            </MembersSection>
+          }
+        />
+      )}
       <Route
         path="anfragen"
         element={

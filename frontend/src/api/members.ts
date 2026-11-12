@@ -3,6 +3,7 @@ import { t } from '../i18n/index.ts'
 import { api, requestBlob } from './client.ts'
 import type { AuditEntry } from './orgs.ts'
 import type { DatePrecision } from '../components/forms.ts'
+import type { MemberHousehold } from './households.ts'
 
 /** Ob eine Mitgliedsart gelöscht werden kann oder nur archiviert, und warum. */
 export interface TypeUsage {
@@ -227,6 +228,8 @@ export interface MemberRow {
   exit_date: string | null
   departments: string[]
   honorary_titles: string[]
+  /** aktuelle Familienhaushalte und Firmen (H1) */
+  households?: { id: number; name: string; kind: 'family' | 'company'; role: string }[]
   photo_url: string | null
   email: string
   phone: string
@@ -340,6 +343,8 @@ export interface MemberDetail {
   contact_persons?: ContactPerson[]
   /** Organisationen, für die diese Person Ansprechpartner ist */
   contact_for?: { member_id: number; name: string }[]
+  /** aktuelle Haushalte und Firmen (H1) */
+  households?: MemberHousehold[]
   last_name: string
   first_name: string
   /** leer bei Organisationen */
@@ -446,6 +451,8 @@ export interface ListParams {
   typ?: string
   abteilung?: string
   ehrentitel?: string
+  /** „mit“, „ohne“ oder Nummer eines Haushalts (H1) */
+  haushalt?: string
   sortierung?: string
   page?: number
   page_size?: number

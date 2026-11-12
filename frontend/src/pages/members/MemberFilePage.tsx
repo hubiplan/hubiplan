@@ -34,6 +34,7 @@ import { SuggestCorrection } from './FederationMembersPage.tsx'
 import { FieldsTab } from './FieldsTab.tsx'
 import { PhotoSection } from './PhotoSection.tsx'
 import { ContactPersons } from './ContactPersons.tsx'
+import { MemberHouseholds } from './MemberHouseholds.tsx'
 import { PublicationSection } from './PublicationSection.tsx'
 import { HonoraryAwards } from './HonoraryAwards.tsx'
 import { AssignRoleDialog } from '../../components/AssignRoleDialog.tsx'
@@ -143,6 +144,9 @@ export function MemberFilePage() {
               canEdit={canEdit}
               onChange={() => void reload()}
             />
+          )}
+          {(data.households ?? []).length > 0 && (
+            <MemberHouseholds households={data.households ?? []} />
           )}
           {(data.contact_for ?? []).length > 0 && (
             <p className="muted">

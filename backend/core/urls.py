@@ -49,6 +49,7 @@ from mcpserver import urls as mcp_urls
 from meetings import portal as meeting_portal
 from members import (
     federation_views,
+    household_views,
     jubilee_views,
     open_tasks,
     photo_views,
@@ -201,6 +202,7 @@ org_router.register("department-roles", org_views.DepartmentRoleViewSet, basenam
 org_router.register("roles", access_views.RoleViewSet, basename="role")
 org_router.register("assignments", access_views.AssignmentViewSet, basename="assignment")
 org_router.register("member-types", member_views.MemberTypeViewSet, basename="member-type")
+org_router.register("households", household_views.HouseholdViewSet, basename="household")
 org_router.register(
     "honorary-titles", honorary_views.HonoraryTitleViewSet, basename="honorary-title"
 )

@@ -46,6 +46,7 @@ from .models import (
     DepartmentRoleHolder,
     FederationMember,
     Gender,
+    HouseholdMember,
     Membership,
     MembershipPeriod,
     MemberType,
@@ -281,6 +282,18 @@ def filter_members(qs, params, org: Organization, *, lazy: bool = False):
         if title.isdigit():
             awards = awards.filter(title_id=int(title))
         qs = qs.filter(Exists(awards))
+    household = str(params.get("haushalt") or "")
+    if household in ("mit", "ohne") or household.isdigit():
+        from .households import open_on
+
+        on = today()
+        links = HouseholdMember.objects.filter(membership=OuterRef("pk")).filter(open_on(on))
+        if household.isdigit():
+            qs = qs.filter(Exists(links.filter(household_id=int(household))))
+        elif household == "mit":
+            qs = qs.filter(Exists(links))
+        else:
+            qs = qs.filter(~Exists(links))
     search = (params.get("suche") or "").strip()
     if search:
         words = {}
@@ -391,6 +404,9 @@ def member_rows(memberships, org: Organization, full_names: bool = False) -> lis
     from .honorary import titles_by_person
 
     titles = titles_by_person(person_ids, org, on)
+    from .households import households_by_membership
+
+    homes = households_by_membership(ids, on)
     rows = []
     for m in memberships:
         c = contacts.get(m.person_id)
@@ -414,6 +430,11 @@ def member_rows(memberships, org: Organization, full_names: bool = False) -> lis
                 "exit_date": None if m.is_current else m.exit_date,
                 "departments": departments.get(m.pk, []),
                 "honorary_titles": titles.get(m.person_id, []),
+                # Familienhaushalt und Firma (Konzept Familien, Haushalte und Firmen, H1)
+                "households": [
+                    {"id": h["id"], "name": h["name"], "kind": h["kind"], "role": h["role"]}
+                    for h in homes.get(m.pk, [])
+                ],
                 "photo_url": (
                     f"/api/orgs/{m.organization_id}/members/{m.pk}/photo/"
                     f"?size=thumb&v={photos[m.pk]}"
@@ -442,6 +463,7 @@ class MemberListView(_ClubMixin, generics.GenericAPIView):
             OpenApiParameter("geschlecht", str, enum=[*Gender.values, "ohne"]),
             OpenApiParameter("abteilung", int),
             OpenApiParameter("ehrentitel", str, description="Nummer oder „mit“ (beliebiger)"),
+            OpenApiParameter("haushalt", str, description="Nummer, „mit“ oder „ohne“"),
             OpenApiParameter("sortierung", str),
         ]
     )
