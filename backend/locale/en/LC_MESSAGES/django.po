@@ -8565,6 +8565,12 @@ msgstr "Row {index}: contact person's name is missing."
 msgid "Zeile {index}: E-Mail des Ansprechpartners ist ungültig."
 msgstr "Row {index}: contact person's email is invalid."
 
+msgid "{label}: höchstens {limit} Zeichen."
+msgstr "{label}: at most {limit} characters."
+
+msgid "Die Rechnungs-E-Mail ist ungültig."
+msgstr "The billing email is invalid."
+
 msgid "Eine Organisation hat keinen Vornamen und kein Geburtsdatum."
 msgstr "An organisation has no first name and no date of birth."
 

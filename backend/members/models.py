@@ -36,6 +36,20 @@ class Gender(models.TextChoices):
     DIVERSE = "divers", gettext_lazy("divers")
 
 
+# Vorschläge für den Titel vor dem Namen (Ralf 12.11.: Auswahlliste oder frei). Das Feld
+# nimmt auch andere Titel auf (z. B. „Dipl.-Ing.“); leer = kein Titel. Steht in Anrede und
+# Anschrift, auf der Webseite nur mit „Titel nennen“. Abkürzungen, keine Übersetzung.
+TITLE_DR, TITLE_DR_DR, TITLE_PROF, TITLE_PROF_DR = "Dr.", "Dr. Dr.", "Prof.", "Prof. Dr."
+TITLE_MAX_LENGTH = 30
+
+
+def with_title(title: str, first: str, last: str) -> str:
+    """„Dr. Max Muster“ (ohne Titel „Max Muster“)."""
+    return " ".join(
+        p for p in ((title or "").strip(), (first or "").strip(), (last or "").strip()) if p
+    )
+
+
 class PersonKind(models.TextChoices):
     """Mitgliedstyp: Mensch oder Organisation (Firma, Verein, Behörde …)."""
 
@@ -124,6 +138,10 @@ class Person(models.Model):
     birth_year_only = models.BooleanField("nur Geburtsjahr bekannt", default=False)
     gender = models.CharField(
         "Geschlecht", max_length=10, choices=Gender.choices, blank=True, default=""
+    )
+    # Nur für Personen; leer für Organisationen
+    title = models.CharField(
+        "Titel", max_length=TITLE_MAX_LENGTH, blank=True, default="", db_default=""
     )
     # Nur für Organisationen
     name_suffix = models.CharField(
@@ -253,6 +271,13 @@ class Person(models.Model):
         if self.is_organization:
             return f"{self.last_name} – {self.name_suffix}" if self.name_suffix else self.last_name
         return f"{self.first_name} {self.last_name}".strip()
+
+    @property
+    def address_name(self) -> str:
+        """Name für Anschrift und „z. Hd.“: mit Titel („Dr. Max Muster“)."""
+        if self.is_organization:
+            return self.display_name
+        return with_title(self.title, self.first_name, self.last_name)
 
     @property
     def legal_form_label(self) -> str:
@@ -600,6 +625,9 @@ class ContactPerson(models.Model):
     gender = models.CharField(
         "Geschlecht", max_length=10, choices=Gender.choices, blank=True, default=""
     )
+    title = models.CharField(
+        "Titel", max_length=TITLE_MAX_LENGTH, blank=True, default="", db_default=""
+    )
     function = EncryptedCharField("Funktion", max_length=100, blank=True)
     email = EncryptedEmailField("E-Mail-Adresse", blank=True)
     phone = EncryptedCharField("Telefon", max_length=50, blank=True)
@@ -637,6 +665,13 @@ class ContactPerson(models.Model):
         if self.person_id is not None:
             return f"{self.person.first_name} {self.person.last_name}".strip()
         return f"{self.first_name} {self.last_name}".strip()
+
+    @property
+    def address_name(self) -> str:
+        """Name mit Titel für „z. Hd.“ (verknüpfte Person: Titel aus deren Akte)."""
+        if self.person_id is not None:
+            return self.person.address_name
+        return with_title(self.title, self.first_name, self.last_name)
 
 
 class BillingAddress(models.Model):

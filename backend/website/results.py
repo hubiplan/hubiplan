@@ -113,7 +113,8 @@ class Names:
         age = _age_on(person.birth_date, self.comp.date)
         if age is not None and age < 18 and Category.RESULTS_MINOR not in active:
             return WITHOUT_NAME
-        return self._format(person.first_name, person.last_name, fmt) or WITHOUT_NAME
+        title = person.title if self.site.site.show_titles else ""
+        return self._format(person.first_name, person.last_name, fmt, title) or WITHOUT_NAME
 
     def club(self, pk) -> str:
         s = self.starters.get(pk)

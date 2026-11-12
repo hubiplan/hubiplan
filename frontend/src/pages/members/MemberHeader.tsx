@@ -27,7 +27,7 @@ export function MemberHeader({
   const organization = member.kind === 'organization'
   const name = organization
     ? [member.last_name, member.organization?.name_suffix].filter(Boolean).join(' – ')
-    : `${member.first_name} ${member.last_name}`
+    : [member.title, member.first_name, member.last_name].filter(Boolean).join(' ')
   const today = todayIso()
   const running = (from: string, until: string | null) =>
     from <= today && (!until || until >= today)

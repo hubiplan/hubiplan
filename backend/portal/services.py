@@ -32,7 +32,7 @@ SELF_LINK_HOURS = 1
 
 # Felder, die ein Mitglied als Änderung melden darf
 # Kontaktdaten ändern Mitglieder direkt (außer der Verein verlangt Bestätigung);
-# Name, Geburtsdatum und Geschlecht bestätigt immer der Verein.
+# Name, Geburtsdatum, Geschlecht und Titel bestätigt immer der Verein.
 DIRECT_FIELDS = ("email", "phone", "street", "postal_code", "city", "country")
 
 CHANGEABLE_FIELDS = (
@@ -40,6 +40,7 @@ CHANGEABLE_FIELDS = (
     "first_name",
     "birth_date",
     "gender",
+    "title",
     "email",
     "phone",
     "street",

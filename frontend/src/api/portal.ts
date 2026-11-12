@@ -89,6 +89,7 @@ export interface DeptMember {
   first_name: string
   birth_date: string | null
   gender?: string
+  title?: string
   club_number: string
   member_type: string | null
   entry_date: string | null
@@ -194,6 +195,9 @@ export const FIELD_LABELS: Record<string, string> = {
   },
   get gender() {
     return t('Geschlecht')
+  },
+  get title() {
+    return t('Titel')
   },
   get email() {
     return t('E-Mail')

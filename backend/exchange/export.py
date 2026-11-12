@@ -102,6 +102,23 @@ class PhotoRef:
             return None
 
 
+def billing_columns() -> list[tuple[str, str, str]]:
+    """(Spaltenschlüssel, Überschrift, Feld) der Rechnungsanschrift, wie im Import."""
+    from .importer import BASE_TARGETS, BILLING_TARGETS
+
+    return [(t, BASE_TARGETS[t], key) for t, (key, _) in BILLING_TARGETS.items()]
+
+
+def billing_rows(memberships) -> dict[int, dict]:
+    from members.models import BillingAddress
+
+    fields = [key for _, _, key in billing_columns()]
+    return {
+        b.membership_id: {k: getattr(b, k) for k in fields}
+        for b in BillingAddress.objects.filter(membership_id__in=memberships)
+    }
+
+
 def member_columns(org: Organization) -> list[Column]:
     cols = [
         Column("photo", "Foto", lambda r: PhotoRef(r.get("photo_path"))),
@@ -112,6 +129,7 @@ def member_columns(org: Organization) -> list[Column]:
         Column("legal_form", "Rechtsform", lambda r: r.get("legal_form", "")),
         Column("birth_date", "Geburtsdatum", lambda r: _date(r["birth_date"])),
         Column("gender", "Geschlecht", lambda r: r.get("gender", "")),
+        Column("title", "Titel", lambda r: r.get("title", "")),
         Column("member_type", "Mitgliedsart", lambda r: r["member_type"] or ""),
         Column("status", "Status", lambda r: STATUS.get(r["status"], r["status"])),
         Column("entry_date", "Eintritt", lambda r: _date(r["entry_date"])),
@@ -130,6 +148,11 @@ def member_columns(org: Organization) -> list[Column]:
         Column("contact_function", "Ansprechpartner Funktion", lambda r: _primary(r, "function")),
         Column("contact_email", "Ansprechpartner E-Mail", lambda r: _primary(r, "email")),
         Column("contact_phone", "Ansprechpartner Telefon", lambda r: _primary(r, "phone")),
+        # Abweichende Rechnungsanschrift (J3); Spaltennamen passen zum Import
+        *(
+            Column(target, label, (lambda k: lambda r: (r.get("billing") or {}).get(k, ""))(key))
+            for target, label, key in billing_columns()
+        ),
     ]
     for definition in definitions_for(org):
         if definition.is_archived:
@@ -191,6 +214,7 @@ def federation_columns(org=None) -> list[Column]:
         Column("first_name", "Vorname", lambda r: r["first_name"]),
         Column("birth_date", "Geburtsdatum", lambda r: _date(r["birth_date"])),
         Column("gender", "Geschlecht", lambda r: r.get("gender", "")),
+        Column("title", "Titel", lambda r: r.get("title", "")),
         Column("member_number", "Verbandsnummer", lambda r: r["member_number"] or ""),
         Column("member_type", "Mitgliedsart", lambda r: r["member_type"] or ""),
         Column("honorary_titles", "Ehrungen", lambda r: ", ".join(r["honorary_titles"])),
@@ -288,7 +312,9 @@ def member_data(org: Organization, filters: dict) -> list[dict]:
         if org_ids
         else {}
     )
+    billing = billing_rows(list(person_ids.keys()))
     for row in rows:
+        row["billing"] = billing.get(row["id"], {})
         row["contact_persons"] = contacts.get(row["id"], [])
         row["legal_form"] = legal.get(row["id"], "")
         row["fields"] = values.get(person_ids[row["id"]], {})

@@ -210,6 +210,7 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'name_format',
   'show_vacant',
   'show_instrument',
+  'show_titles',
   'show_address',
   'show_member_since',
   'missing_consent',
@@ -701,6 +702,12 @@ function WebsiteAdmin({
             <Why k="web_names" />
             <Why k="web_consent" />
           </div>
+          <Checkbox
+            label={t('Titel vor dem Namen nennen')}
+            hint={t('z. B. „Dr. Max Muster“; Titel aus der Mitgliedsakte')}
+            checked={v.show_titles ?? false}
+            onChange={(on) => set('show_titles', on)}
+          />
           <Checkbox
             label={t('Unbesetzte Funktionen als „derzeit unbesetzt“ zeigen')}
             checked={v.show_vacant}

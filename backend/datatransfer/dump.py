@@ -604,7 +604,7 @@ class Dumper:
             result.append(
                 {
                     "id": p.pk,
-                    **values(p, ("last_name", "first_name", "birth_date", "gender")),
+                    **values(p, ("last_name", "first_name", "birth_date", "gender", "title")),
                     # Organisationsmitglieder (Firma, Verein, Behörde …); ältere Dateien
                     # ohne diese Angaben enthalten nur Personen
                     **(

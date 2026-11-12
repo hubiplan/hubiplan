@@ -405,6 +405,7 @@ def member_rows(memberships, org: Organization, full_names: bool = False) -> lis
                 "birth_date": m.person.birth_date,
                 "birth_year_only": m.person.birth_year_only,
                 "gender": m.person.gender,
+                "title": m.person.title,
                 "club_number": m.club_number,
                 "member_number": fm.member_number if fm else None,
                 "member_type": m.current_type_name,
@@ -540,6 +541,7 @@ class MemberDetailView(_ClubMixin, APIView):
                     "first_name",
                     "birth_date",
                     "gender",
+                    "title",
                     *services.ORGANIZATION_FIELDS,
                     "size",
                     *services.CONTACT_FIELDS,
@@ -568,7 +570,7 @@ def update_member(org: Organization, membership: Membership, values: dict, user)
         if "last_name" in values and not values["last_name"].strip():
             raise serializers.ValidationError({"last_name": gettext("Pflichtfeld.")})
     else:
-        fields = ("last_name", "first_name", "birth_date", "gender")
+        fields = ("last_name", "first_name", "birth_date", "gender", "title")
         if "birth_date" in values and values["birth_date"] != person.birth_date:
             check_birth_before_entries(person, values["birth_date"])
     before_person = snapshot(person)
