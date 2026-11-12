@@ -5,15 +5,15 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 
-from .models import TITLE_MAX_LENGTH, Title
+from .models import TITLE_DR, TITLE_DR_DR, TITLE_MAX_LENGTH, TITLE_PROF, TITLE_PROF_DR
 
 # Verglichen wird klein, ohne Punkte und Leerzeichen („Prof. Dr.“, „prof.dr“, „ProfDr“).
 # Genauere Angaben wie „Dr. med.“ bleiben, wie sie eingegeben wurden.
 ALIASES = {
-    Title.DR: {"dr", "doktor"},
-    Title.DR_DR: {"drdr", "doktordoktor"},
-    Title.PROF: {"prof", "professor", "professorin"},
-    Title.PROF_DR: {"profdr", "professordoktor"},
+    TITLE_DR: {"dr", "doktor"},
+    TITLE_DR_DR: {"drdr", "doktordoktor"},
+    TITLE_PROF: {"prof", "professor", "professorin"},
+    TITLE_PROF_DR: {"profdr", "professordoktor"},
 }
 EMPTY = {"", "-", "–", "ka", "keineangabe", "kein", "keiner", "ohne"}
 
@@ -29,7 +29,7 @@ def parse_title(value) -> str:
         return ""
     for title, names in ALIASES.items():
         if text in names:
-            return str(title)
+            return title
     return raw[:TITLE_MAX_LENGTH]
 
 

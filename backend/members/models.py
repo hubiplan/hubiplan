@@ -36,17 +36,10 @@ class Gender(models.TextChoices):
     DIVERSE = "divers", gettext_lazy("divers")
 
 
-class Title(models.TextChoices):
-    """Vorschläge für den Titel vor dem Namen (Ralf 12.11.: Auswahlliste oder frei).
-    Das Feld nimmt auch andere Titel auf (z. B. „Dipl.-Ing.“); leer = kein Titel.
-    Steht in Anrede und Anschrift, auf der Webseite nur mit „Titel nennen“."""
-
-    DR = "Dr.", "Dr."
-    DR_DR = "Dr. Dr.", "Dr. Dr."
-    PROF = "Prof.", "Prof."
-    PROF_DR = "Prof. Dr.", "Prof. Dr."
-
-
+# Vorschläge für den Titel vor dem Namen (Ralf 12.11.: Auswahlliste oder frei). Das Feld
+# nimmt auch andere Titel auf (z. B. „Dipl.-Ing.“); leer = kein Titel. Steht in Anrede und
+# Anschrift, auf der Webseite nur mit „Titel nennen“. Abkürzungen, keine Übersetzung.
+TITLE_DR, TITLE_DR_DR, TITLE_PROF, TITLE_PROF_DR = "Dr.", "Dr. Dr.", "Prof.", "Prof. Dr."
 TITLE_MAX_LENGTH = 30
 
 
