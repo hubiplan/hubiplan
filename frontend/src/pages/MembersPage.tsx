@@ -16,6 +16,8 @@ import { ApplicationsPage } from './members/ApplicationsPage.tsx'
 import { ApplicationSettings } from './members/ApplicationSettings.tsx'
 import { HonoraryTitlesPage } from './members/HonoraryTitlesPage.tsx'
 import { MemberFilePage } from './members/MemberFilePage.tsx'
+import { QualificationsPage } from './members/QualificationsPage.tsx'
+import { QualificationTypesPage } from './members/QualificationTypesPage.tsx'
 import { MemberListPage } from './members/MemberListPage.tsx'
 import { MemberPortalSettings, MemberDurationSettings } from './members/SetupPages.tsx'
 import { TransfersPage } from './members/TransfersPage.tsx'
@@ -119,6 +121,18 @@ function ClubMembers() {
       />
       <Route path="entwicklung" element={<MembersDevelopmentPage />} />
       <Route
+        path="qualifikationen"
+        element={
+          org.modules.includes('qualifications') ? (
+            <MembersSection title={t('Qualifikationen')}>
+              <QualificationsPage />
+            </MembersSection>
+          ) : (
+            list
+          )
+        }
+      />
+      <Route
         path="wuerdentraeger/*"
         element={org.modules.includes('honors') ? <ChroniclePage /> : list}
       />
@@ -161,6 +175,12 @@ function SetupArea() {
         <Route path="mitgliedsarten" element={page(t('Einrichtung'), <MemberTypesPage />)} />
       )}
       {awards && <Route path="ehrungen" element={page(t('Einrichtung'), <HonoraryTitlesPage />)} />}
+      {org.modules.includes('qualifications') && (
+        <Route
+          path="qualifikationen"
+          element={page(t('Einrichtung'), <QualificationTypesPage />)}
+        />
+      )}
       {/* frühere Adresse (Lesezeichen) */}
       <Route
         path="ehrentitel"

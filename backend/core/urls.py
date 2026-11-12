@@ -92,6 +92,7 @@ from organizations.platform_public import (
 from outbox import views as outbox_views
 from peering import urls as peering_urls
 from portal import views as portal_views
+from qualifications import views as qualification_views
 from statutes import views as statute_views
 from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
@@ -204,6 +205,9 @@ org_router.register("member-types", member_views.MemberTypeViewSet, basename="me
 org_router.register(
     "honorary-titles", honorary_views.HonoraryTitleViewSet, basename="honorary-title"
 )
+org_router.register(
+    "qualification-types", qualification_views.TypeViewSet, basename="qualification-type"
+)
 org_router.register("fields", field_views.FieldDefinitionViewSet, basename="field")
 org_router.register("social-links", social_views.SocialLinkViewSet, basename="social-link")
 org_router.register("exports", exchange_views.ExportJobViewSet, basename="export")
@@ -237,6 +241,9 @@ member_router.register(
 )
 member_router.register(
     "honorary-titles", honorary_views.MemberAwardViewSet, basename="member-honorary-title"
+)
+member_router.register(
+    "qualifications", qualification_views.MemberRecordViewSet, basename="member-qualification"
 )
 
 federation_member_router = SimpleRouter()
@@ -734,6 +741,11 @@ org_patterns = [
     *gate("honors", honors_urls.org_patterns),
     *competition_urls.org_patterns,
     *entry_urls.org_patterns,
+    path(
+        "qualifications/",
+        qualification_views.OverviewView.as_view(),
+        name="qualification-overview",
+    ),
     path("offices/", office_views.OfficesView.as_view(), name="offices"),
     path("offices/<int:pk>/", office_views.OfficeEntryView.as_view(), name="office-entry"),
     path(

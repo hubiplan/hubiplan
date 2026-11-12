@@ -65,9 +65,12 @@ export function memberSections(org: OrgSummary | null): NavItem[] {
   ]
 }
 
-/** Jubiläen (Modul „Ehrungen & Jubiläen“) und Würdenträger (Modul „Würden“) */
+/** Jubiläen (Modul „Ehrungen & Jubiläen“), Würdenträger (Modul „Würden“), Qualifikationen */
 function extras(org: OrgSummary): NavItem[] {
   return [
+    ...(org.modules.includes('qualifications')
+      ? [{ to: '/mitglieder/qualifikationen', label: t('Qualifikationen') }]
+      : []),
     ...(org.modules.includes('awards')
       ? [{ to: '/mitglieder/jubilaeen', label: t('Jubiläen') }]
       : []),
@@ -92,6 +95,9 @@ export function setupTabs(org: OrgSummary): NavItem[] {
       ? [{ to: '/mitglieder/einrichtung/mitgliedsarten', label: t('Mitgliedsarten') }]
       : []),
     ...(awards ? [{ to: '/mitglieder/einrichtung/ehrungen', label: t('Ehrungen') }] : []),
+    ...(org.modules.includes('qualifications')
+      ? [{ to: '/mitglieder/einrichtung/qualifikationen', label: t('Qualifikationen') }]
+      : []),
     { to: '/mitglieder/einrichtung/zusatzfelder', label: t('Zusatzfelder') },
     ...(club ? [{ to: '/mitglieder/einrichtung/antrag', label: t('Online-Antrag') }] : []),
     ...(awards ? [{ to: '/mitglieder/einrichtung/jubilaeen', label: t('Jubiläen & Dauer') }] : []),

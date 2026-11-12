@@ -7,6 +7,7 @@ urlpatterns = [
     path("members/", views.MembersView.as_view()),
     path("events/", views.EventsView.as_view()),
     path("units/", views.UnitsView.as_view()),
+    path("qualifications/", views.QualificationsView.as_view()),
     path("done/", extras.DoneView.as_view()),
     path("quotas/", views.UnitQuotasView.as_view()),
     path("quotas/<int:pk>/assignments/", views.UnitQuotaAssignView.as_view()),
