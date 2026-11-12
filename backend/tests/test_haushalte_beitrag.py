@@ -3,6 +3,7 @@ Familien- und Firmenbeitrag, Mandat am Haushalt, Mitgliederbereich des Zahlers."
 # ruff: noqa: F811  (Fixtures aus test_m9_billing als Parameter)
 
 import datetime
+import uuid
 from decimal import Decimal
 
 import pytest
@@ -12,6 +13,7 @@ from billing.households import fee_discount
 from billing.models import HouseholdFeeRule, Invoice
 from billing.services import FeeItem, period
 from core.tenancy import tenant_context
+from finance.models import Booking
 from members.models import HouseholdMember
 from portal.models import PortalAccess
 
@@ -211,6 +213,66 @@ class TestHaushaltsrechnung:
         data = api(m_access.user).get(f"/api/portal/{m_access.pk}/invoices/").json()
         assert data["invoices"] == []
         assert data["collective"][0]["department_name"] == "Familie Muster"
+
+
+class TestZuwendungAnZahler:
+    def test_zahlung_auf_den_zahler(self, club, c, base, family, setup):
+        """FH-15: Zahlung einer Haushaltsrechnung bucht auf den Zahler, nicht auf ein Kind."""
+        hh = household(c, club, family, who=("max", "lisa"))
+        set_payer(c, base, hh, kind="member", membership=family["erika"].pk)
+        run = start_run(c, base).json()
+        c.post(f"{base}/runs/{run['id']}/finalize/")
+        invoice = Invoice.objects.get(recipient_kind="household")
+        resp = c.post(
+            f"{base}/invoices/{invoice.pk}/payments/",
+            {
+                "date": "2025-02-10",
+                "amount": "10.00",
+                "method": "transfer",
+                "account": setup["bank"],
+            },
+            content_type=JSON,
+            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
+        )
+        assert resp.status_code == 200, resp.json()
+        with tenant_context(club.pk):
+            booking = Booking.objects.get(payment__invoice=invoice)
+        assert booking.membership_id == family["erika"].pk
+
+    def test_spender_aus_der_rechnung(self, club, c, base, family, setup):
+        hh = household(c, club, family, who=("max", "lisa"))
+        set_payer(
+            c,
+            base,
+            hh,
+            kind="external",
+            name="Gisela Muster",
+            street="Ahornweg 2",
+            postal_code="12345",
+            city="Musterstadt",
+        )
+        run = start_run(c, base).json()
+        c.post(f"{base}/runs/{run['id']}/finalize/")
+        invoice = Invoice.objects.get(recipient_kind="household")
+        c.post(
+            f"{base}/invoices/{invoice.pk}/payments/",
+            {
+                "date": "2025-02-10",
+                "amount": "10.00",
+                "method": "transfer",
+                "account": setup["bank"],
+            },
+            content_type=JSON,
+            HTTP_IDEMPOTENCY_KEY=str(uuid.uuid4()),
+        )
+        from finance.donations import _donor_from_invoice
+
+        with tenant_context(club.pk):
+            booking = Booking.objects.get(payment__invoice=invoice)
+            assert booking.membership_id is None
+            name, address = _donor_from_invoice(booking)
+        assert name == "Gisela Muster"
+        assert "Ahornweg 2" in address
 
 
 class TestFamilienbeitrag:

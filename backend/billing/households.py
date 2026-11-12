@@ -68,6 +68,19 @@ def link_on(links: list[HouseholdMember], on: datetime.date) -> HouseholdMember 
     return None
 
 
+def booking_parties(invoice):
+    """Mitglied und Geschäftspartner für die Buchung einer Zahlung. Bei Haushalts- und
+    Firmenrechnungen ist das der Zahler (Zuwendungsbestätigung an den Zahler, FH-15)."""
+    from .models import Invoice
+
+    if invoice.recipient_kind != Invoice.Recipient.HOUSEHOLD or invoice.household_id is None:
+        return invoice.membership, invoice.partner
+    payer = payer_of(invoice.household)
+    if payer is None:
+        return None, None
+    return payer.membership, payer.partner
+
+
 def household_recipient(org, household: Household, payer: HouseholdPayer | None = None) -> dict:
     """Empfänger der Haushalts- bzw. Firmenrechnung."""
     from .services import _address, member_recipient

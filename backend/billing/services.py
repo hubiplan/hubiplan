@@ -1204,6 +1204,9 @@ def add_payment(
         raise ValidationError({"account": gettext("Bitte das Konto wählen.")})
     finance_services.ensure_open(org, date=date)
     year = org.fiscal_year_of(date)
+    from .households import booking_parties
+
+    member, partner = booking_parties(invoice)
     booking = Booking(
         organization=org,
         year=year,
@@ -1216,9 +1219,9 @@ def add_payment(
         text=f"Zahlung {invoice.display_number} {invoice.recipient_name.splitlines()[0]}"[:200],
         reference=invoice.display_number,
         counterparty=invoice.recipient_name.splitlines()[0][:200] if invoice.recipient_name else "",
-        partner=invoice.partner,
+        partner=partner,
         # Arbeitsbereich einer Untereinheit: Mitglieder liegen im Datenbereich darüber
-        membership=None if org.type == "unit" else invoice.membership,
+        membership=None if org.type == "unit" else member,
         department=invoice.department,
         project=invoice.project,
         vat_rate=payment_vat_rate(invoice, payment_category),
