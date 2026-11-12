@@ -580,6 +580,10 @@ function WebsiteAdmin({
     </div>
   )
 
+  const hasUnits = data.units.length > 0
+  // Ältere Server liefern has_parent_units nicht: dann wie bisher zeigen
+  const hasParents = data.has_parent_units ?? true
+
   const structure = (
     <>
       {/* Lange Seite: der Hinweis steht oben und bleibt beim Scrollen unter der Kopfzeile */}
@@ -675,15 +679,6 @@ function WebsiteAdmin({
             ))}
         </>,
       )}
-      {data.home_labels && v.home_sections && (
-        <div className="card card-wide">
-          <h2>{t('Startseite')}</h2>
-          <p className="muted small">
-            {t('Die Abschnitte der Startseite stellst du jetzt mit Vorschau zusammen unter')}{' '}
-            <Link to="../gestaltung">{t('Webseite › Gestaltung')}</Link>.
-          </p>
-        </div>
-      )}
       {settings(
         t('Personen'),
         <>
@@ -777,21 +772,30 @@ function WebsiteAdmin({
           {errors.unit_ids && <Alert kind="error">{errors.unit_ids}</Alert>}
         </>,
       )}
+      {/* Häkchen nur, wenn es Einheiten darunter bzw. darüber gibt; sonst entfällt der Block.
+          Gespeicherte Werte bleiben unverändert. */}
       {org.modules.includes('events') &&
+        (hasUnits || hasParents) &&
         settings(
           t('Termine'),
           <>
-            <Checkbox
-              label={t('Öffentliche Termine der Untereinheiten im Kalender der Webseite')}
-              checked={v.include_unit_events}
-              onChange={(on) => set('include_unit_events', on)}
-            />
-            <Checkbox
-              label={t('Öffentliche Termine der übergeordneten Einheiten im Kalender der Webseite')}
-              hint={t('z. B. Dachverband; nur Termine, die nach unten freigegeben sind')}
-              checked={v.include_parent_events}
-              onChange={(on) => set('include_parent_events', on)}
-            />
+            {hasUnits && (
+              <Checkbox
+                label={t('Öffentliche Termine der Untereinheiten im Kalender der Webseite')}
+                checked={v.include_unit_events}
+                onChange={(on) => set('include_unit_events', on)}
+              />
+            )}
+            {hasParents && (
+              <Checkbox
+                label={t(
+                  'Öffentliche Termine der übergeordneten Einheiten im Kalender der Webseite',
+                )}
+                hint={t('z. B. Dachverband; nur Termine, die nach unten freigegeben sind')}
+                checked={v.include_parent_events}
+                onChange={(on) => set('include_parent_events', on)}
+              />
+            )}
           </>,
         )}
       {org.modules.includes('honors') &&

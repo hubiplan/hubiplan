@@ -42,3 +42,5 @@ Bookings: “Bookings” shows facilities and material whose booking calendar is
 Search: With the “Search” section a magnifying glass appears in the menu. It searches text pages, albums, documents and events, not people.
 
 People: “Show titles before names” puts the title from the member record before the name (e.g. “Dr. Max Muster”) for the board, lists and results; when off, names appear without a title. “Show main instrument below the name” takes the main instrument from Music › Musicians. “Show postal address for the board” only applies to people with the consent “Postal address” in their member record.
+
+Events: If there are sub-units, a check box adds their public events to the website calendar; if there are parent units with events (e.g. the umbrella association), a second one adds their events that are shared downwards. If there are neither, the “Events” block is not shown.

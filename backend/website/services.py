@@ -32,6 +32,20 @@ def is_unit_site(org) -> bool:
     return getattr(org, "type", None) == "unit" and bool(getattr(org, "organization_id", None))
 
 
+def has_parent_events(org) -> bool:
+    """Gibt es Einheiten darüber, deren öffentliche Termine die Webseite zeigen könnte
+    (wie ``public_views._parent_events``)? Steuert nur die Anzeige des Häkchens."""
+    from events import services as events
+    from organizations.models import Organization
+
+    if is_unit_site(org):
+        return True
+    return any(
+        o.type != Organization.Type.PLATFORM and o.is_active and events.module_on(o)
+        for o in org.ancestors()[1:]
+    )
+
+
 def data_area(org):
     """Einheit, in deren Datenbereich Mitglieder, Termine und Untereinheiten liegen."""
     return org.organization if is_unit_site(org) else org

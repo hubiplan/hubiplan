@@ -670,6 +670,41 @@ describe('Webseite', () => {
     expect(screen.getByRole('button', { name: 'Verwerfen' })).not.toHaveClass('button-primary')
   })
 
+  it.each([
+    { units: [], parents: false, unitsBox: false, parentBox: false },
+    { units: [], parents: true, unitsBox: false, parentBox: true },
+    { units: [{ id: 7, name: 'Jägerzug' }], parents: false, unitsBox: true, parentBox: false },
+  ])(
+    'zeigt im Block Termine nur Häkchen für Einheiten, die es gibt (%o)',
+    async ({ units, parents, unitsBox, parentBox }) => {
+      const site = website('public', { include_unit_events: true, include_parent_events: false })
+      const body = { ...data(site), units, has_parent_units: parents }
+      renderApp(
+        { [`GET ${base}`]: () => ({ status: 200, body }) },
+        '/webseite/aufbau',
+        [],
+        ['events'],
+      )
+      await screen.findByRole('heading', { name: 'Bausteine' })
+      // Der Block „Startseite“ ohne Funktion ist weg
+      expect(screen.queryByRole('heading', { name: 'Startseite' })).not.toBeInTheDocument()
+      // Weder Einheiten darunter noch darüber: der ganze Block entfällt
+      const heading = screen.queryByRole('heading', { name: 'Termine' })
+      if (unitsBox || parentBox) expect(heading).toBeInTheDocument()
+      else expect(heading).not.toBeInTheDocument()
+      const u = screen.queryByRole('checkbox', {
+        name: 'Öffentliche Termine der Untereinheiten im Kalender der Webseite',
+      })
+      const p = screen.queryByRole('checkbox', {
+        name: /Öffentliche Termine der übergeordneten Einheiten/,
+      })
+      if (unitsBox) expect(u).toBeChecked()
+      else expect(u).not.toBeInTheDocument()
+      if (parentBox) expect(p).not.toBeChecked()
+      else expect(p).not.toBeInTheDocument()
+    },
+  )
+
   it('zeigt eingespielte Designs und lädt Pakete nur für Plattformverwalter', async () => {
     const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
     const designs = [
