@@ -52,15 +52,17 @@ def _totp(user):
     return Authenticator.objects.create(user=user, type=Authenticator.Type.TOTP, data={})
 
 
-def test_pflicht_2fa_nach_uebergang(orgs, api, board_a):
+def test_pflicht_2fa_nach_uebergang(orgs, api, board_a, settings):
     import datetime
 
     from django.utils import timezone
 
     from access.catalog import ROLES_MANAGE
     from access.permissions import permissions_in
+    from accounts.mfa_policy import GRACE_DAYS
     from accounts.models import User
 
+    settings.MFA_GRACE_DAYS = GRACE_DAYS
     perms = permissions_in(board_a, orgs["a"])
     assert ROLES_MANAGE in perms
     board_a.refresh_from_db()

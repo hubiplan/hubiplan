@@ -49,9 +49,11 @@ class TestPostausgang:
         net.down.add(VERBAND)
         with net.on(VEREIN):
             msg = services.enqueue(lower, "coupling.config", {"packets": lower.packets})
-        Message.objects.filter(pk=msg.pk).update(
-            payload={"packets": lower.packets}, next_try_at=timezone.now()
-        )
+        # Über save(): der Inhalt liegt verschlüsselt (Gesamtaudit 11.11., S-07)
+        msg = Message.objects.get(pk=msg.pk)
+        msg.payload = {"packets": lower.packets}
+        msg.next_try_at = timezone.now()
+        msg.save()
         net.down.clear()
         with net.on(VEREIN):
             services.deliver(lower.pk)

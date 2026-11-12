@@ -70,7 +70,8 @@ def gate(user, perms: set[str], *, platform: bool = False) -> set[str]:
 
         from .models import User
 
-        due = now + datetime.timedelta(days=GRACE_DAYS)
+        # Tests mit verstellter Uhr setzen MFA_GRACE_DAYS hoch (tests/conftest.py)
+        due = now + datetime.timedelta(days=getattr(settings, "MFA_GRACE_DAYS", GRACE_DAYS))
         # Nur setzen, wenn noch leer (zwei Anfragen gleichzeitig: die erste gewinnt). Kein
         # Teil des Änderungspakets der Anfrage (sonst wäre „Rückgängig“ gesperrt).
         with suppress():

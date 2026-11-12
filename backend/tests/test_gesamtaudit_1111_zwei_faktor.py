@@ -38,7 +38,8 @@ def _totp(user):
     return User.objects.get(pk=user.pk)
 
 
-def test_frist_drei_tage_und_folgenreiche_rechte_ruhen_sofort(orgs, api):
+def test_frist_drei_tage_und_folgenreiche_rechte_ruhen_sofort(orgs, api, settings):
+    settings.MFA_GRACE_DAYS = GRACE_DAYS
     club = orgs["a"]
     board = make_user("neu-vorstand@example.org")
     give_role(board, club)

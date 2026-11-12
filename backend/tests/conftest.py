@@ -108,6 +108,9 @@ def _mfa_lockerer(settings):
     settings.MFA_PLATFORM_GRACE = True
     settings.MFA_STEP_UP = False
     settings.MFA_IMMEDIATE = False
+    # Frist unabhängig von verstellten Uhren (z. B. Aufgabenserien im Jahr 2032); die Frist
+    # selbst prüfen tests/test_gesamtaudit_1111_zwei_faktor.py und test_fachfragen_3110b.py
+    settings.MFA_GRACE_DAYS = 36500
     # Mails sofort statt im Hintergrund (Gesamtaudit 11.11., H-09)
     settings.MAIL_IN_BACKGROUND = False
 
