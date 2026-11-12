@@ -173,7 +173,7 @@ Konto. Jedes Bild belegt erst einen Platz und wird dann wie jeder Upload geprüf
 Format, Pixel, Metadaten entfernt); scheitert es, zählt es nicht. Angelegt werden die Bilder im
 Namen der Person, die den Link erzeugt hat.
 
-**Bild per Adresse**: `Website.image_hosts` (Webseite › Domain, höchstens 10 Rechnernamen, keine
+**Bild per Adresse**: `Website.image_hosts` (Webseite › Internetadresse, höchstens 10 Rechnernamen, keine
 IP-Adressen). Nur `https`, genauer Rechnername, Abruf über `core.safehttp` (keine internen
 Adressen, keine Weiterleitungen, höchstens 15 MB, 15 s), Inhaltstyp JPG/PNG/WebP. Die Quelle
 steht danach in der Bildunterschrift.

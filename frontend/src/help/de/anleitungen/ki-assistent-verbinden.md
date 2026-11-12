@@ -42,11 +42,11 @@ Danach kannst du im Assistenten z. B. schreiben: „Überarbeite den Text ‚Üb
 
 Was der Assistent außerdem kann:
 
-- **Gestaltung, Menü und Startseite**: Design, Farben, Feinabstimmung und Kopfbild wählen, das Menü ordnen (Überschriften, Links nach außen, Knopf) und eigene Abschnitte der Startseite anlegen, verschieben oder ausblenden. Das braucht das Recht „Webseite verwalten“ und landet im Entwurf. Bausteine ein- oder ausschalten geht nur in HUBIplan.
-- **Bilder hochladen**: Schreib z. B. „Ich will Fotos vom Schützenfest hochladen“. Der Assistent gibt dir einen Link, der 30 Minuten für bis zu 20 Bilder gilt. Öffne ihn auf Handy oder PC und wähle die Fotos; sie gehen direkt an HUBIplan, nicht über den Chat, und landen unter Webseite › Bilder.
-- **Bilder beschreiben**: Der Assistent sieht die Bilder klein und schlägt Alternativtext und Bildunterschrift vor. Bei Bildern, die schon auf der Webseite stehen, ergänzt er nur fehlende Texte; vorhandene änderst du selbst. Personen erkennt oder benennt er nicht.
-- **Bilder per Adresse**: Von Servern, die ihr unter [Webseite › Domain](/webseite/domain) bei „Bilder für KI-Assistenten“ freigebt (etwa die Nextcloud des Vereins), holt HUBIplan ein Bild selbst. Die Quelle kommt in die Bildunterschrift. Ohne Eintrag geht das nicht.
-- **Beiträge für Instagram oder Facebook**: Der Assistent legt Text und Bilder als Entwurf unter [Webseite › Social Media](/webseite/beitraege) ab. Dort kopierst du den Text, speicherst die Bilder und postest selbst; HUBIplan veröffentlicht nichts bei Meta.
+- Gestaltung, Menü und Startseite: Design, Farben, Feinabstimmung und Kopfbild wählen, das Menü ordnen (Überschriften, Links nach außen, Knopf) und eigene Abschnitte der Startseite anlegen, verschieben oder ausblenden. Das braucht das Recht „Webseite verwalten“ und landet im Entwurf. Bausteine ein- oder ausschalten geht nur in HUBIplan.
+- Bilder hochladen: Schreib z. B. „Ich will Fotos vom Schützenfest hochladen“. Der Assistent gibt dir einen Link, der 30 Minuten für bis zu 20 Bilder gilt. Öffne ihn auf Handy oder PC und wähle die Fotos; sie gehen direkt an HUBIplan, nicht über den Chat, und landen unter Webseite › Bilder.
+- Bilder beschreiben: Der Assistent sieht die Bilder klein und schlägt Alternativtext und Bildunterschrift vor. Bei Bildern, die schon auf der Webseite stehen, ergänzt er nur fehlende Texte; vorhandene änderst du selbst. Personen erkennt oder benennt er nicht.
+- Bilder per Adresse: Von Servern, die ihr unter [Webseite › Internetadresse](/webseite/domain) bei „Bilder für KI-Assistenten“ freigebt (etwa die Nextcloud des Vereins), holt HUBIplan ein Bild selbst. Die Quelle kommt in die Bildunterschrift. Ohne Eintrag geht das nicht.
+- Beiträge für Instagram oder Facebook: Der Assistent legt Text und Bilder als Entwurf unter [Webseite › Social Media](/webseite/beitraege) ab. Dort kopierst du den Text, speicherst die Bilder und postest selbst; HUBIplan veröffentlicht nichts bei Meta.
 
 Neue Bilder sind erst öffentlich, wenn sie in einem veröffentlichten Text oder Abschnitt stehen.
 

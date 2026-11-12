@@ -42,11 +42,11 @@ Then you can write to the assistant, for example: “Revise the ‘About us’ t
 
 What else the assistant can do:
 
-- **Design, menu and home page**: choose design, colours, fine-tuning and header image, arrange the menu (headings, external links, button) and add, move or hide custom home page sections. This needs the “Manage website” permission and goes into the draft. Switching blocks on or off is only possible in HUBIplan.
-- **Upload images**: write, for example, “I want to upload photos from the summer festival”. The assistant gives you a link that is valid for 30 minutes and up to 20 images. Open it on your phone or PC and choose the photos; they go straight to HUBIplan, not through the chat, and end up under Website › Images.
-- **Describe images**: the assistant sees the images in a small size and suggests alternative text and caption. For images already on the website it only fills in missing texts; you change existing ones yourself. It does not recognise or name people.
-- **Images by address**: HUBIplan fetches an image itself from servers you approve under [Website › Domain](/webseite/domain) at “Images for AI assistants” (such as the club’s Nextcloud). The source goes into the caption. Without an entry this is not possible.
-- **Posts for Instagram or Facebook**: the assistant stores text and images as a draft under [Website › Social media](/webseite/beitraege). There you copy the text, save the images and post yourself; HUBIplan publishes nothing on Meta.
+- Design, menu and home page: choose design, colours, fine-tuning and header image, arrange the menu (headings, external links, button) and add, move or hide custom home page sections. This needs the “Manage website” permission and goes into the draft. Switching blocks on or off is only possible in HUBIplan.
+- Upload images: write, for example, “I want to upload photos from the summer festival”. The assistant gives you a link that is valid for 30 minutes and up to 20 images. Open it on your phone or PC and choose the photos; they go straight to HUBIplan, not through the chat, and end up under Website › Images.
+- Describe images: the assistant sees the images in a small size and suggests alternative text and caption. For images already on the website it only fills in missing texts; you change existing ones yourself. It does not recognise or name people.
+- Images by address: HUBIplan fetches an image itself from servers you approve under [Website › Web address](/webseite/domain) at “Images for AI assistants” (such as the club’s Nextcloud). The source goes into the caption. Without an entry this is not possible.
+- Posts for Instagram or Facebook: the assistant stores text and images as a draft under [Website › Social media](/webseite/beitraege). There you copy the text, save the images and post yourself; HUBIplan publishes nothing on Meta.
 
 New images only become public once they are in a published text or section.
 

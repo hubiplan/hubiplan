@@ -4,7 +4,7 @@
   kurz gültigen Link an. Sie öffnet ihn auf Handy oder PC und wählt Fotos; die Dateien
   gehen nie über den Anbieter des Assistenten.
 - **Bild per Adresse (W3):** HUBIplan holt ein Bild von einem Server, den die Einheit unter
-  Webseite › Domain freigegeben hat (``Website.image_hosts``), über ``core.safehttp``
+  Webseite › Internetadresse freigegeben hat (``Website.image_hosts``), über ``core.safehttp``
   (keine internen Adressen) und prüft es wie jeden Upload.
 
 Beides legt nur Bilder in die Bilderverwaltung; öffentlich wird ein Bild erst, wenn es in
@@ -183,7 +183,7 @@ def fetch(url: str, allowed: list[str]) -> SimpleUploadedFile:
             {
                 "url": gettext(
                     "Von {host} dürfen keine Bilder geholt werden. Erlaubte Server stehen unter "
-                    "Webseite › Domain › Bilder für KI-Assistenten."
+                    "Webseite › Internetadresse › Bilder für KI-Assistenten."
                 ).format(host=host)
             }
         )

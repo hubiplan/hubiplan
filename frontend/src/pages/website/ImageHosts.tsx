@@ -1,4 +1,4 @@
-// Webseite › Domain: Server, von denen ein KI-Assistent Bilder per Adresse holen darf
+// Webseite › Internetadresse: Server, von denen ein KI-Assistent Bilder per Adresse holen darf
 // (KI-Schnittstelle W3, docs/mcp.md). Leer = keine; gespeichert wird beim Verlassen des Felds.
 import { useEffect, useState } from 'react'
 import { Field } from '../../components/ui.tsx'

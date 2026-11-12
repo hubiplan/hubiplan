@@ -882,8 +882,8 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
         title=gettext_lazy("Bild von einer Adresse holen"),
         description=gettext_lazy(
             "Holt ein JPG-, PNG- oder WebP-Bild von einem Server, den die Einheit freigegeben "
-            "hat (Webseite › Domain), in die Bilderverwaltung. Quelle und Lizenz sind Pflicht "
-            "und kommen in die Bildunterschrift."
+            "hat (Webseite › Internetadresse), in die Bilderverwaltung. Quelle und Lizenz sind "
+            "Pflicht und kommen in die Bildunterschrift."
         ),
         schema=_schema(
             {
