@@ -328,6 +328,16 @@ def test_rechte_gelten_live(club, site, editor):
     assert rpc(token, "ping").status_code == 401
 
 
+def test_schluessel_gilt_auch_unter_rls(club, site, editor):
+    # Im Betrieb läuft die Anwendung in der eingeschränkten Rolle: Die Rechteprüfung des
+    # Schlüssels muss die Rollen des Kontos sehen, obwohl die Anfrage keine Sitzung hat
+    from .verbund_netz import app_role
+
+    token = connect(editor, club)["access_token"]
+    with app_role():
+        assert rpc(token, "ping").status_code == 200
+
+
 def test_mein_konto_listet_und_trennt(club, site, editor):
     token = connect(editor, club)["access_token"]
     c = with_mfa(editor)
