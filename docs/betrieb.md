@@ -920,9 +920,12 @@ unbrauchbar und meldet App-Geräte und Verbund-Anmeldungen des Kontos ab.
 
 ## Pflicht-2FA
 
-Wer Rollen verwaltet, vollständige Exporte erstellt, in der Kasse bucht oder die Plattform
-verwaltet, braucht die Zwei-Faktor-Anmeldung. Beim ersten Bedarf beginnen 14 Tage Übergang
-(Hinweis oben auf jeder Seite); danach ruhen genau diese Rechte, bis 2FA eingerichtet ist.
+Wer in einer Einheit irgendein Recht hat (Vorstand, Kasse, Abteilungsrolle …) oder die
+Plattform verwaltet, braucht die Zwei-Faktor-Anmeldung; nur der eigene Mitgliederbereich kommt
+ohne aus (Gesamtaudit 11.11., Fachfrage 1). Beim ersten Bedarf beginnen 3 Tage Übergang
+(Hinweis oben auf jeder Seite). Schon in dieser Zeit ruhen Rundschreiben, Exporte und das
+Buchen in der Kasse (`MFA_IMMEDIATE`, `accounts/mfa_policy.py`); danach ruhen alle Rechte, bis
+2FA eingerichtet ist.
 Die Plattform-Verwaltung hat keine Übergangsfrist: Ohne 2FA ruhen alle Plattformrechte sofort
 (auch für Superuser); „Mein Konto“ bleibt erreichbar, um 2FA einzurichten. Handy verloren: mit einem
 Wiederherstellungscode anmelden, oder eine zweite Person mit Rollenverwaltung und eigener
