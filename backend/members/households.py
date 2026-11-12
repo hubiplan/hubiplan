@@ -18,6 +18,9 @@ from rest_framework import serializers
 
 from .models import Gender, Household, HouseholdMember, Membership, PersonKind, today
 
+# Fehlercode, wenn das Mitglied schon in einem anderen Haushalt ist (kein Oberflächentext)
+OTHER_HOUSEHOLD = "other_household"
+
 
 def open_on(on: datetime.date) -> Q:
     return Q(valid_from__lte=on) & (Q(valid_until__isnull=True) | Q(valid_until__gte=on))
@@ -127,7 +130,7 @@ def add_member(
                         "Das Mitglied gehört schon zu „{name}“. Dort zuerst beenden "
                         "oder „wechseln“ wählen."
                     ).format(name=link.household.name),
-                    "code": "other_household",
+                    "code": OTHER_HOUSEHOLD,
                 }
             )
         if link.valid_from >= valid_from:
