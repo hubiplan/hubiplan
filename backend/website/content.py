@@ -674,6 +674,7 @@ _SECTION_TARGETS = [
     ("offices", "aemter", "Ämter"),
     ("statutes", "dokumente", "Dokumente"),
     ("contact", "kontakt", "Kontakt"),
+    ("join", "mitglied-werden", "Mitglied werden"),
 ]
 
 

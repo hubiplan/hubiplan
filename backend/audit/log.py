@@ -25,6 +25,9 @@ IGNORED_FIELDS = {"created_at", "updated_at", "id", "organization", "uuid"}
 
 # Lesbare Namen der protokollierten Objekte
 OBJECT_TYPES = {
+    "applicationform": gettext_noop("Online-Antrag"),
+    "kiosklink": gettext_noop("Stand-Link"),
+    "application": gettext_noop("Mitgliedsantrag"),
     "businesspartner": gettext_noop("Geschäftspartner"),
     "incominginvoice": gettext_noop("Rechnungseingang"),
     "incomingmailbox": gettext_noop("Rechnungspostfach"),

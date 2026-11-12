@@ -945,3 +945,38 @@ class ContactView(_Public):
         response = self.respond({"status": "ok"}, site)
         response["Cache-Control"] = "private, no-store"
         return response
+
+
+class JoinView(_Public):
+    """Seite „Mitglied werden“: Einleitung, Arten mit Beitrag und Adresse des Formulars.
+
+    Das Formular selbst liegt in HUBIplan (``/mitglied-werden/<key>``); die Webseite
+    speichert und sieht keine Angaben (konzepte/online-beitrittsformular.md)."""
+
+    def get(self, request, key: str):
+        from django.utils.translation import override
+
+        from admission import public as join_public
+        from admission import services as join_services
+        from admission.models import ApplicationForm
+        from core.i18n import normalize
+
+        site = self.load(request, key)
+        if not site.site.block_on("join"):
+            raise Http404
+        org = site.site.organization
+        form = ApplicationForm.objects.get(organization=org)
+        language = normalize(request.query_params.get("lang"))
+        with override(language):
+            data = {
+                "intro": join_services.text_of(form, "intro", language),
+                "types": join_public.type_entries(form, language),
+                "units": [
+                    {"id": u.pk, "name": u.name}
+                    for u in join_public.units_of(org)
+                    if (form.fields or {}).get("unit", "off") != "off"
+                ],
+                "sepa": join_public.sepa_state(form)[0],
+                "form_url": f"{join_services.base_url(org)}/mitglied-werden/{form.public_key}",
+            }
+        return self.respond(data, site)

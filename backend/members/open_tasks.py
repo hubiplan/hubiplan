@@ -491,6 +491,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
 
     def get(self, request, org_id: int):
         org, perms = self.org, self.org_permissions
+        from admission.open_tasks import application_tasks
         from entries.open_tasks import entry_tasks
         from helpers.open_tasks import helper_tasks
         from meetings.open_tasks import meeting_tasks
@@ -504,6 +505,14 @@ class OpenTasksView(OrgScopedMixin, APIView):
                 lambda: (
                     member_tasks(org, perms)
                     if org.keeps_members and "members" in (org.enabled_modules or [])
+                    else []
+                ),
+            ),
+            (
+                "members",
+                lambda: (
+                    application_tasks(request.user, org, perms)
+                    if "members" in (org.enabled_modules or [])
                     else []
                 ),
             ),

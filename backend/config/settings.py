@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "meetings",
     "helpers",
     "places",
+    "admission",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -367,6 +368,10 @@ CELERY_BEAT_SCHEDULE = {
     "webseite-beitraege-zugang": {
         "task": "website.tasks.maintain_social_feeds",
         "schedule": 24 * 60 * 60,
+    },
+    "mitgliedsantraege-aufraeumen": {
+        "task": "admission.tasks.purge_applications",
+        "schedule": 60 * 60,  # stündlich (unbestätigte Anträge nach 48 Stunden)
     },
     "webseite-nachrichten-aufraeumen": {
         "task": "website.tasks.purge_held_messages",

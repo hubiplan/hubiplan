@@ -42,6 +42,7 @@ BLOCKS = {
     "bookings": "Belegung",
     "statutes": "Dokumente",
     "contact": "Kontakt",
+    "join": "Mitglied werden",
     "social": "Social-Media-Symbole",
     "search": "Suche",
 }
@@ -62,6 +63,7 @@ BLOCK_HINTS = {
     "bookings": "Infrastruktur und Material, deren Buchungskalender „auf der Webseite“ zeigt",
     "statutes": "Satzung, Beitragsordnung, Gründungsurkunde und eigene Dokumente",
     "contact": "Kontaktformular",
+    "join": "Online-Mitgliedsantrag (Mitglieder › Online-Antrag einschalten)",
     "social": "oben im Kopf, auf dem Handy im Menü",
     "search": "Lupe im Menü: sucht in Textseiten, Terminen und Alben",
 }
@@ -113,6 +115,13 @@ def block_module(key: str) -> str | None:
 
 def _off(org, modules: dict[str, str]) -> set[str]:
     return {k for k, m in modules.items() if m in MODULE_BY_ID and not module_on(org, m)}
+
+
+def _join_enabled(org) -> bool:
+    """Baustein „Mitglied werden“ nur mit eingeschaltetem Online-Antrag."""
+    from admission.models import ApplicationForm
+
+    return ApplicationForm.objects.filter(organization=org, enabled=True).exists()
 
 
 def blocks_without_module(org) -> set[str]:
@@ -402,6 +411,8 @@ class Website(models.Model):
         # Baustein eines abgeschalteten Moduls erscheint nicht (module-neustruktur)
         module = block_module(key)
         if module in MODULE_BY_ID and not module_on(self.organization, module):
+            return False
+        if key == "join" and not _join_enabled(self.organization):
             return False
         if is_extra_block(key):
             default = not key.startswith(DEFAULT_OFF_PREFIXES)

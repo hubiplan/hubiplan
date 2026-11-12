@@ -782,7 +782,7 @@ def member_detail(membership: Membership, org) -> dict:
             many=True,
             context={"org": org},
         ).data
-        if person.is_organization
+        if person.is_organization or membership.contact_persons.exists()
         else [],
         "contact_for": [
             {"member_id": c.membership_id, "name": c.membership.person.display_name}

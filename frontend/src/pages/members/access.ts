@@ -55,6 +55,7 @@ export function memberSections(org: OrgSummary | null): NavItem[] {
   }
   return [
     { to: '/mitglieder', label: t('Mitgliederliste') },
+    { to: '/mitglieder/antraege', label: t('Mitgliedsanträge') },
     { to: '/mitglieder/entwicklung', label: t('Entwicklung') },
     ...extras(org),
     { to: '/mitglieder/aemter', label: t('Ämter') },
@@ -92,6 +93,7 @@ export function setupTabs(org: OrgSummary): NavItem[] {
       : []),
     ...(awards ? [{ to: '/mitglieder/einrichtung/ehrungen', label: t('Ehrungen') }] : []),
     { to: '/mitglieder/einrichtung/zusatzfelder', label: t('Zusatzfelder') },
+    ...(club ? [{ to: '/mitglieder/einrichtung/antrag', label: t('Online-Antrag') }] : []),
     ...(awards ? [{ to: '/mitglieder/einrichtung/jubilaeen', label: t('Jubiläen & Dauer') }] : []),
     ...(club
       ? [{ to: '/mitglieder/einrichtung/mitgliederbereich', label: t('Mitgliederbereich & Fotos') }]

@@ -2334,7 +2334,8 @@ button.tab.active {
   gap: 1.25rem;
   align-items: flex-start;
 }
-.card-qr {
+.card-qr,
+.join-qr {
   width: 10rem;
   height: 10rem;
   background: #fff;
@@ -5559,7 +5560,7 @@ label:has(> .file-input:focus-visible) {
   color: #f6deb4;
 }
 /* Logos und QR-Codes behalten ihren hellen Untergrund */
-:root[data-theme='dark'] :is(.card-qr, .signature-pad, .signature-image) {
+:root[data-theme='dark'] :is(.card-qr, .join-qr, .signature-pad, .signature-image) {
   color-scheme: light;
 }
 .home-actions .card-head {
@@ -5982,4 +5983,42 @@ label:has(> .file-input:focus-visible) {
 .color-sheet-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.9em;
+}
+
+/* Mitgliedsantrag (pages/join): Schritte über dem Formular */
+.join-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  counter-reset: join-step;
+}
+
+.join-steps li {
+  counter-increment: join-step;
+}
+
+.join-steps li::before {
+  content: counter(join-step) '. ';
+}
+
+.join-steps li[aria-current='step'] {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.join-form fieldset {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin: 0;
+}
+
+/* Einrichtung › Online-Antrag: Angaben zu einer freigegebenen Mitgliedsart */
+.indent {
+  padding-left: var(--space-5);
 }

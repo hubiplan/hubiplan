@@ -23,6 +23,8 @@ import { PublicCardPage } from './pages/PublicCardPage.tsx'
 import { PublicPhotoPage } from './pages/PublicPhotoPage.tsx'
 import { PublicOptOutPage } from './pages/PublicOptOutPage.tsx'
 import { PublicRsvpPage } from './pages/PublicRsvpPage.tsx'
+import { JoinFormPage } from './pages/join/JoinFormPage.tsx'
+import { JoinStatusPage } from './pages/join/JoinStatusPage.tsx'
 import { PublicCircularConfirmPage } from './pages/PublicCircularConfirmPage.tsx'
 import { McpConnectPage } from './pages/McpConnectPage.tsx'
 import { NextcloudLoginPage } from './pages/NextcloudLoginPage.tsx'
@@ -269,6 +271,9 @@ export default function App() {
           />
           <Route path="/rundschreiben/abmelden/:token" element={<PublicOptOutPage />} />
           <Route path="/rueckmeldung/:token" element={<PublicRsvpPage />} />
+          <Route path="/mitglied-werden/stand/:token" element={<JoinFormPage kiosk />} />
+          <Route path="/mitglied-werden/:key" element={<JoinFormPage />} />
+          <Route path="/antrag/:token" element={<JoinStatusPage />} />
           <Route path="/rundschreiben/bestaetigen/:token" element={<PublicCircularConfirmPage />} />
           <Route path="/ausweis/:token" element={<PublicCardPage />} />
           <Route path="/passwort-zuruecksetzen/:key" element={<PasswordResetPage />} />
