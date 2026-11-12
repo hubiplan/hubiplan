@@ -43,7 +43,7 @@ it('wählt das Mitglied eines neuen Musikers per Suche statt aus einer Gesamtlis
     </MemoryRouter>,
   )
   await userEvent.click(await screen.findByRole('button', { name: 'Neuer Musiker' }))
-  await userEvent.type(screen.getByRole('searchbox', { name: 'Mitglied' }), 'Mus')
+  await userEvent.type(await screen.findByRole('searchbox', { name: 'Mitglied' }), 'Mus')
   await userEvent.click(await screen.findByRole('button', { name: /Muster, Anna/ }))
   expect(screen.getByText(/Muster, Anna/)).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'Speichern' }))
