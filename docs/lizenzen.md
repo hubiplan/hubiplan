@@ -89,7 +89,7 @@ Installationspakete an Dritte gehen (siehe unten).
 | SEPA-Schema `backend/music/schemas/pain.001.001.09.xsd` | ISO 20022 Nutzungsbedingungen | Unverändertes ISO-20022-Originalschema zur Prüfung der Auszahlungsdatei. Die strengeren Regeln der Deutschen Kreditwirtschaft (GBIC 5) prüft `music.payouts.dk_rules` im eigenen Code; die DK-Schemadatei ist seit 10.11.2026 entfernt, weil eine Erlaubnis zur Weitergabe fehlte (Audit 10.11., L04) |
 
 Das Server-Image enthält nur die Laufzeit-Abhängigkeiten (`requirements.txt`). Test-Werkzeuge
-(`requirements-dev.txt`: pytest, ruff) baut nur `scripts/test.sh` mit
+(`requirements-dev.txt`: pytest, ruff, pip-audit) baut nur `scripts/test.sh` mit
 `--build-arg REQUIREMENTS=requirements-dev.txt` dazu.
 
 **API-Dokumentation:** Die Swagger-Oberfläche unter `/api/docs/` lädt Code von einem CDN

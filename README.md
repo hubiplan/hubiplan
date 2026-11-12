@@ -257,7 +257,7 @@ kopieren (die `.env` wird nie eingecheckt).
 cd backend
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -r requirements-dev.txt
+pip install --require-hashes --no-deps -r requirements-dev.txt
 export DJANGO_DEBUG=true
 export DATABASE_URL=postgres://hubiplan:hubiplan@localhost:5432/hubiplan
 python manage.py migrate

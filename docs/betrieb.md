@@ -1111,6 +1111,12 @@ HUBIplan nicht löschen; das steht im erzeugten Datenschutzhinweis.
 ## Updates
 
 - Dependabot meldet wöchentlich Updates; Django bleibt auf der LTS-Version.
+- Python-Pakete sind mit Prüfsummen festgeschrieben: Gepflegt werden nur
+  `backend/requirements.in` und `backend/requirements-dev.in`; `scripts/pakete-sperren.sh`
+  schreibt daraus `requirements.txt` und `requirements-dev.txt` mit allen indirekten
+  Abhängigkeiten. Das Image installiert nichts anderes (`pip --require-hashes --no-deps`).
+- `scripts/test.sh` prüft die festgeschriebenen Pakete mit `pip-audit` auf bekannte
+  Schwachstellen und bricht dann ab. Nur bewusst überspringen: `TEST_PIP_AUDIT=0`.
 - Kritische Sicherheitslücken innerhalb weniger Tage einspielen, sonst monatlich.
 - Vor dem Ausrollen lokal testen: `BACKUP_TEST=1 scripts/test.sh` (in WSL).
   Tests laufen nie auf dem Server, sondern lokal über einen Testplatz
