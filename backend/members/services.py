@@ -6,7 +6,7 @@ import datetime
 from dataclasses import dataclass
 
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import F, Max, Min
 from django.utils.translation import gettext
 from rest_framework.exceptions import ValidationError
 
@@ -366,6 +366,59 @@ def lock_person(person_id: int) -> None:
 # --- Aufnahme ---
 
 
+def _following(numbers) -> str:
+    """Nächste Nummer nach den reinen Zahlen in ``numbers``; führende Nullen bleiben."""
+    numbers = [n.strip() for n in numbers if n and n.strip().isdigit()]
+    if not numbers:
+        return "1"
+    # Breite der längsten Nummer mit führender Null: so schreibt der Verein seine Nummern
+    width = max((len(n) for n in numbers if n.startswith("0")), default=0)
+    return str(max(int(n) for n in numbers) + 1).zfill(width)
+
+
+def _numeric_club_numbers(membership_model, organization_id) -> list[str]:
+    return list(
+        membership_model.objects.filter(
+            organization_id=organization_id, club_number__regex=r"^[0-9]+$"
+        ).values_list("club_number", flat=True)
+    )
+
+
+def next_club_number(club: Organization, also_taken=()) -> str:
+    """Nächste Mitgliedsnummer im Verein, wenn keine von Hand vergeben wird.
+
+    Höchste reine Zahl unter den Nummern des Vereins (auch ehemalige Mitglieder) plus 1.
+    Nummern mit Buchstaben zählen nicht mit. Führende Nullen („0042“) bleiben erhalten.
+    Sperrt den Verein, damit zwei gleichzeitige Aufnahmen nicht dieselbe Nummer ziehen.
+    """
+    Organization.objects.select_for_update().filter(pk=club.pk).first()
+    return _following(_numeric_club_numbers(Membership, club.pk) + list(also_taken))
+
+
+def fill_missing_club_numbers(membership_model=Membership) -> int:
+    """Gibt allen Mitgliedschaften ohne Nummer eine (Nachvergabe, Migration 0030).
+
+    Je Verein in Eintrittsreihenfolge (frühester Zeitraum, dann Anlage), weiter nach der
+    höchsten vorhandenen Zahl. Gelöschte Mitgliedschaften (Löschfrist) bleiben ohne Nummer.
+    Nimmt das Modell als Argument, damit die Migration ihr historisches Modell übergeben kann.
+    """
+    missing = membership_model.objects.filter(club_number="", purged_at__isnull=True)
+    changed = 0
+    for organization_id in sorted(set(missing.values_list("organization_id", flat=True))):
+        rows = list(
+            missing.filter(organization_id=organization_id)
+            .annotate(first_entry=Min("periods__entry_date"))
+            .order_by(F("first_entry").asc(nulls_last=True), "pk")
+        )
+        number = _following(_numeric_club_numbers(membership_model, organization_id))
+        for row in rows:
+            row.club_number = number
+            number = str(int(number) + 1).zfill(len(number))
+        membership_model.objects.bulk_update(rows, ["club_number"], batch_size=500)
+        changed += len(rows)
+    return changed
+
+
 @transaction.atomic
 def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Membership:
     """Nimmt eine Person auf: neue Person oder Verknüpfung mit vorhandener.
@@ -413,8 +466,9 @@ def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Memb
 
     check_active_rule(person, club, member_type, entry_date)
 
+    club_number = (data.get("club_number") or "").strip() or next_club_number(club)
     membership = Membership.objects.create(
-        organization=club, scope=scope, person=person, club_number=data.get("club_number", "")
+        organization=club, scope=scope, person=person, club_number=club_number
     )
     MembershipPeriod.objects.create(organization=club, membership=membership, entry_date=entry_date)
     MemberTypeAssignment.objects.create(
