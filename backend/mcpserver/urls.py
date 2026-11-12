@@ -6,11 +6,26 @@ from drf_spectacular.utils import extend_schema
 from . import oauth_views
 from .views import McpClubView, McpView
 
+
+@extend_schema(exclude=True)
+class _McpNoSlash(McpView):
+    """Wie /api/mcp/, im OpenAPI-Schema nur einmal."""
+
+
+@extend_schema(exclude=True)
+class _McpClubNoSlash(McpClubView):
+    """Wie /api/mcp/verein/, im OpenAPI-Schema nur einmal."""
+
+
 api_patterns = [
     # Stufe 0: nur Hilfe, ohne Anmeldung
     path("mcp/", McpView.as_view(), name="mcp"),
     # Stufe 1a: mit Anmeldung, Webseite der verbundenen Einheit (W1)
     path("mcp/verein/", McpClubView.as_view(), name="mcp-club"),
+    # Ohne Schrägstrich ebenso, ohne Weiterleitung: claude.ai prüft die Adresse so und
+    # bricht bei 301 ab; ein POST überlebt eine Weiterleitung ohnehin nicht
+    path("mcp", _McpNoSlash.as_view(), name="mcp-noslash"),
+    path("mcp/verein", _McpClubNoSlash.as_view(), name="mcp-club-noslash"),
     path(
         "mcp/oauth/.well-known/oauth-authorization-server",
         oauth_views.ServerMetadataView.as_view(),
