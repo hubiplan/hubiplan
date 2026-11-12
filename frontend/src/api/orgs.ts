@@ -99,8 +99,6 @@ export interface OrgSummary {
   cash_counts_enabled?: boolean
   /** Dachverband darf seinen Vereinen Module freigeben */
   modules_pass_down?: boolean
-  /** Geschäftspartner als eigener Punkt oben im Hauptmenü (Seite Geschäftspartner) */
-  partners_in_menu?: boolean
   /** Rücklagen nach § 62 AO eingeschaltet (Finanzen › Konten) */
   reserves_enabled?: boolean
   /** Oberste Einheit führt auch selbst Mitglieder */

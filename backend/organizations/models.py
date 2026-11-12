@@ -476,7 +476,8 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     cash_counts_enabled = models.BooleanField(
         "Zählprotokoll und Kassenbericht für Feste", default=False
     )
-    # Geschäftspartner als eigener Punkt oben im Hauptmenü statt unter Verein
+    # Früher: Geschäftspartner oben im Hauptmenü. Nicht mehr verwendet; die Spalte bleibt eine
+    # Fassung lang für den Rückweg und wird im nächsten Release entfernt (docs/releases.md).
     partners_in_menu = models.BooleanField(
         "Geschäftspartner im Hauptmenü", default=False, db_default=False
     )

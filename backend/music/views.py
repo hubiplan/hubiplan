@@ -11,7 +11,6 @@ from rest_framework.response import Response
 from billing.models import BusinessPartner
 from core.api_base import AuditMixin, OrgScopedMixin
 from events import services
-from members.models import Membership
 
 from .availability import ensure_performance
 from .models import Assignment, Musician, Performance, Position, Skill
@@ -272,19 +271,15 @@ class MusicViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
                 .filter(organization=self.org, department=None, repeat="none", remote_uid="")
                 .values("id", "title")
             )
-        members = []
-        if "members.view" in self.org_permissions:
-            members = [
-                {"id": row.pk, "name": str(row.person)}
-                for row in Membership.objects.filter(organization=self.org).select_related("person")
-            ]
         partners = []
         if self.org_permissions & {"billing.view", "finance.view"}:
             partners = [
                 {"id": row.pk, "name": row.name}
                 for row in BusinessPartner.objects.filter(organization=self.org, is_active=True)
             ]
-        return Response({"events": events, "members": members, "partners": partners})
+        # Mitglieder wählt die Oberfläche per Suche (Gesamtaudit 11.11., P-04): keine Liste
+        # aller Mitglieder mit entschlüsselten Namen bei jedem Öffnen des Musikbereichs.
+        return Response({"events": events, "partners": partners})
 
 
 class MusicianViewSet(MusicViewSet):

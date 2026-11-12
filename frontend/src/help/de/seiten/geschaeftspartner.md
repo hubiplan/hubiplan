@@ -38,6 +38,5 @@ Hier stehen alle Firmen, Behörden, Vereine und Personen außerhalb der Mitglied
 - Für einen **Vertrag** (Art der Vereinbarung) tragt ihr die **Kündigungsfrist in Tagen** ein und ob er sich automatisch verlängert. Dann erinnert die Aufgabe rechtzeitig vor dem letzten Kündigungstag, und in der Liste steht „kündigen bis …“.
 - Unter **Dokumente** legt ihr Verträge, Angebote, Einwilligungen oder Schriftverkehr an der Akte ab. Die Dateien zählen zum Speicherplatz der Ablage und werden wie dort auf Viren geprüft.
 - Unter **Webseite** haltet ihr fest, ob der Partner auf eurer Webseite als Partner oder Sponsor genannt werden darf. Nur diese Partner übernimmt der Webseiten-Abschnitt „Partner und Sponsoren“ mit **Aus Geschäftspartnern übernehmen**.
-- **Oben im Hauptmenü zeigen** stellt Geschäftspartner als eigenen Punkt ganz oben ins Menü statt unter Verein, etwa wenn ihr oft mit Lieferanten und Sponsoren arbeitet. Der Schalter gilt für alle in dieser Einheit; umschalten darf, wer Geschäftspartner bearbeiten darf.
 - Löschen geht nur, solange ein Partner nirgends verwendet wird. Sonst entfernt ihr den Haken **Aktiv**.
 - Ist ein Partner auch Mitglied, etwa eine Firma als Fördermitglied, legt ihn bitte nicht doppelt an. Privatpersonen speichert ihr nur, soweit ihr sie für einen Vertrag braucht.

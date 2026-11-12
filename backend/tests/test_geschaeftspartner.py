@@ -305,22 +305,15 @@ def test_einheit_und_mitgliedschaft_aus_fremdem_verein_abgelehnt(c, base, orgs):
     assert response.status_code == 400
 
 
-def test_schalter_hauptmenue(api, club, c, base):
-    def summary(client):
-        rows = client.get("/api/me/organizations/").json()
-        return next(o for o in rows if o["id"] == club.pk)
-
-    assert summary(c)["partners_in_menu"] is False
-    response = c.post(f"{base}menu/", {"partners_in_menu": True}, content_type=JSON)
-    assert response.status_code == 200, response.content
-    assert response.json() == {"partners_in_menu": True}
-    assert summary(c)["partners_in_menu"] is True
-    assert c.post(f"{base}menu/", {}, content_type=JSON).status_code == 400
-    # Nur lesen reicht nicht zum Umschalten
-    user = make_user("lesen@example.org")
-    give_role(user, club, ["partners.view"], name="Nur lesen")
-    reader = api(user)
-    assert (
-        reader.post(f"{base}menu/", {"partners_in_menu": False}, content_type=JSON).status_code
-        == 403
+def test_kein_schalter_fuer_hauptmenue_mehr(club, c, base):
+    """Der Schalter „Oben im Hauptmenü zeigen“ ist entfallen: Geschäftspartner stehen immer
+    unter Verein, auch wenn die alte Spalte noch gesetzt ist."""
+    club.partners_in_menu = True
+    club.save(update_fields=["partners_in_menu"])
+    rows = c.get("/api/me/organizations/").json()
+    summary = next(o for o in rows if o["id"] == club.pk)
+    assert "partners_in_menu" not in summary
+    assert c.post(f"{base}menu/", {"partners_in_menu": True}, content_type=JSON).status_code in (
+        404,
+        405,
     )
