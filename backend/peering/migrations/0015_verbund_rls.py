@@ -1,6 +1,7 @@
 """Verbundtabellen mit Daten von Partnerinstanzen: Row-Level Security über die Kopplung
-(Gesamtaudit 11.11., S-07). Eine Zeile sieht nur die eigene Einheit der Kopplung; Empfang
-und Versand im Verbund laufen wie bisher mit Umgehung (peering/server.py, peering/tasks.py).
+(Gesamtaudit 11.11., S-07). Eine Zeile sieht nur die eigene Einheit der Kopplung und deren
+Platzhalter der Gegenseite (dort arbeitet niemand). Eingänge laufen im Bereich der
+Einheit (peering/services.py, unit_context), Versand und Aufgaben mit Umgehung.
 
 Nicht darunter: ``peering_message`` (Postausgang und Nachweise, Inhalt verschlüsselt und nach
 der Zustellung gelöscht; Versand wird aus Abläufen mehrerer Einheiten angestoßen)."""
@@ -16,7 +17,12 @@ COUPLING_TABLES = (
     "peering_remotecircular",
     "peering_remotestate",
 )
-OWN = f"coupling_id IN (SELECT id FROM peering_coupling WHERE local_unit_id = {ORG})"
+# Eigene Einheit oder ihr Platzhalter der Gegenseite: Pakete wie die Mitgliedermeldung
+# arbeiten im Bereich des Platzhalters (peering/packet_members.py, unit_context)
+OWN = (
+    "coupling_id IN (SELECT id FROM peering_coupling "
+    f"WHERE local_unit_id = {ORG} OR remote_unit_id = {ORG})"
+)
 
 
 def forwards(apps, schema_editor):

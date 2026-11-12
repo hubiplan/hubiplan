@@ -55,7 +55,7 @@ des Vereins bleibt unverändert). In Platzhaltern arbeitet niemand.
 - Ein angekündigter Umzug der Gegenstelle wird erst nach Bestätigung übernommen (siehe
   Umzug). Konzept zur Härtung: `konzepte/haertung-austausch.md` im Projektordner.
 - Übermittelte Daten (gemeldete Mitglieder, Rechnungen, Wechsel, Rundschreiben, Stände)
-  sieht in der Datenbank nur die eigene Einheit der Kopplung (Row-Level Security über
+  sieht in der Datenbank nur die eigene Einheit der Kopplung und ihr Platzhalter der Gegenseite (Row-Level Security über
   `coupling_id`, Migration `peering/0015`); Empfang und Versand laufen mit Umgehung. Die
   Inhalte (`data`, `payload` des Postausgangs) liegen mit dem Schlüssel der eigenen Einheit
   verschlüsselt. Bestand nach dem Ausrollen mit `manage.py daten_verschluesseln`
