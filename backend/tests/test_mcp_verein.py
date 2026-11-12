@@ -6,6 +6,7 @@ Alle Daten erfunden.
 from __future__ import annotations
 
 import base64
+import datetime
 import hashlib
 import json
 import time
@@ -16,9 +17,12 @@ from allauth.account.internal.flows.login import AUTHENTICATION_METHODS_SESSION_
 from allauth.mfa.models import Authenticator
 from django.core import mail
 from django.test import Client as HttpClient
+from django.utils import timezone
 
 from audit.models import AuditEntry
+from core.tenancy import rls_bypass
 from mcpserver.models import McpClient, McpGrant
+from mcpserver.oauth import redirect_kind
 from website.content_models import WebsiteText
 from website.models import Website
 
@@ -448,3 +452,47 @@ def test_abgeschaltet(club, site, editor, settings):
     settings.MCP_ENABLED = False
     assert rpc(token, "ping").status_code == 404
     assert HttpClient().get("/.well-known/oauth-protected-resource").status_code == 404
+
+
+# --- Gesamtaudit 11.11., S-06: Zustimmungsseite zeigt, wohin die Freigabe geht ---
+
+
+def test_art_der_rueckleitung(settings):
+    settings.MCP_KNOWN_REDIRECT_HOSTS = ["claude.ai", "assistent.example.org"]
+    assert redirect_kind("https://claude.ai/api/mcp/auth_callback") == "bekannt"
+    assert redirect_kind("https://app.assistent.example.org/cb") == "bekannt"
+    # Nur ganze Namensteile zählen: kein Unterlaufen mit ähnlichem Namen
+    assert redirect_kind("https://claude.ai.boese.example/cb") == "web"
+    assert redirect_kind("https://fakeclaude.ai/cb") == "web"
+    assert redirect_kind("http://127.0.0.1:45001/callback") == "rechner"
+    assert redirect_kind("de.example.assistent:/cb") == "rechner"
+
+
+def test_zustimmungsseite_nennt_art_und_fruehere_verbindung(settings, club, site, editor):
+    settings.MCP_KNOWN_REDIRECT_HOSTS = ["claude.ai"]
+    c = with_mfa(editor)
+    client_id = register()["client_id"]
+    info = c.get("/api/mcp/oauth/authorize/", params(client_id)).json()
+    assert info["redirect_host"] == "assistent.example.org"
+    assert info["redirect_kind"] == "web"
+    assert info["connected_before"] is False
+    settings.MCP_KNOWN_REDIRECT_HOSTS = ["example.org"]
+    assert c.get("/api/mcp/oauth/authorize/", params(client_id)).json()["redirect_kind"] == (
+        "bekannt"
+    )
+    # Nach einer Verbindung mit demselben Assistenten: keine Warnung mehr nötig
+    first = connect(editor, club)
+    info = c.get("/api/mcp/oauth/authorize/", params(first["client_id"])).json()
+    assert info["connected_before"] is True
+
+
+def test_nie_genutzte_anmeldungen_nach_einem_tag_weg():
+    old = register()["client_id"]
+    with rls_bypass():
+        McpClient.objects.filter(client_id=old).update(
+            created_at=timezone.now() - datetime.timedelta(hours=25)
+        )
+    fresh = register()["client_id"]
+    with rls_bypass():
+        ids = set(McpClient.objects.values_list("client_id", flat=True))
+    assert old not in ids and fresh in ids

@@ -25,6 +25,7 @@ import re
 import secrets
 from urllib.parse import urlencode, urlsplit, urlunsplit
 
+from django.conf import settings
 from django.core.cache import cache
 from django.db import transaction
 from django.utils import timezone
@@ -55,7 +56,8 @@ CODE_PREFIX = "mcp:code:"
 MAX_PARAM = 500
 MAX_REDIRECTS = 5
 # Nicht genutzte Anmeldungen von Assistenten nach einer Woche wegräumen
-CLIENT_UNUSED = datetime.timedelta(days=7)
+# Jeder darf sich anmelden: nie genutzte Anmeldungen nur kurz aufheben (Gesamtaudit 11.11., S-06)
+CLIENT_UNUSED = datetime.timedelta(days=1)
 
 # Bereiche (scopes): Hilfe ist immer dabei. „entwurf“ schließt „lesen“ ein.
 SCOPE_READ = "webseite.lesen"
@@ -341,12 +343,31 @@ def _mfa_problem(request, user) -> str:
     return ""
 
 
+def redirect_kind(uri: str) -> str:
+    """``bekannt``: Adresse eines bekannten Assistenten, ``web``: andere Webadresse,
+    ``rechner``: Programm auf dem eigenen Rechner (Loopback oder eigenes Schema)."""
+    parts = urlsplit(uri)
+    if parts.scheme != "https":
+        return "rechner"
+    host = (parts.hostname or "").lower()
+    for known in settings.MCP_KNOWN_REDIRECT_HOSTS:
+        known = known.strip().lower().lstrip(".")
+        if known and (host == known or host.endswith("." + known)):
+            return "bekannt"
+    return "web"
+
+
 def describe(request, params) -> dict:
     client, redirect_uri, _state, scopes = _checked(request, params)
     user = request.user
+    with rls_bypass():
+        before = McpGrant.objects.filter(user=user, client=client).exists()
     return {
         "client": client.name,
         "redirect_host": urlsplit(redirect_uri).hostname or urlsplit(redirect_uri).scheme,
+        # Woran die Person die Gegenseite erkennt (Name ist frei wählbar, Gesamtaudit S-06)
+        "redirect_kind": redirect_kind(redirect_uri),
+        "connected_before": before,
         "scopes": scope_labels(scopes),
         "units": [{"id": o.pk, "name": o.name} for o in units_for(user)],
         "problem": _mfa_problem(request, user),

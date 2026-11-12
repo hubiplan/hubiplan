@@ -19,6 +19,8 @@ const DESCRIBE = `GET /api/mcp/oauth/authorize/?${QUERY}`
 const REQUEST = {
   client: 'Testassistent',
   redirect_host: 'assistent.example.org',
+  redirect_kind: 'bekannt' as const,
+  connected_before: false,
   scopes: [{ scope: 'webseite.lesen', label: 'Webseite lesen' }],
   units: [{ id: 7, name: 'Verein A' }],
   problem: '',
@@ -51,7 +53,9 @@ describe('KI-Assistent verbinden', () => {
         body: { redirect: 'https://assistent.example.org/cb?code=c&state=s1' },
       }),
     })
-    expect(await screen.findByText(/„Testassistent“ möchte/)).toBeInTheDocument()
+    expect(await screen.findByText('assistent.example.org')).toBeInTheDocument()
+    expect(screen.getByText(/nennt sich „Testassistent“/)).toBeInTheDocument()
+    expect(screen.queryByText(/keinem bekannten KI-Assistenten/)).not.toBeInTheDocument()
     expect(screen.getByText('Webseite lesen')).toBeInTheDocument()
     await userEvent.setup().click(screen.getByRole('button', { name: 'Erlauben' }))
     await waitFor(() =>
@@ -62,6 +66,14 @@ describe('KI-Assistent verbinden', () => {
       organization: 7,
       params: { client_id: 'hpmc_abc', state: 's1' },
     })
+  })
+
+  it('warnt bei unbekannter Adresse, nicht nach früherer Verbindung', async () => {
+    renderAt({
+      'GET /_allauth/browser/v1/auth/session': session,
+      [DESCRIBE]: () => ({ status: 200, body: { ...REQUEST, redirect_kind: 'web' } }),
+    })
+    expect(await screen.findByText(/keinem bekannten KI-Assistenten/)).toBeInTheDocument()
   })
 
   it('ohne zweiten Faktor kein Erlauben', async () => {

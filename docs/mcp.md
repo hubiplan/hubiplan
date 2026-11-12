@@ -91,12 +91,15 @@ Regeln:
 
 - Rückleitung: `https://…`, `http://127.0.0.1|localhost|[::1]` (Port darf wechseln, RFC 8252) oder
   ein eigenes Schema eines Programms; nie `javascript:`, `data:`, `file:`, kein Fragment.
-  Nicht genutzte Selbstanmeldungen räumt HUBIplan nach 7 Tagen weg; höchstens 20 je Stunde
+  Nicht genutzte Selbstanmeldungen räumt HUBIplan nach einem Tag weg; höchstens 20 je Stunde
   und Adresse.
 - Zustimmen kann nur, wer mit **zweitem Faktor** angemeldet ist (`amr` enthält `mfa`) und in der
   gewählten Einheit das Modul **„KI-Assistenten“** (`mcp`, braucht „Webseite“, standardmäßig aus)
-  und das Zusatzrecht **`mcp.connect`** hat. Die Seite zeigt Name des Assistenten, Host der
-  Rückleitung, Bereiche und einen Hinweis zum Datenschutz.
+  und das Zusatzrecht **`mcp.connect`** hat. Die Seite zeigt groß den Host der Rückleitung (dort
+  landet die Freigabe), den selbst gewählten Namen des Assistenten nur nachrangig, Bereiche und
+  einen Hinweis zum Datenschutz. Gehört der Host zu keinem bekannten Assistenten
+  (`HUBIPLAN_MCP_BEKANNTE_ASSISTENTEN`, Standard `claude.ai,claude.com`, Endungen zählen mit),
+  warnt sie vor einer Täuschung; ebenso bei einem Programm auf dem eigenen Rechner.
 - Bereiche: `webseite.lesen`, `webseite.entwurf` (schließt lesen ein). Die Hilfe ist immer dabei.
 - Zugriffsschlüssel `hpm_…` 1 Stunde, Erneuerung `hpmr_…` dreht sich bei jeder Nutzung; die
   Verbindung (`McpGrant`) gilt höchstens 30 Tage und endet nach 14 Tagen ohne Nutzung. Wer

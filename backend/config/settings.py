@@ -569,6 +569,9 @@ MCP_HILFE_ENABLED = env_bool("HUBIPLAN_MCP_HILFE", True)
 # Stufe 1a/W1: KI-Assistenten mit Anmeldung (/api/mcp/verein/); je Einheit zusätzlich Modul
 # „KI-Assistenten“ und Zusatzrecht nötig. false schaltet es für die ganze Instanz ab.
 MCP_ENABLED = env_bool("HUBIPLAN_MCP", True)
+# Rückleitungen bekannter KI-Assistenten (Host oder Endung ohne Punkt davor). Für andere
+# Adressen warnt die Zustimmungsseite (Gesamtaudit 11.11., S-06).
+MCP_KNOWN_REDIRECT_HOSTS = env_list("HUBIPLAN_MCP_BEKANNTE_ASSISTENTEN", "claude.ai,claude.com")
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
 EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")
