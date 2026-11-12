@@ -158,36 +158,38 @@ export function TodoSeries({
                 : 'Die Serie ist beendet.',
             )}
           </p>
-          {todo.can_edit && todo.series.active && !trash && (
-            <button
-              className="button button-ghost"
-              disabled={busy}
-              onClick={() => void change({ active: false })}
-            >
-              {t('Serie beenden')}
-            </button>
-          )}
-          {todo.can_delete && (
-            <button
-              className="button button-ghost"
-              disabled={busy}
-              onClick={() => {
-                void (async () => {
-                  if (
-                    await confirmDialog({
-                      title: t(trash ? 'Ganze Serie wiederherstellen?' : 'Ganze Serie löschen?'),
-                      message: t(
-                        'Die Aktion betrifft die Serie einschließlich ihres Verlaufs und ihrer Anhänge.',
-                      ),
-                    })
-                  )
-                    await change({ deleted: !trash })
-                })()
-              }}
-            >
-              {t(trash ? 'Serie wiederherstellen' : 'Serie löschen')}
-            </button>
-          )}
+          <div className="button-row">
+            {todo.can_edit && todo.series.active && !trash && (
+              <button
+                className="button button-ghost"
+                disabled={busy}
+                onClick={() => void change({ active: false })}
+              >
+                {t('Serie beenden')}
+              </button>
+            )}
+            {todo.can_delete && (
+              <button
+                className="button button-ghost"
+                disabled={busy}
+                onClick={() => {
+                  void (async () => {
+                    if (
+                      await confirmDialog({
+                        title: t(trash ? 'Ganze Serie wiederherstellen?' : 'Ganze Serie löschen?'),
+                        message: t(
+                          'Die Aktion betrifft die Serie einschließlich ihres Verlaufs und ihrer Anhänge.',
+                        ),
+                      })
+                    )
+                      await change({ deleted: !trash })
+                  })()
+                }}
+              >
+                {t(trash ? 'Serie wiederherstellen' : 'Serie löschen')}
+              </button>
+            )}
+          </div>
         </>
       )}
     </details>
