@@ -141,7 +141,7 @@ describe('Kündigungen im Verein', () => {
         status: 200,
         body: [testOrg({ permissions: ['members.view', 'members.edit'] })],
       }),
-      'GET /api/orgs/7/cancellations/': () => ({ status: 200, body: [request] }),
+      'GET /api/orgs/7/cancellations/?status=pending': () => ({ status: 200, body: [request] }),
       'POST /api/orgs/7/cancellations/3/decide/': () => ({
         status: 200,
         body: { ...request, status: 'accepted', status_label: 'bestätigt' },
