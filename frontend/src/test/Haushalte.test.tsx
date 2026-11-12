@@ -76,7 +76,10 @@ describe('Haushalte und Firmen', () => {
     await user.click(screen.getByRole('button', { name: 'Anlegen' }))
     await waitFor(() => expect(calls.some((c) => c.key === `POST ${base}`)).toBe(true))
     const post = calls.find((c) => c.key === `POST ${base}`)!
-    expect(JSON.parse(String(post.init?.body))).toEqual({ kind: 'family', name: 'Familie Beispiel' })
+    expect(JSON.parse(String(post.init?.body))).toEqual({
+      kind: 'family',
+      name: 'Familie Beispiel',
+    })
     expect(await screen.findByText('„Familie Beispiel“ angelegt.')).toBeInTheDocument()
   })
 
