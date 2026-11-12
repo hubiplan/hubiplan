@@ -598,6 +598,11 @@ def _purge_related(membership: Membership, person, club) -> None:
     values = FieldValue.objects.filter(person=person).select_related("organization")
     own = [v.pk for v in values if club in v.organization.ancestors()]
     FieldValue.objects.filter(pk__in=own).delete()
+    # Qualifikationen und Einsichtsvermerke (z. B. Führungszeugnis) braucht nach dem Austritt
+    # niemand mehr
+    from qualifications.models import Qualification
+
+    Qualification.objects.filter(organization=club, person=person).delete()
     # Meldungen: Inhalte leeren; offene gelten als erledigt, damit nichts später
     # gelöschte Daten zurückschreibt
     ChangeRequest.objects.filter(membership=membership).update(
@@ -655,6 +660,7 @@ def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, 
     from competitions.models import AwardGrant
     from honors.models import Companion, Reign, ReignPhoto
     from honors.views import _remove_photo
+    from qualifications.models import Qualification
 
     from .auskunft import _org_ids
     from .models import HonoraryTitleAward, Person
@@ -674,6 +680,9 @@ def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, 
                 name=NAME_REMOVED,
             ),
             "Ehrungen": HonoraryTitleAward.objects.filter(
+                organization_id__in=orgs, person=person
+            ).delete()[0],
+            "Qualifikationen": Qualification.objects.filter(
                 organization_id__in=orgs, person=person
             ).delete()[0],
             "Wettbewerbe": update_encrypted(

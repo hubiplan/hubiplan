@@ -5104,6 +5104,115 @@ msgid_plural "überfällig seit {n} Tagen"
 msgstr[0] "overdue for {n} day"
 msgstr[1] "overdue for {n} days"
 
+#: qualifications
+msgid "Qualifikationen"
+msgstr "Qualifications"
+
+msgid "Nachweise mit Ablaufdatum wie Erste Hilfe, Übungsleiter oder Führungszeugnis, Erinnerung vor dem Ablauf"
+msgstr "Certificates with an expiry date such as first aid, coach licence or criminal record certificate, reminder before expiry"
+
+msgid "Voraussetzung"
+msgstr "Requirement"
+
+#, python-brace-format
+msgid "„{name}“ fehlt"
+msgstr "“{name}” missing"
+
+#, python-brace-format
+msgid "„{name}“ nur bis {date}"
+msgstr "“{name}” only until {date}"
+
+msgid "Unbekannte Qualifikation."
+msgstr "Unknown qualification."
+
+msgid "gültig für Monate"
+msgstr "valid for months"
+
+msgid "Erinnerung Tage vorher"
+msgstr "reminder days before"
+
+msgid "nur Einsichtsvermerk"
+msgstr "inspection note only"
+
+msgid "nicht mehr verwendet"
+msgstr "no longer used"
+
+msgid "Qualifikationsart"
+msgstr "Qualification type"
+
+msgid "Qualifikationsarten"
+msgstr "Qualification types"
+
+msgid "Qualifikation"
+msgstr "Qualification"
+
+msgid "erworben am"
+msgstr "obtained on"
+
+msgid "gültig bis"
+msgstr "valid until"
+
+#, python-brace-format
+msgid "Erinnerung: „{name}“ läuft am {date} ab"
+msgstr "Reminder: “{name}” expires on {date}"
+
+#, python-brace-format
+msgid "dein Nachweis „{name}“ ist laut unseren Unterlagen bis {date} gültig."
+msgstr "according to our records, your certificate “{name}” is valid until {date}."
+
+msgid "Bitte denk rechtzeitig an die Verlängerung und gib dem Vorstand Bescheid, sobald du den neuen Nachweis hast."
+msgstr "Please remember to renew it in time and let the board know as soon as you have the new certificate."
+
+#, python-brace-format
+msgid "Für diesen Dienst ist „{name}“ nötig. Bei dir ist das nicht eingetragen; bitte wende dich an den Vorstand."
+msgstr "This duty requires “{name}”. It is not recorded for you; please contact the board."
+
+#, python-brace-format
+msgid "Für diesen Dienst ist „{name}“ nötig; beim Mitglied ist nichts eingetragen."
+msgstr "This duty requires “{name}”; nothing is recorded for the member."
+
+#, python-brace-format
+msgid "Für diesen Dienst ist „{name}“ nötig. Dein Nachweis gilt nur bis {date}; bitte wende dich an den Vorstand."
+msgstr "This duty requires “{name}”. Your certificate is only valid until {date}; please contact the board."
+
+#, python-brace-format
+msgid "Für diesen Dienst ist „{name}“ nötig; der Nachweis gilt nur bis {date}."
+msgstr "This duty requires “{name}”; the certificate is only valid until {date}."
+
+msgid "Diese Qualifikation gibt es schon."
+msgstr "This qualification already exists."
+
+msgid "Bitte mindestens einen Monat angeben."
+msgstr "Please enter at least one month."
+
+msgid "Einträge dieser Art haben Bemerkungen. Bitte diese zuerst entfernen."
+msgstr "Entries of this type have remarks. Please remove them first."
+
+#, python-brace-format
+msgid "„{name}“ ist bei Mitgliedern eingetragen und kann nur archiviert werden."
+msgstr "“{name}” is recorded for members and can only be archived."
+
+msgid "Diese Qualifikation ist archiviert."
+msgstr "This qualification is archived."
+
+msgid "Das Ablaufdatum liegt vor dem Beginn."
+msgstr "The expiry date is before the start."
+
+msgid "Bei einem Einsichtsvermerk ist keine Bemerkung möglich."
+msgstr "An inspection note cannot have a remark."
+
+#, python-brace-format
+msgid "{n} abgelaufen"
+msgid_plural "{n} abgelaufen"
+msgstr[0] "{n} expired"
+msgstr[1] "{n} expired"
+
+#, python-brace-format
+msgid "{n} läuft bald ab"
+msgid_plural "{n} laufen bald ab"
+msgstr[0] "{n} expires soon"
+msgstr[1] "{n} expire soon"
+
 msgid "Dokument ohne Zugriff"
 msgstr "Document without access"
 

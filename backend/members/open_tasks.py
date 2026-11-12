@@ -512,6 +512,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
         from helpers.open_tasks import helper_tasks
         from meetings.open_tasks import meeting_tasks
         from organizations.setup_status import setup_tasks
+        from qualifications.open_tasks import qualification_tasks
         from todos.open_tasks import todo_tasks
 
         # Bereich je Quelle: Die Finanzen-Übersicht zeigt nur „finance“ (Menüprüfung 2, N-03)
@@ -532,6 +533,7 @@ class OpenTasksView(OrgScopedMixin, APIView):
                     else []
                 ),
             ),
+            ("members", lambda: qualification_tasks(org, perms)),
             ("events", lambda: event_tasks(org, perms)),
             (
                 "finance",

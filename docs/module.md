@@ -60,6 +60,7 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | | Mitgliedsausweise | `cards` | aus | Mitglieder |
 | | Mitgliederbereich | `portal` | an | Mitglieder |
 | | Ehrungen & Jubiläen | `awards` | an | Mitglieder |
+| | Qualifikationen | `qualifications` | an | Mitglieder |
 | | Würden | `honors` | aus | – |
 | Vereinsleben | Termine | `events` | an | – |
 | | Aufgaben | `todos` | an | – |
