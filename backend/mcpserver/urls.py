@@ -1,20 +1,37 @@
 """Adressen der KI-Schnittstelle (docs/mcp.md)."""
 
 from django.urls import path, re_path
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 
 from . import oauth_views
 from .views import McpClubView, McpView
 
 
-@extend_schema(exclude=True)
 class _McpNoSlash(McpView):
-    """Wie /api/mcp/, im OpenAPI-Schema nur einmal."""
+    """Wie /api/mcp/, ohne Schrägstrich; eigene operationId im Schema."""
+
+    @extend_schema(
+        operation_id="mcp_create_ohne_schraegstrich",
+        request=OpenApiTypes.OBJECT,
+        responses={200: OpenApiTypes.OBJECT, 202: None},
+        description="Wie POST /api/mcp/ (Adresse ohne Schrägstrich, ohne Weiterleitung).",
+    )
+    def post(self, request):
+        return super().post(request)
 
 
-@extend_schema(exclude=True)
 class _McpClubNoSlash(McpClubView):
-    """Wie /api/mcp/verein/, im OpenAPI-Schema nur einmal."""
+    """Wie /api/mcp/verein/, ohne Schrägstrich; eigene operationId im Schema."""
+
+    @extend_schema(
+        operation_id="mcp_verein_create_ohne_schraegstrich",
+        request=OpenApiTypes.OBJECT,
+        responses={200: OpenApiTypes.OBJECT, 202: None, 401: OpenApiTypes.OBJECT},
+        description="Wie POST /api/mcp/verein/ (Adresse ohne Schrägstrich, ohne Weiterleitung).",
+    )
+    def post(self, request):
+        return super().post(request)
 
 
 api_patterns = [
