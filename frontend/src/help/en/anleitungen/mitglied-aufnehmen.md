@@ -16,7 +16,9 @@ Before you start: there is at least one membership type (Members › Setup › M
    it, HUBIplan only looks for members of your own club with the same name, and age-based fee
    levels, birthdays and ages are left out for this person.
 3. If there are **Possible matches**, choose the right person or **None of these – create a new person**.
-4. Choose the **Membership type** and the **Joining date**.
+4. Choose the **Membership type** and the **Joining date**. The **Membership number** is
+   optional: if you leave it empty, HUBIplan assigns the next free number (the highest existing
+   number in the club plus 1, including former members; numbers with letters do not count).
 5. Add contact details and address and click **Admit**. For a person who already exists, the
    existing shared contact details stay as they are; your entries only fill empty fields. You can
    change them afterwards in the member record.

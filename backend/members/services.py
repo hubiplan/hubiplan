@@ -366,6 +366,28 @@ def lock_person(person_id: int) -> None:
 # --- Aufnahme ---
 
 
+
+def next_club_number(club: Organization, also_taken=()) -> str:
+    """Nächste Mitgliedsnummer im Verein, wenn keine von Hand vergeben wird.
+
+    Höchste reine Zahl unter den Nummern des Vereins (auch ehemalige Mitglieder) plus 1.
+    Nummern mit Buchstaben zählen nicht mit. Führende Nullen („0042“) bleiben erhalten.
+    Sperrt den Verein, damit zwei gleichzeitige Aufnahmen nicht dieselbe Nummer ziehen.
+    """
+    Organization.objects.select_for_update().filter(pk=club.pk).first()
+    numbers = list(
+        Membership.objects.filter(organization=club, club_number__regex=r"^[0-9]+$").values_list(
+            "club_number", flat=True
+        )
+    )
+    numbers += [n.strip() for n in also_taken if n and n.strip().isdigit()]
+    if not numbers:
+        return "1"
+    highest = max(numbers, key=lambda n: (int(n), len(n)))
+    width = len(highest) if highest.startswith("0") else 0
+    return str(int(highest) + 1).zfill(width)
+
+
 @transaction.atomic
 def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Membership:
     """Nimmt eine Person auf: neue Person oder Verknüpfung mit vorhandener.
@@ -409,8 +431,9 @@ def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Memb
 
     check_active_rule(person, club, member_type, entry_date)
 
+    club_number = (data.get("club_number") or "").strip() or next_club_number(club)
     membership = Membership.objects.create(
-        organization=club, scope=scope, person=person, club_number=data.get("club_number", "")
+        organization=club, scope=scope, person=person, club_number=club_number
     )
     MembershipPeriod.objects.create(organization=club, membership=membership, entry_date=entry_date)
     MemberTypeAssignment.objects.create(
