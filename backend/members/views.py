@@ -463,6 +463,12 @@ class DuplicateView(_ClubMixin, APIView):
                 else []
             )
             return Response(DuplicateSerializer(found, many=True, context={"org": self.org}).data)
+        if not params.get("geburtsdatum"):
+            # Ohne Geburtsdatum nur eigene Mitglieder gleichen Namens zeigen
+            found = services.club_namesakes(
+                self.org, params.get("name", ""), params.get("vorname", "")
+            )
+            return Response(DuplicateSerializer(found, many=True, context={"org": self.org}).data)
         try:
             birth_date = serializers.DateField().to_internal_value(params.get("geburtsdatum"))
         except serializers.ValidationError:
@@ -569,6 +575,8 @@ def update_member(org: Organization, membership: Membership, values: dict, user)
     for field in fields:
         if field in values:
             setattr(person, field, values[field])
+    if person.birth_date is None:
+        person.birth_year_only = False  # ohne Datum auch kein „nur Jahr“
     person.save()
     changes = diff(before_person, snapshot(person))
 

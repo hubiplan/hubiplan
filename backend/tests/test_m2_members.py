@@ -121,7 +121,9 @@ class TestAufnahme:
             },
             content_type=JSON,
         )
-        assert {"last_name", "first_name", "birth_date"} <= set(resp.json())
+        # Geburtsdatum ist freiwillig
+        assert {"last_name", "first_name"} <= set(resp.json())
+        assert "birth_date" not in resp.json()
 
     def test_fremde_mitgliedsart_abgelehnt(self, api, orgs, types, board_a):
         resp = admit(api(board_a), orgs["a"], types["b"]["aktiv"])

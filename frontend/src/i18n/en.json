@@ -1423,6 +1423,7 @@
   "Zuerst prüfen wir, ob es die Person schon gibt – zum Beispiel als Mitglied {e_eines_anderen} {dv_im}.": "First we check whether the person already exists – for example as a member of {e_eines_anderen} {dv_im}.",
   "Zuerst prüfen wir, ob es die Person schon gibt.": "First we check whether the person already exists.",
   "Geburtsdatum": "Date of birth",
+  "Freiwillig. Ohne Geburtsdatum sucht HUBIplan nur unter den eigenen Mitgliedern nach gleichem Namen.": "Optional. Without a date of birth, HUBIplan only looks for members of your own club with the same name.",
   "Geschlecht": "Gender",
   "Mögliche Treffer": "Possible matches",
   "Ist eine dieser Personen gemeint? Dann wird sie verknüpft: Verbandsnummer und Eintritt in {dv_akk} bleiben erhalten.": "Is one of these people meant? Then they will be linked: association number and joining date in {dv_akk} are kept.",

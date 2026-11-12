@@ -521,8 +521,7 @@ class Checker:
             if not p.get("last_name") or not p.get("first_name"):
                 self.p.error(f"{where}: Name oder Vorname fehlt.")
             try:
-                if parse_date(p.get("birth_date")) is None:
-                    self.p.error(f"{where}: Geburtsdatum fehlt.")
+                parse_date(p.get("birth_date"))  # freiwillig, aber gültig
             except ValueError:
                 self.p.error(f"{where}: Geburtsdatum ist ungültig.")
 

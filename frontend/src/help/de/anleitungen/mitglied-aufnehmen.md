@@ -12,7 +12,9 @@ Vorher: Es gibt mindestens eine Mitgliedsart (Mitglieder › Einrichtung › Mit
 
 1. Klicke in der [Mitgliederliste](/mitglieder) auf **Mitglied aufnehmen**.
 2. Trage Name, Vorname und Geburtsdatum ein und klicke auf **Weiter**. HUBIplan prüft, ob es die
-   Person schon gibt, z. B. aus einem anderen Verein.
+   Person schon gibt, z. B. aus einem anderen Verein. Das Geburtsdatum ist freiwillig; ohne es
+   sucht HUBIplan nur unter den eigenen Mitgliedern nach gleichem Namen, und Altersstufen beim
+   Beitrag, Geburtstage und Altersangaben entfallen für diese Person.
 3. Gibt es **Mögliche Treffer**, wähle die richtige Person oder **Keine davon – neue Person anlegen**.
 4. Wähle die **Mitgliedsart** und das Datum für den **Eintritt**.
 5. Ergänze Kontakt und Anschrift und klicke auf **Aufnehmen**. Bei einer schon bekannten Person

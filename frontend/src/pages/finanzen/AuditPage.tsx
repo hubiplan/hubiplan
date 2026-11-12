@@ -518,7 +518,7 @@ function AuditDetail({ id, onBack }: { id: number; onBack: () => void }) {
         </button>
         <strong>{t('Kassenprüfung {y}', { y: audit.label })}</strong>
         <span className="muted">{audit.status_label}</span>
-        <span className="push-right">
+        <span className="button-row push-right">
           <a
             className="button button-ghost"
             href={financeApi.auditPdfUrl(org.id, audit.id)}
@@ -526,7 +526,7 @@ function AuditDetail({ id, onBack }: { id: number; onBack: () => void }) {
             rel="noreferrer"
           >
             {t('Prüfbericht (PDF)')}
-          </a>{' '}
+          </a>
           {canAudit && (
             <button type="button" className="button button-primary" onClick={() => void close()}>
               {t('Prüfung abschließen')}

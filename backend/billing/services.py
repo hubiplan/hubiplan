@@ -342,6 +342,9 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
         details = [member_type.name]
         if stage:
             details.append(stage)
+        elif m.person.birth_date is None and not m.person.is_organization:
+            # Ohne Geburtsdatum greift keine Altersstufe
+            details.append(gettext("ohne Geburtsdatum"))
         reason = member_type.name
         # Ehrungen des Vereins mit Beitragsanpassung: der günstigste gilt
         titles = [

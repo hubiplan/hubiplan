@@ -72,7 +72,7 @@ function currentValues(d: PortalDetail): Record<FieldKey, string> {
   return {
     last_name: d.last_name,
     first_name: d.first_name,
-    birth_date: d.birth_date,
+    birth_date: d.birth_date ?? '',
     gender: d.gender ?? '',
     email: d.contact?.email ?? '',
     phone: d.contact?.phone ?? '',

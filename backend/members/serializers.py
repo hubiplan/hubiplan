@@ -35,6 +35,20 @@ EARLIEST = datetime.date(1800, 1, 1)
 YEARS_AHEAD = 10
 
 
+class OptionalDateField(serializers.DateField):
+    """Freiwilliges Datum: leer ("" oder null) heißt „nicht angegeben“."""
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault("required", False)
+        kwargs.setdefault("allow_null", True)
+        super().__init__(**kwargs)
+
+    def to_internal_value(self, value):
+        if value in ("", None):
+            return None
+        return super().to_internal_value(value)
+
+
 def check_plausible(attrs: dict, *fields: str) -> None:
     latest = timezone.localdate().replace(month=12, day=31)
     latest = latest.replace(year=latest.year + YEARS_AHEAD)
@@ -162,7 +176,8 @@ class AdmitSerializer(OrganizationFieldsMixin, ContactSerializer):
     )
     last_name = serializers.CharField(max_length=100, required=False)
     first_name = serializers.CharField(max_length=100, required=False)
-    birth_date = serializers.DateField(required=False)
+    # Freiwillig; ohne Datum gibt es keine Dublettensuche im Verbandsbereich
+    birth_date = OptionalDateField()
     gender = serializers.ChoiceField(choices=Gender.choices, required=False, allow_blank=True)
     club_number = serializers.CharField(max_length=30, required=False, allow_blank=True)
     member_type = OrgPrimaryKeyField(MemberType)
@@ -181,7 +196,7 @@ class AdmitSerializer(OrganizationFieldsMixin, ContactSerializer):
             for name in (*services.ORGANIZATION_FIELDS, "size"):
                 attrs.pop(name, None)
         check_plausible(attrs, "entry_date", "birth_date")
-        required = ("last_name",) if organization else ("last_name", "first_name", "birth_date")
+        required = ("last_name",) if organization else ("last_name", "first_name")
         missing = [f for f in required if not attrs.get(f)]
         if missing:
             raise serializers.ValidationError({f: gettext("Pflichtfeld.") for f in missing})
@@ -658,7 +673,7 @@ class MemberUpdateSerializer(OrganizationFieldsMixin, serializers.Serializer):
 
     last_name = serializers.CharField(max_length=100, required=False)
     first_name = serializers.CharField(max_length=100, required=False)
-    birth_date = serializers.DateField(required=False)
+    birth_date = OptionalDateField()
     gender = serializers.ChoiceField(choices=Gender.choices, required=False, allow_blank=True)
     club_number = serializers.CharField(max_length=30, required=False, allow_blank=True)
     pays_fee_self = serializers.BooleanField(required=False)
@@ -671,6 +686,8 @@ class MemberUpdateSerializer(OrganizationFieldsMixin, serializers.Serializer):
     country = serializers.CharField(max_length=100, required=False)
 
     def validate_birth_date(self, value):
+        if value is None:
+            return None  # Geburtsdatum ist freiwillig
         # Dieselbe Prüfung wie bei der Aufnahme (Audit 31.10. M31-03)
         check_plausible({"birth_date": value}, "birth_date")
         if value > timezone.localdate():

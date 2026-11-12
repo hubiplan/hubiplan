@@ -354,6 +354,20 @@ button.tab.active {
   flex-wrap: wrap;
 }
 
+/* .actions ist eine Knopfzeile wie .button-row. Ohne eigene Regel klebten die Knöpfe darin
+   aneinander (Ralf 11.11.2026, Rechnungspostfach: „Adresse kopieren“ und „Neue Adresse
+   vergeben“). Tabellenzellen (td/th.actions) bleiben Zellen. Spezifität 0, damit eigene
+   Regeln Vorrang haben. */
+:where(.actions:not(td, th)) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+:where(span.actions) {
+  display: inline-flex;
+}
+
 /* Designregel: Buttons und Blöcke stehen nie ohne Abstand neben- oder
    untereinander.
    Nebeneinander: mehrere Buttons immer in .button-row (oder einem anderen
@@ -362,10 +376,10 @@ button.tab.active {
    Abstand zu ihren Nachbarn, z. B. zur nächsten Karte oder zum Logo-Upload.
    Die Ränder fallen mit denen von Feldern, Absätzen und Hinweisen zusammen,
    dort ändert sich also nichts. Spezifität 0, damit eigene Regeln Vorrang haben. */
-:where(.button-row:not(:first-child)) {
+:where(.button-row, div.actions):where(:not(:first-child)) {
   margin-top: 0.75rem;
 }
-:where(.button-row:not(:last-child)) {
+:where(.button-row, div.actions):where(:not(:last-child)) {
   margin-bottom: 0.75rem;
 }
 :where(.card:not(:first-child)) {
@@ -400,6 +414,7 @@ button.tab.active {
     .image-filters,
     .image-choice-row,
     .button-row,
+    .actions,
     /* Neue Leisten, Kopf- und Aktionszeilen gelten nach ihrem Namen automatisch */
     [class*='toolbar'],
     [class*='-actions'],
@@ -407,7 +422,7 @@ button.tab.active {
     [class*='-tools'],
     [class*='-filters']
   )
-  > :is(.button-row, .card) {
+  > :is(.button-row, .card, .actions) {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -422,8 +437,14 @@ button.tab.active {
 :where(li, p, dd) > :where(.button:not(:first-child)) {
   margin-inline-start: var(--space-2);
 }
+/* Mehrere Knöpfe direkt in einer Tabellenzelle: Abstand nebeneinander, ohne die Zeile höher
+   zu machen. Mehr als zwei Knöpfe besser in eine .button-row setzen. */
+:where(td, th) > :where(.button:not(:first-child)) {
+  margin-inline-start: var(--space-2);
+}
 :where(
     [class*='row'],
+    .actions,
     [class*='toolbar'],
     [class*='-actions'],
     [class*='-head'],

@@ -35,6 +35,19 @@ IDENTITY_FIELDS = {
 # Organisationen haben kein Geburtsdatum: ihre Marken nehmen diesen festen Wert statt
 # des Datums. Er kann mit keinem ISO-Datum zusammenfallen.
 ORGANIZATION_DATE = "organization"
+# Personen ohne Geburtsdatum: ebenso ein fester Wert. Ohne Datum findet die
+# Dublettensuche niemanden (``candidates``); die Marken bleiben nur vollständig.
+NO_DATE = "ohne"
+
+
+def _birth_empty(person, using) -> bool:
+    """Steht wirklich kein Geburtsdatum in der Zeile (und nicht bloß ein unlesbares)?"""
+    if person.pk is None:
+        return True
+    with connections[using].cursor() as cursor:
+        cursor.execute("SELECT birth_date IS NULL FROM members_person WHERE id = %s", [person.pk])
+        row = cursor.fetchone()
+    return row is None or bool(row[0])
 
 
 def names(last_name, first_name, *, using="default"):
@@ -60,7 +73,7 @@ def _mark(raw_key, scope_id, purpose, name, date):
 def values(person, *, using="default", create_key=True):
     organization = person.kind == "organization"
     birth = person._meta.get_field("birth_date").to_python(person.birth_date)
-    if birth is None and not organization:
+    if birth is None and not organization and not _birth_empty(person, using):
         raise ValueError("Geburtsdatum nicht lesbar; Suchmarken nicht berechnet.")
     if create_key:
         key_id, raw_key = crypto.key_for_org(person.scope_id)
@@ -72,6 +85,8 @@ def values(person, *, using="default", create_key=True):
     last, first = names(person.last_name, person.first_name, using=using)
     if organization:
         day, year = ORGANIZATION_DATE, ""
+    elif birth is None:
+        day, year = NO_DATE, ""
     else:
         day, year = birth.isoformat(), str(birth.year)
     result = {"marks_version": VERSION, "marks_key_id": key_id}
@@ -83,7 +98,7 @@ def values(person, *, using="default", create_key=True):
     ):
         result[field] = (
             _mark(raw_key, person.scope_id, field, name, date)
-            if "year" not in field or (person.birth_year_only and not organization)
+            if "year" not in field or (person.birth_year_only and year)
             else ""
         )
     return result

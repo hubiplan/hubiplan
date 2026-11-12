@@ -121,7 +121,7 @@ def _clean(row) -> dict | None:
     organization = row.get("kind") == "organization"
     if organization:
         first, birth = "", None  # Organisationen: kein Vorname, kein Geburtsdatum (J6)
-    elif not first or not birth:
+    elif not first:
         return None
     if not uid.startswith("m") or not uid[1:].isdigit() or not last:
         return None
