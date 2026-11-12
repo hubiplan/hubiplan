@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- **Households in Excel import and export**: columns “Haushalt”, “Rolle im Haushalt”, “Firma” and “Beitrag über”; the same name in the file makes one household. HUBIplan books payments on household and company invoices to the payer, so the donation receipt goes to them as well.
 - **Companies report employees**: if an organisation member pays for employees, its contact persons see under My area › Employees whom the company pays for. They report new employees with name and email (the person gets the link to the online application and joins the company once admitted) and end the payment from a date; the membership continues.
 - **Guardians**: for members under 18 you can now enter parents or a legal guardian by hand in the member file. If you like, they also get circulars to the child by email and their own member area login. Four weeks before the 18th birthday they get an email; on the birthday their access and entry end automatically.
 - **Fees via household or company**: a household or company can have a payer (member, person without membership, organisation member or business partner). The fee run then creates one invoice for all members with “Fee via the household”, optionally with a family or company fee (maximum, flat rate or graduated, under Finance › Set up › Fee rates). Direct debit uses the payer's mandate; the payer sees the invoice in the member area.

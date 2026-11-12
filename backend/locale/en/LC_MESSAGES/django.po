@@ -11186,3 +11186,17 @@ msgstr "Fee paid by"
 
 msgid "Der Haushalt hat keinen Zahler mehr."
 msgstr "The household no longer has a payer."
+
+msgid ""
+"Rolle im Haushalt: „{value}“ ist unbekannt (erlaubt: Erwachsener, Kind oder "
+"leer)."
+msgstr ""
+"Role in household: “{value}” is unknown (allowed: Erwachsener, Kind or "
+"empty)."
+
+msgid ""
+"Beitrag über: „{value}“ ist unbekannt (erlaubt: Haushalt, Firma oder leer)."
+msgstr "Fee via: “{value}” is unknown (allowed: Haushalt, Firma or empty)."
+
+msgid "Beitrag über {value}: Spalte „{column}“ ist leer."
+msgstr "Fee via {value}: column “{column}” is empty."

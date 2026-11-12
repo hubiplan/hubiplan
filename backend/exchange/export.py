@@ -119,6 +119,27 @@ def billing_rows(memberships) -> dict[int, dict]:
     }
 
 
+def household_rows(memberships) -> dict[int, dict]:
+    """Aktueller Haushalt und Firma je Mitgliedschaft, Spalten wie im Import (H6)."""
+    from members.households import current_links
+    from members.models import Household, HouseholdMember
+
+    roles = {HouseholdMember.Role.ADULT: "Erwachsener", HouseholdMember.Role.CHILD: "Kind"}
+    result: dict[int, dict] = {}
+    for link in current_links(memberships).order_by("pk"):
+        row = result.setdefault(link.membership_id, {})
+        if link.kind == Household.Kind.FAMILY:
+            row["household"] = link.household.name
+            row["household_role"] = roles.get(link.role, "")
+            if link.pays_via:
+                row["fee_via"] = "Haushalt"
+        else:
+            row["company"] = link.household.name
+            if link.pays_via:
+                row["fee_via"] = "Firma"
+    return result
+
+
 def member_columns(org: Organization) -> list[Column]:
     cols = [
         Column("photo", "Foto", lambda r: PhotoRef(r.get("photo_path"))),
@@ -152,6 +173,18 @@ def member_columns(org: Organization) -> list[Column]:
         *(
             Column(target, label, (lambda k: lambda r: (r.get("billing") or {}).get(k, ""))(key))
             for target, label, key in billing_columns()
+        ),
+        # Haushalte und Firmen (H6); Spaltennamen passen zum Import
+        *(
+            Column(
+                target, label, (lambda k: lambda r: (r.get("households") or {}).get(k, ""))(target)
+            )
+            for target, label in (
+                ("household", "Haushalt"),
+                ("household_role", "Rolle im Haushalt"),
+                ("company", "Firma"),
+                ("fee_via", "Beitrag über"),
+            )
         ),
     ]
     for definition in definitions_for(org):
@@ -313,8 +346,10 @@ def member_data(org: Organization, filters: dict) -> list[dict]:
         else {}
     )
     billing = billing_rows(list(person_ids.keys()))
+    households = household_rows(list(person_ids.keys()))
     for row in rows:
         row["billing"] = billing.get(row["id"], {})
+        row["households"] = households.get(row["id"], {})
         row["contact_persons"] = contacts.get(row["id"], [])
         row["legal_form"] = legal.get(row["id"], "")
         row["fields"] = values.get(person_ids[row["id"]], {})
