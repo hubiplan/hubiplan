@@ -168,6 +168,12 @@ urlpatterns = [
         portal_views.ChangeRequestDecisionView,
         "change-request-decide",
     ),
+    _p("cancellations/", portal_views.CancellationListView, "cancellations"),
+    _p(
+        "cancellations/<int:pk>/decide/",
+        portal_views.CancellationDecisionView,
+        "cancellation-decide",
+    ),
     _p("changes/<uuid:set_id>/undo/", change_views.UndoView, "undo"),
     _p("birthdays/", jubilee_views.BirthdayView, "birthdays"),
     _p("jubilees/", jubilee_views.JubileeView, "jubilees"),

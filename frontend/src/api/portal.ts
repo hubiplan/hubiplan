@@ -112,6 +112,32 @@ export interface ChangeRequest {
   decided_at: string | null
 }
 
+export interface Cancellation {
+  id: number
+  member_id: number
+  member_name: string
+  exit_date: string
+  earliest_date: string
+  message: string
+  status: 'pending' | 'accepted' | 'rejected' | 'withdrawn'
+  status_label: string
+  response: string
+  created_at: string
+  decided_at: string | null
+}
+
+/** Kündigung im Mitgliederbereich: eingeschaltet, möglich, frühestes Datum, Verlauf */
+export interface CancellationInfo {
+  enabled: boolean
+  possible: boolean
+  earliest_date: string | null
+  /** Regel in Worten, z. B. „mit einer Frist von 3 Monaten zum Ende des Geschäftsjahres“ */
+  rule: string
+  /** schon eingetragener Austritt in der Zukunft */
+  planned_exit: string | null
+  requests: Cancellation[]
+}
+
 export interface PortalDetail extends DeptMember {
   status: 'active' | 'former'
   contact_changes_need_approval: boolean
@@ -126,6 +152,8 @@ export interface PortalDetail extends DeptMember {
     website: string
   }
   change_requests: ChangeRequest[]
+  /** fehlt bei älteren Serverständen */
+  cancellation?: CancellationInfo
 }
 
 export interface DeptRole {
@@ -270,6 +298,10 @@ export const portalApi = {
       `/api/portal/${access}/change-requests/`,
       data,
     ),
+  cancel: (access: number, data: { exit_date?: string; message: string }) =>
+    api.post<Cancellation>(`/api/portal/${access}/cancellation/`, { ...data, confirm: true }),
+  withdrawCancellation: (access: number, id: number) =>
+    api.del(`/api/portal/${access}/cancellation/${id}/`),
 
   // Vereinsseite
   memberAccess: (orgId: number, member: number, contact?: number) =>
@@ -293,6 +325,13 @@ export const portalApi = {
       response,
       overwrite,
     }),
+  cancellations: (orgId: number, status = 'pending') =>
+    api.get<Cancellation[]>(`${org(orgId)}/cancellations/?status=${status}`),
+  decideCancellation: (
+    orgId: number,
+    id: number,
+    data: { accept: boolean; response?: string; exit_date?: string },
+  ) => api.post<Cancellation>(`${org(orgId)}/cancellations/${id}/decide/`, data),
 
   // Postausgang
   outbox: (orgId: number, query: ListQuery = {}) =>

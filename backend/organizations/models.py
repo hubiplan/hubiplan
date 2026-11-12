@@ -225,6 +225,15 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         READ = "read", gettext_lazy("nur lesen")
         WRITE = "write", gettext_lazy("lesen und ändern")
 
+    class CancellationEnd(models.TextChoices):
+        """Zu welchem Termin eine Kündigung des Mitglieds wirkt (Satzung)."""
+
+        ANY = "any", gettext_lazy("zu jedem Tag")
+        MONTH = "month", gettext_lazy("zum Monatsende")
+        QUARTER = "quarter", gettext_lazy("zum Quartalsende")
+        HALF_YEAR = "half_year", gettext_lazy("zum Halbjahresende")
+        YEAR = "year", gettext_lazy("zum Ende des Geschäftsjahres")
+
     class ContactSource(models.TextChoices):
         OWN = "own", gettext_lazy("eigene Angaben")
         ROLE = "role", gettext_lazy("von einer Vorstandsrolle übernehmen")
@@ -401,6 +410,23 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     )
     contact_changes_need_approval = models.BooleanField(
         "Änderungen an Kontaktdaten erst nach Bestätigung durch den Verein", default=False
+    )
+    # Kündigung durch das Mitglied im Mitgliederbereich; Frist und Termin nach Satzung
+    member_cancellation_enabled = models.BooleanField(
+        "Mitglieder können im Mitgliederbereich kündigen", default=False, db_default=False
+    )
+    cancellation_notice_months = models.PositiveSmallIntegerField(
+        "Kündigungsfrist in Monaten",
+        default=3,
+        db_default=3,
+        validators=[MaxValueValidator(24)],
+    )
+    cancellation_period_end = models.CharField(
+        "Kündigung wirksam",
+        max_length=10,
+        choices=CancellationEnd.choices,
+        default=CancellationEnd.YEAR,
+        db_default=CancellationEnd.YEAR,
     )
     department_access_enabled = models.BooleanField(
         "Zugang für Abteilungen freigeschaltet",

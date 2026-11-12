@@ -517,6 +517,12 @@ org_patterns = [
         portal_views.ChangeRequestDecisionView.as_view(),
         name="change-request-decide",
     ),
+    path("cancellations/", portal_views.CancellationListView.as_view(), name="cancellations"),
+    path(
+        "cancellations/<int:pk>/decide/",
+        portal_views.CancellationDecisionView.as_view(),
+        name="cancellation-decide",
+    ),
     path("outbox/", outbox_views.OrgOutboxView.as_view(), name="org-outbox"),
     path(
         "outbox/settings/", outbox_views.OrgOutboxSettingsView.as_view(), name="org-outbox-settings"
@@ -1127,6 +1133,16 @@ urlpatterns = [
         "portal/<int:access_id>/change-requests/",
         portal_views.PortalChangeRequestView.as_view(),
         name="portal-change-request",
+    ),
+    path(
+        "portal/<int:access_id>/cancellation/",
+        portal_views.PortalCancellationView.as_view(),
+        name="portal-cancellation",
+    ),
+    path(
+        "portal/<int:access_id>/cancellation/<int:pk>/",
+        portal_views.PortalCancellationView.as_view(),
+        name="portal-cancellation-withdraw",
     ),
     path(
         "portal/<int:access_id>/documents/",

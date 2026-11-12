@@ -68,8 +68,8 @@ from organizations.terms import department_terms, fill
 from organizations.theme import effective_theme
 from organizations.tree import UnitTree, subtree_ids
 
-from . import services
-from .models import ChangeRequest, LoginLink, PortalAccess, hash_token
+from . import cancellation, services
+from .models import CancellationRequest, ChangeRequest, LoginLink, PortalAccess, hash_token
 
 # --- Vereinsseite: Zugänge und Datenänderungen ---
 
@@ -343,6 +343,50 @@ class ChangeRequestDecisionView(_ClubMixin, APIView):
             cr.response or self.org.name,
         )
         return Response(change_request_data(cr))
+
+
+class CancellationListView(_ClubMixin, APIView):
+    """Kündigungen der Mitglieder aus dem Mitgliederbereich."""
+
+    def get(self, request, org_id: int):
+        qs = CancellationRequest.objects.filter(organization=self.org).select_related(
+            "membership__person"
+        )
+        wanted = request.query_params.get("status", "pending")
+        if wanted != "alle":
+            qs = qs.filter(status=wanted)
+        return Response([cancellation.request_data(c) for c in qs[:200]])
+
+
+class CancellationDecisionSerializer(serializers.Serializer):
+    accept = serializers.BooleanField()
+    response = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    # Der Verein darf das Austrittsdatum beim Bestätigen anpassen (z. B. nach Satzung)
+    exit_date = serializers.DateField(required=False, allow_null=True)
+
+
+class CancellationDecisionView(_ClubMixin, APIView):
+    @transaction.atomic
+    def post(self, request, org_id: int, pk: int):
+        c = get_object_or_404(
+            CancellationRequest.objects.select_related("membership__person").select_for_update(
+                of=("self",)
+            ),
+            organization=self.org,
+            pk=pk,
+        )
+        data = CancellationDecisionSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        cancellation.decide(
+            self.org,
+            c,
+            request.user,
+            accept=v["accept"],
+            response=v.get("response", ""),
+            exit_date=v.get("exit_date"),
+        )
+        return Response(cancellation.request_data(c))
 
 
 # --- Abteilungsbereich ---
@@ -881,6 +925,7 @@ class PortalDetailView(APIView):
                     "membership__person"
                 )[:20]
             ]
+            data["cancellation"] = cancellation.info(club, membership)
         return Response(data)
 
 
@@ -971,6 +1016,42 @@ class PortalChangeRequestView(APIView):
                 },
                 status=status.HTTP_201_CREATED if cr else status.HTTP_200_OK,
             )
+
+
+class PortalCancellationSerializer(serializers.Serializer):
+    exit_date = serializers.DateField(required=False, allow_null=True)
+    message = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    # Bewusst bestätigt: „Ja, ich kündige meine Mitgliedschaft“
+    confirm = serializers.BooleanField()
+
+
+class PortalCancellationView(APIView):
+    """Kündigung der eigenen Mitgliedschaft einreichen (POST) oder zurücknehmen (DELETE)."""
+
+    def post(self, request, access_id: int):
+        access = _portal_access(request.user, access_id)
+        club = access.organization
+        data = PortalCancellationSerializer(data=request.data)
+        data.is_valid(raise_exception=True)
+        v = data.validated_data
+        if not v["confirm"]:
+            raise serializers.ValidationError(
+                {"confirm": gettext("Bitte bestätige, dass du kündigen möchtest.")}
+            )
+        with tenant_context(club.pk, request.user.pk):
+            membership = Membership.objects.select_related("person").get(pk=access.membership_id)
+            c = cancellation.submit(
+                club, membership, request.user, v.get("exit_date"), v.get("message", "")
+            )
+            return Response(cancellation.request_data(c), status=status.HTTP_201_CREATED)
+
+    def delete(self, request, access_id: int, pk: int):
+        access = _portal_access(request.user, access_id)
+        club = access.organization
+        with tenant_context(club.pk, request.user.pk):
+            membership = Membership.objects.select_related("person").get(pk=access.membership_id)
+            c = cancellation.withdraw(club, membership, request.user, pk)
+            return Response(cancellation.request_data(c))
 
 
 # --- Anmeldelinks (ohne Anmeldung erreichbar) ---
