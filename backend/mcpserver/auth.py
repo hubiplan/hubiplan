@@ -13,7 +13,7 @@ from django.utils import timezone
 
 from access.catalog import MCP_CONNECT
 from changes import tracking
-from core.tenancy import rls_bypass
+from core.tenancy import rls_bypass, user_view
 
 from .models import ACCESS_PREFIX, McpGrant, hash_token
 
@@ -63,7 +63,11 @@ def find_grant(token: str) -> McpGrant:
         raise TokenInvalid("Zwei-Faktor-Anmeldung fehlt")
     if not module_on(grant.organization, MODULE):
         raise TokenInvalid("Modul „KI-Assistenten“ ist aus")
-    if MCP_CONNECT not in permissions_in(user, grant.organization):
+    # Unter RLS sieht die Anfrage hier noch niemanden (Schlüssel, keine Sitzung): ohne
+    # die Sicht des Kontos fehlten dessen Rollen und das Recht schiene immer zu fehlen
+    with user_view(user.pk):
+        connect = MCP_CONNECT in permissions_in(user, grant.organization)
+    if not connect:
         raise TokenInvalid("Recht „KI-Assistenten verbinden“ fehlt")
     if grant.last_used_at < now - USED_EVERY:
         with tracking.suppress(), rls_bypass():
