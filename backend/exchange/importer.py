@@ -32,6 +32,7 @@ from customfields.views import definitions_for
 from members import services
 from members.gender import parse_gender
 from members.models import (
+    BillingAddress,
     ContactDetails,
     ContactPerson,
     DepartmentMembership,
@@ -81,6 +82,28 @@ BASE_TARGETS = {
     "contact_function": "Ansprechpartner Funktion",
     "contact_email": "Ansprechpartner E-Mail",
     "contact_phone": "Ansprechpartner Telefon",
+    # Abweichende Rechnungsanschrift (J3), für Personen und Organisationen
+    "billing_name": "Rechnungsempfänger",
+    "billing_attention": "Rechnung z. Hd.",
+    "billing_street": "Rechnung Straße oder Postfach",
+    "billing_postal_code": "Rechnung PLZ",
+    "billing_city": "Rechnung Ort",
+    "billing_country": "Rechnung Land",
+    "billing_email": "Rechnungs-E-Mail",
+    "billing_order_reference": "Bestellnummer",
+    "billing_leitweg_id": "Leitweg-ID",
+}
+# Ziel -> (Feld der Rechnungsanschrift, Höchstlänge)
+BILLING_TARGETS = {
+    "billing_name": ("name", 200),
+    "billing_attention": ("attention", 200),
+    "billing_street": ("street", 200),
+    "billing_postal_code": ("postal_code", 20),
+    "billing_city": ("city", 100),
+    "billing_country": ("country", 100),
+    "billing_email": ("email", 254),
+    "billing_order_reference": ("order_reference", 100),
+    "billing_leitweg_id": ("leitweg_id", 50),
 }
 CONTACT_TARGETS = {
     "contact_last_name": "last_name",
@@ -107,6 +130,15 @@ SYNONYMS = {
     "contact_function": ["ansprechpartner funktion"],
     "contact_email": ["ansprechpartner email", "ansprechpartner mail"],
     "contact_phone": ["ansprechpartner telefon", "ansprechpartner tel"],
+    "billing_name": ["rechnung name", "rechnung empfänger", "rechnungsanschrift name"],
+    "billing_attention": ["rechnung zhd", "rechnung abteilung", "rechnungsanschrift zhd"],
+    "billing_street": ["rechnung straße", "rechnung strasse", "rechnungsanschrift straße"],
+    "billing_postal_code": ["rechnung postleitzahl", "rechnungsanschrift plz"],
+    "billing_city": ["rechnungsanschrift ort"],
+    "billing_country": ["rechnungsanschrift land"],
+    "billing_email": ["rechnung email", "rechnung mail", "rechnungsmail", "rechnungsemail"],
+    "billing_order_reference": ["bestellnr", "bestellnummer", "käuferreferenz"],
+    "billing_leitweg_id": ["leitweg id", "leitwegid"],
     "last_name": ["name", "nachname", "familienname"],
     "first_name": ["vorname"],
     "birth_date": ["geburtsdatum", "geboren", "geb", "gebdatum", "geburtstag"],
@@ -480,6 +512,7 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
             else:
                 _conflict(g, target, value, index)
         _pad_postal_code(g, index)
+        _read_billing(g, row, mapping, index)
         raw_gender = _value(row, mapping, "gender")
         if raw_gender not in (None, "") and not g.data.get("gender"):
             gender = parse_gender(raw_gender)
@@ -508,6 +541,64 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
         _read_fields(g, row, mapping, lookups, index)
         _read_contact(g, row, mapping, index)
     return [groups[k] for k in order]
+
+
+def _read_billing(g, row, mapping, index) -> None:
+    """Rechnungsanschrift: erster Wert gilt, ein anderer in einer weiteren Zeile ist ein
+    Widerspruch (wie bei der Anschrift)."""
+    for target in BILLING_TARGETS:
+        value = _value(row, mapping, target)
+        if value in (None, ""):
+            continue
+        value = str(value).strip()
+        if not value:
+            continue
+        if not g.data.get(target):
+            g.data[target] = value
+            g.sources[target] = index
+        else:
+            _conflict(g, target, value, index)
+    code = g.data.get("billing_postal_code") or ""
+    country = (g.data.get("billing_country") or "").strip().lower()
+    if g.sources.get("billing_postal_code") == index and (
+        len(code) == 4 and code.isdigit() and country in GERMANY
+    ):
+        g.data["billing_postal_code"] = "0" + code
+        g.notes.append(
+            gettext("Zeile {index}: PLZ „{old}“ zu „{new}“ ergänzt.").format(
+                index=index, old=code, new="0" + code
+            )
+        )
+
+
+def billing_values(d: dict) -> dict:
+    """Felder der Rechnungsanschrift aus den gelesenen Daten (leer: keine)."""
+    return {key: d[target] for target, (key, _) in BILLING_TARGETS.items() if d.get(target)}
+
+
+def _check_billing(g) -> None:
+    values = billing_values(g.data)
+    if not values:
+        return
+    for target, (key, limit) in BILLING_TARGETS.items():
+        if len(values.get(key, "")) > limit:
+            g.errors.append(
+                gettext("{label}: höchstens {limit} Zeichen.").format(
+                    label=BASE_TARGETS[target], limit=limit
+                )
+            )
+    street, city = values.get("street", ""), values.get("city", "")
+    if (street or city or values.get("postal_code")) and not (street and city):
+        g.errors.append(
+            gettext(
+                "Für eine eigene Rechnungsanschrift bitte Straße (oder Postfach) und Ort angeben."
+            )
+        )
+    if values.get("email"):
+        try:
+            validate_email(values["email"])
+        except DjangoValidationError:
+            g.errors.append(gettext("Die Rechnungs-E-Mail ist ungültig."))
 
 
 def _read_contact(g, row, mapping, index):
@@ -550,6 +641,7 @@ CONFLICT_LABELS = {
     "city": "Ort",
     "country": "Land",
     "club_number": "Mitgliedsnummer",
+    **{target: BASE_TARGETS[target] for target in BILLING_TARGETS},
 }
 
 
@@ -732,6 +824,7 @@ def check_group(
                     "„Organisation“ eintragen."
                 ).format(name=d.get("last_name"))
             )
+    _check_billing(g)
     if not g.periods:
         g.errors.append(gettext("Kein Eintrittsdatum."))
     periods = sorted(g.periods, key=lambda p: p.entry)
@@ -921,6 +1014,10 @@ def run(job, user) -> dict:
                 phone=c["phone"][:50],
                 is_primary=i == 0,
             )
+        billing = billing_values(d)
+        if billing:
+            # verschwindet beim Rückgängigmachen mit der Mitgliedschaft
+            BillingAddress.objects.create(organization=org, membership=membership, **billing)
         reported = False
         for p in sorted(g.periods, key=lambda x: x.entry):
             MembershipPeriod.objects.create(
