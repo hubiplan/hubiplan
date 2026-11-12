@@ -25,6 +25,7 @@ import { JubileesPage } from './members/JubileesPage.tsx'
 import { ImportPage } from './members/ImportPage.tsx'
 import { FederationMembersPage } from './members/FederationMembersPage.tsx'
 import { ChangeRequestsPage } from './members/ChangeRequestsPage.tsx'
+import { CancellationsPage } from './members/CancellationsPage.tsx'
 import { ChroniclePage } from './members/ChroniclePage.tsx'
 import { OfficesPage } from './members/OfficesPage.tsx'
 import { MembersDevelopmentPage } from './members/DevelopmentPage.tsx'
@@ -102,6 +103,14 @@ function ClubMembers() {
         element={
           <MembersSection title={t('Datenänderungen')} tabs={requestTabs()}>
             <ChangeRequestsPage />
+          </MembersSection>
+        }
+      />
+      <Route
+        path="anfragen/kuendigungen"
+        element={
+          <MembersSection title={t('Kündigungen')} tabs={requestTabs()}>
+            <CancellationsPage />
           </MembersSection>
         }
       />

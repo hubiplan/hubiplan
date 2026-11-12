@@ -149,3 +149,56 @@ class ChangeRequest(models.Model):
 
     def __str__(self) -> str:
         return f"Änderungsmeldung {self.pk} ({self.get_status_display()})"
+
+
+class CancellationRequest(models.Model):
+    """Kündigung, die ein Mitglied im Mitgliederbereich einreicht.
+
+    Der Verein bestätigt sie; erst dann wird der Austritt eingetragen. Das Datum ergibt
+    sich aus Frist und Termin der Einstellungen, das Mitglied darf ein späteres wählen."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", gettext_lazy("offen")
+        ACCEPTED = "accepted", gettext_lazy("bestätigt")
+        REJECTED = "rejected", gettext_lazy("abgelehnt")
+        WITHDRAWN = "withdrawn", gettext_lazy("zurückgenommen")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    membership = models.ForeignKey(
+        "members.Membership", on_delete=models.CASCADE, related_name="cancellation_requests"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name="eingereicht von",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    exit_date = models.DateField("Austritt zum")
+    # Frühestes Datum nach Satzung zum Zeitpunkt der Kündigung (zum Vergleich)
+    earliest_date = models.DateField("frühestens zum")
+    message = models.CharField("Nachricht", max_length=500, blank=True)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    response = models.CharField("Antwort", max_length=500, blank=True)
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    decided_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Kündigung"
+        verbose_name_plural = "Kündigungen"
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["membership"],
+                condition=models.Q(status="pending"),
+                name="kuendigung_einmal_offen",
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"Kündigung {self.pk} ({self.get_status_display()})"
