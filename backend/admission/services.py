@@ -8,6 +8,7 @@ der Sprache des Antrags.
 from __future__ import annotations
 
 import datetime
+import logging
 import secrets
 
 from dateutil.relativedelta import relativedelta
@@ -41,6 +42,8 @@ CONFIRM_FEE_RULES = "fee_rules"
 CONFIRM_PRIVACY = "privacy"
 CONFIRM_MANDATE = "mandate"
 CONFIRM_GUARDIAN = "guardian"
+
+logger = logging.getLogger(__name__)
 
 
 def form_for(org) -> ApplicationForm:
@@ -256,6 +259,8 @@ def summary_lines(app: Application) -> list[str]:
         rows.append((gettext("Untereinheit"), app.unit.name))
     if app.entry_wish:
         rows.append((gettext("Gewünschter Eintritt"), app.entry_wish.strftime("%d.%m.%Y")))
+    if d.get("company_name"):
+        rows.append((gettext("Beitrag zahlt"), d["company_name"]))
     if app.mandate:
         from billing.sepa import masked_iban
 
@@ -654,6 +659,9 @@ def _accept_extras(app: Application, membership, user) -> None:
             mandate,
             {"SEPA-Mandat": [None, f"{mandate.reference} im Online-Antrag {app.number} erteilt"]},
         )
+    company = (app.data or {}).get("company_household")
+    if company:
+        _join_company(app, membership, company, user)
     keys = {c.get("key") for c in app.consents or [] if c.get("given")}
     if CONSENT_PHOTO in keys:
         membership.photo_consent_at = signed_on
@@ -706,6 +714,35 @@ def _accept_extras(app: Application, membership, user) -> None:
                 person=membership.person,
                 defaults={"value": value, "organization": definition.organization},
             )
+
+
+def _join_company(app: Application, membership, household_id, user) -> None:
+    """Gemeldeter Mitarbeiter (H5): mit „Beitrag über die Firma“ zur Firma."""
+    from members.households import add_member
+    from members.models import Household
+
+    household = Household.objects.filter(
+        organization=app.organization, pk=household_id, kind=Household.Kind.COMPANY
+    ).first()
+    if household is None:
+        return
+    start = membership.periods.order_by("entry_date").values_list("entry_date", flat=True).first()
+    try:
+        with transaction.atomic():
+            link = add_member(household, membership, valid_from=start, pays_via=True)
+    except ValidationError:
+        # Schon in einer anderen Firma oder Beitrag läuft über einen Haushalt: Aufnahme
+        # bleibt gültig, der Vorstand ordnet von Hand zu.
+        logger.info("Antrag %s: Mitglied nicht zur Firma %s", app.number, household.pk)
+        return
+    record(
+        app.organization,
+        user,
+        "create",
+        link,
+        {"Firma": [None, f"{household.name} (Online-Antrag {app.number})"]},
+        person=membership.person,
+    )
 
 
 def _invite(org, membership, user) -> None:

@@ -47,6 +47,8 @@ export interface JoinSchema {
   signature: 'none' | 'required'
   minors: boolean
   min_age: number | null
+  /** Link „Mitarbeiter melden“: Name der Firma, die den Beitrag zahlt */
+  company?: string | null
   challenge?: { token: string; salt: string; difficulty: number }
   key?: string
   kiosk?: string
@@ -86,6 +88,7 @@ export interface JoinSubmission {
   guardians?: Guardian[]
   signature?: SignatureInput | null
   homepage?: string
+  company?: string
   challenge?: string
   nonce?: number
 }
@@ -110,11 +113,11 @@ export type ApplicationStatus =
 const lang = (language: string) => `?lang=${encodeURIComponent(language)}`
 
 export const joinApi = {
-  form: (key: string, language: string, unit = '') =>
+  form: (key: string, language: string, unit = '', company = '') =>
     api.get<JoinSchema>(
       `/api/public/join/${encodeURIComponent(key)}/${lang(language)}${
         unit ? `&einheit=${encodeURIComponent(unit)}` : ''
-      }`,
+      }${company ? `&firma=${encodeURIComponent(company)}` : ''}`,
     ),
   submit: (key: string, data: JoinSubmission) =>
     api.post<{ status: string }>(`/api/public/join/${encodeURIComponent(key)}/`, data),

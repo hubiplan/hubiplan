@@ -203,9 +203,22 @@ def custom_entries(form: ApplicationForm) -> list:
     return [defs[i] for i in wanted if i in defs]
 
 
+def company_of(form: ApplicationForm, token: str):
+    """Firma aus dem Link „Mitarbeiter melden“ (Konzept Familien, H5), sonst None."""
+    if not token or "billing" not in (form.organization.enabled_modules or []):
+        return None
+    from billing.company_portal import read_token
+
+    return read_token(form.organization, token)
+
+
 def schema(form: ApplicationForm, language: str, request=None, unit_hint: str = "") -> dict:
     org = form.organization
     sepa, mandate = sepa_state(form)
+    company = company_of(form, request.query_params.get("firma", "")) if request else None
+    if company is not None and sepa == "required":
+        # Den Beitrag zahlt die Firma: Lastschrift des Mitarbeiters nur freiwillig
+        sepa = "offer"
     fields = {k: (form.fields or {}).get(k, "off") for k in FIELD_KEYS}
     units = []
     preselect = None
@@ -242,6 +255,7 @@ def schema(form: ApplicationForm, language: str, request=None, unit_hint: str = 
         "signature": form.signature,
         "minors": form.minors,
         "min_age": form.min_age,
+        "company": company.name if company is not None else None,
     }
 
 
@@ -294,6 +308,8 @@ class SubmitSerializer(serializers.Serializer):
     homepage = serializers.CharField(max_length=200, required=False, allow_blank=True)
     challenge = serializers.CharField(max_length=500, required=False, allow_blank=True)
     nonce = serializers.IntegerField(min_value=0, required=False)
+    # Link „Mitarbeiter melden“: Firma, die den Beitrag zahlt (H5)
+    company = serializers.CharField(max_length=500, required=False, allow_blank=True)
 
 
 def age_on(birth: datetime.date, on: datetime.date) -> int:
@@ -421,6 +437,16 @@ def clean_submission(form: ApplicationForm, v: dict, *, kiosk: bool = False) -> 
 
     # Lastschrift (B2)
     sepa, mandate_info = sepa_state(form)
+    company = company_of(form, v.get("company") or "")
+    if v.get("company") and company is None:
+        errors["company"] = gettext(
+            "Der Link der Firma ist abgelaufen. Bitte bei der Firma einen neuen anfordern."
+        )
+    if company is not None:
+        data["company_household"] = company.pk
+        data["company_name"] = company.name
+        if sepa == "required":
+            sepa = "offer"
     mandate = {}
     given = v.get("mandate")
     if sepa == "required" and not given:

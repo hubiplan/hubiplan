@@ -1,0 +1,165 @@
+"""Firmen zahlen für Mitarbeiter (Konzept Familien, Haushalte und Firmen, H5). Alles erfunden."""
+# ruff: noqa: F811  (Fixtures aus test_mitgliedsantrag als Parameter)
+
+import datetime
+
+import pytest
+from django.core import mail
+from django.test import Client
+
+from billing.company_portal import invite_token
+from core.tenancy import tenant_context
+from members.models import Household, HouseholdMember, Membership, today
+from portal.models import PortalAccess
+
+from .factories import make_member
+from .test_mitgliedsantrag import app_of, club, schema, submit, token_from_mail  # noqa: F401
+from .test_organisationsmitglieder import admit_org
+
+pytestmark = pytest.mark.django_db(transaction=True)
+JSON = "application/json"
+
+
+@pytest.fixture
+def firma(club, api):
+    org = club["org"]
+    org.member_portal_enabled = True
+    org.contact_email = "vorstand@example.org"
+    org.save()
+    c = club["client"]
+    res = admit_org(c, org, club["aktiv"])
+    assert res.status_code == 201, res.content
+    org_member = res.json()["id"]
+    members = f"/api/orgs/{org.pk}/members/{org_member}/"
+    contact = c.post(
+        f"{members}contacts/",
+        {"last_name": "Beispiel", "first_name": "Petra", "email": "petra@musterbau.example"},
+        content_type=JSON,
+    ).json()
+    res = c.post(f"{members}access/?ansprechpartner={contact['id']}")
+    assert res.status_code in (200, 201), res.content
+    hh = c.post(
+        f"/api/orgs/{org.pk}/households/",
+        {"name": "Musterbau GmbH", "kind": "company"},
+        content_type=JSON,
+    ).json()
+    res = c.put(
+        f"/api/orgs/{org.pk}/billing/households/{hh['id']}/payer/",
+        {"kind": "organization", "membership": org_member},
+        content_type=JSON,
+    )
+    assert res.status_code == 200, res.content
+    ina = make_member(org, "Ina", "Beispiel", "ina@example.org")
+    res = c.post(
+        f"/api/orgs/{org.pk}/households/{hh['id']}/members/",
+        {"membership": ina.pk, "valid_from": "2025-01-01", "pays_via": True},
+        content_type=JSON,
+    )
+    assert res.status_code == 201, res.content
+    access = PortalAccess.objects.get(contact_person_id=contact["id"])
+    return {
+        **club,
+        "household": hh["id"],
+        "ina": ina,
+        "access": access,
+        "portal": api(access.user),
+        "url": f"/api/portal/{access.pk}/company/",
+    }
+
+
+class TestListe:
+    def test_nur_name_seit_und_beitrag(self, firma):
+        data = firma["portal"].get(firma["url"]).json()
+        assert data["can_report"] is True
+        [company] = data["companies"]
+        assert company["name"] == "Musterbau GmbH"
+        [row] = company["members"]
+        assert row["name"] == "Ina Beispiel"
+        assert row["since"] == "2025-01-01"
+        assert row["pays_via"] is True
+        assert set(row) == {"link", "name", "since", "until", "pays_via"}
+
+    def test_menuepunkt(self, firma):
+        portal = firma["portal"].get("/api/me/contexts/").json()["portal"]
+        assert [p["company"] for p in portal] == [True]
+
+    def test_eigener_zugang_sieht_keine_firma(self, firma, api):
+        org = firma["org"]
+        firma["client"].post(f"/api/orgs/{org.pk}/members/{firma['ina'].pk}/access/")
+        access = PortalAccess.objects.get(membership=firma["ina"], contact_person=None)
+        assert api(access.user).get(f"/api/portal/{access.pk}/company/").status_code == 404
+
+
+class TestMelden:
+    def test_melden_antrag_und_annahme(self, firma):
+        mail.outbox.clear()
+        res = firma["portal"].post(
+            f"{firma['url']}{firma['household']}/report/",
+            {"first_name": "Tom", "last_name": "Muster", "email": "tom@example.org"},
+            content_type=JSON,
+        )
+        assert res.status_code == 201, res.content
+        [invite] = mail.outbox
+        assert invite.to == ["tom@example.org"]
+        assert "Musterbau GmbH" in invite.body
+        link = next(w for w in invite.body.split() if "/mitglied-werden/" in w)
+        assert "firma=" in link and "vorname=Tom" in link
+
+        with tenant_context(firma["org"].pk):
+            token = invite_token(Household.objects.get(pk=firma["household"]), "tom@example.org")
+        assert schema(firma["key"], firma=token)["company"] == "Musterbau GmbH"
+        assert schema(firma["key"])["company"] is None
+
+        mail.outbox.clear()
+        res = submit(
+            firma["key"],
+            first_name="Tom",
+            email="tom@example.org",
+            company=token,
+            confirmations=["privacy"],
+        )
+        assert res.status_code == 201, res.content
+        confirm = token_from_mail(mail.outbox[-1])
+        Client().post(f"/api/public/join/application/{confirm}/confirm/")
+        app = app_of(firma["org"])
+        base = f"/api/orgs/{firma['org'].pk}/admission/"
+        res = firma["client"].post(f"{base}{app.pk}/accept/", {"invite": False}, JSON)
+        assert res.status_code == 200, res.content
+        with tenant_context(firma["org"].pk):
+            membership = Membership.objects.get(pk=app.membership_id)
+            link = HouseholdMember.objects.get(membership=membership)
+            assert link.household_id == firma["household"]
+            assert link.pays_via is True
+
+    def test_ungueltiger_link(self, firma):
+        res = submit(firma["key"], company="kaputt", confirmations=["privacy"])
+        assert res.status_code == 400
+        assert "company" in res.json()
+
+    def test_ohne_online_antrag(self, firma):
+        org = firma["org"]
+        firma["client"].patch(f"/api/orgs/{org.pk}/admission/form/", {"enabled": False}, JSON)
+        res = firma["portal"].post(
+            f"{firma['url']}{firma['household']}/report/",
+            {"first_name": "Tom", "last_name": "Muster", "email": "tom@example.org"},
+            content_type=JSON,
+        )
+        assert res.status_code == 400
+
+
+class TestAbmelden:
+    def test_firma_zahlt_nicht_mehr(self, firma):
+        link = firma["portal"].get(firma["url"]).json()["companies"][0]["members"][0]["link"]
+        url = f"{firma['url']}{firma['household']}/members/{link}/end/"
+        past = (today() - datetime.timedelta(days=1)).isoformat()
+        assert (
+            firma["portal"].post(url, {"valid_until": past}, content_type=JSON).status_code == 400
+        )
+        mail.outbox.clear()
+        res = firma["portal"].post(url, {"valid_until": today().isoformat()}, content_type=JSON)
+        assert res.status_code == 200, res.content
+        assert res.json()["members"][0]["until"] == today().isoformat()
+        assert sorted(m.to[0] for m in mail.outbox) == ["ina@example.org", "vorstand@example.org"]
+        with tenant_context(firma["org"].pk):
+            # kein Austritt: die Mitgliedschaft bleibt
+            assert Membership.objects.get(pk=firma["ina"].pk).current_period() is not None

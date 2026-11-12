@@ -16,6 +16,7 @@ from accounts import (
 )
 from admission import urls as admission_urls
 from billing import agreements as partner_agreements
+from billing import company_portal as billing_company_portal
 from billing import einvoice_views, partner_fields, partner_files
 from billing import household_views as billing_household_views
 from billing import partners as partner_views
@@ -943,6 +944,15 @@ urlpatterns = [
     path("me/todos/preferences/", todo_views.TodoPreferencesView.as_view()),
     path("depts/<int:dept_id>/todos/", todo_views.TodoListView.as_view()),
     path("depts/<int:dept_id>/todos/<int:pk>/", todo_views.TodoDetailView.as_view()),
+    path("portal/<int:access_id>/company/", billing_company_portal.CompanyView.as_view()),
+    path(
+        "portal/<int:access_id>/company/<int:pk>/report/",
+        billing_company_portal.CompanyReportView.as_view(),
+    ),
+    path(
+        "portal/<int:access_id>/company/<int:pk>/members/<int:link_id>/end/",
+        billing_company_portal.CompanyEndView.as_view(),
+    ),
     path("portal/<int:access_id>/bookings/", booking_portal.ListView.as_view()),
     path("portal/<int:access_id>/meetings/", meeting_portal.ListView.as_view()),
     path("portal/<int:access_id>/meetings/<int:pk>/motions/", meeting_portal.MotionsView.as_view()),

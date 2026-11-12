@@ -105,6 +105,13 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
   const [search] = useSearchParams()
   const key = (kiosk ? params.token : params.key) ?? ''
   const unitHint = search.get('einheit') ?? ''
+  // Link „Mitarbeiter melden“ einer Firma (Haushalte und Firmen H5)
+  const companyToken = kiosk ? '' : (search.get('firma') ?? '')
+  const preset = useRef({
+    first_name: search.get('vorname') ?? '',
+    last_name: search.get('name') ?? '',
+    email: search.get('mail') ?? '',
+  })
   const [schema, setSchema] = useState<JoinSchema | null>(null)
   const [invalid, setInvalid] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -123,13 +130,19 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
 
   useEffect(() => {
     let alive = true
-    const load = kiosk ? joinApi.kiosk(key, lang()) : joinApi.form(key, lang(), unitHint)
+    const load = kiosk
+      ? joinApi.kiosk(key, lang())
+      : joinApi.form(key, lang(), unitHint, companyToken)
     load
       .then((d) => {
         if (!alive) return
         setSchema(d)
+        const given = d.company ? preset.current : null
         setValues((v) => ({
           ...v,
+          first_name: v.first_name || given?.first_name || '',
+          last_name: v.last_name || given?.last_name || '',
+          email: v.email || given?.email || '',
           member_type: v.member_type || (d.types.length === 1 ? String(d.types[0].id) : ''),
           unit: v.unit || (d.unit ? String(d.unit) : ''),
           pay: v.pay || d.sepa === 'required',
@@ -148,7 +161,7 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
     return () => {
       alive = false
     }
-  }, [key, kiosk, unitHint, attempt])
+  }, [key, kiosk, unitHint, companyToken, attempt])
 
   useEffect(() => {
     heading.current?.focus()
@@ -329,6 +342,7 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
       guardians: minor ? values.guardians.filter((g) => g.last_name || g.email) : [],
       signature,
       homepage: values.homepage,
+      ...(s.company && companyToken ? { company: companyToken } : {}),
     }
     try {
       if (kiosk) {
@@ -435,6 +449,11 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
           ))}
         </ol>
         {step === 0 && s.intro && <p className="rsvp-public-text">{s.intro}</p>}
+        {s.company && (
+          <p className="alert alert-info">
+            {t('Den Mitgliedsbeitrag zahlt {x}.', { x: s.company })}
+          </p>
+        )}
 
         {step === 0 && (
           <>
@@ -776,7 +795,15 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
                   : ` · ${t('Den Beitrag nennt dir der Verein.')}`}
               </p>
             )}
-            {s.sepa === 'off' && (
+            {s.company && (
+              <p className="muted">
+                {t(
+                  'Beitrag zahlt {x}. Eine Lastschrift ist nur nötig, wenn du selbst zahlen möchtest.',
+                  { x: s.company },
+                )}
+              </p>
+            )}
+            {s.sepa === 'off' && !s.company && (
               <p className="muted">
                 {t('Wie der Beitrag gezahlt wird, erfährst du nach der Aufnahme.')}
               </p>

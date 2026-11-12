@@ -8566,5 +8566,21 @@
   "Mit „Mitgliederzugang“ sehen Erziehungsberechtigte im Mitgliederbereich, was das Mitglied selbst sieht. Am 18. Geburtstag enden Zugang und Eintrag; vier Wochen vorher bekommen sie eine Mail.": "With “Member access”, guardians see in the member area what the member sees. On the 18th birthday their access and entry end; they get an email four weeks before.",
   "Noch keine Erziehungsberechtigten eingetragen.": "No guardians entered yet.",
   "Erziehungsberechtigte hinzufügen": "Add guardian",
-  "z. B. Mutter, Vater, Vormund": "e.g. mother, father, legal guardian"
+  "z. B. Mutter, Vater, Vormund": "e.g. mother, father, legal guardian",
+  "Den Mitgliedsbeitrag zahlt {x}.": "{x} pays the membership fee.",
+  "Beitrag zahlt {x}. Eine Lastschrift ist nur nötig, wenn du selbst zahlen möchtest.": "{x} pays the fee. A direct debit is only needed if you want to pay yourself.",
+  "Hier siehst du die Mitarbeiterinnen und Mitarbeiter, für die deine Firma den Beitrag zahlt. Anschrift und weitere Angaben bleiben beim Verein.": "Here you see the employees whose fee your company pays. Addresses and other details stay with the club.",
+  "Seit": "Since",
+  "über die Firma": "via the company",
+  "zahlt selbst": "pays themselves",
+  "Neue Mitarbeiter meldet ihr bitte direkt beim Verein.": "Please report new employees directly to the club.",
+  "Die Firma zahlt dann nicht mehr für {x}. Die Mitgliedschaft bleibt bestehen; danach zahlt das Mitglied selbst. Verein und Mitglied bekommen eine Mail.": "The company will then no longer pay for {x}. The membership continues; afterwards the member pays themselves. The club and the member receive an email.",
+  "Firma zahlt bis": "Company pays until",
+  "Mitarbeiter melden": "Report employee",
+  "Die Person bekommt eine Mail mit dem Link zum Online-Antrag, ergänzt ihre Angaben und bestätigt selbst. Nimmt der Verein sie auf, zahlt die Firma ihren Beitrag.": "The person receives an email with the link to the online application, completes their details and confirms themselves. Once the club admits them, the company pays their fee.",
+  "Mail an {x} gesendet.": "Email sent to {x}.",
+  "Mitarbeiter": "Employees",
+  "Mitarbeiter melden, für die die Firma zahlt": "Report employees whose fee the company pays",
+  "Beitrag beenden": "End fee payment",
+  "Beitrag für {x} beenden": "End fee payment for {x}"
 }

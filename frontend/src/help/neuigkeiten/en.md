@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- **Companies report employees**: if an organisation member pays for employees, its contact persons see under My area › Employees whom the company pays for. They report new employees with name and email (the person gets the link to the online application and joins the company once admitted) and end the payment from a date; the membership continues.
 - **Guardians**: for members under 18 you can now enter parents or a legal guardian by hand in the member file. If you like, they also get circulars to the child by email and their own member area login. Four weeks before the 18th birthday they get an email; on the birthday their access and entry end automatically.
 - **Fees via household or company**: a household or company can have a payer (member, person without membership, organisation member or business partner). The fee run then creates one invoice for all members with “Fee via the household”, optionally with a family or company fee (maximum, flat rate or graduated, under Finance › Set up › Fee rates). Direct debit uses the payer's mandate; the payer sees the invoice in the member area.
 - **Households and companies**: under Members › Households and companies you link members who live together into a household (with suggestions from the same address) and members whose fees a company pays into a company. Circulars and invitations to a household at the same address go out as one letter, emails to the same address as one email.
