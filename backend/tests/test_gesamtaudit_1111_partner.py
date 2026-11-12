@@ -19,10 +19,12 @@ def test_kasse_lesen_ohne_export_und_verteiler(api, club, c, base):
     for response in (
         other.get(f"{base}export/"),
         other.get(f"{base}mailing/?role=sponsor"),
-        other.post(f"{base}mailing/", {"subject": "X", "text": "Y"}, content_type=JSON),
     ):
         assert response.status_code == 403, response.content
         assert "Geschäftspartner" in response.json()["detail"]
+    # Versenden ist schreibend; das scheitert schon am fehlenden Schreibrecht
+    sent = other.post(f"{base}mailing/", {"subject": "X", "text": "Y"}, content_type=JSON)
+    assert sent.status_code == 403, sent.content
 
 
 def test_recht_geschaeftspartner_darf_exportieren(api, club, base, c):
