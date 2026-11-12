@@ -311,6 +311,8 @@ class Website(models.Model):
     show_instrument = models.BooleanField(
         "Hauptinstrument unter dem Namen zeigen", default=False, db_default=False
     )
+    # Titel (Dr., Prof. …) vor dem Namen (Ralf 12.11.: je Webseite entscheidbar)
+    show_titles = models.BooleanField("Titel vor dem Namen nennen", default=False, db_default=False)
     show_address = models.BooleanField(
         "Anschrift beim Vorstand zeigen (nur mit Einwilligung)", default=False, db_default=False
     )

@@ -34,5 +34,11 @@
     "text": "{Pl}",
     "kind": "Property",
     "reason": "Beschriftung wird über fillTerms mit dem lokalisierten Vereinsbegriff erzeugt."
+  },
+  {
+    "file": "pages/portal/PortalPage.tsx",
+    "text": "honorific-prefix",
+    "kind": "Property",
+    "reason": "autocomplete-Wert (WCAG 1.3.5) für das Feld Titel, kein sichtbarer Text."
   }
 ]

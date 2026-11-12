@@ -18,6 +18,7 @@ import {
   useLoad,
 } from '../../components/forms.ts'
 import { Alert, Field, SelectField, Loading } from '../../components/ui.tsx'
+import { TitleField } from '../../components/TitleField.tsx'
 import { confirmDiscard, useChangesGuard } from '../../components/leaveGuard.ts'
 import { GENDERS } from '../../api/members.ts'
 import { OwnCardPanel } from '../../components/CardPanel.tsx'
@@ -35,6 +36,7 @@ const FIELDS = [
   'first_name',
   'birth_date',
   'gender',
+  'title',
   'email',
   'phone',
   'street',
@@ -43,8 +45,10 @@ const FIELDS = [
   'country',
 ] as const
 type FieldKey = (typeof FIELDS)[number]
-/** Organisationen haben keinen Vornamen, kein Geburtsdatum und kein Geschlecht. */
-const ORG_FIELDS = FIELDS.filter((f) => !['first_name', 'birth_date', 'gender'].includes(f))
+/** Organisationen haben keinen Vornamen, kein Geburtsdatum, kein Geschlecht und keinen Titel. */
+const ORG_FIELDS = FIELDS.filter(
+  (f) => !['first_name', 'birth_date', 'gender', 'title'].includes(f),
+)
 
 function fieldsFor(d: PortalDetail): readonly FieldKey[] {
   return d.kind === 'organization' ? ORG_FIELDS : FIELDS
@@ -60,6 +64,7 @@ const AUTOCOMPLETE: Record<FieldKey, string> = {
   first_name: 'given-name',
   birth_date: 'bday',
   gender: 'sex',
+  title: 'honorific-prefix',
   email: 'email',
   phone: 'tel',
   street: 'street-address',
@@ -74,6 +79,7 @@ function currentValues(d: PortalDetail): Record<FieldKey, string> {
     first_name: d.first_name,
     birth_date: d.birth_date ?? '',
     gender: d.gender ?? '',
+    title: d.title ?? '',
     email: d.contact?.email ?? '',
     phone: d.contact?.phone ?? '',
     street: d.contact?.street ?? '',
@@ -514,6 +520,15 @@ function ChangeForm({
                 </option>
               ))}
             </SelectField>
+          ) : key === 'title' ? (
+            <TitleField
+              key={key}
+              value={v[key]}
+              error={errors[key]}
+              disabled={hasPending && (needsApproval || !DIRECT.includes(key))}
+              hint={!needsApproval && !DIRECT.includes(key) ? t('mit Bestätigung') : undefined}
+              onChange={(value) => set(key, value)}
+            />
           ) : (
             <Field
               key={key}

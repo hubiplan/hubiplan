@@ -47,6 +47,7 @@ from members.models import (
     PersonKind,
     overlaps,
 )
+from members.title import parse_title
 from organizations.models import Department, Organization
 from organizations.terms import fill
 
@@ -58,6 +59,7 @@ BASE_TARGETS = {
     "first_name": "Vorname",
     "birth_date": "Geburtsdatum",
     "gender": "Geschlecht",
+    "title": "Titel",
     "email": "E-Mail",
     "phone": "Telefon",
     "street": "Straße und Hausnummer",
@@ -143,6 +145,7 @@ SYNONYMS = {
     "first_name": ["vorname"],
     "birth_date": ["geburtsdatum", "geboren", "geb", "gebdatum", "geburtstag"],
     "gender": ["geschlecht", "anrede", "m/w", "mw", "sex"],
+    "title": ["titel", "akademischer titel", "akad titel", "akademischer grad", "grad"],
     "email": ["email", "e-mail", "mail"],
     "phone": ["telefon", "tel", "handy", "mobil"],
     "street": ["strasse", "straße", "adresse", "anschrift", "strasse und hausnummer"],
@@ -187,6 +190,7 @@ def suggest_mapping(headers: list[str], org: Organization) -> dict[str, str]:
     by_label = {normalize(label): key for key, label in targets.items()}
     # Das feste Feld geht einem gleichnamigen Zusatzfeld vor
     by_label[normalize(BASE_TARGETS["gender"])] = "gender"
+    by_label[normalize(BASE_TARGETS["title"])] = "title"
     for key, words in SYNONYMS.items():
         for w in words:
             by_label.setdefault(normalize(w), key)
@@ -525,6 +529,11 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
                 )
             elif gender:
                 g.data["gender"] = gender
+        raw_title = _value(row, mapping, "title")
+        if raw_title not in (None, "") and not g.data.get("title"):
+            # frei; übliche Schreibweisen vereinheitlicht („dr“ → „Dr.“)
+            if title := parse_title(raw_title):
+                g.data["title"] = title
         try:
             fed = parse_date(_value(row, mapping, "federation_entry_date"))
             if fed:
@@ -988,6 +997,7 @@ def run(job, user) -> dict:
                 first_name="" if organization else d["first_name"],
                 birth_date=None if organization else d["birth_date"],
                 gender=d.get("gender", ""),
+                title="" if organization else d.get("title", ""),
                 name_suffix=d.get("name_suffix", "") if organization else "",
                 legal_form=d.get("legal_form", "") if organization else "",
                 legal_form_other=d.get("legal_form_other", "") if organization else "",

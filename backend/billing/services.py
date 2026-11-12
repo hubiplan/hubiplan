@@ -511,17 +511,14 @@ def member_recipient(org, membership: Membership, for_invoice: bool = True) -> d
     person = membership.person
     contact = contact_for(person, org)
     billing = BillingAddress.objects.filter(membership=membership).first() if for_invoice else None
-    name = (
-        person.display_name
-        if person.is_organization
-        else (f"{person.first_name} {person.last_name}")
-    )
+    # mit Titel („Dr. Max Muster“); Organisationen mit Namenszusatz
+    name = person.address_name
     email = contact.email if contact else ""
     attention = ""
     if person.is_organization and for_invoice:
         chosen, chosen_email = _invoice_contact(org, membership)
         if chosen is not None:
-            attention = f"z. Hd. {chosen.display_name}"
+            attention = f"z. Hd. {chosen.address_name}"
             email = chosen_email or email
     address = _address(contact)
     if billing is not None and billing.has_address:
@@ -565,8 +562,7 @@ def department_recipient(org, department) -> dict:
     contact = contact_for(person, org)
     return {
         "recipient_name": (
-            f"{org.department_label} {department.name}\n"
-            f"z. Hd. {person.first_name} {person.last_name}"
+            f"{org.department_label} {department.name}\nz. Hd. {person.address_name}"
         ),
         "recipient_address": _address(contact),
         "recipient_email": contact.email if contact else "",

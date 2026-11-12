@@ -217,6 +217,8 @@ export interface MemberRow {
   /** nach der Löschfrist: nur das Jahr ist bekannt */
   birth_year_only?: boolean
   gender: Gender
+  /** Titel vor dem Namen (Dr., Prof. … oder frei), leer = keiner */
+  title?: string
   club_number: string
   member_number: number | null
   member_type: string | null
@@ -296,6 +298,8 @@ export interface ContactPerson {
   last_name: string
   first_name: string
   gender: Gender
+  /** Titel vor dem Namen (Dr., Prof. … oder frei), leer = keiner */
+  title?: string
   function: string
   email: string
   phone: string
@@ -344,6 +348,8 @@ export interface MemberDetail {
   organization?: OrganizationInfo | null
   birth_year_only?: boolean
   gender: Gender
+  /** Titel vor dem Namen (Dr., Prof. … oder frei), leer = keiner */
+  title?: string
   club_number: string
   pays_fee_self: boolean
   info_opt_out_at: string | null
