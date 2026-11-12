@@ -2477,6 +2477,8 @@ button.tab.active {
 }
 .segmented {
   display: inline-flex;
+  /* lange Beschriftungen brechen auf schmalen Bildschirmen im Segment um */
+  max-width: 100%;
 }
 .segmented .button {
   border-radius: 0;

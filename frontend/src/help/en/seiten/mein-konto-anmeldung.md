@@ -15,3 +15,7 @@ A new address under **Change sign-in email** only takes effect once you have con
 address. If you have no password of your own and only sign in with links, you also have to confirm
 the change with the link sent to your previous address. After the change your other browsers are
 signed out; the app stays connected.
+
+If someone enters a wrong password for your account several times in a row, signing in with a
+password is blocked for a few minutes, but only on unknown devices. On devices you have signed in
+with before, and with a passkey, you can still get in. You will receive an email about it.

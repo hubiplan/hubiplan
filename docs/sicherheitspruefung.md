@@ -47,7 +47,7 @@ falls freigegeben – die Vereine.
 
 | Thema | Umsetzung |
 | --- | --- |
-| Anmeldung | E-Mail/Passwort, optionale 2FA (TOTP, Wiederherstellungscodes), Ratenbegrenzung bei Fehlversuchen (allauth), Passwortregeln von Django |
+| Anmeldung | E-Mail/Passwort, optionale 2FA (TOTP, Wiederherstellungscodes), Ratenbegrenzung bei Fehlversuchen (allauth; die Sperre je Konto trifft nur unbekannte Geräte, bekannte haben über das Cookie `hp_geraet` einen eigenen Zähler, `accounts/known_device.py`), Passwortregeln von Django |
 | Sitzung | HttpOnly-, Secure- und SameSite-Cookies, 12 Stunden Laufzeit |
 | CSRF | Django-CSRF-Schutz für alle schreibenden Aufrufe (getestet) |
 | XSS | React maskiert Ausgaben; Content-Security-Policy ohne Inline-Skripte; keine SVG-Uploads |

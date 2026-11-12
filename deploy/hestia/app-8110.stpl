@@ -7,7 +7,7 @@
 # Aufgebaut nach den Standardvorlagen von HestiaCP 1.9.4                  #
 # (nginx-Vorlagen, github.com/hestiacp/hestiacp, Commit aae8b2b),         #
 # GPL-3.0; von Ralf Philipsen geändert für HUBIplan ab Oktober 2026,      #
-# letzte Änderung 2026-11-08 (bei jeder Änderung anpassen, GPL § 5a).     #
+# letzte Änderung 2026-11-12 (bei jeder Änderung anpassen, GPL § 5a).     #
 # Diese Datei steht daher unter der GPL-3.0; Volltext in                  #
 # LICENSE-GPL-3.0.txt daneben, Einordnung in docs/lizenzen.md.            #
 #=========================================================================#
@@ -19,8 +19,6 @@ server {
 
 	ssl_certificate     %ssl_pem%;
 	ssl_certificate_key %ssl_key%;
-	ssl_stapling        on;
-	ssl_stapling_verify on;
 
 	include %home%/%user%/conf/web/%domain%/nginx.hsts.conf*;
 
