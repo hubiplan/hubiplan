@@ -910,6 +910,29 @@ Rücksicherungstest in `/tmp` im Arbeitsspeicher ab; wächst die Datenbank über
 `BACKUP_TMP_SIZE` und `BACKUP_MEM_LIMIT` erhöhen. Wird ein Dienst an seiner Grenze
 beendet, startet Docker ihn neu (`restart: unless-stopped`); die anderen laufen weiter.
 
+## Firewall für die Docker-Netze
+
+Docker-Brückennetze sind vom Server aus geroutet: Jeder Prozess auf dem Server, auch der einer
+fremden Website auf einem geteilten Hestia-Server, erreicht die Container direkt, an nginx und
+Caddy vorbei. Das Backend wertet Absenderangaben deshalb nur von Caddy und vom Webseiten-Dienst
+aus (Gesamtaudit 11.11., S-02). Zusätzlich begrenzt `deploy/hestia/wirt-firewall.sh`
+Verbindungen vom Server in die HUBIplan-Netze auf Antworten, die veröffentlichten lokalen
+Ports und Prozesse von root:
+
+```sh
+sudo bash deploy/hestia/wirt-firewall.sh                   # nur prüfen
+sudo MODUS=einrichten bash deploy/hestia/wirt-firewall.sh  # Regeln, Timer, Selbsttest
+sudo MODUS=entfernen bash deploy/hestia/wirt-firewall.sh   # Rückweg
+```
+
+`einrichten` legt die Kette `HUBIPLAN-WIRT` (Sprünge aus `OUTPUT` je Brücke) und den Timer
+`hubiplan-wirt-firewall.timer` an, der die Regeln nach jedem Start und alle zwei Minuten
+anwendet, auch für neu erstellte Netze. Danach prüft das Skript als Benutzer `nobody`: Die
+veröffentlichten Ports müssen erreichbar bleiben, der Datenbank-Container darf es nicht mehr
+sein. Klappt das nicht, nimmt es die Regeln sofort wieder heraus. Abgewiesene Verbindungen
+stehen begrenzt im Kernel-Log mit dem Präfix `HUBIPLAN-WIRT` und der Benutzerkennung. Die
+Regeln gelten für IPv4; die Prüfung meldet, wenn Container IPv6-Adressen haben.
+
 ## Einladungen statt Startpasswort
 
 Neue Konten (Rollen, Plattform-Vorstand) bekommen kein Startpasswort mehr, sondern eine
