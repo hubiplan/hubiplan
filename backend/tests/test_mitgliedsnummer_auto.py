@@ -101,3 +101,40 @@ def test_import_vergibt_fehlende_nummern(api, orgs, types, board_a):
         for m in Membership.objects.filter(organization=org).select_related("person")
     }
     assert by_name == {"Erika": "10", "Anna": "21", "Bernd": "20", "Clara": "22"}
+
+
+def test_nachvergabe_fuer_bestand(orgs, types):
+    """Migration 0030: Bestand ohne Nummer in Eintrittsreihenfolge, Gelöschte bleiben leer."""
+    import datetime
+
+    from django.utils import timezone
+
+    from members.services import fill_missing_club_numbers
+
+    def member(last, year, number=""):
+        m = make_member(
+            orgs["a"],
+            "Erika",
+            last,
+            member_type=types["passiv"],
+            entry_date=datetime.date(year, 1, 1),
+        )
+        m.club_number = number
+        m.save(update_fields=["club_number"])
+        return m
+
+    spaet = member("Spät", 2020)
+    frueh = member("Früh", 1990)
+    member("Nummer", 2000, "0041")
+    member("Buchstabe", 2001, "A-99")
+    geloescht = member("Gelöscht", 1980)
+    Membership.objects.filter(pk=geloescht.pk).update(purged_at=timezone.now())
+    other = make_member(orgs["b"], "Max", "Beispiel", member_type=make_types(orgs["b"])["passiv"])
+    Membership.objects.filter(pk=other.pk).update(club_number="")
+
+    assert fill_missing_club_numbers() == 3
+    number = dict(Membership.objects.values_list("pk", "club_number"))
+    assert (number[frueh.pk], number[spaet.pk]) == ("0042", "0043")
+    assert number[geloescht.pk] == ""
+    assert number[other.pk] == "1"
+    assert fill_missing_club_numbers() == 0
