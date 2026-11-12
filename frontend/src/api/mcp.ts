@@ -10,6 +10,11 @@ export interface McpScope {
 export interface McpRequest {
   client: string
   redirect_host: string
+  /** bekannt: Adresse eines bekannten Assistenten; web: andere Webadresse; rechner: Programm
+   * auf dem eigenen Rechner. Der Name ist frei wählbar, die Adresse nicht. */
+  redirect_kind: 'bekannt' | 'web' | 'rechner'
+  /** Mit diesem Assistenten schon einmal verbunden */
+  connected_before: boolean
   scopes: McpScope[]
   units: { id: number; name: string }[]
   /** Leer: zweiter Faktor in Ordnung; sonst der Hinweis, was fehlt */

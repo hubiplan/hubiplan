@@ -753,15 +753,61 @@ def closing_changes(old: dict, new: dict) -> list[str]:
     return lines
 
 
-def reopen_year(closing: YearClosing, user, reason: str):
-    """Abschluss aufheben; der alte Stand bleibt mit Grund erhalten (B4)."""
-    from .models import ReopenedClosing
+# Ein Antrag auf Aufheben (Vier-Augen-Prinzip) verfällt nach dieser Zeit
+REOPEN_REQUEST_DAYS = 14
 
+
+def reopen_pending(closing: YearClosing) -> bool:
+    """Offener, nicht verfallener Antrag auf Aufheben."""
+    at = closing.reopen_requested_at
+    return bool(at) and timezone.now() - at <= datetime.timedelta(days=REOPEN_REQUEST_DAYS)
+
+
+def _check_reason(reason: str) -> str:
     reason = (reason or "").strip()
     if len(reason) < 5:
         raise ValidationError(
             gettext("Bitte einen Grund angeben, warum der Abschluss aufgehoben wird.")
         )
+    return reason
+
+
+def request_reopen(closing: YearClosing, user, reason: str) -> None:
+    """Aufheben beantragen; eine andere Person mit Rollenverwaltung bestätigt."""
+    closing.reopen_reason = _check_reason(reason)[:500]
+    closing.reopen_requested_by = user
+    closing.reopen_requested_by_name = (user.get_full_name() or user.email) if user else ""
+    closing.reopen_requested_at = timezone.now()
+    closing.save(
+        update_fields=[
+            "reopen_reason",
+            "reopen_requested_by",
+            "reopen_requested_by_name",
+            "reopen_requested_at",
+        ]
+    )
+
+
+def clear_reopen_request(closing: YearClosing) -> None:
+    closing.reopen_reason = ""
+    closing.reopen_requested_by = None
+    closing.reopen_requested_by_name = ""
+    closing.reopen_requested_at = None
+    closing.save(
+        update_fields=[
+            "reopen_reason",
+            "reopen_requested_by",
+            "reopen_requested_by_name",
+            "reopen_requested_at",
+        ]
+    )
+
+
+def reopen_year(closing: YearClosing, user, reason: str):
+    """Abschluss aufheben; der alte Stand bleibt mit Grund erhalten (B4)."""
+    from .models import ReopenedClosing
+
+    reason = _check_reason(reason)
     by = closing.closed_by
     archived = ReopenedClosing.objects.create(
         organization=closing.organization,

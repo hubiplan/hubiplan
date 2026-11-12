@@ -39,10 +39,13 @@ def test_mitglieder_und_postausgang_lesen_ruhen_ohne_zweiten_faktor(orgs, api):
     assert c.get(f"/api/orgs/{club.pk}/outbox/").status_code in (403, 404)
 
 
-def test_ohne_heikle_rechte_keine_pflicht(orgs, api):
+def test_auch_einfache_rechte_brauchen_den_zweiten_faktor(orgs, api):
+    # Gesamtaudit 11.11., Fachfrage 1: Pflicht für jedes Verwaltungsrecht
     club = orgs["a"]
     user = make_user("termine@example.org")
     give_role(user, club, ["events.view"], name="Termine")
-    permissions_in(user, club)
+    assert "events.view" in permissions_in(user, club)
     user.refresh_from_db()
-    assert user.mfa_required_by is None
+    assert user.mfa_required_by is not None
+    _overdue(user)
+    assert permissions_in(user, club) == set()

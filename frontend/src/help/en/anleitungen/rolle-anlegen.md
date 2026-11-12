@@ -13,6 +13,6 @@ stichworte: [role, rights, invite, access, treasurer]
 4. Assign the role under Members › Offices with **Assign** (without member management under **Terms of office**). If the person has no account yet, they receive an invitation by email. The link in it is valid for 7 days.
 5. If the deadline passes before the person has set a password, click **Resend invitation** in their row under Settings › Accounts. Alternatively, they choose **Forgot password** on the sign-in page.
 
-Anyone who manages roles, runs exports, books in the cash book, may see all members or reads the change log and outbox must set up two-factor authentication. There are 14 days to do so; permissions for a single department do not need it.
+Anyone with a role, in the club or in a department, must set up two-factor authentication. There are 3 days to do so; during that time circulars, exports and posting in the treasury are already paused, afterwards all permissions of the role.
 
 ![Starting point: Create a role and invite a person](bild:rolle-anlegen)

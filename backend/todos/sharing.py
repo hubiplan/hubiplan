@@ -2,19 +2,41 @@
 
 from django.db.models import F
 from django.utils.translation import gettext
-from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from access.models import Role, RoleAssignment
+from access.permissions import permissions_in
 from accounts.models import User
 from audit.log import record
 from changes.tracking import active, suppress
 from core.tenancy import rls_bypass, tenant_context
 
-from .access import can_take_over, local_task, scope_for, shares_for
+from .access import can_take_over, local_task, shares_for
 from .models import TodoShare
 
 
-def eligible_users(scope):
+def _sees_tasks(user, scope, memo: dict) -> bool:
+    """Wie ``scope_for`` (Aufgaben sichtbar?), ohne Sitzungsvariablen zu setzen und mit
+    gemerkten Abteilungsrechten je Konto: Die Auswahl fragt das für jedes Konto in jeder
+    Einheit ab (Gesamtaudit 11.11., P-06)."""
+    if scope.department_id is not None:
+        from portal.services import department_contexts
+
+        key = ("abteilungen", user.pk)
+        if key not in memo:
+            memo[key] = department_contexts(user)
+        ctx = memo[key].get(int(scope.department_id))
+        return ctx is not None and "todos.view" in ctx.permissions
+    return "todos.view" in permissions_in(user, scope.org)
+
+
+def eligible_users(scope, memo: dict | None = None):
+    """Aktive Konten, die in der Einheit Aufgaben sehen. ``memo``: über mehrere Einheiten
+    einer Anfrage geteilt (Konten und Abteilungsrechte werden nur einmal geladen)."""
+    memo = {} if memo is None else memo
+    unit = ("einheit", scope.org.pk, scope.department_id)
+    if unit in memo:
+        return memo[unit]
     assignments = RoleAssignment.all_objects.active().filter(
         organization=scope.org,
         role__department_id=scope.department_id,
@@ -32,11 +54,9 @@ def eligible_users(scope):
     users = []
     for user in User.objects.filter(pk__in=ids, is_active=True).order_by("email"):
         with tenant_context(scope.org.pk, user.pk):
-            try:
-                scope_for(user, scope.org.pk, scope.department_id)
-            except (NotFound, PermissionDenied):
-                continue
-        users.append(user)
+            if _sees_tasks(user, scope, memo):
+                users.append(user)
+    memo[unit] = users
     return users
 
 

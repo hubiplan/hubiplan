@@ -145,7 +145,7 @@ describe('Mitgliedsantrag', () => {
     renderAt('/antrag/abc?bestaetigen=1')
     expect(await screen.findByText('Danke, der Antrag ist bestätigt.')).toBeInTheDocument()
     expect(calls.some((c) => c.key === 'POST /api/public/join/application/abc/confirm/')).toBe(true)
-    fireEvent.click(screen.getByRole('button', { name: 'Antrag zurückziehen' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mitgliedsantrag zurückziehen' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Ja, zurückziehen' }))
     await waitFor(() =>
       expect(screen.getByText('Du hast den Antrag zurückgezogen.')).toBeInTheDocument(),

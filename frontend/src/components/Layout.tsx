@@ -540,7 +540,7 @@ function MfaNotice({ by, overdue }: { by: string; overdue: boolean }) {
     <div className={`alert ${overdue ? 'alert-error' : 'alert-info'} mfa-hint`} role="status">
       <p>
         {overdue
-          ? t('Zwei-Faktor-Anmeldung fehlt: Einige Rechte ruhen.')
+          ? t('Zwei-Faktor-Anmeldung fehlt: Deine Verwaltungsrechte ruhen.')
           : t('Zwei-Faktor-Anmeldung nötig ab {date}.', { date })}{' '}
         <NavLink to="/mein-konto/anmeldung">{t('Jetzt einrichten')}</NavLink>
       </p>
@@ -549,10 +549,10 @@ function MfaNotice({ by, overdue }: { by: string; overdue: boolean }) {
         <p className="small">
           {overdue
             ? t(
-                'Mitgliederdaten, Protokoll, Rollenverwaltung, vollständige Exporte und das Buchen in der Kasse ruhen, bis du die Zwei-Faktor-Anmeldung einrichtest. ',
+                'Alle Rechte in Verein und Abteilungen ruhen, bis du die Zwei-Faktor-Anmeldung einrichtest. Dein eigener Mitgliederbereich und „Mein Konto“ gehen weiter. ',
               )
             : t(
-                'Für deine Rechte (Mitglieder, Protokoll, Rollen, Exporte oder Kasse) brauchst du ab dem {date} die Zwei-Faktor-Anmeldung. ',
+                'Für deine Rechte brauchst du ab dem {date} die Zwei-Faktor-Anmeldung. Bis dahin ruhen schon Rundschreiben, Exporte und das Buchen in der Kasse. ',
                 { date },
               )}
         </p>

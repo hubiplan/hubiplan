@@ -197,6 +197,8 @@ MFA_ADAPTER = "accounts.mfa.MFAAdapter"
 # verlangen einen frischen Code (accounts/step_up.py). Tests schalten beides gezielt ein.
 MFA_PLATFORM_GRACE = False
 MFA_STEP_UP = True
+# Rundschreiben, Exporte und Buchen ruhen schon in der Frist ohne 2FA (Gesamtaudit 11.11.)
+MFA_IMMEDIATE = True
 # Ein leerer Wert (z. B. aus docker-compose ${MFA_ENCRYPTION_KEYS:-}) gilt als nicht gesetzt
 MFA_ENCRYPTION_KEYS = env_list("MFA_ENCRYPTION_KEYS") or env_list("MFA_ENCRYPTION_KEY")
 if not MFA_ENCRYPTION_KEYS:
@@ -288,6 +290,9 @@ REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", REDIS_URL)
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", REDIS_URL)
 CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", False)
+# Anmeldelink und „Passwort vergessen“ im Hintergrund senden, damit die Antwortzeit nicht
+# verrät, ob es ein Konto gibt (Gesamtaudit 11.11., H-09). Tests schalten es aus.
+MAIL_IN_BACKGROUND = env_bool("MAIL_IN_BACKGROUND", True)
 CELERY_TIMEZONE = "Europe/Berlin"
 # Regelmäßige Jobs (laufen im Dienst "beat")
 CELERY_BEAT_SCHEDULE = {
@@ -304,6 +309,8 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 3600.0,
     },
     "materials-purge": {"task": "materials.tasks.purge_deleted", "schedule": 86400.0},
+    # Benutzte und abgelaufene Anmeldelinks nach 30 Tagen löschen (Gesamtaudit 11.11., H-07)
+    "anmeldelinks-aufraeumen": {"task": "portal.tasks.purge_login_links", "schedule": 86400.0},
     # Eingehende Dateien in Quarantäne nachprüfen (Gesamtaudit 10.11., Fachfrage 2)
     "virenscan-quarantaene": {"task": "core.tasks.recheck_quarantine", "schedule": 600.0},
     "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": 86400.0},
@@ -525,6 +532,10 @@ CLAMD_TIMEOUT = int(os.environ.get("CLAMD_TIMEOUT", "60"))
 # Rundschreiben-Anhänge und öffentliche Dokumente nur geprüft weitergeben (FQ16). Pflicht,
 # sobald clamd eingerichtet ist (Gesamtaudit 08.11., F-02); abschalten nur mit "0".
 VIRUS_SCAN_REQUIRED = os.environ.get("VIRUS_SCAN_REQUIRED", "1" if CLAMD_SOCKET else "") == "1"
+# Was beim Hochladen geprüft wird (Gesamtaudit 11.11., Fachfrage 4): "alle" Uploads oder nur
+# "extern", also Dateien von außen (ohne Anmeldung, z. B. Foto-Upload-Links und
+# Rückmeldelinks). Mails (Rechnungspostfach, Verteiler) und Verbund prüft HUBIplan immer.
+VIRUS_SCAN_SCOPE = "extern" if os.environ.get("VIRUS_SCAN_SCOPE", "") == "extern" else "alle"
 FILE_UPLOAD_HANDLERS = [
     "core.virenscan.ClamavUploadHandler",
     "django.core.files.uploadhandler.MemoryFileUploadHandler",
@@ -563,6 +574,9 @@ MCP_HILFE_ENABLED = env_bool("HUBIPLAN_MCP_HILFE", True)
 # Stufe 1a/W1: KI-Assistenten mit Anmeldung (/api/mcp/verein/); je Einheit zusätzlich Modul
 # „KI-Assistenten“ und Zusatzrecht nötig. false schaltet es für die ganze Instanz ab.
 MCP_ENABLED = env_bool("HUBIPLAN_MCP", True)
+# Rückleitungen bekannter KI-Assistenten (Host oder Endung ohne Punkt davor). Für andere
+# Adressen warnt die Zustimmungsseite (Gesamtaudit 11.11., S-06).
+MCP_KNOWN_REDIRECT_HOSTS = env_list("HUBIPLAN_MCP_BEKANNTE_ASSISTENTEN", "claude.ai,claude.com")
 # Land des Serverstandorts (Selbstauskunft, ISO-Kürzel)
 PEERING_COUNTRY = os.environ.get("PEERING_COUNTRY", "DE")
 EINVOICE_VALIDATOR_DIR = os.environ.get("EINVOICE_VALIDATOR_DIR", "/opt/hubiplan-einvoice")

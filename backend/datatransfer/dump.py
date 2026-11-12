@@ -191,6 +191,7 @@ ORG_FIELDS = (
     # Finanzeinstellungen und Festschreibung (Gesamtaudit 01.11., GA-F08)
     "finance_locked_until",
     "cash_counts_enabled",
+    "finance_reopen_four_eyes",
     "reserves_enabled",
     "datev_enabled",
     "datev_consultant",
@@ -236,6 +237,7 @@ DEPT_FIELDS = (
     # Finanzeinstellungen und Festschreibung (Gesamtaudit 01.11., GA-F08)
     "finance_locked_until",
     "cash_counts_enabled",
+    "finance_reopen_four_eyes",
     "reserves_enabled",
     "datev_enabled",
     "datev_consultant",

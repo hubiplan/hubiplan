@@ -54,6 +54,12 @@ des Vereins bleibt unverändert). In Platzhaltern arbeitet niemand.
   Adressen und verbinden genau die geprüfte (`core/safehttp.py`, kein DNS-Rebinding).
 - Ein angekündigter Umzug der Gegenstelle wird erst nach Bestätigung übernommen (siehe
   Umzug). Konzept zur Härtung: `konzepte/haertung-austausch.md` im Projektordner.
+- Übermittelte Daten (gemeldete Mitglieder, Rechnungen, Wechsel, Rundschreiben, Stände)
+  sieht in der Datenbank nur die eigene Einheit der Kopplung und ihr Platzhalter der Gegenseite (Row-Level Security über
+  `coupling_id`, Migration `peering/0015`); Empfang und Versand laufen mit Umgehung. Die
+  Inhalte (`data`, `payload` des Postausgangs) liegen mit dem Schlüssel der eigenen Einheit
+  verschlüsselt. Bestand nach dem Ausrollen mit `manage.py daten_verschluesseln`
+  verschlüsseln; Rückweg siehe `docs/betrieb.md` (`--rueckweg-zu`).
 
 ## Betrieb
 
@@ -205,6 +211,9 @@ Mitgliederliste des Dachverbands steht stattdessen „Korrektur vorschlagen“
 (`register.suggest`, nur Name, Vorname, Geburtsdatum). Beim Verein erscheint der
 Vorschlag als Änderungsmeldung und wird übernommen oder abgelehnt; die Berichtigung
 kommt dann mit dem nächsten Stand zurück.
+Offen sind höchstens 3 Vorschläge je Person und 200 je Partner; weitere verwirft der
+Verein still (Protokoll). Eingänge mit falschen Typen beantwortet die Instanz mit 400
+statt mit einem Fehler im Betrieb.
 
 ### Rundschreiben nach unten (Schritt 5)
 

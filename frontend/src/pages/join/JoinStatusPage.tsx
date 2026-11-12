@@ -134,7 +134,7 @@ export function JoinStatusPage() {
               )}
               {info.can_withdraw && !asking && (
                 <button type="button" className="button" onClick={() => setAsking(true)}>
-                  {t('Antrag zurückziehen')}
+                  {t('Mitgliedsantrag zurückziehen')}
                 </button>
               )}
             </div>

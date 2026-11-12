@@ -1,10 +1,11 @@
-"""Pflicht zur Zwei-Faktor-Anmeldung für heikle Rechte (Gesamtaudit 31.10.b, Frage 1).
+"""Pflicht zur Zwei-Faktor-Anmeldung für jedes Verwaltungsrecht (Gesamtaudit 11.11., Frage 1).
 
-Wer Plattform, Rollen, vollständige Exporte oder die Kasse (schreibend) verwaltet, alle
-Mitglieder lesen darf oder Protokoll und Postausgang sieht (Gesamtaudit 05.11. F-02),
-braucht eine eingerichtete Zwei-Faktor-Anmeldung. Ab dem ersten Mal, dass ein Konto solche Rechte
-hat, bleiben ``GRACE_DAYS`` Tage zum Einrichten; danach ruhen genau diese Rechte, bis die
-Zwei-Faktor-Anmeldung eingerichtet ist. Alles andere geht weiter, auch „Mein Konto“.
+Wer in einer Einheit irgendein Recht hat (Vorstand, Kasse, Schriftführung, Abteilungsrolle …),
+braucht eine eingerichtete Zwei-Faktor-Anmeldung. Nur der eigene Mitgliederbereich kommt ohne
+aus. Ab dem ersten Mal, dass ein Konto solche Rechte hat, bleiben ``GRACE_DAYS`` Tage zum
+Einrichten. Schon in dieser Frist ruhen die folgenreichsten Rechte (Rundschreiben, Exporte,
+Buchen in der Kasse, ``IMMEDIATE_PERMISSIONS``); danach ruhen alle Rechte, bis die
+Zwei-Faktor-Anmeldung eingerichtet ist. „Mein Konto“ geht weiter.
 
 Für die Plattform-Verwaltung gibt es keine Frist (Gesamtaudit 10.11., Frage 1): Ohne
 zweiten Faktor ruhen ihre Rechte sofort. Heikle Einzelaktionen verlangen zusätzlich eine
@@ -20,29 +21,21 @@ from django.utils import timezone
 
 from access import catalog
 
-GRACE_DAYS = 14
+GRACE_DAYS = 3
 
-# Rechte, die einen zweiten Faktor verlangen (Plattform: alle ihre Rechte)
-MFA_PERMISSIONS = frozenset(
+# Rechte, die schon in der Frist ruhen: Ein Rundschreiben im Namen des Vereins, ein Export
+# aller Daten oder eine Buchung sind für Betrüger am wertvollsten.
+IMMEDIATE_PERMISSIONS = frozenset(
     {
-        catalog.ROLES_MANAGE,
-        catalog.DEPT_ROLES_MANAGE,
+        catalog.CIRCULARS_SEND,
+        catalog.CIRCULARS_EDIT,
+        catalog.DEPT_CIRCULARS_SEND,
         catalog.DATA_EXPORT,
-        catalog.FINANCE_EDIT,
-        catalog.PLATFORM_MANAGE,
-        catalog.CLUBS_MANAGE,
-        # dieselben Rechte als Bereiche (konzepte/berechtigungen.md)
-        catalog.ROLES_EDIT,
-        # KI-Assistenten verbinden (docs/mcp.md)
-        catalog.MCP_CONNECT,
         catalog.EXPORT_FULL,
-        catalog.UNITS_EDIT,
-        catalog.PLATFORM_EDIT,
-        # Lesen aller Mitglieder, Protokoll und Postausgang (Gesamtaudit 05.11. F-02);
-        # Rechte nur für eine Abteilung bleiben ohne Pflicht
-        catalog.MEMBERS_VIEW,
-        catalog.MEMBERS_EDIT,
-        catalog.AUDIT_VIEW,
+        catalog.EXPORT_RUN,
+        catalog.EXPORT_LISTS,
+        catalog.DEPT_EXPORT,
+        catalog.FINANCE_EDIT,
     }
 )
 
@@ -65,9 +58,8 @@ def deadline(user) -> datetime.datetime | None:
 
 
 def gate(user, perms: set[str], *, platform: bool = False) -> set[str]:
-    """Rechte nach der Übergangsfrist ohne zweiten Faktor abziehen."""
-    needed = perms if platform else perms & MFA_PERMISSIONS
-    if not needed or not getattr(user, "pk", None) or has_mfa(user):
+    """Rechte ohne zweiten Faktor abziehen: in der Frist die folgenreichsten, danach alle."""
+    if not perms or not getattr(user, "pk", None) or has_mfa(user):
         return perms
     if platform and not getattr(settings, "MFA_PLATFORM_GRACE", False):
         return set()
@@ -78,7 +70,8 @@ def gate(user, perms: set[str], *, platform: bool = False) -> set[str]:
 
         from .models import User
 
-        due = now + datetime.timedelta(days=GRACE_DAYS)
+        # Tests mit verstellter Uhr setzen MFA_GRACE_DAYS hoch (tests/conftest.py)
+        due = now + datetime.timedelta(days=getattr(settings, "MFA_GRACE_DAYS", GRACE_DAYS))
         # Nur setzen, wenn noch leer (zwei Anfragen gleichzeitig: die erste gewinnt). Kein
         # Teil des Änderungspakets der Anfrage (sonst wäre „Rückgängig“ gesperrt).
         with suppress():
@@ -89,9 +82,11 @@ def gate(user, perms: set[str], *, platform: bool = False) -> set[str]:
             User.objects.filter(pk=user.pk).values_list("mfa_required_by", flat=True).first() or due
         )
         due = user.mfa_required_by
-    if now <= due:
-        return perms
-    return set() if platform else perms - MFA_PERMISSIONS
+    if now > due:
+        return set()
+    if getattr(settings, "MFA_IMMEDIATE", True):
+        return perms - IMMEDIATE_PERMISSIONS
+    return perms
 
 
 def status(user) -> dict:

@@ -1018,7 +1018,18 @@ def _receive(coupling: Coupling, payload: dict) -> dict:
         stale = seq <= coupling.in_seq
         persons = 0
         if not stale:
-            persons = _process(coupling, kind, data)
+            try:
+                persons = _process(coupling, kind, data)
+            except (TypeError, AttributeError, KeyError, ValueError) as exc:
+                # Falsche Typen von der Partnerinstanz: 400 statt 500 und Alarm-Mail
+                # (Gesamtaudit 11.11., S-05). Mit Ablauf im Protokoll, ohne Inhalt.
+                log.warning(
+                    "Verbund: Nachricht %s von Kopplung %s mit falschem Format",
+                    kind[:40],
+                    coupling.pk,
+                    exc_info=True,
+                )
+                raise Refused(400, "Die Nachricht hat ein ungültiges Format.") from exc
             coupling.in_seq = seq
         coupling.last_contact_at = timezone.now()
         # Nur die Felder des Eingangs: ein Versand während der Verarbeitung zählt

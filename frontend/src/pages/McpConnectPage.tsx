@@ -76,12 +76,28 @@ export function McpConnectPage() {
         {!info && !error && <p aria-live="polite">{t('Einen Moment …')}</p>}
         {info && (
           <>
+            {/* Die Adresse entscheidet, wohin die Freigabe geht; den Namen wählt der Assistent
+                selbst (Gesamtaudit 11.11., S-06). */}
             <p>
-              {t('„{name}“ möchte mit deinem HUBIplan-Zugang arbeiten.', { name: info.client })}{' '}
-              <span className="muted small">
-                {t('Rückleitung an: {host}', { host: info.redirect_host })}
-              </span>
+              {info.redirect_kind === 'rechner'
+                ? t('Die Freigabe geht an ein Programm auf deinem Rechner:')
+                : t('Die Freigabe geht an:')}{' '}
+              <strong>{info.redirect_host}</strong>
             </p>
+            <p className="muted small">
+              {t('Der Assistent nennt sich „{name}“.', { name: info.client })}
+            </p>
+            {info.redirect_kind !== 'bekannt' && !info.connected_before && (
+              <Alert kind={info.redirect_kind === 'rechner' ? 'info' : 'error'}>
+                {info.redirect_kind === 'rechner'
+                  ? t(
+                      'Erlaube nur, wenn du die Verbindung gerade selbst in einem Programm auf diesem Rechner eingerichtet hast.',
+                    )
+                  : t(
+                      'Diese Adresse gehört zu keinem bekannten KI-Assistenten. Erlaube nur, wenn du die Verbindung gerade selbst eingerichtet hast und die Adresse kennst. Kam der Link per Mail oder Nachricht, lehne ab.',
+                    )}
+              </Alert>
+            )}
             <p className="muted small">
               {t('Angemeldet als')} <strong>{user?.email}</strong>
             </p>
