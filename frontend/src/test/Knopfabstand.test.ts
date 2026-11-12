@@ -142,6 +142,7 @@ function plaetze(kinder: Knoten[]): ('knopf' | 'anderes')[] {
         return false
       }
       case 'Literal':
+        return typeof e.value === 'string' && !e.value.trim() ? null : false
       case 'TemplateLiteral':
         return false
       default:
@@ -151,7 +152,9 @@ function plaetze(kinder: Knoten[]): ('knopf' | 'anderes')[] {
   for (const kind of kinder) {
     if (kind.type === 'JSXText') {
       const text = kind.value as string
-      if (text.trim() || !text.includes('\n')) ergebnis.push('anderes')
+      // Ein Leerzeichen zwischen Knöpfen trennt nur, solange sie in einer Zeile stehen; beim
+      // Umbruch kleben sie untereinander (Kassenzählung auf dem Handy)
+      if (text.trim()) ergebnis.push('anderes')
       continue
     }
     if (kind.type === 'JSXElement') {

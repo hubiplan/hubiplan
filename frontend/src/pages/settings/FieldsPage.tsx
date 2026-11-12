@@ -270,7 +270,7 @@ export function FieldsAdmin({
                 <strong>{f.label}</strong>
                 {f.inherited && <span className="small muted"> {terms.dv_vom}</span>}
                 {editable && !f.inherited && (
-                  <span className="push-right">
+                  <span className="button-row push-right">
                     <button
                       type="button"
                       className="button button-ghost"
@@ -283,7 +283,7 @@ export function FieldsAdmin({
                       }
                     >
                       {t('Wiederherstellen')}
-                    </button>{' '}
+                    </button>
                     <button
                       type="button"
                       className="button button-ghost"

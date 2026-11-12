@@ -39,10 +39,10 @@ export function CashCountsPage({ canEdit }: { canEdit: boolean }) {
       <div className="card-head">
         <h2>{t('Kassenzählung')}</h2>
         {canEdit && form === null && (
-          <span className="push-right">
+          <span className="button-row push-right">
             <button type="button" className="button button-ghost" onClick={() => setForm('count')}>
               {t('Kasse zählen')}
-            </button>{' '}
+            </button>
             <button type="button" className="button button-ghost" onClick={() => setForm('event')}>
               {t('Kassenbericht Fest')}
             </button>

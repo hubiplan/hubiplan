@@ -158,7 +158,7 @@ export function TaxPage() {
             p: data.period,
           })}
         </span>
-        <span className="push-right">
+        <span className="button-row push-right">
           <a
             className="button button-ghost"
             href={financeApi.taxReportUrl(org.id, data.year, 'pdf')}
@@ -166,7 +166,7 @@ export function TaxPage() {
             rel="noreferrer"
           >
             {t('PDF')}
-          </a>{' '}
+          </a>
           <a
             className="button button-ghost"
             href={financeApi.taxReportUrl(org.id, data.year, 'xlsx')}
