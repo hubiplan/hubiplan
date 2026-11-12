@@ -11,6 +11,7 @@ from peering.models import Coupling, Message, RemoteMember
 
 from .factories import make_org
 from .test_verbund_kopplung import VEREIN, _setup, api, couple, net, world  # noqa: F401
+from .verbund_netz import app_role
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -38,11 +39,11 @@ def test_gemeldete_mitglieder_nur_fuer_die_eigene_einheit(net, world):
         stranger = make_org("Fremder Verein Muster")
         with rls_bypass():
             RemoteMember.objects.create(coupling=lower, uid="m999", data={"hinweis": "Probe"})
-        # unit_context: streng im Bereich der Einheit, ohne geerbte Umgehung (wie ein Eingang)
-        with unit_context(world["club"].pk):
+        # Wie ein Eingang: eingeschränkte Rolle, streng im Bereich der Einheit
+        with app_role(), unit_context(world["club"].pk):
             row = RemoteMember.objects.get(uid="m999")
             assert row.data == {"hinweis": "Probe"}
-        with unit_context(stranger.pk):
+        with app_role(), unit_context(stranger.pk):
             assert not RemoteMember.objects.filter(uid="m999").exists()
             # Schreiben für eine fremde Kopplung scheitert ebenfalls
             with pytest.raises(Exception), connection.cursor() as cur:  # noqa: B017
