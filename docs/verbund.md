@@ -205,6 +205,9 @@ Mitgliederliste des Dachverbands steht stattdessen „Korrektur vorschlagen“
 (`register.suggest`, nur Name, Vorname, Geburtsdatum). Beim Verein erscheint der
 Vorschlag als Änderungsmeldung und wird übernommen oder abgelehnt; die Berichtigung
 kommt dann mit dem nächsten Stand zurück.
+Offen sind höchstens 3 Vorschläge je Person und 200 je Partner; weitere verwirft der
+Verein still (Protokoll). Eingänge mit falschen Typen beantwortet die Instanz mit 400
+statt mit einem Fehler im Betrieb.
 
 ### Rundschreiben nach unten (Schritt 5)
 
