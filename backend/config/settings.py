@@ -527,6 +527,10 @@ CLAMD_TIMEOUT = int(os.environ.get("CLAMD_TIMEOUT", "60"))
 # Rundschreiben-Anhänge und öffentliche Dokumente nur geprüft weitergeben (FQ16). Pflicht,
 # sobald clamd eingerichtet ist (Gesamtaudit 08.11., F-02); abschalten nur mit "0".
 VIRUS_SCAN_REQUIRED = os.environ.get("VIRUS_SCAN_REQUIRED", "1" if CLAMD_SOCKET else "") == "1"
+# Was beim Hochladen geprüft wird (Gesamtaudit 11.11., Fachfrage 4): "alle" Uploads oder nur
+# "extern", also Dateien von außen (ohne Anmeldung, z. B. Foto-Upload-Links und
+# Rückmeldelinks). Mails (Rechnungspostfach, Verteiler) und Verbund prüft HUBIplan immer.
+VIRUS_SCAN_SCOPE = "extern" if os.environ.get("VIRUS_SCAN_SCOPE", "") == "extern" else "alle"
 FILE_UPLOAD_HANDLERS = [
     "core.virenscan.ClamavUploadHandler",
     "django.core.files.uploadhandler.MemoryFileUploadHandler",

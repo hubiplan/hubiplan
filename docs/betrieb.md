@@ -991,6 +991,13 @@ stoppt den Versand bzw. den Abruf und schickt eine Alarm-Mail. Mit Virenprüfung
 anderes. Mit `VIRUS_SCAN_REQUIRED=0` in der `.env` geht Ungeprüftes wie früher durch
 und steht nur im Log.
 
+Mit `VIRUS_SCAN_SCOPE=extern` in der `.env` prüft HUBIplan beim Hochladen nur Dateien von
+außen, also Uploads ohne Anmeldung (Foto-Upload-Links, Rückmeldelinks) und von App-Geräten.
+Mails an Rechnungspostfach und Verteiler, Dateien aus dem Verbund und die Prüfung vor der
+Weitergabe bleiben wie oben. Uploads angemeldeter Personen gehen dann ungeprüft durch, auch
+wenn clamd ausfällt. Das passt zu Instanzen, die vor allem wegen des Rechnungspostfachs einen
+Scanner brauchen (Gesamtaudit 11.11., Fachfrage 4); Standard ist `alle`.
+
 Ohne `CLAMD_SOCKET_DIR` (Testserver, Entwicklung) gibt es keine Prüfung. Plattform › Version
 zeigt dann einen Hinweis. Steht `VIRUS_SCAN_REQUIRED=1` ohne Scanner in der `.env`, gehen
 eingehende Dokumente in Quarantäne, bis ein Scanner eingerichtet ist, und Mails an Verteiler

@@ -18,6 +18,10 @@ ausgefallenem Scanner nicht mehr abgelehnt, sondern angenommen und gesperrt
 (:class:`core.models.QuarantinedFile`). Herunterladen und Weitergeben gehen erst, wenn
 ``recheck_quarantine`` sie nachgeprüft hat; ein Fund sperrt sie dauerhaft. Mails an
 Verteiler bleiben bei ausgefallenem Scanner ungelesen im Sammelpostfach liegen.
+
+Mit ``VIRUS_SCAN_SCOPE=extern`` (Fachfrage 4, Gesamtaudit 11.11.) prüft der Upload-Handler
+nur Dateien von außen (ohne Anmeldung); Mails und Verbund (``inbound_ok``) und die Prüfung
+vor der Weitergabe (``release_ok``) bleiben wie beschrieben.
 """
 
 from __future__ import annotations
@@ -91,6 +95,18 @@ def enabled() -> bool:
 def required() -> bool:
     """Weitergabe nur geprüfter Dateien (Rundschreiben, öffentliche Dokumente)."""
     return bool(getattr(settings, "VIRUS_SCAN_REQUIRED", False))
+
+
+def external_only() -> bool:
+    """Nur Dateien von außen prüfen (``VIRUS_SCAN_SCOPE=extern``, Fachfrage 4, 11.11.)."""
+    return getattr(settings, "VIRUS_SCAN_SCOPE", "alle") == "extern"
+
+
+def from_outside(request) -> bool:
+    """Kommt der Upload von außen? Ohne Anmeldung im Browser (öffentliche Links) zählt als
+    außen, ebenso App-Geräte (ohne Sitzung), damit im Zweifel geprüft wird."""
+    user = getattr(request, "user", None)
+    return not getattr(user, "is_authenticated", False)
 
 
 def max_bytes() -> int:
@@ -259,6 +275,9 @@ class ClamavUploadHandler(FileUploadHandler):
         self.size = 0
         self.held = False
         self.quarantine = quarantine_allowed(self.request)
+        if external_only() and not from_outside(self.request):
+            # Nur Eingänge von außen prüfen: Uploads angemeldeter Personen gehen durch
+            return
         if enabled():
             try:
                 self.stream = Stream()
