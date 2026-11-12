@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("organizations", "0066_geschaeftspartner_im_menue"),
+        ("organizations", "0067_adresszusatz"),
     ]
 
     operations = [
