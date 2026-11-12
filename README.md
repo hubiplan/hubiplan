@@ -90,6 +90,9 @@ Schützenverein, Musikverein oder Sportverein.
   ([docs/versammlungen.md](docs/versammlungen.md))
 - Helferdienste: Schichtpläne mit Selbsteintragung, Kontingenten für Untereinheiten und
   Nachweis geleisteter Dienste ([docs/helferdienste.md](docs/helferdienste.md))
+- Fristenkalender für Vereinspflichten (Freistellungsbescheid, Kassenprüfung,
+  Transparenzregister …) mit Erinnerung an das zuständige Amt, Verlauf und der Aufgabe für das
+  Registergericht nach einer Vorstandswahl ([docs/fristenkalender.md](docs/fristenkalender.md))
 - Material, Räume und Anlagen mit Standort, Zustand und Verlauf; Belegung mit Anfragen aus
   dem Mitgliederbereich, Wochenansicht und Kalender-Abo ([docs/material.md](docs/material.md))
 - Musik: Auftritte mit Besetzung, Verfügbarkeiten und Abrechnung, Proben, Programme und ein
@@ -369,6 +372,7 @@ backend/
   todos/           Aufgaben
   meetings/        Versammlungen, Protokolle, Beschlussbuch
   helpers/         Helferdienste und Schichtpläne
+  obligations/     Fristenkalender für Vereinspflichten
   materials/       Material, Räume und Anlagen
   bookings/        Belegung und Anfragen
   music/           Musik: Auftritte, Besetzung, Proben, Notenarchiv
@@ -416,6 +420,7 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/fremde-kalender.md](docs/fremde-kalender.md) | Fremde Kalender (Vereinsplaner, iCal) |
 | [docs/versammlungen.md](docs/versammlungen.md) | Versammlungen, Protokolle, Beschlussbuch |
 | [docs/helferdienste.md](docs/helferdienste.md) | Helferdienste und Schichtpläne |
+| [docs/fristenkalender.md](docs/fristenkalender.md) | Fristenkalender für Vereinspflichten |
 | [docs/material.md](docs/material.md), [docs/konzept-materialverwaltung.md](docs/konzept-materialverwaltung.md) | Material, Räume, Anlagen und Belegung |
 | [docs/musik.md](docs/musik.md) | Musik: Auftritte, Besetzung, Proben, Notenarchiv |
 | [docs/briefvorlage.md](docs/briefvorlage.md) | Briefbogen und Briefvorlage |

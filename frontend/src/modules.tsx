@@ -168,6 +168,18 @@ export const modules: AppModule[] = [
       !!(org?.permissions.includes('todos.view') || ws.dept?.permissions.includes('todos.view')),
   },
   {
+    id: 'fristenkalender',
+    group: 'planen',
+    label: t('Fristenkalender'),
+    path: '/fristenkalender',
+    icon: icon('M4 6.5h16v13.5H4zM4 10.5h16M8.5 4v4M15.5 4v4M12 13v3.5M12 18.4v.1'),
+    visible: (org) =>
+      !!org &&
+      (org.type === 'club' || org.type === 'federation') &&
+      org.modules.includes('obligations') &&
+      org.permissions.includes(PERM.obligationsView),
+  },
+  {
     id: 'mitglieder',
     group: 'verein',
     label: t('Mitglieder'),

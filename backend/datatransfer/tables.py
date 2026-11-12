@@ -184,6 +184,9 @@ MODULE_MODELS = (
     "helpers.Shift",
     "helpers.ShiftQuota",
     "helpers.ShiftAssignment",
+    # Fristenkalender: Pflichten vor ihrem Verlauf
+    "obligations.Obligation",
+    "obligations.ObligationDone",
     "circulars.CircularTemplate",
     "circulars.Circular",
     "circulars.CircularAttachment",

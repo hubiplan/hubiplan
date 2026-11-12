@@ -10968,3 +10968,135 @@ msgstr "Only board members with role management can confirm."
 #, python-brace-format
 msgid "{reason} (beantragt von {by}, bestätigt von {confirmed})"
 msgstr "{reason} (requested by {by}, confirmed by {confirmed})"
+
+msgid "Fristenkalender"
+msgstr "Deadline calendar"
+
+msgid "Vereinspflicht"
+msgstr "Club obligation"
+
+#, python-brace-format
+msgid "überfällig seit {date}"
+msgstr "overdue since {date}"
+
+#, python-brace-format
+msgid "Frist {date}"
+msgstr "deadline {date}"
+
+#, python-brace-format
+msgid "Gewählt in „{meeting}“ am {day}:"
+msgstr "Elected at “{meeting}” on {day}:"
+
+msgid "Steuererklärung und Freistellungsbescheid"
+msgstr "Tax return and exemption notice"
+
+msgid "Gemeinnützige Vereine geben in der Regel alle drei Jahre eine Steuererklärung ab (mit Anlage Gem). Das Finanzamt prüft dabei die Gemeinnützigkeit und erteilt einen neuen Freistellungsbescheid. Zuwendungsbestätigungen darf der Verein nur ausstellen, solange der Bescheid nicht älter als fünf Jahre ist (§ 63 Abs. 5 AO). Die genaue Frist steht im Schreiben des Finanzamts."
+msgstr "Non-profit associations usually file a tax return every three years (with the annex “Gem”). The tax office then reviews the non-profit status and issues a new exemption notice. The club may only issue donation receipts while the notice is no more than five years old (§ 63 (5) AO). The exact deadline is stated in the letter from the tax office."
+
+msgid "Kassenprüfung vor der Jahreshauptversammlung"
+msgstr "Cash audit before the annual general meeting"
+
+msgid "Die Kassenprüfer prüfen Kasse, Konten und Belege des abgelaufenen Jahres und berichten der Mitgliederversammlung; danach folgt die Entlastung des Vorstands. Wer prüft und wann, regelt die Satzung."
+msgstr "The cash auditors check the cash, accounts and receipts of the past year and report to the general meeting; the discharge of the board follows. Who audits and when is set out in the statutes."
+
+msgid "Angaben im Transparenzregister prüfen"
+msgstr "Check the entries in the transparency register"
+
+msgid "Eingetragene Vereine stehen mit den Angaben aus dem Vereinsregister im Transparenzregister. Weichen die wirtschaftlich Berechtigten davon ab (zum Beispiel nach einer Vorstandswahl vor der Eintragung oder bei besonderen Stimmrechten), muss der Vorstand sie selbst melden (§ 20 GwG)."
+msgstr "Registered associations appear in the transparency register with the details from the register of associations. If the beneficial owners differ from these (for example after a board election before it is registered, or with special voting rights), the board has to report them itself (§ 20 GwG)."
+
+msgid "Vorstandsänderung beim Registergericht anmelden"
+msgstr "Report the change of the board to the register court"
+
+msgid "Jede Änderung des Vorstands ist zum Vereinsregister anzumelden (§ 67 BGB), durch Vorstandsmitglieder in vertretungsberechtigter Zahl und öffentlich beglaubigt, meist über einen Notar (§ 77 BGB). Eine Abschrift des Wahlprotokolls gehört dazu. Nach jeder Wahl in ein Amt, das den Verein vertritt, legt HUBIplan dafür eine Aufgabe an."
+msgstr "Every change of the board must be reported to the register of associations (§ 67 BGB), by board members in the number required for representation and publicly certified, usually through a notary (§ 77 BGB). A copy of the election minutes is part of it. After every election to an office that represents the club, HUBIplan creates a task for this."
+
+msgid "Versicherungen prüfen"
+msgstr "Review insurance"
+
+msgid "Vereinshaftpflicht, Veranstaltungen, Unfallversicherung der Helfer, Gebäude und Inventar: Passen Deckung und Beiträge noch zu Mitgliederzahl und Vorhaben? Oft lohnt ein Blick auf die Sammelverträge des Verbands."
+msgstr "Club liability, events, accident insurance for volunteers, buildings and inventory: do cover and premiums still match the number of members and your plans? The federation’s group contracts are often worth a look."
+
+msgid "Bestandsmeldung an Verband oder Sportbund"
+msgstr "Membership report to the federation or sports association"
+
+msgid "Viele Verbände und Landessportbünde erheben einmal im Jahr die Mitgliederzahlen, oft zum 1. Januar. Davon hängen Beiträge und Zuschüsse ab."
+msgstr "Many federations and regional sports associations collect membership figures once a year, often as of 1 January. Fees and grants depend on them."
+
+msgid "Datenschutz prüfen"
+msgstr "Review data protection"
+
+msgid "Verzeichnis der Verarbeitungstätigkeiten, Datenschutzhinweise, Einwilligungen für Fotos und die Zugriffsrechte im Vorstand einmal im Jahr durchsehen (Art. 30 DSGVO)."
+msgstr "Go through the record of processing activities, privacy notices, consents for photos and the access rights within the board once a year (Art. 30 GDPR)."
+
+msgid "Nächste Frist"
+msgstr "Next deadline"
+
+msgid "Wiederholung in Monaten"
+msgstr "Repetition in months"
+
+msgid "Erinnerung Tage vorher"
+msgstr "Reminder days before"
+
+msgid "Frist"
+msgstr "Deadline"
+
+msgid "nach einer Vorstandswahl"
+msgstr "after a board election"
+
+#, python-brace-format
+msgid "Überfällig: {title} (Frist {day})"
+msgstr "Overdue: {title} (deadline {day})"
+
+#, python-brace-format
+msgid "Erinnerung: {title} bis {day}"
+msgstr "Reminder: {title} by {day}"
+
+#, python-brace-format
+msgid "im Fristenkalender von {org} steht eine Pflicht an:"
+msgstr "an obligation is coming up in the deadline calendar of {org}:"
+
+#, python-brace-format
+msgid "Frist: {day}"
+msgstr "Deadline: {day}"
+
+#, python-brace-format
+msgid "Wenn es erledigt ist, vermerke es bitte im Fristenkalender: {url}"
+msgstr "Once it is done, please record it in the deadline calendar: {url}"
+
+#, python-brace-format
+msgid "Zuständig: {role}"
+msgstr "Responsible: {role}"
+
+msgid "Die Pflicht wurde inzwischen geändert. Bitte neu laden."
+msgstr "The obligation has been changed in the meantime. Please reload."
+
+msgid "Erledigt"
+msgstr "Done"
+
+msgid "Bitte eine Bezeichnung eingeben."
+msgstr "Please enter a name."
+
+msgid "Höchstens 100 Pflichten je Einheit."
+msgstr "At most 100 obligations per unit."
+
+msgid "Diese Pflicht hat keine offene Frist."
+msgstr "This obligation has no open deadline."
+
+msgid "Bitte eine Frist eingeben."
+msgstr "Please enter a deadline."
+
+msgid "Unbekannter Vorschlag."
+msgstr "Unknown suggestion."
+
+msgid "Dieser Vorschlag ist schon übernommen."
+msgstr "This suggestion has already been adopted."
+
+msgid "Wiederkehrende Pflichten des Vereins mit Erinnerung, zum Beispiel Freistellungsbescheid, Kassenprüfung und Anmeldungen zum Vereinsregister"
+msgstr "Recurring obligations of the club with reminders, for example exemption notice, cash audit and filings with the register of associations"
+
+msgid "Pflichten und Fristen des Vereins sehen"
+msgstr "See the club’s obligations and deadlines"
+
+msgid "Pflichten anlegen, ändern und als erledigt vermerken"
+msgstr "Create and change obligations and mark them as done"

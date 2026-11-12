@@ -80,6 +80,10 @@ const ChronikPage = lazyPage(() => import('./pages/chronik/ChronikPage.tsx'), 'C
 const PartnersPage = lazyPage(() => import('./pages/partners/PartnersPage.tsx'), 'PartnersPage')
 const ScoresOnlyPage = lazyPage(() => import('./pages/music/MusicPage.tsx'), 'ScoresOnlyPage')
 const HelpersPage = lazyPage(() => import('./pages/helpers/HelpersPage.tsx'), 'HelpersPage')
+const ObligationsPage = lazyPage(
+  () => import('./pages/obligations/ObligationsPage.tsx'),
+  'ObligationsPage',
+)
 const WebsitePage = lazyPage(() => import('./pages/website/WebsitePage.tsx'), 'WebsitePage')
 const EventsPage = lazyPage(() => import('./pages/events/EventsPage.tsx'), 'EventsPage')
 const CompetitionsPage = lazyPage(
@@ -348,6 +352,7 @@ export default function App() {
           />
           <Route path="noten" element={<ScoresOnlyPage />} />
           <Route path="helferdienste" element={<HelpersPage />} />
+          <Route path="fristenkalender" element={<ObligationsPage />} />
           <Route path="termine/*" element={<EventsPage />} />
           <Route
             path="musik/*"

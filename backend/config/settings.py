@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "bookings",
     "meetings",
     "helpers",
+    "obligations",
     "places",
     "admission",
     "django.contrib.admin",
@@ -315,6 +316,10 @@ CELERY_BEAT_SCHEDULE = {
     "virenscan-quarantaene": {"task": "core.tasks.recheck_quarantine", "schedule": 600.0},
     "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": 86400.0},
     "helferdienste-erinnerungen": {"task": "helpers.tasks.send_reminders", "schedule": 3600.0},
+    "fristenkalender-erinnerungen": {
+        "task": "obligations.tasks.send_reminders",
+        "schedule": 3600.0,
+    },
     "todos-reminders": {"task": "todos.tasks.send_due_reminders", "schedule": 300.0},
     "todos-completed": {"task": "todos.tasks.purge_completed", "schedule": 86400.0},
     "todos-purge": {"task": "todos.tasks.purge_deleted", "schedule": 86400.0},

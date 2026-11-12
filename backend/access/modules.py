@@ -250,6 +250,17 @@ MODULES: tuple[Module, ...] = (
         org_types=("federation", "club"),
     ),
     Module(
+        "obligations",
+        gettext_noop("Fristenkalender"),
+        "admin",
+        gettext_noop(
+            "Wiederkehrende Pflichten des Vereins mit Erinnerung, zum Beispiel "
+            "Freistellungsbescheid, Kassenprüfung und Anmeldungen zum Vereinsregister"
+        ),
+        default=True,
+        org_types=("federation", "club"),
+    ),
+    Module(
         "mcp",
         gettext_noop("KI-Assistenten"),
         "admin",

@@ -83,5 +83,6 @@ abschaltbar sind und welche eine neue Einheit bekommt.
 | | Belegung | `bookings` | aus | Material oder Räume |
 | | Steuern & Gemeinnützigkeit | `tax` | aus | Kasse |
 | | Zuwendungsbestätigungen | `donations` | aus | Kasse |
+| | Fristenkalender | `obligations` | an | – |
 
 Konzept und weitere Schritte: Projektunterlage „Module neu ordnen“.
