@@ -50,6 +50,7 @@ from members.models import (
     Gender,
     Membership,
     today,
+    with_title,
 )
 from members.personsearch import ordered
 from organizations.models import Organization
@@ -73,6 +74,8 @@ class Candidate:
     last_name: str
     email: str = ""
     gender: str = ""
+    # Titel vor dem Nachnamen in der förmlichen Anrede („Sehr geehrter Herr Dr. Muster“)
+    title: str = ""
     address: str = ""
     membership_id: int | None = None
     user_id: int | None = None
@@ -142,8 +145,8 @@ def years_ago(on: datetime.date, years: int) -> datetime.date:
         return on.replace(year=on.year - years, day=28)
 
 
-def address_of(first: str, last: str, row: dict) -> str:
-    lines = [f"{first} {last}".strip(), row.get("street", "")]
+def address_of(first: str, last: str, row: dict, title: str = "") -> str:
+    lines = [with_title(title, first, last), row.get("street", "")]
     lines.append(f"{row.get('postal_code', '')} {row.get('city', '')}".strip())
     country = row.get("country", "")
     if country and country.lower() not in ("deutschland", "germany", "de"):
@@ -278,18 +281,19 @@ def _organization_candidates(m, row: dict, club) -> list[Candidate]:
         .order_by("-is_primary", "pk")
     )
 
-    def details(c: ContactPerson) -> tuple[str, str, str, str]:
+    def details(c: ContactPerson) -> tuple[str, str, str, str, str]:
         if c.person_id is not None:
             linked = contact_for(c.person, club)
             email = linked.email if linked else ""
-            return c.person.first_name, c.person.last_name, c.person.gender, email
-        return c.first_name, c.last_name, c.gender, c.email
+            p = c.person
+            return p.first_name, p.last_name, p.gender, p.title, email
+        return c.first_name, c.last_name, c.gender, c.title, c.email
 
     result = []
     for c in contacts:
         if not c.receives_mail:
             continue
-        first, last, gender, email = details(c)
+        first, last, gender, title, email = details(c)
         if not email.strip():
             continue
         result.append(
@@ -299,6 +303,7 @@ def _organization_candidates(m, row: dict, club) -> list[Candidate]:
                 first_name=first,
                 last_name=last,
                 gender=gender,
+                title=title,
                 email=email.strip(),
                 membership_id=m.pk,
                 departments=row.get("departments", []),
@@ -310,12 +315,12 @@ def _organization_candidates(m, row: dict, club) -> list[Candidate]:
     if result:
         return result
     primary = next((c for c in contacts if c.is_primary), contacts[0] if contacts else None)
-    first, last, gender = ("", "", "")
+    first, last, gender, title = ("", "", "", "")
     if primary is not None:
-        first, last, gender, _ = details(primary)
+        first, last, gender, title, _ = details(primary)
     lines = [name]
     if primary is not None:
-        lines.append(f"z. Hd. {first} {last}".strip())
+        lines.append(f"z. Hd. {with_title(title, first, last)}".strip())
     address = address_of("", "", row)
     return [
         Candidate(
@@ -324,6 +329,7 @@ def _organization_candidates(m, row: dict, club) -> list[Candidate]:
             first_name=first,
             last_name=last or name,
             gender=gender,
+            title=title,
             email=(row.get("email") or "").strip(),
             address="\n".join([*lines, address]) if address else "\n".join(lines),
             membership_id=m.pk,
@@ -350,8 +356,9 @@ def _member_candidates(memberships, rows: dict[int, dict], club_of) -> list[Cand
                 first_name=person.first_name,
                 last_name=person.last_name,
                 gender=person.gender,
+                title=person.title,
                 email=(row.get("email") or "").strip(),
-                address=address_of(person.first_name, person.last_name, row),
+                address=address_of(person.first_name, person.last_name, row, person.title),
                 membership_id=m.pk,
                 departments=row.get("departments", []),
                 membership=m,
@@ -666,14 +673,14 @@ def select(circular: Circular) -> Selection:
 
 
 def formal_salutation(c: Candidate) -> str:
-    """„Sehr geehrter Herr Muster“; ohne Angabe „Guten Tag Max Muster“."""
+    """„Sehr geehrter Herr Dr. Muster“; ohne Geschlecht „Guten Tag Dr. Max Muster“."""
     if c.without_person:
         return "Sehr geehrte Damen und Herren"
     if c.gender == Gender.MALE:
-        return f"Sehr geehrter Herr {c.last_name}"
+        return f"Sehr geehrter Herr {with_title(c.title, '', c.last_name)}"
     if c.gender == Gender.FEMALE:
-        return f"Sehr geehrte Frau {c.last_name}"
-    return f"Guten Tag {c.first_name} {c.last_name}".replace("  ", " ").strip()
+        return f"Sehr geehrte Frau {with_title(c.title, '', c.last_name)}"
+    return f"Guten Tag {with_title(c.title, c.first_name, c.last_name)}"
 
 
 def informal_salutation(c: Candidate) -> str:

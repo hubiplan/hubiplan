@@ -14,6 +14,7 @@ from organizations.terms import fill
 
 from . import services
 from .models import (
+    TITLE_MAX_LENGTH,
     BillingAddress,
     ContactPerson,
     DepartmentMembership,
@@ -104,6 +105,21 @@ class ContactSerializer(serializers.Serializer):
     country = serializers.CharField(required=False, max_length=100, default="Deutschland")
 
 
+class TitleField(serializers.CharField):
+    """Titel vor dem Namen: frei, die Auswahlliste schlägt nur vor; übliche
+    Schreibweisen werden vereinheitlicht („dr“ → „Dr.“, members.title)."""
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault("max_length", TITLE_MAX_LENGTH)
+        kwargs.setdefault("allow_blank", True)
+        super().__init__(**kwargs)
+
+    def to_internal_value(self, data):
+        from .title import parse_title
+
+        return parse_title(super().to_internal_value(data))
+
+
 class OptionalIntegerField(serializers.IntegerField):
     """Ganzzahl, bei der ein leeres Eingabefeld „keine Angabe“ bedeutet."""
 
@@ -179,6 +195,7 @@ class AdmitSerializer(OrganizationFieldsMixin, ContactSerializer):
     # Freiwillig; ohne Datum gibt es keine Dublettensuche im Verbandsbereich
     birth_date = OptionalDateField()
     gender = serializers.ChoiceField(choices=Gender.choices, required=False, allow_blank=True)
+    title = TitleField(required=False)
     club_number = serializers.CharField(max_length=30, required=False, allow_blank=True)
     member_type = OrgPrimaryKeyField(MemberType)
     entry_date = serializers.DateField()
@@ -190,7 +207,7 @@ class AdmitSerializer(OrganizationFieldsMixin, ContactSerializer):
         org = self.context["org"]
         organization = attrs["kind"] == PersonKind.ORGANIZATION
         if organization:
-            for name in ("first_name", "birth_date", "gender"):
+            for name in ("first_name", "birth_date", "gender", "title"):
                 attrs.pop(name, None)
         else:
             for name in (*services.ORGANIZATION_FIELDS, "size"):
@@ -525,6 +542,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
         allow_null=True,
         help_text="Mitgliedschaft (in diesem Verein) der Person, die Ansprechpartner ist.",
     )
+    title = TitleField(required=False)
     linked_member = serializers.SerializerMethodField()
     display_name = serializers.SerializerMethodField()
     contact_email = serializers.SerializerMethodField()
@@ -543,6 +561,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
             "last_name",
             "first_name",
             "gender",
+            "title",
             "function",
             "email",
             "phone",
@@ -614,7 +633,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
             attrs["person"] = person
         if person is not None:
             # Name und Kontakt stehen in der Akte der Person
-            for name in ("last_name", "first_name", "gender", "email", "phone"):
+            for name in ("last_name", "first_name", "gender", "title", "email", "phone"):
                 attrs[name] = ""
         else:
             last = attrs.get("last_name", getattr(self.instance, "last_name", ""))
@@ -675,6 +694,7 @@ class MemberUpdateSerializer(OrganizationFieldsMixin, serializers.Serializer):
     first_name = serializers.CharField(max_length=100, required=False)
     birth_date = OptionalDateField()
     gender = serializers.ChoiceField(choices=Gender.choices, required=False, allow_blank=True)
+    title = TitleField(required=False)
     club_number = serializers.CharField(max_length=30, required=False, allow_blank=True)
     pays_fee_self = serializers.BooleanField(required=False)
     info_opt_out = serializers.BooleanField(required=False)
@@ -753,6 +773,7 @@ def member_detail(membership: Membership, org) -> dict:
         "birth_date": person.birth_date,
         "birth_year_only": person.birth_year_only,
         "gender": person.gender,
+        "title": person.title,
         "organization": organization_data(person),
         "contact_persons": ContactPersonSerializer(
             membership.contact_persons.select_related("person"),

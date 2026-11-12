@@ -8,6 +8,7 @@ import { orgApi, unitName } from '../../api/orgs.ts'
 import { errorMessage, formatDate, useForm, useLoad } from '../../components/forms.ts'
 import { useChangesGuard } from '../../components/leaveGuard.ts'
 import { Alert, Field, LoadError, SelectField } from '../../components/ui.tsx'
+import { TitleField } from '../../components/TitleField.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { PageHeader, Segmented } from '../../components/PageHeader.tsx'
@@ -55,6 +56,7 @@ export function AdmitPage() {
     first_name: '',
     birth_date: '',
     gender: '' as Gender,
+    title: '',
     email: '',
     phone: '',
     street: '',
@@ -275,6 +277,7 @@ export function AdmitPage() {
                   </option>
                 ))}
               </SelectField>
+              <TitleField value={v.title} onChange={(value) => form.set('title', value)} />
             </div>
           )}
           {checkError && <Alert kind="error">{checkError}</Alert>}

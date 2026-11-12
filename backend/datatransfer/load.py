@@ -43,6 +43,7 @@ from core.filecheck import clean_logo
 from core.tenancy import rls_bypass
 from customfields.models import FieldDefinition, FieldValue, clean_value
 from members.models import (
+    TITLE_MAX_LENGTH,
     ContactDetails,
     DepartmentMembership,
     DepartmentRoleHolder,
@@ -945,6 +946,8 @@ class Loader:
                 birth_date=parse_date(p["birth_date"]),
                 # Ältere Exporte kennen kein Geschlecht
                 gender=p.get("gender") if p.get("gender") in Gender.values else "",
+                # Ältere Exporte kennen keinen Titel
+                title=str(p.get("title") or "").strip()[:TITLE_MAX_LENGTH],
             )
             self.ids.set("person", pid, person.pk)
             self.new_person_ids.add(person.pk)

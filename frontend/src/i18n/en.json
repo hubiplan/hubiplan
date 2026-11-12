@@ -8216,5 +8216,11 @@
   "gilt für {host}": "works for {host}",
   "zuletzt benutzt am {day}": "last used on {day}",
   "– sicher aufbewahren. Jeder Code funktioniert einmal, falls du deinen Passkey nicht zur Hand hast.": "– keep them safe. Each code works once in case you do not have your passkey at hand.",
-  "„{name}“ kann danach nicht mehr zum Anmelden benutzt werden. Lösche den Passkey zusätzlich auf deinem Gerät oder im Passwortmanager.": "“{name}” can then no longer be used to sign in. Also delete the passkey on your device or in your password manager."
+  "„{name}“ kann danach nicht mehr zum Anmelden benutzt werden. Lösche den Passkey zusätzlich auf deinem Gerät oder im Passwortmanager.": "“{name}” can then no longer be used to sign in. Also delete the passkey on your device or in your password manager.",
+  "kein Titel": "no title",
+  "anderer Titel …": "other title …",
+  "Anderer Titel": "Other title",
+  "z. B. Dipl.-Ing.": "e.g. Dipl.-Ing.",
+  "Titel vor dem Namen nennen": "Show titles before names",
+  "z. B. „Dr. Max Muster“; Titel aus der Mitgliedsakte": "e.g. “Dr. Max Muster”; title from the member record"
 }

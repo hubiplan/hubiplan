@@ -186,7 +186,7 @@ class FederationMemberDetailView(_FederationMixin, APIView):
         values = data.validated_data
         person = m.person
         before = snapshot(person)
-        for f in ("last_name", "first_name", "birth_date", "gender"):
+        for f in ("last_name", "first_name", "birth_date", "gender", "title"):
             if f in values:
                 setattr(person, f, values[f])
         person.save()

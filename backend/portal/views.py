@@ -52,7 +52,7 @@ from members.models import (
     today,
 )
 from members.personsearch import ordered
-from members.serializers import MemberUpdateSerializer
+from members.serializers import MemberUpdateSerializer, TitleField
 from members.views import (
     MemberPagination,
     _ClubMixin,
@@ -229,6 +229,7 @@ def current_values(club, membership) -> dict:
         "first_name": current["first_name"],
         "birth_date": current["birth_date"].isoformat() if current["birth_date"] else None,
         "gender": current["gender"],
+        "title": current.get("title", ""),
         **(current["contact"] or {}),
     }
 
@@ -238,6 +239,7 @@ FIELD_LABELS = {
     "first_name": "Vorname",
     "birth_date": "Geburtsdatum",
     "gender": "Geschlecht",
+    "title": "Titel",
     "email": "E-Mail",
     "phone": "Telefon",
     "mobile": "Mobil",
@@ -449,6 +451,7 @@ def dept_member_detail(org, membership: Membership, with_access: bool) -> dict:
         "first_name": person.first_name,
         "birth_date": person.birth_date,
         "gender": person.gender,
+        "title": person.title,
         "club_number": membership.club_number,
         "member_type": current_type.member_type.name if current_type else None,
         "entry_date": first.entry_date if first else None,
@@ -886,6 +889,7 @@ class PortalChangeSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=100, required=False)
     birth_date = serializers.DateField(required=False)
     gender = serializers.ChoiceField(choices=Gender.choices, required=False, allow_blank=True)
+    title = TitleField(required=False)
     email = serializers.EmailField(required=False)
     phone = serializers.CharField(required=False, allow_blank=True, max_length=50)
     street = serializers.CharField(max_length=200, required=False)
@@ -908,7 +912,7 @@ class PortalChangeRequestView(APIView):
             membership = Membership.objects.select_related("person").get(pk=access.membership_id)
             if membership.person.is_organization:
                 # Organisationen haben keinen Vornamen, kein Geburtsdatum, kein Geschlecht
-                for key in ("first_name", "birth_date", "gender"):
+                for key in ("first_name", "birth_date", "gender", "title"):
                     values.pop(key, None)
             previous_values = current_values(club, membership)
             changed = {

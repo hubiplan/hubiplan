@@ -9,6 +9,7 @@ import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { Segmented } from '../../components/PageHeader.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
+import { TitleField } from '../../components/TitleField.tsx'
 import { t } from '../../i18n/index.ts'
 
 type Flags = Pick<
@@ -170,6 +171,7 @@ function ContactForm({
     last_name: contact?.last_name ?? '',
     first_name: contact?.first_name ?? '',
     gender: (contact?.gender ?? '') as Gender,
+    title: contact?.title ?? '',
     function: contact?.function ?? '',
     email: contact?.email ?? '',
     phone: contact?.phone ?? '',
@@ -208,6 +210,7 @@ function ContactForm({
         last_name: v.last_name,
         first_name: v.first_name,
         gender: v.gender,
+        title: v.title,
         email: v.email,
         phone: v.phone,
       })
@@ -296,6 +299,11 @@ function ContactForm({
                   </option>
                 ))}
               </SelectField>
+              <TitleField
+                value={v.title}
+                error={errors.title}
+                onChange={(value) => set('title', value)}
+              />
             </div>
             <div className="grid-2">
               <Field

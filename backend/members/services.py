@@ -393,6 +393,9 @@ def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Memb
         if data.get("gender") and not person.gender:
             person.gender = data["gender"]
             person.save(update_fields=["gender"])
+        if data.get("title") and not person.title:
+            person.title = data["title"]
+            person.save(update_fields=["title"])
     else:
         keep_contact = False
         organization = data.get("kind") == PersonKind.ORGANIZATION
@@ -403,6 +406,7 @@ def admit(club: Organization, data: dict, *, keep_contact: bool = False) -> Memb
             first_name="" if organization else data["first_name"].strip(),
             birth_date=None if organization else data.get("birth_date"),
             gender="" if organization else data.get("gender", ""),
+            title="" if organization else data.get("title", ""),
             **{f: data.get(f, "") for f in ORGANIZATION_FIELDS if organization},
             size=data.get("size") if organization else None,
         )
