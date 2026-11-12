@@ -82,3 +82,52 @@ def test_alte_links_werden_aufgeraeumt():
     with rls_bypass():
         left = set(LoginLink.objects.values_list("token_hash", flat=True))
     assert left == {current.token_hash, "c" * 64}
+
+
+# --- H-09: Versand im Hintergrund, damit die Antwortzeit nichts verrät ---
+
+
+@pytest.fixture
+def hintergrund(settings):
+    settings.MAIL_IN_BACKGROUND = True
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+
+
+def test_anmeldelink_im_hintergrund(
+    club, api, board_a, hintergrund, django_capture_on_commit_callbacks
+):
+    m = make_member(club, "Erika", "Muster", "erika@example.org")
+    api(board_a).post(f"/api/orgs/{club.pk}/members/{m.pk}/access/")
+    before = len(mail.outbox)
+    with django_capture_on_commit_callbacks() as callbacks:
+        known = request_link()
+        unknown = request_link("niemand@example.org")
+    # in der Anfrage selbst geht keine Mail hinaus, die Antworten sind gleich
+    assert len(mail.outbox) == before
+    assert known.json() == unknown.json()
+    assert len(callbacks) == 2
+    for callback in callbacks:
+        callback()
+    assert len(mail.outbox) == before + 1
+    assert "eine Stunde" in mail.outbox[-1].body
+
+
+def test_passwort_vergessen_im_hintergrund(hintergrund, django_capture_on_commit_callbacks):
+    from .conftest import csrf_headers
+
+    make_user("anna@example.org")
+    client = Client()
+    before = len(mail.outbox)
+    with django_capture_on_commit_callbacks(execute=False) as callbacks:
+        resp = client.post(
+            "/_allauth/browser/v1/auth/password/request",
+            {"email": "anna@example.org"},
+            content_type=JSON,
+            headers=csrf_headers(client),
+        )
+    assert resp.status_code == 200, resp.content
+    assert len(mail.outbox) == before
+    for callback in callbacks:
+        callback()
+    assert len(mail.outbox) == before + 1
+    assert "passwort-zuruecksetzen" in mail.outbox[-1].body

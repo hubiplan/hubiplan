@@ -63,7 +63,6 @@ from members.views import (
 )
 from organizations.imprint import ensure as ensure_imprint
 from organizations.models import DepartmentRole
-from organizations.platform_public import instance_name
 from organizations.serializers import clean_department_permissions
 from organizations.terms import department_terms, fill
 from organizations.theme import effective_theme
@@ -973,7 +972,6 @@ class PortalChangeRequestView(APIView):
 # --- Anmeldelinks (ohne Anmeldung erreichbar) ---
 
 RATE = (10, 15 * 60)  # 10 Versuche je 15 Minuten und IP
-RECIPIENT_RATE = (3, 60 * 60)  # 3 Links je Empfänger und Stunde (Gesamtaudit 11.11., Fachfrage 3)
 
 
 def _rate_limited(request, kind: str) -> bool:
@@ -997,46 +995,16 @@ class LoginLinkRequestView(APIView):
             )
         data = RequestLinkSerializer(data=request.data)
         data.is_valid(raise_exception=True)
-        user = User.objects.filter(email__iexact=data.validated_data["email"]).first()
-        if user is not None:
-            set_rls(None, user.pk)
-            if (
-                services.portal_accesses(user)
-                and services.link_login_allowed(user)
-                # höchstens 3 Links je Empfänger und Stunde; die Antwort bleibt gleich
-                and not too_many(f"login-link:to:{user.pk}", *RECIPIENT_RATE)
-            ):
-                url = services.create_login_link(user)
-                from core.i18n import language_of, user_language
-                from outbox import mail
+        email = data.validated_data["email"]
+        # Versand im Hintergrund: Die Antwortzeit verrät nicht, ob es ein Konto gibt (H-09)
+        from django.conf import settings
 
-                with language_of(user):
-                    subject = gettext("Ihr Anmeldelink für {instanz}").format(
-                        instanz=instance_name()
-                    )
-                    body = (
-                        gettext("Guten Tag,")
-                        + "\n\n"
-                        + gettext(
-                            "mit diesem Link melden Sie sich im Mitgliederbereich an "
-                            "(gültig eine Stunde, einmal nutzbar; ältere Links gelten nicht mehr):"
-                        )
-                        + f"\n\n{url}\n\n"
-                        + gettext(
-                            "Falls Sie den Link nicht angefordert haben, können Sie diese Mail "
-                            "ignorieren."
-                        )
-                        + "\n"
-                    )
-                mail.send(
-                    user.email,
-                    subject,
-                    body,
-                    kind="anmeldelink",
-                    fail_silently=True,
-                    language=user_language(user),
-                )
-            set_rls(None, None)
+        from .tasks import send_requested_link
+
+        if getattr(settings, "MAIL_IN_BACKGROUND", False):
+            transaction.on_commit(lambda: send_requested_link.delay(email), robust=True)
+        else:
+            send_requested_link(email)
         return Response(
             {
                 "detail": gettext(

@@ -287,6 +287,9 @@ REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", REDIS_URL)
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", REDIS_URL)
 CELERY_TASK_ALWAYS_EAGER = env_bool("CELERY_TASK_ALWAYS_EAGER", False)
+# Anmeldelink und „Passwort vergessen“ im Hintergrund senden, damit die Antwortzeit nicht
+# verrät, ob es ein Konto gibt (Gesamtaudit 11.11., H-09). Tests schalten es aus.
+MAIL_IN_BACKGROUND = env_bool("MAIL_IN_BACKGROUND", True)
 CELERY_TIMEZONE = "Europe/Berlin"
 # Regelmäßige Jobs (laufen im Dienst "beat")
 CELERY_BEAT_SCHEDULE = {

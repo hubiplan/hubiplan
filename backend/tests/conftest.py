@@ -106,6 +106,8 @@ def _mfa_lockerer(settings):
     (tests/test_frischer_code.py)."""
     settings.MFA_PLATFORM_GRACE = True
     settings.MFA_STEP_UP = False
+    # Mails sofort statt im Hintergrund (Gesamtaudit 11.11., H-09)
+    settings.MAIL_IN_BACKGROUND = False
 
 
 @pytest.fixture(autouse=True)

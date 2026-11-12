@@ -52,20 +52,29 @@ class AccountAdapter(DefaultAccountAdapter):
             raise
 
     def send_mail(self, template_prefix, email, context):
-        """Mails von allauth (z. B. „Passwort vergessen“) in der Sprache des Kontos."""
+        """Mails von allauth (z. B. „Passwort vergessen“) in der Sprache des Kontos.
+
+        Versand im Hintergrund (Gesamtaudit 11.11., H-09): Die Antwortzeit verrät dann nicht,
+        ob es zu der Adresse ein Konto gibt."""
+        from allauth.core import context as allauth_context
+        from django.contrib.sites.shortcuts import get_current_site
         from django.utils import translation
 
         from core.i18n import user_language
+        from outbox.tasks import deliver
 
         user = context.get("user")
         if user is None:
             from .models import User
 
             user = User.objects.filter(email__iexact=email).first()
-        if user is None:
-            return super().send_mail(template_prefix, email, context)
-        with translation.override(user_language(user)):
-            return super().send_mail(template_prefix, email, context)
+        request = allauth_context.request
+        ctx = {"request": request, "email": email, "current_site": get_current_site(request)}
+        ctx.update(context)
+        language = user_language(user) if user is not None else translation.get_language()
+        with translation.override(language):
+            msg = self.render_mail(template_prefix, email, ctx)
+        deliver(msg)
 
 
 class HeadlessAdapter(DefaultHeadlessAdapter):
