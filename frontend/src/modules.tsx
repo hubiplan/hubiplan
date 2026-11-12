@@ -113,15 +113,6 @@ export const modules: AppModule[] = [
     visible: (_org, ws) => !!ws.portal,
     children: (_org, ws) => portalNav(ws?.portal ?? null),
   },
-  // Geschäftspartner wahlweise oben im Hauptmenü (Schalter auf der Seite Geschäftspartner)
-  {
-    id: 'geschaeftspartner-oben',
-    group: 'alltag',
-    label: t('Geschäftspartner'),
-    path: '/geschaeftspartner',
-    icon: icon('M3 8h18v12H3zM8 8V5h8v3M3 13h18M11 12h2v3h-2z'),
-    visible: (org) => partnersVisible(org) && !!org?.partners_in_menu,
-  },
   // Planen: Termine und was daran hängt (Menüprüfung 2, N-01)
   {
     id: 'termine',
@@ -280,7 +271,7 @@ export const modules: AppModule[] = [
     label: t('Geschäftspartner'),
     path: '/geschaeftspartner',
     icon: icon('M3 8h18v12H3zM8 8V5h8v3M3 13h18M11 12h2v3h-2z'),
-    visible: (org) => partnersVisible(org) && !org?.partners_in_menu,
+    visible: (org) => partnersVisible(org),
   },
   {
     id: 'abteilung',
