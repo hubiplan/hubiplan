@@ -56,6 +56,9 @@ def _party(**extra):
         "city": "Musterstadt",
         "country": "DE",
         "email": "info@verein-a.example.org",
+        # Verkäuferangaben braucht party(..., seller=True) für cac:Contact
+        "contact": "Erika Muster",
+        "phone": "0123 456789",
         **extra,
     }
     einvoice_xml.party(root, "AccountingSupplierParty", data, seller=True)

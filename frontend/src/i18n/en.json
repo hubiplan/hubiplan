@@ -1437,6 +1437,7 @@
   "– bitte wählen –": "– please choose –",
   "Eintritt": "Joining date",
   "Mitgliedsnummer {e_im} (optional)": "Membership number {e_im} (optional)",
+  "Leer lassen, dann vergibt HUBIplan die nächste freie Nummer.": "Leave empty and HUBIplan assigns the next free number.",
   "nicht aktiv": "inactive",
   " · wird an {dv_akk} gemeldet": " · reported to {dv_akk}",
   " · wird nicht gemeldet": " · not reported",
