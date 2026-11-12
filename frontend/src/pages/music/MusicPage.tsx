@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { EngagementPage } from './EngagementPage.tsx'
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { api } from '../../api/client.ts'
+import { memberApi } from '../../api/members.ts'
+import type { PickedMember } from '../../api/members.ts'
+import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { errorMessage, formatDateTime, useLoad } from '../../components/forms.ts'
 import { useDraftGuard, confirmLeave } from '../../components/leaveGuard.ts'
 import { Alert, EmptyState, Loading } from '../../components/ui.tsx'
@@ -20,12 +23,14 @@ import { PageHeader } from '../../components/PageHeader.tsx'
 import { MusicLayout, MusicHeader, MusicEmptyState } from './MusicLayout.tsx'
 
 type Row = { id: number; [key: string]: string | number | boolean | null }
-type Choices = { events: Row[]; members: Row[]; partners: Row[] }
+type Choices = { events: Row[]; partners: Row[] }
 type Field = {
   key: string
   label: string
   type?: string
   options?: [string, string][]
+  /** Mitglied per Suche wählen statt aus einer Liste aller Mitglieder */
+  member?: boolean
   optional?: boolean
   initial?: number
   min?: number
@@ -183,12 +188,9 @@ function MusicWorkspace() {
     String(d.musicians.find((m) => m.id === id)?.display_name || id)
   const fields: Record<string, Field[]> = {
     musicians: [
-      {
-        key: 'membership',
-        label: t('Mitglied'),
-        options: opts(d.choices.members, 'name'),
-        optional: true,
-      },
+      ...(org.permissions.includes('members.view')
+        ? [{ key: 'membership', label: t('Mitglied'), member: true, optional: true }]
+        : []),
       { key: 'name', label: t('Gastname'), optional: true },
       { key: 'contact', label: t('Kontakt'), optional: true },
       {
@@ -596,7 +598,7 @@ function Editor({
             Object.fromEntries(
               fields.map((f) => [
                 f.key,
-                values[f.key] === '' && f.options
+                values[f.key] === '' && (f.options || f.member)
                   ? null
                   : f.type === 'datetime-local' && values[f.key]
                     ? new Date(String(values[f.key])).toISOString()
@@ -612,56 +614,69 @@ function Editor({
       }}
     >
       <div className="music-form-fields">
-        {fields.map((f) => (
-          <label key={f.key} className={f.type === 'textarea' ? 'music-field-wide' : undefined}>
-            {f.label}
-            {f.options ? (
-              <select
-                required={!f.optional}
-                value={String(values[f.key] ?? '')}
-                disabled={
-                  !!row &&
-                  ['membership', 'event', 'performance', 'position', 'musician'].includes(f.key)
-                }
-                onChange={(e) => {
-                  setValues({ ...values, [f.key]: e.target.value })
-                  setDirty(true)
-                }}
-              >
-                {f.optional && <option value="">—</option>}
-                {f.options.map(([v, l]) => (
-                  <option key={v} value={v}>
-                    {l}
-                  </option>
-                ))}
-              </select>
-            ) : f.type === 'textarea' ? (
-              <textarea
-                value={String(values[f.key])}
-                onChange={(e) => {
-                  setValues({ ...values, [f.key]: e.target.value })
-                  setDirty(true)
-                }}
-              />
-            ) : (
-              <input
-                required={!f.optional && f.type !== 'checkbox'}
-                type={f.type || 'text'}
-                min={f.type === 'number' ? (f.min ?? 1) : undefined}
-                max={f.type === 'number' ? (f.max ?? 500) : undefined}
-                value={f.type === 'checkbox' ? undefined : String(values[f.key] ?? '')}
-                checked={f.type === 'checkbox' ? Boolean(values[f.key]) : undefined}
-                onChange={(e) => {
-                  setValues({
-                    ...values,
-                    [f.key]: f.type === 'checkbox' ? e.target.checked : e.target.value,
-                  })
-                  setDirty(true)
-                }}
-              />
-            )}
-          </label>
-        ))}
+        {fields.map((f) =>
+          f.member ? (
+            <MemberField
+              key={f.key}
+              label={f.label}
+              id={String(values[f.key] ?? '')}
+              fixedName={row ? String(row.display_name || '') : undefined}
+              onChange={(id) => {
+                setValues({ ...values, [f.key]: id })
+                setDirty(true)
+              }}
+            />
+          ) : (
+            <label key={f.key} className={f.type === 'textarea' ? 'music-field-wide' : undefined}>
+              {f.label}
+              {f.options ? (
+                <select
+                  required={!f.optional}
+                  value={String(values[f.key] ?? '')}
+                  disabled={
+                    !!row &&
+                    ['membership', 'event', 'performance', 'position', 'musician'].includes(f.key)
+                  }
+                  onChange={(e) => {
+                    setValues({ ...values, [f.key]: e.target.value })
+                    setDirty(true)
+                  }}
+                >
+                  {f.optional && <option value="">—</option>}
+                  {f.options.map(([v, l]) => (
+                    <option key={v} value={v}>
+                      {l}
+                    </option>
+                  ))}
+                </select>
+              ) : f.type === 'textarea' ? (
+                <textarea
+                  value={String(values[f.key])}
+                  onChange={(e) => {
+                    setValues({ ...values, [f.key]: e.target.value })
+                    setDirty(true)
+                  }}
+                />
+              ) : (
+                <input
+                  required={!f.optional && f.type !== 'checkbox'}
+                  type={f.type || 'text'}
+                  min={f.type === 'number' ? (f.min ?? 1) : undefined}
+                  max={f.type === 'number' ? (f.max ?? 500) : undefined}
+                  value={f.type === 'checkbox' ? undefined : String(values[f.key] ?? '')}
+                  checked={f.type === 'checkbox' ? Boolean(values[f.key]) : undefined}
+                  onChange={(e) => {
+                    setValues({
+                      ...values,
+                      [f.key]: f.type === 'checkbox' ? e.target.checked : e.target.value,
+                    })
+                    setDirty(true)
+                  }}
+                />
+              )}
+            </label>
+          ),
+        )}
       </div>
       <div className="actions">
         <button className="button button-primary" disabled={busy}>
@@ -684,5 +699,61 @@ export function ScoresOnlyPage() {
     <MusicLayout>
       <ScoresPage key={org.id} />
     </MusicLayout>
+  )
+}
+
+/** Mitglied eines Musikers: beim Anlegen per Suche, danach unveränderlich. */
+function MemberField({
+  label,
+  id,
+  fixedName,
+  onChange,
+}: {
+  label: string
+  id: string
+  fixedName?: string
+  onChange: (id: string) => void
+}) {
+  const org = useActiveOrg()
+  const [picked, setPicked] = useState<PickedMember | null>(null)
+  // Vorbelegung aus der Mitgliedsakte: den Namen zur Nummer nachladen
+  const pending = fixedName === undefined && !!id && String(picked?.id) !== id
+  useEffect(() => {
+    if (!pending) return
+    let alive = true
+    memberApi
+      .detail(org.id, Number(id))
+      .then((m) => {
+        if (alive) setPicked({ id: m.id, first_name: m.first_name, last_name: m.last_name })
+      })
+      .catch(() => alive && onChange(''))
+    return () => {
+      alive = false
+    }
+  }, [org.id, id, pending, onChange])
+  if (fixedName !== undefined)
+    return id ? (
+      <div className="field">
+        <span>{label}</span>
+        <p>{fixedName}</p>
+      </div>
+    ) : null
+  if (pending)
+    return (
+      <div className="field">
+        <span>{label}</span>
+        <p className="muted">{t('Wird geladen …')}</p>
+      </div>
+    )
+  return (
+    <MemberPicker<PickedMember>
+      orgId={org.id}
+      value={picked}
+      label={label}
+      onChange={(m) => {
+        setPicked(m)
+        onChange(m ? String(m.id) : '')
+      }}
+    />
   )
 }

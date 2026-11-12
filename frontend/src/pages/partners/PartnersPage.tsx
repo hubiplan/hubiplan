@@ -21,7 +21,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, useLoad } from '../../components/forms.ts'
 import { confirmLeave, useDraftGuard } from '../../components/leaveGuard.ts'
 import { Alert, Checkbox, Field, LoadError, Loading, SelectField } from '../../components/ui.tsx'
-import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
+import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { t } from '../../i18n/index.ts'
 import { formatDay, formatEuro } from '../../i18n/format.ts'
 import { FieldsTab } from '../members/FieldsTab.tsx'
@@ -150,7 +150,6 @@ export function PartnersPage() {
       {org.modules.includes('finance') && org.permissions.includes('finance.edit') && (
         <SuggestionsCard onAdopted={() => void load.reload()} />
       )}
-      {access.edit && <MenuSwitch onError={setError} />}
       {selected && (
         <PartnerForm
           key={selected === 'new' ? 'new' : selected.id}
@@ -1011,32 +1010,5 @@ function SuggestionsCard({ onAdopted }: { onAdopted: () => void }) {
         ))}
       </ul>
     </details>
-  )
-}
-
-/** Geschäftspartner wahlweise als eigener Punkt oben im Hauptmenü, für alle in der Einheit. */
-function MenuSwitch({ onError }: { onError: (message: string) => void }) {
-  const org = useActiveOrg()
-  const { refresh } = useOrg()
-  const [busy, setBusy] = useState(false)
-  return (
-    <Checkbox
-      label={t('Oben im Hauptmenü zeigen')}
-      hint={t('statt unter Verein, für alle in dieser Einheit')}
-      checked={!!org.partners_in_menu}
-      busy={busy}
-      onChange={async (on) => {
-        setBusy(true)
-        onError('')
-        try {
-          await partnerApi.setMenu(org.id, on)
-          await refresh()
-        } catch (err) {
-          onError(errorMessage(err))
-        } finally {
-          setBusy(false)
-        }
-      }}
-    />
   )
 }
