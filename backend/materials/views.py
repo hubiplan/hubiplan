@@ -276,7 +276,13 @@ class ChoicesView(Base):
         kind = request.query_params.get("kind", "member")
         rows = []
         if kind == "member":
-            rows = [{"id": r.pk, "title": str(r.person)} for r in access.members(self.scope)]
+            # Nur Nummer und Name laden, keine Modellobjekte (Gesamtaudit 11.11., P-04)
+            rows = [
+                {"id": pk, "title": f"{last}, {first}" if first else last}
+                for pk, last, first in access.members(self.scope)
+                .order_by("pk")
+                .values_list("pk", "person__last_name", "person__first_name")
+            ]
         elif kind == "event":
             rows = [
                 {
