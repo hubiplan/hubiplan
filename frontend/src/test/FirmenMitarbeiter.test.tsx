@@ -113,36 +113,38 @@ describe('Firmen melden Mitarbeiter', () => {
   })
 })
 
+const joinSchema: Partial<JoinSchema> = {
+  organization: 'Musterverein',
+  language: 'de',
+  languages: ['de'],
+  intro: '',
+  thanks: '',
+  types: [{ id: 3, label: 'Aktiv', text: '', fee: '36,00', organizations: false }],
+  fields: {
+    phone: 'optional',
+    gender: 'off',
+    birth_date: 'off',
+    unit: 'off',
+    entry_wish: 'off',
+    note: 'off',
+  },
+  units: [],
+  unit: null,
+  unit_label: 'Abteilung',
+  custom_fields: [],
+  sepa: 'off',
+  mandate: {},
+  confirmations: [],
+  consents: [],
+  signature: 'none',
+  minors: false,
+  min_age: null,
+  company: 'Musterbau GmbH',
+}
+
 describe('Online-Antrag mit Link der Firma', () => {
   it('füllt Name und Mail vor und zeigt, wer den Beitrag zahlt', async () => {
-    const schema: Partial<JoinSchema> = {
-      organization: 'Musterverein',
-      language: 'de',
-      languages: ['de'],
-      intro: '',
-      thanks: '',
-      types: [{ id: 3, label: 'Aktiv', text: '', fee: '36,00', organizations: false }],
-      fields: {
-        phone: 'optional',
-        gender: 'off',
-        birth_date: 'off',
-        unit: 'off',
-        entry_wish: 'off',
-        note: 'off',
-      },
-      units: [],
-      unit: null,
-      unit_label: 'Abteilung',
-      custom_fields: [],
-      sepa: 'off',
-      mandate: {},
-      confirmations: [],
-      consents: [],
-      signature: 'none',
-      minors: false,
-      min_age: null,
-      company: 'Musterbau GmbH',
-    }
+    const schema = joinSchema
     fakeApi({
       [SESSION]: () => ({ status: 401, body: { status: 401, data: { flows: [] } } }),
       'GET /api/public/join/abc/?lang=de&firma=tok': () => ({ status: 200, body: schema }),
@@ -153,5 +155,43 @@ describe('Online-Antrag mit Link der Firma', () => {
     ).toBeInTheDocument()
     expect(screen.getByLabelText(/^Vorname/)).toHaveValue('Tom')
     expect(screen.getByLabelText(/^E-Mail/)).toHaveValue('tom@example.org')
+  })
+
+  it('Familienantrag: weitere Personen hinzufügen und entfernen', async () => {
+    const user = userEvent.setup()
+    const schema = {
+      ...joinSchema,
+      company: null,
+      fields: {
+        ...joinSchema.fields!,
+        birth_date: 'optional' as const,
+        family: 'optional' as const,
+      },
+    }
+    fakeApi({
+      [SESSION]: () => ({ status: 401, body: { status: 401, data: { flows: [] } } }),
+      'GET /api/public/join/abc/?lang=de': () => ({ status: 200, body: schema }),
+    })
+    renderAt('/mitglied-werden/abc')
+    const section = await screen.findByRole('group', { name: 'Weitere Familienmitglieder' })
+    await user.click(within(section).getByRole('button', { name: 'Familienmitglied hinzufügen' }))
+    const first = within(section).getByRole('group', { name: 'Familienmitglied 1' })
+    await user.type(within(first).getByLabelText(/^Vorname/), 'Lisa')
+    expect(within(first).getByLabelText(/^Geburtsdatum/)).toBeInTheDocument()
+    await user.click(within(first).getByRole('button', { name: 'Entfernen' }))
+    expect(within(section).queryByRole('group', { name: 'Familienmitglied 1' })).toBeNull()
+  })
+
+  it('ohne Einstellung kein Familienantrag', async () => {
+    fakeApi({
+      [SESSION]: () => ({ status: 401, body: { status: 401, data: { flows: [] } } }),
+      'GET /api/public/join/abc/?lang=de': () => ({
+        status: 200,
+        body: { ...joinSchema, company: null },
+      }),
+    })
+    renderAt('/mitglied-werden/abc')
+    expect(await screen.findByLabelText(/^Vorname/)).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Weitere Familienmitglieder' })).toBeNull()
   })
 })

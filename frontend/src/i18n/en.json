@@ -8582,5 +8582,11 @@
   "Mitarbeiter": "Employees",
   "Mitarbeiter melden, für die die Firma zahlt": "Report employees whose fee the company pays",
   "Beitrag beenden": "End fee payment",
-  "Beitrag für {x} beenden": "End fee payment for {x}"
+  "Beitrag für {x} beenden": "End fee payment for {x}",
+  "Weitere Familienmitglieder": "Further family members",
+  "Familienmitglieder mit derselben Anschrift kannst du hier gleich mit anmelden. Ihr bekommt Post und Beitragsrechnung gemeinsam.": "You can register family members at the same address right here. You will receive mail and the fee invoice together.",
+  "Familienmitglied {n}": "Family member {n}",
+  "Nachname (wenn anders)": "Last name (if different)",
+  "Familienmitglied hinzufügen": "Add family member",
+  "Familienantrag: weitere Personen mit derselben Anschrift im selben Antrag": "Family application: further people at the same address in the same application"
 }

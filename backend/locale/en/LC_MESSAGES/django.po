@@ -11200,3 +11200,13 @@ msgstr "Fee via: “{value}” is unknown (allowed: Haushalt, Firma or empty)."
 
 msgid "Beitrag über {value}: Spalte „{column}“ ist leer."
 msgstr "Fee via {value}: column “{column}” is empty."
+
+msgid ""
+"Weitere Familienmitglieder kann nur eine volljährige Person mit beantragen."
+msgstr "Only an adult can apply for further family members."
+
+msgid "Höchstens {n} weitere Personen."
+msgstr "At most {n} further people."
+
+msgid "Weitere Person"
+msgstr "Further person"

@@ -261,6 +261,13 @@ def summary_lines(app: Application) -> list[str]:
         rows.append((gettext("Gewünschter Eintritt"), app.entry_wish.strftime("%d.%m.%Y")))
     if d.get("company_name"):
         rows.append((gettext("Beitrag zahlt"), d["company_name"]))
+    for f in d.get("family") or []:
+        parts = [f"{f.get('first_name', '')} {f.get('last_name', '')}".strip()]
+        if f.get("birth_date"):
+            parts.append(_date(f["birth_date"]))
+        if f.get("member_type_label"):
+            parts.append(f["member_type_label"])
+        rows.append((gettext("Weitere Person"), ", ".join(parts)))
     if app.mandate:
         from billing.sepa import masked_iban
 
@@ -610,6 +617,8 @@ def accept(app: Application, user, perms: set[str], options: dict, *, auto: bool
         person=membership.person,
     )
     _accept_extras(app, membership, user)
+    if d.get("family"):
+        _accept_family(app, membership, data, user)
     app.status = Application.Status.ACCEPTED
     app.membership = membership
     app.decided_at = timezone.now()
@@ -714,6 +723,108 @@ def _accept_extras(app: Application, membership, user) -> None:
                 person=membership.person,
                 defaults={"value": value, "organization": definition.organization},
             )
+
+
+def _accept_family(app: Application, main, main_data: dict, user) -> None:
+    """Familienantrag (H6): weitere Personen aufnehmen, Haushalt anlegen. Mit dem Modul
+    Beiträge zahlt der Antragsteller für alle (ein Mandat, eine Rechnung)."""
+    from members import services as member_services
+    from members.guardians import is_minor
+    from members.households import add_member
+    from members.models import ContactPerson, Household, HouseholdMember, MemberType
+
+    org = app.organization
+    d = app.data or {}
+    billing = "billing" in (org.enabled_modules or [])
+    household = Household.objects.create(
+        organization=org,
+        kind=Household.Kind.FAMILY,
+        name=gettext("Familie {name}").format(name=d.get("last_name", "")),
+    )
+    entry = main_data["entry_date"]
+    # Zahlt schon eine Firma für den Antragsteller (H5), bleibt sein Beitrag dort
+    via_company = HouseholdMember.objects.filter(membership=main, pays_via=True).exists()
+    add_member(
+        household,
+        main,
+        role=HouseholdMember.Role.ADULT,
+        valid_from=entry,
+        pays_via=billing and not via_company,
+    )
+    signed_on = (app.confirmed_at or app.created_at).date()
+    added = []
+    for f in d.get("family") or []:
+        member_type = (
+            MemberType.objects.filter(organization=org, pk=f.get("member_type")).first()
+            or main_data["member_type"]
+        )
+        data = {
+            "kind": "person",
+            "last_name": f.get("last_name") or d.get("last_name", ""),
+            "first_name": f.get("first_name", ""),
+            "birth_date": _parse_date(f.get("birth_date")),
+            "member_type": member_type,
+            "entry_date": entry,
+            "departments": main_data["departments"],
+        }
+        for key in ("street", "postal_code", "city", "country", "address_extra"):
+            if d.get(key):
+                data[key] = d[key]
+        membership = member_services.admit(org, data, keep_contact=True)
+        minor = is_minor(membership.person)
+        add_member(
+            household,
+            membership,
+            role=HouseholdMember.Role.CHILD if minor else HouseholdMember.Role.ADULT,
+            valid_from=entry,
+            pays_via=billing,
+        )
+        if minor:
+            ContactPerson.objects.create(
+                organization=org,
+                membership=membership,
+                person=main.person,
+                last_name=d.get("last_name", ""),
+                first_name=d.get("first_name", ""),
+                function=gettext("Erziehungsberechtigt"),
+                email=d.get("email", ""),
+                phone=d.get("phone", ""),
+                is_primary=True,
+                receives_mail=True,
+                receives_invoices=True,
+                represents=True,
+                is_guardian=True,
+                since=signed_on,
+            )
+        record(
+            org,
+            user,
+            "create",
+            membership,
+            {
+                "Mitgliedsart": [None, member_type.name],
+                "Aufnahme": [None, f"Online-Antrag {app.number} (Familie)"],
+            },
+            person=membership.person,
+        )
+        added.append(str(membership.person))
+    if billing:
+        from billing.models import HouseholdPayer
+
+        HouseholdPayer.objects.create(
+            organization=org,
+            household=household,
+            kind=HouseholdPayer.Kind.MEMBER,
+            membership=main,
+        )
+    record(
+        org,
+        user,
+        "create",
+        household,
+        {"Familienantrag": [None, f"{app.number}: {', '.join(added)}"]},
+        person=main.person,
+    )
 
 
 def _join_company(app: Application, membership, household_id, user) -> None:

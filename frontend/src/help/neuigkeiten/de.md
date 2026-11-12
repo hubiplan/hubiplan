@@ -4,6 +4,7 @@ Nach dem Update auf ein neues Release zeigt HUBIplan allen, die etwas verwalten,
 
 November 2026:
 
+- **Familienantrag**: Im Online-Antrag lässt sich unter Felder der Familienantrag einschalten. Dann melden Volljährige weitere Familienmitglieder mit derselben Anschrift gleich mit an; bei der Annahme entsteht ein Haushalt, und der Antragsteller zahlt mit einem Mandat für alle.
 - **Haushalte im Excel-Import und -Export**: Spalten „Haushalt“, „Rolle im Haushalt“, „Firma“ und „Beitrag über“; gleicher Name in der Datei ergibt einen Haushalt. Zahlungen auf Haushalts- und Firmenrechnungen bucht HUBIplan auf den Zahler, damit auch die Zuwendungsbestätigung an ihn geht.
 - **Firmen melden Mitarbeiter**: Zahlt ein Organisationsmitglied für Mitarbeiter, sehen seine Ansprechpartner unter Mein Bereich › Mitarbeiter, für wen die Firma zahlt. Sie melden neue Mitarbeiter mit Name und Mail (die Person bekommt den Link zum Online-Antrag und kommt nach der Aufnahme zur Firma) und beenden die Zahlung ab einem Datum; die Mitgliedschaft bleibt dabei bestehen.
 - **Erziehungsberechtigte**: Bei Mitgliedern unter 18 lassen sich Eltern oder Vormund jetzt von Hand in der Akte eintragen. Sie bekommen auf Wunsch Rundschreiben an das Kind zusätzlich per Mail und einen eigenen Zugang zum Mitgliederbereich. Vier Wochen vor dem 18. Geburtstag gibt es eine Mail, am Geburtstag enden Zugang und Eintrag automatisch.

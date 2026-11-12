@@ -22,8 +22,10 @@ from . import services
 from .models import ApplicationForm
 
 FIELD_STATES = ("required", "optional", "off")
-FIELD_KEYS = ("phone", "gender", "birth_date", "unit", "entry_wish", "note")
+# „family“: Familienantrag, weitere Personen im selben Antrag (Haushalte H6); an = „optional“
+FIELD_KEYS = ("phone", "gender", "birth_date", "unit", "entry_wish", "note", "family")
 GUARDIAN_LIMIT = 2
+FAMILY_LIMIT = 8
 
 
 class ChallengeKey:
@@ -269,6 +271,13 @@ class GuardianSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=50, required=False, allow_blank=True)
 
 
+class FamilyMemberSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length=100)
+    last_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    birth_date = OptionalDateField()
+    member_type = serializers.IntegerField(required=False, allow_null=True)
+
+
 class MandateSerializer(serializers.Serializer):
     holder = serializers.CharField(max_length=70)
     iban = serializers.CharField(max_length=40)
@@ -303,6 +312,8 @@ class SubmitSerializer(serializers.Serializer):
         child=serializers.CharField(max_length=20), required=False, default=list
     )
     guardians = GuardianSerializer(many=True, required=False, default=list)
+    # Familienantrag (H6): weitere Personen mit gleicher Anschrift
+    family = FamilyMemberSerializer(many=True, required=False, default=list)
     signature = serializers.JSONField(required=False, allow_null=True)
     # Spamschutz (nicht im Stand-Modus)
     homepage = serializers.CharField(max_length=200, required=False, allow_blank=True)
@@ -413,6 +424,11 @@ def clean_submission(form: ApplicationForm, v: dict, *, kiosk: bool = False) -> 
         {k: (g.get(k) or "").strip() for k in ("last_name", "first_name", "email", "phone")}
         for g in guardians[:GUARDIAN_LIMIT]
     ]
+
+    # Familienantrag (H6)
+    family = _clean_family(form, v, data, types, fields, person, minor, errors, language)
+    if family:
+        data["family"] = family
 
     # Zusatzfelder (B5)
     custom_values, custom_labels = {}, {}
@@ -528,6 +544,57 @@ def clean_submission(form: ApplicationForm, v: dict, *, kiosk: bool = False) -> 
         "guardians": guardians,
         "signature": signature,
     }
+
+
+def _clean_family(form, v, data, types, fields, person, minor, errors, language) -> list[dict]:
+    """Weitere Personen des Familienantrags: Vorname Pflicht, Name wie beim Antragsteller,
+    Geburtsdatum wie im Formular eingestellt, Mitgliedsart aus den angebotenen."""
+    given = list(v.get("family") or [])
+    if not given or not person or fields.get("family", "off") == "off":
+        return []
+    if minor:
+        errors["family"] = gettext(
+            "Weitere Familienmitglieder kann nur eine volljährige Person mit beantragen."
+        )
+        return []
+    if len(given) > FAMILY_LIMIT:
+        errors["family"] = gettext("Höchstens {n} weitere Personen.").format(n=FAMILY_LIMIT)
+        return []
+    today = timezone.localdate()
+    out, problems = [], {}
+    for i, f in enumerate(given):
+        row = {
+            "first_name": (f.get("first_name") or "").strip(),
+            "last_name": (f.get("last_name") or "").strip() or data["last_name"],
+        }
+        issue = {}
+        if not row["first_name"]:
+            issue["first_name"] = gettext("Pflichtfeld.")
+        entry = types.get(f.get("member_type") or v["member_type"])
+        if entry is None:
+            issue["member_type"] = gettext("Bitte eine Mitgliedsart wählen.")
+        else:
+            row["member_type"] = entry["id"]
+            row["member_type_label"] = entry["label"]
+        birth = f.get("birth_date") if fields.get("birth_date", "off") != "off" else None
+        if fields.get("birth_date") == "required" and not birth:
+            issue["birth_date"] = gettext("Pflichtfeld.")
+        if birth:
+            if birth > today or birth.year < today.year - 120:
+                issue["birth_date"] = gettext("Bitte das Geburtsdatum prüfen.")
+            elif form.min_age and age_on(birth, today) < form.min_age:
+                issue["birth_date"] = gettext(
+                    "Eine Mitgliedschaft ist erst ab {age} Jahren möglich."
+                ).format(age=form.min_age)
+            elif not form.minors and age_on(birth, today) < 18:
+                issue["birth_date"] = gettext("Online können nur Volljährige beantragen.")
+            row["birth_date"] = birth.isoformat()
+        if issue:
+            problems[str(i)] = issue
+        out.append(row)
+    if problems:
+        errors["family"] = problems
+    return out
 
 
 def clean_settings(form: ApplicationForm, payload: dict) -> dict:

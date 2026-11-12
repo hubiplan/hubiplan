@@ -163,3 +163,82 @@ class TestAbmelden:
         with tenant_context(firma["org"].pk):
             # kein Austritt: die Mitgliedschaft bleibt
             assert Membership.objects.get(pk=firma["ina"].pk).current_period() is not None
+
+
+IBAN = "DE89370400440532013000"
+
+
+@pytest.fixture
+def familienformular(club):
+    org = club["org"]
+    res = club["client"].patch(
+        f"/api/orgs/{org.pk}/admission/form/",
+        {"fields": {"birth_date": "optional", "phone": "optional", "family": "optional"}},
+        JSON,
+    )
+    assert res.status_code == 200, res.content
+    assert schema(club["key"])["fields"]["family"] == "optional"
+    return club
+
+
+class TestFamilienantrag:
+    """Familienantrag (H6): mehrere Personen, gemeinsame Anschrift, ein Mandat."""
+
+    def test_annahme_legt_haushalt_an(self, familienformular):
+        club = familienformular
+        org = club["org"]
+        mail.outbox.clear()
+        res = submit(
+            club["key"],
+            mandate={"holder": "Max Muster", "iban": IBAN},
+            family=[
+                {"first_name": "Lisa", "birth_date": "2014-03-01"},
+                {"first_name": "Erika", "last_name": "Beispiel", "birth_date": "1985-01-01"},
+            ],
+        )
+        assert res.status_code == 201, res.content
+        confirm = token_from_mail(mail.outbox[-1])
+        Client().post(f"/api/public/join/application/{confirm}/confirm/")
+        app = app_of(org)
+        base = f"/api/orgs/{org.pk}/admission/"
+        detail = club["client"].get(f"{base}{app.pk}/").json()
+        assert "Lisa Muster" in str(detail)
+        res = club["client"].post(f"{base}{app.pk}/accept/", {"invite": False}, JSON)
+        assert res.status_code == 200, res.content
+        with tenant_context(org.pk):
+            from billing.models import HouseholdPayer
+            from members.models import ContactPerson
+
+            household = Household.objects.get(kind="family")
+            assert household.name == "Familie Muster"
+            links = {
+                link.membership.person.first_name: link
+                for link in household.members.select_related("membership__person")
+            }
+            assert set(links) == {"Max", "Lisa", "Erika"}
+            assert links["Lisa"].role == "child" and links["Erika"].role == "adult"
+            assert all(link.pays_via for link in links.values())
+            assert links["Erika"].membership.person.last_name == "Beispiel"
+            payer = HouseholdPayer.objects.get(household=household)
+            assert payer.membership_id == app.membership_id
+            guardian = ContactPerson.objects.get(membership=links["Lisa"].membership)
+            assert guardian.is_guardian and guardian.person_id == links["Max"].membership.person_id
+
+    def test_ohne_einstellung_keine_weiteren_personen(self, club):
+        mail.outbox.clear()
+        res = submit(
+            club["key"],
+            mandate={"holder": "Max Muster", "iban": IBAN},
+            family=[{"first_name": "Lisa"}],
+        )
+        assert res.status_code == 201, res.content
+        assert "family" not in app_of(club["org"]).data
+
+    def test_vorname_pflicht(self, familienformular):
+        res = submit(
+            familienformular["key"],
+            mandate={"holder": "Max Muster", "iban": IBAN},
+            family=[{"first_name": ""}],
+        )
+        assert res.status_code == 400
+        assert "family" in res.json()

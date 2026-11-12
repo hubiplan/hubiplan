@@ -6,7 +6,13 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import type { SignatureInput } from '../../api/finance.ts'
 import { ApiError } from '../../api/client.ts'
 import { joinApi, solveChallenge } from '../../api/admission.ts'
-import type { FieldState, Guardian, JoinSchema, JoinSubmission } from '../../api/admission.ts'
+import type {
+  FamilyMember,
+  FieldState,
+  Guardian,
+  JoinSchema,
+  JoinSubmission,
+} from '../../api/admission.ts'
 import { SignaturePad } from '../../components/SignaturePad.tsx'
 import { errorMessage } from '../../components/forms.ts'
 import { Logo } from '../../components/Logo.tsx'
@@ -43,6 +49,7 @@ interface Values {
   confirmations: string[]
   consents: string[]
   guardians: Guardian[]
+  family: FamilyMember[]
   homepage: string
 }
 
@@ -72,8 +79,17 @@ const empty: Values = {
   confirmations: [],
   consents: [],
   guardians: [{ last_name: '', first_name: '', email: '', phone: '' }],
+  family: [],
   homepage: '',
 }
+
+const FAMILY_LIMIT = 8
+const newRelative = (): FamilyMember => ({
+  first_name: '',
+  last_name: '',
+  birth_date: '',
+  member_type: '',
+})
 
 /** In welchem Schritt steht das Feld? (für Fehler vom Server) */
 function stepOf(key: string): Step {
@@ -193,6 +209,13 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
     }))
   }
 
+  function setRelative(i: number, k: keyof FamilyMember, v: string) {
+    setValues((old) => ({
+      ...old,
+      family: old.family.map((g, n) => (n === i ? { ...g, [k]: v } : g)),
+    }))
+  }
+
   function setGuardian(i: number, k: keyof Guardian, v: string) {
     setValues((old) => ({
       ...old,
@@ -237,6 +260,8 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
 
   const s = schema
   const f = s.fields
+  // Familienantrag (Haushalte H6): ältere Server kennen das Feld nicht
+  const familyOn = person && !minor && (f.family ?? 'off') !== 'off'
   const confirmations = [
     ...s.confirmations,
     ...(minor
@@ -340,6 +365,16 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
       confirmations: values.confirmations.filter((k) => confirmations.some((c) => c.key === k)),
       consents: values.consents,
       guardians: minor ? values.guardians.filter((g) => g.last_name || g.email) : [],
+      family: familyOn
+        ? values.family
+            .filter((r) => r.first_name.trim())
+            .map((r) => ({
+              first_name: r.first_name.trim(),
+              last_name: r.last_name.trim(),
+              birth_date: f.birth_date !== 'off' && r.birth_date ? r.birth_date : undefined,
+              member_type: r.member_type ? Number(r.member_type) : undefined,
+            }))
+        : [],
       signature,
       homepage: values.homepage,
       ...(s.company && companyToken ? { company: companyToken } : {}),
@@ -682,6 +717,86 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
                       }
                     >
                       {t('Zweiten Erziehungsberechtigten angeben')}
+                    </button>
+                  </div>
+                )}
+              </fieldset>
+            )}
+            {familyOn && (
+              <fieldset className="stack-sm">
+                <legend>{t('Weitere Familienmitglieder')}</legend>
+                <p className="muted small">
+                  {t(
+                    'Familienmitglieder mit derselben Anschrift kannst du hier gleich mit anmelden. Ihr bekommt Post und Beitragsrechnung gemeinsam.',
+                  )}
+                </p>
+                {values.family.map((r, i) => (
+                  <div
+                    key={i}
+                    className="stack-sm"
+                    role="group"
+                    aria-label={t('Familienmitglied {n}', { n: i + 1 })}
+                  >
+                    <div className="grid-2">
+                      <Field
+                        label={t('Vorname')}
+                        value={r.first_name}
+                        required
+                        onChange={(e) => setRelative(i, 'first_name', e.target.value)}
+                      />
+                      <Field
+                        label={t('Nachname (wenn anders)')}
+                        value={r.last_name}
+                        placeholder={values.last_name}
+                        onChange={(e) => setRelative(i, 'last_name', e.target.value)}
+                      />
+                    </div>
+                    {f.birth_date !== 'off' && (
+                      <Field
+                        label={label(t('Geburtsdatum'), f.birth_date)}
+                        type="date"
+                        value={r.birth_date}
+                        onChange={(e) => setRelative(i, 'birth_date', e.target.value)}
+                      />
+                    )}
+                    {s.types.length > 1 && (
+                      <SelectField
+                        label={t('Mitgliedsart')}
+                        value={r.member_type || values.member_type}
+                        onChange={(e) => setRelative(i, 'member_type', e.target.value)}
+                      >
+                        {s.types.map((x) => (
+                          <option key={x.id} value={x.id}>
+                            {x.label}
+                          </option>
+                        ))}
+                      </SelectField>
+                    )}
+                    <div className="button-row">
+                      <button
+                        type="button"
+                        className="button button-ghost"
+                        onClick={() =>
+                          set(
+                            'family',
+                            values.family.filter((_, n) => n !== i),
+                          )
+                        }
+                      >
+                        {t('Entfernen')}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {err('family') && <p className="field-error">{err('family')}</p>}
+                {values.family.length < FAMILY_LIMIT && (
+                  <div className="button-row">
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={() => set('family', [...values.family, newRelative()])}
+                    >
+                      {t('Familienmitglied hinzufügen')}
                     </button>
                   </div>
                 )}

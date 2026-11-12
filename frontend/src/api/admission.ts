@@ -4,7 +4,18 @@ import { api } from './client.ts'
 import type { SignatureInput } from './finance.ts'
 
 export type FieldState = 'required' | 'optional' | 'off'
-export type FieldKey = 'phone' | 'gender' | 'birth_date' | 'unit' | 'entry_wish' | 'note'
+export type FieldKey =
+  | 'phone'
+  | 'gender'
+  | 'birth_date'
+  | 'unit'
+  | 'entry_wish'
+  | 'note'
+  /** Familienantrag: weitere Personen mit gleicher Anschrift (an = „optional“) */
+  | 'family'
+
+/** Felder des Formulars; „family“ fehlt bei älteren Servern */
+export type FieldStates = Record<Exclude<FieldKey, 'family'>, FieldState> & { family?: FieldState }
 
 export interface JoinType {
   id: number
@@ -29,7 +40,7 @@ export interface JoinSchema {
   intro: string
   thanks: string
   types: JoinType[]
-  fields: Record<FieldKey, FieldState>
+  fields: FieldStates
   units: { id: number; name: string }[]
   unit: number | null
   unit_label: string
@@ -62,6 +73,13 @@ export interface Guardian {
   phone?: string
 }
 
+export interface FamilyMember {
+  first_name: string
+  last_name: string
+  birth_date: string
+  member_type: string
+}
+
 export interface JoinSubmission {
   language: string
   kind: 'person' | 'organization'
@@ -86,6 +104,7 @@ export interface JoinSubmission {
   confirmations: string[]
   consents: string[]
   guardians?: Guardian[]
+  family?: { first_name: string; last_name?: string; birth_date?: string; member_type?: number }[]
   signature?: SignatureInput | null
   homepage?: string
   company?: string
@@ -179,7 +198,7 @@ export interface FormSettings {
   public_key: string
   form_url: string
   types: { id: number; label: LangText; text: LangText; organizations: boolean }[]
-  fields: Record<FieldKey, FieldState>
+  fields: FieldStates
   custom_fields: number[]
   sepa: 'off' | 'offer' | 'required'
   sepa_available: boolean
