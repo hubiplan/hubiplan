@@ -40,6 +40,14 @@ Hinweise zum Stil:
 - Neue Abhängigkeiten müssen mit der AGPL-3.0 verträglich sein (z. B. MIT, BSD, Apache-2.0,
   LGPL, MPL-2.0). Nicht möglich: GPL-2.0-only, SSPL, „nur nicht-kommerziell“, proprietär.
   Siehe [docs/lizenzen.md](docs/lizenzen.md).
+- Python-Pakete stehen mit Prüfsummen fest: neue oder geänderte Pakete in `backend/requirements.in`
+  bzw. `backend/requirements-dev.in` eintragen und `scripts/pakete-sperren.sh` laufen lassen;
+  `scripts/test.sh` prüft die Pakete zusätzlich mit `pip-audit`.
+- Jeder neue Text der Oberfläche und des Backends gleich auch auf Englisch (`t()` und
+  `frontend/src/i18n/en.json`, Backend `gettext` und `backend/locale/en`), siehe
+  [docs/uebersetzung.md](docs/uebersetzung.md).
+- Wer eine Seite oder einen Ablauf ändert, passt die Hilfe in `frontend/src/help/` (Deutsch und
+  Englisch) im selben Pull Request an ([docs/hilfe.md](docs/hilfe.md)).
 - GitHub Actions laufen nur von Hand; vor dem Merge testet der Betreuer jeden Pull Request
   lokal mit `scripts/test.sh`.
 

@@ -48,10 +48,14 @@ ausblenden; ein Dachverband kann Module an seine Vereine weitergeben
 Schützenverein, Musikverein oder Sportverein.
 
 **Mitglieder**
+- Online-Mitgliedsantrag: eigenes Beitrittsformular je Verein oder Untereinheit mit Adresse
+  und QR-Code, Bestätigung per Mail, Prüfung mit Dublettensuche, Zustimmungen nach Satzung,
+  Rückfragen und Aufnahme mit einem Klick
 - Mitgliedschaften mit Zeiträumen und selbst definierten Mitgliedsarten (z. B. „an
   Dachverband melden“, „aktiv“, „zählt für die Mitgliedsdauer“)
 - Aufnahme mit Dublettenprüfung im Dachverband, Austritt, Wiedereintritt, Wechsel der
-  Untereinheit oder des Vereins, Löschfrist
+  Untereinheit oder des Vereins, Löschfrist; Mitgliedsnummer auf Wunsch automatisch
+- Titel (Dr., Prof. … oder frei) in Akte, Anrede und Anschrift; Geburtsdatum freiwillig
 - **Organisationen als Mitglieder** (Firmen, Vereine, Behörden): Rechtsform, Ansprechpartner
   mit eigenem Zugang, Rechnungsanschrift, Beitrag nach Größe, Firmenlastschrift (SEPA B2B)
 - Zusatzfelder (auch Jahreszeiträume), Mitgliederfotos mit Einwilligung
@@ -65,9 +69,12 @@ Schützenverein, Musikverein oder Sportverein.
 - Autospeichern, Rückgängig, Papierkorb und Änderungsprotokoll
 
 **Zugänge und Rechte**
-- Anmeldung mit E-Mail und Passwort, Zwei-Faktor-Anmeldung (TOTP), Einladungen statt
-  Startpasswörtern; Pflicht-2FA für weitreichende Rechte (z. B. Rollenverwaltung, Kasse,
-  alle Mitglieder lesen)
+- Anmeldung mit E-Mail und Passwort oder mit Passkey, Zwei-Faktor-Anmeldung (TOTP oder
+  Passkey), Einladungen statt Startpasswörtern
+- Pflicht-2FA für jede Rolle mit Rechten (kurze Frist zum Einrichten, in der die
+  folgenreichsten Rechte schon ruhen; der eigene Mitgliederbereich geht ohne); heikle Aktionen
+  wie vollständige Exporte, Rollen vergeben oder endgültiges Löschen verlangen einen frischen
+  Code
 - Rollen mit einer Stufe je Bereich („kein Zugriff“, „lesen“, „bearbeiten“) und Zusatzrechten,
   je Einheit; eine Person kann mehrere Rollen haben ([docs/berechtigungen.md](docs/berechtigungen.md))
 - „Ansicht als Rolle“: HUBIplan nur lesend so ansehen, wie eine Rolle es sieht, nie mit mehr
@@ -76,13 +83,16 @@ Schützenverein, Musikverein oder Sportverein.
   [docs/nextcloud.md](docs/nextcloud.md))
 - „Mein Bereich“ für Mitglieder, Arbeitsbereich für Untereinheiten, Zugänge für Kassierer
   und Kassenprüfer; „Zu erledigen“ sammelt offene Punkte aus allen Bereichen
+- Startseite je Konto selbst zusammenstellen (Blöcke ziehen, Größe wählen, ausblenden), frei
+  gewählte Schnellaktionen; „Einrichtung (Übersicht)“ zeigt den Stand aller Einrichtungsseiten
 
 **Vereinsleben**
 - Kalender für Dachverband, Verein und Untereinheiten mit Serienterminen, Anhängen und
-  Sichtbarkeit je Termin; fremde Kalender (Vereinsplaner, iCal) übernehmen
+  Sichtbarkeit je Termin; gespeicherte Orte mit Anfahrt und Routenlink; fremde Kalender (Vereinsplaner, iCal) übernehmen
   ([docs/fremde-kalender.md](docs/fremde-kalender.md))
-- Zu- und Absagen mit Anmeldeschluss, Höchstzahl und Begleitpersonen, Teilnehmerlisten;
-  Einladung, Änderung und Erinnerung per E-Mail, Jahresprogramm als PDF, Kalender-Abo (iCal)
+- Zu- und Absagen (auf Wunsch auch „Vielleicht“) mit Anmeldeschluss, Höchstzahl und
+  Begleitpersonen, Teilnehmerlisten; Einladung, Änderung, Erinnerung und Rundschreiben zum
+  Termin per E-Mail mit Rückmeldelink ohne Anmeldung, Jahresprogramm als PDF, Kalender-Abo (iCal)
 - Aufgaben mit Fristen, Serien, Anhängen und Freigaben über Ebenen
   ([docs/aufgaben.md](docs/aufgaben.md))
 - Versammlungen und Sitzungen: Einladung mit Tagesordnung, Anträge, Anwesenheit, Protokoll,
@@ -115,9 +125,18 @@ Schützenverein, Musikverein oder Sportverein.
   und Sammelrechnungen an Untereinheiten, Verbandsbeitrag des Dachverbands
 - Rechnungen als PDF mit QR-Code, Versand per E-Mail, Mahnstufen
 - SEPA-Lastschrift mit Mandaten, Lastschriftdatei (pain.008) und Vorabankündigung
+- Rechnungen und Stornorechnungen als eigener Beleg
 - Leistungsrechnungen an Geschäftspartner, E-Rechnungen (XRechnung, ZUGFeRD) erstellen und
   empfangen, Beitragsrechnungen als XRechnung an Mitglieder mit Leitweg-ID
-  ([docs/e-rechnungen.md](docs/e-rechnungen.md))
+  ([docs/e-rechnungen.md](docs/e-rechnungen.md)); Rechnungspostfach je Einheit, aus dem
+  HUBIplan E-Rechnungen selbst abholt und im Hintergrund prüft
+
+**Geschäftspartner**
+- Lieferanten, Dienstleister, Kunden, Sponsoren, Behörden und andere außerhalb der
+  Mitgliederliste mit Ansprechpartnern, Zusatzfeldern, Bankverbindung und Excel-Import/-Export
+- Vorschlag des Partners im Rechnungseingang und im Kassenbuch, Bestätigung bei geänderter IBAN
+- Sponsoring mit Leistung und Gegenleistung, Verträge mit Kündigungsfrist und Erinnerung,
+  Serienbrief und Verteiler ([docs/geschaeftspartner.md](docs/geschaeftspartner.md))
 
 **Kasse, Steuern und Gemeinnützigkeit**
 - Kasse mit Konten, Kategorien (mit Vorlagen), Splitbuchungen, Belegen, Projekten und eigenem
@@ -144,13 +163,20 @@ Schützenverein, Musikverein oder Sportverein.
 - Impressum und Datenschutzhinweise je Einheit
 
 **Webseite und App**
-- Inhalte der Vereinswebseite (Startseite aus Bausteinen, Texte, Bilder und Alben, Chronik,
-  Belegung, eigene Beiträge von Instagram und Facebook) mit Entwurf, Vorschau und
-  Veröffentlichen; Gestaltung über Designpakete ([docs/designpakete.md](docs/designpakete.md))
+- Inhalte der Vereinswebseite (Startseite und Textseiten aus Abschnitten, Texte, Bilder und
+  Alben, Chronik, Belegung, eigene Beiträge von Instagram und Facebook) mit Entwurf, Vorschau
+  und Veröffentlichen
+- Gestaltung über Designpakete ([docs/designpakete.md](docs/designpakete.md)), Feinabstimmung
+  mit Reglern statt CSS, Vorschau als Handy, Tablet und Bildschirm, die letzten fünf
+  Fassungen zum Zurückholen
+- Erscheinungsbild je Einheit mit Farbpalette, Verläufen und eigenem Logo für den Dunkelmodus
 - öffentliche, versionierte Schnittstelle für
   [hubiplan-website](https://github.com/hubiplan/hubiplan-website)
 - Schnittstelle für die [Android-App](https://github.com/hubiplan/hubiplan-android):
   Verbinden per QR-Code, Geräteschlüssel je Gerät, Push über Web-Push/UnifiedPush
+- KI-Schnittstelle (Model Context Protocol): KI-Assistenten durchsuchen die Hilfe ohne
+  Anmeldung; mit Anmeldung und Zusatzrecht lesen sie die Webseite der Einheit und bearbeiten
+  sie als Entwurf ([docs/mcp.md](docs/mcp.md))
 
 **Datenschutz**
 - vertrauliche Felder (Kontaktdaten, Geburtsdatum, Bankverbindungen, SEPA-Mandate,
@@ -158,12 +184,14 @@ Schützenverein, Musikverein oder Sportverein.
   mit einem Schlüssel je Verein ([docs/betrieb.md](docs/betrieb.md#verschlüsselung-der-daten))
 - Mandantentrennung zusätzlich in der Datenbank (Row-Level Security), Kasse und Protokoll
   dort schreibgeschützt; Einwilligungen für Fotos und Veröffentlichung, Löschfristen
-  ([docs/aufbewahrung.md](docs/aufbewahrung.md))
+  ([docs/aufbewahrung.md](docs/aufbewahrung.md)); Einheiten werden zweistufig gelöscht,
+  endgültig erst nach Ablauf der Aufbewahrungsfristen
 
 **Sprache, Hilfe und Lernhilfen**
 - Oberfläche, Hinweis-Mails und Push auf Deutsch oder Englisch, je Benutzer wählbar, sobald
   der Betreiber Englisch freischaltet (`HUBIPLAN_LANGUAGES=de,en`,
   [docs/uebersetzung.md](docs/uebersetzung.md))
+- Mitgliederseiten auch im Dunkelmodus
 - Hilfe-Seite mit Suche, Anleitungen mit Bildschirmfotos und „Hilfe zu dieser Seite“
   (Taste `?`, [docs/hilfe.md](docs/hilfe.md))
 - Erklärungen und Glossar direkt in der Oberfläche, Prüflisten für wiederkehrende Aufgaben
@@ -208,7 +236,7 @@ Die Oberfläche spricht ausschließlich über die REST-API mit dem Backend.
 
 | Teil | Technik |
 | --- | --- |
-| Backend (`backend/`) | Python 3.13, Django 5.2 LTS, Django REST Framework, drf-spectacular (OpenAPI), django-allauth (Anmeldung, 2FA) |
+| Backend (`backend/`) | Python 3.13, Django 5.2 LTS, Django REST Framework, drf-spectacular (OpenAPI), django-allauth (Anmeldung, 2FA, Passkeys) |
 | Frontend (`frontend/`) | React 19, TypeScript, Vite, Node.js 24 |
 | Datenbank | PostgreSQL 18 mit Row-Level Security |
 | Hintergrund-Jobs | Celery mit Redis 8 |
@@ -288,7 +316,7 @@ cd frontend && npm run typecheck && npm run lint && npm run format:check
 **Vollständiger Test** vor jedem Merge und jedem Ausrollen (Linux oder WSL mit Docker):
 
 ```bash
-scripts/test.sh <commit>                 # Backend (ruff, pytest gegen PostgreSQL 18) und Frontend (tsc, oxlint, Prettier, Vitest)
+scripts/test.sh <commit>                 # Backend (ruff, pip-audit, pytest gegen PostgreSQL 18) und Frontend (tsc, oxlint, Prettier, Vitest)
 BACKUP_TEST=1 scripts/test.sh <commit>   # zusätzlich Backup und Rücksicherung
 ```
 
@@ -342,10 +370,11 @@ backend/
   locale/          englische Texte des Backends
   config/          Einstellungen, URLs, Celery
   core/            Health-Check, CSRF, /api/me/, Row-Level Security, Verschlüsselung, Dateiprüfung
-  accounts/        Benutzerkonten (E-Mail als Login)
+  accounts/        Benutzerkonten (E-Mail als Login), 2FA-Pflicht, Passkeys
   organizations/   Plattform und Einheiten, Impressum, Demodaten (seed_testdata)
   access/          Rollen und Rechte, Modulverzeichnis
   oidc/            Anmeldedienst (OpenID Connect) für die Nextcloud
+  admission/       Online-Mitgliedsantrag (Beitrittsformular)
   members/         Mitglieder (Personen und Organisationen), Mitgliedschaften, Mitgliedsarten, Jubiläen
   customfields/    Zusatzfelder
   honors/          Würden und Chronik
@@ -355,9 +384,10 @@ backend/
   changes/         Rückgängig und Papierkorb
   audit/           Änderungsprotokoll
   portal/          Mitgliederbereich, Bereich für Untereinheiten, Anmeldelinks
-  billing/         Beiträge, Beitragsläufe, Rechnungen, E-Rechnungen, SEPA
+  billing/         Beiträge, Beitragsläufe, Rechnungen, E-Rechnungen, Rechnungspostfach, SEPA, Geschäftspartner
   finance/         Kasse, Quittungen, Kassenprüfung, Steuern, Rücklagen, Anlagen, Zuwendungen, GoBD-Export
   events/          Termine, Zu- und Absagen, Kalender-Abos
+  places/          gespeicherte Orte mit Anfahrt
   competitions/    Wettbewerbe, Standmodus, Scheiben und Fotoerkennung, Urkunden
   entries/         Meldungen und Ausschreibungen
   circulars/       Rundschreiben
@@ -367,6 +397,7 @@ backend/
   outbox/          Postausgang
   website/         Webseite: Inhalte, öffentliche Schnittstelle, Kontaktformular, Social Media
   peering/         Verbund mit anderen Instanzen
+  mcpserver/       KI-Schnittstelle (Model Context Protocol)
   devices/         App-Geräte, Push, Schnittstelle /api/app/v1/
   pushgateway/     eigenständiges Push-Gateway für die Play-Fassung der App
   todos/           Aufgaben
@@ -387,7 +418,7 @@ frontend/
   src/theme/       Farben und Logo als CSS-Variablen
   lizenzen/        erzeugt die Lizenzliste der Browser-Bibliotheken
 deploy/            Caddy, Ausrollen und Rückweg, Servereinrichtung, Backup, Aktualisierer, HestiaCP-Vorlagen
-scripts/           test.sh (vollständiger Test), testplatz.sh (Testplätze), hilfe-bilder.sh (Bilder der Hilfe), release.sh
+scripts/           test.sh (vollständiger Test), testplatz.sh (Testplätze), hilfe-bilder.sh (Bilder der Hilfe), pakete-sperren.sh, release.sh
 docs/              Betrieb und Beschreibungen einzelner Bereiche
 ```
 
@@ -409,8 +440,10 @@ docs/              Betrieb und Beschreibungen einzelner Bereiche
 | [docs/verbund.md](docs/verbund.md) | Verbund mit anderen Instanzen |
 | [docs/nextcloud.md](docs/nextcloud.md) | Anmeldung an der Nextcloud mit dem HUBIplan-Konto |
 | [docs/app.md](docs/app.md) | Schnittstelle für die App, Push |
+| [docs/mcp.md](docs/mcp.md) | KI-Schnittstelle (Model Context Protocol) |
 | [docs/kontoauszug.md](docs/kontoauszug.md) | Kontoauszüge (CAMT.053) einlesen |
-| [docs/e-rechnungen.md](docs/e-rechnungen.md) | Geschäftspartner, Leistungsrechnungen, E-Rechnungen |
+| [docs/geschaeftspartner.md](docs/geschaeftspartner.md) | Geschäftspartner, Sponsoring, Verträge |
+| [docs/e-rechnungen.md](docs/e-rechnungen.md) | Leistungsrechnungen, E-Rechnungen, Rechnungspostfach |
 | [docs/verfahrensdokumentation-kasse.md](docs/verfahrensdokumentation-kasse.md) | Verfahrensdokumentation Kasse und Quittungen (GoBD) |
 | [docs/aufbewahrung.md](docs/aufbewahrung.md) | Aufbewahrung und Löschung je Datenart (Rechtsgrundlage, Fristbeginn) |
 | [docs/zuwendungen.md](docs/zuwendungen.md) | Zuwendungsbestätigungen |

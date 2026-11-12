@@ -37,12 +37,13 @@ z. B. per [Selbstupdate](docs/betrieb.md#selbstupdate).
 
 ## Umfang
 
-Gemeint ist der Code in diesem Repository: Backend, Oberfläche, Schnittstellen für Webseite
-und App, Push-Gateway, Verbund, Anmeldedienst für die Nextcloud, Aktualisierer für das
-Selbstupdate sowie die Skripte und Vorlagen für Ausrollen und Backup. Besonders interessant sind:
+Gemeint ist der Code in diesem Repository: Backend, Oberfläche, Schnittstellen für Webseite,
+App und KI-Assistenten (MCP), Online-Mitgliedsantrag, Rechnungspostfach, Push-Gateway, Verbund,
+Anmeldedienst für die Nextcloud, Aktualisierer für das Selbstupdate sowie die Skripte und Vorlagen für Ausrollen und Backup. Besonders interessant sind:
 
 - Zugriff auf Daten fremder Vereine oder Einheiten (Mandantentrennung, Row-Level Security),
-- Rechte, die eine Rolle nicht haben dürfte, oder Umgehung der Zwei-Faktor-Anmeldung,
+- Rechte, die eine Rolle nicht haben dürfte, oder Umgehung der Zwei-Faktor-Anmeldung, der
+  Pflicht dazu, der frischen Bestätigung bei heiklen Aktionen oder der Passkey-Anmeldung,
 - Zugriff auf Funktionen eines Moduls, das für die Einheit nicht freigegeben oder
   ausgeschaltet ist,
 - Zugänge von Ansprechpartnern einer Organisation, die mehr sehen als ihre Organisation,
@@ -52,6 +53,12 @@ Selbstupdate sowie die Skripte und Vorlagen für Ausrollen und Backup. Besonders
 - Schwächen der Anmeldung per OpenID Connect (z. B. Weiterleitungen, Token für fremde
   Konten oder Nextclouds),
 - Zugriff über einen Standzugang der Wettbewerbe auf mehr als den eigenen Wettbewerb,
+- Rückmeldelinks aus Mails, Anmeldelinks oder Links des Online-Mitgliedsantrags, die mehr
+  zeigen oder ändern als den eigenen Termin oder Antrag,
+- KI-Assistenten, die über die MCP-Schnittstelle Vereinsdaten ohne Anmeldung sehen, mehr als
+  die verbundene Einheit erreichen oder ohne Freigabe veröffentlichen,
+- Mails an das Rechnungspostfach, die eine fremde Einheit erreichen oder Schadcode in die
+  Ablage bringen,
 - nachträgliche Änderungen an festgeschriebenen Kassenbuchungen, Jahresabschlüssen,
   freigegebenen Protokollen oder dem Änderungsprotokoll,
 - Zertifikate oder Anmeldeseiten für Adressen, die keiner Einheit zugeordnet sind,
