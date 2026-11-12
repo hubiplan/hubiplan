@@ -287,7 +287,7 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
             ))}
           </select>
         </label>
-        <span className="push-right">
+        <span className="button-row push-right">
           {canEdit && (
             <button
               type="button"
@@ -296,7 +296,7 @@ export function AssetsPage({ canEdit }: { canEdit: boolean }) {
             >
               {t('Anlage hinzufügen')}
             </button>
-          )}{' '}
+          )}
           <a className="button button-ghost" href={financeApi.assetsXlsxUrl(org.id, data.year)}>
             {t('Excel')}
           </a>
