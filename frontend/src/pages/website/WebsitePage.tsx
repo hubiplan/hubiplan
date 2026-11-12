@@ -582,6 +582,16 @@ function WebsiteAdmin({
 
   const structure = (
     <>
+      {/* Lange Seite: der Hinweis steht oben und bleibt beim Scrollen unter der Kopfzeile */}
+      {hasDraft(website) && (
+        <DraftBar
+          website={website}
+          auto={auto}
+          canManage={data.can_manage}
+          onReset={onReset}
+          sticky
+        />
+      )}
       {settings(
         t('Bausteine'),
         <>
@@ -665,7 +675,6 @@ function WebsiteAdmin({
             ))}
         </>,
       )}
-      {hasDraft(website) && draftBar}
       {data.home_labels && v.home_sections && (
         <div className="card card-wide">
           <h2>{t('Startseite')}</h2>

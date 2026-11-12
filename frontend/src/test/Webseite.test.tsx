@@ -654,6 +654,22 @@ describe('Webseite', () => {
     expect(screen.getAllByRole('button', { name: 'Zurückholen' })).toHaveLength(1)
   })
 
+  it('heftet die Leiste mit offenen Änderungen in Menü und Bereiche oben an', async () => {
+    const body = data(website('public', { draft: { style: { font: 'modern' } } }))
+    renderApp({ [`GET ${base}`]: () => ({ status: 200, body }) }, '/webseite/aufbau')
+    const text = await screen.findByText(
+      'Nicht veröffentlichte Änderungen. Besucher sehen noch den bisherigen Stand.',
+    )
+    const bar = text.closest('.draft-bar') as HTMLElement
+    expect(bar).toHaveClass('draft-bar-sticky')
+    // Steht vor der ersten Karte, nicht mitten zwischen den Karten
+    const first = screen.getByRole('heading', { name: 'Bausteine' })
+    expect(bar.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // „Veröffentlichen“ ist der Hauptknopf, „Verwerfen“ der Nebenknopf
+    expect(screen.getByRole('button', { name: 'Veröffentlichen' })).toHaveClass('button-primary')
+    expect(screen.getByRole('button', { name: 'Verwerfen' })).not.toHaveClass('button-primary')
+  })
+
   it('zeigt eingespielte Designs und lädt Pakete nur für Plattformverwalter', async () => {
     const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
     const designs = [

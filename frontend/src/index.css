@@ -5714,6 +5714,8 @@ label:has(> .file-input:focus-visible) {
 
 /* Webseite › Gestaltung (G2): Einstellungen links, Vorschau der echten Webseite rechts */
 .draft-bar {
+  /* so breit wie die Karten darunter (.card-wide), nicht über die ganze Seite */
+  max-width: 64rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem 1rem;
@@ -5730,6 +5732,13 @@ label:has(> .file-input:focus-visible) {
   border-color: var(--color-primary);
   color: var(--color-text);
   font-weight: 600;
+}
+/* Webseite › Aufbau: oben angeheftet wie der Speicherstand langer Formulare (UX-Audit S-02) */
+.draft-bar-sticky {
+  position: sticky;
+  top: 3.6rem;
+  z-index: 5;
+  box-shadow: var(--shadow);
 }
 .draft-bar-actions {
   display: flex;
