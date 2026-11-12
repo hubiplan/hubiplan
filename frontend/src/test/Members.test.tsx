@@ -214,7 +214,10 @@ describe('Aufnahme', () => {
     const organisation = await screen.findByRole('button', {
       name: 'eine Organisation (Firma, Verein, Behörde …)',
     })
-    expect(screen.getByRole('button', { name: 'eine Person' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'eine Person' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
     await user.click(organisation)
     expect(organisation).toHaveAttribute('aria-pressed', 'true')
     expect(screen.queryByLabelText('Vorname')).not.toBeInTheDocument()
