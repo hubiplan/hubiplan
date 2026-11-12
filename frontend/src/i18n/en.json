@@ -8216,5 +8216,7 @@
   "gilt für {host}": "works for {host}",
   "zuletzt benutzt am {day}": "last used on {day}",
   "– sicher aufbewahren. Jeder Code funktioniert einmal, falls du deinen Passkey nicht zur Hand hast.": "– keep them safe. Each code works once in case you do not have your passkey at hand.",
-  "„{name}“ kann danach nicht mehr zum Anmelden benutzt werden. Lösche den Passkey zusätzlich auf deinem Gerät oder im Passwortmanager.": "“{name}” can then no longer be used to sign in. Also delete the passkey on your device or in your password manager."
+  "„{name}“ kann danach nicht mehr zum Anmelden benutzt werden. Lösche den Passkey zusätzlich auf deinem Gerät oder im Passwortmanager.": "“{name}” can then no longer be used to sign in. Also delete the passkey on your device or in your password manager.",
+  "Adresszusatz (optional)": "Address supplement (optional)",
+  "z. B. c/o Firma; steht über Straße und Hausnummer.": "e.g. c/o company; shown above street and house number."
 }

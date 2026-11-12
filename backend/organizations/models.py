@@ -295,6 +295,14 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
         "Bezeichnung englisch (Mehrzahl)", max_length=50, blank=True, default="", db_default=""
     )
     street = models.CharField("Straße und Hausnummer", max_length=200, blank=True)
+    address_extra = models.CharField(
+        "Adresszusatz",
+        max_length=200,
+        blank=True,
+        default="",
+        db_default="",
+        help_text="z. B. c/o Firma oder Gebäude; steht über Straße und Hausnummer.",
+    )
     postal_code = models.CharField("PLZ", max_length=10, blank=True)
     city = models.CharField("Ort", max_length=100, blank=True)
     country = models.CharField("Land", max_length=100, blank=True, default="Deutschland")
@@ -1025,6 +1033,14 @@ class Imprint(models.Model):
         "Rechtsform", max_length=100, blank=True, help_text="z. B. eingetragener Verein"
     )
     street = models.CharField("Straße und Hausnummer", max_length=200, blank=True)
+    address_extra = models.CharField(
+        "Adresszusatz",
+        max_length=200,
+        blank=True,
+        default="",
+        db_default="",
+        help_text="z. B. c/o Firma oder Gebäude; steht über Straße und Hausnummer.",
+    )
     postal_code = models.CharField("PLZ", max_length=10, blank=True)
     city = models.CharField("Ort", max_length=100, blank=True)
     representatives = models.TextField(

@@ -65,6 +65,12 @@ export function ImprintDetailsView({ d }: { d: ImprintDetails }) {
             {d.legal_form}
           </>
         )}
+        {address.address_extra && (
+          <>
+            <br />
+            {address.address_extra}
+          </>
+        )}
         {address.street && (
           <>
             <br />
