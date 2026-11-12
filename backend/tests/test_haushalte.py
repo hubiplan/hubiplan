@@ -84,7 +84,8 @@ class TestHaushalt:
         one = new_household(c, club)
         two = new_household(c, club, "Familie Zwei")
         firm = new_household(c, club, "Musterbau GmbH", kind="company")
-        assert add(c, club, one, family["max"]).status_code == 201
+        start = str(today() - datetime.timedelta(days=10))
+        assert add(c, club, one, family["max"], valid_from=start).status_code == 201
         resp = add(c, club, two, family["max"])
         assert resp.status_code == 400 and "Familie Muster" in str(resp.json())
         # Firma geht zusätzlich (FH-3), Rolle gibt es dort nicht
@@ -101,7 +102,8 @@ class TestHaushalt:
         c = api(board_a)
         club = cal["a"]
         hh = new_household(c, club)
-        link = add(c, club, hh, family["erika"]).json()["members"][0]["link"]
+        start = str(today() - datetime.timedelta(days=10))
+        link = add(c, club, hh, family["erika"], valid_from=start).json()["members"][0]["link"]
         assert c.delete(hh_url(club, hh["id"])).status_code == 400
         resp = c.patch(
             hh_url(club, hh["id"], f"members/{link}/"),

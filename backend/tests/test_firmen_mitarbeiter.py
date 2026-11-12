@@ -132,6 +132,7 @@ class TestMelden:
         base = f"/api/orgs/{firma['org'].pk}/admission/"
         res = firma["client"].post(f"{base}{app.pk}/accept/", {"invite": False}, JSON)
         assert res.status_code == 200, res.content
+        app.refresh_from_db()
         with tenant_context(firma["org"].pk):
             membership = Membership.objects.get(pk=app.membership_id)
             link = HouseholdMember.objects.get(membership=membership)
@@ -212,6 +213,7 @@ class TestFamilienantrag:
         assert "Lisa Muster" in str(detail)
         res = club["client"].post(f"{base}{app.pk}/accept/", {"invite": False}, JSON)
         assert res.status_code == 200, res.content
+        app.refresh_from_db()
         with tenant_context(org.pk):
             from billing.models import HouseholdPayer
             from members.models import ContactPerson
