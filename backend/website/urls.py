@@ -243,6 +243,7 @@ public_patterns = [
         name="site-honors-photo",
     ),
     path(f"{SITE}imprint/", public_views.ImprintView.as_view(), name="site-imprint"),
+    path(f"{SITE}join/", public_views.JoinView.as_view(), name="site-join"),
     path(
         f"{SITE}statute/preview/",
         public_views.StatutePreviewView.as_view(),

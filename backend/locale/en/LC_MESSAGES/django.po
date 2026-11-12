@@ -10599,3 +10599,345 @@ msgstr "Hello {name},\n\na wrong password was entered for your account several t
 
 msgid "Für die ganze Liste braucht es das Recht „Geschäftspartner“."
 msgstr "The whole list requires the “Business partners” right."
+
+msgid "nicht anbieten"
+msgstr "do not offer"
+
+msgid "anbieten"
+msgstr "offer"
+
+msgid "Pflicht"
+msgstr "required"
+
+msgid "Bestätigung per E-Mail genügt"
+msgstr "Email confirmation is enough"
+
+msgid "Unterschrift nötig"
+msgstr "Signature required"
+
+msgid "Tag der Annahme"
+msgstr "Day of admission"
+
+msgid "Erster des Folgemonats"
+msgstr "First of the following month"
+
+msgid "Wunschdatum aus dem Antrag"
+msgstr "Requested date from the application"
+
+msgid "E-Mail noch nicht bestätigt"
+msgstr "Email not yet confirmed"
+
+msgid "wartet auf Unterschrift"
+msgstr "awaiting signature"
+
+msgid "eingegangen"
+msgstr "received"
+
+msgid "stimmt zu"
+msgstr "approves"
+
+msgid "lehnt ab"
+msgstr "objects"
+
+msgid "Rückfrage läuft"
+msgstr "question pending"
+
+msgid "Ablehnung liegt vor"
+msgstr "objection raised"
+
+msgid "deine Zustimmung fehlt"
+msgstr "your approval is missing"
+
+msgid "wartet auf Zustimmungen"
+msgstr "awaiting approvals"
+
+msgid "bereit zur Aufnahme"
+msgstr "ready for admission"
+
+msgid "Mitgliedsantrag"
+msgstr "Membership application"
+
+msgid "Mitgliedsantrag {number}"
+msgstr "Membership application {number}"
+
+msgid "Hiermit beantrage ich die Aufnahme als Mitglied in {org}."
+msgstr "I hereby apply for membership of {org}."
+
+msgid "(Fassung vom {date})"
+msgstr "(version of {date})"
+
+msgid "Ort, Datum"
+msgstr "Place, date"
+
+msgid "Unterschrift (bei Minderjährigen: Erziehungsberechtigte)"
+msgstr "Signature (for minors: legal guardians)"
+
+msgid "Unterschrift"
+msgstr "Signature"
+
+msgid "Bitte unterschreiben und an den Verein schicken oder abgeben."
+msgstr "Please sign and send or hand it in to the club."
+
+msgid "wird bei der Aufnahme vergeben"
+msgstr "assigned on admission"
+
+msgid "{org} verarbeitet deine Angaben, um über deinen Mitgliedsantrag zu entscheiden und die Mitgliedschaft zu führen (Art. 6 Abs. 1 lit. b DSGVO). Die Daten liegen verschlüsselt in HUBIplan und sind nur für die zuständigen Personen im Verein sichtbar. Ohne Bestätigung deiner E-Mail-Adresse wird der Antrag nach 48 Stunden gelöscht, ein abgelehnter oder zurückgezogener Antrag nach der vom Verein festgelegten Frist."
+msgstr "{org} processes your details to decide on your membership application and to manage the membership (Art. 6(1)(b) GDPR). The data is stored encrypted in HUBIplan and is only visible to the responsible people in the club. Without confirmation of your email address, the application is deleted after 48 hours; a declined or withdrawn application after the period set by the club."
+
+msgid "Ich habe die Satzung gelesen und erkenne sie an."
+msgstr "I have read the statutes and accept them."
+
+msgid "Ich habe die Beitragsordnung gelesen und erkenne sie an."
+msgstr "I have read the fee regulations and accept them."
+
+msgid "Ich habe die Datenschutzhinweise gelesen."
+msgstr "I have read the privacy notice."
+
+msgid "Der Verein darf Fotos von mir für die Vereinsarbeit verwenden."
+msgstr "The club may use photos of me for club work."
+
+msgid "Auf der Webseite darf erscheinen: {what}"
+msgstr "May appear on the website: {what}"
+
+msgid "Fotos für die Vereinsarbeit"
+msgstr "Photos for club work"
+
+msgid "Webseite: {what}"
+msgstr "Website: {what}"
+
+msgid "Bitte eine Mitgliedsart wählen."
+msgstr "Please choose a membership type."
+
+msgid "Diese Mitgliedsart können nur Personen beantragen."
+msgstr "Only individuals can apply for this membership type."
+
+msgid "Bitte eine gültige Postleitzahl angeben."
+msgstr "Please enter a valid postcode."
+
+msgid "Bitte das Geburtsdatum prüfen."
+msgstr "Please check the date of birth."
+
+msgid "Bitte neu wählen."
+msgstr "Please choose again."
+
+msgid "Eine Mitgliedschaft ist erst ab {age} Jahren möglich."
+msgstr "Membership is only possible from the age of {age}."
+
+msgid "Bitte angeben, ob du volljährig bist."
+msgstr "Please state whether you are of legal age."
+
+msgid "Online können nur Volljährige beantragen."
+msgstr "Only adults can apply online."
+
+msgid "Bitte einen Erziehungsberechtigten angeben."
+msgstr "Please enter a legal guardian."
+
+msgid "Bitte die Bankverbindung für die Lastschrift angeben."
+msgstr "Please enter the bank details for the direct debit."
+
+msgid "Ich bin erziehungsberechtigt und stimme dem Antrag zu (bei zwei Erziehungsberechtigten mit Einverständnis des anderen)."
+msgstr "I am a legal guardian and agree to the application (with two guardians, with the consent of the other)."
+
+msgid "Ich erteile das SEPA-Mandat."
+msgstr "I grant the SEPA mandate."
+
+msgid "Bitte bestätigen."
+msgstr "Please confirm."
+
+msgid "Bitte unterschreiben."
+msgstr "Please sign."
+
+msgid "Zwischen 1 und 36 Monaten."
+msgstr "Between 1 and 36 months."
+
+msgid "Bitte ein Alter zwischen 0 und 99 angeben."
+msgstr "Please enter an age between 0 and 99."
+
+msgid "Zu viele Anträge. Bitte später noch einmal versuchen."
+msgstr "Too many applications. Please try again later."
+
+msgid "Zu viele Anträge."
+msgstr "Too many applications."
+
+msgid "Unbekannte Regel."
+msgstr "Unknown rule."
+
+msgid "Ungültige Rollen."
+msgstr "Invalid roles."
+
+msgid "Die Mindestzahl muss zwischen 0 und 20 liegen."
+msgstr "The minimum number must be between 0 and 20."
+
+msgid "Bitte Rollen, eine Mindestzahl oder die Untereinheit angeben."
+msgstr "Please specify roles, a minimum number or the sub-unit."
+
+msgid "verschiedene Personen für die geforderten Rollen"
+msgstr "different people for the required roles"
+
+msgid "noch {n} Zustimmung(en)"
+msgstr "{n} more approval(s)"
+
+msgid "Zustimmung der Untereinheit"
+msgstr "approval of the sub-unit"
+
+msgid "Eine Person mit Recht „Mitglieder bearbeiten“ entscheidet."
+msgstr "One person with the “Edit members” permission decides."
+
+msgid "Die Versammlung beschließt; der Vorstand trägt das Ergebnis ein."
+msgstr "The general meeting decides; the board enters the result."
+
+msgid "Zustimmung von: {roles}"
+msgstr "Approval of: {roles}"
+
+msgid "mindestens {n} Personen"
+msgstr "at least {n} people"
+
+msgid "aus {roles}"
+msgstr "from {roles}"
+
+msgid "Zustimmung der gewünschten Untereinheit"
+msgstr "approval of the requested sub-unit"
+
+msgid "Stand: {label}"
+msgstr "Booth: {label}"
+
+msgid "für {name} wurde ein Mitgliedsantrag bei {org} gestellt. Sie sind als Erziehungsberechtigte(r) angegeben. Bitte bestätigen Sie den Antrag und Ihre Zustimmung über diesen Link (gültig {hours} Stunden):"
+msgstr "a membership application to {org} has been made for {name}. You are named as legal guardian. Please confirm the application and your consent with this link (valid for {hours} hours):"
+
+msgid "vielen Dank für deinen Mitgliedsantrag bei {org}. Bitte bestätige deine E-Mail-Adresse über diesen Link (gültig {hours} Stunden):"
+msgstr "thank you for your membership application to {org}. Please confirm your email address with this link (valid for {hours} hours):"
+
+msgid "Ohne Bestätigung wird der Antrag nach {hours} Stunden gelöscht. Hast du keinen Antrag gestellt, kannst du diese Mail einfach ignorieren."
+msgstr "Without confirmation, the application is deleted after {hours} hours. If you did not apply, you can simply ignore this email."
+
+msgid "Bitte Mitgliedsantrag bestätigen: {org}"
+msgstr "Please confirm your membership application: {org}"
+
+msgid "dein Mitgliedsantrag bei {org} ist eingegangen (Nummer {number})."
+msgstr "your membership application to {org} has been received (number {number})."
+
+msgid "Der Verein braucht deine Unterschrift. Du kannst auf dieser Seite mit dem Finger unterschreiben oder den Antrag als PDF ausdrucken, unterschreiben und dem Verein schicken:"
+msgstr "The club needs your signature. You can sign with your finger on this page or print the application as a PDF, sign it and send it to the club:"
+
+msgid "Deine Angaben:"
+msgstr "Your details:"
+
+msgid "Den Stand deines Antrags siehst du hier; dort kannst du ihn auch zurückziehen:"
+msgstr "You can see the status of your application here and also withdraw it there:"
+
+msgid "Mitgliedsantrag eingegangen: {org}"
+msgstr "Membership application received: {org}"
+
+msgid "Geburtsdatum"
+msgstr "Date of birth"
+
+msgid "Gewünschter Eintritt"
+msgstr "Desired start date"
+
+msgid "Erziehungsberechtigt"
+msgstr "Legal guardian"
+
+msgid "Bemerkung"
+msgstr "Note"
+
+msgid "Neuer Mitgliedsantrag für {org}: {name} ({number})."
+msgstr "New membership application for {org}: {name} ({number})."
+
+msgid "Zum Antrag:"
+msgstr "To the application:"
+
+msgid "Neuer Mitgliedsantrag: {name}"
+msgstr "New membership application: {name}"
+
+msgid "Über den Antrag ist schon entschieden."
+msgstr "The application has already been decided."
+
+msgid "Der Antrag braucht keine Unterschrift mehr."
+msgstr "The application no longer needs a signature."
+
+msgid "Der Antrag wartet nicht auf eine Unterschrift."
+msgstr "The application is not waiting for a signature."
+
+msgid "Für diesen Antrag ist keine Rückfrage möglich."
+msgstr "No question is possible for this application."
+
+msgid "Bitte die Frage eingeben."
+msgstr "Please enter the question."
+
+msgid "zu deinem Mitgliedsantrag bei {org} ({number}) gibt es eine Rückfrage:"
+msgstr "there is a question about your membership application to {org} ({number}):"
+
+msgid "Bitte antworte einfach auf diese Mail."
+msgstr "Please simply reply to this email."
+
+msgid "Rückfrage zu deinem Mitgliedsantrag: {org}"
+msgstr "Question about your membership application: {org}"
+
+msgid "Es läuft keine Rückfrage."
+msgstr "There is no pending question."
+
+msgid "Der Antrag ist nicht mehr offen."
+msgstr "The application is no longer open."
+
+msgid "Zustimmen geht nur bei eingegangenen Anträgen."
+msgstr "Approval is only possible for received applications."
+
+msgid "Für diesen Verein sind keine Zustimmungen eingestellt."
+msgstr "No approvals are configured for this club."
+
+msgid "Eine Zustimmung der Untereinheit ist nicht nötig."
+msgstr "No approval of the sub-unit is needed."
+
+msgid "Deine Zustimmung ist nach der Regel nicht vorgesehen."
+msgstr "The rule does not provide for your approval."
+
+msgid "Ungültige Entscheidung."
+msgstr "Invalid decision."
+
+msgid "Bitte kurz begründen."
+msgstr "Please give a short reason."
+
+msgid "Aufnehmen geht nur bei eingegangenen Anträgen."
+msgstr "Admission is only possible for received applications."
+
+msgid "Es gibt eine Ablehnung. Bitte klärt das, bevor ihr aufnehmt."
+msgstr "There is an objection. Please resolve it before admitting."
+
+msgid "Es fehlen noch Zustimmungen: {missing}"
+msgstr "Approvals still missing: {missing}"
+
+msgid "Bitte den Beschluss der Versammlung angeben."
+msgstr "Please enter the resolution of the general meeting."
+
+msgid "herzlich willkommen bei {org}! Dein Mitgliedsantrag wurde angenommen."
+msgstr "welcome to {org}! Your membership application has been accepted."
+
+msgid "Willkommen bei {org}"
+msgstr "Welcome to {org}"
+
+msgid "leider können wir deinen Mitgliedsantrag bei {org} nicht annehmen."
+msgstr "unfortunately we cannot accept your membership application to {org}."
+
+msgid "Dein Mitgliedsantrag bei {org}"
+msgstr "Your membership application to {org}"
+
+msgid "Zwischen 1 Stunde und 7 Tagen."
+msgstr "Between 1 hour and 7 days."
+
+msgid "Ungültiges Datum."
+msgstr "Invalid date."
+
+msgid "Bitte Anträge auswählen."
+msgstr "Please select applications."
+
+msgid "Ungültige Dauer."
+msgstr "Invalid duration."
+
+msgid "Online-Antrag"
+msgstr "Online application"
+
+msgid "Stand-Link"
+msgstr "Booth link"
+
+msgid "im Online-Antrag"
+msgstr "in the online application"

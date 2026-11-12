@@ -1169,6 +1169,7 @@ class Mandate(models.Model):
     class Source(models.TextChoices):
         PAPER = "paper", gettext_lazy("schriftlich")
         ONLINE = "online", gettext_lazy("im Mitgliederbereich")
+        APPLICATION = "application", gettext_lazy("im Online-Antrag")
 
     class Status(models.TextChoices):
         ACTIVE = "active", gettext_lazy("gültig")
@@ -1206,7 +1207,7 @@ class Mandate(models.Model):
     iban = EncryptedCharField("IBAN", max_length=34)
     bic = EncryptedCharField("BIC", max_length=11, blank=True)
     signed_on = models.DateField("Datum der Unterschrift")
-    source = models.CharField("Erteilt", max_length=10, choices=Source.choices)
+    source = models.CharField("Erteilt", max_length=12, choices=Source.choices)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     revoked_on = models.DateField("widerrufen am", null=True, blank=True)
     last_used_on = models.DateField("zuletzt eingezogen", null=True, blank=True)

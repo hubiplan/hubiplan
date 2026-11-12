@@ -12,6 +12,8 @@ import { MemberTypesPage } from './settings/MemberTypesPage.tsx'
 import { ownMembers, requestTabs, setupTabs } from './members/access.ts'
 import type { NavItem } from './members/access.ts'
 import { AdmitPage } from './members/AdmitPage.tsx'
+import { ApplicationsPage } from './members/ApplicationsPage.tsx'
+import { ApplicationSettings } from './members/ApplicationSettings.tsx'
 import { HonoraryTitlesPage } from './members/HonoraryTitlesPage.tsx'
 import { MemberFilePage } from './members/MemberFilePage.tsx'
 import { MemberListPage } from './members/MemberListPage.tsx'
@@ -84,6 +86,7 @@ function ClubMembers() {
     <Routes>
       <Route index element={<MemberListPage />} />
       <Route path="neu" element={canEdit ? <AdmitPage /> : list} />
+      {org.type === 'club' && <Route path="antraege/*" element={<ApplicationsPage />} />}
       <Route
         path="anfragen"
         element={
@@ -164,6 +167,7 @@ function SetupArea() {
         element={<Navigate to="/mitglieder/einrichtung/ehrungen" replace />}
       />
       <Route path="zusatzfelder" element={page(t('Einrichtung'), <FieldsPage />)} />
+      {club && <Route path="antrag" element={page(t('Einrichtung'), <ApplicationSettings />)} />}
       {awards && (
         <Route path="jubilaeen" element={page(t('Einrichtung'), <MemberDurationSettings />)} />
       )}

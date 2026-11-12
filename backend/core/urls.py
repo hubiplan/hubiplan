@@ -14,6 +14,7 @@ from accounts import (
     self_service,
     step_up,
 )
+from admission import urls as admission_urls
 from billing import agreements as partner_agreements
 from billing import einvoice_views, partner_fields, partner_files
 from billing import partners as partner_views
@@ -250,6 +251,7 @@ platform_router.register("orgs", org_views.PlatformOrganizationViewSet, basename
 platform_router.register("addresses", org_views.InstanceAddressViewSet, basename="platform-address")
 
 org_patterns = [
+    *admission_urls.org_patterns,
     path("music/equipment/", EquipmentView.as_view()),
     path("music/custody-reminders/", CustodyReminderView.as_view()),
     path("music/payout-runs/", PayoutRuns.as_view()),
@@ -993,6 +995,7 @@ urlpatterns = [
     # KI-Schnittstelle (MCP): Hilfe ohne Anmeldung, Verein mit Anmeldung (docs/mcp.md)
     *mcp_urls.api_patterns,
     path("public/card/<str:token>/", card_views.PublicCardView.as_view(), name="public-card"),
+    *admission_urls.public_patterns,
     path("public/rsvp/<str:token>/", rsvp_link.PublicRsvpView.as_view(), name="public-rsvp"),
     path(
         "public/rsvp/<str:token>/attachments/<int:att_id>/",

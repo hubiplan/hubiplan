@@ -123,6 +123,8 @@ def facts(website: Website) -> dict:
         # zutreffend im Stand, damit bestehende Texte nicht als veraltet gelten
         # „consent“: seit Gesamtaudit 05.11. nur mit Einwilligung (ändert den Stand)
         **({"members": "consent"} if website.block_on("members") else {}),
+        # Online-Mitgliedsantrag (konzepte/online-beitrittsformular.md); nur wenn eingeschaltet
+        **({"join": True} if website.block_on("join") else {}),
         **({"memorial": True} if website.block_on("memorial") else {}),
         **({"address": True} if website.show_address and website.block_on("board") else {}),
         **({"instrument": True} if website.show_instrument and module_on(org, "music") else {}),
@@ -223,6 +225,26 @@ def website_privacy(website: Website) -> str:
                 "Adresse und Ihre Nachricht, um zu antworten (Art. 6 Abs. 1 lit. b bzw. f DSGVO)."
             )
         sections.append(_section(f"{nr()} Kontakt", *lines))
+    if f.get("join"):
+        sections.append(
+            _section(
+                f"{nr()} Mitgliedsantrag",
+                "Über das Formular „Mitglied werden“ schicken Sie uns die Angaben für Ihren "
+                "Mitgliedsantrag: Name, Anschrift, Kontaktdaten und je nach Formular "
+                "Geburtsdatum, gewünschte Mitgliedsart, Bankverbindung für die Lastschrift, "
+                "Angaben zu Erziehungsberechtigten und Ihre Unterschrift. Wir verwenden sie, "
+                "um über den Antrag zu entscheiden und die Mitgliedschaft zu führen "
+                "(Art. 6 Abs. 1 lit. b DSGVO); freiwillige Einwilligungen (z. B. Fotos) "
+                "verarbeiten wir nach Art. 6 Abs. 1 lit. a DSGVO und Sie können sie jederzeit "
+                "widerrufen.",
+                "Das Formular schickt Ihre Angaben direkt an unsere Mitgliederverwaltung "
+                "HUBIplan; dort liegen sie verschlüsselt. Ohne Bestätigung der E-Mail-Adresse "
+                "wird der Antrag nach 48 Stunden gelöscht, ein abgelehnter oder zurückgezogener "
+                "Antrag nach der von uns festgelegten Frist. Ein angenommener Antrag gehört zu "
+                "den Unterlagen der Mitgliedschaft. Zum Schutz vor Spam gelten dieselben "
+                "Prüfungen wie beim Kontaktformular.",
+            )
+        )
     if f["events"]:
         sections.append(
             _section(

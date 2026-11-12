@@ -898,6 +898,7 @@ def target_key(field) -> str:
 # Fachfrage 12 (Audit 31.10.): bewusst nicht mitgenommen, im Umzugsbericht genannt
 NOT_INCLUDED = [
     "Zurückgehaltene Nachrichten des Kontaktformulars",
+    "Online-Mitgliedsanträge und Einstellungen des Online-Antrags (neu einrichten)",
     "Vorlagen für Rundschreiben",
     "Änderungsprotokoll (bleibt auf der alten Instanz)",
     "Zugangsdaten für Instagram/Facebook (neu verbinden)",

@@ -133,7 +133,7 @@ export function MemberFilePage() {
             canEdit={canEdit && !data.managed_by}
             onSaved={setData}
           />
-          {data.kind === 'organization' && (
+          {(data.kind === 'organization' || (data.contact_persons ?? []).length > 0) && (
             <ContactPersons
               key={`ansprechpartner-${data.id}`}
               orgId={org.id}

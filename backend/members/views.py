@@ -738,7 +738,8 @@ class ContactPersonViewSet(_MemberChildMixin, viewsets.ModelViewSet):
         return super().get_queryset().select_related("person")
 
     def _check_organization(self, membership):
-        if not membership.person.is_organization:
+        # Personen: Erziehungsberechtigte aus dem Online-Antrag (Beitrittsformular B3)
+        if not membership.person.is_organization and not membership.contact_persons.exists():
             raise serializers.ValidationError(
                 {"detail": gettext("Ansprechpartner gibt es nur bei Organisationsmitgliedern.")}
             )
