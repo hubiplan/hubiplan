@@ -35,7 +35,7 @@ from .models import (
 )
 
 KIND = "mitgliedsantrag"
-CONSENT_PHOTO = "photo"
+CONSENT_PHOTO = "club_photo"  # nicht "photo": so heißt die Webseiten-Kategorie Foto
 CONFIRM_STATUTE = "statute"
 CONFIRM_FEE_RULES = "fee_rules"
 CONFIRM_PRIVACY = "privacy"

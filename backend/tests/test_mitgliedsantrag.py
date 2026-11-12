@@ -15,6 +15,7 @@ from members.models import ContactPerson, Membership, MemberType
 from website import contact
 
 from .factories import give_role, make_user
+from .test_rls import as_app_role
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -54,7 +55,7 @@ def club(orgs, board_a, api):
                 {"id": foerder.pk, "organizations": True},
             ],
             "fields": {"phone": "optional", "birth_date": "optional", "note": "optional"},
-            "consents": ["photo", "photo"],
+            "consents": ["club_photo", "club_photo", "photo"],
             "texts": {"intro": {"de": "Willkommen!", "en": "Welcome!"}},
         },
         "application/json",
@@ -137,7 +138,7 @@ class TestFormular:
         assert data["types"][0]["fee"] == "36,00"
         assert data["sepa"] == "offer"
         assert "DE98ZZZ09999999999" in data["mandate"]["text"]
-        assert [c["key"] for c in data["consents"]] == ["photo"]
+        assert [c["key"] for c in data["consents"]] == ["club_photo", "photo"]
         assert data["challenge"]["token"]
         assert schema(club["key"], lang="en")["types"][0]["label"] in ("Active", "Aktiv im Zug")
 
@@ -193,7 +194,7 @@ class TestAblauf:
         res = submit(
             club["key"],
             mandate={"holder": "Max Muster", "iban": IBAN},
-            consents=["photo"],
+            consents=["club_photo"],
             phone="0123 456",
         )
         assert res.status_code == 201, res.content
@@ -489,11 +490,11 @@ class TestStand:
 
 
 class TestEinbindung:
-    def test_fremder_verein_sieht_nichts(self, club, board_b, api):
+    def test_fremder_verein_sieht_nichts(self, club, orgs, board_b, api):
         app, _ = submit_and_confirm(club)
         other = api(board_b)
         assert other.get(f"/api/orgs/{club['org'].pk}/admission/").status_code == 404
-        with tenant_context(club["org"].pk + 1000):
+        with as_app_role(), tenant_context(orgs["b"].pk):
             assert not Application.objects.filter(pk=app.pk).exists()
 
     def test_zu_erledigen(self, club):

@@ -560,7 +560,7 @@ def clean_settings(form: ApplicationForm, payload: dict) -> dict:
             out[key] = bool(payload[key])
     if "consents" in payload:
         keys = {c["key"] for c in allowed_consents()}
-        out["consents"] = [k for k in payload["consents"] or [] if k in keys]
+        out["consents"] = list(dict.fromkeys(k for k in payload["consents"] or [] if k in keys))
     if "texts" in payload:
         raw = payload["texts"] or {}
         out["texts"] = {

@@ -80,7 +80,8 @@ class ApplicationForm(models.Model):
     sepa = models.CharField("Lastschrift", max_length=10, choices=Sepa.choices, default="offer")
     confirm_statute = models.BooleanField("Satzung bestätigen", default=True)
     confirm_fee_rules = models.BooleanField("Beitragsordnung bestätigen", default=True)
-    # Freiwillige Einwilligungen: "photo" und Kategorien aus website.PublicationConsent
+    # Freiwillige Einwilligungen: "club_photo" (Vereinsfotos) und Kategorien aus
+    # website.PublicationConsent
     consents = models.JSONField("Freiwillige Einwilligungen", default=list, blank=True)
     signature = models.CharField(
         "Unterschrift", max_length=10, choices=Signature.choices, default="none"
