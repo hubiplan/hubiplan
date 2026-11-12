@@ -16,7 +16,7 @@ Vorher: Es gibt mindestens eine Mitgliedsart (Mitglieder › Einrichtung › Mit
    sucht HUBIplan nur unter den eigenen Mitgliedern nach gleichem Namen, und Altersstufen beim
    Beitrag, Geburtstage und Altersangaben entfallen für diese Person.
 3. Gibt es **Mögliche Treffer**, wähle die richtige Person oder **Keine davon – neue Person anlegen**.
-4. Wähle die **Mitgliedsart** und das Datum für den **Eintritt**. Die **Mitgliedsnummer** ist
+4. Wähle die **Mitgliedsart** und das Datum für den **Eintritt**. Die Mitgliedsnummer ist
    freiwillig: Lässt du sie leer, vergibt HUBIplan die nächste freie Nummer (höchste vorhandene
    Zahl im Verein plus 1, ehemalige Mitglieder zählen mit; Nummern mit Buchstaben zählen nicht).
 5. Ergänze Kontakt und Anschrift und klicke auf **Aufnehmen**. Bei einer schon bekannten Person
