@@ -94,6 +94,7 @@ def _facts(org: Organization) -> dict:
         ).exists()
     parent = org.parent if org.parent and org.parent.type == Organization.Type.FEDERATION else None
     return {
+        "application": _application_required(org),
         "modules": modules,
         "sepa": sepa,
         "reported": reported and parent is not None,
@@ -103,6 +104,97 @@ def _facts(org: Organization) -> dict:
         "has_org_members": has_org_members,
         "keeps_members": org.keeps_members or org.type == Organization.Type.UNIT,
     }
+
+
+def _application_required(org: Organization) -> dict | None:
+    """Pflichtangaben des Online-Mitgliedsantrags, wenn er eingeschaltet ist."""
+    from admission.models import ApplicationForm
+    from admission.public import FIELD_KEYS, sepa_state
+
+    with rls_bypass():
+        form = ApplicationForm.objects.filter(organization=org, enabled=True).first()
+        if form is None:
+            return None
+        sepa, _ = sepa_state(form)
+    fields = {k: (form.fields or {}).get(k, "off") for k in FIELD_KEYS}
+    required = {k for k, state in fields.items() if state == "required"}
+    return {
+        "required": required,
+        "birth_date_off": fields["birth_date"] == "off",
+        "sepa": sepa == "required",
+        "minors": form.minors,
+        "min_age": form.min_age,
+    }
+
+
+# Bezeichnungen der einstellbaren Pflichtfelder im Online-Antrag (admission.FIELD_KEYS)
+_APPLICATION_LABELS = {
+    "phone": "Telefonnummer",
+    "unit": "gewünschte Untereinheit",
+    "entry_wish": "gewünschtes Eintrittsdatum",
+    "note": "Bemerkung",
+}
+
+
+def _required_lines(f: dict) -> list[str]:
+    """Abschnitt „Pflicht zur Angabe“ nach den tatsächlichen Pflichtfeldern.
+
+    Bei der Aufnahme sind Name und Anschrift Pflicht, bei Personen zusätzlich der
+    Vorname (members.serializers.AdmitSerializer); das Geburtsdatum ist freiwillig.
+    Der Online-Antrag verlangt außerdem die E-Mail-Adresse und die Felder, die der
+    Verein als Pflicht eingestellt hat (admission.public)."""
+    lines = [
+        "Für die Mitgliedschaft brauchen wir:",
+        _bullets(
+            [
+                "bei Personen: Name, Vorname und Anschrift",
+                "bei Organisationen als Mitglied (z. B. Firmen, Vereine, Behörden): Name "
+                "der Organisation und Anschrift",
+            ]
+        ),
+        "Ohne diese Angaben ist eine Aufnahme nicht möglich.",
+    ]
+    app = f.get("application")
+    birth_required = False
+    if app:
+        common = ["E-Mail-Adresse"] + [
+            label for key, label in _APPLICATION_LABELS.items() if key in app["required"]
+        ]
+        if app["sepa"]:
+            common.append("Bankverbindung für das SEPA-Lastschriftmandat")
+        person = []
+        if "gender" in app["required"]:
+            person.append("Geschlecht")
+        if "birth_date" in app["required"]:
+            birth_required = True
+            person.append("Geburtsdatum")
+        elif app["birth_date_off"]:
+            person.append("die Angabe, ob Sie volljährig sind")
+        items = [f"von allen: {_join(common)}"]
+        if person:
+            items.append(f"von Personen außerdem: {_join(person)}")
+        if app["minors"]:
+            items.append(
+                "bei Minderjährigen: Name und E-Mail-Adresse mindestens eines "
+                "Erziehungsberechtigten"
+            )
+        lines += [
+            "Beim Online-Mitgliedsantrag fragen wir zusätzlich ab:",
+            _bullets(items),
+        ]
+        if app["min_age"]:
+            lines.append(
+                f"Online ist eine Mitgliedschaft erst ab {app['min_age']} Jahren möglich; "
+                "ein angegebenes Geburtsdatum prüfen wir darauf."
+            )
+    if birth_required:
+        lines.append(
+            "Das Geburtsdatum ist nur beim Online-Mitgliedsantrag Pflicht; bei einer "
+            "Aufnahme auf anderem Weg ist es freiwillig. Alle weiteren Angaben sind freiwillig."
+        )
+    else:
+        lines.append("Alle weiteren Angaben, auch das Geburtsdatum, sind freiwillig.")
+    return lines
 
 
 def unit_privacy(org: Organization) -> str:
@@ -117,7 +209,7 @@ def unit_privacy(org: Organization) -> str:
     units = org.department_label_plural if f["has_units"] else ""
 
     data = [
-        "Name, Vorname, Geburtsdatum, Anschrift, Telefon und E-Mail-Adresse",
+        "Name, Vorname, Anschrift, Telefon und E-Mail-Adresse, Geburtsdatum, wenn angegeben",
         "Beginn, Ende und Art der Mitgliedschaft, Verbandsnummer, Ehrungen und Jubiläen",
     ]
     if units:
@@ -214,7 +306,8 @@ def unit_privacy(org: Organization) -> str:
     if f["reported"]:
         parent = f["parent"]
         recipients.append(
-            f"{parent.name}: Name, Geburtsdatum, Anschrift und Mitgliedszeiten der Mitglieder, "
+            f"{parent.name}: Name, Geburtsdatum (wenn angegeben), Anschrift und Mitgliedszeiten "
+            "der Mitglieder, "
             "die wir dorthin melden (Mitgliedschaft im Verband, Verbandsbeitrag, Ehrungen)"
         )
         if parent.federation_member_access != Organization.MemberAccess.NONE:
@@ -273,11 +366,7 @@ def unit_privacy(org: Organization) -> str:
             "Sie können sich bei einer Datenschutz-Aufsichtsbehörde beschweren, z. B. bei der "
             "Behörde des Bundeslands, in dem wir unseren Sitz haben.",
         ),
-        _section(
-            "7. Pflicht zur Angabe",
-            "Name, Anschrift und Geburtsdatum brauchen wir für die Mitgliedschaft. Ohne sie "
-            "ist eine Aufnahme nicht möglich. Alle weiteren Angaben sind freiwillig.",
-        ),
+        _section("7. Pflicht zur Angabe", *_required_lines(f)),
         _section(
             "8. HUBIplan-App",
             "Mit der HUBIplan-App für Android sehen Sie dieselben Daten wie im "

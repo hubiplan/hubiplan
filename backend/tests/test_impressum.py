@@ -320,6 +320,52 @@ class TestTexteErzeugen:
         assert "Verbandsbeitrag" not in text
         assert "[Vorstand nach § 26 BGB]" in text
 
+    def test_pflichtangaben_personen_und_organisationen(self, orgs):
+        from organizations.imprint_generator import unit_privacy
+
+        text = unit_privacy(orgs["c"])
+        pflicht = text.split("7. Pflicht zur Angabe")[1].split("8. HUBIplan-App")[0]
+        assert "bei Personen: Name, Vorname und Anschrift" in pflicht
+        assert "Name der Organisation und Anschrift" in pflicht
+        assert "auch das Geburtsdatum, sind freiwillig" in pflicht
+        assert "Online-Mitgliedsantrag" not in pflicht
+        assert "Name, Anschrift und Geburtsdatum brauchen wir" not in text
+
+    def test_pflichtangaben_online_antrag(self, orgs):
+        from admission.models import ApplicationForm
+        from organizations.imprint_generator import unit_privacy
+
+        club = orgs["c"]
+        with rls_bypass():
+            ApplicationForm.objects.create(
+                organization=club,
+                public_key="antrag-c",
+                enabled=True,
+                fields={"phone": "required", "birth_date": "required", "gender": "off"},
+                min_age=16,
+                minors=True,
+            )
+        pflicht = unit_privacy(club).split("7. Pflicht zur Angabe")[1]
+        assert "von allen: E-Mail-Adresse und Telefonnummer" in pflicht
+        assert "von Personen außerdem: Geburtsdatum" in pflicht
+        assert "erst ab 16 Jahren" in pflicht
+        assert "Erziehungsberechtigten" in pflicht
+        assert "nur beim Online-Mitgliedsantrag Pflicht" in pflicht
+
+        with rls_bypass():
+            ApplicationForm.objects.filter(organization=club).update(
+                fields={"birth_date": "off"}, minors=False, min_age=None
+            )
+        pflicht = unit_privacy(club).split("7. Pflicht zur Angabe")[1]
+        assert "von allen: E-Mail-Adresse\n" in pflicht
+        assert "ob Sie volljährig sind" in pflicht
+        assert "Erziehungsberechtigten" not in pflicht
+        assert "auch das Geburtsdatum, sind freiwillig" in pflicht
+
+        with rls_bypass():
+            ApplicationForm.objects.filter(organization=club).update(enabled=False)
+        assert "Online-Mitgliedsantrag" not in unit_privacy(club)
+
     def test_plattform(self, db, settings):
         from organizations.imprint_generator import platform_privacy
 
