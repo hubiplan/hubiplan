@@ -8168,8 +8168,6 @@
   "Verbundene Assistenten": "Connected assistants",
   "Noch kein Assistent verbunden.": "No assistant connected yet.",
   "zuletzt benutzt {x}, gilt bis {y}": "last used {x}, valid until {y}",
-  "Oben im Hauptmenü zeigen": "Show at the top of the main menu",
-  "statt unter Verein, für alle in dieser Einheit": "instead of under Club, for everyone in this unit",
   "Am einfachsten exportieren, in Excel ändern und wieder einlesen. Eine bekannte Nummer aktualisiert den Partner, leere Zellen ändern nichts. Zeilen ohne Nummer mit schon vorhandenem Namen werden übersprungen. Das Blatt „Ansprechpartner“ ergänzt und ändert Ansprechpartner.": "The easiest way is to export, edit in Excel and import again. A known number updates the partner; empty cells change nothing. Rows without a number whose name already exists are skipped. The “Contact person” sheet adds and updates contact persons.",
   "{created} neu, {updated} geändert, {skipped} unverändert oder übersprungen.": "{created} new, {updated} changed, {skipped} unchanged or skipped.",
   "Ansprechpartner: {created} neu, {updated} geändert.": "Contact persons: {created} new, {updated} changed.",
