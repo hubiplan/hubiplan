@@ -973,6 +973,7 @@ class PortalChangeRequestView(APIView):
 # --- Anmeldelinks (ohne Anmeldung erreichbar) ---
 
 RATE = (10, 15 * 60)  # 10 Versuche je 15 Minuten und IP
+RECIPIENT_RATE = (3, 60 * 60)  # 3 Links je Empfänger und Stunde (Gesamtaudit 11.11., Fachfrage 3)
 
 
 def _rate_limited(request, kind: str) -> bool:
@@ -999,7 +1000,12 @@ class LoginLinkRequestView(APIView):
         user = User.objects.filter(email__iexact=data.validated_data["email"]).first()
         if user is not None:
             set_rls(None, user.pk)
-            if services.portal_accesses(user) and services.link_login_allowed(user):
+            if (
+                services.portal_accesses(user)
+                and services.link_login_allowed(user)
+                # höchstens 3 Links je Empfänger und Stunde; die Antwort bleibt gleich
+                and not too_many(f"login-link:to:{user.pk}", *RECIPIENT_RATE)
+            ):
                 url = services.create_login_link(user)
                 from core.i18n import language_of, user_language
                 from outbox import mail
@@ -1013,8 +1019,8 @@ class LoginLinkRequestView(APIView):
                         + "\n\n"
                         + gettext(
                             "mit diesem Link melden Sie sich im Mitgliederbereich an "
-                            "(gültig {days} Tage, einmal nutzbar):"
-                        ).format(days=services.LINK_DAYS)
+                            "(gültig eine Stunde, einmal nutzbar; ältere Links gelten nicht mehr):"
+                        )
                         + f"\n\n{url}\n\n"
                         + gettext(
                             "Falls Sie den Link nicht angefordert haben, können Sie diese Mail "

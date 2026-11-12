@@ -25,7 +25,10 @@ from outbox import mail
 
 from .models import LoginLink, PortalAccess, hash_token
 
+# Vom Verein verschickte Links (Einladung) gelten 7 Tage, selbst angeforderte eine Stunde
+# (Gesamtaudit 11.11., Fachfrage 3). Ein neuer Link entwertet die älteren offenen Links.
 LINK_DAYS = 7
+SELF_LINK_HOURS = 1
 
 # Felder, die ein Mitglied als Änderung melden darf
 # Kontaktdaten ändern Mitglieder direkt (außer der Verein verlangt Bestätigung);
@@ -288,13 +291,28 @@ def _notify_transfer(
 
 
 def create_login_link(user, organization=None, created_by=None) -> str:
+    """Neuer Anmeldelink; ohne Verein (selbst angefordert) gilt er eine Stunde.
+
+    Ältere offene Links des Kontos laufen dabei sofort ab, damit höchstens einer gilt.
+    """
+    from core.tenancy import rls_bypass
+
+    now = timezone.now()
+    if organization is None:
+        valid = datetime.timedelta(hours=SELF_LINK_HOURS)
+    else:
+        valid = datetime.timedelta(days=LINK_DAYS)
     token = LoginLink.new_token()
+    with rls_bypass():
+        LoginLink.objects.filter(user=user, used_at__isnull=True, expires_at__gt=now).update(
+            expires_at=now
+        )
     LoginLink.objects.create(
         user=user,
         organization=organization,
         token_hash=hash_token(token),
         created_by=created_by,
-        expires_at=timezone.now() + datetime.timedelta(days=LINK_DAYS),
+        expires_at=now + valid,
     )
     return f"{base_url(organization)}/anmelden/link/{token}"
 

@@ -303,6 +303,8 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": 3600.0,
     },
     "materials-purge": {"task": "materials.tasks.purge_deleted", "schedule": 86400.0},
+    # Benutzte und abgelaufene Anmeldelinks nach 30 Tagen löschen (Gesamtaudit 11.11., H-07)
+    "anmeldelinks-aufraeumen": {"task": "portal.tasks.purge_login_links", "schedule": 86400.0},
     # Eingehende Dateien in Quarantäne nachprüfen (Gesamtaudit 10.11., Fachfrage 2)
     "virenscan-quarantaene": {"task": "core.tasks.recheck_quarantine", "schedule": 600.0},
     "bookings-series": {"task": "bookings.tasks.extend_series", "schedule": 86400.0},

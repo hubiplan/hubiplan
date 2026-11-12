@@ -10599,3 +10599,6 @@ msgstr "Hello {name},\n\na wrong password was entered for your account several t
 
 msgid "Für die ganze Liste braucht es das Recht „Geschäftspartner“."
 msgstr "The whole list requires the “Business partners” right."
+
+msgid "mit diesem Link melden Sie sich im Mitgliederbereich an (gültig eine Stunde, einmal nutzbar; ältere Links gelten nicht mehr):"
+msgstr "with this link you sign in to the member area (valid for one hour, single use; older links no longer work):"
