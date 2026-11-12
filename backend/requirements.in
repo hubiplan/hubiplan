@@ -28,3 +28,6 @@ numpy==2.5.4
 verovio==6.4.1
 # SVG aus Verovio in reportlab-PDF; lxml/cssselect2/tinycss2 kommen als Abhängigkeiten mit
 svglib==2.4.0
+# Direkt genutzt (billing/delivery.py, Geräteschlüssel und Verbund), nicht nur über andere Pakete
+requests==2.34.2
+cryptography==50.0.2
