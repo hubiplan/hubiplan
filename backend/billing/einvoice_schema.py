@@ -9,6 +9,7 @@ from rest_framework import serializers
 class PartySerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200)
     street = serializers.CharField(max_length=200)
+    address_extra = serializers.CharField(max_length=200, allow_blank=True, default="")
     postcode = serializers.CharField(max_length=20)
     city = serializers.CharField(max_length=100)
     country = serializers.RegexField(r"^[A-Z]{2}$", default="DE")

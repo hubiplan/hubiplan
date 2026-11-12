@@ -222,6 +222,14 @@ function OrganizationForm({
               <>
                 <h3>{t('Anschrift')}</h3>
                 <Field
+                  label={t('Adresszusatz (optional)')}
+                  maxLength={200}
+                  value={v.address_extra ?? ''}
+                  error={errors.address_extra}
+                  hint={t('z. B. c/o Firma; steht über Straße und Hausnummer.')}
+                  onChange={(e) => set('address_extra', e.target.value)}
+                />
+                <Field
                   label={t('Straße und Hausnummer')}
                   required
                   value={v.street}
@@ -489,6 +497,7 @@ const EDITABLE: (keyof OrgDetail)[] = [
   'name',
   'short_name',
   'founding_year',
+  'address_extra',
   'street',
   'postal_code',
   'city',

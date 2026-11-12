@@ -583,7 +583,12 @@ def federation_board_candidates(circular: Circular) -> list[Candidate]:
                     )
                 )
             if not seen:
-                lines = [club.name, club.street, f"{club.postal_code} {club.city}".strip()]
+                lines = [
+                    club.name,
+                    club.address_extra,
+                    club.street,
+                    f"{club.postal_code} {club.city}".strip(),
+                ]
                 result.append(
                     Candidate(
                         key=f"c{club.pk}",

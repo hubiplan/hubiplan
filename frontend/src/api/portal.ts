@@ -116,6 +116,7 @@ export interface PortalDetail extends DeptMember {
   contact_changes_need_approval: boolean
   club: {
     name: string
+    address_extra?: string
     street: string
     postal_code: string
     city: string

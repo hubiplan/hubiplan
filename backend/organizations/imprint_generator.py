@@ -29,7 +29,12 @@ def _join(items: list[str]) -> str:
 
 def _address(d: dict) -> str:
     a = d["address"]
-    parts = [d["name"], a["street"], f"{a['postal_code']} {a['city']}".strip()]
+    parts = [
+        d["name"],
+        a.get("address_extra", ""),
+        a["street"],
+        f"{a['postal_code']} {a['city']}".strip(),
+    ]
     return ", ".join(p for p in parts if p)
 
 

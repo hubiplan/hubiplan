@@ -112,7 +112,7 @@ export function PartnersPage() {
           access.edit ? { label: t('Geschäftspartner anlegen'), onClick: () => open('new') } : null
         }
         actions={[
-          {
+          access.list && {
             label: t('Als Excel exportieren'),
             onClick: () => {
               setError('')
@@ -123,7 +123,11 @@ export function PartnersPage() {
             },
           },
           access.edit && { label: t('Aus Excel importieren'), onClick: () => setImporting(true) },
-          access.edit && { label: t('Serienbrief und Verteiler'), onClick: () => setMailing(true) },
+          access.edit &&
+            access.list && {
+              label: t('Serienbrief und Verteiler'),
+              onClick: () => setMailing(true),
+            },
           { label: t('Zusatzfelder'), onClick: () => setFields((x) => !x) },
         ]}
       />
