@@ -868,6 +868,7 @@ class PortalDetailView(APIView):
             data["contact_changes_need_approval"] = club.contact_changes_need_approval
             data["club"] = {
                 "name": club.name,
+                "address_extra": club.address_extra,
                 "street": club.street,
                 "postal_code": club.postal_code,
                 "city": club.city,

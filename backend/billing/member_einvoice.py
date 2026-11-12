@@ -69,6 +69,9 @@ def _seller(org, cfg, taxable: bool) -> dict:
     imprint = Imprint.objects.filter(organization=org).first()
     contact = effective_contact(org)
     street = (imprint.street if imprint and imprint.street else org.street).strip()
+    # Wie im Impressum: mit eigener Straße gilt auch dessen Zusatz
+    own = imprint and (imprint.street or imprint.address_extra)
+    address_extra = (imprint.address_extra if own else org.address_extra).strip()
     postcode = (imprint.postal_code if imprint and imprint.postal_code else org.postal_code).strip()
     city = (imprint.city if imprint and imprint.city else org.city).strip()
     email = cfg.einvoice_email or contact.get("email") or (imprint.email if imprint else "")
@@ -107,6 +110,7 @@ def _seller(org, cfg, taxable: bool) -> dict:
     return {
         "name": (imprint.name if imprint and imprint.name else org.name)[:200],
         "street": street,
+        "address_extra": address_extra[:200],
         "postcode": postcode,
         "city": city,
         "country": "DE",

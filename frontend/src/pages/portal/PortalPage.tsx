@@ -396,6 +396,12 @@ function ClubContact({ club }: { club: PortalDetail['club'] }) {
       <p>
         {club.name}
         <br />
+        {club.address_extra && (
+          <>
+            {club.address_extra}
+            <br />
+          </>
+        )}
         {club.street && (
           <>
             {club.street}

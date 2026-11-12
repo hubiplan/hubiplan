@@ -25,6 +25,7 @@ const FIELDS: (keyof ImprintFields)[] = [
   'external_url',
   'name',
   'legal_form',
+  'address_extra',
   'street',
   'postal_code',
   'city',
@@ -176,6 +177,14 @@ export function ImprintEditor({
               />
             </div>
             <h3>{t('Anschrift (ladungsfähig, kein Postfach)')}</h3>
+            <Field
+              label={t('Adresszusatz (optional)')}
+              value={v.address_extra}
+              placeholder={p.address.address_extra}
+              hint={t('z. B. c/o Firma; steht über Straße und Hausnummer.')}
+              error={errors.address_extra}
+              onChange={(e) => set('address_extra', e.target.value)}
+            />
             <Field
               label={t('Straße und Hausnummer')}
               value={v.street}

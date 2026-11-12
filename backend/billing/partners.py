@@ -380,9 +380,20 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
         keep = self.get_queryset().get(pk=keep.pk)
         return Response({**self.get_serializer(keep).data, "moved": moved})
 
+    def _require_partner_right(self):
+        """Ganze Listen (Excel, Serienbrief, Verteiler) nur mit dem Recht „Geschäftspartner“.
+
+        Kasse und Beiträge lesen die Partner an Buchungen und Rechnungen, brauchen aber keine
+        Liste aller Kontaktdaten zum Mitnehmen (Fachfrage 6 des Gesamtaudits vom 11.11.2026)."""
+        if not self.org_permissions & {PARTNERS_VIEW, PARTNERS_EDIT}:
+            raise PermissionDenied(
+                gettext("Für die ganze Liste braucht es das Recht „Geschäftspartner“.")
+            )
+
     @action(detail=False, methods=["get"])
     def export(self, request, org_id):
         """Excel mit allen Feldern und einem Blatt „Ansprechpartner“ (Bank nur mit Kassenrecht)."""
+        self._require_partner_right()
         content = export_workbook(
             self.org, self.get_queryset(), can_see_money(self.org_permissions)
         )
@@ -451,6 +462,7 @@ class PartnerViewSet(PartnerAccess, AuditMixin, viewsets.ModelViewSet):
         """Serienbrief und E-Mail-Verteiler an eine Partnergruppe (P5)."""
         from .partner_files import mailing_get, mailing_post
 
+        self._require_partner_right()
         if request.method == "GET":
             return mailing_get(self, request)
         return mailing_post(self, request)

@@ -1206,7 +1206,7 @@ class ClubItem:
 def club_recipient(club) -> dict:
     from organizations.serializers import effective_contact
 
-    lines = [club.street, f"{club.postal_code} {club.city}".strip()]
+    lines = [club.address_extra, club.street, f"{club.postal_code} {club.city}".strip()]
     return {
         "recipient_name": club.name,
         "recipient_address": "\n".join(line for line in lines if line),

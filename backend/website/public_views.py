@@ -200,7 +200,12 @@ class SiteInfoView(_Public):
             "founding_year": org.founding_year,
             "unit_label": org.department_label,
             "unit_label_plural": org.department_label_plural,
-            "address": {"street": org.street, "postal_code": org.postal_code, "city": org.city},
+            "address": {
+                "address_extra": org.address_extra,
+                "street": org.street,
+                "postal_code": org.postal_code,
+                "city": org.city,
+            },
             "email": contact_data.get("email") or None,
             "phone": contact_data.get("phone") or None,
             "member_of": {"name": parent.name, "website": parent.website or None}
