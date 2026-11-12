@@ -177,6 +177,21 @@ class TestPersonen:
         holder = get("schluessel-a/board/").json()["roles"][0]["holders"][0]
         assert holder["name"] == "Erika B."
 
+    def test_titel_nur_mit_einstellung(self, setup):
+        person = setup["erika"].person
+        person.title = "Dr."
+        person.save()
+        holder = get("schluessel-a/board/").json()["roles"][0]["holders"][0]
+        assert holder["name"] == "Erika Beispiel"
+        setup["site"].show_titles = True
+        setup["site"].save()
+        holder = get("schluessel-a/board/").json()["roles"][0]["holders"][0]
+        assert holder["name"] == "Dr. Erika Beispiel"
+        setup["site"].name_format = "initial"
+        setup["site"].save()
+        holder = get("schluessel-a/board/").json()["roles"][0]["holders"][0]
+        assert holder["name"] == "Dr. Erika B."
+
     def test_zug_ohne_termine(self, setup):
         units = {u["slug"]: u["has_events"] for u in get("schluessel-a/").json()["units"]}
         assert units == {"jaegerzug": False}

@@ -96,6 +96,7 @@ SETTINGS_FIELDS = [
     "name_format",
     "show_vacant",
     "show_instrument",
+    "show_titles",
     "show_address",
     "show_member_since",
     "missing_consent",

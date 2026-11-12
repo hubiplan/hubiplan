@@ -133,11 +133,9 @@ def _buyer(org, invoice) -> dict:
     person = membership.person
     billing = BillingAddress.objects.filter(membership=membership).first()
     source = billing if billing is not None and billing.has_address else contact_for(person, org)
-    name = (billing.name.strip() if billing is not None and billing.has_address else "") or (
-        person.display_name
-        if person.is_organization
-        else f"{person.first_name} {person.last_name}".strip()
-    )
+    name = (
+        billing.name.strip() if billing is not None and billing.has_address else ""
+    ) or person.address_name
     street = (getattr(source, "street", "") or "").strip()
     postcode = (getattr(source, "postal_code", "") or "").strip()
     city = (getattr(source, "city", "") or "").strip()

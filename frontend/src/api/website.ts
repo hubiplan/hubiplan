@@ -33,6 +33,8 @@ export interface WebsiteSettings {
   show_vacant: boolean
   /** Hauptinstrument aus dem Musikmodul unter dem Namen (fehlt bei älteren Ständen) */
   show_instrument?: boolean
+  /** Titel (Dr., Prof. …) vor dem Namen; Standard aus */
+  show_titles?: boolean
   /** Anschrift beim Vorstand, nur mit Einwilligung der Person */
   show_address?: boolean
   /** Mitgliederlisten mit Eintrittsjahr */

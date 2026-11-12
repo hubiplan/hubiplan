@@ -46,6 +46,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { Term } from '../../learning/Aids.tsx'
 import { t, tn } from '../../i18n/index.ts'
 import { CompetitionsTab } from '../competitions/MemberTab.tsx'
+import { TitleField } from '../../components/TitleField.tsx'
 import { FeesTab } from './FeesTab.tsx'
 import { MusicTab } from './MusicTab.tsx'
 import { AtAGlance } from './AtAGlance.tsx'
@@ -239,6 +240,7 @@ function MasterData({
     first_name: member.first_name,
     birth_date: member.birth_date ?? '',
     gender: member.gender ?? '',
+    title: member.title ?? '',
     name_suffix: o?.name_suffix ?? '',
     legal_form: o?.legal_form ?? '',
     legal_form_other: o?.legal_form_other ?? '',
@@ -387,6 +389,11 @@ function MasterData({
                 </option>
               ))}
             </SelectField>
+            <TitleField
+              value={v.title}
+              error={e.title}
+              onChange={(value) => form.set('title', value)}
+            />
           </div>
         )}
         <div className="grid-2">

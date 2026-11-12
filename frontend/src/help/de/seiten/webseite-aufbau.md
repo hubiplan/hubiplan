@@ -38,4 +38,4 @@ Belegung: „Belegung“ zeigt Infrastruktur und Material, deren Buchungskalende
 
 Suche: Mit dem Bereich „Suche“ erscheint eine Lupe im Menü. Gesucht wird in Textseiten, Alben, Dokumenten und Terminen, nicht in Personen.
 
-Personen: „Hauptinstrument unter dem Namen zeigen“ nimmt das Hauptinstrument aus Musik › Musiker. „Anschrift beim Vorstand zeigen“ gilt nur für Personen mit der Einwilligung „Anschrift“ in der Mitgliederakte.
+Personen: „Titel vor dem Namen nennen“ setzt den Titel aus der Mitgliedsakte vor den Namen (z. B. „Dr. Max Muster“), bei Vorstand, Listen und Ergebnissen; ausgeschaltet erscheinen Namen ohne Titel. „Hauptinstrument unter dem Namen zeigen“ nimmt das Hauptinstrument aus Musik › Musiker. „Anschrift beim Vorstand zeigen“ gilt nur für Personen mit der Einwilligung „Anschrift“ in der Mitgliederakte.

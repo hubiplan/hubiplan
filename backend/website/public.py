@@ -47,11 +47,16 @@ def unit_slug(name: str) -> str:
     return slugify(base) or "einheit"
 
 
-def format_name(first: str, last: str, fmt: str) -> str:
+def format_name(first: str, last: str, fmt: str, title: str = "") -> str:
+    """„Max Muster“ oder „Max M.“; mit Titel davor („Dr. Max Muster“), wenn die
+    Webseite Titel nennt (Website.show_titles) und die Person einen hat."""
     first, last = (first or "").strip(), (last or "").strip()
     if fmt == Website.NameFormat.INITIAL and last:
-        return f"{first} {last[0]}.".strip()
-    return f"{first} {last}".strip()
+        name = f"{first} {last[0]}.".strip()
+    else:
+        name = f"{first} {last}".strip()
+    title = (title or "").strip()
+    return f"{title} {name}" if title and name else name
 
 
 class _People:
@@ -224,7 +229,8 @@ class SiteView:
         first, last = split_name(person, fallback_name)
         if ordinal:
             first = f"{first} {roman(ordinal)}.".strip()
-        name = format_name(first, last, self.site.name_format) if last else first
+        title = person.title if person is not None and self.site.show_titles else ""
+        name = format_name(first, last, self.site.name_format, title) if last else first
         if not name:
             return None
         data = {"name": name, "photo_url": None}
