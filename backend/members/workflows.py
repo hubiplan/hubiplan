@@ -607,7 +607,7 @@ def _purge_related(membership: Membership, person, club) -> None:
 
     Rechnungen und Buchungen bleiben wegen der Aufbewahrungspflicht unverändert."""
     from customfields.models import FieldValue
-    from portal.models import ChangeRequest, LoginLink, PortalAccess
+    from portal.models import CancellationRequest, ChangeRequest, LoginLink, PortalAccess
 
     # Zusatzfeldwerte des Vereins und seiner Untereinheiten; Felder übergeordneter
     # Ebenen (z. B. Dachverband) gehören nicht dem Verein und bleiben
@@ -622,6 +622,10 @@ def _purge_related(membership: Membership, person, club) -> None:
     ChangeRequest.objects.filter(membership=membership, status=ChangeRequest.Status.PENDING).update(
         status=ChangeRequest.Status.REJECTED, decided_at=timezone.now()
     )
+    CancellationRequest.objects.filter(membership=membership).update(message="", response="")
+    CancellationRequest.objects.filter(
+        membership=membership, status=CancellationRequest.Status.PENDING
+    ).update(status=CancellationRequest.Status.REJECTED, decided_at=timezone.now())
     # Zugang sperren: Mitgliederzugang und offene Anmeldelinks dieses Vereins
     # (bei Organisationen die Zugänge aller Ansprechpartner)
     for access in PortalAccess.objects.filter(membership=membership):

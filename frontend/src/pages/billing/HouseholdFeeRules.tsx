@@ -13,7 +13,7 @@ import { t } from '../../i18n/index.ts'
 const MODE_LABELS: Record<FeeRuleMode, string> = {
   none: t('keine Ermäßigung'),
   cap: t('Höchstbetrag je Rechnung'),
-  flat: t('Pauschale'),
+  flat: t('Pauschalbetrag'),
   stagger: t('Staffel (zweite Person, ab der dritten)'),
 }
 

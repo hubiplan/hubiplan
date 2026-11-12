@@ -198,11 +198,19 @@ export interface OrgDetail {
   member_portal_enabled: boolean
   department_access_enabled: boolean
   contact_changes_need_approval: boolean
+  /** Mitglieder können im Mitgliederbereich kündigen */
+  member_cancellation_enabled: boolean
+  /** Kündigungsfrist in Monaten (0–24) */
+  cancellation_notice_months: number
+  /** Kündigung wirkt zu jedem Tag oder zum Ende von Monat, Quartal, Halbjahr, Geschäftsjahr */
+  cancellation_period_end: CancellationEnd
   fiscal_start_month: number
   fiscal_start_day: number
   fiscal_label: string
   logo_url: string | null
 }
+
+export type CancellationEnd = 'any' | 'month' | 'quarter' | 'half_year' | 'year'
 
 export type MemberSettings = Pick<
   OrgDetail,
@@ -214,6 +222,9 @@ export type MemberSettings = Pick<
   | 'federation_duration_rule'
   | 'member_portal_enabled'
   | 'contact_changes_need_approval'
+  | 'member_cancellation_enabled'
+  | 'cancellation_notice_months'
+  | 'cancellation_period_end'
   | 'photo_approval_required'
 > & {
   /** Ausweis in Apple und Google Wallet anbieten */
