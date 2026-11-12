@@ -336,8 +336,10 @@ def platform_privacy() -> str:
         _section(
             "4. Cookies und Speicher im Browser",
             "Wir setzen nur technisch notwendige Cookies: ein Sitzungs-Cookie für die "
-            f"Anmeldung (läuft nach {session_hours} Stunden ab) und ein Cookie zum Schutz vor "
-            "gefälschten Anfragen (CSRF). Es gibt keine Analyse- oder Werbe-Cookies, kein "
+            f"Anmeldung (läuft nach {session_hours} Stunden ab), ein Cookie zum Schutz vor "
+            "gefälschten Anfragen (CSRF) und ein Cookie, das Ihr Gerät nach einer erfolgreichen "
+            "Anmeldung 180 Tage lang wiedererkennt, damit Fehlversuche Fremder Ihre Anmeldung "
+            "nicht sperren. Es gibt keine Analyse- oder Werbe-Cookies, kein "
             "Tracking und keine Inhalte von Dritten; Schriften und Skripte kommen vom eigenen "
             "Server (§ 25 Abs. 2 TDDDG).",
             "Für die Bedienung merkt sich Ihr Browser einige Angaben im eigenen Speicher "

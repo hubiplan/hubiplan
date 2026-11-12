@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime
+from collections import defaultdict
 
 from django.db.models import Exists, OuterRef, Q
 
@@ -43,33 +44,44 @@ def birthdays_between(org: Organization, start: datetime.date, end: datetime.dat
     touching = MembershipPeriod.objects.filter(
         membership=OuterRef("pk"), entry_date__lte=end
     ).filter(Q(exit_date__isnull=True) | Q(exit_date__gte=start))
-    memberships = (
-        Membership.objects.filter(organization=org, purged_at__isnull=True)
-        .filter(Exists(touching))
-        .select_related("person")
-        .prefetch_related("periods")
+    memberships = Membership.objects.filter(organization=org, purged_at__isnull=True).filter(
+        Exists(touching)
     )
+    # Nur Zeiträume und Geburtsdatum aller Mitglieder laden (ohne Modellobjekte); die Namen
+    # werden erst für die Treffer entschlüsselt (Gesamtaudit 11.11., P-03).
+    periods: dict[int, list] = defaultdict(list)
+    for mid, entry, exit_ in MembershipPeriod.objects.filter(
+        membership__in=memberships
+    ).values_list("membership_id", "entry_date", "exit_date"):
+        periods[mid].append((entry, exit_))
     rows = []
-    for m in memberships:
-        birth = m.person.birth_date
+    for mid, birth in memberships.order_by().values_list("pk", "person__birth_date"):
         if birth is None:
             continue
-        periods = [(p.entry_date, p.exit_date) for p in m.periods.all()]
         for year in range(start.year, end.year + 1):
             day = _birthday_in(birth, year)
+            if not (start <= day <= end and day > birth):
+                continue
             # Nur wer am Geburtstag selbst Mitglied ist (Audit 31.10. M31-01): nicht nach
             # dem Austritt, nicht vor dem (Wieder-)Eintritt
-            member_then = any(a <= day and (b is None or day <= b) for a, b in periods)
-            if start <= day <= end and day > birth and member_then:
-                rows.append(
-                    {
-                        "member_id": m.pk,
-                        "first_name": m.person.first_name,
-                        "last_name": m.person.last_name,
-                        "date": day,
-                        "age": year - birth.year,
-                    }
-                )
+            if any(a <= day and (b is None or day <= b) for a, b in periods[mid]):
+                rows.append({"member_id": mid, "date": day, "age": year - birth.year})
+    names = {
+        mid: (first, last)
+        for mid, first, last in Membership.objects.filter(
+            pk__in={r["member_id"] for r in rows}
+        ).values_list("pk", "person__first_name", "person__last_name")
+    }
+    rows = [
+        {
+            "member_id": r["member_id"],
+            "first_name": names[r["member_id"]][0],
+            "last_name": names[r["member_id"]][1],
+            "date": r["date"],
+            "age": r["age"],
+        }
+        for r in rows
+    ]
     units = unit_names({r["member_id"] for r in rows}, start)
     for r in rows:
         r["units"] = units.get(r["member_id"], "")
