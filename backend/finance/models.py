@@ -458,6 +458,18 @@ class YearClosing(models.Model):
         "Löschsperre gesetzt von", max_length=200, blank=True, db_default="", strict=True
     )
     retention_hold_at = models.DateTimeField("Löschsperre gesetzt am", null=True, blank=True)
+    # Antrag auf Aufheben, wenn der Verein das Vier-Augen-Prinzip eingeschaltet hat: Die Kasse
+    # beantragt mit Grund, eine andere Person mit Rollenverwaltung bestätigt.
+    reopen_requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    reopen_requested_by_name = EncryptedCharField(
+        "Aufheben beantragt von", max_length=200, blank=True, db_default="", strict=True
+    )
+    reopen_requested_at = models.DateTimeField("Aufheben beantragt am", null=True, blank=True)
+    reopen_reason = models.CharField(
+        "Grund für das Aufheben", max_length=500, blank=True, db_default=""
+    )
 
     class Meta:
         verbose_name = "Jahresabschluss"

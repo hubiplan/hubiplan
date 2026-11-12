@@ -8216,5 +8216,18 @@
   "– sicher aufbewahren. Jeder Code funktioniert einmal, falls du deinen Passkey nicht zur Hand hast.": "– keep them safe. Each code works once in case you do not have your passkey at hand.",
   "„{name}“ kann danach nicht mehr zum Anmelden benutzt werden. Lösche den Passkey zusätzlich auf deinem Gerät oder im Passwortmanager.": "“{name}” can then no longer be used to sign in. Also delete the passkey on your device or in your password manager.",
   "Adresszusatz (optional)": "Address supplement (optional)",
-  "z. B. c/o Firma; steht über Straße und Hausnummer.": "e.g. c/o company; shown above street and house number."
+  "z. B. c/o Firma; steht über Straße und Hausnummer.": "e.g. c/o company; shown above street and house number.",
+  "Aufheben des Abschlusses {label} beantragen?": "Request reopening of the {label} closing?",
+  "Eine andere Person mit Rollenverwaltung muss den Antrag bestätigen. ": "Another person with role management must confirm the request. ",
+  "Beantragen": "Request",
+  "Aufheben von {label} beantragt. Jetzt muss eine zweite Person bestätigen.": "Reopening of {label} requested. A second person now has to confirm.",
+  "Du bestätigst den Antrag als zweite Person. Danach ist das Jahr wieder offen.": "You confirm the request as the second person. The year will then be open again.",
+  "Bestätigen und aufheben": "Confirm and reopen",
+  "Abschluss nur zu zweit aufheben (Kasse beantragt, Vorstand bestätigt)": "Reopen a closing only with two people (treasurer requests, board confirms)",
+  "Ein Abschluss lässt sich jetzt nur noch zu zweit aufheben.": "A closing can now only be reopened by two people.",
+  "Ein Abschluss lässt sich wieder allein aufheben.": "A closing can be reopened by one person again.",
+  "Aufheben beantragen": "Request reopening",
+  "Antrag zurückgezogen.": "Request withdrawn.",
+  "Antrag zurückziehen": "Withdraw request",
+  "Aufheben beantragt von {by} am {at}: {reason}": "Reopening requested by {by} on {at}: {reason}"
 }

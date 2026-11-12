@@ -328,6 +328,8 @@ export interface TaxReport {
 export interface FinanceSettings {
   tax_areas_enabled: boolean
   cash_counts_enabled?: boolean
+  /** Abschluss aufheben nur zu zweit (Vier-Augen-Prinzip) */
+  reopen_four_eyes?: boolean
   /** Rücklagen nach § 62 AO (zuschaltbar) */
   reserves_enabled?: boolean
   /** Satzung erlaubt Vergütung des Vorstands (§ 27 Abs. 3 BGB) */
@@ -528,9 +530,15 @@ export interface Closings {
     changes?: string[]
     /** Ende der Aufbewahrungsfrist (nur abgeschlossene Jahre) */
     retention?: Retention | null
+    /** Offener Antrag auf Aufheben (Vier-Augen-Prinzip) */
+    reopen_request?: { by: string; at: string; reason: string; mine: boolean } | null
   }[]
   can_close: boolean
   can_reopen: boolean
+  /** Abschluss aufheben nur zu zweit: Kasse beantragt, Vorstand bestätigt */
+  reopen_four_eyes?: boolean
+  can_request_reopen?: boolean
+  can_confirm_reopen?: boolean
 }
 
 export type AuditResult = '' | 'ok' | 'issue' | 'na'
@@ -701,8 +709,13 @@ export const financeApi = {
   /** Löschsperre setzen (Grund) oder aufheben (leerer Text) */
   setRetentionHold: (org: number, year: number, hold: string) =>
     api.post<{ hold: string }>(`${base(org)}/closings/aufbewahrung/`, { year, hold }),
+  /** Aufheben; mit Vier-Augen-Prinzip stellt das den Antrag */
   reopenYear: (org: number, year: number, reason: string) =>
     api.delWith<Closings>(`${base(org)}/closings/?jahr=${year}`, { reason }),
+  confirmReopen: (org: number, year: number) =>
+    api.delWith<Closings>(`${base(org)}/closings/?jahr=${year}`, { confirm: true }),
+  withdrawReopen: (org: number, year: number) =>
+    api.delWith<Closings>(`${base(org)}/closings/?jahr=${year}`, { withdraw: true }),
   reportUrl: (org: number, year: number) => `${base(org)}/report/?jahr=${year}`,
   /** ZIP für eine Prüfung (Finanzamt, Kassenprüfer): alle Finanzdaten mit Belegen und index.xml */
   exportUrl: (org: number, year: number) => `${base(org)}/export/?jahr=${year}`,

@@ -1,9 +1,9 @@
 // Kasse: Jahresabschluss mit Kassenbericht; danach ist das Geschäftsjahr gesperrt.
 import { useState } from 'react'
 import { financeApi } from '../../api/finance.ts'
-import type { Retention } from '../../api/finance.ts'
+import type { Closings, Retention } from '../../api/finance.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
-import { Alert, LoadError, Loading } from '../../components/ui.tsx'
+import { Alert, Checkbox, LoadError, Loading } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { confirmDialog, promptDialog } from '../../components/dialog.ts'
 import { Term, Why } from '../../learning/Aids.tsx'
@@ -55,21 +55,52 @@ export function ClosingsPage() {
     }
   }
 
+  const fourEyes = !!data.reopen_four_eyes
+
   async function reopen(year: number, label: string) {
     const reason = await promptDialog({
-      title: t('Abschluss {label} aufheben?', { label }),
+      title: fourEyes
+        ? t('Aufheben des Abschlusses {label} beantragen?', { label })
+        : t('Abschluss {label} aufheben?', { label }),
       message:
+        (fourEyes
+          ? t('Eine andere Person mit Rollenverwaltung muss den Antrag bestätigen. ')
+          : '') +
         t('Der bisherige Stand bleibt mit Grund gespeichert. Beim erneuten Abschluss siehst du, ') +
         t('was sich gegenüber diesem Stand geändert hat.'),
       label: t('Grund'),
-      confirmLabel: t('Aufheben'),
+      confirmLabel: fourEyes ? t('Beantragen') : t('Aufheben'),
     })
     if (reason === null) return
+    await run(
+      () => financeApi.reopenYear(org.id, year, reason),
+      fourEyes
+        ? t('Aufheben von {label} beantragt. Jetzt muss eine zweite Person bestätigen.', { label })
+        : t('Abschluss {label} aufgehoben.', { label }),
+    )
+  }
+
+  async function confirmReopen(year: number, label: string) {
+    if (
+      !(await confirmDialog({
+        title: t('Abschluss {label} aufheben?', { label }),
+        message: t('Du bestätigst den Antrag als zweite Person. Danach ist das Jahr wieder offen.'),
+        confirmLabel: t('Bestätigen und aufheben'),
+      }))
+    )
+      return
+    await run(
+      () => financeApi.confirmReopen(org.id, year),
+      t('Abschluss {label} aufgehoben.', { label }),
+    )
+  }
+
+  async function run(action: () => Promise<Closings>, success: string) {
     setBusy(true)
     setNotice(null)
     try {
-      setData(await financeApi.reopenYear(org.id, year, reason))
-      setNotice({ kind: 'success', text: t('Abschluss {label} aufgehoben.', { label }) })
+      setData(await action())
+      setNotice({ kind: 'success', text: success })
     } catch (err) {
       setNotice({ kind: 'error', text: errorMessage(err) })
     } finally {
@@ -255,6 +286,24 @@ export function ClosingsPage() {
         {t('lassen sich Belege löschen und Bücher anonymisieren.')}
       </p>
       <Why k="closing_lock" />
+      {data.can_confirm_reopen && data.can_request_reopen && (
+        <Checkbox
+          label={t('Abschluss nur zu zweit aufheben (Kasse beantragt, Vorstand bestätigt)')}
+          checked={fourEyes}
+          disabled={busy}
+          onChange={(on) =>
+            void run(
+              async () => {
+                await financeApi.updateSettings(org.id, { reopen_four_eyes: on })
+                return financeApi.closings(org.id)
+              },
+              on
+                ? t('Ein Abschluss lässt sich jetzt nur noch zu zweit aufheben.')
+                : t('Ein Abschluss lässt sich wieder allein aufheben.'),
+            )
+          }
+        />
+      )}
       {data.can_reopen && <Why k="reopen_closing" />}
       {data.years.some((y) => y.retention?.documents_due || y.retention?.records_due) && (
         <Why k="retention_end" />
@@ -292,6 +341,15 @@ export function ClosingsPage() {
                   : y.running
                     ? t('läuft noch')
                     : t('offen')}
+                {y.reopen_request && (
+                  <div className="small">
+                    {t('Aufheben beantragt von {by} am {at}: {reason}', {
+                      by: y.reopen_request.by,
+                      at: formatDateTime(y.reopen_request.at),
+                      reason: y.reopen_request.reason,
+                    })}
+                  </div>
+                )}
                 {(y.reopened ?? []).map((h) => (
                   <div key={h.reopened_at} className="muted small">
                     {t('Abschluss vom {x} aufgehoben am', { x: formatDateTime(h.closed_at) })}{' '}
@@ -352,7 +410,7 @@ export function ClosingsPage() {
                     {t('Abschließen')}
                   </button>
                 )}
-                {data.can_reopen &&
+                {(fourEyes ? data.can_request_reopen && !y.reopen_request : data.can_reopen) &&
                   y.closed &&
                   !y.retention?.documents_purged_at &&
                   !y.retention?.records_purged_at && (
@@ -362,9 +420,37 @@ export function ClosingsPage() {
                       disabled={busy}
                       onClick={() => void reopen(y.year, y.label)}
                     >
-                      {t('Abschluss aufheben')}
+                      {fourEyes ? t('Aufheben beantragen') : t('Abschluss aufheben')}
                     </button>
                   )}
+                {y.reopen_request && data.can_confirm_reopen && !y.reopen_request.mine && (
+                  <button
+                    type="button"
+                    className="link-button"
+                    disabled={busy}
+                    onClick={() => void confirmReopen(y.year, y.label)}
+                  >
+                    {t('Bestätigen und aufheben')}
+                  </button>
+                )}
+                {y.reopen_request && (y.reopen_request.mine || data.can_confirm_reopen) && (
+                  <>
+                    {' '}
+                    <button
+                      type="button"
+                      className="link-button"
+                      disabled={busy}
+                      onClick={() =>
+                        void run(
+                          () => financeApi.withdrawReopen(org.id, y.year),
+                          t('Antrag zurückgezogen.'),
+                        )
+                      }
+                    >
+                      {t('Antrag zurückziehen')}
+                    </button>
+                  </>
+                )}
                 {data.can_reopen && y.retention && !y.retention.records_purged_at && (
                   <>
                     {' '}

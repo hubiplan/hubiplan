@@ -1090,6 +1090,18 @@ class FinanceSettingsView(FinanceMixin, APIView):
             return self._datev(request)
         if "cash_counts_enabled" in request.data:
             return self._switch(request, "cash_counts_enabled", "Zählprotokoll und Kassenbericht")
+        if "reopen_four_eyes" in request.data:
+            # Abschalten soll nicht die Kasse allein können, die damit aufheben möchte
+            if ROLES_MANAGE not in self.org_permissions:
+                raise PermissionDenied(
+                    gettext("Das Vier-Augen-Prinzip stellen nur Vorstände mit Rollenverwaltung um.")
+                )
+            return self._switch(
+                request,
+                "finance_reopen_four_eyes",
+                "Abschluss aufheben nur zu zweit",
+                key="reopen_four_eyes",
+            )
         # Rücklagen und steuerliche Bereiche gehören zum Modul „Steuern & Gemeinnützigkeit“
         if not module_on(self.org, "tax"):
             raise NotFound(gettext("Nicht gefunden."))
@@ -1127,10 +1139,11 @@ class FinanceSettingsView(FinanceMixin, APIView):
             self.org.save(update_fields=["tax_areas_enabled"])
         return Response(self.data())
 
-    def _switch(self, request, field: str, label: str):
-        value = request.data.get(field)
+    def _switch(self, request, field: str, label: str, key: str | None = None):
+        key = key or field
+        value = request.data.get(key)
         if not isinstance(value, bool):
-            raise serializers.ValidationError({field: gettext("Bitte ja oder nein angeben.")})
+            raise serializers.ValidationError({key: gettext("Bitte ja oder nein angeben.")})
         if value != getattr(self.org, field):
             record(
                 self.org,
@@ -1287,6 +1300,8 @@ class FinanceSettingsView(FinanceMixin, APIView):
             "auto_locked_until": auto,
             "tax_areas_enabled": self.org.tax_areas_on,
             "cash_counts_enabled": self.org.cash_counts_enabled,
+            "reopen_four_eyes": self.org.finance_reopen_four_eyes,
+            "can_edit_four_eyes": ROLES_MANAGE in self.org_permissions,
             "reserves_enabled": self.org.reserves_on,
             "board_pay_allowed": self.org.board_pay_allowed,
             "vat_registered": tax._vat_registered(self.org),
@@ -1430,13 +1445,31 @@ class YearClosingView(FinanceMixin, APIView):
                     else [],
                     # Aufbewahrungsfrist (Finanzamt-Prüfung C6)
                     "retention": retention.state(self.org, c) if c else None,
+                    # Offener Antrag auf Aufheben (Vier-Augen-Prinzip)
+                    "reopen_request": self._request_of(c),
                 }
             )
+        four_eyes = self.org.finance_reopen_four_eyes
         return {
             "years": result,
             "can_close": FINANCE_EDIT in self.org_permissions,
             "can_reopen": FINANCE_EDIT in self.org_permissions
             and ROLES_MANAGE in self.org_permissions,
+            "reopen_four_eyes": four_eyes,
+            # Mit Vier-Augen-Prinzip beantragt die Kasse, eine andere Person mit
+            # Rollenverwaltung bestätigt
+            "can_request_reopen": FINANCE_EDIT in self.org_permissions,
+            "can_confirm_reopen": ROLES_MANAGE in self.org_permissions,
+        }
+
+    def _request_of(self, closing):
+        if closing is None or not services.reopen_pending(closing):
+            return None
+        return {
+            "by": closing.reopen_requested_by_name,
+            "at": closing.reopen_requested_at,
+            "reason": closing.reopen_reason,
+            "mine": closing.reopen_requested_by_id == self.request.user.pk,
         }
 
     def get(self, request, org_id: int):
@@ -1470,14 +1503,17 @@ class YearClosingView(FinanceMixin, APIView):
 
     @transaction.atomic
     def delete(self, request, org_id: int):
-        if ROLES_MANAGE not in self.org_permissions:
+        four_eyes = self.org.finance_reopen_four_eyes
+        if not four_eyes and ROLES_MANAGE not in self.org_permissions:
             raise PermissionDenied(
                 gettext("Einen Abschluss heben nur Vorstände mit Rollenverwaltung auf.")
             )
         year = request.query_params.get("jahr", "")
-        closing = YearClosing.objects.filter(
-            organization=self.org, year=int(year) if year.isdigit() else -1
-        ).first()
+        closing = (
+            YearClosing.objects.select_for_update()
+            .filter(organization=self.org, year=int(year) if year.isdigit() else -1)
+            .first()
+        )
         if closing is None:
             raise NotFound(gettext("Kein Abschluss für dieses Geschäftsjahr."))
         if closing.documents_purged_at or closing.records_purged_at:
@@ -1492,6 +1528,12 @@ class YearClosingView(FinanceMixin, APIView):
                 gettext("Bitte zuerst den Abschluss des Folgejahres aufheben.")
             )
         label = self.org.fiscal_label(closing.year)
+        reason = str(request.data.get("reason", "") or "").strip()
+        if four_eyes:
+            done = self._four_eyes(request, closing, label, reason)
+            if not done:
+                return Response(self.data())
+            reason = done
         # Erst protokollieren (braucht die ID), bei fehlendem Grund rollt alles zurück
         record(
             self.org,
@@ -1501,15 +1543,71 @@ class YearClosingView(FinanceMixin, APIView):
             {
                 "Jahresabschluss": [
                     f"Geschäftsjahr {label}",
-                    f"aufgehoben, Grund: {request.data.get('reason', '').strip()}",
+                    f"aufgehoben, Grund: {reason}",
                 ]
             },
         )
         try:
-            services.reopen_year(closing, request.user, request.data.get("reason", ""))
+            services.reopen_year(closing, request.user, reason)
         except DjangoValidationError as exc:
             raise serializers.ValidationError({"reason": exc.messages}) from exc
         return Response(self.data())
+
+    def _four_eyes(self, request, closing, label: str, reason: str) -> str:
+        """Vier-Augen-Prinzip (Gesamtaudit 11.11., Fachfrage 5).
+
+        Ohne offenen Antrag beantragt die Kasse mit Grund. Mit offenem Antrag bestätigt eine
+        andere Person mit Rollenverwaltung (``confirm``) oder jemand zieht ihn zurück
+        (``withdraw``: die beantragende Person oder Rollenverwaltung). Gibt den Grund zurück,
+        wenn jetzt aufgehoben wird, sonst einen leeren Text."""
+        user = request.user
+        pending = services.reopen_pending(closing)
+        if request.data.get("withdraw"):
+            if not pending:
+                return ""
+            if closing.reopen_requested_by_id != user.pk and ROLES_MANAGE not in (
+                self.org_permissions
+            ):
+                raise PermissionDenied(
+                    gettext("Zurückziehen nur durch die beantragende Person oder den Vorstand.")
+                )
+            services.clear_reopen_request(closing)
+            record(
+                self.org,
+                user,
+                "update",
+                closing,
+                {"Jahresabschluss": [f"Aufheben {label} beantragt", "Antrag zurückgezogen"]},
+            )
+            return ""
+        if not pending:
+            try:
+                services.request_reopen(closing, user, reason)
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError({"reason": exc.messages}) from exc
+            record(
+                self.org,
+                user,
+                "update",
+                closing,
+                {"Jahresabschluss": [None, f"Aufheben {label} beantragt, Grund: {reason}"]},
+            )
+            return ""
+        if not request.data.get("confirm"):
+            raise serializers.ValidationError(
+                gettext("Das Aufheben ist schon beantragt und wartet auf die Bestätigung.")
+            )
+        if closing.reopen_requested_by_id == user.pk:
+            raise PermissionDenied(
+                gettext("Bestätigen muss eine andere Person als die, die beantragt hat.")
+            )
+        if ROLES_MANAGE not in self.org_permissions:
+            raise PermissionDenied(gettext("Bestätigen dürfen nur Vorstände mit Rollenverwaltung."))
+        return gettext("{reason} (beantragt von {by}, bestätigt von {confirmed})").format(
+            reason=closing.reopen_reason,
+            by=closing.reopen_requested_by_name,
+            confirmed=user.get_full_name() or user.email,
+        )
 
 
 class ExportView(FinanceMixin, APIView):

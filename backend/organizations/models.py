@@ -480,6 +480,11 @@ class Organization(ShortNameMixin, FiscalYearFields, ThemeFields):
     tax_areas_enabled = models.BooleanField("steuerliche Bereiche in der Kasse", default=False)
     # Kasse: Buchungen bis einschließlich diesem Tag sind festgeschrieben (GoBD); nur vorwärts
     finance_locked_until = models.DateField("Kasse festgeschrieben bis", null=True, blank=True)
+    # Kasse: Abschluss aufheben nur zu zweit (Kasse beantragt, Vorsitz bestätigt; Gesamtaudit
+    # 11.11., Fachfrage 5), für Vereine mit Prüfpflicht
+    finance_reopen_four_eyes = models.BooleanField(
+        "Abschluss aufheben nur zu zweit", default=False, db_default=False
+    )
     # Kasse: Zählprotokoll (Kassensturz) und Kassenbericht für Feste (offene Ladenkasse)
     cash_counts_enabled = models.BooleanField(
         "Zählprotokoll und Kassenbericht für Feste", default=False
