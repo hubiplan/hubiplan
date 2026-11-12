@@ -2334,7 +2334,8 @@ button.tab.active {
   gap: 1.25rem;
   align-items: flex-start;
 }
-.card-qr {
+.card-qr,
+.join-qr {
   width: 10rem;
   height: 10rem;
   background: #fff;
@@ -5559,7 +5560,7 @@ label:has(> .file-input:focus-visible) {
   color: #f6deb4;
 }
 /* Logos und QR-Codes behalten ihren hellen Untergrund */
-:root[data-theme='dark'] :is(.card-qr, .signature-pad, .signature-image) {
+:root[data-theme='dark'] :is(.card-qr, .join-qr, .signature-pad, .signature-image) {
   color-scheme: light;
 }
 .home-actions .card-head {
@@ -6022,10 +6023,3 @@ label:has(> .file-input:focus-visible) {
   padding-left: var(--space-5);
 }
 
-.join-qr {
-  width: 10rem;
-  height: 10rem;
-  background: #fff;
-  padding: var(--space-2);
-  border-radius: var(--radius);
-}
