@@ -84,10 +84,12 @@ def _call(params: dict, ctx: Context, server: Server) -> dict:
     try:
         # Antwort in der gewünschten Sprache, auch die Hinweise und Fehler
         with translation.override(lang if lang in LANGS else translation.get_language()):
-            text, failed = tool.run(args, ctx), False
+            result, failed = tool.run(args, ctx), False
     except ToolError as exc:
-        text, failed = str(exc), True
-    return {"content": [{"type": "text", "text": text}], "isError": failed}
+        result, failed = str(exc), True
+    # Werkzeuge liefern Text oder schon fertige Inhaltsteile (z. B. ein Bild und Text)
+    content = result if isinstance(result, list) else [{"type": "text", "text": result}]
+    return {"content": content, "isError": failed}
 
 
 def handle(message, ctx: Context, server: Server = HELP) -> dict | None:

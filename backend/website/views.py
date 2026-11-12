@@ -51,6 +51,8 @@ from .models import (
     HOME_SECTIONS,
     HOSTNAME_RE,
     LINK_URL_MAX,
+    MAX_IMAGE_HOSTS,
+    MENU_DRAFT_FIELDS,
     PREVIEW_LINK_MAX_DAYS,
     DesignVersion,
     PreviewLink,
@@ -115,7 +117,12 @@ SETTINGS_FIELDS = [
     "notice_target",
     "notice_from",
     "notice_until",
+    "image_hosts",
 ]
+
+
+# W3: erlaubte Bildquellen nur als Rechnername, keine IP-Adresse
+IP_LIKE = re.compile(r"^[0-9.]+$")
 
 
 class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
@@ -290,6 +297,27 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             )
         return value
 
+    def validate_image_hosts(self, value):
+        # Nur Rechnernamen (W3, docs/mcp.md): keine Adressen, keine Ports, keine IP-Adressen
+        if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
+            raise serializers.ValidationError(_("Bitte die Server als Liste angeben."))
+        result = []
+        for raw in value:
+            host = raw.strip().lower().rstrip(".")
+            if not host:
+                continue
+            if not re.match(HOSTNAME_RE, host) or IP_LIKE.match(host):
+                raise serializers.ValidationError(
+                    _("Bitte nur Rechnernamen angeben, z. B. cloud.example.org: {host}").format(
+                        host=raw
+                    )
+                )
+            if host not in result:
+                result.append(host)
+        if len(result) > MAX_IMAGE_HOSTS:
+            raise serializers.ValidationError(_("Höchstens {n} Server.").format(n=MAX_IMAGE_HOSTS))
+        return result
+
     def _package_roles(self) -> dict:
         return designs.package_roles(self.instance.packages()) if self.instance else {}
 
@@ -346,6 +374,10 @@ def live_design(website: Website) -> dict:
         "header_image": header_image_id(website),
         "home_sections": normalize_home_sections(website.home_sections),
         "layouts": variants.normalize(website.layouts),
+        "menu": menu.normalize(website.menu, menu.items(website)),
+        "block_names": website.block_names if isinstance(website.block_names, dict) else {},
+        "menu_links": website.menu_links if isinstance(website.menu_links, dict) else {},
+        "menu_button": website.menu_button or "",
     }
 
 
@@ -361,8 +393,13 @@ def clean_draft(website: Website, draft) -> dict:
         valid = {}
         for key in DRAFT_FIELDS:
             if key in draft and key not in ser.errors:
-                one = WebsiteSerializer(website, data={key: draft[key]}, partial=True)
-                if one.is_valid():
+                data = {key: draft[key]}
+                if key in MENU_DRAFT_FIELDS:
+                    # Menü, Namen und Links hängen zusammen (neue Überschriften und Links)
+                    data = {k: draft[k] for k in MENU_DRAFT_FIELDS if k in draft}
+                one = WebsiteSerializer(website, data=data, partial=True)
+                one.is_valid()
+                if key not in one.errors and key in one.validated_data:
                     valid[key] = one.validated_data[key]
         values = valid
     else:
