@@ -371,9 +371,9 @@ def _following(numbers) -> str:
     numbers = [n.strip() for n in numbers if n and n.strip().isdigit()]
     if not numbers:
         return "1"
-    highest = max(numbers, key=lambda n: (int(n), len(n)))
-    width = len(highest) if highest.startswith("0") else 0
-    return str(int(highest) + 1).zfill(width)
+    # Breite der längsten Nummer mit führender Null: so schreibt der Verein seine Nummern
+    width = max((len(n) for n in numbers if n.startswith("0")), default=0)
+    return str(max(int(n) for n in numbers) + 1).zfill(width)
 
 
 def _numeric_club_numbers(membership_model, organization_id) -> list[str]:
