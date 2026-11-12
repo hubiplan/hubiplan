@@ -211,9 +211,12 @@ describe('Aufnahme', () => {
     })
     renderAt('/mitglieder/neu')
     const user = userEvent.setup()
-    await user.click(
-      await screen.findByRole('radio', { name: 'eine Organisation (Firma, Verein, Behörde …)' }),
-    )
+    const organisation = await screen.findByRole('button', {
+      name: 'eine Organisation (Firma, Verein, Behörde …)',
+    })
+    expect(screen.getByRole('button', { name: 'eine Person' })).toHaveAttribute('aria-pressed', 'true')
+    await user.click(organisation)
+    expect(organisation).toHaveAttribute('aria-pressed', 'true')
     expect(screen.queryByLabelText('Vorname')).not.toBeInTheDocument()
     expect(screen.queryByLabelText('Geburtsdatum')).not.toBeInTheDocument()
     await user.type(screen.getByLabelText('Name der Organisation'), 'Musterbau GmbH')

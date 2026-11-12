@@ -6,6 +6,7 @@ import type { ContactPerson, ContactPersonInput, Gender, MemberRow } from '../..
 import { ApiError } from '../../api/client.ts'
 import { errorMessage, formatDate } from '../../components/forms.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
+import { Segmented } from '../../components/PageHeader.tsx'
 import { confirmDialog } from '../../components/dialog.ts'
 import { Alert, Checkbox, Field, SelectField } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
@@ -235,26 +236,15 @@ function ContactForm({
       <fieldset disabled={busy} className="stack">
         <fieldset>
           <legend>{t('Art des Ansprechpartners')}</legend>
-          <div className="chips">
-            <label className="checkbox chip">
-              <input
-                type="radio"
-                name="contact-kind"
-                checked={!linked}
-                onChange={() => setLinked(false)}
-              />
-              <span>{t('Name eingeben')}</span>
-            </label>
-            <label className="checkbox chip">
-              <input
-                type="radio"
-                name="contact-kind"
-                checked={linked}
-                onChange={() => setLinked(true)}
-              />
-              <span>{t('Mitglied auswählen')}</span>
-            </label>
-          </div>
+          <Segmented
+            label={t('Art des Ansprechpartners')}
+            value={linked ? 'linked' : 'name'}
+            onChange={(kind) => setLinked(kind === 'linked')}
+            options={[
+              { value: 'name', label: t('Name eingeben') },
+              { value: 'linked', label: t('Mitglied auswählen') },
+            ]}
+          />
         </fieldset>
         {linked ? (
           <>

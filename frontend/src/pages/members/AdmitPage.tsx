@@ -10,7 +10,7 @@ import { useChangesGuard } from '../../components/leaveGuard.ts'
 import { Alert, Field, LoadError, SelectField } from '../../components/ui.tsx'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
-import { PageHeader } from '../../components/PageHeader.tsx'
+import { PageHeader, Segmented } from '../../components/PageHeader.tsx'
 import { t } from '../../i18n/index.ts'
 
 type Step = 'person' | 'details'
@@ -183,26 +183,15 @@ export function AdmitPage() {
           <h2>{organization ? t('1. Organisation') : t('1. Person')}</h2>
           <fieldset className="field">
             <legend>{t('Mitglied ist')}</legend>
-            <div className="chips">
-              <label className="checkbox chip">
-                <input
-                  type="radio"
-                  name="kind"
-                  checked={!organization}
-                  onChange={() => form.set('kind', 'person')}
-                />
-                <span>{t('eine Person')}</span>
-              </label>
-              <label className="checkbox chip">
-                <input
-                  type="radio"
-                  name="kind"
-                  checked={organization}
-                  onChange={() => form.set('kind', 'organization')}
-                />
-                <span>{t('eine Organisation (Firma, Verein, Behörde …)')}</span>
-              </label>
-            </div>
+            <Segmented
+              label={t('Mitglied ist')}
+              value={organization ? 'organization' : 'person'}
+              onChange={(kind) => form.set('kind', kind)}
+              options={[
+                { value: 'person', label: t('eine Person') },
+                { value: 'organization', label: t('eine Organisation (Firma, Verein, Behörde …)') },
+              ]}
+            />
           </fieldset>
           <p className="muted small">
             {organization
