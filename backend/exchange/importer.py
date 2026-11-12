@@ -702,10 +702,13 @@ def _plain(raw, field_type):
 # --- Prüfen ---
 
 
-def check_group(g: PersonGroup, org: Organization, link_duplicates: bool) -> None:
+def check_group(
+    g: PersonGroup, org: Organization, link_duplicates: bool, names: dict | None = None
+) -> None:
+    """``names``: vorab gelesener Namensindex des Vereins (services.club_name_index)."""
     d = g.data
     organization = d.get("kind") == PersonKind.ORGANIZATION
-    required = ("last_name",) if organization else ("last_name", "first_name", "birth_date")
+    required = ("last_name",) if organization else ("last_name", "first_name")
     for target in required:
         if not d.get(target):
             g.errors.append(gettext("{x0} fehlt.").format(x0=BASE_TARGETS[target]))
@@ -763,7 +766,17 @@ def check_group(g: PersonGroup, org: Organization, link_duplicates: bool) -> Non
                 g.errors.append(fill("Die Organisation ist bereits Mitglied {e_dieses}.", org))
                 break
         return
-    if g.errors or not d.get("birth_date"):
+    if g.errors:
+        return
+    if not d.get("birth_date"):
+        # Ohne Geburtsdatum keine Dublettensuche; eigene Mitglieder gleichen Namens melden
+        if services.club_namesakes(org, d["last_name"], d["first_name"], index=names):
+            g.errors.append(
+                gettext(
+                    "Eine Person mit diesem Namen ist hier bereits Mitglied. "
+                    "Bitte das Geburtsdatum angeben."
+                )
+            )
         return
     found = services.find_duplicates(org, d["last_name"], d["first_name"], d["birth_date"])
     exact = [
@@ -805,8 +818,11 @@ def validate(job) -> list[PersonGroup]:
     lookups = Lookups(job.organization, job.value_mapping)
     groups = group_rows(job, rows, lookups)
     link = job.options.get("link_duplicates", True)
+    names = None
+    if any(not g.data.get("birth_date") for g in groups):
+        names = services.club_name_index(job.organization)
     for g in groups:
-        check_group(g, job.organization, link)
+        check_group(g, job.organization, link, names)
     return groups
 
 

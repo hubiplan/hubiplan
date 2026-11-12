@@ -2462,8 +2462,18 @@ msgstr ""
 "This import is older than {IMPORT_KEEP_DAYS} days; the file and “Undo” are "
 "no longer available."
 
-msgid "Name, Vorname und Geburtsdatum müssen zugeordnet sein."
-msgstr "Surname, first name and date of birth must be assigned."
+msgid "Name und Vorname müssen zugeordnet sein."
+msgstr "Surname and first name must be assigned."
+
+msgid ""
+"Eine Person mit diesem Namen ist hier bereits Mitglied. Bitte das "
+"Geburtsdatum angeben."
+msgstr ""
+"A person with this name is already a member here. Please enter the date of "
+"birth."
+
+msgid "ohne Geburtsdatum"
+msgstr "no date of birth"
 
 msgid ""
 "Dieser Import ist schon übernommen oder wird gerade bearbeitet. Für eine "

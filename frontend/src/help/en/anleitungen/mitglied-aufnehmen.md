@@ -12,7 +12,9 @@ Before you start: there is at least one membership type (Members › Setup › M
 
 1. In the [member list](/mitglieder), click **Admit member**.
 2. Enter surname, first name and date of birth and click **Next**. HUBIplan checks whether the
-   person already exists, for example from another club.
+   person already exists, for example from another club. The date of birth is optional; without
+   it, HUBIplan only looks for members of your own club with the same name, and age-based fee
+   levels, birthdays and ages are left out for this person.
 3. If there are **Possible matches**, choose the right person or **None of these – create a new person**.
 4. Choose the **Membership type** and the **Joining date**.
 5. Add contact details and address and click **Admit**. For a person who already exists, the

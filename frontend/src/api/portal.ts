@@ -87,7 +87,7 @@ export interface DeptMember {
   display_name?: string
   last_name: string
   first_name: string
-  birth_date: string
+  birth_date: string | null
   gender?: string
   club_number: string
   member_type: string | null

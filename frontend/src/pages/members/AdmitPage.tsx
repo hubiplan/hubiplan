@@ -71,7 +71,9 @@ export function AdmitPage() {
   const organization = v.kind === 'organization'
   const summary = organization
     ? [v.last_name, v.name_suffix].filter(Boolean).join(' – ')
-    : `${v.last_name}, ${v.first_name} · ${formatDate(v.birth_date)}`
+    : [`${v.last_name}, ${v.first_name}`, v.birth_date && formatDate(v.birth_date)]
+        .filter(Boolean)
+        .join(' · ')
   // Eingaben vor dem Absenden nicht unbemerkt verlieren (UX-Audit 31.10. W01)
   const [done, setDone] = useState(false)
   useChangesGuard(v, !done && !transferSent)
@@ -267,7 +269,9 @@ export function AdmitPage() {
               <Field
                 label={t('Geburtsdatum')}
                 type="date"
-                required
+                hint={t(
+                  'Freiwillig. Ohne Geburtsdatum sucht HUBIplan nur unter den eigenen Mitgliedern nach gleichem Namen.',
+                )}
                 value={v.birth_date}
                 onChange={(ev) => form.set('birth_date', ev.target.value)}
               />

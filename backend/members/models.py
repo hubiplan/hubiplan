@@ -118,7 +118,7 @@ class Person(models.Model):
     # Organisationen: leer (``blank`` nicht gesetzt, die API prüft den Mitgliedstyp)
     first_name = EncryptedCharField("Vorname", max_length=100, strict=True)
     # Verschlüsselt mit dem Schlüssel des Verbandsbereichs; Vergleiche nur in Python
-    # (members.services.same_birth). Pflicht für Personen, leer für Organisationen.
+    # (members.services.same_birth). Freiwillig für Personen, leer für Organisationen.
     birth_date = EncryptedDateField("Geburtsdatum", null=True, blank=True)
     # Nach der Löschfrist bleibt nur das Geburtsjahr (Datum auf den 1. Januar gekürzt)
     birth_year_only = models.BooleanField("nur Geburtsjahr bekannt", default=False)
@@ -194,10 +194,6 @@ class Person(models.Model):
                     )
                 ),
                 name="person_marks_complete",
-            ),
-            models.CheckConstraint(
-                condition=Q(kind="organization") | Q(birth_date__isnull=False),
-                name="person_birth_date_required",
             ),
             models.CheckConstraint(
                 condition=Q(kind__in=["person", "organization"]), name="person_kind_valid"

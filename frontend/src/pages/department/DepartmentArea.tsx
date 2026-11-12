@@ -255,7 +255,7 @@ function memberValues(m: DeptMember) {
   return {
     last_name: m.last_name,
     first_name: m.first_name,
-    birth_date: m.birth_date,
+    birth_date: m.birth_date ?? '',
     email: m.contact?.email ?? '',
     phone: m.contact?.phone ?? '',
     street: m.contact?.street ?? '',
@@ -378,7 +378,6 @@ function DeptMemberForm({
           <Field
             label={t('Geburtsdatum')}
             type="date"
-            required
             value={v.birth_date}
             error={errors.birth_date}
             onChange={(e) => set('birth_date', e.target.value)}
