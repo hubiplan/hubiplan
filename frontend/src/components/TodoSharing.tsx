@@ -195,46 +195,48 @@ export function TodoSharing({
               ))}
             </optgroup>
           </SelectField>
-          <button
-            className="button button-ghost"
-            disabled={!recipient}
-            onClick={() => {
-              const [kind, id] = recipient.split(':')
-              append([
-                {
-                  ...(kind === 'u' ? { user: Number(id) } : { role: Number(id) }),
-                  ...(chosen
-                    ? { target_org: chosen.organization, target_department: chosen.department }
-                    : {}),
-                  level: foreignChosen && perUnit ? 'edit' : 'view',
-                  responsible: false,
-                },
-              ])
-            }}
-          >
-            {t('Hinzufügen')}
-          </button>
-          {!!matchingRoles.length && (
+          <div className="button-row">
             <button
               className="button button-ghost"
-              onClick={() =>
-                append(
-                  matchingRoles.map(({ unit, role }) => ({
-                    role: role.id,
-                    target_org: unit.organization,
-                    target_department: unit.department,
-                    level: perUnit ? 'edit' : 'view',
+              disabled={!recipient}
+              onClick={() => {
+                const [kind, id] = recipient.split(':')
+                append([
+                  {
+                    ...(kind === 'u' ? { user: Number(id) } : { role: Number(id) }),
+                    ...(chosen
+                      ? { target_org: chosen.organization, target_department: chosen.department }
+                      : {}),
+                    level: foreignChosen && perUnit ? 'edit' : 'view',
                     responsible: false,
-                  })),
-                )
-              }
+                  },
+                ])
+              }}
             >
-              {t('Rolle „{name}“ in {n} Zieleinheiten hinzufügen', {
-                name: roleName!,
-                n: matchingRoles.length,
-              })}
+              {t('Hinzufügen')}
             </button>
-          )}
+            {!!matchingRoles.length && (
+              <button
+                className="button button-ghost"
+                onClick={() =>
+                  append(
+                    matchingRoles.map(({ unit, role }) => ({
+                      role: role.id,
+                      target_org: unit.organization,
+                      target_department: unit.department,
+                      level: perUnit ? 'edit' : 'view',
+                      responsible: false,
+                    })),
+                  )
+                }
+              >
+                {t('Rolle „{name}“ in {n} Zieleinheiten hinzufügen', {
+                  name: roleName!,
+                  n: matchingRoles.length,
+                })}
+              </button>
+            )}
+          </div>
           {shares.map((entry, index) => (
             <div className="subcard" key={`${entry.user ?? 'r'}:${entry.role ?? 'u'}:${index}`}>
               <p>
