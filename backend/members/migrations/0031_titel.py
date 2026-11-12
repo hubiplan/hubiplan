@@ -17,7 +17,7 @@ def take_over(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("members", "0029_geburtsdatum_freiwillig"),
+        ("members", "0030_mitgliedsnummer_nachvergeben"),
         ("customfields", "0001_initial"),
     ]
 
