@@ -271,6 +271,8 @@ SPECTACULAR_SETTINGS = {
         "OrganizationTypeEnum": "organizations.models.Organization.Type",
         "InvoiceStatusEnum": "billing.models.Invoice.Status",
         "CashAuditStatusEnum": "finance.models.CashAudit.Status",
+        "HouseholdKindEnum": "members.models.Household.Kind",
+        "HouseholdPayerKindEnum": "billing.models.HouseholdPayer.Kind",
         "GenderEnum": [("f", "die (weiblich)"), ("m", "der (männlich)"), ("n", "das (sächlich)")],
     },
 }

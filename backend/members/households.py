@@ -71,6 +71,7 @@ def add_member(
     role: str = "",
     valid_from: datetime.date | None = None,
     move: bool = False,
+    pays_via: bool = False,
 ) -> HouseholdMember:
     """Mitgliedschaft in den Haushalt aufnehmen.
 
@@ -139,6 +140,8 @@ def add_member(
             )
         link.valid_until = valid_from - datetime.timedelta(days=1)
         link.save(update_fields=["valid_until"])
+    if pays_via:
+        check_pays_via(membership)
     return HouseholdMember.objects.create(
         organization_id=household.organization_id,
         household=household,
@@ -146,7 +149,28 @@ def add_member(
         kind=household.kind,
         role=role,
         valid_from=valid_from,
+        pays_via=pays_via,
     )
+
+
+def check_pays_via(membership: Membership, exclude: int | None = None) -> None:
+    """Der Beitrag läuft über höchstens einen Haushalt bzw. eine Firma (H2)."""
+    other = (
+        HouseholdMember.objects.filter(
+            membership=membership, pays_via=True, valid_until__isnull=True
+        )
+        .exclude(pk=exclude)
+        .select_related("household")
+        .first()
+    )
+    if other is not None:
+        raise serializers.ValidationError(
+            {
+                "pays_via": gettext(
+                    "Der Beitrag läuft schon über „{name}“. Dort zuerst ausschalten."
+                ).format(name=other.household.name)
+            }
+        )
 
 
 def end_member(link: HouseholdMember, valid_until: datetime.date) -> HouseholdMember:

@@ -1,6 +1,6 @@
-// Mitglieder › Haushalte und Firmen (Konzept Familien, Haushalte und Firmen, H1):
+// Mitglieder › Haushalte und Firmen (Konzept Familien, Haushalte und Firmen, H1/H2):
 // Mitglieder zu einer Familie oder Firma verbinden. Briefe an eine Familie mit gleicher
-// Anschrift gehen als ein Brief; Beitrag und Zahler folgen in einer späteren Stufe.
+// Anschrift gehen als ein Brief; mit Zahler gehen die Beiträge als eine Rechnung.
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
@@ -20,9 +20,10 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, useLoad } from '../../components/forms.ts'
 import { MemberPicker } from '../../components/MemberPicker.tsx'
 import { Segmented } from '../../components/PageHeader.tsx'
-import { Alert, Field, Loading, SelectField } from '../../components/ui.tsx'
+import { Alert, Checkbox, Field, Loading, SelectField } from '../../components/ui.tsx'
 import { t } from '../../i18n/index.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
+import { HouseholdPayerPanel } from './HouseholdPayer.tsx'
 
 const ROLE_LABELS: Record<HouseholdRole, string> = {
   adult: t('Erwachsener'),
@@ -52,6 +53,8 @@ function otherHousehold(err: unknown): boolean {
 export function HouseholdsPage() {
   const org = useActiveOrg()
   const canEdit = org.permissions.includes(PERM.membersEdit)
+  // Beitrag und Zahler (H2) nur mit Modul „Beiträge“ und Leserecht dort
+  const billing = org.modules.includes('billing') && org.permissions.includes(PERM.billingView)
   const [kind, setKind] = useState<HouseholdKind>('family')
   const [past, setPast] = useState(false)
   const { data, error, reload } = useLoad(
@@ -120,6 +123,8 @@ export function HouseholdsPage() {
           orgId={org.id}
           household={h}
           canEdit={canEdit}
+          billing={billing}
+          canEditBilling={billing && org.permissions.includes(PERM.billingEdit)}
           onChange={() => void reload()}
           onMessage={setMessage}
         />
@@ -185,12 +190,16 @@ function HouseholdCard({
   orgId,
   household,
   canEdit,
+  billing,
+  canEditBilling,
   onChange,
   onMessage,
 }: {
   orgId: number
   household: Household
   canEdit: boolean
+  billing: boolean
+  canEditBilling: boolean
   onChange: () => void
   onMessage: (m: { kind: 'error' | 'success'; text: string } | null) => void
 }) {
@@ -232,6 +241,19 @@ function HouseholdCard({
     )
   }
 
+  async function togglePays(m: HouseholdMember) {
+    const name = `${m.first_name} ${m.last_name}`
+    await run(
+      () => householdApi.changeMember(orgId, household.id, m.link, { pays_via: !m.pays_via }),
+      m.pays_via
+        ? t('Der Beitrag für {name} geht wieder einzeln.', { name })
+        : t('Der Beitrag für {name} geht über „{household}“.', {
+            name,
+            household: household.name,
+          }),
+    )
+  }
+
   async function remove() {
     const ok = await confirmDialog({
       title: t('„{name}“ löschen?', { name: household.name }),
@@ -270,6 +292,9 @@ function HouseholdCard({
                   {[m.title, m.first_name, m.last_name].filter(Boolean).join(' ')}
                 </Link>
                 {family && m.role && <span className="badge">{ROLE_LABELS[m.role]}</span>}
+                {billing && m.pays_via && (
+                  <span className="badge">{t('Beitrag über den Haushalt')}</span>
+                )}
                 <span className="muted small">
                   {' '}
                   {m.valid_until
@@ -282,6 +307,15 @@ function HouseholdCard({
               </div>
               {canEdit && m.current && !m.valid_until && (
                 <div className="button-row">
+                  {billing && (
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={() => void togglePays(m)}
+                    >
+                      {m.pays_via ? t('Beitrag einzeln') : t('Beitrag über den Haushalt')}
+                    </button>
+                  )}
                   <button type="button" className="link-button" onClick={() => void end(m)}>
                     {t('Herausnehmen')}
                   </button>
@@ -291,11 +325,15 @@ function HouseholdCard({
           ))}
         </ul>
       )}
+      {billing && (
+        <HouseholdPayerPanel orgId={orgId} household={household} canEdit={canEditBilling} />
+      )}
       {canEdit &&
         (adding ? (
           <AddMember
             orgId={orgId}
             household={household}
+            billing={billing}
             onDone={(changed) => {
               setAdding(false)
               if (changed) onChange()
@@ -367,14 +405,18 @@ function Rename({
 function AddMember({
   orgId,
   household,
+  billing,
   onDone,
 }: {
   orgId: number
   household: Household
+  billing: boolean
   onDone: (changed: boolean) => void
 }) {
   const family = household.kind === 'family'
   const [member, setMember] = useState<MemberRow | null>(null)
+  // Firmen zahlen meist für ihre Mitarbeiter; in Familien nur ausdrücklich (FH-4)
+  const [paysVia, setPaysVia] = useState(!family && billing)
   const [role, setRole] = useState<HouseholdRole>('')
   const [since, setSince] = useState(todayIso())
   const [error, setError] = useState<string | null>(null)
@@ -394,6 +436,7 @@ function AddMember({
         role: family ? role : '',
         valid_from: since,
         move,
+        pays_via: billing && paysVia,
       })
       onDone(true)
     } catch (err) {
@@ -445,6 +488,14 @@ function AddMember({
         required
         onChange={(e) => setSince(e.target.value)}
       />
+      {billing && (
+        <Checkbox
+          label={t('Beitrag über den Haushalt')}
+          hint={t('Der Beitrag steht dann auf der Rechnung an den Zahler.')}
+          checked={paysVia}
+          onChange={setPaysVia}
+        />
+      )}
       <div className="button-row">
         <button type="submit" className="button" disabled={!member || busy}>
           {t('Hinzufügen')}

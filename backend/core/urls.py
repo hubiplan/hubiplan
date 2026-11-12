@@ -17,6 +17,7 @@ from accounts import (
 from admission import urls as admission_urls
 from billing import agreements as partner_agreements
 from billing import einvoice_views, partner_fields, partner_files
+from billing import household_views as billing_household_views
 from billing import partners as partner_views
 from billing import portal_views as billing_portal_views
 from billing import views as billing_views
@@ -573,6 +574,16 @@ org_patterns = [
     ),
     path("billing/settings/", billing_views.BillingSettingsView.as_view(), name="billing-settings"),
     path("billing/fees/", billing_views.FeeRatesView.as_view(), name="billing-fees"),
+    path(
+        "billing/households/<int:pk>/payer/",
+        billing_household_views.HouseholdPayerView.as_view(),
+        name="billing-household-payer",
+    ),
+    path(
+        "billing/household-fee-rules/",
+        billing_household_views.HouseholdFeeRulesView.as_view(),
+        name="billing-household-fee-rules",
+    ),
     path("billing/payments/<int:pk>/", billing_views.PaymentView.as_view(), name="billing-payment"),
     path(
         "billing/payments/<int:pk>/receipt/",

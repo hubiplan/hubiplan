@@ -766,6 +766,9 @@ class HouseholdMember(models.Model):
     )
     valid_from = models.DateField("seit")
     valid_until = models.DateField("bis", null=True, blank=True)
+    # Beitrag läuft über die Rechnung an den Zahler des Haushalts bzw. der Firma (H2);
+    # gilt für den Zeitraum dieser Zugehörigkeit (Fachfrage FH-4: nur ausdrücklich)
+    pays_via = models.BooleanField("Beitrag über den Haushalt", default=False, db_default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -777,6 +780,11 @@ class HouseholdMember(models.Model):
                 fields=["membership", "kind"],
                 condition=Q(valid_until__isnull=True),
                 name="ein_offener_haushalt_je_art",
+            ),
+            models.UniqueConstraint(
+                fields=["membership"],
+                condition=Q(valid_until__isnull=True, pays_via=True),
+                name="beitrag_ueber_einen_haushalt",
             ),
             models.CheckConstraint(
                 condition=Q(valid_until__isnull=True) | Q(valid_until__gte=models.F("valid_from")),

@@ -37,6 +37,9 @@ MODULE_MODELS = (
     "finance.DonationSettings",
     "finance.DonationStatement",
     "finance.Donation",
+    # Haushalte und Firmen (H1) vor Rechnungen und Mandaten (Verweise darauf)
+    "members.Household",
+    "members.HouseholdMember",
     "billing.BillingSettings",
     "billing.FeeRate",
     "billing.AgeRate",
@@ -64,6 +67,9 @@ MODULE_MODELS = (
     "billing.Mandate",
     "billing.DebitRun",
     "billing.DebitItem",
+    # Zahler und Familienbeitrag (H2/H3)
+    "billing.HouseholdPayer",
+    "billing.HouseholdFeeRule",
     "finance.BankStatement",
     "finance.BankLine",
     # Rücklagen (Finanzamt-Prüfung C4)
@@ -82,9 +88,6 @@ MODULE_MODELS = (
     # Ansprechpartner von Organisationsmitgliedern (J2)
     "members.ContactPerson",
     "members.BillingAddress",
-    # Haushalte und Firmen (H1)
-    "members.Household",
-    "members.HouseholdMember",
     "honors.Dignity",
     "honors.Reign",
     "honors.Companion",

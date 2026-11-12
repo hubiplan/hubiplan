@@ -88,11 +88,13 @@ def mandate_usable(mandate: Mandate, on: datetime.date | None = None) -> bool:
     return mandate.status == Mandate.Status.ACTIVE and not mandate_expired(mandate, on)
 
 
-def next_reference(org, membership=None, club=None) -> str:
-    """Mandatsreferenz: MITGL-<Mitgliedsnummer>-<n> bzw. VEREIN-<Nr>-<n>."""
+def next_reference(org, membership=None, club=None, household=None) -> str:
+    """Mandatsreferenz: MITGL-<Mitgliedsnummer>-<n>, HAUSH-<Nr>-<n> bzw. VEREIN-<Nr>-<n>."""
     if membership is not None:
         key = membership.club_number or str(membership.pk)
         prefix = f"MITGL-{sepa_text(key, 20).replace(' ', '')}"
+    elif household is not None:
+        prefix = f"HAUSH-{household.pk}"
     else:
         prefix = f"VEREIN-{club.pk}"
     n = Mandate.objects.filter(organization=org, reference__startswith=prefix + "-").count() + 1
@@ -128,20 +130,34 @@ B2B = "B2B"
 CORE = "CORE"
 
 
-def b2b_allowed(membership=None, club=None) -> bool:
+def b2b_allowed(membership=None, club=None, household=None) -> bool:
     """Firmenlastschrift nur für Zahler, die keine Verbraucher sind."""
     if club is not None:
         return True
+    if household is not None:
+        from .models import HouseholdPayer
+
+        payer = HouseholdPayer.objects.filter(household=household).first()
+        return payer is not None and payer.kind == HouseholdPayer.Kind.PARTNER
     return membership is not None and membership.person.is_organization
 
 
 def create_mandate(
-    org, *, membership=None, club=None, signed_on, source, user, scheme=CORE, **data
+    org,
+    *,
+    membership=None,
+    club=None,
+    household=None,
+    signed_on,
+    source,
+    user,
+    scheme=CORE,
+    **data,
 ) -> Mandate:
     clean = validate_mandate_data(data.get("holder", ""), data.get("iban", ""), data.get("bic", ""))
     if scheme not in (CORE, B2B):
         raise ValidationError({"scheme": gettext("Unbekanntes Lastschriftverfahren.")})
-    if scheme == B2B and not b2b_allowed(membership, club):
+    if scheme == B2B and not b2b_allowed(membership, club, household):
         raise ValidationError(
             {
                 "scheme": gettext(
@@ -150,7 +166,12 @@ def create_mandate(
             }
         )
     # Ein Zahler hat höchstens ein gültiges Mandat: ein neues ersetzt das alte
-    payer = Q(membership=membership) if membership is not None else Q(club=club)
+    if membership is not None:
+        payer = Q(membership=membership)
+    elif household is not None:
+        payer = Q(household=household)
+    else:
+        payer = Q(club=club)
     Mandate.objects.filter(payer, organization=org, status=Mandate.Status.ACTIVE).update(
         status=Mandate.Status.REVOKED, revoked_on=timezone.localdate()
     )
@@ -158,7 +179,8 @@ def create_mandate(
         organization=org,
         membership=membership,
         club=club,
-        reference=next_reference(org, membership, club),
+        household=household,
+        reference=next_reference(org, membership, club, household),
         scheme=scheme,
         signed_on=signed_on,
         source=source,
@@ -207,6 +229,10 @@ def payer_mandate(invoice: Invoice, on: datetime.date | None = None) -> Mandate 
         payer = Q(membership_id=invoice.membership_id)
     elif invoice.recipient_kind == Invoice.Recipient.CLUB and invoice.club_id:
         payer = Q(club_id=invoice.club_id)
+    elif invoice.recipient_kind == Invoice.Recipient.HOUSEHOLD and invoice.household_id:
+        payer = household_payer_q(invoice.household_id)
+        if payer is None:
+            return None
     else:
         return None
     mandate = (
@@ -216,6 +242,24 @@ def payer_mandate(invoice: Invoice, on: datetime.date | None = None) -> Mandate 
         .first()
     )
     return mandate if mandate and mandate_usable(mandate, on) else None
+
+
+def household_payer_q(household_id: int) -> Q | None:
+    """Mandat für Rechnungen an einen Haushalt: das des zahlenden Mitglieds bzw. der
+    zahlenden Organisation, sonst das am Haushalt hinterlegte (Person ohne
+    Mitgliedschaft, Geschäftspartner)."""
+    from .households import payer_ready
+    from .models import HouseholdPayer
+
+    payer = HouseholdPayer.objects.filter(household_id=household_id).first()
+    if not payer_ready(payer):
+        return None
+    if payer.membership_id is not None and payer.kind in (
+        HouseholdPayer.Kind.MEMBER,
+        HouseholdPayer.Kind.ORGANIZATION,
+    ):
+        return Q(membership_id=payer.membership_id)
+    return Q(household_id=household_id)
 
 
 def pending_invoice_ids(org) -> set[int]:
@@ -232,7 +276,13 @@ def proposals(org, on: datetime.date | None = None) -> list[tuple[Invoice, Manda
     result = []
     invoices = (
         Invoice.objects.filter(organization=org, status=Invoice.Status.OPEN)
-        .filter(recipient_kind__in=[Invoice.Recipient.MEMBER, Invoice.Recipient.CLUB])
+        .filter(
+            recipient_kind__in=[
+                Invoice.Recipient.MEMBER,
+                Invoice.Recipient.CLUB,
+                Invoice.Recipient.HOUSEHOLD,
+            ]
+        )
         .exclude(pk__in=pending)
         .select_related("organization", "membership__person", "club")
         .order_by("due_date", "number")

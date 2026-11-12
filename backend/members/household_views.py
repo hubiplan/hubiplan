@@ -3,8 +3,9 @@
 - ``households/``                 Liste (``?art=family|company``, ``?ehemalige=1``), Anlegen
 - ``households/<id>/``            Lesen, Umbenennen, Löschen (nur ohne aktuelle Mitglieder)
 - ``households/<id>/members/``    Mitglied aufnehmen (``membership``, ``role``, ``valid_from``,
-  ``move``)
-- ``households/<id>/members/<link>/``  PATCH: Ende (``valid_until``) oder Rolle;
+  ``move``, ``pays_via``)
+- ``households/<id>/members/<link>/``  PATCH: Ende (``valid_until``), Rolle oder
+  ``pays_via`` (Beitrag über den Haushalt, H2);
   DELETE: falsch erfassten Eintrag löschen
 - ``households/suggestions/``     Mitglieder mit gleicher Anschrift (nur Vorschläge)
 """
@@ -70,6 +71,7 @@ class HouseholdSerializer(serializers.ModelSerializer):
                     "title": person.title,
                     "birth_date": person.birth_date,
                     "role": link.role,
+                    "pays_via": link.pays_via,
                     "valid_from": link.valid_from,
                     "valid_until": link.valid_until,
                     "current": current,
@@ -95,6 +97,7 @@ class HouseholdMemberInput(serializers.Serializer):
     )
     valid_from = serializers.DateField(required=False)
     move = serializers.BooleanField(required=False, default=False)
+    pays_via = serializers.BooleanField(required=False, default=False)
 
 
 class HouseholdLinkUpdate(serializers.Serializer):
@@ -102,6 +105,7 @@ class HouseholdLinkUpdate(serializers.Serializer):
     role = serializers.ChoiceField(
         choices=HouseholdMember.Role.values, required=False, allow_blank=True
     )
+    pays_via = serializers.BooleanField(required=False)
 
 
 class HouseholdViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
@@ -145,6 +149,18 @@ class HouseholdViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
                     )
                 }
             )
+        from billing.models import Mandate
+
+        if Mandate.objects.filter(household=instance, debits__isnull=False).exists():
+            raise serializers.ValidationError(
+                {
+                    "detail": gettext(
+                        "Über ein Mandat dieses Haushalts wurde schon eingezogen. Der Haushalt "
+                        "bleibt deshalb erhalten; er ist ohne Mitglieder nur noch unter "
+                        "„ehemalige“ zu sehen."
+                    )
+                }
+            )
         super().perform_destroy(instance)
 
     def _record(self, action_name, link, before):
@@ -178,6 +194,7 @@ class HouseholdViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
                 role=v.get("role", ""),
                 valid_from=v.get("valid_from"),
                 move=v.get("move", False),
+                pays_via=v.get("pays_via", False),
             )
             for old in ended:
                 old.refresh_from_db()
@@ -230,6 +247,8 @@ class HouseholdViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
                                 )
                             }
                         )
+                    if link.pays_via:
+                        households.check_pays_via(link.membership, exclude=link.pk)
                     link.valid_until = None
                     link.save(update_fields=["valid_until"])
                 else:
@@ -237,6 +256,11 @@ class HouseholdViewSet(OrgScopedMixin, AuditMixin, viewsets.ModelViewSet):
             if "role" in v:
                 link.role = v["role"] if household.kind == Household.Kind.FAMILY else ""
                 link.save(update_fields=["role"])
+            if "pays_via" in v and v["pays_via"] != link.pays_via:
+                if v["pays_via"] and link.valid_until is None:
+                    households.check_pays_via(link.membership, exclude=link.pk)
+                link.pays_via = v["pays_via"]
+                link.save(update_fields=["pays_via"])
             changes = diff(before, snapshot(link))
             if changes:
                 record(

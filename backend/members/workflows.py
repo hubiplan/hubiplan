@@ -552,7 +552,10 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
         HouseholdMember.objects.filter(membership=membership).values_list("household_id", flat=True)
     )
     HouseholdMember.objects.filter(membership=membership).delete()
-    Household.objects.filter(pk__in=homes, members__isnull=True).delete()
+    # Haushalte ohne Mitglieder entfallen, außer über ihr Mandat wurde schon eingezogen
+    Household.objects.filter(pk__in=homes, members__isnull=True).exclude(
+        mandates__debits__isnull=False
+    ).delete()
     from .photos import remove_all
 
     remove_all(membership)
