@@ -13,7 +13,14 @@ from members.models import Household, HouseholdMember, Membership, today
 from portal.models import PortalAccess
 
 from .factories import make_member
-from .test_mitgliedsantrag import app_of, club, schema, submit, token_from_mail  # noqa: F401
+from .test_mitgliedsantrag import (  # noqa: F401  (Fixtures, auch die automatische)
+    app_of,
+    club,
+    leichte_aufgabe,
+    schema,
+    submit,
+    token_from_mail,
+)
 from .test_organisationsmitglieder import admit_org
 
 pytestmark = pytest.mark.django_db(transaction=True)

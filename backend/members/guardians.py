@@ -73,27 +73,39 @@ def end_for(membership: Membership, user=None) -> int:
 
 def end_adults(on: datetime.date | None = None) -> int:
     """Täglich: Erziehungsberechtigte aller Volljährigen beenden."""
-    from core.tenancy import rls_bypass, tenant_context
+    from core.tenancy import tenant_context
 
     on = on or today()
     count = 0
+    for membership in _guardian_memberships():
+        person = membership.person
+        if person.birth_date is None or is_minor(person, on):
+            continue
+        with tenant_context(membership.organization_id):
+            count += end_for(membership)
+    return count
+
+
+def _guardian_memberships():
+    """Mitgliedschaften mit Erziehungsberechtigten. Das Geburtsdatum ist verschlüsselt und
+    lässt sich nicht in der Datenbank vergleichen; geprüft wird deshalb hier."""
+    from core.tenancy import rls_bypass, tenant_context
+
     with rls_bypass():
         ids = list(
-            ContactPerson.objects.filter(
-                is_guardian=True, membership__person__birth_date__lte=on - relativedelta(years=18)
-            )
+            ContactPerson.objects.filter(is_guardian=True)
             .values_list("membership_id", "organization_id")
             .distinct()
         )
     for membership_id, org_id in ids:
         with tenant_context(org_id):
-            membership = Membership.objects.select_related("person", "organization").get(
-                pk=membership_id
+            membership = (
+                Membership.objects.select_related("person", "organization")
+                .filter(pk=membership_id)
+                .first()
             )
-            if is_minor(membership.person, on):
-                continue
-            count += end_for(membership)
-    return count
+        if membership is not None:
+            yield membership
 
 
 def notice_text(membership: Membership) -> tuple[str, str]:
@@ -127,29 +139,17 @@ def send_notices(on: datetime.date | None = None) -> int:
     from rest_framework.exceptions import ValidationError
 
     from core.i18n import language_of_org
-    from core.tenancy import rls_bypass, tenant_context
+    from core.tenancy import tenant_context
     from outbox import mail
     from portal.services import contact_email
 
     on = on or today()
     birthday = on + datetime.timedelta(days=NOTICE_DAYS) - relativedelta(years=ADULT_AGE)
-    with rls_bypass():
-        ids = list(
-            ContactPerson.objects.filter(
-                is_guardian=True,
-                membership__person__birth_date__month=birthday.month,
-                membership__person__birth_date__day=birthday.day,
-                membership__person__birth_date__year=birthday.year,
-            )
-            .values_list("membership_id", "organization_id")
-            .distinct()
-        )
     sent = 0
-    for membership_id, org_id in ids:
-        with tenant_context(org_id):
-            membership = Membership.objects.select_related("person", "organization").get(
-                pk=membership_id
-            )
+    for membership in _guardian_memberships():
+        if membership.person.birth_date != birthday:
+            continue
+        with tenant_context(membership.organization_id):
             org = membership.organization
             with language_of_org(org):
                 subject, body = notice_text(membership)

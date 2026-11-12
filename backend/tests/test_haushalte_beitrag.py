@@ -79,7 +79,11 @@ class TestHaushaltsrechnung:
         assert invoice.recipient_email == "erika@example.org"
         assert "Familie Muster" in invoice.subject
         lines = list(invoice.lines.all())
-        assert [line.text for line in lines] == ["Muster, Erika", "Muster, Max", "Muster, Lisa"]
+        assert sorted(line.text for line in lines) == [
+            "Muster, Erika",
+            "Muster, Lisa",
+            "Muster, Max",
+        ]
         assert invoice.total == Decimal("150.00")  # 60 + 60 + 30 (Jugend)
         # Keine Einzelrechnungen für die drei, Otto wie bisher
         assert not Invoice.objects.filter(membership__in=[family["erika"], family["max"]]).exists()

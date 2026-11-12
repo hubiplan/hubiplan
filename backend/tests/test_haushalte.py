@@ -9,7 +9,7 @@ import pytest
 from audit.models import AuditEntry
 from circulars.models import CircularRecipient
 from members.households import letter_name
-from members.models import ContactDetails, Household, HouseholdMember, Membership
+from members.models import ContactDetails, Household, HouseholdMember, Membership, today
 from members.workflows import _purge_membership, exit_membership
 
 from .factories import make_member, make_user
@@ -92,10 +92,10 @@ class TestHaushalt:
         assert resp.status_code == 201
         assert resp.json()["members"][0]["role"] == ""
         # Wechseln: bisherige Zugehörigkeit endet am Vortag
-        resp = add(c, club, two, family["max"], move=True, valid_from=str(datetime.date.today()))
+        resp = add(c, club, two, family["max"], move=True, valid_from=str(today()))
         assert resp.status_code == 201, resp.json()
         old = HouseholdMember.objects.get(household_id=one["id"])
-        assert old.valid_until == datetime.date.today() - datetime.timedelta(days=1)
+        assert old.valid_until == today() - datetime.timedelta(days=1)
 
     def test_beenden_loeschen_und_rechte(self, api, cal, board_a, family):
         c = api(board_a)
@@ -105,13 +105,13 @@ class TestHaushalt:
         assert c.delete(hh_url(club, hh["id"])).status_code == 400
         resp = c.patch(
             hh_url(club, hh["id"], f"members/{link}/"),
-            {"valid_until": str(datetime.date.today())},
+            {"valid_until": str(today())},
             content_type=JSON,
         )
         assert resp.status_code == 200
         # bis heute gilt noch; ein Tag später ist der Haushalt leer
         HouseholdMember.objects.filter(pk=link).update(
-            valid_until=datetime.date.today() - datetime.timedelta(days=1)
+            valid_until=today() - datetime.timedelta(days=1)
         )
         assert c.get(hh_url(club)).json()[0]["members"] == []
         assert c.get(hh_url(club, hh["id"])).json()["members"][0]["current"] is False
@@ -132,8 +132,9 @@ class TestHaushalt:
         c = api(board_a)
         club = cal["a"]
         hh = new_household(c, club)
-        add(c, club, hh, family["otto"])
-        exit_date = datetime.date.today() - datetime.timedelta(days=3)
+        start = today() - datetime.timedelta(days=10)
+        assert add(c, club, hh, family["otto"], valid_from=str(start)).status_code == 201
+        exit_date = today() - datetime.timedelta(days=3)
         exit_membership(family["otto"], exit_date, "exit")
         assert HouseholdMember.objects.get().valid_until == exit_date
         _purge_membership(Membership.objects.get(pk=family["otto"].pk))
@@ -143,7 +144,9 @@ class TestHaushalt:
     def test_vorschlaege_gleiche_anschrift(self, api, cal, board_a, family):
         c = api(board_a)
         club = cal["a"]
-        ContactDetails.objects.filter(person=family["otto"].person).update(street="Andere Str. 1")
+        details = ContactDetails.objects.get(person=family["otto"].person)
+        details.street = "Andere Str. 1"
+        details.save()
         found = c.get(hh_url(club, suffix="suggestions/")).json()
         assert len(found) == 1
         assert {m["first_name"] for m in found[0]["members"]} == {"Erika", "Max", "Lisa"}
