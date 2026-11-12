@@ -9,6 +9,8 @@ export function partnerAccess(permissions: string[]) {
   return {
     view: has(PERM.partnersView) || has(PERM.financeView) || has(PERM.billingView),
     edit: has(PERM.partnersEdit) || has(PERM.financeEdit) || has(PERM.billingEdit),
+    /** Ganze Liste: Excel, Serienbrief und Verteiler nur mit dem Recht „Geschäftspartner“ */
+    list: has(PERM.partnersView) || has(PERM.partnersEdit),
     /** Bank, Standardkategorie, Zahlungsziel, Künstlerkennzeichen */
     money: has(PERM.financeView) || has(PERM.billingView),
     moneyEdit: has(PERM.financeEdit) || has(PERM.billingEdit),
