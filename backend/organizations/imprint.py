@@ -143,6 +143,10 @@ def details(owner: Organization, imprint: Imprint) -> dict:
         "name": imprint.name or owner.name,
         "legal_form": guess_legal_form(owner, imprint),
         "address": {
+            # Eigene Straße im Impressum: dessen Zusatz gilt, auch wenn er leer ist
+            "address_extra": imprint.address_extra
+            if (imprint.street or imprint.address_extra)
+            else owner.address_extra,
             "street": imprint.street or owner.street,
             "postal_code": imprint.postal_code or owner.postal_code,
             "city": imprint.city or owner.city,

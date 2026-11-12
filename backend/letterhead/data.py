@@ -254,7 +254,7 @@ def letter_data(
     owner, lh = owner_of(unit)
     theme = effective_theme(unit.ancestors())
     street_city = f"{owner.postal_code} {owner.city}".strip()
-    address = [p for p in (owner.name, owner.street, street_city) if p]
+    address = [p for p in (owner.name, owner.address_extra, owner.street, street_city) if p]
     contact: list[tuple[str, str]] = []
     with rls_bypass():
         eff = effective_contact(owner)

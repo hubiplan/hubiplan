@@ -26,6 +26,7 @@ EDIT_FIELDS = [
     "name",
     "legal_form",
     "street",
+    "address_extra",
     "postal_code",
     "city",
     "representatives",

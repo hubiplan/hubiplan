@@ -8,6 +8,7 @@ export interface ImprintFields {
   external_url: string
   name: string
   legal_form: string
+  address_extra: string
   street: string
   postal_code: string
   city: string
@@ -41,7 +42,13 @@ export interface Representative {
 export interface ImprintDetails {
   name: string
   legal_form: string
-  address: { street: string; postal_code: string; city: string; country: string }
+  address: {
+    address_extra?: string
+    street: string
+    postal_code: string
+    city: string
+    country: string
+  }
   representatives: Representative[]
   representatives_text: string
   email: string

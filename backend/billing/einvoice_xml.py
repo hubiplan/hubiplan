@@ -84,6 +84,9 @@ def party(root, name, data, seller=False):
         element(element(node, "cac:PartyIdentification"), "cbc:ID", data["identifier"])
     address = element(node, "cac:PostalAddress")
     element(address, "cbc:StreetName", data["street"])
+    if data.get("address_extra"):
+        # BT-36/BT-51: zweite Adresszeile, z. B. c/o
+        element(address, "cbc:AdditionalStreetName", data["address_extra"])
     element(address, "cbc:CityName", data["city"])
     element(address, "cbc:PostalZone", data["postcode"])
     element(element(address, "cac:Country"), "cbc:IdentificationCode", data["country"])

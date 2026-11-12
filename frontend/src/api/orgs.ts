@@ -157,6 +157,7 @@ export interface OrgDetail {
   label_en?: string
   label_plural_en?: string
   founding_year: number | null
+  address_extra?: string
   street: string
   postal_code: string
   city: string
@@ -507,6 +508,7 @@ export interface PlatformOrg {
   label_en?: string
   label_plural_en?: string
   founding_year: number | null
+  address_extra?: string
   street: string
   postal_code: string
   city: string
@@ -547,6 +549,7 @@ export interface FederationClub {
   /** Baum darunter, nur zum Ansehen */
   units?: { id: number; name: string; depth: number }[]
   founding_year: number | null
+  address_extra?: string
   street: string
   postal_code: string
   city: string

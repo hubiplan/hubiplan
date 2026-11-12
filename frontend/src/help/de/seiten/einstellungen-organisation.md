@@ -3,10 +3,12 @@ key: page.settings_org
 titel: Einstellungen › Organisation
 rechte: [org.edit]
 routen: [/einstellungen/organisation]
-stichworte: [Verein, Name, Anschrift, Kontakt, Gründungsjahr, Ansprechpartner]
+stichworte: [Verein, Name, Anschrift, Adresszusatz, c/o, Kontakt, Gründungsjahr, Ansprechpartner]
 ---
 
 Hier pflegt ihr Namen, Kurznamen, Gründungsjahr, Anschrift und Kontakt der Einheit. Der vollständige Name erscheint auf Rechnungen, Ausweisen, PDFs und in Mails. Welche Module ihr nutzt, schaltet die Plattform-Verwaltung frei. Wie Einheit und Untereinheiten heißen, steht unter [Einstellungen › Bezeichnungen](/einstellungen/bezeichnungen); Satzung, Beitragsordnung und Gründungsurkunde stehen unter [Dokumente](/dokumente) oben bei „Vereinsdokumente“. Oben auf der Seite seht ihr beim Scrollen immer, ob alles gespeichert ist.
+
+Sitzt der Verein bei einer Firma oder in einem Gebäude mit eigenem Namen, tragt das unter „Adresszusatz“ ein, zum Beispiel „c/o Musterfirma GmbH“. Der Zusatz steht als eigene Zeile über Straße und Hausnummer, im Briefkopf, im Impressum, in Rundschreiben und als zweite Adresszeile in der E-Rechnung.
 
 Unten legt ihr die Ansprechpartner für Fragen zu HUBIplan fest. Sie erscheinen in der Hilfe unter „Wer hilft bei uns?“, auch für Untereinheiten ohne eigene Ansprechpartner. Wie die übrigen Angaben auf dieser Seite speichert HUBIplan sie automatisch, sobald ein Name eingetragen ist.
 

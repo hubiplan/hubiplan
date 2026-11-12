@@ -3,10 +3,12 @@ key: page.settings_org
 titel: Settings › Organisation
 rechte: [org.edit]
 routen: [/einstellungen/organisation]
-stichworte: [club, name, address, contact, founding year, contacts]
+stichworte: [club, name, address, address supplement, c/o, contact, founding year, contacts]
 ---
 
 Here you maintain the unit's name, short name, founding year, address and contact. The full name appears on invoices, cards, PDFs and in emails. The platform administration enables which modules you use. What the unit and its sub-units are called is under [Settings › Names and terms](/einstellungen/bezeichnungen); constitution, fee regulations and founding deed are under [Documents](/dokumente) at the top, under “Club documents”. While you scroll, the top of the page always shows whether everything is saved.
+
+If the club is based at a company or in a building with its own name, enter that under “Address supplement”, for example “c/o Musterfirma GmbH”. It appears on its own line above street and house number: in the letterhead, the imprint, circulars and as the second address line of e-invoices.
 
 At the bottom you set the contacts for questions about HUBIplan. They appear in the help under “Who helps us?”, also for sub-units without their own contacts. Like everything else on this page, HUBIplan saves them automatically as soon as a name is entered.
 
