@@ -333,6 +333,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "members.tasks.purge_expired_members",
         "schedule": 24 * 60 * 60,  # täglich
     },
+    "erziehungsberechtigte-volljaehrig": {
+        "task": "members.tasks.end_guardianships",
+        "schedule": 24 * 60 * 60,  # täglich
+    },
     "termin-erinnerungen": {
         "task": "events.tasks.send_event_reminders",
         "schedule": 60 * 60,  # stündlich

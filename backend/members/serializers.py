@@ -555,7 +555,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactPerson
         # Mitgliederzugang richtet „Zugang einrichten“ ein (J5), nicht das Kennzeichen
-        read_only_fields = ["member_access"]
+        read_only_fields = ["member_access", "is_guardian"]
         fields = [
             "id",
             "member",
@@ -576,6 +576,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
             "receives_invoices",
             "represents",
             "member_access",
+            "is_guardian",
             "since",
         ]
 

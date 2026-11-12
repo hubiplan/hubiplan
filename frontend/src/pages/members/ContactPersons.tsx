@@ -25,19 +25,23 @@ const FLAGS: { key: keyof Flags; label: string }[] = [
   { key: 'member_access', label: t('Mitgliederzugang') },
 ]
 
-/** Ansprechpartner eines Organisationsmitglieds (Abschnitt in der Mitgliedsakte). */
+/** Ansprechpartner eines Organisationsmitglieds bzw. Erziehungsberechtigte einer
+ *  minderjährigen Person (Abschnitt in der Mitgliedsakte, H4). */
 export function ContactPersons({
   orgId,
   memberId,
   contacts,
   canEdit,
   onChange,
+  guardians = false,
 }: {
   orgId: number
   memberId: number
   contacts: ContactPerson[]
   canEdit: boolean
   onChange: () => void
+  /** Person: Erziehungsberechtigte statt Ansprechpartner */
+  guardians?: boolean
 }) {
   const [editing, setEditing] = useState<ContactPerson | 'new' | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -62,10 +66,23 @@ export function ContactPersons({
 
   return (
     <section className="card card-wide" aria-labelledby="ansprechpartner-titel">
-      <h2 id="ansprechpartner-titel">{t('Ansprechpartner')}</h2>
+      <h2 id="ansprechpartner-titel">
+        {guardians ? t('Erziehungsberechtigte') : t('Ansprechpartner')}
+      </h2>
+      {guardians && (
+        <p className="muted small">
+          {t(
+            'Mit „Mitgliederzugang“ sehen Erziehungsberechtigte im Mitgliederbereich, was das Mitglied selbst sieht. Am 18. Geburtstag enden Zugang und Eintrag; vier Wochen vorher bekommen sie eine Mail.',
+          )}
+        </p>
+      )}
       {error && <Alert kind="error">{error}</Alert>}
       {contacts.length === 0 ? (
-        <p className="muted">{t('Noch kein Ansprechpartner eingetragen.')}</p>
+        <p className="muted">
+          {guardians
+            ? t('Noch keine Erziehungsberechtigten eingetragen.')
+            : t('Noch kein Ansprechpartner eingetragen.')}
+        </p>
       ) : (
         <ul className="plain-list stack">
           {contacts.map((c) =>
@@ -74,6 +91,7 @@ export function ContactPersons({
                 <ContactForm
                   orgId={orgId}
                   memberId={memberId}
+                  guardians={guardians}
                   contact={c}
                   onDone={(changed) => {
                     setEditing(null)
@@ -133,6 +151,7 @@ export function ContactPersons({
           <ContactForm
             orgId={orgId}
             memberId={memberId}
+            guardians={guardians}
             contact={null}
             first={contacts.length === 0}
             onDone={(changed) => {
@@ -143,7 +162,7 @@ export function ContactPersons({
         ) : (
           <p>
             <button type="button" className="button" onClick={() => setEditing('new')}>
-              {t('Ansprechpartner hinzufügen')}
+              {guardians ? t('Erziehungsberechtigte hinzufügen') : t('Ansprechpartner hinzufügen')}
             </button>
           </p>
         ))}
@@ -156,12 +175,14 @@ function ContactForm({
   memberId,
   contact,
   first = false,
+  guardians = false,
   onDone,
 }: {
   orgId: number
   memberId: number
   contact: ContactPerson | null
   first?: boolean
+  guardians?: boolean
   onDone: (changed: boolean) => void
 }) {
   const linkedAtStart = contact?.linked_member ?? null
@@ -325,7 +346,11 @@ function ContactForm({
         <div className="grid-2">
           <Field
             label={t('Funktion')}
-            hint={t('z. B. Geschäftsführer, Bürgermeister')}
+            hint={
+              guardians
+                ? t('z. B. Mutter, Vater, Vormund')
+                : t('z. B. Geschäftsführer, Bürgermeister')
+            }
             value={v.function}
             error={errors.function}
             onChange={(ev) => set('function', ev.target.value)}

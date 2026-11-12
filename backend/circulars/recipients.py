@@ -356,8 +356,63 @@ def _organization_candidates(m, row: dict, club) -> list[Candidate]:
     ]
 
 
+def _guardians_by_membership(memberships) -> dict[int, list]:
+    """Erziehungsberechtigte mit „erhält Rundschreiben“ der minderjährigen Personen (H4)."""
+    from members.guardians import is_minor
+    from members.models import ContactPerson
+
+    minors = [m.pk for m in memberships if is_minor(m.person)]
+    result: dict[int, list] = {}
+    if not minors:
+        return result
+    for c in (
+        ContactPerson.objects.filter(membership_id__in=minors, is_guardian=True, receives_mail=True)
+        .select_related("person")
+        .order_by("-is_primary", "pk")
+    ):
+        result.setdefault(c.membership_id, []).append(c)
+    return result
+
+
+def _guardian_candidates(m, row: dict, club, own_email: str, contacts) -> list[Candidate]:
+    """Zusätzlich eine Mail an jeden Erziehungsberechtigten mit eigener Adresse."""
+    from members.services import contact_for
+
+    result = []
+    seen = {own_email.lower()} if own_email else set()
+    for c in contacts:
+        if c.person_id is not None:
+            linked = contact_for(c.person, club)
+            first, last = c.person.first_name, c.person.last_name
+            gender, title = c.person.gender, c.person.title
+            email = (linked.email if linked else "").strip()
+        else:
+            first, last, gender, title = c.first_name, c.last_name, c.gender, c.title
+            email = (c.email or "").strip()
+        if not email or email.lower() in seen:
+            continue
+        seen.add(email.lower())
+        result.append(
+            Candidate(
+                key=f"m{m.pk}-{c.pk}",
+                club=club,
+                first_name=first,
+                last_name=last,
+                gender=gender,
+                title=title,
+                email=email,
+                membership_id=m.pk,
+                departments=row.get("departments", []),
+                membership=m,
+                extra_contact=True,
+            )
+        )
+    return result
+
+
 def _member_candidates(memberships, rows: dict[int, dict], club_of) -> list[Candidate]:
     result = []
+    guardians = _guardians_by_membership(memberships)
     for m in memberships:
         row = rows.get(m.pk, {})
         person = m.person
@@ -386,6 +441,12 @@ def _member_candidates(memberships, rows: dict[int, dict], club_of) -> list[Cand
                 ),
             )
         )
+        if m.pk in guardians:
+            result.extend(
+                _guardian_candidates(
+                    m, row, club_of(m), (row.get("email") or "").strip(), guardians[m.pk]
+                )
+            )
     return result
 
 

@@ -636,6 +636,9 @@ class ContactPerson(models.Model):
     receives_invoices = models.BooleanField("erhält Rechnungen", default=True)
     represents = models.BooleanField("vertritt in Versammlungen", default=True)
     member_access = models.BooleanField("Mitgliederzugang", default=False)
+    # Erziehungsberechtigt für ein minderjähriges Mitglied (Konzept Familien, H4): endet
+    # mit dem 18. Geburtstag samt Zugang und Zeile
+    is_guardian = models.BooleanField("erziehungsberechtigt", default=False, db_default=False)
     since = models.DateField("Ansprechpartner seit", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -314,6 +314,8 @@ export interface ContactPerson {
   receives_invoices: boolean
   represents: boolean
   member_access: boolean
+  /** erziehungsberechtigt für ein minderjähriges Mitglied (H4) */
+  is_guardian?: boolean
   since: string | null
 }
 
@@ -621,4 +623,18 @@ export const memberApi = {
 export function todayIso(): string {
   const d = new Date()
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
+}
+
+/** Unter 18 (mit Geburtsdatum): Erziehungsberechtigte lassen sich eintragen (H4). */
+export function isMinor(birthDate: string | null | undefined): boolean {
+  if (!birthDate) return false
+  const born = new Date(birthDate)
+  const now = new Date()
+  let age = now.getFullYear() - born.getFullYear()
+  if (
+    now.getMonth() < born.getMonth() ||
+    (now.getMonth() === born.getMonth() && now.getDate() < born.getDate())
+  )
+    age -= 1
+  return age < 18
 }

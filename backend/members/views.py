@@ -762,10 +762,21 @@ class ContactPersonViewSet(_MemberChildMixin, viewsets.ModelViewSet):
         return super().get_queryset().select_related("person")
 
     def _check_organization(self, membership):
-        # Personen: Erziehungsberechtigte aus dem Online-Antrag (Beitrittsformular B3)
-        if not membership.person.is_organization and not membership.contact_persons.exists():
+        """Organisationen: Ansprechpartner. Personen: Erziehungsberechtigte, solange das
+        Mitglied minderjährig ist (H4) oder schon welche hat (Online-Antrag B3)."""
+        from .guardians import is_minor
+
+        person = membership.person
+        if person.is_organization:
+            return
+        if not is_minor(person) and not membership.contact_persons.exists():
             raise serializers.ValidationError(
-                {"detail": gettext("Ansprechpartner gibt es nur bei Organisationsmitgliedern.")}
+                {
+                    "detail": gettext(
+                        "Erziehungsberechtigte gibt es nur bei minderjährigen Mitgliedern "
+                        "(mit Geburtsdatum)."
+                    )
+                }
             )
 
     @staticmethod
@@ -790,6 +801,9 @@ class ContactPersonViewSet(_MemberChildMixin, viewsets.ModelViewSet):
                 is_primary=False
             )
         super().perform_create(serializer)
+        if not membership.person.is_organization:
+            serializer.instance.is_guardian = True
+            serializer.instance.save(update_fields=["is_guardian"])
         self._one_primary(serializer.instance)
 
     @transaction.atomic

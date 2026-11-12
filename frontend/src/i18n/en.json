@@ -8562,5 +8562,9 @@
   "Der Beitrag für {name} geht über „{household}“.": "The fee for {name} goes via “{household}”.",
   "Beitrag über den Haushalt": "Fee via the household",
   "Beitrag einzeln": "Fee individually",
-  "Der Beitrag steht dann auf der Rechnung an den Zahler.": "The fee then appears on the invoice to the payer."
+  "Der Beitrag steht dann auf der Rechnung an den Zahler.": "The fee then appears on the invoice to the payer.",
+  "Mit „Mitgliederzugang“ sehen Erziehungsberechtigte im Mitgliederbereich, was das Mitglied selbst sieht. Am 18. Geburtstag enden Zugang und Eintrag; vier Wochen vorher bekommen sie eine Mail.": "With “Member access”, guardians see in the member area what the member sees. On the 18th birthday their access and entry end; they get an email four weeks before.",
+  "Noch keine Erziehungsberechtigten eingetragen.": "No guardians entered yet.",
+  "Erziehungsberechtigte hinzufügen": "Add guardian",
+  "z. B. Mutter, Vater, Vormund": "e.g. mother, father, legal guardian"
 }

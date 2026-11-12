@@ -686,6 +686,7 @@ def _accept_extras(app: Application, membership, user) -> None:
             receives_mail=True,
             receives_invoices=True,
             represents=True,
+            is_guardian=True,
             since=signed_on,
         )
     custom = (app.data or {}).get("custom_values") or {}

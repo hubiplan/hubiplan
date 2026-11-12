@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { MaterialReferences } from '../../components/MaterialReferences.tsx'
 import type { FormEvent, ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { GENDERS, LEGAL_FORMS, memberApi, todayIso } from '../../api/members.ts'
+import { GENDERS, LEGAL_FORMS, isMinor, memberApi, todayIso } from '../../api/members.ts'
 import type { DepartmentMembership, DurationInfo, Gender, MemberDetail } from '../../api/members.ts'
 import { orgApi, PERM, unitName } from '../../api/orgs.ts'
 import type { OrgSummary } from '../../api/orgs.ts'
@@ -135,13 +135,16 @@ export function MemberFilePage() {
             canEdit={canEdit && !data.managed_by}
             onSaved={setData}
           />
-          {(data.kind === 'organization' || (data.contact_persons ?? []).length > 0) && (
+          {(data.kind === 'organization' ||
+            (data.contact_persons ?? []).length > 0 ||
+            isMinor(data.birth_date)) && (
             <ContactPersons
               key={`ansprechpartner-${data.id}`}
               orgId={org.id}
               memberId={data.id}
               contacts={data.contact_persons ?? []}
               canEdit={canEdit}
+              guardians={data.kind !== 'organization'}
               onChange={() => void reload()}
             />
           )}
