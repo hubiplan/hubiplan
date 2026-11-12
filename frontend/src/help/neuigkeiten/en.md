@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Security: **two-factor sign-in for every role.** Anyone with a permission in a club or department sets up two-factor sign-in within 3 days. Until then, circulars, exports and posting in the treasury are already paused, afterwards all permissions. The own member area remains usable without a second factor.
 - Finances › Incoming invoices: **invoice mailbox**. Every unit gets its own address for e-invoices, e.g. `rechnung+k7m2q9ab@example.org`. HUBIplan collects emails to this address every minute and imports XML and ZUGFeRD/Factur-X attachments into incoming invoices. Senders that match no business partner are marked **Unknown sender**; emails without an e-invoice appear as a notice. The server administration sets up the mailbox.
 - Appearance: every palette colour gets a **use** (e.g. “body text”), plus up to two named **gradients** made from two palette colours. **View colour sheet** shows the colours with hex and RGB values and the gradients, to pass on or print. On the website, the header, footer, colour bands, decorative lines and sections can get a gradient; under Design you can also set colours for **body text**, **secondary text**, **surfaces** and the **page background**, with a notice if text becomes hard to read.
 - AI assistants: At the address `/api/mcp/` of your HUBIplan instance, an AI assistant such as Claude or ChatGPT can search the HUBIplan help and explain terms (Model Context Protocol). It sees no club data and changes nothing.

@@ -10605,3 +10605,24 @@ msgstr "Hello {name},\n\na wrong password was entered for your account several t
 
 msgid "Für die ganze Liste braucht es das Recht „Geschäftspartner“."
 msgstr "The whole list requires the “Business partners” right."
+
+msgid "mit diesem Link melden Sie sich im Mitgliederbereich an (gültig eine Stunde, einmal nutzbar; ältere Links gelten nicht mehr):"
+msgstr "with this link you sign in to the member area (valid for one hour, single use; older links no longer work):"
+msgid "Das Vier-Augen-Prinzip stellen nur Vorstände mit Rollenverwaltung um."
+msgstr "Only board members with role management can change the two-person rule."
+
+msgid "Zurückziehen nur durch die beantragende Person oder den Vorstand."
+msgstr "Only the requesting person or the board can withdraw the request."
+
+msgid "Das Aufheben ist schon beantragt und wartet auf die Bestätigung."
+msgstr "Reopening has already been requested and is awaiting confirmation."
+
+msgid "Bestätigen muss eine andere Person als die, die beantragt hat."
+msgstr "Confirmation must come from someone other than the person who requested it."
+
+msgid "Bestätigen dürfen nur Vorstände mit Rollenverwaltung."
+msgstr "Only board members with role management can confirm."
+
+#, python-brace-format
+msgid "{reason} (beantragt von {by}, bestätigt von {confirmed})"
+msgstr "{reason} (requested by {by}, confirmed by {confirmed})"

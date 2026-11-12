@@ -8,10 +8,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Im Betrieb nur die Laufzeit-Abhängigkeiten; scripts/test.sh baut mit
-# --build-arg REQUIREMENTS=requirements-dev.txt (pytest, ruff)
+# --build-arg REQUIREMENTS=requirements-dev.txt (pytest, ruff, pip-audit).
+# Beide Dateien sind vollständig mit Prüfsummen festgeschrieben (scripts/pakete-sperren.sh):
+# pip lädt nur genau diese Dateien und keine weiteren Abhängigkeiten (Gesamtaudit 11.11., H-02).
 ARG REQUIREMENTS=requirements.txt
 COPY requirements.txt requirements-dev.txt ./
-RUN pip install -r "$REQUIREMENTS"
+RUN pip install --require-hashes --no-deps -r "$REQUIREMENTS"
 
 # XRechnung: lokale XSD-/Schematron-Prüfung. Keine Rechnungsdaten an externe Dienste.
 COPY install_einvoice_validator.py install_pdf_validator.py ./

@@ -240,7 +240,11 @@ class PairRequestView(_Pairing):
             if str(info["instance_id"]) != str(peer.instance_id):
                 raise ValidationError(gettext("Die Selbstauskunft passt nicht zum Absender."))
             services._code_for(str(payload.get("unit", "")), str(payload.get("secret", "")))
-        return services.handle_request(info, payload)
+        # Die Selbstauskunft der Gegenseite kann den RLS-Zustand der Verbindung neu setzen
+        # (in Tests läuft sie als Anfrage auf derselben Verbindung); die Kopplung anzulegen
+        # ist eine Systemaufgabe und sieht auch Ausgliederungen (RLS seit peering/0015).
+        with rls_bypass():
+            return services.handle_request(info, payload)
 
 
 class InboxView(_Signed):

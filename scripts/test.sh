@@ -304,6 +304,13 @@ if [ "$RUN_BACKEND" = 1 ]; then
     docker run --rm "$CPUS" --entrypoint sh "$BACKEND_IMG" \
         -c "ruff check . && ruff format --check ."
     echo "Backend: ruff ok"
+    # Bekannte Schwachstellen in den festgeschriebenen Python-Paketen (OSV/PyPI, braucht Netz).
+    # Gesamtaudit 11.11., H-02. Überspringen nur bewusst: TEST_PIP_AUDIT=0
+    if [ "${TEST_PIP_AUDIT:-1}" = 1 ]; then
+        docker run --rm "$CPUS" --entrypoint sh "$BACKEND_IMG" \
+            -c "pip-audit --progress-spinner off --disable-pip --require-hashes -r requirements-dev.txt"
+        echo "Backend: pip-audit ok"
+    fi
     # Fehlende oder widersprüchliche Migrationen (z. B. zwei parallel gemergte 0007 derselben
     # App) gleich hier melden, nach Sekunden statt am Ende des Laufs. Ohne Datenbank.
     if ! out=$(docker run --rm "$CPUS" -e PYTHONWARNINGS=ignore -e DJANGO_DEBUG=true \

@@ -103,9 +103,16 @@ def _clear_cache():
 def _mfa_lockerer(settings):
     """Die meisten Tests melden sich ohne 2FA an (force_authenticate). Sofortpflicht für die
     Plattform und frischer Code für heikle Aktionen gelten nur in den Tests, die sie prüfen
-    (tests/test_frischer_code.py)."""
+    (tests/test_frischer_code.py). Ebenso ruhen Rundschreiben, Exporte und Buchen in der Frist
+    nur in den Tests, die das prüfen (tests/test_gesamtaudit_1111_zwei_faktor.py)."""
     settings.MFA_PLATFORM_GRACE = True
     settings.MFA_STEP_UP = False
+    settings.MFA_IMMEDIATE = False
+    # Frist unabhängig von verstellten Uhren (z. B. Aufgabenserien im Jahr 2032); die Frist
+    # selbst prüfen tests/test_gesamtaudit_1111_zwei_faktor.py und test_fachfragen_3110b.py
+    settings.MFA_GRACE_DAYS = 36500
+    # Mails sofort statt im Hintergrund (Gesamtaudit 11.11., H-09)
+    settings.MAIL_IN_BACKGROUND = False
 
 
 @pytest.fixture(autouse=True)

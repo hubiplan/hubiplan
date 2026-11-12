@@ -9,6 +9,8 @@ x-clamav: &clamav
     CLAMD_SOCKET: /run/clamav-host/${CLAMD_SOCKET_NAME:-clamd.ctl}
     # Rundschreiben-Anhänge und öffentliche Dokumente nur geprüft weitergeben (FQ16)
     VIRUS_SCAN_REQUIRED: ${VIRUS_SCAN_REQUIRED:-1}
+    # alle: jeder Upload; extern: nur Dateien von außen (Gesamtaudit 11.11., Fachfrage 4)
+    VIRUS_SCAN_SCOPE: ${VIRUS_SCAN_SCOPE:-alle}
 
 services:
   backend:

@@ -34,5 +34,7 @@ If you have not set up two-factor authentication yet, you confirm with your pass
 transition period.
 
 Platform administration has no transition period: without two-factor authentication its
-rights are paused until you set it up here. Board and treasurer have 14 days; the deadline is
-shown at the top of every page.
+rights are paused until you set it up here. Anyone else with a permission in a club or
+department has 3 days; the deadline is shown at the top of every page. During that time,
+circulars, exports and posting in the treasury are already paused, afterwards all permissions.
+Your own member area does not need a second factor.

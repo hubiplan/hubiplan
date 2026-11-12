@@ -21,8 +21,25 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy
 
+from core.encfields import EncryptedJSONField
 from core.privatefiles import PrivateFileField
 from exchange.models import private_storage
+
+
+class OwnUnitEncryption:
+    """Verschlüsselt mit dem Schlüssel der eigenen Einheit der Kopplung (Gesamtaudit
+    11.11., S-07): Daten der Partnerinstanz liegen wie eigene Mitgliederdaten nur
+    verschlüsselt in Datenbank und Sicherung."""
+
+    def encryption_org_id(self) -> int | None:
+        coupling = self._state.fields_cache.get("coupling")
+        if coupling is not None:
+            return coupling.local_unit_id
+        return (
+            Coupling.objects.filter(pk=self.coupling_id)
+            .values_list("local_unit_id", flat=True)
+            .first()
+        )
 
 
 def remote_file_path(instance, filename: str) -> str:
@@ -179,7 +196,7 @@ class CouplingCode(models.Model):
         return self.used_at is None and self.expires_at > timezone.now()
 
 
-class Message(models.Model):
+class Message(OwnUnitEncryption, models.Model):
     """Ein Paket im Verbund-Postausgang bzw. -Eingang.
 
     Der Inhalt bleibt nur so lange, bis er zugestellt bzw. verarbeitet ist. Danach
@@ -202,7 +219,7 @@ class Message(models.Model):
     seq = models.PositiveIntegerField()
     kind = models.CharField(max_length=40)
     schema = models.PositiveSmallIntegerField(default=1)
-    payload = models.JSONField(null=True, blank=True)
+    payload = EncryptedJSONField(null=True, blank=True)
     persons = models.PositiveIntegerField("Anzahl Personen", default=0)
     state = models.CharField(max_length=10, choices=State.choices, default=State.QUEUED)
     attempts = models.PositiveSmallIntegerField(default=0)
@@ -230,14 +247,14 @@ class Message(models.Model):
         return f"{self.get_direction_display()} {self.kind} #{self.seq}"
 
 
-class RemoteState(models.Model):
+class RemoteState(OwnUnitEncryption, models.Model):
     """Übermittelter Stand eines Pakets der Gegenseite, der nur angezeigt wird
     (z. B. Vorstand, Satzung, Zahlen). Termine liegen dagegen als Termine des
     Platzhalters im Kalender."""
 
     coupling = models.ForeignKey(Coupling, on_delete=models.CASCADE, related_name="states")
     key = models.CharField(max_length=40)
-    data = models.JSONField(default=dict)
+    data = EncryptedJSONField(default=dict)
     file = PrivateFileField(storage=private_storage, upload_to=remote_file_path, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -251,16 +268,8 @@ class RemoteState(models.Model):
     def __str__(self) -> str:
         return f"{self.coupling} · {self.key}"
 
-    def encryption_org_id(self) -> int | None:
-        # Dateien gehören zur eigenen Einheit der Kopplung (core/privatefiles.py)
-        return (
-            Coupling.objects.filter(pk=self.coupling_id)
-            .values_list("local_unit_id", flat=True)
-            .first()
-        )
 
-
-class RemoteInvoice(models.Model):
+class RemoteInvoice(OwnUnitEncryption, models.Model):
     """Rechnung zwischen gekoppelten Einheiten (Paket „Rechnungen“, P8/P9).
 
     Beim Aussteller verweist sie auf die eigene Rechnung (``invoice``) und merkt
@@ -283,7 +292,7 @@ class RemoteInvoice(models.Model):
     date = models.DateField("Rechnungsdatum", null=True, blank=True)
     due_date = models.DateField("fällig am", null=True, blank=True)
     total = models.DecimalField("Betrag", max_digits=12, decimal_places=2, default=0)
-    data = models.JSONField(default=dict)
+    data = EncryptedJSONField(default=dict)
     file = PrivateFileField(storage=private_storage, upload_to=remote_file_path, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
     paid_reported_on = models.DateField("als bezahlt gemeldet am", null=True, blank=True)
@@ -300,20 +309,12 @@ class RemoteInvoice(models.Model):
     def __str__(self) -> str:
         return f"{self.number} {self.subject}"
 
-    def encryption_org_id(self) -> int | None:
-        # Dateien gehören zur eigenen Einheit der Kopplung (core/privatefiles.py)
-        return (
-            Coupling.objects.filter(pk=self.coupling_id)
-            .values_list("local_unit_id", flat=True)
-            .first()
-        )
-
     @property
     def key(self) -> str:  # für remote_file_path
         return f"rechnung-{self.uid}"
 
 
-class RemoteMember(models.Model):
+class RemoteMember(OwnUnitEncryption, models.Model):
     """Eine namentlich gemeldete Mitgliedschaft im Verbund (Paket „Mitgliedermeldung“, Stufe B).
 
     Beim Verein (unten) verbindet sie die eigene Mitgliedschaft mit der
@@ -335,7 +336,7 @@ class RemoteMember(models.Model):
     number = models.PositiveIntegerField("Verbandsnummer", null=True, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.ACTIVE)
     # Oben: gemeldete Zeile bei Klärfällen, Hinweise (z. B. doppelt aktiv)
-    data = models.JSONField(default=dict, blank=True)
+    data = EncryptedJSONField(default=dict, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -349,7 +350,7 @@ class RemoteMember(models.Model):
         return f"{self.coupling} · {self.uid}"
 
 
-class RemoteTransfer(models.Model):
+class RemoteTransfer(OwnUnitEncryption, models.Model):
     """Wechselanfrage über Instanzgrenzen (Verbund, nur mit namentlicher Meldung).
 
     ``role``: ``from`` = diese Seite führt die bisherige aktive Mitgliedschaft und
@@ -382,7 +383,7 @@ class RemoteTransfer(models.Model):
     membership = models.ForeignKey(
         "members.Membership", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
     )
-    data = models.JSONField(default=dict, blank=True)
+    data = EncryptedJSONField(default=dict, blank=True)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     response = models.CharField("Antwort", max_length=500, blank=True)
     created_by = models.ForeignKey(

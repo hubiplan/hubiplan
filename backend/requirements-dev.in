@@ -1,0 +1,8 @@
+# Entwicklung und Tests. Nach jeder Änderung: scripts/pakete-sperren.sh
+-c requirements.txt
+-r requirements.in
+pytest==9.2.0
+pytest-django==4.14.0
+ruff==0.17.3
+pytest-xdist==3.8.0
+pip-audit==2.10.1

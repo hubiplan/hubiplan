@@ -910,6 +910,29 @@ Rücksicherungstest in `/tmp` im Arbeitsspeicher ab; wächst die Datenbank über
 `BACKUP_TMP_SIZE` und `BACKUP_MEM_LIMIT` erhöhen. Wird ein Dienst an seiner Grenze
 beendet, startet Docker ihn neu (`restart: unless-stopped`); die anderen laufen weiter.
 
+## Firewall für die Docker-Netze
+
+Docker-Brückennetze sind vom Server aus geroutet: Jeder Prozess auf dem Server, auch der einer
+fremden Website auf einem geteilten Hestia-Server, erreicht die Container direkt, an nginx und
+Caddy vorbei. Das Backend wertet Absenderangaben deshalb nur von Caddy und vom Webseiten-Dienst
+aus (Gesamtaudit 11.11., S-02). Zusätzlich begrenzt `deploy/hestia/wirt-firewall.sh`
+Verbindungen vom Server in die HUBIplan-Netze auf Antworten, die veröffentlichten lokalen
+Ports und Prozesse von root:
+
+```sh
+sudo bash deploy/hestia/wirt-firewall.sh                   # nur prüfen
+sudo MODUS=einrichten bash deploy/hestia/wirt-firewall.sh  # Regeln, Timer, Selbsttest
+sudo MODUS=entfernen bash deploy/hestia/wirt-firewall.sh   # Rückweg
+```
+
+`einrichten` legt die Kette `HUBIPLAN-WIRT` (Sprünge aus `OUTPUT` je Brücke) und den Timer
+`hubiplan-wirt-firewall.timer` an, der die Regeln nach jedem Start und alle zwei Minuten
+anwendet, auch für neu erstellte Netze. Danach prüft das Skript als Benutzer `nobody`: Die
+veröffentlichten Ports müssen erreichbar bleiben, der Datenbank-Container darf es nicht mehr
+sein. Klappt das nicht, nimmt es die Regeln sofort wieder heraus. Abgewiesene Verbindungen
+stehen begrenzt im Kernel-Log mit dem Präfix `HUBIPLAN-WIRT` und der Benutzerkennung. Die
+Regeln gelten für IPv4; die Prüfung meldet, wenn Container IPv6-Adressen haben.
+
 ## Einladungen statt Startpasswort
 
 Neue Konten (Rollen, Plattform-Vorstand) bekommen kein Startpasswort mehr, sondern eine
@@ -920,9 +943,12 @@ unbrauchbar und meldet App-Geräte und Verbund-Anmeldungen des Kontos ab.
 
 ## Pflicht-2FA
 
-Wer Rollen verwaltet, vollständige Exporte erstellt, in der Kasse bucht oder die Plattform
-verwaltet, braucht die Zwei-Faktor-Anmeldung. Beim ersten Bedarf beginnen 14 Tage Übergang
-(Hinweis oben auf jeder Seite); danach ruhen genau diese Rechte, bis 2FA eingerichtet ist.
+Wer in einer Einheit irgendein Recht hat (Vorstand, Kasse, Abteilungsrolle …) oder die
+Plattform verwaltet, braucht die Zwei-Faktor-Anmeldung; nur der eigene Mitgliederbereich kommt
+ohne aus (Gesamtaudit 11.11., Fachfrage 1). Beim ersten Bedarf beginnen 3 Tage Übergang
+(Hinweis oben auf jeder Seite). Schon in dieser Zeit ruhen Rundschreiben, Exporte und das
+Buchen in der Kasse (`MFA_IMMEDIATE`, `accounts/mfa_policy.py`); danach ruhen alle Rechte, bis
+2FA eingerichtet ist.
 Die Plattform-Verwaltung hat keine Übergangsfrist: Ohne 2FA ruhen alle Plattformrechte sofort
 (auch für Superuser); „Mein Konto“ bleibt erreichbar, um 2FA einzurichten. Handy verloren: mit einem
 Wiederherstellungscode anmelden, oder eine zweite Person mit Rollenverwaltung und eigener
@@ -987,6 +1013,13 @@ stoppt den Versand bzw. den Abruf und schickt eine Alarm-Mail. Mit Virenprüfung
 `CLAMD_MAX_BYTES` werden dann nicht weitergegeben, und fällt der Socket weg, auch nichts
 anderes. Mit `VIRUS_SCAN_REQUIRED=0` in der `.env` geht Ungeprüftes wie früher durch
 und steht nur im Log.
+
+Mit `VIRUS_SCAN_SCOPE=extern` in der `.env` prüft HUBIplan beim Hochladen nur Dateien von
+außen, also Uploads ohne Anmeldung (Foto-Upload-Links, Rückmeldelinks) und von App-Geräten.
+Mails an Rechnungspostfach und Verteiler, Dateien aus dem Verbund und die Prüfung vor der
+Weitergabe bleiben wie oben. Uploads angemeldeter Personen gehen dann ungeprüft durch, auch
+wenn clamd ausfällt. Das passt zu Instanzen, die vor allem wegen des Rechnungspostfachs einen
+Scanner brauchen (Gesamtaudit 11.11., Fachfrage 4); Standard ist `alle`.
 
 Ohne `CLAMD_SOCKET_DIR` (Testserver, Entwicklung) gibt es keine Prüfung. Plattform › Version
 zeigt dann einen Hinweis. Steht `VIRUS_SCAN_REQUIRED=1` ohne Scanner in der `.env`, gehen
@@ -1078,6 +1111,12 @@ HUBIplan nicht löschen; das steht im erzeugten Datenschutzhinweis.
 ## Updates
 
 - Dependabot meldet wöchentlich Updates; Django bleibt auf der LTS-Version.
+- Python-Pakete sind mit Prüfsummen festgeschrieben: Gepflegt werden nur
+  `backend/requirements.in` und `backend/requirements-dev.in`; `scripts/pakete-sperren.sh`
+  schreibt daraus `requirements.txt` und `requirements-dev.txt` mit allen indirekten
+  Abhängigkeiten. Das Image installiert nichts anderes (`pip --require-hashes --no-deps`).
+- `scripts/test.sh` prüft die festgeschriebenen Pakete mit `pip-audit` auf bekannte
+  Schwachstellen und bricht dann ab. Nur bewusst überspringen: `TEST_PIP_AUDIT=0`.
 - Kritische Sicherheitslücken innerhalb weniger Tage einspielen, sonst monatlich.
 - Vor dem Ausrollen lokal testen: `BACKUP_TEST=1 scripts/test.sh` (in WSL).
   Tests laufen nie auf dem Server, sondern lokal über einen Testplatz

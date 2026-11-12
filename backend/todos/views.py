@@ -352,6 +352,7 @@ class TodoChoicesView(TodoScopeMixin, APIView):
         from .targets import allowed_scopes, key, label
 
         units = []
+        memo: dict = {}  # Konten und Abteilungsrechte nur einmal je Anfrage (P-06)
         for target in allowed_scopes(self.scope).values():
             with tenant_context(target.org.pk):
                 units.append(
@@ -362,7 +363,7 @@ class TodoChoicesView(TodoScopeMixin, APIView):
                         "name": label(target),
                         "users": [
                             {"id": u.pk, "name": u.get_full_name() or u.email}
-                            for u in eligible_users(target)
+                            for u in eligible_users(target, memo)
                         ],
                         "roles": [
                             {
@@ -383,7 +384,7 @@ class TodoChoicesView(TodoScopeMixin, APIView):
                 "units": units,
                 "users": [
                     {"id": u.pk, "name": u.get_full_name() or u.email}
-                    for u in eligible_users(self.scope)
+                    for u in eligible_users(self.scope, memo)
                 ],
                 "roles": [
                     {

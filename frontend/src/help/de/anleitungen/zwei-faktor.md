@@ -34,5 +34,7 @@ Passkey auch der Passkey (siehe „Mit Passkey anmelden“). Wer die Zwei-Faktor
 nicht eingerichtet hat, bestätigt in der Übergangsfrist mit dem Passwort.
 
 Die Plattform-Verwaltung hat keine Übergangsfrist: Ohne Zwei-Faktor-Anmeldung ruhen ihre
-Rechte, bis du sie hier einrichtest. Vorstand und Kasse haben 14 Tage Zeit; die Frist steht oben
-auf jeder Seite.
+Rechte, bis du sie hier einrichtest. Wer sonst ein Recht in Verein oder Abteilung hat, hat
+3 Tage Zeit; die Frist steht oben auf jeder Seite. Schon in der Frist ruhen Rundschreiben,
+Exporte und das Buchen in der Kasse, danach alle Rechte. Der eigene Mitgliederbereich braucht
+keinen zweiten Faktor.

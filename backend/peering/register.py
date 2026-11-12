@@ -17,6 +17,7 @@ Ablauf der Löschfrist, kürzt der Dachverband auf das Minimum.
 from __future__ import annotations
 
 import datetime
+import logging
 
 from django.utils import timezone
 from django.utils.translation import gettext
@@ -24,6 +25,12 @@ from django.utils.translation import gettext
 from .models import Coupling, RemoteMember, RemoteState
 
 LIMIT = 20000
+# Höchstens so viele Nummern je Meldung und offene Vorschläge je Partner (Gesamtaudit S-05)
+MAX_NUMBERS = LIMIT
+MAX_OPEN_PER_MEMBER = 3
+MAX_OPEN_PER_PARTNER = 200
+
+logger = logging.getLogger(__name__)
 NOTE = "nicht mehr gemeldet (Verbund)"
 IDENTITY = ("last_name", "first_name", "birth_date")
 
@@ -126,7 +133,10 @@ def receive_numbers(coupling: Coupling, data: dict) -> None:
     own = set(
         Membership.objects.filter(organization=coupling.local_unit).values_list("pk", flat=True)
     )
-    for uid, number in (data.get("numbers") or {}).items():
+    numbers = data.get("numbers")
+    if not isinstance(numbers, dict):
+        return
+    for uid, number in list(numbers.items())[:MAX_NUMBERS]:
         uid = str(uid)[:40]
         if not uid.startswith("m") or not uid[1:].isdigit() or int(uid[1:]) not in own:
             continue
@@ -726,7 +736,7 @@ def receive_suggestion(coupling: Coupling, data: dict) -> int:
 
     if coupling.direction != Coupling.Direction.PARENT:
         return 0
-    uid = str(data.get("uid") or "")
+    uid = str(data.get("uid") or "")[:40]
     if not uid.startswith("m") or not uid[1:].isdigit():
         return 0
     membership = Membership.objects.filter(
@@ -734,10 +744,27 @@ def receive_suggestion(coupling: Coupling, data: dict) -> int:
     ).first()
     if membership is None:
         return 0
+    # Eingaben der Partnerinstanz nur in der erwarteten Form (Gesamtaudit 11.11., S-05)
+    suggested = data.get("data")
+    if not isinstance(suggested, dict):
+        return 0
+    prefix = f"Korrekturvorschlag von {coupling.remote_unit.name}"
+    open_requests = ChangeRequest.objects.filter(
+        organization=coupling.local_unit,
+        user=None,
+        status=ChangeRequest.Status.PENDING,
+        message__startswith=prefix,
+    )
+    if (
+        open_requests.filter(membership=membership).count() >= MAX_OPEN_PER_MEMBER
+        or open_requests.count() >= MAX_OPEN_PER_PARTNER
+    ):
+        logger.warning("Verbund: Vorschlag von Kopplung %s verworfen, zu viele offene", coupling.pk)
+        return 0
     values = {}
     for field in SUGGEST_FIELDS:
-        value = (data.get("data") or {}).get(field)
-        if value is None:
+        value = suggested.get(field)
+        if value is None or isinstance(value, (dict, list)):
             continue
         value = str(value).strip()[:100]
         if field == "birth_date" and _date(value) is None:
@@ -746,17 +773,20 @@ def receive_suggestion(coupling: Coupling, data: dict) -> int:
             values[field] = value
     if not values:
         return 0
+    before = data.get("previous")
     previous = {
-        k: str(v)[:100] for k, v in (data.get("previous") or {}).items() if k in SUGGEST_FIELDS
+        k: str(v)[:100]
+        for k, v in (before.items() if isinstance(before, dict) else ())
+        if k in SUGGEST_FIELDS and not isinstance(v, (dict, list))
     }
-    text = str(data.get("message") or "").strip()
+    text = data.get("message")
+    text = text.strip()[:400] if isinstance(text, str) else ""
     ChangeRequest.objects.create(
         organization=coupling.local_unit,
         membership=membership,
         user=None,
         data=values,
         previous=previous,
-        message=f"Korrekturvorschlag von {coupling.remote_unit.name}"
-        + (f": {text}" if text else "")[:400],
+        message=(prefix + (f": {text}" if text else ""))[:500],
     )
     return 1
