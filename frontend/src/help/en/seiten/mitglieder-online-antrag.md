@@ -23,8 +23,10 @@ Here you set up the form people use to become members online. Each club has its 
 - **Fee and direct debit**: the SEPA mandate can be offered or required in the application once the creditor ID is entered.
 - **Confirmations and consents**: statutes and fee regulations with their version, the privacy notice and voluntary consents such as photos.
 - **Signature**: either the confirmed email address is enough, or a signature on the device or on the printed application is needed.
-- **Minors**: whether minors may apply online with their legal guardians, and from what age.
+- **Minors**: whether minors may apply online with their legal guardians, and from what age. If someone gives no date of birth (field optional or not asked), the form asks whether the person is of age.
 - Family application: adults can register further family members at the same address in the same application (first name, optionally their own last name, date of birth and membership type). On acceptance everyone is admitted and linked into a household “… family”; with the Fees module the applicant pays for everyone via their mandate, and minors get the applicant as their guardian. Please check yourselves whether a further person is already on record; duplicate entries can be merged.
 - **Who decides?**: as your statutes require, also with several roles, a minimum number and the approval of the sub-unit.
 
 **Share the form** shows the address and QR code, optionally with a preselected sub-unit, and the links for booth mode.
+
+Retention: HUBIplan deletes unconfirmed applications after 48 hours, rejected and withdrawn ones after the period you set. After your decision, the link from the confirmation email only shows the status, no details and no PDF, and expires after 30 days. On acceptance HUBIplan files the application as a PDF; you still find it with the application. Twelve months after acceptance the individual details of the application are removed because they are in the member record. The number, decision, approvals and the PDF remain.

@@ -21,7 +21,7 @@ from rest_framework.views import APIView
 from access.catalog import MEMBERS_EDIT, MEMBERS_VIEW
 from audit.log import record
 from core.api_base import OrgScopedMixin
-from members.models import MemberType, Person
+from members.models import Gender, MemberType, Person
 from members.serializers import OptionalDateField
 from organizations.models import Department, Organization
 
@@ -138,8 +138,8 @@ def approvals_data(app: Application) -> list[dict]:
     ]
 
 
-def row(app: Application, form: ApplicationForm) -> dict:
-    st = services.state(app, form) if app.is_open else None
+def row(app: Application, form: ApplicationForm, names: dict | None = None) -> dict:
+    st = services.state(app, form, names) if app.is_open else None
     d = app.data or {}
     return {
         "id": app.pk,
@@ -165,6 +165,19 @@ def row(app: Application, form: ApplicationForm) -> dict:
     }
 
 
+def _counts(org) -> dict[str, int]:
+    """Offene Anträge je Stand in einer Abfrage."""
+    from django.db.models import Count
+
+    found = dict(
+        Application.objects.filter(organization=org, status__in=Application.OPEN_STATES)
+        .values_list("status")
+        .annotate(n=Count("pk"))
+        .order_by()
+    )
+    return {s: found.get(s, 0) for s in Application.OPEN_STATES}
+
+
 class ApplicationListView(_Mixin, APIView):
     def get(self, request, org_id: int):
         form = services.form_for(self.org)
@@ -183,7 +196,8 @@ class ApplicationListView(_Mixin, APIView):
             qs = qs.filter(member_type_id=request.query_params["art"])
         if request.query_params.get("einheit"):
             qs = qs.filter(unit_id=request.query_params["einheit"])
-        rows = [row(a, form) for a in qs[:500]]
+        names = rules.role_names(self.org)  # einmal für alle Zeilen (P-01)
+        rows = [row(a, form, names) for a in qs[:500]]
         return Response(
             {
                 "results": rows,
@@ -193,10 +207,7 @@ class ApplicationListView(_Mixin, APIView):
                 "may_approve": rules.may_approve(
                     form.rule or {}, rules.user_roles(request.user, self.org), self.org_permissions
                 ),
-                "counts": {
-                    s: Application.objects.filter(organization=self.org, status=s).count()
-                    for s in Application.OPEN_STATES
-                },
+                "counts": _counts(self.org),
             }
         )
 
@@ -246,6 +257,23 @@ def public_date(value):
         return None
 
 
+class CorrectionSerializer(serializers.Serializer):
+    """Korrektur durch den Vorstand, Grenzen wie ``public.SubmitSerializer``."""
+
+    last_name = serializers.CharField(max_length=100)
+    first_name = serializers.CharField(max_length=100, allow_blank=True)
+    birth_date = serializers.CharField(max_length=10, allow_blank=True)
+    gender = serializers.CharField(max_length=10, allow_blank=True)
+    email = serializers.EmailField(max_length=200)
+    phone = serializers.CharField(max_length=50, allow_blank=True)
+    street = serializers.CharField(max_length=200, allow_blank=True)
+    address_extra = serializers.CharField(max_length=200, allow_blank=True)
+    postal_code = serializers.CharField(max_length=10, allow_blank=True)
+    city = serializers.CharField(max_length=100, allow_blank=True)
+    country = serializers.CharField(max_length=100, allow_blank=True)
+    note = serializers.CharField(max_length=2000, allow_blank=True)
+
+
 class ApplicationDetailView(_Mixin, APIView):
     def get_app(self, pk: int) -> Application:
         return get_object_or_404(
@@ -283,6 +311,7 @@ class ApplicationDetailView(_Mixin, APIView):
                 "decided_at": app.decided_at,
                 "decided_by": services._user_name(app.decided_by) if app.decided_by else "",
                 "decision_note": app.decision_note,
+                "data_purged": app.data_purged_at is not None,
                 "approvals": approvals_data(app),
                 "events": [
                     {
@@ -333,10 +362,18 @@ class ApplicationDetailView(_Mixin, APIView):
             "country",
             "note",
         )
-        changes = {k: str(request.data[k]).strip() for k in allowed if k in request.data}
+        # Dieselben Grenzen wie bei der Eingabe im Formular: Die Werte gehen in Mails und
+        # bei der Annahme in die Mitgliederakte (Gesamtaudit 13.11. S-07)
+        ser = CorrectionSerializer(
+            data={k: request.data[k] for k in allowed if k in request.data}, partial=True
+        )
+        ser.is_valid(raise_exception=True)
+        changes = {k: str(v).strip() for k, v in ser.validated_data.items()}
         if "birth_date" in changes and changes["birth_date"]:
             if public_date(changes["birth_date"]) is None:
                 raise serializers.ValidationError({"birth_date": gettext("Ungültiges Datum.")})
+        if changes.get("gender") and changes["gender"] not in Gender.values:
+            raise serializers.ValidationError({"gender": gettext("Ungültige Angabe.")})
         services.update_data(app, request.user, changes)
         member_type = unit = None
         if request.data.get("member_type"):
@@ -452,7 +489,14 @@ class PdfView(ApplicationDetailView):
         from .pdf import render
 
         app = self.get_app(pk)
-        response = HttpResponse(render(app), content_type="application/pdf")
+        # Angenommene Anträge: der bei der Annahme abgelegte Beleg (die Angaben können
+        # nach der Frist entfernt sein, Gesamtaudit 13.11. S-03)
+        if app.pdf:
+            with app.pdf.open("rb") as stored:
+                content = stored.read()
+        else:
+            content = render(app)
+        response = HttpResponse(content, content_type="application/pdf")
         response["Content-Disposition"] = f'inline; filename="mitgliedsantrag-{app.number}.pdf"'
         return response
 

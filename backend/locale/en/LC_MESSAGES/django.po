@@ -11432,6 +11432,30 @@ msgid ""
 "anfordern."
 msgstr "The company link has expired. Please ask the company for a new one."
 
+msgid ""
+"Dieser Link gilt nur für die Mailadresse, an die er geschickt wurde. Bitte "
+"diese Adresse angeben oder bei der Firma einen neuen Link anfordern."
+msgstr ""
+"This link is only valid for the email address it was sent to. Please enter "
+"that address or ask the company for a new link."
+
+msgid ""
+"Bitte nur Buchstaben, Leerzeichen, Bindestrich, Punkt und Apostroph."
+msgstr "Please use only letters, spaces, hyphens, full stops and apostrophes."
+
+msgid ""
+"An diese Adresse ging heute schon eine Meldung. Bitte morgen erneut."
+msgstr ""
+"A report has already been sent to this address today. Please try again "
+"tomorrow."
+
+msgid ""
+"Heute wurden schon sehr viele Mitarbeiter gemeldet. Bitte morgen erneut oder "
+"direkt beim Verein melden."
+msgstr ""
+"A large number of employees have already been reported today. Please try "
+"again tomorrow or contact the club directly."
+
 msgid "Beitrag zahlt"
 msgstr "Fee paid by"
 
@@ -12227,3 +12251,89 @@ msgstr "The code has expired. Please scan the current code."
 
 msgid "Online-Abstimmungen in Versammlungen (das Ergebnis steht im Beschluss)"
 msgstr "Online votes in meetings (the result is recorded in the resolution)"
+
+msgid "Bitte die Zeilen als Liste senden."
+msgstr "Please send the lines as a list."
+
+msgid "Höchstens {n} Zeilen je Haushaltsplan."
+msgstr "At most {n} lines per budget."
+
+msgid "Ungültige Zeile."
+msgstr "Invalid line."
+
+msgid "Bitte Einnahmen oder Ausgaben wählen."
+msgstr "Please choose income or expenses."
+
+msgid "Die Kategorie „{name}“ passt nicht zu {kind}."
+msgstr "The category “{name}” does not match {kind}."
+
+msgid "Bitte einen Betrag von 0 oder mehr eingeben."
+msgstr "Please enter an amount of 0 or more."
+
+msgid "Diese Kategorie steht schon im Plan."
+msgstr "This category is already in the budget."
+
+msgid "Der Haushaltsplan wurde inzwischen geändert. Bitte neu laden."
+msgstr "The budget has been changed in the meantime. Please reload."
+
+msgid ""
+"Der Haushaltsplan ist beschlossen. Zum Ändern bitte zuerst wieder auf Entwurf"
+" setzen."
+msgstr "The budget has been adopted. To change it, set it back to draft first."
+
+msgid "Für das Vorjahr gibt es keinen Plan."
+msgstr "There is no budget for the previous year."
+
+msgid "Im Vorjahr gibt es keine Buchungen."
+msgstr "There are no bookings in the previous year."
+
+msgid "Bitte Plan oder Ist wählen."
+msgstr "Please choose plan or actual."
+
+msgid "Für dieses Jahr gibt es noch keinen Plan."
+msgstr "There is no budget for this year yet."
+
+msgid "Bitte das Datum des Beschlusses angeben."
+msgstr "Please enter the date of the resolution."
+
+msgid "Der Plan hat noch keine Zeilen."
+msgstr "The budget has no lines yet."
+
+msgid "Bitte Entwurf oder beschlossen wählen."
+msgstr "Please choose draft or adopted."
+
+msgid "Plan {year}"
+msgstr "Plan {year}"
+
+msgid "Ist {year}"
+msgstr "Actual {year}"
+
+msgid "Hochrechnung"
+msgstr "Forecast"
+
+msgid "nicht geplant"
+msgstr "not budgeted"
+
+msgid "Haushaltsplan {year}"
+msgstr "Budget {year}"
+
+msgid "beschlossen am {date}"
+msgstr "adopted on {date}"
+
+msgid "Geschäftsjahr {start} bis {end}"
+msgstr "Financial year {start} to {end}"
+
+msgid "Stand {date}"
+msgstr "As of {date}"
+
+msgid "Summe"
+msgstr "Total"
+
+msgid "Einnahmen minus Ausgaben"
+msgstr "Income minus expenses"
+
+msgid "Ungültige Anfrage."
+msgstr "Invalid request."
+
+msgid "beschlossen"
+msgstr "adopted"

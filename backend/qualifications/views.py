@@ -53,7 +53,9 @@ class TypeSerializer(serializers.ModelSerializer):
         read_only_fields = ["is_archived", "sort_order"]
 
     def get_in_use(self, obj) -> bool:
-        return obj.records.exists()
+        # Die Liste bringt den Wert aus der Hauptabfrage mit (Gesamtaudit 13.11. P-03)
+        known = getattr(obj, "in_use_flag", None)
+        return obj.records.exists() if known is None else known
 
     def validate_name(self, value: str) -> str:
         value = value.strip()
@@ -97,7 +99,11 @@ class TypeViewSet(_ModuleMixin, OrgScopedMixin, AuditMixin, viewsets.ModelViewSe
     http_method_names = ["get", "post", "patch", "delete", "options", "head"]
 
     def get_queryset(self):
-        return QualificationType.objects.filter(organization=self.org)
+        from django.db.models import Exists, OuterRef
+
+        return QualificationType.objects.filter(organization=self.org).annotate(
+            in_use_flag=Exists(Qualification.objects.filter(kind=OuterRef("pk")))
+        )
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
@@ -294,15 +300,10 @@ class OverviewView(_ModuleMixin, OrgScopedMixin, APIView):
     def get(self, request, org_id: int):
         from members.views import member_queryset
 
-        members = {
-            m.person_id: m
-            for m in member_queryset(self.org)
-            .filter(is_current=True, purged_at__isnull=True)
-            .select_related("person")
-        }
-        qs = Qualification.objects.filter(
-            organization=self.org, person_id__in=list(members)
-        ).select_related("kind")
+        # Von den Nachweisen ausgehen und nur deren Inhaber laden: Früher wurden erst alle
+        # aktuellen Mitglieder samt entschlüsselter Personendaten geholt, auch wenn nur
+        # wenige einen Nachweis haben (Gesamtaudit 13.11. P-02)
+        qs = Qualification.objects.filter(organization=self.org).select_related("kind")
         kind = request.query_params.get("art")
         if kind:
             if not kind.isdigit():
@@ -310,12 +311,27 @@ class OverviewView(_ModuleMixin, OrgScopedMixin, APIView):
             qs = qs.filter(kind_id=int(kind))
         on = today()
         only_soon = request.query_params.get("stand") == "bald"
-        rows = []
+        wanted = []
         for q in services.latest(qs).values():
             state = services.status(q, on)
             if only_soon and state == services.VALID:
                 continue
-            m = members[q.person_id]
+            wanted.append((q, state))
+        members = {
+            m.person_id: m
+            for m in member_queryset(self.org)
+            .filter(
+                is_current=True,
+                purged_at__isnull=True,
+                person_id__in={q.person_id for q, _ in wanted},
+            )
+            .select_related("person")
+        }
+        rows = []
+        for q, state in wanted:
+            m = members.get(q.person_id)
+            if m is None:  # kein aktuelles Mitglied mehr
+                continue
             rows.append(
                 {
                     "id": q.pk,

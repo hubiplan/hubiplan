@@ -15,8 +15,10 @@ Hier richtest du das Formular ein, mit dem Interessierte online Mitglied werden 
 - **Beitrag und Lastschrift**: Das SEPA-Mandat kann im Antrag angeboten oder verlangt werden, sobald die Gläubiger-ID eingetragen ist.
 - **Bestätigungen und Einwilligungen**: Satzung und Beitragsordnung mit ihrer Fassung, Datenschutzhinweise und freiwillige Einwilligungen wie Fotos.
 - **Unterschrift**: Entweder genügt die bestätigte E-Mail-Adresse, oder es braucht eine Unterschrift auf dem Gerät oder auf dem ausgedruckten Antrag.
-- **Minderjährige**: Ob Minderjährige mit ihren Erziehungsberechtigten online beantragen dürfen und ab welchem Alter.
+- **Minderjährige**: Ob Minderjährige mit ihren Erziehungsberechtigten online beantragen dürfen und ab welchem Alter. Gibt jemand kein Geburtsdatum an (Feld freiwillig oder nicht abgefragt), fragt das Formular, ob die Person volljährig ist.
 - Familienantrag: Wer volljährig ist, kann weitere Familienmitglieder mit derselben Anschrift im selben Antrag anmelden (Vorname, auf Wunsch eigener Nachname, Geburtsdatum und Mitgliedsart). Bei der Annahme werden alle aufgenommen und zu einem Haushalt „Familie …“ verbunden; mit dem Modul Beiträge zahlt der Antragsteller für alle über sein Mandat, und Minderjährige bekommen ihn als Erziehungsberechtigten. Ob eine weitere Person schon im Bestand ist, prüft ihr bitte selbst; doppelte Einträge lassen sich zusammenführen.
 - **Wer entscheidet?**: so, wie es eure Satzung vorgibt, auch mit mehreren Rollen, einer Mindestzahl und der Zustimmung der Untereinheit.
 
 Unter **Formular verteilen** stehen Adresse und QR-Code, auf Wunsch mit vorausgewählter Untereinheit, und die Links für den Stand-Modus.
+
+Aufbewahrung: Unbestätigte Anträge löscht HUBIplan nach 48 Stunden, abgelehnte und zurückgezogene nach der eingestellten Frist. Der Link aus der Bestätigungsmail zeigt nach eurer Entscheidung nur noch den Stand, keine Angaben und kein PDF mehr, und erlischt nach 30 Tagen. Bei der Annahme legt HUBIplan den Antrag als PDF ab; ihr findet es weiter beim Antrag. Zwölf Monate nach der Annahme werden die einzelnen Angaben des Antrags entfernt, weil sie in der Mitgliederakte stehen. Es bleiben Nummer, Entscheidung, Zustimmungen und das PDF.

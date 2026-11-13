@@ -41,6 +41,16 @@ Inhalt
 - qualifikationen.json: Qualifikationen und Nachweise mit Gültigkeit (bei Einsichtsvermerken wie
   dem Führungszeugnis nur das Datum der Einsicht, nie der Inhalt)
 - verbund.json: Meldungen an andere HUBIplan-Instanzen (z. B. Dachverband)
+- antrag.json / antrag-*.pdf: Online-Mitgliedsantrag mit Einwilligungen und Verlauf
+- aenderungswuensche.json, kuendigungen.json: Wünsche aus dem Mitgliederbereich
+- einwilligungen.json: Einwilligungen zur Veröffentlichung (Webseite, Fotos)
+- ausweise.json, fotolinks.json: Mitgliedsausweise und Links zum Hochladen eines Fotos
+- kasse.json: Buchungen, Quittungen und Zuwendungsbestätigungen zur Person
+- zahler.json, geschaeftspartner.json: Zahler eines Haushalts oder einer Firma, Geschäftspartner
+- rundschreiben.json: Rundschreiben und Briefe an die Person
+- wettbewerbe.json, meldungen.json, wuerden.json: Starts, Auszeichnungen, Meldungen, Würden
+- musik.json, material.json: Besetzung in der Musik, überlassenes Material
+- wechsel.json: Vereinswechsel
 - protokoll.json: Änderungen an den Daten der Person (ohne Namen der Bearbeitenden)
 - foto.*: hinterlegtes Mitgliederfoto (falls vorhanden)
 
@@ -51,7 +61,35 @@ steuerlichen Aufbewahrungsfrist aufbewahrt.
 """
 
 # Felder, die nie in eine Auskunft gehören (Prüfsummen, Schlüssel, interne Verweise)
-SECRET = {"token_hash", "previous_token_hash", "retired_hashes", "admin_token_hash"}
+SECRET = {
+    "token_hash",
+    "previous_token_hash",
+    "retired_hashes",
+    "admin_token_hash",
+    "token",
+    "wallet_passes",
+    "fingerprint",
+    "pdf_sha256",
+    "cancel_sha256",
+}
+
+# Wer etwas angelegt, bearbeitet oder entschieden hat, sind Daten anderer Personen
+STAFF = frozenset(
+    {
+        "created_by",
+        "decided_by",
+        "user",
+        "recorded_by",
+        "issued_by",
+        "cancelled_by",
+        "finalized_by",
+        "treasurer_user",
+        "treasurer_name",
+        "treasurer_signature",
+        "signer_name",
+        "liaison",
+    }
+)
 
 
 def _row(obj, exclude: set[str] | frozenset = frozenset()) -> dict:
@@ -59,13 +97,19 @@ def _row(obj, exclude: set[str] | frozenset = frozenset()) -> dict:
     for field in obj._meta.concrete_fields:
         if field.name in exclude or field.name in SECRET:
             continue
-        if isinstance(field, models.FileField):
+        if isinstance(field, models.FileField | models.BinaryField):
             continue
         if isinstance(field, models.ForeignKey):
             data[field.attname] = getattr(obj, field.attname)
             continue
         data[field.name] = field.value_from_object(obj)
     return data
+
+
+def _rows(queryset, exclude: set[str] | frozenset = frozenset()) -> list[dict]:
+    """Zeilen eines Bestands ohne Verweise auf den Verein, die Person selbst und Bearbeiter."""
+    skip = STAFF | {"organization", "membership", "person"} | set(exclude)
+    return [_row(obj, skip) for obj in queryset]
 
 
 def _dump(value) -> str:
@@ -141,6 +185,135 @@ def _invoice_rows(invoices, membership: Membership | None = None) -> list[dict]:
         row["zahlungen"] = [_row(p, {"created_by", "booking"}) for p in inv.payments.all()]
         rows.append(row)
     return rows
+
+
+def _applications(membership: Membership) -> dict[str, str | bytes]:
+    """Online-Anträge der Person (Gesamtaudit 13.11. K-02)."""
+    from admission.models import Application
+
+    files: dict[str, str | bytes] = {}
+    rows = []
+    for app in Application.objects.filter(membership=membership).order_by("pk"):
+        rows.append(
+            {
+                "nummer": app.number,
+                "stand": app.get_status_display(),
+                "herkunft": app.get_source_display(),
+                "gestellt": app.created_at,
+                "bestaetigt": app.confirmed_at,
+                "unterschrieben": app.signed_at,
+                "entschieden": app.decided_at,
+                "vermerk": app.decision_note,
+                "wunsch_eintritt": app.entry_wish,
+                "angaben": app.data,
+                "angaben_entfernt": app.data_purged_at,
+                "einwilligungen": app.consents,
+                "erziehungsberechtigte": app.guardians,
+                "mandat": app.mandate,
+                # ohne Namen der Entscheidenden
+                "zustimmungen": [
+                    {"rollen": a.role_names, "entscheidung": a.decision, "am": a.created_at}
+                    for a in app.approvals.all()
+                ],
+                "verlauf": [
+                    {"ereignis": e.kind, "vermerk": e.note, "am": e.created_at}
+                    for e in app.events.all()
+                ],
+            }
+        )
+        if app.pdf:
+            try:
+                with app.pdf.open("rb") as fh:
+                    files[f"antrag-{app.number}.pdf"] = fh.read()
+            except OSError:
+                pass
+    files["antrag.json"] = _dump(rows)
+    return files
+
+
+def _further(membership: Membership, org_ids: list[int]) -> dict[str, str | bytes]:
+    """Alle übrigen Bestände mit Bezug zur Person (Gesamtaudit 13.11. K-02).
+
+    ``tests/test_auskunft_vollstaendig.py`` prüft, dass jedes Modell mit Verweis auf Person
+    oder Mitgliedschaft hier, in der Akte oder auf der begründeten Ausnahmeliste steht.
+    """
+    from billing.models import BusinessPartner, HouseholdPayer
+    from cards.models import MemberCard
+    from circulars.models import CircularRecipient
+    from competitions.models import AwardGrant, ShootOffEntry, Starter
+    from entries.models import EntryPerson
+    from finance.models import Booking, CashReceipt, DonationStatement
+    from honors.models import Companion, Reign
+    from materials.models import MaterialItem
+    from music.models import Musician
+    from peering.models import RemoteTransfer
+    from portal.models import CancellationRequest, ChangeRequest
+    from website.models import PublicationConsent
+
+    from .models import PhotoUploadLink, TransferRequest
+
+    person = membership.person
+    mine = {"membership": membership}
+    files = _applications(membership)
+    files["aenderungswuensche.json"] = _dump(_rows(ChangeRequest.objects.filter(**mine)))
+    files["kuendigungen.json"] = _dump(_rows(CancellationRequest.objects.filter(**mine)))
+    files["einwilligungen.json"] = _dump(_rows(PublicationConsent.objects.filter(**mine)))
+    files["ausweise.json"] = _dump(_rows(MemberCard.objects.filter(**mine)))
+    files["fotolinks.json"] = _dump(_rows(PhotoUploadLink.objects.filter(**mine)))
+    files["kasse.json"] = _dump(
+        {
+            "buchungen": _rows(Booking.objects.filter(**mine)),
+            "quittungen": _rows(CashReceipt.objects.filter(**mine)),
+            "zuwendungsbestaetigungen": _rows(DonationStatement.objects.filter(**mine)),
+        }
+    )
+    files["zahler.json"] = _dump(_rows(HouseholdPayer.objects.filter(**mine)))
+    files["geschaeftspartner.json"] = _dump(_rows(BusinessPartner.objects.filter(**mine)))
+    files["rundschreiben.json"] = _dump(
+        [
+            {"rundschreiben": str(r.circular), **_row(r, STAFF | {"organization", "membership"})}
+            for r in CircularRecipient.objects.filter(**mine).select_related("circular")
+        ]
+    )
+    files["wettbewerbe.json"] = _dump(
+        {
+            "starts": [
+                {"wettbewerb": str(s.competition), **_row(s, {"organization", "membership"})}
+                for s in Starter.objects.filter(**mine).select_related("competition")
+            ],
+            "stechen": _rows(ShootOffEntry.objects.filter(**mine)),
+            "auszeichnungen": _rows(AwardGrant.objects.filter(**mine)),
+        }
+    )
+    files["meldungen.json"] = _dump(_rows(EntryPerson.objects.filter(**mine)))
+    files["wuerden.json"] = _dump(
+        {
+            "wuerden": [
+                {"wuerde": str(r.dignity), **_row(r, {"organization", "person"})}
+                for r in Reign.objects.filter(
+                    person=person, organization_id__in=org_ids
+                ).select_related("dignity")
+            ],
+            "begleitung": _rows(
+                Companion.objects.filter(person=person, organization_id__in=org_ids)
+            ),
+        }
+    )
+    files["musik.json"] = _dump(_rows(Musician.objects.filter(**mine)))
+    files["material.json"] = _dump(
+        _rows(MaterialItem.objects.filter(member=membership), {"member", "version"})
+    )
+    files["wechsel.json"] = _dump(
+        {
+            "anfragen": _rows(
+                TransferRequest.objects.filter(person=person).filter(
+                    Q(from_org_id__in=org_ids) | Q(to_org_id__in=org_ids)
+                )
+            ),
+            "verbund": _rows(RemoteTransfer.objects.filter(**mine), {"coupling", "transfer"}),
+        }
+    )
+    return files
 
 
 def build(membership: Membership, org) -> bytes:
@@ -356,6 +529,8 @@ def build(membership: Membership, org) -> bytes:
             )
         ]
     )
+
+    files.update(_further(membership, org_ids))
 
     entries = AuditEntry.objects.filter(organization_id__in=org_ids, person_id=person.pk)
     files["protokoll.json"] = _dump(
