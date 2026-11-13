@@ -236,6 +236,11 @@ export function financeSections(a: FinanceAccess): NavItem[] {
         text: t('Ergebnis nach Konten und Kategorien, Vermögen'),
       },
       a.finance && {
+        to: '/finanzen/haushaltsplan',
+        label: t('Haushaltsplan'),
+        text: t('Plan und Ist je Kategorie, Vorlage für die Versammlung'),
+      },
+      a.finance && {
         to: '/finanzen/entwicklung',
         label: t('Entwicklung'),
         text: t('Einnahmen und Ausgaben über die Jahre'),

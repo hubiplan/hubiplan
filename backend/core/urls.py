@@ -37,6 +37,7 @@ from exchange import views as exchange_views
 from finance import (
     asset_views,
     bank_views,
+    budget_views,
     cash_audit_views,
     cash_count_views,
     donation_views,
@@ -548,6 +549,13 @@ org_patterns = [
     path("cards/pdf/", card_views.OrgCardsPdfView.as_view(), name="cards-pdf"),
     path("finance/overview/", finance_views.OverviewView.as_view(), name="finance-overview"),
     path("finance/statistics/", finance_views.StatisticsView.as_view(), name="finance-statistics"),
+    path("finance/budget/", budget_views.BudgetView.as_view(), name="finance-budget"),
+    path(
+        "finance/budget/status/",
+        budget_views.BudgetStatusView.as_view(),
+        name="finance-budget-status",
+    ),
+    path("finance/budget/copy/", budget_views.BudgetCopyView.as_view(), name="finance-budget-copy"),
     path("finance/tax/", finance_views.TaxReportView.as_view(), name="finance-tax"),
     path("finance/allowances/", finance_views.AllowanceView.as_view(), name="finance-allowances"),
     path("finance/vat/", finance_views.VatView.as_view(), name="finance-vat"),
