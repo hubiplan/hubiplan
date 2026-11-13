@@ -34,8 +34,9 @@ export function PublicPhotoPage() {
           applyTheme(body.theme)
           setState('ready')
         } else if (status === 429) {
+          const detail = (body as { detail?: unknown }).detail
           setError(
-            (typeof body.detail === 'string' && body.detail) ||
+            (typeof detail === 'string' && detail) ||
               t('Zu viele Aufrufe. Bitte später erneut versuchen.'),
           )
           setState('invalid')
