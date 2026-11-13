@@ -109,6 +109,20 @@ DATEIEN="-f docker-compose.server.yml"
 # 127.0.0.1:WEB_PORT, HTTPS macht der vorgeschaltete Webserver.
 if grep -q '^HUBIPLAN_HINTER_PROXY=1' .env; then
     DATEIEN="$DATEIEN -f docker-compose.proxy.yml"
+    # Ohne den geheimen Kopfwert zwischen nginx und Caddy könnte jeder Prozess auf dem Server
+    # Besucheradressen vorgeben (Gesamtaudit 13.11., H-02). Erste Einrichtung: Wert anlegen,
+    # deploy/hestia/einrichten.sh trägt ihn danach in nginx ein. Läuft schon etwas, wird
+    # nichts geändert, bis proxy-geheim.sh gelaufen ist.
+    if ! grep -q '^HUBIPLAN_PROXY_GEHEIM=[0-9a-f]' .env; then
+        if [ -n "$(docker ps -q --filter "label=com.docker.compose.project=$PROJEKT")" ]; then
+            echo "Abbruch: HUBIPLAN_PROXY_GEHEIM fehlt in der .env. Erst die nginx-Vorlagen" >&2
+            echo "erneuern und deploy/hestia/proxy-geheim.sh ausführen (docs/echtbetrieb.md)." >&2
+            echo "Am Server wurde nichts geändert." >&2
+            exit 1
+        fi
+        echo "Erzeuge geheimen Kopfwert für den vorgeschalteten Webserver …"
+        echo "HUBIPLAN_PROXY_GEHEIM=$(openssl rand -hex 32)" >> .env
+    fi
 fi
 # Virenprüfung mit dem clamd des Rechners (Socket-Ordner in der .env, z. B. /run/clamav)
 if grep -q '^CLAMD_SOCKET_DIR=.' .env; then

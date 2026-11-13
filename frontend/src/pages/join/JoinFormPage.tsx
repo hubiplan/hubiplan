@@ -112,6 +112,10 @@ function ageOn(birth: string, today = new Date()): number | null {
   return age
 }
 
+/** Ohne Geburtsdatum (Feld aus, oder freiwillig und leer) fragt das Formular nach der Volljährigkeit */
+const askAdult = (state: FieldState, person: boolean, birthDate: string) =>
+  person && (state === 'off' || (state === 'optional' && !birthDate))
+
 const label = (base: string, state: FieldState) =>
   state === 'optional' ? t('{x} (freiwillig)', { x: base }) : base
 
@@ -123,11 +127,6 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
   const unitHint = search.get('einheit') ?? ''
   // Link „Mitarbeiter melden“ einer Firma (Haushalte und Firmen H5)
   const companyToken = kiosk ? '' : (search.get('firma') ?? '')
-  const preset = useRef({
-    first_name: search.get('vorname') ?? '',
-    last_name: search.get('name') ?? '',
-    email: search.get('mail') ?? '',
-  })
   const [schema, setSchema] = useState<JoinSchema | null>(null)
   const [invalid, setInvalid] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -153,7 +152,7 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
       .then((d) => {
         if (!alive) return
         setSchema(d)
-        const given = d.company ? preset.current : null
+        const given = d.company ? d.invite : null
         setValues((v) => ({
           ...v,
           first_name: v.first_name || given?.first_name || '',
@@ -293,7 +292,7 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
       if (f.phone === 'required' && !values.phone.trim()) e.phone = need
       if (person && f.gender === 'required' && !values.gender) e.gender = need
       if (person && f.birth_date === 'required' && !values.birth_date) e.birth_date = need
-      if (person && f.birth_date === 'off' && !values.adult)
+      if (askAdult(f.birth_date, person, values.birth_date) && !values.adult)
         e.adult = t('Bitte angeben, ob du volljährig bist.')
       if (person && age !== null && s.min_age && age < s.min_age)
         e.birth_date = t('Eine Mitgliedschaft ist erst ab {age} Jahren möglich.', {
@@ -353,7 +352,7 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
       phone: values.phone,
       gender: person ? values.gender : '',
       birth_date: person && values.birth_date ? values.birth_date : undefined,
-      adult: person && f.birth_date === 'off' ? values.adult === 'yes' : null,
+      adult: askAdult(f.birth_date, person, values.birth_date) ? values.adult === 'yes' : null,
       unit: values.unit ? Number(values.unit) : null,
       entry_wish: values.entry_wish || undefined,
       note: values.note,
@@ -580,7 +579,7 @@ export function JoinFormPage({ kiosk = false }: { kiosk?: boolean }) {
                 required={f.birth_date === 'required'}
               />
             )}
-            {person && f.birth_date === 'off' && (
+            {askAdult(f.birth_date, person, values.birth_date) && (
               <fieldset className={`field${err('adult') ? ' field-invalid' : ''}`}>
                 <legend>{t('Bist du volljährig?')}</legend>
                 <Segmented

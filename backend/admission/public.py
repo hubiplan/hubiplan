@@ -16,6 +16,7 @@ from django.utils.translation import gettext
 from rest_framework import serializers
 
 from core.i18n import available, normalize
+from core.names import clean_person_name, has_link
 from members.serializers import OptionalDateField
 
 from . import services
@@ -205,19 +206,26 @@ def custom_entries(form: ApplicationForm) -> list:
     return [defs[i] for i in wanted if i in defs]
 
 
-def company_of(form: ApplicationForm, token: str):
-    """Firma aus dem Link „Mitarbeiter melden“ (Konzept Familien, H5), sonst None."""
+def invite_of(form: ApplicationForm, token: str):
+    """Firma und gemeldete Person aus dem Link „Mitarbeiter melden“ (Konzept Familien, H5):
+    ``(Firma, {email, first_name, last_name})``, sonst None."""
     if not token or "billing" not in (form.organization.enabled_modules or []):
         return None
-    from billing.company_portal import read_token
+    from billing.company_portal import read_invite
 
-    return read_token(form.organization, token)
+    return read_invite(form.organization, token)
+
+
+def company_of(form: ApplicationForm, token: str):
+    invite = invite_of(form, token)
+    return invite[0] if invite else None
 
 
 def schema(form: ApplicationForm, language: str, request=None, unit_hint: str = "") -> dict:
     org = form.organization
     sepa, mandate = sepa_state(form)
-    company = company_of(form, request.query_params.get("firma", "")) if request else None
+    invite = invite_of(form, request.query_params.get("firma", "")) if request else None
+    company = invite[0] if invite else None
     if company is not None and sepa == "required":
         # Den Beitrag zahlt die Firma: Lastschrift des Mitarbeiters nur freiwillig
         sepa = "offer"
@@ -258,6 +266,8 @@ def schema(form: ApplicationForm, language: str, request=None, unit_hint: str = 
         "minors": form.minors,
         "min_age": form.min_age,
         "company": company.name if company is not None else None,
+        # Vorbelegung aus dem verschlüsselten Link, nicht aus der Adresse (S-01)
+        "invite": invite[1] if invite else None,
     }
 
 
@@ -320,7 +330,7 @@ class SubmitSerializer(serializers.Serializer):
     challenge = serializers.CharField(max_length=500, required=False, allow_blank=True)
     nonce = serializers.IntegerField(min_value=0, required=False)
     # Link „Mitarbeiter melden“: Firma, die den Beitrag zahlt (H5)
-    company = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    company = serializers.CharField(max_length=1500, required=False, allow_blank=True)
 
 
 def age_on(birth: datetime.date, on: datetime.date) -> int:
@@ -361,6 +371,21 @@ def clean_submission(form: ApplicationForm, v: dict, *, kiosk: bool = False) -> 
     }
     if person and not data["first_name"]:
         errors["first_name"] = gettext("Pflichtfeld.")
+    # Der Name steht in der Bestätigungsmail an eine noch ungeprüfte Adresse: nur, was in
+    # Namen vorkommt, bei Organisationen keine Webadresse (Gesamtaudit 13.11. H-09)
+    for key in ("first_name", "last_name"):
+        if not data[key] or key in errors:
+            continue
+        if person:
+            name = clean_person_name(data[key])
+            if name is None:
+                errors[key] = gettext(
+                    "Bitte nur Buchstaben, Leerzeichen, Bindestrich, Punkt und Apostroph."
+                )
+            else:
+                data[key] = name
+        elif has_link(data[key]):
+            errors[key] = gettext("Ungültige Angabe.")
     if not re.fullmatch(r"[0-9A-Za-z \-]{3,10}", data["postal_code"]):
         errors["postal_code"] = gettext("Bitte eine gültige Postleitzahl angeben.")
 
@@ -411,7 +436,9 @@ def clean_submission(form: ApplicationForm, v: dict, *, kiosk: bool = False) -> 
                 ).format(age=form.min_age)
         elif v.get("adult") is False:
             minor = True
-        elif v.get("adult") is None and fields["birth_date"] == "off":
+        elif v.get("adult") is None:
+            # Auch bei freiwilligem Geburtsdatum: Ohne Datum gilt niemand stillschweigend
+            # als volljährig (Gesamtaudit 13.11. S-06)
             errors["adult"] = gettext("Bitte angeben, ob du volljährig bist.")
     if minor:
         if not form.minors:
@@ -453,10 +480,18 @@ def clean_submission(form: ApplicationForm, v: dict, *, kiosk: bool = False) -> 
 
     # Lastschrift (B2)
     sepa, mandate_info = sepa_state(form)
-    company = company_of(form, v.get("company") or "")
+    invite = invite_of(form, v.get("company") or "")
+    company = invite[0] if invite else None
     if v.get("company") and company is None:
         errors["company"] = gettext(
             "Der Link der Firma ist abgelaufen. Bitte bei der Firma einen neuen anfordern."
+        )
+    elif invite and invite[1]["email"] and invite[1]["email"] != data["email"]:
+        # Der Link gilt nur für die gemeldete Person: Weitergereicht könnte sonst jeder
+        # auf Kosten der Firma beantragen (Gesamtaudit 13.11. S-04)
+        errors["email"] = gettext(
+            "Dieser Link gilt nur für die Mailadresse, an die er geschickt wurde. Bitte diese "
+            "Adresse angeben oder bei der Firma einen neuen Link anfordern."
         )
     if company is not None:
         data["company_household"] = company.pk

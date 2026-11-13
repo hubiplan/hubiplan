@@ -60,6 +60,8 @@ export interface JoinSchema {
   min_age: number | null
   /** Link „Mitarbeiter melden“: Name der Firma, die den Beitrag zahlt */
   company?: string | null
+  /** Gemeldete Person aus dem Link der Firma (Vorbelegung) */
+  invite?: { first_name: string; last_name: string; email: string } | null
   challenge?: { token: string; salt: string; difficulty: number }
   key?: string
   kiosk?: string
@@ -120,6 +122,8 @@ export interface JoinStatus {
   name: string
   language: string
   summary: string[]
+  /** Gibt es das PDF über den Link? Nach der Entscheidung nicht mehr. */
+  pdf?: boolean
   signed: boolean
   signature_required: boolean
   can_withdraw: boolean
@@ -269,6 +273,8 @@ export interface ApplicationDetail extends ApplicationRow {
   decided_at: string | null
   decided_by: string
   decision_note: string
+  /** Angaben nach der Aufbewahrungsfrist entfernt; der Beleg bleibt als PDF */
+  data_purged?: boolean
   approvals: {
     id: number
     user_name: string

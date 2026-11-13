@@ -26,7 +26,9 @@ nicht selbst Port 80 oder 443. Die konkrete Belegung anderer Dienste gehört nic
   Get-Content -Raw deploy/hestia/proxy-geheim.sh | ssh deploy@server.example.org "sudo bash -s"
   ```
 
-  Ohne `HUBIPLAN_PROXY_GEHEIM` verhält sich Caddy wie bisher.
+  Ohne `HUBIPLAN_PROXY_GEHEIM` startet der Verbund hinter einem vorgeschalteten Webserver
+  nicht: `deploy/server-setup.sh` bricht ab, bevor es etwas ändert, und nennt diesen Schritt.
+  Bei der ersten Einrichtung legt es den Wert selbst an.
 - Auch die Container selbst erreicht auf einem geteilten Server jeder Prozess im Docker-Netz,
   an Caddy vorbei. Das Backend glaubt `X-Forwarded-For` deshalb nur, wenn die Verbindung von
   Caddy kommt, und die Besucheradresse der Vereinswebseite (`X-Hubiplan-Besucher`) nur vom

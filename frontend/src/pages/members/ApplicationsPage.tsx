@@ -691,6 +691,13 @@ function Detail({
               })}{' '}
             {app.decision_note}
           </p>
+          {app.data_purged && (
+            <p className="muted">
+              {t(
+                'Die Angaben dieses Antrags wurden nach der Aufbewahrungsfrist entfernt. Der Antrag bleibt als PDF erhalten.',
+              )}
+            </p>
+          )}
           {app.membership_id && (
             <Link to={`/mitglieder/${app.membership_id}`}>{t('Zur Mitgliederakte')}</Link>
           )}

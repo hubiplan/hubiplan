@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import datetime
 
-from django.core.cache import cache
 from django.db import transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -22,6 +21,7 @@ from rest_framework.views import APIView
 
 from access.modules import module_on
 from audit.log import current_via, record
+from core.ratelimit import client_ip, too_many
 from core.tenancy import rls_bypass, unit_context
 
 from . import services
@@ -114,6 +114,7 @@ class StandAccessView(_Mixin, APIView):
 # --- Öffentlich mit Schlüssel (ohne Anmeldung) ---
 
 RATE = (1500, 600)  # 1500 Aufrufe je 10 Minuten und Zugang (Stand alle 3 s, Abgleich, Laden)
+UNKNOWN_RATE = (60, 600)  # Aufrufe mit unbekanntem Schlüssel je 10 Minuten und Adresse
 
 
 class _StandPublic(APIView):
@@ -121,11 +122,6 @@ class _StandPublic(APIView):
     permission_classes = [AllowAny]
 
     def resolve(self, token: str) -> StandAccess:
-        key = f"stand:{hash_token(token)[:32]}"
-        count = cache.get(key, 0)
-        if count >= RATE[0]:
-            raise ValidationError(gettext("Zu viele Aufrufe. Bitte kurz warten."))
-        cache.set(key, count + 1, RATE[1])
         with rls_bypass():
             access = (
                 StandAccess.objects.select_related("competition", "organization")
@@ -137,7 +133,18 @@ class _StandPublic(APIView):
             or not access.is_active
             or MODULE not in (access.organization.enabled_modules or [])
         ):
+            # Unbekannte Schlüssel zählen je Adresse, nicht je Schlüssel: Sonst legte jeder
+            # geratene Schlüssel einen eigenen Zähler an und füllte den Zwischenspeicher, den
+            # sich die Grenzen mit der Auftragsschlange teilen (Gesamtaudit 13.11. V-01)
+            request = getattr(self, "request", None)
+            address = client_ip(request) if request is not None else ""
+            if too_many(f"stand:unbekannt:{address}", UNKNOWN_RATE[0], UNKNOWN_RATE[1]):
+                raise ValidationError(gettext("Zu viele Aufrufe. Bitte kurz warten."))
             raise Http404
+        # Festes Zeitfenster: Früher verlängerte jeder Aufruf die Laufzeit des Zählers, er
+        # lief im Dauerbetrieb nie ab und sperrte das Tablet (Gesamtaudit 13.11. K-01)
+        if too_many(f"stand:{access.pk}", RATE[0], RATE[1]):
+            raise ValidationError(gettext("Zu viele Aufrufe. Bitte kurz warten."))
         return access
 
     def finish(self, data) -> Response:

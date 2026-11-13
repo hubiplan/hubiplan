@@ -22,6 +22,8 @@ export function McpConnectPage() {
   const [back, setBack] = useState('')
   const [unit, setUnit] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
+  // Bereiche, die sofort wirken: nur mit eigenem Haken, nie vorangekreuzt
+  const [extra, setExtra] = useState<string[]>([])
 
   useEffect(() => {
     let active = true
@@ -48,7 +50,7 @@ export function McpConnectPage() {
     setError(null)
     try {
       const res =
-        allow && unit !== null ? await mcpApi.allow(params, unit) : await mcpApi.deny(params)
+        allow && unit !== null ? await mcpApi.allow(params, unit, extra) : await mcpApi.deny(params)
       leaveTo.go(res.redirect)
     } catch (e) {
       const body = e instanceof ApiError ? (e.body as McpDenied | null) : null
@@ -108,6 +110,25 @@ export function McpConnectPage() {
               ))}
               <li>{t('die Hilfe von HUBIplan lesen')}</li>
             </ul>
+            {(info.optional ?? []).length > 0 && !info.problem && info.units.length > 0 && (
+              <>
+                <h2>{t('Zusätzlich erlauben')}</h2>
+                {(info.optional ?? []).map((s) => (
+                  <label key={s.scope} className="checkbox">
+                    <input
+                      type="checkbox"
+                      checked={extra.includes(s.scope)}
+                      onChange={(e) =>
+                        setExtra((old) =>
+                          e.target.checked ? [...old, s.scope] : old.filter((x) => x !== s.scope),
+                        )
+                      }
+                    />
+                    <span>{s.label}</span>
+                  </label>
+                ))}
+              </>
+            )}
             <p className="muted small">
               {t(
                 'Nie mehr als du selbst. Veröffentlichen, Mitgliederdaten, Mails und Zahlungen gibt es über den Assistenten nicht. Was er schreibt, geht an den Anbieter des Assistenten; schreibe dort keine vertraulichen Daten hinein. Trennen kannst du die Verbindung jederzeit unter Mein Konto › App & andere Instanzen.',

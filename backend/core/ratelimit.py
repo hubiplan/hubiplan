@@ -64,6 +64,25 @@ def _is_ip(value: str) -> bool:
     return True
 
 
+def bucket(value: str) -> str:
+    """Adresse, unter der gezählt wird.
+
+    Ein gewöhnlicher IPv6-Anschluss verfügt über ein ganzes /64-Netz; zählte jede einzelne
+    Adresse für sich, wäre jede Grenze je Adresse durch Wechseln umgangen (Gesamtaudit
+    13.11. S-02). IPv6 zählt deshalb je /64, IPv4 (auch als ``::ffff:…``) je Adresse.
+    Alles andere bleibt, wie es ist.
+    """
+    try:
+        ip = ipaddress.ip_address(value)
+    except ValueError:
+        return value
+    if ip.version == 4:
+        return str(ip)
+    if ip.ipv4_mapped is not None:
+        return str(ip.ipv4_mapped)
+    return str(ipaddress.ip_network((int(ip) >> 64 << 64, 64)).network_address)
+
+
 def from_proxy(request) -> bool:
     """Kommt die Anfrage vom eigenen Proxy (Caddy)?
 
@@ -103,14 +122,15 @@ def client_ip(request) -> str:
     Vor dem Backend steht genau ein Proxy (Caddy); er setzt X-Forwarded-For neu
     und ignoriert, was der Aufrufer selbst mitschickt. Genommen wird der letzte
     Eintrag, also der, den Caddy angehängt hat. Kommt die Anfrage nicht von Caddy
-    (``from_proxy``), zählt die Adresse der Verbindung.
+    (``from_proxy``), zählt die Adresse der Verbindung. IPv6 kommt als /64-Netz zurück
+    (``bucket``).
     """
     remote = request.META.get("REMOTE_ADDR", "")
     if not from_proxy(request):
-        return remote
+        return bucket(remote)
     forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
     parts = [p.strip() for p in forwarded.split(",") if p.strip()]
-    return parts[-1] if parts else remote
+    return bucket(parts[-1] if parts else remote)
 
 
 VISITOR_HEADER = "HTTP_X_HUBIPLAN_BESUCHER"
@@ -126,8 +146,8 @@ def visitor_ip(request) -> str:
     if from_website(request):
         visitor = request.META.get(VISITOR_HEADER, "").strip()
         if _is_ip(visitor):
-            return visitor
-        return request.META.get("REMOTE_ADDR", "")
+            return bucket(visitor)
+        return bucket(request.META.get("REMOTE_ADDR", ""))
     return client_ip(request)
 
 

@@ -16,6 +16,8 @@ export interface McpRequest {
   /** Mit diesem Assistenten schon einmal verbunden */
   connected_before: boolean
   scopes: McpScope[]
+  /** Gibt es nur mit eigenem Haken (wirkt sofort, ohne Entwurf) */
+  optional: McpScope[]
   units: { id: number; name: string }[]
   /** Leer: zweiter Faktor in Ordnung; sonst der Hinweis, was fehlt */
   problem: string
@@ -46,8 +48,8 @@ export interface McpConnections {
 
 export const mcpApi = {
   describe: (query: string) => api.get<McpRequest>(`/api/mcp/oauth/authorize/?${query}`),
-  allow: (params: Record<string, string>, organization: number) =>
-    api.post<{ redirect: string }>('/api/mcp/oauth/authorize/', { params, organization }),
+  allow: (params: Record<string, string>, organization: number, extra: string[] = []) =>
+    api.post<{ redirect: string }>('/api/mcp/oauth/authorize/', { params, organization, extra }),
   deny: (params: Record<string, string>) =>
     api.post<{ redirect: string }>('/api/mcp/oauth/authorize/', { params, deny: true }),
   connections: () => api.get<McpConnections>('/api/me/mcp/'),

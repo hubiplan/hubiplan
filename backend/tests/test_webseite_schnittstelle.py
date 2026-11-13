@@ -415,7 +415,11 @@ class TestKontakt:
         assert resp.status_code == 200, resp.content
         assert mail.outbox[0].to == ["erika@example.org"]
         assert mail.outbox[0].reply_to == ["max@example.org"]
-        assert mail.outbox[1].to == ["max@example.org"]  # Kopie
+        # Bestätigung an die ungeprüfte Adresse: ohne Namen und ohne den Text der Nachricht
+        # (Gesamtaudit 13.11. H-06)
+        assert mail.outbox[1].to == ["max@example.org"]
+        assert "Schützenfest" not in mail.outbox[1].body
+        assert "Max Besucher" not in mail.outbox[1].body
 
     def test_zu_schnell(self, setup):
         rid = get("schluessel-a/contact/").json()["recipients"][0]["id"]
