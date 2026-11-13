@@ -248,6 +248,10 @@ def _menu_read(args: dict, ctx: ClubContext) -> str:
     result = {
         "menue": [node(n) for n in v.get("menu") or []],
         "knopf": v.get("menu_button") or "",
+        # Webseite #75: Hauptpunkte nur im Fuß oder im Menü und im Fuß
+        "fuss": {
+            k: PLACE_NAMES[p] for k, p in (v.get("menu_places") or {}).items() if p in PLACE_NAMES
+        },
         "punkte": [{"schluessel": k, **x} for k, x in items.items()],
     }
     return (
@@ -258,6 +262,11 @@ def _menu_read(args: dict, ctx: ClubContext) -> str:
         + "\n\n"
         + _dump(result)
     )
+
+
+# Platz eines Hauptpunkts (Webseite #75): Wert in HUBIplan → Wort für das Werkzeug
+PLACE_NAMES = {"footer": "fuss", "both": "beides"}
+PLACE_VALUES = {"fuss": "footer", "beides": "both", "menue": None}
 
 
 def _tree(value) -> list[dict]:
@@ -295,6 +304,7 @@ def _menu_change(args: dict, ctx: ClubContext) -> str:
     links = dict(v.get("menu_links") or {})
     menu = list(v.get("menu") or [])
     button = v.get("menu_button") or ""
+    places = dict(v.get("menu_places") or {})
     created = []
     for entry in _list(args, "neu") or []:
         if not isinstance(entry, dict) or entry.get("art") not in ("ueberschrift", "link"):
@@ -327,11 +337,26 @@ def _menu_change(args: dict, ctx: ClubContext) -> str:
         menu = _tree(args["reihenfolge"])
     if "knopf" in args:
         button = _str(args, "knopf", 40) or ""
-    if not created and not any(k in args for k in ("namen", "links", "reihenfolge", "knopf")):
+    for key, place in (_obj(args, "fuss") or {}).items():
+        if place not in PLACE_VALUES:
+            raise ToolError(_("Platz im Fuß: „fuss“, „beides“ oder „menue“."))
+        if PLACE_VALUES[place]:
+            places[key] = PLACE_VALUES[place]
+        else:
+            places.pop(key, None)
+    if not created and not any(
+        k in args for k in ("namen", "links", "reihenfolge", "knopf", "fuss")
+    ):
         raise ToolError(_("Bitte angeben, was sich am Menü ändern soll."))
     _save_draft(
         ctx,
-        {"menu": menu, "block_names": names, "menu_links": links, "menu_button": button},
+        {
+            "menu": menu,
+            "block_names": names,
+            "menu_links": links,
+            "menu_button": button,
+            "menu_places": places,
+        },
     )
     text = _("Menü geändert.") + " " + _draft_hint()
     if created:
@@ -353,10 +378,9 @@ def _new_key(taken: set[str]) -> str:
 LOOK = {"hintergrund": "bg", "breite": "width", "spalte": "column"}
 
 
-def _home_build(args: dict, ctx: ClubContext) -> str:
-    _data, site = _site(ctx)
-    v = _current(site)
-    sections = [dict(s) for s in v.get("home_sections") or []]
+def _rebuild(sections: list[dict], args: dict) -> tuple[list[dict], list[str]]:
+    """Aufbau einer Folge von Abschnitten ändern (Startseite und Textseiten, #78)."""
+    sections = [dict(s) for s in sections]
     by_key = {s["key"]: s for s in sections}
     changed = False
     created = []
@@ -409,11 +433,71 @@ def _home_build(args: dict, ctx: ClubContext) -> str:
         changed = True
     if not changed:
         raise ToolError(_("Bitte angeben, was sich am Aufbau ändern soll."))
+    return sections, created
+
+
+def _home_build(args: dict, ctx: ClubContext) -> str:
+    _data, site = _site(ctx)
+    v = _current(site)
+    sections, created = _rebuild(v.get("home_sections") or [], args)
     _save_draft(ctx, {"home_sections": sections})
     text = _("Aufbau der Startseite geändert.") + " " + _draft_hint()
     if created:
         text += "\n\n" + _dump({"neue_schluessel": created})
     return text
+
+
+# --- Abschnitte einer Textseite (#78) ---
+
+
+def _page_sections(ctx: ClubContext, pk: int) -> list[dict]:
+    _v, content_views = _views()
+    t = ctx.call(content_views.TextDetailView, "GET", f"website/texts/{pk}/", pk=pk)
+    if t.get("kind") != "page" or t.get("has_timeline"):
+        raise ToolError(
+            _("Abschnitte gibt es nur auf Textseiten (nicht in der Chronik mit Zeitleiste).")
+        )
+    return list(t.get("sections") or [])
+
+
+def _save_page_sections(ctx: ClubContext, pk: int, sections: list[dict]) -> dict:
+    _v, content_views = _views()
+    return ctx.call(
+        content_views.TextDetailView, "PUT", f"website/texts/{pk}/", {"sections": sections}, pk=pk
+    )
+
+
+def _page_build(args: dict, ctx: ClubContext) -> str:
+    pk = _int(args, "nummer")
+    sections, created = _rebuild(_page_sections(ctx, pk), args)
+    t = _save_page_sections(ctx, pk, sections)
+    text = (
+        _("Aufbau der Textseite „{title}“ geändert.").format(title=t.get("title", ""))
+        + " "
+        + _draft_hint()
+    )
+    if created:
+        text += "\n\n" + _dump({"neue_schluessel": created})
+    return text
+
+
+def _page_section_change(args: dict, ctx: ClubContext) -> str:
+    pk = _int(args, "nummer")
+    key = _str(args, "schluessel", 40, required=True)
+    content = args.get("inhalt")
+    if not isinstance(content, dict) or not content:
+        raise ToolError(_("„inhalt“ muss ein Objekt mit den geänderten Feldern sein."))
+    sections = [dict(s) for s in _page_sections(ctx, pk)]
+    target = next((s for s in sections if s.get("key") == key), None)
+    if target is None:
+        raise ToolError(_("Diesen Abschnitt gibt es nicht. Erst webseite_text_lesen aufrufen."))
+    if "kind" not in target:
+        raise ToolError(
+            _("Den Text der Seite ändert webseite_text_aendern; er hat hier keinen Inhalt.")
+        )
+    target["data"] = {**(target.get("data") or {}), **content}
+    _save_page_sections(ctx, pk, sections)
+    return _("Abschnitt {key} der Textseite geändert.").format(key=key) + " " + _draft_hint()
 
 
 def _home_options(args: dict, ctx: ClubContext) -> str:
@@ -727,8 +811,8 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
         title=gettext_lazy("Menü ändern (Entwurf)"),
         description=gettext_lazy(
             "Ordnet das Menü im Entwurf: Reihenfolge mit Unterpunkten, eigene Namen, neue "
-            "Überschriften und Links nach außen, Knopf. Bausteine ein- oder ausschalten geht nur "
-            "in HUBIplan. Braucht das Recht „Webseite verwalten“."
+            "Überschriften und Links nach außen, Knopf, Platz im Fuß. Bausteine ein- oder "
+            "ausschalten geht nur in HUBIplan. Braucht das Recht „Webseite verwalten“."
         ),
         schema=_schema(
             {
@@ -772,6 +856,14 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
                     "type": "string",
                     "maxLength": 40,
                     "description": gettext_lazy("Hauptpunkt als Knopf; leer = keiner."),
+                },
+                "fuss": {
+                    "type": "object",
+                    "additionalProperties": {"type": "string", "enum": ["fuss", "beides", "menue"]},
+                    "description": gettext_lazy(
+                        "Schlüssel eines Hauptpunkts → „fuss“ (nur im Fuß, z. B. Kontakt neben "
+                        "dem Impressum), „beides“ (Menü und Fuß) oder „menue“ (nur im Menü)."
+                    ),
                 },
             }
         ),
@@ -834,6 +926,89 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
             }
         ),
         run=_home_build,
+        writes=True,
+        scope=SCOPE_DRAFT,
+    ),
+    Tool(
+        name="textseite_aufbau_aendern",
+        title=gettext_lazy("Aufbau einer Textseite ändern (Entwurf)"),
+        description=gettext_lazy(
+            "Abschnitte einer Textseite wie auf der Startseite: neue eigene Abschnitte (z. B. "
+            "Kacheln, Text mit Bild, Knopfleiste, Ansprechpartner; dazu „cover“ = Titelbild mit "
+            "inhalt {image}, höchstens eins), Reihenfolge, an/aus, Aussehen und Entfernen. Der "
+            "Text der Seite ist der feste Abschnitt „body“ (ändern mit webseite_text_aendern). "
+            "Schlüssel liefert webseite_text_lesen, Felder je Art startseite_bausteine."
+        ),
+        schema=_schema(
+            {
+                "nummer": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": gettext_lazy("Nummer der Textseite."),
+                },
+                "neu": {
+                    "type": "array",
+                    "maxItems": 10,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "art": {"type": "string", "maxLength": 20},
+                            "inhalt": OPEN_OBJECT,
+                            "nach": {
+                                "type": "string",
+                                "maxLength": 40,
+                                "description": gettext_lazy(
+                                    "Schlüssel des Abschnitts davor; leer = ganz oben, fehlt = "
+                                    "ganz unten."
+                                ),
+                            },
+                            "an": {"type": "boolean"},
+                        },
+                        "required": ["art"],
+                    },
+                },
+                "reihenfolge": KEYS,
+                "an": KEYS,
+                "aus": KEYS,
+                "entfernen": KEYS,
+                "aussehen": {
+                    "type": "object",
+                    "description": gettext_lazy(
+                        "Schlüssel → {hintergrund, breite}, Werte aus startseite_bausteine. "
+                        "Auch für „body“, z. B. breite full für Text über die volle Breite."
+                    ),
+                },
+            },
+            ["nummer"],
+        ),
+        run=_page_build,
+        writes=True,
+        scope=SCOPE_DRAFT,
+    ),
+    Tool(
+        name="textseite_abschnitt_aendern",
+        title=gettext_lazy("Abschnitt einer Textseite ändern (Entwurf)"),
+        description=gettext_lazy(
+            "Ändert den Inhalt eines eigenen Abschnitts einer Textseite im Entwurf. „inhalt“ "
+            "enthält nur die geänderten Felder, aufgebaut wie „data“ aus webseite_text_lesen."
+        ),
+        schema=_schema(
+            {
+                "nummer": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": gettext_lazy("Nummer der Textseite."),
+                },
+                "schluessel": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "description": gettext_lazy("Schlüssel des Abschnitts, z. B. c:ab12."),
+                },
+                "inhalt": OPEN_OBJECT,
+            },
+            ["nummer", "schluessel", "inhalt"],
+        ),
+        run=_page_section_change,
         writes=True,
         scope=SCOPE_DRAFT,
     ),

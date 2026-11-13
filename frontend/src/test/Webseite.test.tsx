@@ -541,6 +541,52 @@ describe('Webseite', () => {
     )
   })
 
+  it('setzt einen Menüpunkt nur in den Fuß (Webseite #75)', async () => {
+    const items = ['events', 'contact'].map((key) => ({
+      key,
+      label: key === 'contact' ? 'Kontakt' : 'Termine',
+      default_label: key === 'contact' ? 'Kontakt' : 'Termine',
+      renamable: true,
+      hint: '',
+      toggle: key,
+      heading: false,
+      parent: null,
+    }))
+    const body = {
+      ...data(
+        website('maintenance', {
+          menu: [
+            { key: 'events', children: [] },
+            { key: 'contact', children: [] },
+          ],
+          menu_items: items,
+          block_names: {},
+          menu_links: {},
+          menu_button: '',
+          menu_places: {},
+        }),
+      ),
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body }),
+        [`PUT ${base}`]: () => ({ status: 200, body }),
+      },
+      '/webseite/aufbau',
+    )
+    const user = userEvent.setup()
+    await user.click(await screen.findByText('Menüpunkte im Fuß'))
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Kontakt' }), 'footer')
+    await waitFor(
+      () => {
+        const last = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+        const sent = JSON.parse(String(last?.init?.body ?? '{}'))
+        expect(sent.menu_places).toEqual({ contact: 'footer' })
+      },
+      { timeout: 4000 },
+    )
+  })
+
   it('stellt Stilregler ein, sperrt Vorgaben des Designs und stellt zurück', async () => {
     const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
     const body = {

@@ -17,6 +17,8 @@ export interface WebsiteSettings {
   menu_links?: Record<string, string>
   /** Hauptpunkt des Menüs, der als Knopf hervorgehoben ist; leer = keiner */
   menu_button?: string
+  /** Platz von Hauptpunkten (Webseite #75): footer = nur im Fuß, both = Menü und Fuß; fehlt = Menü */
+  menu_places?: Record<string, MenuPlace>
   /** Bausteine der Startseite in ihrer Reihenfolge */
   home_sections: HomeSection[]
   /** Standarddesign der Webseite (classic, festive, sidebar, stage, newspaper) */
@@ -149,6 +151,8 @@ export interface DesignImportOptions {
 }
 
 /** Punkt im Menübaum (höchstens zwei Ebenen) */
+export type MenuPlace = 'footer' | 'both'
+
 export interface MenuNode {
   key: string
   children: MenuNode[]
@@ -343,6 +347,7 @@ export const DRAFT_FIELDS = [
   'block_names',
   'menu_links',
   'menu_button',
+  'menu_places',
 ] as const
 export type DraftField = (typeof DRAFT_FIELDS)[number]
 export type DesignDraft = Partial<Pick<WebsiteSettings, DraftField>>

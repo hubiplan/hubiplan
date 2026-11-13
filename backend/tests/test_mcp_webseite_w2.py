@@ -147,6 +147,23 @@ def test_menue_im_entwurf_mit_ueberschrift_und_link(club, site, manager):  # noq
     assert not site.draft
 
 
+# Webseite #75: Hauptpunkt nur im Fuß oder in Menü und Fuß
+def test_ki_setzt_platz_im_fuss(club, site, manager):  # noqa: F811
+    token = connect(manager, club)["access_token"]
+    text, failed = call(token, "webseite_menue_aendern", fuss={"contact": "fuss"})
+    assert not failed, text
+    site.refresh_from_db()
+    assert site.draft["menu_places"] == {"contact": "footer"}
+    text, _failed = call(token, "webseite_menue_ansehen")
+    assert data_of(text)["fuss"] == {"contact": "fuss"}
+    text, failed = call(token, "webseite_menue_aendern", fuss={"contact": "menue"})
+    assert not failed, text
+    site.refresh_from_db()
+    assert not (site.draft or {}).get("menu_places")
+    _text, failed = call(token, "webseite_menue_aendern", fuss={"contact": "oben"})
+    assert failed
+
+
 def test_aufbau_der_startseite_im_entwurf(club, site, manager):  # noqa: F811
     token = connect(manager, club)["access_token"]
     text, failed = call(token, "startseite_bausteine")
@@ -491,3 +508,79 @@ def test_kopfbild_schmal_ueber_die_schnittstelle(club, site, manager):  # noqa: 
     assert not failed, text
     site.refresh_from_db()
     assert "header_image_narrow" not in site.draft
+
+
+# --- Abschnitte von Textseiten (Webseite #78) ---
+
+
+def test_textseite_aus_abschnitten_ueber_die_schnittstelle(club, site, editor):  # noqa: F811
+    """#78: Kacheln, Knöpfe usw. auf Textseiten über die KI-Verbindung, nur im Entwurf."""
+    token = connect(editor, club)["access_token"]
+    text, failed = call(
+        token, "webseite_textseite_anlegen", titel="Mitmachen", adresse="mitmachen", text="Hallo."
+    )
+    assert not failed, text
+    page = WebsiteText.objects.get(website=site, slug="mitmachen")
+    names = {t["name"] for t in rpc(token, "tools/list").json()["result"]["tools"]}
+    assert {"textseite_aufbau_aendern", "textseite_abschnitt_aendern"} <= names
+    read = data_of(call(token, "webseite_text_lesen", nummer=page.pk)[0])
+    assert [s["key"] for s in read["abschnitte"]] == ["body"]
+    text, failed = call(
+        token,
+        "textseite_aufbau_aendern",
+        nummer=page.pk,
+        neu=[
+            {
+                "art": "tiles",
+                "inhalt": {
+                    "title": "Wege in den Verein",
+                    "tiles": [
+                        {"title": "Zug", "text": "Gemeinsam marschieren."},
+                        {"title": "Musik", "text": "Mitspielen."},
+                    ],
+                },
+            },
+            {"art": "buttons", "inhalt": {"title": "Fragen?"}, "nach": ""},
+        ],
+        aussehen={"body": {"breite": "full"}},
+    )
+    assert not failed, text
+    tiles, buttons = data_of(text)["neue_schluessel"]
+    page.refresh_from_db()
+    assert [s["key"] for s in page.sections] == [buttons, "body", tiles]
+    body = next(s for s in page.sections if s["key"] == "body")
+    assert body["width"] == "full"
+    assert page.published_sections == []
+    text, failed = call(
+        token,
+        "textseite_abschnitt_aendern",
+        nummer=page.pk,
+        schluessel=tiles,
+        inhalt={"title": "Vier Wege"},
+    )
+    assert not failed, text
+    page.refresh_from_db()
+    own = next(s for s in page.sections if s["key"] == tiles)
+    assert own["data"]["title"] == "Vier Wege" and len(own["data"]["tiles"]) == 2
+    # Der Text der Seite hat hier keinen Inhalt, entfernen geht nur bei eigenen Abschnitten
+    _text, failed = call(
+        token, "textseite_abschnitt_aendern", nummer=page.pk, schluessel="body", inhalt={"x": 1}
+    )
+    assert failed
+    _text, failed = call(token, "textseite_aufbau_aendern", nummer=page.pk, entfernen=["body"])
+    assert failed
+    # Unbekannte Art wird abgelehnt, nichts ändert sich
+    _text, failed = call(token, "textseite_aufbau_aendern", nummer=page.pk, neu=[{"art": "x"}])
+    assert failed
+    page.refresh_from_db()
+    assert len(page.sections) == 3
+
+
+def test_textseite_abschnitte_nicht_bei_anderen_texten(club, site, editor):  # noqa: F811
+    token = connect(editor, club)["access_token"]
+    call(token, "webseite_texte")  # legt die Begrüßung an
+    greeting = WebsiteText.objects.get(website=site, kind="greeting")
+    text, failed = call(
+        token, "textseite_aufbau_aendern", nummer=greeting.pk, neu=[{"art": "divider"}]
+    )
+    assert failed and "Textseiten" in text

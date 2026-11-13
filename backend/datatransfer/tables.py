@@ -833,6 +833,10 @@ def remap_design(data, ids: IdMap) -> dict:
         }
     if data.get("menu_button"):
         data["menu_button"] = remap(data["menu_button"]) or ""
+    if isinstance(data.get("menu_places"), dict):
+        data["menu_places"] = {
+            remap(k): v for k, v in data["menu_places"].items() if remap(k) is not None
+        }
     return data
 
 
@@ -866,6 +870,11 @@ def fix_website_keys(name: str, obj, ids: IdMap) -> None:
         # Hervorgehobener Menüpunkt (z. B. eine Textseite) zeigt auf die neue Nummer
         if getattr(obj, "menu_button", ""):
             obj.menu_button = remap(obj.menu_button) or ""
+        # Platz im Fuß (Webseite #75): Textseiten und Links mit neuer Nummer
+        if isinstance(getattr(obj, "menu_places", None), dict):
+            obj.menu_places = {
+                remap(k): v for k, v in obj.menu_places.items() if remap(k) is not None
+            }
         # Ziel der Hinweisleiste (G6): Menüpunkt oder Termin mit neuer Nummer
         target = getattr(obj, "notice_target", None)
         if isinstance(target, dict) and "page" in target:

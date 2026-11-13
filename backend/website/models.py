@@ -219,7 +219,7 @@ def normalize_home_sections(value) -> list:
 
 # Was der Entwurf der Gestaltung umfasst (Design, Farbrollen, Stilregler, Kopfbild, Startseite,
 # Darstellung und seit W2 der KI-Schnittstelle auch das Menü mit Namen, Links und Knopf)
-MENU_DRAFT_FIELDS = ("menu", "block_names", "menu_links", "menu_button")
+MENU_DRAFT_FIELDS = ("menu", "block_names", "menu_links", "menu_button", "menu_places")
 DRAFT_FIELDS = (
     "design",
     "color_roles",
@@ -286,6 +286,9 @@ class Website(models.Model):
     menu_links = models.JSONField("Links im Menü", default=dict, blank=True)
     # Ein Hauptpunkt des Menüs als Knopf hervorgehoben (z. B. „Mitglied werden“), leer = keiner
     menu_button = models.CharField("Menüpunkt als Knopf", max_length=40, blank=True)
+    # Platz von Hauptpunkten (Webseite #75): Schlüssel → "footer" (nur im Fuß) oder "both"
+    # (Hauptmenü und Fuß); fehlt = nur im Hauptmenü (website/menu.py PLACES)
+    menu_places = models.JSONField("Platz der Menüpunkte", default=dict, blank=True)
     # Stilregler (Gestaltung › Feinabstimmung, website/style.py): nur verstellte; leer = Design
     style = models.JSONField("Stilregler", default=dict, blank=True)
     # Darstellung der festen Bereiche (G5, website/variants.py): nur abweichende Varianten

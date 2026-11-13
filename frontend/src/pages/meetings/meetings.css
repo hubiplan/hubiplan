@@ -98,10 +98,6 @@
   align-items: center;
   gap: 1rem;
 }
-.live-code svg,
-.live-overlay svg {
-  background: #fff;
-}
 .live-overlay {
   position: fixed;
   inset: 0;
