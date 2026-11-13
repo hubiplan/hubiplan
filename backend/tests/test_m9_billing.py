@@ -196,6 +196,8 @@ class TestBeitragslauf:
             "with_mandate": 0,
             "open_change_requests": 0,
             "multi_units": 0,
+            "households": 0,
+            "household_without_payer": 0,
         }
 
     def test_lauf_erzeugt_entwuerfe(self, c, base, members):

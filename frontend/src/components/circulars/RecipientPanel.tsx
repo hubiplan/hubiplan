@@ -434,6 +434,14 @@ export function RecipientPanel({
             </>
           )}
 
+          {audience === 'members' && !federation && !event && (
+            <Checkbox
+              label={t('Briefe je Haushalt zusammenfassen')}
+              hint={t('ein Brief bzw. eine Mail je Haushalt mit gleicher Anschrift')}
+              checked={filters.households_merge !== false}
+              onChange={(on) => onFilters({ households_merge: on })}
+            />
+          )}
           {audience === 'members' && (
             <div className="stack-sm">
               <label className="field">
@@ -490,6 +498,10 @@ export function RecipientPanel({
               t(' · {opted_out} abgemeldet', { opted_out: data.counts.opted_out })}
             {!!data.counts.excluded &&
               t(' · {excluded} abgewählt', { excluded: data.counts.excluded })}
+            {!!data.counts.merged &&
+              t(' · {merged} im gemeinsamen Schreiben an den Haushalt', {
+                merged: data.counts.merged,
+              })}
           </p>
           {items.length === 0 ? (
             <p className="muted">{t('Für diese Auswahl gibt es keine Empfänger.')}</p>
@@ -526,7 +538,9 @@ export function RecipientPanel({
                       )}
                       <td>
                         {c.channel ? channelLabel[c.channel] : '–'}
-                        {c.opted_out && <div className="muted small">{c.note}</div>}
+                        {(c.opted_out || c.merged_into) && (
+                          <div className="muted small">{c.note}</div>
+                        )}
                       </td>
                       {!fixed && (
                         <td>

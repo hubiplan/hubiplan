@@ -3142,6 +3142,13 @@ form.card > .save-status:first-child {
   gap: 0.5rem 1rem;
   margin-bottom: 0.75rem;
 }
+/* Mitglieder › Haushalte und Firmen */
+.households-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
 .doc-folder {
   margin: 0 0 0.75rem;
   padding: 0.5rem 0.75rem;

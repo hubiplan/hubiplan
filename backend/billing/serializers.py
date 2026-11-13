@@ -306,6 +306,7 @@ class InvoiceListSerializer(serializers.ModelSerializer):
         source="department.display_name", read_only=True, default=None
     )
     club_name = serializers.CharField(source="club.display_name", read_only=True, default=None)
+    household_name = serializers.CharField(source="household.name", read_only=True, default=None)
     issuer_name = serializers.CharField(source="organization.display_name", read_only=True)
     run_label = serializers.CharField(source="run.label", read_only=True, default=None)
     project_name = serializers.CharField(source="project.name", read_only=True, default=None)
@@ -334,6 +335,8 @@ class InvoiceListSerializer(serializers.ModelSerializer):
             "department_name",
             "club",
             "club_name",
+            "household",
+            "household_name",
             "issuer_name",
             "run",
             "run_label",
@@ -489,6 +492,7 @@ class MandateSerializer(serializers.ModelSerializer):
             "scheme_label",
             "membership",
             "club",
+            "household",
             "payer_name",
             "holder",
             "iban",
@@ -513,6 +517,8 @@ class MandateSerializer(serializers.ModelSerializer):
         if obj.membership_id:
             p = obj.membership.person
             return p.display_name if p.is_organization else f"{p.last_name}, {p.first_name}"
+        if obj.household_id:
+            return obj.household.name
         return obj.club.display_name if obj.club_id else ""
 
     def get_iban_masked(self, obj) -> str:
@@ -529,6 +535,7 @@ class MandateSerializer(serializers.ModelSerializer):
 class MandateInputSerializer(serializers.Serializer):
     membership = serializers.IntegerField(required=False, allow_null=True)
     club = serializers.IntegerField(required=False, allow_null=True)
+    household = serializers.IntegerField(required=False, allow_null=True)
     holder = serializers.CharField(max_length=70)
     iban = serializers.CharField(max_length=42)
     bic = serializers.CharField(max_length=14, required=False, allow_blank=True, default="")

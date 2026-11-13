@@ -138,6 +138,12 @@ export function PortalHelpers({ accessId }: { accessId: number }) {
                 {duty.min_age && (
                   <span className="muted"> · {t('ab {age} Jahren', { age: duty.min_age })}</span>
                 )}
+                {duty.qualification && (
+                  <span className="muted">
+                    {' '}
+                    · {t('Voraussetzung: {name}', { name: duty.qualification })}
+                  </span>
+                )}
               </h3>
               <table className="table">
                 <thead>

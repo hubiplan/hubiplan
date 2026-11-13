@@ -276,6 +276,7 @@ function PlanDetail({
     () => (club ? helperApi.units(base).catch(() => []) : Promise.resolve([])),
     [base, club],
   )
+  const qualifications = useLoad(() => helperApi.qualifications(base).catch(() => []), [base])
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const plan = loaded.data
@@ -453,29 +454,67 @@ function PlanDetail({
           editable={editable}
           canMark={plan.can_edit}
           units={editable ? (unitList.data ?? []) : []}
+          qualifications={editable ? (qualifications.data ?? []) : []}
           onChanged={loaded.reload}
         />
       ))}
       {plan.duties?.length === 0 && (
         <p className="muted">{t('Lege zuerst die Dienste an, etwa Theke, Kasse oder Aufbau.')}</p>
       )}
-      {editable && <NewDuty base={base} plan={plan.id} onSaved={loaded.reload} />}
+      {editable && (
+        <NewDuty
+          base={base}
+          plan={plan.id}
+          qualifications={qualifications.data ?? []}
+          onSaved={loaded.reload}
+        />
+      )}
     </div>
+  )
+}
+
+/** Auswahl der vorausgesetzten Qualifikation (nur mit Modul Qualifikationen und Arten). */
+function QualificationSelect({
+  value,
+  options,
+  onChange,
+  label = t('Voraussetzung'),
+}: {
+  value: string
+  options: { id: number; name: string }[]
+  onChange: (value: string) => void
+  label?: string
+}) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">{t('keine')}</option>
+        {options.map((k) => (
+          <option key={k.id} value={k.id}>
+            {k.name}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 
 function NewDuty({
   base,
   plan,
+  qualifications,
   onSaved,
 }: {
   base: string
   plan: number
+  qualifications: { id: number; name: string }[]
   onSaved: () => Promise<void>
 }) {
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
   const [minAge, setMinAge] = useState('')
+  const [qualification, setQualification] = useState('')
   const [error, setError] = useState('')
   return (
     <form
@@ -488,10 +527,12 @@ function NewDuty({
             name,
             location,
             min_age: minAge ? Number(minAge) : null,
+            ...(qualification ? { qualification: Number(qualification) } : {}),
           })
           setName('')
           setLocation('')
           setMinAge('')
+          setQualification('')
           await onSaved()
         } catch (err) {
           setError(errorMessage(err))
@@ -521,6 +562,13 @@ function NewDuty({
             onChange={(e) => setMinAge(e.target.value)}
           />
         </label>
+        {qualifications.length > 0 && (
+          <QualificationSelect
+            value={qualification}
+            options={qualifications}
+            onChange={setQualification}
+          />
+        )}
       </div>
       {error && <p role="alert">{error}</p>}
       <div className="button-row">
@@ -539,6 +587,7 @@ function DutyCard({
   editable,
   canMark,
   units,
+  qualifications,
   onChanged,
 }: {
   base: string
@@ -547,6 +596,7 @@ function DutyCard({
   editable: boolean
   canMark: boolean
   units: { id: number; name: string }[]
+  qualifications: { id: number; name: string }[]
   onChanged: () => Promise<void>
 }) {
   const [error, setError] = useState('')
@@ -582,12 +632,36 @@ function DutyCard({
           </button>
         )}
       </div>
-      {(duty.location || duty.min_age) && (
+      {(duty.location || duty.min_age || duty.qualification_name) && (
         <p className="muted">
-          {[duty.location, duty.min_age ? t('ab {age} Jahren', { age: duty.min_age }) : '']
+          {[
+            duty.location,
+            duty.min_age ? t('ab {age} Jahren', { age: duty.min_age }) : '',
+            duty.qualification_name
+              ? t('Voraussetzung: {name}', { name: duty.qualification_name })
+              : '',
+          ]
             .filter(Boolean)
             .join(' · ')}
         </p>
+      )}
+      {editable && (qualifications.length > 0 || duty.qualification) && (
+        <div className="duty-tools">
+          <QualificationSelect
+            label={t('Voraussetzung für „{name}“', { name: duty.name })}
+            value={duty.qualification ? String(duty.qualification) : ''}
+            options={
+              duty.qualification && !qualifications.some((k) => k.id === duty.qualification)
+                ? [...qualifications, { id: duty.qualification, name: duty.qualification_name }]
+                : qualifications
+            }
+            onChange={(v) =>
+              void act(() =>
+                helperApi.updateDuty(base, duty.id, { qualification: v ? Number(v) : null }),
+              )
+            }
+          />
+        </div>
       )}
       {error && <p role="alert">{error}</p>}
       {duty.shifts.length > 0 && (
@@ -633,6 +707,11 @@ function DutyCard({
                             </span>
                           )}
                           {a.phone && <span className="muted small"> {a.phone}</span>}
+                          {a.qualification_issue && (
+                            <span className="badge badge-open" title={t('Hinweis')}>
+                              {a.qualification_issue}
+                            </span>
+                          )}
                           {canMark && started(s) && (
                             <label className="done-mark">
                               <input

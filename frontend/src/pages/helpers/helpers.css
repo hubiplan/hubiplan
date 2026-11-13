@@ -45,3 +45,7 @@
   gap: 0.25rem;
   margin-left: 0.5rem;
 }
+
+.duty-tools {
+  max-width: 24rem;
+}

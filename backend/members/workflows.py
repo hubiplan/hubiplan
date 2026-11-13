@@ -30,6 +30,8 @@ from .models import (
     DepartmentMembership,
     DepartmentRoleHolder,
     ExitReason,
+    Household,
+    HouseholdMember,
     Membership,
     MembershipPeriod,
     MemberType,
@@ -128,6 +130,8 @@ def exit_membership(
         membership.type_assignments.filter(open_until),
         membership.department_memberships.filter(open_until),
         membership.department_roles.filter(open_until),
+        # Haushalte und Firmen (H1)
+        membership.household_links.filter(open_until),
     ):
         for item in qs:
             if item.valid_from > exit_date:
@@ -145,6 +149,8 @@ def _item_label(item) -> str:
         return gettext("Die Mitgliedsart")
     if isinstance(item, DepartmentMembership):
         return gettext("Die Untereinheit")
+    if isinstance(item, HouseholdMember):
+        return gettext("Der Haushalt")
     return gettext("Das Amt")
 
 
@@ -153,6 +159,7 @@ def _period_items(membership: Membership):
         membership.type_assignments.all(),
         membership.department_memberships.all(),
         membership.department_roles.all(),
+        membership.household_links.all(),
     )
 
 
@@ -540,6 +547,15 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     ContactPerson.objects.filter(membership=membership).delete()
     ContactPerson.objects.filter(organization=club, person=person).delete()
     BillingAddress.objects.filter(membership=membership).delete()
+    # Haushalte und Firmen (H1): Zugehörigkeiten; leere Haushalte entfallen
+    homes = list(
+        HouseholdMember.objects.filter(membership=membership).values_list("household_id", flat=True)
+    )
+    HouseholdMember.objects.filter(membership=membership).delete()
+    # Haushalte ohne Mitglieder entfallen, außer über ihr Mandat wurde schon eingezogen
+    Household.objects.filter(pk__in=homes, members__isnull=True).exclude(
+        mandates__debits__isnull=False
+    ).delete()
     from .photos import remove_all
 
     remove_all(membership)
@@ -598,6 +614,11 @@ def _purge_related(membership: Membership, person, club) -> None:
     values = FieldValue.objects.filter(person=person).select_related("organization")
     own = [v.pk for v in values if club in v.organization.ancestors()]
     FieldValue.objects.filter(pk__in=own).delete()
+    # Qualifikationen und Einsichtsvermerke (z. B. Führungszeugnis) braucht nach dem Austritt
+    # niemand mehr
+    from qualifications.models import Qualification
+
+    Qualification.objects.filter(organization=club, person=person).delete()
     # Meldungen: Inhalte leeren; offene gelten als erledigt, damit nichts später
     # gelöschte Daten zurückschreibt
     ChangeRequest.objects.filter(membership=membership).update(
@@ -655,6 +676,7 @@ def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, 
     from competitions.models import AwardGrant
     from honors.models import Companion, Reign, ReignPhoto
     from honors.views import _remove_photo
+    from qualifications.models import Qualification
 
     from .auskunft import _org_ids
     from .models import HonoraryTitleAward, Person
@@ -674,6 +696,9 @@ def erase_history(membership: Membership, *, listed: bool = False) -> dict[str, 
                 name=NAME_REMOVED,
             ),
             "Ehrungen": HonoraryTitleAward.objects.filter(
+                organization_id__in=orgs, person=person
+            ).delete()[0],
+            "Qualifikationen": Qualification.objects.filter(
                 organization_id__in=orgs, person=person
             ).delete()[0],
             "Wettbewerbe": update_encrypted(

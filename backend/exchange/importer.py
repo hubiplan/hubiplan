@@ -38,6 +38,8 @@ from members.models import (
     DepartmentMembership,
     ExitReason,
     FederationMember,
+    Household,
+    HouseholdMember,
     LegalForm,
     Membership,
     MembershipPeriod,
@@ -94,7 +96,13 @@ BASE_TARGETS = {
     "billing_email": "Rechnungs-E-Mail",
     "billing_order_reference": "Bestellnummer",
     "billing_leitweg_id": "Leitweg-ID",
+    # Haushalte und Firmen (H6): gleicher Name = derselbe Haushalt bzw. dieselbe Firma
+    "household": "Haushalt",
+    "household_role": "Rolle im Haushalt",
+    "company": "Firma",
+    "fee_via": "Beitrag über",
 }
+HOUSEHOLD_TARGETS = ("household", "household_role", "company", "fee_via")
 # Ziel -> (Feld der Rechnungsanschrift, Höchstlänge)
 BILLING_TARGETS = {
     "billing_name": ("name", 200),
@@ -141,6 +149,10 @@ SYNONYMS = {
     "billing_email": ["rechnung email", "rechnung mail", "rechnungsmail", "rechnungsemail"],
     "billing_order_reference": ["bestellnr", "bestellnummer", "käuferreferenz"],
     "billing_leitweg_id": ["leitweg id", "leitwegid"],
+    "household": ["familie", "haushalt name", "familienname haushalt"],
+    "household_role": ["rolle haushalt", "haushaltsrolle", "rolle in der familie"],
+    "company": ["arbeitgeber", "firma name"],
+    "fee_via": ["beitrag ueber", "beitrag über haushalt", "zahlt über"],
     "last_name": ["name", "nachname", "familienname"],
     "first_name": ["vorname"],
     "birth_date": ["geburtsdatum", "geboren", "geb", "gebdatum", "geburtstag"],
@@ -517,6 +529,7 @@ def group_rows(job, rows: list[list], lookups: Lookups) -> list[PersonGroup]:
                 _conflict(g, target, value, index)
         _pad_postal_code(g, index)
         _read_billing(g, row, mapping, index)
+        _read_household(g, row, mapping, index)
         raw_gender = _value(row, mapping, "gender")
         if raw_gender not in (None, "") and not g.data.get("gender"):
             gender = parse_gender(raw_gender)
@@ -577,6 +590,99 @@ def _read_billing(g, row, mapping, index) -> None:
             gettext("Zeile {index}: PLZ „{old}“ zu „{new}“ ergänzt.").format(
                 index=index, old=code, new="0" + code
             )
+        )
+
+
+def _read_household(g, row, mapping, index) -> None:
+    """Haushalt, Rolle, Firma und „Beitrag über“: erster Wert gilt, wie bei der Anschrift."""
+    for target in HOUSEHOLD_TARGETS:
+        value = _value(row, mapping, target)
+        value = "" if value is None else str(value).strip()
+        if not value:
+            continue
+        if not g.data.get(target):
+            g.data[target] = value
+            g.sources[target] = index
+        else:
+            _conflict(g, target, value, index)
+
+
+ROLE_WORDS = {
+    "erwachsen": HouseholdMember.Role.ADULT,
+    "erwachsener": HouseholdMember.Role.ADULT,
+    "erwachsene": HouseholdMember.Role.ADULT,
+    "adult": HouseholdMember.Role.ADULT,
+    "kind": HouseholdMember.Role.CHILD,
+    "child": HouseholdMember.Role.CHILD,
+}
+FEE_VIA_WORDS = {
+    "haushalt": Household.Kind.FAMILY,
+    "familie": Household.Kind.FAMILY,
+    "household": Household.Kind.FAMILY,
+    "firma": Household.Kind.COMPANY,
+    "company": Household.Kind.COMPANY,
+}
+
+
+def _check_household(g) -> None:
+    d = g.data
+    for target, limit in (("household", 200), ("company", 200)):
+        if len(d.get(target, "")) > limit:
+            g.errors.append(
+                gettext("{label}: höchstens {limit} Zeichen.").format(
+                    label=BASE_TARGETS[target], limit=limit
+                )
+            )
+    role = (d.get("household_role") or "").casefold()
+    if role and role not in ROLE_WORDS:
+        g.errors.append(
+            gettext(
+                "Rolle im Haushalt: „{value}“ ist unbekannt (erlaubt: Erwachsener, Kind oder leer)."
+            ).format(value=d["household_role"])
+        )
+    via = (d.get("fee_via") or "").casefold()
+    if via and via not in FEE_VIA_WORDS and via not in ("selbst", "einzeln", "-"):
+        g.errors.append(
+            gettext(
+                "Beitrag über: „{value}“ ist unbekannt (erlaubt: Haushalt, Firma oder leer)."
+            ).format(value=d["fee_via"])
+        )
+    elif via in FEE_VIA_WORDS:
+        kind = FEE_VIA_WORDS[via]
+        needed = "household" if kind == Household.Kind.FAMILY else "company"
+        if not d.get(needed):
+            g.errors.append(
+                gettext("Beitrag über {value}: Spalte „{column}“ ist leer.").format(
+                    value=d["fee_via"], column=BASE_TARGETS[needed]
+                )
+            )
+
+
+def _join_households(org, d, membership, valid_from, cache, created) -> None:
+    """Mitglied den Haushalten aus der Datei zuordnen; gleiche Namen = derselbe Haushalt."""
+    from members.households import add_member
+
+    via = FEE_VIA_WORDS.get((d.get("fee_via") or "").casefold())
+    for target, kind in (("household", Household.Kind.FAMILY), ("company", Household.Kind.COMPANY)):
+        name = (d.get(target) or "").strip()
+        if not name:
+            continue
+        key = (kind, name.casefold())
+        if key not in cache:
+            for existing in Household.objects.filter(organization=org, kind=kind):
+                cache.setdefault((kind, existing.name.strip().casefold()), existing)
+        household = cache.get(key)
+        if household is None:
+            household = Household.objects.create(organization=org, kind=kind, name=name)
+            created["households"].append(household.pk)
+            cache[key] = household
+        role = ROLE_WORDS.get((d.get("household_role") or "").casefold(), "")
+        add_member(
+            household,
+            membership,
+            role=role if kind == Household.Kind.FAMILY else "",
+            valid_from=valid_from,
+            pays_via=via == kind,
         )
 
 
@@ -834,6 +940,7 @@ def check_group(
                 ).format(name=d.get("last_name"))
             )
     _check_billing(g)
+    _check_household(g)
     if not g.periods:
         g.errors.append(gettext("Kein Eintrittsdatum."))
     periods = sorted(g.periods, key=lambda p: p.entry)
@@ -975,8 +1082,10 @@ def run(job, user) -> dict:
             "field_values",
             "role_assignments",
             "federation_members",
+            "households",
         )
     }
+    households: dict = {}
     errors = []
     audit = []
     # Zeilen ohne Mitgliedsnummer bekommen die nächste freie, auch über die Nummern der Datei
@@ -1046,6 +1155,8 @@ def run(job, user) -> dict:
             )
             reported = reported or p.member_type.reported
         latest = max(g.periods, key=lambda x: x.entry)
+        if not latest.exit:
+            _join_households(org, d, membership, latest.entry, households, created)
         for dep in g.departments:
             DepartmentMembership.objects.create(
                 organization=org,
@@ -1201,6 +1312,8 @@ def undo(job, user) -> None:
     memberships.delete()
     FederationMember.objects.filter(pk__in=c.get("federation_members", [])).delete()
     Person.objects.filter(pk__in=c.get("persons", [])).filter(memberships__isnull=True).delete()
+    # Haushalte des Imports, die jetzt leer sind
+    Household.objects.filter(pk__in=c.get("households", []), members__isnull=True).delete()
     job.status = job.Status.UNDONE
     job.undone_at = timezone.now()
     job.save()

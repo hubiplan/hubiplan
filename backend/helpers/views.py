@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from audit.log import diff, record, snapshot
+from core.i18n import date_text
 
 from . import access, exports, services
 from .models import Duty, HelperPlan, Shift, ShiftAssignment, ShiftQuota
@@ -81,7 +82,7 @@ def require_open(plan: HelperPlan) -> None:
         raise ValidationError({"detail": _("Der Dienstplan ist abgeschlossen.")})
 
 
-def assignment_data(a: ShiftAssignment, scope) -> dict:
+def assignment_data(a: ShiftAssignment, scope, *, issues=None) -> dict:
     data = {
         "id": a.pk,
         "membership": a.membership_id,
@@ -94,6 +95,9 @@ def assignment_data(a: ShiftAssignment, scope) -> dict:
     }
     if scope.can_edit:
         data["phone"] = a.phone
+        if issues is not None:
+            # Voraussetzung des Dienstes fehlt oder läuft vor der Schicht ab (Hinweis, keine Sperre)
+            data["qualification_issue"] = issues.get(a.pk, "")
     return data
 
 
@@ -107,8 +111,44 @@ def quota_data(quota: ShiftQuota, rows: list[dict]) -> dict:
     }
 
 
+def qualification_issues(shift: Shift, scope) -> dict[int, str] | None:
+    """Einteilung → Hinweistext, wenn der Person die Voraussetzung des Dienstes fehlt."""
+    from qualifications import services as qualifications
+
+    kind = shift.duty.qualification
+    if not scope.can_edit or kind is None or not qualifications.module_on(scope.org):
+        return None
+    rows = [
+        a
+        for a in shift.assignments.all()
+        if a.membership_id and a.status == ShiftAssignment.Status.ACTIVE
+    ]
+    if not rows:
+        return {}
+    from members.models import Membership
+
+    persons = dict(
+        Membership.objects.filter(pk__in=[a.membership_id for a in rows]).values_list(
+            "pk", "person_id"
+        )
+    )
+    best = qualifications.current_for(scope.org.pk, set(persons.values()), [kind.pk])
+    day = timezone.localtime(shift.ends_at).date()
+    issues = {}
+    for a in rows:
+        q = best.get((persons.get(a.membership_id), kind.pk))
+        if q is None:
+            issues[a.pk] = _("„{name}“ fehlt").format(name=kind.name)
+        elif q.valid_until is not None and q.valid_until < day:
+            issues[a.pk] = _("„{name}“ nur bis {date}").format(
+                name=kind.name, date=date_text(q.valid_until)
+            )
+    return issues
+
+
 def shift_data(shift: Shift, scope) -> dict:
-    rows = [assignment_data(a, scope) for a in shift.assignments.all()]
+    issues = qualification_issues(shift, scope)
+    rows = [assignment_data(a, scope, issues=issues) for a in shift.assignments.all()]
     return {
         "id": shift.pk,
         "starts_at": shift.starts_at,
@@ -128,6 +168,8 @@ def duty_data(duty: Duty, scope) -> dict:
         "description": duty.description,
         "location": duty.location,
         "min_age": duty.min_age,
+        "qualification": duty.qualification_id,
+        "qualification_name": duty.qualification.name if duty.qualification_id else "",
         "position": duty.position,
         "shifts": [shift_data(s, scope) for s in duty.shifts.all()],
     }
@@ -158,7 +200,9 @@ def plan_data(plan: HelperPlan, scope, *, full=False, counts=None) -> dict:
     if counts is not None:
         data.update(counts)
     if full:
-        duties = plan.duties.prefetch_related("shifts__assignments", "shifts__quotas__department")
+        duties = plan.duties.select_related("qualification").prefetch_related(
+            "shifts__assignments", "shifts__quotas__department"
+        )
         data["note"] = plan.note
         data["duties"] = [duty_data(d, scope) for d in duties]
         needed = sum(s["needed"] for d in data["duties"] for s in d["shifts"])
@@ -278,6 +322,7 @@ class DutyInput(serializers.Serializer):
     location = serializers.CharField(max_length=200, allow_blank=True, required=False)
     min_age = serializers.IntegerField(min_value=1, max_value=99, allow_null=True, required=False)
     position = serializers.IntegerField(min_value=0, max_value=1000, required=False)
+    qualification = serializers.IntegerField(min_value=1, allow_null=True, required=False)
 
 
 def _apply_duty(duty: Duty, data: dict) -> None:
@@ -289,6 +334,18 @@ def _apply_duty(duty: Duty, data: dict) -> None:
     for field in ("description", "location", "min_age", "position"):
         if field in data:
             setattr(duty, field, data[field])
+    if "qualification" in data:
+        from qualifications.models import QualificationType
+
+        kind = None
+        if data["qualification"]:
+            # Nur Arten des Vereins (Untereinheiten nutzen die ihres Vereins)
+            kind = QualificationType.objects.filter(
+                organization_id=duty.organization_id, pk=data["qualification"]
+            ).first()
+            if kind is None:
+                raise ValidationError({"qualification": _("Unbekannte Qualifikation.")})
+        duty.qualification = kind
 
 
 class DutiesView(Base):
@@ -533,6 +590,20 @@ class MembersView(Base):
                 for m in rows
             ]
         )
+
+
+class QualificationsView(Base):
+    """Qualifikationsarten des Vereins, die ein Dienst voraussetzen kann (leer: Modul aus)."""
+
+    def get(self, request, **kwargs):
+        from qualifications import services as qualifications
+        from qualifications.models import QualificationType
+
+        access.require_edit(self.scope)
+        if not qualifications.module_on(self.scope.org):
+            return Response([])
+        rows = QualificationType.objects.filter(organization=self.scope.org, is_archived=False)
+        return Response([{"id": k.pk, "name": k.name} for k in rows])
 
 
 class EventsView(Base):

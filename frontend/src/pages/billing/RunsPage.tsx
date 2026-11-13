@@ -131,7 +131,9 @@ function NewRun({
     }
   }
 
-  const deptTotal = (preview?.departments ?? []).reduce((sum, d) => sum + Number(d.total), 0)
+  const deptTotal =
+    (preview?.departments ?? []).reduce((sum, d) => sum + Number(d.total), 0) +
+    (preview?.households ?? []).reduce((sum, h) => sum + Number(h.total), 0)
   const federation = settings.org_type === 'federation'
 
   return (
@@ -219,6 +221,22 @@ function NewRun({
                   <li key={d.id}>
                     <Term k="collective_invoice">{t('Sammelrechnung')}</Term> {d.name}
                     {t(': {members}  Mitglieder,', { members: d.members })} {euro(d.total)}
+                  </li>
+                ))}
+                {(preview.households ?? []).map((h) => (
+                  <li key={`h${h.id}`}>
+                    {h.kind === 'company'
+                      ? t('Firmenrechnung {name}: {members} Mitglieder,', {
+                          name: h.name,
+                          members: h.members,
+                        })
+                      : t('Haushaltsrechnung {name}: {members} Mitglieder,', {
+                          name: h.name,
+                          members: h.members,
+                        })}{' '}
+                    {euro(h.total)}
+                    {Number(h.discount) > 0 &&
+                      ` ${t('(davon {amount} Ermäßigung)', { amount: euro(h.discount) })}`}
                   </li>
                 ))}
               </ul>
