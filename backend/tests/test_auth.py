@@ -12,6 +12,10 @@ AUTH = "/_allauth/browser/v1"
 
 
 def totp_code(secret: str) -> str:
+    # Nicht kurz vor dem Wechsel des 30-Sekunden-Fensters erzeugen, sonst ist der Code beim
+    # Prüfen schon ungültig (so in test_app_verwaltung.fresh_code)
+    if time.time() % 30 > 28:
+        time.sleep(30 - time.time() % 30 + 0.1)
     return format_hotp_value(hotp_value(secret, int(time.time()) // 30))
 
 
