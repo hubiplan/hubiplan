@@ -130,13 +130,13 @@ Die Einheit kommt immer aus der Verbindung, nie aus den Eingaben.
 |---|---|---|
 | `webseite_ansehen` | lesen | Zustand, Adresse, Menü, Bausteine, offener Entwurf |
 | `webseite_texte` | lesen | alle Texte mit Nummer, Art, Titel, Stand |
-| `webseite_text_lesen` | lesen | `nummer` → Titel und Markdown im Entwurf, veröffentlichter Stand |
+| `webseite_text_lesen` | lesen | `nummer` → Titel, Markdown und Bild (samt Karussell) im Entwurf, veröffentlichter Stand |
 | `webseite_bilder` | lesen | Bilder mit Markdown-Zeile `![…](bild:…)` |
 | `startseite_ansehen` | lesen | Abschnitte der Startseite im Entwurf mit Art und Inhalt |
 | `webseite_pruefen` | lesen | Prüfpunkte (Impressum, Datenschutz) und offene Entwürfe |
 | `webseite_vorschau` | lesen | kurz gültiger Link zur Vorschau mit allen Entwürfen |
-| `webseite_text_aendern` | entwurf | `nummer`, `titel`, `text` → Entwurf des Textes |
-| `webseite_textseite_anlegen` | entwurf | `titel`, `adresse`, `text` → neue, unveröffentlichte Textseite |
+| `webseite_text_aendern` | entwurf | `nummer`, `titel`, `text`, `bild` (Bildnummer oder `null`), `bilder`, `bilder_takt`, `bilder_zufall` (Karussell der Begrüßung bzw. Untereinheit) → Entwurf des Textes; Hinweis bei Bildern ohne Alternativtext |
+| `webseite_textseite_anlegen` | entwurf | `titel`, `adresse`, `text`, `bild` → neue, unveröffentlichte Textseite |
 | `startseite_abschnitt_aendern` | entwurf | `schluessel`, `inhalt` (nur geänderte Felder) → Entwurf; Aufbau, Reihenfolge, Aussehen bleiben |
 
 Bewusst nicht: Veröffentlichen, Zustand, Domains, Kontaktnachrichten, Löschen.
