@@ -14,6 +14,8 @@ stichworte: [Anwesenheit, Vollmacht, Beschlussfähigkeit, Stimmrecht]
 4. Trage Gäste unter **Gast ohne Stimmrecht** ein.
 5. Lies oben ab, wie viele Stimmberechtigte da sind und ob die Versammlung beschlussfähig ist.
 
+Mit **Anmeldung per App öffnen** melden sich Mitglieder selbst per QR-Code an; die Liste aktualisiert sich dann von allein und zeigt „per App“ oder „aus der Ferne“.
+
 Für die Liste brauchst du zusätzlich das Leserecht auf die Mitglieder. Organisationen als Mitglied sind **Durch Vertreter** anwesend.
 
 ![Ausgangspunkt: Anwesenheit in der Versammlung erfassen](bild:anwesenheit-erfassen)

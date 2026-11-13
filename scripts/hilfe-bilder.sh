@@ -161,6 +161,30 @@ if access:
     page.save()
     attachment = CircularAttachment(circular=letter, name='Einladung.pdf', size=len(pdf.getvalue()))
     attachment.file.save('Einladung.pdf', ContentFile(pdf.getvalue()))
+# Versammlung mit offener Anmeldung per App und laufender Online-Abstimmung (V7), nur in
+# dieser Wegwerf-Datenbank. Sie bekommt die Nummer 1 (bilder.json: versammlung=1).
+import secrets
+from datetime import timedelta
+from meetings import live, services as meeting_services
+from meetings.models import AgendaItem, Attendance, Meeting, MeetingKind
+kind = MeetingKind.objects.create(organization=club, name='Jahreshauptversammlung', base='general',
+    proxies_allowed=True, online_voting=True, remote_allowed=True, motion_days=None)
+start = timezone.now().replace(second=0, microsecond=0) - timedelta(minutes=30)
+event = Event.objects.create(organization=club, title='Jahreshauptversammlung', starts_at=start,
+    ends_at=start + timedelta(hours=3), location='Vereinsheim', visibility='members')
+meeting = Meeting.objects.create(organization=club, kind=kind, event=event, status='invited',
+    invited_at=timezone.now(), checkin_open=True, checkin_key=secrets.token_urlsafe(32), remote=True)
+for i, (title, type_) in enumerate(meeting_services.default_agenda(kind), start=1):
+    AgendaItem.objects.create(organization=club, meeting=meeting, position=i, title=str(title), type=type_)
+members = [m for m in Membership.objects.filter(organization=club).select_related('person').order_by('pk') if m.current_period() and not m.person.is_organization][:8]
+for i, m in enumerate(members):
+    Attendance.objects.create(organization=club, meeting=meeting, membership=m, voter=True,
+        name=(m.person.first_name + ' ' + m.person.last_name).strip(), status='present',
+        mode='online' if m.pk == membership.pk or i == 3 else ('app' if i % 2 else ''))
+item = meeting.agenda.get(title__startswith='Entlastung')
+poll = live.create_poll(meeting, item, question='Entlastung des Vorstands für das letzte Geschäftsjahr',
+    secret=True, office='', candidates=[])
+live.set_poll_status(poll, 'open')
 " > /dev/null
 echo "Backend mit Demodaten bereit"
 

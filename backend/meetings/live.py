@@ -311,12 +311,19 @@ def cast(poll: Poll, membership_id: int, votes: list[dict]) -> None:
         raise ValidationError({"detail": _("Für diese Stimme wurde schon abgestimmt.")}) from None
 
 
+def option_label(option: PollOption) -> str:
+    """Ja, Nein und Enthaltung in der Sprache der Person, die die Abstimmung sieht."""
+    if option.role == PollOption.Role.CANDIDATE:
+        return option.label
+    return str(PollOption.Role(option.role).label)
+
+
 def tally(poll: Poll) -> list[dict]:
     counts: dict[int, int] = {}
     for option_id in poll.ballots.values_list("option_id", flat=True):
         counts[option_id] = counts.get(option_id, 0) + 1
     return [
-        {"id": o.pk, "role": o.role, "label": o.label, "votes": counts.get(o.pk, 0)}
+        {"id": o.pk, "role": o.role, "label": option_label(o), "votes": counts.get(o.pk, 0)}
         for o in poll.options.all()
     ]
 
@@ -394,7 +401,9 @@ def poll_data(poll: Poll, *, voter_ids: set[int], for_membership: int | None = N
             if poll.status == Poll.Status.CLOSED
             else entitled_count(poll.meeting, voter_ids)
         ),
-        "options": [{"id": o.pk, "role": o.role, "label": o.label} for o in poll.options.all()],
+        "options": [
+            {"id": o.pk, "role": o.role, "label": option_label(o)} for o in poll.options.all()
+        ],
         # Ergebnis erst nach dem Ende, damit niemand beeinflusst wird
         "result": tally(poll) if poll.status == Poll.Status.CLOSED else None,
         "resolution": poll.resolution_id,
@@ -408,7 +417,7 @@ def poll_data(poll: Poll, *, voter_ids: set[int], for_membership: int | None = N
         ]
     elif not poll.secret and poll.status == Poll.Status.CLOSED:
         names = {r.pk: r.name for r in poll.meeting.attendance.all()}
-        labels = {o.pk: o.label for o in poll.options.all()}
+        labels = {o.pk: option_label(o) for o in poll.options.all()}
         data["open_votes"] = sorted(
             (
                 {"name": names.get(b.attendance_id, ""), "option": labels.get(b.option_id, "")}

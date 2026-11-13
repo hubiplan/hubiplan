@@ -385,6 +385,18 @@
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/einstellungen/einrichtung",
       "ausschnitt": ".setup-overview"
+    },
+    {
+      "name": "online-abstimmung",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/versammlungen?versammlung=1",
+      "ausschnitt": ".live-card"
+    },
+    {
+      "name": "versammlung-teilnehmen",
+      "zugang": "mitglied@hubertus-grimlinghausen.test",
+      "seite": "/mein-bereich/versammlungen/live/1",
+      "ausschnitt": ""
     }
   ]
 }
