@@ -474,7 +474,7 @@ function Gradients({
     return p?.name ? `${role} (${p.name})` : role
   }
   return (
-    <div className={`field${error ? ' field-invalid' : ''}`}>
+    <div className={`field color-group${error ? ' field-invalid' : ''}`}>
       <span>{t('Verläufe')}</span>
       <small className="muted">
         {t(
@@ -482,77 +482,84 @@ function Gradients({
         )}
         {!ownPrimary && t(' Verläufe gelten nur zusammen mit einer eigenen Hauptfarbe.')}
       </small>
-      {gradients.map((g, i) => {
-        const a = palette[g.from]?.color
-        const b = palette[g.to]?.color
-        const ok = valid(a) && valid(b)
-        const on = ok ? readableOnPair(a as string, b as string) : '#000000'
-        const ratio = ok
-          ? Math.min(contrastRatio(a as string, on), contrastRatio(b as string, on))
-          : 0
-        return (
-          <div className="gradient-row" key={i}>
-            <span
-              className="gradient-swatch"
-              aria-hidden="true"
-              style={ok ? { background: gradientCss(a!, b!, g.direction), color: on } : undefined}
-            >
-              {g.name || t('Verlauf {x}', { x: i + 1 })}
-            </span>
-            <Field
-              label={t('Name')}
-              value={g.name}
-              maxLength={30}
-              placeholder={t('z. B. Blauverlauf')}
-              onChange={(e) => update(i, { name: e.target.value })}
-            />
-            <SelectField
-              label={t('von')}
-              value={String(g.from)}
-              onChange={(e) => update(i, { from: Number(e.target.value) })}
-            >
-              {palette.map((_, j) => (
-                <option key={j} value={String(j)}>
-                  {slotName(j)}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label={t('nach')}
-              value={String(g.to)}
-              onChange={(e) => update(i, { to: Number(e.target.value) })}
-            >
-              {palette.map((_, j) => (
-                <option key={j} value={String(j)}>
-                  {slotName(j)}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label={t('Richtung')}
-              value={g.direction}
-              onChange={(e) =>
-                update(i, { direction: e.target.value === 'down' ? 'down' : 'right' })
-              }
-            >
-              <option value="right">{t('von links nach rechts')}</option>
-              <option value="down">{t('von oben nach unten')}</option>
-            </SelectField>
-            {ok && (
-              <span className={`small ${ratio >= 4.5 ? 'ok' : 'bad'}`}>
-                {ratio >= 4.5 ? '✓' : '✗'} {t('Text darauf {x} : 1', { x: ratio.toFixed(1) })}
-              </span>
-            )}
-            <button
-              type="button"
-              className="button button-ghost"
-              onClick={() => onChange(gradients.filter((_, j) => j !== i))}
-            >
-              {t('Entfernen')}
-            </button>
-          </div>
-        )
-      })}
+      <div className="color-list">
+        {gradients.map((g, i) => {
+          const a = palette[g.from]?.color
+          const b = palette[g.to]?.color
+          const ok = valid(a) && valid(b)
+          const on = ok ? readableOnPair(a as string, b as string) : '#000000'
+          const ratio = ok
+            ? Math.min(contrastRatio(a as string, on), contrastRatio(b as string, on))
+            : 0
+          return (
+            <div className="gradient-row" key={i}>
+              <div className="gradient-row-head">
+                <span
+                  className="gradient-swatch"
+                  aria-hidden="true"
+                  style={
+                    ok ? { background: gradientCss(a!, b!, g.direction), color: on } : undefined
+                  }
+                >
+                  {g.name || t('Verlauf {x}', { x: i + 1 })}
+                </span>
+                <span className={`color-contrast small ${ok && ratio >= 4.5 ? 'ok' : 'bad'}`}>
+                  {ok &&
+                    `${ratio >= 4.5 ? '✓' : '✗'} ${t('Text darauf {x} : 1', { x: ratio.toFixed(1) })}`}
+                </span>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => onChange(gradients.filter((_, j) => j !== i))}
+                >
+                  {t('Entfernen')}
+                </button>
+              </div>
+              <div className="gradient-row-fields">
+                <Field
+                  label={t('Name')}
+                  value={g.name}
+                  maxLength={30}
+                  placeholder={t('z. B. Blauverlauf')}
+                  onChange={(e) => update(i, { name: e.target.value })}
+                />
+                <SelectField
+                  label={t('von')}
+                  value={String(g.from)}
+                  onChange={(e) => update(i, { from: Number(e.target.value) })}
+                >
+                  {palette.map((_, j) => (
+                    <option key={j} value={String(j)}>
+                      {slotName(j)}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  label={t('nach')}
+                  value={String(g.to)}
+                  onChange={(e) => update(i, { to: Number(e.target.value) })}
+                >
+                  {palette.map((_, j) => (
+                    <option key={j} value={String(j)}>
+                      {slotName(j)}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  label={t('Richtung')}
+                  value={g.direction}
+                  onChange={(e) =>
+                    update(i, { direction: e.target.value === 'down' ? 'down' : 'right' })
+                  }
+                >
+                  <option value="right">{t('von links nach rechts')}</option>
+                  <option value="down">{t('von oben nach unten')}</option>
+                </SelectField>
+              </div>
+            </div>
+          )
+        })}
+      </div>
       {gradients.length < MAX_GRADIENTS && palette.length >= 2 && (
         <div>
           <button
@@ -591,7 +598,7 @@ function ExtraColors({
     onChange(next)
   }
   return (
-    <div className={`field${error ? ' field-invalid' : ''}`}>
+    <div className={`field color-group${error ? ' field-invalid' : ''}`}>
       <span>{t('Weitere Farben')}</span>
       <small className="muted">
         {t(
@@ -599,69 +606,72 @@ function ExtraColors({
         )}
         {!ownPrimary && t(' Weitere Farben gelten nur zusammen mit einer eigenen Hauptfarbe.')}
       </small>
-      {colors.map((c, i) => {
-        const valid = /^#[0-9a-f]{6}$/i.test(c.color)
-        const ratio = valid ? contrastRatio(c.color, readableOn(c.color)) : 0
-        return (
-          <div className="color-row" key={i}>
-            <input
-              type="color"
-              aria-label={t('{x}. Farbe wählen', { x: i + 3 })}
-              value={valid ? c.color : '#000000'}
-              onChange={(e) => update(i, { color: e.target.value })}
-            />
-            <input
-              aria-label={t('{x}. Farbe als Hex-Wert', { x: i + 3 })}
-              value={c.color}
-              onChange={(e) => update(i, { color: e.target.value.trim() })}
-            />
-            <input
-              aria-label={t('Name der {x}. Farbe', { x: i + 3 })}
-              value={c.name}
-              maxLength={30}
-              placeholder={t('Name, z. B. Weinrot')}
-              onChange={(e) => update(i, { name: e.target.value })}
-            />
-            <input
-              aria-label={t('Verwendung der {x}. Farbe', { x: i + 3 })}
-              value={c.use ?? ''}
-              maxLength={60}
-              placeholder={t('Verwendung, z. B. Fließtext')}
-              onChange={(e) => update(i, { use: e.target.value })}
-            />
-            {valid && (
-              <span className={`small ${ratio >= 4.5 ? 'ok' : 'bad'}`}>
-                {ratio >= 4.5 ? '✓' : '✗'} {t('Text darauf {x} : 1', { x: ratio.toFixed(1) })}
+      <div className="color-list">
+        {colors.map((c, i) => {
+          const valid = /^#[0-9a-f]{6}$/i.test(c.color)
+          const ratio = valid ? contrastRatio(c.color, readableOn(c.color)) : 0
+          return (
+            <div className="color-row extra-color-row" key={i}>
+              <input
+                type="color"
+                aria-label={t('{x}. Farbe wählen', { x: i + 3 })}
+                value={valid ? c.color : '#000000'}
+                onChange={(e) => update(i, { color: e.target.value })}
+              />
+              <input
+                aria-label={t('{x}. Farbe als Hex-Wert', { x: i + 3 })}
+                value={c.color}
+                onChange={(e) => update(i, { color: e.target.value.trim() })}
+              />
+              <input
+                aria-label={t('Name der {x}. Farbe', { x: i + 3 })}
+                value={c.name}
+                maxLength={30}
+                placeholder={t('Name, z. B. Weinrot')}
+                onChange={(e) => update(i, { name: e.target.value })}
+              />
+              <input
+                aria-label={t('Verwendung der {x}. Farbe', { x: i + 3 })}
+                value={c.use ?? ''}
+                maxLength={60}
+                placeholder={t('Verwendung, z. B. Fließtext')}
+                onChange={(e) => update(i, { use: e.target.value })}
+              />
+              <span className={`color-contrast small ${valid && ratio >= 4.5 ? 'ok' : 'bad'}`}>
+                {valid &&
+                  `${ratio >= 4.5 ? '✓' : '✗'} ${t('Text darauf {x} : 1', { x: ratio.toFixed(1) })}`}
               </span>
-            )}
-            <button
-              type="button"
-              className="button button-ghost"
-              aria-label={t('{x}. Farbe nach oben', { x: i + 3 })}
-              disabled={i === 0}
-              onClick={() => move(i, -1)}
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              className="button button-ghost"
-              aria-label={t('{x}. Farbe nach unten', { x: i + 3 })}
-              disabled={i === colors.length - 1}
-              onClick={() => move(i, 1)}
-            >
-              ↓
-            </button>
-            <button
-              type="button"
-              className="button button-ghost"
-              onClick={() => onChange(colors.filter((_, j) => j !== i))}
-            >
-              {t('Entfernen')}
-            </button>
-          </div>
-        )
-      })}
+              <div className="color-row-actions">
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  aria-label={t('{x}. Farbe nach oben', { x: i + 3 })}
+                  disabled={i === 0}
+                  onClick={() => move(i, -1)}
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  aria-label={t('{x}. Farbe nach unten', { x: i + 3 })}
+                  disabled={i === colors.length - 1}
+                  onClick={() => move(i, 1)}
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => onChange(colors.filter((_, j) => j !== i))}
+                >
+                  {t('Entfernen')}
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
       {colors.length < MAX_EXTRA && (
         <div>
           <button
