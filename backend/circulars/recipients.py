@@ -14,6 +14,8 @@ Verein bzw. Abteilung (aktuelle Mitglieder):
   (Einladung zur Versammlung, J4)
 - ``jubilee_year``  Jubilare dieses Jahres (Verein oder Dachverband)
 - ``honorary_titles``  Inhaber dieser Ehrungen (des Vereins oder des Dachverbands)
+- ``households_merge``  Briefe (und Mails an dieselbe Adresse) an einen Familienhaushalt
+  zusammenfassen; fehlt die Angabe, gilt „ja“ (Konzept Familien, Haushalte und Firmen, H1)
 - ``event_responses``  nur bei einem Rundschreiben zu einem Termin (``Circular.event``):
   Eingeladene mit dieser Rückmeldung (``open`` = noch keine, ``yes``, ``no``, ``maybe``)
 
@@ -44,6 +46,7 @@ from django.db.models import Exists, OuterRef, Q
 from access.models import RoleAssignment
 from core.tenancy import rls_bypass
 from members.duration import Duration, club_ranges, jubilees_between
+from members.households import address_key, and_join, family_last_name, letter_name
 from members.models import (
     DepartmentMembership,
     DepartmentRoleHolder,
@@ -64,6 +67,7 @@ NOTE_LETTER = "keine E-Mail-Adresse: Brief"
 NOTE_APP = "per App"
 NOTE_APP_MAIL = "per App und E-Mail"
 NOTE_PORTAL = "weder App noch E-Mail: nur im Mitgliederbereich"
+NOTE_MERGED = "im gemeinsamen Schreiben an den Haushalt"
 
 
 @dataclass
@@ -97,10 +101,19 @@ class Candidate:
     without_person: bool = False
     # weiterer Ansprechpartner derselben Organisation (kein eigener App-Zugang)
     extra_contact: bool = False
+    # Familienhaushalt (H1): Nummer, Name, Rolle und Vergleichsschlüssel der Anschrift
+    household_id: int | None = None
+    household_name: str = ""
+    household_role: str = ""
+    address_key: str = ""
+    # zusammengefasst in das Schreiben an diesen Empfänger (Schlüssel)
+    merged_into: str = ""
+    # im gemeinsamen Schreiben: alle Personen (Titel, Vorname, Name, Geschlecht)
+    household_people: list[tuple[str, str, str, str]] = field(default_factory=list)
 
     @property
     def channel(self) -> str | None:
-        if self.excluded or self.opted_out:
+        if self.excluded or self.opted_out or self.merged_into:
             return None
         if self.app_access:
             return "app"
@@ -112,6 +125,8 @@ class Candidate:
     def note(self) -> str:
         if self.opted_out:
             return NOTE_OPT_OUT
+        if self.merged_into:
+            return NOTE_MERGED
         if self.app_access:
             return NOTE_APP_MAIL if self.also_mail and self.email else NOTE_APP
         if not self.email:
@@ -341,14 +356,70 @@ def _organization_candidates(m, row: dict, club) -> list[Candidate]:
     ]
 
 
+def _guardians_by_membership(memberships) -> dict[int, list]:
+    """Erziehungsberechtigte mit „erhält Rundschreiben“ der minderjährigen Personen (H4)."""
+    from members.guardians import is_minor
+    from members.models import ContactPerson
+
+    minors = [m.pk for m in memberships if is_minor(m.person)]
+    result: dict[int, list] = {}
+    if not minors:
+        return result
+    for c in (
+        ContactPerson.objects.filter(membership_id__in=minors, is_guardian=True, receives_mail=True)
+        .select_related("person")
+        .order_by("-is_primary", "pk")
+    ):
+        result.setdefault(c.membership_id, []).append(c)
+    return result
+
+
+def _guardian_candidates(m, row: dict, club, own_email: str, contacts) -> list[Candidate]:
+    """Zusätzlich eine Mail an jeden Erziehungsberechtigten mit eigener Adresse."""
+    from members.services import contact_for
+
+    result = []
+    seen = {own_email.lower()} if own_email else set()
+    for c in contacts:
+        if c.person_id is not None:
+            linked = contact_for(c.person, club)
+            first, last = c.person.first_name, c.person.last_name
+            gender, title = c.person.gender, c.person.title
+            email = (linked.email if linked else "").strip()
+        else:
+            first, last, gender, title = c.first_name, c.last_name, c.gender, c.title
+            email = (c.email or "").strip()
+        if not email or email.lower() in seen:
+            continue
+        seen.add(email.lower())
+        result.append(
+            Candidate(
+                key=f"m{m.pk}-{c.pk}",
+                club=club,
+                first_name=first,
+                last_name=last,
+                gender=gender,
+                title=title,
+                email=email,
+                membership_id=m.pk,
+                departments=row.get("departments", []),
+                membership=m,
+                extra_contact=True,
+            )
+        )
+    return result
+
+
 def _member_candidates(memberships, rows: dict[int, dict], club_of) -> list[Candidate]:
     result = []
+    guardians = _guardians_by_membership(memberships)
     for m in memberships:
         row = rows.get(m.pk, {})
         person = m.person
         if person.is_organization:
             result.extend(_organization_candidates(m, row, club_of(m)))
             continue
+        home = next((h for h in row.get("households", []) if h["kind"] == "family"), None)
         result.append(
             Candidate(
                 key=f"m{m.pk}",
@@ -362,8 +433,20 @@ def _member_candidates(memberships, rows: dict[int, dict], club_of) -> list[Cand
                 membership_id=m.pk,
                 departments=row.get("departments", []),
                 membership=m,
+                household_id=home["id"] if home else None,
+                household_name=home["name"] if home else "",
+                household_role=home["role"] if home else "",
+                address_key=address_key(
+                    row.get("street", ""), row.get("postal_code", ""), row.get("city", "")
+                ),
             )
         )
+        if m.pk in guardians:
+            result.extend(
+                _guardian_candidates(
+                    m, row, club_of(m), (row.get("email") or "").strip(), guardians[m.pk]
+                )
+            )
     return result
 
 
@@ -630,6 +713,10 @@ class Selection:
             "portal": sum(1 for c in self.candidates if c.channel == "portal"),
             "opted_out": sum(1 for c in self.candidates if c.opted_out and not c.excluded),
             "excluded": sum(1 for c in self.candidates if c.excluded),
+            # in ein gemeinsames Schreiben an den Haushalt aufgenommen (H1)
+            "merged": sum(
+                1 for c in self.candidates if c.merged_into and not c.excluded and not c.opted_out
+            ),
         }
 
 
@@ -674,11 +761,66 @@ def select(circular: Circular) -> Selection:
                 accesses.get(c.membership_id) if c.membership_id and not c.extra_contact else None
             )
             c.also_mail = circular.also_mail
+    if merging_households(circular):
+        merge_households(candidates)
     return Selection(candidates, jubilees)
+
+
+# Platzhalter mit Werten je Person: Schreiben dann nicht zusammenfassen
+PERSONAL_PLACEHOLDERS = {"Mitgliedsjahre", "Jubiläumsjahre"}
+
+
+def merging_households(circular: Circular) -> bool:
+    """Schreiben je Familienhaushalt zusammenfassen? Nur an Mitglieder eines Vereins,
+    nicht zu einem Termin (Rückmeldelinks je Person) und nicht mit Platzhaltern, die
+    je Person verschieden sind."""
+    from .services import used_placeholders
+
+    if circular.organization.type != Organization.Type.CLUB:
+        return False
+    if circular.audience != Circular.Audience.MEMBERS or circular.event_id:
+        return False
+    if (circular.filters or {}).get("households_merge") is False:
+        return False
+    return not (used_placeholders(circular) & PERSONAL_PLACEHOLDERS)
+
+
+ROLE_ORDER = {"adult": 0, "": 1, "child": 2}
+
+
+def merge_households(candidates: list[Candidate]) -> None:
+    """Briefe an denselben Familienhaushalt mit gleicher Anschrift und Mails an dieselbe
+    Adresse im selben Haushalt werden ein Schreiben an den ersten Erwachsenen. Wer anders
+    wohnt oder eine eigene Adresse hat, bekommt sein eigenes."""
+    groups: dict[tuple, list[Candidate]] = {}
+    for c in candidates:
+        if not c.household_id or c.organization_name or c.extra_contact:
+            continue
+        channel = c.channel
+        if channel == "letter" and c.address_key:
+            key = (c.household_id, "letter", c.address_key)
+        elif channel == "mail" and c.email:
+            key = (c.household_id, "mail", c.email.lower())
+        else:
+            continue
+        groups.setdefault(key, []).append(c)
+    for key, members in groups.items():
+        if len(members) < 2:
+            continue
+        members.sort(key=lambda c: ROLE_ORDER.get(c.household_role, 1))
+        lead = members[0]
+        lead.household_people = [(c.title, c.first_name, c.last_name, c.gender) for c in members]
+        if key[1] == "letter":
+            lines = lead.address.split("\n")
+            lead.address = "\n".join([letter_name(lead.household_people), *lines[1:]])
+        for c in members[1:]:
+            c.merged_into = lead.key
 
 
 def formal_salutation(c: Candidate) -> str:
     """„Sehr geehrter Herr Dr. Muster“; ohne Geschlecht „Guten Tag Dr. Max Muster“."""
+    if c.household_people:
+        return f"Sehr geehrte Familie {family_last_name(c.household_people)}"
     if c.without_person:
         return "Sehr geehrte Damen und Herren"
     if c.gender == Gender.MALE:
@@ -690,6 +832,8 @@ def formal_salutation(c: Candidate) -> str:
 
 def informal_salutation(c: Candidate) -> str:
     """„Lieber Max“ / „Liebe Maria“; ohne Angabe „Hallo Max“."""
+    if c.household_people:
+        return f"Liebe Familie {family_last_name(c.household_people)}"
     if c.without_person:
         return "Hallo zusammen"
     name = c.first_name or c.last_name
@@ -716,13 +860,18 @@ def fill_values(circular: Circular, selection: Selection, used: set[str]) -> Non
     dept_name = circular.department.name if circular.department_id else ""
     for c in selection.candidates:
         c.values = {
-            "Vorname": c.first_name,
+            "Vorname": (
+                and_join([p[1] for p in c.household_people if p[1]])
+                if c.household_people
+                else c.first_name
+            ),
             "Nachname": c.last_name,
             "Anrede": formal_salutation(c),
             "Anrede Du": informal_salutation(c),
             "Abteilung": dept_name or ", ".join(c.departments),
             "Verein": c.club.name,
             "Organisation": c.organization_name,
+            "Haushalt": c.household_name,
             "Mitgliedsjahre": str(years[c.membership_id]) if c.membership_id in years else "",
             "Jubiläumsjahre": (
                 str(selection.jubilees[c.membership_id])

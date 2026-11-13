@@ -391,8 +391,14 @@ def _anonymize_records(org, start, end) -> dict[str, int]:
     Dunning.objects.filter(invoice__in=invoices).update(text="")
     # Mitgliedsrechnungen brauchen sonst ein Mitglied (Constraint rechnung_empfaenger)
     invoices.filter(
-        recipient_kind__in=[Invoice.Recipient.MEMBER, Invoice.Recipient.PARTNER]
-    ).update(recipient_kind=Invoice.Recipient.ANONYMIZED, membership=None, partner=None)
+        recipient_kind__in=[
+            Invoice.Recipient.MEMBER,
+            Invoice.Recipient.PARTNER,
+            Invoice.Recipient.HOUSEHOLD,
+        ]
+    ).update(
+        recipient_kind=Invoice.Recipient.ANONYMIZED, membership=None, partner=None, household=None
+    )
     counts["Rechnungen"] = update_encrypted(
         invoices,
         recipient_name=ANON,

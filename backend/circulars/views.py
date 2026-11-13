@@ -60,7 +60,7 @@ FILTER_LIST_KEYS = (
 )
 FILTER_KEY_LISTS = ("include", "exclude", "role_names")
 FILTER_INT_KEYS = ("age_min", "age_max", "jubilee_year")
-FILTER_BOOL_KEYS = ("board", "reported", "organizations_any_age")
+FILTER_BOOL_KEYS = ("board", "reported", "organizations_any_age", "households_merge")
 
 
 def user_name(user) -> str:
@@ -301,6 +301,8 @@ def candidate_data(c: rcp.Candidate) -> dict:
         "excluded": c.excluded,
         "included": c.included,
         "opted_out": c.opted_out,
+        "household": c.household_name,
+        "merged_into": c.merged_into,
     }
 
 

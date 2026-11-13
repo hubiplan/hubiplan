@@ -4,6 +4,7 @@ import { PortalTodos } from './PortalTodos.tsx'
 import { PortalBookings } from './PortalBookings.tsx'
 import { PortalHelpers } from './PortalHelpers.tsx'
 import { PortalMeetings } from './PortalMeetings.tsx'
+import { PortalCompany } from './PortalCompany.tsx'
 import { PortalCancellation } from './PortalCancellation.tsx'
 import { OwnMusic } from '../music/OwnMusic.tsx'
 import { useEffect, useState } from 'react'
@@ -142,6 +143,16 @@ export function PortalPage() {
           </PortalSection>
         }
       />
+      {activePortal.company && (
+        <Route
+          path="firma"
+          element={
+            <PortalSection title={t('Mitarbeiter')}>
+              <PortalCompany key={activePortal.id} accessId={activePortal.id} />
+            </PortalSection>
+          }
+        />
+      )}
       <Route index element={<PortalOverview key={activePortal.id} entry={activePortal} />} />
       <Route
         path="ausweis"
