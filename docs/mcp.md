@@ -132,7 +132,7 @@ Die Einheit kommt immer aus der Verbindung, nie aus den Eingaben.
 |---|---|---|
 | `webseite_ansehen` | lesen | Zustand, Adresse, Menü, Bausteine, offener Entwurf |
 | `webseite_texte` | lesen | alle Texte mit Nummer, Art, Titel, Stand |
-| `webseite_text_lesen` | lesen | `nummer` → Titel, Markdown und Bild (samt Karussell) im Entwurf, veröffentlichter Stand |
+| `webseite_text_lesen` | lesen | `nummer` → Titel, Markdown und Bild (samt Karussell) im Entwurf, veröffentlichter Stand; bei Textseiten `abschnitte` samt `body` |
 | `webseite_bilder` | lesen | Bilder mit Markdown-Zeile `![…](bild:…)` |
 | `startseite_ansehen` | lesen | Abschnitte der Startseite im Entwurf mit Art und Inhalt |
 | `webseite_pruefen` | lesen | Prüfpunkte (Impressum, Datenschutz) und offene Entwürfe |
@@ -159,6 +159,8 @@ wirksam. `clean_draft` prüft die vier Menüfelder zusammen.
 | `webseite_menue_aendern` | entwurf | `reihenfolge`, `namen`, `links`, `neu` (Überschrift/Link), `knopf` |
 | `startseite_bausteine` | lesen | Abschnittsarten mit Feldern, Aussehen, `home_choices` |
 | `startseite_aufbau_aendern` | entwurf | `neu`, `reihenfolge`, `an`, `aus`, `aussehen`, `entfernen` (nur eigene Abschnitte) |
+| `textseite_aufbau_aendern` | entwurf | `nummer` + wie `startseite_aufbau_aendern` für die Abschnitte einer Textseite (#78); `body` ist der Text der Seite, `cover` das Titelbild; über `PUT website/texts/<nummer>/` mit „Inhalte bearbeiten“ |
+| `textseite_abschnitt_aendern` | entwurf | `nummer`, `schluessel`, `inhalt` (nur geänderte Felder) eines eigenen Abschnitts einer Textseite |
 | `bilder_suchen` | lesen | Suche über Bildunterschrift, Alternativtext, Datei, Untereinheit |
 | `bild_ansehen` | lesen | kleine Fassung (640 px, JPEG) als Bildinhalt; Hinweis: keine Personen erkennen |
 | `bild_beschreiben` | entwurf | Alternativtext, Bildunterschrift; bei benutzten Bildern nur leere Felder füllen |

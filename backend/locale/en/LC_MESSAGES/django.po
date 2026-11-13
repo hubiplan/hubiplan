@@ -12236,3 +12236,39 @@ msgstr "Invalid request."
 
 msgid "beschlossen"
 msgstr "adopted"
+
+msgid "Text im Entwurf (Markdown; Bilder als ![Beschreibung](bild:Schlüssel), siehe webseite_bilder). Textseiten haben „abschnitte“ wie die Startseite; ändern mit textseite_aufbau_aendern und textseite_abschnitt_aendern."
+msgstr "Draft text (Markdown; images as ![description](bild:key), see webseite_bilder). Text pages have “abschnitte” (sections) like the home page; change them with textseite_aufbau_aendern and textseite_abschnitt_aendern."
+
+msgid "Abschnitte gibt es nur auf Textseiten (nicht in der Chronik mit Zeitleiste)."
+msgstr "Sections exist only on text pages (not in the chronicle with a timeline)."
+
+msgid "Diesen Abschnitt gibt es nicht. Erst webseite_text_lesen aufrufen."
+msgstr "This section does not exist. Call webseite_text_lesen first."
+
+msgid "Den Text der Seite ändert webseite_text_aendern; er hat hier keinen Inhalt."
+msgstr "The page text is changed with webseite_text_aendern; it has no content here."
+
+msgid "Aufbau einer Textseite ändern (Entwurf)"
+msgstr "Change the layout of a text page (draft)"
+
+msgid "Abschnitte einer Textseite wie auf der Startseite: neue eigene Abschnitte (z. B. Kacheln, Text mit Bild, Knopfleiste, Ansprechpartner; dazu „cover“ = Titelbild mit inhalt {image}, höchstens eins), Reihenfolge, an/aus, Aussehen und Entfernen. Der Text der Seite ist der feste Abschnitt „body“ (ändern mit webseite_text_aendern). Schlüssel liefert webseite_text_lesen, Felder je Art startseite_bausteine."
+msgstr "Sections of a text page as on the home page: new custom sections (e.g. tiles, text with image, button bar, contacts; plus “cover” = cover image with inhalt {image}, at most one), order, on/off, look and removal. The page text is the fixed section “body” (change it with webseite_text_aendern). Keys come from webseite_text_lesen, fields per kind from startseite_bausteine."
+
+msgid "Abschnitt einer Textseite ändern (Entwurf)"
+msgstr "Change a section of a text page (draft)"
+
+msgid "Ändert den Inhalt eines eigenen Abschnitts einer Textseite im Entwurf. „inhalt“ enthält nur die geänderten Felder, aufgebaut wie „data“ aus webseite_text_lesen."
+msgstr "Changes the content of a custom section of a text page in the draft. “inhalt” contains only the changed fields, structured like “data” from webseite_text_lesen."
+
+msgid "Aufbau der Textseite „{title}“ geändert."
+msgstr "Layout of the text page “{title}” changed."
+
+msgid "Abschnitt {key} der Textseite geändert."
+msgstr "Section {key} of the text page changed."
+
+msgid "Nummer der Textseite."
+msgstr "Number of the text page."
+
+msgid "Schlüssel → {hintergrund, breite}, Werte aus startseite_bausteine. Auch für „body“, z. B. breite full für Text über die volle Breite."
+msgstr "Key → {hintergrund, breite}, values from startseite_bausteine. Also for “body”, e.g. breite full for text across the full width."

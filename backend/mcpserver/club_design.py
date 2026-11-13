@@ -353,10 +353,9 @@ def _new_key(taken: set[str]) -> str:
 LOOK = {"hintergrund": "bg", "breite": "width", "spalte": "column"}
 
 
-def _home_build(args: dict, ctx: ClubContext) -> str:
-    _data, site = _site(ctx)
-    v = _current(site)
-    sections = [dict(s) for s in v.get("home_sections") or []]
+def _rebuild(sections: list[dict], args: dict) -> tuple[list[dict], list[str]]:
+    """Aufbau einer Folge von Abschnitten ändern (Startseite und Textseiten, #78)."""
+    sections = [dict(s) for s in sections]
     by_key = {s["key"]: s for s in sections}
     changed = False
     created = []
@@ -409,11 +408,71 @@ def _home_build(args: dict, ctx: ClubContext) -> str:
         changed = True
     if not changed:
         raise ToolError(_("Bitte angeben, was sich am Aufbau ändern soll."))
+    return sections, created
+
+
+def _home_build(args: dict, ctx: ClubContext) -> str:
+    _data, site = _site(ctx)
+    v = _current(site)
+    sections, created = _rebuild(v.get("home_sections") or [], args)
     _save_draft(ctx, {"home_sections": sections})
     text = _("Aufbau der Startseite geändert.") + " " + _draft_hint()
     if created:
         text += "\n\n" + _dump({"neue_schluessel": created})
     return text
+
+
+# --- Abschnitte einer Textseite (#78) ---
+
+
+def _page_sections(ctx: ClubContext, pk: int) -> list[dict]:
+    _v, content_views = _views()
+    t = ctx.call(content_views.TextDetailView, "GET", f"website/texts/{pk}/", pk=pk)
+    if t.get("kind") != "page" or t.get("has_timeline"):
+        raise ToolError(
+            _("Abschnitte gibt es nur auf Textseiten (nicht in der Chronik mit Zeitleiste).")
+        )
+    return list(t.get("sections") or [])
+
+
+def _save_page_sections(ctx: ClubContext, pk: int, sections: list[dict]) -> dict:
+    _v, content_views = _views()
+    return ctx.call(
+        content_views.TextDetailView, "PUT", f"website/texts/{pk}/", {"sections": sections}, pk=pk
+    )
+
+
+def _page_build(args: dict, ctx: ClubContext) -> str:
+    pk = _int(args, "nummer")
+    sections, created = _rebuild(_page_sections(ctx, pk), args)
+    t = _save_page_sections(ctx, pk, sections)
+    text = (
+        _("Aufbau der Textseite „{title}“ geändert.").format(title=t.get("title", ""))
+        + " "
+        + _draft_hint()
+    )
+    if created:
+        text += "\n\n" + _dump({"neue_schluessel": created})
+    return text
+
+
+def _page_section_change(args: dict, ctx: ClubContext) -> str:
+    pk = _int(args, "nummer")
+    key = _str(args, "schluessel", 40, required=True)
+    content = args.get("inhalt")
+    if not isinstance(content, dict) or not content:
+        raise ToolError(_("„inhalt“ muss ein Objekt mit den geänderten Feldern sein."))
+    sections = [dict(s) for s in _page_sections(ctx, pk)]
+    target = next((s for s in sections if s.get("key") == key), None)
+    if target is None:
+        raise ToolError(_("Diesen Abschnitt gibt es nicht. Erst webseite_text_lesen aufrufen."))
+    if "kind" not in target:
+        raise ToolError(
+            _("Den Text der Seite ändert webseite_text_aendern; er hat hier keinen Inhalt.")
+        )
+    target["data"] = {**(target.get("data") or {}), **content}
+    _save_page_sections(ctx, pk, sections)
+    return _("Abschnitt {key} der Textseite geändert.").format(key=key) + " " + _draft_hint()
 
 
 def _home_options(args: dict, ctx: ClubContext) -> str:
@@ -834,6 +893,89 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
             }
         ),
         run=_home_build,
+        writes=True,
+        scope=SCOPE_DRAFT,
+    ),
+    Tool(
+        name="textseite_aufbau_aendern",
+        title=gettext_lazy("Aufbau einer Textseite ändern (Entwurf)"),
+        description=gettext_lazy(
+            "Abschnitte einer Textseite wie auf der Startseite: neue eigene Abschnitte (z. B. "
+            "Kacheln, Text mit Bild, Knopfleiste, Ansprechpartner; dazu „cover“ = Titelbild mit "
+            "inhalt {image}, höchstens eins), Reihenfolge, an/aus, Aussehen und Entfernen. Der "
+            "Text der Seite ist der feste Abschnitt „body“ (ändern mit webseite_text_aendern). "
+            "Schlüssel liefert webseite_text_lesen, Felder je Art startseite_bausteine."
+        ),
+        schema=_schema(
+            {
+                "nummer": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": gettext_lazy("Nummer der Textseite."),
+                },
+                "neu": {
+                    "type": "array",
+                    "maxItems": 10,
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "art": {"type": "string", "maxLength": 20},
+                            "inhalt": OPEN_OBJECT,
+                            "nach": {
+                                "type": "string",
+                                "maxLength": 40,
+                                "description": gettext_lazy(
+                                    "Schlüssel des Abschnitts davor; leer = ganz oben, fehlt = "
+                                    "ganz unten."
+                                ),
+                            },
+                            "an": {"type": "boolean"},
+                        },
+                        "required": ["art"],
+                    },
+                },
+                "reihenfolge": KEYS,
+                "an": KEYS,
+                "aus": KEYS,
+                "entfernen": KEYS,
+                "aussehen": {
+                    "type": "object",
+                    "description": gettext_lazy(
+                        "Schlüssel → {hintergrund, breite}, Werte aus startseite_bausteine. "
+                        "Auch für „body“, z. B. breite full für Text über die volle Breite."
+                    ),
+                },
+            },
+            ["nummer"],
+        ),
+        run=_page_build,
+        writes=True,
+        scope=SCOPE_DRAFT,
+    ),
+    Tool(
+        name="textseite_abschnitt_aendern",
+        title=gettext_lazy("Abschnitt einer Textseite ändern (Entwurf)"),
+        description=gettext_lazy(
+            "Ändert den Inhalt eines eigenen Abschnitts einer Textseite im Entwurf. „inhalt“ "
+            "enthält nur die geänderten Felder, aufgebaut wie „data“ aus webseite_text_lesen."
+        ),
+        schema=_schema(
+            {
+                "nummer": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": gettext_lazy("Nummer der Textseite."),
+                },
+                "schluessel": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "description": gettext_lazy("Schlüssel des Abschnitts, z. B. c:ab12."),
+                },
+                "inhalt": OPEN_OBJECT,
+            },
+            ["nummer", "schluessel", "inhalt"],
+        ),
+        run=_page_section_change,
         writes=True,
         scope=SCOPE_DRAFT,
     ),
