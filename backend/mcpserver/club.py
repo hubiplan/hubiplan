@@ -1,10 +1,13 @@
 """Werkzeuge für die Vereinsdaten, Stufe W1: Webseite lesen und als Entwurf bearbeiten.
 
+Gestaltung, Menü, Aufbau der Startseite, Bilder und Beitragsentwürfe (W2/W3) stehen in
+``club_design``.
+
 Die Werkzeuge rufen dieselben Ansichten auf wie die Oberfläche im Browser
 (``website.views``, ``website.content_views``). Rechte, Prüfungen, Protokoll und
 „Rückgängig“ sind also dieselben; der Assistent darf nie mehr als die Person, die ihn
-verbunden hat. Es gibt bewusst kein Werkzeug zum Veröffentlichen, für Zustand, Domains,
-Gestaltung oder Kontaktnachrichten (docs/mcp.md).
+verbunden hat. Es gibt bewusst kein Werkzeug zum Veröffentlichen, für Zustand, Domains
+oder Kontaktnachrichten (docs/mcp.md).
 """
 
 from __future__ import annotations
@@ -368,8 +371,8 @@ def _images(args: dict, ctx: ClubContext) -> str:
     ]
     return (
         _(
-            "Bilder der Webseite. In Texten mit der Markdown-Zeile einbinden. Neue Bilder lädt "
-            "jemand in HUBIplan unter Webseite › Bilder hoch."
+            "Bilder der Webseite. In Texten mit der Markdown-Zeile einbinden. Neue Bilder: "
+            "bild_hochladen_vorbereiten liefert einen Link zum Hochladen."
         )
         + "\n\n"
         + _dump(rows)
@@ -579,5 +582,7 @@ CLUB_TOOLS: tuple[Tool, ...] = (
 
 def tools_for(ctx: Context):
     """Hilfe immer; Webseite je nach Bereich der Zustimmung."""
+    from .club_design import DESIGN_TOOLS
+
     scopes = set(getattr(getattr(ctx, "grant", None), "scopes", None) or [])
-    return (*TOOLS, *(t for t in CLUB_TOOLS if t.scope in scopes))
+    return (*TOOLS, *(t for t in (*CLUB_TOOLS, *DESIGN_TOOLS) if t.scope in scopes))

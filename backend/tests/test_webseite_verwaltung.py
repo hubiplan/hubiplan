@@ -334,3 +334,18 @@ class TestSprache:
         settings.HUBIPLAN_LANGUAGES = ["de"]
         assert c.put(url(orgs["a"]), {"language": "en"}, "application/json").status_code == 200
         assert c.put(url(orgs["a"]), {"language": "fr"}, "application/json").status_code == 400
+
+
+def test_uebergeordnete_einheiten_mit_terminen(orgs, site, board_a, api):
+    """Häkchen „Termine der übergeordneten Einheiten“ nur, wenn es solche Einheiten gibt."""
+    c = api(board_a)
+    fed = orgs["federation"]
+    # Termine sind Standardmodul: beim Dachverband erst ausschalten
+    fed.enabled_modules = [m for m in fed.enabled_modules if m != "events"]
+    fed.save(update_fields=["enabled_modules"])
+    assert c.get(url(orgs["a"])).json()["has_parent_units"] is False
+    fed.enabled_modules = [*fed.enabled_modules, "events"]
+    fed.save(update_fields=["enabled_modules"])
+    assert c.get(url(orgs["a"])).json()["has_parent_units"] is True
+    # Verein ohne Dachverband: die Plattform zählt nicht
+    assert services.has_parent_events(orgs["c"]) is False
