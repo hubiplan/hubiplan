@@ -456,6 +456,30 @@ def image_ids(sections: list[dict]) -> set[int]:
     return ids
 
 
+def text_image_keys(sections: list[dict]) -> set[str]:
+    """Schlüssel der Bilder, die als ``![…](bild:<key>)`` im Text eingeschalteter Abschnitte
+    stehen (#415). Sie dürfen wie Bilder mit eigener Bildnummer öffentlich ausgeliefert werden."""
+    from .content import _IMAGE_KEY
+
+    keys: set[str] = set()
+
+    def walk(value):
+        if isinstance(value, str):
+            if "bild:" in value:
+                keys.update(_IMAGE_KEY.findall(value))
+        elif isinstance(value, dict):
+            for v in value.values():
+                walk(v)
+        elif isinstance(value, list):
+            for v in value:
+                walk(v)
+
+    for s in sections:
+        if s.get("on") and "kind" in s:
+            walk(s.get("data"))
+    return keys
+
+
 def public(site, home_keys: list[str], event_entry) -> list[dict]:
     """Eingeschaltete Abschnitte mit Inhalt für die Webseite, in Reihenfolge.
 
