@@ -32,6 +32,7 @@ import { FinanceGroupPage } from './GroupPage.tsx'
 import { AuditPage } from './AuditPage.tsx'
 import { NetAssetsPage } from './NetAssetsPage.tsx'
 import { UseOfFundsPage } from './UseOfFundsPage.tsx'
+import { BudgetPage } from './BudgetPage.tsx'
 import { ArtistFeesPage } from './ArtistFeesPage.tsx'
 import { AllowancesPage } from './AllowancesPage.tsx'
 import { VatPage } from './VatPage.tsx'
@@ -193,6 +194,18 @@ export function FinanzenPage() {
               ]}
             >
               <ProjectsArea />
+            </Section>
+          ) : (
+            home
+          )
+        }
+      />
+      <Route
+        path="haushaltsplan"
+        element={
+          a.finance ? (
+            <Section readOnly={!a.financeEdit}>
+              <BudgetPage canEdit={a.financeEdit} />
             </Section>
           ) : (
             home

@@ -209,6 +209,8 @@ function ProjectForm({
     series: String(project?.series ?? ''),
     department: String(project && 'department' in project ? (project.department ?? '') : ''),
     description: project?.description ?? '',
+    plan_income: project?.plan_income ?? '',
+    plan_expense: project?.plan_expense ?? '',
   })
   const { values: v, errors, set } = form
 
@@ -240,6 +242,8 @@ function ProjectForm({
       series: x.series ? Number(x.series) : null,
       department: x.department ? Number(x.department) : null,
       description: x.description,
+      plan_income: x.plan_income.trim() ? x.plan_income.replace(',', '.') : null,
+      plan_expense: x.plan_expense.trim() ? x.plan_expense.replace(',', '.') : null,
     }
   }
 
@@ -332,6 +336,21 @@ function ProjectForm({
               ))}
               <option value="+">{t('+ neue Reihe …')}</option>
             </SelectField>
+            <Field
+              label={t('geplante Einnahmen (optional)')}
+              inputMode="decimal"
+              value={v.plan_income}
+              error={errors.plan_income}
+              hint={t('Für den Vergleich von Plan und Ist')}
+              onChange={(e) => set('plan_income', e.target.value)}
+            />
+            <Field
+              label={t('geplante Ausgaben (optional)')}
+              inputMode="decimal"
+              value={v.plan_expense}
+              error={errors.plan_expense}
+              onChange={(e) => set('plan_expense', e.target.value)}
+            />
             {(departments.data?.length ?? 0) > 0 && (
               <SelectField
                 label={t('{sg} (optional)', { sg: tm.sg })}
@@ -496,10 +515,16 @@ function ProjectDetail() {
         <div className="card tile">
           <h2>{t('Einnahmen')}</h2>
           <p className="amount-big amount-in">{euro(tm.income)}</p>
+          {d.plan && (
+            <span className="muted small">{t('Plan {x}', { x: euro(d.plan.income) })}</span>
+          )}
         </div>
         <div className="card tile">
           <h2>{t('Ausgaben')}</h2>
           <p className="amount-big amount-out">{euro(tm.expense)}</p>
+          {d.plan && (
+            <span className="muted small">{t('Plan {x}', { x: euro(d.plan.expense) })}</span>
+          )}
         </div>
         <div className="card tile">
           <h2>{Number(tm.result) < 0 ? t('Fehlbetrag') : t('Überschuss')}</h2>
@@ -508,6 +533,7 @@ function ProjectDetail() {
           </p>
           <span className="muted small">
             {d.booking_count} {t('Buchungen')}
+            {d.plan && <> · {t('Plan {x}', { x: euro(d.plan.result) })}</>}
           </span>
         </div>
       </div>

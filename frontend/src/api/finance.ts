@@ -420,6 +420,9 @@ export interface Project {
   result: string
   booking_count: number
   event_count: number
+  /** Planwerte (Haushaltsplan), null wenn nichts geplant ist */
+  plan_income: string | null
+  plan_expense: string | null
 }
 
 export interface ProjectSeries {
@@ -460,6 +463,10 @@ export interface ProjectEvaluation {
   categories: ({ id: number | null; name: string; tax_area: string } & Sums)[]
   tax_areas: ({ area: string; label: string } & Sums)[]
   totals: Sums
+  /** Planwerte der Veranstaltung, null wenn nichts geplant ist */
+  plan: Sums | null
+  plan_income: string | null
+  plan_expense: string | null
   booking_count: number
   bookings: {
     id: number
@@ -689,6 +696,74 @@ export interface NetAssets {
   free: string
 }
 
+/** Haushaltsplan: Plan und Ist je Kategorie (und Untereinheit) eines Geschäftsjahres */
+export type BudgetKind = 'income' | 'expense'
+
+export interface BudgetLine {
+  id: number
+  kind: BudgetKind
+  category: number
+  category_name: string
+  category_active: boolean
+  department: number | null
+  department_name: string | null
+  amount: string
+  note: string
+  /** null bei einem künftigen Jahr */
+  actual: string | null
+  forecast: string | null
+  previous_plan: string | null
+  previous_actual: string
+}
+
+export interface BudgetTotals {
+  plan: string
+  actual: string | null
+  forecast: string | null
+  previous_plan: string
+  previous_actual: string
+}
+
+export interface BudgetReport {
+  year: number
+  label: string
+  start_date: string
+  end_date: string
+  phase: 'past' | 'current' | 'future'
+  elapsed_percent: number | null
+  years: { year: number; label: string }[]
+  previous_label: string
+  previous_has_budget: boolean
+  budget: {
+    id: number
+    status: 'draft' | 'adopted'
+    status_label: string
+    adopted_on: string | null
+    adopted_by: string
+    note: string
+    version: number
+    updated_at: string
+  } | null
+  lines: BudgetLine[]
+  unplanned: {
+    kind: BudgetKind
+    category: number
+    category_name: string
+    department: number | null
+    department_name: string | null
+    actual: string
+  }[]
+  totals: { income: BudgetTotals; expense: BudgetTotals; result: BudgetTotals }
+}
+
+export interface BudgetLineInput {
+  kind: BudgetKind
+  category: number
+  department: number | null
+  amount: string
+  note: string
+}
+
 const base = (org: number) => `/api/orgs/${org}/finance`
 
 export const financeApi = {
@@ -724,6 +799,29 @@ export const financeApi = {
     api.get<NetAssets>(`${base(org)}/net-assets/?jahr=${year}`),
   vat: (org: number, year: number, period: VatPeriod, index: number) =>
     api.get<VatReport>(`${base(org)}/vat/?jahr=${year}&art=${period}&zeitraum=${index}`),
+  budget: (org: number, year: number | null) =>
+    api.get<BudgetReport>(`${base(org)}/budget/${year === null ? '' : `?jahr=${year}`}`),
+  saveBudget: (
+    org: number,
+    year: number,
+    data: { lines: BudgetLineInput[]; note?: string; version?: number },
+  ) => api.put<BudgetReport>(`${base(org)}/budget/?jahr=${year}`, data),
+  deleteBudget: (org: number, year: number, version?: number) =>
+    api.delWith<BudgetReport>(`${base(org)}/budget/?jahr=${year}`, { version }),
+  budgetStatus: (
+    org: number,
+    year: number,
+    data: {
+      status: 'draft' | 'adopted'
+      adopted_on?: string
+      adopted_by?: string
+      version?: number
+    },
+  ) => api.post<BudgetReport>(`${base(org)}/budget/status/?jahr=${year}`, data),
+  copyBudget: (org: number, year: number, source: 'plan' | 'actual', version?: number) =>
+    api.post<BudgetReport>(`${base(org)}/budget/copy/?jahr=${year}`, { source, version }),
+  budgetFileUrl: (org: number, year: number, als: 'pdf' | 'xlsx') =>
+    `${base(org)}/budget/?jahr=${year}&als=${als}`,
   useOfFunds: (org: number, year: number) =>
     api.get<UseOfFunds>(`${base(org)}/use-of-funds/?jahr=${year}`),
   artistFees: (org: number, year: number) =>
