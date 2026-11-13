@@ -67,8 +67,10 @@ class ClubContext(Context):
     def org_id(self) -> int:
         return self.grant.organization_id
 
-    def call(self, view_cls: type, method: str, path: str, data=None, **kwargs):
-        """Ansicht der Oberfläche aufrufen; liefert die Daten der Antwort oder ToolError."""
+    def call(self, view_cls: type, method: str, path: str, data=None, multipart=None, **kwargs):
+        """Ansicht der Oberfläche aufrufen; liefert die Daten der Antwort oder ToolError.
+
+        ``multipart``: Formular mit Dateien (POST), z. B. für das Logo."""
         outer = self.request
         factory = RequestFactory()
         extra = {
@@ -79,6 +81,8 @@ class ClubContext(Context):
         full = f"/api/orgs/{self.org_id}/{path}"
         if method == "GET":
             inner = factory.get(full, **extra)
+        elif multipart is not None:
+            inner = factory.post(full, multipart, **extra)
         else:
             inner = factory.generic(
                 method,
@@ -681,6 +685,8 @@ CLUB_TOOLS: tuple[Tool, ...] = (
 def tools_for(ctx: Context):
     """Hilfe immer; Webseite je nach Bereich der Zustimmung."""
     from .club_design import DESIGN_TOOLS
+    from .club_theme import THEME_TOOLS
 
     scopes = set(getattr(getattr(ctx, "grant", None), "scopes", None) or [])
-    return (*TOOLS, *(t for t in (*CLUB_TOOLS, *DESIGN_TOOLS) if t.scope in scopes))
+    club = (*CLUB_TOOLS, *DESIGN_TOOLS, *THEME_TOOLS)
+    return (*TOOLS, *(t for t in club if t.scope in scopes))
