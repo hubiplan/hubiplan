@@ -1,7 +1,7 @@
 // Webseite › Gestaltung › Feinabstimmung (Ralf 10.11.2026, Konzept webseite-baukasten G1):
 // feste Stufen statt CSS. Sechs aufklappbare Gruppen, jeder Regler eine Leiste mit 2 oder 3
-// gleich breiten Feldern oder ein Schalter. Nicht verstellt = wie das Design; ein zweiter Klick
-// auf das gewählte Feld stellt zurück. Stufen und Sperren je Design kommen aus HUBIplan
+// (Kopfhöhe und Titelbild 4) gleich breiten Feldern oder ein Schalter. Nicht verstellt = wie
+// das Design; ein zweiter Klick auf das gewählte Feld stellt zurück. Stufen und Sperren je Design kommen aus HUBIplan
 // (website/style.py), die Namen stehen hier.
 import type { StyleCatalog, StyleValues } from '../../api/website.ts'
 import { confirmDialog } from '../../components/dialog.ts'
@@ -18,7 +18,11 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         label: t('Schriftart'),
         options: { system: t('System'), modern: t('Modern'), festive: t('Festlich') },
       },
-      { key: 'size', label: t('Größe'), options: { normal: t('normal'), large: t('größer') } },
+      {
+        key: 'size',
+        label: t('Größe'),
+        options: { normal: t('normal'), large: t('größer'), xlarge: t('sehr groß') },
+      },
       {
         key: 'leading',
         label: t('Zeilenabstand'),
@@ -61,6 +65,20 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         label: t('Ecken'),
         options: { square: t('eckig'), slight: t('leicht'), round: t('rund') },
       },
+      {
+        key: 'dark',
+        label: t('Dunkle Darstellung'),
+        options: { off: t('aus'), auto: t('nach Gerät') },
+        hint: t(
+          'Nach Gerät: Wer sein Handy oder seinen Rechner dunkel eingestellt hat, sieht die Webseite dunkel. Kopf, Menü und Fuß behalten ihre Vereinsfarben.',
+        ),
+      },
+      {
+        key: 'contrast',
+        label: t('Kontrast erhöht'),
+        hint: t('Dunklere Schrift und kräftigere Linien, leichter zu lesen.'),
+      },
+      { key: 'to_top', label: t('Knopf „Nach oben“ auf langen Seiten') },
     ],
   },
   {
@@ -75,6 +93,11 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         key: 'images',
         label: t('Bilder'),
         options: { cards: t('wie Karten'), square: t('eckig') },
+      },
+      {
+        key: 'tile_ratio',
+        label: t('Bildformat in Kacheln'),
+        options: { wide: '3:2', classic: '4:3', square: t('quadratisch') },
       },
       { key: 'image_frame', label: t('Rahmen um Bilder') },
       {
@@ -125,6 +148,11 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         options: { underline: t('Linie'), filled: t('hinterlegt') },
       },
       { key: 'sticky', label: t('Menü oben anheften') },
+      {
+        key: 'nav_mobile',
+        label: t('Menü auf dem Handy'),
+        options: { toggle: t('aufklappbar'), scroll: t('Leiste zum Wischen') },
+      },
     ],
   },
   {
@@ -133,9 +161,15 @@ const GROUPS: { title: string; rows: Row[] }[] = [
       {
         key: 'hero',
         label: t('Titelbild'),
-        options: { low: t('niedrig'), normal: t('normal'), high: t('hoch') },
+        options: { low: t('niedrig'), medium: t('mittel'), normal: t('normal'), high: t('hoch') },
       },
       { key: 'hero_name', label: t('Name auf dem Titelbild') },
+      {
+        key: 'carousel',
+        label: t('Bilderkarussell blättert'),
+        options: { off: t('nur von Hand'), slow: t('langsam'), normal: t('normal') },
+        hint: t('Langsam: doppelt so lange je Bild wie beim Karussell eingestellt.'),
+      },
     ],
   },
   {
@@ -163,6 +197,8 @@ const SWITCH_DEFAULTS: Record<string, boolean> = {
   name: true,
   sticky: false,
   hero_name: false,
+  contrast: false,
+  to_top: false,
 }
 const SWITCH_BY_DESIGN: Record<string, Record<string, boolean>> = {
   stage: { sticky: true, hero_name: true },

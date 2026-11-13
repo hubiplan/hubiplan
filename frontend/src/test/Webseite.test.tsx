@@ -588,6 +588,52 @@ describe('Webseite', () => {
     expect(modern).toHaveAttribute('aria-pressed', 'false')
   })
 
+  it('stellt dunkle Darstellung, Kontrast und Karussell ein (Ralf 13.11.)', async () => {
+    const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
+    const body = {
+      ...data(website('maintenance', { design: 'classic', color_roles: {}, style: {} })),
+      designs: [{ key: 'classic', label: 'Klassisch', hint: 'erfunden', roles, package: false }],
+      style_catalog: {
+        options: {
+          dark: ['off', 'auto'],
+          contrast: 'switch',
+          hero: ['low', 'medium', 'normal', 'high'],
+          carousel: ['off', 'slow', 'normal'],
+        },
+        locks: {},
+      },
+    }
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body }),
+        [`PUT ${base}`]: () => ({ status: 200, body }),
+        [`GET ${base}images/`]: () => ({ status: 200, body: [] }),
+      },
+      '/webseite/gestaltung',
+    )
+    const user = userEvent.setup()
+    const lastStyle = () => {
+      const last = calls.filter((c) => c.key === `PUT ${base}`).at(-1)
+      return JSON.parse(String(last?.init?.body ?? '{}')).style
+    }
+    await user.click(await screen.findByText('Seite'))
+    await user.click(screen.getByRole('button', { name: 'nach Gerät' }))
+    await user.click(screen.getByRole('switch', { name: /^Kontrast erhöht/ }))
+    await user.click(screen.getByText('Startseite', { selector: 'summary' }))
+    await user.click(screen.getByRole('button', { name: 'mittel' }))
+    await user.click(screen.getByRole('button', { name: 'nur von Hand' }))
+    await waitFor(
+      () =>
+        expect(lastStyle()).toEqual({
+          dark: 'auto',
+          contrast: true,
+          hero: 'medium',
+          carousel: 'off',
+        }),
+      { timeout: 4000 },
+    )
+  })
+
   it('legt Gestaltung als Entwurf an, zeigt die Vorschau und veröffentlicht (G2)', async () => {
     const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
     const site = (draft: Record<string, unknown>, versions: unknown[] = []) => ({

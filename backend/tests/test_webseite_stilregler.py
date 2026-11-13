@@ -75,9 +75,9 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     assert catalog["locks"]["sidebar"]["logo_pos"] is None
     assert catalog["locks"]["stage"]["width"] == ["narrow"]
     # Jede Leiste hat 2 oder 3 gleich breite Felder (Ralf 10.11.);
-    # einzige Ausnahme: die Kopfhöhe mit vier Stufen (Ralf 13.11., Webseite #68)
+    # Ausnahmen: Kopfhöhe und Titelbild mit vier Stufen (Ralf 13.11., Webseite #68)
     for key, options in catalog["options"].items():
-        most = 4 if key == "header_height" else 3
+        most = 4 if key in ("header_height", "hero") else 3
         assert options == "switch" or 2 <= len(options) <= most
 
 
@@ -102,7 +102,7 @@ def test_alter_ungueltiger_stand_bricht_nichts(club, site):
 
 def test_gleiche_liste_wie_die_webseite():
     # hubiplan-website/seite/stil.py führt dieselben Regler; hier nur die Form
-    assert len(style.OPTIONS) == 28
+    assert len(style.OPTIONS) == 34
     for design, locks in style.LOCKS.items():
         for key, values in locks.items():
             assert key in style.OPTIONS, (design, key)
@@ -116,3 +116,25 @@ def test_kopfhoehe_mittel(club, site, client_web):
     assert resp.status_code == 200, resp.content
     site.refresh_from_db()
     assert site.style == {"header_height": "medium"}
+
+
+def test_neue_regler(club, site, client_web):
+    """Ralf 13.11.: Titelbild „mittel“, Schrift „sehr groß“, Kontrast, Handymenü, Bildformat
+    der Kacheln, Karussell, „Nach oben“ und die dunkle Darstellung."""
+    values = {
+        "hero": "medium",
+        "size": "xlarge",
+        "contrast": True,
+        "nav_mobile": "scroll",
+        "tile_ratio": "square",
+        "carousel": "slow",
+        "to_top": True,
+        "dark": "auto",
+    }
+    resp = put(client_web, club, {"style": values})
+    assert resp.status_code == 200, resp.content
+    site.refresh_from_db()
+    assert site.style == values
+    assert put(client_web, club, {"style": {"carousel": "fast"}}).status_code == 400
+    assert put(client_web, club, {"style": {"contrast": "on"}}).status_code == 400
+    assert style.LOCKS["sidebar"]["nav_mobile"] is None
