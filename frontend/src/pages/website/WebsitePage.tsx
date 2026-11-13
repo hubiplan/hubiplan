@@ -51,6 +51,7 @@ import { t } from '../../i18n/index.ts'
 import { GalleryPage } from './GalleryPage.tsx'
 import { DocumentsPage } from './DocumentsPage.tsx'
 import { SocialPage } from './SocialPage.tsx'
+import { ImageHosts } from './ImageHosts.tsx'
 import { LINK, MenuTree } from './MenuTree.tsx'
 import { normalizeMenu } from './menuTree.ts'
 import { PageHeader } from '../../components/PageHeader.tsx'
@@ -226,6 +227,7 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'notice_target',
   'notice_from',
   'notice_until',
+  'image_hosts',
 ]
 
 function pick(w: Website): WebsiteSettings {
@@ -604,6 +606,11 @@ function WebsiteAdmin({
               'Welche Bereiche die Webseite zeigt, in der Reihenfolge des Menüs. Mit dem Stift gibst du einem Baustein einen eigenen Namen für Menü und Überschrift.',
             )}
           </p>
+          <p className="muted small">
+            {t(
+              'Reihenfolge, Namen, Links und Knopf des Menüs kommen in den Entwurf und erscheinen erst nach „Veröffentlichen“. Die Häkchen (Baustein an oder aus) gelten sofort.',
+            )}
+          </p>
           {website.menu_items && (
             <>
               <MenuTree
@@ -826,6 +833,15 @@ function WebsiteAdmin({
           />
           <Why k="web_indexing" />
         </>,
+      )}
+      {settings(
+        t('Bilder für KI-Assistenten'),
+        <ImageHosts
+          value={v.image_hosts ?? []}
+          error={errors.image_hosts}
+          disabled={!data.can_manage}
+          onChange={(next) => set('image_hosts', next)}
+        />,
       )}
     </>
   )

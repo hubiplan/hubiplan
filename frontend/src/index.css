@@ -6038,3 +6038,26 @@ label:has(> .file-input:focus-visible) {
 .indent {
   padding-left: var(--space-5);
 }
+
+/* Webseite › Social Media: Entwürfe für Beiträge (KI-Schnittstelle W3) */
+.social-draft {
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+}
+.social-draft-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.social-draft-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.social-draft-images img {
+  width: 6rem;
+  height: 6rem;
+  object-fit: cover;
+  border-radius: var(--radius, 6px);
+}

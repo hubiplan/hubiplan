@@ -9,6 +9,7 @@ from __future__ import annotations
 from django.db import transaction
 from django.http import FileResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import serializers, status
 from rest_framework.exceptions import NotFound, ValidationError
@@ -16,14 +17,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from access.catalog import WEBSITE_MANAGE
+from access.catalog import WEBSITE_CONTENT, WEBSITE_MANAGE
 from access.permissions import permissions_in
 from audit.log import record
 from core.tenancy import rls_bypass
 
 from . import services, social
-from .content_views import _ContentMixin
-from .social_models import SocialFeed, SocialPost, SocialPostImage
+from .content_models import WebsiteImage
+from .content_views import _ContentMixin, image_data
+from .social_models import (
+    SOCIAL_DRAFT_MAX_IMAGES,
+    SOCIAL_DRAFT_MAX_TEXT,
+    SocialDraft,
+    SocialFeed,
+    SocialPost,
+    SocialPostImage,
+)
 from .views import _WebsiteMixin
 
 
@@ -321,6 +330,139 @@ class PostImageFileView(_ContentMixin, APIView):
         response["Cache-Control"] = "private, max-age=3600"
         response["X-Content-Type-Options"] = "nosniff"
         return response
+
+
+# --- Entwürfe für Beiträge (KI-Schnittstelle W3, docs/mcp.md) ---
+
+
+def draft_data(org_id: int, draft: SocialDraft, images: dict[int, WebsiteImage]) -> dict:
+    who = draft.created_by
+    return {
+        "id": draft.pk,
+        "channel": draft.channel,
+        "channel_label": draft.get_channel_display() if draft.channel else "",
+        "text": draft.text,
+        "images": [
+            {
+                "id": pk,
+                "url": data["url"],
+                "small_url": data["small_url"],
+                "alt_text": data["alt_text"] or data["caption"],
+            }
+            for pk in draft.images
+            if pk in images and (data := image_data(org_id, images[pk]))
+        ],
+        "created_at": draft.created_at,
+        "created_by": (who.get_full_name() or who.email) if who else "",
+        "via": draft.via,
+        "done_at": draft.done_at,
+    }
+
+
+def _images_of(website, drafts) -> dict[int, WebsiteImage]:
+    ids = {pk for d in drafts for pk in d.images if isinstance(pk, int)}
+    return {i.pk: i for i in WebsiteImage.objects.filter(website=website, pk__in=ids)}
+
+
+class SocialDraftSerializer(serializers.Serializer):
+    channel = serializers.ChoiceField(
+        choices=SocialDraft.Channel.choices, required=False, allow_blank=True, default=""
+    )
+    text = serializers.CharField(max_length=SOCIAL_DRAFT_MAX_TEXT)
+    images = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        required=False,
+        default=list,
+        max_length=SOCIAL_DRAFT_MAX_IMAGES,
+    )
+    via = serializers.CharField(max_length=120, required=False, allow_blank=True, default="")
+
+
+class SocialDraftListView(_ContentMixin, APIView):
+    """GET: Entwürfe (offene zuerst) · POST: neuer Entwurf {channel, text, images, via}."""
+
+    def get(self, request, org_id: int):
+        website = self.website()
+        drafts = list(SocialDraft.objects.filter(website=website).select_related("created_by")[:50])
+        images = _images_of(website, drafts)
+        return Response(
+            {
+                "drafts": [draft_data(self.org.pk, d, images) for d in drafts],
+                "can_manage": bool({WEBSITE_CONTENT, WEBSITE_MANAGE} & self.org_permissions),
+            }
+        )
+
+    @transaction.atomic
+    def post(self, request, org_id: int):
+        website = self.website()
+        ser = SocialDraftSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        values = ser.validated_data
+        ids = list(dict.fromkeys(values["images"]))
+        known = set(
+            WebsiteImage.objects.filter(website=website, pk__in=ids).values_list("pk", flat=True)
+        )
+        if set(ids) - known:
+            raise ValidationError({"images": [gettext("Unbekanntes Bild.")]})
+        draft = SocialDraft.objects.create(
+            organization=self.org,
+            website=website,
+            channel=values["channel"],
+            text=values["text"].strip(),
+            images=ids,
+            created_by=request.user,
+            via=values["via"],
+        )
+        record(
+            self.org,
+            request.user,
+            "create",
+            draft,
+            {"Beitragsentwurf": [None, draft.text[:80] + (f" ({draft.via})" if draft.via else "")]},
+        )
+        return Response(
+            draft_data(self.org.pk, draft, _images_of(website, [draft])),
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class SocialDraftDetailView(_ContentMixin, APIView):
+    """PUT {done}: als erledigt markieren (oder zurück) · DELETE: löschen."""
+
+    def draft(self) -> SocialDraft:
+        return get_object_or_404(SocialDraft, website=self.website(), pk=self.kwargs["pk"])
+
+    @transaction.atomic
+    def put(self, request, org_id: int, pk: int):
+        draft = self.draft()
+        done = request.data.get("done") if isinstance(request.data, dict) else None
+        if not isinstance(done, bool):
+            raise ValidationError({"done": [gettext("Bitte ja oder nein angeben.")]})
+        if done != (draft.done_at is not None):
+            draft.done_at = timezone.now() if done else None
+            draft.save(update_fields=["done_at"])
+            record(
+                self.org,
+                request.user,
+                "update",
+                draft,
+                {
+                    "Beitragsentwurf": [
+                        "offen" if done else "erledigt",
+                        "erledigt" if done else "offen",
+                    ]
+                },
+            )
+        return Response(draft_data(self.org.pk, draft, _images_of(draft.website, [draft])))
+
+    @transaction.atomic
+    def delete(self, request, org_id: int, pk: int):
+        draft = self.draft()
+        record(
+            self.org, request.user, "delete", draft, {"Beitragsentwurf": [draft.text[:80], None]}
+        )
+        draft.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CallbackView(APIView):

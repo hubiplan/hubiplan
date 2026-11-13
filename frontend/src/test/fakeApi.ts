@@ -36,6 +36,11 @@ const DEFAULTS: Record<string, Handler> = {
     status: 200,
     body: { languages: [{ code: 'de', name: 'Deutsch' }], default: 'de', language: 'de' },
   }),
+  // Entwürfe für Social-Media-Beiträge (KI-Assistent): ohne eigene Angabe keine
+  'GET /api/orgs/7/website/social/drafts/': () => ({
+    status: 200,
+    body: { drafts: [], can_manage: true },
+  }),
   'GET /api/public/languages/': () => ({
     status: 200,
     body: { languages: [{ code: 'de', name: 'Deutsch' }], default: 'de' },

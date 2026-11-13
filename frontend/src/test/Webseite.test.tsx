@@ -1846,3 +1846,48 @@ describe('Veröffentlichung in der Mitgliederakte', () => {
     expect(await screen.findByText(/Nicht verbunden: Kein Konto/)).toBeInTheDocument()
   })
 })
+
+describe('Entwürfe für Beiträge', () => {
+  it('zeigt Entwürfe, markiert erledigt', async () => {
+    let done: string | null = null
+    const draft = () => ({
+      id: 3,
+      channel: 'instagram',
+      channel_label: 'Instagram',
+      text: 'Morgen ist Schützenfest!',
+      images: [{ id: 4, url: '/b.jpg', small_url: '/b-klein.jpg', alt_text: 'Fahne' }],
+      created_at: '2026-11-12T10:00:00Z',
+      created_by: 'Erika Muster',
+      via: 'KI-Assistent (Testassistent)',
+      done_at: done,
+    })
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}social/`]: () => ({
+          status: 200,
+          body: { feeds: [], redirect_uri: 'https://x.test/cb/', units: [], can_manage: true },
+        }),
+        [`GET ${base}social/drafts/`]: () => ({
+          status: 200,
+          body: { drafts: [draft()], can_manage: true },
+        }),
+        [`PUT ${base}social/drafts/3/`]: () => {
+          done = '2026-11-12T11:00:00Z'
+          return { status: 200, body: draft() }
+        },
+      },
+      '/webseite/beitraege',
+      [],
+      ['social'],
+    )
+    expect(await screen.findByText('Morgen ist Schützenfest!')).toBeInTheDocument()
+    expect(screen.getByAltText('Fahne')).toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Als erledigt markieren' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Als erledigt markieren' })).toBeNull(),
+    )
+    const put = calls.find((c) => c.key === `PUT ${base}social/drafts/3/`)
+    expect(JSON.parse(String(put?.init?.body))).toEqual({ done: true })
+  })
+})

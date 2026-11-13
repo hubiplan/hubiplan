@@ -32,6 +32,8 @@ Links nach außen: „Link nach außen hinzufügen“ legt einen Menüpunkt an, 
 
 Knopf: Unter „Menüpunkt als Knopf hervorheben“ wählt ihr einen Hauptpunkt, der im Menü als farbiger Knopf erscheint, etwa „Kontakt“ oder einen Link „Mitglied werden“. Es gibt höchstens einen Knopf; Überschriften und Punkte mit Unterpunkten gehen nicht.
 
+Entwurf: Reihenfolge, Namen, Links und Knopf des Menüs kommen in den Entwurf, wie Design und Startseite. In der Vorschau unter Webseite › Gestaltung seht ihr das neue Menü, öffentlich wird es mit **Veröffentlichen**. Die Häkchen, die einen Bereich ein- oder ausschalten, gelten dagegen sofort.
+
 Startseite: Die Abschnitte der Startseite stellt ihr unter Webseite › Gestaltung zusammen, mit Vorschau daneben.
 
 Repertoire und Presse: „Repertoire“ zeigt die Stücke aus dem Notenarchiv mit dem Haken „Im Repertoire auf der Webseite“. „Presse“ zeigt den Pressespiegel aus Webseite › Dokumente.

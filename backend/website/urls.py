@@ -9,6 +9,7 @@ from . import (
     gallery_views,
     public_views,
     social_views,
+    upload_views,
     views,
 )
 
@@ -95,6 +96,16 @@ org_patterns = [
         name="website-text-timeline-import",
     ),
     path("website/images/", content_views.ImageListView.as_view(), name="website-images"),
+    path(
+        "website/images/upload-link/",
+        upload_views.ImageUploadLinkView.as_view(),
+        name="website-image-upload-link",
+    ),
+    path(
+        "website/images/fetch/",
+        upload_views.ImageFetchView.as_view(),
+        name="website-image-fetch",
+    ),
     path("website/images/<int:pk>/", content_views.ImageDetailView.as_view(), name="website-image"),
     path(
         "website/images/<int:pk>/crop/",
@@ -165,6 +176,16 @@ org_patterns = [
         social_views.FeedSyncView.as_view(),
         name="website-social-sync",
     ),
+    path(
+        "website/social/drafts/",
+        social_views.SocialDraftListView.as_view(),
+        name="website-social-drafts",
+    ),
+    path(
+        "website/social/drafts/<int:pk>/",
+        social_views.SocialDraftDetailView.as_view(),
+        name="website-social-draft",
+    ),
     path("website/social/posts/", social_views.PostListView.as_view(), name="website-social-posts"),
     path(
         "website/social/posts/<int:pk>/",
@@ -185,6 +206,11 @@ org_patterns = [
 
 SITE = "public/site/v1/<str:key>/"
 public_patterns = [
+    path(
+        "public/website-images/<str:token>/",
+        upload_views.PublicImageUploadView.as_view(),
+        name="public-website-image-upload",
+    ),
     path(
         "website/social/callback/",
         social_views.CallbackView.as_view(),

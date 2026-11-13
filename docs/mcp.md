@@ -49,6 +49,8 @@ Einheit („Hinweise bei uns“, „Wer hilft bei uns?“) gehören zu Vereinsda
   `MCP-Protocol-Version` mit 400.
 - Fehler eines Werkzeugs (fehlende Eingabe, unbekannte Anleitung) kommen als Ergebnis mit
   `isError: true` und erklärendem Text, damit der Assistent sich korrigieren kann.
+- Ein Werkzeug liefert Text oder eine fertige Liste von Inhaltsteilen (`bild_ansehen`: ein
+  `image`-Teil mit JPEG in Base64 und ein `text`-Teil).
 
 ## Schutz
 
@@ -137,9 +139,53 @@ Die Einheit kommt immer aus der Verbindung, nie aus den Eingaben.
 | `webseite_textseite_anlegen` | entwurf | `titel`, `adresse`, `text` → neue, unveröffentlichte Textseite |
 | `startseite_abschnitt_aendern` | entwurf | `schluessel`, `inhalt` (nur geänderte Felder) → Entwurf; Aufbau, Reihenfolge, Aussehen bleiben |
 
-Bewusst nicht: Veröffentlichen, Zustand, Domains, Gestaltung, Kontaktnachrichten, Löschen.
-Bilder hochladen (W2) und Gestaltung im Entwurf (W3) folgen.
+Bewusst nicht: Veröffentlichen, Zustand, Domains, Kontaktnachrichten, Löschen.
 
-Code: `mcpserver/oauth.py` (Anmeldung), `auth.py` (Schlüssel prüfen), `club.py` (Werkzeuge),
-`oauth_views.py`, `models.py`; Tests `backend/tests/test_mcp_verein.py`,
+## W2/W3: Gestaltung, Menü, Bilder, Beitragsentwürfe
+
+Gestaltung, Menü und Aufbau der Startseite gehen über `PUT website/` mit `{"draft": …}` und
+brauchen „Webseite verwalten“; Bilder und Beitragsentwürfe „Inhalte bearbeiten“. Das Menü
+(`menu`, `block_names`, `menu_links`, `menu_button`) gehört seit W2 zu `DRAFT_FIELDS`, auch in
+der Oberfläche; die Häkchen der Bausteine (`blocks`) und die Hinweisleiste bleiben sofort
+wirksam. `clean_draft` prüft die vier Menüfelder zusammen.
+
+| Werkzeug | Bereich | Was |
+|---|---|---|
+| `webseite_gestaltung_ansehen` | lesen | Design, Farbrollen, Palette, Stilregler, Darstellung, Kopfbild mit erlaubten Werten |
+| `webseite_gestaltung_aendern` | entwurf | `design`, `stil`, `farben`, `darstellung`, `kopfbild`; nur Angegebenes ändert sich, `null` setzt zurück |
+| `webseite_menue_ansehen` | lesen | Menübaum im Entwurf mit Namen, Links, Knopf |
+| `webseite_menue_aendern` | entwurf | `reihenfolge`, `namen`, `links`, `neu` (Überschrift/Link), `knopf` |
+| `startseite_bausteine` | lesen | Abschnittsarten mit Feldern, Aussehen, `home_choices` |
+| `startseite_aufbau_aendern` | entwurf | `neu`, `reihenfolge`, `an`, `aus`, `aussehen`, `entfernen` (nur eigene Abschnitte) |
+| `bilder_suchen` | lesen | Suche über Bildunterschrift, Alternativtext, Datei, Untereinheit |
+| `bild_ansehen` | lesen | kleine Fassung (640 px, JPEG) als Bildinhalt; Hinweis: keine Personen erkennen |
+| `bild_beschreiben` | entwurf | Alternativtext, Bildunterschrift; bei benutzten Bildern nur leere Felder füllen |
+| `bild_hochladen_vorbereiten` | entwurf | Hochladelink (30 Minuten, 20 Bilder) |
+| `bild_von_adresse` | entwurf | Bild von einem freigegebenen Server, `quelle` Pflicht |
+| `social_beitrag_entwerfen` | entwurf | Text (2200 Zeichen), bis 10 Bilder, Kanal → `SocialDraft` |
+| `social_entwuerfe` | lesen | Entwürfe, offene zuerst |
+
+**Hochladelink** (`ImageUploadLink`): Nur der SHA-256 des Schlüssels liegt in der Datenbank.
+`/bilder-hochladen/<schlüssel>` ist eine Seite ohne Anmeldung; sie spricht
+`/api/public/website-images/<schlüssel>/` (GET Angaben, POST ein Bild, je IP begrenzt). Der
+Link endet nach Ablauf, voll, mit stillgelegter Einheit, abgeschaltetem Modul oder inaktivem
+Konto. Jedes Bild belegt erst einen Platz und wird dann wie jeder Upload geprüft (Größe,
+Format, Pixel, Metadaten entfernt); scheitert es, zählt es nicht. Angelegt werden die Bilder im
+Namen der Person, die den Link erzeugt hat.
+
+**Bild per Adresse**: `Website.image_hosts` (Webseite › Internetadresse, höchstens 10 Rechnernamen, keine
+IP-Adressen). Nur `https`, genauer Rechnername, Abruf über `core.safehttp` (keine internen
+Adressen, keine Weiterleitungen, höchstens 15 MB, 15 s), Inhaltstyp JPG/PNG/WebP. Die Quelle
+steht danach in der Bildunterschrift.
+
+**Beitragsentwürfe** (`SocialDraft`): Unter Webseite › Social Media mit „Text kopieren“, Bildern
+zum Speichern, „Als erledigt markieren“ und „Löschen“. HUBIplan postet nichts bei Meta; die
+Adressen liegen unter dem Modul „Social Media“.
+
+Neue Tabellen mit RLS (Migration `website/0046`). Hochladelinks und Beitragsentwürfe gehen nicht
+in den Datenumzug.
+
+Code: `mcpserver/oauth.py` (Anmeldung), `auth.py` (Schlüssel prüfen), `club.py` (Werkzeuge W1),
+`club_design.py` (W2/W3), `website/upload_views.py` (Hochladelink, Bild per Adresse),
+`oauth_views.py`, `models.py`; Tests `backend/tests/test_mcp_verein.py`, `test_mcp_webseite_w2.py`,
 `frontend/src/test/McpConnect.test.tsx`.
