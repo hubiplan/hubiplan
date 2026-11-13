@@ -415,7 +415,7 @@ def build(membership: Membership, org) -> bytes:
     )
 
     from helpers.models import ShiftAssignment
-    from meetings.models import Attendance, Ballot, Motion, Resolution, VoteCast
+    from meetings.models import Attendance, Ballot, Motion, PollOption, Resolution, VoteCast
 
     files["versammlungen.json"] = _dump(
         {
@@ -468,6 +468,18 @@ def build(membership: Membership, org) -> bytes:
                     ),
                 }
                 for c in VoteCast.objects.filter(attendance__membership=membership).select_related(
+                    "poll__meeting__event"
+                )
+            ],
+            # Zur Wahl gestanden (Online-Wahl, V7)
+            "kandidaturen": [
+                {
+                    "versammlung": o.poll.meeting.event.title,
+                    "frage": o.poll.question,
+                    "amt": o.poll.office,
+                    "name": o.label,
+                }
+                for o in PollOption.objects.filter(membership=membership).select_related(
                     "poll__meeting__event"
                 )
             ],
