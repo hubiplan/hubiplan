@@ -220,6 +220,9 @@ class FeeItem:
     department: object | None = None
     # Per Mail oder Post erreichbar (für die Prüfliste, ohne die Kontakte erneut zu lesen)
     reachable: bool = True
+    # für den Familien- bzw. Firmenbeitrag (H3)
+    member_type_id: int | None = None
+    household_role: str = ""
 
 
 @dataclass
@@ -230,6 +233,11 @@ class RunPlan:
     skipped: list[dict] = field(default_factory=list)
     # Mitglieder in mehreren Untereinheiten (Rechnung an die mit dem frühesten Beginn)
     multi_units: int = 0
+    # Beiträge über Haushalt oder Firma (H2): Haushalt -> Posten
+    household_items: dict[int, list[FeeItem]] = field(default_factory=dict)
+    households: dict[int, object] = field(default_factory=dict)
+    # „Beitrag über den Haushalt“, aber der Haushalt hat keinen Zahler
+    household_without_payer: int = 0
 
 
 def fee_exempt_units(org) -> dict[int, str]:
@@ -288,6 +296,10 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
         .select_related("title")
     ):
         awards.setdefault(a.person_id, []).append(a)
+    from . import households as hh
+
+    paying = hh.paying_links(org, ids)
+    payers = hh.payers_for(org) if paying else {}
     for m in _in_blocks(ids):
         spans = [
             s
@@ -369,6 +381,23 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
                 {"membership": m.pk, "name": name, "reason": f"beitragsfrei ({reason})"}
             )
             continue
+        via = hh.link_on(paying.get(m.pk, []), ref)
+        if via is not None and via.household_id in payers:
+            item = FeeItem(
+                m,
+                amount,
+                name,
+                " · ".join(details),
+                None,
+                True,
+                member_type.pk,
+                via.role,
+            )
+            plan.households[via.household_id] = via.household
+            plan.household_items.setdefault(via.household_id, []).append(item)
+            continue
+        if via is not None:
+            plan.household_without_payer += 1
         dept = None
         if not m.pays_fee_self:
             # Mehrere Untereinheiten: die mit dem frühesten Beginn, bei Gleichstand die in
@@ -395,7 +424,7 @@ def plan_run(org, p: Period, exclude: set[int] | None = None) -> RunPlan:
         reachable = bool(contact and contact.email) or bool(
             contact and contact.street and contact.postal_code and contact.city
         )
-        item = FeeItem(m, amount, name, " · ".join(details), dept, reachable)
+        item = FeeItem(m, amount, name, " · ".join(details), dept, reachable, member_type.pk)
         if dept is None:
             item.text = f"Mitgliedsbeitrag {p.label}"
             plan.member_items.append(item)
@@ -463,6 +492,8 @@ def preview_checks(org, plan: RunPlan) -> dict:
             organization=org, status=ChangeRequest.Status.PENDING
         ).count(),
         "multi_units": plan.multi_units,
+        "households": len(plan.household_items),
+        "household_without_payer": plan.household_without_payer,
     }
 
 
@@ -597,6 +628,12 @@ def refresh_recipient(invoice: Invoice) -> None:
         data = member_recipient(org, invoice.membership)
     elif invoice.recipient_kind == Invoice.Recipient.CLUB:
         data = club_recipient(invoice.club)
+    elif invoice.recipient_kind == Invoice.Recipient.HOUSEHOLD:
+        if invoice.household_id is None:
+            return
+        from .households import household_recipient
+
+        data = household_recipient(org, invoice.household)
     else:
         data = department_recipient(org, invoice.department)
     for key, value in data.items():
@@ -698,7 +735,61 @@ def build_run(run: FeeRun, user) -> dict:
             for n, i in enumerate(items)
         )
         created += 1
+    created += _build_households(org, plan, p, common)
     return {"created": created, "skipped": plan.skipped}
+
+
+def _build_households(org, plan: RunPlan, p: Period, common: dict) -> int:
+    """Eine Rechnung je Haushalt bzw. Firma an den Zahler, mit Familien- oder
+    Firmenbeitrag als Abzugsposten (H2/H3)."""
+    from . import households as hh
+
+    if not plan.household_items:
+        return 0
+    payers = hh.payers_for(org)
+    rules = hh.rules_for(org)
+    created = 0
+    for hh_id, items in plan.household_items.items():
+        household = plan.households[hh_id]
+        discount, detail = hh.fee_discount(rules.get(household.kind), items, p)
+        total = sum((i.amount for i in items), ZERO) - discount
+        word = "Firmenbeiträge" if household.kind == "company" else "Mitgliedsbeiträge"
+        invoice = Invoice(
+            recipient_kind=Invoice.Recipient.HOUSEHOLD,
+            household=household,
+            subject=f"{word} {p.label} – {household.name}",
+            total=total,
+            **common,
+            **hh.household_recipient(org, household, payers.get(hh_id)),
+        )
+        invoice.save()
+        lines = [
+            InvoiceLine(
+                organization=org,
+                invoice=invoice,
+                position=n,
+                text=i.text,
+                detail=i.detail,
+                amount=i.amount,
+                membership=i.membership,
+                is_fee=True,
+            )
+            for n, i in enumerate(items)
+        ]
+        if discount > 0:
+            lines.append(
+                InvoiceLine(
+                    organization=org,
+                    invoice=invoice,
+                    position=len(items),
+                    text=hh.discount_text(household.kind),
+                    detail=detail,
+                    amount=-discount,
+                )
+            )
+        InvoiceLine.objects.bulk_create(lines)
+        created += 1
+    return created
 
 
 def run_summary(run: FeeRun) -> dict:
@@ -715,6 +806,9 @@ def run_summary(run: FeeRun) -> dict:
         .exclude(invoice__status=Invoice.Status.CANCELLED)
         .count(),
         "departments": invoices.filter(recipient_kind=Invoice.Recipient.DEPARTMENT)
+        .exclude(status=Invoice.Status.CANCELLED)
+        .count(),
+        "households": invoices.filter(recipient_kind=Invoice.Recipient.HOUSEHOLD)
         .exclude(status=Invoice.Status.CANCELLED)
         .count(),
         "paid": invoices.aggregate(n=Sum("paid"))["n"] or ZERO,
@@ -1110,6 +1204,9 @@ def add_payment(
         raise ValidationError({"account": gettext("Bitte das Konto wählen.")})
     finance_services.ensure_open(org, date=date)
     year = org.fiscal_year_of(date)
+    from .households import booking_parties
+
+    member, partner = booking_parties(invoice)
     booking = Booking(
         organization=org,
         year=year,
@@ -1122,9 +1219,9 @@ def add_payment(
         text=f"Zahlung {invoice.display_number} {invoice.recipient_name.splitlines()[0]}"[:200],
         reference=invoice.display_number,
         counterparty=invoice.recipient_name.splitlines()[0][:200] if invoice.recipient_name else "",
-        partner=invoice.partner,
+        partner=partner,
         # Arbeitsbereich einer Untereinheit: Mitglieder liegen im Datenbereich darüber
-        membership=None if org.type == "unit" else invoice.membership,
+        membership=None if org.type == "unit" else member,
         department=invoice.department,
         project=invoice.project,
         vat_rate=payment_vat_rate(invoice, payment_category),

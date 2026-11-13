@@ -159,6 +159,7 @@ export function MemberListPage() {
     params.typ,
     params.abteilung,
     params.ehrentitel,
+    params.haushalt,
   ].filter(Boolean).length
 
   // Suche erst nach kurzer Tipp-Pause auslösen
@@ -351,6 +352,17 @@ export function MemberListPage() {
                   {tm.is_archived ? t(' (archiviert)') : ''}
                 </option>
               ))}
+            </select>
+          )}
+          {org.type === 'club' && (
+            <select
+              aria-label={t('Haushalt')}
+              value={params.haushalt ?? ''}
+              onChange={(e) => setParams((p) => ({ ...p, haushalt: e.target.value, page: 1 }))}
+            >
+              <option value="">{t('mit und ohne Haushalt')}</option>
+              <option value="mit">{t('in einem Haushalt oder einer Firma')}</option>
+              <option value="ohne">{t('ohne Haushalt und Firma')}</option>
             </select>
           )}
           <button

@@ -10,6 +10,7 @@ import { Alert, Checkbox, Field, SaveStatus, SelectField, Loading } from '../../
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { useTerms } from '../../org/terms.ts'
 import { HowTo, Term, Why } from '../../learning/Aids.tsx'
+import { HouseholdFeeRulesCard } from './HouseholdFeeRules.tsx'
 import { locale, t } from '../../i18n/index.ts'
 
 function useBillingSettings() {
@@ -39,6 +40,7 @@ export function FeeRulesPage() {
       )}
       <AgeRatesCard orgId={org.id} canEdit={s.can_edit} federation={federation} />
       {!federation && <SizeRatesCard orgId={org.id} canEdit={s.can_edit} />}
+      {s.org_type === 'club' && <HouseholdFeeRulesCard orgId={org.id} canEdit={s.can_edit} />}
     </div>
   )
 }

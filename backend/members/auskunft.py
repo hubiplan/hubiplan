@@ -38,6 +38,8 @@ Inhalt
 - mails.json: E-Mails, die der Verein über HUBIplan an die Person geschickt hat
 - zugang.json: Mitgliederzugang, Anmeldekonto und verbundene Geräte der App
 - termine.json: Zu- und Absagen zu Terminen
+- qualifikationen.json: Qualifikationen und Nachweise mit Gültigkeit (bei Einsichtsvermerken wie
+  dem Führungszeugnis nur das Datum der Einsicht, nie der Inhalt)
 - verbund.json: Meldungen an andere HUBIplan-Instanzen (z. B. Dachverband)
 - protokoll.json: Änderungen an den Daten der Person (ohne Namen der Bearbeitenden)
 - foto.*: hinterlegtes Mitgliederfoto (falls vorhanden)
@@ -301,6 +303,20 @@ def build(membership: Membership, org) -> bytes:
             for a in ShiftAssignment.objects.filter(membership=membership).select_related(
                 "shift__duty__plan"
             )
+        ]
+    )
+
+    from qualifications.models import Qualification
+
+    files["qualifikationen.json"] = _dump(
+        [
+            {
+                "qualifikation": q.kind.name,
+                **_row(q, {"kind", "person", "organization", "created_by", "reminded_at"}),
+            }
+            for q in Qualification.objects.filter(
+                organization=membership.organization, person_id=membership.person_id
+            ).select_related("kind")
         ]
     )
 

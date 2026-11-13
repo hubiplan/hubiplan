@@ -25,6 +25,12 @@ shift is already full, overlaps with another shift of the same person, or the pe
 than the minimum age, HUBIplan asks first; **Assign anyway** goes ahead regardless. Phone numbers
 are only visible to those who may edit duty rosters.
 
+Requirement: If the “Qualifications” module is switched on, you choose a qualification under
+**Requirement** at a duty, for example range officer for the shooting range. If the person lacks
+it or it expires before the end of the shift, HUBIplan asks when assigning, and a note appears at
+the person. Members who sign up themselves see the requirement and cannot sign up without a valid
+certificate.
+
 Printing: **Notice as PDF** creates one page per duty with the shifts and empty lines for
 signing up. **List as Excel** contains all shifts with the people assigned.
 

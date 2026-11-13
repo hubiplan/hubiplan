@@ -4,7 +4,18 @@ import { api } from './client.ts'
 import type { SignatureInput } from './finance.ts'
 
 export type FieldState = 'required' | 'optional' | 'off'
-export type FieldKey = 'phone' | 'gender' | 'birth_date' | 'unit' | 'entry_wish' | 'note'
+export type FieldKey =
+  | 'phone'
+  | 'gender'
+  | 'birth_date'
+  | 'unit'
+  | 'entry_wish'
+  | 'note'
+  /** Familienantrag: weitere Personen mit gleicher Anschrift (an = „optional“) */
+  | 'family'
+
+/** Felder des Formulars; „family“ fehlt bei älteren Servern */
+export type FieldStates = Record<Exclude<FieldKey, 'family'>, FieldState> & { family?: FieldState }
 
 export interface JoinType {
   id: number
@@ -29,7 +40,7 @@ export interface JoinSchema {
   intro: string
   thanks: string
   types: JoinType[]
-  fields: Record<FieldKey, FieldState>
+  fields: FieldStates
   units: { id: number; name: string }[]
   unit: number | null
   unit_label: string
@@ -47,6 +58,8 @@ export interface JoinSchema {
   signature: 'none' | 'required'
   minors: boolean
   min_age: number | null
+  /** Link „Mitarbeiter melden“: Name der Firma, die den Beitrag zahlt */
+  company?: string | null
   challenge?: { token: string; salt: string; difficulty: number }
   key?: string
   kiosk?: string
@@ -58,6 +71,13 @@ export interface Guardian {
   first_name: string
   email: string
   phone?: string
+}
+
+export interface FamilyMember {
+  first_name: string
+  last_name: string
+  birth_date: string
+  member_type: string
 }
 
 export interface JoinSubmission {
@@ -84,8 +104,10 @@ export interface JoinSubmission {
   confirmations: string[]
   consents: string[]
   guardians?: Guardian[]
+  family?: { first_name: string; last_name?: string; birth_date?: string; member_type?: number }[]
   signature?: SignatureInput | null
   homepage?: string
+  company?: string
   challenge?: string
   nonce?: number
 }
@@ -110,11 +132,11 @@ export type ApplicationStatus =
 const lang = (language: string) => `?lang=${encodeURIComponent(language)}`
 
 export const joinApi = {
-  form: (key: string, language: string, unit = '') =>
+  form: (key: string, language: string, unit = '', company = '') =>
     api.get<JoinSchema>(
       `/api/public/join/${encodeURIComponent(key)}/${lang(language)}${
         unit ? `&einheit=${encodeURIComponent(unit)}` : ''
-      }`,
+      }${company ? `&firma=${encodeURIComponent(company)}` : ''}`,
     ),
   submit: (key: string, data: JoinSubmission) =>
     api.post<{ status: string }>(`/api/public/join/${encodeURIComponent(key)}/`, data),
@@ -176,7 +198,7 @@ export interface FormSettings {
   public_key: string
   form_url: string
   types: { id: number; label: LangText; text: LangText; organizations: boolean }[]
-  fields: Record<FieldKey, FieldState>
+  fields: FieldStates
   custom_fields: number[]
   sepa: 'off' | 'offer' | 'required'
   sepa_available: boolean

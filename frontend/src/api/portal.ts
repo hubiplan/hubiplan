@@ -55,6 +55,8 @@ export interface PortalEntry {
   cards_enabled?: boolean
   /** Aktive Musikerin oder aktiver Musiker (Mein Bereich › Musik) */
   musician?: boolean
+  /** Ansprechpartner einer Firma, die für Mitarbeiter zahlt (Mein Bereich › Firma) */
+  company?: boolean
   terms?: DeptTerms
   imprint_key?: string
 }

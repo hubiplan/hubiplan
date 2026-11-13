@@ -108,6 +108,18 @@ export function portalSections(entry: PortalEntry | null): PortalSection[] {
           },
         ]
       : []),
+    ...(entry.company
+      ? [
+          {
+            to: '/mein-bereich/firma',
+            label: t('Mitarbeiter'),
+            tile: {
+              title: t('Mitarbeiter'),
+              text: t('Mitarbeiter melden, für die die Firma zahlt'),
+            },
+          },
+        ]
+      : []),
     {
       to: '/mein-bereich/rechnungen',
       label: t('Rechnungen'),
