@@ -25,6 +25,8 @@ export interface WebsiteSettings {
   color_roles: ColorRoles
   /** Kopfbild statt Wappen und Vereinsname (Bild der Bilderverwaltung) */
   header_image?: number | null
+  /** Kopfbild für schmale Bildschirme unter 600 px (Webseite #73), optional */
+  header_image_narrow?: number | null
   /** Stilregler (Feinabstimmung): nur verstellte; fehlt = wie das Design */
   style?: StyleValues
   /** Darstellung der festen Bereiche (G5): nur abweichende Varianten; fehlt = Standard */
@@ -333,6 +335,7 @@ export const DRAFT_FIELDS = [
   'color_roles',
   'style',
   'header_image',
+  'header_image_narrow',
   'home_sections',
   'layouts',
   // Menü mit Namen, Links und Knopf (KI-Schnittstelle W2): erst nach „Veröffentlichen“ sichtbar

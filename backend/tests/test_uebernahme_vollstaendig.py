@@ -50,32 +50,16 @@ NICHT = {
     "todos.TodoPortalGrant": "Freigabe an Zugänge, die nicht mitkommen",
     "todos.TodoRemoteShare": "Freigabe an eine Kopplung der alten Instanz",
     "todos.TodoRemoteTask": "Aufgabe einer Kopplung der alten Instanz",
-}
-
-# Soll nach Fachfrage 5 (13.11.: „alles mitnehmen“) noch mitkommen, fehlt aber. Jede Zeile hier
-# ist offene Arbeit; die Liste darf nur kürzer werden.
-OFFEN = {
-    "places.Place",
-    "admission.ApplicationForm",
-    "admission.Application",
-    "admission.Approval",
-    "admission.ApplicationEvent",
-    "portal.ChangeRequest",
-    "portal.CancellationRequest",
-    "circulars.MailingList",
-    "website.SocialDraft",
-    "website.DesignVersion",
-    "materials.MaterialRevision",
-    "finance.ReopenedClosing",
-    "exchange.ExportTemplate",
-    "exchange.ImportTemplate",
-    "music.MusicReminderPreference",
-    "competitions.PhotoSampleConsent",
-    "competitions.PhotoSample",
-    "todos.TodoReminderConfig",
-    "todos.TodoCleanupSetting",
-    "todos.TodoProgress",
-    "todos.TodoPortalPublication",
+    # Fachfrage 5 (13.11.): alles Übrige kommt mit, Online-Anträge ausdrücklich nicht
+    "admission.ApplicationForm": "Einstellungen des Online-Antrags, am Ziel neu einrichten",
+    "admission.Application": "Online-Anträge bleiben auf der alten Instanz",
+    "admission.Approval": "Zustimmungen zu Online-Anträgen der alten Instanz",
+    "admission.ApplicationEvent": "Verlauf der Online-Anträge der alten Instanz",
+    "materials.MaterialRevision": "Änderungsverlauf der alten Instanz (wird dort auch gelöscht)",
+    "music.MusicReminderPreference": "Einstellung eines Kontos; Konten kommen nicht mit",
+    "todos.TodoReminderConfig": "Erinnerung eines Kontos; Konten kommen nicht mit",
+    "todos.TodoProgress": "Verteilung an andere Einheiten, am Ziel neu verteilen",
+    "todos.TodoPortalPublication": "Freigabe im Mitgliederbereich, am Ziel neu vergeben",
 }
 
 
@@ -97,11 +81,9 @@ def _fehlend() -> set[str]:
 
 
 def test_jedes_vereinsmodell_kommt_mit_oder_ist_begruendet():
-    assert _fehlend() - set(NICHT) - OFFEN == set()
+    assert _fehlend() - set(NICHT) == set()
 
 
 def test_listen_sind_aktuell():
-    fehlend = _fehlend()
     # was inzwischen mitkommt, fliegt aus den Listen
-    assert (set(NICHT) | OFFEN) - fehlend == set()
-    assert not set(NICHT) & OFFEN
+    assert set(NICHT) - _fehlend() == set()

@@ -43,19 +43,24 @@ def default_tagline(org: Organization) -> str:
 
 
 def ensure(org: Organization) -> Letterhead:
-    """Briefbogen der Einheit; legt ihn beim ersten Zugriff mit Standardwerten an."""
-    letterhead = Letterhead.objects.filter(organization=org).first()
-    if letterhead is not None:
-        return letterhead
-    try:
-        with transaction.atomic():
-            return Letterhead.objects.create(
-                organization=org,
-                mode=Letterhead.default_mode(org),
-                tagline=default_tagline(org),
-            )
-    except IntegrityError:
-        return Letterhead.objects.get(organization=org)
+    """Briefbogen der Einheit; legt ihn beim ersten Zugriff mit Standardwerten an.
+
+    Die Einheit wählt der Aufrufer (die eigene, eine Untereinheit oder die übergeordnete, von
+    der geerbt wird); der Zeilenschutz der Tabelle gilt deshalb hier nicht (Gesamtaudit 13.11.,
+    V-02). Jede andere Abfrage der Tabelle sieht nur die Zeile der angemeldeten Einheit."""
+    with rls_bypass():
+        letterhead = Letterhead.objects.filter(organization=org).first()
+        if letterhead is not None:
+            return letterhead
+        try:
+            with transaction.atomic():
+                return Letterhead.objects.create(
+                    organization=org,
+                    mode=Letterhead.default_mode(org),
+                    tagline=default_tagline(org),
+                )
+        except IntegrityError:
+            return Letterhead.objects.get(organization=org)
 
 
 def may_have_own(org: Organization) -> bool:

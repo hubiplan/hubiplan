@@ -155,7 +155,8 @@ def load_letterhead(org: Organization, data: dict | None) -> None:
             setattr(lh, field, str(value or "")[: model_field.max_length])
     if lh.mode == Letterhead.Mode.INHERIT and org.type != Organization.Type.UNIT:
         lh.mode = Letterhead.Mode.OWN
-    lh.save()
+    with rls_bypass():  # Einheit vom Import gewählt, auch neue Untereinheiten
+        lh.save()
 
 
 def load_imprint(org: Organization, data: dict | None) -> None:

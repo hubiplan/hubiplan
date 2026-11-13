@@ -112,7 +112,8 @@ def letterhead_data(org: Organization) -> dict | None:
     """Briefbogen ohne Kontowahl (Konten bekommen beim Einlesen neue Nummern)."""
     from letterhead.models import Letterhead
 
-    lh = Letterhead.objects.filter(organization=org).first()
+    with rls_bypass():  # auch Untereinheiten der exportierten Einheit
+        lh = Letterhead.objects.filter(organization=org).first()
     return {f: getattr(lh, f) for f in LETTERHEAD_FIELDS} if lh else None
 
 

@@ -297,6 +297,9 @@ class WebsiteImage(models.Model):
     # im Kopf. Höchstens eines je Webseite (website/views.py). Am Bild statt an der Webseite,
     # damit Export und Import es ohne Verweis in beide Richtungen mitnehmen.
     header = models.BooleanField("Kopfbild der Webseite", default=False)
+    # Kopfbild für schmale Bildschirme (Webseite #73): optional, die Webseite zeigt es unter
+    # 600 px Breite statt des Kopfbilds. Höchstens eines je Webseite, wie ``header``.
+    header_narrow = models.BooleanField("Kopfbild für schmale Bildschirme", default=False)
 
     class Meta:
         verbose_name = "Bild der Webseite"

@@ -474,3 +474,20 @@ def test_bild_im_text_eines_abschnitts_wird_ausgeliefert(club, site, editor):  #
     # Ausgeschaltete Abschnitte geben ihre Bilder nicht frei
     hidden_url = f"/api/public/site/v1/{site.public_key}/images/{hidden.key}/"
     assert HttpClient().get(hidden_url).status_code == 404
+
+
+def test_kopfbild_schmal_ueber_die_schnittstelle(club, site, manager):  # noqa: F811
+    """Webseite #73: Kopfbild für Handys im Entwurf setzen und wieder entfernen."""
+    image = add_image(site, manager)
+    token = connect(manager, club)["access_token"]
+    text, failed = call(token, "webseite_gestaltung_aendern", kopfbild_schmal=image.pk)
+    assert not failed, text
+    site.refresh_from_db()
+    assert site.draft["header_image_narrow"] == image.pk
+    text, failed = call(token, "webseite_gestaltung_ansehen")
+    assert not failed, text
+    assert data_of(text)["kopfbild_schmal"] == image.pk
+    text, failed = call(token, "webseite_gestaltung_aendern", kopfbild_schmal=None)
+    assert not failed, text
+    site.refresh_from_db()
+    assert "header_image_narrow" not in site.draft

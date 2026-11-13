@@ -46,6 +46,7 @@ from .models import (
     DEFAULT_HOME_OFF,
     DESIGN_VERSIONS,
     DRAFT_FIELDS,
+    HEADER_IMAGE_FIELDS,
     HOME_HINTS,
     HOME_NEEDS_BLOCK,
     HOME_SECTIONS,
@@ -128,12 +129,14 @@ IP_LIKE = re.compile(r"^[0-9.]+$")
 class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
     # Kopfbild (Ralf 05.11.): Nummer eines Bildes der Bilderverwaltung oder null
     header_image = serializers.IntegerField(required=False, allow_null=True)
+    # Kopfbild für schmale Bildschirme (Webseite #73), optional
+    header_image_narrow = serializers.IntegerField(required=False, allow_null=True)
     # Ziel der Hinweisleiste (G6): null oder {} entfernt es
     notice_target = serializers.JSONField(required=False, allow_null=True)
 
     class Meta:
         model = Website
-        fields = [*SETTINGS_FIELDS, "header_image"]
+        fields = [*SETTINGS_FIELDS, *HEADER_IMAGE_FIELDS]
 
     def validate_header_image(self, value):
         if value is not None and (
@@ -143,9 +146,12 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             raise serializers.ValidationError(_("Unbekanntes Bild."))
         return value
 
+    validate_header_image_narrow = validate_header_image
+
     def update(self, instance, validated_data):
-        if "header_image" in validated_data:
-            set_header_image(instance, validated_data.pop("header_image"))
+        for key in HEADER_IMAGE_FIELDS:
+            if key in validated_data:
+                set_header_image(instance, validated_data.pop(key), key)
         return super().update(instance, validated_data)
 
     def validate_language(self, value):
@@ -356,6 +362,7 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
         )
         data["design"] = instance.effective_design()
         data["header_image"] = header_image_id(instance)
+        data["header_image_narrow"] = header_image_id(instance, "header_image_narrow")
         data["draft"] = clean_draft(instance, instance.draft)
         return data
 
@@ -372,6 +379,7 @@ def live_design(website: Website) -> dict:
         ),
         "style": style.public(website.style),
         "header_image": header_image_id(website),
+        "header_image_narrow": header_image_id(website, "header_image_narrow"),
         "home_sections": normalize_home_sections(website.home_sections),
         "layouts": variants.normalize(website.layouts),
         "menu": menu.normalize(website.menu, menu.items(website)),
@@ -418,18 +426,23 @@ def version_data(version: DesignVersion) -> dict:
     }
 
 
-def header_image_id(website: Website) -> int | None:
+def header_image_id(website: Website, key: str = "header_image") -> int | None:
+    """Kopfbild (``header_image``) oder Kopfbild für schmale Bildschirme (Webseite #73)."""
+    flag = HEADER_IMAGE_FIELDS[key]
     return (
-        WebsiteImage.objects.filter(website=website, header=True)
+        WebsiteImage.objects.filter(website=website, **{flag: True})
         .values_list("pk", flat=True)
         .first()
     )
 
 
-def set_header_image(website: Website, pk: int | None) -> None:
-    WebsiteImage.objects.filter(website=website, header=True).exclude(pk=pk).update(header=False)
+def set_header_image(website: Website, pk: int | None, key: str = "header_image") -> None:
+    flag = HEADER_IMAGE_FIELDS[key]
+    WebsiteImage.objects.filter(website=website, **{flag: True}).exclude(pk=pk).update(
+        **{flag: False}
+    )
     if pk is not None:
-        WebsiteImage.objects.filter(website=website, pk=pk).update(header=True)
+        WebsiteImage.objects.filter(website=website, pk=pk).update(**{flag: True})
 
 
 def can_import_designs(user) -> bool:
@@ -714,6 +727,7 @@ class WebsiteView(_WebsiteMixin, APIView):
         before = snapshot(website)
         old_state = website.state
         old_header = header_image_id(website)
+        old_narrow = header_image_id(website, "header_image_narrow")
         data = request.data
         if isinstance(data, dict) and "draft" in data:
             # Gestaltung als Entwurf: nur in der Vorschau sichtbar (G2)
@@ -743,6 +757,9 @@ class WebsiteView(_WebsiteMixin, APIView):
         new_header = header_image_id(website)
         if new_header != old_header:
             changes["Kopfbild"] = [old_header, new_header]
+        new_narrow = header_image_id(website, "header_image_narrow")
+        if new_narrow != old_narrow:
+            changes["Kopfbild für schmale Bildschirme"] = [old_narrow, new_narrow]
         if changes:
             record(self.org, request.user, "update", website, changes)
         return Response(self.payload(website))
@@ -757,10 +774,11 @@ class WebsiteView(_WebsiteMixin, APIView):
 
 def _apply_design(website: Website, values: dict) -> None:
     for key in DRAFT_FIELDS:
-        if key in values and key != "header_image":
+        if key in values and key not in HEADER_IMAGE_FIELDS:
             setattr(website, key, values[key])
-    if "header_image" in values:
-        set_header_image(website, values["header_image"])
+    for key in HEADER_IMAGE_FIELDS:
+        if key in values:
+            set_header_image(website, values[key], key)
 
 
 def publish_draft(website: Website, user, org) -> None:
