@@ -132,10 +132,16 @@ import datetime as _dt
 from members.models import Household, HouseholdMember
 current = [m for m in Membership.objects.filter(organization=club, person__kind='person').select_related('person').order_by('pk') if m.current_period()]
 since = _dt.date.today().replace(month=1, day=1)
+# Familien aus Mitgliedern mit gleichem Nachnamen, damit die Bilder stimmig wirken
+by_name = {}
+for m in current:
+    by_name.setdefault(m.person.last_name, []).append(m)
+families = sorted((ms for ms in by_name.values() if len(ms) >= 2), key=len, reverse=True)[:2]
+used = {m.pk for ms in families for m in ms}
+others = [m for m in current if m.pk not in used]
 for name, kind, people in [
-    ('Familie Muster', 'family', [(current[1], 'adult'), (current[2], 'adult'), (current[3], 'child')]),
-    ('Familie Beispiel', 'family', [(current[4], 'adult'), (current[5], 'child')]),
-    ('Musterbau GmbH', 'company', [(current[6], 'adult'), (current[7], 'adult')]),
+    *[('Familie ' + ms[0].person.last_name, 'family', [(m, 'child' if i >= 2 else 'adult') for i, m in enumerate(ms[:4])]) for ms in families],
+    ('Musterbau GmbH', 'company', [(others[0], 'adult'), (others[1], 'adult')]),
 ]:
     hh = Household.objects.create(organization=club, name=name, kind=kind)
     for m, role in people:

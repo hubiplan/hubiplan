@@ -288,13 +288,16 @@ function HouseholdCard({
           {household.members.map((m) => (
             <li key={m.link} className="item-row">
               <div className="item-row-info">
-                <Link to={`/mitglieder/${m.membership}`}>
-                  {[m.title, m.first_name, m.last_name].filter(Boolean).join(' ')}
-                </Link>
-                {family && m.role && <span className="badge">{ROLE_LABELS[m.role]}</span>}
-                {billing && m.pays_via && (
-                  <span className="badge">{t('Beitrag über den Haushalt')}</span>
-                )}
+                {/* Name und Schilder in einer Zeile (sonst zieht die Spalte die Schilder breit) */}
+                <span>
+                  <Link to={`/mitglieder/${m.membership}`}>
+                    {[m.title, m.first_name, m.last_name].filter(Boolean).join(' ')}
+                  </Link>
+                  {family && m.role && <span className="badge">{ROLE_LABELS[m.role]}</span>}
+                  {billing && m.pays_via && (
+                    <span className="badge">{t('Beitrag über den Haushalt')}</span>
+                  )}
+                </span>
                 <span className="muted small">
                   {' '}
                   {m.valid_until

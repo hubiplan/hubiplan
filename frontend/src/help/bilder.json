@@ -8,10 +8,16 @@
       "ausschnitt": ""
     },
     {
+      "name": "firmen-liste",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/mitglieder/haushalte",
+      "ausschnitt": ""
+    },
+    {
       "name": "haushalt-karte",
       "zugang": "vorstand@hubertus-grimlinghausen.test",
       "seite": "/mitglieder/haushalte",
-      "ausschnitt": "section.card-wide[aria-label=\"Familie Muster\"]"
+      "ausschnitt": "section.card-wide[aria-label^=\"Familie \"]"
     },
     {
       "name": "kalender-abo",
