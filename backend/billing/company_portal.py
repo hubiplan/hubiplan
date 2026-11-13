@@ -15,8 +15,13 @@ Geburtsdatum, keine Termine oder Ämter.
 
 from __future__ import annotations
 
+import base64
 import datetime
+import hashlib
+import json
 
+from cryptography.fernet import Fernet, InvalidToken
+from django.conf import settings
 from django.core import signing
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -30,6 +35,8 @@ from rest_framework.views import APIView
 
 from audit.log import diff, record, snapshot
 from core.i18n import date_text, language_of_org
+from core.names import clean_person_name
+from core.ratelimit import too_many
 from core.tenancy import tenant_context
 from members.households import end_member
 from members.models import Household, HouseholdMember, today
@@ -62,25 +69,70 @@ def has_company(access) -> bool:
     return company_households(access).exists()
 
 
-def invite_token(household: Household, email: str) -> str:
-    return signing.dumps(
-        {"o": household.organization_id, "h": household.pk, "e": email.lower()}, salt=SALT
-    )
+# Grenzen für „Mitarbeiter melden“ (Gesamtaudit 13.11. S-01, Fachfrage 7): je Tag
+REPORTS_PER_COMPANY = 20
+REPORTS_PER_CLUB = 100
+DAY = 24 * 60 * 60
+TOKEN_MAX = 1500
+
+
+def _fernet() -> Fernet:
+    digest = hashlib.sha256(b"hubiplan-firma-meldet:" + settings.SECRET_KEY.encode()).digest()
+    return Fernet(base64.urlsafe_b64encode(digest))
+
+
+def invite_token(
+    household: Household, email: str, first_name: str = "", last_name: str = ""
+) -> str:
+    """Link der Meldung: verschlüsselt, damit Name und Mailadresse der gemeldeten Person
+    nicht lesbar in Adressen und damit in Zugriffsprotokollen stehen (Gesamtaudit 13.11.
+    S-01). Das Formular füllt die Angaben aus dem Token vor (``read_invite``)."""
+    payload = {
+        "o": household.organization_id,
+        "h": household.pk,
+        "e": email.strip().lower(),
+        "v": first_name,
+        "n": last_name,
+    }
+    return _fernet().encrypt(json.dumps(payload).encode()).decode()
+
+
+def _payload(token: str) -> dict | None:
+    if not token or len(token) > TOKEN_MAX:
+        return None
+    max_age = INVITE_DAYS * DAY
+    try:
+        data = json.loads(_fernet().decrypt(token.encode(), ttl=max_age))
+    except (InvalidToken, ValueError):
+        # Links aus der Zeit vor der Verschlüsselung gelten bis zu ihrem Ablauf weiter
+        try:
+            data = signing.loads(token, salt=SALT, max_age=max_age)
+        except signing.BadSignature:
+            return None
+    return data if isinstance(data, dict) else None
+
+
+def read_invite(org, token: str) -> tuple[Household, dict] | None:
+    """Firma und gemeldete Person aus dem Link; ungültig oder abgelaufen: None."""
+    data = _payload(token)
+    if data is None or data.get("o") != org.pk:
+        return None
+    household = Household.objects.filter(
+        organization=org, pk=data.get("h"), kind=Household.Kind.COMPANY
+    ).first()
+    if household is None:
+        return None
+    return household, {
+        "email": str(data.get("e") or ""),
+        "first_name": str(data.get("v") or ""),
+        "last_name": str(data.get("n") or ""),
+    }
 
 
 def read_token(org, token: str) -> Household | None:
     """Firma aus dem Link der Meldung; ungültig oder abgelaufen: keine."""
-    if not token or len(token) > 500:
-        return None
-    try:
-        data = signing.loads(token, salt=SALT, max_age=INVITE_DAYS * 24 * 3600)
-    except signing.BadSignature:
-        return None
-    if data.get("o") != org.pk:
-        return None
-    return Household.objects.filter(
-        organization=org, pk=data.get("h"), kind=Household.Kind.COMPANY
-    ).first()
+    invite = read_invite(org, token)
+    return invite[0] if invite else None
 
 
 def _access(request, access_id: int):
@@ -113,9 +165,27 @@ def _rows(household: Household) -> list[dict]:
 
 
 class EmployeeReport(serializers.Serializer):
-    first_name = serializers.CharField(max_length=100)
-    last_name = serializers.CharField(max_length=100)
+    first_name = serializers.CharField(max_length=60)
+    last_name = serializers.CharField(max_length=60)
     email = serializers.EmailField(max_length=200)
+
+    def _name(self, value: str) -> str:
+        # Namen gehen in eine Mail an eine fremde Adresse: nur, was in Namen vorkommt
+        name = clean_person_name(value)
+        if name is None:
+            raise serializers.ValidationError(
+                gettext("Bitte nur Buchstaben, Leerzeichen, Bindestrich, Punkt und Apostroph.")
+            )
+        return name
+
+    def validate_first_name(self, value: str) -> str:
+        return self._name(value)
+
+    def validate_last_name(self, value: str) -> str:
+        return self._name(value)
+
+    def validate_email(self, value: str) -> str:
+        return value.strip().lower()
 
 
 class EmployeeEnd(serializers.Serializer):
@@ -168,14 +238,32 @@ class CompanyReportView(APIView):
                         )
                     }
                 )
-            token = invite_token(household, v["email"])
+            # Mengengrenzen: Sonst ließe sich über die Meldung im Namen des Vereins beliebig
+            # viel Post an fremde Adressen schicken (Gesamtaudit 13.11. S-01)
+            address = hashlib.sha256(v["email"].encode()).hexdigest()[:32]
+            if too_many(f"firma-meldung:mail:{club.pk}:{address}", 1, DAY):
+                raise serializers.ValidationError(
+                    {
+                        "email": gettext(
+                            "An diese Adresse ging heute schon eine Meldung. Bitte morgen erneut."
+                        )
+                    }
+                )
+            if too_many(
+                f"firma-meldung:firma:{household.pk}", REPORTS_PER_COMPANY, DAY
+            ) or too_many(f"firma-meldung:verein:{club.pk}", REPORTS_PER_CLUB, DAY):
+                raise serializers.ValidationError(
+                    {
+                        "detail": gettext(
+                            "Heute wurden schon sehr viele Mitarbeiter gemeldet. Bitte morgen "
+                            "erneut oder direkt beim Verein melden."
+                        )
+                    }
+                )
+            token = invite_token(household, v["email"], v["first_name"], v["last_name"])
             from urllib.parse import quote
 
-            url = (
-                f"{base_url(club)}/mitglied-werden/{form.public_key}"
-                f"?firma={quote(token)}&vorname={quote(v['first_name'])}"
-                f"&name={quote(v['last_name'])}&mail={quote(v['email'])}"
-            )
+            url = f"{base_url(club)}/mitglied-werden/{form.public_key}?firma={quote(token)}"
             with language_of_org(club):
                 subject = gettext("Mitgliedsantrag bei {club}").format(club=club.name)
                 body = gettext(

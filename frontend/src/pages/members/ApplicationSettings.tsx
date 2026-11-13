@@ -328,6 +328,13 @@ function SettingsForm({
             <option value="offer">{t('anbieten (freiwillig)')}</option>
             <option value="required">{t('Pflicht')}</option>
           </SelectField>
+          {v.sepa !== 'off' && v.signature === 'none' && (
+            <Alert kind="info">
+              {t(
+                'Ohne Unterschrift erteilte Lastschriftmandate: Widerspricht ein Mitglied einer Lastschrift, kann die Bank ein unterschriebenes Mandat verlangen. Könnt ihr keines vorlegen, wird der Betrag bis zu 13 Monate lang zurückgebucht. Wer das nicht tragen möchte, stellt unten „Unterschrift nötig“ ein.',
+              )}
+            </Alert>
+          )}
         </Section>
 
         <Section title={t('Bestätigungen und Einwilligungen')}>

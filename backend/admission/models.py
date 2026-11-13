@@ -15,9 +15,20 @@ from django.db import models
 from django.utils.translation import gettext_lazy
 
 from core.encfields import EncryptedJSONField
+from core.privatefiles import PrivateFileField
+from exchange.models import private_storage
 
 PURGE_MONTHS = 6
 UNCONFIRMED_HOURS = 48
+# Gesamtaudit 13.11. S-03 (Fachfrage 1): Der Link aus der Bestätigungsmail zeigt nach der
+# Entscheidung nur noch den Stand und erlischt nach LINK_DAYS. Angenommene Anträge behalten
+# ihre Angaben ACCEPTED_KEEP_MONTHS; danach bleibt nur das PDF als Beleg in der Akte.
+LINK_DAYS = 30
+ACCEPTED_KEEP_MONTHS = 12
+
+
+def application_pdf_path(instance, filename: str) -> str:
+    return f"antraege/{instance.organization_id}/{instance.pk}-{filename}"
 
 
 def hash_token(token: str) -> str:
@@ -173,6 +184,11 @@ class Application(models.Model):
         related_name="applications",
     )
     purge_after = models.DateField("löschen ab", null=True, blank=True)
+    # Beleg des angenommenen Antrags (mit Unterschrift), bleibt mit der Mitgliedschaft
+    pdf = PrivateFileField(
+        "PDF", storage=private_storage, upload_to=application_pdf_path, blank=True
+    )
+    data_purged_at = models.DateTimeField("Angaben entfernt am", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

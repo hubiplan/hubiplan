@@ -107,6 +107,8 @@ Regeln:
   (`HUBIPLAN_MCP_BEKANNTE_ASSISTENTEN`, Standard `claude.ai,claude.com`, Endungen zählen mit),
   warnt sie vor einer Täuschung; ebenso bei einem Programm auf dem eigenen Rechner.
 - Bereiche: `webseite.lesen`, `webseite.entwurf` (schließt lesen ein). Die Hilfe ist immer dabei.
+  `verein.erscheinungsbild` gibt es nur, wenn die Person es auf der Seite eigens anhakt (nicht
+  vorangekreuzt), auch wenn der Assistent danach fragt; die Seite schickt den Haken als `extra` mit.
 - Zugriffsschlüssel `hpm_…` 1 Stunde, Erneuerung `hpmr_…` dreht sich bei jeder Nutzung; die
   Verbindung (`McpGrant`) gilt höchstens 30 Tage und endet nach 14 Tagen ohne Nutzung. Wer
   einen alten Erneuerungsschlüssel noch einmal benutzt, beendet die Verbindung (Kopie). In der
@@ -189,7 +191,8 @@ in den Datenumzug.
 
 Ralf 13.11.2026: Das Erscheinungsbild der Einheit hat keinen Entwurf, Änderungen gelten sofort
 (HUBIplan und Webseite) und lassen sich im Änderungsprotokoll zurücknehmen. Eigener Bereich
-`verein.erscheinungsbild` (Vorgabe bei neuen Verbindungen; ältere Verbindungen neu verbinden),
+`verein.erscheinungsbild` (nur mit eigenem Haken beim Verbinden, keine Vorgabe; ältere
+Verbindungen neu verbinden),
 Recht `theme.edit`, Ansichten `ThemeView` (PATCH `theme/`) und `OrganizationLogoView`/
 `OrganizationLogoDarkView` (Formular mit Datei über `ClubContext.call(..., multipart=…)`).
 

@@ -22,6 +22,7 @@ const REQUEST = {
   redirect_kind: 'bekannt' as const,
   connected_before: false,
   scopes: [{ scope: 'webseite.lesen', label: 'Webseite lesen' }],
+  optional: [{ scope: 'verein.erscheinungsbild', label: 'Erscheinungsbild ändern' }],
   units: [{ id: 7, name: 'Verein A' }],
   problem: '',
 }
@@ -65,7 +66,31 @@ describe('KI-Assistent verbinden', () => {
     expect(JSON.parse(String(post?.init?.body))).toMatchObject({
       organization: 7,
       params: { client_id: 'hpmc_abc', state: 's1' },
+      // Erscheinungsbild ist nicht vorangekreuzt (Gesamtaudit 13.11., H-04)
+      extra: [],
     })
+  })
+
+  it('gibt das Erscheinungsbild nur mit eigenem Haken frei', async () => {
+    vi.spyOn(leaveTo, 'go').mockImplementation(() => {})
+    const calls = renderAt({
+      'GET /_allauth/browser/v1/auth/session': session,
+      [DESCRIBE]: () => ({ status: 200, body: REQUEST }),
+      'POST /api/mcp/oauth/authorize/': () => ({
+        status: 200,
+        body: { redirect: 'https://assistent.example.org/cb?code=c&state=s1' },
+      }),
+    })
+    const box = await screen.findByRole('checkbox', { name: 'Erscheinungsbild ändern' })
+    expect(box).not.toBeChecked()
+    const user = userEvent.setup()
+    await user.click(box)
+    await user.click(screen.getByRole('button', { name: 'Erlauben' }))
+    await waitFor(() =>
+      expect(calls.some((c) => c.key === 'POST /api/mcp/oauth/authorize/')).toBe(true),
+    )
+    const post = calls.find((c) => c.key === 'POST /api/mcp/oauth/authorize/')
+    expect(JSON.parse(String(post?.init?.body)).extra).toEqual(['verein.erscheinungsbild'])
   })
 
   it('warnt bei unbekannter Adresse, nicht nach früherer Verbindung', async () => {

@@ -8,7 +8,8 @@ services:
     command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.proxy", "--adapter", "caddyfile"]
     environment:
       # Nur Anfragen mit diesem Kopfwert (setzt nginx) dürfen X-Real-IP vorgeben
-      # (deploy/hestia/proxy-geheim.sh). Leer: wie bisher.
-      HUBIPLAN_PROXY_GEHEIM: ${HUBIPLAN_PROXY_GEHEIM:-}
+      # (deploy/hestia/proxy-geheim.sh). Ohne den Wert startet der Verbund nicht
+      # (Gesamtaudit 13.11., H-02).
+      HUBIPLAN_PROXY_GEHEIM: ${HUBIPLAN_PROXY_GEHEIM:?fehlt in der .env - deploy/hestia/proxy-geheim.sh ausfuehren}
     ports: !override
       - "127.0.0.1:${WEB_PORT:-8110}:80"

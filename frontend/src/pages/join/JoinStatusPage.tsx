@@ -93,7 +93,7 @@ export function JoinStatusPage() {
         {invalid && (
           <Alert kind="error">
             {t(
-              'Diesen Antrag gibt es nicht mehr. Unbestätigte Anträge werden nach 48 Stunden gelöscht.',
+              'Diesen Antrag gibt es nicht mehr. Unbestätigte Anträge werden nach 48 Stunden gelöscht; nach der Entscheidung des Vereins gilt der Link noch 30 Tage.',
             )}
           </Alert>
         )}
@@ -103,7 +103,7 @@ export function JoinStatusPage() {
         {info && (
           <>
             <p className="muted">
-              {info.organization} · {info.name}
+              {info.name ? `${info.organization} · ${info.name}` : info.organization}
             </p>
             <p>
               <strong>{info.status_label}</strong>
@@ -127,7 +127,7 @@ export function JoinStatusPage() {
                   {t('Antrag bestätigen')}
                 </button>
               )}
-              {info.status !== 'unconfirmed' && (
+              {(info.pdf ?? info.status !== 'unconfirmed') && (
                 <a className="button" href={joinApi.pdfUrl(token)} target="_blank" rel="noreferrer">
                   {t('Antrag als PDF')}
                 </a>
