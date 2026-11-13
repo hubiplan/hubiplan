@@ -248,6 +248,10 @@ def _menu_read(args: dict, ctx: ClubContext) -> str:
     result = {
         "menue": [node(n) for n in v.get("menu") or []],
         "knopf": v.get("menu_button") or "",
+        # Webseite #75: Hauptpunkte nur im Fuß oder im Menü und im Fuß
+        "fuss": {
+            k: PLACE_NAMES[p] for k, p in (v.get("menu_places") or {}).items() if p in PLACE_NAMES
+        },
         "punkte": [{"schluessel": k, **x} for k, x in items.items()],
     }
     return (
@@ -258,6 +262,11 @@ def _menu_read(args: dict, ctx: ClubContext) -> str:
         + "\n\n"
         + _dump(result)
     )
+
+
+# Platz eines Hauptpunkts (Webseite #75): Wert in HUBIplan → Wort für das Werkzeug
+PLACE_NAMES = {"footer": "fuss", "both": "beides"}
+PLACE_VALUES = {"fuss": "footer", "beides": "both", "menue": None}
 
 
 def _tree(value) -> list[dict]:
@@ -295,6 +304,7 @@ def _menu_change(args: dict, ctx: ClubContext) -> str:
     links = dict(v.get("menu_links") or {})
     menu = list(v.get("menu") or [])
     button = v.get("menu_button") or ""
+    places = dict(v.get("menu_places") or {})
     created = []
     for entry in _list(args, "neu") or []:
         if not isinstance(entry, dict) or entry.get("art") not in ("ueberschrift", "link"):
@@ -327,11 +337,26 @@ def _menu_change(args: dict, ctx: ClubContext) -> str:
         menu = _tree(args["reihenfolge"])
     if "knopf" in args:
         button = _str(args, "knopf", 40) or ""
-    if not created and not any(k in args for k in ("namen", "links", "reihenfolge", "knopf")):
+    for key, place in (_obj(args, "fuss") or {}).items():
+        if place not in PLACE_VALUES:
+            raise ToolError(_("Platz im Fuß: „fuss“, „beides“ oder „menue“."))
+        if PLACE_VALUES[place]:
+            places[key] = PLACE_VALUES[place]
+        else:
+            places.pop(key, None)
+    if not created and not any(
+        k in args for k in ("namen", "links", "reihenfolge", "knopf", "fuss")
+    ):
         raise ToolError(_("Bitte angeben, was sich am Menü ändern soll."))
     _save_draft(
         ctx,
-        {"menu": menu, "block_names": names, "menu_links": links, "menu_button": button},
+        {
+            "menu": menu,
+            "block_names": names,
+            "menu_links": links,
+            "menu_button": button,
+            "menu_places": places,
+        },
     )
     text = _("Menü geändert.") + " " + _draft_hint()
     if created:
@@ -786,8 +811,8 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
         title=gettext_lazy("Menü ändern (Entwurf)"),
         description=gettext_lazy(
             "Ordnet das Menü im Entwurf: Reihenfolge mit Unterpunkten, eigene Namen, neue "
-            "Überschriften und Links nach außen, Knopf. Bausteine ein- oder ausschalten geht nur "
-            "in HUBIplan. Braucht das Recht „Webseite verwalten“."
+            "Überschriften und Links nach außen, Knopf, Platz im Fuß. Bausteine ein- oder "
+            "ausschalten geht nur in HUBIplan. Braucht das Recht „Webseite verwalten“."
         ),
         schema=_schema(
             {
@@ -831,6 +856,14 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
                     "type": "string",
                     "maxLength": 40,
                     "description": gettext_lazy("Hauptpunkt als Knopf; leer = keiner."),
+                },
+                "fuss": {
+                    "type": "object",
+                    "additionalProperties": {"type": "string", "enum": ["fuss", "beides", "menue"]},
+                    "description": gettext_lazy(
+                        "Schlüssel eines Hauptpunkts → „fuss“ (nur im Fuß, z. B. Kontakt neben "
+                        "dem Impressum), „beides“ (Menü und Fuß) oder „menue“ (nur im Menü)."
+                    ),
                 },
             }
         ),

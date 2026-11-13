@@ -13,7 +13,8 @@ für die Überschrift „Geschichte“, ``members`` mit ``membertype:<id>`` je M
 und ``memorial`` (Ralf 05.11.) sowie ``heading:<n>`` für frei benannte Überschriften
 (Name in ``Website.block_names``) und ``link:<n>`` für Links nach außen (Name in
 ``block_names``, Adresse in ``Website.menu_links``, Ralf 10.11.). Ein Hauptpunkt kann als
-Knopf hervorgehoben sein (``Website.menu_button``). Überschriften (``heading``)
+Knopf hervorgehoben sein (``Website.menu_button``) und nur im Fuß oder zusätzlich im Fuß
+stehen (``Website.menu_places``, Webseite #75). Überschriften (``heading``)
 haben keine eigene Seite; ohne Unterpunkte entfallen sie, mit nur einem steht dieser
 direkt im Menü.
 """
@@ -24,6 +25,8 @@ from .models import BLOCK_HINTS, BLOCKS, Website, blocks_without_module, is_rena
 
 # Bausteine, die kein Menüpunkt sind
 NOT_IN_MENU = {"social", "search"}
+# Platz eines Hauptpunkts außer dem Hauptmenü (Webseite #75): nur im Fuß, Hauptmenü und Fuß
+PLACES = ("footer", "both")
 # Überschriften ohne eigene Seite: Schlüssel → (Bezeichnung, Standard-Unterpunkte)
 HEADINGS = {"group:history": ("Geschichte", ("history", "offices"))}
 # Textseite „Geschichte“ ist der Baustein „history“, kein eigener Menüpunkt
@@ -251,6 +254,33 @@ def validate(value, known: dict[str, dict]) -> list[dict]:
     return normalize(value, known)
 
 
+def validate_places(value, known: dict[str, dict]) -> dict[str, str]:
+    """Platz der Menüpunkte aus der Verwaltung (wirft ValueError): nur bekannte Punkte, die
+    keine Überschrift sind, und nur Plätze aus PLACES; „main“ oder leer heißt Hauptmenü."""
+    if value in (None, ""):
+        return {}
+    if not isinstance(value, dict):
+        raise ValueError("Bitte den Platz der Menüpunkte als Zuordnung angeben.")
+    result = {}
+    for key, place in value.items():
+        if place in (None, "", "main"):
+            continue
+        if place not in PLACES:
+            raise ValueError(f"Unbekannter Platz für {key}: {place}")
+        if key not in known or known[key]["heading"]:
+            raise ValueError(f"Dieser Menüpunkt kann nicht in den Fuß: {key}")
+        result[key] = place
+    return result
+
+
+def places(website: Website) -> dict[str, str]:
+    """Gespeicherter Platz der Menüpunkte (nur gültige Werte; alte Stände ohne Feld: {})."""
+    value = getattr(website, "menu_places", None)
+    if not isinstance(value, dict):
+        return {}
+    return {k: v for k, v in value.items() if isinstance(k, str) and v in PLACES}
+
+
 def _visible(site, known: dict, key: str) -> bool:
     item = known[key]
     if "visible" in item:
@@ -288,7 +318,7 @@ def public_target(site, key: str, known: dict | None = None) -> dict | None:
 def public_nav(site) -> list[dict]:
     """Menü für die Webseite: nur sichtbare Punkte, je Punkt ``key``, ``label``,
     bei Textseiten ``slug``, bei Würden ``id``, bei Überschriften ``heading`` und
-    bei Unterpunkten ``children``."""
+    bei Unterpunkten ``children``, beim Knopf ``button`` und mit Platz im Fuß ``place``."""
     website = site.site
     known = items(website, public_site=site)
 
@@ -298,6 +328,7 @@ def public_nav(site) -> list[dict]:
     def entry(key: str) -> dict:
         return _entry(site, known, key)
 
+    where = places(website)
     result = []
     for node in normalize(website.menu, known):
         children = [entry(c["key"]) for c in node["children"] if visible(c["key"])]
@@ -317,6 +348,9 @@ def public_nav(site) -> list[dict]:
         # Knopf nur für einen einfachen Hauptpunkt (keine Überschrift, kein Aufklappmenü)
         if node["key"] == website.menu_button and not top.get("heading") and not children:
             top["button"] = True
+        # Nur im Fuß oder zusätzlich im Fuß (Webseite #75), ebenfalls nur einfache Hauptpunkte
+        if where.get(node["key"]) and not top.get("heading") and not children:
+            top["place"] = where[node["key"]]
         result.append(top)
     return result
 

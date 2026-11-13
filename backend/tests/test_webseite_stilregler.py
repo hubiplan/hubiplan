@@ -102,7 +102,7 @@ def test_alter_ungueltiger_stand_bricht_nichts(club, site):
 
 def test_gleiche_liste_wie_die_webseite():
     # hubiplan-website/seite/stil.py führt dieselben Regler; hier nur die Form
-    assert len(style.OPTIONS) == 34
+    assert len(style.OPTIONS) == 36
     for design, locks in style.LOCKS.items():
         for key, values in locks.items():
             assert key in style.OPTIONS, (design, key)

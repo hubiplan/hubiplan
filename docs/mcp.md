@@ -147,7 +147,7 @@ Bewusst nicht: Veröffentlichen, Zustand, Domains, Kontaktnachrichten, Löschen.
 
 Gestaltung, Menü und Aufbau der Startseite gehen über `PUT website/` mit `{"draft": …}` und
 brauchen „Webseite verwalten“; Bilder und Beitragsentwürfe „Inhalte bearbeiten“. Das Menü
-(`menu`, `block_names`, `menu_links`, `menu_button`) gehört seit W2 zu `DRAFT_FIELDS`, auch in
+(`menu`, `block_names`, `menu_links`, `menu_button`, seit Webseite #75 auch `menu_places`) gehört seit W2 zu `DRAFT_FIELDS`, auch in
 der Oberfläche; die Häkchen der Bausteine (`blocks`) und die Hinweisleiste bleiben sofort
 wirksam. `clean_draft` prüft die vier Menüfelder zusammen.
 
@@ -156,7 +156,7 @@ wirksam. `clean_draft` prüft die vier Menüfelder zusammen.
 | `webseite_gestaltung_ansehen` | lesen | Design, Farbrollen, Palette, Stilregler, Darstellung, Kopfbild mit erlaubten Werten |
 | `webseite_gestaltung_aendern` | entwurf | `design`, `stil`, `farben`, `darstellung`, `kopfbild`, `kopfbild_schmal` (Handyfassung unter 600 px); nur Angegebenes ändert sich, `null` setzt zurück |
 | `webseite_menue_ansehen` | lesen | Menübaum im Entwurf mit Namen, Links, Knopf |
-| `webseite_menue_aendern` | entwurf | `reihenfolge`, `namen`, `links`, `neu` (Überschrift/Link), `knopf` |
+| `webseite_menue_aendern` | entwurf | `reihenfolge`, `namen`, `links`, `neu` (Überschrift/Link), `knopf`, `fuss` (Platz im Fuß) |
 | `startseite_bausteine` | lesen | Abschnittsarten mit Feldern, Aussehen, `home_choices` |
 | `startseite_aufbau_aendern` | entwurf | `neu`, `reihenfolge`, `an`, `aus`, `aussehen`, `entfernen` (nur eigene Abschnitte) |
 | `textseite_aufbau_aendern` | entwurf | `nummer` + wie `startseite_aufbau_aendern` für die Abschnitte einer Textseite (#78); `body` ist der Text der Seite, `cover` das Titelbild; über `PUT website/texts/<nummer>/` mit „Inhalte bearbeiten“ |

@@ -49,6 +49,10 @@ OPTIONS: dict[str, tuple[str, ...] | type] = {
     "sticky": bool,
     # Menü auf dem Handy: hinter „Menü“ aufklappen oder als Leiste zum Wischen
     "nav_mobile": ("toggle", "scroll"),
+    # Webseite #75: „Start“ in der Menüleiste am Bildschirm (Logo und Kopfbild führen zur
+    # Startseite, im Handymenü bleibt er) und Lage der Suche (aus: Baustein „Suche“)
+    "nav_start": bool,
+    "search": ("nav", "header", "footer"),
     # Startseite
     "hero": ("low", "medium", "normal", "high"),
     "hero_name": bool,
