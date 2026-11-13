@@ -13,6 +13,7 @@ import secrets
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy
 
 from core.privatefiles import PrivateFileField
@@ -189,3 +190,44 @@ class SocialPostImage(models.Model):
     @staticmethod
     def new_key() -> str:
         return secrets.token_urlsafe(12)
+
+
+SOCIAL_DRAFT_MAX_TEXT = 2200  # so lang darf ein Instagram-Beitrag sein
+SOCIAL_DRAFT_MAX_IMAGES = 10
+
+
+class SocialDraft(models.Model):
+    """Entwurf für einen Beitrag auf Instagram oder Facebook (W3, docs/mcp.md).
+
+    HUBIplan veröffentlicht nichts bei Meta: Jemand übernimmt Text und Bilder unter
+    Webseite › Social Media und postet sie selbst. Bilder sind Nummern aus der
+    Bilderverwaltung der Webseite."""
+
+    class Channel(models.TextChoices):
+        ANY = "", gettext_lazy("beliebig")
+        INSTAGRAM = "instagram", gettext_lazy("Instagram")
+        FACEBOOK = "facebook", gettext_lazy("Facebook")
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    website = models.ForeignKey(
+        "website.Website", on_delete=models.CASCADE, related_name="social_drafts"
+    )
+    channel = models.CharField("Kanal", max_length=10, choices=Channel.choices, blank=True)
+    text = models.TextField("Text", max_length=SOCIAL_DRAFT_MAX_TEXT)
+    images = models.JSONField("Bilder", default=list, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
+    )
+    via = models.CharField("angelegt über", max_length=120, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    done_at = models.DateTimeField("erledigt am", null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Entwurf eines Social-Media-Beitrags"
+        verbose_name_plural = "Entwürfe für Social-Media-Beiträge"
+        ordering = ["done_at", "-created_at", "-pk"]
+
+    def __str__(self) -> str:
+        return f"Beitragsentwurf {timezone.localtime(self.created_at):%d.%m.%Y}"

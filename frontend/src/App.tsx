@@ -21,6 +21,7 @@ import {
 import { PasswordRequestPage, PasswordResetPage } from './pages/PasswordPages.tsx'
 import { PublicCardPage } from './pages/PublicCardPage.tsx'
 import { PublicPhotoPage } from './pages/PublicPhotoPage.tsx'
+import { PublicImageUploadPage } from './pages/PublicImageUploadPage.tsx'
 import { PublicOptOutPage } from './pages/PublicOptOutPage.tsx'
 import { PublicRsvpPage } from './pages/PublicRsvpPage.tsx'
 import { JoinFormPage } from './pages/join/JoinFormPage.tsx'
@@ -242,6 +243,7 @@ export default function App() {
           <Route path="/konto/email/:token" element={<EmailConfirmPage />} />
           <Route path="/passwort-vergessen" element={<PasswordRequestPage />} />
           <Route path="/foto/:token" element={<PublicPhotoPage />} />
+          <Route path="/bilder-hochladen/:token" element={<PublicImageUploadPage />} />
           <Route path="/app/verbinden" element={<AppPairNoticePage />} />
           <Route path="/verbund/start" element={<VerbundStartPage />} />
           <Route path="/verbund/angemeldet" element={<VerbundFinishPage />} />

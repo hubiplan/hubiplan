@@ -57,6 +57,8 @@ export interface WebsiteSettings {
   /** Zeitraum (JJJJ-MM-TT, Grenzen eingeschlossen); null = offen */
   notice_from?: string | null
   notice_until?: string | null
+  /** Server, von denen ein KI-Assistent Bilder per Adresse holen darf (W3); fehlt = keine */
+  image_hosts?: string[]
 }
 
 export type ColorRoles = Record<string, Record<string, number | string>>
@@ -333,6 +335,11 @@ export const DRAFT_FIELDS = [
   'header_image',
   'home_sections',
   'layouts',
+  // Menü mit Namen, Links und Knopf (KI-Schnittstelle W2): erst nach „Veröffentlichen“ sichtbar
+  'menu',
+  'block_names',
+  'menu_links',
+  'menu_button',
 ] as const
 export type DraftField = (typeof DRAFT_FIELDS)[number]
 export type DesignDraft = Partial<Pick<WebsiteSettings, DraftField>>
@@ -862,7 +869,26 @@ export interface SocialPost {
   }[]
 }
 
+/** Entwurf für einen Beitrag auf Instagram oder Facebook (KI-Schnittstelle W3) */
+export interface SocialDraft {
+  id: number
+  channel: '' | 'instagram' | 'facebook'
+  channel_label: string
+  text: string
+  images: { id: number; url: string; small_url: string; alt_text: string }[]
+  created_at: string
+  created_by: string
+  via: string
+  done_at: string | null
+}
+
 export const socialApi = {
+  drafts: (org: number) =>
+    api.get<{ drafts: SocialDraft[]; can_manage: boolean }>(`${base(org)}social/drafts/`),
+  setDraft: (org: number, id: number, data: { done: boolean }) =>
+    api.put<SocialDraft>(`${base(org)}social/drafts/${id}/`, data),
+  removeDraft: (org: number, id: number) => api.del(`${base(org)}social/drafts/${id}/`),
+
   list: (org: number) =>
     api.get<{
       feeds: SocialFeed[]

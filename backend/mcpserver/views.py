@@ -130,9 +130,11 @@ def club_server():
         instructions=lambda: _(
             "HUBIplan, eine freie Vereinsverwaltung. Diese Verbindung gilt für genau eine "
             "Einheit und darf nie mehr als die Person, die sie erlaubt hat. Die Webseite lässt "
-            "sich lesen und als Entwurf bearbeiten (Texte, Inhalte der Startseite, neue "
-            "Textseiten). Veröffentlichen, Zustand, Domains und Gestaltung gibt es hier nicht; "
-            "das macht ein Mensch in HUBIplan. Nach Änderungen webseite_vorschau anbieten. "
+            "sich lesen und als Entwurf bearbeiten (Texte, Startseite, Gestaltung, Menü, neue "
+            "Textseiten). Bilder kommen über einen Hochladelink oder von freigegebenen "
+            "Servern; Beiträge für soziale Medien werden nur als Entwurf abgelegt. "
+            "Veröffentlichen, Zustand und Domains gibt es hier nicht; das macht ein Mensch in "
+            "HUBIplan. Nach Änderungen webseite_vorschau anbieten. "
             "Für Fragen zur Bedienung die Hilfe-Werkzeuge nutzen."
         ),
         tools=club.tools_for,
