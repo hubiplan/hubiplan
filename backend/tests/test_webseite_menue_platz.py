@@ -57,7 +57,7 @@ class TestPlatz:
         assert not any(c.get("place") for c in events["children"])
 
     def test_alte_werte_ohne_fehler(self, club, site):  # noqa: F811
-        site.menu_places = {"contact": "irgendwo", 5: "footer"}
+        site.menu_places = {"contact": "irgendwo", "events": 5}
         site.save()
         assert menu.places(Website.objects.get(pk=site.pk)) == {}
 
