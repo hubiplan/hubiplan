@@ -16,6 +16,7 @@ from rest_framework.views import APIView
 from access.catalog import DOCS_MANAGE, ORG_EDIT, SETTINGS_VIEW
 from audit.log import diff, record, snapshot
 from core.api_base import ModelCleanMixin, OrgScopedMixin
+from core.tenancy import rls_bypass
 from organizations.models import Department, Organization
 
 from . import data as service
@@ -116,7 +117,9 @@ def _update(request, org: Organization, audit_org: Organization) -> dict:
     serializer.is_valid(raise_exception=True)
     with transaction.atomic():
         before = snapshot(letterhead)
-        obj = serializer.save()
+        # Die Ansicht hat das Recht für diese Einheit geprüft (auch Untereinheiten)
+        with rls_bypass():
+            obj = serializer.save()
         changes = diff(before, snapshot(obj))
         if changes:
             record(audit_org, request.user, "update", obj, changes)
