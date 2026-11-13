@@ -137,7 +137,7 @@ def board(owner: Organization) -> list[dict]:
             .filter(organization=owner)
             .filter(Q(role__represents=True) | Q(role__on_letterhead=True))
             .select_related("role", "user", "person")
-            .order_by("-role__represents", "role__name", "valid_from")
+            .order_by("-role__represents", "role__position", "role__name", "valid_from")
         )
         for row in rows:
             if row.person_id:

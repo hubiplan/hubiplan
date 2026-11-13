@@ -117,6 +117,31 @@ class TestPflege:
         data = api(board_a).get(f"/api/orgs/{orgs['a'].pk}/imprint/").json()
         assert data["preview"]["representatives"] == []
 
+    def test_vertretung_in_rollenreihenfolge(self, api, orgs, board_a):
+        # Reihenfolge aus Einstellungen › Rollen, nicht alphabetisch (Ralf 13.11.)
+        from letterhead.data import board
+
+        for i, (email, first, last, name) in enumerate(
+            [
+                ("erika@example.org", "Erika", "Muster", "Vorsitzender"),
+                ("max@example.org", "Max", "Beispiel", "stellvertretender Vorsitzender"),
+                ("lisa@example.org", "Lisa", "Probe", "Vorstandsmitglied Finanzen"),
+            ]
+        ):
+            give_role(make_user(email, first_name=first, last_name=last), orgs["a"], [], name)
+            Role.objects.filter(organization=orgs["a"], name=name).update(
+                represents=True, position=i + 10
+            )
+        expected = [
+            {"name": "Erika Muster", "role": "Vorsitzender"},
+            {"name": "Max Beispiel", "role": "stellvertretender Vorsitzender"},
+            {"name": "Lisa Probe", "role": "Vorstandsmitglied Finanzen"},
+        ]
+        data = api(board_a).get(f"/api/orgs/{orgs['a'].pk}/imprint/").json()
+        assert data["preview"]["representatives"] == expected
+        names = {r["role"] for r in expected}
+        assert [r for r in board(orgs["a"]) if r["role"] in names] == expected
+
     def test_rollen_kennzeichen_ueber_api(self, api, orgs, board_a):
         role = Role.objects.get(organization=orgs["a"], name="Vorstand")
         resp = api(board_a).patch(
