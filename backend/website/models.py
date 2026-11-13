@@ -225,10 +225,13 @@ DRAFT_FIELDS = (
     "color_roles",
     "style",
     "header_image",
+    "header_image_narrow",
     "home_sections",
     "layouts",
     *MENU_DRAFT_FIELDS,
 )
+# Kopfbilder stehen am Bild (WebsiteImage.header/header_narrow), nicht an der Webseite
+HEADER_IMAGE_FIELDS = {"header_image": "header", "header_image_narrow": "header_narrow"}
 # Bilder per Adresse für KI-Assistenten (W3): höchstens so viele erlaubte Server
 MAX_IMAGE_HOSTS = 10
 DESIGN_VERSIONS = 5  # wie bei den Texten: die letzten 5 veröffentlichten Fassungen
@@ -412,10 +415,11 @@ class Website(models.Model):
         """Entwurf nur im Speicher über die Werte legen (Vorschau); nie danach speichern."""
         draft = self.draft if isinstance(self.draft, dict) else {}
         for key in DRAFT_FIELDS:
-            if key in draft and key != "header_image":
+            if key in draft and key not in HEADER_IMAGE_FIELDS:
                 setattr(self, key, draft[key])
-        if "header_image" in draft:
-            self.draft_header_image = draft["header_image"]
+        for key in HEADER_IMAGE_FIELDS:
+            if key in draft:
+                setattr(self, f"draft_{key}", draft[key])
 
     def design_choices(self) -> set[str]:
         return set(DESIGNS) | {p.key for p in self.packages()}

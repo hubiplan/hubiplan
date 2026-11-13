@@ -94,3 +94,57 @@ def test_kopfbild_setzen_und_entfernen(orgs, admin, site):
 def test_fremdes_bild_abgelehnt(orgs, admin, site):
     resp = admin.put(url(orgs["a"]), {"header_image": 999999}, "application/json")
     assert resp.status_code == 400
+
+
+def test_kopfbild_fuer_schmale_bildschirme(orgs, admin, site):
+    """Webseite #73: optionale Fassung fürs Handy, nur zusammen mit einem Kopfbild."""
+    org = orgs["a"]
+    wide = upload(admin, org)
+    narrow = upload(admin, org, alt="Banner kompakt")
+    key = WebsiteImage.objects.get(pk=narrow["id"]).public_key
+    assert info()["header_image_narrow"] is None
+
+    resp = admin.put(url(org), {"header_image_narrow": narrow["id"]}, "application/json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["website"]["header_image_narrow"] == narrow["id"]
+    # Ohne Kopfbild bleibt es bei Wappen und Name, auch auf dem Handy
+    assert info()["header_image"] is None
+    assert info()["header_image_narrow"] is None
+    assert Client().get(f"/api/public/site/v1/kopf-a/images/{key}/").status_code == 404
+
+    admin.put(url(org), {"header_image": wide["id"]}, "application/json")
+    data = info()
+    assert data["header_image"]["url"] != data["header_image_narrow"]["url"]
+    assert data["header_image_narrow"]["url"].endswith(f"images/{key}/")
+    assert data["header_image_narrow"]["alt"] == "Banner kompakt"
+    assert Client().get(f"/api/public/site/v1/kopf-a/images/{key}/").status_code == 200
+    usage = admin.get(url(org, f"images/{narrow['id']}/")).json()["usage"]
+    assert any(u.get("header") for u in usage)
+    # Beide Kopfbilder unabhängig: das Kopfbild zu ändern lässt die Handyfassung stehen
+    assert WebsiteImage.objects.get(pk=narrow["id"]).header_narrow
+    assert not WebsiteImage.objects.get(pk=narrow["id"]).header
+
+    admin.put(url(org), {"header_image_narrow": None}, "application/json")
+    assert info()["header_image_narrow"] is None
+    assert info()["header_image"] is not None
+    assert not WebsiteImage.objects.filter(header_narrow=True).exists()
+
+
+def test_kopfbild_schmal_fremdes_bild_abgelehnt(orgs, admin, site):
+    resp = admin.put(url(orgs["a"]), {"header_image_narrow": 999999}, "application/json")
+    assert resp.status_code == 400
+
+
+def test_kopfbild_schmal_im_entwurf(orgs, admin, site):
+    org = orgs["a"]
+    wide = upload(admin, org)
+    narrow = upload(admin, org)
+    admin.put(url(org), {"header_image": wide["id"]}, "application/json")
+    resp = admin.put(url(org), {"draft": {"header_image_narrow": narrow["id"]}}, "application/json")
+    assert resp.status_code == 200, resp.content
+    assert resp.json()["website"]["draft"] == {"header_image_narrow": narrow["id"]}
+    # Öffentlich noch nicht
+    assert info()["header_image_narrow"] is None
+    resp = admin.post(url(org, "design/publish/"))
+    assert resp.status_code == 200, resp.content
+    assert info()["header_image_narrow"]["url"]

@@ -208,6 +208,7 @@ const SETTINGS: (keyof WebsiteSettings)[] = [
   'style',
   'layouts',
   'header_image',
+  'header_image_narrow',
   'name_format',
   'show_vacant',
   'show_instrument',
@@ -443,8 +444,10 @@ function WebsiteAdmin({
   const headerImage = (
     <HeaderImage
       value={v.header_image ?? null}
+      narrow={v.header_image_narrow ?? null}
       units={data.units}
       onChange={(id) => set('header_image', id)}
+      onNarrowChange={(id) => set('header_image_narrow', id)}
     />
   )
 

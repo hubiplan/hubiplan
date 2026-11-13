@@ -1193,8 +1193,9 @@ class SiteView:
             ):
                 if t.kind != WebsiteText.Kind.UNIT or t.department_id in self.unit_slugs:
                     return image
-        if image.pk == self.header_image_pk:
-            # Kopfbild der Webseite (Ralf 05.11.), in der Vorschau auch das des Entwurfs
+        if self.header_image_pk and image.pk in (self.header_image_pk, self.header_image_narrow_pk):
+            # Kopfbild der Webseite (Ralf 05.11.) und seine Fassung für schmale Bildschirme
+            # (#73), in der Vorschau auch die des Entwurfs
             return image
         if image.pk in self.home_image_ids or image.key in self.home_text_image_keys:
             # Bilder eingeschalteter Abschnitte der Startseite (G3), in der Vorschau des Entwurfs,
@@ -1227,20 +1228,32 @@ class SiteView:
 
         return text_image_keys(normalize_page(sections)) if sections else set()
 
-    @cached_property
-    def header_image_pk(self) -> int | None:
+    def _header_pk(self, key: str, flag: str) -> int | None:
         # Vorschau mit Entwurf (Website.apply_draft): das Kopfbild des Entwurfs
-        if hasattr(self.site, "draft_header_image"):
-            return self.site.draft_header_image
+        if hasattr(self.site, f"draft_{key}"):
+            return getattr(self.site, f"draft_{key}")
         return (
-            WebsiteImage.objects.filter(website=self.site, header=True)
+            WebsiteImage.objects.filter(website=self.site, **{flag: True})
             .values_list("pk", flat=True)
             .first()
         )
 
-    def header_image(self) -> dict | None:
-        """Kopfbild statt Wappen und Vereinsname (Ralf 05.11.)."""
-        pk = self.header_image_pk
+    @cached_property
+    def header_image_pk(self) -> int | None:
+        return self._header_pk("header_image", "header")
+
+    @cached_property
+    def header_image_narrow_pk(self) -> int | None:
+        return self._header_pk("header_image_narrow", "header_narrow")
+
+    def header_image(self, narrow: bool = False) -> dict | None:
+        """Kopfbild statt Wappen und Vereinsname (Ralf 05.11.).
+
+        ``narrow``: Fassung für schmale Bildschirme (Webseite #73), nur zusammen mit einem
+        Kopfbild; ohne sie bleibt es beim Kopfbild."""
+        if narrow and not self.header_image_pk:
+            return None
+        pk = self.header_image_narrow_pk if narrow else self.header_image_pk
         image = WebsiteImage.objects.filter(website=self.site, pk=pk).first() if pk else None
         data = self.image(image)
         if data is not None:

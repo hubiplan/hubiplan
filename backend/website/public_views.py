@@ -234,6 +234,8 @@ class SiteInfoView(_Public):
             "notice": site.notice(),
             # Kopfbild statt Wappen und Name (Ralf 05.11.); ältere Webseiten übergehen es
             "header_image": site.header_image(),
+            # Kopfbild für schmale Bildschirme (Webseite #73), sonst null
+            "header_image_narrow": site.header_image(narrow=True),
             # Wettbewerbsergebnisse (Schritt 5 der Wettbewerbe): Übersicht und Startseite
             "results_url": site.url("results/") if results.enabled(site) else None,
             "menu": site.menu(),

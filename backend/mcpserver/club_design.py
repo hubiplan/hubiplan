@@ -138,6 +138,7 @@ def _design_read(args: dict, ctx: ClubContext) -> str:
             for a in data.get("layout_catalog") or []
         ],
         "kopfbild": v.get("header_image"),
+        "kopfbild_schmal": v.get("header_image_narrow"),
         "im_entwurf": sorted((site.get("draft") or {}).keys()),
         "darf_gestalten": data.get("can_manage"),
     }
@@ -179,6 +180,11 @@ def _design_change(args: dict, ctx: ClubContext) -> str:
         if value is not None:
             value = _int(args, "kopfbild")
         draft["header_image"] = value
+    if "kopfbild_schmal" in args:
+        value = args["kopfbild_schmal"]
+        if value is not None:
+            value = _int(args, "kopfbild_schmal")
+        draft["header_image_narrow"] = value
     if not draft:
         raise ToolError(_("Bitte angeben, was sich ändern soll (design, stil, farben, …)."))
     saved = _save_draft(ctx, draft)
@@ -691,6 +697,13 @@ DESIGN_TOOLS: tuple[Tool, ...] = (
                 "kopfbild": {
                     "type": ["integer", "null"],
                     "description": gettext_lazy("Bildnummer oder null (Wappen und Name)."),
+                },
+                "kopfbild_schmal": {
+                    "type": ["integer", "null"],
+                    "description": gettext_lazy(
+                        "Bildnummer eines Kopfbilds für Handys (unter 600 px Breite) oder null "
+                        "(überall das Kopfbild)."
+                    ),
                 },
             }
         ),

@@ -12141,6 +12141,16 @@ msgstr ""
 "Offer webseite_vorschau after changes. Use the help tools for questions "
 "about using HUBIplan."
 
+msgid "Kopfbild für schmale Bildschirme"
+msgstr "Header image for narrow screens"
+
+msgid ""
+"Bildnummer eines Kopfbilds für Handys (unter 600 px Breite) oder null "
+"(überall das Kopfbild)."
+msgstr ""
+"Image number of a header image for phones (below 600 px wide) or null "
+"(header image everywhere)."
+
 msgid "Bitte die Zeilen als Liste senden."
 msgstr "Please send the lines as a list."
 

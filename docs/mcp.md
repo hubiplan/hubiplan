@@ -154,7 +154,7 @@ wirksam. `clean_draft` prüft die vier Menüfelder zusammen.
 | Werkzeug | Bereich | Was |
 |---|---|---|
 | `webseite_gestaltung_ansehen` | lesen | Design, Farbrollen, Palette, Stilregler, Darstellung, Kopfbild mit erlaubten Werten |
-| `webseite_gestaltung_aendern` | entwurf | `design`, `stil`, `farben`, `darstellung`, `kopfbild`; nur Angegebenes ändert sich, `null` setzt zurück |
+| `webseite_gestaltung_aendern` | entwurf | `design`, `stil`, `farben`, `darstellung`, `kopfbild`, `kopfbild_schmal` (Handyfassung unter 600 px); nur Angegebenes ändert sich, `null` setzt zurück |
 | `webseite_menue_ansehen` | lesen | Menübaum im Entwurf mit Namen, Links, Knopf |
 | `webseite_menue_aendern` | entwurf | `reihenfolge`, `namen`, `links`, `neu` (Überschrift/Link), `knopf` |
 | `startseite_bausteine` | lesen | Abschnittsarten mit Feldern, Aussehen, `home_choices` |
