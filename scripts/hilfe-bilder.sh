@@ -181,7 +181,7 @@ for i, m in enumerate(members):
     Attendance.objects.create(organization=club, meeting=meeting, membership=m, voter=True,
         name=(m.person.first_name + ' ' + m.person.last_name).strip(), status='present',
         mode='online' if m.pk == membership.pk or i == 3 else ('app' if i % 2 else ''))
-item = meeting.agenda.get(title__startswith='Entlastung')
+item = next(a for a in meeting.agenda.all() if a.title.startswith('Entlastung'))
 poll = live.create_poll(meeting, item, question='Entlastung des Vorstands für das letzte Geschäftsjahr',
     secret=True, office='', candidates=[])
 live.set_poll_status(poll, 'open')
