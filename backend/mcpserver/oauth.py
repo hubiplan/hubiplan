@@ -62,6 +62,8 @@ CLIENT_UNUSED = datetime.timedelta(days=1)
 # Bereiche (scopes): Hilfe ist immer dabei. „entwurf“ schließt „lesen“ ein.
 SCOPE_READ = "webseite.lesen"
 SCOPE_DRAFT = "webseite.entwurf"
+# Erscheinungsbild der Einheit (Farben, Verläufe, Farbrollen, Logo): wirkt sofort
+SCOPE_THEME = "verein.erscheinungsbild"
 SCOPES = {
     SCOPE_READ: gettext_lazy("Webseite lesen: Einstellungen, Texte und Startseite ansehen"),
     SCOPE_DRAFT: gettext_lazy(
@@ -69,8 +71,12 @@ SCOPES = {
         "neue Textseiten anlegen, Bilder hinzufügen und beschreiben, Beiträge für soziale "
         "Medien vorbereiten (veröffentlicht wird nur in HUBIplan)"
     ),
+    SCOPE_THEME: gettext_lazy(
+        "Erscheinungsbild ändern: Farben, Verläufe, Farbrollen und Logo der Einheit (gilt "
+        "sofort für HUBIplan und Webseite, rückgängig im Änderungsprotokoll)"
+    ),
 }
-DEFAULT_SCOPES = (SCOPE_READ, SCOPE_DRAFT)
+DEFAULT_SCOPES = (SCOPE_READ, SCOPE_DRAFT, SCOPE_THEME)
 # Schemata, die nie als Rückleitung taugen
 BAD_SCHEMES = {"javascript", "data", "file", "vbscript", "about", "blob", "ftp", "ws", "wss"}
 SCHEME = re.compile(r"^[a-z][a-z0-9+.-]{1,40}$")
