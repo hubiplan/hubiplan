@@ -107,7 +107,7 @@ const GROUPS: { title: string; rows: Row[] }[] = [
       {
         key: 'header_height',
         label: t('Kopfhöhe'),
-        options: { low: t('niedrig'), normal: t('normal'), high: t('hoch') },
+        options: { low: t('niedrig'), medium: t('mittel'), normal: t('normal'), high: t('hoch') },
       },
       {
         key: 'line',

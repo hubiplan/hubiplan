@@ -74,9 +74,11 @@ def test_katalog_fuer_die_oberflaeche(club, site, client_web):
     assert catalog["options"]["sticky"] == "switch"
     assert catalog["locks"]["sidebar"]["logo_pos"] is None
     assert catalog["locks"]["stage"]["width"] == ["narrow"]
-    # Jede Leiste hat 2 oder 3 gleich breite Felder (Ralf 10.11.)
-    for options in catalog["options"].values():
-        assert options == "switch" or 2 <= len(options) <= 3
+    # Jede Leiste hat 2 oder 3 gleich breite Felder (Ralf 10.11.);
+    # einzige Ausnahme: die Kopfhöhe mit vier Stufen (Ralf 13.11., Webseite #68)
+    for key, options in catalog["options"].items():
+        most = 4 if key == "header_height" else 3
+        assert options == "switch" or 2 <= len(options) <= most
 
 
 def test_oeffentliche_schnittstelle(club, site):
@@ -105,3 +107,12 @@ def test_gleiche_liste_wie_die_webseite():
         for key, values in locks.items():
             assert key in style.OPTIONS, (design, key)
             assert values is None or set(values) <= set(style.OPTIONS[key])
+
+
+def test_kopfhoehe_mittel(club, site, client_web):
+    """Zwischenstufe „mittel“ zwischen niedrig und normal (Webseite #68)."""
+    assert style.OPTIONS["header_height"] == ("low", "medium", "normal", "high")
+    resp = put(client_web, club, {"style": {"header_height": "medium"}})
+    assert resp.status_code == 200, resp.content
+    site.refresh_from_db()
+    assert site.style == {"header_height": "medium"}
