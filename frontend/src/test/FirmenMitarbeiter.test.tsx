@@ -199,9 +199,13 @@ describe('Online-Antrag mit Link der Firma', () => {
       'GET /api/public/join/abc/?lang=de': () => ({ status: 200, body: schema }),
     })
     renderAt('/mitglied-werden/abc')
-    expect(await screen.findByRole('group', { name: 'Bist du volljährig?' })).toBeInTheDocument()
+    // Feldgruppe und Auswahl tragen beide den Namen der Frage
+    expect(
+      await screen.findByRole('button', { name: 'Ja, 18 Jahre oder älter' }),
+    ).toBeInTheDocument()
+    expect(screen.getAllByRole('group', { name: 'Bist du volljährig?' }).length).toBeGreaterThan(0)
     await user.type(screen.getByLabelText(/^Geburtsdatum/), '1990-05-01')
-    expect(screen.queryByRole('group', { name: 'Bist du volljährig?' })).toBeNull()
+    expect(screen.queryAllByRole('group', { name: 'Bist du volljährig?' })).toHaveLength(0)
   })
 
   it('ohne Einstellung kein Familienantrag', async () => {

@@ -21,6 +21,8 @@ OHNE_RLS = {
     "portal_loginlink": "Anmeldelink wird ohne Sitzung über seinen Schlüssel gefunden",
     "core_datakey": "Schlüsselverwaltung der Feldverschlüsselung, unterhalb des Zeilenschutzes",
     "core_datakeyrotation": "Schlüsselwechsel, Systemaufgabe über alle Vereine",
+    "finance_gobd_freigabe": "Freigaben der Festschreibung; die Rolle der Anwendung hat darauf "
+    "keinerlei Rechte (finance 0032), nur die Funktionen der Datenbank",
     "letterhead_letterhead": "Altbestand; der Zugriff läuft über die Rechteprüfung der Ansichten",
 }
 
