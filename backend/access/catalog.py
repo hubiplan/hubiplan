@@ -268,6 +268,13 @@ AREAS: tuple[Area, ...] = (
         org_types=("platform", "federation", "club"),
     ),
     Area(
+        "obligations",
+        gettext_noop("Fristenkalender"),
+        gettext_noop("Pflichten und Fristen des Vereins sehen"),
+        gettext_noop("Pflichten anlegen, ändern und als erledigt vermerken"),
+        module="obligations",
+    ),
+    Area(
         "partners",
         gettext_noop("Geschäftspartner"),
         gettext_noop("Geschäftspartner und Ansprechpartner sehen"),
