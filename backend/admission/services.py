@@ -410,8 +410,11 @@ def valid_approvals(app: Application):
     return app.approvals.all()
 
 
-def state(app: Application, form: ApplicationForm) -> rules.State:
-    names = rules.role_names(app.organization)
+def state(app: Application, form: ApplicationForm, names: dict | None = None) -> rules.State:
+    """Stand der Zustimmungen. ``names`` (Rollennamen des Vereins) gibt die Liste einmal für
+    alle Anträge mit, statt sie je Antrag neu zu laden (Gesamtaudit 13.11. P-01)."""
+    if names is None:
+        names = rules.role_names(app.organization)
     return rules.evaluate(form.rule or {}, valid_approvals(app), names)
 
 

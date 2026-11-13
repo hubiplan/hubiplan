@@ -19,7 +19,6 @@ import base64
 import datetime
 import hashlib
 import json
-import re
 
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
@@ -36,6 +35,7 @@ from rest_framework.views import APIView
 
 from audit.log import diff, record, snapshot
 from core.i18n import date_text, language_of_org
+from core.names import clean_person_name
 from core.ratelimit import too_many
 from core.tenancy import tenant_context
 from members.households import end_member
@@ -74,8 +74,6 @@ REPORTS_PER_COMPANY = 20
 REPORTS_PER_CLUB = 100
 DAY = 24 * 60 * 60
 TOKEN_MAX = 1500
-# Namen gehen in eine Mail an eine fremde Adresse: nur, was in Namen vorkommt
-NAME = re.compile(r"^[^\W\d_](?:[^\W\d_]|['’-])*\.?$")
 
 
 def _fernet() -> Fernet:
@@ -172,12 +170,13 @@ class EmployeeReport(serializers.Serializer):
     email = serializers.EmailField(max_length=200)
 
     def _name(self, value: str) -> str:
-        value = " ".join(value.split())
-        if not all(NAME.match(part) for part in value.split(" ")):
+        # Namen gehen in eine Mail an eine fremde Adresse: nur, was in Namen vorkommt
+        name = clean_person_name(value)
+        if name is None:
             raise serializers.ValidationError(
                 gettext("Bitte nur Buchstaben, Leerzeichen, Bindestrich, Punkt und Apostroph.")
             )
-        return value
+        return name
 
     def validate_first_name(self, value: str) -> str:
         return self._name(value)

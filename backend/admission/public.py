@@ -16,6 +16,7 @@ from django.utils.translation import gettext
 from rest_framework import serializers
 
 from core.i18n import available, normalize
+from core.names import clean_person_name, has_link
 from members.serializers import OptionalDateField
 
 from . import services
@@ -370,6 +371,21 @@ def clean_submission(form: ApplicationForm, v: dict, *, kiosk: bool = False) -> 
     }
     if person and not data["first_name"]:
         errors["first_name"] = gettext("Pflichtfeld.")
+    # Der Name steht in der Bestätigungsmail an eine noch ungeprüfte Adresse: nur, was in
+    # Namen vorkommt, bei Organisationen keine Webadresse (Gesamtaudit 13.11. H-09)
+    for key in ("first_name", "last_name"):
+        if not data[key] or key in errors:
+            continue
+        if person:
+            name = clean_person_name(data[key])
+            if name is None:
+                errors[key] = gettext(
+                    "Bitte nur Buchstaben, Leerzeichen, Bindestrich, Punkt und Apostroph."
+                )
+            else:
+                data[key] = name
+        elif has_link(data[key]):
+            errors[key] = gettext("Ungültige Angabe.")
     if not re.fullmatch(r"[0-9A-Za-z \-]{3,10}", data["postal_code"]):
         errors["postal_code"] = gettext("Bitte eine gültige Postleitzahl angeben.")
 

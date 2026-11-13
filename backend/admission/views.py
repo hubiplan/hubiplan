@@ -138,8 +138,8 @@ def approvals_data(app: Application) -> list[dict]:
     ]
 
 
-def row(app: Application, form: ApplicationForm) -> dict:
-    st = services.state(app, form) if app.is_open else None
+def row(app: Application, form: ApplicationForm, names: dict | None = None) -> dict:
+    st = services.state(app, form, names) if app.is_open else None
     d = app.data or {}
     return {
         "id": app.pk,
@@ -165,6 +165,19 @@ def row(app: Application, form: ApplicationForm) -> dict:
     }
 
 
+def _counts(org) -> dict[str, int]:
+    """Offene Anträge je Stand in einer Abfrage."""
+    from django.db.models import Count
+
+    found = dict(
+        Application.objects.filter(organization=org, status__in=Application.OPEN_STATES)
+        .values_list("status")
+        .annotate(n=Count("pk"))
+        .order_by()
+    )
+    return {s: found.get(s, 0) for s in Application.OPEN_STATES}
+
+
 class ApplicationListView(_Mixin, APIView):
     def get(self, request, org_id: int):
         form = services.form_for(self.org)
@@ -183,7 +196,8 @@ class ApplicationListView(_Mixin, APIView):
             qs = qs.filter(member_type_id=request.query_params["art"])
         if request.query_params.get("einheit"):
             qs = qs.filter(unit_id=request.query_params["einheit"])
-        rows = [row(a, form) for a in qs[:500]]
+        names = rules.role_names(self.org)  # einmal für alle Zeilen (P-01)
+        rows = [row(a, form, names) for a in qs[:500]]
         return Response(
             {
                 "results": rows,
@@ -193,10 +207,7 @@ class ApplicationListView(_Mixin, APIView):
                 "may_approve": rules.may_approve(
                     form.rule or {}, rules.user_roles(request.user, self.org), self.org_permissions
                 ),
-                "counts": {
-                    s: Application.objects.filter(organization=self.org, status=s).count()
-                    for s in Application.OPEN_STATES
-                },
+                "counts": _counts(self.org),
             }
         )
 

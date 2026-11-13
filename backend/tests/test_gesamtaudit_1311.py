@@ -72,25 +72,58 @@ class TestAdressenZaehlen:
 class TestStandZaehler:
     """K-01: Der Zähler des Standzugangs hat ein festes Zeitfenster."""
 
-    def test_grenze_und_festes_fenster(self, monkeypatch):
+    def test_unbekannte_schluessel_zaehlen_je_adresse(self, monkeypatch):
+        """V-01: Geratene Schlüssel legen keine eigenen Zähler an."""
         cache.clear()
-        monkeypatch.setattr(stand_views, "RATE", (3, 600))
+        monkeypatch.setattr(stand_views, "UNKNOWN_RATE", (3, 600))
 
         # Früher schrieb jeder Aufruf den Zähler mit neuer Laufzeit zurück (cache.set); im
-        # Dauerbetrieb lief er nie ab. Jetzt zählt nur noch too_many (add + incr).
+        # Dauerbetrieb lief er nie ab (K-01). Jetzt zählt nur noch too_many (add + incr).
         def kein_set(*args, **kwargs):
             raise AssertionError("cache.set verlängert die Laufzeit des Zählers")
 
         monkeypatch.setattr(cache, "set", kein_set)
         view = stand_views._StandPublic()
-        for _ in range(3):
+        view.request = RequestFactory().get("/", REMOTE_ADDR="203.0.113.7")
+        for i in range(3):
             with pytest.raises(Http404):
-                view.resolve("unbekannter-schluessel")
+                view.resolve(f"geraten-{i}")
         with pytest.raises(ValidationError):
-            view.resolve("unbekannter-schluessel")
-        # ein anderer Zugang zählt für sich
+            view.resolve("geraten-neu")
+        # eine andere Adresse zählt für sich
+        view.request = RequestFactory().get("/", REMOTE_ADDR="203.0.113.8")
         with pytest.raises(Http404):
-            view.resolve("anderer-schluessel")
+            view.resolve("geraten-neu")
+
+    def test_gueltiger_zugang_festes_fenster(self, monkeypatch):
+        """K-01: Der Zähler eines Zugangs läuft über too_many (festes Fenster)."""
+        gezaehlt = []
+
+        def zaehlen(key, limit, window):
+            gezaehlt.append((key, limit, window))
+            return False
+
+        class Zugang:
+            pk = 7
+            is_active = True
+
+            class organization:  # noqa: N801
+                enabled_modules = [stand_views.MODULE]
+
+        class Bestand:
+            def select_related(self, *a):
+                return self
+
+            def filter(self, **kw):
+                return self
+
+            def first(self):
+                return Zugang
+
+        monkeypatch.setattr(stand_views, "too_many", zaehlen)
+        monkeypatch.setattr(stand_views.StandAccess, "objects", Bestand())
+        assert stand_views._StandPublic().resolve("schluessel") is Zugang
+        assert gezaehlt == [("stand:7", *stand_views.RATE)]
 
 
 @pytest.mark.django_db(transaction=True)
@@ -218,3 +251,17 @@ class TestBestaetigung:
         res = Client().post(f"/api/public/join/application/{token}/confirm/")
         assert res.status_code == 200 and res.json()["status"] != "unconfirmed"
         assert len(mail.outbox) == count
+
+
+@pytest.mark.django_db(transaction=True)
+class TestNamen:
+    """H-09: Im Namen steht nur, was in Namen vorkommt."""
+
+    @pytest.mark.parametrize("name", ["https://example.org", "Gewinn 100", "www.example.org"])
+    def test_kein_freier_text(self, club, name):
+        res = submit(club["key"], first_name=name)
+        assert res.status_code == 400 and "first_name" in res.json()
+
+    def test_uebliche_namen(self, club):
+        res = submit(club["key"], first_name="Anna-Lena", last_name="von der O’Neil jun.")
+        assert res.status_code == 201, res.content
