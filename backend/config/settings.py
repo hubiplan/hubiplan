@@ -272,6 +272,8 @@ SPECTACULAR_SETTINGS = {
         "OrganizationTypeEnum": "organizations.models.Organization.Type",
         "InvoiceStatusEnum": "billing.models.Invoice.Status",
         "CashAuditStatusEnum": "finance.models.CashAudit.Status",
+        "HouseholdKindEnum": "members.models.Household.Kind",
+        "HouseholdPayerKindEnum": "billing.models.HouseholdPayer.Kind",
         "GenderEnum": [("f", "die (weiblich)"), ("m", "der (männlich)"), ("n", "das (sächlich)")],
     },
 }
@@ -334,6 +336,10 @@ CELERY_BEAT_SCHEDULE = {
     },
     "loeschfrist": {
         "task": "members.tasks.purge_expired_members",
+        "schedule": 24 * 60 * 60,  # täglich
+    },
+    "erziehungsberechtigte-volljaehrig": {
+        "task": "members.tasks.end_guardianships",
         "schedule": 24 * 60 * 60,  # täglich
     },
     "termin-erinnerungen": {

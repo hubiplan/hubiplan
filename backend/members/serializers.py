@@ -29,6 +29,7 @@ from .models import (
     Person,
     PersonKind,
     overlaps,
+    today,
 )
 
 # Plausible Daten: Ein Tippfehler wie 9999 würde sonst Dauer und Jubiläen sprengen.
@@ -554,7 +555,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactPerson
         # Mitgliederzugang richtet „Zugang einrichten“ ein (J5), nicht das Kennzeichen
-        read_only_fields = ["member_access"]
+        read_only_fields = ["member_access", "is_guardian"]
         fields = [
             "id",
             "member",
@@ -575,6 +576,7 @@ class ContactPersonSerializer(serializers.ModelSerializer):
             "receives_invoices",
             "represents",
             "member_access",
+            "is_guardian",
             "since",
         ]
 
@@ -754,6 +756,38 @@ def _remote_federation(membership: Membership) -> dict | None:
     }
 
 
+def household_data(membership: Membership) -> list[dict]:
+    """Aktuelle Haushalte und Firmen der Mitgliedschaft mit den übrigen Mitgliedern (H1)."""
+    from .households import current_links, open_on
+
+    on = today()
+    result = []
+    for link in current_links([membership.pk], on).order_by("kind", "pk"):
+        others = (
+            link.household.members.filter(open_on(on))
+            .exclude(membership_id=membership.pk)
+            .select_related("membership__person")
+        )
+        result.append(
+            {
+                "id": link.household_id,
+                "name": link.household.name,
+                "kind": link.kind,
+                "role": link.role,
+                "since": link.valid_from,
+                "others": [
+                    {
+                        "member_id": o.membership_id,
+                        "name": o.membership.person.display_name,
+                        "role": o.role,
+                    }
+                    for o in others
+                ],
+            }
+        )
+    return result
+
+
 def member_detail(membership: Membership, org) -> dict:
     """Mitgliedsakte als Daten (Reiter Stammdaten, Mitgliedschaft, Rollen)."""
     from access.models import RoleAssignment
@@ -793,6 +827,7 @@ def member_detail(membership: Membership, org) -> dict:
         "billing_address": BillingAddressSerializer(membership.billing_address).data
         if hasattr(membership, "billing_address")
         else None,
+        "households": household_data(membership),
         "club_number": membership.club_number,
         "pays_fee_self": membership.pays_fee_self,
         "info_opt_out_at": membership.info_opt_out_at,

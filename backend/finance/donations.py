@@ -204,6 +204,18 @@ def donor_from_membership(org, membership) -> tuple[str, str]:
     return data["recipient_name"], data["recipient_address"]
 
 
+def _donor_from_invoice(booking) -> tuple[str, str]:
+    """Zahlung einer Rechnung ohne Mitglied (z. B. Haushalt mit Zahler ohne Mitgliedschaft):
+    Name und Anschrift wie auf der Rechnung, sonst nur der Name aus der Buchung."""
+    from billing.models import Payment
+
+    payment = Payment.objects.filter(booking=booking).select_related("invoice").first()
+    if payment is not None and payment.invoice.recipient_name.strip():
+        invoice = payment.invoice
+        return invoice.recipient_name.strip().splitlines()[0], invoice.recipient_address
+    return booking.counterparty.strip(), ""
+
+
 @transaction.atomic
 def import_bookings(org, year: int, user) -> list[Donation]:
     """Einnahmen aus Spenden-Kategorien eines Kalenderjahrs als Zuwendungen übernehmen."""
@@ -225,7 +237,7 @@ def import_bookings(org, year: int, user) -> list[Donation]:
         if booking.membership_id:
             name, address = donor_from_membership(org, booking.membership)
         else:
-            name, address = booking.counterparty.strip(), ""
+            name, address = _donor_from_invoice(booking)
         created.append(
             Donation.objects.create(
                 organization=org,

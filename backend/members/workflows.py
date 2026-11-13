@@ -30,6 +30,8 @@ from .models import (
     DepartmentMembership,
     DepartmentRoleHolder,
     ExitReason,
+    Household,
+    HouseholdMember,
     Membership,
     MembershipPeriod,
     MemberType,
@@ -128,6 +130,8 @@ def exit_membership(
         membership.type_assignments.filter(open_until),
         membership.department_memberships.filter(open_until),
         membership.department_roles.filter(open_until),
+        # Haushalte und Firmen (H1)
+        membership.household_links.filter(open_until),
     ):
         for item in qs:
             if item.valid_from > exit_date:
@@ -145,6 +149,8 @@ def _item_label(item) -> str:
         return gettext("Die Mitgliedsart")
     if isinstance(item, DepartmentMembership):
         return gettext("Die Untereinheit")
+    if isinstance(item, HouseholdMember):
+        return gettext("Der Haushalt")
     return gettext("Das Amt")
 
 
@@ -153,6 +159,7 @@ def _period_items(membership: Membership):
         membership.type_assignments.all(),
         membership.department_memberships.all(),
         membership.department_roles.all(),
+        membership.household_links.all(),
     )
 
 
@@ -540,6 +547,15 @@ def _purge_membership(membership: Membership, after_deadline: bool = False) -> N
     ContactPerson.objects.filter(membership=membership).delete()
     ContactPerson.objects.filter(organization=club, person=person).delete()
     BillingAddress.objects.filter(membership=membership).delete()
+    # Haushalte und Firmen (H1): Zugehörigkeiten; leere Haushalte entfallen
+    homes = list(
+        HouseholdMember.objects.filter(membership=membership).values_list("household_id", flat=True)
+    )
+    HouseholdMember.objects.filter(membership=membership).delete()
+    # Haushalte ohne Mitglieder entfallen, außer über ihr Mandat wurde schon eingezogen
+    Household.objects.filter(pk__in=homes, members__isnull=True).exclude(
+        mandates__debits__isnull=False
+    ).delete()
     from .photos import remove_all
 
     remove_all(membership)

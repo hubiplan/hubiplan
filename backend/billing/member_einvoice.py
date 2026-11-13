@@ -49,13 +49,14 @@ def country_code(value: str) -> str:
 
 
 def applies(invoice, cfg) -> bool:
-    """E-Rechnung für diese Rechnung? Nur Rechnungen an Mitglieder mit Leitweg-ID."""
+    """E-Rechnung für diese Rechnung? Nur Rechnungen an Mitglieder bzw. Haushalte und Firmen
+    (H5) mit Leitweg-ID."""
     from .models import Invoice
 
     return (
         bool(cfg.einvoice_members)
         and invoice.organization.type != "unit"
-        and invoice.recipient_kind == Invoice.Recipient.MEMBER
+        and invoice.recipient_kind in (Invoice.Recipient.MEMBER, Invoice.Recipient.HOUSEHOLD)
         and bool(invoice.leitweg_id.strip())
         and invoice.document_kind == "invoice"
         and not invoice.electronic_data
@@ -125,17 +126,51 @@ def _seller(org, cfg, taxable: bool) -> dict:
     }
 
 
+def _payer_source(org, invoice):
+    """Anschrift des Zahlers einer Haushalts- bzw. Firmenrechnung (H5): Mitgliedschaft oder
+    eigene Angaben (Person ohne Mitgliedschaft, Geschäftspartner)."""
+    from types import SimpleNamespace
+
+    from .models import HouseholdPayer
+
+    payer = HouseholdPayer.objects.filter(household_id=invoice.household_id).first()
+    if payer is None:
+        raise ValidationError(gettext("Der Haushalt hat keinen Zahler mehr."))
+    if payer.membership_id is not None:
+        return payer.membership, None
+    if payer.partner_id is not None:
+        d = payer.partner.details or {}
+        return None, SimpleNamespace(
+            name=payer.partner.name,
+            street=d.get("street", ""),
+            postal_code=d.get("postcode", ""),
+            city=d.get("city", ""),
+            country=d.get("country", ""),
+        )
+    return None, payer
+
+
 def _buyer(org, invoice) -> dict:
     from members.models import BillingAddress
     from members.services import contact_for
 
-    membership = invoice.membership
-    person = membership.person
-    billing = BillingAddress.objects.filter(membership=membership).first()
-    source = billing if billing is not None and billing.has_address else contact_for(person, org)
-    name = (
-        billing.name.strip() if billing is not None and billing.has_address else ""
-    ) or person.address_name
+    from .models import Invoice
+
+    membership, own = invoice.membership, None
+    if invoice.recipient_kind == Invoice.Recipient.HOUSEHOLD:
+        membership, own = _payer_source(org, invoice)
+    if own is not None:
+        source = own
+        name = own.name.strip()
+    else:
+        person = membership.person
+        billing = BillingAddress.objects.filter(membership=membership).first()
+        source = (
+            billing if billing is not None and billing.has_address else contact_for(person, org)
+        )
+        name = (
+            billing.name.strip() if billing is not None and billing.has_address else ""
+        ) or person.address_name
     street = (getattr(source, "street", "") or "").strip()
     postcode = (getattr(source, "postal_code", "") or "").strip()
     city = (getattr(source, "city", "") or "").strip()

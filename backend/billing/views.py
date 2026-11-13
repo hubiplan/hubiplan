@@ -470,7 +470,13 @@ def invoice_pdf_response(invoice: Invoice, download: bool) -> HttpResponse:
 
 def _invoice_qs(org):
     return Invoice.objects.filter(organization=org).select_related(
-        "organization", "department", "club", "run", "membership__person", "project"
+        "organization",
+        "department",
+        "club",
+        "household",
+        "run",
+        "membership__person",
+        "project",
     )
 
 
@@ -500,6 +506,27 @@ class FeeRunViewSet(BillingMixin, viewsets.ReadOnlyModelViewSet):
             return services.period(self.org, data["year"], cfg.rhythm, data["period"])
         except DjangoValidationError as exc:
             raise _as_drf(exc) from exc
+
+    def _household_preview(self, plan, p) -> list[dict]:
+        """Rechnungen an Haushalte und Firmen mit Familien- bzw. Firmenbeitrag (H2/H3)."""
+        from . import households as hh
+
+        rules = hh.rules_for(self.org) if plan.household_items else {}
+        rows = []
+        for hh_id, items in plan.household_items.items():
+            household = plan.households[hh_id]
+            discount, _ = hh.fee_discount(rules.get(household.kind), items, p)
+            rows.append(
+                {
+                    "id": hh_id,
+                    "name": household.name,
+                    "kind": household.kind,
+                    "members": len(items),
+                    "discount": discount,
+                    "total": sum((i.amount for i in items), services.ZERO) - discount,
+                }
+            )
+        return rows
 
     @action(detail=False, methods=["post"])
     def preview(self, request, org_id: int):
@@ -554,6 +581,7 @@ class FeeRunViewSet(BillingMixin, viewsets.ReadOnlyModelViewSet):
                         }
                         for d, items in plan.department_items.items()
                     ],
+                    "households": self._household_preview(plan, p),
                     "skipped": plan.skipped,
                     "checks": services.preview_checks(self.org, plan),
                 }
@@ -795,6 +823,18 @@ class InvoiceViewSet(BillingMixin, viewsets.ModelViewSet):
         """
         kind = data.get("recipient_kind") or (invoice.recipient_kind if invoice else None)
         empty = {"membership": None, "department": None, "club": None}
+        if kind == Invoice.Recipient.HOUSEHOLD:
+            # Haushaltsrechnungen entstehen nur im Beitragslauf (H2); im Entwurf bleibt
+            # der Haushalt Empfänger
+            if invoice is None or invoice.recipient_kind != Invoice.Recipient.HOUSEHOLD:
+                raise serializers.ValidationError(
+                    {
+                        "recipient_kind": gettext(
+                            "Rechnungen an einen Haushalt entstehen im Beitragslauf."
+                        )
+                    }
+                )
+            return {**empty, "recipient_kind": kind}
         if kind == Invoice.Recipient.MEMBER:
             if not (self.is_unit or self.org.keeps_members):
                 raise serializers.ValidationError(
@@ -1627,13 +1667,15 @@ class MandateViewSet(SepaMixin, viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         qs = Mandate.objects.filter(organization=self.org).select_related(
-            "membership__person", "club"
+            "membership__person", "club", "household"
         )
         p = self.request.query_params
         if (s := p.get("status")) in Mandate.Status.values:
             qs = qs.filter(status=s)
         if (m := p.get("mitglied")) and m.isdigit():
             qs = qs.filter(membership_id=m)
+        if (h := p.get("haushalt")) and h.isdigit():
+            qs = qs.filter(household_id=h)
         if term := p.get("suche", "").strip():
             # Kontoinhaber ist verschlüsselt (core/encfields.py): im Speicher suchen
             low = term.lower()
@@ -1653,8 +1695,18 @@ class MandateViewSet(SepaMixin, viewsets.ReadOnlyModelViewSet):
         ser = MandateInputSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         data = ser.validated_data
-        membership = club = None
-        if self.is_federation:
+        membership = club = household = None
+        if data.get("household") and not self.is_federation:
+            from members.models import Household
+
+            household = Household.objects.filter(
+                organization=self.org, pk=data["household"]
+            ).first()
+            if household is None:
+                raise serializers.ValidationError(
+                    {"household": gettext("Bitte einen Haushalt wählen.")}
+                )
+        elif self.is_federation:
             club = Organization.objects.filter(
                 parent=self.org, type=Organization.Type.CLUB, pk=data.get("club") or 0
             ).first()
@@ -1677,6 +1729,7 @@ class MandateViewSet(SepaMixin, viewsets.ReadOnlyModelViewSet):
                 self.org,
                 membership=membership,
                 club=club,
+                household=household,
                 signed_on=data["signed_on"],
                 source=Mandate.Source.PAPER,
                 user=request.user,
