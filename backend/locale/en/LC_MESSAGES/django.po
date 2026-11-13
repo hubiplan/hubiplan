@@ -12116,3 +12116,114 @@ msgstr ""
 "status and domains are not available here; a person does that in HUBIplan. "
 "Offer webseite_vorschau after changes. Use the help tools for questions "
 "about using HUBIplan."
+
+msgid "Die Anmeldung ist jetzt nicht mehr möglich."
+msgstr "Checking in is no longer possible."
+
+msgid "Bei dieser Art ist keine Teilnahme aus der Ferne vorgesehen."
+msgstr "This type of meeting does not provide for remote participation."
+
+msgid "Organisationsmitglieder trägt die Leitung mit ihrem Vertreter ein."
+msgstr "Organisation members are entered by the chair together with their representative."
+
+msgid "Aus der Ferne teilnehmen können nur Stimmberechtigte."
+msgstr "Only members entitled to vote can take part remotely."
+
+msgid "Bei dieser Art ist keine Online-Abstimmung vorgesehen."
+msgstr "This type of meeting does not provide for online voting."
+
+msgid "Abstimmungen sind jetzt nicht mehr möglich."
+msgstr "Votes are no longer possible."
+
+msgid "Zu viele Abstimmungen in dieser Versammlung."
+msgstr "Too many votes in this meeting."
+
+msgid "Zu viele Personen zur Wahl."
+msgstr "Too many candidates."
+
+msgid "Bitte mindestens eine Person zur Wahl angeben."
+msgstr "Please enter at least one candidate."
+
+msgid "Die Abstimmung wurde schon gestartet."
+msgstr "The vote has already been started."
+
+msgid "Die Abstimmung läuft nicht."
+msgstr "The vote is not running."
+
+msgid "Unbekannter Stand."
+msgstr "Unknown status."
+
+msgid "Bitte eine Antwort wählen."
+msgstr "Please choose an answer."
+
+msgid "Für diese Stimme bist du nicht berechtigt."
+msgstr "You are not entitled to cast this vote."
+
+msgid "Für diese Stimme wurde schon abgestimmt."
+msgstr "This vote has already been cast."
+
+msgid "Die Abstimmung ist noch nicht beendet."
+msgstr "The vote has not ended yet."
+
+msgid "Das Protokoll lässt sich nicht mehr ändern."
+msgstr "The minutes can no longer be changed."
+
+msgid "Anmeldung per App"
+msgstr "Check-in via app"
+
+msgid "beendet"
+msgstr "ended"
+
+msgid "Teilnahme aus der Ferne"
+msgstr "Remote participation"
+
+msgid "erlaubt"
+msgstr "allowed"
+
+msgid "nicht erlaubt"
+msgstr "not allowed"
+
+msgid "Abgestimmt wird nur bei Beschlüssen und Wahlen."
+msgstr "Votes are only held for resolutions and elections."
+
+msgid "Online-Abstimmung"
+msgstr "Online vote"
+
+msgid "gestartet"
+msgstr "started"
+
+msgid "Eine gestartete Abstimmung lässt sich nicht löschen."
+msgstr "A vote that has been started cannot be deleted."
+
+msgid "Online-Abstimmung erlaubt"
+msgstr "Online voting allowed"
+
+msgid "Teilnahme aus der Ferne erlaubt"
+msgstr "Remote participation allowed"
+
+msgid "gegangen"
+msgstr "left"
+
+msgid "per App"
+msgstr "via app"
+
+msgid "aus der Ferne"
+msgstr "remote"
+
+msgid "vorbereitet"
+msgstr "prepared"
+
+msgid "geheim"
+msgstr "secret"
+
+msgid "Die Anmeldung ist nicht geöffnet."
+msgstr "Check-in is not open."
+
+msgid "Bei dieser Versammlung ist keine Teilnahme aus der Ferne vorgesehen."
+msgstr "This meeting does not provide for remote participation."
+
+msgid "Der Code ist abgelaufen. Bitte den aktuellen Code scannen."
+msgstr "The code has expired. Please scan the current code."
+
+msgid "Online-Abstimmungen in Versammlungen (das Ergebnis steht im Beschluss)"
+msgstr "Online votes in meetings (the result is recorded in the resolution)"

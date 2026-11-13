@@ -7,6 +7,8 @@ Versammlungen gehören zu einem Verein oder Dachverband oder zu einer Untereinhe
 (Spalte ``department``, wie beim Material).
 """
 
+import uuid
+
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -66,6 +68,14 @@ class MeetingKind(models.Model):
     motion_days = models.PositiveSmallIntegerField(
         null=True, blank=True, validators=[MaxValueValidator(90)]
     )
+    # Schritt V7: Abstimmen am Handy und Teilnahme aus der Ferne (§ 32 Abs. 2 BGB). Beides
+    # setzt eine Grundlage in der Satzung voraus, für die der Verein selbst verantwortlich ist.
+    online_voting = models.BooleanField(
+        _("Online-Abstimmung erlaubt"), default=False, db_default=False
+    )
+    remote_allowed = models.BooleanField(
+        _("Teilnahme aus der Ferne erlaubt"), default=False, db_default=False
+    )
     position = models.PositiveSmallIntegerField(default=0)
     active = models.BooleanField(default=True)
 
@@ -115,6 +125,10 @@ class Meeting(models.Model):
         related_name="meetings",
     )
     invited_at = models.DateTimeField(null=True, blank=True)
+    # Schritt V7: Anmelden per App (wechselnder QR-Code) und Teilnahme aus der Ferne
+    checkin_open = models.BooleanField(default=False, db_default=False)
+    checkin_key = models.CharField(max_length=64, blank=True, default="", db_default="")
+    remote = models.BooleanField(default=False, db_default=False)
     # Freigabe des Protokolls (V4): Leitung und Protokollführung bestätigen
     chair_confirmed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
@@ -225,6 +239,13 @@ class Attendance(models.Model):
         REPRESENTED = "represented", _("vertreten")
         # Organisationsmitglied, anwesend durch seinen Vertreter (J4)
         DELEGATE = "delegate", _("durch Vertreter")
+        # Per App abgemeldet („Ich gehe“, V7): zählt nicht mehr mit
+        LEFT = "left", _("gegangen")
+
+    class Mode(models.TextChoices):
+        MANUAL = "", _("von Hand")
+        APP = "app", _("per App")
+        ONLINE = "online", _("aus der Ferne")
 
     organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
     meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="attendance")
@@ -244,6 +265,9 @@ class Attendance(models.Model):
     )
     delegate_membership = models.ForeignKey(
         "members.Membership", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    mode = models.CharField(
+        max_length=10, choices=Mode.choices, blank=True, default="", db_default=""
     )
     recorded_at = models.DateTimeField(auto_now=True)
 
@@ -324,3 +348,111 @@ class Motion(models.Model):
 
     def __str__(self):
         return f"motion {self.pk}"
+
+
+class Poll(models.Model):
+    """Online-Abstimmung zu einem Beschluss oder einer Wahl (Schritt V7).
+
+    Die Leitung legt sie an, öffnet und schließt sie und übernimmt das Ergebnis in einen
+    Beschluss. Abstimmen dürfen anwesende Stimmberechtigte (auch aus der Ferne, wenn die
+    Versammlung es erlaubt), für jede Vollmacht eine weitere Stimme. Bei einer geheimen
+    Abstimmung steht in ``Ballot`` keine Person; wer abgestimmt hat, steht getrennt in
+    ``VoteCast``.
+    """
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", _("vorbereitet")
+        OPEN = "open", _("läuft")
+        CLOSED = "closed", _("beendet")
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="polls")
+    agenda_item = models.ForeignKey(AgendaItem, on_delete=models.CASCADE, related_name="polls")
+    kind = models.CharField(
+        max_length=10, choices=Resolution.Kind.choices, default=Resolution.Kind.RESOLUTION
+    )
+    question = EncryptedTextField(_("Frage"))
+    office = EncryptedCharField(_("Amt"), max_length=200, blank=True)
+    # Wahl mit nur einer Person: Ja/Nein/Enthaltung über diese Person
+    candidate = EncryptedCharField(_("Person"), max_length=200, blank=True)
+    secret = models.BooleanField(_("geheim"), default=False)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.DRAFT)
+    opened_at = models.DateTimeField(null=True, blank=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
+    # Stimmberechtigte beim Schließen (anwesend, vertreten), für das Ergebnis
+    entitled = models.PositiveIntegerField(null=True, blank=True)
+    resolution = models.ForeignKey(
+        Resolution, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["agenda_item__position", "created_at", "pk"]
+
+    def __str__(self):
+        return f"poll {self.pk}"
+
+
+class PollOption(models.Model):
+    """Antwort einer Abstimmung: Ja, Nein, Enthaltung oder eine Person bei einer Wahl."""
+
+    class Role(models.TextChoices):
+        YES = "yes", _("Ja")
+        NO = "no", _("Nein")
+        ABSTAIN = "abstain", _("Enthaltung")
+        CANDIDATE = "candidate", _("Person")
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="+")
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="options")
+    position = models.PositiveSmallIntegerField(default=0)
+    role = models.CharField(max_length=10, choices=Role.choices)
+    label = EncryptedCharField(_("Antwort"), max_length=200)
+    membership = models.ForeignKey(
+        "members.Membership", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self):
+        return f"poll option {self.pk}"
+
+
+class VoteCast(models.Model):
+    """Wer für welche Stimme abgestimmt hat (ohne die Antwort, ohne Zeitpunkt).
+
+    ``attendance`` ist die Stimme (eigene oder die eines Vertretenen), ``cast_by`` der
+    Eintrag der Person, die sie abgegeben hat.
+    """
+
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="+")
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="casts")
+    attendance = models.ForeignKey(Attendance, on_delete=models.CASCADE, related_name="+")
+    cast_by = models.ForeignKey(
+        Attendance, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["poll", "attendance"], name="votecast_once")]
+
+    def __str__(self):
+        return f"vote cast {self.pk}"
+
+
+class Ballot(models.Model):
+    """Stimmzettel. Geheim: ohne Person, zufällige Nummer, kein Zeitpunkt. Offen: mit der
+    Stimme (Anwesenheitseintrag), damit das Protokoll zeigen kann, wer wie gestimmt hat."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    organization = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE)
+    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, related_name="+")
+    poll = models.ForeignKey(Poll, on_delete=models.CASCADE, related_name="ballots")
+    option = models.ForeignKey(PollOption, on_delete=models.CASCADE, related_name="ballots")
+    attendance = models.ForeignKey(
+        Attendance, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    def __str__(self):
+        return f"ballot {self.pk}"

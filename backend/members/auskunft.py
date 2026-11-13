@@ -242,7 +242,7 @@ def build(membership: Membership, org) -> bytes:
     )
 
     from helpers.models import ShiftAssignment
-    from meetings.models import Attendance, Motion, Resolution
+    from meetings.models import Attendance, Ballot, Motion, Resolution, VoteCast
 
     files["versammlungen.json"] = _dump(
         {
@@ -274,6 +274,28 @@ def build(membership: Membership, org) -> bytes:
                 }
                 for r in Resolution.objects.filter(elected=membership).select_related(
                     "meeting__event"
+                )
+            ],
+            # Online-Abstimmungen (V7): offene mit Antwort, geheime nur „abgestimmt“
+            "abstimmungen": [
+                {
+                    "versammlung": c.poll.meeting.event.title,
+                    "frage": c.poll.question,
+                    "geheim": c.poll.secret,
+                    "antwort": ""
+                    if c.poll.secret
+                    else next(
+                        (
+                            b.option.label
+                            for b in Ballot.objects.filter(
+                                poll=c.poll, attendance=c.attendance
+                            ).select_related("option")
+                        ),
+                        "",
+                    ),
+                }
+                for c in VoteCast.objects.filter(attendance__membership=membership).select_related(
+                    "poll__meeting__event"
                 )
             ],
             "antraege": [
