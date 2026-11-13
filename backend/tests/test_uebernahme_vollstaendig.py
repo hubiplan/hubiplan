@@ -105,7 +105,4 @@ def test_listen_sind_aktuell():
     fehlend = _fehlend()
     # was inzwischen mitkommt, fliegt aus den Listen
     assert (set(NICHT) | OFFEN) - fehlend == set()
-        "datatransfer.TransferJob",
-        "bookings.BookingSlot",
-    } == set()
     assert not set(NICHT) & OFFEN
