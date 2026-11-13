@@ -91,6 +91,7 @@ SETTINGS_FIELDS = [
     "block_names",
     "menu_links",
     "menu_button",
+    "menu_places",
     "home_sections",
     "design",
     "color_roles",
@@ -303,6 +304,17 @@ class WebsiteSerializer(ModelCleanMixin, serializers.ModelSerializer):
             )
         return value
 
+    def validate_menu_places(self, value):
+        if self.instance is None:
+            return {}
+        names, links = self._pending_menu()
+        try:
+            return menu.validate_places(value, menu.items(self.instance, names=names, links=links))
+        except ValueError as exc:
+            raise serializers.ValidationError(
+                _("Diesen Menüpunkt kann man nicht in den Fuß setzen.")
+            ) from exc
+
     def validate_image_hosts(self, value):
         # Nur Rechnernamen (W3, docs/mcp.md): keine Adressen, keine Ports, keine IP-Adressen
         if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
@@ -386,6 +398,7 @@ def live_design(website: Website) -> dict:
         "block_names": website.block_names if isinstance(website.block_names, dict) else {},
         "menu_links": website.menu_links if isinstance(website.menu_links, dict) else {},
         "menu_button": website.menu_button or "",
+        "menu_places": menu.places(website),
     }
 
 

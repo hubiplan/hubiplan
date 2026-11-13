@@ -8817,5 +8817,15 @@
   "Leer beginnen": "Start empty",
   "Die Kasse hat für dieses Jahr noch nichts geplant.": "The treasurer has not budgeted anything for this year yet.",
   "Plan löschen": "Delete budget",
-  "Plan und Ist je Kategorie, Vorlage für die Versammlung": "Plan and actual per category, ready for the meeting"
+  "Plan und Ist je Kategorie, Vorlage für die Versammlung": "Plan and actual per category, ready for the meeting",
+  "„Start“ im Menü": "“Home” in the menu",
+  "Aus: Am Bildschirm führen Wappen, Name oder Kopfbild zur Startseite. Im Handymenü bleibt „Start“.": "Off: on larger screens the crest, name or header image leads to the home page. The mobile menu keeps “Home”.",
+  "im Menü": "in the menu",
+  "oben rechts": "top right",
+  "im Fuß": "in the footer",
+  "Ganz ausblenden: Baustein „Suche“ unter Bausteine ausschalten.": "To hide it completely, switch off the “Search” block under Building blocks.",
+  "Menüpunkte im Fuß": "Menu items in the footer",
+  "Ein Punkt kann statt im Menü im Fuß neben Impressum und Datenschutz stehen, oder in beiden. Die Seite bleibt erreichbar und ihr Baustein bleibt an.": "An item can appear in the footer next to the legal notice and privacy policy instead of the menu, or in both. The page stays reachable and its block stays on.",
+  "nur im Fuß": "footer only",
+  "im Menü und im Fuß": "menu and footer"
 }

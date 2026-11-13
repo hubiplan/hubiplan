@@ -32,7 +32,9 @@ Links nach außen: „Link nach außen hinzufügen“ legt einen Menüpunkt an, 
 
 Knopf: Unter „Menüpunkt als Knopf hervorheben“ wählt ihr einen Hauptpunkt, der im Menü als farbiger Knopf erscheint, etwa „Kontakt“ oder einen Link „Mitglied werden“. Es gibt höchstens einen Knopf; Überschriften und Punkte mit Unterpunkten gehen nicht.
 
-Entwurf: Reihenfolge, Namen, Links und Knopf des Menüs kommen in den Entwurf, wie Design und Startseite. In der Vorschau unter Webseite › Gestaltung seht ihr das neue Menü, öffentlich wird es mit **Veröffentlichen**. Die Häkchen, die einen Bereich ein- oder ausschalten, gelten dagegen sofort.
+Menüpunkte im Fuß: Wird die Menüleiste zu voll, stellt ihr unter „Menüpunkte im Fuß“ für einen Hauptpunkt ein, ob er „im Menü“, „nur im Fuß“ oder „im Menü und im Fuß“ steht. Im Fuß erscheint er neben Impressum und Datenschutz, zum Beispiel „Kontakt“. Die Seite bleibt erreichbar und ihr Baustein bleibt eingeschaltet. Überschriften und Punkte mit Unterpunkten gehen nicht. „Start“ und die Suche stellt ihr unter Webseite › Gestaltung › Feinabstimmung › Kopf und Menü ein.
+
+Entwurf: Reihenfolge, Namen, Links, Knopf und Platz im Fuß des Menüs kommen in den Entwurf, wie Design und Startseite. In der Vorschau unter Webseite › Gestaltung seht ihr das neue Menü, öffentlich wird es mit **Veröffentlichen**. Die Häkchen, die einen Bereich ein- oder ausschalten, gelten dagegen sofort.
 
 Startseite: Die Abschnitte der Startseite stellt ihr unter Webseite › Gestaltung zusammen, mit Vorschau daneben.
 

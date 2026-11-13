@@ -153,6 +153,19 @@ const GROUPS: { title: string; rows: Row[] }[] = [
         label: t('Menü auf dem Handy'),
         options: { toggle: t('aufklappbar'), scroll: t('Leiste zum Wischen') },
       },
+      {
+        key: 'nav_start',
+        label: t('„Start“ im Menü'),
+        hint: t(
+          'Aus: Am Bildschirm führen Wappen, Name oder Kopfbild zur Startseite. Im Handymenü bleibt „Start“.',
+        ),
+      },
+      {
+        key: 'search',
+        label: t('Suche'),
+        options: { nav: t('im Menü'), header: t('oben rechts'), footer: t('im Fuß') },
+        hint: t('Ganz ausblenden: Baustein „Suche“ unter Bausteine ausschalten.'),
+      },
     ],
   },
   {
@@ -199,6 +212,7 @@ const SWITCH_DEFAULTS: Record<string, boolean> = {
   hero_name: false,
   contrast: false,
   to_top: false,
+  nav_start: true,
 }
 const SWITCH_BY_DESIGN: Record<string, Record<string, boolean>> = {
   stage: { sticky: true, hero_name: true },

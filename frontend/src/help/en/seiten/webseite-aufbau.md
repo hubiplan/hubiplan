@@ -33,7 +33,9 @@ External links: “Add external link” creates a menu item that leads to anothe
 
 Button: Under “Highlight a menu item as a button” you choose one main item that appears in the menu as a coloured button, such as “Contact” or a link “Become a member”. There is at most one button; headings and items with sub-items are not possible.
 
-Draft: order, names, links and button of the menu go into the draft, like design and home page. The preview under Website › Design shows the new menu; it becomes public with **Publish**. The check boxes that switch a section on or off, however, apply immediately.
+Menu items in the footer: if the menu bar gets too full, “Menu items in the footer” lets you set for each main item whether it appears “in the menu”, “footer only” or “menu and footer”. In the footer it appears next to the legal notice and privacy policy, for example “Contact”. The page stays reachable and its block stays switched on. Headings and items with sub-items are not possible. “Home” and the search are set under Website › Design › Fine-tuning › Header and menu.
+
+Draft: order, names, links, button and footer place of the menu go into the draft, like design and home page. The preview under Website › Design shows the new menu; it becomes public with **Publish**. The check boxes that switch a section on or off, however, apply immediately.
 
 Home page: You put together the home page sections under Website › Design, with the preview next to them.
 

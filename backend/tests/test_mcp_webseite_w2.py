@@ -147,6 +147,23 @@ def test_menue_im_entwurf_mit_ueberschrift_und_link(club, site, manager):  # noq
     assert not site.draft
 
 
+# Webseite #75: Hauptpunkt nur im Fuß oder in Menü und Fuß
+def test_ki_setzt_platz_im_fuss(club, site, manager):  # noqa: F811
+    token = connect(manager, club)["access_token"]
+    text, failed = call(token, "webseite_menue_aendern", fuss={"contact": "fuss"})
+    assert not failed, text
+    site.refresh_from_db()
+    assert site.draft["menu_places"] == {"contact": "footer"}
+    text, _failed = call(token, "webseite_menue_ansehen")
+    assert data_of(text)["fuss"] == {"contact": "fuss"}
+    text, failed = call(token, "webseite_menue_aendern", fuss={"contact": "menue"})
+    assert not failed, text
+    site.refresh_from_db()
+    assert not (site.draft or {}).get("menu_places")
+    _text, failed = call(token, "webseite_menue_aendern", fuss={"contact": "oben"})
+    assert failed
+
+
 def test_aufbau_der_startseite_im_entwurf(club, site, manager):  # noqa: F811
     token = connect(manager, club)["access_token"]
     text, failed = call(token, "startseite_bausteine")
