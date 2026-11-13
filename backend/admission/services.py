@@ -26,6 +26,8 @@ from outbox.mail import send
 
 from . import rules
 from .models import (
+    ACCEPTED_KEEP_MONTHS,
+    LINK_DAYS,
     UNCONFIRMED_HOURS,
     Application,
     ApplicationEvent,
@@ -168,7 +170,17 @@ def find(token: str) -> Application | None:
 
 @transaction.atomic
 def confirm(app: Application, token: str) -> Application:
-    if app.status != Application.Status.UNCONFIRMED:
+    # Zeile sperren: Zwei gleichzeitige Aufrufe des Links (Doppelklick, Linkprüfung des
+    # Mailanbieters) verschickten sonst alles doppelt (Gesamtaudit 13.11. V-04)
+    current = (
+        Application.objects.select_for_update()
+        .filter(pk=app.pk)
+        .values_list("status", flat=True)
+        .first()
+    )
+    if current != Application.Status.UNCONFIRMED:
+        if current is not None and current != app.status:
+            app.refresh_from_db()
         return app
     confirmed(app, token)
     return app
@@ -625,7 +637,9 @@ def accept(app: Application, user, perms: set[str], options: dict, *, auto: bool
     app.decided_by = user
     app.decision_note = note[:500]
     app.mandate = {}  # liegt jetzt im Mandat (billing)
+    app.purge_after = timezone.localdate() + relativedelta(months=ACCEPTED_KEEP_MONTHS)
     app.save()
+    store_pdf(app)
     event(app, "accepted", user, note)
     if options.get("welcome", True):
         send_welcome(app, form)
@@ -942,8 +956,65 @@ def reject(app: Application, user, note: str, send_mail: bool, text: str = "") -
 # --- Aufräumen ---
 
 
+def store_pdf(app: Application) -> None:
+    """Beleg des angenommenen Antrags (mit Unterschrift und Einwilligungen) ablegen. Er
+    bleibt mit der Mitgliedschaft, auch wenn die Angaben nach der Frist entfernt sind."""
+    from django.core.files.base import ContentFile
+
+    from .pdf import render
+
+    if app.pdf:
+        return
+    app.pdf.save(f"mitgliedsantrag-{app.number}.pdf", ContentFile(render(app)), save=False)
+    app.save(update_fields=["pdf", "updated_at"])
+
+
+def link_open(app: Application, now: datetime.datetime | None = None) -> bool:
+    """Gilt der Link aus der Bestätigungsmail noch? Nach der Entscheidung nur LINK_DAYS."""
+    if app.status not in Application.DONE_STATES or app.decided_at is None:
+        return True
+    return (now or timezone.now()) < app.decided_at + datetime.timedelta(days=LINK_DAYS)
+
+
+# Was nach der Frist von den Angaben bleibt: nur, woran der Vorstand den Antrag erkennt.
+# Alles Übrige steht in der Mitgliederakte und im abgelegten PDF.
+KEPT_AFTER_PURGE = ("first_name", "last_name")
+
+
+def purge_accepted(now: datetime.datetime) -> int:
+    """Angaben angenommener Anträge nach der Frist entfernen (Gesamtaudit 13.11. S-03).
+
+    Es bleiben Nummer, Daten, Entscheidung, Zustimmungen und das PDF. Anträge aus der Zeit
+    vor der Frist (ohne ``purge_after``) zählen ab der Entscheidung.
+    """
+    from django.db.models import Q
+
+    cutoff = now - relativedelta(months=ACCEPTED_KEEP_MONTHS)
+    due = Application.objects.filter(status="accepted", data_purged_at__isnull=True).filter(
+        Q(purge_after__lte=now.date()) | Q(purge_after__isnull=True, decided_at__lte=cutoff)
+    )
+    count = 0
+    for app in due.select_related("organization").iterator():
+        with tenant_context(app.organization_id), transaction.atomic():
+            try:
+                store_pdf(app)
+            except Exception:  # noqa: BLE001 - ohne Beleg bleiben die Angaben stehen
+                logger.exception("Antrag %s: PDF ließ sich nicht ablegen", app.pk)
+                continue
+            data = app.data or {}
+            app.data = {k: data[k] for k in KEPT_AFTER_PURGE if data.get(k)}
+            app.mandate = {}
+            app.guardians = []
+            app.signature = {}
+            app.data_purged_at = now
+            app.save()
+            count += 1
+    return count
+
+
 def purge(now: datetime.datetime | None = None) -> int:
-    """Unbestätigte Anträge nach 48 Stunden, abgelehnte und zurückgezogene nach der Frist."""
+    """Unbestätigte Anträge nach 48 Stunden, abgelehnte und zurückgezogene nach der Frist;
+    bei angenommenen nach der Frist die Angaben."""
     now = now or timezone.now()
     with rls_bypass():
         old = now - datetime.timedelta(hours=UNCONFIRMED_HOURS)
@@ -952,7 +1023,8 @@ def purge(now: datetime.datetime | None = None) -> int:
             status__in=("rejected", "withdrawn"), purge_after__lte=now.date()
         ).delete()
         KioskLink.objects.filter(valid_until__lt=now - datetime.timedelta(days=30)).delete()
-    return n1 + n2
+        n3 = purge_accepted(now)
+    return n1 + n2 + n3
 
 
 # --- Stand-Modus (B5) ---

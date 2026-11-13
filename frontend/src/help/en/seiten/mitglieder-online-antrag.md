@@ -28,3 +28,5 @@ Here you set up the form people use to become members online. Each club has its 
 - **Who decides?**: as your statutes require, also with several roles, a minimum number and the approval of the sub-unit.
 
 **Share the form** shows the address and QR code, optionally with a preselected sub-unit, and the links for booth mode.
+
+**Retention**: HUBIplan deletes unconfirmed applications after 48 hours, rejected and withdrawn ones after the period you set. After your decision, the link from the confirmation email only shows the status, no details and no PDF, and expires after 30 days. On acceptance HUBIplan files the application as a PDF; you still find it with the application. Twelve months after acceptance the individual details of the application are removed because they are in the member record. The number, decision, approvals and the PDF remain.

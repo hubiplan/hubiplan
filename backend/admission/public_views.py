@@ -120,22 +120,27 @@ class FormView(_Public):
 
 def own_application(token: str) -> Application:
     app = services.find(token)
-    if app is None:
+    # Nach der Entscheidung erlischt der Link nach einer Frist (Gesamtaudit 13.11. S-03)
+    if app is None or not services.link_open(app):
         raise Http404
     return app
 
 
 def status_payload(app: Application, token: str) -> dict:
     form = services.form_for(app.organization)
+    # Nach der Entscheidung zeigt der Link nur noch den Stand: keine Angaben, kein PDF.
+    # Wer die Mail später in die Hände bekommt, liest sonst alles mit (S-03).
+    done = app.status in Application.DONE_STATES
     with override(app.language):
         return {
             "number": app.number,
             "status": app.status,
             "status_label": str(Application.Status(app.status).label),
             "organization": app.organization.name,
-            "name": app.display_name,
+            "name": "" if done else app.display_name,
             "language": app.language,
-            "summary": services.summary_lines(app),
+            "summary": [] if done else services.summary_lines(app),
+            "pdf": not done and app.status != Application.Status.UNCONFIRMED,
             "signed": bool(app.signature),
             "signature_required": form.signature == ApplicationForm.Signature.REQUIRED,
             "can_withdraw": app.status not in Application.DONE_STATES,
@@ -178,7 +183,7 @@ class PdfView(_Public):
         from .pdf import render
 
         app = own_application(token)
-        if app.status == Application.Status.UNCONFIRMED:
+        if app.status == Application.Status.UNCONFIRMED or app.status in Application.DONE_STATES:
             raise Http404
         with tenant_context(app.organization_id):
             data = render(app)
