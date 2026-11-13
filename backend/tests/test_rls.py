@@ -526,3 +526,23 @@ def test_anmeldung_als_app_rolle_ohne_superuser_rechte():
     finally:
         with connection.cursor() as cursor:
             cursor.execute(f"ALTER ROLE {APP_ROLE} WITH NOLOGIN PASSWORD NULL")
+
+
+def test_briefbogen_nur_der_eigenen_einheit(orgs):
+    """Gesamtaudit 13.11., V-02: Auch ohne Filter gibt die Datenbank keinen fremden Briefbogen
+    heraus; ``ensure`` legt ihn trotzdem für die gewünschte Einheit an (z. B. beim Erben)."""
+    from letterhead.data import ensure
+    from letterhead.models import Letterhead
+
+    with as_app_role():
+        with tenant_context(orgs["a"].pk):
+            ensure(orgs["a"])
+            # Die übergeordnete oder eine andere Einheit: Der Aufrufer wählt sie bewusst
+            fremd = ensure(orgs["b"])
+            assert fremd.organization_id == orgs["b"].pk
+            assert list(Letterhead.objects.values_list("organization_id", flat=True)) == [
+                orgs["a"].pk
+            ]
+            assert Letterhead.objects.filter(pk=fremd.pk).update(tagline="x") == 0
+        with tenant_context(orgs["b"].pk):
+            assert Letterhead.objects.get().tagline != "x"
