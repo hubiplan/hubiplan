@@ -60,6 +60,8 @@ export interface JoinSchema {
   min_age: number | null
   /** Link „Mitarbeiter melden“: Name der Firma, die den Beitrag zahlt */
   company?: string | null
+  /** Gemeldete Person aus dem Link der Firma (Vorbelegung) */
+  invite?: { first_name: string; last_name: string; email: string } | null
   challenge?: { token: string; salt: string; difficulty: number }
   key?: string
   kiosk?: string

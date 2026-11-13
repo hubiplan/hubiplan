@@ -144,12 +144,17 @@ const joinSchema: Partial<JoinSchema> = {
 
 describe('Online-Antrag mit Link der Firma', () => {
   it('füllt Name und Mail vor und zeigt, wer den Beitrag zahlt', async () => {
-    const schema = joinSchema
+    // Name und Mail kommen aus dem verschlüsselten Link über den Server, nicht aus der
+    // Adresse (Gesamtaudit 13.11. S-01)
+    const schema = {
+      ...joinSchema,
+      invite: { first_name: 'Tom', last_name: 'Muster', email: 'tom@example.org' },
+    }
     fakeApi({
       [SESSION]: () => ({ status: 401, body: { status: 401, data: { flows: [] } } }),
       'GET /api/public/join/abc/?lang=de&firma=tok': () => ({ status: 200, body: schema }),
     })
-    renderAt('/mitglied-werden/abc?firma=tok&vorname=Tom&name=Muster&mail=tom%40example.org')
+    renderAt('/mitglied-werden/abc?firma=tok')
     expect(
       await screen.findByText('Den Mitgliedsbeitrag zahlt Musterbau GmbH.'),
     ).toBeInTheDocument()
@@ -180,6 +185,23 @@ describe('Online-Antrag mit Link der Firma', () => {
     expect(within(first).getByLabelText(/^Geburtsdatum/)).toBeInTheDocument()
     await user.click(within(first).getByRole('button', { name: 'Entfernen' }))
     expect(within(section).queryByRole('group', { name: 'Familienmitglied 1' })).toBeNull()
+  })
+
+  it('fragt bei freiwilligem, leerem Geburtsdatum nach der Volljährigkeit', async () => {
+    const user = userEvent.setup()
+    const schema = {
+      ...joinSchema,
+      company: null,
+      fields: { ...joinSchema.fields!, birth_date: 'optional' as const },
+    }
+    fakeApi({
+      [SESSION]: () => ({ status: 401, body: { status: 401, data: { flows: [] } } }),
+      'GET /api/public/join/abc/?lang=de': () => ({ status: 200, body: schema }),
+    })
+    renderAt('/mitglied-werden/abc')
+    expect(await screen.findByRole('group', { name: 'Bist du volljährig?' })).toBeInTheDocument()
+    await user.type(screen.getByLabelText(/^Geburtsdatum/), '1990-05-01')
+    expect(screen.queryByRole('group', { name: 'Bist du volljährig?' })).toBeNull()
   })
 
   it('ohne Einstellung kein Familienantrag', async () => {

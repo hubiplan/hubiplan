@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import datetime
 
-from django.core.cache import cache
 from django.db import transaction
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -22,6 +21,7 @@ from rest_framework.views import APIView
 
 from access.modules import module_on
 from audit.log import current_via, record
+from core.ratelimit import too_many
 from core.tenancy import rls_bypass, unit_context
 
 from . import services
@@ -121,11 +121,10 @@ class _StandPublic(APIView):
     permission_classes = [AllowAny]
 
     def resolve(self, token: str) -> StandAccess:
-        key = f"stand:{hash_token(token)[:32]}"
-        count = cache.get(key, 0)
-        if count >= RATE[0]:
+        # Festes Zeitfenster: Früher verlängerte jeder Aufruf die Laufzeit des Zählers, er
+        # lief im Dauerbetrieb nie ab und sperrte das Tablet (Gesamtaudit 13.11. K-01)
+        if too_many(f"stand:{hash_token(token)[:32]}", RATE[0], RATE[1]):
             raise ValidationError(gettext("Zu viele Aufrufe. Bitte kurz warten."))
-        cache.set(key, count + 1, RATE[1])
         with rls_bypass():
             access = (
                 StandAccess.objects.select_related("competition", "organization")

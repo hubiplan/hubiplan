@@ -11432,6 +11432,30 @@ msgid ""
 "anfordern."
 msgstr "The company link has expired. Please ask the company for a new one."
 
+msgid ""
+"Dieser Link gilt nur für die Mailadresse, an die er geschickt wurde. Bitte "
+"diese Adresse angeben oder bei der Firma einen neuen Link anfordern."
+msgstr ""
+"This link is only valid for the email address it was sent to. Please enter "
+"that address or ask the company for a new link."
+
+msgid ""
+"Bitte nur Buchstaben, Leerzeichen, Bindestrich, Punkt und Apostroph."
+msgstr "Please use only letters, spaces, hyphens, full stops and apostrophes."
+
+msgid ""
+"An diese Adresse ging heute schon eine Meldung. Bitte morgen erneut."
+msgstr ""
+"A report has already been sent to this address today. Please try again "
+"tomorrow."
+
+msgid ""
+"Heute wurden schon sehr viele Mitarbeiter gemeldet. Bitte morgen erneut oder "
+"direkt beim Verein melden."
+msgstr ""
+"A large number of employees have already been reported today. Please try "
+"again tomorrow or contact the club directly."
+
 msgid "Beitrag zahlt"
 msgstr "Fee paid by"
 
