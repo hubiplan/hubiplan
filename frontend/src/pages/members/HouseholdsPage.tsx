@@ -295,7 +295,9 @@ function HouseholdCard({
                   </Link>
                   {family && m.role && <span className="badge">{ROLE_LABELS[m.role]}</span>}
                   {billing && m.pays_via && (
-                    <span className="badge">{t('Beitrag über den Haushalt')}</span>
+                    <span className="badge">
+                      {family ? t('Beitrag über den Haushalt') : t('Beitrag über die Firma')}
+                    </span>
                   )}
                 </span>
                 <span className="muted small">
@@ -316,7 +318,11 @@ function HouseholdCard({
                       className="link-button"
                       onClick={() => void togglePays(m)}
                     >
-                      {m.pays_via ? t('Beitrag einzeln') : t('Beitrag über den Haushalt')}
+                      {m.pays_via
+                        ? t('Beitrag einzeln')
+                        : family
+                          ? t('Beitrag über den Haushalt')
+                          : t('Beitrag über die Firma')}
                     </button>
                   )}
                   <button type="button" className="link-button" onClick={() => void end(m)}>
@@ -493,7 +499,7 @@ function AddMember({
       />
       {billing && (
         <Checkbox
-          label={t('Beitrag über den Haushalt')}
+          label={family ? t('Beitrag über den Haushalt') : t('Beitrag über die Firma')}
           hint={t('Der Beitrag steht dann auf der Rechnung an den Zahler.')}
           checked={paysVia}
           onChange={setPaysVia}
