@@ -457,6 +457,39 @@ def test_fotos_und_upload_link_unter_rls(orgs, board_a, board_b, api, client, se
         assert PhotoUploadLink.objects.count() == 0
 
 
+def test_webseiten_hochladelink_unter_rls(orgs, board_a, client, settings, tmp_path):
+    """Öffentlicher Hochladelink in der RLS-Rolle: 201 und richtiger Rest (#413)."""
+    import io
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image
+
+    from website.models import ImageUploadLink, Website, WebsiteImage
+
+    settings.PRIVATE_ROOT = tmp_path / "private"
+    org = orgs["a"]
+    org.enabled_modules = [*org.enabled_modules, "website"]
+    org.save()
+    site = Website.objects.create(organization=org, public_key="rls-hochladen")
+    link, secret = ImageUploadLink.create(site, board_a, "")
+
+    def img():
+        buf = io.BytesIO()
+        Image.new("RGB", (300, 200), "blue").save(buf, "PNG")
+        return SimpleUploadedFile("bild.png", buf.getvalue(), content_type="image/png")
+
+    with as_app_role():
+        resp = client.post(f"/api/public/website-images/{secret}/", {"file": img()})
+        assert resp.status_code == 201, resp.content
+        assert resp.json()["remaining"] == link.max_files - 1
+        assert client.get(f"/api/public/website-images/{secret}/").json()["remaining"] == (
+            link.max_files - 1
+        )
+    with as_app_role(), tenant_context(orgs["b"].pk):
+        assert ImageUploadLink.objects.count() == 0
+        assert WebsiteImage.objects.count() == 0
+
+
 @pytest.mark.django_db(transaction=True)
 def test_anmeldung_als_app_rolle_ohne_superuser_rechte():
     """Im Betrieb meldet sich die Anwendung direkt als hubiplan_app an.
