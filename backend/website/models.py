@@ -217,8 +217,20 @@ def normalize_home_sections(value) -> list:
     return normalize(value, HOME_SECTIONS, DEFAULT_HOME_OFF)
 
 
-# Was der Entwurf der Gestaltung umfasst (Design, Farbrollen, Stilregler, Kopfbild, Startseite)
-DRAFT_FIELDS = ("design", "color_roles", "style", "header_image", "home_sections", "layouts")
+# Was der Entwurf der Gestaltung umfasst (Design, Farbrollen, Stilregler, Kopfbild, Startseite,
+# Darstellung und seit W2 der KI-Schnittstelle auch das Menü mit Namen, Links und Knopf)
+MENU_DRAFT_FIELDS = ("menu", "block_names", "menu_links", "menu_button")
+DRAFT_FIELDS = (
+    "design",
+    "color_roles",
+    "style",
+    "header_image",
+    "home_sections",
+    "layouts",
+    *MENU_DRAFT_FIELDS,
+)
+# Bilder per Adresse für KI-Assistenten (W3): höchstens so viele erlaubte Server
+MAX_IMAGE_HOSTS = 10
 DESIGN_VERSIONS = 5  # wie bei den Texten: die letzten 5 veröffentlichten Fassungen
 
 
@@ -300,6 +312,11 @@ class Website(models.Model):
         "Alben sortieren nach", max_length=20, default="date_desc", blank=True
     )
     color_roles = models.JSONField("Farbzuordnung je Design", default=dict, blank=True)
+    # Server, von denen ein KI-Assistent Bilder per Adresse holen darf (W3, docs/mcp.md);
+    # leer = keine. Nur Rechnernamen, z. B. ``cloud.example.org``
+    image_hosts = models.JSONField(
+        "Erlaubte Bildquellen für KI-Assistenten", default=list, blank=True, db_default=[]
+    )
     name_format = models.CharField(
         "Namensform", max_length=10, choices=NameFormat.choices, default=NameFormat.FULL
     )
@@ -595,6 +612,63 @@ class PreviewLink(models.Model):
         return link, token
 
 
+UPLOAD_LINK_MINUTES = 30
+UPLOAD_LINK_MAX_FILES = 20
+
+
+class ImageUploadLink(models.Model):
+    """Persönlicher Link zum Hochladen von Bildern in die Bilderverwaltung (W2, docs/mcp.md).
+
+    Ein KI-Assistent legt ihn an, die Person öffnet ihn auf Handy oder PC und wählt Fotos;
+    die Dateien gehen nie über den Anbieter des Assistenten. Kurz gültig, höchstens
+    ``max_files`` Bilder, gespeichert wird nur der Hash."""
+
+    organization = models.ForeignKey(
+        "organizations.Organization", on_delete=models.CASCADE, related_name="+"
+    )
+    website = models.ForeignKey(Website, on_delete=models.CASCADE, related_name="upload_links")
+    token_hash = models.CharField(max_length=64, unique=True)
+    # Wem die Bilder zugerechnet werden (die Person hinter dem Assistenten)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
+    )
+    via = models.CharField("angelegt über", max_length=120, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField("gültig bis")
+    max_files = models.PositiveSmallIntegerField(default=UPLOAD_LINK_MAX_FILES)
+    uploaded = models.PositiveSmallIntegerField(default=0)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Link zum Hochladen von Bildern"
+        verbose_name_plural = "Links zum Hochladen von Bildern"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Hochladelink {self.pk}"
+
+    @property
+    def is_open(self) -> bool:
+        return (
+            self.revoked_at is None
+            and self.expires_at > timezone.now()
+            and self.uploaded < self.max_files
+        )
+
+    @classmethod
+    def create(cls, website: Website, user, via: str = "") -> tuple[ImageUploadLink, str]:
+        token = secrets.token_urlsafe(32)
+        link = cls.objects.create(
+            organization=website.organization,
+            website=website,
+            token_hash=hash_token(token),
+            created_by=user,
+            via=via[:120],
+            expires_at=timezone.now() + datetime.timedelta(minutes=UPLOAD_LINK_MINUTES),
+        )
+        return link, token
+
+
 class DesignVersion(models.Model):
     """Veröffentlichte Gestaltung (Werte aus DRAFT_FIELDS), die letzten fünf bleiben."""
 
@@ -699,4 +773,4 @@ from .content_models import (  # noqa: E402, F401
     WebsiteRevision,
     WebsiteText,
 )
-from .social_models import SocialFeed, SocialPost, SocialPostImage  # noqa: E402, F401
+from .social_models import SocialDraft, SocialFeed, SocialPost, SocialPostImage  # noqa: E402, F401

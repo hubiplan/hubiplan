@@ -11,6 +11,7 @@ import { confirmDialog } from '../../components/dialog.ts'
 import { errorMessage, formatDate, formatDateTime, useLoad } from '../../components/forms.ts'
 import { Alert, Checkbox, Field, LoadError, SelectField, Loading } from '../../components/ui.tsx'
 import { SocialLinksPanel } from '../../components/SocialLinksPanel.tsx'
+import { SocialDrafts } from './SocialDrafts.tsx'
 import { PERM } from '../../api/orgs.ts'
 import { useActiveOrg } from '../../org/OrgContext.tsx'
 import { Why } from '../../learning/Aids.tsx'
@@ -83,6 +84,7 @@ export function SocialPage() {
             </div>
           ))}
       </div>
+      <SocialDrafts />
       {data.can_manage && <SetupGuide redirectUri={data.redirect_uri} />}
     </>
   )

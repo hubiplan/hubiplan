@@ -50,7 +50,10 @@ def owner_of(org: Organization) -> tuple[Organization, Imprint]:
 
 
 def representatives(org: Organization) -> list[dict]:
-    """Heutige Inhaber der Rollen mit „vertritt die Einheit“ (Name und Funktion)."""
+    """Heutige Inhaber der Rollen mit „vertritt die Einheit“ (Name und Funktion).
+
+    Reihenfolge wie unter Einstellungen › Rollen (per Ziehen festgelegt), nicht alphabetisch.
+    """
     from access.models import RoleAssignment
 
     with rls_bypass():
@@ -58,7 +61,7 @@ def representatives(org: Organization) -> list[dict]:
             RoleAssignment.objects.active()
             .filter(organization=org, role__represents=True)
             .select_related("role", "user", "person")
-            .order_by("role__name", "valid_from")
+            .order_by("role__position", "role__name", "valid_from")
         )
         result, seen = [], set()
         for row in rows:

@@ -11543,3 +11543,406 @@ msgstr "withdrawn"
 
 msgid "Bitte bestätige, dass du kündigen möchtest."
 msgstr "Please confirm that you want to cancel."
+
+msgid "Abschnittsarten und Auswahl"
+msgstr "Section types and choices"
+
+msgid ""
+"Arten eigener Abschnitte mit ihren Feldern und die Nummern, auf die sie "
+"verweisen können (Rollen, Alben, Termine, Orte, Kategorien, Dokumente). "
+"Bilder: webseite_bilder."
+msgstr ""
+"Types of custom sections with their fields and the numbers they can refer "
+"to (roles, albums, events, places, categories, documents). Images: "
+"webseite_bilder."
+
+msgid "Aufbau der Startseite geändert."
+msgstr "Home page layout changed."
+
+msgid "Aufbau der Startseite ändern (Entwurf)"
+msgstr "Change home page layout (draft)"
+
+msgid "Bereich → Variante oder null."
+msgstr "Area → variant or null."
+
+msgid ""
+"Beschreibe nur, was zu sehen ist. Erkenne oder benenne keine Personen; "
+"Namen kommen nur aus HUBIplan."
+msgstr ""
+"Describe only what can be seen. Do not recognise or name people; names come "
+"only from HUBIplan."
+
+msgid "Bild als Nummer {pk} in der Bilderverwaltung gespeichert ({markdown})."
+msgstr "Image saved to the media library as number {pk} ({markdown})."
+
+msgid "Bild ansehen"
+msgstr "View image"
+
+msgid "Bild beschreiben"
+msgstr "Describe image"
+
+msgid "Bild nicht erreichbar: {x}"
+msgstr "Image not reachable: {x}"
+
+msgid "Bild von einer Adresse holen"
+msgstr "Fetch image from an address"
+
+msgid ""
+"Bilder der Webseite (neueste zuerst). Ansehen mit bild_ansehen, Texte dazu "
+"mit bild_beschreiben. In Texten mit der Markdown-Zeile einbinden, in "
+"Abschnitten mit der Nummer."
+msgstr ""
+"Website images (newest first). View with bild_ansehen, add texts with "
+"bild_beschreiben. Embed in texts with the Markdown line, in sections with "
+"the number."
+
+msgid ""
+"Bilder der Webseite. In Texten mit der Markdown-Zeile einbinden. Neue "
+"Bilder: bild_hochladen_vorbereiten liefert einen Link zum Hochladen."
+msgstr ""
+"Website images. Embed them in texts with the Markdown line. New images: "
+"bild_hochladen_vorbereiten returns an upload link."
+
+msgid "Bilder suchen"
+msgstr "Search images"
+
+msgid "Bildnummer oder null (Wappen und Name)."
+msgstr "Image number or null (crest and name)."
+
+msgid "Bildunterschrift und Quelle sind zusammen zu lang."
+msgstr "Caption and source are too long together."
+
+msgid "Bitte alternativtext oder bildunterschrift angeben."
+msgstr "Please give alternativtext or bildunterschrift."
+
+msgid "Bitte angeben, was sich am Aufbau ändern soll."
+msgstr "Please say what should change in the layout."
+
+msgid "Bitte angeben, was sich am Menü ändern soll."
+msgstr "Please say what should change in the menu."
+
+msgid "Bitte angeben, was sich ändern soll (design, stil, farben, …)."
+msgstr "Please say what should change (design, stil, farben, …)."
+
+msgid "Bitte die Server als Liste angeben."
+msgstr "Please give the servers as a list."
+
+msgid "Bitte eine vollständige https-Adresse angeben."
+msgstr "Please give a complete https address."
+
+msgid "Bitte nur Rechnernamen angeben, z. B. cloud.example.org: {host}"
+msgstr "Please give host names only, e.g. cloud.example.org: {host}"
+
+msgid ""
+"Das Bild ist schon in Gebrauch und hat einen {name}. Den ändert jemand in "
+"HUBIplan unter Webseite › Bilder."
+msgstr ""
+"The image is already in use and has a {name}. Someone changes it in "
+"HUBIplan under Website › Images."
+
+msgid "Das Bild ist schon in Gebrauch; der neue Text gilt dort sofort."
+msgstr "The image is already in use; the new text applies there immediately."
+
+msgid "Der Server antwortet mit {status}."
+msgstr "The server responds with {status}."
+
+msgid ""
+"Design, Farben, Stilregler, Darstellung der Bereiche und Kopfbild im "
+"Entwurf, mit allen erlaubten Werten."
+msgstr ""
+"Design, colours, style controls, area layouts and header image in the "
+"draft, with all allowed values."
+
+msgid "Diesen Abschnitt gibt es nicht: {key}"
+msgstr "This section does not exist: {key}"
+
+msgid "Dieses Bild gibt es nicht."
+msgstr "This image does not exist."
+
+msgid "Ein Link braucht eine „adresse“ mit https://."
+msgstr "A link needs an “adresse” with https://."
+
+msgid "Entfernen geht nur bei eigenen Abschnitten: {key}"
+msgstr "Only custom sections can be removed: {key}"
+
+msgid ""
+"Entwurf {pk} gespeichert. Die Person findet ihn in HUBIplan unter Webseite "
+"› Social Media, kopiert Text und Bilder und postet selbst; HUBIplan "
+"veröffentlicht nichts bei Instagram oder Facebook."
+msgstr ""
+"Draft {pk} saved. The person finds it in HUBIplan under Website › Social "
+"media, copies text and images and posts it themselves; HUBIplan publishes "
+"nothing on Instagram or Facebook."
+
+msgid "Entwürfe für Social-Media-Beiträge, neueste zuerst."
+msgstr "Drafts for social media posts, newest first."
+
+msgid ""
+"Farbrolle → Palettenplatz, „dark“, „light“, g0, g1 oder null (für das "
+"gewählte Design)."
+msgstr ""
+"Colour role → palette slot, “dark”, “light”, g0, g1 or null (for the chosen "
+"design)."
+
+msgid ""
+"Gespeichert. Öffentlich wird das Bild erst, wenn es in einem "
+"veröffentlichten Text oder Abschnitt steht."
+msgstr ""
+"Saved. The image only becomes public once it is in a published text or "
+"section."
+
+msgid "Gestaltung ansehen"
+msgstr "View design"
+
+msgid "Gestaltung geändert ({keys})."
+msgstr "Design changed ({keys})."
+
+msgid ""
+"Gestaltung im Entwurf. Farben: Palettenplatz (Zahl), „dark“, „light“ oder "
+"ein Verlauf (g0, g1, nur wo verlauf_moeglich). Stilregler: Stufe aus "
+"stilregler, „switch“ heißt ja/nein, null setzt auf das Design zurück."
+msgstr ""
+"Design in the draft. Colours: palette slot (number), “dark”, “light” or a "
+"gradient (g0, g1, only where verlauf_moeglich). Style controls: level from "
+"stilregler, “switch” means yes/no, null resets to the design."
+
+msgid "Gestaltung ändern (Entwurf)"
+msgstr "Change design (draft)"
+
+msgid ""
+"HUBIplan, eine freie Vereinsverwaltung. Diese Verbindung gilt für genau "
+"eine Einheit und darf nie mehr als die Person, die sie erlaubt hat. Die "
+"Webseite lässt sich lesen und als Entwurf bearbeiten (Texte, Startseite, "
+"Gestaltung, Menü, neue Textseiten). Bilder kommen über einen Hochladelink "
+"oder von freigegebenen Servern; Beiträge für soziale Medien werden nur als "
+"Entwurf abgelegt. Veröffentlichen, Zustand und Domains gibt es hier nicht; "
+"das macht ein Mensch in HUBIplan. Nach Änderungen webseite_vorschau "
+"anbieten. Für Fragen zur Bedienung die Hilfe-Werkzeuge nutzen."
+msgstr ""
+"HUBIplan, a free club management system. This connection applies to exactly "
+"one unit and may never do more than the person who allowed it. The website "
+"can be read and edited as a draft (texts, home page, design, menu, new text "
+"pages). Images come via an upload link or from approved servers; social "
+"media posts are only stored as drafts. Publishing, status and domains are "
+"not available here; a person does that in HUBIplan. Offer webseite_vorschau "
+"after changes. Use the help tools for questions about using HUBIplan."
+
+msgid "Hauptpunkt als Knopf; leer = keiner."
+msgstr "Main item shown as a button; empty = none."
+
+msgid ""
+"Hauptpunkte in neuer Reihenfolge; fehlende kommen an ihren Standardplatz."
+msgstr "Main items in the new order; missing ones go to their default place."
+
+msgid ""
+"Holt ein JPG-, PNG- oder WebP-Bild von einem Server, den die Einheit "
+"freigegeben hat (Webseite › Internetadresse), in die Bilderverwaltung. Quelle und "
+"Lizenz sind Pflicht und kommen in die Bildunterschrift."
+msgstr ""
+"Fetches a JPG, PNG or WebP image from a server the unit has approved "
+"(Website › Web address) into the media library. Source and licence are required "
+"and go into the caption."
+
+msgid "Höchstens {n} Server."
+msgstr "At most {n} servers."
+
+msgid ""
+"Im Entwurf gespeichert. Sichtbar ist es erst, wenn jemand den Entwurf in "
+"HUBIplan unter Webseite veröffentlicht. Ansehen mit webseite_vorschau."
+msgstr ""
+"Saved in the draft. It only becomes visible once someone publishes the "
+"draft in HUBIplan under Website. View it with webseite_vorschau."
+
+msgid "Jeder Menüpunkt braucht einen „schluessel“."
+msgstr "Every menu item needs a “schluessel”."
+
+msgid ""
+"Legt einen Entwurf für Instagram oder Facebook an (Text und Bilder aus der "
+"Bilderverwaltung). Gepostet wird von Hand; HUBIplan veröffentlicht nichts "
+"bei Meta."
+msgstr ""
+"Creates a draft for Instagram or Facebook (text and images from the media "
+"library). Posting is done by hand; HUBIplan publishes nothing on Meta."
+
+msgid ""
+"Liefert einen persönlichen Link (30 Minuten, bis 20 Bilder), über den die "
+"Person Fotos in die Bilderverwaltung lädt, ohne sie in den Chat zu geben."
+msgstr ""
+"Returns a personal link (30 minutes, up to 20 images) through which the "
+"person uploads photos to the media library without putting them into the "
+"chat."
+
+msgid ""
+"Link zum Hochladen (gültig bis {until}, höchstens {n} Bilder): {url}\n"
+"\n"
+"Gib den Link der Person weiter. Sie öffnet ihn auf Handy oder PC und wählt "
+"Fotos; die Dateien gehen nicht über den Chat. Danach findest du die neuen "
+"Bilder mit webseite_bilder."
+msgstr ""
+"Upload link (valid until {until}, at most {n} images): {url}\n"
+"\n"
+"Pass the link on to the person. They open it on a phone or PC and choose "
+"photos; the files do not go through the chat. Afterwards you find the new "
+"images with webseite_bilder."
+
+msgid "Link zum Hochladen von Bildern"
+msgstr "Link for uploading images"
+
+msgid "Listet die Entwürfe für Social-Media-Beiträge."
+msgstr "Lists the drafts for social media posts."
+
+msgid "Menü ansehen"
+msgstr "View menu"
+
+msgid ""
+"Menü der Webseite im Entwurf: Reihenfolge, Unterpunkte, Namen, Links nach "
+"außen und der als Knopf hervorgehobene Punkt."
+msgstr ""
+"Website menu in the draft: order, sub-items, names, external links and the "
+"item highlighted as a button."
+
+msgid "Menü geändert."
+msgstr "Menu changed."
+
+msgid ""
+"Menü im Entwurf (zwei Ebenen). „an“: Baustein eingeschaltet; ein- und "
+"ausschalten geht nur in HUBIplan. Ändern mit webseite_menue_aendern."
+msgstr ""
+"Menu in the draft (two levels). “an”: block switched on; switching on and "
+"off is only possible in HUBIplan. Change with webseite_menue_aendern."
+
+msgid "Menü ändern (Entwurf)"
+msgstr "Change menu (draft)"
+
+msgid "Namen höchstens 60 Zeichen."
+msgstr "Names at most 60 characters."
+
+msgid "Neue Abschnitte brauchen eine „art“."
+msgstr "New sections need an “art”."
+
+msgid "Neue Punkte brauchen einen Namen (höchstens 60 Zeichen)."
+msgstr "New items need a name (at most 60 characters)."
+
+msgid "Neue Punkte: art „ueberschrift“ oder „link“ mit name."
+msgstr "New items: art “ueberschrift” or “link” with name."
+
+msgid ""
+"Neue eigene Abschnitte, Reihenfolge, an/aus, Aussehen und Entfernen eigener "
+"Abschnitte im Entwurf. Felder je Art: startseite_bausteine. Braucht das "
+"Recht „Webseite verwalten“."
+msgstr ""
+"New custom sections, order, on/off, look and removal of custom sections in "
+"the draft. Fields per type: startseite_bausteine. Needs the “Manage "
+"website” permission."
+
+msgid ""
+"Ordnet das Menü im Entwurf: Reihenfolge mit Unterpunkten, eigene Namen, "
+"neue Überschriften und Links nach außen, Knopf. Bausteine ein- oder "
+"ausschalten geht nur in HUBIplan. Braucht das Recht „Webseite verwalten“."
+msgstr ""
+"Arranges the menu in the draft: order with sub-items, custom names, new "
+"headings and external links, button. Switching blocks on or off is only "
+"possible in HUBIplan. Needs the “Manage website” permission."
+
+msgid "Quelle: {source}"
+msgstr "Source: {source}"
+
+msgid "Schlüssel des Abschnitts davor; leer = ganz oben, fehlt = ganz unten."
+msgstr ""
+"Key of the section before it; empty = at the top, missing = at the bottom."
+
+msgid "Schlüssel eines Links → https-Adresse."
+msgstr "Key of a link → https address."
+
+msgid "Schlüssel → eigener Name; leer = Standardname."
+msgstr "Key → custom name; empty = default name."
+
+msgid ""
+"Schlüssel → {hintergrund, breite, spalte}, Werte aus startseite_bausteine."
+msgstr "Key → {hintergrund, breite, spalte}, values from startseite_bausteine."
+
+msgid ""
+"Setzt Alternativtext und/oder Bildunterschrift eines Bildes. Bei Bildern, "
+"die schon auf der Webseite stehen, nur, wenn der Text noch fehlt."
+msgstr ""
+"Sets the alternative text and/or caption of an image. For images already on "
+"the website, only if the text is still missing."
+
+msgid "Social-Media-Beitrag entwerfen"
+msgstr "Draft social media post"
+
+msgid "Social-Media-Entwürfe"
+msgstr "Social media drafts"
+
+msgid "Stilregler → Stufe, ja/nein oder null."
+msgstr "Style control → level, yes/no or null."
+
+msgid ""
+"Sucht Bilder der Webseite nach Bildunterschrift, Alternativtext, Dateiname "
+"und Untereinheit; ohne Suchwort alle."
+msgstr ""
+"Searches website images by caption, alternative text, file name and "
+"sub-unit; without a search term, all of them."
+
+msgid "Texte zu Bild {pk} gespeichert."
+msgstr "Texts for image {pk} saved."
+
+msgid "Unter dieser Adresse liegt kein JPG-, PNG- oder WebP-Bild."
+msgstr "There is no JPG, PNG or WebP image at this address."
+
+msgid "Urheber und Lizenz, z. B. „Foto: Verein“."
+msgstr "Author and licence, e.g. “Photo: club”."
+
+msgid ""
+"Von {host} dürfen keine Bilder geholt werden. Erlaubte Server stehen unter "
+"Webseite › Internetadresse › Bilder für KI-Assistenten."
+msgstr ""
+"Images may not be fetched from {host}. Allowed servers are listed under "
+"Website › Web address › Images for AI assistants."
+
+msgid ""
+"Webseite als Entwurf bearbeiten: Texte, Startseite, Gestaltung und Menü "
+"ändern, neue Textseiten anlegen, Bilder hinzufügen und beschreiben, "
+"Beiträge für soziale Medien vorbereiten (veröffentlicht wird nur in "
+"HUBIplan)"
+msgstr ""
+"Edit the website as a draft: change texts, home page, design and menu, "
+"create new text pages, add and describe images, prepare social media posts "
+"(publishing happens only in HUBIplan)"
+
+msgid ""
+"Welche eigenen Abschnitte es gibt, welche Felder sie haben und welche "
+"Rollen, Alben, Termine, Orte, Kategorien und Dokumente sie zeigen können."
+msgstr ""
+"Which custom sections exist, which fields they have and which roles, "
+"albums, events, places, categories and documents they can show."
+
+msgid ""
+"Zeigt ein Bild der Webseite in kleiner Größe, z. B. um einen Alternativtext "
+"vorzuschlagen."
+msgstr ""
+"Shows a website image in a small size, e.g. to suggest an alternative text."
+
+msgid "beliebig"
+msgstr "any"
+
+msgid ""
+"Ändert Design, Farben, Stilregler, Darstellung oder Kopfbild im Entwurf. "
+"Nur angegebene Werte ändern sich; null setzt einen Wert zurück. Werte aus "
+"webseite_gestaltung_ansehen. Braucht das Recht „Webseite verwalten“."
+msgstr ""
+"Changes design, colours, style controls, layout or header image in the "
+"draft. Only the given values change; null resets a value. Values from "
+"webseite_gestaltung_ansehen. Needs the “Manage website” permission."
+
+msgid "„%(name)s“ muss ein Objekt sein."
+msgstr "“%(name)s” must be an object."
+
+msgid "„%(name)s“ muss eine Liste sein."
+msgstr "“%(name)s” must be a list."
+
+msgid "„bilder“ ist eine Liste von Bildnummern."
+msgstr "“bilder” is a list of image numbers."
+
+msgid "„reihenfolge“ muss eine Liste sein."
+msgstr "“reihenfolge” must be a list."
