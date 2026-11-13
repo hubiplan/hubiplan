@@ -81,8 +81,7 @@ OFFEN = {
 
 def _fehlend() -> set[str]:
     source = "".join(
-        p.read_text(encoding="utf-8")
-        for p in Path(tables.__file__).parent.glob("*.py")
+        p.read_text(encoding="utf-8") for p in Path(tables.__file__).parent.glob("*.py")
     )
     have = {m.lower() for m in tables.MODULE_MODELS}
     missing = set()
