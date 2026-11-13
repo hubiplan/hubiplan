@@ -18,11 +18,14 @@ export function DraftBar({
   auto,
   canManage,
   onReset,
+  sticky = false,
 }: {
   website: Website
   auto: AutoSave
   canManage: boolean
   onReset: (data: WebsiteData) => void
+  /** oben unter der Kopfzeile angeheftet (lange Seiten wie Webseite › Aufbau) */
+  sticky?: boolean
 }) {
   const org = useActiveOrg()
   const [busy, setBusy] = useState(false)
@@ -35,7 +38,7 @@ export function DraftBar({
     // Entwurf mit Gestaltungsänderungen: veröffentlichen kann nur die Webseitenverwaltung
     if (!open) return null
     return (
-      <div className="draft-bar draft-bar-open" role="status">
+      <div className={`draft-bar draft-bar-open${sticky ? ' draft-bar-sticky' : ''}`} role="status">
         <span>
           {t(
             'Der Entwurf ändert auch die Gestaltung. Veröffentlichen kann ihn nur, wer die Webseite verwaltet.',
@@ -81,7 +84,10 @@ export function DraftBar({
   }
 
   return (
-    <div className={`draft-bar${open ? ' draft-bar-open' : ''}`} role="status">
+    <div
+      className={`draft-bar${open ? ' draft-bar-open' : ''}${sticky ? ' draft-bar-sticky' : ''}`}
+      role="status"
+    >
       <span>
         {open
           ? t('Nicht veröffentlichte Änderungen. Besucher sehen noch den bisherigen Stand.')
@@ -98,7 +104,7 @@ export function DraftBar({
           </button>
           <button
             type="button"
-            className="button"
+            className="button button-primary"
             disabled={busy}
             onClick={() =>
               void run(() =>

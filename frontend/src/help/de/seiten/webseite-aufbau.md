@@ -22,6 +22,8 @@ stichworte:
 
 Hier legt ihr fest, welche Bereiche die Webseite hat, etwa Termine, {pl}, Chronik oder Kontakt, wie sie im Menü heißen und in welcher Reihenfolge sie erscheinen.
 
+Nicht veröffentlichte Änderungen: Liegt ein Entwurf vor, steht ganz oben die Leiste „Nicht veröffentlichte Änderungen“ mit **Veröffentlichen** und **Verwerfen**. Sie bleibt beim Scrollen unter der Kopfzeile sichtbar.
+
 Mitglieder: Die Überschrift „Mitglieder“ hat eine Liste je Mitgliedsart, zum Beispiel „Aktive“ und „Passive“. Jede Liste schaltet ihr einzeln ein, mit dem Stift gebt ihr ihr einen Namen. Die Listen zeigen die heutigen Mitglieder nach Nachnamen, mit Eintrittsjahr und auf Wunsch mit Hauptinstrument (Einstellungen unter „Personen“). Es erscheinen nur Mitglieder, die eingewilligt haben: in der Mitgliederakte im Reiter „Foto & Webseite“ unter „Veröffentlichung auf der Webseite“ bei „Mitgliederliste“. Wer der Veröffentlichung seines Namens widersprochen hat, fehlt trotzdem. „In Gedenken“ zeigt Mitglieder mit dem Austrittsgrund „Tod“ und dem Todesjahr, aber nur, wenn der Vorstand sie in ihrer Mitgliederakte bei „In Gedenken“ einzeln freigegeben hat; eine Textseite mit der Adresse `in-gedenken` steht als Einleitung darüber.
 
 Eigene Überschriften: „Überschrift hinzufügen“ legt einen Menüpunkt ohne eigene Seite an, zum Beispiel „Kapelle“. Zieht Bereiche darauf, dann werden sie seine Unterpunkte. Ohne Unterpunkte erscheint die Überschrift nicht. Lasst ihr den Namen leer, wird sie beim Speichern entfernt.
@@ -41,3 +43,5 @@ Belegung: „Belegung“ zeigt Infrastruktur und Material, deren Buchungskalende
 Suche: Mit dem Bereich „Suche“ erscheint eine Lupe im Menü. Gesucht wird in Textseiten, Alben, Dokumenten und Terminen, nicht in Personen.
 
 Personen: „Titel vor dem Namen nennen“ setzt den Titel aus der Mitgliedsakte vor den Namen (z. B. „Dr. Max Muster“), bei Vorstand, Listen und Ergebnissen; ausgeschaltet erscheinen Namen ohne Titel. „Hauptinstrument unter dem Namen zeigen“ nimmt das Hauptinstrument aus Musik › Musiker. „Anschrift beim Vorstand zeigen“ gilt nur für Personen mit der Einwilligung „Anschrift“ in der Mitgliederakte.
+
+Termine: Gibt es Untereinheiten, holt ein Häkchen deren öffentliche Termine in den Kalender der Webseite; gibt es übergeordnete Einheiten mit Terminen (z. B. den Dachverband), holt ein zweites deren nach unten freigegebene Termine dazu. Gibt es beides nicht, fehlt der Block „Termine“.

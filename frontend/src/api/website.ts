@@ -395,6 +395,8 @@ export interface WebsiteData {
   home_kind_needs_block?: Partial<Record<HomeKind, string>>
   home_choices?: HomeChoices
   units: { id: number; name: string }[]
+  /** Es gibt Einheiten darüber, deren öffentliche Termine die Webseite zeigen kann */
+  has_parent_units?: boolean
   /** Standarddesigns zur Auswahl (fehlt bei älteren Ständen) */
   designs?: DesignInfo[]
   /** Farben der Einheit: Haupt-, Zweit- und weitere Farben */

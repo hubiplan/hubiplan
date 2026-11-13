@@ -638,6 +638,8 @@ class WebsiteView(_WebsiteMixin, APIView):
             "layout_catalog": variants.catalog(),
             # Designpakete einspielen und freigeben: nur Plattformverwalter
             "can_import_designs": can_import_designs(self.request.user),
+            # Termine-Block: Häkchen „übergeordnete Einheiten“ nur, wenn es sie gibt
+            "has_parent_units": services.has_parent_events(self.org),
             "units": [
                 {"id": u.pk, "name": u.name}
                 for u in services.in_tree_order(services.units_below(self.org))
