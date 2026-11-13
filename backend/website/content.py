@@ -361,15 +361,15 @@ def image_usage(image: WebsiteImage, texts=None) -> list[dict]:
         result.append(
             {"text": None, "album": album.pk, "label": f"Galerie: {album}", "places": places}
         )
-    # Kopfbild (Ralf 05.11.)
+    # Kopfbild (Ralf 05.11.) und Kopfbild für schmale Bildschirme (#73)
+    header_places = []
     if image.header:
+        header_places.append(gettext("Kopfbild"))
+    if image.header_narrow:
+        header_places.append(gettext("Kopfbild für schmale Bildschirme"))
+    if header_places:
         result.append(
-            {
-                "text": None,
-                "header": True,
-                "label": gettext("Gestaltung"),
-                "places": [gettext("Kopfbild")],
-            }
+            {"text": None, "header": True, "label": gettext("Gestaltung"), "places": header_places}
         )
     # Abschnitte der Startseite (G3), veröffentlicht oder im Entwurf
     from .home import image_ids
@@ -421,7 +421,9 @@ def used_image_ids(website) -> set[int]:
         if pk
     )
     used.update(
-        WebsiteImage.objects.filter(website=website, header=True).values_list("pk", flat=True)
+        WebsiteImage.objects.filter(website=website)
+        .filter(models.Q(header=True) | models.Q(header_narrow=True))
+        .values_list("pk", flat=True)
     )
     # Abschnitte der Startseite (G3), auch im Entwurf
     from .home import image_ids

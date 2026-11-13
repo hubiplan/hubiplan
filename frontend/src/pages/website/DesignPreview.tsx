@@ -239,6 +239,7 @@ function stampOf(website: Website): string {
     website.style,
     website.color_roles,
     website.header_image,
+    website.header_image_narrow,
     website.home_sections,
     website.layouts,
   ])
