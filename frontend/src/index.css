@@ -1537,55 +1537,203 @@ label:has(> :is(input, select, textarea):required) > span:first-child::after {
 .color-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--space-2);
   align-items: center;
 }
 
-.color-row input:not([type='color']) {
-  min-width: 8rem;
-}
-
-/* Verläufe (Einstellungen › Erscheinungsbild): Muster, Name, von, nach, Richtung */
-.gradient-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
-  align-items: flex-end;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.gradient-row .field {
-  flex: 1 1 9rem;
-  margin: 0;
-}
-
-.gradient-swatch {
-  flex: 1 1 100%;
-  display: flex;
-  align-items: center;
-  min-height: 2.5rem;
-  padding: 0 0.75rem;
-  border-radius: var(--radius);
-  border: 1px solid var(--color-border);
-  font-weight: 600;
-}
-
-.color-row input[type='color'] {
+.color-row > input[type='color'] {
+  flex: none;
   width: 3rem;
-  height: 2.5rem;
+  height: var(--control-height);
   padding: 0.15rem;
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
   background: var(--color-surface);
 }
 
-.color-row input:not([type='color']) {
-  flex: 1;
-  padding: 0.55rem 0.7rem;
+.color-row > input:not([type='color']) {
+  flex: 0 1 12rem;
+  min-width: 6rem;
+  min-height: var(--control-height);
+  padding: var(--control-padding-y) var(--control-padding-x);
   font: inherit;
   border: 1px solid var(--color-input-border);
   border-radius: var(--radius);
+}
+
+/* Weitere Farben und Verläufe (Einstellungen › Erscheinungsbild): feste Spalten, damit Felder,
+   Kontrasthinweis und Knöpfe aller Zeilen fluchten, egal wie lang der Hinweis ist. Die Breite
+   des Inhaltsbereichs entscheidet (Containerabfrage), nicht die des Fensters. */
+.color-group {
+  container-type: inline-size;
+}
+
+.color-list {
+  display: grid;
+  gap: var(--space-2);
+  margin-block: var(--space-2);
+}
+
+.color-contrast {
+  white-space: nowrap;
+}
+
+.color-row-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Schmal: Farbe und Hex-Wert, darunter Name und Verwendung, darunter Hinweis und Knöpfe */
+.extra-color-row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  grid-template-areas:
+    'farbe hex'
+    'name name'
+    'verwendung verwendung'
+    'kontrast kontrast'
+    'knoepfe knoepfe'
+    'rollen rollen';
+  gap: var(--space-2);
+  align-items: center;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.extra-color-row > input[type='color'] {
+  grid-area: farbe;
+}
+.extra-color-row > input:nth-of-type(2) {
+  grid-area: hex;
+}
+.extra-color-row > input:nth-of-type(3) {
+  grid-area: name;
+}
+.extra-color-row > input:nth-of-type(4) {
+  grid-area: verwendung;
+}
+.extra-color-row > .color-contrast {
+  grid-area: kontrast;
+}
+.extra-color-row > .color-row-actions {
+  grid-area: knoepfe;
+}
+.extra-color-row > .color-roles {
+  grid-area: rollen;
+}
+
+/* Farbrollen je Farbe (Fließtext, Sekundärtext, Flächen, Hintergrund) */
+.color-roles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.color-roles .checkbox {
+  margin: 0;
+}
+/* In .field gälte sonst die Breite der Textfelder auch für die Kästchen */
+.color-roles .checkbox input {
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  margin: 0.1rem 0.15rem;
+}
+.extra-color-row > .color-roles {
+  margin-bottom: 0;
+}
+
+.extra-color-row > input:not([type='color']) {
+  min-width: 0;
+  width: 100%;
+}
+
+@container (min-width: 30rem) {
+  .extra-color-row {
+    grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'farbe hex kontrast'
+      '. name verwendung'
+      '. knoepfe knoepfe'
+      '. rollen rollen';
+  }
+}
+
+/* Breit: alle Zeilen in einem gemeinsamen Raster (subgrid), eine Zeile je Farbe */
+@container (min-width: 52rem) {
+  .color-list:has(> .extra-color-row) {
+    grid-template-columns:
+      3rem minmax(6.5rem, 8rem) minmax(7rem, 1fr) minmax(7rem, 1fr)
+      max-content max-content;
+    column-gap: var(--space-2);
+  }
+  .extra-color-row {
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    grid-template-areas:
+      'farbe hex name verwendung kontrast knoepfe'
+      '. rollen rollen rollen rollen rollen';
+    row-gap: var(--space-1);
+  }
+}
+
+/* Verläufe: oben Muster, Kontrasthinweis und Entfernen, darunter Name, von, nach, Richtung */
+.gradient-row {
+  display: grid;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gradient-row-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.gradient-row-head .gradient-swatch {
+  grid-column: 1 / -1;
+}
+
+.gradient-row-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2) var(--space-3);
+  align-items: start;
+}
+
+.gradient-row-fields .field {
+  margin: 0;
+}
+
+@container (min-width: 30rem) {
+  .gradient-row-head {
+    grid-template-columns: minmax(0, 1fr) max-content max-content;
+  }
+  .gradient-row-head .gradient-swatch {
+    grid-column: auto;
+  }
+  .gradient-row-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 52rem) {
+  .gradient-row-fields {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.gradient-swatch {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  font-weight: 600;
 }
 
 .theme-preview {

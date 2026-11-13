@@ -4,7 +4,14 @@ import type { ChangeEvent } from 'react'
 import { api } from '../../api/client.ts'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import { gradientCss } from '../../api/orgs.ts'
-import type { ExtraColor, GradientSetting, ThemeSettings } from '../../api/orgs.ts'
+import { PALETTE_ROLES } from '../../api/orgs.ts'
+import type {
+  ExtraColor,
+  GradientSetting,
+  PaletteRole,
+  PaletteRoles,
+  ThemeSettings,
+} from '../../api/orgs.ts'
 import {
   Alert,
   Checkbox,
@@ -17,7 +24,7 @@ import {
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { contrastRatio, readableOn, readableOnPair } from '../../theme/contrast.ts'
-import { buttonColors, linkColor, PAGE_BG, TEXT_COLOR } from '../../theme/theme.ts'
+import { appColors, buttonColors, linkColor, PAGE_BG, TEXT_COLOR } from '../../theme/theme.ts'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
 import { t } from '../../i18n/index.ts'
@@ -64,11 +71,40 @@ function ThemeForm({
     primary_color_use: theme.primary_color_use ?? '',
     accent_color_use: theme.accent_color_use ?? '',
     gradients: theme.gradients ?? [],
+    palette_roles: theme.palette_roles ?? ({} as PaletteRoles),
+    palette_roles_in_app: theme.palette_roles_in_app ?? false,
   })
   const eff = theme.effective
   const primary = form.values.primary_color || eff.primary
   const accent = form.values.accent_color || eff.accent
   const buttonPreview = buttonColors(primary, readableOn(primary))
+  const roles = form.values.palette_roles
+  // Jede Rolle hat höchstens eine Farbe: Ankreuzen bei einer Farbe nimmt sie der vorigen
+  const toggleRole = (slot: number, role: PaletteRole, on: boolean) => {
+    const next = { ...roles }
+    if (on) next[role] = slot
+    else if (next[role] === slot) delete next[role]
+    form.set('palette_roles', next)
+  }
+  // Weitere Farben verschoben oder entfernt: Rollen und Verläufe zeigen weiter auf dieselbe Farbe
+  const remapSlots = (map: (slot: number) => number | null) => {
+    const next: PaletteRoles = {}
+    for (const role of PALETTE_ROLES) {
+      const slot = roles[role]
+      const moved = slot === undefined ? null : map(slot)
+      if (moved !== null) next[role] = moved
+    }
+    form.set('palette_roles', next)
+    form.set(
+      'gradients',
+      form.values.gradients.flatMap((g) => {
+        const from = map(g.from)
+        const to = map(g.to)
+        return from === null || to === null ? [] : [{ ...g, from, to }]
+      }),
+    )
+  }
+  const paletteColors = [{ color: primary }, { color: accent }, ...form.values.extra_colors]
 
   const auto = useAutoSave(form, (changes) => orgApi.updateTheme(orgId, changes), {
     enabled: editable,
@@ -123,6 +159,12 @@ function ThemeForm({
               onChange={(v) => form.set('primary_color_use', v)}
             />
           </div>
+          <ColorRoles
+            label={t('Hauptfarbe verwendet für')}
+            slot={0}
+            roles={roles}
+            onToggle={toggleRole}
+          />
           <ColorInput
             label={t('Zweitfarbe (Akzentfarbe)')}
             hint={t('Hervorhebungen')}
@@ -144,11 +186,22 @@ function ThemeForm({
               onChange={(v) => form.set('accent_color_use', v)}
             />
           </div>
+          <ColorRoles
+            label={t('Zweitfarbe verwendet für')}
+            slot={1}
+            roles={roles}
+            onToggle={toggleRole}
+          />
           <ExtraColors
             colors={form.values.extra_colors}
             error={form.errors.extra_colors}
             ownPrimary={Boolean(form.values.primary_color)}
-            onChange={(v) => form.set('extra_colors', v)}
+            roles={roles}
+            onToggleRole={toggleRole}
+            onChange={(v, map) => {
+              form.set('extra_colors', v)
+              if (map) remapSlots(map)
+            }}
           />
           <Gradients
             gradients={form.values.gradients}
@@ -160,6 +213,12 @@ function ThemeForm({
             error={form.errors.gradients}
             ownPrimary={Boolean(form.values.primary_color)}
             onChange={(v) => form.set('gradients', v)}
+          />
+          <AppRoles
+            palette={paletteColors}
+            roles={roles}
+            enabled={form.values.palette_roles_in_app}
+            onChange={(v) => form.set('palette_roles_in_app', v)}
           />
         </fieldset>
 
@@ -474,7 +533,7 @@ function Gradients({
     return p?.name ? `${role} (${p.name})` : role
   }
   return (
-    <div className={`field${error ? ' field-invalid' : ''}`}>
+    <div className={`field color-group${error ? ' field-invalid' : ''}`}>
       <span>{t('Verläufe')}</span>
       <small className="muted">
         {t(
@@ -482,77 +541,84 @@ function Gradients({
         )}
         {!ownPrimary && t(' Verläufe gelten nur zusammen mit einer eigenen Hauptfarbe.')}
       </small>
-      {gradients.map((g, i) => {
-        const a = palette[g.from]?.color
-        const b = palette[g.to]?.color
-        const ok = valid(a) && valid(b)
-        const on = ok ? readableOnPair(a as string, b as string) : '#000000'
-        const ratio = ok
-          ? Math.min(contrastRatio(a as string, on), contrastRatio(b as string, on))
-          : 0
-        return (
-          <div className="gradient-row" key={i}>
-            <span
-              className="gradient-swatch"
-              aria-hidden="true"
-              style={ok ? { background: gradientCss(a!, b!, g.direction), color: on } : undefined}
-            >
-              {g.name || t('Verlauf {x}', { x: i + 1 })}
-            </span>
-            <Field
-              label={t('Name')}
-              value={g.name}
-              maxLength={30}
-              placeholder={t('z. B. Blauverlauf')}
-              onChange={(e) => update(i, { name: e.target.value })}
-            />
-            <SelectField
-              label={t('von')}
-              value={String(g.from)}
-              onChange={(e) => update(i, { from: Number(e.target.value) })}
-            >
-              {palette.map((_, j) => (
-                <option key={j} value={String(j)}>
-                  {slotName(j)}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label={t('nach')}
-              value={String(g.to)}
-              onChange={(e) => update(i, { to: Number(e.target.value) })}
-            >
-              {palette.map((_, j) => (
-                <option key={j} value={String(j)}>
-                  {slotName(j)}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
-              label={t('Richtung')}
-              value={g.direction}
-              onChange={(e) =>
-                update(i, { direction: e.target.value === 'down' ? 'down' : 'right' })
-              }
-            >
-              <option value="right">{t('von links nach rechts')}</option>
-              <option value="down">{t('von oben nach unten')}</option>
-            </SelectField>
-            {ok && (
-              <span className={`small ${ratio >= 4.5 ? 'ok' : 'bad'}`}>
-                {ratio >= 4.5 ? '✓' : '✗'} {t('Text darauf {x} : 1', { x: ratio.toFixed(1) })}
-              </span>
-            )}
-            <button
-              type="button"
-              className="button button-ghost"
-              onClick={() => onChange(gradients.filter((_, j) => j !== i))}
-            >
-              {t('Entfernen')}
-            </button>
-          </div>
-        )
-      })}
+      <div className="color-list">
+        {gradients.map((g, i) => {
+          const a = palette[g.from]?.color
+          const b = palette[g.to]?.color
+          const ok = valid(a) && valid(b)
+          const on = ok ? readableOnPair(a as string, b as string) : '#000000'
+          const ratio = ok
+            ? Math.min(contrastRatio(a as string, on), contrastRatio(b as string, on))
+            : 0
+          return (
+            <div className="gradient-row" key={i}>
+              <div className="gradient-row-head">
+                <span
+                  className="gradient-swatch"
+                  aria-hidden="true"
+                  style={
+                    ok ? { background: gradientCss(a!, b!, g.direction), color: on } : undefined
+                  }
+                >
+                  {g.name || t('Verlauf {x}', { x: i + 1 })}
+                </span>
+                <span className={`color-contrast small ${ok && ratio >= 4.5 ? 'ok' : 'bad'}`}>
+                  {ok &&
+                    `${ratio >= 4.5 ? '✓' : '✗'} ${t('Text darauf {x} : 1', { x: ratio.toFixed(1) })}`}
+                </span>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  onClick={() => onChange(gradients.filter((_, j) => j !== i))}
+                >
+                  {t('Entfernen')}
+                </button>
+              </div>
+              <div className="gradient-row-fields">
+                <Field
+                  label={t('Name')}
+                  value={g.name}
+                  maxLength={30}
+                  placeholder={t('z. B. Blauverlauf')}
+                  onChange={(e) => update(i, { name: e.target.value })}
+                />
+                <SelectField
+                  label={t('von')}
+                  value={String(g.from)}
+                  onChange={(e) => update(i, { from: Number(e.target.value) })}
+                >
+                  {palette.map((_, j) => (
+                    <option key={j} value={String(j)}>
+                      {slotName(j)}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  label={t('nach')}
+                  value={String(g.to)}
+                  onChange={(e) => update(i, { to: Number(e.target.value) })}
+                >
+                  {palette.map((_, j) => (
+                    <option key={j} value={String(j)}>
+                      {slotName(j)}
+                    </option>
+                  ))}
+                </SelectField>
+                <SelectField
+                  label={t('Richtung')}
+                  value={g.direction}
+                  onChange={(e) =>
+                    update(i, { direction: e.target.value === 'down' ? 'down' : 'right' })
+                  }
+                >
+                  <option value="right">{t('von links nach rechts')}</option>
+                  <option value="down">{t('von oben nach unten')}</option>
+                </SelectField>
+              </div>
+            </div>
+          )
+        })}
+      </div>
       {gradients.length < MAX_GRADIENTS && palette.length >= 2 && (
         <div>
           <button
@@ -576,22 +642,36 @@ function ExtraColors({
   colors,
   error,
   ownPrimary,
+  roles,
+  onToggleRole,
   onChange,
 }: {
   colors: ExtraColor[]
   error?: string
   ownPrimary: boolean
-  onChange: (v: ExtraColor[]) => void
+  roles: PaletteRoles
+  onToggleRole: (slot: number, role: PaletteRole, on: boolean) => void
+  /** ``map``: neuer Palettenplatz je altem (null = entfernt), für Rollen und Verläufe */
+  onChange: (v: ExtraColor[], map?: (slot: number) => number | null) => void
 }) {
   const update = (i: number, patch: Partial<ExtraColor>) =>
     onChange(colors.map((c, j) => (j === i ? { ...c, ...patch } : c)))
   const move = (i: number, d: number) => {
     const next = [...colors]
     ;[next[i], next[i + d]] = [next[i + d], next[i]]
-    onChange(next)
+    const a = i + 2
+    const b = i + d + 2
+    onChange(next, (slot) => (slot === a ? b : slot === b ? a : slot))
+  }
+  const remove = (i: number) => {
+    const gone = i + 2
+    onChange(
+      colors.filter((_, j) => j !== i),
+      (slot) => (slot === gone ? null : slot > gone ? slot - 1 : slot),
+    )
   }
   return (
-    <div className={`field${error ? ' field-invalid' : ''}`}>
+    <div className={`field color-group${error ? ' field-invalid' : ''}`}>
       <span>{t('Weitere Farben')}</span>
       <small className="muted">
         {t(
@@ -599,69 +679,74 @@ function ExtraColors({
         )}
         {!ownPrimary && t(' Weitere Farben gelten nur zusammen mit einer eigenen Hauptfarbe.')}
       </small>
-      {colors.map((c, i) => {
-        const valid = /^#[0-9a-f]{6}$/i.test(c.color)
-        const ratio = valid ? contrastRatio(c.color, readableOn(c.color)) : 0
-        return (
-          <div className="color-row" key={i}>
-            <input
-              type="color"
-              aria-label={t('{x}. Farbe wählen', { x: i + 3 })}
-              value={valid ? c.color : '#000000'}
-              onChange={(e) => update(i, { color: e.target.value })}
-            />
-            <input
-              aria-label={t('{x}. Farbe als Hex-Wert', { x: i + 3 })}
-              value={c.color}
-              onChange={(e) => update(i, { color: e.target.value.trim() })}
-            />
-            <input
-              aria-label={t('Name der {x}. Farbe', { x: i + 3 })}
-              value={c.name}
-              maxLength={30}
-              placeholder={t('Name, z. B. Weinrot')}
-              onChange={(e) => update(i, { name: e.target.value })}
-            />
-            <input
-              aria-label={t('Verwendung der {x}. Farbe', { x: i + 3 })}
-              value={c.use ?? ''}
-              maxLength={60}
-              placeholder={t('Verwendung, z. B. Fließtext')}
-              onChange={(e) => update(i, { use: e.target.value })}
-            />
-            {valid && (
-              <span className={`small ${ratio >= 4.5 ? 'ok' : 'bad'}`}>
-                {ratio >= 4.5 ? '✓' : '✗'} {t('Text darauf {x} : 1', { x: ratio.toFixed(1) })}
+      <div className="color-list">
+        {colors.map((c, i) => {
+          const valid = /^#[0-9a-f]{6}$/i.test(c.color)
+          const ratio = valid ? contrastRatio(c.color, readableOn(c.color)) : 0
+          return (
+            <div className="color-row extra-color-row" key={i}>
+              <input
+                type="color"
+                aria-label={t('{x}. Farbe wählen', { x: i + 3 })}
+                value={valid ? c.color : '#000000'}
+                onChange={(e) => update(i, { color: e.target.value })}
+              />
+              <input
+                aria-label={t('{x}. Farbe als Hex-Wert', { x: i + 3 })}
+                value={c.color}
+                onChange={(e) => update(i, { color: e.target.value.trim() })}
+              />
+              <input
+                aria-label={t('Name der {x}. Farbe', { x: i + 3 })}
+                value={c.name}
+                maxLength={30}
+                placeholder={t('Name, z. B. Weinrot')}
+                onChange={(e) => update(i, { name: e.target.value })}
+              />
+              <input
+                aria-label={t('Verwendung der {x}. Farbe', { x: i + 3 })}
+                value={c.use ?? ''}
+                maxLength={60}
+                placeholder={t('Verwendung, z. B. Fließtext')}
+                onChange={(e) => update(i, { use: e.target.value })}
+              />
+              <span className={`color-contrast small ${valid && ratio >= 4.5 ? 'ok' : 'bad'}`}>
+                {valid &&
+                  `${ratio >= 4.5 ? '✓' : '✗'} ${t('Text darauf {x} : 1', { x: ratio.toFixed(1) })}`}
               </span>
-            )}
-            <button
-              type="button"
-              className="button button-ghost"
-              aria-label={t('{x}. Farbe nach oben', { x: i + 3 })}
-              disabled={i === 0}
-              onClick={() => move(i, -1)}
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              className="button button-ghost"
-              aria-label={t('{x}. Farbe nach unten', { x: i + 3 })}
-              disabled={i === colors.length - 1}
-              onClick={() => move(i, 1)}
-            >
-              ↓
-            </button>
-            <button
-              type="button"
-              className="button button-ghost"
-              onClick={() => onChange(colors.filter((_, j) => j !== i))}
-            >
-              {t('Entfernen')}
-            </button>
-          </div>
-        )
-      })}
+              <div className="color-row-actions">
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  aria-label={t('{x}. Farbe nach oben', { x: i + 3 })}
+                  disabled={i === 0}
+                  onClick={() => move(i, -1)}
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  className="button button-ghost"
+                  aria-label={t('{x}. Farbe nach unten', { x: i + 3 })}
+                  disabled={i === colors.length - 1}
+                  onClick={() => move(i, 1)}
+                >
+                  ↓
+                </button>
+                <button type="button" className="button button-ghost" onClick={() => remove(i)}>
+                  {t('Entfernen')}
+                </button>
+              </div>
+              <ColorRoles
+                label={t('{x}. Farbe verwendet für', { x: i + 3 })}
+                slot={i + 2}
+                roles={roles}
+                onToggle={onToggleRole}
+              />
+            </div>
+          )
+        })}
+      </div>
       {colors.length < MAX_EXTRA && (
         <div>
           <button
@@ -674,6 +759,87 @@ function ExtraColors({
         </div>
       )}
       {error && <small className="field-error">{error}</small>}
+    </div>
+  )
+}
+
+/** Beschriftung der Farbrollen (Einstellungen, Hinweise) */
+function roleLabel(role: PaletteRole): string {
+  switch (role) {
+    case 'text':
+      return t('Fließtext')
+    case 'muted':
+      return t('Sekundärtext')
+    case 'surface':
+      return t('Flächen und Tabellenzeilen')
+    case 'background':
+      return t('Hintergrund')
+  }
+}
+
+/** Wofür eine Farbe da ist: Rollen zum Ankreuzen, jede Rolle hat höchstens eine Farbe */
+function ColorRoles({
+  label,
+  slot,
+  roles,
+  onToggle,
+}: {
+  label: string
+  slot: number
+  roles: PaletteRoles
+  onToggle: (slot: number, role: PaletteRole, on: boolean) => void
+}) {
+  return (
+    <div className="color-roles" role="group" aria-label={label}>
+      <span className="muted small">{t('Verwendet für')}</span>
+      {PALETTE_ROLES.map((role) => (
+        <Checkbox
+          key={role}
+          label={roleLabel(role)}
+          checked={roles[role] === slot}
+          onChange={(on) => onToggle(slot, role, on)}
+        />
+      ))}
+    </div>
+  )
+}
+
+/** Farbrollen auch in der HUBIplan-Oberfläche (heller Modus), mit Kontrastschutz */
+function AppRoles({
+  palette,
+  roles,
+  enabled,
+  onChange,
+}: {
+  palette: { color: string }[]
+  roles: PaletteRoles
+  enabled: boolean
+  onChange: (v: boolean) => void
+}) {
+  const { dropped } = appColors(palette, roles)
+  const any = PALETTE_ROLES.some((r) => roles[r] !== undefined)
+  return (
+    <div className="field">
+      <span>{t('Farbrollen in HUBIplan')}</span>
+      <small className="muted">
+        {t(
+          'Die angekreuzten Rollen gelten für die Webseite (Webseite › Gestaltung, dort lässt sich jede Rolle noch ändern). Auf Wunsch färben sie auch HUBIplan selbst, nur in der hellen Darstellung; der Dunkelmodus behält seine Farben. Ohne Rollen bleibt alles, wie es ist.',
+        )}
+      </small>
+      <Checkbox
+        label={t('Farbrollen auch in HUBIplan verwenden')}
+        checked={enabled}
+        onChange={onChange}
+      />
+      {enabled && !any && <p className="muted small">{t('Noch keine Rolle angekreuzt.')}</p>}
+      {enabled && dropped.length > 0 && (
+        <Alert kind="info">
+          {t(
+            'Zu wenig Kontrast (mind. 4.5 : 1), HUBIplan nimmt dort die eigene Farbe: {x}. Die Webseite nimmt die Farben trotzdem; Webseite › Gestaltung warnt dort.',
+            { x: dropped.map(roleLabel).join(', ') },
+          )}
+        </Alert>
+      )}
     </div>
   )
 }

@@ -401,6 +401,8 @@ class ThemeSerializer(serializers.ModelSerializer):
             "primary_color_use",
             "accent_color_use",
             "gradients",
+            "palette_roles",
+            "palette_roles_in_app",
             "logo_url",
             "logo_dark_url",
             "effective",
@@ -440,6 +442,9 @@ class ThemeSerializer(serializers.ModelSerializer):
 
     def validate_gradients(self, value) -> list:
         return _django_errors(theme.clean_gradients, value)
+
+    def validate_palette_roles(self, value) -> dict:
+        return _django_errors(theme.clean_palette_roles, value)
 
 
 class HomepageImageSerializer(serializers.Serializer):
@@ -606,6 +611,8 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
             "primary_color_use",
             "accent_color_use",
             "gradients",
+            "palette_roles",
+            "palette_roles_in_app",
             "logo_url",
             "logo_dark_url",
             "roles",
@@ -810,6 +817,9 @@ class DepartmentSerializer(ModelCleanMixin, serializers.ModelSerializer):
 
     def validate_gradients(self, value) -> list:
         return _django_errors(theme.clean_gradients, value)
+
+    def validate_palette_roles(self, value) -> dict:
+        return _django_errors(theme.clean_palette_roles, value)
 
     def validate_short_name(self, value: str) -> str:
         value = value.strip()

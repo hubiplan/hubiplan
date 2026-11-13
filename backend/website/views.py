@@ -662,7 +662,12 @@ class WebsiteView(_WebsiteMixin, APIView):
                 # Farben je Rolle für alle Designs (Skizzen in der Auswahl)
                 "design_colors": {
                     key: designs.resolve(
-                        key, palette, website.color_roles, extra, theme["gradients"]
+                        key,
+                        palette,
+                        website.color_roles,
+                        extra,
+                        theme["gradients"],
+                        theme["palette_roles"],
                     )
                     for key in [*designs.DESIGNS, *extra]
                 },

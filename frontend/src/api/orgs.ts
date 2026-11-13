@@ -19,6 +19,10 @@ export interface EffectiveTheme {
   palette?: PaletteColor[]
   /** benannte Verläufe aus der Palette (ältere Server: fehlt) */
   gradients?: Gradient[]
+  /** Farbrollen: Palettenplatz je Rolle (ältere Server: fehlt) */
+  palette_roles?: PaletteRoles
+  /** Farbrollen auch in der HUBIplan-Oberfläche (heller Modus) */
+  palette_roles_in_app?: boolean
   inherited_from: { colors: string | null; logo: string | null }
 }
 
@@ -29,6 +33,12 @@ export interface PaletteColor {
   /** wofür die Farbe da ist, z. B. „Fließtext“ */
   use?: string
 }
+
+/** Wofür eine Palettenfarbe da ist (Ralf 13.11.2026); jede Rolle hat höchstens eine Farbe */
+export const PALETTE_ROLES = ['text', 'muted', 'surface', 'background'] as const
+export type PaletteRole = (typeof PALETTE_ROLES)[number]
+/** Palettenplatz je Rolle: 0 = Hauptfarbe, 1 = Zweitfarbe, 2 … = weitere Farben */
+export type PaletteRoles = Partial<Record<PaletteRole, number>>
 
 export interface ExtraColor {
   color: string
@@ -242,6 +252,8 @@ export interface ThemeSettings {
   primary_color_use?: string
   accent_color_use?: string
   gradients?: GradientSetting[]
+  palette_roles?: PaletteRoles
+  palette_roles_in_app?: boolean
   logo_url: string | null
   /** eigenes Logo für den Dunkelmodus (ohne Rückfall) */
   logo_dark_url?: string | null
