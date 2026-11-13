@@ -31,6 +31,7 @@ const PUBLIC_TITLES: [string, string][] = [
   ['/passwort-vergessen', t('Passwort vergessen')],
   ['/passwort-zuruecksetzen', t('Passwort zurücksetzen')],
   ['/foto', t('Foto hochladen')],
+  ['/bilder-hochladen', t('Bilder für die Webseite')],
   ['/rundschreiben/abmelden', t('Rundschreiben abbestellen')],
   ['/ausweis', t('Mitgliedsausweis')],
   ['/impressum', t('Impressum')],

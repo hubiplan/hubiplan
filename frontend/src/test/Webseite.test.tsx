@@ -654,6 +654,57 @@ describe('Webseite', () => {
     expect(screen.getAllByRole('button', { name: 'Zurückholen' })).toHaveLength(1)
   })
 
+  it('heftet die Leiste mit offenen Änderungen in Menü und Bereiche oben an', async () => {
+    const body = data(website('public', { draft: { style: { font: 'modern' } } }))
+    renderApp({ [`GET ${base}`]: () => ({ status: 200, body }) }, '/webseite/aufbau')
+    const text = await screen.findByText(
+      'Nicht veröffentlichte Änderungen. Besucher sehen noch den bisherigen Stand.',
+    )
+    const bar = text.closest('.draft-bar') as HTMLElement
+    expect(bar).toHaveClass('draft-bar-sticky')
+    // Steht vor der ersten Karte, nicht mitten zwischen den Karten
+    const first = screen.getByRole('heading', { name: 'Bausteine' })
+    expect(bar.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // „Veröffentlichen“ ist der Hauptknopf, „Verwerfen“ der Nebenknopf
+    expect(screen.getByRole('button', { name: 'Veröffentlichen' })).toHaveClass('button-primary')
+    expect(screen.getByRole('button', { name: 'Verwerfen' })).not.toHaveClass('button-primary')
+  })
+
+  it.each([
+    { units: [], parents: false, unitsBox: false, parentBox: false },
+    { units: [], parents: true, unitsBox: false, parentBox: true },
+    { units: [{ id: 7, name: 'Jägerzug' }], parents: false, unitsBox: true, parentBox: false },
+  ])(
+    'zeigt im Block Termine nur Häkchen für Einheiten, die es gibt (%o)',
+    async ({ units, parents, unitsBox, parentBox }) => {
+      const site = website('public', { include_unit_events: true, include_parent_events: false })
+      const body = { ...data(site), units, has_parent_units: parents }
+      renderApp(
+        { [`GET ${base}`]: () => ({ status: 200, body }) },
+        '/webseite/aufbau',
+        [],
+        ['events'],
+      )
+      await screen.findByRole('heading', { name: 'Bausteine' })
+      // Der Block „Startseite“ ohne Funktion ist weg
+      expect(screen.queryByRole('heading', { name: 'Startseite' })).not.toBeInTheDocument()
+      // Weder Einheiten darunter noch darüber: der ganze Block entfällt
+      const heading = screen.queryByRole('heading', { name: 'Termine' })
+      if (unitsBox || parentBox) expect(heading).toBeInTheDocument()
+      else expect(heading).not.toBeInTheDocument()
+      const u = screen.queryByRole('checkbox', {
+        name: 'Öffentliche Termine der Untereinheiten im Kalender der Webseite',
+      })
+      const p = screen.queryByRole('checkbox', {
+        name: /Öffentliche Termine der übergeordneten Einheiten/,
+      })
+      if (unitsBox) expect(u).toBeChecked()
+      else expect(u).not.toBeInTheDocument()
+      if (parentBox) expect(p).not.toBeChecked()
+      else expect(p).not.toBeInTheDocument()
+    },
+  )
+
   it('zeigt eingespielte Designs und lädt Pakete nur für Plattformverwalter', async () => {
     const roles = [{ key: 'header', label: 'Kopf', default: 0 }]
     const designs = [
@@ -1793,5 +1844,50 @@ describe('Veröffentlichung in der Mitgliederakte', () => {
       '/social-rueckkehr?fehler=Kein+Konto',
     )
     expect(await screen.findByText(/Nicht verbunden: Kein Konto/)).toBeInTheDocument()
+  })
+})
+
+describe('Entwürfe für Beiträge', () => {
+  it('zeigt Entwürfe, markiert erledigt', async () => {
+    let done: string | null = null
+    const draft = () => ({
+      id: 3,
+      channel: 'instagram',
+      channel_label: 'Instagram',
+      text: 'Morgen ist Schützenfest!',
+      images: [{ id: 4, url: '/b.jpg', small_url: '/b-klein.jpg', alt_text: 'Fahne' }],
+      created_at: '2026-11-12T10:00:00Z',
+      created_by: 'Erika Muster',
+      via: 'KI-Assistent (Testassistent)',
+      done_at: done,
+    })
+    const calls = renderApp(
+      {
+        [`GET ${base}`]: () => ({ status: 200, body: data(website()) }),
+        [`GET ${base}social/`]: () => ({
+          status: 200,
+          body: { feeds: [], redirect_uri: 'https://x.test/cb/', units: [], can_manage: true },
+        }),
+        [`GET ${base}social/drafts/`]: () => ({
+          status: 200,
+          body: { drafts: [draft()], can_manage: true },
+        }),
+        [`PUT ${base}social/drafts/3/`]: () => {
+          done = '2026-11-12T11:00:00Z'
+          return { status: 200, body: draft() }
+        },
+      },
+      '/webseite/beitraege',
+      [],
+      ['social'],
+    )
+    expect(await screen.findByText('Morgen ist Schützenfest!')).toBeInTheDocument()
+    expect(screen.getByAltText('Fahne')).toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Als erledigt markieren' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Als erledigt markieren' })).toBeNull(),
+    )
+    const put = calls.find((c) => c.key === `PUT ${base}social/drafts/3/`)
+    expect(JSON.parse(String(put?.init?.body))).toEqual({ done: true })
   })
 })

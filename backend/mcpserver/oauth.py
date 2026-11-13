@@ -65,8 +65,9 @@ SCOPE_DRAFT = "webseite.entwurf"
 SCOPES = {
     SCOPE_READ: gettext_lazy("Webseite lesen: Einstellungen, Texte und Startseite ansehen"),
     SCOPE_DRAFT: gettext_lazy(
-        "Webseite als Entwurf bearbeiten: Texte und Inhalte der Startseite ändern, neue "
-        "Textseiten anlegen (veröffentlicht wird nur in HUBIplan)"
+        "Webseite als Entwurf bearbeiten: Texte, Startseite, Gestaltung und Menü ändern, "
+        "neue Textseiten anlegen, Bilder hinzufügen und beschreiben, Beiträge für soziale "
+        "Medien vorbereiten (veröffentlicht wird nur in HUBIplan)"
     ),
 }
 DEFAULT_SCOPES = (SCOPE_READ, SCOPE_DRAFT)
