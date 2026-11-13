@@ -17,6 +17,11 @@ hast. Hast du kein eigenes Passwort und meldest dich nur über Links an, musst d
 zusätzlich mit dem Link an deine bisherige Adresse bestätigen. Nach dem Wechsel sind deine anderen
 Browser abgemeldet; die App bleibt verbunden.
 
+Zur Bestätigung fragt HUBIplan nach deinem Passwort für HUBIplan, nicht nach dem Passwort deines
+E-Mail-Postfachs. Je Stunde gehen fünf Versuche für die Anmelde-E-Mail und zehn für das Passwort.
+Danach nennt die Meldung, in wie vielen Minuten du es wieder versuchen kannst. Die Stunde beginnt
+mit dem ersten Versuch.
+
 Gibt jemand mehrmals hintereinander ein falsches Passwort für dein Konto ein, ist die Anmeldung mit
 Passwort einige Minuten gesperrt, aber nur auf fremden Geräten. Auf Geräten, mit denen du dich schon
 einmal angemeldet hast, und mit einem Passkey kommst du weiter hinein. Du bekommst dazu eine Mail.

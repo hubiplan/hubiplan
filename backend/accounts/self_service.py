@@ -26,7 +26,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.i18n import language_of, user_language
-from core.ratelimit import too_many
+from core.ratelimit import TooMany, too_many
 from organizations.platform_public import instance_name
 from outbox import mail
 
@@ -55,8 +55,11 @@ def account_data(user: User) -> dict:
     }
 
 
-def _too_many(user_id: int, kind: str, limit: int = 10) -> bool:
-    return too_many(f"konto:{kind}:{user_id}", limit, 3600)
+def _limit(user_id: int, kind: str, limit: int = 10) -> None:
+    """Je Konto und Stunde höchstens ``limit`` Versuche; sonst 429 mit Wartezeit."""
+    key = f"konto:{kind}:{user_id}"
+    if too_many(key, limit, 3600):
+        raise TooMany(key)
 
 
 class NameSerializer(serializers.Serializer):
@@ -96,10 +99,7 @@ class PasswordView(APIView):
         data = PasswordSerializer(data=request.data)
         data.is_valid(raise_exception=True)
         authenticated = request.user
-        if _too_many(authenticated.pk, "passwort"):
-            return Response(
-                {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
-            )
+        _limit(authenticated.pk, "passwort")
         user = User.objects.select_for_update().filter(pk=authenticated.pk, is_active=True).first()
         if user is None or not constant_time_compare(
             user.get_session_auth_hash(), authenticated.get_session_auth_hash()
@@ -170,14 +170,19 @@ class EmailChangeView(APIView):
         data = EmailSerializer(data=request.data)
         data.is_valid(raise_exception=True)
         user = request.user
-        if _too_many(user.pk, "email", limit=5):
-            return Response(
-                {"detail": gettext("Zu viele Versuche. Bitte später erneut.")}, status=429
-            )
+        _limit(user.pk, "email", limit=5)
         if user.has_usable_password() and not user.check_password(
             data.validated_data.get("password")
         ):
-            raise serializers.ValidationError({"password": gettext("Das Passwort stimmt nicht.")})
+            # Häufige Verwechslung: das Passwort des Postfachs statt des Anmeldepassworts
+            raise serializers.ValidationError(
+                {
+                    "password": gettext(
+                        "Das Passwort stimmt nicht. Gemeint ist dein Passwort für {instanz}, "
+                        "nicht das Passwort deines E-Mail-Postfachs."
+                    ).format(instanz=instance_name())
+                }
+            )
         new = User.objects.normalize_email(data.validated_data["email"]).lower()
         if new == user.email:
             raise serializers.ValidationError(

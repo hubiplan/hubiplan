@@ -27,7 +27,7 @@ from access.catalog import ROLES_MANAGE
 from accounts.mfa import encrypt
 from audit.log import record
 from core.api_base import AuditMixin, OrgScopedMixin
-from core.ratelimit import client_ip, too_many
+from core.ratelimit import TooMany, client_ip, too_many
 
 from . import nc_accounts, provider
 from .models import USERNAME_RE, Account, Client, clean_groups, parse_usernames
@@ -119,8 +119,9 @@ class AuthorizeView(APIView):
             return Response({"detail": exc.message}, status=400)
 
     def post(self, request):
-        if too_many(f"oidc:authorize:{request.user.pk}", 30, 600):
-            raise ValidationError({"detail": gettext("Zu viele Versuche. Bitte später erneut.")})
+        key = f"oidc:authorize:{request.user.pk}"
+        if too_many(key, 30, 600):
+            raise TooMany(key)
         try:
             return Response({"redirect": provider.authorize(request._request, request.data)})
         except provider.AuthorizeError as exc:

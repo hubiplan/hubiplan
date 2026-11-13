@@ -72,7 +72,11 @@ async function ask(kind: StepUpKind, passkey: boolean): Promise<boolean> {
     )
     if (status === 200) return true
     if (status === 429) {
-      await alertDialog(t('Zu viele Versuche. Bitte einen Moment warten.'))
+      // Die Meldung des Servers nennt die Wartezeit in Minuten
+      await alertDialog(
+        (typeof body?.detail === 'string' && body.detail) ||
+          t('Zu viele Versuche. Bitte einen Moment warten.'),
+      )
       return false
     }
     if (status === 0) return false

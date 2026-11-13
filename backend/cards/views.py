@@ -26,7 +26,7 @@ from rest_framework.views import APIView
 from access.catalog import CARDS_MANAGE, CARDS_VIEW, DEPT_CARDS_MANAGE
 from audit.log import record
 from core.api_base import OrgScopedMixin, has_needed
-from core.ratelimit import client_ip, too_many
+from core.ratelimit import TooMany, client_ip, too_many
 from core.tenancy import rls_bypass, tenant_context
 from members.federation_views import federation_queryset, filter_federation
 from members.models import Membership
@@ -349,8 +349,10 @@ class PortalCardPdfView(APIView):
 RATE = (60, 600)  # 60 Aufrufe je 10 Minuten und IP
 
 
-def _rate_limited(request) -> bool:
-    return too_many(f"card:{client_ip(request)}", RATE[0], RATE[1])
+def _limit(request) -> None:
+    key = f"card:{client_ip(request)}"
+    if too_many(key, RATE[0], RATE[1]):
+        raise TooMany(key, "aufrufe")
 
 
 class PublicCardView(APIView):
@@ -358,10 +360,7 @@ class PublicCardView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, token: str):
-        if _rate_limited(request):
-            return Response(
-                {"detail": gettext("Zu viele Aufrufe. Bitte später erneut.")}, status=429
-            )
+        _limit(request)
         card = services.find_valid(token)
         if card is None:
             raise Http404

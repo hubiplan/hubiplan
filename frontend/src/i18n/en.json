@@ -398,6 +398,7 @@
   "Dein Konto hat hier Vorstands-, Kassen- oder Prüferrechte. Bitte zusätzlich den Code aus deiner Authenticator-App für diese Instanz eingeben.": "Your account has board, treasury or auditor permissions here. Please also enter the code from your authenticator app for this instance.",
   "Dein Passwort ist gesetzt.": "Your password has been set.",
   "Dein Passwort zur Bestätigung": "Your password for confirmation",
+  "Dein Passwort für {name}, nicht das Passwort deines E-Mail-Postfachs.": "Your password for {name}, not the password of your email mailbox.",
   "Deine Eingaben für den neuen Termin gehen dann verloren.": "Your entries for the new event will then be lost.",
   "Deine Eingaben wurden noch nicht gespeichert und gehen verloren.": "Your entries have not been saved yet and will be lost.",
   "Deine Eingaben wurden noch nicht gespeichert. Wenn du die Seite verlässt, gehen sie verloren.": "Your entries have not been saved yet. If you leave the page, they will be lost.",

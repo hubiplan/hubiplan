@@ -17,7 +17,7 @@ from django.utils import timezone
 from django.utils.translation import gettext
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
-from rest_framework.exceptions import Throttled, ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -48,7 +48,7 @@ from access.permissions import organizations_for
 from audit.log import current_via
 from changes import tracking
 from core.api_base import OrgScopedMixin
-from core.ratelimit import too_many
+from core.ratelimit import TooMany, too_many
 from members.open_tasks import event_tasks, member_tasks
 
 from .auth import AdminTokenAuthentication, DeviceTokenAuthentication
@@ -199,10 +199,9 @@ class AdminUnlockView(APIView):
     def post(self, request):
         device: Device = request.auth
         user = request.user
-        if too_many(f"app-admin-unlock:{device.pk}", *UNLOCK_LIMIT):
-            raise Throttled(
-                detail=gettext("Zu viele Versuche. Bitte in einer Viertelstunde erneut.")
-            )
+        key = f"app-admin-unlock:{device.pk}"
+        if too_many(key, *UNLOCK_LIMIT):
+            raise TooMany(key)
         if not admin_units(user) and not admin_departments(user):
             raise ValidationError({"detail": gettext("Dein Konto hat keine Verwaltungsrechte.")})
         totp = Authenticator.objects.filter(user=user, type=Authenticator.Type.TOTP).first()
@@ -268,8 +267,9 @@ class AppAdminAccess:
     def initial(self, request, *args, **kwargs):
         device = request.auth  # meldet an
         if device is not None:
-            if too_many(f"app-admin:{device.pk}", 600, 60 * 60):
-                raise Throttled(detail=gettext("Zu viele Anfragen. Bitte etwas später erneut."))
+            key = f"app-admin:{device.pk}"
+            if too_many(key, 600, 60 * 60):
+                raise TooMany(key, "anfragen")
             # Änderungspaket gehört der Person (für Rückgängig), Protokoll nennt das Gerät
             ctx = tracking.active()
             if ctx is not None:

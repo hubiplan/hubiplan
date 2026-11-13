@@ -18,14 +18,14 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound, Throttled
+from rest_framework.exceptions import NotFound
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from audit.log import record
 from core import virenscan
-from core.ratelimit import client_ip, too_many
+from core.ratelimit import TooMany, client_ip, too_many
 from core.tenancy import rls_bypass
 from members.models import Membership
 from organizations.addresses import base_url
@@ -126,8 +126,9 @@ class _LinkBase(APIView):
     permission_classes = [AllowAny]
 
     def resolve(self, request, value: str, *, lock: bool = False) -> tuple[Event, Membership]:
-        if too_many(f"rsvp-link:{client_ip(request)}", RATE[0], RATE[1]):
-            raise Throttled(detail=gettext("Zu viele Aufrufe. Bitte später erneut."))
+        key = f"rsvp-link:{client_ip(request)}"
+        if too_many(key, RATE[0], RATE[1]):
+            raise TooMany(key, "aufrufe")
         ids = parse(value)
         invalid = gettext("Dieser Link ist ungültig oder abgelaufen.")
         if ids is None:

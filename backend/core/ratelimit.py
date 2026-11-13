@@ -7,12 +7,15 @@ denselben alten Stand lesen.
 from __future__ import annotations
 
 import ipaddress
+import math
 import socket
 import threading
 import time
 
 from django.conf import settings
 from django.core.cache import cache
+from django.utils.translation import gettext, ngettext
+from rest_framework.exceptions import Throttled
 
 # Namensauflösung der vertrauten Container: so lange gilt ein Ergebnis; nach einem Treffer
 # daneben (z. B. neue Adresse nach dem Ausrollen) wird frühestens nach RETRY neu gefragt.
@@ -131,13 +134,82 @@ def visitor_ip(request) -> str:
     return client_ip(request)
 
 
+def _until_key(key: str) -> str:
+    return f"{key}:bis"
+
+
+def _start(key: str, window: int) -> bool:
+    """Legt den Zähler an; merkt sich daneben, wann das Fenster endet."""
+    if not cache.add(key, 1, window):
+        return False
+    cache.set(_until_key(key), time.time() + window, window)
+    return True
+
+
 def too_many(key: str, limit: int, window: int) -> bool:
-    """Zählt einen Aufruf; True, wenn im Zeitfenster mehr als ``limit`` waren."""
-    if cache.add(key, 1, window):
+    """Zählt einen Aufruf; True, wenn im Zeitfenster mehr als ``limit`` waren.
+
+    Das Fenster ist fest: Es beginnt mit dem ersten Aufruf und endet ``window`` Sekunden
+    später, unabhängig davon, wie viele Aufrufe danach noch kommen.
+    """
+    if _start(key, window):
         return limit < 1
     try:
         count = cache.incr(key)
     except ValueError:  # gerade abgelaufen
-        cache.add(key, 1, window)
+        _start(key, window)
         count = 1
     return count > limit
+
+
+def retry_after(key: str) -> int | None:
+    """Sekunden, bis das Fenster von ``key`` abläuft (None, wenn unbekannt)."""
+    until = cache.get(_until_key(key))
+    if until is None:
+        return None
+    return max(1, math.ceil(until - time.time()))
+
+
+# Was gezählt wird, bestimmt die Meldung („Zu viele Versuche/Aufrufe/Anfragen“).
+_LATER = {
+    "versuche": lambda: gettext("Zu viele Versuche. Bitte später erneut."),
+    "aufrufe": lambda: gettext("Zu viele Aufrufe. Bitte später erneut."),
+    "anfragen": lambda: gettext("Zu viele Anfragen. Bitte etwas später erneut."),
+}
+_MINUTES = {
+    "versuche": lambda n: ngettext(
+        "Zu viele Versuche. Bitte in etwa einer Minute erneut versuchen.",
+        "Zu viele Versuche. Bitte in etwa {n} Minuten erneut versuchen.",
+        n,
+    ),
+    "aufrufe": lambda n: ngettext(
+        "Zu viele Aufrufe. Bitte in etwa einer Minute erneut versuchen.",
+        "Zu viele Aufrufe. Bitte in etwa {n} Minuten erneut versuchen.",
+        n,
+    ),
+    "anfragen": lambda n: ngettext(
+        "Zu viele Anfragen. Bitte in etwa einer Minute erneut versuchen.",
+        "Zu viele Anfragen. Bitte in etwa {n} Minuten erneut versuchen.",
+        n,
+    ),
+}
+
+
+def wait_message(key: str, what: str = "versuche") -> str:
+    """Meldung mit der ungefähren Wartezeit in Minuten (aufgerundet)."""
+    seconds = retry_after(key)
+    if seconds is None:
+        return _LATER[what]()
+    minutes = max(1, math.ceil(seconds / 60))
+    return _MINUTES[what](minutes).format(n=minutes)
+
+
+class TooMany(Throttled):
+    """429 mit Wartezeit in der Meldung und in der Kopfzeile ``Retry-After``.
+
+    Anders als ``Throttled(wait=…)`` hängt sie keinen zweiten Satz in Sekunden an.
+    """
+
+    def __init__(self, key: str, what: str = "versuche"):
+        super().__init__(detail=wait_message(key, what))
+        self.wait = retry_after(key)
