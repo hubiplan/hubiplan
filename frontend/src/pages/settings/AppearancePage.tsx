@@ -791,7 +791,7 @@ function ColorRoles({
 }) {
   return (
     <div className="color-roles" role="group" aria-label={label}>
-      <span className="muted small">{t('Verwendet für:')}</span>
+      <span className="muted small">{t('Verwendet für')}</span>
       {PALETTE_ROLES.map((role) => (
         <Checkbox
           key={role}
