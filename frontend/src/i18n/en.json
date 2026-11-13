@@ -8021,7 +8021,6 @@
   "Übernommen von „{x0}“.": "Taken from “{x0}”.",
   "RGB {x}": "RGB {x}",
   "Text, Flächen und Hintergrund": "Text, surfaces and background",
-  "Gilt für die ganze Webseite. „Vorgabe des Designs“ lässt die Farben des Designs, wie sie sind.": "Applies to the whole website. “Design default” keeps the design's colours as they are.",
   "Jetzt: Verlauf {from} → {to}": "Now: gradient {from} → {to}",
   "Verlauf: {name}": "Gradient: {name}",
   "{from} → {to}": "{from} → {to}",
@@ -8684,5 +8683,19 @@
   "Nachname (wenn anders)": "Last name (if different)",
   "Familienmitglied hinzufügen": "Add family member",
   "Familienantrag: weitere Personen mit derselben Anschrift im selben Antrag": "Family application: further people at the same address in the same application",
-  "Pauschalbetrag": "Flat rate"
+  "Pauschalbetrag": "Flat rate",
+  "Gilt für die ganze Webseite. „Vorgabe“ nimmt die Farbe, die unter Einstellungen › Erscheinungsbild für diese Rolle angekreuzt ist, sonst die des Designs.": "Applies to the whole website. “Default” takes the colour ticked for this role under Settings › Appearance, otherwise the design's own.",
+  "Vorgabe (Vereinsfarben oder Design)": "Default (club colours or design)",
+  "Hauptfarbe verwendet für": "Main colour used for",
+  "Zweitfarbe verwendet für": "Second colour used for",
+  "{x}. Farbe verwendet für": "Colour {x} used for",
+  "Verwendet für:": "Used for:",
+  "Fließtext": "Body text",
+  "Sekundärtext": "Secondary text",
+  "Flächen und Tabellenzeilen": "Surfaces and table rows",
+  "Farbrollen in HUBIplan": "Colour roles in HUBIplan",
+  "Die angekreuzten Rollen gelten für die Webseite (Webseite › Gestaltung, dort lässt sich jede Rolle noch ändern). Auf Wunsch färben sie auch HUBIplan selbst, nur in der hellen Darstellung; der Dunkelmodus behält seine Farben. Ohne Rollen bleibt alles, wie es ist.": "The ticked roles apply to the website (Website › Design, where each role can still be changed). If you like, they also colour HUBIplan itself, in the light view only; dark mode keeps its colours. Without roles everything stays as it is.",
+  "Farbrollen auch in HUBIplan verwenden": "Also use colour roles in HUBIplan",
+  "Noch keine Rolle angekreuzt.": "No role ticked yet.",
+  "Zu wenig Kontrast (mind. 4.5 : 1), HUBIplan nimmt dort die eigene Farbe: {x}. Die Webseite nimmt die Farben trotzdem; Webseite › Gestaltung warnt dort.": "Not enough contrast (at least 4.5 : 1), HUBIplan uses its own colour there: {x}. The website still uses the colours; Website › Design shows a warning there."
 }

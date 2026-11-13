@@ -10070,6 +10070,15 @@ msgstr "A gradient needs two colours from the palette."
 msgid "Ein Verlauf braucht zwei verschiedene Farben."
 msgstr "A gradient needs two different colours."
 
+msgid "Farbrollen bitte als Zuordnung angeben."
+msgstr "Please give colour roles as a mapping."
+
+msgid "Diese Farbrolle gibt es nicht."
+msgstr "This colour role does not exist."
+
+msgid "Eine Farbrolle braucht eine Farbe aus der Palette."
+msgstr "A colour role needs a colour from the palette."
+
 msgid "Diese Richtung gibt es nicht."
 msgstr "This direction does not exist."
 msgid "Startseite"

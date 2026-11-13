@@ -73,6 +73,8 @@ THEME_FIELDS = {
     "primary_color_use",
     "accent_color_use",
     "gradients",
+    "palette_roles",
+    "palette_roles_in_app",
     "logo",
     "logo_dark",
 }

@@ -162,7 +162,12 @@ class SiteInfoView(_Public):
             ],
             "designs": {
                 key: designs.resolve(
-                    key, theme["palette"], site.site.color_roles, extra, theme["gradients"]
+                    key,
+                    theme["palette"],
+                    site.site.color_roles,
+                    extra,
+                    theme["gradients"],
+                    theme["palette_roles"],
                 )
                 for key in [*designs.DESIGNS, *extra]
             },

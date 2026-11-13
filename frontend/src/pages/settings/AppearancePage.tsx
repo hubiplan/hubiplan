@@ -4,7 +4,14 @@ import type { ChangeEvent } from 'react'
 import { api } from '../../api/client.ts'
 import { orgApi, PERM } from '../../api/orgs.ts'
 import { gradientCss } from '../../api/orgs.ts'
-import type { ExtraColor, GradientSetting, ThemeSettings } from '../../api/orgs.ts'
+import { PALETTE_ROLES } from '../../api/orgs.ts'
+import type {
+  ExtraColor,
+  GradientSetting,
+  PaletteRole,
+  PaletteRoles,
+  ThemeSettings,
+} from '../../api/orgs.ts'
 import {
   Alert,
   Checkbox,
@@ -17,7 +24,7 @@ import {
 import { errorMessage, useAutoSave, useForm, useLoad } from '../../components/forms.ts'
 import { useActiveOrg, useOrg } from '../../org/OrgContext.tsx'
 import { contrastRatio, readableOn, readableOnPair } from '../../theme/contrast.ts'
-import { buttonColors, linkColor, PAGE_BG, TEXT_COLOR } from '../../theme/theme.ts'
+import { appColors, buttonColors, linkColor, PAGE_BG, TEXT_COLOR } from '../../theme/theme.ts'
 import { useImageCrop } from '../../components/ImageCrop.tsx'
 import { RightsHint } from '../../components/RightsHint.tsx'
 import { t } from '../../i18n/index.ts'
@@ -64,11 +71,40 @@ function ThemeForm({
     primary_color_use: theme.primary_color_use ?? '',
     accent_color_use: theme.accent_color_use ?? '',
     gradients: theme.gradients ?? [],
+    palette_roles: theme.palette_roles ?? ({} as PaletteRoles),
+    palette_roles_in_app: theme.palette_roles_in_app ?? false,
   })
   const eff = theme.effective
   const primary = form.values.primary_color || eff.primary
   const accent = form.values.accent_color || eff.accent
   const buttonPreview = buttonColors(primary, readableOn(primary))
+  const roles = form.values.palette_roles
+  // Jede Rolle hat höchstens eine Farbe: Ankreuzen bei einer Farbe nimmt sie der vorigen
+  const toggleRole = (slot: number, role: PaletteRole, on: boolean) => {
+    const next = { ...roles }
+    if (on) next[role] = slot
+    else if (next[role] === slot) delete next[role]
+    form.set('palette_roles', next)
+  }
+  // Weitere Farben verschoben oder entfernt: Rollen und Verläufe zeigen weiter auf dieselbe Farbe
+  const remapSlots = (map: (slot: number) => number | null) => {
+    const next: PaletteRoles = {}
+    for (const role of PALETTE_ROLES) {
+      const slot = roles[role]
+      const moved = slot === undefined ? null : map(slot)
+      if (moved !== null) next[role] = moved
+    }
+    form.set('palette_roles', next)
+    form.set(
+      'gradients',
+      form.values.gradients.flatMap((g) => {
+        const from = map(g.from)
+        const to = map(g.to)
+        return from === null || to === null ? [] : [{ ...g, from, to }]
+      }),
+    )
+  }
+  const paletteColors = [{ color: primary }, { color: accent }, ...form.values.extra_colors]
 
   const auto = useAutoSave(form, (changes) => orgApi.updateTheme(orgId, changes), {
     enabled: editable,
@@ -123,6 +159,12 @@ function ThemeForm({
               onChange={(v) => form.set('primary_color_use', v)}
             />
           </div>
+          <ColorRoles
+            label={t('Hauptfarbe verwendet für')}
+            slot={0}
+            roles={roles}
+            onToggle={toggleRole}
+          />
           <ColorInput
             label={t('Zweitfarbe (Akzentfarbe)')}
             hint={t('Hervorhebungen')}
@@ -144,11 +186,22 @@ function ThemeForm({
               onChange={(v) => form.set('accent_color_use', v)}
             />
           </div>
+          <ColorRoles
+            label={t('Zweitfarbe verwendet für')}
+            slot={1}
+            roles={roles}
+            onToggle={toggleRole}
+          />
           <ExtraColors
             colors={form.values.extra_colors}
             error={form.errors.extra_colors}
             ownPrimary={Boolean(form.values.primary_color)}
-            onChange={(v) => form.set('extra_colors', v)}
+            roles={roles}
+            onToggleRole={toggleRole}
+            onChange={(v, map) => {
+              form.set('extra_colors', v)
+              if (map) remapSlots(map)
+            }}
           />
           <Gradients
             gradients={form.values.gradients}
@@ -160,6 +213,12 @@ function ThemeForm({
             error={form.errors.gradients}
             ownPrimary={Boolean(form.values.primary_color)}
             onChange={(v) => form.set('gradients', v)}
+          />
+          <AppRoles
+            palette={paletteColors}
+            roles={roles}
+            enabled={form.values.palette_roles_in_app}
+            onChange={(v) => form.set('palette_roles_in_app', v)}
           />
         </fieldset>
 
@@ -583,19 +642,33 @@ function ExtraColors({
   colors,
   error,
   ownPrimary,
+  roles,
+  onToggleRole,
   onChange,
 }: {
   colors: ExtraColor[]
   error?: string
   ownPrimary: boolean
-  onChange: (v: ExtraColor[]) => void
+  roles: PaletteRoles
+  onToggleRole: (slot: number, role: PaletteRole, on: boolean) => void
+  /** ``map``: neuer Palettenplatz je altem (null = entfernt), für Rollen und Verläufe */
+  onChange: (v: ExtraColor[], map?: (slot: number) => number | null) => void
 }) {
   const update = (i: number, patch: Partial<ExtraColor>) =>
     onChange(colors.map((c, j) => (j === i ? { ...c, ...patch } : c)))
   const move = (i: number, d: number) => {
     const next = [...colors]
     ;[next[i], next[i + d]] = [next[i + d], next[i]]
-    onChange(next)
+    const a = i + 2
+    const b = i + d + 2
+    onChange(next, (slot) => (slot === a ? b : slot === b ? a : slot))
+  }
+  const remove = (i: number) => {
+    const gone = i + 2
+    onChange(
+      colors.filter((_, j) => j !== i),
+      (slot) => (slot === gone ? null : slot > gone ? slot - 1 : slot),
+    )
   }
   return (
     <div className={`field color-group${error ? ' field-invalid' : ''}`}>
@@ -660,14 +733,16 @@ function ExtraColors({
                 >
                   ↓
                 </button>
-                <button
-                  type="button"
-                  className="button button-ghost"
-                  onClick={() => onChange(colors.filter((_, j) => j !== i))}
-                >
+                <button type="button" className="button button-ghost" onClick={() => remove(i)}>
                   {t('Entfernen')}
                 </button>
               </div>
+              <ColorRoles
+                label={t('{x}. Farbe verwendet für', { x: i + 3 })}
+                slot={i + 2}
+                roles={roles}
+                onToggle={onToggleRole}
+              />
             </div>
           )
         })}
@@ -684,6 +759,87 @@ function ExtraColors({
         </div>
       )}
       {error && <small className="field-error">{error}</small>}
+    </div>
+  )
+}
+
+/** Beschriftung der Farbrollen (Einstellungen, Hinweise) */
+function roleLabel(role: PaletteRole): string {
+  switch (role) {
+    case 'text':
+      return t('Fließtext')
+    case 'muted':
+      return t('Sekundärtext')
+    case 'surface':
+      return t('Flächen und Tabellenzeilen')
+    case 'background':
+      return t('Hintergrund')
+  }
+}
+
+/** Wofür eine Farbe da ist: Rollen zum Ankreuzen, jede Rolle hat höchstens eine Farbe */
+function ColorRoles({
+  label,
+  slot,
+  roles,
+  onToggle,
+}: {
+  label: string
+  slot: number
+  roles: PaletteRoles
+  onToggle: (slot: number, role: PaletteRole, on: boolean) => void
+}) {
+  return (
+    <div className="color-roles" role="group" aria-label={label}>
+      <span className="muted small">{t('Verwendet für:')}</span>
+      {PALETTE_ROLES.map((role) => (
+        <Checkbox
+          key={role}
+          label={roleLabel(role)}
+          checked={roles[role] === slot}
+          onChange={(on) => onToggle(slot, role, on)}
+        />
+      ))}
+    </div>
+  )
+}
+
+/** Farbrollen auch in der HUBIplan-Oberfläche (heller Modus), mit Kontrastschutz */
+function AppRoles({
+  palette,
+  roles,
+  enabled,
+  onChange,
+}: {
+  palette: { color: string }[]
+  roles: PaletteRoles
+  enabled: boolean
+  onChange: (v: boolean) => void
+}) {
+  const { dropped } = appColors(palette, roles)
+  const any = PALETTE_ROLES.some((r) => roles[r] !== undefined)
+  return (
+    <div className="field">
+      <span>{t('Farbrollen in HUBIplan')}</span>
+      <small className="muted">
+        {t(
+          'Die angekreuzten Rollen gelten für die Webseite (Webseite › Gestaltung, dort lässt sich jede Rolle noch ändern). Auf Wunsch färben sie auch HUBIplan selbst, nur in der hellen Darstellung; der Dunkelmodus behält seine Farben. Ohne Rollen bleibt alles, wie es ist.',
+        )}
+      </small>
+      <Checkbox
+        label={t('Farbrollen auch in HUBIplan verwenden')}
+        checked={enabled}
+        onChange={onChange}
+      />
+      {enabled && !any && <p className="muted small">{t('Noch keine Rolle angekreuzt.')}</p>}
+      {enabled && dropped.length > 0 && (
+        <Alert kind="info">
+          {t(
+            'Zu wenig Kontrast (mind. 4.5 : 1), HUBIplan nimmt dort die eigene Farbe: {x}. Die Webseite nimmt die Farben trotzdem; Webseite › Gestaltung warnt dort.',
+            { x: dropped.map(roleLabel).join(', ') },
+          )}
+        </Alert>
+      )}
     </div>
   )
 }

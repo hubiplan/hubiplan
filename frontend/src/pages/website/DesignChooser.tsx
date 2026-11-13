@@ -145,7 +145,7 @@ export function DesignChooser({
           <h4>{t('Text, Flächen und Hintergrund')}</h4>
           <p className="muted small">
             {t(
-              'Gilt für die ganze Webseite. „Vorgabe des Designs“ lässt die Farben des Designs, wie sie sind.',
+              'Gilt für die ganze Webseite. „Vorgabe“ nimmt die Farbe, die unter Einstellungen › Erscheinungsbild für diese Rolle angekreuzt ist, sonst die des Designs.',
             )}
           </p>
           <div className="grid-2">
@@ -159,6 +159,7 @@ export function DesignChooser({
                   swatch={colors[design]?.[r.key]}
                   palette={palette.map((_, i) => paletteName(i))}
                   gradients={[]}
+                  common
                   onChange={(v) => setRole(r.key, v)}
                 />
               ))}
@@ -179,9 +180,12 @@ function RoleSelect({
   swatch,
   palette,
   gradients,
+  common = false,
   onChange,
 }: {
   role: { key: string; label: string }
+  /** Text, Flächen, Hintergrund: Vorgabe sind die Farbrollen der Einheit */
+  common?: boolean
   chosen: number | string | undefined
   swatch?: RoleColors[string]
   palette: string[]
@@ -200,7 +204,9 @@ function RoleSelect({
       hint={now}
       onChange={(e) => onChange(e.target.value)}
     >
-      <option value="">{t('Vorgabe des Designs')}</option>
+      <option value="">
+        {common ? t('Vorgabe (Vereinsfarben oder Design)') : t('Vorgabe des Designs')}
+      </option>
       {palette.map((label, i) => (
         <option key={i} value={String(i)}>
           {label}

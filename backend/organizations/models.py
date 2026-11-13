@@ -137,6 +137,13 @@ class ThemeFields(models.Model):
     # Bis zu zwei benannte Verläufe aus Palettenplätzen (Ralf 10.11.2026):
     # [{name, from, to, direction}]
     gradients = models.JSONField("Verläufe", default=list, blank=True, db_default=[])
+    # Wofür eine Palettenfarbe da ist (Ralf 13.11.2026): {rolle: platz} mit den Rollen
+    # text, muted, surface, background (theme.PALETTE_ROLES); Webseite › Gestaltung nimmt sie
+    # als Vorgabe, mit palette_roles_in_app auch die HUBIplan-Oberfläche im hellen Modus
+    palette_roles = models.JSONField("Farbrollen", default=dict, blank=True, db_default={})
+    palette_roles_in_app = models.BooleanField(
+        "Farbrollen auch in HUBIplan", default=False, db_default=False
+    )
     logo = models.ImageField(
         "Logo/Wappen", upload_to=logo_path, blank=True, validators=[validate_logo]
     )
@@ -957,6 +964,8 @@ class Department(Organization):
             "primary_color_use",
             "accent_color_use",
             "gradients",
+            "palette_roles",
+            "palette_roles_in_app",
             "logo",
             "logo_dark",
             "own_workspace",
