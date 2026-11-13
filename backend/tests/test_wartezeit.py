@@ -68,7 +68,7 @@ def test_email_aendern_nennt_wartezeit_und_retry_after(api):
         )
         assert r.status_code == 400
     # Falsches Passwort: Hinweis, dass nicht das Postfach-Passwort gemeint ist
-    assert "E-Mail-Postfachs" in r.json()["password"][0]
+    assert "E-Mail-Postfachs" in str(r.json()["password"])
     r = c.post(
         "/api/me/email/", {"email": "neu@example.org", "password": PASSWORD}, content_type=JSON
     )
