@@ -4,6 +4,7 @@ After an update to a new release, HUBIplan shows everyone who manages something 
 
 November 2026:
 
+- Finance › Evaluate & close › **Budget**: plan income and expenses per category for a financial year, optionally per sub-unit, and compare them with the cash book as you go: plan, actual, variance and a forecast based on the previous year. The previous year's plan or actual figures serve as a template. An adopted budget is locked; PDF and Excel show plan and actual next to the previous year, for example for the annual general meeting. Events get planned income and expenses.
 - Website: Design › Fine-tuning › Header and menu now offers an optional **Header image for phones**. On narrow screens below 600 pixels the website shows this more compact version instead of the wide header image, so lettering and subtitle stay readable. A connected AI assistant can also set it in the draft.
 - AI assistants: a connected assistant can now also change the **appearance**: colours, gradients, colour roles and logo. This applies immediately and can be undone in the change log. Reconnect existing connections once.
 - Website: Design › Fine-tuning now offers **Dark mode** following the device setting, **Increased contrast**, a **“Back to top” button on long pages**, the font size “very large”, the **Image format in tiles** (3:2, 4:3, square), the **Menu on phones** as a collapsible menu or swipeable bar, the cover image height “medium” and “only by hand”, “slowly” or “normal” for image carousels.
