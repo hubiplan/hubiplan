@@ -320,6 +320,21 @@ Ansprechpartnern, Felder wie im Browser; `?suche=` findet Name, Nummer, Ort und 
 höchstens 200 Treffer. Rechte wie im Browser (`partners.view`, `finance.view` oder
 `billing.view`); Bankdaten nur mit Kassen- oder Beitragsrecht. Gepflegt wird im Browser.
 
+### Haushalte, Qualifikationen und Fristen
+
+- Haushalte und Firmen stehen in der Akte (`members/<id>/`) unter `households`: je Eintrag `id`,
+  `name`, `kind` (`family`/`company`), `role`, `since` und `others` (übrige Mitglieder mit
+  `member_id`, `name`, `role`). Gepflegt wird im Browser.
+- Qualifikationen (Modul `qualifications`, Recht `members.view`), nur lesen:
+  `qualifications/` (Übersicht wie im Browser, `?stand=bald` nur bald ablaufende oder
+  abgelaufene, `?art=<id>`) und `members/<id>/qualifications/` (Nachweise eines Mitglieds).
+- Fristenkalender (Modul `obligations`, Recht `obligations.view`), nur lesen: `obligations/`
+  mit `items` (je Pflicht `title`, `due_date`, `status` `overdue|soon|planned|election|done|
+  inactive`, `role_name`, `history`). Anlegen und Erledigen gehen im Browser.
+- Firmen im Mitgliederbereich: `GET /api/portal/<Zugang>/company/` (Mitarbeiter, die die Firma
+  bezahlt) und `POST …/company/<Haushalt>/report/` (Mitarbeiter melden) gelten auch für die App
+  mit dem Geräteschlüssel; `company: true` in `portal` zeigt, wer das darf.
+
 ### Quittung mit Unterschrift
 
 Konzept `konzepte/digitale-quittung.md`, Ablauf und Prüfung in

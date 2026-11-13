@@ -198,6 +198,13 @@ for (const language of ['de', 'en']) {
             .click()
           await continuation.waitFor()
         }
+        // Firmen stehen auf dem zweiten Reiter der Haushaltsseite
+        if (b.name === 'firmen-liste') {
+          await page
+            .getByRole('button', { name: language === 'en' ? 'Companies' : 'Firmen', exact: true })
+            .click()
+          await page.locator('section.card-wide[aria-label="Musterbau GmbH"]').waitFor()
+        }
         // „Ansicht als Rolle“ steht im Menü „Mein Konto“ oben rechts
         if (b.name === 'ansicht-als-rolle') {
           await page.locator('header.topbar .account-menu > button').click()
