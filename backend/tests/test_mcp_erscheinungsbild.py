@@ -18,6 +18,7 @@ from .test_mcp_verein import call, club, connect, editor, rpc, site  # noqa: F40
 pytestmark = pytest.mark.django_db(transaction=True)
 
 ALL = "webseite.lesen webseite.entwurf verein.erscheinungsbild"
+THEME = "verein.erscheinungsbild"
 
 
 @pytest.fixture(autouse=True)
@@ -47,13 +48,38 @@ def test_bereich_und_werkzeuge(club, site, designer):  # noqa: F811
     names = {t["name"] for t in rpc(token, "tools/list").json()["result"]["tools"]}
     assert "erscheinungsbild_ansehen" in names
     assert not {"erscheinungsbild_aendern", "logo_aus_bild"} & names
-    token = connect(designer, club, scope=ALL)["access_token"]
+    token = connect(designer, club, scope=ALL, haken=[THEME])["access_token"]
     names = {t["name"] for t in rpc(token, "tools/list").json()["result"]["tools"]}
     assert {"erscheinungsbild_aendern", "logo_aus_bild"} <= names
 
 
+def test_erscheinungsbild_nur_mit_eigenem_haken(club, site, designer):  # noqa: F811
+    # Gesamtaudit 13.11., H-04: Fragt der Assistent nach allem, gibt es das Erscheinungsbild
+    # trotzdem nur, wenn die Person es auf der Seite anhakt.
+    for scope in (ALL, ""):
+        got = connect(designer, club, scope=scope)
+        assert got["scope"] == "webseite.lesen webseite.entwurf"
+        names = {
+            t["name"] for t in rpc(got["access_token"], "tools/list").json()["result"]["tools"]
+        }
+        assert not {"erscheinungsbild_aendern", "logo_aus_bild"} & names
+    # Der Haken gilt auch, wenn der Assistent gar nicht danach gefragt hat
+    got = connect(designer, club, scope="webseite.lesen", haken=[THEME])
+    assert got["scope"] == "webseite.lesen verein.erscheinungsbild"
+    # Nur nach dem Erscheinungsbild gefragt, nicht angehakt: es bleibt beim Lesen
+    assert connect(designer, club, scope=THEME)["scope"] == "webseite.lesen"
+    # Die Seite bietet den Haken an und zählt den Bereich nicht zu den üblichen
+    from .test_mcp_verein import params, register, with_mfa
+
+    query = params(register()["client_id"], scope=ALL)
+    info = with_mfa(designer).get("/api/mcp/oauth/authorize/", query)
+    assert info.status_code == 200, info.content
+    assert [s["scope"] for s in info.json()["optional"]] == [THEME]
+    assert THEME not in [s["scope"] for s in info.json()["scopes"]]
+
+
 def test_farben_sofort_mit_protokoll(club, site, designer):  # noqa: F811
-    token = connect(designer, club, scope=ALL)["access_token"]
+    token = connect(designer, club, scope=ALL, haken=[THEME])["access_token"]
     text, failed = call(token, "erscheinungsbild_ansehen")
     assert not failed, text
     assert data_of(text)["eigene_farben"] is False
@@ -92,7 +118,7 @@ def test_farben_sofort_mit_protokoll(club, site, designer):  # noqa: F811
 
 
 def test_ohne_recht_nur_lesen(club, site, editor):  # noqa: F811
-    token = connect(editor, club, scope=ALL)["access_token"]
+    token = connect(editor, club, scope=ALL, haken=[THEME])["access_token"]
     _text, failed = call(token, "erscheinungsbild_aendern", hauptfarbe={"farbe": "#123e7a"})
     assert failed
     club.refresh_from_db()
@@ -104,7 +130,7 @@ def test_logo_aus_bild(club, site, designer):  # noqa: F811
     Image.new("RGBA", (300, 200), (18, 62, 122, 255)).save(buf, "PNG")
     upload = SimpleUploadedFile("wappen.png", buf.getvalue(), content_type="image/png")
     image = content.store_image(site, upload, "", "", designer)
-    token = connect(designer, club, scope=ALL)["access_token"]
+    token = connect(designer, club, scope=ALL, haken=[THEME])["access_token"]
     text, failed = call(token, "logo_aus_bild", nummer=image.pk)
     assert not failed, text
     club.refresh_from_db()

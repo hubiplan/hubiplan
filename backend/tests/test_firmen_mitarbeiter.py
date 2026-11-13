@@ -2,12 +2,14 @@
 # ruff: noqa: F811  (Fixtures aus test_mitgliedsantrag als Parameter)
 
 import datetime
+from urllib.parse import unquote
 
 import pytest
-from django.core import mail
+from django.core import mail, signing
 from django.test import Client
 
-from billing.company_portal import invite_token
+from billing import company_portal
+from billing.company_portal import SALT, invite_token
 from core.tenancy import tenant_context
 from members.models import Household, HouseholdMember, Membership, today
 from portal.models import PortalAccess
@@ -110,12 +112,19 @@ class TestMelden:
         assert invite.to == ["tom@example.org"]
         assert "Musterbau GmbH" in invite.body
         link = next(w for w in invite.body.split() if "/mitglied-werden/" in w)
-        assert "firma=" in link and "vorname=Tom" in link
-
-        with tenant_context(firma["org"].pk):
-            token = invite_token(Household.objects.get(pk=firma["household"]), "tom@example.org")
-        assert schema(firma["key"], firma=token)["company"] == "Musterbau GmbH"
+        # Name und Mailadresse stehen nicht lesbar im Link (Gesamtaudit 13.11. S-01)
+        assert "firma=" in link
+        assert "Tom" not in link and "Muster" not in link and "example.org" not in link
+        token = unquote(link.split("firma=")[1])
+        data = schema(firma["key"], firma=token)
+        assert data["company"] == "Musterbau GmbH"
+        assert data["invite"] == {
+            "email": "tom@example.org",
+            "first_name": "Tom",
+            "last_name": "Muster",
+        }
         assert schema(firma["key"])["company"] is None
+        assert schema(firma["key"])["invite"] is None
 
         mail.outbox.clear()
         res = submit(
@@ -143,6 +152,59 @@ class TestMelden:
         res = submit(firma["key"], company="kaputt", confirmations=["privacy"])
         assert res.status_code == 400
         assert "company" in res.json()
+
+    def test_link_gilt_nur_fuer_die_gemeldete_adresse(self, firma):
+        """Gesamtaudit 13.11. S-04: Weitergereicht nützt der Link niemandem."""
+        with tenant_context(firma["org"].pk):
+            token = invite_token(
+                Household.objects.get(pk=firma["household"]), "tom@example.org", "Tom", "Muster"
+            )
+        res = submit(
+            firma["key"], email="fremd@example.org", company=token, confirmations=["privacy"]
+        )
+        assert res.status_code == 400 and "email" in res.json()
+        res = submit(
+            firma["key"], email="Tom@Example.org", company=token, confirmations=["privacy"]
+        )
+        assert res.status_code == 201, res.content
+
+    def test_alter_link_gilt_weiter(self, firma):
+        """Links aus der Zeit vor der Verschlüsselung bleiben bis zum Ablauf gültig."""
+        old = signing.dumps(
+            {"o": firma["org"].pk, "h": firma["household"], "e": "tom@example.org"}, salt=SALT
+        )
+        data = schema(firma["key"], firma=old)
+        assert data["company"] == "Musterbau GmbH"
+        assert data["invite"]["email"] == "tom@example.org"
+
+    def test_grenzen(self, firma, monkeypatch):
+        """Gesamtaudit 13.11. S-01: keine Mailflut im Namen des Vereins."""
+        url = f"{firma['url']}{firma['household']}/report/"
+
+        def melden(mail_address, first="Tom", last="Muster"):
+            return firma["portal"].post(
+                url,
+                {"first_name": first, "last_name": last, "email": mail_address},
+                content_type=JSON,
+            )
+
+        mail.outbox.clear()
+        assert melden("tom@example.org").status_code == 201
+        # dieselbe Adresse nur einmal am Tag, auch anders geschrieben
+        res = melden("Tom@Example.org")
+        assert res.status_code == 400 and "email" in res.json()
+        # im Namen steht nur, was in Namen vorkommt
+        for name in ("https://example.org", "Jetzt gewinnen!", "www.example.org", "A1"):
+            res = melden("anna@example.org", first=name)
+            assert res.status_code == 400 and "first_name" in res.json(), name
+        assert melden("anna@example.org", first="Anna-Lena", last="O’Neil").status_code == 201
+        assert len(mail.outbox) == 2
+        # Grenze je Firma
+        monkeypatch.setattr(company_portal, "REPORTS_PER_COMPANY", 3)
+        assert melden("b@example.org").status_code == 201
+        res = melden("c@example.org")
+        assert res.status_code == 400 and "detail" in res.json()
+        assert len(mail.outbox) == 3
 
     def test_ohne_online_antrag(self, firma):
         org = firma["org"]

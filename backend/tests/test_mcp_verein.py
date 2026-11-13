@@ -111,10 +111,11 @@ def params(client_id: str, **extra) -> dict:
     return {k: v for k, v in data.items() if v is not None}
 
 
-def consent(c, client_id, org_id, **extra):
+def consent(c, client_id, org_id, haken=(), **extra):
+    # haken: Bereiche, die die Person auf der Seite eigens anhakt (Erscheinungsbild)
     return c.post(
         "/api/mcp/oauth/authorize/",
-        {"params": params(client_id, **extra), "organization": org_id},
+        {"params": params(client_id, **extra), "organization": org_id, "extra": list(haken)},
         content_type=JSON,
     )
 
@@ -141,10 +142,10 @@ def redeem(client_id: str, code: str, **extra):
     return HttpClient(enforce_csrf_checks=True).post("/api/mcp/oauth/token", data)
 
 
-def connect(user, club, scope="webseite.lesen webseite.entwurf") -> dict:
+def connect(user, club, scope="webseite.lesen webseite.entwurf", haken=()) -> dict:
     client_id = register()["client_id"]
     c = with_mfa(user)
-    resp = redeem(client_id, code_of(consent(c, client_id, club.pk, scope=scope)))
+    resp = redeem(client_id, code_of(consent(c, client_id, club.pk, haken=haken, scope=scope)))
     assert resp.status_code == 200, resp.content
     return {"client_id": client_id, **resp.json()}
 

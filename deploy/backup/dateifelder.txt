@@ -53,3 +53,4 @@ website_websitedocument file private
 website_websitedocument preview private
 materials_materialphoto file private
 meetings_minutesversion file private
+admission_application pdf private

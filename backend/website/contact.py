@@ -210,10 +210,17 @@ def deliver(website, recipient_name: str, emails: list[str], data: dict) -> bool
 
 
 def copy_to_sender(website, recipient_name: str, data: dict) -> None:
+    """Bestätigung an die angegebene Adresse, ohne Namen und ohne den Text der Nachricht.
+
+    Die Adresse ist ungeprüft: Mit dem Text darin ließe sich über das Formular im Namen des
+    Vereins beliebiger Inhalt an Fremde schicken (Gesamtaudit 13.11. H-06).
+    """
     org = website.organization
     body = (
-        f"Hallo {data['name']},\n\ndeine Nachricht an {recipient_name} ({org.name}) ist "
-        f"angekommen. Zur Erinnerung dein Text:\n\n{data['message']}\n"
+        f"Guten Tag,\n\nüber das Kontaktformular von {org.name} ist eine Nachricht an "
+        f"{recipient_name} mit dieser Adresse als Absender eingegangen. Den Text schicken "
+        "wir aus Sicherheitsgründen nicht mit.\n\nWar das nicht von dir, musst du nichts "
+        "tun.\n"
     )
     send(
         [data["email"]],
@@ -271,7 +278,13 @@ def _accept(website, target, data: dict) -> str:
 HOLD_FAILED = "Zustellung gescheitert, bitte erneut freigeben"
 
 
+# So viele angehaltene Nachrichten hebt eine Webseite höchstens auf (Gesamtaudit 13.11. H-05)
+HELD_MAX = 500
+
+
 def hold(website, recipient_name: str, data: dict, reason: str) -> None:
+    if HeldMessage.objects.filter(website=website).count() >= HELD_MAX:
+        raise Rejected("Zu viele Nachrichten. Bitte später noch einmal versuchen.", 429)
     HeldMessage.objects.create(
         organization=website.organization,
         website=website,
