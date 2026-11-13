@@ -1193,7 +1193,7 @@ class SiteView:
             ):
                 if t.kind != WebsiteText.Kind.UNIT or t.department_id in self.unit_slugs:
                     return image
-        if image.pk in (self.header_image_pk, self.header_image_narrow_pk):
+        if self.header_image_pk and image.pk in (self.header_image_pk, self.header_image_narrow_pk):
             # Kopfbild der Webseite (Ralf 05.11.) und seine Fassung für schmale Bildschirme
             # (#73), in der Vorschau auch die des Entwurfs
             return image

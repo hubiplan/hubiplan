@@ -47,7 +47,7 @@ export function HeaderImage({
             )}
           </p>
           <ImageChoice
-            label={t('Kopfbild für Handys (optional)')}
+            label={t('Kopfbild für Handys')}
             value={narrow}
             images={images.data ?? []}
             units={units}

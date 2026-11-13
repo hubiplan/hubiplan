@@ -6333,7 +6333,7 @@
   "Als Titelbild": "Use as cover",
   "Aus dem Album nehmen": "Remove from album",
   "Kopfbild": "Header image",
-  "Kopfbild für Handys (optional)": "Header image for phones (optional)",
+  "Kopfbild für Handys": "Header image for phones",
   "Auf dem Handy wird ein breites Kopfbild neben dem Menüknopf sehr klein. Optional zeigt die Webseite auf schmalen Bildschirmen (unter 600 Pixel Breite) stattdessen eine kompaktere Fassung, z. B. mit dem Schriftzug über zwei Zeilen. Ohne dieses Bild steht dort das Kopfbild.": "On a phone a wide header image becomes very small next to the menu button. Optionally the website shows a more compact version on narrow screens (below 600 pixels wide) instead, for example with the lettering on two lines. Without this image the header image appears there.",
   "Ohne Kopfbild zeigt die Webseite oben Wappen und Vereinsnamen. Mit Kopfbild steht dort nur das Bild, z. B. ein Banner mit Schriftzug. Es sollte den Vereinsnamen enthalten und breit sein, etwa 1200 × 300 Pixel.": "Without a header image the website shows the coat of arms and the club name at the top. With a header image only the image appears there, for example a banner with lettering. It should contain the club name and be wide, about 1200 × 300 pixels.",
   "Anschrift beim Vorstand zeigen": "Show postal address for the board",
