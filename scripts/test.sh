@@ -394,7 +394,8 @@ if [ "$RUN_BACKEND" = 1 ]; then
             docker exec "$ID-db" pg_dump -U test -Fc "$TEST_DB" > "$DUMP.$ID" && mv "$DUMP.$ID" "$DUMP"
             rm -f "$DUMP.$ID"
             # Nur die zehn neuesten Vorlagen behalten
-            ls -1t "$DB_CACHE"/*.dump 2> /dev/null | tail -n +11 | xargs -r rm -f
+            # Räumt ein paralleler Lauf gleichzeitig auf, fehlt eine Datei schon: kein Fehler
+            ls -1t "$DB_CACHE"/*.dump 2> /dev/null | tail -n +11 | xargs -r rm -f || true
         fi
         echo "Backend: Testdatenbank migriert ($(($(date +%s) - dbstart)) s)"
     fi
