@@ -2,6 +2,18 @@
   "_hinweis": "Bildschirmfotos der Hilfe, erzeugt mit scripts/hilfe-bilder.sh aus den Demodaten (seed_testdata). zugang: Demozugang ohne Domain; ausschnitt: CSS-Auswahl des Bereichs (leer: Inhalt der Seite); wurzel (wahlweise): Bereich, in dem ausschnitt gesucht wird, etwa header.topbar für die Kopfleiste (Standard: main).",
   "bilder": [
     {
+      "name": "haushalte-liste",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/mitglieder/haushalte",
+      "ausschnitt": ""
+    },
+    {
+      "name": "haushalt-karte",
+      "zugang": "vorstand@hubertus-grimlinghausen.test",
+      "seite": "/mitglieder/haushalte",
+      "ausschnitt": "section.card-wide[aria-label=\"Familie Muster\"]"
+    },
+    {
       "name": "kalender-abo",
       "zugang": "mitglied@hubertus-grimlinghausen.test",
       "seite": "/termine/abo",

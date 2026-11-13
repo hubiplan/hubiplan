@@ -9,7 +9,11 @@ stichworte: [Haushalt, Familie, Familienbrief, ein Brief, Porto, Firma, Mitarbei
 
 Hier verbindest du Mitglieder, die zusammengehören. Unter **Familien und Haushalte** stehen Mitglieder, die zusammen wohnen, unter **Firmen** Mitglieder, für die eine Firma zahlt. Ein Mitglied gehört gleichzeitig höchstens zu einem Haushalt und höchstens zu einer Firma.
 
+![Haushalte und Firmen mit ihren Mitgliedern](bild:haushalte-liste)
+
 Mit **Haushalt anlegen** gibst du einen Namen ein, z. B. „Familie Muster“. Über **Mitglied hinzufügen** suchst du ein Mitglied, wählst die Rolle (**Erwachsener** oder **Kind**; HUBIplan schlägt sie nach dem Alter vor) und das Datum, ab dem es dazugehört. Gehört das Mitglied schon zu einem anderen Haushalt, fragt HUBIplan, ob es wechseln soll; die bisherige Zugehörigkeit endet dann am Vortag. **Herausnehmen** beendet die Zugehörigkeit heute, sie bleibt als früherer Eintrag erhalten (**Frühere Mitglieder zeigen**). Tritt ein Mitglied aus, endet seine Zugehörigkeit mit dem Austritt. Einen Haushalt ohne aktuelle Mitglieder kannst du löschen.
+
+![Karte eines Haushalts mit Rolle und Datum je Mitglied](bild:haushalt-karte)
 
 **Vorschläge suchen** zeigt aktuelle Mitglieder mit derselben Anschrift, die noch nicht zusammen in einem Haushalt sind. Mit **Als Haushalt anlegen** übernimmst du einen Vorschlag; Mitglieder, die schon zu einem anderen Haushalt gehören, bleiben dort.
 

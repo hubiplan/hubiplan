@@ -127,6 +127,20 @@ user, _ = get_user_model().objects.get_or_create(email='mitglied@hubertus-grimli
 user.set_password('$PASSWORD')
 user.save()
 PortalAccess.objects.get_or_create(membership=membership, defaults={'organization': club, 'user': user})
+# Haushalte und eine Firma für die Hilfebilder (erfundene Namen, nur in dieser Wegwerf-Datenbank)
+import datetime as _dt
+from members.models import Household, HouseholdMember
+current = [m for m in Membership.objects.filter(organization=club, person__kind='person').select_related('person').order_by('pk') if m.current_period()]
+since = _dt.date.today().replace(month=1, day=1)
+for name, kind, people in [
+    ('Familie Muster', 'family', [(current[1], 'adult'), (current[2], 'adult'), (current[3], 'child')]),
+    ('Familie Beispiel', 'family', [(current[4], 'adult'), (current[5], 'child')]),
+    ('Musterbau GmbH', 'company', [(current[6], 'adult'), (current[7], 'adult')]),
+]:
+    hh = Household.objects.create(organization=club, name=name, kind=kind)
+    for m, role in people:
+        HouseholdMember.objects.create(organization=club, household=hh, membership=m, kind=kind,
+            role=role, valid_from=since, pays_via=(kind == 'company'))
 # Kalenderbeispiele: gleicher Titel in zwei Einheiten und ein Termin über Mitternacht.
 # Ausschließlich in dieser Wegwerf-Datenbank, damit die Hilfebilder den Kontext zeigen.
 from datetime import datetime

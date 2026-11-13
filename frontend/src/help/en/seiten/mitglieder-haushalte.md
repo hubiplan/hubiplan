@@ -9,7 +9,11 @@ stichworte: [household, family, family letter, one letter, postage, company, emp
 
 Here you link members who belong together. **Families and households** lists members who live together, **Companies** lists members whose fees a company pays. A member belongs to at most one household and at most one company at the same time.
 
+![Households and companies with their members](bild:haushalte-liste)
+
 With **Create household** you enter a name, e.g. “Muster family”. **Add member** lets you search for a member, choose the role (**Adult** or **Child**; HUBIplan suggests it from the age) and the date from which they belong. If the member already belongs to another household, HUBIplan asks whether to move them; the previous membership in it then ends the day before. **Remove** ends the membership in the household today; it stays visible as a past entry (**Show former members**). When a member leaves the club, their membership in the household ends on the exit date. You can delete a household without current members.
+
+![Card of a household with role and date for each member](bild:haushalt-karte)
 
 **Find suggestions** shows current members with the same address who are not yet together in a household. **Create as household** takes over a suggestion; members who already belong to another household stay there.
 

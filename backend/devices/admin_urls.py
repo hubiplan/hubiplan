@@ -21,8 +21,10 @@ from finance import views as finance_views
 from members import honorary as honorary_views
 from members import jubilee_views, photo_views, workflow_views
 from members import views as member_views
+from obligations import views as obligation_views
 from organizations import views as org_views
 from portal import views as portal_views
+from qualifications import views as qualification_views
 from todos import attachments as todo_attachments
 from todos import cross_views as todo_cross_views
 from todos import reminder_views as todo_reminder_views
@@ -105,6 +107,12 @@ member_router.register(
     "honorary-titles",
     for_app(honorary_views.MemberAwardViewSet),
     basename="app-admin-member-honorary-title",
+)
+# Qualifikationen am Mitglied (konzepte/fehlende-funktionen): nur lesen, gepflegt im Browser
+member_router.register(
+    "qualifications",
+    for_app(qualification_views.MemberRecordViewSet, True),
+    basename="app-admin-member-qualification",
 )
 
 
@@ -237,6 +245,17 @@ urlpatterns = [
         "billing/payments/<int:pk>/receipt/",
         billing_views.PaymentReceiptView,
         "billing-payment-receipt",
+    ),
+    # Qualifikationen (bald ablaufende Nachweise) und Fristenkalender: nur lesen
+    path(
+        "qualifications/",
+        for_app(qualification_views.OverviewView, True).as_view(),
+        name="app-admin-qualifications",
+    ),
+    path(
+        "obligations/",
+        for_app(obligation_views.ListView, True).as_view(),
+        name="app-admin-obligations",
     ),
     path("", include(org_router.urls)),
 ]
