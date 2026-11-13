@@ -8160,6 +8160,7 @@
   "Diese Adresse gehört zu keinem bekannten KI-Assistenten. Erlaube nur, wenn du die Verbindung gerade selbst eingerichtet hast und die Adresse kennst. Kam der Link per Mail oder Nachricht, lehne ab.": "This address does not belong to any known AI assistant. Only allow this if you have just set up the connection yourself and know the address. If the link came by email or message, decline.",
   "Angemeldet als": "Signed in as",
   "Der Assistent darf": "The assistant may",
+  "Zusätzlich erlauben": "Also allow",
   "die Hilfe von HUBIplan lesen": "read the HUBIplan help",
   "Nie mehr als du selbst. Veröffentlichen, Mitgliederdaten, Mails und Zahlungen gibt es über den Assistenten nicht. Was er schreibt, geht an den Anbieter des Assistenten; schreibe dort keine vertraulichen Daten hinein. Trennen kannst du die Verbindung jederzeit unter Mein Konto › App & andere Instanzen.": "Never more than you yourself. Publishing, member data, emails and payments are not available through the assistant. What it writes goes to the provider of the assistant; do not put confidential data there. You can disconnect at any time under My account › App & other instances.",
   "Für keine deiner Einheiten ist das möglich. Nötig sind das Modul „KI-Assistenten“ und in deiner Rolle das Zusatzrecht „KI-Assistenten verbinden“.": "This is not possible for any of your units. It needs the “AI assistants” module and, in your role, the extra permission “Connect AI assistants”.",

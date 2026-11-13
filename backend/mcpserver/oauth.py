@@ -76,7 +76,10 @@ SCOPES = {
         "sofort für HUBIplan und Webseite, rückgängig im Änderungsprotokoll)"
     ),
 }
-DEFAULT_SCOPES = (SCOPE_READ, SCOPE_DRAFT, SCOPE_THEME)
+DEFAULT_SCOPES = (SCOPE_READ, SCOPE_DRAFT)
+# Wirkt sofort und ohne Entwurf: gibt es nur, wenn die Person es beim Verbinden eigens
+# anhakt, auch wenn der Assistent danach fragt (Gesamtaudit 13.11., H-04)
+OPTIONAL_SCOPES = (SCOPE_THEME,)
 # Schemata, die nie als Rückleitung taugen
 BAD_SCHEMES = {"javascript", "data", "file", "vbscript", "about", "blob", "ftp", "ws", "wss"}
 SCHEME = re.compile(r"^[a-z][a-z0-9+.-]{1,40}$")
@@ -165,11 +168,22 @@ def scope_labels(scopes) -> list[dict]:
 
 
 def clean_scopes(value) -> list[str]:
-    """Leere Angabe: alle Bereiche. Unbekannte fallen weg; „entwurf“ zieht „lesen“ mit."""
+    """Leere Angabe: die üblichen Bereiche. Unbekannte fallen weg; „entwurf“ zieht „lesen“ mit."""
     if isinstance(value, str):
         value = value.split()
     wanted = [s for s in value or [] if s in SCOPES] if value else list(DEFAULT_SCOPES)
     if SCOPE_DRAFT in wanted and SCOPE_READ not in wanted:
+        wanted.append(SCOPE_READ)
+    return [s for s in SCOPES if s in wanted]
+
+
+def granted_scopes(requested, extra) -> list[str]:
+    """Was die Zustimmung gibt: das Angefragte ohne die eigens anzuhakenden Bereiche, dazu
+    die angehakten. Bleibt nichts übrig, gilt „lesen“."""
+    extra = extra if isinstance(extra, (list, tuple)) else []
+    wanted = [s for s in requested if s not in OPTIONAL_SCOPES]
+    wanted += [s for s in OPTIONAL_SCOPES if s in extra]
+    if not [s for s in wanted if s not in OPTIONAL_SCOPES]:
         wanted.append(SCOPE_READ)
     return [s for s in SCOPES if s in wanted]
 
@@ -375,15 +389,20 @@ def describe(request, params) -> dict:
         # Woran die Person die Gegenseite erkennt (Name ist frei wählbar, Gesamtaudit S-06)
         "redirect_kind": redirect_kind(redirect_uri),
         "connected_before": before,
-        "scopes": scope_labels(scopes),
+        "scopes": scope_labels(granted_scopes(scopes, [])),
+        # Nur mit eigenem Haken auf der Seite
+        "optional": scope_labels(OPTIONAL_SCOPES),
         "units": [{"id": o.pk, "name": o.name} for o in units_for(user)],
         "problem": _mfa_problem(request, user),
     }
 
 
-def authorize(request, params, organization_id) -> str:
-    """Zustimmung der angemeldeten Person; liefert die Rückleitung mit Code."""
+def authorize(request, params, organization_id, extra=()) -> str:
+    """Zustimmung der angemeldeten Person; liefert die Rückleitung mit Code.
+
+    ``extra``: Bereiche, die die Person auf der Seite eigens angehakt hat."""
     client, redirect_uri, state, scopes = _checked(request, params)
+    scopes = granted_scopes(scopes, extra)
     user = request.user
     problem = _mfa_problem(request, user)
     if problem:

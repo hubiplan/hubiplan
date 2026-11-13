@@ -150,7 +150,9 @@ class AuthorizeView(APIView):
                 return Response({"detail": exc.message, "redirect": exc.redirect}, status=400)
             return Response({"redirect": oauth.denied(request._request, params)})
         try:
-            url = oauth.authorize(request._request, params, data.get("organization"))
+            url = oauth.authorize(
+                request._request, params, data.get("organization"), data.get("extra")
+            )
         except oauth.ConsentError as exc:
             return Response({"detail": exc.message, "redirect": exc.redirect}, status=400)
         return Response({"redirect": url})
